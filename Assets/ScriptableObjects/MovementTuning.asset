@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1000000000000000000000000000001, type: 3}
+  m_Name: MovementTuning
+  m_EditorClassIdentifier: 
+  walkSpeed: 4.5
+  sprintSpeed: 7
+  accelTime: 0.18
+  brakeTime: 0.12
+  turnRateWalk: 540
+  turnRateSprint: 380
+  jumpApexHeight: 1.15
+  gravity: 28
+  jumpLaunchSpeed: 8
+  coyoteTime: 0.12
+  jumpBuffer: 0.14
+  airControlPercent: 0.45
+  sprintJumpHorizRetain: 1
+  hardLandFallMultiple: 1.5
+  hardLandHorizPenalty: 0.15
+  hardLandPenaltyDuration: 0.1
+  slideSpeedGate: 5.5
+  slideDuration: 0.7
+  slidePunchDuration: 0.15
+  slideEndSpeedPercent: 0.55
+  slideHeight: 0.9
+  standHeight: 1.8
+  slideJumpHorizBonus: 0.12
+  slideCooldown: 0.08
+  wallRunAttachSpeed: 5
+  wallRunFaceAngleMax: 70
+  wallRunVelAngleMax: 55
+  wallRunMaxDuration: 1.25
+  wallRunGravityScale: 0.35
+  wallRunDetachOppositeHold: 0.1
+  wallRunMinSpeed: 3.5
+  sameWallCooldown: 0.35
+  wallChainCap: 3
+  wallChainAttachMinAfterCap: 6.2
+  wallJumpOutSpeed: 6.5
+  wallJumpUpSpeed: 5.5
+  wallJumpSteerPercent: 0.2
+  wallJumpAlongPercent: 0.5
+  wallJumpFalloffWindow: 0.8
+  wallJumpFalloffMult: 0.85
+  wallJumpFalloffFloor: 0.55
+  wallJumpBuffer: 0.1
+  vaultLowMin: 0.45
+  vaultLowMax: 1.1
+  vaultLowSpeedGate: 3.5
+  vaultLowLock: 0.28
+  vaultLowRetain: 0.95
+  vaultHighMin: 1.1
+  vaultHighMax: 1.7
+  vaultHighSpeedGate: 4
+  vaultHighLock: 0.4
+  vaultHighRetain: 0.85
+  vaultConeDegrees: 35
+  vaultFailSpeedPenalty: 0.4
+  vaultFailPenaltyDuration: 0.15
+  vaultLipJumpWindow: 0.3
+  capsuleRadius: 0.4

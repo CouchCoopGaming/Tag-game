@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1000000000000000000000000000002, type: 3}
+  m_Name: PunchTagTuning
+  m_EditorClassIdentifier: 
+  inputBuffer: 0.08
+  windup: 0.12
+  active: 0.1
+  hitRecover: 0.15
+  missRecover: 0.32
+  windupMoveSpeedScale: 0.7
+  allowSlideCancelDuringPunch: 0
+  reach: 1.35
+  width: 0.7
+  height: 1.2
+  midTorsoHeight: 0.9
+  pitchToleranceDeg: 15
+  preferContinuousCast: 1
+  runnerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  losMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  ragdollDuration: 1.5
+  ragdollHasIFrames: 1
+  knockbackHorizontal: 4
+  knockbackUp: 2
+  speedBuffPercent: 0.08
+  speedBuffDuration: 2
+  speedBuffStacks: 0
+  speedBuffRefreshOnHit: 1
+  speedBuffClearsOnLosingIt: 1
