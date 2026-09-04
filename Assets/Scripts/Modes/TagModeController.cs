@@ -6,9 +6,18 @@ using UnityEngine;
 
 namespace Tag.Modes
 {
+    public enum MatchPhase
+    {
+        Idle,
+        Countdown,
+        Playing,
+        PostRound,
+        Results
+    }
+
     /// <summary>
-    /// Selects / instantiates an ITagMode, owns shared It-transfer, end conditions, HUD.
-    /// Replaces the LeastIt-only TagRoundController path.
+    /// Owns players, It transfer, countdown/round/results shell; delegates rules to ITagMode.
+    /// Replaces the LeastIt-only TagRoundController path (TagRoundController subclasses this).
     /// </summary>
     public class TagModeController : MonoBehaviour
     {
@@ -19,6 +28,7 @@ namespace Tag.Modes
         [SerializeField] TagModeId selectedMode = TagModeId.LeastIt;
         [SerializeField] bool autoFindPlayers = true;
         [SerializeField] List<ItController> players = new List<ItController>();
+        [SerializeField] MatchTuning matchTuning;
         [SerializeField] LeastItTuning leastItTuning;
         [SerializeField] HotPotatoTuning hotPotatoTuning;
         [SerializeField] TrailTagTuning trailTagTuning;
@@ -26,6 +36,9 @@ namespace Tag.Modes
         readonly TagModeContext _ctx = new TagModeContext();
         ITagMode _mode;
         bool _endedNotified;
+        MatchPhase _phase = MatchPhase.Idle;
+        float _phaseTimer;
+        string _resultMessage = "";
 
         public TagModeId SelectedMode
         {
@@ -33,26 +46,28 @@ namespace Tag.Modes
             set => selectedMode = value;
         }
 
+        public MatchTuning MatchTuning => matchTuning;
         public float Remaining => _ctx.RemainingTime;
         public bool IsRunning => _ctx.RoundRunning;
-        public bool RoundActive => _ctx.RoundRunning;
+        public bool RoundActive => _ctx.RoundRunning || _phase == MatchPhase.Countdown || _phase == MatchPhase.PostRound;
         public ItController CurrentIt => _ctx.CurrentIt;
         public ITagMode ActiveMode => _mode;
         public TagModeContext Context => _ctx;
+        public MatchPhase Phase => _phase;
+        public string ResultMessage => _resultMessage;
 
         void Awake()
         {
             Instance = this;
-            if (GameFlow.SelectedMode.HasValue)
-                selectedMode = GameFlow.SelectedMode.Value;
-            else if (PlayerPrefs.HasKey(PrefsModeKey))
-                selectedMode = (TagModeId)PlayerPrefs.GetInt(PrefsModeKey, (int)TagModeId.LeastIt);
+            ResolveSelectedModeFromFlow();
 
+            if (matchTuning == null) matchTuning = MatchTuning.CreateRuntimeDefaults();
             if (leastItTuning == null) leastItTuning = LeastItTuning.CreateRuntimeDefaults();
             if (hotPotatoTuning == null) hotPotatoTuning = HotPotatoTuning.CreateRuntimeDefaults();
             if (trailTagTuning == null) trailTagTuning = TrailTagTuning.CreateRuntimeDefaults();
 
             _ctx.Eliminate = p => EliminatePlayer(p, "mode");
+            _ctx.MatchTuning = matchTuning;
         }
 
         void OnDestroy()
@@ -64,9 +79,23 @@ namespace Tag.Modes
         {
             if (autoFindPlayers)
                 RefreshPlayers();
-            // If no GameFlow, auto-start (Play scene opened directly).
             if (FindFirstObjectByType<GameFlow>() == null)
                 StartRound();
+        }
+
+        void ResolveSelectedModeFromFlow()
+        {
+            var flow = GameFlow.Instance != null ? GameFlow.Instance : FindFirstObjectByType<GameFlow>();
+            if (flow != null)
+                selectedMode = flow.SelectedMode;
+            else if (PlayerPrefs.HasKey(PrefsModeKey))
+                selectedMode = (TagModeId)PlayerPrefs.GetInt(PrefsModeKey, (int)TagModeId.LeastIt);
+        }
+
+        public void SetMode(TagModeId id)
+        {
+            selectedMode = id;
+            PlayerPrefs.SetInt(PrefsModeKey, (int)id);
         }
 
         public void RefreshPlayers()
@@ -107,23 +136,32 @@ namespace Tag.Modes
             }
         }
 
-        public void StartRound()
+        public void StartRound() => StartRound(selectedMode);
+
+        public void StartRound(TagModeId modeId)
         {
+            SetMode(modeId);
             RefreshPlayers();
             _endedNotified = false;
-            selectedMode = GameFlow.SelectedMode ?? selectedMode;
+            _resultMessage = "";
             _mode = CreateMode(selectedMode);
 
             _ctx.Players.Clear();
             _ctx.Players.AddRange(players);
             _ctx.CurrentIt = null;
             _ctx.Elapsed = 0f;
-            _ctx.RoundRunning = true;
+            _ctx.RemainingTime = 0f;
+            _ctx.RoundRunning = false;
+            _ctx.SuddenDeath = false;
+            _ctx.MatchTuning = matchTuning;
 
-            // Disable trail emit by default; TrailTagMode enables.
             foreach (var p in players)
             {
                 if (p == null) continue;
+                p.Revive();
+                p.ResetScore();
+                p.SetIt(false);
+                p.ApplySpawnIFrames(matchTuning.spawnIFramesSec);
                 var e = p.GetComponent<PlayerTrailEmitter>();
                 if (e != null)
                 {
@@ -132,9 +170,20 @@ namespace Tag.Modes
                 }
             }
 
+            _phase = MatchPhase.Countdown;
+            _phaseTimer = Mathf.Max(0.01f, matchTuning.countdownSec);
+            Debug.Log($"[TagMode] Countdown {_phaseTimer:0}s → {selectedMode} ({_ctx.Players.Count}p)");
+        }
+
+        public void Rematch() => StartRound(selectedMode);
+
+        void BeginPlaying()
+        {
+            _phase = MatchPhase.Playing;
+            _ctx.RoundRunning = true;
             _mode.OnRoundStart(_ctx);
 
-            if (_ctx.Players.Count > 0)
+            if (_ctx.CurrentIt == null && _ctx.Players.Count > 0)
             {
                 var living = new List<ItController>();
                 foreach (var p in _ctx.LivingPlayers()) living.Add(p);
@@ -145,30 +194,61 @@ namespace Tag.Modes
                 }
             }
 
-            Debug.Log($"[TagMode] Started {_mode.Id} — {_ctx.Players.Count} players.");
+            Debug.Log($"[TagMode] Playing {_mode.Id}");
         }
-
-        public void Rematch() => StartRound();
 
         void Update()
         {
-            if (!_ctx.RoundRunning || _mode == null) return;
-
             float dt = Time.deltaTime;
+
+            if (_phase == MatchPhase.Countdown)
+            {
+                _phaseTimer -= dt;
+                if (_phaseTimer <= 0f)
+                    BeginPlaying();
+                return;
+            }
+
+            if (_phase == MatchPhase.PostRound)
+            {
+                _phaseTimer -= dt;
+                if (_phaseTimer <= 0f)
+                {
+                    // Mode may start next fuse while RoundRunning stays true
+                    _phase = MatchPhase.Playing;
+                    _ctx.RoundRunning = true;
+                }
+                return;
+            }
+
+            if (_phase != MatchPhase.Playing || !_ctx.RoundRunning || _mode == null)
+                return;
+
             _ctx.Elapsed += dt;
             _mode.Tick(_ctx, dt);
 
             if (_mode.ShouldEndRound(_ctx))
-                EndRound();
+                EndMatch();
+        }
+
+        /// <summary>Hot Potato post-round pause between fuse rounds (not match end).</summary>
+        public void EnterPostRound(float seconds)
+        {
+            _phase = MatchPhase.PostRound;
+            _phaseTimer = Mathf.Max(0.01f, seconds);
+            _ctx.RoundRunning = false;
         }
 
         public void OnSuccessfulPunch(ItController puncher, ItController target)
         {
-            if (!_ctx.RoundRunning || puncher == null || target == null) return;
+            if (_phase != MatchPhase.Playing || !_ctx.RoundRunning) return;
+            if (puncher == null || target == null) return;
             if (!puncher.IsIt) return;
             if (!target.IsAlive || !target.CanBeTagged) return;
             TransferIt(puncher, target);
             _mode?.OnPunchTransfer(_ctx, puncher, target);
+            if (_mode != null && _mode.ShouldEndRound(_ctx))
+                EndMatch();
         }
 
         public void TransferIt(ItController from, ItController to)
@@ -189,7 +269,7 @@ namespace Tag.Modes
         public void EliminatePlayer(ItController player, string reason = "")
         {
             if (player == null || !player.IsAlive) return;
-            player.Eliminate();
+            player.Eliminate(reason);
             if (_ctx.CurrentIt == player)
             {
                 player.SetIt(false);
@@ -203,36 +283,54 @@ namespace Tag.Modes
             Debug.Log($"[TagMode] Eliminated {player.PlayerId} ({reason})");
 
             if (_mode != null && _mode.ShouldEndRound(_ctx))
-                EndRound();
+                EndMatch();
         }
 
-        void EndRound()
+        void EndMatch()
         {
-            if (!_ctx.RoundRunning) return;
+            if (_phase == MatchPhase.Results) return;
             _ctx.RoundRunning = false;
             if (_ctx.RemainingTime < 0f) _ctx.RemainingTime = 0f;
+            _phase = MatchPhase.Results;
 
             var winners = _mode != null ? _mode.GetWinnerIds(_ctx) : new List<string>();
-            string msg = winners != null && winners.Count > 0
+            _resultMessage = winners != null && winners.Count > 0
                 ? "Winner(s): " + string.Join(", ", winners)
                 : "No winners";
-            Debug.Log($"[TagMode] END {_mode?.Id} — {msg}");
+            Debug.Log($"[TagMode] END {_mode?.Id} — {_resultMessage}");
+
+            foreach (var p in players)
+            {
+                if (p == null) continue;
+                var e = p.GetComponent<PlayerTrailEmitter>();
+                if (e != null) e.SetEmitting(false);
+            }
 
             if (_endedNotified) return;
             _endedNotified = true;
 
             var flow = GameFlow.Instance != null ? GameFlow.Instance : FindFirstObjectByType<GameFlow>();
             if (flow != null)
-                flow.OnRoundEnded();
+                flow.OnRoundEnded(_resultMessage);
         }
 
         void OnGUI()
         {
+            if (_phase == MatchPhase.Countdown)
+            {
+                GUI.Box(new Rect(Screen.width * 0.5f - 80, Screen.height * 0.35f, 160, 60), "");
+                GUI.Label(new Rect(Screen.width * 0.5f - 70, Screen.height * 0.35f + 18, 140, 30),
+                    $"Countdown {_phaseTimer:0.0}");
+                return;
+            }
+
             string body = _mode != null ? _mode.GetHud(_ctx) : $"Mode {selectedMode}";
-            if (!_ctx.RoundRunning)
-                body += "\n(R = Rematch)";
-            GUI.Box(new Rect(12, Screen.height - 140, 420, 128), "");
-            GUI.Label(new Rect(20, Screen.height - 134, 400, 120), body);
+            if (_phase == MatchPhase.Results)
+                body += $"\n{_resultMessage}\n(R = Rematch)";
+            else if (_phase == MatchPhase.PostRound)
+                body += $"\nPost-round {_phaseTimer:0.0}s";
+            GUI.Box(new Rect(12, Screen.height - 150, 440, 138), "");
+            GUI.Label(new Rect(20, Screen.height - 144, 420, 130), body);
         }
     }
 }

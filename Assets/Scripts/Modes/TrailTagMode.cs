@@ -13,7 +13,6 @@ namespace Tag.Modes
     {
         readonly TrailTagTuning _tuning;
         bool _ended;
-        bool _timerExpired;
 
         public TagModeId Id => TagModeId.TrailTag;
         public TrailTagTuning Tuning => _tuning;
@@ -26,7 +25,6 @@ namespace Tag.Modes
         public void OnRoundStart(TagModeContext ctx)
         {
             _ended = false;
-            _timerExpired = false;
             ctx.RemainingTime = _tuning.matchTimeCap > 0f ? _tuning.matchTimeCap : 0f;
 
             foreach (var p in ctx.Players)
@@ -47,7 +45,6 @@ namespace Tag.Modes
 
         void OnTrailHit(ItController victim, ItController owner)
         {
-            // Elimination routed through TagModeController via static/current context callback.
             var controller = TagModeController.Instance;
             if (controller == null || !controller.RoundActive) return;
             if (victim == null || !victim.IsAlive) return;
@@ -64,7 +61,6 @@ namespace Tag.Modes
                 if (ctx.RemainingTime <= 0f)
                 {
                     ctx.RemainingTime = 0f;
-                    _timerExpired = true;
                     _ended = true;
                     StopEmitters(ctx);
                 }

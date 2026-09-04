@@ -37,21 +37,13 @@ namespace Tag.Modes
             if (ctx.RemainingTime < 0f) ctx.RemainingTime = 0f;
         }
 
-        public void OnPunchTransfer(TagModeContext ctx, ItController from, ItController to)
-        {
-            // Shared transfer handled by controller; nothing mode-specific.
-        }
-
+        public void OnPunchTransfer(TagModeContext ctx, ItController from, ItController to) { }
         public void OnPlayerEliminated(TagModeContext ctx, ItController player) { }
 
         public bool ShouldEndRound(TagModeContext ctx)
         {
             if (_ended) return true;
-            if (ctx.RemainingTime <= 0f)
-            {
-                _ended = true;
-                return true;
-            }
+            if (ctx.RemainingTime <= 0f) { _ended = true; return true; }
             return false;
         }
 
@@ -69,9 +61,7 @@ namespace Tag.Modes
                     winners.Add(p.PlayerId);
                 }
                 else if (Mathf.Abs(p.TimeAsIt - best) <= 0.0001f)
-                {
                     winners.Add(p.PlayerId);
-                }
             }
             return winners;
         }
