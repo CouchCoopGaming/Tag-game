@@ -47,7 +47,7 @@ namespace Tag.Level
             BuildSlideMarkers();
             BuildGroundPads();
             BuildSpawns();
-            BuildV02Density();
+            BuildDensity();
             BuildOobSkirt();
         }
 
@@ -374,8 +374,9 @@ namespace Tag.Level
 
         // --- v0.2 chase density (do not move v0.1 chain geo) -------------------------
 
-        void BuildV02Density()
+        void BuildDensity()
         {
+            // Producer snippet-aligned (CUT-v0.2-BuildDensity.cs.txt)
             BuildWestBackAlley();
             BuildMidCutHurdles();
             BuildBowlElbows();
