@@ -179,7 +179,5 @@ namespace Tag.Modes
             }
             return sb.ToString().TrimEnd();
         }
-            return sb.ToString().Replace("\n", "\n").TrimEnd();
-        }
     }
 }

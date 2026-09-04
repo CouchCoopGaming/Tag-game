@@ -24,6 +24,7 @@ namespace Tag.Modes
         public float lifetime = 6.0f;
         public float fade = 0.75f;
         public float maxTrailMeters = 80f;
+        public float maxTrailMetersAlive { get => maxTrailMeters; set => maxTrailMeters = value; }
 
         [Header("Self-hit grace")]
         public float selfHitGraceSec = 0.80f;
@@ -40,12 +41,13 @@ namespace Tag.Modes
         [Range(1f, 2f)] public float itTrailBrightness = 1.45f;
 
         [Header("Colors")]
+        // Art bible neon cyan flat ribbon #00E5FF (all slots same until meshes)
         public Color[] colors = new Color[]
         {
-            new Color(0.20f, 0.85f, 1.00f, 0.95f),
-            new Color(1.00f, 0.55f, 0.15f, 0.95f),
-            new Color(0.45f, 1.00f, 0.40f, 0.95f),
-            new Color(0.95f, 0.35f, 0.85f, 0.95f)
+            new Color(0f, 229f/255f, 1f, 0.95f),
+            new Color(0f, 229f/255f, 1f, 0.95f),
+            new Color(0f, 229f/255f, 1f, 0.95f),
+            new Color(0f, 229f/255f, 1f, 0.95f)
         };
 
         public float trailLifetime { get => lifetime; set => lifetime = value; }
