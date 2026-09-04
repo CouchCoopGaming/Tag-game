@@ -22,7 +22,7 @@
 | `Dummy_It` | `Assets/Art/Characters/Dummy_It.fbx` | same |
 
 ## Trail
-`Assets/Art/VFX/Trail/Trail_Ribbon.fbx` + `Mat_Trail_Cyan` (`#00E5FF`), bottom clear **0.35 m**.
+`Assets/Art/VFX/Trail/Trail_Ribbon.fbx` + `Mat_Trail_Cyan` (`#00E5FF`), bottom clear **1.05 m**.
 
 ## Folders
 - Meshes: `Assets/Art/Props/Playground/*.fbx`
