@@ -7,9 +7,9 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
     path: Assets/Scenes/Boot.unity
-    guid: b0010000000000000000000000000001
+    guid: ec368bfefa9a45d78f3bb3e926b918a4
   - enabled: 1
     path: Assets/Scenes/Play.unity
-    guid: b0010000000000000000000000000002
+    guid: bd270ceafb804f7b9b708ab620cc2734
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0
