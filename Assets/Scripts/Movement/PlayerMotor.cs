@@ -1,5 +1,4 @@
 using UnityEngine;
-using Tag.Gameplay;
 using Tag.Input;
 
 namespace Tag.Movement
