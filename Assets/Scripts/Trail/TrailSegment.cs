@@ -12,7 +12,9 @@ namespace Tag.Trail
         public ItController Owner { get; private set; }
         public float SpawnTime { get; private set; }
         public float Lifetime { get; private set; }
-        public float SelfGrace { get; private set; }
+        public float SelfGraceSec { get; private set; }
+        public float SelfGraceDist { get; private set; }
+        public Vector3 SpawnOrigin { get; private set; }
         public bool EliminateSelfAfterGrace { get; private set; }
 
         Action<ItController, ItController> _onHit;
@@ -21,7 +23,8 @@ namespace Tag.Trail
         public void Init(
             ItController owner,
             float lifetime,
-            float selfGrace,
+            float selfGraceSec,
+            float selfGraceDist,
             bool eliminateSelfAfterGrace,
             Action<ItController, ItController> onHit)
         {
@@ -29,7 +32,9 @@ namespace Tag.Trail
             OwnerId = owner != null ? owner.PlayerId : "?";
             SpawnTime = Time.time;
             Lifetime = lifetime;
-            SelfGrace = selfGrace;
+            SelfGraceSec = selfGraceSec;
+            SelfGraceDist = selfGraceDist;
+            SpawnOrigin = transform.position;
             EliminateSelfAfterGrace = eliminateSelfAfterGrace;
             _onHit = onHit;
             _collisionEnabled = true;
@@ -44,11 +49,16 @@ namespace Tag.Trail
             var victim = other.GetComponentInParent<ItController>();
             if (victim == null || !victim.IsAlive) return;
 
+            // Air-dodge i-frames intentionally do NOT ignore trails (modes sheet).
+
             bool isSelf = Owner != null && victim == Owner;
             if (isSelf)
             {
                 if (!EliminateSelfAfterGrace) return;
-                if (Time.time - SpawnTime < SelfGrace) return;
+                float age = Time.time - SpawnTime;
+                float dist = Vector3.Distance(victim.transform.position, SpawnOrigin);
+                // SelfHitGraceSec OR Dist — still protected if either grace applies
+                if (age < SelfGraceSec || dist < SelfGraceDist) return;
             }
 
             _onHit?.Invoke(victim, Owner);

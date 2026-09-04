@@ -4,9 +4,10 @@
 **Engine:** Unity **6000.0.23f1** (Unity 6 LTS) — see `ProjectSettings/ProjectVersion.txt`  
 **Remote:** https://github.com/CouchCoopGaming/Tag-game (`main`)
 
-Vertical slice: **2–4p punch-tag** (transfer-It on successful punch), timed round (~90–120s), score = **least time-as-It**.  
+Vertical slice: **2–4p punch-tag** (transfer-It on successful punch) with **three modes** (HotPotato / LeastIt / TrailTag).  
 Movement kit (Apex-adjacent): sprint, jump, slide, wall run, wall jump, vault, air dodge (Systems Tag v1).  
-**Out of scope:** double jump, grapple, climb-as-verb, guns, multi-mode framework, final CUT art mesh (graybox is in).
+**Out of scope:** double jump, grapple, climb-as-verb, guns, final CUT art mesh (graybox is in).
+**Modes:** HotPotato · LeastIt · TrailTag via `TagModeController` + `ITagMode`.
 
 ---
 
@@ -29,6 +30,60 @@ Movement kit (Apex-adjacent): sprint, jump, slide, wall run, wall jump, vault, a
 Baked into `PunchTagTuning` defaults + `Assets/ScriptableObjects/PunchTagTuning.asset`. Runtime `CreateRuntimeDefaults()` if asset missing.
 
 
+
+## Modes framework
+
+Shared flow: **Boot → Mode Select → Play → Rematch** (selected mode retained).
+
+| Key | Mode | End condition |
+|-----|------|---------------|
+| **1** | **HotPotato** | Fuse timer (default **75s**). Punch transfers the potato (It). At 0, **current It is eliminated / loses**; others win. |
+| **2** | **LeastIt** | Timed round (default **105s**). Punch transfers It. Winner = **least cumulative TimeAsIt** among survivors. |
+| **3** | **TrailTag** | Everyone leaves a Light-Cycle ribbon. Hitting another player's trail (or own after grace) **eliminates**. Last alive wins (or survivors at time cap **120s**). Punch still transfers It (brighter trail). |
+
+Confirm with **Enter / Space**. After a round: **R / Enter** rematch (same mode), **M** back to Mode Select.
+
+### Architecture
+
+| Piece | Path | Role |
+|-------|------|------|
+| `TagModeId` | `Scripts/Modes/` | HotPotato / LeastIt / TrailTag |
+| `ITagMode` | | OnRoundStart, Tick, OnPunchTransfer, OnPlayerEliminated, ShouldEndRound, GetWinnerIds, GetHud |
+| `TagModeController` | | Players, It transfer, countdown/round/results; delegates rules to `ITagMode` |
+| `TagRoundController` | `Scripts/Tag/` | Thin subclass of `TagModeController` (scene back-compat) |
+| `ModeSelectUI` | | Boot Mode Select OnGUI + keys 1/2/3 |
+| Tunings | SO + `CreateRuntimeDefaults()` | `HotPotatoTuning`, `LeastItTuning`, `TrailTagTuning`, `MatchTuning` |
+| Trails | `Scripts/Trail/` | `PlayerTrailEmitter` + `TrailSegment` (LineRenderer + trigger box meshes) |
+
+### TrailTag tunables (`TrailTagTuning`)
+
+| Field | Default | Notes |
+|-------|---------|-------|
+| `trailWidth` / width | 0.55 | Ribbon + collider width |
+| `trailHeight` | 0.9 | Collider height |
+| `lifetime` | 4.5s | Segment lifetime |
+| `minSpacing` / segmentSpacing | 0.45 | Sample spacing |
+| `selfHitGraceSec` | 1.25s | Own-trail immunity time |
+| `selfHitGraceDist` | 1.5 | Own-trail immunity distance |
+| `eliminateSelfAfterGrace` | true | Self-collision after grace |
+| `matchTimeCap` | 120s | Soft timer (0 = no cap) |
+| `spawnEmitDelay` | 0.75s | Delay before emit at round start |
+| `itTrailBrightness` | 1.45 | Current It's ribbon emphasis |
+| `colors[]` | cyan/orange/green/pink | Per-player ownership tint |
+| `maxTrailMeters` | 80 | Cap meters of ribbon |
+
+Assets: `Assets/ScriptableObjects/{HotPotato,LeastIt,TrailTag}Tuning.asset`.
+
+### Smoke-test modes (Editor)
+
+1. Open **Boot**, Play → **Mode Select**.
+2. Press **1** / **2** / **3**, then **Enter** → Play loads CUT arena.
+3. **LeastIt:** punch DummyRunner to transfer It; watch TimeAsIt HUD; wait or Rematch.
+4. **HotPotato:** hold It near fuse end (or temporarily set `fuseDuration` ~8s on the SO) → It should eliminate and round ends with others winning.
+5. **TrailTag:** DummyRunner patrols and emits a ribbon; run into its trail → you eliminate (or chase it into yours). Trails are visible (line + colored boxes). **R** rematches same mode.
+
+Play opened directly skips Mode Select and uses `selectedMode` on Systems / PlayerPrefs.
+
 ## Open in Unity Hub
 
 1. Install **Unity 6000.0.23f1** (or any 6000.0.x LTS close to it).
@@ -49,7 +104,7 @@ Baked into `PunchTagTuning` defaults + `Assets/ScriptableObjects/PunchTagTuning.
 
 | Scene | Path | Role |
 |-------|------|------|
-| Boot | `Assets/Scenes/Boot.unity` | Start UI (OnGUI) → loads Play |
+| Boot | `Assets/Scenes/Boot.unity` | Start → Mode Select (OnGUI) → loads Play |
 | Play | `Assets/Scenes/Play.unity` | CUT graybox (v0.1 chains + v0.2 density) (v0.1) + Player + DummyRunner + round systems |
 
 Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
@@ -57,7 +112,8 @@ Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
 - `CutArenaBootstrap` empty GO (idempotent rebuild on Awake)
 - `Player` at SW spawn **(3, 0, 3)**: CharacterController + motor + camera pivot + punch + It + ragdoll stub
 - `DummyRunner` near Bowl south rim **(18, 0, 8)** for punch test
-- `Systems`: `GameFlow` + `TagRoundController` (105 s default)
+- `Systems`: `GameFlow` + `TagRoundController` (is `TagModeController`; mode tunings wired)
+- `Player` / `DummyRunner`: `PlayerTrailEmitter` (TrailTag); Dummy also has `DummyPatrol`
 
 ---
 
@@ -73,7 +129,8 @@ Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
 | Punch | LMB or R | X / West |
 | Air dodge | Left Alt or Q | RB |
 | Boot Start | Enter / Space / button | — |
-| Rematch (round over) | R / Enter | — |
+| Mode Select | 1 HotPotato · 2 LeastIt · 3 TrailTag · Enter | — |
+| Rematch (round over) | R / Enter (keeps mode) | — |
 
 ---
 
@@ -86,10 +143,13 @@ Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
 | `Input/PlayerInputReader.cs` | Tag.Input | New Input + legacy fallback (incl. air dodge) |
 | `Tag/PunchTagTuning.cs` | Tag.Gameplay | Ragdoll 1.5s, +8% / 2s boost |
 | `Tag/ItController.cs` | Tag.Gameplay | It flag + time-as-It |
-| `Tag/TagRoundController.cs` | Tag.Gameplay | Timer, transfer-It, score HUD stub |
+| `Tag/TagRoundController.cs` | Tag.Gameplay | Legacy shim → `TagModeController` |
+| `Modes/TagModeController.cs` | Tag.Modes | Mode select host, It transfer, HUD |
+| `Modes/{HotPotato,LeastIt,TrailTag}Mode.cs` | Tag.Modes | Per-mode rules |
+| `Trail/PlayerTrailEmitter.cs` | Tag.Trail | Ribbon + segment triggers |
 | `Tag/PunchHitbox.cs` | Tag.Gameplay | It-only melee (windup/active/recover, box cast) |
 | `Tag/PlayerRagdoll.cs` | Tag.Gameplay | CC off → Rigidbody fall → restore |
-| `Core/GameFlow.cs` | Tag.Core | Boot → Play → Rematch |
+| `Core/GameFlow.cs` | Tag.Core | Boot → ModeSelect → Play → Rematch |
 | `Core/FollowCamera.cs` | Tag.Core | Optional 3rd-person follow (disabled on pivot; look is FPS-style on pivot) |
 | `Level/CutArenaBootstrap.cs` | Tag.Level | Builds CUT graybox primitives from brief v0.1 on Awake |
 
@@ -111,7 +171,9 @@ Runtime `CreateRuntimeDefaults()` if references are missing.
 - Wall run **first-pass** (side ray attach, gravity scale, timer, detach, wall jump out/up)
 - Vault **first-pass** (forward obstacle height bands, lock move, lip-jump window)
 - Punch → It transfer (if puncher is It), target ragdoll stub 1.5 s, puncher +8% speed 2 s
-- Round timer + time-as-It tracking + Boot/Rematch flow
+- Mode Select + HotPotato / LeastIt / TrailTag end conditions
+- Trail ribbons (visible + colliding eliminate) on Player + DummyRunner
+- Round timer + time-as-It tracking + Boot/Rematch (mode retained)
 - Same movement kit for It and runner
 
 ### Stubbed / TODO / incomplete
@@ -163,7 +225,7 @@ Also: loft lip vault 1.50 from G at Z≈24; bowl corner ramps 20°; punch DummyR
   Packages/manifest.json
   ProjectSettings/ProjectVersion.txt   # 6000.0.23f1
   Assets/
-    Scripts/{Movement,Tag,Core,Input,Level}/
+    Scripts/{Movement,Tag,Core,Input,Level,Modes,Trail}/
     Scenes/{Boot,Play}.unity
     ScriptableObjects/
     Prefabs/
@@ -179,6 +241,7 @@ Also: loft lip vault 1.50 from G at Z≈24; bowl corner ramps 20°; punch DummyR
 3. Replace runtime primitives with authored graybox/final mesh when Level drops meshes.
 4. Flesh wall-run / vault / air-dodge Systems sheet; bone ragdoll optional.
 5. Add Input Actions asset + simple TMP HUD; then netcode / 2–4p session.
+6. Multi-elim HotPotato ladder / sudden-death polish; authored PARK mesh when Level drops it.
 
 
 ## Modes (Boot → Mode Select → Play)

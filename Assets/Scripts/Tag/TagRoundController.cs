@@ -3,8 +3,7 @@ using Tag.Modes;
 namespace Tag.Gameplay
 {
     /// <summary>
-    /// Back-compat scene / GameFlow type. Logic lives in <see cref="TagModeController"/>.
-    /// Scene GUID kept so Play.unity Systems component continues to bind.
+    /// Scene back-compat (Play.unity Systems GUID). Same behavior as TagModeController.
     /// </summary>
     public class TagRoundController : TagModeController
     {

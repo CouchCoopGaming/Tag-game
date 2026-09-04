@@ -7,7 +7,7 @@ namespace Tag.Modes
 {
     /// <summary>
     /// All living players emit trails; trail collision eliminates.
-    /// Last alive wins, or timer expiry → all survivors win.
+    /// Last alive wins, or timer expiry → survivors win.
     /// </summary>
     public class TrailTagMode : ITagMode
     {
@@ -27,8 +27,9 @@ namespace Tag.Modes
             _ended = false;
             ctx.RemainingTime = _tuning.matchTimeCap > 0f ? _tuning.matchTimeCap : 0f;
 
-            foreach (var p in ctx.Players)
+            for (int i = 0; i < ctx.Players.Count; i++)
             {
+                var p = ctx.Players[i];
                 if (p == null) continue;
                 p.Revive();
                 p.ResetScore();
@@ -37,9 +38,12 @@ namespace Tag.Modes
                 var emitter = p.GetComponent<PlayerTrailEmitter>();
                 if (emitter == null)
                     emitter = p.gameObject.AddComponent<PlayerTrailEmitter>();
-                emitter.Configure(_tuning, p, OnTrailHit);
+                emitter.Configure(_tuning, p, OnTrailHit, i);
                 emitter.ClearTrail();
                 emitter.SetEmitting(true);
+                if (_tuning.spawnEmitDelay > 0f)
+                    emitter.BeginSpawnDelay(_tuning.spawnEmitDelay);
+                emitter.SetItEmphasis(false, _tuning.itTrailBrightness);
             }
         }
 
@@ -54,6 +58,14 @@ namespace Tag.Modes
         public void Tick(TagModeContext ctx, float dt)
         {
             if (_ended) return;
+
+            foreach (var p in ctx.Players)
+            {
+                if (p == null) continue;
+                var e = p.GetComponent<PlayerTrailEmitter>();
+                if (e != null)
+                    e.SetItEmphasis(p.IsIt && p.IsAlive, _tuning.itTrailBrightness);
+            }
 
             if (_tuning.matchTimeCap > 0f)
             {

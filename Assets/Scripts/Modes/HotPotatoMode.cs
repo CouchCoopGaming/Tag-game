@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Tag.Modes
 {
-    /// <summary>Timed fuse; when time hits 0, current It is eliminated / loses; others win.</summary>
+    /// <summary>Timed fuse (default 75s); when time hits 0, current It is eliminated / loses; others win.</summary>
     public class HotPotatoMode : ITagMode
     {
         readonly HotPotatoTuning _tuning;
@@ -22,7 +22,8 @@ namespace Tag.Modes
         {
             _ended = false;
             _loser = null;
-            ctx.RemainingTime = _tuning.fuseDuration;
+            int n = Mathf.Max(2, ctx.Players.Count);
+            ctx.RemainingTime = _tuning.DurationForPlayerCount(n);
             foreach (var p in ctx.Players)
             {
                 if (p == null) continue;

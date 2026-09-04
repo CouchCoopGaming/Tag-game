@@ -12,16 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1000000000000000000000000000015, type: 3}
   m_Name: TrailTagTuning
   m_EditorClassIdentifier: 
-  roundDuration: 120
-  width: 0.55
-  height: 0.35
+  trailWidth: 0.55
+  trailHeight: 0.9
   lifetime: 4.5
-  segmentSpacing: 0.45
-  maxSegments: 48
-  enableSelfCollision: 1
-  selfHitGrace: 1.25
+  minSpacing: 0.45
+  bottomClearance: 0.35
+  sampleHz: 20
+  maxTrailMeters: 80
+  fade: 0.75
+  maxPoints: 64
+  eliminateSelfAfterGrace: 1
+  selfHitGraceSec: 1.25
+  selfHitGraceDist: 1.5
+  suddenDeathGraceScale: 0.5
+  matchTimeCap: 120
+  spawnEmitDelay: 0.75
   itTrailBrightness: 1.45
-  punchTransfersIt: 1
   colors:
   - {r: 0.2, g: 0.85, b: 1, a: 0.95}
   - {r: 1, g: 0.55, b: 0.15, a: 0.95}

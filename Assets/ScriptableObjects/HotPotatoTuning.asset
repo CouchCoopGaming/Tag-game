@@ -13,4 +13,14 @@ MonoBehaviour:
   m_Name: HotPotatoTuning
   m_EditorClassIdentifier: 
   fuseDuration: 75
+  warnSec: 10
+  durationByPlayerCount:
+  - 0
+  - 0
+  - 75
+  - 75
+  - 75
+  winsToTakeMatch: 1
+  maxRounds: 1
+  postRoundSec: 0
   punchTransfersIt: 1

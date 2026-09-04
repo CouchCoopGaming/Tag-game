@@ -84,6 +84,12 @@ namespace Tag.Gameplay
             _iFrameTimer = 0f;
         }
 
+        public void ApplySpawnIFrames(float seconds)
+        {
+            if (seconds > 0f)
+                _iFrameTimer = Mathf.Max(_iFrameTimer, seconds);
+        }
+
         public void Eliminate() => Eliminate("eliminated");
 
         public void Eliminate(string reason)

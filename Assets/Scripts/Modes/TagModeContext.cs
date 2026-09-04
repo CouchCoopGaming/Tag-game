@@ -12,7 +12,10 @@ namespace Tag.Modes
         public float RemainingTime;
         public float Elapsed;
         public bool RoundRunning;
+        public bool SuddenDeath;
+        public MatchTuning MatchTuning;
         public Action<ItController> Eliminate;
+        public Action<float> EnterPostRound;
 
         public IEnumerable<ItController> LivingPlayers()
         {
