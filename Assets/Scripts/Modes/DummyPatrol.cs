@@ -1,11 +1,13 @@
 using Tag.Gameplay;
-using Tag.Modes;
+using Tag.Movement;
 using UnityEngine;
 
 namespace Tag.Modes
 {
     /// <summary>
     /// Dummy AI v0 (SP demo): chase+punch when It; flee when not. Same punch kit, no range cheat.
+    /// Feel pass: close-range chase bump, mild lead, no orbit when already facing,
+    /// Hot Potato flee urgency when fuse is low.
     /// Spec: tag-gdd/DUMMY-AI-v0.md
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
@@ -23,6 +25,12 @@ namespace Tag.Modes
         [SerializeField] float cooldownMax = 0.9f;
         [SerializeField] float decisionHz = 5f;
         [SerializeField] Vector3 centerOffset = Vector3.zero;
+        [SerializeField] float closeChaseRange = 3f;
+        [SerializeField] float closeChaseSpeedMul = 1.15f;
+        [SerializeField] float leadSeconds = 0.25f;
+        [SerializeField] float faceAlignDeg = 18f;
+        [SerializeField] float hotPotatoUrgencySec = 10f;
+        [SerializeField] float fleeUrgencyMul = 1.18f;
 
         CharacterController _cc;
         ItController _it;
@@ -33,6 +41,8 @@ namespace Tag.Modes
         float _cooldown;
         float _decisionTimer;
         ItController _target;
+        PlayerMotor _targetMotor;
+        CharacterController _targetCc;
         TagModeController _modes;
         float _itGraceTimer;
         bool _wasIt;
@@ -99,6 +109,8 @@ namespace Tag.Modes
         void Retarget()
         {
             _target = null;
+            _targetMotor = null;
+            _targetCc = null;
             float best = float.MaxValue;
             foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
             {
@@ -106,25 +118,73 @@ namespace Tag.Modes
                 float d = (p.transform.position - transform.position).sqrMagnitude;
                 if (d < best) { best = d; _target = p; }
             }
+            if (_target == null) return;
+            _targetMotor = _target.GetComponent<PlayerMotor>();
+            _targetCc = _target.GetComponent<CharacterController>();
+        }
+
+        Vector3 TargetPlanarVelocity()
+        {
+            Vector3 v = Vector3.zero;
+            if (_targetMotor != null)
+                v = _targetMotor.Velocity;
+            else if (_targetCc != null)
+                v = _targetCc.velocity;
+            v.y = 0f;
+            return v;
+        }
+
+        Vector3 AimPoint(ItController target)
+        {
+            Vector3 pos = target.transform.position;
+            Vector3 vel = TargetPlanarVelocity();
+            if (vel.sqrMagnitude < 0.04f || leadSeconds <= 0f)
+                return pos;
+            return pos + vel * leadSeconds;
+        }
+
+        void FaceAndSteer(Vector3 desired, float dt, out Vector3 moveDir)
+        {
+            if (desired.sqrMagnitude < 0.001f)
+            {
+                moveDir = transform.forward;
+                return;
+            }
+            desired.Normalize();
+            float ang = Vector3.Angle(transform.forward, desired);
+            if (ang <= faceAlignDeg)
+            {
+                // Already facing — charge the aim point instead of orbiting on residual yaw.
+                transform.rotation = Quaternion.LookRotation(desired, Vector3.up);
+                moveDir = desired;
+            }
+            else
+            {
+                Quaternion look = Quaternion.LookRotation(desired, Vector3.up);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, look, turnSpeed * dt);
+                moveDir = transform.forward;
+            }
         }
 
         void TickChase(float dt)
         {
             if (_target == null || !_target.IsAlive) Retarget();
             Vector3 moveDir = transform.forward;
+            float speedMul = chaseSpeedMul;
+
             if (_target != null)
             {
-                Vector3 to = _target.transform.position - transform.position;
-                to.y = 0f;
-                if (to.sqrMagnitude > 0.001f)
-                {
-                    Quaternion look = Quaternion.LookRotation(to.normalized, Vector3.up);
-                    transform.rotation = Quaternion.RotateTowards(transform.rotation, look, turnSpeed * dt);
-                    moveDir = transform.forward;
-                }
+                Vector3 toAim = AimPoint(_target) - transform.position;
+                toAim.y = 0f;
+                FaceAndSteer(toAim, dt, out moveDir);
 
-                float dist = to.magnitude;
-                float ang = Vector3.Angle(transform.forward, to.sqrMagnitude > 0.001f ? to.normalized : transform.forward);
+                Vector3 toBody = _target.transform.position - transform.position;
+                toBody.y = 0f;
+                float dist = toBody.magnitude;
+                if (dist <= closeChaseRange)
+                    speedMul *= closeChaseSpeedMul;
+
+                float ang = Vector3.Angle(transform.forward, toBody.sqrMagnitude > 0.001f ? toBody.normalized : transform.forward);
                 _cooldown -= dt;
                 if (_itGraceTimer > 0f)
                     _itGraceTimer -= dt;
@@ -137,17 +197,25 @@ namespace Tag.Modes
             }
             else
             {
-                // No runner — keep orbiting
                 _angle += (speed / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
             }
 
-            ApplyMove(moveDir * (speed * chaseSpeedMul), dt);
+            ApplyMove(moveDir * (speed * speedMul), dt);
+        }
+
+        float HotPotatoFleeMul()
+        {
+            if (_modes == null || _modes.SelectedMode != TagModeId.HotPotato)
+                return 1f;
+            float remain = _modes.Remaining;
+            if (remain > 0f && remain <= hotPotatoUrgencySec)
+                return fleeUrgencyMul;
+            return 1f;
         }
 
         void TickFleeOrWander(float dt)
         {
             Vector3 moveDir = transform.forward;
-            // Flee It if present
             ItController threat = null;
             foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
             {
@@ -158,9 +226,7 @@ namespace Tag.Modes
                 Vector3 away = transform.position - threat.transform.position;
                 away.y = 0f;
                 if (away.sqrMagnitude < 0.01f) away = -transform.forward;
-                Quaternion look = Quaternion.LookRotation(away.normalized, Vector3.up);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, look, turnSpeed * dt);
-                moveDir = transform.forward;
+                FaceAndSteer(away, dt, out moveDir);
             }
             else
             {
@@ -168,14 +234,9 @@ namespace Tag.Modes
                 Vector3 target = _center + new Vector3(Mathf.Cos(_angle * Mathf.Deg2Rad), 0f, Mathf.Sin(_angle * Mathf.Deg2Rad)) * radius;
                 Vector3 to = target - transform.position;
                 to.y = 0f;
-                if (to.sqrMagnitude > 0.001f)
-                {
-                    Quaternion look = Quaternion.LookRotation(to.normalized, Vector3.up);
-                    transform.rotation = Quaternion.RotateTowards(transform.rotation, look, turnSpeed * dt);
-                }
-                moveDir = transform.forward;
+                FaceAndSteer(to, dt, out moveDir);
             }
-            ApplyMove(moveDir * speed, dt);
+            ApplyMove(moveDir * (speed * HotPotatoFleeMul()), dt);
         }
 
         void ApplyMove(Vector3 horiz, float dt)
