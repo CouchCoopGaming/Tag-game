@@ -1,6 +1,7 @@
 using UnityEngine;
 using Tag.Input;
 using Tag.Movement;
+using Tag.Modes;
 
 namespace Tag.Gameplay
 {
@@ -26,7 +27,8 @@ namespace Tag.Gameplay
         ItController _it;
         PlayerMotor _motor;
         PlayerRagdoll _ragdoll;
-        TagRoundController _round;
+        TagModeController _mode;
+        TagRoundController _roundLegacy;
 
         public PunchPhase Phase { get; private set; } = PunchPhase.Idle;
         public bool IsPunching => Phase != PunchPhase.Idle;
@@ -51,7 +53,11 @@ namespace Tag.Gameplay
 
         void Start()
         {
-            _round = FindFirstObjectByType<TagRoundController>();
+            _mode = TagModeController.Instance != null
+                ? TagModeController.Instance
+                : FindFirstObjectByType<TagModeController>();
+            if (_mode == null)
+                _roundLegacy = FindFirstObjectByType<TagRoundController>();
         }
 
         void Update()
@@ -66,7 +72,7 @@ namespace Tag.Gameplay
             bool canStart =
                 Phase == PunchPhase.Idle
                 && _bufferTimer > 0f
-                && _it != null && _it.IsIt
+                && _it != null && _it.IsIt && !_it.IsEliminated
                 && (_motor == null || !_motor.IsMotorLocked)
                 && (_ragdoll == null || !_ragdoll.IsRagdolling)
                 && !_it.HasIFrames;
@@ -193,6 +199,7 @@ namespace Tag.Gameplay
 
             var other = col.GetComponentInParent<ItController>();
             if (other == null || other == _it) return;
+            if (other.IsEliminated) return;
             if (other.IsIt) return; // runners only
             if (!other.CanBeTagged) return;
 
@@ -227,8 +234,10 @@ namespace Tag.Gameplay
             Vector3 knock = flat * tuning.knockbackHorizontal + Vector3.up * tuning.knockbackUp;
 
             // Transfer-It
-            if (_round != null)
-                _round.OnSuccessfulPunch(_it, victim);
+            if (_mode != null)
+                _mode.OnSuccessfulPunch(_it, victim);
+            else if (_roundLegacy != null)
+                _roundLegacy.OnSuccessfulPunch(_it, victim);
             else if (_it != null && _it.IsIt)
             {
                 _it.SetIt(false);

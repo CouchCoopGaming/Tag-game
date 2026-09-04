@@ -179,3 +179,11 @@ Also: loft lip vault 1.50 from G at Z≈24; bowl corner ramps 20°; punch DummyR
 3. Replace runtime primitives with authored graybox/final mesh when Level drops meshes.
 4. Flesh wall-run / vault / air-dodge Systems sheet; bone ragdoll optional.
 5. Add Input Actions asset + simple TMP HUD; then netcode / 2–4p session.
+
+
+## Modes (Boot → Mode Select → Play)
+Keys **1** Hot Potato · **2** Least It · **3** Trail Tag · Enter to play · **R** rematch.
+
+- **Hot Potato:** fuse 45/40/35s (2/3/4p). Timer 0 → current It loses the *round*; others +1 round-win. First to 2 wins (max 3 rounds). No elim.
+- **Least It:** 120s; least cumulative time-as-It wins.
+- **Trail Tag:** Light Cycle trails (`#00E5FF`); collision eliminates. Emitters All/ItOnly tunable.
