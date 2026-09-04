@@ -165,18 +165,20 @@ namespace Tag.Modes
             return winners;
         }
 
-        public string GetHud(TagModeContext ctx)
+                public string GetHud(TagModeContext ctx)
         {
             string it = ctx.CurrentIt != null ? ctx.CurrentIt.PlayerId : "-";
             string timer = _suddenDeath ? "SUDDEN DEATH"
                 : (_tuning.matchTimeCap > 0f ? $"Time {ctx.RemainingTime:0.0}s" : "No cap");
             var sb = new System.Text.StringBuilder();
-            sb.Append($"TrailTag | {timer} | Alive {ctx.LivingCount()} | Emit:{_tuning.emitters} | It:{it}\n");
+            sb.AppendLine($"TrailTag | {timer} | Alive {ctx.LivingCount()} | Emit:{_tuning.emitters} | It:{it}");
             foreach (var p in ctx.Players)
             {
                 if (p == null) continue;
-                sb.Append($"{p.PlayerId}: {(p.IsAlive ? "alive" : "OUT")}{(p.IsIt ? " *" : "")}\n");
+                sb.AppendLine($"{p.PlayerId}: {(p.IsAlive ? "alive" : "OUT")}{(p.IsIt ? " *" : "")}");
             }
+            return sb.ToString().TrimEnd();
+        }
             return sb.ToString().Replace("\n", "\n").TrimEnd();
         }
     }

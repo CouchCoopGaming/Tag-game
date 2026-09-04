@@ -2,16 +2,16 @@ using UnityEngine;
 
 namespace Tag.Modes
 {
+    /// <summary>modes-sheet v0.1 Hot Potato — round wins, NOT last-standing elim.</summary>
     [CreateAssetMenu(fileName = "HotPotatoTuning", menuName = "Tag/Modes/Hot Potato Tuning", order = 21)]
     public class HotPotatoTuning : ScriptableObject
     {
-        [Tooltip("Brief default fuse; DurationForPlayerCount uses this when array unset.")]
-        public float fuseDuration = 75f;
+        [Tooltip("Fuse by player count: [2]=45,[3]=40,[4]=35.")]
+        public float[] durationByPlayerCount = { 0f, 0f, 45f, 40f, 35f };
         public float warnSec = 10f;
-        public float[] durationByPlayerCount = { 0f, 0f, 75f, 75f, 75f };
-        public int winsToTakeMatch = 1;
-        public int maxRounds = 1;
-        public float postRoundSec = 0f;
+        public int winsToTakeMatch = 2;
+        public int maxRounds = 3;
+        public float postRoundSec = 4f;
         public bool punchTransfersIt = true;
 
         public float DurationForPlayerCount(int n)
@@ -19,15 +19,13 @@ namespace Tag.Modes
             n = Mathf.Clamp(n, 2, 4);
             if (durationByPlayerCount != null && durationByPlayerCount.Length > n && durationByPlayerCount[n] > 0f)
                 return durationByPlayerCount[n];
-            return fuseDuration > 0f ? fuseDuration : 75f;
+            return n == 2 ? 45f : n == 3 ? 40f : 35f;
         }
 
         public static HotPotatoTuning CreateRuntimeDefaults()
         {
             var t = CreateInstance<HotPotatoTuning>();
             t.name = "HotPotatoTuning (Runtime)";
-            t.fuseDuration = 75f;
-            t.warnSec = 10f;
             return t;
         }
     }

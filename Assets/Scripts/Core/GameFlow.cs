@@ -142,7 +142,7 @@ namespace Tag.Core
             if (round == null)
                 round = FindFirstObjectByType<TagRoundController>();
             if (modeController == null && round != null)
-                modeController = round.Mode;
+                modeController = round;
         }
 
         void EnsureRoundStarted()
@@ -178,6 +178,12 @@ namespace Tag.Core
             {
                 if (Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.Return))
                     Rematch();
+                if (Input.GetKeyDown(KeyCode.M))
+                {
+                    State = GameFlowState.ModeSelect;
+                    if (SceneManager.GetActiveScene().name != bootSceneName)
+                        SceneManager.LoadScene(bootSceneName);
+                }
             }
         }
 
@@ -194,9 +200,9 @@ namespace Tag.Core
                 float cx = Screen.width * 0.5f;
                 float cy = Screen.height * 0.5f;
                 GUI.Box(new Rect(cx - 180, cy - 120, 360, 240), "Select Mode");
-                DrawModeRow(cx, cy - 70, 0, "1  Hot Potato  (fuse 75s — It loses)");
+                DrawModeRow(cx, cy - 70, 0, "1  Hot Potato  (fuse ~75s — It loses at 0)");
                 DrawModeRow(cx, cy - 30, 1, "2  Least It    (105s — least time-as-It)");
-                DrawModeRow(cx, cy + 10, 2, "3  Trail Tag   (trails eliminate)");
+                DrawModeRow(cx, cy + 10, 2, "3  Trail Tag   (ribbons eliminate · last standing)");
                 GUI.Label(new Rect(cx - 160, cy + 60, 320, 40), "↑↓ or 1/2/3 · Enter to play");
                 if (GUI.Button(new Rect(cx - 60, cy + 95, 120, 28), "Play"))
                     ConfirmModeAndPlay();
