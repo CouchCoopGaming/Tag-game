@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Tag.Level
 {
     /// <summary>
-    /// Builds the CUT graybox from primitives (brief v0.1).
+    /// Builds the CUT graybox from primitives (brief v0.1 + v0.2 density).
     /// Origin = SW playable corner; +X east, +Z north, +Y up.
     /// Idempotent: clears children under a CUT root before rebuild.
     /// </summary>
@@ -47,6 +47,7 @@ namespace Tag.Level
             BuildSlideMarkers();
             BuildGroundPads();
             BuildSpawns();
+            BuildV02Density();
             BuildOobSkirt();
         }
 
@@ -368,6 +369,81 @@ namespace Tag.Level
             Box("OOB_W", new Vector3(-1f, y, 14f), new Vector3(2f, t, 28f), _matOob);
             // East strip X[36,38]
             Box("OOB_E", new Vector3(37f, y, 14f), new Vector3(2f, t, 28f), _matOob);
+        }
+
+
+        // --- v0.2 chase density (do not move v0.1 chain geo) -------------------------
+
+        void BuildV02Density()
+        {
+            BuildWestBackAlley();
+            BuildMidCutHurdles();
+            BuildBowlElbows();
+            BuildJukeIslands();
+            BuildBowlNubs();
+            BuildSouthOffAxis();
+        }
+
+        void BuildWestBackAlley()
+        {
+            // Three 0.90 stubs across X[0.4,2.6], Z=8,13,18 — length 2.2 in X, 0.5 thick
+            float[] zs = { 8f, 13f, 18f };
+            for (int i = 0; i < zs.Length; i++)
+            {
+                Box($"Vault_BackAlley_{i}",
+                    new Vector3(1.5f, 0.90f * 0.5f, zs[i]),
+                    new Vector3(2.2f, 0.90f, 0.5f), _matVault);
+            }
+        }
+
+        void BuildMidCutHurdles()
+        {
+            // Vault rails only — NOT wall-run (yellow vault mat)
+            // Vault_MidCut_S — X=24.8, Z[10.5,12.5], 1.00 × 0.4 × 2.0
+            Box("Vault_MidCut_S",
+                new Vector3(24.8f, 1.00f * 0.5f, 11.5f),
+                new Vector3(0.4f, 1.00f, 2.0f), _matVault);
+            // Vault_MidCut_N — X=26.2, Z[15.5,17.5]
+            Box("Vault_MidCut_N",
+                new Vector3(26.2f, 1.00f * 0.5f, 16.5f),
+                new Vector3(0.4f, 1.00f, 2.0f), _matVault);
+        }
+
+        void BuildBowlElbows()
+        {
+            // 1.2 m L-stubs at (18,7) and (18,21)
+            Elbow("Elbow_BowlSouth", 18f, 7f, towardEast: true, towardNorth: true);
+            Elbow("Elbow_BowlNorth", 18f, 21f, towardEast: true, towardNorth: false);
+        }
+
+        void BuildJukeIslands()
+        {
+            // Low 1.00 tables, 2×1 footprint, 0.4 thick
+            Box("Island_NW",
+                new Vector3(10f, 1.00f * 0.5f, 22f),
+                new Vector3(2f, 1.00f, 1f), _matVault);
+            Box("Island_NE",
+                new Vector3(26f, 1.00f * 0.5f, 22f),
+                new Vector3(2f, 1.00f, 1f), _matVault);
+        }
+
+        void BuildBowlNubs()
+        {
+            // 0.90 cubes 1×1 inside Bowl on Y=-1 floor
+            Box("Nub_Bowl_SW",
+                new Vector3(15.2f, -1.0f + 0.90f * 0.5f, 11.2f),
+                new Vector3(1f, 0.90f, 1f), _matVault);
+            Box("Nub_Bowl_NE",
+                new Vector3(20.8f, -1.0f + 0.90f * 0.5f, 16.8f),
+                new Vector3(1f, 0.90f, 1f), _matVault);
+        }
+
+        void BuildSouthOffAxis()
+        {
+            // 0.90 at X[18,20] Z=2.6 — south of C3 landing cone
+            Box("Vault_SouthOff",
+                new Vector3(19f, 0.90f * 0.5f, 2.6f),
+                new Vector3(2f, 0.90f, 0.5f), _matVault);
         }
 
         // --- Helpers ----------------------------------------------------------------

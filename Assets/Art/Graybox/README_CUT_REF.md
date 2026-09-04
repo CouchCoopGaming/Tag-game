@@ -27,3 +27,14 @@ Canonical shared-box paths (if present): `/workspace/tag-gdd/level/CUT-graybox-v
 | Markers | cyan = wall-run; magenta = slide / pad edge; yellow = vault |
 
 No +3.6 catwalk, no +7.2 deck. Full mesh art comes after chains play.
+
+
+## v0.2 density (added in CutArenaBootstrap.BuildV02Density)
+- West Back-Alley: three 0.90 stubs X[0.4,2.6] @ Z=8,13,18
+- Mid Cut hurdles 1.00 @ (24.8,11.5) and (26.2,16.5) — vault only, not wall-run
+- Elbows 1.2 m at (18,7) and (18,21)
+- Islands 1.00 at (10,22) and (26,22)
+- Bowl nubs 0.90 at (15.2,11.2) and (20.8,16.8)
+- South off-axis 0.90 at X[18,20] Z=2.6
+
+v0.1 chain geo is unchanged. Brief: `CUT-graybox-v0.2.md`.

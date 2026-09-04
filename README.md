@@ -50,7 +50,7 @@ Baked into `PunchTagTuning` defaults + `Assets/ScriptableObjects/PunchTagTuning.
 | Scene | Path | Role |
 |-------|------|------|
 | Boot | `Assets/Scenes/Boot.unity` | Start UI (OnGUI) → loads Play |
-| Play | `Assets/Scenes/Play.unity` | CUT graybox (v0.1) + Player + DummyRunner + round systems |
+| Play | `Assets/Scenes/Play.unity` | CUT graybox (v0.1 chains + v0.2 density) (v0.1) + Player + DummyRunner + round systems |
 
 Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
 - Runtime `CUT` root: Floor G, Bowl Y=−1 + 20° ramps + rim vaults, Loft +1.5 + lip, West/SW/East/SE walls, vaults, slide markers, 3×3 G pads, 4 spawns + elbows
