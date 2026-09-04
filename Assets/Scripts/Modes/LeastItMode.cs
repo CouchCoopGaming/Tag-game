@@ -16,6 +16,7 @@ namespace Tag.Modes
         bool _awaitingTieBreak;
         float _tieBreakTimer;
         string _pendingWinner;
+        readonly HashSet<string> _tieBreakEligible = new HashSet<string>();
 
         public TagModeId Id => TagModeId.LeastIt;
 
@@ -31,6 +32,7 @@ namespace Tag.Modes
             _awaitingTieBreak = false;
             _tieBreakTimer = 0f;
             _pendingWinner = null;
+            _tieBreakEligible.Clear();
             ctx.RemainingTime = _tuning.roundDuration;
             foreach (var p in ctx.Players)
             {
@@ -84,6 +86,10 @@ namespace Tag.Modes
                 return;
             }
 
+            _tieBreakEligible.Clear();
+            foreach (var p in tied)
+                _tieBreakEligible.Add(p.PlayerId);
+
             _awaitingTieBreak = true;
             _tieBreakTimer = Mathf.Max(0.1f, _tuning.nextPunchTimeoutSec);
             Debug.Log($"[LeastIt] Tie at {best:0.0}s — NextPunch tiebreak among {tied.Count} (timeout {_tieBreakTimer:0}s)");
@@ -91,27 +97,29 @@ namespace Tag.Modes
 
         void ResolveTieByCurrentItTime(TagModeContext ctx)
         {
-            // 20s no punch → least current It-time among tied (shared if still equal)
-            var ranked = RankByLeastIt(ctx);
+            // 20s no punch → least current It-time among ORIGINAL tied set (shared if still equal)
+            var ranked = new List<ItController>();
+            foreach (var p in RankByLeastIt(ctx))
+            {
+                if (_tieBreakEligible.Count == 0 || _tieBreakEligible.Contains(p.PlayerId))
+                    ranked.Add(p);
+            }
             if (ranked.Count == 0) { _ended = true; _awaitingTieBreak = false; return; }
             float best = RoundScore(ranked[0].TimeAsIt);
-            var winners = new System.Collections.Generic.List<string>();
+            var winners = new List<string>();
             foreach (var p in ranked)
             {
                 if (Mathf.Abs(RoundScore(p.TimeAsIt) - best) <= 0.0001f)
                     winners.Add(p.PlayerId);
                 else break;
             }
-            _pendingWinner = winners.Count == 1 ? winners[0] : winners[0]; // shared: first of tied is fine; GetWinnerIds handles multi
-            if (winners.Count > 1)
-            {
-                // Keep multi via clearing single and letting GetWinnerIds rank
-                _pendingWinner = null;
-                // Force end; GetWinnerIds returns all least-tied
-            }
+            if (winners.Count == 1)
+                _pendingWinner = winners[0];
+            else
+                _pendingWinner = null; // shared win; GetWinnerIds returns all least-tied among eligible
             _awaitingTieBreak = false;
             _ended = true;
-            Debug.Log($"[LeastIt] NextPunch timeout — resolve by TimeAsIt ({winners.Count} tied)");
+            Debug.Log($"[LeastIt] NextPunch timeout — resolve by TimeAsIt among original tied ({winners.Count} winners)");
         }
 
         float RoundScore(float t)
@@ -134,10 +142,8 @@ namespace Tag.Modes
         public void OnPunchTransfer(TagModeContext ctx, ItController from, ItController to)
         {
             if (!_awaitingTieBreak || _ended) return;
-            // NextPunch: the player who just became It loses the tie (got punched = was runner with tied low time?
-            // Sheet: TieBreak=NextPunch — simplest readable: the transfer itself breaks the tie;
-            // winner = player who successfully dumped It (puncher / from), i.e. least-It intent.
-            if (from != null)
+            // NextPunch: winner = puncher who dumps It, but only if they were in the original tied set.
+            if (from != null && (_tieBreakEligible.Count == 0 || _tieBreakEligible.Contains(from.PlayerId)))
             {
                 _pendingWinner = from.PlayerId;
                 _awaitingTieBreak = false;
@@ -159,6 +165,7 @@ namespace Tag.Modes
             foreach (var p in ctx.Players)
             {
                 if (p == null || !p.IsAlive) continue;
+                if (_tieBreakEligible.Count > 0 && !_tieBreakEligible.Contains(p.PlayerId)) continue;
                 float s = RoundScore(p.TimeAsIt);
                 if (s < best - 0.0001f)
                 {
