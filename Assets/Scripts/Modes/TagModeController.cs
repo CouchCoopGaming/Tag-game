@@ -39,6 +39,7 @@ namespace Tag.Modes
         MatchPhase _phase = MatchPhase.Idle;
         float _phaseTimer;
         string _resultMessage = "";
+        bool _firstCountdownHint = true;
 
         public TagModeId SelectedMode { get => selectedMode; set => selectedMode = value; }
         public MatchTuning MatchTuningAsset => matchTuning;
@@ -167,6 +168,7 @@ namespace Tag.Modes
 
         void BeginPlaying()
         {
+            _firstCountdownHint = false;
             _phase = MatchPhase.Playing;
             _ctx.RoundRunning = true;
             AudioCuePlayer.Ensure()?.RoundStart();
@@ -292,9 +294,12 @@ namespace Tag.Modes
         {
             if (_phase == MatchPhase.Countdown)
             {
-                GUI.Box(new Rect(Screen.width * 0.5f - 80, Screen.height * 0.35f, 160, 60), "");
-                GUI.Label(new Rect(Screen.width * 0.5f - 70, Screen.height * 0.35f + 18, 140, 30),
-                    $"Countdown {_phaseTimer:0.0}");
+                float cx = Screen.width * 0.5f;
+                float cy = Screen.height * 0.35f;
+                GUI.Box(new Rect(cx - 80, cy, 160, 60), "");
+                GUI.Label(new Rect(cx - 70, cy + 18, 140, 30), $"Countdown {_phaseTimer:0.0}");
+                if (_firstCountdownHint)
+                    GUI.Label(new Rect(cx - 160, cy + 68, 320, 22), "WASD move, punch to tag, Esc pause");
                 return;
             }
 
