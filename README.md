@@ -2,13 +2,32 @@
 
 **Path:** `/workspace/tag-unity`  
 **Engine:** Unity **6000.0.23f1** (Unity 6 LTS) — see `ProjectSettings/ProjectVersion.txt`  
-**Remote SCM:** https://github.com/CouchCoopGaming/Tag-game
+**Remote SCM:** TBD (no Origin/GitHub push from this scaffold — files only under `/workspace/tag-unity`)
 
 Vertical slice: **2–4p punch-tag** (transfer-It on successful punch), timed round (~90–120s), score = **least time-as-It**.  
 Movement kit (Apex-adjacent): sprint, jump, slide, wall run, wall jump, vault.  
 **Out of scope:** double jump, grapple, climb-as-verb, guns, multi-mode framework, full CUT arena mesh.
 
 ---
+
+## Punch / Transfer-It (Systems v0 — LOCKED)
+
+**It-only dedicated melee. NOT contact aura.**
+
+| Phase | Value |
+|-------|-------|
+| Input buffer | 80 ms |
+| Windup | 120 ms @ 70% move |
+| Active | 100 ms (continuous cast preferred) |
+| Hit recover | 150 ms |
+| Miss recover | 320 ms (no slide cancel) |
+
+**Hitbox:** reach 1.35 · W 0.70 · H 1.20 · mid-torso · ±15° pitch · LoS · closest runner
+
+**On hit:** transfer-It · ragdoll 1.5s + i-frames · knock 4.0 horiz + 2.0 up · puncher +8% walk+sprint for 2s (no stack; refresh on hit; clears on losing It)
+
+Baked into `PunchTagTuning` defaults + `Assets/ScriptableObjects/PunchTagTuning.asset`. Runtime `CreateRuntimeDefaults()` if asset missing.
+
 
 ## Open in Unity Hub
 
@@ -68,7 +87,7 @@ Play contents (movement test only — **not** full CUT):
 | `Tag/PunchTagTuning.cs` | Tag.Gameplay | Ragdoll 1.5s, +8% / 2s boost |
 | `Tag/ItController.cs` | Tag.Gameplay | It flag + time-as-It |
 | `Tag/TagRoundController.cs` | Tag.Gameplay | Timer, transfer-It, score HUD stub |
-| `Tag/PunchHitbox.cs` | Tag.Gameplay | OverlapSphere punch |
+| `Tag/PunchHitbox.cs` | Tag.Gameplay | It-only melee (windup/active/recover, box cast) |
 | `Tag/PlayerRagdoll.cs` | Tag.Gameplay | CC off → Rigidbody fall → restore |
 | `Core/GameFlow.cs` | Tag.Core | Boot → Play → Rematch |
 | `Core/FollowCamera.cs` | Tag.Core | Optional 3rd-person follow (disabled on pivot; look is FPS-style on pivot) |

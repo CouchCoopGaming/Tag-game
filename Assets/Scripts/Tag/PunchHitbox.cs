@@ -150,21 +150,11 @@ namespace Tag.Gameplay
             hitPoint = aimOrigin.position;
 
             Vector3 origin = aimOrigin.position + Vector3.up * tuning.midTorsoHeight;
-            Vector3 forward = aimOrigin.forward;
-            // Pitch clamp ±tolerance around forward
-            float pitch = Mathf.Asin(Mathf.Clamp(forward.y, -1f, 1f)) * Mathf.Rad2Deg;
-            if (Mathf.Abs(pitch) > tuning.pitchToleranceDeg)
-            {
-                float clamped = Mathf.Clamp(pitch, -tuning.pitchToleranceDeg, tuning.pitchToleranceDeg);
-                Vector3 flat = new Vector3(forward.x, 0f, forward.z).normalized;
-                forward = (Quaternion.AngleAxis(clamped, Vector3.Cross(flat, Vector3.up).normalized) * flat);
-                // simpler: flatten excess pitch
-                forward = Vector3.RotateTowards(
-                    new Vector3(forward.x, 0f, forward.z).normalized,
-                    aimOrigin.forward,
-                    tuning.pitchToleranceDeg * Mathf.Deg2Rad,
-                    0f);
-            }
+            // Pitch clamp ±tolerance around planar forward
+            Vector3 flatFwd = new Vector3(aimOrigin.forward.x, 0f, aimOrigin.forward.z).normalized;
+            if (flatFwd.sqrMagnitude < 0.001f) flatFwd = transform.forward;
+            Vector3 forward = Vector3.RotateTowards(
+                flatFwd, aimOrigin.forward, tuning.pitchToleranceDeg * Mathf.Deg2Rad, 0f);
 
             Vector3 halfExtents = new Vector3(tuning.width * 0.5f, tuning.height * 0.5f, 0.05f);
             float best = float.MaxValue;

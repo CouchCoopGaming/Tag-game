@@ -20,7 +20,7 @@ namespace Tag.Core
         [SerializeField] string bootSceneName = "Boot";
         [SerializeField] string playSceneName = "Play";
         [SerializeField] float bootDelay = 0.35f;
-        [SerializeField] bool autoLoadPlay = true;
+        [SerializeField] bool autoLoadPlay = false;
 
         public TagRoundController round;
         public GameFlowState State { get; private set; } = GameFlowState.Boot;
@@ -34,6 +34,13 @@ namespace Tag.Core
             }
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        void OnDestroy()
+        {
+            if (Instance == this)
+                SceneManager.sceneLoaded -= OnSceneLoaded;
         }
 
         void Start()
@@ -51,6 +58,18 @@ namespace Tag.Core
                 EnsureRoundStarted();
             }
         }
+
+        void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            if (scene.name == playSceneName || scene.name == "Play")
+            {
+                State = GameFlowState.Play;
+                EnsureRoundStarted();
+            }
+        }
+
+        /// <summary>Alias used by Boot UI / docs.</summary>
+        public void StartPlay() => GoToPlay();
 
         public void GoToPlay()
         {
@@ -91,9 +110,14 @@ namespace Tag.Core
 
         void Update()
         {
-            if (State == GameFlowState.RoundEnd || (State == GameFlowState.Play && round != null && !round.RoundActive))
+            if (State == GameFlowState.Boot)
             {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.R))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
+                    GoToPlay();
+            }
+            else if (State == GameFlowState.RoundEnd || (State == GameFlowState.Play && round != null && !round.RoundActive))
+            {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.R) || UnityEngine.Input.GetKeyDown(KeyCode.Return))
                     Rematch();
             }
         }
