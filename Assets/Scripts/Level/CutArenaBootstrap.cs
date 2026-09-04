@@ -31,6 +31,8 @@ namespace Tag.Level
         void Awake()
         {
             Build();
+            if (GetComponent<Tag.Art.ParkPropDresser>() == null)
+                gameObject.AddComponent<Tag.Art.ParkPropDresser>();
         }
 
         [ContextMenu("Rebuild CUT Graybox")]

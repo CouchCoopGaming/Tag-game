@@ -254,3 +254,8 @@ Keys **1** Hot Potato · **2** Least It · **3** Trail Tag · Enter to play · *
 
 ## Dummy art bind
 Art drop in `Assets/Art/Characters/`. In Unity: **Tag → Setup Dummy Prefabs From FBX**, then add `DummyAvatarBinder` on Player/DummyRunner and assign the two prefabs (hides capsule).
+
+
+## Hub visuals (dummies + park props)
+After pull, in Unity once: **Tag → Setup Hub Visuals (Dummies + Props + Play Bind)** (or accept the auto dialog).
+That fills Dummy prefabs from FBX, copies into Resources, binds Player/DummyRunner, and enables PARK prop dressing.
