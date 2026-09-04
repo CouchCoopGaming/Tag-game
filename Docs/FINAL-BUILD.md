@@ -15,7 +15,9 @@
 | Hub hear-pass (SFX/music) | **UNVERIFIED** — awaiting Landon |
 | Win64 player build on machine | **UNVERIFIED** — awaiting Landon |
 
-**Static-ready only.** Do **not** claim play-verified or ship-ready until Hub Dummy + hear-pass pass.
+**Static / SP-demo candidate only.** Do **not** claim Hub-verified, hear-pass PASS, or ship-ready until Landon Hub Dummy + hear-pass pass.
+
+Out of FINAL scope: gamepad menus (P2).
 
 ## What this tip includes
 
