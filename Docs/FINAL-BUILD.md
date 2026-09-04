@@ -1,9 +1,14 @@
 # Tag — SP Demo Final Build (Win64)
 
-**Tip branch:** `release/sp-demo-final` · **Tag:** `v0.1.0-sp-demo`  
+> Path: `Docs/FINAL-BUILD.md`
+
+**Branch:** `release/sp-demo-final` · **Tag:** `v0.1.0-sp-demo`  
 **No Steam store publish.** Hub play smoke + this build only.
 
 ## What this tip is
+
+Includes Dummy It-grace + LeastIt Dummy NextPunch failsafe softlocks and real Boot/Play EditorBuildSettings GUIDs from main `7e7864c` ancestry.
+
 
 - Modes: Hot Potato / Least It / Trail Tag
 - SP + Dummy AI (chase/punch when It)
