@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Tag.Movement
 {
     /// <summary>
-    /// Systems Movement Numbers v0 — baked defaults for Apex-adjacent kit.
+    /// Systems Tag v1 movement numbers — baked defaults for Apex-adjacent kit.
     /// Create via Assets → Create → Tag → Movement Tuning.
     /// </summary>
     [CreateAssetMenu(fileName = "MovementTuning", menuName = "Tag/Movement Tuning", order = 0)]
@@ -21,15 +21,22 @@ namespace Tag.Movement
         public float turnRateWalk = 540f;
         public float turnRateSprint = 380f;
 
-        [Header("Jump")]
+        [Header("Jump / momentum")]
         public float jumpApexHeight = 1.15f;
         public float gravity = 28f;
         public float jumpLaunchSpeed = 8.0f;
         public float coyoteTime = 0.120f;
         public float jumpBuffer = 0.140f;
         [Range(0f, 1f)] public float airControlPercent = 0.45f;
+        [Tooltip("Planar speed retained on any grounded/coyote jump takeoff (walk, sprint, slide-exit). 1 = full carry.")]
+        [Range(0f, 1f)] public float jumpHorizRetain = 1.0f;
+        [Tooltip("Additional planar retain multiplier when sprint-held at takeoff (stacked with jumpHorizRetain).")]
         [Range(0f, 1f)] public float sprintJumpHorizRetain = 1.0f;
+        [Tooltip("When airborne with move input, planar speed floor is max(wishSpeed, current*this). 1 = never bleed carried momentum toward walk.")]
+        [Range(0f, 1f)] public float airMomentumPreserve = 1.0f;
+        [Tooltip("Hard land if fall distance exceeds this × jump apex → apply horiz penalty.")]
         public float hardLandFallMultiple = 1.5f;
+        [Tooltip("Horiz speed reduction fraction during hard-land window (0.15 → keep ×0.85). Never zeroes velocity.")]
         public float hardLandHorizPenalty = 0.15f;
         public float hardLandPenaltyDuration = 0.1f;
 
@@ -42,6 +49,24 @@ namespace Tag.Movement
         public float standHeight = 1.8f;
         public float slideJumpHorizBonus = 0.12f;
         public float slideCooldown = 0.080f;
+        [Tooltip("If true, snap planar speed to slideSpeedGate on enter. Systems Tag v1: false — keep current horiz.")]
+        public bool slideEnterWipe = false;
+
+        [Header("Air dodge (juke) — Systems Tag v1")]
+        [Tooltip("Charges available while airborne (recharge on ground).")]
+        public int airDodgeCharges = 1;
+        [Tooltip("Planar speed set on air dodge (m/s). Replaces horiz toward input, or facing if no input; keeps vertical.")]
+        public float airDodgeSpeed = 6.5f;
+        [Tooltip("No air control during lock (seconds). Systems: 130 ms.")]
+        public float airDodgeLock = 0.130f;
+        [Tooltip("I-frames vs punch hurtbox only (seconds). Systems: 100 ms.")]
+        public float airDodgeIFrames = 0.100f;
+        [Tooltip("Input buffer for air dodge (seconds). Systems: 80 ms.")]
+        public float airDodgeBuffer = 0.080f;
+        [Tooltip("Grounded footfalls required to recharge (optional; travel fallback preferred).")]
+        public int airDodgeRechargeSteps = 3;
+        [Tooltip("Grounded travel (m) to recharge one charge. Systems Tag v1 fallback: 1.8 m.")]
+        public float airDodgeRechargeTravel = 1.8f;
 
         [Header("Wall run")]
         public float wallRunAttachSpeed = 5.0f;

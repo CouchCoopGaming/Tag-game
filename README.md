@@ -5,7 +5,7 @@
 **Remote:** https://github.com/CouchCoopGaming/Tag-game (`main`)
 
 Vertical slice: **2–4p punch-tag** (transfer-It on successful punch), timed round (~90–120s), score = **least time-as-It**.  
-Movement kit (Apex-adjacent): sprint, jump, slide, wall run, wall jump, vault.  
+Movement kit (Apex-adjacent): sprint, jump, slide, wall run, wall jump, vault, air dodge (juke stub).  
 **Out of scope:** double jump, grapple, climb-as-verb, guns, multi-mode framework, final CUT art mesh (graybox is in).
 
 ---
@@ -71,6 +71,7 @@ Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
 | Jump | Space | A / South |
 | Slide | Ctrl or C | B / East |
 | Punch | LMB or R | X / West |
+| Air dodge (juke) | Left Alt or Q | RB / Right shoulder |
 | Boot Start | Enter / Space / button | — |
 | Rematch (round over) | R / Enter | — |
 
@@ -81,8 +82,8 @@ Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
 | Script | Namespace | Notes |
 |--------|-----------|-------|
 | `Movement/MovementTuning.cs` | Tag.Movement | ScriptableObject — Systems Movement Numbers v0 defaults |
-| `Movement/PlayerMotor.cs` | Tag.Movement | CharacterController motor |
-| `Input/PlayerInputReader.cs` | Tag.Input | New Input + legacy fallback |
+| `Movement/PlayerMotor.cs` | Tag.Movement | CharacterController motor (momentum jump/slide + air dodge) |
+| `Input/PlayerInputReader.cs` | Tag.Input | New Input + legacy fallback (incl. air dodge) |
 | `Tag/PunchTagTuning.cs` | Tag.Gameplay | Ragdoll 1.5s, +8% / 2s boost |
 | `Tag/ItController.cs` | Tag.Gameplay | It flag + time-as-It |
 | `Tag/TagRoundController.cs` | Tag.Gameplay | Timer, transfer-It, score HUD stub |
@@ -104,7 +105,9 @@ Runtime `CreateRuntimeDefaults()` if references are missing.
 - Walk / sprint / accel / brake / mouse look
 - Jump with coyote (120 ms) + buffer (140 ms), custom gravity ≈28, apex ~1.15 m
 - Air control (~45%)
-- Slide (speed gate, duration, height shrink, jump-from-slide bonus, exit sprint)
+- Jump / slide carry current planar speed (no hard reset to walk); air coast preserves momentum
+- Slide (speed gate ≥5.5, entry momentum into punch/coast, decay to 55% end, jump-from-slide bonus, exit sprint)
+- Air dodge / juke **stub** (airborne only; ~4 m/s planar over ~0.15 s; 3 grounded stride recharge; i-frames off)
 - Wall run **first-pass** (side ray attach, gravity scale, timer, detach, wall jump out/up)
 - Vault **first-pass** (forward obstacle height bands, lock move, lip-jump window)
 - Punch → It transfer (if puncher is It), target ragdoll stub 1.5 s, puncher +8% speed 2 s
@@ -113,6 +116,7 @@ Runtime `CreateRuntimeDefaults()` if references are missing.
 
 ### Stubbed / TODO / incomplete
 
+- Air dodge: stub numbers (impulse 4.0 / duration 0.15 / up 0.35 / stride 0.8 / 3 steps); i-frames false; await Systems sheet
 - Wall run: full face/vel angle gates, along-wall clamp polish, opposite-hold feel, chain-cap attach min 6.2 tuning edge cases
 - Wall jump: falloff ×0.85 within 0.8 s (floor ×0.55) not fully applied over time
 - Vault: 35° cone auto-detect, fail penalty −40%, more robust lip detection
@@ -174,5 +178,5 @@ Also: loft lip vault 1.50 from G at Z≈24; bowl corner ramps 20°; punch DummyR
 1. Open in Unity Hub; let packages resolve; create URP pipeline asset if prompted.
 2. Smoke-test Chains 1–3 on CUT graybox; tune via SO assets.
 3. Replace runtime primitives with authored graybox/final mesh when Level drops meshes.
-4. Flesh wall-run / vault TODOs; bone ragdoll optional.
+4. Flesh wall-run / vault / air-dodge Systems sheet; bone ragdoll optional.
 5. Add Input Actions asset + simple TMP HUD; then netcode / 2–4p session.

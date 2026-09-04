@@ -7,7 +7,8 @@ namespace Tag.Input
 {
     /// <summary>
     /// Input wrapper. Prefers New Input System when available; falls back to legacy Input.
-    /// Controls: WASD/stick move, Shift sprint, Ctrl/C slide, Space jump, Mouse look, LMB/R punch.
+    /// Controls: WASD/stick move, Shift sprint, Ctrl/C slide, Space jump, Mouse look, LMB/R punch,
+    /// Left Alt/Q or gamepad RB air dodge (airborne only — gated in PlayerMotor).
     /// </summary>
     public class PlayerInputReader : MonoBehaviour
     {
@@ -19,10 +20,7 @@ namespace Tag.Input
         public bool JumpPressed { get; private set; }
         public bool SlidePressed { get; private set; }
         public bool PunchPressed { get; private set; }
-
-        bool _jumpConsumed;
-        bool _slideConsumed;
-        bool _punchConsumed;
+        public bool AirDodgePressed { get; private set; }
 
         void OnEnable()
         {
@@ -47,6 +45,7 @@ namespace Tag.Input
             JumpPressed = false;
             SlidePressed = false;
             PunchPressed = false;
+            AirDodgePressed = false;
 
 #if ENABLE_INPUT_SYSTEM
             if (Keyboard.current != null || Gamepad.current != null || Mouse.current != null)
@@ -72,8 +71,11 @@ namespace Tag.Input
                 bool jumpDown = Keyboard.current.spaceKey.wasPressedThisFrame;
                 bool slideDown = Keyboard.current.leftCtrlKey.wasPressedThisFrame
                                  || Keyboard.current.cKey.wasPressedThisFrame;
+                bool airDodgeDown = Keyboard.current.leftAltKey.wasPressedThisFrame
+                                    || Keyboard.current.qKey.wasPressedThisFrame;
                 if (jumpDown) JumpPressed = true;
                 if (slideDown) SlidePressed = true;
+                if (airDodgeDown) AirDodgePressed = true;
             }
             if (Gamepad.current != null)
             {
@@ -83,6 +85,7 @@ namespace Tag.Input
                 if (Gamepad.current.buttonSouth.wasPressedThisFrame) JumpPressed = true;
                 if (Gamepad.current.buttonEast.wasPressedThisFrame) SlidePressed = true;
                 if (Gamepad.current.buttonWest.wasPressedThisFrame) PunchPressed = true;
+                if (Gamepad.current.rightShoulder.wasPressedThisFrame) AirDodgePressed = true;
                 LookDelta = Gamepad.current.rightStick.ReadValue() * 8f;
             }
             else
@@ -107,6 +110,7 @@ namespace Tag.Input
             JumpPressed = UnityEngine.Input.GetKeyDown(KeyCode.Space);
             SlidePressed = UnityEngine.Input.GetKeyDown(KeyCode.LeftControl) || UnityEngine.Input.GetKeyDown(KeyCode.C);
             PunchPressed = UnityEngine.Input.GetMouseButtonDown(0) || UnityEngine.Input.GetKeyDown(KeyCode.R);
+            AirDodgePressed = UnityEngine.Input.GetKeyDown(KeyCode.LeftAlt) || UnityEngine.Input.GetKeyDown(KeyCode.Q);
         }
     }
 }
