@@ -570,7 +570,15 @@ namespace Tag.Movement
                 dir.Normalize();
 
             float keepY = _velocity.y;
-            _velocity = dir * tuning.airDodgeSpeed;
+            float dodgeSpeed = tuning.airDodgeSpeed;
+            // Soft clamp effective distance (speed × lock) to airDodgeMaxDistance when > 0.
+            if (tuning.airDodgeMaxDistance > 0f && tuning.airDodgeLock > 0.0001f)
+            {
+                float maxSpeed = tuning.airDodgeMaxDistance / tuning.airDodgeLock;
+                if (dodgeSpeed > maxSpeed)
+                    dodgeSpeed = maxSpeed;
+            }
+            _velocity = dir * dodgeSpeed;
             _velocity.y = keepY;
 
             _airDodgeChargesLeft = Mathf.Max(0, _airDodgeChargesLeft - 1);

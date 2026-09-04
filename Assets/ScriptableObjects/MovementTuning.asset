@@ -46,6 +46,7 @@ MonoBehaviour:
   airDodgeBuffer: 0.08
   airDodgeRechargeSteps: 3
   airDodgeRechargeTravel: 1.8
+  airDodgeMaxDistance: 1
   wallRunAttachSpeed: 5
   wallRunFaceAngleMax: 70
   wallRunVelAngleMax: 55

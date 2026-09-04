@@ -67,6 +67,8 @@ namespace Tag.Movement
         public int airDodgeRechargeSteps = 3;
         [Tooltip("Grounded travel (m) to recharge one charge. Systems Tag v1 fallback: 1.8 m.")]
         public float airDodgeRechargeTravel = 1.8f;
+        [Tooltip("Soft clamp: if AirDodgeSpeed × AirDodgeLock would exceed this distance (m), scale speed down. 0 = off. Default 1.0 keeps juke ≤~1 m.")]
+        public float airDodgeMaxDistance = 1.0f;
 
         [Header("Wall run")]
         public float wallRunAttachSpeed = 5.0f;
