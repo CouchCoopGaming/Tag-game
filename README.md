@@ -5,7 +5,7 @@
 **Remote:** https://github.com/CouchCoopGaming/Tag-game (`main`)
 
 Vertical slice: **2–4p punch-tag** (transfer-It on successful punch), timed round (~90–120s), score = **least time-as-It**.  
-Movement kit (Apex-adjacent): sprint, jump, slide, wall run, wall jump, vault, air dodge (juke stub).  
+Movement kit (Apex-adjacent): sprint, jump, slide, wall run, wall jump, vault, air dodge (Systems Tag v1).  
 **Out of scope:** double jump, grapple, climb-as-verb, guns, multi-mode framework, final CUT art mesh (graybox is in).
 
 ---
@@ -71,7 +71,7 @@ Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
 | Jump | Space | A / South |
 | Slide | Ctrl or C | B / East |
 | Punch | LMB or R | X / West |
-| Air dodge (juke) | Left Alt or Q | RB / Right shoulder |
+| Air dodge | Left Alt or Q | RB |
 | Boot Start | Enter / Space / button | — |
 | Rematch (round over) | R / Enter | — |
 
@@ -81,7 +81,7 @@ Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
 
 | Script | Namespace | Notes |
 |--------|-----------|-------|
-| `Movement/MovementTuning.cs` | Tag.Movement | ScriptableObject — Systems Movement Numbers v0 defaults |
+| `Movement/MovementTuning.cs` | Tag.Movement | ScriptableObject — Systems Tag v1 momentum + air dodge |
 | `Movement/PlayerMotor.cs` | Tag.Movement | CharacterController motor (momentum jump/slide + air dodge) |
 | `Input/PlayerInputReader.cs` | Tag.Input | New Input + legacy fallback (incl. air dodge) |
 | `Tag/PunchTagTuning.cs` | Tag.Gameplay | Ragdoll 1.5s, +8% / 2s boost |
@@ -104,10 +104,10 @@ Runtime `CreateRuntimeDefaults()` if references are missing.
 
 - Walk / sprint / accel / brake / mouse look
 - Jump with coyote (120 ms) + buffer (140 ms), custom gravity ≈28, apex ~1.15 m
-- Air control (~45%)
-- Jump / slide carry current planar speed (no hard reset to walk); air coast preserves momentum
-- Slide (speed gate ≥5.5, entry momentum into punch/coast, decay to 55% end, jump-from-slide bonus, exit sprint)
-- Air dodge / juke **stub** (airborne only; ~4 m/s planar over ~0.15 s; 3 grounded stride recharge; i-frames off)
+- Momentum (Systems Tag v1): JumpHorizRetain 1.0 on all takeoffs; SlideEnterWipe false; hard land ×0.85 horiz for 0.1 s if fall > 1.5× apex (never zero); vault/wall-jump exit carries speed
+- Air control (~45%) with airMomentumPreserve (no bleed toward walk while coasting)
+- Slide (speed gate ≥5.5, keep current horiz on enter, decay to 55% end, jump-from-slide bonus, exit sprint)
+- Air dodge (Systems Tag v1): airborne; 6.5 m/s planar replace toward input/facing; 130 ms lock; 100 ms punch i-frames; 80 ms buffer; 1 charge; recharge 1.8 m grounded travel (or 3 footfalls); blocked on wall-run / vault-lock / ragdoll / punch windup·active·miss-recover
 - Wall run **first-pass** (side ray attach, gravity scale, timer, detach, wall jump out/up)
 - Vault **first-pass** (forward obstacle height bands, lock move, lip-jump window)
 - Punch → It transfer (if puncher is It), target ragdoll stub 1.5 s, puncher +8% speed 2 s
@@ -116,11 +116,10 @@ Runtime `CreateRuntimeDefaults()` if references are missing.
 
 ### Stubbed / TODO / incomplete
 
-- Air dodge: stub numbers (impulse 4.0 / duration 0.15 / up 0.35 / stride 0.8 / 3 steps); i-frames false; await Systems sheet
 - Wall run: full face/vel angle gates, along-wall clamp polish, opposite-hold feel, chain-cap attach min 6.2 tuning edge cases
 - Wall jump: falloff ×0.85 within 0.8 s (floor ×0.55) not fully applied over time
 - Vault: 35° cone auto-detect, fail penalty −40%, more robust lip detection
-- Hard-land detection is approximate
+- Hard-land uses descent speed vs apex×1.5 threshold (approx fall distance)
 - Ragdoll is **not** bone ragdoll — whole-body Rigidbody freeze/fall
 - No netcode / multiplayer session — local DummyRunner only
 - No `.inputactions` asset; OnGUI menus only (no TMP canvas yet)
@@ -143,7 +142,7 @@ Runtime `CreateRuntimeDefaults()` if references are missing.
 | Spawns | SW/SE/NW/NE on G; orange pads + yellow elbows |
 
 Brief copies in-repo: `Assets/Art/Graybox/CUT-graybox-v0.1.md`, `CUT-plan.svg`, `README_CUT_REF.md`.  
-Systems Movement Numbers v0 are **locked** in `MovementTuning`.
+Systems Tag v1 momentum + air dodge are **locked** in `MovementTuning`.
 
 ### Smoke-test the three chains (open Play, press Play)
 

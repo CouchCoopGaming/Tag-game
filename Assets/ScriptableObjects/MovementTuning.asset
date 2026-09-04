@@ -24,7 +24,9 @@ MonoBehaviour:
   coyoteTime: 0.12
   jumpBuffer: 0.14
   airControlPercent: 0.45
+  jumpHorizRetain: 1
   sprintJumpHorizRetain: 1
+  airMomentumPreserve: 1
   hardLandFallMultiple: 1.5
   hardLandHorizPenalty: 0.15
   hardLandPenaltyDuration: 0.1
@@ -36,6 +38,14 @@ MonoBehaviour:
   standHeight: 1.8
   slideJumpHorizBonus: 0.12
   slideCooldown: 0.08
+  slideEnterWipe: 0
+  airDodgeCharges: 1
+  airDodgeSpeed: 6.5
+  airDodgeLock: 0.13
+  airDodgeIFrames: 0.1
+  airDodgeBuffer: 0.08
+  airDodgeRechargeSteps: 3
+  airDodgeRechargeTravel: 1.8
   wallRunAttachSpeed: 5
   wallRunFaceAngleMax: 70
   wallRunVelAngleMax: 55

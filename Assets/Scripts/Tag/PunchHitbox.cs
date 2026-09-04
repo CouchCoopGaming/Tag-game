@@ -196,6 +196,10 @@ namespace Tag.Gameplay
             if (other.IsIt) return; // runners only
             if (!other.CanBeTagged) return;
 
+            // Systems Tag v1: air-dodge i-frames vs punch hurtbox only
+            var victimMotor = other.GetComponent<PlayerMotor>();
+            if (victimMotor != null && victimMotor.HasAirDodgeIFrames) return;
+
             // LoS
             Vector3 losTarget = col.bounds.center;
             if (Physics.Linecast(origin, losTarget, out var losHit, tuning.losMask, QueryTriggerInteraction.Ignore))

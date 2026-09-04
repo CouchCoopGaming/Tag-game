@@ -1,12 +1,12 @@
 using UnityEngine;
 using Tag.Input;
+using Tag.Gameplay;
 
 namespace Tag.Movement
 {
     /// <summary>
-    /// CharacterController motor: walk/sprint/jump/coyote/buffer/air control are live.
-    /// Slide, wall run, wall jump, vault have first-pass / stub implementations (see TODOs).
-    /// Air dodge (juke) is a short airborne planar burst with grounded-step recharge.
+    /// CharacterController motor: walk/sprint/jump/coyote/buffer/air control,
+    /// slide, wall run, wall jump, vault, air dodge (Systems Tag v1).
     /// Same kit for It and runner.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
@@ -20,6 +20,8 @@ namespace Tag.Movement
 
         CharacterController _cc;
         PlayerInputReader _input;
+        PunchHitbox _punch;
+        PlayerRagdoll _ragdoll;
         Vector3 _velocity;
         float _yaw;
         float _pitch;
@@ -37,7 +39,6 @@ namespace Tag.Movement
         float _standHeight;
         float _standCenterY;
         Vector3 _slideDir;
-        float _slideEntrySpeed;
 
         // Wall run state (first-pass)
         bool _wallRunning;
@@ -54,14 +55,15 @@ namespace Tag.Movement
         float _vaultLock;
         Vector3 _vaultVel;
 
-        // Air dodge (juke)
-        bool _airDodging;
-        float _airDodgeTimer;
-        Vector3 _airDodgeDir;
-        int _airDodgeStepsNeeded;
-        float _groundStepAccum;
+        // Air dodge (Systems Tag v1)
+        int _airDodgeChargesLeft;
+        float _airDodgeBufferTimer;
+        float _airDodgeLockTimer;
+        float _airDodgeIFrameTimer;
+        float _airDodgeGroundTravel;
+        int _airDodgeGroundSteps;
         Vector3 _lastGroundPos;
-        bool _hasLastGroundPos;
+        bool _wasGrounded;
 
         // External freeze (ragdoll)
         bool _motorLocked;
@@ -73,9 +75,11 @@ namespace Tag.Movement
         public bool IsGrounded => _cc != null && _cc.isGrounded;
         public bool IsSliding => _sliding;
         public bool IsWallRunning => _wallRunning;
-        public bool IsAirDodging => _airDodging;
+        public bool IsVaulting => _vaulting;
         public bool IsMotorLocked => _motorLocked;
-        public bool AirDodgeReady => _airDodgeStepsNeeded <= 0 && !_airDodging;
+        public bool IsAirDodgeLocked => _airDodgeLockTimer > 0f;
+        /// <summary>True while air-dodge punch i-frames are active (PunchHitbox should ignore).</summary>
+        public bool HasAirDodgeIFrames => _airDodgeIFrameTimer > 0f;
         public Vector3 Velocity => _velocity;
         public float HorizontalSpeed => new Vector3(_velocity.x, 0f, _velocity.z).magnitude;
         public MovementTuning Tuning => tuning;
@@ -84,12 +88,16 @@ namespace Tag.Movement
         {
             _cc = GetComponent<CharacterController>();
             _input = GetComponent<PlayerInputReader>();
+            _punch = GetComponent<PunchHitbox>();
+            _ragdoll = GetComponent<PlayerRagdoll>();
             if (tuning == null)
                 tuning = MovementTuning.CreateRuntimeDefaults();
 
             _standHeight = _cc.height > 0.1f ? _cc.height : tuning.standHeight;
             _standCenterY = _cc.center.y;
             _yaw = transform.eulerAngles.y;
+            _airDodgeChargesLeft = Mathf.Max(1, tuning.airDodgeCharges);
+            _lastGroundPos = transform.position;
 
             if (cameraPivot == null)
             {
@@ -105,7 +113,8 @@ namespace Tag.Movement
             float dt = Time.deltaTime;
             TickTimers(dt);
             ReadLook(dt);
-            TickGroundedSteps(dt);
+            TickAirDodgeBuffer(dt);
+            TickAirDodgeRecharge(dt);
 
             if (_vaulting)
             {
@@ -116,6 +125,7 @@ namespace Tag.Movement
             if (_wallRunning)
             {
                 TickWallRun(dt);
+                // wall-run attached: air dodge gated off
                 return;
             }
 
@@ -125,10 +135,9 @@ namespace Tag.Movement
                 return;
             }
 
-            TryStartAirDodge();
-            if (_airDodging)
+            if (_airDodgeLockTimer > 0f)
             {
-                TickAirDodge(dt);
+                TickAirDodgeLock(dt);
                 return;
             }
 
@@ -136,6 +145,7 @@ namespace Tag.Movement
             TryStartSlide();
             TryAttachWallRun();
             TryVault();
+            TryAirDodge();
         }
 
         void TickTimers(float dt)
@@ -156,6 +166,8 @@ namespace Tag.Movement
             if (_hardLandTimer > 0f) _hardLandTimer -= dt;
             if (_slideCooldownTimer > 0f) _slideCooldownTimer -= dt;
             if (_sameWallCd > 0f) _sameWallCd -= dt;
+            if (_airDodgeLockTimer > 0f) _airDodgeLockTimer -= dt;
+            if (_airDodgeIFrameTimer > 0f) _airDodgeIFrameTimer -= dt;
 
             if (_speedBoostTimer > 0f)
             {
@@ -164,42 +176,54 @@ namespace Tag.Movement
             }
         }
 
-        /// <summary>
-        /// Distance-based stride counter while grounded. Going airborne mid-recharge
-        /// does not reset the remaining step requirement — only grounded locomotion counts.
-        /// </summary>
-        void TickGroundedSteps(float dt)
+        void TickAirDodgeBuffer(float dt)
         {
-            if (_airDodgeStepsNeeded <= 0)
-            {
-                _groundStepAccum = 0f;
-                _hasLastGroundPos = false;
-                return;
-            }
+            if (_input != null && _input.AirDodgePressed)
+                _airDodgeBufferTimer = tuning.airDodgeBuffer;
+            else
+                _airDodgeBufferTimer = Mathf.Max(0f, _airDodgeBufferTimer - dt);
+        }
 
-            if (!IsGrounded || _sliding || _vaulting || _wallRunning)
+        void TickAirDodgeRecharge(float dt)
+        {
+            bool grounded = IsGrounded;
+            if (grounded)
             {
-                // Pause accumulation while airborne / not locomoting on feet; do not reset steps needed.
-                _hasLastGroundPos = false;
-                return;
-            }
-
-            Vector3 pos = transform.position;
-            if (_hasLastGroundPos)
-            {
-                Vector3 delta = pos - _lastGroundPos;
-                delta.y = 0f;
-                _groundStepAccum += delta.magnitude;
-                float stride = Mathf.Max(0.1f, tuning.airDodgeStrideLength);
-                while (_groundStepAccum >= stride && _airDodgeStepsNeeded > 0)
+                if (!_wasGrounded)
                 {
-                    _groundStepAccum -= stride;
-                    _airDodgeStepsNeeded--;
+                    _lastGroundPos = transform.position;
+                    _airDodgeGroundSteps++;
+                }
+
+                Vector3 flat = transform.position - _lastGroundPos;
+                flat.y = 0f;
+                float moved = flat.magnitude;
+                if (moved > 0.001f)
+                {
+                    _airDodgeGroundTravel += moved;
+                    _lastGroundPos = transform.position;
+                }
+
+                int maxCharges = Mathf.Max(1, tuning.airDodgeCharges);
+                if (_airDodgeChargesLeft < maxCharges)
+                {
+                    // Prefer travel fallback (Systems Tag v1: 1.8 m); steps as secondary.
+                    bool travelReady = _airDodgeGroundTravel >= tuning.airDodgeRechargeTravel;
+                    bool stepsReady = _airDodgeGroundSteps >= tuning.airDodgeRechargeSteps;
+                    if (travelReady || stepsReady)
+                    {
+                        _airDodgeChargesLeft = maxCharges;
+                        _airDodgeGroundTravel = 0f;
+                        _airDodgeGroundSteps = 0;
+                    }
                 }
             }
+            else if (_wasGrounded)
+            {
+                // left ground — keep travel progress until recharge fires next ground stint
+            }
 
-            _lastGroundPos = pos;
-            _hasLastGroundPos = true;
+            _wasGrounded = grounded;
         }
 
         void ReadLook(float dt)
@@ -226,45 +250,32 @@ namespace Tag.Movement
             if (wish.sqrMagnitude > 1f) wish.Normalize();
 
             Vector3 horiz = new Vector3(_velocity.x, 0f, _velocity.z);
+            float accel = IsGrounded
+                ? (wish.sqrMagnitude > 0.01f ? (1f / Mathf.Max(0.01f, tuning.accelTime)) : (1f / Mathf.Max(0.01f, tuning.brakeTime)))
+                : (1f / Mathf.Max(0.01f, tuning.accelTime)) * tuning.airControlPercent;
 
-            if (IsGrounded)
+            Vector3 desired = wish * targetSpeed;
+
+            // Airborne: preserve carried planar momentum (Systems: airMomentumPreserve).
+            if (!IsGrounded && wish.sqrMagnitude > 0.01f)
             {
-                float accel = wish.sqrMagnitude > 0.01f
-                    ? (1f / Mathf.Max(0.01f, tuning.accelTime))
-                    : (1f / Mathf.Max(0.01f, tuning.brakeTime));
-                Vector3 desired = wish * targetSpeed;
-                horiz = Vector3.MoveTowards(horiz, desired, targetSpeed * accel * dt);
-
-                float turnRate = _sprintHeld ? tuning.turnRateSprint : tuning.turnRateWalk;
-                if (wish.sqrMagnitude > 0.01f)
-                {
-                    horiz = Vector3.RotateTowards(horiz, desired.sqrMagnitude > 0.01f ? desired : horiz,
-                        turnRate * Mathf.Deg2Rad * dt, 0f);
-                }
+                float floor = Mathf.Max(desired.magnitude, horiz.magnitude * tuning.airMomentumPreserve);
+                if (desired.sqrMagnitude > 0.01f)
+                    desired = desired.normalized * floor;
             }
-            else
+
+            horiz = Vector3.MoveTowards(horiz, desired, Mathf.Max(targetSpeed, 0.01f) * accel * dt);
+
+            float turnRate = _sprintHeld ? tuning.turnRateSprint : tuning.turnRateWalk;
+            if (wish.sqrMagnitude > 0.01f && IsGrounded)
             {
-                // Air: preserve carried planar momentum (no hard pull to walk / zero).
-                // Steer toward wish while keeping speed floor at max(wishSpeed, current * preserve).
-                if (wish.sqrMagnitude > 0.01f)
-                {
-                    float currentSpd = horiz.magnitude;
-                    float preserve = Mathf.Clamp01(tuning.airMomentumPreserve);
-                    float speedFloor = Mathf.Max(targetSpeed, currentSpd * preserve);
-                    Vector3 desiredAir = wish.normalized * speedFloor;
-                    float airAccel = (1f / Mathf.Max(0.01f, tuning.accelTime)) * tuning.airControlPercent;
-                    horiz = Vector3.MoveTowards(horiz, desiredAir, speedFloor * airAccel * dt);
-                    // Never bleed below the preserved floor when steering with input.
-                    if (horiz.magnitude < speedFloor && speedFloor > 0.01f)
-                        horiz = horiz.sqrMagnitude > 0.0001f ? horiz.normalized * speedFloor : wish.normalized * speedFloor;
-                }
-                // No move input: keep horizontal velocity (Apex-style coast).
+                horiz = Vector3.RotateTowards(horiz, desired.sqrMagnitude > 0.01f ? desired : horiz,
+                    turnRate * Mathf.Deg2Rad * dt, 0f);
             }
 
             _velocity.x = horiz.x;
             _velocity.z = horiz.z;
 
-            // Gravity + jump
             if (IsGrounded && _velocity.y < 0f)
                 _velocity.y = -2f;
 
@@ -278,20 +289,25 @@ namespace Tag.Movement
                 _velocity.y -= tuning.gravity * dt;
             }
 
-            // Hard-land detect
+            // Hard-land detect: fall > 1.5× jump apex → ×0.85 horiz for 0.1s; never zero
+            Vector3 before = transform.position;
+            float vyBefore = _velocity.y;
             CollisionFlags flags = _cc.Move(_velocity * dt);
-            if ((flags & CollisionFlags.Below) != 0 && _velocity.y < 0f)
+            if ((flags & CollisionFlags.Below) != 0 && vyBefore < 0f)
             {
                 float hardThresh = tuning.jumpApexHeight * tuning.hardLandFallMultiple;
-                if (-_velocity.y > Mathf.Sqrt(2f * tuning.gravity * hardThresh) * 0.85f)
+                float hardSpeed = Mathf.Sqrt(2f * tuning.gravity * hardThresh);
+                if (-vyBefore > hardSpeed * 0.85f)
+                {
                     _hardLandTimer = tuning.hardLandPenaltyDuration;
+                    float keep = 1f - tuning.hardLandHorizPenalty; // 0.85
+                    _velocity.x *= keep;
+                    _velocity.z *= keep;
+                }
                 _velocity.y = -2f;
             }
         }
 
-        /// <summary>
-        /// Jump takeoff preserves current planar speed (walk/sprint/coyote). No hard reset to walk.
-        /// </summary>
         void ApplyJumpTakeoff()
         {
             float launch = tuning.jumpLaunchSpeed;
@@ -300,11 +316,11 @@ namespace Tag.Movement
                 launch = derived;
             _velocity.y = launch;
 
+            // Systems Tag v1: JumpHorizRetain on ALL takeoffs (not just sprint).
             Vector3 h = new Vector3(_velocity.x, 0f, _velocity.z);
-            float retain = tuning.jumpHorizRetain;
+            h *= tuning.jumpHorizRetain;
             if (_sprintHeld)
-                retain *= tuning.sprintJumpHorizRetain;
-            h *= retain;
+                h *= tuning.sprintJumpHorizRetain;
             _velocity.x = h.x;
             _velocity.z = h.z;
 
@@ -319,13 +335,19 @@ namespace Tag.Movement
             if (!IsGrounded || _sliding || _slideCooldownTimer > 0f) return;
             if (HorizontalSpeed < tuning.slideSpeedGate) return;
 
-            // Carry current horizontal momentum into punch/coast (gate still ≥5.5).
-            _slideEntrySpeed = HorizontalSpeed;
             _sliding = true;
             _slideTimer = tuning.slideDuration;
             _slideDir = new Vector3(_velocity.x, 0f, _velocity.z).normalized;
             if (_slideDir.sqrMagnitude < 0.01f)
                 _slideDir = transform.forward;
+
+            // Systems: SlideEnterWipe = false → keep current horiz (gate still ≥5.5).
+            if (tuning.slideEnterWipe)
+            {
+                float spd = tuning.slideSpeedGate;
+                _velocity.x = _slideDir.x * spd;
+                _velocity.z = _slideDir.z * spd;
+            }
 
             _cc.height = tuning.slideHeight;
             _cc.center = new Vector3(0f, tuning.slideHeight * 0.5f, 0f);
@@ -335,29 +357,24 @@ namespace Tag.Movement
         {
             _slideTimer -= dt;
             float t = 1f - Mathf.Clamp01(_slideTimer / tuning.slideDuration);
-            // Use entry speed for the whole slide — do not reclamp to a fixed speed each frame.
-            float startSpd = _slideEntrySpeed;
+            float startSpd = Mathf.Max(HorizontalSpeed, tuning.slideSpeedGate);
             float endSpd = startSpd * tuning.slideEndSpeedPercent;
-            float punchT = tuning.slideDuration > 0.0001f
-                ? tuning.slidePunchDuration / tuning.slideDuration
-                : 0f;
-            float spd = t < punchT
+            float spd = t < (tuning.slidePunchDuration / tuning.slideDuration)
                 ? startSpd
-                : Mathf.Lerp(startSpd, endSpd, punchT < 1f ? (t - punchT) / (1f - punchT) : 1f);
+                : Mathf.Lerp(startSpd, endSpd, t);
 
             _velocity = _slideDir * spd;
             _velocity.y = -2f;
             _cc.Move(_velocity * dt);
 
-            // Jump-from-slide — carry slide planar speed + bonus, no walk reset.
             if (_input != null && _input.JumpPressed)
             {
-                float launchSpd = spd * (1f + tuning.slideJumpHorizBonus);
                 ExitSlide(toSprint: true);
-                _velocity = _slideDir * launchSpd;
+                _velocity = _slideDir * (spd * (1f + tuning.slideJumpHorizBonus));
                 _velocity.y = Mathf.Sqrt(2f * tuning.gravity * tuning.jumpApexHeight);
-                // Apply jump horiz retain on slide-exit jump as well.
-                Vector3 h = new Vector3(_velocity.x, 0f, _velocity.z) * tuning.jumpHorizRetain;
+                // retain on slide-exit jump
+                Vector3 h = new Vector3(_velocity.x, 0f, _velocity.z);
+                h *= tuning.jumpHorizRetain;
                 _velocity.x = h.x;
                 _velocity.z = h.z;
                 _coyoteTimer = 0f;
@@ -379,60 +396,6 @@ namespace Tag.Movement
                 _sprintHeld = true;
         }
 
-        void TryStartAirDodge()
-        {
-            if (_input == null || !_input.AirDodgePressed) return;
-            if (IsGrounded || _airDodging || _sliding || _vaulting || _wallRunning) return;
-            if (_airDodgeStepsNeeded > 0) return;
-
-            Vector2 move = _input.Move;
-            Vector3 dir = transform.right * move.x + transform.forward * move.y;
-            dir.y = 0f;
-            if (dir.sqrMagnitude < 0.01f)
-                dir = transform.forward;
-            else
-                dir.Normalize();
-
-            _airDodgeDir = dir;
-            _airDodging = true;
-            _airDodgeTimer = tuning.airDodgeDuration;
-
-            // Instant planar boost; Y preserved (+ optional small up).
-            Vector3 h = new Vector3(_velocity.x, 0f, _velocity.z);
-            h += _airDodgeDir * tuning.airDodgeImpulse;
-            _velocity.x = h.x;
-            _velocity.z = h.z;
-            if (tuning.airDodgeUpBoost > 0f)
-                _velocity.y = Mathf.Max(_velocity.y, 0f) + tuning.airDodgeUpBoost;
-
-            // Recharge: must register N grounded steps before available again.
-            _airDodgeStepsNeeded = Mathf.Max(1, tuning.airDodgeStepRecharge);
-            _groundStepAccum = 0f;
-            _hasLastGroundPos = false;
-
-            // i-frames stub: tuning.airDodgeIFrames is false for now (no combat hook).
-            _ = tuning.airDodgeIFrames;
-        }
-
-        void TickAirDodge(float dt)
-        {
-            _airDodgeTimer -= dt;
-
-            // Hold a fraction of the boost through the burst window, then resume normal air.
-            float retain = Mathf.Clamp01(_airDodgeTimer / Mathf.Max(0.01f, tuning.airDodgeDuration));
-            Vector3 h = new Vector3(_velocity.x, 0f, _velocity.z);
-            // Soft steer toward dodge dir without zeroing Y.
-            Vector3 boosted = Vector3.Lerp(h, _airDodgeDir * Mathf.Max(h.magnitude, tuning.airDodgeImpulse), retain * 0.35f);
-            _velocity.x = boosted.x;
-            _velocity.z = boosted.z;
-            _velocity.y -= tuning.gravity * dt;
-
-            _cc.Move(_velocity * dt);
-
-            if (_airDodgeTimer <= 0f || IsGrounded)
-                _airDodging = false;
-        }
-
         void TryAttachWallRun()
         {
             // TODO: full face/vel angle gates, same-wall CD, chain cap 6.2 attach.
@@ -448,7 +411,6 @@ namespace Tag.Movement
                 if (_sameWallCd > 0f && rh.collider == _wallCollider) return;
 
                 float faceAng = Vector3.Angle(-rh.normal, transform.forward);
-                // loose first-pass gate
                 if (faceAng > tuning.wallRunFaceAngleMax) return;
 
                 _wallRunning = true;
@@ -474,11 +436,9 @@ namespace Tag.Movement
             _velocity.y -= tuning.gravity * tuning.wallRunGravityScale * dt;
             _cc.Move(_velocity * dt);
 
-            // stick to wall lightly
             _cc.Move(-_wallNormal * 2f * dt);
 
             Vector2 move = _input != null ? _input.Move : Vector2.zero;
-            // opposite = away from wall
             Vector3 away = _wallNormal;
             float awayInput = Vector3.Dot(transform.right * move.x + transform.forward * move.y, away);
             if (awayInput > 0.4f) _oppositeHold += dt;
@@ -497,7 +457,7 @@ namespace Tag.Movement
 
         void DoWallJump()
         {
-            // wall jump: out 6.5 + up 5.5, steer ±20%, along 50%
+            // wall jump: out 6.5 + up 5.5, steer ±20%, along 50% — carries speed into follow-up jump/slide
             Vector3 along = Vector3.Cross(_wallNormal, Vector3.up).normalized;
             if (Vector3.Dot(along, transform.forward) < 0f) along = -along;
 
@@ -514,7 +474,7 @@ namespace Tag.Movement
 
             // TODO: falloff ×0.85 within 0.8s floor ×0.55
             DetachWallRun(clearSameWallCd: false);
-            _sameWallCd = 0f; // opposite OK after wall jump
+            _sameWallCd = 0f;
             _jumpBufferTimer = 0f;
         }
 
@@ -530,8 +490,7 @@ namespace Tag.Movement
         {
             // TODO: cone auto-detect 35°, low/high bands, lip jump last 30% of lock.
             if (_input == null || !_input.JumpPressed) return;
-            if (IsGrounded == false && !_sliding) return; // first-pass: only ground/slide approach
-            // Placeholder: short forward obstacle ray
+            if (IsGrounded == false && !_sliding) return;
             Vector3 origin = transform.position + Vector3.up * 0.3f;
             if (!Physics.Raycast(origin, transform.forward, out RaycastHit hit, 1.2f)) return;
             float h = hit.collider.bounds.max.y - transform.position.y;
@@ -553,13 +512,17 @@ namespace Tag.Movement
         {
             _vaultTimer -= dt;
             _cc.Move(_vaultVel * dt);
-            // lip jump window
             float remaining = _vaultTimer / Mathf.Max(0.01f, _vaultLock);
             if (remaining <= tuning.vaultLipJumpWindow && _input != null && _input.JumpPressed)
             {
+                // Vault exit may chain into jump at carried speed
                 _vaulting = false;
                 _velocity = _vaultVel;
                 _velocity.y = Mathf.Sqrt(2f * tuning.gravity * tuning.jumpApexHeight * 0.6f);
+                Vector3 h = new Vector3(_velocity.x, 0f, _velocity.z);
+                h *= tuning.jumpHorizRetain;
+                _velocity.x = h.x;
+                _velocity.z = h.z;
                 return;
             }
             if (_vaultTimer <= 0f)
@@ -570,9 +533,71 @@ namespace Tag.Movement
             }
         }
 
+        bool CanAirDodge()
+        {
+            if (_airDodgeBufferTimer <= 0f) return false;
+            if (_airDodgeChargesLeft <= 0) return false;
+            if (IsGrounded) return false;
+            if (_wallRunning) return false;
+            if (_vaulting) return false;
+            if (_motorLocked) return false;
+            if (_ragdoll != null && _ragdoll.IsRagdolling) return false;
+            if (_airDodgeLockTimer > 0f) return false;
+
+            // Block during punch windup / active / miss-recover (HitRecover allowed).
+            if (_punch != null)
+            {
+                var phase = _punch.Phase;
+                if (phase == PunchPhase.Windup
+                    || phase == PunchPhase.Active
+                    || phase == PunchPhase.MissRecover)
+                    return false;
+            }
+
+            return true;
+        }
+
+        void TryAirDodge()
+        {
+            if (!CanAirDodge()) return;
+
+            Vector2 move = _input != null ? _input.Move : Vector2.zero;
+            Vector3 dir = transform.right * move.x + transform.forward * move.y;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.01f)
+                dir = transform.forward;
+            else
+                dir.Normalize();
+
+            float keepY = _velocity.y;
+            _velocity = dir * tuning.airDodgeSpeed;
+            _velocity.y = keepY;
+
+            _airDodgeChargesLeft = Mathf.Max(0, _airDodgeChargesLeft - 1);
+            _airDodgeBufferTimer = 0f;
+            _airDodgeLockTimer = tuning.airDodgeLock;
+            _airDodgeIFrameTimer = tuning.airDodgeIFrames;
+            _airDodgeGroundTravel = 0f;
+            _airDodgeGroundSteps = 0;
+        }
+
+        void TickAirDodgeLock(float dt)
+        {
+            // No air control during lock — gravity + carry dodge velocity only.
+            if (!IsGrounded)
+                _velocity.y -= tuning.gravity * dt;
+            else if (_velocity.y < 0f)
+                _velocity.y = -2f;
+
+            CollisionFlags flags = _cc.Move(_velocity * dt);
+            if ((flags & CollisionFlags.Below) != 0 && _velocity.y < 0f)
+                _velocity.y = -2f;
+
+            // Still accept buffered dodge only after lock ends (handled next frame).
+        }
+
         public void ApplySpeedBoost(float percent, float duration)
         {
-            // No stack: set absolute multiplier; refresh timer on hit
             _speedMul = 1f + percent;
             _speedBoostTimer = duration;
         }
@@ -609,7 +634,8 @@ namespace Tag.Movement
                 _sliding = false;
                 _wallRunning = false;
                 _vaulting = false;
-                _airDodging = false;
+                _airDodgeLockTimer = 0f;
+                _airDodgeIFrameTimer = 0f;
             }
         }
 
@@ -646,7 +672,11 @@ namespace Tag.Movement
 
         public void SetTuning(MovementTuning t)
         {
-            if (t != null) tuning = t;
+            if (t != null)
+            {
+                tuning = t;
+                _airDodgeChargesLeft = Mathf.Max(1, tuning.airDodgeCharges);
+            }
         }
     }
 }
