@@ -16,6 +16,7 @@ namespace Tag.Modes
         readonly TrailTagTuning _tuning;
         bool _ended;
         bool _suddenDeath;
+        float _stallTimer;
 
         public TagModeId Id => TagModeId.TrailTag;
         public TrailTagTuning Tuning => _tuning;
@@ -29,6 +30,7 @@ namespace Tag.Modes
         {
             _ended = false;
             _suddenDeath = false;
+            _stallTimer = 0f;
             ctx.SuddenDeath = false;
             ctx.RemainingTime = _tuning.matchTimeCap > 0f ? _tuning.matchTimeCap : 0f;
 
@@ -83,10 +85,44 @@ namespace Tag.Modes
                 }
             }
 
+            // Stall failsafe: ≥2 alive, no lethal segments for 8s → SD
+            if (!_suddenDeath && !_ended && ctx.LivingCount() >= 2)
+            {
+                bool anyLethal = false;
+                foreach (var p in ctx.Players)
+                {
+                    if (p == null || !p.IsAlive) continue;
+                    var e = p.GetComponent<PlayerTrailEmitter>();
+                    if (e != null && e.HasLethalSegment()) { anyLethal = true; break; }
+                }
+                if (anyLethal) _stallTimer = 0f;
+                else
+                {
+                    _stallTimer += dt;
+                    float stall = _tuning.stallFailsafeSec > 0f ? _tuning.stallFailsafeSec : 8f;
+                    if (_stallTimer >= stall)
+                    {
+                        Debug.Log("[TrailTag] Stall failsafe — forcing sudden death emit All");
+                        ForceEmitAll(ctx);
+                        EnterSuddenDeath(ctx);
+                    }
+                }
+            }
+
             if (!_ended && ctx.LivingCount() <= 1)
             {
                 _ended = true;
                 StopEmitters(ctx);
+            }
+        }
+
+        void ForceEmitAll(TagModeContext ctx)
+        {
+            foreach (var p in ctx.Players)
+            {
+                if (p == null || !p.IsAlive) continue;
+                var e = p.GetComponent<PlayerTrailEmitter>();
+                if (e != null) e.SetEmitting(true);
             }
         }
 
@@ -111,8 +147,11 @@ namespace Tag.Modes
                 var e = p.GetComponent<PlayerTrailEmitter>();
                 if (e == null) continue;
                 if (!p.IsAlive) { e.SetEmitting(false); continue; }
+                bool itOnlyNoIt = _tuning.emitters == TrailEmitterMode.ItOnly && ctx.CurrentIt == null;
                 bool should = _tuning.emitters == TrailEmitterMode.All
-                    || (_tuning.emitters == TrailEmitterMode.ItOnly && p.IsIt);
+                    || itOnlyNoIt
+                    || (_tuning.emitters == TrailEmitterMode.ItOnly && p.IsIt)
+                    || _suddenDeath;
                 e.SetEmitting(should);
             }
         }

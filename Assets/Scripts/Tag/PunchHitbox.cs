@@ -34,6 +34,14 @@ namespace Tag.Gameplay
         public PunchPhase Phase { get; private set; } = PunchPhase.Idle;
         public bool IsPunching => Phase != PunchPhase.Idle;
 
+        /// <summary>AI / external: arm punch buffer (same path as input).</summary>
+        public void QueuePunch()
+        {
+            if (tuning == null) return;
+            _bufferTimer = Mathf.Max(_bufferTimer, tuning.inputBuffer);
+        }
+
+
         float _phaseTimer;
         float _bufferTimer;
         bool _hitThisSwing;

@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   emitters: 0
   trailWidth: 0.55
-  trailHeight: 1.2
-  bottomClearance: 0.35
+  trailHeight: 1
+  bottomClearance: 1.05
   sampleHz: 20
   minSpacing: 0.25
   lifetime: 6
@@ -28,6 +28,7 @@ MonoBehaviour:
   trailWhileAirborne: 1
   trailWhileWallRun: 1
   eliminateSelfAfterGrace: 1
+  stallFailsafeSec: 8
   matchTimeCap: 180
   suddenDeathGraceScale: 0.5
   itTrailBrightness: 1.45

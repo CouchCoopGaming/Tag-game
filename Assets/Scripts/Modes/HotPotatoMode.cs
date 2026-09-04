@@ -69,12 +69,24 @@ namespace Tag.Modes
         void ResolveRoundLoss(TagModeContext ctx)
         {
             var it = ctx.CurrentIt;
-            _lastRoundLoserId = it != null ? it.PlayerId : null;
+            // Fuse 0 + CurrentIt null → void round: 0 wins, new random It, refill fuse, 2s beat
+            if (it == null)
+            {
+                _lastRoundLoserId = null;
+                int nVoid = Mathf.Clamp(Mathf.Max(2, ctx.Players.Count), 2, 4);
+                ctx.RemainingTime = _tuning.DurationForPlayerCount(nVoid);
+                PickNewIt(ctx);
+                ctx.EnterPostRound?.Invoke(2f);
+                Debug.Log("[HotPotato] null-It void round — no wins awarded");
+                return;
+            }
+
+            _lastRoundLoserId = it.PlayerId;
 
             foreach (var p in ctx.Players)
             {
                 if (p == null) continue;
-                if (it != null && ReferenceEquals(p, it)) continue;
+                if (ReferenceEquals(p, it)) continue;
                 if (!_roundWins.ContainsKey(p.PlayerId)) _roundWins[p.PlayerId] = 0;
                 _roundWins[p.PlayerId]++;
             }

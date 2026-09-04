@@ -47,6 +47,29 @@ namespace Tag.Trail
         }
 
         public bool IsEmitting => _emitting;
+
+        /// <summary>True if any live segment is past self-grace (lethal to owner).</summary>
+        public bool HasLethalSegment()
+        {
+            float now = Time.time;
+            float graceSec = _tuning != null ? _tuning.selfHitGraceSec : 0.8f;
+            float graceDist = _tuning != null ? _tuning.selfHitGraceDist : 2f;
+            if (_suddenDeath && _tuning != null)
+            {
+                graceSec *= _tuning.suddenDeathGraceScale;
+                graceDist *= _tuning.suddenDeathGraceScale;
+            }
+            for (int i = 0; i < _segments.Count; i++)
+            {
+                var s = _segments[i];
+                if (s.Go == null || s.Seg == null) continue;
+                float age = now - s.SpawnTime;
+                if (age >= graceSec && s.Length >= 0f) // age gate; dist checked on contact
+                    return true;
+            }
+            return false;
+        }
+
         public string OwnerId => _owner != null ? _owner.PlayerId : name;
 
         void Awake()

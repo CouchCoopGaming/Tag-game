@@ -17,8 +17,8 @@ namespace Tag.Modes
 
         [Header("Ribbon")]
         public float trailWidth = 0.55f;
-        public float trailHeight = 1.2f;
-        public float bottomClearance = 0.35f;
+        public float trailHeight = 1.0f;
+        public float bottomClearance = 1.05f;
         public float sampleHz = 20f;
         public float minSpacing = 0.25f;
         public float lifetime = 6.0f;
@@ -36,6 +36,7 @@ namespace Tag.Modes
         public bool eliminateSelfAfterGrace = true;
 
         [Header("Match")]
+        public float stallFailsafeSec = 8f;
         public float matchTimeCap = 180f;
         public float suddenDeathGraceScale = 0.5f;
         [Range(1f, 2f)] public float itTrailBrightness = 1.45f;

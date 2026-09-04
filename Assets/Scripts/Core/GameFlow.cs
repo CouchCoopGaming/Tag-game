@@ -42,7 +42,7 @@ namespace Tag.Core
             DontDestroyOnLoad(gameObject);
             SceneManager.sceneLoaded += OnSceneLoaded;
             LocalPlayerRoster.Load();
-            _playerCountCursor = Mathf.Clamp(LocalPlayerRoster.PlayerCount - 2, 0, 2);
+            _playerCountCursor = Mathf.Clamp(LocalPlayerRoster.PlayerCount - 1, 0, 3);
             AudioCuePlayer.Ensure();
             if (PlayerPrefs.HasKey(TagModeController.PrefsModeKey))
             {
@@ -201,7 +201,7 @@ namespace Tag.Core
             if (State == GameFlowState.Boot)
             {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
-                    GoToPlayerCount();
+                    GoToModeSelect();
             }
             else if (State == GameFlowState.PlayerCount)
             {
@@ -243,19 +243,21 @@ namespace Tag.Core
             if (State == GameFlowState.Boot)
             {
                 GUI.Box(new Rect(cx - 140, cy - 50, 280, 100), "TAG — Steam MVP");
-                if (GUI.Button(new Rect(cx - 60, cy, 120, 28), "Play")) GoToPlayerCount();
+                if (GUI.Button(new Rect(cx - 60, cy - 5, 120, 28), "Play SP")) { LocalPlayerRoster.SetCount(1); GoToModeSelect(); }
+                if (GUI.Button(new Rect(cx - 60, cy + 30, 120, 28), "Couch…")) GoToPlayerCount();
             }
             else if (State == GameFlowState.PlayerCount)
             {
-                GUI.Box(new Rect(cx - 160, cy - 100, 320, 200), "Local Players (couch)");
-                DrawRow(cx, cy - 50, 0, "2 Players");
-                DrawRow(cx, cy - 15, 1, "3 Players");
-                DrawRow(cx, cy + 20, 2, "4 Players");
-                GUI.Label(new Rect(cx - 150, cy + 60, 300, 40), "2/3/4 or arrows · Enter");
+                GUI.Box(new Rect(cx - 160, cy - 120, 320, 240), "Players");
+                DrawRow(cx, cy - 70, 0, "1 Player (SP + Dummy)");
+                DrawRow(cx, cy - 35, 1, "2 Players (couch)");
+                DrawRow(cx, cy, 2, "3 Players (couch)");
+                DrawRow(cx, cy + 35, 3, "4 Players (couch)");
+                GUI.Label(new Rect(cx - 150, cy + 75, 300, 40), "1–4 · Enter");
             }
             else if (State == GameFlowState.ModeSelect)
             {
-                GUI.Box(new Rect(cx - 200, cy - 120, 400, 240), $"Mode — {LocalPlayerRoster.PlayerCount}P local");
+                GUI.Box(new Rect(cx - 200, cy - 120, 400, 240), LocalPlayerRoster.IsCouch ? $"Mode — {LocalPlayerRoster.PlayerCount}P couch" : "Mode — SP + Dummy");
                 DrawMode(cx, cy - 70, 0, "1  Hot Potato  (Fuse 45/40/35s · first to 2)");
                 DrawMode(cx, cy - 30, 1, "2  Least It    (120s — least time-as-It)");
                 DrawMode(cx, cy + 10, 2, "3  Trail Tag   (ribbons eliminate · last standing)");
@@ -282,7 +284,7 @@ namespace Tag.Core
             if (GUI.Button(r, (sel ? "> " : "  ") + label))
             {
                 _playerCountCursor = index;
-                LocalPlayerRoster.SetCount(index + 2);
+                LocalPlayerRoster.SetCount(index + 1);
                 GoToModeSelect();
             }
         }

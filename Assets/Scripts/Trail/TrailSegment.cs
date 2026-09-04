@@ -57,7 +57,7 @@ namespace Tag.Trail
                 if (!EliminateSelfAfterGrace) return;
                 float age = Time.time - SpawnTime;
                 float dist = Vector3.Distance(victim.transform.position, SpawnOrigin);
-                // SelfHitGraceSec OR Dist — still protected if either grace applies
+                // Self-lethal only when BOTH age ≥ graceSec AND dist ≥ graceDist (protected while either grace holds)
                 if (age < SelfGraceSec || dist < SelfGraceDist) return;
             }
 

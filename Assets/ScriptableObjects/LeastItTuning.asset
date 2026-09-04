@@ -16,3 +16,4 @@ MonoBehaviour:
   roundCount: 1
   scorePrecision: 0.1
   tieBreak: 0
+  nextPunchTimeoutSec: 20

@@ -12,6 +12,8 @@ namespace Tag.Modes
         public float scorePrecision = 0.1f;
         public LeastItTieBreak tieBreak = LeastItTieBreak.NextPunch;
         public bool punchTransfersIt = true;
+        [Tooltip("After timer, if NextPunch tie: resolve after this many seconds with no punch.")]
+        public float nextPunchTimeoutSec = 20f;
 
         public static LeastItTuning CreateRuntimeDefaults()
         {

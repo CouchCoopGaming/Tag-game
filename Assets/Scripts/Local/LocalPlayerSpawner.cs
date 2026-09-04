@@ -32,12 +32,20 @@ namespace Tag.Local
                 var p = GameObject.Find("Player");
                 playerTemplate = p;
             }
-            // Disable DummyRunner as fake opponent when local MP
+            LocalPlayerRoster.Load();
             var dummy = GameObject.Find("DummyRunner");
-            if (dummy != null && LocalPlayerRoster.PlayerCount >= 2)
-                dummy.SetActive(false);
-
-            SpawnAll(LocalPlayerRoster.PlayerCount);
+            if (LocalPlayerRoster.IsCouch)
+            {
+                if (dummy != null) dummy.SetActive(false);
+                SpawnAll(LocalPlayerRoster.PlayerCount);
+            }
+            else
+            {
+                // SP demo: keep DummyRunner, only configure P0
+                if (dummy != null) dummy.SetActive(true);
+                var p0 = GameObject.Find("Player");
+                if (p0 != null) ConfigurePawn(p0, 0);
+            }
         }
 
         public void SpawnAll(int count)

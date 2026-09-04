@@ -14,6 +14,7 @@ namespace Tag.Modes
         bool _timerDone;
         bool _ended;
         bool _awaitingTieBreak;
+        float _tieBreakTimer;
         string _pendingWinner;
 
         public TagModeId Id => TagModeId.LeastIt;
@@ -28,6 +29,7 @@ namespace Tag.Modes
             _timerDone = false;
             _ended = false;
             _awaitingTieBreak = false;
+            _tieBreakTimer = 0f;
             _pendingWinner = null;
             ctx.RemainingTime = _tuning.roundDuration;
             foreach (var p in ctx.Players)
@@ -42,7 +44,13 @@ namespace Tag.Modes
         public void Tick(TagModeContext ctx, float dt)
         {
             if (_ended) return;
-            if (_awaitingTieBreak) return;
+            if (_awaitingTieBreak)
+            {
+                _tieBreakTimer -= dt;
+                if (_tieBreakTimer <= 0f)
+                    ResolveTieByCurrentItTime(ctx);
+                return;
+            }
 
             ctx.RemainingTime -= dt;
             if (ctx.RemainingTime > 0f) return;
@@ -77,7 +85,33 @@ namespace Tag.Modes
             }
 
             _awaitingTieBreak = true;
-            Debug.Log($"[LeastIt] Tie at {best:0.0}s — NextPunch tiebreak among {tied.Count}");
+            _tieBreakTimer = Mathf.Max(0.1f, _tuning.nextPunchTimeoutSec);
+            Debug.Log($"[LeastIt] Tie at {best:0.0}s — NextPunch tiebreak among {tied.Count} (timeout {_tieBreakTimer:0}s)");
+        }
+
+        void ResolveTieByCurrentItTime(TagModeContext ctx)
+        {
+            // 20s no punch → least current It-time among tied (shared if still equal)
+            var ranked = RankByLeastIt(ctx);
+            if (ranked.Count == 0) { _ended = true; _awaitingTieBreak = false; return; }
+            float best = RoundScore(ranked[0].TimeAsIt);
+            var winners = new System.Collections.Generic.List<string>();
+            foreach (var p in ranked)
+            {
+                if (Mathf.Abs(RoundScore(p.TimeAsIt) - best) <= 0.0001f)
+                    winners.Add(p.PlayerId);
+                else break;
+            }
+            _pendingWinner = winners.Count == 1 ? winners[0] : winners[0]; // shared: first of tied is fine; GetWinnerIds handles multi
+            if (winners.Count > 1)
+            {
+                // Keep multi via clearing single and letting GetWinnerIds rank
+                _pendingWinner = null;
+                // Force end; GetWinnerIds returns all least-tied
+            }
+            _awaitingTieBreak = false;
+            _ended = true;
+            Debug.Log($"[LeastIt] NextPunch timeout — resolve by TimeAsIt ({winners.Count} tied)");
         }
 
         float RoundScore(float t)
