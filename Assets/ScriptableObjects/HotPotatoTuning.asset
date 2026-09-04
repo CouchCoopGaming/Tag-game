@@ -12,15 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1000000000000000000000000000013, type: 3}
   m_Name: HotPotatoTuning
   m_EditorClassIdentifier: 
-  fuseDuration: 75
-  warnSec: 10
   durationByPlayerCount:
   - 0
   - 0
-  - 75
-  - 75
-  - 75
-  winsToTakeMatch: 1
-  maxRounds: 1
-  postRoundSec: 0
+  - 45
+  - 40
+  - 35
+  warnSec: 10
+  winsToTakeMatch: 2
+  maxRounds: 3
+  postRoundSec: 4
   punchTransfersIt: 1

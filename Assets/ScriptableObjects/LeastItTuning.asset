@@ -12,4 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1000000000000000000000000000014, type: 3}
   m_Name: LeastItTuning
   m_EditorClassIdentifier: 
-  roundDuration: 105
+  roundDuration: 120
+  roundCount: 1
+  scorePrecision: 0.1
+  tieBreak: 0
