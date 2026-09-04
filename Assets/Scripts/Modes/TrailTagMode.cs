@@ -6,13 +6,15 @@ using UnityEngine;
 namespace Tag.Modes
 {
     /// <summary>
-    /// All living players emit trails; trail collision eliminates.
-    /// Last alive wins, or timer expiry → survivors win.
+    /// Trail collision eliminates; last standing wins.
+    /// Emitters All (default) vs ItOnly. MatchTimeCap → sudden death (self-grace halved).
+    /// Punch/It stay. Dodge i-frames do NOT ignore trails.
     /// </summary>
     public class TrailTagMode : ITagMode
     {
         readonly TrailTagTuning _tuning;
         bool _ended;
+        bool _suddenDeath;
 
         public TagModeId Id => TagModeId.TrailTag;
         public TrailTagTuning Tuning => _tuning;
@@ -25,6 +27,8 @@ namespace Tag.Modes
         public void OnRoundStart(TagModeContext ctx)
         {
             _ended = false;
+            _suddenDeath = false;
+            ctx.SuddenDeath = false;
             ctx.RemainingTime = _tuning.matchTimeCap > 0f ? _tuning.matchTimeCap : 0f;
 
             for (int i = 0; i < ctx.Players.Count; i++)
@@ -40,11 +44,11 @@ namespace Tag.Modes
                     emitter = p.gameObject.AddComponent<PlayerTrailEmitter>();
                 emitter.Configure(_tuning, p, OnTrailHit, i);
                 emitter.ClearTrail();
-                emitter.SetEmitting(true);
-                if (_tuning.spawnEmitDelay > 0f)
-                    emitter.BeginSpawnDelay(_tuning.spawnEmitDelay);
+                emitter.SetSuddenDeath(false);
+                emitter.BeginSpawnDelay(_tuning.spawnTrailDelay);
                 emitter.SetItEmphasis(false, _tuning.itTrailBrightness);
             }
+            RefreshEmitterGates(ctx);
         }
 
         void OnTrailHit(ItController victim, ItController owner)
@@ -58,7 +62,7 @@ namespace Tag.Modes
         public void Tick(TagModeContext ctx, float dt)
         {
             if (_ended) return;
-
+            RefreshEmitterGates(ctx);
             foreach (var p in ctx.Players)
             {
                 if (p == null) continue;
@@ -67,14 +71,13 @@ namespace Tag.Modes
                     e.SetItEmphasis(p.IsIt && p.IsAlive, _tuning.itTrailBrightness);
             }
 
-            if (_tuning.matchTimeCap > 0f)
+            if (_tuning.matchTimeCap > 0f && !_suddenDeath)
             {
                 ctx.RemainingTime -= dt;
                 if (ctx.RemainingTime <= 0f)
                 {
                     ctx.RemainingTime = 0f;
-                    _ended = true;
-                    StopEmitters(ctx);
+                    EnterSuddenDeath(ctx);
                 }
             }
 
@@ -82,6 +85,33 @@ namespace Tag.Modes
             {
                 _ended = true;
                 StopEmitters(ctx);
+            }
+        }
+
+        void EnterSuddenDeath(TagModeContext ctx)
+        {
+            _suddenDeath = true;
+            ctx.SuddenDeath = true;
+            foreach (var p in ctx.Players)
+            {
+                if (p == null) continue;
+                var e = p.GetComponent<PlayerTrailEmitter>();
+                if (e != null) e.SetSuddenDeath(true);
+            }
+            Debug.Log("[TrailTag] Sudden death — next trail hit eliminates (self-grace halved)");
+        }
+
+        void RefreshEmitterGates(TagModeContext ctx)
+        {
+            foreach (var p in ctx.Players)
+            {
+                if (p == null) continue;
+                var e = p.GetComponent<PlayerTrailEmitter>();
+                if (e == null) continue;
+                if (!p.IsAlive) { e.SetEmitting(false); continue; }
+                bool should = _tuning.emitters == TrailEmitterMode.All
+                    || (_tuning.emitters == TrailEmitterMode.ItOnly && p.IsIt);
+                e.SetEmitting(should);
             }
         }
 
@@ -95,7 +125,24 @@ namespace Tag.Modes
             }
         }
 
-        public void OnPunchTransfer(TagModeContext ctx, ItController from, ItController to) { }
+        public void OnPunchTransfer(TagModeContext ctx, ItController from, ItController to)
+        {
+            if (_tuning.emitters != TrailEmitterMode.ItOnly) return;
+            if (from != null)
+            {
+                var fe = from.GetComponent<PlayerTrailEmitter>();
+                if (fe != null) fe.SetEmitting(false);
+            }
+            if (to != null)
+            {
+                var te = to.GetComponent<PlayerTrailEmitter>();
+                if (te != null)
+                {
+                    te.BeginSpawnDelay(_tuning.spawnTrailDelay);
+                    te.SetEmitting(true);
+                }
+            }
+        }
 
         public void OnPlayerEliminated(TagModeContext ctx, ItController player)
         {
@@ -114,26 +161,23 @@ namespace Tag.Modes
         public IReadOnlyList<string> GetWinnerIds(TagModeContext ctx)
         {
             var winners = new List<string>();
-            foreach (var p in ctx.LivingPlayers())
-                winners.Add(p.PlayerId);
+            foreach (var p in ctx.LivingPlayers()) winners.Add(p.PlayerId);
             return winners;
         }
 
         public string GetHud(TagModeContext ctx)
         {
             string it = ctx.CurrentIt != null ? ctx.CurrentIt.PlayerId : "-";
-            string timer = _tuning.matchTimeCap > 0f
-                ? $"Time {ctx.RemainingTime:0.0}s"
-                : "No cap";
-            int alive = ctx.LivingCount();
+            string timer = _suddenDeath ? "SUDDEN DEATH"
+                : (_tuning.matchTimeCap > 0f ? $"Time {ctx.RemainingTime:0.0}s" : "No cap");
             var sb = new System.Text.StringBuilder();
-            sb.Append($"TrailTag | {timer} | Alive {alive} | It: {it}\n");
+            sb.Append($"TrailTag | {timer} | Alive {ctx.LivingCount()} | Emit:{_tuning.emitters} | It:{it}\n");
             foreach (var p in ctx.Players)
             {
                 if (p == null) continue;
                 sb.Append($"{p.PlayerId}: {(p.IsAlive ? "alive" : "OUT")}{(p.IsIt ? " *" : "")}\n");
             }
-            return sb.ToString().TrimEnd();
+            return sb.ToString().Replace("\n", "\n").TrimEnd();
         }
     }
 }

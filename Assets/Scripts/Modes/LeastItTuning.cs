@@ -7,7 +7,7 @@ namespace Tag.Modes
     [CreateAssetMenu(fileName = "LeastItTuning", menuName = "Tag/Modes/Least It Tuning", order = 20)]
     public class LeastItTuning : ScriptableObject
     {
-        public float roundDuration = 120f;
+        public float roundDuration = 105f;
         public int roundCount = 1;
         public float scorePrecision = 0.1f;
         public LeastItTieBreak tieBreak = LeastItTieBreak.NextPunch;

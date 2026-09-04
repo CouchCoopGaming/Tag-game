@@ -279,17 +279,18 @@ namespace Tag.Trail
 
             var go = new GameObject($"TrailSeg_{OwnerId}");
             go.layer = gameObject.layer;
-            var col = go.AddComponent<BoxCollider>();
-            col.isTrigger = true;
             float height = _tuning.trailHeight;
             float width = _tuning.trailWidth;
-            // Bottom clearance: collider sits above ground so slides can duck under
-            col.size = new Vector3(width, height, len);
-            col.center = Vector3.zero;
-
             go.transform.position = mid + Vector3.up * (_tuning.bottomClearance + height * 0.5f);
             if (dir.sqrMagnitude > 0.0001f)
                 go.transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+            // Scale drives both mesh and collider (unit cube / size=1)
+            go.transform.localScale = new Vector3(width, height, len);
+
+            var col = go.AddComponent<BoxCollider>();
+            col.isTrigger = true;
+            col.size = Vector3.one;
+            col.center = Vector3.zero;
 
             var rb = go.AddComponent<Rigidbody>();
             rb.isKinematic = true;
