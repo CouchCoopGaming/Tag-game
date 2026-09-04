@@ -250,3 +250,7 @@ Keys **1** Hot Potato · **2** Least It · **3** Trail Tag · Enter to play · *
 - **Hot Potato:** fuse 45/40/35s (2/3/4p). Timer 0 → current It loses the *round*; others +1 round-win. First to 2 wins (max 3 rounds). No elim.
 - **Least It:** 120s; least cumulative time-as-It wins.
 - **Trail Tag:** Light Cycle trails (`#00E5FF`); collision eliminates. Emitters All/ItOnly tunable.
+
+
+## Dummy art bind
+Art drop in `Assets/Art/Characters/`. In Unity: **Tag → Setup Dummy Prefabs From FBX**, then add `DummyAvatarBinder` on Player/DummyRunner and assign the two prefabs (hides capsule).

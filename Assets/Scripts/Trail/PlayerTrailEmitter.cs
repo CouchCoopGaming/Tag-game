@@ -73,11 +73,24 @@ namespace Tag.Trail
             _line.numCornerVertices = 2;
             _line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _line.receiveShadows = false;
-            var shader = Shader.Find("Sprites/Default");
-            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
-            if (shader == null) shader = Shader.Find("Unlit/Color");
-            if (shader != null)
-                _line.material = new Material(shader);
+            // Prefer Art bible trail mat when present (Hub import).
+            var artMat = Resources.Load<Material>("Mat_Trail_Cyan");
+#if UNITY_EDITOR
+            if (artMat == null)
+                artMat = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/VFX/Trail/Mat_Trail_Cyan.mat");
+#endif
+            if (artMat != null)
+            {
+                _line.material = artMat;
+            }
+            else
+            {
+                var shader = Shader.Find("Sprites/Default");
+                if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
+                if (shader == null) shader = Shader.Find("Unlit/Color");
+                if (shader != null)
+                    _line.material = new Material(shader);
+            }
         }
 
         void PickColor()
