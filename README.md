@@ -2,11 +2,11 @@
 
 **Path:** `/workspace/tag-unity`  
 **Engine:** Unity **6000.0.23f1** (Unity 6 LTS) — see `ProjectSettings/ProjectVersion.txt`  
-**Remote SCM:** TBD (no Origin/GitHub push from this scaffold — files only under `/workspace/tag-unity`)
+**Remote:** https://github.com/CouchCoopGaming/Tag-game (`main`)
 
 Vertical slice: **2–4p punch-tag** (transfer-It on successful punch), timed round (~90–120s), score = **least time-as-It**.  
 Movement kit (Apex-adjacent): sprint, jump, slide, wall run, wall jump, vault.  
-**Out of scope:** double jump, grapple, climb-as-verb, guns, multi-mode framework, full CUT arena mesh.
+**Out of scope:** double jump, grapple, climb-as-verb, guns, multi-mode framework, final CUT art mesh (graybox is in).
 
 ---
 
@@ -50,14 +50,13 @@ Baked into `PunchTagTuning` defaults + `Assets/ScriptableObjects/PunchTagTuning.
 | Scene | Path | Role |
 |-------|------|------|
 | Boot | `Assets/Scenes/Boot.unity` | Start UI (OnGUI) → loads Play |
-| Play | `Assets/Scenes/Play.unity` | Test graybox: floor, 2 wall-run walls, low vault block, Player + DummyRunner, round systems |
+| Play | `Assets/Scenes/Play.unity` | CUT graybox (v0.1) + Player + DummyRunner + round systems |
 
-Play contents (movement test only — **not** full CUT):
-- Floor plane (~40×40)
-- `Wall_TestA` / `Wall_TestB` (~3.2 m gap) for wall-run / wall-jump
-- `Vault_LowBlock` (~1.0 m) for vault probe
-- `Player` capsule: CharacterController + motor + camera pivot + punch + It + ragdoll stub
-- `DummyRunner` stationary target for punch / It transfer
+Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
+- Runtime `CUT` root: Floor G, Bowl Y=−1 + 20° ramps + rim vaults, Loft +1.5 + lip, West/SW/East/SE walls, vaults, slide markers, 3×3 G pads, 4 spawns + elbows
+- `CutArenaBootstrap` empty GO (idempotent rebuild on Awake)
+- `Player` at SW spawn **(3, 0, 3)**: CharacterController + motor + camera pivot + punch + It + ragdoll stub
+- `DummyRunner` near Bowl south rim **(18, 0, 8)** for punch test
 - `Systems`: `GameFlow` + `TagRoundController` (105 s default)
 
 ---
@@ -91,6 +90,7 @@ Play contents (movement test only — **not** full CUT):
 | `Tag/PlayerRagdoll.cs` | Tag.Gameplay | CC off → Rigidbody fall → restore |
 | `Core/GameFlow.cs` | Tag.Core | Boot → Play → Rematch |
 | `Core/FollowCamera.cs` | Tag.Core | Optional 3rd-person follow (disabled on pivot; look is FPS-style on pivot) |
+| `Level/CutArenaBootstrap.cs` | Tag.Level | Builds CUT graybox primitives from brief v0.1 on Awake |
 
 Default assets: `Assets/ScriptableObjects/MovementTuning.asset`, `PunchTagTuning.asset`.  
 Runtime `CreateRuntimeDefaults()` if references are missing.
@@ -121,19 +121,33 @@ Runtime `CreateRuntimeDefaults()` if references are missing.
 - No netcode / multiplayer session — local DummyRunner only
 - No `.inputactions` asset; OnGUI menus only (no TMP canvas yet)
 - URP asset/renderer may need Unity to auto-create on first open (manifest lists URP; no custom Renderer asset checked in)
-- Full **CUT** arena not built — see Level brief below
+- CUT graybox is **runtime primitives** (not final art mesh)
 
 ---
 
-## Level graybox (upcoming)
+## Level graybox (CUT v0.1 — in Play)
 
-Do **not** drop the full CUT mesh into this scaffold yet. Brief + plan live at:
+`CutArenaBootstrap` builds the arena from `/workspace/tag-gdd/level/CUT-graybox-v0.1.md` (+ `CUT-plan.svg`).
 
-- `/workspace/tag-gdd/level/CUT-graybox-v0.md` (symlink: `Docs-CUT-graybox-v0.md` in this project)
-- `/workspace/tag-gdd/level/CUT-plan.svg`
-- In-repo note: `Assets/Art/Graybox/README_CUT_REF.md`
+| Zone | Notes |
+|------|--------|
+| Bowl | Y=−1.0, X[13,23] Z[9,19], rim vault 1.00, corner ramps 20° |
+| West Spine (Chain 1) | West Wall 10×3.2 @ X=8 Z[8,18]; slide X[2,7] Z[10,12]; landing vault 1.00 @ X[10.4,12.4] |
+| East Alley (Chain 2) | Faces X=28.0 & 31.2 (3.2 m gap), 10×3.5; G pads at mouths |
+| South Lane (Chain 3) | Rails 0.90 then 1.05; slide X[16,22] Z[3,5] → Bowl |
+| North Loft | +1.5, 6×4, lip vault 1.50, side drop ramps 20° |
+| Spawns | SW/SE/NW/NE on G; orange pads + yellow elbows |
 
-Systems Movement Numbers v0 are **locked** and baked into `MovementTuning`.
+Brief copies in-repo: `Assets/Art/Graybox/CUT-graybox-v0.1.md`, `CUT-plan.svg`, `README_CUT_REF.md`.  
+Systems Movement Numbers v0 are **locked** in `MovementTuning`.
+
+### Smoke-test the three chains (open Play, press Play)
+
+1. **Chain 1 (West Spine → Bowl):** From SW spawn, sprint north along X≈4–7 → magenta slide X[2,7] Z[10,12] → jump onto West Wall (cyan @ X=8) → wall-run ≤0.8 s → wall-jump east ~2.8 m onto yellow Chain1 landing vault (1.00 @ X[10.4,12.4] Z[15,16]) → sprint into Bowl.
+2. **Chain 2 (East Alley):** Enter alley between X=28 and X=31.2 → sprint/jump → wall-run → wall-jump opposite face (3.2 m gap) → 2–3 ping-pongs → land on magenta **G pad** at a mouth (no air-loop of 4 walls).
+3. **Chain 3 (South Lane):** From west, sprint X[6,22] Z≈[2.5,5.5] → vault 0.90 (X[10,12]) → vault 1.05 (X[14,16]) → magenta slide X[16,22] Z[3,5] → jump into Bowl south rim (no wall in landing cone).
+
+Also: loft lip vault 1.50 from G at Z≈24; bowl corner ramps 20°; punch DummyRunner near Bowl.
 
 ---
 
@@ -143,15 +157,14 @@ Systems Movement Numbers v0 are **locked** and baked into `MovementTuning`.
 /workspace/tag-unity/
   README.md
   .gitignore
-  Docs-CUT-graybox-v0.md          → symlink to tag-gdd brief
   Packages/manifest.json
   ProjectSettings/ProjectVersion.txt   # 6000.0.23f1
   Assets/
-    Scripts/{Movement,Tag,Core,Input}/
+    Scripts/{Movement,Tag,Core,Input,Level}/
     Scenes/{Boot,Play}.unity
     ScriptableObjects/
-    Prefabs/                      # empty — ready for player prefab extract
-    Art/Graybox/
+    Prefabs/
+    Art/Graybox/                  # brief + plan + README_CUT_REF; geo via CutArenaBootstrap
 ```
 
 ---
@@ -159,8 +172,7 @@ Systems Movement Numbers v0 are **locked** and baked into `MovementTuning`.
 ## Next needs
 
 1. Open in Unity Hub; let packages resolve; create URP pipeline asset if prompted.
-2. Smoke-test movement on Play walls/vault block; tune via SO assets.
-3. Level: drop CUT graybox into `Art/Graybox` + new scene (or replace Play geo).
+2. Smoke-test Chains 1–3 on CUT graybox; tune via SO assets.
+3. Replace runtime primitives with authored graybox/final mesh when Level drops meshes.
 4. Flesh wall-run / vault TODOs; bone ragdoll optional.
 5. Add Input Actions asset + simple TMP HUD; then netcode / 2–4p session.
-6. Init remote SCM when ready (not done here).

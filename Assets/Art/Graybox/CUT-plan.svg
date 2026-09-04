@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 620" width="760" height="620" font-family="ui-monospace, Menlo, monospace">
+  <rect width="760" height="620" fill="#1a1c1e"/>
+  <text x="24" y="28" fill="#e8e6e3" font-size="16">CUT v0.1 — slice arena (top-down, N up) · 36 × 28 m</text>
+  <text x="24" y="48" fill="#9aa0a6" font-size="11">Systems v0 locked · G=0 · Bowl=-1.0 · Loft=+1.5 · alley gap 3.2 · walls 10x3.2 / 10x3.5</text>
+  <g transform="translate(80,72)">
+    <rect x="-32" y="-32" width="640" height="512" fill="#2a2e32" stroke="#5c6370" stroke-width="1"/>
+    <rect x="0" y="0" width="576" height="448" fill="#3a3f45" stroke="#d0d4d8" stroke-width="2"/>
+    <rect x="208" y="144" width="160" height="160" fill="#2b3340" stroke="#8ab4f8" stroke-width="2"/>
+    <text x="288" y="218" fill="#8ab4f8" font-size="12" text-anchor="middle">BOWL -1.0</text>
+    <text x="288" y="234" fill="#8ab4f8" font-size="10" text-anchor="middle">10x10 · rim 1.00</text>
+    <rect x="208" y="144" width="32" height="32" fill="#4a5563"/>
+    <rect x="336" y="144" width="32" height="32" fill="#4a5563"/>
+    <rect x="208" y="272" width="32" height="32" fill="#4a5563"/>
+    <rect x="336" y="272" width="32" height="32" fill="#4a5563"/>
+    <rect x="128" y="160" width="6" height="160" fill="#22d3ee"/>
+    <text x="86" y="248" fill="#22d3ee" font-size="10" transform="rotate(-90 86 248)">WEST 10x3.2</text>
+    <rect x="32" y="256" width="96" height="32" fill="#c026d3" opacity="0.7"/>
+    <text x="40" y="276" fill="#f5d0fe" font-size="9">SLIDE 6m</text>
+    <rect x="166" y="176" width="40" height="8" fill="#facc15"/>
+    <text x="166" y="170" fill="#facc15" font-size="9">C1 vault 1.00</text>
+    <rect x="128" y="320" width="6" height="128" fill="#22d3ee" opacity="0.55"/>
+    <rect x="448" y="160" width="6" height="160" fill="#22d3ee"/>
+    <rect x="499" y="160" width="6" height="160" fill="#22d3ee"/>
+    <text x="448" y="148" fill="#22d3ee" font-size="10">EAST ALLEY 3.2 gap · 10x3.5</text>
+    <rect x="448" y="320" width="6" height="128" fill="#22d3ee" opacity="0.55"/>
+    <rect x="499" y="320" width="6" height="128" fill="#22d3ee" opacity="0.55"/>
+    <rect x="448" y="136" width="57" height="24" fill="#c026d3" opacity="0.45" stroke="#e879f9"/>
+    <rect x="448" y="320" width="57" height="24" fill="#c026d3" opacity="0.45" stroke="#e879f9"/>
+    <rect x="104" y="136" width="48" height="24" fill="#c026d3" opacity="0.45" stroke="#e879f9"/>
+    <rect x="104" y="320" width="48" height="24" fill="#c026d3" opacity="0.45" stroke="#e879f9"/>
+    <text x="560" y="154" fill="#e879f9" font-size="9">G pads</text>
+    <rect x="96" y="384" width="256" height="28" fill="#7c3aed" opacity="0.3"/>
+    <rect x="160" y="390" width="32" height="10" fill="#facc15"/>
+    <rect x="224" y="394" width="32" height="10" fill="#facc15"/>
+    <text x="160" y="424" fill="#facc15" font-size="10">SOUTH · 0.90 then 1.05 · slide 6m</text>
+    <rect x="240" y="0" width="96" height="64" fill="#94a3b8" stroke="#e2e8f0" stroke-width="2"/>
+    <text x="288" y="30" fill="#0f172a" font-size="11" text-anchor="middle">LOFT +1.5</text>
+    <text x="288" y="46" fill="#0f172a" font-size="9" text-anchor="middle">6x4 · vault 1.50</text>
+    <rect x="16" y="400" width="20" height="20" fill="#f97316"/>
+    <rect x="528" y="400" width="20" height="20" fill="#f97316"/>
+    <rect x="16" y="16" width="20" height="20" fill="#f97316"/>
+    <rect x="528" y="16" width="20" height="20" fill="#f97316"/>
+    <text x="40" y="414" fill="#fdba74" font-size="9">SW</text>
+    <text x="512" y="414" fill="#fdba74" font-size="9">SE</text>
+    <text x="40" y="30" fill="#fdba74" font-size="9">NW</text>
+    <text x="512" y="30" fill="#fdba74" font-size="9">NE</text>
+    <rect x="48" y="392" width="8" height="36" fill="#facc15" opacity="0.5"/>
+    <rect x="512" y="392" width="8" height="36" fill="#facc15" opacity="0.5"/>
+    <rect x="48" y="8" width="8" height="36" fill="#facc15" opacity="0.5"/>
+    <rect x="512" y="8" width="8" height="36" fill="#facc15" opacity="0.5"/>
+    <polyline points="48,272 128,240 176,180 220,200" fill="none" stroke="#fb7185" stroke-width="3" stroke-dasharray="8 4"/>
+    <text x="48" y="262" fill="#fb7185" font-size="11">C1</text>
+    <polyline points="474,312 474,168" fill="none" stroke="#34d399" stroke-width="3" stroke-dasharray="8 4"/>
+    <text x="508" y="248" fill="#34d399" font-size="11">C2</text>
+    <polyline points="140,400 280,400 300,304" fill="none" stroke="#fbbf24" stroke-width="3" stroke-dasharray="8 4"/>
+    <text x="140" y="380" fill="#fbbf24" font-size="11">C3</text>
+  </g>
+  <g font-size="11" fill="#cbd5e1">
+    <text x="24" y="560">C1 pink: sprint-slide-jump-wall-walljump-vault-sprint</text>
+    <text x="24" y="576">C2 green: sprint-jump-wall-walljump-opposite-sprint (3.2 m gap + G pads)</text>
+    <text x="24" y="592">C3 gold: sprint-vault-slide-jump · orange spawns · cyan walls · yellow vaults · magenta ground pads</text>
+  </g>
+</svg>
