@@ -48,6 +48,7 @@ namespace Tag.Modes
             if (_ended) return;
             if (_awaitingTieBreak)
             {
+                ClampTieBreakTimerForDummyIt(ctx);
                 _tieBreakTimer -= dt;
                 if (_tieBreakTimer <= 0f)
                     ResolveTieByCurrentItTime(ctx);
@@ -91,8 +92,46 @@ namespace Tag.Modes
                 _tieBreakEligible.Add(p.PlayerId);
 
             _awaitingTieBreak = true;
-            _tieBreakTimer = Mathf.Max(0.1f, _tuning.nextPunchTimeoutSec);
-            Debug.Log($"[LeastIt] Tie at {best:0.0}s — NextPunch tiebreak among {tied.Count} (timeout {_tieBreakTimer:0}s)");
+            _tieBreakTimer = EffectiveNextPunchTimeout(ctx);
+            Debug.Log($"[LeastIt] Tie at {best:0.0}s — NextPunch tiebreak among {tied.Count} (timeout {_tieBreakTimer:0.#}s)");
+        }
+
+        float EffectiveNextPunchTimeout(TagModeContext ctx)
+        {
+            float full = Mathf.Max(0.1f, _tuning.nextPunchTimeoutSec);
+            float dummy = Mathf.Max(0.1f, _tuning.dummyNoPunchTimeoutSec);
+            bool currentItIsDummy = ctx.CurrentIt != null && ctx.CurrentIt.GetComponent<DummyPatrol>() != null;
+            if (currentItIsDummy || OnlyDummyOrNoPunchFoes(ctx))
+                return Mathf.Min(full, dummy);
+            return full;
+        }
+
+        void ClampTieBreakTimerForDummyIt(TagModeContext ctx)
+        {
+            if (ctx.CurrentIt == null || ctx.CurrentIt.GetComponent<DummyPatrol>() == null)
+                return;
+            float dummy = Mathf.Max(0.1f, _tuning.dummyNoPunchTimeoutSec);
+            if (_tieBreakTimer > dummy)
+                _tieBreakTimer = dummy;
+        }
+
+        /// <summary>
+        /// True when every living player is DummyPatrol or lacks PlayerInputReader
+        /// (no human input present who could land the NextPunch).
+        /// </summary>
+        bool OnlyDummyOrNoPunchFoes(TagModeContext ctx)
+        {
+            bool anyLiving = false;
+            foreach (var p in ctx.Players)
+            {
+                if (p == null || !p.IsAlive) continue;
+                anyLiving = true;
+                bool isDummy = p.GetComponent<DummyPatrol>() != null;
+                bool hasInput = p.GetComponent<Tag.Input.PlayerInputReader>() != null;
+                if (hasInput && !isDummy)
+                    return false;
+            }
+            return anyLiving;
         }
 
         void ResolveTieByCurrentItTime(TagModeContext ctx)

@@ -14,6 +14,8 @@ namespace Tag.Modes
         public bool punchTransfersIt = true;
         [Tooltip("After timer, if NextPunch tie: resolve after this many seconds with no punch.")]
         public float nextPunchTimeoutSec = 20f;
+        [Tooltip("NextPunch resolves after this when only Dummy/no-punch foes can break the tie (or Dummy is CurrentIt).")]
+        public float dummyNoPunchTimeoutSec = 1f;
 
         public static LeastItTuning CreateRuntimeDefaults()
         {

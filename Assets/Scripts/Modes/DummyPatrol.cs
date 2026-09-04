@@ -17,6 +17,7 @@ namespace Tag.Modes
         [SerializeField] float chaseSpeedMul = 1.0f;
         [SerializeField] float punchRange = 1.2f;
         [SerializeField] float punchConeDeg = 40f;
+        [SerializeField] float itGraceSec = 1f;
         [SerializeField] float aggression = 0.85f;
         [SerializeField] float cooldownMin = 0.6f;
         [SerializeField] float cooldownMax = 0.9f;
@@ -33,6 +34,8 @@ namespace Tag.Modes
         float _decisionTimer;
         ItController _target;
         TagModeController _modes;
+        float _itGraceTimer;
+        bool _wasIt;
 
         void Awake()
         {
@@ -73,6 +76,10 @@ namespace Tag.Modes
             }
 
             bool isIt = _it != null && _it.IsIt;
+            if (isIt && !_wasIt)
+                _itGraceTimer = Mathf.Max(0f, itGraceSec);
+            _wasIt = isIt;
+
             if (isIt)
                 TickChase(dt);
             else
@@ -119,8 +126,10 @@ namespace Tag.Modes
                 float dist = to.magnitude;
                 float ang = Vector3.Angle(transform.forward, to.sqrMagnitude > 0.001f ? to.normalized : transform.forward);
                 _cooldown -= dt;
+                if (_itGraceTimer > 0f)
+                    _itGraceTimer -= dt;
                 bool inCone = dist <= punchRange && ang <= punchConeDeg * 0.5f;
-                if (inCone && _cooldown <= 0f && Random.value <= EffectiveAggression())
+                if (inCone && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
                 {
                     _punch?.QueuePunch();
                     _cooldown = Random.Range(cooldownMin, cooldownMax);
