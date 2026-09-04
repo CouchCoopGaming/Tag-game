@@ -121,6 +121,13 @@ namespace Tag.Core
             LastResultMessage = result ?? "";
             State = GameFlowState.RoundEnd;
             Time.timeScale = 1f;
+            var msg = LastResultMessage.ToLowerInvariant();
+            if (msg.Contains("win"))
+                AudioCuePlayer.Ensure()?.RoundWin();
+            else if (msg.Contains("lose") || msg.Contains("loss"))
+                AudioCuePlayer.Ensure()?.RoundLose();
+            else
+                AudioCuePlayer.Ensure()?.RoundEnd();
         }
 
         // Compat for older callers
@@ -182,6 +189,7 @@ namespace Tag.Core
                 modeController.RegisterPlayer(p);
             if (!modeController.RoundActive)
                 modeController.StartRound();
+            AudioCuePlayer.Ensure()?.PlaygroundMusic();
         }
 
         void Update()

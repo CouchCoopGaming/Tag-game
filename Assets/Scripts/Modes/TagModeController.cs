@@ -169,6 +169,7 @@ namespace Tag.Modes
         {
             _phase = MatchPhase.Playing;
             _ctx.RoundRunning = true;
+            AudioCuePlayer.Ensure()?.RoundStart();
             _mode.OnRoundStart(_ctx);
 
             if (_ctx.CurrentIt == null)

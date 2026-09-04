@@ -337,6 +337,7 @@ namespace Tag.Movement
             if (HorizontalSpeed < tuning.slideSpeedGate) return;
 
             _sliding = true;
+            AudioCuePlayer.Ensure()?.Slide(transform.position);
             _slideTimer = tuning.slideDuration;
             _slideDir = new Vector3(_velocity.x, 0f, _velocity.z).normalized;
             if (_slideDir.sqrMagnitude < 0.01f)
@@ -588,6 +589,7 @@ namespace Tag.Movement
             _airDodgeIFrameTimer = tuning.airDodgeIFrames;
             _airDodgeGroundTravel = 0f;
             _airDodgeGroundSteps = 0;
+            AudioCuePlayer.Ensure()?.AirDodge(transform.position);
         }
 
         void TickAirDodgeLock(float dt)

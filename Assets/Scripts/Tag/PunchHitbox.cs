@@ -246,6 +246,9 @@ namespace Tag.Gameplay
                 victim.SetIt(true);
             }
 
+            AudioCuePlayer.Ensure()?.PunchHit(transform.position);
+            AudioCuePlayer.Ensure()?.TagTransfer(hitPoint);
+
             // Target ragdoll / kinematic stun proxy + i-frames
             victim.ReceiveTagHit(knock, tuning);
 
