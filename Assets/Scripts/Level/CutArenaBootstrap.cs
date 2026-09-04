@@ -11,18 +11,18 @@ namespace Tag.Level
     {
         const string RootName = "PARK";
 
-        // PARK Art bible follow-up (Level meter ACK c0b8917)
-        // Ground mulch #5C3A2E · Vault #F5D547 · Wall-run #3D7EFF · Elbows/spawns #E23B2F
-        static readonly Color ColFloor = new Color(0x5C / 255f, 0x3A / 255f, 0x2E / 255f, 1f); // Mulch
-        static readonly Color ColBowl = new Color(0xD4 / 255f, 0xB4 / 255f, 0x83 / 255f, 1f);  // Sand (sandbox)
+        // PARK v1 kit palette (Level ACK)
+        // Lawn #5B8C4A · Sand #D4B483 · Rubber #8B3A3A · Climb #3AA6C8 · Furniture #E6C14A · Hedge #3F6B3A · Tower #C4B8A5
+        static readonly Color ColFloor = new Color(0x5B / 255f, 0x8C / 255f, 0x4A / 255f, 1f); // Lawn
+        static readonly Color ColBowl = new Color(0xD4 / 255f, 0xB4 / 255f, 0x83 / 255f, 1f);  // Sand
         static readonly Color ColLoft = new Color(0xC4 / 255f, 0xB8 / 255f, 0xA5 / 255f, 1f);  // Tower
-        static readonly Color ColWallRun = new Color(0x3D / 255f, 0x7E / 255f, 1f, 1f);       // #3D7EFF
-        static readonly Color ColSlide = new Color(0x5C / 255f, 0x3A / 255f, 0x2E / 255f, 1f); // Mulch-adjacent rubber strip
-        static readonly Color ColPadEdge = new Color(0xE2 / 255f, 0x3B / 255f, 0x2F / 255f, 1f); // Red pads
-        static readonly Color ColVault = new Color(0xF5 / 255f, 0xD5 / 255f, 0x47 / 255f, 1f);  // #F5D547
-        static readonly Color ColSpawn = new Color(0xE2 / 255f, 0x3B / 255f, 0x2F / 255f, 1f);  // #E23B2F
-        static readonly Color ColElbow = new Color(0xE2 / 255f, 0x3B / 255f, 0x2F / 255f, 1f);  // #E23B2F
-        static readonly Color ColRamp = new Color(0xC4 / 255f, 0xB8 / 255f, 0xA5 / 255f, 1f);
+        static readonly Color ColWallRun = new Color(0x3A / 255f, 0xA6 / 255f, 0xC8 / 255f, 1f); // Climb
+        static readonly Color ColSlide = new Color(0x8B / 255f, 0x3A / 255f, 0x3A / 255f, 1f);  // Rubber
+        static readonly Color ColPadEdge = new Color(0x8B / 255f, 0x3A / 255f, 0x3A / 255f, 1f); // Rubber pads
+        static readonly Color ColVault = new Color(0xE6 / 255f, 0xC1 / 255f, 0x4A / 255f, 1f);  // Furniture (Mid Cut yellow)
+        static readonly Color ColSpawn = new Color(0x8B / 255f, 0x3A / 255f, 0x3A / 255f, 1f);  // Rubber
+        static readonly Color ColElbow = new Color(0x3F / 255f, 0x6B / 255f, 0x3A / 255f, 1f);  // Hedge
+        static readonly Color ColRamp = new Color(0xC4 / 255f, 0xB8 / 255f, 0xA5 / 255f, 1f);  // Tower slides
         static readonly Color ColOob = new Color(0.18f, 0.19f, 0.21f, 1f);
 
         Transform _root;
