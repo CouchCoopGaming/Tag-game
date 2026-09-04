@@ -1,4 +1,5 @@
 using UnityEngine;
+using Tag.Audio;
 using Tag.Input;
 using Tag.Movement;
 using Tag.Modes;
@@ -129,6 +130,7 @@ namespace Tag.Gameplay
             if (_phaseTimer <= 0f)
             {
                 Phase = PunchPhase.MissRecover;
+            AudioCuePlayer.Ensure()?.PunchMiss(transform.position);
                 _phaseTimer = tuning.missRecover;
             }
         }

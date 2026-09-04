@@ -2,27 +2,28 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Tag.Gameplay;
 using Tag.Modes;
+using Tag.Local;
+using Tag.Audio;
 
 namespace Tag.Core
 {
     public enum GameFlowState
     {
         Boot,
+        PlayerCount,
         ModeSelect,
         Play,
+        Paused,
         RoundEnd,
         Rematch
     }
 
-    /// <summary>Boot → ModeSelect (1/2/3 + Enter) → Play → Rematch (keeps mode).</summary>
     public class GameFlow : MonoBehaviour
     {
         public static GameFlow Instance { get; private set; }
 
         [SerializeField] string bootSceneName = "Boot";
         [SerializeField] string playSceneName = "Play";
-        [SerializeField] float bootDelay = 0.35f;
-        [SerializeField] bool autoLoadPlay = false;
 
         public TagModeController modeController;
         public TagRoundController round;
@@ -32,18 +33,17 @@ namespace Tag.Core
         public string LastResultMessage { get; private set; } = "";
 
         int _menuCursor = 1;
+        int _playerCountCursor;
 
         void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(this);
-                return;
-            }
+            if (Instance != null && Instance != this) { Destroy(this); return; }
             Instance = this;
             DontDestroyOnLoad(gameObject);
             SceneManager.sceneLoaded += OnSceneLoaded;
-
+            LocalPlayerRoster.Load();
+            _playerCountCursor = Mathf.Clamp(LocalPlayerRoster.PlayerCount - 2, 0, 2);
+            AudioCuePlayer.Ensure();
             if (PlayerPrefs.HasKey(TagModeController.PrefsModeKey))
             {
                 SelectedMode = (TagModeId)PlayerPrefs.GetInt(TagModeController.PrefsModeKey, (int)TagModeId.LeastIt);
@@ -53,22 +53,18 @@ namespace Tag.Core
 
         void OnDestroy()
         {
-            if (Instance == this)
-                SceneManager.sceneLoaded -= OnSceneLoaded;
+            if (Instance == this) SceneManager.sceneLoaded -= OnSceneLoaded;
         }
 
         void Start()
         {
             var scene = SceneManager.GetActiveScene().name;
             if (scene == bootSceneName || scene == "Boot")
-            {
                 State = GameFlowState.Boot;
-                if (autoLoadPlay)
-                    Invoke(nameof(GoToModeSelect), bootDelay);
-            }
             else
             {
                 State = GameFlowState.Play;
+                EnsurePlayHelpers();
                 EnsureRoundStarted();
             }
         }
@@ -78,148 +74,215 @@ namespace Tag.Core
             if (scene.name == playSceneName || scene.name == "Play")
             {
                 State = GameFlowState.Play;
+                EnsurePlayHelpers();
                 EnsureRoundStarted();
             }
         }
 
-        public void StartPlay() => GoToModeSelect();
-        public void GoToModeSelect() => State = GameFlowState.ModeSelect;
+        void EnsurePlayHelpers()
+        {
+            if (FindFirstObjectByType<LocalPlayerSpawner>() == null)
+            {
+                var go = new GameObject("LocalMultiplayer");
+                go.AddComponent<LocalPlayerSpawner>();
+                go.AddComponent<LocalSplitCamera>();
+            }
+            else
+                FindFirstObjectByType<LocalSplitCamera>()?.Apply();
+        }
+
+        public void GoToPlayerCount() { State = GameFlowState.PlayerCount; AudioCuePlayer.Ensure()?.UiClick(); }
+        public void GoToModeSelect() { State = GameFlowState.ModeSelect; AudioCuePlayer.Ensure()?.UiClick(); }
 
         public void ConfirmModeAndPlay()
         {
             SelectedMode = (TagModeId)_menuCursor;
             PlayerPrefs.SetInt(TagModeController.PrefsModeKey, (int)SelectedMode);
             PlayerPrefs.Save();
+            AudioCuePlayer.Ensure()?.UiConfirm();
             GoToPlay();
-        }
-
-        public void ConfirmModeAndPlay(TagModeId mode)
-        {
-            _menuCursor = (int)mode;
-            ConfirmModeAndPlay();
         }
 
         public void GoToPlay()
         {
             State = GameFlowState.Play;
+            Time.timeScale = 1f;
             if (SceneManager.GetActiveScene().name != playSceneName)
                 SceneManager.LoadScene(playSceneName);
             else
+            {
+                EnsurePlayHelpers();
                 EnsureRoundStarted();
+            }
         }
 
-        public void OnRoundEnded() => OnRoundEnded(LastResultMessage);
-
-        public void OnRoundEnded(string resultMessage)
+        public void OnRoundEnded(string result = "")
         {
-            LastResultMessage = resultMessage ?? "";
+            LastResultMessage = result ?? "";
             State = GameFlowState.RoundEnd;
+            Time.timeScale = 1f;
         }
+
+        // Compat for older callers
+        public void OnRoundEnded() => OnRoundEnded(LastResultMessage);
 
         public void Rematch()
         {
-            State = GameFlowState.Rematch;
-            ResolveControllers();
-            if (modeController != null)
-            {
-                modeController.SetMode(SelectedMode);
-                modeController.Rematch();
-            }
-            else if (round != null)
-            {
-                round.SetMode(SelectedMode);
-                round.Rematch();
-            }
-            else
-                SceneManager.LoadScene(playSceneName);
+            AudioCuePlayer.Ensure()?.UiConfirm();
+            if (modeController == null) modeController = FindFirstObjectByType<TagModeController>();
+            if (modeController != null) modeController.Rematch();
+            else SceneManager.LoadScene(playSceneName);
             State = GameFlowState.Play;
         }
 
-        void ResolveControllers()
+        public void QuitToMenu()
         {
-            if (modeController == null)
-                modeController = TagModeController.Instance ?? FindFirstObjectByType<TagModeController>();
-            if (round == null)
-                round = FindFirstObjectByType<TagRoundController>();
-            if (modeController == null && round != null)
-                modeController = round;
+            Time.timeScale = 1f;
+            AudioCuePlayer.Ensure()?.StopMusic();
+            SceneManager.LoadScene(bootSceneName);
+            State = GameFlowState.Boot;
+        }
+
+        void TogglePause()
+        {
+            if (State == GameFlowState.Play)
+            {
+                State = GameFlowState.Paused;
+                Time.timeScale = 0f;
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                AudioCuePlayer.Ensure()?.UiClick();
+            }
+            else if (State == GameFlowState.Paused)
+            {
+                State = GameFlowState.Play;
+                Time.timeScale = 1f;
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
         }
 
         void EnsureRoundStarted()
         {
-            ResolveControllers();
+            if (modeController == null)
+                modeController = FindFirstObjectByType<TagModeController>();
+            if (modeController == null)
+            {
+                var legacy = FindFirstObjectByType<TagRoundController>();
+                if (legacy != null)
+                {
+                    modeController = legacy.GetComponent<TagModeController>();
+                    if (modeController == null)
+                        modeController = legacy.gameObject.AddComponent<TagModeController>();
+                }
+            }
             if (modeController == null) return;
-            modeController.SetMode(SelectedMode);
+            modeController.SelectedMode = SelectedMode;
             foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
                 modeController.RegisterPlayer(p);
             if (!modeController.RoundActive)
-                modeController.StartRound(SelectedMode);
+                modeController.StartRound();
         }
 
         void Update()
         {
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape) &&
+                (State == GameFlowState.Play || State == GameFlowState.Paused))
+                TogglePause();
+
             if (State == GameFlowState.Boot)
             {
-                if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
+                    GoToPlayerCount();
+            }
+            else if (State == GameFlowState.PlayerCount)
+            {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) _playerCountCursor = 0;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) _playerCountCursor = 1;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) _playerCountCursor = 2;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) _playerCountCursor = (_playerCountCursor + 2) % 3;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) _playerCountCursor = (_playerCountCursor + 1) % 3;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
+                {
+                    LocalPlayerRoster.SetCount(_playerCountCursor + 2);
                     GoToModeSelect();
+                }
             }
             else if (State == GameFlowState.ModeSelect)
             {
-                if (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1)) _menuCursor = 0;
-                if (Input.GetKeyDown(KeyCode.Alpha2) || Input.GetKeyDown(KeyCode.Keypad2)) _menuCursor = 1;
-                if (Input.GetKeyDown(KeyCode.Alpha3) || Input.GetKeyDown(KeyCode.Keypad3)) _menuCursor = 2;
-                if (Input.GetKeyDown(KeyCode.UpArrow)) _menuCursor = (_menuCursor + 2) % 3;
-                if (Input.GetKeyDown(KeyCode.DownArrow)) _menuCursor = (_menuCursor + 1) % 3;
-                if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) _menuCursor = 0;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) _menuCursor = 1;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) _menuCursor = 2;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) _menuCursor = (_menuCursor + 2) % 3;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) _menuCursor = (_menuCursor + 1) % 3;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
                     ConfirmModeAndPlay();
             }
-            else if (State == GameFlowState.RoundEnd ||
-                     (State == GameFlowState.Play && modeController != null && !modeController.RoundActive))
+            else if (State == GameFlowState.RoundEnd)
             {
-                if (Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.Return))
-                    Rematch();
-                if (Input.GetKeyDown(KeyCode.M))
-                {
-                    State = GameFlowState.ModeSelect;
-                    if (SceneManager.GetActiveScene().name != bootSceneName)
-                        SceneManager.LoadScene(bootSceneName);
-                }
+                if (UnityEngine.Input.GetKeyDown(KeyCode.R)) Rematch();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Q)) QuitToMenu();
+            }
+            else if (State == GameFlowState.Paused)
+            {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Q)) QuitToMenu();
             }
         }
 
         void OnGUI()
         {
+            float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
             if (State == GameFlowState.Boot)
             {
-                GUI.Box(new Rect(Screen.width * 0.5f - 120, Screen.height * 0.5f - 40, 240, 80), "TAG — Boot");
-                if (GUI.Button(new Rect(Screen.width * 0.5f - 60, Screen.height * 0.5f, 120, 28), "Start"))
-                    GoToModeSelect();
+                GUI.Box(new Rect(cx - 140, cy - 50, 280, 100), "TAG — Steam MVP");
+                if (GUI.Button(new Rect(cx - 60, cy, 120, 28), "Play")) GoToPlayerCount();
+            }
+            else if (State == GameFlowState.PlayerCount)
+            {
+                GUI.Box(new Rect(cx - 160, cy - 100, 320, 200), "Local Players (couch)");
+                DrawRow(cx, cy - 50, 0, "2 Players");
+                DrawRow(cx, cy - 15, 1, "3 Players");
+                DrawRow(cx, cy + 20, 2, "4 Players");
+                GUI.Label(new Rect(cx - 150, cy + 60, 300, 40), "2/3/4 or arrows · Enter");
             }
             else if (State == GameFlowState.ModeSelect)
             {
-                float cx = Screen.width * 0.5f;
-                float cy = Screen.height * 0.5f;
-                GUI.Box(new Rect(cx - 180, cy - 120, 360, 240), "Select Mode");
-                DrawModeRow(cx, cy - 70, 0, "1  Hot Potato  (fuse ~75s — It loses at 0)");
-                DrawModeRow(cx, cy - 30, 1, "2  Least It    (105s — least time-as-It)");
-                DrawModeRow(cx, cy + 10, 2, "3  Trail Tag   (ribbons eliminate · last standing)");
-                GUI.Label(new Rect(cx - 160, cy + 60, 320, 40), "↑↓ or 1/2/3 · Enter to play");
-                if (GUI.Button(new Rect(cx - 60, cy + 95, 120, 28), "Play"))
-                    ConfirmModeAndPlay();
+                GUI.Box(new Rect(cx - 200, cy - 120, 400, 240), $"Mode — {LocalPlayerRoster.PlayerCount}P local");
+                DrawMode(cx, cy - 70, 0, "1  Hot Potato  (Fuse 45/40/35s · first to 2)");
+                DrawMode(cx, cy - 30, 1, "2  Least It    (120s — least time-as-It)");
+                DrawMode(cx, cy + 10, 2, "3  Trail Tag   (ribbons eliminate · last standing)");
+                GUI.Label(new Rect(cx - 160, cy + 55, 320, 40), "1/2/3 · Enter to play");
+            }
+            else if (State == GameFlowState.Paused)
+            {
+                GUI.Box(new Rect(cx - 120, cy - 60, 240, 120), "Paused");
+                if (GUI.Button(new Rect(cx - 60, cy - 10, 120, 28), "Resume")) TogglePause();
+                if (GUI.Button(new Rect(cx - 60, cy + 25, 120, 28), "Quit to Menu")) QuitToMenu();
             }
             else if (State == GameFlowState.RoundEnd)
             {
-                string msg = string.IsNullOrEmpty(LastResultMessage) ? "Round over" : LastResultMessage;
-                GUI.Box(new Rect(Screen.width * 0.5f - 200, 40, 400, 70), "");
-                GUI.Label(new Rect(Screen.width * 0.5f - 190, 48, 380, 54),
-                    $"{msg}\nR / Enter Rematch (keeps {SelectedMode})");
+                GUI.Box(new Rect(cx - 180, 40, 360, 80),
+                    $"{LastResultMessage}\nR Rematch · Q Menu");
             }
         }
 
-        void DrawModeRow(float cx, float y, int index, string label)
+        void DrawRow(float cx, float y, int index, string label)
+        {
+            bool sel = _playerCountCursor == index;
+            var r = new Rect(cx - 120, y, 240, 28);
+            if (sel) GUI.Box(r, "");
+            if (GUI.Button(r, (sel ? "> " : "  ") + label))
+            {
+                _playerCountCursor = index;
+                LocalPlayerRoster.SetCount(index + 2);
+                GoToModeSelect();
+            }
+        }
+
+        void DrawMode(float cx, float y, int index, string label)
         {
             bool sel = _menuCursor == index;
-            var r = new Rect(cx - 160, y, 320, 28);
+            var r = new Rect(cx - 180, y, 360, 28);
             if (sel) GUI.Box(r, "");
             if (GUI.Button(r, (sel ? "> " : "  ") + label))
             {

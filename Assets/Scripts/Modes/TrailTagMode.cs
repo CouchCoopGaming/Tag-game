@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Tag.Gameplay;
 using Tag.Trail;
 using UnityEngine;
+using Tag.Audio;
 
 namespace Tag.Modes
 {
@@ -56,6 +57,7 @@ namespace Tag.Modes
             var controller = TagModeController.Instance;
             if (controller == null || !controller.RoundActive) return;
             if (victim == null || !victim.IsAlive) return;
+            AudioCuePlayer.Ensure()?.TrailElim(victim.transform.position);
             controller.EliminatePlayer(victim, $"trail from {owner?.PlayerId ?? "?"}");
         }
 

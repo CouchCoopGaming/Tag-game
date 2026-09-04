@@ -37,8 +37,8 @@ Shared flow: **Boot → Mode Select → Play → Rematch** (selected mode retain
 
 | Key | Mode | End condition |
 |-----|------|---------------|
-| **1** | **HotPotato** | Fuse timer (default **75s**). Punch transfers the potato (It). At 0, **current It is eliminated / loses**; others win. |
-| **2** | **LeastIt** | Timed round (default **105s**). Punch transfers It. Winner = **least cumulative TimeAsIt** among survivors. |
+| **1** | **HotPotato** | Fuse **45/40/35s** (2/3/4p). Punch transfers It. Timer 0 → It loses the **round**; others +1 round-win; **first to 2**. |
+| **2** | **LeastIt** | Timed round **120s**. Punch transfers It. Winner = **least cumulative TimeAsIt**; tie → NextPunch. |
 | **3** | **TrailTag** | Everyone leaves a Light-Cycle ribbon. Hitting another player's trail (or own after grace) **eliminates**. Last alive wins (or survivors at time cap **120s**). Punch still transfers It (brighter trail). |
 
 Confirm with **Enter / Space**. After a round: **R / Enter** rematch (same mode), **M** back to Mode Select.

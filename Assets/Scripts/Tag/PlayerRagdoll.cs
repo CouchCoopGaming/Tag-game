@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Tag.Audio;
 using Tag.Movement;
 
 namespace Tag.Gameplay
@@ -54,6 +55,7 @@ namespace Tag.Gameplay
         IEnumerator RagdollRoutine(float duration, Vector3 knockVelocity)
         {
             _ragdolling = true;
+            AudioCuePlayer.Ensure()?.Ragdoll(transform.position);
             if (_motor != null) _motor.SetMotorLocked(true);
             if (_cc != null) _cc.enabled = false;
 

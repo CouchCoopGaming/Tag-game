@@ -3,6 +3,7 @@ using Tag.Core;
 using Tag.Gameplay;
 using Tag.Trail;
 using UnityEngine;
+using Tag.Audio;
 
 namespace Tag.Modes
 {

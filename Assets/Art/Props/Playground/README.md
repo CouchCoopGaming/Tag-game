@@ -1,16 +1,17 @@
-# Playground prop kit (PARK v1 / CUT meters)
+# Playground prop kit — Hub bind ready
 
-Modular FBX shells — **do not change Level meters**. Place/skin on CUT roles.
+See `ENGINEER_BIND.md` for bootstrap name → FBX map.
 
-## Priority deliverables
-1. `Mat_Mulch_Plane.fbx` — `#5C3A2E`
-2. `Toy_VaultRail_090/100/105.fbx` — yellow lip `#F5D547` on steel
-3. `Toy_WallPanel.fbx` — steel + blue `#3D7EFF` bands
-4. `Toy_Slide.fbx` + `Toy_Tower.fbx` — yellow / blue
-5. `Toy_SpawnPad_{Teal,Violet,Coral,Lime}.fbx`
-6. `Toy_Bars.fbx` — three 0.90 rails, 1.2 m spacing (monkey bars = vault not hang)
-7. `Toy_Bumper.fbx`, `Toy_PicnicTable.fbx`, `Toy_Bench.fbx`
+## Priority FBXs
+- `Toy_VaultRail_090/100/105.fbx` — yellow lip vaults
+- `Toy_Bars.fbx` / `Toy_Bars_Rail.fbx` — monkey bars (vault)
+- `Toy_Slide_C1.fbx` — C1 chute (~5×2)
+- `Toy_RubberTrack_C3.fbx` — C3 rubber track 6×2 + yellow edge
+- `Toy_Slide.fbx` / `Toy_Tower.fbx` / `Toy_WallPanel.fbx`
+- Spawn pads, bumper, picnic, bench
 
-Trail clearance: keep ribbon bottom ≥ 0.35 m; no curb lips on mulch.
+## Materials
+`Materials/Mat_Park_{Yellow,Steel,Blue,Red,Mulch,Concrete,Rubber}.mat`
 
-Source blend: `/workspace/art-build/PlaygroundKit.blend`
+## Prefabs
+`Prefabs/Toy_*.prefab` — stubs; Engineer binds mesh + colliders to match CUT meters.
