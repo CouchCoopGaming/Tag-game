@@ -35,7 +35,7 @@ namespace Tag.Modes
         public bool eliminateSelfAfterGrace = true;
 
         [Header("Match")]
-        public float matchTimeCap = 120f;
+        public float matchTimeCap = 180f;
         public float suddenDeathGraceScale = 0.5f;
         [Range(1f, 2f)] public float itTrailBrightness = 1.45f;
 
