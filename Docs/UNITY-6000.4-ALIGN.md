@@ -22,3 +22,11 @@ Do **not** reopen this branch in 6000.0.23f1 — that rewrites `ProjectVersion.t
 5. Boot → Mode Select → Play. Build settings must stay Boot `ec368bfefa9a45d78f3bb3e926b918a4` / Play `bd270ceafb804f7b9b708ab620cc2734`.
 
 If Unity rewrites nested lock versions on first resolve, keep the **17.4.0 / 1.19.0** top-level pins. No Steam publish; SP demo only.
+
+## Known Console noise (Unity 6.4.2)
+
+Two `error CS0246` lines in `com.unity.shadergraph` PackageCache
+(`BuiltInCanvasSubTarget.cs` / `TargetSetupContext.cs`, `UnityEngine.GUID`)
+are a **Unity 6.4 engine bug**. Reported on Unity Discussions; fixed in
+**6000.5.0a3**, not backported to 6000.4.x as of 2026-09-05. Assembly-CSharp
+and Boot→Play can still succeed; do not treat as Tag project compile failure.
