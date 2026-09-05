@@ -17,3 +17,5 @@ MonoBehaviour:
   scorePrecision: 0.1
   tieBreak: 0
   nextPunchTimeoutSec: 20
+  punchTransfersIt: 1
+  dummyNoPunchTimeoutSec: 1
