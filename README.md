@@ -88,7 +88,7 @@ Play opened directly skips Mode Select and uses `selectedMode` on Systems / Play
 
 1. Install **Unity 6000.4.2f1** (do not open this branch in 6000.0.23f1).
 2. Hub → **Open** → select `/workspace/tag-unity` (or copy this folder to your machine).
-3. If this was previously opened in 6000.0.x: close Unity, delete `Library/`, then reopen so URP/ShaderGraph **17.4.0** resolve cleanly (see `Docs/UNITY-6000.4-ALIGN.md`).
+3. If this was previously opened in 6000.0.x: close Unity, delete `Library/`, then reopen so URP **17.4.0** + embedded ShaderGraph resolve cleanly (see `Docs/UNITY-6000.4-ALIGN.md`).
 4. **File → Build Settings** should list `Assets/Scenes/Boot` then `Play` (already in `EditorBuildSettings.asset`).
 5. Open **Boot**, press Play → Start, or open **Play** directly.
 
