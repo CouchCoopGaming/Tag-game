@@ -155,10 +155,10 @@ namespace Tag.EditorTools
                     Directory.CreateDirectory(dstDir);
 
                 File.Copy(srcFull, dstFull, overwrite: true);
-                var srcMeta = srcFull + ".meta";
+                // Do NOT copy .meta — duplicate GUIDs in Resources cause import conflicts.
                 var dstMeta = dstFull + ".meta";
-                if (File.Exists(srcMeta))
-                    File.Copy(srcMeta, dstMeta, overwrite: true);
+                if (File.Exists(dstMeta))
+                    File.Delete(dstMeta);
 
                 AssetDatabase.ImportAsset(dst, ImportAssetOptions.ForceUpdate);
                 if (AssetDatabase.LoadMainAssetAtPath(dst) == null)
