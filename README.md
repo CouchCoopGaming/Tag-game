@@ -1,7 +1,7 @@
 # Tag (Unity) — local scaffold
 
 **Path:** `/workspace/tag-unity`  
-**Engine:** Unity **6000.0.23f1** (Unity 6 LTS) — see `ProjectSettings/ProjectVersion.txt`  
+**Engine:** Unity **6000.4.2f1** — see `ProjectSettings/ProjectVersion.txt` and `Docs/UNITY-6000.4-ALIGN.md`  
 **Remote:** https://github.com/CouchCoopGaming/Tag-game (`main`)
 
 Vertical slice: **2–4p punch-tag** (transfer-It on successful punch) with **three modes** (HotPotato / LeastIt / TrailTag).  
@@ -86,9 +86,9 @@ Play opened directly skips Mode Select and uses `selectedMode` on Systems / Play
 
 ## Open in Unity Hub
 
-1. Install **Unity 6000.0.23f1** (or any 6000.0.x LTS close to it).
+1. Install **Unity 6000.4.2f1** (do not open this branch in 6000.0.23f1).
 2. Hub → **Open** → select `/workspace/tag-unity` (or copy this folder to your machine).
-3. First open will import URP + Input System + TMP from `Packages/manifest.json` (needs network for Package Manager).
+3. If this was previously opened in 6000.0.x: close Unity, delete `Library/`, then reopen so URP/ShaderGraph **17.4.0** resolve cleanly (see `Docs/UNITY-6000.4-ALIGN.md`).
 4. **File → Build Settings** should list `Assets/Scenes/Boot` then `Play` (already in `EditorBuildSettings.asset`).
 5. Open **Boot**, press Play → Start, or open **Play** directly.
 
@@ -223,7 +223,7 @@ Also: loft lip vault 1.50 from G at Z≈24; bowl corner ramps 20°; punch DummyR
   README.md
   .gitignore
   Packages/manifest.json
-  ProjectSettings/ProjectVersion.txt   # 6000.0.23f1
+  ProjectSettings/ProjectVersion.txt   # 6000.4.2f1
   Assets/
     Scripts/{Movement,Tag,Core,Input,Level,Modes,Trail}/
     Scenes/{Boot,Play}.unity

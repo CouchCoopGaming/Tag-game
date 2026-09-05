@@ -6,7 +6,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/Builds/Windows"
 UNITY="${UNITY_PATH:-}"
 if [[ -z "$UNITY" ]]; then
-  echo "Set UNITY_PATH to Unity 6000.0.23f1 Editor binary, or use Tag → Build Windows Standalone in Editor."
+  echo "Set UNITY_PATH to Unity 6000.4.2f1 Editor binary, or use Tag → Build Windows Standalone in Editor."
   exit 1
 fi
 mkdir -p "$OUT"
