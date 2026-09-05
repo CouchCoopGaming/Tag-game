@@ -33,8 +33,8 @@ Includes Dummy It-grace + LeastIt Dummy NextPunch failsafe softlocks and real Bo
 
 ## Build (Landon machine)
 
-1. Unity **6000.0.23f1** — open this repo (pull `release/sp-demo-final` or tag `v0.1.0-sp-demo`).
-2. Wait for package resolve (slimmed manifest: URP + Input System + uGUI + core modules).
+1. Unity **6000.4.2f1** — open this repo (pull `release/sp-demo-final`). Close Unity, delete `Library/`, reopen if you previously used 6000.0.23f1.
+2. Wait for package resolve (URP **17.4.0** builtin + Input System **1.19.0**; see `Docs/UNITY-6000.4-ALIGN.md`).
 3. Menu **Tag → Setup Hub Visuals** once if dummies/props look graybox.
 4. Menu **Tag → Build Windows Standalone**
    - Output: `Builds/Windows/Tag.exe`
@@ -44,7 +44,7 @@ Includes Dummy It-grace + LeastIt Dummy NextPunch failsafe softlocks and real Bo
 Alternate CLI (optional):
 
 ```bash
-# Set UNITY_PATH to the 6000.0.23f1 Editor binary
+# Set UNITY_PATH to the 6000.4.2f1 Editor binary
 ./Tools/build-windows.sh
 ```
 

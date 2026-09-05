@@ -21,6 +21,6 @@
 
 ## Build notes
 
-- Unity **6000.0.23f1**
+- Unity **6000.4.2f1** (see `Docs/UNITY-6000.4-ALIGN.md`; delete `Library/` after pull)
 - Scenes in build: `Assets/Scenes/Boot.unity`, `Assets/Scenes/Play.unity`
 - After GUID fix, `ProjectSettings/EditorBuildSettings.asset` must match scene `.meta` guids
