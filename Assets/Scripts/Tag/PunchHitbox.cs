@@ -33,6 +33,9 @@ namespace Tag.Gameplay
 
         public PunchPhase Phase { get; private set; } = PunchPhase.Idle;
         public bool IsPunching => Phase != PunchPhase.Idle;
+        /// <summary>0 at phase start, 1 when the phase timer expires.</summary>
+        public float PhaseProgress =>
+            _phaseDuration <= 0.0001f ? 1f : 1f - Mathf.Clamp01(_phaseTimer / _phaseDuration);
 
         /// <summary>AI / external: arm punch buffer (same path as input).</summary>
         public void QueuePunch()
@@ -43,6 +46,7 @@ namespace Tag.Gameplay
 
 
         float _phaseTimer;
+        float _phaseDuration;
         float _bufferTimer;
         bool _hitThisSwing;
         readonly Collider[] _overlap = new Collider[24];
@@ -103,7 +107,8 @@ namespace Tag.Gameplay
             _bufferTimer = 0f;
             _hitThisSwing = false;
             Phase = PunchPhase.Windup;
-            _phaseTimer = tuning.windup;
+            _phaseDuration = tuning.windup;
+            _phaseTimer = _phaseDuration;
             if (_motor != null)
             {
                 _motor.SetPunchMoveScale(tuning.windupMoveSpeedScale);
@@ -118,7 +123,8 @@ namespace Tag.Gameplay
             if (_phaseTimer <= 0f)
             {
                 Phase = PunchPhase.Active;
-                _phaseTimer = tuning.active;
+                _phaseDuration = tuning.active;
+                _phaseTimer = _phaseDuration;
                 if (_motor != null) _motor.SetPunchMoveScale(1f);
             }
         }
@@ -130,7 +136,8 @@ namespace Tag.Gameplay
                 _hitThisSwing = true;
                 ResolveHit(victim, hitPoint);
                 Phase = PunchPhase.HitRecover;
-                _phaseTimer = tuning.hitRecover;
+                _phaseDuration = tuning.hitRecover;
+                _phaseTimer = _phaseDuration;
                 return;
             }
 
@@ -139,7 +146,8 @@ namespace Tag.Gameplay
             {
                 Phase = PunchPhase.MissRecover;
             AudioCuePlayer.Ensure()?.PunchMiss(transform.position);
-                _phaseTimer = tuning.missRecover;
+                _phaseDuration = tuning.missRecover;
+                _phaseTimer = _phaseDuration;
             }
         }
 

@@ -96,6 +96,7 @@ namespace Tag.Movement
         public bool HasAirDodgeIFrames => _airDodgeIFrameTimer > 0f;
         public int AirDodgeChargesLeft => _airDodgeChargesLeft;
         public Vector3 Velocity => _velocity;
+        public float VerticalSpeed => _velocity.y;
         public float HorizontalSpeed => new Vector3(_velocity.x, 0f, _velocity.z).magnitude;
         public MovementTuning Tuning => tuning;
 

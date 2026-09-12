@@ -28,6 +28,7 @@ namespace Tag.EditorTests
             EmptyDummyPrefab_HasNoRenderer();
             UrpSetupScript_IsPresent();
             DummyArtFbx_ArePresent();
+            HiPolyPaths_PreferStarHiWhenPresent();
             JumpLaunch_RewritesWhenAuthoredIsOff();
             ParkRamp20_IsWalkable_SteepIsNot();
             ProjectWishOnSlope_KeepsPathSpeed();
@@ -49,6 +50,11 @@ namespace Tag.EditorTests
             Assert.IsTrue(t.airDodgeSpeed >= 14f && t.airDodgeSpeed <= 16f);
             Assert.IsTrue(t.airDodgeLock >= 0.12f && t.airDodgeLock <= 0.18f);
             Assert.IsTrue(t.airDodgeIFrames >= 0.10f && t.airDodgeIFrames <= 0.15f);
+            Assert.AreApproximatelyEqual(0.16f, t.accelTime);
+            Assert.AreApproximatelyEqual(0.14f, t.brakeTime);
+            Assert.AreApproximatelyEqual(0.14f, t.coyoteTime);
+            Assert.AreApproximatelyEqual(360f, t.turnRateSprint);
+            Assert.AreApproximatelyEqual(0.40f, t.airControlPercent);
         }
 
         public static void AirDashDistance_IsInPartyBand()
@@ -119,6 +125,17 @@ namespace Tag.EditorTests
             Assert.IsTrue(System.IO.File.Exists("Assets/Art/Props/Playground/Toy_Bench.fbx"));
             Assert.IsFalse(System.IO.Directory.Exists("Assets/Resources/Characters/Fbx"));
             Assert.IsFalse(System.IO.Directory.Exists("Assets/Resources/Props/Fbx"));
+        }
+
+        public static void HiPolyPaths_PreferStarHiWhenPresent()
+        {
+            Assert.AreEqual("Assets/Art/Characters/HiPoly/Dummy_Runner_Hi.fbx", ArtMeshPaths.PreferCharacterFbx(false));
+            Assert.AreEqual("Assets/Art/Characters/HiPoly/Dummy_It_Hi.fbx", ArtMeshPaths.PreferCharacterFbx(true));
+            Assert.AreEqual("Assets/Art/Props/Playground/HiPoly/Toy_Bench_Hi.fbx", ArtMeshPaths.PreferPropFbx("Toy_Bench"));
+            Assert.AreEqual("Assets/Art/Props/Playground/HiPoly/Toy_Slide_Hi.fbx", ArtMeshPaths.PreferPropFbx("Toy_Slide"));
+            Assert.AreEqual("Assets/Art/Props/Playground/HiPoly/Toy_VaultRail_090_Hi.fbx", ArtMeshPaths.PreferPropFbx("Toy_VaultRail_090"));
+            Assert.IsTrue(System.IO.File.Exists(ArtMeshPaths.PreferCharacterFbx(false)));
+            Assert.IsTrue(System.IO.File.Exists(ArtMeshPaths.PreferPropFbx("Toy_Bars")));
         }
 
         public static void JumpLaunch_RewritesWhenAuthoredIsOff()

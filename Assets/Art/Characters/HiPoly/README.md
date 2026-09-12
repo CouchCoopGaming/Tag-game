@@ -1,3 +1,3 @@
 ﻿# HiPoly (Blender 5.2)
-High-subdivision Tag park props + crash dummies. Prefer these in Tag → Setup Hub Visuals.
-Assign Mat_Park_* / Mat_Runner_* / Mat_It_* in Editor. Tag-only.
+High-subdivision crash dummies. **Tag → Setup Hub Visuals** prefers `Dummy_Runner_Hi.fbx` / `Dummy_It_Hi.fbx` here over `../Dummy_*.fbx`.
+Assign Mat_Runner_* / Mat_It_* in Editor. Tag-only.

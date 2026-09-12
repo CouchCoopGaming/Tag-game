@@ -27,9 +27,9 @@ Tunables live on `Assets/ScriptableObjects/MovementTuning.asset` (`Tag.Movement.
 | Crouch walk | ~2.34 m/s | *not in v1* | Slide-from-speed instead |
 | Slide peak | ~11.45 m/s | **12.0** | Boost-to-peak on enter |
 | Slide-jump class | ~12 m/s | peak × 1.12 retain | Readable, not a tech window |
-| Accel to full | snappy | **0.12 s** | Was 0.18 (Systems v1) |
-| Brake | — | **0.10 s** | Was 0.12 |
-| Jump apex | — | **1.15 m** | Coyote 120 ms, buffer 140 ms |
+| Accel to full | snappy | **0.16 s** | Weightier than 0.12; speeds unchanged |
+| Brake | — | **0.14 s** | A bit more slide-off into stop |
+| Jump apex | — | **1.15 m** | Coyote 140 ms, buffer 140 ms |
 | Air dash distance | — | **~2.25 m** (clamp 2.5) | 15 m/s × 0.15 s |
 | Air dash burst | — | **15 m/s** | Band 14–16 |
 | Air dash lock | — | **0.15 s** | Band 0.12–0.18 |
@@ -46,7 +46,7 @@ Systems Tag v1 (pre-pass) was walk 4.5 / sprint 7.0 / air dodge 6.5 m/s × 130 m
 
 ### Jump
 
-`JumpHorizRetain = 1` on every takeoff (walk, sprint, slide-exit). Coyote **120 ms**, buffer **140 ms**. Hard land (fall > 1.5× apex) keeps **×0.85** horiz for 0.1 s — never zeroes velocity.
+`JumpHorizRetain = 1` on every takeoff (walk, sprint, slide-exit). Coyote **140 ms**, buffer **140 ms**. Sprint turn rate **360°/s**, air control **40%**. Hard land (fall > 1.5× apex) keeps **×0.85** horiz for 0.1 s — never zeroes velocity.
 
 ### Slide
 

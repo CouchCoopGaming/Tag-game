@@ -16,16 +16,16 @@ MonoBehaviour:
   sprintSpeed: 9
   autoSprint: 1
   autoSprintThreshold: 0.55
-  accelTime: 0.12
-  brakeTime: 0.1
+  accelTime: 0.16
+  brakeTime: 0.14
   turnRateWalk: 540
-  turnRateSprint: 420
+  turnRateSprint: 360
   jumpApexHeight: 1.15
   gravity: 28
   jumpLaunchSpeed: 8
-  coyoteTime: 0.12
+  coyoteTime: 0.14
   jumpBuffer: 0.14
-  airControlPercent: 0.45
+  airControlPercent: 0.4
   jumpHorizRetain: 1
   sprintJumpHorizRetain: 1
   airMomentumPreserve: 1

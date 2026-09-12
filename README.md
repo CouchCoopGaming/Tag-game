@@ -172,10 +172,10 @@ Runtime `CreateRuntimeDefaults()` if references are missing.
 
 ### Should work in Editor Play Mode (after import)
 
-- Walk **5.5** / sprint **9.0** (auto-sprint on full stick/WASD) / accel 0.12 / brake 0.10 / third-person boom
-- Jump with coyote (120 ms) + buffer (140 ms), custom gravity ≈28, apex ~1.15 m
+- Walk **5.5** / sprint **9.0** (auto-sprint on full stick/WASD) / accel 0.16 / brake 0.14 / third-person boom
+- Jump with coyote (140 ms) + buffer (140 ms), custom gravity ≈28, apex ~1.15 m
 - Momentum: JumpHorizRetain 1.0 on all takeoffs; slide boost-to-peak 12; hard land ×0.85 horiz for 0.1 s if fall > 1.5× apex (never zero); vault/wall-jump exit carries speed
-- Air control (~45%) with airMomentumPreserve (no bleed toward walk while coasting)
+- Air control (~40%) with airMomentumPreserve (no bleed toward walk while coasting)
 - Slide-from-speed (hold crouch while ≥6.5 m/s, peak 12, decay to 55% end, jump-from-slide bonus, exit sprint)
 - Air dash (party): airborne; **15 m/s** planar replace toward input/facing (~2.25 m / 150 ms lock); 120 ms punch i-frames; 80 ms buffer; **1 charge, refresh on land**; blocked on wall-run / vault-lock / ragdoll / punch windup·active·miss-recover
 - Debug HUD (F3) live m/s — see `Docs/MOVEMENT.md`

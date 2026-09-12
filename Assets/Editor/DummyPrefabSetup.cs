@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.IO;
+using Tag.Art;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -8,10 +9,6 @@ namespace Tag.EditorTools
 {
     public static class DummyPrefabSetup
     {
-        const string RunnerFbx = "Assets/Art/Characters/Dummy_Runner.fbx";
-        const string ItFbx = "Assets/Art/Characters/Dummy_It.fbx";
-        const string RunnerHiFbx = "Assets/Art/Characters/HiPoly/Dummy_Runner_Hi.fbx";
-        const string ItHiFbx = "Assets/Art/Characters/HiPoly/Dummy_It_Hi.fbx";
         const string RunnerPrefab = "Assets/Art/Characters/Dummy_Runner.prefab";
         const string ItPrefab = "Assets/Art/Characters/Dummy_It.prefab";
 
@@ -29,13 +26,13 @@ namespace Tag.EditorTools
         [MenuItem("Tag/Setup Dummy Prefabs From FBX")]
         public static void SetupDummyPrefabs()
         {
-            BuildCharacter(PreferHiPoly(RunnerFbx, RunnerHiFbx), RunnerPrefab, new[]
+            BuildCharacter(ArtMeshPaths.PreferCharacterFbx(false), RunnerPrefab, new[]
             {
                 "Assets/Art/Characters/Mat_Runner_Base.mat",
                 "Assets/Art/Characters/Mat_Runner_Accent.mat",
                 "Assets/Art/Characters/Mat_Runner_ItOverride.mat"
             });
-            BuildCharacter(PreferHiPoly(ItFbx, ItHiFbx), ItPrefab, new[]
+            BuildCharacter(ArtMeshPaths.PreferCharacterFbx(true), ItPrefab, new[]
             {
                 "Assets/Art/Characters/Mat_It_Base.mat",
                 "Assets/Art/Characters/Mat_It_Accent.mat",
@@ -46,7 +43,8 @@ namespace Tag.EditorTools
         static void BuildCharacter(string fbxPath, string prefabPath, string[] matPaths)
         {
             var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(fbxPath);
-            if (fbx == null) { Debug.LogError("Missing " + fbxPath); return; }
+            if (fbx == null) { Debug.LogError("[Tag] Missing character FBX " + fbxPath); return; }
+            Debug.Log("[Tag] Character mesh " + fbxPath);
             var root = Object.Instantiate(fbx);
             root.name = Path.GetFileNameWithoutExtension(prefabPath);
             var mats = new Material[matPaths.Length];
@@ -88,9 +86,7 @@ namespace Tag.EditorTools
             };
             foreach (var p in props)
             {
-                var src = PreferHiPoly(
-                    $"Assets/Art/Props/Playground/{p}.fbx",
-                    $"Assets/Art/Props/Playground/HiPoly/{p}.fbx");
+                var src = ArtMeshPaths.PreferPropFbx(p);
                 if (File.Exists(src) || AssetDatabase.LoadAssetAtPath<Object>(src) != null)
                     BuildPropPrefab(src, $"Assets/Resources/Props/{p}.prefab", p);
             }
@@ -110,22 +106,13 @@ namespace Tag.EditorTools
         {
             var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(fbxPath);
             if (fbx == null) return;
+            Debug.Log("[Tag] Prop mesh " + fbxPath);
             var root = Object.Instantiate(fbx);
             root.name = propName;
             foreach (var col in root.GetComponentsInChildren<Collider>())
                 Object.DestroyImmediate(col);
             PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             Object.DestroyImmediate(root);
-        }
-
-        static bool AssetExists(string path)
-        {
-            return File.Exists(path) || AssetDatabase.LoadAssetAtPath<Object>(path) != null;
-        }
-
-        static string PreferHiPoly(string lowPolyPath, string hiPolyPath)
-        {
-            return AssetExists(hiPolyPath) ? hiPolyPath : lowPolyPath;
         }
 
         static void CopyReplace(string src, string dst)
@@ -181,9 +168,11 @@ namespace Tag.EditorTools
             EditorApplication.delayCall += () =>
             {
                 if (SessionState.GetBool("Tag.HubVisualsSetupDone", false)) return;
-                if (!File.Exists("Assets/Art/Characters/Dummy_Runner.fbx")) return;
+                if (!File.Exists("Assets/Art/Characters/Dummy_Runner.fbx")
+                    && !File.Exists("Assets/Art/Characters/HiPoly/Dummy_Runner_Hi.fbx"))
+                    return;
                 if (EditorUtility.DisplayDialog("Tag Hub Visuals",
-                    "Dummy + PARK prop meshes are in the project. Run setup so Play shows them instead of graybox capsules?\n\nAlso assigns the URP pipeline (fixes magenta materials).",
+                    "Dummy + PARK prop meshes are in the project. Run setup so Play uses Dummy_* / Toy_* (prefers HiPoly/*_Hi.fbx when present) instead of graybox capsules?\n\nAlso assigns the URP pipeline (fixes magenta materials).",
                     "Setup now", "Later"))
                 {
                     SetupAll();

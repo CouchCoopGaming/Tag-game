@@ -19,7 +19,7 @@ The local bypass that kept Unity 6000.3 alive (delete `Assets/Settings/` URP stu
 5. Wait for `Rebuilding Library`. After scripts compile, **Tag → Ensure URP Pipeline** runs (also in the menu). Unity writes `Assets/Settings/TagURP*.asset` itself — those generated files are fine to keep locally; do not replace them with stubs.
 6. If materials are still magenta: run the menu again, then Play.
 
-If `Assets/Art/Characters/HiPoly/` or `Assets/Art/Props/Playground/HiPoly/` FBX are present, **Tag → Setup Hub Visuals** prefers those meshes when filling dummy/prop prefabs.
+If HiPoly `*_Hi.fbx` files are on disk, **Tag → Setup Hub Visuals** prefers them (see below).
 
 ## URP (fixes magenta / pink)
 
@@ -35,14 +35,41 @@ Do **not** commit hand-written `TagURP*.asset` YAML. On open:
 
 ## Dummy meshes + motion
 
-`Dummy_Runner.prefab` / `Dummy_It.prefab` stay as Hub stubs. Play uses `DummyLocomotor` on FBX bones (`UpperArm_L/R`, `UpperLeg_L/R`, …) after **Tag → Setup Hub Visuals**, or a primitive dummy with the same bone names. PARK toys dress from Resources prefabs after that menu (FBX is **not** duplicated under Resources).
+`Dummy_Runner.prefab` / `Dummy_It.prefab` stay as Hub stubs. Play uses `DummyLocomotor` on FBX bones after **Tag → Setup Hub Visuals**, or a primitive dummy with the same bone names. PARK toys dress from Resources prefabs after that menu (FBX is **not** duplicated under Resources).
 
-There are **no `.anim` / `.controller` files** in the drop.
+There are **no `.anim` / `.controller` files** in the drop. `DummyLocomotor` is the shippable tell (party-punchy, not mocap). Bone names match Dummy_* FBX and the primitive fallback:
+
+`Hips`, `Spine`, `Head`, `UpperArm_L/R`, `LowerArm_L/R`, `UpperLeg_L/R`, `LowerLeg_L/R` (Humanoid / mixamo aliases also bind).
+
+| State | Readable tell |
+|-------|----------------|
+| Idle | Chest breathe + slight head/arm sway |
+| Run / sprint | Opposite arm/leg swing, hip yaw, foot bob |
+| Jump | Stretch on takeoff, limb tuck in air, land squash |
+| Slide | Forward lean, hips down, arms out |
+| Air dash | Fast limb snap + slight forward pose |
+| Punch (It) | Right-arm windup (cock back) then hit extend; opposite arm braces |
+
+`PunchHitbox.PhaseProgress` drives the windup→hit blend. `PlayerMotor.VerticalSpeed` / `IsAirDodgeLocked` / `IsSliding` drive jump, dash, and slide.
 
 Optional Hub bind:
 
 1. **Tag → Ensure URP Pipeline**
 2. **Tag → Setup Dummy Prefabs From FBX** or **Tag → Setup Hub Visuals (Dummies + Props + Play Bind)**
+
+## HiPoly setup
+
+Landon’s denser meshes live next to the low-poly drop. **Tag → Setup Hub Visuals** (`ArtMeshPaths`) picks the first file that exists, then writes **prefabs** (never raw FBX) into `Assets/Art/Characters/Dummy_*.prefab` and `Assets/Resources/{Characters,Props}/`. `DummyAvatarBinder` and `ParkPropDresser` load those Resources prefabs at Play.
+
+| Slot | Preferred path | Fallback |
+|------|----------------|----------|
+| Runner | `Assets/Art/Characters/HiPoly/Dummy_Runner_Hi.fbx` | `Assets/Art/Characters/Dummy_Runner.fbx` |
+| It | `Assets/Art/Characters/HiPoly/Dummy_It_Hi.fbx` | `Assets/Art/Characters/Dummy_It.fbx` |
+| Park toys | `Assets/Art/Props/Playground/HiPoly/Toy_*_Hi.fbx` | `Assets/Art/Props/Playground/Toy_*.fbx` |
+
+Examples now on the branch: `Toy_Bench_Hi.fbx`, `Toy_Slide_Hi.fbx`, `Toy_Bars_Hi.fbx`, `Toy_VaultRail_090_Hi.fbx`, spawn pads, bumpers, tower, wall panel. Assign `Mat_Runner_*` / `Mat_It_*` / `Mat_Park_*` in the Hub setup (already wired). After a HiPoly drop: quit Unity if it was open, then run **Tag → Setup Hub Visuals** so Resources prefabs refresh.
+
+Do **not** copy FBX into `Resources/**/Fbx/`. Unity generates ModelImporter `.meta` on first import — do not hand-author truncated ones.
 
 ## Open in Unity
 
@@ -81,7 +108,7 @@ Sprint is automatic on full WASD. Light stick walks (~5.5 m/s). Sprint class **9
 ## What you should see
 
 - Third-person dummy (not FPS). Vinyl Runner `#E8D9C0` / teal accent, or It `#FF6A00` / black chevrons — **not magenta**.
-- Visible idle sway, run cycle, jump tuck, slide crouch, and a right-arm punch tell.
+- Visible idle breathe, run cycle, jump stretch/tuck + land squash, slide lean, air-dash snap, and a right-arm punch windup→hit.
 - **It** = orange hat + pulsing floor ring + point light. Punch dumps It; the other dummy swaps the hat.
 - PARK mulch / yellow vaults / blue walls (URP Lit). Toy meshes dress over graybox after **Tag → Setup Hub Visuals**.
 - Top banner: `YOU ARE IT` or `IT: Dummy`.

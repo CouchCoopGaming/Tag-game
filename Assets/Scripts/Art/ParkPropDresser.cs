@@ -5,7 +5,8 @@ namespace Tag.Art
 {
     /// <summary>
     /// After CutArenaBootstrap builds PARK toys, dress named roots with 3D prop
-    /// meshes from Resources/Props prefabs (filled by Tag → Setup Hub Visuals).
+    /// meshes from Resources/Props prefabs (filled by Tag → Setup Hub Visuals,
+    /// which prefers Assets/Art/Props/Playground/HiPoly/Toy_*_Hi.fbx when present).
     /// Keeps collider/volume from graybox; hides graybox MeshRenderer when dressed.
     /// </summary>
     [DefaultExecutionOrder(50)]

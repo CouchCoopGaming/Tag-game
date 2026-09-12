@@ -23,20 +23,20 @@ namespace Tag.Movement
         [Range(0.1f, 1f)] public float autoSprintThreshold = 0.55f;
 
         [Header("Acceleration (seconds to full)")]
-        public float accelTime = 0.12f;
-        public float brakeTime = 0.10f;
+        public float accelTime = 0.16f;
+        public float brakeTime = 0.14f;
 
         [Header("Turn rates (deg/s)")]
         public float turnRateWalk = 540f;
-        public float turnRateSprint = 420f;
+        public float turnRateSprint = 360f;
 
         [Header("Jump / momentum")]
         public float jumpApexHeight = 1.15f;
         public float gravity = 28f;
         public float jumpLaunchSpeed = 8.0f;
-        public float coyoteTime = 0.120f;
+        public float coyoteTime = 0.140f;
         public float jumpBuffer = 0.140f;
-        [Range(0f, 1f)] public float airControlPercent = 0.45f;
+        [Range(0f, 1f)] public float airControlPercent = 0.40f;
         [Tooltip("Planar speed retained on any grounded/coyote jump takeoff (walk, sprint, slide-exit). 1 = full carry.")]
         [Range(0f, 1f)] public float jumpHorizRetain = 1.0f;
         [Tooltip("Additional planar retain multiplier when sprint-held at takeoff (stacked with jumpHorizRetain).")]

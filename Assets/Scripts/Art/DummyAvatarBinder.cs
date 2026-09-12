@@ -7,6 +7,8 @@ namespace Tag.Art
     /// <summary>
     /// Replaces capsule mesh with Dummy_Runner / Dummy_It visual.
     /// Load order: SerializeField → Resources/Characters prefab → primitive dummy.
+    /// Hub <c>Tag → Setup Hub Visuals</c> writes those prefabs from
+    /// <c>ArtMeshPaths.PreferCharacterFbx</c> (HiPoly Dummy_*_Hi.fbx when present).
     /// Applies Landon mats (paint lock) and DummyLocomotor.
     /// </summary>
     public class DummyAvatarBinder : MonoBehaviour
