@@ -24,6 +24,10 @@ namespace Tag.Input
         public bool PunchPressed { get; private set; }
         public bool AirDodgePressed { get; private set; }
 
+#if ENABLE_INPUT_SYSTEM
+        TagInputActions _actions;
+#endif
+
         void OnEnable()
         {
             if (lockCursor && playerIndex == 0)
@@ -31,6 +35,10 @@ namespace Tag.Input
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
             }
+#if ENABLE_INPUT_SYSTEM
+            _actions?.Dispose();
+            _actions = TagInputActions.Bind(playerIndex);
+#endif
         }
 
         void OnDisable()
@@ -40,6 +48,10 @@ namespace Tag.Input
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
+#if ENABLE_INPUT_SYSTEM
+            _actions?.Dispose();
+            _actions = null;
+#endif
         }
 
         void Update()
@@ -59,7 +71,26 @@ namespace Tag.Input
 #if ENABLE_INPUT_SYSTEM
         void ReadNewInput()
         {
-            // Gamepad slot
+            if (_actions != null && _actions.IsValid)
+            {
+                _actions.Read(out var move, out var look, out var sprint, out var jump,
+                    out var slideHeld, out var slidePressed, out var punch, out var airDash);
+                Move = move;
+                LookDelta = look;
+                SprintHeld = sprint;
+                JumpPressed = jump;
+                SlideHeld = slideHeld;
+                SlidePressed = slidePressed;
+                PunchPressed = punch;
+                AirDodgePressed = airDash;
+                return;
+            }
+
+            ReadNewInputManual();
+        }
+
+        void ReadNewInputManual()
+        {
             Gamepad pad = null;
             if (Gamepad.all.Count > playerIndex)
                 pad = Gamepad.all[playerIndex];
@@ -97,7 +128,6 @@ namespace Tag.Input
                 if (Keyboard.current.slashKey.wasPressedThisFrame || Keyboard.current.periodKey.wasPressedThisFrame) SlidePressed = true;
                 if (Keyboard.current.rightAltKey.wasPressedThisFrame || Keyboard.current.quoteKey.wasPressedThisFrame) AirDodgePressed = true;
                 if (Keyboard.current.rightBracketKey.wasPressedThisFrame || Keyboard.current.enterKey.wasPressedThisFrame) PunchPressed = true;
-                // look: IJKL
                 Vector2 look = Vector2.zero;
                 if (Keyboard.current.iKey.isPressed) look.y += 1f;
                 if (Keyboard.current.kKey.isPressed) look.y -= 1f;

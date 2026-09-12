@@ -13,10 +13,14 @@ namespace Tag.Modes
     [RequireComponent(typeof(CharacterController))]
     public class DummyPatrol : MonoBehaviour
     {
-        [SerializeField] float speed = 4.2f;
+        [SerializeField] float speed = 7.4f;
         [SerializeField] float radius = 5.5f;
         [SerializeField] float turnSpeed = 220f;
-        [SerializeField] float chaseSpeedMul = 1.0f;
+        [SerializeField] float chaseSpeedMul = 1.12f;
+        [Tooltip("If true, chase/flee scale off the player's sprint so dummy stays in the 9 m/s class.")]
+        [SerializeField] bool matchPlayerSprint = true;
+        [SerializeField] float sprintChaseMul = 0.88f;
+        [SerializeField] float sprintFleeMul = 0.80f;
         [SerializeField] float punchRange = 1.2f;
         [SerializeField] float punchConeDeg = 40f;
         [SerializeField] float itGraceSec = 1f;
@@ -44,6 +48,7 @@ namespace Tag.Modes
         PlayerMotor _targetMotor;
         CharacterController _targetCc;
         TagModeController _modes;
+        PlayerMotor _playerMotorRef;
         float _itGraceTimer;
         bool _wasIt;
 
@@ -200,7 +205,7 @@ namespace Tag.Modes
                 _angle += (speed / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
             }
 
-            ApplyMove(moveDir * (speed * speedMul), dt);
+            ApplyMove(moveDir * (ChaseSpeed() * speedMul), dt);
         }
 
         float HotPotatoFleeMul()
@@ -236,8 +241,28 @@ namespace Tag.Modes
                 to.y = 0f;
                 FaceAndSteer(to, dt, out moveDir);
             }
-            ApplyMove(moveDir * (speed * HotPotatoFleeMul()), dt);
+            ApplyMove(moveDir * (FleeSpeed() * HotPotatoFleeMul()), dt);
         }
+
+        float PartySprint()
+        {
+            if (!matchPlayerSprint) return speed;
+            if (_playerMotorRef == null || _playerMotorRef.Tuning == null)
+            {
+                foreach (var m in FindObjectsByType<PlayerMotor>(FindObjectsSortMode.None))
+                {
+                    if (m == null || m.Tuning == null || m.GetComponent<DummyPatrol>() != null) continue;
+                    _playerMotorRef = m;
+                    break;
+                }
+            }
+            if (_playerMotorRef != null && _playerMotorRef.Tuning != null)
+                return _playerMotorRef.Tuning.sprintSpeed;
+            return speed > 0.1f ? speed : 9f;
+        }
+
+        float ChaseSpeed() => matchPlayerSprint ? PartySprint() * sprintChaseMul : speed;
+        float FleeSpeed() => matchPlayerSprint ? PartySprint() * sprintFleeMul : speed;
 
         void ApplyMove(Vector3 horiz, float dt)
         {

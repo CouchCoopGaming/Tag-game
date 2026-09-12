@@ -74,27 +74,31 @@ namespace Tag.Art
             var prefab = asIt
                 ? (itVisualPrefab != null ? itVisualPrefab : runnerVisualPrefab)
                 : (runnerVisualPrefab != null ? runnerVisualPrefab : itVisualPrefab);
-            if (prefab == null)
-            {
-                Debug.LogWarning("[DummyAvatarBinder] No dummy prefab — run Tag/Setup Hub Visuals once in Editor.");
-                return;
-            }
 
             if (_visualInstance != null)
                 Destroy(_visualInstance);
 
-            _visualInstance = Instantiate(prefab, transform);
-            _visualInstance.name = asIt ? "DummyVisual_It" : "DummyVisual_Runner";
-            _visualInstance.transform.localPosition = visualLocalPosition;
-            _visualInstance.transform.localRotation = Quaternion.identity;
-            _visualInstance.transform.localScale = visualLocalScale;
-
-            foreach (var cc in _visualInstance.GetComponentsInChildren<CharacterController>())
-                Destroy(cc);
-            foreach (var rb in _visualInstance.GetComponentsInChildren<Rigidbody>())
-                Destroy(rb);
+            if (DummyPrimitiveFactory.PrefabHasRenderer(prefab))
+            {
+                _visualInstance = Instantiate(prefab, transform);
+                _visualInstance.name = asIt ? "DummyVisual_It" : "DummyVisual_Runner";
+                _visualInstance.transform.localPosition = visualLocalPosition;
+                _visualInstance.transform.localRotation = Quaternion.identity;
+                _visualInstance.transform.localScale = visualLocalScale;
+                foreach (var cc in _visualInstance.GetComponentsInChildren<CharacterController>())
+                    Destroy(cc);
+                foreach (var rb in _visualInstance.GetComponentsInChildren<Rigidbody>())
+                    Destroy(rb);
+            }
+            else
+            {
+                // Empty prefab stubs / missing Resources — still show a dummy in third person.
+                _visualInstance = DummyPrimitiveFactory.Build(transform, asIt);
+            }
 
             HideCapsuleMeshes();
+            if (GetComponent<ItMarker>() == null)
+                gameObject.AddComponent<ItMarker>();
         }
     }
 }

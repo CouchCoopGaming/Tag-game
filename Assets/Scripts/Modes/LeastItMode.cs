@@ -225,11 +225,12 @@ namespace Tag.Modes
             string it = ctx.CurrentIt != null ? ctx.CurrentIt.PlayerId : "-";
             string extra = _awaitingTieBreak ? " | TIEBREAK: next punch" : "";
             var sb = new System.Text.StringBuilder();
-            sb.Append($"LeastIt | Time {ctx.RemainingTime:0.0}s | It: {it}{extra}\n");
+            sb.Append($"TAG / Least It   {ctx.RemainingTime:0}s left   It: {it}{extra}\n");
+            sb.Append("Least time-as-It wins. Punch transfers It.\n");
             foreach (var p in ctx.Players)
             {
                 if (p == null) continue;
-                sb.Append($"{p.PlayerId}: {p.TimeAsIt:0.0}s{(p.IsIt ? " *" : "")}\n");
+                sb.Append($"{p.PlayerId}: {p.TimeAsIt:0.0}s as It{(p.IsIt ? "  << IT" : "")}\n");
             }
             return sb.ToString().TrimEnd();
         }

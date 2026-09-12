@@ -1,5 +1,7 @@
 # Tag movement — party Apex pass
 
+Play the slice: [`Docs/PLAY-SLICE.md`](PLAY-SLICE.md).
+
 Fast chase locomotion for crash-test dummies in giant arenas. **Inspire Apex numbers, do not require Apex tech.**
 
 Tunables live on `Assets/ScriptableObjects/MovementTuning.asset` (`Tag.Movement.MovementTuning`). Runtime fallback: `MovementTuning.CreateRuntimeDefaults()` (same field defaults). Debug HUD (F3) shows live **m/s**.

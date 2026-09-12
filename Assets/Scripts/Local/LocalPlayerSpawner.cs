@@ -99,6 +99,7 @@ namespace Tag.Local
             if (go.GetComponent<PunchHitbox>() == null) go.AddComponent<PunchHitbox>();
             if (go.GetComponent<PlayerTrailEmitter>() == null) go.AddComponent<PlayerTrailEmitter>();
             if (go.GetComponent<DummyAvatarBinder>() == null) go.AddComponent<DummyAvatarBinder>();
+            if (go.GetComponent<ItMarker>() == null) go.AddComponent<ItMarker>();
             if (go.GetComponent<CharacterController>() == null)
             {
                 var cc = go.AddComponent<CharacterController>();

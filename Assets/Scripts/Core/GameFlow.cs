@@ -91,6 +91,17 @@ namespace Tag.Core
                 FindFirstObjectByType<LocalSplitCamera>()?.Apply();
         }
 
+        public void PlayLeastItSlice()
+        {
+            LocalPlayerRoster.SetCount(1);
+            SelectedMode = TagModeId.LeastIt;
+            _menuCursor = (int)TagModeId.LeastIt;
+            PlayerPrefs.SetInt(TagModeController.PrefsModeKey, (int)TagModeId.LeastIt);
+            PlayerPrefs.Save();
+            AudioCuePlayer.Ensure()?.UiConfirm();
+            GoToPlay();
+        }
+
         public void GoToPlayerCount() { State = GameFlowState.PlayerCount; AudioCuePlayer.Ensure()?.UiClick(); }
         public void GoToModeSelect() { State = GameFlowState.ModeSelect; AudioCuePlayer.Ensure()?.UiClick(); }
 
@@ -201,7 +212,7 @@ namespace Tag.Core
             if (State == GameFlowState.Boot)
             {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
-                    GoToModeSelect();
+                    PlayLeastItSlice();
             }
             else if (State == GameFlowState.PlayerCount)
             {
@@ -242,9 +253,17 @@ namespace Tag.Core
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
             if (State == GameFlowState.Boot)
             {
-                GUI.Box(new Rect(cx - 140, cy - 50, 280, 100), "TAG — Steam MVP");
-                if (GUI.Button(new Rect(cx - 60, cy - 5, 120, 28), "Play SP")) { LocalPlayerRoster.SetCount(1); GoToModeSelect(); }
-                if (GUI.Button(new Rect(cx - 60, cy + 30, 120, 28), "Couch…")) GoToPlayerCount();
+                GUI.Box(new Rect(cx - 180, cy - 80, 360, 170), "TAG — party slice");
+                GUI.Label(new Rect(cx - 170, cy - 52, 340, 36), "Crash-test dummies · playground · punch-tag");
+                if (GUI.Button(new Rect(cx - 90, cy - 10, 180, 32), "Play Tag (Least It)"))
+                    PlayLeastItSlice();
+                if (GUI.Button(new Rect(cx - 90, cy + 28, 180, 28), "Mode select…"))
+                {
+                    LocalPlayerRoster.SetCount(1);
+                    GoToModeSelect();
+                }
+                if (GUI.Button(new Rect(cx - 90, cy + 62, 180, 28), "Couch…"))
+                    GoToPlayerCount();
             }
             else if (State == GameFlowState.PlayerCount)
             {

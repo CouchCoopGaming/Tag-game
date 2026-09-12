@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using Tag.Art;
 using Tag.Movement;
 using UnityEngine;
 
@@ -81,6 +82,12 @@ namespace Tag.EditorTests
             float launch = MovementKinematics.JumpLaunchSpeed(28f, 1.15f, 8f);
             Assert.AreEqual(8f, launch, 0.01f);
             Assert.Less(Mathf.Abs(8f - derived), 0.5f);
+        }
+
+        [Test]
+        public void EmptyDummyPrefab_HasNoRenderer()
+        {
+            Assert.IsFalse(DummyPrimitiveFactory.PrefabHasRenderer(null));
         }
 
         [Test]

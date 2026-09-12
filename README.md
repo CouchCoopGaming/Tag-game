@@ -4,10 +4,12 @@
 **Engine:** Unity **6000.0.23f1** (Unity 6 LTS) — see `ProjectSettings/ProjectVersion.txt`  
 **Remote:** https://github.com/CouchCoopGaming/Tag-game (`main`)
 
-Vertical slice: **2–4p punch-tag** (transfer-It on successful punch) with **three modes** (HotPotato / LeastIt / TrailTag).  
+**Playable party slice (this PR):** third-person crash-test dummies, PARK arena, Apex-fast move + short air dash, **Least It** punch-tag vs one AI dummy.  
+How to play: [`Docs/PLAY-SLICE.md`](Docs/PLAY-SLICE.md) · movement numbers: [`Docs/MOVEMENT.md`](Docs/MOVEMENT.md).
+
+Vertical slice: **2–4p punch-tag** (transfer-It on successful punch) with **three modes** (HotPotato / LeastIt / TrailTag). **Ship mode for this slice = Least It.**  
 Movement kit (Apex-inspired party pass): auto-sprint **9 m/s**, slide-from-speed peak **12**, universal short air dash **~2.25 m**. Wall run / vault first-pass unchanged.  
-Numbers + Apex refs: [`Docs/MOVEMENT.md`](Docs/MOVEMENT.md).  
-**Out of scope:** double jump, grapple, climb-as-verb, guns, Apex tech (superglide / wallbounce), final CUT art mesh (graybox is in).
+**Out of scope for this slice:** netcode, Trail Tag as the ship mode, Metropolis, Apex tech (superglide / wallbounce).
 **Modes:** HotPotato · LeastIt · TrailTag via `TagModeController` + `ITagMode`.
 
 ---
@@ -88,10 +90,10 @@ Play opened directly skips Mode Select and uses `selectedMode` on Systems / Play
 ## Open in Unity Hub
 
 1. Install **Unity 6000.0.23f1** (or any 6000.0.x LTS close to it).
-2. Hub → **Open** → select `/workspace/tag-unity` (or copy this folder to your machine).
+2. Hub → **Open** → select this repo folder.
 3. First open will import URP + Input System + TMP from `Packages/manifest.json` (needs network for Package Manager).
 4. **File → Build Settings** should list `Assets/Scenes/Boot` then `Play` (already in `EditorBuildSettings.asset`).
-5. Open **Boot**, press Play → Start, or open **Play** directly.
+5. Open **Boot**, Play → **Play Tag (Least It)** — or open **Play** directly. See [`Docs/PLAY-SLICE.md`](Docs/PLAY-SLICE.md).
 
 > Editor is **not** installed on this shared box — do not expect Play Mode here.
 
@@ -144,7 +146,10 @@ Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
 | `Movement/MovementKinematics.cs` | Tag.Movement | Pure helpers (dash clamp, slide enter, auto-sprint) |
 | `Movement/PlayerMotor.cs` | Tag.Movement | CharacterController motor (auto-sprint, slide-from-speed, air dash) |
 | `Movement/MovementDebugHud.cs` | Tag.Movement | On-screen m/s + state (F3) |
-| `Input/PlayerInputReader.cs` | Tag.Input | New Input + legacy fallback (slide hold + air dash) |
+| `Input/PlayerInputReader.cs` | Tag.Input | New Input actions + legacy fallback |
+| `Input/TagInputActions.cs` | Tag.Input | Per-slot Input System map (WASD / pad) |
+| `Art/DummyPrimitiveFactory.cs` | Tag.Art | Runtime dummy if FBX prefabs are empty |
+| `Art/ItMarker.cs` | Tag.Art | Orange hat + halo while It |
 | `Tag/PunchTagTuning.cs` | Tag.Gameplay | Ragdoll 1.5s, +8% / 2s boost |
 | `Tag/ItController.cs` | Tag.Gameplay | It flag + time-as-It |
 | `Tag/TagRoundController.cs` | Tag.Gameplay | Legacy shim → `TagModeController` |
