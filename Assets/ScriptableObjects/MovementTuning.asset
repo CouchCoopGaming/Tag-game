@@ -12,12 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1000000000000000000000000000001, type: 3}
   m_Name: MovementTuning
   m_EditorClassIdentifier: 
-  walkSpeed: 4.5
-  sprintSpeed: 7
-  accelTime: 0.18
-  brakeTime: 0.12
+  walkSpeed: 5.5
+  sprintSpeed: 9
+  autoSprint: 1
+  autoSprintThreshold: 0.55
+  accelTime: 0.12
+  brakeTime: 0.1
   turnRateWalk: 540
-  turnRateSprint: 380
+  turnRateSprint: 420
   jumpApexHeight: 1.15
   gravity: 28
   jumpLaunchSpeed: 8
@@ -30,7 +32,10 @@ MonoBehaviour:
   hardLandFallMultiple: 1.5
   hardLandHorizPenalty: 0.15
   hardLandPenaltyDuration: 0.1
-  slideSpeedGate: 5.5
+  slideFromSpeed: 1
+  slideSpeedGate: 6.5
+  slidePeakSpeed: 12
+  slideBoostToPeak: 1
   slideDuration: 0.7
   slidePunchDuration: 0.15
   slideEndSpeedPercent: 0.55
@@ -40,13 +45,20 @@ MonoBehaviour:
   slideCooldown: 0.08
   slideEnterWipe: 0
   airDodgeCharges: 1
-  airDodgeSpeed: 6.5
-  airDodgeLock: 0.13
-  airDodgeIFrames: 0.1
+  airDodgeSpeed: 15
+  airDodgeLock: 0.15
+  airDodgeIFrames: 0.12
   airDodgeBuffer: 0.08
+  airDodgeRefreshOnLand: 1
   airDodgeRechargeSteps: 3
   airDodgeRechargeTravel: 1.8
-  airDodgeMaxDistance: 1
+  airDodgeMaxDistance: 2.5
+  thirdPerson: 1
+  thirdPersonOffset: {x: 0, y: 2.1, z: -5.8}
+  thirdPersonLookAtHeight: 1.35
+  thirdPersonProbeRadius: 0.22
+  thirdPersonMinDistance: 0.45
+  showDebugHud: 1
   wallRunAttachSpeed: 5
   wallRunFaceAngleMax: 70
   wallRunVelAngleMax: 55

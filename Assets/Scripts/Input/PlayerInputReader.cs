@@ -20,6 +20,7 @@ namespace Tag.Input
         public bool SprintHeld { get; private set; }
         public bool JumpPressed { get; private set; }
         public bool SlidePressed { get; private set; }
+        public bool SlideHeld { get; private set; }
         public bool PunchPressed { get; private set; }
         public bool AirDodgePressed { get; private set; }
 
@@ -47,6 +48,7 @@ namespace Tag.Input
             LookDelta = Vector2.zero;
             Move = Vector2.zero;
             SprintHeld = false;
+            SlideHeld = false;
 #if ENABLE_INPUT_SYSTEM
             ReadNewInput();
 #else
@@ -72,6 +74,7 @@ namespace Tag.Input
                 Move = move;
                 SprintHeld = Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed;
                 if (Keyboard.current.spaceKey.wasPressedThisFrame) JumpPressed = true;
+                SlideHeld = Keyboard.current.leftCtrlKey.isPressed || Keyboard.current.cKey.isPressed;
                 if (Keyboard.current.leftCtrlKey.wasPressedThisFrame || Keyboard.current.cKey.wasPressedThisFrame) SlidePressed = true;
                 if (Keyboard.current.leftAltKey.wasPressedThisFrame || Keyboard.current.qKey.wasPressedThisFrame) AirDodgePressed = true;
                 if (Mouse.current != null)
@@ -90,6 +93,7 @@ namespace Tag.Input
                 Move = move;
                 SprintHeld = Keyboard.current.rightShiftKey.isPressed;
                 if (Keyboard.current.rightCtrlKey.wasPressedThisFrame) JumpPressed = true;
+                SlideHeld = Keyboard.current.slashKey.isPressed || Keyboard.current.periodKey.isPressed;
                 if (Keyboard.current.slashKey.wasPressedThisFrame || Keyboard.current.periodKey.wasPressedThisFrame) SlidePressed = true;
                 if (Keyboard.current.rightAltKey.wasPressedThisFrame || Keyboard.current.quoteKey.wasPressedThisFrame) AirDodgePressed = true;
                 if (Keyboard.current.rightBracketKey.wasPressedThisFrame || Keyboard.current.enterKey.wasPressedThisFrame) PunchPressed = true;
@@ -108,6 +112,7 @@ namespace Tag.Input
                 if (stick.sqrMagnitude > Move.sqrMagnitude) Move = stick;
                 SprintHeld = SprintHeld || pad.leftStickButton.isPressed || pad.leftShoulder.isPressed;
                 if (pad.buttonSouth.wasPressedThisFrame) JumpPressed = true;
+                SlideHeld = SlideHeld || pad.buttonEast.isPressed;
                 if (pad.buttonEast.wasPressedThisFrame) SlidePressed = true;
                 if (pad.buttonWest.wasPressedThisFrame) PunchPressed = true;
                 if (pad.rightShoulder.wasPressedThisFrame) AirDodgePressed = true;
@@ -126,6 +131,7 @@ namespace Tag.Input
                 LookDelta = new Vector2(UnityEngine.Input.GetAxis("Mouse X"), UnityEngine.Input.GetAxis("Mouse Y"));
                 SprintHeld = UnityEngine.Input.GetKey(KeyCode.LeftShift);
                 JumpPressed = UnityEngine.Input.GetKeyDown(KeyCode.Space);
+                SlideHeld = UnityEngine.Input.GetKey(KeyCode.LeftControl) || UnityEngine.Input.GetKey(KeyCode.C);
                 SlidePressed = UnityEngine.Input.GetKeyDown(KeyCode.LeftControl) || UnityEngine.Input.GetKeyDown(KeyCode.C);
                 PunchPressed = UnityEngine.Input.GetMouseButtonDown(0);
                 AirDodgePressed = UnityEngine.Input.GetKeyDown(KeyCode.LeftAlt) || UnityEngine.Input.GetKeyDown(KeyCode.Q);
@@ -139,7 +145,10 @@ namespace Tag.Input
                 if (UnityEngine.Input.GetKey(KeyCode.DownArrow)) y -= 1;
                 Move = new Vector2(x, y);
                 JumpPressed = UnityEngine.Input.GetKeyDown(KeyCode.RightControl);
+                SlideHeld = UnityEngine.Input.GetKey(KeyCode.Slash) || UnityEngine.Input.GetKey(KeyCode.Period);
+                SlidePressed = UnityEngine.Input.GetKeyDown(KeyCode.Slash) || UnityEngine.Input.GetKeyDown(KeyCode.Period);
                 PunchPressed = UnityEngine.Input.GetKeyDown(KeyCode.Return);
+                AirDodgePressed = UnityEngine.Input.GetKeyDown(KeyCode.RightAlt) || UnityEngine.Input.GetKeyDown(KeyCode.Quote);
             }
             Move = Vector2.ClampMagnitude(Move, 1f);
         }

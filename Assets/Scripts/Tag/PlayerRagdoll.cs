@@ -80,6 +80,8 @@ namespace Tag.Gameplay
             {
                 _cc.enabled = true;
                 Physics.SyncTransforms();
+                // Single kinematic settle — no spring / multi-frame rubber-band.
+                _cc.Move(Vector3.down * 0.02f);
             }
             if (_motor != null) _motor.SetMotorLocked(false);
             _ragdolling = false;

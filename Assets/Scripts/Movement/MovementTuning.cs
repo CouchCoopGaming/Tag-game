@@ -3,23 +3,32 @@ using UnityEngine;
 namespace Tag.Movement
 {
     /// <summary>
-    /// Systems Tag v1 movement numbers — baked defaults for Apex-adjacent kit.
+    /// Party movement numbers — Apex-inspired, punchier for giant arenas.
     /// Create via Assets → Create → Tag → Movement Tuning.
+    /// See Docs/MOVEMENT.md for Apex refs vs Tag defaults.
     /// </summary>
     [CreateAssetMenu(fileName = "MovementTuning", menuName = "Tag/Movement Tuning", order = 0)]
     public class MovementTuning : ScriptableObject
     {
         [Header("Ground speeds (m/s)")]
-        public float walkSpeed = 4.5f;
-        public float sprintSpeed = 7.0f;
+        [Tooltip("Tag party walk. Apex ref ~5.07.")]
+        public float walkSpeed = 5.5f;
+        [Tooltip("Tag party sprint. Apex ref ~7.59; punchier for giant arenas.")]
+        public float sprintSpeed = 9.0f;
+
+        [Header("Sprint")]
+        [Tooltip("If true, full stick / WASD auto-sprints (party default). Light analog stick still walks.")]
+        public bool autoSprint = true;
+        [Tooltip("Move magnitude (0–1) at or above this counts as sprint when autoSprint is on.")]
+        [Range(0.1f, 1f)] public float autoSprintThreshold = 0.55f;
 
         [Header("Acceleration (seconds to full)")]
-        public float accelTime = 0.18f;
-        public float brakeTime = 0.12f;
+        public float accelTime = 0.12f;
+        public float brakeTime = 0.10f;
 
         [Header("Turn rates (deg/s)")]
         public float turnRateWalk = 540f;
-        public float turnRateSprint = 380f;
+        public float turnRateSprint = 420f;
 
         [Header("Jump / momentum")]
         public float jumpApexHeight = 1.15f;
@@ -40,8 +49,15 @@ namespace Tag.Movement
         public float hardLandHorizPenalty = 0.15f;
         public float hardLandPenaltyDuration = 0.1f;
 
-        [Header("Slide")]
-        public float slideSpeedGate = 5.5f;
+        [Header("Slide (Apex-style: crouch while fast)")]
+        [Tooltip("If true, holding crouch/slide while at or above the speed gate starts a slide.")]
+        public bool slideFromSpeed = true;
+        [Tooltip("Minimum planar speed (m/s) to start a slide. Between walk and sprint so you must be running.")]
+        public float slideSpeedGate = 6.5f;
+        [Tooltip("Planar speed punched to on slide enter when slideBoostToPeak is on. Apex ref ~11.45.")]
+        public float slidePeakSpeed = 12.0f;
+        [Tooltip("If true, slide enter uses max(current, peak) so a sprint always reads as a fast slide.")]
+        public bool slideBoostToPeak = true;
         public float slideDuration = 0.70f;
         public float slidePunchDuration = 0.15f;
         [Range(0f, 1f)] public float slideEndSpeedPercent = 0.55f;
@@ -49,26 +65,40 @@ namespace Tag.Movement
         public float standHeight = 1.8f;
         public float slideJumpHorizBonus = 0.12f;
         public float slideCooldown = 0.080f;
-        [Tooltip("If true, snap planar speed to slideSpeedGate on enter. Systems Tag v1: false — keep current horiz.")]
+        [Tooltip("If true, snap planar speed to slideSpeedGate on enter. Party default: false (boost-to-peak instead).")]
         public bool slideEnterWipe = false;
 
-        [Header("Air dodge (juke) — Systems Tag v1")]
-        [Tooltip("Charges available while airborne (recharge on ground).")]
+        [Header("Air dodge (universal short dash)")]
+        [Tooltip("Charges available while airborne (recharge on land).")]
         public int airDodgeCharges = 1;
-        [Tooltip("Planar speed set on air dodge (m/s). Replaces horiz toward input, or facing if no input; keeps vertical.")]
-        public float airDodgeSpeed = 6.5f;
-        [Tooltip("No air control during lock (seconds). Systems: 130 ms.")]
-        public float airDodgeLock = 0.130f;
-        [Tooltip("I-frames vs punch hurtbox only (seconds). Systems: 100 ms.")]
-        public float airDodgeIFrames = 0.100f;
-        [Tooltip("Input buffer for air dodge (seconds). Systems: 80 ms.")]
+        [Tooltip("Planar burst speed on air dodge (m/s). Party target 14–16.")]
+        public float airDodgeSpeed = 15.0f;
+        [Tooltip("No air control during lock (seconds). Party target 0.12–0.18.")]
+        public float airDodgeLock = 0.150f;
+        [Tooltip("I-frames vs punch hurtbox only (seconds). Party target 0.10–0.15.")]
+        public float airDodgeIFrames = 0.120f;
+        [Tooltip("Input buffer for air dodge (seconds).")]
         public float airDodgeBuffer = 0.080f;
-        [Tooltip("Grounded footfalls required to recharge (optional; travel fallback preferred).")]
+        [Tooltip("If true, landing restores all air-dodge charges immediately (party default).")]
+        public bool airDodgeRefreshOnLand = true;
+        [Tooltip("Grounded footfalls required to recharge when refresh-on-land is off.")]
         public int airDodgeRechargeSteps = 3;
-        [Tooltip("Grounded travel (m) to recharge one charge. Systems Tag v1 fallback: 1.8 m.")]
+        [Tooltip("Grounded travel (m) to recharge one charge when refresh-on-land is off.")]
         public float airDodgeRechargeTravel = 1.8f;
-        [Tooltip("Soft clamp: if AirDodgeSpeed × AirDodgeLock would exceed this distance (m), scale speed down. 0 = off. Default 1.0 keeps juke ≤~1 m.")]
-        public float airDodgeMaxDistance = 1.0f;
+        [Tooltip("Soft clamp: if speed × lock would exceed this distance (m), scale speed down. 0 = off.")]
+        public float airDodgeMaxDistance = 2.5f;
+
+        [Header("Camera")]
+        [Tooltip("Third-person boom so the dummy (and slide/dash) is readable. Off = eye-height pivot.")]
+        public bool thirdPerson = true;
+        public Vector3 thirdPersonOffset = new Vector3(0f, 2.1f, -5.8f);
+        public float thirdPersonLookAtHeight = 1.35f;
+        public float thirdPersonProbeRadius = 0.22f;
+        public float thirdPersonMinDistance = 0.45f;
+
+        [Header("Debug")]
+        [Tooltip("Show on-screen m/s + state HUD (toggle F3 in play).")]
+        public bool showDebugHud = true;
 
         [Header("Wall run")]
         public float wallRunAttachSpeed = 5.0f;
