@@ -105,4 +105,4 @@ Also useful CC primers: [z3dequX5g_E](https://www.youtube.com/watch?v=z3dequX5g_
 
 1. Select `Assets/ScriptableObjects/MovementTuning.asset`
 2. Tweak speeds; Play Mode HUD confirms m/s
-3. EditMode tests: `Assets/Editor/Tests/MovementKinematicsTests.cs`
+3. Movement smoke: Editor menu **Tag → Run Movement Kinematics Smoke** (`Assets/Editor/Tests/MovementKinematicsTests.cs`, Assembly-CSharp-Editor)

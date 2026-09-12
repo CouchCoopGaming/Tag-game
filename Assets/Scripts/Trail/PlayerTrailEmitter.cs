@@ -380,7 +380,7 @@ namespace Tag.Trail
             if (_unitCube != null) return _unitCube;
             var temp = GameObject.CreatePrimitive(PrimitiveType.Cube);
             _unitCube = temp.GetComponent<MeshFilter>().sharedMesh;
-            Object.Destroy(temp);
+            UnityEngine.Object.Destroy(temp);
             return _unitCube;
         }
 

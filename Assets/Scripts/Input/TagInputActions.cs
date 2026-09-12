@@ -42,13 +42,16 @@ namespace Tag.Input
             asset.name = $"TagInput_P{playerIndex}";
             var map = asset.AddActionMap("Gameplay");
 
-            var move = map.AddAction("Move", InputActionType.Value, expectedControlType: "Vector2");
-            var look = map.AddAction("Look", InputActionType.Value, expectedControlType: "Vector2");
+            // AddAction(name, type) — do not pass expectedControlType (removed/renamed on some Input System versions).
+            var move = map.AddAction("Move", InputActionType.Value);
+            var look = map.AddAction("Look", InputActionType.Value);
             var jump = map.AddAction("Jump", InputActionType.Button);
             var sprint = map.AddAction("Sprint", InputActionType.Button);
             var slide = map.AddAction("Slide", InputActionType.Button);
             var punch = map.AddAction("Punch", InputActionType.Button);
             var airDash = map.AddAction("AirDash", InputActionType.Button);
+            move.expectedControlType = "Vector2";
+            look.expectedControlType = "Vector2";
 
             if (playerIndex == 0)
             {

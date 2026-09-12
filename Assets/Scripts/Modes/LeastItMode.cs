@@ -11,7 +11,6 @@ namespace Tag.Modes
     public class LeastItMode : ITagMode
     {
         readonly LeastItTuning _tuning;
-        bool _timerDone;
         bool _ended;
         bool _awaitingTieBreak;
         float _tieBreakTimer;
@@ -27,7 +26,6 @@ namespace Tag.Modes
 
         public void OnRoundStart(TagModeContext ctx)
         {
-            _timerDone = false;
             _ended = false;
             _awaitingTieBreak = false;
             _tieBreakTimer = 0f;
@@ -58,7 +56,6 @@ namespace Tag.Modes
             ctx.RemainingTime -= dt;
             if (ctx.RemainingTime > 0f) return;
             ctx.RemainingTime = 0f;
-            _timerDone = true;
             ResolveOrTieBreak(ctx);
         }
 

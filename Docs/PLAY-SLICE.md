@@ -4,6 +4,10 @@ Crash-test dummies playing punch-tag in a giant playground. **This slice ships L
 
 Movement numbers: [`Docs/MOVEMENT.md`](MOVEMENT.md).
 
+## Safe Mode / compile (PR #8)
+
+If Unity 6 opens this worktree in **Safe Mode**, pull `cursor/apex-party-movement-f5fd` again. Fixes: isolated test asmdef removed (tests compile in Assembly-CSharp-Editor), `TagInputActions.AddAction` no longer uses `expectedControlType`, trail `Object.Destroy` is `UnityEngine.Object`. Then **Ignore** Safe Mode / reimport scripts. Smoke: **Tag → Run Movement Kinematics Smoke**.
+
 ## Open in Unity
 
 1. Hub → Open this repo (Unity **6000.0.23f1**).
