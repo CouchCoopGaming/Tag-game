@@ -37,16 +37,22 @@ namespace Tag.Art
         public static void EnsurePipeline(string reason)
         {
             if (PipelineLooksValid()) return;
-
-            var renderer = ScriptableObject.CreateInstance<UniversalRendererData>();
-            renderer.name = "TagURPRenderer_Runtime";
-            var pipeline = UniversalRenderPipelineAsset.Create(renderer);
-            pipeline.name = "TagURPAsset_Runtime";
-            _keepAlive.Add(renderer);
-            _keepAlive.Add(pipeline);
-            GraphicsSettings.defaultRenderPipeline = pipeline;
-            QualitySettings.renderPipeline = pipeline;
-            Debug.Log($"[Tag] URP pipeline assigned at {reason} (was missing or invalid).");
+            try
+            {
+                var renderer = ScriptableObject.CreateInstance<UniversalRendererData>();
+                renderer.name = "TagURPRenderer_Runtime";
+                var pipeline = UniversalRenderPipelineAsset.Create(renderer);
+                pipeline.name = "TagURPAsset_Runtime";
+                _keepAlive.Add(renderer);
+                _keepAlive.Add(pipeline);
+                GraphicsSettings.defaultRenderPipeline = pipeline;
+                QualitySettings.renderPipeline = pipeline;
+                Debug.Log($"[Tag] URP pipeline assigned at {reason} (was missing or invalid).");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[Tag] Failed to create a runtime URP pipeline: " + e.Message);
+            }
         }
     }
 }
