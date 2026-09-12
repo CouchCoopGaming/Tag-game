@@ -3,7 +3,23 @@ guid: 49410d9d743a4c6291d73b0aba8bbb1c
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - runnerVisualPrefab
+  - {fileID: 0}
+  - itVisualPrefab
+  - {fileID: 0}
+  - runnerBaseMat
+  - {fileID: 2100000, guid: a2220000000000000000000000000001, type: 2}
+  - runnerAccentMat
+  - {fileID: 2100000, guid: a2220000000000000000000000000002, type: 2}
+  - runnerOverrideMat
+  - {fileID: 2100000, guid: a2220000000000000000000000000003, type: 2}
+  - itBaseMat
+  - {fileID: 2100000, guid: a2220000000000000000000000000004, type: 2}
+  - itAccentMat
+  - {fileID: 2100000, guid: a2220000000000000000000000000005, type: 2}
+  - itOverrideMat
+  - {fileID: 2100000, guid: a2220000000000000000000000000006, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -36,3 +36,9 @@ GraphicsSettings:
   m_LightProbeOutsideHullStrategy: 0
   m_CameraRelativeLightCulling: 0
   m_CameraRelativeShadowCulling: 0
+  m_CustomRenderPipeline: {fileID: 11400000, guid: 8b2c3d4e5f60718293a4b5c6d7e8f901, type: 2}
+  m_TransparencySortMode: 0
+  m_TransparencySortAxis: {x: 0, y: 0, z: 1}
+  m_DefaultRenderingPath: 1
+  m_DefaultMobileRenderingPath: 1
+  m_TierSettings: []

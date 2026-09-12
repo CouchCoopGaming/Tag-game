@@ -26,6 +26,8 @@ namespace Tag.EditorTests
             SlideFromSpeed_RequiresGateAndHold();
             JumpLaunch_KeepsAuthoredWhenCloseToDerived();
             EmptyDummyPrefab_HasNoRenderer();
+            UrpPipelineFiles_ArePresent();
+            DummyFbxResources_ArePresent();
             JumpLaunch_RewritesWhenAuthoredIsOff();
             ParkRamp20_IsWalkable_SteepIsNot();
             ProjectWishOnSlope_KeepsPathSpeed();
@@ -101,6 +103,21 @@ namespace Tag.EditorTests
         public static void EmptyDummyPrefab_HasNoRenderer()
         {
             Assert.IsFalse(DummyPrimitiveFactory.PrefabHasRenderer(null));
+        }
+
+        public static void UrpPipelineFiles_ArePresent()
+        {
+            Assert.IsTrue(System.IO.File.Exists("Assets/Settings/TagURPAsset.asset"));
+            Assert.IsTrue(System.IO.File.Exists("Assets/Settings/TagURPRenderer.asset"));
+            var gfx = System.IO.File.ReadAllText("ProjectSettings/GraphicsSettings.asset");
+            Assert.IsTrue(gfx.Contains("m_CustomRenderPipeline") && gfx.Contains("8b2c3d4e5f60718293a4b5c6d7e8f901"));
+        }
+
+        public static void DummyFbxResources_ArePresent()
+        {
+            Assert.IsTrue(System.IO.File.Exists("Assets/Resources/Characters/Fbx/Dummy_Runner.fbx"));
+            Assert.IsTrue(System.IO.File.Exists("Assets/Resources/Characters/Fbx/Dummy_It.fbx"));
+            Assert.IsTrue(System.IO.File.Exists("Assets/Resources/Props/Fbx/Toy_Bench.fbx"));
         }
 
         public static void JumpLaunch_RewritesWhenAuthoredIsOff()
