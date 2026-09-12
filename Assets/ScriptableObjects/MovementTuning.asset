@@ -91,4 +91,11 @@ MonoBehaviour:
   vaultFailSpeedPenalty: 0.4
   vaultFailPenaltyDuration: 0.15
   vaultLipJumpWindow: 0.3
+  slopeLimit: 45
+  slopeProbeExtra: 0.28
+  slopeStickSpeed: 14
+  steepSlopeSlideSpeed: 8
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
   capsuleRadius: 0.4

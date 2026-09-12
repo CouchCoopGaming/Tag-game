@@ -52,7 +52,7 @@ namespace Tag.Movement
             EnsureStyles();
             float x = 12f;
             float y = 12f;
-            GUI.Box(new Rect(x, y, 280, 148), "", _box);
+            GUI.Box(new Rect(x, y, 280, 168), "", _box);
 
             float spd = _motor.HorizontalSpeed;
             float vy = _motor.Velocity.y;
@@ -65,6 +65,7 @@ namespace Tag.Movement
                 ? $"dash {tuning.airDodgeSpeed:0.0} m/s × {tuning.airDodgeLock * 1000f:0} ms  → {MovementKinematics.EffectiveAirDashDistance(tuning):0.00} m"
                 : "";
             string line5 = _motor.IsGrounded ? "grounded" : "air";
+            if (_motor.IsGrounded) line5 += $"  slope {_motor.SlopeAngleDeg:0}°";
             if (tuning != null && tuning.autoSprint) line5 += "   auto-sprint";
             if (_motor.HasAirDodgeIFrames) line5 += "   i-frames";
 
@@ -73,7 +74,7 @@ namespace Tag.Movement
             GUI.Label(new Rect(x + 8, y + 54, 264, 22), line3, _label);
             GUI.Label(new Rect(x + 8, y + 78, 264, 22), line4, _label);
             GUI.Label(new Rect(x + 8, y + 102, 264, 22), line5, _label);
-            GUI.Label(new Rect(x + 8, y + 124, 264, 18), "F3 toggle HUD", _label);
+            GUI.Label(new Rect(x + 8, y + 126, 264, 18), "3rd-person CC · F3 HUD", _label);
         }
 
         void EnsureStyles()

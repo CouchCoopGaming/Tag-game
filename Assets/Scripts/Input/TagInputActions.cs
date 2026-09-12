@@ -8,6 +8,7 @@ namespace Tag.Input
 {
     /// <summary>
     /// New Input System map for one local slot (keyboard+mouse on P0, plus that pad).
+    /// Pattern from Landon's Input System ref (actions + bindings) — not an FPS Player look.
     /// </summary>
     public sealed class TagInputActions : IDisposable
     {

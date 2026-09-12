@@ -62,5 +62,43 @@ namespace Tag.Movement
             if (crouchEdge) return true;
             return slideFromSpeed && crouchHeld;
         }
+
+        /// <summary>Angle between surface normal and world up (0 = flat).</summary>
+        public static float SlopeAngle(Vector3 normal)
+        {
+            return Vector3.Angle(normal, Vector3.up);
+        }
+
+        public static bool IsWalkableSlope(Vector3 normal, float slopeLimitDeg)
+        {
+            return SlopeAngle(normal) <= slopeLimitDeg + 0.01f;
+        }
+
+        /// <summary>
+        /// Project planar wish onto the slope so path speed stays constant
+        /// (Dave / CC slope tutorials — downhill is not faster than sprint).
+        /// </summary>
+        public static Vector3 ProjectWishOnSlope(Vector3 wish, Vector3 slopeNormal)
+        {
+            if (wish.sqrMagnitude < 0.0001f) return Vector3.zero;
+            Vector3 proj = Vector3.ProjectOnPlane(wish, slopeNormal);
+            if (proj.sqrMagnitude < 0.0001f) return Vector3.zero;
+            return proj.normalized * wish.magnitude;
+        }
+
+        public static Vector3 SteepSlopeSlideVelocity(Vector3 slopeNormal, float slideSpeed)
+        {
+            Vector3 down = Vector3.ProjectOnPlane(Vector3.down, slopeNormal);
+            if (down.sqrMagnitude < 0.0001f) return Vector3.zero;
+            return down.normalized * Mathf.Max(0f, slideSpeed);
+        }
+
+        public static Vector3 ClampAlongDirection(Vector3 velocity, float maxSpeed)
+        {
+            float cap = Mathf.Max(0.01f, maxSpeed);
+            if (velocity.sqrMagnitude > cap * cap)
+                return velocity.normalized * cap;
+            return velocity;
+        }
     }
 }

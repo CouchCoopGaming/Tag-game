@@ -16,6 +16,7 @@ Tunables live on `Assets/ScriptableObjects/MovementTuning.asset` (`Tag.Movement.
 - Dedicated **air dash** button (not crouch-in-air)
 - Coyote time + jump buffer
 - Kinematic `CharacterController.Move` only — punch/tag must not rubber-band
+- **Third-person** boom (Landon refs are CC / slope / sprint / Input System / dash patterns — not FPS camera)
 
 ## Defaults vs Apex refs
 
@@ -57,9 +58,20 @@ Hold **Ctrl / C / B** while planar speed ≥ `slideSpeedGate` (6.5) — Apex “
 
 Soft clamp: if `airDodgeSpeed × airDodgeLock` would exceed `airDodgeMaxDistance` (2.5 m), speed is scaled down. Helpers live in `MovementKinematics` (EditMode tests assert the 2.0–2.5 m band).
 
+### Slopes (PARK 20° ramps)
+
+CharacterController `isGrounded` flickers on ramps. The motor SphereCasts under the capsule (`slopeProbeExtra`), then:
+
+- **Walkable** (≤ `slopeLimit` 45°): `ProjectOnPlane` so path speed stays sprint/walk (downhill is not faster), plus a stick force so you do not bunny-hop. Standing still kills downhill creep.
+- **Steep** (> 45°): slide down at `steepSlopeSlideSpeed` — no walking up cliffs.
+- Jump sets `exitingSlope` so the probe does not glue you back to the ramp this frame.
+- Stand-up after slide SphereCasts the ceiling (crouch-standup check) and stays low if blocked.
+
+HUD shows `slope N°` when grounded.
+
 ### Camera
 
-`thirdPerson = true` by default: boom behind the dummy (`offset` 0, 2.1, −5.8) with a sphere-cast clip so slide/dash is readable. Set `thirdPerson = false` to restore eye-height pivot look.
+`thirdPerson = true` by default: boom behind the dummy (`offset` 0, 2.1, −5.8) with a sphere-cast clip so slide/dash is readable. Do **not** switch this to an FPS look for the Brackeys-style tutorials — those videos are CC/gravity/input references only.
 
 ### Punch / tag stability
 
@@ -75,6 +87,19 @@ Top-left (P0). Toggle **F3**. Shows live horiz m/s, vy, state, dash charges, wal
 - Ground dash / extra air charges
 - Crouch-walk as a separate gait
 - Wall-run / vault polish (first-pass kit unchanged)
+
+## Coding refs (patterns only)
+
+Landon’s Unity videos — **not** an FPS camera:
+
+| Topic | Video | What we took |
+|-------|--------|----------------|
+| CC Move, gravity, grounded Y | [Brackeys FPS movement](https://www.youtube.com/watch?v=_QajrabyTJc) | `CharacterController.Move`, gravity, jump launch — look stays 3rd-person |
+| Slope + sprint + crouch | [xCxSjgYTw9c](https://www.youtube.com/watch?v=xCxSjgYTw9c) | Probe, ProjectOnPlane, stick, speed-on-slope, stand-up ceiling check. Crouch-while-fast = **slide**, not a crouch-walk gait |
+| New Input System | [v_ncMFEoHTg](https://www.youtube.com/watch?v=v_ncMFEoHTg) | `InputAction` map in `TagInputActions` + `Assets/Input/Tag.inputactions` |
+| Throw | [F20Sr5FlUlE](https://www.youtube.com/watch?v=F20Sr5FlUlE) | Hot Potato later — not this pass |
+
+Also useful CC primers: [z3dequX5g_E](https://www.youtube.com/watch?v=z3dequX5g_E), [1uW-GbHrtQc](https://www.youtube.com/watch?v=1uW-GbHrtQc), [f473C43s8nE](https://www.youtube.com/watch?v=f473C43s8nE).
 
 ## Edit in Unity
 

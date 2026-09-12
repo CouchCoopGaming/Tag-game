@@ -42,7 +42,7 @@ Sprint is automatic on full WASD. Light stick walks (~5.5 m/s). Sprint class **9
 
 - Third-person dummy (not FPS). You can see your body, slide, and dash.
 - **It** = orange hat + pulsing floor ring + point light. Punch dumps It; the other dummy swaps the hat.
-- PARK graybox (ramps, vaults, slide strips). Props dress if Hub Visuals ran.
+- PARK graybox (20° ramps stick + keep sprint path-speed, vaults, slide strips). Props dress if Hub Visuals ran.
 - Top banner: `YOU ARE IT` or `IT: Dummy`.
 - Bottom: Least It timer + time-as-It scores.
 - Top-left: live **m/s** (F3).

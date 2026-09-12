@@ -97,5 +97,34 @@ namespace Tag.EditorTests
             float launch = MovementKinematics.JumpLaunchSpeed(28f, 1.15f, 20f);
             Assert.AreEqual(derived, launch, 0.01f);
         }
+
+        [Test]
+        public void ParkRamp20_IsWalkable_SteepIsNot()
+        {
+            Vector3 ramp20 = Quaternion.Euler(20f, 0f, 0f) * Vector3.up;
+            Vector3 cliff = Quaternion.Euler(60f, 0f, 0f) * Vector3.up;
+            Assert.IsTrue(MovementKinematics.IsWalkableSlope(ramp20, 45f));
+            Assert.IsFalse(MovementKinematics.IsWalkableSlope(cliff, 45f));
+            Assert.AreEqual(20f, MovementKinematics.SlopeAngle(ramp20), 0.1f);
+        }
+
+        [Test]
+        public void ProjectWishOnSlope_KeepsPathSpeed()
+        {
+            Vector3 wish = new Vector3(9f, 0f, 0f);
+            Vector3 n = Quaternion.Euler(0f, 0f, -20f) * Vector3.up;
+            Vector3 along = MovementKinematics.ProjectWishOnSlope(wish, n);
+            Assert.AreEqual(9f, along.magnitude, 0.02f);
+            Assert.Greater(Mathf.Abs(along.y), 0.01f);
+        }
+
+        [Test]
+        public void SteepSlope_SlidesDownhill()
+        {
+            Vector3 n = Quaternion.Euler(0f, 0f, -55f) * Vector3.up;
+            Vector3 v = MovementKinematics.SteepSlopeSlideVelocity(n, 8f);
+            Assert.AreEqual(8f, v.magnitude, 0.05f);
+            Assert.Less(v.y, 0f);
+        }
     }
 }

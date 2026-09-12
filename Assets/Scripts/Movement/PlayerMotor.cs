@@ -7,7 +7,8 @@ namespace Tag.Movement
 {
     /// <summary>
     /// CharacterController motor: walk/sprint/jump/coyote/buffer/air control,
-    /// slide-from-speed, wall run, wall jump, vault, short air dash.
+    /// slide-from-speed, slope probe (ProjectOnPlane + stick), wall run, vault, short air dash.
+    /// Third-person only — CC patterns from Landon refs, not FPS camera.
     /// Same kit for It and runner. Kinematic CC.Move only — no spring/rubber-band.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
@@ -68,6 +69,12 @@ namespace Tag.Movement
         int _airDodgeGroundSteps;
         Vector3 _lastGroundPos;
         bool _wasGrounded;
+        bool _grounded;
+        bool _onWalkableSlope;
+        bool _exitingSlope;
+        bool _lowCapsule;
+        Vector3 _groundNormal = Vector3.up;
+        float _slopeAngle;
 
         // External freeze (ragdoll)
         bool _motorLocked;
@@ -76,7 +83,9 @@ namespace Tag.Movement
         float _punchMoveScale = 1f;
         bool _slideBlocked;
 
-        public bool IsGrounded => _cc != null && _cc.isGrounded;
+        public bool IsGrounded => _grounded;
+        public float SlopeAngleDeg => _slopeAngle;
+        public bool OnWalkableSlope => _onWalkableSlope;
         public bool IsSliding => _sliding;
         public bool IsSprinting => _sprintHeld && !_sliding && IsGrounded;
         public bool IsWallRunning => _wallRunning;
@@ -130,6 +139,16 @@ namespace Tag.Movement
 
             if (GetComponent<MovementDebugHud>() == null)
                 gameObject.AddComponent<MovementDebugHud>();
+
+            ApplyControllerShape();
+        }
+
+        void ApplyControllerShape()
+        {
+            if (_cc == null || tuning == null) return;
+            _cc.slopeLimit = tuning.slopeLimit;
+            if (tuning.capsuleRadius > 0.05f)
+                _cc.radius = tuning.capsuleRadius;
         }
 
         void Update()
@@ -137,6 +156,8 @@ namespace Tag.Movement
             if (_motorLocked || tuning == null) return;
 
             float dt = Time.deltaTime;
+            ProbeGround();
+            TryRestoreStandCapsule();
             TickTimers(dt);
             ReadLook(dt);
             TickAirDodgeBuffer(dt);
@@ -178,6 +199,73 @@ namespace Tag.Movement
         {
             if (tuning == null) return;
             PlaceCamera();
+        }
+
+        void ProbeGround()
+        {
+            _grounded = false;
+            _onWalkableSlope = false;
+            _groundNormal = Vector3.up;
+            _slopeAngle = 0f;
+            if (_cc == null || !_cc.enabled || tuning == null) return;
+
+            // Leaving the ground after jump — do not re-stick this frame (slope tutorials: exitingSlope).
+            if (_exitingSlope && _velocity.y > 0.4f)
+            {
+                if (_cc.isGrounded && _velocity.y < 2f)
+                    _exitingSlope = false;
+                else
+                    return;
+            }
+
+            float radius = Mathf.Max(0.05f, _cc.radius * 0.88f);
+            Vector3 origin = transform.position + Vector3.up * (radius + 0.06f);
+            float dist = radius + Mathf.Max(0.04f, tuning.slopeProbeExtra);
+            bool hitSomething = Physics.SphereCast(origin, radius, Vector3.down, out RaycastHit hit, dist,
+                tuning.groundMask, QueryTriggerInteraction.Ignore);
+            if (hitSomething && hit.transform != null && hit.transform.root == transform.root)
+                hitSomething = false;
+
+            bool ccGrounded = _cc.isGrounded;
+            if (!hitSomething && ccGrounded)
+            {
+                _grounded = true;
+                return;
+            }
+
+            if (!hitSomething) return;
+
+            _groundNormal = hit.normal;
+            _slopeAngle = MovementKinematics.SlopeAngle(_groundNormal);
+            _onWalkableSlope = MovementKinematics.IsWalkableSlope(_groundNormal, tuning.slopeLimit);
+            _grounded = ccGrounded || _onWalkableSlope || hit.distance <= dist;
+            if (_grounded)
+                _exitingSlope = false;
+        }
+
+        bool CanStand()
+        {
+            if (_cc == null || tuning == null) return true;
+            float current = _cc.height;
+            float target = _standHeight;
+            if (target <= current + 0.02f) return true;
+            float radius = Mathf.Max(0.05f, _cc.radius * 0.9f);
+            Vector3 origin = transform.position + Vector3.up * Mathf.Max(radius, current - radius);
+            float extra = (target - current) + 0.08f;
+            if (Physics.SphereCast(origin, radius, Vector3.up, out RaycastHit hit, extra,
+                    tuning.groundMask, QueryTriggerInteraction.Ignore)
+                && hit.transform != null && hit.transform.root != transform.root)
+                return false;
+            return true;
+        }
+
+        void TryRestoreStandCapsule()
+        {
+            if (!_lowCapsule || _sliding) return;
+            if (!CanStand()) return;
+            _cc.height = _standHeight;
+            _cc.center = new Vector3(0f, _standCenterY, 0f);
+            _lowCapsule = false;
         }
 
         void TickTimers(float dt)
@@ -321,6 +409,7 @@ namespace Tag.Movement
                 targetSpeed *= (1f - tuning.hardLandHorizPenalty);
 
             Vector3 wish = transform.right * move.x + transform.forward * move.y;
+            wish.y = 0f;
             if (wish.sqrMagnitude > 1f) wish.Normalize();
 
             Vector3 horiz = new Vector3(_velocity.x, 0f, _velocity.z);
@@ -350,13 +439,40 @@ namespace Tag.Movement
             _velocity.x = horiz.x;
             _velocity.z = horiz.z;
 
-            if (IsGrounded && _velocity.y < 0f)
-                _velocity.y = -2f;
-
             bool canJump = _coyoteTimer > 0f && _jumpBufferTimer > 0f;
             if (canJump)
             {
                 ApplyJumpTakeoff();
+            }
+            else if (IsGrounded && _onWalkableSlope && !_exitingSlope)
+            {
+                // Walkable slope: project onto the plane and stick (no bunny-hop, no idle slide-down).
+                Vector3 planar = new Vector3(_velocity.x, 0f, _velocity.z);
+                Vector3 along = MovementKinematics.ProjectWishOnSlope(planar, _groundNormal);
+                if (planar.sqrMagnitude > 0.0001f)
+                {
+                    along = MovementKinematics.ClampAlongDirection(along, Mathf.Max(targetSpeed, planar.magnitude));
+                    _velocity = along;
+                    _velocity += -_groundNormal * tuning.slopeStickSpeed * dt;
+                }
+                else
+                {
+                    // Standing still — kill downhill creep (tutorial: no gravity slide on walkable slope).
+                    _velocity.x = 0f;
+                    _velocity.z = 0f;
+                    _velocity.y = -2f;
+                }
+            }
+            else if (IsGrounded && !_onWalkableSlope && _slopeAngle > tuning.slopeLimit)
+            {
+                Vector3 slip = MovementKinematics.SteepSlopeSlideVelocity(_groundNormal, tuning.steepSlopeSlideSpeed);
+                _velocity.x = slip.x;
+                _velocity.z = slip.z;
+                _velocity.y = Mathf.Min(_velocity.y, slip.y) - tuning.gravity * dt * 0.25f;
+            }
+            else if (IsGrounded && _velocity.y < 0f)
+            {
+                _velocity.y = -2f;
             }
             else if (!IsGrounded)
             {
@@ -382,6 +498,8 @@ namespace Tag.Movement
 
             _coyoteTimer = 0f;
             _jumpBufferTimer = 0f;
+            _exitingSlope = true;
+            _grounded = false;
         }
 
         void TryStartSlide()
@@ -417,6 +535,7 @@ namespace Tag.Movement
 
             _cc.height = tuning.slideHeight;
             _cc.center = new Vector3(0f, tuning.slideHeight * 0.5f, 0f);
+            _lowCapsule = true;
         }
 
         void TickSlide(float dt)
@@ -429,8 +548,11 @@ namespace Tag.Movement
                 ? startSpd
                 : Mathf.Lerp(startSpd, endSpd, t);
 
-            _velocity = _slideDir * spd;
-            _velocity.y = -2f;
+            Vector3 along = _slideDir * spd;
+            if (_onWalkableSlope)
+                along = MovementKinematics.ProjectWishOnSlope(_slideDir * spd, _groundNormal);
+            _velocity = along;
+            _velocity.y = _onWalkableSlope ? Mathf.Min(_velocity.y, -2f) : -2f;
             ApplyRawMove(_velocity * dt);
 
             if (_input != null && _input.JumpPressed)
@@ -445,6 +567,8 @@ namespace Tag.Movement
                 _velocity.z = h.z;
                 _coyoteTimer = 0f;
                 _jumpBufferTimer = 0f;
+                _exitingSlope = true;
+                _grounded = false;
                 return;
             }
 
@@ -457,8 +581,14 @@ namespace Tag.Movement
             _sliding = false;
             _slideHoldNeedsRelease = true;
             _slideCooldownTimer = tuning.slideCooldown;
-            _cc.height = _standHeight;
-            _cc.center = new Vector3(0f, _standCenterY, 0f);
+            if (CanStand())
+            {
+                _cc.height = _standHeight;
+                _cc.center = new Vector3(0f, _standCenterY, 0f);
+                _lowCapsule = false;
+            }
+            else
+                _lowCapsule = true;
             if (toSprint)
                 _sprintHeld = true;
         }
@@ -542,6 +672,8 @@ namespace Tag.Movement
             DetachWallRun(clearSameWallCd: false);
             _sameWallCd = 0f;
             _jumpBufferTimer = 0f;
+            _exitingSlope = true;
+            _grounded = false;
         }
 
         void DetachWallRun(bool clearSameWallCd = true)
@@ -714,8 +846,14 @@ namespace Tag.Movement
             {
                 _sliding = false;
                 _slideHoldNeedsRelease = true;
-                _cc.height = _standHeight;
-                _cc.center = new Vector3(0f, _standCenterY, 0f);
+                if (CanStand())
+                {
+                    _cc.height = _standHeight;
+                    _cc.center = new Vector3(0f, _standCenterY, 0f);
+                    _lowCapsule = false;
+                }
+                else
+                    _lowCapsule = true;
                 _slideCooldownTimer = tuning != null ? tuning.slideCooldown : 0.08f;
             }
         }
@@ -771,6 +909,7 @@ namespace Tag.Movement
             {
                 tuning = t;
                 _airDodgeChargesLeft = Mathf.Max(1, tuning.airDodgeCharges);
+                ApplyControllerShape();
             }
         }
     }

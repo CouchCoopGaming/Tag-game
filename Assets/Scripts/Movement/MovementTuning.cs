@@ -138,6 +138,18 @@ namespace Tag.Movement
         public float vaultFailPenaltyDuration = 0.15f;
         [Range(0f, 1f)] public float vaultLipJumpWindow = 0.30f;
 
+        [Header("Slopes (CC probe — PARK 20° ramps)")]
+        [Tooltip("Walkable slope degrees. PARK ramps are ~20°. Steeper = slide down.")]
+        public float slopeLimit = 45f;
+        [Tooltip("SphereCast extra distance below the capsule (m). Helps CC.isGrounded flicker on ramps.")]
+        public float slopeProbeExtra = 0.28f;
+        [Tooltip("Extra downward speed on walkable slopes so sprinting up a ramp does not bunny-hop.")]
+        public float slopeStickSpeed = 14f;
+        [Tooltip("Planar slide speed when the surface is steeper than slopeLimit.")]
+        public float steepSlopeSlideSpeed = 8f;
+        [Tooltip("Layers the ground probe hits. Default everything.")]
+        public LayerMask groundMask = ~0;
+
         [Header("Capsule")]
         public float capsuleRadius = 0.4f;
 
