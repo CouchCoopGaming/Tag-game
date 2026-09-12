@@ -284,9 +284,9 @@ MonoBehaviour:
   autoFindPlayers: 1
   players: []
   matchTuning: {fileID: 0}
-  leastItTuning: {fileID: 11400000, guid: c1000000000000000000000000000011, type: 2}
-  hotPotatoTuning: {fileID: 11400000, guid: c1000000000000000000000000000010, type: 2}
-  trailTagTuning: {fileID: 11400000, guid: c1000000000000000000000000000012, type: 2}
+  leastItTuning: {fileID: 11400000, guid: 0520f4d195934cc3870a2117d2fb71d5, type: 2}
+  hotPotatoTuning: {fileID: 11400000, guid: 443f65bec8a5446195409ff9fdd41634, type: 2}
+  trailTagTuning: {fileID: 11400000, guid: 66eb59d333ed41e59abb1ccdf3da8fe5, type: 2}
 --- !u!1 &5000
 GameObject:
   m_ObjectHideFlags: 0
@@ -428,7 +428,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1000000000000000000000000000003, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tuning: {fileID: 11400000, guid: c1000000000000000000000000000001, type: 2}
+  tuning: {fileID: 11400000, guid: 3b87c406c35d472fbc4173226fe27acf, type: 2}
   cameraPivot: {fileID: 5101}
   lookSensitivity: 2
   pitchMin: -80
@@ -461,7 +461,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1000000000000000000000000000007, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tuning: {fileID: 11400000, guid: c1000000000000000000000000000002, type: 2}
+  tuning: {fileID: 11400000, guid: c5478822952540fbbee3361eb3177041, type: 2}
   aimOrigin: {fileID: 5101}
 --- !u!114 &5014
 MonoBehaviour:

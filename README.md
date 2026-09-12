@@ -9,7 +9,7 @@ How to play: [`Docs/PLAY-SLICE.md`](Docs/PLAY-SLICE.md) · movement numbers: [`D
 
 Vertical slice: **2–4p punch-tag** (transfer-It on successful punch) with **three modes** (HotPotato / LeastIt / TrailTag). **Ship mode for this slice = Least It.**  
 Movement kit (Apex-inspired party pass): auto-sprint **9 m/s**, slide-from-speed peak **12**, universal short air dash **~2.25 m**. Wall run / vault first-pass unchanged.  
-**Out of scope for this slice:** netcode, Trail Tag as the ship mode, Metropolis, Apex tech (superglide / wallbounce).
+**Out of scope for this slice:** netcode, Trail Tag as the ship mode, Apex tech (superglide / wallbounce).
 **Modes:** HotPotato · LeastIt · TrailTag via `TagModeController` + `ITagMode`.
 
 ---

@@ -8,6 +8,8 @@ Movement numbers: [`Docs/MOVEMENT.md`](MOVEMENT.md).
 
 If Unity 6 opens this worktree in **Safe Mode**, pull `cursor/apex-party-movement-f5fd` again. Fixes: isolated test asmdef removed (tests compile in Assembly-CSharp-Editor), `TagInputActions.AddAction` no longer uses `expectedControlType`, trail `Object.Destroy` is `UnityEngine.Object`. Then **Ignore** Safe Mode / reimport scripts. Smoke: **Tag → Run Movement Kinematics Smoke**.
 
+If the Editor crashed on a previous open (duplicate `.meta` GUIDs / `MetaFileHandling`), delete the worktree **`Library`** folder and reopen the project so the import cache is rebuilt.
+
 ## URP (fixes magenta / pink)
 
 Materials under `Assets/Art` already use **URP Lit**. Pink on Amaterasu was the Built-in pipeline: `GraphicsSettings.m_CustomRenderPipeline` and Quality were unassigned, and there was no URP pipeline/renderer asset.
@@ -94,4 +96,4 @@ Sprint is automatic on full WASD. Light stick walks (~5.5 m/s). Sprint class **9
 
 ## Out of slice
 
-Netcode, Trail Tag light-cycle as the ship mode, Metropolis. Hub **Tag → Setup Hub Visuals** is optional (Resources FBX already ships).
+Netcode, Trail Tag light-cycle as the ship mode. Hub **Tag → Setup Hub Visuals** is optional (Resources FBX already ships).
