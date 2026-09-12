@@ -94,7 +94,7 @@ Play opened directly skips Mode Select and uses `selectedMode` on Systems / Play
 3. First open will import URP + Input System + TMP from `Packages/manifest.json` (needs network for Package Manager).
 4. **File → Build Settings** should list `Assets/Scenes/Boot` then `Play` (already in `EditorBuildSettings.asset`).
 5. Open **Boot**, Play → **Play Tag (Least It)** — or open **Play** directly. See [`Docs/PLAY-SLICE.md`](Docs/PLAY-SLICE.md).
-6. If materials are magenta: **Tag → Ensure URP Pipeline** (pipeline lives at `Assets/Settings/TagURPAsset.asset` and is assigned in Graphics/Quality). Dummy motion is `DummyLocomotor` (no `.anim` files in the Art drop).
+6. If materials are magenta: **Tag → Ensure URP Pipeline** (Unity writes `Assets/Settings/TagURP*.asset`; do not hand-author those YAML files). Dummy motion is `DummyLocomotor`. If the Editor crashed on an older pull: delete `Library` and reopen.
 
 > Editor is **not** installed on this shared box — do not expect Play Mode here.
 

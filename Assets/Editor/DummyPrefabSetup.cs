@@ -66,14 +66,10 @@ namespace Tag.EditorTools
         {
             EnsureFolder("Assets/Resources");
             EnsureFolder("Assets/Resources/Characters");
-            EnsureFolder("Assets/Resources/Characters/Fbx");
             EnsureFolder("Assets/Resources/Props");
-            EnsureFolder("Assets/Resources/Props/Fbx");
 
             CopyReplace(RunnerPrefab, "Assets/Resources/Characters/Dummy_Runner.prefab");
             CopyReplace(ItPrefab, "Assets/Resources/Characters/Dummy_It.prefab");
-            CopyReplace(RunnerFbx, "Assets/Resources/Characters/Fbx/Dummy_Runner.fbx");
-            CopyReplace(ItFbx, "Assets/Resources/Characters/Fbx/Dummy_It.fbx");
 
             CopyReplace("Assets/Art/Characters/Mat_Runner_Base.mat", "Assets/Resources/Characters/Mat_Runner_Base.mat");
             CopyReplace("Assets/Art/Characters/Mat_Runner_Accent.mat", "Assets/Resources/Characters/Mat_Runner_Accent.mat");
@@ -92,10 +88,7 @@ namespace Tag.EditorTools
             {
                 var src = $"Assets/Art/Props/Playground/{p}.fbx";
                 if (File.Exists(src) || AssetDatabase.LoadAssetAtPath<Object>(src) != null)
-                {
-                    CopyReplace(src, $"Assets/Resources/Props/Fbx/{p}.fbx");
                     BuildPropPrefab(src, $"Assets/Resources/Props/{p}.prefab", p);
-                }
             }
 
             string[] parkMats =

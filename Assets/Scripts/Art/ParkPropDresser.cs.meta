@@ -3,21 +3,7 @@ guid: ff981f1ebd1b4c6f986b4d94798616e7
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences:
-  - matYellow
-  - {fileID: 2100000, guid: 2a5a8ad22351483c8482662aa1d1cb66, type: 2}
-  - matBlue
-  - {fileID: 2100000, guid: bdee0a49f41f4e2391f54a50f9b6ce2a, type: 2}
-  - matSteel
-  - {fileID: 2100000, guid: 6164dac4a42c49e1818adfa9dde56bb4, type: 2}
-  - matRubber
-  - {fileID: 2100000, guid: f92210c19e174b87bc7572d177522039, type: 2}
-  - matRed
-  - {fileID: 2100000, guid: 7f51439dca2a457f9c4c262048c11264, type: 2}
-  - matConcrete
-  - {fileID: 2100000, guid: dc14a40cadfe473ab8770180a86d80f8, type: 2}
-  - matMulch
-  - {fileID: 2100000, guid: 50204b48c3a2421b85a5e0e2ea7135e0, type: 2}
+  defaultReferences: []
   executionOrder: 50
   icon: {instanceID: 0}
   userData: 

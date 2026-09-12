@@ -8,42 +8,47 @@ Movement numbers: [`Docs/MOVEMENT.md`](MOVEMENT.md).
 
 If Unity 6 opens this worktree in **Safe Mode**, pull `cursor/apex-party-movement-f5fd` again. Fixes: isolated test asmdef removed (tests compile in Assembly-CSharp-Editor), `TagInputActions.AddAction` no longer uses `expectedControlType`, trail `Object.Destroy` is `UnityEngine.Object`. Then **Ignore** Safe Mode / reimport scripts. Smoke: **Tag → Run Movement Kinematics Smoke**.
 
-If the Editor crashed on a previous open (duplicate `.meta` GUIDs / `MetaFileHandling`), delete the worktree **`Library`** folder and reopen the project so the import cache is rebuilt.
+## Amaterasu / reopen (do this after every pull if the Editor crashed)
+
+Hand-authored URP YAML and abbreviated FBX `.meta` files crashed Unity 6000.3 `MetaFileHandling` on import. Those stubs are gone. Pipeline assets are created by the Editor, not checked in.
+
+1. `git pull` on `cursor/apex-party-movement-f5fd`
+2. Quit Unity
+3. Delete the worktree **`Library`** folder (import cache from a crashed open is poison)
+4. Hub → Open this folder (6000.0.x or 6000.3.x)
+5. Wait for import. After scripts compile, **Tag → Ensure URP Pipeline** runs (also in the menu). That writes `Assets/Settings/TagURPAsset.asset` via Unity APIs and assigns Graphics/Quality.
+6. If materials are still magenta: run the menu again, then Play. Do not switch mats to Standard.
 
 ## URP (fixes magenta / pink)
 
-Materials under `Assets/Art` already use **URP Lit**. Pink on Amaterasu was the Built-in pipeline: `GraphicsSettings.m_CustomRenderPipeline` and Quality were unassigned, and there was no URP pipeline/renderer asset.
+Materials under `Assets/Art` already use **URP Lit**. Pink was Built-in RP with no pipeline assigned.
 
-Checked in:
+Do **not** commit hand-written `TagURP*.asset` YAML. On open:
 
-| Asset | Path |
-|-------|------|
-| Pipeline | `Assets/Settings/TagURPAsset.asset` |
-| Renderer | `Assets/Settings/TagURPRenderer.asset` |
-| Assigned in | `ProjectSettings/GraphicsSettings.asset` + `QualitySettings` (Medium) |
-
-On open, **Tag → Ensure URP Pipeline** also runs after domain reload and rewrites Graphics/Quality if the assignment was lost. Play Mode has a runtime fallback (`TagUrpBootstrap`) if the asset is still missing.
-
-If everything is magenta after pull: **Tag → Ensure URP Pipeline**, then Play. Do not switch materials to Standard.
+| Step | Who |
+|------|-----|
+| Create renderer + pipeline | **Tag → Ensure URP Pipeline** (`TagUrpSetup`, also `InitializeOnLoad`) |
+| Assign Graphics + Quality | same menu |
+| Play Mode if assets missing | `TagUrpBootstrap` builds an in-memory URP pipeline |
 
 ## Dummy meshes + motion
 
-`Dummy_Runner.prefab` / `Dummy_It.prefab` stay as Hub stubs. Play loads the real FBX from `Assets/Resources/Characters/Fbx/` (same meshes/mats as `Assets/Art/Characters`). PARK toys load from `Assets/Resources/Props/Fbx/` + `Mat_Park_*`.
+`Dummy_Runner.prefab` / `Dummy_It.prefab` stay as Hub stubs. Play uses `DummyLocomotor` on FBX bones (`UpperArm_L/R`, `UpperLeg_L/R`, …) after **Tag → Setup Hub Visuals**, or a primitive dummy with the same bone names. PARK toys dress from Resources prefabs after that menu (FBX is **not** duplicated under Resources).
 
-There are **no `.anim` / `.controller` files** in the drop. `DummyLocomotor` drives the FBX bones (`UpperArm_L/R`, `UpperLeg_L/R`, …) for idle / run / jump / slide / punch. Primitive fallback uses the same bone names.
+There are **no `.anim` / `.controller` files** in the drop.
 
-Optional Hub bind (fills Art prefabs + copies into `Resources/Characters` + `Resources/Props`):
+Optional Hub bind:
 
 1. **Tag → Ensure URP Pipeline**
 2. **Tag → Setup Dummy Prefabs From FBX** or **Tag → Setup Hub Visuals (Dummies + Props + Play Bind)**
 
 ## Open in Unity
 
-1. Hub → Open this repo (Unity **6000.0.23f1** / **6000.0.24f1**).
+1. Hub → Open this repo (Unity **6000.0.23f1** / **6000.0.24f1** / **6000.3.x**).
 2. Either:
    - Open **Boot**, Play → **Play Tag (Least It)** (Enter / Space), or
    - Open **Play** directly (skips Boot; starts Least It vs Dummy).
-3. First-time art (optional): **Tag → Setup Hub Visuals**. Not required for a non-pink dummy — Resources FBX + locomotor run without the menu.
+3. First-time art (optional): **Tag → Setup Hub Visuals**. Without it you still get a non-pink primitive dummy + locomotor.
 
 ## How to play
 
@@ -76,7 +81,7 @@ Sprint is automatic on full WASD. Light stick walks (~5.5 m/s). Sprint class **9
 - Third-person dummy (not FPS). Vinyl Runner `#E8D9C0` / teal accent, or It `#FF6A00` / black chevrons — **not magenta**.
 - Visible idle sway, run cycle, jump tuck, slide crouch, and a right-arm punch tell.
 - **It** = orange hat + pulsing floor ring + point light. Punch dumps It; the other dummy swaps the hat.
-- PARK mulch / yellow vaults / blue walls (URP Lit). Toy FBX dress over graybox when Resources props load.
+- PARK mulch / yellow vaults / blue walls (URP Lit). Toy meshes dress over graybox after **Tag → Setup Hub Visuals**.
 - Top banner: `YOU ARE IT` or `IT: Dummy`.
 - Bottom: Least It timer + time-as-It scores.
 - Top-left: live **m/s** (F3).
@@ -90,10 +95,10 @@ Sprint is automatic on full WASD. Light stick walks (~5.5 m/s). Sprint class **9
 | Least It | `Assets/Scripts/Modes/LeastItMode.cs` |
 | Dummy AI | `Assets/Scripts/Modes/DummyPatrol.cs` |
 | Dummy + It hat + locomotor | `Assets/Scripts/Art/` |
-| URP pipeline | `Assets/Settings/TagURPAsset.asset` |
+| URP pipeline | Created at `Assets/Settings/` by **Tag → Ensure URP Pipeline** |
 | Input | `Assets/Scripts/Input/` + `Assets/Input/Tag.inputactions` |
 | Arena | `CutArenaBootstrap` on Play |
 
 ## Out of slice
 
-Netcode, Trail Tag light-cycle as the ship mode. Hub **Tag → Setup Hub Visuals** is optional (Resources FBX already ships).
+Netcode, Trail Tag light-cycle as the ship mode. Hub **Tag → Setup Hub Visuals** is optional (primitive dummy + locomotor work without it).

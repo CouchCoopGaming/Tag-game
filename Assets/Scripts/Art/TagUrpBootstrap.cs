@@ -6,8 +6,8 @@ namespace Tag.Art
 {
     /// <summary>
     /// Last-resort URP assignment so URP Lit materials are not magenta if
-    /// Graphics/Quality lost the pipeline asset (the playtest pink bug).
-    /// Prefers the checked-in Assets/Settings/TagURPAsset.
+    /// Graphics/Quality have no pipeline yet (Editor <c>TagUrpSetup</c> creates
+    /// the on-disk assets; this path builds an in-memory pipeline for Play).
     /// </summary>
     public static class TagUrpBootstrap
     {

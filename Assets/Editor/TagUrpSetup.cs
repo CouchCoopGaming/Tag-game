@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -7,8 +8,8 @@ using UnityEngine.Rendering.Universal;
 namespace Tag.EditorTools
 {
     /// <summary>
-    /// Creates / assigns Tag URP pipeline + renderer so URP Lit mats resolve.
-    /// Menu: Tag → Ensure URP Pipeline. Also runs once after domain reload.
+    /// Creates a real URP pipeline + renderer via Unity APIs (do not hand-author YAML).
+    /// Menu: Tag → Ensure URP Pipeline. Also runs after domain reload.
     /// </summary>
     public static class TagUrpSetup
     {
@@ -42,6 +43,14 @@ namespace Tag.EditorTools
         {
             if (!AssetDatabase.IsValidFolder(Folder))
                 AssetDatabase.CreateFolder("Assets", "Settings");
+
+            // Discard stubs that failed to deserialize as URP types.
+            if (File.Exists(PipelinePath) &&
+                AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(PipelinePath) == null)
+                AssetDatabase.DeleteAsset(PipelinePath);
+            if (File.Exists(RendererPath) &&
+                AssetDatabase.LoadAssetAtPath<UniversalRendererData>(RendererPath) == null)
+                AssetDatabase.DeleteAsset(RendererPath);
 
             var renderer = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(RendererPath);
             if (renderer == null)
