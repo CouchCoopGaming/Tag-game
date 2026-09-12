@@ -10,14 +10,16 @@ If Unity 6 opens this worktree in **Safe Mode**, pull `cursor/apex-party-movemen
 
 ## Amaterasu / reopen (do this after every pull if the Editor crashed)
 
-Hand-authored URP YAML and abbreviated FBX `.meta` files crashed Unity 6000.3 `MetaFileHandling` on import. Those stubs are gone. Pipeline assets are created by the Editor, not checked in.
+The local bypass that kept Unity 6000.3 alive (delete `Assets/Settings/` URP stubs, delete `Resources/**/Fbx/`, clear Graphics/Quality pipeline, wipe `Library`) is what this branch ships. Do not re-add hand-written `TagURP*.asset` YAML.
 
-1. `git pull` on `cursor/apex-party-movement-f5fd`
+1. `git pull` on `cursor/apex-party-movement-f5fd` (discard local copies of those deletions if git complains — the PR already removed them)
 2. Quit Unity
-3. Delete the worktree **`Library`** folder (import cache from a crashed open is poison)
+3. Delete the worktree **`Library`** folder
 4. Hub → Open this folder (6000.0.x or 6000.3.x)
-5. Wait for import. After scripts compile, **Tag → Ensure URP Pipeline** runs (also in the menu). That writes `Assets/Settings/TagURPAsset.asset` via Unity APIs and assigns Graphics/Quality.
-6. If materials are still magenta: run the menu again, then Play. Do not switch mats to Standard.
+5. Wait for `Rebuilding Library`. After scripts compile, **Tag → Ensure URP Pipeline** runs (also in the menu). Unity writes `Assets/Settings/TagURP*.asset` itself — those generated files are fine to keep locally; do not replace them with stubs.
+6. If materials are still magenta: run the menu again, then Play.
+
+If `Assets/Art/Characters/HiPoly/` or `Assets/Art/Props/Playground/HiPoly/` FBX are present, **Tag → Setup Hub Visuals** prefers those meshes when filling dummy/prop prefabs.
 
 ## URP (fixes magenta / pink)
 

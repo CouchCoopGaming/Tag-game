@@ -5,7 +5,7 @@ namespace Tag.Art
 {
     /// <summary>
     /// After CutArenaBootstrap builds PARK toys, dress named roots with 3D prop
-    /// meshes from Resources/Props (prefab) or Resources/Props/Fbx (Landon FBX).
+    /// meshes from Resources/Props prefabs (filled by Tag → Setup Hub Visuals).
     /// Keeps collider/volume from graybox; hides graybox MeshRenderer when dressed.
     /// </summary>
     [DefaultExecutionOrder(50)]
@@ -106,16 +106,13 @@ namespace Tag.Art
             if (dressed > 0)
                 Debug.Log($"[ParkPropDresser] Dressed {dressed} toys with 3D props.");
             else
-                Debug.LogWarning("[ParkPropDresser] No props loaded — run Tag → Setup Hub Visuals, or confirm Resources/Props/Fbx.");
+                Debug.LogWarning("[ParkPropDresser] No props loaded — run Tag → Setup Hub Visuals.");
         }
 
         static GameObject LoadProp(string name)
         {
             var prefab = Resources.Load<GameObject>("Props/" + name);
-            if (DummyPrimitiveFactory.PrefabHasRenderer(prefab)) return prefab;
-            var fbx = Resources.Load<GameObject>("Props/Fbx/" + name);
-            if (DummyPrimitiveFactory.PrefabHasRenderer(fbx)) return fbx;
-            return null;
+            return DummyPrimitiveFactory.PrefabHasRenderer(prefab) ? prefab : null;
         }
 
         void ApplyPropMats(GameObject go, string propName)

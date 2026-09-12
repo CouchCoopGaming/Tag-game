@@ -6,8 +6,8 @@ namespace Tag.Art
 {
     /// <summary>
     /// Replaces capsule mesh with Dummy_Runner / Dummy_It visual.
-    /// Load order: SerializeField → Resources/Characters prefab → Resources/Characters/Fbx
-    /// → primitive dummy. Applies Landon mats (paint lock) and DummyLocomotor.
+    /// Load order: SerializeField → Resources/Characters prefab → primitive dummy.
+    /// Applies Landon mats (paint lock) and DummyLocomotor.
     /// </summary>
     public class DummyAvatarBinder : MonoBehaviour
     {
@@ -40,10 +40,8 @@ namespace Tag.Art
         {
             if (_resolved) return;
             _resolved = true;
-            runnerVisualPrefab = FirstRenderable(runnerVisualPrefab,
-                "Characters/Dummy_Runner", "Characters/Fbx/Dummy_Runner");
-            itVisualPrefab = FirstRenderable(itVisualPrefab,
-                "Characters/Dummy_It", "Characters/Fbx/Dummy_It");
+            runnerVisualPrefab = FirstRenderable(runnerVisualPrefab, "Characters/Dummy_Runner");
+            itVisualPrefab = FirstRenderable(itVisualPrefab, "Characters/Dummy_It");
             if (runnerBaseMat == null) runnerBaseMat = Resources.Load<Material>("Characters/Mat_Runner_Base");
             if (runnerAccentMat == null) runnerAccentMat = Resources.Load<Material>("Characters/Mat_Runner_Accent");
             if (runnerOverrideMat == null) runnerOverrideMat = Resources.Load<Material>("Characters/Mat_Runner_ItOverride");

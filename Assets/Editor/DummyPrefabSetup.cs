@@ -10,6 +10,8 @@ namespace Tag.EditorTools
     {
         const string RunnerFbx = "Assets/Art/Characters/Dummy_Runner.fbx";
         const string ItFbx = "Assets/Art/Characters/Dummy_It.fbx";
+        const string RunnerHiFbx = "Assets/Art/Characters/HiPoly/Dummy_Runner_Hi.fbx";
+        const string ItHiFbx = "Assets/Art/Characters/HiPoly/Dummy_It_Hi.fbx";
         const string RunnerPrefab = "Assets/Art/Characters/Dummy_Runner.prefab";
         const string ItPrefab = "Assets/Art/Characters/Dummy_It.prefab";
 
@@ -27,13 +29,13 @@ namespace Tag.EditorTools
         [MenuItem("Tag/Setup Dummy Prefabs From FBX")]
         public static void SetupDummyPrefabs()
         {
-            BuildCharacter(RunnerFbx, RunnerPrefab, new[]
+            BuildCharacter(PreferHiPoly(RunnerFbx, RunnerHiFbx), RunnerPrefab, new[]
             {
                 "Assets/Art/Characters/Mat_Runner_Base.mat",
                 "Assets/Art/Characters/Mat_Runner_Accent.mat",
                 "Assets/Art/Characters/Mat_Runner_ItOverride.mat"
             });
-            BuildCharacter(ItFbx, ItPrefab, new[]
+            BuildCharacter(PreferHiPoly(ItFbx, ItHiFbx), ItPrefab, new[]
             {
                 "Assets/Art/Characters/Mat_It_Base.mat",
                 "Assets/Art/Characters/Mat_It_Accent.mat",
@@ -86,7 +88,9 @@ namespace Tag.EditorTools
             };
             foreach (var p in props)
             {
-                var src = $"Assets/Art/Props/Playground/{p}.fbx";
+                var src = PreferHiPoly(
+                    $"Assets/Art/Props/Playground/{p}.fbx",
+                    $"Assets/Art/Props/Playground/HiPoly/{p}.fbx");
                 if (File.Exists(src) || AssetDatabase.LoadAssetAtPath<Object>(src) != null)
                     BuildPropPrefab(src, $"Assets/Resources/Props/{p}.prefab", p);
             }
@@ -112,6 +116,16 @@ namespace Tag.EditorTools
                 Object.DestroyImmediate(col);
             PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             Object.DestroyImmediate(root);
+        }
+
+        static bool AssetExists(string path)
+        {
+            return File.Exists(path) || AssetDatabase.LoadAssetAtPath<Object>(path) != null;
+        }
+
+        static string PreferHiPoly(string lowPolyPath, string hiPolyPath)
+        {
+            return AssetExists(hiPolyPath) ? hiPolyPath : lowPolyPath;
         }
 
         static void CopyReplace(string src, string dst)
