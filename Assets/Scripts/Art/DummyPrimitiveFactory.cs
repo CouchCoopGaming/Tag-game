@@ -1,15 +1,15 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Tag.Art
 {
     /// <summary>
-    /// Crash-test dummy built from primitives when Dummy_Runner / Dummy_It
-    /// FBX/prefabs are missing. Limb names match Dummy_*.fbx so DummyLocomotor
-    /// can drive either path. Paint lock: Runner #E8D9C0/#2BB3A3, It #FF6A00/black.
+    /// Navy Spade–inspired crash dummy when FBX/prefabs are missing.
+    /// Featureless head, colored polymer panels, black rubber joints/chest/hands/feet.
+    /// Limb names match DummyLocomotor (UpperArm_L/R, UpperLeg_L/R, ...).
     /// </summary>
     public static class DummyPrimitiveFactory
     {
-        static Material _matBody, _matItBody, _matAccent, _matItAccent, _matEye, _matSensor;
+        static Material _matBody, _matItBody, _matJoint, _matSensor;
 
         public static bool PrefabHasRenderer(GameObject prefab)
         {
@@ -24,74 +24,65 @@ namespace Tag.Art
             root.transform.localPosition = Vector3.zero;
             root.transform.localRotation = Quaternion.identity;
 
-            Color body = asIt ? new Color(1f, 0.416f, 0f) : new Color(0.91f, 0.851f, 0.753f);
-            Color accent = asIt ? new Color(0.04f, 0.04f, 0.04f) : new Color(0.169f, 0.702f, 0.639f);
             var bodyMat = asIt ? _matItBody : _matBody;
-            var accentMat = asIt ? _matItAccent : _matAccent;
+            var joint = _matJoint;
 
-            Prim(PrimitiveType.Capsule, root.transform, "Body",
-                new Vector3(0f, 1.05f, 0f), new Vector3(0.72f, 0.55f, 0.55f), bodyMat);
+            // Torso panels (colored) + black chest plate
+            Prim(PrimitiveType.Capsule, root.transform, "Torso",
+                new Vector3(0f, 1.15f, 0f), new Vector3(0.55f, 0.42f, 0.38f), bodyMat);
+            Prim(PrimitiveType.Cube, root.transform, "ChestPlate",
+                new Vector3(0f, 1.22f, 0.12f), new Vector3(0.42f, 0.38f, 0.08f), joint);
+            Prim(PrimitiveType.Cube, root.transform, "Pelvis",
+                new Vector3(0f, 0.88f, 0f), new Vector3(0.4f, 0.16f, 0.28f), joint);
+
+            // Featureless head (no eyes) — hidden in FP via PlayerMotor
             Prim(PrimitiveType.Sphere, root.transform, "Head",
-                new Vector3(0f, 1.62f, 0f), new Vector3(0.42f, 0.42f, 0.42f), bodyMat);
-            Prim(PrimitiveType.Sphere, root.transform, "EyeL",
-                new Vector3(-0.1f, 1.66f, 0.16f), new Vector3(0.07f, 0.07f, 0.07f), _matEye);
-            Prim(PrimitiveType.Sphere, root.transform, "EyeR",
-                new Vector3(0.1f, 1.66f, 0.16f), new Vector3(0.07f, 0.07f, 0.07f), _matEye);
-            Prim(PrimitiveType.Cube, root.transform, "Band",
-                new Vector3(0f, 1.22f, 0.12f), new Vector3(0.5f, 0.08f, 0.12f), accentMat);
-            Prim(PrimitiveType.Cube, root.transform, "Sensor",
-                new Vector3(0f, 1.78f, 0.12f), new Vector3(0.22f, 0.04f, 0.06f), _matSensor);
+                new Vector3(0f, 1.62f, 0f), new Vector3(0.38f, 0.4f, 0.38f), bodyMat);
+            Prim(PrimitiveType.Cylinder, root.transform, "Neck",
+                new Vector3(0f, 1.44f, 0f), new Vector3(0.12f, 0.06f, 0.12f), joint);
 
-            var hips = Empty(root.transform, "Hips", new Vector3(0f, 0.92f, 0f));
-            var spine = Empty(root.transform, "Spine", new Vector3(0f, 1.22f, 0f));
+            var hips = Empty(root.transform, "Hips", new Vector3(0f, 0.9f, 0f));
+            var spine = Empty(root.transform, "Spine", new Vector3(0f, 1.2f, 0f));
 
-            BuildArm(spine, "L", new Vector3(-0.34f, 0.12f, 0f), bodyMat, accentMat, left: true);
-            BuildArm(spine, "R", new Vector3(0.34f, 0.12f, 0f), bodyMat, accentMat, left: false);
-            BuildLeg(hips, "L", new Vector3(-0.13f, 0f, 0f), bodyMat, accentMat);
-            BuildLeg(hips, "R", new Vector3(0.13f, 0f, 0f), bodyMat, accentMat);
+            BuildArm(spine, "L", new Vector3(-0.32f, 0.08f, 0f), bodyMat, joint, left: true);
+            BuildArm(spine, "R", new Vector3(0.32f, 0.08f, 0f), bodyMat, joint, left: false);
+            BuildLeg(hips, "L", new Vector3(-0.12f, 0f, 0f), bodyMat, joint);
+            BuildLeg(hips, "R", new Vector3(0.12f, 0f, 0f), bodyMat, joint);
 
-            var bodyRend = root.transform.Find("Body")?.GetComponent<Renderer>();
-            if (bodyRend != null)
+            // Optional It sensor strip (glow) — still no face
+            if (asIt)
             {
-                var block = new MaterialPropertyBlock();
-                bodyRend.GetPropertyBlock(block);
-                block.SetColor("_BaseColor", body);
-                block.SetColor("_Color", body);
-                bodyRend.SetPropertyBlock(block);
-            }
-
-            var bandRend = root.transform.Find("Band")?.GetComponent<Renderer>();
-            if (bandRend != null)
-            {
-                var block = new MaterialPropertyBlock();
-                bandRend.GetPropertyBlock(block);
-                block.SetColor("_BaseColor", accent);
-                block.SetColor("_Color", accent);
-                bandRend.SetPropertyBlock(block);
+                Prim(PrimitiveType.Cube, root.transform, "Sensor",
+                    new Vector3(0f, 1.78f, 0.1f), new Vector3(0.2f, 0.03f, 0.05f), _matSensor);
             }
 
             return root;
         }
 
-        static void BuildArm(Transform parent, string side, Vector3 pos, Material body, Material accent, bool left)
+        static void BuildArm(Transform parent, string side, Vector3 pos, Material body, Material joint, bool left)
         {
             var upper = Empty(parent, "UpperArm_" + side, pos);
-            LimbMesh(upper, "UpperArmMesh_" + side, new Vector3(0f, -0.16f, 0f), new Vector3(0.16f, 0.2f, 0.16f), body);
+            // black shoulder ball
+            LimbMesh(upper, "Shoulder_" + side, new Vector3(0f, 0.02f, 0f), new Vector3(0.16f, 0.16f, 0.16f), joint, PrimitiveType.Sphere);
+            LimbMesh(upper, "UpperArmMesh_" + side, new Vector3(0f, -0.16f, 0f), new Vector3(0.14f, 0.18f, 0.14f), body, PrimitiveType.Capsule);
             var lower = Empty(upper, "LowerArm_" + side, new Vector3(0f, -0.34f, 0f));
-            LimbMesh(lower, "LowerArmMesh_" + side, new Vector3(0f, -0.14f, 0f), new Vector3(0.13f, 0.16f, 0.13f), body);
+            LimbMesh(lower, "Elbow_" + side, Vector3.zero, new Vector3(0.12f, 0.12f, 0.12f), joint, PrimitiveType.Sphere);
+            LimbMesh(lower, "LowerArmMesh_" + side, new Vector3(0f, -0.14f, 0f), new Vector3(0.12f, 0.15f, 0.12f), body, PrimitiveType.Capsule);
             var hand = Empty(lower, "Hand_" + side, new Vector3(0f, -0.28f, 0f));
-            LimbMesh(hand, "HandMesh_" + side, Vector3.zero, new Vector3(0.12f, 0.08f, 0.1f), accent);
-            upper.localRotation = Quaternion.Euler(0f, 0f, left ? 8f : -8f);
+            LimbMesh(hand, "HandMesh_" + side, Vector3.zero, new Vector3(0.11f, 0.08f, 0.1f), joint, PrimitiveType.Cube);
+            upper.localRotation = Quaternion.Euler(0f, 0f, left ? 10f : -10f);
         }
 
-        static void BuildLeg(Transform parent, string side, Vector3 pos, Material body, Material accent)
+        static void BuildLeg(Transform parent, string side, Vector3 pos, Material body, Material joint)
         {
             var upper = Empty(parent, "UpperLeg_" + side, pos);
-            LimbMesh(upper, "UpperLegMesh_" + side, new Vector3(0f, -0.2f, 0f), new Vector3(0.2f, 0.22f, 0.2f), body);
+            LimbMesh(upper, "Hip_" + side, Vector3.zero, new Vector3(0.16f, 0.16f, 0.16f), joint, PrimitiveType.Sphere);
+            LimbMesh(upper, "UpperLegMesh_" + side, new Vector3(0f, -0.2f, 0f), new Vector3(0.18f, 0.2f, 0.18f), body, PrimitiveType.Capsule);
             var lower = Empty(upper, "LowerLeg_" + side, new Vector3(0f, -0.4f, 0f));
-            LimbMesh(lower, "LowerLegMesh_" + side, new Vector3(0f, -0.18f, 0f), new Vector3(0.16f, 0.2f, 0.16f), body);
-            var foot = Empty(lower, "Foot_" + side, new Vector3(0f, -0.36f, 0.06f));
-            LimbMesh(foot, "FootMesh_" + side, Vector3.zero, new Vector3(0.16f, 0.07f, 0.26f), accent);
+            LimbMesh(lower, "Knee_" + side, Vector3.zero, new Vector3(0.13f, 0.13f, 0.13f), joint, PrimitiveType.Sphere);
+            LimbMesh(lower, "LowerLegMesh_" + side, new Vector3(0f, -0.18f, 0f), new Vector3(0.14f, 0.18f, 0.14f), body, PrimitiveType.Capsule);
+            var foot = Empty(lower, "Foot_" + side, new Vector3(0f, -0.36f, 0.05f));
+            LimbMesh(foot, "FootMesh_" + side, Vector3.zero, new Vector3(0.15f, 0.07f, 0.26f), joint, PrimitiveType.Cube);
         }
 
         static Transform Empty(Transform parent, string name, Vector3 pos)
@@ -103,9 +94,9 @@ namespace Tag.Art
             return go.transform;
         }
 
-        static void LimbMesh(Transform parent, string name, Vector3 pos, Vector3 scale, Material mat)
+        static void LimbMesh(Transform parent, string name, Vector3 pos, Vector3 scale, Material mat, PrimitiveType type)
         {
-            Prim(PrimitiveType.Capsule, parent, name, pos, scale, mat);
+            Prim(type, parent, name, pos, scale, mat);
         }
 
         static void Prim(PrimitiveType type, Transform parent, string name, Vector3 pos, Vector3 scale, Material mat)
@@ -125,12 +116,11 @@ namespace Tag.Art
         static void EnsureMaterials()
         {
             if (_matBody != null) return;
-            _matBody = MakeMat(new Color(0.91f, 0.851f, 0.753f));
-            _matItBody = MakeMat(new Color(1f, 0.416f, 0f));
-            _matAccent = MakeMat(new Color(0.169f, 0.702f, 0.639f));
-            _matItAccent = MakeMat(new Color(0.04f, 0.04f, 0.04f));
-            _matEye = MakeMat(new Color(0.05f, 0.05f, 0.06f));
-            _matSensor = MakeMat(new Color(0.2f, 0.85f, 1f));
+            // Runner default: tan polymer; It: orange — black rubber joints
+            _matBody = MakeMat(new Color(0.92f, 0.78f, 0.55f));
+            _matItBody = MakeMat(new Color(0.95f, 0.35f, 0.12f));
+            _matJoint = MakeMat(new Color(0.06f, 0.06f, 0.07f));
+            _matSensor = MakeMat(new Color(0.2f, 0.9f, 1f));
         }
 
         public static Material MakeMat(Color c)
@@ -142,6 +132,7 @@ namespace Tag.Art
             var m = new Material(shader) { name = "DummyPrim_" + ColorUtility.ToHtmlStringRGB(c) };
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
             if (m.HasProperty("_Color")) m.SetColor("_Color", c);
+            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.35f);
             return m;
         }
     }

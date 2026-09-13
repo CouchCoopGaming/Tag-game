@@ -1,0 +1,251 @@
+CHROMA FORGE · SLENDER MOLD BIBLE · v1.1                                                        ATTACH TO CHAT · ARTIST BRIEF
+
+
+
+
+ CHROMA FORGE
+                                                        Slender Mold Art Bible · Version 1.1
+
+
+ Seven factory molds woke when the Great Palette shattered. Not nations. Molds. Each remembers a different war — circuit,
+ impact, neon, salt, honor, plastic, vacuum — but all of them run on one law: color is rank, technique, and voltage. This
+ pack is the shareable brief. Attach the zip or this PDF to any chat, artist thread, or engine channel.
+
+ These are concept models and a production system, not finished FBX files. Build seven slender humanoid meshes in Blender
+ from the sheets. Recolor in Unity with the included scripts.
+
+ Proportion lock — slender
+ This revision kills bulk. Every mold shares the same lean fashion-toy body so a pink dummy and a deep-red knight still look
+ like they came from one factory.
+
+  Measure                                          Target
+
+  Height                                           1.80 m hero · Army Man 1.72 m
+
+  Heads tall                                       7.5–8
+
+  Shoulder width                                   2.0–2.2 heads (never past 2.3)
+
+  Waist                                            0.55–0.62 of shoulder
+
+  Arm span                                         Equal to height
+
+  Hands                                            +10% toy scale for readability
+
+  Tris LOD0                                        8k–16k depending on mold
+
+     If armor makes the shoulder wider than 2.3 heads, cut the armor. Do not fatten the body.
+
+
+
+
+Seven molds. One skeleton. Thirty-three charges.                                                                        Page 1
+CHROMA FORGE · SLENDER MOLD BIBLE · v1.1                                                                 ATTACH TO CHAT · ARTIST BRIEF
+
+
+
+
+                               Lineup — slender pass. Shared limb length, shared waist, shared toy seam language.
+
+
+
+
+Seven molds. One skeleton. Thirty-three charges.                                                                                 Page 2
+CHROMA FORGE · SLENDER MOLD BIBLE · v1.1                                                     ATTACH TO CHAT · ARTIST BRIEF
+
+
+
+
+ The 33-charge palette
+ Eleven hues. Three depths. Pale is a recruit. Standard is a veteran. Deep is a named piece that survived the box. Never bake
+ these into albedo. They are ScriptableObject data.
+
+         HUE                                PALE                     STANDARD                              DEEP
+
+
+WHITE                                      #F4F1EA                     #E6E0D4                            #C9C2B4
+
+
+BLACK                                      #3E3E42                     #16161A                             #07070A
+
+
+BLUE                                       #7EB8E8                     #2E6BFF                            #0A2A6B
+
+
+GREEN                                      #8FDC7A                     #2F8B3A                             #163D18
+
+
+YELLOW                                     #FFE566                     #FFD100                             #B8860B
+
+
+RED                                        #FF6B6B                     #E10600                             #7A0000
+
+
+ORANGE                                     #FFB347                     #FF6A00                            #C44D00
+
+
+PINK                                       #FFB6D9                     #FF4FA3                             #C71585
+
+
+PURPLE                                     #C9A0FF                     #7B2CBF                            #3C096C
+
+
+BROWN                                      #C4A574                     #8B5A2B                            #4A2C14
+
+
+GREY                                       #C0C4C8                     #6E7378                            #3A3D40
+
+
+
+ Mask law: R = Primary, G = Secondary, B = Accent. Eyes and teeth stay on a second material or in the black of the mask.
+ Tron Bots keep the body in Ink/Void and put the named hue into Accent + emission (Pale 1.5 / Standard 3.5 / Deep 6).
+
+ Power system
+ Manga wants named techniques. Production wants three verbs that every mold shares: Dash (mobility), Mark (paint the
+ world in the unit hue), Break (spend shade depth on a finisher). Pale dashes farther and breaks weaker. Deep dashes shorter
+ and breaks the screen. Hybrid rule: Primary chooses the animation set. Accent chooses the VFX color.
+
+
+
+
+Seven molds. One skeleton. Thirty-three charges.                                                                         Page 3
+CHROMA FORGE · SLENDER MOLD BIBLE · v1.1                                                          ATTACH TO CHAT · ARTIST BRIEF
+
+
+
+
+ The seven slender molds
+                                                   Robot Ninja
+                                                   Silent Circuit Clan
+                                                   Slim mecha assassin. Thin kabuto visor, long forearms, folded back-blades,
+                                                   twin short katanas. No bulky pauldrons. 13–16k tris.
+
+                                                      Techniques: Optical Smear / Circuit-Cut / Mute Field
+
+
+
+
+                                                   Crash Test Dummy
+                                                   Unbreakable Cohort
+                                                   Tall sensor doll, not a barrel. Rubber-ring neck, circular eyes, rib bands on a
+                                                   narrow torso, long ball-joint limbs. Vinyl. 11–14k tris.
+
+                                                      Techniques: Rebound / Data Scar / Full Dummy Protocol
+
+
+
+
+Seven molds. One skeleton. Thirty-three charges.                                                                              Page 4
+CHROMA FORGE · SLENDER MOLD BIBLE · v1.1                                                          ATTACH TO CHAT · ARTIST BRIEF
+
+
+
+
+                                                   Tron Bot
+                                                   Grid Sentinel
+                                                   Lithe Program. Hard bevels, neon sitting in grooves, one-volume helmet,
+                                                   identity disc on the back. Body stays near black. 11–15k tris.
+
+                                                      Techniques: Line Walk / Identity Throw / Derezz
+
+
+
+
+                                                   Pirate
+                                                   Salt-and-Chrome Corsair
+                                                   Lean coat, fitted waist, tricorn, hook, cutlass. Coat is a separate cloth mesh.
+                                                   13–16k tris.
+
+                                                      Techniques: Black Spot / Boarding Hook / Powder Night
+
+
+
+
+Seven molds. One skeleton. Thirty-three charges.                                                                              Page 5
+CHROMA FORGE · SLENDER MOLD BIBLE · v1.1                                                        ATTACH TO CHAT · ARTIST BRIEF
+
+
+
+
+                                                   Knight
+                                                   Painted Order
+                                                   Fitted plate, wasp waist, thin crest, modular helm/chest/tabard/shield/sword.
+                                                   Hidden body deleted. 14–16k tris.
+
+                                                      Techniques: Color Guard / Oath Swing / Last Standard
+
+
+
+
+                                                   Army Man
+                                                   Plastic Battalion
+                                                   54mm toy language stretched to slender hero height. Single-color plastic,
+                                                   sagittal mold line, molded face. 8–11k tris. Default Green Standard.
+
+                                                      Techniques: Bag Spill / Mold Line / Whole Platoon
+
+
+
+
+Seven molds. One skeleton. Thirty-three charges.                                                                            Page 6
+CHROMA FORGE · SLENDER MOLD BIBLE · v1.1                                                       ATTACH TO CHAT · ARTIST BRIEF
+
+
+
+
+                                                   Astronaut
+                                                   Void Walker
+                                                   Sleek technical suit, compact pack, spherical helmet, cyan ring light, long
+                                                   legs. Not a marshmallow. 12–15k tris.
+
+                                                     Techniques: Soft Vacuum / Beacon / Re-entry
+
+
+
+
+Seven molds. One skeleton. Thirty-three charges.                                                                          Page 7
+CHROMA FORGE · SLENDER MOLD BIBLE · v1.1                                                                 ATTACH TO CHAT · ARTIST BRIEF
+
+
+
+
+ Unity architecture
+ One prefab per mold. Thirty-three palette assets. Zero duplicated materials per color. Push color through a
+ MaterialPropertyBlock onto a single ChromaLit shader.
+
+ Folder contract
+     Assets/_Game/Characters/_Shared/Shaders/ChromaLit.shadergraph
+     Assets/_Game/Characters/_Shared/Scripts/ChromaPalette.cs
+     Assets/_Game/Characters/_Shared/Scripts/ChromaApplier.cs
+     Assets/_Game/Characters/_Shared/Scripts/ChromaPaletteLibrary.cs
+     Assets/_Game/Characters/_Shared/Palettes/*.asset
+     Assets/_Game/Characters/RobotNinja|CrashDummy|TronBot|Pirate|Knight|ArmyMan|Astronaut/
+ Shader Graph
+ Sample greyscale albedo. Sample RGB mask. tint = Primary·R + Secondary·G + Accent·B. baseColor = albedo × tint. ORM
+ pack is AO / Roughness / Metallic. emission = Accent × EmissiveMask × EmissionStrength. Feed a URP Lit master.
+
+ Sockets on every mold
+     socket_weapon_r · socket_weapon_l · socket_back · socket_hat · socket_fx_chest · socket_fx_eye
+ Animation
+ Unity Humanoid only. Mixamo for Idle / Walk / Run / Jump / Hit / Death plus three class attacks. Retarget once. Class extras
+ live on Animator layers with Avatar Masks. Do not custom-rig seven skeletons.
+
+ Build order
+ 1. Shader + 33 palettes on grey cubes. 2. Army Man. 3. Knight. 4. Tron Bot. 5. Dummy. 6. Astronaut. 7. Pirate. 8. Robot
+ Ninja last — most silhouette-sensitive.
+
+ Copy-paste artist brief
+ Seven slender humanoid hero molds, collectible-toy style, 8–16k tris, Unity Humanoid, T-pose, applied scale, +Z forward.
+ Greyscale albedo + RGB tint mask + packed ORM + optional emissive. Three tint zones only. Shared 7.5–8 head
+ proportions, narrow waist, long limbs. Weapons socketed. No baked brand colors. Build Army Man first as the shader proof.
+ Use the concept sheets in /concepts and the hex table in this bible.
+
+
+
+                                The molds are the game. Color is the army. Keep those two ideas welded together.
+
+
+
+
+Seven molds. One skeleton. Thirty-three charges.                                                                                 Page 8
+

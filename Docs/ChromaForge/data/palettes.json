@@ -1,0 +1,70 @@
+{
+  "version": "1.1-slender",
+  "notes": "Pale = recruit, Standard = veteran, Deep = named elite. Tron Bots use accent as emissive and keep body near black.",
+  "hues": {
+    "white": {
+      "pale":     {"hex": "#F4F1EA", "name": "Bone"},
+      "standard": {"hex": "#E6E0D4", "name": "Ivory"},
+      "deep":     {"hex": "#C9C2B4", "name": "Antique"}
+    },
+    "black": {
+      "pale":     {"hex": "#3E3E42", "name": "Charcoal"},
+      "standard": {"hex": "#16161A", "name": "Ink"},
+      "deep":     {"hex": "#07070A", "name": "Void"}
+    },
+    "blue": {
+      "pale":     {"hex": "#7EB8E8", "name": "Ice"},
+      "standard": {"hex": "#2E6BFF", "name": "Signal"},
+      "deep":     {"hex": "#0A2A6B", "name": "Abyss"}
+    },
+    "green": {
+      "pale":     {"hex": "#8FDC7A", "name": "Mint"},
+      "standard": {"hex": "#2F8B3A", "name": "Army"},
+      "deep":     {"hex": "#163D18", "name": "Jungle"}
+    },
+    "yellow": {
+      "pale":     {"hex": "#FFE566", "name": "Sun"},
+      "standard": {"hex": "#FFD100", "name": "Hazard"},
+      "deep":     {"hex": "#B8860B", "name": "Brass"}
+    },
+    "red": {
+      "pale":     {"hex": "#FF6B6B", "name": "Flare"},
+      "standard": {"hex": "#E10600", "name": "Banner"},
+      "deep":     {"hex": "#7A0000", "name": "BloodPlastic"}
+    },
+    "orange": {
+      "pale":     {"hex": "#FFB347", "name": "Safety"},
+      "standard": {"hex": "#FF6A00", "name": "FlareOrange"},
+      "deep":     {"hex": "#C44D00", "name": "RustFire"}
+    },
+    "pink": {
+      "pale":     {"hex": "#FFB6D9", "name": "Cotton"},
+      "standard": {"hex": "#FF4FA3", "name": "Neon"},
+      "deep":     {"hex": "#C71585", "name": "MagentaSeal"}
+    },
+    "purple": {
+      "pale":     {"hex": "#C9A0FF", "name": "Lilac"},
+      "standard": {"hex": "#7B2CBF", "name": "Royal"},
+      "deep":     {"hex": "#3C096C", "name": "NightInk"}
+    },
+    "brown": {
+      "pale":     {"hex": "#C4A574", "name": "Tan"},
+      "standard": {"hex": "#8B5A2B", "name": "Leather"},
+      "deep":     {"hex": "#4A2C14", "name": "Hull"}
+    },
+    "grey": {
+      "pale":     {"hex": "#C0C4C8", "name": "Primer"},
+      "standard": {"hex": "#6E7378", "name": "Steel"},
+      "deep":     {"hex": "#3A3D40", "name": "Slate"}
+    }
+  },
+  "defaultLoadouts": {
+    "RobotNinja":  {"primary": "blue.standard",  "secondary": "black.standard", "accent": "blue.pale",    "emission": 0.35},
+    "CrashDummy":  {"primary": "yellow.standard","secondary": "black.pale",     "accent": "black.standard","emission": 0.00},
+    "TronBot":     {"primary": "black.standard", "secondary": "grey.deep",      "accent": "blue.pale",    "emission": 3.50},
+    "Pirate":      {"primary": "red.deep",       "secondary": "brown.pale",     "accent": "yellow.deep",  "emission": 0.00},
+    "Knight":      {"primary": "purple.standard","secondary": "grey.pale",      "accent": "yellow.deep",  "emission": 0.00},
+    "ArmyMan":     {"primary": "green.standard", "secondary": "green.deep",     "accent": "green.pale",   "emission": 0.00},
+    "Astronaut":   {"primary": "white.standard", "secondary": "grey.standard",  "accent": "orange.standard","emission": 0.80}
+  }
+}

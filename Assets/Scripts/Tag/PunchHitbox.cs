@@ -1,7 +1,6 @@
 using UnityEngine;
 using Tag.Audio;
-using Tag.Input;
-using Tag.Movement;
+using TagArena.Movement;
 using Tag.Modes;
 
 namespace Tag.Gameplay

@@ -1,5 +1,5 @@
 using UnityEngine;
-using Tag.Movement;
+using TagArena.Movement;
 
 namespace Tag.Gameplay
 {
@@ -17,7 +17,8 @@ namespace Tag.Gameplay
         bool _eliminated;
         MaterialPropertyBlock _mpb;
         PlayerMotor _motor;
-        CharacterController _cc;
+        Rigidbody _rb;
+        Collider _bodyCol;
         PunchTagTuning _lastPunchTuning;
         static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         static readonly int ColorId = Shader.PropertyToID("_Color");
@@ -36,7 +37,9 @@ namespace Tag.Gameplay
                 PlayerId = gameObject.name;
             _mpb = new MaterialPropertyBlock();
             _motor = GetComponent<PlayerMotor>();
-            _cc = GetComponent<CharacterController>();
+            _rb = GetComponent<Rigidbody>();
+            _bodyCol = GetComponent<CapsuleCollider>();
+            if (_bodyCol == null) _bodyCol = GetComponent<Collider>();
             if (accentRenderer == null)
                 accentRenderer = GetComponentInChildren<Renderer>();
             ApplyVisual();
@@ -99,8 +102,13 @@ namespace Tag.Gameplay
             isIt = false;
             _iFrameTimer = 0f;
             if (_motor != null) _motor.SetMotorLocked(true);
-            if (_cc == null) _cc = GetComponent<CharacterController>();
-            if (_cc != null) _cc.enabled = false;
+            if (_rb == null) _rb = GetComponent<Rigidbody>();
+            if (_rb != null)
+            {
+                _rb.linearVelocity = Vector3.zero;
+                _rb.angularVelocity = Vector3.zero;
+            }
+            // Keep collider for world collision; motor lock stops control.
             ApplyVisual();
             Debug.Log($"[It] {PlayerId} eliminated ({reason})");
         }
@@ -114,12 +122,8 @@ namespace Tag.Gameplay
             _iFrameTimer = 0f;
             isIt = false;
             if (_motor != null) _motor.SetMotorLocked(false);
-            if (_cc == null) _cc = GetComponent<CharacterController>();
-            if (_cc != null)
-            {
-                _cc.enabled = true;
-                Physics.SyncTransforms();
-            }
+            if (_rb == null) _rb = GetComponent<Rigidbody>();
+            Physics.SyncTransforms();
             if (accentRenderer != null) accentRenderer.enabled = true;
             ApplyVisual();
         }

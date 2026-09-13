@@ -124,7 +124,7 @@ namespace Tag.Modes
                 if (p == null || !p.IsAlive) continue;
                 anyLiving = true;
                 bool isDummy = p.GetComponent<DummyPatrol>() != null;
-                bool hasInput = p.GetComponent<Tag.Input.PlayerInputReader>() != null;
+                bool hasInput = p.GetComponent<TagArena.Movement.PlayerInputReader>() != null;
                 if (hasInput && !isDummy)
                     return false;
             }

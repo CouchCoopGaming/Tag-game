@@ -53,7 +53,7 @@ MonoBehaviour:
   airDodgeRechargeSteps: 3
   airDodgeRechargeTravel: 1.8
   airDodgeMaxDistance: 2.5
-  thirdPerson: 1
+  thirdPerson: 0
   thirdPersonOffset: {x: 0, y: 2.1, z: -5.8}
   thirdPersonLookAtHeight: 1.35
   thirdPersonProbeRadius: 0.22

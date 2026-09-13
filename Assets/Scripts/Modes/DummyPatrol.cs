@@ -1,16 +1,14 @@
 using Tag.Gameplay;
-using Tag.Movement;
+using TagArena.Movement;
 using UnityEngine;
 
 namespace Tag.Modes
 {
     /// <summary>
-    /// Dummy AI v0 (SP demo): chase+punch when It; flee when not. Same punch kit, no range cheat.
-    /// Feel pass: close-range chase bump, mild lead, no orbit when already facing,
-    /// Hot Potato flee urgency when fuse is low.
-    /// Spec: tag-gdd/DUMMY-AI-v0.md
+    /// Dummy AI v0 (SP demo): chase+punch when It; flee when not.
+    /// Drives Rigidbody while PlayerMotor stays locked (TagArena cutover).
     /// </summary>
-    [RequireComponent(typeof(CharacterController))]
+    [RequireComponent(typeof(Rigidbody))]
     public class DummyPatrol : MonoBehaviour
     {
         [SerializeField] float speed = 7.4f;
@@ -35,26 +33,33 @@ namespace Tag.Modes
         [SerializeField] float faceAlignDeg = 18f;
         [SerializeField] float hotPotatoUrgencySec = 10f;
         [SerializeField] float fleeUrgencyMul = 1.18f;
+        [SerializeField] float gravity = 20f;
 
-        CharacterController _cc;
+        Rigidbody _rb;
+        PlayerRagdoll _ragdoll;
+        PlayerMotor _selfMotor;
         ItController _it;
         PunchHitbox _punch;
         Vector3 _center;
         float _angle;
-        float _gravity;
         float _cooldown;
         float _decisionTimer;
         ItController _target;
         PlayerMotor _targetMotor;
-        CharacterController _targetCc;
         TagModeController _modes;
         PlayerMotor _playerMotorRef;
         float _itGraceTimer;
         bool _wasIt;
+        bool _grounded;
 
         void Awake()
         {
-            _cc = GetComponent<CharacterController>();
+            _rb = GetComponent<Rigidbody>();
+            _ragdoll = GetComponent<PlayerRagdoll>();
+            _selfMotor = GetComponent<PlayerMotor>();
+            if (_selfMotor != null)
+                _selfMotor.SetMotorLocked(true);
+
             _it = GetComponent<ItController>();
             if (_it == null) _it = gameObject.AddComponent<ItController>();
             if (string.IsNullOrEmpty(_it.PlayerId) || _it.PlayerId == "Player" || _it.PlayerId == gameObject.name)
@@ -77,12 +82,15 @@ namespace Tag.Modes
                 _modes.RegisterPlayer(_it);
         }
 
-        void Update()
+        void FixedUpdate()
         {
             if (_it != null && _it.IsEliminated) return;
-            if (_cc == null || !_cc.enabled) return;
+            if (_ragdoll != null && _ragdoll.IsRagdolling) return;
+            if (_selfMotor != null && !_selfMotor.IsMotorLocked)
+                _selfMotor.SetMotorLocked(true);
+            if (_rb == null) return;
 
-            float dt = Time.deltaTime;
+            float dt = Time.fixedDeltaTime;
             _decisionTimer -= dt;
             if (_decisionTimer <= 0f)
             {
@@ -95,19 +103,26 @@ namespace Tag.Modes
                 _itGraceTimer = Mathf.Max(0f, itGraceSec);
             _wasIt = isIt;
 
+            ProbeGround();
+
             if (isIt)
                 TickChase(dt);
             else
                 TickFleeOrWander(dt);
         }
 
+        void ProbeGround()
+        {
+            _grounded = Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, 1.2f, ~0, QueryTriggerInteraction.Ignore);
+        }
+
         float EffectiveAggression()
         {
             float a = aggression;
             if (_modes != null && _modes.SelectedMode == TagModeId.LeastIt)
-                a = 1.0f; // NextPunch pressure
+                a = 1.0f;
             if (_modes != null && _modes.SelectedMode == TagModeId.HotPotato)
-                a = Mathf.Max(a, 0.95f); // prioritize punch
+                a = Mathf.Max(a, 0.95f);
             return a;
         }
 
@@ -115,7 +130,6 @@ namespace Tag.Modes
         {
             _target = null;
             _targetMotor = null;
-            _targetCc = null;
             float best = float.MaxValue;
             foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
             {
@@ -125,7 +139,6 @@ namespace Tag.Modes
             }
             if (_target == null) return;
             _targetMotor = _target.GetComponent<PlayerMotor>();
-            _targetCc = _target.GetComponent<CharacterController>();
         }
 
         Vector3 TargetPlanarVelocity()
@@ -133,8 +146,6 @@ namespace Tag.Modes
             Vector3 v = Vector3.zero;
             if (_targetMotor != null)
                 v = _targetMotor.Velocity;
-            else if (_targetCc != null)
-                v = _targetCc.velocity;
             v.y = 0f;
             return v;
         }
@@ -159,7 +170,6 @@ namespace Tag.Modes
             float ang = Vector3.Angle(transform.forward, desired);
             if (ang <= faceAlignDeg)
             {
-                // Already facing — charge the aim point instead of orbiting on residual yaw.
                 transform.rotation = Quaternion.LookRotation(desired, Vector3.up);
                 moveDir = desired;
             }
@@ -247,17 +257,16 @@ namespace Tag.Modes
         float PartySprint()
         {
             if (!matchPlayerSprint) return speed;
-            if (_playerMotorRef == null || _playerMotorRef.Tuning == null)
+            if (_playerMotorRef == null)
             {
                 foreach (var m in FindObjectsByType<PlayerMotor>(FindObjectsSortMode.None))
                 {
-                    if (m == null || m.Tuning == null || m.GetComponent<DummyPatrol>() != null) continue;
+                    if (m == null || m.GetComponent<DummyPatrol>() != null) continue;
                     _playerMotorRef = m;
                     break;
                 }
             }
-            if (_playerMotorRef != null && _playerMotorRef.Tuning != null)
-                return _playerMotorRef.Tuning.sprintSpeed;
+            if (_playerMotorRef != null) return _playerMotorRef.SprintSpeed;
             return speed > 0.1f ? speed : 9f;
         }
 
@@ -266,10 +275,11 @@ namespace Tag.Modes
 
         void ApplyMove(Vector3 horiz, float dt)
         {
-            if (_cc.isGrounded) _gravity = -2f;
-            else _gravity += -20f * dt;
-            horiz.y = _gravity;
-            _cc.Move(horiz * dt);
+            float vy = _rb.linearVelocity.y;
+            if (_grounded && vy < 0.1f) vy = -0.5f;
+            else vy -= gravity * dt;
+            horiz.y = 0f;
+            _rb.linearVelocity = new Vector3(horiz.x, vy, horiz.z);
         }
     }
 }

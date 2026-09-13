@@ -1,18 +1,25 @@
 using Tag.Gameplay;
-using Tag.Movement;
+using TagArena.Movement;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Tag.Art
 {
     /// <summary>
-    /// Replaces capsule mesh with Dummy_Runner / Dummy_It visual.
-    /// Load order: SerializeField → Resources/Characters prefab → primitive dummy.
-    /// Hub <c>Tag → Setup Hub Visuals</c> writes those prefabs from
-    /// <c>ArtMeshPaths.PreferCharacterFbx</c> (HiPoly Dummy_*_Hi.fbx when present).
-    /// Applies Landon mats (paint lock) and DummyLocomotor.
+    /// Replaces capsule mesh with HiPoly crash-dummy / mannequin visual.
+    /// Load order: SerializeField → HiPoly FBX (Editor) → Resources → primitive fallback.
     /// </summary>
     public class DummyAvatarBinder : MonoBehaviour
     {
+        static readonly string[] MannequinColors =
+        {
+            "Blue", "Mint", "Orange", "Lavender", "Tan", "Red"
+        };
+
+        const string HiPolyDir = "Assets/Art/Characters/HiPoly/";
+
         [SerializeField] GameObject runnerVisualPrefab;
         [SerializeField] GameObject itVisualPrefab;
         [SerializeField] Material runnerBaseMat;
@@ -24,6 +31,9 @@ namespace Tag.Art
         [SerializeField] bool hideRootMeshRenderers = true;
         [SerializeField] Vector3 visualLocalPosition = Vector3.zero;
         [SerializeField] Vector3 visualLocalScale = Vector3.one;
+        [Tooltip("If true, always use procedural mannequin. Leave false to use HiPoly FBX.")]
+        [SerializeField] bool forcePrimitiveMannequin = false;
+        [SerializeField] bool preferMannequinOverRunnerIt = true;
 
         ItController _it;
         GameObject _visualInstance;
@@ -42,8 +52,32 @@ namespace Tag.Art
         {
             if (_resolved) return;
             _resolved = true;
+
+            string color = PickColor();
+#if UNITY_EDITOR
+            if (preferMannequinOverRunnerIt)
+            {
+                runnerVisualPrefab = FirstRenderable(runnerVisualPrefab,
+                    LoadHiPoly($"Dummy_Mannequin_{color}_Hi.fbx"),
+                    LoadHiPoly("Dummy_Runner_Hi.fbx"));
+                itVisualPrefab = FirstRenderable(itVisualPrefab,
+                    LoadHiPoly("Dummy_Mannequin_Red_Hi.fbx"),
+                    LoadHiPoly("Dummy_It_Hi.fbx"),
+                    LoadHiPoly($"Dummy_Mannequin_{color}_Hi.fbx"));
+            }
+            else
+            {
+                runnerVisualPrefab = FirstRenderable(runnerVisualPrefab,
+                    LoadHiPoly("Dummy_Runner_Hi.fbx"),
+                    LoadHiPoly($"Dummy_Mannequin_{color}_Hi.fbx"));
+                itVisualPrefab = FirstRenderable(itVisualPrefab,
+                    LoadHiPoly("Dummy_It_Hi.fbx"),
+                    LoadHiPoly("Dummy_Mannequin_Red_Hi.fbx"));
+            }
+#endif
             runnerVisualPrefab = FirstRenderable(runnerVisualPrefab, "Characters/Dummy_Runner");
             itVisualPrefab = FirstRenderable(itVisualPrefab, "Characters/Dummy_It");
+
             if (runnerBaseMat == null) runnerBaseMat = Resources.Load<Material>("Characters/Mat_Runner_Base");
             if (runnerAccentMat == null) runnerAccentMat = Resources.Load<Material>("Characters/Mat_Runner_Accent");
             if (runnerOverrideMat == null) runnerOverrideMat = Resources.Load<Material>("Characters/Mat_Runner_ItOverride");
@@ -52,14 +86,36 @@ namespace Tag.Art
             if (itOverrideMat == null) itOverrideMat = Resources.Load<Material>("Characters/Mat_It_ItOverride");
         }
 
-        static GameObject FirstRenderable(GameObject current, params string[] resourcePaths)
+#if UNITY_EDITOR
+        static GameObject LoadHiPoly(string fileName)
+        {
+            return AssetDatabase.LoadAssetAtPath<GameObject>(HiPolyDir + fileName);
+        }
+#endif
+
+        string PickColor()
+        {
+            string id = _it != null ? _it.PlayerId : gameObject.name;
+            if (string.IsNullOrEmpty(id)) id = gameObject.name;
+            int h = 0;
+            for (int i = 0; i < id.Length; i++) h = h * 31 + id[i];
+            if (h < 0) h = -h;
+            return MannequinColors[h % MannequinColors.Length];
+        }
+
+        static GameObject FirstRenderable(GameObject current, params object[] candidates)
         {
             if (DummyPrimitiveFactory.PrefabHasRenderer(current)) return current;
-            for (int i = 0; i < resourcePaths.Length; i++)
+            for (int i = 0; i < candidates.Length; i++)
             {
-                var loaded = Resources.Load<GameObject>(resourcePaths[i]);
-                if (DummyPrimitiveFactory.PrefabHasRenderer(loaded))
-                    return loaded;
+                if (candidates[i] is GameObject go && DummyPrimitiveFactory.PrefabHasRenderer(go))
+                    return go;
+                if (candidates[i] is string path)
+                {
+                    var loaded = Resources.Load<GameObject>(path);
+                    if (DummyPrimitiveFactory.PrefabHasRenderer(loaded))
+                        return loaded;
+                }
             }
             return current;
         }
@@ -103,7 +159,7 @@ namespace Tag.Art
             if (_visualInstance != null)
                 Destroy(_visualInstance);
 
-            if (DummyPrimitiveFactory.PrefabHasRenderer(prefab))
+            if (!forcePrimitiveMannequin && DummyPrimitiveFactory.PrefabHasRenderer(prefab))
             {
                 _visualInstance = Instantiate(prefab, transform);
                 _visualInstance.name = asIt ? "DummyVisual_It" : "DummyVisual_Runner";
@@ -124,7 +180,7 @@ namespace Tag.Art
 
             var loco = _visualInstance.GetComponent<DummyLocomotor>();
             if (loco == null) loco = _visualInstance.AddComponent<DummyLocomotor>();
-            loco.Bind(_visualInstance.transform, GetComponent<PlayerMotor>(), GetComponent<PunchHitbox>(), GetComponent<CharacterController>());
+            loco.Bind(_visualInstance.transform, GetComponent<PlayerMotor>(), GetComponent<PunchHitbox>());
 
             HideCapsuleMeshes();
             if (GetComponent<ItMarker>() == null)
@@ -133,6 +189,19 @@ namespace Tag.Art
 
         void ApplyCharacterMats(GameObject visual, bool asIt)
         {
+            // HiPoly mannequins already authored with color — only tint if mats exist
+            // and mesh looks uncolored (skip heavy override when FBX has materials).
+            bool hasAuthored = false;
+            foreach (var r in visual.GetComponentsInChildren<Renderer>(true))
+            {
+                if (r != null && r.sharedMaterial != null && r.sharedMaterial.name != "Default-Material")
+                {
+                    hasAuthored = true;
+                    break;
+                }
+            }
+            if (hasAuthored && !asIt) return;
+
             var mats = asIt
                 ? new[]
                 {

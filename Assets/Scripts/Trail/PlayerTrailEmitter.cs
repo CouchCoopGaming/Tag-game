@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Tag.Gameplay;
 using Tag.Modes;
-using Tag.Movement;
+using TagArena.Movement;
 using UnityEngine;
 
 namespace Tag.Trail

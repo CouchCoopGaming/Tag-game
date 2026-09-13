@@ -1,0 +1,45 @@
+CHROMA LIT — URP Shader Graph notes
+===================================
+
+Create a Lit Shader Graph named ChromaLit.
+
+PROPERTIES
+  AlbedoGrey        Texture2D   (sRGB)     greyscale material / wear
+  Mask              Texture2D   (Linear)   R=Primary G=Secondary B=Accent
+  ORM               Texture2D   (Linear)   R=AO G=Roughness B=Metallic
+  EmissiveMask      Texture2D   (Linear)
+  Normal            Texture2D   (Normal)
+  _Primary          Color
+  _Secondary        Color
+  _Accent           Color
+  _EmissionStrength Float 0-8
+
+GRAPH
+  1. Sample AlbedoGrey
+  2. Sample Mask
+  3. tint = Primary*Mask.r + Secondary*Mask.g + Accent*Mask.b
+  4. baseColor = AlbedoGrey.rgb * tint
+  5. Sample ORM
+       Metallic    = ORM.b
+       Smoothness  = 1 - ORM.g
+       Occlusion   = ORM.r
+  6. emission = Accent * EmissiveMask * _EmissionStrength
+  7. Feed Lit Master
+
+MASK PAINT RULES
+  Pure red / green / blue only.
+  2-4 px soft borders allowed.
+  Eyes, teeth, inner mouth: second material OR sit in black of the mask.
+
+TRON EXCEPTION
+  Albedo almost black.
+  Color lives in Accent + EmissiveMask.
+  Emission: Pale 1.5 / Standard 3.5 / Deep 6.
+
+SOCKET NAMES (all molds)
+  socket_weapon_r
+  socket_weapon_l
+  socket_back
+  socket_hat
+  socket_fx_chest
+  socket_fx_eye

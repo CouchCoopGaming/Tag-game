@@ -326,7 +326,7 @@ namespace Tag.Modes
             string text;
             if (it == null)
                 text = "No one is It";
-            else if (it.GetComponent<Tag.Input.PlayerInputReader>() != null && it.GetComponent<DummyPatrol>() == null)
+            else if (it.GetComponent<TagArena.Movement.PlayerInputReader>() != null && it.GetComponent<DummyPatrol>() == null)
                 text = "YOU ARE IT  —  punch to dump it";
             else
                 text = $"IT: {it.PlayerId}  —  orange hat  —  punch to tag";
