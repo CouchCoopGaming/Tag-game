@@ -24,6 +24,7 @@ namespace Tag.Local
         static MovementConfig _sharedCfg;
 
         [SerializeField] GameObject playerTemplate;
+        [SerializeField] MovementConfig configOverride;
 
         void Awake()
         {
@@ -155,10 +156,22 @@ namespace Tag.Local
             if (mr != null) mr.enabled = false;
         }
 
-        static MovementConfig SharedConfig()
+        MovementConfig SharedConfig()
         {
+            if (_sharedCfg != null)
+                return _sharedCfg;
+
+            if (configOverride != null)
+                _sharedCfg = configOverride;
+            else
+                _sharedCfg = Resources.Load<MovementConfig>("TagArena/MovementConfig");
+
             if (_sharedCfg == null)
+            {
+                Debug.LogWarning("[LocalPlayerSpawner] MovementConfig asset missing; using CreateInstance defaults. Expected Resources/TagArena/MovementConfig.");
                 _sharedCfg = ScriptableObject.CreateInstance<MovementConfig>();
+            }
+
             return _sharedCfg;
         }
 
