@@ -117,7 +117,7 @@ namespace Tag.Art
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
             // Spine / hips lean by state — jet/ski read clearly in TP (jet wins over ski tuck)
-            float leanX = lunging ? 32f : sliding ? 48f : crouch ? 28f : jet ? -18f : skiing ? 16f : wallRun ? 22f : climb ? -8f : mantle ? 34f : air ? 14f : breath;
+            float leanX = lunging ? 32f : sliding ? 48f : crouch ? 28f : jet ? -18f : skiing ? 16f : wallRun ? 22f : climb ? -8f : mantle ? 34f : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : skiing && !jet ? Mathf.Sin(_cycle * 0.5f) * 14f : 0f;
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
             _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : sliding ? 28f : crouch ? 14f : jet ? -8f : skiing ? 10f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
@@ -228,12 +228,12 @@ namespace Tag.Art
             }
             else if (air)
             {
-                // Air / vault limb tells: residual run energy + open arms
+                // Air / vault limb tells: residual run energy + open arms (slight loft for crest leave)
                 float airKick = Mathf.Sin(_cycle) * Mathf.Lerp(28f, 48f, runAmt);
-                _uaLT = _uaL0 * Quaternion.Euler(-28f - airKick * 0.55f, 0f, armZ + 10f);
-                _uaRT = _uaR0 * Quaternion.Euler(-28f + airKick * 0.55f, 0f, -armZ - 10f);
-                _laLT = _laL0 * Quaternion.Euler(-25f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-25f, 0f, 0f);
+                _uaLT = _uaL0 * Quaternion.Euler(-32f - airKick * 0.55f, 0f, armZ + 14f);
+                _uaRT = _uaR0 * Quaternion.Euler(-32f + airKick * 0.55f, 0f, -armZ - 14f);
+                _laLT = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
             }
             else
             {

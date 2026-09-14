@@ -324,9 +324,9 @@ namespace TagArena.Movement
             Vector3 n = _probe.Ground.normal;
             // Gravity along the plane ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â this is the entire Tribes engine in one line.
             v += Physics.gravity.normalized * (cfg.gravity * cfg.skiGravityScale * dt);
-            v = Vector3.ProjectOnPlane(v, n) + n * cfg.skiLaunchLeaveDot * 0.0f;
-
-            // Re-apply plane projection after gravity so we hug without eating speed
+            // Outward vs ground normal — crest-launch fuel (was killed by a zero factor).
+            float leave = Vector3.Dot(v, n);
+            // Hug the plane for friction/edging; restore leave later with a sane factor.
             Vector3 planeVel = Vector3.ProjectOnPlane(v, n);
 
             // Tiny friction ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â never zero, matching real T1 insight: decay by slope.
@@ -341,16 +341,17 @@ namespace TagArena.Movement
                 planeVel = WishAccel.Accelerate(planeVel, edge, planeVel.magnitude + 4f, (cfg.skiSteer * falloff) / 10f, dt);
             }
 
-            v = planeVel;
-
-            // Crest launch: if velocity points away from the plane enough, leave ground.
-            if (Vector3.Dot(v.normalized, n) > cfg.skiLaunchLeaveDot && _probe.Ground.slopeAngle > 8f)
+            // Crest launch: restore outward component (factor 1.0 = full Tribes preserve; threshold = skiLaunchLeaveDot).
+            const float skiLaunchFactor = 1.0f;
+            v = planeVel + n * Mathf.Max(0f, leave) * skiLaunchFactor;
+            if (v.sqrMagnitude > 1e-6f && Vector3.Dot(v.normalized, n) > cfg.skiLaunchLeaveDot && _probe.Ground.slopeAngle > 8f)
             {
                 _coyote = 0f;
                 SetState(MoveState.Air);
             }
             else
             {
+                v = planeVel; // stay glued when not launching
                 SetState(MoveState.Ski);
             }
 
