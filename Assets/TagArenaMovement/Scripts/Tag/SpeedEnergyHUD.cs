@@ -12,6 +12,7 @@ namespace TagArena.Movement
     /// + nearest mega-park zone + It / mode / Hot Potato fuse / Least It times
     /// + bearing/distance to CurrentIt when you are not It
     /// + bearing/distance to nearest non-It when you ARE It (Prey)
+    /// + brief YOU'RE IT / YOU'RE FREE OnGUI flash on local It handoff
     /// (reads TagModeController, falls back to ItController scan).
     /// Local human only (wired by LocalPlayerSpawner for index 0).
     /// </summary>
@@ -22,6 +23,14 @@ namespace TagArena.Movement
         GUIStyle _small;
         GUIStyle _keys;
         GUIStyle _status;
+        GUIStyle _flash;
+
+        // Brief center flash when local gains/loses It (SetIt / TransferIt / punch).
+        const float ItFlashSec = 0.5f;
+        bool _itFlashPrimed;
+        bool _prevLocalIsIt;
+        float _itFlashUntil;
+        bool _itFlashGained;
 
         // Labels mirror PlayerInputReader defaults (skiKey/jetKey/crouchKey/punchKey/lungeKey + hard-coded alts).
         const string Controls =
@@ -97,6 +106,104 @@ namespace TagArena.Movement
             y += 178f;
 
             DrawMatchStatus(y);
+            DrawItHandoffFlash();
+        }
+
+        void Update()
+        {
+            TickItHandoffFlash();
+        }
+
+        /// <summary>
+        /// Watch local ItController.IsIt — same flag SetIt / TransferIt / PunchHitbox mutate.
+        /// Skip first sample so spawn / HUD enable does not false-flash.
+        /// </summary>
+        void TickItHandoffFlash()
+        {
+            bool localIsIt = ResolveLocalIsIt();
+            if (!_itFlashPrimed)
+            {
+                _prevLocalIsIt = localIsIt;
+                _itFlashPrimed = true;
+                return;
+            }
+            if (localIsIt == _prevLocalIsIt)
+                return;
+            _itFlashGained = localIsIt;
+            _itFlashUntil = Time.unscaledTime + ItFlashSec;
+            _prevLocalIsIt = localIsIt;
+        }
+
+        bool ResolveLocalIsIt()
+        {
+            ItController self = null;
+            if (motor != null)
+                self = motor.GetComponent<ItController>();
+            if (self == null)
+                self = GetComponent<ItController>();
+            if (self != null)
+                return self.IsAlive && self.IsIt;
+            return false;
+        }
+
+        /// <summary>
+        /// Cave-man center flash ~0.5s: YOU'RE IT / YOU'RE FREE (TAG! handoff beat).
+        /// </summary>
+        void DrawItHandoffFlash()
+        {
+            float rem = _itFlashUntil - Time.unscaledTime;
+            if (rem <= 0f) return;
+
+            if (_flash == null)
+            {
+                _flash = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 64,
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+
+            float elapsed = ItFlashSec - rem;
+            float fadeIn = 0.08f;
+            float fadeOut = 0.18f;
+            float a;
+            if (elapsed < fadeIn)
+                a = elapsed / fadeIn;
+            else if (rem < fadeOut)
+                a = rem / fadeOut;
+            else
+                a = 1f;
+
+            string msg = _itFlashGained ? "YOU'RE IT" : "YOU'RE FREE";
+            Color tint = _itFlashGained
+                ? new Color(1f, 0.35f, 0.28f, a)
+                : new Color(0.45f, 0.95f, 1f, a);
+            _flash.normal.textColor = tint;
+
+            Color prev = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, a);
+            float w = 720f;
+            float h = 90f;
+            var r = new Rect((Screen.width - w) * 0.5f, Screen.height * 0.28f, w, h);
+            Matrix4x4 prevM = GUI.matrix;
+            float peak = 1f - Mathf.Abs((elapsed / ItFlashSec) - 0.35f) * 0.5f;
+            float scale = Mathf.Lerp(0.92f, 1.08f, Mathf.Clamp01(peak));
+            GUIUtility.ScaleAroundPivot(new Vector2(scale, scale), r.center);
+            GUI.Label(r, msg, _flash);
+            if (_status != null)
+            {
+                var sub = new Rect(r.x, r.yMax - 8f, r.width, 28f);
+                Color prevStatus = _status.normal.textColor;
+                _status.normal.textColor = new Color(1f, 0.92f, 0.55f, a * 0.9f);
+                var prevAlign = _status.alignment;
+                _status.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(sub, "TAG!", _status);
+                _status.alignment = prevAlign;
+                _status.normal.textColor = prevStatus;
+            }
+            GUI.matrix = prevM;
+            GUI.color = prev;
         }
 
         void DrawMatchStatus(float y)
