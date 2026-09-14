@@ -118,9 +118,9 @@ namespace TagArena.Movement
         [Header("Tag arena tuning")]
         public float runnerJetEnergyBonus = 20f;
         public float taggerSprintBonus = 0.55f;
-        public float taggerLungeSpeed = 14f;
-        public float taggerLungeDuration = 0.18f;
-        public float taggerLungeCooldown = 1.6f;
+        public float taggerLungeSpeed = 16f;
+        public float taggerLungeDuration = 0.20f;
+        public float taggerLungeCooldown = 0.8f;
         public float tagRadius = 1.15f;
     }
 }

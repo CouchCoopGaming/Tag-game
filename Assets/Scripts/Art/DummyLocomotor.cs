@@ -1,12 +1,12 @@
-﻿using Tag.Gameplay;
+using Tag.Gameplay;
 using TagArena.Movement;
 using UnityEngine;
 
 namespace Tag.Art
 {
     /// <summary>
-    /// Procedural parkour body driven by TagArena MoveState (ApexÃ—Tribes).
-    /// No AnimationClips required â€” readable limb tells for third-person views.
+    /// Procedural parkour body driven by TagArena MoveState (Apex×Tribes).
+    /// No AnimationClips required — readable limb tells for third-person views.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
     {
@@ -39,7 +39,7 @@ namespace Tag.Art
             if (!_bound && !_loggedBindFail)
             {
                 _loggedBindFail = true;
-                Debug.LogWarning($"[DummyLocomotor] Bone bind failed on '{(visualRoot != null ? visualRoot.name : "null")}' â€” no hierarchical UpperArm/UpperLeg.");
+                Debug.LogWarning($"[DummyLocomotor] Bone bind failed on '{(visualRoot != null ? visualRoot.name : "null")}' — no hierarchical UpperArm/UpperLeg.");
             }
         }
 
@@ -87,6 +87,7 @@ namespace Tag.Art
             bool air = st == MoveState.Air || (!grounded && !climb && !wallRun && !mantle);
             bool crouch = st == MoveState.Crouch;
             bool punching = _punch != null && _punch.IsPunching;
+            bool lunging = _motor != null && _motor.IsLunging;
             var phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
 
             if (grounded && !_wasGrounded) _landSquash = 1f;
@@ -115,11 +116,11 @@ namespace Tag.Art
             float breath = Mathf.Sin(Time.time * 2.1f) * 2.4f;
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
-            // Spine / hips lean by state â€” wall-run asymmetric lean amplified slightly
-            float leanX = sliding || crouch ? 38f : skiing ? 22f : jet ? -12f : wallRun ? 18f : climb ? -8f : mantle ? 28f : air ? 14f : breath;
+            // Spine / hips lean by state — wall-run asymmetric lean amplified slightly
+            float leanX = lunging ? 32f : sliding || crouch ? 38f : skiing ? 22f : jet ? -12f : wallRun ? 18f : climb ? -8f : mantle ? 28f : air ? 14f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 26f : -26f) : skiing ? Mathf.Sin(_cycle * 0.5f) * 6f : 0f;
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
-            _hipsT = _hips0 * Quaternion.Euler(sliding || crouch ? 20f : skiing ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
+            _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : sliding || crouch ? 20f : skiing ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
             _headT = _head0 * Quaternion.Euler(sliding ? 14f : jet ? 8f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
             // Arms
@@ -138,6 +139,15 @@ namespace Tag.Art
                 _uaRT = _uaR0 * Quaternion.Euler(-120f - climbSwing, -10f, -20f);
                 _laLT = _laL0 * Quaternion.Euler(-40f, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(-40f, 0f, 0f);
+            }
+            else if (lunging)
+            {
+                // Short forward dash tell: torso already leans; arms whip back then settle
+                float snap = 0.85f;
+                _uaLT = _uaL0 * Quaternion.Euler(55f * snap, -12f, armZ + 18f);
+                _uaRT = _uaR0 * Quaternion.Euler(55f * snap, 12f, -armZ - 18f);
+                _laLT = _laL0 * Quaternion.Euler(-35f, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(-35f, 0f, 0f);
             }
             else if (punching)
             {
@@ -181,7 +191,14 @@ namespace Tag.Art
             }
 
             // Legs
-            if (sliding || crouch)
+            if (lunging)
+            {
+                _ulLT = _ulL0 * Quaternion.Euler(48f, 0f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(-18f, 0f, 0f);
+                _llLT = _llL0 * Quaternion.Euler(-40f, 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(-12f, 0f, 0f);
+            }
+            else if (sliding || crouch)
             {
                 _ulLT = _ulL0 * Quaternion.Euler(70f, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(55f, 0f, 0f);
@@ -211,14 +228,14 @@ namespace Tag.Art
                 _llRT = _llR0 * Quaternion.Euler(Mathf.Min(0f, -Mathf.Abs(swing) * 0.85f), 0f, 0f);
             }
 
-            float slew = jet || punching || mantle ? 32f : air ? 18f : 16f;
+            float slew = jet || punching || lunging || mantle ? 32f : air ? 18f : 16f;
             Slew(ref _spine, _spineT, slew, dt);
             Slew(ref _hips, _hipsT, slew, dt);
             Slew(ref _head, _headT, slew, dt);
-            Slew(ref _upperArmL, _uaLT, punching ? 36f : slew, dt);
-            Slew(ref _upperArmR, _uaRT, punching ? 40f : slew, dt);
-            Slew(ref _lowerArmL, _laLT, punching ? 36f : slew, dt);
-            Slew(ref _lowerArmR, _laRT, punching ? 40f : slew, dt);
+            Slew(ref _upperArmL, _uaLT, punching || lunging ? 36f : slew, dt);
+            Slew(ref _upperArmR, _uaRT, punching || lunging ? 40f : slew, dt);
+            Slew(ref _lowerArmL, _laLT, punching || lunging ? 36f : slew, dt);
+            Slew(ref _lowerArmR, _laRT, punching || lunging ? 40f : slew, dt);
             Slew(ref _upperLegL, _ulLT, slew, dt);
             Slew(ref _upperLegR, _ulRT, slew, dt);
             Slew(ref _lowerLegL, _llLT, slew, dt);

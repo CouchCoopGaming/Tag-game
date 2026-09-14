@@ -1,4 +1,5 @@
 using UnityEngine;
+using Tag.Audio;
 
 namespace TagArena.Movement
 {
@@ -37,6 +38,7 @@ namespace TagArena.Movement
         public bool HasAirDodgeIFrames => IsAirDodgeLocked;
         public bool IsGrounded => _probe != null && _probe.Ground.grounded;
         public float HorizontalSpeed => HorizSpeed;
+        public bool IsLunging => _lungeT > 0f;
         public float SprintSpeed => cfg != null ? cfg.sprintSpeed : 7.6f;
 
         Rigidbody _rb;
@@ -689,7 +691,10 @@ namespace TagArena.Movement
             if (_lungeT > 0f)
             {
                 _lungeT -= dt;
-                Vector3 dir = wish.sqrMagnitude > 0.01f ? wish : transform.forward;
+                Vector3 dir = wish.sqrMagnitude > 0.01f ? wish.normalized : transform.forward;
+                dir.y = 0f;
+                if (dir.sqrMagnitude < 0.001f) dir = transform.forward;
+                dir.Normalize();
                 v = WishAccel.SetHoriz(v, dir * cfg.taggerLungeSpeed);
                 v.y = Mathf.Max(v.y, -2f);
                 if (_lungeT <= 0f && State != MoveState.Slide) SetState(MoveState.Sprint);
@@ -700,6 +705,14 @@ namespace TagArena.Movement
             if (!_in.LungePressed || _lungeCd > 0f) return false;
             _lungeT = cfg.taggerLungeDuration;
             _lungeCd = cfg.taggerLungeCooldown;
+            Vector3 startDir = wish.sqrMagnitude > 0.01f ? wish.normalized : transform.forward;
+            startDir.y = 0f;
+            if (startDir.sqrMagnitude < 0.001f) startDir = transform.forward;
+            startDir.Normalize();
+            v = WishAccel.SetHoriz(v, startDir * cfg.taggerLungeSpeed);
+            v.y = Mathf.Max(v.y, -2f);
+            if (State != MoveState.Slide) SetState(MoveState.Sprint);
+            TagSfx.LungeWhoosh(transform.position);
             return true;
         }
 

@@ -19,6 +19,7 @@ namespace Tag.Audio
         static AudioClip _slide;
         static AudioClip _jump;
         static AudioClip _miss;
+        static AudioClip _lunge;
 
         public static AudioClip Punch => _punch ??= Resolve("SFX/sfx_punch_hit", () => MakeImpact(180f, 0.07f, 0.55f));
         public static AudioClip Tag => _tag ??= Resolve("SFX/sfx_tag_transfer", () => MakeChirp(520f, 780f, 0.12f, 0.4f));
@@ -28,6 +29,7 @@ namespace Tag.Audio
         public static AudioClip Slide => _slide ??= Resolve("SFX/sfx_slide", () => MakeNoiseWhoosh(0.12f, 0.38f, 700f));
         public static AudioClip Jump => _jump ??= MakeBlip(320f, 0.06f, 0.28f);
         public static AudioClip Miss => _miss ??= Resolve("SFX/sfx_punch_miss", () => MakeBlip(140f, 0.05f, 0.22f));
+        public static AudioClip Lunge => _lunge ??= Resolve("SFX/sfx_air_dodge", () => MakeNoiseWhoosh(0.13f, 0.42f, 1100f));
 
         public static AudioSource EnsureSource(GameObject host)
         {
@@ -66,6 +68,7 @@ namespace Tag.Audio
         public static void SkiStart(AudioSource src) => Play(src, Ski, 0.4f);
         public static void JetStart(AudioSource src) => Play(src, Jet, 0.38f);
         public static void LandImpact(AudioSource src) => Play(src, Land, 0.42f);
+        public static void LungeWhoosh(Vector3 pos) => PlayAt(Lunge, pos, 0.42f);
 
         static AudioClip Resolve(string resourcesPath, System.Func<AudioClip> procedural)
         {
