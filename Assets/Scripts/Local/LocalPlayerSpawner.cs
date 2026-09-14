@@ -24,7 +24,7 @@ namespace Tag.Local
         static MovementConfig _sharedCfg;
 
         [SerializeField] GameObject playerTemplate;
-        [SerializeField] MovementConfig configOverride;
+        [SerializeField] MovementConfig configOverride = null;
 
         void Awake()
         {
