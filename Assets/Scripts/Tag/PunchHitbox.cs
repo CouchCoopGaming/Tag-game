@@ -265,15 +265,15 @@ namespace Tag.Gameplay
                 victim.SetIt(true);
             }
 
-            // Punch impact; become-It chirp fires from ItController.SetIt(true)
-            AudioCuePlayer.Ensure()?.PunchHit(transform.position);
+            // Punch impact (TagSfx has Resources clip + procedural fallback); become-It chirp from SetIt(true)
+            TagSfx.PunchConnect(transform.position);
 
-            // Readable TP punch connect: camera kick on attacker
+            // Readable TP punch connect: stronger camera kick + FOV punch on attacker
             var tps = GetComponentInChildren<TpsMoveCamera>(true);
             if (tps != null)
-                tps.AddKick(new Vector3(0f, 0.08f, -0.22f));
+                tps.AddKick(new Vector3(0f, 0.14f, -0.38f));
 
-            // Target ragdoll / kinematic stun proxy + i-frames + hit pulse
+            // Target ragdoll / kinematic stun proxy + i-frames; hit pulse fires on It visual swap
             victim.ReceiveTagHit(knock, tuning);
 
             // Puncher buff: +8% walk+sprint, no stack, refresh on hit

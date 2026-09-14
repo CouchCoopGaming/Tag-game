@@ -63,7 +63,7 @@ namespace Tag.Audio
             AudioSource.PlayClipAtPoint(clip, pos, Mathf.Clamp01(vol));
         }
 
-        public static void PunchConnect(Vector3 pos) => PlayAt(Punch, pos, 0.5f);
+        public static void PunchConnect(Vector3 pos) => PlayAt(Punch, pos, 0.62f);
         public static void BecomeIt(Vector3 pos) => PlayAt(Tag, pos, 0.48f);
         public static void SkiStart(AudioSource src) => Play(src, Ski, 0.4f);
         public static void JetStart(AudioSource src) => Play(src, Jet, 0.38f);

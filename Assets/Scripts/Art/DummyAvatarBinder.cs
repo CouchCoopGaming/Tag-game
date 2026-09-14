@@ -279,18 +279,18 @@ namespace Tag.Art
             var t = _visualInstance != null ? _visualInstance.transform : null;
             if (t == null) yield break;
             Vector3 baseScale = _visualBaseScale.sqrMagnitude > 0.0001f ? _visualBaseScale : t.localScale;
-            // Brief squash / flash scale so punch connect reads in third-person
-            float dur = 0.22f;
+            // Stronger squash / flash so tag transfer + punch connect read in third-person
+            float dur = 0.28f;
             float elapsed = 0f;
             while (elapsed < dur && t != null)
             {
                 elapsed += Time.deltaTime;
                 float u = Mathf.Clamp01(elapsed / dur);
-                // Overshoot then settle: 1.18 -> 0.92 -> 1
-                float s = u < 0.35f
-                    ? Mathf.Lerp(1f, 1.18f, u / 0.35f)
-                    : (u < 0.65f ? Mathf.Lerp(1.18f, 0.92f, (u - 0.35f) / 0.3f)
-                                 : Mathf.Lerp(0.92f, 1f, (u - 0.65f) / 0.35f));
+                // Overshoot then settle: 1.28 -> 0.88 -> 1
+                float s = u < 0.32f
+                    ? Mathf.Lerp(1f, 1.28f, u / 0.32f)
+                    : (u < 0.62f ? Mathf.Lerp(1.28f, 0.88f, (u - 0.32f) / 0.3f)
+                                 : Mathf.Lerp(0.88f, 1f, (u - 0.62f) / 0.38f));
                 t.localScale = baseScale * s;
                 yield return null;
             }

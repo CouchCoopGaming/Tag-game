@@ -266,7 +266,15 @@ namespace Tag.Art
                     _uaRT = _uaR0 * Quaternion.Euler(-40f - 115f * e, 34f * e, -22f);
                     _laRT = _laR0 * Quaternion.Euler(-55f * e, 0f, 0f);
                 }
-                else // HitRecover / MissRecover
+                else if (phase == PunchPhase.HitRecover)
+                {
+                    // Hold the connect: arm stays punched out + slight overshoot, then eases
+                    float r = Mathf.Lerp(1.15f, 0.55f, punchProg);
+                    _uaRT = _uaR0 * Quaternion.Euler(-55f - 95f * r, 38f * r, -28f);
+                    _laRT = _laR0 * Quaternion.Euler(-62f * r, 0f, 0f);
+                    _uaLT = _uaL0 * Quaternion.Euler(-22f, 12f, armZ + 14f);
+                }
+                else // MissRecover
                 {
                     float r = Mathf.Lerp(1f, 0.2f, punchProg);
                     _uaRT = _uaR0 * Quaternion.Euler(-30f - 70f * r, 18f * r, -12f);
