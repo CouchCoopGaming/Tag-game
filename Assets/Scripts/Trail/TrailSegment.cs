@@ -9,6 +9,11 @@ namespace Tag.Trail
     [RequireComponent(typeof(BoxCollider))]
     public class TrailSegment : MonoBehaviour
     {
+        static readonly List<TrailSegment> s_active = new List<TrailSegment>();
+
+        /// <summary>Live enabled segments (OnEnable/OnDisable). Prefer over FindObjectsByType.</summary>
+        public static IReadOnlyList<TrailSegment> Active => s_active;
+
         public string OwnerId { get; private set; }
         public ItController Owner { get; private set; }
         public float SpawnTime { get; private set; }
@@ -25,6 +30,9 @@ namespace Tag.Trail
         Action<ItController, ItController> _onHit;
         bool _collisionEnabled = true;
         readonly HashSet<int> _hitVictims = new HashSet<int>();
+
+        void OnEnable() => s_active.Add(this);
+        void OnDisable() => s_active.Remove(this);
 
         public void Init(
             ItController owner,

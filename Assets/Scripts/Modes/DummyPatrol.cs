@@ -192,7 +192,7 @@ namespace Tag.Modes
         }
 
         /// <summary>
-        /// Trail Tag only: sample live TrailSegments in range (from PlayerTrailEmitter ribbons)
+        /// Trail Tag only: sample live TrailSegments via static registry (from PlayerTrailEmitter ribbons)
         /// and cache a weighted lateral flee wish. Cheap — runs at decisionHz.
         /// </summary>
         void RefreshTrailFleeWish()
@@ -209,7 +209,7 @@ namespace Tag.Modes
             Vector3 sum = Vector3.zero;
             int hits = 0;
 
-            foreach (var seg in FindObjectsByType<TrailSegment>(FindObjectsSortMode.None))
+            foreach (var seg in TrailSegment.Active)
             {
                 if (seg == null) continue;
                 // Closest point on ribbon A–B (not collider midpoint) so long segments steer correctly.
