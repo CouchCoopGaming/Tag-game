@@ -23,7 +23,6 @@ namespace Tag.Level
         static readonly Color ColSlide = new Color(0x2A / 255f, 0x2A / 255f, 0x2E / 255f, 1f);
         static readonly Color ColPadEdge = new Color(0x2A / 255f, 0x2A / 255f, 0x2E / 255f, 1f);
         static readonly Color ColVault = new Color(0xF5 / 255f, 0xD5 / 255f, 0x47 / 255f, 1f);
-        static readonly Color ColSpawn = new Color(0xE2 / 255f, 0x3B / 255f, 0x2F / 255f, 1f);
         static readonly Color ColElbow = new Color(0xE2 / 255f, 0x3B / 255f, 0x2F / 255f, 1f);
         static readonly Color ColRamp = new Color(0xB8 / 255f, 0xC0 / 255f, 0xC8 / 255f, 1f);
         static readonly Color ColOob = new Color(0x3F / 255f, 0x7A / 255f, 0x4A / 255f, 1f);
@@ -36,7 +35,7 @@ namespace Tag.Level
         static readonly Color ColSpawnLime = new Color(0xA8 / 255f, 0xE6 / 255f, 0x1A / 255f, 1f);
 
         Transform _root;
-        Material _matFloor, _matBowl, _matLoft, _matWall, _matSlide, _matPad, _matVault, _matSpawn, _matElbow, _matRamp, _matOob, _matPath;
+        Material _matFloor, _matBowl, _matLoft, _matWall, _matSlide, _matPad, _matVault, _matElbow, _matRamp, _matOob, _matPath;
 
         void Awake()
         {
@@ -99,7 +98,6 @@ namespace Tag.Level
             _matSlide = MakeMat(ColSlide);
             _matPad = MakeMat(ColPadEdge);
             _matVault = MakeMat(ColVault);
-            _matSpawn = MakeMat(ColSpawn);
             _matElbow = MakeMat(ColElbow);
             _matRamp = MakeMat(ColRamp);
             _matOob = MakeMat(ColOob);
@@ -114,6 +112,18 @@ namespace Tag.Level
             var m = new Material(shader) { color = c, name = "CUT_" + ColorUtility.ToHtmlStringRGB(c) };
             if (m.HasProperty("_BaseColor"))
                 m.SetColor("_BaseColor", c);
+            return m;
+        }
+
+        static Material MakeEmissiveMat(Color c, float emissionMul = 2.2f)
+        {
+            var m = MakeMat(c);
+            m.name = "CUT_Emissive_" + ColorUtility.ToHtmlStringRGB(c);
+            if (m.HasProperty("_EmissionColor"))
+            {
+                m.EnableKeyword("_EMISSION");
+                m.SetColor("_EmissionColor", c * emissionMul);
+            }
             return m;
         }
 
@@ -290,7 +300,7 @@ namespace Tag.Level
 
         void BuildSpawns()
         {
-            // Corner lawns — face inward toward campus; soft rim lights match Toy_SpawnPad colors
+            // Corner lawns — face inward toward campus; emissive rim glow matches Toy_SpawnPad colors
             SpawnPad("Spawn_SW", 6f, 5f, 45f, ColSpawnTeal);
             SpawnPad("Spawn_SE", 66f, 5f, -45f, ColSpawnCoral);
             SpawnPad("Spawn_NW", 6f, 49f, 135f, ColSpawnViolet);
@@ -303,25 +313,25 @@ namespace Tag.Level
 
         void SpawnPad(string name, float x, float z, float faceYawDeg, Color glow)
         {
-            Box(name, new Vector3(x, 0.03f, z), new Vector3(2.2f, 0.06f, 2.2f), _matSpawn);
+            // Per-pad emissive mat (graybox). ParkPropDresser may hide this MeshRenderer when dressed.
+            var padMat = MakeEmissiveMat(glow, 2.2f);
+            Box(name, new Vector3(x, 0.03f, z), new Vector3(2.2f, 0.06f, 2.2f), padMat);
             var face = Box(name + "_Face", new Vector3(x, 0.08f, z), new Vector3(0.3f, 0.08f, 1.1f), _matVault);
             face.transform.localRotation = Quaternion.Euler(0f, faceYawDeg, 0f);
             face.transform.localPosition = new Vector3(x, 0.08f, z) + Quaternion.Euler(0f, faceYawDeg, 0f) * Vector3.forward * 0.9f;
 
-            // Sibling under PARK (unscaled until WorldScale) so pad cube scale does not squash the light.
-            // Wired once from BuildSpawns — matches LocalPlayerSpawner corner pads.
-            var lightGo = new GameObject(name + "_RimLight");
-            lightGo.transform.SetParent(_root, false);
-            lightGo.transform.localPosition = new Vector3(x, 0.28f, z);
-            lightGo.transform.localRotation = Quaternion.identity;
-            lightGo.transform.localScale = Vector3.one;
-            var light = lightGo.AddComponent<Light>();
-            light.type = LightType.Point;
-            light.color = glow;
-            light.intensity = 1.6f;
-            light.range = 32f; // world meters after scale; Light.range is world-space
-            light.shadows = LightShadows.None;
-            light.renderMode = LightRenderMode.Auto;
+            // Thin emissive ring sibling under PARK — no PointLight (URP AdditionalLightsPerObjectLimit=4;
+            // pad PointLights were stealing slots from ItMarker). Survives dresser hideGrayboxMeshWhenDressed.
+            var rim = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            rim.name = name + "_RimGlow";
+            rim.transform.SetParent(_root, false);
+            rim.transform.localPosition = new Vector3(x, 0.02f, z);
+            rim.transform.localRotation = Quaternion.identity;
+            rim.transform.localScale = new Vector3(2.6f, 0.025f, 2.6f);
+            var rimCol = rim.GetComponent<Collider>();
+            if (rimCol != null)
+                Object.DestroyImmediate(rimCol);
+            ApplyMat(rim, MakeEmissiveMat(glow, 2.8f));
         }
 
         void Elbow(string name, float x, float z, bool towardEast, bool towardNorth)
