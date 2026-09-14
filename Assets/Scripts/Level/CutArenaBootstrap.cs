@@ -29,6 +29,12 @@ namespace Tag.Level
         static readonly Color ColOob = new Color(0x3F / 255f, 0x7A / 255f, 0x4A / 255f, 1f);
         static readonly Color ColPath = new Color(0x6E / 255f, 0x4A / 255f, 0x38 / 255f, 1f);
 
+        // Match ParkPropDresser Toy_SpawnPad_* palette (SW Teal, SE Coral, NW Violet, NE Lime)
+        static readonly Color ColSpawnTeal = new Color(0x2E / 255f, 0xC4 / 255f, 0xB6 / 255f, 1f);
+        static readonly Color ColSpawnCoral = new Color(0xFF / 255f, 0x6B / 255f, 0x4A / 255f, 1f);
+        static readonly Color ColSpawnViolet = new Color(0x9B / 255f, 0x5C / 255f, 0xE6 / 255f, 1f);
+        static readonly Color ColSpawnLime = new Color(0xA8 / 255f, 0xE6 / 255f, 0x1A / 255f, 1f);
+
         Transform _root;
         Material _matFloor, _matBowl, _matLoft, _matWall, _matSlide, _matPad, _matVault, _matSpawn, _matElbow, _matRamp, _matOob, _matPath;
 
@@ -284,23 +290,38 @@ namespace Tag.Level
 
         void BuildSpawns()
         {
-            // Corner lawns — face inward toward campus
-            SpawnPad("Spawn_SW", 6f, 5f, 45f);
-            SpawnPad("Spawn_SE", 66f, 5f, -45f);
-            SpawnPad("Spawn_NW", 6f, 49f, 135f);
-            SpawnPad("Spawn_NE", 66f, 49f, -135f);
+            // Corner lawns — face inward toward campus; soft rim lights match Toy_SpawnPad colors
+            SpawnPad("Spawn_SW", 6f, 5f, 45f, ColSpawnTeal);
+            SpawnPad("Spawn_SE", 66f, 5f, -45f, ColSpawnCoral);
+            SpawnPad("Spawn_NW", 6f, 49f, 135f, ColSpawnViolet);
+            SpawnPad("Spawn_NE", 66f, 49f, -135f, ColSpawnLime);
             Elbow("Toy_Hedge_SW", 8f, 7f, true, true);
             Elbow("Toy_Hedge_SE", 64f, 7f, false, true);
             Elbow("Toy_Hedge_NW", 8f, 47f, true, false);
             Elbow("Toy_Hedge_NE", 64f, 47f, false, false);
         }
 
-        void SpawnPad(string name, float x, float z, float faceYawDeg)
+        void SpawnPad(string name, float x, float z, float faceYawDeg, Color glow)
         {
             Box(name, new Vector3(x, 0.03f, z), new Vector3(2.2f, 0.06f, 2.2f), _matSpawn);
             var face = Box(name + "_Face", new Vector3(x, 0.08f, z), new Vector3(0.3f, 0.08f, 1.1f), _matVault);
             face.transform.localRotation = Quaternion.Euler(0f, faceYawDeg, 0f);
             face.transform.localPosition = new Vector3(x, 0.08f, z) + Quaternion.Euler(0f, faceYawDeg, 0f) * Vector3.forward * 0.9f;
+
+            // Sibling under PARK (unscaled until WorldScale) so pad cube scale does not squash the light.
+            // Wired once from BuildSpawns — matches LocalPlayerSpawner corner pads.
+            var lightGo = new GameObject(name + "_RimLight");
+            lightGo.transform.SetParent(_root, false);
+            lightGo.transform.localPosition = new Vector3(x, 0.28f, z);
+            lightGo.transform.localRotation = Quaternion.identity;
+            lightGo.transform.localScale = Vector3.one;
+            var light = lightGo.AddComponent<Light>();
+            light.type = LightType.Point;
+            light.color = glow;
+            light.intensity = 1.6f;
+            light.range = 32f; // world meters after scale; Light.range is world-space
+            light.shadows = LightShadows.None;
+            light.renderMode = LightRenderMode.Auto;
         }
 
         void Elbow(string name, float x, float z, bool towardEast, bool towardNorth)
