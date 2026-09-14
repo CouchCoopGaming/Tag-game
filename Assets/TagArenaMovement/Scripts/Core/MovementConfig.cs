@@ -120,7 +120,7 @@ namespace TagArena.Movement
         public float taggerSprintBonus = 0.55f;
         public float taggerLungeSpeed = 16f;
         public float taggerLungeDuration = 0.20f;
-        public float taggerLungeCooldown = 0.8f;
+        public float taggerLungeCooldown = 1.0f;
         public float tagRadius = 1.15f;
     }
 }

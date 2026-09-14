@@ -117,15 +117,25 @@ namespace Tag.Art
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
             // Spine / hips lean by state — jet/ski read clearly in TP (jet wins over ski tuck)
-            float leanX = lunging ? 32f : sliding ? 48f : crouch ? 28f : jet ? -18f : skiing ? 16f : wallRun ? 22f : climb ? -8f : mantle ? 34f : air ? 18f : breath;
+            float leanX = lunging ? Mathf.Lerp(22f, 36f, _motor != null ? _motor.LungeProgress : 1f) : sliding ? 48f : crouch ? 28f : jet ? -18f : skiing ? 16f : wallRun ? 22f : climb ? -8f : mantle ? 34f : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : skiing && !jet ? Mathf.Sin(_cycle * 0.5f) * 14f : 0f;
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
             _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : sliding ? 28f : crouch ? 14f : jet ? -8f : skiing ? 10f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
-            _headT = _head0 * Quaternion.Euler(sliding ? 18f : crouch ? 6f : jet ? -6f : skiing ? 10f : air ? -6f : -breath * 0.4f, 0f, 0f);
+            _headT = _head0 * Quaternion.Euler(lunging ? 14f : sliding ? 18f : crouch ? 6f : jet ? -6f : skiing ? 10f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
             // Arms
             float armZ = Mathf.Lerp(14f, 30f, runAmt);
-            if (jet)
+            float lungeAmt = lunging && _motor != null ? _motor.LungeProgress : 0f;
+            if (lunging)
+            {
+                // MMB dash tell wins over jet: hard whip early, settle late
+                float snap = Mathf.Lerp(0.45f, 1f, lungeAmt);
+                _uaLT = _uaL0 * Quaternion.Euler(62f * snap, -14f, armZ + 22f);
+                _uaRT = _uaR0 * Quaternion.Euler(62f * snap, 14f, -armZ - 22f);
+                _laLT = _laL0 * Quaternion.Euler(-28f - 18f * snap, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(-28f - 18f * snap, 0f, 0f);
+            }
+            else if (jet)
             {
                 // Pack tell: arms out, off-hand further back
                 _uaLT = _uaL0 * Quaternion.Euler(24f, 10f, 52f);
@@ -168,15 +178,6 @@ namespace Tag.Art
                     _laLT = _laL0 * Quaternion.Euler(-28f, 0f, 0f);
                     _laRT = _laR0 * Quaternion.Euler(-58f, 0f, 0f);
                 }
-            }
-            else if (lunging)
-            {
-                // Short forward dash tell: torso already leans; arms whip back then settle
-                float snap = 0.85f;
-                _uaLT = _uaL0 * Quaternion.Euler(55f * snap, -12f, armZ + 18f);
-                _uaRT = _uaR0 * Quaternion.Euler(55f * snap, 12f, -armZ - 18f);
-                _laLT = _laL0 * Quaternion.Euler(-35f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-35f, 0f, 0f);
             }
             else if (punching)
             {
@@ -246,10 +247,11 @@ namespace Tag.Art
             // Legs
             if (lunging)
             {
-                _ulLT = _ulL0 * Quaternion.Euler(48f, 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(-18f, 0f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(-40f, 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(-12f, 0f, 0f);
+                float stride = Mathf.Lerp(0.55f, 1f, lungeAmt);
+                _ulLT = _ulL0 * Quaternion.Euler(52f * stride, 0f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(-22f * stride, 0f, 0f);
+                _llLT = _llL0 * Quaternion.Euler(-44f * stride, 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(-14f * stride, 0f, 0f);
             }
             else if (sliding)
             {

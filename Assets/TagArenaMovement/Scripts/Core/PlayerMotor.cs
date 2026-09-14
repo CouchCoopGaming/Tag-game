@@ -39,6 +39,11 @@ namespace TagArena.Movement
         public bool IsGrounded => _probe != null && _probe.Ground.grounded;
         public float HorizontalSpeed => HorizSpeed;
         public bool IsLunging => _lungeT > 0f;
+        /// <summary>1 at lunge start, 0 at end (TP whip->settle).</summary>
+        public float LungeProgress =>
+            _lungeT > 0f && cfg != null
+                ? Mathf.Clamp01(_lungeT / Mathf.Max(0.01f, cfg.taggerLungeDuration))
+                : 0f;
         public float SprintSpeed => cfg != null ? cfg.sprintSpeed : 7.6f;
 
         Rigidbody _rb;

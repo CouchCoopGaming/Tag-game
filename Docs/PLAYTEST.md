@@ -61,9 +61,9 @@ Clears ragdoll/stun, zeroes velocity, brief punch i-frames after teleport.
 
 It-only short forward dash (`PlayerMotor.TryLunge`):
 
-- Speed ~16 m/s, duration ~0.20 s, **cooldown ~0.8 s**
+- Speed ~16 m/s, duration ~0.20 s, **cooldown ~1.0 s**
 - Applies on press (wish dir or facing); `TagSfx.LungeWhoosh`
-- `DummyLocomotor` forward lean + arms-back / stride pose while `IsLunging`
+- `DummyLocomotor` whip->settle arms/stride via `LungeProgress` while `IsLunging` (beats jet pack pose)
 
 ## Known leftovers
 
