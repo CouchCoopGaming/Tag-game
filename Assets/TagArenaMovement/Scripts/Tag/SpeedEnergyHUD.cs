@@ -4,6 +4,7 @@ using UnityEngine;
 using Tag.Gameplay;
 using Tag.Level;
 using Tag.Modes;
+using Tag.Trail;
 
 namespace TagArena.Movement
 {
@@ -13,6 +14,7 @@ namespace TagArena.Movement
     /// + bearing/distance to CurrentIt when you are not It
     /// + bearing/distance to nearest non-It when you ARE It (Prey)
     /// + brief YOU'RE IT / YOU'RE FREE OnGUI flash on local It handoff
+    /// + Trail Tag soft near-miss TRAIL! edge pulse when near a foreign ribbon
     /// (reads TagModeController, falls back to ItController scan).
     /// Local human only (wired by LocalPlayerSpawner for index 0).
     /// </summary>
@@ -31,6 +33,12 @@ namespace TagArena.Movement
         bool _prevLocalIsIt;
         float _itFlashUntil;
         bool _itFlashGained;
+
+        // Trail Tag near-miss (foreign ribbon) — soft edge warn before eliminate contact.
+        const float TrailNearMissWarnM = 4.5f;
+        readonly List<TrailSegment> _trailNearScratch = new List<TrailSegment>();
+        float _trailNearDist = float.MaxValue;
+        bool _trailNearActive;
 
         // Labels mirror PlayerInputReader defaults (skiKey/jetKey/crouchKey/punchKey/lungeKey + hard-coded alts).
         const string Controls =
@@ -107,11 +115,13 @@ namespace TagArena.Movement
 
             DrawMatchStatus(y);
             DrawItHandoffFlash();
+            DrawTrailNearMissWarn();
         }
 
         void Update()
         {
             TickItHandoffFlash();
+            TickTrailNearMiss();
         }
 
         /// <summary>
@@ -199,6 +209,119 @@ namespace TagArena.Movement
                 var prevAlign = _status.alignment;
                 _status.alignment = TextAnchor.MiddleCenter;
                 GUI.Label(sub, "TAG!", _status);
+                _status.alignment = prevAlign;
+                _status.normal.textColor = prevStatus;
+            }
+            GUI.matrix = prevM;
+            GUI.color = prev;
+        }
+
+
+        /// <summary>
+        /// Trail Tag only: closest foreign TrailSegment via CopyActive + ClosestPointOnSegment
+        /// (same helpers DummyPatrol trail avoid uses). Warn under TrailNearMissWarnM — soft
+        /// readability cue before BoxCollider eliminate; does not change hit rules.
+        /// </summary>
+        void TickTrailNearMiss()
+        {
+            _trailNearActive = false;
+            _trailNearDist = float.MaxValue;
+
+            var modes = TagModeController.Instance;
+            if (modes == null || modes.SelectedMode != TagModeId.TrailTag)
+                return;
+            if (motor == null) return;
+
+            ItController self = motor.GetComponent<ItController>();
+            if (self == null) self = GetComponent<ItController>();
+            if (self == null || !self.IsAlive || self.IsEliminated)
+                return;
+
+            Vector3 pos = motor.transform.position;
+            float warn = TrailNearMissWarnM;
+            float warnSq = warn * warn;
+            float bestSq = warnSq;
+
+            TrailSegment.CopyActive(_trailNearScratch);
+            for (int i = 0; i < _trailNearScratch.Count; i++)
+            {
+                var seg = _trailNearScratch[i];
+                if (seg == null) continue;
+                // Foreign only — own ribbon is self-grace / separate fairness case.
+                if (seg.Owner != null && seg.Owner == self) continue;
+                if (seg.Owner == null && !string.IsNullOrEmpty(seg.OwnerId)
+                    && seg.OwnerId == self.PlayerId) continue;
+
+                Vector3 closest = seg.ClosestPointOnSegment(pos);
+                Vector3 delta = pos - closest;
+                delta.y = 0f;
+                float dsq = delta.sqrMagnitude;
+                if (dsq >= bestSq) continue;
+                bestSq = dsq;
+                _trailNearDist = Mathf.Sqrt(dsq);
+                _trailNearActive = true;
+            }
+        }
+
+        /// <summary>
+        /// Soft screen-edge pulse + TRAIL! label when near a foreign ribbon.
+        /// Urgency rises toward contact; cave-man OnGUI only (local human HUD).
+        /// </summary>
+        void DrawTrailNearMissWarn()
+        {
+            if (!_trailNearActive || _trailNearDist >= TrailNearMissWarnM)
+                return;
+
+            float urgency = 1f - Mathf.Clamp01(_trailNearDist / TrailNearMissWarnM);
+            float hz = Mathf.Lerp(2.5f, 8f, urgency);
+            float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
+            float pulse = Mathf.Lerp(0.3f, 1f, wave);
+            float a = Mathf.Lerp(0.12f, 0.42f, urgency * pulse);
+
+            Color prev = GUI.color;
+            // Cyan edge → hot warn as you close in (same family as It flee compass).
+            Color calm = new Color(0.2f, 0.95f, 1f, a);
+            Color hot = new Color(1f, 0.35f, 0.45f, a);
+            GUI.color = Color.Lerp(calm, hot, urgency * pulse);
+
+            float edge = Mathf.Lerp(10f, 28f, urgency * pulse);
+            float w = Screen.width;
+            float h = Screen.height;
+            GUI.DrawTexture(new Rect(0f, 0f, w, edge), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(0f, h - edge, w, edge), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(0f, 0f, edge, h), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(w - edge, 0f, edge, h), Texture2D.whiteTexture);
+
+            if (_flash == null)
+            {
+                _flash = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 64,
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+            float textA = Mathf.Lerp(0.45f, 1f, urgency * pulse);
+            _flash.normal.textColor = Color.Lerp(
+                new Color(0.45f, 0.95f, 1f, textA),
+                new Color(1f, 0.4f, 0.5f, textA),
+                urgency * pulse);
+
+            float tw = 420f;
+            float th = 70f;
+            var r = new Rect((w - tw) * 0.5f, h * 0.12f, tw, th);
+            Matrix4x4 prevM = GUI.matrix;
+            float scale = 1f + urgency * 0.12f * pulse;
+            GUIUtility.ScaleAroundPivot(new Vector2(scale, scale), r.center);
+            GUI.Label(r, "TRAIL!", _flash);
+            if (_status != null)
+            {
+                Color prevStatus = _status.normal.textColor;
+                var prevAlign = _status.alignment;
+                _status.alignment = TextAnchor.MiddleCenter;
+                _status.normal.textColor = new Color(1f, 0.92f, 0.55f, textA * 0.85f);
+                GUI.Label(new Rect(r.x, r.yMax - 6f, r.width, 24f),
+                    _trailNearDist.ToString("0.0") + "m", _status);
                 _status.alignment = prevAlign;
                 _status.normal.textColor = prevStatus;
             }
