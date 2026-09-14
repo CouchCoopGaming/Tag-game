@@ -1,10 +1,12 @@
-using Tag.Gameplay;
+﻿using Tag.Gameplay;
+using Tag.Modes;
 using UnityEngine;
 
 namespace Tag.Art
 {
     /// <summary>
     /// Third-person It tell: bright hat + bobbing crown + pulsing floor halo.
+    /// Hot Potato: pulse harder (scale/color/light) as TagModeController.Remaining runs low.
     /// Readable at mid-arena distance without purchased VFX.
     /// </summary>
     public class ItMarker : MonoBehaviour
@@ -14,11 +16,16 @@ namespace Tag.Art
         [SerializeField] float hatHeight = 2.12f;
         [SerializeField] float bobAmp = 0.12f;
         [SerializeField] float bobHz = 2.4f;
+        [SerializeField] float hotPotatoWarnSec = 10f;
 
         ItController _it;
         Transform _hat;
         Transform _halo;
         Light _light;
+        Renderer _hatRend;
+        Renderer _brimRend;
+        Renderer _tipRend;
+        Renderer _haloRend;
         Vector3 _hatBaseLocal;
         Vector3 _hatBaseScale;
         Vector3 _haloBaseScale;
@@ -39,26 +46,52 @@ namespace Tag.Art
             if (_light != null) _light.enabled = on;
             if (!on) return;
 
+            float urgency = HotPotatoFuseUrgency();
             float t = Time.time;
-            float pulse = 0.78f + 0.22f * Mathf.Sin(t * 7.5f);
-            float bob = Mathf.Sin(t * (Mathf.PI * 2f * bobHz)) * bobAmp;
+            float pulseHz = Mathf.Lerp(7.5f, 22f, urgency);
+            float pulseAmp = 0.22f + 0.45f * urgency;
+            float pulse = (0.78f - 0.12f * urgency) + pulseAmp * Mathf.Sin(t * pulseHz);
+            float bob = Mathf.Sin(t * (Mathf.PI * 2f * (bobHz + 3.5f * urgency))) * (bobAmp * (1f + 0.8f * urgency));
 
+            float scaleMul = 0.96f + 0.08f * pulse + 0.22f * urgency * pulse;
             if (_hat != null)
             {
                 _hat.localPosition = _hatBaseLocal + new Vector3(0f, bob, 0f);
-                // Slight spin so the brim reads in TP
-                _hat.localRotation = Quaternion.Euler(0f, t * 55f, 0f);
-                _hat.localScale = _hatBaseScale * (0.96f + 0.08f * pulse);
+                _hat.localRotation = Quaternion.Euler(0f, t * (55f + 90f * urgency), 0f);
+                _hat.localScale = _hatBaseScale * scaleMul;
             }
 
             if (_halo != null)
-                _halo.localScale = _haloBaseScale * pulse;
+                _halo.localScale = _haloBaseScale * (pulse * (1f + 0.55f * urgency));
 
             if (_light != null)
             {
-                _light.intensity = 2.8f * pulse;
-                _light.range = 7.5f + 1.2f * pulse;
+                _light.intensity = (2.8f + 5.5f * urgency) * pulse;
+                _light.range = 7.5f + 1.2f * pulse + 4f * urgency;
+                _light.color = Color.Lerp(new Color(1f, 0.4f, 0.08f), new Color(1f, 0.95f, 0.55f), urgency);
             }
+
+            // Hotter / brighter materials as fuse drains
+            Color hatCol = Color.Lerp(itHat, new Color(1f, 0.92f, 0.35f, 1f), urgency);
+            Color glowCol = Color.Lerp(itGlow, new Color(1f, 0.75f, 0.15f, 0.9f), urgency);
+            float emitMul = 2.6f + 3.4f * urgency * pulse;
+            ApplyRuntimeColor(_hatRend, hatCol, emitMul);
+            ApplyRuntimeColor(_brimRend, hatCol, emitMul * 0.92f);
+            ApplyRuntimeColor(_tipRend, Color.Lerp(new Color(1f, 0.85f, 0.15f, 1f), Color.white, urgency), emitMul * 1.15f);
+            ApplyRuntimeColor(_haloRend, glowCol, 2.8f + 4f * urgency * pulse);
+        }
+
+        /// <summary>0 = calm / not Hot Potato; 1 = fuse about to pop (Remaining near 0).</summary>
+        float HotPotatoFuseUrgency()
+        {
+            var modes = TagModeController.Instance;
+            if (modes == null || modes.SelectedMode != TagModeId.HotPotato)
+                return 0f;
+            float remain = modes.Remaining;
+            if (remain <= 0f)
+                return 0f;
+            float warn = Mathf.Max(0.5f, hotPotatoWarnSec);
+            return 1f - Mathf.Clamp01(remain / warn);
         }
 
         void EnsureParts()
@@ -74,7 +107,7 @@ namespace Tag.Art
             _hatBaseScale = new Vector3(0.48f, 0.2f, 0.48f);
             hatGo.transform.localScale = _hatBaseScale;
             DestroyCollider(hatGo);
-            ApplyMat(hatGo, itHat, emissive: true, emissionMul: 2.6f);
+            _hatRend = ApplyMat(hatGo, itHat, emissive: true, emissionMul: 2.6f);
             _hat = hatGo.transform;
 
             var brim = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
@@ -83,7 +116,7 @@ namespace Tag.Art
             brim.transform.localPosition = new Vector3(0f, -0.65f, 0f);
             brim.transform.localScale = new Vector3(1.7f, 0.14f, 1.7f);
             DestroyCollider(brim);
-            ApplyMat(brim, itHat, emissive: true, emissionMul: 2.4f);
+            _brimRend = ApplyMat(brim, itHat, emissive: true, emissionMul: 2.4f);
 
             // Crown tip for silhouette read
             var tip = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -92,7 +125,7 @@ namespace Tag.Art
             tip.transform.localPosition = new Vector3(0f, 0.85f, 0f);
             tip.transform.localScale = new Vector3(0.55f, 0.55f, 0.55f);
             DestroyCollider(tip);
-            ApplyMat(tip, new Color(1f, 0.85f, 0.15f, 1f), emissive: true, emissionMul: 3.2f);
+            _tipRend = ApplyMat(tip, new Color(1f, 0.85f, 0.15f, 1f), emissive: true, emissionMul: 3.2f);
 
             var haloGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             haloGo.name = "ItHalo";
@@ -101,7 +134,7 @@ namespace Tag.Art
             _haloBaseScale = new Vector3(1.45f, 0.1f, 1.45f);
             haloGo.transform.localScale = _haloBaseScale;
             DestroyCollider(haloGo);
-            ApplyMat(haloGo, itGlow, emissive: true, emissionMul: 2.8f);
+            _haloRend = ApplyMat(haloGo, itGlow, emissive: true, emissionMul: 2.8f);
             _halo = haloGo.transform;
 
             var lightGo = new GameObject("ItLight");
@@ -126,10 +159,10 @@ namespace Tag.Art
             if (c != null) DestroyImmediate(c);
         }
 
-        static void ApplyMat(GameObject go, Color c, bool emissive, float emissionMul = 1.8f)
+        static Renderer ApplyMat(GameObject go, Color c, bool emissive, float emissionMul = 1.8f)
         {
             var r = go.GetComponent<Renderer>();
-            if (r == null) return;
+            if (r == null) return null;
             var mat = DummyPrimitiveFactory.MakeMat(c);
             if (emissive)
             {
@@ -140,6 +173,21 @@ namespace Tag.Art
                 }
             }
             r.sharedMaterial = mat;
+            return r;
+        }
+
+        static void ApplyRuntimeColor(Renderer r, Color c, float emissionMul)
+        {
+            if (r == null) return;
+            var mat = r.material;
+            mat.color = c;
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_EmissionColor"))
+            {
+                mat.EnableKeyword("_EMISSION");
+                mat.SetColor("_EmissionColor", c * emissionMul);
+            }
         }
     }
 }
