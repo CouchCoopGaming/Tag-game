@@ -1,4 +1,4 @@
-﻿using Tag.Gameplay;
+using Tag.Gameplay;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -12,18 +12,26 @@ namespace Tag.Modes
     {
         [SerializeField] float radius = 5.5f;
         [SerializeField] float turnSpeed = 220f;
-        [SerializeField] float punchRange = 1.35f;
-        [SerializeField] float punchConeDeg = 40f;
-        [SerializeField] float itGraceSec = 1f;
-        [SerializeField] float aggression = 0.85f;
-        [SerializeField] float cooldownMin = 0.6f;
-        [SerializeField] float cooldownMax = 0.9f;
+        [Tooltip("Fallback when PunchHitbox/Tuning unavailable. Prefer syncing from PunchTagTuning.reach.")]
+        [SerializeField] float punchRange = 1.55f;
+        [Tooltip("Fallback full cone (deg). Prefer syncing from PunchTagTuning width/reach.")]
+        [SerializeField] float punchConeDeg = 36f;
+        [SerializeField] float itGraceSec = 0.85f;
+        [SerializeField] float aggression = 0.92f;
+        [SerializeField] float cooldownMin = 0.5f;
+        [SerializeField] float cooldownMax = 0.78f;
         [SerializeField] float decisionHz = 5f;
         [SerializeField] Vector3 centerOffset = Vector3.zero;
-        [SerializeField] float closeChaseRange = 3f;
-        [SerializeField] float leadSeconds = 0.25f;
-        [SerializeField] float faceAlignDeg = 18f;
+        [SerializeField] float closeChaseRange = 3.5f;
+        [SerializeField] float leadSeconds = 0.32f;
+        [SerializeField] float faceAlignDeg = 16f;
         [SerializeField] float hotPotatoUrgencySec = 10f;
+        [Tooltip("Only flee when It is within this planar distance; otherwise wander.")]
+        [SerializeField] float fleeThreatRange = 14f;
+        [Tooltip("Blend of lateral strafe into flee dir so pure radial chase is harder.")]
+        [SerializeField] float fleeStrafeBias = 0.35f;
+        [Tooltip("Seconds of threat velocity lead when computing flee-from point.")]
+        [SerializeField] float fleeLeadSeconds = 0.35f;
         [Tooltip("Forward wish strength while wandering (motor treats y>0.4 as sprint).")]
         [SerializeField] float wanderMoveY = 0.35f;
         [Tooltip("Forward wish while fleeing under Hot Potato urgency.")]
@@ -137,6 +145,26 @@ namespace Tag.Modes
             return a;
         }
 
+        /// <summary>Match PunchHitbox / PunchTagTuning.reach so AI swings when the hitbox can connect.</summary>
+        float EffectivePunchRange()
+        {
+            if (_punch != null)
+                return _punch.Reach;
+            return punchRange;
+        }
+
+        /// <summary>Half-angle from hitbox width/reach; slight pad so AI queues near the box edge.</summary>
+        float EffectivePunchConeHalfDeg()
+        {
+            if (_punch != null)
+            {
+                float r = Mathf.Max(0.05f, _punch.Reach);
+                float half = Mathf.Atan((_punch.Width * 0.5f) / r) * Mathf.Rad2Deg;
+                return half * 1.15f; // small decision pad vs geometric box
+            }
+            return punchConeDeg * 0.5f;
+        }
+
         void Retarget()
         {
             _target = null;
@@ -226,7 +254,8 @@ namespace Tag.Modes
                 _cooldown -= dt;
                 if (_itGraceTimer > 0f)
                     _itGraceTimer -= dt;
-                bool inCone = dist <= punchRange && ang <= punchConeDeg * 0.5f;
+                float range = EffectivePunchRange();
+                bool inCone = dist <= range && ang <= EffectivePunchConeHalfDeg();
                 if (inCone && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
                 {
                     _punch?.QueuePunch();
@@ -257,29 +286,67 @@ namespace Tag.Modes
         {
             Vector3 moveDir = transform.forward;
             ItController threat = null;
+            float bestThreat = float.MaxValue;
             foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
             {
-                if (p != null && p.IsIt && p.IsAlive && p != _it) { threat = p; break; }
+                if (p == null || !p.IsIt || !p.IsAlive || p == _it) continue;
+                float d = (p.transform.position - transform.position).sqrMagnitude;
+                if (d < bestThreat) { bestThreat = d; threat = p; }
             }
+
             if (threat != null)
             {
-                Vector3 away = transform.position - threat.transform.position;
+                Vector3 threatPos = threat.transform.position;
+                var threatMotor = threat.GetComponent<PlayerMotor>();
+                if (threatMotor != null && fleeLeadSeconds > 0f)
+                {
+                    Vector3 tv = threatMotor.Velocity;
+                    tv.y = 0f;
+                    threatPos += tv * fleeLeadSeconds;
+                }
+
+                Vector3 away = transform.position - threatPos;
                 away.y = 0f;
+                float threatDist = away.magnitude;
+                if (threatDist > fleeThreatRange)
+                {
+                    // Far enough: resume patrol wander instead of endless radial flee.
+                    Wander(dt, out moveDir);
+                    _ = moveDir;
+                    return;
+                }
+
                 if (away.sqrMagnitude < 0.01f) away = -transform.forward;
+                else away.Normalize();
+
+                // Strafe bias: prefer current facing side so flee isn't pure radial (easier to cut off).
+                Vector3 lateral = Vector3.Cross(Vector3.up, away);
+                if (lateral.sqrMagnitude > 0.001f)
+                {
+                    lateral.Normalize();
+                    if (Vector3.Dot(lateral, transform.right) < 0f) lateral = -lateral;
+                    away = (away + lateral * Mathf.Clamp01(fleeStrafeBias)).normalized;
+                }
+
                 FaceAndSteer(away, dt, out moveDir);
-                bool urgent = HotPotatoUrgent();
+                bool urgent = HotPotatoUrgent() || threatDist <= closeChaseRange * 1.6f;
                 DriveWish(urgent ? fleeUrgencyMoveY : 1f, sprint: true);
             }
             else
             {
-                _angle += (4f / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
-                Vector3 target = _center + new Vector3(Mathf.Cos(_angle * Mathf.Deg2Rad), 0f, Mathf.Sin(_angle * Mathf.Deg2Rad)) * radius;
-                Vector3 to = target - transform.position;
-                to.y = 0f;
-                FaceAndSteer(to, dt, out moveDir);
-                DriveWish(wanderMoveY, sprint: false);
+                Wander(dt, out moveDir);
             }
             _ = moveDir;
+        }
+
+        void Wander(float dt, out Vector3 moveDir)
+        {
+            _angle += (4f / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
+            Vector3 target = _center + new Vector3(Mathf.Cos(_angle * Mathf.Deg2Rad), 0f, Mathf.Sin(_angle * Mathf.Deg2Rad)) * radius;
+            Vector3 to = target - transform.position;
+            to.y = 0f;
+            FaceAndSteer(to, dt, out moveDir);
+            DriveWish(wanderMoveY, sprint: false);
         }
     }
 }

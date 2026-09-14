@@ -15,7 +15,7 @@ namespace Tag.Gameplay
     }
 
     /// <summary>
-    /// It-only dedicated melee. Active punch ONLY Ã¢â‚¬â€ NO passive overlap/aura tag.
+    /// It-only dedicated melee. Active punch ONLY — NO passive overlap/aura tag.
     /// Prefer continuous cast during Active. Closest runner with LoS wins.
     /// </summary>
     public class PunchHitbox : MonoBehaviour
@@ -43,6 +43,10 @@ namespace Tag.Gameplay
             _bufferTimer = Mathf.Max(_bufferTimer, tuning.inputBuffer);
         }
 
+        /// <summary>Active hitbox reach (PunchTagTuning.reach). Used by DummyPatrol swing gating.</summary>
+        public float Reach => tuning != null ? tuning.reach : 1.55f;
+        /// <summary>Active hitbox width (PunchTagTuning.width). Used with Reach for AI cone.</summary>
+        public float Width => tuning != null ? tuning.width : 0.85f;
 
         float _phaseTimer;
         float _phaseDuration;
@@ -173,7 +177,7 @@ namespace Tag.Gameplay
             hitPoint = aimOrigin.position;
 
             Vector3 origin = aimOrigin.position + Vector3.up * tuning.midTorsoHeight;
-            // Pitch clamp Ã‚Â±tolerance around planar forward
+            // Pitch clamp +/-tolerance around planar forward
             Vector3 flatFwd = new Vector3(aimOrigin.forward.x, 0f, aimOrigin.forward.z).normalized;
             if (flatFwd.sqrMagnitude < 0.001f) flatFwd = transform.forward;
             Vector3 forward = Vector3.RotateTowards(
@@ -303,4 +307,3 @@ namespace Tag.Gameplay
         }
     }
 }
-
