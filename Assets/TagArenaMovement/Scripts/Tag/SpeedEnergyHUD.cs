@@ -40,8 +40,8 @@ namespace TagArena.Movement
         const float AllStandingsShowSec = 3.5f;
         const float AllStandingsCycleSec = 8f;
 
-        // Prey compass: pulse scale/alpha/color when chase is this close (meters, flat).
-        const float PreyPulseDistM = 12f;
+        // Compass close-range pulse (Prey hunt / It flee), flat meters.
+        const float CompassPulseDistM = 12f;
 
         // Relative to camera: forward = N, right = E (hunt direction, not world north).
         static readonly string[] Compass8 = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
@@ -150,10 +150,11 @@ namespace TagArena.Movement
 
         /// <summary>
         /// Cave-man compass toward It: camera-relative 8-way + flat meters.
+        /// Pulses under ~12m (cyan/white → hot-potato warn) so close flee reads distinct from Prey hunt.
         /// </summary>
         float DrawItBearing(ItController it, float y)
         {
-            return DrawCompassBearing("It", it.transform.position, y, pulseClose: false);
+            return DrawCompassBearing("It", it.transform.position, y, pulseClose: true, itWarnTint: true);
         }
 
         /// <summary>
@@ -168,7 +169,7 @@ namespace TagArena.Movement
                 GUI.Label(new Rect(24, y, 520, 22), "Prey  none", _status);
                 return y + 22f;
             }
-            return DrawCompassBearing("Prey", prey.transform.position, y, pulseClose: true);
+            return DrawCompassBearing("Prey", prey.transform.position, y, pulseClose: true, itWarnTint: false);
         }
 
         ItController FindNearestPrey(TagModeController modes)
@@ -212,9 +213,10 @@ namespace TagArena.Movement
         /// <summary>
         /// Shared cave-man compass: camera-relative 8-way + flat meters.
         /// Label examples: "It ->  SW  18m" / "Prey ->  SW  18m".
-        /// When pulseClose and dist &lt; PreyPulseDistM: scale/alpha/color urgency pulse.
+        /// When pulseClose and dist &lt; CompassPulseDistM: scale/alpha/color urgency pulse.
+        /// itWarnTint: cyan/white → magenta-orange (flee); else amber → red (hunt).
         /// </summary>
-        float DrawCompassBearing(string label, Vector3 to, float y, bool pulseClose)
+        float DrawCompassBearing(string label, Vector3 to, float y, bool pulseClose, bool itWarnTint = false)
         {
             Vector3 from = motor.transform.position;
             Vector3 flat = to - from;
@@ -247,16 +249,28 @@ namespace TagArena.Movement
 
             Color prevColor = GUI.color;
             Matrix4x4 prevMatrix = GUI.matrix;
-            if (pulseClose && dist < PreyPulseDistM)
+            if (pulseClose && dist < CompassPulseDistM)
             {
                 // 0 at threshold, 1 at contact — closer = hotter / bigger / faster pulse.
-                float urgency = 1f - Mathf.Clamp01(dist / PreyPulseDistM);
+                float urgency = 1f - Mathf.Clamp01(dist / CompassPulseDistM);
                 float hz = Mathf.Lerp(3.5f, 9f, urgency);
                 float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
                 float pulse = Mathf.Lerp(0.35f, 1f, wave);
 
-                Color calm = new Color(1f, 0.92f, 0.55f, 1f);
-                Color hot = new Color(1f, 0.28f, 0.12f, 1f);
+                Color calm;
+                Color hot;
+                if (itWarnTint)
+                {
+                    // Fleeing It: cyan/white → hot-potato warn (magenta-orange), distinct from Prey hunt.
+                    calm = new Color(0.55f, 0.95f, 1f, 1f);
+                    hot = new Color(1f, 0.35f, 0.55f, 1f);
+                }
+                else
+                {
+                    // Hunting Prey: amber → red.
+                    calm = new Color(1f, 0.92f, 0.55f, 1f);
+                    hot = new Color(1f, 0.28f, 0.12f, 1f);
+                }
                 Color tint = Color.Lerp(calm, hot, urgency * pulse);
                 tint.a = Mathf.Lerp(0.55f, 1f, Mathf.Lerp(0.65f, 1f, urgency) * pulse);
                 GUI.color = tint;
