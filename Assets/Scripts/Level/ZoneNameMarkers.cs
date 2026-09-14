@@ -10,7 +10,8 @@ namespace Tag.Level
     public class ZoneNameMarkers : MonoBehaviour
     {
         const string FolderName = "_ZoneNameMarkers";
-        const float LabelHeight = 7f;
+        // Graybox Y; world = * WorldScale (~150). Clears towers (~5 graybox tops).
+        const float LabelHeight = 15f;
 
         static readonly (string label, float cx, float cz)[] Zones =
         {
@@ -63,8 +64,8 @@ namespace Tag.Level
                 tm.anchor = TextAnchor.MiddleCenter;
                 tm.alignment = TextAlignment.Center;
                 tm.fontSize = 64;
-                // Under PARK WorldScale (~10): glyphs stay readable, not giant
-                tm.characterSize = 0.12f;
+                // Under PARK WorldScale (~10): ~3 world-unit glyphs, readable from afar
+                tm.characterSize = 0.3f;
                 tm.color = new Color(1f, 0.95f, 0.75f, 1f);
                 tm.fontStyle = FontStyle.Bold;
 
