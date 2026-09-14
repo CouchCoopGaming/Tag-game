@@ -39,6 +39,8 @@ namespace Tag.Level
                 gameObject.AddComponent<Tag.Art.ParkPropDresser>();
             if (GetComponent<Tag.Art.PgkLandmarkPlacer>() == null)
                 gameObject.AddComponent<Tag.Art.PgkLandmarkPlacer>();
+            if (GetComponent<ZoneNameMarkers>() == null)
+                gameObject.AddComponent<ZoneNameMarkers>();
         }
 
         [ContextMenu("Rebuild CUT Graybox")]
