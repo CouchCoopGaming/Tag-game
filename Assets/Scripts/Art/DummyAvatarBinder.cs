@@ -9,8 +9,8 @@ namespace Tag.Art
 {
     /// <summary>
     /// Replaces capsule mesh with HiPoly crash-dummy / mannequin visual.
-    /// Load order: SerializeField → HiPoly FBX (Editor) → Resources → primitive fallback.
-    /// Falls back to Navy Spade primitive when HiPoly/Resources lack hierarchical limb bones.
+    /// Load order: SerializeField -> Hier HiPoly -> flat HiPoly -> Resources -> primitive fallback.
+    /// Prefers hierarchical HiPoly (*_Hier_Hi). Falls back to flat HiPoly, then Navy Spade primitive when unbound.
     /// </summary>
     public class DummyAvatarBinder : MonoBehaviour
     {
@@ -60,20 +60,26 @@ namespace Tag.Art
 #if UNITY_EDITOR
             if (preferMannequinOverRunnerIt)
             {
+                // Prefer hierarchical HiPoly (*_Hier_Hi) so DummyLocomotor can swing limbs;
+                // flat HiPoly remains as secondary before Runner/It legacy meshes.
                 runnerVisualPrefab = FirstRenderable(runnerVisualPrefab,
+                    LoadHiPoly($"Dummy_Mannequin_{color}_Hier_Hi.fbx"),
                     LoadHiPoly($"Dummy_Mannequin_{color}_Hi.fbx"),
                     LoadHiPoly("Dummy_Runner_Hi.fbx"));
                 itVisualPrefab = FirstRenderable(itVisualPrefab,
+                    LoadHiPoly("Dummy_Mannequin_Red_Hier_Hi.fbx"),
                     LoadHiPoly("Dummy_Mannequin_Red_Hi.fbx"),
                     LoadHiPoly("Dummy_It_Hi.fbx"),
-                    LoadHiPoly($"Dummy_Mannequin_{color}_Hi.fbx"));
+                    LoadHiPoly($"Dummy_Mannequin_{color}_Hier_Hi.fbx"));
             }
             else
             {
                 runnerVisualPrefab = FirstRenderable(runnerVisualPrefab,
+                    LoadHiPoly($"Dummy_Mannequin_{color}_Hier_Hi.fbx"),
                     LoadHiPoly("Dummy_Runner_Hi.fbx"),
                     LoadHiPoly($"Dummy_Mannequin_{color}_Hi.fbx"));
                 itVisualPrefab = FirstRenderable(itVisualPrefab,
+                    LoadHiPoly("Dummy_Mannequin_Red_Hier_Hi.fbx"),
                     LoadHiPoly("Dummy_It_Hi.fbx"),
                     LoadHiPoly("Dummy_Mannequin_Red_Hi.fbx"));
             }
