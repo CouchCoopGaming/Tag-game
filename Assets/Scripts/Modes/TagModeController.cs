@@ -44,6 +44,7 @@ namespace Tag.Modes
 
         public TagModeId SelectedMode { get => selectedMode; set => selectedMode = value; }
         public MatchTuning MatchTuningAsset => matchTuning;
+        public HotPotatoTuning HotPotatoTuningAsset => hotPotatoTuning;
         public float Remaining => _ctx.RemainingTime;
         public bool IsRunning => _ctx.RoundRunning;
         public bool RoundActive =>

@@ -30,7 +30,7 @@ namespace Tag.Modes
         [SerializeField] float closeChaseRange = 3.5f;
         [SerializeField] float leadSeconds = 0.32f;
         [SerializeField] float faceAlignDeg = 16f;
-        [Tooltip("Hot Potato fuse warn window (matches HotPotatoTuning.warnSec / ItMarker).")]
+        [Tooltip("Fallback Hot Potato fuse warn window when HotPotatoTuning unavailable.")]
         [SerializeField] float hotPotatoUrgencySec = 10f;
         [Tooltip("Only flee when It is within this planar distance; otherwise wander.")]
         [SerializeField] float fleeThreatRange = 14f;
@@ -157,7 +157,7 @@ namespace Tag.Modes
 
         /// <summary>
         /// 0 = calm / not Hot Potato; 1 = fuse about to pop (Remaining near 0).
-        /// Uses TagModeController.Remaining vs hotPotatoUrgencySec (~warnSec 10).
+        /// Uses TagModeController.Remaining vs HotPotatoTuning.warnSec (fallback: hotPotatoUrgencySec).
         /// </summary>
         float HotPotatoFuseUrgency()
         {
@@ -166,7 +166,11 @@ namespace Tag.Modes
             float remain = _modes.Remaining;
             if (remain <= 0f)
                 return 0f;
-            float warn = Mathf.Max(0.5f, hotPotatoUrgencySec);
+            float warnSec = hotPotatoUrgencySec;
+            var tuning = _modes.HotPotatoTuningAsset;
+            if (tuning != null && tuning.warnSec > 0f)
+                warnSec = tuning.warnSec;
+            float warn = Mathf.Max(0.5f, warnSec);
             if (remain > warn)
                 return 0f;
             return 1f - Mathf.Clamp01(remain / warn);
