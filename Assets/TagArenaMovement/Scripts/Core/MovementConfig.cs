@@ -14,8 +14,8 @@ namespace TagArena.Movement
         [Header("Grounding")]
         public float groundProbe = 0.28f;
         public float maxWalkableAngle = 48f;
-        public float coyoteTime = 0.14f;
-        public float jumpBuffer = 0.12f;
+        public float coyoteTime = 0.10f;
+        public float jumpBuffer = 0.16f;
         public LayerMask groundMask = ~0;
         public LayerMask wallMask = ~0;
 
@@ -44,10 +44,10 @@ namespace TagArena.Movement
         public float jumpFatigueWindow = 0.75f;
         public float jumpFatigueFullAt = 0.15f;
         public float gravity = 22f;
-        public float fallGravityMult = 1.18f;
+        public float fallGravityMult = 1.50f;
         public float maxFallSpeed = 42f;
         public float landStunSpeed = 28f;
-        public float landStunDuration = 0.28f;
+        public float landStunDuration = 0.20f;
 
         [Header("Air control — Quake/Apex lurch + tap-strafe analog")]
         public float airAccel = 28f;

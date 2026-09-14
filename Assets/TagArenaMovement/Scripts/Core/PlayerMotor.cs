@@ -138,7 +138,7 @@ namespace TagArena.Movement
             Vector3 wish = WishAccel.CameraWish(cam ? cam : transform, _in.Move);
             Vector3 v = _rb.linearVelocity;
 
-            bool grounded = _coyote > 0f && State != MoveState.Mantle && State != MoveState.WallClimb && State != MoveState.WallRun;
+            bool grounded = _probe.Ground.grounded && State != MoveState.Mantle && State != MoveState.WallClimb && State != MoveState.WallRun;
 
             TickEnergy(dt);
             TickHeight(dt);
@@ -465,7 +465,8 @@ namespace TagArena.Movement
                 return;
             }
 
-            if (!grounded) return;
+            // Coyote is jump-only — walk-off should fall immediately (Apex snappy, not air-walk).
+            if (!grounded && _coyote <= 0f) return;
 
             float h = JumpHeightNow();
             bool fromSlide = State == MoveState.Slide && _slideT <= cfg.slideJumpWindow && HorizSpeed <= cfg.slideJumpSpeedCap;

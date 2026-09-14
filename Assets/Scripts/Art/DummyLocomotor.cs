@@ -92,7 +92,7 @@ namespace Tag.Art
 
             if (grounded && !_wasGrounded) _landSquash = 1f;
             _wasGrounded = grounded;
-            _landSquash = Mathf.MoveTowards(_landSquash, 0f, dt * 4.5f);
+            _landSquash = Mathf.MoveTowards(_landSquash, 0f, dt * 6f);
 
             float walkAmt = Mathf.Clamp01(speed / 5.5f);
             float runAmt = Mathf.InverseLerp(5.2f, 9.5f, speed);
@@ -346,9 +346,9 @@ namespace Tag.Art
             if (sliding) bob = -0.22f; else if (crouch) bob = -0.14f;
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
             else if (skiing) bob = -0.10f;
-            if (_landSquash > 0f) bob -= 0.08f * _landSquash;
+            if (_landSquash > 0f) bob -= 0.12f * _landSquash;
             transform.localPosition = _root0 + new Vector3(0f, bob, 0f);
-            float squash = 1f - 0.08f * _landSquash;
+            float squash = 1f - 0.12f * _landSquash;
             transform.localScale = new Vector3(1f / squash, squash, 1f / squash);
         }
 
