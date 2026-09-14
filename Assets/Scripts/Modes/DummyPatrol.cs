@@ -12,6 +12,8 @@ namespace Tag.Modes
     /// Trail Tag: samples nearby TrailSegments and blends a lateral flee wish into steering.
     /// Hot Potato: when fuse Remaining is low (warnSec ~10), It chases harder to dump the tag;
     /// non-It flees harder from the current It.
+    /// Least It: when It, prefer chasing runners with low TimeAsIt (leaders) to push their clocks;
+    /// when not It, bias flee/wander toward nearby non-It allies.
     /// </summary>
     public class DummyPatrol : MonoBehaviour
     {
@@ -53,6 +55,11 @@ namespace Tag.Modes
         [SerializeField] float trailAvoidStrafeBias = 0.45f;
         [Tooltip("How hard trail flee blends into chase/flee/wander wish (0=off).")]
         [SerializeField] float trailAvoidWeight = 0.7f;
+        [Header("Least It bias")]
+        [Tooltip("When It in Least It: meters of chase cost per second of target TimeAsIt (higher = stronger preference for low-time leaders).")]
+        [SerializeField] float leastItChaseTimeWeight = 0.75f;
+        [Tooltip("When not It in Least It: blend flee/wander toward nearest non-It ally (0=off).")]
+        [SerializeField] float leastItAllySeekWeight = 0.45f;
 
         PlayerInputReader _input;
         PlayerRagdoll _ragdoll;
@@ -255,16 +262,49 @@ namespace Tag.Modes
             _targetMotor = null;
             float best = float.MaxValue;
             bool selfIsIt = _it != null && _it.IsIt;
+            bool leastIt = _modes != null && _modes.SelectedMode == TagModeId.LeastIt;
             foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
             {
                 if (p == null || p == _it || !p.IsAlive || p.IsEliminated) continue;
                 // When chasing as It, dump onto nearest non-It (skip other Its if any).
                 if (selfIsIt && p.IsIt) continue;
-                float d = (p.transform.position - transform.position).sqrMagnitude;
-                if (d < best) { best = d; _target = p; }
+                float dSq = (p.transform.position - transform.position).sqrMagnitude;
+                float score = dSq;
+                // Least It + It: prefer tagging leaders (low TimeAsIt) so their clocks rise.
+                if (leastIt && selfIsIt && leastItChaseTimeWeight > 0.001f)
+                {
+                    float dist = Mathf.Sqrt(dSq);
+                    score = dist + leastItChaseTimeWeight * Mathf.Max(0f, p.TimeAsIt);
+                }
+                if (score < best) { best = score; _target = p; }
             }
             if (_target == null) return;
             _targetMotor = _target.GetComponent<PlayerMotor>();
+        }
+
+        /// <summary>
+        /// Least It only: planar unit toward nearest living non-It ally (pack up to avoid free tags).
+        /// </summary>
+        Vector3 LeastItAllySeekDir()
+        {
+            if (_modes == null || _modes.SelectedMode != TagModeId.LeastIt)
+                return Vector3.zero;
+            if (leastItAllySeekWeight <= 0.01f)
+                return Vector3.zero;
+
+            ItController bestAlly = null;
+            float best = float.MaxValue;
+            foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
+            {
+                if (p == null || p == _it || !p.IsAlive || p.IsEliminated || p.IsIt) continue;
+                float d = (p.transform.position - transform.position).sqrMagnitude;
+                if (d < best) { best = d; bestAlly = p; }
+            }
+            if (bestAlly == null) return Vector3.zero;
+            Vector3 to = bestAlly.transform.position - transform.position;
+            to.y = 0f;
+            if (to.sqrMagnitude < 0.01f) return Vector3.zero;
+            return to.normalized;
         }
 
         /// <summary>
@@ -483,6 +523,11 @@ namespace Tag.Modes
                     away = (away + lateral * Mathf.Clamp01(strafe)).normalized;
                 }
 
+                // Least It: peel toward a non-It ally so the pack clusters instead of solo runs.
+                Vector3 allySeek = LeastItAllySeekDir();
+                if (allySeek.sqrMagnitude > 0.01f)
+                    away = (away + allySeek * Mathf.Clamp01(leastItAllySeekWeight)).normalized;
+
                 away = BlendTrailAvoid(away);
                 FaceAndSteer(away, dt, out moveDir);
                 bool urgent = HotPotatoUrgent() || threatDist <= closeChaseRange * 1.6f;
@@ -501,6 +546,12 @@ namespace Tag.Modes
             Vector3 target = _center + new Vector3(Mathf.Cos(_angle * Mathf.Deg2Rad), 0f, Mathf.Sin(_angle * Mathf.Deg2Rad)) * radius;
             Vector3 to = target - transform.position;
             to.y = 0f;
+            Vector3 allySeek = LeastItAllySeekDir();
+            if (allySeek.sqrMagnitude > 0.01f)
+            {
+                if (to.sqrMagnitude < 0.001f) to = allySeek;
+                else to = (to.normalized + allySeek * Mathf.Clamp01(leastItAllySeekWeight * 0.6f)).normalized;
+            }
             to = BlendTrailAvoid(to);
             FaceAndSteer(to, dt, out moveDir);
             DriveWish(wanderMoveY, sprint: false);
