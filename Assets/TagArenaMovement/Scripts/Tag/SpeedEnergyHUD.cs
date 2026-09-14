@@ -3,13 +3,25 @@
 namespace TagArena.Movement
 {
     /// <summary>
-    /// Cave-man OnGUI: speed, move state, jet fuel, ski on/off. Local human only.
+    /// Cave-man OnGUI: speed, move state, jet fuel, ski on/off + P0 controls cheat-sheet.
+    /// Local human only (wired by LocalPlayerSpawner for index 0).
     /// </summary>
     public class SpeedEnergyHUD : MonoBehaviour
     {
         public PlayerMotor motor;
         GUIStyle _big;
         GUIStyle _small;
+        GUIStyle _keys;
+
+        // Labels mirror PlayerInputReader defaults (skiKey/jetKey/crouchKey/punchKey/lungeKey + hard-coded alts).
+        const string Controls =
+            "WASD move\n" +
+            "Shift ski\n" +
+            "RMB jet\n" +
+            "Space jump\n" +
+            "Ctrl/C crouch\n" +
+            "LMB/E punch\n" +
+            "MMB lunge";
 
         void OnGUI()
         {
@@ -18,8 +30,10 @@ namespace TagArena.Movement
             {
                 _big = new GUIStyle(GUI.skin.label) { fontSize = 28, fontStyle = FontStyle.Bold };
                 _small = new GUIStyle(GUI.skin.label) { fontSize = 18 };
+                _keys = new GUIStyle(GUI.skin.label) { fontSize = 15 };
                 _big.normal.textColor = Color.white;
                 _small.normal.textColor = new Color(0.85f, 0.9f, 1f);
+                _keys.normal.textColor = new Color(0.75f, 0.82f, 0.95f);
             }
 
             float hs = motor.HorizSpeed;
@@ -40,8 +54,14 @@ namespace TagArena.Movement
                 "JET " + motor.Energy.ToString("0") + "/" + maxE.ToString("0") + "  " + jet + "   " + ski,
                 _small);
 
+            float y = 110f;
             if (motor.SuperGlideT >= 0f)
-                GUI.Label(new Rect(24, 110, 280, 28), "GLIDE WINDOW", _big);
+            {
+                GUI.Label(new Rect(24, y, 280, 28), "GLIDE WINDOW", _big);
+                y += 32f;
+            }
+
+            GUI.Label(new Rect(24, y, 220, 160), Controls, _keys);
         }
     }
 }

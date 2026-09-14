@@ -1,4 +1,4 @@
-using Tag.Gameplay;
+﻿using Tag.Gameplay;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -11,16 +11,19 @@ namespace Tag.Local
     public class VoidRespawn : MonoBehaviour
     {
         [SerializeField] float killY = -20f;
+        [SerializeField] float punchInvulnAfterTeleport = 1f;
 
         Rigidbody _rb;
         PlayerMotor _motor;
         PlayerRagdoll _ragdoll;
+        ItController _it;
 
         void Awake()
         {
             _rb = GetComponent<Rigidbody>();
             _motor = GetComponent<PlayerMotor>();
             _ragdoll = GetComponent<PlayerRagdoll>();
+            _it = GetComponent<ItController>();
         }
 
         void FixedUpdate()
@@ -49,6 +52,11 @@ namespace Tag.Local
 
             transform.position = pad;
             Physics.SyncTransforms();
+
+            // Brief punch i-frames so spawn-camp / mid-void teleports aren't free tags.
+            // PunchHitbox already gates via ItController.CanBeTagged → HasIFrames.
+            if (_it != null && punchInvulnAfterTeleport > 0f)
+                _it.ApplySpawnIFrames(punchInvulnAfterTeleport);
         }
 
         static Vector3 NearestPad(Vector3 from)
