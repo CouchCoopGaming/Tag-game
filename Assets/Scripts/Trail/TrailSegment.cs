@@ -14,6 +14,16 @@ namespace Tag.Trail
         /// <summary>Live enabled segments (OnEnable/OnDisable). Prefer over FindObjectsByType.</summary>
         public static IReadOnlyList<TrailSegment> Active => s_active;
 
+        /// <summary>
+        /// Snapshot live segments into buffer (clears first). Iterate the copy so
+        /// OnDisable/despawn mid-loop cannot throw InvalidOperationException.
+        /// </summary>
+        public static void CopyActive(List<TrailSegment> buffer)
+        {
+            buffer.Clear();
+            buffer.AddRange(s_active);
+        }
+
         public string OwnerId { get; private set; }
         public ItController Owner { get; private set; }
         public float SpawnTime { get; private set; }

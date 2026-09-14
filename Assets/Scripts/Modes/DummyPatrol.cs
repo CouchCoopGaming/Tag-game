@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Tag.Gameplay;
 using Tag.Trail;
 using TagArena.Movement;
@@ -61,6 +62,7 @@ namespace Tag.Modes
         float _itGraceTimer;
         bool _wasIt;
         Vector3 _trailFleeWish;
+        readonly List<TrailSegment> _trailActiveScratch = new List<TrailSegment>();
 
         void Awake()
         {
@@ -192,7 +194,7 @@ namespace Tag.Modes
         }
 
         /// <summary>
-        /// Trail Tag only: sample live TrailSegments via static registry (from PlayerTrailEmitter ribbons)
+        /// Trail Tag only: sample a snapshot of live TrailSegments via CopyActive (from PlayerTrailEmitter ribbons)
         /// and cache a weighted lateral flee wish. Cheap — runs at decisionHz.
         /// </summary>
         void RefreshTrailFleeWish()
@@ -209,7 +211,8 @@ namespace Tag.Modes
             Vector3 sum = Vector3.zero;
             int hits = 0;
 
-            foreach (var seg in TrailSegment.Active)
+            TrailSegment.CopyActive(_trailActiveScratch);
+            foreach (var seg in _trailActiveScratch)
             {
                 if (seg == null) continue;
                 // Closest point on ribbon A–B (not collider midpoint) so long segments steer correctly.
