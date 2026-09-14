@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Tag.Local
 {
     /// <summary>
-    /// Spawns 2–4 local players on PARK pads using TagArena (Apex×Tribes) motor + FP camera.
+    /// Spawns 2â€“4 local players on PARK pads using TagArena (ApexÃ—Tribes) motor + third-person camera.
     /// </summary>
     public class LocalPlayerSpawner : MonoBehaviour
     {
@@ -98,14 +98,14 @@ namespace Tag.Local
 
             if (go.GetComponent<PlayerInputReader>() == null) go.AddComponent<PlayerInputReader>();
             var input = go.GetComponent<PlayerInputReader>();
-            // PlayerIndex lives on Tag.Input legacy — arena reader has no index; split-screen later
+            // PlayerIndex lives on Tag.Input legacy â€” arena reader has no index; split-screen later
 
             if (go.GetComponent<SurfaceProbe>() == null) go.AddComponent<SurfaceProbe>();
             var motor = go.GetComponent<PlayerMotor>();
             if (motor == null) motor = go.AddComponent<PlayerMotor>();
             motor.cfg = SharedConfig();
 
-            // Do NOT attach TagArena.TagRole auto-tag — Tag uses PunchHitbox + ItController
+            // Do NOT attach TagArena.TagRole auto-tag â€” Tag uses PunchHitbox + ItController
             motor.tagRole = null;
 
             if (go.GetComponent<MoveAnimDriver>() == null)
@@ -123,9 +123,9 @@ namespace Tag.Local
             var it = go.GetComponent<ItController>();
             if (it != null) it.PlayerId = $"P{index + 1}";
 
-            // First-person camera only for human pawns (AI keeps no MainCamera)
+            // Third-person camera for human pawns (AI keeps no MainCamera)
             if (!ai)
-                SetupFpCamera(go, motor);
+                SetupTpCamera(go, motor);
             else
             {
                 // Kill orphan cameras on DummyRunner so they don't steal MainCamera
@@ -152,14 +152,14 @@ namespace Tag.Local
             return _sharedCfg;
         }
 
-        static void SetupFpCamera(GameObject go, PlayerMotor motor)
+        static void SetupTpCamera(GameObject go, PlayerMotor motor)
         {
-            // Remove old child cameras that aren't under CamRig
+            // Disable / remove first-person eye CamRig and FpsMoveCamera
+            foreach (var fps in go.GetComponentsInChildren<FpsMoveCamera>(true))
+                Destroy(fps);
+
             foreach (var cam in go.GetComponentsInChildren<Camera>(true))
             {
-                if (cam.transform.parent != null && cam.transform.parent.name == "Pitch") continue;
-                if (cam.transform.name == "Camera" && cam.transform.parent != null && cam.transform.parent.name == "Pitch") continue;
-                // keep if already in CamRig
                 bool underRig = false;
                 var t = cam.transform;
                 while (t != null)
@@ -167,62 +167,54 @@ namespace Tag.Local
                     if (t.name == "CamRig") { underRig = true; break; }
                     t = t.parent;
                 }
-                if (!underRig && cam.gameObject.name != "Camera")
-                    Destroy(cam.gameObject);
-                else if (!underRig)
+                if (!underRig)
                 {
-                    // orphan old camera — disable, build new rig
                     cam.enabled = false;
                     var al = cam.GetComponent<AudioListener>();
                     if (al) al.enabled = false;
                 }
             }
 
-            Transform camRig = go.transform.Find("CamRig");
-            if (camRig == null)
+            // Tear down old FP eye placement if present (CamRig at eye height with Pitch child)
+            Transform existing = go.transform.Find("CamRig");
+            if (existing != null)
             {
-                var rigGo = new GameObject("CamRig");
-                camRig = rigGo.transform;
-                camRig.SetParent(go.transform, false);
-                camRig.localPosition = new Vector3(0f, 1.62f, 0f);
-
-                var pitchGo = new GameObject("Pitch");
-                pitchGo.transform.SetParent(camRig, false);
-
-                var camGo = new GameObject("Camera");
-                camGo.transform.SetParent(pitchGo.transform, false);
-                var cam = camGo.AddComponent<Camera>();
-                cam.tag = "MainCamera";
-                cam.fieldOfView = motor.cfg != null ? motor.cfg.fovIdle : 75f;
-                if (camGo.GetComponent<AudioListener>() == null)
-                    camGo.AddComponent<AudioListener>();
-
-                var feel = camRig.gameObject.AddComponent<FpsMoveCamera>();
-                feel.motor = motor;
-                feel.cfg = motor.cfg;
-                feel.pitchPivot = pitchGo.transform;
-                feel.cam = cam;
-                motor.cam = cam.transform;
+                // Rebuild clean TP boom â€” destroy old eye rig
+                Destroy(existing.gameObject);
+                existing = null;
             }
-            else
-            {
-                var feel = camRig.GetComponent<FpsMoveCamera>();
-                if (feel == null) feel = camRig.gameObject.AddComponent<FpsMoveCamera>();
-                feel.motor = motor;
-                feel.cfg = motor.cfg;
-                var pitch = camRig.Find("Pitch");
-                if (pitch != null)
-                {
-                    feel.pitchPivot = pitch;
-                    var cam = pitch.GetComponentInChildren<Camera>();
-                    if (cam != null)
-                    {
-                        feel.cam = cam;
-                        motor.cam = cam.transform;
-                        cam.tag = "MainCamera";
-                    }
-                }
-            }
+
+            var rigGo = new GameObject("CamRig");
+            var camRig = rigGo.transform;
+            camRig.SetParent(go.transform, false);
+            camRig.localPosition = Vector3.zero;
+            camRig.localRotation = Quaternion.identity;
+
+            var pivotGo = new GameObject("Pivot");
+            pivotGo.transform.SetParent(camRig, false);
+            pivotGo.transform.localPosition = new Vector3(0f, 1.35f, 0f);
+
+            var camGo = new GameObject("Camera");
+            camGo.transform.SetParent(pivotGo.transform, false);
+            camGo.transform.localPosition = new Vector3(0f, 0.55f, -5.5f);
+            var camComp = camGo.AddComponent<Camera>();
+            camComp.tag = "MainCamera";
+            camComp.fieldOfView = motor.cfg != null ? motor.cfg.fovIdle : 70f;
+            camComp.nearClipPlane = 0.15f;
+            if (camGo.GetComponent<AudioListener>() == null)
+                camGo.AddComponent<AudioListener>();
+
+            var tps = camRig.gameObject.AddComponent<TpsMoveCamera>();
+            tps.motor = motor;
+            tps.cfg = motor.cfg;
+            tps.pitchPivot = pivotGo.transform;
+            tps.cam = camComp;
+            tps.boomOffset = new Vector3(0f, 0.55f, -5.5f);
+            tps.pivotHeight = 1.35f;
+            motor.cam = camComp.transform;
+
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
     }
 }

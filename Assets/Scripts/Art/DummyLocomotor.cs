@@ -6,7 +6,7 @@ namespace Tag.Art
 {
     /// <summary>
     /// Procedural parkour body driven by TagArena MoveState (Apex×Tribes).
-    /// No AnimationClips required — readable limb tells for FP + third-party views.
+    /// No AnimationClips required — readable limb tells for third-person views.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
     {
@@ -21,6 +21,7 @@ namespace Tag.Art
         Quaternion _ulL0, _ulR0, _llL0, _llR0;
         Vector3 _root0;
         bool _bound;
+        bool _loggedBindFail;
         float _cycle;
         float _landSquash;
         bool _wasGrounded = true;
@@ -35,6 +36,35 @@ namespace Tag.Art
             _punch = punch;
             _root0 = transform.localPosition;
             Cache(visualRoot);
+            if (!_bound && !_loggedBindFail)
+            {
+                _loggedBindFail = true;
+                Debug.LogWarning($"[DummyLocomotor] Bone bind failed on '{(visualRoot != null ? visualRoot.name : "null")}' — no hierarchical UpperArm/UpperLeg.");
+            }
+        }
+
+        /// <summary>
+        /// True when the visual has a hierarchical limb rig (LowerArm under UpperArm).
+        /// Flat sibling mesh mannequins (HiPoly FBX / Dummy_Runner) return false.
+        /// </summary>
+        public static bool HasBindableBones(Transform root)
+        {
+            if (root == null) return false;
+            var upperArm = FindBone(root, "UpperArm_L", "UpperArm.L", "LeftArm", "LeftUpperArm", "mixamorig:LeftArm", "Arm_L", "upperarm_l", "Upper_Arm_L");
+            var lowerArm = FindBone(root, "LowerArm_L", "LowerArm.L", "LeftForeArm", "LeftLowerArm", "mixamorig:LeftForeArm", "ForeArm_L", "lowerarm_l", "Lower_Arm_L");
+            var upperLeg = FindBone(root, "UpperLeg_L", "UpperLeg.L", "LeftUpLeg", "LeftUpperLeg", "mixamorig:LeftUpLeg", "Thigh_L", "upperleg_l", "Upper_Leg_L");
+            if (upperArm == null || upperLeg == null) return false;
+            // Require hierarchy so procedural swing actually moves the distal limb
+            if (lowerArm != null && lowerArm.IsChildOf(upperArm) && lowerArm != upperArm)
+                return true;
+            // Or explicit Hips/Spine empties with arms as descendants (primitive factory)
+            var hips = FindBone(root, "Hips", "Pelvis", "mixamorig:Hips", "hip", "Root");
+            var spine = FindBone(root, "Spine", "Torso", "Spine1", "mixamorig:Spine", "Chest");
+            if (hips != null && upperLeg.IsChildOf(hips))
+                return true;
+            if (spine != null && upperArm.IsChildOf(spine) && upperArm != spine)
+                return true;
+            return false;
         }
 
         void LateUpdate()
@@ -184,17 +214,17 @@ namespace Tag.Art
         void Cache(Transform root)
         {
             if (root == null) return;
-            _hips = FindBone(root, "Hips");
-            _spine = FindBone(root, "Spine") ?? FindBone(root, "Torso");
-            _head = FindBone(root, "Head");
-            _upperArmL = FindBone(root, "UpperArm_L");
-            _upperArmR = FindBone(root, "UpperArm_R");
-            _lowerArmL = FindBone(root, "LowerArm_L");
-            _lowerArmR = FindBone(root, "LowerArm_R");
-            _upperLegL = FindBone(root, "UpperLeg_L");
-            _upperLegR = FindBone(root, "UpperLeg_R");
-            _lowerLegL = FindBone(root, "LowerLeg_L");
-            _lowerLegR = FindBone(root, "LowerLeg_R");
+            _hips = FindBone(root, "Hips", "Pelvis", "mixamorig:Hips", "hip");
+            _spine = FindBone(root, "Spine", "Torso", "Spine1", "mixamorig:Spine", "Chest");
+            _head = FindBone(root, "Head", "mixamorig:Head", "head");
+            _upperArmL = FindBone(root, "UpperArm_L", "UpperArm.L", "LeftArm", "LeftUpperArm", "mixamorig:LeftArm", "Arm_L", "upperarm_l");
+            _upperArmR = FindBone(root, "UpperArm_R", "UpperArm.R", "RightArm", "RightUpperArm", "mixamorig:RightArm", "Arm_R", "upperarm_r");
+            _lowerArmL = FindBone(root, "LowerArm_L", "LowerArm.L", "LeftForeArm", "LeftLowerArm", "mixamorig:LeftForeArm", "ForeArm_L", "lowerarm_l");
+            _lowerArmR = FindBone(root, "LowerArm_R", "LowerArm.R", "RightForeArm", "RightLowerArm", "mixamorig:RightForeArm", "ForeArm_R", "lowerarm_r");
+            _upperLegL = FindBone(root, "UpperLeg_L", "UpperLeg.L", "LeftUpLeg", "LeftUpperLeg", "mixamorig:LeftUpLeg", "Thigh_L", "upperleg_l");
+            _upperLegR = FindBone(root, "UpperLeg_R", "UpperLeg.R", "RightUpLeg", "RightUpperLeg", "mixamorig:RightUpLeg", "Thigh_R", "upperleg_r");
+            _lowerLegL = FindBone(root, "LowerLeg_L", "LowerLeg.L", "LeftLeg", "LeftLowerLeg", "mixamorig:LeftLeg", "Calf_L", "lowerleg_l");
+            _lowerLegR = FindBone(root, "LowerLeg_R", "LowerLeg.R", "RightLeg", "RightLowerLeg", "mixamorig:RightLeg", "Calf_R", "lowerleg_r");
             _bound = _upperArmL != null || _upperLegL != null || _spine != null;
             if (!_bound) return;
             if (_hips) _hips0 = _hips.localRotation;
@@ -213,12 +243,65 @@ namespace Tag.Art
             _ulLT = _ulL0; _ulRT = _ulR0; _llLT = _llL0; _llRT = _llR0;
         }
 
-        static Transform FindBone(Transform root, string name)
+        static Transform FindBone(Transform root, params string[] names)
         {
-            if (root.name == name) return root;
-            foreach (var t in root.GetComponentsInChildren<Transform>(true))
-                if (t.name == name) return t;
+            if (root == null || names == null || names.Length == 0) return null;
+            var all = root.GetComponentsInChildren<Transform>(true);
+
+            // Exact match (any alias)
+            for (int n = 0; n < names.Length; n++)
+            {
+                string want = names[n];
+                if (string.IsNullOrEmpty(want)) continue;
+                for (int i = 0; i < all.Length; i++)
+                {
+                    if (all[i].name == want) return all[i];
+                }
+            }
+
+            // Case-insensitive exact
+            for (int n = 0; n < names.Length; n++)
+            {
+                string want = names[n];
+                if (string.IsNullOrEmpty(want)) continue;
+                for (int i = 0; i < all.Length; i++)
+                {
+                    if (string.Equals(all[i].name, want, System.StringComparison.OrdinalIgnoreCase))
+                        return all[i];
+                }
+            }
+
+            // Fuzzy: strip common prefixes, then contains token
+            for (int n = 0; n < names.Length; n++)
+            {
+                string token = NormalizeBoneToken(names[n]);
+                if (token.Length < 3) continue;
+                Transform best = null;
+                int bestScore = int.MaxValue;
+                for (int i = 0; i < all.Length; i++)
+                {
+                    string tn = NormalizeBoneToken(all[i].name);
+                    if (tn == token) return all[i];
+                    if (tn.Contains(token))
+                    {
+                        int score = tn.Length - token.Length;
+                        if (score < bestScore) { bestScore = score; best = all[i]; }
+                    }
+                }
+                if (best != null) return best;
+            }
+
             return null;
+        }
+
+        static string NormalizeBoneToken(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return string.Empty;
+            // strip mixamorig: / Armature / spaces
+            int colon = name.LastIndexOf(':');
+            if (colon >= 0 && colon + 1 < name.Length) name = name.Substring(colon + 1);
+            name = name.Replace(" ", "").Replace(".", "").Replace("-", "");
+            return name.ToLowerInvariant();
         }
     }
 }

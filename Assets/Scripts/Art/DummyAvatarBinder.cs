@@ -10,6 +10,7 @@ namespace Tag.Art
     /// <summary>
     /// Replaces capsule mesh with HiPoly crash-dummy / mannequin visual.
     /// Load order: SerializeField → HiPoly FBX (Editor) → Resources → primitive fallback.
+    /// Falls back to Navy Spade primitive when HiPoly/Resources lack hierarchical limb bones.
     /// </summary>
     public class DummyAvatarBinder : MonoBehaviour
     {
@@ -31,9 +32,11 @@ namespace Tag.Art
         [SerializeField] bool hideRootMeshRenderers = true;
         [SerializeField] Vector3 visualLocalPosition = Vector3.zero;
         [SerializeField] Vector3 visualLocalScale = Vector3.one;
-        [Tooltip("If true, always use procedural mannequin. Leave false to use HiPoly FBX.")]
+        [Tooltip("If true, always use procedural mannequin. Leave false to use HiPoly FBX when it has bindable bones.")]
         [SerializeField] bool forcePrimitiveMannequin = false;
         [SerializeField] bool preferMannequinOverRunnerIt = true;
+        [Tooltip("If HiPoly/Resources instantiate but have no hierarchical limb bones, use Navy Spade primitive.")]
+        [SerializeField] bool fallbackToPrimitiveIfUnbound = true;
 
         ItController _it;
         GameObject _visualInstance;
@@ -159,6 +162,7 @@ namespace Tag.Art
             if (_visualInstance != null)
                 Destroy(_visualInstance);
 
+            bool usedPrimitive = false;
             if (!forcePrimitiveMannequin && DummyPrimitiveFactory.PrefabHasRenderer(prefab))
             {
                 _visualInstance = Instantiate(prefab, transform);
@@ -170,12 +174,26 @@ namespace Tag.Art
                     Destroy(cc);
                 foreach (var rb in _visualInstance.GetComponentsInChildren<Rigidbody>())
                     Destroy(rb);
-                ApplyCharacterMats(_visualInstance, asIt);
-                FitVisual(_visualInstance);
+
+                // Flat HiPoly / Dummy_Runner meshes have limb names but no hierarchy —
+                // procedural swing cannot move distal limbs. Prefer Navy Spade primitive.
+                if (fallbackToPrimitiveIfUnbound && !DummyLocomotor.HasBindableBones(_visualInstance.transform))
+                {
+                    Debug.Log($"[DummyAvatarBinder] '{prefab.name}' has no hierarchical limb bones — using Navy Spade primitive.");
+                    Destroy(_visualInstance);
+                    _visualInstance = DummyPrimitiveFactory.Build(transform, asIt);
+                    usedPrimitive = true;
+                }
+                else
+                {
+                    ApplyCharacterMats(_visualInstance, asIt);
+                    FitVisual(_visualInstance);
+                }
             }
             else
             {
                 _visualInstance = DummyPrimitiveFactory.Build(transform, asIt);
+                usedPrimitive = true;
             }
 
             var loco = _visualInstance.GetComponent<DummyLocomotor>();
@@ -185,6 +203,9 @@ namespace Tag.Art
             HideCapsuleMeshes();
             if (GetComponent<ItMarker>() == null)
                 gameObject.AddComponent<ItMarker>();
+
+            if (usedPrimitive)
+                Debug.Log($"[DummyAvatarBinder] Navy Spade primitive active on {gameObject.name} (asIt={asIt}).");
         }
 
         void ApplyCharacterMats(GameObject visual, bool asIt)
