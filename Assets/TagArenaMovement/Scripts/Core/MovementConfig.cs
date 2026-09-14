@@ -60,12 +60,12 @@ namespace TagArena.Movement
         [Header("Ski — Tribes bloodline")]
         public float skiMinSlope = 6f;
         public float skiFriction = 0.15f;
-        public float skiSteer = 16f;
-        public float skiGravityScale = 1.0f;
+        public float skiSteer = 19f;
+        public float skiGravityScale = 1.12f;
         public float skiLaunchLeaveDot = 0.12f;
         public float skiMaxSpeed = 38f;
         public float skiAirDrag = 0.08f;
-        public float highSpeedSteerFalloff = 22f;
+        public float highSpeedSteerFalloff = 28f;
 
         [Header("Jet — Tribes bloodline")]
         public float jetEnergyMax = 100f;
@@ -73,7 +73,7 @@ namespace TagArena.Movement
         public float jetRegenDelay = 0.35f;
         public float jetDrain = 38f;
         public float jetUpForce = 26f;
-        public float jetWishForce = 14f;
+        public float jetWishForce = 18f;
         public float jetHoverDamp = 8f;
         public float jetMinEnergy = 4f;
         public float gravityWhileJetting = 0.15f;

@@ -410,7 +410,12 @@ namespace TagArena.Movement
             if (wish.sqrMagnitude > 0.01f)
             {
                 Vector3 hv = WishAccel.Horizontal(v);
-                hv = WishAccel.Accelerate(hv, wish, Mathf.Max(hv.magnitude, cfg.sprintSpeed + 2f), cfg.jetWishForce / 10f, dt);
+                float wishSpd = Mathf.Max(hv.magnitude, cfg.sprintSpeed + 2f);
+                float jAccel = cfg.jetWishForce / 10f;
+                // Low-speed jet still reads as thrust, not a hover-in-place.
+                if (hv.magnitude < cfg.sprintSpeed)
+                    jAccel *= 1.35f;
+                hv = WishAccel.Accelerate(hv, wish, wishSpd, jAccel, dt);
                 v = WishAccel.SetHoriz(v, hv);
             }
 
