@@ -1,4 +1,5 @@
 using Tag.Gameplay;
+using Tag.Trail;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ namespace Tag.Modes
     /// <summary>
     /// Dummy AI v1 (SP demo): chase+punch when It; flee when not.
     /// Feeds TagArena PlayerMotor via PlayerInputReader.ExternalControl (no RB velocity fight).
+    /// Trail Tag: samples nearby TrailSegments and blends a lateral flee wish into steering.
     /// </summary>
     public class DummyPatrol : MonoBehaviour
     {
@@ -36,6 +38,13 @@ namespace Tag.Modes
         [SerializeField] float wanderMoveY = 0.35f;
         [Tooltip("Forward wish while fleeing under Hot Potato urgency.")]
         [SerializeField] float fleeUrgencyMoveY = 1f;
+        [Header("Trail Tag avoid")]
+        [Tooltip("Only active when TagModeController SelectedMode is TrailTag.")]
+        [SerializeField] float trailAvoidRange = 8f;
+        [Tooltip("Lateral bias on trail flee (same idea as fleeStrafeBias).")]
+        [SerializeField] float trailAvoidStrafeBias = 0.45f;
+        [Tooltip("How hard trail flee blends into chase/flee/wander wish (0=off).")]
+        [SerializeField] float trailAvoidWeight = 0.7f;
 
         PlayerInputReader _input;
         PlayerRagdoll _ragdoll;
@@ -51,6 +60,7 @@ namespace Tag.Modes
         TagModeController _modes;
         float _itGraceTimer;
         bool _wasIt;
+        Vector3 _trailFleeWish;
 
         void Awake()
         {
@@ -115,6 +125,7 @@ namespace Tag.Modes
             {
                 _decisionTimer = 1f / Mathf.Max(1f, decisionHz);
                 Retarget();
+                RefreshTrailFleeWish();
             }
 
             bool isIt = _it != null && _it.IsIt;
@@ -180,6 +191,60 @@ namespace Tag.Modes
             _targetMotor = _target.GetComponent<PlayerMotor>();
         }
 
+        /// <summary>
+        /// Trail Tag only: sample live TrailSegments in range (from PlayerTrailEmitter ribbons)
+        /// and cache a weighted lateral flee wish. Cheap — runs at decisionHz.
+        /// </summary>
+        void RefreshTrailFleeWish()
+        {
+            _trailFleeWish = Vector3.zero;
+            if (_modes == null || _modes.SelectedMode != TagModeId.TrailTag)
+                return;
+            if (trailAvoidRange <= 0.01f || trailAvoidWeight <= 0.01f)
+                return;
+
+            float range = trailAvoidRange;
+            float rangeSq = range * range;
+            Vector3 pos = transform.position;
+            Vector3 sum = Vector3.zero;
+            int hits = 0;
+
+            foreach (var seg in FindObjectsByType<TrailSegment>(FindObjectsSortMode.None))
+            {
+                if (seg == null) continue;
+                Vector3 delta = pos - seg.transform.position;
+                delta.y = 0f;
+                float dsq = delta.sqrMagnitude;
+                if (dsq > rangeSq || dsq < 0.0001f) continue;
+
+                float d = Mathf.Sqrt(dsq);
+                float w = 1f - (d / range);
+                Vector3 away = delta / d;
+                Vector3 lateral = Vector3.Cross(Vector3.up, away);
+                if (lateral.sqrMagnitude > 0.001f)
+                {
+                    lateral.Normalize();
+                    if (Vector3.Dot(lateral, transform.right) < 0f) lateral = -lateral;
+                    away = (away + lateral * Mathf.Clamp01(trailAvoidStrafeBias)).normalized;
+                }
+                sum += away * w;
+                hits++;
+            }
+
+            if (hits > 0 && sum.sqrMagnitude > 0.0001f)
+                _trailFleeWish = sum.normalized;
+        }
+
+        Vector3 BlendTrailAvoid(Vector3 desired)
+        {
+            if (_trailFleeWish.sqrMagnitude < 0.0001f)
+                return desired;
+            float w = Mathf.Clamp01(trailAvoidWeight);
+            if (desired.sqrMagnitude < 0.0001f)
+                return _trailFleeWish;
+            return (desired.normalized + _trailFleeWish * w).normalized;
+        }
+
         Vector3 TargetPlanarVelocity()
         {
             Vector3 v = Vector3.zero;
@@ -241,6 +306,7 @@ namespace Tag.Modes
             {
                 Vector3 toAim = AimPoint(_target) - transform.position;
                 toAim.y = 0f;
+                toAim = BlendTrailAvoid(toAim);
                 FaceAndSteer(toAim, dt, out moveDir);
 
                 Vector3 toBody = _target.transform.position - transform.position;
@@ -267,6 +333,9 @@ namespace Tag.Modes
                 _angle += (6f / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
                 moveY = wanderMoveY;
                 sprint = false;
+                // Still peel off ribbons while hunting with no target.
+                Vector3 peel = BlendTrailAvoid(transform.forward);
+                FaceAndSteer(peel, dt, out moveDir);
             }
 
             // Keep facing coherent even when moveDir came from FaceAndSteer.
@@ -328,6 +397,7 @@ namespace Tag.Modes
                     away = (away + lateral * Mathf.Clamp01(fleeStrafeBias)).normalized;
                 }
 
+                away = BlendTrailAvoid(away);
                 FaceAndSteer(away, dt, out moveDir);
                 bool urgent = HotPotatoUrgent() || threatDist <= closeChaseRange * 1.6f;
                 DriveWish(urgent ? fleeUrgencyMoveY : 1f, sprint: true);
@@ -345,6 +415,7 @@ namespace Tag.Modes
             Vector3 target = _center + new Vector3(Mathf.Cos(_angle * Mathf.Deg2Rad), 0f, Mathf.Sin(_angle * Mathf.Deg2Rad)) * radius;
             Vector3 to = target - transform.position;
             to.y = 0f;
+            to = BlendTrailAvoid(to);
             FaceAndSteer(to, dt, out moveDir);
             DriveWish(wanderMoveY, sprint: false);
         }
