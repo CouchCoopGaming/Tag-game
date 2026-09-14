@@ -15,7 +15,7 @@ namespace Tag.Gameplay
     }
 
     /// <summary>
-    /// It-only dedicated melee. Active punch ONLY â€” NO passive overlap/aura tag.
+    /// It-only dedicated melee. Active punch ONLY Ã¢â‚¬â€ NO passive overlap/aura tag.
     /// Prefer continuous cast during Active. Closest runner with LoS wins.
     /// </summary>
     public class PunchHitbox : MonoBehaviour
@@ -173,7 +173,7 @@ namespace Tag.Gameplay
             hitPoint = aimOrigin.position;
 
             Vector3 origin = aimOrigin.position + Vector3.up * tuning.midTorsoHeight;
-            // Pitch clamp Â±tolerance around planar forward
+            // Pitch clamp Ã‚Â±tolerance around planar forward
             Vector3 flatFwd = new Vector3(aimOrigin.forward.x, 0f, aimOrigin.forward.z).normalized;
             if (flatFwd.sqrMagnitude < 0.001f) flatFwd = transform.forward;
             Vector3 forward = Vector3.RotateTowards(
@@ -261,8 +261,8 @@ namespace Tag.Gameplay
                 victim.SetIt(true);
             }
 
+            // Punch impact; become-It chirp fires from ItController.SetIt(true)
             AudioCuePlayer.Ensure()?.PunchHit(transform.position);
-            AudioCuePlayer.Ensure()?.TagTransfer(hitPoint);
 
             // Readable TP punch connect: camera kick on attacker
             var tps = GetComponentInChildren<TpsMoveCamera>(true);
@@ -303,3 +303,4 @@ namespace Tag.Gameplay
         }
     }
 }
+

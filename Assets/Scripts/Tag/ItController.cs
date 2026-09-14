@@ -1,4 +1,5 @@
 using UnityEngine;
+using Tag.Audio;
 using TagArena.Movement;
 
 namespace Tag.Gameplay
@@ -60,6 +61,8 @@ namespace Tag.Gameplay
             bool wasIt = isIt;
             isIt = value;
             ApplyVisual();
+            if (!wasIt && value)
+                TagSfx.BecomeIt(transform.position);
             if (wasIt && !value && _motor != null)
             {
                 if (_lastPunchTuning == null || _lastPunchTuning.speedBuffClearsOnLosingIt)

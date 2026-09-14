@@ -1,10 +1,12 @@
 using UnityEngine;
+using Tag.Audio;
 
 namespace TagArena.Movement
 {
     /// <summary>
     /// Fires one-shot animator triggers and optional root-motion-free additive poses.
     /// Body mesh should be a child. First-person arms can listen to the same parameters.
+    /// Empty AudioClip fields fall back to TagSfx (Resources or procedural).
     /// </summary>
     public class MoveAnimDriver : MonoBehaviour
     {
@@ -25,6 +27,7 @@ namespace TagArena.Movement
         void OnEnable()
         {
             if (!motor) motor = GetComponent<PlayerMotor>();
+            EnsureAudio();
             if (!motor) return;
             motor.OnJumped += HandleJump;
             motor.OnSlid += HandleSlide;
@@ -32,6 +35,7 @@ namespace TagArena.Movement
             motor.OnSuperGlide += HandleGlide;
             motor.OnMantle += HandleMantle;
             motor.OnStateChanged += HandleState;
+            motor.OnBecameIt += HandleBecameIt;
         }
 
         void OnDisable()
@@ -43,6 +47,13 @@ namespace TagArena.Movement
             motor.OnSuperGlide -= HandleGlide;
             motor.OnMantle -= HandleMantle;
             motor.OnStateChanged -= HandleState;
+            motor.OnBecameIt -= HandleBecameIt;
+        }
+
+        void EnsureAudio()
+        {
+            if (source == null)
+                source = TagSfx.EnsureSource(gameObject);
         }
 
         void Update()
@@ -63,24 +74,24 @@ namespace TagArena.Movement
         void HandleJump()
         {
             if (animator) animator.SetTrigger(AnimIds.JumpTrig);
-            Play(jumpClip, 0.7f);
+            Play(jumpClip != null ? jumpClip : TagSfx.Jump, 0.55f);
         }
 
         void HandleSlide()
         {
-            Play(slideClip, 0.85f);
+            Play(slideClip != null ? slideClip : TagSfx.Slide, 0.5f);
         }
 
         void HandleBounce()
         {
             if (animator) animator.SetTrigger(AnimIds.BounceTrig);
-            Play(bounceClip, 1f);
+            Play(bounceClip != null ? bounceClip : TagSfx.Land, 0.55f);
         }
 
         void HandleGlide()
         {
             if (animator) animator.SetTrigger(AnimIds.GlideTrig);
-            Play(glideClip, 1f);
+            Play(glideClip != null ? glideClip : TagSfx.Jet, 0.45f);
         }
 
         void HandleMantle()
@@ -88,18 +99,32 @@ namespace TagArena.Movement
             if (animator) animator.SetTrigger(AnimIds.MantleTrig);
         }
 
+        void HandleBecameIt()
+        {
+            TagSfx.BecomeIt(transform.position);
+        }
+
         void HandleState(MoveState prev, MoveState next)
         {
             if (next == MoveState.LandStun)
             {
                 if (animator) animator.SetTrigger(AnimIds.LandTrig);
-                Play(landClip, 1f);
+                Play(landClip != null ? landClip : TagSfx.Land, 0.48f);
+            }
+            else if (next == MoveState.Ski && prev != MoveState.Ski)
+            {
+                Play(skiLoop != null ? skiLoop : TagSfx.Ski, 0.4f);
+            }
+            else if (next == MoveState.Jet && prev != MoveState.Jet)
+            {
+                Play(jetLoop != null ? jetLoop : TagSfx.Jet, 0.38f);
             }
         }
 
         void Play(AudioClip clip, float vol)
         {
-            if (source && clip) source.PlayOneShot(clip, vol);
+            EnsureAudio();
+            TagSfx.Play(source, clip, vol);
         }
     }
 }
