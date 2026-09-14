@@ -171,8 +171,6 @@ namespace Tag.Modes
             if (tuning != null && tuning.warnSec > 0f)
                 warnSec = tuning.warnSec;
             float warn = Mathf.Max(0.5f, warnSec);
-            if (remain > warn)
-                return 0f;
             return 1f - Mathf.Clamp01(remain / warn);
         }
 
