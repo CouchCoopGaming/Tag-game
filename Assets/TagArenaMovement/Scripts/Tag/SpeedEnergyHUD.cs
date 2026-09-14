@@ -43,6 +43,9 @@ namespace TagArena.Movement
         // Compass close-range pulse (Prey hunt / It flee), flat meters.
         const float CompassPulseDistM = 12f;
 
+        // Hot Potato fuse HUD warn fallback (matches ItMarker / DummyPatrol when tuning missing).
+        const float HotPotatoWarnSecFallback = 10f;
+
         // Relative to camera: forward = N, right = E (hunt direction, not world north).
         static readonly string[] Compass8 = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
 
@@ -127,10 +130,27 @@ namespace TagArena.Movement
                 modeName = "default";
             }
 
+            // Hot Potato + local is It: pulse fuse/It lines as Remaining approaches warnSec
+            // (same urgency curve as ItMarker / DummyPatrol).
+            bool localIsIt = it != null && IsLocalPlayer(it);
+            float fuseUrgency = (localIsIt && modes != null && modes.SelectedMode == TagModeId.HotPotato)
+                ? HotPotatoFuseUrgency(modes)
+                : 0f;
+            bool pulseFuse = fuseUrgency > 0.01f;
+
             GUI.Label(new Rect(24, y, 480, 22), "Mode " + modeName, _status);
             y += 22f;
-            GUI.Label(new Rect(24, y, 480, 22), "It: " + itLabel, _status);
-            y += 22f;
+
+            if (pulseFuse)
+            {
+                DrawFuseUrgencyLabel(new Rect(24, y, 480, 22), "It: " + itLabel, fuseUrgency);
+                y += 22f;
+            }
+            else
+            {
+                GUI.Label(new Rect(24, y, 480, 22), "It: " + itLabel, _status);
+                y += 22f;
+            }
 
             // Compass: hunt It when not It; hunt nearest prey when you are It.
             if (it != null && IsLocalPlayer(it))
@@ -140,12 +160,63 @@ namespace TagArena.Movement
 
             if (fuseLine != null)
             {
-                GUI.Label(new Rect(24, y, 480, 22), fuseLine, _status);
+                string line = pulseFuse ? fuseLine + " !!" : fuseLine;
+                if (pulseFuse)
+                    DrawFuseUrgencyLabel(new Rect(24, y, 520, 22), line, fuseUrgency);
+                else
+                    GUI.Label(new Rect(24, y, 480, 22), line, _status);
                 y += 22f;
             }
 
             if (modes != null && modes.SelectedMode == TagModeId.LeastIt)
                 y = DrawLeastItTimes(modes, y);
+        }
+
+        /// <summary>
+        /// 0 = calm / not in warn window; 1 = fuse about to pop (Remaining near 0).
+        /// Matches ItMarker / DummyPatrol: Remaining vs HotPotatoTuning.warnSec (fallback 10s).
+        /// </summary>
+        static float HotPotatoFuseUrgency(TagModeController modes)
+        {
+            if (modes == null || modes.SelectedMode != TagModeId.HotPotato)
+                return 0f;
+            float remain = modes.Remaining;
+            if (remain <= 0f)
+                return 0f;
+            float warnSec = HotPotatoWarnSecFallback;
+            var tuning = modes.HotPotatoTuningAsset;
+            if (tuning != null && tuning.warnSec > 0f)
+                warnSec = tuning.warnSec;
+            float warn = Mathf.Max(0.5f, warnSec);
+            return 1f - Mathf.Clamp01(remain / warn);
+        }
+
+        /// <summary>
+        /// Pulse fuse/It status text: scale + amber→hot tint, faster as urgency rises.
+        /// </summary>
+        void DrawFuseUrgencyLabel(Rect r, string text, float urgency)
+        {
+            Color prevColor = GUI.color;
+            Matrix4x4 prevMatrix = GUI.matrix;
+
+            float hz = Mathf.Lerp(4f, 11f, urgency);
+            float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
+            float pulse = Mathf.Lerp(0.35f, 1f, wave);
+
+            // Status amber → hot-potato warn (magenta-orange), same family as It flee compass.
+            Color calm = new Color(1f, 0.92f, 0.55f, 1f);
+            Color hot = new Color(1f, 0.35f, 0.55f, 1f);
+            Color tint = Color.Lerp(calm, hot, urgency * pulse);
+            tint.a = Mathf.Lerp(0.6f, 1f, Mathf.Lerp(0.7f, 1f, urgency) * pulse);
+            GUI.color = tint;
+
+            float scale = 1f + urgency * 0.22f * pulse;
+            var pivot = new Vector2(r.x, r.y + r.height * 0.5f);
+            GUIUtility.ScaleAroundPivot(new Vector2(scale, scale), pivot);
+
+            GUI.Label(r, text, _status);
+            GUI.color = prevColor;
+            GUI.matrix = prevMatrix;
         }
 
         /// <summary>
