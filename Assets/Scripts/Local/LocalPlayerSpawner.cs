@@ -1,4 +1,4 @@
-using Tag.Art;
+﻿using Tag.Art;
 using Tag.Gameplay;
 using Tag.Modes;
 using Tag.Trail;
@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Tag.Local
 {
     /// <summary>
-    /// Spawns 2–4 local players on PARK pads using TagArena (Apex×Tribes) motor + third-person camera.
+    /// Spawns 2â€“4 local players on PARK pads using TagArena (ApexÃ—Tribes) motor + third-person camera.
     /// </summary>
     public class LocalPlayerSpawner : MonoBehaviour
     {
@@ -98,14 +98,15 @@ namespace Tag.Local
 
             if (go.GetComponent<PlayerInputReader>() == null) go.AddComponent<PlayerInputReader>();
             var input = go.GetComponent<PlayerInputReader>();
-            // PlayerIndex lives on Tag.Input legacy — arena reader has no index; split-screen later
+            if (input != null) input.ExternalControl = ai;
+            // PlayerIndex lives on Tag.Input legacy â€” arena reader has no index; split-screen later
 
             if (go.GetComponent<SurfaceProbe>() == null) go.AddComponent<SurfaceProbe>();
             var motor = go.GetComponent<PlayerMotor>();
             if (motor == null) motor = go.AddComponent<PlayerMotor>();
             motor.cfg = SharedConfig();
 
-            // Do NOT attach TagArena.TagRole auto-tag — Tag uses PunchHitbox + ItController
+            // Do NOT attach TagArena.TagRole auto-tag â€” Tag uses PunchHitbox + ItController
             motor.tagRole = null;
 
             if (go.GetComponent<MoveAnimDriver>() == null)
@@ -179,7 +180,7 @@ namespace Tag.Local
             Transform existing = go.transform.Find("CamRig");
             if (existing != null)
             {
-                // Rebuild clean TP boom — destroy old eye rig
+                // Rebuild clean TP boom â€” destroy old eye rig
                 Destroy(existing.gameObject);
                 existing = null;
             }
@@ -218,3 +219,4 @@ namespace Tag.Local
         }
     }
 }
+

@@ -1,25 +1,18 @@
-using Tag.Gameplay;
+﻿using Tag.Gameplay;
 using TagArena.Movement;
 using UnityEngine;
 
 namespace Tag.Modes
 {
     /// <summary>
-    /// Dummy AI v0 (SP demo): chase+punch when It; flee when not.
-    /// Drives Rigidbody while PlayerMotor stays locked (TagArena cutover).
+    /// Dummy AI v1 (SP demo): chase+punch when It; flee when not.
+    /// Feeds TagArena PlayerMotor via PlayerInputReader.ExternalControl (no RB velocity fight).
     /// </summary>
-    [RequireComponent(typeof(Rigidbody))]
     public class DummyPatrol : MonoBehaviour
     {
-        [SerializeField] float speed = 7.4f;
         [SerializeField] float radius = 5.5f;
         [SerializeField] float turnSpeed = 220f;
-        [SerializeField] float chaseSpeedMul = 1.12f;
-        [Tooltip("If true, chase/flee scale off the player's sprint so dummy stays in the 9 m/s class.")]
-        [SerializeField] bool matchPlayerSprint = true;
-        [SerializeField] float sprintChaseMul = 0.88f;
-        [SerializeField] float sprintFleeMul = 0.80f;
-        [SerializeField] float punchRange = 1.2f;
+        [SerializeField] float punchRange = 1.35f;
         [SerializeField] float punchConeDeg = 40f;
         [SerializeField] float itGraceSec = 1f;
         [SerializeField] float aggression = 0.85f;
@@ -28,14 +21,15 @@ namespace Tag.Modes
         [SerializeField] float decisionHz = 5f;
         [SerializeField] Vector3 centerOffset = Vector3.zero;
         [SerializeField] float closeChaseRange = 3f;
-        [SerializeField] float closeChaseSpeedMul = 1.15f;
         [SerializeField] float leadSeconds = 0.25f;
         [SerializeField] float faceAlignDeg = 18f;
         [SerializeField] float hotPotatoUrgencySec = 10f;
-        [SerializeField] float fleeUrgencyMul = 1.18f;
-        [SerializeField] float gravity = 20f;
+        [Tooltip("Forward wish strength while wandering (motor treats y>0.4 as sprint).")]
+        [SerializeField] float wanderMoveY = 0.35f;
+        [Tooltip("Forward wish while fleeing under Hot Potato urgency.")]
+        [SerializeField] float fleeUrgencyMoveY = 1f;
 
-        Rigidbody _rb;
+        PlayerInputReader _input;
         PlayerRagdoll _ragdoll;
         PlayerMotor _selfMotor;
         ItController _it;
@@ -47,18 +41,24 @@ namespace Tag.Modes
         ItController _target;
         PlayerMotor _targetMotor;
         TagModeController _modes;
-        PlayerMotor _playerMotorRef;
         float _itGraceTimer;
         bool _wasIt;
-        bool _grounded;
 
         void Awake()
         {
-            _rb = GetComponent<Rigidbody>();
+            _input = GetComponent<PlayerInputReader>();
+            if (_input == null) _input = gameObject.AddComponent<PlayerInputReader>();
+            _input.ExternalControl = true;
+
             _ragdoll = GetComponent<PlayerRagdoll>();
             _selfMotor = GetComponent<PlayerMotor>();
-            if (_selfMotor != null)
-                _selfMotor.SetMotorLocked(true);
+            // Motor must stay unlocked so locomotion + PunchHitbox can run.
+            if (_selfMotor != null && _selfMotor.IsMotorLocked)
+                _selfMotor.SetMotorLocked(false);
+
+            // Never enable legacy CharacterController — TagArena is RB-only.
+            var cc = GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
 
             _it = GetComponent<ItController>();
             if (_it == null) _it = gameObject.AddComponent<ItController>();
@@ -84,11 +84,22 @@ namespace Tag.Modes
 
         void FixedUpdate()
         {
-            if (_it != null && _it.IsEliminated) return;
-            if (_ragdoll != null && _ragdoll.IsRagdolling) return;
-            if (_selfMotor != null && !_selfMotor.IsMotorLocked)
-                _selfMotor.SetMotorLocked(true);
-            if (_rb == null) return;
+            if (_it != null && _it.IsEliminated)
+            {
+                StopWish();
+                return;
+            }
+            if (_ragdoll != null && _ragdoll.IsRagdolling)
+            {
+                StopWish();
+                return;
+            }
+            if (_selfMotor != null && _selfMotor.IsMotorLocked)
+            {
+                // Stun / ragdoll proxy owns the lock — do not fight it.
+                StopWish();
+                return;
+            }
 
             float dt = Time.fixedDeltaTime;
             _decisionTimer -= dt;
@@ -103,17 +114,17 @@ namespace Tag.Modes
                 _itGraceTimer = Mathf.Max(0f, itGraceSec);
             _wasIt = isIt;
 
-            ProbeGround();
-
             if (isIt)
                 TickChase(dt);
             else
                 TickFleeOrWander(dt);
         }
 
-        void ProbeGround()
+        void StopWish()
         {
-            _grounded = Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, 1.2f, ~0, QueryTriggerInteraction.Ignore);
+            if (_input == null) return;
+            _input.ExternalControl = true;
+            _input.SetExternalMove(Vector2.zero, false);
         }
 
         float EffectiveAggression()
@@ -181,11 +192,22 @@ namespace Tag.Modes
             }
         }
 
+        /// <summary>
+        /// Body-relative wish: AI has no TP cam, so PlayerMotor uses transform as wish basis.
+        /// Face first, then push forward — matches human TP (yaw then Move.y).
+        /// </summary>
+        void DriveWish(float moveY, bool sprint)
+        {
+            if (_input == null) return;
+            _input.SetExternalMove(new Vector2(0f, Mathf.Clamp(moveY, -1f, 1f)), sprint);
+        }
+
         void TickChase(float dt)
         {
             if (_target == null || !_target.IsAlive) Retarget();
             Vector3 moveDir = transform.forward;
-            float speedMul = chaseSpeedMul;
+            float moveY = 1f;
+            bool sprint = true;
 
             if (_target != null)
             {
@@ -196,8 +218,9 @@ namespace Tag.Modes
                 Vector3 toBody = _target.transform.position - transform.position;
                 toBody.y = 0f;
                 float dist = toBody.magnitude;
+                // Close range: keep sprinting in; motor owns accel (no velocity overwrite).
                 if (dist <= closeChaseRange)
-                    speedMul *= closeChaseSpeedMul;
+                    moveY = 1f;
 
                 float ang = Vector3.Angle(transform.forward, toBody.sqrMagnitude > 0.001f ? toBody.normalized : transform.forward);
                 _cooldown -= dt;
@@ -212,20 +235,22 @@ namespace Tag.Modes
             }
             else
             {
-                _angle += (speed / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
+                _angle += (6f / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
+                moveY = wanderMoveY;
+                sprint = false;
             }
 
-            ApplyMove(moveDir * (ChaseSpeed() * speedMul), dt);
+            // Keep facing coherent even when moveDir came from FaceAndSteer.
+            _ = moveDir;
+            DriveWish(moveY, sprint);
         }
 
-        float HotPotatoFleeMul()
+        bool HotPotatoUrgent()
         {
             if (_modes == null || _modes.SelectedMode != TagModeId.HotPotato)
-                return 1f;
+                return false;
             float remain = _modes.Remaining;
-            if (remain > 0f && remain <= hotPotatoUrgencySec)
-                return fleeUrgencyMul;
-            return 1f;
+            return remain > 0f && remain <= hotPotatoUrgencySec;
         }
 
         void TickFleeOrWander(float dt)
@@ -242,44 +267,19 @@ namespace Tag.Modes
                 away.y = 0f;
                 if (away.sqrMagnitude < 0.01f) away = -transform.forward;
                 FaceAndSteer(away, dt, out moveDir);
+                bool urgent = HotPotatoUrgent();
+                DriveWish(urgent ? fleeUrgencyMoveY : 1f, sprint: true);
             }
             else
             {
-                _angle += (speed / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
+                _angle += (4f / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
                 Vector3 target = _center + new Vector3(Mathf.Cos(_angle * Mathf.Deg2Rad), 0f, Mathf.Sin(_angle * Mathf.Deg2Rad)) * radius;
                 Vector3 to = target - transform.position;
                 to.y = 0f;
                 FaceAndSteer(to, dt, out moveDir);
+                DriveWish(wanderMoveY, sprint: false);
             }
-            ApplyMove(moveDir * (FleeSpeed() * HotPotatoFleeMul()), dt);
-        }
-
-        float PartySprint()
-        {
-            if (!matchPlayerSprint) return speed;
-            if (_playerMotorRef == null)
-            {
-                foreach (var m in FindObjectsByType<PlayerMotor>(FindObjectsSortMode.None))
-                {
-                    if (m == null || m.GetComponent<DummyPatrol>() != null) continue;
-                    _playerMotorRef = m;
-                    break;
-                }
-            }
-            if (_playerMotorRef != null) return _playerMotorRef.SprintSpeed;
-            return speed > 0.1f ? speed : 9f;
-        }
-
-        float ChaseSpeed() => matchPlayerSprint ? PartySprint() * sprintChaseMul : speed;
-        float FleeSpeed() => matchPlayerSprint ? PartySprint() * sprintFleeMul : speed;
-
-        void ApplyMove(Vector3 horiz, float dt)
-        {
-            float vy = _rb.linearVelocity.y;
-            if (_grounded && vy < 0.1f) vy = -0.5f;
-            else vy -= gravity * dt;
-            horiz.y = 0f;
-            _rb.linearVelocity = new Vector3(horiz.x, vy, horiz.z);
+            _ = moveDir;
         }
     }
 }

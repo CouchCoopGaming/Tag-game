@@ -1,10 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace TagArena.Movement
 {
     /// <summary>
     /// Thin input adapter. Swap the body of Read() if you migrate to the new Input System.
     /// Keep raw + consumed flags separate so buffering (jump) is deterministic.
+    /// When ExternalControl is true (AI), Read() leaves fields alone so DummyPatrol can drive them.
     /// </summary>
     public class PlayerInputReader : MonoBehaviour
     {
@@ -21,6 +22,9 @@ namespace TagArena.Movement
         public bool LungePressed;
         public bool PunchPressed;
         public bool TapForwardPulse;
+
+        /// <summary>When true, Read() is a no-op — AI / tests own Move/Look/buttons.</summary>
+        public bool ExternalControl;
 
         [Header("Legacy key map")]
         public KeyCode skiKey = KeyCode.LeftShift;
@@ -39,6 +43,8 @@ namespace TagArena.Movement
 
         public void Read()
         {
+            if (ExternalControl) return;
+
             Move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             if (Move.sqrMagnitude > 1f) Move.Normalize();
 
@@ -68,6 +74,25 @@ namespace TagArena.Movement
 
             LungePressed = Input.GetKeyDown(lungeKey) || Input.GetMouseButtonDown(2);
             PunchPressed = Input.GetKeyDown(punchKey) || Input.GetKeyDown(KeyCode.E);
+        }
+
+        /// <summary>AI helper: set planar wish in body space and clear one-shot human buttons.</summary>
+        public void SetExternalMove(Vector2 move, bool sprint)
+        {
+            ExternalControl = true;
+            Move = move.sqrMagnitude > 1f ? move.normalized : move;
+            SprintHeld = sprint;
+            Look = Vector2.zero;
+            CrouchHeld = false;
+            CrouchPressed = false;
+            JumpHeld = false;
+            JumpPressed = false;
+            SkiHeld = false;
+            JetHeld = false;
+            JetPressed = false;
+            LungePressed = false;
+            PunchPressed = false;
+            TapForwardPulse = false;
         }
 
         public void ConsumeJumpPress() => JumpPressed = false;
