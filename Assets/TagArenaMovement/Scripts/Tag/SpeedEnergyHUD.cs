@@ -193,7 +193,9 @@ namespace TagArena.Movement
                 for (int i = 0; i < list.Count; i++)
                     Consider(list[i]);
             }
-            else
+
+            // Empty / no-candidate PlayersForHud: same scan as when modes is null.
+            if (best == null)
             {
                 var all = Object.FindObjectsByType<ItController>(FindObjectsSortMode.None);
                 for (int i = 0; i < all.Length; i++)
