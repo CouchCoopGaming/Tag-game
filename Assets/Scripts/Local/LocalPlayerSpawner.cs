@@ -1,4 +1,4 @@
-﻿using Tag.Art;
+using Tag.Art;
 using Tag.Gameplay;
 using Tag.Modes;
 using Tag.Trail;
@@ -123,6 +123,14 @@ namespace Tag.Local
             if (go.GetComponent<ItController>() == null) go.AddComponent<ItController>();
             var it = go.GetComponent<ItController>();
             if (it != null) it.PlayerId = $"P{index + 1}";
+
+            // Speed/ski/jet HUD for primary local human only (not AI, not couch clones)
+            if (!ai && index == 0)
+            {
+                var hud = go.GetComponent<SpeedEnergyHUD>();
+                if (hud == null) hud = go.AddComponent<SpeedEnergyHUD>();
+                hud.motor = motor;
+            }
 
             // Third-person camera for human pawns (AI keeps no MainCamera)
             if (!ai)
