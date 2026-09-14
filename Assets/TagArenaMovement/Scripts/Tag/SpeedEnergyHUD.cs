@@ -2,13 +2,15 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using Tag.Gameplay;
+using Tag.Level;
 using Tag.Modes;
 
 namespace TagArena.Movement
 {
     /// <summary>
     /// Cave-man OnGUI: speed, move state, jet fuel, ski on/off + P0 controls cheat-sheet
-    /// + It / mode / Hot Potato fuse / Least It times (reads TagModeController, falls back to ItController scan).
+    /// + nearest mega-park zone + It / mode / Hot Potato fuse / Least It times
+    /// (reads TagModeController, falls back to ItController scan).
     /// Local human only (wired by LocalPlayerSpawner for index 0).
     /// </summary>
     public class SpeedEnergyHUD : MonoBehaviour
@@ -70,6 +72,10 @@ namespace TagArena.Movement
                 _small);
 
             float y = 110f;
+            string zone = ZoneNameMarkers.GetNearestZoneName(motor.transform.position);
+            GUI.Label(new Rect(24, y, 480, 22), "Zone: " + zone, _small);
+            y += 24f;
+
             if (motor.SuperGlideT >= 0f)
             {
                 GUI.Label(new Rect(24, y, 280, 28), "GLIDE WINDOW", _big);

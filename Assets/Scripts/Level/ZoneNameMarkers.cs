@@ -13,7 +13,8 @@ namespace Tag.Level
         // Graybox Y; world = * WorldScale (~150). Clears towers (~5 graybox tops).
         const float LabelHeight = 15f;
 
-        static readonly (string label, float cx, float cz)[] Zones =
+        /// <summary>Mega-park zone labels + graybox XZ centers (shared with HUD / helpers).</summary>
+        public static readonly (string label, float cx, float cz)[] ZoneCenters =
         {
             ("CRASH",  36f, 27f),
             ("PIRATE", 14f, 12f),
@@ -23,6 +24,8 @@ namespace Tag.Level
             ("TRON",   36f,  8f),
             ("NINJA",  36f, 46f),
         };
+
+        static Transform _parkCached;
 
         Transform[] _labels;
         Camera _cam;
@@ -39,6 +42,8 @@ namespace Tag.Level
                 return;
             }
 
+            _parkCached = park;
+
             var existing = park.Find(FolderName);
             if (existing != null)
                 Destroy(existing.gameObject);
@@ -49,10 +54,10 @@ namespace Tag.Level
             folder.localRotation = Quaternion.identity;
             folder.localScale = Vector3.one;
 
-            _labels = new Transform[Zones.Length];
-            for (int i = 0; i < Zones.Length; i++)
+            _labels = new Transform[ZoneCenters.Length];
+            for (int i = 0; i < ZoneCenters.Length; i++)
             {
-                var z = Zones[i];
+                var z = ZoneCenters[i];
                 var go = new GameObject("Label_" + z.label);
                 go.transform.SetParent(folder, false);
                 go.transform.localPosition = new Vector3(z.cx, LabelHeight, z.cz);
@@ -73,6 +78,59 @@ namespace Tag.Level
             }
 
             Debug.Log($"[ZoneNameMarkers] placed {_labels.Length} zone labels");
+        }
+
+        /// <summary>
+        /// Nearest mega-park zone label for a world-space position (XZ, graybox centers).
+        /// Uses PARK InverseTransformPoint when available so WorldScale cannot drift.
+        /// </summary>
+        public static string GetNearestZoneName(Vector3 worldPos)
+        {
+            var centers = ZoneCenters;
+            if (centers == null || centers.Length == 0)
+                return "";
+
+            Vector2 local = WorldToGrayboxXZ(worldPos);
+            string best = centers[0].label;
+            float bestSq = float.MaxValue;
+            for (int i = 0; i < centers.Length; i++)
+            {
+                var z = centers[i];
+                float dx = local.x - z.cx;
+                float dz = local.y - z.cz;
+                float sq = dx * dx + dz * dz;
+                if (sq < bestSq)
+                {
+                    bestSq = sq;
+                    best = z.label;
+                }
+            }
+            return best;
+        }
+
+        static Vector2 WorldToGrayboxXZ(Vector3 worldPos)
+        {
+            var park = ResolvePark();
+            if (park != null)
+            {
+                var local = park.InverseTransformPoint(worldPos);
+                return new Vector2(local.x, local.z);
+            }
+
+            // Fallback matches VoidRespawn assumption: PARK at origin, uniform WorldScale.
+            float s = CutArenaBootstrap.WorldScale;
+            if (s < 0.0001f) s = 1f;
+            return new Vector2(worldPos.x / s, worldPos.z / s);
+        }
+
+        static Transform ResolvePark()
+        {
+            if (_parkCached != null)
+                return _parkCached;
+            var go = GameObject.Find("PARK");
+            if (go != null)
+                _parkCached = go.transform;
+            return _parkCached;
         }
 
         void LateUpdate()
