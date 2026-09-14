@@ -206,11 +206,19 @@ namespace Tag.Art
                 go.transform.localPosition = Vector3.zero;
                 go.transform.localRotation = Quaternion.identity;
                 go.transform.localScale = Vector3.one;
-                foreach (var col in go.GetComponentsInChildren<Collider>())
-                    Destroy(col);
+                // Strip import/prefab colliders immediately so Ensure can rebuild same-frame.
+                foreach (var col in go.GetComponentsInChildren<Collider>(true))
+                    Object.DestroyImmediate(col);
                 if (propKey != null)
                     ApplyPropMats(go, propKey);
                 FitToParent(go, t);
+                StaticPropColliders.EnsureStaticColliders(go);
+                // Prefer visual colliders - disable graybox host collider when PropMesh has any.
+                if (go.GetComponentInChildren<Collider>() != null)
+                {
+                    var hostCol = t.GetComponent<Collider>();
+                    if (hostCol != null) hostCol.enabled = false;
+                }
                 if (hideGrayboxMeshWhenDressed)
                 {
                     var mr = t.GetComponent<MeshRenderer>();

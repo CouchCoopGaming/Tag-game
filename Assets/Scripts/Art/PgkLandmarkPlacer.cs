@@ -331,11 +331,11 @@ namespace Tag.Art
             go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
             go.transform.localScale = Vector3.one * scale;
             StripImportCameras(go);
-            EnsureMeshColliders(go);
+            StaticPropColliders.EnsureStaticColliders(go);
             return go;
         }
 
-                static Dictionary<string, string> LatestByStem(string glob)
+        static Dictionary<string, string> LatestByStem(string glob)
         {
             bool landmark = glob.StartsWith("Landmark");
             if (Time.realtimeSinceStartup - _stemCacheTime < 30f)
@@ -388,22 +388,7 @@ namespace Tag.Art
                 Destroy(l);
         }
 
-                static void EnsureMeshColliders(GameObject go)
-        {
-            // Keep graybox collision when present; only add mesh colliders if none exist on this hierarchy.
-            if (go.GetComponentsInChildren<Collider>(true).Length > 0) return;
-            foreach (var mf in go.GetComponentsInChildren<MeshFilter>(true))
-            {
-                if (mf.sharedMesh == null) continue;
-                // Skip tiny detail meshes to cut cooking cost
-                if (mf.sharedMesh.vertexCount < 24) continue;
-                var col = mf.GetComponent<MeshCollider>();
-                if (col == null) col = mf.gameObject.AddComponent<MeshCollider>();
-                col.sharedMesh = mf.sharedMesh;
-                // Convex is cheaper; non-convex only for larger climb pieces
-                col.convex = false;
-            }
-        }
+
 #endif
     }
 }
