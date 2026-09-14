@@ -40,6 +40,9 @@ namespace TagArena.Movement
         const float AllStandingsShowSec = 3.5f;
         const float AllStandingsCycleSec = 8f;
 
+        // Prey compass: pulse scale/alpha/color when chase is this close (meters, flat).
+        const float PreyPulseDistM = 12f;
+
         // Relative to camera: forward = N, right = E (hunt direction, not world north).
         static readonly string[] Compass8 = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
 
@@ -150,11 +153,12 @@ namespace TagArena.Movement
         /// </summary>
         float DrawItBearing(ItController it, float y)
         {
-            return DrawCompassBearing("It", it.transform.position, y);
+            return DrawCompassBearing("It", it.transform.position, y, pulseClose: false);
         }
 
         /// <summary>
         /// Mirror of It compass when local is It: nearest alive non-It (Prey).
+        /// Pulses under ~12m so close chase reads better.
         /// </summary>
         float DrawPreyBearing(TagModeController modes, float y)
         {
@@ -164,7 +168,7 @@ namespace TagArena.Movement
                 GUI.Label(new Rect(24, y, 520, 22), "Prey  none", _status);
                 return y + 22f;
             }
-            return DrawCompassBearing("Prey", prey.transform.position, y);
+            return DrawCompassBearing("Prey", prey.transform.position, y, pulseClose: true);
         }
 
         ItController FindNearestPrey(TagModeController modes)
@@ -208,8 +212,9 @@ namespace TagArena.Movement
         /// <summary>
         /// Shared cave-man compass: camera-relative 8-way + flat meters.
         /// Label examples: "It ->  SW  18m" / "Prey ->  SW  18m".
+        /// When pulseClose and dist &lt; PreyPulseDistM: scale/alpha/color urgency pulse.
         /// </summary>
-        float DrawCompassBearing(string label, Vector3 to, float y)
+        float DrawCompassBearing(string label, Vector3 to, float y, bool pulseClose)
         {
             Vector3 from = motor.transform.position;
             Vector3 flat = to - from;
@@ -239,7 +244,31 @@ namespace TagArena.Movement
             int relIdx = Mathf.RoundToInt(rel360 / 45f) & 7;
 
             string line = label + " ->  " + Compass8[relIdx] + "  " + dist.ToString("0") + "m";
+
+            Color prevColor = GUI.color;
+            Matrix4x4 prevMatrix = GUI.matrix;
+            if (pulseClose && dist < PreyPulseDistM)
+            {
+                // 0 at threshold, 1 at contact — closer = hotter / bigger / faster pulse.
+                float urgency = 1f - Mathf.Clamp01(dist / PreyPulseDistM);
+                float hz = Mathf.Lerp(3.5f, 9f, urgency);
+                float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
+                float pulse = Mathf.Lerp(0.35f, 1f, wave);
+
+                Color calm = new Color(1f, 0.92f, 0.55f, 1f);
+                Color hot = new Color(1f, 0.28f, 0.12f, 1f);
+                Color tint = Color.Lerp(calm, hot, urgency * pulse);
+                tint.a = Mathf.Lerp(0.55f, 1f, Mathf.Lerp(0.65f, 1f, urgency) * pulse);
+                GUI.color = tint;
+
+                float scale = 1f + urgency * 0.18f * pulse;
+                var pivot = new Vector2(24f, y + 11f);
+                GUIUtility.ScaleAroundPivot(new Vector2(scale, scale), pivot);
+            }
+
             GUI.Label(new Rect(24, y, 520, 22), line, _status);
+            GUI.color = prevColor;
+            GUI.matrix = prevMatrix;
             return y + 22f;
         }
 
