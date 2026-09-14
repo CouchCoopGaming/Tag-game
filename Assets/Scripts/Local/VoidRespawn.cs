@@ -1,22 +1,28 @@
-﻿using Tag.Gameplay;
+using Tag.Gameplay;
+using Tag.Level;
 using TagArena.Movement;
 using UnityEngine;
 
 namespace Tag.Local
 {
     /// <summary>
-    /// Lightweight void killplane: below Y threshold, teleport to nearest LocalPlayerSpawner pad.
-    /// Works for human and AI pawns (any Rigidbody + optional motor/ragdoll).
+    /// Lightweight OOB / void killplane: below Y threshold OR outside mega-park XZ AABB,
+    /// teleport to nearest LocalPlayerSpawner pad. Works for human and AI pawns.
     /// </summary>
     public class VoidRespawn : MonoBehaviour
     {
         [SerializeField] float killY = -20f;
         [SerializeField] float punchInvulnAfterTeleport = 1f;
+        /// <summary>World-space margin past floor edge (MapW/MapD * WorldScale).</summary>
+        [SerializeField] float xzMargin = 20f;
 
         Rigidbody _rb;
         PlayerMotor _motor;
         PlayerRagdoll _ragdoll;
         ItController _it;
+
+        // Derived from CutArenaBootstrap: origin = SW corner, +X east, +Z north.
+        float _minX, _maxX, _minZ, _maxZ;
 
         void Awake()
         {
@@ -24,11 +30,21 @@ namespace Tag.Local
             _motor = GetComponent<PlayerMotor>();
             _ragdoll = GetComponent<PlayerRagdoll>();
             _it = GetComponent<ItController>();
+
+            float worldW = CutArenaBootstrap.MapW * CutArenaBootstrap.WorldScale;
+            float worldD = CutArenaBootstrap.MapD * CutArenaBootstrap.WorldScale;
+            _minX = -xzMargin;
+            _maxX = worldW + xzMargin;
+            _minZ = -xzMargin;
+            _maxZ = worldD + xzMargin;
         }
 
         void FixedUpdate()
         {
-            if (transform.position.y >= killY) return;
+            Vector3 p = transform.position;
+            bool oobY = p.y < killY;
+            bool oobXZ = p.x < _minX || p.x > _maxX || p.z < _minZ || p.z > _maxZ;
+            if (!oobY && !oobXZ) return;
             RespawnToNearestPad();
         }
 
