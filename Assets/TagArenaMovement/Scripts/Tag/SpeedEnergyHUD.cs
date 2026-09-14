@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using Tag.Gameplay;
@@ -11,6 +11,7 @@ namespace TagArena.Movement
     /// Cave-man OnGUI: speed, move state, jet fuel, ski on/off + P0 controls cheat-sheet
     /// + nearest mega-park zone + It / mode / Hot Potato fuse / Least It times
     /// + bearing/distance to CurrentIt when you are not It
+    /// + bearing/distance to nearest non-It when you ARE It (Prey)
     /// (reads TagModeController, falls back to ItController scan).
     /// Local human only (wired by LocalPlayerSpawner for index 0).
     /// </summary>
@@ -128,8 +129,10 @@ namespace TagArena.Movement
             GUI.Label(new Rect(24, y, 480, 22), "It: " + itLabel, _status);
             y += 22f;
 
-            // Bearing only when someone else is It (YOU ARE IT banner already covers self).
-            if (it != null && !IsLocalPlayer(it))
+            // Compass: hunt It when not It; hunt nearest prey when you are It.
+            if (it != null && IsLocalPlayer(it))
+                y = DrawPreyBearing(modes, y);
+            else if (it != null)
                 y = DrawItBearing(it, y);
 
             if (fuseLine != null)
@@ -144,18 +147,75 @@ namespace TagArena.Movement
 
         /// <summary>
         /// Cave-man compass toward It: camera-relative 8-way + flat meters.
-        /// Skipped when local is It (YOU ARE IT banner covers that).
         /// </summary>
         float DrawItBearing(ItController it, float y)
         {
+            return DrawCompassBearing("It", it.transform.position, y);
+        }
+
+        /// <summary>
+        /// Mirror of It compass when local is It: nearest alive non-It (Prey).
+        /// </summary>
+        float DrawPreyBearing(TagModeController modes, float y)
+        {
+            var prey = FindNearestPrey(modes);
+            if (prey == null)
+            {
+                GUI.Label(new Rect(24, y, 520, 22), "Prey  none", _status);
+                return y + 22f;
+            }
+            return DrawCompassBearing("Prey", prey.transform.position, y);
+        }
+
+        ItController FindNearestPrey(TagModeController modes)
+        {
             Vector3 from = motor.transform.position;
-            Vector3 to = it.transform.position;
+            ItController best = null;
+            float bestSq = float.MaxValue;
+
+            void Consider(ItController p)
+            {
+                if (p == null || !p.IsAlive || p.IsIt) return;
+                if (IsLocalPlayer(p)) return;
+                Vector3 d = p.transform.position - from;
+                d.y = 0f;
+                float sq = d.sqrMagnitude;
+                if (sq < bestSq)
+                {
+                    bestSq = sq;
+                    best = p;
+                }
+            }
+
+            if (modes != null && modes.PlayersForHud != null)
+            {
+                var list = modes.PlayersForHud;
+                for (int i = 0; i < list.Count; i++)
+                    Consider(list[i]);
+            }
+            else
+            {
+                var all = Object.FindObjectsByType<ItController>(FindObjectsSortMode.None);
+                for (int i = 0; i < all.Length; i++)
+                    Consider(all[i]);
+            }
+
+            return best;
+        }
+
+        /// <summary>
+        /// Shared cave-man compass: camera-relative 8-way + flat meters.
+        /// Label examples: "It ->  SW  18m" / "Prey ->  SW  18m".
+        /// </summary>
+        float DrawCompassBearing(string label, Vector3 to, float y)
+        {
+            Vector3 from = motor.transform.position;
             Vector3 flat = to - from;
             flat.y = 0f;
             float dist = flat.magnitude;
             if (dist < 0.05f)
             {
-                GUI.Label(new Rect(24, y, 520, 22), "It  HERE", _status);
+                GUI.Label(new Rect(24, y, 520, 22), label + "  HERE", _status);
                 return y + 22f;
             }
 
@@ -176,7 +236,7 @@ namespace TagArena.Movement
             float rel360 = rel < 0f ? rel + 360f : rel;
             int relIdx = Mathf.RoundToInt(rel360 / 45f) & 7;
 
-            string line = "It ->  " + Compass8[relIdx] + "  " + dist.ToString("0") + "m";
+            string line = label + " ->  " + Compass8[relIdx] + "  " + dist.ToString("0") + "m";
             GUI.Label(new Rect(24, y, 520, 22), line, _status);
             return y + 22f;
         }
