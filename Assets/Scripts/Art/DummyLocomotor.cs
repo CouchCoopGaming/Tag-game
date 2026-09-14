@@ -143,7 +143,7 @@ namespace Tag.Art
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
             // Spine / hips lean by state — jet/ski read clearly in TP (jet wins over ski tuck)
-            float leanX = lunging ? Mathf.Lerp(22f, 36f, _motor != null ? _motor.LungeProgress : 1f) : sliding ? 48f : crouch ? 28f : jet ? -18f : skiing ? 16f : wallRun ? 22f : climb ? -8f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
+            float leanX = lunging ? Mathf.Lerp(22f, 36f, _motor != null ? _motor.LungeProgress : 1f) : sliding ? 48f : crouch ? 28f : jet ? -18f : skiing ? 16f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : skiing && !jet ? Mathf.Sin(_cycle * 0.5f) * 14f : 0f;
             if (bouncing)
             {
@@ -159,7 +159,7 @@ namespace Tag.Art
             }
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
             float mantleAmt = mantle && _motor != null ? _motor.MantleProgress : 0f;
-            _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : sliding ? 28f : crouch ? 14f : jet ? -8f : skiing ? 10f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
+            _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : sliding ? 28f : crouch ? 14f : jet ? -8f : skiing ? 10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
             _headT = _head0 * Quaternion.Euler(lunging ? 14f : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? 18f : crouch ? 6f : jet ? -6f : skiing ? 10f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
             // Arms
@@ -184,11 +184,12 @@ namespace Tag.Art
             }
             else if (climb)
             {
-                float climbSwing = Mathf.Sin(Time.time * 8f) * 40f;
-                _uaLT = _uaL0 * Quaternion.Euler(-120f + climbSwing, 10f, 20f);
-                _uaRT = _uaR0 * Quaternion.Euler(-120f - climbSwing, -10f, -20f);
-                _laLT = _laL0 * Quaternion.Euler(-40f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-40f, 0f, 0f);
+                // Hand-over-hand reach — louder than idle freeze; opposite phase to legs.
+                float climbSwing = Mathf.Sin(Time.time * 7.5f) * 48f;
+                _uaLT = _uaL0 * Quaternion.Euler(-138f + climbSwing, 16f, 28f);
+                _uaRT = _uaR0 * Quaternion.Euler(-138f - climbSwing, -16f, -28f);
+                _laLT = _laL0 * Quaternion.Euler(-55f - Mathf.Abs(climbSwing) * 0.12f, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(-55f - Mathf.Abs(climbSwing) * 0.12f, 0f, 0f);
             }
             else if (mantle)
             {
@@ -364,6 +365,15 @@ namespace Tag.Art
                 _llLT = _llL0 * Quaternion.Euler(Mathf.Lerp(-82f, -22f, m), 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(Mathf.Lerp(-64f, -38f, m), 0f, 0f);
             }
+            else if (climb)
+            {
+                // Opposite to arms: drive / plant — vertical climb silhouette in TP.
+                float stride = Mathf.Sin(Time.time * 7.5f) * 28f;
+                _ulLT = _ulL0 * Quaternion.Euler(52f - stride, 0f, 8f);
+                _ulRT = _ulR0 * Quaternion.Euler(52f + stride, 0f, -8f);
+                _llLT = _llL0 * Quaternion.Euler(-58f + stride * 0.45f, 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(-58f - stride * 0.45f, 0f, 0f);
+            }
             else if (wallRun)
             {
                 bool left = _motor != null && _motor.WallLeft;
@@ -427,7 +437,7 @@ namespace Tag.Art
                 _llRT = _llR0 * Quaternion.Euler(Mathf.Min(0f, -Mathf.Abs(swing) * 0.85f), 0f, 0f);
             }
 
-            float slew = bouncing || gliding || jet || punching || lunging || mantle || wallRun || sliding ? 36f : skiing || crouch ? 24f : air ? 18f : 16f;
+            float slew = bouncing || gliding || jet || punching || lunging || mantle || wallRun || climb || sliding ? 36f : skiing || crouch ? 24f : air ? 18f : 16f;
             Slew(ref _spine, _spineT, slew, dt);
             Slew(ref _hips, _hipsT, slew, dt);
             Slew(ref _head, _headT, slew, dt);

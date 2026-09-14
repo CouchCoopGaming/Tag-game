@@ -115,7 +115,7 @@ namespace TagArena.Movement
             // Sticky re-probe into last wall normal so brief gaps do not cancel wall-run
             if (Time.time <= _wallStickyUntil && _stickyNormal.sqrMagnitude > 0.01f)
             {
-                if (CastWall(origin, -_stickyNormal, reach * 1.12f, out hit))
+                if (CastWall(origin, -_stickyNormal, reach * 1.18f, out hit))
                     FillWall(hit, _stickyLeft);
             }
         }
@@ -136,7 +136,7 @@ namespace TagArena.Movement
             Wall.left = left || Vector3.Dot(body.right, -hit.normal) < 0f;
             _stickyNormal = Wall.normal;
             _stickyLeft = Wall.left;
-            _wallStickyUntil = Time.time + 0.14f;
+            _wallStickyUntil = Time.time + 0.18f; // was 0.14 — brief climb/run gap forgiveness
         }
 
         void ProbeLedge(float height)

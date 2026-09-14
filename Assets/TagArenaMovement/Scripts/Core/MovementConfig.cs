@@ -80,10 +80,11 @@ namespace TagArena.Movement
 
         [Header("Wall climb / mantle — Apex bloodline")]
         public float climbMaxHeight = 6.0f;
-        public float climbSpeed = 7.2f;
+        // Slightly snappier vertical + glue for TP parkour (was 7.2 / 18 / 3.4).
+        public float climbSpeed = 7.8f;
         public float climbAttachAngle = 55f;
-        public float climbStickForce = 18f;
-        public float climbSideSpeed = 3.4f;
+        public float climbStickForce = 22f;
+        public float climbSideSpeed = 3.7f;
         public float climbSlipSpeed = 2.2f;
         // Slightly taller / lower lips for mega-park rails + decks (was 2.35 / 0.55).
         public float mantleMaxLedgeHeight = 2.55f;

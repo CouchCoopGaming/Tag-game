@@ -612,7 +612,8 @@ namespace TagArena.Movement
             }
 
             Vector3 up = Vector3.up * cfg.climbSpeed;
-            Vector3 stick = -_probe.Wall.normal * cfg.climbStickForce * 0.05f;
+            // Stronger into-wall glue so sticky probe + climb stay attached (was *0.05).
+            Vector3 stick = -_probe.Wall.normal * cfg.climbStickForce * 0.09f;
             Vector3 side = Vector3.Cross(_probe.Wall.normal, Vector3.up).normalized * (_in.Move.x * cfg.climbSideSpeed);
             if (_in.Move.y < -0.3f) up = Vector3.down * cfg.climbSlipSpeed;
 
