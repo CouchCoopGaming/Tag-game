@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Tag.Art
@@ -10,24 +11,54 @@ namespace Tag.Art
     /// </summary>
     public static class DummyPrimitiveFactory
     {
-        static Material _matBody, _matItBody, _matJoint, _matPanel, _matItPanel, _matSensor;
+        // Soft body foam — same keys as DummyAvatarBinder.MannequinColors / Hier COLORS.
+        static readonly Dictionary<string, Color> BodyColors = new Dictionary<string, Color>
+        {
+            ["Blue"] = new Color(0.42f, 0.68f, 0.92f),
+            ["Mint"] = new Color(0.42f, 0.82f, 0.70f),
+            ["Orange"] = new Color(0.94f, 0.42f, 0.14f),
+            ["Lavender"] = new Color(0.70f, 0.58f, 0.88f),
+            ["Tan"] = new Color(0.90f, 0.76f, 0.52f),
+            ["Red"] = new Color(0.88f, 0.22f, 0.24f),
+        };
+
+        // Saturated polymer accent panels — Hier PANELS.
+        static readonly Dictionary<string, Color> PanelColors = new Dictionary<string, Color>
+        {
+            ["Blue"] = new Color(0.08f, 0.32f, 0.78f),
+            ["Mint"] = new Color(0.06f, 0.58f, 0.48f),
+            ["Orange"] = new Color(1.00f, 0.48f, 0.05f),
+            ["Lavender"] = new Color(0.48f, 0.28f, 0.82f),
+            ["Tan"] = new Color(0.10f, 0.48f, 0.68f),
+            ["Red"] = new Color(0.72f, 0.06f, 0.10f),
+        };
+
+        static Material _matJoint, _matSensor;
+        static readonly Dictionary<string, Material> _bodyMats = new Dictionary<string, Material>();
+        static readonly Dictionary<string, Material> _panelMats = new Dictionary<string, Material>();
 
         public static bool PrefabHasRenderer(GameObject prefab)
         {
             return prefab != null && prefab.GetComponentInChildren<Renderer>(true) != null;
         }
 
-        public static GameObject Build(Transform parent, bool asIt)
+        /// <param name="colorKey">
+        /// Runner foam/panel key (Blue/Mint/Orange/Lavender/Tan/Red). Ignored when asIt —
+        /// It keeps Orange (Red/Orange) emphasis to match Hier It look.
+        /// </param>
+        public static GameObject Build(Transform parent, bool asIt, string colorKey = null)
         {
-            EnsureMaterials();
+            // It: Orange foam + Orange panels (Red/Orange emphasis). Runner: PickColor key.
+            string key = asIt ? "Orange" : NormalizeColorKey(colorKey);
+            EnsureMaterials(key);
+            var bodyMat = _bodyMats[key];
+            var panelMat = _panelMats[key];
+            var joint = _matJoint;
+
             var root = new GameObject(asIt ? "DummyVisual_It" : "DummyVisual_Runner");
             root.transform.SetParent(parent, false);
             root.transform.localPosition = Vector3.zero;
             root.transform.localRotation = Quaternion.identity;
-
-            var bodyMat = asIt ? _matItBody : _matBody;
-            var panelMat = asIt ? _matItPanel : _matPanel;
-            var joint = _matJoint;
 
             // Black rubber chest / pelvis core
             Prim(PrimitiveType.Cube, root.transform, "ChestPlate",
@@ -71,6 +102,13 @@ namespace Tag.Art
             }
 
             return root;
+        }
+
+        static string NormalizeColorKey(string colorKey)
+        {
+            if (!string.IsNullOrEmpty(colorKey) && BodyColors.ContainsKey(colorKey))
+                return colorKey;
+            return "Tan";
         }
 
         static void BuildArm(Transform parent, string side, Vector3 pos, Material body, Material panel, Material joint, bool left)
@@ -131,18 +169,19 @@ namespace Tag.Art
             if (r != null) r.sharedMaterial = mat;
         }
 
-        static void EnsureMaterials()
+        static void EnsureMaterials(string colorKey)
         {
-            if (_matBody != null) return;
             // Hier Navy Spade palette (build_mannequin_hier.py COLORS/PANELS/JOINT/SENSOR).
-            // Runner = Tan foam + Tan polymer panels; It = Orange foam + Orange panels.
             // Smoothness ~= 1 - Blender roughness (body 0.40, panel 0.28, joint 0.90, sensor 0.22).
-            _matBody = MakeMat(new Color(0.90f, 0.76f, 0.52f), 0.60f);
-            _matItBody = MakeMat(new Color(0.94f, 0.42f, 0.14f), 0.60f);
-            _matPanel = MakeMat(new Color(0.10f, 0.48f, 0.68f), 0.72f);
-            _matItPanel = MakeMat(new Color(1.00f, 0.48f, 0.05f), 0.72f);
-            _matJoint = MakeMat(new Color(0.02f, 0.02f, 0.025f), 0.10f);
-            _matSensor = MakeMat(new Color(0.20f, 0.90f, 1.0f), 0.78f);
+            if (_matJoint == null)
+                _matJoint = MakeMat(new Color(0.02f, 0.02f, 0.025f), 0.10f);
+            if (_matSensor == null)
+                _matSensor = MakeMat(new Color(0.20f, 0.90f, 1.0f), 0.78f);
+
+            if (!_bodyMats.ContainsKey(colorKey))
+                _bodyMats[colorKey] = MakeMat(BodyColors[colorKey], 0.60f);
+            if (!_panelMats.ContainsKey(colorKey))
+                _panelMats[colorKey] = MakeMat(PanelColors[colorKey], 0.72f);
         }
 
         public static Material MakeMat(Color c) => MakeMat(c, 0.42f);

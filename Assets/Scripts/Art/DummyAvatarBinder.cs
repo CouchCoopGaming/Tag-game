@@ -192,7 +192,7 @@ namespace Tag.Art
                 {
                     Debug.Log($"[DummyAvatarBinder] '{prefab.name}' has no hierarchical limb bones — using Navy Spade primitive.");
                     Destroy(_visualInstance);
-                    _visualInstance = DummyPrimitiveFactory.Build(transform, asIt);
+                    _visualInstance = DummyPrimitiveFactory.Build(transform, asIt, PickColor());
                     usedPrimitive = true;
                 }
                 else
@@ -203,7 +203,7 @@ namespace Tag.Art
             }
             else
             {
-                _visualInstance = DummyPrimitiveFactory.Build(transform, asIt);
+                _visualInstance = DummyPrimitiveFactory.Build(transform, asIt, PickColor());
                 usedPrimitive = true;
             }
 
