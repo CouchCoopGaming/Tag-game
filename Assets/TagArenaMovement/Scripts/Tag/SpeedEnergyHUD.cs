@@ -10,7 +10,7 @@ namespace TagArena.Movement
 {
     /// <summary>
     /// Cave-man OnGUI: speed, move state, jet fuel, ski on/off + P0 controls cheat-sheet
-    /// + nearest mega-park zone + It / mode / Hot Potato fuse / Least It times
+    /// + nearest mega-park zone + It / mode / Hot Potato fuse / Least It times (LEAD/LAG tint)
     /// + bearing/distance to CurrentIt when you are not It
     /// + bearing/distance to nearest non-It when you ARE It (Prey)
     /// + brief YOU'RE IT / YOU'RE FREE OnGUI flash on local It handoff
@@ -704,6 +704,7 @@ namespace TagArena.Movement
             ItController self = null;
             ItController leader = null;
             float best = float.MaxValue;
+            float worst = float.MinValue;
             var living = new List<ItController>(8);
 
             var list = modes.PlayersForHud;
@@ -721,6 +722,8 @@ namespace TagArena.Movement
                         best = p.TimeAsIt;
                         leader = p;
                     }
+                    if (p.TimeAsIt > worst)
+                        worst = p.TimeAsIt;
                 }
             }
 
@@ -732,17 +735,55 @@ namespace TagArena.Movement
             }
 
             float youT = self != null ? self.TimeAsIt : 0f;
+            // Soft standings cue: lowest It-time = LEAD (mint), highest/near-highest = LAG (coral).
+            bool leading = false;
+            bool lagging = false;
+            if (self != null && living.Count > 0)
+            {
+                const float eps = 0.05f;
+                leading = youT <= best + eps;
+                if (!leading && living.Count >= 2)
+                {
+                    if (youT >= worst - eps)
+                        lagging = true;
+                    else if (living.Count >= 3)
+                    {
+                        // Near-highest: 2nd-from-bottom by TimeAsIt rank.
+                        living.Sort((a, b) => a.TimeAsIt.CompareTo(b.TimeAsIt));
+                        int idx = living.IndexOf(self);
+                        if (idx >= living.Count - 2)
+                            lagging = true;
+                    }
+                }
+            }
+
+            Color prev = GUI.color;
+            string youTag = " as It";
+            if (leading)
+            {
+                GUI.color = new Color(0.45f, 1f, 0.7f, 1f);
+                youTag = "  LEAD";
+            }
+            else if (lagging)
+            {
+                GUI.color = new Color(1f, 0.55f, 0.42f, 1f);
+                youTag = "  LAG";
+            }
             GUI.Label(new Rect(24, y, 520, 22),
-                "You " + youT.ToString("0.0") + "s as It", _status);
+                "You " + youT.ToString("0.0") + "s" + youTag, _status);
+            GUI.color = prev;
             y += 22f;
 
             if (leader != null)
             {
                 string leadName = IsLocalPlayer(leader) ? "YOU" : FormatIt(leader);
                 string leadMark = (self != null && leader == self) ? "  (you)" : "";
+                if (leading)
+                    GUI.color = new Color(0.45f, 1f, 0.7f, 1f);
                 GUI.Label(new Rect(24, y, 520, 22),
                     "Lead " + leadName + " " + leader.TimeAsIt.ToString("0.0") + "s" + leadMark,
                     _status);
+                GUI.color = prev;
                 y += 22f;
             }
 
