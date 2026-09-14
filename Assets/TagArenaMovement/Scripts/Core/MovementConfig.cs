@@ -85,10 +85,12 @@ namespace TagArena.Movement
         public float climbStickForce = 18f;
         public float climbSideSpeed = 3.4f;
         public float climbSlipSpeed = 2.2f;
-        public float mantleMaxLedgeHeight = 2.35f;
-        public float mantleMinLedgeHeight = 0.55f;
-        public float mantleDuration = 0.42f;
-        public float mantleForward = 0.85f;
+        // Slightly taller / lower lips for mega-park rails + decks (was 2.35 / 0.55).
+        public float mantleMaxLedgeHeight = 2.55f;
+        public float mantleMinLedgeHeight = 0.45f;
+        public float mantleDuration = 0.40f;
+        // Extra settle onto thick Mega_ tops so TP does not hang on the lip.
+        public float mantleForward = 0.95f;
         public float wallBounceSpeed = 9.2f;
         public float wallBounceUp = 7.0f;
         public float wallBounceGreenMin = 0.04f;

@@ -144,26 +144,63 @@ namespace TagArena.Movement
             Ledge = default;
             if (!Wall.hit) return;
 
-            Vector3 into = -Wall.normal;
-            Vector3 start = body.position + Vector3.up * (cfg.mantleMaxLedgeHeight + 0.2f) + into * (cfg.radius + 0.25f);
+            // Multi-depth casts: mega-park / HiPoly tops miss a single thin cast.
+            Vector3 into = Vector3.ProjectOnPlane(-Wall.normal, Vector3.up);
+            if (into.sqrMagnitude < 0.01f) into = -Wall.normal;
+            into.Normalize();
 
-            if (!Physics.SphereCast(start, 0.18f, Vector3.down, out RaycastHit top, cfg.mantleMaxLedgeHeight + 0.4f, cfg.groundMask, QueryTriggerInteraction.Ignore))
-                return;
+            float castR = Mathf.Max(0.16f, cfg.radius * 0.48f);
+            float maxH = cfg.mantleMaxLedgeHeight;
+            float castDist = maxH + 0.55f;
+            float bestScore = float.MaxValue;
+            RaycastHit best = default;
+            bool found = false;
 
-            float ledgeH = top.point.y - body.position.y;
-            if (ledgeH < cfg.mantleMinLedgeHeight || ledgeH > cfg.mantleMaxLedgeHeight)
-                return;
+            // Near lip, mid slab, deep top — covers thin rails and thick Mega_ decks.
+            float[] depths = {
+                cfg.radius + 0.12f,
+                cfg.radius + 0.32f,
+                cfg.radius + 0.55f,
+                cfg.radius + 0.85f
+            };
 
-            // Clearance on the stand point
-            if (Physics.CheckCapsule(top.point + Vector3.up * (cfg.radius + 0.05f),
-                    top.point + Vector3.up * (cfg.standingHeight - cfg.radius),
-                    cfg.radius * 0.85f, cfg.wallMask, QueryTriggerInteraction.Ignore))
-                return;
+            for (int i = 0; i < depths.Length; i++)
+            {
+                Vector3 start = body.position + Vector3.up * (maxH + 0.25f) + into * depths[i];
+                if (!Physics.SphereCast(start, castR, Vector3.down, out RaycastHit top, castDist, cfg.groundMask, QueryTriggerInteraction.Ignore))
+                    continue;
+
+                float ledgeH = top.point.y - body.position.y;
+                if (ledgeH < cfg.mantleMinLedgeHeight || ledgeH > maxH)
+                    continue;
+
+                // Prefer walkable tops; steep ramps are climb, not mantle.
+                if (Vector3.Angle(top.normal, Vector3.up) > cfg.maxWalkableAngle + 8f)
+                    continue;
+
+                // Clearance: slightly slimmer so busy park props do not false-reject.
+                if (Physics.CheckCapsule(
+                        top.point + Vector3.up * (cfg.radius + 0.04f),
+                        top.point + Vector3.up * (cfg.standingHeight - cfg.radius * 0.9f),
+                        cfg.radius * 0.72f, cfg.wallMask, QueryTriggerInteraction.Ignore))
+                    continue;
+
+                // Prefer mid-height lips near the wall (lower score wins).
+                float score = Mathf.Abs(ledgeH - (cfg.mantleMinLedgeHeight + maxH) * 0.45f) + depths[i] * 0.15f;
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    best = top;
+                    found = true;
+                }
+            }
+
+            if (!found) return;
 
             Ledge.hit = true;
-            Ledge.standPoint = top.point + Vector3.up * 0.02f;
+            Ledge.standPoint = best.point + Vector3.up * 0.03f;
             Ledge.wallNormal = Wall.normal;
-            Ledge.height = ledgeH;
+            Ledge.height = best.point.y - body.position.y;
         }
 
         public static Vector3 ProjectOnPlanePreserveMag(Vector3 vel, Vector3 normal)

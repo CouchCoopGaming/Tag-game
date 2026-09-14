@@ -143,7 +143,7 @@ namespace Tag.Art
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
             // Spine / hips lean by state — jet/ski read clearly in TP (jet wins over ski tuck)
-            float leanX = lunging ? Mathf.Lerp(22f, 36f, _motor != null ? _motor.LungeProgress : 1f) : sliding ? 48f : crouch ? 28f : jet ? -18f : skiing ? 16f : wallRun ? 22f : climb ? -8f : mantle ? 34f : air ? 18f : breath;
+            float leanX = lunging ? Mathf.Lerp(22f, 36f, _motor != null ? _motor.LungeProgress : 1f) : sliding ? 48f : crouch ? 28f : jet ? -18f : skiing ? 16f : wallRun ? 22f : climb ? -8f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : skiing && !jet ? Mathf.Sin(_cycle * 0.5f) * 14f : 0f;
             if (bouncing)
             {
@@ -158,7 +158,8 @@ namespace Tag.Art
                 leanZ = Mathf.Lerp(leanZ, 0f, glideAmt);
             }
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
-            _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : sliding ? 28f : crouch ? 14f : jet ? -8f : skiing ? 10f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
+            float mantleAmt = mantle && _motor != null ? _motor.MantleProgress : 0f;
+            _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : sliding ? 28f : crouch ? 14f : jet ? -8f : skiing ? 10f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
             _headT = _head0 * Quaternion.Euler(lunging ? 14f : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? 18f : crouch ? 6f : jet ? -6f : skiing ? 10f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
             // Arms
@@ -191,12 +192,14 @@ namespace Tag.Art
             }
             else if (mantle)
             {
-                // Pull-up tell: both arms reach high then settle
-                float pull = Mathf.Sin(Time.time * 11f) * 10f;
-                _uaLT = _uaL0 * Quaternion.Euler(-145f + pull, 18f, 28f);
-                _uaRT = _uaR0 * Quaternion.Euler(-145f - pull, -18f, -28f);
-                _laLT = _laL0 * Quaternion.Euler(-55f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-55f, 0f, 0f);
+                // Progress pull-up → plant: syncs with motor mantle arc (not free Time.sin).
+                float m = _motor != null ? _motor.MantleProgress : 0.5f;
+                float reach = Mathf.Lerp(-155f, -78f, m);
+                float flare = Mathf.Lerp(32f, 14f, m);
+                _uaLT = _uaL0 * Quaternion.Euler(reach, Mathf.Lerp(20f, 8f, m), flare);
+                _uaRT = _uaR0 * Quaternion.Euler(reach - 4f, Mathf.Lerp(-20f, -8f, m), -flare);
+                _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-62f, -28f, m), 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-62f, -28f, m), 0f, 0f);
             }
             else if (wallRun)
             {
@@ -354,11 +357,12 @@ namespace Tag.Art
             }
             else if (mantle)
             {
-                // Tucked then extend — readable vault silhouette
-                _ulLT = _ulL0 * Quaternion.Euler(62f, 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(48f, 0f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(-75f, 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(-58f, 0f, 0f);
+                // Tuck early, lead-leg plant late — readable vault in TP
+                float m = _motor != null ? _motor.MantleProgress : 0.5f;
+                _ulLT = _ulL0 * Quaternion.Euler(Mathf.Lerp(72f, 28f, m), 0f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(58f, 42f, m), 0f, 0f);
+                _llLT = _llL0 * Quaternion.Euler(Mathf.Lerp(-82f, -22f, m), 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(Mathf.Lerp(-64f, -38f, m), 0f, 0f);
             }
             else if (wallRun)
             {

@@ -44,6 +44,11 @@ namespace TagArena.Movement
             _lungeT > 0f && cfg != null
                 ? Mathf.Clamp01(_lungeT / Mathf.Max(0.01f, cfg.taggerLungeDuration))
                 : 0f;
+        /// <summary>0 at mantle start, 1 at finish (TP pull-up then plant).</summary>
+        public float MantleProgress =>
+            State == MoveState.Mantle && cfg != null
+                ? Mathf.Clamp01(_mantleT / Mathf.Max(0.01f, cfg.mantleDuration))
+                : 0f;
         public float SprintSpeed => cfg != null ? cfg.sprintSpeed : 7.6f;
         /// <summary>Downward speed (m/s) latched on the most recent ground contact.</summary>
         public float LastLandImpactSpeed => _lastLandImpactSpeed;
@@ -65,6 +70,7 @@ namespace TagArena.Movement
         float _mantleT;
         Vector3 _mantleFrom;
         Vector3 _mantleTo;
+        Vector3 _mantleFwd;
         float _energyRegenDelay;
         float _tapCd;
         float _lungeCd;
@@ -619,7 +625,12 @@ namespace TagArena.Movement
         {
             _mantleT = 0f;
             _mantleFrom = transform.position;
-            _mantleTo = _probe.Ledge.standPoint + _probe.Ledge.wallNormal * 0.05f + Vector3.up * 0.02f;
+            // Nudge onto the deck along wall normal — 5cm clipped Mega_/rail colliders.
+            Vector3 n = Vector3.ProjectOnPlane(_probe.Ledge.wallNormal, Vector3.up);
+            if (n.sqrMagnitude < 0.01f) n = _probe.Ledge.wallNormal;
+            n.Normalize();
+            _mantleFwd = -n;
+            _mantleTo = _probe.Ledge.standPoint + n * Mathf.Max(0.12f, cfg.radius * 0.35f) + Vector3.up * 0.03f;
             SuperGlideT = -1f;
             ClimbHeightUsed = 0f;
             _jumpFatigued = false;
@@ -631,12 +642,17 @@ namespace TagArena.Movement
         {
             _mantleT += dt;
             float u = Mathf.Clamp01(_mantleT / cfg.mantleDuration);
-            // Fast pull then settle ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Apex mantle is front-loaded.
+            // Fast pull then settle — Apex mantle is front-loaded.
             float s = u < 0.55f ? Mathf.SmoothStep(0f, 1f, u / 0.55f) : 1f;
-            Vector3 mid = _mantleFrom + Vector3.up * (cfg.mantleMaxLedgeHeight * 0.35f);
+            Vector3 fwd = _mantleFwd.sqrMagnitude > 0.01f ? _mantleFwd : transform.forward;
+            // Arc follows actual ledge rise (not max knob) so short rails do not sky-vault.
+            float rise = Mathf.Max(0.15f, _mantleTo.y - _mantleFrom.y);
+            Vector3 mid = _mantleFrom + Vector3.up * (rise * 0.55f);
+            Vector3 pullTarget = mid + (_mantleTo - _mantleFrom) * 0.4f;
+            Vector3 settleTarget = _mantleTo + fwd * cfg.mantleForward;
             Vector3 pos = u < 0.55f
-                ? Vector3.Lerp(_mantleFrom, mid + (_mantleTo - _mantleFrom) * 0.4f, s)
-                : Vector3.Lerp(mid + (_mantleTo - _mantleFrom) * 0.4f, _mantleTo + transform.forward * cfg.mantleForward, (u - 0.55f) / 0.45f);
+                ? Vector3.Lerp(_mantleFrom, pullTarget, s)
+                : Vector3.Lerp(pullTarget, settleTarget, (u - 0.55f) / 0.45f);
 
             Vector3 delta = (pos - transform.position) / dt;
             v = delta;
@@ -657,8 +673,8 @@ namespace TagArena.Movement
 
             if (u >= 1f)
             {
-                transform.position = _mantleTo + transform.forward * cfg.mantleForward * 0.25f;
-                v = transform.forward * Mathf.Max(cfg.walkSpeed, HorizSpeed * 0.4f);
+                transform.position = _mantleTo + fwd * cfg.mantleForward * 0.25f;
+                v = fwd * Mathf.Max(cfg.walkSpeed, HorizSpeed * 0.4f);
                 SetState(MoveState.Idle);
             }
             return v;
