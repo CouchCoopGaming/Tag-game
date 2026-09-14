@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using Tag.Gameplay;
@@ -10,6 +10,7 @@ namespace TagArena.Movement
     /// <summary>
     /// Cave-man OnGUI: speed, move state, jet fuel, ski on/off + P0 controls cheat-sheet
     /// + nearest mega-park zone + It / mode / Hot Potato fuse / Least It times
+    /// + bearing/distance to CurrentIt when you are not It
     /// (reads TagModeController, falls back to ItController scan).
     /// Local human only (wired by LocalPlayerSpawner for index 0).
     /// </summary>
@@ -37,6 +38,9 @@ namespace TagArena.Movement
         // Flash full Least-It standings briefly every few seconds.
         const float AllStandingsShowSec = 3.5f;
         const float AllStandingsCycleSec = 8f;
+
+        // Relative to camera: forward = N, right = E (hunt direction, not world north).
+        static readonly string[] Compass8 = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
 
         void OnGUI()
         {
@@ -93,12 +97,13 @@ namespace TagArena.Movement
             string modeName = "";
             string itLabel = "";
             string fuseLine = null;
+            ItController it = null;
 
             var modes = TagModeController.Instance;
             if (modes != null)
             {
                 modeName = FriendlyModeName(modes.SelectedMode);
-                var it = modes.CurrentIt;
+                it = modes.CurrentIt;
                 if (it == null)
                     it = ScanItControllers();
                 itLabel = FormatIt(it);
@@ -113,7 +118,7 @@ namespace TagArena.Movement
             }
             else
             {
-                var it = ScanItControllers();
+                it = ScanItControllers();
                 itLabel = FormatIt(it);
                 modeName = "default";
             }
@@ -122,6 +127,11 @@ namespace TagArena.Movement
             y += 22f;
             GUI.Label(new Rect(24, y, 480, 22), "It: " + itLabel, _status);
             y += 22f;
+
+            // Bearing only when someone else is It (YOU ARE IT banner already covers self).
+            if (it != null && !IsLocalPlayer(it))
+                y = DrawItBearing(it, y);
+
             if (fuseLine != null)
             {
                 GUI.Label(new Rect(24, y, 480, 22), fuseLine, _status);
@@ -130,6 +140,45 @@ namespace TagArena.Movement
 
             if (modes != null && modes.SelectedMode == TagModeId.LeastIt)
                 y = DrawLeastItTimes(modes, y);
+        }
+
+        /// <summary>
+        /// Cave-man compass toward It: camera-relative 8-way + flat meters.
+        /// Skipped when local is It (YOU ARE IT banner covers that).
+        /// </summary>
+        float DrawItBearing(ItController it, float y)
+        {
+            Vector3 from = motor.transform.position;
+            Vector3 to = it.transform.position;
+            Vector3 flat = to - from;
+            flat.y = 0f;
+            float dist = flat.magnitude;
+            if (dist < 0.05f)
+            {
+                GUI.Label(new Rect(24, y, 520, 22), "It  HERE", _status);
+                return y + 22f;
+            }
+
+            float worldDeg = Mathf.Atan2(flat.x, flat.z) * Mathf.Rad2Deg;
+
+            // Relative to camera yaw (fallback: motor forward). Forward = N for hunt.
+            Vector3 face = motor.transform.forward;
+            var cam = Camera.main;
+            if (cam != null)
+                face = cam.transform.forward;
+            face.y = 0f;
+            if (face.sqrMagnitude < 0.0001f)
+                face = Vector3.forward;
+            face.Normalize();
+
+            float faceDeg = Mathf.Atan2(face.x, face.z) * Mathf.Rad2Deg;
+            float rel = Mathf.DeltaAngle(faceDeg, worldDeg); // -180..180, + = target to the right
+            float rel360 = rel < 0f ? rel + 360f : rel;
+            int relIdx = Mathf.RoundToInt(rel360 / 45f) & 7;
+
+            string line = "It ->  " + Compass8[relIdx] + "  " + dist.ToString("0") + "m";
+            GUI.Label(new Rect(24, y, 520, 22), line, _status);
+            return y + 22f;
         }
 
         float DrawLeastItTimes(TagModeController modes, float y)
