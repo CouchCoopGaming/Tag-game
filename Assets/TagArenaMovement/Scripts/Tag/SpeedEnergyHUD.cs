@@ -15,6 +15,7 @@ namespace TagArena.Movement
     /// + bearing/distance to nearest non-It when you ARE It (Prey)
     /// + brief YOU'RE IT / YOU'RE FREE OnGUI flash on local It handoff
     /// + Trail Tag soft near-miss TRAIL! edge pulse when near a foreign ribbon
+    /// + brief OUT! / TRAIL HIT OnGUI flash when local IsAlive drops (trail eliminate)
     /// (reads TagModeController, falls back to ItController scan).
     /// Local human only (wired by LocalPlayerSpawner for index 0).
     /// </summary>
@@ -39,6 +40,12 @@ namespace TagArena.Movement
         readonly List<TrailSegment> _trailNearScratch = new List<TrailSegment>();
         float _trailNearDist = float.MaxValue;
         bool _trailNearActive;
+
+        // Trail Tag eliminate — brief center flash when local IsAlive drops (trail hit).
+        const float TrailOutFlashSec = 0.65f;
+        bool _aliveFlashPrimed;
+        bool _prevLocalAlive = true;
+        float _trailOutFlashUntil;
 
         // Labels mirror PlayerInputReader defaults (skiKey/jetKey/crouchKey/punchKey/lungeKey + hard-coded alts).
         const string Controls =
@@ -116,12 +123,14 @@ namespace TagArena.Movement
             DrawMatchStatus(y);
             DrawItHandoffFlash();
             DrawTrailNearMissWarn();
+            DrawTrailEliminateFlash();
         }
 
         void Update()
         {
             TickItHandoffFlash();
             TickTrailNearMiss();
+            TickTrailEliminateFlash();
         }
 
         /// <summary>
@@ -322,6 +331,109 @@ namespace TagArena.Movement
                 _status.normal.textColor = new Color(1f, 0.92f, 0.55f, textA * 0.85f);
                 GUI.Label(new Rect(r.x, r.yMax - 6f, r.width, 24f),
                     _trailNearDist.ToString("0.0") + "m", _status);
+                _status.alignment = prevAlign;
+                _status.normal.textColor = prevStatus;
+            }
+            GUI.matrix = prevM;
+            GUI.color = prev;
+        }
+
+
+        /// <summary>
+        /// Watch local ItController.IsAlive — same flag TrailSegment hit / EliminatePlayer mutate.
+        /// Trail Tag only. Skip first sample so spawn / HUD enable does not false-flash.
+        /// Does not invent trail rules; mirrors IsAlive edge after existing eliminate path.
+        /// </summary>
+        void TickTrailEliminateFlash()
+        {
+            var modes = TagModeController.Instance;
+            bool trailMode = modes != null && modes.SelectedMode == TagModeId.TrailTag;
+
+            bool alive = ResolveLocalAlive();
+            if (!_aliveFlashPrimed)
+            {
+                _prevLocalAlive = alive;
+                _aliveFlashPrimed = true;
+                return;
+            }
+
+            // Rising edge of eliminate: was alive, now dead, while Trail Tag is selected.
+            if (trailMode && _prevLocalAlive && !alive)
+                _trailOutFlashUntil = Time.unscaledTime + TrailOutFlashSec;
+
+            _prevLocalAlive = alive;
+        }
+
+        bool ResolveLocalAlive()
+        {
+            ItController self = null;
+            if (motor != null)
+                self = motor.GetComponent<ItController>();
+            if (self == null)
+                self = GetComponent<ItController>();
+            if (self != null)
+                return self.IsAlive;
+            return true;
+        }
+
+        /// <summary>
+        /// Cave-man center flash ~0.65s on trail eliminate: OUT! + TRAIL HIT.
+        /// Distinct from TAG handoff (YOU'RE IT / FREE) and near-miss TRAIL! edge pulse —
+        /// lower screen, hot red, no edge bars.
+        /// </summary>
+        void DrawTrailEliminateFlash()
+        {
+            float rem = _trailOutFlashUntil - Time.unscaledTime;
+            if (rem <= 0f) return;
+
+            if (_flash == null)
+            {
+                _flash = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 64,
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+
+            float elapsed = TrailOutFlashSec - rem;
+            float fadeIn = 0.06f;
+            float fadeOut = 0.2f;
+            float a;
+            if (elapsed < fadeIn)
+                a = elapsed / fadeIn;
+            else if (rem < fadeOut)
+                a = rem / fadeOut;
+            else
+                a = 1f;
+
+            Color prev = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, a);
+
+            // Soft red wash behind text (distinct from near-miss cyan/hot edge bars).
+            float washA = a * 0.22f;
+            GUI.color = new Color(0.85f, 0.08f, 0.12f, washA);
+            GUI.DrawTexture(new Rect(0f, Screen.height * 0.38f, Screen.width, Screen.height * 0.28f), Texture2D.whiteTexture);
+            GUI.color = new Color(1f, 1f, 1f, a);
+
+            _flash.normal.textColor = new Color(1f, 0.2f, 0.18f, a);
+
+            float w = 720f;
+            float h = 90f;
+            var r = new Rect((Screen.width - w) * 0.5f, Screen.height * 0.42f, w, h);
+            Matrix4x4 prevM = GUI.matrix;
+            float peak = 1f - Mathf.Abs((elapsed / TrailOutFlashSec) - 0.3f) * 0.55f;
+            float scale = Mathf.Lerp(0.9f, 1.12f, Mathf.Clamp01(peak));
+            GUIUtility.ScaleAroundPivot(new Vector2(scale, scale), r.center);
+            GUI.Label(r, "OUT!", _flash);
+            if (_status != null)
+            {
+                var sub = new Rect(r.x, r.yMax - 4f, r.width, 28f);
+                Color prevStatus = _status.normal.textColor;
+                _status.normal.textColor = new Color(1f, 0.75f, 0.35f, a * 0.95f);
+                var prevAlign = _status.alignment;
+                _status.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(sub, "TRAIL HIT", _status);
                 _status.alignment = prevAlign;
                 _status.normal.textColor = prevStatus;
             }
