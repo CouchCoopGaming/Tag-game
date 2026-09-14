@@ -676,7 +676,8 @@ namespace TagArena.Movement
             float y = v.y;
             y -= cfg.wallRunGravity * dt;
             y = Mathf.Max(y, -2.5f);
-            v = hv + Vector3.up * y - _probe.Wall.normal * 2f;
+            // Slightly stronger into-wall stick so sticky probe + run stay glued in TP
+            v = hv + Vector3.up * y - _probe.Wall.normal * 2.8f;
 
             if (_in.JumpPressed) DoWallRunJump(ref v);
             return v;

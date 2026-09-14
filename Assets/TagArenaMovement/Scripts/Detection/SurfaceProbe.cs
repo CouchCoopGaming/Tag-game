@@ -45,6 +45,10 @@ namespace TagArena.Movement
         public LedgeHit Ledge;
 
         CapsuleCollider _cap;
+        // Brief wall memory so one-frame SphereCast misses do not drop wall-run/climb.
+        float _wallStickyUntil;
+        Vector3 _stickyNormal;
+        bool _stickyLeft;
 
         public void Init(MovementConfig config, Transform t, CapsuleCollider cap)
         {
@@ -94,7 +98,8 @@ namespace TagArena.Movement
                 : body.forward;
             if (dir.sqrMagnitude < 0.01f) dir = body.forward;
 
-            float reach = cfg.radius + 0.55f;
+            // Slightly longer reach + fatter cast = stickier wall detect for TP parkour
+            float reach = cfg.radius + 0.68f;
 
             if (CastWall(origin, dir, reach, out RaycastHit hit))
             {
@@ -105,12 +110,19 @@ namespace TagArena.Movement
             // Side probes for wall-run / bounce from glancing slides
             Vector3 right = body.right;
             if (CastWall(origin, right, reach, out hit)) { FillWall(hit, false); return; }
-            if (CastWall(origin, -right, reach, out hit)) { FillWall(hit, true); }
+            if (CastWall(origin, -right, reach, out hit)) { FillWall(hit, true); return; }
+
+            // Sticky re-probe into last wall normal so brief gaps do not cancel wall-run
+            if (Time.time <= _wallStickyUntil && _stickyNormal.sqrMagnitude > 0.01f)
+            {
+                if (CastWall(origin, -_stickyNormal, reach * 1.12f, out hit))
+                    FillWall(hit, _stickyLeft);
+            }
         }
 
         bool CastWall(Vector3 origin, Vector3 dir, float reach, out RaycastHit hit)
         {
-            return Physics.SphereCast(origin, cfg.radius * 0.55f, dir, out hit, reach, cfg.wallMask, QueryTriggerInteraction.Ignore)
+            return Physics.SphereCast(origin, cfg.radius * 0.62f, dir, out hit, reach, cfg.wallMask, QueryTriggerInteraction.Ignore)
                    && Vector3.Angle(hit.normal, Vector3.up) > cfg.maxWalkableAngle + 4f;
         }
 
@@ -122,6 +134,9 @@ namespace TagArena.Movement
             Wall.distance = hit.distance;
             Wall.collider = hit.collider;
             Wall.left = left || Vector3.Dot(body.right, -hit.normal) < 0f;
+            _stickyNormal = Wall.normal;
+            _stickyLeft = Wall.left;
+            _wallStickyUntil = Time.time + 0.14f;
         }
 
         void ProbeLedge(float height)

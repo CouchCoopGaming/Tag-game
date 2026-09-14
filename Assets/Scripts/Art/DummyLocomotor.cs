@@ -116,9 +116,9 @@ namespace Tag.Art
             float breath = Mathf.Sin(Time.time * 2.1f) * 2.4f;
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
-            // Spine / hips lean by state — wall-run asymmetric lean amplified slightly
-            float leanX = lunging ? 32f : sliding || crouch ? 38f : skiing ? 22f : jet ? -12f : wallRun ? 18f : climb ? -8f : mantle ? 28f : air ? 14f : breath;
-            float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 26f : -26f) : skiing ? Mathf.Sin(_cycle * 0.5f) * 6f : 0f;
+            // Spine / hips lean by state — wall-run / mantle read clearly in TP
+            float leanX = lunging ? 32f : sliding || crouch ? 38f : skiing ? 22f : jet ? -12f : wallRun ? 22f : climb ? -8f : mantle ? 34f : air ? 14f : breath;
+            float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : skiing ? Mathf.Sin(_cycle * 0.5f) * 6f : 0f;
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
             _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : sliding || crouch ? 20f : skiing ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
             _headT = _head0 * Quaternion.Euler(sliding ? 14f : jet ? 8f : air ? -6f : -breath * 0.4f, 0f, 0f);
@@ -139,6 +139,34 @@ namespace Tag.Art
                 _uaRT = _uaR0 * Quaternion.Euler(-120f - climbSwing, -10f, -20f);
                 _laLT = _laL0 * Quaternion.Euler(-40f, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(-40f, 0f, 0f);
+            }
+            else if (mantle)
+            {
+                // Pull-up tell: both arms reach high then settle
+                float pull = Mathf.Sin(Time.time * 11f) * 10f;
+                _uaLT = _uaL0 * Quaternion.Euler(-145f + pull, 18f, 28f);
+                _uaRT = _uaR0 * Quaternion.Euler(-145f - pull, -18f, -28f);
+                _laLT = _laL0 * Quaternion.Euler(-55f, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(-55f, 0f, 0f);
+            }
+            else if (wallRun)
+            {
+                // Wall-side arm plants toward wall; outer arm balances forward
+                bool left = _motor != null && _motor.WallLeft;
+                if (left)
+                {
+                    _uaLT = _uaL0 * Quaternion.Euler(-60f, 28f, 48f);
+                    _uaRT = _uaR0 * Quaternion.Euler(-38f, -8f, -30f);
+                    _laLT = _laL0 * Quaternion.Euler(-58f, 0f, 0f);
+                    _laRT = _laR0 * Quaternion.Euler(-28f, 0f, 0f);
+                }
+                else
+                {
+                    _uaLT = _uaL0 * Quaternion.Euler(-38f, 8f, 30f);
+                    _uaRT = _uaR0 * Quaternion.Euler(-60f, -28f, -48f);
+                    _laLT = _laL0 * Quaternion.Euler(-28f, 0f, 0f);
+                    _laRT = _laR0 * Quaternion.Euler(-58f, 0f, 0f);
+                }
             }
             else if (lunging)
             {
@@ -212,6 +240,33 @@ namespace Tag.Art
                 _llLT = _llL0 * Quaternion.Euler(-15f, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(-15f, 0f, 0f);
             }
+            else if (mantle)
+            {
+                // Tucked then extend — readable vault silhouette
+                _ulLT = _ulL0 * Quaternion.Euler(62f, 0f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(48f, 0f, 0f);
+                _llLT = _llL0 * Quaternion.Euler(-75f, 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(-58f, 0f, 0f);
+            }
+            else if (wallRun)
+            {
+                bool left = _motor != null && _motor.WallLeft;
+                float stride = Mathf.Sin(Time.time * 9.5f) * 24f;
+                if (left)
+                {
+                    _ulLT = _ulL0 * Quaternion.Euler(38f + stride * 0.35f, 0f, 14f);
+                    _ulRT = _ulR0 * Quaternion.Euler(18f - stride, 0f, -8f);
+                    _llLT = _llL0 * Quaternion.Euler(-42f, 0f, 0f);
+                    _llRT = _llR0 * Quaternion.Euler(-28f - Mathf.Abs(stride) * 0.3f, 0f, 0f);
+                }
+                else
+                {
+                    _ulLT = _ulL0 * Quaternion.Euler(18f + stride, 0f, 8f);
+                    _ulRT = _ulR0 * Quaternion.Euler(38f - stride * 0.35f, 0f, -14f);
+                    _llLT = _llL0 * Quaternion.Euler(-28f - Mathf.Abs(stride) * 0.3f, 0f, 0f);
+                    _llRT = _llR0 * Quaternion.Euler(-42f, 0f, 0f);
+                }
+            }
             else if (air)
             {
                 float airKick = Mathf.Sin(_cycle) * Mathf.Lerp(32f, 55f, runAmt);
@@ -228,7 +283,7 @@ namespace Tag.Art
                 _llRT = _llR0 * Quaternion.Euler(Mathf.Min(0f, -Mathf.Abs(swing) * 0.85f), 0f, 0f);
             }
 
-            float slew = jet || punching || lunging || mantle ? 32f : air ? 18f : 16f;
+            float slew = jet || punching || lunging || mantle || wallRun ? 34f : air ? 18f : 16f;
             Slew(ref _spine, _spineT, slew, dt);
             Slew(ref _hips, _hipsT, slew, dt);
             Slew(ref _head, _headT, slew, dt);
