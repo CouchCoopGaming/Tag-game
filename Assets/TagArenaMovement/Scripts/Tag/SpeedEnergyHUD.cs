@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+using System.Collections.Generic;
+using System.Text;
+using UnityEngine;
 using Tag.Gameplay;
 using Tag.Modes;
 
@@ -6,7 +8,7 @@ namespace TagArena.Movement
 {
     /// <summary>
     /// Cave-man OnGUI: speed, move state, jet fuel, ski on/off + P0 controls cheat-sheet
-    /// + It / mode / Hot Potato fuse (reads TagModeController, falls back to ItController scan).
+    /// + It / mode / Hot Potato fuse / Least It times (reads TagModeController, falls back to ItController scan).
     /// Local human only (wired by LocalPlayerSpawner for index 0).
     /// </summary>
     public class SpeedEnergyHUD : MonoBehaviour
@@ -25,7 +27,14 @@ namespace TagArena.Movement
             "Space jump\n" +
             "Ctrl/C crouch\n" +
             "LMB/E punch\n" +
-            "MMB lunge";
+            "MMB lunge\n" +
+            "F1 Hot Potato\n" +
+            "F2 Least It\n" +
+            "F3 Trail Tag";
+
+        // Flash full Least-It standings briefly every few seconds.
+        const float AllStandingsShowSec = 3.5f;
+        const float AllStandingsCycleSec = 8f;
 
         void OnGUI()
         {
@@ -67,16 +76,16 @@ namespace TagArena.Movement
                 y += 32f;
             }
 
-            GUI.Label(new Rect(24, y, 220, 160), Controls, _keys);
-            y += 132f;
+            GUI.Label(new Rect(24, y, 220, 200), Controls, _keys);
+            y += 178f;
 
             DrawMatchStatus(y);
         }
 
         void DrawMatchStatus(float y)
         {
-            string modeName = "—";
-            string itLabel = "—";
+            string modeName = "";
+            string itLabel = "";
             string fuseLine = null;
 
             var modes = TagModeController.Instance;
@@ -93,7 +102,7 @@ namespace TagArena.Movement
                     float rem = modes.Remaining;
                     fuseLine = rem > 0f
                         ? "Fuse " + rem.ToString("0.0") + "s"
-                        : "Fuse —";
+                        : "Fuse ";
                 }
             }
             else
@@ -108,7 +117,93 @@ namespace TagArena.Movement
             GUI.Label(new Rect(24, y, 480, 22), "It: " + itLabel, _status);
             y += 22f;
             if (fuseLine != null)
+            {
                 GUI.Label(new Rect(24, y, 480, 22), fuseLine, _status);
+                y += 22f;
+            }
+
+            if (modes != null && modes.SelectedMode == TagModeId.LeastIt)
+                y = DrawLeastItTimes(modes, y);
+        }
+
+        float DrawLeastItTimes(TagModeController modes, float y)
+        {
+            ItController self = null;
+            ItController leader = null;
+            float best = float.MaxValue;
+            var living = new List<ItController>(8);
+
+            var list = modes.PlayersForHud;
+            if (list != null)
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var p = list[i];
+                    if (p == null || !p.IsAlive) continue;
+                    living.Add(p);
+                    if (IsLocalPlayer(p))
+                        self = p;
+                    if (p.TimeAsIt < best)
+                    {
+                        best = p.TimeAsIt;
+                        leader = p;
+                    }
+                }
+            }
+
+            if (self == null)
+            {
+                var onMotor = motor != null ? motor.GetComponent<ItController>() : null;
+                if (onMotor != null && onMotor.IsAlive)
+                    self = onMotor;
+            }
+
+            float youT = self != null ? self.TimeAsIt : 0f;
+            GUI.Label(new Rect(24, y, 520, 22),
+                "You " + youT.ToString("0.0") + "s as It", _status);
+            y += 22f;
+
+            if (leader != null)
+            {
+                string leadName = IsLocalPlayer(leader) ? "YOU" : FormatIt(leader);
+                string leadMark = (self != null && leader == self) ? "  (you)" : "";
+                GUI.Label(new Rect(24, y, 520, 22),
+                    "Lead " + leadName + " " + leader.TimeAsIt.ToString("0.0") + "s" + leadMark,
+                    _status);
+                y += 22f;
+            }
+
+            // Briefly show all players' times on a compact line (cycle).
+            float cycle = Mathf.Repeat(Time.unscaledTime, AllStandingsCycleSec);
+            if (living.Count > 0 && cycle < AllStandingsShowSec)
+            {
+                var sb = new StringBuilder(64);
+                sb.Append("All ");
+                living.Sort((a, b) => a.TimeAsIt.CompareTo(b.TimeAsIt));
+                for (int i = 0; i < living.Count; i++)
+                {
+                    if (i > 0) sb.Append(" | ");
+                    var p = living[i];
+                    string n = IsLocalPlayer(p) ? "YOU" : (string.IsNullOrEmpty(p.PlayerId) ? p.name : p.PlayerId);
+                    sb.Append(n);
+                    sb.Append(' ');
+                    sb.Append(p.TimeAsIt.ToString("0.0"));
+                }
+                GUI.Label(new Rect(24, y, 640, 22), sb.ToString(), _status);
+                y += 22f;
+            }
+
+            return y;
+        }
+
+        bool IsLocalPlayer(ItController it)
+        {
+            if (it == null) return false;
+            if (it.gameObject == gameObject) return true;
+            if (motor != null && it.GetComponent<PlayerMotor>() == motor) return true;
+            if (it.GetComponent<PlayerInputReader>() != null && it.GetComponent<DummyPatrol>() == null)
+                return true;
+            return false;
         }
 
         static string FriendlyModeName(TagModeId id)
@@ -125,11 +220,7 @@ namespace TagArena.Movement
         string FormatIt(ItController it)
         {
             if (it == null) return "none";
-            // Human P0: same GO as this HUD / motor, or has input reader and no DummyPatrol.
-            if (it.gameObject == gameObject ||
-                (motor != null && it.GetComponent<PlayerMotor>() == motor))
-                return "YOU";
-            if (it.GetComponent<PlayerInputReader>() != null && it.GetComponent<DummyPatrol>() == null)
+            if (IsLocalPlayer(it))
                 return "YOU";
             return string.IsNullOrEmpty(it.PlayerId) ? it.gameObject.name : it.PlayerId;
         }

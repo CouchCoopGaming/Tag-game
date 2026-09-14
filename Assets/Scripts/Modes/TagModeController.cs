@@ -17,8 +17,9 @@ namespace Tag.Modes
     }
 
     /// <summary>
-    /// Shared shell: Countdown → Round(s) → Results. Delegates rules to ITagMode.
+    /// Shared shell: Countdown -> Round(s) -> Results. Delegates rules to ITagMode.
     /// TagRoundController on the same GO wraps this for scene GUID back-compat.
+    /// Playtest: F1 Hot Potato, F2 Least It, F3 Trail Tag -> StartRound(mode).
     /// </summary>
     public class TagModeController : MonoBehaviour
     {
@@ -52,6 +53,9 @@ namespace Tag.Modes
         public TagModeContext Context => _ctx;
         public MatchPhase Phase => _phase;
         public string ResultMessage => _resultMessage;
+
+        /// <summary>Living players' TimeAsIt (already on ItController); empty if no context players.</summary>
+        public IReadOnlyList<ItController> PlayersForHud => _ctx.Players;
 
         void Awake()
         {
@@ -161,7 +165,7 @@ namespace Tag.Modes
 
             _phase = MatchPhase.Countdown;
             _phaseTimer = Mathf.Max(0.01f, matchTuning.countdownSec);
-            Debug.Log($"[TagMode] Countdown {_phaseTimer:0}s → {selectedMode} ({_ctx.Players.Count}p)");
+            Debug.Log($"[TagMode] Countdown {_phaseTimer:0}s -> {selectedMode} ({_ctx.Players.Count}p)");
         }
 
         public void Rematch() => StartRound(selectedMode);
@@ -193,6 +197,8 @@ namespace Tag.Modes
 
         void Update()
         {
+            PollPlaytestModeHotkeys();
+
             float dt = Time.deltaTime;
 
             if (_phase == MatchPhase.Countdown)
@@ -222,6 +228,29 @@ namespace Tag.Modes
                 EndMatch();
         }
 
+        /// <summary>
+        /// Playtest: F1 Hot Potato / F2 Least It / F3 Trail Tag  SetMode + StartRound cleanly.
+        /// Works in any phase (Idle/Countdown/Playing/Results).
+        /// </summary>
+        void PollPlaytestModeHotkeys()
+        {
+            if (UnityEngine.Input.GetKeyDown(KeyCode.F1))
+            {
+                Debug.Log("[TagMode] Playtest hotkey F1 -> Hot Potato");
+                StartRound(TagModeId.HotPotato);
+            }
+            else if (UnityEngine.Input.GetKeyDown(KeyCode.F2))
+            {
+                Debug.Log("[TagMode] Playtest hotkey F2 -> Least It");
+                StartRound(TagModeId.LeastIt);
+            }
+            else if (UnityEngine.Input.GetKeyDown(KeyCode.F3))
+            {
+                Debug.Log("[TagMode] Playtest hotkey F3 -> Trail Tag");
+                StartRound(TagModeId.TrailTag);
+            }
+        }
+
         public void OnSuccessfulPunch(ItController puncher, ItController target)
         {
             if (_phase != MatchPhase.Playing || !_ctx.RoundRunning) return;
@@ -241,7 +270,7 @@ namespace Tag.Modes
             {
                 to.SetIt(true);
                 _ctx.CurrentIt = to;
-                Debug.Log($"[TagMode] It → {to.PlayerId}");
+                Debug.Log($"[TagMode] It -> {to.PlayerId}");
             }
             else
                 _ctx.CurrentIt = null;
@@ -275,7 +304,7 @@ namespace Tag.Modes
             _resultMessage = winners != null && winners.Count > 0
                 ? $"[{_mode?.Id}] Winner(s): " + string.Join(", ", winners)
                 : $"[{_mode?.Id}] No winners";
-            Debug.Log($"[TagMode] END — {_resultMessage}");
+            Debug.Log($"[TagMode] END -- {_resultMessage}");
 
             foreach (var p in players)
             {
@@ -302,14 +331,14 @@ namespace Tag.Modes
                 GUI.Label(new Rect(cx - 130, cy + 10, 260, 28), $"Get ready  {_phaseTimer:0}");
                 GUI.Label(new Rect(cx - 130, cy + 36, 260, 40),
                     _firstCountdownHint
-                        ? "WASD sprint · Ctrl slide · Q dash\nLMB punch transfers It"
+                        ? "WASD sprint  Ctrl slide  Q dash\nLMB punch transfers It"
                         : "Punch the dummy with the orange hat");
                 return;
             }
 
             string body = _mode != null ? _mode.GetHud(_ctx) : $"Mode {selectedMode}";
             if (_phase == MatchPhase.Results)
-                body += $"\n{_resultMessage}\n(R = Rematch · Q = Menu)";
+                body += $"\n{_resultMessage}\n(R = Rematch  Q = Menu)";
             else if (_phase == MatchPhase.PostRound)
                 body += $"\nPost-round {_phaseTimer:0.0}s";
             GUI.Box(new Rect(12, Screen.height - 168, 480, 156), "");
@@ -327,9 +356,9 @@ namespace Tag.Modes
             if (it == null)
                 text = "No one is It";
             else if (it.GetComponent<TagArena.Movement.PlayerInputReader>() != null && it.GetComponent<DummyPatrol>() == null)
-                text = "YOU ARE IT  —  punch to dump it";
+                text = "YOU ARE IT    punch to dump it";
             else
-                text = $"IT: {it.PlayerId}  —  orange hat  —  punch to tag";
+                text = $"IT: {it.PlayerId}    orange hat    punch to tag";
             GUI.Label(new Rect(r.x + 12, r.y + 12, w - 24, 24), text);
         }
     }
