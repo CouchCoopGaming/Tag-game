@@ -16,6 +16,7 @@ namespace Tag.Art
         [SerializeField] float hatHeight = 2.12f;
         [SerializeField] float bobAmp = 0.12f;
         [SerializeField] float bobHz = 2.4f;
+        [Tooltip("Fallback Hot Potato fuse warn window when HotPotatoTuning unavailable.")]
         [SerializeField] float hotPotatoWarnSec = 10f;
 
         ItController _it;
@@ -81,7 +82,10 @@ namespace Tag.Art
             ApplyRuntimeColor(_haloRend, glowCol, 2.8f + 4f * urgency * pulse);
         }
 
-        /// <summary>0 = calm / not Hot Potato; 1 = fuse about to pop (Remaining near 0).</summary>
+        /// <summary>
+        /// 0 = calm / not Hot Potato; 1 = fuse about to pop (Remaining near 0).
+        /// Uses TagModeController.Remaining vs HotPotatoTuning.warnSec (fallback: hotPotatoWarnSec).
+        /// </summary>
         float HotPotatoFuseUrgency()
         {
             var modes = TagModeController.Instance;
@@ -90,7 +94,11 @@ namespace Tag.Art
             float remain = modes.Remaining;
             if (remain <= 0f)
                 return 0f;
-            float warn = Mathf.Max(0.5f, hotPotatoWarnSec);
+            float warnSec = hotPotatoWarnSec;
+            var tuning = modes.HotPotatoTuningAsset;
+            if (tuning != null && tuning.warnSec > 0f)
+                warnSec = tuning.warnSec;
+            float warn = Mathf.Max(0.5f, warnSec);
             return 1f - Mathf.Clamp01(remain / warn);
         }
 
