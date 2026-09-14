@@ -21,17 +21,17 @@ namespace Tag.Gameplay
         public bool allowSlideCancelDuringPunch = false;
 
         [Header("Hitbox")]
-        public float reach = 1.35f;
-        public float width = 0.70f;
-        public float height = 1.20f;
-        public float midTorsoHeight = 0.90f;
+        public float reach = 1.55f;
+        public float width = 0.85f;
+        public float height = 1.40f;
+        public float midTorsoHeight = 1.00f;
         public float pitchToleranceDeg = 15f;
         public bool preferContinuousCast = true;
         public LayerMask runnerMask = ~0;
         public LayerMask losMask = ~0;
 
         [Header("On Hit")]
-        public float ragdollDuration = 1.5f;
+        public float ragdollDuration = 1.15f;
         public bool ragdollHasIFrames = true;
         public float knockbackHorizontal = 4.0f;
         public float knockbackUp = 2.0f;
