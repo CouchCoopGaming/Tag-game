@@ -28,7 +28,7 @@ namespace Tag.Audio
         public static AudioClip Land => _land ??= MakeThud(90f, 0.09f, 0.5f);
         public static AudioClip Slide => _slide ??= Resolve("SFX/sfx_slide", () => MakeNoiseWhoosh(0.12f, 0.38f, 700f));
         public static AudioClip Jump => _jump ??= MakeBlip(320f, 0.06f, 0.28f);
-        public static AudioClip Miss => _miss ??= Resolve("SFX/sfx_punch_miss", () => MakeBlip(140f, 0.05f, 0.22f));
+        public static AudioClip Miss => _miss ??= Resolve("SFX/sfx_punch_miss", () => MakeBlip(300f, 0.045f, 0.14f));
         public static AudioClip Lunge => _lunge ??= Resolve("SFX/sfx_air_dodge", () => MakeNoiseWhoosh(0.13f, 0.42f, 1100f));
 
         public static AudioSource EnsureSource(GameObject host)
@@ -64,6 +64,24 @@ namespace Tag.Audio
         }
 
         public static void PunchConnect(Vector3 pos) => PlayAt(Punch, pos, 0.62f);
+        /// <summary>Soft fail: quieter + slightly higher than PunchConnect.</summary>
+        public static void PunchMiss(Vector3 pos)
+        {
+            var clip = Miss;
+            if (clip == null) return;
+            var go = new GameObject("TagSfx_Miss");
+            go.transform.position = pos;
+            var src = go.AddComponent<AudioSource>();
+            src.playOnAwake = false;
+            src.spatialBlend = 0.65f;
+            src.rolloffMode = AudioRolloffMode.Linear;
+            src.maxDistance = 22f;
+            src.pitch = 1.15f + Random.Range(-0.04f, 0.04f);
+            src.volume = 0.28f;
+            src.clip = clip;
+            src.Play();
+            Object.Destroy(go, clip.length / Mathf.Max(0.5f, src.pitch) + 0.08f);
+        }
         public static void BecomeIt(Vector3 pos) => PlayAt(Tag, pos, 0.48f);
         public static void SkiStart(AudioSource src) => Play(src, Ski, 0.4f);
         public static void JetStart(AudioSource src) => Play(src, Jet, 0.38f);

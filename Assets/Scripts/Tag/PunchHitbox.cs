@@ -148,7 +148,11 @@ namespace Tag.Gameplay
             if (_phaseTimer <= 0f)
             {
                 Phase = PunchPhase.MissRecover;
-            AudioCuePlayer.Ensure()?.PunchMiss(transform.position);
+                // Soft fail: quieter/higher TagSfx + light cam nudge (connect keeps strong kick)
+                TagSfx.PunchMiss(transform.position);
+                var tpsMiss = GetComponentInChildren<TpsMoveCamera>(true);
+                if (tpsMiss != null)
+                    tpsMiss.AddKick(new Vector3(0f, 0.025f, -0.06f));
                 _phaseDuration = tuning.missRecover;
                 _phaseTimer = _phaseDuration;
             }

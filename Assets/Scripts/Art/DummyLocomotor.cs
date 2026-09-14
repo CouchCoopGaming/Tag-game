@@ -274,11 +274,11 @@ namespace Tag.Art
                     _laRT = _laR0 * Quaternion.Euler(-62f * r, 0f, 0f);
                     _uaLT = _uaL0 * Quaternion.Euler(-22f, 12f, armZ + 14f);
                 }
-                else // MissRecover
+                else // MissRecover — limp whiff: less extension, quicker drop vs HitRecover hold
                 {
-                    float r = Mathf.Lerp(1f, 0.2f, punchProg);
-                    _uaRT = _uaR0 * Quaternion.Euler(-30f - 70f * r, 18f * r, -12f);
-                    _laRT = _laR0 * Quaternion.Euler(-28f * r, 0f, 0f);
+                    float r = Mathf.Lerp(0.7f, 0.08f, punchProg * punchProg);
+                    _uaRT = _uaR0 * Quaternion.Euler(-18f - 48f * r, 10f * r, -8f);
+                    _laRT = _laR0 * Quaternion.Euler(-18f * r, 0f, 0f);
                 }
             }
             else if (sliding)
