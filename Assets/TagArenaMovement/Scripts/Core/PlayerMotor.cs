@@ -255,7 +255,9 @@ namespace TagArena.Movement
         void EnterSlide(ref Vector3 v)
         {
             Vector3 hv = WishAccel.Horizontal(v);
-            float boost = cfg.slideBoost * Mathf.InverseLerp(cfg.slideEntrySpeed, cfg.sprintSpeed + 2f, hv.magnitude);
+            // Floor scale so gate-speed enters still punch; sprint still gets full boost.
+            float scale = Mathf.InverseLerp(cfg.slideEntrySpeed, cfg.sprintSpeed + 2f, hv.magnitude);
+            float boost = cfg.slideBoost * Mathf.Lerp(0.4f, 1f, scale);
             Vector3 dir = hv.sqrMagnitude > 0.05f ? hv.normalized : transform.forward;
             hv = dir * (hv.magnitude + boost);
             v = WishAccel.SetHoriz(v, hv);
@@ -292,7 +294,7 @@ namespace TagArena.Movement
             v = along;
 
             bool keep = _in.CrouchHeld || (_slideT < cfg.slideMinDuration);
-            bool tooSlow = WishAccel.HorizSpeed(v) < cfg.walkSpeed * 0.85f && _slideT > cfg.slideMinDuration;
+            bool tooSlow = WishAccel.HorizSpeed(v) < cfg.walkSpeed * 0.72f && _slideT > cfg.slideMinDuration;
             if (!keep || tooSlow || !_probe.Ground.grounded)
             {
                 if (_in.CrouchHeld && _probe.Ground.grounded) SetState(MoveState.Crouch);

@@ -110,18 +110,18 @@ namespace Tag.Art
             float swing = Mathf.Sin(_cycle) * Mathf.Lerp(30f, 82f, Mathf.Max(walkAmt, runAmt));
             if (skiing) swing *= 0.35f;
             if (air) swing *= 0.72f; // retain vault/run energy instead of nearly freezing
-            if (sliding || crouch) swing *= 0.12f;
+            if (sliding) swing *= 0.08f; else if (crouch) swing *= 0.18f;
             if (jet) swing = 0f;
 
             float breath = Mathf.Sin(Time.time * 2.1f) * 2.4f;
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
             // Spine / hips lean by state — wall-run / mantle read clearly in TP
-            float leanX = lunging ? 32f : sliding || crouch ? 38f : skiing ? 22f : jet ? -12f : wallRun ? 22f : climb ? -8f : mantle ? 34f : air ? 14f : breath;
+            float leanX = lunging ? 32f : sliding ? 48f : crouch ? 28f : skiing ? 22f : jet ? -12f : wallRun ? 22f : climb ? -8f : mantle ? 34f : air ? 14f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : skiing ? Mathf.Sin(_cycle * 0.5f) * 6f : 0f;
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
-            _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : sliding || crouch ? 20f : skiing ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
-            _headT = _head0 * Quaternion.Euler(sliding ? 14f : jet ? 8f : air ? -6f : -breath * 0.4f, 0f, 0f);
+            _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : sliding ? 28f : crouch ? 14f : skiing ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
+            _headT = _head0 * Quaternion.Euler(sliding ? 18f : crouch ? 6f : jet ? 8f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
             // Arms
             float armZ = Mathf.Lerp(14f, 30f, runAmt);
@@ -201,6 +201,22 @@ namespace Tag.Art
                     _laRT = _laR0 * Quaternion.Euler(-28f * r, 0f, 0f);
                 }
             }
+            else if (sliding)
+            {
+                // Compact dive silhouette: lead arm plants low, trail braces back
+                _uaLT = _uaL0 * Quaternion.Euler(52f, -18f, armZ + 22f);
+                _uaRT = _uaR0 * Quaternion.Euler(-28f, 22f, -armZ - 8f);
+                _laLT = _laL0 * Quaternion.Euler(-58f, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
+            }
+            else if (crouch)
+            {
+                // Low guard squat - quieter than slide, still readable in TP
+                _uaLT = _uaL0 * Quaternion.Euler(22f, -6f, armZ + 8f);
+                _uaRT = _uaR0 * Quaternion.Euler(22f, 6f, -armZ - 8f);
+                _laLT = _laL0 * Quaternion.Euler(-28f, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(-28f, 0f, 0f);
+            }
             else if (air)
             {
                 // Air / vault limb tells: residual run energy + open arms
@@ -226,12 +242,20 @@ namespace Tag.Art
                 _llLT = _llL0 * Quaternion.Euler(-40f, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(-12f, 0f, 0f);
             }
-            else if (sliding || crouch)
+            else if (sliding)
             {
-                _ulLT = _ulL0 * Quaternion.Euler(70f, 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(55f, 0f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(-40f, 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(-25f, 0f, 0f);
+                // Lead tucked, trail extended - reads as a slide, not a squat
+                _ulLT = _ulL0 * Quaternion.Euler(82f, 8f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(28f, -6f, 0f);
+                _llLT = _llL0 * Quaternion.Euler(-72f, 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(-18f, 0f, 0f);
+            }
+            else if (crouch)
+            {
+                _ulLT = _ulL0 * Quaternion.Euler(62f, 0f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(58f, 0f, 0f);
+                _llLT = _llL0 * Quaternion.Euler(-52f, 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(-48f, 0f, 0f);
             }
             else if (skiing)
             {
@@ -283,7 +307,7 @@ namespace Tag.Art
                 _llRT = _llR0 * Quaternion.Euler(Mathf.Min(0f, -Mathf.Abs(swing) * 0.85f), 0f, 0f);
             }
 
-            float slew = jet || punching || lunging || mantle || wallRun ? 34f : air ? 18f : 16f;
+            float slew = jet || punching || lunging || mantle || wallRun || sliding ? 34f : crouch ? 24f : air ? 18f : 16f;
             Slew(ref _spine, _spineT, slew, dt);
             Slew(ref _hips, _hipsT, slew, dt);
             Slew(ref _head, _headT, slew, dt);
@@ -297,7 +321,7 @@ namespace Tag.Art
             Slew(ref _lowerLegR, _llRT, slew, dt);
 
             float bob = grounded ? Mathf.Abs(Mathf.Sin(_cycle)) * 0.055f * walkAmt : air ? Mathf.Abs(Mathf.Sin(_cycle)) * 0.02f : 0f;
-            if (sliding || crouch) bob = -0.18f;
+            if (sliding) bob = -0.22f; else if (crouch) bob = -0.14f;
             if (_landSquash > 0f) bob -= 0.08f * _landSquash;
             transform.localPosition = _root0 + new Vector3(0f, bob, 0f);
             float squash = 1f - 0.08f * _landSquash;

@@ -28,9 +28,9 @@ namespace TagArena.Movement
         public float slideEntrySpeed = 5.6f;
 
         [Header("Slide — Apex bloodline")]
-        public float slideBoost = 3.2f;
-        public float slideMinDuration = 0.18f;
-        public float slideFlatFriction = 6.5f;
+        public float slideBoost = 3.8f;
+        public float slideMinDuration = 0.26f;
+        public float slideFlatFriction = 5.6f;
         public float slideDownhillAccel = 14f;
         public float slideUphillBrake = 18f;
         public float slideSteer = 22f;
