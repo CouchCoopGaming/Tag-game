@@ -322,15 +322,19 @@ namespace Tag.Level
 
             // Thin emissive ring sibling under PARK — no PointLight (URP AdditionalLightsPerObjectLimit=4;
             // pad PointLights were stealing slots from ItMarker). Survives dresser hideGrayboxMeshWhenDressed.
+            // Raised Y + slightly oversized XY vs pad (2.2) to avoid z-fight with pad disc; no collider/shadows.
             var rim = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             rim.name = name + "_RimGlow";
             rim.transform.SetParent(_root, false);
-            rim.transform.localPosition = new Vector3(x, 0.02f, z);
+            rim.transform.localPosition = new Vector3(x, 0.07f, z);
             rim.transform.localRotation = Quaternion.identity;
-            rim.transform.localScale = new Vector3(2.6f, 0.025f, 2.6f);
+            rim.transform.localScale = new Vector3(2.75f, 0.02f, 2.75f);
             var rimCol = rim.GetComponent<Collider>();
             if (rimCol != null)
                 Object.DestroyImmediate(rimCol);
+            var rimMr = rim.GetComponent<MeshRenderer>();
+            if (rimMr != null)
+                rimMr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             ApplyMat(rim, MakeEmissiveMat(glow, 2.8f));
         }
 
