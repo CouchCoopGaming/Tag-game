@@ -89,8 +89,8 @@ namespace TagArena.Movement
         public float mantleMinLedgeHeight = 0.55f;
         public float mantleDuration = 0.42f;
         public float mantleForward = 0.85f;
-        public float wallBounceSpeed = 8.4f;
-        public float wallBounceUp = 6.6f;
+        public float wallBounceSpeed = 9.2f;
+        public float wallBounceUp = 7.0f;
         public float wallBounceGreenMin = 0.04f;
         public float wallBounceGreenMax = 0.22f;
         public float superGlideWindow = 0.055f;

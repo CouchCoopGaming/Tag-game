@@ -25,6 +25,9 @@ namespace Tag.Art
         float _cycle;
         float _landSquash;
         bool _wasGrounded = true;
+        float _bouncePulse;
+        bool _bounceWallLeft;
+        PlayerMotor _bounceHooked;
 
         Quaternion _spineT, _hipsT, _headT;
         Quaternion _uaLT, _uaRT, _laLT, _laRT;
@@ -33,6 +36,7 @@ namespace Tag.Art
         public void Bind(Transform visualRoot, PlayerMotor motor, PunchHitbox punch, CharacterController ccIgnored = null)
         {
             _motor = motor;
+            HookBounce();
             _punch = punch;
             _root0 = transform.localPosition;
             Cache(visualRoot);
@@ -72,6 +76,7 @@ namespace Tag.Art
             if (!_bound) Cache(transform);
             if (!_bound) return;
             if (_motor == null) _motor = GetComponentInParent<PlayerMotor>();
+            HookBounce();
             if (_punch == null) _punch = GetComponentInParent<PunchHitbox>();
 
             float dt = Time.deltaTime;
@@ -105,6 +110,10 @@ namespace Tag.Art
             _wasGrounded = grounded;
             float recover = Mathf.Lerp(7.5f, 5f, Mathf.Clamp01(_landSquash));
             _landSquash = Mathf.MoveTowards(_landSquash, 0f, dt * recover);
+            // Bible WallBounce ~0.22s kick flash — brief TP limb tell after OnWallBounced.
+            _bouncePulse = Mathf.MoveTowards(_bouncePulse, 0f, dt / 0.22f);
+            bool bouncing = _bouncePulse > 0.04f;
+            float bounceAmt = Mathf.Clamp01(_bouncePulse);
 
             float walkAmt = Mathf.Clamp01(speed / 5.5f);
             float runAmt = Mathf.InverseLerp(5.2f, 9.5f, speed);
@@ -131,9 +140,15 @@ namespace Tag.Art
             // Spine / hips lean by state — jet/ski read clearly in TP (jet wins over ski tuck)
             float leanX = lunging ? Mathf.Lerp(22f, 36f, _motor != null ? _motor.LungeProgress : 1f) : sliding ? 48f : crouch ? 28f : jet ? -18f : skiing ? 16f : wallRun ? 22f : climb ? -8f : mantle ? 34f : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : skiing && !jet ? Mathf.Sin(_cycle * 0.5f) * 14f : 0f;
+            if (bouncing)
+            {
+                // Kick wall: spine opens opposite the wall normal (WallLeft = wall on left).
+                leanX = Mathf.Lerp(leanX, 28f, bounceAmt);
+                leanZ = Mathf.Lerp(leanZ, _bounceWallLeft ? -38f : 38f, bounceAmt);
+            }
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
-            _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : sliding ? 28f : crouch ? 14f : jet ? -8f : skiing ? 10f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
-            _headT = _head0 * Quaternion.Euler(lunging ? 14f : sliding ? 18f : crouch ? 6f : jet ? -6f : skiing ? 10f : air ? -6f : -breath * 0.4f, 0f, 0f);
+            _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : bouncing ? 14f : sliding ? 28f : crouch ? 14f : jet ? -8f : skiing ? 10f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
+            _headT = _head0 * Quaternion.Euler(lunging ? 14f : bouncing ? 10f : sliding ? 18f : crouch ? 6f : jet ? -6f : skiing ? 10f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
             // Arms
             float armZ = Mathf.Lerp(14f, 30f, runAmt);
@@ -189,6 +204,25 @@ namespace Tag.Art
                     _uaRT = _uaR0 * Quaternion.Euler(-60f, -28f, -48f);
                     _laLT = _laL0 * Quaternion.Euler(-28f, 0f, 0f);
                     _laRT = _laR0 * Quaternion.Euler(-58f, 0f, 0f);
+                }
+            }
+            else if (bouncing)
+            {
+                // Brief push-off: wall-side arm plants/kicks, outer flings open
+                float k = bounceAmt;
+                if (_bounceWallLeft)
+                {
+                    _uaLT = _uaL0 * Quaternion.Euler(Mathf.Lerp(-20f, -78f, k), 22f * k, 42f * k);
+                    _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-20f, -48f, k), -18f * k, -36f * k);
+                    _laLT = _laL0 * Quaternion.Euler(-52f * k, 0f, 0f);
+                    _laRT = _laR0 * Quaternion.Euler(-24f * k, 0f, 0f);
+                }
+                else
+                {
+                    _uaLT = _uaL0 * Quaternion.Euler(Mathf.Lerp(-20f, -48f, k), 18f * k, 36f * k);
+                    _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-20f, -78f, k), -22f * k, -42f * k);
+                    _laLT = _laL0 * Quaternion.Euler(-24f * k, 0f, 0f);
+                    _laRT = _laR0 * Quaternion.Euler(-52f * k, 0f, 0f);
                 }
             }
             else if (punching)
@@ -325,6 +359,25 @@ namespace Tag.Art
                     _llRT = _llR0 * Quaternion.Euler(-42f, 0f, 0f);
                 }
             }
+            else if (bouncing)
+            {
+                // Wall-side leg kicks the face; outer tucks — readable off-wall impulse
+                float k = bounceAmt;
+                if (_bounceWallLeft)
+                {
+                    _ulLT = _ulL0 * Quaternion.Euler(Mathf.Lerp(18f, 62f, k), 0f, 12f * k);
+                    _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(16f, 28f, k), 0f, -6f * k);
+                    _llLT = _llL0 * Quaternion.Euler(Mathf.Lerp(-22f, -58f, k), 0f, 0f);
+                    _llRT = _llR0 * Quaternion.Euler(Mathf.Lerp(-18f, -28f, k), 0f, 0f);
+                }
+                else
+                {
+                    _ulLT = _ulL0 * Quaternion.Euler(Mathf.Lerp(16f, 28f, k), 0f, 6f * k);
+                    _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(18f, 62f, k), 0f, -12f * k);
+                    _llLT = _llL0 * Quaternion.Euler(Mathf.Lerp(-18f, -28f, k), 0f, 0f);
+                    _llRT = _llR0 * Quaternion.Euler(Mathf.Lerp(-22f, -58f, k), 0f, 0f);
+                }
+            }
             else if (air)
             {
                 float airKick = Mathf.Sin(_cycle) * Mathf.Lerp(32f, 55f, runAmt);
@@ -341,7 +394,7 @@ namespace Tag.Art
                 _llRT = _llR0 * Quaternion.Euler(Mathf.Min(0f, -Mathf.Abs(swing) * 0.85f), 0f, 0f);
             }
 
-            float slew = jet || punching || lunging || mantle || wallRun || sliding ? 34f : skiing || crouch ? 24f : air ? 18f : 16f;
+            float slew = bouncing || jet || punching || lunging || mantle || wallRun || sliding ? 36f : skiing || crouch ? 24f : air ? 18f : 16f;
             Slew(ref _spine, _spineT, slew, dt);
             Slew(ref _hips, _hipsT, slew, dt);
             Slew(ref _head, _headT, slew, dt);
@@ -362,6 +415,31 @@ namespace Tag.Art
             transform.localPosition = _root0 + new Vector3(0f, bob, 0f);
             float squash = 1f - 0.12f * _landSquash;
             transform.localScale = new Vector3(1f / squash, squash, 1f / squash);
+        }
+
+        void HookBounce()
+        {
+            if (_motor == _bounceHooked) return;
+            if (_bounceHooked != null)
+                _bounceHooked.OnWallBounced -= HandleWallBounced;
+            _bounceHooked = _motor;
+            if (_bounceHooked != null)
+                _bounceHooked.OnWallBounced += HandleWallBounced;
+        }
+
+        void HandleWallBounced()
+        {
+            _bouncePulse = 1f;
+            _bounceWallLeft = _motor != null && _motor.WallLeft;
+        }
+
+        void OnDisable()
+        {
+            if (_bounceHooked != null)
+            {
+                _bounceHooked.OnWallBounced -= HandleWallBounced;
+                _bounceHooked = null;
+            }
         }
 
         static void Slew(ref Transform t, Quaternion target, float speed, float dt)

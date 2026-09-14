@@ -514,9 +514,10 @@ namespace TagArena.Movement
             float outSpeed = green ? cfg.wallBounceSpeed : cfg.wallBounceSpeed * 0.65f;
 
             Vector3 hv = Vector3.ProjectOnPlane(v, Vector3.up);
-            Vector3 launch = (away * 0.7f + look * 0.5f).normalized * outSpeed + Vector3.up * up;
+            // Bias off-wall so TP reads a Tribes kick, not a plain jump-away.
+            Vector3 launch = (away * 0.85f + look * 0.4f).normalized * outSpeed + Vector3.up * up;
             // Keep some inbound speed so bounce is a redirect, not a reset.
-            launch += hv * 0.35f;
+            launch += hv * 0.4f;
 
             v = launch;
             _jumpBuf = 0f;
