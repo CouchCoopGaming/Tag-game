@@ -183,6 +183,7 @@ namespace Tag.Art
 
                 // Flat HiPoly / Dummy_Runner meshes have limb names but no hierarchy —
                 // procedural swing cannot move distal limbs. Prefer Navy Spade primitive.
+                // HasBindableBones uses GetComponentsInChildren, so Unity FBX root wrapper is fine.
                 if (fallbackToPrimitiveIfUnbound && !DummyLocomotor.HasBindableBones(_visualInstance.transform))
                 {
                     Debug.Log($"[DummyAvatarBinder] '{prefab.name}' has no hierarchical limb bones — using Navy Spade primitive.");

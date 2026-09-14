@@ -30,15 +30,15 @@ namespace Tag.Art
 
             // Black rubber chest / pelvis core
             Prim(PrimitiveType.Cube, root.transform, "ChestPlate",
-                new Vector3(0f, 1.22f, 0.02f), new Vector3(0.48f, 0.42f, 0.28f), joint);
+                new Vector3(0f, 1.24f, 0.02f), new Vector3(0.46f, 0.44f, 0.26f), joint);
             Prim(PrimitiveType.Cube, root.transform, "Pelvis",
-                new Vector3(0f, 0.88f, 0f), new Vector3(0.44f, 0.18f, 0.30f), joint);
+                new Vector3(0f, 0.90f, 0f), new Vector3(0.42f, 0.16f, 0.28f), joint);
 
             // Colored polymer torso panels (Navy Spade crash-dummy look)
             Prim(PrimitiveType.Cube, root.transform, "Panel_Chest",
-                new Vector3(0f, 1.28f, 0.16f), new Vector3(0.40f, 0.28f, 0.06f), panelMat);
+                new Vector3(0f, 1.30f, 0.155f), new Vector3(0.38f, 0.26f, 0.045f), panelMat);
             Prim(PrimitiveType.Cube, root.transform, "Panel_Abs",
-                new Vector3(0f, 1.05f, 0.15f), new Vector3(0.34f, 0.18f, 0.05f), panelMat);
+                new Vector3(0f, 1.06f, 0.145f), new Vector3(0.32f, 0.16f, 0.04f), panelMat);
             Prim(PrimitiveType.Cube, root.transform, "Panel_Back",
                 new Vector3(0f, 1.22f, -0.15f), new Vector3(0.42f, 0.36f, 0.05f), bodyMat);
             Prim(PrimitiveType.Cube, root.transform, "Panel_Side_L",
@@ -48,19 +48,19 @@ namespace Tag.Art
 
             // Featureless head (sphere) + black rubber neck collar — no face/eyes
             Prim(PrimitiveType.Sphere, root.transform, "Head",
-                new Vector3(0f, 1.64f, 0f), new Vector3(0.36f, 0.38f, 0.36f), bodyMat);
+                new Vector3(0f, 1.66f, 0f), new Vector3(0.34f, 0.37f, 0.34f), bodyMat);
             Prim(PrimitiveType.Cylinder, root.transform, "Neck",
-                new Vector3(0f, 1.45f, 0f), new Vector3(0.14f, 0.05f, 0.14f), joint);
+                new Vector3(0f, 1.47f, 0f), new Vector3(0.12f, 0.045f, 0.12f), joint);
             Prim(PrimitiveType.Cylinder, root.transform, "NeckCollar",
                 new Vector3(0f, 1.50f, 0f), new Vector3(0.22f, 0.03f, 0.22f), joint);
 
-            var hips = Empty(root.transform, "Hips", new Vector3(0f, 0.9f, 0f));
-            var spine = Empty(root.transform, "Spine", new Vector3(0f, 1.2f, 0f));
+            var hips = Empty(root.transform, "Hips", new Vector3(0f, 0.92f, 0f));
+            var spine = Empty(root.transform, "Spine", new Vector3(0f, 1.22f, 0f));
 
-            BuildArm(spine, "L", new Vector3(-0.34f, 0.1f, 0f), bodyMat, panelMat, joint, left: true);
-            BuildArm(spine, "R", new Vector3(0.34f, 0.1f, 0f), bodyMat, panelMat, joint, left: false);
-            BuildLeg(hips, "L", new Vector3(-0.13f, 0f, 0f), bodyMat, panelMat, joint);
-            BuildLeg(hips, "R", new Vector3(0.13f, 0f, 0f), bodyMat, panelMat, joint);
+            BuildArm(spine, "L", new Vector3(-0.33f, 0.1f, 0f), bodyMat, panelMat, joint, left: true);
+            BuildArm(spine, "R", new Vector3(0.33f, 0.1f, 0f), bodyMat, panelMat, joint, left: false);
+            BuildLeg(hips, "L", new Vector3(-0.12f, 0f, 0f), bodyMat, panelMat, joint);
+            BuildLeg(hips, "R", new Vector3(0.12f, 0f, 0f), bodyMat, panelMat, joint);
 
             // Optional It sensor strip (glow) — still no face
             if (asIt)

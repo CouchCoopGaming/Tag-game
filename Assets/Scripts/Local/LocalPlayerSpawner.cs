@@ -192,11 +192,11 @@ namespace Tag.Local
 
             var pivotGo = new GameObject("Pivot");
             pivotGo.transform.SetParent(camRig, false);
-            pivotGo.transform.localPosition = new Vector3(0f, 1.35f, 0f);
+            pivotGo.transform.localPosition = new Vector3(0f, 1.4f, 0f);
 
             var camGo = new GameObject("Camera");
             camGo.transform.SetParent(pivotGo.transform, false);
-            camGo.transform.localPosition = new Vector3(0f, 0.55f, -5.5f);
+            camGo.transform.localPosition = new Vector3(0.4f, 0.45f, -5.2f);
             var camComp = camGo.AddComponent<Camera>();
             camComp.tag = "MainCamera";
             camComp.fieldOfView = motor.cfg != null ? motor.cfg.fovIdle : 70f;
@@ -209,8 +209,8 @@ namespace Tag.Local
             tps.cfg = motor.cfg;
             tps.pitchPivot = pivotGo.transform;
             tps.cam = camComp;
-            tps.boomOffset = new Vector3(0f, 0.55f, -5.5f);
-            tps.pivotHeight = 1.35f;
+            tps.boomOffset = new Vector3(0.4f, 0.45f, -5.2f);
+            tps.pivotHeight = 1.4f;
             motor.cam = camComp.transform;
 
             Cursor.lockState = CursorLockMode.Locked;
