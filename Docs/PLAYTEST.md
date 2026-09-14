@@ -23,6 +23,8 @@ Branch: `cursor/apex-party-movement-f5fd`. Deeper notes: `Docs/MOVEMENT.md` / `D
 | **Ski crest** | Tribes leave: outward ski launch factor **1.0**, threshold `skiLaunchLeaveDot` ~0.12; DummyLocomotor air loft tell |
 | **Lunge** | It-only MMB: ~16 m/s, ~0.20 s, **CD ~1.0 s**; TP whip→settle via `LungeProgress` |
 | **Jump / land** | Coyote ~0.10 s, jump buffer ~0.16 s; hard land → LandStun; DummyLocomotor firmer land squash |
+| **Motor knobs** | Live on `Assets/Resources/TagArena/MovementConfig.asset` (`Resources.Load` `TagArena/MovementConfig`); recreate via **Tag → Create MovementConfig Asset** (won't overwrite) |
+| **Mantle / climb / glide / bounce** | Stickier mega-park mantle + wall-climb, fairer super-glide window, punchier wall bounce (TP vault/climb/glide/kick tells) |
 | **AI** | `DummyPatrol`: It chase + punch sync to `PunchHitbox` reach/cone; not-It flee with lead/strafe (wander when far); drives `PlayerMotor` via input |
 
 ## Controls (`PlayerInputReader`)
