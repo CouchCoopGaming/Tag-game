@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using Tag.Gameplay;
 using UnityEngine;
 
@@ -19,6 +20,7 @@ namespace Tag.Trail
 
         Action<ItController, ItController> _onHit;
         bool _collisionEnabled = true;
+        readonly HashSet<int> _hitVictims = new HashSet<int>();
 
         public void Init(
             ItController owner,
@@ -38,16 +40,26 @@ namespace Tag.Trail
             EliminateSelfAfterGrace = eliminateSelfAfterGrace;
             _onHit = onHit;
             _collisionEnabled = true;
+            _hitVictims.Clear();
         }
 
         public void SetCollisionEnabled(bool enabled) => _collisionEnabled = enabled;
 
-        void OnTriggerEnter(Collider other)
+        void OnTriggerEnter(Collider other) => TryHit(other);
+
+        // Stay catches: (1) RB ContinuousDynamic tunneling past thin segments,
+        // (2) owner still overlapping when self-grace expires (Enter already fired during grace).
+        void OnTriggerStay(Collider other) => TryHit(other);
+
+        void TryHit(Collider other)
         {
             if (!_collisionEnabled || other == null) return;
 
             var victim = other.GetComponentInParent<ItController>();
             if (victim == null || !victim.IsAlive) return;
+
+            int id = victim.GetInstanceID();
+            if (_hitVictims.Contains(id)) return;
 
             // Air-dodge i-frames intentionally do NOT ignore trails (modes sheet).
 
@@ -61,6 +73,7 @@ namespace Tag.Trail
                 if (age < SelfGraceSec || dist < SelfGraceDist) return;
             }
 
+            _hitVictims.Add(id);
             _onHit?.Invoke(victim, Owner);
         }
     }
