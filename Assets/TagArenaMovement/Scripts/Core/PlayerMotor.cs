@@ -451,7 +451,7 @@ namespace TagArena.Movement
         {
             if (_jumpBuf <= 0f) return;
 
-            // Super-glide: jump + crouch at mantle peak
+            // Super-glide: jump at mantle peak (crouch optional; height follows CrouchHeld)
             if (State == MoveState.Mantle && SuperGlideT >= 0f && SuperGlideT <= cfg.superGlideWindow)
             {
                 DoSuperGlide(ref v);
@@ -532,7 +532,7 @@ namespace TagArena.Movement
             Vector3 dir = cam ? Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized : transform.forward;
             if (_in.Move.sqrMagnitude > 0.1f)
                 dir = WishAccel.CameraWish(cam ? cam : transform, _in.Move);
-            v = dir * cfg.superGlideSpeed + Vector3.up * 1.6f;
+            v = dir * cfg.superGlideSpeed + Vector3.up * 1.85f;
             _jumpBuf = 0f;
             SuperGlideT = -1f;
             SetState(MoveState.Air);
@@ -641,13 +641,15 @@ namespace TagArena.Movement
             Vector3 delta = (pos - transform.position) / dt;
             v = delta;
 
-            // Super-glide window opens at the peak of the warp
-            if (u > 0.62f && u < 0.62f + cfg.superGlideWindow + 0.04f)
-                SuperGlideT = u - 0.62f;
-            else if (u >= 0.62f + cfg.superGlideWindow + 0.04f)
+            // Super-glide: real seconds from mantle peak (bible u~0.62), not u-fraction.
+            float peakT = cfg.mantleDuration * 0.62f;
+            if (_mantleT > peakT && _mantleT <= peakT + cfg.superGlideWindow)
+                SuperGlideT = _mantleT - peakT;
+            else
                 SuperGlideT = -1f;
 
-            if (_in.JumpPressed && SuperGlideT >= 0f)
+            // Jump buffer so early taps still catch the window (party-fair).
+            if (_jumpBuf > 0f && SuperGlideT >= 0f)
             {
                 DoSuperGlide(ref v);
                 return v;

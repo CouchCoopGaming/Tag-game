@@ -93,7 +93,8 @@ namespace TagArena.Movement
         public float wallBounceUp = 7.0f;
         public float wallBounceGreenMin = 0.04f;
         public float wallBounceGreenMax = 0.22f;
-        public float superGlideWindow = 0.055f;
+        // Real seconds at mantle peak (bible). 0.10 party-fair; was 0.055 counted as u-fraction (~23ms).
+        public float superGlideWindow = 0.10f;
         public float superGlideSpeed = 10.3f;
 
         [Header("Wall run — short arena parkour, not Titanfall infinite")]

@@ -27,6 +27,7 @@ namespace Tag.Art
         bool _wasGrounded = true;
         float _bouncePulse;
         bool _bounceWallLeft;
+        float _glidePulse;
         PlayerMotor _bounceHooked;
 
         Quaternion _spineT, _hipsT, _headT;
@@ -114,6 +115,10 @@ namespace Tag.Art
             _bouncePulse = Mathf.MoveTowards(_bouncePulse, 0f, dt / 0.22f);
             bool bouncing = _bouncePulse > 0.04f;
             float bounceAmt = Mathf.Clamp01(_bouncePulse);
+            // Bible SuperGlide ~0.28s flat body + crouch hips — TP launch tell.
+            _glidePulse = Mathf.MoveTowards(_glidePulse, 0f, dt / 0.28f);
+            bool gliding = _glidePulse > 0.04f;
+            float glideAmt = Mathf.Clamp01(_glidePulse);
 
             float walkAmt = Mathf.Clamp01(speed / 5.5f);
             float runAmt = Mathf.InverseLerp(5.2f, 9.5f, speed);
@@ -146,9 +151,15 @@ namespace Tag.Art
                 leanX = Mathf.Lerp(leanX, 28f, bounceAmt);
                 leanZ = Mathf.Lerp(leanZ, _bounceWallLeft ? -38f : 38f, bounceAmt);
             }
+            if (gliding)
+            {
+                // Flat launch silhouette — hips read a crouch even if capsule stands.
+                leanX = Mathf.Lerp(leanX, 42f, glideAmt);
+                leanZ = Mathf.Lerp(leanZ, 0f, glideAmt);
+            }
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
-            _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : bouncing ? 14f : sliding ? 28f : crouch ? 14f : jet ? -8f : skiing ? 10f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
-            _headT = _head0 * Quaternion.Euler(lunging ? 14f : bouncing ? 10f : sliding ? 18f : crouch ? 6f : jet ? -6f : skiing ? 10f : air ? -6f : -breath * 0.4f, 0f, 0f);
+            _hipsT = _hips0 * Quaternion.Euler(lunging ? 16f : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : sliding ? 28f : crouch ? 14f : jet ? -8f : skiing ? 10f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
+            _headT = _head0 * Quaternion.Euler(lunging ? 14f : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? 18f : crouch ? 6f : jet ? -6f : skiing ? 10f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
             // Arms
             float armZ = Mathf.Lerp(14f, 30f, runAmt);
@@ -205,6 +216,15 @@ namespace Tag.Art
                     _laLT = _laL0 * Quaternion.Euler(-28f, 0f, 0f);
                     _laRT = _laR0 * Quaternion.Euler(-58f, 0f, 0f);
                 }
+            }
+            else if (gliding)
+            {
+                // Flat forward reach — reads as mantle→glide launch, not air flail
+                float g = glideAmt;
+                _uaLT = _uaL0 * Quaternion.Euler(Mathf.Lerp(-20f, -72f, g), 12f * g, Mathf.Lerp(14f, 38f, g));
+                _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-20f, -72f, g), -12f * g, Mathf.Lerp(-14f, -38f, g));
+                _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-18f, -36f, g), 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-18f, -36f, g), 0f, 0f);
             }
             else if (bouncing)
             {
@@ -359,6 +379,15 @@ namespace Tag.Art
                     _llRT = _llR0 * Quaternion.Euler(-42f, 0f, 0f);
                 }
             }
+            else if (gliding)
+            {
+                // Crouch-hip tuck in air — bible: crouch in hips even if capsule stands
+                float g = glideAmt;
+                _ulLT = _ulL0 * Quaternion.Euler(Mathf.Lerp(18f, 58f, g), 0f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(16f, 52f, g), 0f, 0f);
+                _llLT = _llL0 * Quaternion.Euler(Mathf.Lerp(-18f, -48f, g), 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(Mathf.Lerp(-16f, -44f, g), 0f, 0f);
+            }
             else if (bouncing)
             {
                 // Wall-side leg kicks the face; outer tucks — readable off-wall impulse
@@ -394,7 +423,7 @@ namespace Tag.Art
                 _llRT = _llR0 * Quaternion.Euler(Mathf.Min(0f, -Mathf.Abs(swing) * 0.85f), 0f, 0f);
             }
 
-            float slew = bouncing || jet || punching || lunging || mantle || wallRun || sliding ? 36f : skiing || crouch ? 24f : air ? 18f : 16f;
+            float slew = bouncing || gliding || jet || punching || lunging || mantle || wallRun || sliding ? 36f : skiing || crouch ? 24f : air ? 18f : 16f;
             Slew(ref _spine, _spineT, slew, dt);
             Slew(ref _hips, _hipsT, slew, dt);
             Slew(ref _head, _headT, slew, dt);
@@ -421,10 +450,16 @@ namespace Tag.Art
         {
             if (_motor == _bounceHooked) return;
             if (_bounceHooked != null)
+            {
                 _bounceHooked.OnWallBounced -= HandleWallBounced;
+                _bounceHooked.OnSuperGlide -= HandleSuperGlide;
+            }
             _bounceHooked = _motor;
             if (_bounceHooked != null)
+            {
                 _bounceHooked.OnWallBounced += HandleWallBounced;
+                _bounceHooked.OnSuperGlide += HandleSuperGlide;
+            }
         }
 
         void HandleWallBounced()
@@ -433,11 +468,17 @@ namespace Tag.Art
             _bounceWallLeft = _motor != null && _motor.WallLeft;
         }
 
+        void HandleSuperGlide()
+        {
+            _glidePulse = 1f;
+        }
+
         void OnDisable()
         {
             if (_bounceHooked != null)
             {
                 _bounceHooked.OnWallBounced -= HandleWallBounced;
+                _bounceHooked.OnSuperGlide -= HandleSuperGlide;
                 _bounceHooked = null;
             }
         }
