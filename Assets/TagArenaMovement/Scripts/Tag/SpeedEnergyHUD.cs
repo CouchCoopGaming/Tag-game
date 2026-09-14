@@ -1,9 +1,12 @@
 ﻿using UnityEngine;
+using Tag.Gameplay;
+using Tag.Modes;
 
 namespace TagArena.Movement
 {
     /// <summary>
-    /// Cave-man OnGUI: speed, move state, jet fuel, ski on/off + P0 controls cheat-sheet.
+    /// Cave-man OnGUI: speed, move state, jet fuel, ski on/off + P0 controls cheat-sheet
+    /// + It / mode / Hot Potato fuse (reads TagModeController, falls back to ItController scan).
     /// Local human only (wired by LocalPlayerSpawner for index 0).
     /// </summary>
     public class SpeedEnergyHUD : MonoBehaviour
@@ -12,6 +15,7 @@ namespace TagArena.Movement
         GUIStyle _big;
         GUIStyle _small;
         GUIStyle _keys;
+        GUIStyle _status;
 
         // Labels mirror PlayerInputReader defaults (skiKey/jetKey/crouchKey/punchKey/lungeKey + hard-coded alts).
         const string Controls =
@@ -31,9 +35,11 @@ namespace TagArena.Movement
                 _big = new GUIStyle(GUI.skin.label) { fontSize = 28, fontStyle = FontStyle.Bold };
                 _small = new GUIStyle(GUI.skin.label) { fontSize = 18 };
                 _keys = new GUIStyle(GUI.skin.label) { fontSize = 15 };
+                _status = new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold };
                 _big.normal.textColor = Color.white;
                 _small.normal.textColor = new Color(0.85f, 0.9f, 1f);
                 _keys.normal.textColor = new Color(0.75f, 0.82f, 0.95f);
+                _status.normal.textColor = new Color(1f, 0.92f, 0.55f);
             }
 
             float hs = motor.HorizSpeed;
@@ -62,6 +68,82 @@ namespace TagArena.Movement
             }
 
             GUI.Label(new Rect(24, y, 220, 160), Controls, _keys);
+            y += 132f;
+
+            DrawMatchStatus(y);
+        }
+
+        void DrawMatchStatus(float y)
+        {
+            string modeName = "—";
+            string itLabel = "—";
+            string fuseLine = null;
+
+            var modes = TagModeController.Instance;
+            if (modes != null)
+            {
+                modeName = FriendlyModeName(modes.SelectedMode);
+                var it = modes.CurrentIt;
+                if (it == null)
+                    it = ScanItControllers();
+                itLabel = FormatIt(it);
+
+                if (modes.SelectedMode == TagModeId.HotPotato)
+                {
+                    float rem = modes.Remaining;
+                    fuseLine = rem > 0f
+                        ? "Fuse " + rem.ToString("0.0") + "s"
+                        : "Fuse —";
+                }
+            }
+            else
+            {
+                var it = ScanItControllers();
+                itLabel = FormatIt(it);
+                modeName = "default";
+            }
+
+            GUI.Label(new Rect(24, y, 480, 22), "Mode " + modeName, _status);
+            y += 22f;
+            GUI.Label(new Rect(24, y, 480, 22), "It: " + itLabel, _status);
+            y += 22f;
+            if (fuseLine != null)
+                GUI.Label(new Rect(24, y, 480, 22), fuseLine, _status);
+        }
+
+        static string FriendlyModeName(TagModeId id)
+        {
+            switch (id)
+            {
+                case TagModeId.HotPotato: return "Hot Potato";
+                case TagModeId.LeastIt: return "Least It";
+                case TagModeId.TrailTag: return "Trail Tag";
+                default: return id.ToString();
+            }
+        }
+
+        string FormatIt(ItController it)
+        {
+            if (it == null) return "none";
+            // Human P0: same GO as this HUD / motor, or has input reader and no DummyPatrol.
+            if (it.gameObject == gameObject ||
+                (motor != null && it.GetComponent<PlayerMotor>() == motor))
+                return "YOU";
+            if (it.GetComponent<PlayerInputReader>() != null && it.GetComponent<DummyPatrol>() == null)
+                return "YOU";
+            return string.IsNullOrEmpty(it.PlayerId) ? it.gameObject.name : it.PlayerId;
+        }
+
+        static ItController ScanItControllers()
+        {
+            var all = Object.FindObjectsByType<ItController>(FindObjectsSortMode.None);
+            for (int i = 0; i < all.Length; i++)
+            {
+                var c = all[i];
+                if (c != null && c.IsIt && c.IsAlive)
+                    return c;
+            }
+            return null;
         }
     }
 }
