@@ -18,6 +18,10 @@ namespace Tag.Trail
         public Vector3 SpawnOrigin { get; private set; }
         public bool EliminateSelfAfterGrace { get; private set; }
 
+        /// <summary>Ribbon sample endpoints (world). Midpoint is transform.position; prefer these for distance.</summary>
+        public Vector3 PointA { get; private set; }
+        public Vector3 PointB { get; private set; }
+
         Action<ItController, ItController> _onHit;
         bool _collisionEnabled = true;
         readonly HashSet<int> _hitVictims = new HashSet<int>();
@@ -41,6 +45,23 @@ namespace Tag.Trail
             _onHit = onHit;
             _collisionEnabled = true;
             _hitVictims.Clear();
+        }
+
+        public void SetEndpoints(Vector3 a, Vector3 b)
+        {
+            PointA = a;
+            PointB = b;
+        }
+
+        /// <summary>Closest world point on the A–B ribbon sample (clamped to the segment).</summary>
+        public Vector3 ClosestPointOnSegment(Vector3 worldPos)
+        {
+            Vector3 ab = PointB - PointA;
+            float lenSq = ab.sqrMagnitude;
+            if (lenSq < 0.0001f)
+                return PointA;
+            float t = Mathf.Clamp01(Vector3.Dot(worldPos - PointA, ab) / lenSq);
+            return PointA + ab * t;
         }
 
         public void SetCollisionEnabled(bool enabled) => _collisionEnabled = enabled;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Tag.Gameplay;
 using Tag.Modes;
@@ -371,6 +371,7 @@ namespace Tag.Trail
 
             var seg = go.AddComponent<TrailSegment>();
             seg.Init(_owner, _tuning.lifetime, graceSec, graceDist, _tuning.eliminateSelfAfterGrace, HandleHit);
+            seg.SetEndpoints(a, b);
 
             _segments.Add(new SegmentRec
             {
@@ -499,3 +500,4 @@ namespace Tag.Trail
         }
     }
 }
+

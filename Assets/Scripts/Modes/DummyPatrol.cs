@@ -212,7 +212,8 @@ namespace Tag.Modes
             foreach (var seg in FindObjectsByType<TrailSegment>(FindObjectsSortMode.None))
             {
                 if (seg == null) continue;
-                Vector3 delta = pos - seg.transform.position;
+                // Closest point on ribbon A–B (not collider midpoint) so long segments steer correctly.
+                Vector3 delta = pos - seg.ClosestPointOnSegment(pos);
                 delta.y = 0f;
                 float dsq = delta.sqrMagnitude;
                 if (dsq > rangeSq || dsq < 0.0001f) continue;
