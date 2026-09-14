@@ -7,7 +7,7 @@ High-subdivision crash dummies / mannequins.
 
 `DummyAvatarBinder` prefers `*_Hier_Hi`, then flat HiPoly, then Navy Spade primitive when `HasBindableBones` fails.
 
-Rebuild: Blender 5.2 `--background --python Assets/Art/Characters/HiPoly/build_mannequin_hier.py`
+Rebuild: Blender 5.2 `--background --python Tools/Tag/build_mannequin_hier.py`
 (Scratch mirror: `C:\Users\Zubal\Dev\_ororo_scratch\Tag\hipoly\build_mannequin_hier.py`)
 
 Colors: Blue, Mint, Orange, Lavender, Tan, Red. Export `-Z` forward, `Y` up.
