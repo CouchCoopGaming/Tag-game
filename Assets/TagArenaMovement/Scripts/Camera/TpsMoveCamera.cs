@@ -31,6 +31,8 @@ namespace TagArena.Movement
         float _fov;
         float _tilt;
         float _boomDist;
+        Vector3 _kick;
+        float _fovKick;
 
         PlayerInputReader _in;
 
@@ -68,7 +70,7 @@ namespace TagArena.Movement
 
             if (pitchPivot != null)
             {
-                pitchPivot.localPosition = new Vector3(0f, pivotHeight, 0f);
+                pitchPivot.localPosition = new Vector3(0f, pivotHeight, 0f) + _kick;
                 pitchPivot.localRotation = Quaternion.Euler(_pitch, 0f, _tilt);
             }
 
@@ -96,6 +98,7 @@ namespace TagArena.Movement
                             break;
                     }
                 }
+                targetFov += _fovKick;
                 _fov = Mathf.Lerp(_fov, targetFov, 1f - Mathf.Exp(-6f * dt));
                 cam.fieldOfView = _fov;
             }
@@ -107,8 +110,18 @@ namespace TagArena.Movement
                 wantTilt = motor.WallLeft ? tiltMax * 0.6f : -tiltMax * 0.6f;
             _tilt = Mathf.Lerp(_tilt, wantTilt, 1f - Mathf.Exp(-8f * dt));
 
+            _kick = Vector3.Lerp(_kick, Vector3.zero, 1f - Mathf.Exp(-12f * dt));
+            _fovKick = Mathf.Lerp(_fovKick, 0f, 1f - Mathf.Exp(-10f * dt));
+
             if (motor.cam == null && cam != null)
                 motor.cam = cam.transform;
+        }
+
+        /// <summary>Brief punch/tag camera kick (local pivot offset + optional FOV punch).</summary>
+        public void AddKick(Vector3 local)
+        {
+            _kick += local;
+            _fovKick += Mathf.Clamp(local.magnitude * 18f, 2f, 8f);
         }
 
         void ApplyBoomWithCollision()

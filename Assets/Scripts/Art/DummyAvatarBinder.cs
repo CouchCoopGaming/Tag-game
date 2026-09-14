@@ -1,3 +1,4 @@
+using System.Collections;
 using Tag.Gameplay;
 using TagArena.Movement;
 using UnityEngine;
@@ -42,6 +43,8 @@ namespace Tag.Art
         GameObject _visualInstance;
         bool _showingIt;
         bool _resolved;
+        Coroutine _hitPulseCo;
+        Vector3 _visualBaseScale = Vector3.one;
 
         void Awake()
         {
@@ -160,6 +163,7 @@ namespace Tag.Art
         void ApplyVisual(bool asIt)
         {
             ResolvePrefabs();
+            bool becameIt = asIt && !_showingIt;
             _showingIt = asIt;
             var prefab = asIt
                 ? (itVisualPrefab != null ? itVisualPrefab : runnerVisualPrefab)
@@ -208,8 +212,13 @@ namespace Tag.Art
             loco.Bind(_visualInstance.transform, GetComponent<PlayerMotor>(), GetComponent<PunchHitbox>());
 
             HideCapsuleMeshes();
+            if (_visualInstance != null)
+                _visualBaseScale = _visualInstance.transform.localScale;
             if (GetComponent<ItMarker>() == null)
                 gameObject.AddComponent<ItMarker>();
+
+            if (becameIt)
+                PlayTagHitFeedback();
 
             if (usedPrimitive)
                 Debug.Log($"[DummyAvatarBinder] Navy Spade primitive active on {gameObject.name} (asIt={asIt}).");
@@ -257,6 +266,37 @@ namespace Tag.Art
             }
         }
 
+
+        public void PlayTagHitFeedback()
+        {
+            if (_visualInstance == null) return;
+            if (_hitPulseCo != null) StopCoroutine(_hitPulseCo);
+            _hitPulseCo = StartCoroutine(HitPulseRoutine());
+        }
+
+        IEnumerator HitPulseRoutine()
+        {
+            var t = _visualInstance != null ? _visualInstance.transform : null;
+            if (t == null) yield break;
+            Vector3 baseScale = _visualBaseScale.sqrMagnitude > 0.0001f ? _visualBaseScale : t.localScale;
+            // Brief squash / flash scale so punch connect reads in third-person
+            float dur = 0.22f;
+            float elapsed = 0f;
+            while (elapsed < dur && t != null)
+            {
+                elapsed += Time.deltaTime;
+                float u = Mathf.Clamp01(elapsed / dur);
+                // Overshoot then settle: 1.18 -> 0.92 -> 1
+                float s = u < 0.35f
+                    ? Mathf.Lerp(1f, 1.18f, u / 0.35f)
+                    : (u < 0.65f ? Mathf.Lerp(1.18f, 0.92f, (u - 0.35f) / 0.3f)
+                                 : Mathf.Lerp(0.92f, 1f, (u - 0.65f) / 0.35f));
+                t.localScale = baseScale * s;
+                yield return null;
+            }
+            if (t != null) t.localScale = baseScale;
+            _hitPulseCo = null;
+        }
         static void FitVisual(GameObject visual)
         {
             var rends = visual.GetComponentsInChildren<Renderer>();

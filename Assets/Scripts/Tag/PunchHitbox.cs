@@ -15,7 +15,7 @@ namespace Tag.Gameplay
     }
 
     /// <summary>
-    /// It-only dedicated melee. Active punch ONLY — NO passive overlap/aura tag.
+    /// It-only dedicated melee. Active punch ONLY â€” NO passive overlap/aura tag.
     /// Prefer continuous cast during Active. Closest runner with LoS wins.
     /// </summary>
     public class PunchHitbox : MonoBehaviour
@@ -173,7 +173,7 @@ namespace Tag.Gameplay
             hitPoint = aimOrigin.position;
 
             Vector3 origin = aimOrigin.position + Vector3.up * tuning.midTorsoHeight;
-            // Pitch clamp ±tolerance around planar forward
+            // Pitch clamp Â±tolerance around planar forward
             Vector3 flatFwd = new Vector3(aimOrigin.forward.x, 0f, aimOrigin.forward.z).normalized;
             if (flatFwd.sqrMagnitude < 0.001f) flatFwd = transform.forward;
             Vector3 forward = Vector3.RotateTowards(
@@ -264,7 +264,12 @@ namespace Tag.Gameplay
             AudioCuePlayer.Ensure()?.PunchHit(transform.position);
             AudioCuePlayer.Ensure()?.TagTransfer(hitPoint);
 
-            // Target ragdoll / kinematic stun proxy + i-frames
+            // Readable TP punch connect: camera kick on attacker
+            var tps = GetComponentInChildren<TpsMoveCamera>(true);
+            if (tps != null)
+                tps.AddKick(new Vector3(0f, 0.08f, -0.22f));
+
+            // Target ragdoll / kinematic stun proxy + i-frames + hit pulse
             victim.ReceiveTagHit(knock, tuning);
 
             // Puncher buff: +8% walk+sprint, no stack, refresh on hit
