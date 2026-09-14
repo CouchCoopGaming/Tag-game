@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Tag.Level
 {
@@ -123,15 +123,45 @@ namespace Tag.Level
 
         void BuildSkiSpines()
         {
-            // Long fall-line spines (Tribes) across campus — rubber strips
-            Box("Spine_EW_S", new Vector3(36f, 0.02f, 18f), new Vector3(56f, 0.04f, 2.2f), _matSlide);
-            Box("Spine_EW_N", new Vector3(36f, 0.02f, 36f), new Vector3(56f, 0.04f, 2.2f), _matSlide);
-            Box("Spine_NS_W", new Vector3(24f, 0.02f, 27f), new Vector3(2.2f, 0.04f, 40f), _matSlide);
-            Box("Spine_NS_E", new Vector3(48f, 0.02f, 27f), new Vector3(2.2f, 0.04f, 40f), _matSlide);
-            Box("Spine_Diag_A", new Vector3(36f, 0.025f, 27f), new Vector3(40f, 0.04f, 1.6f), _matPath)
+            // Wider/thicker fall-line spines (Tribes ski) — continuous rubber highways + junctions
+            const float spineW = 3.0f;
+            const float spineT = 0.12f;
+            const float diagW = 2.4f;
+            float y = spineT * 0.5f;
+
+            Box("Spine_EW_S", new Vector3(36f, y, 18f), new Vector3(56f, spineT, spineW), _matSlide);
+            Box("Spine_EW_N", new Vector3(36f, y, 36f), new Vector3(56f, spineT, spineW), _matSlide);
+            Box("Spine_NS_W", new Vector3(24f, y, 27f), new Vector3(spineW, spineT, 40f), _matSlide);
+            Box("Spine_NS_E", new Vector3(48f, y, 27f), new Vector3(spineW, spineT, 40f), _matSlide);
+            Box("Spine_Diag_A", new Vector3(36f, y + 0.01f, 27f), new Vector3(42f, spineT, diagW), _matPath)
                 .transform.localRotation = Quaternion.Euler(0f, 35f, 0f);
-            Box("Spine_Diag_B", new Vector3(36f, 0.025f, 27f), new Vector3(40f, 0.04f, 1.6f), _matPath)
+            Box("Spine_Diag_B", new Vector3(36f, y + 0.01f, 27f), new Vector3(42f, spineT, diagW), _matPath)
                 .transform.localRotation = Quaternion.Euler(0f, -35f, 0f);
+
+            // Junction hubs so crossings stay readable / continuous
+            float jy = y + 0.02f;
+            const float j = 4.5f;
+            Box("Spine_Jct_SW", new Vector3(24f, jy, 18f), new Vector3(j, spineT, j), _matRamp);
+            Box("Spine_Jct_SE", new Vector3(48f, jy, 18f), new Vector3(j, spineT, j), _matRamp);
+            Box("Spine_Jct_NW", new Vector3(24f, jy, 36f), new Vector3(j, spineT, j), _matRamp);
+            Box("Spine_Jct_NE", new Vector3(48f, jy, 36f), new Vector3(j, spineT, j), _matRamp);
+            Box("Spine_Jct_Core", new Vector3(36f, jy + 0.01f, 27f), new Vector3(5.2f, spineT, 5.2f), _matPath);
+
+            // Approach ramps: pad → nearest spine (clearer Tribes entry slopes)
+            SkiRamp("Conn_Tron_N", new Vector3(36f, 0.55f, 12.8f), new Vector3(3.4f, 0.28f, 6.5f), -12f, 0f);
+            SkiRamp("Conn_Ninja_S", new Vector3(36f, 0.55f, 41.2f), new Vector3(3.4f, 0.28f, 6.5f), 12f, 0f);
+            SkiRamp("Conn_Pirate_N", new Vector3(14f, 0.55f, 15.2f), new Vector3(3.2f, 0.28f, 5.5f), -12f, 0f);
+            SkiRamp("Conn_Army_N", new Vector3(58f, 0.55f, 15.2f), new Vector3(3.2f, 0.28f, 5.5f), -12f, 0f);
+            SkiRamp("Conn_Astro_S", new Vector3(14f, 0.55f, 38.8f), new Vector3(3.2f, 0.28f, 5.5f), 12f, 0f);
+            SkiRamp("Conn_Knight_S", new Vector3(58f, 0.55f, 38.8f), new Vector3(3.2f, 0.28f, 5.5f), 12f, 0f);
+            SkiRamp("Conn_Crash_W", new Vector3(29.2f, 0.45f, 27f), new Vector3(5.5f, 0.28f, 3.2f), -10f, 90f);
+            SkiRamp("Conn_Crash_E", new Vector3(42.8f, 0.45f, 27f), new Vector3(5.5f, 0.28f, 3.2f), -10f, -90f);
+        }
+
+        void SkiRamp(string name, Vector3 localPos, Vector3 scale, float pitchDeg, float yawDeg)
+        {
+            var go = Box(name, localPos, scale, _matRamp);
+            go.transform.localRotation = Quaternion.Euler(pitchDeg, yawDeg, 0f);
         }
 
         // --- Zone pads --------------------------------------------------------------
@@ -179,8 +209,8 @@ namespace Tag.Level
             ChildBox(z, "Deck_High", new Vector3(-2f, 2.4f, 2f), new Vector3(4f, 0.3f, 3f), _matLoft);
             ChildBox(z, "Plank_Run", new Vector3(4f, 1.5f, 0f), new Vector3(6f, 0.25f, 1.2f), _matVault);
             ChildBox(z, "ClimbNetWall", new Vector3(-6f, 1.6f, 0f), new Vector3(0.35f, 3.2f, 6f), _matWall);
-            ChildBox(z, "Slide_Ramp", new Vector3(5f, 1.0f, -3f), new Vector3(2f, 0.3f, 5f), _matSlide)
-                .transform.localRotation = Quaternion.Euler(18f, 0f, 0f);
+            ChildBox(z, "Slide_Ramp", new Vector3(5f, 1.0f, -3f), new Vector3(2.8f, 0.3f, 5.5f), _matSlide)
+                .transform.localRotation = Quaternion.Euler(14f, 0f, 0f);
             ElbowAt(z, "Toy_Hedge_Pirate", -6f, -5f, true, true);
         }
 
@@ -191,8 +221,8 @@ namespace Tag.Level
             ChildBox(z, "Bunker_A", new Vector3(-3f, 0.7f, -2f), new Vector3(4f, 1.4f, 3f), _matPad);
             ChildBox(z, "Bunker_B", new Vector3(3f, 0.7f, 2f), new Vector3(4f, 1.4f, 3f), _matPad);
             ChildBox(z, "FoxholeTrench", new Vector3(0f, -0.4f, 0f), new Vector3(10f, 0.8f, 2f), _matBowl);
-            ChildBox(z, "Ramp_Up", new Vector3(-5f, 0.8f, 4f), new Vector3(3f, 0.3f, 6f), _matRamp)
-                .transform.localRotation = Quaternion.Euler(-16f, 90f, 0f);
+            ChildBox(z, "Ramp_Up", new Vector3(-5f, 0.8f, 4f), new Vector3(3.6f, 0.3f, 6.5f), _matRamp)
+                .transform.localRotation = Quaternion.Euler(-14f, 90f, 0f);
             ChildBox(z, "Wall_Cover", new Vector3(6f, 1.2f, 0f), new Vector3(0.4f, 2.4f, 8f), _matWall);
             ChildBox(z, "Vault_Low", new Vector3(0f, 0.5f, 5f), new Vector3(6f, 1f, 0.4f), _matVault);
         }
@@ -221,8 +251,8 @@ namespace Tag.Level
             ChildBox(z, "Keep_Tower", new Vector3(4f, 2.5f, 3f), new Vector3(3f, 5f, 3f), _matPad);
             ChildBox(z, "Battlement", new Vector3(4f, 5.2f, 3f), new Vector3(4f, 0.4f, 4f), _matLoft);
             ChildBox(z, "VaultGate", new Vector3(0f, 0.9f, -4f), new Vector3(3f, 1.8f, 0.5f), _matVault);
-            ChildBox(z, "Ramp_Keep", new Vector3(4f, 1.2f, -1f), new Vector3(2f, 0.3f, 5f), _matRamp)
-                .transform.localRotation = Quaternion.Euler(-20f, 0f, 0f);
+            ChildBox(z, "Ramp_Keep", new Vector3(4f, 1.2f, -1f), new Vector3(2.8f, 0.3f, 5.5f), _matRamp)
+                .transform.localRotation = Quaternion.Euler(-16f, 0f, 0f);
         }
 
         void BuildTronPad()
@@ -317,6 +347,7 @@ namespace Tag.Level
             go.transform.localRotation = Quaternion.identity;
             go.transform.localScale = scale;
             ApplyMat(go, mat);
+            EnsureBoxCollider(go);
             return go;
         }
 
@@ -329,6 +360,7 @@ namespace Tag.Level
             go.transform.localRotation = Quaternion.identity;
             go.transform.localScale = scale;
             ApplyMat(go, mat);
+            EnsureBoxCollider(go);
             return go;
         }
 
@@ -337,6 +369,15 @@ namespace Tag.Level
             var r = go.GetComponent<MeshRenderer>();
             if (r != null && mat != null)
                 r.sharedMaterial = mat;
+        }
+
+        /// <summary>CreatePrimitive already adds a BoxCollider; keep it enabled for ski contact.</summary>
+        static void EnsureBoxCollider(GameObject go)
+        {
+            var col = go.GetComponent<BoxCollider>();
+            if (col == null)
+                col = go.AddComponent<BoxCollider>();
+            col.enabled = true;
         }
     }
 }

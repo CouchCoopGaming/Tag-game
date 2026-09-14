@@ -260,6 +260,7 @@ namespace Tag.Art
 
         int BuildConnectorToys(Transform root)
         {
+            // Spine-aligned toys: denser safety tiles + slides along EW/NS fall-lines for Tribes read
             var parent = MakeGroup(root, "PGK_Connectors", Vector3.zero, 0f);
             var pieces = new List<(string id, Vector3 p, float y)>
             {
@@ -269,14 +270,23 @@ namespace Tag.Art
                 ("PGK_Tunnel_Plastic_LOD0", new Vector3(36f, 0f, 36f), 0f),
                 ("PGK_Spinner_StandOn_LOD0", new Vector3(24f, 0f, 36f), 0f),
                 ("PGK_Spinner_StandOn_LOD0", new Vector3(48f, 0f, 18f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(30f, 0.01f, 27f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(42f, 0.01f, 27f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(30f, 0.02f, 27f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(42f, 0.02f, 27f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(30f, 0.02f, 18f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(42f, 0.02f, 18f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(30f, 0.02f, 36f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(42f, 0.02f, 36f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(24f, 0.02f, 22f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(24f, 0.02f, 32f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(48f, 0.02f, 22f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(48f, 0.02f, 32f), 0f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(36f, 0f, 22.5f), 0f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(36f, 0f, 31.5f), 180f),
                 ("PGK_Dome_Geo_3m_LOD0", new Vector3(48f, 0f, 36f), 0f),
                 ("PGK_Monkey_4m_LOD0", new Vector3(24f, 0f, 18f), 90f),
             };
             return SpawnList(parent, pieces);
         }
-
         Transform MakeGroup(Transform root, string name, Vector3 origin, float yaw)
         {
             var go = new GameObject(name);
