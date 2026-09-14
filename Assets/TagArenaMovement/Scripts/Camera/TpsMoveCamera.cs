@@ -6,6 +6,7 @@ namespace TagArena.Movement
     /// Third-person orbit/follow. Mouse look drives player yaw + camera pitch boom.
     /// Sets motor.cam for wish-direction; keeps the full body visible (no eye CamRig).
     /// Soft sphere-cast keeps the boom from clipping through world geometry.
+    /// FOV + slight look-ahead track HorizSpeed / MoveState for readable speed feel.
     /// </summary>
     public class TpsMoveCamera : MonoBehaviour
     {
@@ -25,12 +26,18 @@ namespace TagArena.Movement
         public float collisionRadius = 0.28f;
         public float collisionMinDistance = 0.55f;
         public LayerMask collisionMask = ~0;
+        // Look-ahead / speed FOV — keep small for TP readability (not FPS tunnel)
+        public float lookAheadMax = 0.9f;
+        public float lookAheadSpeedLo = 4.4f;
+        public float lookAheadSpeedHi = 22f;
+        public float speedFovBoostMax = 3f;
 
         float _yaw;
         float _pitch = 12f;
         float _fov;
         float _tilt;
         float _boomDist;
+        float _lookAhead;
         Vector3 _kick;
         float _fovKick;
 
@@ -78,12 +85,33 @@ namespace TagArena.Movement
             {
                 ApplyBoomWithCollision();
 
-                // Look toward upper chest so framing stays readable
+                // Look toward upper chest + slight velocity look-ahead (readable speed)
                 Vector3 lookAt = motor.transform.position + Vector3.up * lookAtHeight;
+                float lo = cfg != null ? cfg.walkSpeed : lookAheadSpeedLo;
+                float hi = lookAheadSpeedHi;
+                float speedT = Mathf.InverseLerp(lo, hi, motor.HorizSpeed);
+                float wantAhead = lookAheadMax * speedT;
+                switch (motor.State)
+                {
+                    case MoveState.Sprint: wantAhead *= 1.05f; break;
+                    case MoveState.Slide: wantAhead *= 1.15f; break;
+                    case MoveState.Ski: wantAhead *= 1.25f; break;
+                    case MoveState.Jet: wantAhead *= 1.1f; break;
+                    case MoveState.Air: wantAhead *= 1.08f; break;
+                    case MoveState.WallRun: wantAhead *= 0.7f; break;
+                    case MoveState.Crouch:
+                    case MoveState.Idle: wantAhead *= 0.35f; break;
+                }
+                _lookAhead = Mathf.Lerp(_lookAhead, wantAhead, 1f - Mathf.Exp(-8f * dt));
+                Vector3 hv = motor.Velocity; hv.y = 0f;
+                Vector3 aheadDir = hv.sqrMagnitude > 0.25f ? hv.normalized : motor.transform.forward;
+                lookAt += aheadDir * _lookAhead;
+
                 Vector3 to = lookAt - cam.transform.position;
                 if (to.sqrMagnitude > 0.001f)
                     cam.transform.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
 
+                // Mirror FpsMoveCamera cfg.fov* by MoveState (+ tiny continuous speed boost)
                 float targetFov = cfg != null ? cfg.fovIdle : 70f;
                 if (cfg != null)
                 {
@@ -97,6 +125,7 @@ namespace TagArena.Movement
                             targetFov = Mathf.Lerp(cfg.fovIdle, cfg.fovSki, Mathf.InverseLerp(8f, 24f, motor.HorizSpeed));
                             break;
                     }
+                    targetFov += speedFovBoostMax * speedT;
                 }
                 targetFov += _fovKick;
                 _fov = Mathf.Lerp(_fov, targetFov, 1f - Mathf.Exp(-6f * dt));
@@ -132,7 +161,8 @@ namespace TagArena.Movement
                 return;
             }
 
-            float wantDist = Mathf.Abs(boomOffset.z);
+            // Slight boom stretch at speed so look-ahead has room without clipping feel
+            float wantDist = Mathf.Abs(boomOffset.z) + _lookAhead * 0.35f;
             Vector3 localDir = new Vector3(boomOffset.x, boomOffset.y, -wantDist);
             Vector3 worldDesired = pitchPivot.TransformPoint(localDir);
             Vector3 origin = pitchPivot.position;
