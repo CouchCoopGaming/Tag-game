@@ -768,6 +768,12 @@ namespace TagArena.Movement
             Invoke(nameof(EndStunProxy), Mathf.Max(0.05f, duration));
         }
 
+        public void ClearStun()
+        {
+            CancelInvoke(nameof(EndStunProxy));
+            SetMotorLocked(false);
+        }
+
         void EndStunProxy() => SetMotorLocked(false);
 
         #endregion

@@ -37,6 +37,29 @@ namespace Tag.Gameplay
             }
         }
 
+
+        public void ForceRecover()
+        {
+            if (_routine != null)
+            {
+                StopCoroutine(_routine);
+                _routine = null;
+            }
+
+            EnsureBodyRb();
+            if (bodyRb != null)
+            {
+                bodyRb.linearVelocity = Vector3.zero;
+                bodyRb.angularVelocity = Vector3.zero;
+                bodyRb.useGravity = false;
+                Quaternion rot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+                transform.rotation = rot;
+            }
+
+            if (_motor != null) _motor.SetMotorLocked(false);
+            _ragdolling = false;
+        }
+
         public void TriggerRagdoll(float duration)
         {
             TriggerRagdoll(duration, Vector3.up * 2f);

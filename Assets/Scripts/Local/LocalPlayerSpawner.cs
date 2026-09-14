@@ -12,7 +12,7 @@ namespace Tag.Local
     /// </summary>
     public class LocalPlayerSpawner : MonoBehaviour
     {
-        static readonly Vector3[] Spawns =
+        public static readonly Vector3[] Spawns =
         {
             new Vector3(60f, 1.5f, 50f),
             new Vector3(660f, 1.5f, 50f),
@@ -117,6 +117,7 @@ namespace Tag.Local
 
             if (go.GetComponent<PunchHitbox>() == null) go.AddComponent<PunchHitbox>();
             if (go.GetComponent<PlayerRagdoll>() == null) go.AddComponent<PlayerRagdoll>();
+            if (go.GetComponent<VoidRespawn>() == null) go.AddComponent<VoidRespawn>();
             if (go.GetComponent<PlayerTrailEmitter>() == null) go.AddComponent<PlayerTrailEmitter>();
             if (go.GetComponent<DummyAvatarBinder>() == null) go.AddComponent<DummyAvatarBinder>();
             if (go.GetComponent<ItMarker>() == null) go.AddComponent<ItMarker>();
