@@ -6,6 +6,7 @@ namespace Tag.Art
     /// Navy Spade–inspired crash dummy when FBX/prefabs lack a hierarchical limb rig.
     /// Featureless head, colored polymer panels, black rubber joints/chest/hands/feet.
     /// Limb names match DummyLocomotor (UpperArm_L/R, UpperLeg_L/R, ...).
+    /// Colors aligned with Tools/Tag/build_mannequin_hier.py COLORS / PANELS / JOINT.
     /// </summary>
     public static class DummyPrimitiveFactory
     {
@@ -133,16 +134,20 @@ namespace Tag.Art
         static void EnsureMaterials()
         {
             if (_matBody != null) return;
-            // Runner: tan polymer body + teal accent panels; It: orange; joints: black rubber
-            _matBody = MakeMat(new Color(0.88f, 0.72f, 0.48f));
-            _matItBody = MakeMat(new Color(0.92f, 0.38f, 0.14f));
-            _matPanel = MakeMat(new Color(0.18f, 0.55f, 0.72f));   // navy-teal polymer panels
-            _matItPanel = MakeMat(new Color(0.95f, 0.55f, 0.12f));
-            _matJoint = MakeMat(new Color(0.05f, 0.05f, 0.06f));
-            _matSensor = MakeMat(new Color(0.2f, 0.9f, 1f));
+            // Hier Navy Spade palette (build_mannequin_hier.py COLORS/PANELS/JOINT/SENSOR).
+            // Runner = Tan foam + Tan polymer panels; It = Orange foam + Orange panels.
+            // Smoothness ~= 1 - Blender roughness (body 0.40, panel 0.28, joint 0.90, sensor 0.22).
+            _matBody = MakeMat(new Color(0.90f, 0.76f, 0.52f), 0.60f);
+            _matItBody = MakeMat(new Color(0.94f, 0.42f, 0.14f), 0.60f);
+            _matPanel = MakeMat(new Color(0.10f, 0.48f, 0.68f), 0.72f);
+            _matItPanel = MakeMat(new Color(1.00f, 0.48f, 0.05f), 0.72f);
+            _matJoint = MakeMat(new Color(0.02f, 0.02f, 0.025f), 0.10f);
+            _matSensor = MakeMat(new Color(0.20f, 0.90f, 1.0f), 0.78f);
         }
 
-        public static Material MakeMat(Color c)
+        public static Material MakeMat(Color c) => MakeMat(c, 0.42f);
+
+        public static Material MakeMat(Color c, float smoothness)
         {
             var shader = Shader.Find("Universal Render Pipeline/Lit")
                          ?? Shader.Find("Standard")
@@ -151,7 +156,8 @@ namespace Tag.Art
             var m = new Material(shader) { name = "DummyPrim_" + ColorUtility.ToHtmlStringRGB(c) };
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
             if (m.HasProperty("_Color")) m.SetColor("_Color", c);
-            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", 0.42f);
+            if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", smoothness);
+            if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", 0f);
             return m;
         }
     }
