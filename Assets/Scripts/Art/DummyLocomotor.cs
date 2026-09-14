@@ -90,9 +90,21 @@ namespace Tag.Art
             bool lunging = _motor != null && _motor.IsLunging;
             var phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
 
-            if (grounded && !_wasGrounded) _landSquash = 1f;
+            if (grounded && !_wasGrounded)
+            {
+                // Soft landings = mild squash; hard (near landStunSpeed) = punchier. Clamped.
+                float impact = _motor != null ? _motor.LastLandImpactSpeed : 10f;
+                float soft = 5f;
+                float hard = 24f;
+                if (_motor != null && _motor.cfg != null)
+                    hard = Mathf.Max(soft + 1f, _motor.cfg.landStunSpeed);
+                float t = Mathf.Clamp01(Mathf.InverseLerp(soft, hard, impact));
+                // Ease-in so mid falls stay readable but terminal velocity punches.
+                _landSquash = Mathf.Clamp(Mathf.Lerp(0.2f, 1.25f, t * t), 0.2f, 1.25f);
+            }
             _wasGrounded = grounded;
-            _landSquash = Mathf.MoveTowards(_landSquash, 0f, dt * 6f);
+            float recover = Mathf.Lerp(7.5f, 5f, Mathf.Clamp01(_landSquash));
+            _landSquash = Mathf.MoveTowards(_landSquash, 0f, dt * recover);
 
             float walkAmt = Mathf.Clamp01(speed / 5.5f);
             float runAmt = Mathf.InverseLerp(5.2f, 9.5f, speed);

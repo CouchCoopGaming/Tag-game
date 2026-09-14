@@ -45,6 +45,8 @@ namespace TagArena.Movement
                 ? Mathf.Clamp01(_lungeT / Mathf.Max(0.01f, cfg.taggerLungeDuration))
                 : 0f;
         public float SprintSpeed => cfg != null ? cfg.sprintSpeed : 7.6f;
+        /// <summary>Downward speed (m/s) latched on the most recent ground contact.</summary>
+        public float LastLandImpactSpeed => _lastLandImpactSpeed;
 
         Rigidbody _rb;
         CapsuleCollider _cap;
@@ -68,6 +70,8 @@ namespace TagArena.Movement
         float _lungeCd;
         float _lungeT;
         float _landStunT;
+        float _lastLandImpactSpeed;
+        bool _wasProbeGrounded = true;
         bool _jumpFatigued;
         int _airJumpsFromFatigue;
         bool _motorLocked;
@@ -134,6 +138,7 @@ namespace TagArena.Movement
 
             _probe.Refresh(_height, _rb.linearVelocity);
             if (_probe.Ground.grounded) _coyote = cfg.coyoteTime;
+            LatchLandImpact();
 
             Vector3 wish = WishAccel.CameraWish(cam ? cam : transform, _in.Move);
             Vector3 v = _rb.linearVelocity;
@@ -808,6 +813,27 @@ namespace TagArena.Movement
 
         #region State / capsule / helpers
 
+        void LatchLandImpact()
+        {
+            bool g = _probe.Ground.grounded;
+            if (g && !_wasProbeGrounded)
+            {
+                float impact = Mathf.Max(0f, -_rb.linearVelocity.y);
+                _lastLandImpactSpeed = impact;
+                _lastLanded = Time.time;
+
+                // Landing shock (Apex) — only from true air/jet, not ski kisses.
+                // Harder impacts hold stun a touch longer (clamped).
+                if ((State == MoveState.Air || State == MoveState.Jet) && impact >= cfg.landStunSpeed)
+                {
+                    float over = Mathf.InverseLerp(cfg.landStunSpeed, cfg.maxFallSpeed, impact);
+                    _landStunT = cfg.landStunDuration * Mathf.Lerp(1f, 1.35f, over);
+                    SetState(MoveState.LandStun);
+                }
+            }
+            _wasProbeGrounded = g;
+        }
+
         void UpdateLocomotionState(bool grounded, Vector3 v)
         {
             if (State == MoveState.Mantle || State == MoveState.WallClimb || State == MoveState.WallRun || State == MoveState.LandStun)
@@ -853,16 +879,7 @@ namespace TagArena.Movement
                     _jumpFatigued = false;
             }
 
-            // Landing shock (Apex) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â only from true air, not ski kisses
-            if (_probe.Ground.grounded && (State == MoveState.Air || State == MoveState.Jet))
-            {
-                if (_rb.linearVelocity.y < -cfg.landStunSpeed)
-                {
-                    _landStunT = cfg.landStunDuration;
-                    SetState(MoveState.LandStun);
-                }
-                _lastLanded = Time.time;
-            }
+            // Landing shock moved to LatchLandImpact (after probe Refresh).
         }
 
         Vector3 ClampAndDrag(Vector3 v, float dt)
