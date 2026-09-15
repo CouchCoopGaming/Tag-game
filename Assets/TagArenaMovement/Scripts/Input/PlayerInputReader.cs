@@ -63,8 +63,10 @@ namespace TagArena.Movement
             _prevJump = JumpHeld ? 1f : 0f;
 
             SkiHeld = Input.GetKey(skiKey);
+            // Shift may also mean ski; PlayerMotor.WantsSki decides if ski engages.
+            // When ski does not engage (flat jog), Shift still counts as sprint so run reads correctly.
             SprintHeld = useShiftAsSprintWhenNotSkiing
-                ? (Input.GetKey(KeyCode.LeftShift) && !SkiHeld) || Input.GetKey(KeyCode.LeftAlt)
+                ? Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftAlt)
                 : Input.GetKey(KeyCode.LeftAlt);
 
             // Default: hold RMB / Left Shift+Space feel. Jet is dedicated.

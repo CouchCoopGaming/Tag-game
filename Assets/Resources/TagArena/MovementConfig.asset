@@ -31,9 +31,10 @@ MonoBehaviour:
   crouchSpeed: 2.8
   groundAccel: 48
   groundDecel: 36
-  slideEntrySpeed: 5.6
+  slideEntrySpeed: 6.4
   slideBoost: 3.8
-  slideMinDuration: 0.26
+  slideStaySpeed: 4
+  slideMinDuration: 0.12
   slideFlatFriction: 5.6
   slideDownhillAccel: 14
   slideUphillBrake: 18
@@ -73,12 +74,14 @@ MonoBehaviour:
   jetHoverDamp: 8
   jetMinEnergy: 4
   gravityWhileJetting: 0.15
-  climbMaxHeight: 6
+  climbMaxHeight: 3.4
+  climbMaxTime: 0.85
+  climbDecayStart: 0.4
   climbSpeed: 7.8
   climbAttachAngle: 55
   climbStickForce: 22
   climbSideSpeed: 3.7
-  climbSlipSpeed: 2.2
+  climbSlipSpeed: 3.4
   mantleMaxLedgeHeight: 2.55
   mantleMinLedgeHeight: 0.45
   mantleDuration: 0.4
@@ -90,10 +93,11 @@ MonoBehaviour:
   superGlideWindow: 0.1
   superGlideSpeed: 10.3
   enableWallRun: 1
-  wallRunMaxTime: 0.85
+  wallRunMaxTime: 0.62
   wallRunMinSpeed: 6
   wallRunSpeed: 9.5
-  wallRunGravity: 4.5
+  wallRunGravity: 6.5
+  wallRunGravityEndMult: 3.2
   wallRunJumpOut: 8
   wallRunJumpUp: 6.2
   wallRunAttachAngle: 35

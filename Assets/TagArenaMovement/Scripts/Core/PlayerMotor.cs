@@ -309,12 +309,16 @@ namespace TagArena.Movement
 
             v = along;
 
-            bool keep = _in.CrouchHeld || (_slideT < cfg.slideMinDuration);
-            bool tooSlow = WishAccel.HorizSpeed(v) < cfg.walkSpeed * 0.72f && _slideT > cfg.slideMinDuration;
-            if (!keep || tooSlow || !_probe.Ground.grounded)
+            // Slide only while crouch is held with momentum. Short commit avoids crouch-edge flicker on enter.
+            float hNow = WishAccel.HorizSpeed(v);
+            float commit = Mathf.Max(0.04f, cfg.slideMinDuration);
+            bool inCommit = _slideT < commit;
+            bool keepCrouch = _in.CrouchHeld || inCommit;
+            bool keepSpeed = hNow >= cfg.slideStaySpeed || inCommit;
+            if (!keepCrouch || !keepSpeed || !_probe.Ground.grounded)
             {
                 if (_in.CrouchHeld && _probe.Ground.grounded) SetState(MoveState.Crouch);
-                else if (_probe.Ground.grounded) SetState(HorizSpeed > cfg.walkSpeed + 0.4f ? MoveState.Sprint : MoveState.Walk);
+                else if (_probe.Ground.grounded) SetState(hNow > cfg.walkSpeed + 0.4f ? MoveState.Sprint : MoveState.Walk);
                 else SetState(MoveState.Air);
             }
 
@@ -330,8 +334,10 @@ namespace TagArena.Movement
         {
             if (!_in.SkiHeld) return false;
             if (State == MoveState.Mantle || State == MoveState.WallClimb) return false;
-            if (grounded && _probe.Ground.slopeAngle < cfg.skiMinSlope && HorizSpeed < cfg.sprintSpeed * 0.8f)
-                return _in.SkiHeld && HorizSpeed > cfg.walkSpeed; // allow flat ski to keep momentum
+            // Flat / mild slope: do NOT ice-skate at jog speeds — prefer run/sprint.
+            // Only allow flat ski to preserve already-high momentum (Tribes crest carry).
+            if (grounded && _probe.Ground.slopeAngle < cfg.skiMinSlope)
+                return HorizSpeed >= cfg.sprintSpeed * 1.15f;
             return true;
         }
 
@@ -602,20 +608,34 @@ namespace TagArena.Movement
                 return v;
             }
 
-            if (ClimbHeightUsed >= cfg.climbMaxHeight || (!_in.JumpHeld && _in.Move.y < 0.1f && _climbT > 0.08f))
+            bool timeOut = cfg.climbMaxTime > 0f && _climbT >= cfg.climbMaxTime;
+            bool heightOut = ClimbHeightUsed >= cfg.climbMaxHeight;
+            bool released = !_in.JumpHeld && _in.Move.y < 0.1f && _climbT > 0.08f;
+            if (timeOut || heightOut || released)
             {
-                // Drop / slip off
+                // Drop / slip off — stronger after a long cling so you cannot stick forever.
                 v = Vector3.ProjectOnPlane(v, _probe.Wall.normal);
-                v.y = Mathf.Min(v.y, -cfg.climbSlipSpeed);
+                float slip = cfg.climbSlipSpeed * (timeOut || heightOut ? 1.6f : 1f);
+                v.y = Mathf.Min(v.y, -slip);
                 SetState(MoveState.Air);
                 return v;
             }
 
-            Vector3 up = Vector3.up * cfg.climbSpeed;
+            // Decay up-speed after climbDecayStart so mid-climb already starts sliding down.
+            float fade = 1f;
+            if (cfg.climbMaxTime > 0.05f && _climbT > cfg.climbDecayStart)
+            {
+                float u = Mathf.InverseLerp(cfg.climbDecayStart, cfg.climbMaxTime, _climbT);
+                fade = Mathf.Clamp01(1f - u * u);
+            }
+            Vector3 up = Vector3.up * (cfg.climbSpeed * Mathf.Max(0.12f, fade));
             // Stronger into-wall glue so sticky probe + climb stay attached (was *0.05).
             Vector3 stick = -_probe.Wall.normal * cfg.climbStickForce * 0.09f;
             Vector3 side = Vector3.Cross(_probe.Wall.normal, Vector3.up).normalized * (_in.Move.x * cfg.climbSideSpeed);
             if (_in.Move.y < -0.3f) up = Vector3.down * cfg.climbSlipSpeed;
+            // Past decay window, add downward slip so the body visibly slides.
+            if (fade < 0.85f)
+                up += Vector3.down * (cfg.climbSlipSpeed * (1f - fade));
 
             v = up + side + stick;
             SetHeight(cfg.standingHeight);
@@ -711,10 +731,18 @@ namespace TagArena.Movement
             Vector3 along = Vector3.Cross(_probe.Wall.normal, Vector3.up);
             if (Vector3.Dot(along, WishAccel.Horizontal(v)) < 0f) along = -along;
 
-            Vector3 hv = along * cfg.wallRunSpeed;
+            // Speed fades near the end of the window so the exit reads as a drop, not a glue peel.
+            float tNorm = Mathf.Clamp01(_wallRunT / Mathf.Max(0.05f, cfg.wallRunMaxTime));
+            float speedFade = Mathf.Lerp(1f, 0.55f, tNorm * tNorm);
+            Vector3 hv = along * (cfg.wallRunSpeed * speedFade);
             float y = v.y;
-            y -= cfg.wallRunGravity * dt;
-            y = Mathf.Max(y, -2.5f);
+            float grav = cfg.wallRunGravity * Mathf.Lerp(1f, Mathf.Max(1f, cfg.wallRunGravityEndMult), tNorm * tNorm);
+            y -= grav * dt;
+            // Early: soft floor. Late: allow real slide-down (no Spiderman hover).
+            float minY = tNorm < 0.3f
+                ? -1.5f
+                : Mathf.Lerp(-2.5f, -16f, (tNorm - 0.3f) / 0.7f);
+            y = Mathf.Max(y, minY);
             // Slightly stronger into-wall stick so sticky probe + run stay glued in TP
             v = hv + Vector3.up * y - _probe.Wall.normal * 2.8f;
 

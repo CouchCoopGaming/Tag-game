@@ -44,6 +44,9 @@ namespace Tag.Level
                 gameObject.AddComponent<Tag.Art.ParkPropDresser>();
             if (GetComponent<Tag.Art.PgkLandmarkPlacer>() == null)
                 gameObject.AddComponent<Tag.Art.PgkLandmarkPlacer>();
+            // EXPERIMENTAL fans — component present but spawnFans defaults false (not core loop).
+            if (GetComponent<Tag.Experimental.ExperimentalFanPlacer>() == null)
+                gameObject.AddComponent<Tag.Experimental.ExperimentalFanPlacer>();
             if (GetComponent<ZoneNameMarkers>() == null)
                 gameObject.AddComponent<ZoneNameMarkers>();
         }

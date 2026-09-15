@@ -82,6 +82,12 @@ namespace Tag.Gameplay
                 ragdoll.TriggerRagdoll(dur, knock);
             else if (_motor != null)
                 _motor.BeginStunProxy(dur, knock);
+
+            // Readable tag flinch on victim dummy (code-only pose pulse)
+            var loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
+            if (loco != null) loco.PlayTagFlinch();
+            var binder = GetComponent<Tag.Art.DummyAvatarBinder>();
+            if (binder != null) binder.PlayTagHitFeedback();
         }
 
         public void ResetScore()

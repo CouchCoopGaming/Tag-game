@@ -25,11 +25,14 @@ namespace TagArena.Movement
         public float crouchSpeed = 2.8f;
         public float groundAccel = 48f;
         public float groundDecel = 36f;
-        public float slideEntrySpeed = 5.6f;
+        public float slideEntrySpeed = 6.4f;
 
         [Header("Slide — Apex bloodline")]
         public float slideBoost = 3.8f;
-        public float slideMinDuration = 0.26f;
+        /// <summary>Minimum planar speed to stay in slide while crouch is held.</summary>
+        public float slideStaySpeed = 4.0f;
+        /// <summary>Brief commit so crouch-edge noise does not cancel enter; releasing crouch after this exits.</summary>
+        public float slideMinDuration = 0.12f;
         public float slideFlatFriction = 5.6f;
         public float slideDownhillAccel = 14f;
         public float slideUphillBrake = 18f;
@@ -79,13 +82,17 @@ namespace TagArena.Movement
         public float gravityWhileJetting = 0.15f;
 
         [Header("Wall climb / mantle — Apex bloodline")]
-        public float climbMaxHeight = 6.0f;
+        public float climbMaxHeight = 3.4f;
+        /// <summary>Hard time cap — after this you slip down (no Spiderman stick).</summary>
+        public float climbMaxTime = 0.85f;
+        /// <summary>Climb up-speed begins decaying after this many seconds on the wall.</summary>
+        public float climbDecayStart = 0.40f;
         // Slightly snappier vertical + glue for TP parkour (was 7.2 / 18 / 3.4).
         public float climbSpeed = 7.8f;
         public float climbAttachAngle = 55f;
         public float climbStickForce = 22f;
         public float climbSideSpeed = 3.7f;
-        public float climbSlipSpeed = 2.2f;
+        public float climbSlipSpeed = 3.4f;
         // Slightly taller / lower lips for mega-park rails + decks (was 2.35 / 0.55).
         public float mantleMaxLedgeHeight = 2.55f;
         public float mantleMinLedgeHeight = 0.45f;
@@ -102,10 +109,12 @@ namespace TagArena.Movement
 
         [Header("Wall run — short arena parkour, not Titanfall infinite")]
         public bool enableWallRun = true;
-        public float wallRunMaxTime = 0.85f;
+        public float wallRunMaxTime = 0.62f;
         public float wallRunMinSpeed = 6.0f;
         public float wallRunSpeed = 9.5f;
-        public float wallRunGravity = 4.5f;
+        public float wallRunGravity = 6.5f;
+        /// <summary>Extra gravity multiplier reached at wallRunMaxTime (slides you down).</summary>
+        public float wallRunGravityEndMult = 3.2f;
         public float wallRunJumpOut = 8.0f;
         public float wallRunJumpUp = 6.2f;
         public float wallRunAttachAngle = 35f;

@@ -209,7 +209,13 @@ namespace Tag.Art
 
             var loco = _visualInstance.GetComponent<DummyLocomotor>();
             if (loco == null) loco = _visualInstance.AddComponent<DummyLocomotor>();
-            loco.Bind(_visualInstance.transform, GetComponent<PlayerMotor>(), GetComponent<PunchHitbox>());
+            var motor = GetComponent<PlayerMotor>();
+            loco.Bind(_visualInstance.transform, motor, GetComponent<PunchHitbox>());
+
+            // Jet thrust beam — makes the "invisible grapple" (actually Tribes jet) readable
+            var jetFx = GetComponent<JetThrustVisual>();
+            if (jetFx == null) jetFx = gameObject.AddComponent<JetThrustVisual>();
+            jetFx.Bind(motor, _visualInstance.transform);
 
             HideCapsuleMeshes();
             if (_visualInstance != null)
