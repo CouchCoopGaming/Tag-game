@@ -1,39 +1,38 @@
 #if UNITY_EDITOR
 using System.IO;
+using Tag.Art;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Tag.EditorTools
 {
     public static class DummyPrefabSetup
     {
-        const string RunnerFbx = "Assets/Art/Characters/Dummy_Runner.fbx";
-        const string ItFbx = "Assets/Art/Characters/Dummy_It.fbx";
         const string RunnerPrefab = "Assets/Art/Characters/Dummy_Runner.prefab";
         const string ItPrefab = "Assets/Art/Characters/Dummy_It.prefab";
 
         [MenuItem("Tag/Setup Hub Visuals (Dummies + Props + Play Bind)")]
         public static void SetupAll()
         {
+            TagUrpSetup.Ensure();
             SetupDummyPrefabs();
             CopyToResources();
             BindPlayScene();
             AssetDatabase.SaveAssets();
-            Debug.Log("[Tag] Hub visuals ready — Play should show dummies + park props.");
+            Debug.Log("[Tag] Hub visuals ready — URP + dummies + park props.");
         }
 
         [MenuItem("Tag/Setup Dummy Prefabs From FBX")]
         public static void SetupDummyPrefabs()
         {
-            BuildCharacter(RunnerFbx, RunnerPrefab, new[]
+            BuildCharacter(ArtMeshPaths.PreferCharacterFbx(false), RunnerPrefab, new[]
             {
                 "Assets/Art/Characters/Mat_Runner_Base.mat",
                 "Assets/Art/Characters/Mat_Runner_Accent.mat",
                 "Assets/Art/Characters/Mat_Runner_ItOverride.mat"
             });
-            BuildCharacter(ItFbx, ItPrefab, new[]
+            BuildCharacter(ArtMeshPaths.PreferCharacterFbx(true), ItPrefab, new[]
             {
                 "Assets/Art/Characters/Mat_It_Base.mat",
                 "Assets/Art/Characters/Mat_It_Accent.mat",
@@ -44,7 +43,8 @@ namespace Tag.EditorTools
         static void BuildCharacter(string fbxPath, string prefabPath, string[] matPaths)
         {
             var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(fbxPath);
-            if (fbx == null) { Debug.LogError("Missing " + fbxPath); return; }
+            if (fbx == null) { Debug.LogError("[Tag] Missing character FBX " + fbxPath); return; }
+            Debug.Log("[Tag] Character mesh " + fbxPath);
             var root = Object.Instantiate(fbx);
             root.name = Path.GetFileNameWithoutExtension(prefabPath);
             var mats = new Material[matPaths.Length];
@@ -55,6 +55,8 @@ namespace Tag.EditorTools
                 if (mats.Length > 0 && mats[0] != null)
                     r.sharedMaterials = mats;
             }
+            if (root.GetComponent<Tag.Art.DummyLocomotor>() == null)
+                root.AddComponent<Tag.Art.DummyLocomotor>();
             PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             Object.DestroyImmediate(root);
             Debug.Log("[Tag] Prefab " + prefabPath);
@@ -65,8 +67,16 @@ namespace Tag.EditorTools
             EnsureFolder("Assets/Resources");
             EnsureFolder("Assets/Resources/Characters");
             EnsureFolder("Assets/Resources/Props");
-            AssetDatabase.CopyAsset(RunnerPrefab, "Assets/Resources/Characters/Dummy_Runner.prefab");
-            AssetDatabase.CopyAsset(ItPrefab, "Assets/Resources/Characters/Dummy_It.prefab");
+
+            CopyReplace(RunnerPrefab, "Assets/Resources/Characters/Dummy_Runner.prefab");
+            CopyReplace(ItPrefab, "Assets/Resources/Characters/Dummy_It.prefab");
+
+            CopyReplace("Assets/Art/Characters/Mat_Runner_Base.mat", "Assets/Resources/Characters/Mat_Runner_Base.mat");
+            CopyReplace("Assets/Art/Characters/Mat_Runner_Accent.mat", "Assets/Resources/Characters/Mat_Runner_Accent.mat");
+            CopyReplace("Assets/Art/Characters/Mat_Runner_ItOverride.mat", "Assets/Resources/Characters/Mat_Runner_ItOverride.mat");
+            CopyReplace("Assets/Art/Characters/Mat_It_Base.mat", "Assets/Resources/Characters/Mat_It_Base.mat");
+            CopyReplace("Assets/Art/Characters/Mat_It_Accent.mat", "Assets/Resources/Characters/Mat_It_Accent.mat");
+            CopyReplace("Assets/Art/Characters/Mat_It_ItOverride.mat", "Assets/Resources/Characters/Mat_It_ItOverride.mat");
 
             string[] props =
             {
@@ -76,13 +86,42 @@ namespace Tag.EditorTools
             };
             foreach (var p in props)
             {
-                var src = $"Assets/Art/Props/Playground/{p}.fbx";
+                var src = ArtMeshPaths.PreferPropFbx(p);
                 if (File.Exists(src) || AssetDatabase.LoadAssetAtPath<Object>(src) != null)
-                    AssetDatabase.CopyAsset(src, $"Assets/Resources/Props/{p}.prefab");
+                    BuildPropPrefab(src, $"Assets/Resources/Props/{p}.prefab", p);
             }
-            // Trail mat
-            EnsureFolder("Assets/Resources");
-            AssetDatabase.CopyAsset("Assets/Art/VFX/Trail/Mat_Trail_Cyan.mat", "Assets/Resources/Mat_Trail_Cyan.mat");
+
+            string[] parkMats =
+            {
+                "Mat_Park_Yellow","Mat_Park_Blue","Mat_Park_Steel","Mat_Park_Rubber",
+                "Mat_Park_Red","Mat_Park_Concrete","Mat_Park_Mulch"
+            };
+            foreach (var m in parkMats)
+                CopyReplace($"Assets/Art/Props/Playground/Materials/{m}.mat", $"Assets/Resources/Props/{m}.mat");
+
+            CopyReplace("Assets/Art/VFX/Trail/Mat_Trail_Cyan.mat", "Assets/Resources/Mat_Trail_Cyan.mat");
+        }
+
+        static void BuildPropPrefab(string fbxPath, string prefabPath, string propName)
+        {
+            var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(fbxPath);
+            if (fbx == null) return;
+            Debug.Log("[Tag] Prop mesh " + fbxPath);
+            var root = Object.Instantiate(fbx);
+            root.name = propName;
+            foreach (var col in root.GetComponentsInChildren<Collider>())
+                Object.DestroyImmediate(col);
+            PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+            Object.DestroyImmediate(root);
+        }
+
+        static void CopyReplace(string src, string dst)
+        {
+            if (!File.Exists(src) && AssetDatabase.LoadAssetAtPath<Object>(src) == null)
+                return;
+            if (AssetDatabase.LoadAssetAtPath<Object>(dst) != null)
+                AssetDatabase.DeleteAsset(dst);
+            AssetDatabase.CopyAsset(src, dst);
         }
 
         static void BindPlayScene()
@@ -101,8 +140,7 @@ namespace Tag.EditorTools
                     AssetDatabase.LoadAssetAtPath<GameObject>(ItPrefab);
                 so.ApplyModifiedPropertiesWithoutUndo();
             }
-            // Park dresser on CutArenaBootstrap host
-            var bootstrap = Object.FindObjectOfType<Tag.Level.CutArenaBootstrap>();
+            var bootstrap = Object.FindFirstObjectByType<Tag.Level.CutArenaBootstrap>();
             if (bootstrap != null)
             {
                 if (bootstrap.GetComponent<Tag.Art.ParkPropDresser>() == null)
@@ -123,7 +161,6 @@ namespace Tag.EditorTools
             AssetDatabase.CreateFolder(parent, name);
         }
 
-        // Auto-run once when scripts recompile if flag missing
         [InitializeOnLoadMethod]
         static void AutoPrompt()
         {
@@ -131,9 +168,11 @@ namespace Tag.EditorTools
             EditorApplication.delayCall += () =>
             {
                 if (SessionState.GetBool("Tag.HubVisualsSetupDone", false)) return;
-                if (!File.Exists("Assets/Art/Characters/Dummy_Runner.fbx")) return;
+                if (!File.Exists("Assets/Art/Characters/Dummy_Runner.fbx")
+                    && !File.Exists("Assets/Art/Characters/HiPoly/Dummy_Runner_Hi.fbx"))
+                    return;
                 if (EditorUtility.DisplayDialog("Tag Hub Visuals",
-                    "Dummy + PARK prop meshes are in the project. Run setup so Play shows them instead of graybox capsules?",
+                    "Dummy + PARK prop meshes are in the project. Run setup so Play uses Dummy_* / Toy_* (prefers HiPoly/*_Hi.fbx when present) instead of graybox capsules?\n\nAlso assigns the URP pipeline (fixes magenta materials).",
                     "Setup now", "Later"))
                 {
                     SetupAll();

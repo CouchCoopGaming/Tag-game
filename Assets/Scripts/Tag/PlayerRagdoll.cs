@@ -1,18 +1,17 @@
 using System.Collections;
 using UnityEngine;
 using Tag.Audio;
-using Tag.Movement;
+using TagArena.Movement;
 
 namespace Tag.Gameplay
 {
     /// <summary>
-    /// Kinematic stun / ragdoll proxy: CC off → Rigidbody impulse → CC on.
+    /// Stun / ragdoll proxy on Rigidbody motor: lock motor, impulse, unlock.
     /// Full bone ragdoll can replace this later. No punch while down (motor locked).
     /// </summary>
     public class PlayerRagdoll : MonoBehaviour
     {
         [SerializeField] Rigidbody bodyRb;
-        CharacterController _cc;
         PlayerMotor _motor;
         bool _ragdolling;
         Coroutine _routine;
@@ -21,7 +20,6 @@ namespace Tag.Gameplay
 
         void Awake()
         {
-            _cc = GetComponent<CharacterController>();
             _motor = GetComponent<PlayerMotor>();
             EnsureBodyRb();
         }
@@ -37,8 +35,29 @@ namespace Tag.Gameplay
                 bodyRb.interpolation = RigidbodyInterpolation.Interpolate;
                 bodyRb.constraints = RigidbodyConstraints.FreezeRotation;
             }
-            bodyRb.isKinematic = true;
-            bodyRb.useGravity = false;
+        }
+
+
+        public void ForceRecover()
+        {
+            if (_routine != null)
+            {
+                StopCoroutine(_routine);
+                _routine = null;
+            }
+
+            EnsureBodyRb();
+            if (bodyRb != null)
+            {
+                bodyRb.linearVelocity = Vector3.zero;
+                bodyRb.angularVelocity = Vector3.zero;
+                bodyRb.useGravity = false;
+                Quaternion rot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+                transform.rotation = rot;
+            }
+
+            if (_motor != null) _motor.SetMotorLocked(false);
+            _ragdolling = false;
         }
 
         public void TriggerRagdoll(float duration)
@@ -57,9 +76,9 @@ namespace Tag.Gameplay
             _ragdolling = true;
             AudioCuePlayer.Ensure()?.Ragdoll(transform.position);
             if (_motor != null) _motor.SetMotorLocked(true);
-            if (_cc != null) _cc.enabled = false;
 
             EnsureBodyRb();
+            // Motor already owns non-kinematic RB; keep gravity on during stun.
             bodyRb.isKinematic = false;
             bodyRb.useGravity = true;
             bodyRb.linearVelocity = Vector3.zero;
@@ -72,15 +91,10 @@ namespace Tag.Gameplay
             Quaternion rot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
             bodyRb.linearVelocity = Vector3.zero;
             bodyRb.angularVelocity = Vector3.zero;
-            bodyRb.isKinematic = true;
-            bodyRb.useGravity = false;
+            // Keep non-kinematic for TagArena motor; just settle yaw.
             transform.SetPositionAndRotation(pos, rot);
+            Physics.SyncTransforms();
 
-            if (_cc != null)
-            {
-                _cc.enabled = true;
-                Physics.SyncTransforms();
-            }
             if (_motor != null) _motor.SetMotorLocked(false);
             _ragdolling = false;
             _routine = null;

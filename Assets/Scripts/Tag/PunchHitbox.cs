@@ -1,7 +1,6 @@
 using UnityEngine;
 using Tag.Audio;
-using Tag.Input;
-using Tag.Movement;
+using TagArena.Movement;
 using Tag.Modes;
 
 namespace Tag.Gameplay
@@ -33,6 +32,9 @@ namespace Tag.Gameplay
 
         public PunchPhase Phase { get; private set; } = PunchPhase.Idle;
         public bool IsPunching => Phase != PunchPhase.Idle;
+        /// <summary>0 at phase start, 1 when the phase timer expires.</summary>
+        public float PhaseProgress =>
+            _phaseDuration <= 0.0001f ? 1f : 1f - Mathf.Clamp01(_phaseTimer / _phaseDuration);
 
         /// <summary>AI / external: arm punch buffer (same path as input).</summary>
         public void QueuePunch()
@@ -41,8 +43,13 @@ namespace Tag.Gameplay
             _bufferTimer = Mathf.Max(_bufferTimer, tuning.inputBuffer);
         }
 
+        /// <summary>Active hitbox reach (PunchTagTuning.reach). Used by DummyPatrol swing gating.</summary>
+        public float Reach => tuning != null ? tuning.reach : 1.55f;
+        /// <summary>Active hitbox width (PunchTagTuning.width). Used with Reach for AI cone.</summary>
+        public float Width => tuning != null ? tuning.width : 0.85f;
 
         float _phaseTimer;
+        float _phaseDuration;
         float _bufferTimer;
         bool _hitThisSwing;
         readonly Collider[] _overlap = new Collider[24];
@@ -103,7 +110,8 @@ namespace Tag.Gameplay
             _bufferTimer = 0f;
             _hitThisSwing = false;
             Phase = PunchPhase.Windup;
-            _phaseTimer = tuning.windup;
+            _phaseDuration = tuning.windup;
+            _phaseTimer = _phaseDuration;
             if (_motor != null)
             {
                 _motor.SetPunchMoveScale(tuning.windupMoveSpeedScale);
@@ -118,7 +126,8 @@ namespace Tag.Gameplay
             if (_phaseTimer <= 0f)
             {
                 Phase = PunchPhase.Active;
-                _phaseTimer = tuning.active;
+                _phaseDuration = tuning.active;
+                _phaseTimer = _phaseDuration;
                 if (_motor != null) _motor.SetPunchMoveScale(1f);
             }
         }
@@ -130,7 +139,8 @@ namespace Tag.Gameplay
                 _hitThisSwing = true;
                 ResolveHit(victim, hitPoint);
                 Phase = PunchPhase.HitRecover;
-                _phaseTimer = tuning.hitRecover;
+                _phaseDuration = tuning.hitRecover;
+                _phaseTimer = _phaseDuration;
                 return;
             }
 
@@ -138,8 +148,13 @@ namespace Tag.Gameplay
             if (_phaseTimer <= 0f)
             {
                 Phase = PunchPhase.MissRecover;
-            AudioCuePlayer.Ensure()?.PunchMiss(transform.position);
-                _phaseTimer = tuning.missRecover;
+                // Soft fail: quieter/higher TagSfx + light cam nudge (connect keeps strong kick)
+                TagSfx.PunchMiss(transform.position);
+                var tpsMiss = GetComponentInChildren<TpsMoveCamera>(true);
+                if (tpsMiss != null)
+                    tpsMiss.AddKick(new Vector3(0f, 0.025f, -0.06f));
+                _phaseDuration = tuning.missRecover;
+                _phaseTimer = _phaseDuration;
             }
         }
 
@@ -166,7 +181,7 @@ namespace Tag.Gameplay
             hitPoint = aimOrigin.position;
 
             Vector3 origin = aimOrigin.position + Vector3.up * tuning.midTorsoHeight;
-            // Pitch clamp ±tolerance around planar forward
+            // Pitch clamp +/-tolerance around planar forward
             Vector3 flatFwd = new Vector3(aimOrigin.forward.x, 0f, aimOrigin.forward.z).normalized;
             if (flatFwd.sqrMagnitude < 0.001f) flatFwd = transform.forward;
             Vector3 forward = Vector3.RotateTowards(
@@ -254,10 +269,15 @@ namespace Tag.Gameplay
                 victim.SetIt(true);
             }
 
-            AudioCuePlayer.Ensure()?.PunchHit(transform.position);
-            AudioCuePlayer.Ensure()?.TagTransfer(hitPoint);
+            // Punch impact (TagSfx has Resources clip + procedural fallback); become-It chirp from SetIt(true)
+            TagSfx.PunchConnect(transform.position);
 
-            // Target ragdoll / kinematic stun proxy + i-frames
+            // Readable TP punch connect: stronger camera kick + FOV punch on attacker
+            var tps = GetComponentInChildren<TpsMoveCamera>(true);
+            if (tps != null)
+                tps.AddKick(new Vector3(0f, 0.14f, -0.38f));
+
+            // Target ragdoll / kinematic stun proxy + i-frames; hit pulse fires on It visual swap
             victim.ReceiveTagHit(knock, tuning);
 
             // Puncher buff: +8% walk+sprint, no stack, refresh on hit

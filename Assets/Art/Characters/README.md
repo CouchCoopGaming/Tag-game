@@ -12,6 +12,7 @@
 ## Mesh FBX
 - `Dummy_Runner.fbx` — armature + skinned mesh, slots Base/Accent/ItOverride
 - `Dummy_It.fbx` — same hierarchy, It paint
+- `HiPoly/Dummy_Runner_Hi.fbx` / `HiPoly/Dummy_It_Hi.fbx` — denser drop; **Tag → Setup Hub Visuals** prefers these when present
 
 ## Materials (URP)
 - `Mat_Runner_Base` / `Mat_Runner_Accent` / `Mat_Runner_ItOverride`

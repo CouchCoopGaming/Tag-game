@@ -19,11 +19,14 @@ namespace Tag.Audio
             DontDestroyOnLoad(gameObject);
             _sfx = gameObject.AddComponent<AudioSource>();
             _sfx.playOnAwake = false;
+            _sfx.volume = 0.7f;
             _ui = gameObject.AddComponent<AudioSource>();
             _ui.playOnAwake = false;
+            _ui.volume = 0.65f;
             _music = gameObject.AddComponent<AudioSource>();
             _music.playOnAwake = false;
             _music.loop = true;
+            _music.volume = 0.35f;
         }
 
         public static AudioCuePlayer Ensure()
@@ -39,7 +42,7 @@ namespace Tag.Audio
             if (clip == null) return;
             _sfx.pitch = 1f + Random.Range(-pitchJitter, pitchJitter);
             if (pos.HasValue)
-                AudioSource.PlayClipAtPoint(clip, pos.Value, 1f);
+                AudioSource.PlayClipAtPoint(clip, pos.Value, 0.55f);
             else
                 _sfx.PlayOneShot(clip);
         }
@@ -59,6 +62,7 @@ namespace Tag.Audio
             if (_music.clip == clip && _music.isPlaying) return;
             _music.clip = clip;
             _music.loop = true;
+            _music.volume = 0.35f;
             _music.Play();
         }
 
@@ -93,3 +97,4 @@ namespace Tag.Audio
         public void PlaygroundMusic() => PlayMusic("Music/music_playground_bed_loop");
     }
 }
+

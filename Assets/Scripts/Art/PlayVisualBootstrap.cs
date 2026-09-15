@@ -9,10 +9,13 @@ namespace Tag.Art
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Hook()
         {
+            TagUrpBootstrap.EnsurePipeline("play-visuals");
             foreach (var it in Object.FindObjectsByType<ItController>(FindObjectsSortMode.None))
             {
                 if (it.GetComponent<DummyAvatarBinder>() == null)
                     it.gameObject.AddComponent<DummyAvatarBinder>();
+                if (it.GetComponent<ItMarker>() == null)
+                    it.gameObject.AddComponent<ItMarker>();
             }
         }
     }

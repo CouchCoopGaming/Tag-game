@@ -19,10 +19,10 @@ MonoBehaviour:
   missRecover: 0.32
   windupMoveSpeedScale: 0.7
   allowSlideCancelDuringPunch: 0
-  reach: 1.35
-  width: 0.7
-  height: 1.2
-  midTorsoHeight: 0.9
+  reach: 1.55
+  width: 0.85
+  height: 1.4
+  midTorsoHeight: 1
   pitchToleranceDeg: 15
   preferContinuousCast: 1
   runnerMask:
@@ -31,7 +31,7 @@ MonoBehaviour:
   losMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  ragdollDuration: 1.5
+  ragdollDuration: 1.15
   ragdollHasIFrames: 1
   knockbackHorizontal: 4
   knockbackUp: 2
