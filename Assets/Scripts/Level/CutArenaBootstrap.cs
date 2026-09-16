@@ -1,11 +1,16 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace Tag.Level
 {
     /// <summary>
-    /// PARK campus graybox. Readable zones + clear cardinal chase/ski lanes.
+    /// PARK campus graybox — figure-8 chase campus with readable cardinal ski spines.
     /// Origin = SW corner; +X east, +Z north. WorldScale on root.
-    /// Layout rule: open lawn between pads; spines are highways; pads keep 3–5 signature toys.
+    ///
+    /// Path design:
+    ///   Outer ring: Pirate → Tron → Army → Knight → Ninja → Astro → Pirate
+    ///   Figure-8 cross: west NS spine + east NS spine through Crash (the X)
+    ///   Height: pad approach vault → mid deck → high perch → slide exit to spine
+    ///   Rule: open lawn between pads; spines are highways; 3–5 toys per pad; no clutter on lanes.
     /// </summary>
     public class CutArenaBootstrap : MonoBehaviour
     {
@@ -17,6 +22,21 @@ namespace Tag.Level
         public const float MapW = 72f;
         public const float MapD = 54f;
 
+        // Named pad centers (keep in sync with ZoneNameMarkers / PgkLandmarkPlacer)
+        public const float CxCrash = 36f, CzCrash = 27f;
+        public const float CxPirate = 14f, CzPirate = 12f;
+        public const float CxArmy = 58f, CzArmy = 12f;
+        public const float CxAstro = 14f, CzAstro = 42f;
+        public const float CxKnight = 58f, CzKnight = 42f;
+        public const float CxTron = 36f, CzTron = 8f;
+        public const float CxNinja = 36f, CzNinja = 46f;
+
+        // Cardinal ski highway axes (figure-8 frame)
+        const float SpineZs = 18f; // south EW
+        const float SpineZn = 36f; // north EW
+        const float SpineXw = 24f; // west NS
+        const float SpineXe = 48f; // east NS
+
         static readonly Color ColFloor = new Color(0x5C / 255f, 0x3A / 255f, 0x2E / 255f, 1f);
         static readonly Color ColBowl = new Color(0x5C / 255f, 0x3A / 255f, 0x2E / 255f, 1f);
         static readonly Color ColLoft = new Color(0xC5 / 255f, 0xCB / 255f, 0xD1 / 255f, 1f);
@@ -24,7 +44,6 @@ namespace Tag.Level
         static readonly Color ColSlide = new Color(0x2A / 255f, 0x2A / 255f, 0x2E / 255f, 1f);
         static readonly Color ColPadEdge = new Color(0x2A / 255f, 0x2A / 255f, 0x2E / 255f, 1f);
         static readonly Color ColVault = new Color(0xF5 / 255f, 0xD5 / 255f, 0x47 / 255f, 1f);
-        static readonly Color ColElbow = new Color(0xE2 / 255f, 0x3B / 255f, 0x2F / 255f, 1f);
         static readonly Color ColRamp = new Color(0xB8 / 255f, 0xC0 / 255f, 0xC8 / 255f, 1f);
         static readonly Color ColOob = new Color(0x3F / 255f, 0x7A / 255f, 0x4A / 255f, 1f);
         static readonly Color ColPath = new Color(0x6E / 255f, 0x4A / 255f, 0x38 / 255f, 1f);
@@ -36,7 +55,7 @@ namespace Tag.Level
         static readonly Color ColSpawnLime = new Color(0xA8 / 255f, 0xE6 / 255f, 0x1A / 255f, 1f);
 
         Transform _root;
-        Material _matFloor, _matBowl, _matLoft, _matWall, _matSlide, _matPad, _matVault, _matElbow, _matRamp, _matOob, _matPath;
+        Material _matFloor, _matBowl, _matLoft, _matWall, _matSlide, _matPad, _matVault, _matRamp, _matOob, _matPath;
 
         void Awake()
         {
@@ -60,15 +79,16 @@ namespace Tag.Level
             ClearRootChildren();
 
             BuildGround();
-            BuildClearLanes();     // open chase corridors (prop-light)
-            BuildSkiSpines();      // cardinal ski highways only
-            BuildCrashCore();      // center
-            BuildPiratePad();      // SW
-            BuildArmyPad();        // SE
-            BuildAstroPad();       // NW
-            BuildKnightPad();      // NE
-            BuildTronPad();        // S mid
-            BuildNinjaPad();       // N mid
+            BuildChaseLanes();    // figure-8 path tint (prop-light)
+            BuildSkiSpines();     // cardinal ski highways + pad connectors
+            BuildFlowSteps();     // sparse mid-height run→jump→slide stones
+            BuildCrashCore();     // center X
+            BuildPiratePad();     // SW
+            BuildArmyPad();       // SE
+            BuildAstroPad();      // NW
+            BuildKnightPad();     // NE
+            BuildTronPad();       // S mid
+            BuildNinjaPad();      // N mid
             BuildSpawns();
             BuildOobSkirt();
 
@@ -103,7 +123,6 @@ namespace Tag.Level
             _matSlide = MakeMat(ColSlide);
             _matPad = MakeMat(ColPadEdge);
             _matVault = MakeMat(ColVault);
-            _matElbow = MakeMat(ColElbow);
             _matRamp = MakeMat(ColRamp);
             _matOob = MakeMat(ColOob);
             _matPath = MakeMat(ColPath);
@@ -132,55 +151,73 @@ namespace Tag.Level
             return m;
         }
 
-        // --- Ground / space ---------------------------------------------------------
+        // --- Ground / chase space ---------------------------------------------------
 
         void BuildGround()
         {
             const float t = 0.25f;
-            // One big mulch lawn — open chase / ski space between pads
             Box("Lawn_Campus", new Vector3(MapW * 0.5f, -t * 0.5f, MapD * 0.5f),
                 new Vector3(MapW, t, MapD), _matFloor);
         }
 
-        void BuildClearLanes()
+        /// <summary>
+        /// Soft path tint for the figure-8: west + east loops cross at Crash.
+        /// Tint only — never stacks props; keeps chase space readable.
+        /// </summary>
+        void BuildChaseLanes()
         {
-            // Soft path tint only — keeps chase space readable without blocking.
-            // Mid campus ring between pads (do not stack props here).
             const float t = 0.06f;
             float y = t * 0.5f + 0.01f;
-            Box("Lane_Ring_EW", new Vector3(36f, y, 27f), new Vector3(40f, t, 8f), _matPath);
-            Box("Lane_Ring_NS", new Vector3(36f, y, 27f), new Vector3(8f, t, 28f), _matPath);
+            const float laneW = 7f;
+
+            // West loop (Pirate / Astro / Crash) — NS + south/north arcs
+            Box("Lane_West_NS", new Vector3(SpineXw, y, CzCrash), new Vector3(laneW, t, 30f), _matPath);
+            Box("Lane_West_S", new Vector3(19f, y, SpineZs), new Vector3(14f, t, laneW), _matPath);
+            Box("Lane_West_N", new Vector3(19f, y, SpineZn), new Vector3(14f, t, laneW), _matPath);
+
+            // East loop (Army / Knight / Crash)
+            Box("Lane_East_NS", new Vector3(SpineXe, y, CzCrash), new Vector3(laneW, t, 30f), _matPath);
+            Box("Lane_East_S", new Vector3(53f, y, SpineZs), new Vector3(14f, t, laneW), _matPath);
+            Box("Lane_East_N", new Vector3(53f, y, SpineZn), new Vector3(14f, t, laneW), _matPath);
+
+            // Outer ring connectors through Tron / Ninja mid pads
+            Box("Lane_Outer_S", new Vector3(CxTron, y, CzTron + 2f), new Vector3(28f, t, 5.5f), _matPath);
+            Box("Lane_Outer_N", new Vector3(CxNinja, y, CzNinja - 2f), new Vector3(28f, t, 5.5f), _matPath);
+
+            // Cross at Crash (the X of the 8)
+            Box("Lane_Cross_EW", new Vector3(CxCrash, y, CzCrash), new Vector3(28f, t, 6f), _matPath);
         }
 
         void BuildSkiSpines()
         {
-            // Cardinal ski highways only (no diagonal X) — readable Tribes fall-lines.
-            const float spineW = 3.4f;
+            // Four cardinal highways only — no diagonal spaghetti.
+            const float spineW = 3.2f;
             const float spineT = 0.12f;
             float y = spineT * 0.5f;
 
-            Box("Spine_EW_S", new Vector3(36f, y, 18f), new Vector3(56f, spineT, spineW), _matSlide);
-            Box("Spine_EW_N", new Vector3(36f, y, 36f), new Vector3(56f, spineT, spineW), _matSlide);
-            Box("Spine_NS_W", new Vector3(24f, y, 27f), new Vector3(spineW, spineT, 40f), _matSlide);
-            Box("Spine_NS_E", new Vector3(48f, y, 27f), new Vector3(spineW, spineT, 40f), _matSlide);
+            Box("Spine_EW_S", new Vector3(CxCrash, y, SpineZs), new Vector3(52f, spineT, spineW), _matSlide);
+            Box("Spine_EW_N", new Vector3(CxCrash, y, SpineZn), new Vector3(52f, spineT, spineW), _matSlide);
+            Box("Spine_NS_W", new Vector3(SpineXw, y, CzCrash), new Vector3(spineW, spineT, 36f), _matSlide);
+            Box("Spine_NS_E", new Vector3(SpineXe, y, CzCrash), new Vector3(spineW, spineT, 36f), _matSlide);
 
+            // Junction plates at figure-8 corners + Crash cross
             float jy = y + 0.02f;
-            const float j = 4.2f;
-            Box("Spine_Jct_SW", new Vector3(24f, jy, 18f), new Vector3(j, spineT, j), _matRamp);
-            Box("Spine_Jct_SE", new Vector3(48f, jy, 18f), new Vector3(j, spineT, j), _matRamp);
-            Box("Spine_Jct_NW", new Vector3(24f, jy, 36f), new Vector3(j, spineT, j), _matRamp);
-            Box("Spine_Jct_NE", new Vector3(48f, jy, 36f), new Vector3(j, spineT, j), _matRamp);
-            Box("Spine_Jct_Core", new Vector3(36f, jy + 0.01f, 27f), new Vector3(5f, spineT, 5f), _matPath);
+            const float j = 4f;
+            Box("Spine_Jct_SW", new Vector3(SpineXw, jy, SpineZs), new Vector3(j, spineT, j), _matRamp);
+            Box("Spine_Jct_SE", new Vector3(SpineXe, jy, SpineZs), new Vector3(j, spineT, j), _matRamp);
+            Box("Spine_Jct_NW", new Vector3(SpineXw, jy, SpineZn), new Vector3(j, spineT, j), _matRamp);
+            Box("Spine_Jct_NE", new Vector3(SpineXe, jy, SpineZn), new Vector3(j, spineT, j), _matRamp);
+            Box("Spine_Jct_Core", new Vector3(CxCrash, jy + 0.01f, CzCrash), new Vector3(5.5f, spineT, 5.5f), _matPath);
 
-            // One approach ramp per pad → nearest spine
-            SkiRamp("Conn_Tron_N", new Vector3(36f, 0.55f, 12.8f), new Vector3(3.4f, 0.28f, 6.5f), -12f, 0f);
-            SkiRamp("Conn_Ninja_S", new Vector3(36f, 0.55f, 41.2f), new Vector3(3.4f, 0.28f, 6.5f), 12f, 0f);
-            SkiRamp("Conn_Pirate_N", new Vector3(14f, 0.55f, 15.2f), new Vector3(3.2f, 0.28f, 5.5f), -12f, 0f);
-            SkiRamp("Conn_Army_N", new Vector3(58f, 0.55f, 15.2f), new Vector3(3.2f, 0.28f, 5.5f), -12f, 0f);
-            SkiRamp("Conn_Astro_S", new Vector3(14f, 0.55f, 38.8f), new Vector3(3.2f, 0.28f, 5.5f), 12f, 0f);
-            SkiRamp("Conn_Knight_S", new Vector3(58f, 0.55f, 38.8f), new Vector3(3.2f, 0.28f, 5.5f), 12f, 0f);
-            SkiRamp("Conn_Crash_W", new Vector3(29.2f, 0.45f, 27f), new Vector3(5.5f, 0.28f, 3.2f), -10f, 90f);
-            SkiRamp("Conn_Crash_E", new Vector3(42.8f, 0.45f, 27f), new Vector3(5.5f, 0.28f, 3.2f), -10f, -90f);
+            // One approach ramp per pad → nearest spine (fall-line into chase)
+            SkiRamp("Conn_Tron_N", new Vector3(CxTron, 0.5f, 12.5f), new Vector3(3.2f, 0.26f, 5.5f), -11f, 0f);
+            SkiRamp("Conn_Ninja_S", new Vector3(CxNinja, 0.5f, 41.5f), new Vector3(3.2f, 0.26f, 5.5f), 11f, 0f);
+            SkiRamp("Conn_Pirate_N", new Vector3(CxPirate, 0.5f, 15.0f), new Vector3(3.0f, 0.26f, 5.0f), -11f, 0f);
+            SkiRamp("Conn_Army_N", new Vector3(CxArmy, 0.5f, 15.0f), new Vector3(3.0f, 0.26f, 5.0f), -11f, 0f);
+            SkiRamp("Conn_Astro_S", new Vector3(CxAstro, 0.5f, 39.0f), new Vector3(3.0f, 0.26f, 5.0f), 11f, 0f);
+            SkiRamp("Conn_Knight_S", new Vector3(CxKnight, 0.5f, 39.0f), new Vector3(3.0f, 0.26f, 5.0f), 11f, 0f);
+            SkiRamp("Conn_Crash_W", new Vector3(30.0f, 0.42f, CzCrash), new Vector3(5.0f, 0.26f, 3.0f), -9f, 90f);
+            SkiRamp("Conn_Crash_E", new Vector3(42.0f, 0.42f, CzCrash), new Vector3(5.0f, 0.26f, 3.0f), -9f, -90f);
         }
 
         void SkiRamp(string name, Vector3 localPos, Vector3 scale, float pitchDeg, float yawDeg)
@@ -189,7 +226,33 @@ namespace Tag.Level
             go.transform.localRotation = Quaternion.Euler(pitchDeg, yawDeg, 0f);
         }
 
-        // --- Zone pads --------------------------------------------------------------
+        /// <summary>
+        /// Sparse mid-height stones on the figure-8 — run → jump → slide lines without blocking sightlines.
+        /// </summary>
+        void BuildFlowSteps()
+        {
+            // West NS corridor (Pirate ↔ Astro via Crash west)
+            FlowStone("Flow_W_S", new Vector3(SpineXw, 0.9f, 22f), new Vector3(2.4f, 0.25f, 2.4f));
+            FlowStone("Flow_W_N", new Vector3(SpineXw, 0.9f, 32f), new Vector3(2.4f, 0.25f, 2.4f));
+            // East NS corridor
+            FlowStone("Flow_E_S", new Vector3(SpineXe, 0.9f, 22f), new Vector3(2.4f, 0.25f, 2.4f));
+            FlowStone("Flow_E_N", new Vector3(SpineXe, 0.9f, 32f), new Vector3(2.4f, 0.25f, 2.4f));
+            // Outer south / north ring (Tron ↔ corners / Ninja ↔ corners)
+            FlowStone("Flow_S_W", new Vector3(26f, 0.75f, CzTron + 1.5f), new Vector3(2.2f, 0.22f, 2.2f));
+            FlowStone("Flow_S_E", new Vector3(46f, 0.75f, CzTron + 1.5f), new Vector3(2.2f, 0.22f, 2.2f));
+            FlowStone("Flow_N_W", new Vector3(26f, 0.75f, CzNinja - 1.5f), new Vector3(2.2f, 0.22f, 2.2f));
+            FlowStone("Flow_N_E", new Vector3(46f, 0.75f, CzNinja - 1.5f), new Vector3(2.2f, 0.22f, 2.2f));
+            // Crash loft-approach steps (slightly higher for jump into twin-tower loft)
+            FlowStone("Flow_Core_S", new Vector3(CxCrash, 1.35f, CzCrash - 5.5f), new Vector3(3.0f, 0.28f, 2.0f));
+            FlowStone("Flow_Core_N", new Vector3(CxCrash, 1.35f, CzCrash + 5.5f), new Vector3(3.0f, 0.28f, 2.0f));
+        }
+
+        void FlowStone(string name, Vector3 localPos, Vector3 scale)
+        {
+            Box(name, localPos, scale, _matLoft);
+        }
+
+        // --- Zone pads (3–5 signature toys; open sightlines to campus) --------------
 
         Transform Zone(string name, float cx, float cz)
         {
@@ -204,100 +267,109 @@ namespace Tag.Level
             ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, 0f), new Vector3(w, 0.16f, d), mat);
         }
 
+        /// <summary>Crash = figure-8 X. Bowl + twin towers + open EW cross; no wall blocking spines.</summary>
         void BuildCrashCore()
         {
-            var z = Zone("Zone_Crash", 36f, 27f);
-            PadFloor(z, 18f, 16f, _matBowl);
-            // Sunken bowl
-            ChildBox(z, "Toy_Sandbox", new Vector3(0f, -1.0f, 0f), new Vector3(10f, 0.2f, 10f), _matBowl);
-            ChildBox(z, "Toy_SandboxRim_S", new Vector3(0f, 0.4f, -5f), new Vector3(10.4f, 0.8f, 0.35f), _matVault);
-            ChildBox(z, "Toy_SandboxRim_N", new Vector3(0f, 0.4f, 5f), new Vector3(10.4f, 0.8f, 0.35f), _matVault);
-            ChildBox(z, "Toy_SandboxRim_W", new Vector3(-5f, 0.4f, 0f), new Vector3(0.35f, 0.8f, 10.4f), _matVault);
-            ChildBox(z, "Toy_SandboxRim_E", new Vector3(5f, 0.4f, 0f), new Vector3(0.35f, 0.8f, 10.4f), _matVault);
-            // Twin towers + loft
-            ChildBox(z, "Toy_TwinTower_W", new Vector3(-5f, 2.0f, 4f), new Vector3(2.2f, 4f, 2.2f), _matWall);
-            ChildBox(z, "Toy_TwinTower_E", new Vector3(5f, 2.0f, 4f), new Vector3(2.2f, 4f, 2.2f), _matWall);
-            ChildBox(z, "Toy_Tower", new Vector3(0f, 3.2f, 5.5f), new Vector3(8f, 0.35f, 4f), _matLoft);
-            ChildBox(z, "Toy_ClimbWall_West", new Vector3(-7.5f, 1.5f, 0f), new Vector3(0.4f, 3f, 8f), _matWall);
-            ChildBox(z, "Toy_VaultRail", new Vector3(0f, 0.7f, -6f), new Vector3(5f, 1.2f, 0.35f), _matVault);
+            var z = Zone("Zone_Crash", CxCrash, CzCrash);
+            PadFloor(z, 16f, 14f, _matBowl);
+
+            // Sunken bowl — open corners for chase through
+            ChildBox(z, "Toy_Sandbox", new Vector3(0f, -0.9f, 0f), new Vector3(8f, 0.2f, 8f), _matBowl);
+            ChildBox(z, "Toy_SandboxRim_S", new Vector3(0f, 0.35f, -4.2f), new Vector3(6f, 0.7f, 0.3f), _matVault);
+            ChildBox(z, "Toy_SandboxRim_N", new Vector3(0f, 0.35f, 4.2f), new Vector3(6f, 0.7f, 0.3f), _matVault);
+            // No full E/W rims — keep EW chase sightline through Crash
+
+            // Twin towers north of bowl + loft bridge (run→jump→slide off loft south)
+            ChildBox(z, "Toy_TwinTower_W", new Vector3(-4.5f, 2.0f, 3.5f), new Vector3(2.0f, 4f, 2.0f), _matWall);
+            ChildBox(z, "Toy_TwinTower_E", new Vector3(4.5f, 2.0f, 3.5f), new Vector3(2.0f, 4f, 2.0f), _matWall);
+            ChildBox(z, "Toy_Tower", new Vector3(0f, 3.1f, 3.5f), new Vector3(7f, 0.3f, 3.2f), _matLoft);
+
+            // One climb face on west (escape vertical); vault on south approach
+            ChildBox(z, "Toy_ClimbWall_West", new Vector3(-6.5f, 1.4f, 0f), new Vector3(0.35f, 2.8f, 6f), _matWall);
+            ChildBox(z, "Toy_VaultRail", new Vector3(0f, 0.65f, -5.5f), new Vector3(4.5f, 1.1f, 0.3f), _matVault);
         }
 
+        /// <summary>Pirate SW — low deck → high deck → plank east toward spine → slide south exit.</summary>
         void BuildPiratePad()
         {
-            var z = Zone("Zone_Pirate", 14f, 12f);
-            PadFloor(z, 16f, 14f, _matFloor);
-            ChildBox(z, "MastBase", new Vector3(0f, 0.5f, 0f), new Vector3(3f, 1f, 3f), _matVault);
-            ChildBox(z, "Deck_Low", new Vector3(0f, 1.2f, 0f), new Vector3(8f, 0.3f, 5f), _matLoft);
-            ChildBox(z, "Deck_High", new Vector3(-2f, 2.4f, 2f), new Vector3(4f, 0.3f, 3f), _matLoft);
-            ChildBox(z, "Plank_Run", new Vector3(4f, 1.5f, 0f), new Vector3(6f, 0.25f, 1.2f), _matVault);
-            ChildBox(z, "ClimbNetWall", new Vector3(-6f, 1.6f, 0f), new Vector3(0.35f, 3.2f, 6f), _matWall);
-            ChildBox(z, "Slide_Ramp", new Vector3(5f, 1.0f, -3f), new Vector3(2.8f, 0.3f, 5.5f), _matSlide)
-                .transform.localRotation = Quaternion.Euler(14f, 0f, 0f);
+            var z = Zone("Zone_Pirate", CxPirate, CzPirate);
+            PadFloor(z, 14f, 12f, _matFloor);
+            ChildBox(z, "MastBase", new Vector3(-1f, 0.45f, 0.5f), new Vector3(2.6f, 0.9f, 2.6f), _matVault);
+            ChildBox(z, "Deck_Low", new Vector3(0f, 1.1f, 0.5f), new Vector3(7f, 0.28f, 4.5f), _matLoft);
+            ChildBox(z, "Deck_High", new Vector3(-2f, 2.2f, 2f), new Vector3(3.5f, 0.28f, 2.8f), _matLoft);
+            ChildBox(z, "Plank_Run", new Vector3(3.5f, 1.35f, 0.5f), new Vector3(5f, 0.22f, 1.1f), _matVault);
+            ChildBox(z, "ClimbNetWall", new Vector3(-5.5f, 1.5f, 0.5f), new Vector3(0.3f, 3f, 5f), _matWall);
+            ChildBox(z, "Slide_Ramp", new Vector3(4f, 0.95f, -3f), new Vector3(2.6f, 0.28f, 5f), _matSlide)
+                .transform.localRotation = Quaternion.Euler(13f, 15f, 0f);
         }
 
+        /// <summary>Army SE — staggered bunkers + trench lane + ramp north to spine.</summary>
         void BuildArmyPad()
         {
-            var z = Zone("Zone_Army", 58f, 12f);
-            PadFloor(z, 16f, 14f, _matFloor);
-            ChildBox(z, "Bunker_A", new Vector3(-3f, 0.7f, -2f), new Vector3(4f, 1.4f, 3f), _matPad);
-            ChildBox(z, "Bunker_B", new Vector3(3f, 0.7f, 2f), new Vector3(4f, 1.4f, 3f), _matPad);
-            ChildBox(z, "FoxholeTrench", new Vector3(0f, -0.4f, 0f), new Vector3(10f, 0.8f, 2f), _matBowl);
-            ChildBox(z, "Ramp_Up", new Vector3(-5f, 0.8f, 4f), new Vector3(3.6f, 0.3f, 6.5f), _matRamp)
-                .transform.localRotation = Quaternion.Euler(-14f, 90f, 0f);
-            ChildBox(z, "Wall_Cover", new Vector3(6f, 1.2f, 0f), new Vector3(0.4f, 2.4f, 8f), _matWall);
-            ChildBox(z, "Vault_Low", new Vector3(0f, 0.5f, 5f), new Vector3(6f, 1f, 0.4f), _matVault);
+            var z = Zone("Zone_Army", CxArmy, CzArmy);
+            PadFloor(z, 14f, 12f, _matFloor);
+            // Staggered so mid trench stays a clear chase lane
+            ChildBox(z, "Bunker_A", new Vector3(-3.5f, 0.65f, -2.5f), new Vector3(3.5f, 1.3f, 2.6f), _matPad);
+            ChildBox(z, "Bunker_B", new Vector3(3.5f, 0.65f, 2.5f), new Vector3(3.5f, 1.3f, 2.6f), _matPad);
+            ChildBox(z, "FoxholeTrench", new Vector3(0f, -0.35f, 0f), new Vector3(9f, 0.7f, 1.8f), _matBowl);
+            ChildBox(z, "Ramp_Up", new Vector3(-4.5f, 0.75f, 3.5f), new Vector3(3.2f, 0.28f, 5.5f), _matRamp)
+                .transform.localRotation = Quaternion.Euler(-13f, 90f, 0f);
+            ChildBox(z, "Wall_Cover", new Vector3(5.5f, 1.1f, 0f), new Vector3(0.35f, 2.2f, 7f), _matWall);
+            ChildBox(z, "Vault_Low", new Vector3(0f, 0.45f, 4.5f), new Vector3(5f, 0.9f, 0.35f), _matVault);
         }
 
+        /// <summary>Astro NW — open loft ring (cut south for sightline) + half-pipes + climb stub.</summary>
         void BuildAstroPad()
         {
-            var z = Zone("Zone_Astro", 14f, 42f);
-            PadFloor(z, 16f, 14f, _matFloor);
-            ChildBox(z, "Loft_Ring", new Vector3(0f, 2.0f, 0f), new Vector3(10f, 0.3f, 10f), _matLoft);
-            ChildBox(z, "VisorPipe_A", new Vector3(-3f, 1.0f, -3f), new Vector3(2f, 2f, 6f), _matWall)
-                .transform.localRotation = Quaternion.Euler(0f, 45f, 0f);
-            ChildBox(z, "VisorPipe_B", new Vector3(3f, 1.0f, 3f), new Vector3(2f, 2f, 6f), _matWall)
-                .transform.localRotation = Quaternion.Euler(0f, 45f, 0f);
-            ChildBox(z, "HalfPipe_L", new Vector3(-5f, 0.8f, 0f), new Vector3(0.5f, 2.4f, 8f), _matSlide);
-            ChildBox(z, "HalfPipe_R", new Vector3(5f, 0.8f, 0f), new Vector3(0.5f, 2.4f, 8f), _matSlide);
-            ChildBox(z, "Ladder_Stub", new Vector3(0f, 1.0f, -5.5f), new Vector3(1.2f, 2f, 0.4f), _matVault);
+            var z = Zone("Zone_Astro", CxAstro, CzAstro);
+            PadFloor(z, 14f, 12f, _matFloor);
+            // U-shaped loft open to south (campus / spine) — no solid 10x10 plate
+            ChildBox(z, "Loft_Ring", new Vector3(0f, 2.0f, 1.5f), new Vector3(9f, 0.28f, 6f), _matLoft);
+            ChildBox(z, "VisorPipe_A", new Vector3(-3.5f, 0.95f, -2f), new Vector3(1.8f, 1.9f, 5f), _matWall)
+                .transform.localRotation = Quaternion.Euler(0f, 35f, 0f);
+            ChildBox(z, "HalfPipe_L", new Vector3(-5f, 0.75f, 0.5f), new Vector3(0.45f, 2.2f, 7f), _matSlide);
+            ChildBox(z, "HalfPipe_R", new Vector3(5f, 0.75f, 0.5f), new Vector3(0.45f, 2.2f, 7f), _matSlide);
+            ChildBox(z, "Ladder_Stub", new Vector3(0f, 1.0f, -4.5f), new Vector3(1.1f, 2f, 0.35f), _matVault);
         }
 
+        /// <summary>Knight NE — open courtyard, one keep, shield on north only, ramp down to spine.</summary>
         void BuildKnightPad()
         {
-            var z = Zone("Zone_Knight", 58f, 42f);
-            PadFloor(z, 16f, 14f, _matFloor);
-            ChildBox(z, "Courtyard", new Vector3(0f, 0.05f, 0f), new Vector3(10f, 0.1f, 8f), _matLoft);
-            ChildBox(z, "ShieldWall_N", new Vector3(0f, 1.5f, 5f), new Vector3(10f, 3f, 0.45f), _matWall);
-            ChildBox(z, "ShieldWall_W", new Vector3(-5.5f, 1.2f, 0f), new Vector3(0.45f, 2.4f, 8f), _matWall);
-            ChildBox(z, "Keep_Tower", new Vector3(4f, 2.5f, 3f), new Vector3(3f, 5f, 3f), _matPad);
-            ChildBox(z, "Battlement", new Vector3(4f, 5.2f, 3f), new Vector3(4f, 0.4f, 4f), _matLoft);
-            ChildBox(z, "VaultGate", new Vector3(0f, 0.9f, -4f), new Vector3(3f, 1.8f, 0.5f), _matVault);
-            ChildBox(z, "Ramp_Keep", new Vector3(4f, 1.2f, -1f), new Vector3(2.8f, 0.3f, 5.5f), _matRamp)
-                .transform.localRotation = Quaternion.Euler(-16f, 0f, 0f);
+            var z = Zone("Zone_Knight", CxKnight, CzKnight);
+            PadFloor(z, 14f, 12f, _matFloor);
+            ChildBox(z, "Courtyard", new Vector3(0f, 0.05f, 0f), new Vector3(9f, 0.1f, 7f), _matLoft);
+            ChildBox(z, "ShieldWall_N", new Vector3(0f, 1.4f, 4.5f), new Vector3(9f, 2.8f, 0.4f), _matWall);
+            // Drop west shield — open sightline into campus / NS_E
+            ChildBox(z, "Keep_Tower", new Vector3(3.5f, 2.4f, 2.5f), new Vector3(2.8f, 4.8f, 2.8f), _matPad);
+            ChildBox(z, "Battlement", new Vector3(3.5f, 5.0f, 2.5f), new Vector3(3.6f, 0.35f, 3.6f), _matLoft);
+            ChildBox(z, "VaultGate", new Vector3(0f, 0.85f, -3.5f), new Vector3(2.8f, 1.7f, 0.45f), _matVault);
+            ChildBox(z, "Ramp_Keep", new Vector3(3.5f, 1.1f, -1.5f), new Vector3(2.6f, 0.28f, 5f), _matRamp)
+                .transform.localRotation = Quaternion.Euler(-15f, 0f, 0f);
         }
 
+        /// <summary>Tron S — open courtyard, two posts + neon, wall-run south edge only.</summary>
         void BuildTronPad()
         {
-            var z = Zone("Zone_Tron", 36f, 8f);
-            PadFloor(z, 14f, 10f, _matPad);
-            // Two posts only — leave mid courtyard open for chase
-            ChildBox(z, "GridPost_0", new Vector3(-3.5f, 1.2f, 0f), new Vector3(0.35f, 2.4f, 0.35f), _matWall);
-            ChildBox(z, "GridPost_1", new Vector3(3.5f, 1.2f, 0f), new Vector3(0.35f, 2.4f, 0.35f), _matWall);
-            ChildBox(z, "NeonTube_EW", new Vector3(0f, 2.4f, 0f), new Vector3(12f, 0.2f, 0.2f), _matVault);
-            ChildBox(z, "DiscPad", new Vector3(0f, 0.15f, -2f), new Vector3(4f, 0.3f, 4f), _matSlide);
-            ChildBox(z, "WallRun_S", new Vector3(0f, 1.4f, -4.5f), new Vector3(10f, 2.8f, 0.35f), _matWall);
+            var z = Zone("Zone_Tron", CxTron, CzTron);
+            PadFloor(z, 12f, 9f, _matPad);
+            ChildBox(z, "GridPost_0", new Vector3(-3.2f, 1.1f, 0.5f), new Vector3(0.3f, 2.2f, 0.3f), _matWall);
+            ChildBox(z, "GridPost_1", new Vector3(3.2f, 1.1f, 0.5f), new Vector3(0.3f, 2.2f, 0.3f), _matWall);
+            ChildBox(z, "NeonTube_EW", new Vector3(0f, 2.2f, 0.5f), new Vector3(10f, 0.18f, 0.18f), _matVault);
+            ChildBox(z, "DiscPad", new Vector3(0f, 0.12f, -1.5f), new Vector3(3.5f, 0.24f, 3.5f), _matSlide);
+            ChildBox(z, "WallRun_S", new Vector3(0f, 1.3f, -3.8f), new Vector3(9f, 2.6f, 0.3f), _matWall);
         }
 
+        /// <summary>Ninja N — twin silent towers + blade rails + climb; landing deck for jump exits.</summary>
         void BuildNinjaPad()
         {
-            var z = Zone("Zone_Ninja", 36f, 46f);
-            PadFloor(z, 14f, 10f, _matFloor);
-            ChildBox(z, "SilentTower_A", new Vector3(-4f, 2.5f, 0f), new Vector3(2f, 5f, 2f), _matPad);
-            ChildBox(z, "SilentTower_B", new Vector3(4f, 2.0f, 2f), new Vector3(2f, 4f, 2f), _matPad);
-            ChildBox(z, "BladeRail", new Vector3(0f, 1.6f, 0f), new Vector3(10f, 0.25f, 0.35f), _matVault);
-            ChildBox(z, "BladeRail_High", new Vector3(0f, 3.2f, 1f), new Vector3(8f, 0.25f, 0.35f), _matVault);
-            ChildBox(z, "ClimbFace", new Vector3(-6f, 1.8f, 0f), new Vector3(0.4f, 3.6f, 6f), _matWall);
-            ChildBox(z, "LandingDeck", new Vector3(4f, 4.2f, 2f), new Vector3(3f, 0.3f, 3f), _matLoft);
+            var z = Zone("Zone_Ninja", CxNinja, CzNinja);
+            PadFloor(z, 12f, 9f, _matFloor);
+            ChildBox(z, "SilentTower_A", new Vector3(-3.5f, 2.4f, 0.5f), new Vector3(1.8f, 4.8f, 1.8f), _matPad);
+            ChildBox(z, "SilentTower_B", new Vector3(3.5f, 1.9f, 1.5f), new Vector3(1.8f, 3.8f, 1.8f), _matPad);
+            ChildBox(z, "BladeRail", new Vector3(0f, 1.5f, 0.5f), new Vector3(9f, 0.22f, 0.3f), _matVault);
+            ChildBox(z, "BladeRail_High", new Vector3(0f, 3.0f, 1.2f), new Vector3(7f, 0.22f, 0.3f), _matVault);
+            ChildBox(z, "ClimbFace", new Vector3(-5.5f, 1.7f, 0.5f), new Vector3(0.35f, 3.4f, 5f), _matWall);
+            ChildBox(z, "LandingDeck", new Vector3(3.5f, 4.0f, 1.5f), new Vector3(2.8f, 0.28f, 2.8f), _matLoft);
         }
 
         void BuildSpawns()
@@ -307,21 +379,17 @@ namespace Tag.Level
             SpawnPad("Spawn_SE", 66f, 5f, -45f, ColSpawnCoral);
             SpawnPad("Spawn_NW", 6f, 49f, 135f, ColSpawnViolet);
             SpawnPad("Spawn_NE", 66f, 49f, -135f, ColSpawnLime);
-            // Corner hedges removed — keep spawn lawns open for chase reads.
         }
 
         void SpawnPad(string name, float x, float z, float faceYawDeg, Color glow)
         {
-            // Per-pad emissive mat (graybox). ParkPropDresser may hide this MeshRenderer when dressed.
             var padMat = MakeEmissiveMat(glow, 2.2f);
             Box(name, new Vector3(x, 0.03f, z), new Vector3(2.2f, 0.06f, 2.2f), padMat);
             var face = Box(name + "_Face", new Vector3(x, 0.08f, z), new Vector3(0.3f, 0.08f, 1.1f), _matVault);
             face.transform.localRotation = Quaternion.Euler(0f, faceYawDeg, 0f);
             face.transform.localPosition = new Vector3(x, 0.08f, z) + Quaternion.Euler(0f, faceYawDeg, 0f) * Vector3.forward * 0.9f;
 
-            // Thin emissive ring sibling under PARK — no PointLight (URP AdditionalLightsPerObjectLimit=4;
-            // pad PointLights were stealing slots from ItMarker). Survives dresser hideGrayboxMeshWhenDressed.
-            // Raised Y + slightly oversized XY vs pad (2.2) to avoid z-fight with pad disc; no collider/shadows.
+            // Thin emissive ring sibling under PARK — no PointLight (URP AdditionalLightsPerObjectLimit=4).
             var rim = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             rim.name = name + "_RimGlow";
             rim.transform.SetParent(_root, false);
@@ -335,30 +403,6 @@ namespace Tag.Level
             if (rimMr != null)
                 rimMr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             ApplyMat(rim, MakeEmissiveMat(glow, 2.8f));
-        }
-
-        void Elbow(string name, float x, float z, bool towardEast, bool towardNorth)
-        {
-            const float h = 1.2f, arm = 2.2f, thick = 0.4f;
-            float sx = towardEast ? 1f : -1f;
-            float sz = towardNorth ? 1f : -1f;
-            var parent = new GameObject(name);
-            parent.transform.SetParent(_root, false);
-            parent.transform.localPosition = new Vector3(x, 0f, z);
-            ChildBox(parent.transform, "Arm_X", new Vector3(sx * arm * 0.5f, h * 0.5f, 0f), new Vector3(arm, h, thick), _matElbow);
-            ChildBox(parent.transform, "Arm_Z", new Vector3(0f, h * 0.5f, sz * arm * 0.5f), new Vector3(thick, h, arm), _matElbow);
-        }
-
-        void ElbowAt(Transform z, string name, float lx, float lz, bool towardEast, bool towardNorth)
-        {
-            const float h = 1.2f, arm = 2.0f, thick = 0.35f;
-            float sx = towardEast ? 1f : -1f;
-            float sz = towardNorth ? 1f : -1f;
-            var parent = new GameObject(name);
-            parent.transform.SetParent(z, false);
-            parent.transform.localPosition = new Vector3(lx, 0f, lz);
-            ChildBox(parent.transform, "Arm_X", new Vector3(sx * arm * 0.5f, h * 0.5f, 0f), new Vector3(arm, h, thick), _matElbow);
-            ChildBox(parent.transform, "Arm_Z", new Vector3(0f, h * 0.5f, sz * arm * 0.5f), new Vector3(thick, h, arm), _matElbow);
         }
 
         void BuildOobSkirt()
