@@ -11,6 +11,7 @@ namespace Tag.Level
     ///   Figure-8 cross: west NS spine + east NS spine through Crash (the X)
     ///   Height: pad approach vault → mid deck → high perch → slide exit to spine
     ///   Rule: open lawn between pads; spines are highways; 3–5 toys per pad; no clutter on lanes.
+    ///   Pass3: stronger ring tint + spawn lead lanes; playground gear lives in PgkLandmarkPlacer.
     /// </summary>
     public class CutArenaBootstrap : MonoBehaviour
     {
@@ -47,6 +48,9 @@ namespace Tag.Level
         static readonly Color ColRamp = new Color(0xB8 / 255f, 0xC0 / 255f, 0xC8 / 255f, 1f);
         static readonly Color ColOob = new Color(0x3F / 255f, 0x7A / 255f, 0x4A / 255f, 1f);
         static readonly Color ColPath = new Color(0x6E / 255f, 0x4A / 255f, 0x38 / 255f, 1f);
+        // Warmer outer-ring chase tint (readability without clutter)
+        static readonly Color ColRing = new Color(0x8A / 255f, 0x5A / 255f, 0x3C / 255f, 1f);
+        static readonly Color ColSpawnLead = new Color(0x7A / 255f, 0x6A / 255f, 0x48 / 255f, 1f);
 
         // Match ParkPropDresser Toy_SpawnPad_* palette (SW Teal, SE Coral, NW Violet, NE Lime)
         static readonly Color ColSpawnTeal = new Color(0x2E / 255f, 0xC4 / 255f, 0xB6 / 255f, 1f);
@@ -55,7 +59,7 @@ namespace Tag.Level
         static readonly Color ColSpawnLime = new Color(0xA8 / 255f, 0xE6 / 255f, 0x1A / 255f, 1f);
 
         Transform _root;
-        Material _matFloor, _matBowl, _matLoft, _matWall, _matSlide, _matPad, _matVault, _matRamp, _matOob, _matPath;
+        Material _matFloor, _matBowl, _matLoft, _matWall, _matSlide, _matPad, _matVault, _matRamp, _matOob, _matPath, _matRing, _matSpawnLead;
 
         void Awake()
         {
@@ -79,9 +83,10 @@ namespace Tag.Level
             ClearRootChildren();
 
             BuildGround();
-            BuildChaseLanes();    // figure-8 path tint (prop-light)
+            BuildChaseLanes();    // figure-8 + stronger outer-ring tint
             BuildSkiSpines();     // cardinal ski highways + pad connectors
             BuildFlowSteps();     // sparse mid-height run→jump→slide stones
+            BuildSpawnLeads();    // spawn -> nearest spine/Flow in first seconds
             BuildCrashCore();     // center X
             BuildPiratePad();     // SW
             BuildArmyPad();       // SE
@@ -126,6 +131,8 @@ namespace Tag.Level
             _matRamp = MakeMat(ColRamp);
             _matOob = MakeMat(ColOob);
             _matPath = MakeMat(ColPath);
+            _matRing = MakeMat(ColRing);
+            _matSpawnLead = MakeMat(ColSpawnLead);
         }
 
         static Material MakeMat(Color c)
@@ -180,9 +187,12 @@ namespace Tag.Level
             Box("Lane_East_S", new Vector3(53f, y, SpineZs), new Vector3(14f, t, laneW), _matPath);
             Box("Lane_East_N", new Vector3(53f, y, SpineZn), new Vector3(14f, t, laneW), _matPath);
 
-            // Outer ring connectors through Tron / Ninja mid pads
-            Box("Lane_Outer_S", new Vector3(CxTron, y, CzTron + 2f), new Vector3(28f, t, 5.5f), _matPath);
-            Box("Lane_Outer_N", new Vector3(CxNinja, y, CzNinja - 2f), new Vector3(28f, t, 5.5f), _matPath);
+            // Outer ring — warmer/wider tint for chase readability (gear sits beside in placer)
+            Box("Lane_Outer_S", new Vector3(CxTron, y, CzTron + 2f), new Vector3(32f, t, 6.5f), _matRing);
+            Box("Lane_Outer_N", new Vector3(CxNinja, y, CzNinja - 2f), new Vector3(32f, t, 6.5f), _matRing);
+            // Thin edge kerbs (south of S ring / north of N ring) — no clutter posts
+            Box("EdgeRail_S", new Vector3(CxTron, 0.18f, CzTron - 1.6f), new Vector3(30f, 0.28f, 0.35f), _matVault);
+            Box("EdgeRail_N", new Vector3(CxNinja, 0.18f, CzNinja + 1.6f), new Vector3(30f, 0.28f, 0.35f), _matVault);
 
             // Cross at Crash (the X of the 8)
             Box("Lane_Cross_EW", new Vector3(CxCrash, y, CzCrash), new Vector3(28f, t, 6f), _matPath);
@@ -258,6 +268,29 @@ namespace Tag.Level
         void FlowStone(string name, Vector3 localPos, Vector3 scale)
         {
             Box(name, localPos, scale, _matLoft);
+        }
+
+        /// <summary>
+        /// Short tinted leads from corner spawns toward nearest spine / Flow / Conn.
+        /// Readable in the first ~3s of a run; playground toys sit beside these in placer.
+        /// </summary>
+        void BuildSpawnLeads()
+        {
+            const float t = 0.05f;
+            float y = t * 0.5f + 0.015f;
+            const float w = 3.2f;
+            // SW teal (6,5) → Pirate Conn / SW jct (SpineXw, SpineZs)
+            Box("SpawnLead_SW", new Vector3(11f, y, 10f), new Vector3(10f, t, w), _matSpawnLead)
+                .transform.localRotation = Quaternion.Euler(0f, 40f, 0f);
+            // SE coral (66,5) → Army Conn / SE jct
+            Box("SpawnLead_SE", new Vector3(61f, y, 10f), new Vector3(10f, t, w), _matSpawnLead)
+                .transform.localRotation = Quaternion.Euler(0f, -40f, 0f);
+            // NW violet (6,49) → Astro Conn / NW jct
+            Box("SpawnLead_NW", new Vector3(11f, y, 44f), new Vector3(10f, t, w), _matSpawnLead)
+                .transform.localRotation = Quaternion.Euler(0f, 140f, 0f);
+            // NE lime (66,49) → Knight Conn / NE jct
+            Box("SpawnLead_NE", new Vector3(61f, y, 44f), new Vector3(10f, t, w), _matSpawnLead)
+                .transform.localRotation = Quaternion.Euler(0f, -140f, 0f);
         }
 
         // --- Zone pads (3–5 signature toys; open sightlines to campus) --------------
