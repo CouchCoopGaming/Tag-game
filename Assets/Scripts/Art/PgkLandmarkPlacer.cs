@@ -140,56 +140,56 @@ namespace Tag.Art
         int SoftPlayPlaza(Transform root, string name, Vector3 origin, float yaw)
         {
             var parent = MakeGroup(root, name, origin, yaw);
-            // Bay A (core) + Bay B (SW satellite) — multi-level tubes/nets/slides.
-            // Footprint stays off SpineXw (x=24) / SpineZs (z=18) / Crash cross.
+            // Readable chase path (not a pile): climb line -> decks -> tube run -> exit.
+            // Compact footprint - off SpineXw (x=24) / SpineZs (z=18) / Crash bowl.
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                // --- Bay A frame ---
-                ("PGK_Post_Square_3m_LOD0", new Vector3(-2.2f, 0f, -2.2f), 0f),
-                ("PGK_Post_Square_3m_LOD0", new Vector3(2.2f, 0f, -2.2f), 0f),
-                ("PGK_Post_Square_3m_LOD0", new Vector3(-2.2f, 0f, 2.2f), 0f),
-                ("PGK_Post_Square_3m_LOD0", new Vector3(2.2f, 0f, 2.2f), 0f),
+                // --- Bay A frame (core decks) ---
+                ("PGK_Post_Square_3m_LOD0", new Vector3(-2f, 0f, -2f), 0f),
+                ("PGK_Post_Square_3m_LOD0", new Vector3(2f, 0f, -2f), 0f),
+                ("PGK_Post_Square_3m_LOD0", new Vector3(-2f, 0f, 2f), 0f),
+                ("PGK_Post_Square_3m_LOD0", new Vector3(2f, 0f, 2f), 0f),
                 ("PGK_Deck_2x2_LOD0", new Vector3(0f, 1.15f, 0f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(-2.2f, 1.15f, -2.2f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(2.2f, 1.15f, -2.2f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(-2.2f, 1.15f, 2.2f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(2.2f, 1.15f, 2.2f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(-2f, 1.15f, -2f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(2f, 1.15f, -2f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(-2f, 1.15f, 2f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(2f, 1.15f, 2f), 0f),
                 ("PGK_Deck_1x2_LOD0", new Vector3(0f, 2.05f, 0f), 0f),
-                ("PGK_Post_Square_1_5m_LOD0", new Vector3(-1.2f, 2.05f, 0f), 0f),
-                ("PGK_Post_Square_1_5m_LOD0", new Vector3(1.2f, 2.05f, 0f), 0f),
+                ("PGK_Post_Square_1_5m_LOD0", new Vector3(-1.1f, 2.05f, 0f), 0f),
+                ("PGK_Post_Square_1_5m_LOD0", new Vector3(1.1f, 2.05f, 0f), 0f),
                 ("PGK_Deck_1x1_LOD0", new Vector3(0f, 2.85f, 0f), 0f),
-                ("PGK_Rail_2m_LOD0", new Vector3(0f, 2.05f, -1.4f), 0f),
-                ("PGK_Rail_2m_LOD0", new Vector3(0f, 2.05f, 1.4f), 0f),
-                ("PGK_Rail_Corner90_LOD0", new Vector3(1.6f, 1.15f, 1.6f), 0f),
-                ("PGK_Stairs_5_LOD0", new Vector3(4.4f, 0f, 0f), 90f),
-                ("PGK_Ladder_Rung_LOD0", new Vector3(-3.6f, 0f, 0f), 0f),
-                ("Toy_Ladder", new Vector3(0f, 0f, 3.8f), 0f),
-                // Tubes / slides / nets from mid + peak
-                ("PGK_Slide_Spiral270_LOD0", new Vector3(-5.2f, 0f, 1.2f), 0f),
-                ("PGK_Slide_Tube90_LOD0", new Vector3(3.2f, 1.15f, -4.2f), 180f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, 2.05f, 4.2f), 0f),
-                ("Mega_SlideTube", new Vector3(-1.5f, 1.15f, -5.5f), 90f),
-                ("PGK_Tunnel_Plastic_LOD0", new Vector3(0f, 0f, 5.5f), 0f),
-                ("Mega_CrawlTunnel", new Vector3(-5.2f, 0f, -4.2f), 90f),
-                ("Toy_TunnelTube", new Vector3(4.2f, 1.15f, -1.2f), 15f),
-                ("Mega_ClimbNet", new Vector3(4.6f, 0f, 3.6f), -25f),
-                ("Toy_NetFrame", new Vector3(-5.5f, 0f, 3.5f), 15f),
-                ("PGK_Dome_Geo_3m_LOD0", new Vector3(4.8f, 0f, -3.8f), 0f),
-                ("Toy_ClimberDome", new Vector3(-6.5f, 0f, -1f), 0f),
-                ("PGK_Monkey_4m_LOD0", new Vector3(0f, 0f, -7.2f), 90f),
-                ("Toy_SpiralClimber", new Vector3(-7.2f, 0f, 2.2f), 30f),
-                // --- Bay B satellite (local SW) - away from Crash / SpineZs ---
-                ("Mega_TowerFort", new Vector3(-6.5f, 0f, -5.5f), -20f),
-                ("PGK_Post_Square_2_5m_LOD0", new Vector3(-4.5f, 0f, -5.5f), 0f),
-                ("PGK_Post_Square_2_5m_LOD0", new Vector3(-8.5f, 0f, -5.5f), 0f),
-                ("PGK_Deck_2x2_LOD0", new Vector3(-6.5f, 1.35f, -5.5f), 0f),
-                ("PGK_Deck_Corner_L_LOD0", new Vector3(-4.8f, 1.35f, -3.8f), 90f),
-                ("Toy_Bridge", new Vector3(-3.2f, 1.2f, -2.8f), -45f),
-                ("PGK_Slide_Tube90_LOD0", new Vector3(-8.5f, 1.35f, -3.2f), 90f),
-                ("Mega_ClimbNet", new Vector3(-9.2f, 0f, -7.2f), -40f),
+                ("PGK_Rail_2m_LOD0", new Vector3(0f, 2.05f, -1.3f), 0f),
+                ("PGK_Rail_2m_LOD0", new Vector3(0f, 2.05f, 1.3f), 0f),
+                // Access: stairs E (campus), ladder N, net climb line on W flank
+                ("PGK_Stairs_5_LOD0", new Vector3(4f, 0f, 0f), 90f),
+                ("PGK_Ladder_Rung_LOD0", new Vector3(0f, 0f, 3.6f), 0f),
+                // --- Net climb line (W flank, ground -> mid -> peak) ---
+                ("Mega_ClimbNet", new Vector3(-3.6f, 0f, -1.2f), 90f),
+                ("Toy_NetFrame", new Vector3(-3.8f, 0f, 1.6f), 90f),
+                ("Toy_SpiralClimber", new Vector3(-4.2f, 0f, 3.4f), 0f),
+                ("PGK_Slide_Spiral270_LOD0", new Vector3(-4.8f, 0f, -3.2f), 180f),
+                // --- Tube continuity (mid deck -> SW Bay B -> ground) ---
+                ("Toy_TunnelTube", new Vector3(-0.2f, 1.15f, -2.6f), 180f),
+                ("PGK_Slide_Tube90_LOD0", new Vector3(-2.4f, 1.15f, -3.8f), 135f),
+                ("Toy_Bridge", new Vector3(-3.6f, 1.2f, -4.2f), -45f),
+                ("Mega_SlideTube", new Vector3(-5.2f, 1.25f, -5.2f), 135f),
+                ("PGK_Slide_Tube90_LOD0", new Vector3(-6.6f, 1.35f, -4.0f), 90f),
+                // Peak exit (straight slide N - readable drop off high deck)
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, 2.05f, 3.8f), 0f),
+                // --- Ground tunnel lane (parallel chase under tube run) ---
+                ("Mega_CrawlTunnel", new Vector3(-1.8f, 0f, -3.6f), 135f),
+                ("PGK_Tunnel_Plastic_LOD0", new Vector3(-4.0f, 0f, -5.0f), 135f),
+                // --- Bay B satellite (SW, pulled in - keep SpineXw / SpineZs clear) ---
+                ("PGK_Post_Square_2_5m_LOD0", new Vector3(-5.2f, 0f, -5.8f), 0f),
+                ("PGK_Post_Square_2_5m_LOD0", new Vector3(-7.2f, 0f, -5.8f), 0f),
+                ("PGK_Deck_2x2_LOD0", new Vector3(-6.2f, 1.35f, -5.8f), 0f),
+                ("PGK_Deck_Corner_L_LOD0", new Vector3(-4.6f, 1.35f, -4.4f), 90f),
+                ("Mega_ClimbNet", new Vector3(-7.4f, 0f, -7.0f), -45f),
+                ("Mega_TowerFort", new Vector3(-6.2f, 0f, -7.4f), -30f),
+                // Mulch crumbs under core only
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 0f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1f, 0.02f, -1f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1f, 0.02f, 1f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.2f, 0.02f, -0.8f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1.2f, 0.02f, 0.8f), 0f),
             });
         }
 

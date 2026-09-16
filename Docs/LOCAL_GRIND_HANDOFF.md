@@ -22,7 +22,7 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - Prefer sparse chase-path structures over dense pad dumps. Keep ski midlines clear.
 
 ### Pass3/4 structure map (graybox coords)
-- `Play_SoftPlay_CrashSW` (28,21): dense multi-level soft-play (Bay A + SW Bay B) — decks/posts, spiral+tube slides, tunnels, nets, tower fort, spiral climber, bridge
+- `Play_SoftPlay_CrashSW` (28,21): tube continuity mid?Bay B + readable net climb line (Mega_ClimbNet/tunnels/spiral); Crash/spines kept clear
 - `Play_MerryGoRound` (15.5,22): Mega hub + 4 Toy cardinal ring + stand-on diagonals, mulch apron, west benches only (east open for SpineXw)
 - `Play_Swing` (60.5,33.5): twin bars + rail A-frame + monkey bay, clear mulch fall zone, east benches only (west open for SpineXe)
 - `Play_Kickball` (56.5,27): clear diamond + N/S goals, east benches only (west open for figure-8), larger rubber pad
