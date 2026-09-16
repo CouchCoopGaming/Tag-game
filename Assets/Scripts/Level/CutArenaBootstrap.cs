@@ -14,6 +14,7 @@ namespace Tag.Level
     ///   Pass3: stronger ring tint + spawn lead lanes; playground gear lives in PgkLandmarkPlacer.
     ///   Pass4: named play-area floor pads (soft-play / swing / merry / kickball / hopscotch).
     ///   Pass5: thin theme pads — clear pad -> PadSlideExit -> Conn run-outs.
+    ///   Pass6: Conn corridor ramps catch PadSlide landings; Flow stones hand off to spines.
     /// </summary>
     public class CutArenaBootstrap : MonoBehaviour
     {
@@ -227,15 +228,15 @@ namespace Tag.Level
             Box("Spine_Jct_NE", new Vector3(SpineXe, jy, SpineZn), new Vector3(j, spineT, j), _matRamp);
             Box("Spine_Jct_Core", new Vector3(CxCrash, jy + 0.01f, CzCrash), new Vector3(5.5f, spineT, 5.5f), _matPath);
 
-            // One approach ramp per pad → nearest spine (fall-line into chase)
-            SkiRamp("Conn_Tron_N", new Vector3(CxTron, 0.5f, 12.5f), new Vector3(3.2f, 0.26f, 5.5f), -11f, 0f);
-            SkiRamp("Conn_Ninja_S", new Vector3(CxNinja, 0.5f, 41.5f), new Vector3(3.2f, 0.26f, 5.5f), 11f, 0f);
-            SkiRamp("Conn_Pirate_N", new Vector3(CxPirate, 0.5f, 15.0f), new Vector3(3.0f, 0.26f, 5.0f), -11f, 0f);
-            SkiRamp("Conn_Army_N", new Vector3(CxArmy, 0.5f, 15.0f), new Vector3(3.0f, 0.26f, 5.0f), -11f, 0f);
-            SkiRamp("Conn_Astro_S", new Vector3(CxAstro, 0.5f, 39.0f), new Vector3(3.0f, 0.26f, 5.0f), 11f, 0f);
-            SkiRamp("Conn_Knight_S", new Vector3(CxKnight, 0.5f, 39.0f), new Vector3(3.0f, 0.26f, 5.0f), 11f, 0f);
-            SkiRamp("Conn_Crash_W", new Vector3(30.0f, 0.42f, CzCrash), new Vector3(5.0f, 0.26f, 3.0f), -9f, 90f);
-            SkiRamp("Conn_Crash_E", new Vector3(42.0f, 0.42f, CzCrash), new Vector3(5.0f, 0.26f, 3.0f), -9f, -90f);
+            // Approach ramps: PadSlide/pad low end → crest to spine (skiMinSlope 6°); corner Conns under Play_Slide_* tips
+            SkiRamp("Conn_Tron_N", new Vector3(CxTron, 0.48f, 13.2f), new Vector3(3.6f, 0.24f, 6.2f), -9f, 0f);
+            SkiRamp("Conn_Ninja_S", new Vector3(CxNinja, 0.48f, 40.8f), new Vector3(3.6f, 0.24f, 6.2f), 9f, 0f);
+            SkiRamp("Conn_Pirate_N", new Vector3(17.5f, 0.48f, 15.2f), new Vector3(4.2f, 0.24f, 5.6f), -9f, 0f);
+            SkiRamp("Conn_Army_N", new Vector3(54.5f, 0.48f, 15.2f), new Vector3(4.2f, 0.24f, 5.6f), -9f, 0f);
+            SkiRamp("Conn_Astro_S", new Vector3(17.5f, 0.48f, 38.8f), new Vector3(4.2f, 0.24f, 5.6f), 9f, 0f);
+            SkiRamp("Conn_Knight_S", new Vector3(54.5f, 0.48f, 38.8f), new Vector3(4.2f, 0.24f, 5.6f), 9f, 0f);
+            SkiRamp("Conn_Crash_W", new Vector3(30.2f, 0.40f, CzCrash), new Vector3(5.4f, 0.24f, 3.2f), -8f, 90f);
+            SkiRamp("Conn_Crash_E", new Vector3(41.8f, 0.40f, CzCrash), new Vector3(5.4f, 0.24f, 3.2f), -8f, -90f);
         }
 
         void SkiRamp(string name, Vector3 localPos, Vector3 scale, float pitchDeg, float yawDeg)
@@ -247,30 +248,30 @@ namespace Tag.Level
         /// <summary>
         /// Sparse hop stones beside the figure-8 — run → jump → slide onto spines.
         /// jumpSpeed 24.7 / gravity 22 → apex ≈ 13.9 world ≈ 1.39 graybox (WorldScale 10).
-        /// Tops stay ≤ ~1.20 from lawn; stones sit off spine axes so ski highways stay clear.
+        /// Tops stay ≤ ~1.05 from lawn; end stones sit near Conn→spine handoffs.
         /// Mid stones keep horizontal chain gaps ~5–6 graybox (skiable / stretch at sprint).
         /// </summary>
         void BuildFlowSteps()
         {
-            // West NS — west of SpineXw (Pirate ↔ Astro)
-            FlowStone("Flow_W_S", new Vector3(SpineXw - 2.6f, 0.52f, 21.5f), new Vector3(2.0f, 0.20f, 2.0f));
-            FlowStone("Flow_W_Mid", new Vector3(SpineXw - 2.6f, 0.68f, 27.0f), new Vector3(2.0f, 0.20f, 2.0f));
-            FlowStone("Flow_W_N", new Vector3(SpineXw - 2.6f, 0.52f, 32.5f), new Vector3(2.0f, 0.20f, 2.0f));
-            // East NS — east of SpineXe (Army ↔ Knight)
-            FlowStone("Flow_E_S", new Vector3(SpineXe + 2.6f, 0.52f, 21.5f), new Vector3(2.0f, 0.20f, 2.0f));
-            FlowStone("Flow_E_Mid", new Vector3(SpineXe + 2.6f, 0.68f, 27.0f), new Vector3(2.0f, 0.20f, 2.0f));
-            FlowStone("Flow_E_N", new Vector3(SpineXe + 2.6f, 0.52f, 32.5f), new Vector3(2.0f, 0.20f, 2.0f));
-            // Outer south ring (Tron) — south of lane / Spine_EW_S
-            FlowStone("Flow_S_W", new Vector3(26f, 0.48f, CzTron - 0.5f), new Vector3(2.0f, 0.18f, 2.0f));
-            FlowStone("Flow_S_Mid", new Vector3(CxTron, 0.58f, CzTron - 0.5f), new Vector3(2.0f, 0.18f, 2.0f));
-            FlowStone("Flow_S_E", new Vector3(46f, 0.48f, CzTron - 0.5f), new Vector3(2.0f, 0.18f, 2.0f));
-            // Outer north ring (Ninja) — north of lane / Spine_EW_N
-            FlowStone("Flow_N_W", new Vector3(26f, 0.48f, CzNinja + 0.5f), new Vector3(2.0f, 0.18f, 2.0f));
-            FlowStone("Flow_N_Mid", new Vector3(CxNinja, 0.58f, CzNinja + 0.5f), new Vector3(2.0f, 0.18f, 2.0f));
-            FlowStone("Flow_N_E", new Vector3(46f, 0.48f, CzNinja + 0.5f), new Vector3(2.0f, 0.18f, 2.0f));
+            // West NS — west of SpineXw; S/N ends near Conn crest → SpineZs/Zn
+            FlowStone("Flow_W_S", new Vector3(SpineXw - 2.2f, 0.55f, 19.8f), new Vector3(2.2f, 0.20f, 2.2f));
+            FlowStone("Flow_W_Mid", new Vector3(SpineXw - 2.6f, 0.70f, 27.0f), new Vector3(2.0f, 0.20f, 2.0f));
+            FlowStone("Flow_W_N", new Vector3(SpineXw - 2.2f, 0.55f, 34.2f), new Vector3(2.2f, 0.20f, 2.2f));
+            // East NS — east of SpineXe; S/N ends near Conn crest → SpineZs/Zn
+            FlowStone("Flow_E_S", new Vector3(SpineXe + 2.2f, 0.55f, 19.8f), new Vector3(2.2f, 0.20f, 2.2f));
+            FlowStone("Flow_E_Mid", new Vector3(SpineXe + 2.6f, 0.70f, 27.0f), new Vector3(2.0f, 0.20f, 2.0f));
+            FlowStone("Flow_E_N", new Vector3(SpineXe + 2.2f, 0.55f, 34.2f), new Vector3(2.2f, 0.20f, 2.2f));
+            // Outer south ring (Tron) — beside Conn_Tron_N / Spine_EW_S
+            FlowStone("Flow_S_W", new Vector3(28f, 0.50f, 14.5f), new Vector3(2.1f, 0.18f, 2.1f));
+            FlowStone("Flow_S_Mid", new Vector3(CxTron, 0.60f, 14.5f), new Vector3(2.1f, 0.18f, 2.1f));
+            FlowStone("Flow_S_E", new Vector3(44f, 0.50f, 14.5f), new Vector3(2.1f, 0.18f, 2.1f));
+            // Outer north ring (Ninja) — beside Conn_Ninja_S / Spine_EW_N
+            FlowStone("Flow_N_W", new Vector3(28f, 0.50f, 39.5f), new Vector3(2.1f, 0.18f, 2.1f));
+            FlowStone("Flow_N_Mid", new Vector3(CxNinja, 0.60f, 39.5f), new Vector3(2.1f, 0.18f, 2.1f));
+            FlowStone("Flow_N_E", new Vector3(44f, 0.50f, 39.5f), new Vector3(2.1f, 0.18f, 2.1f));
             // Crash loft approaches — south of vault / north of towers (no overlap with Toy_VaultRail)
-            FlowStone("Flow_Core_S", new Vector3(CxCrash, 0.95f, CzCrash - 7.5f), new Vector3(2.8f, 0.24f, 1.8f));
-            FlowStone("Flow_Core_N", new Vector3(CxCrash, 0.95f, CzCrash + 7.0f), new Vector3(2.8f, 0.24f, 1.8f));
+            FlowStone("Flow_Core_S", new Vector3(CxCrash, 0.92f, CzCrash - 7.5f), new Vector3(2.8f, 0.22f, 1.8f));
+            FlowStone("Flow_Core_N", new Vector3(CxCrash, 0.92f, CzCrash + 7.0f), new Vector3(2.8f, 0.22f, 1.8f));
         }
 
         void FlowStone(string name, Vector3 localPos, Vector3 scale)
