@@ -3,13 +3,14 @@
 Branch: `cursor/apex-party-movement-f5fd`  
 Parent pushes; **do not push** from casual local grind unless asked.
 
-## Done this pass (feel + figure-8 path layout)
+## Done this pass (feel + figure-8 path layout + map pass2)
 
 - Movement: no jet (`enableJet=false`), slide carries/decays (no enter boost), jump ~10× height (`jumpSpeed=24.7`), air-crouch 2× fall, faster run (`sprint=12`) vs ski max 24.
 - Arms hang/swing + human knee run in `DummyLocomotor`; jet VFX not auto-added.
 - Experimental grapple: `Assets/Scripts/Experimental/ExperimentalGrapple.cs` (off by default).
 - **Air dash done:** ~0.1s planar momentum burst (`enableAirDash`, jet stays off). Q / Left Alt / MMB-in-air; 1 charge refresh on land.
 - **Path layout:** `CutArenaBootstrap` figure-8 chase campus — west/east loops through Crash X, outer ring via Tron/Ninja, cardinal ski spines only, sparse `Flow_*` mid-height stones, thinner pads with open sightlines. PGK structures stay **off** (`placePgkStructures=false`).
+- **Map pass2:** `Flow_*` tops fair for jumpSpeed 24.7 / gravity 22 / WorldScale 10 (apex ~1.39 graybox); stones offset off spine axes + mid stones for chain gaps; pad toys nudged for center sightlines; landmarks thinned/nudged off pad centers.
 
 ### Path design notes (playground)
 - **Outer ring:** Pirate → Tron → Army → Knight → Ninja → Astro → Pirate (lane tint + mid stones).
@@ -63,6 +64,6 @@ Author: Landon Sikes / CouchCoopGaming@users.noreply.github.com (env author, no 
 Do not push; parent agent pushes.
 
 ## Next coding pass
-- Feel the figure-8 in Play; tweak Flow stone heights / pad exits if needed.
+- Feel pass2 figure-8 in Play (ski spines clear? pad centers readable? Core hop -> vault fair?).
 - Mannequin polish overnight OK.
 

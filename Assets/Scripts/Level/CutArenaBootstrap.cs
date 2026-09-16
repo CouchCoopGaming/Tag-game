@@ -227,24 +227,32 @@ namespace Tag.Level
         }
 
         /// <summary>
-        /// Sparse mid-height stones on the figure-8 — run → jump → slide lines without blocking sightlines.
+        /// Sparse hop stones beside the figure-8 — run → jump → slide onto spines.
+        /// jumpSpeed 24.7 / gravity 22 → apex ≈ 13.9 world ≈ 1.39 graybox (WorldScale 10).
+        /// Tops stay ≤ ~1.20 from lawn; stones sit off spine axes so ski highways stay clear.
+        /// Mid stones keep horizontal chain gaps ~5–6 graybox (skiable / stretch at sprint).
         /// </summary>
         void BuildFlowSteps()
         {
-            // West NS corridor (Pirate ↔ Astro via Crash west)
-            FlowStone("Flow_W_S", new Vector3(SpineXw, 0.9f, 22f), new Vector3(2.4f, 0.25f, 2.4f));
-            FlowStone("Flow_W_N", new Vector3(SpineXw, 0.9f, 32f), new Vector3(2.4f, 0.25f, 2.4f));
-            // East NS corridor
-            FlowStone("Flow_E_S", new Vector3(SpineXe, 0.9f, 22f), new Vector3(2.4f, 0.25f, 2.4f));
-            FlowStone("Flow_E_N", new Vector3(SpineXe, 0.9f, 32f), new Vector3(2.4f, 0.25f, 2.4f));
-            // Outer south / north ring (Tron ↔ corners / Ninja ↔ corners)
-            FlowStone("Flow_S_W", new Vector3(26f, 0.75f, CzTron + 1.5f), new Vector3(2.2f, 0.22f, 2.2f));
-            FlowStone("Flow_S_E", new Vector3(46f, 0.75f, CzTron + 1.5f), new Vector3(2.2f, 0.22f, 2.2f));
-            FlowStone("Flow_N_W", new Vector3(26f, 0.75f, CzNinja - 1.5f), new Vector3(2.2f, 0.22f, 2.2f));
-            FlowStone("Flow_N_E", new Vector3(46f, 0.75f, CzNinja - 1.5f), new Vector3(2.2f, 0.22f, 2.2f));
-            // Crash loft-approach steps (slightly higher for jump into twin-tower loft)
-            FlowStone("Flow_Core_S", new Vector3(CxCrash, 1.35f, CzCrash - 5.5f), new Vector3(3.0f, 0.28f, 2.0f));
-            FlowStone("Flow_Core_N", new Vector3(CxCrash, 1.35f, CzCrash + 5.5f), new Vector3(3.0f, 0.28f, 2.0f));
+            // West NS — west of SpineXw (Pirate ↔ Astro)
+            FlowStone("Flow_W_S", new Vector3(SpineXw - 2.6f, 0.52f, 21.5f), new Vector3(2.0f, 0.20f, 2.0f));
+            FlowStone("Flow_W_Mid", new Vector3(SpineXw - 2.6f, 0.68f, 27.0f), new Vector3(2.0f, 0.20f, 2.0f));
+            FlowStone("Flow_W_N", new Vector3(SpineXw - 2.6f, 0.52f, 32.5f), new Vector3(2.0f, 0.20f, 2.0f));
+            // East NS — east of SpineXe (Army ↔ Knight)
+            FlowStone("Flow_E_S", new Vector3(SpineXe + 2.6f, 0.52f, 21.5f), new Vector3(2.0f, 0.20f, 2.0f));
+            FlowStone("Flow_E_Mid", new Vector3(SpineXe + 2.6f, 0.68f, 27.0f), new Vector3(2.0f, 0.20f, 2.0f));
+            FlowStone("Flow_E_N", new Vector3(SpineXe + 2.6f, 0.52f, 32.5f), new Vector3(2.0f, 0.20f, 2.0f));
+            // Outer south ring (Tron) — south of lane / Spine_EW_S
+            FlowStone("Flow_S_W", new Vector3(26f, 0.48f, CzTron - 0.5f), new Vector3(2.0f, 0.18f, 2.0f));
+            FlowStone("Flow_S_Mid", new Vector3(CxTron, 0.58f, CzTron - 0.5f), new Vector3(2.0f, 0.18f, 2.0f));
+            FlowStone("Flow_S_E", new Vector3(46f, 0.48f, CzTron - 0.5f), new Vector3(2.0f, 0.18f, 2.0f));
+            // Outer north ring (Ninja) — north of lane / Spine_EW_N
+            FlowStone("Flow_N_W", new Vector3(26f, 0.48f, CzNinja + 0.5f), new Vector3(2.0f, 0.18f, 2.0f));
+            FlowStone("Flow_N_Mid", new Vector3(CxNinja, 0.58f, CzNinja + 0.5f), new Vector3(2.0f, 0.18f, 2.0f));
+            FlowStone("Flow_N_E", new Vector3(46f, 0.48f, CzNinja + 0.5f), new Vector3(2.0f, 0.18f, 2.0f));
+            // Crash loft approaches — south of vault / north of towers (no overlap with Toy_VaultRail)
+            FlowStone("Flow_Core_S", new Vector3(CxCrash, 0.95f, CzCrash - 7.5f), new Vector3(2.8f, 0.24f, 1.8f));
+            FlowStone("Flow_Core_N", new Vector3(CxCrash, 0.95f, CzCrash + 7.0f), new Vector3(2.8f, 0.24f, 1.8f));
         }
 
         void FlowStone(string name, Vector3 localPos, Vector3 scale)
@@ -284,9 +292,9 @@ namespace Tag.Level
             ChildBox(z, "Toy_TwinTower_E", new Vector3(4.5f, 2.0f, 3.5f), new Vector3(2.0f, 4f, 2.0f), _matWall);
             ChildBox(z, "Toy_Tower", new Vector3(0f, 3.1f, 3.5f), new Vector3(7f, 0.3f, 3.2f), _matLoft);
 
-            // One climb face on west (escape vertical); vault on south approach
-            ChildBox(z, "Toy_ClimbWall_West", new Vector3(-6.5f, 1.4f, 0f), new Vector3(0.35f, 2.8f, 6f), _matWall);
-            ChildBox(z, "Toy_VaultRail", new Vector3(0f, 0.65f, -5.5f), new Vector3(4.5f, 1.1f, 0.3f), _matVault);
+            // Climb face west but shortened — keep EW chase sightline through Crash
+            ChildBox(z, "Toy_ClimbWall_West", new Vector3(-7.0f, 1.4f, 1.2f), new Vector3(0.35f, 2.8f, 4.2f), _matWall);
+            ChildBox(z, "Toy_VaultRail", new Vector3(0f, 0.65f, -5.5f), new Vector3(3.6f, 1.1f, 0.3f), _matVault);
         }
 
         /// <summary>Pirate SW — low deck → high deck → plank east toward spine → slide south exit.</summary>
@@ -294,9 +302,10 @@ namespace Tag.Level
         {
             var z = Zone("Zone_Pirate", CxPirate, CzPirate);
             PadFloor(z, 14f, 12f, _matFloor);
-            ChildBox(z, "MastBase", new Vector3(-1f, 0.45f, 0.5f), new Vector3(2.6f, 0.9f, 2.6f), _matVault);
-            ChildBox(z, "Deck_Low", new Vector3(0f, 1.1f, 0.5f), new Vector3(7f, 0.28f, 4.5f), _matLoft);
-            ChildBox(z, "Deck_High", new Vector3(-2f, 2.2f, 2f), new Vector3(3.5f, 0.28f, 2.8f), _matLoft);
+            // Mast/decks nudged west — open pad center sightline toward campus
+            ChildBox(z, "MastBase", new Vector3(-2.4f, 0.45f, 0.8f), new Vector3(2.4f, 0.9f, 2.4f), _matVault);
+            ChildBox(z, "Deck_Low", new Vector3(-1.2f, 1.1f, 0.8f), new Vector3(6.2f, 0.28f, 4.0f), _matLoft);
+            ChildBox(z, "Deck_High", new Vector3(-2.8f, 2.2f, 2.2f), new Vector3(3.2f, 0.28f, 2.6f), _matLoft);
             ChildBox(z, "Plank_Run", new Vector3(3.5f, 1.35f, 0.5f), new Vector3(5f, 0.22f, 1.1f), _matVault);
             ChildBox(z, "ClimbNetWall", new Vector3(-5.5f, 1.5f, 0.5f), new Vector3(0.3f, 3f, 5f), _matWall);
             ChildBox(z, "Slide_Ramp", new Vector3(4f, 0.95f, -3f), new Vector3(2.6f, 0.28f, 5f), _matSlide)
@@ -315,7 +324,8 @@ namespace Tag.Level
             ChildBox(z, "Ramp_Up", new Vector3(-4.5f, 0.75f, 3.5f), new Vector3(3.2f, 0.28f, 5.5f), _matRamp)
                 .transform.localRotation = Quaternion.Euler(-13f, 90f, 0f);
             ChildBox(z, "Wall_Cover", new Vector3(5.5f, 1.1f, 0f), new Vector3(0.35f, 2.2f, 7f), _matWall);
-            ChildBox(z, "Vault_Low", new Vector3(0f, 0.45f, 4.5f), new Vector3(5f, 0.9f, 0.35f), _matVault);
+            // Offset vault — leave mid trench → spine approach open
+            ChildBox(z, "Vault_Low", new Vector3(-2.8f, 0.45f, 4.5f), new Vector3(3.4f, 0.9f, 0.35f), _matVault);
         }
 
         /// <summary>Astro NW — open loft ring (cut south for sightline) + half-pipes + climb stub.</summary>
@@ -323,13 +333,13 @@ namespace Tag.Level
         {
             var z = Zone("Zone_Astro", CxAstro, CzAstro);
             PadFloor(z, 14f, 12f, _matFloor);
-            // U-shaped loft open to south (campus / spine) — no solid 10x10 plate
-            ChildBox(z, "Loft_Ring", new Vector3(0f, 2.0f, 1.5f), new Vector3(9f, 0.28f, 6f), _matLoft);
-            ChildBox(z, "VisorPipe_A", new Vector3(-3.5f, 0.95f, -2f), new Vector3(1.8f, 1.9f, 5f), _matWall)
+            // U loft open south; ladder off mid so Conn_Astro approach stays clear
+            ChildBox(z, "Loft_Ring", new Vector3(0f, 2.0f, 2.2f), new Vector3(8f, 0.28f, 5f), _matLoft);
+            ChildBox(z, "VisorPipe_A", new Vector3(-3.8f, 0.95f, -1.5f), new Vector3(1.6f, 1.9f, 4.5f), _matWall)
                 .transform.localRotation = Quaternion.Euler(0f, 35f, 0f);
-            ChildBox(z, "HalfPipe_L", new Vector3(-5f, 0.75f, 0.5f), new Vector3(0.45f, 2.2f, 7f), _matSlide);
-            ChildBox(z, "HalfPipe_R", new Vector3(5f, 0.75f, 0.5f), new Vector3(0.45f, 2.2f, 7f), _matSlide);
-            ChildBox(z, "Ladder_Stub", new Vector3(0f, 1.0f, -4.5f), new Vector3(1.1f, 2f, 0.35f), _matVault);
+            ChildBox(z, "HalfPipe_L", new Vector3(-5.2f, 0.75f, 0.8f), new Vector3(0.45f, 2.2f, 6.5f), _matSlide);
+            ChildBox(z, "HalfPipe_R", new Vector3(5.2f, 0.75f, 0.8f), new Vector3(0.45f, 2.2f, 6.5f), _matSlide);
+            ChildBox(z, "Ladder_Stub", new Vector3(-3.6f, 1.0f, -4.2f), new Vector3(1.1f, 2f, 0.35f), _matVault);
         }
 
         /// <summary>Knight NE — open courtyard, one keep, shield on north only, ramp down to spine.</summary>
@@ -342,7 +352,8 @@ namespace Tag.Level
             // Drop west shield — open sightline into campus / NS_E
             ChildBox(z, "Keep_Tower", new Vector3(3.5f, 2.4f, 2.5f), new Vector3(2.8f, 4.8f, 2.8f), _matPad);
             ChildBox(z, "Battlement", new Vector3(3.5f, 5.0f, 2.5f), new Vector3(3.6f, 0.35f, 3.6f), _matLoft);
-            ChildBox(z, "VaultGate", new Vector3(0f, 0.85f, -3.5f), new Vector3(2.8f, 1.7f, 0.45f), _matVault);
+            // Gate off mid — open courtyard sightline south to spine
+            ChildBox(z, "VaultGate", new Vector3(2.2f, 0.85f, -3.5f), new Vector3(2.2f, 1.7f, 0.45f), _matVault);
             ChildBox(z, "Ramp_Keep", new Vector3(3.5f, 1.1f, -1.5f), new Vector3(2.6f, 0.28f, 5f), _matRamp)
                 .transform.localRotation = Quaternion.Euler(-15f, 0f, 0f);
         }
@@ -354,8 +365,9 @@ namespace Tag.Level
             PadFloor(z, 12f, 9f, _matPad);
             ChildBox(z, "GridPost_0", new Vector3(-3.2f, 1.1f, 0.5f), new Vector3(0.3f, 2.2f, 0.3f), _matWall);
             ChildBox(z, "GridPost_1", new Vector3(3.2f, 1.1f, 0.5f), new Vector3(0.3f, 2.2f, 0.3f), _matWall);
-            ChildBox(z, "NeonTube_EW", new Vector3(0f, 2.2f, 0.5f), new Vector3(10f, 0.18f, 0.18f), _matVault);
-            ChildBox(z, "DiscPad", new Vector3(0f, 0.12f, -1.5f), new Vector3(3.5f, 0.24f, 3.5f), _matSlide);
+            ChildBox(z, "NeonTube_EW", new Vector3(0f, 2.4f, 1.2f), new Vector3(9f, 0.16f, 0.16f), _matVault);
+            // Disc south of center — clear pad midpoint sightline north to campus
+            ChildBox(z, "DiscPad", new Vector3(0f, 0.12f, -2.2f), new Vector3(3.2f, 0.24f, 3.2f), _matSlide);
             ChildBox(z, "WallRun_S", new Vector3(0f, 1.3f, -3.8f), new Vector3(9f, 2.6f, 0.3f), _matWall);
         }
 
@@ -366,9 +378,10 @@ namespace Tag.Level
             PadFloor(z, 12f, 9f, _matFloor);
             ChildBox(z, "SilentTower_A", new Vector3(-3.5f, 2.4f, 0.5f), new Vector3(1.8f, 4.8f, 1.8f), _matPad);
             ChildBox(z, "SilentTower_B", new Vector3(3.5f, 1.9f, 1.5f), new Vector3(1.8f, 3.8f, 1.8f), _matPad);
-            ChildBox(z, "BladeRail", new Vector3(0f, 1.5f, 0.5f), new Vector3(9f, 0.22f, 0.3f), _matVault);
-            ChildBox(z, "BladeRail_High", new Vector3(0f, 3.0f, 1.2f), new Vector3(7f, 0.22f, 0.3f), _matVault);
-            ChildBox(z, "ClimbFace", new Vector3(-5.5f, 1.7f, 0.5f), new Vector3(0.35f, 3.4f, 5f), _matWall);
+            // Rails north of center — leave mid courtyard open for sightline/run
+            ChildBox(z, "BladeRail", new Vector3(0f, 1.6f, 2.0f), new Vector3(7f, 0.22f, 0.3f), _matVault);
+            ChildBox(z, "BladeRail_High", new Vector3(0f, 3.0f, 2.4f), new Vector3(6f, 0.22f, 0.3f), _matVault);
+            ChildBox(z, "ClimbFace", new Vector3(-5.5f, 1.7f, 1.2f), new Vector3(0.35f, 3.4f, 4.2f), _matWall);
             ChildBox(z, "LandingDeck", new Vector3(3.5f, 4.0f, 1.5f), new Vector3(2.8f, 0.28f, 2.8f), _matLoft);
         }
 

@@ -25,18 +25,20 @@ namespace Tag.Art
         [SerializeField] bool placeLandmarks = true;
         /// <summary>OFF by default — graybox CutArenaBootstrap owns parkour; PGK dump stacked chaos on every pad.</summary>
         [SerializeField] bool placePgkStructures = false;
-        [SerializeField] float landmarkUniformScale = 1.35f;
+        /// <summary>Keep landmarks readable but thin enough for pad-center sightlines.</summary>
+        [SerializeField] float landmarkUniformScale = 1.15f;
         [SerializeField] float pgkUniformScale = 1f;
 
+        // Nudged off pad centers toward zone edges so chase midpoints stay readable.
         static readonly (string stem, Vector3 pos, float yaw, float scale)[] LandmarkSlots =
         {
-            ("Landmark_CrashTorso_Hi", new Vector3(36f, 0f, 27f), 0f, 1.5f),
-            ("Landmark_PirateMast_Hi", new Vector3(14f, 0f, 12f), 25f, 1.4f),
-            ("Landmark_ArmyFoxhole_Hi", new Vector3(58f, 0f, 12f), -20f, 1.3f),
-            ("Landmark_AstroHelmet_Hi", new Vector3(14f, 0f, 42f), 40f, 1.45f),
-            ("Landmark_KnightShield_Hi", new Vector3(58f, 0f, 42f), 180f, 1.4f),
-            ("Landmark_TronDisc_Hi", new Vector3(36f, 0f, 8f), 0f, 1.25f),
-            ("Landmark_NinjaBladeRail_Hi", new Vector3(36f, 0f, 46f), 90f, 1.35f),
+            ("Landmark_CrashTorso_Hi", new Vector3(36f, 0f, 31.5f), 0f, 1.15f),
+            ("Landmark_PirateMast_Hi", new Vector3(11f, 0f, 13.5f), 25f, 1.1f),
+            ("Landmark_ArmyFoxhole_Hi", new Vector3(61.5f, 0f, 10.5f), -20f, 1.05f),
+            ("Landmark_AstroHelmet_Hi", new Vector3(11f, 0f, 44.5f), 40f, 1.15f),
+            ("Landmark_KnightShield_Hi", new Vector3(61.5f, 0f, 44.5f), 180f, 1.1f),
+            ("Landmark_TronDisc_Hi", new Vector3(36f, 0f, 5.5f), 0f, 1.0f),
+            ("Landmark_NinjaBladeRail_Hi", new Vector3(36f, 0f, 48.5f), 90f, 1.05f),
         };
 
         void Start() => Place();
@@ -267,7 +269,8 @@ namespace Tag.Art
             {
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(30f, 0.02f, 27f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(42f, 0.02f, 27f), 0f),
-                ("PGK_Balance_Beam_3m_LOD0", new Vector3(36f, 0.40f, 27f), 0f),
+                // Off the X mid — do not park a beam on the Crash cross sightline
+                ("PGK_Balance_Beam_3m_LOD0", new Vector3(36f, 0.40f, 23.5f), 0f),
             };
             return SpawnList(parent, pieces);
         }
