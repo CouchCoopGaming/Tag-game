@@ -103,8 +103,8 @@ namespace Tag.Art
             // Dense McDonald's-style soft-play — SW of Crash X (off SpineXw / SpineZs)
             n += SoftPlayPlaza(root, "Play_SoftPlay_CrashSW", new Vector3(28f, 0f, 21f), 15f);
             // Named play areas (readable from spawn / ring)
-            n += MerryGoRound(root, "Play_MerryGoRound", new Vector3(16f, 0f, 22f), 0f);
-            n += SwingSet(root, "Play_Swing", new Vector3(60f, 0f, 34f), 0f);
+            n += MerryGoRound(root, "Play_MerryGoRound", new Vector3(15.5f, 0f, 22f), 0f);
+            n += SwingSet(root, "Play_Swing", new Vector3(60.5f, 0f, 33.5f), 0f);
             n += KickballField(root, "Play_Kickball", new Vector3(56.5f, 0f, 27f), 0f);
             n += HopscotchCourt(root, "Play_Hopscotch_SW", new Vector3(9.5f, 0f, 9f), 35f);
             n += HopscotchCourt(root, "Play_Hopscotch_SE", new Vector3(64f, 0f, 8f), -35f);
@@ -381,44 +381,61 @@ namespace Tag.Art
 
         int MerryGoRound(Transform root, string name, Vector3 origin, float yaw)
         {
-            // West lawn between Pirate/Astro — west of SpineXw so NS chase stays clear
+            // Classic spinner cluster — west lawn; east face open toward SpineXw
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
+                // Hub + cardinal Toy ring (reads at WorldScale 10)
                 ("Mega_Spinner", new Vector3(0f, 0f, 0f), 0f),
-                ("Toy_Spinner", new Vector3(3.2f, 0f, 0.5f), 20f),
-                ("Toy_Spinner", new Vector3(-3.2f, 0f, -0.5f), -20f),
-                ("PGK_Spinner_StandOn_LOD0", new Vector3(0.5f, 0f, 3.4f), 0f),
-                ("PGK_Spinner_StandOn_LOD0", new Vector3(-0.5f, 0f, -3.4f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, 2f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, 2f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, -2f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, -2f), 0f),
-                ("Toy_Bench", new Vector3(5.2f, 0f, 0f), -90f),
-                ("Toy_Bench", new Vector3(-5.2f, 0f, 0f), 90f),
+                ("Toy_Spinner", new Vector3(0f, 0f, 3.6f), 0f),
+                ("Toy_Spinner", new Vector3(3.6f, 0f, 0f), 90f),
+                ("Toy_Spinner", new Vector3(0f, 0f, -3.6f), 180f),
+                ("Toy_Spinner", new Vector3(-3.6f, 0f, 0f), -90f),
+                // Outer stand-on orbit (diagonals)
+                ("PGK_Spinner_StandOn_LOD0", new Vector3(3.2f, 0f, 3.2f), 45f),
+                ("PGK_Spinner_StandOn_LOD0", new Vector3(-3.2f, 0f, -3.2f), -135f),
+                // Mulch tile ring outline (not a filled blob)
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 5f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(5f, 0.02f, 0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -5f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-5f, 0.02f, 0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3.5f, 0.02f, 3.5f), 45f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-3.5f, 0.02f, 3.5f), -45f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3.5f, 0.02f, -3.5f), -45f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-3.5f, 0.02f, -3.5f), 45f),
+                // Spectators west only (outer flank; SpineXw east stays clear)
+                ("Toy_Bench", new Vector3(-6.2f, 0f, -2f), 90f),
+                ("Toy_Bench", new Vector3(-6.2f, 0f, 2f), 90f),
             });
         }
 
         int SwingSet(Transform root, string name, Vector3 origin, float yaw)
         {
-            // East lawn between Army/Knight — east of SpineXe
+            // Classic swing frame — east lawn; west face open toward SpineXe
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("Toy_Bars", new Vector3(-2.2f, 0f, 0f), 0f),
-                ("Toy_Bars", new Vector3(2.2f, 0f, 0f), 0f),
+                // A-frame bay: twin bars + top rail (reads as swing set at WorldScale 10)
+                ("Toy_Bars", new Vector3(-3f, 0f, 0f), 0f),
+                ("Toy_Bars", new Vector3(3f, 0f, 0f), 0f),
                 ("Toy_Bars_Rail", new Vector3(0f, 0f, 0f), 90f),
-                ("PGK_Monkey_4m_LOD0", new Vector3(0f, 0f, 3.5f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(-4f, 0f, -1.5f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(4f, 0f, -1.5f), 0f),
-                ("PGK_Rail_2m_LOD0", new Vector3(0f, 1.6f, -1.5f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1f, 0.02f, -2.5f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -2.5f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1f, 0.02f, -2.5f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1f, 0.02f, -3.5f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1f, 0.02f, -3.5f), 0f),
-                ("Toy_Bench", new Vector3(0f, 0f, -5f), 0f),
-                ("Toy_SpringRider", new Vector3(5f, 0f, 1.5f), -15f),
+                // Parallel monkey bay (second row of seats / hang)
+                ("PGK_Monkey_4m_LOD0", new Vector3(0f, 0f, 4f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(-4.5f, 0f, 0f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(4.5f, 0f, 0f), 0f),
+                ("PGK_Rail_2m_LOD0", new Vector3(0f, 1.7f, 0f), 0f),
+                // Clear mulch fall zone under seats (outline apron, not filled)
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, -2.8f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -2.8f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, -2.8f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, -4f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -4f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, -4f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-3.2f, 0.02f, -3.4f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3.2f, 0.02f, -3.4f), 0f),
+                // Spectators east only (outer flank; SpineXe west stays clear)
+                ("Toy_Bench", new Vector3(6f, 0f, -2f), -90f),
+                ("Toy_Bench", new Vector3(6f, 0f, 2f), -90f),
             });
         }
 

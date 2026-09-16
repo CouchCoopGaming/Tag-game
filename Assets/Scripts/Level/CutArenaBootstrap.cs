@@ -309,8 +309,10 @@ namespace Tag.Level
             const float t = 0.1f;
             float y = -t * 0.5f + 0.004f;
             Box("PlayPad_SoftPlay", new Vector3(26.5f, y, 19.5f), new Vector3(18f, t, 16f), _matPlayMulch);
-            Box("PlayPad_Merry", new Vector3(16f, y, 22f), new Vector3(10f, t, 10f), _matPlayRubber);
-            Box("PlayPad_Swing", new Vector3(60f, y, 34f), new Vector3(11f, t, 9f), _matPlayMulch);
+            // Merry mulch — spinner apron; east edge stops short of SpineXw
+            Box("PlayPad_Merry", new Vector3(15.5f, y, 22f), new Vector3(14f, t, 14f), _matPlayMulch);
+            // Swing mulch — fall-zone apron; west edge stops short of SpineXe
+            Box("PlayPad_Swing", new Vector3(60.5f, y, 33.5f), new Vector3(14f, t, 12f), _matPlayMulch);
             // Kickball rubber — between Loop_E and Ring_E; apron for run-through (west face open)
             Box("PlayPad_Kickball", new Vector3(56.5f, y, 27f), new Vector3(14f, t, 16f), _matPlayRubber);
             // Hopscotch rubber — apron around tile chain so players can run beside

@@ -1,4 +1,4 @@
-﻿# Local grind handoff (Amaterasu) — until tomorrow ~6pm CT
+# Local grind handoff (Amaterasu) — until tomorrow ~6pm CT
 
 Branch: `cursor/apex-party-movement-f5fd`  
 Parent pushes; **do not push** from casual local grind unless asked.
@@ -23,8 +23,8 @@ Parent pushes; **do not push** from casual local grind unless asked.
 
 ### Pass3/4 structure map (graybox coords)
 - `Play_SoftPlay_CrashSW` (28,21): dense multi-level soft-play (Bay A + SW Bay B) — decks/posts, spiral+tube slides, tunnels, nets, tower fort, spiral climber, bridge
-- `Play_MerryGoRound` (16,22): Mega/Toy/PGK spinners + tile ring + benches (west of SpineXw)
-- `Play_Swing` (60,34): twin bars + rail + monkey frame + mulch tiles (east of SpineXe)
+- `Play_MerryGoRound` (15.5,22): Mega hub + 4 Toy cardinal ring + stand-on diagonals, mulch apron, west benches only (east open for SpineXw)
+- `Play_Swing` (60.5,33.5): twin bars + rail A-frame + monkey bay, clear mulch fall zone, east benches only (west open for SpineXe)
 - `Play_Kickball` (56.5,27): clear diamond + N/S goals, east benches only (west open for figure-8), larger rubber pad
 - `Play_Hopscotch_SW/SE` (9.5,9)/(64,8): classic tile chain with gaps, larger rubber apron, outer-flank bench
 - `Play_Ring_S` (36,5.5): twin monkey, tunnel, Mega_SlideTube, straight slide, rails, spinner
