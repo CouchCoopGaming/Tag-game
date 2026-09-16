@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Tag.Level
 {
@@ -13,9 +13,10 @@ namespace Tag.Level
         // Graybox Y; world = * WorldScale (~150). Clears towers (~5 graybox tops).
         const float LabelHeight = 15f;
 
-        /// <summary>Mega-park zone labels + graybox XZ centers (shared with HUD / helpers).</summary>
+        /// <summary>Mega-park theme + named play-court labels + graybox XZ centers (shared with HUD / helpers).</summary>
         public static readonly (string label, float cx, float cz)[] ZoneCenters =
         {
+            // Theme pads
             ("CRASH",  36f, 27f),
             ("PIRATE", 14f, 12f),
             ("ARMY",   58f, 12f),
@@ -23,6 +24,13 @@ namespace Tag.Level
             ("KNIGHT", 58f, 42f),
             ("TRON",   36f,  8f),
             ("NINJA",  36f, 46f),
+            // Named play courts (pad centers from CutArenaBootstrap Pass4)
+            ("SOFT PLAY",     26.5f, 19.5f),
+            ("MERRY",         15.5f, 22f),
+            ("SWING",         60.5f, 33.5f),
+            ("KICKBALL",      56.5f, 27f),
+            ("HOPSCOTCH SW",   9.5f,  9f),
+            ("HOPSCOTCH SE",  64f,   8f),
         };
 
         static Transform _parkCached;
@@ -58,7 +66,7 @@ namespace Tag.Level
             for (int i = 0; i < ZoneCenters.Length; i++)
             {
                 var z = ZoneCenters[i];
-                var go = new GameObject("Label_" + z.label);
+                var go = new GameObject("Label_" + z.label.Replace(' ', '_'));
                 go.transform.SetParent(folder, false);
                 go.transform.localPosition = new Vector3(z.cx, LabelHeight, z.cz);
                 go.transform.localRotation = Quaternion.identity;
