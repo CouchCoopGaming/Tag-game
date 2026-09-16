@@ -552,6 +552,9 @@ namespace Tag.Art
             go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
             go.transform.localScale = Vector3.one * scale;
             StripImportCameras(go);
+            // Strip import/prefab colliders so Ensure can rebuild same-frame (ParkPropDresser path).
+            foreach (var col in go.GetComponentsInChildren<Collider>(true))
+                Object.DestroyImmediate(col);
             StaticPropColliders.EnsureStaticColliders(go);
             return go;
         }

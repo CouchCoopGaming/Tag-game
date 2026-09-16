@@ -1,11 +1,11 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Tag.Art
 {
     /// <summary>
     /// Runtime helper: ensure static HiPoly / PGK / landmark visuals have usable colliders.
-    /// Prefer non-convex MeshCollider for static park props; BoxCollider(bounds) fallback
-    /// for huge or unusable meshes. Skips player mannequins / dummies.
+    /// Prefer non-convex MeshCollider when mesh.isReadable; BoxCollider(bounds) fallback
+    /// for non-readable, huge, or unusable meshes. Skips player mannequins / dummies.
     /// </summary>
     public static class StaticPropColliders
     {
@@ -31,7 +31,8 @@ namespace Tag.Art
                 var mesh = mf.sharedMesh;
                 if (mesh.vertexCount < MinVertexCount) continue;
 
-                if (mesh.vertexCount >= HugeVertexCount)
+                // Runtime MeshCollider needs Read/Write; HiPoly FBX imports ship isReadable=0.
+                if (!mesh.isReadable || mesh.vertexCount >= HugeVertexCount)
                 {
                     AddBoxFittedToRenderer(mf.gameObject);
                     continue;
