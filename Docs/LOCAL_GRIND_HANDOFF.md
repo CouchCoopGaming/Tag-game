@@ -20,15 +20,19 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - **Pads:** 3-5 signature graybox toys (dressed via `ParkPropDresser`); playground fantasy gear from `PgkLandmarkPlacer` along lanes.
 - Prefer sparse chase-path structures over dense pad dumps. Keep ski midlines clear.
 
-### Pass3 structure map (graybox coords)
-- `Play_SoftPlay_CrashSW` (28,21): multi-level decks/posts, spiral+tube slides, tunnels, climb net, dome, monkey
+### Pass3/4 structure map (graybox coords)
+- `Play_SoftPlay_CrashSW` (28,21): dense multi-level soft-play (Bay A + SW Bay B) — decks/posts, spiral+tube slides, tunnels, nets, tower fort, spiral climber, bridge
+- `Play_MerryGoRound` (16,22): Mega/Toy/PGK spinners + tile ring + benches (west of SpineXw)
+- `Play_Swing` (60,34): twin bars + rail + monkey frame + mulch tiles (east of SpineXe)
+- `Play_Kickball` (55,27): dual goals, crossed rubber track, diamond bases, benches
+- `Play_Hopscotch_SW/SE` (10,9)/(62,9): named tile courts + bench
 - `Play_Ring_S` (36,5.5): twin monkey, tunnel, Mega_SlideTube, straight slide, rails, spinner
 - `Play_Ring_N` (36,49): twin monkey, crawl/tunnel, tube slide, balance beams, Mega_Spinner
 - `Play_Loop_W/E` (19,27)/(53,27): deck+rails, parkour ramp, slide, wall panel, vault rail
 - `Play_Slide_*` Pirate/Army/Astro/Knight pad exits toward spines
-- `Play_Spawn_SW/SE/NW/NE`: hopscotch/spinner/seesaw/spring; NW dome+net; NE bars+monkey (swings)
-- `Play_Kickball` (55,27): dual goals, rubber track, diamond tiles, benches
-- `Play_SpineAccents`: balance beams, vaults, dome, skybridge — off midlines
+- `Play_Spawn_*`: light spring/seesaw/bumper lead toys (named courts above)
+- `Play_SpineAccents`: balance beams, vaults, dome, skybridge - off midlines
+- Graybox `PlayPad_*` mulch/rubber floors under named courts (`CutArenaBootstrap.BuildNamedPlayPads`)
 
 ## Keep grinding (priority order)
 
@@ -76,7 +80,7 @@ Author: Landon Sikes / CouchCoopGaming@users.noreply.github.com (env author, no 
 Do not push; parent agent pushes.
 
 ## Next coding pass
-- Feel pass3 playground chase in Play: soft-play plaza, outer-ring monkey/slides, spawn->path in ~3s, kickball lawn. Ski midlines still clear?
+- Feel pass4 named play areas in Play: dense soft-play, swing/merry/kickball/hopscotch readable; ski midlines still clear?
 - Tune piece scales/offsets if a cluster blocks a spine.
 - Mannequin polish overnight OK.
 

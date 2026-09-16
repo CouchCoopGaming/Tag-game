@@ -9,8 +9,8 @@ using UnityEditor;
 namespace Tag.Art
 {
     /// <summary>
-    /// Playground fantasy dresser: zone landmarks + sparse chase-path structures
-    /// (soft-play, slides, monkey bars, tunnels, spinners, kickball, hopscotch).
+    /// Playground fantasy dresser: zone landmarks + chase-path structures
+    /// (dense soft-play, named swing/merry/kickball/hopscotch, ring slides/tunnels).
     /// Pieces sit beside figure-8 / outer-ring lanes — not on spine midlines.
     /// </summary>
     [DefaultExecutionOrder(60)]
@@ -94,14 +94,20 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Sparse playground structures along figure-8 + outer ring.
-        /// Off spine midlines so ski highways stay runnable.
+        /// Playground structures along figure-8 + outer ring.
+        /// Named play areas sit beside chase lanes; ski midlines stay clear.
         /// </summary>
         int PlaceChasePlayground(Transform root)
         {
             int n = 0;
-            // McDonald's-style soft-play plaza — SW of Crash X (west loop / south approach)
+            // Dense McDonald's-style soft-play — SW of Crash X (off SpineXw / SpineZs)
             n += SoftPlayPlaza(root, "Play_SoftPlay_CrashSW", new Vector3(28f, 0f, 21f), 15f);
+            // Named play areas (readable from spawn / ring)
+            n += MerryGoRound(root, "Play_MerryGoRound", new Vector3(16f, 0f, 22f), 0f);
+            n += SwingSet(root, "Play_Swing", new Vector3(60f, 0f, 34f), 0f);
+            n += KickballField(root, "Play_Kickball", new Vector3(55f, 0f, 27f), 0f);
+            n += HopscotchCourt(root, "Play_Hopscotch_SW", new Vector3(10f, 0f, 9f), 35f);
+            n += HopscotchCourt(root, "Play_Hopscotch_SE", new Vector3(62f, 0f, 9f), -35f);
             // Outer ring south (Tron arc) — monkey + tube slide + tunnel
             n += OuterRingSouth(root, "Play_Ring_S", new Vector3(36f, 0f, 5.5f), 0f);
             // Outer ring north (Ninja arc)
@@ -114,13 +120,11 @@ namespace Tag.Art
             n += PadSlideExit(root, "Play_Slide_Army", new Vector3(54f, 0f, 14f), -90f);
             n += PadSlideExit(root, "Play_Slide_Astro", new Vector3(18f, 0f, 40f), 90f);
             n += PadSlideExit(root, "Play_Slide_Knight", new Vector3(54f, 0f, 40f), -90f);
-            // Spawn lawn playsets → nearest path in first seconds
+            // Light spawn lawn toys → nearest path (named courts live above)
             n += SpawnPlay_SW(root);
             n += SpawnPlay_SE(root);
             n += SpawnPlay_NW(root);
             n += SpawnPlay_NE(root);
-            // Kickball field — east lawn between Crash and Army (off SpineXe)
-            n += KickballField(root, "Play_Kickball", new Vector3(55f, 0f, 27f), 0f);
             // Sparse spine-side accents (balance / vault) — never on X mid
             n += SpineAccents(root);
             return n;
@@ -129,28 +133,56 @@ namespace Tag.Art
         int SoftPlayPlaza(Transform root, string name, Vector3 origin, float yaw)
         {
             var parent = MakeGroup(root, name, origin, yaw);
+            // Bay A (core) + Bay B (SW satellite) — multi-level tubes/nets/slides.
+            // Footprint stays off SpineXw (x=24) / SpineZs (z=18) / Crash cross.
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                // Multi-level posts + decks
-                ("PGK_Post_Square_3m_LOD0", new Vector3(-2f, 0f, -2f), 0f),
-                ("PGK_Post_Square_3m_LOD0", new Vector3(2f, 0f, -2f), 0f),
-                ("PGK_Post_Square_3m_LOD0", new Vector3(-2f, 0f, 2f), 0f),
-                ("PGK_Post_Square_3m_LOD0", new Vector3(2f, 0f, 2f), 0f),
-                ("PGK_Deck_2x2_LOD0", new Vector3(0f, 1.2f, 0f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(-2f, 1.2f, -2f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(2f, 1.2f, 2f), 0f),
-                ("PGK_Deck_1x2_LOD0", new Vector3(0f, 2.0f, 0f), 0f),
-                ("PGK_Stairs_5_LOD0", new Vector3(4.2f, 0f, 0f), 90f),
-                ("PGK_Ladder_Rung_LOD0", new Vector3(-3.5f, 0f, 0f), 0f),
-                // Tubes / slides / nets — indoor soft-play fantasy
-                ("PGK_Slide_Spiral270_LOD0", new Vector3(-5f, 0f, 1f), 0f),
-                ("PGK_Slide_Tube90_LOD0", new Vector3(3f, 1.2f, -4f), 180f),
-                ("PGK_Tunnel_Plastic_LOD0", new Vector3(0f, 0f, 5f), 0f),
-                ("Mega_CrawlTunnel", new Vector3(-5f, 0f, -4f), 90f),
-                ("Mega_ClimbNet", new Vector3(5.5f, 0f, 3f), -20f),
-                ("PGK_Dome_Geo_3m_LOD0", new Vector3(6f, 0f, -3f), 0f),
-                ("PGK_Monkey_4m_LOD0", new Vector3(0f, 0f, -6.5f), 90f),
-                ("PGK_Rail_2m_LOD0", new Vector3(0f, 2.0f, -1.5f), 0f),
+                // --- Bay A frame ---
+                ("PGK_Post_Square_3m_LOD0", new Vector3(-2.2f, 0f, -2.2f), 0f),
+                ("PGK_Post_Square_3m_LOD0", new Vector3(2.2f, 0f, -2.2f), 0f),
+                ("PGK_Post_Square_3m_LOD0", new Vector3(-2.2f, 0f, 2.2f), 0f),
+                ("PGK_Post_Square_3m_LOD0", new Vector3(2.2f, 0f, 2.2f), 0f),
+                ("PGK_Deck_2x2_LOD0", new Vector3(0f, 1.15f, 0f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(-2.2f, 1.15f, -2.2f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(2.2f, 1.15f, -2.2f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(-2.2f, 1.15f, 2.2f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(2.2f, 1.15f, 2.2f), 0f),
+                ("PGK_Deck_1x2_LOD0", new Vector3(0f, 2.05f, 0f), 0f),
+                ("PGK_Post_Square_1_5m_LOD0", new Vector3(-1.2f, 2.05f, 0f), 0f),
+                ("PGK_Post_Square_1_5m_LOD0", new Vector3(1.2f, 2.05f, 0f), 0f),
+                ("PGK_Deck_1x1_LOD0", new Vector3(0f, 2.85f, 0f), 0f),
+                ("PGK_Rail_2m_LOD0", new Vector3(0f, 2.05f, -1.4f), 0f),
+                ("PGK_Rail_2m_LOD0", new Vector3(0f, 2.05f, 1.4f), 0f),
+                ("PGK_Rail_Corner90_LOD0", new Vector3(1.6f, 1.15f, 1.6f), 0f),
+                ("PGK_Stairs_5_LOD0", new Vector3(4.4f, 0f, 0f), 90f),
+                ("PGK_Ladder_Rung_LOD0", new Vector3(-3.6f, 0f, 0f), 0f),
+                ("Toy_Ladder", new Vector3(0f, 0f, 3.8f), 0f),
+                // Tubes / slides / nets from mid + peak
+                ("PGK_Slide_Spiral270_LOD0", new Vector3(-5.2f, 0f, 1.2f), 0f),
+                ("PGK_Slide_Tube90_LOD0", new Vector3(3.2f, 1.15f, -4.2f), 180f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, 2.05f, 4.2f), 0f),
+                ("Mega_SlideTube", new Vector3(-1.5f, 1.15f, -5.5f), 90f),
+                ("PGK_Tunnel_Plastic_LOD0", new Vector3(0f, 0f, 5.5f), 0f),
+                ("Mega_CrawlTunnel", new Vector3(-5.2f, 0f, -4.2f), 90f),
+                ("Toy_TunnelTube", new Vector3(4.2f, 1.15f, -1.2f), 15f),
+                ("Mega_ClimbNet", new Vector3(4.6f, 0f, 3.6f), -25f),
+                ("Toy_NetFrame", new Vector3(-5.5f, 0f, 3.5f), 15f),
+                ("PGK_Dome_Geo_3m_LOD0", new Vector3(4.8f, 0f, -3.8f), 0f),
+                ("Toy_ClimberDome", new Vector3(-6.5f, 0f, -1f), 0f),
+                ("PGK_Monkey_4m_LOD0", new Vector3(0f, 0f, -7.2f), 90f),
+                ("Toy_SpiralClimber", new Vector3(-7.2f, 0f, 2.2f), 30f),
+                // --- Bay B satellite (local SW) - away from Crash / SpineZs ---
+                ("Mega_TowerFort", new Vector3(-6.5f, 0f, -5.5f), -20f),
+                ("PGK_Post_Square_2_5m_LOD0", new Vector3(-4.5f, 0f, -5.5f), 0f),
+                ("PGK_Post_Square_2_5m_LOD0", new Vector3(-8.5f, 0f, -5.5f), 0f),
+                ("PGK_Deck_2x2_LOD0", new Vector3(-6.5f, 1.35f, -5.5f), 0f),
+                ("PGK_Deck_Corner_L_LOD0", new Vector3(-4.8f, 1.35f, -3.8f), 90f),
+                ("Toy_Bridge", new Vector3(-3.2f, 1.2f, -2.8f), -45f),
+                ("PGK_Slide_Tube90_LOD0", new Vector3(-8.5f, 1.35f, -3.2f), 90f),
+                ("Mega_ClimbNet", new Vector3(-9.2f, 0f, -7.2f), -40f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1f, 0.02f, -1f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1f, 0.02f, 1f), 0f),
             });
         }
 
@@ -217,29 +249,25 @@ namespace Tag.Art
 
         int SpawnPlay_SW(Transform root)
         {
-            // Teal spawn (6,5) → Pirate / SW spine jct — hopscotch + spinner lead NE
+            // Teal spawn (6,5) → Pirate / SW jct — light lead toys (hopscotch is Play_Hopscotch_SW)
             var parent = MakeGroup(root, "Play_Spawn_SW", new Vector3(8f, 0f, 7f), 45f);
-            int n = SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("PGK_Spinner_StandOn_LOD0", new Vector3(-1.5f, 0f, -1f), 0f),
-                ("Toy_SpringRider", new Vector3(1.5f, 0f, -1.5f), 20f),
-                ("Toy_Seesaw", new Vector3(-2.5f, 0f, 1.5f), 90f),
+                ("Toy_SpringRider", new Vector3(1.2f, 0f, -1.2f), 20f),
+                ("Toy_Seesaw", new Vector3(-2.2f, 0f, 1.2f), 90f),
+                ("Toy_Bumper", new Vector3(0f, 0f, 2.2f), 0f),
             });
-            n += Hopscotch(parent, new Vector3(2f, 0.02f, 2f), 0f);
-            return n;
         }
 
         int SpawnPlay_SE(Transform root)
         {
             var parent = MakeGroup(root, "Play_Spawn_SE", new Vector3(64f, 0f, 7f), -45f);
-            int n = SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("Mega_Spinner", new Vector3(1.5f, 0f, -1f), 0f),
-                ("Toy_SpringRider", new Vector3(-1.5f, 0f, -1.5f), -20f),
-                ("Toy_Seesaw", new Vector3(2.5f, 0f, 1.5f), 90f),
+                ("Toy_SpringRider", new Vector3(-1.2f, 0f, -1.2f), -20f),
+                ("Toy_Seesaw", new Vector3(2.2f, 0f, 1.2f), 90f),
+                ("Toy_Bumper", new Vector3(0f, 0f, 2.2f), 0f),
             });
-            n += Hopscotch(parent, new Vector3(-2f, 0.02f, 2f), 0f);
-            return n;
         }
 
         int SpawnPlay_NW(Transform root)
@@ -250,48 +278,107 @@ namespace Tag.Art
                 ("PGK_Dome_Geo_3m_LOD0", new Vector3(-1f, 0f, -1f), 0f),
                 ("Toy_NetFrame", new Vector3(2f, 0f, 0f), 0f),
                 ("Toy_SpringRider", new Vector3(-2.5f, 0f, 1.5f), 40f),
-                ("PGK_Spinner_StandOn_LOD0", new Vector3(1.5f, 0f, 2f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 3f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 4f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1f, 0.02f, 4.5f), 0f),
             });
         }
 
         int SpawnPlay_NE(Transform root)
         {
-            // Swing / bars cluster → Knight / NE jct
+            // Lead toys only — swings live in Play_Swing
             var parent = MakeGroup(root, "Play_Spawn_NE", new Vector3(64f, 0f, 47f), -135f);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("Toy_Bars", new Vector3(0f, 0f, 0f), 0f),
-                ("PGK_Monkey_4m_LOD0", new Vector3(0f, 0f, 3f), 90f),
-                ("Toy_SpringRider", new Vector3(2.5f, 0f, -1.5f), -40f),
-                ("Mega_Spinner", new Vector3(-2f, 0f, -1f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -3f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -4f), 0f),
+                ("Toy_SpringRider", new Vector3(2.2f, 0f, -1.2f), -40f),
+                ("Toy_Seesaw", new Vector3(-2f, 0f, 1f), 0f),
+                ("Toy_Bumper", new Vector3(0f, 0f, -2.2f), 0f),
+            });
+        }
+
+        int MerryGoRound(Transform root, string name, Vector3 origin, float yaw)
+        {
+            // West lawn between Pirate/Astro — west of SpineXw so NS chase stays clear
+            var parent = MakeGroup(root, name, origin, yaw);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("Mega_Spinner", new Vector3(0f, 0f, 0f), 0f),
+                ("Toy_Spinner", new Vector3(3.2f, 0f, 0.5f), 20f),
+                ("Toy_Spinner", new Vector3(-3.2f, 0f, -0.5f), -20f),
+                ("PGK_Spinner_StandOn_LOD0", new Vector3(0.5f, 0f, 3.4f), 0f),
+                ("PGK_Spinner_StandOn_LOD0", new Vector3(-0.5f, 0f, -3.4f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, 2f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, 2f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, -2f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, -2f), 0f),
+                ("Toy_Bench", new Vector3(5.2f, 0f, 0f), -90f),
+                ("Toy_Bench", new Vector3(-5.2f, 0f, 0f), 90f),
+            });
+        }
+
+        int SwingSet(Transform root, string name, Vector3 origin, float yaw)
+        {
+            // East lawn between Army/Knight — east of SpineXe
+            var parent = MakeGroup(root, name, origin, yaw);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("Toy_Bars", new Vector3(-2.2f, 0f, 0f), 0f),
+                ("Toy_Bars", new Vector3(2.2f, 0f, 0f), 0f),
+                ("Toy_Bars_Rail", new Vector3(0f, 0f, 0f), 90f),
+                ("PGK_Monkey_4m_LOD0", new Vector3(0f, 0f, 3.5f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(-4f, 0f, -1.5f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(4f, 0f, -1.5f), 0f),
+                ("PGK_Rail_2m_LOD0", new Vector3(0f, 1.6f, -1.5f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1f, 0.02f, -2.5f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -2.5f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1f, 0.02f, -2.5f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1f, 0.02f, -3.5f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1f, 0.02f, -3.5f), 0f),
+                ("Toy_Bench", new Vector3(0f, 0f, -5f), 0f),
+                ("Toy_SpringRider", new Vector3(5f, 0f, 1.5f), -15f),
             });
         }
 
         int KickballField(Transform root, string name, Vector3 origin, float yaw)
         {
+            // Diamond footprint + goals — east of SpineXe (chase lane clear west of field)
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("Toy_Goal", new Vector3(0f, 0f, -5.5f), 0f),
-                ("Toy_Goal", new Vector3(0f, 0f, 5.5f), 180f),
+                ("Toy_Goal", new Vector3(0f, 0f, -6f), 0f),
+                ("Toy_Goal", new Vector3(0f, 0f, 6f), 180f),
                 ("Toy_RubberTrack_C3", new Vector3(0f, 0.02f, 0f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, -2f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -3f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, -2f), 0f),
+                ("Toy_RubberTrack_C3", new Vector3(0f, 0.02f, 0f), 90f),
+                // Diamond bases (home south, then 1B/2B/3B)
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -4f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3f, 0.02f, 0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 4f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-3f, 0.02f, 0f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 0f), 0f),
-                ("Toy_Bench", new Vector3(-4.5f, 0f, 0f), 90f),
-                ("Toy_Bench", new Vector3(4.5f, 0f, 0f), -90f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.5f, 0.02f, -2f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1.5f, 0.02f, -2f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.5f, 0.02f, 2f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1.5f, 0.02f, 2f), 0f),
+                ("Toy_Bench", new Vector3(-5.5f, 0f, -2f), 90f),
+                ("Toy_Bench", new Vector3(-5.5f, 0f, 2f), 90f),
+                ("Toy_Bench", new Vector3(5.5f, 0f, 0f), -90f),
+                ("Toy_TrashCan", new Vector3(5.5f, 0f, -3.5f), 0f),
             });
+        }
+
+        int HopscotchCourt(Transform root, string name, Vector3 origin, float yaw)
+        {
+            var parent = MakeGroup(root, name, origin, yaw);
+            int n = Hopscotch(parent, new Vector3(0f, 0.02f, 0f), 0f);
+            n += SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("Toy_Bench", new Vector3(-2.8f, 0f, 3f), 90f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2.2f, 0.02f, 0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2.2f, 0.02f, 1.05f), 0f),
+            });
+            return n;
         }
 
         int Hopscotch(Transform parent, Vector3 start, float yaw)
         {
-            // 1-2-3-4-5 tile chain toward campus (safety tiles as hopscotch)
+            // Classic 1-2-3 / pair / 4-5 / pair / home tile chain
             var tiles = new List<(string id, Vector3 p, float y)>();
             float[] xs = { 0f, 0f, 0f, -0.55f, 0.55f, 0f, -0.55f, 0.55f, 0f };
             float[] zs = { 0f, 1.05f, 2.1f, 3.15f, 3.15f, 4.2f, 5.25f, 5.25f, 6.3f };

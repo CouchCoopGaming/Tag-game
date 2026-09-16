@@ -12,6 +12,7 @@ namespace Tag.Level
     ///   Height: pad approach vault → mid deck → high perch → slide exit to spine
     ///   Rule: open lawn between pads; spines are highways; 3–5 toys per pad; no clutter on lanes.
     ///   Pass3: stronger ring tint + spawn lead lanes; playground gear lives in PgkLandmarkPlacer.
+    ///   Pass4: named play-area floor pads (soft-play / swing / merry / kickball / hopscotch).
     /// </summary>
     public class CutArenaBootstrap : MonoBehaviour
     {
@@ -51,6 +52,9 @@ namespace Tag.Level
         // Warmer outer-ring chase tint (readability without clutter)
         static readonly Color ColRing = new Color(0x8A / 255f, 0x5A / 255f, 0x3C / 255f, 1f);
         static readonly Color ColSpawnLead = new Color(0x7A / 255f, 0x6A / 255f, 0x48 / 255f, 1f);
+        // Named play-area floors (mulch vs rubber) — read as zones beside chase lanes
+        static readonly Color ColPlayMulch = new Color(0x7A / 255f, 0x4E / 255f, 0x32 / 255f, 1f);
+        static readonly Color ColPlayRubber = new Color(0x3A / 255f, 0x4A / 255f, 0x5C / 255f, 1f);
 
         // Match ParkPropDresser Toy_SpawnPad_* palette (SW Teal, SE Coral, NW Violet, NE Lime)
         static readonly Color ColSpawnTeal = new Color(0x2E / 255f, 0xC4 / 255f, 0xB6 / 255f, 1f);
@@ -59,7 +63,7 @@ namespace Tag.Level
         static readonly Color ColSpawnLime = new Color(0xA8 / 255f, 0xE6 / 255f, 0x1A / 255f, 1f);
 
         Transform _root;
-        Material _matFloor, _matBowl, _matLoft, _matWall, _matSlide, _matPad, _matVault, _matRamp, _matOob, _matPath, _matRing, _matSpawnLead;
+        Material _matFloor, _matBowl, _matLoft, _matWall, _matSlide, _matPad, _matVault, _matRamp, _matOob, _matPath, _matRing, _matSpawnLead, _matPlayMulch, _matPlayRubber;
 
         void Awake()
         {
@@ -87,6 +91,7 @@ namespace Tag.Level
             BuildSkiSpines();     // cardinal ski highways + pad connectors
             BuildFlowSteps();     // sparse mid-height run→jump→slide stones
             BuildSpawnLeads();    // spawn -> nearest spine/Flow in first seconds
+            BuildNamedPlayPads(); // mulch/rubber under named playground courts
             BuildCrashCore();     // center X
             BuildPiratePad();     // SW
             BuildArmyPad();       // SE
@@ -133,6 +138,8 @@ namespace Tag.Level
             _matPath = MakeMat(ColPath);
             _matRing = MakeMat(ColRing);
             _matSpawnLead = MakeMat(ColSpawnLead);
+            _matPlayMulch = MakeMat(ColPlayMulch);
+            _matPlayRubber = MakeMat(ColPlayRubber);
         }
 
         static Material MakeMat(Color c)
@@ -291,6 +298,22 @@ namespace Tag.Level
             // NE lime (66,49) → Knight Conn / NE jct
             Box("SpawnLead_NE", new Vector3(61f, y, 44f), new Vector3(10f, t, w), _matSpawnLead)
                 .transform.localRotation = Quaternion.Euler(0f, -140f, 0f);
+        }
+
+        /// <summary>
+        /// Soft floor pads under named play areas (coords match PgkLandmarkPlacer groups).
+        /// Tint only — sit beside spines so chase midlines stay clear.
+        /// </summary>
+        void BuildNamedPlayPads()
+        {
+            const float t = 0.1f;
+            float y = -t * 0.5f + 0.004f;
+            Box("PlayPad_SoftPlay", new Vector3(26.5f, y, 19.5f), new Vector3(18f, t, 16f), _matPlayMulch);
+            Box("PlayPad_Merry", new Vector3(16f, y, 22f), new Vector3(10f, t, 10f), _matPlayRubber);
+            Box("PlayPad_Swing", new Vector3(60f, y, 34f), new Vector3(11f, t, 9f), _matPlayMulch);
+            Box("PlayPad_Kickball", new Vector3(55f, y, 27f), new Vector3(12f, t, 14f), _matPlayRubber);
+            Box("PlayPad_Hopscotch_SW", new Vector3(10f, y, 9f), new Vector3(5.5f, t, 8.5f), _matPlayRubber);
+            Box("PlayPad_Hopscotch_SE", new Vector3(62f, y, 9f), new Vector3(5.5f, t, 8.5f), _matPlayRubber);
         }
 
         // --- Zone pads (3–5 signature toys; open sightlines to campus) --------------
