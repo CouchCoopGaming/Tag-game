@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -122,11 +122,12 @@ namespace Tag.Art
             n += SlideBank(root, "Play_Bank_SE", new Vector3(52f, 0f, 6f), 0f);
             n += SlideBank(root, "Play_Bank_NW", new Vector3(20f, 0f, 48f), 180f);
             n += SlideBank(root, "Play_Bank_NE", new Vector3(52f, 0f, 48f), 180f);
-            // Pad-edge signature slides (exit toward nearest spine — not on Conn mid)
-            n += PadSlideExit(root, "Play_Slide_Pirate", new Vector3(18f, 0f, 14f), 90f);
-            n += PadSlideExit(root, "Play_Slide_Army", new Vector3(54f, 0f, 14f), -90f);
-            n += PadSlideExit(root, "Play_Slide_Astro", new Vector3(18f, 0f, 40f), 90f);
-            n += PadSlideExit(root, "Play_Slide_Knight", new Vector3(54f, 0f, 40f), -90f);
+            // Pad-edge slides: tip onto Conn (off mid), yaw toward figure-8 spine jcts
+            // Pirate/Army -> Conn_*_N / SpineZs; Astro/Knight -> Conn_*_S / SpineZn
+            n += PadSlideExit(root, "Play_Slide_Pirate", new Vector3(16.5f, 0f, 12.0f), 25f);
+            n += PadSlideExit(root, "Play_Slide_Army", new Vector3(55.5f, 0f, 12.0f), -25f);
+            n += PadSlideExit(root, "Play_Slide_Astro", new Vector3(16.5f, 0f, 42.0f), 155f);
+            n += PadSlideExit(root, "Play_Slide_Knight", new Vector3(55.5f, 0f, 42.0f), -155f);
             // Light spawn lawn toys → nearest path (named courts live above)
             n += SpawnPlay_SW(root);
             n += SpawnPlay_SE(root);
@@ -321,6 +322,7 @@ namespace Tag.Art
             });
         }
 
+        /// <summary>Stairs (-Z) / deck / slide (+Z tip). Parent yaw aims tip onto Conn toward spines.</summary>
         int PadSlideExit(Transform root, string name, Vector3 origin, float yaw)
         {
             var parent = MakeGroup(root, name, origin, yaw);
@@ -328,7 +330,7 @@ namespace Tag.Art
             {
                 ("PGK_Post_Square_2m_LOD0", new Vector3(0f, 0f, 0f), 0f),
                 ("PGK_Deck_1x1_LOD0", new Vector3(0f, 1.2f, 0f), 0f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, 1.2f, 3f), 0f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, 1.2f, 3.4f), 0f),
                 ("PGK_Stairs_5_LOD0", new Vector3(0f, 0f, -2.5f), 180f),
             });
         }
