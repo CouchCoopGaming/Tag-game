@@ -12,6 +12,7 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - **Path layout:** `CutArenaBootstrap` figure-8 chase campus — west/east loops through Crash X, outer ring via Tron/Ninja, cardinal ski spines only, sparse `Flow_*` mid-height stones, thinner pads with open sightlines.
 - **Map pass2:** `Flow_*` tops fair for jumpSpeed 24.7 / gravity 22 / WorldScale 10 (apex ~1.39 graybox); stones offset off spine axes + mid stones for chain gaps; pad toys nudged for center sightlines; landmarks thinned/nudged off pad centers.
 - **Map pass3:** real playground structures along chase paths (`placePgkStructures=true` in `PgkLandmarkPlacer`). Soft-play plaza, outer-ring monkey/tunnels/slides, loop wall-runs, pad slide exits, spawn playsets (spinner/seesaw/hopscotch/swings), kickball field. Stronger outer-ring tint + `SpawnLead_*` lanes + edge kerbs. Landmarks edge-nudged; gear sits **beside** spines/Flow/Conn (not on midlines).
+- **Wall-run + slide banks:** denser `LoopWallRun`, `WallRunStrip` on ring W/E, `SlideBank` at ring corners, ring S/N panels/vaults — Toy_WallPanel + vault rails + PGK deck/stairs/slides. Chase midlines kept clear.
 
 ### Path design notes (playground)
 - **Outer ring:** Pirate -> Tron -> Army -> Knight -> Ninja -> Astro -> Pirate (ring tint + edge kerbs + PGK monkey/tunnel/slide).
@@ -28,10 +29,13 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - `Play_Hopscotch_SW/SE` (10,9)/(62,9): named tile courts + bench
 - `Play_Ring_S` (36,5.5): twin monkey, tunnel, Mega_SlideTube, straight slide, rails, spinner
 - `Play_Ring_N` (36,49): twin monkey, crawl/tunnel, tube slide, balance beams, Mega_Spinner
-- `Play_Loop_W/E` (19,27)/(53,27): deck+rails, parkour ramp, slide, wall panel, vault rail
+- `Play_Loop_W/E` (19,27)/(53,27): denser wall-run (4x Toy_WallPanel + vault rails), decks, stairs, slide/tube exit
+- `Play_Ring_W/E` (11,27)/(61,27): outer-ring wall-run strips + mid deck slide bank
+- `Play_Bank_SW/SE/NW/NE` (20,6)/(52,6)/(20,48)/(52,48): slide banks (deck+stairs+slide+side wall)
+- `Play_Ring_S/N`: added wall-run panels + vaults + corner deck/slide
 - `Play_Slide_*` Pirate/Army/Astro/Knight pad exits toward spines
 - `Play_Spawn_*`: light spring/seesaw/bumper lead toys (named courts above)
-- `Play_SpineAccents`: balance beams, vaults, dome, skybridge - off midlines
+- `Play_SpineAccents`: balance beams, vaults, wall panels, dome, skybridge - off midlines
 - Graybox `PlayPad_*` mulch/rubber floors under named courts (`CutArenaBootstrap.BuildNamedPlayPads`)
 
 ## Keep grinding (priority order)
@@ -80,7 +84,7 @@ Author: Landon Sikes / CouchCoopGaming@users.noreply.github.com (env author, no 
 Do not push; parent agent pushes.
 
 ## Next coding pass
-- Feel pass4 named play areas in Play: dense soft-play, swing/merry/kickball/hopscotch readable; ski midlines still clear?
-- Tune piece scales/offsets if a cluster blocks a spine.
+- Feel in Play: wall-run faces + slide banks along figure-8 / outer ring; ski midlines still clear?
+- Tune offsets if a wall/bank clips Flow stones or Conn.
 - Mannequin polish overnight OK.
 
