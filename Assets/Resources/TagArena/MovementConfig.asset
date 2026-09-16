@@ -110,6 +110,10 @@ MonoBehaviour:
   fovJet: 90
   tiltMax: 8
   bobAmp: 0.015
+  enableAirDash: 1
+  airDashSpeed: 15
+  airDashDuration: 0.1
+  airDashIFrames: 0.1
   runnerJetEnergyBonus: 20
   taggerSprintBonus: 0.55
   taggerLungeSpeed: 16

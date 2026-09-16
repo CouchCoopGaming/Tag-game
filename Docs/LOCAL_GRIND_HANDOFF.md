@@ -8,6 +8,7 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - Movement: no jet (`enableJet=false`), slide carries/decays (no enter boost), jump ~10× height (`jumpSpeed=24.7`), air-crouch 2× fall, faster run (`sprint=12`) vs ski max 24.
 - Arms hang/swing + human knee run in `DummyLocomotor`; jet VFX not auto-added.
 - Experimental grapple: `Assets/Scripts/Experimental/ExperimentalGrapple.cs` (off by default).
+- **Air dash done:** ~0.1s planar momentum burst (`enableAirDash`, jet stays off). Q / Left Alt / MMB-in-air; 1 charge refresh on land.
 - Map readability start: `CutArenaBootstrap` clear lanes + cardinal spines only; PGK structure dump **off** by default in `PgkLandmarkPlacer`.
 
 ## Keep grinding (priority order)
@@ -33,6 +34,7 @@ Parent pushes; **do not push** from casual local grind unless asked.
 5. Jump feels ~10×; air+crouch falls faster  
 6. Run closer to ski; ski still wins on slopes  
 7. Grapple only if enabled (see below)
+8. Air dash: Q/Alt or MMB in air — short burst, not hover; 1/air until land
 
 ## How to enable experimental grapple
 1. Add `Tag.Experimental.ExperimentalGrapple` to a player with `PlayerMotor` + `PlayerInputReader`.
@@ -53,3 +55,8 @@ Prefer this while Unity is open. Do not commit `_Staging/`, `*.slnx`, `_compile_
 ## Commit hygiene
 Author: Landon Sikes / CouchCoopGaming@users.noreply.github.com (env author, no `git config`).  
 Do not push; parent agent pushes.
+
+## Next coding pass
+- Playground map layout (highest) — see checklist above.
+- Mannequin polish overnight OK.
+

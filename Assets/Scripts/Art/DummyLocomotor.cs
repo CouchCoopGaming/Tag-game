@@ -31,6 +31,7 @@ namespace Tag.Art
         float _dashPulse;
         float _tagFlinch;
         bool _wasLunging;
+        bool _wasAirDashing;
         bool _wasJetting;
         PlayerMotor _bounceHooked;
 
@@ -124,15 +125,21 @@ namespace Tag.Art
             bool gliding = _glidePulse > 0.04f;
             float glideAmt = Mathf.Clamp01(_glidePulse);
 
-            // MMB lunge / dash tell + brief jet (air-dodge) pop
+            // MMB lunge / air-dash tell + brief jet pop
+            bool airDashing = _motor != null && _motor.IsAirDashing;
             if (lunging && !_wasLunging) _dashPulse = 1f;
+            if (airDashing && !_wasAirDashing) _dashPulse = 1f;
             if (jet && !_wasJetting) _dashPulse = Mathf.Max(_dashPulse, 0.85f);
             _wasLunging = lunging;
+            _wasAirDashing = airDashing;
             _wasJetting = jet;
-            _dashPulse = Mathf.MoveTowards(_dashPulse, 0f, dt / 0.22f);
+            _dashPulse = Mathf.MoveTowards(_dashPulse, 0f, dt / 0.18f);
             _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.32f);
-            bool dashing = _dashPulse > 0.04f || lunging;
-            float dashAmt = Mathf.Max(Mathf.Clamp01(_dashPulse), lunging && _motor != null ? _motor.LungeProgress : 0f);
+            bool dashing = _dashPulse > 0.04f || lunging || airDashing;
+            float dashAmt = Mathf.Max(
+                Mathf.Clamp01(_dashPulse),
+                lunging && _motor != null ? _motor.LungeProgress : 0f,
+                airDashing && _motor != null ? _motor.AirDashProgress : 0f);
             float flinchAmt = Mathf.Clamp01(_tagFlinch);
 
             float walkAmt = Mathf.Clamp01(speed / 5.5f);

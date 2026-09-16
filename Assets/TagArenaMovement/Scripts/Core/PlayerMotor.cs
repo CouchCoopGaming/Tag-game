@@ -35,7 +35,13 @@ namespace TagArena.Movement
         public bool IsWallRunning => State == MoveState.WallRun;
         public bool IsVaulting => State == MoveState.Mantle;
         public bool IsAirDodgeLocked => State == MoveState.Jet && Jetting;
-        public bool HasAirDodgeIFrames => IsAirDodgeLocked;
+        public bool IsAirDashing => _airDashT > 0f;
+        public bool HasAirDodgeIFrames => IsAirDodgeLocked || _airDashIFramesT > 0f;
+        /// <summary>1 at air-dash start, 0 at end (TP whip).</summary>
+        public float AirDashProgress =>
+            _airDashT > 0f && cfg != null
+                ? Mathf.Clamp01(_airDashT / Mathf.Max(0.01f, cfg.airDashDuration))
+                : 0f;
         public bool IsGrounded => _probe != null && _probe.Ground.grounded;
         public float HorizontalSpeed => HorizSpeed;
         public bool IsLunging => _lungeT > 0f;
@@ -75,6 +81,10 @@ namespace TagArena.Movement
         float _tapCd;
         float _lungeCd;
         float _lungeT;
+        float _airDashT;
+        float _airDashIFramesT;
+        int _airDashCharges = 1;
+        Vector3 _airDashDir;
         float _landStunT;
         float _lastLandImpactSpeed;
         bool _wasProbeGrounded = true;
@@ -201,6 +211,7 @@ namespace TagArena.Movement
 
             if (TryEnterClimb(v, grounded)) return _rb.linearVelocity;
             if (TryEnterWallRun(v, grounded, wish)) return _rb.linearVelocity;
+            if (TryAirDash(ref v, wish, dt, grounded)) return v;
             if (TryLunge(ref v, wish, dt)) return v;
 
             if (grounded && !Skiing)
@@ -758,6 +769,53 @@ namespace TagArena.Movement
 
         #region Lunge / land stun / tag
 
+        bool TryAirDash(ref Vector3 v, Vector3 wish, float dt, bool grounded)
+        {
+            if (_airDashT > 0f)
+            {
+                _airDashT -= dt;
+                v = WishAccel.SetHoriz(v, _airDashDir * cfg.airDashSpeed);
+                // Keep vertical — burst, not hover/jet.
+                if (_airDashT <= 0f && State != MoveState.Slide)
+                    SetState(grounded ? MoveState.Sprint : MoveState.Air);
+                return true;
+            }
+
+            if (cfg == null || !cfg.enableAirDash) return false;
+            if (grounded) return false;
+            if (State == MoveState.Mantle || State == MoveState.WallClimb || State == MoveState.WallRun || State == MoveState.LandStun)
+                return false;
+            if (_airDashCharges <= 0) return false;
+
+            // Dedicated keys, or MMB/lunge press reused as air-dodge while airborne.
+            bool pressed = _in.AirDashPressed || _in.LungePressed;
+            if (!pressed) return false;
+
+            Vector3 dir = DashWishDir(wish);
+            _airDashDir = dir;
+            _airDashT = cfg.airDashDuration;
+            _airDashIFramesT = cfg.airDashIFrames;
+            _airDashCharges = 0;
+            v = WishAccel.SetHoriz(v, dir * cfg.airDashSpeed);
+            SetState(MoveState.Air);
+            TagSfx.LungeWhoosh(transform.position);
+            return true;
+        }
+
+        Vector3 DashWishDir(Vector3 wish)
+        {
+            Vector3 dir;
+            if (wish.sqrMagnitude > 0.01f)
+                dir = wish;
+            else if (cam != null)
+                dir = Vector3.ProjectOnPlane(cam.forward, Vector3.up);
+            else
+                dir = transform.forward;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.001f) dir = transform.forward;
+            return dir.normalized;
+        }
+
         bool TryLunge(ref Vector3 v, Vector3 wish, float dt)
         {
             if (_lungeT > 0f)
@@ -773,14 +831,13 @@ namespace TagArena.Movement
                 return true;
             }
 
+            // Ground It burst only — airborne MMB is consumed by TryAirDash.
+            if (!_probe.Ground.grounded) return false;
             if (tagRole == null || !tagRole.IsIt) return false;
             if (!_in.LungePressed || _lungeCd > 0f) return false;
             _lungeT = cfg.taggerLungeDuration;
             _lungeCd = cfg.taggerLungeCooldown;
-            Vector3 startDir = wish.sqrMagnitude > 0.01f ? wish.normalized : transform.forward;
-            startDir.y = 0f;
-            if (startDir.sqrMagnitude < 0.001f) startDir = transform.forward;
-            startDir.Normalize();
+            Vector3 startDir = DashWishDir(wish);
             v = WishAccel.SetHoriz(v, startDir * cfg.taggerLungeSpeed);
             v.y = Mathf.Max(v.y, -2f);
             if (State != MoveState.Slide) SetState(MoveState.Sprint);
@@ -873,6 +930,7 @@ namespace TagArena.Movement
                 float impact = Mathf.Max(0f, -_rb.linearVelocity.y);
                 _lastLandImpactSpeed = impact;
                 _lastLanded = Time.time;
+                _airDashCharges = 1;
 
                 // Landing shock (Apex) — only from true air/jet, not ski kisses.
                 // Harder impacts hold stun a touch longer (clamped).
@@ -923,6 +981,7 @@ namespace TagArena.Movement
             if (_jumpBuf > 0f) _jumpBuf -= dt;
             if (_tapCd > 0f) _tapCd -= dt;
             if (_lungeCd > 0f) _lungeCd -= dt;
+            if (_airDashIFramesT > 0f) _airDashIFramesT -= dt;
             if (_energyRegenDelay > 0f) _energyRegenDelay -= dt;
 
             if (_probe.Ground.grounded && State != MoveState.Air && State != MoveState.Jet && State != MoveState.WallClimb)

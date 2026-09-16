@@ -133,6 +133,15 @@ namespace TagArena.Movement
         public float tiltMax = 8f;
         public float bobAmp = 0.015f;
 
+        [Header("Air dash — short momentum burst (not jet)")]
+        public bool enableAirDash = true;
+        /// <summary>Planar replace speed while dash is active (~15 m/s party default).</summary>
+        public float airDashSpeed = 15f;
+        /// <summary>Active lock window. ~0.1s = big burst, not a jetpack.</summary>
+        public float airDashDuration = 0.10f;
+        /// <summary>Punch i-frame window while dashing (hurtbox only).</summary>
+        public float airDashIFrames = 0.10f;
+
         [Header("Tag arena tuning")]
         public float runnerJetEnergyBonus = 20f;
         public float taggerSprintBonus = 0.55f;

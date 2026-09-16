@@ -20,6 +20,7 @@ namespace TagArena.Movement
         public bool JetHeld;
         public bool JetPressed;
         public bool LungePressed;
+        public bool AirDashPressed;
         public bool PunchPressed;
         public bool TapForwardPulse;
 
@@ -31,6 +32,7 @@ namespace TagArena.Movement
         public KeyCode jetKey = KeyCode.Mouse1;
         public KeyCode crouchKey = KeyCode.C;
         public KeyCode lungeKey = KeyCode.Mouse2;
+        public KeyCode airDashKey = KeyCode.Q;
         public KeyCode punchKey = KeyCode.Mouse0;
         public KeyCode tapStrafePulseKey = KeyCode.W;
         public bool useShiftAsSprintWhenNotSkiing = true;
@@ -75,6 +77,8 @@ namespace TagArena.Movement
             _prevJet = JetHeld ? 1f : 0f;
 
             LungePressed = Input.GetKeyDown(lungeKey) || Input.GetMouseButtonDown(2);
+            // Q / Left Alt (docs); MMB also counts via LungePressed when airborne in motor.
+            AirDashPressed = Input.GetKeyDown(airDashKey) || Input.GetKeyDown(KeyCode.LeftAlt);
             PunchPressed = Input.GetKeyDown(punchKey) || Input.GetKeyDown(KeyCode.E);
         }
 
@@ -93,6 +97,7 @@ namespace TagArena.Movement
             JetHeld = false;
             JetPressed = false;
             LungePressed = false;
+            AirDashPressed = false;
             PunchPressed = false;
             TapForwardPulse = false;
         }
