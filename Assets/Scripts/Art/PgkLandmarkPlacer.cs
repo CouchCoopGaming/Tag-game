@@ -105,9 +105,9 @@ namespace Tag.Art
             // Named play areas (readable from spawn / ring)
             n += MerryGoRound(root, "Play_MerryGoRound", new Vector3(16f, 0f, 22f), 0f);
             n += SwingSet(root, "Play_Swing", new Vector3(60f, 0f, 34f), 0f);
-            n += KickballField(root, "Play_Kickball", new Vector3(55f, 0f, 27f), 0f);
-            n += HopscotchCourt(root, "Play_Hopscotch_SW", new Vector3(10f, 0f, 9f), 35f);
-            n += HopscotchCourt(root, "Play_Hopscotch_SE", new Vector3(62f, 0f, 9f), -35f);
+            n += KickballField(root, "Play_Kickball", new Vector3(56.5f, 0f, 27f), 0f);
+            n += HopscotchCourt(root, "Play_Hopscotch_SW", new Vector3(9.5f, 0f, 9f), 35f);
+            n += HopscotchCourt(root, "Play_Hopscotch_SE", new Vector3(64f, 0f, 8f), -35f);
             // Outer ring S/N — monkey/tunnels + wall-run faces + slide banks
             n += OuterRingSouth(root, "Play_Ring_S", new Vector3(36f, 0f, 5.5f), 0f);
             n += OuterRingNorth(root, "Play_Ring_N", new Vector3(36f, 0f, 49f), 0f);
@@ -424,50 +424,54 @@ namespace Tag.Art
 
         int KickballField(Transform root, string name, Vector3 origin, float yaw)
         {
-            // Diamond footprint + goals — east of SpineXe (chase lane clear west of field)
+            // Diamond between Loop_E and Ring_E — west face open (no benches) for figure-8
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("Toy_Goal", new Vector3(0f, 0f, -6f), 0f),
-                ("Toy_Goal", new Vector3(0f, 0f, 6f), 180f),
+                // Goals N/S of diamond (inset from EW spines z=18/36)
+                ("Toy_Goal", new Vector3(0f, 0f, -5.5f), 0f),
+                ("Toy_Goal", new Vector3(0f, 0f, 5.5f), 180f),
+                // Crossed rubber infield
                 ("Toy_RubberTrack_C3", new Vector3(0f, 0.02f, 0f), 0f),
                 ("Toy_RubberTrack_C3", new Vector3(0f, 0.02f, 0f), 90f),
-                // Diamond bases (home south, then 1B/2B/3B)
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -4f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3f, 0.02f, 0f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 4f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-3f, 0.02f, 0f), 0f),
+                // Clear diamond: home / 1B / 2B / 3B / mound
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -4.5f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3.5f, 0.02f, 0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 4.5f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-3.5f, 0.02f, 0f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 0f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.5f, 0.02f, -2f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1.5f, 0.02f, -2f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.5f, 0.02f, 2f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1.5f, 0.02f, 2f), 0f),
-                ("Toy_Bench", new Vector3(-5.5f, 0f, -2f), 90f),
-                ("Toy_Bench", new Vector3(-5.5f, 0f, 2f), 90f),
-                ("Toy_Bench", new Vector3(5.5f, 0f, 0f), -90f),
-                ("Toy_TrashCan", new Vector3(5.5f, 0f, -3.5f), 0f),
+                // Base-path midpoints (outline, not a filled blob)
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, -2.5f), 45f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, 2.5f), -45f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, 2.5f), 45f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, -2.5f), -45f),
+                // Sideline only on east (toward Ring_E) — SpineXe west stays clear
+                ("Toy_Bench", new Vector3(5.5f, 0f, -3f), -90f),
+                ("Toy_Bench", new Vector3(5.5f, 0f, 3f), -90f),
+                ("Toy_TrashCan", new Vector3(5.5f, 0f, -5f), 0f),
             });
         }
 
         int HopscotchCourt(Transform root, string name, Vector3 origin, float yaw)
         {
+            // Tile chain centered on rubber pad; bench on outer flank (away from campus)
             var parent = MakeGroup(root, name, origin, yaw);
-            int n = Hopscotch(parent, new Vector3(0f, 0.02f, 0f), 0f);
+            int n = Hopscotch(parent, new Vector3(0f, 0.02f, -3.6f), 0f);
             n += SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("Toy_Bench", new Vector3(-2.8f, 0f, 3f), 90f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2.2f, 0.02f, 0f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2.2f, 0.02f, 1.05f), 0f),
+                ("Toy_Bench", new Vector3(-3.6f, 0f, 0f), 90f),
             });
             return n;
         }
 
         int Hopscotch(Transform parent, Vector3 start, float yaw)
         {
-            // Classic 1-2-3 / pair / 4-5 / pair / home tile chain
+            // Classic 1-2-3 / pair / 6 / pair / home — slight gaps so squares read at WorldScale 10
             var tiles = new List<(string id, Vector3 p, float y)>();
-            float[] xs = { 0f, 0f, 0f, -0.55f, 0.55f, 0f, -0.55f, 0.55f, 0f };
-            float[] zs = { 0f, 1.05f, 2.1f, 3.15f, 3.15f, 4.2f, 5.25f, 5.25f, 6.3f };
+            const float step = 1.15f;
+            const float pair = 0.65f;
+            float[] xs = { 0f, 0f, 0f, -pair, pair, 0f, -pair, pair, 0f };
+            float[] zs = { 0f, step, 2f * step, 3f * step, 3f * step, 4f * step, 5f * step, 5f * step, 6f * step };
             for (int i = 0; i < xs.Length; i++)
             {
                 var local = Quaternion.Euler(0f, yaw, 0f) * new Vector3(xs[i], 0f, zs[i]);

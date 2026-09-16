@@ -25,8 +25,8 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - `Play_SoftPlay_CrashSW` (28,21): dense multi-level soft-play (Bay A + SW Bay B) — decks/posts, spiral+tube slides, tunnels, nets, tower fort, spiral climber, bridge
 - `Play_MerryGoRound` (16,22): Mega/Toy/PGK spinners + tile ring + benches (west of SpineXw)
 - `Play_Swing` (60,34): twin bars + rail + monkey frame + mulch tiles (east of SpineXe)
-- `Play_Kickball` (55,27): dual goals, crossed rubber track, diamond bases, benches
-- `Play_Hopscotch_SW/SE` (10,9)/(62,9): named tile courts + bench
+- `Play_Kickball` (56.5,27): clear diamond + N/S goals, east benches only (west open for figure-8), larger rubber pad
+- `Play_Hopscotch_SW/SE` (9.5,9)/(64,8): classic tile chain with gaps, larger rubber apron, outer-flank bench
 - `Play_Ring_S` (36,5.5): twin monkey, tunnel, Mega_SlideTube, straight slide, rails, spinner
 - `Play_Ring_N` (36,49): twin monkey, crawl/tunnel, tube slide, balance beams, Mega_Spinner
 - `Play_Loop_W/E` (19,27)/(53,27): denser wall-run (4x Toy_WallPanel + vault rails), decks, stairs, slide/tube exit
