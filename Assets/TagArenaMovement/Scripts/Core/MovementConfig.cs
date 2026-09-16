@@ -20,21 +20,22 @@ namespace TagArena.Movement
         public LayerMask wallMask = ~0;
 
         [Header("Ground speeds (m/s)")]
-        public float walkSpeed = 4.4f;
-        public float sprintSpeed = 7.6f;
-        public float crouchSpeed = 2.8f;
-        public float groundAccel = 48f;
-        public float groundDecel = 36f;
-        public float slideEntrySpeed = 6.4f;
+        public float walkSpeed = 6.0f;
+        public float sprintSpeed = 12.0f;
+        public float crouchSpeed = 3.2f;
+        public float groundAccel = 52f;
+        public float groundDecel = 38f;
+        public float slideEntrySpeed = 7.5f;
 
         [Header("Slide — Apex bloodline")]
-        public float slideBoost = 3.8f;
+        /// <summary>Legacy field; EnterSlide no longer adds impulse. Keep 0.</summary>
+        public float slideBoost = 0f;
         /// <summary>Minimum planar speed to stay in slide while crouch is held.</summary>
         public float slideStaySpeed = 4.0f;
         /// <summary>Brief commit so crouch-edge noise does not cancel enter; releasing crouch after this exits.</summary>
         public float slideMinDuration = 0.12f;
-        public float slideFlatFriction = 5.6f;
-        public float slideDownhillAccel = 14f;
+        public float slideFlatFriction = 6.8f;
+        public float slideDownhillAccel = 16f;
         public float slideUphillBrake = 18f;
         public float slideSteer = 22f;
         public float slideJumpWindow = 0.24f;
@@ -42,19 +43,22 @@ namespace TagArena.Movement
         public float slideHopRetain = 0.92f;
 
         [Header("Jump / fatigue — Apex bloodline")]
-        public float jumpSpeed = 7.8f;
-        public float jumpFatigueMin = 3.1f;
+        /// <summary>~10x prior peak height at same gravity (v scales with sqrt(height)).</summary>
+        public float jumpSpeed = 24.7f;
+        public float jumpFatigueMin = 9.8f;
         public float jumpFatigueWindow = 0.75f;
         public float jumpFatigueFullAt = 0.15f;
         public float gravity = 22f;
         public float fallGravityMult = 1.50f;
-        public float maxFallSpeed = 42f;
+        /// <summary>While airborne + crouch held, fall gravity is multiplied by this.</summary>
+        public float airCrouchFallMult = 2.0f;
+        public float maxFallSpeed = 52f;
         public float landStunSpeed = 28f;
         public float landStunDuration = 0.20f;
 
         [Header("Air control — Quake/Apex lurch + tap-strafe analog")]
-        public float airAccel = 28f;
-        public float airSpeedCap = 7.6f;
+        public float airAccel = 30f;
+        public float airSpeedCap = 12.0f;
         public float airStrafeBonus = 1.35f;
         public float tapStrafeImpulse = 9.5f;
         public float tapStrafeCooldown = 0.08f;
@@ -66,11 +70,12 @@ namespace TagArena.Movement
         public float skiSteer = 19f;
         public float skiGravityScale = 1.12f;
         public float skiLaunchLeaveDot = 0.12f;
-        public float skiMaxSpeed = 38f;
+        public float skiMaxSpeed = 24f;
         public float skiAirDrag = 0.08f;
         public float highSpeedSteerFalloff = 28f;
 
-        [Header("Jet — Tribes bloodline")]
+        [Header("Jet — Tribes bloodline (OFF by default — not a core verb)")]
+        public bool enableJet = false;
         public float jetEnergyMax = 100f;
         public float jetEnergyRegen = 22f;
         public float jetRegenDelay = 0.35f;

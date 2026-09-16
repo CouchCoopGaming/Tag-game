@@ -49,7 +49,7 @@ namespace TagArena.Movement
             State == MoveState.Mantle && cfg != null
                 ? Mathf.Clamp01(_mantleT / Mathf.Max(0.01f, cfg.mantleDuration))
                 : 0f;
-        public float SprintSpeed => cfg != null ? cfg.sprintSpeed : 7.6f;
+        public float SprintSpeed => cfg != null ? cfg.sprintSpeed : 12f;
         /// <summary>Downward speed (m/s) latched on the most recent ground contact.</summary>
         public float LastLandImpactSpeed => _lastLandImpactSpeed;
 
@@ -270,12 +270,11 @@ namespace TagArena.Movement
 
         void EnterSlide(ref Vector3 v)
         {
+            // Carry existing planar speed only — no enter impulse / boost.
             Vector3 hv = WishAccel.Horizontal(v);
-            // Floor scale so gate-speed enters still punch; sprint still gets full boost.
-            float scale = Mathf.InverseLerp(cfg.slideEntrySpeed, cfg.sprintSpeed + 2f, hv.magnitude);
-            float boost = cfg.slideBoost * Mathf.Lerp(0.4f, 1f, scale);
-            Vector3 dir = hv.sqrMagnitude > 0.05f ? hv.normalized : transform.forward;
-            hv = dir * (hv.magnitude + boost);
+            if (hv.sqrMagnitude < 0.05f)
+                hv = transform.forward * Mathf.Max(hv.magnitude, cfg.slideEntrySpeed * 0.85f);
+            // Ignore legacy slideBoost so slides never punch speed on enter.
             v = WishAccel.SetHoriz(v, hv);
             _slideT = 0f;
             _slideStartSpeed = hv.magnitude;
@@ -389,8 +388,12 @@ namespace TagArena.Movement
         {
             float g = cfg.gravity * (v.y < 0f ? cfg.fallGravityMult : 1f);
             if (Jetting) g *= cfg.gravityWhileJetting;
+            // Air crouch = dive: ~2x fall rate while crouch held and falling/rising into dive.
+            if (!Jetting && _in.CrouchHeld)
+                g *= Mathf.Max(1f, cfg.airCrouchFallMult);
             v.y -= g * dt;
-            if (v.y < -cfg.maxFallSpeed) v.y = -cfg.maxFallSpeed;
+            float fallCap = cfg.maxFallSpeed * (_in.CrouchHeld && !Jetting ? Mathf.Max(1f, cfg.airCrouchFallMult) : 1f);
+            if (v.y < -fallCap) v.y = -fallCap;
 
             Vector3 hv = WishAccel.Horizontal(v);
             if (wish.sqrMagnitude > 0.01f)
@@ -418,6 +421,7 @@ namespace TagArena.Movement
 
         bool WantsJet()
         {
+            if (cfg == null || !cfg.enableJet) return false;
             return _in.JetHeld && Energy > cfg.jetMinEnergy && State != MoveState.Mantle && State != MoveState.WallClimb;
         }
 

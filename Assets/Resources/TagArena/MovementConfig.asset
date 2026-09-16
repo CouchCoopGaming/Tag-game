@@ -26,33 +26,34 @@ MonoBehaviour:
   wallMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  walkSpeed: 4.4
-  sprintSpeed: 7.6
-  crouchSpeed: 2.8
-  groundAccel: 48
-  groundDecel: 36
-  slideEntrySpeed: 6.4
-  slideBoost: 3.8
+  walkSpeed: 6
+  sprintSpeed: 12
+  crouchSpeed: 3.2
+  groundAccel: 52
+  groundDecel: 38
+  slideEntrySpeed: 7.5
+  slideBoost: 0
   slideStaySpeed: 4
   slideMinDuration: 0.12
-  slideFlatFriction: 5.6
-  slideDownhillAccel: 14
+  slideFlatFriction: 6.8
+  slideDownhillAccel: 16
   slideUphillBrake: 18
   slideSteer: 22
   slideJumpWindow: 0.24
   slideJumpSpeedCap: 11.5
   slideHopRetain: 0.92
-  jumpSpeed: 7.8
-  jumpFatigueMin: 3.1
+  jumpSpeed: 24.7
+  jumpFatigueMin: 9.8
   jumpFatigueWindow: 0.75
   jumpFatigueFullAt: 0.15
   gravity: 22
   fallGravityMult: 1.5
-  maxFallSpeed: 42
+  airCrouchFallMult: 2
+  maxFallSpeed: 52
   landStunSpeed: 28
   landStunDuration: 0.2
-  airAccel: 28
-  airSpeedCap: 7.6
+  airAccel: 30
+  airSpeedCap: 12
   airStrafeBonus: 1.35
   tapStrafeImpulse: 9.5
   tapStrafeCooldown: 0.08
@@ -62,9 +63,10 @@ MonoBehaviour:
   skiSteer: 19
   skiGravityScale: 1.12
   skiLaunchLeaveDot: 0.12
-  skiMaxSpeed: 38
+  skiMaxSpeed: 24
   skiAirDrag: 0.08
   highSpeedSteerFalloff: 28
+  enableJet: 0
   jetEnergyMax: 100
   jetEnergyRegen: 22
   jetRegenDelay: 0.35

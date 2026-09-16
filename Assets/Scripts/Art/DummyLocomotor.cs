@@ -135,10 +135,10 @@ namespace Tag.Art
             float dashAmt = Mathf.Max(Mathf.Clamp01(_dashPulse), lunging && _motor != null ? _motor.LungeProgress : 0f);
             float flinchAmt = Mathf.Clamp01(_tagFlinch);
 
-            float walkAmt = Mathf.Clamp01(speed / 5.0f);
-            float runAmt = Mathf.InverseLerp(4.6f, 8.8f, speed);
-            // Readable run cycle — prefer loud legs/arms over ice-skate lock
-            float cadence = Mathf.Lerp(7.6f, 14.5f, runAmt);
+            float walkAmt = Mathf.Clamp01(speed / 5.5f);
+            float runAmt = Mathf.InverseLerp(5.5f, 11.5f, speed);
+            // Human-ish run cadence — knees drive the cycle, not ice-skate lock
+            float cadence = Mathf.Lerp(7.2f, 13.2f, runAmt);
             if (skiing) cadence = Mathf.Lerp(8f, 14f, runAmt);
             // Keep a soft air/vault cycle so limbs stay energetic off the ground
             if (grounded && speed > 0.35f && !sliding && !crouch)
@@ -148,12 +148,14 @@ namespace Tag.Art
             else if (!jet)
                 _cycle = Mathf.MoveTowards(_cycle, Mathf.Round(_cycle), dt * 8f);
 
-            // Louder third-person limb cycles (walk/run must read clearly — not skate)
-            float swing = Mathf.Sin(_cycle) * Mathf.Lerp(38f, 108f, Mathf.Max(walkAmt, runAmt));
+            // Natural hang/swing — keep amplitude human (not arms-into-butt flares)
+            float swing = Mathf.Sin(_cycle) * Mathf.Lerp(28f, 52f, Mathf.Max(walkAmt, runAmt));
             if (skiing) swing *= 0.35f;
-            if (air) swing *= 0.72f; // retain vault/run energy instead of nearly freezing
+            if (air) swing *= 0.72f;
             if (sliding) swing *= 0.08f; else if (crouch) swing *= 0.18f;
             if (jet) swing = 0f;
+            float sinC = Mathf.Sin(_cycle);
+            float cosC = Mathf.Cos(_cycle);
 
             float breath = Mathf.Sin(Time.time * 2.1f) * 2.4f;
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
@@ -183,8 +185,8 @@ namespace Tag.Art
             _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : sliding ? 28f : crouch ? 14f : jet ? -10f : skiing ? 10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
             _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? 18f : crouch ? 6f : jet ? -8f : skiing ? 10f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
-            // Arms
-            float armZ = Mathf.Lerp(14f, 30f, runAmt);
+            // Arms — slight outward A-pose only (large +Z was V-ing hands into the butt)
+            float armZ = Mathf.Lerp(6f, 10f, runAmt);
             float lungeAmt = lunging && _motor != null ? _motor.LungeProgress : 0f;
             if (lunging || dashing)
             {
@@ -310,27 +312,27 @@ namespace Tag.Art
             }
             else if (sliding)
             {
-                // Compact dive silhouette: lead arm plants low, trail braces back
-                _uaLT = _uaL0 * Quaternion.Euler(52f, -18f, armZ + 22f);
-                _uaRT = _uaR0 * Quaternion.Euler(-28f, 22f, -armZ - 8f);
-                _laLT = _laL0 * Quaternion.Euler(-58f, 0f, 0f);
+                // Dive: arms forward/low — never behind the hips
+                _uaLT = _uaL0 * Quaternion.Euler(-48f, -8f, armZ + 12f);
+                _uaRT = _uaR0 * Quaternion.Euler(-28f, 10f, -armZ - 8f);
+                _laLT = _laL0 * Quaternion.Euler(-42f, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
             }
             else if (crouch)
             {
-                // Low guard squat - quieter than slide, still readable in TP
-                _uaLT = _uaL0 * Quaternion.Euler(22f, -6f, armZ + 8f);
-                _uaRT = _uaR0 * Quaternion.Euler(22f, 6f, -armZ - 8f);
+                // Low guard — hands forward of thighs
+                _uaLT = _uaL0 * Quaternion.Euler(-18f, -4f, armZ + 4f);
+                _uaRT = _uaR0 * Quaternion.Euler(-18f, 4f, -armZ - 4f);
                 _laLT = _laL0 * Quaternion.Euler(-28f, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(-28f, 0f, 0f);
             }
             else if (skiing)
             {
-                // Quiet tuck — not a walk cycle; carve lives in hips/legs
-                _uaLT = _uaL0 * Quaternion.Euler(32f, -10f, 16f);
-                _uaRT = _uaR0 * Quaternion.Euler(32f, 10f, -16f);
-                _laLT = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
+                // Quiet forward brace — carve lives in hips/legs
+                _uaLT = _uaL0 * Quaternion.Euler(-22f, -6f, 10f);
+                _uaRT = _uaR0 * Quaternion.Euler(-22f, 6f, -10f);
+                _laLT = _laL0 * Quaternion.Euler(-24f, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(-24f, 0f, 0f);
             }
             else if (air)
             {
@@ -343,12 +345,14 @@ namespace Tag.Art
             }
             else
             {
-                float armSwing = swing * 1.15f;
-                float pump = Mathf.Lerp(18f, 38f, runAmt);
-                _uaLT = _uaL0 * Quaternion.Euler(-armSwing, 0f, armZ + pump * 0.15f);
-                _uaRT = _uaR0 * Quaternion.Euler(armSwing, 0f, -armZ - pump * 0.15f);
-                _laLT = _laL0 * Quaternion.Euler(Mathf.Min(0f, -armSwing * 0.7f), 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(Mathf.Min(0f, armSwing * 0.7f), 0f, 0f);
+                // Opposite-phase hang swing; elbows bend on the forward arm
+                float armSwing = swing;
+                _uaLT = _uaL0 * Quaternion.Euler(-armSwing, 0f, armZ);
+                _uaRT = _uaR0 * Quaternion.Euler(armSwing, 0f, -armZ);
+                float elbowL = -18f - Mathf.Max(0f, -sinC) * Mathf.Lerp(18f, 42f, runAmt);
+                float elbowR = -18f - Mathf.Max(0f, sinC) * Mathf.Lerp(18f, 42f, runAmt);
+                _laLT = _laL0 * Quaternion.Euler(elbowL, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(elbowR, 0f, 0f);
             }
 
             // Legs
@@ -468,12 +472,19 @@ namespace Tag.Art
             }
             else
             {
-                // Amplified run stride — readable leg swing vs feet-locked skate
-                float leg = swing * 1.62f;
-                _ulLT = _ulL0 * Quaternion.Euler(leg, 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(-leg, 0f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(Mathf.Min(0f, -Mathf.Abs(swing) * 1.05f), 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(Mathf.Min(0f, -Mathf.Abs(swing) * 1.05f), 0f, 0f);
+                // Human run: thigh stride + recovery-leg knee bend (stance more extended)
+                float stride = Mathf.Lerp(1.05f, 1.35f, runAmt);
+                float thighL = swing * stride;
+                float thighR = -swing * stride;
+                _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
+                float kneeAmt = Mathf.Lerp(22f, 58f, runAmt);
+                float baseFlex = Mathf.Lerp(8f, 14f, runAmt);
+                // Forward thigh (sin>0 left) flexes; trailing extends
+                float kneeL = -(baseFlex + Mathf.Max(0f, sinC) * kneeAmt + Mathf.Max(0f, -cosC) * kneeAmt * 0.25f);
+                float kneeR = -(baseFlex + Mathf.Max(0f, -sinC) * kneeAmt + Mathf.Max(0f, cosC) * kneeAmt * 0.25f);
+                _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(kneeR, 0f, 0f);
             }
 
             if (flinchAmt > 0.04f)

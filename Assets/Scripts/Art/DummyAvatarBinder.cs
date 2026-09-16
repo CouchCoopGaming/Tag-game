@@ -212,10 +212,10 @@ namespace Tag.Art
             var motor = GetComponent<PlayerMotor>();
             loco.Bind(_visualInstance.transform, motor, GetComponent<PunchHitbox>());
 
-            // Jet thrust beam — makes the "invisible grapple" (actually Tribes jet) readable
+            // Jet VFX gated — jet is disabled by default (enableJet=false). Do not auto-add.
             var jetFx = GetComponent<JetThrustVisual>();
-            if (jetFx == null) jetFx = gameObject.AddComponent<JetThrustVisual>();
-            jetFx.Bind(motor, _visualInstance.transform);
+            if (jetFx != null)
+                jetFx.Bind(motor, _visualInstance.transform);
 
             HideCapsuleMeshes();
             if (_visualInstance != null)

@@ -61,21 +61,21 @@ namespace Tag.Art
             root.transform.localRotation = Quaternion.identity;
 
             // Black rubber chest / pelvis core
-            Prim(PrimitiveType.Cube, root.transform, "ChestPlate",
-                new Vector3(0f, 1.24f, 0.02f), new Vector3(0.46f, 0.44f, 0.26f), joint);
-            Prim(PrimitiveType.Cube, root.transform, "Pelvis",
-                new Vector3(0f, 0.90f, 0f), new Vector3(0.42f, 0.16f, 0.28f), joint);
+            Prim(PrimitiveType.Sphere, root.transform, "ChestPlate",
+                new Vector3(0f, 1.26f, 0.02f), new Vector3(0.50f, 0.48f, 0.30f), joint);
+            Prim(PrimitiveType.Sphere, root.transform, "Pelvis",
+                new Vector3(0f, 0.90f, 0f), new Vector3(0.44f, 0.20f, 0.30f), joint);
 
             // Colored polymer torso panels (Navy Spade crash-dummy look)
-            Prim(PrimitiveType.Cube, root.transform, "Panel_Chest",
+            Prim(PrimitiveType.Sphere, root.transform, "Panel_Chest",
                 new Vector3(0f, 1.30f, 0.155f), new Vector3(0.38f, 0.26f, 0.045f), panelMat);
-            Prim(PrimitiveType.Cube, root.transform, "Panel_Abs",
+            Prim(PrimitiveType.Sphere, root.transform, "Panel_Abs",
                 new Vector3(0f, 1.06f, 0.145f), new Vector3(0.32f, 0.16f, 0.04f), panelMat);
-            Prim(PrimitiveType.Cube, root.transform, "Panel_Back",
+            Prim(PrimitiveType.Sphere, root.transform, "Panel_Back",
                 new Vector3(0f, 1.22f, -0.15f), new Vector3(0.42f, 0.36f, 0.05f), bodyMat);
-            Prim(PrimitiveType.Cube, root.transform, "Panel_Side_L",
+            Prim(PrimitiveType.Sphere, root.transform, "Panel_Side_L",
                 new Vector3(-0.26f, 1.18f, 0f), new Vector3(0.06f, 0.32f, 0.22f), panelMat);
-            Prim(PrimitiveType.Cube, root.transform, "Panel_Side_R",
+            Prim(PrimitiveType.Sphere, root.transform, "Panel_Side_R",
                 new Vector3(0.26f, 1.18f, 0f), new Vector3(0.06f, 0.32f, 0.22f), panelMat);
 
             // Featureless head (sphere) + black rubber neck collar — no face/eyes
@@ -123,7 +123,7 @@ namespace Tag.Art
             LimbMesh(lower, "LowerArmMesh_" + side, new Vector3(0f, -0.14f, 0f), new Vector3(0.12f, 0.15f, 0.12f), body, PrimitiveType.Capsule);
             LimbMesh(lower, "LowerArmPanel_" + side, new Vector3(0f, -0.14f, 0.05f), new Vector3(0.10f, 0.12f, 0.035f), panel, PrimitiveType.Cube);
             var hand = Empty(lower, "Hand_" + side, new Vector3(0f, -0.28f, 0f));
-            LimbMesh(hand, "HandMesh_" + side, Vector3.zero, new Vector3(0.12f, 0.09f, 0.11f), joint, PrimitiveType.Cube);
+            LimbMesh(hand, "HandMesh_" + side, Vector3.zero, new Vector3(0.11f, 0.08f, 0.10f), joint, PrimitiveType.Sphere);
             upper.localRotation = Quaternion.Euler(0f, 0f, left ? 12f : -12f);
         }
 
@@ -138,7 +138,7 @@ namespace Tag.Art
             LimbMesh(lower, "LowerLegMesh_" + side, new Vector3(0f, -0.18f, 0f), new Vector3(0.14f, 0.18f, 0.14f), body, PrimitiveType.Capsule);
             LimbMesh(lower, "ShinPanel_" + side, new Vector3(0f, -0.18f, 0.06f), new Vector3(0.11f, 0.14f, 0.035f), panel, PrimitiveType.Cube);
             var foot = Empty(lower, "Foot_" + side, new Vector3(0f, -0.36f, 0.05f));
-            LimbMesh(foot, "FootMesh_" + side, Vector3.zero, new Vector3(0.16f, 0.08f, 0.28f), joint, PrimitiveType.Cube);
+            LimbMesh(foot, "FootMesh_" + side, Vector3.zero, new Vector3(0.14f, 0.07f, 0.24f), joint, PrimitiveType.Sphere);
         }
 
         static Transform Empty(Transform parent, string name, Vector3 pos)

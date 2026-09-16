@@ -176,6 +176,8 @@ namespace Tag.Art
                 if (t.Find("PropMesh") != null) continue;
                 // Skip PGK / landmark folder — already HiPoly
                 if (IsUnder(t, "_PgkLandmarks")) continue;
+                // Keep layout lanes/spines as graybox — do not dress over chase highways
+                if (t.name.StartsWith("Lane_") || t.name.StartsWith("Spine_") || t.name.StartsWith("Lawn_")) continue;
 
                 GameObject prefab = null;
                 string propKey = null;

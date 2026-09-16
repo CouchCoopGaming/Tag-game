@@ -3,10 +3,10 @@ Build hierarchical Navy Spade crash-dummy mannequin for Tag DummyLocomotor.
 Parented empties/meshes with exact bone names — not flat sibling meshes.
 Exports Dummy_Mannequin_<Color>_Hier_Hi.fbx (-Z forward, Y up).
 
-Polish pass: rounder limbs (higher subsurf), thinner polymer panels, less blocky
-chest/joints — featureless head, black rubber joints, colored panel torso.
-Color pass: richer saturated polymer panels + near-black matte rubber joints
-for clearer Navy Spade contrast against soft body foam.
+Polish pass: slick curved crash-dummy (Navy Spade polymer) — rounded torso
+shells (spheres/cylinders, not cubes), higher subsurf, thin inset panels,
+featureless egg head, black rubber joints. Arms hang with slight outward A-pose
+matching DummyPrimitiveFactory (no Y-twist that V's hands into the butt).
 """
 import bpy
 import math
@@ -99,7 +99,7 @@ def empty(name, parent, world_loc):
     return o
 
 
-def mesh_prim(kind, name, parent, world_loc, scale, material, levels=1, bevel_w=0.006, segs=28):
+def mesh_prim(kind, name, parent, world_loc, scale, material, levels=1, bevel_w=0.006, segs=20):
     """Create mesh at world location, parent under parent (keep world)."""
     if kind == "sphere":
         bpy.ops.mesh.primitive_uv_sphere_add(
@@ -201,134 +201,142 @@ def build_mannequin(color_name):
     body_rgb = COLORS[color_name]
     panel_rgb = PANELS[color_name]
     body = mat(f"Body_{color_name}", body_rgb, 0.40)
-    panel = mat(f"Panel_{color_name}", panel_rgb, 0.28)  # glossier polymer inlays
+    panel = mat(f"Panel_{color_name}", panel_rgb, 0.26)  # slick polymer
     joint = mat("Joint", JOINT, 0.90)  # matte black rubber
     sensor = mat("Sensor", SENSOR, 0.22)
 
     root = empty("DummyRoot", None, (0.0, 0.0, 0.0))
 
-    # ---- torso: black rubber core + thinner polymer panels (less blocky) ----
-    mesh_prim("cube", "ChestPlate", root, (0.0, 0.02, 1.24), (0.46, 0.26, 0.44), joint, 2, 0.014)
-    mesh_prim("cube", "PelvisMesh", root, (0.0, 0.0, 0.90), (0.42, 0.28, 0.16), joint, 2, 0.012)
-    mesh_prim("cube", "Panel_Chest", root, (0.0, 0.155, 1.30), (0.38, 0.045, 0.26), panel, 2, 0.01)
-    mesh_prim("cube", "Panel_Abs", root, (0.0, 0.145, 1.06), (0.32, 0.04, 0.16), panel, 2, 0.01)
-    mesh_prim("cube", "Panel_Back", root, (0.0, -0.14, 1.24), (0.40, 0.04, 0.34), body, 2, 0.01)
-    mesh_prim("cube", "Panel_Side_L", root, (-0.25, 0.0, 1.20), (0.045, 0.20, 0.30), panel, 2, 0.008)
-    mesh_prim("cube", "Panel_Side_R", root, (0.25, 0.0, 1.20), (0.045, 0.20, 0.30), panel, 2, 0.008)
+    # ---- torso: rounded rubber shells + thin curved polymer inlays (not cubes) ----
+    # Chest as squashed sphere reads as crash-dummy shell; pelvis as soft capsule.
+    mesh_prim("sphere", "ChestPlate", root, (0.0, 0.02, 1.26), (0.50, 0.30, 0.48), joint, 1, 0.012, segs=24)
+    mesh_prim("sphere", "PelvisMesh", root, (0.0, 0.0, 0.90), (0.44, 0.30, 0.20), joint, 1, 0.01, segs=20)
+    # Thin polymer panels — high bevel/subsurf so edges stay rounded
+    mesh_prim("sphere", "Panel_Chest", root, (0.0, 0.16, 1.30), (0.36, 0.05, 0.24), panel, 1, 0.01, segs=20)
+    mesh_prim("sphere", "Panel_Abs", root, (0.0, 0.15, 1.06), (0.30, 0.045, 0.15), panel, 1, 0.008, segs=24)
+    mesh_prim("sphere", "Panel_Back", root, (0.0, -0.15, 1.24), (0.38, 0.05, 0.32), body, 1, 0.01, segs=20)
+    mesh_prim("sphere", "Panel_Side_L", root, (-0.26, 0.0, 1.20), (0.06, 0.18, 0.26), panel, 1, 0.008, segs=24)
+    mesh_prim("sphere", "Panel_Side_R", root, (0.26, 0.0, 1.20), (0.06, 0.18, 0.26), panel, 1, 0.008, segs=24)
 
     # Featureless egg head + black rubber neck collar
     head = empty("Head", root, (0.0, 0.0, 1.66))
-    mesh_prim("sphere", "HeadMesh", head, (0.0, 0.0, 1.66), (0.34, 0.34, 0.37), body, 2, 0.012, segs=32)
-    mesh_prim("cylinder", "Neck", root, (0.0, 0.0, 1.47), (0.12, 0.12, 0.09), joint, 2, 0.005)
-    mesh_prim("cylinder", "NeckCollar", root, (0.0, 0.0, 1.52), (0.20, 0.20, 0.05), joint, 2, 0.005)
+    mesh_prim("sphere", "HeadMesh", head, (0.0, 0.0, 1.66), (0.34, 0.34, 0.38), body, 1, 0.01, segs=24)
+    mesh_prim("cylinder", "Neck", root, (0.0, 0.0, 1.47), (0.12, 0.12, 0.09), joint, 1, 0.005, segs=24)
+    mesh_prim("cylinder", "NeckCollar", root, (0.0, 0.0, 1.52), (0.20, 0.20, 0.05), joint, 1, 0.005, segs=24)
 
     if color_name == "Red":
-        mesh_prim("cube", "Sensor", root, (0.0, 0.11, 1.80), (0.20, 0.04, 0.03), sensor, 1, 0.002)
+        mesh_prim("sphere", "Sensor", root, (0.0, 0.12, 1.80), (0.18, 0.035, 0.03), sensor, 1, 0.002, segs=16)
 
     hips = empty("Hips", root, (0.0, 0.0, 0.92))
     spine = empty("Spine", root, (0.0, 0.0, 1.22))
 
     def build_arm(side, sx):
         ua = empty(f"UpperArm_{side}", spine, (sx * 0.33, 0.0, 1.32))
-        mesh_prim("sphere", f"Shoulder_{side}", ua, (sx * 0.33, 0.0, 1.34), (0.16, 0.16, 0.16), joint, 2, 0.008, segs=24)
+        mesh_prim("sphere", f"Shoulder_{side}", ua, (sx * 0.33, 0.0, 1.34), (0.16, 0.16, 0.16), joint, 1, 0.006, segs=20)
         mesh_prim(
             "capsule",
             f"UpperArmMesh_{side}",
             ua,
             (sx * 0.33, 0.0, 1.14),
-            (0.13, 0.13, 0.38),
+            (0.125, 0.125, 0.38),
             body,
-            2,
-            0.008,
-            segs=24,
+            1,
+            0.006,
+            segs=20,
         )
+        # Thin curved polymer inlay (sphere squash, not cube)
         mesh_prim(
-            "cube",
+            "sphere",
             f"UpperArmPanel_{side}",
             ua,
             (sx * 0.33, 0.055, 1.14),
-            (0.10, 0.03, 0.26),
+            (0.09, 0.028, 0.24),
             panel,
-            2,
-            0.005,
+            1,
+            0.004,
+            segs=20,
         )
         la = empty(f"LowerArm_{side}", ua, (sx * 0.33, 0.0, 0.94))
-        mesh_prim("sphere", f"Elbow_{side}", la, (sx * 0.33, 0.0, 0.94), (0.12, 0.12, 0.12), joint, 2, 0.006, segs=24)
+        mesh_prim("sphere", f"Elbow_{side}", la, (sx * 0.33, 0.0, 0.94), (0.115, 0.115, 0.115), joint, 1, 0.005, segs=24)
         mesh_prim(
             "capsule",
             f"LowerArmMesh_{side}",
             la,
             (sx * 0.33, 0.0, 0.78),
-            (0.105, 0.105, 0.32),
+            (0.10, 0.10, 0.32),
             body,
-            2,
-            0.006,
-            segs=24,
+            1,
+            0.005,
+            segs=20,
         )
         mesh_prim(
-            "cube",
+            "sphere",
             f"LowerArmPanel_{side}",
             la,
             (sx * 0.33, 0.045, 0.78),
-            (0.085, 0.028, 0.22),
+            (0.075, 0.025, 0.20),
             panel,
-            2,
-            0.004,
+            1,
+            0.003,
+            segs=20,
         )
         hand = empty(f"Hand_{side}", la, (sx * 0.33, 0.0, 0.62))
-        mesh_prim("cube", f"HandMesh_{side}", hand, (sx * 0.33, 0.0, 0.62), (0.11, 0.10, 0.08), joint, 2, 0.006)
-        ua.rotation_euler[1] = math.radians(10.0 if sx > 0 else -10.0)
+        mesh_prim("sphere", f"HandMesh_{side}", hand, (sx * 0.33, 0.0, 0.62), (0.10, 0.09, 0.07), joint, 1, 0.005, segs=20)
+        # Slight outward A-pose (Blender Y ~ Unity Z after FBX). No twist into butt.
+        ua.rotation_euler[1] = math.radians(12.0 if sx < 0 else -12.0)
         return ua
 
     def build_leg(side, sx):
         ul = empty(f"UpperLeg_{side}", hips, (sx * 0.12, 0.0, 0.92))
-        mesh_prim("sphere", f"Hip_{side}", ul, (sx * 0.12, 0.0, 0.92), (0.16, 0.16, 0.16), joint, 2, 0.008, segs=24)
+        mesh_prim("sphere", f"Hip_{side}", ul, (sx * 0.12, 0.0, 0.92), (0.16, 0.16, 0.16), joint, 1, 0.006, segs=20)
         mesh_prim(
             "capsule",
             f"UpperLegMesh_{side}",
             ul,
             (sx * 0.12, 0.0, 0.68),
-            (0.155, 0.155, 0.44),
+            (0.15, 0.15, 0.44),
             body,
-            2,
-            0.008,
-            segs=24,
+            1,
+            0.006,
+            segs=20,
         )
         mesh_prim(
-            "cube",
+            "sphere",
             f"ThighPanel_{side}",
             ul,
             (sx * 0.12, 0.06, 0.68),
-            (0.12, 0.03, 0.30),
+            (0.11, 0.028, 0.28),
             panel,
-            2,
-            0.005,
+            1,
+            0.004,
+            segs=20,
         )
         ll = empty(f"LowerLeg_{side}", ul, (sx * 0.12, 0.0, 0.46))
-        mesh_prim("sphere", f"Knee_{side}", ll, (sx * 0.12, 0.0, 0.46), (0.125, 0.125, 0.125), joint, 2, 0.006, segs=24)
+        mesh_prim("sphere", f"Knee_{side}", ll, (sx * 0.12, 0.0, 0.46), (0.12, 0.12, 0.12), joint, 1, 0.005, segs=24)
         mesh_prim(
             "capsule",
             f"LowerLegMesh_{side}",
             ll,
             (sx * 0.12, 0.0, 0.26),
-            (0.12, 0.12, 0.38),
+            (0.115, 0.115, 0.38),
             body,
-            2,
-            0.006,
-            segs=24,
+            1,
+            0.005,
+            segs=20,
         )
         mesh_prim(
-            "cube",
+            "sphere",
             f"ShinPanel_{side}",
             ll,
             (sx * 0.12, 0.05, 0.26),
-            (0.095, 0.028, 0.26),
+            (0.085, 0.025, 0.24),
             panel,
-            2,
-            0.004,
+            1,
+            0.003,
+            segs=20,
         )
         foot = empty(f"Foot_{side}", ll, (sx * 0.12, 0.06, 0.08))
-        mesh_prim("cube", f"FootMesh_{side}", foot, (sx * 0.12, 0.06, 0.08), (0.14, 0.26, 0.07), joint, 2, 0.006)
+        mesh_prim("sphere", f"FootMesh_{side}", foot, (sx * 0.12, 0.06, 0.08), (0.13, 0.24, 0.065), joint, 1, 0.005, segs=20)
         return ul
 
     build_arm("L", -1)

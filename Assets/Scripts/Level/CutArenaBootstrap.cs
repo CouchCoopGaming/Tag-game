@@ -3,8 +3,9 @@
 namespace Tag.Level
 {
     /// <summary>
-    /// Mega multi-playground PARK campus. Graybox meters, then WorldScale on the root.
-    /// Origin = SW playable corner; +X east, +Z north. Plenty of open lawn between pads.
+    /// PARK campus graybox. Readable zones + clear cardinal chase/ski lanes.
+    /// Origin = SW corner; +X east, +Z north. WorldScale on root.
+    /// Layout rule: open lawn between pads; spines are highways; pads keep 3–5 signature toys.
     /// </summary>
     public class CutArenaBootstrap : MonoBehaviour
     {
@@ -59,7 +60,8 @@ namespace Tag.Level
             ClearRootChildren();
 
             BuildGround();
-            BuildSkiSpines();
+            BuildClearLanes();     // open chase corridors (prop-light)
+            BuildSkiSpines();      // cardinal ski highways only
             BuildCrashCore();      // center
             BuildPiratePad();      // SW
             BuildArmyPad();        // SE
@@ -140,33 +142,37 @@ namespace Tag.Level
                 new Vector3(MapW, t, MapD), _matFloor);
         }
 
+        void BuildClearLanes()
+        {
+            // Soft path tint only — keeps chase space readable without blocking.
+            // Mid campus ring between pads (do not stack props here).
+            const float t = 0.06f;
+            float y = t * 0.5f + 0.01f;
+            Box("Lane_Ring_EW", new Vector3(36f, y, 27f), new Vector3(40f, t, 8f), _matPath);
+            Box("Lane_Ring_NS", new Vector3(36f, y, 27f), new Vector3(8f, t, 28f), _matPath);
+        }
+
         void BuildSkiSpines()
         {
-            // Wider/thicker fall-line spines (Tribes ski) — continuous rubber highways + junctions
-            const float spineW = 3.0f;
+            // Cardinal ski highways only (no diagonal X) — readable Tribes fall-lines.
+            const float spineW = 3.4f;
             const float spineT = 0.12f;
-            const float diagW = 2.4f;
             float y = spineT * 0.5f;
 
             Box("Spine_EW_S", new Vector3(36f, y, 18f), new Vector3(56f, spineT, spineW), _matSlide);
             Box("Spine_EW_N", new Vector3(36f, y, 36f), new Vector3(56f, spineT, spineW), _matSlide);
             Box("Spine_NS_W", new Vector3(24f, y, 27f), new Vector3(spineW, spineT, 40f), _matSlide);
             Box("Spine_NS_E", new Vector3(48f, y, 27f), new Vector3(spineW, spineT, 40f), _matSlide);
-            Box("Spine_Diag_A", new Vector3(36f, y + 0.01f, 27f), new Vector3(42f, spineT, diagW), _matPath)
-                .transform.localRotation = Quaternion.Euler(0f, 35f, 0f);
-            Box("Spine_Diag_B", new Vector3(36f, y + 0.01f, 27f), new Vector3(42f, spineT, diagW), _matPath)
-                .transform.localRotation = Quaternion.Euler(0f, -35f, 0f);
 
-            // Junction hubs so crossings stay readable / continuous
             float jy = y + 0.02f;
-            const float j = 4.5f;
+            const float j = 4.2f;
             Box("Spine_Jct_SW", new Vector3(24f, jy, 18f), new Vector3(j, spineT, j), _matRamp);
             Box("Spine_Jct_SE", new Vector3(48f, jy, 18f), new Vector3(j, spineT, j), _matRamp);
             Box("Spine_Jct_NW", new Vector3(24f, jy, 36f), new Vector3(j, spineT, j), _matRamp);
             Box("Spine_Jct_NE", new Vector3(48f, jy, 36f), new Vector3(j, spineT, j), _matRamp);
-            Box("Spine_Jct_Core", new Vector3(36f, jy + 0.01f, 27f), new Vector3(5.2f, spineT, 5.2f), _matPath);
+            Box("Spine_Jct_Core", new Vector3(36f, jy + 0.01f, 27f), new Vector3(5f, spineT, 5f), _matPath);
 
-            // Approach ramps: pad → nearest spine (clearer Tribes entry slopes)
+            // One approach ramp per pad → nearest spine
             SkiRamp("Conn_Tron_N", new Vector3(36f, 0.55f, 12.8f), new Vector3(3.4f, 0.28f, 6.5f), -12f, 0f);
             SkiRamp("Conn_Ninja_S", new Vector3(36f, 0.55f, 41.2f), new Vector3(3.4f, 0.28f, 6.5f), 12f, 0f);
             SkiRamp("Conn_Pirate_N", new Vector3(14f, 0.55f, 15.2f), new Vector3(3.2f, 0.28f, 5.5f), -12f, 0f);
@@ -213,10 +219,7 @@ namespace Tag.Level
             ChildBox(z, "Toy_TwinTower_E", new Vector3(5f, 2.0f, 4f), new Vector3(2.2f, 4f, 2.2f), _matWall);
             ChildBox(z, "Toy_Tower", new Vector3(0f, 3.2f, 5.5f), new Vector3(8f, 0.35f, 4f), _matLoft);
             ChildBox(z, "Toy_ClimbWall_West", new Vector3(-7.5f, 1.5f, 0f), new Vector3(0.4f, 3f, 8f), _matWall);
-            ChildBox(z, "Toy_Bars_0", new Vector3(-2f, 0.9f, -6f), new Vector3(0.25f, 1.8f, 3f), _matVault);
-            ChildBox(z, "Toy_Bars_1", new Vector3(0f, 0.9f, -6f), new Vector3(0.25f, 1.8f, 3f), _matVault);
-            ChildBox(z, "Toy_Bars_2", new Vector3(2f, 0.9f, -6f), new Vector3(0.25f, 1.8f, 3f), _matVault);
-            ElbowAt(z, "Toy_Hedge_Crash", -7f, -6f, true, true);
+            ChildBox(z, "Toy_VaultRail", new Vector3(0f, 0.7f, -6f), new Vector3(5f, 1.2f, 0.35f), _matVault);
         }
 
         void BuildPiratePad()
@@ -230,7 +233,6 @@ namespace Tag.Level
             ChildBox(z, "ClimbNetWall", new Vector3(-6f, 1.6f, 0f), new Vector3(0.35f, 3.2f, 6f), _matWall);
             ChildBox(z, "Slide_Ramp", new Vector3(5f, 1.0f, -3f), new Vector3(2.8f, 0.3f, 5.5f), _matSlide)
                 .transform.localRotation = Quaternion.Euler(14f, 0f, 0f);
-            ElbowAt(z, "Toy_Hedge_Pirate", -6f, -5f, true, true);
         }
 
         void BuildArmyPad()
@@ -278,12 +280,9 @@ namespace Tag.Level
         {
             var z = Zone("Zone_Tron", 36f, 8f);
             PadFloor(z, 14f, 10f, _matPad);
-            // Grid courtyard posts
-            for (int i = 0; i < 4; i++)
-            {
-                float x = -4.5f + i * 3f;
-                ChildBox(z, $"GridPost_{i}", new Vector3(x, 1.2f, 0f), new Vector3(0.35f, 2.4f, 0.35f), _matWall);
-            }
+            // Two posts only — leave mid courtyard open for chase
+            ChildBox(z, "GridPost_0", new Vector3(-3.5f, 1.2f, 0f), new Vector3(0.35f, 2.4f, 0.35f), _matWall);
+            ChildBox(z, "GridPost_1", new Vector3(3.5f, 1.2f, 0f), new Vector3(0.35f, 2.4f, 0.35f), _matWall);
             ChildBox(z, "NeonTube_EW", new Vector3(0f, 2.4f, 0f), new Vector3(12f, 0.2f, 0.2f), _matVault);
             ChildBox(z, "DiscPad", new Vector3(0f, 0.15f, -2f), new Vector3(4f, 0.3f, 4f), _matSlide);
             ChildBox(z, "WallRun_S", new Vector3(0f, 1.4f, -4.5f), new Vector3(10f, 2.8f, 0.35f), _matWall);
@@ -308,10 +307,7 @@ namespace Tag.Level
             SpawnPad("Spawn_SE", 66f, 5f, -45f, ColSpawnCoral);
             SpawnPad("Spawn_NW", 6f, 49f, 135f, ColSpawnViolet);
             SpawnPad("Spawn_NE", 66f, 49f, -135f, ColSpawnLime);
-            Elbow("Toy_Hedge_SW", 8f, 7f, true, true);
-            Elbow("Toy_Hedge_SE", 64f, 7f, false, true);
-            Elbow("Toy_Hedge_NW", 8f, 47f, true, false);
-            Elbow("Toy_Hedge_NE", 64f, 47f, false, false);
+            // Corner hedges removed — keep spawn lawns open for chase reads.
         }
 
         void SpawnPad(string name, float x, float z, float faceYawDeg, Color glow)

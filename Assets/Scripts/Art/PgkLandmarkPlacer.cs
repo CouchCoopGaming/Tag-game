@@ -23,7 +23,8 @@ namespace Tag.Art
         static float _stemCacheTime;
 
         [SerializeField] bool placeLandmarks = true;
-        [SerializeField] bool placePgkStructures = true;
+        /// <summary>OFF by default — graybox CutArenaBootstrap owns parkour; PGK dump stacked chaos on every pad.</summary>
+        [SerializeField] bool placePgkStructures = false;
         [SerializeField] float landmarkUniformScale = 1.35f;
         [SerializeField] float pgkUniformScale = 1f;
 
@@ -260,30 +261,13 @@ namespace Tag.Art
 
         int BuildConnectorToys(Transform root)
         {
-            // Spine-aligned toys: denser safety tiles + slides along EW/NS fall-lines for Tribes read
+            // Sparse spine accents only — keep chase lanes readable (no tunnel/spinner clutter).
             var parent = MakeGroup(root, "PGK_Connectors", Vector3.zero, 0f);
             var pieces = new List<(string id, Vector3 p, float y)>
             {
-                ("PGK_Balance_Beam_3m_LOD0", new Vector3(24f, 0.40f, 27f), 90f),
-                ("PGK_Balance_Beam_3m_LOD0", new Vector3(48f, 0.40f, 27f), 90f),
-                ("PGK_Tunnel_Plastic_LOD0", new Vector3(36f, 0f, 18f), 0f),
-                ("PGK_Tunnel_Plastic_LOD0", new Vector3(36f, 0f, 36f), 0f),
-                ("PGK_Spinner_StandOn_LOD0", new Vector3(24f, 0f, 36f), 0f),
-                ("PGK_Spinner_StandOn_LOD0", new Vector3(48f, 0f, 18f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(30f, 0.02f, 27f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(42f, 0.02f, 27f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(30f, 0.02f, 18f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(42f, 0.02f, 18f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(30f, 0.02f, 36f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(42f, 0.02f, 36f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(24f, 0.02f, 22f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(24f, 0.02f, 32f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(48f, 0.02f, 22f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(48f, 0.02f, 32f), 0f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(36f, 0f, 22.5f), 0f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(36f, 0f, 31.5f), 180f),
-                ("PGK_Dome_Geo_3m_LOD0", new Vector3(48f, 0f, 36f), 0f),
-                ("PGK_Monkey_4m_LOD0", new Vector3(24f, 0f, 18f), 90f),
+                ("PGK_Balance_Beam_3m_LOD0", new Vector3(36f, 0.40f, 27f), 0f),
             };
             return SpawnList(parent, pieces);
         }

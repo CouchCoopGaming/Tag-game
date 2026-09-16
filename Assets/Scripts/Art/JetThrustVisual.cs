@@ -30,7 +30,8 @@ namespace Tag.Art
             EnsureBuilt();
             if (!_built) return;
 
-            bool on = _motor != null && _motor.Jetting;
+            bool jetAllowed = _motor != null && _motor.cfg != null && _motor.cfg.enableJet;
+            bool on = jetAllowed && _motor.Jetting;
             _beam.enabled = on;
             if (_nozzle != null) _nozzle.gameObject.SetActive(on);
             if (!on) return;
