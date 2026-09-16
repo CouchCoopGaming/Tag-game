@@ -1,10 +1,10 @@
-ï»¿using TagArena.Movement;
+using TagArena.Movement;
 using UnityEngine;
 
 namespace Tag.Experimental
 {
     /// <summary>
-    /// EXPERIMENTAL â€” optional grapple hook. Core tag loop works without this.
+    /// EXPERIMENTAL — optional grapple hook. Core tag loop works without this.
     /// Off by default (enableGrapple=false). Add to a player with PlayerMotor +
     /// PlayerInputReader, set enableGrapple=true. Hold fire (default RMB / JetHeld
     /// while jet is disabled) to attach a LineRenderer rope and pull toward the hit;
@@ -13,7 +13,7 @@ namespace Tag.Experimental
     [DisallowMultipleComponent]
     public class ExperimentalGrapple : MonoBehaviour
     {
-        [Header("EXPERIMENTAL â€” off by default")]
+        [Header("EXPERIMENTAL — off by default")]
         public bool enableGrapple = false;
         [Tooltip("If true, uses PlayerInputReader.JetHeld (RMB). Safe while MovementConfig.enableJet=false.")]
         public bool useJetHeldAsFire = true;
@@ -68,7 +68,7 @@ namespace Tag.Experimental
         {
             if (useJetHeldAsFire && _input != null)
                 return _input.JetHeld;
-            return Input.GetKey(fireKey) || Input.GetMouseButton(1);
+            return UnityEngine.Input.GetKey(fireKey) || UnityEngine.Input.GetMouseButton(1);
         }
 
         void TryAttach()
@@ -98,7 +98,7 @@ namespace Tag.Experimental
             }
 
             Vector3 dir = to / dist;
-            // Soft pull â€” accelerate toward anchor, clamp planar+vertical blend
+            // Soft pull — accelerate toward anchor, clamp planar+vertical blend
             Vector3 v = _rb.linearVelocity;
             v += dir * (pullAccel * Time.deltaTime);
             if (v.magnitude > maxPullSpeed)
