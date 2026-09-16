@@ -56,9 +56,10 @@ namespace Tag.Art
                 return;
             }
 
+            // Same-frame clear so rebuild/context-menu Place does not leave orphaned Play_* colliders.
             var folder = park.Find(RootFolder);
             if (folder != null)
-                Destroy(folder.gameObject);
+                DestroyImmediate(folder.gameObject);
 
             var root = new GameObject(RootFolder).transform;
             root.SetParent(park, false);
