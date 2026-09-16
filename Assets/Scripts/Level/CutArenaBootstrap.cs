@@ -15,6 +15,7 @@ namespace Tag.Level
     ///   Pass4: named play-area floor pads (soft-play / swing / merry / kickball / hopscotch).
     ///   Pass5: thin theme pads — clear pad -> PadSlideExit -> Conn run-outs.
     ///   Pass6: Conn corridor ramps catch PadSlide landings; Flow stones hand off to spines.
+    ///   Pass7: Crash bowl open for EW chase; SoftPlay nudged SW off SpineXw/Xe.
     /// </summary>
     public class CutArenaBootstrap : MonoBehaviour
     {
@@ -269,7 +270,7 @@ namespace Tag.Level
             FlowStone("Flow_N_W", new Vector3(28f, 0.50f, 39.5f), new Vector3(2.1f, 0.18f, 2.1f));
             FlowStone("Flow_N_Mid", new Vector3(CxNinja, 0.60f, 39.5f), new Vector3(2.1f, 0.18f, 2.1f));
             FlowStone("Flow_N_E", new Vector3(44f, 0.50f, 39.5f), new Vector3(2.1f, 0.18f, 2.1f));
-            // Crash loft approaches — south of vault / north of towers (no overlap with Toy_VaultRail)
+            // Crash loft approaches — south rim / north of towers (center vault removed for EW chase)
             FlowStone("Flow_Core_S", new Vector3(CxCrash, 0.92f, CzCrash - 7.5f), new Vector3(2.8f, 0.22f, 1.8f));
             FlowStone("Flow_Core_N", new Vector3(CxCrash, 0.92f, CzCrash + 7.0f), new Vector3(2.8f, 0.22f, 1.8f));
         }
@@ -310,7 +311,7 @@ namespace Tag.Level
         {
             const float t = 0.1f;
             float y = -t * 0.5f + 0.004f;
-            Box("PlayPad_SoftPlay", new Vector3(26.5f, y, 19.5f), new Vector3(18f, t, 16f), _matPlayMulch);
+            Box("PlayPad_SoftPlay", new Vector3(18.5f, y, 13.5f), new Vector3(14f, t, 12f), _matPlayMulch);
             // Merry mulch — spinner apron; east edge stops short of SpineXw
             Box("PlayPad_Merry", new Vector3(15.5f, y, 22f), new Vector3(14f, t, 14f), _matPlayMulch);
             // Swing mulch — fall-zone apron; west edge stops short of SpineXe
@@ -337,26 +338,25 @@ namespace Tag.Level
             ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, 0f), new Vector3(w, 0.16f, d), mat);
         }
 
-        /// <summary>Crash = figure-8 X. Bowl + twin towers + open EW cross; no wall blocking spines.</summary>
+        /// <summary>Crash = figure-8 X. Open bowl for EW chase; toys only on N/W flanks.</summary>
         void BuildCrashCore()
         {
             var z = Zone("Zone_Crash", CxCrash, CzCrash);
             PadFloor(z, 16f, 14f, _matBowl);
 
-            // Sunken bowl — open corners for chase through
+            // Sunken bowl — open E/W + corners so SpineXw/Xe cross stays runnable
             ChildBox(z, "Toy_Sandbox", new Vector3(0f, -0.9f, 0f), new Vector3(8f, 0.2f, 8f), _matBowl);
             ChildBox(z, "Toy_SandboxRim_S", new Vector3(0f, 0.35f, -4.2f), new Vector3(6f, 0.7f, 0.3f), _matVault);
             ChildBox(z, "Toy_SandboxRim_N", new Vector3(0f, 0.35f, 4.2f), new Vector3(6f, 0.7f, 0.3f), _matVault);
-            // No full E/W rims — keep EW chase sightline through Crash
+            // No E/W rims, no center vault — keep EW figure-8 chase sightline clear
 
-            // Twin towers north of bowl + loft bridge (run→jump→slide off loft south)
-            ChildBox(z, "Toy_TwinTower_W", new Vector3(-4.5f, 2.0f, 3.5f), new Vector3(2.0f, 4f, 2.0f), _matWall);
-            ChildBox(z, "Toy_TwinTower_E", new Vector3(4.5f, 2.0f, 3.5f), new Vector3(2.0f, 4f, 2.0f), _matWall);
-            ChildBox(z, "Toy_Tower", new Vector3(0f, 3.1f, 3.5f), new Vector3(7f, 0.3f, 3.2f), _matLoft);
+            // Twin towers + loft pulled north of bowl (off EW mid at local z=0)
+            ChildBox(z, "Toy_TwinTower_W", new Vector3(-4.5f, 2.0f, 4.8f), new Vector3(2.0f, 4f, 2.0f), _matWall);
+            ChildBox(z, "Toy_TwinTower_E", new Vector3(4.5f, 2.0f, 4.8f), new Vector3(2.0f, 4f, 2.0f), _matWall);
+            ChildBox(z, "Toy_Tower", new Vector3(0f, 3.1f, 4.8f), new Vector3(7f, 0.3f, 3.0f), _matLoft);
 
-            // Climb face west but shortened — keep EW chase sightline through Crash
-            ChildBox(z, "Toy_ClimbWall_West", new Vector3(-7.0f, 1.4f, 1.2f), new Vector3(0.35f, 2.8f, 4.2f), _matWall);
-            ChildBox(z, "Toy_VaultRail", new Vector3(0f, 0.65f, -5.5f), new Vector3(3.6f, 1.1f, 0.3f), _matVault);
+            // Climb face west + north-biased — clear of EW chase lane through Crash
+            ChildBox(z, "Toy_ClimbWall_West", new Vector3(-7.6f, 1.4f, 2.8f), new Vector3(0.35f, 2.8f, 3.2f), _matWall);
         }
 
         /// <summary>
