@@ -96,6 +96,6 @@ Do not push; parent agent pushes.
 ## Next coding pass
 - Feel SoftPlay tube run in Play: pieces sit on deck/mulch (not floating); tube path readable SW; Crash bowl open.
 - Tune tube yaw/XZ if mouths misalign; stem Y offsets already at tip.
-- **Wall-run strips:** HiPoly `Toy_WallPanel` feet ~0 (no StemSeatYOffset); thin-Z face — Loop/WallRunStrip yaw **90** (NS), Ring_S yaw **0** / Ring_N yaw **180** (campus), Bank side yaw **90**. Panels abutted (~1.6) along Loop/Ring; vaults on chase/+X. Feel continuous wall-run in Play; tune XZ if alley feels tight.
+- **Wall-run strips:** HiPoly `Toy_WallPanel` feet ~0; thin-Z face — Loop/WallRunStrip yaw **90** (NS), Ring_S yaw **0** / Ring_N yaw **180**, Bank yaw **90**. Abutted (~1.6): Ring pairs at ±2.4/±4.0 z±1.85 (clear monkeys ±8); Loop panels x=-2.35; WallRunStrip x=-1.2; Bank x=-2.85. Feel continuous run face in Play.
 - Mannequin polish overnight OK.
 

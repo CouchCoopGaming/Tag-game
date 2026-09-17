@@ -165,16 +165,16 @@ namespace Tag.Art
         {
             // Tron arc — keep z south of SpineZs; walls face campus (+Z)
             var parent = MakeGroup(root, name, origin, yaw);
-            // HiPoly WallPanel ~1.6 along X at yaw0 (thin Z); abut for EW wall-run; face campus (+Z).
+            // HiPoly WallPanel ~1.6 X; abut pairs inset from monkeys (±8); slight +Z campus clearance.
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
                 ("PGK_Monkey_4m_LOD0", new Vector3(-8f, 0f, 0f), 0f),
                 ("PGK_Monkey_4m_LOD0", new Vector3(8f, 0f, 0f), 0f),
                 ("Mega_SlideTube", new Vector3(0f, 0f, -1.0f), 0f),
-                ("Toy_WallPanel", new Vector3(-4.8f, 0f, 1.6f), 0f),
-                ("Toy_WallPanel", new Vector3(-3.2f, 0f, 1.6f), 0f),
-                ("Toy_WallPanel", new Vector3(3.2f, 0f, 1.6f), 0f),
-                ("Toy_WallPanel", new Vector3(4.8f, 0f, 1.6f), 0f),
+                ("Toy_WallPanel", new Vector3(-4.0f, 0f, 1.85f), 0f),
+                ("Toy_WallPanel", new Vector3(-2.4f, 0f, 1.85f), 0f),
+                ("Toy_WallPanel", new Vector3(2.4f, 0f, 1.85f), 0f),
+                ("Toy_WallPanel", new Vector3(4.0f, 0f, 1.85f), 0f),
                 ("Toy_VaultRail_100", new Vector3(0f, 0f, 2.8f), 90f),
                 ("PGK_Stairs_5_LOD0", new Vector3(-10f, 0f, -2f), 180f),
                 ("PGK_Deck_1x2_LOD0", new Vector3(-10f, Stairs5DeckY, 0.4f), 0f),
@@ -186,16 +186,16 @@ namespace Tag.Art
         {
             // Ninja arc — keep z north of SpineZn; walls face campus (-Z)
             var parent = MakeGroup(root, name, origin, yaw);
-            // yaw 180 flips HiPoly +Z face toward campus (-Z).
+            // yaw 180 campus face (-Z); abut pairs inset from monkeys like Ring_S.
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
                 ("PGK_Monkey_4m_LOD0", new Vector3(-8f, 0f, 0f), 0f),
                 ("PGK_Monkey_4m_LOD0", new Vector3(8f, 0f, 0f), 0f),
                 ("Mega_CrawlTunnel", new Vector3(0f, 0f, 1.0f), 90f),
-                ("Toy_WallPanel", new Vector3(-4.8f, 0f, -1.6f), 180f),
-                ("Toy_WallPanel", new Vector3(-3.2f, 0f, -1.6f), 180f),
-                ("Toy_WallPanel", new Vector3(3.2f, 0f, -1.6f), 180f),
-                ("Toy_WallPanel", new Vector3(4.8f, 0f, -1.6f), 180f),
+                ("Toy_WallPanel", new Vector3(-4.0f, 0f, -1.85f), 180f),
+                ("Toy_WallPanel", new Vector3(-2.4f, 0f, -1.85f), 180f),
+                ("Toy_WallPanel", new Vector3(2.4f, 0f, -1.85f), 180f),
+                ("Toy_WallPanel", new Vector3(4.0f, 0f, -1.85f), 180f),
                 ("Toy_VaultRail_100", new Vector3(0f, 0f, -2.8f), 90f),
                 ("PGK_Stairs_5_LOD0", new Vector3(10f, 0f, 2f), 0f),
                 ("PGK_Deck_1x2_LOD0", new Vector3(10f, Stairs5DeckY, -0.4f), 0f),
@@ -210,7 +210,7 @@ namespace Tag.Art
         int LoopWallRun(Transform root, string name, Vector3 origin, float yaw)
         {
             var parent = MakeGroup(root, name, origin, yaw);
-            // Outer alley wall-run (local -X); yaw90 → thin face world ±X for NS run. Panel ~1.6 along Z.
+            // Outer alley wall-run (local -X, nudged off mid deck); yaw90 → thin face world ±X for NS run. Panel ~1.6 along Z.
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
                 ("PGK_Post_Square_2_5m_LOD0", new Vector3(0f, 0f, -4f), 0f),
@@ -218,10 +218,10 @@ namespace Tag.Art
                 ("PGK_Deck_1x2_LOD0", new Vector3(0f, Stairs5DeckY, 0f), 90f),
                 ("PGK_Stairs_5_LOD0", new Vector3(0f, 0f, -6.2f), 180f),
                 ("PGK_Slide_Straight_M_LOD0", new Vector3(2.2f, Stairs5DeckY, 4.8f), 0f),
-                ("Toy_WallPanel", new Vector3(-2.0f, 0f, -2.45f), 90f),
-                ("Toy_WallPanel", new Vector3(-2.0f, 0f, -0.8f), 90f),
-                ("Toy_WallPanel", new Vector3(-2.0f, 0f, 0.85f), 90f),
-                ("Toy_WallPanel", new Vector3(-2.0f, 0f, 2.5f), 90f),
+                ("Toy_WallPanel", new Vector3(-2.35f, 0f, -2.45f), 90f),
+                ("Toy_WallPanel", new Vector3(-2.35f, 0f, -0.8f), 90f),
+                ("Toy_WallPanel", new Vector3(-2.35f, 0f, 0.85f), 90f),
+                ("Toy_WallPanel", new Vector3(-2.35f, 0f, 2.5f), 90f),
                 ("Toy_VaultRail_090", new Vector3(2f, 0f, -2.5f), 0f),
                 ("Toy_VaultRail_100", new Vector3(2f, 0f, 0f), 0f),
                 ("Toy_VaultRail_105", new Vector3(2f, 0f, 2.5f), 0f),
@@ -235,13 +235,13 @@ namespace Tag.Art
         int WallRunStrip(Transform root, string name, Vector3 origin, float yaw)
         {
             var parent = MakeGroup(root, name, origin, yaw);
-            // Unused (Ring_W/E dropped) — keep yaw90 / abut spacing if restored.
+            // Unused (Ring_W/E dropped) — yaw90 abut on -X clear of mid deck @+0.4.
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("Toy_WallPanel", new Vector3(0f, 0f, -2.45f), 90f),
-                ("Toy_WallPanel", new Vector3(0f, 0f, -0.8f), 90f),
-                ("Toy_WallPanel", new Vector3(0f, 0f, 0.85f), 90f),
-                ("Toy_WallPanel", new Vector3(0f, 0f, 2.5f), 90f),
+                ("Toy_WallPanel", new Vector3(-1.2f, 0f, -2.45f), 90f),
+                ("Toy_WallPanel", new Vector3(-1.2f, 0f, -0.8f), 90f),
+                ("Toy_WallPanel", new Vector3(-1.2f, 0f, 0.85f), 90f),
+                ("Toy_WallPanel", new Vector3(-1.2f, 0f, 2.5f), 90f),
                 ("Toy_VaultRail_100", new Vector3(2f, 0f, -2f), 0f),
                 ("Toy_VaultRail_105", new Vector3(2f, 0f, 2f), 0f),
                 ("PGK_Post_Square_2m_LOD0", new Vector3(0.4f, 0f, -1.2f), 0f),
@@ -265,8 +265,8 @@ namespace Tag.Art
                 ("PGK_Deck_2x2_LOD0", new Vector3(0f, Stairs5DeckY, 0f), 0f),
                 ("PGK_Stairs_5_LOD0", new Vector3(0f, 0f, -3.6f), 180f),
                 ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, Stairs5DeckY, 4f), 0f),
-                // Side wall faces local ±X (yaw90) for bank-flank wall-run; vault on +X approach.
-                ("Toy_WallPanel", new Vector3(-2.6f, 0f, 0f), 90f),
+                // Side wall yaw90 bank-flank; x=-2.85 clear of deck 2x2; vault on +X approach.
+                ("Toy_WallPanel", new Vector3(-2.85f, 0f, 0f), 90f),
                 ("Toy_VaultRail_100", new Vector3(2.6f, 0f, 0.5f), 0f),
                 ("PGK_Rail_2m_LOD0", new Vector3(0f, Stairs5DeckY, -1.4f), 0f),
             });
