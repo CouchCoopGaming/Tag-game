@@ -496,10 +496,10 @@ namespace Tag.Art
         /// Name-based pivot seating. Author local Y means mulch feet or deck/mouth attach.
         /// Measured Unity AABB (Blender FBX height axis = Z in source): Straight mouth ~+1.77,
         /// Spiral feet ~+0.51, Stairs tread0 ~+0.06, Tube90 feet ~-0.52, Mega_SlideTube feet ~-0.24,
-        /// Toy_TunnelTube feet ~-0.02, Mega_CrawlTunnel ~0, Toy_Bars feet ~+0.23,
-        /// Toy_Seesaw feet ~+0.10, Toy_Bumper feet ~+0.17, Toy_Goal feet ~-0.05,
-        /// Toy_Bars_Rail / Mega_Spinner / Monkey / Bench / VaultRail / WallPanel / SpringRider ~0.
-        /// Decks/posts bottom-pivoted (0). Offset = -feetOrMouthY. Coarse - tune in Play if needed.
+        /// Mega_ParkourRamp feet ~-0.26, Toy_TunnelTube ~-0.02, Mega_CrawlTunnel ~0, Toy_Bars ~+0.23,
+        /// Seesaw ~+0.10, Bumper ~+0.17, Goal ~-0.05; Bars_Rail / Spinner / Monkey / Bench /
+        /// VaultRail / WallPanel / SpringRider / Tower / Picnic / Safety_Tile / RubberTrack(~0.02) /
+        /// NetFrame / posts/decks ~0. Offset = -feetOrMouthY. Coarse - tune in Play if needed.
         /// </summary>
         static float StemSeatYOffset(string stem)
         {
@@ -509,13 +509,14 @@ namespace Tag.Art
             if (stem.StartsWith("PGK_Slide_Tube")) return 0.52f;      // feet (minY~-0.52)
             if (stem.StartsWith("PGK_Stairs")) return -0.06f;         // first tread -> mulch
             if (stem.StartsWith("Mega_SlideTube")) return 0.24f;      // feet (minY~-0.24)
+            if (stem.StartsWith("Mega_ParkourRamp")) return 0.26f;    // feet (minY~-0.26) Loop wall-run
             if (stem.StartsWith("Toy_TunnelTube")) return 0.02f;      // feet (minY~-0.02)
             if (stem.StartsWith("Toy_Bars_Rail")) return 0f;         // feet ~0
             if (stem.StartsWith("Toy_Bars")) return -0.23f;           // feet (minY~+0.23) Play_Swing
             if (stem.StartsWith("Toy_Seesaw")) return -0.10f;        // feet (minY~+0.10) SpawnLead
             if (stem.StartsWith("Toy_Bumper")) return -0.17f;        // feet (minY~+0.17) SpawnLead
             if (stem.StartsWith("Toy_Goal")) return 0.05f;           // feet (minY~-0.05) Kickball lift
-            // Mega_Spinner / Monkey / Bench / WallPanel / VaultRail / SpringRider HiPoly feet ~0
+            // Mega_Spinner / Monkey / Bench / WallPanel / VaultRail / SpringRider / Tower / Picnic ~0
             return 0f;
         }
 

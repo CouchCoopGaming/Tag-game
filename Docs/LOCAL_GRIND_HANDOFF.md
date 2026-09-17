@@ -1,4 +1,4 @@
-﻿# Local grind handoff (Amaterasu) — until tomorrow ~6pm CT
+# Local grind handoff (Amaterasu) — until tomorrow ~6pm CT
 
 Branch: `cursor/apex-party-movement-f5fd`  
 Parent pushes; **do not push** from casual local grind unless asked.
@@ -44,12 +44,40 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - **Jump:** `v.y = jumpSpeed` (fixed launch, not additive with ski/slope residual).
 - **Map:** `SpawnFbx` feet-snap to local Y; succinct PGK clusters (dropped SE hopscotch + 2 banks + Bay B clutter); prefer HiPoly on mulch.
 - **Map grounding:** snap is ground-only + sink-biased (no lift on overhanging slides); dropped Ring_W/E + merry cardinal spinners; Flow thinned to 4 Conn->spine handoffs (no S/N ring / Core / mids).
-- **Stem seating:** `SpawnFbx` name rules - `PGK_Slide_Straight*` mouth -1.77, `PGK_Slide_Spiral*` feet -0.51, `PGK_Stairs*` -0.06, `PGK_Slide_Tube*` feet +0.52, `Mega_SlideTube` +0.24, `Toy_TunnelTube` +0.02 (Mega_CrawlTunnel ~0); `Toy_Bars` -0.23 (Rail 0); `Toy_Seesaw` -0.10 / `Toy_Bumper` -0.17 (SpawnLead); `Toy_Goal` +0.05 (Kickball); `Toy_WallPanel` / `Toy_VaultRail*` / SpringRider HiPoly feet ~0; snap still uses authored Y (elevated decks/mouths skip snap; sink-biased on ground).
+- **Stem seating:** `SpawnFbx` name rules - `PGK_Slide_Straight*` mouth -1.77, `PGK_Slide_Spiral*` feet -0.51, `PGK_Stairs*` -0.06, `PGK_Slide_Tube*` feet +0.52, `Mega_SlideTube` +0.24, `Mega_ParkourRamp` +0.26 (Loop), `Toy_TunnelTube` +0.02 (Mega_CrawlTunnel ~0); `Toy_Bars` -0.23 (Rail 0); `Toy_Seesaw` -0.10 / `Toy_Bumper` -0.17 (SpawnLead); `Toy_Goal` +0.05 (Kickball); `Toy_WallPanel` / `Toy_VaultRail*` / SpringRider / Tower / Picnic / Bench / Spinner / tiles / monkey / NetFrame HiPoly feet ~0; snap still uses authored Y (elevated decks/mouths skip snap; sink-biased on ground).
 - **Stairs/deck match:** soft-play + pad clusters use Stairs5DeckY=0.8 (Stairs_5 top ~0.84; kit snap). Decks/slide mouths/rails share that Y; StemSeatYOffset unchanged.
 - **SoftPlay tube restore:** re-added TunnelTube->Tube90->Mega_SlideTube SW of core deck (author Y=Stairs5DeckY); no Bay B tower clutter; Crash EW clear.
 - **VaultRail StemSeat check (no-op):** Blender AABB on `Toy_VaultRail_{090,100,105}_Hi` min height axis = 0.000 — feet already on pivot; no StemSeatYOffset. Spot-check vs wall strips: Ring_S/N vault z±2.8 vs panels ±1.85 (~0.25m face gap after yaw90); Loop/Bank/WallRunStrip vaults on +X opposite panels on -X (clear); SpineAccents vault beside panel intentional adjacency.
 - **Swing/merry/hopscotch/kickball + SpawnLead StemSeat pass:** Blender AABB (FBX height axis = Z in source). `Play_MerryGoRound` Mega_Spinner feet~0; `Play_Hopscotch_SW` Safety_Tile feet~0 (author Y=0.02); `Play_Swing` `Toy_Bars` feet~+0.23 -> StemSeat -0.23 (Rail 0). SpawnLead `Toy_Seesaw` feet~+0.10 / `Toy_Bumper` feet~+0.17 -> StemSeat -0.10 / -0.17. `Play_Kickball` `Toy_Goal` feet~-0.05 -> StemSeat +0.05 (Kickball-only stem; snap still refuse larger lifts). SpringRider feet~0. Snap sink-biases residual floaters.
 
+
+
+- **StemSeat float audit (towers/picnic/benches/spinner/tiles/ramps):** Blender AABB height-axis min (FBX Z -> Unity Y). Clear float = min clearly > ~0.05. StemSeat only when float/sink clear and `SpawnFbx` stem path.
+
+| Stem / asset | heightMinZ | Placer stem? | StemSeat | Notes |
+|---|---:|:---:|---|---|
+| Toy_Tower / Ultra | 0.00 | SoftPlay posts/decks | 0 (n/a) | Dresser TwinTower/Tower ~0 feet |
+| Toy_PicnicTable | 0.00 | no | 0 (n/a) | Dresser only; grounded |
+| Toy_Bench | 0.00 | yes | 0 | merry/swing/kickball/hopscotch |
+| Toy_SpringRider | 0.00 | yes | 0 | SpawnLead |
+| Mega_Spinner | 0.00 | yes | 0 | MerryGoRound |
+| PGK_Safety_Tile | 0.00 | yes | 0 | author Y=0.02 apron |
+| Toy_RubberTrack_C3 | 0.02 | yes | 0 | Kickball; not clear float |
+| PGK_Monkey_4m | 0.00 | yes | 0 | Ring/Swing |
+| Mega_ClimbNet | 0.00 | yes | 0 | SoftPlay |
+| Mega_CrawlTunnel | 0.00 | yes | 0 | SoftPlay/Ring_N |
+| **Mega_ParkourRamp** | **-0.26** | **yes (Loop)** | **+0.26** | sink like SlideTube; this pass |
+| Mega_TowerFort / SkyBridge | 0.00 | no | - | dresser/landmark only |
+| Toy_NetFrame | 0.00 | yes | 0 | Spawn Astro |
+| PGK_Dome / BalanceBeam / Posts / Decks / Rail | ~0 | yes | 0 | decks elevated author Y intentional |
+| Toy_WallPanel / VaultRail | ~0 | yes | 0 | prior pass |
+| Toy_ClimberDome | **+0.33** | no | - | unused by placer; open if dressed later |
+| Toy_Ramp | **+0.17** | no | - | dresser FoxholeTrench only (not StemSeat path) |
+| Toy_Slide_Hi | +0.09 | no | - | dresser Toy_Slide_C1; slides skipped (PGK mouths seated) |
+| Toy_TireStack | +0.06 | no | - | unused; borderline |
+| Conn_* ramps | n/a | graybox SkiRamp | - | CutArenaBootstrap boxes, not HiPoly |
+
+**Result:** no remaining clear *float* on `PgkLandmarkPlacer` stems. Applied StemSeat `Mega_ParkourRamp` +0.26 (Loop wall-run sink). Tower/Picnic/Bench/Spinner/tiles/monkey/net/decks already ~0.
 ## Keep grinding (priority order)
 
 ### 1) Playground map layout (iterate in Play)
@@ -98,6 +126,8 @@ Do not push; parent agent pushes.
 ## Next coding pass
 - Feel SoftPlay tube run in Play: pieces sit on deck/mulch (not floating); tube path readable SW; Crash bowl open.
 - Tune tube yaw/XZ if mouths misalign; stem Y offsets already at tip.
-- **Wall-run strips:** feel continuous run face in Play (Loop/WallRunStrip yaw 90; Ring_S 0 / Ring_N 180; Bank 90).
+- **Wall-run strips:** feel continuous run face in Play (Loop/WallRunStrip yaw 90; Ring_S 0 / Ring_N 180; Bank 90). Feel `Mega_ParkourRamp` StemSeat +0.26 on Loop (feet on mulch).
 - **SpawnLead Seesaw/Bumper + Kickball Goal:** StemSeat -0.10 / -0.17 / +0.05 applied; feel feet on mulch in Play after Place.
+- Open floats (not StemSeat path): dresser `Toy_Ramp` (+0.17), unused `Toy_ClimberDome` (+0.33), borderline `Toy_TireStack` (+0.06), dresser `Toy_Slide_Hi` (+0.09).
 - Mannequin polish overnight OK.
+
