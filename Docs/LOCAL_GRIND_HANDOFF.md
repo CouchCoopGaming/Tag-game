@@ -1,4 +1,4 @@
-# Local grind handoff (Amaterasu) — until tomorrow ~6pm CT
+﻿# Local grind handoff (Amaterasu) — until tomorrow ~6pm CT
 
 Branch: `cursor/apex-party-movement-f5fd`  
 Parent pushes; **do not push** from casual local grind unless asked.
@@ -47,6 +47,7 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - **Stem seating:** `SpawnFbx` name rules - `PGK_Slide_Straight*` mouth -1.77, `PGK_Slide_Spiral*` feet -0.51, `PGK_Stairs*` -0.06, `PGK_Slide_Tube*` feet +0.52, `Mega_SlideTube` +0.24, `Toy_TunnelTube` +0.02 (Mega_CrawlTunnel ~0); `Toy_WallPanel` / `Toy_VaultRail*` HiPoly feet ~0; snap still uses authored Y (elevated decks/mouths skip snap; sink-biased on ground).
 - **Stairs/deck match:** soft-play + pad clusters use Stairs5DeckY=0.8 (Stairs_5 top ~0.84; kit snap). Decks/slide mouths/rails share that Y; StemSeatYOffset unchanged.
 - **SoftPlay tube restore:** re-added TunnelTube->Tube90->Mega_SlideTube SW of core deck (author Y=Stairs5DeckY); no Bay B tower clutter; Crash EW clear.
+- **VaultRail StemSeat check (no-op):** Blender AABB on `Toy_VaultRail_{090,100,105}_Hi` min height axis = 0.000 — feet already on pivot; no StemSeatYOffset. Spot-check vs wall strips: Ring_S/N vault z±2.8 vs panels ±1.85 (~0.25m face gap after yaw90); Loop/Bank/WallRunStrip vaults on +X opposite panels on -X (clear); SpineAccents vault beside panel intentional adjacency.
 
 ## Keep grinding (priority order)
 
@@ -97,5 +98,6 @@ Do not push; parent agent pushes.
 - Feel SoftPlay tube run in Play: pieces sit on deck/mulch (not floating); tube path readable SW; Crash bowl open.
 - Tune tube yaw/XZ if mouths misalign; stem Y offsets already at tip.
 - **Wall-run strips:** HiPoly `Toy_WallPanel` feet ~0; thin-Z face — Loop/WallRunStrip yaw **90** (NS), Ring_S yaw **0** / Ring_N yaw **180**, Bank yaw **90**. Abutted (~1.6): Ring pairs at ±2.4/±4.0 z±1.85 (clear monkeys ±8); Loop panels x=-2.35; WallRunStrip x=-1.2; Bank x=-2.85. Feel continuous run face in Play.
+- **VaultRail:** no StemSeatYOffset (HiPoly feet @0); placement near strips OK — leave as-is unless Play shows float/sink.
 - Mannequin polish overnight OK.
 
