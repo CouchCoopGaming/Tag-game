@@ -29,7 +29,7 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - `Play_Hopscotch_SW/SE` (9.5,9)/(64,8): classic tile chain with gaps, larger rubber apron, outer-flank bench
 - `Play_Ring_S` (36,5.5): twin monkey, tunnel, Mega_SlideTube, straight slide, rails, spinner
 - `Play_Ring_N` (36,49): twin monkey, crawl/tunnel, tube slide, balance beams, Mega_Spinner
-- `Play_Loop_W/E` (19,27)/(53,27): denser wall-run (4x Toy_WallPanel + vault rails), decks, stairs, slide/tube exit
+- `Play_Loop_W/E` (19,27)/(53,27): abutted wall-run (4x Toy_WallPanel yaw90 + vault rails), decks, stairs, slide exit
 - `Play_Bank_SW/NE` (20,6)/(52,48): slide banks (deck+stairs+slide+side wall); Ring_W/E dropped
 - `Play_Ring_S/N`: added wall-run panels + vaults + corner deck/slide
 - `Play_Slide_*` Pirate/Army/Astro/Knight pad exits toward spines
@@ -44,7 +44,7 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - **Jump:** `v.y = jumpSpeed` (fixed launch, not additive with ski/slope residual).
 - **Map:** `SpawnFbx` feet-snap to local Y; succinct PGK clusters (dropped SE hopscotch + 2 banks + Bay B clutter); prefer HiPoly on mulch.
 - **Map grounding:** snap is ground-only + sink-biased (no lift on overhanging slides); dropped Ring_W/E + merry cardinal spinners; Flow thinned to 4 Conn->spine handoffs (no S/N ring / Core / mids).
-- **Stem seating:** `SpawnFbx` name rules - `PGK_Slide_Straight*` mouth -1.77, `PGK_Slide_Spiral*` feet -0.51, `PGK_Stairs*` -0.06, `PGK_Slide_Tube*` feet +0.52, `Mega_SlideTube` +0.24, `Toy_TunnelTube` +0.02 (Mega_CrawlTunnel ~0); snap still uses authored Y (elevated decks/mouths skip snap; sink-biased on ground).
+- **Stem seating:** `SpawnFbx` name rules - `PGK_Slide_Straight*` mouth -1.77, `PGK_Slide_Spiral*` feet -0.51, `PGK_Stairs*` -0.06, `PGK_Slide_Tube*` feet +0.52, `Mega_SlideTube` +0.24, `Toy_TunnelTube` +0.02 (Mega_CrawlTunnel ~0); `Toy_WallPanel` / `Toy_VaultRail*` HiPoly feet ~0; snap still uses authored Y (elevated decks/mouths skip snap; sink-biased on ground).
 - **Stairs/deck match:** soft-play + pad clusters use Stairs5DeckY=0.8 (Stairs_5 top ~0.84; kit snap). Decks/slide mouths/rails share that Y; StemSeatYOffset unchanged.
 - **SoftPlay tube restore:** re-added TunnelTube->Tube90->Mega_SlideTube SW of core deck (author Y=Stairs5DeckY); no Bay B tower clutter; Crash EW clear.
 
@@ -96,5 +96,6 @@ Do not push; parent agent pushes.
 ## Next coding pass
 - Feel SoftPlay tube run in Play: pieces sit on deck/mulch (not floating); tube path readable SW; Crash bowl open.
 - Tune tube yaw/XZ if mouths misalign; stem Y offsets already at tip.
+- **Wall-run strips:** HiPoly `Toy_WallPanel` feet ~0 (no StemSeatYOffset); thin-Z face — Loop/WallRunStrip yaw **90** (NS), Ring_S yaw **0** / Ring_N yaw **180** (campus), Bank side yaw **90**. Panels abutted (~1.6) along Loop/Ring; vaults on chase/+X. Feel continuous wall-run in Play; tune XZ if alley feels tight.
 - Mannequin polish overnight OK.
 
