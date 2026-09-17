@@ -72,12 +72,14 @@ Parent pushes; **do not push** from casual local grind unless asked.
 | PGK_Dome / BalanceBeam / Posts / Decks / Rail | ~0 | yes | 0 | decks elevated author Y intentional |
 | Toy_WallPanel / VaultRail | ~0 | yes | 0 | prior pass |
 | Toy_ClimberDome | **+0.33** | no | - | unused by placer; open if dressed later |
-| Toy_Ramp | **+0.17** | no | - | dresser FoxholeTrench only (not StemSeat path) |
-| Toy_Slide_Hi | +0.09 | no | - | dresser Toy_Slide_C1; slides skipped (PGK mouths seated) |
-| Toy_TireStack | +0.06 | no | - | unused; borderline |
+| Toy_Ramp | **+0.17** | no | **DresserSeat -0.17** | dresser FoxholeTrench; world Y after FitToParent |
+| Toy_Slide_Hi | +0.09 | no | **DresserSeat -0.09** | dresser Toy_Slide_C1 -> Toy_Slide; PGK mouths still StemSeat |
+| Toy_TireStack | +0.06 | no | **DresserSeat -0.06** | unused today; hook ready if dressed |
 | Conn_* ramps | n/a | graybox SkiRamp | - | CutArenaBootstrap boxes, not HiPoly |
 
 **Result:** no remaining clear *float* on `PgkLandmarkPlacer` stems. Applied StemSeat `Mega_ParkourRamp` +0.26 (Loop wall-run sink). Tower/Picnic/Bench/Spinner/tiles/monkey/net/decks already ~0.
+
+- **Dresser seating (ParkPropDresser):** `DresserSeatYOffset` mirrors StemSeat for dressed PropMesh only — `Toy_Ramp` -0.17 (FoxholeTrench), `Toy_Slide*` -0.09 (`Toy_Slide_C1` -> HiPoly Slide), `Toy_TireStack` -0.06 (future). Applied as **world Y after FitToParent** (ChildBox hosts are scaled cubes; local nudge would shrink with host Y scale). Hedges/pads/towers/etc. still `localPosition` zero. Colliders rebuild after seat via `EnsureStaticColliders`.
 ## Keep grinding (priority order)
 
 ### 1) Playground map layout (iterate in Play)
@@ -128,6 +130,6 @@ Do not push; parent agent pushes.
 - Tune tube yaw/XZ if mouths misalign; stem Y offsets already at tip.
 - **Wall-run strips:** feel continuous run face in Play (Loop/WallRunStrip yaw 90; Ring_S 0 / Ring_N 180; Bank 90). Feel `Mega_ParkourRamp` StemSeat +0.26 on Loop (feet on mulch).
 - **SpawnLead Seesaw/Bumper + Kickball Goal:** StemSeat -0.10 / -0.17 / +0.05 applied; feel feet on mulch in Play after Place.
-- Open floats (not StemSeat path): dresser `Toy_Ramp` (+0.17), unused `Toy_ClimberDome` (+0.33), borderline `Toy_TireStack` (+0.06), dresser `Toy_Slide_Hi` (+0.09).
+- **DresserSeat applied:** `Toy_Ramp` -0.17 / `Toy_Slide*` -0.09 / `Toy_TireStack` -0.06 (hook). Feel FoxholeTrench ramp feet in Play after Dress. Still open: unused `Toy_ClimberDome` (+0.33) if ever dressed.
 - Mannequin polish overnight OK.
 

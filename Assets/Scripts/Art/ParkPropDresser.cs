@@ -214,6 +214,8 @@ namespace Tag.Art
                 if (propKey != null)
                     ApplyPropMats(go, propKey);
                 FitToParent(go, t);
+                // StemSeat-style feet nudge after fit (world Y - graybox hosts are scaled cubes).
+                ApplyDresserSeat(go, propKey);
                 StaticPropColliders.EnsureStaticColliders(go);
                 // Prefer visual colliders - disable graybox host collider when PropMesh has any.
                 if (go.GetComponentInChildren<Collider>() != null)
@@ -338,6 +340,32 @@ namespace Tag.Art
             if (mat == null) return;
             foreach (var r in go.GetComponentsInChildren<Renderer>(true))
                 r.sharedMaterial = mat;
+        }
+
+
+        /// <summary>
+        /// Name-based pivot seating for dresser PropMesh (mirror PgkLandmarkPlacer StemSeatYOffset).
+        /// Applied as world Y after FitToParent so scaled ChildBox hosts do not shrink the meter offset.
+        /// Only floating stems; hedges/pads/towers/etc. stay localPosition zero.
+        /// Blender AABB height-axis min (FBX Z): Toy_Ramp ~+0.17, Toy_Slide_Hi ~+0.09, Toy_TireStack ~+0.06.
+        /// Offset = -feetY.
+        /// </summary>
+        static float DresserSeatYOffset(string propStem)
+        {
+            if (string.IsNullOrEmpty(propStem)) return 0f;
+            if (propStem.StartsWith("Toy_Ramp")) return -0.17f;       // FoxholeTrench
+            if (propStem.StartsWith("Toy_Slide")) return -0.09f;      // Toy_Slide_C1 -> Toy_Slide_Hi
+            if (propStem.StartsWith("Toy_TireStack")) return -0.06f;  // if placed later
+            return 0f;
+        }
+
+        static void ApplyDresserSeat(GameObject go, string propStem)
+        {
+            float dy = DresserSeatYOffset(propStem);
+            if (go == null || Mathf.Abs(dy) < 0.0001f) return;
+            var p = go.transform.position;
+            p.y += dy;
+            go.transform.position = p;
         }
 
         static void FitToParent(GameObject go, Transform parent)
