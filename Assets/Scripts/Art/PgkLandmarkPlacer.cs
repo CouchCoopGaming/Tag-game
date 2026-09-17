@@ -28,6 +28,13 @@ namespace Tag.Art
         [SerializeField] float landmarkUniformScale = 1.15f;
         [SerializeField] float pgkUniformScale = 1f;
 
+        /// <summary>
+        /// Stairs_5 top tread ~0.84m (AABB height ~0.78). Kit deck snap 0.80 —
+        /// author decks + slide mouths + deck rails here so Stairs_5 meets them
+        /// without Y-stretch. StemSeatYOffset still seats mouths/treads.
+        /// </summary>
+        const float Stairs5DeckY = 0.8f;
+
         // Edge-nudged landmarks — pad midpoints + Flow/Conn corridors stay clear.
         static readonly (string stem, Vector3 pos, float yaw, float scale)[] LandmarkSlots =
         {
@@ -140,10 +147,10 @@ namespace Tag.Art
                 ("PGK_Post_Square_3m_LOD0", new Vector3(2f, 0f, -2f), 0f),
                 ("PGK_Post_Square_3m_LOD0", new Vector3(-2f, 0f, 2f), 0f),
                 ("PGK_Post_Square_3m_LOD0", new Vector3(2f, 0f, 2f), 0f),
-                ("PGK_Deck_2x2_LOD0", new Vector3(0f, 1.15f, 0f), 0f),
+                ("PGK_Deck_2x2_LOD0", new Vector3(0f, Stairs5DeckY, 0f), 0f),
                 ("PGK_Stairs_5_LOD0", new Vector3(0f, 0f, -4f), 180f),
                 ("Mega_ClimbNet", new Vector3(-3.6f, 0f, 0f), 90f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, 1.15f, 3.6f), 0f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, Stairs5DeckY, 3.6f), 0f),
                 ("Mega_CrawlTunnel", new Vector3(0f, 0f, -5.2f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 0f), 0f),
             });
@@ -162,8 +169,8 @@ namespace Tag.Art
                 ("Toy_WallPanel", new Vector3(4f, 0f, 1.6f), 0f),
                 ("Toy_VaultRail_100", new Vector3(0f, 0f, 2.8f), 90f),
                 ("PGK_Stairs_5_LOD0", new Vector3(-10f, 0f, -2f), 180f),
-                ("PGK_Deck_1x2_LOD0", new Vector3(-10f, 1.2f, 0.4f), 0f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(-10f, 1.2f, 3.2f), 0f),
+                ("PGK_Deck_1x2_LOD0", new Vector3(-10f, Stairs5DeckY, 0.4f), 0f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(-10f, Stairs5DeckY, 3.2f), 0f),
             });
         }
 
@@ -180,8 +187,8 @@ namespace Tag.Art
                 ("Toy_WallPanel", new Vector3(4f, 0f, -1.6f), 180f),
                 ("Toy_VaultRail_100", new Vector3(0f, 0f, -2.8f), 90f),
                 ("PGK_Stairs_5_LOD0", new Vector3(10f, 0f, 2f), 0f),
-                ("PGK_Deck_1x2_LOD0", new Vector3(10f, 1.2f, -0.4f), 0f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(10f, 1.2f, -3.2f), 180f),
+                ("PGK_Deck_1x2_LOD0", new Vector3(10f, Stairs5DeckY, -0.4f), 0f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(10f, Stairs5DeckY, -3.2f), 180f),
             });
         }
 
@@ -196,9 +203,9 @@ namespace Tag.Art
             {
                 ("PGK_Post_Square_2_5m_LOD0", new Vector3(0f, 0f, -4f), 0f),
                 ("PGK_Post_Square_2_5m_LOD0", new Vector3(0f, 0f, 4f), 0f),
-                ("PGK_Deck_1x2_LOD0", new Vector3(0f, 1.35f, 0f), 90f),
+                ("PGK_Deck_1x2_LOD0", new Vector3(0f, Stairs5DeckY, 0f), 90f),
                 ("PGK_Stairs_5_LOD0", new Vector3(0f, 0f, -6.2f), 180f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(2.2f, 1.2f, 4.8f), 0f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(2.2f, Stairs5DeckY, 4.8f), 0f),
                 ("Toy_WallPanel", new Vector3(-2.0f, 0f, -3f), 90f),
                 ("Toy_WallPanel", new Vector3(-2.0f, 0f, 0f), 90f),
                 ("Toy_WallPanel", new Vector3(-2.0f, 0f, 3f), 90f),
@@ -221,9 +228,9 @@ namespace Tag.Art
                 ("Toy_VaultRail_100", new Vector3(2f, 0f, 0f), 0f),
                 ("PGK_Post_Square_2m_LOD0", new Vector3(0.4f, 0f, -1.2f), 0f),
                 ("PGK_Post_Square_2m_LOD0", new Vector3(0.4f, 0f, 1.2f), 0f),
-                ("PGK_Deck_1x2_LOD0", new Vector3(0.4f, 1.35f, 0f), 90f),
+                ("PGK_Deck_1x2_LOD0", new Vector3(0.4f, Stairs5DeckY, 0f), 90f),
                 ("PGK_Stairs_5_LOD0", new Vector3(0.4f, 0f, -4.2f), 180f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(0.4f, 1.35f, 4.0f), 0f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(0.4f, Stairs5DeckY, 4.0f), 0f),
             });
         }
 
@@ -237,12 +244,12 @@ namespace Tag.Art
             {
                 ("PGK_Post_Square_2_5m_LOD0", new Vector3(-1.2f, 0f, 0f), 0f),
                 ("PGK_Post_Square_2_5m_LOD0", new Vector3(1.2f, 0f, 0f), 0f),
-                ("PGK_Deck_2x2_LOD0", new Vector3(0f, 1.4f, 0f), 0f),
+                ("PGK_Deck_2x2_LOD0", new Vector3(0f, Stairs5DeckY, 0f), 0f),
                 ("PGK_Stairs_5_LOD0", new Vector3(0f, 0f, -3.6f), 180f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, 1.4f, 4f), 0f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, Stairs5DeckY, 4f), 0f),
                 ("Toy_WallPanel", new Vector3(-2.6f, 0f, 0f), 90f),
                 ("Toy_VaultRail_100", new Vector3(2.6f, 0f, 0.5f), 0f),
-                ("PGK_Rail_2m_LOD0", new Vector3(0f, 1.4f, -1.4f), 0f),
+                ("PGK_Rail_2m_LOD0", new Vector3(0f, Stairs5DeckY, -1.4f), 0f),
             });
         }
 
@@ -253,8 +260,8 @@ namespace Tag.Art
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
                 ("PGK_Post_Square_2m_LOD0", new Vector3(0f, 0f, 0f), 0f),
-                ("PGK_Deck_1x1_LOD0", new Vector3(0f, 1.2f, 0f), 0f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, 1.2f, 3.4f), 0f),
+                ("PGK_Deck_1x1_LOD0", new Vector3(0f, Stairs5DeckY, 0f), 0f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, Stairs5DeckY, 3.4f), 0f),
                 ("PGK_Stairs_5_LOD0", new Vector3(0f, 0f, -2.5f), 180f),
             });
         }
