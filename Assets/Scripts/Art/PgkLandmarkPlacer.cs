@@ -110,9 +110,7 @@ namespace Tag.Art
             // Outer ring S/N — monkey / slide / short wall face
             n += OuterRingSouth(root, "Play_Ring_S", new Vector3(36f, 0f, 5.5f), 0f);
             n += OuterRingNorth(root, "Play_Ring_N", new Vector3(36f, 0f, 49f), 0f);
-            // One wall-run strip per side + one bank each (SW/NE diagonals)
-            n += WallRunStrip(root, "Play_Ring_W", new Vector3(11f, 0f, 27f), 0f);
-            n += WallRunStrip(root, "Play_Ring_E", new Vector3(61f, 0f, 27f), 180f);
+            // Figure-8 loop wall-runs + one bank each (SW/NE); Ring_W/E dropped (Loop covers NS)
             n += LoopWallRun(root, "Play_Loop_W", new Vector3(19f, 0f, 27f), 0f);
             n += LoopWallRun(root, "Play_Loop_E", new Vector3(53f, 0f, 27f), 180f);
             n += SlideBank(root, "Play_Bank_SW", new Vector3(20f, 0f, 6f), 0f);
@@ -148,8 +146,6 @@ namespace Tag.Art
                 ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, 1.15f, 3.6f), 0f),
                 ("Mega_CrawlTunnel", new Vector3(0f, 0f, -5.2f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 0f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.2f, 0.02f, -0.8f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1.2f, 0.02f, 0.8f), 0f),
             });
         }
 
@@ -316,15 +312,11 @@ namespace Tag.Art
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
                 ("Mega_Spinner", new Vector3(0f, 0f, 0f), 0f),
-                ("Toy_Spinner", new Vector3(0f, 0f, 3.4f), 0f),
-                ("Toy_Spinner", new Vector3(3.4f, 0f, 0f), 90f),
-                ("Toy_Spinner", new Vector3(0f, 0f, -3.4f), 180f),
-                ("Toy_Spinner", new Vector3(-3.4f, 0f, 0f), -90f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 4.5f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(4.5f, 0.02f, 0f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -4.5f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-4.5f, 0.02f, 0f), 0f),
-                ("Toy_Bench", new Vector3(-6.0f, 0f, 0f), 90f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 3.6f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3.6f, 0.02f, 0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -3.6f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-3.6f, 0.02f, 0f), 0f),
+                ("Toy_Bench", new Vector3(-5.5f, 0f, 0f), 90f),
             });
         }
 
@@ -472,19 +464,26 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// localPos.y is the support plane (mulch / deck). Shift so mesh bounds.min.y sits there.
+        /// Seat ground props on mulch/lawn. localPos.y is the support plane.
+        /// Ground-only + sink-biased: never lift overhanging slides/stairs (AABB below pivot
+        /// would otherwise float the whole assembly off the deck).
         /// </summary>
         static void SnapFeetToLocalY(GameObject go, float localGroundY)
         {
             if (go == null || go.transform.parent == null) return;
+            // Elevated authored Y (decks / slide mouths) keeps placement; only mulch seating.
+            if (localGroundY > 0.08f) return;
             var rends = go.GetComponentsInChildren<Renderer>(true);
             if (rends == null || rends.Length == 0) return;
             Bounds b = rends[0].bounds;
             for (int i = 1; i < rends.Length; i++)
                 b.Encapsulate(rends[i].bounds);
+            // Parent yaw-only — world Y of support is uniform across local XZ.
             float targetY = go.transform.parent.TransformPoint(new Vector3(0f, localGroundY, 0f)).y;
             float dy = targetY - b.min.y;
             if (Mathf.Abs(dy) < 0.001f) return;
+            // Sink floaters; allow tiny upward for pivot noise; refuse larger lifts.
+            if (dy > 0.015f) return;
             var lp = go.transform.localPosition;
             lp.y += dy;
             go.transform.localPosition = lp;

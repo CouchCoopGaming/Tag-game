@@ -23,15 +23,14 @@ Parent pushes; **do not push** from casual local grind unless asked.
 
 ### Pass3/4 structure map (graybox coords)
 - `Play_SoftPlay_CrashSW` (28,21): tube continuity mid?Bay B + readable net climb line (Mega_ClimbNet/tunnels/spiral); Crash/spines kept clear
-- `Play_MerryGoRound` (15.5,22): Mega hub + 4 Toy cardinal ring + stand-on diagonals, mulch apron, west benches only (east open for SpineXw)
+- `Play_MerryGoRound` (15.5,22): Mega hub + mulch tiles + west bench (east open for SpineXw)
 - `Play_Swing` (60.5,33.5): twin bars + rail A-frame + monkey bay, clear mulch fall zone, east benches only (west open for SpineXe)
 - `Play_Kickball` (56.5,27): clear diamond + N/S goals, east benches only (west open for figure-8), larger rubber pad
 - `Play_Hopscotch_SW/SE` (9.5,9)/(64,8): classic tile chain with gaps, larger rubber apron, outer-flank bench
 - `Play_Ring_S` (36,5.5): twin monkey, tunnel, Mega_SlideTube, straight slide, rails, spinner
 - `Play_Ring_N` (36,49): twin monkey, crawl/tunnel, tube slide, balance beams, Mega_Spinner
 - `Play_Loop_W/E` (19,27)/(53,27): denser wall-run (4x Toy_WallPanel + vault rails), decks, stairs, slide/tube exit
-- `Play_Ring_W/E` (11,27)/(61,27): outer-ring wall-run strips + mid deck slide bank
-- `Play_Bank_SW/SE/NW/NE` (20,6)/(52,6)/(20,48)/(52,48): slide banks (deck+stairs+slide+side wall)
+- `Play_Bank_SW/NE` (20,6)/(52,48): slide banks (deck+stairs+slide+side wall); Ring_W/E dropped
 - `Play_Ring_S/N`: added wall-run panels + vaults + corner deck/slide
 - `Play_Slide_*` Pirate/Army/Astro/Knight pad exits toward spines
 - `Play_Spawn_*`: light spring/seesaw/bumper lead toys (named courts above)
@@ -44,6 +43,7 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - **Air dash:** still ~0.1s planar burst; **30s cooldown** (`airDashCooldown`); DummyLocomotor whip + brief cyan trail/squash; `OnAirDashed`.
 - **Jump:** `v.y = jumpSpeed` (fixed launch, not additive with ski/slope residual).
 - **Map:** `SpawnFbx` feet-snap to local Y; succinct PGK clusters (dropped SE hopscotch + 2 banks + Bay B clutter); prefer HiPoly on mulch.
+- **Map grounding:** snap is ground-only + sink-biased (no lift on overhanging slides); dropped Ring_W/E + merry cardinal spinners; Flow thinned to 4 Conn->spine handoffs (no S/N ring / Core / mids).
 
 ## Keep grinding (priority order)
 

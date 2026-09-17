@@ -247,32 +247,18 @@ namespace Tag.Level
         }
 
         /// <summary>
-        /// Sparse hop stones beside the figure-8 — run → jump → slide onto spines.
-        /// jumpSpeed 24.7 / gravity 22 → apex ≈ 13.9 world ≈ 1.39 graybox (WorldScale 10).
-        /// Tops stay ≤ ~1.05 from lawn; end stones sit near Conn→spine handoffs.
-        /// Mid stones keep horizontal chain gaps ~5–6 graybox (skiable / stretch at sprint).
+        /// Conn→spine handoff stones only (W/E NS). Outer-ring + Crash Core + mid stones
+        /// dropped — HiPoly Ring/Loop banks cover height flow; graybox cubes read as clutter.
+        /// jumpSpeed 24.7 / gravity 22 → apex ≈ 1.39 graybox (WorldScale 10).
         /// </summary>
         void BuildFlowSteps()
         {
-            // West NS — west of SpineXw; S/N ends near Conn crest → SpineZs/Zn
+            // West NS — west of SpineXw; near Conn crest → SpineZs/Zn
             FlowStone("Flow_W_S", new Vector3(SpineXw - 2.2f, 0.55f, 19.8f), new Vector3(2.2f, 0.20f, 2.2f));
-            FlowStone("Flow_W_Mid", new Vector3(SpineXw - 2.6f, 0.70f, 27.0f), new Vector3(2.0f, 0.20f, 2.0f));
             FlowStone("Flow_W_N", new Vector3(SpineXw - 2.2f, 0.55f, 34.2f), new Vector3(2.2f, 0.20f, 2.2f));
-            // East NS — east of SpineXe; S/N ends near Conn crest → SpineZs/Zn
+            // East NS — east of SpineXe
             FlowStone("Flow_E_S", new Vector3(SpineXe + 2.2f, 0.55f, 19.8f), new Vector3(2.2f, 0.20f, 2.2f));
-            FlowStone("Flow_E_Mid", new Vector3(SpineXe + 2.6f, 0.70f, 27.0f), new Vector3(2.0f, 0.20f, 2.0f));
             FlowStone("Flow_E_N", new Vector3(SpineXe + 2.2f, 0.55f, 34.2f), new Vector3(2.2f, 0.20f, 2.2f));
-            // Outer south ring (Tron) — beside Conn_Tron_N / Spine_EW_S
-            FlowStone("Flow_S_W", new Vector3(28f, 0.50f, 14.5f), new Vector3(2.1f, 0.18f, 2.1f));
-            FlowStone("Flow_S_Mid", new Vector3(CxTron, 0.60f, 14.5f), new Vector3(2.1f, 0.18f, 2.1f));
-            FlowStone("Flow_S_E", new Vector3(44f, 0.50f, 14.5f), new Vector3(2.1f, 0.18f, 2.1f));
-            // Outer north ring (Ninja) — beside Conn_Ninja_S / Spine_EW_N
-            FlowStone("Flow_N_W", new Vector3(28f, 0.50f, 39.5f), new Vector3(2.1f, 0.18f, 2.1f));
-            FlowStone("Flow_N_Mid", new Vector3(CxNinja, 0.60f, 39.5f), new Vector3(2.1f, 0.18f, 2.1f));
-            FlowStone("Flow_N_E", new Vector3(44f, 0.50f, 39.5f), new Vector3(2.1f, 0.18f, 2.1f));
-            // Crash loft approaches — south rim / north of towers (center vault removed for EW chase)
-            FlowStone("Flow_Core_S", new Vector3(CxCrash, 0.92f, CzCrash - 7.5f), new Vector3(2.8f, 0.22f, 1.8f));
-            FlowStone("Flow_Core_N", new Vector3(CxCrash, 0.92f, CzCrash + 7.0f), new Vector3(2.8f, 0.22f, 1.8f));
         }
 
         void FlowStone(string name, Vector3 localPos, Vector3 scale)
