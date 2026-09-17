@@ -101,40 +101,31 @@ namespace Tag.Art
         int PlaceChasePlayground(Transform root)
         {
             int n = 0;
-            // Dense McDonald's-style soft-play — SW of Crash X (off SpineXw / SpineZs)
+            // Succinct playground: fewer HiPoly clusters, grounded on mulch pads.
             n += SoftPlayPlaza(root, "Play_SoftPlay_CrashSW", new Vector3(19f, 0f, 13.5f), 0f);
-            // Named play areas (readable from spawn / ring)
             n += MerryGoRound(root, "Play_MerryGoRound", new Vector3(15.5f, 0f, 22f), 0f);
             n += SwingSet(root, "Play_Swing", new Vector3(60.5f, 0f, 33.5f), 0f);
             n += KickballField(root, "Play_Kickball", new Vector3(56.5f, 0f, 27f), 0f);
             n += HopscotchCourt(root, "Play_Hopscotch_SW", new Vector3(9.5f, 0f, 9f), 35f);
-            n += HopscotchCourt(root, "Play_Hopscotch_SE", new Vector3(64f, 0f, 8f), -35f);
-            // Outer ring S/N — monkey/tunnels + wall-run faces + slide banks
+            // Outer ring S/N — monkey / slide / short wall face
             n += OuterRingSouth(root, "Play_Ring_S", new Vector3(36f, 0f, 5.5f), 0f);
             n += OuterRingNorth(root, "Play_Ring_N", new Vector3(36f, 0f, 49f), 0f);
-            // Outer ring W/E wall-run strips (far from SpineXw/Xe)
+            // One wall-run strip per side + one bank each (SW/NE diagonals)
             n += WallRunStrip(root, "Play_Ring_W", new Vector3(11f, 0f, 27f), 0f);
             n += WallRunStrip(root, "Play_Ring_E", new Vector3(61f, 0f, 27f), 180f);
-            // Figure-8 loop wall-runs (beside NS spines, not on mid)
             n += LoopWallRun(root, "Play_Loop_W", new Vector3(19f, 0f, 27f), 0f);
             n += LoopWallRun(root, "Play_Loop_E", new Vector3(53f, 0f, 27f), 180f);
-            // Slide banks on outer-ring corners (deck + stairs + slide + side wall)
             n += SlideBank(root, "Play_Bank_SW", new Vector3(20f, 0f, 6f), 0f);
-            n += SlideBank(root, "Play_Bank_SE", new Vector3(52f, 0f, 6f), 0f);
-            n += SlideBank(root, "Play_Bank_NW", new Vector3(20f, 0f, 48f), 180f);
             n += SlideBank(root, "Play_Bank_NE", new Vector3(52f, 0f, 48f), 180f);
-            // Pad-edge slides: tip onto Conn (off mid), yaw toward figure-8 spine jcts
-            // Pirate/Army -> Conn_*_N / SpineZs; Astro/Knight -> Conn_*_S / SpineZn
+            // Pad-edge slides toward Conn / spines
             n += PadSlideExit(root, "Play_Slide_Pirate", new Vector3(16.5f, 0f, 12.0f), 25f);
             n += PadSlideExit(root, "Play_Slide_Army", new Vector3(55.5f, 0f, 12.0f), -25f);
             n += PadSlideExit(root, "Play_Slide_Astro", new Vector3(16.5f, 0f, 42.0f), 155f);
             n += PadSlideExit(root, "Play_Slide_Knight", new Vector3(55.5f, 0f, 42.0f), -155f);
-            // Light spawn lawn toys → nearest path (named courts live above)
             n += SpawnPlay_SW(root);
             n += SpawnPlay_SE(root);
             n += SpawnPlay_NW(root);
             n += SpawnPlay_NE(root);
-            // Sparse spine-side accents (balance / vault) — never on X mid
             n += SpineAccents(root);
             return n;
         }
@@ -146,49 +137,16 @@ namespace Tag.Art
             // Origin SW of SpineXw (24) / SpineZs (18) so Crash EW chase stays open.
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                // --- Bay A frame (core decks) ---
+                // Compact tower on mulch: posts + deck + stairs + net + slide exit
                 ("PGK_Post_Square_3m_LOD0", new Vector3(-2f, 0f, -2f), 0f),
                 ("PGK_Post_Square_3m_LOD0", new Vector3(2f, 0f, -2f), 0f),
                 ("PGK_Post_Square_3m_LOD0", new Vector3(-2f, 0f, 2f), 0f),
                 ("PGK_Post_Square_3m_LOD0", new Vector3(2f, 0f, 2f), 0f),
                 ("PGK_Deck_2x2_LOD0", new Vector3(0f, 1.15f, 0f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(-2f, 1.15f, -2f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(2f, 1.15f, -2f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(-2f, 1.15f, 2f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(2f, 1.15f, 2f), 0f),
-                ("PGK_Deck_1x2_LOD0", new Vector3(0f, 2.05f, 0f), 0f),
-                ("PGK_Post_Square_1_5m_LOD0", new Vector3(-1.1f, 2.05f, 0f), 0f),
-                ("PGK_Post_Square_1_5m_LOD0", new Vector3(1.1f, 2.05f, 0f), 0f),
-                ("PGK_Deck_1x1_LOD0", new Vector3(0f, 2.85f, 0f), 0f),
-                ("PGK_Rail_2m_LOD0", new Vector3(0f, 2.05f, -1.3f), 0f),
-                ("PGK_Rail_2m_LOD0", new Vector3(0f, 2.05f, 1.3f), 0f),
-                // Access: stairs S (Pirate lawn), ladder N, net climb on W — east face open to SpineXw
                 ("PGK_Stairs_5_LOD0", new Vector3(0f, 0f, -4f), 180f),
-                ("PGK_Ladder_Rung_LOD0", new Vector3(0f, 0f, 3.6f), 0f),
-                // --- Net climb line (W flank, ground -> mid -> peak) ---
-                ("Mega_ClimbNet", new Vector3(-3.6f, 0f, -1.2f), 90f),
-                ("Toy_NetFrame", new Vector3(-3.8f, 0f, 1.6f), 90f),
-                ("Toy_SpiralClimber", new Vector3(-4.2f, 0f, 3.4f), 0f),
-                ("PGK_Slide_Spiral270_LOD0", new Vector3(-4.8f, 0f, -3.2f), 180f),
-                // --- Tube continuity (mid deck -> SW Bay B -> ground) ---
-                ("Toy_TunnelTube", new Vector3(-0.2f, 1.15f, -2.6f), 180f),
-                ("PGK_Slide_Tube90_LOD0", new Vector3(-2.4f, 1.15f, -3.8f), 135f),
-                ("Toy_Bridge", new Vector3(-3.6f, 1.2f, -4.2f), -45f),
-                ("Mega_SlideTube", new Vector3(-5.6f, 1.25f, -5.6f), 135f),
-                ("PGK_Slide_Tube90_LOD0", new Vector3(-7.0f, 1.35f, -4.6f), 90f),
-                // Peak exit (straight slide N - readable drop off high deck)
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, 2.05f, 3.8f), 0f),
-                // --- Ground tunnel lane (parallel chase under tube run) ---
-                ("Mega_CrawlTunnel", new Vector3(-2.2f, 0f, -4.0f), 135f),
-                ("PGK_Tunnel_Plastic_LOD0", new Vector3(-4.4f, 0f, -5.4f), 135f),
-                // --- Bay B satellite (further SW — clear of SpineXw / SpineZs / Crash) ---
-                ("PGK_Post_Square_2_5m_LOD0", new Vector3(-5.8f, 0f, -6.6f), 0f),
-                ("PGK_Post_Square_2_5m_LOD0", new Vector3(-7.8f, 0f, -6.6f), 0f),
-                ("PGK_Deck_2x2_LOD0", new Vector3(-6.8f, 1.35f, -6.6f), 0f),
-                ("PGK_Deck_Corner_L_LOD0", new Vector3(-5.0f, 1.35f, -5.2f), 90f),
-                ("Mega_ClimbNet", new Vector3(-8.0f, 0f, -7.8f), -45f),
-                ("Mega_TowerFort", new Vector3(-6.8f, 0f, -8.2f), -30f),
-                // Mulch crumbs under core only
+                ("Mega_ClimbNet", new Vector3(-3.6f, 0f, 0f), 90f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, 1.15f, 3.6f), 0f),
+                ("Mega_CrawlTunnel", new Vector3(0f, 0f, -5.2f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 0f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.2f, 0.02f, -0.8f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1.2f, 0.02f, 0.8f), 0f),
@@ -201,24 +159,15 @@ namespace Tag.Art
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("PGK_Monkey_4m_LOD0", new Vector3(-10f, 0f, 0f), 0f),
-                ("PGK_Monkey_4m_LOD0", new Vector3(10f, 0f, 0f), 0f),
-                ("PGK_Tunnel_Plastic_LOD0", new Vector3(-4f, 0f, -1.5f), 90f),
-                ("Mega_SlideTube", new Vector3(4f, 0f, -1.2f), 0f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, 0.8f, 2.5f), 0f),
-                ("PGK_Rail_2m_LOD0", new Vector3(-7f, 0.9f, 1.2f), 0f),
-                ("PGK_Rail_2m_LOD0", new Vector3(7f, 0.9f, 1.2f), 0f),
-                ("PGK_Spinner_StandOn_LOD0", new Vector3(14f, 0f, -0.5f), 0f),
-                // Wall-run face along ring (Toy_WallPanel + vaults)
-                ("Toy_WallPanel", new Vector3(-6f, 0f, 1.8f), 0f),
-                ("Toy_WallPanel", new Vector3(-3f, 0f, 1.8f), 0f),
-                ("Toy_WallPanel", new Vector3(3f, 0f, 1.8f), 0f),
-                ("Toy_WallPanel", new Vector3(6f, 0f, 1.8f), 0f),
-                ("Toy_VaultRail_100", new Vector3(-4.5f, 0f, 3.2f), 90f),
-                ("Toy_VaultRail_090", new Vector3(4.5f, 0f, 3.2f), 90f),
-                ("PGK_Deck_1x2_LOD0", new Vector3(-12f, 1.2f, 0.5f), 0f),
-                ("PGK_Stairs_5_LOD0", new Vector3(-12f, 0f, -2.5f), 180f),
-                ("PGK_Slide_Tube90_LOD0", new Vector3(-12f, 1.2f, 3.5f), 0f),
+                ("PGK_Monkey_4m_LOD0", new Vector3(-8f, 0f, 0f), 0f),
+                ("PGK_Monkey_4m_LOD0", new Vector3(8f, 0f, 0f), 0f),
+                ("Mega_SlideTube", new Vector3(0f, 0f, -1.0f), 0f),
+                ("Toy_WallPanel", new Vector3(-4f, 0f, 1.6f), 0f),
+                ("Toy_WallPanel", new Vector3(4f, 0f, 1.6f), 0f),
+                ("Toy_VaultRail_100", new Vector3(0f, 0f, 2.8f), 90f),
+                ("PGK_Stairs_5_LOD0", new Vector3(-10f, 0f, -2f), 180f),
+                ("PGK_Deck_1x2_LOD0", new Vector3(-10f, 1.2f, 0.4f), 0f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(-10f, 1.2f, 3.2f), 0f),
             });
         }
 
@@ -228,23 +177,15 @@ namespace Tag.Art
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("PGK_Monkey_4m_LOD0", new Vector3(-10f, 0f, 0f), 0f),
-                ("PGK_Monkey_4m_LOD0", new Vector3(10f, 0f, 0f), 0f),
-                ("Mega_CrawlTunnel", new Vector3(-4f, 0f, 1.2f), 90f),
-                ("PGK_Tunnel_Plastic_LOD0", new Vector3(4f, 0f, 1.5f), 90f),
-                ("PGK_Slide_Tube90_LOD0", new Vector3(0f, 0.6f, -2.5f), 180f),
-                ("PGK_Balance_Beam_3m_LOD0", new Vector3(-7f, 0.5f, -1f), 0f),
-                ("PGK_Balance_Beam_3m_LOD0", new Vector3(7f, 0.5f, -1f), 0f),
-                ("Mega_Spinner", new Vector3(-14f, 0f, 0.5f), 0f),
-                ("Toy_WallPanel", new Vector3(-6f, 0f, -1.8f), 180f),
-                ("Toy_WallPanel", new Vector3(-3f, 0f, -1.8f), 180f),
-                ("Toy_WallPanel", new Vector3(3f, 0f, -1.8f), 180f),
-                ("Toy_WallPanel", new Vector3(6f, 0f, -1.8f), 180f),
-                ("Toy_VaultRail_105", new Vector3(-4.5f, 0f, -3.2f), 90f),
-                ("Toy_VaultRail_100", new Vector3(4.5f, 0f, -3.2f), 90f),
-                ("PGK_Deck_1x2_LOD0", new Vector3(12f, 1.2f, -0.5f), 0f),
-                ("PGK_Stairs_5_LOD0", new Vector3(12f, 0f, 2.5f), 0f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(12f, 1.2f, -3.5f), 180f),
+                ("PGK_Monkey_4m_LOD0", new Vector3(-8f, 0f, 0f), 0f),
+                ("PGK_Monkey_4m_LOD0", new Vector3(8f, 0f, 0f), 0f),
+                ("Mega_CrawlTunnel", new Vector3(0f, 0f, 1.0f), 90f),
+                ("Toy_WallPanel", new Vector3(-4f, 0f, -1.6f), 180f),
+                ("Toy_WallPanel", new Vector3(4f, 0f, -1.6f), 180f),
+                ("Toy_VaultRail_100", new Vector3(0f, 0f, -2.8f), 90f),
+                ("PGK_Stairs_5_LOD0", new Vector3(10f, 0f, 2f), 0f),
+                ("PGK_Deck_1x2_LOD0", new Vector3(10f, 1.2f, -0.4f), 0f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(10f, 1.2f, -3.2f), 180f),
             });
         }
 
@@ -257,25 +198,16 @@ namespace Tag.Art
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("PGK_Post_Square_2_5m_LOD0", new Vector3(0f, 0f, -5f), 0f),
-                ("PGK_Post_Square_2_5m_LOD0", new Vector3(0f, 0f, 5f), 0f),
-                ("PGK_Deck_1x2_LOD0", new Vector3(0f, 1.45f, 0f), 90f),
-                ("PGK_Deck_1x1_LOD0", new Vector3(0f, 1.45f, -3.2f), 0f),
-                ("PGK_Deck_1x1_LOD0", new Vector3(0f, 1.45f, 3.2f), 0f),
-                ("PGK_Rail_2m_LOD0", new Vector3(0f, 1.45f, -2f), 90f),
-                ("PGK_Rail_2m_LOD0", new Vector3(0f, 1.45f, 2f), 90f),
-                ("PGK_Stairs_5_LOD0", new Vector3(0f, 0f, -7f), 180f),
-                ("Mega_ParkourRamp", new Vector3(2.5f, 0f, -5.5f), 0f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(2.5f, 1.2f, 5.5f), 0f),
-                ("PGK_Slide_Tube90_LOD0", new Vector3(-0.5f, 1.45f, 6.5f), 0f),
-                // Vertical run face (along Z) + vault approach on chase side
-                ("Toy_WallPanel", new Vector3(-2.2f, 0f, -4.5f), 90f),
-                ("Toy_WallPanel", new Vector3(-2.2f, 0f, -1.5f), 90f),
-                ("Toy_WallPanel", new Vector3(-2.2f, 0f, 1.5f), 90f),
-                ("Toy_WallPanel", new Vector3(-2.2f, 0f, 4.5f), 90f),
-                ("Toy_VaultRail_090", new Vector3(2f, 0f, -3.5f), 0f),
+                ("PGK_Post_Square_2_5m_LOD0", new Vector3(0f, 0f, -4f), 0f),
+                ("PGK_Post_Square_2_5m_LOD0", new Vector3(0f, 0f, 4f), 0f),
+                ("PGK_Deck_1x2_LOD0", new Vector3(0f, 1.35f, 0f), 90f),
+                ("PGK_Stairs_5_LOD0", new Vector3(0f, 0f, -6.2f), 180f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(2.2f, 1.2f, 4.8f), 0f),
+                ("Toy_WallPanel", new Vector3(-2.0f, 0f, -3f), 90f),
+                ("Toy_WallPanel", new Vector3(-2.0f, 0f, 0f), 90f),
+                ("Toy_WallPanel", new Vector3(-2.0f, 0f, 3f), 90f),
                 ("Toy_VaultRail_100", new Vector3(2f, 0f, 0f), 0f),
-                ("Toy_VaultRail_105", new Vector3(2f, 0f, 3.5f), 0f),
+                ("Mega_ParkourRamp", new Vector3(2.4f, 0f, -4.8f), 0f),
             });
         }
 
@@ -287,20 +219,15 @@ namespace Tag.Art
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("Toy_WallPanel", new Vector3(0f, 0f, -5f), 90f),
-                ("Toy_WallPanel", new Vector3(0f, 0f, -2.5f), 90f),
+                ("Toy_WallPanel", new Vector3(0f, 0f, -3.5f), 90f),
                 ("Toy_WallPanel", new Vector3(0f, 0f, 0f), 90f),
-                ("Toy_WallPanel", new Vector3(0f, 0f, 2.5f), 90f),
-                ("Toy_WallPanel", new Vector3(0f, 0f, 5f), 90f),
-                ("Toy_VaultRail_100", new Vector3(2f, 0f, -4f), 0f),
-                ("Toy_VaultRail_105", new Vector3(2f, 0f, 0f), 0f),
-                ("Toy_VaultRail_090", new Vector3(2f, 0f, 4f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(0.4f, 0f, -1.5f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(0.4f, 0f, 1.5f), 0f),
+                ("Toy_WallPanel", new Vector3(0f, 0f, 3.5f), 90f),
+                ("Toy_VaultRail_100", new Vector3(2f, 0f, 0f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(0.4f, 0f, -1.2f), 0f),
+                ("PGK_Post_Square_2m_LOD0", new Vector3(0.4f, 0f, 1.2f), 0f),
                 ("PGK_Deck_1x2_LOD0", new Vector3(0.4f, 1.35f, 0f), 90f),
-                ("PGK_Stairs_5_LOD0", new Vector3(0.4f, 0f, -4.5f), 180f),
-                ("PGK_Slide_Straight_M_LOD0", new Vector3(0.4f, 1.35f, 4.5f), 0f),
-                ("Mega_ParkourRamp", new Vector3(3.2f, 0f, -5.5f), 0f),
+                ("PGK_Stairs_5_LOD0", new Vector3(0.4f, 0f, -4.2f), 180f),
+                ("PGK_Slide_Straight_M_LOD0", new Vector3(0.4f, 1.35f, 4.0f), 0f),
             });
         }
 
@@ -388,27 +315,16 @@ namespace Tag.Art
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                // Hub + cardinal Toy ring (reads at WorldScale 10)
                 ("Mega_Spinner", new Vector3(0f, 0f, 0f), 0f),
-                ("Toy_Spinner", new Vector3(0f, 0f, 3.6f), 0f),
-                ("Toy_Spinner", new Vector3(3.6f, 0f, 0f), 90f),
-                ("Toy_Spinner", new Vector3(0f, 0f, -3.6f), 180f),
-                ("Toy_Spinner", new Vector3(-3.6f, 0f, 0f), -90f),
-                // Outer stand-on orbit (diagonals)
-                ("PGK_Spinner_StandOn_LOD0", new Vector3(3.2f, 0f, 3.2f), 45f),
-                ("PGK_Spinner_StandOn_LOD0", new Vector3(-3.2f, 0f, -3.2f), -135f),
-                // Mulch tile ring outline (not a filled blob)
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 5f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(5f, 0.02f, 0f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -5f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-5f, 0.02f, 0f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3.5f, 0.02f, 3.5f), 45f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-3.5f, 0.02f, 3.5f), -45f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3.5f, 0.02f, -3.5f), -45f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-3.5f, 0.02f, -3.5f), 45f),
-                // Spectators west only (outer flank; SpineXw east stays clear)
-                ("Toy_Bench", new Vector3(-6.2f, 0f, -2f), 90f),
-                ("Toy_Bench", new Vector3(-6.2f, 0f, 2f), 90f),
+                ("Toy_Spinner", new Vector3(0f, 0f, 3.4f), 0f),
+                ("Toy_Spinner", new Vector3(3.4f, 0f, 0f), 90f),
+                ("Toy_Spinner", new Vector3(0f, 0f, -3.4f), 180f),
+                ("Toy_Spinner", new Vector3(-3.4f, 0f, 0f), -90f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 4.5f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(4.5f, 0.02f, 0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -4.5f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-4.5f, 0.02f, 0f), 0f),
+                ("Toy_Bench", new Vector3(-6.0f, 0f, 0f), 90f),
             });
         }
 
@@ -418,27 +334,14 @@ namespace Tag.Art
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                // A-frame bay: twin bars + top rail (reads as swing set at WorldScale 10)
                 ("Toy_Bars", new Vector3(-3f, 0f, 0f), 0f),
                 ("Toy_Bars", new Vector3(3f, 0f, 0f), 0f),
                 ("Toy_Bars_Rail", new Vector3(0f, 0f, 0f), 90f),
-                // Parallel monkey bay (second row of seats / hang)
-                ("PGK_Monkey_4m_LOD0", new Vector3(0f, 0f, 4f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(-4.5f, 0f, 0f), 0f),
-                ("PGK_Post_Square_2m_LOD0", new Vector3(4.5f, 0f, 0f), 0f),
-                ("PGK_Rail_2m_LOD0", new Vector3(0f, 1.7f, 0f), 0f),
-                // Clear mulch fall zone under seats (outline apron, not filled)
+                ("PGK_Monkey_4m_LOD0", new Vector3(0f, 0f, 3.6f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, -2.8f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -2.8f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, -2.8f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, -4f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -4f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, -4f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-3.2f, 0.02f, -3.4f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3.2f, 0.02f, -3.4f), 0f),
-                // Spectators east only (outer flank; SpineXe west stays clear)
-                ("Toy_Bench", new Vector3(6f, 0f, -2f), -90f),
-                ("Toy_Bench", new Vector3(6f, 0f, 2f), -90f),
+                ("Toy_Bench", new Vector3(6f, 0f, 0f), -90f),
             });
         }
 
@@ -448,27 +351,15 @@ namespace Tag.Art
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                // Goals N/S of diamond (inset from EW spines z=18/36)
                 ("Toy_Goal", new Vector3(0f, 0f, -5.5f), 0f),
                 ("Toy_Goal", new Vector3(0f, 0f, 5.5f), 180f),
-                // Crossed rubber infield
                 ("Toy_RubberTrack_C3", new Vector3(0f, 0.02f, 0f), 0f),
-                ("Toy_RubberTrack_C3", new Vector3(0f, 0.02f, 0f), 90f),
-                // Clear diamond: home / 1B / 2B / 3B / mound
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -4.5f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3.5f, 0.02f, 0f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 4.5f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-3.5f, 0.02f, 0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -4.2f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3.2f, 0.02f, 0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 4.2f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-3.2f, 0.02f, 0f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 0f), 0f),
-                // Base-path midpoints (outline, not a filled blob)
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, -2.5f), 45f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, 2.5f), -45f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, 2.5f), 45f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, -2.5f), -45f),
-                // Sideline only on east (toward Ring_E) — SpineXe west stays clear
-                ("Toy_Bench", new Vector3(5.5f, 0f, -3f), -90f),
-                ("Toy_Bench", new Vector3(5.5f, 0f, 3f), -90f),
-                ("Toy_TrashCan", new Vector3(5.5f, 0f, -5f), 0f),
+                ("Toy_Bench", new Vector3(5.5f, 0f, 0f), -90f),
             });
         }
 
@@ -506,16 +397,12 @@ namespace Tag.Art
             // Off cardinal midlines — beside SpineXw/Xe and EW spines
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                ("PGK_Balance_Beam_3m_LOD0", new Vector3(21f, 0.4f, 18f), 90f),
-                ("PGK_Balance_Beam_3m_LOD0", new Vector3(51f, 0.4f, 36f), 90f),
-                ("Toy_VaultRail_090", new Vector3(21f, 0f, 23f), 0f),
-                ("Toy_VaultRail_100", new Vector3(21f, 0f, 30f), 0f),
-                ("Toy_VaultRail_090", new Vector3(51f, 0f, 31f), 0f),
-                ("Toy_VaultRail_105", new Vector3(51f, 0f, 24f), 0f),
+                ("PGK_Balance_Beam_3m_LOD0", new Vector3(21f, 0f, 18f), 90f),
+                ("PGK_Balance_Beam_3m_LOD0", new Vector3(51f, 0f, 36f), 90f),
+                ("Toy_VaultRail_100", new Vector3(21f, 0f, 27f), 0f),
+                ("Toy_VaultRail_100", new Vector3(51f, 0f, 27f), 0f),
                 ("Toy_WallPanel", new Vector3(21.5f, 0f, 26.5f), 90f),
                 ("Toy_WallPanel", new Vector3(50.5f, 0f, 27.5f), 90f),
-                ("PGK_Dome_Geo_3m_LOD0", new Vector3(40f, 0f, 39f), 0f),
-                ("Mega_SkyBridge", new Vector3(40f, 0f, 15f), 0f),
             });
         }
 
@@ -576,11 +463,31 @@ namespace Tag.Art
             go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
             go.transform.localScale = Vector3.one * scale;
             StripImportCameras(go);
+            SnapFeetToLocalY(go, localPos.y);
             // Strip import/prefab colliders so Ensure can rebuild same-frame (ParkPropDresser path).
             foreach (var col in go.GetComponentsInChildren<Collider>(true))
                 Object.DestroyImmediate(col);
             StaticPropColliders.EnsureStaticColliders(go);
             return go;
+        }
+
+        /// <summary>
+        /// localPos.y is the support plane (mulch / deck). Shift so mesh bounds.min.y sits there.
+        /// </summary>
+        static void SnapFeetToLocalY(GameObject go, float localGroundY)
+        {
+            if (go == null || go.transform.parent == null) return;
+            var rends = go.GetComponentsInChildren<Renderer>(true);
+            if (rends == null || rends.Length == 0) return;
+            Bounds b = rends[0].bounds;
+            for (int i = 1; i < rends.Length; i++)
+                b.Encapsulate(rends[i].bounds);
+            float targetY = go.transform.parent.TransformPoint(new Vector3(0f, localGroundY, 0f)).y;
+            float dy = targetY - b.min.y;
+            if (Mathf.Abs(dy) < 0.001f) return;
+            var lp = go.transform.localPosition;
+            lp.y += dy;
+            go.transform.localPosition = lp;
         }
 
         static Dictionary<string, string> IndexHiPoly()

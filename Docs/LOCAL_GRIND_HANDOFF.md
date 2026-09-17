@@ -38,6 +38,13 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - `Play_SpineAccents`: balance beams, vaults, wall panels, dome, skybridge - off midlines
 - Graybox `PlayPad_*` mulch/rubber floors under named courts (`CutArenaBootstrap.BuildNamedPlayPads`)
 
+## Playtest fix pass (Sep 16 evening CT)
+
+- **Slide:** carry `_slideStartSpeed` only; friction degrade (softer downhill); hard clamp — never above entry. `slideDownhillAccel=0`.
+- **Air dash:** still ~0.1s planar burst; **30s cooldown** (`airDashCooldown`); DummyLocomotor whip + brief cyan trail/squash; `OnAirDashed`.
+- **Jump:** `v.y = jumpSpeed` (fixed launch, not additive with ski/slope residual).
+- **Map:** `SpawnFbx` feet-snap to local Y; succinct PGK clusters (dropped SE hopscotch + 2 banks + Bay B clutter); prefer HiPoly on mulch.
+
 ## Keep grinding (priority order)
 
 ### 1) Playground map layout (iterate in Play)

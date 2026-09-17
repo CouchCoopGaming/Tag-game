@@ -318,9 +318,8 @@ namespace Tag.Level
             Box("PlayPad_Swing", new Vector3(60.5f, y, 33.5f), new Vector3(14f, t, 12f), _matPlayMulch);
             // Kickball rubber — between Loop_E and Ring_E; apron for run-through (west face open)
             Box("PlayPad_Kickball", new Vector3(56.5f, y, 27f), new Vector3(14f, t, 16f), _matPlayRubber);
-            // Hopscotch rubber — apron around tile chain so players can run beside
+            // Hopscotch rubber — SW only (succinct map; SE dropped)
             Box("PlayPad_Hopscotch_SW", new Vector3(9.5f, y, 9f), new Vector3(8f, t, 11f), _matPlayRubber);
-            Box("PlayPad_Hopscotch_SE", new Vector3(64f, y, 8f), new Vector3(8f, t, 11f), _matPlayRubber);
         }
 
         // --- Zone pads (3–5 signature toys; open sightlines to campus) --------------
