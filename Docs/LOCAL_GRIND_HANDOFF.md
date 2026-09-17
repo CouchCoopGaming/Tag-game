@@ -44,10 +44,11 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - **Jump:** `v.y = jumpSpeed` (fixed launch, not additive with ski/slope residual).
 - **Map:** `SpawnFbx` feet-snap to local Y; succinct PGK clusters (dropped SE hopscotch + 2 banks + Bay B clutter); prefer HiPoly on mulch.
 - **Map grounding:** snap is ground-only + sink-biased (no lift on overhanging slides); dropped Ring_W/E + merry cardinal spinners; Flow thinned to 4 Conn->spine handoffs (no S/N ring / Core / mids).
-- **Stem seating:** `SpawnFbx` name rules - `PGK_Slide_Straight*` mouth -1.77, `PGK_Slide_Spiral*` feet -0.51, `PGK_Stairs*` -0.06, `PGK_Slide_Tube*` feet +0.52, `Mega_SlideTube` +0.24, `Toy_TunnelTube` +0.02 (Mega_CrawlTunnel ~0); `Toy_WallPanel` / `Toy_VaultRail*` HiPoly feet ~0; snap still uses authored Y (elevated decks/mouths skip snap; sink-biased on ground).
+- **Stem seating:** `SpawnFbx` name rules - `PGK_Slide_Straight*` mouth -1.77, `PGK_Slide_Spiral*` feet -0.51, `PGK_Stairs*` -0.06, `PGK_Slide_Tube*` feet +0.52, `Mega_SlideTube` +0.24, `Toy_TunnelTube` +0.02 (Mega_CrawlTunnel ~0); `Toy_Bars` -0.23 (Rail 0); `Toy_WallPanel` / `Toy_VaultRail*` HiPoly feet ~0; snap still uses authored Y (elevated decks/mouths skip snap; sink-biased on ground).
 - **Stairs/deck match:** soft-play + pad clusters use Stairs5DeckY=0.8 (Stairs_5 top ~0.84; kit snap). Decks/slide mouths/rails share that Y; StemSeatYOffset unchanged.
 - **SoftPlay tube restore:** re-added TunnelTube->Tube90->Mega_SlideTube SW of core deck (author Y=Stairs5DeckY); no Bay B tower clutter; Crash EW clear.
 - **VaultRail StemSeat check (no-op):** Blender AABB on `Toy_VaultRail_{090,100,105}_Hi` min height axis = 0.000 — feet already on pivot; no StemSeatYOffset. Spot-check vs wall strips: Ring_S/N vault z±2.8 vs panels ±1.85 (~0.25m face gap after yaw90); Loop/Bank/WallRunStrip vaults on +X opposite panels on -X (clear); SpineAccents vault beside panel intentional adjacency.
+- **Swing/merry/hopscotch/kickball StemSeat pass:** Blender AABB (FBX height axis = Z in source) on court toys. `Play_MerryGoRound` Mega_Spinner feet~0; `Play_Hopscotch_SW` Safety_Tile feet~0 (author Y=0.02); `Play_Kickball` Goal/Rubber/Bench ~0 / Goal feet~-0.05 (snap won't lift; left as-is this pass). `Play_Swing` `Toy_Bars` feet~+0.23 above pivot - added `StemSeatYOffset=-0.23` (`Toy_Bars_Rail` stays 0). Snap still sink-biases residual floaters.
 
 ## Keep grinding (priority order)
 
@@ -98,6 +99,6 @@ Do not push; parent agent pushes.
 - Feel SoftPlay tube run in Play: pieces sit on deck/mulch (not floating); tube path readable SW; Crash bowl open.
 - Tune tube yaw/XZ if mouths misalign; stem Y offsets already at tip.
 - **Wall-run strips:** HiPoly `Toy_WallPanel` feet ~0; thin-Z face — Loop/WallRunStrip yaw **90** (NS), Ring_S yaw **0** / Ring_N yaw **180**, Bank yaw **90**. Abutted (~1.6): Ring pairs at ±2.4/±4.0 z±1.85 (clear monkeys ±8); Loop panels x=-2.35; WallRunStrip x=-1.2; Bank x=-2.85. Feel continuous run face in Play.
-- **VaultRail:** no StemSeatYOffset (HiPoly feet @0); placement near strips OK — leave as-is unless Play shows float/sink.
+- **Swing Bars:** `Toy_Bars` StemSeat -0.23 seated; feel Play_Swing feet on mulch. Optional next: Kickball Goal feet~-0.05 (buried; snap refuses lift) or SpawnLead Seesaw/Bumper float (~0.10/0.17).
 - Mannequin polish overnight OK.
 
