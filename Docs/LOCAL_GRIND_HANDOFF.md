@@ -44,6 +44,7 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - **Jump:** `v.y = jumpSpeed` (fixed launch, not additive with ski/slope residual).
 - **Map:** `SpawnFbx` feet-snap to local Y; succinct PGK clusters (dropped SE hopscotch + 2 banks + Bay B clutter); prefer HiPoly on mulch.
 - **Map grounding:** snap is ground-only + sink-biased (no lift on overhanging slides); dropped Ring_W/E + merry cardinal spinners; Flow thinned to 4 Conn->spine handoffs (no S/N ring / Core / mids).
+- **Stem seating:** `SpawnFbx` name rules - `PGK_Slide_Straight*` mouth offset -1.77, `PGK_Slide_Spiral*` feet -0.51, `PGK_Stairs*` -0.06; snap still uses authored Y (elevated decks/mouths skip snap).
 
 ## Keep grinding (priority order)
 

@@ -451,11 +451,14 @@ namespace Tag.Art
             if (go == null) go = Instantiate(prefab);
             go.name = name;
             go.transform.SetParent(parent, false);
+            // Author Y = support/attach plane; stem offset fixes FBX pivot quirks (slide mouth, stair tread).
+            float authoredY = localPos.y;
+            localPos.y += StemSeatYOffset(name);
             go.transform.localPosition = localPos;
             go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
             go.transform.localScale = Vector3.one * scale;
             StripImportCameras(go);
-            SnapFeetToLocalY(go, localPos.y);
+            SnapFeetToLocalY(go, authoredY);
             // Strip import/prefab colliders so Ensure can rebuild same-frame (ParkPropDresser path).
             foreach (var col in go.GetComponentsInChildren<Collider>(true))
                 Object.DestroyImmediate(col);
@@ -464,7 +467,21 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Seat ground props on mulch/lawn. localPos.y is the support plane.
+        /// Name-based pivot seating. Author local Y means mulch feet or deck/mouth attach.
+        /// Measured Unity AABB: Straight slide mouth ~+1.77, Spiral feet ~+0.51, Stairs tread0 ~+0.06.
+        /// Decks/posts are bottom-pivoted (0). Coarse — tune in Play if needed.
+        /// </summary>
+        static float StemSeatYOffset(string stem)
+        {
+            if (string.IsNullOrEmpty(stem)) return 0f;
+            if (stem.StartsWith("PGK_Slide_Straight")) return -1.77f; // mouth -> authored Y
+            if (stem.StartsWith("PGK_Slide_Spiral")) return -0.51f;   // feet -> authored Y
+            if (stem.StartsWith("PGK_Stairs")) return -0.06f;         // first tread -> mulch
+            return 0f;
+        }
+
+        /// <summary>
+        /// Seat ground props on mulch/lawn. authoredY is the support plane (before stem offset).
         /// Ground-only + sink-biased: never lift overhanging slides/stairs (AABB below pivot
         /// would otherwise float the whole assembly off the deck).
         /// </summary>
