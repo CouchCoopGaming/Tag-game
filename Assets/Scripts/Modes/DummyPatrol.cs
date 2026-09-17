@@ -1,55 +1,99 @@
+using System.Collections.Generic;
 using Tag.Gameplay;
-using Tag.Movement;
+using Tag.Trail;
+using TagArena.Movement;
 using UnityEngine;
 
 namespace Tag.Modes
 {
     /// <summary>
-    /// Dummy AI v0 (SP demo): chase+punch when It; flee when not. Same punch kit, no range cheat.
-    /// Feel pass: close-range chase bump, mild lead, no orbit when already facing,
-    /// Hot Potato flee urgency when fuse is low.
-    /// Spec: tag-gdd/DUMMY-AI-v0.md
+    /// Dummy AI v1 (SP demo): chase+punch when It; flee when not.
+    /// Feeds TagArena PlayerMotor via PlayerInputReader.ExternalControl (no RB velocity fight).
+    /// Trail Tag: samples nearby TrailSegments and blends a lateral flee wish into steering.
+    /// Hot Potato: when fuse Remaining is low (warnSec ~10), It chases harder to dump the tag;
+    /// non-It flees harder from the current It.
+    /// Least It: when It, prefer chasing runners with low TimeAsIt (leaders) to push their clocks;
+    /// when not It, bias flee/wander toward nearby non-It allies.
     /// </summary>
-    [RequireComponent(typeof(CharacterController))]
     public class DummyPatrol : MonoBehaviour
     {
-        [SerializeField] float speed = 4.2f;
         [SerializeField] float radius = 5.5f;
         [SerializeField] float turnSpeed = 220f;
-        [SerializeField] float chaseSpeedMul = 1.0f;
-        [SerializeField] float punchRange = 1.2f;
-        [SerializeField] float punchConeDeg = 40f;
-        [SerializeField] float itGraceSec = 1f;
-        [SerializeField] float aggression = 0.85f;
-        [SerializeField] float cooldownMin = 0.6f;
-        [SerializeField] float cooldownMax = 0.9f;
+        [Tooltip("Fallback when PunchHitbox/Tuning unavailable. Prefer syncing from PunchTagTuning.reach.")]
+        [SerializeField] float punchRange = 1.55f;
+        [Tooltip("Fallback full cone (deg). Prefer syncing from PunchTagTuning width/reach.")]
+        [SerializeField] float punchConeDeg = 36f;
+        [SerializeField] float itGraceSec = 0.85f;
+        [SerializeField] float aggression = 0.92f;
+        [SerializeField] float cooldownMin = 0.5f;
+        [SerializeField] float cooldownMax = 0.78f;
         [SerializeField] float decisionHz = 5f;
         [SerializeField] Vector3 centerOffset = Vector3.zero;
-        [SerializeField] float closeChaseRange = 3f;
-        [SerializeField] float closeChaseSpeedMul = 1.15f;
-        [SerializeField] float leadSeconds = 0.25f;
-        [SerializeField] float faceAlignDeg = 18f;
+        [SerializeField] float closeChaseRange = 3.5f;
+        [SerializeField] float leadSeconds = 0.32f;
+        [SerializeField] float faceAlignDeg = 16f;
+        [Tooltip("Fallback Hot Potato fuse warn window when HotPotatoTuning unavailable.")]
         [SerializeField] float hotPotatoUrgencySec = 10f;
-        [SerializeField] float fleeUrgencyMul = 1.18f;
+        [Tooltip("Only flee when It is within this planar distance; otherwise wander.")]
+        [SerializeField] float fleeThreatRange = 14f;
+        [Tooltip("Blend of lateral strafe into flee dir so pure radial chase is harder.")]
+        [SerializeField] float fleeStrafeBias = 0.35f;
+        [Tooltip("Seconds of threat velocity lead when computing flee-from point.")]
+        [SerializeField] float fleeLeadSeconds = 0.35f;
+        [Tooltip("Forward wish strength while wandering (motor treats y>0.4 as sprint).")]
+        [SerializeField] float wanderMoveY = 0.35f;
+        [Tooltip("Forward wish while fleeing under Hot Potato urgency.")]
+        [SerializeField] float fleeUrgencyMoveY = 1f;
+        [Tooltip("Extra planar flee range when Hot Potato fuse is in the warn window.")]
+        [SerializeField] float fleeUrgencyThreatBonus = 6f;
+        [Tooltip("Punch cooldown scale when It and Hot Potato fuse is urgent (lower = dump faster).")]
+        [SerializeField] float chaseUrgencyCooldownScale = 0.62f;
+        [Header("Trail Tag avoid")]
+        [Tooltip("Only active when TagModeController SelectedMode is TrailTag.")]
+        [SerializeField] float trailAvoidRange = 8f;
+        [Tooltip("Lateral bias on trail flee (same idea as fleeStrafeBias).")]
+        [SerializeField] float trailAvoidStrafeBias = 0.45f;
+        [Tooltip("How hard trail flee blends into chase/flee/wander wish (0=off).")]
+        [SerializeField] float trailAvoidWeight = 0.7f;
+        [Header("Least It bias")]
+        [Tooltip("When It in Least It: meters of chase cost per second of target TimeAsIt (higher = stronger preference for low-time leaders).")]
+        [SerializeField] float leastItChaseTimeWeight = 0.75f;
+        [Tooltip("When not It in Least It: blend flee/wander toward nearest non-It ally (0=off).")]
+        [SerializeField] float leastItAllySeekWeight = 0.45f;
 
-        CharacterController _cc;
+        PlayerInputReader _input;
+        PlayerRagdoll _ragdoll;
+        PlayerMotor _selfMotor;
         ItController _it;
         PunchHitbox _punch;
         Vector3 _center;
         float _angle;
-        float _gravity;
         float _cooldown;
         float _decisionTimer;
         ItController _target;
         PlayerMotor _targetMotor;
-        CharacterController _targetCc;
         TagModeController _modes;
         float _itGraceTimer;
         bool _wasIt;
+        Vector3 _trailFleeWish;
+        readonly List<TrailSegment> _trailActiveScratch = new List<TrailSegment>();
 
         void Awake()
         {
-            _cc = GetComponent<CharacterController>();
+            _input = GetComponent<PlayerInputReader>();
+            if (_input == null) _input = gameObject.AddComponent<PlayerInputReader>();
+            _input.ExternalControl = true;
+
+            _ragdoll = GetComponent<PlayerRagdoll>();
+            _selfMotor = GetComponent<PlayerMotor>();
+            // Motor must stay unlocked so locomotion + PunchHitbox can run.
+            if (_selfMotor != null && _selfMotor.IsMotorLocked)
+                _selfMotor.SetMotorLocked(false);
+
+            // Never enable legacy CharacterController — TagArena is RB-only.
+            var cc = GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+
             _it = GetComponent<ItController>();
             if (_it == null) _it = gameObject.AddComponent<ItController>();
             if (string.IsNullOrEmpty(_it.PlayerId) || _it.PlayerId == "Player" || _it.PlayerId == gameObject.name)
@@ -72,17 +116,32 @@ namespace Tag.Modes
                 _modes.RegisterPlayer(_it);
         }
 
-        void Update()
+        void FixedUpdate()
         {
-            if (_it != null && _it.IsEliminated) return;
-            if (_cc == null || !_cc.enabled) return;
+            if (_it != null && _it.IsEliminated)
+            {
+                StopWish();
+                return;
+            }
+            if (_ragdoll != null && _ragdoll.IsRagdolling)
+            {
+                StopWish();
+                return;
+            }
+            if (_selfMotor != null && _selfMotor.IsMotorLocked)
+            {
+                // Stun / ragdoll proxy owns the lock — do not fight it.
+                StopWish();
+                return;
+            }
 
-            float dt = Time.deltaTime;
+            float dt = Time.fixedDeltaTime;
             _decisionTimer -= dt;
             if (_decisionTimer <= 0f)
             {
                 _decisionTimer = 1f / Mathf.Max(1f, decisionHz);
                 Retarget();
+                RefreshTrailFleeWish();
             }
 
             bool isIt = _it != null && _it.IsIt;
@@ -96,31 +155,212 @@ namespace Tag.Modes
                 TickFleeOrWander(dt);
         }
 
+        void StopWish()
+        {
+            if (_input == null) return;
+            _input.ExternalControl = true;
+            _input.SetExternalMove(Vector2.zero, false);
+        }
+
+        /// <summary>
+        /// 0 = calm / not Hot Potato; 1 = fuse about to pop (Remaining near 0).
+        /// Uses TagModeController.Remaining vs HotPotatoTuning.warnSec (fallback: hotPotatoUrgencySec).
+        /// </summary>
+        float HotPotatoFuseUrgency()
+        {
+            if (_modes == null || _modes.SelectedMode != TagModeId.HotPotato)
+                return 0f;
+            float remain = _modes.Remaining;
+            if (remain <= 0f)
+                return 0f;
+            float warnSec = hotPotatoUrgencySec;
+            var tuning = _modes.HotPotatoTuningAsset;
+            if (tuning != null && tuning.warnSec > 0f)
+                warnSec = tuning.warnSec;
+            float warn = Mathf.Max(0.5f, warnSec);
+            return 1f - Mathf.Clamp01(remain / warn);
+        }
+
+        bool HotPotatoUrgent() => HotPotatoFuseUrgency() > 0.01f;
+
         float EffectiveAggression()
         {
             float a = aggression;
             if (_modes != null && _modes.SelectedMode == TagModeId.LeastIt)
-                a = 1.0f; // NextPunch pressure
+                a = 1.0f;
             if (_modes != null && _modes.SelectedMode == TagModeId.HotPotato)
-                a = Mathf.Max(a, 0.95f); // prioritize punch
+            {
+                a = Mathf.Max(a, 0.95f);
+                // Desperate tag dump: near-certain punch when fuse is in the warn window.
+                float u = HotPotatoFuseUrgency();
+                if (u > 0f)
+                    a = Mathf.Lerp(a, 1f, u);
+            }
             return a;
+        }
+
+        float EffectiveLeadSeconds()
+        {
+            float lead = leadSeconds;
+            float u = HotPotatoFuseUrgency();
+            if (u > 0f && _it != null && _it.IsIt)
+                lead = Mathf.Lerp(lead, lead * 1.35f, u);
+            return lead;
+        }
+
+        float EffectiveFleeThreatRange()
+        {
+            float range = fleeThreatRange;
+            float u = HotPotatoFuseUrgency();
+            if (u > 0f)
+                range += fleeUrgencyThreatBonus * u;
+            return range;
+        }
+
+        float EffectiveFleeStrafeBias()
+        {
+            float bias = fleeStrafeBias;
+            float u = HotPotatoFuseUrgency();
+            // Less lateral wobble when fuse is low — commit to getting away from It.
+            if (u > 0f)
+                bias = Mathf.Lerp(bias, bias * 0.35f, u);
+            return bias;
+        }
+
+        float EffectiveFleeLeadSeconds()
+        {
+            float lead = fleeLeadSeconds;
+            float u = HotPotatoFuseUrgency();
+            if (u > 0f)
+                lead = Mathf.Lerp(lead, lead * 1.4f, u);
+            return lead;
+        }
+
+        /// <summary>Match PunchHitbox / PunchTagTuning.reach so AI swings when the hitbox can connect.</summary>
+        float EffectivePunchRange()
+        {
+            if (_punch != null)
+                return _punch.Reach;
+            return punchRange;
+        }
+
+        /// <summary>Half-angle from hitbox width/reach; slight pad so AI queues near the box edge.</summary>
+        float EffectivePunchConeHalfDeg()
+        {
+            if (_punch != null)
+            {
+                float r = Mathf.Max(0.05f, _punch.Reach);
+                float half = Mathf.Atan((_punch.Width * 0.5f) / r) * Mathf.Rad2Deg;
+                return half * 1.15f; // small decision pad vs geometric box
+            }
+            return punchConeDeg * 0.5f;
         }
 
         void Retarget()
         {
             _target = null;
             _targetMotor = null;
-            _targetCc = null;
             float best = float.MaxValue;
+            bool selfIsIt = _it != null && _it.IsIt;
+            bool leastIt = _modes != null && _modes.SelectedMode == TagModeId.LeastIt;
             foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
             {
                 if (p == null || p == _it || !p.IsAlive || p.IsEliminated) continue;
-                float d = (p.transform.position - transform.position).sqrMagnitude;
-                if (d < best) { best = d; _target = p; }
+                // When chasing as It, dump onto nearest non-It (skip other Its if any).
+                if (selfIsIt && p.IsIt) continue;
+                float dSq = (p.transform.position - transform.position).sqrMagnitude;
+                float score = dSq;
+                // Least It + It: prefer tagging leaders (low TimeAsIt) so their clocks rise.
+                if (leastIt && selfIsIt && leastItChaseTimeWeight > 0.001f)
+                {
+                    float dist = Mathf.Sqrt(dSq);
+                    score = dist + leastItChaseTimeWeight * Mathf.Max(0f, p.TimeAsIt);
+                }
+                if (score < best) { best = score; _target = p; }
             }
             if (_target == null) return;
             _targetMotor = _target.GetComponent<PlayerMotor>();
-            _targetCc = _target.GetComponent<CharacterController>();
+        }
+
+        /// <summary>
+        /// Least It only: planar unit toward nearest living non-It ally (pack up to avoid free tags).
+        /// </summary>
+        Vector3 LeastItAllySeekDir()
+        {
+            if (_modes == null || _modes.SelectedMode != TagModeId.LeastIt)
+                return Vector3.zero;
+            if (leastItAllySeekWeight <= 0.01f)
+                return Vector3.zero;
+
+            ItController bestAlly = null;
+            float best = float.MaxValue;
+            foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
+            {
+                if (p == null || p == _it || !p.IsAlive || p.IsEliminated || p.IsIt) continue;
+                float d = (p.transform.position - transform.position).sqrMagnitude;
+                if (d < best) { best = d; bestAlly = p; }
+            }
+            if (bestAlly == null) return Vector3.zero;
+            Vector3 to = bestAlly.transform.position - transform.position;
+            to.y = 0f;
+            if (to.sqrMagnitude < 0.01f) return Vector3.zero;
+            return to.normalized;
+        }
+
+        /// <summary>
+        /// Trail Tag only: sample a snapshot of live TrailSegments via CopyActive (from PlayerTrailEmitter ribbons)
+        /// and cache a weighted lateral flee wish. Cheap — runs at decisionHz.
+        /// </summary>
+        void RefreshTrailFleeWish()
+        {
+            _trailFleeWish = Vector3.zero;
+            if (_modes == null || _modes.SelectedMode != TagModeId.TrailTag)
+                return;
+            if (trailAvoidRange <= 0.01f || trailAvoidWeight <= 0.01f)
+                return;
+
+            float range = trailAvoidRange;
+            float rangeSq = range * range;
+            Vector3 pos = transform.position;
+            Vector3 sum = Vector3.zero;
+            int hits = 0;
+
+            TrailSegment.CopyActive(_trailActiveScratch);
+            foreach (var seg in _trailActiveScratch)
+            {
+                if (seg == null) continue;
+                // Closest point on ribbon A–B (not collider midpoint) so long segments steer correctly.
+                Vector3 delta = pos - seg.ClosestPointOnSegment(pos);
+                delta.y = 0f;
+                float dsq = delta.sqrMagnitude;
+                if (dsq > rangeSq || dsq < 0.0001f) continue;
+
+                float d = Mathf.Sqrt(dsq);
+                float w = 1f - (d / range);
+                Vector3 away = delta / d;
+                Vector3 lateral = Vector3.Cross(Vector3.up, away);
+                if (lateral.sqrMagnitude > 0.001f)
+                {
+                    lateral.Normalize();
+                    if (Vector3.Dot(lateral, transform.right) < 0f) lateral = -lateral;
+                    away = (away + lateral * Mathf.Clamp01(trailAvoidStrafeBias)).normalized;
+                }
+                sum += away * w;
+                hits++;
+            }
+
+            if (hits > 0 && sum.sqrMagnitude > 0.0001f)
+                _trailFleeWish = sum.normalized;
+        }
+
+        Vector3 BlendTrailAvoid(Vector3 desired)
+        {
+            if (_trailFleeWish.sqrMagnitude < 0.0001f)
+                return desired;
+            float w = Mathf.Clamp01(trailAvoidWeight);
+            if (desired.sqrMagnitude < 0.0001f)
+                return _trailFleeWish;
+            return (desired.normalized + _trailFleeWish * w).normalized;
         }
 
         Vector3 TargetPlanarVelocity()
@@ -128,8 +368,6 @@ namespace Tag.Modes
             Vector3 v = Vector3.zero;
             if (_targetMotor != null)
                 v = _targetMotor.Velocity;
-            else if (_targetCc != null)
-                v = _targetCc.velocity;
             v.y = 0f;
             return v;
         }
@@ -138,9 +376,10 @@ namespace Tag.Modes
         {
             Vector3 pos = target.transform.position;
             Vector3 vel = TargetPlanarVelocity();
-            if (vel.sqrMagnitude < 0.04f || leadSeconds <= 0f)
+            float lead = EffectiveLeadSeconds();
+            if (vel.sqrMagnitude < 0.04f || lead <= 0f)
                 return pos;
-            return pos + vel * leadSeconds;
+            return pos + vel * lead;
         }
 
         void FaceAndSteer(Vector3 desired, float dt, out Vector3 moveDir)
@@ -154,7 +393,6 @@ namespace Tag.Modes
             float ang = Vector3.Angle(transform.forward, desired);
             if (ang <= faceAlignDeg)
             {
-                // Already facing — charge the aim point instead of orbiting on residual yaw.
                 transform.rotation = Quaternion.LookRotation(desired, Vector3.up);
                 moveDir = desired;
             }
@@ -166,85 +404,157 @@ namespace Tag.Modes
             }
         }
 
+        /// <summary>
+        /// Body-relative wish: AI has no TP cam, so PlayerMotor uses transform as wish basis.
+        /// Face first, then push forward — matches human TP (yaw then Move.y).
+        /// </summary>
+        void DriveWish(float moveY, bool sprint)
+        {
+            if (_input == null) return;
+            _input.SetExternalMove(new Vector2(0f, Mathf.Clamp(moveY, -1f, 1f)), sprint);
+        }
+
         void TickChase(float dt)
         {
             if (_target == null || !_target.IsAlive) Retarget();
             Vector3 moveDir = transform.forward;
-            float speedMul = chaseSpeedMul;
+            float moveY = 1f;
+            bool sprint = true;
+            float urgency = HotPotatoFuseUrgency();
 
             if (_target != null)
             {
                 Vector3 toAim = AimPoint(_target) - transform.position;
                 toAim.y = 0f;
+                toAim = BlendTrailAvoid(toAim);
                 FaceAndSteer(toAim, dt, out moveDir);
 
                 Vector3 toBody = _target.transform.position - transform.position;
                 toBody.y = 0f;
                 float dist = toBody.magnitude;
+                // Close range: keep sprinting in; motor owns accel (no velocity overwrite).
                 if (dist <= closeChaseRange)
-                    speedMul *= closeChaseSpeedMul;
+                    moveY = 1f;
 
                 float ang = Vector3.Angle(transform.forward, toBody.sqrMagnitude > 0.001f ? toBody.normalized : transform.forward);
                 _cooldown -= dt;
                 if (_itGraceTimer > 0f)
                     _itGraceTimer -= dt;
-                bool inCone = dist <= punchRange && ang <= punchConeDeg * 0.5f;
+                float range = EffectivePunchRange();
+                // Slightly wider decision cone when dumping a low fuse.
+                float cone = EffectivePunchConeHalfDeg() * (1f + 0.2f * urgency);
+                bool inCone = dist <= range && ang <= cone;
                 if (inCone && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
                 {
                     _punch?.QueuePunch();
-                    _cooldown = Random.Range(cooldownMin, cooldownMax);
+                    float cMin = cooldownMin;
+                    float cMax = cooldownMax;
+                    if (urgency > 0f)
+                    {
+                        float scale = Mathf.Lerp(1f, Mathf.Clamp(chaseUrgencyCooldownScale, 0.35f, 1f), urgency);
+                        cMin *= scale;
+                        cMax *= scale;
+                    }
+                    _cooldown = Random.Range(cMin, cMax);
                 }
             }
             else
             {
-                _angle += (speed / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
+                _angle += (6f / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
+                moveY = wanderMoveY;
+                sprint = false;
+                // Still peel off ribbons while hunting with no target.
+                Vector3 peel = BlendTrailAvoid(transform.forward);
+                FaceAndSteer(peel, dt, out moveDir);
             }
 
-            ApplyMove(moveDir * (speed * speedMul), dt);
-        }
-
-        float HotPotatoFleeMul()
-        {
-            if (_modes == null || _modes.SelectedMode != TagModeId.HotPotato)
-                return 1f;
-            float remain = _modes.Remaining;
-            if (remain > 0f && remain <= hotPotatoUrgencySec)
-                return fleeUrgencyMul;
-            return 1f;
+            // Keep facing coherent even when moveDir came from FaceAndSteer.
+            _ = moveDir;
+            DriveWish(moveY, sprint);
         }
 
         void TickFleeOrWander(float dt)
         {
             Vector3 moveDir = transform.forward;
             ItController threat = null;
+            float bestThreat = float.MaxValue;
             foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
             {
-                if (p != null && p.IsIt && p.IsAlive && p != _it) { threat = p; break; }
+                if (p == null || !p.IsIt || !p.IsAlive || p == _it) continue;
+                float d = (p.transform.position - transform.position).sqrMagnitude;
+                if (d < bestThreat) { bestThreat = d; threat = p; }
             }
+
             if (threat != null)
             {
-                Vector3 away = transform.position - threat.transform.position;
+                Vector3 threatPos = threat.transform.position;
+                var threatMotor = threat.GetComponent<PlayerMotor>();
+                float fleeLead = EffectiveFleeLeadSeconds();
+                if (threatMotor != null && fleeLead > 0f)
+                {
+                    Vector3 tv = threatMotor.Velocity;
+                    tv.y = 0f;
+                    threatPos += tv * fleeLead;
+                }
+
+                Vector3 away = transform.position - threatPos;
                 away.y = 0f;
+                float threatDist = away.magnitude;
+                float threatRange = EffectiveFleeThreatRange();
+                if (threatDist > threatRange)
+                {
+                    // Far enough: resume patrol wander instead of endless radial flee.
+                    Wander(dt, out moveDir);
+                    _ = moveDir;
+                    return;
+                }
+
                 if (away.sqrMagnitude < 0.01f) away = -transform.forward;
+                else away.Normalize();
+
+                // Strafe bias: prefer current facing side so flee isn't pure radial (easier to cut off).
+                // Under Hot Potato urgency, bias shrinks so flee commits away from It.
+                Vector3 lateral = Vector3.Cross(Vector3.up, away);
+                float strafe = EffectiveFleeStrafeBias();
+                if (lateral.sqrMagnitude > 0.001f && strafe > 0.01f)
+                {
+                    lateral.Normalize();
+                    if (Vector3.Dot(lateral, transform.right) < 0f) lateral = -lateral;
+                    away = (away + lateral * Mathf.Clamp01(strafe)).normalized;
+                }
+
+                // Least It: peel toward a non-It ally so the pack clusters instead of solo runs.
+                Vector3 allySeek = LeastItAllySeekDir();
+                if (allySeek.sqrMagnitude > 0.01f)
+                    away = (away + allySeek * Mathf.Clamp01(leastItAllySeekWeight)).normalized;
+
+                away = BlendTrailAvoid(away);
                 FaceAndSteer(away, dt, out moveDir);
+                bool urgent = HotPotatoUrgent() || threatDist <= closeChaseRange * 1.6f;
+                DriveWish(urgent ? fleeUrgencyMoveY : 1f, sprint: true);
             }
             else
             {
-                _angle += (speed / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
-                Vector3 target = _center + new Vector3(Mathf.Cos(_angle * Mathf.Deg2Rad), 0f, Mathf.Sin(_angle * Mathf.Deg2Rad)) * radius;
-                Vector3 to = target - transform.position;
-                to.y = 0f;
-                FaceAndSteer(to, dt, out moveDir);
+                Wander(dt, out moveDir);
             }
-            ApplyMove(moveDir * (speed * HotPotatoFleeMul()), dt);
+            _ = moveDir;
         }
 
-        void ApplyMove(Vector3 horiz, float dt)
+        void Wander(float dt, out Vector3 moveDir)
         {
-            if (_cc.isGrounded) _gravity = -2f;
-            else _gravity += -20f * dt;
-            horiz.y = _gravity;
-            _cc.Move(horiz * dt);
+            _angle += (4f / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
+            Vector3 target = _center + new Vector3(Mathf.Cos(_angle * Mathf.Deg2Rad), 0f, Mathf.Sin(_angle * Mathf.Deg2Rad)) * radius;
+            Vector3 to = target - transform.position;
+            to.y = 0f;
+            Vector3 allySeek = LeastItAllySeekDir();
+            if (allySeek.sqrMagnitude > 0.01f)
+            {
+                if (to.sqrMagnitude < 0.001f) to = allySeek;
+                else to = (to.normalized + allySeek * Mathf.Clamp01(leastItAllySeekWeight * 0.6f)).normalized;
+            }
+            to = BlendTrailAvoid(to);
+            FaceAndSteer(to, dt, out moveDir);
+            DriveWish(wanderMoveY, sprint: false);
         }
     }
 }

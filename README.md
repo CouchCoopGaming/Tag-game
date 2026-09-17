@@ -4,9 +4,12 @@
 **Engine:** Unity **6000.0.23f1** (Unity 6 LTS) — see `ProjectSettings/ProjectVersion.txt`  
 **Remote:** https://github.com/CouchCoopGaming/Tag-game (`main`)
 
-Vertical slice: **2–4p punch-tag** (transfer-It on successful punch) with **three modes** (HotPotato / LeastIt / TrailTag).  
-Movement kit (Apex-adjacent): sprint, jump, slide, wall run, wall jump, vault, air dodge (Systems Tag v1).  
-**Out of scope:** double jump, grapple, climb-as-verb, guns, final CUT art mesh (graybox is in).
+**Playable party slice (this PR):** third-person crash-test dummies, PARK arena, Apex-fast move + short air dash, **Least It** punch-tag vs one AI dummy.  
+How to play: [`Docs/PLAY-SLICE.md`](Docs/PLAY-SLICE.md) · movement numbers: [`Docs/MOVEMENT.md`](Docs/MOVEMENT.md).
+
+Vertical slice: **2–4p punch-tag** (transfer-It on successful punch) with **three modes** (HotPotato / LeastIt / TrailTag). **Ship mode for this slice = Least It.**  
+Movement kit (Apex-inspired party pass): auto-sprint **9 m/s**, slide-from-speed peak **12**, universal short air dash **~2.25 m**. Wall run / vault first-pass unchanged.  
+**Out of scope for this slice:** netcode, Trail Tag as the ship mode, Apex tech (superglide / wallbounce).
 **Modes:** HotPotato · LeastIt · TrailTag via `TagModeController` + `ITagMode`.
 
 ---
@@ -87,10 +90,11 @@ Play opened directly skips Mode Select and uses `selectedMode` on Systems / Play
 ## Open in Unity Hub
 
 1. Install **Unity 6000.0.23f1** (or any 6000.0.x LTS close to it).
-2. Hub → **Open** → select `/workspace/tag-unity` (or copy this folder to your machine).
+2. Hub → **Open** → select this repo folder.
 3. First open will import URP + Input System + TMP from `Packages/manifest.json` (needs network for Package Manager).
 4. **File → Build Settings** should list `Assets/Scenes/Boot` then `Play` (already in `EditorBuildSettings.asset`).
-5. Open **Boot**, press Play → Start, or open **Play** directly.
+5. Open **Boot**, Play → **Play Tag (Least It)** — or open **Play** directly. See [`Docs/PLAY-SLICE.md`](Docs/PLAY-SLICE.md).
+6. If materials are magenta: **Tag → Ensure URP Pipeline** (Unity writes `Assets/Settings/TagURP*.asset`; do not hand-author those YAML files). Dummy motion is `DummyLocomotor`. If the Editor crashed on an older pull: delete `Library` and reopen.
 
 > Editor is **not** installed on this shared box — do not expect Play Mode here.
 
@@ -121,13 +125,14 @@ Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
 
 | Action | Keyboard / mouse | Gamepad (New Input) |
 |--------|------------------|---------------------|
-| Move | WASD | Left stick |
+| Move | WASD (auto-sprint) | Left stick (full = sprint, light = walk) |
 | Look | Mouse | Right stick |
-| Sprint | Shift | L3 / LB |
+| Sprint | Auto, or Shift | Auto, or L3 / LB |
 | Jump | Space | A / South |
-| Slide | Ctrl or C | B / East |
+| Slide | Hold Ctrl or C while fast | Hold B while fast |
 | Punch | LMB or R | X / West |
-| Air dodge | Left Alt or Q | RB |
+| Air dash | Left Alt or Q (air only) | RB |
+| Move HUD | F3 | — |
 | Boot Start | Enter / Space / button | — |
 | Mode Select | 1 HotPotato · 2 LeastIt · 3 TrailTag · Enter | — |
 | Rematch (round over) | R / Enter (keeps mode) | — |
@@ -138,9 +143,14 @@ Play contents (**CUT graybox v0.1** via `CutArenaBootstrap`):
 
 | Script | Namespace | Notes |
 |--------|-----------|-------|
-| `Movement/MovementTuning.cs` | Tag.Movement | ScriptableObject — Systems Tag v1 momentum + air dodge |
-| `Movement/PlayerMotor.cs` | Tag.Movement | CharacterController motor (momentum jump/slide + air dodge) |
-| `Input/PlayerInputReader.cs` | Tag.Input | New Input + legacy fallback (incl. air dodge) |
+| `Movement/MovementTuning.cs` | Tag.Movement | ScriptableObject — party Apex speeds + air dash |
+| `Movement/MovementKinematics.cs` | Tag.Movement | Pure helpers (dash clamp, slide enter, auto-sprint) |
+| `Movement/PlayerMotor.cs` | Tag.Movement | CharacterController motor (auto-sprint, slide-from-speed, air dash) |
+| `Movement/MovementDebugHud.cs` | Tag.Movement | On-screen m/s + state (F3) |
+| `Input/PlayerInputReader.cs` | Tag.Input | New Input actions + legacy fallback |
+| `Input/TagInputActions.cs` | Tag.Input | Per-slot Input System map (WASD / pad) |
+| `Art/DummyPrimitiveFactory.cs` | Tag.Art | Runtime dummy if FBX prefabs are empty |
+| `Art/ItMarker.cs` | Tag.Art | Orange hat + halo while It |
 | `Tag/PunchTagTuning.cs` | Tag.Gameplay | Ragdoll 1.5s, +8% / 2s boost |
 | `Tag/ItController.cs` | Tag.Gameplay | It flag + time-as-It |
 | `Tag/TagRoundController.cs` | Tag.Gameplay | Legacy shim → `TagModeController` |
@@ -162,12 +172,13 @@ Runtime `CreateRuntimeDefaults()` if references are missing.
 
 ### Should work in Editor Play Mode (after import)
 
-- Walk / sprint / accel / brake / mouse look
-- Jump with coyote (120 ms) + buffer (140 ms), custom gravity ≈28, apex ~1.15 m
-- Momentum (Systems Tag v1): JumpHorizRetain 1.0 on all takeoffs; SlideEnterWipe false; hard land ×0.85 horiz for 0.1 s if fall > 1.5× apex (never zero); vault/wall-jump exit carries speed
-- Air control (~45%) with airMomentumPreserve (no bleed toward walk while coasting)
-- Slide (speed gate ≥5.5, keep current horiz on enter, decay to 55% end, jump-from-slide bonus, exit sprint)
-- Air dodge (Systems Tag v1): airborne; 6.5 m/s planar replace toward input/facing; 130 ms lock; 100 ms punch i-frames; 80 ms buffer; 1 charge; recharge 1.8 m grounded travel (or 3 footfalls); blocked on wall-run / vault-lock / ragdoll / punch windup·active·miss-recover
+- Walk **5.5** / sprint **9.0** (auto-sprint on full stick/WASD) / accel 0.16 / brake 0.14 / third-person boom
+- Jump with coyote (140 ms) + buffer (140 ms), custom gravity ≈28, apex ~1.15 m
+- Momentum: JumpHorizRetain 1.0 on all takeoffs; slide boost-to-peak 12; hard land ×0.85 horiz for 0.1 s if fall > 1.5× apex (never zero); vault/wall-jump exit carries speed
+- Air control (~40%) with airMomentumPreserve (no bleed toward walk while coasting)
+- Slide-from-speed (hold crouch while ≥6.5 m/s, peak 12, decay to 55% end, jump-from-slide bonus, exit sprint)
+- Air dash (party): airborne; **15 m/s** planar replace toward input/facing (~2.25 m / 150 ms lock); 120 ms punch i-frames; 80 ms buffer; **1 charge, refresh on land**; blocked on wall-run / vault-lock / ragdoll / punch windup·active·miss-recover
+- Debug HUD (F3) live m/s — see `Docs/MOVEMENT.md`
 - Wall run **first-pass** (side ray attach, gravity scale, timer, detach, wall jump out/up)
 - Vault **first-pass** (forward obstacle height bands, lock move, lip-jump window)
 - Punch → It transfer (if puncher is It), target ragdoll stub 1.5 s, puncher +8% speed 2 s
@@ -204,7 +215,7 @@ Runtime `CreateRuntimeDefaults()` if references are missing.
 | Spawns | SW/SE/NW/NE on G; orange pads + yellow elbows |
 
 Brief copies in-repo: `Assets/Art/Graybox/CUT-graybox-v0.1.md`, `CUT-plan.svg`, `README_CUT_REF.md`.  
-Systems Tag v1 momentum + air dodge are **locked** in `MovementTuning`.
+Party movement defaults (walk 5.5 / sprint 9 / slide peak 12 / air dash ~2.25 m) are on `MovementTuning`. See `Docs/MOVEMENT.md`.
 
 ### Smoke-test the three chains (open Play, press Play)
 
@@ -239,7 +250,7 @@ Also: loft lip vault 1.50 from G at Z≈24; bowl corner ramps 20°; punch DummyR
 1. Open in Unity Hub; let packages resolve; create URP pipeline asset if prompted.
 2. Smoke-test Chains 1–3 on CUT graybox; tune via SO assets.
 3. Replace runtime primitives with authored graybox/final mesh when Level drops meshes.
-4. Flesh wall-run / vault / air-dodge Systems sheet; bone ragdoll optional.
+4. Flesh wall-run / vault first-pass; bone ragdoll optional. Air dash is the v1 dodge — do not add Apex tech.
 5. Add Input Actions asset + simple TMP HUD; then netcode / 2–4p session.
 6. Multi-elim HotPotato ladder / sudden-death polish; authored PARK mesh when Level drops it.
 

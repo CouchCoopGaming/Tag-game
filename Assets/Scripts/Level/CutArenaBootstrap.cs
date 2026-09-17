@@ -3,36 +3,83 @@ using UnityEngine;
 namespace Tag.Level
 {
     /// <summary>
-    /// Builds PARK v1 playground (CUT v0.2 meters + toy dressing). Fantasy: crash-test dummies in a park.
-    /// Origin = SW playable corner; +X east, +Z north, +Y up.
-    /// Idempotent: clears children under a CUT root before rebuild.
+    /// PARK campus graybox — figure-8 chase campus with readable cardinal ski spines.
+    /// Origin = SW corner; +X east, +Z north. WorldScale on root.
+    ///
+    /// Path design:
+    ///   Outer ring: Pirate → Tron → Army → Knight → Ninja → Astro → Pirate
+    ///   Figure-8 cross: west NS spine + east NS spine through Crash (the X)
+    ///   Height: pad approach vault → mid deck → high perch → slide exit to spine
+    ///   Rule: open lawn between pads; spines are highways; 3–5 toys per pad; no clutter on lanes.
+    ///   Pass3: stronger ring tint + spawn lead lanes; playground gear lives in PgkLandmarkPlacer.
+    ///   Pass4: named play-area floor pads (soft-play / swing / merry / kickball / hopscotch).
+    ///   Pass5: thin theme pads — clear pad -> PadSlideExit -> Conn run-outs.
+    ///   Pass6: Conn corridor ramps catch PadSlide landings; Flow stones hand off to spines.
+    ///   Pass7: Crash bowl open for EW chase; SoftPlay nudged SW off SpineXw/Xe.
     /// </summary>
     public class CutArenaBootstrap : MonoBehaviour
     {
         const string RootName = "PARK";
+        /// <summary>Soft-play fantasy scale (~10x).</summary>
+        public const float WorldScale = 10f;
 
-        // Style Bible v0 / Level palette sync (recolor only)
-        // Mulch #5C3A2E · OOB grass #3F7A4A · Vault #F5D547 · Climb #3D7EFF · Elbow/spawn #E23B2F · Pads #2A2A2E · Loft #C5CBD1
-        static readonly Color ColFloor = new Color(0x5C / 255f, 0x3A / 255f, 0x2E / 255f, 1f); // Mulch ground/paths
-        static readonly Color ColBowl = new Color(0x5C / 255f, 0x3A / 255f, 0x2E / 255f, 1f);  // Bowl floor mulch
-        static readonly Color ColLoft = new Color(0xC5 / 255f, 0xCB / 255f, 0xD1 / 255f, 1f);  // Concrete deck
-        static readonly Color ColWallRun = new Color(0x3D / 255f, 0x7E / 255f, 1f, 1f);       // Climb + twin towers #3D7EFF
-        static readonly Color ColSlide = new Color(0x2A / 255f, 0x2A / 255f, 0x2E / 255f, 1f); // Rubber grip strips
-        static readonly Color ColPadEdge = new Color(0x2A / 255f, 0x2A / 255f, 0x2E / 255f, 1f); // Pads/grip #2A2A2E
-        static readonly Color ColVault = new Color(0xF5 / 255f, 0xD5 / 255f, 0x47 / 255f, 1f);  // Vault/Mid Cut/bars #F5D547
-        static readonly Color ColSpawn = new Color(0xE2 / 255f, 0x3B / 255f, 0x2F / 255f, 1f);  // Spawn markers #E23B2F
-        static readonly Color ColElbow = new Color(0xE2 / 255f, 0x3B / 255f, 0x2F / 255f, 1f);  // Elbows #E23B2F
-        static readonly Color ColRamp = new Color(0xB8 / 255f, 0xC0 / 255f, 0xC8 / 255f, 1f);  // Steel frames optional
-        static readonly Color ColOob = new Color(0x3F / 255f, 0x7A / 255f, 0x4A / 255f, 1f);   // OOB grass trim
+        // Playable campus in graybox meters (world = * WorldScale)
+        public const float MapW = 72f;
+        public const float MapD = 54f;
+
+        // Named pad centers (keep in sync with ZoneNameMarkers / PgkLandmarkPlacer)
+        public const float CxCrash = 36f, CzCrash = 27f;
+        public const float CxPirate = 14f, CzPirate = 12f;
+        public const float CxArmy = 58f, CzArmy = 12f;
+        public const float CxAstro = 14f, CzAstro = 42f;
+        public const float CxKnight = 58f, CzKnight = 42f;
+        public const float CxTron = 36f, CzTron = 8f;
+        public const float CxNinja = 36f, CzNinja = 46f;
+
+        // Cardinal ski highway axes (figure-8 frame)
+        const float SpineZs = 18f; // south EW
+        const float SpineZn = 36f; // north EW
+        const float SpineXw = 24f; // west NS
+        const float SpineXe = 48f; // east NS
+
+        static readonly Color ColFloor = new Color(0x5C / 255f, 0x3A / 255f, 0x2E / 255f, 1f);
+        static readonly Color ColBowl = new Color(0x5C / 255f, 0x3A / 255f, 0x2E / 255f, 1f);
+        static readonly Color ColLoft = new Color(0xC5 / 255f, 0xCB / 255f, 0xD1 / 255f, 1f);
+        static readonly Color ColWallRun = new Color(0x3D / 255f, 0x7E / 255f, 1f, 1f);
+        static readonly Color ColSlide = new Color(0x2A / 255f, 0x2A / 255f, 0x2E / 255f, 1f);
+        static readonly Color ColPadEdge = new Color(0x2A / 255f, 0x2A / 255f, 0x2E / 255f, 1f);
+        static readonly Color ColVault = new Color(0xF5 / 255f, 0xD5 / 255f, 0x47 / 255f, 1f);
+        static readonly Color ColRamp = new Color(0xB8 / 255f, 0xC0 / 255f, 0xC8 / 255f, 1f);
+        static readonly Color ColOob = new Color(0x3F / 255f, 0x7A / 255f, 0x4A / 255f, 1f);
+        static readonly Color ColPath = new Color(0x6E / 255f, 0x4A / 255f, 0x38 / 255f, 1f);
+        // Warmer outer-ring chase tint (readability without clutter)
+        static readonly Color ColRing = new Color(0x8A / 255f, 0x5A / 255f, 0x3C / 255f, 1f);
+        static readonly Color ColSpawnLead = new Color(0x7A / 255f, 0x6A / 255f, 0x48 / 255f, 1f);
+        // Named play-area floors (mulch vs rubber) — read as zones beside chase lanes
+        static readonly Color ColPlayMulch = new Color(0x7A / 255f, 0x4E / 255f, 0x32 / 255f, 1f);
+        static readonly Color ColPlayRubber = new Color(0x3A / 255f, 0x4A / 255f, 0x5C / 255f, 1f);
+
+        // Match ParkPropDresser Toy_SpawnPad_* palette (SW Teal, SE Coral, NW Violet, NE Lime)
+        static readonly Color ColSpawnTeal = new Color(0x2E / 255f, 0xC4 / 255f, 0xB6 / 255f, 1f);
+        static readonly Color ColSpawnCoral = new Color(0xFF / 255f, 0x6B / 255f, 0x4A / 255f, 1f);
+        static readonly Color ColSpawnViolet = new Color(0x9B / 255f, 0x5C / 255f, 0xE6 / 255f, 1f);
+        static readonly Color ColSpawnLime = new Color(0xA8 / 255f, 0xE6 / 255f, 0x1A / 255f, 1f);
 
         Transform _root;
-        Material _matFloor, _matBowl, _matLoft, _matWall, _matSlide, _matPad, _matVault, _matSpawn, _matElbow, _matRamp, _matOob;
+        Material _matFloor, _matBowl, _matLoft, _matWall, _matSlide, _matPad, _matVault, _matRamp, _matOob, _matPath, _matRing, _matSpawnLead, _matPlayMulch, _matPlayRubber;
 
         void Awake()
         {
             Build();
             if (GetComponent<Tag.Art.ParkPropDresser>() == null)
                 gameObject.AddComponent<Tag.Art.ParkPropDresser>();
+            if (GetComponent<Tag.Art.PgkLandmarkPlacer>() == null)
+                gameObject.AddComponent<Tag.Art.PgkLandmarkPlacer>();
+            // EXPERIMENTAL fans — component present but spawnFans defaults false (not core loop).
+            if (GetComponent<Tag.Experimental.ExperimentalFanPlacer>() == null)
+                gameObject.AddComponent<Tag.Experimental.ExperimentalFanPlacer>();
+            if (GetComponent<ZoneNameMarkers>() == null)
+                gameObject.AddComponent<ZoneNameMarkers>();
         }
 
         [ContextMenu("Rebuild CUT Graybox")]
@@ -42,27 +89,29 @@ namespace Tag.Level
             EnsureRoot();
             ClearRootChildren();
 
-            BuildFloorG();
-            BuildBowl();
-            BuildLoft();
-            BuildWalls();
-            BuildVaults();
-            BuildSlideMarkers();
-            BuildGroundPads();
+            BuildGround();
+            BuildChaseLanes();    // figure-8 + stronger outer-ring tint
+            BuildSkiSpines();     // cardinal ski highways + pad connectors
+            BuildFlowSteps();     // sparse mid-height run→jump→slide stones
+            BuildSpawnLeads();    // spawn -> nearest spine/Flow in first seconds
+            BuildNamedPlayPads(); // mulch/rubber under named playground courts
+            BuildCrashCore();     // center X
+            BuildPiratePad();     // SW
+            BuildArmyPad();       // SE
+            BuildAstroPad();      // NW
+            BuildKnightPad();     // NE
+            BuildTronPad();       // S mid
+            BuildNinjaPad();      // N mid
             BuildSpawns();
-            BuildDensity();
             BuildOobSkirt();
+
+            _root.localScale = Vector3.one * WorldScale;
         }
 
         void EnsureRoot()
         {
             var existing = transform.Find(RootName);
-            if (existing != null)
-            {
-                _root = existing;
-                return;
-            }
-
+            if (existing != null) { _root = existing; return; }
             var go = new GameObject(RootName);
             go.transform.SetParent(transform, false);
             go.transform.localPosition = Vector3.zero;
@@ -73,7 +122,6 @@ namespace Tag.Level
 
         void ClearRootChildren()
         {
-            // DestroyImmediate so rebuild is idempotent in the same frame (play or edit).
             for (int i = _root.childCount - 1; i >= 0; i--)
                 Object.DestroyImmediate(_root.GetChild(i).gameObject);
         }
@@ -88,10 +136,13 @@ namespace Tag.Level
             _matSlide = MakeMat(ColSlide);
             _matPad = MakeMat(ColPadEdge);
             _matVault = MakeMat(ColVault);
-            _matSpawn = MakeMat(ColSpawn);
-            _matElbow = MakeMat(ColElbow);
             _matRamp = MakeMat(ColRamp);
             _matOob = MakeMat(ColOob);
+            _matPath = MakeMat(ColPath);
+            _matRing = MakeMat(ColRing);
+            _matSpawnLead = MakeMat(ColSpawnLead);
+            _matPlayMulch = MakeMat(ColPlayMulch);
+            _matPlayRubber = MakeMat(ColPlayRubber);
         }
 
         static Material MakeMat(Color c)
@@ -105,372 +156,330 @@ namespace Tag.Level
             return m;
         }
 
-        // --- Floors -----------------------------------------------------------------
-
-        void BuildFloorG()
+        static Material MakeEmissiveMat(Color c, float emissionMul = 2.2f)
         {
-            // Composite G around bowl hole X[13,23] Z[9,19]. Thickness 0.2, top at Y=0.
-            const float t = 0.2f;
-            // West slab X[0,13] Z[0,28]
-            Box("Lawn_West", new Vector3(6.5f, -t * 0.5f, 14f), new Vector3(13f, t, 28f), _matFloor);
-            // East slab X[23,36] Z[0,28]
-            Box("Lawn_East", new Vector3(29.5f, -t * 0.5f, 14f), new Vector3(13f, t, 28f), _matFloor);
-            // South strip X[13,23] Z[0,9]
-            Box("Lawn_South", new Vector3(18f, -t * 0.5f, 4.5f), new Vector3(10f, t, 9f), _matFloor);
-            // North strip X[13,23] Z[19,28]
-            Box("Lawn_North", new Vector3(18f, -t * 0.5f, 23.5f), new Vector3(10f, t, 9f), _matFloor);
+            var m = MakeMat(c);
+            m.name = "CUT_Emissive_" + ColorUtility.ToHtmlStringRGB(c);
+            if (m.HasProperty("_EmissionColor"))
+            {
+                m.EnableKeyword("_EMISSION");
+                m.SetColor("_EmissionColor", c * emissionMul);
+            }
+            return m;
         }
 
-        void BuildBowl()
+        // --- Ground / chase space ---------------------------------------------------
+
+        void BuildGround()
         {
-            const float t = 0.2f;
-            // Bowl floor Y=-1, X[13,23] Z[9,19]
-            Box("Toy_Sandbox", new Vector3(18f, -1f - t * 0.5f, 14f), new Vector3(10f, t, 10f), _matBowl);
-
-            // Four corner ramps 20° — rise 1.0 over ~2.75 m (tan20≈0.364)
-            // Place in bowl corners, sloping from G rim down into bowl.
-            const float run = 2.75f;
-            const float rise = 1.0f;
-            float pitch = 20f;
-
-            // SW corner of bowl → ramp faces NE into bowl (pivot along SE-NW? )
-            // Ramp box: length=run along slope direction, height thin, rotate about local X or Z.
-            // SW: from (13,0,9) into bowl toward (15.75, -1, 11.75)
-            PlaceRamp("Toy_SandboxRamp_SW", new Vector3(13f + run * 0.5f, -0.5f, 9f + run * 0.5f), run, rise, pitch, 45f);
-            PlaceRamp("Toy_SandboxRamp_SE", new Vector3(23f - run * 0.5f, -0.5f, 9f + run * 0.5f), run, rise, pitch, -45f);
-            PlaceRamp("Toy_SandboxRamp_NW", new Vector3(13f + run * 0.5f, -0.5f, 19f - run * 0.5f), run, rise, pitch, 135f);
-            PlaceRamp("Toy_SandboxRamp_NE", new Vector3(23f - run * 0.5f, -0.5f, 19f - run * 0.5f), run, rise, pitch, -135f);
-
-            // Rim vaults 1.00 on all four sides at G (top at 1.00).
-            // Leave ~2.75 m corner gaps so 20° ramps can exit onto G without clipping the rail.
-            const float rimH = 1.00f;
-            const float rimT = 0.4f;
-            const float rimLen = 4.5f; // centered on each side of the 10 m bowl
-            // South rim along Z=9
-            Box("Toy_SandboxRim_S", new Vector3(18f, rimH * 0.5f, 9f), new Vector3(rimLen, rimH, rimT), _matVault);
-            // North rim along Z=19
-            Box("Toy_SandboxRim_N", new Vector3(18f, rimH * 0.5f, 19f), new Vector3(rimLen, rimH, rimT), _matVault);
-            // West rim along X=13
-            Box("Toy_SandboxRim_W", new Vector3(13f, rimH * 0.5f, 14f), new Vector3(rimT, rimH, rimLen), _matVault);
-            // East rim along X=23
-            Box("Toy_SandboxRim_E", new Vector3(23f, rimH * 0.5f, 14f), new Vector3(rimT, rimH, rimLen), _matVault);
+            const float t = 0.25f;
+            Box("Lawn_Campus", new Vector3(MapW * 0.5f, -t * 0.5f, MapD * 0.5f),
+                new Vector3(MapW, t, MapD), _matFloor);
         }
 
-        void PlaceRamp(string name, Vector3 center, float run, float rise, float pitchDeg, float yawDeg)
+        /// <summary>
+        /// Soft path tint for the figure-8: west + east loops cross at Crash.
+        /// Tint only — never stacks props; keeps chase space readable.
+        /// </summary>
+        void BuildChaseLanes()
         {
-            // Thin slab rotated so surface is ~20°. Length along slope = hypot(run,rise).
-            float len = Mathf.Sqrt(run * run + rise * rise);
-            const float width = 2.2f;
-            const float thick = 0.2f;
-            var go = Box(name, center, new Vector3(width, thick, len), _matRamp);
+            const float t = 0.06f;
+            float y = t * 0.5f + 0.01f;
+            const float laneW = 7f;
+
+            // West loop (Pirate / Astro / Crash) — NS + south/north arcs
+            Box("Lane_West_NS", new Vector3(SpineXw, y, CzCrash), new Vector3(laneW, t, 30f), _matPath);
+            Box("Lane_West_S", new Vector3(19f, y, SpineZs), new Vector3(14f, t, laneW), _matPath);
+            Box("Lane_West_N", new Vector3(19f, y, SpineZn), new Vector3(14f, t, laneW), _matPath);
+
+            // East loop (Army / Knight / Crash)
+            Box("Lane_East_NS", new Vector3(SpineXe, y, CzCrash), new Vector3(laneW, t, 30f), _matPath);
+            Box("Lane_East_S", new Vector3(53f, y, SpineZs), new Vector3(14f, t, laneW), _matPath);
+            Box("Lane_East_N", new Vector3(53f, y, SpineZn), new Vector3(14f, t, laneW), _matPath);
+
+            // Outer ring — warmer/wider tint for chase readability (gear sits beside in placer)
+            Box("Lane_Outer_S", new Vector3(CxTron, y, CzTron + 2f), new Vector3(32f, t, 6.5f), _matRing);
+            Box("Lane_Outer_N", new Vector3(CxNinja, y, CzNinja - 2f), new Vector3(32f, t, 6.5f), _matRing);
+            // Thin edge kerbs (south of S ring / north of N ring) — no clutter posts
+            Box("EdgeRail_S", new Vector3(CxTron, 0.18f, CzTron - 1.6f), new Vector3(30f, 0.28f, 0.35f), _matVault);
+            Box("EdgeRail_N", new Vector3(CxNinja, 0.18f, CzNinja + 1.6f), new Vector3(30f, 0.28f, 0.35f), _matVault);
+
+            // Cross at Crash (the X of the 8)
+            Box("Lane_Cross_EW", new Vector3(CxCrash, y, CzCrash), new Vector3(28f, t, 6f), _matPath);
+        }
+
+        void BuildSkiSpines()
+        {
+            // Four cardinal highways only — no diagonal spaghetti.
+            const float spineW = 3.2f;
+            const float spineT = 0.12f;
+            float y = spineT * 0.5f;
+
+            Box("Spine_EW_S", new Vector3(CxCrash, y, SpineZs), new Vector3(52f, spineT, spineW), _matSlide);
+            Box("Spine_EW_N", new Vector3(CxCrash, y, SpineZn), new Vector3(52f, spineT, spineW), _matSlide);
+            Box("Spine_NS_W", new Vector3(SpineXw, y, CzCrash), new Vector3(spineW, spineT, 36f), _matSlide);
+            Box("Spine_NS_E", new Vector3(SpineXe, y, CzCrash), new Vector3(spineW, spineT, 36f), _matSlide);
+
+            // Junction plates at figure-8 corners + Crash cross
+            float jy = y + 0.02f;
+            const float j = 4f;
+            Box("Spine_Jct_SW", new Vector3(SpineXw, jy, SpineZs), new Vector3(j, spineT, j), _matRamp);
+            Box("Spine_Jct_SE", new Vector3(SpineXe, jy, SpineZs), new Vector3(j, spineT, j), _matRamp);
+            Box("Spine_Jct_NW", new Vector3(SpineXw, jy, SpineZn), new Vector3(j, spineT, j), _matRamp);
+            Box("Spine_Jct_NE", new Vector3(SpineXe, jy, SpineZn), new Vector3(j, spineT, j), _matRamp);
+            Box("Spine_Jct_Core", new Vector3(CxCrash, jy + 0.01f, CzCrash), new Vector3(5.5f, spineT, 5.5f), _matPath);
+
+            // Approach ramps: PadSlide/pad low end → crest to spine (skiMinSlope 6°); corner Conns under Play_Slide_* tips
+            SkiRamp("Conn_Tron_N", new Vector3(CxTron, 0.48f, 13.2f), new Vector3(3.6f, 0.24f, 6.2f), -9f, 0f);
+            SkiRamp("Conn_Ninja_S", new Vector3(CxNinja, 0.48f, 40.8f), new Vector3(3.6f, 0.24f, 6.2f), 9f, 0f);
+            SkiRamp("Conn_Pirate_N", new Vector3(17.5f, 0.48f, 15.2f), new Vector3(4.2f, 0.24f, 5.6f), -9f, 0f);
+            SkiRamp("Conn_Army_N", new Vector3(54.5f, 0.48f, 15.2f), new Vector3(4.2f, 0.24f, 5.6f), -9f, 0f);
+            SkiRamp("Conn_Astro_S", new Vector3(17.5f, 0.48f, 38.8f), new Vector3(4.2f, 0.24f, 5.6f), 9f, 0f);
+            SkiRamp("Conn_Knight_S", new Vector3(54.5f, 0.48f, 38.8f), new Vector3(4.2f, 0.24f, 5.6f), 9f, 0f);
+            SkiRamp("Conn_Crash_W", new Vector3(30.2f, 0.40f, CzCrash), new Vector3(5.4f, 0.24f, 3.2f), -8f, 90f);
+            SkiRamp("Conn_Crash_E", new Vector3(41.8f, 0.40f, CzCrash), new Vector3(5.4f, 0.24f, 3.2f), -8f, -90f);
+        }
+
+        void SkiRamp(string name, Vector3 localPos, Vector3 scale, float pitchDeg, float yawDeg)
+        {
+            var go = Box(name, localPos, scale, _matRamp);
             go.transform.localRotation = Quaternion.Euler(pitchDeg, yawDeg, 0f);
         }
 
-        void BuildLoft()
+        /// <summary>
+        /// Conn→spine handoff stones only (W/E NS). Outer-ring + Crash Core + mid stones
+        /// dropped — HiPoly Ring/Loop banks cover height flow; graybox cubes read as clutter.
+        /// jumpSpeed 24.7 / gravity 22 → apex ≈ 1.39 graybox (WorldScale 10).
+        /// </summary>
+        void BuildFlowSteps()
         {
-            // 6×4 at +1.5, X[15,21] Z[24,28]. Platform top at 1.5.
-            const float t = 0.2f;
-            Box("Toy_Tower", new Vector3(18f, 1.5f - t * 0.5f, 26f), new Vector3(6f, t, 4f), _matLoft);
-
-            // High-vault lip 1.50 on south edge (Z=24). Lip is the vault obstacle from G — height 1.50.
-            // Brief: "Loft lip | 1.50 | high | south edge of loft"
-            Box("Toy_TowerLip", new Vector3(18f, 1.50f * 0.5f, 24f), new Vector3(6f, 1.50f, 0.4f), _matVault);
-
-            // Two drop-off 20° ramps from loft down toward G (south-ish sides / ends).
-            const float run = 2.75f; // same 20° for 1.0 rise; loft is +1.5 so longer run
-            float loftRun = 1.5f / Mathf.Tan(20f * Mathf.Deg2Rad); // ≈4.12
-            float loftLen = Mathf.Sqrt(loftRun * loftRun + 1.5f * 1.5f);
-            // West drop from loft west edge
-            var rw = Box("Toy_Slide_Tower_W",
-                new Vector3(15f - loftRun * 0.5f, 1.5f * 0.5f, 26f),
-                new Vector3(2.0f, 0.2f, loftLen), _matRamp);
-            rw.transform.localRotation = Quaternion.Euler(20f, 90f, 0f);
-            // East drop
-            var re = Box("Toy_Slide_Tower_E",
-                new Vector3(21f + loftRun * 0.5f, 1.5f * 0.5f, 26f),
-                new Vector3(2.0f, 0.2f, loftLen), _matRamp);
-            re.transform.localRotation = Quaternion.Euler(20f, -90f, 0f);
+            // West NS — west of SpineXw; near Conn crest → SpineZs/Zn
+            FlowStone("Flow_W_S", new Vector3(SpineXw - 2.2f, 0.55f, 19.8f), new Vector3(2.2f, 0.20f, 2.2f));
+            FlowStone("Flow_W_N", new Vector3(SpineXw - 2.2f, 0.55f, 34.2f), new Vector3(2.2f, 0.20f, 2.2f));
+            // East NS — east of SpineXe
+            FlowStone("Flow_E_S", new Vector3(SpineXe + 2.2f, 0.55f, 19.8f), new Vector3(2.2f, 0.20f, 2.2f));
+            FlowStone("Flow_E_N", new Vector3(SpineXe + 2.2f, 0.55f, 34.2f), new Vector3(2.2f, 0.20f, 2.2f));
         }
 
-        // --- Walls ------------------------------------------------------------------
-
-        void BuildWalls()
+        void FlowStone(string name, Vector3 localPos, Vector3 scale)
         {
-            const float thick = 0.4f;
-
-            // West Wall 10×3.2 @ X=8, Z[8,18], Y[0,3.2] — cyan wall-run
-            Box("Toy_ClimbWall_West",
-                new Vector3(8.0f, 3.2f * 0.5f, 13f),
-                new Vector3(thick, 3.2f, 10f), _matWall);
-
-            // SW Wall copy 8×3.2 @ X=8, Z[0,8]
-            Box("Toy_ClimbWall_SW",
-                new Vector3(8.0f, 3.2f * 0.5f, 4f),
-                new Vector3(thick, 3.2f, 8f), _matWall);
-
-            // East Alley W face 10×3.5 @ X=28, Z[8,18]
-            Box("Toy_TwinTower_W",
-                new Vector3(28.0f, 3.5f * 0.5f, 13f),
-                new Vector3(thick, 3.5f, 10f), _matWall);
-
-            // East Alley E face 10×3.5 @ X=31.2, Z[8,18] — 3.2 m gap
-            Box("Toy_TwinTower_E",
-                new Vector3(31.2f, 3.5f * 0.5f, 13f),
-                new Vector3(thick, 3.5f, 10f), _matWall);
-
-            // SE Alley copies 8×3.5, same X, Z[0,8]
-            Box("Toy_TwinTower_SE_W",
-                new Vector3(28.0f, 3.5f * 0.5f, 4f),
-                new Vector3(thick, 3.5f, 8f), _matWall);
-            Box("Toy_TwinTower_SE_E",
-                new Vector3(31.2f, 3.5f * 0.5f, 4f),
-                new Vector3(thick, 3.5f, 8f), _matWall);
+            Box(name, localPos, scale, _matLoft);
         }
 
-        // --- Vaults -----------------------------------------------------------------
-
-        void BuildVaults()
+        /// <summary>
+        /// Short tinted leads from corner spawns toward nearest spine / Flow / Conn.
+        /// Readable in the first ~3s of a run; playground toys sit beside these in placer.
+        /// </summary>
+        void BuildSpawnLeads()
         {
-            // South rail A: 0.90, X[10,12], Z≈4
-            Box("Toy_Bench_South_A",
-                new Vector3(11f, 0.90f * 0.5f, 4f),
-                new Vector3(2f, 0.90f, 0.5f), _matVault);
-
-            // South rail B: 1.05, X[14,16], Z≈4.5 (stagger)
-            Box("Toy_Bench_South_B",
-                new Vector3(15f, 1.05f * 0.5f, 4.5f),
-                new Vector3(2f, 1.05f, 0.5f), _matVault);
-
-            // Chain 1 landing: 1.00, X[10.4,12.4], Z[15,16] — 2.8 m east of West Wall on G
-            Box("Toy_Bench_Chain1",
-                new Vector3(11.4f, 1.00f * 0.5f, 15.5f),
-                new Vector3(2f, 1.00f, 1f), _matVault);
-
-            // Bowl rims + loft lip already built in BuildBowl / BuildLoft
+            const float t = 0.05f;
+            float y = t * 0.5f + 0.015f;
+            const float w = 3.2f;
+            // SW teal (6,5) → Pirate Conn / SW jct (SpineXw, SpineZs)
+            Box("SpawnLead_SW", new Vector3(11f, y, 10f), new Vector3(10f, t, w), _matSpawnLead)
+                .transform.localRotation = Quaternion.Euler(0f, 40f, 0f);
+            // SE coral (66,5) → Army Conn / SE jct
+            Box("SpawnLead_SE", new Vector3(61f, y, 10f), new Vector3(10f, t, w), _matSpawnLead)
+                .transform.localRotation = Quaternion.Euler(0f, -40f, 0f);
+            // NW violet (6,49) → Astro Conn / NW jct
+            Box("SpawnLead_NW", new Vector3(11f, y, 44f), new Vector3(10f, t, w), _matSpawnLead)
+                .transform.localRotation = Quaternion.Euler(0f, 140f, 0f);
+            // NE lime (66,49) → Knight Conn / NE jct
+            Box("SpawnLead_NE", new Vector3(61f, y, 44f), new Vector3(10f, t, w), _matSpawnLead)
+                .transform.localRotation = Quaternion.Euler(0f, -140f, 0f);
         }
 
-        // --- Slide markers (open floor, magenta) ------------------------------------
-
-        void BuildSlideMarkers()
+        /// <summary>
+        /// Soft floor pads under named play areas (coords match PgkLandmarkPlacer groups).
+        /// Tint only — sit beside spines so chase midlines stay clear.
+        /// </summary>
+        void BuildNamedPlayPads()
         {
-            const float h = 0.05f;
-            // Chain 1 slide: X[2,7] Z[10,12] — 6 m (5×2)
-            Box("Toy_Slide_C1",
-                new Vector3(4.5f, h * 0.5f, 11f),
-                new Vector3(5f, h, 2f), _matSlide);
-
-            // South Lane slide: X[16,22] Z[3,5] — 6 m
-            Box("Toy_RubberTrack_C3",
-                new Vector3(19f, h * 0.5f, 4f),
-                new Vector3(6f, h, 2f), _matSlide);
+            const float t = 0.1f;
+            float y = -t * 0.5f + 0.004f;
+            Box("PlayPad_SoftPlay", new Vector3(18.5f, y, 13.5f), new Vector3(14f, t, 12f), _matPlayMulch);
+            // Merry mulch — spinner apron; east edge stops short of SpineXw
+            Box("PlayPad_Merry", new Vector3(15.5f, y, 22f), new Vector3(14f, t, 14f), _matPlayMulch);
+            // Swing mulch — fall-zone apron; west edge stops short of SpineXe
+            Box("PlayPad_Swing", new Vector3(60.5f, y, 33.5f), new Vector3(14f, t, 12f), _matPlayMulch);
+            // Kickball rubber — between Loop_E and Ring_E; apron for run-through (west face open)
+            Box("PlayPad_Kickball", new Vector3(56.5f, y, 27f), new Vector3(14f, t, 16f), _matPlayRubber);
+            // Hopscotch rubber — SW only (succinct map; SE dropped)
+            Box("PlayPad_Hopscotch_SW", new Vector3(9.5f, y, 9f), new Vector3(8f, t, 11f), _matPlayRubber);
         }
 
-        // --- 3×3 G pads (magenta edge) ----------------------------------------------
+        // --- Zone pads (3–5 signature toys; open sightlines to campus) --------------
 
-        void BuildGroundPads()
+        Transform Zone(string name, float cx, float cz)
         {
-            // Centers from brief
-            Vector2[] pads =
-            {
-                new Vector2(29.6f, 6.5f),  // East Alley S mouth
-                new Vector2(29.6f, 19.5f), // East Alley N mouth
-                new Vector2(29.6f, 1.5f),  // SE Alley S mouth
-                new Vector2(8.0f, 6.5f),   // West Wall S
-                new Vector2(8.0f, 19.5f),  // West Wall N
-                new Vector2(8.0f, 1.5f),   // SW Wall S
-            };
-            string[] names =
-            {
-                "Pad_EastAlley_S", "Pad_EastAlley_N", "Pad_SEAlley_S",
-                "Pad_WestWall_S", "Pad_WestWall_N", "Pad_SWWall_S"
-            };
-
-            for (int i = 0; i < pads.Length; i++)
-                BuildPad(names[i], pads[i].x, pads[i].y);
+            var go = new GameObject(name);
+            go.transform.SetParent(_root, false);
+            go.transform.localPosition = new Vector3(cx, 0f, cz);
+            return go.transform;
         }
 
-        void BuildPad(string name, float cx, float cz)
+        void PadFloor(Transform z, float w, float d, Material mat)
         {
-            // Magenta-edge frame on G: thin border strips around 3×3, plus faint fill
-            const float size = 3f;
-            const float edge = 0.12f;
-            const float h = 0.04f;
-            float half = size * 0.5f;
-
-            var parent = new GameObject(name);
-            parent.transform.SetParent(_root, false);
-            parent.transform.localPosition = new Vector3(cx, 0f, cz);
-
-            // Fill (slightly darker magenta translucent look via same mat)
-            ChildBox(parent.transform, "Fill",
-                new Vector3(0f, h * 0.5f, 0f), new Vector3(size - edge * 2f, h * 0.5f, size - edge * 2f), _matPad);
-
-            // Edges
-            ChildBox(parent.transform, "Edge_N",
-                new Vector3(0f, h * 0.5f, half - edge * 0.5f), new Vector3(size, h, edge), _matPad);
-            ChildBox(parent.transform, "Edge_S",
-                new Vector3(0f, h * 0.5f, -half + edge * 0.5f), new Vector3(size, h, edge), _matPad);
-            ChildBox(parent.transform, "Edge_E",
-                new Vector3(half - edge * 0.5f, h * 0.5f, 0f), new Vector3(edge, h, size - edge * 2f), _matPad);
-            ChildBox(parent.transform, "Edge_W",
-                new Vector3(-half + edge * 0.5f, h * 0.5f, 0f), new Vector3(edge, h, size - edge * 2f), _matPad);
+            ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, 0f), new Vector3(w, 0.16f, d), mat);
         }
 
-        // --- Spawns + elbows --------------------------------------------------------
+        /// <summary>Crash = figure-8 X. Open bowl for EW chase; toys only on N/W flanks.</summary>
+        void BuildCrashCore()
+        {
+            var z = Zone("Zone_Crash", CxCrash, CzCrash);
+            PadFloor(z, 16f, 14f, _matBowl);
+
+            // Sunken bowl — open E/W + corners so SpineXw/Xe cross stays runnable
+            ChildBox(z, "Toy_Sandbox", new Vector3(0f, -0.9f, 0f), new Vector3(8f, 0.2f, 8f), _matBowl);
+            ChildBox(z, "Toy_SandboxRim_S", new Vector3(0f, 0.35f, -4.2f), new Vector3(6f, 0.7f, 0.3f), _matVault);
+            ChildBox(z, "Toy_SandboxRim_N", new Vector3(0f, 0.35f, 4.2f), new Vector3(6f, 0.7f, 0.3f), _matVault);
+            // No E/W rims, no center vault — keep EW figure-8 chase sightline clear
+
+            // Twin towers + loft pulled north of bowl (off EW mid at local z=0)
+            ChildBox(z, "Toy_TwinTower_W", new Vector3(-4.5f, 2.0f, 4.8f), new Vector3(2.0f, 4f, 2.0f), _matWall);
+            ChildBox(z, "Toy_TwinTower_E", new Vector3(4.5f, 2.0f, 4.8f), new Vector3(2.0f, 4f, 2.0f), _matWall);
+            ChildBox(z, "Toy_Tower", new Vector3(0f, 3.1f, 4.8f), new Vector3(7f, 0.3f, 3.0f), _matLoft);
+
+            // Climb face west + north-biased — clear of EW chase lane through Crash
+            ChildBox(z, "Toy_ClimbWall_West", new Vector3(-7.6f, 1.4f, 2.8f), new Vector3(0.35f, 2.8f, 3.2f), _matWall);
+        }
+
+        /// <summary>
+        /// Pirate SW — mast/decks west + climb; east face open to PadSlideExit -> Conn_Pirate_N.
+        /// </summary>
+        void BuildPiratePad()
+        {
+            var z = Zone("Zone_Pirate", CxPirate, CzPirate);
+            PadFloor(z, 14f, 12f, _matFloor);
+            // Cluster west — leave +X corridor clear for Play_Slide_Pirate (16.5,12)
+            ChildBox(z, "MastBase", new Vector3(-3.2f, 0.45f, 0.6f), new Vector3(2.2f, 0.9f, 2.2f), _matVault);
+            ChildBox(z, "Deck_Low", new Vector3(-2.4f, 1.1f, 0.6f), new Vector3(5.0f, 0.28f, 3.6f), _matLoft);
+            ChildBox(z, "Deck_High", new Vector3(-3.4f, 2.2f, 2.0f), new Vector3(2.8f, 0.28f, 2.4f), _matLoft);
+            ChildBox(z, "ClimbNetWall", new Vector3(-5.8f, 1.5f, 0.4f), new Vector3(0.3f, 3f, 4.5f), _matWall);
+            // Dropped Plank_Run + Slide_Ramp — PadSlideExit owns the east exit
+        }
+
+        /// <summary>
+        /// Army SE — bunkers + trench; west/north open to PadSlideExit -> Conn_Army_N.
+        /// </summary>
+        void BuildArmyPad()
+        {
+            var z = Zone("Zone_Army", CxArmy, CzArmy);
+            PadFloor(z, 14f, 12f, _matFloor);
+            // Staggered bunkers south/east — mid + NW clear for Play_Slide_Army (55.5,12) / Conn
+            ChildBox(z, "Bunker_A", new Vector3(-2.8f, 0.65f, -3.2f), new Vector3(3.2f, 1.3f, 2.4f), _matPad);
+            ChildBox(z, "Bunker_B", new Vector3(3.8f, 0.65f, 1.2f), new Vector3(3.2f, 1.3f, 2.4f), _matPad);
+            ChildBox(z, "FoxholeTrench", new Vector3(1.2f, -0.35f, -0.8f), new Vector3(7f, 0.7f, 1.6f), _matBowl);
+            ChildBox(z, "Wall_Cover", new Vector3(5.8f, 1.1f, -1.5f), new Vector3(0.35f, 2.2f, 5.5f), _matWall);
+            // Dropped Vault_Low + Ramp_Up — sat on Conn_Army_N / west slide run-out
+        }
+
+        /// <summary>
+        /// Astro NW — loft + west pipe; east/south open to PadSlideExit -> Conn_Astro_S.
+        /// </summary>
+        void BuildAstroPad()
+        {
+            var z = Zone("Zone_Astro", CxAstro, CzAstro);
+            PadFloor(z, 14f, 12f, _matFloor);
+            // Loft north; one west half-pipe — no east pipe on Play_Slide_Astro
+            ChildBox(z, "Loft_Ring", new Vector3(-0.5f, 2.0f, 2.6f), new Vector3(7f, 0.28f, 4.2f), _matLoft);
+            ChildBox(z, "VisorPipe_A", new Vector3(-4.0f, 0.95f, -0.8f), new Vector3(1.5f, 1.9f, 4.0f), _matWall)
+                .transform.localRotation = Quaternion.Euler(0f, 35f, 0f);
+            ChildBox(z, "HalfPipe_L", new Vector3(-5.5f, 0.75f, 1.2f), new Vector3(0.45f, 2.2f, 5.5f), _matSlide);
+            ChildBox(z, "Ladder_Stub", new Vector3(-4.2f, 1.0f, -3.6f), new Vector3(1.1f, 2f, 0.35f), _matVault);
+            // Dropped HalfPipe_R — blocked east PadSlideExit
+        }
+
+        /// <summary>
+        /// Knight NE — keep NE + north shield; west/south open to PadSlideExit -> Conn_Knight_S.
+        /// </summary>
+        void BuildKnightPad()
+        {
+            var z = Zone("Zone_Knight", CxKnight, CzKnight);
+            PadFloor(z, 14f, 12f, _matFloor);
+            ChildBox(z, "Courtyard", new Vector3(0.8f, 0.05f, 0.6f), new Vector3(7.5f, 0.1f, 6f), _matLoft);
+            ChildBox(z, "ShieldWall_N", new Vector3(1.0f, 1.4f, 4.6f), new Vector3(8f, 2.8f, 0.4f), _matWall);
+            ChildBox(z, "Keep_Tower", new Vector3(4.0f, 2.4f, 2.8f), new Vector3(2.6f, 4.8f, 2.6f), _matPad);
+            ChildBox(z, "Battlement", new Vector3(4.0f, 5.0f, 2.8f), new Vector3(3.2f, 0.35f, 3.2f), _matLoft);
+            ChildBox(z, "Ramp_Keep", new Vector3(4.0f, 1.1f, -0.8f), new Vector3(2.4f, 0.28f, 4.2f), _matRamp)
+                .transform.localRotation = Quaternion.Euler(-15f, 0f, 0f);
+            // Dropped VaultGate — sat on south/west run-out to Play_Slide_Knight / Conn
+        }
+
+        /// <summary>
+        /// Tron S — disc + wall-run south; north face open to Conn_Tron_N.
+        /// </summary>
+        void BuildTronPad()
+        {
+            var z = Zone("Zone_Tron", CxTron, CzTron);
+            PadFloor(z, 12f, 9f, _matPad);
+            // Posts + neon south of mid — clear +Z toward Conn_Tron_N (36,12.5)
+            ChildBox(z, "GridPost_0", new Vector3(-3.2f, 1.1f, -1.2f), new Vector3(0.3f, 2.2f, 0.3f), _matWall);
+            ChildBox(z, "GridPost_1", new Vector3(3.2f, 1.1f, -1.2f), new Vector3(0.3f, 2.2f, 0.3f), _matWall);
+            ChildBox(z, "NeonTube_EW", new Vector3(0f, 2.4f, -1.6f), new Vector3(8f, 0.16f, 0.16f), _matVault);
+            ChildBox(z, "DiscPad", new Vector3(0f, 0.12f, -2.4f), new Vector3(3.0f, 0.24f, 3.0f), _matSlide);
+            ChildBox(z, "WallRun_S", new Vector3(0f, 1.3f, -3.8f), new Vector3(9f, 2.6f, 0.3f), _matWall);
+        }
+
+        /// <summary>
+        /// Ninja N — towers + climb west; south courtyard open to Conn_Ninja_S.
+        /// </summary>
+        void BuildNinjaPad()
+        {
+            var z = Zone("Zone_Ninja", CxNinja, CzNinja);
+            PadFloor(z, 12f, 9f, _matFloor);
+            ChildBox(z, "SilentTower_A", new Vector3(-3.8f, 2.4f, 1.2f), new Vector3(1.8f, 4.8f, 1.8f), _matPad);
+            ChildBox(z, "SilentTower_B", new Vector3(3.8f, 1.9f, 2.0f), new Vector3(1.8f, 3.8f, 1.8f), _matPad);
+            // One blade rail north — leave -Z run-out to Conn_Ninja_S clear
+            ChildBox(z, "BladeRail", new Vector3(0f, 1.6f, 2.6f), new Vector3(6f, 0.22f, 0.3f), _matVault);
+            ChildBox(z, "ClimbFace", new Vector3(-5.6f, 1.7f, 1.6f), new Vector3(0.35f, 3.4f, 3.6f), _matWall);
+            ChildBox(z, "LandingDeck", new Vector3(3.8f, 4.0f, 2.0f), new Vector3(2.6f, 0.28f, 2.6f), _matLoft);
+            // Dropped BladeRail_High — thin to 3–5 toys; south exit already open
+        }
 
         void BuildSpawns()
         {
-            SpawnPad("Spawn_SW", 3f, 3f, 90f);  // CCW: east along south lawn
-            SpawnPad("Spawn_SE", 33f, 3f, 0f);   // CCW: north along east lawn
-            SpawnPad("Spawn_NW", 3f, 25f, 180f); // CCW: south along west lawn
-            SpawnPad("Spawn_NE", 33f, 25f, -90f); // CCW: west along north lawn
-
-            // 1.2 m elbow L-stubs ~2 m — break spawn LOS (yellow)
-            // Place inward from each corner toward arena center
-            Elbow("Toy_Hedge_SW", 5f, 3f, towardEast: true, towardNorth: true);
-            Elbow("Toy_Hedge_SE", 31f, 3f, towardEast: false, towardNorth: true);
-            Elbow("Toy_Hedge_NW", 5f, 25f, towardEast: true, towardNorth: false);
-            Elbow("Toy_Hedge_NE", 31f, 25f, towardEast: false, towardNorth: false);
+            // Corner lawns — face inward toward campus; emissive rim glow matches Toy_SpawnPad colors
+            SpawnPad("Spawn_SW", 6f, 5f, 45f, ColSpawnTeal);
+            SpawnPad("Spawn_SE", 66f, 5f, -45f, ColSpawnCoral);
+            SpawnPad("Spawn_NW", 6f, 49f, 135f, ColSpawnViolet);
+            SpawnPad("Spawn_NE", 66f, 49f, -135f, ColSpawnLime);
         }
 
-        void SpawnPad(string name, float x, float z, float faceYawDeg)
+        void SpawnPad(string name, float x, float z, float faceYawDeg, Color glow)
         {
-            // Rubber pad + facing wedge — Trail Tag anti-spaghetti: face perimeter CCW, not sandbox
-            Box(name, new Vector3(x, 0.03f, z), new Vector3(1.5f, 0.06f, 1.5f), _matSpawn);
-            var face = Box(name + "_Face", new Vector3(x, 0.08f, z), new Vector3(0.25f, 0.08f, 0.9f), _matVault);
+            var padMat = MakeEmissiveMat(glow, 2.2f);
+            Box(name, new Vector3(x, 0.03f, z), new Vector3(2.2f, 0.06f, 2.2f), padMat);
+            var face = Box(name + "_Face", new Vector3(x, 0.08f, z), new Vector3(0.3f, 0.08f, 1.1f), _matVault);
             face.transform.localRotation = Quaternion.Euler(0f, faceYawDeg, 0f);
-            // Offset wedge forward along facing
-            face.transform.localPosition = new Vector3(x, 0.08f, z) + Quaternion.Euler(0f, faceYawDeg, 0f) * Vector3.forward * 0.7f;
-        }
+            face.transform.localPosition = new Vector3(x, 0.08f, z) + Quaternion.Euler(0f, faceYawDeg, 0f) * Vector3.forward * 0.9f;
 
-        void Elbow(string name, float x, float z, bool towardEast, bool towardNorth)
-        {
-            // L-stub: one arm along X (~2m), one along Z (~2m), height 1.2 (high-vault height)
-            const float h = 1.2f;
-            const float arm = 2.0f;
-            const float thick = 0.35f;
-            float sx = towardEast ? 1f : -1f;
-            float sz = towardNorth ? 1f : -1f;
-
-            var parent = new GameObject(name);
-            parent.transform.SetParent(_root, false);
-            parent.transform.localPosition = new Vector3(x, 0f, z);
-
-            ChildBox(parent.transform, "Arm_X",
-                new Vector3(sx * arm * 0.5f, h * 0.5f, 0f),
-                new Vector3(arm, h, thick), _matElbow);
-            ChildBox(parent.transform, "Arm_Z",
-                new Vector3(0f, h * 0.5f, sz * arm * 0.5f),
-                new Vector3(thick, h, arm), _matElbow);
+            // Thin emissive ring sibling under PARK — no PointLight (URP AdditionalLightsPerObjectLimit=4).
+            var rim = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            rim.name = name + "_RimGlow";
+            rim.transform.SetParent(_root, false);
+            rim.transform.localPosition = new Vector3(x, 0.07f, z);
+            rim.transform.localRotation = Quaternion.identity;
+            rim.transform.localScale = new Vector3(2.75f, 0.02f, 2.75f);
+            var rimCol = rim.GetComponent<Collider>();
+            if (rimCol != null)
+                Object.DestroyImmediate(rimCol);
+            var rimMr = rim.GetComponent<MeshRenderer>();
+            if (rimMr != null)
+                rimMr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            ApplyMat(rim, MakeEmissiveMat(glow, 2.8f));
         }
 
         void BuildOobSkirt()
         {
-            // OOB skirt volume hint: floor ring X[-2,38] Z[-2,30] outside playable
-            const float t = 0.15f;
+            const float t = 0.2f;
             float y = -t * 0.5f - 0.02f;
-            // South strip Z[-2,0] X[-2,38]
-            Box("OOB_S", new Vector3(18f, y, -1f), new Vector3(40f, t, 2f), _matOob);
-            // North strip Z[28,30]
-            Box("OOB_N", new Vector3(18f, y, 29f), new Vector3(40f, t, 2f), _matOob);
-            // West strip X[-2,0] Z[0,28]
-            Box("OOB_W", new Vector3(-1f, y, 14f), new Vector3(2f, t, 28f), _matOob);
-            // East strip X[36,38]
-            Box("OOB_E", new Vector3(37f, y, 14f), new Vector3(2f, t, 28f), _matOob);
+            float margin = 4f;
+            Box("OOB_S", new Vector3(MapW * 0.5f, y, -margin * 0.5f), new Vector3(MapW + margin * 2f, t, margin), _matOob);
+            Box("OOB_N", new Vector3(MapW * 0.5f, y, MapD + margin * 0.5f), new Vector3(MapW + margin * 2f, t, margin), _matOob);
+            Box("OOB_W", new Vector3(-margin * 0.5f, y, MapD * 0.5f), new Vector3(margin, t, MapD), _matOob);
+            Box("OOB_E", new Vector3(MapW + margin * 0.5f, y, MapD * 0.5f), new Vector3(margin, t, MapD), _matOob);
         }
-
-
-        // --- v0.2 chase density (do not move v0.1 chain geo) -------------------------
-
-        void BuildDensity()
-        {
-            // Producer snippet-aligned (CUT-v0.2-BuildDensity.cs.txt)
-            BuildWestBackAlley();
-            BuildMidCutHurdles();
-            BuildBowlElbows();
-            BuildJukeIslands();
-            BuildBowlNubs();
-            BuildSouthOffAxis();
-            BuildMonkeyBars();
-        }
-
-        void BuildWestBackAlley()
-        {
-            // Three 0.90 stubs across X[0.4,2.6], Z=8,13,18 — length 2.2 in X, 0.5 thick
-            float[] zs = { 8f, 13f, 18f };
-            for (int i = 0; i < zs.Length; i++)
-            {
-                Box($"Toy_BackAlleyBar_{i}",
-                    new Vector3(1.5f, 0.90f * 0.5f, zs[i]),
-                    new Vector3(2.2f, 0.90f, 0.5f), _matVault);
-            }
-        }
-
-        void BuildMidCutHurdles()
-        {
-            // Vault rails only — NOT wall-run (yellow vault mat)
-            // Vault_MidCut_S — X=24.8, Z[10.5,12.5], 1.00 × 0.4 × 2.0
-            Box("Toy_Picnic_MidCut_S",
-                new Vector3(24.8f, 1.00f * 0.5f, 11.5f),
-                new Vector3(0.4f, 1.00f, 2.0f), _matVault);
-            // Vault_MidCut_N — X=26.2, Z[15.5,17.5]
-            Box("Toy_Picnic_MidCut_N",
-                new Vector3(26.2f, 1.00f * 0.5f, 16.5f),
-                new Vector3(0.4f, 1.00f, 2.0f), _matVault);
-        }
-
-        void BuildBowlElbows()
-        {
-            // 1.2 m L-stubs at (18,7) and (18,21)
-            Elbow("Toy_Hedge_BowlSouth", 18f, 7f, towardEast: true, towardNorth: true);
-            Elbow("Toy_Hedge_BowlNorth", 18f, 21f, towardEast: true, towardNorth: false);
-        }
-
-        void BuildJukeIslands()
-        {
-            // Low 1.00 tables, 2×1 footprint, 0.4 thick
-            Box("Toy_Picnic_Island_NW",
-                new Vector3(10f, 1.00f * 0.5f, 22f),
-                new Vector3(2f, 1.00f, 1f), _matVault);
-            Box("Toy_Picnic_Island_NE",
-                new Vector3(26f, 1.00f * 0.5f, 22f),
-                new Vector3(2f, 1.00f, 1f), _matVault);
-        }
-
-        void BuildBowlNubs()
-        {
-            // 0.90 cubes 1×1 inside Bowl on Y=-1 floor
-            Box("Toy_SandToy_SW",
-                new Vector3(15.2f, -1.0f + 0.90f * 0.5f, 11.2f),
-                new Vector3(1f, 0.90f, 1f), _matVault);
-            Box("Toy_SandToy_NE",
-                new Vector3(20.8f, -1.0f + 0.90f * 0.5f, 16.8f),
-                new Vector3(1f, 0.90f, 1f), _matVault);
-        }
-
-        void BuildSouthOffAxis()
-        {
-            // 0.90 at X[18,20] Z=2.6 — south of C3 landing cone
-            Box("Toy_Bench_SouthOff",
-                new Vector3(19f, 0.90f * 0.5f, 2.6f),
-                new Vector3(2f, 0.90f, 0.5f), _matVault);
-        }
-
-
-        void BuildMonkeyBars()
-        {
-            // PARK v1 — three 0.90 rails along X[10,16] Z=7, 1.2 m spacing. Vault only (no hang/climb).
-            // Centers at X = 10.6, 11.8, 13.0 spanning toward 16 — 1.2m spacing, footprints 0.2×1.6
-            float[] xs = { 10.6f, 11.8f, 13.0f };
-            for (int i = 0; i < xs.Length; i++)
-            {
-                Box($"Toy_Bars_{i}",
-                    new Vector3(xs[i], 0.90f * 0.5f, 7f),
-                    new Vector3(0.2f, 0.90f, 1.6f), _matVault);
-            }
-        }
-
-        // --- Helpers ----------------------------------------------------------------
 
         GameObject Box(string name, Vector3 localPos, Vector3 scale, Material mat)
         {
@@ -481,10 +490,11 @@ namespace Tag.Level
             go.transform.localRotation = Quaternion.identity;
             go.transform.localScale = scale;
             ApplyMat(go, mat);
+            EnsureBoxCollider(go);
             return go;
         }
 
-        void ChildBox(Transform parent, string name, Vector3 localPos, Vector3 scale, Material mat)
+        GameObject ChildBox(Transform parent, string name, Vector3 localPos, Vector3 scale, Material mat)
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = name;
@@ -493,6 +503,8 @@ namespace Tag.Level
             go.transform.localRotation = Quaternion.identity;
             go.transform.localScale = scale;
             ApplyMat(go, mat);
+            EnsureBoxCollider(go);
+            return go;
         }
 
         static void ApplyMat(GameObject go, Material mat)
@@ -500,6 +512,15 @@ namespace Tag.Level
             var r = go.GetComponent<MeshRenderer>();
             if (r != null && mat != null)
                 r.sharedMaterial = mat;
+        }
+
+        /// <summary>CreatePrimitive already adds a BoxCollider; keep it enabled for ski contact.</summary>
+        static void EnsureBoxCollider(GameObject go)
+        {
+            var col = go.GetComponent<BoxCollider>();
+            if (col == null)
+                col = go.AddComponent<BoxCollider>();
+            col.enabled = true;
         }
     }
 }

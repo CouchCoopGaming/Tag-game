@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Tag.Gameplay;
 using Tag.Modes;
-using Tag.Movement;
+using TagArena.Movement;
 using UnityEngine;
 
 namespace Tag.Trail
@@ -11,6 +11,7 @@ namespace Tag.Trail
     /// Samples at ~20Hz, spawns trail segment colliders, LineRenderer ribbon.
     /// No emit while ragdolled (tunable). Air/wall-run emit OK. Max meters cap.
     /// Dodge i-frames do not suppress trail hits (handled in TrailSegment).
+    /// Sized for mega park (WorldScale 10) — wide bright light-cycle walls.
     /// </summary>
     public class PlayerTrailEmitter : MonoBehaviour
     {
@@ -32,7 +33,7 @@ namespace Tag.Trail
         bool _hasLast;
         readonly List<SegmentRec> _segments = new List<SegmentRec>();
         readonly List<Vector3> _linePoints = new List<Vector3>();
-        Color _color = new Color(0.2f, 0.9f, 1f, 0.85f);
+        Color _color = new Color(0.15f, 1f, 1f, 1f);
         float _itBrightness = 1f;
 
         struct SegmentRec
@@ -52,8 +53,8 @@ namespace Tag.Trail
         public bool HasLethalSegment()
         {
             float now = Time.time;
-            float graceSec = _tuning != null ? _tuning.selfHitGraceSec : 0.8f;
-            float graceDist = _tuning != null ? _tuning.selfHitGraceDist : 2f;
+            float graceSec = _tuning != null ? _tuning.selfHitGraceSec : 1f;
+            float graceDist = _tuning != null ? _tuning.selfHitGraceDist : 5f;
             if (_suddenDeath && _tuning != null)
             {
                 graceSec *= _tuning.suddenDeathGraceScale;
@@ -91,9 +92,9 @@ namespace Tag.Trail
                 _line = gameObject.AddComponent<LineRenderer>();
             _line.useWorldSpace = true;
             _line.positionCount = 0;
-            _line.widthMultiplier = 0.55f;
-            _line.numCapVertices = 2;
-            _line.numCornerVertices = 2;
+            _line.widthMultiplier = _tuning != null ? _tuning.trailWidth : 2.4f;
+            _line.numCapVertices = 4;
+            _line.numCornerVertices = 4;
             _line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _line.receiveShadows = false;
             // Prefer Art bible trail mat when present (Hub import).
@@ -108,9 +109,9 @@ namespace Tag.Trail
             }
             else
             {
-                var shader = Shader.Find("Sprites/Default");
-                if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
-                if (shader == null) shader = Shader.Find("Unlit/Color");
+                var shader = Shader.Find("Universal Render Pipeline/Unlit")
+                             ?? Shader.Find("Sprites/Default")
+                             ?? Shader.Find("Unlit/Color");
                 if (shader != null)
                     _line.material = new Material(shader);
             }
@@ -123,12 +124,12 @@ namespace Tag.Trail
             else
             {
                 int h = (OwnerId ?? name).GetHashCode();
-                _color = Color.HSVToRGB(Mathf.Abs(h % 1000) / 1000f, 0.75f, 1f);
-                _color.a = 0.9f;
+                _color = Color.HSVToRGB(Mathf.Abs(h % 1000) / 1000f, 0.85f, 1f);
+                _color.a = 1f;
             }
             if (_line != null)
             {
-                _line.widthMultiplier = _tuning != null ? _tuning.trailWidth : 0.55f;
+                _line.widthMultiplier = _tuning != null ? _tuning.trailWidth : 2.4f;
                 ApplyLineColor();
             }
         }
@@ -158,14 +159,20 @@ namespace Tag.Trail
             c.r = Mathf.Clamp01(c.r * _itBrightness);
             c.g = Mathf.Clamp01(c.g * _itBrightness);
             c.b = Mathf.Clamp01(c.b * _itBrightness);
+            c.a = 1f;
             _line.startColor = c;
-            _line.endColor = new Color(c.r, c.g, c.b, 0.15f);
+            _line.endColor = new Color(c.r, c.g, c.b, 0.35f);
             if (_line.material != null)
             {
                 if (_line.material.HasProperty("_Color"))
                     _line.material.color = c;
                 if (_line.material.HasProperty("_BaseColor"))
                     _line.material.SetColor("_BaseColor", c);
+                if (_line.material.HasProperty("_EmissionColor"))
+                {
+                    _line.material.EnableKeyword("_EMISSION");
+                    _line.material.SetColor("_EmissionColor", c * (2.5f * _itBrightness));
+                }
             }
         }
 
@@ -277,7 +284,7 @@ namespace Tag.Trail
             }
             _sampleAccum -= interval;
 
-            float clearance = _tuning != null ? _tuning.bottomClearance : 0.35f;
+            float clearance = _tuning != null ? _tuning.bottomClearance : 0.85f;
             Vector3 pos = transform.position + Vector3.up * (clearance + 0.05f);
             if (!_hasLast)
             {
@@ -287,11 +294,11 @@ namespace Tag.Trail
                 return;
             }
 
-            float minSpacing = _tuning != null ? _tuning.minSpacing : 0.25f;
+            float minSpacing = _tuning != null ? _tuning.minSpacing : 0.55f;
             float dist = Vector3.Distance(pos, _lastPoint);
             if (dist >= minSpacing)
             {
-                float remaining = _tuning != null ? _tuning.maxTrailMeters - _metersEmitted : 80f;
+                float remaining = _tuning != null ? _tuning.maxTrailMeters - _metersEmitted : 450f;
                 if (dist > remaining) dist = remaining;
                 if (dist >= minSpacing * 0.5f)
                 {
@@ -314,7 +321,8 @@ namespace Tag.Trail
             Vector3 dir = delta / len;
 
             var go = new GameObject($"TrailSeg_{OwnerId}");
-            go.layer = gameObject.layer;
+            // Default layer so player-layer matrix quirks cannot swallow trail triggers.
+            go.layer = 0;
             float height = _tuning.trailHeight;
             float width = _tuning.trailWidth;
             go.transform.position = mid + Vector3.up * (_tuning.bottomClearance + height * 0.5f);
@@ -331,6 +339,8 @@ namespace Tag.Trail
             var rb = go.AddComponent<Rigidbody>();
             rb.isKinematic = true;
             rb.useGravity = false;
+            // Speculative contacts help catch fast RB motor sweeps against thin walls.
+            rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
 
             // Visible ribbon body (unit cube scaled by transform)
             var mf = go.AddComponent<MeshFilter>();
@@ -344,8 +354,11 @@ namespace Tag.Trail
             vis.r = Mathf.Clamp01(vis.r * _itBrightness);
             vis.g = Mathf.Clamp01(vis.g * _itBrightness);
             vis.b = Mathf.Clamp01(vis.b * _itBrightness);
+            vis.a = 1f;
             mpb.SetColor("_BaseColor", vis);
             mpb.SetColor("_Color", vis);
+            if (mr.sharedMaterial != null && mr.sharedMaterial.HasProperty("_EmissionColor"))
+                mpb.SetColor("_EmissionColor", vis * (3f * _itBrightness));
             mr.SetPropertyBlock(mpb);
 
             float graceSec = _tuning.selfHitGraceSec;
@@ -358,6 +371,7 @@ namespace Tag.Trail
 
             var seg = go.AddComponent<TrailSegment>();
             seg.Init(_owner, _tuning.lifetime, graceSec, graceDist, _tuning.eliminateSelfAfterGrace, HandleHit);
+            seg.SetEndpoints(a, b);
 
             _segments.Add(new SegmentRec
             {
@@ -380,18 +394,40 @@ namespace Tag.Trail
             if (_unitCube != null) return _unitCube;
             var temp = GameObject.CreatePrimitive(PrimitiveType.Cube);
             _unitCube = temp.GetComponent<MeshFilter>().sharedMesh;
-            Object.Destroy(temp);
+            UnityEngine.Object.Destroy(temp);
             return _unitCube;
         }
 
         static Material GetTrailMeshMaterial()
         {
             if (_trailMeshMat != null) return _trailMeshMat;
-            var shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader == null) shader = Shader.Find("Standard");
-            if (shader == null) shader = Shader.Find("Sprites/Default");
+            var artMat = Resources.Load<Material>("Mat_Trail_Cyan");
+#if UNITY_EDITOR
+            if (artMat == null)
+                artMat = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/VFX/Trail/Mat_Trail_Cyan.mat");
+#endif
+            if (artMat != null)
+            {
+                _trailMeshMat = artMat;
+                return _trailMeshMat;
+            }
+
+            var shader = Shader.Find("Universal Render Pipeline/Unlit")
+                         ?? Shader.Find("Universal Render Pipeline/Lit")
+                         ?? Shader.Find("Sprites/Default")
+                         ?? Shader.Find("Unlit/Color");
             _trailMeshMat = new Material(shader);
             _trailMeshMat.name = "TrailSegMeshMat";
+            var neon = new Color(0.15f, 1f, 1f, 1f);
+            if (_trailMeshMat.HasProperty("_BaseColor"))
+                _trailMeshMat.SetColor("_BaseColor", neon);
+            if (_trailMeshMat.HasProperty("_Color"))
+                _trailMeshMat.color = neon;
+            if (_trailMeshMat.HasProperty("_EmissionColor"))
+            {
+                _trailMeshMat.EnableKeyword("_EMISSION");
+                _trailMeshMat.SetColor("_EmissionColor", neon * 3f);
+            }
             return _trailMeshMat;
         }
 
@@ -404,7 +440,6 @@ namespace Tag.Trail
         {
             if (_tuning == null) return;
             float now = Time.time;
-            float fadeStart = Mathf.Clamp01(1f - _tuning.fade); // fade window length as fraction? sheet Fade=0.75s
             // Interpret Fade as seconds of fade at end of life
             float fadeSec = Mathf.Max(0.05f, _tuning.fade);
 
@@ -412,7 +447,7 @@ namespace Tag.Trail
             {
                 var s = _segments[i];
                 float age = now - s.SpawnTime;
-                float life = s.Lifetime > 0f ? s.Lifetime : 6f;
+                float life = s.Lifetime > 0f ? s.Lifetime : 10f;
 
                 if (s.Seg != null && age >= life - fadeSec)
                     s.Seg.SetCollisionEnabled(false);
@@ -448,10 +483,13 @@ namespace Tag.Trail
             {
                 _line.widthMultiplier = _tuning.trailWidth;
                 var start = _color;
-                start.a = 0.9f;
+                start.r = Mathf.Clamp01(start.r * _itBrightness);
+                start.g = Mathf.Clamp01(start.g * _itBrightness);
+                start.b = Mathf.Clamp01(start.b * _itBrightness);
+                start.a = 1f;
                 _line.startColor = start;
-                var end = _color;
-                end.a = 0.15f;
+                var end = start;
+                end.a = 0.35f;
                 _line.endColor = end;
             }
         }
@@ -462,3 +500,4 @@ namespace Tag.Trail
         }
     }
 }
+
