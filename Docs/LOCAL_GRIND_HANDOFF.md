@@ -44,7 +44,7 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - **Jump:** `v.y = jumpSpeed` (fixed launch, not additive with ski/slope residual).
 - **Map:** `SpawnFbx` feet-snap to local Y; succinct PGK clusters (dropped SE hopscotch + 2 banks + Bay B clutter); prefer HiPoly on mulch.
 - **Map grounding:** snap is ground-only + sink-biased (no lift on overhanging slides); dropped Ring_W/E + merry cardinal spinners; Flow thinned to 4 Conn->spine handoffs (no S/N ring / Core / mids).
-- **Stem seating:** `SpawnFbx` name rules - `PGK_Slide_Straight*` mouth offset -1.77, `PGK_Slide_Spiral*` feet -0.51, `PGK_Stairs*` -0.06; snap still uses authored Y (elevated decks/mouths skip snap).
+- **Stem seating:** `SpawnFbx` name rules - `PGK_Slide_Straight*` mouth -1.77, `PGK_Slide_Spiral*` feet -0.51, `PGK_Stairs*` -0.06, `PGK_Slide_Tube*` feet +0.52, `Mega_SlideTube` +0.24, `Toy_TunnelTube` +0.02 (Mega_CrawlTunnel ~0); snap still uses authored Y (elevated decks/mouths skip snap; sink-biased on ground).
 - **Stairs/deck match:** soft-play + pad clusters use Stairs5DeckY=0.8 (Stairs_5 top ~0.84; kit snap). Decks/slide mouths/rails share that Y; StemSeatYOffset unchanged.
 
 ## Keep grinding (priority order)

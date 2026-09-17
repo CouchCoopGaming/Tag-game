@@ -475,15 +475,20 @@ namespace Tag.Art
 
         /// <summary>
         /// Name-based pivot seating. Author local Y means mulch feet or deck/mouth attach.
-        /// Measured Unity AABB: Straight slide mouth ~+1.77, Spiral feet ~+0.51, Stairs tread0 ~+0.06.
-        /// Decks/posts are bottom-pivoted (0). Coarse — tune in Play if needed.
+        /// Measured Unity AABB (Blender FBX to Y-up): Straight mouth ~+1.77, Spiral feet ~+0.51,
+        /// Stairs tread0 ~+0.06, Tube90 feet ~-0.52, Mega_SlideTube feet ~-0.24,
+        /// Toy_TunnelTube feet ~-0.02, Mega_CrawlTunnel ~0. Decks/posts bottom-pivoted (0).
+        /// Offset = -feetOrMouthY. Coarse - tune in Play if needed.
         /// </summary>
         static float StemSeatYOffset(string stem)
         {
             if (string.IsNullOrEmpty(stem)) return 0f;
             if (stem.StartsWith("PGK_Slide_Straight")) return -1.77f; // mouth -> authored Y
             if (stem.StartsWith("PGK_Slide_Spiral")) return -0.51f;   // feet -> authored Y
+            if (stem.StartsWith("PGK_Slide_Tube")) return 0.52f;      // feet (minY~-0.52)
             if (stem.StartsWith("PGK_Stairs")) return -0.06f;         // first tread -> mulch
+            if (stem.StartsWith("Mega_SlideTube")) return 0.24f;      // feet (minY~-0.24)
+            if (stem.StartsWith("Toy_TunnelTube")) return 0.02f;      // feet (minY~-0.02)
             return 0f;
         }
 
