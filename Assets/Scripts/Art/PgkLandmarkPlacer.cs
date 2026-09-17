@@ -138,11 +138,11 @@ namespace Tag.Art
         int SoftPlayPlaza(Transform root, string name, Vector3 origin, float yaw)
         {
             var parent = MakeGroup(root, name, origin, yaw);
-            // Readable chase path: climb -> decks -> tube -> Bay B exit.
+            // Compact tower + readable tube continuity SW (grounded via StemSeatYOffset).
             // Origin SW of SpineXw (24) / SpineZs (18) so Crash EW chase stays open.
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
-                // Compact tower on mulch: posts + deck + stairs + net + slide exit
+                // Core tower on mulch: posts + stairs-matched deck + climb + N slide exit
                 ("PGK_Post_Square_3m_LOD0", new Vector3(-2f, 0f, -2f), 0f),
                 ("PGK_Post_Square_3m_LOD0", new Vector3(2f, 0f, -2f), 0f),
                 ("PGK_Post_Square_3m_LOD0", new Vector3(-2f, 0f, 2f), 0f),
@@ -151,7 +151,12 @@ namespace Tag.Art
                 ("PGK_Stairs_5_LOD0", new Vector3(0f, 0f, -4f), 180f),
                 ("Mega_ClimbNet", new Vector3(-3.6f, 0f, 0f), 90f),
                 ("PGK_Slide_Straight_M_LOD0", new Vector3(0f, Stairs5DeckY, 3.6f), 0f),
-                ("Mega_CrawlTunnel", new Vector3(0f, 0f, -5.2f), 0f),
+                // Tube continuity: deck -> SW away from Crash/spines (author Y = deck; stem seats feet)
+                ("Toy_TunnelTube", new Vector3(-0.2f, Stairs5DeckY, -2.6f), 180f),
+                ("PGK_Slide_Tube90_LOD0", new Vector3(-2.4f, Stairs5DeckY, -3.8f), 135f),
+                ("Mega_SlideTube", new Vector3(-4.8f, Stairs5DeckY, -5.0f), 135f),
+                // Ground chase under tube run
+                ("Mega_CrawlTunnel", new Vector3(-1.5f, 0f, -5.0f), 135f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 0f), 0f),
             });
         }

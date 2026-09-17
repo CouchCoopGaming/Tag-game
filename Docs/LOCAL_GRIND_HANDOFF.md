@@ -22,7 +22,7 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - Prefer sparse chase-path structures over dense pad dumps. Keep ski midlines clear.
 
 ### Pass3/4 structure map (graybox coords)
-- `Play_SoftPlay_CrashSW` (28,21): tube continuity mid?Bay B + readable net climb line (Mega_ClimbNet/tunnels/spiral); Crash/spines kept clear
+- `Play_SoftPlay_CrashSW` (19,13.5): compact tower + tube continuity (Toy_TunnelTube / Tube90 / Mega_SlideTube on Stairs5DeckY via StemSeatYOffset) + crawl under; Crash/spines kept clear
 - `Play_MerryGoRound` (15.5,22): Mega hub + mulch tiles + west bench (east open for SpineXw)
 - `Play_Swing` (60.5,33.5): twin bars + rail A-frame + monkey bay, clear mulch fall zone, east benches only (west open for SpineXe)
 - `Play_Kickball` (56.5,27): clear diamond + N/S goals, east benches only (west open for figure-8), larger rubber pad
@@ -46,6 +46,7 @@ Parent pushes; **do not push** from casual local grind unless asked.
 - **Map grounding:** snap is ground-only + sink-biased (no lift on overhanging slides); dropped Ring_W/E + merry cardinal spinners; Flow thinned to 4 Conn->spine handoffs (no S/N ring / Core / mids).
 - **Stem seating:** `SpawnFbx` name rules - `PGK_Slide_Straight*` mouth -1.77, `PGK_Slide_Spiral*` feet -0.51, `PGK_Stairs*` -0.06, `PGK_Slide_Tube*` feet +0.52, `Mega_SlideTube` +0.24, `Toy_TunnelTube` +0.02 (Mega_CrawlTunnel ~0); snap still uses authored Y (elevated decks/mouths skip snap; sink-biased on ground).
 - **Stairs/deck match:** soft-play + pad clusters use Stairs5DeckY=0.8 (Stairs_5 top ~0.84; kit snap). Decks/slide mouths/rails share that Y; StemSeatYOffset unchanged.
+- **SoftPlay tube restore:** re-added TunnelTube->Tube90->Mega_SlideTube SW of core deck (author Y=Stairs5DeckY); no Bay B tower clutter; Crash EW clear.
 
 ## Keep grinding (priority order)
 
@@ -93,7 +94,7 @@ Author: Landon Sikes / CouchCoopGaming@users.noreply.github.com (env author, no 
 Do not push; parent agent pushes.
 
 ## Next coding pass
-- Feel in Play: wall-run faces + slide banks along figure-8 / outer ring; ski midlines still clear?
-- Tune offsets if a wall/bank clips Flow stones or Conn.
+- Feel SoftPlay tube run in Play: pieces sit on deck/mulch (not floating); tube path readable SW; Crash bowl open.
+- Tune tube yaw/XZ if mouths misalign; stem Y offsets already at tip.
 - Mannequin polish overnight OK.
 
