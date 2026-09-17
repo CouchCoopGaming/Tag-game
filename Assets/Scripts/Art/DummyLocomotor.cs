@@ -29,11 +29,13 @@ namespace Tag.Art
         bool _bounceWallLeft;
         float _glidePulse;
         float _dashPulse;
+        float _dashTrailT;
         float _tagFlinch;
         bool _wasLunging;
         bool _wasAirDashing;
         bool _wasJetting;
         PlayerMotor _bounceHooked;
+        TrailRenderer _dashTrail;
 
         Quaternion _spineT, _hipsT, _headT;
         Quaternion _uaLT, _uaRT, _laLT, _laRT;
@@ -127,12 +129,20 @@ namespace Tag.Art
             // MMB lunge / air-dash tell + brief jet pop
             bool airDashing = _motor != null && _motor.IsAirDashing;
             if (lunging && !_wasLunging) _dashPulse = 1f;
-            if (airDashing && !_wasAirDashing) _dashPulse = 1f;
+            if (airDashing && !_wasAirDashing)
+            {
+                _dashPulse = 1f;
+                _dashTrailT = 0.22f;
+                EnsureDashTrail();
+            }
             if (jet && !_wasJetting) _dashPulse = Mathf.Max(_dashPulse, 0.85f);
             _wasLunging = lunging;
             _wasAirDashing = airDashing;
             _wasJetting = jet;
             _dashPulse = Mathf.MoveTowards(_dashPulse, 0f, dt / 0.18f);
+            if (_dashTrailT > 0f) _dashTrailT = Mathf.MoveTowards(_dashTrailT, 0f, dt);
+            if (_dashTrail != null)
+                _dashTrail.emitting = _dashTrailT > 0.01f || airDashing;
             _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.32f);
             bool dashing = _dashPulse > 0.04f || lunging || airDashing;
             float dashAmt = Mathf.Max(
@@ -509,10 +519,47 @@ namespace Tag.Art
             if (flinchAmt > 0.04f) bob -= 0.1f * flinchAmt;
             transform.localPosition = _root0 + new Vector3(0f, bob, 0f);
             float squash = 1f - 0.12f * _landSquash;
-            // Dash stretch (long) then brief squash; tag flinch compresses
-            float stretchY = 1f + 0.18f * dashAmt - 0.16f * flinchAmt;
-            float stretchXZ = 1f - 0.1f * dashAmt + 0.12f * flinchAmt;
+            // Air-dash: strong stretch then brief squash; tag flinch compresses
+            float dashStretch = airDashing ? 0.32f : 0.18f;
+            float dashSquash = airDashing ? 0.16f : 0.1f;
+            float stretchY = 1f + dashStretch * dashAmt - 0.16f * flinchAmt;
+            float stretchXZ = 1f - dashSquash * dashAmt + 0.12f * flinchAmt;
             transform.localScale = new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash);
+        }
+
+        void EnsureDashTrail()
+        {
+            if (_dashTrail != null) return;
+            var go = new GameObject("AirDashTrail");
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = new Vector3(0f, 0.9f, -0.15f);
+            _dashTrail = go.AddComponent<TrailRenderer>();
+            _dashTrail.time = 0.18f;
+            _dashTrail.minVertexDistance = 0.05f;
+            _dashTrail.widthMultiplier = 0.22f;
+            _dashTrail.emitting = false;
+            _dashTrail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            _dashTrail.receiveShadows = false;
+            var grad = new Gradient();
+            grad.SetKeys(
+                new[] {
+                    new GradientColorKey(new Color(0.55f, 0.95f, 1f), 0f),
+                    new GradientColorKey(new Color(0.2f, 0.55f, 1f), 1f)
+                },
+                new[] {
+                    new GradientAlphaKey(0.85f, 0f),
+                    new GradientAlphaKey(0f, 1f)
+                });
+            _dashTrail.colorGradient = grad;
+            var shader = Shader.Find("Universal Render Pipeline/Unlit")
+                         ?? Shader.Find("Unlit/Color")
+                         ?? Shader.Find("Sprites/Default")
+                         ?? Shader.Find("Standard");
+            var mat = new Material(shader);
+            var c = new Color(0.45f, 0.9f, 1f, 0.9f);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
+            _dashTrail.sharedMaterial = mat;
         }
 
         /// <summary>Victim tag / punch connect flinch — called from ItController / binder.</summary>
@@ -528,13 +575,23 @@ namespace Tag.Art
             {
                 _bounceHooked.OnWallBounced -= HandleWallBounced;
                 _bounceHooked.OnSuperGlide -= HandleSuperGlide;
+                _bounceHooked.OnAirDashed -= HandleAirDashed;
             }
             _bounceHooked = _motor;
             if (_bounceHooked != null)
             {
                 _bounceHooked.OnWallBounced += HandleWallBounced;
                 _bounceHooked.OnSuperGlide += HandleSuperGlide;
+                _bounceHooked.OnAirDashed += HandleAirDashed;
             }
+        }
+
+        void HandleAirDashed()
+        {
+            _dashPulse = 1f;
+            _dashTrailT = 0.22f;
+            EnsureDashTrail();
+            if (_dashTrail != null) _dashTrail.emitting = true;
         }
 
         void HandleWallBounced()

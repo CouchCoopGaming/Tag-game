@@ -42,6 +42,8 @@ namespace TagArena.Movement
             _airDashT > 0f && cfg != null
                 ? Mathf.Clamp01(_airDashT / Mathf.Max(0.01f, cfg.airDashDuration))
                 : 0f;
+        /// <summary>Seconds left before air dash is usable again (0 = ready).</summary>
+        public float AirDashCooldownRemaining => Mathf.Max(0f, _airDashCd);
         public bool IsGrounded => _probe != null && _probe.Ground.grounded;
         public float HorizontalSpeed => HorizSpeed;
         public bool IsLunging => _lungeT > 0f;
@@ -83,7 +85,7 @@ namespace TagArena.Movement
         float _lungeT;
         float _airDashT;
         float _airDashIFramesT;
-        int _airDashCharges = 1;
+        float _airDashCd;
         Vector3 _airDashDir;
         float _landStunT;
         float _lastLandImpactSpeed;
@@ -99,6 +101,7 @@ namespace TagArena.Movement
         public event System.Action<MoveState, MoveState> OnStateChanged;
         public event System.Action OnJumped;
         public event System.Action OnSlid;
+        public event System.Action OnAirDashed;
         public event System.Action OnWallBounced;
         public event System.Action OnSuperGlide;
         public event System.Action OnMantle;
@@ -304,18 +307,29 @@ namespace TagArena.Movement
             bool downhill = _probe.Ground.fallLine.sqrMagnitude > 0f &&
                             Vector3.Dot(along, _probe.Ground.fallLine) > 0f;
 
-            if (slope > 4f && downhill)
-                along += _probe.Ground.fallLine * (cfg.slideDownhillAccel * (slope / 45f) * dt);
-            else if (slope > 8f && !downhill)
+            // Carry entry speed only — never accelerate above slide-entry planar speed.
+            // Downhill softens friction (sustains longer) but cannot add speed.
+            if (slope > 8f && !downhill)
                 along = WishAccel.Friction(along, cfg.slideUphillBrake / Mathf.Max(along.magnitude, 1f), dt);
             else
-                along = WishAccel.Friction(along, cfg.slideFlatFriction / Mathf.Max(along.magnitude, 1f), dt);
+            {
+                float fric = (downhill && slope > 4f)
+                    ? cfg.slideFlatFriction * 0.35f
+                    : cfg.slideFlatFriction;
+                along = WishAccel.Friction(along, fric / Mathf.Max(along.magnitude, 1f), dt);
+            }
 
             if (wish.sqrMagnitude > 0.01f)
             {
                 Vector3 steer = Vector3.ProjectOnPlane(wish, n);
-                along = WishAccel.Accelerate(along, steer, along.magnitude + 1.5f, cfg.slideSteer / 10f, dt);
+                // Steer only — cap at current speed (no +1.5 boost).
+                along = WishAccel.Accelerate(along, steer, along.magnitude, cfg.slideSteer / 10f, dt);
             }
+
+            float cap = Mathf.Max(0.01f, _slideStartSpeed);
+            float spd = along.magnitude;
+            if (spd > cap)
+                along *= cap / spd;
 
             v = along;
 
@@ -503,7 +517,8 @@ namespace TagArena.Movement
             float h = JumpHeightNow();
             bool fromSlide = State == MoveState.Slide && _slideT <= cfg.slideJumpWindow && HorizSpeed <= cfg.slideJumpSpeedCap;
 
-            v.y = Mathf.Max(v.y, 0f) + h;
+            // Fixed launch: not additive with residual up from run/sprint/ski slopes.
+            v.y = h;
             if (fromSlide)
             {
                 Vector3 hv = WishAccel.Horizontal(v);
@@ -785,7 +800,7 @@ namespace TagArena.Movement
             if (grounded) return false;
             if (State == MoveState.Mantle || State == MoveState.WallClimb || State == MoveState.WallRun || State == MoveState.LandStun)
                 return false;
-            if (_airDashCharges <= 0) return false;
+            if (_airDashCd > 0f) return false;
 
             // Dedicated keys, or MMB/lunge press reused as air-dodge while airborne.
             bool pressed = _in.AirDashPressed || _in.LungePressed;
@@ -795,10 +810,11 @@ namespace TagArena.Movement
             _airDashDir = dir;
             _airDashT = cfg.airDashDuration;
             _airDashIFramesT = cfg.airDashIFrames;
-            _airDashCharges = 0;
+            _airDashCd = Mathf.Max(0.01f, cfg.airDashCooldown);
             v = WishAccel.SetHoriz(v, dir * cfg.airDashSpeed);
             SetState(MoveState.Air);
             TagSfx.LungeWhoosh(transform.position);
+            OnAirDashed?.Invoke();
             return true;
         }
 
@@ -930,7 +946,7 @@ namespace TagArena.Movement
                 float impact = Mathf.Max(0f, -_rb.linearVelocity.y);
                 _lastLandImpactSpeed = impact;
                 _lastLanded = Time.time;
-                _airDashCharges = 1;
+                // Air dash uses time cooldown (not land refresh).
 
                 // Landing shock (Apex) — only from true air/jet, not ski kisses.
                 // Harder impacts hold stun a touch longer (clamped).
@@ -981,6 +997,7 @@ namespace TagArena.Movement
             if (_jumpBuf > 0f) _jumpBuf -= dt;
             if (_tapCd > 0f) _tapCd -= dt;
             if (_lungeCd > 0f) _lungeCd -= dt;
+            if (_airDashCd > 0f) _airDashCd -= dt;
             if (_airDashIFramesT > 0f) _airDashIFramesT -= dt;
             if (_energyRegenDelay > 0f) _energyRegenDelay -= dt;
 

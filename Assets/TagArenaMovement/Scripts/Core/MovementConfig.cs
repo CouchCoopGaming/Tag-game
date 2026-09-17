@@ -35,7 +35,8 @@ namespace TagArena.Movement
         /// <summary>Brief commit so crouch-edge noise does not cancel enter; releasing crouch after this exits.</summary>
         public float slideMinDuration = 0.12f;
         public float slideFlatFriction = 6.8f;
-        public float slideDownhillAccel = 16f;
+        /// <summary>Legacy; SlideMove no longer accelerates downhill. Keep 0.</summary>
+        public float slideDownhillAccel = 0f;
         public float slideUphillBrake = 18f;
         public float slideSteer = 22f;
         public float slideJumpWindow = 0.24f;
@@ -141,6 +142,8 @@ namespace TagArena.Movement
         public float airDashDuration = 0.10f;
         /// <summary>Punch i-frame window while dashing (hurtbox only).</summary>
         public float airDashIFrames = 0.10f;
+        /// <summary>Time after a dash before another is allowed (party default 30s).</summary>
+        public float airDashCooldown = 30f;
 
         [Header("Tag arena tuning")]
         public float runnerJetEnergyBonus = 20f;

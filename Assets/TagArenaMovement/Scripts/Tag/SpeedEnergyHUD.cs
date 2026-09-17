@@ -55,7 +55,7 @@ namespace TagArena.Movement
             "Space jump\n" +
             "Ctrl/C crouch\n" +
             "LMB/E punch\n" +
-            "Q/Alt air dash\n" +
+            "Q/Alt air dash 30s\n" +
             "MMB lunge\n" +
             "F1 Hot Potato\n" +
             "F2 Least It\n" +

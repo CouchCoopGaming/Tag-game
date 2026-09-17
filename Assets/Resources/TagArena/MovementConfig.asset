@@ -36,7 +36,7 @@ MonoBehaviour:
   slideStaySpeed: 4
   slideMinDuration: 0.12
   slideFlatFriction: 6.8
-  slideDownhillAccel: 16
+  slideDownhillAccel: 0
   slideUphillBrake: 18
   slideSteer: 22
   slideJumpWindow: 0.24
@@ -114,6 +114,7 @@ MonoBehaviour:
   airDashSpeed: 15
   airDashDuration: 0.1
   airDashIFrames: 0.1
+  airDashCooldown: 30
   runnerJetEnergyBonus: 20
   taggerSprintBonus: 0.55
   taggerLungeSpeed: 16
