@@ -25,12 +25,12 @@ namespace Tag.Level
             ("TRON",   36f,  8f),
             ("NINJA",  36f, 46f),
             // Named play courts (pad centers from CutArenaBootstrap Pass4)
-            ("SOFT PLAY",     18.5f, 13.5f),
-            ("MERRY",         15.5f, 22f),
-            ("SWING",         60.5f, 33.5f),
-            ("KICKBALL",      56.5f, 27f),
-            ("HOPSCOTCH SW",   9.5f,  9f),
-            ("HOPSCOTCH SE",  64f,   8f),
+            ("SOFT PLAY",     15f, 11f),
+            ("MERRY",          7f, 24f),
+            ("SWING",         67f, 31f),
+            ("KICKBALL",      67f, 24f),
+            ("HOPSCOTCH SW",   7f,  9f),
+            ("HOPSCOTCH SE",  70f, 12f),
         };
 
         static Transform _parkCached;

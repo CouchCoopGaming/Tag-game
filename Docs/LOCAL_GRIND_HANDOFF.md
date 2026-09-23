@@ -3,6 +3,19 @@
 Branch: `cursor/apex-party-movement-f5fd`  
 Parent pushes; **do not push** from casual local grind unless asked.
 
+## Campus zone pass (place)
+
+Graybox pad cubes are gone (they were stretching HiPoly into a low-poly look). Flow stones are gone. The chase is kit districts:
+
+- **Soft-play** (15, 11), **Army bunker** (56, 11), **Astro loft** (14, 43), **Knight keep** (58, 43). Each is posts on the 1 m grid, decks at 0.80 / 1.60 / 2.00, stairs between them, a straight slide whose mouth tucks under the 2.00 deck and whose exit sits on mulch, a spiral off the 1.60 deck, and an abutted tube run with plastic mouths.
+- **Merry** (7, 24) stand-on spinner. **Swing** (67, 31) and **kickball** (67, 24) are the east rec yard. **Hopscotch** SW (7, 9) and SE (70, 12).
+- **Ring S** (36, 3): 3 monkeys, a 6-panel wall, an 8 m crawl, west tower slide into the south lane. **Ring N** (36, 51): same idea, three tubes, slide south into the north lane.
+- **Loop W** (16, 25) and **Loop E** (56, 29): 6-panel wall-run plus an end tower. The slide drops across the alley and stops short of the NS spine.
+
+Playtest: spawn SW → hopscotch → soft-play stairs/tube/slide onto the south spine. Outer ring is monkey then slide. Figure-8 is the wall-run face then the tower slide. East rec is swing then kickball.
+
+Known: straight-slide exit is seated to mulch (mouth authored 1.91, just under the 2.00 deck). Spiral entrance is ~1.73 beside the 1.60 deck (top 1.68). `Mega_SlideTube` / `PGK_Slide_Tube90` stay unused — their drops do not meet the deck grid. Tron disc is scaled down so the south ring can exist.
+
 ## Done this pass (feel + figure-8 + map pass2/pass3 playground)
 
 - Movement: no jet (`enableJet=false`), slide carries/decays (no enter boost), jump ~10x height (`jumpSpeed=24.7`), air-crouch 2x fall, faster run (`sprint=12`) vs ski max 24.
