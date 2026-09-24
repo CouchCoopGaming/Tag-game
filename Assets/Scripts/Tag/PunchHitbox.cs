@@ -79,6 +79,11 @@ namespace Tag.Gameplay
 
         void Update()
         {
+            if (Time.timeScale <= 0f)
+            {
+                _bufferTimer = 0f;
+                return;
+            }
             float dt = Time.deltaTime;
 
             if (_input != null && _input.PunchPressed)

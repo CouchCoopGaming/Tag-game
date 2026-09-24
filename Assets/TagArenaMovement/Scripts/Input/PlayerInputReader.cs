@@ -48,6 +48,27 @@ namespace TagArena.Movement
         {
             if (ExternalControl) return;
 
+            // Pause freezes the clock but Update still runs. A menu click is Mouse0,
+            // which is also punch, and look is not scaled by deltaTime.
+            if (Time.timeScale <= 0f)
+            {
+                Move = Vector2.zero;
+                Look = Vector2.zero;
+                SprintHeld = false;
+                CrouchHeld = false;
+                CrouchPressed = false;
+                JumpHeld = false;
+                JumpPressed = false;
+                SkiHeld = false;
+                JetHeld = false;
+                JetPressed = false;
+                LungePressed = false;
+                AirDashPressed = false;
+                PunchPressed = false;
+                TapForwardPulse = false;
+                return;
+            }
+
             Move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             if (Move.sqrMagnitude > 1f) Move.Normalize();
 

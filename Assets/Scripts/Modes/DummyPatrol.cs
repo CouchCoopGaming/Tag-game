@@ -469,11 +469,17 @@ namespace Tag.Modes
             if (loco != null) loco.HoldPunchTelegraph();
         }
 
+        void CancelPunchTelegraph()
+        {
+            var loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
+            if (loco != null) loco.CancelPunchTelegraph();
+        }
+
         /// <summary>
         /// Sample ground 1.4-3.2 m along planarDir. Positive = higher deck than feet.
         /// Lets chase/flee hop a playground lip after weave steers off the ideal line.
         /// </summary>
-                float ProbeAheadDeckDy(Vector3 planarDir)
+        float ProbeAheadDeckDy(Vector3 planarDir)
         {
             if (planarDir.sqrMagnitude < 0.01f) return 0f;
             planarDir.Normalize();
@@ -547,7 +553,10 @@ namespace Tag.Modes
                 if (_punchTell > 0f)
                 {
                     if (!inCone || juked || _itGraceTimer > 0f)
+                    {
                         _punchTell = 0f;
+                        CancelPunchTelegraph();
+                    }
                     else
                     {
                         HoldPunchTelegraph();
@@ -568,6 +577,7 @@ namespace Tag.Modes
             else
             {
                 _punchTell = 0f;
+                CancelPunchTelegraph();
                 _angle += (6f / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
                 moveY = wanderMoveY;
                 sprint = false;
