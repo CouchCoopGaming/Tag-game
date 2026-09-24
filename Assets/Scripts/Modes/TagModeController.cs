@@ -41,8 +41,8 @@ namespace Tag.Modes
         MatchPhase _phase = MatchPhase.Idle;
         float _phaseTimer;
         string _resultMessage = "";
-        bool _resultHasWinners;
-        bool _resultIsDraw;
+        string _resultTitle = "";
+        string _resultDetail = "";
         bool _firstCountdownHint = true;
         float _roundStartGuard;
         bool _localPaused;
@@ -232,6 +232,10 @@ namespace Tag.Modes
             PollLocalPause();
             if (_localPaused)
             {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
+                    TagArena.Movement.LookSensitivity.Cycle(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
+                    TagArena.Movement.LookSensitivity.Cycle(1);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Q))
                     LoadBootMenu();
                 return;
@@ -424,12 +428,17 @@ namespace Tag.Modes
             _phase = MatchPhase.Results;
 
             var winners = _mode != null ? _mode.GetWinnerIds(_ctx) : new List<string>();
-            _resultMessage = winners != null && winners.Count > 0
-                ? $"[{_mode?.Id}] Winner(s): " + string.Join(", ", winners)
-                : $"[{_mode?.Id}] No winners";
-            _resultHasWinners = winners != null && winners.Count > 0;
-            _resultIsDraw = _resultHasWinners && winners.Count > 1;
-            Debug.Log($"[TagMode] END -- {_resultMessage}");
+            bool anyWinner = winners != null && winners.Count > 0;
+            string names = anyWinner ? string.Join(", ", winners) : "nobody";
+            _resultTitle = HeadlineFor(winners);
+            _resultDetail = ModeTitle(selectedMode) + (anyWinner ? "\nWinners: " + names : "\nNo winner");
+            if (_resultTitle == "YOU LOSE" || _resultTitle == "BOT WINS")
+                _resultMessage = $"[{_mode?.Id}] Lose";
+            else if (!anyWinner)
+                _resultMessage = $"[{_mode?.Id}] No winners";
+            else
+                _resultMessage = $"[{_mode?.Id}] Winner(s): " + names;
+            Debug.Log($"[TagMode] END -- {_resultTitle} {_resultMessage}");
 
             foreach (var p in players)
             {
@@ -468,9 +477,10 @@ namespace Tag.Modes
             float h = 120f;
             float x = (Screen.width - w) * 0.5f;
             float y = Screen.height * 0.38f;
-            GUI.Box(new Rect(x, y, w, h), "Paused");
+            GUI.Box(new Rect(x, y, w, h + 28f), "Paused");
             string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
-            GUI.Label(new Rect(x + 16, y + 36, w - 32, 64), "Esc resume\nQ  Boot menu" + extra);
+            GUI.Label(new Rect(x + 16, y + 36, w - 32, 96),
+                "Esc resume\nQ  Boot menu\nLeft / Right  " + TagArena.Movement.LookSensitivity.Label + extra);
         }
 
         static string ModeTitle(TagModeId id)
@@ -523,6 +533,8 @@ namespace Tag.Modes
                     alignment = TextAnchor.MiddleCenter
                 };
             }
+            _countStyle.fontSize = 54;
+            _countStyle.alignment = TextAnchor.MiddleCenter;
             float w = 440f;
             float h = 168f;
             float x = (Screen.width - w) * 0.5f;
@@ -537,16 +549,52 @@ namespace Tag.Modes
             GUI.Label(new Rect(x + 16, y + 104, w - 32, 48), hint);
         }
 
+        string HeadlineFor(System.Collections.Generic.IReadOnlyList<string> winners)
+        {
+            bool any = winners != null && winners.Count > 0;
+            if (!any) return "DRAW";
+            int humans = 0;
+            int humanWins = 0;
+            foreach (var p in players)
+            {
+                if (p == null || p.GetComponent<DummyPatrol>() != null) continue;
+                if (p.GetComponent<TagArena.Movement.PlayerInputReader>() == null) continue;
+                humans++;
+                if (winners == null) continue;
+                for (int i = 0; i < winners.Count; i++)
+                {
+                    if (winners[i] == p.PlayerId) humanWins++;
+                }
+            }
+            if (humans == 0) return "ROUND OVER";
+            if (humans == 1) return humanWins > 0 ? "YOU WIN" : "YOU LOSE";
+            if (humanWins <= 0) return "BOT WINS";
+            return "ROUND OVER";
+        }
+
         void DrawResultsCard()
         {
             float w = 520f;
-            float h = 168f;
+            float h = 220f;
             float x = (Screen.width - w) * 0.5f;
-            float y = Screen.height * 0.32f;
-            string title = !_resultHasWinners ? "Round over" : (_resultIsDraw ? "Draw" : "Victory");
-            GUI.Box(new Rect(x, y, w, h), title);
-            GUI.Label(new Rect(x + 16, y + 28, w - 32, 70),
-                (_resultMessage ?? "") + "\n\nR  Rematch     Q / Esc  Menu");
+            float y = Screen.height * 0.26f;
+            if (_countStyle == null)
+            {
+                _countStyle = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 54,
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+            string title = string.IsNullOrEmpty(_resultTitle) ? "ROUND OVER" : _resultTitle;
+            GUI.Box(new Rect(x, y, w, h), "");
+            _countStyle.fontSize = 46;
+            _countStyle.normal.textColor = Color.white;
+            GUI.Label(new Rect(x, y + 12, w, 56), title, _countStyle);
+            _countStyle.fontSize = 54;
+            GUI.Label(new Rect(x + 16, y + 72, w - 32, 80),
+                (_resultDetail ?? "") + "\n\nR  Rematch     Q / Esc  Menu");
             float bw = 140f;
             float by = y + h - 44f;
             if (GUI.Button(new Rect(x + w * 0.5f - bw - 8f, by, bw, 32f), "Rematch"))
@@ -589,4 +637,5 @@ namespace Tag.Modes
         }
     }
 }
+
 

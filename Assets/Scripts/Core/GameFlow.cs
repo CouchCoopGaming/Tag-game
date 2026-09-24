@@ -4,6 +4,7 @@ using Tag.Gameplay;
 using Tag.Modes;
 using Tag.Local;
 using Tag.Audio;
+using TagArena.Movement;
 
 namespace Tag.Core
 {
@@ -34,6 +35,7 @@ namespace Tag.Core
 
         int _menuCursor = 1;
         int _playerCountCursor;
+        bool _settingsOpen;
 
         void Awake()
         {
@@ -233,6 +235,20 @@ namespace Tag.Core
 
         void Update()
         {
+            if (_settingsOpen)
+            {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                {
+                    _settingsOpen = false;
+                    AudioCuePlayer.Ensure()?.UiClick();
+                }
+                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
+                    LookSensitivity.Cycle(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
+                    LookSensitivity.Cycle(1);
+                return;
+            }
+
             if (UnityEngine.Input.GetKeyDown(KeyCode.Escape) &&
                 (State == GameFlowState.Play || State == GameFlowState.Paused))
                 TogglePause();
@@ -301,33 +317,45 @@ namespace Tag.Core
 
         void OnGUI()
         {
+            if (_settingsOpen)
+            {
+                DrawLookSettings();
+                return;
+            }
+
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
             if (State == GameFlowState.Boot)
             {
-                GUI.Box(new Rect(cx - 180, cy - 80, 360, 170), "TAG — party slice");
-                GUI.Label(new Rect(cx - 170, cy - 52, 340, 36), "Crash-test dummies · playground · punch-tag");
-                if (GUI.Button(new Rect(cx - 90, cy - 10, 180, 32), "Play Tag (Least It)"))
+                GUI.Box(new Rect(cx - 180, cy - 110, 360, 230), "TAG — party slice");
+                GUI.Label(new Rect(cx - 170, cy - 78, 340, 36), "Crash-test dummies · playground · punch-tag");
+                if (GUI.Button(new Rect(cx - 90, cy - 36, 180, 32), "Play Tag (Least It)"))
                     PlayLeastItSlice();
-                if (GUI.Button(new Rect(cx - 90, cy + 28, 180, 28), "Mode select…"))
+                if (GUI.Button(new Rect(cx - 90, cy + 2, 180, 28), "Mode select…"))
                 {
                     LocalPlayerRoster.SetCount(1);
                     GoToModeSelect();
                 }
-                if (GUI.Button(new Rect(cx - 90, cy + 62, 180, 28), "Couch…"))
+                if (GUI.Button(new Rect(cx - 90, cy + 36, 180, 28), "Couch…"))
                     GoToPlayerCount();
+                if (GUI.Button(new Rect(cx - 90, cy + 70, 180, 28), "Look sensitivity"))
+                    _settingsOpen = true;
             }
             else if (State == GameFlowState.PlayerCount)
             {
-                GUI.Box(new Rect(cx - 160, cy - 120, 320, 240), "Players");
-                DrawRow(cx, cy - 70, 0, "1 Player (SP + Dummy)");
-                DrawRow(cx, cy - 35, 1, "2 Players (couch)");
-                DrawRow(cx, cy, 2, "3 Players (couch)");
-                DrawRow(cx, cy + 35, 3, "4 Players (couch)");
-                GUI.Label(new Rect(cx - 150, cy + 75, 300, 40), "1-4  Enter    Esc back");
+                GUI.Box(new Rect(cx - 180, cy - 140, 360, 280), "Who plays");
+                DrawRow(cx, cy - 80, 0, "You + 1 bot");
+                DrawRow(cx, cy - 45, 1, "2 humans (bot off)");
+                DrawRow(cx, cy - 10, 2, "3 humans (bot off)");
+                DrawRow(cx, cy + 25, 3, "4 humans (bot off)");
+                GUI.Label(new Rect(cx - 170, cy + 62, 340, 64),
+                    "1 is solo versus the bot.\n2-4 is couch and the bot stays off.\n1-4  Enter    Esc back");
             }
             else if (State == GameFlowState.ModeSelect)
             {
-                GUI.Box(new Rect(cx - 220, cy - 150, 440, 300), LocalPlayerRoster.IsCouch ? $"Mode — {LocalPlayerRoster.PlayerCount}P couch" : "Mode — SP + Dummy");
+                string roster = LocalPlayerRoster.IsCouch
+                    ? $"{LocalPlayerRoster.PlayerCount} humans, bot off"
+                    : "you + 1 bot";
+                GUI.Box(new Rect(cx - 220, cy - 150, 440, 300), "Mode  " + roster);
                 DrawMode(cx, cy - 100, 0, "1  Hot Potato  (first to 2 - fuse 45/40/35s)");
                 DrawMode(cx, cy - 60, 1, "2  Least It    (120s + next-punch tiebreak)");
                 DrawMode(cx, cy - 20, 2, "3  Trail Tag   (ribbons eliminate - last standing)");
@@ -336,10 +364,12 @@ namespace Tag.Core
             }
             else if (State == GameFlowState.Paused)
             {
-                GUI.Box(new Rect(cx - 150, cy - 80, 300, 160), "Paused");
-                if (GUI.Button(new Rect(cx - 70, cy - 28, 140, 28), "Resume")) TogglePause();
-                if (GUI.Button(new Rect(cx - 70, cy + 8, 140, 28), "Quit to Menu")) QuitToMenu();
-                GUI.Label(new Rect(cx - 130, cy + 44, 260, 22), "Esc resume    Q menu");
+                GUI.Box(new Rect(cx - 150, cy - 96, 300, 192), "Paused");
+                if (GUI.Button(new Rect(cx - 70, cy - 52, 140, 28), "Resume")) TogglePause();
+                if (GUI.Button(new Rect(cx - 70, cy - 16, 140, 28), "Quit to Menu")) QuitToMenu();
+                if (GUI.Button(new Rect(cx - 70, cy + 20, 140, 28), "Look sensitivity"))
+                    _settingsOpen = true;
+                GUI.Label(new Rect(cx - 130, cy + 56, 260, 22), "Esc resume    Q menu");
             }
             else if (State == GameFlowState.RoundEnd)
             {
@@ -351,6 +381,19 @@ namespace Tag.Core
                         $"{LastResultMessage}\n\nR  Rematch    Q  Menu");
                 }
             }
+        }
+
+        void DrawLookSettings()
+        {
+            float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
+            GUI.Box(new Rect(cx - 200, cy - 90, 400, 180), "Look sensitivity");
+            GUI.Label(new Rect(cx - 180, cy - 48, 360, 28), LookSensitivity.Label);
+            if (GUI.Button(new Rect(cx - 150, cy - 10, 80, 28), "<"))
+                LookSensitivity.Cycle(-1);
+            if (GUI.Button(new Rect(cx + 70, cy - 10, 80, 28), ">"))
+                LookSensitivity.Cycle(1);
+            GUI.Label(new Rect(cx - 180, cy + 28, 360, 48),
+                "Left / Right    Esc back\nDefault is the current camera feel");
         }
 
         void DrawRow(float cx, float y, int index, string label)
@@ -379,3 +422,4 @@ namespace Tag.Core
         }
     }
 }
+

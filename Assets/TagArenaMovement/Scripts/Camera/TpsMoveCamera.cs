@@ -52,6 +52,8 @@ namespace TagArena.Movement
             _yaw = motor != null ? motor.transform.eulerAngles.y : transform.root.eulerAngles.y;
             _fov = cfg != null ? cfg.fovIdle : 70f;
             _boomDist = Mathf.Abs(boomOffset.z);
+            LookSensitivity.Load();
+            sensitivity = LookSensitivity.Current;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
