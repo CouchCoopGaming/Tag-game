@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using Tag.Gameplay;
@@ -46,6 +46,13 @@ namespace TagArena.Movement
         bool _aliveFlashPrimed;
         bool _prevLocalAlive = true;
         float _trailOutFlashUntil;
+
+        // Brief center flash when F1/F2/F3 (or menu) changes SelectedMode.
+        const float ModeFlashSec = 0.85f;
+        bool _modeFlashPrimed;
+        TagModeId _prevMode;
+        float _modeFlashUntil;
+        string _modeFlashLabel = "";
 
         // Labels mirror PlayerInputReader defaults (skiKey/jetKey/crouchKey/punchKey/lungeKey + hard-coded alts).
         const string Controls =
@@ -131,6 +138,7 @@ namespace TagArena.Movement
             DrawItHandoffFlash();
             DrawTrailNearMissWarn();
             DrawTrailEliminateFlash();
+            DrawModeChangeFlash();
         }
 
         void Update()
@@ -138,6 +146,7 @@ namespace TagArena.Movement
             TickItHandoffFlash();
             TickTrailNearMiss();
             TickTrailEliminateFlash();
+            TickModeChangeFlash();
         }
 
         /// <summary>
@@ -825,6 +834,64 @@ namespace TagArena.Movement
             if (it.GetComponent<PlayerInputReader>() != null && it.GetComponent<DummyPatrol>() == null)
                 return true;
             return false;
+        }
+
+
+        void TickModeChangeFlash()
+        {
+            var modes = TagModeController.Instance;
+            if (modes == null) return;
+            var cur = modes.SelectedMode;
+            if (!_modeFlashPrimed)
+            {
+                _prevMode = cur;
+                _modeFlashPrimed = true;
+                return;
+            }
+            if (cur == _prevMode) return;
+            _prevMode = cur;
+            _modeFlashLabel = FriendlyModeName(cur);
+            _modeFlashUntil = Time.unscaledTime + ModeFlashSec;
+        }
+
+        void DrawModeChangeFlash()
+        {
+            float rem = _modeFlashUntil - Time.unscaledTime;
+            if (rem <= 0f || string.IsNullOrEmpty(_modeFlashLabel)) return;
+
+            if (_flash == null)
+            {
+                _flash = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 52,
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+
+            float elapsed = ModeFlashSec - rem;
+            float fadeIn = 0.08f;
+            float fadeOut = 0.22f;
+            float a;
+            if (elapsed < fadeIn) a = elapsed / fadeIn;
+            else if (rem < fadeOut) a = rem / fadeOut;
+            else a = 1f;
+
+            _flash.normal.textColor = new Color(1f, 0.92f, 0.45f, a);
+            float w = 720f;
+            float h = 70f;
+            var r = new Rect((Screen.width - w) * 0.5f, Screen.height * 0.18f, w, h);
+            GUI.Label(r, "MODE  " + _modeFlashLabel, _flash);
+            if (_status != null)
+            {
+                var prev = _status.normal.textColor;
+                var prevA = _status.alignment;
+                _status.alignment = TextAnchor.MiddleCenter;
+                _status.normal.textColor = new Color(0.85f, 0.9f, 1f, a * 0.9f);
+                GUI.Label(new Rect(r.x, r.yMax - 4f, r.width, 24f), "F1 Hot Potato  |  F2 Least It  |  F3 Trail Tag", _status);
+                _status.alignment = prevA;
+                _status.normal.textColor = prev;
+            }
         }
 
         static string FriendlyModeName(TagModeId id)

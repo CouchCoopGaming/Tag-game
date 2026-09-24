@@ -154,7 +154,7 @@ namespace Tag.Art
             float walkAmt = Mathf.Clamp01(speed / 5.5f);
             float runAmt = Mathf.InverseLerp(5.5f, 11.5f, speed);
             // Human-ish run cadence — knees drive the cycle, not ice-skate lock
-            float cadence = Mathf.Lerp(7.2f, 13.2f, runAmt);
+            float cadence = Mathf.Lerp(7.6f, 14.0f, runAmt);
             // Keep a soft air/vault cycle so limbs stay energetic off the ground
             if (grounded && speed > 0.35f && !sliding && !crouch)
                 _cycle += dt * cadence;
@@ -206,8 +206,9 @@ namespace Tag.Art
             {
                 // MMB dash / air-dodge tell: hard whip + stretch early, settle late
                 float snap = Mathf.Lerp(0.55f, 1f, Mathf.Max(lungeAmt, dashAmt));
-                _uaLT = _uaL0 * Quaternion.Euler(78f * snap, -22f, armZ + 34f);
-                _uaRT = _uaR0 * Quaternion.Euler(78f * snap, 22f, -armZ - 34f);
+                // Keep whip readable but limit +Z flare (large +Z V's hands into the butt on Hier/primitive).
+                _uaLT = _uaL0 * Quaternion.Euler(78f * snap, -22f, armZ + 16f);
+                _uaRT = _uaR0 * Quaternion.Euler(78f * snap, 22f, -armZ - 16f);
                 _laLT = _laL0 * Quaternion.Euler(-38f - 28f * snap, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(-38f - 28f * snap, 0f, 0f);
             }
@@ -628,14 +629,14 @@ namespace Tag.Art
             _hips = FindBone(root, "Hips", "Pelvis", "mixamorig:Hips", "hip");
             _spine = FindBone(root, "Spine", "Torso", "Spine1", "mixamorig:Spine", "Chest");
             _head = FindBone(root, "Head", "mixamorig:Head", "head");
-            _upperArmL = FindBone(root, "UpperArm_L", "UpperArm.L", "LeftArm", "LeftUpperArm", "mixamorig:LeftArm", "Arm_L", "upperarm_l");
-            _upperArmR = FindBone(root, "UpperArm_R", "UpperArm.R", "RightArm", "RightUpperArm", "mixamorig:RightArm", "Arm_R", "upperarm_r");
-            _lowerArmL = FindBone(root, "LowerArm_L", "LowerArm.L", "LeftForeArm", "LeftLowerArm", "mixamorig:LeftForeArm", "ForeArm_L", "lowerarm_l");
-            _lowerArmR = FindBone(root, "LowerArm_R", "LowerArm.R", "RightForeArm", "RightLowerArm", "mixamorig:RightForeArm", "ForeArm_R", "lowerarm_r");
-            _upperLegL = FindBone(root, "UpperLeg_L", "UpperLeg.L", "LeftUpLeg", "LeftUpperLeg", "mixamorig:LeftUpLeg", "Thigh_L", "upperleg_l");
-            _upperLegR = FindBone(root, "UpperLeg_R", "UpperLeg.R", "RightUpLeg", "RightUpperLeg", "mixamorig:RightUpLeg", "Thigh_R", "upperleg_r");
-            _lowerLegL = FindBone(root, "LowerLeg_L", "LowerLeg.L", "LeftLeg", "LeftLowerLeg", "mixamorig:LeftLeg", "Calf_L", "lowerleg_l");
-            _lowerLegR = FindBone(root, "LowerLeg_R", "LowerLeg.R", "RightLeg", "RightLowerLeg", "mixamorig:RightLeg", "Calf_R", "lowerleg_r");
+            _upperArmL = FindBone(root, "UpperArm_L", "UpperArm.L", "LeftArm", "LeftUpperArm", "mixamorig:LeftArm", "Arm_L", "upperarm_l", "Upper_Arm_L");
+            _upperArmR = FindBone(root, "UpperArm_R", "UpperArm.R", "RightArm", "RightUpperArm", "mixamorig:RightArm", "Arm_R", "upperarm_r", "Upper_Arm_R");
+            _lowerArmL = FindBone(root, "LowerArm_L", "LowerArm.L", "LeftForeArm", "LeftLowerArm", "mixamorig:LeftForeArm", "ForeArm_L", "lowerarm_l", "Lower_Arm_L");
+            _lowerArmR = FindBone(root, "LowerArm_R", "LowerArm.R", "RightForeArm", "RightLowerArm", "mixamorig:RightForeArm", "ForeArm_R", "lowerarm_r", "Lower_Arm_R");
+            _upperLegL = FindBone(root, "UpperLeg_L", "UpperLeg.L", "LeftUpLeg", "LeftUpperLeg", "mixamorig:LeftUpLeg", "Thigh_L", "upperleg_l", "Upper_Leg_L");
+            _upperLegR = FindBone(root, "UpperLeg_R", "UpperLeg.R", "RightUpLeg", "RightUpperLeg", "mixamorig:RightUpLeg", "Thigh_R", "upperleg_r", "Upper_Leg_R");
+            _lowerLegL = FindBone(root, "LowerLeg_L", "LowerLeg.L", "LeftLeg", "LeftLowerLeg", "mixamorig:LeftLeg", "Calf_L", "lowerleg_l", "Lower_Leg_L");
+            _lowerLegR = FindBone(root, "LowerLeg_R", "LowerLeg.R", "RightLeg", "RightLowerLeg", "mixamorig:RightLeg", "Calf_R", "lowerleg_r", "Lower_Leg_R");
             _bound = _upperArmL != null || _upperLegL != null || _spine != null;
             if (!_bound) return;
             if (_hips) _hips0 = _hips.localRotation;
