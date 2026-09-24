@@ -65,11 +65,13 @@ namespace Tag.Art
         // covered Spawn_NW / Spawn_SE. Shield is shifted north of Spawn_NE.
         static readonly (string stem, Vector3 pos, float yaw, float scale)[] LandmarkSlots =
         {
-            // West side of the north lip, not the middle of the cross. Scale 0.28 yaw 0.
-            // x 28.5–31.1: 1.0 m east of Lane_West_NS, ~1.2 m off the cross lane and SpineZn.
-            // The lip from x~31 to the east lane stays open, so the tag route through Crash
-            // is not looking at a statue. Stem seats minY 1.001.
-            ("Landmark_CrashTorso_Hi", new Vector3(29.79f, 0f, 32.20f), 0f, 0.28f),
+            // Off every chase lane. The west lip (x 28.5–31.1, z 31–33) still sat on the
+            // west junction of the cross, so it walled that tag line. Scale 0.28 yaw 0
+            // does not fit between the outer lanes and the spines (those gaps are ~1.2 m
+            // and the mesh is ~2.0 m deep). NW lawn: x 10.7–13.3, z 51.1–53.1, 1.0 m
+            // north of Spawn_NW, west of the north ring, south of the map edge.
+            // Stem seats minY 1.001. Crash bowl stays open.
+            ("Landmark_CrashTorso_Hi", new Vector3(12f, 0f, 52.12f), 0f, 0.28f),
             ("Landmark_PirateMast_Hi", new Vector3(5f, 0f, 15f), 25f, 1.0f),
             // Foxhole sits east of Spawn_SE (pad ends x=67.1). Scale 0.35 is the
             // largest yaw-0 footprint that stays on the map and off that pad.
@@ -249,9 +251,9 @@ namespace Tag.Art
             // Net shifted east until ~0.25 m off the tube street and ~0.37 m off the west plastic.
             // x=-4.15 is the closest the 0.15 m thick net can sit without entering the tubes.
             pieces.Add(("Mega_ClimbNet", new Vector3(-4.15f, 0f, -0.78f), 90f));
-            // Lands on the open SW corner. East end x=-1.02 (deck edge), 0.06 m off the net.
-            // North edge z=-1.13 is 0.08 m south of the corner post and 0.13 m south of the deck.
-            // The ground stair is clear in x (~0.57 m). Top is 0.41, the same band as the 0.40 stoop.
+            // Lands on the open SW corner. Rechecked: east end is already 0.02 m off the
+            // deck edge, north edge 0.08 m off the post and 0.13 m off the deck face.
+            // Closer in z hits the post. Top is 0.41, the same band as the 0.40 stoop.
             pieces.Add(("PGK_Balance_Beam_3m_LOD0", new Vector3(-2.52f, 0f, -1.19f), 0f));
             // 2.4 m rung on the west shoulder, yaw 90 so it faces the decks.
             // x=-1.15: ~0.12 m off the 2×2 edge, ~0.07 m off the corner post, clear of the side stair.
