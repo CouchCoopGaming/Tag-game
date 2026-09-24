@@ -65,6 +65,10 @@ Punch is **not** a contact aura — only active punch hits transfer It (`PunchHi
 7. Kickball fence is north, east, and behind the south goal. South fence world z≈19.75, just off the south spine. West side stays open.
 8. Feel, unchanged: slide decays only, jump height is not speed-tied, air dash is the cyan trail with a 30 s cooldown.
 
+## Tag handoff / AI (code)
+
+- HUD mode line uses ASCII  |  separator; center MODE flash lists F1-F4.
+
 ## Tag handoff / AI (code, this pass)
 
 - Punch transfer: PunchHitbox -> TagModeController.OnSuccessfulPunch -> TransferIt -> ItController.SetIt.

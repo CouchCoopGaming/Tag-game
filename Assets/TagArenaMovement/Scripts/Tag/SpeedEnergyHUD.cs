@@ -485,7 +485,7 @@ namespace TagArena.Movement
             var modes = TagModeController.Instance;
             if (modes != null)
             {
-                modeName = FriendlyModeName(modes.SelectedMode) + "  ·  " + PhaseLabel(modes.Phase);
+                modeName = FriendlyModeName(modes.SelectedMode) + " | " + PhaseLabel(modes.Phase);
                 it = modes.CurrentIt;
                 if (it == null)
                     it = ScanItControllers();
@@ -906,7 +906,7 @@ namespace TagArena.Movement
                 var prevA = _status.alignment;
                 _status.alignment = TextAnchor.MiddleCenter;
                 _status.normal.textColor = new Color(0.85f, 0.9f, 1f, a * 0.9f);
-                GUI.Label(new Rect(r.x, r.yMax - 4f, r.width, 24f), "F1 Hot Potato  |  F2 Least It  |  F3 Trail Tag", _status);
+                GUI.Label(new Rect(r.x, r.yMax - 4f, r.width, 24f), "F1 Hot Potato  |  F2 Least It  |  F3 Trail Tag  |  F4 Free play", _status);
                 _status.alignment = prevA;
                 _status.normal.textColor = prev;
             }

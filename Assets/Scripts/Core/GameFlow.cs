@@ -278,10 +278,10 @@ namespace Tag.Core
             else if (State == GameFlowState.ModeSelect)
             {
                 GUI.Box(new Rect(cx - 220, cy - 150, 440, 300), LocalPlayerRoster.IsCouch ? $"Mode — {LocalPlayerRoster.PlayerCount}P couch" : "Mode — SP + Dummy");
-                DrawMode(cx, cy - 100, 0, "1  Hot Potato  (first to 2 · fuse 45/40/35s)");
+                DrawMode(cx, cy - 100, 0, "1  Hot Potato  (first to 2 - fuse 45/40/35s)");
                 DrawMode(cx, cy - 60, 1, "2  Least It    (120s + next-punch tiebreak)");
-                DrawMode(cx, cy - 20, 2, "3  Trail Tag   (ribbons eliminate · last standing)");
-                DrawMode(cx, cy + 20, 3, "4  Free play   (punch transfers It · no timer)");
+                DrawMode(cx, cy - 20, 2, "3  Trail Tag   (ribbons eliminate - last standing)");
+                DrawMode(cx, cy + 20, 3, "4  Free play   (punch transfers It - no timer)");
                 GUI.Label(new Rect(cx - 180, cy + 70, 360, 40), "1/2/3/4 · Enter to play");
             }
             else if (State == GameFlowState.Paused)
