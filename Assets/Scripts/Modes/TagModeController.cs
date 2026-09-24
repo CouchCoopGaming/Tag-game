@@ -54,6 +54,9 @@ namespace Tag.Modes
         public TagModeContext Context => _ctx;
         public MatchPhase Phase => _phase;
         public string ResultMessage => _resultMessage;
+        /// <summary>Last punch/round handoff, for the local TAG flash.</summary>
+        public string LastFromId { get; private set; }
+        public string LastToId { get; private set; }
 
         /// <summary>Living players' TimeAsIt (already on ItController); empty if no context players.</summary>
         public IReadOnlyList<ItController> PlayersForHud => _ctx.Players;
@@ -157,6 +160,9 @@ namespace Tag.Modes
             foreach (var p in players)
             {
                 if (p == null) continue;
+                // Stop a live ragdoll coroutine before Revive unlocks the motor, or it locks them again.
+                var rag = p.GetComponent<Tag.Gameplay.PlayerRagdoll>();
+                if (rag != null) rag.ForceRecover();
                 p.Revive();
                 p.ResetScore();
                 p.SetIt(false);
@@ -164,6 +170,8 @@ namespace Tag.Modes
                 var e = p.GetComponent<PlayerTrailEmitter>();
                 if (e != null) { e.ClearTrail(); e.SetEmitting(false); }
             }
+
+            PlacePlayersOnPads();
 
             _phase = MatchPhase.Countdown;
             _phaseTimer = Mathf.Max(0.01f, matchTuning.countdownSec);
@@ -272,15 +280,61 @@ namespace Tag.Modes
 
         public void TransferIt(ItController from, ItController to)
         {
+            LastFromId = from != null ? from.PlayerId : "";
             if (from != null) from.SetIt(false);
             if (to != null && to.IsAlive)
             {
                 to.SetIt(true);
                 _ctx.CurrentIt = to;
+                LastToId = to.PlayerId;
                 Debug.Log($"[TagMode] It -> {to.PlayerId}");
             }
             else
+            {
                 _ctx.CurrentIt = null;
+                LastToId = "";
+            }
+        }
+
+        /// <summary>
+        /// F1–F4 start a round from the pads, not from wherever the last ragdoll stopped.
+        /// Slot follows P1/P2/… when the id parses; everyone else fills the next free pad.
+        /// </summary>
+        void PlacePlayersOnPads()
+        {
+            var pads = Tag.Local.LocalPlayerSpawner.Spawns;
+            if (pads == null || pads.Length == 0) return;
+            var used = new bool[pads.Length];
+            int next = 0;
+            foreach (var p in players)
+            {
+                if (p == null) continue;
+                int idx = -1;
+                string id = p.PlayerId;
+                if (!string.IsNullOrEmpty(id) && id.Length > 1 && (id[0] == 'P' || id[0] == 'p')
+                    && int.TryParse(id.Substring(1), out int n)
+                    && n >= 1 && n <= pads.Length)
+                    idx = n - 1;
+                if (idx < 0 || used[idx])
+                {
+                    while (next < used.Length && used[next]) next++;
+                    idx = next < used.Length ? next : 0;
+                    if (next < used.Length) next++;
+                }
+                used[idx] = true;
+
+                Vector3 pad = pads[idx];
+                var rb = p.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.linearVelocity = Vector3.zero;
+                    rb.angularVelocity = Vector3.zero;
+                    rb.useGravity = false;
+                    rb.position = pad;
+                }
+                p.transform.position = pad;
+            }
+            Physics.SyncTransforms();
         }
 
         public void EliminatePlayer(ItController player, string reason = "")

@@ -38,6 +38,7 @@ namespace TagArena.Movement
         float _tilt;
         float _boomDist;
         float _lookAhead;
+        Vector3 _aheadSmoothed;
         Vector3 _kick;
         float _fovKick;
 
@@ -104,8 +105,13 @@ namespace TagArena.Movement
                 }
                 _lookAhead = Mathf.Lerp(_lookAhead, wantAhead, 1f - Mathf.Exp(-8f * dt));
                 Vector3 hv = motor.Velocity; hv.y = 0f;
-                Vector3 aheadDir = hv.sqrMagnitude > 0.25f ? hv.normalized : motor.transform.forward;
-                lookAt += aheadDir * _lookAhead;
+                // Direction is smoothed. An instant velocity flip was yawing the look-at
+                // point 180° in one frame (the distance lerp was already smooth).
+                Vector3 rawAhead = hv.sqrMagnitude > 1f ? hv.normalized : motor.transform.forward;
+                if (_aheadSmoothed.sqrMagnitude < 0.001f) _aheadSmoothed = rawAhead;
+                _aheadSmoothed = Vector3.Slerp(_aheadSmoothed, rawAhead, 1f - Mathf.Exp(-4.5f * dt));
+                if (_aheadSmoothed.sqrMagnitude > 0.001f)
+                    lookAt += _aheadSmoothed.normalized * _lookAhead;
 
                 Vector3 to = lookAt - cam.transform.position;
                 if (to.sqrMagnitude > 0.001f)
@@ -134,7 +140,8 @@ namespace TagArena.Movement
 
             float side = Vector3.Dot(motor.Velocity, motor.transform.right);
             float tiltMax = cfg != null ? cfg.tiltMax : 6f;
-            float wantTilt = Mathf.Clamp(-side * 0.15f, -tiltMax, tiltMax);
+            // Strafe roll used to orbit the boom, then LookRotation snapped the lens back.
+            float wantTilt = Mathf.Clamp(-side * 0.05f, -tiltMax, tiltMax);
             if (motor.State == MoveState.WallRun)
                 wantTilt = motor.WallLeft ? tiltMax * 0.6f : -tiltMax * 0.6f;
             _tilt = Mathf.Lerp(_tilt, wantTilt, 1f - Mathf.Exp(-8f * dt));

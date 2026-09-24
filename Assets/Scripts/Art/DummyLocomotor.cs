@@ -154,7 +154,9 @@ namespace Tag.Art
             if (air) swing *= 0.72f;
             if (sliding) swing *= 0.08f; else if (crouch) swing *= 0.18f;
             if (jet) swing = 0f;
-            float sinC = Mathf.Sin(_cycle);
+            // Hold the plant and the lift, then cross zero faster — a sine reads as skating.
+            float sinRaw = Mathf.Sin(_cycle);
+            float sinC = Mathf.Sign(sinRaw) * Mathf.Pow(Mathf.Abs(sinRaw), 0.55f);
             float cosC = Mathf.Cos(_cycle);
 
             float breath = Mathf.Sin(Time.time * 2.1f) * 2.4f;
@@ -471,6 +473,19 @@ namespace Tag.Art
                 _llRT = _llR0 * Quaternion.Euler(kneeR, 0f, 0f);
             }
 
+            if (_landSquash > 0.08f && grounded && !sliding && !dashing)
+            {
+                // Recovery the squash scale never showed: knees buckle, arms out for balance.
+                float k = Mathf.Clamp01(_landSquash);
+                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(42f, 0f, 8f), k);
+                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(36f, 0f, -8f), k);
+                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-62f, 0f, 0f), k);
+                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-48f, 0f, 0f), k);
+                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-22f, 10f, 22f), k);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-22f, -10f, -22f), k);
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(26f, 0f, 0f), k);
+            }
+
             if (flinchAmt > 0.04f)
             {
                 // Tagged victim recoils: open arms + crumpled torso/legs
@@ -486,19 +501,22 @@ namespace Tag.Art
             }
 
             float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
+            // 0.1s dash never reached the whip pose at slew 42.
+            float dashSlew = airDashing ? 78f : (punching || lunging || dashing ? 46f : slew);
             Slew(ref _spine, _spineT, slew, dt);
             Slew(ref _hips, _hipsT, slew, dt);
             Slew(ref _head, _headT, slew, dt);
-            Slew(ref _upperArmL, _uaLT, punching || lunging || dashing ? 42f : slew, dt);
-            Slew(ref _upperArmR, _uaRT, punching || lunging || dashing ? 46f : slew, dt);
-            Slew(ref _lowerArmL, _laLT, punching || lunging || dashing ? 42f : slew, dt);
-            Slew(ref _lowerArmR, _laRT, punching || lunging || dashing ? 46f : slew, dt);
-            Slew(ref _upperLegL, _ulLT, slew, dt);
-            Slew(ref _upperLegR, _ulRT, slew, dt);
-            Slew(ref _lowerLegL, _llLT, slew, dt);
-            Slew(ref _lowerLegR, _llRT, slew, dt);
+            Slew(ref _upperArmL, _uaLT, dashSlew, dt);
+            Slew(ref _upperArmR, _uaRT, dashSlew, dt);
+            Slew(ref _lowerArmL, _laLT, dashSlew, dt);
+            Slew(ref _lowerArmR, _laRT, dashSlew, dt);
+            Slew(ref _upperLegL, _ulLT, airDashing ? dashSlew : slew, dt);
+            Slew(ref _upperLegR, _ulRT, airDashing ? dashSlew : slew, dt);
+            Slew(ref _lowerLegL, _llLT, airDashing ? dashSlew : slew, dt);
+            Slew(ref _lowerLegR, _llRT, airDashing ? dashSlew : slew, dt);
 
-            float bob = grounded ? Mathf.Abs(Mathf.Sin(_cycle)) * 0.07f * Mathf.Max(walkAmt, runAmt) : air ? Mathf.Abs(Mathf.Sin(_cycle)) * 0.02f : 0f;
+            float step = Mathf.Pow(Mathf.Abs(sinRaw), 1.7f);
+            float bob = grounded ? step * 0.085f * Mathf.Max(walkAmt, runAmt) : air ? step * 0.02f : 0f;
             if (sliding) bob = -0.22f; else if (crouch) bob = -0.14f;
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
             if (_landSquash > 0f) bob -= 0.12f * _landSquash;
