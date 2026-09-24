@@ -119,4 +119,5 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - Master volume / mute: Boot or pause Audio; Left/Right steps SFX; Up/Down steps the music bed (default 0.35); M mute all; N music only. Saved in PlayerPrefs.
 
 ## Results
-- Rematch / Menu: results ignore input for ~0.25s and one-shot R/click so the round-end click cannot rematch. Left/Right arms a button and stops at the ends. Enter uses it. Punch ForceEnd on results and pause.
+- Rematch / Menu: results ignore input for ~0.25s and one-shot R/Q/Esc/click (Esc mirrors menu) so the round-end key cannot rematch or quit early. Left/Right arms a button and stops at the ends. Enter uses it. Punch ForceEnd on results and pause.
+- Direct Play pause / Boot pause: M mute, N music; H controls lists N. Up/Down steps the music bed.

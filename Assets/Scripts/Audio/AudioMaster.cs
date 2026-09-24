@@ -31,7 +31,8 @@ namespace Tag.Audio
                 Load();
                 if (Muted) return "Muted";
                 int i = IndexOf(Volume);
-                return Names[i] + "  " + Volume.ToString("0.00");
+                string core = Names[i] + "  " + Volume.ToString("0.00");
+                return MusicMuted ? core + "  music off" : core;
             }
         }
 
