@@ -31,6 +31,9 @@ namespace Tag.Art
         Vector3 _hatBaseScale;
         Vector3 _haloBaseScale;
         bool _built;
+        bool _popPrimed;
+        bool _wasOn;
+        float _pop;
 
         void Awake()
         {
@@ -45,6 +48,15 @@ namespace Tag.Art
             if (_hat != null) _hat.gameObject.SetActive(on);
             if (_halo != null) _halo.gameObject.SetActive(on);
             if (_light != null) _light.enabled = on;
+            if (!_popPrimed)
+            {
+                _wasOn = on;
+                _popPrimed = true;
+            }
+            else if (on && !_wasOn)
+                _pop = 1f;
+            _wasOn = on;
+            _pop = Mathf.MoveTowards(_pop, 0f, Time.deltaTime / 0.32f);
             if (!on) return;
 
             float urgency = HotPotatoFuseUrgency();
@@ -54,7 +66,7 @@ namespace Tag.Art
             float pulse = (0.78f - 0.12f * urgency) + pulseAmp * Mathf.Sin(t * pulseHz);
             float bob = Mathf.Sin(t * (Mathf.PI * 2f * (bobHz + 3.5f * urgency))) * (bobAmp * (1f + 0.8f * urgency));
 
-            float scaleMul = 0.96f + 0.08f * pulse + 0.22f * urgency * pulse;
+            float scaleMul = (0.96f + 0.08f * pulse + 0.22f * urgency * pulse) * (1f + 0.7f * _pop);
             if (_hat != null)
             {
                 _hat.localPosition = _hatBaseLocal + new Vector3(0f, bob, 0f);

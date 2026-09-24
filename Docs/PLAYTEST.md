@@ -6,18 +6,18 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) → **Play**.
 3. Optional first-time art: **Tag → Ensure URP Pipeline**, then **Tag → Setup Hub Visuals**.
 
-Branch: `cursor/playground-campus-zones-afc4` (campus kit tip; WIP backup `backup/amaterasu-wip-20260923`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/mechanics-anim-features-497c` (PR #10 into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 ## Stack snapshot
 
 | Piece | What you get |
 |-------|----------------|
-| **TP cam** | `TpsMoveCamera` orbit/follow (~boom −5.2), soft collision, FOV by MoveState + slight speed look-ahead (`lookAheadMax` ~0.9, `speedFovBoostMax` ~3°) |
+| **TP cam** | `TpsMoveCamera` orbit/follow (~boom −5.2), soft collision, FOV by MoveState + slight speed look-ahead (`lookAheadMax` ~0.9, `speedFovBoostMax` ~3°). Look-ahead **direction** is smoothed (a brake used to yaw the aim point in one frame). Strafe roll is lighter so the boom does not orbit and snap back. |
 | **Hier dummy** | `DummyAvatarBinder` prefers `*_Hier_Hi` FBX → flat HiPoly → Navy Spade primitive (foam + polymer panels + matte joints; palette aligned with `Tools/Tag/build_mannequin_hier.py` — Tan runner / Orange It); `DummyLocomotor` swings limbs when bindable UpperArm/UpperLeg hierarchy exists |
 | **Modes** | F1 Hot Potato / F2 Least It / F3 Trail Tag / **F4 Free play** (`TagModeController` SetMode + StartRound). Free play still transfers It on punch and does not end on a timer. |
-| **HUD** | `SpeedEnergyHUD` (local P0): km/h + readable verb (RUN/SLIDE/DASH/WALL/CLIMB/LAND/…), **dash cooldown bar** (cyan, ready or seconds left; jet bar only if `enableJet`), ski flag, controls cheat-sheet, mode + phase + who is It, HP fuse (pulse when It ≤ warnSec), Least It times (brief all-standings flash); **LEAD** (mint) / **LAG** (coral) on local standings; **TAG flash** YOU'RE IT / YOU'RE FREE; **It compass** (flee / not It) + **Prey compass** (hunt / It → nearest alive); both pulse <12 m w/ distinct tints; cam bearing + m |
-| **Void / XZ** | `VoidRespawn`: Y < −20 **or** mega-park XZ AABB (+~20 m) → nearest `LocalPlayerSpawner` pad; clear ragdoll/stun, zero vel, ~1 s punch i-frames |
-| **Playground** | West play places (soft-play 14, 9.75 and astro loft 14, 44.25) link along **BARS W** (x=11): monkey segments that stop at the ski spines, with the merry-go-round's east apron facing the middle run. East bunker/keep (army 58, 9.75 and knight 58, 44.25) link along **BARS E** (x=61) into a fenced kickball field (west side open) and the swing set. Hopscotch SW, SE, and NE. South crawl ring, north tube ring, figure-8 wall-runs. After pull: **CutArenaBootstrap** Rebuild / **PgkLandmarkPlacer → Place**. |
+| **HUD** | `SpeedEnergyHUD` (local P0): km/h + readable verb (RUN/SLIDE/DASH/WALL/CLIMB/LAND/...), **dash cooldown bar** (cyan, ready or seconds left; jet bar only if `enableJet`), ski flag, controls cheat-sheet, mode + phase + who is It. Hot Potato: fuse line **and** top-center **FUSE** pulse for everyone inside `warnSec` (not only when you are It). Least It: clock on the mode line, **WINNING (least)** / **BEHIND (more It)**; brief all-standings flash; **LEAD** (mint) / **LAG** (coral). **TAG flash** ~0.85 s names who It moved to (YOU'RE IT / YOU'RE FREE); It hat pops on handoff. **It compass** (flee) + **Prey compass** (hunt); both pulse <12 m w/ distinct tints; cam bearing + m |
+| **Void / XZ** | `VoidRespawn`: Y < -20 **or** mega-park XZ AABB (+~20 m) -> nearest `LocalPlayerSpawner` pad; clear ragdoll/stun, zero vel, ~1 s punch i-frames. **F1-F4 / rematch** also `ForceRecover` and place every pawn on a pad (P1->pad 0) so a mode switch does not resume a ragdoll in the void. |
+| **Playground** | West play places (soft-play 14, 9.75 and astro loft 14, 44.25) link along **BARS W** (x=11): monkey segments that stop at the ski spines, with the merry-go-round's east apron facing the middle run. East bunker/keep (army 58, 9.75 and knight 58, 44.25) link along **BARS E** (x=61) into a fenced kickball field (west side open) and the swing set. Hopscotch SW, SE, and NE. South crawl ring, north tube ring, figure-8 wall-runs. After pull: **CutArenaBootstrap** Rebuild / **PgkLandmarkPlacer -> Place**. |
 | **Colliders** | `StaticPropColliders.EnsureStaticColliders` after dress/place so HiPoly/PGK toys keep Mesh/Box collision |
 | **Trail Tag** | Wide bright light-cycle walls (mega-park WorldScale 10); Stay + Default-layer triggers so RB motor still eliminates; near-miss **TRAIL!** <4.5 m foreign; elim **OUT!** / TRAIL HIT |
 | **SFX** | `TagSfx`: Resources/Audio clips when present, else procedural one-shots (punch, It, ski/jet, slide, lunge whoosh, jump) |
@@ -26,11 +26,11 @@ Branch: `cursor/playground-campus-zones-afc4` (campus kit tip; WIP backup `backu
 | **Punch** | Connect = loud kick + hold arm; miss = soft blip + limp arm (`TagSfx` / DummyLocomotor / `PunchHitbox`) |
 | **Lunge** | It-only MMB: ~16 m/s, ~0.20 s, **CD ~1.0 s**; TP whip→settle via `LungeProgress` |
 | **Slide** | Crouch+speed: carry entry speed + friction decay only (**no** enter boost) |
-| **Air dash** | Visual whip + cyan trail; **30 s CD**; **Q / Left Alt** (in air); short planar burst (PlayerInputReader.airDashKey) |
-| **Jump / land** | Fixed height (`jumpSpeed` launch, not speed-tied / additive); coyote ~0.10 s, buffer ~0.16 s; hard land → LandStun; DummyLocomotor firmer land squash |
+| **Air dash** | Visual whip + cyan trail; **30 s CD**; **Q / Left Alt** (in air; airborne MMB also counts via motor); short planar burst. Grounded MMB = It lunge. |
+| **Jump / land** | Fixed height (`jumpSpeed` launch, not speed-tied / additive); coyote ~0.10 s, buffer ~0.16 s; hard land -> LandStun; DummyLocomotor land squash plus a knee-buckle / arms-out recovery pose |
 | **Motor knobs** | Live on `Assets/Resources/TagArena/MovementConfig.asset` (`Resources.Load` `TagArena/MovementConfig`); recreate via **Tag → Create MovementConfig Asset** (won't overwrite) |
 | **Mantle / climb / glide / bounce** | Stickier mega-park mantle + wall-climb, fairer super-glide window, punchier wall bounce (TP vault/climb/glide/kick tells) |
-| **AI** | `DummyPatrol`: It chase + punch sync to `PunchHitbox` reach/cone; It lunges in the band just outside punch reach; both sides hop when a deck is above (chase) or It is close (flee) so a playground lip is not a dead stop; mild chase strafe outside close range; not-It flee with lead/strafe (wander when far); Least It: It prefers low TimeAsIt leaders, non-It clusters with non-It allies; drives `PlayerMotor` via input |
+| **AI** | `DummyPatrol`: chase/flee turn (no 16° snap, capped ~150°/s) plus a half-second weave outside punch range so a juke is not tracked perfectly. Lead intercept capped at 0.18 s. A fast strafe across the fist (~7.5 m/s lateral) usually whiffs. Still hops for decks, lunges just outside reach, punch cone matches `PunchHitbox`. Least It still prefers low TimeAsIt. |
 
 ## Controls (`PlayerInputReader`)
 
@@ -45,8 +45,8 @@ Branch: `cursor/playground-campus-zones-afc4` (campus kit tip; WIP backup `backu
 | Crouch / slide gate | Ctrl or C (hold + speed; in air this is the fast fall) |
 | Punch (It transfer) | LMB (Mouse0) or E |
 | **Lunge (It only, grounded)** | **MMB (Mouse2)** |
-| **Air dash** | **Q / Left Alt (in air)** — ~0.1 s, cyan trail, ~30 s cooldown. Not a jet. |
-| Mode hotkeys | F1 / F2 / F3 / **F4 free play** |
+| **Air dash** | **Q / Left Alt (in air)**; airborne **MMB** also dashes. ~0.1 s, cyan trail, ~30 s CD. Not a jet. Grounded MMB = It lunge. |
+| Mode hotkeys | **F1** Hot Potato / **F2** Least It / **F3** Trail Tag / **F4** Free play (same four in the mode menu as 1/2/3/4). Each start recovers ragdoll and places pawns on spawn pads. |
 
 Punch is **not** a contact aura — only active punch hits transfer It (`PunchHitbox`).
 
@@ -81,15 +81,17 @@ Wall-run and wall-climb set a latch on exit (timeout, jump-off, or lost contact)
 
 ## Human verify next
 
-No Unity play on this pass. After pull, open **Play**:
+No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **Play**:
 
-1. Sprint, hold Ctrl: slide should not speed up on entry. Down a slide, it should last longer and still not go faster than the speed you had at the crouch.
-2. Jump from a walk and from a sprint: same height. Hold Ctrl in the air: you should drop faster than a normal fall.
-3. Air dash (Q): short cyan streak, then the HUD dash bar counts ~30 s. RMB should not jet.
-4. Wall-run a figure-8 panel: you should slide down and fall off. You should not re-stick until you leave the wall or land. Climb a net: rise, then slide down. After you hit the ground you can climb again.
-5. Run should show a knee bend. Hands should hang / swing forward, not fold back into the hips.
-6. F4: HUD says Free play · Playing, punch still moves It, the round does not end. F2 returns to Least It.
-7. Let the dummy be It on a deck: it should hop toward you and lunge when it is close, not only run into the wall.
+1. Sprint, hold Ctrl: slide should not speed up. Downhill lasts longer and still does not exceed entry speed.
+2. Jump height matches from a walk and a sprint. Ctrl in the air falls faster. RMB does not jet.
+3. Q dash: short cyan streak and a visible whip pose, then the HUD counts ~30 s.
+4. Wall-run slides down and does not re-stick until you leave the wall or land. Climb rises, slides down, and works again after you land.
+5. Run steps (a plant, then a lift) rather than a constant skate. Hands stay forward of the hips. A hard landing buckles the knees and opens the arms, then stands back up.
+6. Hard brake or sharp turn: the camera should not whip with your velocity. Mouse look should still feel stuck to the mouse.
+7. Tag the dummy: hat pops, flash says YOU'RE FREE and names who is It. When they tag you: YOU'RE IT and who it came from.
+8. F1 while you are It: top-center FUSE appears inside the warn window even if you pass It away. F2: mode line shows seconds left and WINNING (least) / BEHIND (more It). F3: a foreign trail still eliminates; your own trail does not until the grace ends. F4: free play, punch still moves It, no timer. Each of F1–F4 should drop you on a spawn pad, including if you were ragdolled.
+9. As It, a sharp strafe should make the dummy miss more often than it connects. As runner, you should be able to cut their flank instead of losing a straight race every time.
 
 ## Known leftovers
 

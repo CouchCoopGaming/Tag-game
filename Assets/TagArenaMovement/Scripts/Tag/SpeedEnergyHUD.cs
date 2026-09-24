@@ -29,7 +29,7 @@ namespace TagArena.Movement
         GUIStyle _flash;
 
         // Brief center flash when local gains/loses It (SetIt / TransferIt / punch).
-        const float ItFlashSec = 0.5f;
+        const float ItFlashSec = 0.85f;
         bool _itFlashPrimed;
         bool _prevLocalIsIt;
         float _itFlashUntil;
@@ -153,6 +153,7 @@ namespace TagArena.Movement
             y += 214f;
 
             DrawMatchStatus(y);
+            DrawFuseBanner();
             DrawItHandoffFlash();
             DrawTrailNearMissWarn();
             DrawTrailEliminateFlash();
@@ -246,12 +247,12 @@ namespace TagArena.Movement
             GUI.Label(r, msg, _flash);
             if (_status != null)
             {
-                var sub = new Rect(r.x, r.yMax - 8f, r.width, 28f);
+                var sub = new Rect(r.x, r.yMax - 4f, r.width, 28f);
                 Color prevStatus = _status.normal.textColor;
                 _status.normal.textColor = new Color(1f, 0.92f, 0.55f, a * 0.9f);
                 var prevAlign = _status.alignment;
                 _status.alignment = TextAnchor.MiddleCenter;
-                GUI.Label(sub, "TAG!", _status);
+                GUI.Label(sub, HandoffSubtitle(), _status);
                 _status.alignment = prevAlign;
                 _status.normal.textColor = prevStatus;
             }
@@ -506,15 +507,16 @@ namespace TagArena.Movement
                 modeName = "default";
             }
 
-            // Hot Potato + local is It: pulse fuse/It lines as Remaining approaches warnSec
-            // (same urgency curve as ItMarker / DummyPatrol).
-            bool localIsIt = it != null && IsLocalPlayer(it);
-            float fuseUrgency = (localIsIt && modes != null && modes.SelectedMode == TagModeId.HotPotato)
+            // Hot Potato fuse pulses for everyone once Remaining is inside warnSec.
+            // (Previously only the local It saw the pulse, so runners missed the pop.)
+            float fuseUrgency = (modes != null && modes.SelectedMode == TagModeId.HotPotato && modes.Phase == MatchPhase.Playing)
                 ? HotPotatoFuseUrgency(modes)
                 : 0f;
             bool pulseFuse = fuseUrgency > 0.01f;
 
-            GUI.Label(new Rect(24, y, 480, 22), "Mode " + modeName, _status);
+            if (modes != null && modes.SelectedMode == TagModeId.LeastIt && modes.Phase == MatchPhase.Playing)
+                modeName += "  " + modes.Remaining.ToString("0") + "s  lowest wins";
+            GUI.Label(new Rect(24, y, 560, 22), "Mode " + modeName, _status);
             y += 22f;
 
             if (pulseFuse)
@@ -796,12 +798,12 @@ namespace TagArena.Movement
             if (leading)
             {
                 GUI.color = new Color(0.45f, 1f, 0.7f, 1f);
-                youTag = "  LEAD";
+                youTag = "  WINNING (least)";
             }
             else if (lagging)
             {
                 GUI.color = new Color(1f, 0.55f, 0.42f, 1f);
-                youTag = "  LAG";
+                youTag = "  BEHIND (more It)";
             }
             GUI.Label(new Rect(24, y, 520, 22),
                 "You " + youT.ToString("0.0") + "s" + youTag, _status);
@@ -922,6 +924,52 @@ namespace TagArena.Movement
                 case TagModeId.FreePlay: return "Free play";
                 default: return id.ToString();
             }
+        }
+
+        /// <summary>Who the It flag moved to, matching TagModeController.TransferIt.</summary>
+        string HandoffSubtitle()
+        {
+            var modes = TagModeController.Instance;
+            if (modes == null) return "TAG";
+            if (_itFlashGained)
+            {
+                if (!string.IsNullOrEmpty(modes.LastFromId))
+                    return "from " + modes.LastFromId;
+                return "you are It";
+            }
+            if (!string.IsNullOrEmpty(modes.LastToId))
+                return modes.LastToId + " is It";
+            return "you are free";
+        }
+
+        /// <summary>Big top-center fuse once Hot Potato is inside the warn window. Visible to runners and It.</summary>
+        void DrawFuseBanner()
+        {
+            var modes = TagModeController.Instance;
+            if (modes == null || modes.SelectedMode != TagModeId.HotPotato || modes.Phase != MatchPhase.Playing)
+                return;
+            float remain = modes.Remaining;
+            if (remain <= 0f) return;
+            float urgency = HotPotatoFuseUrgency(modes);
+            if (urgency <= 0.02f) return;
+
+            if (_flash == null)
+            {
+                _flash = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 42,
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+
+            float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * Mathf.Lerp(3f, 9f, urgency) * Mathf.PI * 2f);
+            Color prev = GUI.color;
+            GUI.color = Color.Lerp(new Color(1f, 0.85f, 0.25f, 0.85f), new Color(1f, 0.25f, 0.2f, 1f), urgency * wave);
+            float w = 420f;
+            var r = new Rect((Screen.width - w) * 0.5f, 64f, w, 48f);
+            GUI.Label(r, "FUSE " + remain.ToString("0.0"), _flash);
+            GUI.color = prev;
         }
 
         static string PhaseLabel(MatchPhase phase)
