@@ -25,7 +25,7 @@ namespace Tag.Level
             ("TRON",   36f,  8f),
             ("NINJA",  36f, 46f),
             // Named play courts (pad centers from CutArenaBootstrap Pass4)
-            ("SOFT PLAY",     14f, 10.75f),
+            ("SOFT PLAY",     14f, 9.75f),
             ("MERRY",          7f, 24f),
             ("SWING",         67f, 31f),
             ("KICKBALL",      67f, 24f),

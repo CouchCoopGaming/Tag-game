@@ -7,14 +7,16 @@ Parent pushes; **do not push** from casual local grind unless asked.
 
 Graybox pad cubes are gone (they were stretching HiPoly into a low-poly look). Flow stones are gone. The chase is kit districts:
 
-- **Soft-play** (14, 10.75), **Army bunker** (58, 10.75), **Astro loft** (14, 43.5), **Knight keep** (58, 43.5). Posts on the 1 m grid, decks at 0.80 / 1.60 / 2.00. Straight slide pivot is 2.00 m off the tower so the mouth sits ~0.10 m inside the lip; two safety tiles (3.75 / 4.75) catch the exit and stay off the 3.2 m ski spines and the Conn ramps. Spiral at local (2.75, 0, −0.5) yaw 180 docks its entrance on the 1.60 deck edge (step down into the chute; feet on mulch) and keeps the exit swing off the Conn ramps. The 1.20 beam is gone — its walk surface matched neither deck. Tube street is three abutted `Toy_TunnelTube` pieces plus plastic mouths on both ends and the north face (short of the ground stair). Climb net is west of that street so it does not stab a Conn ramp.
-- **Merry** (7, 24) stand-on spinner. **Swing** (67, 31) and **kickball** (67, 24) are the east rec yard. **Hopscotch** SW (7, 9) and SE (70, 12).
-- **Ring S** (36, 3): 3 monkeys, a 6-panel wall, an 8 m crawl with plastic mouths at x ±4.5, west tower slide into the south lane. **Ring N** (36, 51): three tubes with plastic mouths at x ±4, slide south into the north lane.
-- **Loop W** (16, 25) and **Loop E** (56, 29): 6-panel wall-run plus an end tower. Slide lip uses the same 2.00 m offset; runway stops short of the NS spine.
+- **Soft-play** (14, 9.75) and **astro loft** (14, 44.25) are the play places: decks 0.80 / 1.60 / 2.00, straight slide with a 3-tile pit (3.75 / 4.75 / 5.75), spiral at local (2.50, 0, −0.5) yaw 180 so the entrance overlaps the 1.60 deck by 0.25 m (posts clear), tube street with plastic collars (~0.36 m on the ends, ~0.31 m on the north mouth).
+- **Army bunker** (58, 9.75) and **knight keep** (58, 44.25) share the tower and the 3-tile pit, then a single crawl trench and a climb net. No second spiral.
+- Fort z is set so the far pit tile stays ~0.4 m off the ski spines. Theme carpets grew to sit under the tubes/crawls and still stop short of the spines.
+- **Merry** (7, 24). **Swing** (67, 31) and **kickball** (67, 24). **Hopscotch** SW (7, 9) and SE (70, 12).
+- **Ring S** (36, 3): monkeys, wall, open 8 m crawl (no 1.2 m plastic caps — they do not match the 2.8 m mouth), west tower slide. **Ring N** (36, 51): tube chain with plastic collars, slide south.
+- **Loop W** (16, 25) and **Loop E** (56, 29): wall-run plus end tower. Same 3-tile pit, short of the NS spine.
 
-Playtest: spawn SW → hopscotch → soft-play stairs, then the tube street (either end cap, out the north mouth by the stoop), then the straight slide onto the two landing tiles west of Conn_Pirate. Spiral is the east lip of the 1.60 deck. Outer ring is monkey, then the crawl mouths, then the tower slide. Figure-8 is the wall-run face then the tower slide. East rec is swing then kickball.
+Playtest: spawn SW → hopscotch → soft-play tube street → stairs → spiral or the straight slide onto the three tiles, west of Conn_Pirate. Army is the crawl trench then the slide. Outer ring is monkey, open crawl, tower slide. Figure-8 is the wall then the tower slide. East rec is swing then kickball.
 
-`Mega_SlideTube` / `PGK_Slide_Tube90` stay unused. Tube90 is a vertical elbow ~3.45 m tall; Mega_SlideTube's floor rises ~3.4 m. Neither meets 0.40–2.00 without burying the low end. Tron disc stays scaled down so the south ring can exist.
+`Mega_SlideTube` / `PGK_Slide_Tube90` stay unused. Tube90 is ~3.45 m tall; Mega_SlideTube's floor rises ~3.4 m. Neither meets 0.40–2.00 without burying the low end. Tron disc stays scaled down so the south ring can exist.
 
 Feel (read, not played here): slide clamps to entry speed (downhill only softens friction); jump `v.y` is `jumpSpeed` / fatigue; air dash cooldown is 30 s with the dummy trail tell.
 

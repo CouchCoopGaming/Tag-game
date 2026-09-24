@@ -315,28 +315,31 @@ namespace Tag.Level
         void BuildPiratePad()
         {
             var z = Zone("Zone_Pirate", CxPirate, CzPirate);
-            ChildBox(z, "PadFloor", new Vector3(1f, -0.08f, -1.5f), new Vector3(12f, 0.16f, 9f), _matFloor);
+            // Covers the tube street south of Play_SoftPlay (14, 9.75). Stops short of SpineZs.
+            ChildBox(z, "PadFloor", new Vector3(1f, -0.08f, -2f), new Vector3(12f, 0.16f, 11f), _matFloor);
         }
 
         /// <summary>Army SE carpet under Play_ArmyBunker.</summary>
         void BuildArmyPad()
         {
             var z = Zone("Zone_Army", CxArmy, CzArmy);
-            ChildBox(z, "PadFloor", new Vector3(-2f, -0.08f, -1.5f), new Vector3(12f, 0.16f, 9f), _matFloor);
+            // Covers the bunker crawl and the east climb net. Stops short of SpineZs.
+            ChildBox(z, "PadFloor", new Vector3(-1f, -0.08f, -2.5f), new Vector3(14f, 0.16f, 12f), _matFloor);
         }
 
         /// <summary>Astro NW carpet under Play_AstroLoft, north of SpineZn.</summary>
         void BuildAstroPad()
         {
             var z = Zone("Zone_Astro", CxAstro, CzAstro);
-            ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, 1f), new Vector3(12f, 0.16f, 8f), _matFloor);
+            // Covers Play_AstroLoft tubes (world z ~48) and stays north of SpineZn.
+            ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, 2f), new Vector3(12f, 0.16f, 12f), _matFloor);
         }
 
         /// <summary>Knight NE carpet under Play_KnightKeep.</summary>
         void BuildKnightPad()
         {
             var z = Zone("Zone_Knight", CxKnight, CzKnight);
-            ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, 1f), new Vector3(12f, 0.16f, 8f), _matFloor);
+            ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, 2f), new Vector3(14f, 0.16f, 12f), _matFloor);
         }
 
         /// <summary>Tron disc lawn between the south ring and SpineZs. Ring gear is Play_Ring_S.</summary>

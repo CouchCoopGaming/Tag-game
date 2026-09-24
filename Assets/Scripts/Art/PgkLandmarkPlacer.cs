@@ -50,9 +50,13 @@ namespace Tag.Art
         /// </summary>
         const float SlideLipOffset = 2.00f;
 
-        /// <summary>Exit band is ~1.91 m ahead of the pivot. Tiles under it, short of the 3.2 m ski spines.</summary>
+        /// <summary>
+        /// Exit band is ~1.91 m ahead of the pivot (~4.0 m from the tower). Three tiles
+        /// carry the runout. Forts are shifted so the far edge stays ~0.4 m off the ski spines.
+        /// </summary>
         const float SlideLandingNear = 3.75f;
-        const float SlideLandingFar = 4.75f;
+        const float SlideLandingMid = 4.75f;
+        const float SlideLandingFar = 5.75f;
 
         // Landmarks sit on open lawn, off kit decks and off ski spines.
         static readonly (string stem, Vector3 pos, float yaw, float scale)[] LandmarkSlots =
@@ -122,7 +126,7 @@ namespace Tag.Art
 
         /// <summary>
         /// Connected playground districts. Ski spines (x=24/48, z=18/36, 3.2 m wide) stay open.
-        /// Fort slide mouths tuck inside the 2×2 lip; exits sit on a two-tile runway.
+        /// Fort slide mouths tuck inside the 2×2 lip; exits sit on a three-tile pit.
         /// Mega_SlideTube and PGK_Slide_Tube90 stay unspawned: the mega tube's floor
         /// rises ~3.4 m over 10 m, and Tube90's opening span is ~3.45 m. Neither end
         /// pair lands on the 0.40–2.00 deck grid without burying the low mouth.
@@ -131,14 +135,12 @@ namespace Tag.Art
         int PlaceChasePlayground(Transform root)
         {
             int n = 0;
-            // South forts sit at z=10.75 so the spiral tip and slide runway clear the Conn ramps
-            // (z≥12.4) and the south spine (z≤16.4). x keeps the runway off the ramp in X.
-            n += KitFort(root, "Play_SoftPlay", new Vector3(14f, 0f, 10.75f), 0f);
-            n += KitFort(root, "Play_ArmyBunker", new Vector3(58f, 0f, 10.75f), 0f);
-            // North forts at z=43.5: slide runway stays above the north spine (z≥37.6)
-            // and the spiral tip stays clear of Conn_Astro / Conn_Knight (z≤41.6).
-            n += KitFort(root, "Play_AstroLoft", new Vector3(14f, 0f, 43.5f), 180f);
-            n += KitFort(root, "Play_KnightKeep", new Vector3(58f, 0f, 43.5f), 180f);
+            // West play places: tube street + spiral. East bunker/keep: one crawl trench + climb net.
+            // z is set so a 3-tile slide pit (far edge +0.5 at local 5.75) stays ~0.4 m off the spine.
+            n += KitFort(root, "Play_SoftPlay", new Vector3(14f, 0f, 9.75f), 0f, true);
+            n += KitFort(root, "Play_ArmyBunker", new Vector3(58f, 0f, 9.75f), 0f, false);
+            n += KitFort(root, "Play_AstroLoft", new Vector3(14f, 0f, 44.25f), 180f, true);
+            n += KitFort(root, "Play_KnightKeep", new Vector3(58f, 0f, 44.25f), 180f, false);
 
             n += MerryGoRound(root, "Play_MerryGoRound", new Vector3(7f, 0f, 24f), 0f);
             n += SwingSet(root, "Play_Swing", new Vector3(67f, 0f, 31f), 0f);
@@ -163,39 +165,58 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// McDonald's soft-play tower. Local +Z is the slide exit.
-        /// Group yaw aims that exit at the nearest ski connector.
+        /// Deck tower plus one ground annex. Local +Z is the slide exit.
+        /// playPlace = tube street + spiral (soft-play / loft). Otherwise a bunker crawl + climb net.
         /// </summary>
-        int KitFort(Transform root, string name, Vector3 origin, float yaw)
+        int KitFort(Transform root, string name, Vector3 origin, float yaw, bool playPlace)
         {
             var parent = MakeGroup(root, name, origin, yaw);
             var pieces = new List<(string id, Vector3 p, float y)>();
             AddDeckTower(pieces, 0f, 0f, true);
-
-            // Spiral docks on the east lip (yaw 180). z=-0.5 keeps the exit swing off the
-            // Conn ramps. Entrance floor is ~1.57 vs deck top 1.68 — a step into the chute.
-            // The old 1.20 beam missed both heights, so it is gone.
-            pieces.Add(("PGK_Slide_Spiral270_LOD0", new Vector3(2.75f, 0f, -0.5f), 180f));
-            // Stoop on the 0.40 grid, beside the ground stair (clear of the tube run).
+            // Stoop on the 0.40 grid, beside the ground stair.
             pieces.Add(("PGK_Deck_1x1_LOD0", new Vector3(1.5f, Deck040, -2.5f), 0f));
 
-            // Abutted tube street (each tube ~2.5 m along X). Plastic mouths cap both
-            // ends and the north face, beside the stair and the 0.40 stoop.
-            // Mega_SlideTube / PGK_Slide_Tube90 are not in this chain — see PlaceChasePlayground.
-            pieces.Add(("Toy_TunnelTube", new Vector3(-2.5f, 0f, -3.75f), 0f));
-            pieces.Add(("Toy_TunnelTube", new Vector3(0f, 0f, -3.75f), 0f));
-            pieces.Add(("Toy_TunnelTube", new Vector3(2.5f, 0f, -3.75f), 0f));
-            pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(-4f, 0f, -3.75f), 0f));
-            pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(4f, 0f, -3.75f), 0f));
-            // North mouth stops short of the ground stair (stair south edge ~z -2.1).
-            pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(0f, 0f, -3f), 0f));
-            // Climb wall west of the street. Yaw 90 runs the net along Z, clear of Conn ramps.
-            pieces.Add(("Mega_ClimbNet", new Vector3(-5f, 0f, -1.5f), 90f));
+            if (playPlace)
+                AddPlayPlaceAnnex(pieces);
+            else
+                AddBunkerAnnex(pieces);
 
             for (int ix = -1; ix <= 1; ix++)
             for (int iz = -1; iz <= 1; iz++)
                 pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(ix, 0.02f, iz), 0f));
             return SpawnList(parent, pieces);
+        }
+
+        /// <summary>
+        /// McDonald's ground floor: spiral you step into off the 1.60 deck, then a tube street.
+        /// Spiral at x=2.50 yaw 180: entrance overlaps the deck by 0.25 m. Corner posts
+        /// (±1, ±1) have no mesh within 0.15 m. Plastic end caps insert ~0.36 m into the
+        /// tube rims; the north mouth inserts ~0.31 m and stops short of the stair.
+        /// </summary>
+        static void AddPlayPlaceAnnex(List<(string id, Vector3 p, float y)> pieces)
+        {
+            pieces.Add(("PGK_Slide_Spiral270_LOD0", new Vector3(2.5f, 0f, -0.5f), 180f));
+            pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(3f, 0.02f, 0.75f), 0f));
+            pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(4f, 0.02f, 0.75f), 0f));
+
+            pieces.Add(("Toy_TunnelTube", new Vector3(-2.5f, 0f, -3.75f), 0f));
+            pieces.Add(("Toy_TunnelTube", new Vector3(0f, 0f, -3.75f), 0f));
+            pieces.Add(("Toy_TunnelTube", new Vector3(2.5f, 0f, -3.75f), 0f));
+            pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(-4f, 0f, -3.75f), 0f));
+            pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(4f, 0f, -3.75f), 0f));
+            pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(0f, 0f, -2.75f), 0f));
+            pieces.Add(("Mega_ClimbNet", new Vector3(-5f, 0f, -1.5f), 90f));
+        }
+
+        /// <summary>
+        /// Bunker / keep ground floor: one 8 m crawl clear of the stair, climb net on the outer side.
+        /// No second spiral — that annex is the west play places.
+        /// </summary>
+        static void AddBunkerAnnex(List<(string id, Vector3 p, float y)> pieces)
+        {
+            // Shifted west so the south rim misses Spawn_SE. Knight's yaw flips it clear of Spawn_NE.
+            pieces.Add(("Mega_CrawlTunnel", new Vector3(-1.5f, 0f, -4.25f), 0f));
+            pieces.Add(("Mega_ClimbNet", new Vector3(5f, 0f, -1.5f), 90f));
         }
 
         /// <summary>
@@ -225,6 +246,7 @@ namespace Tag.Art
                 pieces.Add(("PGK_Stairs_5_LOD0", new Vector3(cx, 0f, cz - 2f), 180f));
                 pieces.Add(("PGK_Slide_Straight_M_LOD0", new Vector3(cx, SlideGroundMouthY, cz + SlideLipOffset), 0f));
                 pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(cx, 0.02f, cz + SlideLandingNear), 0f));
+                pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(cx, 0.02f, cz + SlideLandingMid), 0f));
                 pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(cx, 0.02f, cz + SlideLandingFar), 0f));
             }
             else
@@ -232,6 +254,7 @@ namespace Tag.Art
                 pieces.Add(("PGK_Stairs_5_LOD0", new Vector3(cx, 0f, cz + 2f), 0f));
                 pieces.Add(("PGK_Slide_Straight_M_LOD0", new Vector3(cx, SlideGroundMouthY, cz - SlideLipOffset), 180f));
                 pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(cx, 0.02f, cz - SlideLandingNear), 0f));
+                pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(cx, 0.02f, cz - SlideLandingMid), 0f));
                 pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(cx, 0.02f, cz - SlideLandingFar), 0f));
             }
             // Side flight: yaw -90 climbs toward +X onto the west edge of the deck.
@@ -256,14 +279,11 @@ namespace Tag.Art
             for (int i = 0; i < 6; i++)
                 pieces.Add(("Toy_WallPanel", new Vector3(-4f + i * 1.6f, 0f, wallZ), wallYaw));
 
-            // Crawl / tube street with plastic mouths. These stand in for Mega_SlideTube
-            // and PGK_Slide_Tube90, whose drops are not on the 0.40–2.00 deck grid.
+            // South ring is the big crawl (2.8 m mouth). A 1.2 m plastic cap does not
+            // match that rim, so the crawl is left open. North ring is the small-tube
+            // street: plastic caps insert ~0.36 m, the same collar as the fort tubes.
             if (facePositiveZ)
-            {
                 pieces.Add(("Mega_CrawlTunnel", new Vector3(0f, 0f, -1.5f), 0f));
-                pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(-4.5f, 0f, -1.5f), 0f));
-                pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(4.5f, 0f, -1.5f), 0f));
-            }
             else
             {
                 pieces.Add(("Toy_TunnelTube", new Vector3(-2.5f, 0f, 1.5f), 0f));
@@ -318,6 +338,7 @@ namespace Tag.Art
             float slideX = towerX + slideSign * SlideLipOffset;
             pieces.Add(("PGK_Slide_Straight_M_LOD0", new Vector3(slideX, SlideGroundMouthY, towerZ), slideYaw));
             pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(towerX + slideSign * SlideLandingNear, 0.02f, towerZ), 0f));
+            pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(towerX + slideSign * SlideLandingMid, 0.02f, towerZ), 0f));
             pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(towerX + slideSign * SlideLandingFar, 0.02f, towerZ), 0f));
 
             float vaultX = slideExitsEast ? 2.5f : -2.5f;
