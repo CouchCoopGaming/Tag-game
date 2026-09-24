@@ -41,6 +41,8 @@ namespace Tag.Modes
         MatchPhase _phase = MatchPhase.Idle;
         float _phaseTimer;
         string _resultMessage = "";
+        bool _resultHasWinners;
+        bool _resultIsDraw;
         bool _firstCountdownHint = true;
         float _roundStartGuard;
         bool _localPaused;
@@ -425,6 +427,8 @@ namespace Tag.Modes
             _resultMessage = winners != null && winners.Count > 0
                 ? $"[{_mode?.Id}] Winner(s): " + string.Join(", ", winners)
                 : $"[{_mode?.Id}] No winners";
+            _resultHasWinners = winners != null && winners.Count > 0;
+            _resultIsDraw = _resultHasWinners && winners.Count > 1;
             Debug.Log($"[TagMode] END -- {_resultMessage}");
 
             foreach (var p in players)
@@ -465,7 +469,8 @@ namespace Tag.Modes
             float x = (Screen.width - w) * 0.5f;
             float y = Screen.height * 0.38f;
             GUI.Box(new Rect(x, y, w, h), "Paused");
-            GUI.Label(new Rect(x + 16, y + 36, w - 32, 64), "Esc resume\nQ  Boot menu");
+            string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
+            GUI.Label(new Rect(x + 16, y + 36, w - 32, 64), "Esc resume\nQ  Boot menu" + extra);
         }
 
         static string ModeTitle(TagModeId id)
@@ -538,13 +543,15 @@ namespace Tag.Modes
             float h = 168f;
             float x = (Screen.width - w) * 0.5f;
             float y = Screen.height * 0.32f;
-            GUI.Box(new Rect(x, y, w, h), "Round over");
+            string title = !_resultHasWinners ? "Round over" : (_resultIsDraw ? "Draw" : "Victory");
+            GUI.Box(new Rect(x, y, w, h), title);
             GUI.Label(new Rect(x + 16, y + 28, w - 32, 70),
                 (_resultMessage ?? "") + "\n\nR  Rematch     Q / Esc  Menu");
             float bw = 140f;
             float by = y + h - 44f;
             if (GUI.Button(new Rect(x + w * 0.5f - bw - 8f, by, bw, 32f), "Rematch"))
             {
+                TagSfx.UiConfirm();
                 var flow = GameFlow.Instance;
                 if (flow != null) flow.Rematch();
                 else Rematch();
@@ -582,3 +589,4 @@ namespace Tag.Modes
         }
     }
 }
+

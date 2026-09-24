@@ -238,17 +238,32 @@ namespace Tag.Modes
 
         public string GetHud(TagModeContext ctx)
         {
-            string it = ctx.CurrentIt != null ? ctx.CurrentIt.PlayerId : "-";
+            string itId = ctx.CurrentIt != null ? ctx.CurrentIt.PlayerId : "-";
+            bool youAreIt = IsLocalHuman(ctx.CurrentIt);
             string timer = _suddenDeath ? "SUDDEN DEATH"
                 : (_tuning.matchTimeCap > 0f ? $"Time {ctx.RemainingTime:0.0}s" : "No cap");
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine($"TrailTag | {timer} | Alive {ctx.LivingCount()} | Emit:{_tuning.emitters} | It:{it}");
+            string itLabel = youAreIt ? "YOU" : itId;
+            sb.AppendLine($"TrailTag | {timer} | Alive {ctx.LivingCount()} | Emit:{_tuning.emitters} | It:{itLabel}");
+            if (_suddenDeath)
+                sb.AppendLine("Next trail hit eliminates (self-grace halved)");
             foreach (var p in ctx.Players)
             {
                 if (p == null) continue;
-                sb.AppendLine($"{p.PlayerId}: {(p.IsAlive ? "alive" : "OUT")}{(p.IsIt ? " *" : "")}");
+                string who = IsLocalHuman(p) ? "YOU" : p.PlayerId;
+                string state = !p.IsAlive ? "OUT - waiting for round"
+                    : (p.IsIt ? "alive It" : "alive");
+                sb.AppendLine($"{who}: {state}");
             }
             return sb.ToString().TrimEnd();
         }
+
+        static bool IsLocalHuman(ItController p)
+        {
+            if (p == null) return false;
+            if (p.GetComponent<DummyPatrol>() != null) return false;
+            return p.GetComponent<TagArena.Movement.PlayerInputReader>() != null;
+        }
     }
 }
+
