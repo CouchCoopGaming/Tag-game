@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/menu-input-grapple-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/menu-focus-input-leak-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 ## Stack snapshot
 
