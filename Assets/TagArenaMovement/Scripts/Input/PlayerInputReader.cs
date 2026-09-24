@@ -44,6 +44,12 @@ namespace TagArena.Movement
         bool _prevW;
         float _extPrevJump;
 
+        void Awake()
+        {
+            ControlBinds.Load();
+            airDashKey = ControlBinds.AirDash;
+        }
+
         public void Read()
         {
             if (ExternalControl) return;
@@ -66,8 +72,15 @@ namespace TagArena.Movement
                 AirDashPressed = false;
                 PunchPressed = false;
                 TapForwardPulse = false;
+                // A hold that started in the menu must not look like a fresh press on resume.
+                _prevCrouch = (Input.GetKey(crouchKey) || Input.GetKey(KeyCode.LeftControl)) ? 1f : 0f;
+                _prevJump = (Input.GetButton("Jump") || Input.GetKey(KeyCode.Space)) ? 1f : 0f;
+                _prevJet = (Input.GetKey(jetKey) || Input.GetMouseButton(1)) ? 1f : 0f;
+                _prevW = Input.GetKey(tapStrafePulseKey);
                 return;
             }
+
+            airDashKey = ControlBinds.AirDash;
 
             Move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             if (Move.sqrMagnitude > 1f) Move.Normalize();
