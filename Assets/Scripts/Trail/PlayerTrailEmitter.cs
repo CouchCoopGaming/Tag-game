@@ -152,9 +152,13 @@ namespace Tag.Trail
             ApplyLineColor();
         }
 
+        float ItWidthMul() => _itBrightness > 1.01f ? 1.35f : 1f;
+
         void ApplyLineColor()
         {
             if (_line == null) return;
+            if (_tuning != null)
+                _line.widthMultiplier = _tuning.trailWidth * ItWidthMul();
             var c = _color;
             c.r = Mathf.Clamp01(c.r * _itBrightness);
             c.g = Mathf.Clamp01(c.g * _itBrightness);
@@ -481,7 +485,7 @@ namespace Tag.Trail
 
             if (_tuning != null)
             {
-                _line.widthMultiplier = _tuning.trailWidth;
+                _line.widthMultiplier = _tuning.trailWidth * ItWidthMul();
                 var start = _color;
                 start.r = Mathf.Clamp01(start.r * _itBrightness);
                 start.g = Mathf.Clamp01(start.g * _itBrightness);

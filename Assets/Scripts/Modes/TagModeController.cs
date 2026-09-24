@@ -214,6 +214,7 @@ namespace Tag.Modes
         void Update()
         {
             PollPlaytestModeHotkeys();
+            PollResultsKeys();
 
             float dt = Time.deltaTime;
 
@@ -270,6 +271,21 @@ namespace Tag.Modes
                 Debug.Log("[TagMode] Playtest hotkey F4 -> Free play");
                 StartRound(TagModeId.FreePlay);
             }
+        }
+
+        /// <summary>
+        /// Direct Play has no GameFlow, but the results line still says R / Q.
+        /// When Boot's GameFlow is in RoundEnd it already owns those keys.
+        /// </summary>
+        void PollResultsKeys()
+        {
+            if (_phase != MatchPhase.Results) return;
+            var flow = GameFlow.Instance;
+            if (flow != null && flow.State == GameFlowState.RoundEnd) return;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.R))
+                Rematch();
+            if (flow != null && UnityEngine.Input.GetKeyDown(KeyCode.Q))
+                flow.QuitToMenu();
         }
 
         public void OnSuccessfulPunch(ItController puncher, ItController target)
@@ -406,11 +422,36 @@ namespace Tag.Modes
 
             string body = _mode != null ? _mode.GetHud(_ctx) : $"Mode {selectedMode}";
             if (_phase == MatchPhase.Results)
-                body += $"\n{_resultMessage}\n(R = Rematch  Q = Menu)";
+                DrawResultsCard();
             else if (_phase == MatchPhase.PostRound)
-                body += $"\nPost-round {_phaseTimer:0.0}s";
+            {
+                body += $"\nNext round {_phaseTimer:0.0}s";
+                DrawPostRoundCard();
+            }
             GUI.Box(new Rect(12, Screen.height - 168, 480, 156), "");
             GUI.Label(new Rect(20, Screen.height - 162, 464, 148), body);
+        }
+
+        void DrawResultsCard()
+        {
+            float w = 520f;
+            float h = 150f;
+            float x = (Screen.width - w) * 0.5f;
+            float y = Screen.height * 0.32f;
+            GUI.Box(new Rect(x, y, w, h), "Round over");
+            string keys = GameFlow.Instance != null
+                ? "R  Rematch     Q  Menu"
+                : "R  Rematch";
+            GUI.Label(new Rect(x + 16, y + 28, w - 32, h - 36),
+                (_resultMessage ?? "") + "\n\n" + keys);
+        }
+
+        void DrawPostRoundCard()
+        {
+            float w = 360f;
+            var r = new Rect((Screen.width - w) * 0.5f, Screen.height * 0.22f, w, 36f);
+            GUI.Box(r, "");
+            GUI.Label(new Rect(r.x + 12, r.y + 8, w - 24, 22), $"Next round  {_phaseTimer:0.0}s");
         }
 
         void DrawItBanner()

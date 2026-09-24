@@ -154,6 +154,7 @@ namespace TagArena.Movement
 
             DrawMatchStatus(y);
             DrawFuseBanner();
+            DrawWaitingBanner();
             DrawItHandoffFlash();
             DrawTrailNearMissWarn();
             DrawTrailEliminateFlash();
@@ -258,6 +259,33 @@ namespace TagArena.Movement
             }
             GUI.matrix = prevM;
             GUI.color = prev;
+        }
+
+        /// <summary>
+        /// Trail eliminate locks the motor and the OUT flash lasts under a second.
+        /// Keep a waiting line until the round ends so the freeze is explained.
+        /// </summary>
+        void DrawWaitingBanner()
+        {
+            ItController self = null;
+            if (motor != null) self = motor.GetComponent<ItController>();
+            if (self == null) self = GetComponent<ItController>();
+            if (self == null || self.IsAlive) return;
+            var modes = TagModeController.Instance;
+            if (modes == null || modes.Phase != MatchPhase.Playing) return;
+
+            float w = 420f;
+            var r = new Rect((Screen.width - w) * 0.5f, Screen.height * 0.62f, w, 52f);
+            GUI.Box(r, "");
+            if (_status != null)
+            {
+                var prev = _status.alignment;
+                _status.alignment = TextAnchor.MiddleCenter;
+                GUI.Label(r, "OUT    waiting for the round", _status);
+                _status.alignment = prev;
+            }
+            else
+                GUI.Label(r, "OUT    waiting for the round");
         }
 
         string HandoffSubtitle()

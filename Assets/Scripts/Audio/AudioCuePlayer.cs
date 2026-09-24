@@ -39,7 +39,11 @@ namespace Tag.Audio
         public void PlaySfx(string resourcesPath, Vector3? pos = null)
         {
             var clip = Load(resourcesPath);
-            if (clip == null) return;
+            if (clip == null)
+            {
+                PlayProcedural(resourcesPath, pos);
+                return;
+            }
             _sfx.pitch = 1f + Random.Range(-pitchJitter, pitchJitter);
             if (pos.HasValue)
                 AudioSource.PlayClipAtPoint(clip, pos.Value, 0.55f);
@@ -50,9 +54,37 @@ namespace Tag.Audio
         public void PlayUi(string resourcesPath)
         {
             var clip = Load(resourcesPath);
-            if (clip == null) return;
+            if (clip == null)
+            {
+                PlayProcedural(resourcesPath, null);
+                return;
+            }
             _ui.pitch = 1f;
             _ui.PlayOneShot(clip);
+        }
+
+        /// <summary>
+        /// Resources clips are optional. Same events already have TagSfx procedural tones.
+        /// </summary>
+        static void PlayProcedural(string resourcesPath, Vector3? pos)
+        {
+            Vector3 p = pos ?? Vector3.zero;
+            switch (resourcesPath)
+            {
+                case "SFX/sfx_punch_hit": TagSfx.PunchConnect(p); break;
+                case "SFX/sfx_punch_miss": TagSfx.PunchMiss(p); break;
+                case "SFX/sfx_ragdoll": TagSfx.LandAt(p, 0.5f); break;
+                case "SFX/sfx_slide": TagSfx.PlayAt(TagSfx.Slide, p, 0.4f); break;
+                case "SFX/sfx_air_dodge": TagSfx.AirDash(p); break;
+                case "SFX/sfx_tag_transfer": TagSfx.BecomeIt(p); break;
+                case "SFX/sfx_trail_elim": TagSfx.TrailElim(p); break;
+                case "SFX/sfx_round_start": TagSfx.RoundStart(); break;
+                case "SFX/sfx_round_end": TagSfx.RoundEnd(); break;
+                case "SFX/sfx_round_win": TagSfx.RoundWin(); break;
+                case "SFX/sfx_round_lose": TagSfx.RoundLose(); break;
+                case "UI/ui_click": TagSfx.UiClick(); break;
+                case "UI/ui_confirm": TagSfx.UiConfirm(); break;
+            }
         }
 
         public void PlayMusic(string resourcesPath)

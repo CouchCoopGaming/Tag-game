@@ -841,7 +841,7 @@ namespace TagArena.Movement
             _airDashCd = Mathf.Max(0.01f, cfg.airDashCooldown);
             v = WishAccel.SetHoriz(v, dir * cfg.airDashSpeed);
             SetState(MoveState.Air);
-            TagSfx.LungeWhoosh(transform.position);
+            TagSfx.AirDash(transform.position);
             OnAirDashed?.Invoke();
             return true;
         }
@@ -1012,6 +1012,11 @@ namespace TagArena.Movement
                     float over = Mathf.InverseLerp(cfg.landStunSpeed, cfg.maxFallSpeed, impact);
                     _landStunT = cfg.landStunDuration * Mathf.Lerp(1f, 1.35f, over);
                     SetState(MoveState.LandStun);
+                }
+                else if (impact >= 5f)
+                {
+                    // Hard land already thuds via MoveAnimDriver on LandStun. This is the step-down.
+                    TagSfx.LandAt(transform.position, Mathf.Lerp(0.18f, 0.36f, Mathf.Clamp01(impact / 12f)));
                 }
             }
             _wasProbeGrounded = g;

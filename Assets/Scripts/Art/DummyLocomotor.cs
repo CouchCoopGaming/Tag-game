@@ -213,8 +213,8 @@ namespace Tag.Art
             {
                 // Hand-over-hand reach — louder than idle freeze; opposite phase to legs.
                 float climbSwing = Mathf.Sin(Time.time * 7.5f) * 48f;
-                _uaLT = _uaL0 * Quaternion.Euler(-138f + climbSwing, 16f, 28f);
-                _uaRT = _uaR0 * Quaternion.Euler(-138f - climbSwing, -16f, -28f);
+                _uaLT = _uaL0 * Quaternion.Euler(-138f + climbSwing, 16f, 12f);
+                _uaRT = _uaR0 * Quaternion.Euler(-138f - climbSwing, -16f, -12f);
                 _laLT = _laL0 * Quaternion.Euler(-55f - Mathf.Abs(climbSwing) * 0.12f, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(-55f - Mathf.Abs(climbSwing) * 0.12f, 0f, 0f);
             }
@@ -284,7 +284,8 @@ namespace Tag.Art
                 if (phase == PunchPhase.Windup)
                 {
                     float w = Mathf.Lerp(0.35f, 1f, punchProg);
-                    _uaRT = _uaR0 * Quaternion.Euler(58f + 62f * w, -48f * w, 28f);
+                    // +Z on the punch arm folds the fist into the hip. Cock back, keep the hand outside.
+                    _uaRT = _uaR0 * Quaternion.Euler(58f + 62f * w, -48f * w, -8f);
                     _laRT = _laR0 * Quaternion.Euler(-88f * w, 0f, 0f);
                     _hipsT = _hips0 * Quaternion.Euler(12f + 10f * w, -18f * w, 0f);
                     _spineT = _spine0 * Quaternion.Euler(leanX + 10f * w, -22f * w, leanZ);
@@ -332,7 +333,7 @@ namespace Tag.Art
             else if (air)
             {
                 // Air / vault limb tells: residual run energy + open arms (slight loft for crest leave)
-                float airKick = Mathf.Sin(_cycle) * Mathf.Lerp(28f, 48f, runAmt);
+                float airKick = sinC * Mathf.Lerp(28f, 48f, runAmt);
                 _uaLT = _uaL0 * Quaternion.Euler(-32f - airKick * 0.55f, 0f, 8f);
                 _uaRT = _uaR0 * Quaternion.Euler(-32f + airKick * 0.55f, 0f, -8f);
                 _laLT = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
@@ -451,7 +452,7 @@ namespace Tag.Art
             }
             else if (air)
             {
-                float airKick = Mathf.Sin(_cycle) * Mathf.Lerp(32f, 55f, runAmt);
+                float airKick = sinC * Mathf.Lerp(32f, 55f, runAmt);
                 _ulLT = _ulL0 * Quaternion.Euler(22f + airKick, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(18f - airKick, 0f, 0f);
                 _llLT = _llL0 * Quaternion.Euler(-35f - Mathf.Abs(airKick) * 0.35f, 0f, 0f);
