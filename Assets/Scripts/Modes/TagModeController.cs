@@ -377,7 +377,12 @@ namespace Tag.Modes
                 TagSfx.UiClick();
             }
             if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter))
+            {
                 ActivateResultsFocus();
+                return;
+            }
+            // Re-check latch: Enter above may have already rematched this frame.
+            if (_resultsActionTaken) return;
             if (UnityEngine.Input.GetKeyDown(KeyCode.R))
             {
                 _resultsActionTaken = true;
