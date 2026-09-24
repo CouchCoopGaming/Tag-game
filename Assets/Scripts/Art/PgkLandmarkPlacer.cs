@@ -176,6 +176,7 @@ namespace Tag.Art
             // the faced exit (yaw 45), not on it.
             n += GroundAccent(root, "Play_Mushroom_SW", new Vector3(4.5f, 0f, 6.94f), 0f, "Toy_MushroomSteps");
             n += PathBridges(root);
+            n += PathCues(root);
             // Overhead bars. West stays at x=11 (the mast owns x≤9.5 around z 12–18).
             // East sits at x=62.5, just inside the kickball pad's open west edge.
             // Segments stop at the EW spines; you cross those on foot.
@@ -587,6 +588,24 @@ namespace Tag.Art
             n += GroundAccent(root, "Play_Bridge_NE", new Vector3(65.65f, 0f, 41f), 0f, "Toy_Bridge");
             // Army net face x=63.08. Hopscotch SE starts x=68.75. South of SpineZs.
             n += GroundAccent(root, "Play_Bridge_SE", new Vector3(65.90f, 0f, 10.5f), 0f, "Toy_Bridge");
+            return n;
+        }
+
+        /// <summary>
+        /// Low marks on the play path. Both are Toy_Bench (feet y=0, 0.46 tall).
+        /// SW sits in the 2.2 m court-to-bar gap without closing it.
+        /// Kickball's bench is west of the bars, so the open side of the field stays empty.
+        /// No fourth arch: the SW gap is 2.2 m and an arch is 3 m, so the piers cannot clear by 1.3 m.
+        /// </summary>
+        int PathCues(Transform root)
+        {
+            int n = 0;
+            // Court east edge x=8.75, south bar x=10.96. Yaw 90 makes the bench 0.45 m thick in X.
+            // z=9 stays on the court band and 0.8 m south of the bar (bar starts z=10.5).
+            n += GroundAccent(root, "Play_Cue_SW", new Vector3(9.85f, 0f, 9f), 90f, "Toy_Bench");
+            // West of the bars (bar face x=62.46). South of the Loop E ground stair (z ends 22.55)
+            // and north of SpineZs (ends 19.6). Not inside the diamond.
+            n += GroundAccent(root, "Play_Cue_Kickball", new Vector3(61.30f, 0f, 21.05f), 90f, "Toy_Bench");
             return n;
         }
 

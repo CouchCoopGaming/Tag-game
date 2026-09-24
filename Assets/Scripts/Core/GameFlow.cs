@@ -179,6 +179,7 @@ namespace Tag.Core
         {
             LastResultMessage = result ?? "";
             State = GameFlowState.RoundEnd;
+            _looseResultsFocus = 0;
             Time.timeScale = 1f;
             // Unlock so Rematch/Menu clicks on the results card work (pause already unlocks).
             Cursor.lockState = CursorLockMode.None;
