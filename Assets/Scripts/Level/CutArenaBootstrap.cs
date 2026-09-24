@@ -353,7 +353,7 @@ namespace Tag.Level
             ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, 3.5f), new Vector3(8f, 0.16f, 6f), _matPad);
         }
 
-        /// <summary>Ninja approach south of Play_Ring_N. Blade landmark sits on the west lawn.</summary>
+        /// <summary>Ninja approach south of Play_Ring_N. Blade landmark is a rail on the north rim.</summary>
         void BuildNinjaPad()
         {
             var z = Zone("Zone_Ninja", CxNinja, CzNinja);
