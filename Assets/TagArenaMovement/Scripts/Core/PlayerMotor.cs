@@ -192,7 +192,7 @@ namespace TagArena.Movement
             }
 
             v = ClampAndDrag(v, dt);
-            // Punch speed buff is walk/sprint. Never multiply a slide — entry speed only decays.
+            // Punch speed buff is walk/sprint. Never multiply a slide Ã¢â‚¬â€ entry speed only decays.
             if (_speedBoostMul > 1.001f && State != MoveState.LandStun && State != MoveState.Slide)
             {
                 Vector3 hv = WishAccel.Horizontal(v) * _speedBoostMul;
@@ -286,7 +286,7 @@ namespace TagArena.Movement
             }
             else
             {
-                // Too steep to walk ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â start an involuntary ski if pointing downhill
+                // Too steep to walk ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â start an involuntary ski if pointing downhill
                 v = WishAccel.SetHoriz(v, hv);
                 v.y -= cfg.gravity * dt;
             }
@@ -297,7 +297,7 @@ namespace TagArena.Movement
 
         void EnterSlide(ref Vector3 v)
         {
-            // Carry existing planar speed only — no enter impulse / boost.
+            // Carry existing planar speed only Ã¢â‚¬â€ no enter impulse / boost.
             Vector3 hv = WishAccel.Horizontal(v);
             if (hv.sqrMagnitude < 0.05f)
                 hv = transform.forward * Mathf.Max(hv.magnitude, cfg.slideEntrySpeed * 0.85f);
@@ -320,7 +320,7 @@ namespace TagArena.Movement
             bool downhill = _probe.Ground.fallLine.sqrMagnitude > 0f &&
                             Vector3.Dot(along, _probe.Ground.fallLine) > 0f;
 
-            // Carry entry speed only — never accelerate above slide-entry planar speed.
+            // Carry entry speed only Ã¢â‚¬â€ never accelerate above slide-entry planar speed.
             // Downhill softens friction (sustains longer) but cannot add speed.
             if (slope > 8f && !downhill)
                 along = WishAccel.Friction(along, cfg.slideUphillBrake / Mathf.Max(along.magnitude, 1f), dt);
@@ -335,7 +335,7 @@ namespace TagArena.Movement
             if (wish.sqrMagnitude > 0.01f)
             {
                 Vector3 steer = Vector3.ProjectOnPlane(wish, n);
-                // Steer only — cap at current speed (no +1.5 boost).
+                // Steer only Ã¢â‚¬â€ cap at current speed (no +1.5 boost).
                 along = WishAccel.Accelerate(along, steer, along.magnitude, cfg.slideSteer / 10f, dt);
             }
 
@@ -371,7 +371,7 @@ namespace TagArena.Movement
         {
             if (!_in.SkiHeld) return false;
             if (State == MoveState.Mantle || State == MoveState.WallClimb) return false;
-            // Flat / mild slope: do NOT ice-skate at jog speeds — prefer run/sprint.
+            // Flat / mild slope: do NOT ice-skate at jog speeds Ã¢â‚¬â€ prefer run/sprint.
             // Only allow flat ski to preserve already-high momentum (Tribes crest carry).
             if (grounded && _probe.Ground.slopeAngle < cfg.skiMinSlope)
                 return HorizSpeed >= cfg.sprintSpeed * 1.15f;
@@ -381,14 +381,14 @@ namespace TagArena.Movement
         Vector3 SkiMove(float dt, Vector3 v, Vector3 wish)
         {
             Vector3 n = _probe.Ground.normal;
-            // Gravity along the plane ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â this is the entire Tribes engine in one line.
+            // Gravity along the plane ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â this is the entire Tribes engine in one line.
             v += Physics.gravity.normalized * (cfg.gravity * cfg.skiGravityScale * dt);
-            // Outward vs ground normal — crest-launch fuel (was killed by a zero factor).
+            // Outward vs ground normal Ã¢â‚¬â€ crest-launch fuel (was killed by a zero factor).
             float leave = Vector3.Dot(v, n);
             // Hug the plane for friction/edging; restore leave later with a sane factor.
             Vector3 planeVel = Vector3.ProjectOnPlane(v, n);
 
-            // Tiny friction ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â never zero, matching real T1 insight: decay by slope.
+            // Tiny friction ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â never zero, matching real T1 insight: decay by slope.
             float fric = cfg.skiFriction * Mathf.Lerp(1f, 0.25f, Mathf.InverseLerp(cfg.skiMinSlope, 50f, _probe.Ground.slopeAngle));
             planeVel = WishAccel.Friction(planeVel, fric, dt);
 
@@ -524,7 +524,7 @@ namespace TagArena.Movement
                 return;
             }
 
-            // Coyote is jump-only — walk-off should fall immediately (Apex snappy, not air-walk).
+            // Coyote is jump-only Ã¢â‚¬â€ walk-off should fall immediately (Apex snappy, not air-walk).
             if (!grounded && _coyote <= 0f) return;
 
             float h = JumpHeightNow();
@@ -622,7 +622,7 @@ namespace TagArena.Movement
             if (face > cfg.climbAttachAngle) return false;
             if (grounded && !_in.JumpHeld && !_in.JumpPressed) return false;
 
-            // Ledge grab is not a stick — still allowed after a climb has decayed off.
+            // Ledge grab is not a stick Ã¢â‚¬â€ still allowed after a climb has decayed off.
             if (_probe.Ledge.hit && _probe.Ledge.height < cfg.mantleMaxLedgeHeight && v.y > -8f)
             {
                 BeginMantle();
@@ -662,7 +662,7 @@ namespace TagArena.Movement
             bool released = !_in.JumpHeld && _in.Move.y < 0.1f && _climbT > 0.08f;
             if (timeOut || heightOut || released)
             {
-                // Drop / slip off — stronger after a long cling so you cannot stick forever.
+                // Drop / slip off Ã¢â‚¬â€ stronger after a long cling so you cannot stick forever.
                 _climbBlocked = true;
                 v = Vector3.ProjectOnPlane(v, _probe.Wall.normal);
                 float slip = cfg.climbSlipSpeed * (timeOut || heightOut ? 1.6f : 1f);
@@ -698,7 +698,7 @@ namespace TagArena.Movement
         {
             _mantleT = 0f;
             _mantleFrom = transform.position;
-            // Nudge onto the deck along wall normal — 5cm clipped Mega_/rail colliders.
+            // Nudge onto the deck along wall normal Ã¢â‚¬â€ 5cm clipped Mega_/rail colliders.
             Vector3 n = Vector3.ProjectOnPlane(_probe.Ledge.wallNormal, Vector3.up);
             if (n.sqrMagnitude < 0.01f) n = _probe.Ledge.wallNormal;
             n.Normalize();
@@ -715,7 +715,7 @@ namespace TagArena.Movement
         {
             _mantleT += dt;
             float u = Mathf.Clamp01(_mantleT / cfg.mantleDuration);
-            // Fast pull then settle — Apex mantle is front-loaded.
+            // Fast pull then settle Ã¢â‚¬â€ Apex mantle is front-loaded.
             float s = u < 0.55f ? Mathf.SmoothStep(0f, 1f, u / 0.55f) : 1f;
             Vector3 fwd = _mantleFwd.sqrMagnitude > 0.01f ? _mantleFwd : transform.forward;
             // Arc follows actual ledge rise (not max knob) so short rails do not sky-vault.
@@ -818,7 +818,7 @@ namespace TagArena.Movement
             {
                 _airDashT -= dt;
                 v = WishAccel.SetHoriz(v, _airDashDir * cfg.airDashSpeed);
-                // Keep vertical — burst, not hover/jet.
+                // Keep vertical Ã¢â‚¬â€ burst, not hover/jet.
                 if (_airDashT <= 0f && State != MoveState.Slide)
                     SetState(grounded ? MoveState.Sprint : MoveState.Air);
                 return true;
@@ -875,7 +875,7 @@ namespace TagArena.Movement
                 return true;
             }
 
-            // Ground It burst only — airborne MMB is consumed by TryAirDash.
+            // Ground It burst only Ã¢â‚¬â€ airborne MMB is consumed by TryAirDash.
             if (!_probe.Ground.grounded) return false;
             if (tagRole == null || !tagRole.IsIt) return false;
             if (!_in.LungePressed || _lungeCd > 0f) return false;
@@ -1005,7 +1005,7 @@ namespace TagArena.Movement
                 _lastLanded = Time.time;
                 // Air dash uses time cooldown (not land refresh).
 
-                // Landing shock (Apex) — only from true air/jet, not ski kisses.
+                // Landing shock (Apex) Ã¢â‚¬â€ only from true air/jet, not ski kisses.
                 // Harder impacts hold stun a touch longer (clamped).
                 if ((State == MoveState.Air || State == MoveState.Jet) && impact >= cfg.landStunSpeed)
                 {
@@ -1045,6 +1045,11 @@ namespace TagArena.Movement
             if (State == next) return;
             var prev = State;
             State = next;
+            if (next == MoveState.Ski && prev != MoveState.Ski)
+            {
+                var src = GetComponent<AudioSource>();
+                if (src != null) TagSfx.SkiStart(src);
+            }
             OnStateChanged?.Invoke(prev, next);
         }
 

@@ -81,6 +81,7 @@ namespace Tag.Modes
         float _lungeGate;
         float _weave;
         float _weaveT;
+        float _punchTell;
         readonly List<TrailSegment> _trailActiveScratch = new List<TrailSegment>();
 
         void Awake()
@@ -95,7 +96,7 @@ namespace Tag.Modes
             if (_selfMotor != null && _selfMotor.IsMotorLocked)
                 _selfMotor.SetMotorLocked(false);
 
-            // Never enable legacy CharacterController ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â TagArena is RB-only.
+            // Never enable legacy CharacterController ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â TagArena is RB-only.
             var cc = GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
 
@@ -135,7 +136,7 @@ namespace Tag.Modes
             }
             if (_selfMotor != null && _selfMotor.IsMotorLocked)
             {
-                // Stun / ragdoll proxy owns the lock ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â do not fight it.
+                // Stun / ragdoll proxy owns the lock ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â do not fight it.
                 StopWish();
                 return;
             }
@@ -235,7 +236,7 @@ namespace Tag.Modes
         {
             float bias = fleeStrafeBias;
             float u = HotPotatoFuseUrgency();
-            // Less lateral wobble when fuse is low ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â commit to getting away from It.
+            // Less lateral wobble when fuse is low ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â commit to getting away from It.
             if (u > 0f)
                 bias = Mathf.Lerp(bias, bias * 0.35f, u);
             return bias;
@@ -325,7 +326,7 @@ namespace Tag.Modes
 
         /// <summary>
         /// Trail Tag only: sample a snapshot of live TrailSegments via CopyActive (from PlayerTrailEmitter ribbons)
-        /// and cache a weighted lateral flee wish. Cheap ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â runs at decisionHz.
+        /// and cache a weighted lateral flee wish. Cheap ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â runs at decisionHz.
         /// </summary>
         void RefreshTrailFleeWish()
         {
@@ -345,7 +346,7 @@ namespace Tag.Modes
             foreach (var seg in _trailActiveScratch)
             {
                 if (seg == null) continue;
-                // Closest point on ribbon AÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œB (not collider midpoint) so long segments steer correctly.
+                // Closest point on ribbon AÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“B (not collider midpoint) so long segments steer correctly.
                 Vector3 delta = pos - seg.ClosestPointOnSegment(pos);
                 delta.y = 0f;
                 float dsq = delta.sqrMagnitude;
@@ -408,7 +409,7 @@ namespace Tag.Modes
                 return;
             }
             desired.Normalize();
-            // Always turn. The old 16ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° snap made a juke useless once they were lined up.
+            // Always turn. The old 16ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° snap made a juke useless once they were lined up.
             Quaternion look = Quaternion.LookRotation(desired, Vector3.up);
             float rate = Mathf.Min(turnSpeed, 150f);
             if (Vector3.Angle(transform.forward, desired) <= faceAlignDeg)
@@ -441,7 +442,7 @@ namespace Tag.Modes
 
         /// <summary>
         /// Body-relative wish: AI has no TP cam, so PlayerMotor uses transform as wish basis.
-        /// Face first, then push forward ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â matches human TP (yaw then Move.y).
+        /// Face first, then push forward ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â matches human TP (yaw then Move.y).
         /// </summary>
         void DriveWish(float moveY, bool sprint, float strafe = 0f, bool jump = false, bool lunge = false)
         {
@@ -449,19 +450,39 @@ namespace Tag.Modes
             _input.SetExternalMove(new Vector2(strafe, Mathf.Clamp(moveY, -1f, 1f)), sprint, jump, lunge);
         }
 
+        float NextPunchCooldown(float urgency)
+        {
+            float cMin = cooldownMin;
+            float cMax = cooldownMax;
+            if (urgency > 0f)
+            {
+                float scale = Mathf.Lerp(1f, Mathf.Clamp(chaseUrgencyCooldownScale, 0.35f, 1f), urgency);
+                cMin *= scale;
+                cMax *= scale;
+            }
+            return Random.Range(cMin, cMax);
+        }
+
+        void HoldPunchTelegraph()
+        {
+            var loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
+            if (loco != null) loco.HoldPunchTelegraph();
+        }
+
         /// <summary>
         /// Sample ground 1.4-3.2 m along planarDir. Positive = higher deck than feet.
         /// Lets chase/flee hop a playground lip after weave steers off the ideal line.
         /// </summary>
-        float ProbeAheadDeckDy(Vector3 planarDir)
+                float ProbeAheadDeckDy(Vector3 planarDir)
         {
             if (planarDir.sqrMagnitude < 0.01f) return 0f;
             planarDir.Normalize();
             float best = 0f;
-            for (int i = 0; i < 3; i++)
+            // Include a close sample so a lip under the fists (pressed against a 1 m deck) still registers.
+            float[] dists = { 0.7f, 1.1f, 1.6f, 2.3f, 3.2f };
+            for (int i = 0; i < dists.Length; i++)
             {
-                float dist = 1.4f + i * 0.9f;
-                Vector3 origin = transform.position + planarDir * dist + Vector3.up * 2.8f;
+                Vector3 origin = transform.position + planarDir * dists[i] + Vector3.up * 2.8f;
                 if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 5.5f, ~0, QueryTriggerInteraction.Ignore))
                 {
                     float dy = hit.point.y - transform.position.y;
@@ -475,7 +496,9 @@ namespace Tag.Modes
         {
             _jumpPulseCd -= Time.fixedDeltaTime;
             _jumpHoldT -= Time.fixedDeltaTime;
-            if (dy > minDy && dist < maxDist && dist > 0.8f && grounded && _jumpPulseCd <= 0f)
+            // Clear lips often put the body <0.8 m from the deck face; allow closer when dy is a real step.
+            float minDist = dy >= 1.0f ? 0.35f : 0.8f;
+            if (dy > minDy && dist < maxDist && dist > minDist && grounded && _jumpPulseCd <= 0f)
             {
                 _jumpHoldT = 0.42f;
                 _jumpPulseCd = 0.9f;
@@ -515,26 +538,36 @@ namespace Tag.Modes
                 // Slightly wider decision cone when dumping a low fuse.
                 float cone = EffectivePunchConeHalfDeg() * (1f + 0.2f * urgency);
                 bool inCone = dist <= range && ang <= cone;
-                // A hard strafe past the fist should whiff ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â not a guaranteed tag.
+                // A hard strafe past the fist should whiff ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â not a guaranteed tag.
                 Vector3 juke = TargetPlanarVelocity();
                 float lateral = Mathf.Abs(Vector3.Dot(juke, transform.right));
                 bool juked = lateral > 7.5f && Random.value < 0.7f;
-                if (inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
+                // Windup on the punch itself is 0.12s. Cock the arm first so the swing is readable,
+                // and drop it if they leave the fist.
+                if (_punchTell > 0f)
                 {
-                    _punch?.QueuePunch();
-                    float cMin = cooldownMin;
-                    float cMax = cooldownMax;
-                    if (urgency > 0f)
+                    if (!inCone || juked || _itGraceTimer > 0f)
+                        _punchTell = 0f;
+                    else
                     {
-                        float scale = Mathf.Lerp(1f, Mathf.Clamp(chaseUrgencyCooldownScale, 0.35f, 1f), urgency);
-                        cMin *= scale;
-                        cMax *= scale;
+                        HoldPunchTelegraph();
+                        _punchTell -= dt;
+                        if (_punchTell <= 0f)
+                        {
+                            _punch?.QueuePunch();
+                            _cooldown = NextPunchCooldown(urgency);
+                        }
                     }
-                    _cooldown = Random.Range(cMin, cMax);
+                }
+                else if (inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
+                {
+                    _punchTell = Mathf.Lerp(0.34f, 0.2f, urgency);
+                    HoldPunchTelegraph();
                 }
             }
             else
             {
+                _punchTell = 0f;
                 _angle += (6f / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
                 moveY = wanderMoveY;
                 sprint = false;
@@ -556,7 +589,7 @@ namespace Tag.Modes
             bool chaseGrounded = _selfMotor == null || _selfMotor.IsGrounded;
             // After weave, target dy alone can miss a lip between us; probe ahead along chase flat.
             float chaseLip = ProbeAheadDeckDy(chaseFlat);
-            bool chaseJump = ConsumeHop(Mathf.Max(chaseDy, chaseLip), chaseFlat.magnitude, chaseGrounded, 0.85f, 9f);
+            bool chaseJump = ConsumeHop(Mathf.Max(chaseDy, chaseLip), chaseFlat.magnitude, chaseGrounded, 0.7f, 9f);
             float chaseAng = chaseFlat.sqrMagnitude > 0.001f
                 ? Vector3.Angle(transform.forward, chaseFlat.normalized)
                 : 0f;
