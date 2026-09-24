@@ -90,11 +90,11 @@ namespace TagArena.Movement
         [Header("Wall climb / mantle — Apex bloodline")]
         public float climbMaxHeight = 3.4f;
         /// <summary>Hard time cap — after this you slip down (no Spiderman stick).</summary>
-        public float climbMaxTime = 0.85f;
+        public float climbMaxTime = 1.00f;
         /// <summary>Climb up-speed begins decaying after this many seconds on the wall.</summary>
-        public float climbDecayStart = 0.40f;
-        // Slightly snappier vertical + glue for TP parkour (was 7.2 / 18 / 3.4).
-        public float climbSpeed = 7.8f;
+        public float climbDecayStart = 0.16f;
+        // Rises ~3 m then vertical speed reverses (slip) before climbMaxHeight. Was 7.8 / 0.40, which hit the height cap while still going up.
+        public float climbSpeed = 6.0f;
         public float climbAttachAngle = 55f;
         public float climbStickForce = 22f;
         public float climbSideSpeed = 3.7f;
@@ -120,7 +120,7 @@ namespace TagArena.Movement
         public float wallRunSpeed = 9.5f;
         public float wallRunGravity = 6.5f;
         /// <summary>Extra gravity multiplier reached at wallRunMaxTime (slides you down).</summary>
-        public float wallRunGravityEndMult = 3.2f;
+        public float wallRunGravityEndMult = 4.8f;
         public float wallRunJumpOut = 8.0f;
         public float wallRunJumpUp = 6.2f;
         public float wallRunAttachAngle = 35f;

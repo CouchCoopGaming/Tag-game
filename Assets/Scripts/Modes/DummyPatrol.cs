@@ -76,6 +76,9 @@ namespace Tag.Modes
         float _itGraceTimer;
         bool _wasIt;
         Vector3 _trailFleeWish;
+        float _jumpHoldT;
+        float _jumpPulseCd;
+        float _lungeGate;
         readonly List<TrailSegment> _trailActiveScratch = new List<TrailSegment>();
 
         void Awake()
@@ -408,10 +411,25 @@ namespace Tag.Modes
         /// Body-relative wish: AI has no TP cam, so PlayerMotor uses transform as wish basis.
         /// Face first, then push forward — matches human TP (yaw then Move.y).
         /// </summary>
-        void DriveWish(float moveY, bool sprint)
+        void DriveWish(float moveY, bool sprint, float strafe = 0f, bool jump = false, bool lunge = false)
         {
             if (_input == null) return;
-            _input.SetExternalMove(new Vector2(0f, Mathf.Clamp(moveY, -1f, 1f)), sprint);
+            _input.SetExternalMove(new Vector2(strafe, Mathf.Clamp(moveY, -1f, 1f)), sprint, jump, lunge);
+        }
+
+        /// <summary>
+        /// Hop toward a target standing on a deck. JumpHeld stays up briefly so a wall climb can attach.
+        /// </summary>
+        bool ConsumeHop(float dy, float dist, bool grounded, float minDy, float maxDist)
+        {
+            _jumpPulseCd -= Time.fixedDeltaTime;
+            _jumpHoldT -= Time.fixedDeltaTime;
+            if (dy > minDy && dist < maxDist && dist > 0.8f && grounded && _jumpPulseCd <= 0f)
+            {
+                _jumpHoldT = 0.42f;
+                _jumpPulseCd = 0.9f;
+            }
+            return _jumpHoldT > 0f;
         }
 
         void TickChase(float dt)
@@ -470,7 +488,32 @@ namespace Tag.Modes
 
             // Keep facing coherent even when moveDir came from FaceAndSteer.
             _ = moveDir;
-            DriveWish(moveY, sprint);
+            if (_target == null)
+            {
+                DriveWish(moveY, sprint);
+                return;
+            }
+            float chaseDy = _target.transform.position.y - transform.position.y;
+            Vector3 chaseFlat = _target.transform.position - transform.position;
+            chaseFlat.y = 0f;
+            bool chaseGrounded = _selfMotor == null || _selfMotor.IsGrounded;
+            bool chaseJump = ConsumeHop(chaseDy, chaseFlat.magnitude, chaseGrounded, 1.05f, 9f);
+            float chaseAng = chaseFlat.sqrMagnitude > 0.001f
+                ? Vector3.Angle(transform.forward, chaseFlat.normalized)
+                : 0f;
+            _lungeGate -= dt;
+            bool chaseLunge = false;
+            float reach = EffectivePunchRange();
+            float chaseDist = chaseFlat.magnitude;
+            if (chaseDist > reach + 0.35f && chaseDist < reach + 4.2f && chaseAng <= 22f && _lungeGate <= 0f)
+            {
+                chaseLunge = true;
+                _lungeGate = 1.35f;
+            }
+            float chaseStrafe = chaseDist > closeChaseRange
+                ? Mathf.Sin(Time.time * 1.6f + transform.GetInstanceID() * 0.017f) * 0.18f
+                : 0f;
+            DriveWish(moveY, sprint, chaseStrafe, chaseJump, chaseLunge);
         }
 
         void TickFleeOrWander(float dt)
@@ -531,7 +574,10 @@ namespace Tag.Modes
                 away = BlendTrailAvoid(away);
                 FaceAndSteer(away, dt, out moveDir);
                 bool urgent = HotPotatoUrgent() || threatDist <= closeChaseRange * 1.6f;
-                DriveWish(urgent ? fleeUrgencyMoveY : 1f, sprint: true);
+                bool grounded = _selfMotor == null || _selfMotor.IsGrounded;
+                // Short hops while It is close so a deck or low wall is not a dead end.
+                bool jump = ConsumeHop(threatDist < 6f ? 1.2f : 0f, 2f, grounded, 1.05f, 9f);
+                DriveWish(urgent ? fleeUrgencyMoveY : 1f, sprint: true, jump: jump);
             }
             else
             {

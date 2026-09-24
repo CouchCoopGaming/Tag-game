@@ -127,6 +127,7 @@ namespace Tag.Modes
             {
                 case TagModeId.HotPotato: return new HotPotatoMode(hotPotatoTuning);
                 case TagModeId.TrailTag: return new TrailTagMode(trailTagTuning);
+                case TagModeId.FreePlay: return new FreePlayMode();
                 case TagModeId.LeastIt:
                 default: return new LeastItMode(leastItTuning);
             }
@@ -249,6 +250,11 @@ namespace Tag.Modes
             {
                 Debug.Log("[TagMode] Playtest hotkey F3 -> Trail Tag");
                 StartRound(TagModeId.TrailTag);
+            }
+            else if (UnityEngine.Input.GetKeyDown(KeyCode.F4))
+            {
+                Debug.Log("[TagMode] Playtest hotkey F4 -> Free play");
+                StartRound(TagModeId.FreePlay);
             }
         }
 

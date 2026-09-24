@@ -75,6 +75,10 @@ namespace TagArena.Movement
         float _climbT;
         float _climbStartY;
         float _wallRunT;
+        float _wallContactLostT;
+        bool _wallRunBlocked;
+        bool _climbBlocked;
+        const float WallReattachDelay = 0.15f;
         float _mantleT;
         Vector3 _mantleFrom;
         Vector3 _mantleTo;
@@ -158,6 +162,7 @@ namespace TagArena.Movement
             _probe.Refresh(_height, _rb.linearVelocity);
             if (_probe.Ground.grounded) _coyote = cfg.coyoteTime;
             LatchLandImpact();
+            TickWallContactGates(dt);
 
             Vector3 wish = WishAccel.CameraWish(cam ? cam : transform, _in.Move);
             Vector3 v = _rb.linearVelocity;
@@ -187,7 +192,8 @@ namespace TagArena.Movement
             }
 
             v = ClampAndDrag(v, dt);
-            if (_speedBoostMul > 1.001f && State != MoveState.LandStun)
+            // Punch speed buff is walk/sprint. Never multiply a slide — entry speed only decays.
+            if (_speedBoostMul > 1.001f && State != MoveState.LandStun && State != MoveState.Slide)
             {
                 Vector3 hv = WishAccel.Horizontal(v) * _speedBoostMul;
                 v = WishAccel.SetHoriz(v, hv);
@@ -196,6 +202,13 @@ namespace TagArena.Movement
             {
                 Vector3 hv = WishAccel.Horizontal(v) * _punchMoveScale;
                 v = WishAccel.SetHoriz(v, hv);
+            }
+            if (State == MoveState.Slide)
+            {
+                Vector3 sh = WishAccel.Horizontal(v);
+                float scap = Mathf.Max(0.01f, _slideStartSpeed);
+                if (sh.magnitude > scap)
+                    v = WishAccel.SetHoriz(v, sh * (scap / sh.magnitude));
             }
             if (_slideBlocked && State == MoveState.Slide)
                 SetState(MoveState.Crouch);
@@ -552,6 +565,7 @@ namespace TagArena.Movement
             Vector3 away = _probe.Wall.hit ? _probe.Wall.normal : -transform.forward;
             Vector3 look = cam ? Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized : transform.forward;
 
+            _climbBlocked = true;
             float up = green ? cfg.wallBounceUp : cfg.wallBounceUp * 0.55f;
             float outSpeed = green ? cfg.wallBounceSpeed : cfg.wallBounceSpeed * 0.65f;
 
@@ -584,6 +598,7 @@ namespace TagArena.Movement
 
         void DoWallRunJump(ref Vector3 v)
         {
+            _wallRunBlocked = true;
             Vector3 away = _probe.Wall.hit ? _probe.Wall.normal : -transform.right;
             Vector3 look = cam ? Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized : transform.forward;
             v = away * cfg.wallRunJumpOut + Vector3.up * cfg.wallRunJumpUp + look * 3.5f;
@@ -606,14 +621,17 @@ namespace TagArena.Movement
             if (!holdingIn) return false;
             if (face > cfg.climbAttachAngle) return false;
             if (grounded && !_in.JumpHeld && !_in.JumpPressed) return false;
-            if (ClimbHeightUsed >= cfg.climbMaxHeight) return false;
 
-            // Ledge in range ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ mantle instead of long climb
+            // Ledge grab is not a stick — still allowed after a climb has decayed off.
             if (_probe.Ledge.hit && _probe.Ledge.height < cfg.mantleMaxLedgeHeight && v.y > -8f)
             {
                 BeginMantle();
                 return true;
             }
+
+            // Same-wall reattach is what made climb feel like a spider. Leave the surface first.
+            if (_climbBlocked) return false;
+            if (ClimbHeightUsed >= cfg.climbMaxHeight) return false;
 
             _climbT = 0f;
             _climbStartY = transform.position.y;
@@ -625,6 +643,7 @@ namespace TagArena.Movement
         {
             if (!_probe.Wall.hit)
             {
+                _climbBlocked = true;
                 SetState(MoveState.Air);
                 return v;
             }
@@ -644,6 +663,7 @@ namespace TagArena.Movement
             if (timeOut || heightOut || released)
             {
                 // Drop / slip off — stronger after a long cling so you cannot stick forever.
+                _climbBlocked = true;
                 v = Vector3.ProjectOnPlane(v, _probe.Wall.normal);
                 float slip = cfg.climbSlipSpeed * (timeOut || heightOut ? 1.6f : 1f);
                 v.y = Mathf.Min(v.y, -slip);
@@ -651,21 +671,23 @@ namespace TagArena.Movement
                 return v;
             }
 
-            // Decay up-speed after climbDecayStart so mid-climb already starts sliding down.
+            // Up-speed decays to a real downward slide before the height cap.
+            // A 0.12 floor here used to keep vy positive until climbMaxHeight fired (~0.42s)
+            // and the budget never cleared, so the slide-down never played.
             float fade = 1f;
             if (cfg.climbMaxTime > 0.05f && _climbT > cfg.climbDecayStart)
             {
                 float u = Mathf.InverseLerp(cfg.climbDecayStart, cfg.climbMaxTime, _climbT);
                 fade = Mathf.Clamp01(1f - u * u);
             }
-            Vector3 up = Vector3.up * (cfg.climbSpeed * Mathf.Max(0.12f, fade));
+            float climbVy = cfg.climbSpeed * fade;
+            if (fade < 0.85f)
+                climbVy -= cfg.climbSlipSpeed * 3.5f * (1f - fade);
+            if (_in.Move.y < -0.3f) climbVy = -cfg.climbSlipSpeed;
+            Vector3 up = Vector3.up * climbVy;
             // Stronger into-wall glue so sticky probe + climb stay attached (was *0.05).
             Vector3 stick = -_probe.Wall.normal * cfg.climbStickForce * 0.09f;
             Vector3 side = Vector3.Cross(_probe.Wall.normal, Vector3.up).normalized * (_in.Move.x * cfg.climbSideSpeed);
-            if (_in.Move.y < -0.3f) up = Vector3.down * cfg.climbSlipSpeed;
-            // Past decay window, add downward slip so the body visibly slides.
-            if (fade < 0.85f)
-                up += Vector3.down * (cfg.climbSlipSpeed * (1f - fade));
 
             v = up + side + stick;
             SetHeight(cfg.standingHeight);
@@ -734,6 +756,7 @@ namespace TagArena.Movement
         bool TryEnterWallRun(Vector3 v, bool grounded, Vector3 wish)
         {
             if (!cfg.enableWallRun) return false;
+            if (_wallRunBlocked) return false;
             if (grounded) return false;
             if (!_probe.Wall.hit) return false;
             if (State == MoveState.WallClimb || State == MoveState.Mantle) return false;
@@ -753,6 +776,11 @@ namespace TagArena.Movement
         {
             if (!_probe.Wall.hit || _wallRunT > cfg.wallRunMaxTime)
             {
+                // Block re-entry until the wall is actually left. Air accel used to
+                // climb back over wallRunMinSpeed in ~2 frames and reset the timer.
+                _wallRunBlocked = true;
+                if (_wallRunT > cfg.wallRunMaxTime)
+                    v.y = Mathf.Min(v.y, -4.5f);
                 SetState(MoveState.Air);
                 return v;
             }
@@ -937,6 +965,35 @@ namespace TagArena.Movement
         #endregion
 
         #region State / capsule / helpers
+
+        /// <summary>
+        /// One attach per contact. Grounded, or ~0.15s with no wall hit, clears the latch
+        /// so a new wall (or the same wall after you leave it) can be used again.
+        /// </summary>
+        void TickWallContactGates(float dt)
+        {
+            bool onWallState = State == MoveState.WallClimb || State == MoveState.WallRun;
+            if (_probe.Ground.grounded && !onWallState)
+            {
+                _wallRunBlocked = false;
+                _climbBlocked = false;
+                ClimbHeightUsed = 0f;
+                _wallContactLostT = 0f;
+                return;
+            }
+
+            if (!_probe.Wall.hit)
+            {
+                _wallContactLostT += dt;
+                if (_wallContactLostT >= WallReattachDelay)
+                {
+                    _wallRunBlocked = false;
+                    _climbBlocked = false;
+                }
+            }
+            else
+                _wallContactLostT = 0f;
+        }
 
         void LatchLandImpact()
         {

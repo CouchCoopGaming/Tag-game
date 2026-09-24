@@ -232,8 +232,9 @@ namespace Tag.Core
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) _menuCursor = 0;
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) _menuCursor = 1;
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) _menuCursor = 2;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) _menuCursor = (_menuCursor + 2) % 3;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) _menuCursor = (_menuCursor + 1) % 3;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) _menuCursor = 3;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) _menuCursor = (_menuCursor + 3) % 4;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) _menuCursor = (_menuCursor + 1) % 4;
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
                     ConfirmModeAndPlay();
             }
@@ -276,11 +277,12 @@ namespace Tag.Core
             }
             else if (State == GameFlowState.ModeSelect)
             {
-                GUI.Box(new Rect(cx - 200, cy - 120, 400, 240), LocalPlayerRoster.IsCouch ? $"Mode — {LocalPlayerRoster.PlayerCount}P couch" : "Mode — SP + Dummy");
-                DrawMode(cx, cy - 70, 0, "1  Hot Potato  (first to 2 · fuse 45/40/35s)");
-                DrawMode(cx, cy - 30, 1, "2  Least It    (120s + next-punch tiebreak)");
-                DrawMode(cx, cy + 10, 2, "3  Trail Tag   (ribbons eliminate · last standing)");
-                GUI.Label(new Rect(cx - 160, cy + 55, 320, 40), "1/2/3 · Enter to play");
+                GUI.Box(new Rect(cx - 220, cy - 150, 440, 300), LocalPlayerRoster.IsCouch ? $"Mode — {LocalPlayerRoster.PlayerCount}P couch" : "Mode — SP + Dummy");
+                DrawMode(cx, cy - 100, 0, "1  Hot Potato  (first to 2 · fuse 45/40/35s)");
+                DrawMode(cx, cy - 60, 1, "2  Least It    (120s + next-punch tiebreak)");
+                DrawMode(cx, cy - 20, 2, "3  Trail Tag   (ribbons eliminate · last standing)");
+                DrawMode(cx, cy + 20, 3, "4  Free play   (punch transfers It · no timer)");
+                GUI.Label(new Rect(cx - 180, cy + 70, 360, 40), "1/2/3/4 · Enter to play");
             }
             else if (State == GameFlowState.Paused)
             {
@@ -311,7 +313,7 @@ namespace Tag.Core
         void DrawMode(float cx, float y, int index, string label)
         {
             bool sel = _menuCursor == index;
-            var r = new Rect(cx - 180, y, 360, 28);
+            var r = new Rect(cx - 200, y, 400, 28);
             if (sel) GUI.Box(r, "");
             if (GUI.Button(r, (sel ? "> " : "  ") + label))
             {
