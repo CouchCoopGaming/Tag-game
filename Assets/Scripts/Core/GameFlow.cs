@@ -36,6 +36,8 @@ namespace Tag.Core
         int _menuCursor = 1;
         int _playerCountCursor;
         bool _settingsOpen;
+        bool _controlsOpen;
+        bool _firstBoot;
 
         void Awake()
         {
@@ -45,6 +47,9 @@ namespace Tag.Core
             SceneManager.sceneLoaded += OnSceneLoaded;
             LocalPlayerRoster.Load();
             _playerCountCursor = Mathf.Clamp(LocalPlayerRoster.PlayerCount - 1, 0, 3);
+            _firstBoot = PlayerPrefs.GetInt("Tag.BootSeen", 0) == 0;
+            LookSensitivity.Load();
+            ControlBinds.Load();
             AudioCuePlayer.Ensure();
             if (PlayerPrefs.HasKey(TagModeController.PrefsModeKey))
             {
@@ -95,6 +100,7 @@ namespace Tag.Core
 
         public void PlayLeastItSlice()
         {
+            MarkBootSeen();
             LocalPlayerRoster.SetCount(1);
             SelectedMode = TagModeId.LeastIt;
             _menuCursor = (int)TagModeId.LeastIt;
@@ -104,14 +110,36 @@ namespace Tag.Core
             GoToPlay();
         }
 
-        public void GoToPlayerCount() { State = GameFlowState.PlayerCount; AudioCuePlayer.Ensure()?.UiClick(); }
+        public void GoToPlayerCount()
+        {
+            MarkBootSeen();
+            State = GameFlowState.PlayerCount;
+            AudioCuePlayer.Ensure()?.UiClick();
+        }
+
+        void MarkBootSeen()
+        {
+            if (PlayerPrefs.GetInt("Tag.BootSeen", 0) != 0)
+            {
+                _firstBoot = false;
+                return;
+            }
+            PlayerPrefs.SetInt("Tag.BootSeen", 1);
+            PlayerPrefs.Save();
+            _firstBoot = false;
+        }
         public void SyncSelectedMode(TagModeId id)
         {
             SelectedMode = id;
             _menuCursor = (int)id;
         }
 
-        public void GoToModeSelect() { State = GameFlowState.ModeSelect; AudioCuePlayer.Ensure()?.UiClick(); }
+        public void GoToModeSelect()
+        {
+            MarkBootSeen();
+            State = GameFlowState.ModeSelect;
+            AudioCuePlayer.Ensure()?.UiClick();
+        }
 
         public void ConfirmModeAndPlay()
         {
@@ -235,6 +263,20 @@ namespace Tag.Core
 
         void Update()
         {
+            if (_controlsOpen)
+            {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                {
+                    _controlsOpen = false;
+                    AudioCuePlayer.Ensure()?.UiClick();
+                }
+                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
+                    ControlBinds.CycleDash(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
+                    ControlBinds.CycleDash(1);
+                return;
+            }
+
             if (_settingsOpen)
             {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
@@ -317,6 +359,12 @@ namespace Tag.Core
 
         void OnGUI()
         {
+            if (_controlsOpen)
+            {
+                DrawControls();
+                return;
+            }
+
             if (_settingsOpen)
             {
                 DrawLookSettings();
@@ -326,19 +374,30 @@ namespace Tag.Core
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
             if (State == GameFlowState.Boot)
             {
-                GUI.Box(new Rect(cx - 180, cy - 110, 360, 230), "TAG — party slice");
-                GUI.Label(new Rect(cx - 170, cy - 78, 340, 36), "Crash-test dummies · playground · punch-tag");
-                if (GUI.Button(new Rect(cx - 90, cy - 36, 180, 32), "Play Tag (Least It)"))
+                GUI.Box(new Rect(cx - 210, cy - 160, 420, 320), "TAG — party slice");
+                string hello = _firstBoot
+                    ? "First run: Play is you and one bot, Least It.\nPunch passes It. Esc pauses."
+                    : "Play is you and one bot. Couch is local humans.";
+                GUI.Label(new Rect(cx - 190, cy - 128, 380, 44), hello);
+                if (GUI.Button(new Rect(cx - 90, cy - 76, 180, 32), "Play Tag (Least It)"))
                     PlayLeastItSlice();
-                if (GUI.Button(new Rect(cx - 90, cy + 2, 180, 28), "Mode select…"))
+                if (GUI.Button(new Rect(cx - 90, cy - 38, 180, 28), "Controls"))
+                {
+                    _settingsOpen = false;
+                    _controlsOpen = true;
+                }
+                if (GUI.Button(new Rect(cx - 90, cy - 4, 180, 28), "Look sensitivity"))
+                {
+                    _controlsOpen = false;
+                    _settingsOpen = true;
+                }
+                if (GUI.Button(new Rect(cx - 90, cy + 30, 180, 28), "Mode select…"))
                 {
                     LocalPlayerRoster.SetCount(1);
                     GoToModeSelect();
                 }
-                if (GUI.Button(new Rect(cx - 90, cy + 36, 180, 28), "Couch…"))
+                if (GUI.Button(new Rect(cx - 90, cy + 64, 180, 28), "Couch…"))
                     GoToPlayerCount();
-                if (GUI.Button(new Rect(cx - 90, cy + 70, 180, 28), "Look sensitivity"))
-                    _settingsOpen = true;
             }
             else if (State == GameFlowState.PlayerCount)
             {
@@ -364,12 +423,20 @@ namespace Tag.Core
             }
             else if (State == GameFlowState.Paused)
             {
-                GUI.Box(new Rect(cx - 150, cy - 96, 300, 192), "Paused");
-                if (GUI.Button(new Rect(cx - 70, cy - 52, 140, 28), "Resume")) TogglePause();
-                if (GUI.Button(new Rect(cx - 70, cy - 16, 140, 28), "Quit to Menu")) QuitToMenu();
-                if (GUI.Button(new Rect(cx - 70, cy + 20, 140, 28), "Look sensitivity"))
+                GUI.Box(new Rect(cx - 150, cy - 118, 300, 236), "Paused");
+                if (GUI.Button(new Rect(cx - 70, cy - 74, 140, 28), "Resume")) TogglePause();
+                if (GUI.Button(new Rect(cx - 70, cy - 40, 140, 28), "Controls"))
+                {
+                    _settingsOpen = false;
+                    _controlsOpen = true;
+                }
+                if (GUI.Button(new Rect(cx - 70, cy - 6, 140, 28), "Look sensitivity"))
+                {
+                    _controlsOpen = false;
                     _settingsOpen = true;
-                GUI.Label(new Rect(cx - 130, cy + 56, 260, 22), "Esc resume    Q menu");
+                }
+                if (GUI.Button(new Rect(cx - 70, cy + 28, 140, 28), "Quit to Menu")) QuitToMenu();
+                GUI.Label(new Rect(cx - 130, cy + 64, 260, 22), "Esc resume    Q menu");
             }
             else if (State == GameFlowState.RoundEnd)
             {
@@ -381,6 +448,19 @@ namespace Tag.Core
                         $"{LastResultMessage}\n\nR  Rematch    Q  Menu");
                 }
             }
+        }
+
+        void DrawControls()
+        {
+            float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
+            GUI.Box(new Rect(cx - 230, cy - 170, 460, 340), "Controls");
+            GUI.Label(new Rect(cx - 210, cy - 140, 420, 220), ControlBinds.Help);
+            if (GUI.Button(new Rect(cx - 150, cy + 88, 80, 28), "<"))
+                ControlBinds.CycleDash(-1);
+            if (GUI.Button(new Rect(cx + 70, cy + 88, 80, 28), ">"))
+                ControlBinds.CycleDash(1);
+            GUI.Label(new Rect(cx - 210, cy + 122, 420, 36),
+                "Left / Right changes air dash. Alt still dashes. Esc back.");
         }
 
         void DrawLookSettings()

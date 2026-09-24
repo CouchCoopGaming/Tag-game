@@ -46,6 +46,7 @@ namespace Tag.Modes
         bool _firstCountdownHint = true;
         float _roundStartGuard;
         bool _localPaused;
+        bool _localHelp;
         GUIStyle _countStyle;
 
         public TagModeId SelectedMode { get => selectedMode; set => selectedMode = value; }
@@ -232,10 +233,22 @@ namespace Tag.Modes
             PollLocalPause();
             if (_localPaused)
             {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
-                    TagArena.Movement.LookSensitivity.Cycle(-1);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
-                    TagArena.Movement.LookSensitivity.Cycle(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.H))
+                    _localHelp = !_localHelp;
+                if (_localHelp)
+                {
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
+                        TagArena.Movement.ControlBinds.CycleDash(-1);
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
+                        TagArena.Movement.ControlBinds.CycleDash(1);
+                }
+                else
+                {
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
+                        TagArena.Movement.LookSensitivity.Cycle(-1);
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
+                        TagArena.Movement.LookSensitivity.Cycle(1);
+                }
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Q))
                     LoadBootMenu();
                 return;
@@ -465,6 +478,7 @@ namespace Tag.Modes
         void SetLocalPause(bool paused)
         {
             _localPaused = paused;
+            if (!paused) _localHelp = false;
             Time.timeScale = paused ? 0f : 1f;
             Cursor.lockState = paused ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = paused;
@@ -477,10 +491,17 @@ namespace Tag.Modes
             float h = 120f;
             float x = (Screen.width - w) * 0.5f;
             float y = Screen.height * 0.38f;
+            if (_localHelp)
+            {
+                GUI.Box(new Rect(x - 40f, y, w + 80f, 280f), "Controls");
+                GUI.Label(new Rect(x - 24f, y + 28, w + 48f, 220),
+                    TagArena.Movement.ControlBinds.Help + "\n\nH close    Left / Right dash key");
+                return;
+            }
             string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
             GUI.Box(new Rect(x, y, w, h + 48f), "Paused");
-            GUI.Label(new Rect(x + 16, y + 36, w - 32, 110),
-                "Esc resume\nQ  Boot menu\nLeft / Right  " + TagArena.Movement.LookSensitivity.Label + extra);
+            GUI.Label(new Rect(x + 16, y + 36, w - 32, 120),
+                "Esc resume\nQ  Boot menu\nH  controls\nLeft / Right  " + TagArena.Movement.LookSensitivity.Label + extra);
         }
 
         static string ModeTitle(TagModeId id)
