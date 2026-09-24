@@ -286,12 +286,13 @@ namespace Tag.Art
                 _laLT = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
                 if (phase == PunchPhase.Windup)
                 {
-                    float w = Mathf.Lerp(0.35f, 1f, punchProg);
-                    // +Z on the punch arm folds the fist into the hip. Cock back, keep the hand outside.
-                    _uaRT = _uaR0 * Quaternion.Euler(58f + 62f * w, -48f * w, -8f);
-                    _laRT = _laR0 * Quaternion.Euler(-88f * w, 0f, 0f);
-                    _hipsT = _hips0 * Quaternion.Euler(12f + 10f * w, -18f * w, 0f);
-                    _spineT = _spine0 * Quaternion.Euler(leanX + 10f * w, -22f * w, leanZ);
+                    float w = Mathf.Lerp(0.55f, 1f, punchProg);
+                    // Fist behind the spine vanishes in the chase cam. Flare the elbow out beside the head.
+                    // Timing stays the authored 0.12s windup.
+                    _uaRT = _uaR0 * Quaternion.Euler(28f * w, -16f * w, -52f - 14f * w);
+                    _laRT = _laR0 * Quaternion.Euler(-40f - 72f * w, 0f, 0f);
+                    _hipsT = _hips0 * Quaternion.Euler(14f + 8f * w, -24f * w, 0f);
+                    _spineT = _spine0 * Quaternion.Euler(leanX + 12f * w, -32f * w, leanZ);
                 }
                 else if (phase == PunchPhase.Active)
                 {
@@ -516,8 +517,9 @@ namespace Tag.Art
 
             float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
             // 0.1s air dash never reached the whip pose at slew 42.
-            float armSlewL = airDashing ? 78f : (punching || lunging || dashing ? 42f : slew);
-            float armSlewR = airDashing ? 78f : (punching || lunging || dashing ? 46f : slew);
+            bool punchWind = punching && phase == PunchPhase.Windup;
+            float armSlewL = airDashing ? 78f : punchWind ? 90f : (punching || lunging || dashing ? 42f : slew);
+            float armSlewR = airDashing ? 78f : punchWind ? 90f : (punching || lunging || dashing ? 46f : slew);
             float legSlew = airDashing ? 78f : slew;
             Slew(ref _spine, _spineT, slew, dt);
             Slew(ref _hips, _hipsT, slew, dt);

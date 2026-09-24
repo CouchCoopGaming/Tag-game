@@ -3,6 +3,7 @@ using Tag.Core;
 using Tag.Gameplay;
 using Tag.Trail;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Tag.Audio;
 
 namespace Tag.Modes
@@ -42,6 +43,8 @@ namespace Tag.Modes
         string _resultMessage = "";
         bool _firstCountdownHint = true;
         float _roundStartGuard;
+        bool _localPaused;
+        GUIStyle _countStyle;
 
         public TagModeId SelectedMode { get => selectedMode; set => selectedMode = value; }
         public MatchTuning MatchTuningAsset => matchTuning;
@@ -150,6 +153,8 @@ namespace Tag.Modes
             if (Time.unscaledTime < _roundStartGuard)
                 return;
             _roundStartGuard = Time.unscaledTime + 0.05f;
+            if (_localPaused)
+                SetLocalPause(false);
             if (GameFlow.Instance != null)
                 GameFlow.Instance.ReturnToPlay();
             SetMode(id);
@@ -222,6 +227,13 @@ namespace Tag.Modes
 
         void Update()
         {
+            PollLocalPause();
+            if (_localPaused)
+            {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Q))
+                    LoadBootMenu();
+                return;
+            }
             PollPlaytestModeHotkeys();
             PollResultsKeys();
 
@@ -283,8 +295,9 @@ namespace Tag.Modes
         }
 
         /// <summary>
-        /// One listener for the results card. GameFlow skips R/Q while this phase is Results.
-        /// Direct Play has no GameFlow, so Q cannot open a menu.
+        /// One listener for the results card. GameFlow skips R/Q while this phase is Results
+        /// and still owns Esc there, so this method does not also read Esc when a flow exists.
+        /// Direct Play has no GameFlow, so Q and Esc load Boot.
         /// </summary>
         void PollResultsKeys()
         {
@@ -295,8 +308,20 @@ namespace Tag.Modes
                 if (flow != null) flow.Rematch();
                 else Rematch();
             }
-            if (flow != null && UnityEngine.Input.GetKeyDown(KeyCode.Q))
-                flow.QuitToMenu();
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Q))
+            {
+                if (flow != null) flow.QuitToMenu();
+                else LoadBootMenu();
+            }
+            if (flow == null && UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                LoadBootMenu();
+        }
+
+        void LoadBootMenu()
+        {
+            Time.timeScale = 1f;
+            Tag.Audio.TagSfx.UiClick();
+            SceneManager.LoadScene("Boot");
         }
 
         public void OnSuccessfulPunch(ItController puncher, ItController target)
@@ -415,20 +440,58 @@ namespace Tag.Modes
             if (flow != null) flow.OnRoundEnded(_resultMessage);
         }
 
+        void PollLocalPause()
+        {
+            // Boot's GameFlow already owns Esc. Direct Play has no menu object.
+            if (GameFlow.Instance != null) return;
+            if (_phase == MatchPhase.Results || _phase == MatchPhase.Idle) return;
+            if (!UnityEngine.Input.GetKeyDown(KeyCode.Escape)) return;
+            SetLocalPause(!_localPaused);
+        }
+
+        void SetLocalPause(bool paused)
+        {
+            _localPaused = paused;
+            Time.timeScale = paused ? 0f : 1f;
+            Cursor.lockState = paused ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = paused;
+            Tag.Audio.TagSfx.UiClick();
+        }
+
+        void DrawLocalPause()
+        {
+            float w = 320f;
+            float h = 120f;
+            float x = (Screen.width - w) * 0.5f;
+            float y = Screen.height * 0.38f;
+            GUI.Box(new Rect(x, y, w, h), "Paused");
+            GUI.Label(new Rect(x + 16, y + 36, w - 32, 64), "Esc resume\nQ  Boot menu");
+        }
+
+        static string ModeTitle(TagModeId id)
+        {
+            switch (id)
+            {
+                case TagModeId.HotPotato: return "Hot Potato";
+                case TagModeId.TrailTag: return "Trail Tag";
+                case TagModeId.FreePlay: return "Free play";
+                default: return "Least It";
+            }
+        }
+
         void OnGUI()
         {
+            if (_localPaused)
+            {
+                DrawLocalPause();
+                return;
+            }
+
             DrawItBanner();
 
             if (_phase == MatchPhase.Countdown)
             {
-                float cx = Screen.width * 0.5f;
-                float cy = Screen.height * 0.35f;
-                GUI.Box(new Rect(cx - 140, cy, 280, 88), "");
-                GUI.Label(new Rect(cx - 130, cy + 10, 260, 28), $"Get ready  {_phaseTimer:0}");
-                GUI.Label(new Rect(cx - 130, cy + 36, 260, 40),
-                    _firstCountdownHint
-                        ? "WASD sprint  Ctrl slide  Q dash\nLMB punch transfers It"
-                        : "Punch the dummy with the orange hat");
+                DrawCountdownCard();
                 return;
             }
 
@@ -444,6 +507,31 @@ namespace Tag.Modes
             GUI.Label(new Rect(20, Screen.height - 162, 464, 148), body);
         }
 
+        void DrawCountdownCard()
+        {
+            if (_countStyle == null)
+            {
+                _countStyle = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 54,
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+            float w = 440f;
+            float h = 168f;
+            float x = (Screen.width - w) * 0.5f;
+            float y = Screen.height * 0.28f;
+            int show = Mathf.Max(1, Mathf.CeilToInt(_phaseTimer));
+            GUI.Box(new Rect(x, y, w, h), ModeTitle(selectedMode));
+            _countStyle.normal.textColor = Color.white;
+            GUI.Label(new Rect(x, y + 28, w, 70), show.ToString(), _countStyle);
+            string hint = _firstCountdownHint
+                ? "WASD sprint   Ctrl slide   Q dash\nLMB punch transfers It"
+                : "Punch the dummy with the orange hat";
+            GUI.Label(new Rect(x + 16, y + 104, w - 32, 48), hint);
+        }
+
         void DrawResultsCard()
         {
             float w = 520f;
@@ -451,11 +539,8 @@ namespace Tag.Modes
             float x = (Screen.width - w) * 0.5f;
             float y = Screen.height * 0.32f;
             GUI.Box(new Rect(x, y, w, h), "Round over");
-            string keys = GameFlow.Instance != null
-                ? "R  Rematch     Q / Esc  Menu"
-                : "R  Rematch";
             GUI.Label(new Rect(x + 16, y + 28, w - 32, 70),
-                (_resultMessage ?? "") + "\n\n" + keys);
+                (_resultMessage ?? "") + "\n\nR  Rematch     Q / Esc  Menu");
             float bw = 140f;
             float by = y + h - 44f;
             if (GUI.Button(new Rect(x + w * 0.5f - bw - 8f, by, bw, 32f), "Rematch"))
@@ -464,9 +549,11 @@ namespace Tag.Modes
                 if (flow != null) flow.Rematch();
                 else Rematch();
             }
-            if (GameFlow.Instance != null &&
-                GUI.Button(new Rect(x + w * 0.5f + 8f, by, bw, 32f), "Menu"))
-                GameFlow.Instance.QuitToMenu();
+            if (GUI.Button(new Rect(x + w * 0.5f + 8f, by, bw, 32f), "Menu"))
+            {
+                if (GameFlow.Instance != null) GameFlow.Instance.QuitToMenu();
+                else LoadBootMenu();
+            }
         }
 
         void DrawPostRoundCard()

@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ **Play**.
 3. Optional first-time art: **Tag ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Ensure URP Pipeline**, then **Tag ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Setup Hub Visuals**.
 
-Branch: `cursor/rematch-punch-tell-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/pause-countdown-windup-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 ## Stack snapshot
 
@@ -75,7 +75,7 @@ Punch is **not** a contact aura ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â
 - Flee panic hop uses dy 0.9 (was 0.55, below ConsumeHop minDy 0.85, so it never fired). Trail Tag mode line shows **SUDDEN DEATH** when the cap/stall failsafe trips.
 - HUD mode line uses ASCII ` | ` separator; center MODE flash lists F1-F4. F1-F4 SetMode also syncs GameFlow menu cursor via PlayerPrefs, recovers ragdoll, and places pawns on pads.
 - Trail Tag self-hit still needs both age and distance grace. Dodge i-frames do not ignore trails. Punch updates It brightness the same frame for every emitter mode. ItOnly still gates who emits.
-- Round over draws a center card (cursor unlocks for clicks). **R** / Rematch button starts once; Boot does not also rematch. A second StartRound inside 0.05 s is ignored. **Q** or **Esc** returns to the menu when GameFlow is loaded. F1-F4 or R leave pause and the round-end state so the countdown is not frozen. Resume and quit click on pause; Rematch/Menu click on results. "No winners" no longer plays the win sting.
+- Round over draws a center card (cursor unlocks for clicks). **R** / Rematch button starts once; Boot does not also rematch. A second StartRound inside 0.05 s is ignored. **Q** or **Esc** returns to Boot (GameFlow when it is loaded, otherwise a direct scene load). F1-F4 or R leave pause and the round-end state so the countdown is not frozen. Resume and quit click on pause; Rematch/Menu click on results. "No winners" no longer plays the win sting. Esc on the player-count and mode screens steps back to Boot. Keys 1-4 on the player screen match the four rows. Direct Play (no GameFlow) pauses on Esc; Q loads Boot. Pause zeroes look and punch so a menu click does not swing the camera or queue a punch. The countdown card names the mode and shows 3, 2, 1. Local punch windup flares the elbow beside the head; the 0.12 s windup is unchanged. The punch-buffer cock from the last pass stays. Playground music stays silent: only the wav meta exists, and PlayMusic returns when the clip is null. Ski entry still uses TagSfx.EnsureSource.
 
 ## Feel check (code, not a Unity play)
 
@@ -97,14 +97,15 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 8. F1 while you are It: top-center FUSE appears inside the warn window even if you pass It away. F2: mode line shows seconds left and WINNING (least) / BEHIND (more It). F3: a foreign trail still eliminates; your own trail does not until the grace ends. F4: free play, punch still moves It, no timer. Each of F1ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œF4 should drop you on a spawn pad, including if you were ragdolled.
 9. As It, a sharp strafe should make the dummy miss more often than it connects. As runner, you should be able to cut their flank instead of losing a straight race every time.
 10. Q dash and a grounded It lunge should not sound the same. A short hop lands with a soft thud; a hard land is louder. Tag, round start, and a trail elim should make a tone even with no audio files imported.
-11. From across a fort the orange hat and beacon should still read. Punch windup cocks the fist out, not into the hip.
-12. When a round ends, a center card names the result. One R (or Rematch click) starts the next round from a pad (a second R in the same moment does not restart it again). Esc pause, then F1: the countdown should move. Q or Esc from the card returns to Boot's menu only if you came through Boot. In Trail Tag, after OUT you should see "waiting for the round" until the match ends.
+11. From across a fort the orange hat and beacon should still read. Your punch windup should flare the elbow out beside the head within the same short windup. Holding LMB as It should still cock the fist before the swing.
+12. When a round ends, a center card names the result. One R (or Rematch click) starts the next round from a pad (a second R in the same moment does not restart it again). Esc pause, then F1: the countdown should move. Q, Esc, or Menu from the card returns to Boot, including a direct Play scene. In Trail Tag, after OUT you should see "waiting for the round" until the match ends.
 13. Your own hat should sit on your head without a tall spike in the camera. The dummy's beacon should still read from across a fort. When the dummy is It, you should see the arm cock before the punch, and leaving that range should cancel it. Getting tagged should nudge your camera. Pause resume and quit should click.
+14. Esc during Play pauses. Mouse look should stop and a click on Resume should not punch. Direct Play (opened without Boot) still pauses, and Q loads Boot. Boot's player and mode screens: Esc steps back, and 1 starts one player. The countdown names the mode and counts 3, then 2, then 1. No music bed is expected. A ski entry still makes a tone.
 
 ## Known leftovers
 
 - Prefab/mat dirt after Hub visuals / URP regen ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â do not commit unless intentional.
 - Flat HiPoly mannequins may skip hierarchical `DummyLocomotor` binds (primitive / bindable-bone path is the readable tell).
 - Legacy contact `TryTag` radius still exists on motor; play modes use punch transfer.
-- AI weave/whiff still needs a human feel pass. No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent unless a Resources loop is present. No hitstop.
+- AI weave/whiff still needs a human feel pass. No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent: `music_playground_bed_loop.wav` is meta only, so PlayMusic returns. No hitstop.
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.

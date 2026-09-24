@@ -244,19 +244,31 @@ namespace Tag.Core
             }
             else if (State == GameFlowState.PlayerCount)
             {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) _playerCountCursor = 0;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) _playerCountCursor = 1;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) _playerCountCursor = 2;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) _playerCountCursor = (_playerCountCursor + 2) % 3;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) _playerCountCursor = (_playerCountCursor + 1) % 3;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                {
+                    AudioCuePlayer.Ensure()?.UiClick();
+                    State = GameFlowState.Boot;
+                }
+                // Rows are 1..4. Keys used to highlight row 0 while Enter started 2 players.
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) _playerCountCursor = 0;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) _playerCountCursor = 1;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) _playerCountCursor = 2;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) _playerCountCursor = 3;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) _playerCountCursor = (_playerCountCursor + 3) % 4;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) _playerCountCursor = (_playerCountCursor + 1) % 4;
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
                 {
-                    LocalPlayerRoster.SetCount(_playerCountCursor + 2);
+                    LocalPlayerRoster.SetCount(_playerCountCursor + 1);
                     GoToModeSelect();
                 }
             }
             else if (State == GameFlowState.ModeSelect)
             {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                {
+                    AudioCuePlayer.Ensure()?.UiClick();
+                    State = GameFlowState.Boot;
+                }
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) _menuCursor = 0;
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) _menuCursor = 1;
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) _menuCursor = 2;
@@ -311,7 +323,7 @@ namespace Tag.Core
                 DrawRow(cx, cy - 35, 1, "2 Players (couch)");
                 DrawRow(cx, cy, 2, "3 Players (couch)");
                 DrawRow(cx, cy + 35, 3, "4 Players (couch)");
-                GUI.Label(new Rect(cx - 150, cy + 75, 300, 40), "1Ã¢â‚¬â€œ4 Ã‚Â· Enter");
+                GUI.Label(new Rect(cx - 150, cy + 75, 300, 40), "1Ã¢â‚¬â€œ4 Ã‚Â· Enter    Esc back");
             }
             else if (State == GameFlowState.ModeSelect)
             {
@@ -320,13 +332,14 @@ namespace Tag.Core
                 DrawMode(cx, cy - 60, 1, "2  Least It    (120s + next-punch tiebreak)");
                 DrawMode(cx, cy - 20, 2, "3  Trail Tag   (ribbons eliminate - last standing)");
                 DrawMode(cx, cy + 20, 3, "4  Free play   (punch transfers It - no timer)");
-                GUI.Label(new Rect(cx - 180, cy + 70, 360, 40), "1/2/3/4 Ã‚Â· Enter to play");
+                GUI.Label(new Rect(cx - 180, cy + 70, 360, 40), "1/2/3/4 Ã‚Â· Enter to play    Esc back");
             }
             else if (State == GameFlowState.Paused)
             {
-                GUI.Box(new Rect(cx - 120, cy - 60, 240, 120), "Paused");
-                if (GUI.Button(new Rect(cx - 60, cy - 10, 120, 28), "Resume")) TogglePause();
-                if (GUI.Button(new Rect(cx - 60, cy + 25, 120, 28), "Quit to Menu")) QuitToMenu();
+                GUI.Box(new Rect(cx - 150, cy - 80, 300, 160), "Paused");
+                if (GUI.Button(new Rect(cx - 70, cy - 28, 140, 28), "Resume")) TogglePause();
+                if (GUI.Button(new Rect(cx - 70, cy + 8, 140, 28), "Quit to Menu")) QuitToMenu();
+                GUI.Label(new Rect(cx - 130, cy + 44, 260, 22), "Esc resume    Q menu");
             }
             else if (State == GameFlowState.RoundEnd)
             {
