@@ -28,7 +28,7 @@ namespace Tag.Modes
 
         public string GetHud(TagModeContext ctx)
         {
-            return "Free play\nPunch transfers It. No round timer.\nF1-F3 start a scored mode.";
+            return "Free play\nPunch transfers It. No round timer.\nF1-F3 scored modes; F4 stays free.";
         }
     }
 }

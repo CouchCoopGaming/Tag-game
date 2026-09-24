@@ -19,7 +19,7 @@ namespace Tag.Modes
     /// <summary>
     /// Shared shell: Countdown -> Round(s) -> Results. Delegates rules to ITagMode.
     /// TagRoundController on the same GO wraps this for scene GUID back-compat.
-    /// Playtest: F1 Hot Potato, F2 Least It, F3 Trail Tag -> StartRound(mode).
+    /// Playtest: F1 Hot Potato, F2 Least It, F3 Trail Tag, F4 Free play -> StartRound(mode).
     /// </summary>
     public class TagModeController : MonoBehaviour
     {
@@ -91,10 +91,14 @@ namespace Tag.Modes
                 StartRound();
         }
 
+
         public void SetMode(TagModeId id)
         {
             selectedMode = id;
             PlayerPrefs.SetInt(PrefsModeKey, (int)id);
+            // Keep hub menu cursor in sync when F1-F4 restart a round in-play.
+            if (GameFlow.Instance != null)
+                GameFlow.Instance.SyncSelectedMode(id);
         }
 
         public void RefreshPlayers()
@@ -231,7 +235,7 @@ namespace Tag.Modes
         }
 
         /// <summary>
-        /// Playtest: F1 Hot Potato / F2 Least It / F3 Trail Tag  SetMode + StartRound cleanly.
+        /// Playtest: F1 Hot Potato / F2 Least It / F3 Trail Tag / F4 Free play - SetMode + StartRound cleanly.
         /// Works in any phase (Idle/Countdown/Playing/Results).
         /// </summary>
         void PollPlaytestModeHotkeys()

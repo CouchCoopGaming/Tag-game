@@ -103,6 +103,12 @@ namespace Tag.Core
         }
 
         public void GoToPlayerCount() { State = GameFlowState.PlayerCount; AudioCuePlayer.Ensure()?.UiClick(); }
+        public void SyncSelectedMode(TagModeId id)
+        {
+            SelectedMode = id;
+            _menuCursor = (int)id;
+        }
+
         public void GoToModeSelect() { State = GameFlowState.ModeSelect; AudioCuePlayer.Ensure()?.UiClick(); }
 
         public void ConfirmModeAndPlay()

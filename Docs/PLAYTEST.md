@@ -67,14 +67,11 @@ Punch is **not** a contact aura — only active punch hits transfer It (`PunchHi
 
 ## Tag handoff / AI (code)
 
-- HUD mode line uses ASCII  |  separator; center MODE flash lists F1-F4.
-
-## Tag handoff / AI (code, this pass)
-
 - Punch transfer: PunchHitbox -> TagModeController.OnSuccessfulPunch -> TransferIt -> ItController.SetIt.
 - SetIt(true) plays become-It SFX, calls PlayerMotor.NotifyBecameIt() (anim/HUD listeners), and pulses DummyLocomotor.PlayTagFlinch on the new It.
-- Victim also flinches via ReceiveTagHit. HUD already flashes YOU'RE IT / YOU'RE FREE from IsIt edges.
+- Victim also flinches via ReceiveTagHit. HUD flashes YOU'RE IT / YOU'RE FREE from IsIt edges.
 - DummyPatrol Retargets immediately on **gain and lose** It (chase prey / flee new It without waiting for decisionHz).
+- HUD mode line uses ASCII ` | ` separator; center MODE flash lists F1-F4. F1-F4 SetMode also syncs GameFlow menu cursor via PlayerPrefs.
 
 ## Feel check (code, not a Unity play)
 
