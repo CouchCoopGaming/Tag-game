@@ -38,6 +38,7 @@ namespace Tag.Audio
 
         public void PlaySfx(string resourcesPath, Vector3? pos = null)
         {
+            MasterVolume.Ensure();
             var clip = Load(resourcesPath);
             if (clip == null)
             {
@@ -53,6 +54,7 @@ namespace Tag.Audio
 
         public void PlayUi(string resourcesPath)
         {
+            MasterVolume.Ensure();
             var clip = Load(resourcesPath);
             if (clip == null)
             {
@@ -89,6 +91,7 @@ namespace Tag.Audio
 
         public void PlayMusic(string resourcesPath)
         {
+            MasterVolume.Ensure();
             var clip = Load(resourcesPath);
             if (clip == null) return;
             if (_music.clip == clip && _music.isPlaying) return;

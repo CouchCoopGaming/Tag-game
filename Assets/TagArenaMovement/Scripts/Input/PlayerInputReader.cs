@@ -48,15 +48,20 @@ namespace TagArena.Movement
         {
             ControlBinds.Load();
             airDashKey = ControlBinds.AirDash;
+            punchKey = ControlBinds.Punch;
         }
 
         public void Read()
         {
             if (ExternalControl) return;
 
-            // Pause freezes the clock but Update still runs. A menu click is Mouse0,
-            // which is also punch, and look is not scaled by deltaTime.
-            if (Time.timeScale <= 0f)
+            airDashKey = ControlBinds.AirDash;
+            punchKey = ControlBinds.Punch;
+
+            // Pause freezes the clock but Update still runs. Results keep timeScale at 1
+            // and unlock the cursor, so a Rematch click (Mouse0) would also punch.
+            // Look is not scaled by deltaTime, so an unlocked cursor must not yaw either.
+            if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked)
             {
                 Move = Vector2.zero;
                 Look = Vector2.zero;
@@ -79,8 +84,6 @@ namespace TagArena.Movement
                 _prevW = Input.GetKey(tapStrafePulseKey);
                 return;
             }
-
-            airDashKey = ControlBinds.AirDash;
 
             Move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             if (Move.sqrMagnitude > 1f) Move.Normalize();

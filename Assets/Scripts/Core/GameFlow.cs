@@ -51,6 +51,7 @@ namespace Tag.Core
             _firstBoot = PlayerPrefs.GetInt("Tag.BootSeen", 0) == 0;
             LookSensitivity.Load();
             ControlBinds.Load();
+            MasterVolume.Load();
             AudioCuePlayer.Ensure();
             if (PlayerPrefs.HasKey(TagModeController.PrefsModeKey))
             {
@@ -281,6 +282,16 @@ namespace Tag.Core
                     ControlBinds.CycleDash(-1);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
                     ControlBinds.CycleDash(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
+                    ControlBinds.CyclePunch(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))
+                    ControlBinds.CyclePunch(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Minus) || UnityEngine.Input.GetKeyDown(KeyCode.LeftBracket))
+                    MasterVolume.Cycle(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Equals) || UnityEngine.Input.GetKeyDown(KeyCode.RightBracket))
+                    MasterVolume.Cycle(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.M))
+                    MasterVolume.ToggleMute();
                 return;
             }
 
@@ -460,14 +471,24 @@ namespace Tag.Core
         void DrawControls()
         {
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
-            GUI.Box(new Rect(cx - 230, cy - 170, 460, 340), "Controls");
-            GUI.Label(new Rect(cx - 210, cy - 140, 420, 220), ControlBinds.Help);
-            if (GUI.Button(new Rect(cx - 150, cy + 88, 80, 28), "<"))
+            GUI.Box(new Rect(cx - 240, cy - 210, 480, 420), "Controls");
+            GUI.Label(new Rect(cx - 220, cy - 180, 440, 250), ControlBinds.Help);
+            if (GUI.Button(new Rect(cx - 220, cy + 78, 100, 26), "Dash <"))
                 ControlBinds.CycleDash(-1);
-            if (GUI.Button(new Rect(cx + 70, cy + 88, 80, 28), ">"))
+            if (GUI.Button(new Rect(cx - 112, cy + 78, 100, 26), "Dash >"))
                 ControlBinds.CycleDash(1);
-            GUI.Label(new Rect(cx - 210, cy + 122, 420, 36),
-                "Left / Right changes air dash. Alt still dashes. Esc back.");
+            if (GUI.Button(new Rect(cx + 4, cy + 78, 100, 26), "Punch <"))
+                ControlBinds.CyclePunch(-1);
+            if (GUI.Button(new Rect(cx + 112, cy + 78, 100, 26), "Punch >"))
+                ControlBinds.CyclePunch(1);
+            if (GUI.Button(new Rect(cx - 220, cy + 110, 100, 26), "Quieter"))
+                MasterVolume.Cycle(-1);
+            if (GUI.Button(new Rect(cx - 112, cy + 110, 100, 26), "Louder"))
+                MasterVolume.Cycle(1);
+            if (GUI.Button(new Rect(cx + 4, cy + 110, 208, 26), MasterVolume.Muted ? "Unmute" : "Mute"))
+                MasterVolume.ToggleMute();
+            GUI.Label(new Rect(cx - 220, cy + 142, 440, 48),
+                "Left / Right dash. Up / Down punch. E still punches.\n- / + volume. M mute. Alt still dashes. Esc back.");
         }
 
         void DrawLookSettings()

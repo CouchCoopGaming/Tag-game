@@ -150,7 +150,8 @@ namespace TagArena.Movement
             if (_in == null || cfg == null) return;
             _in.Read();
             // Pause stops FixedUpdate, so a buffered jump would fire on resume.
-            if (Time.timeScale <= 0f)
+            // Results keep timeScale at 1 with the cursor unlocked; drop that buffer too.
+            if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked)
             {
                 _jumpBuf = 0f;
                 return;
