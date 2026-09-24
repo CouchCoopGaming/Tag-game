@@ -34,8 +34,8 @@ namespace Tag.Level
             ("HOPSCOTCH NE",  70f, 38f),
             ("BARS W",        11f, 26f),
             ("BARS E",      62.5f, 26f),
-            ("BEAM W",      13.5f, 25f),
-            ("BEAM E",      60.5f, 29f),
+            ("BEAM W",      13.5f, 25.25f),
+            ("BEAM E",      60.5f, 28.75f),
         };
 
         static Transform _parkCached;
