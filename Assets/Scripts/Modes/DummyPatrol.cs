@@ -151,6 +151,11 @@ namespace Tag.Modes
                 _itGraceTimer = Mathf.Max(0f, itGraceSec);
                 Retarget();
             }
+            else if (!isIt && _wasIt)
+            {
+                // Just lost It: retarget so flee locks onto the new It without waiting for decisionHz.
+                Retarget();
+            }
             _wasIt = isIt;
 
             if (isIt)

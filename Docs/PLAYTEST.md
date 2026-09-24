@@ -26,7 +26,7 @@ Branch: `cursor/playground-campus-zones-afc4` (campus kit tip; WIP backup `backu
 | **Punch** | Connect = loud kick + hold arm; miss = soft blip + limp arm (`TagSfx` / DummyLocomotor / `PunchHitbox`) |
 | **Lunge** | It-only MMB: ~16 m/s, ~0.20 s, **CD ~1.0 s**; TP whip→settle via `LungeProgress` |
 | **Slide** | Crouch+speed: carry entry speed + friction decay only (**no** enter boost) |
-| **Air dash** | Visual whip + cyan trail; **30 s CD**; Q / Left Alt / MMB (in air); short planar burst |
+| **Air dash** | Visual whip + cyan trail; **30 s CD**; **Q / Left Alt** (in air); short planar burst (PlayerInputReader.airDashKey) |
 | **Jump / land** | Fixed height (`jumpSpeed` launch, not speed-tied / additive); coyote ~0.10 s, buffer ~0.16 s; hard land → LandStun; DummyLocomotor firmer land squash |
 | **Motor knobs** | Live on `Assets/Resources/TagArena/MovementConfig.asset` (`Resources.Load` `TagArena/MovementConfig`); recreate via **Tag → Create MovementConfig Asset** (won't overwrite) |
 | **Mantle / climb / glide / bounce** | Stickier mega-park mantle + wall-climb, fairer super-glide window, punchier wall bounce (TP vault/climb/glide/kick tells) |
@@ -45,7 +45,8 @@ Branch: `cursor/playground-campus-zones-afc4` (campus kit tip; WIP backup `backu
 | Crouch / slide gate | Ctrl or C |
 | Punch (It transfer) | LMB (Mouse0) or E |
 | **Lunge (It only)** | **MMB (Mouse2)** |
-| **Air dash** | **Q / Left Alt / MMB (in air)** |
+| **Air dash** | **Q / Left Alt (in air)** |
+| **Lunge (It only)** | **MMB** |
 | Mode hotkeys | F1 / F2 / F3 |
 
 Punch is **not** a contact aura — only active punch hits transfer It (`PunchHitbox`).
@@ -64,6 +65,13 @@ Punch is **not** a contact aura — only active punch hits transfer It (`PunchHi
 6. Army crawl is shifted to local (−2, −4.5): about 1 m south of the stair, west edge short of Spawn_SE. Knight's copy should miss Spawn_NE.
 7. Kickball fence is north, east, and behind the south goal. South fence world z≈19.75, just off the south spine. West side stays open.
 8. Feel, unchanged: slide decays only, jump height is not speed-tied, air dash is the cyan trail with a 30 s cooldown.
+
+## Tag handoff / AI (code, this pass)
+
+- Punch transfer: PunchHitbox -> TagModeController.OnSuccessfulPunch -> TransferIt -> ItController.SetIt.
+- SetIt(true) plays become-It SFX, calls PlayerMotor.NotifyBecameIt() (anim/HUD listeners), and pulses DummyLocomotor.PlayTagFlinch on the new It.
+- Victim also flinches via ReceiveTagHit. HUD already flashes YOU'RE IT / YOU'RE FREE from IsIt edges.
+- DummyPatrol Retargets immediately on **gain and lose** It (chase prey / flee new It without waiting for decisionHz).
 
 ## Feel check (code, not a Unity play)
 
