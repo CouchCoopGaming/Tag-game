@@ -8,7 +8,7 @@ namespace Tag.Modes
 {
     /// <summary>
     /// Trail collision eliminates; last standing wins.
-    /// Emitters All (default) vs ItOnly. MatchTimeCap → sudden death (self-grace halved).
+    /// Emitters All (default) vs ItOnly. MatchTimeCap â†’ sudden death (self-grace halved).
     /// Punch/It stay. Dodge i-frames do NOT ignore trails.
     /// </summary>
     public class TrailTagMode : ITagMode
@@ -85,7 +85,7 @@ namespace Tag.Modes
                 }
             }
 
-            // Stall failsafe: ≥2 alive, no lethal segments for 8s → SD
+            // Stall failsafe: â‰¥2 alive, no lethal segments for 8s â†’ SD
             if (!_suddenDeath && !_ended && ctx.LivingCount() >= 2)
             {
                 bool anyLethal = false;
@@ -102,7 +102,7 @@ namespace Tag.Modes
                     float stall = _tuning.stallFailsafeSec > 0f ? _tuning.stallFailsafeSec : 8f;
                     if (_stallTimer >= stall)
                     {
-                        Debug.Log("[TrailTag] Stall failsafe — forcing sudden death emit All");
+                        Debug.Log("[TrailTag] Stall failsafe â€” forcing sudden death emit All");
                         ForceEmitAll(ctx);
                         EnterSuddenDeath(ctx);
                     }
@@ -136,7 +136,7 @@ namespace Tag.Modes
                 var e = p.GetComponent<PlayerTrailEmitter>();
                 if (e != null) e.SetSuddenDeath(true);
             }
-            Debug.Log("[TrailTag] Sudden death — next trail hit eliminates (self-grace halved)");
+            Debug.Log("[TrailTag] Sudden death â€” next trail hit eliminates (self-grace halved)");
         }
 
         void RefreshEmitterGates(TagModeContext ctx)
@@ -199,6 +199,27 @@ namespace Tag.Modes
             if (player == null) return;
             var e = player.GetComponent<PlayerTrailEmitter>();
             if (e != null) e.SetEmitting(false);
+
+            // EliminatePlayer clears CurrentIt when the victim was It. Re-pick so ItOnly
+            // emitters and the It hat stay coherent while 2+ runners remain.
+            if (ctx.CurrentIt == null && ctx.LivingCount() >= 2)
+            {
+                var living = new List<ItController>();
+                foreach (var p in ctx.LivingPlayers()) living.Add(p);
+                if (living.Count > 0)
+                {
+                    var next = living[Random.Range(0, living.Count)];
+                    var modes = TagModeController.Instance;
+                    if (modes != null) modes.TransferIt(null, next);
+                    else
+                    {
+                        next.SetIt(true);
+                        ctx.CurrentIt = next;
+                    }
+                    RefreshEmitterGates(ctx);
+                }
+            }
+
             if (ctx.LivingCount() <= 1)
             {
                 _ended = true;
@@ -215,7 +236,7 @@ namespace Tag.Modes
             return winners;
         }
 
-                public string GetHud(TagModeContext ctx)
+        public string GetHud(TagModeContext ctx)
         {
             string it = ctx.CurrentIt != null ? ctx.CurrentIt.PlayerId : "-";
             string timer = _suddenDeath ? "SUDDEN DEATH"

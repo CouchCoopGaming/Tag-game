@@ -95,7 +95,7 @@ namespace Tag.Modes
             if (_selfMotor != null && _selfMotor.IsMotorLocked)
                 _selfMotor.SetMotorLocked(false);
 
-            // Never enable legacy CharacterController — TagArena is RB-only.
+            // Never enable legacy CharacterController ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â TagArena is RB-only.
             var cc = GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
 
@@ -135,7 +135,7 @@ namespace Tag.Modes
             }
             if (_selfMotor != null && _selfMotor.IsMotorLocked)
             {
-                // Stun / ragdoll proxy owns the lock — do not fight it.
+                // Stun / ragdoll proxy owns the lock ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â do not fight it.
                 StopWish();
                 return;
             }
@@ -235,7 +235,7 @@ namespace Tag.Modes
         {
             float bias = fleeStrafeBias;
             float u = HotPotatoFuseUrgency();
-            // Less lateral wobble when fuse is low — commit to getting away from It.
+            // Less lateral wobble when fuse is low ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â commit to getting away from It.
             if (u > 0f)
                 bias = Mathf.Lerp(bias, bias * 0.35f, u);
             return bias;
@@ -325,7 +325,7 @@ namespace Tag.Modes
 
         /// <summary>
         /// Trail Tag only: sample a snapshot of live TrailSegments via CopyActive (from PlayerTrailEmitter ribbons)
-        /// and cache a weighted lateral flee wish. Cheap — runs at decisionHz.
+        /// and cache a weighted lateral flee wish. Cheap ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â runs at decisionHz.
         /// </summary>
         void RefreshTrailFleeWish()
         {
@@ -345,7 +345,7 @@ namespace Tag.Modes
             foreach (var seg in _trailActiveScratch)
             {
                 if (seg == null) continue;
-                // Closest point on ribbon A–B (not collider midpoint) so long segments steer correctly.
+                // Closest point on ribbon AÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“B (not collider midpoint) so long segments steer correctly.
                 Vector3 delta = pos - seg.ClosestPointOnSegment(pos);
                 delta.y = 0f;
                 float dsq = delta.sqrMagnitude;
@@ -408,7 +408,7 @@ namespace Tag.Modes
                 return;
             }
             desired.Normalize();
-            // Always turn. The old 16° snap made a juke useless once they were lined up.
+            // Always turn. The old 16Ãƒâ€šÃ‚Â° snap made a juke useless once they were lined up.
             Quaternion look = Quaternion.LookRotation(desired, Vector3.up);
             float rate = Mathf.Min(turnSpeed, 150f);
             if (Vector3.Angle(transform.forward, desired) <= faceAlignDeg)
@@ -441,7 +441,7 @@ namespace Tag.Modes
 
         /// <summary>
         /// Body-relative wish: AI has no TP cam, so PlayerMotor uses transform as wish basis.
-        /// Face first, then push forward — matches human TP (yaw then Move.y).
+        /// Face first, then push forward ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â matches human TP (yaw then Move.y).
         /// </summary>
         void DriveWish(float moveY, bool sprint, float strafe = 0f, bool jump = false, bool lunge = false)
         {
@@ -450,8 +450,27 @@ namespace Tag.Modes
         }
 
         /// <summary>
-        /// Hop toward a target standing on a deck. JumpHeld stays up briefly so a wall climb can attach.
+        /// Sample ground 1.4-3.2 m along planarDir. Positive = higher deck than feet.
+        /// Lets chase/flee hop a playground lip after weave steers off the ideal line.
         /// </summary>
+        float ProbeAheadDeckDy(Vector3 planarDir)
+        {
+            if (planarDir.sqrMagnitude < 0.01f) return 0f;
+            planarDir.Normalize();
+            float best = 0f;
+            for (int i = 0; i < 3; i++)
+            {
+                float dist = 1.4f + i * 0.9f;
+                Vector3 origin = transform.position + planarDir * dist + Vector3.up * 2.8f;
+                if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 5.5f, ~0, QueryTriggerInteraction.Ignore))
+                {
+                    float dy = hit.point.y - transform.position.y;
+                    if (dy > best) best = dy;
+                }
+            }
+            return best;
+        }
+
         bool ConsumeHop(float dy, float dist, bool grounded, float minDy, float maxDist)
         {
             _jumpPulseCd -= Time.fixedDeltaTime;
@@ -496,7 +515,7 @@ namespace Tag.Modes
                 // Slightly wider decision cone when dumping a low fuse.
                 float cone = EffectivePunchConeHalfDeg() * (1f + 0.2f * urgency);
                 bool inCone = dist <= range && ang <= cone;
-                // A hard strafe past the fist should whiff — not a guaranteed tag.
+                // A hard strafe past the fist should whiff ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â not a guaranteed tag.
                 Vector3 juke = TargetPlanarVelocity();
                 float lateral = Mathf.Abs(Vector3.Dot(juke, transform.right));
                 bool juked = lateral > 7.5f && Random.value < 0.7f;
@@ -535,7 +554,9 @@ namespace Tag.Modes
             Vector3 chaseFlat = _target.transform.position - transform.position;
             chaseFlat.y = 0f;
             bool chaseGrounded = _selfMotor == null || _selfMotor.IsGrounded;
-            bool chaseJump = ConsumeHop(chaseDy, chaseFlat.magnitude, chaseGrounded, 1.05f, 9f);
+            // After weave, target dy alone can miss a lip between us; probe ahead along chase flat.
+            float chaseLip = ProbeAheadDeckDy(chaseFlat);
+            bool chaseJump = ConsumeHop(Mathf.Max(chaseDy, chaseLip), chaseFlat.magnitude, chaseGrounded, 0.85f, 9f);
             float chaseAng = chaseFlat.sqrMagnitude > 0.001f
                 ? Vector3.Angle(transform.forward, chaseFlat.normalized)
                 : 0f;
@@ -621,8 +642,12 @@ namespace Tag.Modes
                 FaceAndSteer(away, dt, out moveDir);
                 bool urgent = HotPotatoUrgent() || threatDist <= closeChaseRange * 1.6f;
                 bool grounded = _selfMotor == null || _selfMotor.IsGrounded;
-                // Short hops while It is close so a deck or low wall is not a dead end.
-                bool jump = ConsumeHop(threatDist < 6f ? 1.2f : 0f, 2f, grounded, 1.05f, 9f);
+                // Probe flee heading for a real deck lip; mild panic hop only when It is close.
+                float fleeLip = ProbeAheadDeckDy(away);
+                float panicDy = threatDist < 5.5f ? 0.55f : 0f;
+                float hopDy = Mathf.Max(fleeLip, panicDy);
+                float hopDist = Mathf.Clamp(threatDist, 1.2f, 8f);
+                bool jump = ConsumeHop(hopDy, hopDist, grounded, 0.85f, 9f);
                 DriveWish(urgent ? fleeUrgencyMoveY : 1f, sprint: true, jump: jump);
             }
             else

@@ -841,7 +841,7 @@ namespace TagArena.Movement
             _airDashCd = Mathf.Max(0.01f, cfg.airDashCooldown);
             v = WishAccel.SetHoriz(v, dir * cfg.airDashSpeed);
             SetState(MoveState.Air);
-            TagSfx.AirDash(transform.position);
+            TagSfx.PlayAirDash(transform.position);
             OnAirDashed?.Invoke();
             return true;
         }

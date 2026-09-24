@@ -75,7 +75,7 @@ namespace Tag.Audio
                 case "SFX/sfx_punch_miss": TagSfx.PunchMiss(p); break;
                 case "SFX/sfx_ragdoll": TagSfx.LandAt(p, 0.5f); break;
                 case "SFX/sfx_slide": TagSfx.PlayAt(TagSfx.Slide, p, 0.4f); break;
-                case "SFX/sfx_air_dodge": TagSfx.AirDash(p); break;
+                case "SFX/sfx_air_dodge": TagSfx.PlayAirDash(p); break;
                 case "SFX/sfx_tag_transfer": TagSfx.BecomeIt(p); break;
                 case "SFX/sfx_trail_elim": TagSfx.TrailElim(p); break;
                 case "SFX/sfx_round_start": TagSfx.RoundStart(); break;

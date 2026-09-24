@@ -104,7 +104,7 @@ namespace Tag.Audio
         public static void JetStart(AudioSource src) => Play(src, Jet, 0.38f);
         public static void LandImpact(AudioSource src) => Play(src, Land, 0.42f);
         public static void LungeWhoosh(Vector3 pos) => PlayAt(Lunge, pos, 0.42f);
-        public static void AirDash(Vector3 pos) => PlayAt(AirDash, pos, 0.4f);
+        public static void PlayAirDash(Vector3 pos) => PlayAt(AirDash, pos, 0.4f);
         public static void TrailElim(Vector3 pos) => PlayAt(TrailElimClip, pos, 0.5f);
         public static void LandAt(Vector3 pos, float vol = 0.32f) => PlayAt(Land, pos, vol);
         public static void RoundStart() => PlayFlat(RoundStartClip, 0.45f);
