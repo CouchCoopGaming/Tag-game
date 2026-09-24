@@ -13,7 +13,7 @@ Branch: `cursor/tag-loop-kite-cam-497c` (PR #11 into `cursor/playground-campus-z
 | Piece | What you get |
 |-------|----------------|
 | **TP cam** | `TpsMoveCamera` orbit/follow (~boom −5.2), soft collision, FOV by MoveState + slight speed look-ahead (`lookAheadMax` ~0.9, `speedFovBoostMax` ~3°). Look-ahead **direction** is smoothed (a brake used to yaw the aim point in one frame). Strafe roll is lighter so the boom does not orbit and snap back. |
-| **Hier dummy** | `DummyAvatarBinder` prefers `*_Hier_Hi` FBX → flat HiPoly → Navy Spade primitive (foam + polymer panels + matte joints; palette aligned with `Tools/Tag/build_mannequin_hier.py` — Tan runner / Orange It); `DummyLocomotor` swings limbs when bindable UpperArm/UpperLeg hierarchy exists. It hat grows with camera distance (clamped) and has a tall beacon so it reads across a fort. |
+| **Hier dummy** | `DummyAvatarBinder` prefers `*_Hier_Hi` FBX → flat HiPoly → Navy Spade primitive. It hat grows with camera distance and a beacon reads across a fort. Your own chase cam hides the beacon, slows the spin, and shortens the light so the hat is not a lens blocker. |
 | **Modes** | F1 Hot Potato / F2 Least It / F3 Trail Tag / **F4 Free play** (`TagModeController` SetMode + StartRound). Free play still transfers It on punch and does not end on a timer. |
 | **HUD** | `SpeedEnergyHUD` (local P0): km/h + readable verb (RUN/SLIDE/DASH/WALL/CLIMB/LAND/…), **dash cooldown bar** (cyan, ready or seconds left; jet bar only if `enableJet`), ski flag, controls cheat-sheet, mode + phase + who is It. Hot Potato: fuse line **and** top-center **FUSE** pulse for everyone inside `warnSec` (not only when you are It). Least It: clock + **lowest wins** on the mode line, **WINNING (least)** / **BEHIND (more It)**. TAG flash ~0.85 s names who It moved to. It hat pops on the handoff. Compass unchanged. |
 | **Void / XZ** | `VoidRespawn`: Y < −20 **or** mega-park XZ AABB (+~20 m) → nearest `LocalPlayerSpawner` pad; clear ragdoll/stun, zero vel, ~1 s punch i-frames. **F1–F4 / rematch** also `ForceRecover`, cancel land-stun, and place every pawn on a pad (P1→pad 0) so a mode switch does not resume a ragdoll in the void. |
@@ -30,7 +30,7 @@ Branch: `cursor/tag-loop-kite-cam-497c` (PR #11 into `cursor/playground-campus-z
 | **Jump / land** | Fixed height (`jumpSpeed` launch, not speed-tied / additive); coyote ~0.10 s, buffer ~0.16 s; hard land → LandStun; land squash plus a knee-buckle / arms-out recovery pose |
 | **Motor knobs** | Live on `Assets/Resources/TagArena/MovementConfig.asset` (`Resources.Load` `TagArena/MovementConfig`); recreate via **Tag → Create MovementConfig Asset** (won't overwrite) |
 | **Mantle / climb / glide / bounce** | Stickier mega-park mantle + wall-climb, fairer super-glide window, punchier wall bounce (TP vault/climb/glide/kick tells) |
-| **AI** | `DummyPatrol`: chase/flee turn (no 16° snap, capped ~150°/s) plus a half-second weave outside punch range so a juke is not tracked perfectly. Lead intercept capped at 0.18 s. A fast strafe across the fist (~7.5 m/s lateral) usually whiffs. Still hops for decks, lunges just outside reach, retargets the moment It changes hands. Least It still prefers low TimeAsIt. |
+| **AI** | `DummyPatrol`: chase/flee turn (no 16° snap, capped ~150°/s) plus a half-second weave outside punch range. Lead intercept capped at 0.18 s. A fast strafe usually whiffs. Before the swing the dummy cocks its arm (~0.34 s, shorter on a hot fuse) and cancels if you leave the fist. Punch connect kicks the attacker's camera and a lighter kick on the victim's. No hitstop. |
 
 ## Controls (`PlayerInputReader`)
 
@@ -73,7 +73,7 @@ Punch is **not** a contact aura — only active punch hits transfer It (`PunchHi
 - DummyPatrol Retargets immediately on **gain and lose** It, then weaves and caps turn rate so the new chase is a kite, not a snap.
 - HUD mode line uses ASCII ` | ` separator; center MODE flash lists F1-F4. F1-F4 SetMode also syncs GameFlow menu cursor via PlayerPrefs, recovers ragdoll, and places pawns on pads.
 - Trail Tag self-hit still needs both age and distance grace. Dodge i-frames do not ignore trails. Punch updates It brightness the same frame for every emitter mode. ItOnly still gates who emits.
-- Round over draws a center card. **R** rematches from Play even when Boot's GameFlow is absent. **Q** returns to the menu only when GameFlow is loaded. "No winners" no longer plays the win sting.
+- Round over draws a center card. **R** is handled once (the results screen owns it; Boot's menu does not also rematch). **Q** returns to the menu only when GameFlow is loaded. F1–F4 or R leave pause and the round-end state so the countdown is not frozen and R does not restart the round you just picked. "No winners" no longer plays the win sting. Resume and quit click.
 
 ## Feel check (code, not a Unity play)
 
@@ -96,12 +96,13 @@ No Unity play on this pass. After pull, open **Play**:
 9. As It, a sharp strafe should make the dummy miss more often than it connects. As runner, you should be able to cut their flank instead of losing a straight race every time.
 10. Q dash and a grounded It lunge should not sound the same. A short hop lands with a soft thud; a hard land is louder. Tag, round start, and a trail elim should make a tone even with no audio files imported.
 11. From across a fort the orange hat and beacon should still read. Punch windup cocks the fist out, not into the hip.
-12. When a round ends, a center card names the result. R starts the next round from a pad. In Trail Tag, after OUT you should see "waiting for the round" until the match ends.
+12. When a round ends, a center card names the result. One R starts the next round from a pad (a second R in the same moment does not restart it again). Esc pause, then F1: the countdown should move. Q from the card returns to Boot's menu only if you came through Boot. In Trail Tag, after OUT you should see "waiting for the round" until the match ends.
+13. Your own hat should sit on your head without a tall spike in the camera. The dummy's beacon should still read from across a fort. When the dummy is It, you should see the arm cock before the punch, and leaving that range should cancel it. Getting tagged should nudge your camera. Pause resume and quit should click.
 
 ## Known leftovers
 
 - Prefab/mat dirt after Hub visuals / URP regen — do not commit unless intentional.
 - Flat HiPoly mannequins may skip hierarchical `DummyLocomotor` binds (primitive / bindable-bone path is the readable tell).
 - Legacy contact `TryTag` radius still exists on motor; play modes use punch transfer.
-- AI weave/whiff still needs a human feel pass. No spectator camera: an eliminated player stays on their body with a waiting line.
+- AI weave/whiff still needs a human feel pass. No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent unless a Resources loop is present. No hitstop.
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.

@@ -41,6 +41,7 @@ namespace Tag.Modes
         float _phaseTimer;
         string _resultMessage = "";
         bool _firstCountdownHint = true;
+        float _roundStartGuard;
 
         public TagModeId SelectedMode { get => selectedMode; set => selectedMode = value; }
         public MatchTuning MatchTuningAsset => matchTuning;
@@ -144,6 +145,12 @@ namespace Tag.Modes
 
         public void StartRound(TagModeId id)
         {
+            // Same-frame double R (this controller and GameFlow) must not restart twice.
+            if (Time.unscaledTime < _roundStartGuard)
+                return;
+            _roundStartGuard = Time.unscaledTime + 0.05f;
+            if (GameFlow.Instance != null)
+                GameFlow.Instance.ReturnToPlay();
             SetMode(id);
             RefreshPlayers();
             _endedNotified = false;
@@ -274,16 +281,18 @@ namespace Tag.Modes
         }
 
         /// <summary>
-        /// Direct Play has no GameFlow, but the results line still says R / Q.
-        /// When Boot's GameFlow is in RoundEnd it already owns those keys.
+        /// One listener for the results card. GameFlow skips R/Q while this phase is Results.
+        /// Direct Play has no GameFlow, so Q cannot open a menu.
         /// </summary>
         void PollResultsKeys()
         {
             if (_phase != MatchPhase.Results) return;
             var flow = GameFlow.Instance;
-            if (flow != null && flow.State == GameFlowState.RoundEnd) return;
             if (UnityEngine.Input.GetKeyDown(KeyCode.R))
-                Rematch();
+            {
+                if (flow != null) flow.Rematch();
+                else Rematch();
+            }
             if (flow != null && UnityEngine.Input.GetKeyDown(KeyCode.Q))
                 flow.QuitToMenu();
         }

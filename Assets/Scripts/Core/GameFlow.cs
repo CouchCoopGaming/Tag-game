@@ -156,15 +156,30 @@ namespace Tag.Core
         public void Rematch()
         {
             AudioCuePlayer.Ensure()?.UiConfirm();
+            ReturnToPlay();
             if (modeController == null) modeController = FindFirstObjectByType<TagModeController>();
             if (modeController != null) modeController.Rematch();
             else SceneManager.LoadScene(playSceneName);
+        }
+
+        /// <summary>
+        /// F1–F4 and rematch leave RoundEnd / Pause. Otherwise R still rematches
+        /// the new round, and a pause leaves timeScale at 0 so the countdown never finishes.
+        /// </summary>
+        public void ReturnToPlay()
+        {
+            if (State != GameFlowState.Paused && State != GameFlowState.RoundEnd)
+                return;
             State = GameFlowState.Play;
+            Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
 
         public void QuitToMenu()
         {
             Time.timeScale = 1f;
+            AudioCuePlayer.Ensure()?.UiClick();
             AudioCuePlayer.Ensure()?.StopMusic();
             SceneManager.LoadScene(bootSceneName);
             State = GameFlowState.Boot;
@@ -186,6 +201,7 @@ namespace Tag.Core
                 Time.timeScale = 1f;
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
+                AudioCuePlayer.Ensure()?.UiClick();
             }
         }
 
@@ -249,6 +265,11 @@ namespace Tag.Core
             }
             else if (State == GameFlowState.RoundEnd)
             {
+                // TagModeController owns R/Q while it is showing results, so one press
+                // cannot start the round twice.
+                var modes = TagModeController.Instance;
+                if (modes != null && modes.Phase == MatchPhase.Results)
+                    return;
                 if (UnityEngine.Input.GetKeyDown(KeyCode.R)) Rematch();
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Q)) QuitToMenu();
             }

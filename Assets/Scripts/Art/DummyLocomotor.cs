@@ -24,6 +24,7 @@ namespace Tag.Art
         bool _loggedBindFail;
         float _cycle;
         float _landSquash;
+        float _punchTelegraph;
         bool _wasGrounded = true;
         float _bouncePulse;
         bool _bounceWallLeft;
@@ -82,6 +83,7 @@ namespace Tag.Art
         void LateUpdate()
         {
             float dt = Time.deltaTime;
+            _punchTelegraph = Mathf.MoveTowards(_punchTelegraph, 0f, dt);
             if (_motor == null) _motor = GetComponentInParent<PlayerMotor>();
             HookBounce();
             // Cyan dash tell must run even when the limb rig failed to bind.
@@ -352,6 +354,15 @@ namespace Tag.Art
                 _laRT = _laR0 * Quaternion.Euler(elbowR, 0f, 0f);
             }
 
+            if (_punchTelegraph > 0.02f && !punching)
+            {
+                // Dummy It cocks before QueuePunch. The real windup is only 0.12s.
+                float k = Mathf.Clamp01(_punchTelegraph / 0.2f);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(78f, -30f, -8f), k);
+                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-74f, 0f, 0f), k);
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 10f, -18f, leanZ), k);
+            }
+
             // Legs
             if (lunging || dashing)
             {
@@ -602,6 +613,12 @@ namespace Tag.Art
             if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
             if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
             _dashTrail.sharedMaterial = mat;
+        }
+
+        /// <summary>Called while the dummy is committed to a punch but has not swung yet.</summary>
+        public void HoldPunchTelegraph()
+        {
+            _punchTelegraph = 0.2f;
         }
 
         /// <summary>Victim tag / punch connect flinch — called from ItController / binder.</summary>
