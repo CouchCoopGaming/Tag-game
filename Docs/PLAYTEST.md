@@ -1,10 +1,10 @@
-# Tag ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â local playtest (Amaterasu)
+# Tag -> local playtest (Amaterasu)
 
 ## Open
 
-1. Unity Hub ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ open `C:\Users\Zubal\Dev\Tag-game-playtest` (6000.3.x / 6000.0.x).
-2. Open scene **Play** (`Assets/Scenes/Play.unity`) ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ **Play**.
-3. Optional first-time art: **Tag ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Ensure URP Pipeline**, then **Tag ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Setup Hub Visuals**.
+1. Unity Hub -> open `C:\Users\Zubal\Dev\Tag-game-playtest` (6000.3.x / 6000.0.x).
+2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
+3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
 Branch: `cursor/controls-boot-pause-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
@@ -24,7 +24,7 @@ Branch: `cursor/controls-boot-pause-497c` (into `cursor/playground-campus-zones-
 | **Ski spines** | Thicker mega-park ski spines (~3 m wide / 0.12 m thick) + zone approach ramps (pad -> nearest spine); denser PGK connectors (`CutArenaBootstrap.BuildSkiSpines`) |
 | **Ski crest** | Tribes leave: outward ski launch factor **1.0**, threshold `skiLaunchLeaveDot` ~0.12; DummyLocomotor air loft tell |
 | **Punch** | Connect = loud kick + hold arm; miss = soft blip + limp arm (`TagSfx` / DummyLocomotor / `PunchHitbox`). Local It cocks the fist while the punch buffer is armed (same tell as dummy telegraph). |
-| **Lunge** | It-only MMB: ~16 m/s, ~0.20 s, **CD ~1.0 s**; TP whipÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢settle via `LungeProgress` |
+| **Lunge** | It-only MMB: ~16 m/s, ~0.20 s, **CD ~1.0 s**; TP whip->settle via `LungeProgress` |
 | **Slide** | Crouch+speed: carry entry speed + friction decay only (**no** enter boost) |
 | **Air dash** | Visual whip + cyan trail; **30 s CD**; **Q / Left Alt** (in air; airborne MMB also counts via motor); short planar burst. Grounded MMB = It lunge. |
 | **Jump / land** | Fixed height (`jumpSpeed` launch, not speed-tied / additive); coyote ~0.10 s, buffer ~0.16 s; hard land -> LandStun; DummyLocomotor land squash plus a knee-buckle / arms-out recovery pose |
@@ -48,7 +48,7 @@ Branch: `cursor/controls-boot-pause-497c` (into `cursor/playground-campus-zones-
 | **Air dash** | **Q / Left Alt (in air)**; airborne **MMB** also dashes. ~0.1 s, cyan trail, ~30 s CD. Not a jet. Grounded MMB = It lunge. |
 | Mode hotkeys | **F1** Hot Potato / **F2** Least It / **F3** Trail Tag / **F4** Free play (same four in the mode menu as 1/2/3/4). Each start recovers ragdoll and places pawns on spawn pads. |
 
-Punch is **not** a contact aura ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â only active punch hits transfer It (`PunchHitbox`).
+Punch is **not** a contact aura -> only active punch hits transfer It (`PunchHitbox`).
 
 ## Tube pieces left out (measured)
 
@@ -59,9 +59,9 @@ Punch is **not** a contact aura ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â only acti
 Walk these in order. Spines and the crash cross stay empty. This pass did not move the crash torso, the net beam, or the ninja rail.
 
 1. **SW exit.** Spawn_SW faces northeast. Mushroom steps at (4.5, 6.94) sit beside that line, between the pad and hopscotch SW. Feet are on the ground.
-2. **West loop.** Hopscotch SW → south bar (x=11) → soft-play (tubes, slide, rung, net beam, or the tall net) → cross the south spine on foot → middle bars or the beam lane → merry apron into the bars. Picnic table is on the merry's south edge, not on the apron. Cross the north spine → north bar → astro.
+2. **West loop.** Hopscotch SW -> south bar (x=11) -> soft-play (tubes, slide, rung, net beam, or the tall net) -> cross the south spine on foot -> middle bars or the beam lane -> merry apron into the bars. Picnic table is on the merry's south edge, not on the apron. Cross the north spine -> north bar -> astro.
 3. **NW exit.** Spawn_NW faces southeast (yaw 135), into astro. The crash torso at (12, 52.12) is 1.0 m north of the pad and about 3.6 m east of the pad's east edge, so it is not on that exit. Hopscotch NW is at (3.2, 42), south of the pad, west of astro.
-4. **East loop.** Spawn_SE → hopscotch SE → army crawl or the 1.8 m ladder → bars at x=62.5 into the open west side of kickball → swings. Swing fall tiles should clear the kickball north fence by about 0.16 m. Continue the bars → knight → hopscotch NE. Spawn_NE faces southwest, into the keep. The shield is north of that pad.
+4. **East loop.** Spawn_SE -> hopscotch SE -> army crawl or the 1.8 m ladder -> bars at x=62.5 into the open west side of kickball -> swings. Swing fall tiles should clear the kickball north fence by about 0.16 m. Continue the bars -> knight -> hopscotch NE. Spawn_NE faces southwest, into the keep. The shield is north of that pad.
 5. **Crash.** Cross the bowl east-west. Both lips and the middle should be open lawn.
 6. Feel was not edited. Slide still decays only, jump height is not speed-tied, air dash is Q / Left Alt (airborne MMB also dashes) with a 30 s cooldown.
 
@@ -81,7 +81,7 @@ Walk these in order. Spines and the crash cross stay empty. This pass did not mo
 
 Slide keeps entry planar speed: `SlideMove` only applies friction (softer downhill) and clamps to `_slideStartSpeed`. The punch +8% speed buff is skipped while `State == Slide`, then the same cap is applied again. `slideDownhillAccel` is 0 and unused. Jump sets `v.y` from `jumpSpeed` / fatigue, not from horizontal speed. Air dash is a short planar burst with `airDashCooldown` 30 and a cyan trail on `DummyLocomotor` (trail updates even if the limb bind fails). The near-zero speed floor inside `EnterSlide` cannot run: crouch only enters a slide at `slideEntrySpeed` (7.5).
 
-Wall-run and wall-climb set a latch on exit (timeout, jump-off, or lost contact). The latch clears on the ground or after ~0.15 s with no wall hit, so air accel cannot restart the timer on the same surface. Climb up-speed (`climbSpeed` 6, decay from 0.16 s, slip ÃƒÆ’Ã¢â‚¬â€ 3.5) reverses before `climbMaxHeight`; the old 7.8 / 0.40 curve hit the height cap at ~0.42 s while still going up, and `ClimbHeightUsed` never cleared on landing. Sprint stays 12 m/s, ski max 24 m/s (run was already raised; ski still wins). Jet stays off.
+Wall-run and wall-climb set a latch on exit (timeout, jump-off, or lost contact). The latch clears on the ground or after ~0.15 s with no wall hit, so air accel cannot restart the timer on the same surface. Climb up-speed (`climbSpeed` 6, decay from 0.16 s, slip -> 3.5) reverses before `climbMaxHeight`; the old 7.8 / 0.40 curve hit the height cap at ~0.42 s while still going up, and `ClimbHeightUsed` never cleared on landing. Sprint stays 12 m/s, ski max 24 m/s (run was already raised; ski still wins). Jet stays off.
 
 ## Human verify next
 
@@ -94,7 +94,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 5. Run steps (a plant, then a lift) rather than a constant skate. Hands stay forward of the hips. A hard landing buckles the knees and opens the arms, then stands back up. Q dash should reach the whip pose inside the short burst.
 6. Hard brake or sharp turn: the camera should not whip with your velocity. Mouse look should still feel stuck to the mouse.
 7. Tag the dummy: hat pops, flash says YOU'RE FREE and names who is It. When they tag you: YOU'RE IT and who it came from.
-8. F1 while you are It: top-center FUSE appears inside the warn window even if you pass It away. F2: mode line shows seconds left and WINNING (least) / BEHIND (more It). F3: a foreign trail still eliminates; your own trail does not until the grace ends. F4: free play, punch still moves It, no timer. Each of F1ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“F4 should drop you on a spawn pad, including if you were ragdolled.
+8. F1 while you are It: top-center FUSE appears inside the warn window even if you pass It away. F2: mode line shows seconds left and WINNING (least) / BEHIND (more It). F3: a foreign trail still eliminates; your own trail does not until the grace ends. F4: free play, punch still moves It, no timer. Each of F1->F4 should drop you on a spawn pad, including if you were ragdolled.
 9. As It, a sharp strafe should make the dummy miss more often than it connects. As runner, you should be able to cut their flank instead of losing a straight race every time.
 10. Q dash and a grounded It lunge should not sound the same. A short hop lands with a soft thud; a hard land is louder. Tag, round start, and a trail elim should make a tone even with no audio files imported.
 11. From across a fort the orange hat and beacon should still read. Your punch windup should flare the elbow out beside the head within the same short windup. Holding LMB as It should still cock the fist before the swing.
@@ -106,7 +106,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 
 ## Known leftovers
 
-- Prefab/mat dirt after Hub visuals / URP regen ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â do not commit unless intentional.
+- Prefab/mat dirt after Hub visuals / URP regen -> do not commit unless intentional.
 - Flat HiPoly mannequins may skip hierarchical `DummyLocomotor` binds (primitive / bindable-bone path is the readable tell).
 - Legacy contact `TryTag` radius still exists on motor; play modes use punch transfer.
 - AI weave/whiff still needs a human feel pass. No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent: `music_playground_bed_loop.wav` is meta only, so PlayMusic returns. No hitstop.
