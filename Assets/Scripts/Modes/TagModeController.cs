@@ -177,6 +177,10 @@ namespace Tag.Modes
             RefreshPlayers();
             _endedNotified = false;
             _resultMessage = "";
+            // F1-F4 / rematch leave Results: drop the arm latch so the next card is live.
+            _resultsActionTaken = false;
+            _resultsFocus = 0;
+            _resultsInputReadyAt = 0f;
             _mode = CreateMode(selectedMode);
 
             _ctx.Players.Clear();
@@ -322,24 +326,30 @@ namespace Tag.Modes
         /// </summary>
         void PollPlaytestModeHotkeys()
         {
+            // Same-frame Results R/Enter must not also rematch after an F-key restart.
+            bool fromResults = _phase == MatchPhase.Results;
             if (UnityEngine.Input.GetKeyDown(KeyCode.F1))
             {
                 Debug.Log("[TagMode] Playtest hotkey F1 -> Hot Potato");
+                if (fromResults) _resultsActionTaken = true;
                 StartRound(TagModeId.HotPotato);
             }
             else if (UnityEngine.Input.GetKeyDown(KeyCode.F2))
             {
                 Debug.Log("[TagMode] Playtest hotkey F2 -> Least It");
+                if (fromResults) _resultsActionTaken = true;
                 StartRound(TagModeId.LeastIt);
             }
             else if (UnityEngine.Input.GetKeyDown(KeyCode.F3))
             {
                 Debug.Log("[TagMode] Playtest hotkey F3 -> Trail Tag");
+                if (fromResults) _resultsActionTaken = true;
                 StartRound(TagModeId.TrailTag);
             }
             else if (UnityEngine.Input.GetKeyDown(KeyCode.F4))
             {
                 Debug.Log("[TagMode] Playtest hotkey F4 -> Free play");
+                if (fromResults) _resultsActionTaken = true;
                 StartRound(TagModeId.FreePlay);
             }
         }
@@ -367,7 +377,12 @@ namespace Tag.Modes
                 TagSfx.UiClick();
             }
             if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter))
+            {
                 ActivateResultsFocus();
+                return;
+            }
+            // Re-check latch: Enter above may have already rematched this frame.
+            if (_resultsActionTaken) return;
             if (UnityEngine.Input.GetKeyDown(KeyCode.R))
             {
                 _resultsActionTaken = true;

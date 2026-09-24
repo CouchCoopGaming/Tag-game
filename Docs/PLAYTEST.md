@@ -63,7 +63,7 @@ Walk these in order. Spines and the crash cross stay empty. This pass did not mo
 3. **NW exit.** Spawn_NW faces southeast (yaw 135), into astro. The crash torso at (12, 52.12) is 1.0 m north of the pad and about 3.6 m east of the pad's east edge, so it is not on that exit. Hopscotch NW is at (3.2, 42), south of the pad, west of astro. The arch at (7.70, 42) spans that court toward the north bar. Piers stay about 1.7 m off both. The deck is at 1.05 and the span underneath is open, so the court stays a destination.
 4. **East loop.** Spawn_SE -> hopscotch SE -> arch at (65.90, 10.5) -> army. Army and knight each have the 2.4 m rung on the west shoulder and the 1.8 m ladder on the net side. Bars at x=62.5 into the open west side of kickball -> swings. Swing fall tiles should clear the kickball north fence by about 0.16 m. Continue the bars. Knight is west of those bars (same rung and ladder). The arch at (65.65, 41) is east of them, then hopscotch NE. Spawn_NE faces southwest, into the keep. The shield is north of that pad. Nothing was added inside kickball.
 5. **Crash.** Cross the bowl east-west. Both lips and the middle should be open lawn.
-6. Feel was not edited. Slide still decays only, jump height is not speed-tied, air dash is Q / Left Alt (airborne MMB also dashes) with a 30 s cooldown.
+6. Play path: hopscotch corners, swing fall tiles clear kickball fence, crash bowl open, three Toy_Bridge path arches grounded, army/knight 2.4 m climb rungs to the 2.00 deck.
 
 ## Tag handoff / AI (code)
 
@@ -93,7 +93,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 3. Air dash (Q): short cyan streak, then the HUD dash bar counts ~30 s. RMB should not jet.
 4. Wall-run a figure-8 panel: you should slide down and fall off. You should not re-stick until you leave the wall or land. Climb a net: rise, then slide down. After you hit the ground you can climb again.
 5. Run steps (a plant, then a lift) rather than a constant skate. Hands stay forward of the hips. A hard landing buckles the knees and opens the arms, then stands back up. Q dash should reach the whip pose inside the short burst.
-6. Hard brake or sharp turn: the camera should not whip with your velocity. Mouse look should still feel stuck to the mouse.
+6. Play path: hopscotch corners, swing fall tiles clear kickball fence, crash bowl open, three Toy_Bridge path arches grounded, army/knight 2.4 m climb rungs to the 2.00 deck.
 7. Tag the dummy: hat pops, flash says YOU'RE FREE and names who is It. When they tag you: YOU'RE IT and who it came from.
 8. F1 while you are It: top-center FUSE appears inside the warn window even if you pass It away. F2: mode line shows seconds left and WINNING (least) / BEHIND (more It). F3: a foreign trail still eliminates; your own trail does not until the grace ends. F4: free play, punch still moves It, no timer. Each of F1->F4 should drop you on a spawn pad, including if you were ragdolled.
 9. As It, a sharp strafe should make the dummy miss more often than it connects. As runner, you should be able to cut their flank instead of losing a straight race every time.
@@ -129,7 +129,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 3. Audio: Left/Right SFX volume, Up/Down music bed, M mute all, N music mute.
 4. Results: 0.25s arm; R rematch; Q/Esc menu; Left/Right focus; Enter activates; one-shot.
 5. Trail Tag SD: HUD says SD; center flash on rising edge; rematch re-arms flash.
-6. Play path: hopscotch corners, swing fall tiles clear kickball fence, crash bowl open.
+6. Play path: hopscotch corners, swing fall tiles clear kickball fence, crash bowl open, three Toy_Bridge path arches grounded, army/knight 2.4 m climb rungs to the 2.00 deck.
 7. Boot Up/Down and pause Left/Right arm a row and stop at the ends. Enter uses it. Play stays the default Boot row.
 
 ## Grapple (experimental, off)
