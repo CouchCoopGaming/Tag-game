@@ -29,11 +29,13 @@ namespace Tag.Level
             ("MERRY",          7f, 24f),
             ("SWING",         67f, 31f),
             ("KICKBALL",      67f, 24f),
-            ("HOPSCOTCH SW",   7f,  9f),
+            ("HOPSCOTCH SW",  4.5f,  9f),
             ("HOPSCOTCH SE",  70f, 12f),
             ("HOPSCOTCH NE",  70f, 38f),
             ("BARS W",        11f, 26f),
-            ("BARS E",        61f, 26f),
+            ("BARS E",      62.5f, 26f),
+            ("BEAM W",      13.5f, 25f),
+            ("BEAM E",      60.5f, 29f),
         };
 
         static Transform _parkCached;

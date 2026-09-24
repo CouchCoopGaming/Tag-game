@@ -51,21 +51,25 @@ namespace Tag.Art
         const float SlideLipOffset = 2.00f;
 
         /// <summary>
-        /// Exit band is ~1.91 m ahead of the pivot (~4.0 m from the tower). Three tiles
-        /// carry the runout. Forts are shifted so the far edge stays ~0.4 m off the ski spines.
+        /// Exit band is ~1.91 m ahead of the pivot (~4.05 m from the tower). Far tile edge
+        /// is 6.25, so ~2.2 m of pad remains after the chute and ~0.4 m before the spine.
+        /// A fourth tile (edge 7.25) would enter the spine. Do not lengthen.
         /// </summary>
         const float SlideLandingNear = 3.75f;
         const float SlideLandingMid = 4.75f;
         const float SlideLandingFar = 5.75f;
 
-        // Landmarks sit on open lawn, off kit decks and off ski spines.
+        // Landmarks sit on open lawn, off kit decks, off spawn pads, and inside the map.
+        // Helmet / foxhole scales are the largest that still clear the 2.2 m pads:
+        // the raw meshes are ~12 m, so the old corner scales hung off the map and
+        // covered Spawn_NW / Spawn_SE. Shield is shifted north of Spawn_NE.
         static readonly (string stem, Vector3 pos, float yaw, float scale)[] LandmarkSlots =
         {
             ("Landmark_CrashTorso_Hi", new Vector3(29f, 0f, 34.5f), -15f, 1.05f),
             ("Landmark_PirateMast_Hi", new Vector3(5f, 0f, 15f), 25f, 1.0f),
-            ("Landmark_ArmyFoxhole_Hi", new Vector3(69f, 0f, 3f), -20f, 0.75f),
-            ("Landmark_AstroHelmet_Hi", new Vector3(4f, 0f, 46f), 40f, 0.55f),
-            ("Landmark_KnightShield_Hi", new Vector3(68f, 0f, 49f), 180f, 0.9f),
+            ("Landmark_ArmyFoxhole_Hi", new Vector3(69.8f, 0f, 2f), 90f, 0.26f),
+            ("Landmark_AstroHelmet_Hi", new Vector3(2.5f, 0f, 51.2f), 0f, 0.30f),
+            ("Landmark_KnightShield_Hi", new Vector3(66f, 0f, 52.2f), 180f, 0.9f),
             ("Landmark_TronDisc_Hi", new Vector3(36f, 0f, 11.5f), 0f, 0.5f),
             ("Landmark_NinjaBladeRail_Hi", new Vector3(22f, 0f, 48f), 0f, 1.0f),
         };
@@ -145,13 +149,18 @@ namespace Tag.Art
             n += MerryGoRound(root, "Play_MerryGoRound", new Vector3(7f, 0f, 24f), 0f);
             n += SwingSet(root, "Play_Swing", new Vector3(67f, 0f, 31f), 0f);
             n += KickballField(root, "Play_Kickball", new Vector3(67f, 0f, 24f), 0f);
-            n += HopscotchCourt(root, "Play_Hopscotch_SW", new Vector3(7f, 0f, 9f), 0f);
+            // SW court runs east-west: a north-south court cannot fit between Spawn_SW and the mast.
+            n += HopscotchCourt(root, "Play_Hopscotch_SW", new Vector3(4.5f, 0f, 9f), 90f);
             n += HopscotchCourt(root, "Play_Hopscotch_SE", new Vector3(70f, 0f, 12f), 0f);
             n += HopscotchCourt(root, "Play_Hopscotch_NE", new Vector3(70f, 0f, 38f), 0f);
-            // Overhead bars linking the west play places, and the east bunker to the keep.
-            // Segments stop at the EW spines (x=11 and x=61 are inside the spine's x-range).
+            // Overhead bars. West stays at x=11 (the mast owns x≤9.5 around z 12–18).
+            // East sits at x=62.5, just inside the kickball pad's open west edge.
+            // Segments stop at the EW spines; you cross those on foot.
             n += MonkeyLane(root, "Play_Bars_W", 11f, new[] { 12.6f, 22f, 26.2f, 30.4f, 40.2f });
-            n += MonkeyLane(root, "Play_Bars_E", 61f, new[] { 13.2f, 22f, 26.2f, 30.4f, 40.2f, 44.4f });
+            n += MonkeyLane(root, "Play_Bars_E", 62.5f, new[] { 13.2f, 22f, 26.2f, 30.4f, 40.2f, 44.4f });
+            // Low beam runs beside the bars, clear of both loop towers and both EW spines.
+            n += BeamLane(root, "Play_Beam_W", 13.5f, new[] { 22f, 25f, 28f });
+            n += BeamLane(root, "Play_Beam_E", 60.5f, new[] { 26f, 29f, 32f });
 
             // Outer ring: monkey run + tube/crawl + a deck tower whose slide feeds the ring lane.
             n += OuterRing(root, "Play_Ring_S", new Vector3(36f, 0f, 3f), true);
@@ -162,6 +171,8 @@ namespace Tag.Art
             n += LoopWallRun(root, "Play_Loop_W", new Vector3(16f, 0f, 25f), 6f, true);
             n += LoopWallRun(root, "Play_Loop_E", new Vector3(56f, 0f, 29f), -6f, false);
 
+            // SW cluster is west of Spawn_SW. NW cluster is south of Spawn_NW
+            // (the old z=52 dome crossed the north map edge).
             n += SpawnPlay_SW(root);
             n += SpawnPlay_SE(root);
             n += SpawnPlay_NW(root);
@@ -213,6 +224,10 @@ namespace Tag.Art
             pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(4f, 0f, -4f), 0f));
             pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(0f, 0f, -3f), 0f));
             pieces.Add(("Mega_ClimbNet", new Vector3(-5f, 0f, -1.5f), 90f));
+            // Deck ladder on the west shoulder (yaw 90 faces the decks). x=-1.25 is
+            // ~0.19 m off the 2×2 edge and the west rail; z=0.90 clears the side stair.
+            // Bunkers keep the tall net only, so the two fort types stay distinct.
+            pieces.Add(("PGK_Ladder_Rung_LOD0", new Vector3(-1.25f, 0f, 0.90f), 90f));
         }
 
         /// <summary>
@@ -358,7 +373,7 @@ namespace Tag.Art
 
         int SpawnPlay_SW(Transform root)
         {
-            var parent = MakeGroup(root, "Play_Spawn_SW", new Vector3(3.5f, 0f, 4f), 40f);
+            var parent = MakeGroup(root, "Play_Spawn_SW", new Vector3(2.2f, 0f, 4f), 40f);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
                 ("Toy_SpringRider", new Vector3(1f, 0f, -0.5f), 20f),
@@ -380,7 +395,7 @@ namespace Tag.Art
 
         int SpawnPlay_NW(Transform root)
         {
-            var parent = MakeGroup(root, "Play_Spawn_NW", new Vector3(3f, 0f, 52f), 135f);
+            var parent = MakeGroup(root, "Play_Spawn_NW", new Vector3(2.5f, 0f, 44f), 135f);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
                 ("PGK_Dome_Geo_3m_LOD0", new Vector3(-1f, 0f, -1f), 0f),
@@ -401,9 +416,9 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Bars yaw 90 run along Z and abut at 4.2 m. Centers are chosen so each run
-        /// stops short of the EW spines (z 16.4–19.6 and 34.4–37.6). West x=11 misses
-        /// the pirate mast and the astro spiral; east x=61 is the open side of kickball.
+        /// Bars yaw 90 run along Z and abut at 4.2 m. Centers stop short of the EW spines
+        /// (z 16.4–19.6 and 34.4–37.6). West x=11 misses the pirate mast and the astro
+        /// spiral. East x=62.5 is on the kickball pad's open west edge.
         /// </summary>
         int MonkeyLane(Transform root, string name, float x, float[] centersZ)
         {
@@ -414,9 +429,25 @@ namespace Tag.Art
             return SpawnList(parent, pieces);
         }
 
+        /// <summary>
+        /// 3 m beams yaw 90, abutted along Z. West x=13.5 ends 0.5 m south of the Loop W
+        /// tower. East x=60.5 starts 0.5 m north of the Loop E tower and 0.9 m south of
+        /// the north spine. Neither lane enters the kickball field.
+        /// </summary>
+        int BeamLane(Transform root, string name, float x, float[] centersZ)
+        {
+            var parent = MakeGroup(root, name, Vector3.zero, 0f);
+            var pieces = new List<(string id, Vector3 p, float y)>();
+            foreach (var z in centersZ)
+                pieces.Add(("PGK_Balance_Beam_3m_LOD0", new Vector3(x, 0f, z), 90f));
+            return SpawnList(parent, pieces);
+        }
+
         int MerryGoRound(Transform root, string name, Vector3 origin, float yaw)
         {
-            // Stand-on spinner. East apron faces the west bar lane (x=11); bench stays west.
+            // Stand-on spinner. East apron runs out to the west bars (world x=11).
+            // Tiles at local x=4, z=±1 sit under the bar span. Local (4, 0) is omitted:
+            // that tile would bury the bar feet where the two middle segments meet.
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
@@ -427,7 +458,13 @@ namespace Tag.Art
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, 2f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, -2f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, 1f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, 0f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, -1f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3f, 0.02f, 1f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3f, 0.02f, 0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(3f, 0.02f, -1f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(4f, 0.02f, 1f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(4f, 0.02f, -1f), 0f),
                 ("Toy_Bench", new Vector3(-3f, 0f, 0f), 90f),
                 ("Toy_Seesaw", new Vector3(-2f, 0f, 3f), 0f),
             });
@@ -463,14 +500,14 @@ namespace Tag.Art
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 2f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, 0f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 0f), 0f),
-                // South fence sits behind the goal (z=-4.25 → world 19.75) and off SpineZs (ends 19.6).
-                // West stays open onto the bar lane.
+                // South fence is behind the goal (goal back ~z=-3.83) and off SpineZs (ends 19.6).
+                // z=-4.0 → world 20.0: ~0.36 m off the spine, ~0.13 m behind the goal. West stays open.
                 ("Toy_Fence", new Vector3(-2.6f, 0f, 4.5f), 0f),
                 ("Toy_Fence", new Vector3(0f, 0f, 4.5f), 0f),
                 ("Toy_Fence", new Vector3(2.6f, 0f, 4.5f), 0f),
-                ("Toy_Fence", new Vector3(-2.6f, 0f, -4.25f), 0f),
-                ("Toy_Fence", new Vector3(0f, 0f, -4.25f), 0f),
-                ("Toy_Fence", new Vector3(2.6f, 0f, -4.25f), 0f),
+                ("Toy_Fence", new Vector3(-2.6f, 0f, -4f), 0f),
+                ("Toy_Fence", new Vector3(0f, 0f, -4f), 0f),
+                ("Toy_Fence", new Vector3(2.6f, 0f, -4f), 0f),
                 ("Toy_Fence", new Vector3(4.5f, 0f, -2.6f), 90f),
                 ("Toy_Fence", new Vector3(4.5f, 0f, 0f), 90f),
                 ("Toy_Fence", new Vector3(4.5f, 0f, 2.6f), 90f),

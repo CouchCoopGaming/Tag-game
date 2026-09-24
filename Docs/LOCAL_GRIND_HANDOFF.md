@@ -7,14 +7,17 @@ Parent pushes; **do not push** from casual local grind unless asked.
 
 Graybox pad cubes are gone (they were stretching HiPoly into a low-poly look). Flow stones are gone. The chase is kit districts:
 
-- **Soft-play** (14, 9.75) and **astro loft** (14, 44.25) are the play places: decks 0.80 / 1.60 / 2.00, 3-tile slide pit, spiral at local (2.50, 0, −0.5) yaw 180 (entrance overlaps the 1.60 deck by 0.25 m; posts clear). Tube street is at local z=−4; north plastic mouth at z=−3 collars ~0.31 m and stays ~0.28 m off the stair.
-- **Army bunker** (58, 9.75) and **knight keep** (58, 44.25): same tower and pit, crawl at local (−2, −4.5) so the south rim misses Spawn_SE and the north rim stays ~1 m off the stair, plus a climb net. No second spiral.
-- **BARS W** x=11 and **BARS E** x=61: `PGK_Monkey_4m` yaw 90, abutted at 4.2 m inside each gap between the EW spines. West misses the mast and the astro spiral. East is the open side of kickball. You cross the spines on foot.
-- **Merry** (7, 24) east apron faces the west bars. **Swing** (67, 31). **Kickball** (67, 24) fenced on north, east, and behind the south goal (world z≈19.75, off the spine); west open. **Hopscotch** SW (7, 9), SE (70, 12), NE (70, 38).
+- **Soft-play** (14, 9.75) and **astro loft** (14, 44.25) are the play places: decks 0.80 / 1.60 / 2.00, 3-tile slide pit (not lengthened — ~2.2 m of pad after the chute, ~0.4 m before the spine; a fourth tile enters the spine), spiral at local (2.50, 0, −0.5) yaw 180 (entrance overlaps the 1.60 deck by 0.25 m; posts clear). Tube street is at local z=−4; north plastic mouth at z=−3 collars ~0.31 m and stays ~0.28 m off the stair. Rung ladder at local (−1.25, 0, 0.90) yaw 90 faces the west deck edge.
+- **Army bunker** (58, 9.75) and **knight keep** (58, 44.25): same tower and pit, crawl at local (−2, −4.5) so the south rim misses Spawn_SE and the north rim stays ~1 m off the stair, plus a climb net. No second spiral and no rung ladder.
+- **BARS W** x=11 and **BARS E** x=62.5: `PGK_Monkey_4m` yaw 90, abutted at 4.2 m inside each gap between the EW spines. West stays at 11 because the mast owns x≤9.5 around z 12–18; the merry apron extends to meet it. East is just inside the kickball pad's open west edge. You cross the spines on foot.
+- **Beam lanes:** west x=13.5 (z centers 22 / 25 / 28, ends 0.5 m short of the Loop W tower) and east x=60.5 (z centers 26 / 29 / 32, starts 0.5 m north of the Loop E tower, 0.9 m short of the north spine).
+- **Merry** (7, 24) east apron tiles run to local x=4 (world x=11) at z=±1. Local (4, 0) is omitted so the bar feet at the z=24 joint stay on mulch. **Swing** (67, 31). **Kickball** (67, 24) fenced on north, east, and behind the south goal (local z=−4.0 → world 20, ~0.36 m off the spine, ~0.13 m behind the goal); west open. **Hopscotch** SW (4.5, 9) yaw 90 so the court fits between Spawn_SW and the mast; SE (70, 12), NE (70, 38).
+- **Spawns:** SW toys at (2.2, 4), west of the pad. NW toys at (2.5, 44), south of the pad (old z=52 crossed the map). SE and NE were already clear.
+- **Landmarks:** helmet (2.5, 51.2) scale 0.30 yaw 0; foxhole (69.8, 2) scale 0.26 yaw 90; shield (66, 52.2). Old corner scales covered the spawn pads and left the map.
 - **Ring S** (36, 3): monkeys, wall, open 8 m crawl, west tower slide. **Ring N** (36, 51): tube chain with plastic collars, slide south.
 - **Loop W** (16, 25) and **Loop E** (56, 29): wall-run plus end tower, same 3-tile pit.
 
-Playtest: spawn SW → hopscotch → south bar → soft-play tubes and slide → cross the south spine → middle bars → merry → cross the north spine → north bar → astro. East: army crawl → bars → kickball → swings → bars → knight.
+Playtest: spawn SW → hopscotch (east-west) → south bar → soft-play tubes, slide, or ladder → cross the south spine → middle bars or beam lane → merry apron → cross the north spine → north bar → astro. East: army crawl → bars → kickball → swings → bars → knight, with the east beam lane beside the bars.
 
 `Mega_SlideTube` / `PGK_Slide_Tube90` stay unused. Tube90 is ~3.45 m tall; Mega_SlideTube's floor rises ~3.4 m. Neither meets 0.40–2.00 without burying the low end. Tron disc stays scaled down so the south ring can exist.
 

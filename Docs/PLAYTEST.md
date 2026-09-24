@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) → **Play**.
 3. Optional first-time art: **Tag → Ensure URP Pipeline**, then **Tag → Setup Hub Visuals**.
 
-Branch: `cursor/mechanics-anim-features-497c` (PR #10 into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/playground-campus-zones-afc4` (campus map; mechanics from PR #10 are on this branch). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 ## Stack snapshot
 
@@ -17,7 +17,7 @@ Branch: `cursor/mechanics-anim-features-497c` (PR #10 into `cursor/playground-ca
 | **Modes** | F1 Hot Potato / F2 Least It / F3 Trail Tag / **F4 Free play** (`TagModeController` SetMode + StartRound). Free play still transfers It on punch and does not end on a timer. |
 | **HUD** | `SpeedEnergyHUD` (local P0): km/h + readable verb (RUN/SLIDE/DASH/WALL/CLIMB/LAND/...), **dash cooldown bar** (cyan, ready or seconds left; jet bar only if `enableJet`), ski flag, controls cheat-sheet, mode + phase + who is It. Hot Potato: fuse line **and** top-center **FUSE** pulse for everyone inside `warnSec` (not only when you are It). Least It: clock on the mode line, **WINNING (least)** / **BEHIND (more It)**; brief all-standings flash; **LEAD** (mint) / **LAG** (coral). **TAG flash** ~0.85 s names who It moved to (YOU'RE IT / YOU'RE FREE); It hat pops on handoff. **It compass** (flee) + **Prey compass** (hunt); both pulse <12 m w/ distinct tints; cam bearing + m |
 | **Void / XZ** | `VoidRespawn`: Y < -20 **or** mega-park XZ AABB (+~20 m) -> nearest `LocalPlayerSpawner` pad; clear ragdoll/stun, zero vel, ~1 s punch i-frames. **F1-F4 / rematch** also `ForceRecover` and place every pawn on a pad (P1->pad 0) so a mode switch does not resume a ragdoll in the void. |
-| **Playground** | West play places (soft-play 14, 9.75 and astro loft 14, 44.25) link along **BARS W** (x=11): monkey segments that stop at the ski spines, with the merry-go-round's east apron facing the middle run. East bunker/keep (army 58, 9.75 and knight 58, 44.25) link along **BARS E** (x=61) into a fenced kickball field (west side open) and the swing set. Hopscotch SW, SE, and NE. South crawl ring, north tube ring, figure-8 wall-runs. After pull: **CutArenaBootstrap** Rebuild / **PgkLandmarkPlacer -> Place**. |
+| **Playground** | West play places (soft-play 14, 9.75 and astro loft 14, 44.25) link along **BARS W** (x=11). The merry apron now runs out under that lane (world x=11 at z 23 and 25). A ground beam lane sits at x=13.5. East bunker/keep link along **BARS E** (x=62.5), on the open west edge of kickball, with a beam lane at x=60.5. Play places have a rung ladder on the deck shoulder. Hopscotch SW runs east-west at (4.5, 9); SE and NE stay north-south. South crawl ring, north tube ring, figure-8 wall-runs. After pull: **CutArenaBootstrap** Rebuild / **PgkLandmarkPlacer -> Place**. |
 | **Colliders** | `StaticPropColliders.EnsureStaticColliders` after dress/place so HiPoly/PGK toys keep Mesh/Box collision |
 | **Trail Tag** | Wide bright light-cycle walls (mega-park WorldScale 10); Stay + Default-layer triggers so RB motor still eliminates; near-miss **TRAIL!** <4.5 m foreign; elim **OUT!** / TRAIL HIT |
 | **SFX** | `TagSfx`: Resources/Audio clips when present, else procedural one-shots (punch, It, ski/jet, slide, lunge whoosh, jump) |
@@ -56,14 +56,15 @@ Punch is **not** a contact aura — only active punch hits transfer It (`PunchHi
 
 ## What to look at next (human eye)
 
-1. **Bar lanes.** West run x=11 (segments at z 12.6, then 22–30.4, then 40.2) should miss the pirate mast, the EW spines, and the astro spiral. East run x=61 should be the open west side of kickball, not on the swing bays. You cross the ski spines on foot between segments.
-2. **Run.** Spawn SW → hopscotch SW → south bar → soft-play tubes/slide → cross the south spine → middle bars → merry (east apron) → cross the north spine → north bar → astro loft. East mirror: army crawl → bars → kickball (open west) → swings → bars → knight.
+1. **Bar drops.** West bars stay at x=11 (the mast owns anything nearer around z 12–18). The merry apron tiles reach world x=11 at z 23 and 25, so the drop is on the apron. The z=24 joint is mulch on purpose — a tile there would bury the bar feet. East bars are at x=62.5, just inside the kickball rubber's open west edge, not on the swing bays. You still cross the ski spines on foot between segments.
+2. **Run.** Spawn SW → hopscotch SW (east-west) → south bar → soft-play tubes/slide, or the new rung ladder onto the deck → cross the south spine → middle bars or the beam lane (x=13.5) → merry apron → cross the north spine → north bar → astro loft. East mirror: army crawl → bars (x=62.5) → kickball (open west) → swings → bars → knight, with the east beam lane (x=60.5) beside the bars.
 3. Spiral entrance still overlaps the 1.60 deck by about 0.25 m and should miss both east posts.
 4. North plastic mouth (tube street at z=-4, mouth at z=-3) should read as a door: about 0.31 m into the rim, about 0.28 m short of the stair. End caps about 0.36 m.
-5. Three-tile slide pit: far edge about 0.4 m short of the ski spine. Say if that runout still feels short.
+5. Three-tile slide pit was **not** lengthened. Exit mesh ends ~4.05 m from the tower; far tile edge is 6.25, so ~2.2 m of pad after the chute and ~0.4 m before the spine. A fourth tile would land on the spine. Say if that runout still feels short.
 6. Army crawl is shifted to local (−2, −4.5): about 1 m south of the stair, west edge short of Spawn_SE. Knight's copy should miss Spawn_NE.
-7. Kickball fence is north, east, and behind the south goal. South fence world z≈19.75, just off the south spine. West side stays open.
-8. Feel, unchanged: slide decays only, jump height is not speed-tied, air dash is the cyan trail with a 30 s cooldown.
+7. Kickball fence is north, east, and behind the south goal. South fence is local z=−4.0 (world z=20): about 0.36 m off the south spine and about 0.13 m behind the goal back, not in the mouth. West side stays open.
+8. **Spawns and corners.** SW toys sit west of Spawn_SW. NW toys sit south of Spawn_NW (the old cluster crossed the north map edge). Helmet (2.5, 51.2, scale 0.30) and foxhole (69.8, 2, scale 0.26, yaw 90) are the sizes that stay on the map and off the pads — say if they read too small. Knight shield is north of Spawn_NE at (66, 52.2).
+9. This map pass did not touch slide, jump, or air dash. Slide still decays only, jump height is not speed-tied, air dash is Q / Left Alt (airborne MMB also dashes) with a 30 s cooldown. Wall-latch and land notes are in Feel check below.
 
 ## Tag handoff / AI (code)
 

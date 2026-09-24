@@ -275,17 +275,20 @@ namespace Tag.Level
             const float t = 0.1f;
             float y = -t * 0.5f + 0.004f;
             // Forts sit on the theme-pad floors. These carpets are the courts and runs.
-            Box("PlayPad_Merry", new Vector3(7f, y, 24f), new Vector3(8f, t, 8f), _matPlayMulch);
+            // Merry reaches the west bars (apron tiles end at x=11.5) and stops short of Loop W (x=12).
+            Box("PlayPad_Merry", new Vector3(7.4f, y, 24f), new Vector3(8.8f, t, 8f), _matPlayMulch);
             Box("PlayPad_Swing", new Vector3(67f, y, 31f), new Vector3(10f, t, 8f), _matPlayMulch);
             Box("PlayPad_Kickball", new Vector3(67f, y, 24f), new Vector3(10f, t, 10f), _matPlayRubber);
-            Box("PlayPad_Hopscotch_SW", new Vector3(7f, y, 9f), new Vector3(5f, t, 10f), _matPlayRubber);
+            // East-west court between Spawn_SW and the mast. East edge stops short of the pirate carpet (x=9).
+            Box("PlayPad_Hopscotch_SW", new Vector3(4.5f, y, 9.4f), new Vector3(8.6f, t, 4f), _matPlayRubber);
             Box("PlayPad_Hopscotch_SE", new Vector3(70f, y, 11.5f), new Vector3(4f, t, 8f), _matPlayRubber);
             Box("PlayPad_Hopscotch_NE", new Vector3(70f, y, 38f), new Vector3(4f, t, 8f), _matPlayRubber);
             // South ring stays below the outer lane; north ring stays inside the map edge.
             Box("PlayPad_Ring_S", new Vector3(36f, y, 3f), new Vector3(22f, t, 5.5f), _matPlayMulch);
             Box("PlayPad_Ring_N", new Vector3(36f, y, 51f), new Vector3(20f, t, 4.5f), _matPlayMulch);
             Box("PlayPad_Loop_W", new Vector3(16f, y, 26.5f), new Vector3(8f, t, 12f), _matPlayMulch);
-            Box("PlayPad_Loop_E", new Vector3(56f, y, 27.5f), new Vector3(8f, t, 12f), _matPlayMulch);
+            // East edge covers the beam lane (x=60.5) and stops 1 m short of the kickball pad (x=62).
+            Box("PlayPad_Loop_E", new Vector3(56.5f, y, 27.5f), new Vector3(9f, t, 12f), _matPlayMulch);
         }
 
         // --- Zone pads (3–5 signature toys; open sightlines to campus) --------------
