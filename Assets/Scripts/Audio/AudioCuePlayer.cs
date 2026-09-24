@@ -26,7 +26,7 @@ namespace Tag.Audio
             _music = gameObject.AddComponent<AudioSource>();
             _music.playOnAwake = false;
             _music.loop = true;
-            _music.volume = 0.35f;
+            _music.volume = AudioMaster.MusicMuted ? 0f : 0.35f;
         }
 
         public static AudioCuePlayer Ensure()
@@ -94,8 +94,14 @@ namespace Tag.Audio
             if (_music.clip == clip && _music.isPlaying) return;
             _music.clip = clip;
             _music.loop = true;
-            _music.volume = 0.35f;
+            _music.volume = AudioMaster.MusicMuted ? 0f : 0.35f;
             _music.Play();
+        }
+
+        public void RefreshVolumes()
+        {
+            if (_music != null)
+                _music.volume = AudioMaster.MusicMuted ? 0f : 0.35f;
         }
 
         public void StopMusic()

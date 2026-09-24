@@ -9,6 +9,7 @@ namespace Tag.Audio
     {
         public const string VolumePrefsKey = "Tag.MasterVolume";
         public const string MutePrefsKey = "Tag.MasterMute";
+        public const string MusicMutePrefsKey = "Tag.MusicMute";
         public const float DefaultVolume = 0.8f;
 
         static readonly float[] Steps = { 0f, 0.25f, 0.5f, 0.8f, 1f };
@@ -16,6 +17,7 @@ namespace Tag.Audio
 
         public static float Volume { get; private set; } = DefaultVolume;
         public static bool Muted { get; private set; }
+        public static bool MusicMuted { get; private set; }
 
         public static string Label
         {
@@ -32,6 +34,7 @@ namespace Tag.Audio
         {
             Volume = Nearest(PlayerPrefs.GetFloat(VolumePrefsKey, DefaultVolume));
             Muted = PlayerPrefs.GetInt(MutePrefsKey, 0) != 0;
+            MusicMuted = PlayerPrefs.GetInt(MusicMutePrefsKey, 0) != 0;
             Apply();
         }
 
@@ -67,9 +70,21 @@ namespace Tag.Audio
             TagSfx.UiClick();
         }
 
+        public static void ToggleMusicMute()
+        {
+            Load();
+            MusicMuted = !MusicMuted;
+            PlayerPrefs.SetInt(MusicMutePrefsKey, MusicMuted ? 1 : 0);
+            PlayerPrefs.Save();
+            Apply();
+            TagSfx.UiClick();
+        }
+
         public static void Apply()
         {
             AudioListener.volume = Muted ? 0f : Mathf.Clamp01(Volume);
+            if (AudioCuePlayer.Instance != null)
+                AudioCuePlayer.Instance.RefreshVolumes();
         }
 
         static int IndexOf(float v)

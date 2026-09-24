@@ -254,6 +254,8 @@ namespace Tag.Modes
                     LoadBootMenu();
                 if (UnityEngine.Input.GetKeyDown(KeyCode.M))
                     Tag.Audio.AudioMaster.ToggleMute();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.N))
+                    Tag.Audio.AudioMaster.ToggleMusicMute();
                 return;
             }
             PollPlaytestModeHotkeys();
@@ -512,7 +514,7 @@ namespace Tag.Modes
             string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
             GUI.Box(new Rect(x, y, w, h + 48f), "Paused");
             GUI.Label(new Rect(x + 16, y + 36, w - 32, 120),
-                "Esc resume\nQ  Boot menu\nH  controls\nM  mute  (" + Tag.Audio.AudioMaster.Label + ")\nLeft / Right  " + TagArena.Movement.LookSensitivity.Label + extra);
+                "Esc resume\nQ  Boot menu\nH  controls\nM mute / N music  (" + Tag.Audio.AudioMaster.Label + ")\nLeft / Right  " + TagArena.Movement.LookSensitivity.Label + extra);
         }
 
         static string ModeTitle(TagModeId id)
@@ -659,7 +661,8 @@ namespace Tag.Modes
             if (_phase != MatchPhase.Playing && _phase != MatchPhase.PostRound) return;
             var it = _ctx.CurrentIt;
             float w = 420f;
-            var r = new Rect((Screen.width - w) * 0.5f, 16f, w, 46f);
+            float h = SuddenDeath ? 64f : 46f;
+            var r = new Rect((Screen.width - w) * 0.5f, 16f, w, h);
             GUI.Box(r, "");
             string text;
             if (it == null)
@@ -668,7 +671,9 @@ namespace Tag.Modes
                 text = "YOU ARE IT    punch to dump it";
             else
                 text = $"IT: {it.PlayerId}    orange hat    punch to tag";
-            GUI.Label(new Rect(r.x + 12, r.y + 12, w - 24, 24), text);
+            if (SuddenDeath)
+                text += "\nSD - next trail hit eliminates";
+            GUI.Label(new Rect(r.x + 12, r.y + 10, w - 24, h - 16), text);
         }
     }
 }

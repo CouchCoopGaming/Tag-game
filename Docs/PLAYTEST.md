@@ -114,4 +114,4 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.
 
 ## Audio
-- Master volume / mute: Boot or pause **Audio**, Left/Right steps Off/Low/Med/Default/Max, **M** mute. Saved in PlayerPrefs. Drives AudioListener.volume so TagSfx + music bed share one gate.
+- Master volume / mute: Boot or pause Audio; Left/Right steps; M mute all; N music only. Saved in PlayerPrefs.

@@ -8,7 +8,7 @@ namespace Tag.Modes
 {
     /// <summary>
     /// Trail collision eliminates; last standing wins.
-    /// Emitters All (default) vs ItOnly. MatchTimeCap â†’ sudden death (self-grace halved).
+    /// Emitters All (default) vs ItOnly. MatchTimeCap --- sudden death (self-grace halved).
     /// Punch/It stay. Dodge i-frames do NOT ignore trails.
     /// </summary>
     public class TrailTagMode : ITagMode
@@ -85,7 +85,7 @@ namespace Tag.Modes
                 }
             }
 
-            // Stall failsafe: â‰¥2 alive, no lethal segments for 8s â†’ SD
+            // Stall failsafe: ---2 alive, no lethal segments for 8s --- SD
             if (!_suddenDeath && !_ended && ctx.LivingCount() >= 2)
             {
                 bool anyLethal = false;
@@ -102,7 +102,7 @@ namespace Tag.Modes
                     float stall = _tuning.stallFailsafeSec > 0f ? _tuning.stallFailsafeSec : 8f;
                     if (_stallTimer >= stall)
                     {
-                        Debug.Log("[TrailTag] Stall failsafe â€” forcing sudden death emit All");
+                        Debug.Log("[TrailTag] Stall failsafe --- forcing sudden death emit All");
                         ForceEmitAll(ctx);
                         EnterSuddenDeath(ctx);
                     }
@@ -136,7 +136,7 @@ namespace Tag.Modes
                 var e = p.GetComponent<PlayerTrailEmitter>();
                 if (e != null) e.SetSuddenDeath(true);
             }
-            Debug.Log("[TrailTag] Sudden death â€” next trail hit eliminates (self-grace halved)");
+            Debug.Log("[TrailTag] Sudden death --- next trail hit eliminates (self-grace halved)");
         }
 
         void RefreshEmitterGates(TagModeContext ctx)
@@ -240,16 +240,23 @@ namespace Tag.Modes
         {
             string itId = ctx.CurrentIt != null ? ctx.CurrentIt.PlayerId : "-";
             bool youAreIt = IsLocalHuman(ctx.CurrentIt);
-            string timer = _suddenDeath ? "SUDDEN DEATH"
+            string timer = _suddenDeath ? "SD"
                 : (_tuning.matchTimeCap > 0f ? $"Time {ctx.RemainingTime:0.0}s" : "No cap");
             var sb = new System.Text.StringBuilder();
             string itLabel = youAreIt ? "YOU" : itId;
             sb.AppendLine($"TrailTag | {timer} | Alive {ctx.LivingCount()} | Emit:{_tuning.emitters} | It:{itLabel}");
             if (_suddenDeath)
-                sb.AppendLine("Next trail hit eliminates (self-grace halved)");
+                sb.AppendLine("SD: next ribbon hit eliminates (self-grace halved)");
+            // Local OUT line first so spectating is obvious under the It banner.
+            foreach (var p in ctx.Players)
+            {
+                if (p == null || !IsLocalHuman(p) || p.IsAlive) continue;
+                sb.AppendLine("YOU: OUT - waiting for round");
+            }
             foreach (var p in ctx.Players)
             {
                 if (p == null) continue;
+                if (IsLocalHuman(p) && !p.IsAlive) continue; // already listed
                 string who = IsLocalHuman(p) ? "YOU" : p.PlayerId;
                 string state = !p.IsAlive ? "OUT - waiting for round"
                     : (p.IsIt ? "alive It" : "alive");

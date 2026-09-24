@@ -299,6 +299,8 @@ namespace Tag.Core
                     AudioMaster.CycleVolume(1);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.M))
                     AudioMaster.ToggleMute();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.N))
+                    AudioMaster.ToggleMusicMute();
                 return;
             }
 
@@ -422,7 +424,7 @@ namespace Tag.Core
             {
                 GUI.Box(new Rect(cx - 210, cy - 170, 420, 360), "TAG - party slice");
                 string hello = _firstBoot
-                    ? "First run: Play is you and one bot, Least It.\nPunch passes It. Esc pauses."
+                    ? "First run: Play is you and one bot, Least It.\nPunch passes It. Esc pauses. Audio / M mute."
                     : "Play is you and one bot. Couch is local humans.";
                 GUI.Label(new Rect(cx - 190, cy - 128, 380, 44), hello);
                 if (GUI.Button(new Rect(cx - 90, cy - 76, 180, 32), "Play Tag (Least It)"))
@@ -433,7 +435,7 @@ namespace Tag.Core
                     _audioOpen = false;
                     _controlsOpen = true;
                 }
-                                if (GUI.Button(new Rect(cx - 90, cy - 4, 180, 28), "Look sensitivity"))
+                if (GUI.Button(new Rect(cx - 90, cy - 4, 180, 28), "Look sensitivity"))
                 {
                     _controlsOpen = false;
                     _audioOpen = false;
@@ -541,17 +543,20 @@ namespace Tag.Core
         void DrawAudioSettings()
         {
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
-            GUI.Box(new Rect(cx - 200, cy - 100, 400, 200), "Audio");
-            GUI.Label(new Rect(cx - 180, cy - 58, 360, 28), "Volume  " + AudioMaster.Label);
-            if (GUI.Button(new Rect(cx - 150, cy - 20, 80, 28), "<"))
+            GUI.Box(new Rect(cx - 200, cy - 120, 400, 240), "Audio");
+            GUI.Label(new Rect(cx - 180, cy - 78, 360, 28), "Volume  " + AudioMaster.Label);
+            if (GUI.Button(new Rect(cx - 150, cy - 40, 80, 28), "<"))
                 AudioMaster.CycleVolume(-1);
-            if (GUI.Button(new Rect(cx + 70, cy - 20, 80, 28), ">"))
+            if (GUI.Button(new Rect(cx + 70, cy - 40, 80, 28), ">"))
                 AudioMaster.CycleVolume(1);
             string muteLabel = AudioMaster.Muted ? "Unmute (M)" : "Mute (M)";
-            if (GUI.Button(new Rect(cx - 70, cy + 20, 140, 28), muteLabel))
+            if (GUI.Button(new Rect(cx - 150, cy + 0, 140, 28), muteLabel))
                 AudioMaster.ToggleMute();
-            GUI.Label(new Rect(cx - 180, cy + 58, 360, 36),
-                "Left / Right volume    M mute    Esc back");
+            string musicLabel = AudioMaster.MusicMuted ? "Music on (N)" : "Music off (N)";
+            if (GUI.Button(new Rect(cx + 10, cy + 0, 140, 28), musicLabel))
+                AudioMaster.ToggleMusicMute();
+            GUI.Label(new Rect(cx - 180, cy + 48, 360, 48),
+                "Left / Right volume    M mute all    N music    Esc back");
         }
 
         void DrawRow(float cx, float y, int index, string label)
