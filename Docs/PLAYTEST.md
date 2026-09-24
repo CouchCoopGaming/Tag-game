@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ **Play**.
 3. Optional first-time art: **Tag ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Ensure URP Pipeline**, then **Tag ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Setup Hub Visuals**.
 
-Branch: `cursor/playground-campus-zones-afc4` (integration tip; map 68edd8f + PR #11 tag-loop-kite-cam). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/rematch-punch-tell-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 ## Stack snapshot
 
@@ -75,7 +75,7 @@ Punch is **not** a contact aura ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â only acti
 - Flee panic hop uses dy 0.9 (was 0.55, below ConsumeHop minDy 0.85, so it never fired). Trail Tag mode line shows **SUDDEN DEATH** when the cap/stall failsafe trips.
 - HUD mode line uses ASCII ` | ` separator; center MODE flash lists F1-F4. F1-F4 SetMode also syncs GameFlow menu cursor via PlayerPrefs, recovers ragdoll, and places pawns on pads.
 - Trail Tag self-hit still needs both age and distance grace. Dodge i-frames do not ignore trails. Punch updates It brightness the same frame for every emitter mode. ItOnly still gates who emits.
-- Round over draws a center card. **R** is handled once (the results screen owns it; Boot's menu does not also rematch). **Q** returns to the menu only when GameFlow is loaded. F1–F4 or R leave pause and the round-end state so the countdown is not frozen and R does not restart the round you just picked. "No winners" no longer plays the win sting. Resume and quit click.
+- Round over draws a center card. **R** is handled once (the results screen owns it; Boot's menu does not also rematch). A second StartRound inside 0.05 s is ignored. **Q** returns to the menu only when GameFlow is loaded. F1-F4 or R leave pause and the round-end state so the countdown is not frozen and R does not restart the round you just picked. Resume and quit click. "No winners" no longer plays the win sting.
 
 ## Feel check (code, not a Unity play)
 
