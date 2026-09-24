@@ -7,14 +7,14 @@ Parent pushes; **do not push** from casual local grind unless asked.
 
 Graybox pad cubes are gone (they were stretching HiPoly into a low-poly look). Flow stones are gone. The chase is kit districts:
 
-- **Soft-play** (14, 9.75) and **astro loft** (14, 44.25) are the play places: decks 0.80 / 1.60 / 2.00, straight slide with a 3-tile pit (3.75 / 4.75 / 5.75), spiral at local (2.50, 0, −0.5) yaw 180 so the entrance overlaps the 1.60 deck by 0.25 m (posts clear), tube street with plastic collars (~0.36 m on the ends, ~0.31 m on the north mouth).
-- **Army bunker** (58, 9.75) and **knight keep** (58, 44.25) share the tower and the 3-tile pit, then a single crawl trench and a climb net. No second spiral.
-- Fort z is set so the far pit tile stays ~0.4 m off the ski spines. Theme carpets grew to sit under the tubes/crawls and still stop short of the spines.
-- **Merry** (7, 24). **Swing** (67, 31) and **kickball** (67, 24). **Hopscotch** SW (7, 9) and SE (70, 12).
-- **Ring S** (36, 3): monkeys, wall, open 8 m crawl (no 1.2 m plastic caps — they do not match the 2.8 m mouth), west tower slide. **Ring N** (36, 51): tube chain with plastic collars, slide south.
-- **Loop W** (16, 25) and **Loop E** (56, 29): wall-run plus end tower. Same 3-tile pit, short of the NS spine.
+- **Soft-play** (14, 9.75) and **astro loft** (14, 44.25) are the play places: decks 0.80 / 1.60 / 2.00, 3-tile slide pit, spiral at local (2.50, 0, −0.5) yaw 180 (entrance overlaps the 1.60 deck by 0.25 m; posts clear). Tube street is at local z=−4; north plastic mouth at z=−3 collars ~0.31 m and stays ~0.28 m off the stair.
+- **Army bunker** (58, 9.75) and **knight keep** (58, 44.25): same tower and pit, crawl at local (−2, −4.5) so the south rim misses Spawn_SE and the north rim stays ~1 m off the stair, plus a climb net. No second spiral.
+- **BARS W** x=11 and **BARS E** x=61: `PGK_Monkey_4m` yaw 90, abutted at 4.2 m inside each gap between the EW spines. West misses the mast and the astro spiral. East is the open side of kickball. You cross the spines on foot.
+- **Merry** (7, 24) east apron faces the west bars. **Swing** (67, 31). **Kickball** (67, 24) fenced on north, east, and behind the south goal (world z≈19.75, off the spine); west open. **Hopscotch** SW (7, 9), SE (70, 12), NE (70, 38).
+- **Ring S** (36, 3): monkeys, wall, open 8 m crawl, west tower slide. **Ring N** (36, 51): tube chain with plastic collars, slide south.
+- **Loop W** (16, 25) and **Loop E** (56, 29): wall-run plus end tower, same 3-tile pit.
 
-Playtest: spawn SW → hopscotch → soft-play tube street → stairs → spiral or the straight slide onto the three tiles, west of Conn_Pirate. Army is the crawl trench then the slide. Outer ring is monkey, open crawl, tower slide. Figure-8 is the wall then the tower slide. East rec is swing then kickball.
+Playtest: spawn SW → hopscotch → south bar → soft-play tubes and slide → cross the south spine → middle bars → merry → cross the north spine → north bar → astro. East: army crawl → bars → kickball → swings → bars → knight.
 
 `Mega_SlideTube` / `PGK_Slide_Tube90` stay unused. Tube90 is ~3.45 m tall; Mega_SlideTube's floor rises ~3.4 m. Neither meets 0.40–2.00 without burying the low end. Tron disc stays scaled down so the south ring can exist.
 

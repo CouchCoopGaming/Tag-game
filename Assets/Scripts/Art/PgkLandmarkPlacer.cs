@@ -147,6 +147,11 @@ namespace Tag.Art
             n += KickballField(root, "Play_Kickball", new Vector3(67f, 0f, 24f), 0f);
             n += HopscotchCourt(root, "Play_Hopscotch_SW", new Vector3(7f, 0f, 9f), 0f);
             n += HopscotchCourt(root, "Play_Hopscotch_SE", new Vector3(70f, 0f, 12f), 0f);
+            n += HopscotchCourt(root, "Play_Hopscotch_NE", new Vector3(70f, 0f, 38f), 0f);
+            // Overhead bars linking the west play places, and the east bunker to the keep.
+            // Segments stop at the EW spines (x=11 and x=61 are inside the spine's x-range).
+            n += MonkeyLane(root, "Play_Bars_W", 11f, new[] { 12.6f, 22f, 26.2f, 30.4f, 40.2f });
+            n += MonkeyLane(root, "Play_Bars_E", 61f, new[] { 13.2f, 22f, 26.2f, 30.4f, 40.2f, 44.4f });
 
             // Outer ring: monkey run + tube/crawl + a deck tower whose slide feeds the ring lane.
             n += OuterRing(root, "Play_Ring_S", new Vector3(36f, 0f, 3f), true);
@@ -190,8 +195,8 @@ namespace Tag.Art
         /// <summary>
         /// McDonald's ground floor: spiral you step into off the 1.60 deck, then a tube street.
         /// Spiral at x=2.50 yaw 180: entrance overlaps the deck by 0.25 m. Corner posts
-        /// (±1, ±1) have no mesh within 0.15 m. Plastic end caps insert ~0.36 m into the
-        /// tube rims; the north mouth inserts ~0.31 m and stops short of the stair.
+        /// (±1, ±1) have no mesh within 0.15 m. Plastic end caps insert ~0.36 m.
+        /// North mouth at z=-3 collars the tube by ~0.31 m and stays ~0.28 m off the stair.
         /// </summary>
         static void AddPlayPlaceAnnex(List<(string id, Vector3 p, float y)> pieces)
         {
@@ -199,12 +204,14 @@ namespace Tag.Art
             pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(3f, 0.02f, 0.75f), 0f));
             pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(4f, 0.02f, 0.75f), 0f));
 
-            pieces.Add(("Toy_TunnelTube", new Vector3(-2.5f, 0f, -3.75f), 0f));
-            pieces.Add(("Toy_TunnelTube", new Vector3(0f, 0f, -3.75f), 0f));
-            pieces.Add(("Toy_TunnelTube", new Vector3(2.5f, 0f, -3.75f), 0f));
-            pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(-4f, 0f, -3.75f), 0f));
-            pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(4f, 0f, -3.75f), 0f));
-            pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(0f, 0f, -2.75f), 0f));
+            // Street sits at z=-4 so the north mouth (z=-3) collars the rim by ~0.31 m
+            // and stays ~0.28 m clear of the ground stair. End caps still insert ~0.36 m.
+            pieces.Add(("Toy_TunnelTube", new Vector3(-2.5f, 0f, -4f), 0f));
+            pieces.Add(("Toy_TunnelTube", new Vector3(0f, 0f, -4f), 0f));
+            pieces.Add(("Toy_TunnelTube", new Vector3(2.5f, 0f, -4f), 0f));
+            pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(-4f, 0f, -4f), 0f));
+            pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(4f, 0f, -4f), 0f));
+            pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(0f, 0f, -3f), 0f));
             pieces.Add(("Mega_ClimbNet", new Vector3(-5f, 0f, -1.5f), 90f));
         }
 
@@ -214,8 +221,9 @@ namespace Tag.Art
         /// </summary>
         static void AddBunkerAnnex(List<(string id, Vector3 p, float y)> pieces)
         {
-            // Shifted west so the south rim misses Spawn_SE. Knight's yaw flips it clear of Spawn_NE.
-            pieces.Add(("Mega_CrawlTunnel", new Vector3(-1.5f, 0f, -4.25f), 0f));
+            // South rim misses Spawn_SE (x≤60). North rim stays ~1 m off the ground stair.
+            // Knight yaw 180 flips this clear of Spawn_NE.
+            pieces.Add(("Mega_CrawlTunnel", new Vector3(-2f, 0f, -4.5f), 0f));
             pieces.Add(("Mega_ClimbNet", new Vector3(5f, 0f, -1.5f), 90f));
         }
 
@@ -392,9 +400,23 @@ namespace Tag.Art
             });
         }
 
+        /// <summary>
+        /// Bars yaw 90 run along Z and abut at 4.2 m. Centers are chosen so each run
+        /// stops short of the EW spines (z 16.4–19.6 and 34.4–37.6). West x=11 misses
+        /// the pirate mast and the astro spiral; east x=61 is the open side of kickball.
+        /// </summary>
+        int MonkeyLane(Transform root, string name, float x, float[] centersZ)
+        {
+            var parent = MakeGroup(root, name, Vector3.zero, 0f);
+            var pieces = new List<(string id, Vector3 p, float y)>();
+            foreach (var z in centersZ)
+                pieces.Add(("PGK_Monkey_4m_LOD0", new Vector3(x, 0f, z), 90f));
+            return SpawnList(parent, pieces);
+        }
+
         int MerryGoRound(Transform root, string name, Vector3 origin, float yaw)
         {
-            // Stand-on spinner (round in XZ). East side stays open toward SpineXw.
+            // Stand-on spinner. East apron faces the west bar lane (x=11); bench stays west.
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
@@ -404,6 +426,8 @@ namespace Tag.Art
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, -2f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, 2f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, -2f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, 1f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2f, 0.02f, -1f), 0f),
                 ("Toy_Bench", new Vector3(-3f, 0f, 0f), 90f),
                 ("Toy_Seesaw", new Vector3(-2f, 0f, 3f), 0f),
             });
@@ -439,7 +463,17 @@ namespace Tag.Art
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 2f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, 0f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 0f), 0f),
-                ("Toy_Bench", new Vector3(4f, 0f, 0f), -90f),
+                // South fence sits behind the goal (z=-4.25 → world 19.75) and off SpineZs (ends 19.6).
+                // West stays open onto the bar lane.
+                ("Toy_Fence", new Vector3(-2.6f, 0f, 4.5f), 0f),
+                ("Toy_Fence", new Vector3(0f, 0f, 4.5f), 0f),
+                ("Toy_Fence", new Vector3(2.6f, 0f, 4.5f), 0f),
+                ("Toy_Fence", new Vector3(-2.6f, 0f, -4.25f), 0f),
+                ("Toy_Fence", new Vector3(0f, 0f, -4.25f), 0f),
+                ("Toy_Fence", new Vector3(2.6f, 0f, -4.25f), 0f),
+                ("Toy_Fence", new Vector3(4.5f, 0f, -2.6f), 90f),
+                ("Toy_Fence", new Vector3(4.5f, 0f, 0f), 90f),
+                ("Toy_Fence", new Vector3(4.5f, 0f, 2.6f), 90f),
             });
         }
 

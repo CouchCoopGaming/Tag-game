@@ -280,6 +280,7 @@ namespace Tag.Level
             Box("PlayPad_Kickball", new Vector3(67f, y, 24f), new Vector3(10f, t, 10f), _matPlayRubber);
             Box("PlayPad_Hopscotch_SW", new Vector3(7f, y, 9f), new Vector3(5f, t, 10f), _matPlayRubber);
             Box("PlayPad_Hopscotch_SE", new Vector3(70f, y, 11.5f), new Vector3(4f, t, 8f), _matPlayRubber);
+            Box("PlayPad_Hopscotch_NE", new Vector3(70f, y, 38f), new Vector3(4f, t, 8f), _matPlayRubber);
             // South ring stays below the outer lane; north ring stays inside the map edge.
             Box("PlayPad_Ring_S", new Vector3(36f, y, 3f), new Vector3(22f, t, 5.5f), _matPlayMulch);
             Box("PlayPad_Ring_N", new Vector3(36f, y, 51f), new Vector3(20f, t, 4.5f), _matPlayMulch);

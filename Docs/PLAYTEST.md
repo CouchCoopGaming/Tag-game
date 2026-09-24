@@ -17,7 +17,7 @@ Branch: `cursor/playground-campus-zones-afc4` (campus kit tip; WIP backup `backu
 | **Modes** | F1 Hot Potato / F2 Least It / F3 Trail Tag (`TagModeController` SetMode + StartRound) |
 | **HUD** | `SpeedEnergyHUD` (local P0): km/h + MoveState, JET bar, ski/jet flags, controls cheat-sheet, mode + who is It, HP fuse (pulse when It ≤ warnSec), Least It times (brief all-standings flash); **LEAD** (mint) / **LAG** (coral) on local standings; **TAG flash** YOU'RE IT / YOU'RE FREE; **It compass** (flee / not It) + **Prey compass** (hunt / It → nearest alive); both pulse <12 m w/ distinct tints; cam bearing + m |
 | **Void / XZ** | `VoidRespawn`: Y < −20 **or** mega-park XZ AABB (+~20 m) → nearest `LocalPlayerSpawner` pad; clear ragdoll/stun, zero vel, ~1 s punch i-frames |
-| **Playground** | West play places: soft-play (14, 9.75) and astro loft (14, 44.25) — deck tower, spiral you step onto from the 1.60 deck, three-tube street with plastic mouths. East bunker/keep: army (58, 9.75) and knight (58, 44.25) — same tower and a 3-tile slide pit, plus one crawl trench and a climb net (no second spiral). Merry, swing, kickball, hopscotch, south crawl ring, north tube ring, figure-8 wall-runs. Graybox cubes and Flow stones are gone. After pull: **CutArenaBootstrap** Rebuild / **PgkLandmarkPlacer → Place**. |
+| **Playground** | West play places (soft-play 14, 9.75 and astro loft 14, 44.25) link along **BARS W** (x=11): monkey segments that stop at the ski spines, with the merry-go-round's east apron facing the middle run. East bunker/keep (army 58, 9.75 and knight 58, 44.25) link along **BARS E** (x=61) into a fenced kickball field (west side open) and the swing set. Hopscotch SW, SE, and NE. South crawl ring, north tube ring, figure-8 wall-runs. After pull: **CutArenaBootstrap** Rebuild / **PgkLandmarkPlacer → Place**. |
 | **Colliders** | `StaticPropColliders.EnsureStaticColliders` after dress/place so HiPoly/PGK toys keep Mesh/Box collision |
 | **Trail Tag** | Wide bright light-cycle walls (mega-park WorldScale 10); Stay + Default-layer triggers so RB motor still eliminates; near-miss **TRAIL!** <4.5 m foreign; elim **OUT!** / TRAIL HIT |
 | **SFX** | `TagSfx`: Resources/Audio clips when present, else procedural one-shots (punch, It, ski/jet, slide, lunge whoosh, jump) |
@@ -56,11 +56,14 @@ Punch is **not** a contact aura — only active punch hits transfer It (`PunchHi
 
 ## What to look at next (human eye)
 
-1. Soft-play spiral: entrance should overlap the 1.60 deck (about 0.25 m) and miss both east corner posts. A few lip verts sit in the deck slab on purpose so you can step in.
-2. Plastic mouths: end caps should collar the tube by about 0.36 m, the north mouth by about 0.31 m, and that north mouth should not touch the ground stair. South-ring crawl has no plastic caps — its mouth is 2.8 m and the 1.2 m portal does not fit.
-3. Straight-slide pit is three tiles. The far tile should stop about 0.4 m short of the ski spine, not on the Conn ramp. Say if that runout still feels short.
-4. Army/knight crawl should sit behind the stair, not through it, and clear the corner spawns.
-5. Feel, unchanged in code this pass: slide decays only, jump height is not speed-tied, air dash is the cyan trail with a 30 s cooldown.
+1. **Bar lanes.** West run x=11 (segments at z 12.6, then 22–30.4, then 40.2) should miss the pirate mast, the EW spines, and the astro spiral. East run x=61 should be the open west side of kickball, not on the swing bays. You cross the ski spines on foot between segments.
+2. **Run.** Spawn SW → hopscotch SW → south bar → soft-play tubes/slide → cross the south spine → middle bars → merry (east apron) → cross the north spine → north bar → astro loft. East mirror: army crawl → bars → kickball (open west) → swings → bars → knight.
+3. Spiral entrance still overlaps the 1.60 deck by about 0.25 m and should miss both east posts.
+4. North plastic mouth (tube street at z=-4, mouth at z=-3) should read as a door: about 0.31 m into the rim, about 0.28 m short of the stair. End caps about 0.36 m.
+5. Three-tile slide pit: far edge about 0.4 m short of the ski spine. Say if that runout still feels short.
+6. Army crawl is shifted to local (−2, −4.5): about 1 m south of the stair, west edge short of Spawn_SE. Knight's copy should miss Spawn_NE.
+7. Kickball fence is north, east, and behind the south goal. South fence world z≈19.75, just off the south spine. West side stays open.
+8. Feel, unchanged: slide decays only, jump height is not speed-tied, air dash is the cyan trail with a 30 s cooldown.
 
 ## Feel check (code, not a Unity play)
 

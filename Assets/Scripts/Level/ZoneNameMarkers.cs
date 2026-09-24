@@ -31,6 +31,9 @@ namespace Tag.Level
             ("KICKBALL",      67f, 24f),
             ("HOPSCOTCH SW",   7f,  9f),
             ("HOPSCOTCH SE",  70f, 12f),
+            ("HOPSCOTCH NE",  70f, 38f),
+            ("BARS W",        11f, 26f),
+            ("BARS E",        61f, 26f),
         };
 
         static Transform _parkCached;
