@@ -277,6 +277,8 @@ namespace Tag.Modes
                 if (p == null || p == _it || !p.IsAlive || p.IsEliminated) continue;
                 // When chasing as It, dump onto nearest non-It (skip other Its if any).
                 if (selfIsIt && p.IsIt) continue;
+                // When fleeing, prefer locking onto the current It so lose-It Retarget is useful.
+                if (!selfIsIt && !p.IsIt) continue;
                 float dSq = (p.transform.position - transform.position).sqrMagnitude;
                 float score = dSq;
                 // Least It + It: prefer tagging leaders (low TimeAsIt) so their clocks rise.
@@ -486,12 +488,18 @@ namespace Tag.Modes
         {
             Vector3 moveDir = transform.forward;
             ItController threat = null;
+            // Prefer Retarget lock (updated on lose-It) when it still points at a living It.
+            if (_target != null && _target.IsIt && _target.IsAlive && !_target.IsEliminated)
+                threat = _target;
             float bestThreat = float.MaxValue;
-            foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
+            if (threat == null)
             {
-                if (p == null || !p.IsIt || !p.IsAlive || p == _it) continue;
-                float d = (p.transform.position - transform.position).sqrMagnitude;
-                if (d < bestThreat) { bestThreat = d; threat = p; }
+                foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
+                {
+                    if (p == null || !p.IsIt || !p.IsAlive || p == _it) continue;
+                    float d = (p.transform.position - transform.position).sqrMagnitude;
+                    if (d < bestThreat) { bestThreat = d; threat = p; }
+                }
             }
 
             if (threat != null)

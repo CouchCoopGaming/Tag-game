@@ -172,7 +172,12 @@ namespace Tag.Modes
             if (from != null)
             {
                 var fe = from.GetComponent<PlayerTrailEmitter>();
-                if (fe != null) fe.SetEmitting(false);
+                if (fe != null)
+                {
+                    fe.SetEmitting(false);
+                    // Same-frame readability: drop It trail brightness before next Tick.
+                    fe.SetItEmphasis(false, _tuning.itTrailBrightness);
+                }
             }
             if (to != null)
             {
@@ -181,6 +186,7 @@ namespace Tag.Modes
                 {
                     te.BeginSpawnDelay(_tuning.spawnTrailDelay);
                     te.SetEmitting(true);
+                    te.SetItEmphasis(true, _tuning.itTrailBrightness);
                 }
             }
         }
