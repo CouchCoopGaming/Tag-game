@@ -2,6 +2,7 @@ using UnityEngine;
 using Tag.Audio;
 using TagArena.Movement;
 using Tag.Modes;
+using Tag.Art;
 
 namespace Tag.Gameplay
 {
@@ -15,7 +16,7 @@ namespace Tag.Gameplay
     }
 
     /// <summary>
-    /// It-only dedicated melee. Active punch ONLY — NO passive overlap/aura tag.
+    /// It-only dedicated melee. Active punch ONLY ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â NO passive overlap/aura tag.
     /// Prefer continuous cast during Active. Closest runner with LoS wins.
     /// </summary>
     public class PunchHitbox : MonoBehaviour
@@ -85,6 +86,11 @@ namespace Tag.Gameplay
             else
                 _bufferTimer = Mathf.Max(0f, _bufferTimer - dt);
 
+            // Local It: cock the fist while the punch buffer is armed (same tell AI uses).
+            if (Phase == PunchPhase.Idle && _bufferTimer > 0f &&
+                _it != null && _it.IsIt && !_it.IsEliminated)
+                HoldLocalPunchTell();
+
             bool canStart =
                 Phase == PunchPhase.Idle
                 && _bufferTimer > 0f
@@ -109,6 +115,7 @@ namespace Tag.Gameplay
         {
             _bufferTimer = 0f;
             _hitThisSwing = false;
+            HoldLocalPunchTell();
             Phase = PunchPhase.Windup;
             _phaseDuration = tuning.windup;
             _phaseTimer = _phaseDuration;
@@ -163,6 +170,12 @@ namespace Tag.Gameplay
             _phaseTimer -= dt;
             if (_phaseTimer <= 0f)
                 EndPunch();
+        }
+
+        void HoldLocalPunchTell()
+        {
+            var loco = GetComponentInChildren<DummyLocomotor>();
+            if (loco != null) loco.HoldPunchTelegraph();
         }
 
         void EndPunch()
@@ -276,7 +289,7 @@ namespace Tag.Gameplay
             var tps = GetComponentInChildren<TpsMoveCamera>(true);
             if (tps != null)
                 tps.AddKick(new Vector3(0f, 0.14f, -0.38f));
-            // Victim's chase cam, lighter than the attacker's. No hitstop — nothing else freezes time.
+            // Victim's chase cam, lighter than the attacker's. No hitstop ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â nothing else freezes time.
             var victimCam = victim.GetComponentInChildren<TpsMoveCamera>(true);
             if (victimCam != null && victimCam != tps)
                 victimCam.AddKick(new Vector3(0.04f, 0.08f, -0.18f));

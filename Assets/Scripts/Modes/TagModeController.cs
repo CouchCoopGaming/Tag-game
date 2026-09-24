@@ -330,9 +330,9 @@ namespace Tag.Modes
         }
 
         /// <summary>
-        /// F1â€“F4 start a round from the pads, not from wherever the last ragdoll stopped.
-        /// Slot follows P1/P2/â€¦ when the id parses; everyone else fills the next free pad.
-        /// Yaw is left alone â€” the chase camera owns it.
+        /// F1Ã¢â‚¬â€œF4 start a round from the pads, not from wherever the last ragdoll stopped.
+        /// Slot follows P1/P2/Ã¢â‚¬Â¦ when the id parses; everyone else fills the next free pad.
+        /// Yaw is left alone Ã¢â‚¬â€ the chase camera owns it.
 
         /// </summary>
         void PlacePlayersOnPads()
@@ -447,15 +447,26 @@ namespace Tag.Modes
         void DrawResultsCard()
         {
             float w = 520f;
-            float h = 150f;
+            float h = 168f;
             float x = (Screen.width - w) * 0.5f;
             float y = Screen.height * 0.32f;
             GUI.Box(new Rect(x, y, w, h), "Round over");
             string keys = GameFlow.Instance != null
-                ? "R  Rematch     Q  Menu"
+                ? "R  Rematch     Q / Esc  Menu"
                 : "R  Rematch";
-            GUI.Label(new Rect(x + 16, y + 28, w - 32, h - 36),
+            GUI.Label(new Rect(x + 16, y + 28, w - 32, 70),
                 (_resultMessage ?? "") + "\n\n" + keys);
+            float bw = 140f;
+            float by = y + h - 44f;
+            if (GUI.Button(new Rect(x + w * 0.5f - bw - 8f, by, bw, 32f), "Rematch"))
+            {
+                var flow = GameFlow.Instance;
+                if (flow != null) flow.Rematch();
+                else Rematch();
+            }
+            if (GameFlow.Instance != null &&
+                GUI.Button(new Rect(x + w * 0.5f + 8f, by, bw, 32f), "Menu"))
+                GameFlow.Instance.QuitToMenu();
         }
 
         void DrawPostRoundCard()
