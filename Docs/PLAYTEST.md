@@ -17,7 +17,7 @@ Branch: `cursor/apex-party-movement-f5fd`. Deeper notes: `Docs/MOVEMENT.md` / `D
 | **Modes** | F1 Hot Potato / F2 Least It / F3 Trail Tag (`TagModeController` SetMode + StartRound) |
 | **HUD** | `SpeedEnergyHUD` (local P0): km/h + MoveState, JET bar, ski/jet flags, controls cheat-sheet, mode + who is It, HP fuse (pulse when It ≤ warnSec), Least It times (brief all-standings flash); **LEAD** (mint) / **LAG** (coral) on local standings; **TAG flash** YOU'RE IT / YOU'RE FREE; **It compass** (flee / not It) + **Prey compass** (hunt / It → nearest alive); both pulse <12 m w/ distinct tints; cam bearing + m |
 | **Void / XZ** | `VoidRespawn`: Y < −20 **or** mega-park XZ AABB (+~20 m) → nearest `LocalPlayerSpawner` pad; clear ragdoll/stun, zero vel, ~1 s punch i-frames |
-| **Playground** | Four kit forts (soft-play SW, army SE, astro NW, knight NE) on the 0.40–2.00 m deck grid, plus merry, swing, kickball, both hopscotch courts, south crawl + north tube run, and figure-8 wall-run towers. Graybox zone cubes and Flow stones are gone. After pull: **CutArenaBootstrap** Rebuild / **PgkLandmarkPlacer → Place**. |
+| **Playground** | Four kit forts (soft-play 14,10.75; army bunker 58,10.75; astro 14,43.5; knight 58,43.5) on the 0.40–2.00 m deck grid. Straight slides tuck into the deck lip and land on a two-tile runway clear of the ski connectors. Each fort has a spiral docked on the 1.60 deck, a three-mouth tube street, and a side climb net. South ring is an 8 m crawl with plastic mouths; north ring is a tube chain with mouths. Merry, swing, kickball, hopscotch, and figure-8 wall-runs stay. Graybox cubes and Flow stones are gone. After pull: **CutArenaBootstrap** Rebuild / **PgkLandmarkPlacer → Place**. |
 | **Colliders** | `StaticPropColliders.EnsureStaticColliders` after dress/place so HiPoly/PGK toys keep Mesh/Box collision |
 | **Trail Tag** | Wide bright light-cycle walls (mega-park WorldScale 10); Stay + Default-layer triggers so RB motor still eliminates; near-miss **TRAIL!** <4.5 m foreign; elim **OUT!** / TRAIL HIT |
 | **SFX** | `TagSfx`: Resources/Audio clips when present, else procedural one-shots (punch, It, ski/jet, slide, lunge whoosh, jump) |
@@ -49,6 +49,14 @@ Branch: `cursor/apex-party-movement-f5fd`. Deeper notes: `Docs/MOVEMENT.md` / `D
 | Mode hotkeys | F1 / F2 / F3 |
 
 Punch is **not** a contact aura — only active punch hits transfer It (`PunchHitbox`).
+
+## Tube pieces left out (measured)
+
+`Mega_SlideTube` and `PGK_Slide_Tube90` are still not placed. Unity-space bounds: Tube90 is a vertical elbow about 3.45 m tall (openings near the bottom and near y≈2.7–2.9), so grounding the feet puts the high mouth ~1.4 m above the 2.00 deck. Mega_SlideTube is ~10 m long and the tube floor climbs ~3.4 m, so the high end misses 2.00 by about 1.4 m. Seating either high end on a deck buries the low mouth. The crawl is the horizontal tubes and the south-ring `Mega_CrawlTunnel`, with plastic mouths on the ends.
+
+## Feel check (code, not a Unity play)
+
+Slide keeps entry planar speed: `SlideMove` only applies friction (softer downhill) and clamps to `_slideStartSpeed`. `slideDownhillAccel` is 0 and unused. Jump sets `v.y` from `jumpSpeed` / fatigue, not from horizontal speed. Air dash is a short planar burst with `airDashCooldown` 30 and a cyan trail / squash on `DummyLocomotor`. The near-zero speed floor inside `EnterSlide` cannot run: crouch only enters a slide at `slideEntrySpeed` (7.5).
 
 ## Known leftovers
 

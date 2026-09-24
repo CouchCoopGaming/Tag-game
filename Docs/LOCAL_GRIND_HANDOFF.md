@@ -7,14 +7,16 @@ Parent pushes; **do not push** from casual local grind unless asked.
 
 Graybox pad cubes are gone (they were stretching HiPoly into a low-poly look). Flow stones are gone. The chase is kit districts:
 
-- **Soft-play** (15, 11), **Army bunker** (56, 11), **Astro loft** (14, 43), **Knight keep** (58, 43). Each is posts on the 1 m grid, decks at 0.80 / 1.60 / 2.00, stairs between them, a straight slide whose mouth tucks under the 2.00 deck and whose exit sits on mulch, a spiral off the 1.60 deck, and an abutted tube run with plastic mouths.
+- **Soft-play** (14, 10.75), **Army bunker** (58, 10.75), **Astro loft** (14, 43.5), **Knight keep** (58, 43.5). Posts on the 1 m grid, decks at 0.80 / 1.60 / 2.00. Straight slide pivot is 2.00 m off the tower so the mouth sits ~0.10 m inside the lip; two safety tiles (3.75 / 4.75) catch the exit and stay off the 3.2 m ski spines and the Conn ramps. Spiral at local (2.75, 0, −0.5) yaw 180 docks its entrance on the 1.60 deck edge (step down into the chute; feet on mulch) and keeps the exit swing off the Conn ramps. The 1.20 beam is gone — its walk surface matched neither deck. Tube street is three abutted `Toy_TunnelTube` pieces plus plastic mouths on both ends and the north face (short of the ground stair). Climb net is west of that street so it does not stab a Conn ramp.
 - **Merry** (7, 24) stand-on spinner. **Swing** (67, 31) and **kickball** (67, 24) are the east rec yard. **Hopscotch** SW (7, 9) and SE (70, 12).
-- **Ring S** (36, 3): 3 monkeys, a 6-panel wall, an 8 m crawl, west tower slide into the south lane. **Ring N** (36, 51): same idea, three tubes, slide south into the north lane.
-- **Loop W** (16, 25) and **Loop E** (56, 29): 6-panel wall-run plus an end tower. The slide drops across the alley and stops short of the NS spine.
+- **Ring S** (36, 3): 3 monkeys, a 6-panel wall, an 8 m crawl with plastic mouths at x ±4.5, west tower slide into the south lane. **Ring N** (36, 51): three tubes with plastic mouths at x ±4, slide south into the north lane.
+- **Loop W** (16, 25) and **Loop E** (56, 29): 6-panel wall-run plus an end tower. Slide lip uses the same 2.00 m offset; runway stops short of the NS spine.
 
-Playtest: spawn SW → hopscotch → soft-play stairs/tube/slide onto the south spine. Outer ring is monkey then slide. Figure-8 is the wall-run face then the tower slide. East rec is swing then kickball.
+Playtest: spawn SW → hopscotch → soft-play stairs, then the tube street (either end cap, out the north mouth by the stoop), then the straight slide onto the two landing tiles west of Conn_Pirate. Spiral is the east lip of the 1.60 deck. Outer ring is monkey, then the crawl mouths, then the tower slide. Figure-8 is the wall-run face then the tower slide. East rec is swing then kickball.
 
-Known: straight-slide exit is seated to mulch (mouth authored 1.91, just under the 2.00 deck). Spiral entrance is ~1.73 beside the 1.60 deck (top 1.68). `Mega_SlideTube` / `PGK_Slide_Tube90` stay unused — their drops do not meet the deck grid. Tron disc is scaled down so the south ring can exist.
+`Mega_SlideTube` / `PGK_Slide_Tube90` stay unused. Tube90 is a vertical elbow ~3.45 m tall; Mega_SlideTube's floor rises ~3.4 m. Neither meets 0.40–2.00 without burying the low end. Tron disc stays scaled down so the south ring can exist.
+
+Feel (read, not played here): slide clamps to entry speed (downhill only softens friction); jump `v.y` is `jumpSpeed` / fatigue; air dash cooldown is 30 s with the dummy trail tell.
 
 ## Done this pass (feel + figure-8 + map pass2/pass3 playground)
 
