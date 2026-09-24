@@ -65,7 +65,11 @@ namespace Tag.Art
         // covered Spawn_NW / Spawn_SE. Shield is shifted north of Spawn_NE.
         static readonly (string stem, Vector3 pos, float yaw, float scale)[] LandmarkSlots =
         {
-            ("Landmark_CrashTorso_Hi", new Vector3(29f, 0f, 34.5f), -15f, 1.05f),
+            // Was (29, 34.5) yaw -15 scale 1.05: that footprint sat on SpineZn and the west chase.
+            // Scale 0.39 yaw 0 is the largest that fits the lip north of the bowl (lane ends z=30,
+            // sandbox ends z=31, spine starts z=34.4) with ~0.40 m of spine clearance.
+            // Stem seats minY 1.001 (see StemSeatYOffset). Height still ~6.8 graybox.
+            ("Landmark_CrashTorso_Hi", new Vector3(36f, 0f, 32.58f), 0f, 0.39f),
             ("Landmark_PirateMast_Hi", new Vector3(5f, 0f, 15f), 25f, 1.0f),
             // Foxhole sits east of Spawn_SE (pad ends x=67.1). Scale 0.35 is the
             // largest yaw-0 footprint that stays on the map and off that pad.
@@ -75,9 +79,11 @@ namespace Tag.Art
             ("Landmark_KnightShield_Hi", new Vector3(66f, 0f, 52.2f), 180f, 0.9f),
             // Disc is east of Conn_Tron (ends x=37.8) and west of SpineXe (starts x=46.4).
             ("Landmark_TronDisc_Hi", new Vector3(42.1f, 0f, 11.5f), 0f, 0.5f),
-            // Grounded via stem. x=19.9 stays west of the chase lane (x=20.5) and the north curb.
-            // z=46.6 keeps the scaled tip inside the map (z≤53.5) and north of SpineZn.
-            ("Landmark_NinjaBladeRail_Hi", new Vector3(19.9f, 0f, 46.6f), 0f, 1.0f),
+            // Full scale yaw 0 was a 1.38-tall wall along the west chase (z through Spawn_NW).
+            // Slot 0.725 yaw 90: length runs along X, height matches PGK_Rail (~1.0), grounded.
+            // Sits on the north rim (x 31–41, z ~48.2–48.5): ~0.41 m north of EdgeRail_N,
+            // ~0.78 m south of the ring wall, clear of both NS spines and the outer lane.
+            ("Landmark_NinjaBladeRail_Hi", new Vector3(36f, 0f, 48.35f), 90f, 0.725f),
         };
 
         void Start() => Place();
@@ -196,7 +202,7 @@ namespace Tag.Art
         {
             var parent = MakeGroup(root, name, origin, yaw);
             var pieces = new List<(string id, Vector3 p, float y)>();
-            // Inner pit wing would sit on the Conn ramp. Outer wing only.
+            // Inner pit wing would sit on the Conn ramp. Outer wing, plus a second outer column.
             AddDeckTower(pieces, 0f, 0f, true, OuterPitSide(origin.x, yaw));
             // Stoop on the 0.40 grid, beside the ground stair.
             pieces.Add(("PGK_Deck_1x1_LOD0", new Vector3(1.5f, Deck040, -2.5f), 0f));
@@ -233,8 +239,13 @@ namespace Tag.Art
             pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(4f, 0f, -4f), 0f));
             pieces.Add(("PGK_Tunnel_Plastic_LOD0", new Vector3(0f, 0f, -3f), 0f));
             pieces.Add(("Mega_ClimbNet", new Vector3(-5f, 0f, -1.5f), 90f));
+            // Low beam from the net toward the deck. One 3 m span cannot close both gaps;
+            // this seat leaves ~0.28 m at the net and ~0.15 m at the corner tile. Yaw 0, height 0.41.
+            // z=-1.7 stays off the tube street, the side stair, and the rung.
+            pieces.Add(("PGK_Balance_Beam_3m_LOD0", new Vector3(-3.15f, 0f, -1.7f), 0f));
             // 2.4 m rung on the west shoulder, yaw 90 so it faces the decks.
             // x=-1.15: ~0.12 m off the 2×2 edge, ~0.07 m off the corner post, clear of the side stair.
+            // Closer (x=-1.12) closes the post gap to ~0.04 m. Leave it.
             pieces.Add(("PGK_Ladder_Rung_LOD0", new Vector3(-1.15f, 0f, 0.90f), 90f));
         }
 
@@ -305,8 +316,11 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Three tiles down the chute. Mid and far gain a side wing so the pit reads wide.
-        /// No fourth tile: far edge 6.25 is already ~0.4 m off the spine.
+        /// Three tiles down the chute. Mid and far gain a side wing, plus a second column
+        /// on the outer side, so the pit reads wider. No fourth tile down the chute:
+        /// far edge 6.25 is already ~0.4 m off the spine.
+        /// pitSide 2 (rings) adds the second column on local +X only. Local −X at |2|
+        /// meets SpineXw (tower world x=28, tile would be x 25.5–26.5).
         /// </summary>
         static void AddSlidePit(List<(string id, Vector3 p, float y)> pieces, float cx, float cz, float dir, int pitSide)
         {
@@ -322,6 +336,13 @@ namespace Tag.Art
             {
                 pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(cx + 1f, 0.02f, cz + dir * SlideLandingMid), 0f));
                 pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(cx + 1f, 0.02f, cz + dir * SlideLandingFar), 0f));
+            }
+            // Second column. Forts: outer side only. Rings: local +X only (see summary).
+            if (pitSide == -1 || pitSide == 1 || pitSide == 2)
+            {
+                float extra = pitSide == -1 ? -2f : 2f;
+                pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(cx + extra, 0.02f, cz + dir * SlideLandingMid), 0f));
+                pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(cx + extra, 0.02f, cz + dir * SlideLandingFar), 0f));
             }
         }
 
@@ -405,7 +426,8 @@ namespace Tag.Art
             pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(towerX + slideSign * SlideLandingNear, 0.02f, towerZ), 0f));
             pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(towerX + slideSign * SlideLandingMid, 0.02f, towerZ), 0f));
             pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(towerX + slideSign * SlideLandingFar, 0.02f, towerZ), 0f));
-            // Side wings on the mid and far tiles. The alley is open here; do not lengthen toward the spine.
+            // Side wings on the mid and far tiles. A second ±Z column clips the vault at local z=3.
+            // Do not lengthen toward the spine.
             float midX = towerX + slideSign * SlideLandingMid;
             float farX = towerX + slideSign * SlideLandingFar;
             pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(midX, 0.02f, towerZ - 1f), 0f));
@@ -687,7 +709,9 @@ namespace Tag.Art
             if (stem.StartsWith("Toy_Seesaw")) return -0.10f;        // feet (minY~+0.10) SpawnLead
             if (stem.StartsWith("Toy_Bumper")) return -0.17f;        // feet (minY~+0.17) SpawnLead
             if (stem.StartsWith("Toy_Goal")) return 0.05f;           // feet (minY~-0.05) Kickball lift
-            if (stem.StartsWith("Landmark_NinjaBlade")) return -0.46f; // rail minY 0.40 * uniform 1.15
+            // minY * landmarkUniformScale * slotScale. Slot scales are baked in; change both together.
+            if (stem.StartsWith("Landmark_NinjaBlade")) return -0.334f; // 0.40 * 1.15 * slot 0.725
+            if (stem.StartsWith("Landmark_CrashTorso")) return -0.449f; // 1.001 * 1.15 * slot 0.39
             // Mega_Spinner / Monkey / Bench / WallPanel / VaultRail / SpringRider / Tower / Picnic ~0
             return 0f;
         }

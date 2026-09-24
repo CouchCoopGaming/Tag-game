@@ -7,17 +7,17 @@ Parent pushes; **do not push** from casual local grind unless asked.
 
 Graybox pad cubes are gone (they were stretching HiPoly into a low-poly look). Flow stones are gone. The chase is kit districts:
 
-- **Soft-play** (14, 9.75) and **astro loft** (14, 44.25): decks 0.80 / 1.60 / 2.00, spiral at local (2.50, 0, −0.5) yaw 180, tube street at z=−4 with the north mouth at z=−3. Rung ladder at local (−1.15, 0, 0.90) yaw 90 (~0.12 m off the deck). Tall net stays at local x=−5. Slide pit is still three tiles long (~2.2 m after the chute). Mid and far tiles gain an outer side wing only — the inner wing would sit on the Conn ramp.
+- **Soft-play** (14, 9.75) and **astro loft** (14, 44.25): decks 0.80 / 1.60 / 2.00, spiral at local (2.50, 0, −0.5) yaw 180, tube street at z=−4 with the north mouth at z=−3. Rung ladder at local (−1.15, 0, 0.90) yaw 90 (~0.12 m off the deck; closer hits the post). Low beam at local (−3.15, 0, −1.7) yaw 0 between the net and the deck. Tall net stays at local x=−5. Slide pit is still three tiles long (~2.2 m after the chute). Mid and far tiles have an outer wing plus a second outer column. The inner wing would sit on the Conn ramp.
 - **Army bunker** (58, 9.75) and **knight keep** (58, 44.25): same tower and pit, crawl at local (−2, −4.5), climb net, plus a 1.8 m `Toy_Ladder` at local (1.20, 0, 0.45) yaw −90 on the net side (reaches the 1.60 deck, not the 2.00 cap).
 - **BARS W** x=11 and **BARS E** x=62.5. West stays at 11 (mast). Merry apron covers the middle spans. East bar mesh is fully on the kickball rubber (pad starts x=62).
 - **Beam lanes:** west x=13.5, z centers 22.25 / 25.25 / 28.25 (ends z=29.75, tower deck starts z=30). East x=60.5, z centers 25.75 / 28.75 / 31.75 (starts z=24.25, tower deck ends z=24).
 - **Merry** (7, 24) apron local x=4 at z=±1 and ±2. Local (4, 0) omitted so bar feet at the joint stay on mulch. **Kickball** south fence local z=−4.0. **Hopscotch** SW (4.5, 9) yaw 90; SE and NE unchanged.
 - **Spawns:** SW toys (2.2, 4), NW toys (2.5, 44). Pads stay clear.
-- **Landmarks:** helmet (2.5, 51.2) scale 0.30 (max that fits); foxhole (69.55, 2.55) scale 0.35 yaw 0; shield (66, 52.2); tron disc (42.1, 11.5) off Conn_Tron; ninja rail (19.9, 46.6) grounded (stem −0.46) and inside the map.
-- **Ring S** (36, 3): monkeys, wall, open 8 m crawl, west tower slide. **Ring N** (36, 51): tube chain with plastic collars, slide south.
-- **Loop W** (16, 25) and **Loop E** (56, 29): wall-run plus end tower, same 3-tile pit.
+- **Landmarks:** helmet (2.5, 51.2) scale 0.30 (max yaw-0 fit; ~4.1 graybox tall); foxhole (69.55, 2.55) scale 0.35 yaw 0; shield (66, 52.2); tron disc (42.1, 11.5) off Conn_Tron; crash torso (36, 32.58) scale 0.39 yaw 0, stem −0.449, north lip of the bowl; ninja rail (36, 48.35) yaw 90 scale 0.725, stem −0.334, height ~1.0 on the north rim.
+- **Ring S** (36, 3): monkeys, wall, open 8 m crawl, west tower slide. **Ring N** (36, 51): tube chain with plastic collars, slide south. Ring pits grow a second column on local +X only (the west column meets SpineXw).
+- **Loop W** (16, 25) and **Loop E** (56, 29): wall-run plus end tower, same 3-tile pit with ±1 wings. A second ±Z wing clips the vault rail.
 
-Playtest: spawn SW → hopscotch (east-west) → south bar → soft-play tubes, slide, or ladder → cross the south spine → middle bars or beam lane → merry apron → cross the north spine → north bar → astro. East: army crawl → bars → kickball → swings → bars → knight, with the east beam lane beside the bars.
+Playtest: spawn SW → hopscotch (east-west) → south bar → soft-play tubes, slide, rung, net beam, or tall net → cross the south spine → middle bars or beam lane → merry apron → cross the north spine → north bar → astro. East: army crawl → bars → kickball → swings → bars → knight, with the east beam lane beside the bars. Crash cross stays open; the torso is on the north lip.
 
 `Mega_SlideTube` / `PGK_Slide_Tube90` stay unused. Tube90 is ~3.45 m tall; Mega_SlideTube's floor rises ~3.4 m. Neither meets 0.40–2.00 without burying the low end. Tron disc is scale 0.5 and shifted east of its Conn ramp.
 
