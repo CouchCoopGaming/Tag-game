@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/volume-punch-results-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/music-results-focus-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 ## Stack snapshot
 
@@ -105,6 +105,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 15. Boot and the pause menu have Look sensitivity. Default should feel like the current camera. Left/Right or the arrows step Low, Lower, Default, Higher, High. Esc leaves the panel without unpausing if you opened it from pause. Quit and relaunch: the same step should still be selected. When a solo round ends, the card should say YOU WIN, YOU LOSE, or DRAW, and name the mode and the winners. Rematch and Menu still click.
 16. First Boot visit should say Play is you and one bot in Least It. Controls lists the real keys. Left/Right on that card steps the air dash key (Q, V, Mouse4). Alt still dashes. Default Q should feel the same. Holding jump through Esc should not hop when you resume. Direct Play pause: H opens the same card.
 17. Controls steps punch (LMB, F, Mouse3) with Up/Down or Punch buttons. E still punches. Default LMB should feel the same. Volume stays on the Audio card (Off, Low, Med, Default, Max, M mute). On the results card, clicking Rematch should not punch and the mouse should not turn you. The next countdown should not still be swinging. Direct Play results should unlock the cursor the same way. Direct Play pause: H still changes dash and punch; - / + changes that same volume; M mutes.
+18. Audio: Left/Right is SFX (the master). Up/Down is the music bed only (Low, Default 0.35, High). N still mutes music and leaves SFX. Default bed should sound the same. On the results card, wait a beat, then Left/Right highlights Rematch then Menu and stops at the ends. Enter uses the highlighted button. R still rematches even if Menu is highlighted, and a second R does not. Q and Esc still return to Boot. A grapple, if you turned that experiment on, should drop when you pause or when the card is up.
 
 ## Known leftovers
 
@@ -115,7 +116,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.
 
 ## Audio
-- Master volume / mute: Boot or pause Audio; Left/Right steps; M mute all; N music only. Saved in PlayerPrefs.
+- Master volume / mute: Boot or pause Audio; Left/Right steps SFX; Up/Down steps the music bed (default 0.35); M mute all; N music only. Saved in PlayerPrefs.
 
 ## Results
-- Rematch / Menu: results ignore input for ~0.25s and one-shot R/click so the round-end click cannot rematch. Punch ForceEnd on results and pause.
+- Rematch / Menu: results ignore input for ~0.25s and one-shot R/click so the round-end click cannot rematch. Left/Right arms a button and stops at the ends. Enter uses it. Punch ForceEnd on results and pause.

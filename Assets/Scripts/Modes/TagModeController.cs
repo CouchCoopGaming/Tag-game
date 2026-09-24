@@ -49,6 +49,7 @@ namespace Tag.Modes
         float _roundStartGuard;
         bool _localPaused;
         bool _localHelp;
+        int _resultsFocus;
         GUIStyle _countStyle;
 
         public TagModeId SelectedMode { get => selectedMode; set => selectedMode = value; }
@@ -265,6 +266,10 @@ namespace Tag.Modes
                         TagArena.Movement.LookSensitivity.Cycle(-1);
                     if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
                         TagArena.Movement.LookSensitivity.Cycle(1);
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
+                        Tag.Audio.AudioMaster.CycleMusic(1);
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))
+                        Tag.Audio.AudioMaster.CycleMusic(-1);
                 }
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Q))
                     LoadBootMenu();
@@ -345,6 +350,19 @@ namespace Tag.Modes
             if (_resultsActionTaken) return;
             if (Time.unscaledTime < _resultsInputReadyAt) return;
             var flow = GameFlow.Instance;
+            // Ends stay put. Left on Rematch and Right on Menu do not wrap or leak.
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) && _resultsFocus != 0)
+            {
+                _resultsFocus = 0;
+                TagSfx.UiClick();
+            }
+            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) && _resultsFocus != 1)
+            {
+                _resultsFocus = 1;
+                TagSfx.UiClick();
+            }
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter))
+                ActivateResultsFocus();
             if (UnityEngine.Input.GetKeyDown(KeyCode.R))
             {
                 _resultsActionTaken = true;
@@ -362,6 +380,24 @@ namespace Tag.Modes
                 _resultsActionTaken = true;
                 LoadBootMenu();
             }
+        }
+
+        void ActivateResultsFocus()
+        {
+            _resultsActionTaken = true;
+            if (_resultsFocus == 0)
+            {
+                var flow = GameFlow.Instance;
+                if (flow != null) flow.Rematch();
+                else
+                {
+                    TagSfx.UiConfirm();
+                    Rematch();
+                }
+                return;
+            }
+            if (GameFlow.Instance != null) GameFlow.Instance.QuitToMenu();
+            else LoadBootMenu();
         }
 
         void LoadBootMenu()
@@ -467,6 +503,7 @@ namespace Tag.Modes
             if (_ctx.RemainingTime < 0f) _ctx.RemainingTime = 0f;
             _phase = MatchPhase.Results;
             _resultsActionTaken = false;
+            _resultsFocus = 0;
             // Ignore the same click/key that ended the round (unscaled: results keep timeScale 1).
             _resultsInputReadyAt = Time.unscaledTime + 0.25f;
 
@@ -549,9 +586,11 @@ namespace Tag.Modes
                 return;
             }
             string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
-            GUI.Box(new Rect(x, y, w, h + 48f), "Paused");
-            GUI.Label(new Rect(x + 16, y + 36, w - 32, 120),
-                "Esc resume\nQ  Boot menu\nH  controls\nM mute / N music  (" + Tag.Audio.AudioMaster.Label + ")\nLeft / Right  " + TagArena.Movement.LookSensitivity.Label + extra);
+            GUI.Box(new Rect(x, y, w, h + 72f), "Paused");
+            GUI.Label(new Rect(x + 16, y + 28, w - 32, 150),
+                "Esc resume\nQ  Boot menu\nH  controls\nM mute (" + Tag.Audio.AudioMaster.Label +
+                ")   N music\nUp / Down bed (" + Tag.Audio.AudioMaster.MusicLabel +
+                ")\nLeft / Right  " + TagArena.Movement.LookSensitivity.Label + extra);
         }
 
         static string ModeTitle(TagModeId id)
@@ -647,7 +686,7 @@ namespace Tag.Modes
         void DrawResultsCard()
         {
             float w = 520f;
-            float h = 220f;
+            float h = 248f;
             float x = (Screen.width - w) * 0.5f;
             float y = Screen.height * 0.26f;
             if (_countStyle == null)
@@ -665,12 +704,18 @@ namespace Tag.Modes
             _countStyle.normal.textColor = Color.white;
             GUI.Label(new Rect(x, y + 12, w, 56), title, _countStyle);
             _countStyle.fontSize = 54;
-            GUI.Label(new Rect(x + 16, y + 72, w - 32, 80),
-                (_resultDetail ?? "") + "\n\nR  Rematch     Q / Esc  Menu");
+            GUI.Label(new Rect(x + 16, y + 72, w - 32, 96),
+                (_resultDetail ?? "") + "\n\nLeft / Right picks. Enter uses it.\nR rematch    Q / Esc menu");
             float bw = 140f;
             float by = y + h - 44f;
             bool canAct = !_resultsActionTaken && Time.unscaledTime >= _resultsInputReadyAt;
-            if (canAct && GUI.Button(new Rect(x + w * 0.5f - bw - 8f, by, bw, 32f), "Rematch"))
+            var remRect = new Rect(x + w * 0.5f - bw - 8f, by, bw, 32f);
+            var menuRect = new Rect(x + w * 0.5f + 8f, by, bw, 32f);
+            if (_resultsFocus == 0)
+                GUI.Box(new Rect(remRect.x - 4f, remRect.y - 4f, remRect.width + 8f, remRect.height + 8f), "");
+            else
+                GUI.Box(new Rect(menuRect.x - 4f, menuRect.y - 4f, menuRect.width + 8f, menuRect.height + 8f), "");
+            if (canAct && GUI.Button(remRect, _resultsFocus == 0 ? "> Rematch" : "Rematch"))
             {
                 _resultsActionTaken = true;
                 var flow = GameFlow.Instance;
@@ -681,7 +726,7 @@ namespace Tag.Modes
                     Rematch();
                 }
             }
-            if (canAct && GUI.Button(new Rect(x + w * 0.5f + 8f, by, bw, 32f), "Menu"))
+            if (canAct && GUI.Button(menuRect, _resultsFocus == 1 ? "> Menu" : "Menu"))
             {
                 _resultsActionTaken = true;
                 if (GameFlow.Instance != null) GameFlow.Instance.QuitToMenu();

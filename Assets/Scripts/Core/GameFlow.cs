@@ -302,6 +302,10 @@ namespace Tag.Core
                     AudioMaster.ToggleMute();
                 if (UnityEngine.Input.GetKeyDown(KeyCode.N))
                     AudioMaster.ToggleMusicMute();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
+                    AudioMaster.CycleMusic(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))
+                    AudioMaster.CycleMusic(-1);
                 return;
             }
 
@@ -401,6 +405,9 @@ namespace Tag.Core
             {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Q)) QuitToMenu();
                 if (UnityEngine.Input.GetKeyDown(KeyCode.M)) AudioMaster.ToggleMute();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.N)) AudioMaster.ToggleMusicMute();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) AudioMaster.CycleMusic(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) AudioMaster.CycleMusic(-1);
             }
         }
 
@@ -505,7 +512,8 @@ namespace Tag.Core
                     _audioOpen = true;
                 }
                 if (GUI.Button(new Rect(cx - 70, cy + 46, 140, 28), "Quit to Menu")) QuitToMenu();
-                GUI.Label(new Rect(cx - 140, cy + 86, 280, 36), "Esc resume    Q menu    M mute");
+                GUI.Label(new Rect(cx - 140, cy + 80, 280, 48),
+                    "Esc resume    Q menu\nM mute    N music    Up / Down bed");
             }
             else if (State == GameFlowState.RoundEnd)
             {
@@ -552,20 +560,25 @@ namespace Tag.Core
         void DrawAudioSettings()
         {
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
-            GUI.Box(new Rect(cx - 200, cy - 120, 400, 240), "Audio");
-            GUI.Label(new Rect(cx - 180, cy - 78, 360, 28), "Volume  " + AudioMaster.Label);
-            if (GUI.Button(new Rect(cx - 150, cy - 40, 80, 28), "<"))
+            GUI.Box(new Rect(cx - 200, cy - 140, 400, 280), "Audio");
+            GUI.Label(new Rect(cx - 180, cy - 108, 360, 28), "SFX  " + AudioMaster.Label);
+            if (GUI.Button(new Rect(cx - 150, cy - 74, 80, 28), "<"))
                 AudioMaster.CycleVolume(-1);
-            if (GUI.Button(new Rect(cx + 70, cy - 40, 80, 28), ">"))
+            if (GUI.Button(new Rect(cx + 70, cy - 74, 80, 28), ">"))
                 AudioMaster.CycleVolume(1);
+            GUI.Label(new Rect(cx - 180, cy - 36, 360, 28), "Music  " + AudioMaster.MusicLabel);
+            if (GUI.Button(new Rect(cx - 150, cy - 4, 80, 28), "<"))
+                AudioMaster.CycleMusic(-1);
+            if (GUI.Button(new Rect(cx + 70, cy - 4, 80, 28), ">"))
+                AudioMaster.CycleMusic(1);
             string muteLabel = AudioMaster.Muted ? "Unmute (M)" : "Mute (M)";
-            if (GUI.Button(new Rect(cx - 150, cy + 0, 140, 28), muteLabel))
+            if (GUI.Button(new Rect(cx - 150, cy + 36, 140, 28), muteLabel))
                 AudioMaster.ToggleMute();
             string musicLabel = AudioMaster.MusicMuted ? "Music on (N)" : "Music off (N)";
-            if (GUI.Button(new Rect(cx + 10, cy + 0, 140, 28), musicLabel))
+            if (GUI.Button(new Rect(cx + 10, cy + 36, 140, 28), musicLabel))
                 AudioMaster.ToggleMusicMute();
-            GUI.Label(new Rect(cx - 180, cy + 48, 360, 48),
-                "Left / Right volume    M mute all    N music    Esc back");
+            GUI.Label(new Rect(cx - 180, cy + 74, 360, 48),
+                "Left / Right SFX    Up / Down music\nM mute all    N music    Esc back");
         }
 
         void DrawRow(float cx, float y, int index, string label)
