@@ -95,7 +95,7 @@ namespace Tag.Modes
             if (_selfMotor != null && _selfMotor.IsMotorLocked)
                 _selfMotor.SetMotorLocked(false);
 
-            // Never enable legacy CharacterController ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â TagArena is RB-only.
+            // Never enable legacy CharacterController ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â TagArena is RB-only.
             var cc = GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
 
@@ -135,7 +135,7 @@ namespace Tag.Modes
             }
             if (_selfMotor != null && _selfMotor.IsMotorLocked)
             {
-                // Stun / ragdoll proxy owns the lock ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â do not fight it.
+                // Stun / ragdoll proxy owns the lock ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â do not fight it.
                 StopWish();
                 return;
             }
@@ -235,7 +235,7 @@ namespace Tag.Modes
         {
             float bias = fleeStrafeBias;
             float u = HotPotatoFuseUrgency();
-            // Less lateral wobble when fuse is low ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â commit to getting away from It.
+            // Less lateral wobble when fuse is low ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â commit to getting away from It.
             if (u > 0f)
                 bias = Mathf.Lerp(bias, bias * 0.35f, u);
             return bias;
@@ -325,7 +325,7 @@ namespace Tag.Modes
 
         /// <summary>
         /// Trail Tag only: sample a snapshot of live TrailSegments via CopyActive (from PlayerTrailEmitter ribbons)
-        /// and cache a weighted lateral flee wish. Cheap ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â runs at decisionHz.
+        /// and cache a weighted lateral flee wish. Cheap ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â runs at decisionHz.
         /// </summary>
         void RefreshTrailFleeWish()
         {
@@ -345,7 +345,7 @@ namespace Tag.Modes
             foreach (var seg in _trailActiveScratch)
             {
                 if (seg == null) continue;
-                // Closest point on ribbon AÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Å“B (not collider midpoint) so long segments steer correctly.
+                // Closest point on ribbon AÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œB (not collider midpoint) so long segments steer correctly.
                 Vector3 delta = pos - seg.ClosestPointOnSegment(pos);
                 delta.y = 0f;
                 float dsq = delta.sqrMagnitude;
@@ -408,7 +408,7 @@ namespace Tag.Modes
                 return;
             }
             desired.Normalize();
-            // Always turn. The old 16Ãƒâ€šÃ‚Â° snap made a juke useless once they were lined up.
+            // Always turn. The old 16ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° snap made a juke useless once they were lined up.
             Quaternion look = Quaternion.LookRotation(desired, Vector3.up);
             float rate = Mathf.Min(turnSpeed, 150f);
             if (Vector3.Angle(transform.forward, desired) <= faceAlignDeg)
@@ -441,7 +441,7 @@ namespace Tag.Modes
 
         /// <summary>
         /// Body-relative wish: AI has no TP cam, so PlayerMotor uses transform as wish basis.
-        /// Face first, then push forward ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â matches human TP (yaw then Move.y).
+        /// Face first, then push forward ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â matches human TP (yaw then Move.y).
         /// </summary>
         void DriveWish(float moveY, bool sprint, float strafe = 0f, bool jump = false, bool lunge = false)
         {
@@ -515,7 +515,7 @@ namespace Tag.Modes
                 // Slightly wider decision cone when dumping a low fuse.
                 float cone = EffectivePunchConeHalfDeg() * (1f + 0.2f * urgency);
                 bool inCone = dist <= range && ang <= cone;
-                // A hard strafe past the fist should whiff ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â not a guaranteed tag.
+                // A hard strafe past the fist should whiff ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â not a guaranteed tag.
                 Vector3 juke = TargetPlanarVelocity();
                 float lateral = Mathf.Abs(Vector3.Dot(juke, transform.right));
                 bool juked = lateral > 7.5f && Random.value < 0.7f;
@@ -644,7 +644,7 @@ namespace Tag.Modes
                 bool grounded = _selfMotor == null || _selfMotor.IsGrounded;
                 // Probe flee heading for a real deck lip; mild panic hop only when It is close.
                 float fleeLip = ProbeAheadDeckDy(away);
-                float panicDy = threatDist < 5.5f ? 0.55f : 0f;
+                float panicDy = threatDist < 5.5f ? 0.9f : 0f; // must clear ConsumeHop minDy (0.85)
                 float hopDy = Mathf.Max(fleeLip, panicDy);
                 float hopDist = Mathf.Clamp(threatDist, 1.2f, 8f);
                 bool jump = ConsumeHop(hopDy, hopDist, grounded, 0.85f, 9f);

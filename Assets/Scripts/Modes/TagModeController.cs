@@ -53,6 +53,7 @@ namespace Tag.Modes
         public ITagMode ActiveMode => _mode;
         public TagModeContext Context => _ctx;
         public MatchPhase Phase => _phase;
+        public bool SuddenDeath => _ctx.SuddenDeath;
         public string ResultMessage => _resultMessage;
         /// <summary>Last punch/round handoff, for the local TAG flash.</summary>
         public string LastFromId { get; private set; }
@@ -320,9 +321,9 @@ namespace Tag.Modes
         }
 
         /// <summary>
-        /// F1–F4 start a round from the pads, not from wherever the last ragdoll stopped.
-        /// Slot follows P1/P2/… when the id parses; everyone else fills the next free pad.
-        /// Yaw is left alone — the chase camera owns it.
+        /// F1â€“F4 start a round from the pads, not from wherever the last ragdoll stopped.
+        /// Slot follows P1/P2/â€¦ when the id parses; everyone else fills the next free pad.
+        /// Yaw is left alone â€” the chase camera owns it.
 
         /// </summary>
         void PlacePlayersOnPads()

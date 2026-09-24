@@ -35,13 +35,13 @@ namespace TagArena.Movement
         float _itFlashUntil;
         bool _itFlashGained;
 
-        // Trail Tag near-miss (foreign ribbon) â€” soft edge warn before eliminate contact.
+        // Trail Tag near-miss (foreign ribbon) Ã¢â‚¬â€ soft edge warn before eliminate contact.
         const float TrailNearMissWarnM = 4.5f;
         readonly List<TrailSegment> _trailNearScratch = new List<TrailSegment>();
         float _trailNearDist = float.MaxValue;
         bool _trailNearActive;
 
-        // Trail Tag eliminate â€” brief center flash when local IsAlive drops (trail hit).
+        // Trail Tag eliminate Ã¢â‚¬â€ brief center flash when local IsAlive drops (trail hit).
         const float TrailOutFlashSec = 0.65f;
         bool _aliveFlashPrimed;
         bool _prevLocalAlive = true;
@@ -170,7 +170,7 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// Watch local ItController.IsIt â€” same flag SetIt / TransferIt / PunchHitbox mutate.
+        /// Watch local ItController.IsIt Ã¢â‚¬â€ same flag SetIt / TransferIt / PunchHitbox mutate.
         /// Skip first sample so spawn / HUD enable does not false-flash.
         /// </summary>
         void TickItHandoffFlash()
@@ -321,7 +321,7 @@ namespace TagArena.Movement
 
         /// <summary>
         /// Trail Tag only: closest foreign TrailSegment via CopyActive + ClosestPointOnSegment
-        /// (same helpers DummyPatrol trail avoid uses). Warn under TrailNearMissWarnM â€” soft
+        /// (same helpers DummyPatrol trail avoid uses). Warn under TrailNearMissWarnM Ã¢â‚¬â€ soft
         /// readability cue before BoxCollider eliminate; does not change hit rules.
         /// </summary>
         void TickTrailNearMiss()
@@ -349,7 +349,7 @@ namespace TagArena.Movement
             {
                 var seg = _trailNearScratch[i];
                 if (seg == null) continue;
-                // Foreign only â€” own ribbon is self-grace / separate fairness case.
+                // Foreign only Ã¢â‚¬â€ own ribbon is self-grace / separate fairness case.
                 if (seg.Owner != null && seg.Owner == self) continue;
                 if (seg.Owner == null && !string.IsNullOrEmpty(seg.OwnerId)
                     && seg.OwnerId == self.PlayerId) continue;
@@ -381,7 +381,7 @@ namespace TagArena.Movement
             float a = Mathf.Lerp(0.12f, 0.42f, urgency * pulse);
 
             Color prev = GUI.color;
-            // Cyan edge â†’ hot warn as you close in (same family as It flee compass).
+            // Cyan edge Ã¢â€ â€™ hot warn as you close in (same family as It flee compass).
             Color calm = new Color(0.2f, 0.95f, 1f, a);
             Color hot = new Color(1f, 0.35f, 0.45f, a);
             GUI.color = Color.Lerp(calm, hot, urgency * pulse);
@@ -433,7 +433,7 @@ namespace TagArena.Movement
 
 
         /// <summary>
-        /// Watch local ItController.IsAlive â€” same flag TrailSegment hit / EliminatePlayer mutate.
+        /// Watch local ItController.IsAlive Ã¢â‚¬â€ same flag TrailSegment hit / EliminatePlayer mutate.
         /// Trail Tag only. Skip first sample so spawn / HUD enable does not false-flash.
         /// Does not invent trail rules; mirrors IsAlive edge after existing eliminate path.
         /// </summary>
@@ -471,7 +471,7 @@ namespace TagArena.Movement
 
         /// <summary>
         /// Cave-man center flash ~0.65s on trail eliminate: OUT! + TRAIL HIT.
-        /// Distinct from TAG handoff (YOU'RE IT / FREE) and near-miss TRAIL! edge pulse â€”
+        /// Distinct from TAG handoff (YOU'RE IT / FREE) and near-miss TRAIL! edge pulse Ã¢â‚¬â€
         /// lower screen, hot red, no edge bars.
         /// </summary>
         void DrawTrailEliminateFlash()
@@ -547,6 +547,8 @@ namespace TagArena.Movement
                 modeName = FriendlyModeName(modes.SelectedMode) + " | " + PhaseLabel(modes.Phase);
                 if (modes.SelectedMode == TagModeId.LeastIt && modes.Phase == MatchPhase.Playing && modes.Remaining > 0f)
                     modeName += "  " + modes.Remaining.ToString("0") + "s  lowest wins";
+                if (modes.SelectedMode == TagModeId.TrailTag && modes.Phase == MatchPhase.Playing && modes.SuddenDeath)
+                    modeName += "  SUDDEN DEATH";
                 it = modes.CurrentIt;
                 if (it == null)
                     it = ScanItControllers();
@@ -630,7 +632,7 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// Pulse fuse/It status text: scale + amberâ†’hot tint, faster as urgency rises.
+        /// Pulse fuse/It status text: scale + amberÃ¢â€ â€™hot tint, faster as urgency rises.
         /// </summary>
         void DrawFuseUrgencyLabel(Rect r, string text, float urgency)
         {
@@ -641,7 +643,7 @@ namespace TagArena.Movement
             float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
             float pulse = Mathf.Lerp(0.35f, 1f, wave);
 
-            // Status amber â†’ hot-potato warn (magenta-orange), same family as It flee compass.
+            // Status amber Ã¢â€ â€™ hot-potato warn (magenta-orange), same family as It flee compass.
             Color calm = new Color(1f, 0.92f, 0.55f, 1f);
             Color hot = new Color(1f, 0.35f, 0.55f, 1f);
             Color tint = Color.Lerp(calm, hot, urgency * pulse);
@@ -659,7 +661,7 @@ namespace TagArena.Movement
 
         /// <summary>
         /// Cave-man compass toward It: camera-relative 8-way + flat meters.
-        /// Pulses under ~12m (cyan/white â†’ hot-potato warn) so close flee reads distinct from Prey hunt.
+        /// Pulses under ~12m (cyan/white Ã¢â€ â€™ hot-potato warn) so close flee reads distinct from Prey hunt.
         /// </summary>
         float DrawItBearing(ItController it, float y)
         {
@@ -723,7 +725,7 @@ namespace TagArena.Movement
         /// Shared cave-man compass: camera-relative 8-way + flat meters.
         /// Label examples: "It ->  SW  18m" / "Prey ->  SW  18m".
         /// When pulseClose and dist &lt; CompassPulseDistM: scale/alpha/color urgency pulse.
-        /// itWarnTint: cyan/white â†’ magenta-orange (flee); else amber â†’ red (hunt).
+        /// itWarnTint: cyan/white Ã¢â€ â€™ magenta-orange (flee); else amber Ã¢â€ â€™ red (hunt).
         /// </summary>
         float DrawCompassBearing(string label, Vector3 to, float y, bool pulseClose, bool itWarnTint = false)
         {
@@ -760,7 +762,7 @@ namespace TagArena.Movement
             Matrix4x4 prevMatrix = GUI.matrix;
             if (pulseClose && dist < CompassPulseDistM)
             {
-                // 0 at threshold, 1 at contact â€” closer = hotter / bigger / faster pulse.
+                // 0 at threshold, 1 at contact Ã¢â‚¬â€ closer = hotter / bigger / faster pulse.
                 float urgency = 1f - Mathf.Clamp01(dist / CompassPulseDistM);
                 float hz = Mathf.Lerp(3.5f, 9f, urgency);
                 float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
@@ -770,13 +772,13 @@ namespace TagArena.Movement
                 Color hot;
                 if (itWarnTint)
                 {
-                    // Fleeing It: cyan/white â†’ hot-potato warn (magenta-orange), distinct from Prey hunt.
+                    // Fleeing It: cyan/white Ã¢â€ â€™ hot-potato warn (magenta-orange), distinct from Prey hunt.
                     calm = new Color(0.55f, 0.95f, 1f, 1f);
                     hot = new Color(1f, 0.35f, 0.55f, 1f);
                 }
                 else
                 {
-                    // Hunting Prey: amber â†’ red.
+                    // Hunting Prey: amber Ã¢â€ â€™ red.
                     calm = new Color(1f, 0.92f, 0.55f, 1f);
                     hot = new Color(1f, 0.28f, 0.12f, 1f);
                 }
