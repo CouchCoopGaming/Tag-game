@@ -330,9 +330,9 @@ namespace Tag.Modes
         }
 
         /// <summary>
-        /// F1Ã¢â‚¬â€œF4 start a round from the pads, not from wherever the last ragdoll stopped.
-        /// Slot follows P1/P2/Ã¢â‚¬Â¦ when the id parses; everyone else fills the next free pad.
-        /// Yaw is left alone Ã¢â‚¬â€ the chase camera owns it.
+        /// F1â€“F4 start a round from the pads, not from wherever the last ragdoll stopped.
+        /// Slot follows P1/P2/â€¦ when the id parses; everyone else fills the next free pad.
+        /// Yaw is left alone â€” the chase camera owns it.
 
         /// </summary>
         void PlacePlayersOnPads()

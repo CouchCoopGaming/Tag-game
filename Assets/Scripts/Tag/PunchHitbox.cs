@@ -16,7 +16,7 @@ namespace Tag.Gameplay
     }
 
     /// <summary>
-    /// It-only dedicated melee. Active punch ONLY ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â NO passive overlap/aura tag.
+    /// It-only dedicated melee. Active punch ONLY — NO passive overlap/aura tag.
     /// Prefer continuous cast during Active. Closest runner with LoS wins.
     /// </summary>
     public class PunchHitbox : MonoBehaviour
@@ -289,7 +289,7 @@ namespace Tag.Gameplay
             var tps = GetComponentInChildren<TpsMoveCamera>(true);
             if (tps != null)
                 tps.AddKick(new Vector3(0f, 0.14f, -0.38f));
-            // Victim's chase cam, lighter than the attacker's. No hitstop ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â nothing else freezes time.
+            // Victim's chase cam, lighter than the attacker's. No hitstop — nothing else freezes time.
             var victimCam = victim.GetComponentInChildren<TpsMoveCamera>(true);
             if (victimCam != null && victimCam != tps)
                 victimCam.AddKick(new Vector3(0.04f, 0.08f, -0.18f));

@@ -166,7 +166,7 @@ namespace Tag.Core
         }
 
         /// <summary>
-        /// F1Ã¢â‚¬â€œF4 and rematch leave RoundEnd / Pause. Otherwise R still rematches
+        /// F1–F4 and rematch leave RoundEnd / Pause. Otherwise R still rematches
         /// the new round, and a pause leaves timeScale at 0 so the countdown never finishes.
         /// </summary>
         public void ReturnToPlay()
@@ -292,16 +292,16 @@ namespace Tag.Core
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
             if (State == GameFlowState.Boot)
             {
-                GUI.Box(new Rect(cx - 180, cy - 80, 360, 170), "TAG Ã¢â‚¬â€ party slice");
-                GUI.Label(new Rect(cx - 170, cy - 52, 340, 36), "Crash-test dummies Ã‚Â· playground Ã‚Â· punch-tag");
+                GUI.Box(new Rect(cx - 180, cy - 80, 360, 170), "TAG — party slice");
+                GUI.Label(new Rect(cx - 170, cy - 52, 340, 36), "Crash-test dummies · playground · punch-tag");
                 if (GUI.Button(new Rect(cx - 90, cy - 10, 180, 32), "Play Tag (Least It)"))
                     PlayLeastItSlice();
-                if (GUI.Button(new Rect(cx - 90, cy + 28, 180, 28), "Mode selectÃ¢â‚¬Â¦"))
+                if (GUI.Button(new Rect(cx - 90, cy + 28, 180, 28), "Mode select…"))
                 {
                     LocalPlayerRoster.SetCount(1);
                     GoToModeSelect();
                 }
-                if (GUI.Button(new Rect(cx - 90, cy + 62, 180, 28), "CouchÃ¢â‚¬Â¦"))
+                if (GUI.Button(new Rect(cx - 90, cy + 62, 180, 28), "Couch…"))
                     GoToPlayerCount();
             }
             else if (State == GameFlowState.PlayerCount)
@@ -311,16 +311,16 @@ namespace Tag.Core
                 DrawRow(cx, cy - 35, 1, "2 Players (couch)");
                 DrawRow(cx, cy, 2, "3 Players (couch)");
                 DrawRow(cx, cy + 35, 3, "4 Players (couch)");
-                GUI.Label(new Rect(cx - 150, cy + 75, 300, 40), "1Ã¢â‚¬â€œ4 Ã‚Â· Enter");
+                GUI.Label(new Rect(cx - 150, cy + 75, 300, 40), "1–4 · Enter");
             }
             else if (State == GameFlowState.ModeSelect)
             {
-                GUI.Box(new Rect(cx - 220, cy - 150, 440, 300), LocalPlayerRoster.IsCouch ? $"Mode Ã¢â‚¬â€ {LocalPlayerRoster.PlayerCount}P couch" : "Mode Ã¢â‚¬â€ SP + Dummy");
+                GUI.Box(new Rect(cx - 220, cy - 150, 440, 300), LocalPlayerRoster.IsCouch ? $"Mode — {LocalPlayerRoster.PlayerCount}P couch" : "Mode — SP + Dummy");
                 DrawMode(cx, cy - 100, 0, "1  Hot Potato  (first to 2 - fuse 45/40/35s)");
                 DrawMode(cx, cy - 60, 1, "2  Least It    (120s + next-punch tiebreak)");
                 DrawMode(cx, cy - 20, 2, "3  Trail Tag   (ribbons eliminate - last standing)");
                 DrawMode(cx, cy + 20, 3, "4  Free play   (punch transfers It - no timer)");
-                GUI.Label(new Rect(cx - 180, cy + 70, 360, 40), "1/2/3/4 Ã‚Â· Enter to play");
+                GUI.Label(new Rect(cx - 180, cy + 70, 360, 40), "1/2/3/4 · Enter to play");
             }
             else if (State == GameFlowState.Paused)
             {
