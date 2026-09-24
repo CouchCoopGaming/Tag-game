@@ -27,11 +27,12 @@ namespace Tag.Level
             // Named play courts (pad centers from CutArenaBootstrap Pass4)
             ("SOFT PLAY",     14f, 9.75f),
             ("MERRY",          7f, 24f),
-            ("SWING",         67f, 31f),
+            ("SWING",         67f, 31.2f),
             ("KICKBALL",      67f, 24f),
             ("HOPSCOTCH SW",  4.5f,  9f),
             ("HOPSCOTCH SE",  70f, 12f),
             ("HOPSCOTCH NE",  70f, 38f),
+            ("HOPSCOTCH NW",  3.2f, 42f),
             ("BARS W",        11f, 26f),
             ("BARS E",      62.5f, 26f),
             ("BEAM W",      13.5f, 25.25f),

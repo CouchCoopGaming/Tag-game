@@ -11,13 +11,13 @@ Graybox pad cubes are gone (they were stretching HiPoly into a low-poly look). F
 - **Army bunker** (58, 9.75) and **knight keep** (58, 44.25): same tower and pit, crawl at local (−2, −4.5), climb net, plus a 1.8 m `Toy_Ladder` at local (1.20, 0, 0.45) yaw −90 on the net side (reaches the 1.60 deck, not the 2.00 cap).
 - **BARS W** x=11 and **BARS E** x=62.5. West stays at 11 (mast). Merry apron covers the middle spans. East bar mesh is fully on the kickball rubber (pad starts x=62).
 - **Beam lanes:** west x=13.5, z centers 22.25 / 25.25 / 28.25 (ends z=29.75, tower deck starts z=30). East x=60.5, z centers 25.75 / 28.75 / 31.75 (starts z=24.25, tower deck ends z=24).
-- **Merry** (7, 24) apron local x=4 at z=±1 and ±2. Local (4, 0) omitted so bar feet at the joint stay on mulch. **Kickball** south fence local z=−4.0. **Hopscotch** SW (4.5, 9) yaw 90; SE and NE unchanged.
-- **Spawns:** SW toys (2.2, 4), NW toys (2.5, 44). Pads stay clear.
+- **Hopscotch** SW (4.5, 9) yaw 90; SE (70, 12); NE (70, 38); NW (3.2, 42) yaw 0, south of Spawn_NW and west of astro. Mushroom steps at (4.5, 6.94) sit between Spawn_SW and the SW court, beside the faced exit. Merry picnic is local (−2.2, −2.6), feet on y=0.
+- **Swings** (67, 31.2): south tiles clear the kickball north fence by ~0.16 m. The swing pad stops at z=34.2, short of the north spine.
 - **Landmarks:** helmet (2.5, 51.2) scale 0.30 (max yaw-0 fit; ~4.1 graybox tall); foxhole (69.55, 2.55) scale 0.35 yaw 0; shield (66, 52.2); tron disc (42.1, 11.5) off Conn_Tron; crash torso (12, 52.12) scale 0.28 yaw 0, stem −0.322, NW lawn 1.0 m north of Spawn_NW so the crash lips stay clear (the mesh is too deep for the lane-to-spine gaps); ninja rail (36, 48.70) yaw 90 scale 0.725, stem −0.334, height ~1.0 (10:1 mesh cannot be a short rail). Beam stays local (−2.52, −1.19): closer to the deck hits the corner post.
 - **Ring S** (36, 3): monkeys, wall, open 8 m crawl, west tower slide. **Ring N** (36, 51): tube chain with plastic collars, slide south. Ring pits grow a second column on local +X only (the west column meets SpineXw).
 - **Loop W** (16, 25) and **Loop E** (56, 29): wall-run plus end tower, same 3-tile pit with ±1 wings. A second ±Z wing clips the vault rail.
 
-Playtest: spawn SW → hopscotch (east-west) → south bar → soft-play tubes, slide, rung, net beam, or tall net → cross the south spine → middle bars or beam lane → merry apron → cross the north spine → north bar → astro. East: army crawl → bars → kickball → swings → bars → knight, with the east beam lane beside the bars. Crash cross stays open; the torso is on the north lip.
+Playtest: spawn SW → mushroom step → hopscotch SW → south bar → soft-play → cross the south spine → bars or beams → merry → cross the north spine → north bar → astro → hopscotch NW. East: army → bars → kickball → swings → bars → knight → hopscotch NE. Crash cross stays open. The torso is north of Spawn_NW, off the faced exit.
 
 `Mega_SlideTube` / `PGK_Slide_Tube90` stay unused. Tube90 is ~3.45 m tall; Mega_SlideTube's floor rises ~3.4 m. Neither meets 0.40–2.00 without burying the low end. Tron disc is scale 0.5 and shifted east of its Conn ramp.
 
