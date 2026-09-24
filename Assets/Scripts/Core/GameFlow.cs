@@ -397,6 +397,7 @@ namespace Tag.Core
             {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Q)) QuitToMenu();
                 if (UnityEngine.Input.GetKeyDown(KeyCode.M)) AudioMaster.ToggleMute();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.N)) AudioMaster.ToggleMusicMute();
             }
         }
 
@@ -501,7 +502,7 @@ namespace Tag.Core
                     _audioOpen = true;
                 }
                 if (GUI.Button(new Rect(cx - 70, cy + 46, 140, 28), "Quit to Menu")) QuitToMenu();
-                GUI.Label(new Rect(cx - 140, cy + 86, 280, 36), "Esc resume    Q menu    M mute");
+                GUI.Label(new Rect(cx - 140, cy + 86, 280, 36), "Esc resume    Q menu    M mute    N music");
             }
             else if (State == GameFlowState.RoundEnd)
             {

@@ -544,10 +544,10 @@ namespace Tag.Modes
             float y = Screen.height * 0.38f;
             if (_localHelp)
             {
-                GUI.Box(new Rect(x - 40f, y, w + 80f, 320f), "Controls");
-                GUI.Label(new Rect(x - 24f, y + 28, w + 48f, 270),
+                GUI.Box(new Rect(x - 40f, y, w + 80f, 340f), "Controls");
+                GUI.Label(new Rect(x - 24f, y + 28, w + 48f, 290),
                     TagArena.Movement.ControlBinds.Help +
-                    "\n\nH close\nLeft / Right dash    Up / Down punch\n- / + volume    M mute");
+                    "\n\nH close\nLeft / Right dash    Up / Down punch\n- / + volume    M mute    N music");
                 return;
             }
             string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
