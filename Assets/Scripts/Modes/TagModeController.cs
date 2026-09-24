@@ -161,6 +161,10 @@ namespace Tag.Modes
                 SetLocalPause(false);
             if (GameFlow.Instance != null)
                 GameFlow.Instance.ReturnToPlay();
+            // Direct Play has no flow to lock the cursor after the results card.
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+            Time.timeScale = 1f;
             SetMode(id);
             RefreshPlayers();
             _endedNotified = false;
@@ -193,6 +197,8 @@ namespace Tag.Modes
                 p.ApplySpawnIFrames(matchTuning.spawnIFramesSec);
                 var e = p.GetComponent<PlayerTrailEmitter>();
                 if (e != null) { e.ClearTrail(); e.SetEmitting(false); }
+                var punch = p.GetComponent<PunchHitbox>();
+                if (punch != null) punch.ForceEnd();
             }
 
             PlacePlayersOnPads();
@@ -242,6 +248,14 @@ namespace Tag.Modes
                         TagArena.Movement.ControlBinds.CycleDash(-1);
                     if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
                         TagArena.Movement.ControlBinds.CycleDash(1);
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
+                        TagArena.Movement.ControlBinds.CyclePunch(-1);
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))
+                        TagArena.Movement.ControlBinds.CyclePunch(1);
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.Minus) || UnityEngine.Input.GetKeyDown(KeyCode.LeftBracket))
+                        Tag.Audio.AudioMaster.CycleVolume(-1);
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.Equals) || UnityEngine.Input.GetKeyDown(KeyCode.RightBracket))
+                        Tag.Audio.AudioMaster.CycleVolume(1);
                 }
                 else
                 {
@@ -468,6 +482,12 @@ namespace Tag.Modes
             _endedNotified = true;
             var flow = GameFlow.Instance != null ? GameFlow.Instance : FindFirstObjectByType<GameFlow>();
             if (flow != null) flow.OnRoundEnded(_resultMessage);
+            else
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                Time.timeScale = 1f;
+            }
         }
 
         void PollLocalPause()
@@ -506,9 +526,10 @@ namespace Tag.Modes
             float y = Screen.height * 0.38f;
             if (_localHelp)
             {
-                GUI.Box(new Rect(x - 40f, y, w + 80f, 280f), "Controls");
-                GUI.Label(new Rect(x - 24f, y + 28, w + 48f, 220),
-                    TagArena.Movement.ControlBinds.Help + "\n\nH close    Left / Right dash key");
+                GUI.Box(new Rect(x - 40f, y, w + 80f, 320f), "Controls");
+                GUI.Label(new Rect(x - 24f, y + 28, w + 48f, 270),
+                    TagArena.Movement.ControlBinds.Help +
+                    "\n\nH close\nLeft / Right dash    Up / Down punch\n- / + volume    M mute");
                 return;
             }
             string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
@@ -578,7 +599,8 @@ namespace Tag.Modes
             _countStyle.normal.textColor = Color.white;
             GUI.Label(new Rect(x, y + 28, w, 70), show.ToString(), _countStyle);
             string hint = _firstCountdownHint
-                ? "WASD sprint   Ctrl slide   Q dash\nLMB punch transfers It"
+                ? "WASD sprint   Ctrl slide   " + TagArena.Movement.ControlBinds.DashName + " dash\n" +
+                  TagArena.Movement.ControlBinds.PunchName + " punch transfers It"
                 : "Punch the dummy with the orange hat";
             GUI.Label(new Rect(x + 16, y + 104, w - 32, 48), hint);
         }

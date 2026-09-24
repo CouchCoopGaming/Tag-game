@@ -84,6 +84,14 @@ namespace Tag.Gameplay
                 _bufferTimer = 0f;
                 return;
             }
+            // Results stay at timeScale 1. A swing must not finish on the card.
+            if (Cursor.lockState != CursorLockMode.Locked)
+            {
+                _bufferTimer = 0f;
+                if (Phase != PunchPhase.Idle)
+                    EndPunch();
+                return;
+            }
             float dt = Time.deltaTime;
 
             if (_input != null && _input.PunchPressed)
@@ -181,6 +189,13 @@ namespace Tag.Gameplay
         {
             var loco = GetComponentInChildren<DummyLocomotor>();
             if (loco != null) loco.HoldPunchTelegraph();
+        }
+
+        /// <summary>Drop a swing that started on the results click so it does not carry into countdown.</summary>
+        public void ForceEnd()
+        {
+            _bufferTimer = 0f;
+            EndPunch();
         }
 
         void EndPunch()

@@ -154,7 +154,10 @@ namespace TagArena.Movement
                 y += 32f;
             }
 
-            GUI.Label(new Rect(24, y, 280, 230), Controls, _keys);
+            string keys = Controls
+                .Replace("LMB/E punch", ControlBinds.PunchName + "/E punch")
+                .Replace("Q/Alt air dash", ControlBinds.DashName + "/Alt air dash");
+            GUI.Label(new Rect(24, y, 280, 230), keys, _keys);
             y += 214f;
 
             DrawMatchStatus(y);

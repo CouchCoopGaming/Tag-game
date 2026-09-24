@@ -64,6 +64,7 @@ namespace Tag.Audio
         public static void Play(AudioSource src, AudioClip clip, float vol = DefaultVol)
         {
             if (clip == null) return;
+            AudioMaster.Apply();
             vol = Mathf.Clamp01(vol);
             if (src != null)
             {
@@ -77,6 +78,7 @@ namespace Tag.Audio
         public static void PlayAt(AudioClip clip, Vector3 pos, float vol = DefaultVol)
         {
             if (clip == null) return;
+            AudioMaster.Apply();
             AudioSource.PlayClipAtPoint(clip, pos, Mathf.Clamp01(vol));
         }
 
@@ -93,6 +95,7 @@ namespace Tag.Audio
             src.spatialBlend = 0.65f;
             src.rolloffMode = AudioRolloffMode.Linear;
             src.maxDistance = 22f;
+            AudioMaster.Apply();
             src.pitch = 1.15f + Random.Range(-0.04f, 0.04f);
             src.volume = 0.28f;
             src.clip = clip;

@@ -315,6 +315,10 @@ namespace Tag.Core
                     ControlBinds.CycleDash(-1);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
                     ControlBinds.CycleDash(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
+                    ControlBinds.CyclePunch(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))
+                    ControlBinds.CyclePunch(1);
                 return;
             }
 
@@ -517,14 +521,18 @@ namespace Tag.Core
         void DrawControls()
         {
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
-            GUI.Box(new Rect(cx - 230, cy - 170, 460, 340), "Controls");
-            GUI.Label(new Rect(cx - 210, cy - 140, 420, 220), ControlBinds.Help);
-            if (GUI.Button(new Rect(cx - 150, cy + 88, 80, 28), "<"))
+            GUI.Box(new Rect(cx - 240, cy - 200, 480, 390), "Controls");
+            GUI.Label(new Rect(cx - 220, cy - 170, 440, 250), ControlBinds.Help);
+            if (GUI.Button(new Rect(cx - 220, cy + 88, 100, 26), "Dash <"))
                 ControlBinds.CycleDash(-1);
-            if (GUI.Button(new Rect(cx + 70, cy + 88, 80, 28), ">"))
+            if (GUI.Button(new Rect(cx - 112, cy + 88, 100, 26), "Dash >"))
                 ControlBinds.CycleDash(1);
-            GUI.Label(new Rect(cx - 210, cy + 122, 420, 36),
-                "Left / Right changes air dash. Alt still dashes. Esc back.");
+            if (GUI.Button(new Rect(cx + 4, cy + 88, 100, 26), "Punch <"))
+                ControlBinds.CyclePunch(-1);
+            if (GUI.Button(new Rect(cx + 112, cy + 88, 100, 26), "Punch >"))
+                ControlBinds.CyclePunch(1);
+            GUI.Label(new Rect(cx - 220, cy + 122, 440, 48),
+                "Left / Right dash. Up / Down punch. E still punches.\nAlt still dashes. Volume is the Audio card. Esc back.");
         }
 
         void DrawLookSettings()

@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/controls-boot-pause-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/volume-punch-results-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 ## Stack snapshot
 
@@ -76,6 +76,7 @@ Walk these in order. Spines and the crash cross stay empty. This pass did not mo
 - Trail Tag self-hit still needs both age and distance grace. Dodge i-frames do not ignore trails. Punch updates It brightness the same frame for every emitter mode. ItOnly still gates who emits.
 - Results card: solo headline is YOU WIN, YOU LOSE, or DRAW, and it names the mode and the winners. Couch with a split result stays ROUND OVER. Rematch click plays UiConfirm. A loss line does not say "winner", so it does not play the win tone. Hot Potato HUD says YOU HOLD THE FUSE when you are It; Trail marks YOU and OUT waiting for round; sudden death explains the next hit. **R** / Rematch starts once; Boot does not also rematch. A second StartRound inside 0.05 s is ignored. **Q** or **Esc** returns to Boot. F1-F4 or R leave pause and round-end so the countdown is not frozen. Esc on player-count and mode screens steps back to Boot. Keys 1-4: you + 1 bot, or 2-4 humans with the bot off. Direct Play pauses on Esc; Q loads Boot. Pause zeroes look and punch, clears a buffered jump; HUD flashes use scaled time so they freeze. Countdown card names the mode (3-2-1). Local punch windup flares the elbow (0.12 s unchanged). Look sensitivity is a five-step stub (default 1.8); Boot and pause open it; Left/Right change it. Direct-Play pause notes Countdown frozen. Playground music stays silent when the clip is null. Ski entry still uses TagSfx.EnsureSource.
 - Look sensitivity stays in PlayerPrefs (`Tag.LookSensitivity`, default 1.8) and loads when the camera wakes. Controls help is on Boot, the pause menu, and Direct Play (H). Air dash can be Q (default), V, or Mouse4; Left Alt still dashes, and that choice is saved. A jump or crouch held through pause is not a new press on resume. A dash or punch tap during pause does not fire later. The first Boot visit says Play is you and one bot in Least It until you start.
+- Punch can be LMB (default), F, or Mouse3; E still punches. That choice is `Tag.PunchKey`. Volume and mute stay on the Boot and pause Audio card (`AudioMaster`, default 0.8). On the results card the cursor is unlocked and gameplay input is zeroed, so a Rematch click does not punch or yaw. StartRound locks the cursor and ends any swing that was still out. Windup stays 0.12 s. Slide, jump, dash, and jet numbers are unchanged.
 
 ## Feel check (code, not a Unity play)
 
@@ -103,6 +104,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 14. Esc during Play pauses. Mouse look should stop and a click on Resume should not punch. A jump you buffered just before Esc should not fire when you resume. HUD flashes should freeze while paused. Direct Play (opened without Boot) still pauses, and Q loads Boot. Left/Right on that pause card changes look speed. Boot's player and mode screens: Esc steps back. Row 1 is you + 1 bot. Rows 2-4 are humans and the bot stays off. The countdown names the mode and counts 3, then 2, then 1. No music bed is expected. A ski entry still makes a tone.
 15. Boot and the pause menu have Look sensitivity. Default should feel like the current camera. Left/Right or the arrows step Low, Lower, Default, Higher, High. Esc leaves the panel without unpausing if you opened it from pause. Quit and relaunch: the same step should still be selected. When a solo round ends, the card should say YOU WIN, YOU LOSE, or DRAW, and name the mode and the winners. Rematch and Menu still click.
 16. First Boot visit should say Play is you and one bot in Least It. Controls lists the real keys. Left/Right on that card steps the air dash key (Q, V, Mouse4). Alt still dashes. Default Q should feel the same. Holding jump through Esc should not hop when you resume. Direct Play pause: H opens the same card.
+17. Controls steps punch (LMB, F, Mouse3) with Up/Down or Punch buttons. E still punches. Default LMB should feel the same. Volume stays on the Audio card (Off, Low, Med, Default, Max, M mute). On the results card, clicking Rematch should not punch and the mouse should not turn you. The next countdown should not still be swinging. Direct Play results should unlock the cursor the same way. Direct Play pause: H still changes dash and punch; - / + changes that same volume; M mutes.
 
 ## Known leftovers
 
