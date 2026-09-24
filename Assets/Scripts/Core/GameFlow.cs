@@ -384,15 +384,11 @@ namespace Tag.Core
             }
             else if (State == GameFlowState.RoundEnd)
             {
-                // TagModeController owns R/Q while it is showing results, so one press
-                // cannot start the round twice.
+                // TagModeController owns R/Q/Esc while Results (arm + one-shot latch).
                 var modes = TagModeController.Instance;
                 if (modes != null && modes.Phase == MatchPhase.Results)
-                {
-                    // Esc mirrors Q when the results card owns the match keys.
-                    if (UnityEngine.Input.GetKeyDown(KeyCode.Escape)) QuitToMenu();
                     return;
-                }
+                // Fallback card when no mode controller is showing results.
                 if (UnityEngine.Input.GetKeyDown(KeyCode.R)) Rematch();
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Q) || UnityEngine.Input.GetKeyDown(KeyCode.Escape))
                     QuitToMenu();
@@ -429,7 +425,7 @@ namespace Tag.Core
             {
                 GUI.Box(new Rect(cx - 210, cy - 170, 420, 360), "TAG - party slice");
                 string hello = _firstBoot
-                    ? "First run: Play is you and one bot, Least It.\nPunch passes It. Esc pauses. Audio / M mute."
+                    ? "First run: you + 1 bot, Least It. LMB/F punch passes It.\nEsc pauses. Audio / M mute. R rematch after a round."
                     : "Play is you and one bot. Couch is local humans.";
                 GUI.Label(new Rect(cx - 190, cy - 128, 380, 44), hello);
                 if (GUI.Button(new Rect(cx - 90, cy - 76, 180, 32), "Play Tag (Least It)"))

@@ -63,6 +63,11 @@ namespace Tag.Modes
         public TagModeContext Context => _ctx;
         public MatchPhase Phase => _phase;
         public bool SuddenDeath => _ctx.SuddenDeath;
+        /// <summary>False during the short results arm so Esc/R/Q ignore the round-end click.</summary>
+        public bool ResultsInputReady =>
+            _phase == MatchPhase.Results
+            && !_resultsActionTaken
+            && Time.unscaledTime >= _resultsInputReadyAt;
         public string ResultMessage => _resultMessage;
         /// <summary>Last punch/round handoff, for the local TAG flash.</summary>
         public string LastFromId { get; private set; }
@@ -335,9 +340,9 @@ namespace Tag.Modes
         }
 
         /// <summary>
-        /// One listener for the results card. GameFlow skips R/Q while this phase is Results
-        /// and still owns Esc there, so this method does not also read Esc when a flow exists.
-        /// Direct Play has no GameFlow, so Q and Esc load Boot.
+        /// One listener for the results card (R rematch, Q/Esc menu). GameFlow skips those
+        /// keys while Phase is Results so the arm window and one-shot latch stay single-owner.
+        /// Direct Play has no GameFlow, so Q/Esc load Boot.
         /// </summary>
         void PollResultsKeys()
         {
@@ -350,17 +355,14 @@ namespace Tag.Modes
                 _resultsActionTaken = true;
                 if (flow != null) flow.Rematch();
                 else Rematch();
+                return;
             }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Q))
+            // Esc mirrors Q (menu). Same arm/latch as Rematch so the round-end Esc is not sticky.
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Q) || UnityEngine.Input.GetKeyDown(KeyCode.Escape))
             {
                 _resultsActionTaken = true;
                 if (flow != null) flow.QuitToMenu();
                 else LoadBootMenu();
-            }
-            if (flow == null && UnityEngine.Input.GetKeyDown(KeyCode.Escape))
-            {
-                _resultsActionTaken = true;
-                LoadBootMenu();
             }
         }
 
