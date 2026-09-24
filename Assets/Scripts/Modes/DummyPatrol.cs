@@ -79,6 +79,8 @@ namespace Tag.Modes
         float _jumpHoldT;
         float _jumpPulseCd;
         float _lungeGate;
+        float _weave;
+        float _weaveT;
         readonly List<TrailSegment> _trailActiveScratch = new List<TrailSegment>();
 
         void Awake()
@@ -393,7 +395,8 @@ namespace Tag.Modes
             float lead = EffectiveLeadSeconds();
             if (vel.sqrMagnitude < 0.04f || lead <= 0f)
                 return pos;
-            return pos + vel * lead;
+            // Cap the cut-off. Serialized lead (0.32s, more under a fuse) was a perfect intercept.
+            return pos + vel * Mathf.Min(lead, 0.18f);
         }
 
         void FaceAndSteer(Vector3 desired, float dt, out Vector3 moveDir)
@@ -404,18 +407,35 @@ namespace Tag.Modes
                 return;
             }
             desired.Normalize();
-            float ang = Vector3.Angle(transform.forward, desired);
-            if (ang <= faceAlignDeg)
+            // Always turn. The old 16° snap made a juke useless once they were lined up.
+            Quaternion look = Quaternion.LookRotation(desired, Vector3.up);
+            float rate = Mathf.Min(turnSpeed, 150f);
+            if (Vector3.Angle(transform.forward, desired) <= faceAlignDeg)
+                rate *= 0.65f;
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, look, rate * dt);
+            moveDir = transform.forward;
+        }
+
+        /// <summary>
+        /// Hold a lateral bias for about half a second so chase and flee are not a perfect line.
+        /// Dropped inside close range so a punch can still line up.
+        /// </summary>
+        Vector3 ApplyWeave(Vector3 dir, float dt, bool distHold)
+        {
+            _weaveT -= dt;
+            if (dir.sqrMagnitude < 0.001f)
+                return dir;
+            if (_weaveT <= 0f)
             {
-                transform.rotation = Quaternion.LookRotation(desired, Vector3.up);
-                moveDir = desired;
+                _weave = Random.Range(-0.5f, 0.5f);
+                _weaveT = Random.Range(0.45f, 0.8f);
             }
-            else
-            {
-                Quaternion look = Quaternion.LookRotation(desired, Vector3.up);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, look, turnSpeed * dt);
-                moveDir = transform.forward;
-            }
+            if (!distHold)
+                return dir;
+            Vector3 side = Vector3.Cross(Vector3.up, dir.normalized);
+            if (side.sqrMagnitude < 0.001f)
+                return dir;
+            return (dir.normalized + side * _weave).normalized;
         }
 
         /// <summary>
@@ -456,6 +476,7 @@ namespace Tag.Modes
                 Vector3 toAim = AimPoint(_target) - transform.position;
                 toAim.y = 0f;
                 toAim = BlendTrailAvoid(toAim);
+                toAim = ApplyWeave(toAim, dt, distHold: toAim.magnitude > closeChaseRange);
                 FaceAndSteer(toAim, dt, out moveDir);
 
                 Vector3 toBody = _target.transform.position - transform.position;
@@ -473,7 +494,11 @@ namespace Tag.Modes
                 // Slightly wider decision cone when dumping a low fuse.
                 float cone = EffectivePunchConeHalfDeg() * (1f + 0.2f * urgency);
                 bool inCone = dist <= range && ang <= cone;
-                if (inCone && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
+                // A hard strafe past the fist should whiff — not a guaranteed tag.
+                Vector3 juke = TargetPlanarVelocity();
+                float lateral = Mathf.Abs(Vector3.Dot(juke, transform.right));
+                bool juked = lateral > 7.5f && Random.value < 0.7f;
+                if (inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
                 {
                     _punch?.QueuePunch();
                     float cMin = cooldownMin;
@@ -571,6 +596,8 @@ namespace Tag.Modes
 
                 if (away.sqrMagnitude < 0.01f) away = -transform.forward;
                 else away.Normalize();
+                // Hold a flank so the human It can cut the corner instead of chasing a perfect radial.
+                away = ApplyWeave(away, dt, distHold: true);
 
                 // Strafe bias: prefer current facing side so flee isn't pure radial (easier to cut off).
                 // Under Hot Potato urgency, bias shrinks so flee commits away from It.
