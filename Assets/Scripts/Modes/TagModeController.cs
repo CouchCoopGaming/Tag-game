@@ -167,6 +167,9 @@ namespace Tag.Modes
                 // Stop a live ragdoll coroutine before Revive unlocks the motor, or it locks them again.
                 var rag = p.GetComponent<Tag.Gameplay.PlayerRagdoll>();
                 if (rag != null) rag.ForceRecover();
+                var motor = p.GetComponent<TagArena.Movement.PlayerMotor>();
+                if (motor != null) motor.ClearStun();
+
                 p.Revive();
                 p.ResetScore();
                 p.SetIt(false);
@@ -303,6 +306,8 @@ namespace Tag.Modes
         /// <summary>
         /// F1–F4 start a round from the pads, not from wherever the last ragdoll stopped.
         /// Slot follows P1/P2/… when the id parses; everyone else fills the next free pad.
+        /// Yaw is left alone — the chase camera owns it.
+
         /// </summary>
         void PlacePlayersOnPads()
         {

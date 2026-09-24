@@ -149,15 +149,16 @@ namespace Tag.Art
             else if (!jet)
                 _cycle = Mathf.MoveTowards(_cycle, Mathf.Round(_cycle), dt * 8f);
 
-            // Natural hang/swing — keep amplitude human (not arms-into-butt flares)
-            float swing = Mathf.Sin(_cycle) * Mathf.Lerp(28f, 52f, Mathf.Max(walkAmt, runAmt));
-            if (air) swing *= 0.72f;
-            if (sliding) swing *= 0.08f; else if (crouch) swing *= 0.18f;
-            if (jet) swing = 0f;
             // Hold the plant and the lift, then cross zero faster — a sine reads as skating.
             float sinRaw = Mathf.Sin(_cycle);
             float sinC = Mathf.Sign(sinRaw) * Mathf.Pow(Mathf.Abs(sinRaw), 0.55f);
             float cosC = Mathf.Cos(_cycle);
+            // Natural hang/swing — keep amplitude human (not arms-into-butt flares)
+            float swing = sinC * Mathf.Lerp(28f, 52f, Mathf.Max(walkAmt, runAmt));
+            if (air) swing *= 0.72f;
+            if (sliding) swing *= 0.08f; else if (crouch) swing *= 0.18f;
+            if (jet) swing = 0f;
+
 
             float breath = Mathf.Sin(Time.time * 2.1f) * 2.4f;
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
@@ -502,19 +503,22 @@ namespace Tag.Art
             }
 
             float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
-            // 0.1s dash never reached the whip pose at slew 42.
-            float dashSlew = airDashing ? 78f : (punching || lunging || dashing ? 46f : slew);
+            // 0.1s air dash never reached the whip pose at slew 42.
+            float armSlewL = airDashing ? 78f : (punching || lunging || dashing ? 42f : slew);
+            float armSlewR = airDashing ? 78f : (punching || lunging || dashing ? 46f : slew);
+            float legSlew = airDashing ? 78f : slew;
             Slew(ref _spine, _spineT, slew, dt);
             Slew(ref _hips, _hipsT, slew, dt);
             Slew(ref _head, _headT, slew, dt);
-            Slew(ref _upperArmL, _uaLT, dashSlew, dt);
-            Slew(ref _upperArmR, _uaRT, dashSlew, dt);
-            Slew(ref _lowerArmL, _laLT, dashSlew, dt);
-            Slew(ref _lowerArmR, _laRT, dashSlew, dt);
-            Slew(ref _upperLegL, _ulLT, airDashing ? dashSlew : slew, dt);
-            Slew(ref _upperLegR, _ulRT, airDashing ? dashSlew : slew, dt);
-            Slew(ref _lowerLegL, _llLT, airDashing ? dashSlew : slew, dt);
-            Slew(ref _lowerLegR, _llRT, airDashing ? dashSlew : slew, dt);
+            Slew(ref _upperArmL, _uaLT, armSlewL, dt);
+            Slew(ref _upperArmR, _uaRT, armSlewR, dt);
+            Slew(ref _lowerArmL, _laLT, armSlewL, dt);
+            Slew(ref _lowerArmR, _laRT, armSlewR, dt);
+            Slew(ref _upperLegL, _ulLT, legSlew, dt);
+            Slew(ref _upperLegR, _ulRT, legSlew, dt);
+            Slew(ref _lowerLegL, _llLT, legSlew, dt);
+            Slew(ref _lowerLegR, _llRT, legSlew, dt);
+
 
             float step = Mathf.Pow(Mathf.Abs(sinRaw), 1.7f);
             float bob = grounded ? step * 0.085f * Mathf.Max(walkAmt, runAmt) : air ? step * 0.02f : 0f;

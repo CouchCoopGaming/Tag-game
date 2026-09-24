@@ -395,7 +395,8 @@ namespace Tag.Modes
             float lead = EffectiveLeadSeconds();
             if (vel.sqrMagnitude < 0.04f || lead <= 0f)
                 return pos;
-            // Cap the cut-off. Serialized lead (0.32s) was a perfect intercept.
+            // Cap the cut-off. Serialized lead (0.32s, more under a fuse) was a perfect intercept.
+
             return pos + vel * Mathf.Min(lead, 0.18f);
         }
 
@@ -476,7 +477,8 @@ namespace Tag.Modes
                 Vector3 toAim = AimPoint(_target) - transform.position;
                 toAim.y = 0f;
                 toAim = BlendTrailAvoid(toAim);
-                toAim = ApplyWeave(toAim, dt, distHold: (toAim.magnitude > closeChaseRange));
+                toAim = ApplyWeave(toAim, dt, distHold: toAim.magnitude > closeChaseRange);
+
                 FaceAndSteer(toAim, dt, out moveDir);
 
                 Vector3 toBody = _target.transform.position - transform.position;

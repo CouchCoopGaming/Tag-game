@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using Tag.Gameplay;
@@ -10,7 +10,7 @@ namespace TagArena.Movement
 {
     /// <summary>
     /// Cave-man OnGUI: speed, move state, jet fuel, ski on/off + P0 controls cheat-sheet
-    /// + nearest mega-park zone + It / mode / Hot Potato fuse / Least It times (LEAD/LAG tint)
+    /// + nearest mega-park zone + It / mode / Hot Potato fuse / Least It times (lowest time wins)
     /// + bearing/distance to CurrentIt when you are not It
     /// + bearing/distance to nearest non-It when you ARE It (Prey)
     /// + brief YOU'RE IT / YOU'RE FREE OnGUI flash on local It handoff
@@ -260,6 +260,36 @@ namespace TagArena.Movement
             GUI.color = prev;
         }
 
+        string HandoffSubtitle()
+        {
+            var modes = TagModeController.Instance;
+            if (modes == null) return "TAG!";
+            if (_itFlashGained)
+            {
+                string from = modes.LastFromId;
+                return string.IsNullOrEmpty(from) ? "TAG!" : "from " + from;
+            }
+            string to = modes.LastToId;
+            return string.IsNullOrEmpty(to) ? "TAG!" : to + " is It";
+        }
+
+        /// <summary>
+        /// Top-center fuse so a runner sees the potato even when they are not It.
+        /// Stays below the It banner (y=16, h=46). Hidden while Remaining is 0 (countdown).
+        /// </summary>
+        void DrawFuseBanner()
+        {
+            var modes = TagModeController.Instance;
+            if (modes == null || modes.SelectedMode != TagModeId.HotPotato || modes.Phase != MatchPhase.Playing)
+                return;
+            float remain = modes.Remaining;
+            float urgency = HotPotatoFuseUrgency(modes);
+            if (remain <= 0f || urgency <= 0.02f) return;
+
+            float w = 280f;
+            var r = new Rect((Screen.width - w) * 0.5f, 68f, w, 36f);
+            DrawFuseUrgencyLabel(r, "FUSE  " + remain.ToString("0.0"), urgency);
+        }
 
         /// <summary>
         /// Trail Tag only: closest foreign TrailSegment via CopyActive + ClosestPointOnSegment
@@ -487,6 +517,8 @@ namespace TagArena.Movement
             if (modes != null)
             {
                 modeName = FriendlyModeName(modes.SelectedMode) + " | " + PhaseLabel(modes.Phase);
+                if (modes.SelectedMode == TagModeId.LeastIt && modes.Phase == MatchPhase.Playing && modes.Remaining > 0f)
+                    modeName += "  " + modes.Remaining.ToString("0") + "s  lowest wins";
                 it = modes.CurrentIt;
                 if (it == null)
                     it = ScanItControllers();
@@ -509,14 +541,14 @@ namespace TagArena.Movement
 
             // Hot Potato fuse pulses for everyone once Remaining is inside warnSec.
             // (Previously only the local It saw the pulse, so runners missed the pop.)
+
             float fuseUrgency = (modes != null && modes.SelectedMode == TagModeId.HotPotato && modes.Phase == MatchPhase.Playing)
                 ? HotPotatoFuseUrgency(modes)
                 : 0f;
             bool pulseFuse = fuseUrgency > 0.01f;
 
-            if (modes != null && modes.SelectedMode == TagModeId.LeastIt && modes.Phase == MatchPhase.Playing)
-                modeName += "  " + modes.Remaining.ToString("0") + "s  lowest wins";
-            GUI.Label(new Rect(24, y, 560, 22), "Mode " + modeName, _status);
+            GUI.Label(new Rect(24, y, 640, 22), "Mode " + modeName, _status);
+
             y += 22f;
 
             if (pulseFuse)
@@ -771,7 +803,7 @@ namespace TagArena.Movement
             }
 
             float youT = self != null ? self.TimeAsIt : 0f;
-            // Soft standings cue: lowest It-time = LEAD (mint), highest/near-highest = LAG (coral).
+            // Soft standings cue: lowest It-time is winning (mint); more It-time is behind (coral).
             bool leading = false;
             bool lagging = false;
             if (self != null && living.Count > 0)
@@ -805,7 +837,7 @@ namespace TagArena.Movement
                 GUI.color = new Color(1f, 0.55f, 0.42f, 1f);
                 youTag = "  BEHIND (more It)";
             }
-            GUI.Label(new Rect(24, y, 520, 22),
+            GUI.Label(new Rect(24, y, 640, 22),
                 "You " + youT.ToString("0.0") + "s" + youTag, _status);
             GUI.color = prev;
             y += 22f;
@@ -817,7 +849,7 @@ namespace TagArena.Movement
                 if (leading)
                     GUI.color = new Color(0.45f, 1f, 0.7f, 1f);
                 GUI.Label(new Rect(24, y, 520, 22),
-                    "Lead " + leadName + " " + leader.TimeAsIt.ToString("0.0") + "s" + leadMark,
+                    "Least " + leadName + " " + leader.TimeAsIt.ToString("0.0") + "s" + leadMark,
                     _status);
                 GUI.color = prev;
                 y += 22f;
