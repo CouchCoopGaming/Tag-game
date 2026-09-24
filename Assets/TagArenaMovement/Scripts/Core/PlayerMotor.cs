@@ -149,6 +149,12 @@ namespace TagArena.Movement
         {
             if (_in == null || cfg == null) return;
             _in.Read();
+            // Pause stops FixedUpdate, so a buffered jump would fire on resume.
+            if (Time.timeScale <= 0f)
+            {
+                _jumpBuf = 0f;
+                return;
+            }
             if (_in.JumpPressed) _jumpBuf = cfg.jumpBuffer;
         }
 

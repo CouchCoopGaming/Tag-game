@@ -192,7 +192,7 @@ namespace TagArena.Movement
             if (localIsIt == _prevLocalIsIt)
                 return;
             _itFlashGained = localIsIt;
-            _itFlashUntil = Time.unscaledTime + ItFlashSec;
+            _itFlashUntil = Time.time + ItFlashSec;
             _prevLocalIsIt = localIsIt;
         }
 
@@ -213,7 +213,7 @@ namespace TagArena.Movement
         /// </summary>
         void DrawItHandoffFlash()
         {
-            float rem = _itFlashUntil - Time.unscaledTime;
+            float rem = _itFlashUntil - Time.time;
             if (rem <= 0f) return;
 
             if (_flash == null)
@@ -383,7 +383,7 @@ namespace TagArena.Movement
 
             float urgency = 1f - Mathf.Clamp01(_trailNearDist / TrailNearMissWarnM);
             float hz = Mathf.Lerp(2.5f, 8f, urgency);
-            float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
+            float wave = 0.5f + 0.5f * Mathf.Sin(Time.time * hz * Mathf.PI * 2f);
             float pulse = Mathf.Lerp(0.3f, 1f, wave);
             float a = Mathf.Lerp(0.12f, 0.42f, urgency * pulse);
 
@@ -459,7 +459,7 @@ namespace TagArena.Movement
 
             // Rising edge of eliminate: was alive, now dead, while Trail Tag is selected.
             if (trailMode && _prevLocalAlive && !alive)
-                _trailOutFlashUntil = Time.unscaledTime + TrailOutFlashSec;
+                _trailOutFlashUntil = Time.time + TrailOutFlashSec;
 
             _prevLocalAlive = alive;
         }
@@ -483,7 +483,7 @@ namespace TagArena.Movement
         /// </summary>
         void DrawTrailEliminateFlash()
         {
-            float rem = _trailOutFlashUntil - Time.unscaledTime;
+            float rem = _trailOutFlashUntil - Time.time;
             if (rem <= 0f) return;
 
             if (_flash == null)
@@ -647,7 +647,7 @@ namespace TagArena.Movement
             Matrix4x4 prevMatrix = GUI.matrix;
 
             float hz = Mathf.Lerp(4f, 11f, urgency);
-            float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
+            float wave = 0.5f + 0.5f * Mathf.Sin(Time.time * hz * Mathf.PI * 2f);
             float pulse = Mathf.Lerp(0.35f, 1f, wave);
 
             // Status amber ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ hot-potato warn (magenta-orange), same family as It flee compass.
@@ -772,7 +772,7 @@ namespace TagArena.Movement
                 // 0 at threshold, 1 at contact ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â closer = hotter / bigger / faster pulse.
                 float urgency = 1f - Mathf.Clamp01(dist / CompassPulseDistM);
                 float hz = Mathf.Lerp(3.5f, 9f, urgency);
-                float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
+                float wave = 0.5f + 0.5f * Mathf.Sin(Time.time * hz * Mathf.PI * 2f);
                 float pulse = Mathf.Lerp(0.35f, 1f, wave);
 
                 Color calm;
@@ -893,7 +893,7 @@ namespace TagArena.Movement
             }
 
             // Briefly show all players' times on a compact line (cycle).
-            float cycle = Mathf.Repeat(Time.unscaledTime, AllStandingsCycleSec);
+            float cycle = Mathf.Repeat(Time.time, AllStandingsCycleSec);
             if (living.Count > 0 && cycle < AllStandingsShowSec)
             {
                 var sb = new StringBuilder(64);
@@ -940,12 +940,12 @@ namespace TagArena.Movement
             if (cur == _prevMode) return;
             _prevMode = cur;
             _modeFlashLabel = FriendlyModeName(cur);
-            _modeFlashUntil = Time.unscaledTime + ModeFlashSec;
+            _modeFlashUntil = Time.time + ModeFlashSec;
         }
 
         void DrawModeChangeFlash()
         {
-            float rem = _modeFlashUntil - Time.unscaledTime;
+            float rem = _modeFlashUntil - Time.time;
             if (rem <= 0f || string.IsNullOrEmpty(_modeFlashLabel)) return;
 
             if (_flash == null)
@@ -1057,13 +1057,13 @@ namespace TagArena.Movement
                 return;
             }
             if (sd && !_prevSuddenDeath)
-                _sdFlashUntil = Time.unscaledTime + SdFlashSec;
+                _sdFlashUntil = Time.time + SdFlashSec;
             _prevSuddenDeath = sd;
         }
 
         void DrawSuddenDeathFlash()
         {
-            float rem = _sdFlashUntil - Time.unscaledTime;
+            float rem = _sdFlashUntil - Time.time;
             if (rem <= 0f) return;
             if (_flash == null)
             {
