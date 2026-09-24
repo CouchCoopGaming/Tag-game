@@ -277,12 +277,14 @@ namespace Tag.Level
             // Forts sit on the theme-pad floors. These carpets are the courts and runs.
             // Merry reaches the west bars (apron tiles end at x=11.5) and stops short of Loop W (x=12).
             Box("PlayPad_Merry", new Vector3(7.4f, y, 24f), new Vector3(8.8f, t, 8f), _matPlayMulch);
-            Box("PlayPad_Swing", new Vector3(67f, y, 31f), new Vector3(10f, t, 8f), _matPlayMulch);
+            Box("PlayPad_Swing", new Vector3(67f, y, 31.5f), new Vector3(10f, t, 5.4f), _matPlayMulch);
             Box("PlayPad_Kickball", new Vector3(67f, y, 24f), new Vector3(10f, t, 10f), _matPlayRubber);
             // East-west court between Spawn_SW and the mast. East edge stops short of the pirate carpet (x=9).
             Box("PlayPad_Hopscotch_SW", new Vector3(4.5f, y, 9.4f), new Vector3(8.6f, t, 4f), _matPlayRubber);
             Box("PlayPad_Hopscotch_SE", new Vector3(70f, y, 11.5f), new Vector3(4f, t, 8f), _matPlayRubber);
             Box("PlayPad_Hopscotch_NE", new Vector3(70f, y, 38f), new Vector3(4f, t, 8f), _matPlayRubber);
+            // North-south court south of Spawn_NW. Stops at z=46.5, 1.4 m short of the pad.
+            Box("PlayPad_Hopscotch_NW", new Vector3(3.0f, y, 42f), new Vector3(4.6f, t, 9f), _matPlayRubber);
             // South ring stays below the outer lane; north ring stays inside the map edge.
             Box("PlayPad_Ring_S", new Vector3(36f, y, 3f), new Vector3(22f, t, 5.5f), _matPlayMulch);
             Box("PlayPad_Ring_N", new Vector3(36f, y, 51f), new Vector3(20f, t, 4.5f), _matPlayMulch);
