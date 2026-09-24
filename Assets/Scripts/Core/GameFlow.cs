@@ -44,6 +44,7 @@ namespace Tag.Core
             DontDestroyOnLoad(gameObject);
             SceneManager.sceneLoaded += OnSceneLoaded;
             LocalPlayerRoster.Load();
+            LookSensitivity.Load();
             _playerCountCursor = Mathf.Clamp(LocalPlayerRoster.PlayerCount - 1, 0, 3);
             AudioCuePlayer.Ensure();
             if (PlayerPrefs.HasKey(TagModeController.PrefsModeKey))
@@ -67,6 +68,8 @@ namespace Tag.Core
             {
                 State = GameFlowState.Play;
                 EnsurePlayHelpers();
+                LookSensitivity.Load();
+                LookSensitivity.Apply();
                 EnsureRoundStarted();
             }
         }
@@ -77,6 +80,8 @@ namespace Tag.Core
             {
                 State = GameFlowState.Play;
                 EnsurePlayHelpers();
+                LookSensitivity.Load();
+                LookSensitivity.Apply();
                 EnsureRoundStarted();
             }
         }
@@ -125,6 +130,8 @@ namespace Tag.Core
         public void GoToPlay()
         {
             State = GameFlowState.Play;
+            LookSensitivity.Load();
+            LookSensitivity.Apply();
             Time.timeScale = 1f;
             if (SceneManager.GetActiveScene().name != playSceneName)
                 SceneManager.LoadScene(playSceneName);

@@ -477,9 +477,9 @@ namespace Tag.Modes
             float h = 120f;
             float x = (Screen.width - w) * 0.5f;
             float y = Screen.height * 0.38f;
-            GUI.Box(new Rect(x, y, w, h + 28f), "Paused");
             string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
-            GUI.Label(new Rect(x + 16, y + 36, w - 32, 96),
+            GUI.Box(new Rect(x, y, w, h + 48f), "Paused");
+            GUI.Label(new Rect(x + 16, y + 36, w - 32, 110),
                 "Esc resume\nQ  Boot menu\nLeft / Right  " + TagArena.Movement.LookSensitivity.Label + extra);
         }
 
@@ -599,10 +599,13 @@ namespace Tag.Modes
             float by = y + h - 44f;
             if (GUI.Button(new Rect(x + w * 0.5f - bw - 8f, by, bw, 32f), "Rematch"))
             {
-                TagSfx.UiConfirm();
                 var flow = GameFlow.Instance;
                 if (flow != null) flow.Rematch();
-                else Rematch();
+                else
+                {
+                    TagSfx.UiConfirm();
+                    Rematch();
+                }
             }
             if (GUI.Button(new Rect(x + w * 0.5f + 8f, by, bw, 32f), "Menu"))
             {
@@ -637,5 +640,6 @@ namespace Tag.Modes
         }
     }
 }
+
 
 

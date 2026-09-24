@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ **Play**.
 3. Optional first-time art: **Tag ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Ensure URP Pipeline**, then **Tag ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Setup Hub Visuals**.
 
-Branch: `cursor/pause-countdown-windup-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/look-sens-bot-win-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 ## Stack snapshot
 
@@ -75,7 +75,7 @@ Punch is **not** a contact aura ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â only acti
 - Flee panic hop uses dy 0.9 (was 0.55, below ConsumeHop minDy 0.85, so it never fired). Trail Tag mode line shows **SUDDEN DEATH** when the cap/stall failsafe trips.
 - HUD mode line uses ASCII ` | ` separator; center MODE flash lists F1-F4. F1-F4 SetMode also syncs GameFlow menu cursor via PlayerPrefs, recovers ragdoll, and places pawns on pads.
 - Trail Tag self-hit still needs both age and distance grace. Dodge i-frames do not ignore trails. Punch updates It brightness the same frame for every emitter mode. ItOnly still gates who emits.
-- Results card uses solo headlines YOU WIN / YOU LOSE / DRAW (couch split stays ROUND OVER and names winners). Rematch click plays UiConfirm. Hot Potato HUD says YOU HOLD THE FUSE when you are It; Trail marks YOU and OUT waiting for round; sudden death explains the next hit. **R** / Rematch starts once; Boot does not also rematch. A second StartRound inside 0.05 s is ignored. **Q** or **Esc** returns to Boot. F1-F4 or R leave pause and round-end so the countdown is not frozen. Esc on player-count and mode screens steps back to Boot. Keys 1-4: you + 1 bot, or 2-4 humans with the bot off. Direct Play pauses on Esc; Q loads Boot. Pause zeroes look and punch, clears a buffered jump; HUD flashes use scaled time so they freeze. Countdown card names the mode (3-2-1). Local punch windup flares the elbow (0.12 s unchanged). Look sensitivity is a five-step stub; Boot and pause open it; Left/Right change it. Direct-Play pause notes Countdown frozen. Playground music stays silent when the clip is null. Ski entry still uses TagSfx.EnsureSource.
+- Results card: solo headline is YOU WIN, YOU LOSE, or DRAW, and it names the mode and the winners. Couch with a split result stays ROUND OVER. Rematch click plays UiConfirm. A loss line does not say "winner", so it does not play the win tone. Hot Potato HUD says YOU HOLD THE FUSE when you are It; Trail marks YOU and OUT waiting for round; sudden death explains the next hit. **R** / Rematch starts once; Boot does not also rematch. A second StartRound inside 0.05 s is ignored. **Q** or **Esc** returns to Boot. F1-F4 or R leave pause and round-end so the countdown is not frozen. Esc on player-count and mode screens steps back to Boot. Keys 1-4: you + 1 bot, or 2-4 humans with the bot off. Direct Play pauses on Esc; Q loads Boot. Pause zeroes look and punch, clears a buffered jump; HUD flashes use scaled time so they freeze. Countdown card names the mode (3-2-1). Local punch windup flares the elbow (0.12 s unchanged). Look sensitivity is a five-step stub (default 1.8); Boot and pause open it; Left/Right change it. Direct-Play pause notes Countdown frozen. Playground music stays silent when the clip is null. Ski entry still uses TagSfx.EnsureSource.
 
 ## Feel check (code, not a Unity play)
 
@@ -110,4 +110,5 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - Legacy contact `TryTag` radius still exists on motor; play modes use punch transfer.
 - AI weave/whiff still needs a human feel pass. No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent: `music_playground_bed_loop.wav` is meta only, so PlayMusic returns. No hitstop.
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.
+
 
