@@ -146,7 +146,11 @@ namespace Tag.Modes
 
             bool isIt = _it != null && _it.IsIt;
             if (isIt && !_wasIt)
+            {
+                // Just became It: drop flee target and pick prey immediately (don't wait for decisionHz).
                 _itGraceTimer = Mathf.Max(0f, itGraceSec);
+                Retarget();
+            }
             _wasIt = isIt;
 
             if (isIt)
