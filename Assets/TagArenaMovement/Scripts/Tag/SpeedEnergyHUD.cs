@@ -51,9 +51,9 @@ namespace TagArena.Movement
         const string Controls =
             "WASD move\n" +
             "Shift ski\n" +
-            "RMB jet\n" +
+            "RMB jet (off)\n" +
             "Space jump\n" +
-            "Ctrl/C crouch\n" +
+            "Ctrl/C crouch+slide\n" +
             "LMB/E punch\n" +
             "Q/Alt air dash 30s\n" +
             "MMB lunge\n" +
@@ -107,7 +107,13 @@ namespace TagArena.Movement
                 "JET " + motor.Energy.ToString("0") + "/" + maxE.ToString("0") + "  " + jet + "   " + ski,
                 _small);
 
-            float y = 110f;
+            float dashCd = motor.AirDashCooldownRemaining;
+            string dashLine = dashCd > 0.05f
+                ? ("DASH CD " + dashCd.ToString("0.0") + "s")
+                : (motor.IsAirDashing ? "DASH!" : "DASH ready");
+            GUI.Label(new Rect(24, 102, 480, 22), dashLine, _small);
+
+            float y = 124f;
             string zone = ZoneNameMarkers.GetNearestZoneName(motor.transform.position);
             GUI.Label(new Rect(24, y, 480, 22), "Zone: " + zone, _small);
             y += 24f;

@@ -475,8 +475,8 @@ namespace Tag.Art
                 float thighR = -swing * stride;
                 _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
-                float kneeAmt = Mathf.Lerp(22f, 58f, runAmt);
-                float baseFlex = Mathf.Lerp(8f, 14f, runAmt);
+                float kneeAmt = Mathf.Lerp(28f, 68f, runAmt);
+                float baseFlex = Mathf.Lerp(10f, 18f, runAmt);
                 // Forward thigh (sin>0 left) flexes; trailing extends
                 float kneeL = -(baseFlex + Mathf.Max(0f, sinC) * kneeAmt + Mathf.Max(0f, -cosC) * kneeAmt * 0.25f);
                 float kneeR = -(baseFlex + Mathf.Max(0f, -sinC) * kneeAmt + Mathf.Max(0f, cosC) * kneeAmt * 0.25f);
@@ -611,6 +611,7 @@ namespace Tag.Art
             {
                 _bounceHooked.OnWallBounced -= HandleWallBounced;
                 _bounceHooked.OnSuperGlide -= HandleSuperGlide;
+                _bounceHooked.OnAirDashed -= HandleAirDashed;
                 _bounceHooked = null;
             }
         }

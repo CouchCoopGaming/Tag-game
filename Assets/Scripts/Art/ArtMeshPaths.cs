@@ -15,11 +15,21 @@ namespace Tag.Art
 
         public static string PreferCharacterFbx(bool asIt)
         {
-            string stem = asIt ? "Dummy_It" : "Dummy_Runner";
+            // Prefer hierarchical HiPoly mannequins so DummyLocomotor can drive knees/arms.
+            // Flat Dummy_It/Runner_Hi are mesh-only siblings (no limb hierarchy).
+            if (asIt)
+            {
+                return FirstExisting(
+                    CharactersHi + "/Dummy_Mannequin_Red_Hier_Hi.fbx",
+                    CharactersHi + "/Dummy_It_Hi.fbx",
+                    CharactersHi + "/Dummy_It.fbx",
+                    Characters + "/Dummy_It.fbx");
+            }
             return FirstExisting(
-                CharactersHi + "/" + stem + "_Hi.fbx",
-                CharactersHi + "/" + stem + ".fbx",
-                Characters + "/" + stem + ".fbx");
+                CharactersHi + "/Dummy_Mannequin_Blue_Hier_Hi.fbx",
+                CharactersHi + "/Dummy_Runner_Hi.fbx",
+                CharactersHi + "/Dummy_Runner.fbx",
+                Characters + "/Dummy_Runner.fbx");
         }
 
         public static string PreferPropFbx(string toyName)
