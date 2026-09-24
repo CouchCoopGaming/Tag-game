@@ -38,6 +38,8 @@ namespace TagArena.Movement
             _yaw = transform.root.eulerAngles.y;
             _fov = cfg.fovIdle;
             _eye = eyeStanding;
+            LookSensitivity.Load();
+            sensitivity = LookSensitivity.Current;
             Cursor.lockState = CursorLockMode.Locked;
         }
 
