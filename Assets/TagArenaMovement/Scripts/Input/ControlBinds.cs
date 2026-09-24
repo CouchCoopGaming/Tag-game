@@ -37,7 +37,7 @@ namespace TagArena.Movement
             "F1 Hot Potato   F2 Least It   F3 Trail Tag   F4 Free play\n" +
             "Esc pause\n" +
             "Air dash key: " + DashName + "    Punch key: " + PunchName + "\n" +
-            "Volume: " + Tag.Audio.MasterVolume.Label;
+            "Volume: " + Tag.Audio.AudioMaster.Label;
 
         public static void Load()
         {
