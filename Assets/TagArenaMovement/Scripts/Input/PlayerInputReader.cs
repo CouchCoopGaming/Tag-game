@@ -42,6 +42,7 @@ namespace TagArena.Movement
         float _prevJet;
         float _prevLunge;
         bool _prevW;
+        float _extPrevJump;
 
         public void Read()
         {
@@ -83,7 +84,7 @@ namespace TagArena.Movement
         }
 
         /// <summary>AI helper: set planar wish in body space and clear one-shot human buttons.</summary>
-        public void SetExternalMove(Vector2 move, bool sprint)
+        public void SetExternalMove(Vector2 move, bool sprint, bool jump = false, bool lunge = false)
         {
             ExternalControl = true;
             Move = move.sqrMagnitude > 1f ? move.normalized : move;
@@ -91,12 +92,13 @@ namespace TagArena.Movement
             Look = Vector2.zero;
             CrouchHeld = false;
             CrouchPressed = false;
-            JumpHeld = false;
-            JumpPressed = false;
+            JumpHeld = jump;
+            JumpPressed = jump && _extPrevJump <= 0f;
+            _extPrevJump = jump ? 1f : 0f;
             SkiHeld = false;
             JetHeld = false;
             JetPressed = false;
-            LungePressed = false;
+            LungePressed = lunge;
             AirDashPressed = false;
             PunchPressed = false;
             TapForwardPulse = false;

@@ -60,13 +60,15 @@ namespace TagArena.Movement
             "Shift ski\n" +
             "RMB jet (off)\n" +
             "Space jump\n" +
-            "Ctrl/C crouch+slide\n" +
+            "Ctrl/C slide (hold + speed)\n" +
+            "Ctrl in air = fast fall\n" +
             "LMB/E punch\n" +
-            "Q/Alt air dash 30s\n" +
-            "MMB lunge\n" +
+            "Q/Alt air dash\n" +
+            "MMB lunge (It, ground)\n" +
             "F1 Hot Potato\n" +
             "F2 Least It\n" +
-            "F3 Trail Tag";
+            "F3 Trail Tag\n" +
+            "F4 Free play";
 
         // Flash full Least-It standings briefly every few seconds.
         const float AllStandingsShowSec = 3.5f;
@@ -98,21 +100,37 @@ namespace TagArena.Movement
 
             float hs = motor.HorizSpeed;
             string kph = (hs * 3.6f).ToString("0");
-            GUI.Label(new Rect(24, 16, 520, 36), kph + " km/h   " + motor.State, _big);
+            GUI.Label(new Rect(24, 16, 560, 36), kph + " km/h   " + LocoVerb(motor), _big);
 
+            bool jetOn = motor.cfg != null && motor.cfg.enableJet;
             float maxE = 100f;
             if (motor.cfg != null)
                 maxE = motor.cfg.jetEnergyMax + 0.001f;
-            float e = Mathf.Clamp01(motor.Energy / maxE);
-            GUI.Box(new Rect(24, 56, 240, 20), GUIContent.none);
-            GUI.Box(new Rect(24, 56, 240 * e, 20), GUIContent.none);
-
-            string jet = motor.Jetting ? "JETTING" : "jet";
             string ski = motor.Skiing ? "SKI ON" : "ski off";
-            GUI.Label(
-                new Rect(24, 80, 480, 26),
-                "JET " + motor.Energy.ToString("0") + "/" + maxE.ToString("0") + "  " + jet + "   " + ski,
-                _small);
+            if (jetOn)
+            {
+                float e = Mathf.Clamp01(motor.Energy / maxE);
+                GUI.Box(new Rect(24, 56, 240, 20), GUIContent.none);
+                GUI.Box(new Rect(24, 56, 240 * e, 20), GUIContent.none);
+                string jet = motor.Jetting ? "JETTING" : "jet";
+                GUI.Label(
+                    new Rect(24, 80, 480, 26),
+                    "JET " + motor.Energy.ToString("0") + "/" + maxE.ToString("0") + "  " + jet + "   " + ski,
+                    _small);
+            }
+            else
+            {
+                float cdMax = motor.cfg != null ? Mathf.Max(0.01f, motor.cfg.airDashCooldown) : 30f;
+                float rem = motor.AirDashCooldownRemaining;
+                float ready = 1f - Mathf.Clamp01(rem / cdMax);
+                Color prev = GUI.color;
+                GUI.color = new Color(0.45f, 0.9f, 1f, 1f);
+                GUI.Box(new Rect(24, 56, 240, 20), GUIContent.none);
+                GUI.Box(new Rect(24, 56, 240 * ready, 20), GUIContent.none);
+                GUI.color = prev;
+                string dash = rem <= 0.05f ? "DASH ready" : "DASH " + rem.ToString("0.0") + "s";
+                GUI.Label(new Rect(24, 80, 480, 26), dash + "   " + ski, _small);
+            }
 
             float dashCd = motor.AirDashCooldownRemaining;
             string dashLine = dashCd > 0.05f
@@ -131,8 +149,8 @@ namespace TagArena.Movement
                 y += 32f;
             }
 
-            GUI.Label(new Rect(24, y, 220, 200), Controls, _keys);
-            y += 178f;
+            GUI.Label(new Rect(24, y, 280, 230), Controls, _keys);
+            y += 214f;
 
             DrawMatchStatus(y);
             DrawItHandoffFlash();
@@ -467,7 +485,7 @@ namespace TagArena.Movement
             var modes = TagModeController.Instance;
             if (modes != null)
             {
-                modeName = FriendlyModeName(modes.SelectedMode);
+                modeName = FriendlyModeName(modes.SelectedMode) + "  ·  " + PhaseLabel(modes.Phase);
                 it = modes.CurrentIt;
                 if (it == null)
                     it = ScanItControllers();
@@ -901,7 +919,40 @@ namespace TagArena.Movement
                 case TagModeId.HotPotato: return "Hot Potato";
                 case TagModeId.LeastIt: return "Least It";
                 case TagModeId.TrailTag: return "Trail Tag";
+                case TagModeId.FreePlay: return "Free play";
                 default: return id.ToString();
+            }
+        }
+
+        static string PhaseLabel(MatchPhase phase)
+        {
+            switch (phase)
+            {
+                case MatchPhase.Countdown: return "Countdown";
+                case MatchPhase.Playing: return "Playing";
+                case MatchPhase.PostRound: return "Post-round";
+                case MatchPhase.Results: return "Results";
+                default: return "Idle";
+            }
+        }
+
+        static string LocoVerb(PlayerMotor motor)
+        {
+            if (motor.IsAirDashing) return "DASH";
+            switch (motor.State)
+            {
+                case MoveState.Sprint: return "RUN";
+                case MoveState.Slide: return "SLIDE";
+                case MoveState.WallRun: return "WALL";
+                case MoveState.WallClimb: return "CLIMB";
+                case MoveState.LandStun: return "LAND";
+                case MoveState.Air: return "AIR";
+                case MoveState.Ski: return "SKI";
+                case MoveState.Crouch: return "CROUCH";
+                case MoveState.Mantle: return "VAULT";
+                case MoveState.Jet: return "JET";
+                case MoveState.Walk: return "WALK";
+                default: return "IDLE";
             }
         }
 

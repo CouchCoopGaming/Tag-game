@@ -77,9 +77,9 @@ MonoBehaviour:
   jetMinEnergy: 4
   gravityWhileJetting: 0.15
   climbMaxHeight: 3.4
-  climbMaxTime: 0.85
-  climbDecayStart: 0.4
-  climbSpeed: 7.8
+  climbMaxTime: 1
+  climbDecayStart: 0.16
+  climbSpeed: 6
   climbAttachAngle: 55
   climbStickForce: 22
   climbSideSpeed: 3.7
@@ -99,7 +99,7 @@ MonoBehaviour:
   wallRunMinSpeed: 6
   wallRunSpeed: 9.5
   wallRunGravity: 6.5
-  wallRunGravityEndMult: 3.2
+  wallRunGravityEndMult: 4.8
   wallRunJumpOut: 8
   wallRunJumpUp: 6.2
   wallRunAttachAngle: 35

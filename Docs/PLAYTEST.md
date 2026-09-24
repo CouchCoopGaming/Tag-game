@@ -14,8 +14,8 @@ Branch: `cursor/playground-campus-zones-afc4` (campus kit tip; WIP backup `backu
 |-------|----------------|
 | **TP cam** | `TpsMoveCamera` orbit/follow (~boom −5.2), soft collision, FOV by MoveState + slight speed look-ahead (`lookAheadMax` ~0.9, `speedFovBoostMax` ~3°) |
 | **Hier dummy** | `DummyAvatarBinder` prefers `*_Hier_Hi` FBX → flat HiPoly → Navy Spade primitive (foam + polymer panels + matte joints; palette aligned with `Tools/Tag/build_mannequin_hier.py` — Tan runner / Orange It); `DummyLocomotor` swings limbs when bindable UpperArm/UpperLeg hierarchy exists |
-| **Modes** | F1 Hot Potato / F2 Least It / F3 Trail Tag (`TagModeController` SetMode + StartRound) |
-| **HUD** | `SpeedEnergyHUD` (local P0): km/h + MoveState, JET bar, ski/jet flags, controls cheat-sheet, mode + who is It, HP fuse (pulse when It ≤ warnSec), Least It times (brief all-standings flash); **LEAD** (mint) / **LAG** (coral) on local standings; **TAG flash** YOU'RE IT / YOU'RE FREE; **It compass** (flee / not It) + **Prey compass** (hunt / It → nearest alive); both pulse <12 m w/ distinct tints; cam bearing + m |
+| **Modes** | F1 Hot Potato / F2 Least It / F3 Trail Tag / **F4 Free play** (`TagModeController` SetMode + StartRound). Free play still transfers It on punch and does not end on a timer. |
+| **HUD** | `SpeedEnergyHUD` (local P0): km/h + readable verb (RUN/SLIDE/DASH/WALL/CLIMB/LAND/…), **dash cooldown bar** (cyan, ready or seconds left; jet bar only if `enableJet`), ski flag, controls cheat-sheet, mode + phase + who is It, HP fuse (pulse when It ≤ warnSec), Least It times (brief all-standings flash); **LEAD** (mint) / **LAG** (coral) on local standings; **TAG flash** YOU'RE IT / YOU'RE FREE; **It compass** (flee / not It) + **Prey compass** (hunt / It → nearest alive); both pulse <12 m w/ distinct tints; cam bearing + m |
 | **Void / XZ** | `VoidRespawn`: Y < −20 **or** mega-park XZ AABB (+~20 m) → nearest `LocalPlayerSpawner` pad; clear ragdoll/stun, zero vel, ~1 s punch i-frames |
 | **Playground** | West play places (soft-play 14, 9.75 and astro loft 14, 44.25) link along **BARS W** (x=11): monkey segments that stop at the ski spines, with the merry-go-round's east apron facing the middle run. East bunker/keep (army 58, 9.75 and knight 58, 44.25) link along **BARS E** (x=61) into a fenced kickball field (west side open) and the swing set. Hopscotch SW, SE, and NE. South crawl ring, north tube ring, figure-8 wall-runs. After pull: **CutArenaBootstrap** Rebuild / **PgkLandmarkPlacer → Place**. |
 | **Colliders** | `StaticPropColliders.EnsureStaticColliders` after dress/place so HiPoly/PGK toys keep Mesh/Box collision |
@@ -30,7 +30,7 @@ Branch: `cursor/playground-campus-zones-afc4` (campus kit tip; WIP backup `backu
 | **Jump / land** | Fixed height (`jumpSpeed` launch, not speed-tied / additive); coyote ~0.10 s, buffer ~0.16 s; hard land → LandStun; DummyLocomotor firmer land squash |
 | **Motor knobs** | Live on `Assets/Resources/TagArena/MovementConfig.asset` (`Resources.Load` `TagArena/MovementConfig`); recreate via **Tag → Create MovementConfig Asset** (won't overwrite) |
 | **Mantle / climb / glide / bounce** | Stickier mega-park mantle + wall-climb, fairer super-glide window, punchier wall bounce (TP vault/climb/glide/kick tells) |
-| **AI** | `DummyPatrol`: It chase + punch sync to `PunchHitbox` reach/cone; not-It flee with lead/strafe (wander when far); Least It: It prefers low TimeAsIt leaders, non-It clusters with non-It allies; drives `PlayerMotor` via input |
+| **AI** | `DummyPatrol`: It chase + punch sync to `PunchHitbox` reach/cone; It lunges in the band just outside punch reach; both sides hop when a deck is above (chase) or It is close (flee) so a playground lip is not a dead stop; mild chase strafe outside close range; not-It flee with lead/strafe (wander when far); Least It: It prefers low TimeAsIt leaders, non-It clusters with non-It allies; drives `PlayerMotor` via input |
 
 ## Controls (`PlayerInputReader`)
 
@@ -42,12 +42,11 @@ Branch: `cursor/playground-campus-zones-afc4` (campus kit tip; WIP backup `backu
 | Sprint (when not skiing) | Left Shift / Left Alt |
 | Jet | RMB (Mouse1) |
 | Jump | Space |
-| Crouch / slide gate | Ctrl or C |
+| Crouch / slide gate | Ctrl or C (hold + speed; in air this is the fast fall) |
 | Punch (It transfer) | LMB (Mouse0) or E |
-| **Lunge (It only)** | **MMB (Mouse2)** |
-| **Air dash** | **Q / Left Alt (in air)** |
-| **Lunge (It only)** | **MMB** |
-| Mode hotkeys | F1 / F2 / F3 |
+| **Lunge (It only, grounded)** | **MMB (Mouse2)** |
+| **Air dash** | **Q / Left Alt (in air)** — ~0.1 s, cyan trail, ~30 s cooldown. Not a jet. |
+| Mode hotkeys | F1 / F2 / F3 / **F4 free play** |
 
 Punch is **not** a contact aura — only active punch hits transfer It (`PunchHitbox`).
 
@@ -75,7 +74,21 @@ Punch is **not** a contact aura — only active punch hits transfer It (`PunchHi
 
 ## Feel check (code, not a Unity play)
 
-Slide keeps entry planar speed: `SlideMove` only applies friction (softer downhill) and clamps to `_slideStartSpeed`. `slideDownhillAccel` is 0 and unused. Jump sets `v.y` from `jumpSpeed` / fatigue, not from horizontal speed. Air dash is a short planar burst with `airDashCooldown` 30 and a cyan trail / squash on `DummyLocomotor`. The near-zero speed floor inside `EnterSlide` cannot run: crouch only enters a slide at `slideEntrySpeed` (7.5).
+Slide keeps entry planar speed: `SlideMove` only applies friction (softer downhill) and clamps to `_slideStartSpeed`. The punch +8% speed buff is skipped while `State == Slide`, then the same cap is applied again. `slideDownhillAccel` is 0 and unused. Jump sets `v.y` from `jumpSpeed` / fatigue, not from horizontal speed. Air dash is a short planar burst with `airDashCooldown` 30 and a cyan trail on `DummyLocomotor` (trail updates even if the limb bind fails). The near-zero speed floor inside `EnterSlide` cannot run: crouch only enters a slide at `slideEntrySpeed` (7.5).
+
+Wall-run and wall-climb set a latch on exit (timeout, jump-off, or lost contact). The latch clears on the ground or after ~0.15 s with no wall hit, so air accel cannot restart the timer on the same surface. Climb up-speed (`climbSpeed` 6, decay from 0.16 s, slip × 3.5) reverses before `climbMaxHeight`; the old 7.8 / 0.40 curve hit the height cap at ~0.42 s while still going up, and `ClimbHeightUsed` never cleared on landing. Sprint stays 12 m/s, ski max 24 m/s (run was already raised; ski still wins). Jet stays off.
+
+## Human verify next
+
+No Unity play on this pass. After pull, open **Play**:
+
+1. Sprint, hold Ctrl: slide should not speed up on entry. Down a slide, it should last longer and still not go faster than the speed you had at the crouch.
+2. Jump from a walk and from a sprint: same height. Hold Ctrl in the air: you should drop faster than a normal fall.
+3. Air dash (Q): short cyan streak, then the HUD dash bar counts ~30 s. RMB should not jet.
+4. Wall-run a figure-8 panel: you should slide down and fall off. You should not re-stick until you leave the wall or land. Climb a net: rise, then slide down. After you hit the ground you can climb again.
+5. Run should show a knee bend. Hands should hang / swing forward, not fold back into the hips.
+6. F4: HUD says Free play · Playing, punch still moves It, the round does not end. F2 returns to Least It.
+7. Let the dummy be It on a deck: it should hop toward you and lunge when it is close, not only run into the wall.
 
 ## Known leftovers
 
