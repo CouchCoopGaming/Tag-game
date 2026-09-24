@@ -81,13 +81,15 @@ namespace Tag.Art
 
         void LateUpdate()
         {
-            if (!_bound) Cache(transform);
-            if (!_bound) return;
+            float dt = Time.deltaTime;
             if (_motor == null) _motor = GetComponentInParent<PlayerMotor>();
             HookBounce();
+            // Cyan dash tell must run even when the limb rig failed to bind.
+            TickAirDashTell(dt);
+            if (!_bound) Cache(transform);
+            if (!_bound) return;
             if (_punch == null) _punch = GetComponentInParent<PunchHitbox>();
 
-            float dt = Time.deltaTime;
             float speed = _motor != null ? _motor.HorizontalSpeed : 0f;
             bool grounded = _motor == null || _motor.IsGrounded;
             var st = _motor != null ? _motor.State : MoveState.Idle;
@@ -126,23 +128,7 @@ namespace Tag.Art
             bool gliding = _glidePulse > 0.04f;
             float glideAmt = Mathf.Clamp01(_glidePulse);
 
-            // MMB lunge / air-dash tell + brief jet pop
             bool airDashing = _motor != null && _motor.IsAirDashing;
-            if (lunging && !_wasLunging) _dashPulse = 1f;
-            if (airDashing && !_wasAirDashing)
-            {
-                _dashPulse = 1f;
-                _dashTrailT = 0.22f;
-                EnsureDashTrail();
-            }
-            if (jet && !_wasJetting) _dashPulse = Mathf.Max(_dashPulse, 0.85f);
-            _wasLunging = lunging;
-            _wasAirDashing = airDashing;
-            _wasJetting = jet;
-            _dashPulse = Mathf.MoveTowards(_dashPulse, 0f, dt / 0.18f);
-            if (_dashTrailT > 0f) _dashTrailT = Mathf.MoveTowards(_dashTrailT, 0f, dt);
-            if (_dashTrail != null)
-                _dashTrail.emitting = _dashTrailT > 0.01f || airDashing;
             _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.32f);
             bool dashing = _dashPulse > 0.04f || lunging || airDashing;
             float dashAmt = Mathf.Max(
@@ -344,19 +330,20 @@ namespace Tag.Art
             {
                 // Air / vault limb tells: residual run energy + open arms (slight loft for crest leave)
                 float airKick = Mathf.Sin(_cycle) * Mathf.Lerp(28f, 48f, runAmt);
-                _uaLT = _uaL0 * Quaternion.Euler(-32f - airKick * 0.55f, 0f, armZ + 14f);
-                _uaRT = _uaR0 * Quaternion.Euler(-32f + airKick * 0.55f, 0f, -armZ - 14f);
+                _uaLT = _uaL0 * Quaternion.Euler(-32f - airKick * 0.55f, 0f, 8f);
+                _uaRT = _uaR0 * Quaternion.Euler(-32f + airKick * 0.55f, 0f, -8f);
                 _laLT = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
             }
             else
             {
-                // Opposite-phase hang swing; elbows bend on the forward arm
-                float armSwing = swing;
-                _uaLT = _uaL0 * Quaternion.Euler(-armSwing, 0f, armZ);
-                _uaRT = _uaR0 * Quaternion.Euler(armSwing, 0f, -armZ);
-                float elbowL = -18f - Mathf.Max(0f, -sinC) * Mathf.Lerp(18f, 42f, runAmt);
-                float elbowR = -18f - Mathf.Max(0f, sinC) * Mathf.Lerp(18f, 42f, runAmt);
+                // Mostly forward. A full ±swing plus extra Z roll put both hands back into the hips.
+                // Rest pose already carries the outward A; do not stack more roll on the run.
+                float amp = Mathf.Lerp(24f, 46f, Mathf.Max(walkAmt, runAmt));
+                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(sinC, amp), 0f, 0f);
+                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(-sinC, amp), 0f, 0f);
+                float elbowL = -18f - Mathf.Max(0f, sinC) * Mathf.Lerp(22f, 48f, runAmt);
+                float elbowR = -18f - Mathf.Max(0f, -sinC) * Mathf.Lerp(22f, 48f, runAmt);
                 _laLT = _laL0 * Quaternion.Euler(elbowL, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(elbowR, 0f, 0f);
             }
@@ -470,12 +457,12 @@ namespace Tag.Art
             else
             {
                 // Human run: thigh stride + recovery-leg knee bend (stance more extended)
-                float stride = Mathf.Lerp(1.05f, 1.35f, runAmt);
+                float stride = Mathf.Lerp(0.92f, 1.18f, runAmt);
                 float thighL = swing * stride;
                 float thighR = -swing * stride;
                 _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
-                float kneeAmt = Mathf.Lerp(22f, 58f, runAmt);
+                float kneeAmt = Mathf.Lerp(28f, 72f, runAmt);
                 float baseFlex = Mathf.Lerp(8f, 14f, runAmt);
                 // Forward thigh (sin>0 left) flexes; trailing extends
                 float kneeL = -(baseFlex + Mathf.Max(0f, sinC) * kneeAmt + Mathf.Max(0f, -cosC) * kneeAmt * 0.25f);
@@ -527,6 +514,39 @@ namespace Tag.Art
             transform.localScale = new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash);
         }
 
+        /// <summary>
+        /// Negative pitch is forward on the hanging arm. Rearward recovery stays short
+        /// so the hands do not fold back into the hips.
+        /// </summary>
+        static float RunArmPitch(float phase, float amp)
+        {
+            float fwd = Mathf.Max(0f, phase) * amp;
+            float back = Mathf.Max(0f, -phase) * amp * 0.22f;
+            return -(fwd - back);
+        }
+
+        void TickAirDashTell(float dt)
+        {
+            bool lunging = _motor != null && _motor.IsLunging;
+            bool airDashing = _motor != null && _motor.IsAirDashing;
+            bool jet = _motor != null && (_motor.State == MoveState.Jet || _motor.Jetting);
+            if (lunging && !_wasLunging) _dashPulse = 1f;
+            if (airDashing && !_wasAirDashing)
+            {
+                _dashPulse = 1f;
+                _dashTrailT = 0.28f;
+                EnsureDashTrail();
+            }
+            if (jet && !_wasJetting) _dashPulse = Mathf.Max(_dashPulse, 0.85f);
+            _wasLunging = lunging;
+            _wasAirDashing = airDashing;
+            _wasJetting = jet;
+            _dashPulse = Mathf.MoveTowards(_dashPulse, 0f, dt / 0.18f);
+            if (_dashTrailT > 0f) _dashTrailT = Mathf.MoveTowards(_dashTrailT, 0f, dt);
+            if (_dashTrail != null)
+                _dashTrail.emitting = _dashTrailT > 0.01f || airDashing;
+        }
+
         void EnsureDashTrail()
         {
             if (_dashTrail != null) return;
@@ -534,9 +554,9 @@ namespace Tag.Art
             go.transform.SetParent(transform, false);
             go.transform.localPosition = new Vector3(0f, 0.9f, -0.15f);
             _dashTrail = go.AddComponent<TrailRenderer>();
-            _dashTrail.time = 0.18f;
-            _dashTrail.minVertexDistance = 0.05f;
-            _dashTrail.widthMultiplier = 0.22f;
+            _dashTrail.time = 0.28f;
+            _dashTrail.minVertexDistance = 0.04f;
+            _dashTrail.widthMultiplier = 0.36f;
             _dashTrail.emitting = false;
             _dashTrail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _dashTrail.receiveShadows = false;
@@ -611,6 +631,7 @@ namespace Tag.Art
             {
                 _bounceHooked.OnWallBounced -= HandleWallBounced;
                 _bounceHooked.OnSuperGlide -= HandleSuperGlide;
+                _bounceHooked.OnAirDashed -= HandleAirDashed;
                 _bounceHooked = null;
             }
         }
