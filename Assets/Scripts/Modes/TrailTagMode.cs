@@ -168,15 +168,15 @@ namespace Tag.Modes
 
         public void OnPunchTransfer(TagModeContext ctx, ItController from, ItController to)
         {
-            if (_tuning.emitters != TrailEmitterMode.ItOnly) return;
+            // Emphasis is visual only. Self-grace and hit rules stay on the segment.
             if (from != null)
             {
                 var fe = from.GetComponent<PlayerTrailEmitter>();
                 if (fe != null)
                 {
-                    fe.SetEmitting(false);
-                    // Same-frame readability: drop It trail brightness before next Tick.
                     fe.SetItEmphasis(false, _tuning.itTrailBrightness);
+                    if (_tuning.emitters == TrailEmitterMode.ItOnly)
+                        fe.SetEmitting(false);
                 }
             }
             if (to != null)
@@ -184,9 +184,12 @@ namespace Tag.Modes
                 var te = to.GetComponent<PlayerTrailEmitter>();
                 if (te != null)
                 {
-                    te.BeginSpawnDelay(_tuning.spawnTrailDelay);
-                    te.SetEmitting(true);
                     te.SetItEmphasis(true, _tuning.itTrailBrightness);
+                    if (_tuning.emitters == TrailEmitterMode.ItOnly)
+                    {
+                        te.BeginSpawnDelay(_tuning.spawnTrailDelay);
+                        te.SetEmitting(true);
+                    }
                 }
             }
         }

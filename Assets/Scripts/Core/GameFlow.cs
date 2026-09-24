@@ -139,7 +139,10 @@ namespace Tag.Core
             State = GameFlowState.RoundEnd;
             Time.timeScale = 1f;
             var msg = LastResultMessage.ToLowerInvariant();
-            if (msg.Contains("win"))
+            // "No winners" contains "win"; check that before the win sting.
+            if (msg.Contains("no winner"))
+                AudioCuePlayer.Ensure()?.RoundEnd();
+            else if (msg.Contains("winner") || msg.Contains(" win"))
                 AudioCuePlayer.Ensure()?.RoundWin();
             else if (msg.Contains("lose") || msg.Contains("loss"))
                 AudioCuePlayer.Ensure()?.RoundLose();
@@ -298,8 +301,13 @@ namespace Tag.Core
             }
             else if (State == GameFlowState.RoundEnd)
             {
-                GUI.Box(new Rect(cx - 180, 40, 360, 80),
-                    $"{LastResultMessage}\nR Rematch · Q Menu");
+                // TagModeController draws the center card when a round is running.
+                if (TagModeController.Instance == null)
+                {
+                    GUI.Box(new Rect(cx - 220, cy - 70, 440, 140), "Round over");
+                    GUI.Label(new Rect(cx - 200, cy - 36, 400, 70),
+                        $"{LastResultMessage}\n\nR  Rematch    Q  Menu");
+                }
             }
         }
 

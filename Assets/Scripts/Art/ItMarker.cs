@@ -67,6 +67,15 @@ namespace Tag.Art
             float bob = Mathf.Sin(t * (Mathf.PI * 2f * (bobHz + 3.5f * urgency))) * (bobAmp * (1f + 0.8f * urgency));
 
             float scaleMul = (0.96f + 0.08f * pulse + 0.22f * urgency * pulse) * (1f + 0.7f * _pop);
+            // Mega park: a 0.5 m hat disappears past a fort. Grow with camera distance, clamp up close.
+            float distMul = 1f;
+            var cam = Camera.main;
+            if (cam != null && _hat != null)
+            {
+                float d = Vector3.Distance(cam.transform.position, _hat.position);
+                distMul = Mathf.Clamp(d / 16f, 1f, 4.5f);
+            }
+            scaleMul *= distMul;
             if (_hat != null)
             {
                 _hat.localPosition = _hatBaseLocal + new Vector3(0f, bob, 0f);
@@ -80,7 +89,7 @@ namespace Tag.Art
             if (_light != null)
             {
                 _light.intensity = (2.8f + 5.5f * urgency) * pulse;
-                _light.range = 7.5f + 1.2f * pulse + 4f * urgency;
+                _light.range = (14f + 1.2f * pulse + 6f * urgency) * Mathf.Lerp(1f, 1.6f, (distMul - 1f) / 3.5f);
                 _light.color = Color.Lerp(new Color(1f, 0.4f, 0.08f), new Color(1f, 0.95f, 0.55f), urgency);
             }
 
@@ -147,6 +156,15 @@ namespace Tag.Art
             DestroyCollider(tip);
             _tipRend = ApplyMat(tip, new Color(1f, 0.85f, 0.15f, 1f), emissive: true, emissionMul: 3.2f);
 
+            // Tall emissive spike so the It reads before the brim does.
+            var beacon = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            beacon.name = "ItHatBeacon";
+            beacon.transform.SetParent(_hat, false);
+            beacon.transform.localPosition = new Vector3(0f, 2.4f, 0f);
+            beacon.transform.localScale = new Vector3(0.22f, 2.8f, 0.22f);
+            DestroyCollider(beacon);
+            ApplyMat(beacon, new Color(1f, 0.45f, 0.05f, 1f), emissive: true, emissionMul: 3.4f);
+
             var haloGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             haloGo.name = "ItHalo";
             haloGo.transform.SetParent(transform, false);
@@ -163,7 +181,7 @@ namespace Tag.Art
             _light = lightGo.AddComponent<Light>();
             _light.type = LightType.Point;
             _light.color = new Color(1f, 0.4f, 0.08f);
-            _light.range = 8f;
+            _light.range = 18f;
             _light.intensity = 2.8f;
             _light.shadows = LightShadows.None;
 
