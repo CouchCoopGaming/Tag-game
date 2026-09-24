@@ -175,6 +175,7 @@ namespace Tag.Art
             // Low step between Spawn_SW and hopscotch SW. Feet are on y=0. Sits beside
             // the faced exit (yaw 45), not on it.
             n += GroundAccent(root, "Play_Mushroom_SW", new Vector3(4.5f, 0f, 6.94f), 0f, "Toy_MushroomSteps");
+            n += PathBridges(root);
             // Overhead bars. West stays at x=11 (the mast owns x≤9.5 around z 12–18).
             // East sits at x=62.5, just inside the kickball pad's open west edge.
             // Segments stop at the EW spines; you cross those on foot.
@@ -281,7 +282,8 @@ namespace Tag.Art
 
         /// <summary>
         /// Bunker / keep ground floor: one 8 m crawl clear of the stair, climb net on the outer side.
-        /// No second spiral — that annex is the west play places.
+        /// No second spiral — that annex is the west play places. The 2.4 m rung matches soft-play
+        /// so the east towers can be climbed to the 2.00 deck, not only the 1.60.
         /// </summary>
         static void AddBunkerAnnex(List<(string id, Vector3 p, float y)> pieces)
         {
@@ -292,6 +294,10 @@ namespace Tag.Art
             // 1.8 m ladder on the net side of the deck. Reaches the 1.60 deck, not the 2.00 cap.
             // x=1.20 is ~0.16 m off the deck edge; z=0.45 stays ~0.1 m south of the corner post.
             pieces.Add(("Toy_Ladder_Hi", new Vector3(1.20f, 0f, 0.45f), -90f));
+            // Same seat as the play-place rung. Yaw 90 faces the decks.
+            // Side stair ends at local z=0.45; rung starts at z=0.62 (~0.17 m). Post gap stays ~0.07 m.
+            // Army world x~56.8 is east of Conn_Army. Knight world z~43.1 is ~0.8 m north of hopscotch NE.
+            pieces.Add(("PGK_Ladder_Rung_LOD0", new Vector3(-1.15f, 0f, 0.90f), 90f));
         }
 
         /// <summary>
@@ -564,6 +570,24 @@ namespace Tag.Art
                 // Picnic feet are on y=0. Southwest of the spinner, on the pad, clear of the bench.
                 ("Toy_PicnicTable", new Vector3(-2.2f, 0f, -2.6f), 0f),
             });
+        }
+
+        /// <summary>
+        /// Toy_Bridge is an arch: feet on y=0, piers only at the outer ~0.27 m, deck at ~1.05
+        /// with the span open underneath. Each center splits a measured gap.
+        /// SW is skipped: hopscotch SW and the south bar are already ~2.2 m apart, short of 3 m.
+        /// Kickball's open west is not bridged.
+        /// </summary>
+        int PathBridges(Transform root)
+        {
+            int n = 0;
+            // Hopscotch NW ends x=4.45. North bar is x=10.96. z=42 is the court center.
+            n += GroundAccent(root, "Play_Bridge_NW", new Vector3(7.70f, 0f, 42f), 0f, "Toy_Bridge");
+            // East bars end x=62.54. Hopscotch NE starts x=68.75. North of kickball, south of Spawn_NE.
+            n += GroundAccent(root, "Play_Bridge_NE", new Vector3(65.65f, 0f, 41f), 0f, "Toy_Bridge");
+            // Army net face x=63.08. Hopscotch SE starts x=68.75. South of SpineZs.
+            n += GroundAccent(root, "Play_Bridge_SE", new Vector3(65.90f, 0f, 10.5f), 0f, "Toy_Bridge");
+            return n;
         }
 
         int GroundAccent(Transform root, string name, Vector3 origin, float yaw, string id)
