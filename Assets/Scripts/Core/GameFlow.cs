@@ -372,12 +372,12 @@ namespace Tag.Core
                     State = GameFlowState.Boot;
                 }
                 // Rows are 1..4. Keys used to highlight row 0 while Enter started 2 players.
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) _playerCountCursor = 0;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) _playerCountCursor = 1;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) _playerCountCursor = 2;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) _playerCountCursor = 3;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) _playerCountCursor = (_playerCountCursor + 3) % 4;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) _playerCountCursor = (_playerCountCursor + 1) % 4;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _playerCountCursor, 0);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _playerCountCursor, 1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _playerCountCursor, 2);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) SetFocus(ref _playerCountCursor, 3);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) Nudge(ref _playerCountCursor, -1, 3);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) Nudge(ref _playerCountCursor, 1, 3);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
                 {
                     LocalPlayerRoster.SetCount(_playerCountCursor + 1);
@@ -391,12 +391,12 @@ namespace Tag.Core
                     AudioCuePlayer.Ensure()?.UiClick();
                     State = GameFlowState.Boot;
                 }
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) _menuCursor = 0;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) _menuCursor = 1;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) _menuCursor = 2;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) _menuCursor = 3;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) _menuCursor = (_menuCursor + 3) % 4;
-                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) _menuCursor = (_menuCursor + 1) % 4;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _menuCursor, 0);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _menuCursor, 1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _menuCursor, 2);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) SetFocus(ref _menuCursor, 3);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) Nudge(ref _menuCursor, -1, 3);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) Nudge(ref _menuCursor, 1, 3);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
                     ConfirmModeAndPlay();
             }
@@ -422,7 +422,8 @@ namespace Tag.Core
             {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) Nudge(ref _pauseFocus, -1, 4);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) Nudge(ref _pauseFocus, 1, 4);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
+                    UnityEngine.Input.GetKeyDown(KeyCode.Space))
                     ActivatePause();
                 else if (UnityEngine.Input.GetKeyDown(KeyCode.Q)) QuitToMenu();
                 if (UnityEngine.Input.GetKeyDown(KeyCode.M)) AudioMaster.ToggleMute();
@@ -460,20 +461,20 @@ namespace Tag.Core
                     ? "First run: you + 1 bot, Least It. LMB/F punch passes It.\nEsc pauses. Audio / M mute. R rematch after a round."
                     : "Play is you and one bot. Couch is local humans.";
                 GUI.Label(new Rect(cx - 190, cy - 128, 380, 44), hello);
-                if (FocusButton(new Rect(cx - 90, cy - 76, 180, 32), 0, _bootFocus, "Play Tag (Least It)"))
+                if (FocusButton(new Rect(cx - 90, cy - 76, 180, 32), 0, ref _bootFocus, "Play Tag (Least It)"))
                     PlayLeastItSlice();
-                if (FocusButton(new Rect(cx - 90, cy - 38, 180, 28), 1, _bootFocus, "Controls"))
+                if (FocusButton(new Rect(cx - 90, cy - 38, 180, 28), 1, ref _bootFocus, "Controls"))
                     OpenControls();
-                if (FocusButton(new Rect(cx - 90, cy - 4, 180, 28), 2, _bootFocus, "Look sensitivity"))
+                if (FocusButton(new Rect(cx - 90, cy - 4, 180, 28), 2, ref _bootFocus, "Look sensitivity"))
                     OpenLook();
-                if (FocusButton(new Rect(cx - 90, cy + 30, 180, 28), 3, _bootFocus, "Audio"))
+                if (FocusButton(new Rect(cx - 90, cy + 30, 180, 28), 3, ref _bootFocus, "Audio"))
                     OpenAudio();
-                if (FocusButton(new Rect(cx - 90, cy + 64, 180, 28), 4, _bootFocus, "Mode select..."))
+                if (FocusButton(new Rect(cx - 90, cy + 64, 180, 28), 4, ref _bootFocus, "Mode select..."))
                 {
                     LocalPlayerRoster.SetCount(1);
                     GoToModeSelect();
                 }
-                if (FocusButton(new Rect(cx - 90, cy + 98, 180, 28), 5, _bootFocus, "Couch..."))
+                if (FocusButton(new Rect(cx - 90, cy + 98, 180, 28), 5, ref _bootFocus, "Couch..."))
                     GoToPlayerCount();
                 GUI.Label(new Rect(cx - 190, cy + 132, 380, 36),
                     "Up / Down picks. Enter uses it. Stops at the ends.");
@@ -486,7 +487,7 @@ namespace Tag.Core
                 DrawRow(cx, cy - 10, 2, "3 humans (bot off)");
                 DrawRow(cx, cy + 25, 3, "4 humans (bot off)");
                 GUI.Label(new Rect(cx - 170, cy + 62, 340, 64),
-                    "1 is solo versus the bot.\n2-4 is couch and the bot stays off.\n1-4  Enter    Esc back");
+                    "1 is solo versus the bot.\n2-4 is couch and the bot stays off.\n1-4  Enter    Esc back    Up/Down stop");
             }
             else if (State == GameFlowState.ModeSelect)
             {
@@ -498,22 +499,23 @@ namespace Tag.Core
                 DrawMode(cx, cy - 60, 1, "2  Least It    (120s + next-punch tiebreak)");
                 DrawMode(cx, cy - 20, 2, "3  Trail Tag   (ribbons eliminate - last standing)");
                 DrawMode(cx, cy + 20, 3, "4  Free play   (punch transfers It - no timer)");
-                GUI.Label(new Rect(cx - 180, cy + 70, 360, 40), "1/2/3/4  Enter to play    Esc back");
+                GUI.Label(new Rect(cx - 180, cy + 70, 360, 48),
+                    "1/2/3/4  Enter to play    Esc back\nUp / Down stops at the ends.");
             }
             else if (State == GameFlowState.Paused)
             {
                 GUI.Box(new Rect(cx - 150, cy - 130, 300, 280), "Paused");
-                if (FocusButton(new Rect(cx - 70, cy - 90, 140, 28), 0, _pauseFocus, "Resume")) TogglePause();
-                if (FocusButton(new Rect(cx - 70, cy - 56, 140, 28), 1, _pauseFocus, "Controls"))
+                if (FocusButton(new Rect(cx - 70, cy - 90, 140, 28), 0, ref _pauseFocus, "Resume")) TogglePause();
+                if (FocusButton(new Rect(cx - 70, cy - 56, 140, 28), 1, ref _pauseFocus, "Controls"))
                     OpenControls();
-                if (FocusButton(new Rect(cx - 70, cy - 22, 140, 28), 2, _pauseFocus, "Look sensitivity"))
+                if (FocusButton(new Rect(cx - 70, cy - 22, 140, 28), 2, ref _pauseFocus, "Look sensitivity"))
                     OpenLook();
-                if (FocusButton(new Rect(cx - 70, cy + 12, 140, 28), 3, _pauseFocus, "Audio"))
+                if (FocusButton(new Rect(cx - 70, cy + 12, 140, 28), 3, ref _pauseFocus, "Audio"))
                     OpenAudio();
-                if (FocusButton(new Rect(cx - 70, cy + 46, 140, 28), 4, _pauseFocus, "Quit to Menu"))
+                if (FocusButton(new Rect(cx - 70, cy + 46, 140, 28), 4, ref _pauseFocus, "Quit to Menu"))
                     QuitToMenu();
                 GUI.Label(new Rect(cx - 140, cy + 78, 280, 64),
-                    "Left / Right picks    Enter\nEsc resume    Q menu\nM mute    N music    Up / Down bed");
+                    "Left / Right picks    Enter / Space\nEsc resume    Q menu\nM mute    N music    Up / Down bed");
             }
             else if (State == GameFlowState.RoundEnd)
             {
@@ -647,11 +649,13 @@ namespace Tag.Core
             _audioOpen = true;
         }
 
-        static bool FocusButton(Rect r, int index, int cursor, string label)
+        static bool FocusButton(Rect r, int index, ref int cursor, string label)
         {
             bool sel = cursor == index;
             if (sel) GUI.Box(new Rect(r.x - 4f, r.y - 4f, r.width + 8f, r.height + 8f), "");
-            return GUI.Button(r, (sel ? "> " : "  ") + label);
+            if (!GUI.Button(r, (sel ? "> " : "  ") + label)) return false;
+            cursor = index;
+            return true;
         }
 
         void DrawRow(float cx, float y, int index, string label)

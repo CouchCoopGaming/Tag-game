@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/boot-pause-focus-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/menu-input-grapple-497c` (into `cursor/playground-campus-zones-afc4`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 ## Stack snapshot
 
@@ -106,7 +106,8 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 16. First Boot visit should say Play is you and one bot in Least It. Controls lists the real keys. Left/Right on that card steps the air dash key (Q, V, Mouse4). Alt still dashes. Default Q should feel the same. Holding jump through Esc should not hop when you resume. Direct Play pause: H opens the same card.
 17. Controls steps punch (LMB, F, Mouse3) with Up/Down or Punch buttons. E still punches. Default LMB should feel the same. Volume stays on the Audio card (Off, Low, Med, Default, Max, M mute). On the results card, clicking Rematch should not punch and the mouse should not turn you. The next countdown should not still be swinging. Direct Play results should unlock the cursor the same way. Direct Play pause: H still changes dash and punch; - / + changes that same volume; M mutes.
 18. Audio: Left/Right is SFX (the master). Up/Down is the music bed only (Low, Default 0.35, High). N still mutes music and leaves SFX. Default bed should sound the same. On the results card, wait a beat, then Left/Right highlights Rematch then Menu and stops at the ends. Enter uses the highlighted button. R still rematches even if Menu is highlighted, and a second R does not. Q and Esc still return to Boot.
-19. Boot: Up/Down highlights Play, Controls, Look, Audio, Mode, Couch and stops at the ends. Enter uses it. With Play highlighted, Enter still starts you and one bot. Keys 1-6 only move the highlight. Pause: Left/Right highlights Resume through Quit and stops at the ends. Enter uses it. Esc still resumes and Q still quits. Up/Down on pause is still the music bed. Who-plays and mode select still wrap.
+19. Boot: Up/Down highlights Play, Controls, Look, Audio, Mode, Couch and stops at the ends. Enter uses it. With Play highlighted, Enter still starts you and one bot. Keys 1-6 only move the highlight. Pause: Left/Right highlights Resume through Quit and stops at the ends. Enter or Space uses it. Esc still resumes and Q still quits. Up/Down on pause is still the music bed.
+20. Who-plays and mode select no longer wrap. Up on the first row and Down on the last row stay put. Keys 1-4 still jump to that row. A click on Boot or Pause moves the highlight, so Esc back from a panel returns to the row you opened.
 
 ## Known leftovers
 
@@ -131,7 +132,8 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 5. Trail Tag SD: HUD says SD; center flash on rising edge; rematch re-arms flash.
 6. Play path: hopscotch corners, swing fall tiles clear kickball fence, crash bowl open, three Toy_Bridge path arches grounded, army/knight 2.4 m climb rungs to the 2.00 deck.
 7. Boot Up/Down and pause Left/Right arm a row and stop at the ends. Enter uses it. Play stays the default Boot row.
+8. Who-plays and mode select stop at the first and last row. A Boot or Pause click leaves that row highlighted.
 
 ## Grapple (experimental, off)
-- Not part of the default tag loop. `ExperimentalGrapple.enableGrapple` stays false, so RMB does not hook and does not jet.
-- If you turn it on, hold RMB (JetHeld) for a rope pull. Pause or the results card drops the rope. Slide, jump, dash, and jet numbers stay the same.
+- Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
+- If you add the component and turn it on, hold RMB (JetHeld) for a rope pull. Release drops it. Pause or the results card drops it too. Slide, jump, dash, and jet numbers stay the same. Audio stays on AudioMaster.
