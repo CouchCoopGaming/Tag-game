@@ -163,12 +163,18 @@ namespace Tag.Art
             n += KitFort(root, "Play_KnightKeep", new Vector3(58f, 0f, 44.25f), 180f, false);
 
             n += MerryGoRound(root, "Play_MerryGoRound", new Vector3(7f, 0f, 24f), 0f);
-            n += SwingSet(root, "Play_Swing", new Vector3(67f, 0f, 31f), 0f);
+            n += SwingSet(root, "Play_Swing", new Vector3(67f, 0f, 31.2f), 0f);
             n += KickballField(root, "Play_Kickball", new Vector3(67f, 0f, 24f), 0f);
             // SW court runs east-west: a north-south court cannot fit between Spawn_SW and the mast.
             n += HopscotchCourt(root, "Play_Hopscotch_SW", new Vector3(4.5f, 0f, 9f), 90f);
             n += HopscotchCourt(root, "Play_Hopscotch_SE", new Vector3(70f, 0f, 12f), 0f);
             n += HopscotchCourt(root, "Play_Hopscotch_NE", new Vector3(70f, 0f, 38f), 0f);
+            // NW court is north-south on the west lawn, south of Spawn_NW. An east-west
+            // court cannot fit between the map edge and the astro carpet (x starts at 8).
+            n += HopscotchCourt(root, "Play_Hopscotch_NW", new Vector3(3.2f, 0f, 42f), 0f);
+            // Low step between Spawn_SW and hopscotch SW. Feet are on y=0. Sits beside
+            // the faced exit (yaw 45), not on it.
+            n += GroundAccent(root, "Play_Mushroom_SW", new Vector3(4.5f, 0f, 6.94f), 0f, "Toy_MushroomSteps");
             // Overhead bars. West stays at x=11 (the mast owns x≤9.5 around z 12–18).
             // East sits at x=62.5, just inside the kickball pad's open west edge.
             // Segments stop at the EW spines; you cross those on foot.
@@ -555,12 +561,24 @@ namespace Tag.Art
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(4f, 0.02f, -2f), 0f),
                 ("Toy_Bench", new Vector3(-3f, 0f, 0f), 90f),
                 ("Toy_Seesaw", new Vector3(-2f, 0f, 3f), 0f),
+                // Picnic feet are on y=0. Southwest of the spinner, on the pad, clear of the bench.
+                ("Toy_PicnicTable", new Vector3(-2.2f, 0f, -2.6f), 0f),
+            });
+        }
+
+        int GroundAccent(Transform root, string name, Vector3 origin, float yaw, string id)
+        {
+            var parent = MakeGroup(root, name, origin, yaw);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                (id, Vector3.zero, 0f),
             });
         }
 
         int SwingSet(Transform root, string name, Vector3 origin, float yaw)
         {
-            // Flat bar bays along X, fall tiles to the south, bench on the east edge.
+            // z=31.2 lifts the south fall tiles 0.16 m off the kickball north fence (was a 0.04 m overlap).
+            // The north monkey stays ~0.66 m south of SpineZn.
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
