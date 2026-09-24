@@ -35,6 +35,9 @@ namespace Tag.Core
 
         int _menuCursor = 1;
         int _playerCountCursor;
+        int _bootFocus;
+        int _pauseFocus;
+        int _looseResultsFocus;
         bool _settingsOpen;
         bool _controlsOpen;
         bool _audioOpen;
@@ -226,6 +229,7 @@ namespace Tag.Core
             AudioCuePlayer.Ensure()?.StopMusic();
             SceneManager.LoadScene(bootSceneName);
             State = GameFlowState.Boot;
+            _bootFocus = 0;
         }
 
         void TogglePause()
@@ -233,6 +237,7 @@ namespace Tag.Core
             if (State == GameFlowState.Play)
             {
                 State = GameFlowState.Paused;
+                _pauseFocus = 0;
                 Time.timeScale = 0f;
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
@@ -347,8 +352,17 @@ namespace Tag.Core
 
             if (State == GameFlowState.Boot)
             {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
-                    PlayLeastItSlice();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) Nudge(ref _bootFocus, -1, 5);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) Nudge(ref _bootFocus, 1, 5);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _bootFocus, 0);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _bootFocus, 1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _bootFocus, 2);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) SetFocus(ref _bootFocus, 3);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha5)) SetFocus(ref _bootFocus, 4);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha6)) SetFocus(ref _bootFocus, 5);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
+                    UnityEngine.Input.GetKeyDown(KeyCode.Space))
+                    ActivateBoot();
             }
             else if (State == GameFlowState.PlayerCount)
             {
@@ -393,13 +407,24 @@ namespace Tag.Core
                 if (modes != null && modes.Phase == MatchPhase.Results)
                     return;
                 // Fallback card when no mode controller is showing results.
-                if (UnityEngine.Input.GetKeyDown(KeyCode.R)) Rematch();
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Q) || UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) Nudge(ref _looseResultsFocus, -1, 1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) Nudge(ref _looseResultsFocus, 1, 1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter))
+                {
+                    if (_looseResultsFocus == 0) Rematch();
+                    else QuitToMenu();
+                }
+                else if (UnityEngine.Input.GetKeyDown(KeyCode.R)) Rematch();
+                else if (UnityEngine.Input.GetKeyDown(KeyCode.Q) || UnityEngine.Input.GetKeyDown(KeyCode.Escape))
                     QuitToMenu();
             }
             else if (State == GameFlowState.Paused)
             {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Q)) QuitToMenu();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) Nudge(ref _pauseFocus, -1, 4);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) Nudge(ref _pauseFocus, 1, 4);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter))
+                    ActivatePause();
+                else if (UnityEngine.Input.GetKeyDown(KeyCode.Q)) QuitToMenu();
                 if (UnityEngine.Input.GetKeyDown(KeyCode.M)) AudioMaster.ToggleMute();
                 if (UnityEngine.Input.GetKeyDown(KeyCode.N)) AudioMaster.ToggleMusicMute();
                 if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) AudioMaster.CycleMusic(1);
@@ -435,33 +460,23 @@ namespace Tag.Core
                     ? "First run: you + 1 bot, Least It. LMB/F punch passes It.\nEsc pauses. Audio / M mute. R rematch after a round."
                     : "Play is you and one bot. Couch is local humans.";
                 GUI.Label(new Rect(cx - 190, cy - 128, 380, 44), hello);
-                if (GUI.Button(new Rect(cx - 90, cy - 76, 180, 32), "Play Tag (Least It)"))
+                if (FocusButton(new Rect(cx - 90, cy - 76, 180, 32), 0, _bootFocus, "Play Tag (Least It)"))
                     PlayLeastItSlice();
-                if (GUI.Button(new Rect(cx - 90, cy - 38, 180, 28), "Controls"))
-                {
-                    _settingsOpen = false;
-                    _audioOpen = false;
-                    _controlsOpen = true;
-                }
-                if (GUI.Button(new Rect(cx - 90, cy - 4, 180, 28), "Look sensitivity"))
-                {
-                    _controlsOpen = false;
-                    _audioOpen = false;
-                    _settingsOpen = true;
-                }
-                if (GUI.Button(new Rect(cx - 90, cy + 30, 180, 28), "Audio"))
-                {
-                    _controlsOpen = false;
-                    _settingsOpen = false;
-                    _audioOpen = true;
-                }
-                if (GUI.Button(new Rect(cx - 90, cy + 64, 180, 28), "Mode select..."))
+                if (FocusButton(new Rect(cx - 90, cy - 38, 180, 28), 1, _bootFocus, "Controls"))
+                    OpenControls();
+                if (FocusButton(new Rect(cx - 90, cy - 4, 180, 28), 2, _bootFocus, "Look sensitivity"))
+                    OpenLook();
+                if (FocusButton(new Rect(cx - 90, cy + 30, 180, 28), 3, _bootFocus, "Audio"))
+                    OpenAudio();
+                if (FocusButton(new Rect(cx - 90, cy + 64, 180, 28), 4, _bootFocus, "Mode select..."))
                 {
                     LocalPlayerRoster.SetCount(1);
                     GoToModeSelect();
                 }
-                if (GUI.Button(new Rect(cx - 90, cy + 98, 180, 28), "Couch..."))
+                if (FocusButton(new Rect(cx - 90, cy + 98, 180, 28), 5, _bootFocus, "Couch..."))
                     GoToPlayerCount();
+                GUI.Label(new Rect(cx - 190, cy + 132, 380, 36),
+                    "Up / Down picks. Enter uses it. Stops at the ends.");
             }
             else if (State == GameFlowState.PlayerCount)
             {
@@ -488,28 +503,17 @@ namespace Tag.Core
             else if (State == GameFlowState.Paused)
             {
                 GUI.Box(new Rect(cx - 150, cy - 130, 300, 280), "Paused");
-                if (GUI.Button(new Rect(cx - 70, cy - 90, 140, 28), "Resume")) TogglePause();
-                if (GUI.Button(new Rect(cx - 70, cy - 56, 140, 28), "Controls"))
-                {
-                    _settingsOpen = false;
-                    _audioOpen = false;
-                    _controlsOpen = true;
-                }
-                if (GUI.Button(new Rect(cx - 70, cy - 22, 140, 28), "Look sensitivity"))
-                {
-                    _controlsOpen = false;
-                    _audioOpen = false;
-                    _settingsOpen = true;
-                }
-                if (GUI.Button(new Rect(cx - 70, cy + 12, 140, 28), "Audio"))
-                {
-                    _controlsOpen = false;
-                    _settingsOpen = false;
-                    _audioOpen = true;
-                }
-                if (GUI.Button(new Rect(cx - 70, cy + 46, 140, 28), "Quit to Menu")) QuitToMenu();
-                GUI.Label(new Rect(cx - 140, cy + 80, 280, 48),
-                    "Esc resume    Q menu\nM mute    N music    Up / Down bed");
+                if (FocusButton(new Rect(cx - 70, cy - 90, 140, 28), 0, _pauseFocus, "Resume")) TogglePause();
+                if (FocusButton(new Rect(cx - 70, cy - 56, 140, 28), 1, _pauseFocus, "Controls"))
+                    OpenControls();
+                if (FocusButton(new Rect(cx - 70, cy - 22, 140, 28), 2, _pauseFocus, "Look sensitivity"))
+                    OpenLook();
+                if (FocusButton(new Rect(cx - 70, cy + 12, 140, 28), 3, _pauseFocus, "Audio"))
+                    OpenAudio();
+                if (FocusButton(new Rect(cx - 70, cy + 46, 140, 28), 4, _pauseFocus, "Quit to Menu"))
+                    QuitToMenu();
+                GUI.Label(new Rect(cx - 140, cy + 78, 280, 64),
+                    "Left / Right picks    Enter\nEsc resume    Q menu\nM mute    N music    Up / Down bed");
             }
             else if (State == GameFlowState.RoundEnd)
             {
@@ -517,8 +521,10 @@ namespace Tag.Core
                 if (TagModeController.Instance == null)
                 {
                     GUI.Box(new Rect(cx - 220, cy - 70, 440, 140), "Round over");
+                    string arm = _looseResultsFocus == 0 ? "> Rematch" : "Rematch";
+                    string menu = _looseResultsFocus == 1 ? "> Menu" : "Menu";
                     GUI.Label(new Rect(cx - 200, cy - 36, 400, 70),
-                        $"{LastResultMessage}\n\nR  Rematch    Q  Menu");
+                        $"{LastResultMessage}\n\n{arm}    {menu}\nLeft / Right    Enter    R    Q");
                 }
             }
         }
@@ -575,6 +581,77 @@ namespace Tag.Core
                 AudioMaster.ToggleMusicMute();
             GUI.Label(new Rect(cx - 180, cy + 74, 360, 48),
                 "Left / Right SFX    Up / Down music\nM mute all    N music    Esc back");
+        }
+
+        static void Nudge(ref int cursor, int dir, int maxInclusive)
+        {
+            int next = Mathf.Clamp(cursor + dir, 0, maxInclusive);
+            if (next == cursor) return;
+            cursor = next;
+            AudioCuePlayer.Ensure()?.UiClick();
+        }
+
+        static void SetFocus(ref int cursor, int index)
+        {
+            if (cursor == index) return;
+            cursor = index;
+            AudioCuePlayer.Ensure()?.UiClick();
+        }
+
+        void ActivateBoot()
+        {
+            switch (_bootFocus)
+            {
+                case 1: OpenControls(); break;
+                case 2: OpenLook(); break;
+                case 3: OpenAudio(); break;
+                case 4:
+                    LocalPlayerRoster.SetCount(1);
+                    GoToModeSelect();
+                    break;
+                case 5: GoToPlayerCount(); break;
+                default: PlayLeastItSlice(); break;
+            }
+        }
+
+        void ActivatePause()
+        {
+            switch (_pauseFocus)
+            {
+                case 1: OpenControls(); break;
+                case 2: OpenLook(); break;
+                case 3: OpenAudio(); break;
+                case 4: QuitToMenu(); break;
+                default: TogglePause(); break;
+            }
+        }
+
+        void OpenControls()
+        {
+            _settingsOpen = false;
+            _audioOpen = false;
+            _controlsOpen = true;
+        }
+
+        void OpenLook()
+        {
+            _controlsOpen = false;
+            _audioOpen = false;
+            _settingsOpen = true;
+        }
+
+        void OpenAudio()
+        {
+            _controlsOpen = false;
+            _settingsOpen = false;
+            _audioOpen = true;
+        }
+
+        static bool FocusButton(Rect r, int index, int cursor, string label)
+        {
+            bool sel = cursor == index;
+            if (sel) GUI.Box(new Rect(r.x - 4f, r.y - 4f, r.width + 8f, r.height + 8f), "");
+            return GUI.Button(r, (sel ? "> " : "  ") + label);
         }
 
         void DrawRow(float cx, float y, int index, string label)
