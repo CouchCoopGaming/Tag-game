@@ -592,20 +592,27 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Low marks on the play path. Both are Toy_Bench (feet y=0, 0.46 tall).
-        /// SW sits in the 2.2 m court-to-bar gap without closing it.
-        /// Kickball's bench is west of the bars, so the open side of the field stays empty.
-        /// No fourth arch: the SW gap is 2.2 m and an arch is 3 m, so the piers cannot clear by 1.3 m.
+        /// Low marks on the play path. All are Toy_Bench (feet y=0, 0.46 tall).
+        /// The SW bench used to sit on the climb net (x≈9.85). It is now west of that net.
+        /// Soft-play's bench is west of the tube street, not in it.
+        /// NE is a bench, not a second arch: the existing arch already clears bars and court by ~1.6 m.
+        /// Merry already has a west bench and a south picnic, so no extra seat there.
         /// </summary>
         int PathCues(Transform root)
         {
             int n = 0;
-            // Court east edge x=8.75, south bar x=10.96. Yaw 90 makes the bench 0.45 m thick in X.
-            // z=9 stays on the court band and 0.8 m south of the bar (bar starts z=10.5).
-            n += GroundAccent(root, "Play_Cue_SW", new Vector3(9.85f, 0f, 9f), 90f, "Toy_Bench");
+            // Court east edge x=8.75. Climb net face x=9.775. Yaw 90 is 0.45 m thick in X.
+            // About 0.29 m off the court and off the net. The passage east of the net, to the bar, stays open.
+            n += GroundAccent(root, "Play_Cue_SW", new Vector3(9.26f, 0f, 9f), 90f, "Toy_Bench");
+            // West of the soft-play plastic (x=9.40). z=5.75 matches the tube mouths.
+            // 0.50 m off the cap. South of the climb net (net starts z=6.72). Not in the street.
+            n += GroundAccent(root, "Play_Cue_SoftPlay", new Vector3(8.20f, 0f, 5.75f), 0f, "Toy_Bench");
             // West of the bars (bar face x=62.46). South of the Loop E ground stair (z ends 22.55)
             // and north of SpineZs (ends 19.6). Not inside the diamond.
             n += GroundAccent(root, "Play_Cue_Kickball", new Vector3(61.30f, 0f, 21.05f), 90f, "Toy_Bench");
+            // North of the NE arch (arch z ends 41.40). Yaw 0 is 1.4 m long in X.
+            // 2.4 m off the east bars (x=62.54) and off hopscotch NE (x=68.75).
+            n += GroundAccent(root, "Play_Cue_NE", new Vector3(65.65f, 0f, 41.90f), 0f, "Toy_Bench");
             return n;
         }
 
