@@ -113,4 +113,5 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - AI weave/whiff still needs a human feel pass. No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent: `music_playground_bed_loop.wav` is meta only, so PlayMusic returns. No hitstop.
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.
 
-
+## Audio
+- Master volume / mute: Boot or pause **Audio**, Left/Right steps Off/Low/Med/Default/Max, **M** mute. Saved in PlayerPrefs. Drives AudioListener.volume so TagSfx + music bed share one gate.

@@ -37,6 +37,7 @@ namespace Tag.Core
         int _playerCountCursor;
         bool _settingsOpen;
         bool _controlsOpen;
+        bool _audioOpen;
         bool _firstBoot;
 
         void Awake()
@@ -51,6 +52,7 @@ namespace Tag.Core
             _firstBoot = PlayerPrefs.GetInt("Tag.BootSeen", 0) == 0;
             LookSensitivity.Load();
             ControlBinds.Load();
+            AudioMaster.Load();
             AudioCuePlayer.Ensure();
             if (PlayerPrefs.HasKey(TagModeController.PrefsModeKey))
             {
@@ -203,7 +205,7 @@ namespace Tag.Core
         }
 
         /// <summary>
-        /// F1–F4 and rematch leave RoundEnd / Pause. Otherwise R still rematches
+        /// F1-F4 and rematch leave RoundEnd / Pause. Otherwise R still rematches
         /// the new round, and a pause leaves timeScale at 0 so the countdown never finishes.
         /// </summary>
         public void ReturnToPlay()
@@ -233,6 +235,7 @@ namespace Tag.Core
                 Time.timeScale = 0f;
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
+                ClearPauseEdges();
                 AudioCuePlayer.Ensure()?.UiClick();
             }
             else if (State == GameFlowState.Paused)
@@ -241,7 +244,20 @@ namespace Tag.Core
                 Time.timeScale = 1f;
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
+                _controlsOpen = false;
+                _settingsOpen = false;
+                _audioOpen = false;
                 AudioCuePlayer.Ensure()?.UiClick();
+            }
+        }
+
+        void ClearPauseEdges()
+        {
+            foreach (var motor in Object.FindObjectsByType<PlayerMotor>(FindObjectsSortMode.None))
+            {
+                if (motor == null) continue;
+                var loco = motor.GetComponentInChildren<Tag.Art.DummyLocomotor>();
+                loco?.CancelPunchTelegraph();
             }
         }
 
@@ -270,6 +286,22 @@ namespace Tag.Core
 
         void Update()
         {
+            if (_audioOpen)
+            {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                {
+                    _audioOpen = false;
+                    AudioCuePlayer.Ensure()?.UiClick();
+                }
+                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
+                    AudioMaster.CycleVolume(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
+                    AudioMaster.CycleVolume(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.M))
+                    AudioMaster.ToggleMute();
+                return;
+            }
+
             if (_controlsOpen)
             {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
@@ -361,11 +393,18 @@ namespace Tag.Core
             else if (State == GameFlowState.Paused)
             {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Q)) QuitToMenu();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.M)) AudioMaster.ToggleMute();
             }
         }
 
         void OnGUI()
         {
+            if (_audioOpen)
+            {
+                DrawAudioSettings();
+                return;
+            }
+
             if (_controlsOpen)
             {
                 DrawControls();
@@ -381,7 +420,7 @@ namespace Tag.Core
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
             if (State == GameFlowState.Boot)
             {
-                GUI.Box(new Rect(cx - 210, cy - 160, 420, 320), "TAG — party slice");
+                GUI.Box(new Rect(cx - 210, cy - 170, 420, 360), "TAG - party slice");
                 string hello = _firstBoot
                     ? "First run: Play is you and one bot, Least It.\nPunch passes It. Esc pauses."
                     : "Play is you and one bot. Couch is local humans.";
@@ -391,19 +430,27 @@ namespace Tag.Core
                 if (GUI.Button(new Rect(cx - 90, cy - 38, 180, 28), "Controls"))
                 {
                     _settingsOpen = false;
+                    _audioOpen = false;
                     _controlsOpen = true;
                 }
-                if (GUI.Button(new Rect(cx - 90, cy - 4, 180, 28), "Look sensitivity"))
+                                if (GUI.Button(new Rect(cx - 90, cy - 4, 180, 28), "Look sensitivity"))
                 {
                     _controlsOpen = false;
+                    _audioOpen = false;
                     _settingsOpen = true;
                 }
-                if (GUI.Button(new Rect(cx - 90, cy + 30, 180, 28), "Mode select…"))
+                if (GUI.Button(new Rect(cx - 90, cy + 30, 180, 28), "Audio"))
+                {
+                    _controlsOpen = false;
+                    _settingsOpen = false;
+                    _audioOpen = true;
+                }
+                if (GUI.Button(new Rect(cx - 90, cy + 64, 180, 28), "Mode select..."))
                 {
                     LocalPlayerRoster.SetCount(1);
                     GoToModeSelect();
                 }
-                if (GUI.Button(new Rect(cx - 90, cy + 64, 180, 28), "Couch…"))
+                if (GUI.Button(new Rect(cx - 90, cy + 98, 180, 28), "Couch..."))
                     GoToPlayerCount();
             }
             else if (State == GameFlowState.PlayerCount)
@@ -430,20 +477,28 @@ namespace Tag.Core
             }
             else if (State == GameFlowState.Paused)
             {
-                GUI.Box(new Rect(cx - 150, cy - 118, 300, 236), "Paused");
-                if (GUI.Button(new Rect(cx - 70, cy - 74, 140, 28), "Resume")) TogglePause();
-                if (GUI.Button(new Rect(cx - 70, cy - 40, 140, 28), "Controls"))
+                GUI.Box(new Rect(cx - 150, cy - 130, 300, 280), "Paused");
+                if (GUI.Button(new Rect(cx - 70, cy - 90, 140, 28), "Resume")) TogglePause();
+                if (GUI.Button(new Rect(cx - 70, cy - 56, 140, 28), "Controls"))
                 {
                     _settingsOpen = false;
+                    _audioOpen = false;
                     _controlsOpen = true;
                 }
-                if (GUI.Button(new Rect(cx - 70, cy - 6, 140, 28), "Look sensitivity"))
+                if (GUI.Button(new Rect(cx - 70, cy - 22, 140, 28), "Look sensitivity"))
                 {
                     _controlsOpen = false;
+                    _audioOpen = false;
                     _settingsOpen = true;
                 }
-                if (GUI.Button(new Rect(cx - 70, cy + 28, 140, 28), "Quit to Menu")) QuitToMenu();
-                GUI.Label(new Rect(cx - 130, cy + 64, 260, 22), "Esc resume    Q menu");
+                if (GUI.Button(new Rect(cx - 70, cy + 12, 140, 28), "Audio"))
+                {
+                    _controlsOpen = false;
+                    _settingsOpen = false;
+                    _audioOpen = true;
+                }
+                if (GUI.Button(new Rect(cx - 70, cy + 46, 140, 28), "Quit to Menu")) QuitToMenu();
+                GUI.Label(new Rect(cx - 140, cy + 86, 280, 36), "Esc resume    Q menu    M mute");
             }
             else if (State == GameFlowState.RoundEnd)
             {
@@ -481,6 +536,22 @@ namespace Tag.Core
                 LookSensitivity.Cycle(1);
             GUI.Label(new Rect(cx - 180, cy + 28, 360, 48),
                 "Left / Right    Esc back\nDefault is the current camera feel");
+        }
+
+        void DrawAudioSettings()
+        {
+            float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
+            GUI.Box(new Rect(cx - 200, cy - 100, 400, 200), "Audio");
+            GUI.Label(new Rect(cx - 180, cy - 58, 360, 28), "Volume  " + AudioMaster.Label);
+            if (GUI.Button(new Rect(cx - 150, cy - 20, 80, 28), "<"))
+                AudioMaster.CycleVolume(-1);
+            if (GUI.Button(new Rect(cx + 70, cy - 20, 80, 28), ">"))
+                AudioMaster.CycleVolume(1);
+            string muteLabel = AudioMaster.Muted ? "Unmute (M)" : "Mute (M)";
+            if (GUI.Button(new Rect(cx - 70, cy + 20, 140, 28), muteLabel))
+                AudioMaster.ToggleMute();
+            GUI.Label(new Rect(cx - 180, cy + 58, 360, 36),
+                "Left / Right volume    M mute    Esc back");
         }
 
         void DrawRow(float cx, float y, int index, string label)

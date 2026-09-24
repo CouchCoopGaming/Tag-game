@@ -71,6 +71,7 @@ namespace Tag.Modes
 
         void Awake()
         {
+            Tag.Audio.AudioMaster.Load();
             Instance = this;
             ApplyPersistedMode();
             if (matchTuning == null) matchTuning = MatchTuning.CreateRuntimeDefaults();
@@ -251,6 +252,8 @@ namespace Tag.Modes
                 }
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Q))
                     LoadBootMenu();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.M))
+                    Tag.Audio.AudioMaster.ToggleMute();
                 return;
             }
             PollPlaytestModeHotkeys();
@@ -374,10 +377,9 @@ namespace Tag.Modes
         }
 
         /// <summary>
-        /// F1â€“F4 start a round from the pads, not from wherever the last ragdoll stopped.
-        /// Slot follows P1/P2/â€¦ when the id parses; everyone else fills the next free pad.
-        /// Yaw is left alone â€” the chase camera owns it.
-
+        /// F1-F4 start a round from the pads, not from wherever bodies stopped.
+        /// Slot follows P1/P2/... when the id parses; everyone else fills a free pad.
+        /// Yaw is left alone - the chase camera owns it.
         /// </summary>
         void PlacePlayersOnPads()
         {
@@ -482,6 +484,15 @@ namespace Tag.Modes
             Time.timeScale = paused ? 0f : 1f;
             Cursor.lockState = paused ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = paused;
+            if (paused)
+            {
+                foreach (var motor in Object.FindObjectsByType<TagArena.Movement.PlayerMotor>(FindObjectsSortMode.None))
+                {
+                    if (motor == null) continue;
+                    var loco = motor.GetComponentInChildren<Tag.Art.DummyLocomotor>();
+                    loco?.CancelPunchTelegraph();
+                }
+            }
             Tag.Audio.TagSfx.UiClick();
         }
 
@@ -501,7 +512,7 @@ namespace Tag.Modes
             string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
             GUI.Box(new Rect(x, y, w, h + 48f), "Paused");
             GUI.Label(new Rect(x + 16, y + 36, w - 32, 120),
-                "Esc resume\nQ  Boot menu\nH  controls\nLeft / Right  " + TagArena.Movement.LookSensitivity.Label + extra);
+                "Esc resume\nQ  Boot menu\nH  controls\nM  mute  (" + Tag.Audio.AudioMaster.Label + ")\nLeft / Right  " + TagArena.Movement.LookSensitivity.Label + extra);
         }
 
         static string ModeTitle(TagModeId id)
