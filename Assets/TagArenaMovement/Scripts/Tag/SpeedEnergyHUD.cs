@@ -35,13 +35,13 @@ namespace TagArena.Movement
         float _itFlashUntil;
         bool _itFlashGained;
 
-        // Trail Tag near-miss (foreign ribbon) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â soft edge warn before eliminate contact.
+        // Trail Tag near-miss (foreign ribbon) ------------------ soft edge warn before eliminate contact.
         const float TrailNearMissWarnM = 4.5f;
         readonly List<TrailSegment> _trailNearScratch = new List<TrailSegment>();
         float _trailNearDist = float.MaxValue;
         bool _trailNearActive;
 
-        // Trail Tag eliminate ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â brief center flash when local IsAlive drops (trail hit).
+        // Trail Tag eliminate ------------------ brief center flash when local IsAlive drops (trail hit).
         const float TrailOutFlashSec = 0.65f;
         bool _aliveFlashPrimed;
         bool _prevLocalAlive = true;
@@ -180,7 +180,7 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// Watch local ItController.IsIt ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â same flag SetIt / TransferIt / PunchHitbox mutate.
+        /// Watch local ItController.IsIt ------------------ same flag SetIt / TransferIt / PunchHitbox mutate.
         /// Skip first sample so spawn / HUD enable does not false-flash.
         /// </summary>
         void TickItHandoffFlash()
@@ -331,7 +331,7 @@ namespace TagArena.Movement
 
         /// <summary>
         /// Trail Tag only: closest foreign TrailSegment via CopyActive + ClosestPointOnSegment
-        /// (same helpers DummyPatrol trail avoid uses). Warn under TrailNearMissWarnM ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â soft
+        /// (same helpers DummyPatrol trail avoid uses). Warn under TrailNearMissWarnM ------------------ soft
         /// readability cue before BoxCollider eliminate; does not change hit rules.
         /// </summary>
         void TickTrailNearMiss()
@@ -359,7 +359,7 @@ namespace TagArena.Movement
             {
                 var seg = _trailNearScratch[i];
                 if (seg == null) continue;
-                // Foreign only ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â own ribbon is self-grace / separate fairness case.
+                // Foreign only ------------------ own ribbon is self-grace / separate fairness case.
                 if (seg.Owner != null && seg.Owner == self) continue;
                 if (seg.Owner == null && !string.IsNullOrEmpty(seg.OwnerId)
                     && seg.OwnerId == self.PlayerId) continue;
@@ -391,7 +391,7 @@ namespace TagArena.Movement
             float a = Mathf.Lerp(0.12f, 0.42f, urgency * pulse);
 
             Color prev = GUI.color;
-            // Cyan edge ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ hot warn as you close in (same family as It flee compass).
+            // Cyan edge ------------------- hot warn as you close in (same family as It flee compass).
             Color calm = new Color(0.2f, 0.95f, 1f, a);
             Color hot = new Color(1f, 0.35f, 0.45f, a);
             GUI.color = Color.Lerp(calm, hot, urgency * pulse);
@@ -443,7 +443,7 @@ namespace TagArena.Movement
 
 
         /// <summary>
-        /// Watch local ItController.IsAlive ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â same flag TrailSegment hit / EliminatePlayer mutate.
+        /// Watch local ItController.IsAlive ------------------ same flag TrailSegment hit / EliminatePlayer mutate.
         /// Trail Tag only. Skip first sample so spawn / HUD enable does not false-flash.
         /// Does not invent trail rules; mirrors IsAlive edge after existing eliminate path.
         /// </summary>
@@ -481,7 +481,7 @@ namespace TagArena.Movement
 
         /// <summary>
         /// Cave-man center flash ~0.65s on trail eliminate: OUT! + TRAIL HIT.
-        /// Distinct from TAG handoff (YOU'RE IT / FREE) and near-miss TRAIL! edge pulse ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â
+        /// Distinct from TAG handoff (YOU'RE IT / FREE) and near-miss TRAIL! edge pulse ------------------
         /// lower screen, hot red, no edge bars.
         /// </summary>
         void DrawTrailEliminateFlash()
@@ -642,7 +642,7 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// Pulse fuse/It status text: scale + amberÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢hot tint, faster as urgency rises.
+        /// Pulse fuse/It status text: scale + amber-------------------hot tint, faster as urgency rises.
         /// </summary>
         void DrawFuseUrgencyLabel(Rect r, string text, float urgency)
         {
@@ -653,7 +653,7 @@ namespace TagArena.Movement
             float wave = 0.5f + 0.5f * Mathf.Sin(Time.time * hz * Mathf.PI * 2f);
             float pulse = Mathf.Lerp(0.35f, 1f, wave);
 
-            // Status amber ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ hot-potato warn (magenta-orange), same family as It flee compass.
+            // Status amber ------------------- hot-potato warn (magenta-orange), same family as It flee compass.
             Color calm = new Color(1f, 0.92f, 0.55f, 1f);
             Color hot = new Color(1f, 0.35f, 0.55f, 1f);
             Color tint = Color.Lerp(calm, hot, urgency * pulse);
@@ -671,7 +671,7 @@ namespace TagArena.Movement
 
         /// <summary>
         /// Cave-man compass toward It: camera-relative 8-way + flat meters.
-        /// Pulses under ~12m (cyan/white ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ hot-potato warn) so close flee reads distinct from Prey hunt.
+        /// Pulses under ~12m (cyan/white ------------------- hot-potato warn) so close flee reads distinct from Prey hunt.
         /// </summary>
         float DrawItBearing(ItController it, float y)
         {
@@ -735,7 +735,7 @@ namespace TagArena.Movement
         /// Shared cave-man compass: camera-relative 8-way + flat meters.
         /// Label examples: "It ->  SW  18m" / "Prey ->  SW  18m".
         /// When pulseClose and dist &lt; CompassPulseDistM: scale/alpha/color urgency pulse.
-        /// itWarnTint: cyan/white ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ magenta-orange (flee); else amber ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ red (hunt).
+        /// itWarnTint: cyan/white ------------------- magenta-orange (flee); else amber ------------------- red (hunt).
         /// </summary>
         float DrawCompassBearing(string label, Vector3 to, float y, bool pulseClose, bool itWarnTint = false)
         {
@@ -772,7 +772,7 @@ namespace TagArena.Movement
             Matrix4x4 prevMatrix = GUI.matrix;
             if (pulseClose && dist < CompassPulseDistM)
             {
-                // 0 at threshold, 1 at contact ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â closer = hotter / bigger / faster pulse.
+                // 0 at threshold, 1 at contact ------------------ closer = hotter / bigger / faster pulse.
                 float urgency = 1f - Mathf.Clamp01(dist / CompassPulseDistM);
                 float hz = Mathf.Lerp(3.5f, 9f, urgency);
                 float wave = 0.5f + 0.5f * Mathf.Sin(Time.time * hz * Mathf.PI * 2f);
@@ -782,13 +782,13 @@ namespace TagArena.Movement
                 Color hot;
                 if (itWarnTint)
                 {
-                    // Fleeing It: cyan/white ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ hot-potato warn (magenta-orange), distinct from Prey hunt.
+                    // Fleeing It: cyan/white ------------------- hot-potato warn (magenta-orange), distinct from Prey hunt.
                     calm = new Color(0.55f, 0.95f, 1f, 1f);
                     hot = new Color(1f, 0.35f, 0.55f, 1f);
                 }
                 else
                 {
-                    // Hunting Prey: amber ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ red.
+                    // Hunting Prey: amber ------------------- red.
                     calm = new Color(1f, 0.92f, 0.55f, 1f);
                     hot = new Color(1f, 0.28f, 0.12f, 1f);
                 }
@@ -1052,11 +1052,18 @@ namespace TagArena.Movement
         void TickSuddenDeathFlash()
         {
             var modes = TagModeController.Instance;
-            bool sd = modes != null && modes.SelectedMode == TagModeId.TrailTag && modes.Phase == MatchPhase.Playing && modes.SuddenDeath;
+            bool trailPlay = modes != null && modes.SelectedMode == TagModeId.TrailTag && modes.Phase == MatchPhase.Playing;
+            bool sd = trailPlay && modes.SuddenDeath;
             if (!_sdFlashPrimed)
             {
                 _prevSuddenDeath = sd;
                 _sdFlashPrimed = true;
+                return;
+            }
+            // Rematch / menu leave Playing: clear edge so the next SD rising edge flashes again.
+            if (!trailPlay)
+            {
+                _prevSuddenDeath = false;
                 return;
             }
             if (sd && !_prevSuddenDeath)

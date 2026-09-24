@@ -198,6 +198,7 @@ namespace Tag.Core
         public void Rematch()
         {
             AudioCuePlayer.Ensure()?.UiConfirm();
+            ClearPauseEdges();
             ReturnToPlay();
             if (modeController == null) modeController = FindFirstObjectByType<TagModeController>();
             if (modeController != null) modeController.Rematch();

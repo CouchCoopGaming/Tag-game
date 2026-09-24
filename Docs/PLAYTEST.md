@@ -116,3 +116,6 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 
 ## Audio
 - Master volume / mute: Boot or pause Audio; Left/Right steps; M mute all; N music only. Saved in PlayerPrefs.
+
+## Results
+- Rematch / Menu: results ignore input for ~0.25s and one-shot R/click so the round-end click cannot rematch. Punch ForceEnd on results and pause.

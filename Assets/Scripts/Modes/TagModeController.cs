@@ -38,6 +38,8 @@ namespace Tag.Modes
         readonly TagModeContext _ctx = new TagModeContext();
         ITagMode _mode;
         bool _endedNotified;
+        bool _resultsActionTaken;
+        float _resultsInputReadyAt;
         MatchPhase _phase = MatchPhase.Idle;
         float _phaseTimer;
         string _resultMessage = "";
@@ -340,19 +342,26 @@ namespace Tag.Modes
         void PollResultsKeys()
         {
             if (_phase != MatchPhase.Results) return;
+            if (_resultsActionTaken) return;
+            if (Time.unscaledTime < _resultsInputReadyAt) return;
             var flow = GameFlow.Instance;
             if (UnityEngine.Input.GetKeyDown(KeyCode.R))
             {
+                _resultsActionTaken = true;
                 if (flow != null) flow.Rematch();
                 else Rematch();
             }
             if (UnityEngine.Input.GetKeyDown(KeyCode.Q))
             {
+                _resultsActionTaken = true;
                 if (flow != null) flow.QuitToMenu();
                 else LoadBootMenu();
             }
             if (flow == null && UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+            {
+                _resultsActionTaken = true;
                 LoadBootMenu();
+            }
         }
 
         void LoadBootMenu()
@@ -457,6 +466,9 @@ namespace Tag.Modes
             _ctx.RoundRunning = false;
             if (_ctx.RemainingTime < 0f) _ctx.RemainingTime = 0f;
             _phase = MatchPhase.Results;
+            _resultsActionTaken = false;
+            // Ignore the same click/key that ended the round (unscaled: results keep timeScale 1).
+            _resultsInputReadyAt = Time.unscaledTime + 0.25f;
 
             var winners = _mode != null ? _mode.GetWinnerIds(_ctx) : new List<string>();
             bool anyWinner = winners != null && winners.Count > 0;
@@ -476,6 +488,8 @@ namespace Tag.Modes
                 if (p == null) continue;
                 var e = p.GetComponent<PlayerTrailEmitter>();
                 if (e != null) e.SetEmitting(false);
+                var punch = p.GetComponent<PunchHitbox>();
+                if (punch != null) punch.ForceEnd();
             }
 
             if (_endedNotified) return;
@@ -513,6 +527,8 @@ namespace Tag.Modes
                     if (motor == null) continue;
                     var loco = motor.GetComponentInChildren<Tag.Art.DummyLocomotor>();
                     loco?.CancelPunchTelegraph();
+                    var punch = motor.GetComponent<PunchHitbox>();
+                    if (punch != null) punch.ForceEnd();
                 }
             }
             Tag.Audio.TagSfx.UiClick();
@@ -653,8 +669,10 @@ namespace Tag.Modes
                 (_resultDetail ?? "") + "\n\nR  Rematch     Q / Esc  Menu");
             float bw = 140f;
             float by = y + h - 44f;
-            if (GUI.Button(new Rect(x + w * 0.5f - bw - 8f, by, bw, 32f), "Rematch"))
+            bool canAct = !_resultsActionTaken && Time.unscaledTime >= _resultsInputReadyAt;
+            if (canAct && GUI.Button(new Rect(x + w * 0.5f - bw - 8f, by, bw, 32f), "Rematch"))
             {
+                _resultsActionTaken = true;
                 var flow = GameFlow.Instance;
                 if (flow != null) flow.Rematch();
                 else
@@ -663,8 +681,9 @@ namespace Tag.Modes
                     Rematch();
                 }
             }
-            if (GUI.Button(new Rect(x + w * 0.5f + 8f, by, bw, 32f), "Menu"))
+            if (canAct && GUI.Button(new Rect(x + w * 0.5f + 8f, by, bw, 32f), "Menu"))
             {
+                _resultsActionTaken = true;
                 if (GameFlow.Instance != null) GameFlow.Instance.QuitToMenu();
                 else LoadBootMenu();
             }
