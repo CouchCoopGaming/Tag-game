@@ -81,6 +81,7 @@ namespace Tag.Modes
         float _lungeGate;
         float _weave;
         float _weaveT;
+        float _punchTell;
         readonly List<TrailSegment> _trailActiveScratch = new List<TrailSegment>();
 
         void Awake()
@@ -449,6 +450,25 @@ namespace Tag.Modes
             _input.SetExternalMove(new Vector2(strafe, Mathf.Clamp(moveY, -1f, 1f)), sprint, jump, lunge);
         }
 
+        float NextPunchCooldown(float urgency)
+        {
+            float cMin = cooldownMin;
+            float cMax = cooldownMax;
+            if (urgency > 0f)
+            {
+                float scale = Mathf.Lerp(1f, Mathf.Clamp(chaseUrgencyCooldownScale, 0.35f, 1f), urgency);
+                cMin *= scale;
+                cMax *= scale;
+            }
+            return Random.Range(cMin, cMax);
+        }
+
+        void HoldPunchTelegraph()
+        {
+            var loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
+            if (loco != null) loco.HoldPunchTelegraph();
+        }
+
         /// <summary>
         /// Sample ground 1.4-3.2 m along planarDir. Positive = higher deck than feet.
         /// Lets chase/flee hop a playground lip after weave steers off the ideal line.
@@ -519,22 +539,32 @@ namespace Tag.Modes
                 Vector3 juke = TargetPlanarVelocity();
                 float lateral = Mathf.Abs(Vector3.Dot(juke, transform.right));
                 bool juked = lateral > 7.5f && Random.value < 0.7f;
-                if (inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
+                // Windup on the punch itself is 0.12s. Cock the arm first so the swing is readable,
+                // and drop it if they leave the fist.
+                if (_punchTell > 0f)
                 {
-                    _punch?.QueuePunch();
-                    float cMin = cooldownMin;
-                    float cMax = cooldownMax;
-                    if (urgency > 0f)
+                    if (!inCone || juked || _itGraceTimer > 0f)
+                        _punchTell = 0f;
+                    else
                     {
-                        float scale = Mathf.Lerp(1f, Mathf.Clamp(chaseUrgencyCooldownScale, 0.35f, 1f), urgency);
-                        cMin *= scale;
-                        cMax *= scale;
+                        HoldPunchTelegraph();
+                        _punchTell -= dt;
+                        if (_punchTell <= 0f)
+                        {
+                            _punch?.QueuePunch();
+                            _cooldown = NextPunchCooldown(urgency);
+                        }
                     }
-                    _cooldown = Random.Range(cMin, cMax);
+                }
+                else if (inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
+                {
+                    _punchTell = Mathf.Lerp(0.34f, 0.2f, urgency);
+                    HoldPunchTelegraph();
                 }
             }
             else
             {
+                _punchTell = 0f;
                 _angle += (6f / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
                 moveY = wanderMoveY;
                 sprint = false;
