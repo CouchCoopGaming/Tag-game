@@ -65,10 +65,11 @@ namespace Tag.Art
         // covered Spawn_NW / Spawn_SE. Shield is shifted north of Spawn_NE.
         static readonly (string stem, Vector3 pos, float yaw, float scale)[] LandmarkSlots =
         {
-            // North lip of the bowl, between the crash conns. Slot 0.28 yaw 0 leaves ~1.18 m
-            // of air to both the cross lane (ends z=30) and SpineZn (starts z=34.4).
-            // Wider than that and the mesh becomes a gate on the chase. Stem seats minY 1.001.
-            ("Landmark_CrashTorso_Hi", new Vector3(36f, 0f, 32.20f), 0f, 0.28f),
+            // West side of the north lip, not the middle of the cross. Scale 0.28 yaw 0.
+            // x 28.5–31.1: 1.0 m east of Lane_West_NS, ~1.2 m off the cross lane and SpineZn.
+            // The lip from x~31 to the east lane stays open, so the tag route through Crash
+            // is not looking at a statue. Stem seats minY 1.001.
+            ("Landmark_CrashTorso_Hi", new Vector3(29.79f, 0f, 32.20f), 0f, 0.28f),
             ("Landmark_PirateMast_Hi", new Vector3(5f, 0f, 15f), 25f, 1.0f),
             // Foxhole sits east of Spawn_SE (pad ends x=67.1). Scale 0.35 is the
             // largest yaw-0 footprint that stays on the map and off that pad.
@@ -215,7 +216,13 @@ namespace Tag.Art
 
             for (int ix = -1; ix <= 1; ix++)
             for (int iz = -1; iz <= 1; iz++)
+            {
+                // The SW pad tile is what kept the net beam 0.6 m south of the deck.
+                // Play places drop that one tile so the beam can land on the corner.
+                if (playPlace && ix == -1 && iz == -1)
+                    continue;
                 pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(ix, 0.02f, iz), 0f));
+            }
             return SpawnList(parent, pieces);
         }
 
@@ -242,9 +249,10 @@ namespace Tag.Art
             // Net shifted east until ~0.25 m off the tube street and ~0.37 m off the west plastic.
             // x=-4.15 is the closest the 0.15 m thick net can sit without entering the tubes.
             pieces.Add(("Mega_ClimbNet", new Vector3(-4.15f, 0f, -0.78f), 90f));
-            // Beam meets that net with a 0.08 m step and ends at the deck's x (local -1).
-            // z=-1.7 stays ~0.14 m south of the corner tile and clear of the ground stair in x.
-            pieces.Add(("PGK_Balance_Beam_3m_LOD0", new Vector3(-2.50f, 0f, -1.7f), 0f));
+            // Lands on the open SW corner. East end x=-1.02 (deck edge), 0.06 m off the net.
+            // North edge z=-1.13 is 0.08 m south of the corner post and 0.13 m south of the deck.
+            // The ground stair is clear in x (~0.57 m). Top is 0.41, the same band as the 0.40 stoop.
+            pieces.Add(("PGK_Balance_Beam_3m_LOD0", new Vector3(-2.52f, 0f, -1.19f), 0f));
             // 2.4 m rung on the west shoulder, yaw 90 so it faces the decks.
             // x=-1.15: ~0.12 m off the 2×2 edge, ~0.07 m off the corner post, clear of the side stair.
             // Closer (x=-1.12) closes the post gap to ~0.04 m. Leave it.
