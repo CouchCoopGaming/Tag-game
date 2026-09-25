@@ -327,6 +327,11 @@ namespace Tag.Art
         Quaternion _bounceKickUlL, _bounceKickUlR, _bounceKickLlL, _bounceKickLlR;
         Quaternion _bounceKickSp, _bounceKickHp, _bounceKickHd;
         float _glidePulse;
+        bool _glideLaunchSnap;
+        float _glideLaunchIn;
+        Quaternion _glideLaunchUaL, _glideLaunchUaR, _glideLaunchLaL, _glideLaunchLaR;
+        Quaternion _glideLaunchUlL, _glideLaunchUlR, _glideLaunchLlL, _glideLaunchLlR;
+        Quaternion _glideLaunchSp, _glideLaunchHp, _glideLaunchHd;
         float _dashPulse;
         float _dashRecover;
         float _armRecover;
@@ -5353,6 +5358,36 @@ namespace Tag.Art
             _glidePulse = Mathf.MoveTowards(_glidePulse, 0f, dt / 0.28f);
             bool gliding = _glidePulse > 0.04f;
             float glideAmt = Mathf.Clamp01(_glidePulse);
+            if (gliding && !_glideLaunchSnap
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                // The pose eases into the launch, then the launch holds.
+                // The slow fade stays off this path. Glide time is unchanged.
+                _glideLaunchSnap = true;
+                _glideLaunchIn = 0f;
+                _glideLaunchUaL = _upperArmL.localRotation;
+                _glideLaunchUaR = _upperArmR.localRotation;
+                _glideLaunchLaL = _lowerArmL.localRotation;
+                _glideLaunchLaR = _lowerArmR.localRotation;
+                _glideLaunchUlL = _upperLegL.localRotation;
+                _glideLaunchUlR = _upperLegR.localRotation;
+                _glideLaunchLlL = _lowerLegL.localRotation;
+                _glideLaunchLlR = _lowerLegR.localRotation;
+                _glideLaunchSp = _spine.localRotation;
+                _glideLaunchHp = _hips.localRotation;
+                _glideLaunchHd = _head.localRotation;
+            }
+            if (_glideLaunchSnap && gliding)
+            {
+                if (_glideLaunchIn < 0.98f)
+                    _glideLaunchIn = Mathf.MoveTowards(_glideLaunchIn, 1f, dt / 0.04f);
+            }
+            else if (!gliding)
+                _glideLaunchSnap = false;
+            if (_glideLaunchSnap)
+                glideAmt = 1f;
 
             bool airDashing = _motor != null && _motor.IsAirDashing;
             _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.45f);
@@ -5719,6 +5754,7 @@ namespace Tag.Art
             if (gliding)
             {
                 // Flat launch silhouette - hips read a crouch even if capsule stands.
+                // The launch holds after the ease. The slow fade stays off that path.
                 leanX = Mathf.Lerp(leanX, 42f, glideAmt);
                 leanZ = Mathf.Lerp(leanZ, 0f, glideAmt);
             }
@@ -6045,12 +6081,24 @@ namespace Tag.Art
             }
             else if (gliding)
             {
-                // Flat forward reach - reads as mantle-glide launch, not air flail
+                // Flat forward reach - reads as mantle-glide launch, not air flail.
+                // The pose eases into that launch, then the launch holds. Glide time is unchanged.
                 float g = glideAmt;
                 _uaLT = _uaL0 * Quaternion.Euler(Mathf.Lerp(-20f, -72f, g), 12f * g, Mathf.Lerp(14f, 38f, g));
                 _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-20f, -72f, g), -12f * g, Mathf.Lerp(-14f, -38f, g));
                 _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-18f, -36f, g), 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-18f, -36f, g), 0f, 0f);
+                if (_glideLaunchSnap && _glideLaunchIn < 0.98f)
+                {
+                    float intoLaunch = _glideLaunchIn;
+                    _uaLT = Quaternion.Slerp(_glideLaunchUaL, _uaLT, intoLaunch);
+                    _uaRT = Quaternion.Slerp(_glideLaunchUaR, _uaRT, intoLaunch);
+                    _laLT = Quaternion.Slerp(_glideLaunchLaL, _laLT, intoLaunch);
+                    _laRT = Quaternion.Slerp(_glideLaunchLaR, _laRT, intoLaunch);
+                    _spineT = Quaternion.Slerp(_glideLaunchSp, _spineT, intoLaunch);
+                    _hipsT = Quaternion.Slerp(_glideLaunchHp, _hipsT, intoLaunch);
+                    _headT = Quaternion.Slerp(_glideLaunchHd, _headT, intoLaunch);
+                }
             }
             else if (bouncing)
             {
@@ -6880,12 +6928,21 @@ namespace Tag.Art
             }
             else if (gliding)
             {
-                // Crouch-hip tuck in air - bible: crouch in hips even if capsule stands
+                // Crouch-hip tuck in air - bible: crouch in hips even if capsule stands.
+                // The pose eases into that launch, then the launch holds. Glide time is unchanged.
                 float g = glideAmt;
                 _ulLT = _ulL0 * Quaternion.Euler(Mathf.Lerp(18f, 58f, g), 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(16f, 52f, g), 0f, 0f);
                 _llLT = _llL0 * Quaternion.Euler(Mathf.Lerp(-18f, -48f, g), 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(Mathf.Lerp(-16f, -44f, g), 0f, 0f);
+                if (_glideLaunchSnap && _glideLaunchIn < 0.98f)
+                {
+                    float intoLaunch = _glideLaunchIn;
+                    _ulLT = Quaternion.Slerp(_glideLaunchUlL, _ulLT, intoLaunch);
+                    _ulRT = Quaternion.Slerp(_glideLaunchUlR, _ulRT, intoLaunch);
+                    _llLT = Quaternion.Slerp(_glideLaunchLlL, _llLT, intoLaunch);
+                    _llRT = Quaternion.Slerp(_glideLaunchLlR, _llRT, intoLaunch);
+                }
             }
             else if (bouncing)
             {
@@ -13774,6 +13831,8 @@ namespace Tag.Art
         void HandleSuperGlide()
         {
             _glidePulse = 1f;
+            _glideLaunchSnap = false;
+            _glideLaunchIn = 0f;
         }
 
         void OnDisable()
