@@ -85,6 +85,8 @@ namespace Tag.Art
         bool _dashFromDartStride;
         float _dartStepL;
         float _dartStepR;
+        bool _dartFromDash;
+        float _dartFromDashIn;
         bool _airDashPoseWas;
         float _dashTrailT;
         float _dashReady;
@@ -635,6 +637,22 @@ namespace Tag.Art
                 _dashFromDartIn = Mathf.MoveTowards(_dashFromDartIn, 1f, dt / 0.04f);
             else if (!dashingAir)
                 _dashFromDart = false;
+            if (!dashingAir && _airDashPoseWas && !jet && air && _input != null && _input.CrouchHeld)
+            {
+                // The burst eases into the dart. An air crouch into a dash keeps its ease.
+                // Fall speed stays doubled. Duration and cooldown are unchanged.
+                _dartFromDash = true;
+                _dartFromDashIn = 0f;
+            }
+            bool dashTell = _dashPulse > 0.04f || lunging || dashingAir;
+            if (_dartFromDash && !dashingAir && !jet && air && _input != null && _input.CrouchHeld)
+            {
+                _dartFromDashIn = Mathf.MoveTowards(_dartFromDashIn, 1f, dt / 0.16f);
+                if (_dartFromDashIn >= 0.98f && !dashTell)
+                    _dartFromDash = false;
+            }
+            else
+                _dartFromDash = false;
             _airDashPoseWas = dashingAir;
             bool windupNow = punching && phase == PunchPhase.Windup;
             bool fromJumpPose = (!grounded && _diveFromJump) || (_landedFromJump && _landSquash > 0.08f);
@@ -4639,6 +4657,31 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_punchUlR, _ulRT, into);
                 _llLT = Quaternion.Slerp(_punchLlL, _llLT, into);
                 _llRT = Quaternion.Slerp(_punchLlR, _llRT, into);
+            }
+            if (_dartFromDash && !airDashing && !punching && !wallRun && !climb)
+            {
+                // The burst eases into the dart, then the dart holds. An air crouch into a dash keeps its ease.
+                // Fall speed stays doubled. Duration and cooldown are unchanged.
+                float intoDart = _dartFromDashIn;
+                Quaternion burstL = _uaL0 * Quaternion.Euler(108f, 32f, armZ);
+                Quaternion burstR = _uaR0 * Quaternion.Euler(108f, -32f, -armZ);
+                Quaternion dartL = _uaL0 * Quaternion.Euler(-16f, 12f, armZ);
+                Quaternion dartR = _uaR0 * Quaternion.Euler(-16f, -12f, -armZ);
+                Quaternion burstElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion burstElR = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion dartElL = _laL0 * Quaternion.Euler(-58f, 0f, 0f);
+                Quaternion dartElR = _laR0 * Quaternion.Euler(-58f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(burstL, dartL, intoDart);
+                _uaRT = Quaternion.Slerp(burstR, dartR, intoDart);
+                _laLT = Quaternion.Slerp(burstElL, dartElL, intoDart);
+                _laRT = Quaternion.Slerp(burstElR, dartElR, intoDart);
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(58f, 0f, 0f), _spine0 * Quaternion.Euler(46f, 0f, 0f), intoDart);
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(24f, 0f, 0f), intoDart);
+                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(0f, 0f, 0f), _head0 * Quaternion.Euler(12f, 0f, 0f), intoDart);
+                _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(72f, 0f, 0f), _ulL0 * Quaternion.Euler(34f, 0f, 0f), intoDart);
+                _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(34f, 0f, 0f), intoDart);
+                _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
+                _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
             }
             if (punching && phase == PunchPhase.HitRecover && _tagFromJump && !_jumpFromTag && _tagFromJumpIn < 0.98f)
             {
