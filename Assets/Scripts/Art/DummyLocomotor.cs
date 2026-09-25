@@ -39,6 +39,12 @@ namespace Tag.Art
         Quaternion _mantleUaL, _mantleUaR, _mantleLaL, _mantleLaR;
         Quaternion _mantleUlL, _mantleUlR, _mantleLlL, _mantleLlR;
         Quaternion _mantleSp, _mantleHp, _mantleHd;
+        bool _wasMantle;
+        bool _mantleExitSnap;
+        float _mantleExitIn;
+        Quaternion _mantleExitUaL, _mantleExitUaR, _mantleExitLaL, _mantleExitLaR;
+        Quaternion _mantleExitUlL, _mantleExitUlR, _mantleExitLlL, _mantleExitLlR;
+        Quaternion _mantleExitSp, _mantleExitHp, _mantleExitHd;
         float _punchTelegraph;
         bool _wasGrounded = true;
         float _prevSpeed;
@@ -5490,6 +5496,37 @@ namespace Tag.Art
             _itClaim = Mathf.MoveTowards(_itClaim, 0f, dt / 0.52f);
             _claimWas = _itClaim > 0.2f;
             bool dashing = _dashPulse > 0.04f || lunging || airDashing;
+            // A mantle eases into the stand or the run, then that pose holds.
+            // The super glide keeps its ease. Mantle time is unchanged.
+            bool mantleGround = !mantle && !gliding && grounded && !air && !wallRun && !climb
+                && !sliding && !jet && !crouch && !dashing && !punching;
+            if (_wasMantle && mantleGround && !_mantleExitSnap
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                _mantleExitSnap = true;
+                _mantleExitIn = 0f;
+                _mantleExitUaL = _upperArmL.localRotation;
+                _mantleExitUaR = _upperArmR.localRotation;
+                _mantleExitLaL = _lowerArmL.localRotation;
+                _mantleExitLaR = _lowerArmR.localRotation;
+                _mantleExitUlL = _upperLegL.localRotation;
+                _mantleExitUlR = _upperLegR.localRotation;
+                _mantleExitLlL = _lowerLegL.localRotation;
+                _mantleExitLlR = _lowerLegR.localRotation;
+                _mantleExitSp = _spine.localRotation;
+                _mantleExitHp = _hips.localRotation;
+                _mantleExitHd = _head.localRotation;
+            }
+            if (_mantleExitSnap && mantleGround)
+            {
+                if (_mantleExitIn < 0.98f)
+                    _mantleExitIn = Mathf.MoveTowards(_mantleExitIn, 1f, dt / 0.04f);
+            }
+            else
+                _mantleExitSnap = false;
+            _wasMantle = mantle;
             float dashAmt = Mathf.Max(
                 Mathf.Clamp01(_dashPulse),
                 lunging && _motor != null ? _motor.LungeProgress : 0f,
@@ -14062,6 +14099,23 @@ namespace Tag.Art
                 armSlewR = 16f;
                 torsoSlew = 16f;
                 legSlew = grounded ? 44f : 16f;
+            }
+            if (_mantleExitSnap && _mantleExitIn < 0.98f)
+            {
+                // The vault eases into the stand or the run, then that pose holds.
+                // The super glide keeps its ease. Mantle time is unchanged.
+                float intoMantleGround = _mantleExitIn;
+                _uaLT = Quaternion.Slerp(_mantleExitUaL, _uaLT, intoMantleGround);
+                _uaRT = Quaternion.Slerp(_mantleExitUaR, _uaRT, intoMantleGround);
+                _laLT = Quaternion.Slerp(_mantleExitLaL, _laLT, intoMantleGround);
+                _laRT = Quaternion.Slerp(_mantleExitLaR, _laRT, intoMantleGround);
+                _spineT = Quaternion.Slerp(_mantleExitSp, _spineT, intoMantleGround);
+                _hipsT = Quaternion.Slerp(_mantleExitHp, _hipsT, intoMantleGround);
+                _headT = Quaternion.Slerp(_mantleExitHd, _headT, intoMantleGround);
+                _ulLT = Quaternion.Slerp(_mantleExitUlL, _ulLT, intoMantleGround);
+                _ulRT = Quaternion.Slerp(_mantleExitUlR, _ulRT, intoMantleGround);
+                _llLT = Quaternion.Slerp(_mantleExitLlL, _llLT, intoMantleGround);
+                _llRT = Quaternion.Slerp(_mantleExitLlR, _llRT, intoMantleGround);
             }
             if (_armSettleSnap && _armSettleIn < 0.98f)
             {
