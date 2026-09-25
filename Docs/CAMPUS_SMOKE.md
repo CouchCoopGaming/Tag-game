@@ -26,6 +26,20 @@ Cross the bowl east-west on z 24-30. Both lips and the middle are open lawn.
 
 Pass: that order is walkable, the named pieces are where listed, and the three arches still clear courts and bars by at least 1.3 m.
 
+## Chase
+
+Walk these. Do not add props. SoftS aisles, the NE hop, and the merry-spine bar stay as they are. `Mega_SlideTube` and `PGK_Slide_Tube90` are not placed.
+
+- [ ] SW: mushroom (4.5, 6.94) -> hopscotch SW -> fort-west spring (8.53, 7.23) -> soft-play bench (8.20, 5.75)
+- [ ] Soft-play: tube street, SoftS apron, slide beam (18.48, 2.97), dome, ground slide, deck tube. Leave the 1.11 m aisles.
+- [ ] South spine: overhead bar at (11, 17.78). Posts sit outside the spine. Rungs are at y=2, so the chase under them stays open.
+- [ ] Merry: bench (4, 24), picnic (4.8, 21.4), west spring (2.50, 24), then merry-north (7.2, 31.2)
+- [ ] North spine -> NW arch (7.70, 42) -> NW cluster (9.4, 45.0) -> hopscotch NW -> astro dome and deck tube
+- [ ] East: hopscotch SE -> SE arch (65.90, 10.5) -> SE cluster -> army crawl mouths and the spiral (crawl spring and conn spring)
+- [ ] Open kickball (field empty) -> swing beam (63.45, 31.20) -> swings. The 0.16 m fall-tile gap stays empty.
+- [ ] Knight crawl mouths and spiral -> NE arch (65.65, 41) -> NE cluster. The hop gap stays 0.56 m. Then hopscotch NE.
+- [ ] Crash cross on z 24-30. Both lips and the middle stay open.
+
 ## Zones
 
 West forts are the play places. Soft-play and astro share the tube street, the dome, the ground slide, and one deck tube. Army and knight are the bunkers: crawl, climb net, ground spiral, a spring on each side of that spiral, and one crate. Army's chute is the deck tube. Knight's is the straight slide.
