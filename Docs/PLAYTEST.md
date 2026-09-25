@@ -524,7 +524,9 @@ Already on this branch: An air dash into a tag eases the burst into the connect.
 
 Already on this branch: A walk into a still crouch eases the walk into the guard. The guard then holds. A soft landing into a punch is unchanged. A soft landing into a tag is unchanged. An air crouch into a punch is unchanged.
 
-This delta: A run into a still crouch eases the stride into the guard. The guard then holds. A walk into a still crouch is unchanged. A jump into a still crouch is unchanged. An air dash into a still crouch is unchanged.
+Already on this branch: A run into a still crouch eases the stride into the guard. The guard then holds. A walk into a still crouch is unchanged. A jump into a still crouch is unchanged. An air dash into a still crouch is unchanged.
+
+This delta: A ski into a still crouch eases the glide into the guard. The guard then holds. A run into a still crouch is unchanged. A walk into a still crouch is unchanged. Ski speed is unchanged.
 
 ## Stack snapshot
 
@@ -905,6 +907,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 282. Air dash, then tag: the burst should ease into the connect. The connect should then hold. An air dash into a punch should feel the same. A climb into a punch should feel the same. A jump into a tag should feel the same. The connect should not feel longer. The dash should not feel longer. Jet stays off.
 283. Walk, then still crouch: the walk should ease into the guard. The guard should then hold. A soft landing into a punch should feel the same. A soft landing into a tag should feel the same. An air crouch into a punch should feel the same. The guard should not feel longer. The stride should not feel longer. Jet stays off.
 284. Run, then still crouch: the stride should ease into the guard. The guard should then hold. A walk into a still crouch should feel the same. A jump into a still crouch should feel the same. An air dash into a still crouch should feel the same. The guard should not feel longer. The stride should not feel longer. Jet stays off.
+285. Ski, then still crouch: the glide should ease into the guard. The guard should then hold. A run into a still crouch should feel the same. A walk into a still crouch should feel the same. The guard should not feel longer. The glide should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1209,6 +1212,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 272. An air dash into a tag eases the burst into the connect. The connect then holds. An air dash into a punch is unchanged. A climb into a punch is unchanged. A jump into a tag is unchanged. Connect time is unchanged. Duration and cooldown are unchanged. Jet stays off.
 273. A walk into a still crouch eases the walk into the guard. The guard then holds. A soft landing into a punch is unchanged. A soft landing into a tag is unchanged. An air crouch into a punch is unchanged. Jet stays off.
 274. A run into a still crouch eases the stride into the guard. The guard then holds. A walk into a still crouch is unchanged. A jump into a still crouch is unchanged. An air dash into a still crouch is unchanged. Jet stays off.
+275. A ski into a still crouch eases the glide into the guard. The guard then holds. A run into a still crouch is unchanged. A walk into a still crouch is unchanged. Ski speed is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
