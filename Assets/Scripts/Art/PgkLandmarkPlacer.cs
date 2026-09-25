@@ -313,9 +313,10 @@ namespace Tag.Art
 
         /// <summary>
         /// Bunker / keep ground floor: crawl, outer net, short ladder, tall rung, spiral climber,
-        /// and one supply crate on the outer apron. The slide spiral, tube street, dome, and
-        /// ground slide stay on the west play places. The climber is the east climb:
-        /// feet on y=0, top at 2.40, so it reaches the 2.00 deck. West forts do not get a copy.
+        /// a spring between that climb and the crawl, and one supply crate on the outer apron.
+        /// The slide spiral, tube street, dome, and ground slide stay on the west play places.
+        /// The climber is the east climb: feet on y=0, top at 2.40, so it reaches the 2.00 deck.
+        /// West forts do not get a copy.
         /// </summary>
         static void AddBunkerAnnex(List<(string id, Vector3 p, float y)> pieces)
         {
@@ -339,6 +340,12 @@ namespace Tag.Art
             // Army: x 59.9-61.8, z 8.8-10.7, 0.40 m south of the south bar and 0.66 m west of it.
             // Knight yaw 180: x 54.2-56.1, z 43.3-45.2, 1.7 m north of Conn_Knight.
             pieces.Add(("Toy_SpiralClimber", new Vector3(2.80f, 0f, 0f), 0f));
+            // Spring between the crawl and the spiral. Crawl north face is local z=-3.104.
+            // South safety tiles end at local z=-1.5. Center z=-2.302 leaves 0.56 m off both.
+            // Local x=2.80 lines up with the spiral. West play places do not get this.
+            // Army world (60.80, 7.45): x 60.45-61.30, z 7.21-7.69.
+            // Knight yaw 180 world (55.20, 46.55): x 54.70-55.55, z 46.31-46.79.
+            pieces.Add(("Toy_SpringRider", new Vector3(2.80f, 0f, -2.302f), 0f));
         }
 
         /// <summary>
