@@ -208,6 +208,16 @@ namespace Tag.Art
             // Spine / hips lean by state - jet reads clearly in TP
             float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : sliding ? 62f : crouch ? 10f : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : 0f;
+            float idleW = 0f;
+            if (grounded && !dashing && !sliding && !crouch && !jet && !wallRun && !climb && !mantle && !air && !lunging && flinchAmt < 0.04f && claimAmt < 0.04f)
+                idleW = 1f - Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+            // Slow side sway and a deeper breath only at rest. The stride does not pick this up.
+            float sway = Mathf.Sin(Time.time * 0.8f) * 5f * idleW;
+            if (idleW > 0.02f)
+            {
+                leanX = breath * (1f + idleW);
+                leanZ = sway;
+            }
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
                 leanX = Mathf.Lerp(leanX, 26f, _skiBlend);
             if (flinchAmt > 0.04f)
@@ -232,6 +242,8 @@ namespace Tag.Art
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f, 0f, 0f), _skiBlend);
             _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? -12f : crouch ? -6f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
+            if (idleW > 0.02f)
+                _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-breath * 0.5f, 0f, -sway * 0.35f), idleW);
 
             // Arms - slight outward A-pose only (large +Z was V-ing hands into the butt)
             float armZ = Mathf.Lerp(4f, 8f, runAmt);
@@ -520,8 +532,11 @@ namespace Tag.Art
                 float reachY = Mathf.Lerp(outY, outY + 6f, runAmt);
                 float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
                 float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
-                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle, yL, roll);
-                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle, -yR, -roll);
+                // Both hands rise a little with the breath. Yaw stays out, and roll stays 0 at rest,
+                // so the sway does not fold the hands into the hips.
+                float armBreath = breath * 0.55f * idle;
+                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll);
+                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll);
                 // Long line on the reach. The elbow fold sits on the back arm, short of the hip.
                 // The trail knee is unchanged and stays straight.
                 float elbowReach = Mathf.Lerp(-10f, -6f, runAmt);
