@@ -22,7 +22,7 @@ namespace Tag.Modes
         [Tooltip("Fallback when PunchHitbox/Tuning unavailable. Prefer syncing from PunchTagTuning.reach.")]
         [SerializeField] float punchRange = 1.55f;
         [Tooltip("Fallback full cone (deg). Prefer syncing from PunchTagTuning width/reach.")]
-        [SerializeField] float punchConeDeg = 36f;
+        [SerializeField] float punchConeDeg = 37f; // hair wider so lined-up tags land more often
         [SerializeField] float itGraceSec = 0.85f;
         [SerializeField] float aggression = 0.92f;
         [SerializeField] float cooldownMin = 0.5f;
