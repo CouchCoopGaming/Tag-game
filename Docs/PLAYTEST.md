@@ -370,7 +370,9 @@ Already on this branch: An air dash into a punch eases the burst into the windup
 
 Already on this branch: An air dash into a tag eases the burst into the connect. An air dash into a punch is unchanged. A jump into a tag is unchanged. A crouch tag is unchanged. Duration and cooldown are unchanged.
 
-This delta: A soft landing into an air dash eases the absorb into the burst. The burst still holds. An air dash into a tag is unchanged. A soft landing into a jump is unchanged. A hard landing is unchanged. Land time is unchanged. Duration and cooldown are unchanged.
+Already on this branch: A soft landing into an air dash eases the absorb into the burst. The burst still holds. An air dash into a tag is unchanged. A soft landing into a jump is unchanged. A hard landing is unchanged. Land time is unchanged. Duration and cooldown are unchanged.
+
+This delta: A hard landing into an air dash eases the deeper absorb into the burst. The burst still holds. A soft landing into an air dash is unchanged. A hard landing into a jump is unchanged. Land time is unchanged. Duration and cooldown are unchanged.
 
 ## Stack snapshot
 
@@ -674,6 +676,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 205. Air dash, then punch: the burst should ease into the windup. A grapple release into an air dash should feel the same. A jump into a punch should feel the same. The cock should not feel longer. The dash should not feel longer. Jet stays off.
 206. Air dash, then tag: the burst should ease into the connect. An air dash into a punch should feel the same. A jump into a tag should feel the same. A crouch tag should feel the same. The dash should not feel longer. Jet stays off.
 207. Soft land, then air dash: the absorb should ease into the burst. The burst should still hold. An air dash into a tag should feel the same. A soft landing into a jump should feel the same. A hard landing should feel the same. The landing should not feel longer. The dash should not feel longer. Jet stays off.
+208. Hard land, then air dash: the deeper absorb should ease into the burst. The burst should still hold. A soft landing into an air dash should feel the same. A hard landing into a jump should feel the same. The landing should not feel longer. The dash should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -901,6 +904,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 195. An air dash into a punch eases the burst into the windup. A grapple release into an air dash is unchanged. A jump into a punch is unchanged. Windup time is unchanged. Duration and cooldown are unchanged. Jet stays off.
 196. An air dash into a tag eases the burst into the connect. An air dash into a punch is unchanged. A jump into a tag is unchanged. A crouch tag is unchanged. Duration and cooldown are unchanged. Jet stays off.
 197. A soft landing into an air dash eases the absorb into the burst. The burst still holds. An air dash into a tag is unchanged. A soft landing into a jump is unchanged. A hard landing is unchanged. Land time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+198. A hard landing into an air dash eases the deeper absorb into the burst. The burst still holds. A soft landing into an air dash is unchanged. A hard landing into a jump is unchanged. Land time is unchanged. Duration and cooldown are unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
