@@ -34,6 +34,11 @@ namespace Tag.Art
         Quaternion _landAbsorbUaL, _landAbsorbUaR, _landAbsorbLaL, _landAbsorbLaR;
         Quaternion _landAbsorbUlL, _landAbsorbUlR, _landAbsorbLlL, _landAbsorbLlR;
         Quaternion _landAbsorbSp, _landAbsorbHp, _landAbsorbHd;
+        bool _mantleSnap;
+        float _mantleSnapIn;
+        Quaternion _mantleUaL, _mantleUaR, _mantleLaL, _mantleLaR;
+        Quaternion _mantleUlL, _mantleUlR, _mantleLlL, _mantleLlR;
+        Quaternion _mantleSp, _mantleHp, _mantleHd;
         float _punchTelegraph;
         bool _wasGrounded = true;
         float _prevSpeed;
@@ -5415,6 +5420,34 @@ namespace Tag.Art
                 _glideLaunchSnap = false;
             if (_glideLaunchSnap)
                 glideAmt = 1f;
+            if (mantle && !_mantleSnap
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                // The pose eases into the vault, then the vault holds.
+                // The super glide keeps its ease. Mantle time is unchanged.
+                _mantleSnap = true;
+                _mantleSnapIn = 0f;
+                _mantleUaL = _upperArmL.localRotation;
+                _mantleUaR = _upperArmR.localRotation;
+                _mantleLaL = _lowerArmL.localRotation;
+                _mantleLaR = _lowerArmR.localRotation;
+                _mantleUlL = _upperLegL.localRotation;
+                _mantleUlR = _upperLegR.localRotation;
+                _mantleLlL = _lowerLegL.localRotation;
+                _mantleLlR = _lowerLegR.localRotation;
+                _mantleSp = _spine.localRotation;
+                _mantleHp = _hips.localRotation;
+                _mantleHd = _head.localRotation;
+            }
+            if (_mantleSnap && mantle)
+            {
+                if (_mantleSnapIn < 0.98f)
+                    _mantleSnapIn = Mathf.MoveTowards(_mantleSnapIn, 1f, dt / 0.04f);
+            }
+            else
+                _mantleSnap = false;
 
             bool airDashing = _motor != null && _motor.IsAirDashing;
             _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.45f);
@@ -6212,6 +6245,19 @@ namespace Tag.Art
                 _uaRT = _uaR0 * Quaternion.Euler(reach - 4f, Mathf.Lerp(-20f, -8f, m), -flare);
                 _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-62f, -28f, m), 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-62f, -28f, m), 0f, 0f);
+                if (_mantleSnap && _mantleSnapIn < 0.98f)
+                {
+                    // The pose eases into the vault, then the vault holds.
+                    // The super glide keeps its ease. Mantle time is unchanged.
+                    float intoMantle = _mantleSnapIn;
+                    _uaLT = Quaternion.Slerp(_mantleUaL, _uaLT, intoMantle);
+                    _uaRT = Quaternion.Slerp(_mantleUaR, _uaRT, intoMantle);
+                    _laLT = Quaternion.Slerp(_mantleLaL, _laLT, intoMantle);
+                    _laRT = Quaternion.Slerp(_mantleLaR, _laRT, intoMantle);
+                    _spineT = Quaternion.Slerp(_mantleSp, _spineT, intoMantle);
+                    _hipsT = Quaternion.Slerp(_mantleHp, _hipsT, intoMantle);
+                    _headT = Quaternion.Slerp(_mantleHd, _headT, intoMantle);
+                }
             }
             else if (wallRun)
             {
@@ -7072,6 +7118,14 @@ namespace Tag.Art
                 _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(58f, 42f, m), 0f, 0f);
                 _llLT = _llL0 * Quaternion.Euler(Mathf.Lerp(-82f, -22f, m), 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(Mathf.Lerp(-64f, -38f, m), 0f, 0f);
+                if (_mantleSnap && _mantleSnapIn < 0.98f)
+                {
+                    float intoMantleLegs = _mantleSnapIn;
+                    _ulLT = Quaternion.Slerp(_mantleUlL, _ulLT, intoMantleLegs);
+                    _ulRT = Quaternion.Slerp(_mantleUlR, _ulRT, intoMantleLegs);
+                    _llLT = Quaternion.Slerp(_mantleLlL, _llLT, intoMantleLegs);
+                    _llRT = Quaternion.Slerp(_mantleLlR, _llRT, intoMantleLegs);
+                }
             }
             else if (climb)
             {
