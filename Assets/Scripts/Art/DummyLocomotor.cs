@@ -333,10 +333,10 @@ namespace Tag.Art
                 if (phase == PunchPhase.Windup)
                 {
                     float w = Mathf.Lerp(0.55f, 1f, punchProg);
-                    // Fist behind the spine vanishes in the chase cam. Flare the elbow out beside the head.
-                    // Timing stays the authored 0.12s windup; a bit more elbow yaw so the cock reads in TP.
-                    _uaRT = _uaR0 * Quaternion.Euler(28f * w, -36f * w, -56f - 16f * w); // elbow out beside the head at chase distance
-                    _laRT = _laR0 * Quaternion.Euler(-40f - 72f * w, 0f, 0f);
+                    // Cock beside the head. The old back-pitch and heavy roll put the fist through the chest.
+                    // Yaw carries the elbow out. Roll stays the mild A. Timing stays the authored 0.12s windup.
+                    _uaRT = _uaR0 * Quaternion.Euler(-58f * w, 46f * w, -armZ);
+                    _laRT = _laR0 * Quaternion.Euler(-68f * w, 0f, 0f);
                     _hipsT = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f); // clearer windup hip twist in TP
                     _spineT = _spine0 * Quaternion.Euler(leanX + 12f * w, -36f * w, leanZ); // clearer windup spine twist in TP
                 }
@@ -434,11 +434,11 @@ namespace Tag.Art
 
             if (_punchTelegraph > 0.02f && !punching)
             {
-                // Dummy It cocks before QueuePunch. Match the flared windup elbow so the tell reads in TP.
+                // Dummy It cocks before QueuePunch. Same pose as the windup, clear of the chest.
                 // The real windup is still only 0.12s; this is the hold pose before QueuePunch.
                 float k = Mathf.Clamp01(_punchTelegraph / 0.2f);
-                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(28f, -36f, -72f), k); // match windup elbow yaw
-                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-112f, 0f, 0f), k);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-58f, 46f, -armZ), k);
+                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-68f, 0f, 0f), k);
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f + 8f, -30f, 0f), k); // match windup hip twist
                 _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 12f, -36f, leanZ), k); // match windup spine twist
             }

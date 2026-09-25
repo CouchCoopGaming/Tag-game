@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `eb6f43d`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `ea43e9e`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
 
@@ -38,7 +38,9 @@ Already on this branch: A slide's arms are a long low line. Elbows stay nearly s
 
 Already on this branch: On a landing the arms come out to the sides for balance while the knees stay buckled, then ease back into the stride.
 
-This delta: A climb keeps both hands on a long line while they swap reach and pull, so the low hand does not fold into the chest. A wall run presses the wall hand up and down with the stride instead of locking it, and the outer hand stays straight. Hands stay on the mild A flare.
+Already on this branch: A climb keeps both hands on a long line while they swap reach and pull. A wall run presses the wall hand with the stride, and the outer hand stays straight.
+
+This delta: The punch windup cocks the fist beside the head, clear of the chest. The elbow yaw carries it out and the roll stays the mild A. Windup time is still 0.12s. The connect is still a long line in front of the chest.
 
 ## Stack snapshot
 
@@ -176,6 +178,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 39. Slide: the arms should be a long line forward and low, not a folded pair at the chest. Lead knee stays under the chest and the trail leg stays straight. Hands stay clear of the hips.
 40. Land, including a small hop: knees buckle, and both arms should come out to the sides while that buckle holds. They should ease back into the run. Hands stay clear of the hips.
 41. Climb: both hands should stay visible as they swap, the low hand a line and not a fold at the chest. Wall-run: the wall hand should move up and down the wall with the step, and the outer arm should stay straight. Hands stay clear of the hips.
+42. Punch: the windup fist should sit beside the head, not inside the chest. The connect should still be a long line in front of the chest. The cock should not feel longer.
 
 ## Known leftovers
 
@@ -185,7 +188,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - Trail avoid starts peeling ~9.2 m (weight 0.80) off a foreign ribbon (HUD TRAIL! soft warn ~6.2 m).
 - AI punch tell drops for ~0.32 s after a juke/leave-cone whiff so the arm drop is readable (still needs a fuller human feel pass). No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent: `music_playground_bed_loop.wav` is meta only, so PlayMusic returns. No hitstop. Hot Potato flee may air-dash once while airborne if the motor CD is ready. A juke whiff also refreshes weave so they peel off the punch line.
 - Dash HUD: jet off = one CD bar (dark track, cyan fill, mint when ready or bursting) and one DASH line (DASH! while bursting). Jet on keeps a dash CD line under JET. Cooldown stays 30 s.
-- Dummy MissRecover: limp whiff drops faster than HitRecover hold (short shoulder sag). AI HoldPunchTelegraph matches the flared windup elbow.
+- Dummy MissRecover: limp whiff drops faster than HitRecover hold (short shoulder sag). AI HoldPunchTelegraph matches the windup cock beside the head.
 - Bots hold still on countdown, results, and Idle (no chase until Playing).
 - Resume / leave-results: look, punch, jump, dash, and lunge ignore two frames after the cursor locks (shared resume gate + cameras) so the menu click that closed the card cannot yaw or punch. Rematch / F-keys from Direct Play also arm that gate when the cursor locks.
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.
@@ -237,6 +240,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 29. Slide arms are a long low line. Elbows stay nearly straight. Lead knee tucked, trail leg long.
 30. Land arms come out for balance during the buckle, then ease into the run. Hands stay clear of the hips.
 31. Climb hands stay a long line through the reach and the pull. The wall-run hand presses with the stride. The outer arm stays straight. Hands stay clear of the hips.
+32. Punch windup sits beside the head, clear of the chest. Connect stays a long line in front. Windup time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
