@@ -312,9 +312,9 @@ namespace Tag.Art
 
             float walkAmt = Mathf.Clamp01(speed / 5.5f);
             float runAmt = Mathf.InverseLerp(5.5f, 11.5f, speed);
-            // A still crouch in the air uses the guard. The fall dart and the air dash stay as they are.
-            // Jump height is unchanged.
-            bool airStillCrouch = air && !jet && !airDashing && !_airDashArms && _armRecover <= 0f
+            // A still crouch in the air uses the guard. The fall dart stays as it is.
+            // After an air dash, a still crouch keeps that guard. Jump height is unchanged.
+            bool airStillCrouch = air && !jet && !airDashing
                 && speed <= 0.35f && _diveVis <= 0.02f
                 && _input != null && _input.CrouchHeld;
             // Keep a soft air/vault cycle so limbs stay energetic off the ground.
@@ -531,9 +531,12 @@ namespace Tag.Art
             _lookArmVis = Mathf.MoveTowards(_lookArmVis, lookPitch, dt * 240f);
             float lungeAmt = lunging && _motor != null ? _motor.LungeProgress : 0f;
             // A walk leaves the burst into the stride. A sprint leaves it into the long stride.
-            // A stand keeps the old leave. Duration and cooldown are unchanged.
+            // A still crouch leaves it into the guard. A stand keeps the old leave.
+            // Duration and cooldown are unchanged.
             bool dashWalk = _airDashArms && !airDashing && !lunging && speed > 0.35f && st != MoveState.Sprint && runAmt <= 0.4f;
             bool dashSprint = _airDashArms && !airDashing && !lunging && !dashWalk && (st == MoveState.Sprint || runAmt > 0.4f || speed > 5.5f);
+            bool dashCrouch = _airDashArms && !airDashing && !lunging && !dashWalk && !dashSprint
+                && speed <= 0.35f && _input != null && _input.CrouchHeld;
             // 1 at the start of an air dash or lunge, 0 at the end. The pulse tail keeps easing after the burst.
             float dashStretchPose = 1f;
             if (lunging || dashing)
@@ -573,7 +576,7 @@ namespace Tag.Art
                     // A soft landing after the burst keeps the arms in the stride. The knees still absorb.
                     float pose = dashStretchPose;
                     float intoStride = 0f;
-                    if (!dashWalk && !dashSprint && grounded && !airDashing && _landSquash > 0.08f)
+                    if (!dashWalk && !dashSprint && !dashCrouch && grounded && !airDashing && _landSquash > 0.08f)
                     {
                         float hardS = Mathf.SmoothStep(0f, 1f, _landHard);
                         pose *= hardS;
@@ -622,6 +625,17 @@ namespace Tag.Art
                         _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(elbowR, 0f, 0f), _laR0 * Quaternion.Euler(-22f, 0f, 0f), pose);
                         _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(58f, 0f, 0f), pose);
                         _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), pose);
+                    }
+                    else if (dashCrouch)
+                    {
+                        // The burst ends in the guard. A crouch walk keeps the stride leave.
+                        _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaL0 * Quaternion.Euler(108f, 32f, armZ), pose);
+                        _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-36f, -16f, -armZ), _uaR0 * Quaternion.Euler(108f, -32f, -armZ), pose);
+                        _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-72f, 0f, 0f), _laL0 * Quaternion.Euler(-22f, 0f, 0f), pose);
+                        _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-72f, 0f, 0f), _laR0 * Quaternion.Euler(-22f, 0f, 0f), pose);
+                        _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(10f, 0f, 0f), _spine0 * Quaternion.Euler(58f, 0f, 0f), pose);
+                        _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(22f, 0f, 0f), pose);
+                        _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-6f, 0f, 0f), 1f - pose);
                     }
                     else
                     {
@@ -1199,8 +1213,19 @@ namespace Tag.Art
                 {
                     // The burst is over. The same lead foot reaches into the stride
                     // under the hips. Collapsing the split reads as a skate.
-                    // A walk keeps that stride. A sprint opens the long stride. A stand keeps the old leave.
+                    // A walk keeps that stride. A sprint opens the long stride.
+                    // A still crouch ends in the guard. A stand keeps the old leave.
                     float w = 1f - Mathf.Clamp01(dashStretchPose);
+                    if (dashCrouch)
+                    {
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(56f, 0f, 0f), w);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(56f, 0f, 0f), w);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-68f, 0f, 0f), w);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-68f, 0f, 0f), w);
+                        _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), w);
+                    }
+                    else
+                    {
                     float openGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
                     float stride = Mathf.Lerp(0.96f, 1.16f, dashSprint ? openGait : _runVis);
                     float reachGait = dashSprint
@@ -1215,6 +1240,7 @@ namespace Tag.Art
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(2f + kneeAmt), 0f, 0f), w);
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-2f, 0f, 0f), w);
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0, w);
+                    }
                 }
             }
             else if (jet)
