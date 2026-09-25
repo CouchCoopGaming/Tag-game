@@ -655,6 +655,11 @@ namespace Tag.Art
         Quaternion _walkStopUaL, _walkStopUaR, _walkStopLaL, _walkStopLaR;
         Quaternion _walkStopUlL, _walkStopUlR, _walkStopLlL, _walkStopLlR;
         Quaternion _walkStopSp, _walkStopHp, _walkStopHd;
+        bool _stopFromIdle;
+        float _stopFromIdleIn;
+        Quaternion _idleStopUaL, _idleStopUaR, _idleStopLaL, _idleStopLaR;
+        Quaternion _idleStopUlL, _idleStopUlR, _idleStopLlL, _idleStopLlR;
+        Quaternion _idleStopSp, _idleStopHp, _idleStopHd;
         bool _walkFromIdle;
         float _walkFromIdleIn;
         Quaternion _idleWalkUaL, _idleWalkUaR, _idleWalkLaL, _idleWalkLaR;
@@ -5579,10 +5584,44 @@ namespace Tag.Art
                     }
                     else
                     {
-                        _cycle = Mathf.MoveTowards(_cycle, plant, dt * 4.2f);
-                        _stopGait = Mathf.MoveTowards(_stopGait, 0f, dt / 0.28f);
-                        _runVis = Mathf.MoveTowards(_runVis, 0f, dt / 0.28f);
-                        _stopRun = _runVis;
+                        bool idleStop = grounded && speed <= 0.35f && !air && !dashing && !_airDashArms
+                            && (_stopGait > 0.02f || _runVis > 0.02f || Mathf.Abs(_cycle - plant) > 0.05f);
+                        if (idleStop && !_stopFromIdle
+                            && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                            && _spine != null && _hips != null && _head != null
+                            && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+                        {
+                            // The pose eases into the idle, then the idle holds.
+                            // A sprint into a stop keeps its ease. A walk into a stop keeps its ease.
+                            // Speed is unchanged.
+                            _stopFromIdle = true;
+                            _stopFromIdleIn = 0f;
+                            _idleStopUaL = _upperArmL.localRotation;
+                            _idleStopUaR = _upperArmR.localRotation;
+                            _idleStopLaL = _lowerArmL.localRotation;
+                            _idleStopLaR = _lowerArmR.localRotation;
+                            _idleStopUlL = _upperLegL.localRotation;
+                            _idleStopUlR = _upperLegR.localRotation;
+                            _idleStopLlL = _lowerLegL.localRotation;
+                            _idleStopLlR = _lowerLegR.localRotation;
+                            _idleStopSp = _spine.localRotation;
+                            _idleStopHp = _hips.localRotation;
+                            _idleStopHd = _head.localRotation;
+                        }
+                        if (_stopFromIdle)
+                        {
+                            _cycle = plant;
+                            _stopGait = 0f;
+                            _runVis = 0f;
+                            _stopRun = 0f;
+                        }
+                        else
+                        {
+                            _cycle = Mathf.MoveTowards(_cycle, plant, dt * 4.2f);
+                            _stopGait = Mathf.MoveTowards(_stopGait, 0f, dt / 0.28f);
+                            _runVis = Mathf.MoveTowards(_runVis, 0f, dt / 0.28f);
+                            _stopRun = _runVis;
+                        }
                     }
                 }
                 else
@@ -5662,6 +5701,15 @@ namespace Tag.Art
             }
             else
                 _stopFromWalk = false;
+            // Stay on the idle after the cut so the slow close cannot resume.
+            // A sprint into a stop keeps its ease. A walk into a stop keeps its ease. Speed is unchanged.
+            if (_stopFromIdle && !_stopFromSprint && !_stopFromWalk && grounded && speed <= 0.35f && !air && !dashing && !_airDashArms && !crouch && !sliding && !jet)
+            {
+                if (_stopFromIdleIn < 0.98f)
+                    _stopFromIdleIn = Mathf.MoveTowards(_stopFromIdleIn, 1f, dt / 0.04f);
+            }
+            else
+                _stopFromIdle = false;
             // An idle into a walk eases the idle into the stride, then the walk holds.
             // A still crouch into a walk keeps its ease. A sprint start still uses the plant. Speed is unchanged.
             if (!_walkFromIdle && !_walkFromStill && !_walkFromCrouchWalk && !_walkFromSki && !_runFromStill && !_runFromCrouchWalk
@@ -7321,7 +7369,7 @@ namespace Tag.Art
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-4f, 0f, 0f), pushW);
                     }
                 }
-                if (stopping && !_stopFromSprint && !_stopFromWalk && _stopPlant > 0.02f && footSki < 0.35f && _dropVis < 0.35f)
+                if (stopping && !_stopFromSprint && !_stopFromWalk && !_stopFromIdle && _stopPlant > 0.02f && footSki < 0.35f && _dropVis < 0.35f)
                 {
                     // Last foot under the hip before the idle sway. The other foot finishes the close.
                     float p = _stopPlant;
@@ -11916,6 +11964,26 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_walkStopUlR, _ulRT, intoStop);
                 _llLT = Quaternion.Slerp(_walkStopLlL, _llLT, intoStop);
                 _llRT = Quaternion.Slerp(_walkStopLlR, _llRT, intoStop);
+            }
+            if (_stopFromIdle && _stopFromIdleIn < 0.98f && !stepping && grounded && speed <= 0.35f
+                && !crouch && !sliding && !jet && !punching && !wallRun && !climb && !air && !dashing
+                && !_stopFromSprint && !_stopFromWalk && !_idleFromSki && !_walkFromSprint && !_sprintFromWalk)
+            {
+                // The pose eases into the idle, then the idle holds.
+                // A sprint into a stop has its own ease. A walk into a stop has its own ease.
+                // A ski into an idle has its own ease. The slow close stays off this path. Speed is unchanged.
+                float intoIdleStop = _stopFromIdleIn;
+                _uaLT = Quaternion.Slerp(_idleStopUaL, _uaLT, intoIdleStop);
+                _uaRT = Quaternion.Slerp(_idleStopUaR, _uaRT, intoIdleStop);
+                _laLT = Quaternion.Slerp(_idleStopLaL, _laLT, intoIdleStop);
+                _laRT = Quaternion.Slerp(_idleStopLaR, _laRT, intoIdleStop);
+                _spineT = Quaternion.Slerp(_idleStopSp, _spineT, intoIdleStop);
+                _hipsT = Quaternion.Slerp(_idleStopHp, _hipsT, intoIdleStop);
+                _headT = Quaternion.Slerp(_idleStopHd, _headT, intoIdleStop);
+                _ulLT = Quaternion.Slerp(_idleStopUlL, _ulLT, intoIdleStop);
+                _ulRT = Quaternion.Slerp(_idleStopUlR, _ulRT, intoIdleStop);
+                _llLT = Quaternion.Slerp(_idleStopLlL, _llLT, intoIdleStop);
+                _llRT = Quaternion.Slerp(_idleStopLlR, _llRT, intoIdleStop);
             }
             if (_walkFromIdle && _walkFromIdleIn < 0.98f && stepping && !crouch && !sliding && !jet && !punching && !wallRun && !climb
                 && runAmt <= 0.4f && !_walkFromStill && !_walkFromCrouchWalk && !_walkFromSki
