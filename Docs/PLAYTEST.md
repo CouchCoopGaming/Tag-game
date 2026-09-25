@@ -574,7 +574,9 @@ Already on this branch: A still crouch into a run eases the planted guard into t
 
 Already on this branch: A slide into a ski eases the wedge into the glide. The glide then holds. A ski into a slide is unchanged. A walk into a ski is unchanged. Ski speed is unchanged.
 
-This delta: A crouch walk into a ski eases the low stride into the glide. The glide then holds. A still crouch into a ski is unchanged. A walk into a ski is unchanged. Ski speed is unchanged.
+Already on this branch: A crouch walk into a ski eases the low stride into the glide. The glide then holds. A still crouch into a ski is unchanged. A walk into a ski is unchanged. Ski speed is unchanged.
+
+This delta: A still crouch into a ski eases the planted guard into the glide. The glide then holds. A crouch walk into a ski is unchanged. A walk into a ski is unchanged. Ski speed is unchanged.
 
 ## Stack snapshot
 
@@ -980,6 +982,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 307. Still crouch, then run: the planted guard should ease into the run. The run should then hold. A still crouch into a walk should feel the same. A crouch walk into a run should feel the same. The run should not feel longer. The drop should not feel faster. Jet stays off.
 308. Slide, then ski: the wedge should ease into the glide. The glide should then hold. A ski into a slide should feel the same. A walk into a ski should feel the same. The glide should not feel longer. The slide should not feel faster. Jet stays off.
 309. Crouch walk, then ski: the low stride should ease into the glide. The glide should then hold. A still crouch into a ski should feel the same. A walk into a ski should feel the same. The glide should not feel longer. The stride should not feel longer. Jet stays off.
+310. Still crouch, then ski: the planted guard should ease into the glide. The glide should then hold. A crouch walk into a ski should feel the same. A walk into a ski should feel the same. The glide should not feel longer. The guard should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1309,6 +1312,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 297. A still crouch into a run eases the planted guard into the run. The run then holds. A still crouch into a walk is unchanged. A crouch walk into a run is unchanged. The drop time is unchanged. Jet stays off.
 298. A slide into a ski eases the wedge into the glide. The glide then holds. A ski into a slide is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. slideBoost stays 0. Jet stays off.
 299. A crouch walk into a ski eases the low stride into the glide. The glide then holds. A still crouch into a ski is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
+300. A still crouch into a ski eases the planted guard into the glide. The glide then holds. A crouch walk into a ski is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
