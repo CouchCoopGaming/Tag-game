@@ -23,3 +23,24 @@ Spawn_SE, hopscotch SE, then the **SE arch** at (65.90, 10.5). **SE cluster** at
 Cross the bowl east-west on z 24-30. Both lips and the middle are open lawn.
 
 Pass: that order is walkable, the named pieces are where listed, and the three arches still clear courts and bars by at least 1.3 m.
+
+## Clearance
+
+No solid sits on the four spines or the crash cross. Army west, knight west, and knight east mouths each have 0.56 m of open approach. Army's east mouth stays the spawn side: Spawn_SE's bumper clears the crawl mesh by 0.09 m and leaves the north side of that opening open, so it was not moved. Slide pits stay 0.4 m off the spines. Soft-merry posts stay outside the south spine, rungs overhead. West beams and the loop walls sit on the loop pads beside the spines and do not pinch a chase under 0.5 m. SoftS aisles, the NE hop, and the merry-spine bar were left as they are.
+
+## Place inventory
+
+| Place | Seat | Prop |
+| --- | --- | --- |
+| Play_Cluster_SoftS step | x 13.15-15.74, z 3.46-4.34 | mushroom under the tube wall |
+| Play_Beam_SoftSlide | (18.48, 2.97) yaw 90 | beam, 0.72 m off spring and slide |
+| Play_Wall_SoftRing | z=1.70, x 21.40-26.20 | three wall panels |
+| Play_Bars_SoftMerry | (11, 17.78) yaw 90 | one monkey, posts outside the spine |
+| Play_Wall_AstroRing | z=51, x 21.36-24.56 | two wall panels |
+| Play_Bars_RingArmy | z=3.35, x 42.3-50.7 | two monkeys |
+| Play_Step_ArmyApron | (53.73, 2.85) | mushroom, army only |
+| Play_Step_ArmyMouth | (50.10, 5.00) | mushroom, army west mouth |
+| Play_Bars_RingKnight | z=51, x 42.3-54.9 | three monkeys |
+| Play_Step_KnightMouth | (54.10, 49.48) | mushroom, knight west mouth |
+| Play_Step_KnightEast | (65.81, 48.75) | mushroom, knight east mouth |
+| Bunker spring | local (2.80, -2.302) | spring on army and knight only |
