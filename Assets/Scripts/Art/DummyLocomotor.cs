@@ -651,6 +651,12 @@ namespace Tag.Art
         Quaternion _slideWalkUaL, _slideWalkUaR, _slideWalkLaL, _slideWalkLaR;
         Quaternion _slideWalkUlL, _slideWalkUlR, _slideWalkLlL, _slideWalkLlR;
         Quaternion _slideWalkSp, _slideWalkHp, _slideWalkHd;
+        bool _crouchWalkFromWalk;
+        float _crouchWalkFromWalkIn;
+        bool _walkCrouchHeld;
+        Quaternion _walkCrouchUaL, _walkCrouchUaR, _walkCrouchLaL, _walkCrouchLaR;
+        Quaternion _walkCrouchUlL, _walkCrouchUlR, _walkCrouchLlL, _walkCrouchLlR;
+        Quaternion _walkCrouchSp, _walkCrouchHp, _walkCrouchHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -1890,6 +1896,43 @@ namespace Tag.Art
                 _crouchWalkFromSki = false;
             else if (_crouchWalkFromSki)
                 _crouchWalkFromSkiIn = Mathf.MoveTowards(_crouchWalkFromSkiIn, 1f, dt / 0.04f);
+            // A walk that drops into a crouch walk. The drop timer stays dt/0.16.
+            bool walkCrouch = crouch && grounded && !sliding && !jet && speed > 0.35f && speed <= 5.5f
+                && st != MoveState.Sprint && !_dropSlide;
+            if (!walkCrouch)
+                _walkCrouchHeld = false;
+            bool walkIntoCrouchWalk = walkCrouch && standWalk && !_walkCrouchHeld
+                && !_crouchWalkFromSki && !_crouchWalkFromSlide
+                && !_stillFromWalk && !_stillFromSprint && !_stillFromSki && !_stillFromSlide
+                && !_crouchFromJump && !_crouchFromDash && !dashPoseNow && !wallRun && !climb
+                && phase != PunchPhase.Windup && phase != PunchPhase.Active
+                && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover
+                && _itClaim <= 0.2f && _dashReady <= 0.2f
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (walkIntoCrouchWalk)
+            {
+                // The walk eases into the low stride. A slide into a crouch walk keeps its ease.
+                // A walk into a still crouch keeps its ease. The drop timer stays dt/0.16.
+                _crouchWalkFromWalk = true;
+                _crouchWalkFromWalkIn = 0f;
+                _walkCrouchHeld = true;
+                _walkCrouchUaL = _upperArmL.localRotation;
+                _walkCrouchUaR = _upperArmR.localRotation;
+                _walkCrouchLaL = _lowerArmL.localRotation;
+                _walkCrouchLaR = _lowerArmR.localRotation;
+                _walkCrouchUlL = _upperLegL.localRotation;
+                _walkCrouchUlR = _upperLegR.localRotation;
+                _walkCrouchLlL = _lowerLegL.localRotation;
+                _walkCrouchLlR = _lowerLegR.localRotation;
+                _walkCrouchSp = _spine.localRotation;
+                _walkCrouchHp = _hips.localRotation;
+                _walkCrouchHd = _head.localRotation;
+            }
+            if (!walkCrouch)
+                _crouchWalkFromWalk = false;
+            else if (_crouchWalkFromWalk)
+                _crouchWalkFromWalkIn = Mathf.MoveTowards(_crouchWalkFromWalkIn, 1f, dt / 0.04f);
 
             if (grounded && !_wasGrounded)
             {
@@ -5222,7 +5265,8 @@ namespace Tag.Art
                     else
                     {
                         // A sprint leaves the guard as the hips rise, so the arms do not stay folded.
-                        float armD = crouchSprintExit ? hipDrop : d;
+                        // A walk into a crouch walk writes the guard now. The drop timer stays dt/0.16.
+                        float armD = _crouchWalkFromWalk ? 1f : (crouchSprintExit ? hipDrop : d);
                         _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), armD);
                         _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), armD);
                         _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-72f, 0f, 0f), armD);
@@ -5823,10 +5867,12 @@ namespace Tag.Art
                         float thighReach = Mathf.Lerp(12f, 34f, open);
                         float kneeBase = Mathf.Lerp(60f, 10f, open);
                         float kneeReach = Mathf.Lerp(8f, 36f, open);
-                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(thighBase + stepL * thighReach - stepR * thighReach * 0.5f, 0f, 0f), d);
-                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(thighBase + stepR * thighReach - stepL * thighReach * 0.5f, 0f, 0f), d);
-                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(kneeBase + stepL * kneeReach), 0f, 0f), d);
-                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(kneeBase + stepR * kneeReach), 0f, 0f), d);
+                        // A walk into a crouch walk writes the low stride now. The drop timer stays dt/0.16.
+                        float legD = _crouchWalkFromWalk ? 1f : d;
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(thighBase + stepL * thighReach - stepR * thighReach * 0.5f, 0f, 0f), legD);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(thighBase + stepR * thighReach - stepL * thighReach * 0.5f, 0f, 0f), legD);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(kneeBase + stepL * kneeReach), 0f, 0f), legD);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(kneeBase + stepR * kneeReach), 0f, 0f), legD);
                     }
                     else
                     {
@@ -6072,6 +6118,9 @@ namespace Tag.Art
                 // A slide stand-up eases the hips so they do not pop flat.
                 // Letting go of a still crouch eases them into the idle breath.
                 float d = (_dropSlide || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? hipDrop : _dropVis;
+                // A walk into a crouch walk writes the guard pitch now. The drop timer stays dt/0.16.
+                if (_crouchWalkFromWalk)
+                    d = 1f;
                 float chest = _dropSlide ? 62f : 10f;
                 float hip = _dropSlide ? 50f : 22f;
                 float head = _dropSlide ? -12f : -6f;
@@ -9773,6 +9822,37 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_slideWalkUlR, strideThighR, intoStride);
                 _llLT = Quaternion.Slerp(_slideWalkLlL, strideKneeL, intoStride);
                 _llRT = Quaternion.Slerp(_slideWalkLlR, strideKneeR, intoStride);
+            }
+            if (_crouchWalkFromWalk && walkCrouch && _crouchWalkFromWalkIn < 0.98f && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The walk eases into the low stride, then the stride holds.
+                // A slide into a crouch walk keeps its ease. A walk into a still crouch keeps its ease.
+                // The drop timer stays dt/0.16.
+                float intoStride = _crouchWalkFromWalkIn;
+                float stepL = Mathf.Max(0f, sinC);
+                float stepR = Mathf.Max(0f, -sinC);
+                Quaternion strideL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion strideR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion strideElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion strideElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion strideSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion strideHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion strideHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion strideThighL = _ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f);
+                Quaternion strideThighR = _ulR0 * Quaternion.Euler(46f + stepR * 12f - stepL * 6f, 0f, 0f);
+                Quaternion strideKneeL = _llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f);
+                Quaternion strideKneeR = _llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f);
+                _uaLT = Quaternion.Slerp(_walkCrouchUaL, strideL, intoStride);
+                _uaRT = Quaternion.Slerp(_walkCrouchUaR, strideR, intoStride);
+                _laLT = Quaternion.Slerp(_walkCrouchLaL, strideElL, intoStride);
+                _laRT = Quaternion.Slerp(_walkCrouchLaR, strideElR, intoStride);
+                _spineT = Quaternion.Slerp(_walkCrouchSp, strideSp, intoStride);
+                _hipsT = Quaternion.Slerp(_walkCrouchHp, strideHp, intoStride);
+                _headT = Quaternion.Slerp(_walkCrouchHd, strideHd, intoStride);
+                _ulLT = Quaternion.Slerp(_walkCrouchUlL, strideThighL, intoStride);
+                _ulRT = Quaternion.Slerp(_walkCrouchUlR, strideThighR, intoStride);
+                _llLT = Quaternion.Slerp(_walkCrouchLlL, strideKneeL, intoStride);
+                _llRT = Quaternion.Slerp(_walkCrouchLlR, strideKneeR, intoStride);
             }
             if (_slideFromWalk && !_slideFromSprint && !_slideFromSki && !_slideFromCrouch && !_slideFromMiss && !_slideFromReady && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && !punching)
             {
