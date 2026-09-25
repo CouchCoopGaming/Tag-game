@@ -254,12 +254,15 @@ namespace Tag.Art
             }
             else if (climb)
             {
-                // Hand-over-hand reach - louder than idle freeze; opposite phase to legs.
-                float climbSwing = Mathf.Sin(Time.time * 7.5f) * 48f;
-                _uaLT = _uaL0 * Quaternion.Euler(-138f + climbSwing, 16f, 12f);
-                _uaRT = _uaR0 * Quaternion.Euler(-138f - climbSwing, -16f, -12f);
-                _laLT = _laL0 * Quaternion.Euler(-55f - Mathf.Abs(climbSwing) * 0.12f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-55f - Mathf.Abs(climbSwing) * 0.12f, 0f, 0f);
+                // One hand reaches, the other pulls. Pitch stays above the torso wrap.
+                // Flare is the run's mild A only, so the hands stay clear of the pelvis.
+                float climbPhase = Mathf.Sin(Time.time * 7.5f);
+                float up = (climbPhase + 1f) * 0.5f;
+                float down = (-climbPhase + 1f) * 0.5f;
+                _uaLT = _uaL0 * Quaternion.Euler(Mathf.Lerp(-36f, -120f, up), 8f, armZ);
+                _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-36f, -120f, down), -8f, -armZ);
+                _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-72f, -12f, up), 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-72f, -12f, down), 0f, 0f);
             }
             else if (mantle)
             {
@@ -274,21 +277,25 @@ namespace Tag.Art
             }
             else if (wallRun)
             {
-                // Wall-side arm plants toward wall; outer arm balances forward
+                // Wall hand stays planted. The outer arm opposes the stepping leg.
+                // Pitch and the mild A flare only — the old roll folded the hand into the wall hip.
                 bool left = _motor != null && _motor.WallLeft;
+                float wallPhase = Mathf.Sin(Time.time * 9.5f);
+                float outerFwd = (-wallPhase + 1f) * 0.5f;
+                float outerArm = Mathf.Lerp(-22f, -80f, outerFwd);
                 if (left)
                 {
-                    _uaLT = _uaL0 * Quaternion.Euler(-60f, 28f, 48f);
-                    _uaRT = _uaR0 * Quaternion.Euler(-38f, -8f, -30f);
-                    _laLT = _laL0 * Quaternion.Euler(-58f, 0f, 0f);
-                    _laRT = _laR0 * Quaternion.Euler(-28f, 0f, 0f);
+                    _uaLT = _uaL0 * Quaternion.Euler(-50f, 16f, armZ);
+                    _uaRT = _uaR0 * Quaternion.Euler(outerArm, -8f, -armZ);
+                    _laLT = _laL0 * Quaternion.Euler(-46f, 0f, 0f);
+                    _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-16f, -34f, (wallPhase + 1f) * 0.5f), 0f, 0f);
                 }
                 else
                 {
-                    _uaLT = _uaL0 * Quaternion.Euler(-38f, 8f, 30f);
-                    _uaRT = _uaR0 * Quaternion.Euler(-60f, -28f, -48f);
-                    _laLT = _laL0 * Quaternion.Euler(-28f, 0f, 0f);
-                    _laRT = _laR0 * Quaternion.Euler(-58f, 0f, 0f);
+                    _uaRT = _uaR0 * Quaternion.Euler(-50f, -16f, -armZ);
+                    _uaLT = _uaL0 * Quaternion.Euler(outerArm, 8f, armZ);
+                    _laRT = _laR0 * Quaternion.Euler(-46f, 0f, 0f);
+                    _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-16f, -34f, (wallPhase + 1f) * 0.5f), 0f, 0f);
                 }
             }
             else if (gliding)
@@ -487,30 +494,34 @@ namespace Tag.Art
             }
             else if (climb)
             {
-                // Opposite to arms: drive / plant - vertical climb silhouette in TP.
-                float stride = Mathf.Sin(Time.time * 7.5f) * 28f;
-                _ulLT = _ulL0 * Quaternion.Euler(52f - stride, 0f, 8f);
-                _ulRT = _ulR0 * Quaternion.Euler(52f + stride, 0f, -8f);
-                _llLT = _llL0 * Quaternion.Euler(-58f + stride * 0.45f, 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(-58f - stride * 0.45f, 0f, 0f);
+                // The leg opposite the reaching hand steps up. That knee bends. The plant leg stays long.
+                float climbPhase = Mathf.Sin(Time.time * 7.5f);
+                float up = (climbPhase + 1f) * 0.5f;
+                _ulLT = _ulL0 * Quaternion.Euler(Mathf.Lerp(62f, 14f, up), 0f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(14f, 62f, up), 0f, 0f);
+                _llLT = _llL0 * Quaternion.Euler(-(6f + Mathf.Max(0f, -climbPhase) * 72f), 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(-(6f + Mathf.Max(0f, climbPhase) * 72f), 0f, 0f);
             }
             else if (wallRun)
             {
+                // Outer leg steps. Its knee bends only on the way forward. The wall-side leg stays long.
                 bool left = _motor != null && _motor.WallLeft;
-                float stride = Mathf.Sin(Time.time * 9.5f) * 24f;
+                float wallPhase = Mathf.Sin(Time.time * 9.5f);
+                float outerThigh = 10f + wallPhase * 38f;
+                float outerKnee = -(6f + Mathf.Max(0f, wallPhase) * 68f);
                 if (left)
                 {
-                    _ulLT = _ulL0 * Quaternion.Euler(38f + stride * 0.35f, 0f, 14f);
-                    _ulRT = _ulR0 * Quaternion.Euler(18f - stride, 0f, -8f);
-                    _llLT = _llL0 * Quaternion.Euler(-42f, 0f, 0f);
-                    _llRT = _llR0 * Quaternion.Euler(-28f - Mathf.Abs(stride) * 0.3f, 0f, 0f);
+                    _ulLT = _ulL0 * Quaternion.Euler(16f, 0f, 0f);
+                    _ulRT = _ulR0 * Quaternion.Euler(outerThigh, 0f, 0f);
+                    _llLT = _llL0 * Quaternion.Euler(-8f, 0f, 0f);
+                    _llRT = _llR0 * Quaternion.Euler(outerKnee, 0f, 0f);
                 }
                 else
                 {
-                    _ulLT = _ulL0 * Quaternion.Euler(18f + stride, 0f, 8f);
-                    _ulRT = _ulR0 * Quaternion.Euler(38f - stride * 0.35f, 0f, -14f);
-                    _llLT = _llL0 * Quaternion.Euler(-28f - Mathf.Abs(stride) * 0.3f, 0f, 0f);
-                    _llRT = _llR0 * Quaternion.Euler(-42f, 0f, 0f);
+                    _ulRT = _ulR0 * Quaternion.Euler(16f, 0f, 0f);
+                    _ulLT = _ulL0 * Quaternion.Euler(outerThigh, 0f, 0f);
+                    _llRT = _llR0 * Quaternion.Euler(-8f, 0f, 0f);
+                    _llLT = _llL0 * Quaternion.Euler(outerKnee, 0f, 0f);
                 }
             }
             else if (gliding)
