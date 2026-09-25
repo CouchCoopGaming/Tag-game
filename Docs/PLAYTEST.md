@@ -30,7 +30,9 @@ Already on this branch: A climb is hand-over-hand. A wall run plants the wall ha
 
 Already on this branch: At a standstill the arms hang slightly forward and out. That offset fades as the walk starts.
 
-This delta: A jump shows a long arm line up and a deep knee tuck before the apex. A fall trails both arms back and lengthens the legs before the landing, including a short hop. Hands stay on the mild A flare. Jet numbers are unchanged.
+Already on this branch: A jump shows a long arm line and a knee tuck before the apex. A fall trails the arms before the landing.
+
+This delta: The run step is a little slower and holds the plant. The front thigh reaches farther than the back thigh, and only the front knee bends. The pass under the hips is short. Arm swing still opposes the front leg. No axis flip and no extra arm roll.
 
 ## Stack snapshot
 
@@ -164,6 +166,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 35. Climb a wall: one hand should reach while the other pulls, and the opposite knee should step. The lower leg should look long. Wall-run: the wall hand stays on the wall, the outer leg steps, and that knee bends only while it swings forward. Hands stay clear of the hips.
 36. Stand still: the hands should hang just forward and outside the hips, not against the pelvis. Start sprinting: the opposite arm/leg stride should return, with no extra twist of the hands into the hips.
 37. Jump, including a short hop: both arms should be a long line up and the knees tucked before you reach the top. On the way down, even a short drop, the arms should trail back and the legs should lengthen before you land. Hands stay clear of the hips.
+38. Sprint: each plant should hold a moment, one knee up and the other leg long behind, not two straight legs sliding together. The forward arm should still be the opposite side. Hands stay clear of the hips.
 
 ## Known leftovers
 
@@ -221,6 +224,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 25. Climb is hand-over-hand with one bent knee. Wall-run plants the wall hand and steps the outer leg. Hands stay clear of the hips.
 26. Idle hands hang forward and out of the hips. The offset is gone once the stride is up. No extra arm roll.
 27. Jump tuck and fall trail show before the landing, including a short hop. Hands stay clear of the hips.
+28. Run plant holds. Front knee bends, back leg stays long, arms still oppose the front leg. No extra arm roll.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

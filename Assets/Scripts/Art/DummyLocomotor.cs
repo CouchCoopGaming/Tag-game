@@ -166,7 +166,7 @@ namespace Tag.Art
             float walkAmt = Mathf.Clamp01(speed / 5.5f);
             float runAmt = Mathf.InverseLerp(5.5f, 11.5f, speed);
             // Human-ish run cadence - knees drive the cycle, not ice-skate lock
-            float cadence = Mathf.Lerp(8.0f, 14.5f, runAmt);
+            float cadence = Mathf.Lerp(7.2f, 11.2f, runAmt);
             // Keep a soft air/vault cycle so limbs stay energetic off the ground
             if (grounded && speed > 0.35f && !sliding && !crouch)
                 _cycle += dt * cadence;
@@ -177,15 +177,7 @@ namespace Tag.Art
 
             // Hold the plant and the lift, then cross zero faster - a sine reads as skating.
             float sinRaw = Mathf.Sin(_cycle);
-            float sinC = Mathf.Sign(sinRaw) * Mathf.Pow(Mathf.Abs(sinRaw), 0.55f);
-            float cosC = Mathf.Cos(_cycle);
-            // Natural hang/swing - keep amplitude human (not arms-into-butt flares)
-            float swing = sinC * Mathf.Lerp(34f, 60f, Mathf.Max(walkAmt, runAmt));
-            if (air) swing *= 0.72f;
-            if (sliding) swing *= 0.08f; else if (crouch) swing *= 0.18f;
-            if (jet) swing = 0f;
-
-
+            float sinC = Mathf.Sign(sinRaw) * Mathf.Pow(Mathf.Abs(sinRaw), 0.40f);
             float breath = Mathf.Sin(Time.time * 2.1f) * 2.4f;
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
@@ -582,16 +574,19 @@ namespace Tag.Art
             }
             else
             {
-                // Recovery leg (thigh swinging forward) takes the knee. Stance stays nearly straight.
-                // Bending both knees every frame reads as a locked skate from the chase cam.
-                float stride = Mathf.Lerp(0.98f, 1.28f, runAmt);
-                float thighL = swing * stride;
-                float thighR = -swing * stride;
+                // Recovery leg takes the knee. The back thigh stays shorter than the front reach
+                // so the pair does not meet straight under the hips. Stance knee stays nearly straight.
+                float stride = Mathf.Lerp(0.96f, 1.16f, runAmt);
+                float reach = Mathf.Lerp(34f, 58f, Mathf.Max(walkAmt, runAmt)) * stride;
+                float frontL = Mathf.Max(0f, sinC);
+                float frontR = Mathf.Max(0f, -sinC);
+                float thighL = (frontL - frontR * 0.58f) * reach;
+                float thighR = (frontR - frontL * 0.58f) * reach;
                 _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
-                float kneeAmt = Mathf.Lerp(46f, 92f, runAmt);
-                float kneeL = -(4f + Mathf.Max(0f, sinC) * kneeAmt);
-                float kneeR = -(4f + Mathf.Max(0f, -sinC) * kneeAmt);
+                float kneeAmt = Mathf.Lerp(48f, 90f, runAmt);
+                float kneeL = -(2f + frontL * kneeAmt);
+                float kneeR = -(2f + frontR * kneeAmt);
                 _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(kneeR, 0f, 0f);
             }
@@ -652,7 +647,7 @@ namespace Tag.Art
             // Run knees have to arrive inside one stride or the flex never shows.
             bool runCycle = grounded && !air && !sliding && !crouch && !dashing && !lunging && speed > 2f;
             // Buckle has to arrive during the short absorb, then follow the ease back into the stride.
-            float legSlew = airDashing ? 78f : airTell ? 64f : (_landSquash > 0.05f ? 46f : runCycle ? 34f : slew);
+            float legSlew = airDashing ? 78f : airTell ? 64f : (_landSquash > 0.05f ? 46f : runCycle ? 44f : slew);
             float torsoSlew = airTell ? 64f : slew;
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
