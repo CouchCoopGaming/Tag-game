@@ -34,6 +34,17 @@ Clearance audit: the three arch piers still clear courts and bars by ≥1.3 m. T
 - Bed exit on mulch (shift −0.693): shell buried 0.927 m, crown at 3.912 (1.912 m above the 2.00 pivot).
 - Bed crown on the 2.00 pivot (shift −2.605): bed exit at −1.912, shell bottom at −2.839.
 
+## KIT_REQUEST
+
+No floater, buried foot, or closed walk under 0.5 m remained, so nothing was moved. The west `Toy_Slide` still reaches x=20.54, 0.04 m into the 7 m lane tint (lane starts x=20.5). The spine starts at x=22.4, so that nick does not close the chase.
+
+Art: a deck-compatible slide tube, so Mega can be unlocked later. Do not place `Mega_SlideTube` or `PGK_Slide_Tube90` until this mesh exists. No placer change this pass.
+
+- Mouth-to-crown ≤ 2.00 m. Low mouth on mulch (y=0). High mouth on the 2.00 deck pivot. A tuck of about 0.09 m under the lip matches the straight slide (mouth at 1.91, deck slab 2.00–2.08).
+- One sleeve. The shell follows the bed for the whole run. At the exit, Mega's shell is Y 3.105–3.812 while the bed is Y 0.693–0.898, so those two parts cannot be seated together.
+- Bed and shell share one pivot. Grounding the low mouth must not bury the shell or float the bed. A single stem offset is enough.
+- Vertical span of Tube90 is 3.450 m and Mega's bed span is 3.912 m. Both are past the 2.00 cap. A new mesh has to come in under that cap. Scaling either asset in the placer is not the fix.
+
 ## Campus zone pass (place)
 
 Graybox pad cubes are gone (they were stretching HiPoly into a low-poly look). Flow stones are gone. The chase is kit districts:
