@@ -41,6 +41,9 @@ namespace Tag.Art
         float _armRecover;
         bool _airDashArms;
         float _dashTrailT;
+        float _dashReady;
+        float _dashCdWas;
+        bool _dashCdSeen;
         float _tagFlinch;
         float _itClaim;
         float _skiBlend;
@@ -1328,6 +1331,30 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(52f, 0f, 0f), c);
                 _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-6f, 0f, 0f), c);
                 _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-64f, 0f, 0f), c);
+            }
+
+            float cd = _motor != null ? _motor.AirDashCooldownRemaining : 0f;
+            if (_dashCdSeen && _dashCdWas > 0.05f && cd <= 0.001f)
+                _dashReady = 1f;
+            if (_motor != null)
+            {
+                _dashCdWas = cd;
+                _dashCdSeen = true;
+            }
+            bool readyBlocked = airDashing || punching || _grapplePose > 0.04f;
+            if (!readyBlocked && _dashReady > 0f)
+                _dashReady = Mathf.MoveTowards(_dashReady, 0f, dt / 0.28f);
+            if (_dashReady > 0.02f && !readyBlocked)
+            {
+                // The cooldown just ended. A short settle on the chest and the arms,
+                // then back into the stride. Not a second whip. Duration and cooldown are unchanged.
+                float w = Mathf.Sin(Mathf.Clamp01(_dashReady) * Mathf.PI);
+                _uaLT = Quaternion.Slerp(_uaLT, _uaLT * Quaternion.Euler(8f, 6f, 0f), w);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaRT * Quaternion.Euler(8f, -6f, 0f), w);
+                _laLT = Quaternion.Slerp(_laLT, _laLT * Quaternion.Euler(4f, 0f, 0f), w);
+                _laRT = Quaternion.Slerp(_laRT, _laRT * Quaternion.Euler(4f, 0f, 0f), w);
+                _spineT = Quaternion.Slerp(_spineT, _spineT * Quaternion.Euler(6f, 0f, 0f), w);
+                _hipsT = Quaternion.Slerp(_hipsT, _hipsT * Quaternion.Euler(3f, 0f, 0f), w);
             }
 
             float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f || claimAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
