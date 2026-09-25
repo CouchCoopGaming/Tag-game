@@ -94,7 +94,7 @@ namespace TagArena.Movement
 
             // Rising edge: menu/results just released play. Same-frame lock + Read would yaw/punch.
             if (!_wasCursorLocked)
-                _lookPunchGateFrames = Mathf.Max(_lookPunchGateFrames, 1);
+                _lookPunchGateFrames = Mathf.Max(_lookPunchGateFrames, 2);
             _wasCursorLocked = true;
 
             Move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
@@ -141,7 +141,7 @@ namespace TagArena.Movement
         }
 
         /// <summary>Optional explicit arm (pause/results clear). Rising-edge lock also arms.</summary>
-        public void ArmLookPunchGate(int frames = 1)
+        public void ArmLookPunchGate(int frames = 2)
         {
             if (frames < 1) frames = 1;
             _lookPunchGateFrames = Mathf.Max(_lookPunchGateFrames, frames);

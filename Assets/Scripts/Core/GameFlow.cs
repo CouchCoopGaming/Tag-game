@@ -238,7 +238,7 @@ namespace Tag.Core
         static void ArmLocalLookPunchGate()
         {
             foreach (var reader in Object.FindObjectsByType<TagArena.Movement.PlayerInputReader>(FindObjectsSortMode.None))
-                reader?.ArmLookPunchGate(1);
+                reader?.ArmLookPunchGate(2);
         }
 
         void TogglePause()

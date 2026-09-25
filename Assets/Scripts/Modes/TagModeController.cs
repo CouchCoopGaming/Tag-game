@@ -175,7 +175,7 @@ namespace Tag.Modes
             Time.timeScale = 1f;
             // Same Update as rematch click / R: swallow look+punch (rising-edge gate also covers this).
             foreach (var reader in Object.FindObjectsByType<TagArena.Movement.PlayerInputReader>(FindObjectsSortMode.None))
-                reader?.ArmLookPunchGate(1);
+                reader?.ArmLookPunchGate(2);
             SetMode(id);
             RefreshPlayers();
             _endedNotified = false;
@@ -593,7 +593,7 @@ namespace Tag.Modes
             else
             {
                 foreach (var reader in Object.FindObjectsByType<TagArena.Movement.PlayerInputReader>(FindObjectsSortMode.None))
-                    reader?.ArmLookPunchGate(1);
+                    reader?.ArmLookPunchGate(2);
             }
             TagSfx.UiClick();
         }

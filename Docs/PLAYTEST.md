@@ -120,7 +120,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - AI punch tell drops for ~0.26 s after a juke/leave-cone whiff so the arm drop is readable (still needs a fuller human feel pass). No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent: `music_playground_bed_loop.wav` is meta only, so PlayMusic returns. No hitstop. Hot Potato flee may air-dash once while airborne if the motor CD is ready. A juke whiff also refreshes weave so they peel off the punch line.
 - Dash HUD: jet off = one cyan CD bar and one DASH line (DASH! while bursting). Jet on keeps a dash CD line under JET.
 - Dummy MissRecover: limp whiff drops faster than HitRecover hold (short shoulder sag). AI HoldPunchTelegraph matches the flared windup elbow.
-- Resume / leave-results: look and punch ignore one frame after the cursor locks so the same Update cannot yaw or punch. Rematch / F-keys from Direct Play also arm that gate when the cursor locks.
+- Resume / leave-results: look and punch ignore two frames after the cursor locks so the menu click that closed the card cannot yaw or punch. Rematch / F-keys from Direct Play also arm that gate when the cursor locks.
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.
 
 ## Audio
@@ -142,7 +142,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 6. Play path: SW exit, west loop (soft-play bench west of the tubes), NW exit, east loop (NE bench north of the arch, kickball field still open), then the crash cross. Hopscotch corners, swing fall tiles clear of the kickball fence, three Toy_Bridge arches, army/knight 2.4 m rungs plus a spiral climber (top 2.40) that west forts do not have. West forts add a ground slide beside the tubes that the east forts do not have. North of merry: mushroom, spring, and two hop tiles, not a bench. North of the NE arch: a net frame, mushroom steps, and a spring rider, east of the bars. Feel was not edited.
 7. Boot Up/Down and pause Left/Right arm a row and stop at the ends. Enter uses it. Play stays the default Boot row.
 8. Who-plays and mode select stop at the first and last row. A Boot or Pause click leaves that row highlighted.
-9. Resume or leave-results: look and punch ignore one frame after the cursor locks (no same-Update yaw or punch).
+9. Resume or leave-results: look and punch ignore two frames after the cursor locks (no menu-click yaw or punch).
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
