@@ -117,7 +117,7 @@ namespace Tag.Art
                 float t = Mathf.Clamp01(Mathf.InverseLerp(soft, hard, impact));
                 // Ease-in so mid falls stay readable but terminal velocity punches.
                 // Slightly stronger mid-band so a park hop-off reads without waiting for stun speed.
-                _landSquash = Mathf.Clamp(Mathf.Lerp(0.28f, 1.40f, t * t), 0.28f, 1.40f); // park hop-off punchier mid squash
+                _landSquash = Mathf.Clamp(Mathf.Lerp(0.28f, 1.42f, t * t), 0.28f, 1.42f); // park hop-off punchier mid squash
             }
             _wasGrounded = grounded;
             float recover = Mathf.Lerp(8.8f, 5.8f, Mathf.Clamp01(_landSquash)); // snappier park hop-off settle
@@ -171,8 +171,8 @@ namespace Tag.Art
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : 0f;
             if (flinchAmt > 0.04f)
             {
-                leanX = Mathf.Lerp(leanX, -32f, flinchAmt); // stronger tuck so tag recoil reads in TP
-                leanZ = Mathf.Lerp(leanZ, Mathf.Sin(Time.time * 40f) * 20f, flinchAmt); // clearer tag flinch shake in TP
+                leanX = Mathf.Lerp(leanX, -34f, flinchAmt); // stronger tuck so tag recoil reads in TP
+                leanZ = Mathf.Lerp(leanZ, Mathf.Sin(Time.time * 42f) * 22f, flinchAmt); // clearer tag flinch shake in TP
             }
             if (bouncing)
             {

@@ -35,7 +35,7 @@ namespace Tag.Modes
         [Tooltip("Fallback Hot Potato fuse warn window when HotPotatoTuning unavailable.")]
         [SerializeField] float hotPotatoUrgencySec = 10f;
         [Tooltip("Only flee when It is within this planar distance; otherwise wander.")]
-        [SerializeField] float fleeThreatRange = 14f;
+        [SerializeField] float fleeThreatRange = 14.5f; // earlier kite start
         [Tooltip("Blend of lateral strafe into flee dir so pure radial chase is harder.")]
         [SerializeField] float fleeStrafeBias = 0.42f; // slightly stronger kite strafe so peel reads
         [Tooltip("Seconds of threat velocity lead when computing flee-from point.")]
