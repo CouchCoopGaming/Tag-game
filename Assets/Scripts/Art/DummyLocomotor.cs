@@ -62,6 +62,11 @@ namespace Tag.Art
         Quaternion _burstJumpUlL, _burstJumpUlR, _burstJumpLlL, _burstJumpLlR;
         Quaternion _burstJumpSp, _burstJumpHp, _burstJumpHd;
         bool _jumpFromClimb;
+        bool _jumpClimbSnap;
+        float _jumpClimbSnapIn;
+        Quaternion _climbJumpUaL, _climbJumpUaR, _climbJumpLaL, _climbJumpLaR;
+        Quaternion _climbJumpUlL, _climbJumpUlR, _climbJumpLlL, _climbJumpLlR;
+        Quaternion _climbJumpSp, _climbJumpHp, _climbJumpHd;
         bool _jumpFromWall;
         bool _jumpWallSnap;
         float _jumpWallSnapIn;
@@ -2912,6 +2917,29 @@ namespace Tag.Art
                 _wallJumpHd = _head.localRotation;
                 _airArmIn = 1f;
             }
+            if (_jumpFromClimb && !_jumpClimbSnap && !punching
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                // The climb pose eases into the air pose, then the air pose holds.
+                // The slow push stays off this path. Exit time is unchanged.
+                // Jump height is unchanged.
+                _jumpClimbSnap = true;
+                _jumpClimbSnapIn = 0f;
+                _climbJumpUaL = _upperArmL.localRotation;
+                _climbJumpUaR = _upperArmR.localRotation;
+                _climbJumpLaL = _lowerArmL.localRotation;
+                _climbJumpLaR = _lowerArmR.localRotation;
+                _climbJumpUlL = _upperLegL.localRotation;
+                _climbJumpUlR = _upperLegR.localRotation;
+                _climbJumpLlL = _lowerLegL.localRotation;
+                _climbJumpLlR = _lowerLegR.localRotation;
+                _climbJumpSp = _spine.localRotation;
+                _climbJumpHp = _hips.localRotation;
+                _climbJumpHd = _head.localRotation;
+                _airArmIn = 1f;
+            }
             _prevVy = _motor != null ? _motor.Velocity.y : 0f;
             if (grounded || _pushOff <= 0.02f)
             {
@@ -2948,6 +2976,13 @@ namespace Tag.Art
             }
             else if (!_jumpFromWall)
                 _jumpWallSnap = false;
+            if (_jumpClimbSnap && _jumpFromClimb && !punching)
+            {
+                if (_jumpClimbSnapIn < 0.98f)
+                    _jumpClimbSnapIn = Mathf.MoveTowards(_jumpClimbSnapIn, 1f, dt / 0.04f);
+            }
+            else if (!_jumpFromClimb)
+                _jumpClimbSnap = false;
             if (_jumpFromStill && _pushOff > 0.02f)
                 _jumpFromStillIn = Mathf.MoveTowards(_jumpFromStillIn, 1f, dt / 0.04f);
             if (_jumpFromCrouchWalk && _pushOff > 0.02f)
@@ -7581,7 +7616,7 @@ namespace Tag.Art
                 _wallExit = Mathf.MoveTowards(_wallExit, 0f, dt / 0.18f);
                 // A climb into a ski eases in its own overlay. A wall run into a ski does too.
                 // The leave timer still runs.
-                if (!_skiFromClimb && !_skiFromWall && !_jumpWallSnap)
+                if (!_skiFromClimb && !_skiFromWall && !_jumpWallSnap && !_jumpClimbSnap)
                 {
                 float w = _wallExit;
                 float body = Mathf.SmoothStep(0f, 1f, w);
@@ -7659,7 +7694,7 @@ namespace Tag.Art
                 }
             }
 
-            if (_jumpFromClimb && _pushOff > 0.02f && !punching)
+            if (_jumpFromClimb && _pushOff > 0.02f && !punching && !_jumpClimbSnap)
             {
                 // The climb eases into the push, then the air pose.
                 // A still crouch, a crouch walk, a ski, a slide, and an air dash keep their jump.
@@ -7714,6 +7749,28 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(Quaternion.Slerp(_exitUlR, pushThighR, intoPush), airThighR, leave);
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(_exitLlL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(_exitLlR, pushKneeR, intoPush), airKneeR, leave);
+            }
+            if (_jumpClimbSnap && _jumpClimbSnapIn < 0.98f && _jumpFromClimb && !punching
+                && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill
+                && !_jumpDashSnap && !_jumpWallSnap)
+            {
+                // The climb pose eases into the air pose, then the air pose holds.
+                // A wall jump has its own ease. An air dash into a jump has its own ease.
+                // A standing idle into a jump has its own ease. A sprint into the air has its own ease.
+                // A walk into a jump has its own ease. The slow push stays off this path.
+                // Exit time is unchanged. Jump height is unchanged.
+                float intoClimbAir = _jumpClimbSnapIn;
+                _uaLT = Quaternion.Slerp(_climbJumpUaL, _uaLT, intoClimbAir);
+                _uaRT = Quaternion.Slerp(_climbJumpUaR, _uaRT, intoClimbAir);
+                _laLT = Quaternion.Slerp(_climbJumpLaL, _laLT, intoClimbAir);
+                _laRT = Quaternion.Slerp(_climbJumpLaR, _laRT, intoClimbAir);
+                _spineT = Quaternion.Slerp(_climbJumpSp, _spineT, intoClimbAir);
+                _hipsT = Quaternion.Slerp(_climbJumpHp, _hipsT, intoClimbAir);
+                _headT = Quaternion.Slerp(_climbJumpHd, _headT, intoClimbAir);
+                _ulLT = Quaternion.Slerp(_climbJumpUlL, _ulLT, intoClimbAir);
+                _ulRT = Quaternion.Slerp(_climbJumpUlR, _ulRT, intoClimbAir);
+                _llLT = Quaternion.Slerp(_climbJumpLlL, _llLT, intoClimbAir);
+                _llRT = Quaternion.Slerp(_climbJumpLlR, _llRT, intoClimbAir);
             }
 
             if (_jumpFromWall && _pushOff > 0.02f && !punching && !_jumpWallSnap)
