@@ -311,7 +311,7 @@ namespace Tag.Gameplay
             // Victim's chase cam, lighter than the attacker's. No hitstop — nothing else freezes time.
             var victimCam = victim.GetComponentInChildren<TpsMoveCamera>(true);
             if (victimCam != null && victimCam != tps)
-                victimCam.AddKick(new Vector3(0.04f, 0.08f, -0.18f));
+                victimCam.AddKick(new Vector3(0.05f, 0.10f, -0.22f)); // clearer tag recoil in TP
 
             // Target ragdoll / kinematic stun proxy + i-frames; hit pulse fires on It visual swap
             victim.ReceiveTagHit(knock, tuning);
