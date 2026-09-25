@@ -147,9 +147,10 @@ namespace Tag.Art
         /// <summary>
         /// Connected playground districts. Ski spines (x=24/48, z=18/36, 3.2 m wide) stay open.
         /// Fort slide mouths tuck inside the 2x2 lip; exits sit on a three-tile pit.
-        /// Mega_SlideTube and PGK_Slide_Tube90 stay unspawned: the mega tube's floor
-        /// rises ~3.4 m over 10 m, and Tube90's opening span is ~3.45 m. Neither end
-        /// pair lands on the 0.40-2.00 deck grid without burying the low mouth.
+        /// Mega_SlideTube and PGK_Slide_Tube90 stay unspawned. Tube90 spans 3.450 m
+        /// in Y (stem +0.52 crowns at 3.445, 1.445 m above a 2.00 deck). The mega bed
+        /// spans 3.912 m (Y 0.693..4.605); the shell spans 5.468 m and sits 0.927 m
+        /// below the bed exit. No 0.40-2.00 pair seats either mouth without a bury.
         /// Horizontal Toy_TunnelTube / Mega_CrawlTunnel runs are the crawl instead.
         /// </summary>
         int PlaceChasePlayground(Transform root)

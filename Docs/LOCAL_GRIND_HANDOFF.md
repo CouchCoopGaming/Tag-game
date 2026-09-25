@@ -20,6 +20,20 @@ Clearance audit: the three arch piers still clear courts and bars by ≥1.3 m. T
 - NE hop tiles flush with the spawn seesaw, about 0.01 m, not an overlap.
 - NW mushrooms to the north bar, about 0.22 m. The bar line itself stays clear.
 
+## Mega tube deck-height grid (blocked)
+
+`Mega_SlideTube` and `PGK_Slide_Tube90` stay unspawned. Measured in Unity space (node transform applied). Deck pivots in use are 0.40 / 0.80 / 1.60 / 2.00. A `PGK_Deck_2x2` is 0.08 thick above its pivot, so the tallest walk surface is 2.08. The tallest rise from mulch onto a deck pivot is 2.00. No yaw seats either tube on that grid without a float or a bury. No new deck was added.
+
+`PGK_Slide_Tube90` is one mesh, 0.590 m deep in Z. Bounds: X −1.725..1.725, Y −0.525..2.925, Z −0.295..0.295. Vertical span is 3.450 m. Stem +0.52 puts the feet at Y −0.005 and the crown at 3.445. Feet on mulch leave the crown 1.445 m above the 2.00 deck pivot (1.365 m above the slab top). Crown on the 2.00 pivot buries the feet at −1.445. The grid is 1.445 m short.
+
+`Mega_SlideTube` is a bed (`Cube`) plus a shell (`Cylinder`), and the shell is not a sleeve on the bed. At the exit (z ≈ 4.8) the bed is Y 0.693..0.898 and the shell is Y 3.105..3.812.
+
+- Bed: Y 0.693..4.605 (span 3.912), Z −2.160..4.977 (run 7.137), X ±1.100. Lower envelope runs from 4.279 at the high end to 0.693 at the exit, a drop of 3.586 m.
+- Shell: Y −0.234..5.234 (span 5.468), Z −5.067..5.067 (length 10.134), X ±1.097. The shell bottom is 0.927 m below the bed exit.
+- Stem +0.24 grounds the shell (minY ≈ 0.006) and leaves the bed exit at 0.927 (floating) and the bed crown at 4.839 (2.839 m above the 2.00 pivot).
+- Bed exit on mulch (shift −0.693): shell buried 0.927 m, crown at 3.912 (1.912 m above the 2.00 pivot).
+- Bed crown on the 2.00 pivot (shift −2.605): bed exit at −1.912, shell bottom at −2.839.
+
 ## Campus zone pass (place)
 
 Graybox pad cubes are gone (they were stretching HiPoly into a low-poly look). Flow stones are gone. The chase is kit districts:
@@ -43,7 +57,7 @@ Graybox pad cubes are gone (they were stretching HiPoly into a low-poly look). F
 
 Playtest, in order: spawn SW → mushroom step → hopscotch SW → bench west of the climb net (9.26, 9) → south bar → soft-play bench (8.20, 5.75) → SoftS south apron (14.5, 2.6: beam, mushrooms, spring, hops) → west climber dome → tubes and ground slide → spring rider (19.20, 10.40) → cross the south spine → bars or beams → merry → merry-north (7.2, 31.2) → cross the north spine → north bar → arch (7.70, 42) → NW cluster (9.4, 45.0) → hopscotch NW → astro (same dome, north of the tubes). East: hopscotch SE → arch (65.90, 10.5) → SE cluster (66.2, 7.5) → army spiral → bars → kickball (field still open) → swings → knight spiral, or arch (65.65, 41) and bench (65.65, 41.90) → NE cluster (66.2, 45.0) → hopscotch NE. Crash cross stays open. Density pause: no new props.
 
-`Mega_SlideTube` / `PGK_Slide_Tube90` stay unused. Tube90 is ~3.45 m tall; Mega_SlideTube's floor rises ~3.4 m. Neither meets 0.40–2.00 without burying the low end. Tron disc is scale 0.5 and shifted east of its Conn ramp.
+`Mega_SlideTube` / `PGK_Slide_Tube90` stay unused. Exact deck-grid blockers are in the section above. Tron disc is scale 0.5 and shifted east of its Conn ramp.
 
 Feel (read, not played here): slide clamps to entry speed (downhill only softens friction); jump `v.y` is `jumpSpeed` / fatigue; air dash cooldown is 30 s with the dummy trail tell.
 

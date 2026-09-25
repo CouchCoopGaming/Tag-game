@@ -54,7 +54,7 @@ Punch is **not** a contact aura -> only active punch hits transfer It (`PunchHit
 
 ## Tube pieces left out (measured)
 
-`Mega_SlideTube` and `PGK_Slide_Tube90` are still not placed. Tube90 is a vertical elbow about 3.45 m tall, so grounding the feet puts the high mouth ~1.4 m above the 2.00 deck. Mega_SlideTube's floor rises ~3.4 m over ~10 m. Seating either high end on a deck buries the low mouth. Crawls are `Toy_TunnelTube` (play places + north ring) and `Mega_CrawlTunnel` (bunkers + south ring).
+`Mega_SlideTube` and `PGK_Slide_Tube90` are still not placed. Tube90 spans 3.450 m in Y (−0.525..2.925). Stem +0.52 puts the crown at 3.445, which is 1.445 m above the 2.00 deck if the feet are on mulch, and seating that crown on the deck buries the feet at −1.445. The mega bed spans Y 0.693..4.605 (3.912 m) over a 7.137 m run; the shell spans Y −0.234..5.234 and hangs 0.927 m below the bed exit, and at that exit the shell is up at Y 3.105..3.812, so it is not a sleeve on the bed. Grounding the shell floats the bed exit to 0.927. Grounding the bed buries the shell 0.927 m and leaves the crown 1.912 m above the 2.00 deck. The grid tops out at 2.00, so neither tube was seated. Crawls are `Toy_TunnelTube` (play places + north ring) and `Mega_CrawlTunnel` (bunkers + south ring).
 
 ## Human Play path
 
