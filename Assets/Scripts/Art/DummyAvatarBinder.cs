@@ -49,10 +49,14 @@ namespace Tag.Art
 
         void Awake()
         {
+            // Strip the placeholder before any visual load can throw. Match start
+            // used to re-enable this renderer after a hide, which brought the pill back.
+            StripPlaceholderBody();
             _it = GetComponent<ItController>();
+            if (_it != null) _it.ReleaseRootAccent();
             ResolvePrefabs();
             ApplyVisual(_it != null && _it.IsIt);
-            HideCapsuleMeshes();
+            StripPlaceholderBody();
         }
 
         void ResolvePrefabs()
@@ -70,12 +74,15 @@ namespace Tag.Art
 #if UNITY_EDITOR
             var assignedRunner = runnerVisualPrefab;
             var assignedIt = itVisualPrefab;
-            if (!DummyPrimitiveFactory.PrefabHasRenderer(hierRunner))
+            // Catalog PPtrs use Prefab fileID 100100000 on an FBX guid. Those resolve
+            // null. Load the model root by path. A renderer on the asset is not required —
+            // imported model roots often report none until they are instantiated.
+            if (hierRunner == null)
                 hierRunner = LoadHiPoly("Dummy_Mannequin_Tan_Hier_Hi.fbx");
-            if (!DummyPrimitiveFactory.PrefabHasRenderer(hierIt))
+            if (hierIt == null)
                 hierIt = LoadHiPoly("Dummy_Mannequin_Orange_Hier_Hi.fbx");
 #endif
-            if (preferMannequinOverRunnerIt && DummyPrimitiveFactory.PrefabHasRenderer(hierRunner))
+            if (preferMannequinOverRunnerIt && hierRunner != null)
                 runnerVisualPrefab = hierRunner;
             else
             {
@@ -91,7 +98,7 @@ namespace Tag.Art
                 runnerVisualPrefab = FirstRenderable(runnerVisualPrefab, "Characters/Dummy_Runner");
             }
 
-            if (preferMannequinOverRunnerIt && DummyPrimitiveFactory.PrefabHasRenderer(hierIt))
+            if (preferMannequinOverRunnerIt && hierIt != null)
                 itVisualPrefab = hierIt;
             else
             {
@@ -155,7 +162,7 @@ namespace Tag.Art
             return current;
         }
 
-        void HideCapsuleMeshes()
+        void StripPlaceholderBody()
         {
             if (!hideRootMeshRenderers) return;
             foreach (var r in GetComponentsInChildren<MeshRenderer>(true))
@@ -166,17 +173,24 @@ namespace Tag.Art
                 {
                     var n = r.gameObject.name;
                     if (n.Contains("Capsule") || n == "Mesh" || n == "Player" || n == "DummyRunner" || r.GetComponent<CharacterController>() != null)
+                    {
                         r.enabled = false;
+                        var mf = r.GetComponent<MeshFilter>();
+                        if (mf != null) mf.sharedMesh = null;
+                    }
                 }
             }
             var rootMr = GetComponent<MeshRenderer>();
             if (rootMr != null) rootMr.enabled = false;
             var rootMf = GetComponent<MeshFilter>();
             if (rootMf != null) rootMf.sharedMesh = null;
+            if (_it != null) _it.ReleaseRootAccent();
         }
 
         void LateUpdate()
         {
+            // Revive() re-enables the serialized capsule accent after Awake.
+            StripPlaceholderBody();
             if (_it == null) return;
             bool wantIt = _it.IsIt;
             if (wantIt != _showingIt)
@@ -194,38 +208,30 @@ namespace Tag.Art
 
             if (_visualInstance != null)
                 Destroy(_visualInstance);
+            _visualInstance = null;
 
             bool usedPrimitive = false;
-            if (!forcePrimitiveMannequin && DummyPrimitiveFactory.PrefabHasRenderer(prefab))
+            if (!forcePrimitiveMannequin)
+                _visualInstance = SpawnBindable(prefab, asIt);
+#if UNITY_EDITOR
+            // Asset-level PrefabHasRenderer misses FBX roots. If the assigned prefab was the
+            // flat Dummy_Runner, instantiate the approved Hier and keep it when the bones bind.
+            if (_visualInstance == null && !forcePrimitiveMannequin)
             {
-                _visualInstance = Instantiate(prefab, transform);
-                _visualInstance.name = asIt ? "DummyVisual_It" : "DummyVisual_Runner";
-                _visualInstance.transform.localPosition = visualLocalPosition;
-                _visualInstance.transform.localRotation = Quaternion.identity;
-                _visualInstance.transform.localScale = visualLocalScale;
-                foreach (var cc in _visualInstance.GetComponentsInChildren<CharacterController>())
-                    Destroy(cc);
-                foreach (var rb in _visualInstance.GetComponentsInChildren<Rigidbody>())
-                    Destroy(rb);
-
-                // Flat HiPoly / Dummy_Runner meshes have limb names but no hierarchy —
-                // procedural swing cannot move distal limbs. Prefer Navy Spade primitive.
-                // HasBindableBones uses GetComponentsInChildren, so Unity FBX root wrapper is fine.
-                if (fallbackToPrimitiveIfUnbound && !DummyLocomotor.HasBindableBones(_visualInstance.transform))
+                var retry = LoadHiPoly(asIt
+                    ? "Dummy_Mannequin_Orange_Hier_Hi.fbx"
+                    : "Dummy_Mannequin_Tan_Hier_Hi.fbx");
+                if (retry != null && retry != prefab)
                 {
-                    Debug.Log($"[DummyAvatarBinder] '{prefab.name}' has no hierarchical limb bones — using Navy Spade primitive.");
-                    Destroy(_visualInstance);
-                    _visualInstance = DummyPrimitiveFactory.Build(transform, asIt, PickColor());
-                    usedPrimitive = true;
-                }
-                else
-                {
-                    ApplyCharacterMats(_visualInstance, asIt);
-                    FitVisual(_visualInstance);
+                    _visualInstance = SpawnBindable(retry, asIt);
+                    if (_visualInstance != null) prefab = retry;
                 }
             }
-            else
+#endif
+            if (_visualInstance == null)
             {
+                if (prefab != null && fallbackToPrimitiveIfUnbound)
+                    Debug.Log($"[DummyAvatarBinder] '{prefab.name}' has no hierarchical limb bones — using Navy Spade primitive.");
                 _visualInstance = DummyPrimitiveFactory.Build(transform, asIt, PickColor());
                 usedPrimitive = true;
             }
@@ -240,7 +246,7 @@ namespace Tag.Art
             if (jetFx != null)
                 jetFx.Bind(motor, _visualInstance.transform);
 
-            HideCapsuleMeshes();
+            StripPlaceholderBody();
             if (_visualInstance != null)
                 _visualBaseScale = _visualInstance.transform.localScale;
             if (GetComponent<ItMarker>() == null)
@@ -258,33 +264,69 @@ namespace Tag.Art
             }
         }
 
+        GameObject SpawnBindable(GameObject source, bool asIt)
+        {
+            if (source == null) return null;
+            var inst = Instantiate(source, transform);
+            inst.name = asIt ? "DummyVisual_It" : "DummyVisual_Runner";
+            inst.transform.localPosition = visualLocalPosition;
+            inst.transform.localRotation = Quaternion.identity;
+            inst.transform.localScale = visualLocalScale;
+            foreach (var cc in inst.GetComponentsInChildren<CharacterController>(true))
+                Destroy(cc);
+            foreach (var rb in inst.GetComponentsInChildren<Rigidbody>(true))
+                Destroy(rb);
+
+            // Flat Dummy_Runner has the limb names as siblings. Procedural swing cannot
+            // move those. Keep the instance only when LowerArm sits under UpperArm.
+            if (!fallbackToPrimitiveIfUnbound || DummyLocomotor.HasBindableBones(inst.transform))
+            {
+                ApplyCharacterMats(inst, asIt);
+                FitVisual(inst);
+                return inst;
+            }
+
+            Destroy(inst);
+            return null;
+        }
+
         void ApplyCharacterMats(GameObject visual, bool asIt)
         {
-            // Hier FBX already carries AD paint (Tan runner, Orange It with nested Vs).
-            // Do not restamp slots — a one-material chevron renderer would turn orange.
-            bool hasAuthored = false;
+            // Hier FBX paint is Phong / Standard. Under URP that shader is magenta.
+            // Keep a real URP material. Swap only broken slots, and keep their albedo
+            // so Tan bone and Orange It do not collapse onto one chevron color.
+            bool anyBroken = false;
             foreach (var r in visual.GetComponentsInChildren<Renderer>(true))
             {
-                if (r != null && r.sharedMaterial != null && r.sharedMaterial.name != "Default-Material")
+                if (r == null) continue;
+                var shared = r.sharedMaterials;
+                if (shared == null) continue;
+                for (int i = 0; i < shared.Length; i++)
                 {
-                    hasAuthored = true;
-                    break;
+                    if (MaterialNeedsUrp(shared[i]))
+                    {
+                        anyBroken = true;
+                        break;
+                    }
                 }
+                if (anyBroken) break;
             }
-            if (hasAuthored) return;
+            if (!anyBroken) return;
 
-            var mats = asIt
+            Color body = asIt ? new Color(1f, 0.416f, 0f) : new Color(0.91f, 0.851f, 0.753f);
+            Color accent = asIt ? new Color(0.04f, 0.04f, 0.04f) : new Color(0.169f, 0.702f, 0.639f);
+            var fallback = asIt
                 ? new[]
                 {
-                    itBaseMat ?? DummyPrimitiveFactory.MakeMat(new Color(1f, 0.416f, 0f)),
-                    itAccentMat ?? DummyPrimitiveFactory.MakeMat(new Color(0.04f, 0.04f, 0.04f)),
-                    itOverrideMat ?? DummyPrimitiveFactory.MakeMat(new Color(1f, 0.416f, 0f))
+                    itBaseMat ?? DummyPrimitiveFactory.MakeMat(body),
+                    itAccentMat ?? DummyPrimitiveFactory.MakeMat(accent),
+                    itOverrideMat ?? DummyPrimitiveFactory.MakeMat(body)
                 }
                 : new[]
                 {
-                    runnerBaseMat ?? DummyPrimitiveFactory.MakeMat(new Color(0.91f, 0.851f, 0.753f)),
-                    runnerAccentMat ?? DummyPrimitiveFactory.MakeMat(new Color(0.169f, 0.702f, 0.639f)),
-                    runnerOverrideMat ?? DummyPrimitiveFactory.MakeMat(new Color(0.91f, 0.851f, 0.753f))
+                    runnerBaseMat ?? DummyPrimitiveFactory.MakeMat(body),
+                    runnerAccentMat ?? DummyPrimitiveFactory.MakeMat(accent),
+                    runnerOverrideMat ?? DummyPrimitiveFactory.MakeMat(body)
                 };
 
             foreach (var r in visual.GetComponentsInChildren<Renderer>(true))
@@ -292,12 +334,43 @@ namespace Tag.Art
                 if (r == null) continue;
                 if (r.gameObject.name.StartsWith("ItHat") || r.gameObject.name.StartsWith("ItHalo"))
                     continue;
-                int n = Mathf.Max(1, r.sharedMaterials.Length);
+                var shared = r.sharedMaterials;
+                int n = shared != null && shared.Length > 0 ? shared.Length : 1;
                 var next = new Material[n];
                 for (int i = 0; i < n; i++)
-                    next[i] = mats[Mathf.Min(i, mats.Length - 1)];
+                {
+                    var src = shared != null && i < shared.Length ? shared[i] : null;
+                    if (!MaterialNeedsUrp(src))
+                    {
+                        next[i] = src;
+                        continue;
+                    }
+                    Color albedo = ReadAlbedo(src, fallback[Mathf.Min(i, fallback.Length - 1)].color);
+                    next[i] = DummyPrimitiveFactory.MakeMat(albedo);
+                }
                 r.sharedMaterials = next;
             }
+        }
+
+        static bool MaterialNeedsUrp(Material m)
+        {
+            if (m == null) return true;
+            if (m.name == "Default-Material") return true;
+            var shader = m.shader;
+            if (shader == null) return true;
+            string n = shader.name;
+            if (n.IndexOf("Universal Render Pipeline", System.StringComparison.Ordinal) >= 0)
+                return false;
+            return true;
+        }
+
+        static Color ReadAlbedo(Material m, Color fallback)
+        {
+            if (m == null || m.name == "Default-Material") return fallback;
+            // Standard / Phong expose _Color. URP slots that we keep are not read here.
+            if (m.HasProperty("_Color") || m.HasProperty("_BaseColor"))
+                return m.color;
+            return fallback;
         }
 
 
@@ -333,23 +406,64 @@ namespace Tag.Art
         }
         static void FitVisual(GameObject visual)
         {
-            var rends = visual.GetComponentsInChildren<Renderer>();
-            if (rends.Length == 0) return;
-            var b = rends[0].bounds;
-            for (int i = 1; i < rends.Length; i++)
-                b.Encapsulate(rends[i].bounds);
-            float h = b.size.y;
-            if (h > 0.15f && (h < 1.15f || h > 2.7f))
+            if (visual == null || visual.transform.parent == null) return;
+            float h = BodyHeight(visual);
+            // Unit-scale misses only. A standing Hier is already ~1.9 m.
+            if (h > 0.15f && h < 80f && (h < 1.15f || h > 2.7f))
+                visual.transform.localScale *= 1.8f / h;
+
+            // Foot meshes (or the ankle bone). A torso-only bound used to plant the
+            // hips on the pad and leave the body in the ground.
+            float sole = LowestFootSole(visual);
+            if (float.IsNaN(sole)) return;
+            float delta = sole - visual.transform.parent.position.y;
+            if (Mathf.Abs(delta) > 0.03f && Mathf.Abs(delta) < 3f)
+                visual.transform.localPosition -= new Vector3(0f, delta, 0f);
+        }
+
+        static float BodyHeight(GameObject visual)
+        {
+            var rends = visual.GetComponentsInChildren<Renderer>(true);
+            if (rends.Length == 0) return 0f;
+            bool any = false;
+            Bounds b = default;
+            for (int i = 0; i < rends.Length; i++)
             {
-                float s = 1.8f / h;
-                visual.transform.localScale *= s;
-                b = rends[0].bounds;
-                for (int i = 1; i < rends.Length; i++)
-                    b.Encapsulate(rends[i].bounds);
+                if (rends[i] == null) continue;
+                if (!any)
+                {
+                    b = rends[i].bounds;
+                    any = true;
+                }
+                else b.Encapsulate(rends[i].bounds);
             }
-            float feet = b.min.y - visual.transform.parent.position.y;
-            if (Mathf.Abs(feet) > 0.05f)
-                visual.transform.localPosition -= new Vector3(0f, feet, 0f);
+            return any ? b.size.y : 0f;
+        }
+
+        static float LowestFootSole(GameObject visual)
+        {
+            float y = float.PositiveInfinity;
+            var rends = visual.GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < rends.Length; i++)
+            {
+                var r = rends[i];
+                if (r == null) continue;
+                if (r.gameObject.name.IndexOf("Foot", System.StringComparison.OrdinalIgnoreCase) < 0)
+                    continue;
+                y = Mathf.Min(y, r.bounds.min.y);
+            }
+            if (y < float.PositiveInfinity) return y;
+
+            var bones = visual.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < bones.Length; i++)
+            {
+                string n = bones[i].name;
+                if (n != "Foot_L" && n != "Foot_R" && n != "Foot.L" && n != "Foot.R")
+                    continue;
+                // Ankle sits a few centimeters above the sole.
+                y = Mathf.Min(y, bones[i].position.y - 0.04f);
+            }
+            return y < float.PositiveInfinity ? y : float.NaN;
         }
     }
 }

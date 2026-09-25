@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4a1e8b27f0d4e6a9b3c5d7e1f2a4b60, type: 3}
   m_Name: HierMannequinCatalog
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.HierMannequinCatalog
-  blue: {fileID: 100100000, guid: db12da2baae8b3f4290c14825b89ddd1, type: 3}
-  mint: {fileID: 100100000, guid: f7c0cc58afda8ee4b8002d5fc98e0dbf, type: 3}
-  orange: {fileID: 100100000, guid: b33974ad57284ef28a7564e3bdf00540, type: 3}
-  lavender: {fileID: 100100000, guid: 6277f46f0f4c6cb4099fd0db3cf2c2ca, type: 3}
-  tan: {fileID: 100100000, guid: ad3f2fa97db94e72869d746ecdf8e87d, type: 3}
-  red: {fileID: 100100000, guid: 144ec0004de6b9545b9d8f9e93412d12, type: 3}
+  blue: {fileID: 0}
+  mint: {fileID: 0}
+  orange: {fileID: 0}
+  lavender: {fileID: 0}
+  tan: {fileID: 0}
+  red: {fileID: 0}

@@ -6,6 +6,10 @@ namespace Tag.Art
     /// Runtime refs to the curved Hier HiPoly mannequins. Play scene pawns serialize
     /// the flat Dummy_Runner / Dummy_It prefabs; this catalog lets a player build
     /// load Hier without AssetDatabase.
+    /// Slots must be the FBX model root (a GameObject). Prefab fileID 100100000 on an
+    /// FBX guid does not resolve and Unity treats the slot as null. Until those roots
+    /// are assigned in the Editor, <see cref="DummyAvatarBinder"/> loads Tan and Orange
+    /// by path.
     /// </summary>
     public class HierMannequinCatalog : ScriptableObject
     {
