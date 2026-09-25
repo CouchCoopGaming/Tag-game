@@ -272,7 +272,9 @@ Already on this branch: A punch that misses in a crouch walk eases into the guar
 
 Already on this branch: A tag in a crouch walk eases the V into the guard and the low stride. A still crouch still ends in the guard. A walk tag and a sprint tag are unchanged. Flinch time is unchanged.
 
-This delta: Becoming It in a crouch walk eases the claim into the guard and the low stride. A still crouch still ends in the guard. A walk claim and a sprint claim are unchanged. Claim time is unchanged.
+Already on this branch: Becoming It in a crouch walk eases the claim into the guard and the low stride. A still crouch still ends in the guard. A walk claim and a sprint claim are unchanged. Claim time is unchanged.
+
+This delta: Letting go of a grapple in a crouch walk eases the line into the guard and the low stride. A still crouch still ends in the guard. A walk release and a sprint release are unchanged. The pull is unchanged. The gate stays off.
 
 ## Stack snapshot
 
@@ -527,6 +529,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 156. Crouch walk, then miss a punch: the body should ease into the guard and the low stride. A still crouch should still end in the guard. A walk miss and a sprint miss should feel the same. The cock should not feel longer.
 157. Crouch walk, then get tagged: the V should ease into the guard and the low stride. A still crouch should still end in the guard. A walk tag and a sprint tag should feel the same. The flinch should not feel longer.
 158. Crouch walk, then become It: the claim should ease into the guard and the low stride. A still crouch should still end in the guard. A walk claim and a sprint claim should feel the same. The claim should not feel longer.
+159. Crouch walk, then let go of a grapple: the line should ease into the guard and the low stride. A still crouch should still end in the guard. A walk release and a sprint release should feel the same. The pull should feel the same. The gate stays off.
 
 ## Known leftovers
 
@@ -705,6 +708,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 146. A punch that misses in a crouch walk eases into the guard and the low stride. A still crouch still ends in the guard. A walk miss and a sprint miss are unchanged. Windup time is unchanged.
 147. A tag in a crouch walk eases the V into the guard and the low stride. A still crouch still ends in the guard. A walk tag and a sprint tag are unchanged. Flinch time is unchanged.
 148. Becoming It in a crouch walk eases the claim into the guard and the low stride. A still crouch still ends in the guard. A walk claim and a sprint claim are unchanged. Claim time is unchanged.
+149. Letting go of a grapple in a crouch walk eases the line into the guard and the low stride. A still crouch still ends in the guard. A walk release and a sprint release are unchanged. The pull is unchanged. The gate stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
