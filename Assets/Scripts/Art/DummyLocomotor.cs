@@ -24,6 +24,7 @@ namespace Tag.Art
         bool _loggedBindFail;
         float _cycle;
         float _landSquash;
+        float _landHold;
         float _punchTelegraph;
         bool _wasGrounded = true;
         float _bouncePulse;
@@ -117,11 +118,18 @@ namespace Tag.Art
                 float t = Mathf.Clamp01(Mathf.InverseLerp(soft, hard, impact));
                 // Ease-in so mid falls stay readable but terminal velocity punches.
                 // Slightly stronger mid-band so a park hop-off reads without waiting for stun speed.
-                _landSquash = Mathf.Clamp(Mathf.Lerp(0.28f, 1.42f, t * t), 0.28f, 1.42f); // park hop-off punchier mid squash
+                _landSquash = Mathf.Clamp(Mathf.Lerp(0.55f, 1.35f, t * t), 0.55f, 1.35f);
+                // Brief absorb, then the pose eases into the run instead of popping off.
+                _landHold = Mathf.Lerp(0.05f, 0.11f, t);
             }
             _wasGrounded = grounded;
-            float recover = Mathf.Lerp(8.8f, 5.8f, Mathf.Clamp01(_landSquash)); // snappier park hop-off settle
-            _landSquash = Mathf.MoveTowards(_landSquash, 0f, dt * recover);
+            if (_landHold > 0f)
+                _landHold = Mathf.Max(0f, _landHold - dt);
+            else
+            {
+                // ~0.4s from a full buckle back to the stride.
+                _landSquash = Mathf.MoveTowards(_landSquash, 0f, dt * 3.1f);
+            }
             // Bible WallBounce ~0.22s kick flash - brief TP limb tell after OnWallBounced.
             _bouncePulse = Mathf.MoveTowards(_bouncePulse, 0f, dt / 0.22f);
             bool bouncing = _bouncePulse > 0.04f;
@@ -498,14 +506,15 @@ namespace Tag.Art
 
             if (_landSquash > 0.08f && grounded && !sliding && !dashing)
             {
-                // Recovery the squash scale never showed: knees buckle, arms out for balance.
-                float k = Mathf.Clamp01(_landSquash);
+                // Ease into the run targets already in _ulLT. SmoothStep keeps the last bit from popping.
+                float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_landSquash));
                 _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(48f, 0f, 6f), k);
                 _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(40f, 0f, -6f), k);
                 _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-78f, 0f, 0f), k);
                 _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-70f, 0f, 0f), k);
                 _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-22f, 8f, 10f), k);
                 _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-22f, -8f, -10f), k);
+                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(18f, 0f, 0f), k);
                 _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(26f, 0f, 0f), k);
             }
 
@@ -530,7 +539,8 @@ namespace Tag.Art
             float armSlewR = airDashing ? 78f : punchWind ? 90f : (punching || lunging || dashing ? 46f : slew);
             // Run knees have to arrive inside one stride or the flex never shows.
             bool runCycle = grounded && !air && !sliding && !crouch && !dashing && !lunging && speed > 2f;
-            float legSlew = airDashing ? 78f : runCycle ? 34f : slew;
+            // Buckle has to arrive during the short absorb, then follow the ease back into the stride.
+            float legSlew = airDashing ? 78f : (_landSquash > 0.05f ? 46f : runCycle ? 34f : slew);
             Slew(ref _spine, _spineT, slew, dt);
             Slew(ref _hips, _hipsT, slew, dt);
             Slew(ref _head, _headT, slew, dt);
