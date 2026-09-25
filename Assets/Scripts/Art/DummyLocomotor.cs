@@ -295,6 +295,12 @@ namespace Tag.Art
                     _cycle += dt * Mathf.Lerp(5.5f, 9f, runAmt);
                 }
             }
+            else if (crouch && grounded && speed > 0.35f)
+            {
+                // Short shuffle under the hips. The guard stays low. Speed is unchanged.
+                _cycle += dt * 6.2f;
+                _runVis = runAmt;
+            }
             else if (!jet)
             {
                 // Close onto a stride where the sine is 0. Rounding to an integer left a leg stuck out,
@@ -1081,6 +1087,16 @@ namespace Tag.Art
                         _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), d);
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), d);
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), d);
+                    }
+                    else if (crouch && speed > 0.35f)
+                    {
+                        // Short steps under the hips. Both knees stay bent, so it is not a run or a skate.
+                        float stepL = Mathf.Max(0f, sinC);
+                        float stepR = Mathf.Max(0f, -sinC);
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f), d);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(46f + stepR * 12f - stepL * 6f, 0f, 0f), d);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f), d);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f), d);
                     }
                     else
                     {
