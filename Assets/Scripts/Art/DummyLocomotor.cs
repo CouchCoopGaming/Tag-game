@@ -104,6 +104,12 @@ namespace Tag.Art
         Quaternion _readyPunchUaL, _readyPunchUaR, _readyPunchLaL, _readyPunchLaR;
         Quaternion _readyPunchUlL, _readyPunchUlR, _readyPunchLlL, _readyPunchLlR;
         Quaternion _readyPunchSp, _readyPunchHp, _readyPunchHd;
+        bool _tagPunchHold;
+        bool _punchFromTag;
+        float _punchFromTagIn;
+        Quaternion _tagPunchUaL, _tagPunchUaR, _tagPunchLaL, _tagPunchLaR;
+        Quaternion _tagPunchUlL, _tagPunchUlR, _tagPunchLlL, _tagPunchLlR;
+        Quaternion _tagPunchSp, _tagPunchHp, _tagPunchHd;
         bool _punchFromDash;
         float _punchFromDashIn;
         bool _tagFromDash;
@@ -1444,6 +1450,22 @@ namespace Tag.Art
                 _punchFromReadyIn = Mathf.MoveTowards(_punchFromReadyIn, 1f, dt / 0.04f);
             else if (!windupNow)
                 _punchFromReady = false;
+            bool tagPunch = windupNow && !_punchWindWas && !fromJumpPose && !crouch && !_punchFromJump && !_punchFromDash && !_punchFromSoft && !_punchFromHard && !_punchFromSki && !_punchFromSlide && !_punchFromClimb && !_punchFromWall && !_punchFromDart && !_punchFromClaim && !_punchFromGrapple && !_punchFromReady
+                && _tagPunchHold && !_jumpFromTag && !jet
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (tagPunch)
+            {
+                // The connect eases into the cock. A punch into a tag keeps its ease.
+                // A dash coming off cooldown into a punch keeps its ease. A crouch tag keeps its pose.
+                // A tag into a jump keeps its push. Windup time is unchanged. Connect time is unchanged.
+                _punchFromTag = true;
+                _punchFromTagIn = 0f;
+                _tagPunchHold = false;
+            }
+            if (windupNow && _punchFromTag)
+                _punchFromTagIn = Mathf.MoveTowards(_punchFromTagIn, 1f, dt / 0.04f);
+            else if (!windupNow)
+                _punchFromTag = false;
             _punchWindWas = windupNow;
             bool hitNow = punching && phase == PunchPhase.HitRecover;
             if (hitNow && !_tagHitWas && fromJumpPose && !crouch && !_jumpFromTag
@@ -1764,6 +1786,27 @@ namespace Tag.Art
                 _tagFromPunchIn = Mathf.MoveTowards(_tagFromPunchIn, 1f, dt / 0.04f);
             else if (!hitNow)
                 _tagFromPunch = false;
+            bool tagFell = _tagHitWas && !hitNow && !crouch && !_jumpFromTag
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (tagFell)
+            {
+                // The next cock can ease out of this connect. A punch into a tag keeps its ease.
+                // A crouch tag keeps its pose. A tag into a jump keeps its push.
+                _tagPunchHold = true;
+                _tagPunchUaL = _upperArmL.localRotation;
+                _tagPunchUaR = _upperArmR.localRotation;
+                _tagPunchLaL = _lowerArmL.localRotation;
+                _tagPunchLaR = _lowerArmR.localRotation;
+                _tagPunchUlL = _upperLegL.localRotation;
+                _tagPunchUlR = _upperLegR.localRotation;
+                _tagPunchLlL = _lowerLegL.localRotation;
+                _tagPunchLlR = _lowerLegR.localRotation;
+                _tagPunchSp = _spine.localRotation;
+                _tagPunchHp = _hips.localRotation;
+                _tagPunchHd = _head.localRotation;
+            }
+            else if (!windupNow)
+                _tagPunchHold = false;
             _punchPhaseWas = phase;
             _tagHitWas = hitNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
@@ -4796,7 +4839,7 @@ namespace Tag.Art
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
             // A punch from this jump eases into the windup. A tag from this jump eases into the connect.
             // Staying down still absorbs. Land time is unchanged.
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide && !_tagFromSki && !_tagFromSlide && !_punchFromClimb && !_tagFromClimb && !_punchFromWall && !_tagFromWall && !_punchFromDart && !_tagFromDart && !_punchFromClaim && !_tagFromItClaim && !_punchFromGrapple && !_tagFromGrapple && !_punchFromReady && !_tagFromReady && !_tagFromPunch)
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide && !_tagFromSki && !_tagFromSlide && !_punchFromClimb && !_tagFromClimb && !_punchFromWall && !_tagFromWall && !_punchFromDart && !_tagFromDart && !_punchFromClaim && !_tagFromItClaim && !_punchFromGrapple && !_tagFromGrapple && !_punchFromReady && !_tagFromReady && !_tagFromPunch && !_punchFromTag)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -5821,6 +5864,32 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulRT, intoCock);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llLT, intoCock);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llRT, intoCock);
+            }
+            if (_punchFromTag && !_punchFromReady && !_punchFromGrapple && !_punchFromClaim && !_punchFromDart && !_punchFromWall && !_punchFromClimb && !_punchFromSlide && !_punchFromSki && !_punchFromHard && !_punchFromSoft && !_punchFromJump && !_punchFromDash && punching && phase == PunchPhase.Windup && _punchFromTagIn < 0.98f)
+            {
+                // The connect eases into the cock, then the windup holds.
+                // A punch into a tag keeps its ease. A dash coming off cooldown into a punch keeps its ease.
+                // A crouch tag keeps its pose. A tag into a jump keeps its push.
+                // Windup time is unchanged. Connect time is unchanged.
+                float into = _punchFromTagIn;
+                float w = Mathf.Lerp(0.85f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg / 0.35f)));
+                Quaternion windL = _uaL0 * Quaternion.Euler(-28f, 14f, armZ + 18f);
+                Quaternion windR = _uaR0 * Quaternion.Euler(-58f * w, 46f * w, -armZ);
+                Quaternion windElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion windElR = _laR0 * Quaternion.Euler(-68f * w, 0f, 0f);
+                Quaternion windHp = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f);
+                Quaternion windSp = _spine0 * Quaternion.Euler(leanX + 12f * w, -36f * w, leanZ);
+                _uaLT = Quaternion.Slerp(_tagPunchUaL, windL, into);
+                _uaRT = Quaternion.Slerp(_tagPunchUaR, windR, into);
+                _laLT = Quaternion.Slerp(_tagPunchLaL, windElL, into);
+                _laRT = Quaternion.Slerp(_tagPunchLaR, windElR, into);
+                _hipsT = Quaternion.Slerp(_tagPunchHp, windHp, into);
+                _spineT = Quaternion.Slerp(_tagPunchSp, windSp, into);
+                _headT = Quaternion.Slerp(_tagPunchHd, _headT, into);
+                _ulLT = Quaternion.Slerp(_tagPunchUlL, _ulLT, into);
+                _ulRT = Quaternion.Slerp(_tagPunchUlR, _ulRT, into);
+                _llLT = Quaternion.Slerp(_tagPunchLlL, _llLT, into);
+                _llRT = Quaternion.Slerp(_tagPunchLlR, _llRT, into);
             }
             if (_punchFromReady && !_punchFromGrapple && !_punchFromClaim && !_punchFromDart && !_punchFromWall && !_punchFromClimb && !_punchFromSlide && !_punchFromSki && !_punchFromHard && !_punchFromSoft && !_punchFromJump && !_punchFromDash && punching && phase == PunchPhase.Windup && _punchFromReadyIn < 0.98f)
             {
