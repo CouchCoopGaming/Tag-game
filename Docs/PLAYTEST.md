@@ -6,9 +6,11 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/playground-campus-zones-afc4` (integration tip). PR #20 (`6b8d4b9`) Controls/Look/Audio Boot-style row highlight merged. Mega tubes stay unused (`0004d3e`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/features-focus-input-hud-238c` on campus tip `16e0d32`. Mega tubes stay unused (`0004d3e`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
-Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing when the cursor unlocks, HUD MUTED / MUSIC OFF, pause keys 1-5, AudioMaster (M mute, N music), Controls/Look/Audio subpanel Up/Down highlight matching Boot (PR #20). No PgkLandmarkPlacer density adds. No MasterVolume type.
+Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing when the cursor unlocks, HUD mute chip (MUTED and MUSIC OFF together when both are on), pause keys 1-5, AudioMaster (M mute, N music), Controls/Look/Audio subpanel Up/Down highlight matching Boot (PR #20). No PgkLandmarkPlacer density adds. No MasterVolume type.
+
+This delta: Controls / Look / Audio close when play, results, or Boot starts (F1–F4, rematch, Q). They no longer stay drawn over the round or hide the Boot card. Direct Play drops a local pause overlay when the results card appears.
 
 ## Stack snapshot
 
@@ -113,6 +115,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 18. Audio panel: Up/Down highlights SFX, Music, Mute, Music mute, then Back and stops at the ends. Left/Right steps the highlighted row (SFX or the music bed). M still mutes all. N still mutes music. Default bed should sound the same. Enter on Back closes. Esc does not unpause. On the results card, Left/Right can move Rematch / Menu during the short arm; Enter does nothing until the arm ends. R still rematches even if Menu is highlighted, and a second R does not. Q and Esc still return to Boot.
 19. Boot: Up/Down highlights Play, Controls, Look, Audio, Mode, Couch and stops at the ends. Enter uses it. With Play highlighted, Enter still starts you and one bot and does not also open another row. Keys 1-6 only move the highlight. Pause: Left/Right or 1-5 picks highlights Resume through Quit and stops at the ends. Enter or Space uses it. Esc still resumes and Q still quits. Up/Down on the main pause card is still the music bed.
 20. Who-plays and mode select no longer wrap. Up on the first row and Down on the last row stay put. Keys 1-4 still jump to that row. A click on Boot or Pause moves the highlight and uses that row only. Enter uses only the highlighted row.
+21. Pause, open Controls (or Look or Audio), then F1. The panel should be gone and the countdown should run. Esc pauses. After a round, that same panel should not cover Rematch / Menu, and Q should show Boot, not the panel. Direct Play: if a round ends while the local pause card is up, the results card should still take Left/Right and Enter.
 
 ## Known leftovers
 
@@ -128,12 +131,13 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.
 
 ## Audio
-- HUD shows MUTED (M) or MUSIC OFF (N) when either mute is on.
+- HUD shows MUTED (M), MUSIC OFF (N), or both chips when both mutes are on.
 - Master volume / mute: Boot or pause Audio. Up/Down highlights SFX, Music, Mute, Music mute, Back. Left/Right steps the highlighted SFX or music bed (default bed 0.35). M mute all. N music only. On the main pause card, Up/Down is still the music bed. Saved in PlayerPrefs on AudioMaster.
 
 ## Results
 - Rematch / Menu: results ignore activate keys for ~0.25s and one-shot R/Q/Esc/click (Esc mirrors menu) so the round-end key cannot rematch or quit early. Left/Right can move the highlight during that arm and still stop at the ends. Enter waits until the arm ends. A click during the arm only moves the highlight. Punch ForceEnd on results and pause.
 - Direct Play pause matches Boot: Left/Right arms Resume, Controls, Look, Audio, Quit. Enter or Space uses that row. Esc on the main card resumes. Esc inside Controls, Look, or Audio only closes the panel. Those three panels use the same Up/Down highlight as Boot. Q to Boot unlocks the cursor and stops the music bed.
+- Controls / Look / Audio close on play, results, and Boot (F1–F4, rematch, Q). A panel left open on the pause card does not stay drawn over the round or the Boot menu. Direct Play clears its pause overlay when results start so Left/Right still move Rematch / Menu.
 - Boot, pause, and subpanel clicks are mouse-only. Enter/Space uses the highlight.
 
 ## Shippable slice checklist
@@ -151,6 +155,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 8. Who-plays and mode select stop at the first and last row. A Boot or Pause click uses that row only. Enter does not also fire a different button.
 9. Resume or leave-results: the tip's shared resume gate still drops look and one-shots for two frames after the cursor locks. This merge does not change that gate.
 10. Direct Play pause matches Boot, including Controls / Look / Audio highlight. Esc on a subpanel stays paused. Q back to Boot shows the cursor.
+11. Open Controls from pause, then F1: the panel closes and the round runs. Results and Boot are not covered by that panel. Direct Play results still accept keys if the local pause card was up.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

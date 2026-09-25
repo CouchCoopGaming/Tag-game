@@ -165,6 +165,7 @@ namespace Tag.Core
 
         public void GoToPlay()
         {
+            CloseMenuPanels();
             State = GameFlowState.Play;
             LookSensitivity.Load();
             LookSensitivity.Apply();
@@ -180,6 +181,7 @@ namespace Tag.Core
 
         public void OnRoundEnded(string result = "")
         {
+            CloseMenuPanels();
             LastResultMessage = result ?? "";
             State = GameFlowState.RoundEnd;
             _looseResultsFocus = 0;
@@ -218,6 +220,8 @@ namespace Tag.Core
         /// </summary>
         public void ReturnToPlay()
         {
+            // F-keys call this even mid-round, when the state guard below no-ops.
+            CloseMenuPanels();
             if (State != GameFlowState.Paused && State != GameFlowState.RoundEnd)
                 return;
             State = GameFlowState.Play;
@@ -234,8 +238,21 @@ namespace Tag.Core
             AudioCuePlayer.Ensure()?.UiClick();
             AudioCuePlayer.Ensure()?.StopMusic();
             SceneManager.LoadScene(bootSceneName);
+            CloseMenuPanels();
             State = GameFlowState.Boot;
             _bootFocus = 0;
+        }
+
+        /// <summary>
+        /// Controls / Look / Audio are drawn before the pause card. F-keys and results
+        /// leave that card without TogglePause, so the panel would stay up over play,
+        /// steal results arrows, and hide Boot after Q.
+        /// </summary>
+        void CloseMenuPanels()
+        {
+            _controlsOpen = false;
+            _settingsOpen = false;
+            _audioOpen = false;
         }
 
 
@@ -263,9 +280,7 @@ namespace Tag.Core
                 Time.timeScale = 1f;
                 ResumeInputGate.LockPlayCursor();
                 Cursor.visible = false;
-                _controlsOpen = false;
-                _settingsOpen = false;
-                _audioOpen = false;
+                CloseMenuPanels();
                 ArmLocalLookPunchGate();
                 AudioCuePlayer.Ensure()?.UiClick();
             }
@@ -306,6 +321,14 @@ namespace Tag.Core
 
         void Update()
         {
+            // Subpanels belong on Boot and the pause card. Any other state drops them
+            // before Esc/Enter can hit both the panel and results or play.
+            if (_audioOpen || _controlsOpen || _settingsOpen)
+            {
+                if (State != GameFlowState.Boot && State != GameFlowState.Paused)
+                    CloseMenuPanels();
+            }
+
             if (_audioOpen)
             {
                 PollAudioKeys();

@@ -499,6 +499,15 @@ namespace Tag.Modes
             _phase = MatchPhase.Results;
             _resultsActionTaken = false;
             _resultsFocus = 0;
+            // A pause subpanel must not stay over the results card or eat Left/Right.
+            _localHelp = false;
+            _localLook = false;
+            _localAudio = false;
+            if (_localPaused)
+            {
+                _localPaused = false;
+                Time.timeScale = 1f;
+            }
             // Ignore the same click/key that ended the round (unscaled: results keep timeScale 1).
             _resultsInputReadyAt = Time.unscaledTime + 0.25f;
 
