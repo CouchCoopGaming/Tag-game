@@ -139,7 +139,7 @@ namespace TagArena.Movement
                 // Active burst wins the label; otherwise ready / CD (no second DASH line below).
                 string dash = motor.IsAirDashing
                     ? "DASH!"
-                    : (rem <= 0.05f ? "DASH ready" : "DASH " + rem.ToString("0.0") + "s");
+                    : (rem <= 0.05f ? "DASH ready" : "DASH " + FormatDashCd(rem));
                 GUI.Label(new Rect(24, 80, 480, 26), dash + "   " + ski, _small);
             }
 
@@ -150,7 +150,7 @@ namespace TagArena.Movement
             {
                 float dashCd = motor.AirDashCooldownRemaining;
                 string dashLine = dashCd > 0.05f
-                    ? ("DASH CD " + dashCd.ToString("0.0") + "s")
+                    ? ("DASH CD " + FormatDashCd(dashCd))
                     : (motor.IsAirDashing ? "DASH!" : "DASH ready");
                 GUI.Label(new Rect(24, 102, 480, 22), dashLine, _small);
                 y = 124f;
@@ -651,6 +651,13 @@ namespace TagArena.Movement
         /// 0 = calm / not in warn window; 1 = fuse about to pop (Remaining near 0).
         /// Matches ItMarker / DummyPatrol: Remaining vs HotPotatoTuning.warnSec (fallback 10s).
         /// </summary>
+        /// <summary>Whole seconds above 10s (30s air-dash CD); one decimal under that.</summary>
+        static string FormatDashCd(float rem)
+        {
+            if (rem >= 10f) return rem.ToString("0") + "s";
+            return rem.ToString("0.0") + "s";
+        }
+
         static float HotPotatoFuseUrgency(TagModeController modes)
         {
             if (modes == null || modes.SelectedMode != TagModeId.HotPotato)

@@ -576,7 +576,7 @@ namespace Tag.Modes
                         CancelPunchTelegraph();
                         // Whiff / leave-cone: brief arm-drop before they can cock again.
                         if (juked || !inCone)
-                            _cooldown = Mathf.Max(_cooldown, 0.26f); // readable arm drop after juke/leave-cone whiff
+                            _cooldown = Mathf.Max(_cooldown, 0.28f); // readable arm drop after juke/leave-cone whiff
                         // Juke peel: refresh weave so they leave the punch line instead of re-cocking in place.
                         if (juked)
                         {
