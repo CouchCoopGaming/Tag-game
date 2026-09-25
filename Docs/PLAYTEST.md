@@ -106,7 +106,9 @@ Already on this branch: After a tag, the hands and the chest ease into the strid
 
 Already on this branch: After you become It, the hands and the chest ease into the stride. They do not stay in the claim and then pop. One knee can still be up. The claim time is unchanged.
 
-This delta: Going between a ski and a run eases the feet under the hips. They do not skate, and the hips do not pop. Speed is unchanged.
+Already on this branch: Going between a ski and a run eases the feet under the hips. They do not skate, and the hips do not pop. Speed is unchanged.
+
+This delta: A hard landing from a stand eases the knees into the idle breath and sway. The arms do not lock in the flare. A short hop still does not flare the arms. The landing does not feel longer.
 
 ## Stack snapshot
 
@@ -278,6 +280,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 73. Get tagged while sprinting: the hands and the chest should ease into the stride together, under the hips. They should not stay folded and then pop. One knee can still be up. The catch should not feel longer.
 74. Become It while sprinting: the hands and the chest should ease into the stride. They should not stay in the claim and then pop. One knee can still be up. The claim should not feel longer.
 75. Hold ski, then let go into a run, and go back into the ski: the feet should ease under the hips. They should not skate, and the hips should not pop. Speed should feel the same. Jet stays off.
+76. Drop from a height and land standing still: the knees should ease into the idle breath and sway. The arms should flare, then ease, and should not stay locked out. A short hop should still keep the arms in the idle pose. The landing should not feel longer.
 
 ## Known leftovers
 
@@ -373,6 +376,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 63. After a tag, the hands and the chest ease into the stride together, under the hips. They do not stay folded and then pop. One knee can still be up. Flinch time is unchanged.
 64. After you become It, the hands and the chest ease into the stride. They do not stay in the claim and then pop. One knee can still be up. The claim time is unchanged.
 65. A ski and a run ease the feet under the hips. They do not skate, and the hips do not pop. Speed is unchanged. Jet stays off.
+66. A hard landing from a stand eases the knees into the idle breath and sway. The arms flare, then ease, and do not lock. A short hop does not flare the arms. Land time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
