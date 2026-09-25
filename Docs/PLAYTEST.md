@@ -68,7 +68,9 @@ Already on this branch: A slide stays a flat wedge with the trail leg straight. 
 
 Already on this branch: A held crouch is a low guard: chest up, both knees bent, elbows folded in front. A slide stays the flat wedge with straight arms and one trail leg. Holding crouch still slides only when you already have speed. Slide speed is unchanged.
 
-This delta: Holding crouch on the way down pitches the chest down and folds the arms in. A normal fall still trails the arms back. The fast-fall speed is unchanged.
+Already on this branch: Holding crouch on the way down pitches the chest down and folds the arms in. A normal fall still trails the arms back. The fast-fall speed is unchanged.
+
+This delta: Landing into a run still buckles both knees, then the trail leg and the arms enter the stride while the front knee is still up. A standstill land still opens both legs together. Land time is unchanged.
 
 ## Stack snapshot
 
@@ -221,6 +223,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 54. Slide, then crouch: the slide should show a flat back, head up, and both arms out in a long line clear of the chest. A crouch should stay a low guard with bent elbows. The slide should not speed up.
 55. From a standstill, hold crouch: both knees should bend and the elbows should fold in front of the chest. The back should stay up. Sprint and keep holding crouch: that becomes the flat slide, straight arms and one leg back, and it should not speed up. When the speed dies while crouch is still held, the guard should return.
 56. Jump, then hold crouch on the way down: the chest should pitch down and the arms should fold in, not trail out like a normal fall. The drop should still feel like the same fast fall. Letting go should return to the trail. A jump with no crouch should feel the same height.
+57. Land while sprinting: both knees should buckle, then the back leg and the arms should already be in the stride while the front knee is still up. They should not both snap straight and then start the run. A small hop still buckles. Standing still, both legs should open together. The land should not feel longer.
 
 ## Known leftovers
 
@@ -297,6 +300,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 44. Slide arms sit out from the chest on the flat wedge, and the head stays up. A crouch stays a bent-elbow guard. Slide speed is unchanged.
 45. Crouch is a low guard with both knees bent and the elbows folded in front. Slide stays the flat wedge with straight arms and a trail leg. Holding crouch still slides only with speed. Slide speed is unchanged.
 46. Air-crouch fall is a nose-down dart with the arms in. A normal fall still trails the arms. The 2x fall speed is unchanged.
+47. Landing into a run opens the trail leg and the arms into the stride while the front knee is still up. A standstill land opens both legs together. Land time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
