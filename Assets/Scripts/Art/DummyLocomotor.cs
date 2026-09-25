@@ -69,6 +69,7 @@ namespace Tag.Art
         float _dropVis;
         bool _dropSlide;
         float _slideToCrouch;
+        float _slideToCrouchWalk;
         float _crouchToSlide;
         bool _crouchFromStand;
         float _diveVis;
@@ -205,9 +206,12 @@ namespace Tag.Art
             else if (crouch)
             {
                 // A slide that dies into a still crouch eases the wedge into the guard.
-                // A moving crouch keeps the old leave. slideBoost stays 0.
+                // A slide that dies into a crouch walk eases the wedge into the low stride.
+                // slideBoost stays 0.
                 if (_dropSlide && speed <= 0.35f)
                     _slideToCrouch = 1f;
+                else if (_dropSlide && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint)
+                    _slideToCrouchWalk = 1f;
                 _dropSlide = false;
             }
             else if (_dropVis <= 0.001f)
@@ -216,6 +220,10 @@ namespace Tag.Art
                 _slideToCrouch = 0f;
             else if (_slideToCrouch > 0f)
                 _slideToCrouch = Mathf.MoveTowards(_slideToCrouch, 0f, dt / 0.16f);
+            if (sliding || !crouch || speed <= 0.35f || speed > 5.5f || st == MoveState.Sprint)
+                _slideToCrouchWalk = 0f;
+            else if (_slideToCrouchWalk > 0f)
+                _slideToCrouchWalk = Mathf.MoveTowards(_slideToCrouchWalk, 0f, dt / 0.16f);
             if (!sliding)
                 _crouchToSlide = 0f;
             else if (_crouchToSlide > 0f)
@@ -1254,10 +1262,10 @@ namespace Tag.Art
                     _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-12f, 0f, 0f), _laL0 * Quaternion.Euler(-72f, 0f, 0f), intoGuard);
                     _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-12f, 0f, 0f), _laR0 * Quaternion.Euler(-72f, 0f, 0f), intoGuard);
                 }
-                if (_slideToCrouch > 0.02f)
+                if (_slideToCrouch > 0.02f || _slideToCrouchWalk > 0.02f)
                 {
-                    // The wedge eases into the guard. It does not snap flat.
-                    float intoGuard = 1f - _slideToCrouch;
+                    // The wedge eases into the guard. A crouch walk keeps these arms.
+                    float intoGuard = 1f - (_slideToCrouch > 0.02f ? _slideToCrouch : _slideToCrouchWalk);
                     _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-70f, 28f, armZ), _uaL0 * Quaternion.Euler(-36f, 16f, armZ), intoGuard);
                     _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-64f, -28f, -armZ), _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), intoGuard);
                     _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-8f, 0f, 0f), _laL0 * Quaternion.Euler(-72f, 0f, 0f), intoGuard);
@@ -1760,6 +1768,24 @@ namespace Tag.Art
                     _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(bendL, 0f, 0f), _llL0 * Quaternion.Euler(-68f, 0f, 0f), intoGuard);
                     _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(bendR, 0f, 0f), _llR0 * Quaternion.Euler(-68f, 0f, 0f), intoGuard);
                 }
+                if (_slideToCrouchWalk > 0.02f)
+                {
+                    // The wedge eases into the low stride. The feet do not snap under the hips.
+                    float intoStride = 1f - _slideToCrouchWalk;
+                    bool leadLeft = sinC >= 0f;
+                    float wedgeL = leadLeft ? 74f : -28f;
+                    float wedgeR = leadLeft ? -28f : 74f;
+                    float bendL = leadLeft ? -94f : -6f;
+                    float bendR = leadLeft ? -6f : -94f;
+                    float footYawL = leadLeft ? 6f : -4f;
+                    float footYawR = leadLeft ? -4f : 6f;
+                    float stepL = Mathf.Max(0f, sinC);
+                    float stepR = Mathf.Max(0f, -sinC);
+                    _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), _ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f), intoStride);
+                    _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(wedgeR, footYawR, 0f), _ulR0 * Quaternion.Euler(46f + stepR * 12f - stepL * 6f, 0f, 0f), intoStride);
+                    _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(bendL, 0f, 0f), _llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f), intoStride);
+                    _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(bendR, 0f, 0f), _llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f), intoStride);
+                }
                 if (_crouchToSlide > 0.02f)
                 {
                     // The guard eases into the wedge. The feet do not snap apart.
@@ -1840,10 +1866,10 @@ namespace Tag.Art
                 _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(14f, 0f, 0f), _hips0 * Quaternion.Euler(22f, 0f, 0f), intoGuard);
                 _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), _head0 * Quaternion.Euler(-6f, 0f, 0f), intoGuard);
             }
-            if (_slideToCrouch > 0.02f && !air && !dashing && !lunging && !jet && !sliding && !punching)
+            if ((_slideToCrouch > 0.02f || _slideToCrouchWalk > 0.02f) && !air && !dashing && !lunging && !jet && !sliding && !punching)
             {
-                // The wedge pitch eases into the guard. The hips do not pop flat.
-                float intoGuard = 1f - _slideToCrouch;
+                // The wedge pitch eases into the guard. A crouch walk keeps this pitch.
+                float intoGuard = 1f - (_slideToCrouch > 0.02f ? _slideToCrouch : _slideToCrouchWalk);
                 _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(62f, 0f, 0f), _spine0 * Quaternion.Euler(10f, 0f, 0f), intoGuard);
                 _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(50f, 0f, 0f), _hips0 * Quaternion.Euler(22f, 0f, 0f), intoGuard);
                 _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-12f, 0f, 0f), _head0 * Quaternion.Euler(-6f, 0f, 0f), intoGuard);
