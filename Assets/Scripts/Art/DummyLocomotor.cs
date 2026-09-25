@@ -401,9 +401,10 @@ namespace Tag.Art
             {
                 if (airDashing && _motor != null)
                 {
-                    float raw = _motor.AirDashProgress;
-                    dashStretchPose = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Mathf.InverseLerp(0.08f, 0.62f, raw)));
-                    _dashRecover = dashStretchPose;
+                    // Hold the whip for the whole burst. A curve that dies early never
+                    // reaches the chest and arms inside 0.1s. Duration and cooldown are unchanged.
+                    dashStretchPose = 1f;
+                    _dashRecover = 1f;
                     _airDashArms = true;
                     _armRecover = 0.28f;
                 }
@@ -425,26 +426,52 @@ namespace Tag.Art
                     float raw = Mathf.Clamp01(_dashPulse);
                     dashStretchPose = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Mathf.InverseLerp(0.08f, 0.62f, raw)));
                 }
-                // Early frames hold the whip. The back half settles toward a hang so the run does not pop in.
                 // Pitch only. Extra roll on the Hier A-pose folds the hands into the pelvis.
-                _uaLT = Quaternion.Slerp(
-                    _uaL0 * Quaternion.Euler(-16f, 0f, armZ),
-                    _uaL0 * Quaternion.Euler(96f, -6f, armZ),
-                    dashStretchPose);
-                _uaRT = Quaternion.Slerp(
-                    _uaR0 * Quaternion.Euler(-12f, 0f, -armZ),
-                    _uaR0 * Quaternion.Euler(70f, 6f, -armZ),
-                    dashStretchPose);
-                _laLT = Quaternion.Slerp(
-                    _laL0 * Quaternion.Euler(-14f, 0f, 0f),
-                    _laL0 * Quaternion.Euler(-58f, 0f, 0f),
-                    dashStretchPose);
-                _laRT = Quaternion.Slerp(
-                    _laR0 * Quaternion.Euler(-12f, 0f, 0f),
-                    _laR0 * Quaternion.Euler(-46f, 0f, 0f),
-                    dashStretchPose);
-                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(14f, 0f, 0f), _spineT, Mathf.Lerp(0.4f, 1f, dashStretchPose));
-                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(8f, 0f, 0f), _hipsT, Mathf.Lerp(0.4f, 1f, dashStretchPose));
+                if (airDashing || (_airDashArms && !lunging))
+                {
+                    // Wide and back, clear of the fall trail, so the short burst reads from behind.
+                    // The same pose eases out after the burst. It does not whip a second time.
+                    _uaLT = Quaternion.Slerp(
+                        _uaL0 * Quaternion.Euler(-16f, 0f, armZ),
+                        _uaL0 * Quaternion.Euler(108f, 32f, armZ),
+                        dashStretchPose);
+                    _uaRT = Quaternion.Slerp(
+                        _uaR0 * Quaternion.Euler(-12f, 0f, -armZ),
+                        _uaR0 * Quaternion.Euler(108f, -32f, -armZ),
+                        dashStretchPose);
+                    _laLT = Quaternion.Slerp(
+                        _laL0 * Quaternion.Euler(-14f, 0f, 0f),
+                        _laL0 * Quaternion.Euler(-22f, 0f, 0f),
+                        dashStretchPose);
+                    _laRT = Quaternion.Slerp(
+                        _laR0 * Quaternion.Euler(-12f, 0f, 0f),
+                        _laR0 * Quaternion.Euler(-22f, 0f, 0f),
+                        dashStretchPose);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(58f, 0f, 0f), dashStretchPose);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), dashStretchPose);
+                }
+                else
+                {
+                    // Early frames hold the whip. The back half settles toward a hang so the run does not pop in.
+                    _uaLT = Quaternion.Slerp(
+                        _uaL0 * Quaternion.Euler(-16f, 0f, armZ),
+                        _uaL0 * Quaternion.Euler(96f, -6f, armZ),
+                        dashStretchPose);
+                    _uaRT = Quaternion.Slerp(
+                        _uaR0 * Quaternion.Euler(-12f, 0f, -armZ),
+                        _uaR0 * Quaternion.Euler(70f, 6f, -armZ),
+                        dashStretchPose);
+                    _laLT = Quaternion.Slerp(
+                        _laL0 * Quaternion.Euler(-14f, 0f, 0f),
+                        _laL0 * Quaternion.Euler(-58f, 0f, 0f),
+                        dashStretchPose);
+                    _laRT = Quaternion.Slerp(
+                        _laR0 * Quaternion.Euler(-12f, 0f, 0f),
+                        _laR0 * Quaternion.Euler(-46f, 0f, 0f),
+                        dashStretchPose);
+                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(14f, 0f, 0f), _spineT, Mathf.Lerp(0.4f, 1f, dashStretchPose));
+                    _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(8f, 0f, 0f), _hipsT, Mathf.Lerp(0.4f, 1f, dashStretchPose));
+                }
             }
             else if (jet)
             {
@@ -1142,7 +1169,7 @@ namespace Tag.Art
             bool runCycle = grounded && !air && !sliding && !crouch && !dashing && !lunging && speed > 2f;
             // Buckle has to arrive during the short absorb, then follow the ease back into the stride.
             float legSlew = airDashing ? 78f : grappleTell ? 36f : airTell ? 64f : (_landSquash > 0.05f ? 46f : runCycle ? 44f : slew);
-            float torsoSlew = grappleTell ? 36f : airTell ? 64f : slew;
+            float torsoSlew = airDashing ? 78f : grappleTell ? 36f : airTell ? 64f : slew;
             if (!(lunging || dashing))
                 _airDashArms = false;
             if (!dashing && !lunging && _armRecover > 0f)

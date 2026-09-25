@@ -110,7 +110,9 @@ Already on this branch: Going between a ski and a run eases the feet under the h
 
 Already on this branch: A hard landing from a stand eases the knees into the idle breath and sway. The arms do not lock in the flare. A short hop still does not flare the arms. The landing does not feel longer.
 
-This delta: An air crouch reads as a crouch in the air. The arms ease into the landing. They do not pop. The fast fall is unchanged.
+Already on this branch: An air crouch reads as a crouch in the air. The arms ease into the landing. They do not pop. The fast fall is unchanged.
+
+This delta: An air dash pitches the chest and throws the arms wide for the short burst. They read, then ease back. The burst and the cooldown are unchanged.
 
 ## Stack snapshot
 
@@ -284,6 +286,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 75. Hold ski, then let go into a run, and go back into the ski: the feet should ease under the hips. They should not skate, and the hips should not pop. Speed should feel the same. Jet stays off.
 76. Drop from a height and land standing still: the knees should ease into the idle breath and sway. The arms should flare, then ease, and should not stay locked out. A short hop should still keep the arms in the idle pose. The landing should not feel longer.
 77. Jump, hold crouch on the way down, and land: the body should read as a crouch in the air, with the arms in. On landing the arms should ease. They should not pop. The drop should still feel like the same fast fall. A jump with no crouch should feel the same height.
+78. Air dash: the chest should pitch and the arms should fly wide for the short burst. They should read, then ease back. The dash should not last longer, and it should still have to recharge.
 
 ## Known leftovers
 
@@ -381,6 +384,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 65. A ski and a run ease the feet under the hips. They do not skate, and the hips do not pop. Speed is unchanged. Jet stays off.
 66. A hard landing from a stand eases the knees into the idle breath and sway. The arms flare, then ease, and do not lock. A short hop does not flare the arms. Land time is unchanged.
 67. An air crouch reads as a crouch in the air. The arms ease into the landing and do not pop. The 2x fall speed is unchanged.
+68. An air dash pitches the chest and throws the arms wide for the short burst. They ease back after. Duration and cooldown are unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
