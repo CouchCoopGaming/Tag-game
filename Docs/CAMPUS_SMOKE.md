@@ -8,7 +8,7 @@ Spawn_SW faces northeast. Mushroom steps at (4.5, 6.94) sit beside that exit. Ho
 
 ## West
 
-South bar into soft-play. **SoftS south** at (14.5, 2.6): balance beam, mushrooms, spring, two hops. **Tube-street step** at z 3.46-4.34, x 13.15-15.74: one mushroom run between that beam and the tube mesh, 0.68 m off both. **West dome and slide** are west-only. The dome is local (-4.66, -6.70), feet seated, top about 1.31, south of the tubes (world x 7.95-10.73, z 1.66-4.44). The ground slide is local (5.90, -5.53): low mouth on the mulch, high end about 2.41, east of the tube cap. **Slide approach beam** at (18.48, 2.97) yaw 90: one 3 m beam between the south spring and that slide, x 18.42-18.54, z 1.47-4.47, 0.72 m off both and 0.56 m south of the tube mesh. Astro does not get it. **Soft-ring wall** at z=1.70, x 21.40-26.20: three panels east of that mouth, 0.86 m off the slide and 1.35 m west of the south ring's ground stair. The ring side stair stays 0.79 m north. South of the pirate carpet and the outer lane. The 2.00 deck chute is `PGK_Slide_TubeDeck_2m`, yaw 90, stem 0, low mouth at local z=5.90. The tube street stays open. **Soft-merry bar** at x=11, z=17.78: one monkey across the south spine. Posts at z 15.74-15.82 and 19.74-19.82 sit outside the spine. Rungs are at y=2, so the chase underneath stays open. **Merry-north** at (7.2, 31.2): mushrooms, spring, two hops, 0.56 m west of the bar.
+South bar into soft-play. **SoftS south** at (14.5, 2.6): balance beam, mushrooms, spring, two hops. **Tube-street step** at z 3.46-4.34, x 13.15-15.74: one mushroom run between that beam and the tube mesh, 0.68 m off both. **West dome and slide** are west-only. The dome is local (-4.66, -6.70), feet seated, top about 1.31, south of the tubes (world x 7.95-10.73, z 1.66-4.44). **Fort-west spring** at (8.53, 7.23): one spring between hopscotch SW and the arrival bench, x 8.18-9.03, z 6.99-7.47, 1.01 m north of that bench, 0.83 m south of the SW bench, 0.75 m west of the climb net, 0.74 m off the nearest court tile and the west tube cap. A 3 m beam does not fit here. Astro does not get it. The mushroom at (4.5, 6.94) stays the exit step. The ground slide is local (5.90, -5.53): low mouth on the mulch, high end about 2.41, east of the tube cap. **Slide approach beam** at (18.48, 2.97) yaw 90: one 3 m beam between the south spring and that slide, x 18.42-18.54, z 1.47-4.47, 0.72 m off both and 0.56 m south of the tube mesh. Astro does not get it. **Soft-ring wall** at z=1.70, x 21.40-26.20: three panels east of that mouth, 0.86 m off the slide and 1.35 m west of the south ring's ground stair. The ring side stair stays 0.79 m north. South of the pirate carpet and the outer lane. The 2.00 deck chute is `PGK_Slide_TubeDeck_2m`, yaw 90, stem 0, low mouth at local z=5.90. The tube street stays open. **Soft-merry bar** at x=11, z=17.78: one monkey across the south spine. Posts at z 15.74-15.82 and 19.74-19.82 sit outside the spine. Rungs are at y=2, so the chase underneath stays open. **Merry-north** at (7.2, 31.2): mushrooms, spring, two hops, 0.56 m west of the bar.
 
 ## NW
 
@@ -33,13 +33,13 @@ Soft-play reaches merry on the overhead bar. Merry keeps its west bench and sout
 No new prop this pass:
 - Kickball bench to the east bars is 0.94 m, to the loop stair 0.80 m, and to the south spine 0.75 m. A 0.12 m beam needs 1.24 m. The 0.16 m fall-tile gap stays empty.
 - Swing east bar to the swing bench is 1.13 m. The north monkey is 0.66 m south of the north spine.
-- Between the soft-play bench and hopscotch SW is 1.78 m in Z. A 3 m beam cannot also clear the SW mushroom and the climb net: that slot is 2.81 m wide. The mushroom at (4.5, 6.94) stays the exit step. Astro's west approach is the NW arch and the NW cluster.
+- Fort-west is a spring at (8.53, 7.23), not a 3 m beam. The beam slot between the SW mushroom and the climb net is 2.81 m wide. Astro's west approach is still the NW arch and the NW cluster.
 
 SoftS aisles, the NE hop, and the merry-spine bar stay as they are.
 
 ## Clearance
 
-No solid sits on the four spines or the crash cross. Army west, knight west, and knight east mouths each have 0.56 m of open approach. Spawn_SE's bumper is local (-2.136, 0.565): mesh x 59.27-60.73, z 1.83-3.29, 0.57 m off the army crawl, so the east mouth stays open. It is 0.57 m off the spawn spring and 2.09 m off the seesaw. Slide pits stay 0.4 m off the spines. Soft-merry posts stay outside the south spine, rungs overhead. West beams and the loop walls sit on the loop pads beside the spines and do not pinch a chase under 0.5 m. SoftS aisles, the NE hop, and the merry-spine bar were left as they are. Kickball's open west, swing-east, merry-west, and fort-west were measured and left open; see Zones.
+No solid sits on the four spines or the crash cross. Army west, knight west, and knight east mouths each have 0.56 m of open approach. Spawn_SE's bumper is local (-2.136, 0.565): mesh x 59.27-60.73, z 1.83-3.29, 0.57 m off the army crawl, so the east mouth stays open. It is 0.57 m off the spawn spring and 2.09 m off the seesaw. Slide pits stay 0.4 m off the spines. Soft-merry posts stay outside the south spine, rungs overhead. West beams and the loop walls sit on the loop pads beside the spines and do not pinch a chase under 0.5 m. SoftS aisles, the NE hop, and the merry-spine bar were left as they are. Kickball's open west, swing-east, and merry-west were measured and left open; see Zones. Fort-west is the spring at (8.53, 7.23).
 
 ## Place inventory
 
@@ -47,6 +47,7 @@ No solid sits on the four spines or the crash cross. Army west, knight west, and
 | --- | --- | --- |
 | Play_Cluster_SoftS step | x 13.15-15.74, z 3.46-4.34 | mushroom under the tube wall |
 | Play_Beam_SoftSlide | (18.48, 2.97) yaw 90 | beam, 0.72 m off spring and slide |
+| Play_Spring_FortW | (8.53, 7.23) | spring, soft-play west approach |
 | Play_Wall_SoftRing | z=1.70, x 21.40-26.20 | three wall panels |
 | Play_Bars_SoftMerry | (11, 17.78) yaw 90 | one monkey, posts outside the spine |
 | Play_Wall_AstroRing | z=51, x 21.36-24.56 | two wall panels |

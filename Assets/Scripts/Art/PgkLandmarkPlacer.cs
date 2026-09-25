@@ -178,6 +178,7 @@ namespace Tag.Art
             n += GroundAccent(root, "Play_Mushroom_SW", new Vector3(4.5f, 0f, 6.94f), 0f, "Toy_MushroomSteps");
             n += PathBridges(root);
             n += PathCues(root);
+            n += FortWestSpring(root);
             n += MerryNorthCluster(root);
             n += EastNorthCluster(root);
             n += SoftPlaySouthCluster(root);
@@ -986,6 +987,23 @@ namespace Tag.Art
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
                 ("PGK_Balance_Beam_3m_LOD0", Vector3.zero, 90f),
+            });
+        }
+
+        /// <summary>
+        /// Spring on the soft-play west approach, between hopscotch SW and the arrival bench.
+        /// A 3 m beam does not fit between the SW mushroom and the climb net. Astro does not get this.
+        /// Center (8.53, 7.23): mesh x 8.18-9.03, z 6.99-7.47.
+        /// 1.01 m north of the arrival bench, 0.83 m south of the SW bench, 0.75 m west of the climb net.
+        /// 0.74 m from the nearest hopscotch tile and from the west tube cap.
+        /// The mushroom at (4.5, 6.94) stays the exit step.
+        /// </summary>
+        int FortWestSpring(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Spring_FortW", new Vector3(8.53f, 0f, 7.23f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("Toy_SpringRider", Vector3.zero, 0f),
             });
         }
 
