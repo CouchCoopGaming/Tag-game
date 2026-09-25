@@ -49,6 +49,8 @@ namespace Tag.Art
         float _idlePhase;
         bool _swayIdle;
         float _stepIn;
+        float _dropVis;
+        bool _dropSlide;
         float _prevYaw;
         float _turnVis;
         bool _hasYaw;
@@ -146,6 +148,14 @@ namespace Tag.Art
                     diveAmt = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-1.2f, -6.5f, vy));
             }
             bool crouch = st == MoveState.Crouch;
+            // Drop into the guard or the wedge, then rise back out. Speed is unchanged.
+            _dropVis = Mathf.MoveTowards(_dropVis, sliding || crouch ? 1f : 0f, dt / 0.16f);
+            if (sliding)
+                _dropSlide = true;
+            else if (crouch)
+                _dropSlide = false;
+            else if (_dropVis <= 0.001f)
+                _dropSlide = false;
             bool skiing = st == MoveState.Ski;
             _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             bool punching = _punch != null && _punch.IsPunching;
@@ -209,6 +219,13 @@ namespace Tag.Art
                 _stopGait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
                 _stopRun = _runVis;
             }
+            else if (sliding)
+            {
+                // Keep the stride that entered the slide. Closing it skates the exit.
+                // slideBoost stays 0. Speed is unchanged.
+                _stopGait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                _stopRun = _runVis;
+            }
             else if (air && !jet)
             {
                 _runVis = runAmt;
@@ -237,6 +254,12 @@ namespace Tag.Art
                 _stepIn = 1f;
             else if (stepping)
                 _stepIn = Mathf.MoveTowards(_stepIn, 1f, dt / 0.32f);
+            else if (crouch)
+            {
+                float remain = Mathf.Abs(_cycle - Mathf.PI * Mathf.Round(_cycle / Mathf.PI));
+                if (remain < 0.25f)
+                    _stepIn = Mathf.MoveTowards(_stepIn, 0f, dt / 0.12f);
+            }
             else if (speed <= 0.35f)
             {
                 float remain = Mathf.Abs(_cycle - Mathf.PI * Mathf.Round(_cycle / Mathf.PI));
@@ -253,7 +276,7 @@ namespace Tag.Art
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
             // Spine / hips lean by state - jet reads clearly in TP
-            float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : sliding ? 62f : crouch ? 10f : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
+            float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : 0f;
             float idleW = 0f;
             bool atRest = grounded && !dashing && !sliding && !crouch && !jet && !wallRun && !climb && !mantle && !air && !lunging && flinchAmt < 0.04f && claimAmt < 0.04f;
@@ -304,10 +327,10 @@ namespace Tag.Art
             }
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
             float mantleAmt = mantle && _motor != null ? _motor.MantleProgress : 0f;
-            _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : sliding ? 50f : crouch ? 22f : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
+            _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f, 0f, 0f), _skiBlend);
-            _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? -12f : crouch ? -6f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
+            _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
             float swayFade = Mathf.Max(idleW, atRest ? Mathf.Clamp01(Mathf.Abs(_swayVis) / 5f) : 0f);
             if (swayFade > 0.02f)
                 _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-breath * 0.5f, 0f, -_swayVis * 0.35f), swayFade);
@@ -544,24 +567,6 @@ namespace Tag.Art
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 6f * r, 0f, leanZ), 0.35f);
                 }
             }
-            else if (sliding)
-            {
-                // Flat wedge, arms clear of the chest. Inward yaw stacked the long line on the torso
-                // and read as the crouch guard. Outward yaw matches the run. Elbows stay nearly straight.
-                _uaLT = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                _uaRT = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
-                _laLT = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
-            }
-            else if (crouch)
-            {
-                // Guard, not the slide wedge. Forearms fold up in front of the chest.
-                // Yaw stays narrower than the slide's long line, and it points out so the hands clear the torso.
-                _uaLT = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
-                _uaRT = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
-                _laLT = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
-            }
             else if (air)
             {
                 // Rise: a long line up and out. Fall: both arms trail back.
@@ -649,6 +654,25 @@ namespace Tag.Art
                     _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-12f, 0f, 0f), _skiBlend);
                     _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-12f, 0f, 0f), _skiBlend);
                 }
+                if (_dropVis > 0.02f)
+                {
+                    // The stride drops into the wedge or the guard. It is not a pose swap.
+                    float d = _dropVis;
+                    if (_dropSlide)
+                    {
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-70f, 28f, armZ), d);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-64f, -28f, -armZ), d);
+                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-8f, 0f, 0f), d);
+                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-6f, 0f, 0f), d);
+                    }
+                    else
+                    {
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), d);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), d);
+                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-72f, 0f, 0f), d);
+                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-72f, 0f, 0f), d);
+                    }
+                }
             }
 
             if (_punchTelegraph > 0.02f && !punching)
@@ -681,22 +705,6 @@ namespace Tag.Art
                     _llR0 * Quaternion.Euler(-8f, 0f, 0f),
                     _llR0 * Quaternion.Euler(-18f, 0f, 0f),
                     dashStretchPose);
-            }
-            else if (sliding)
-            {
-                // Flat chase silhouette: lead knee under the chest, trail leg straight behind.
-                _ulLT = _ulL0 * Quaternion.Euler(74f, 6f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(-28f, -4f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(-94f, 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(-6f, 0f, 0f);
-            }
-            else if (crouch)
-            {
-                // Both knees down. A trail leg would read as the slide.
-                _ulLT = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
             }
             else if (jet)
             {
@@ -849,6 +857,26 @@ namespace Tag.Art
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(6f + sFrontL * 32f), 0f, 0f), _skiBlend);
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(6f + sFrontR * 32f), 0f, 0f), _skiBlend);
                 }
+                if (_dropVis > 0.02f)
+                {
+                    // The stride drops into the pose. The lead foot stays the one that was forward.
+                    float d = _dropVis;
+                    if (_dropSlide)
+                    {
+                        bool leadLeft = sinC >= 0f;
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), d);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), d);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), d);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), d);
+                    }
+                    else
+                    {
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(56f, 0f, 0f), d);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(56f, 0f, 0f), d);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-68f, 0f, 0f), d);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-68f, 0f, 0f), d);
+                    }
+                }
                 if (Mathf.Abs(_turnVis) > 0.18f && _skiBlend < 0.35f)
                 {
                     // Outside foot plants. Positive turn is to the right, so the left foot stays down.
@@ -864,6 +892,18 @@ namespace Tag.Art
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-4f, 0f, 0f), w);
                     }
                 }
+            }
+
+            if (_dropVis > 0.02f && !air && !dashing && !lunging && !jet && !wallRun && !climb && !mantle && !punching)
+            {
+                // Chest and hips follow the drop, then rise back into the stride.
+                float d = _dropVis;
+                float chest = _dropSlide ? 62f : 10f;
+                float hip = _dropSlide ? 50f : 22f;
+                float head = _dropSlide ? -12f : -6f;
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(chest, 0f, 0f), d);
+                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(hip, 0f, 0f), d);
+                _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(head, 0f, 0f), d);
             }
 
             if (wallRun || climb)
@@ -1030,7 +1070,8 @@ namespace Tag.Art
             // Keep the last bounce while the feet close. Cutting it with speed freezes the hips, then the idle sway pops.
             float bobGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
             float bob = grounded ? step * 0.085f * bobGait : air ? step * 0.02f : 0f;
-            if (sliding) bob = -0.32f; else if (crouch) bob = -0.14f;
+            if (_dropVis > 0.02f && !air && !jet)
+                bob = Mathf.Lerp(bob, _dropSlide ? -0.32f : -0.14f, _dropVis);
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
             if (_landSquash > 0f) bob -= 0.14f * _landSquash;
             if (dashing) bob += 0.04f * dashAmt;
