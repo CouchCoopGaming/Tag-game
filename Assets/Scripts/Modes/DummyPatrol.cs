@@ -565,7 +565,7 @@ namespace Tag.Modes
                 // A hard strafe past the fist should whiff - not a guaranteed tag.
                 Vector3 juke = TargetPlanarVelocity();
                 float lateral = Mathf.Abs(Vector3.Dot(juke, transform.right));
-                bool juked = lateral > 7.5f && Random.value < 0.7f;
+                bool juked = lateral > 7.0f && Random.value < 0.75f; // easier cancel when prey strafes
                 // Windup on the punch itself is 0.12s. Cock the arm first so the swing is readable,
                 // and drop it if they leave the fist.
                 if (_punchTell > 0f)
