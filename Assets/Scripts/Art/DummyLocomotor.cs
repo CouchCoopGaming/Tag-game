@@ -199,7 +199,7 @@ namespace Tag.Art
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
             // Spine / hips lean by state - jet reads clearly in TP
-            float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : sliding ? 76f : crouch ? 28f : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
+            float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : sliding ? 62f : crouch ? 28f : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : 0f;
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
                 leanX = Mathf.Lerp(leanX, 26f, _skiBlend);
@@ -224,7 +224,7 @@ namespace Tag.Art
             _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : sliding ? 50f : crouch ? 14f : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f, 0f, 0f), _skiBlend);
-            _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? 18f : crouch ? 6f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
+            _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? -12f : crouch ? 6f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
             // Arms - slight outward A-pose only (large +Z was V-ing hands into the butt)
             float armZ = Mathf.Lerp(4f, 8f, runAmt);
@@ -423,12 +423,12 @@ namespace Tag.Art
             }
             else if (sliding)
             {
-                // Flat wedge: a long low line. A bent elbow disappears into the chest at chase distance.
-                // Pitch and the mild A flare only.
-                _uaLT = _uaL0 * Quaternion.Euler(-74f, -6f, armZ);
-                _uaRT = _uaR0 * Quaternion.Euler(-68f, 6f, -armZ);
-                _laLT = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-10f, 0f, 0f);
+                // Flat wedge, arms clear of the chest. Inward yaw stacked the long line on the torso
+                // and read as the crouch guard. Outward yaw matches the run. Elbows stay nearly straight.
+                _uaLT = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
+                _uaRT = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                _laLT = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
             }
             else if (crouch)
             {
