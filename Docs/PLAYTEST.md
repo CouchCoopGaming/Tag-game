@@ -6,11 +6,11 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/features-focus-input-hud-238c` on campus tip `3ca0c44`. First-run Boot copy, the one-time countdown hint, mute-from-play, the readable dash bar, CloseMenuPanels, and the west TubeDeck are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/playground-campus-zones-afc4` (integration tip). PR #20 Boot tip survives Couch/Mode (`1d7ca65`); digits highlight-only; Boot pause H Controls. Mute-from-play, readable dash bar, CloseMenuPanels, west TubeDeck seated. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
-Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line clears after a round, long countdown hint once then the orange-hat line, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.3 m (avoid ~9.3 m), It hat beacon, west TubeDeck on the 2.00 lips. No MasterVolume type.
+Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.3 m (avoid ~9.3 m), It hat beacon, west TubeDeck on the 2.00 lips. Soft-play/astro only; Mega/Tube90 still out. No MasterVolume type.
 
-This delta: Opening Couch or Mode select no longer clears the first-run line. Digits on Boot, who-plays, and mode select only move the highlight. Enter / Space confirms. Boot pause H opens Controls, same as Direct Play. The first countdown says WASD move and Shift sprint.
+This delta: Opening Couch or Mode select no longer clears the first-run line. Digits on Boot, who-plays, and mode select only move the highlight. Enter / Space confirms. Boot pause H opens Controls, same as Direct Play. The first countdown says WASD move and Shift sprint. Also: windup elbow yaw -26->-27, tag flinch 0.36->0.37s, chase lead 0.34->0.35s; TubeDeck batch smoke helper in Assets/Editor.
 
 ## Stack snapshot
 
