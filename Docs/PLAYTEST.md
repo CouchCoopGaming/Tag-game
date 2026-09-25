@@ -224,7 +224,9 @@ Already on this branch: A jump into a crouch walk absorbs into the low stride. T
 
 Already on this branch: A soft landing into a still crouch absorbs into the guard. The hips stay down. A hard landing keeps the old absorb. A crouch walk still absorbs into the low stride. Land time is unchanged.
 
-This delta: A hard landing into a still crouch absorbs deeper into the guard. The hips stay down. A soft landing still uses the lighter guard. A crouch walk still absorbs into the low stride. Land time is unchanged.
+Already on this branch: A hard landing into a still crouch absorbs deeper into the guard. The hips stay down. A soft landing still uses the lighter guard. A crouch walk still absorbs into the low stride. Land time is unchanged.
+
+This delta: A jump into a still crouch settles into the guard in the air. The push still reads. The fall dart is unchanged. An air dash is unchanged. Jump height is unchanged.
 
 ## Stack snapshot
 
@@ -455,6 +457,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 132. Jump, then land into a crouch walk: the landing should absorb into the low stride. The hips should stay down. A still crouch should still use the old absorb. The landing should not feel longer.
 133. Hop, then land into a still crouch: the landing should absorb into the guard. The hips should stay down. A hard landing should still use the old absorb. A crouch walk should still absorb into the low stride. The landing should not feel longer.
 134. Drop hard into a still crouch: the landing should absorb deeper into the guard. The hips should stay down. A soft landing should still use the lighter guard. A crouch walk should still absorb into the low stride. The landing should not feel longer.
+135. Jump while crouched and still: in the air, the body should settle into the guard. The push should still read. A fast fall should still use the dart. An air dash should feel the same. The jump should not feel higher.
 
 ## Known leftovers
 
@@ -609,6 +612,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 122. A jump into a crouch walk absorbs into the low stride. The hips stay down. A still crouch keeps the old absorb. Land time is unchanged.
 123. A soft landing into a still crouch absorbs into the guard. The hips stay down. A hard landing keeps the old absorb. A crouch walk still absorbs into the low stride. Land time is unchanged.
 124. A hard landing into a still crouch absorbs deeper into the guard. The hips stay down. A soft landing still uses the lighter guard. A crouch walk still absorbs into the low stride. Land time is unchanged.
+125. A jump into a still crouch settles into the guard in the air. The push still reads. The fall dart is unchanged. An air dash is unchanged. Jump height is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
