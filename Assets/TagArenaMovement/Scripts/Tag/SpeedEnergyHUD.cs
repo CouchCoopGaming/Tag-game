@@ -491,7 +491,7 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// Cave-man center flash ~0.65s on trail eliminate: OUT! + TRAIL HIT.
+        /// Center flash ~1.0s on trail eliminate: OUT! + TRAIL HIT.
         /// Distinct from TAG handoff (YOU'RE IT / FREE) and near-miss TRAIL! edge pulse -
         /// lower screen, hot red, no edge bars.
         /// </summary>

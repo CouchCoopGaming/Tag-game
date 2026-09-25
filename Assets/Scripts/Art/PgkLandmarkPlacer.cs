@@ -181,6 +181,7 @@ namespace Tag.Art
             n += EastNorthCluster(root);
             n += SoftPlaySouthCluster(root);
             n += EastSouthCluster(root);
+            n += WestNorthCluster(root);
             // Overhead bars. West stays at x=11 (the mast owns x-9.5 around z 12-18).
             // East sits at x=62.5, just inside the kickball pad's open west edge.
             // Segments stop at the EW spines; you cross those on foot.
@@ -680,6 +681,28 @@ namespace Tag.Art
             });
         }
 
+
+
+        /// <summary>
+        /// Pocket north of the NW arch and west of the bars. Lawn is about
+        /// x 8.2-10.6 and z 43.5-46.5: NW arch center z=42, bar face x=10.96,
+        /// hopscotch NW ends about z=43.5 east of x=5, Spawn_NW stays west.
+        /// Mushroom, spring, two hop tiles. Not a bench. Arch span and bar lane stay clear.
+        /// </summary>
+        int WestNorthCluster(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Cluster_NW", new Vector3(9.4f, 0f, 45.0f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                // Length along X. z 44.56-45.44, 2.5 m north of the NW arch center.
+                ("Toy_MushroomSteps", new Vector3(0f, 0f, 0f), 0f),
+                // Feet y=0. x 10.55-11.40 clipped? keep spring west of bar: local -0.6 => x 8.8-9.65
+                ("Toy_SpringRider", new Vector3(-0.6f, 0f, 1.1f), 0f),
+                // Two hop tiles east of the spring. East edge x=10.4, 0.56 m west of the bar.
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0.5f, 0.02f, -1.0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0.5f, 0.02f, 0.1f), 0f),
+            });
+        }
 
         /// <summary>
         /// Pocket south of the SE arch and west of hopscotch SE. Lawn is about
