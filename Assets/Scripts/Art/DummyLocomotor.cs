@@ -180,6 +180,11 @@ namespace Tag.Art
                 _dropSlide = false;
             else if (_dropVis <= 0.001f)
                 _dropSlide = false;
+            // Stand-up from a slide: the feet enter the stride while the hips are still low.
+            // slideBoost stays 0. The speed you already have carries.
+            bool slideExit = _dropSlide && !sliding && !crouch;
+            float footDrop = slideExit ? _dropVis * _dropVis : _dropVis;
+            float hipDrop = slideExit ? Mathf.SmoothStep(0f, 1f, _dropVis) : _dropVis;
             bool skiing = st == MoveState.Ski;
             _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             // Feet stay in the short glide while the hips are still pitched, then the run opens under them.
@@ -758,8 +763,9 @@ namespace Tag.Art
                 }
                 if (_dropVis > 0.02f)
                 {
-                    // The stride drops into the wedge or the guard. It is not a pose swap.
-                    float d = _dropVis;
+                    // The stride drops into the wedge or the guard. A slide stand-up
+                    // brings the arms back with the feet, under the hips.
+                    float d = footDrop;
                     if (_dropSlide)
                     {
                         _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-70f, 28f, armZ), d);
@@ -978,8 +984,9 @@ namespace Tag.Art
                 }
                 if (_dropVis > 0.02f)
                 {
-                    // The stride drops into the pose. The lead foot stays the one that was forward.
-                    float d = _dropVis;
+                    // The stride drops into the pose. On a stand-up the feet come back
+                    // under the hips while the chest is still low. The lead foot stays forward.
+                    float d = footDrop;
                     if (_dropSlide)
                     {
                         bool leadLeft = sinC >= 0f;
@@ -1016,7 +1023,8 @@ namespace Tag.Art
             if (_dropVis > 0.02f && !air && !dashing && !lunging && !jet && !wallRun && !climb && !mantle && !punching)
             {
                 // Chest and hips follow the drop, then rise back into the stride.
-                float d = _dropVis;
+                // A slide stand-up eases the hips so they do not pop flat.
+                float d = _dropSlide ? hipDrop : _dropVis;
                 float chest = _dropSlide ? 62f : 10f;
                 float hip = _dropSlide ? 50f : 22f;
                 float head = _dropSlide ? -12f : -6f;
@@ -1235,7 +1243,7 @@ namespace Tag.Art
             float bobGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
             float bob = grounded ? step * 0.085f * bobGait : air ? step * 0.02f : 0f;
             if (_dropVis > 0.02f && !air && !jet)
-                bob = Mathf.Lerp(bob, _dropSlide ? -0.32f : -0.14f, _dropVis);
+                bob = Mathf.Lerp(bob, _dropSlide ? -0.32f : -0.14f, _dropSlide ? hipDrop : _dropVis);
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
             if (_landSquash > 0f) bob -= 0.14f * _landSquash;
             if (dashing) bob += 0.04f * dashAmt;
