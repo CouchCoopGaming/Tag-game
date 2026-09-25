@@ -308,13 +308,21 @@ namespace TagArena.Movement
             GUI.Box(r, "");
             if (_status != null)
             {
-                var prev = _status.alignment;
+                var prevA = _status.alignment;
+                var prevC = GUI.color;
                 _status.alignment = TextAnchor.MiddleCenter;
+                GUI.color = new Color(1f, 0.55f, 0.35f, 1f); // warm so OUT waiting reads vs other status
                 GUI.Label(r, "OUT    waiting for the round", _status);
-                _status.alignment = prev;
+                GUI.color = prevC;
+                _status.alignment = prevA;
             }
             else
+            {
+                var prevC = GUI.color;
+                GUI.color = new Color(1f, 0.55f, 0.35f, 1f);
                 GUI.Label(r, "OUT    waiting for the round");
+                GUI.color = prevC;
+            }
         }
 
         string HandoffSubtitle()
