@@ -597,7 +597,7 @@ namespace Tag.Modes
                 }
                 else if (inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
                 {
-                    _punchTell = Mathf.Lerp(0.34f, 0.2f, urgency);
+                    _punchTell = Mathf.Lerp(0.34f, 0.22f, urgency); // urgent cock still long enough to read in TP
                     HoldPunchTelegraph();
                 }
             }
