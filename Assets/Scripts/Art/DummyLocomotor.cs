@@ -279,6 +279,11 @@ namespace Tag.Art
         Quaternion _climbSlideUaL, _climbSlideUaR, _climbSlideLaL, _climbSlideLaR;
         Quaternion _climbSlideUlL, _climbSlideUlR, _climbSlideLlL, _climbSlideLlR;
         Quaternion _climbSlideSp, _climbSlideHp, _climbSlideHd;
+        bool _slideFromWall;
+        float _slideFromWallIn;
+        Quaternion _wallSlideUaL, _wallSlideUaR, _wallSlideLaL, _wallSlideLaR;
+        Quaternion _wallSlideUlL, _wallSlideUlR, _wallSlideLlL, _wallSlideLlR;
+        Quaternion _wallSlideSp, _wallSlideHp, _wallSlideHd;
         bool _climbFromDash;
         float _climbFromDashIn;
         bool _wallFromDash;
@@ -520,7 +525,7 @@ namespace Tag.Art
             // A jump eases the glide or the landing into the wedge.
             // A punch eases the cock or the strike into the wedge. A tag eases the connect into the wedge.
             // A soft landing eases the absorb into the wedge. A hard landing keeps the jump entry.
-            // A climb eases the grab into the wedge. A wall run keeps its leave.
+            // A climb eases the grab into the wedge. A wall run eases the leave into the wedge.
             // slideBoost stays 0. Exit time is unchanged.
             // The land numbers are written later this frame. Read the same impact here
             // so a soft touchdown is not filed as a jump.
@@ -535,16 +540,19 @@ namespace Tag.Art
                 slideRecoverT = Mathf.Clamp01(Mathf.InverseLerp(softEdge, hardEdge, impact));
             }
             bool softSlideRecover = grounded && slideRecoverT < 0.4f && ((grounded && !_wasGrounded) || _landSquash > 0.08f);
+            bool wallLeaveSlide = !wallRun && _exitFromWall && (leavingSurf || _wallExit > 0.2f);
+            bool fromWallSlide = sliding && !_dropSlide && wallLeaveSlide && !jet && !_airDashPoseWas && !_jumpFromWall
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
             bool climbLeaveSlide = !wallRun && !_exitFromWall && (leavingSurf || _wallExit > 0.2f);
-            bool fromClimbSlide = sliding && !_dropSlide && climbLeaveSlide && !jet && !_airDashPoseWas && !_jumpFromClimb
+            bool fromClimbSlide = sliding && !_dropSlide && !fromWallSlide && climbLeaveSlide && !jet && !_airDashPoseWas && !_jumpFromClimb
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-            bool fromSoftSlide = sliding && !_dropSlide && !fromClimbSlide && softSlideRecover && !jet && !_airDashPoseWas
+            bool fromSoftSlide = sliding && !_dropSlide && !fromWallSlide && !fromClimbSlide && softSlideRecover && !jet && !_airDashPoseWas
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-            bool jumpIntoSlide = sliding && !_dropSlide && !fromSoftSlide && !fromClimbSlide && (!grounded || !_wasGrounded || _landSquash > 0.08f);
-            bool fromPunchSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromClimbSlide && !_airDashPoseWas
+            bool jumpIntoSlide = sliding && !_dropSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && (!grounded || !_wasGrounded || _landSquash > 0.08f);
+            bool fromPunchSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !_airDashPoseWas
                 && (_punchPhaseWas == PunchPhase.Windup || _punchPhaseWas == PunchPhase.Active)
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-            bool fromTagSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromClimbSlide && !fromPunchSlide && !_airDashPoseWas && !_jumpFromTag
+            bool fromTagSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromPunchSlide && !_airDashPoseWas && !_jumpFromTag
                 && _punchPhaseWas == PunchPhase.HitRecover
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
             if (jumpIntoSlide)
@@ -552,7 +560,7 @@ namespace Tag.Art
                 _jumpToSlide = 1f;
                 _jumpToSlideLand = grounded;
             }
-            else if (!fromPunchSlide && !fromTagSlide && !fromSoftSlide && !fromClimbSlide)
+            else if (!fromPunchSlide && !fromTagSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide)
             {
                 if (sliding && !_dropSlide && _crouchFromStand && _dropVis > 0.2f)
                     _crouchToSlide = 1f;
@@ -620,10 +628,30 @@ namespace Tag.Art
                 _softSlideHp = _hips.localRotation;
                 _softSlideHd = _head.localRotation;
             }
+            if (fromWallSlide && !_slideFromWall)
+            {
+                // The leave eases into the wedge. A wall run into a ski keeps its ease.
+                // A climb into a slide keeps its ease. A wall run into a jump keeps its push.
+                // A soft landing into a slide keeps its ease. A jump into a slide keeps its ease.
+                // slideBoost stays 0. Exit time is unchanged.
+                _slideFromWall = true;
+                _slideFromWallIn = 0f;
+                _wallSlideUaL = _upperArmL.localRotation;
+                _wallSlideUaR = _upperArmR.localRotation;
+                _wallSlideLaL = _lowerArmL.localRotation;
+                _wallSlideLaR = _lowerArmR.localRotation;
+                _wallSlideUlL = _upperLegL.localRotation;
+                _wallSlideUlR = _upperLegR.localRotation;
+                _wallSlideLlL = _lowerLegL.localRotation;
+                _wallSlideLlR = _lowerLegR.localRotation;
+                _wallSlideSp = _spine.localRotation;
+                _wallSlideHp = _hips.localRotation;
+                _wallSlideHd = _head.localRotation;
+            }
             if (fromClimbSlide && !_slideFromClimb)
             {
                 // The grab eases into the wedge. A climb into a ski keeps its ease.
-                // A wall run into a slide keeps its leave. A climb into a jump keeps its push.
+                // A wall run into a slide keeps its own ease. A climb into a jump keeps its push.
                 // A soft landing into a slide keeps its ease. A jump into a slide keeps its ease.
                 // slideBoost stays 0. Exit time is unchanged.
                 _slideFromClimb = true;
@@ -683,6 +711,7 @@ namespace Tag.Art
                 _slideFromTag = false;
                 _slideFromSoft = false;
                 _slideFromClimb = false;
+                _slideFromWall = false;
             }
             else if (_jumpToSlide > 0f)
                 _jumpToSlide = Mathf.MoveTowards(_jumpToSlide, 0f, dt / 0.16f);
@@ -694,6 +723,8 @@ namespace Tag.Art
                 _slideFromSoftIn = Mathf.MoveTowards(_slideFromSoftIn, 1f, dt / 0.04f);
             if (_slideFromClimb && sliding)
                 _slideFromClimbIn = Mathf.MoveTowards(_slideFromClimbIn, 1f, dt / 0.04f);
+            if (_slideFromWall && sliding)
+                _slideFromWallIn = Mathf.MoveTowards(_slideFromWallIn, 1f, dt / 0.04f);
             if (crouch && !sliding && speed <= 0.35f)
                 _crouchFromStand = true;
             else if ((crouch && speed > 0.35f) || sliding || _dropVis <= 0.001f)
@@ -6824,10 +6855,34 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-(6f + Mathf.Max(0f, -kneePhase) * 72f), 0f, 0f), intoGrab);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-(6f + Mathf.Max(0f, kneePhase) * 72f), 0f, 0f), intoGrab);
             }
-            if (_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromClimbIn < 0.98f)
+            if (_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromWallIn < 0.98f)
+            {
+                // The leave eases into the wedge, then the wedge holds.
+                // A wall run into a ski keeps its ease. A climb into a slide keeps its ease.
+                // A wall run into a jump keeps its push. A soft landing into a slide keeps its ease.
+                // A jump into a slide keeps its ease. slideBoost stays 0. Exit time is unchanged.
+                float intoWedge = _slideFromWallIn;
+                bool leadLeft = sinC >= 0f;
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
+                Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(_wallSlideUaL, wedgeL, intoWedge);
+                _uaRT = Quaternion.Slerp(_wallSlideUaR, wedgeR, intoWedge);
+                _laLT = Quaternion.Slerp(_wallSlideLaL, wedgeElL, intoWedge);
+                _laRT = Quaternion.Slerp(_wallSlideLaR, wedgeElR, intoWedge);
+                _spineT = Quaternion.Slerp(_wallSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_wallSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_wallSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_wallSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_wallSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_wallSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_wallSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+            }
+            if (_slideFromClimb && !_slideFromWall && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromClimbIn < 0.98f)
             {
                 // The grab eases into the wedge, then the wedge holds.
-                // A climb into a ski keeps its ease. A wall run into a slide keeps its leave.
+                // A climb into a ski keeps its ease. A wall run into a slide keeps its own ease.
                 // A climb into a jump keeps its push. A soft landing into a slide keeps its ease.
                 // A jump into a slide keeps its ease. slideBoost stays 0. Exit time is unchanged.
                 float intoWedge = _slideFromClimbIn;
