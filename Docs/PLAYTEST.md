@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `9acb894`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `6906fb4`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
 
@@ -16,7 +16,9 @@ Already on this branch: Run arms oppose the legs. The forward arm is the opposit
 
 Already on this branch: A slide is a flat wedge. Punch connect is a long straight arm in front of the chest.
 
-This delta: A landing holds a short knee buckle, then eases into the run stride instead of popping straight. A small hop still buckles. A hard landing holds a little longer. Balance arms stay only slightly out.
+Already on this branch: A landing holds a short knee buckle, then eases into the run.
+
+This delta: An air dash holds the arm whip at the start, then the arms and legs ease toward a hang before the burst ends. The settle is pitch only, so the hands do not fold into the pelvis. The run does not pop in on the last frame.
 
 ## Stack snapshot
 
@@ -143,6 +145,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 28. Sprint from the chase cam: the arm that reaches forward should be opposite the leg that is forward. The other arm stays back and does not fold into the hips. You and the bot should still be the curved Hier mesh.
 29. Slide: the body should look flat, lead knee under the chest, trail leg straight back, arms forward. Punch: the fist should be a long line in front of the chest, not a folded elbow. It should not pass through the torso.
 30. Jump and keep sprinting: knees buckle on the landing, then open back into the run over a short moment. They should not snap straight on the first frame. A small hop still buckles. Arms stay slightly out and do not fold into the hips.
+31. Air dash: the arms should throw back at the start, then ease down before the streak ends. They should not stay fully whipped and then snap into the run. Hands stay clear of the hips.
 
 ## Known leftovers
 
@@ -193,6 +196,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 18. Run arms oppose the legs. Forward arm is the opposite side of the forward thigh. Hands stay clear of the pelvis. Hier spawn still wins over flat Dummy_Runner.
 19. Slide silhouette is flat (chest down, lead knee tucked, trail leg back). Punch connect is a long arm in front of the chest.
 20. Land holds a short buckle, then eases into the run. A hop still buckles. Arms stay clear of the pelvis.
+21. Air dash whip stretches early and settles before the burst ends. No extra arm roll into the pelvis.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
