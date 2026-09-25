@@ -100,6 +100,11 @@ namespace Tag.Art
         Quaternion _missJumpSp, _missJumpHp, _missJumpHd;
         float _missR;
         bool _jumpFromTag;
+        bool _jumpTagSnap;
+        float _jumpTagSnapIn;
+        Quaternion _hitJumpUaL, _hitJumpUaR, _hitJumpLaL, _hitJumpLaR;
+        Quaternion _hitJumpUlL, _hitJumpUlR, _hitJumpLlL, _hitJumpLlR;
+        Quaternion _hitJumpSp, _hitJumpHp, _hitJumpHd;
         float _tagSettle;
         bool _tagFromClaim;
         bool _jumpFromClaim;
@@ -3052,6 +3057,29 @@ namespace Tag.Art
                 _missJumpHd = _head.localRotation;
                 _airArmIn = 1f;
             }
+            if (_jumpFromTag && !_jumpTagSnap
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                // The connect eases into the air pose, then the air pose holds.
+                // The slow push stays off this path. Flinch time is unchanged.
+                // Jump height is unchanged.
+                _jumpTagSnap = true;
+                _jumpTagSnapIn = 0f;
+                _hitJumpUaL = _upperArmL.localRotation;
+                _hitJumpUaR = _upperArmR.localRotation;
+                _hitJumpLaL = _lowerArmL.localRotation;
+                _hitJumpLaR = _lowerArmR.localRotation;
+                _hitJumpUlL = _upperLegL.localRotation;
+                _hitJumpUlR = _upperLegR.localRotation;
+                _hitJumpLlL = _lowerLegL.localRotation;
+                _hitJumpLlR = _lowerLegR.localRotation;
+                _hitJumpSp = _spine.localRotation;
+                _hitJumpHp = _hips.localRotation;
+                _hitJumpHd = _head.localRotation;
+                _airArmIn = 1f;
+            }
             _prevVy = _motor != null ? _motor.Velocity.y : 0f;
             if (grounded || _pushOff <= 0.02f)
             {
@@ -3123,6 +3151,13 @@ namespace Tag.Art
             }
             else if (!_jumpFromMiss)
                 _jumpMissSnap = false;
+            if (_jumpTagSnap && _jumpFromTag)
+            {
+                if (_jumpTagSnapIn < 0.98f)
+                    _jumpTagSnapIn = Mathf.MoveTowards(_jumpTagSnapIn, 1f, dt / 0.04f);
+            }
+            else if (!_jumpFromTag)
+                _jumpTagSnap = false;
             if (_jumpFromStill && _pushOff > 0.02f)
                 _jumpFromStillIn = Mathf.MoveTowards(_jumpFromStillIn, 1f, dt / 0.04f);
             if (_jumpFromCrouchWalk && _pushOff > 0.02f)
@@ -5916,7 +5951,7 @@ namespace Tag.Art
                     _laRT = _laR0 * Quaternion.Euler(-52f * k, 0f, 0f);
                 }
             }
-            else if (punching && !((_skiFromMiss || _slideFromMiss) && phase == PunchPhase.MissRecover) && !_jumpFromPunch && !_jumpMissSnap)
+            else if (punching && !((_skiFromMiss || _slideFromMiss) && phase == PunchPhase.MissRecover) && !_jumpFromPunch && !_jumpMissSnap && !_jumpTagSnap)
             {
                 // Clear windup -> connect pose (beyond HitRecover) so tags read in TP
                 _uaLT = _uaL0 * Quaternion.Euler(-28f, 14f, armZ + 18f);
@@ -9393,7 +9428,7 @@ namespace Tag.Art
             }
             _readyWas = _dashReady > 0.2f && !readyBlocked && !_skiFromReady && !_slideFromReady;
 
-            if (_jumpFromTag && _pushOff > 0.02f && !wallRun && !climb)
+            if (_jumpFromTag && _pushOff > 0.02f && !wallRun && !climb && !_jumpTagSnap)
             {
                 // The connect eases into the push, then the air pose. A crouch tag keeps its jump.
                 // A punch miss keeps its jump. Jump height is unchanged.
@@ -9477,6 +9512,31 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(Quaternion.Slerp(fromThighR, pushThighR, intoPush), airThighR, leave);
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(fromKneeL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(fromKneeR, pushKneeR, intoPush), airKneeR, leave);
+            }
+            if (_jumpTagSnap && _jumpTagSnapIn < 0.98f && _jumpFromTag
+                && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill
+                && !_jumpDashSnap && !_jumpWallSnap && !_jumpClimbSnap && !_jumpAirCrouchSnap
+                && !_jumpSoftLandSnap && !_jumpHardLandSnap && !_jumpMissSnap)
+            {
+                // The connect eases into the air pose, then the air pose holds.
+                // A punch miss into a jump has its own ease. A hard landing into a jump has its own ease.
+                // A soft landing into a jump has its own ease. An air crouch into a jump has its own ease.
+                // A climb jump has its own ease. A wall jump has its own ease.
+                // An air dash into a jump has its own ease. A standing idle into a jump has its own ease.
+                // A sprint into the air has its own ease. A walk into a jump has its own ease.
+                // The slow push stays off this path. Flinch time is unchanged. Jump height is unchanged.
+                float intoTagAir = _jumpTagSnapIn;
+                _uaLT = Quaternion.Slerp(_hitJumpUaL, _uaLT, intoTagAir);
+                _uaRT = Quaternion.Slerp(_hitJumpUaR, _uaRT, intoTagAir);
+                _laLT = Quaternion.Slerp(_hitJumpLaL, _laLT, intoTagAir);
+                _laRT = Quaternion.Slerp(_hitJumpLaR, _laRT, intoTagAir);
+                _spineT = Quaternion.Slerp(_hitJumpSp, _spineT, intoTagAir);
+                _hipsT = Quaternion.Slerp(_hitJumpHp, _hipsT, intoTagAir);
+                _headT = Quaternion.Slerp(_hitJumpHd, _headT, intoTagAir);
+                _ulLT = Quaternion.Slerp(_hitJumpUlL, _ulLT, intoTagAir);
+                _ulRT = Quaternion.Slerp(_hitJumpUlR, _ulRT, intoTagAir);
+                _llLT = Quaternion.Slerp(_hitJumpLlL, _llLT, intoTagAir);
+                _llRT = Quaternion.Slerp(_hitJumpLlR, _llRT, intoTagAir);
             }
             if (_jumpFromClaim && _pushOff > 0.02f && !wallRun && !climb)
             {
