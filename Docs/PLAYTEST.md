@@ -268,7 +268,9 @@ Already on this branch: Letting go of a grapple in a still crouch eases the line
 
 Already on this branch: A dash coming off cooldown in a still crouch pulses inside the guard. A standing ready still pulses into the idle breath. A moving ready is unchanged. Duration and cooldown are unchanged.
 
-This delta: A punch that misses in a crouch walk eases into the guard and the low stride. A still crouch still ends in the guard. A walk miss and a sprint miss are unchanged. Windup time is unchanged.
+Already on this branch: A punch that misses in a crouch walk eases into the guard and the low stride. A still crouch still ends in the guard. A walk miss and a sprint miss are unchanged. Windup time is unchanged.
+
+This delta: A tag in a crouch walk eases the V into the guard and the low stride. A still crouch still ends in the guard. A walk tag and a sprint tag are unchanged. Flinch time is unchanged.
 
 ## Stack snapshot
 
@@ -521,6 +523,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 154. Crouch still, then let go of a grapple: the line should ease into the guard. A standing release should feel the same. A walk release and a sprint release should feel the same. The pull should feel the same. The gate stays off.
 155. Crouch still, then wait out a dash cooldown: the settle should stay inside the guard. A standing ready should still pulse into the idle breath. A moving ready should feel the same. The dash should not feel longer.
 156. Crouch walk, then miss a punch: the body should ease into the guard and the low stride. A still crouch should still end in the guard. A walk miss and a sprint miss should feel the same. The cock should not feel longer.
+157. Crouch walk, then get tagged: the V should ease into the guard and the low stride. A still crouch should still end in the guard. A walk tag and a sprint tag should feel the same. The flinch should not feel longer.
 
 ## Known leftovers
 
@@ -697,6 +700,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 144. Letting go of a grapple in a still crouch eases the line into the guard. A standing release is unchanged. A walk release and a sprint release are unchanged. The pull is unchanged. The gate stays off.
 145. A dash coming off cooldown in a still crouch pulses inside the guard. A standing ready still pulses into the idle breath. A moving ready is unchanged. Duration and cooldown are unchanged.
 146. A punch that misses in a crouch walk eases into the guard and the low stride. A still crouch still ends in the guard. A walk miss and a sprint miss are unchanged. Windup time is unchanged.
+147. A tag in a crouch walk eases the V into the guard and the low stride. A still crouch still ends in the guard. A walk tag and a sprint tag are unchanged. Flinch time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
