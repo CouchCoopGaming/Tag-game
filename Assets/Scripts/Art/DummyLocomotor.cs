@@ -1669,10 +1669,35 @@ namespace Tag.Art
                 float fHands = Mathf.Lerp(fRelease, f * f, standing);
                 float fL = sinC >= 0f ? f : fRelease;
                 float fR = sinC >= 0f ? fRelease : f;
-                // A walk settles the arms into the stride. A stand still eases into the idle breath.
-                // A sprint keeps its release. Flinch time is unchanged.
+                // A walk settles the arms into the stride. A sprint settles them into the long stride.
+                // A stand still eases into the idle breath. Flinch time is unchanged.
                 float walkTag = grounded ? Mathf.Clamp01(walkAmt) * (1f - Mathf.Clamp01(runAmt)) : 0f;
-                if (walkTag > 0.02f)
+                float sprintTag = grounded && (st == MoveState.Sprint || runAmt > 0.4f) ? 1f : 0f;
+                if (sprintTag > 0.02f)
+                    walkTag = 0f;
+                if (sprintTag > 0.02f)
+                {
+                    float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                    float amp = Mathf.Lerp(36f, 64f, gait);
+                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float roll = Mathf.Lerp(0f, armZ, gait);
+                    float reachY = outY + 6f;
+                    float turnOut = Mathf.Abs(_turnVis) * 5f;
+                    float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
+                    float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
+                    float pitchL = RunArmPitch(-sinC, amp);
+                    float pitchR = RunArmPitch(sinC, amp);
+                    float elbowL = Mathf.Lerp(-6f, -30f, Mathf.Clamp01(sinC) * gait);
+                    float elbowR = Mathf.Lerp(-6f, -30f, Mathf.Clamp01(-sinC) * gait);
+                    float hold = f * f;
+                    _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(pitchL, yL, roll), _uaL0 * Quaternion.Euler(-78f, 22f, armZ), hold);
+                    _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(pitchR, -yR, -roll), _uaR0 * Quaternion.Euler(-78f, -22f, -armZ), hold);
+                    _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(elbowL, 0f, 0f), _laL0 * Quaternion.Euler(-16f, 0f, 0f), hold);
+                    _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(elbowR, 0f, 0f), _laR0 * Quaternion.Euler(-16f, 0f, 0f), hold);
+                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX, 0f, leanZ), _spine0 * Quaternion.Euler(22f, 0f, 0f), hold);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(8f, 0f, 0f), hold);
+                }
+                else if (walkTag > 0.02f)
                 {
                     float gait = Mathf.Max(Mathf.Clamp01(walkAmt), Mathf.Max(_stopGait, _runVis));
                     gait = Mathf.Lerp(gait, 1f, walkTag);
@@ -1710,7 +1735,7 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(22f, 0f, 0f), fR);
                 _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-48f, 0f, 0f), fL);
                 _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-48f, 0f, 0f), fR);
-                if (walkTag <= 0.02f)
+                if (walkTag <= 0.02f && sprintTag <= 0.02f)
                 {
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(22f, 0f, 0f), fHands);
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(8f, 0f, 0f), fHands);
