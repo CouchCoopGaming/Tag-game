@@ -129,7 +129,7 @@ namespace Tag.Art
             }
             bool crouch = st == MoveState.Crouch;
             bool skiing = st == MoveState.Ski;
-            _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.16f);
+            _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             bool punching = _punch != null && _punch.IsPunching;
             bool lunging = _motor != null && _motor.IsLunging;
             var phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
@@ -488,9 +488,11 @@ namespace Tag.Art
                 _laRT = _laR0 * Quaternion.Euler(elbowR, 0f, 0f);
                 if (_skiBlend > 0.02f)
                 {
-                    // Skate is a wide balance, not the run's opposing swing. The blend eases both ways.
-                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-22f, 30f, armZ), _skiBlend);
-                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-22f, -30f, -armZ), _skiBlend);
+                    // Longer than a run, still a short opposing swing so the blend is not a pose swap.
+                    float skateL = RunArmPitch(-sinC, 16f);
+                    float skateR = RunArmPitch(sinC, 16f);
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-18f + skateL, 22f, armZ), _skiBlend);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-18f + skateR, -22f, -armZ), _skiBlend);
                     _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-12f, 0f, 0f), _skiBlend);
                     _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-12f, 0f, 0f), _skiBlend);
                 }
@@ -663,12 +665,12 @@ namespace Tag.Art
                 {
                     float sFrontL = Mathf.Max(0f, sinC);
                     float sFrontR = Mathf.Max(0f, -sinC);
-                    float sThighL = (sFrontL - sFrontR * 0.4f) * 16f;
-                    float sThighR = (sFrontR - sFrontL * 0.4f) * 16f;
+                    float sThighL = (sFrontL - sFrontR * 0.5f) * 32f;
+                    float sThighR = (sFrontR - sFrontL * 0.5f) * 32f;
                     _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(sThighL, 0f, 0f), _skiBlend);
                     _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(sThighR, 0f, 0f), _skiBlend);
-                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(4f + sFrontL * 14f), 0f, 0f), _skiBlend);
-                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(4f + sFrontR * 14f), 0f, 0f), _skiBlend);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(6f + sFrontL * 32f), 0f, 0f), _skiBlend);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(6f + sFrontR * 32f), 0f, 0f), _skiBlend);
                 }
             }
 
