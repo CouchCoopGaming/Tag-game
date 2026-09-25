@@ -408,7 +408,8 @@ namespace Tag.Core
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) SetFocus(ref _menuCursor, 3);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) Nudge(ref _menuCursor, -1, 3);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) Nudge(ref _menuCursor, 1, 3);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
+                    UnityEngine.Input.GetKeyDown(KeyCode.Space))
                     ConfirmModeAndPlay();
             }
             else if (State == GameFlowState.RoundEnd)
