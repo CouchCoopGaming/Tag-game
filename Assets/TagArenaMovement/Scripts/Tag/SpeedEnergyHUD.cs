@@ -79,10 +79,10 @@ namespace TagArena.Movement
 
         // Flash full Least-It standings briefly every few seconds.
         const float AllStandingsShowSec = 4.3f; // slightly longer Least It board read
-        const float AllStandingsCycleSec = 8.5f; // slightly slower board flip
+        const float AllStandingsCycleSec = 8.6f; // slightly slower board flip
 
         // Compass close-range pulse (Prey hunt / It flee), flat meters.
-        const float CompassPulseDistM = 13f; // earlier It-hunt compass pulse
+        const float CompassPulseDistM = 13.5f; // earlier It-hunt compass pulse
 
         // Hot Potato fuse HUD warn fallback (matches ItMarker / DummyPatrol when tuning missing).
         const float HotPotatoWarnSecFallback = 11f; // earlier fuse urgency fallback
