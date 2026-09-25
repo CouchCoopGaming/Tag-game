@@ -1,6 +1,6 @@
 # Campus smoke
 
-After pull: **CutArenaBootstrap** Rebuild, then **PgkLandmarkPlacer -> Place**. Walk on foot. Spines and the crash cross stay empty. Soft-play and astro use `PGK_Slide_TubeDeck_2m` on the 2.00 deck. `Mega_SlideTube` and `PGK_Slide_Tube90` are not placed. Feel was not edited.
+After pull: **CutArenaBootstrap** Rebuild, then **PgkLandmarkPlacer -> Place**. Walk on foot. Spines and the crash cross stay empty. Soft-play and the army bunker use `PGK_Slide_TubeDeck_2m` on the 2.00 deck. Astro keeps the straight chute. `Mega_SlideTube` and `PGK_Slide_Tube90` are not placed. Feel was not edited.
 
 ## SW
 
@@ -12,11 +12,11 @@ South bar into soft-play. **SoftS south** at (14.5, 2.6): balance beam, mushroom
 
 ## NW
 
-Cross the north spine. **NW arch** at (7.70, 42). Piers are about 1.7 m off hopscotch NW and the north bar. The deck is at 1.05 and the span underneath is open. NW cluster at (9.4, 45.0), then hopscotch NW. Astro carries the same dome north of its tubes, off Spawn_NW's exit, and the same deck tube on its 2.00 lip. West forts do not have the east spiral.
+Cross the north spine. **NW arch** at (7.70, 42). Piers are about 1.7 m off hopscotch NW and the north bar. The deck is at 1.05 and the span underneath is open. NW cluster at (9.4, 45.0), then hopscotch NW. Astro carries the same dome north of its tubes, off Spawn_NW's exit. Its 2.00 chute stays the straight slide. West forts do not have the east spiral.
 
 ## East
 
-Spawn_SE, hopscotch SE, then the **SE arch** at (65.90, 10.5). **SE cluster** at (66.2, 7.5): mushrooms, spring, two hops. **East spiral** on army and knight, local (2.80, 0): feet on the ground, top 2.40, a climb onto the 2.00 deck. Kickball's field stays open. **NE arch** at (65.65, 41), bench at (65.65, 41.90). NE cluster at (66.2, 45.0). **NE hops and seesaw**: hop east edge x=68.45, seesaw west edge x=69.01, gap 0.56 m. Then hopscotch NE. The arch span under the bench stays open.
+Spawn_SE, hopscotch SE, then the **SE arch** at (65.90, 10.5). **SE cluster** at (66.2, 7.5): mushrooms, spring, two hops. **East spiral** on army and knight, local (2.80, 0): feet on the ground, top 2.40, a climb onto the 2.00 deck. Army's 2.00 chute is `PGK_Slide_TubeDeck_2m`, yaw 90, stem 0, low mouth at local z=5.90, 1.49 m off that spiral. Knight keeps the straight chute. Kickball's field stays open. **NE arch** at (65.65, 41), bench at (65.65, 41.90). NE cluster at (66.2, 45.0). **NE hops and seesaw**: hop east edge x=68.45, seesaw west edge x=69.01, gap 0.56 m. Then hopscotch NE. The arch span under the bench stays open.
 
 ## Crash
 

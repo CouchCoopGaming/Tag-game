@@ -7,7 +7,8 @@ using UnityEngine;
 
 /// <summary>
 /// Batchmode: Unity -batchmode -nographics -quit -projectPath . -executeMethod TubeDeckSmokeTest.Run -logFile _tubedeck_smoke.log
-/// Opens Play, Rebuild + Place, asserts soft-play/astro TubeDeck seats. Local mesh Y should rise ~1.91.
+/// Opens Play, Rebuild + Place, asserts soft-play and army TubeDeck seats.
+/// Mesh local Y runs from the mulch (~0) to the shell crown (~2.48). Mouth center is 1.91.
 /// </summary>
 public static class TubeDeckSmokeTest
 {
@@ -49,7 +50,20 @@ public static class TubeDeckSmokeTest
         Debug.Log("[TubeDeckSmoke] TubeDeck count=" + tubes.Count);
         if (tubes.Count != 2)
         {
-            Debug.LogError("[TubeDeckSmoke] FAIL expected 2 TubeDeck (soft-play+astro), got " + tubes.Count);
+            Debug.LogError("[TubeDeckSmoke] FAIL expected 2 TubeDeck (soft-play+army), got " + tubes.Count);
+            fail++;
+        }
+        int soft = 0, army = 0, other = 0;
+        foreach (var tube in tubes)
+        {
+            string path = PathOf(tube);
+            if (path.Contains("Play_SoftPlay/")) soft++;
+            else if (path.Contains("Play_ArmyBunker/")) army++;
+            else other++;
+        }
+        if (soft != 1 || army != 1 || other != 0)
+        {
+            Debug.LogError("[TubeDeckSmoke] FAIL seats soft=" + soft + " army=" + army + " other=" + other);
             fail++;
         }
 
@@ -84,16 +98,17 @@ public static class TubeDeckSmokeTest
                       " localMinY=" + minY.ToString("0.000") + " localMaxY=" + maxY.ToString("0.000") +
                       " spanY=" + spanY.ToString("0.000") + " spanX=" + spanX.ToString("0.000") + " spanZ=" + spanZ.ToString("0.000"));
 
-            // Brief: pivot mulch, high mouth ~1.91 on +Y, run ~5 on +X.
+            // Pivot is mulch. Shell crown is ~2.48; the 1.91 figure is the mouth center, not max Y.
+            // Run is ~5.05 along local X. A swapped axis fails spanX.
             bool feetOk = minY > -0.15f && minY < 0.20f;
-            bool crownOk = maxY > 1.70f && maxY < 2.20f;
+            bool crownOk = maxY > 2.20f && maxY < 2.70f;
             bool runOk = spanX > 4.5f && spanX < 5.6f;
             if (!feetOk || !crownOk || !runOk)
             {
                 // Axis/pivot mismatch is a map/art polish item; keep smoke red so tip does not go silent.
                 Debug.LogError("[TubeDeckSmoke] FAIL seat/axis localMinY=" + minY.ToString("0.000") +
                                " localMaxY=" + maxY.ToString("0.000") + " spanX=" + spanX.ToString("0.000") +
-                               " (want feet~0, crown~1.91, runX~5) on " + PathOf(tube));
+                               " (want feet~0, shell crown~2.48, runX~5) on " + PathOf(tube));
                 fail++;
             }
         }
