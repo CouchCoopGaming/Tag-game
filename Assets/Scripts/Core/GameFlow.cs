@@ -432,6 +432,11 @@ namespace Tag.Core
             {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) Nudge(ref _pauseFocus, -1, 4);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) Nudge(ref _pauseFocus, 1, 4);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _pauseFocus, 0);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _pauseFocus, 1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _pauseFocus, 2);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) SetFocus(ref _pauseFocus, 3);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha5)) SetFocus(ref _pauseFocus, 4);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
                     UnityEngine.Input.GetKeyDown(KeyCode.Space))
                     ActivatePause();
