@@ -2323,12 +2323,31 @@ namespace Tag.Art
                 float g = Mathf.SmoothStep(0f, 1f, _grapplePose);
                 float outW = pulling ? g : g * g;
                 // A sprint returns the hands to the long stride. A walk returns them to the walk.
-                // A stand keeps the old leave. The pull is unchanged. The gate stays off.
+                // A stand keeps the old leave. A still crouch eases into the guard.
+                // A crouch walk keeps the walk return. The pull is unchanged. The gate stays off.
+                bool crouchGrapple = !pulling && grounded && crouch && speed <= 0.35f;
                 float walkGrapple = !pulling && grounded ? Mathf.Clamp01(walkAmt) * (1f - Mathf.Clamp01(runAmt)) : 0f;
                 float sprintGrapple = !pulling && grounded && (st == MoveState.Sprint || runAmt > 0.4f) ? 1f : 0f;
-                if (sprintGrapple > 0.02f)
+                if (sprintGrapple > 0.02f || crouchGrapple)
                     walkGrapple = 0f;
-                if (sprintGrapple > 0.02f)
+                if (crouchGrapple)
+                    sprintGrapple = 0f;
+                if (crouchGrapple)
+                {
+                    // The line eases into the guard. It does not rise into the idle.
+                    _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaL0 * Quaternion.Euler(-96f, 16f, armZ), outW);
+                    _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-36f, -16f, -armZ), _uaR0 * Quaternion.Euler(-96f, -16f, -armZ), outW);
+                    _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-72f, 0f, 0f), _laL0 * Quaternion.Euler(-14f, 0f, 0f), outW);
+                    _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-72f, 0f, 0f), _laR0 * Quaternion.Euler(-14f, 0f, 0f), outW);
+                    _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(56f, 0f, 0f), _ulL0 * Quaternion.Euler(8f, 0f, 0f), outW);
+                    _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(56f, 0f, 0f), _ulR0 * Quaternion.Euler(6f, 0f, 0f), outW);
+                    _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-68f, 0f, 0f), _llL0 * Quaternion.Euler(-8f, 0f, 0f), outW);
+                    _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-68f, 0f, 0f), _llR0 * Quaternion.Euler(-8f, 0f, 0f), outW);
+                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(10f, 0f, 0f), _spine0 * Quaternion.Euler(-12f, 0f, 0f), outW);
+                    _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(6f, 0f, 0f), outW);
+                    _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _headT, outW);
+                }
+                else if (sprintGrapple > 0.02f)
                 {
                     float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
                     float amp = Mathf.Lerp(36f, 64f, gait);
@@ -2380,13 +2399,16 @@ namespace Tag.Art
                     _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-14f, 0f, 0f), outW);
                     _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-14f, 0f, 0f), outW);
                 }
-                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(8f, 0f, 0f), outW);
-                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(6f, 0f, 0f), outW);
-                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-8f, 0f, 0f), outW);
-                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-8f, 0f, 0f), outW);
-                if (walkGrapple <= 0.02f && sprintGrapple <= 0.02f)
-                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(-12f, 0f, 0f), outW);
-                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(6f, 0f, 0f), outW);
+                if (!crouchGrapple)
+                {
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(8f, 0f, 0f), outW);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(6f, 0f, 0f), outW);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-8f, 0f, 0f), outW);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-8f, 0f, 0f), outW);
+                    if (walkGrapple <= 0.02f && sprintGrapple <= 0.02f)
+                        _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(-12f, 0f, 0f), outW);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(6f, 0f, 0f), outW);
+                }
             }
 
             if (flinchAmt > 0f)
