@@ -89,6 +89,8 @@ namespace Tag.Art
         bool _dashFromSlide;
         float _dashFromSlideIn;
         bool _slideLeadLeft;
+        bool _skiFromDash;
+        float _skiFromDashIn;
         float _dartStepL;
         float _dartStepR;
         bool _dartFromDash;
@@ -687,6 +689,22 @@ namespace Tag.Art
             }
             else
                 _dartFromDash = false;
+            if (!dashingAir && _airDashPoseWas && skiing && !jet && !crouch)
+            {
+                // The burst eases into the glide. A ski into a dash keeps its ease.
+                // A slide into a dash keeps its ease. Ski speed is unchanged.
+                // Duration and cooldown are unchanged.
+                _skiFromDash = true;
+                _skiFromDashIn = 0f;
+            }
+            if (_skiFromDash && !dashingAir && skiing && !jet && !crouch)
+            {
+                _skiFromDashIn = Mathf.MoveTowards(_skiFromDashIn, 1f, dt / 0.16f);
+                if (_skiFromDashIn >= 0.98f && !dashTell)
+                    _skiFromDash = false;
+            }
+            else
+                _skiFromDash = false;
             _airDashPoseWas = dashingAir;
             bool windupNow = punching && phase == PunchPhase.Windup;
             bool fromJumpPose = (!grounded && _diveFromJump) || (_landedFromJump && _landSquash > 0.08f);
@@ -4754,6 +4772,36 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_punchUlR, _ulRT, into);
                 _llLT = Quaternion.Slerp(_punchLlL, _llLT, into);
                 _llRT = Quaternion.Slerp(_punchLlR, _llRT, into);
+            }
+            if (_skiFromDash && !airDashing && !punching && !wallRun && !climb)
+            {
+                // The burst eases into the glide, then the stride holds.
+                // A ski into a dash keeps its ease. A slide into a dash keeps its ease.
+                // Ski speed is unchanged. Duration and cooldown are unchanged.
+                float intoGlide = _skiFromDashIn;
+                float glideL = Mathf.Max(0f, sinC);
+                float glideR = Mathf.Max(0f, -sinC);
+                float skateL = RunArmPitch(-sinC, 16f);
+                float skateR = RunArmPitch(sinC, 16f);
+                Quaternion burstL = _uaL0 * Quaternion.Euler(108f, 32f, armZ);
+                Quaternion burstR = _uaR0 * Quaternion.Euler(108f, -32f, -armZ);
+                Quaternion skiL = _uaL0 * Quaternion.Euler(-18f + skateL, 22f, armZ);
+                Quaternion skiR = _uaR0 * Quaternion.Euler(-18f + skateR, -22f, -armZ);
+                Quaternion burstElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion burstElR = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion skiElL = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
+                Quaternion skiElR = _laR0 * Quaternion.Euler(-12f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(burstL, skiL, intoGlide);
+                _uaRT = Quaternion.Slerp(burstR, skiR, intoGlide);
+                _laLT = Quaternion.Slerp(burstElL, skiElL, intoGlide);
+                _laRT = Quaternion.Slerp(burstElR, skiElR, intoGlide);
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(58f, 0f, 0f), _spine0 * Quaternion.Euler(26f, 0f, 0f), intoGlide);
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(14f, 0f, 0f), intoGlide);
+                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(0f, 0f, 0f), _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), intoGlide);
+                _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(72f, 0f, 0f), _ulL0 * Quaternion.Euler((glideL - glideR * 0.5f) * 32f, 0f, 0f), intoGlide);
+                _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler((glideR - glideL * 0.5f) * 32f, 0f, 0f), intoGlide);
+                _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-(6f + glideL * 32f), 0f, 0f), intoGlide);
+                _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-(6f + glideR * 32f), 0f, 0f), intoGlide);
             }
             if (_dartFromDash && !airDashing && !punching && !wallRun && !climb)
             {
