@@ -118,7 +118,9 @@ Already on this branch: Leaving a wall eases the hips and the feet into the stri
 
 Already on this branch: While you run, the reaching arm follows the look and stays clear of the hip. It does not fight the stride. Look speed is unchanged.
 
-This delta: Letting go of a slide stands up into the run under the hips. The feet do not pop. The slide does not speed up.
+Already on this branch: Letting go of a slide stands up into the run under the hips. The feet do not pop. The slide does not speed up.
+
+This delta: A jump pushes off the planted foot. The other knee comes up, then the tuck. The jump does not go higher.
 
 ## Stack snapshot
 
@@ -296,6 +298,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 79. Wall-run, then drop into a run: the hips and the feet should ease into the stride under the hips. They should not pop. The hands should not snap, and the leave should not feel longer or shorter. A climb should leave the same way.
 80. Run and look up and down: the reaching arm should follow the look and stay clear of the hip. The other arm should stay in the stride. Look should feel the same.
 81. Slide down a slope, then let go: the body should stand up into the run under the hips. The feet should not pop. The slide should not speed up.
+82. Jump from a walk or a run: the foot that was down should push, and the other knee should come up, then the tuck. The jump should not go higher.
 
 ## Known leftovers
 
@@ -397,6 +400,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 69. Leaving a wall eases the hips and the feet into the stride. They do not pop. The hands still take the same time to leave. A climb leaves the same way.
 70. While running, the reaching arm follows the look and stays clear of the hip. It does not fight the stride. Look speed is unchanged.
 71. Letting go of a slide stands up into the run under the hips. The feet do not pop. The slide does not speed up.
+72. A jump pushes off the planted foot. The other knee comes up, then the tuck. Jump height is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
