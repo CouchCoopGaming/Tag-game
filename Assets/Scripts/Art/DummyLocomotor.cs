@@ -115,6 +115,11 @@ namespace Tag.Art
         Quaternion _crouchPunchUaL, _crouchPunchUaR, _crouchPunchLaL, _crouchPunchLaR;
         Quaternion _crouchPunchUlL, _crouchPunchUlR, _crouchPunchLlL, _crouchPunchLlR;
         Quaternion _crouchPunchSp, _crouchPunchHp, _crouchPunchHd;
+        bool _tagFromCrouch;
+        float _tagFromCrouchIn;
+        Quaternion _crouchTagUaL, _crouchTagUaR, _crouchTagLaL, _crouchTagLaR;
+        Quaternion _crouchTagUlL, _crouchTagUlR, _crouchTagLlL, _crouchTagLlR;
+        Quaternion _crouchTagSp, _crouchTagHp, _crouchTagHd;
         bool _punchFromDash;
         float _punchFromDashIn;
         bool _tagFromDash;
@@ -1979,6 +1984,40 @@ namespace Tag.Art
                 _tagFromMissIn = Mathf.MoveTowards(_tagFromMissIn, 1f, dt / 0.04f);
             else if (!hitNow)
                 _tagFromMiss = false;
+            bool stillCrouchTag = hitNow && !_tagHitWas && !fromJumpPose && crouch && grounded && !sliding && !_dropSlide
+                && !dartAir && !jet && !_airDashPoseWas && !_jumpFromTag
+                && _crouchFromStand && !_crouchWalkArmed && speed <= 0.35f && _dropVis > 0.2f
+                && _itClaim <= 0.2f && _dashReady <= 0.2f
+                && _punchPhaseWas != PunchPhase.MissRecover
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && !_tagFromJump && !_tagFromDash && !_tagFromSoft && !_tagFromHard
+                && !_tagFromSki && !_tagFromSlide && !_tagFromClimb && !_tagFromWall && !_tagFromDart
+                && !_tagFromItClaim && !_tagFromGrapple && !_tagFromReady && !_tagFromPunch && !_tagFromMiss
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (stillCrouchTag)
+            {
+                // The guard eases into the connect. A still crouch into a punch keeps its ease.
+                // A crouch walk into a tag keeps its pose. An air crouch into a tag keeps its ease.
+                // A slide into a tag keeps its ease. A crouch claim keeps its pose.
+                // A punch into a tag keeps its ease. Connect time is unchanged.
+                _tagFromCrouch = true;
+                _tagFromCrouchIn = 0f;
+                _crouchTagUaL = _upperArmL.localRotation;
+                _crouchTagUaR = _upperArmR.localRotation;
+                _crouchTagLaL = _lowerArmL.localRotation;
+                _crouchTagLaR = _lowerArmR.localRotation;
+                _crouchTagUlL = _upperLegL.localRotation;
+                _crouchTagUlR = _upperLegR.localRotation;
+                _crouchTagLlL = _lowerLegL.localRotation;
+                _crouchTagLlR = _lowerLegR.localRotation;
+                _crouchTagSp = _spine.localRotation;
+                _crouchTagHp = _hips.localRotation;
+                _crouchTagHd = _head.localRotation;
+            }
+            if (hitNow && _tagFromCrouch)
+                _tagFromCrouchIn = Mathf.MoveTowards(_tagFromCrouchIn, 1f, dt / 0.04f);
+            else if (!hitNow)
+                _tagFromCrouch = false;
             bool tagFell = _tagHitWas && !hitNow && !crouch && !_jumpFromTag
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
             if (tagFell)
@@ -6784,6 +6823,25 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(34f, 0f, 0f), intoDart);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
+            }
+            if (_tagFromCrouch && !_tagFromMiss && !_tagFromPunch && !_tagFromReady && !_tagFromGrapple && !_tagFromItClaim && !_tagFromDart && !_tagFromWall && !_tagFromClimb && !_tagFromSlide && !_tagFromSki && !_tagFromHard && !_tagFromSoft && !_tagFromJump && !_tagFromDash && !_jumpFromTag && punching && phase == PunchPhase.HitRecover && _tagFromCrouchIn < 0.98f)
+            {
+                // The guard eases into the connect, then the connect holds.
+                // A still crouch into a punch keeps its ease. A crouch walk into a tag keeps its pose.
+                // An air crouch into a tag keeps its ease. A slide into a tag keeps its ease.
+                // A crouch claim keeps its pose. A punch into a tag keeps its ease. Connect time is unchanged.
+                float intoTag = _tagFromCrouchIn;
+                _uaLT = Quaternion.Slerp(_crouchTagUaL, _uaLT, intoTag);
+                _uaRT = Quaternion.Slerp(_crouchTagUaR, _uaRT, intoTag);
+                _laLT = Quaternion.Slerp(_crouchTagLaL, _laLT, intoTag);
+                _laRT = Quaternion.Slerp(_crouchTagLaR, _laRT, intoTag);
+                _spineT = Quaternion.Slerp(_crouchTagSp, _spineT, intoTag);
+                _hipsT = Quaternion.Slerp(_crouchTagHp, _hipsT, intoTag);
+                _headT = Quaternion.Slerp(_crouchTagHd, _headT, intoTag);
+                _ulLT = Quaternion.Slerp(_crouchTagUlL, _ulLT, intoTag);
+                _ulRT = Quaternion.Slerp(_crouchTagUlR, _ulRT, intoTag);
+                _llLT = Quaternion.Slerp(_crouchTagLlL, _llLT, intoTag);
+                _llRT = Quaternion.Slerp(_crouchTagLlR, _llRT, intoTag);
             }
             if (_tagFromMiss && !_tagFromPunch && !_tagFromReady && !_tagFromGrapple && !_tagFromItClaim && !_tagFromDart && !_tagFromWall && !_tagFromClimb && !_tagFromSlide && !_tagFromSki && !_tagFromHard && !_tagFromSoft && !_tagFromJump && !_tagFromDash && !_jumpFromTag && punching && phase == PunchPhase.HitRecover && !crouch && _tagFromMissIn < 0.98f)
             {
