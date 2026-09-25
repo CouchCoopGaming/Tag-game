@@ -892,6 +892,11 @@ namespace Tag.Art
         bool _surfFromJumpPush;
         bool _surfFromJumpWall;
         bool _surfFromJumpWallPush;
+        bool _strideSurfSnap;
+        float _strideSurfIn;
+        Quaternion _strideSurfUaL, _strideSurfUaR, _strideSurfLaL, _strideSurfLaR;
+        Quaternion _strideSurfUlL, _strideSurfUlR, _strideSurfLlL, _strideSurfLlR;
+        Quaternion _strideSurfSp, _strideSurfHp, _strideSurfHd;
         float _prevYaw;
         float _turnVis;
         bool _hasYaw;
@@ -5448,6 +5453,37 @@ namespace Tag.Art
             }
             else
                 _mantleSnap = false;
+            // A walk or a run eases onto the wall, then the climb or the run holds.
+            // A crouch meet keeps its ease. A jump meet keeps its ease. A dash meet keeps its ease.
+            // The meet time is unchanged.
+            bool strideSurf = onSurf && !_surfFromCrouch && !_surfFromJump && !_surfFromJumpWall
+                && !_wallFromDash && !_climbFromDash;
+            if (strideSurf && !_strideSurfSnap
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                _strideSurfSnap = true;
+                _strideSurfIn = 0f;
+                _strideSurfUaL = _upperArmL.localRotation;
+                _strideSurfUaR = _upperArmR.localRotation;
+                _strideSurfLaL = _lowerArmL.localRotation;
+                _strideSurfLaR = _lowerArmR.localRotation;
+                _strideSurfUlL = _upperLegL.localRotation;
+                _strideSurfUlR = _upperLegR.localRotation;
+                _strideSurfLlL = _lowerLegL.localRotation;
+                _strideSurfLlR = _lowerLegR.localRotation;
+                _strideSurfSp = _spine.localRotation;
+                _strideSurfHp = _hips.localRotation;
+                _strideSurfHd = _head.localRotation;
+            }
+            if (_strideSurfSnap && strideSurf)
+            {
+                if (_strideSurfIn < 0.98f)
+                    _strideSurfIn = Mathf.MoveTowards(_strideSurfIn, 1f, dt / 0.04f);
+            }
+            else
+                _strideSurfSnap = false;
 
             bool airDashing = _motor != null && _motor.IsAirDashing;
             _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.45f);
@@ -6234,6 +6270,19 @@ namespace Tag.Art
                 _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-52f, -118f, down), Mathf.Lerp(-12f, -18f, down), -armZ);
                 _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-18f, -8f, up), 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-18f, -8f, down), 0f, 0f);
+                if (_strideSurfSnap && _strideSurfIn < 0.98f)
+                {
+                    // The pose eases onto the climb, then the climb holds.
+                    // A crouch meet keeps its ease. A jump meet keeps its ease. The meet time is unchanged.
+                    float intoStrideSurf = _strideSurfIn;
+                    _uaLT = Quaternion.Slerp(_strideSurfUaL, _uaLT, intoStrideSurf);
+                    _uaRT = Quaternion.Slerp(_strideSurfUaR, _uaRT, intoStrideSurf);
+                    _laLT = Quaternion.Slerp(_strideSurfLaL, _laLT, intoStrideSurf);
+                    _laRT = Quaternion.Slerp(_strideSurfLaR, _laRT, intoStrideSurf);
+                    _spineT = Quaternion.Slerp(_strideSurfSp, _spineT, intoStrideSurf);
+                    _hipsT = Quaternion.Slerp(_strideSurfHp, _hipsT, intoStrideSurf);
+                    _headT = Quaternion.Slerp(_strideSurfHd, _headT, intoStrideSurf);
+                }
             }
             else if (mantle)
             {
@@ -6286,6 +6335,19 @@ namespace Tag.Art
                     _uaLT = _uaL0 * Quaternion.Euler(outerArm, 10f, armZ);
                     _laRT = _laR0 * Quaternion.Euler(wallElbow, 0f, 0f);
                     _laLT = _laL0 * Quaternion.Euler(outerElbow, 0f, 0f);
+                }
+                if (_strideSurfSnap && _strideSurfIn < 0.98f)
+                {
+                    // The pose eases onto the wall run, then the run holds.
+                    // A crouch meet keeps its ease. A jump meet keeps its ease. The meet time is unchanged.
+                    float intoStrideSurf = _strideSurfIn;
+                    _uaLT = Quaternion.Slerp(_strideSurfUaL, _uaLT, intoStrideSurf);
+                    _uaRT = Quaternion.Slerp(_strideSurfUaR, _uaRT, intoStrideSurf);
+                    _laLT = Quaternion.Slerp(_strideSurfLaL, _laLT, intoStrideSurf);
+                    _laRT = Quaternion.Slerp(_strideSurfLaR, _laRT, intoStrideSurf);
+                    _spineT = Quaternion.Slerp(_strideSurfSp, _spineT, intoStrideSurf);
+                    _hipsT = Quaternion.Slerp(_strideSurfHp, _hipsT, intoStrideSurf);
+                    _headT = Quaternion.Slerp(_strideSurfHd, _headT, intoStrideSurf);
                 }
             }
             else if (gliding)
@@ -7137,6 +7199,14 @@ namespace Tag.Art
                 _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(14f, 62f, up), 0f, 0f);
                 _llLT = _llL0 * Quaternion.Euler(-(6f + Mathf.Max(0f, -kneePhase) * 72f), 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(-(6f + Mathf.Max(0f, kneePhase) * 72f), 0f, 0f);
+                if (_strideSurfSnap && _strideSurfIn < 0.98f)
+                {
+                    float intoStrideSurfLegs = _strideSurfIn;
+                    _ulLT = Quaternion.Slerp(_strideSurfUlL, _ulLT, intoStrideSurfLegs);
+                    _ulRT = Quaternion.Slerp(_strideSurfUlR, _ulRT, intoStrideSurfLegs);
+                    _llLT = Quaternion.Slerp(_strideSurfLlL, _llLT, intoStrideSurfLegs);
+                    _llRT = Quaternion.Slerp(_strideSurfLlR, _llRT, intoStrideSurfLegs);
+                }
             }
             else if (wallRun)
             {
@@ -7158,6 +7228,14 @@ namespace Tag.Art
                     _ulLT = _ulL0 * Quaternion.Euler(outerThigh, 0f, 0f);
                     _llRT = _llR0 * Quaternion.Euler(-8f, 0f, 0f);
                     _llLT = _llL0 * Quaternion.Euler(outerKnee, 0f, 0f);
+                }
+                if (_strideSurfSnap && _strideSurfIn < 0.98f)
+                {
+                    float intoStrideSurfLegs = _strideSurfIn;
+                    _ulLT = Quaternion.Slerp(_strideSurfUlL, _ulLT, intoStrideSurfLegs);
+                    _ulRT = Quaternion.Slerp(_strideSurfUlR, _ulRT, intoStrideSurfLegs);
+                    _llLT = Quaternion.Slerp(_strideSurfLlL, _llLT, intoStrideSurfLegs);
+                    _llRT = Quaternion.Slerp(_strideSurfLlR, _llRT, intoStrideSurfLegs);
                 }
             }
             else if (gliding)
