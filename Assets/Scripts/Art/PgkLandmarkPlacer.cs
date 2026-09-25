@@ -304,8 +304,9 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Bunker / keep ground floor: crawl, outer net, short ladder, tall rung, and a spiral climber.
-        /// The slide spiral and the tube street stay on the west play places. This climber is the east verb:
+        /// Bunker / keep ground floor: crawl, outer net, short ladder, tall rung, spiral climber,
+        /// and one supply crate on the outer apron. The slide spiral, tube street, dome, and
+        /// ground slide stay on the west play places. The climber is the east climb:
         /// feet on y=0, top at 2.40, so it reaches the 2.00 deck. West forts do not get a copy.
         /// </summary>
         static void AddBunkerAnnex(List<(string id, Vector3 p, float y)> pieces)
@@ -313,6 +314,11 @@ namespace Tag.Art
             // South rim misses Spawn_SE (x <= 60). North rim stays ~1 m off the ground stair.
             // Knight yaw 180 flips this clear of Spawn_NE.
             pieces.Add(("Mega_CrawlTunnel", new Vector3(-2f, 0f, -4.5f), 0f));
+            // Crate on the outer apron, not in either mouth. Crawl wall is local z=-5.896
+            // (mesh z ±1.396). Center z=-6.81 leaves 0.56 m. Local x=-0.80 is 2.4 m off both
+            // mouths (x=-6 and x=+2). Army world (57.20, 2.94), 2.24 m west of Spawn_SE's bumper.
+            // Knight yaw 180 world (58.80, 51.06): 0.56 m north of the crawl, 1.68 m west of the shield.
+            pieces.Add(("Toy_Crate", new Vector3(-0.80f, 0f, -6.81f), 0f));
             pieces.Add(("Mega_ClimbNet", new Vector3(5f, 0f, -1.5f), 90f));
             // 1.8 m ladder on the net side of the deck. Reaches the 1.60 deck, not the 2.00 cap.
             // x=1.20 is ~0.16 m off the deck edge; z=0.45 stays ~0.1 m south of the corner post.
