@@ -446,7 +446,9 @@ Already on this branch: A wall run into a slide eases the leave into the wedge. 
 
 Already on this branch: An air dash into a ski eases the burst into the glide. A wall run into a slide is unchanged. A wall run into a ski is unchanged. A climb into a ski is unchanged. An air dash into a slide is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged.
 
-This delta: A hard landing into a ski eases the absorb into the glide. An air dash into a ski is unchanged. A soft landing into a ski is unchanged. A jump into a ski is unchanged. A hard landing into a slide is unchanged. Ski speed is unchanged. Land time is unchanged.
+Already on this branch: A hard landing into a ski eases the absorb into the glide. An air dash into a ski is unchanged. A soft landing into a ski is unchanged. A jump into a ski is unchanged. A hard landing into a slide is unchanged. Ski speed is unchanged. Land time is unchanged.
+
+This delta: An air crouch into a ski eases the dart into the glide. A hard landing into a ski is unchanged. An air dash into a ski is unchanged. A jump into a ski is unchanged. An air crouch into a slide is unchanged. Fall speed is unchanged. Ski speed is unchanged.
 
 ## Stack snapshot
 
@@ -788,6 +790,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 243. Wall run, then slide: the leave should ease into the wedge. A wall run into a ski should feel the same. A climb into a slide should feel the same. A wall run into a jump should feel the same. A soft landing into a slide should feel the same. A jump into a slide should feel the same. The slide should not feel faster. The leave should not feel longer. Jet stays off.
 244. Air dash, then ski: the burst should ease into the glide. A wall run into a slide should feel the same. A wall run into a ski should feel the same. A climb into a ski should feel the same. An air dash into a slide should feel the same. The glide should not feel longer. The dash should not feel longer. Speed should feel the same. Jet stays off.
 245. Hard land, then ski: the absorb should ease into the glide. An air dash into a ski should feel the same. A soft landing into a ski should feel the same. A jump into a ski should feel the same. A hard landing into a slide should feel the same. The glide should not feel longer. The landing should not feel longer. Speed should feel the same. Jet stays off.
+246. Air crouch, then ski: the dart should ease into the glide. A hard landing into a ski should feel the same. An air dash into a ski should feel the same. A jump into a ski should feel the same. An air crouch into a slide should feel the same. The glide should not feel longer. The fall should not feel longer. Speed should feel the same. Jet stays off.
 
 ## Known leftovers
 
@@ -1053,6 +1056,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 233. A wall run into a slide eases the leave into the wedge. A wall run into a ski is unchanged. A climb into a slide is unchanged. A wall run into a jump is unchanged. A soft landing into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Exit time is unchanged. Jet stays off.
 234. An air dash into a ski eases the burst into the glide. A wall run into a slide is unchanged. A wall run into a ski is unchanged. A climb into a ski is unchanged. An air dash into a slide is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged. Jet stays off.
 235. A hard landing into a ski eases the absorb into the glide. An air dash into a ski is unchanged. A soft landing into a ski is unchanged. A jump into a ski is unchanged. A hard landing into a slide is unchanged. Ski speed is unchanged. Land time is unchanged. Jet stays off.
+236. An air crouch into a ski eases the dart into the glide. A hard landing into a ski is unchanged. An air dash into a ski is unchanged. A jump into a ski is unchanged. An air crouch into a slide is unchanged. Fall speed is unchanged. Ski speed is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
