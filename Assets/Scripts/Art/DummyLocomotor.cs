@@ -1668,14 +1668,22 @@ namespace Tag.Art
             if (_dashReady > 0.02f && !readyBlocked)
             {
                 // The cooldown just ended. A short settle on the chest and the arms,
-                // then back into the stride. Not a second whip. Duration and cooldown are unchanged.
+                // then back into the stride. Standing, it is a small pulse, then the idle breath.
+                // Not a second whip. Duration and cooldown are unchanged.
+                float moving = grounded ? Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)) : 0f;
+                float standing = grounded ? 1f - moving : 0f;
                 float w = Mathf.Sin(Mathf.Clamp01(_dashReady) * Mathf.PI);
-                _uaLT = Quaternion.Slerp(_uaLT, _uaLT * Quaternion.Euler(8f, 6f, 0f), w);
-                _uaRT = Quaternion.Slerp(_uaRT, _uaRT * Quaternion.Euler(8f, -6f, 0f), w);
-                _laLT = Quaternion.Slerp(_laLT, _laLT * Quaternion.Euler(4f, 0f, 0f), w);
-                _laRT = Quaternion.Slerp(_laRT, _laRT * Quaternion.Euler(4f, 0f, 0f), w);
-                _spineT = Quaternion.Slerp(_spineT, _spineT * Quaternion.Euler(6f, 0f, 0f), w);
-                _hipsT = Quaternion.Slerp(_hipsT, _hipsT * Quaternion.Euler(3f, 0f, 0f), w);
+                float armP = Mathf.Lerp(8f, 3f, standing);
+                float armY = Mathf.Lerp(6f, 0f, standing);
+                float elb = Mathf.Lerp(4f, 1.5f, standing);
+                float chest = Mathf.Lerp(6f, 2f, standing);
+                float hip = Mathf.Lerp(3f, 1f, standing);
+                _uaLT = Quaternion.Slerp(_uaLT, _uaLT * Quaternion.Euler(armP, armY, 0f), w);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaRT * Quaternion.Euler(armP, -armY, 0f), w);
+                _laLT = Quaternion.Slerp(_laLT, _laLT * Quaternion.Euler(elb, 0f, 0f), w);
+                _laRT = Quaternion.Slerp(_laRT, _laRT * Quaternion.Euler(elb, 0f, 0f), w);
+                _spineT = Quaternion.Slerp(_spineT, _spineT * Quaternion.Euler(chest, 0f, 0f), w);
+                _hipsT = Quaternion.Slerp(_hipsT, _hipsT * Quaternion.Euler(hip, 0f, 0f), w);
             }
 
             float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f || claimAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
