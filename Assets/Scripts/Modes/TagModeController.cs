@@ -173,6 +173,9 @@ namespace Tag.Modes
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             Time.timeScale = 1f;
+            // Same Update as rematch click / R: swallow look+punch (rising-edge gate also covers this).
+            foreach (var reader in Object.FindObjectsByType<TagArena.Movement.PlayerInputReader>(FindObjectsSortMode.None))
+                reader?.ArmLookPunchGate(1);
             SetMode(id);
             RefreshPlayers();
             _endedNotified = false;
