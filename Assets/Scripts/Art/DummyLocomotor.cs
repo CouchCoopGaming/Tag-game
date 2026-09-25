@@ -430,8 +430,11 @@ namespace Tag.Art
             if (Mathf.Abs(_turnVis) > 0.12f && canTurn)
             {
                 // Same roll on the chest and the hips. A counter-roll reads as a twist at the waist.
-                float w = Mathf.Clamp01(Mathf.Abs(_turnVis));
-                Quaternion lean = Quaternion.Euler(0f, 0f, _turnVis * 4.5f);
+                // A sprint leans a little more so the pair still reads through the long stride.
+                float sprint = Mathf.Clamp01(_runVis);
+                float leanDeg = Mathf.Lerp(4.5f, 10f, sprint);
+                float w = Mathf.Clamp01(Mathf.Abs(_turnVis) * Mathf.Lerp(1f, 1.7f, sprint));
+                Quaternion lean = Quaternion.Euler(0f, 0f, _turnVis * leanDeg);
                 _spineT = Quaternion.Slerp(_spineT, _spineT * lean, w);
                 _hipsT = Quaternion.Slerp(_hipsT, _hipsT * lean, w);
             }
@@ -1109,7 +1112,11 @@ namespace Tag.Art
                 if (Mathf.Abs(_turnVis) > 0.18f && footSki < 0.35f)
                 {
                     // Outside foot plants. Positive turn is to the right, so the left foot stays down.
-                    float w = Mathf.Clamp01((Mathf.Abs(_turnVis) - 0.15f) / 0.55f);
+                    // A sprint stride is long, so the plant arrives sooner or the foot keeps swinging.
+                    float turnAbs = Mathf.Abs(_turnVis);
+                    float walkW = Mathf.Clamp01((turnAbs - 0.15f) / 0.55f);
+                    float sprintW = Mathf.Clamp01((turnAbs - 0.12f) / 0.22f);
+                    float w = Mathf.Lerp(walkW, sprintW, Mathf.Clamp01(_runVis));
                     if (_turnVis > 0f)
                     {
                         _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(6f, 0f, 0f), w);
