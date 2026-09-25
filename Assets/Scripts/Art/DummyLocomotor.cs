@@ -105,6 +105,8 @@ namespace Tag.Art
         float _slideFromDashIn;
         bool _climbFromDash;
         float _climbFromDashIn;
+        bool _wallFromDash;
+        float _wallFromDashIn;
         float _dartStepL;
         float _dartStepR;
         bool _dartFromDash;
@@ -801,6 +803,22 @@ namespace Tag.Art
             }
             else
                 _climbFromDash = false;
+            if (!dashingAir && _airDashPoseWas && wallRun && !jet && !climb)
+            {
+                // The burst eases into the attach. An air dash into a climb keeps its ease.
+                // A climb into a dash keeps its ease. A wall exit into a dash keeps its ease.
+                // Exit time is unchanged. Duration and cooldown are unchanged.
+                _wallFromDash = true;
+                _wallFromDashIn = 0f;
+            }
+            if (_wallFromDash && !dashingAir && wallRun && !jet && !climb)
+            {
+                _wallFromDashIn = Mathf.MoveTowards(_wallFromDashIn, 1f, dt / 0.16f);
+                if (_wallFromDashIn >= 0.98f && !dashTell)
+                    _wallFromDash = false;
+            }
+            else
+                _wallFromDash = false;
             _airDashPoseWas = dashingAir;
             bool windupNow = punching && phase == PunchPhase.Windup;
             bool fromJumpPose = (!grounded && _diveFromJump) || (_landedFromJump && _landSquash > 0.08f);
@@ -4904,6 +4922,73 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_punchUlR, _ulRT, into);
                 _llLT = Quaternion.Slerp(_punchLlL, _llLT, into);
                 _llRT = Quaternion.Slerp(_punchLlR, _llRT, into);
+            }
+            if (_wallFromDash && !airDashing && wallRun && !climb && !punching)
+            {
+                // The burst eases into the attach, then the attach holds.
+                // An air dash into a climb keeps its ease. A climb into a dash keeps its ease.
+                // A wall exit into a dash keeps its ease.
+                // Exit time is unchanged. Duration and cooldown are unchanged.
+                float intoAttach = _wallFromDashIn;
+                bool left = _motor != null && _motor.WallLeft;
+                float wallLive = Mathf.Sin(_surfPhase);
+                float pressLive = (wallLive + 1f) * 0.5f;
+                float press = Mathf.Lerp(0.55f, pressLive, _surfIn);
+                float outerFwd = 1f - press;
+                float yaw = Mathf.Lerp(18f, 34f, _surfIn);
+                float wallPitch = Mathf.Lerp(-48f, -72f, press);
+                float wallElbow = Mathf.Lerp(-16f, -8f, press);
+                float outerArm = Mathf.Lerp(-36f, Mathf.Lerp(-28f, -84f, 1f - pressLive), _surfIn);
+                float outerElbow = Mathf.Lerp(-16f, -10f, outerFwd);
+                float wallPhase = Mathf.Lerp(0f, wallLive, _surfIn);
+                float outerThigh = 10f + wallPhase * 38f;
+                float outerKnee = -(6f + Mathf.Max(0f, wallPhase) * 68f);
+                float wallLean = left ? 32f : -32f;
+                Quaternion burstL = _uaL0 * Quaternion.Euler(108f, 32f, armZ);
+                Quaternion burstR = _uaR0 * Quaternion.Euler(108f, -32f, -armZ);
+                Quaternion burstElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion burstElR = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion attachL;
+                Quaternion attachR;
+                Quaternion attachElL;
+                Quaternion attachElR;
+                Quaternion attachThighL;
+                Quaternion attachThighR;
+                Quaternion attachKneeL;
+                Quaternion attachKneeR;
+                if (left)
+                {
+                    attachL = _uaL0 * Quaternion.Euler(wallPitch, yaw, armZ);
+                    attachR = _uaR0 * Quaternion.Euler(outerArm, -10f, -armZ);
+                    attachElL = _laL0 * Quaternion.Euler(wallElbow, 0f, 0f);
+                    attachElR = _laR0 * Quaternion.Euler(outerElbow, 0f, 0f);
+                    attachThighL = _ulL0 * Quaternion.Euler(16f, 0f, 0f);
+                    attachThighR = _ulR0 * Quaternion.Euler(outerThigh, 0f, 0f);
+                    attachKneeL = _llL0 * Quaternion.Euler(-8f, 0f, 0f);
+                    attachKneeR = _llR0 * Quaternion.Euler(outerKnee, 0f, 0f);
+                }
+                else
+                {
+                    attachR = _uaR0 * Quaternion.Euler(wallPitch, -yaw, -armZ);
+                    attachL = _uaL0 * Quaternion.Euler(outerArm, 10f, armZ);
+                    attachElR = _laR0 * Quaternion.Euler(wallElbow, 0f, 0f);
+                    attachElL = _laL0 * Quaternion.Euler(outerElbow, 0f, 0f);
+                    attachThighR = _ulR0 * Quaternion.Euler(16f, 0f, 0f);
+                    attachThighL = _ulL0 * Quaternion.Euler(outerThigh, 0f, 0f);
+                    attachKneeR = _llR0 * Quaternion.Euler(-8f, 0f, 0f);
+                    attachKneeL = _llL0 * Quaternion.Euler(outerKnee, 0f, 0f);
+                }
+                _uaLT = Quaternion.Slerp(burstL, attachL, intoAttach);
+                _uaRT = Quaternion.Slerp(burstR, attachR, intoAttach);
+                _laLT = Quaternion.Slerp(burstElL, attachElL, intoAttach);
+                _laRT = Quaternion.Slerp(burstElR, attachElR, intoAttach);
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(58f, 0f, 0f), _spine0 * Quaternion.Euler(22f, 0f, wallLean), intoAttach);
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(0f, 0f, -wallLean * 0.55f), intoAttach);
+                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(0f, 0f, 0f), _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), intoAttach);
+                _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(72f, 0f, 0f), attachThighL, intoAttach);
+                _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), attachThighR, intoAttach);
+                _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), attachKneeL, intoAttach);
+                _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), attachKneeR, intoAttach);
             }
             if (_climbFromDash && !airDashing && climb && !wallRun && !punching)
             {
