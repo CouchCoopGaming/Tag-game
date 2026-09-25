@@ -50,6 +50,7 @@ namespace Tag.Art
         float _skiBlend;
         bool _skiFromWalk;
         bool _skiFromSprint;
+        bool _skiFromCrouch;
         float _stopGait;
         float _stopRun;
         float _stopPlant;
@@ -215,26 +216,28 @@ namespace Tag.Art
             bool slideSprintExit = slideExit && !slideIdleExit && !slideWalkExit;
             // A still crouch eases into the idle breath. A still crouch into a sprint rises into the long stride.
             bool crouchStandSprint = _crouchFromStand && !_dropSlide && !sliding && !crouch && st == MoveState.Sprint;
-            bool crouchIdleExit = !_dropSlide && !sliding && !crouch && speed <= 0.35f && !crouchStandSprint;
+            bool skiing = st == MoveState.Ski;
+            // A walk eases into the glide. A sprint closes the long stride into it.
+            // A still crouch eases the guard into the glide. Ski speed is unchanged.
+            if (skiing && _skiBlend <= 0.02f)
+            {
+                _skiFromWalk = speed > 0.35f && speed <= 5.5f;
+                _skiFromSprint = speed > 5.5f;
+                _skiFromCrouch = !_dropSlide && speed <= 0.35f && _dropVis > 0.2f;
+            }
+            else if (!skiing)
+            {
+                _skiFromWalk = false;
+                _skiFromSprint = false;
+                _skiFromCrouch = false;
+            }
+            bool crouchIdleExit = !_dropSlide && !sliding && !crouch && speed <= 0.35f && !crouchStandSprint && !_skiFromCrouch;
             // A crouch walk stands into the stride. The feet step while the hips are still rising.
             bool crouchWalkExit = !_dropSlide && !sliding && !crouch && speed > 0.35f && !crouchStandSprint;
             // A crouch walk into a sprint opens the step as the hips rise. Speed is unchanged.
             bool crouchSprintExit = crouchWalkExit && st == MoveState.Sprint;
             float footDrop = (slideExit || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? _dropVis * _dropVis : _dropVis;
             float hipDrop = (slideExit || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? Mathf.SmoothStep(0f, 1f, _dropVis) : _dropVis;
-            bool skiing = st == MoveState.Ski;
-            // A walk eases into the glide. A sprint closes the long stride into it.
-            // Ski speed is unchanged.
-            if (skiing && _skiBlend <= 0.02f)
-            {
-                _skiFromWalk = speed > 0.35f && speed <= 5.5f;
-                _skiFromSprint = speed > 5.5f;
-            }
-            else if (!skiing)
-            {
-                _skiFromWalk = false;
-                _skiFromSprint = false;
-            }
             _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             // Feet stay in the short glide while the hips are still pitched, then the run opens under them.
             // A walk returns the stride with the step, so the long glide does not skate off.
@@ -1202,6 +1205,17 @@ namespace Tag.Art
                         _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-72f, 0f, 0f), armD);
                     }
                 }
+                if (_skiFromCrouch && _skiBlend < 0.98f)
+                {
+                    // The guard eases into the glide. It does not stand, then pop.
+                    float intoGlide = _skiBlend;
+                    float glideL = RunArmPitch(-sinC, 16f);
+                    float glideR = RunArmPitch(sinC, 16f);
+                    _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaL0 * Quaternion.Euler(-18f + glideL, 22f, armZ), intoGlide);
+                    _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-36f, -16f, -armZ), _uaR0 * Quaternion.Euler(-18f + glideR, -22f, -armZ), intoGlide);
+                    _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-72f, 0f, 0f), _laL0 * Quaternion.Euler(-12f, 0f, 0f), intoGlide);
+                    _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-72f, 0f, 0f), _laR0 * Quaternion.Euler(-12f, 0f, 0f), intoGlide);
+                }
             }
 
             if (_punchTelegraph > 0.02f && !punching)
@@ -1618,6 +1632,19 @@ namespace Tag.Art
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-4f, 0f, 0f), w);
                     }
                 }
+                if (_skiFromCrouch && _skiBlend < 0.98f)
+                {
+                    // The guard eases into the short glide. The feet do not pass through a stand.
+                    float intoGlide = _skiBlend;
+                    float glideFrontL = Mathf.Max(0f, sinC);
+                    float glideFrontR = Mathf.Max(0f, -sinC);
+                    float glideThighL = (glideFrontL - glideFrontR * 0.5f) * 32f;
+                    float glideThighR = (glideFrontR - glideFrontL * 0.5f) * 32f;
+                    _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(56f, 0f, 0f), _ulL0 * Quaternion.Euler(glideThighL, 0f, 0f), intoGlide);
+                    _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(56f, 0f, 0f), _ulR0 * Quaternion.Euler(glideThighR, 0f, 0f), intoGlide);
+                    _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-68f, 0f, 0f), _llL0 * Quaternion.Euler(-(6f + glideFrontL * 32f), 0f, 0f), intoGlide);
+                    _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-68f, 0f, 0f), _llR0 * Quaternion.Euler(-(6f + glideFrontR * 32f), 0f, 0f), intoGlide);
+                }
             }
 
             if (_dropVis > 0.02f && !air && !dashing && !lunging && !jet && !wallRun && !climb && !mantle && !punching)
@@ -1664,6 +1691,15 @@ namespace Tag.Art
                 _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(chest, 0f, 0f), d);
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(hip, 0f, 0f), d);
                 _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(head, 0f, 0f), d);
+            }
+
+            if (_skiFromCrouch && _skiBlend < 0.98f && !air && !dashing && !lunging && !jet && !sliding && !punching)
+            {
+                // The guard pitch eases into the glide. The hips do not pop flat.
+                float intoGlide = _skiBlend;
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(10f, 0f, 0f), _spine0 * Quaternion.Euler(26f, 0f, 0f), intoGlide);
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(14f, 0f, 0f), intoGlide);
+                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), intoGlide);
             }
 
             if (wallRun || climb)
