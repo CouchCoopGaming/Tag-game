@@ -10,7 +10,9 @@ Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `9acb894`. Results
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
 
-This delta: Player and the bot prefer the curved Hier HiPoly mannequin over the flat Dummy_Runner / Dummy_It prefab saved on the Play scene. It uses the red Hier mesh. A player build loads those meshes from HierMannequinCatalog. If the mesh has no limb hierarchy, the Navy Spade primitive is still the fallback.
+Already on this branch: Player and the bot prefer the curved Hier HiPoly mannequin over the flat Dummy_Runner / Dummy_It prefab. It uses the red Hier mesh.
+
+This delta: Run bends only the recovery knee; the stance leg stays nearly straight. The dash whip is arm pitch, not extra roll, so the hands stay clear of the pelvis. A slide reads as a low lead-knee crouch. Land buckles the knees. Punch windup keeps the elbow beside the head, and the connect stays in front of the chest.
 
 ## Stack snapshot
 
@@ -133,6 +135,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 24. Set 3 humans on who-plays, then Esc from mode select: you should be back on who-plays with 3 highlighted, not Boot. Esc again: Boot, Couch highlighted, and the next Mode select should still say 3 humans. Opening Mode select from Boot should not change that count. The highlighted mode should be the one you played last.
 25. On the results card, 1 and 2 only move Rematch / Menu. During the short arm, Enter and Space do nothing. After it, Enter or Space uses the highlight. R still rematches even if Menu is highlighted. Q and Esc still return to Boot. A click during the arm only moves the highlight. The same keys work on the loose round-end card if no mode controller is showing results.
 26. Play: you and the bot should be the curved Hier mannequin, not the flat Dummy_Runner mesh. The console should say Hier mannequin, not Navy Spade, unless the FBX failed to bind. Becoming It should swap to the red Hier mesh. A run should show the knees bend. Arms should hang slightly out, not fold into the butt.
+27. Sprint: one knee should lift on the forward leg and the back leg should look straight, not two bent skates. Slide should look low, lead knee tucked. A hop should buckle the knees on landing. Air dash should throw the arms back without twisting the hands into the hips. A punch should cock the elbow out, then the fist should stay in front of the chest.
 
 ## Known leftovers
 
@@ -179,6 +182,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 14. Who-plays Esc returns to Boot on Couch. Mode select Esc returns to who-plays after Couch, and to Boot after the Mode row. The Mode row does not reset the player count. Highlights match the saved count and the last mode.
 15. Results: keys 1-2 highlight Rematch and Menu. Enter or Space activates after the 0.25s arm. R rematches. Q/Esc menu. A click during the arm only moves the highlight.
 16. Player and bot spawn the curved Hier HiPoly mannequin. It is the red Hier mesh. Flat Dummy_Runner on the Play scene does not win. Navy Spade only if Hier has no limb bones.
+17. Run: recovery knee flexes, stance leg stays nearly straight. Dash whip does not add arm roll. Slide is a low crouch. Land buckles. Punch connect stays in front of the chest.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
