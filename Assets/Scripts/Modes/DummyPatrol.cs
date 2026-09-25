@@ -37,7 +37,7 @@ namespace Tag.Modes
         [Tooltip("Only flee when It is within this planar distance; otherwise wander.")]
         [SerializeField] float fleeThreatRange = 14f;
         [Tooltip("Blend of lateral strafe into flee dir so pure radial chase is harder.")]
-        [SerializeField] float fleeStrafeBias = 0.35f;
+        [SerializeField] float fleeStrafeBias = 0.40f; // slightly stronger kite strafe so peel reads
         [Tooltip("Seconds of threat velocity lead when computing flee-from point.")]
         [SerializeField] float fleeLeadSeconds = 0.35f;
         [Tooltip("Forward wish strength while wandering (motor treats y>0.4 as sprint).")]
