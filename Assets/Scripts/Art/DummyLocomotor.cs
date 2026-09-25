@@ -45,6 +45,9 @@ namespace Tag.Art
         float _stopGait;
         float _stopRun;
         float _runVis;
+        float _swayVis;
+        float _idlePhase;
+        bool _swayIdle;
         float _prevYaw;
         float _turnVis;
         bool _hasYaw;
@@ -238,15 +241,34 @@ namespace Tag.Art
             float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : sliding ? 62f : crouch ? 10f : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : 0f;
             float idleW = 0f;
-            if (grounded && !dashing && !sliding && !crouch && !jet && !wallRun && !climb && !mantle && !air && !lunging && flinchAmt < 0.04f && claimAmt < 0.04f)
+            bool atRest = grounded && !dashing && !sliding && !crouch && !jet && !wallRun && !climb && !mantle && !air && !lunging && flinchAmt < 0.04f && claimAmt < 0.04f;
+            if (atRest)
                 idleW = 1f - Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
-            // Slow side sway and a deeper breath only at rest. The stride does not pick this up.
-            float sway = Mathf.Sin(Time.time * 0.8f) * 5f * idleW;
-            if (idleW > 0.02f)
+            // After the feet close, the last hip roll eases into the idle sway.
+            // A clock sine pops the hips. Holding them flat until the sway starts reads as a freeze.
+            float strideRemain = Mathf.Abs(_cycle - Mathf.PI * Mathf.Round(_cycle / Mathf.PI));
+            bool stopping = atRest && speed <= 0.35f;
+            float closeRoll = 0f;
+            if (stopping && !_swayIdle)
+                closeRoll = sinC * Mathf.Lerp(3.2f, 5.5f, _stopRun) * Mathf.Max(_stopGait, Mathf.Clamp01(strideRemain / 0.55f));
+            if (!stopping)
+                _swayIdle = false;
+            else if (!_swayIdle && strideRemain < 0.22f)
             {
-                leanX = breath * (1f + idleW);
-                leanZ = sway;
+                _swayIdle = true;
+                float n = Mathf.Clamp(_swayVis / 5f, -1f, 1f);
+                float a = Mathf.Asin(n);
+                // Leave a peak toward center so the idle sway continues the settle.
+                _idlePhase = n >= 0f ? Mathf.PI - a : a;
             }
+            if (_swayIdle)
+                _idlePhase += dt * 0.8f;
+            float swayTarget = !atRest ? 0f : _swayIdle ? Mathf.Sin(_idlePhase) * 5f : closeRoll;
+            _swayVis = Mathf.MoveTowards(_swayVis, swayTarget, dt * 28f);
+            if (idleW > 0.02f)
+                leanX = breath * (1f + idleW);
+            if (stopping || idleW > 0.02f)
+                leanZ = _swayVis;
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
                 leanX = Mathf.Lerp(leanX, 26f, _skiBlend);
             if (flinchAmt > 0.04f)
@@ -272,7 +294,7 @@ namespace Tag.Art
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f, 0f, 0f), _skiBlend);
             _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? -12f : crouch ? -6f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
             if (idleW > 0.02f)
-                _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-breath * 0.5f, 0f, -sway * 0.35f), idleW);
+                _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-breath * 0.5f, 0f, -_swayVis * 0.35f), idleW);
 
             Transform yawSrc = _motor != null ? _motor.transform : transform;
             float yawNow = yawSrc.eulerAngles.y;
@@ -974,7 +996,9 @@ namespace Tag.Art
 
 
             float step = Mathf.Pow(Mathf.Abs(sinRaw), 1.7f);
-            float bob = grounded ? step * 0.085f * Mathf.Max(walkAmt, runAmt) : air ? step * 0.02f : 0f;
+            // Keep the last bounce while the feet close. Cutting it with speed freezes the hips, then the idle sway pops.
+            float bobGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
+            float bob = grounded ? step * 0.085f * bobGait : air ? step * 0.02f : 0f;
             if (sliding) bob = -0.32f; else if (crouch) bob = -0.14f;
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
             if (_landSquash > 0f) bob -= 0.14f * _landSquash;
