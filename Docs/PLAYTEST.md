@@ -212,7 +212,9 @@ Already on this branch: Letting go of a grapple while sprinting returns the hand
 
 Already on this branch: Letting a slide die into a walk brings the body up into the stride. The hips do not pop. A slide into a stand still rises into the idle breath. A slide into a sprint is unchanged. Speed is unchanged.
 
-This delta: Letting a slide die into a sprint brings the body up into the long stride. The hips do not pop. A slide into a walk still rises into the walk. A slide into a stand still rises into the idle breath. Speed is unchanged.
+Already on this branch: Letting a slide die into a sprint brings the body up into the long stride. The hips do not pop. A slide into a walk still rises into the walk. A slide into a stand still rises into the idle breath. Speed is unchanged.
+
+This delta: A still crouch into a sprint raises the hips into the long stride. They do not pop. A still crouch into a stand still rises into the idle breath. A crouch walk into a sprint is unchanged. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -437,6 +439,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 126. If you turn the grapple on, hook, then let go while sprinting: the hands should return to the stride. They should not hitch. It should stay off unless you turn it on. The pull should feel the same.
 127. Slide, then let it die into a walk: the body should rise into the stride. The hips should not pop. A slide into a stand should still rise into the idle breath. A slide into a sprint should feel the same. Speed should feel the same.
 128. Slide, then let it die into a sprint: the body should rise into the long stride. The hips should not pop. A slide into a walk should still rise into the walk. A slide into a stand should still rise into the idle breath. Speed should feel the same.
+129. Crouch still, then sprint: the hips should rise into the long stride. They should not pop. A still crouch into a stand should still rise into the idle breath. A crouch walk into a sprint should feel the same. Speed should feel the same.
 
 ## Known leftovers
 
@@ -585,6 +588,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 116. Letting go of a grapple while sprinting returns the hands to the stride. They do not hitch. A walking release still returns to the walk. A stand keeps the old leave. The gate stays off. Range and speed are unchanged.
 117. Letting a slide die into a walk brings the body up into the stride. The hips do not pop. A slide into a stand still rises into the idle breath. A slide into a sprint is unchanged. Speed is unchanged.
 118. Letting a slide die into a sprint brings the body up into the long stride. The hips do not pop. A slide into a walk still rises into the walk. A slide into a stand still rises into the idle breath. Speed is unchanged.
+119. A still crouch into a sprint raises the hips into the long stride. They do not pop. A still crouch into a stand still rises into the idle breath. A crouch walk into a sprint is unchanged. Speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
