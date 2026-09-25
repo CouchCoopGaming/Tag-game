@@ -600,7 +600,9 @@ Already on this branch: A ski into a slide eases the glide into the wedge. The w
 
 Already on this branch: A still crouch into a slide eases the guard into the wedge. The wedge then holds. The slow guard blend stays off that path. A crouch walk into a slide is unchanged. slideBoost stays 0.
 
-This delta: A crouch walk into a slide eases the low stride into the wedge. The wedge then holds. The slow stride blend stays off that path. A still crouch into a slide is unchanged. A walk into a slide is unchanged. slideBoost stays 0.
+Already on this branch: A crouch walk into a slide eases the low stride into the wedge. The wedge then holds. The slow stride blend stays off that path. A still crouch into a slide is unchanged. A walk into a slide is unchanged. slideBoost stays 0.
+
+This delta: A walk into a sprint eases the walk into the sprint. The sprint then holds. The slow push stays off that path. A crouch walk into a run is unchanged. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -1019,6 +1021,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 320. Ski, then slide: the glide should ease into the wedge. The wedge should then hold. The glide should not ease back in. A slide into a ski should feel the same. The wedge should not feel longer. The slide should not feel faster. Jet stays off.
 321. Still crouch, then slide: the guard should ease into the wedge. The wedge should then hold. The guard should not ease back in. A crouch walk into a slide should feel the same. The wedge should not feel longer. The slide should not feel faster. Jet stays off.
 322. Crouch walk, then slide: the low stride should ease into the wedge. The wedge should then hold. The stride should not ease back in. A still crouch into a slide should feel the same. A walk into a slide should feel the same. The wedge should not feel longer. The slide should not feel faster. Jet stays off.
+323. Walk, then sprint: the walk should ease into the sprint. The sprint should then hold. The push should not ease back in. A crouch walk into a run should feel the same. The sprint should not feel longer. Speed should feel the same. Jet stays off.
 
 ## Known leftovers
 
@@ -1361,6 +1364,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 310. A ski into a slide eases the glide into the wedge. The wedge then holds. The slow glide blend stays off that path. A slide into a ski is unchanged. Ski speed is unchanged. slideBoost stays 0. Jet stays off.
 311. A still crouch into a slide eases the guard into the wedge. The wedge then holds. The slow guard blend stays off that path. A crouch walk into a slide is unchanged. slideBoost stays 0. Jet stays off.
 312. A crouch walk into a slide eases the low stride into the wedge. The wedge then holds. The slow stride blend stays off that path. A still crouch into a slide is unchanged. A walk into a slide is unchanged. slideBoost stays 0. Jet stays off.
+313. A walk into a sprint eases the walk into the sprint. The sprint then holds. The slow push stays off that path. A crouch walk into a run is unchanged. Speed is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
