@@ -64,7 +64,7 @@ namespace Tag.Art
             // Scene pawns serialize the flat Dummy_Runner / Dummy_It prefab. FirstRenderable
             // keeps that prefab when it has a mesh, so Hier never won. Approved meshes are
             // Tan runner and Orange It. The catalog covers player builds; the editor path
-            // loads the same FBX when the catalog ref is empty.
+            // loads the same FBX when the catalog ref is empty. Player and bot share this path.
             GameObject hierRunner = HierPrefab(false);
             GameObject hierIt = HierPrefab(true);
 #if UNITY_EDITOR
