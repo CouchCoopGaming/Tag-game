@@ -181,6 +181,7 @@ namespace Tag.Art
             n += MerryNorthCluster(root);
             n += EastNorthCluster(root);
             n += SoftPlaySouthCluster(root);
+            n += SoftSlideBeam(root);
             n += SoftRingWall(root);
             n += AstroRingWall(root);
             n += RingArmyBars(root);
@@ -940,6 +941,22 @@ namespace Tag.Art
                 // Two hop tiles south of the beam on the open apron (merry/NE mirror).
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(-0.6f, 0.02f, -1.35f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0.6f, 0.02f, -1.35f), 0f),
+            });
+        }
+
+        /// <summary>
+        /// Balance beam between the soft-play south spring and the ground slide.
+        /// Spring ends x=17.70. Slide starts x=19.26. Yaw 90 is 0.12 m thick in X.
+        /// Center (18.48, 2.97): mesh x 18.42-18.54, z 1.47-4.47.
+        /// 0.72 m off the spring and the slide, 0.56 m south of the tube mesh (z=5.03).
+        /// Outside the SoftS aisles. Astro does not get a copy.
+        /// </summary>
+        int SoftSlideBeam(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Beam_SoftSlide", new Vector3(18.48f, 0f, 2.97f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("PGK_Balance_Beam_3m_LOD0", Vector3.zero, 90f),
             });
         }
 
