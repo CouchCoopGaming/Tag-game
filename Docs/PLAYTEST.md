@@ -502,7 +502,9 @@ Already on this branch: A crouch walk into a jump eases the low stride into the 
 
 Already on this branch: A walk into a jump eases the walk into the jump. The jump then holds. A crouch walk into a jump is unchanged. A walk into a ski is unchanged. A still crouch into a jump is unchanged. Jump height is unchanged.
 
-This delta: A walk into an air dash eases the walk into the burst. The burst then holds. A walk into a jump is unchanged. A crouch walk into an air dash is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged.
+Already on this branch: A walk into an air dash eases the walk into the burst. The burst then holds. A walk into a jump is unchanged. A crouch walk into an air dash is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged.
+
+This delta: A still crouch into a jump eases the guard into the jump. The jump then holds. A walk into an air dash is unchanged. A crouch walk into a jump is unchanged. A jump into a still crouch is unchanged. Jump height is unchanged.
 
 ## Stack snapshot
 
@@ -872,6 +874,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 271. Crouch walk, then jump: the low stride should ease into the jump. The jump should then hold. A walk into a ski should feel the same. A still crouch into a jump should feel the same. A crouch walk into an air dash should feel the same. The jump should not feel higher. The stride should not feel longer. Jet stays off.
 272. Walk, then jump: the walk should ease into the jump. The jump should then hold. A crouch walk into a jump should feel the same. A walk into a ski should feel the same. A still crouch into a jump should feel the same. The jump should not feel higher. The stride should not feel longer. Jet stays off.
 273. Walk, then air dash: the walk should ease into the burst. The burst should then hold. A walk into a jump should feel the same. A crouch walk into an air dash should feel the same. A still crouch into an air dash should feel the same. The dash should not feel longer. The stride should not feel longer. Jet stays off.
+274. Still crouch, then jump: the guard should ease into the jump. The jump should then hold. A walk into an air dash should feel the same. A crouch walk into a jump should feel the same. A jump into a still crouch should feel the same. The jump should not feel higher. The guard should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1165,6 +1168,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 261. A crouch walk into a jump eases the low stride into the jump. The jump then holds. A walk into a ski is unchanged. A still crouch into a jump is unchanged. A crouch walk into an air dash is unchanged. Jump height is unchanged. Jet stays off.
 262. A walk into a jump eases the walk into the jump. The jump then holds. A crouch walk into a jump is unchanged. A walk into a ski is unchanged. A still crouch into a jump is unchanged. Jump height is unchanged. Jet stays off.
 263. A walk into an air dash eases the walk into the burst. The burst then holds. A walk into a jump is unchanged. A crouch walk into an air dash is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged. Jet stays off.
+264. A still crouch into a jump eases the guard into the jump. The jump then holds. A walk into an air dash is unchanged. A crouch walk into a jump is unchanged. A jump into a still crouch is unchanged. Jump height is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
