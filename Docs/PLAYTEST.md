@@ -286,7 +286,9 @@ Already on this branch: A ski into a slide eases the glide into the wedge. A wal
 
 Already on this branch: A slide into a ski eases the wedge into the glide. A ski into a slide is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
 
-This delta: An air crouch into a crouch walk eases into the low stride. A still air crouch keeps the dart. An air dash into a crouch walk is unchanged. Fall speed is unchanged. Jump height is unchanged.
+Already on this branch: An air crouch into a crouch walk eases into the low stride. A still air crouch keeps the dart. An air dash into a crouch walk is unchanged. Fall speed is unchanged. Jump height is unchanged.
+
+This delta: An air crouch into a still crouch lands the dart into the guard. A moving air crouch keeps the flare. A still crouch without the dart is unchanged. Fall speed is unchanged. Land time is unchanged.
 
 ## Stack snapshot
 
@@ -548,6 +550,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 163. Ski, then slide: the glide should ease into the wedge. A walk into a ski should feel the same. A slide into a stand should feel the same. Speed should feel the same. Jet stays off.
 164. Slide, then ski: the wedge should ease into the glide. A ski into a slide should feel the same. A walk into a ski should feel the same. Speed should feel the same. Jet stays off.
 165. Jump, hold crouch, and move: the fall should ease into the low stride. A still air crouch should keep the dart. An air dash into a crouch walk should feel the same. The fall should not feel faster.
+166. Jump, hold crouch, and land still: the dart should ease into the guard. A moving air crouch should keep the flare. A still crouch without the dart should feel the same. The land should not feel longer.
 
 ## Known leftovers
 
@@ -733,6 +736,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 153. A ski into a slide eases the glide into the wedge. A walk into a ski is unchanged. A slide into a stand is unchanged. Ski speed is unchanged. Jet stays off.
 154. A slide into a ski eases the wedge into the glide. A ski into a slide is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
 155. An air crouch into a crouch walk eases into the low stride. A still air crouch keeps the dart. An air dash into a crouch walk is unchanged. Fall speed is unchanged. Jump height is unchanged.
+156. An air crouch into a still crouch lands the dart into the guard. A moving air crouch keeps the flare. A still crouch without the dart is unchanged. Fall speed is unchanged. Land time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
