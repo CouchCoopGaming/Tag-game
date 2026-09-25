@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `a50646f`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `f90f344`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
 
@@ -70,7 +70,9 @@ Already on this branch: A held crouch is a low guard: chest up, both knees bent,
 
 Already on this branch: Holding crouch on the way down pitches the chest down and folds the arms in. A normal fall still trails the arms back. The fast-fall speed is unchanged.
 
-This delta: Landing into a run still buckles both knees, then the trail leg and the arms enter the stride while the front knee is still up. A standstill land still opens both legs together. Land time is unchanged.
+Already on this branch: Landing into a run still buckles both knees, then the trail leg and the arms enter the stride while the front knee is still up. A standstill land still opens both legs together. Land time is unchanged.
+
+This delta: On a run plant the arm opposite the front knee stays a long reach, a little wider than the back arm. The elbow fold sits on the back arm. Only the front knee bends. The back swing still stays short of the hip.
 
 ## Stack snapshot
 
@@ -224,6 +226,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 55. From a standstill, hold crouch: both knees should bend and the elbows should fold in front of the chest. The back should stay up. Sprint and keep holding crouch: that becomes the flat slide, straight arms and one leg back, and it should not speed up. When the speed dies while crouch is still held, the guard should return.
 56. Jump, then hold crouch on the way down: the chest should pitch down and the arms should fold in, not trail out like a normal fall. The drop should still feel like the same fast fall. Letting go should return to the trail. A jump with no crouch should feel the same height.
 57. Land while sprinting: both knees should buckle, then the back leg and the arms should already be in the stride while the front knee is still up. They should not both snap straight and then start the run. A small hop still buckles. Standing still, both legs should open together. The land should not feel longer.
+58. Sprint: the arm opposite the lifted knee should be a long reach, wider than the back arm. The back elbow may bend, but that hand should stay clear of the hip. The back leg should stay straight. Only the front knee should lift.
 
 ## Known leftovers
 
@@ -301,6 +304,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 45. Crouch is a low guard with both knees bent and the elbows folded in front. Slide stays the flat wedge with straight arms and a trail leg. Holding crouch still slides only with speed. Slide speed is unchanged.
 46. Air-crouch fall is a nose-down dart with the arms in. A normal fall still trails the arms. The 2x fall speed is unchanged.
 47. Landing into a run opens the trail leg and the arms into the stride while the front knee is still up. A standstill land opens both legs together. Land time is unchanged.
+48. The run arm opposite the front knee is a long reach, wider than the back arm. The back elbow bends short of the hip. Only the front knee lifts.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
