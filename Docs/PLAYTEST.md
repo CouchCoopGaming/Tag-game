@@ -126,7 +126,9 @@ Already on this branch: A punch cocks beside the head and holds that beat, then 
 
 Already on this branch: Stopping from a sprint plants the last foot under the hip, then the idle sway. The foot does not skate. Speed is unchanged.
 
-This delta: In the air, the arms stay clear of the torso. The jump tuck is unchanged. Look speed is unchanged.
+Already on this branch: In the air, the arms stay clear of the torso. The jump tuck is unchanged. Look speed is unchanged.
+
+This delta: Starting or stopping a walk keeps the hands forward and out. They do not drift into the hips. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -308,6 +310,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 83. Punch: the fist should cock beside the head and hold that beat, then strike. It should not feel like a longer cock. The strike should still come out.
 84. Sprint, then let go: the last foot should plant under the hip before the idle sway. It should not skate. Speed should feel the same.
 85. Jump and look around: the arms should stay clear of the torso on the way down. The tuck on the way up should stay the tuck. Look should feel the same.
+86. Stand, then walk, then stop: the hands should stay forward and out the whole way. They should not drift into the hips. The idle sway and the first step should still be there. Speed should feel the same.
 
 ## Known leftovers
 
@@ -413,6 +416,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 73. A punch cocks beside the head and holds that beat, then strikes. Windup time is unchanged.
 74. A stop from a sprint plants the last foot under the hip, then the idle sway. The foot does not skate. Speed is unchanged.
 75. In the air, the arms stay clear of the torso. The jump tuck is unchanged. Look speed is unchanged.
+76. Starting or stopping a walk keeps the hands forward and out. They do not drift into the hips. Speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
