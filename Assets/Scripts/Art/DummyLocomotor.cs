@@ -696,6 +696,12 @@ namespace Tag.Art
         Quaternion _glideRunUaL, _glideRunUaR, _glideRunLaL, _glideRunLaR;
         Quaternion _glideRunUlL, _glideRunUlR, _glideRunLlL, _glideRunLlR;
         Quaternion _glideRunSp, _glideRunHp, _glideRunHd;
+        bool _idleFromSki;
+        float _idleFromSkiIn;
+        bool _idleFromSkiHeld;
+        Quaternion _glideIdleUaL, _glideIdleUaR, _glideIdleLaL, _glideIdleLaR;
+        Quaternion _glideIdleUlL, _glideIdleUlR, _glideIdleLlL, _glideIdleLlR;
+        Quaternion _glideIdleSp, _glideIdleHp, _glideIdleHd;
         bool _walkFromCrouchWalk;
         float _walkFromCrouchWalkIn;
         bool _walkUpHeld;
@@ -2134,6 +2140,42 @@ namespace Tag.Art
             }
             else if (_runFromSki)
                 _runFromSkiIn = Mathf.MoveTowards(_runFromSkiIn, 1f, dt / 0.04f);
+            bool skiToIdle = !skiing && grounded && !crouch && !jet && !_dropSlide && _skiBlend > 0.02f
+                && speed <= 0.35f && st != MoveState.Sprint;
+            bool skiIntoIdle = skiToIdle && _skiBlend > 0.2f && !_idleFromSkiHeld && !_walkFromSki && !_runFromSki
+                && phase != PunchPhase.Windup && phase != PunchPhase.Active
+                && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover
+                && !dashPoseNow && !wallRun && !climb
+                && _itClaim <= 0.2f && _dashReady <= 0.2f
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (skiIntoIdle)
+            {
+                // The glide eases into the idle. A ski into a walk has its own ease.
+                // A ski into a run has its own ease. A ski into a still crouch keeps its ease.
+                // Ski speed is unchanged.
+                _idleFromSki = true;
+                _idleFromSkiIn = 0f;
+                _idleFromSkiHeld = true;
+                _glideIdleUaL = _upperArmL.localRotation;
+                _glideIdleUaR = _upperArmR.localRotation;
+                _glideIdleLaL = _lowerArmL.localRotation;
+                _glideIdleLaR = _lowerArmR.localRotation;
+                _glideIdleUlL = _upperLegL.localRotation;
+                _glideIdleUlR = _upperLegR.localRotation;
+                _glideIdleLlL = _lowerLegL.localRotation;
+                _glideIdleLlR = _lowerLegR.localRotation;
+                _glideIdleSp = _spine.localRotation;
+                _glideIdleHp = _hips.localRotation;
+                _glideIdleHd = _head.localRotation;
+            }
+            if (!skiToIdle)
+            {
+                _idleFromSki = false;
+                _idleFromSkiHeld = false;
+            }
+            else if (_idleFromSki)
+                _idleFromSkiIn = Mathf.MoveTowards(_idleFromSkiIn, 1f, dt / 0.04f);
             // A walk that drops into a crouch walk. The drop timer stays dt/0.16.
             bool walkCrouch = crouch && grounded && !sliding && !jet && speed > 0.35f && speed <= 5.5f
                 && st != MoveState.Sprint && !_dropSlide;
@@ -4815,7 +4857,7 @@ namespace Tag.Art
                 leanX = breath * (1f + idleW);
             if (atRest && (stopping || idleW > 0.02f || Mathf.Abs(_swayVis) > 0.2f))
                 leanZ = _swayVis;
-            if (_skiBlend > 0.02f && !dashing && !sliding && !jet && !_walkFromSki && !_runFromSki)
+            if (_skiBlend > 0.02f && !dashing && !sliding && !jet && !_walkFromSki && !_runFromSki && !_idleFromSki)
                 leanX = Mathf.Lerp(leanX, 26f, _skiBlend);
             if (bouncing)
             {
@@ -4832,7 +4874,7 @@ namespace Tag.Art
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
             float mantleAmt = mantle && _motor != null ? _motor.MantleProgress : 0f;
             _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
-            if (_skiBlend > 0.02f && !dashing && !sliding && !jet && !_walkFromSki && !_runFromSki)
+            if (_skiBlend > 0.02f && !dashing && !sliding && !jet && !_walkFromSki && !_runFromSki && !_idleFromSki)
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f, 0f, 0f), _skiBlend);
             _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
             float swayFade = Mathf.Max(idleW, atRest ? Mathf.Clamp01(Mathf.Abs(_swayVis) / 5f) : 0f);
@@ -5610,7 +5652,7 @@ namespace Tag.Art
                     // Short swing while the feet are still in the glide, so the arms do not skate past the hips.
                     float skateL = RunArmPitch(-sinC, 16f);
                     float skateR = RunArmPitch(sinC, 16f);
-                    float skateW = (_walkFromSki || _runFromSki) ? 0f : legSki;
+                    float skateW = (_walkFromSki || _runFromSki || _idleFromSki) ? 0f : legSki;
                     _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-18f + skateL, 22f, armZ), skateW);
                     _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-18f + skateR, -22f, -armZ), skateW);
                     _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-12f, 0f, 0f), skateW);
@@ -6217,7 +6259,7 @@ namespace Tag.Art
                     float sFrontR = Mathf.Max(0f, -sinC);
                     float sThighL = (sFrontL - sFrontR * 0.5f) * 32f;
                     float sThighR = (sFrontR - sFrontL * 0.5f) * 32f;
-                    float glideW = (_walkFromSki || _runFromSki) ? 0f : legSki;
+                    float glideW = (_walkFromSki || _runFromSki || _idleFromSki) ? 0f : legSki;
                     _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(sThighL, 0f, 0f), glideW);
                     _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(sThighR, 0f, 0f), glideW);
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(6f + sFrontL * 32f), 0f, 0f), glideW);
@@ -11112,6 +11154,24 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_glideRunUlR, _ulRT, intoRun);
                 _llLT = Quaternion.Slerp(_glideRunLlL, _llLT, intoRun);
                 _llRT = Quaternion.Slerp(_glideRunLlR, _llRT, intoRun);
+            }
+            if (_idleFromSki && _idleFromSkiIn < 0.98f && !crouch && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The glide eases into the idle, then the idle holds.
+                // A ski into a walk has its own ease. A ski into a run has its own ease.
+                // A ski into a still crouch keeps its ease. Ski speed is unchanged.
+                float intoIdle = _idleFromSkiIn;
+                _uaLT = Quaternion.Slerp(_glideIdleUaL, _uaLT, intoIdle);
+                _uaRT = Quaternion.Slerp(_glideIdleUaR, _uaRT, intoIdle);
+                _laLT = Quaternion.Slerp(_glideIdleLaL, _laLT, intoIdle);
+                _laRT = Quaternion.Slerp(_glideIdleLaR, _laRT, intoIdle);
+                _spineT = Quaternion.Slerp(_glideIdleSp, _spineT, intoIdle);
+                _hipsT = Quaternion.Slerp(_glideIdleHp, _hipsT, intoIdle);
+                _headT = Quaternion.Slerp(_glideIdleHd, _headT, intoIdle);
+                _ulLT = Quaternion.Slerp(_glideIdleUlL, _ulLT, intoIdle);
+                _ulRT = Quaternion.Slerp(_glideIdleUlR, _ulRT, intoIdle);
+                _llLT = Quaternion.Slerp(_glideIdleLlL, _llLT, intoIdle);
+                _llRT = Quaternion.Slerp(_glideIdleLlR, _llRT, intoIdle);
             }
             if (_skiFromWall && !_skiFromClimb && !_skiFromSoft && !_skiFromTag && !_skiFromPunch && !_skiFromDash && !_skiFromJump && skiing && !jet && !crouch && !wallRun && !climb && _skiFromWallIn < 0.98f)
             {
