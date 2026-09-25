@@ -529,7 +529,9 @@ namespace Tag.Art
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
                 ("Toy_SpringRider", new Vector3(1.5f, 0f, -1f), -40f),
-                ("Toy_Seesaw", new Vector3(-1.5f, 0f, 1f), 0f),
+                // Local (-1.960, 0.540) is 0.65 m east of the old seat. West edge x=69.01,
+                // 0.56 m east of the NE hop tiles. Spawn_NE's southwest exit stays west of this.
+                ("Toy_Seesaw", new Vector3(-1.960f, 0f, 0.540f), 0f),
                 ("Toy_Bumper", new Vector3(0f, 0f, -1.5f), 0f),
             });
         }
@@ -678,13 +680,15 @@ namespace Tag.Art
                 // 1.05 m south of the knight crawl and 0.8 m west of the spawn spring.
                 ("Toy_NetFrame", new Vector3(0.3f, 0f, 0.2f), 90f),
                 // Length along X. z 42.71-43.59, 0.58 m north of the NE bench.
-                // East end x=67.84, 0.42 m west of the spawn seesaw.
+                // East end x=67.84, 1.16 m west of the spawn seesaw.
                 ("Toy_MushroomSteps", new Vector3(0.3f, 0f, -1.85f), 0f),
                 // Feet y=0. x 64.40-65.25, 1.86 m east of the bar face (x=62.54).
                 ("Toy_SpringRider", new Vector3(-1.45f, 0f, 0f), 0f),
-                // Two hop tiles east of the net. East edge x=68.25, flush with the spawn seesaw.
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.55f, 0.02f, -0.95f), 0f),
-                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.55f, 0.02f, 0.55f), 0f),
+                // East of the net posts (face x=67.35). West edge x=67.45, 0.10 m off that post.
+                // South tile starts z=43.75, 0.16 m north of the mushroom cap.
+                // East edge x=68.45, 0.56 m west of the spawn seesaw (x=69.01).
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.75f, 0.02f, -0.75f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.75f, 0.02f, 0.55f), 0f),
             });
         }
 
