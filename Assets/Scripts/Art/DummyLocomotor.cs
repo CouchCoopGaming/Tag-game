@@ -131,6 +131,11 @@ namespace Tag.Art
         Quaternion _grappleUaL, _grappleUaR, _grappleLaL, _grappleLaR;
         Quaternion _grappleUlL, _grappleUlR, _grappleLlL, _grappleLlR;
         Quaternion _grappleSp, _grappleHp, _grappleHd;
+        bool _dashFromSoft;
+        float _dashFromSoftIn;
+        Quaternion _softUaL, _softUaR, _softLaL, _softLaR;
+        Quaternion _softUlL, _softUlR, _softLlL, _softLlR;
+        Quaternion _softSp, _softHp, _softHd;
         float _dartStepL;
         float _dartStepR;
         bool _dartFromDash;
@@ -871,6 +876,33 @@ namespace Tag.Art
                 _dashFromGrappleIn = Mathf.MoveTowards(_dashFromGrappleIn, 1f, dt / 0.04f);
             else if (!dashingAir)
                 _dashFromGrapple = false;
+            bool softAbsorb = _landHard < 0.4f && _landSquash > 0.08f && !_jumpFromSoftLand;
+            if (dashingAir && !_airDashPoseWas && softAbsorb && !jet && !_dashFromGrapple && !_dashFromClaim && !_dashFromTag && !_dashFromMiss
+                && !_jumpFromDash && !_dashFromDart && !_dashFromSki && !_dashFromSlide && !_dashFromClimb && !_dashFromWall
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+            {
+                // The absorb eases into the burst. The burst still holds.
+                // A soft landing into a jump keeps its push. A hard landing keeps its pose.
+                // An air dash into a tag keeps its ease. Land time is unchanged.
+                // Duration and cooldown are unchanged.
+                _dashFromSoft = true;
+                _dashFromSoftIn = 0f;
+                _softUaL = _upperArmL.localRotation;
+                _softUaR = _upperArmR.localRotation;
+                _softLaL = _lowerArmL.localRotation;
+                _softLaR = _lowerArmR.localRotation;
+                _softUlL = _upperLegL.localRotation;
+                _softUlR = _upperLegR.localRotation;
+                _softLlL = _lowerLegL.localRotation;
+                _softLlR = _lowerLegR.localRotation;
+                _softSp = _spine.localRotation;
+                _softHp = _hips.localRotation;
+                _softHd = _head.localRotation;
+            }
+            if (dashingAir && _dashFromSoft)
+                _dashFromSoftIn = Mathf.MoveTowards(_dashFromSoftIn, 1f, dt / 0.04f);
+            else if (!dashingAir)
+                _dashFromSoft = false;
             if (!dashingAir && _airDashPoseWas && !jet && air && _input != null && _input.CrouchHeld)
             {
                 // The burst eases into the dart. An air crouch into a dash keeps its ease.
@@ -5119,6 +5151,25 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_punchUlR, _ulRT, into);
                 _llLT = Quaternion.Slerp(_punchLlL, _llLT, into);
                 _llRT = Quaternion.Slerp(_punchLlR, _llRT, into);
+            }
+            if (airDashing && _dashFromSoft && !_dashFromGrapple && !_dashFromClaim && !_dashFromTag && !_dashFromMiss && !_dashFromWall && !_dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromSoftIn < 0.98f && !punching)
+            {
+                // The absorb eases into the burst, then the burst holds.
+                // A soft landing into a jump keeps its push. A hard landing keeps its pose.
+                // An air dash into a tag keeps its ease. Land time is unchanged.
+                // Duration and cooldown are unchanged.
+                float intoBurst = _dashFromSoftIn;
+                _uaLT = Quaternion.Slerp(_softUaL, _uaLT, intoBurst);
+                _uaRT = Quaternion.Slerp(_softUaR, _uaRT, intoBurst);
+                _laLT = Quaternion.Slerp(_softLaL, _laLT, intoBurst);
+                _laRT = Quaternion.Slerp(_softLaR, _laRT, intoBurst);
+                _ulLT = Quaternion.Slerp(_softUlL, _ulLT, intoBurst);
+                _ulRT = Quaternion.Slerp(_softUlR, _ulRT, intoBurst);
+                _llLT = Quaternion.Slerp(_softLlL, _llLT, intoBurst);
+                _llRT = Quaternion.Slerp(_softLlR, _llRT, intoBurst);
+                _spineT = Quaternion.Slerp(_softSp, _spineT, intoBurst);
+                _hipsT = Quaternion.Slerp(_softHp, _hipsT, intoBurst);
+                _headT = Quaternion.Slerp(_softHd, _headT, intoBurst);
             }
             if (airDashing && _dashFromGrapple && !_dashFromClaim && !_dashFromTag && !_dashFromMiss && !_dashFromWall && !_dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromGrappleIn < 0.98f)
             {
