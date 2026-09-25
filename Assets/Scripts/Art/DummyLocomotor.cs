@@ -31,6 +31,8 @@ namespace Tag.Art
         float _landHard;
         float _punchTelegraph;
         bool _wasGrounded = true;
+        float _pushOff;
+        bool _pushLeft;
         float _bouncePulse;
         bool _bounceWallLeft;
         float _glidePulse;
@@ -209,6 +211,16 @@ namespace Tag.Art
                 _landHold = Mathf.Lerp(0.05f, 0.11f, t);
                 _landHard = t;
             }
+            if (!grounded && _wasGrounded && _motor != null && _motor.Velocity.y > 1.5f)
+            {
+                // Push off the foot that was down. Jump height is unchanged.
+                _pushLeft = Mathf.Cos(_cycle) < 0f;
+                _pushOff = 1f;
+            }
+            else if (!grounded)
+                _pushOff = Mathf.MoveTowards(_pushOff, 0f, dt / 0.12f);
+            else
+                _pushOff = 0f;
             _wasGrounded = grounded;
             if (_landHold > 0f)
                 _landHold = Mathf.Max(0f, _landHold - dt);
@@ -936,6 +948,25 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(34f, 0f, 0f), d);
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-50f, 0f, 0f), d);
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-50f, 0f, 0f), d);
+                }
+                if (_pushOff > 0.02f && _diveVis < 0.2f)
+                {
+                    // The planted foot pushes. The other knee comes up, then the tuck.
+                    float p = _pushOff;
+                    if (_pushLeft)
+                    {
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(-8f, 0f, 0f), p);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-6f, 0f, 0f), p);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(48f, 0f, 0f), p);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-62f, 0f, 0f), p);
+                    }
+                    else
+                    {
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(-8f, 0f, 0f), p);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-6f, 0f, 0f), p);
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(48f, 0f, 0f), p);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-62f, 0f, 0f), p);
+                    }
                 }
             }
             else
