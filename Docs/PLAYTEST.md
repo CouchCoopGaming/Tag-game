@@ -92,7 +92,9 @@ Already on this branch: Letting go of a sprint settles the last hip sway into th
 
 Already on this branch: From a stand, the first step pushes off the planted foot into the stride. The idle sway fades as the walk starts. The feet do not skate. Speed is unchanged.
 
-This delta: From a run, a crouch or a slide drops into the pose. The speed you already have carries. Letting go returns to the stride under the hips. The slide does not speed up.
+Already on this branch: From a run, a crouch or a slide drops into the pose. The speed you already have carries. Letting go returns to the stride under the hips. The slide does not speed up.
+
+This delta: After an air dash, the feet come back into the stride under the hips. They do not skate. The dash is still a short burst, and the cooldown is unchanged.
 
 ## Stack snapshot
 
@@ -257,6 +259,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 66. Sprint, then let go into a stand: after the feet close, the hips should ease into the idle side sway. They should not freeze flat and then jerk sideways. The breath should still be there. Speed should feel the same.
 67. Stand still, then walk: the first step should push off the foot that stays down, and the other leg should reach into the stride. The idle sway should fade out, not pop off. The feet should not skate. Speed should feel the same.
 68. Sprint, then crouch: the body should drop into the slide without a speed bump. Let go: the stride should come back under the hips, not skate. From a slower run, a crouch should drop into the guard and stand back into the stride. The slide should not speed up.
+69. Air dash, then land into a run or a walk: after the burst, the feet should be back in the stride under the hips. They should not skate. The dash should still be a short burst, and it should still have to recharge.
 
 ## Known leftovers
 
@@ -345,6 +348,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 56. A stop from a sprint settles the last hip sway into the idle breath and sway. The hips do not freeze flat or pop. Speed is unchanged.
 57. A walk from idle pushes off the planted foot into the stride. Idle sway fades. The feet do not skate. Speed is unchanged.
 58. A crouch or a slide from a run drops into the pose. The speed you already have carries. Letting go returns to the stride under the hips. The slide does not speed up.
+59. After an air dash, the feet return to the stride under the hips. They do not skate. The burst stays short and the cooldown is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
