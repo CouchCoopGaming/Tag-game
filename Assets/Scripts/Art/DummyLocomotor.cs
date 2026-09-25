@@ -120,7 +120,7 @@ namespace Tag.Art
                 _landSquash = Mathf.Clamp(Mathf.Lerp(0.28f, 1.40f, t * t), 0.28f, 1.40f); // park hop-off punchier mid squash
             }
             _wasGrounded = grounded;
-            float recover = Mathf.Lerp(8.2f, 5.4f, Mathf.Clamp01(_landSquash)); // snappier park hop-off settle
+            float recover = Mathf.Lerp(8.6f, 5.6f, Mathf.Clamp01(_landSquash)); // snappier park hop-off settle
             _landSquash = Mathf.MoveTowards(_landSquash, 0f, dt * recover);
             // Bible WallBounce ~0.22s kick flash - brief TP limb tell after OnWallBounced.
             _bouncePulse = Mathf.MoveTowards(_bouncePulse, 0f, dt / 0.22f);
