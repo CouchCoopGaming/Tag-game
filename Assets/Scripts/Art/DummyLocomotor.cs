@@ -96,6 +96,8 @@ namespace Tag.Art
         bool _surfFromCrouch;
         bool _surfFromJump;
         bool _surfFromJumpPush;
+        bool _surfFromJumpWall;
+        bool _surfFromJumpWallPush;
         float _prevYaw;
         float _turnVis;
         bool _hasYaw;
@@ -189,17 +191,22 @@ namespace Tag.Art
                 _surfPhase = 0f;
                 // A still crouch meets the wall in the guard, then the climb or the run.
                 // A jump meets the climb in the contact, then the grab.
+                // A jump meets the wall run in the contact, then the attach.
                 // A normal entry is unchanged. The meet time is unchanged.
                 _surfFromCrouch = _crouchFromStand && _dropVis > 0.2f && !_dropSlide;
                 float meetVy = _motor != null ? _motor.Velocity.y : 0f;
                 _surfFromJump = climb && !_surfFromCrouch && (meetVy > 1.5f || _prevVy > 1.5f || _pushOff > 0.02f);
                 _surfFromJumpPush = _surfFromJump && _pushOff > 0.02f;
+                _surfFromJumpWall = wallRun && !_surfFromCrouch && !_surfFromJump && (meetVy > 1.5f || _prevVy > 1.5f || _pushOff > 0.02f);
+                _surfFromJumpWallPush = _surfFromJumpWall && _pushOff > 0.02f;
             }
             else if (!onSurf)
             {
                 _surfFromCrouch = false;
                 _surfFromJump = false;
                 _surfFromJumpPush = false;
+                _surfFromJumpWall = false;
+                _surfFromJumpWallPush = false;
             }
             if (onSurf)
             {
@@ -1580,6 +1587,34 @@ namespace Tag.Art
                 _laLT = Quaternion.Slerp(fromElL, _laLT, intoGrab);
                 _laRT = Quaternion.Slerp(fromElR, _laRT, intoGrab);
             }
+            if (_surfFromJumpWall && wallRun && _surfIn < 0.98f)
+            {
+                // The jump eases into the wall-run attach. A jump into a climb is unchanged.
+                // A crouch onto the wall is unchanged. The meet time is unchanged.
+                float intoAttach = _surfIn;
+                Quaternion fromL;
+                Quaternion fromR;
+                Quaternion fromElL;
+                Quaternion fromElR;
+                if (_surfFromJumpWallPush)
+                {
+                    fromL = _uaL0 * Quaternion.Euler(-36f, 14f, armZ);
+                    fromR = _uaR0 * Quaternion.Euler(-36f, -14f, -armZ);
+                    fromElL = _laL0 * Quaternion.Euler(-14f, 0f, 0f);
+                    fromElR = _laR0 * Quaternion.Euler(-14f, 0f, 0f);
+                }
+                else
+                {
+                    fromL = _uaL0 * Quaternion.Euler(-52f, 22f, armZ);
+                    fromR = _uaR0 * Quaternion.Euler(-52f, -22f, -armZ);
+                    fromElL = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
+                    fromElR = _laR0 * Quaternion.Euler(-12f, 0f, 0f);
+                }
+                _uaLT = Quaternion.Slerp(fromL, _uaLT, intoAttach);
+                _uaRT = Quaternion.Slerp(fromR, _uaRT, intoAttach);
+                _laLT = Quaternion.Slerp(fromElL, _laLT, intoAttach);
+                _laRT = Quaternion.Slerp(fromElR, _laRT, intoAttach);
+            }
 
             if (_punchTelegraph > 0.02f && !punching)
             {
@@ -2317,6 +2352,43 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(fromKl, _llLT, intoGrab);
                 _llRT = Quaternion.Slerp(fromKr, _llRT, intoGrab);
             }
+            if (_surfFromJumpWall && wallRun && _surfIn < 0.98f)
+            {
+                // The jump eases into the wall-run attach. The feet do not snap onto the wall.
+                float intoAttach = _surfIn;
+                Quaternion fromL;
+                Quaternion fromR;
+                Quaternion fromKl;
+                Quaternion fromKr;
+                if (_surfFromJumpWallPush)
+                {
+                    if (_pushLeft)
+                    {
+                        fromL = _ulL0 * Quaternion.Euler(-8f, 0f, 0f);
+                        fromKl = _llL0 * Quaternion.Euler(-6f, 0f, 0f);
+                        fromR = _ulR0 * Quaternion.Euler(48f, 0f, 0f);
+                        fromKr = _llR0 * Quaternion.Euler(-62f, 0f, 0f);
+                    }
+                    else
+                    {
+                        fromR = _ulR0 * Quaternion.Euler(-8f, 0f, 0f);
+                        fromKr = _llR0 * Quaternion.Euler(-6f, 0f, 0f);
+                        fromL = _ulL0 * Quaternion.Euler(48f, 0f, 0f);
+                        fromKl = _llL0 * Quaternion.Euler(-62f, 0f, 0f);
+                    }
+                }
+                else
+                {
+                    fromL = _ulL0 * Quaternion.Euler(22f, 0f, 0f);
+                    fromR = _ulR0 * Quaternion.Euler(20f, 0f, 0f);
+                    fromKl = _llL0 * Quaternion.Euler(-28f, 0f, 0f);
+                    fromKr = _llR0 * Quaternion.Euler(-26f, 0f, 0f);
+                }
+                _ulLT = Quaternion.Slerp(fromL, _ulLT, intoAttach);
+                _ulRT = Quaternion.Slerp(fromR, _ulRT, intoAttach);
+                _llLT = Quaternion.Slerp(fromKl, _llLT, intoAttach);
+                _llRT = Quaternion.Slerp(fromKr, _llRT, intoAttach);
+            }
 
             if (_dropVis > 0.02f && !air && !dashing && !lunging && !jet && !wallRun && !climb && !mantle && !punching)
             {
@@ -2652,6 +2724,17 @@ namespace Tag.Art
                 _spineT = Quaternion.Slerp(fromSp, _spineT, intoGrab);
                 _hipsT = Quaternion.Slerp(fromHp, _hipsT, intoGrab);
                 _headT = Quaternion.Slerp(fromHd, _headT, intoGrab);
+            }
+            if (_surfFromJumpWall && wallRun && _surfIn < 0.98f && !punching)
+            {
+                // The jump pitch eases into the wall-run attach. The hips do not pop onto the wall.
+                float intoAttach = _surfIn;
+                Quaternion fromSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion fromHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
+                Quaternion fromHd = _head0 * Quaternion.Euler(_surfFromJumpWallPush ? 0f : -6f, 0f, 0f);
+                _spineT = Quaternion.Slerp(fromSp, _spineT, intoAttach);
+                _hipsT = Quaternion.Slerp(fromHp, _hipsT, intoAttach);
+                _headT = Quaternion.Slerp(fromHd, _headT, intoAttach);
             }
 
             if (wallRun || climb)
