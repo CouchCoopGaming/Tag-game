@@ -278,7 +278,9 @@ Already on this branch: Letting go of a grapple in a crouch walk eases the line 
 
 Already on this branch: A dash coming off cooldown in a crouch walk pulses inside the guard and the low stride. A still crouch still pulses inside the guard. A standing ready still pulses into the idle breath. A moving ready is unchanged. Duration and cooldown are unchanged.
 
-This delta: A soft landing into a crouch walk absorbs into the low stride. A hard landing into a crouch walk is unchanged. A soft landing into a still crouch is unchanged. Land time is unchanged.
+Already on this branch: A soft landing into a crouch walk absorbs into the low stride. A hard landing into a crouch walk is unchanged. A soft landing into a still crouch is unchanged. Land time is unchanged.
+
+This delta: A hard landing into a crouch walk absorbs deeper into the low stride. A soft landing into a crouch walk stays lighter. A hard landing into a still crouch is unchanged. Land time is unchanged.
 
 ## Stack snapshot
 
@@ -536,6 +538,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 159. Crouch walk, then let go of a grapple: the line should ease into the guard and the low stride. A still crouch should still end in the guard. A walk release and a sprint release should feel the same. The pull should feel the same. The gate stays off.
 160. Crouch walk, then wait out a dash cooldown: the settle should stay inside the guard and the low stride. A still crouch should still pulse inside the guard. A standing ready should still pulse into the idle breath. The dash should not feel longer.
 161. Jump, then crouch walk and land soft: the absorb should stay in the low stride. A hard landing into a crouch walk should feel the same. A soft landing into a still crouch should feel the same. The land should not feel longer.
+162. Jump, then crouch walk and land hard: the absorb should go deeper in the low stride. A soft landing into a crouch walk should stay lighter. A hard landing into a still crouch should feel the same. The land should not feel longer.
 
 ## Known leftovers
 
@@ -717,6 +720,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 149. Letting go of a grapple in a crouch walk eases the line into the guard and the low stride. A still crouch still ends in the guard. A walk release and a sprint release are unchanged. The pull is unchanged. The gate stays off.
 150. A dash coming off cooldown in a crouch walk pulses inside the guard and the low stride. A still crouch still pulses inside the guard. A standing ready still pulses into the idle breath. A moving ready is unchanged. Duration and cooldown are unchanged.
 151. A soft landing into a crouch walk absorbs into the low stride. A hard landing into a crouch walk is unchanged. A soft landing into a still crouch is unchanged. Land time is unchanged.
+152. A hard landing into a crouch walk absorbs deeper into the low stride. A soft landing into a crouch walk stays lighter. A hard landing into a still crouch is unchanged. Land time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
