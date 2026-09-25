@@ -180,6 +180,7 @@ namespace Tag.Art
             n += PathCues(root);
             n += FortWestSpring(root);
             n += MerryNorthCluster(root);
+            n += MerryWestSpring(root);
             n += EastNorthCluster(root);
             n += SoftPlaySouthCluster(root);
             n += SoftSlideBeam(root);
@@ -687,7 +688,7 @@ namespace Tag.Art
         /// The SW bench used to sit on the climb net (x-9.85). It is now west of that net.
         /// Soft-play's bench is west of the tube street, not in it.
         /// NE is a bench, not a second arch: the existing arch already clears bars and court by ~1.6 m.
-        /// Merry already has a west bench and a south picnic, so no extra seat there.
+        /// Merry's pad keeps its west bench and south picnic. The west lawn spring is separate.
         /// Soft-play's east shoulder gets a spring rider. The tube street, the north pit,
         /// and the west side of the net all still have an exit, so nothing was removed.
         /// </summary>
@@ -998,6 +999,21 @@ namespace Tag.Art
         /// 0.74 m from the nearest hopscotch tile and from the west tube cap.
         /// The mushroom at (4.5, 6.94) stays the exit step.
         /// </summary>
+        /// <summary>
+        /// Landmark on the merry west lawn, in line with the west bench.
+        /// Bench face is x=3.775. The map edge is x=0. Center (2.50, 24): mesh x 2.15-3.00, z 23.76-24.24.
+        /// 2.15 m off the edge, 0.78 m west of the bench, 1.37 m north of the picnic.
+        /// The pad seats stay. The merry-spine bar is unchanged.
+        /// </summary>
+        int MerryWestSpring(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Spring_MerryW", new Vector3(2.50f, 0f, 24f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("Toy_SpringRider", Vector3.zero, 0f),
+            });
+        }
+
         int FortWestSpring(Transform root)
         {
             var parent = MakeGroup(root, "Play_Spring_FortW", new Vector3(8.53f, 0f, 7.23f), 0f);
