@@ -2183,7 +2183,7 @@ namespace Tag.Art
                 float hipMove = Mathf.Lerp(kneeBase * 0.2f, kRelease, hard);
                 float hipK = hipMove * hipMove;
                 // A jump into a crouch walk absorbs in the low stride.
-                // A soft hop into that walk absorbs lighter. A hard landing keeps the old absorb.
+                // A soft hop into that walk absorbs lighter. A hard landing absorbs deeper in that stride.
                 // A soft landing into a still crouch absorbs in the guard.
                 // A hard landing absorbs deeper in that guard. Land time is unchanged.
                 bool crouchWalkSoft = crouch && speed > 0.35f && st != MoveState.Sprint && _landHard < 0.4f && _diveVis <= 0.02f;
@@ -2218,9 +2218,15 @@ namespace Tag.Art
                     float kneeL = 60f + stepL * 8f;
                     float kneeR = 60f + stepR * 8f;
                     if (sinC >= 0f)
-                        kneeL += 18f * absorb;
+                    {
+                        thighL += 8f * absorb;
+                        kneeL += 28f * absorb;
+                    }
                     else
-                        kneeR += 18f * absorb;
+                    {
+                        thighR += 8f * absorb;
+                        kneeR += 28f * absorb;
+                    }
                     _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(thighL, 0f, 0f), kL);
                     _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(thighR, 0f, 0f), kR);
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-kneeL, 0f, 0f), kL);
@@ -2299,15 +2305,15 @@ namespace Tag.Art
                 }
                 else if (crouchWalkHard)
                 {
-                    // Stay in the crouch. The standing flare would pop the hips up.
+                    // Deeper in the low stride. The standing flare would pop the hips up.
                     float dip = Mathf.Clamp01(k);
                     _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), dip);
                     _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), dip);
-                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-72f, 0f, 0f), dip);
-                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-72f, 0f, 0f), dip);
-                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(28f, 0f, 0f), dip);
-                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(14f, 0f, 0f), dip);
-                    _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-8f, 0f, 0f), dip);
+                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-80f, 0f, 0f), dip);
+                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-80f, 0f, 0f), dip);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(36f, 0f, 0f), dip);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(18f, 0f, 0f), dip);
+                    _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-10f, 0f, 0f), dip);
                 }
                 else if (crouchSoftLand)
                 {
