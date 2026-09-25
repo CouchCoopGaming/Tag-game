@@ -227,6 +227,11 @@ namespace Tag.Art
         Quaternion _punchSkiUaL, _punchSkiUaR, _punchSkiLaL, _punchSkiLaR;
         Quaternion _punchSkiUlL, _punchSkiUlR, _punchSkiLlL, _punchSkiLlR;
         Quaternion _punchSkiSp, _punchSkiHp, _punchSkiHd;
+        bool _skiFromTag;
+        float _skiFromTagIn;
+        Quaternion _tagSkiUaL, _tagSkiUaR, _tagSkiLaL, _tagSkiLaR;
+        Quaternion _tagSkiUlL, _tagSkiUlR, _tagSkiLlL, _tagSkiLlR;
+        Quaternion _tagSkiSp, _tagSkiHp, _tagSkiHd;
         bool _slideFromDash;
         float _slideFromDashIn;
         bool _slideFromPunch;
@@ -583,7 +588,8 @@ namespace Tag.Art
             // A walk eases into the glide. A sprint closes the long stride into it.
             // A still crouch eases the guard into the glide. A crouch walk eases the low stride into it.
             // A slide eases the wedge into the glide. A jump eases the glide or the landing into it.
-            // A punch eases the cock or the strike into the glide. Ski speed is unchanged.
+            // A punch eases the cock or the strike into the glide. A tag eases the connect into the glide.
+            // Ski speed is unchanged.
             if (skiing && _skiBlend <= 0.02f)
             {
                 bool fromSlide = _dropSlide;
@@ -592,10 +598,13 @@ namespace Tag.Art
                 bool fromPunch = !fromSlide && !fromJump && !crouch && !_airDashPoseWas
                     && (_punchPhaseWas == PunchPhase.Windup || _punchPhaseWas == PunchPhase.Active)
                     && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-                _skiFromWalk = !fromSlide && !fromJump && !fromPunch && speed > 0.35f && speed <= 5.5f && !fromCrouchWalk;
-                _skiFromSprint = !fromSlide && !fromJump && !fromPunch && speed > 5.5f;
-                _skiFromCrouch = !fromSlide && !fromJump && !fromPunch && !_dropSlide && speed <= 0.35f && _dropVis > 0.2f;
-                _skiFromCrouchWalk = fromCrouchWalk && !fromPunch;
+                bool fromTag = !fromSlide && !fromJump && !fromPunch && !crouch && !_airDashPoseWas && !_jumpFromTag
+                    && _punchPhaseWas == PunchPhase.HitRecover
+                    && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+                _skiFromWalk = !fromSlide && !fromJump && !fromPunch && !fromTag && speed > 0.35f && speed <= 5.5f && !fromCrouchWalk;
+                _skiFromSprint = !fromSlide && !fromJump && !fromPunch && !fromTag && speed > 5.5f;
+                _skiFromCrouch = !fromSlide && !fromJump && !fromPunch && !fromTag && !_dropSlide && speed <= 0.35f && _dropVis > 0.2f;
+                _skiFromCrouchWalk = fromCrouchWalk && !fromPunch && !fromTag;
                 _slideToSki = fromSlide;
                 _skiFromJump = fromJump;
                 _skiFromJumpLand = fromJump && grounded;
@@ -618,6 +627,25 @@ namespace Tag.Art
                     _punchSkiHp = _hips.localRotation;
                     _punchSkiHd = _head.localRotation;
                 }
+                if (fromTag && !_skiFromTag)
+                {
+                    // The connect eases into the glide. A punch into a ski keeps its ease.
+                    // A punch into a slide keeps its ease. A tag into a jump keeps its push.
+                    // A slide into a ski keeps its ease. Ski speed is unchanged. Connect time is unchanged.
+                    _skiFromTag = true;
+                    _skiFromTagIn = 0f;
+                    _tagSkiUaL = _upperArmL.localRotation;
+                    _tagSkiUaR = _upperArmR.localRotation;
+                    _tagSkiLaL = _lowerArmL.localRotation;
+                    _tagSkiLaR = _lowerArmR.localRotation;
+                    _tagSkiUlL = _upperLegL.localRotation;
+                    _tagSkiUlR = _upperLegR.localRotation;
+                    _tagSkiLlL = _lowerLegL.localRotation;
+                    _tagSkiLlR = _lowerLegR.localRotation;
+                    _tagSkiSp = _spine.localRotation;
+                    _tagSkiHp = _hips.localRotation;
+                    _tagSkiHd = _head.localRotation;
+                }
             }
             else if (!skiing)
             {
@@ -629,6 +657,7 @@ namespace Tag.Art
                 _skiFromJump = false;
                 _skiFromJumpLand = false;
                 _skiFromPunch = false;
+                _skiFromTag = false;
             }
             bool crouchIdleExit = !_dropSlide && !sliding && !crouch && speed <= 0.35f && !crouchStandSprint && !_skiFromCrouch;
             // A crouch walk stands into the stride. The feet step while the hips are still rising.
@@ -640,6 +669,8 @@ namespace Tag.Art
             _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             if (_skiFromPunch && skiing)
                 _skiFromPunchIn = Mathf.MoveTowards(_skiFromPunchIn, 1f, dt / 0.04f);
+            if (_skiFromTag && skiing)
+                _skiFromTagIn = Mathf.MoveTowards(_skiFromTagIn, 1f, dt / 0.04f);
             if (_slideToSki && _skiBlend >= 0.98f)
                 _slideToSki = false;
             if (_skiFromJump && _skiBlend >= 0.98f)
@@ -6523,6 +6554,33 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+            }
+            if (_skiFromTag && !_skiFromPunch && !_skiFromDash && skiing && !jet && !crouch && !wallRun && !climb && _skiFromTagIn < 0.98f)
+            {
+                // The connect eases into the glide, then the glide holds.
+                // A punch into a ski keeps its ease. A punch into a slide keeps its ease.
+                // A tag into a jump keeps its push. A slide into a ski keeps its ease.
+                // Ski speed is unchanged. Connect time is unchanged.
+                float intoGlide = _skiFromTagIn;
+                float glideL = Mathf.Max(0f, sinC);
+                float glideR = Mathf.Max(0f, -sinC);
+                float skateL = RunArmPitch(-sinC, 16f);
+                float skateR = RunArmPitch(sinC, 16f);
+                Quaternion skiL = _uaL0 * Quaternion.Euler(-18f + skateL, 22f, armZ);
+                Quaternion skiR = _uaR0 * Quaternion.Euler(-18f + skateR, -22f, -armZ);
+                Quaternion skiElL = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
+                Quaternion skiElR = _laR0 * Quaternion.Euler(-12f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(_tagSkiUaL, skiL, intoGlide);
+                _uaRT = Quaternion.Slerp(_tagSkiUaR, skiR, intoGlide);
+                _laLT = Quaternion.Slerp(_tagSkiLaL, skiElL, intoGlide);
+                _laRT = Quaternion.Slerp(_tagSkiLaR, skiElR, intoGlide);
+                _spineT = Quaternion.Slerp(_tagSkiSp, _spine0 * Quaternion.Euler(26f, 0f, 0f), intoGlide);
+                _hipsT = Quaternion.Slerp(_tagSkiHp, _hips0 * Quaternion.Euler(14f, 0f, 0f), intoGlide);
+                _headT = Quaternion.Slerp(_tagSkiHd, _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), intoGlide);
+                _ulLT = Quaternion.Slerp(_tagSkiUlL, _ulL0 * Quaternion.Euler((glideL - glideR * 0.5f) * 32f, 0f, 0f), intoGlide);
+                _ulRT = Quaternion.Slerp(_tagSkiUlR, _ulR0 * Quaternion.Euler((glideR - glideL * 0.5f) * 32f, 0f, 0f), intoGlide);
+                _llLT = Quaternion.Slerp(_tagSkiLlL, _llL0 * Quaternion.Euler(-(6f + glideL * 32f), 0f, 0f), intoGlide);
+                _llRT = Quaternion.Slerp(_tagSkiLlR, _llR0 * Quaternion.Euler(-(6f + glideR * 32f), 0f, 0f), intoGlide);
             }
             if (_skiFromPunch && !_skiFromDash && skiing && !jet && !crouch && !wallRun && !climb && _skiFromPunchIn < 0.98f)
             {
