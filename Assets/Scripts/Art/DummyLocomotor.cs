@@ -89,6 +89,7 @@ namespace Tag.Art
         bool _exitIntoWalk;
         bool _exitIntoSprint;
         bool _exitIntoCrouch;
+        bool _exitIntoCrouchWalk;
         bool _exitLeadLeft;
         Quaternion _exitUaL, _exitUaR, _exitLaL, _exitLaR;
         Quaternion _exitUlL, _exitUlR, _exitLlL, _exitLlR;
@@ -1958,6 +1959,7 @@ namespace Tag.Art
                 _exitIntoWalk = false;
                 _exitIntoSprint = false;
                 _exitIntoCrouch = false;
+                _exitIntoCrouchWalk = false;
                 if (climb)
                 {
                     float up = Mathf.Lerp(0.8f, (Mathf.Sin(_surfPhase) + 1f) * 0.5f, _surfIn);
@@ -1982,6 +1984,7 @@ namespace Tag.Art
                 _exitIntoWalk = false;
                 _exitIntoSprint = false;
                 _exitIntoCrouch = false;
+                _exitIntoCrouchWalk = false;
             }
             else if (_wallExit > 0f)
             {
@@ -1991,9 +1994,12 @@ namespace Tag.Art
                 // A wall run or a climb into a sprint opens the hands into the long stride.
                 // They do not stay on the surface and then hitch. A drop keeps the old leave.
                 // A climb into a still crouch eases into the guard. A wall run does the same.
+                // A climb into a crouch walk eases into the low stride. A wall run keeps the old leave.
                 // A walk and a sprint leave are unchanged. Exit time is unchanged.
                 if (leavingSurf && speed <= 0.35f && _input != null && _input.CrouchHeld)
                     _exitIntoCrouch = true;
+                if (leavingSurf && !_exitFromWall && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint && _input != null && _input.CrouchHeld)
+                    _exitIntoCrouchWalk = true;
                 if (leavingSurf && grounded && !air && !crouch && speed > 0.35f)
                 {
                     if (st == MoveState.Sprint || speed > 5.5f)
@@ -2005,18 +2011,30 @@ namespace Tag.Art
                 float w = _wallExit;
                 float body = Mathf.SmoothStep(0f, 1f, w);
                 float handW = _exitIntoWalk ? body : w;
-                if (_exitIntoCrouch)
+                if (_exitIntoCrouch || _exitIntoCrouchWalk)
                 {
-                    // The wall eases into the guard. The hands do not stay on the surface.
+                    // The climb eases into the guard. A crouch walk keeps these arms and opens the low stride.
                     float intoGuard = 1f - body;
                     _uaLT = Quaternion.Slerp(_exitUaL, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), intoGuard);
                     _uaRT = Quaternion.Slerp(_exitUaR, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), intoGuard);
                     _laLT = Quaternion.Slerp(_exitLaL, _laL0 * Quaternion.Euler(-72f, 0f, 0f), intoGuard);
                     _laRT = Quaternion.Slerp(_exitLaR, _laR0 * Quaternion.Euler(-72f, 0f, 0f), intoGuard);
-                    _ulLT = Quaternion.Slerp(_exitUlL, _ulL0 * Quaternion.Euler(56f, 0f, 0f), intoGuard);
-                    _ulRT = Quaternion.Slerp(_exitUlR, _ulR0 * Quaternion.Euler(56f, 0f, 0f), intoGuard);
-                    _llLT = Quaternion.Slerp(_exitLlL, _llL0 * Quaternion.Euler(-68f, 0f, 0f), intoGuard);
-                    _llRT = Quaternion.Slerp(_exitLlR, _llR0 * Quaternion.Euler(-68f, 0f, 0f), intoGuard);
+                    if (_exitIntoCrouchWalk)
+                    {
+                        float stepL = Mathf.Max(0f, sinC);
+                        float stepR = Mathf.Max(0f, -sinC);
+                        _ulLT = Quaternion.Slerp(_exitUlL, _ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f), intoGuard);
+                        _ulRT = Quaternion.Slerp(_exitUlR, _ulR0 * Quaternion.Euler(46f + stepR * 12f - stepL * 6f, 0f, 0f), intoGuard);
+                        _llLT = Quaternion.Slerp(_exitLlL, _llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f), intoGuard);
+                        _llRT = Quaternion.Slerp(_exitLlR, _llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f), intoGuard);
+                    }
+                    else
+                    {
+                        _ulLT = Quaternion.Slerp(_exitUlL, _ulL0 * Quaternion.Euler(56f, 0f, 0f), intoGuard);
+                        _ulRT = Quaternion.Slerp(_exitUlR, _ulR0 * Quaternion.Euler(56f, 0f, 0f), intoGuard);
+                        _llLT = Quaternion.Slerp(_exitLlL, _llL0 * Quaternion.Euler(-68f, 0f, 0f), intoGuard);
+                        _llRT = Quaternion.Slerp(_exitLlR, _llR0 * Quaternion.Euler(-68f, 0f, 0f), intoGuard);
+                    }
                     _spineT = Quaternion.Slerp(_exitSpine, _spine0 * Quaternion.Euler(10f, 0f, 0f), intoGuard);
                     _hipsT = Quaternion.Slerp(_exitHips, _hips0 * Quaternion.Euler(22f, 0f, 0f), intoGuard);
                     _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-6f, 0f, 0f), intoGuard);
@@ -2049,7 +2067,7 @@ namespace Tag.Art
                     _laLT = Quaternion.Slerp(_laLT, _exitLaL, handW);
                     _laRT = Quaternion.Slerp(_laRT, _exitLaR, handW);
                 }
-                if (!_exitIntoCrouch)
+                if (!_exitIntoCrouch && !_exitIntoCrouchWalk)
                 {
                     _ulLT = Quaternion.Slerp(_ulLT, _exitUlL, body);
                     _ulRT = Quaternion.Slerp(_ulRT, _exitUlR, body);
