@@ -626,7 +626,9 @@ Already on this branch: A jump during an air crouch eases the dart into the air 
 
 Already on this branch: A jump out of a soft landing eases the absorb into the air pose. The air pose then holds. The slow push stays off that path. Land time is unchanged when you stay down. Jump height is unchanged.
 
-This delta: A jump out of a hard landing eases the deep absorb into the air pose. The air pose then holds. The slow push stays off that path. Land time is unchanged when you stay down. Jump height is unchanged.
+Already on this branch: A jump out of a hard landing eases the deep absorb into the air pose. The air pose then holds. The slow push stays off that path. Land time is unchanged when you stay down. Jump height is unchanged.
+
+This delta: A jump out of a punch miss eases the whiff into the air pose. The air pose then holds. The slow push stays off that path. Whiff time is unchanged. Jump height is unchanged.
 
 ## Stack snapshot
 
@@ -1058,6 +1060,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 333. Air crouch, then jump: the dart should ease into the air pose. The air pose should then hold. The push should not ease back in. A climb into a jump should feel the same. The fall should not feel faster. The jump should not feel higher. Jet stays off.
 334. Soft land, then jump: the absorb should ease into the air pose. The air pose should then hold. The push should not ease back in. An air crouch into a jump should feel the same. The landing should not feel longer when you stay down. The jump should not feel higher. Jet stays off.
 335. Hard land, then jump: the deep absorb should ease into the air pose. The air pose should then hold. The push should not ease back in. A soft landing into a jump should feel the same. The landing should not feel longer when you stay down. The jump should not feel higher. Jet stays off.
+336. Miss a punch, then jump: the whiff should ease into the air pose. The air pose should then hold. The push should not ease back in. A hard landing into a jump should feel the same. The whiff should not feel longer. The jump should not feel higher. Jet stays off.
 
 ## Known leftovers
 
@@ -1413,6 +1416,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 323. A jump during an air crouch eases the dart into the air pose. The air pose then holds. The slow push stays off that path. Fall speed stays doubled. Jump height is unchanged. Jet stays off.
 324. A jump out of a soft landing eases the absorb into the air pose. The air pose then holds. The slow push stays off that path. Land time is unchanged when you stay down. Jump height is unchanged. Jet stays off.
 325. A jump out of a hard landing eases the deep absorb into the air pose. The air pose then holds. The slow push stays off that path. Land time is unchanged when you stay down. Jump height is unchanged. Jet stays off.
+326. A jump out of a punch miss eases the whiff into the air pose. The air pose then holds. The slow push stays off that path. Whiff time is unchanged. Jump height is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
