@@ -50,6 +50,9 @@ namespace Tag.Modes
         float _roundStartGuard;
         bool _localPaused;
         bool _localHelp;
+        bool _localLook;
+        bool _localAudio;
+        int _localPauseFocus;
         int _resultsFocus;
         GUIStyle _countStyle;
 
@@ -255,44 +258,7 @@ namespace Tag.Modes
         void Update()
         {
             PollLocalPause();
-            if (_localPaused)
-            {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.H))
-                    _localHelp = !_localHelp;
-                if (_localHelp)
-                {
-                    if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
-                        TagArena.Movement.ControlBinds.CycleDash(-1);
-                    if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
-                        TagArena.Movement.ControlBinds.CycleDash(1);
-                    if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
-                        TagArena.Movement.ControlBinds.CyclePunch(-1);
-                    if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))
-                        TagArena.Movement.ControlBinds.CyclePunch(1);
-                    if (UnityEngine.Input.GetKeyDown(KeyCode.Minus) || UnityEngine.Input.GetKeyDown(KeyCode.LeftBracket))
-                        Tag.Audio.AudioMaster.CycleVolume(-1);
-                    if (UnityEngine.Input.GetKeyDown(KeyCode.Equals) || UnityEngine.Input.GetKeyDown(KeyCode.RightBracket))
-                        Tag.Audio.AudioMaster.CycleVolume(1);
-                }
-                else
-                {
-                    if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
-                        TagArena.Movement.LookSensitivity.Cycle(-1);
-                    if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
-                        TagArena.Movement.LookSensitivity.Cycle(1);
-                    if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
-                        Tag.Audio.AudioMaster.CycleMusic(1);
-                    if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))
-                        Tag.Audio.AudioMaster.CycleMusic(-1);
-                }
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Q))
-                    LoadBootMenu();
-                if (UnityEngine.Input.GetKeyDown(KeyCode.M))
-                    Tag.Audio.AudioMaster.ToggleMute();
-                if (UnityEngine.Input.GetKeyDown(KeyCode.N))
-                    Tag.Audio.AudioMaster.ToggleMusicMute();
-                return;
-            }
+            if (_localPaused) return;
             PollPlaytestModeHotkeys();
             PollResultsKeys();
 
@@ -368,8 +334,7 @@ namespace Tag.Modes
         {
             if (_phase != MatchPhase.Results) return;
             if (_resultsActionTaken) return;
-            if (Time.unscaledTime < _resultsInputReadyAt) return;
-            var flow = GameFlow.Instance;
+            // Highlight can move during the arm. Activate still waits.
             // Ends stay put. Left on Rematch and Right on Menu do not wrap or leak.
             if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) && _resultsFocus != 0)
             {
@@ -381,6 +346,8 @@ namespace Tag.Modes
                 _resultsFocus = 1;
                 TagSfx.UiClick();
             }
+            if (Time.unscaledTime < _resultsInputReadyAt) return;
+            var flow = GameFlow.Instance;
             if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter))
             {
                 ActivateResultsFocus();
@@ -425,7 +392,10 @@ namespace Tag.Modes
         void LoadBootMenu()
         {
             Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
             TagSfx.UiClick();
+            AudioCuePlayer.Ensure()?.StopMusic();
             SceneManager.LoadScene("Boot");
         }
 
@@ -568,14 +538,26 @@ namespace Tag.Modes
             // Boot's GameFlow already owns Esc. Direct Play has no menu object.
             if (GameFlow.Instance != null) return;
             if (_phase == MatchPhase.Results || _phase == MatchPhase.Idle) return;
-            if (!UnityEngine.Input.GetKeyDown(KeyCode.Escape)) return;
-            SetLocalPause(!_localPaused);
+            if (!_localPaused)
+            {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                    SetLocalPause(true);
+                return;
+            }
+            // Esc inside Controls / Look / Audio closes that panel and stays paused.
+            if (PollLocalPauseOverlay()) return;
+            PollLocalPauseRoot();
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                SetLocalPause(false);
         }
 
         void SetLocalPause(bool paused)
         {
             _localPaused = paused;
-            if (!paused) _localHelp = false;
+            _localHelp = false;
+            _localLook = false;
+            _localAudio = false;
+            if (paused) _localPauseFocus = 0;
             Time.timeScale = paused ? 0f : 1f;
             if (paused) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; } else ResumeInputGate.LockPlayCursor();
             Cursor.visible = paused;
@@ -598,26 +580,187 @@ namespace Tag.Modes
             TagSfx.UiClick();
         }
 
-        void DrawLocalPause()
+        bool PollLocalPauseOverlay()
         {
-            float w = 320f;
-            float h = 120f;
-            float x = (Screen.width - w) * 0.5f;
-            float y = Screen.height * 0.38f;
             if (_localHelp)
             {
-                GUI.Box(new Rect(x - 40f, y, w + 80f, 340f), "Controls");
-                GUI.Label(new Rect(x - 24f, y + 28, w + 48f, 290),
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape) || UnityEngine.Input.GetKeyDown(KeyCode.H))
+                {
+                    _localHelp = false;
+                    TagSfx.UiClick();
+                }
+                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
+                    TagArena.Movement.ControlBinds.CycleDash(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
+                    TagArena.Movement.ControlBinds.CycleDash(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
+                    TagArena.Movement.ControlBinds.CyclePunch(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))
+                    TagArena.Movement.ControlBinds.CyclePunch(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Minus) || UnityEngine.Input.GetKeyDown(KeyCode.LeftBracket))
+                    Tag.Audio.AudioMaster.CycleVolume(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Equals) || UnityEngine.Input.GetKeyDown(KeyCode.RightBracket))
+                    Tag.Audio.AudioMaster.CycleVolume(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.M))
+                    Tag.Audio.AudioMaster.ToggleMute();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.N))
+                    Tag.Audio.AudioMaster.ToggleMusicMute();
+                return true;
+            }
+            if (_localLook)
+            {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                {
+                    _localLook = false;
+                    TagSfx.UiClick();
+                }
+                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
+                    TagArena.Movement.LookSensitivity.Cycle(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
+                    TagArena.Movement.LookSensitivity.Cycle(1);
+                return true;
+            }
+            if (_localAudio)
+            {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                {
+                    _localAudio = false;
+                    TagSfx.UiClick();
+                }
+                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
+                    Tag.Audio.AudioMaster.CycleVolume(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
+                    Tag.Audio.AudioMaster.CycleVolume(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
+                    Tag.Audio.AudioMaster.CycleMusic(1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))
+                    Tag.Audio.AudioMaster.CycleMusic(-1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.M))
+                    Tag.Audio.AudioMaster.ToggleMute();
+                if (UnityEngine.Input.GetKeyDown(KeyCode.N))
+                    Tag.Audio.AudioMaster.ToggleMusicMute();
+                return true;
+            }
+            return false;
+        }
+
+        void PollLocalPauseRoot()
+        {
+            if (UnityEngine.Input.GetKeyDown(KeyCode.H))
+            {
+                _localHelp = true;
+                TagSfx.UiClick();
+            }
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) NudgeLocalPause(-1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) NudgeLocalPause(1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetLocalPauseFocus(0);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetLocalPauseFocus(1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetLocalPauseFocus(2);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) SetLocalPauseFocus(3);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha5)) SetLocalPauseFocus(4);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
+                UnityEngine.Input.GetKeyDown(KeyCode.Space))
+                ActivateLocalPause();
+            else if (UnityEngine.Input.GetKeyDown(KeyCode.Q))
+                LoadBootMenu();
+            if (UnityEngine.Input.GetKeyDown(KeyCode.M))
+                Tag.Audio.AudioMaster.ToggleMute();
+            if (UnityEngine.Input.GetKeyDown(KeyCode.N))
+                Tag.Audio.AudioMaster.ToggleMusicMute();
+            if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
+                Tag.Audio.AudioMaster.CycleMusic(1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))
+                Tag.Audio.AudioMaster.CycleMusic(-1);
+        }
+
+        void NudgeLocalPause(int dir)
+        {
+            int next = Mathf.Clamp(_localPauseFocus + dir, 0, 4);
+            if (next == _localPauseFocus) return;
+            _localPauseFocus = next;
+            TagSfx.UiClick();
+        }
+
+        void SetLocalPauseFocus(int index)
+        {
+            if (_localPauseFocus == index) return;
+            _localPauseFocus = index;
+            TagSfx.UiClick();
+        }
+
+        void ActivateLocalPause()
+        {
+            switch (_localPauseFocus)
+            {
+                case 1: _localHelp = true; TagSfx.UiClick(); break;
+                case 2: _localLook = true; TagSfx.UiClick(); break;
+                case 3: _localAudio = true; TagSfx.UiClick(); break;
+                case 4: LoadBootMenu(); break;
+                default: SetLocalPause(false); break;
+            }
+        }
+
+        void DrawLocalPause()
+        {
+            float cx = Screen.width * 0.5f;
+            float cy = Screen.height * 0.5f;
+            if (_localHelp)
+            {
+                GUI.Box(new Rect(cx - 240, cy - 200, 480, 400), "Controls");
+                GUI.Label(new Rect(cx - 220, cy - 168, 440, 280),
                     TagArena.Movement.ControlBinds.Help +
-                    "\n\nH close\nLeft / Right dash    Up / Down punch\n- / + volume    M mute    N music");
+                    "\n\nEsc or H back\nLeft / Right dash    Up / Down punch\n- / + volume    M mute    N music");
                 return;
             }
+            if (_localLook)
+            {
+                GUI.Box(new Rect(cx - 200, cy - 90, 400, 180), "Look sensitivity");
+                GUI.Label(new Rect(cx - 180, cy - 48, 360, 28), TagArena.Movement.LookSensitivity.Label);
+                if (MenuClick.Button(new Rect(cx - 150, cy - 10, 80, 28), "<"))
+                    TagArena.Movement.LookSensitivity.Cycle(-1);
+                if (MenuClick.Button(new Rect(cx + 70, cy - 10, 80, 28), ">"))
+                    TagArena.Movement.LookSensitivity.Cycle(1);
+                GUI.Label(new Rect(cx - 180, cy + 28, 360, 48),
+                    "Left / Right    Esc back\nDefault is the current camera feel");
+                return;
+            }
+            if (_localAudio)
+            {
+                GUI.Box(new Rect(cx - 200, cy - 110, 400, 240), "Audio");
+                GUI.Label(new Rect(cx - 180, cy - 78, 360, 28), "SFX  " + Tag.Audio.AudioMaster.Label);
+                if (MenuClick.Button(new Rect(cx - 150, cy - 44, 80, 28), "<"))
+                    Tag.Audio.AudioMaster.CycleVolume(-1);
+                if (MenuClick.Button(new Rect(cx + 70, cy - 44, 80, 28), ">"))
+                    Tag.Audio.AudioMaster.CycleVolume(1);
+                GUI.Label(new Rect(cx - 180, cy - 8, 360, 28), "Music  " + Tag.Audio.AudioMaster.MusicLabel);
+                if (MenuClick.Button(new Rect(cx - 150, cy + 24, 80, 28), "<"))
+                    Tag.Audio.AudioMaster.CycleMusic(-1);
+                if (MenuClick.Button(new Rect(cx + 70, cy + 24, 80, 28), ">"))
+                    Tag.Audio.AudioMaster.CycleMusic(1);
+                GUI.Label(new Rect(cx - 180, cy + 64, 360, 48),
+                    "Left / Right SFX    Up / Down music\nM mute all    N music    Esc back");
+                return;
+            }
+
             string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
-            GUI.Box(new Rect(x, y, w, h + 72f), "Paused");
-            GUI.Label(new Rect(x + 16, y + 28, w - 32, 150),
-                "Esc resume\nQ  Boot menu\nH  controls\nM mute (" + Tag.Audio.AudioMaster.Label +
-                ")   N music\nUp / Down bed (" + Tag.Audio.AudioMaster.MusicLabel +
-                ")\nLeft / Right  " + TagArena.Movement.LookSensitivity.Label + extra);
+            GUI.Box(new Rect(cx - 150, cy - 130, 300, 320), "Paused");
+            if (LocalPauseButton(cx, cy - 90, 0, "Resume")) SetLocalPause(false);
+            if (LocalPauseButton(cx, cy - 56, 1, "Controls")) { _localHelp = true; TagSfx.UiClick(); }
+            if (LocalPauseButton(cx, cy - 22, 2, "Look sensitivity")) { _localLook = true; TagSfx.UiClick(); }
+            if (LocalPauseButton(cx, cy + 12, 3, "Audio")) { _localAudio = true; TagSfx.UiClick(); }
+            if (LocalPauseButton(cx, cy + 46, 4, "Quit to Menu")) LoadBootMenu();
+            GUI.Label(new Rect(cx - 140, cy + 78, 280, 96),
+                "Left / Right picks    Enter / Space\nEsc resume    Q menu    H controls\n1-5 highlight\nM mute    N music    Up / Down bed" + extra);
+        }
+
+        bool LocalPauseButton(float cx, float y, int index, string label)
+        {
+            var r = new Rect(cx - 70, y, 140, 28);
+            bool sel = _localPauseFocus == index;
+            if (sel) GUI.Box(new Rect(r.x - 4f, r.y - 4f, r.width + 8f, r.height + 8f), "");
+            if (!MenuClick.Button(r, (sel ? "> " : "  ") + label)) return false;
+            _localPauseFocus = index;
+            return true;
         }
 
         static string ModeTitle(TagModeId id)
@@ -742,8 +885,12 @@ namespace Tag.Modes
                 GUI.Box(new Rect(remRect.x - 4f, remRect.y - 4f, remRect.width + 8f, remRect.height + 8f), "");
             else
                 GUI.Box(new Rect(menuRect.x - 4f, menuRect.y - 4f, menuRect.width + 8f, menuRect.height + 8f), "");
-            if (canAct && GUI.Button(remRect, _resultsFocus == 0 ? "> Rematch" : "Rematch"))
+            // Mouse only, so Enter does not also fire whichever IMGUI control is focused.
+            // A click during the arm moves the highlight and does not activate.
+            if (MenuClick.Button(remRect, _resultsFocus == 0 ? "> Rematch" : "Rematch"))
             {
+                _resultsFocus = 0;
+                if (!canAct) return;
                 _resultsActionTaken = true;
                 var flow = GameFlow.Instance;
                 if (flow != null) flow.Rematch();
@@ -753,8 +900,10 @@ namespace Tag.Modes
                     Rematch();
                 }
             }
-            if (canAct && GUI.Button(menuRect, _resultsFocus == 1 ? "> Menu" : "Menu"))
+            if (MenuClick.Button(menuRect, _resultsFocus == 1 ? "> Menu" : "Menu"))
             {
+                _resultsFocus = 1;
+                if (!canAct) return;
                 _resultsActionTaken = true;
                 if (GameFlow.Instance != null) GameFlow.Instance.QuitToMenu();
                 else LoadBootMenu();
