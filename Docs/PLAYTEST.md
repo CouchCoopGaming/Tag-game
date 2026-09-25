@@ -594,7 +594,9 @@ Already on this branch: An air dash into a climb eases the burst into the grab. 
 
 Already on this branch: An air dash into a wall run eases the burst into the attach. The attach then holds. An air dash into a climb is unchanged. Duration and cooldown are unchanged. Exit time is unchanged.
 
-This delta: An air dash into a dart eases the burst into the dart. The dart then holds. An air dash into a wall run is unchanged. Duration and cooldown are unchanged. Fall speed stays doubled.
+Already on this branch: An air dash into a dart eases the burst into the dart. The dart then holds. An air dash into a wall run is unchanged. Duration and cooldown are unchanged. Fall speed stays doubled.
+
+This delta: A ski into a slide eases the glide into the wedge. The wedge then holds. The slow glide blend stays off that path. A slide into a ski is unchanged. Ski speed is unchanged. slideBoost stays 0.
 
 ## Stack snapshot
 
@@ -1010,6 +1012,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 317. Air dash, then climb: the burst should ease into the grab. The grab should then hold. An air dash into a slide should feel the same. The grab should not feel longer. The dash should not feel longer. The leave should not feel longer. Jet stays off.
 318. Air dash, then wall run: the burst should ease into the attach. The attach should then hold. An air dash into a climb should feel the same. The attach should not feel longer. The dash should not feel longer. The leave should not feel longer. Jet stays off.
 319. Air dash, then dart: the burst should ease into the dart. The dart should then hold. An air dash into a wall run should feel the same. The dart should not feel longer. The dash should not feel longer. The fall should not feel faster. Jet stays off.
+320. Ski, then slide: the glide should ease into the wedge. The wedge should then hold. The glide should not ease back in. A slide into a ski should feel the same. The wedge should not feel longer. The slide should not feel faster. Jet stays off.
 
 ## Known leftovers
 
@@ -1349,6 +1352,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 307. An air dash into a climb eases the burst into the grab. The grab then holds. An air dash into a slide is unchanged. Duration and cooldown are unchanged. Exit time is unchanged. Jet stays off.
 308. An air dash into a wall run eases the burst into the attach. The attach then holds. An air dash into a climb is unchanged. Duration and cooldown are unchanged. Exit time is unchanged. Jet stays off.
 309. An air dash into a dart eases the burst into the dart. The dart then holds. An air dash into a wall run is unchanged. Duration and cooldown are unchanged. Fall speed stays doubled. Jet stays off.
+310. A ski into a slide eases the glide into the wedge. The wedge then holds. The slow glide blend stays off that path. A slide into a ski is unchanged. Ski speed is unchanged. slideBoost stays 0. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
