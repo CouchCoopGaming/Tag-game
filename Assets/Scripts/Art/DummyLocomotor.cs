@@ -693,14 +693,19 @@ namespace Tag.Art
             }
             else if (air)
             {
-                // Rise: a long line up and out. Fall: both arms trail back.
+                // Rise: a long line up and out. Fall: both arms trail back, wide of the torso.
+                // The tuck pitch is unchanged. Look speed is unchanged.
                 // Apex hangs out to the sides so the top reads before the trail. Mild A only.
                 float airW = Mathf.Clamp01(airRise + airFall);
                 float riseShare = airW > 0.001f ? airRise / (airRise + airFall) : 0f;
+                float lookUp = Mathf.Clamp(-_lookArmVis, 0f, 25f);
+                float lookDown = Mathf.Clamp(_lookArmVis, 0f, 55f);
+                float fallPitch = 72f + lookDown * 0.05f - lookUp * 0.2f;
+                float fallYaw = 16f + lookDown * 0.08f;
                 Quaternion upL = _uaL0 * Quaternion.Euler(-112f, 16f, armZ);
                 Quaternion upR = _uaR0 * Quaternion.Euler(-112f, -16f, -armZ);
-                Quaternion downL = _uaL0 * Quaternion.Euler(72f, 6f, armZ);
-                Quaternion downR = _uaR0 * Quaternion.Euler(72f, -6f, -armZ);
+                Quaternion downL = _uaL0 * Quaternion.Euler(fallPitch, fallYaw, armZ);
+                Quaternion downR = _uaR0 * Quaternion.Euler(fallPitch, -fallYaw, -armZ);
                 Quaternion hangL = _uaL0 * Quaternion.Euler(-52f, 22f, armZ);
                 Quaternion hangR = _uaR0 * Quaternion.Euler(-52f, -22f, -armZ);
                 _uaLT = Quaternion.Slerp(hangL, Quaternion.Slerp(downL, upL, riseShare), airW);

@@ -124,7 +124,9 @@ Already on this branch: A jump pushes off the planted foot. The other knee comes
 
 Already on this branch: A punch cocks beside the head and holds that beat, then strikes. The cock does not feel longer.
 
-This delta: Stopping from a sprint plants the last foot under the hip, then the idle sway. The foot does not skate. Speed is unchanged.
+Already on this branch: Stopping from a sprint plants the last foot under the hip, then the idle sway. The foot does not skate. Speed is unchanged.
+
+This delta: In the air, the arms stay clear of the torso. The jump tuck is unchanged. Look speed is unchanged.
 
 ## Stack snapshot
 
@@ -305,6 +307,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 82. Jump from a walk or a run: the foot that was down should push, and the other knee should come up, then the tuck. The jump should not go higher.
 83. Punch: the fist should cock beside the head and hold that beat, then strike. It should not feel like a longer cock. The strike should still come out.
 84. Sprint, then let go: the last foot should plant under the hip before the idle sway. It should not skate. Speed should feel the same.
+85. Jump and look around: the arms should stay clear of the torso on the way down. The tuck on the way up should stay the tuck. Look should feel the same.
 
 ## Known leftovers
 
@@ -409,6 +412,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 72. A jump pushes off the planted foot. The other knee comes up, then the tuck. Jump height is unchanged.
 73. A punch cocks beside the head and holds that beat, then strikes. Windup time is unchanged.
 74. A stop from a sprint plants the last foot under the hip, then the idle sway. The foot does not skate. Speed is unchanged.
+75. In the air, the arms stay clear of the torso. The jump tuck is unchanged. Look speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
