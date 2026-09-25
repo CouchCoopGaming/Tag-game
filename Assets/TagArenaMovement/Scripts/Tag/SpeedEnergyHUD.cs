@@ -85,7 +85,7 @@ namespace TagArena.Movement
         const float CompassPulseDistM = 13f; // earlier It-hunt compass pulse
 
         // Hot Potato fuse HUD warn fallback (matches ItMarker / DummyPatrol when tuning missing).
-        const float HotPotatoWarnSecFallback = 10f;
+        const float HotPotatoWarnSecFallback = 11f; // earlier fuse urgency fallback
 
         // Relative to camera: forward = N, right = E (hunt direction, not world north).
         static readonly string[] Compass8 = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
