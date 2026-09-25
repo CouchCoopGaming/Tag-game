@@ -424,7 +424,9 @@ Already on this branch: A punch into a ski eases the cock or the strike into the
 
 Already on this branch: A punch into a slide eases the cock or the strike into the wedge. A punch into a ski is unchanged. A slide into a punch is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Windup time is unchanged.
 
-This delta: A tag into a ski eases the connect into the glide. A punch into a slide is unchanged. A punch into a ski is unchanged. A tag into a jump is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Connect time is unchanged.
+Already on this branch: A tag into a ski eases the connect into the glide. A punch into a slide is unchanged. A punch into a ski is unchanged. A tag into a jump is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Connect time is unchanged.
+
+This delta: A tag into a slide eases the connect into the wedge. A tag into a ski is unchanged. A punch into a slide is unchanged. A slide into a tag is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Connect time is unchanged.
 
 ## Stack snapshot
 
@@ -755,6 +757,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 232. Punch, then ski: the cock or the strike should ease into the glide. A ski into a punch should feel the same. A punch miss into a tag should feel the same. A slide into a ski should feel the same. A jump into a ski should feel the same. The glide should not feel longer. The cock should not feel longer. Speed should feel the same. Jet stays off.
 233. Punch, then slide: the cock or the strike should ease into the wedge. A punch into a ski should feel the same. A slide into a punch should feel the same. A crouch into a slide should feel the same. A ski into a slide should feel the same. A jump into a slide should feel the same. The slide should not feel faster. The cock should not feel longer. Jet stays off.
 234. Tag, then ski: the connect should ease into the glide. A punch into a slide should feel the same. A punch into a ski should feel the same. A tag into a jump should feel the same. A slide into a ski should feel the same. The glide should not feel longer. The connect should not feel longer. Speed should feel the same. Jet stays off.
+235. Tag, then slide: the connect should ease into the wedge. A tag into a ski should feel the same. A punch into a slide should feel the same. A slide into a tag should feel the same. A crouch into a slide should feel the same. A ski into a slide should feel the same. A jump into a slide should feel the same. The slide should not feel faster. The connect should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1009,6 +1012,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 222. A punch into a ski eases the cock or the strike into the glide. A ski into a punch is unchanged. A punch miss into a tag is unchanged. A slide into a ski is unchanged. A jump into a ski is unchanged. Ski speed is unchanged. Windup time is unchanged. Jet stays off.
 223. A punch into a slide eases the cock or the strike into the wedge. A punch into a ski is unchanged. A slide into a punch is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Windup time is unchanged. Jet stays off.
 224. A tag into a ski eases the connect into the glide. A punch into a slide is unchanged. A punch into a ski is unchanged. A tag into a jump is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Connect time is unchanged. Jet stays off.
+225. A tag into a slide eases the connect into the wedge. A tag into a ski is unchanged. A punch into a slide is unchanged. A slide into a tag is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Connect time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

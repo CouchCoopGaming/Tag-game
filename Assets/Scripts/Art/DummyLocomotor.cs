@@ -239,6 +239,11 @@ namespace Tag.Art
         Quaternion _punchSlideUaL, _punchSlideUaR, _punchSlideLaL, _punchSlideLaR;
         Quaternion _punchSlideUlL, _punchSlideUlR, _punchSlideLlL, _punchSlideLlR;
         Quaternion _punchSlideSp, _punchSlideHp, _punchSlideHd;
+        bool _slideFromTag;
+        float _slideFromTagIn;
+        Quaternion _tagSlideUaL, _tagSlideUaR, _tagSlideLaL, _tagSlideLaR;
+        Quaternion _tagSlideUlL, _tagSlideUlR, _tagSlideLlL, _tagSlideLlR;
+        Quaternion _tagSlideSp, _tagSlideHp, _tagSlideHd;
         bool _climbFromDash;
         float _climbFromDashIn;
         bool _wallFromDash;
@@ -477,17 +482,22 @@ namespace Tag.Art
             // A still crouch into a slide eases the guard into the wedge.
             // A crouch walk into a slide eases the low stride into the wedge.
             // A ski into a slide eases the glide into the wedge. Ski speed is unchanged.
-            // A jump eases the glide or the landing into the wedge. slideBoost stays 0.
+            // A jump eases the glide or the landing into the wedge.
+            // A punch eases the cock or the strike into the wedge. A tag eases the connect into the wedge.
+            // slideBoost stays 0.
             bool jumpIntoSlide = sliding && !_dropSlide && (!grounded || !_wasGrounded || _landSquash > 0.08f);
             bool fromPunchSlide = sliding && !_dropSlide && !jumpIntoSlide && !_airDashPoseWas
                 && (_punchPhaseWas == PunchPhase.Windup || _punchPhaseWas == PunchPhase.Active)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            bool fromTagSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromPunchSlide && !_airDashPoseWas && !_jumpFromTag
+                && _punchPhaseWas == PunchPhase.HitRecover
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
             if (jumpIntoSlide)
             {
                 _jumpToSlide = 1f;
                 _jumpToSlideLand = grounded;
             }
-            else if (!fromPunchSlide)
+            else if (!fromPunchSlide && !fromTagSlide)
             {
                 if (sliding && !_dropSlide && _crouchFromStand && _dropVis > 0.2f)
                     _crouchToSlide = 1f;
@@ -514,6 +524,26 @@ namespace Tag.Art
                 _punchSlideSp = _spine.localRotation;
                 _punchSlideHp = _hips.localRotation;
                 _punchSlideHd = _head.localRotation;
+            }
+            if (fromTagSlide && !_slideFromTag)
+            {
+                // The connect eases into the wedge. A tag into a ski keeps its ease.
+                // A punch into a slide keeps its ease. A slide into a tag keeps its ease.
+                // A crouch into a slide keeps its ease. A ski into a slide keeps its ease.
+                // A jump into a slide keeps its ease. slideBoost stays 0. Connect time is unchanged.
+                _slideFromTag = true;
+                _slideFromTagIn = 0f;
+                _tagSlideUaL = _upperArmL.localRotation;
+                _tagSlideUaR = _upperArmR.localRotation;
+                _tagSlideLaL = _lowerArmL.localRotation;
+                _tagSlideLaR = _lowerArmR.localRotation;
+                _tagSlideUlL = _upperLegL.localRotation;
+                _tagSlideUlR = _upperLegR.localRotation;
+                _tagSlideLlL = _lowerLegL.localRotation;
+                _tagSlideLlR = _lowerLegR.localRotation;
+                _tagSlideSp = _spine.localRotation;
+                _tagSlideHp = _hips.localRotation;
+                _tagSlideHd = _head.localRotation;
             }
             if (sliding)
                 _dropSlide = true;
@@ -555,11 +585,14 @@ namespace Tag.Art
                 _jumpToSlide = 0f;
                 _jumpToSlideLand = false;
                 _slideFromPunch = false;
+                _slideFromTag = false;
             }
             else if (_jumpToSlide > 0f)
                 _jumpToSlide = Mathf.MoveTowards(_jumpToSlide, 0f, dt / 0.16f);
             if (_slideFromPunch && sliding)
                 _slideFromPunchIn = Mathf.MoveTowards(_slideFromPunchIn, 1f, dt / 0.04f);
+            if (_slideFromTag && sliding)
+                _slideFromTagIn = Mathf.MoveTowards(_slideFromTagIn, 1f, dt / 0.04f);
             if (crouch && !sliding && speed <= 0.35f)
                 _crouchFromStand = true;
             else if ((crouch && speed > 0.35f) || sliding || _dropVis <= 0.001f)
@@ -6502,6 +6535,31 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(Mathf.Lerp(14f, 62f, up), 0f, 0f), intoGrab);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-(6f + Mathf.Max(0f, -kneePhase) * 72f), 0f, 0f), intoGrab);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-(6f + Mathf.Max(0f, kneePhase) * 72f), 0f, 0f), intoGrab);
+            }
+            if (_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromTagIn < 0.98f)
+            {
+                // The connect eases into the wedge, then the wedge holds.
+                // A tag into a ski keeps its ease. A punch into a slide keeps its ease.
+                // A slide into a tag keeps its ease. A crouch into a slide keeps its ease.
+                // A ski into a slide keeps its ease. A jump into a slide keeps its ease.
+                // slideBoost stays 0. Connect time is unchanged.
+                float intoWedge = _slideFromTagIn;
+                bool leadLeft = sinC >= 0f;
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
+                Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(_tagSlideUaL, wedgeL, intoWedge);
+                _uaRT = Quaternion.Slerp(_tagSlideUaR, wedgeR, intoWedge);
+                _laLT = Quaternion.Slerp(_tagSlideLaL, wedgeElL, intoWedge);
+                _laRT = Quaternion.Slerp(_tagSlideLaR, wedgeElR, intoWedge);
+                _spineT = Quaternion.Slerp(_tagSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_tagSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_tagSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_tagSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_tagSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_tagSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_tagSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
             }
             if (_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromPunchIn < 0.98f)
             {
