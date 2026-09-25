@@ -475,6 +475,12 @@ namespace Tag.Art
         Quaternion _jumpCrouchUaL, _jumpCrouchUaR, _jumpCrouchLaL, _jumpCrouchLaR;
         Quaternion _jumpCrouchUlL, _jumpCrouchUlR, _jumpCrouchLlL, _jumpCrouchLlR;
         Quaternion _jumpCrouchSp, _jumpCrouchHp, _jumpCrouchHd;
+        bool _dashCrouchWas;
+        bool _crouchFromDash;
+        float _crouchFromDashIn;
+        Quaternion _dashCrouchUaL, _dashCrouchUaR, _dashCrouchLaL, _dashCrouchLaR;
+        Quaternion _dashCrouchUlL, _dashCrouchUlR, _dashCrouchLlL, _dashCrouchLlR;
+        Quaternion _dashCrouchSp, _dashCrouchHp, _dashCrouchHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -3256,6 +3262,35 @@ namespace Tag.Art
             bool dashSprint = _airDashArms && !airDashing && !lunging && !dashWalk && (st == MoveState.Sprint || runAmt > 0.4f || speed > 5.5f);
             bool dashCrouch = _airDashArms && !airDashing && !lunging && !dashWalk && !dashSprint
                 && speed <= 0.35f && _input != null && _input.CrouchHeld;
+            if (dashCrouch && !_dashCrouchWas && !_crouchFromJump && !_crouchFromDash
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+            {
+                // The burst eases into the guard. A jump into a still crouch keeps its ease.
+                // A still crouch into an air dash keeps its ease. Duration and cooldown are unchanged.
+                _crouchFromDash = true;
+                _crouchFromDashIn = 0f;
+                _dashCrouchUaL = _upperArmL.localRotation;
+                _dashCrouchUaR = _upperArmR.localRotation;
+                _dashCrouchLaL = _lowerArmL.localRotation;
+                _dashCrouchLaR = _lowerArmR.localRotation;
+                _dashCrouchUlL = _upperLegL.localRotation;
+                _dashCrouchUlR = _upperLegR.localRotation;
+                _dashCrouchLlL = _lowerLegL.localRotation;
+                _dashCrouchLlR = _lowerLegR.localRotation;
+                _dashCrouchSp = _spine.localRotation;
+                _dashCrouchHp = _hips.localRotation;
+                _dashCrouchHd = _head.localRotation;
+            }
+            else if (dashCrouch && !_dashCrouchWas && !_crouchFromJump && !_crouchFromDash)
+            {
+                _crouchFromDash = true;
+                _crouchFromDashIn = 1f;
+            }
+            if (!dashCrouch)
+                _crouchFromDash = false;
+            else if (_crouchFromDash)
+                _crouchFromDashIn = Mathf.MoveTowards(_crouchFromDashIn, 1f, dt / 0.04f);
+            _dashCrouchWas = dashCrouch;
             // 1 at the start of an air dash or lunge, 0 at the end. The pulse tail keeps easing after the burst.
             float dashStretchPose = 1f;
             if (lunging || dashing)
@@ -3356,7 +3391,7 @@ namespace Tag.Art
                         _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(58f, 0f, 0f), pose);
                         _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), pose);
                     }
-                    else if (dashCrouch)
+                    else if (dashCrouch && !_crouchFromDash)
                     {
                         // The burst ends in the guard. A crouch walk ends in the low stride.
                         _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaL0 * Quaternion.Euler(108f, 32f, armZ), pose);
@@ -4181,7 +4216,7 @@ namespace Tag.Art
                     // A walk keeps that stride. A sprint opens the long stride.
                     // A still crouch ends in the guard. A stand keeps the old leave.
                     float w = 1f - Mathf.Clamp01(dashStretchPose);
-                    if (dashCrouch)
+                    if (dashCrouch && !_crouchFromDash)
                     {
                         _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(56f, 0f, 0f), w);
                         _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(56f, 0f, 0f), w);
@@ -7626,6 +7661,53 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_jumpCrouchUlR, guardThighR, intoGuard);
                     _llLT = Quaternion.Slerp(_jumpCrouchLlL, guardKneeL, intoGuard);
                     _llRT = Quaternion.Slerp(_jumpCrouchLlR, guardKneeR, intoGuard);
+                }
+                else
+                {
+                    _uaLT = guardL;
+                    _uaRT = guardR;
+                    _laLT = guardElL;
+                    _laRT = guardElR;
+                    _spineT = guardSp;
+                    _hipsT = guardHp;
+                    _headT = guardHd;
+                    _ulLT = guardThighL;
+                    _ulRT = guardThighR;
+                    _llLT = guardKneeL;
+                    _llRT = guardKneeR;
+                }
+            }
+            if (_crouchFromDash && !_crouchFromJump && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The burst eases into the guard, then the guard holds.
+                // A jump into a still crouch keeps its ease. A still crouch into an air dash keeps its ease.
+                // An air dash into a ski keeps its ease. An air dash into a slide keeps its ease.
+                // Duration and cooldown are unchanged.
+                float intoGuard = _crouchFromDashIn;
+                Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion guardR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion guardElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion guardHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion guardHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion guardThighL = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardThighR = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardKneeL = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
+                Quaternion guardKneeR = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
+                if (intoGuard < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_dashCrouchUaL, guardL, intoGuard);
+                    _uaRT = Quaternion.Slerp(_dashCrouchUaR, guardR, intoGuard);
+                    _laLT = Quaternion.Slerp(_dashCrouchLaL, guardElL, intoGuard);
+                    _laRT = Quaternion.Slerp(_dashCrouchLaR, guardElR, intoGuard);
+                    _spineT = Quaternion.Slerp(_dashCrouchSp, guardSp, intoGuard);
+                    _hipsT = Quaternion.Slerp(_dashCrouchHp, guardHp, intoGuard);
+                    _headT = Quaternion.Slerp(_dashCrouchHd, guardHd, intoGuard);
+                    _ulLT = Quaternion.Slerp(_dashCrouchUlL, guardThighL, intoGuard);
+                    _ulRT = Quaternion.Slerp(_dashCrouchUlR, guardThighR, intoGuard);
+                    _llLT = Quaternion.Slerp(_dashCrouchLlL, guardKneeL, intoGuard);
+                    _llRT = Quaternion.Slerp(_dashCrouchLlR, guardKneeR, intoGuard);
                 }
                 else
                 {
