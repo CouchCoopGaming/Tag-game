@@ -298,7 +298,7 @@ namespace Tag.Art
                 else if (phase == PunchPhase.Active)
                 {
                     float e = Mathf.Lerp(0.8f, 1f, punchProg);
-                    _uaRT = _uaR0 * Quaternion.Euler(-55f - 130f * e, 48f * e, -34f);
+                    _uaRT = _uaR0 * Quaternion.Euler(-55f - 130f * e, 52f * e, -34f); // slightly more elbow flare so Active reads in TP
                     _laRT = _laR0 * Quaternion.Euler(-72f * e, 0f, 0f);
                     _hipsT = _hips0 * Quaternion.Euler(18f, 16f * e, 0f);
                     _spineT = _spine0 * Quaternion.Euler(leanX + 18f, 28f * e, leanZ);
