@@ -184,6 +184,7 @@ namespace Tag.Art
             n += SoftRingWall(root);
             n += AstroRingWall(root);
             n += RingArmyBars(root);
+            n += ArmyApronStep(root);
             n += RingKnightBars(root);
             n += EastSouthCluster(root);
             n += WestNorthCluster(root);
@@ -807,6 +808,21 @@ namespace Tag.Art
             {
                 ("PGK_Monkey_4m_LOD0", new Vector3(-2.1f, 0f, 0f), 0f),
                 ("PGK_Monkey_4m_LOD0", new Vector3(2.1f, 0f, 0f), 0f),
+            });
+        }
+
+        /// <summary>
+        /// One mushroom on the army south apron, between the ring-army bars and the crate.
+        /// Bars end at x=50.7. Crawl south wall is z=3.854 (x 52-60). Crate west edge is x=56.85.
+        /// Mesh x 52.48-55.07, z 2.41-3.29: 1.78 m off the bars and the crate, 0.56 m south of the wall.
+        /// The west mouth (x=52, z 3.85-6.65) stays open. Knight does not get a copy.
+        /// </summary>
+        int ArmyApronStep(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Step_ArmyApron", new Vector3(53.73f, 0f, 2.85f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("Toy_MushroomSteps", Vector3.zero, 0f),
             });
         }
 
