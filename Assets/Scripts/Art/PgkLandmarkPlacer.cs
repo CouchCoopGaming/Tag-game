@@ -182,6 +182,7 @@ namespace Tag.Art
             n += EastNorthCluster(root);
             n += SoftPlaySouthCluster(root);
             n += SoftRingWall(root);
+            n += AstroRingWall(root);
             n += EastSouthCluster(root);
             n += WestNorthCluster(root);
             // Overhead bars. West stays at x=11 (the mast owns x-9.5 around z 12-18).
@@ -772,6 +773,22 @@ namespace Tag.Art
                 ("Toy_WallPanel", new Vector3(-1.6f, 0f, 0f), 0f),
                 ("Toy_WallPanel", new Vector3(0f, 0f, 0f), 0f),
                 ("Toy_WallPanel", new Vector3(1.6f, 0f, 0f), 0f),
+            });
+        }
+
+        /// <summary>
+        /// East-west wall run from the astro dome to the north ring side stair.
+        /// Dome ends at x=20.05 (z 49.56-52.34). Side stair starts at x=25.88, z 50.55-51.45.
+        /// Two panels span x 21.36-24.56 at z=51: 1.31 m off the dome, 1.32 m off the stair.
+        /// North of the astro tube street (ends z=48.97) and the outer lane (ends z=47.25).
+        /// </summary>
+        int AstroRingWall(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Wall_AstroRing", new Vector3(22.96f, 0f, 51f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("Toy_WallPanel", new Vector3(-0.8f, 0f, 0f), 0f),
+                ("Toy_WallPanel", new Vector3(0.8f, 0f, 0f), 0f),
             });
         }
 

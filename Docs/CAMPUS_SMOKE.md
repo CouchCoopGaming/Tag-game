@@ -12,7 +12,7 @@ South bar into soft-play. **SoftS south** at (14.5, 2.6): balance beam, mushroom
 
 ## NW
 
-Cross the north spine. **NW arch** at (7.70, 42). Piers are about 1.7 m off hopscotch NW and the north bar. The deck is at 1.05 and the span underneath is open. NW cluster at (9.4, 45.0), then hopscotch NW. Astro carries the same dome north of its tubes, off Spawn_NW's exit, and the same `PGK_Slide_TubeDeck_2m` on its 2.00 lip (yaw 90, stem 0, low mouth at local z=5.90). West forts do not have the east spiral.
+Cross the north spine. **NW arch** at (7.70, 42). Piers are about 1.7 m off hopscotch NW and the north bar. The deck is at 1.05 and the span underneath is open. NW cluster at (9.4, 45.0), then hopscotch NW. Astro carries the same dome north of its tubes, off Spawn_NW's exit, and the same `PGK_Slide_TubeDeck_2m` on its 2.00 lip (yaw 90, stem 0, low mouth at local z=5.90). **Astro-ring wall** at z=51, x 21.36-24.56: two panels east of that dome, 1.31 m off it and 1.32 m west of the north ring side stair. North of the tube street and the outer lane. West forts do not have the east spiral.
 
 ## East
 
