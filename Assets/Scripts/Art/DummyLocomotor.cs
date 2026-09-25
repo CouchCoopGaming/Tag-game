@@ -1612,10 +1612,33 @@ namespace Tag.Art
                 // The gate stays off unless the component is added and enableGrapple is turned on.
                 float g = Mathf.SmoothStep(0f, 1f, _grapplePose);
                 float outW = pulling ? g : g * g;
-                // A walk returns the hands to the stride. A sprint and a stand keep the old leave.
-                // The pull is unchanged. The gate stays off.
+                // A sprint returns the hands to the long stride. A walk returns them to the walk.
+                // A stand keeps the old leave. The pull is unchanged. The gate stays off.
                 float walkGrapple = !pulling && grounded ? Mathf.Clamp01(walkAmt) * (1f - Mathf.Clamp01(runAmt)) : 0f;
-                if (walkGrapple > 0.02f)
+                float sprintGrapple = !pulling && grounded && (st == MoveState.Sprint || runAmt > 0.4f) ? 1f : 0f;
+                if (sprintGrapple > 0.02f)
+                    walkGrapple = 0f;
+                if (sprintGrapple > 0.02f)
+                {
+                    float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                    float amp = Mathf.Lerp(36f, 64f, gait);
+                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float roll = Mathf.Lerp(0f, armZ, gait);
+                    float reachY = outY + 6f;
+                    float turnOut = Mathf.Abs(_turnVis) * 5f;
+                    float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
+                    float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
+                    float pitchL = RunArmPitch(-sinC, amp);
+                    float pitchR = RunArmPitch(sinC, amp);
+                    float elbowL = Mathf.Lerp(-6f, -30f, Mathf.Clamp01(sinC) * gait);
+                    float elbowR = Mathf.Lerp(-6f, -30f, Mathf.Clamp01(-sinC) * gait);
+                    _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(pitchL, yL, roll), _uaL0 * Quaternion.Euler(-96f, 16f, armZ), outW);
+                    _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(pitchR, -yR, -roll), _uaR0 * Quaternion.Euler(-96f, -16f, -armZ), outW);
+                    _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(elbowL, 0f, 0f), _laL0 * Quaternion.Euler(-14f, 0f, 0f), outW);
+                    _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(elbowR, 0f, 0f), _laR0 * Quaternion.Euler(-14f, 0f, 0f), outW);
+                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX, 0f, leanZ), _spine0 * Quaternion.Euler(-12f, 0f, 0f), outW);
+                }
+                else if (walkGrapple > 0.02f)
                 {
                     float gait = Mathf.Max(Mathf.Clamp01(walkAmt), Mathf.Max(_stopGait, _runVis));
                     gait = Mathf.Lerp(gait, 1f, walkGrapple);
@@ -1651,7 +1674,7 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(6f, 0f, 0f), outW);
                 _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-8f, 0f, 0f), outW);
                 _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-8f, 0f, 0f), outW);
-                if (walkGrapple <= 0.02f)
+                if (walkGrapple <= 0.02f && sprintGrapple <= 0.02f)
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(-12f, 0f, 0f), outW);
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(6f, 0f, 0f), outW);
             }
