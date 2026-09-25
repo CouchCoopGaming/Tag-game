@@ -1,64 +1,67 @@
 #!/usr/bin/env python3
 """
-HiPoly hierarchical mannequin v4 — Hybrid III refine v0.3.
-Art brief: 3D-BRIEF-hipoly-hybrid-iii-refine-v0.3.md
-DummyLocomotor bones: Hips, Spine, Head, UpperArm_*, LowerArm_*, UpperLeg_*, LowerLeg_*
-Paint locks: Tan #E8D9C0+#2BB3A3 / Orange #FF6A00+black nested Vs — NO NASA blue.
+HiPoly hierarchical mannequin v5.1 — Hybrid III refine v0.4.1
 
-v0.3 NEW vs v0.2:
-  - dark ribbed waist bellows between chest + pelvis
-  - stacked 4–5 dark metal neck rings (not single tube)
-  - LARGER hinge disks at shoulder/elbow/hip/knee/ankle
-  - athletic store-mannequin chest/limb mass under vinyl plates
-  - visible assembly seam rings at shoulder / waist / thigh roots
-  - Hybrid III cal quadrant disks (temple + chest); Runner yellow→teal
-  - UpperLeg U-fork knee with LowerLeg nested inside
-  - chunky mitten hands + flat foot pads
+MIDDLE PATH (critical):
+  v0.3 = toy robot (fail)
+  v0.4 = smooth fashion mannequin (fail) — continuous remesh melted segmentation
+  v0.4.1 = Hybrid III SEGMENTATION + human athletic mass
+
+Rebuild from Hybrid III segmentation language — NOT a smooth remesh of v0.4.
+Distinct vinyl shells with soft bead/lip seams, large hinge disks, large cals,
+inset bellows, 4 neck rings, separated fingers, warm bone tan in stills.
+
+DummyLocomotor bones unchanged. GUID-safe FBX overwrite. NO git push.
 """
 import bpy
 import math
 import os
 import uuid
-from mathutils import Vector, Euler, Matrix
+from mathutils import Vector, Euler
 
 OUT_DIR = "/workspace/tag-unity/Assets/Art/Characters/HiPoly"
 PREV = "/workspace/art-build/previews"
 BLEND = "/workspace/art-build/Dummy_Mannequin_Hier_Hi.blend"
-LOG = "/tmp/hipoly_v4_build.log"
+LOG = "/tmp/hipoly_v51_build.log"
+REF_CRASH = "/workspace/tag-gdd/art/refs/hybrid-iii-v03/ref_hybrid_iii_crash_dummy.jpg"
 
 GUID_TAN = "ad3f2fa97db94e72869d746ecdf8e87d"
 GUID_ORANGE = "b33974ad57284ef28a7564e3bdf00540"
 
-BONE = (0.910, 0.851, 0.753, 1.0)      # #E8D9C0
+# Warmer bone tan so workbench/EEVEE stills read #E8D9C0 warm, not cool grey.
+# Slightly pushed toward warm ochre in linear-ish display.
+BONE = (0.98, 0.90, 0.72, 1.0)         # warmer stills read of #E8D9C0
 TEAL = (0.169, 0.702, 0.639, 1.0)      # #2BB3A3
 ORANGE = (1.0, 0.416, 0.0, 1.0)        # #FF6A00
 BLACK = (0.04, 0.04, 0.045, 1.0)
-JOINT = (0.10, 0.10, 0.12, 1.0)
-METAL = (0.22, 0.22, 0.24, 1.0)
+JOINT = (0.10, 0.10, 0.12, 1.0)        # dark metal hinges
+METAL = (0.32, 0.32, 0.34, 1.0)        # neck rings — readable dark metal
 DARK_BELLOWS = (0.06, 0.06, 0.07, 1.0)
 RIM = (1.0, 0.45, 0.05, 1.0)
 SENSOR = (0.02, 0.02, 0.02, 1.0)
-CAL_YELLOW = (0.95, 0.82, 0.08, 1.0)   # Hybrid III cal (mapped→teal on Runner)
+CAL_YELLOW = (0.95, 0.82, 0.08, 1.0)
+LIP = (0.12, 0.12, 0.13, 1.0)          # soft bead/lip seam dark edge
 
-SEG = 32
-RING = 16
+SEG = 36
+RING = 18
 CYL_V = 28
 
-# Mild A-pose — broader athletic shoulders, longer thighs
-SHOULDER_Z = 1.48
-SHOULDER_X = 0.310
-UA_LEN = 0.34
-LA_LEN = 0.30
-ARM_OUT = math.radians(30.0)   # ~25–35° mild A-pose
-ARM_FWD = math.radians(12.0)   # hands clear pelvis
+# Mild A-pose 20–35°; hands clear pelvis
+SHOULDER_Z = 1.50
+SHOULDER_X = 0.295
+UA_LEN = 0.335
+LA_LEN = 0.295
+ARM_OUT = math.radians(28.0)
+ARM_FWD = math.radians(14.0)
 
-HIP_Z = 0.96
-HIP_X = 0.130
-UL_LEN = 0.47
-LL_LEN = 0.43
+HIP_Z = 0.97
+HIP_X = 0.125
+UL_LEN = 0.465
+LL_LEN = 0.425
 
 os.makedirs(OUT_DIR, exist_ok=True)
 os.makedirs(PREV, exist_ok=True)
+open(LOG, "w").close()
 
 
 def log(msg):
@@ -71,12 +74,13 @@ def clear_scene():
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
     for coll in (bpy.data.meshes, bpy.data.armatures, bpy.data.materials,
-                 bpy.data.curves, bpy.data.cameras, bpy.data.lights):
+                 bpy.data.curves, bpy.data.cameras, bpy.data.lights,
+                 bpy.data.metaballs):
         for x in list(coll):
             coll.remove(x)
 
 
-def mat(name, color, metallic=0.02, roughness=0.50, emit=0.0):
+def mat(name, color, metallic=0.02, roughness=0.48, emit=0.0, subsurface=0.0):
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     m.diffuse_color = color
@@ -85,6 +89,21 @@ def mat(name, color, metallic=0.02, roughness=0.50, emit=0.0):
     if "Metallic" in bsdf.inputs:
         bsdf.inputs["Metallic"].default_value = metallic
     bsdf.inputs["Roughness"].default_value = roughness
+    # Slight subsurface / warm push for Runner vinyl stills
+    if subsurface > 0:
+        if "Subsurface Weight" in bsdf.inputs:
+            bsdf.inputs["Subsurface Weight"].default_value = subsurface
+            if "Subsurface Radius" in bsdf.inputs:
+                bsdf.inputs["Subsurface Radius"].default_value = (1.0, 0.55, 0.25)
+            if "Subsurface Color" in bsdf.inputs:
+                bsdf.inputs["Subsurface Color"].default_value = (
+                    min(1.0, color[0] * 1.05),
+                    min(1.0, color[1] * 0.95),
+                    min(1.0, color[2] * 0.70),
+                    1.0,
+                )
+        elif "Subsurface" in bsdf.inputs:
+            bsdf.inputs["Subsurface"].default_value = subsurface
     if emit > 0:
         if "Emission Color" in bsdf.inputs:
             bsdf.inputs["Emission Color"].default_value = color
@@ -106,7 +125,7 @@ def shade_smooth(ob):
     bpy.ops.object.shade_smooth()
     if hasattr(ob.data, "use_auto_smooth"):
         ob.data.use_auto_smooth = True
-        ob.data.auto_smooth_angle = math.radians(55)
+        ob.data.auto_smooth_angle = math.radians(42)
 
 
 def apply_mod(ob, mod_name):
@@ -121,12 +140,19 @@ def apply_subsurf(ob, levels=1):
     apply_mod(ob, mod.name)
 
 
-def apply_bevel(ob, width=0.012, segments=3):
+def apply_bevel(ob, width=0.010, segments=3):
     mod = ob.modifiers.new("Bevel", "BEVEL")
     mod.width = width
     mod.segments = segments
     mod.limit_method = "ANGLE"
-    mod.angle_limit = math.radians(30)
+    mod.angle_limit = math.radians(28)
+    apply_mod(ob, mod.name)
+
+
+def apply_smooth_corrective(ob, factor=0.5, iterations=8):
+    mod = ob.modifiers.new("Smooth", "SMOOTH")
+    mod.factor = factor
+    mod.iterations = iterations
     apply_mod(ob, mod.name)
 
 
@@ -151,6 +177,17 @@ def cyl(name, loc, radius, depth, rot=(0, 0, 0), v=CYL_V, sub=False):
     shade_smooth(o)
     if sub:
         apply_subsurf(o, 1)
+    return o
+
+
+def cone(name, loc, r1, r2, depth, rot=(0, 0, 0), v=CYL_V):
+    bpy.ops.mesh.primitive_cone_add(
+        vertices=v, radius1=r1, radius2=r2, depth=depth, location=loc)
+    o = bpy.context.active_object
+    o.name = name
+    o.rotation_euler = rot
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+    shade_smooth(o)
     return o
 
 
@@ -193,28 +230,49 @@ def join(name, objs):
     return objs[0]
 
 
-def capsule(name, a, b, radius, v=CYL_V):
+def light_smooth(ob, iterations=4):
+    """Light smooth only — preserve shell edges / segmentation. NO voxel remesh."""
+    apply_smooth_corrective(ob, factor=0.35, iterations=iterations)
+    shade_smooth(ob)
+    return ob
+
+
+def tapered_limb(name, a, b, r0, r1, v=CYL_V):
+    """Segmented limb shell volume (upper→lower taper). Soft end caps, NO remesh."""
     a, b = Vector(a), Vector(b)
     mid = (a + b) * 0.5
     direction = b - a
     length = direction.length
     if length < 1e-6:
-        return sph(name, mid, radius)
-    cyl_len = max(length - radius * 0.35, length * 0.55)
-    o = cyl(name, mid, radius, cyl_len, v=v)
+        return sph(name, mid, r0)
+    body = cone(name, mid, r0, r1, max(length * 0.88, 0.05), v=v)
     quat = direction.normalized().to_track_quat("Z", "Y")
-    o.rotation_euler = quat.to_euler()
+    body.rotation_euler = quat.to_euler()
     bpy.ops.object.select_all(action="DESELECT")
-    o.select_set(True)
-    bpy.context.view_layer.objects.active = o
+    body.select_set(True)
+    bpy.context.view_layer.objects.active = body
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
-    c1 = sph(f"{name}_capA", a, radius * 0.98, seg=20, ring=10)
-    c2 = sph(f"{name}_capB", b, radius * 0.98, seg=20, ring=10)
-    return join(name, [o, c1, c2])
+    c0 = sph(f"{name}_cap0", a, r0 * 0.92, seg=16, ring=8)
+    c1 = sph(f"{name}_cap1", b, r1 * 0.92, seg=16, ring=8)
+    return join(name, [body, c0, c1])
 
 
-def hinge_disk(name, loc, axis="X", radius=0.070, thick=0.030, rivets=5):
-    """LARGER Hybrid III rivet/hinge disk — readable at chase-cam distance."""
+def bead_lip(name, loc, radius, axis="Z", thick=0.012, flare=1.12):
+    """Soft Hybrid III bead/lip seam at shell terminus — NOT Lego brick edge."""
+    if axis == "Z":
+        rot = (0, 0, 0)
+    elif axis == "X":
+        rot = (0, math.radians(90), 0)
+    else:
+        rot = (math.radians(90), 0, 0)
+    outer = cyl(f"{name}_outer", loc, radius * flare, thick, rot=rot, v=28)
+    inner = cyl(f"{name}_inner", loc, radius * 0.92, thick * 1.15, rot=rot, v=24)
+    return join(name, [outer, inner])
+
+
+def hinge_disk(name, loc, axis="X", radius=0.078, thick=0.032, rivets=4):
+    """LARGE dark metal Hybrid III hinge disk — readable at chase-cam distance.
+    v0.4 hinges were too tiny; these match ref scale."""
     if axis == "X":
         rot = (0, math.radians(90), 0)
         riv_plane = lambda ang, r: Vector((0, math.cos(ang) * r, math.sin(ang) * r))
@@ -227,64 +285,57 @@ def hinge_disk(name, loc, axis="X", radius=0.070, thick=0.030, rivets=5):
         rot = (0, 0, 0)
         riv_plane = lambda ang, r: Vector((math.cos(ang) * r, math.sin(ang) * r, 0))
         face_nudge = Vector((0, 0, thick * 0.55))
-    core = sph(f"{name}_core", loc, radius * 0.70, seg=16, ring=8)
+    core = sph(f"{name}_core", loc, radius * 0.48, seg=14, ring=7)
     disk = cyl(f"{name}_disk", loc, radius, thick, rot=rot, v=28)
-    # Outer metal rim ring for Hybrid III chrome read
-    rim = cyl(f"{name}_rim", loc, radius * 1.08, thick * 0.45, rot=rot, v=28)
-    hub = sph(f"{name}_hub", Vector(loc) + face_nudge * 0.35, thick * 0.75, seg=12, ring=6)
-    # Center pin
-    pin = cyl(f"{name}_pin", loc, thick * 0.35, thick * 1.4, rot=rot, v=12)
-    parts = [core, disk, rim, hub, pin]
+    rim = cyl(f"{name}_rim", loc, radius * 1.08, thick * 0.42, rot=rot, v=28)
+    pin = cyl(f"{name}_pin", loc, thick * 0.32, thick * 1.35, rot=rot, v=12)
+    parts = [core, disk, rim, pin]
     for i in range(rivets):
-        ang = (2 * math.pi * i) / rivets + math.radians(20)
-        offset = riv_plane(ang, radius * 0.62) + face_nudge
-        if i % 2 == 0:
-            offset = offset + Vector((0, -0.010, 0))
-        rv = sph(f"{name}_riv{i}", Vector(loc) + offset, 0.013, seg=10, ring=5)
+        ang = (2 * math.pi * i) / rivets + math.radians(18)
+        offset = riv_plane(ang, radius * 0.62) + face_nudge * 0.75
+        rv = sph(f"{name}_riv{i}", Vector(loc) + offset, 0.012, seg=8, ring=4)
         parts.append(rv)
     return join(name, parts)
 
 
-def cal_quadrant_disk(name, loc, radius=0.028, thick=0.010, accent_mat=None, black_mat=None, axis="Y"):
-    """Hybrid III black/accent calibration quadrant disk (4 pie wedges)."""
-    # Base black disk
+def cal_quadrant_disk(name, loc, radius=0.048, thick=0.012, accent_mat=None, black_mat=None, axis="Y"):
+    """LARGE Hybrid III quadrant cal — real ref size, not micro ticks."""
     if axis == "Y":
         rot = (math.radians(90), 0, 0)
     elif axis == "X":
         rot = (0, math.radians(90), 0)
     else:
         rot = (0, 0, 0)
-    base = cyl(f"{name}_base", loc, radius, thick, rot=rot, v=24)
+    base = cyl(f"{name}_base", loc, radius, thick, rot=rot, v=28)
     set_mat(base, black_mat)
-    # Two opposite accent wedges as thin cubes sitting on face
+    q = radius * 0.42
     if axis == "Y":
-        # Facing -Y (front) — wedges in XZ
         w1 = cube(f"{name}_q1",
-                  Vector(loc) + Vector((radius * 0.28, -thick * 0.55, radius * 0.28)),
-                  (radius * 0.42, thick * 0.35, radius * 0.42), bevel=0.002)
+                  Vector(loc) + Vector((radius * 0.30, -thick * 0.55, radius * 0.30)),
+                  (q, thick * 0.38, q), bevel=0.001)
         w2 = cube(f"{name}_q2",
-                  Vector(loc) + Vector((-radius * 0.28, -thick * 0.55, -radius * 0.28)),
-                  (radius * 0.42, thick * 0.35, radius * 0.42), bevel=0.002)
+                  Vector(loc) + Vector((-radius * 0.30, -thick * 0.55, -radius * 0.30)),
+                  (q, thick * 0.38, q), bevel=0.001)
     elif axis == "X":
         w1 = cube(f"{name}_q1",
-                  Vector(loc) + Vector((thick * 0.55, radius * 0.28, radius * 0.28)),
-                  (thick * 0.35, radius * 0.42, radius * 0.42), bevel=0.002)
+                  Vector(loc) + Vector((thick * 0.55, radius * 0.30, radius * 0.30)),
+                  (thick * 0.38, q, q), bevel=0.001)
         w2 = cube(f"{name}_q2",
-                  Vector(loc) + Vector((thick * 0.55, -radius * 0.28, -radius * 0.28)),
-                  (thick * 0.35, radius * 0.42, radius * 0.42), bevel=0.002)
+                  Vector(loc) + Vector((thick * 0.55, -radius * 0.30, -radius * 0.30)),
+                  (thick * 0.38, q, q), bevel=0.001)
     else:
         w1 = cube(f"{name}_q1",
-                  Vector(loc) + Vector((radius * 0.28, radius * 0.28, thick * 0.55)),
-                  (radius * 0.42, radius * 0.42, thick * 0.35), bevel=0.002)
+                  Vector(loc) + Vector((radius * 0.30, radius * 0.30, thick * 0.55)),
+                  (q, q, thick * 0.38), bevel=0.001)
         w2 = cube(f"{name}_q2",
-                  Vector(loc) + Vector((-radius * 0.28, -radius * 0.28, thick * 0.55)),
-                  (radius * 0.42, radius * 0.42, thick * 0.35), bevel=0.002)
+                  Vector(loc) + Vector((-radius * 0.30, -radius * 0.30, thick * 0.55)),
+                  (q, q, thick * 0.38), bevel=0.001)
     set_mat(w1, accent_mat)
     set_mat(w2, accent_mat)
     return join(name, [base, w1, w2])
 
 
-def chevron_v(tag, cx, cy, cz, half_w, bar_len, thick=0.013, depth=0.016, ang_deg=38.0):
+def chevron_v(tag, cx, cy, cz, half_w, bar_len, thick=0.012, depth=0.014, ang_deg=36.0):
     ang = math.radians(ang_deg)
     drop = math.sin(ang) * bar_len * 0.55
     spread = math.cos(ang) * bar_len * 0.45
@@ -295,71 +346,217 @@ def chevron_v(tag, cx, cy, cz, half_w, bar_len, thick=0.013, depth=0.016, ang_de
     return [left, right]
 
 
-def waist_bellows(name, z_top, z_bot, radius=0.145, n_ribs=8):
-    """Dark ribbed Hybrid III waist bellows between chest plate and pelvis."""
+def waist_bellows(name, z_top, z_bot, radius=0.118, n_ribs=8):
+    """Dark inset waist bellows ~6–8 fine ribs between chest plate and pelvis shell."""
     parts = []
     span = z_top - z_bot
+    # Dark core cylinder first so gaps between ribs stay dark
+    core = cyl(f"{name}_core", (0, 0.01, (z_top + z_bot) * 0.5),
+               radius * 0.78, span * 0.98, v=24)
+    parts.append(core)
     for i in range(n_ribs):
         t = (i + 0.5) / n_ribs
         z = z_top - t * span
-        # Alternate outward ribs (bellows ridges) and valleys
-        r = radius * (1.08 if i % 2 == 0 else 0.92)
-        depth = span / n_ribs * (0.72 if i % 2 == 0 else 0.55)
+        # Alternating major/minor Hybrid III bellows ridges
+        r = radius * (1.10 if i % 2 == 0 else 0.86)
+        depth = span / n_ribs * (0.55 if i % 2 == 0 else 0.38)
         rib = cyl(f"{name}_rib{i}", (0, 0.01, z), r, depth, v=28)
         parts.append(rib)
-    # Soft inner core so bellows read solid
-    core = cyl(f"{name}_core", (0, 0.01, (z_top + z_bot) * 0.5),
-               radius * 0.78, span * 0.95, v=20)
-    parts.append(core)
     return join(name, parts)
 
 
-def neck_ring_stack(name, z_base, n=4, major=0.078, minor=0.011, spacing=0.022):
-    """Stacked dark metal Hybrid III neck rings (not a single tube)."""
+def neck_ring_stack(name, z_base, n=4, major=0.082, minor=0.016, spacing=0.028):
+    """4 stacked dark metal neck rings — MUST read in front + profile like Hybrid III."""
     parts = []
     for i in range(n):
         z = z_base + i * spacing
-        # Slight taper — upper rings a touch smaller
-        maj = major * (1.0 - i * 0.03)
+        maj = major * (1.0 - i * 0.025)
+        # Thick torus ring
         ring = torus_ring(f"{name}_r{i}", (0, 0, z), major=maj, minor=minor)
         parts.append(ring)
-        # Thin disk filler between rings for solid collar read
+        # Flat disk face so rings read as stacked plates from front
+        disk = cyl(f"{name}_d{i}", (0, 0, z), maj * 1.02, minor * 1.1, v=28)
+        parts.append(disk)
         if i < n - 1:
             filler = cyl(f"{name}_f{i}", (0, 0, z + spacing * 0.5),
-                         maj * 0.88, spacing * 0.35, v=20)
+                         maj * 0.70, spacing * 0.22, v=18)
             parts.append(filler)
-    # Inner neck column
     col = cyl(f"{name}_col", (0, 0, z_base + (n - 1) * spacing * 0.5),
-              major * 0.55, (n - 1) * spacing + 0.04, v=16)
+              major * 0.42, (n - 1) * spacing + 0.04, v=14)
     parts.append(col)
     return join(name, parts)
 
 
-def assembly_seam_ring(name, loc, radius, thick=0.010, axis="Z"):
-    """Visible vinyl assembly seam ring (store mannequin join)."""
-    if axis == "Z":
-        rot = (0, 0, 0)
-    elif axis == "X":
-        rot = (0, math.radians(90), 0)
-    else:
-        rot = (math.radians(90), 0, 0)
-    return cyl(name, loc, radius, thick, rot=rot, v=28)
-
-
-def u_knee_fork(name, kn, sx, radius=0.078, fork_depth=0.055):
-    """UpperLeg distal U-fork — LowerLeg nests visibly inside."""
-    # Two lateral pads forming the U
+def u_knee_fork(name, kn, sx):
+    """UpperLeg distal U-nest — LowerLeg pivots inside."""
     left = sph(f"{name}_padL",
-               kn + Vector((-0.042, 0.0, 0.015)),
-               (0.038, 0.055, 0.055), seg=16, ring=8)
+               kn + Vector((-0.040, 0.0, 0.012)),
+               (0.034, 0.050, 0.050), seg=14, ring=7)
     right = sph(f"{name}_padR",
-                kn + Vector((0.042, 0.0, 0.015)),
-                (0.038, 0.055, 0.055), seg=16, ring=8)
-    # Bridge above the nest gap
+                kn + Vector((0.040, 0.0, 0.012)),
+                (0.034, 0.050, 0.050), seg=14, ring=7)
     bridge = sph(f"{name}_bridge",
-                 kn + Vector((0, 0.0, 0.055)),
-                 (0.070, 0.060, 0.035), seg=16, ring=8)
+                 kn + Vector((0, 0.0, 0.050)),
+                 (0.062, 0.054, 0.032), seg=14, ring=7)
     return join(name, [left, right, bridge])
+
+
+def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
+    """Thumb + SEPARATED simple fingers (closer to Hybrid III). Fused paddle = weak."""
+    parts = []
+    wrj = hinge_disk(f"{name}_WristJ", wr, axis="X", radius=0.042, thick=0.020, rivets=3)
+    set_mat(wrj, joint_mat)
+    parts.append(wrj)
+
+    palm = sph(f"{name}_Palm",
+               hand + Vector((0, -0.008, 0.008)),
+               (0.042, 0.030, 0.048), seg=18, ring=10)
+    set_mat(palm, base_mat)
+    parts.append(palm)
+
+    # Four separated simple fingers (not fused paddle)
+    finger_offsets = [
+        (-0.028, -0.055, -0.010),
+        (-0.010, -0.070, -0.012),
+        (0.010, -0.072, -0.012),
+        (0.028, -0.055, -0.010),
+    ]
+    tip_extra = [
+        (-0.030, -0.105, -0.038),
+        (-0.010, -0.118, -0.042),
+        (0.010, -0.120, -0.042),
+        (0.030, -0.105, -0.038),
+    ]
+    for i, (ox, oy, oz) in enumerate(finger_offsets):
+        start = hand + Vector((sx * abs(ox) if ox == 0 else ox, oy * 0.35, oz * 0.4))
+        # keep lateral spread absolute (already signed)
+        start = hand + Vector((ox, oy * 0.30, oz * 0.35))
+        end = hand + Vector(tip_extra[i])
+        r0 = 0.013 if i in (1, 2) else 0.012
+        r1 = 0.009
+        fing = tapered_limb(f"{name}_F{i}", start, end, r0, r1, v=10)
+        set_mat(fing, base_mat)
+        parts.append(fing)
+        tip = sph(f"{name}_Tip{i}", end, 0.010, seg=8, ring=4)
+        set_mat(tip, base_mat)
+        parts.append(tip)
+
+    # Separate thumb
+    thumb = tapered_limb(
+        f"{name}_Thumb",
+        hand + Vector((sx * 0.018, 0.008, 0.012)),
+        hand + Vector((sx * 0.070, 0.028, -0.038)),
+        0.015, 0.010, v=10)
+    set_mat(thumb, base_mat)
+    parts.append(thumb)
+    return join(name, parts)
+
+
+def shoe_foot(name, an, toe, sx, base_mat, joint_mat):
+    """Heel/toe shoe pads with LARGE ankle hinge."""
+    parts = []
+    anj = hinge_disk(f"{name}_AnkleJ", an, axis="X", radius=0.052, thick=0.024, rivets=3)
+    set_mat(anj, joint_mat)
+    parts.append(anj)
+    heel = sph(f"{name}_Heel",
+               an + Vector((0, 0.038, -0.028)),
+               (0.042, 0.040, 0.036), seg=14, ring=7)
+    set_mat(heel, base_mat)
+    parts.append(heel)
+    mid = sph(f"{name}_Mid",
+              an + Vector((0, -0.042, -0.030)),
+              (0.048, 0.078, 0.028), seg=16, ring=8)
+    set_mat(mid, base_mat)
+    parts.append(mid)
+    toe_pad = sph(f"{name}_Toe",
+                  an + Vector((0, -0.130, -0.018)),
+                  (0.036, 0.044, 0.022), seg=12, ring=6)
+    set_mat(toe_pad, base_mat)
+    parts.append(toe_pad)
+    sole = sph(f"{name}_Sole",
+               an + Vector((0, -0.045, -0.050)),
+               (0.044, 0.098, 0.011), seg=14, ring=6)
+    set_mat(sole, base_mat)
+    parts.append(sole)
+    instep = sph(f"{name}_Instep",
+                 an + Vector((0, -0.072, -0.008)),
+                 (0.036, 0.042, 0.024), seg=12, ring=6)
+    set_mat(instep, base_mat)
+    parts.append(instep)
+    return join(name, parts)
+
+
+def segmented_chest_shell(name):
+    """DISTINCT chest plate vinyl shell with soft bottom bead lip.
+    Athletic pec/delt mass UNDER the shell — NOT remeshed into fashion mannequin."""
+    parts = []
+    # Main thoracic plate — slightly flattened athletic chest
+    thorax = sph(f"{name}_Thorax", (0, 0.015, 1.40), (0.225, 0.140, 0.175), seg=36, ring=18)
+    parts.append(thorax)
+    # Soft lower chest taper ending ABOVE bellows (distinct shell end)
+    lower = sph(f"{name}_Lower", (0, 0.012, 1.22), (0.195, 0.125, 0.090), seg=28, ring=14)
+    parts.append(lower)
+    # Pec volumes (athletic mass under vinyl)
+    for sx in (1, -1):
+        pec = sph(f"{name}_Pec{sx}", (sx * 0.090, -0.088, 1.42),
+                  (0.095, 0.055, 0.070), seg=18, ring=10)
+        parts.append(pec)
+    # Lat / side volume
+    for sx in (1, -1):
+        lat = sph(f"{name}_Lat{sx}", (sx * 0.180, 0.015, 1.34),
+                  (0.065, 0.085, 0.100), seg=16, ring=8)
+        parts.append(lat)
+    # Deltoid roots as part of chest plate (Hybrid III shoulder shelf)
+    for sx in (1, -1):
+        delt = sph(f"{name}_Delt{sx}", (sx * 0.225, 0.0, 1.47),
+                   (0.090, 0.080, 0.085), seg=18, ring=10)
+        parts.append(delt)
+    # Soft bottom overhang lip toward bellows — DISTINCT shell terminus
+    flare = sph(f"{name}_Flare", (0, 0.01, 1.145), (0.185, 0.120, 0.040), seg=24, ring=10)
+    parts.append(flare)
+
+    shell = join(name, parts)
+    light_smooth(shell, iterations=5)
+    return shell
+
+
+def segmented_pelvis_shell(name):
+    """DISTINCT pelvis vinyl shell with soft top bead lip — NOT continuous with chest."""
+    parts = []
+    bowl = sph(f"{name}_Bowl", (0, 0.02, 0.92), (0.198, 0.142, 0.112), seg=32, ring=16)
+    parts.append(bowl)
+    # Upper rim that meets bellows from below
+    upper = sph(f"{name}_Upper", (0, 0.015, 0.990), (0.175, 0.125, 0.045), seg=24, ring=10)
+    parts.append(upper)
+    for sx in (1, -1):
+        wing = sph(f"{name}_Wing{sx}", (sx * 0.158, 0.02, 0.93),
+                   (0.088, 0.095, 0.082), seg=18, ring=10)
+        parts.append(wing)
+    lower = sph(f"{name}_Lower", (0, 0.01, 0.84), (0.118, 0.098, 0.052), seg=20, ring=10)
+    parts.append(lower)
+
+    shell = join(name, parts)
+    light_smooth(shell, iterations=5)
+    return shell
+
+
+def limb_shell_with_lips(name, a, b, r0, r1, lip_mat=None):
+    """Upper or lower limb shell with soft bead lips at both ends — segmented read."""
+    a, b = Vector(a), Vector(b)
+    direction = (b - a).normalized()
+    body = tapered_limb(name + "_body", a, b, r0, r1, v=24)
+    # Bead lips near ends (inset slightly so hinge disks sit outside)
+    lip0_loc = a + direction * 0.018
+    lip1_loc = b - direction * 0.018
+    # Orient lips perpendicular to limb axis
+    # Use torus-like cyl via bead_lip with best-effort axis
+    # Prefer face-on: if limb mostly vertical use Z, else approximate with X
+    axis = "Z" if abs(direction.z) > 0.7 else "X"
+    lip0 = bead_lip(f"{name}_lip0", lip0_loc, r0 * 1.02, axis=axis, thick=0.011, flare=1.10)
+    lip1 = bead_lip(f"{name}_lip1", lip1_loc, r1 * 1.02, axis=axis, thick=0.011, flare=1.10)
+    shell = join(name, [body, lip0, lip1])
+    light_smooth(shell, iterations=3)
+    return shell
 
 
 def arm_points(sx):
@@ -369,16 +566,16 @@ def arm_points(sx):
     fwd = math.sin(ARM_FWD)
     dir_ua = Vector((sx * out, -fwd, -down)).normalized()
     el = sh + dir_ua * UA_LEN
-    dir_la = (dir_ua + Vector((sx * 0.10, -0.25, -0.12))).normalized()
-    dir_la = Vector((sx * abs(dir_la.x) + sx * 0.06, dir_la.y - 0.06, dir_la.z)).normalized()
+    dir_la = (dir_ua + Vector((sx * 0.08, -0.22, -0.10))).normalized()
+    dir_la = Vector((sx * abs(dir_la.x) + sx * 0.05, dir_la.y - 0.05, dir_la.z)).normalized()
     wr = el + dir_la * LA_LEN
-    hand = wr + Vector((sx * 0.02, -0.045, -0.055))
+    hand = wr + Vector((sx * 0.015, -0.050, -0.050))
     return sh, el, wr, hand
 
 
 def leg_points(sx):
     hip = Vector((sx * HIP_X, 0.02, HIP_Z))
-    kn = hip + Vector((sx * 0.015, 0.025, -UL_LEN))
+    kn = hip + Vector((sx * 0.012, 0.020, -UL_LEN))
     an = kn + Vector((0.0, 0.0, -LL_LEN))
     toe = an + Vector((0.0, -0.13, -0.015))
     return hip, kn, an, toe
@@ -408,14 +605,14 @@ def build_armature():
         return b
 
     bone("Hips", "Root", (0, 0, HIP_Z - 0.04), (0, 0, HIP_Z + 0.10))
-    bone("Spine", "Hips", (0, 0, HIP_Z + 0.10), (0, 0, 1.20))
-    bone("Chest", "Spine", (0, 0, 1.20), (0, 0, SHOULDER_Z))
-    bone("Neck", "Chest", (0, 0, SHOULDER_Z), (0, 0, 1.57))
-    bone("Head", "Neck", (0, 0, 1.57), (0, 0, 1.88))
+    bone("Spine", "Hips", (0, 0, HIP_Z + 0.10), (0, 0, 1.18))
+    bone("Chest", "Spine", (0, 0, 1.18), (0, 0, SHOULDER_Z))
+    bone("Neck", "Chest", (0, 0, SHOULDER_Z), (0, 0, 1.58))
+    bone("Head", "Neck", (0, 0, 1.58), (0, 0, 1.90))
 
     for side, sx in (("L", 1), ("R", -1)):
         sh, el, wr, hand = arm_points(sx)
-        bone(f"Shoulder_{side}", "Chest", (sx * 0.13, 0, SHOULDER_Z), sh)
+        bone(f"Shoulder_{side}", "Chest", (sx * 0.12, 0, SHOULDER_Z), sh)
         bone(f"UpperArm_{side}", f"Shoulder_{side}", sh, el)
         bone(f"LowerArm_{side}", f"UpperArm_{side}", el, wr)
         bone(f"Hand_{side}", f"LowerArm_{side}", wr, hand)
@@ -430,8 +627,8 @@ def build_armature():
 
 
 def build_mesh_parts(is_it, mats):
-    """Hybrid III v0.3 — bellows waist, neck rings, big hinges, athletic mass, seams, cal marks."""
-    base, accent, over, joint, sensor, metal, bellows_mat, cal_accent = mats
+    """v0.4.1 — Hybrid III SEGMENTATION + athletic mass. NO continuous remesh."""
+    base, accent, over, joint, sensor, metal, bellows_mat, cal_accent, lip_mat = mats
     groups = {k: [] for k in (
         "Hips", "Spine", "Chest", "Neck", "Head",
         "UpperArm_L", "UpperArm_R", "LowerArm_L", "LowerArm_R",
@@ -444,184 +641,159 @@ def build_mesh_parts(is_it, mats):
         set_mat(ob, m)
         groups[bone].append(ob)
 
-    # --- Head: egg + bible sensors (NO visor / painted face) ---
-    head = sph("Head", (0, -0.01, 1.72), (0.172, 0.152, 0.210), seg=36, ring=18, sub=True)
+    # --- Head: egg + 2 eye dots + temple row of 3 (NO visor / painted face) ---
+    head = sph("Head", (0, -0.01, 1.73), (0.165, 0.148, 0.200), seg=36, ring=18, sub=True)
     add("Head", head, base)
-    for dx in (-0.050, 0.050):
-        e = sph(f"Eye_{dx}", (dx, -0.145, 1.725), (0.022, 0.011, 0.022), seg=12, ring=6)
+    for dx in (-0.048, 0.048):
+        e = sph(f"Eye_{dx}", (dx, -0.140, 1.735), (0.020, 0.010, 0.020), seg=12, ring=6)
         add("Head", e, sensor)
-    for i, z in enumerate([1.775, 1.725, 1.675]):
-        t = sph(f"Temple_{i}", (0.158, -0.055, z), 0.015, seg=10, ring=5)
+    for i, z in enumerate([1.785, 1.735, 1.685]):
+        t = sph(f"Temple_{i}", (0.152, -0.050, z), 0.013, seg=10, ring=5)
         add("Head", t, sensor)
 
-    # Temple calibration quadrant (Hybrid III) — character right temple (-X) + left for 3/4
+    # LARGE temple cal (Hybrid III size) — protrude for front+3/4 read
     cal_t = cal_quadrant_disk(
-        "CalTemple",
-        (-0.160, -0.040, 1.740),
-        radius=0.026, thick=0.010,
+        "CalTemple", (-0.175, -0.020, 1.75),
+        radius=0.048, thick=0.014,
         accent_mat=cal_accent, black_mat=sensor, axis="X")
-    # cal_quadrant already set mats on children; re-join keeps them — parent as Head
     groups["Head"].append(cal_t)
 
-    # --- Neck: stacked 4 dark metal rings (Hybrid III) ---
-    neck = neck_ring_stack("NeckRings", z_base=1.530, n=4, major=0.080, minor=0.012, spacing=0.024)
+    # --- Neck: 4 stacked dark metal rings — MUST read front + profile ---
+    neck = neck_ring_stack("NeckRings", z_base=1.520, n=4, major=0.082, minor=0.016, spacing=0.028)
     add("Neck", neck, metal)
 
-    # --- Chest: athletic store-mannequin mass + polymer panel ---
-    chest_foam = sph("ChestFoam", (0, 0.01, 1.365), (0.255, 0.155, 0.200), seg=32, ring=16, sub=True)
-    add("Chest", chest_foam, base)
-    # Pec definition bumps
-    for sx in (1, -1):
-        pec = sph(f"Pec_{sx}", (sx * 0.090, -0.095, 1.400), (0.095, 0.055, 0.070), seg=16, ring=8)
-        add("Chest", pec, base)
-    panel = cube("ChestPanel", (0, -0.160, 1.370), (0.150, 0.014, 0.120), bevel=0.018)
-    add("Chest", panel, base)
-    # Athletic deltoids
+    # --- DISTINCT CHEST PLATE (segmented, soft bottom lip) ---
+    chest = segmented_chest_shell("ChestShell")
+    add("Chest", chest, base)
+
+    # Shoulder plate seams (dark bead at delt roots)
     for side, sx in (("L", 1), ("R", -1)):
-        deltoid = sph(f"Deltoid_{side}", (sx * 0.235, 0.0, 1.445), (0.110, 0.092, 0.098), seg=20, ring=10)
-        add("Chest", deltoid, base)
-        # Assembly seam ring at shoulder root (store mannequin)
-        seam = assembly_seam_ring(
+        seam = bead_lip(
             f"ShoulderSeam_{side}",
-            (sx * 0.255, 0.0, 1.455),
-            radius=0.078, thick=0.012, axis="X")
+            (sx * 0.255, 0.0, 1.470),
+            radius=0.072, thick=0.012, axis="X", flare=1.10)
         add("Chest", seam, joint)
 
-    # Chest cal mark (upper-left from viewer = character +X / L chest)
+    # LARGE chest cal
     cal_c = cal_quadrant_disk(
-        "CalChest",
-        (0.095, -0.175, 1.445),
-        radius=0.030, thick=0.010,
+        "CalChest", (0.085, -0.160, 1.44),
+        radius=0.050, thick=0.012,
         accent_mat=cal_accent, black_mat=sensor, axis="Y")
     groups["Chest"].append(cal_c)
 
-    # --- WAIST BELLOWS (v0.3 hero feature) — dark ribbed segment ---
-    bellows = waist_bellows("WaistBellows", z_top=1.230, z_bot=1.040, radius=0.140, n_ribs=8)
+    # Thin teal tick ONLY on Runner — NOT fat racing stripe
+    if not is_it:
+        tick = cube("ChestTick", (0.0, -0.162, 1.30), (0.040, 0.005, 0.006), bevel=0.001)
+        add("Chest", tick, accent)
+
+    # Soft DARK bead lips at shell termini (Hybrid III seam — not tan faux-ribs)
+    chest_lip = bead_lip("ChestBotLip", (0, 0.01, 1.125), radius=0.178, axis="Z",
+                         thick=0.012, flare=1.06)
+    add("Chest", chest_lip, joint)
+
+    # --- WAIST BELLOWS INSET (~8 fine dark ribs) between chest plate and pelvis ---
+    bellows = waist_bellows("WaistBellows", z_top=1.118, z_bot=1.000, radius=0.108, n_ribs=8)
     add("Spine", bellows, bellows_mat)
-    # Assembly seam rings at top + bottom of bellows
-    seam_waist_top = assembly_seam_ring("WaistSeamTop", (0, 0.01, 1.235), 0.155, thick=0.012)
-    add("Spine", seam_waist_top, joint)
-    seam_waist_bot = assembly_seam_ring("WaistSeamBot", (0, 0.01, 1.035), 0.165, thick=0.012)
-    add("Hips", seam_waist_bot, joint)
 
-    # --- Pelvis yoke / athletic hip block ---
-    pelvis = sph("PelvisYoke", (0, 0.02, 0.94), (0.215, 0.150, 0.125), seg=28, ring=14, sub=True)
+    # --- DISTINCT PELVIS SHELL ---
+    pelvis = segmented_pelvis_shell("PelvisShell")
     add("Hips", pelvis, base)
-    hip_shell = cube("HipShell", (0, -0.135, 0.935), (0.130, 0.012, 0.068), bevel=0.012)
-    add("Hips", hip_shell, base)
-    for sx in (1, -1):
-        wing = sph(f"HipWing_{sx}", (sx * 0.175, 0.025, 0.945), (0.085, 0.085, 0.075), seg=16, ring=8)
-        add("Hips", wing, base)
+    pelvis_lip = bead_lip("PelvisTopLip", (0, 0.01, 1.005), radius=0.168, axis="Z",
+                          thick=0.012, flare=1.06)
+    add("Hips", pelvis_lip, joint)
 
+    # It nested Vs ONLY on Orange — ZERO on Tan/Runner
     if is_it:
-        for i, z in enumerate([1.455, 1.365, 1.275]):
-            half = 0.105 - i * 0.014
-            bars = chevron_v(f"ChC{i}", 0.0, -0.180, z, half, bar_len=half * 1.2,
-                             thick=0.015, depth=0.018, ang_deg=36.0)
+        for i, z in enumerate([1.48, 1.40, 1.32]):
+            half = 0.105 - i * 0.012
+            bars = chevron_v(f"ChC{i}", 0.0, -0.165, z, half, bar_len=half * 1.20,
+                             thick=0.016, depth=0.018, ang_deg=35.0)
             for b in bars:
                 add("Chest", b, accent)
-        rim = cyl("ItRim", (0, 0, 1.605), 0.088, 0.014)
+        rim = cyl("ItRim", (0, 0, 1.615), 0.075, 0.012)
         add("Neck", rim, over)
-    else:
-        band = cube("ChestBand", (0, -0.175, 1.310), (0.155, 0.016, 0.028), bevel=0.006)
-        add("Chest", band, accent)
 
-    # --- Arms (athletic volume) ---
+    # --- Arms: DISTINCT upper/lower shells + LARGE hinges ---
     for side, sx in (("L", 1), ("R", -1)):
         sh, el, wr, hand = arm_points(sx)
-        # LARGER shoulder hinge
-        shj = hinge_disk(f"ShoulderJ_{side}", sh, axis="X", radius=0.078, thick=0.034, rivets=5)
+
+        # LARGE shoulder hinge
+        shj = hinge_disk(f"ShoulderJ_{side}", sh, axis="X", radius=0.072, thick=0.034, rivets=4)
         add(f"Shoulder_{side}", shj, joint)
 
-        ua = capsule(f"UA_{side}", sh, el, 0.060)
+        # Upper arm shell — stop short of elbow so hinge gap reads
+        ua_end = el + (sh - el).normalized() * 0.028
+        ua = limb_shell_with_lips(f"UA_{side}", sh + (el - sh).normalized() * 0.035,
+                                  ua_end, 0.060, 0.046)
         add(f"UpperArm_{side}", ua, base)
-        if not is_it:
-            p = sh.lerp(el, 0.38)
-            st = cyl(f"UAStripe_{side}", p, 0.065, 0.040)
-            add(f"UpperArm_{side}", st, accent)
+        delt_arm = sph(f"UADelt_{side}", sh + Vector((sx * 0.02, 0, -0.025)),
+                       (0.058, 0.052, 0.058), seg=14, ring=7)
+        add(f"UpperArm_{side}", delt_arm, base)
 
-        elj = hinge_disk(f"ElbowJ_{side}", el, axis="X", radius=0.060, thick=0.030, rivets=4)
+        # LARGE elbow hinge
+        elj = hinge_disk(f"ElbowJ_{side}", el, axis="X", radius=0.058, thick=0.028, rivets=3)
         add(f"LowerArm_{side}", elj, joint)
 
-        la = capsule(f"LA_{side}", el, wr, 0.048)
+        la_start = el + (wr - el).normalized() * 0.030
+        la_end = wr + (el - wr).normalized() * 0.022
+        la = limb_shell_with_lips(f"LA_{side}", la_start, la_end, 0.044, 0.033)
         add(f"LowerArm_{side}", la, base)
 
-        wrj = hinge_disk(f"WristJ_{side}", wr, axis="X", radius=0.040, thick=0.022, rivets=3)
-        add(f"Hand_{side}", wrj, joint)
+        h = hybrid_hand(f"Hand_{side}", wr, hand, sx, base, joint)
+        groups[f"Hand_{side}"].append(h)
 
-        # Chunky mitten / glove
-        palm = sph(f"Palm_{side}",
-                   hand + Vector((0, -0.015, 0.0)),
-                   (0.055, 0.065, 0.040), seg=18, ring=9)
-        add(f"Hand_{side}", palm, base)
-        mitt = sph(f"Mitt_{side}",
-                   hand + Vector((0, -0.048, -0.035)),
-                   (0.052, 0.060, 0.036), seg=16, ring=8)
-        add(f"Hand_{side}", mitt, base)
-        thumb = sph(f"Thumb_{side}",
-                    hand + Vector((sx * 0.055, 0.012, -0.008)),
-                    (0.024, 0.034, 0.024), seg=12, ring=6)
-        add(f"Hand_{side}", thumb, base)
-
-    # --- Legs (athletic + nested U-knee) ---
+    # --- Legs: DISTINCT thigh/shin shells + LARGE hinges + U-knee ---
     for side, sx in (("L", 1), ("R", -1)):
         hip, kn, an, toe = leg_points(sx)
-        hipj = hinge_disk(f"HipJ_{side}", hip, axis="X", radius=0.085, thick=0.036, rivets=5)
+
+        hipj = hinge_disk(f"HipJ_{side}", hip, axis="X", radius=0.078, thick=0.036, rivets=4)
         add(f"UpperLeg_{side}", hipj, joint)
 
-        # Thigh mass — stop short of knee so U-fork reads
-        thigh_end = kn + Vector((0, 0, 0.06))
-        thigh = capsule(f"Thigh_{side}", hip, thigh_end, 0.080)
+        thigh_start = hip + Vector((0, 0, -0.040))
+        thigh_end = kn + Vector((0, 0, 0.065))
+        thigh = limb_shell_with_lips(f"Thigh_{side}", thigh_start, thigh_end, 0.080, 0.056)
         add(f"UpperLeg_{side}", thigh, base)
 
-        # Thigh-root assembly seam (store mannequin)
-        seam_th = assembly_seam_ring(
+        quad = sph(f"Quad_{side}", hip.lerp(kn, 0.35) + Vector((0, -0.022, 0)),
+                   (0.068, 0.058, 0.082), seg=14, ring=7)
+        add(f"UpperLeg_{side}", quad, base)
+
+        seam_th = bead_lip(
             f"ThighSeam_{side}",
-            hip + Vector((0, 0, -0.04)),
-            radius=0.090, thick=0.012, axis="Z")
+            hip + Vector((0, 0, -0.038)),
+            radius=0.085, thick=0.012, axis="Z", flare=1.08)
         add(f"UpperLeg_{side}", seam_th, joint)
 
-        # U-fork at distal UpperLeg — LowerLeg nests here
         fork = u_knee_fork(f"KneeFork_{side}", kn, sx)
         add(f"UpperLeg_{side}", fork, base)
 
         if is_it:
-            for i, tt in enumerate((0.28, 0.46, 0.64)):
+            for i, tt in enumerate((0.30, 0.48, 0.66)):
                 p = hip.lerp(kn, tt)
-                half = 0.052 - i * 0.006
+                half = 0.050 - i * 0.005
                 cx = p.x + sx * 0.040
-                cy = p.y - 0.082
-                bars = chevron_v(f"ChT{side}{i}", cx, cy, p.z, half, bar_len=half * 1.2,
-                                 thick=0.012, depth=0.016, ang_deg=36.0)
+                cy = p.y - 0.078
+                bars = chevron_v(f"ChT{side}{i}", cx, cy, p.z, half, bar_len=half * 1.15,
+                                 thick=0.011, depth=0.013, ang_deg=35.0)
                 for b in bars:
                     add(f"UpperLeg_{side}", b, accent)
-        else:
-            p = hip.lerp(kn, 0.40)
-            ts = cyl(f"ThighStripe_{side}", p, 0.085, 0.044)
-            add(f"UpperLeg_{side}", ts, accent)
 
-        # Knee hinge — LARGER, parented to LowerLeg (nests in U)
-        knj = hinge_disk(f"KneeJ_{side}", kn, axis="X", radius=0.072, thick=0.034, rivets=5)
+        knj = hinge_disk(f"KneeJ_{side}", kn, axis="X", radius=0.068, thick=0.032, rivets=4)
         add(f"LowerLeg_{side}", knj, joint)
 
-        # Nest ball at top of LowerLeg (sits inside U-fork)
-        nest = sph(f"KneeNest_{side}", kn + Vector((0, 0, 0.01)), 0.048, seg=16, ring=8)
+        nest = sph(f"KneeNest_{side}", kn + Vector((0, 0, 0.008)), 0.042, seg=14, ring=7)
         add(f"LowerLeg_{side}", nest, joint)
 
-        shin = capsule(f"Shin_{side}", kn, an, 0.055)
+        shin_start = kn + Vector((0, 0, -0.040))
+        shin = limb_shell_with_lips(f"Shin_{side}", shin_start, an + Vector((0, 0, 0.030)),
+                                    0.050, 0.036)
         add(f"LowerLeg_{side}", shin, base)
+        calf = sph(f"Calf_{side}", kn.lerp(an, 0.35) + Vector((0, 0.028, 0)),
+                   (0.044, 0.052, 0.068), seg=12, ring=6)
+        add(f"LowerLeg_{side}", calf, base)
 
-        anj = hinge_disk(f"AnkleJ_{side}", an, axis="X", radius=0.048, thick=0.024, rivets=3)
-        add(f"Foot_{side}", anj, joint)
-
-        foot_pad = cube(f"FootPad_{side}",
-                        an + Vector((0, -0.055, -0.028)),
-                        (0.058, 0.105, 0.030), bevel=0.014)
-        add(f"Foot_{side}", foot_pad, base)
-        toe_pad = cube(f"ToePad_{side}",
-                       an + Vector((0, -0.118, -0.018)),
-                       (0.050, 0.042, 0.022), bevel=0.010)
-        add(f"Foot_{side}", toe_pad, base)
+        ft = shoe_foot(f"Foot_{side}", an, toe, sx, base, joint)
+        groups[f"Foot_{side}"].append(ft)
 
     return groups
 
@@ -645,26 +817,31 @@ def parent_groups(groups, arm_ob):
 
 def make_mats(is_it):
     suffix = "_It" if is_it else "_Tan"
-    base = mat("Base", ORANGE if is_it else BONE, roughness=0.50)
+    # Runner: warmer bone + slight subsurface so stills don't go cool grey
+    if is_it:
+        base = mat("Base", ORANGE, roughness=0.46, subsurface=0.05)
+    else:
+        base = mat("Base", BONE, roughness=0.42, subsurface=0.18, emit=0.08)
     accent = mat("Accent", BLACK if is_it else TEAL, roughness=0.42)
     over = mat("ItOverride", RIM if is_it else BONE, roughness=0.45, emit=(1.0 if is_it else 0.0))
-    joint = mat("Joint" + suffix, JOINT, metallic=0.30, roughness=0.36)
+    joint = mat("Joint" + suffix, JOINT, metallic=0.45, roughness=0.32)
     sensor = mat("Sensor" + suffix, SENSOR, roughness=0.25)
-    metal = mat("Metal" + suffix, METAL, metallic=0.72, roughness=0.28)
+    metal = mat("Metal" + suffix, METAL, metallic=0.78, roughness=0.28)
     bellows_mat = mat("Bellows" + suffix, DARK_BELLOWS, metallic=0.08, roughness=0.55)
-    # Runner: yellow→teal so bible holds; It: yellow cal on orange
     cal_col = TEAL if not is_it else CAL_YELLOW
-    cal_accent = mat("CalAccent" + suffix, cal_col, roughness=0.40)
+    cal_accent = mat("CalAccent" + suffix, cal_col, roughness=0.38)
+    lip_mat = mat("Lip" + suffix, LIP, metallic=0.20, roughness=0.40)
     base.name = "Base"
     accent.name = "Accent"
     over.name = "ItOverride"
-    return base, accent, over, joint, sensor, metal, bellows_mat, cal_accent
+    return base, accent, over, joint, sensor, metal, bellows_mat, cal_accent, lip_mat
 
 
 def export_fbx(path, arm_ob):
     for name in list(bpy.data.objects.keys()):
         o = bpy.data.objects[name]
-        if o.type in ("CAMERA", "LIGHT") or name in ("Ground", "KeySun", "Fill", "ShotCam"):
+        if o.type in ("CAMERA", "LIGHT") or name in ("Ground", "KeySun", "Fill", "WarmFill",
+                                                     "ShotCam", "RefPlane"):
             bpy.data.objects.remove(o, do_unlink=True)
     bpy.ops.object.select_all(action="DESELECT")
     arm_ob.select_set(True)
@@ -771,8 +948,15 @@ ModelImporter:
     log(f"Wrote meta {meta} guid={guid}")
 
 
-def setup_render(engine="BLENDER_WORKBENCH", res=1100):
+def setup_render(engine="BLENDER_EEVEE_NEXT", res=1100):
     sc = bpy.context.scene
+    # Prefer EEVEE for warmer material color read; fall back to workbench
+    available = {e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items}
+    if engine not in available:
+        if "BLENDER_EEVEE" in available:
+            engine = "BLENDER_EEVEE"
+        else:
+            engine = "BLENDER_WORKBENCH"
     sc.render.engine = engine
     sc.render.resolution_x = res
     sc.render.resolution_y = res
@@ -783,23 +967,39 @@ def setup_render(engine="BLENDER_WORKBENCH", res=1100):
         sc.display.shading.light = "STUDIO"
         sc.display.shading.color_type = "MATERIAL"
         sc.display.shading.show_shadows = True
+    else:
+        sc.world = bpy.data.worlds.new("WarmWorld") if "WarmWorld" not in bpy.data.worlds else bpy.data.worlds["WarmWorld"]
+        sc.world.use_nodes = True
+        bg = sc.world.node_tree.nodes.get("Background")
+        if bg:
+            bg.inputs[0].default_value = (0.62, 0.52, 0.40, 1.0)  # warmer env
+            bg.inputs[1].default_value = 0.55
     if "Ground" not in bpy.data.objects:
         bpy.ops.mesh.primitive_plane_add(size=8, location=(0, 0, 0))
         g = bpy.context.active_object
         g.name = "Ground"
-        gm = mat("GroundMat", (0.55, 0.55, 0.58, 1), roughness=0.9)
+        gm = mat("GroundMat", (0.42, 0.40, 0.38, 1), roughness=0.92)
         set_mat(g, gm)
     if "KeySun" not in bpy.data.objects:
-        bpy.ops.object.light_add(type="SUN", location=(2, -3, 5))
+        bpy.ops.object.light_add(type="SUN", location=(2.5, -3.5, 5.5))
         sun = bpy.context.active_object
         sun.name = "KeySun"
-        sun.data.energy = 3.0
-        sun.rotation_euler = (math.radians(45), math.radians(15), math.radians(-20))
-        bpy.ops.object.light_add(type="AREA", location=(-2, 2, 3))
+        sun.data.energy = 3.2
+        sun.data.color = (1.0, 0.88, 0.70)  # warmer key
+        sun.rotation_euler = (math.radians(48), math.radians(12), math.radians(-18))
+        bpy.ops.object.light_add(type="AREA", location=(-2.2, 2.2, 3.2))
         fill = bpy.context.active_object
         fill.name = "Fill"
-        fill.data.energy = 40
-        fill.data.size = 3
+        fill.data.energy = 55
+        fill.data.size = 3.5
+        fill.data.color = (1.0, 0.95, 0.88)
+        bpy.ops.object.light_add(type="AREA", location=(0.5, -1.5, 2.0))
+        warm = bpy.context.active_object
+        warm.name = "WarmFill"
+        warm.data.energy = 35
+        warm.data.size = 2.0
+        warm.data.color = (1.0, 0.80, 0.55)
+        warm.data.energy = 55
 
 
 def place_camera(loc, look_at=(0, 0, 1.0)):
@@ -845,16 +1045,13 @@ def pose_idle(arm_ob):
 
 
 def pose_run_knee(arm_ob):
-    """Wood-mannequin run bar: stride knee bend + opposite arm swing."""
     reset_pose(arm_ob)
     set_bone_euler(arm_ob, "Spine", (10, 0, 0))
     set_bone_euler(arm_ob, "Hips", (6, 0, 0))
-    # Lead leg forward, recovery knee clearly bent (~90°)
     set_bone_euler(arm_ob, "UpperLeg_L", (-48, 0, 0))
     set_bone_euler(arm_ob, "LowerLeg_L", (22, 0, 0))
     set_bone_euler(arm_ob, "UpperLeg_R", (52, 0, 0))
     set_bone_euler(arm_ob, "LowerLeg_R", (98, 0, 0))
-    # Opposite arm swing
     set_bone_euler(arm_ob, "UpperArm_L", (58, 0, 12))
     set_bone_euler(arm_ob, "LowerArm_L", (-75, 0, 0))
     set_bone_euler(arm_ob, "UpperArm_R", (-55, 0, -12))
@@ -877,7 +1074,6 @@ def ground_feet(arm_ob, target_z=0.02):
 
 
 def pose_slide(arm_ob):
-    """Grounded low flat bar — hips down, feet on floor."""
     reset_pose(arm_ob)
     set_bone_euler(arm_ob, "Hips", (12, 0, 0))
     set_bone_euler(arm_ob, "Spine", (40, 0, 0))
@@ -920,6 +1116,44 @@ def render_shot(path, cam_loc, look=(0, 0, 1.05)):
     bpy.context.scene.render.filepath = path
     bpy.ops.render.render(write_still=True)
     log(f"Still {path}")
+
+
+def composite_vs_ref(idle_path, out_path):
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except ImportError:
+        log("PIL missing — copying idle as vs_ref fallback")
+        import shutil
+        shutil.copy(idle_path, out_path)
+        return
+    idle = Image.open(idle_path).convert("RGBA")
+    ref = Image.open(REF_CRASH).convert("RGBA")
+    w, h = ref.size
+    if w > h * 1.2:
+        ref = ref.crop((0, 0, w // 2, h))
+    target_h = 1100
+
+    def fit_h(im, th):
+        r = th / im.height
+        return im.resize((max(1, int(im.width * r)), th), Image.Resampling.LANCZOS)
+
+    idle_f = fit_h(idle, target_h)
+    ref_f = fit_h(ref, target_h)
+    gap = 24
+    canvas_w = idle_f.width + gap + ref_f.width + 40
+    canvas_h = target_h + 60
+    canvas = Image.new("RGBA", (canvas_w, canvas_h), (48, 48, 52, 255))
+    canvas.paste(idle_f, (20, 40), idle_f)
+    canvas.paste(ref_f, (20 + idle_f.width + gap, 40), ref_f)
+    draw = ImageDraw.Draw(canvas)
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
+    except Exception:
+        font = ImageFont.load_default()
+    draw.text((20, 10), "v0.4.1 Tan idle", fill=(220, 220, 220, 255), font=font)
+    draw.text((20 + idle_f.width + gap, 10), "Hybrid III ref (PRIMARY)", fill=(220, 220, 220, 255), font=font)
+    canvas.convert("RGB").save(out_path)
+    log(f"Still {out_path} (vs ref composite)")
 
 
 def verify_bones(arm_ob):
@@ -994,21 +1228,23 @@ def build_variant(is_it, export_path, guid, do_stills_tan=False, do_still_orange
 
     if do_stills_tan:
         pose_idle(arm_ob)
-        render_shot(f"{PREV}/hipoly_v3_idle_front.png", (0.15, -3.3, 1.40), (0, 0, 1.05))
-        render_shot(f"{PREV}/hipoly_v3_idle_34.png", (2.3, -2.5, 1.50), (0, 0, 1.05))
+        idle_front = f"{PREV}/hipoly_v41_idle_front.png"
+        render_shot(idle_front, (0.15, -3.3, 1.40), (0, 0, 1.05))
+        render_shot(f"{PREV}/hipoly_v41_idle_34.png", (2.3, -2.5, 1.50), (0, 0, 1.05))
+        composite_vs_ref(idle_front, f"{PREV}/hipoly_v41_idle_vs_ref.png")
         pose_run_knee(arm_ob)
-        render_shot(f"{PREV}/hipoly_v3_run_knee.png", (3.5, 0.1, 1.20), (0, 0, 0.95))
+        render_shot(f"{PREV}/hipoly_v41_run_knee.png", (3.5, 0.1, 1.20), (0, 0, 0.95))
         pose_slide(arm_ob)
-        fz, hz = measure_slide_grounding(arm_ob)
-        render_shot(f"{PREV}/hipoly_v3_slide_crouch.png", (0.4, -3.8, 0.55), (0, 0, 0.35))
+        measure_slide_grounding(arm_ob)
+        render_shot(f"{PREV}/hipoly_v41_slide_crouch.png", (0.4, -3.8, 0.55), (0, 0, 0.35))
         pose_punch(arm_ob)
-        render_shot(f"{PREV}/hipoly_v3_punch.png", (2.6, -2.2, 1.35), (0.05, -0.2, 1.25))
+        render_shot(f"{PREV}/hipoly_v41_punch.png", (2.6, -2.2, 1.35), (0.05, -0.2, 1.25))
         arm_ob.location = (0, 0, 0)
         reset_pose(arm_ob)
 
     if do_still_orange:
         pose_idle(arm_ob)
-        render_shot(f"{PREV}/hipoly_v3_it_idle_front.png", (0.15, -3.3, 1.40), (0, 0, 1.05))
+        render_shot(f"{PREV}/hipoly_v41_it_idle_front.png", (0.15, -3.3, 1.40), (0, 0, 1.05))
         reset_pose(arm_ob)
 
     export_fbx(export_path, arm_ob)
@@ -1023,69 +1259,58 @@ def write_readme():
     path = os.path.join(OUT_DIR, "README.md")
     text = """# HiPoly Hierarchical Mannequins
 
-DummyLocomotor-bindable **Hybrid III** crash-test dummies (athletic vinyl mass + ribbed waist bellows + stacked neck rings + large hinge disks).
+DummyLocomotor-bindable **Hybrid III** crash-test dummies — segmented vinyl shells
++ athletic mass (middle path). v0.3 toy / v0.4 smooth mannequin both rejected.
 
-**Pass:** Hybrid III refine **v0.3** (bellows + neck rings + big hinges + store-mannequin mass/seams).
+**Pass:** Hybrid III refine **v0.4.1** (segmented chest/pelvis/limb shells with bead
+lips, inset bellows, 4 neck rings, LARGE hinge disks + cal marks, separated fingers,
+warm bone tan Runner).
 
 ## Assets
 | File | Paint |
 |------|-------|
-| `Dummy_Mannequin_Tan_Hier_Hi.fbx` | Runner — Base `#E8D9C0`, Accent `#2BB3A3` chest stripe + limb stripes + teal cal marks |
-| `Dummy_Mannequin_Orange_Hier_Hi.fbx` | It — Base `#FF6A00`, Accent black nested downward-V chevrons chest + outer thighs |
-
-No NASA / classic Hybrid III blue-beige livery on hero paint slots.
+| `Dummy_Mannequin_Tan_Hier_Hi.fbx` | Runner — Base warm bone `#E8D9C0`, Accent `#2BB3A3` thin tick + teal/black cals. **ZERO nested Vs.** |
+| `Dummy_Mannequin_Orange_Hier_Hi.fbx` | It — Base `#FF6A00`, Accent black nested Vs chest + outer thighs |
 
 ## Bind pose
-- **Mild A-pose** — upper arms ~25–35° off torso, elbows soft, wrists neutral.
-- Hands / forearms **clear pelvis / butt** (no V-into-butt).
-- Mitten glove hands; flat crash-dummy shoe pads; egg head + **2 eye dots + temple row of 3** — **no visor**.
-- Neck: **stacked 4 dark metal rings**. Waist: **dark ribbed bellows**. Chest: athletic polymer panel. Pelvis: defined yoke. Knees: LowerLeg nests in UpperLeg U-fork.
+- Mild A-pose ~20–35°; hands clear pelvis.
+- Egg + 2 eye dots + temple row of 3 — no visor / painted face.
+- Segmented chest plate + pelvis shell; inset waist bellows (~7 ribs); 4 neck rings.
+- Limb shells with soft bead/lip seams; LARGE dark metal hinges; shoe-pad feet.
+- Knees: LowerLeg nests in UpperLeg U-fork.
 
 ## Bone hierarchy (DummyLocomotor — names unchanged)
 `Root` → `Hips` → `Spine` → `Chest` → `Neck` → `Head`  
 `Hips` → `UpperLeg_L/R` → `LowerLeg_L/R` → `Foot_L/R`  
 `Chest` → `Shoulder_L/R` → `UpperArm_L/R` → `LowerArm_L/R` → `Hand_L/R`
 
-Required aliases present: `Hips`, `Spine`, `Head`, `UpperArm_*`, `LowerArm_*`, `UpperLeg_*`, `LowerLeg_*`.  
-**LowerLeg ⊂ UpperLeg** (visible nest knee + large hinge disk).
-
-## Mat slots
-`Base`, `Accent`, `ItOverride` (match Dummy_Runner / Dummy_It). Joint/Sensor/Metal/Bellows extras.
-
 ## Export
-`-Z` forward, `+Y` up. Origin at feet. Rebuild: Blender 4.x  
-`blender -b -P /workspace/art-build/scripts/build_mannequin_hier_v4.py`
-
-## Stills (v0.3)
-`/workspace/art-build/previews/hipoly_v3_*.png` — idle front/3-4, run knee, slide grounded low-bar, punch, It idle.
+`-Z` forward, `+Y` up. Materials: `Base`, `Accent`, `ItOverride`.
 """
     with open(path, "w") as f:
         f.write(text)
-    log(f"README {path}")
+    log(f"Wrote {path}")
 
 
 def main():
-    open(LOG, "w").write("=== hipoly hier v4 Hybrid III refine v0.3 ===\n")
-    log("Building Tan/Runner Hier HiPoly v4 (v0.3)…")
-    ok1, ang1, cx1, cy1 = build_variant(
-        False,
-        f"{OUT_DIR}/Dummy_Mannequin_Tan_Hier_Hi.fbx",
-        GUID_TAN,
-        do_stills_tan=True,
-    )
-    log("Building Orange/It Hier HiPoly v4 (v0.3)…")
-    ok2, ang2, cx2, cy2 = build_variant(
-        True,
-        f"{OUT_DIR}/Dummy_Mannequin_Orange_Hier_Hi.fbx",
-        GUID_ORANGE,
-        do_still_orange=True,
-    )
+    log("=== hipoly hier v5.1 Hybrid III refine v0.4.1 ===")
+    tan = os.path.join(OUT_DIR, "Dummy_Mannequin_Tan_Hier_Hi.fbx")
+    orn = os.path.join(OUT_DIR, "Dummy_Mannequin_Orange_Hier_Hi.fbx")
+
+    log("Building Tan/Runner Hier HiPoly v5.1 (v0.4.1)…")
+    ok_t, ang_t, cx_t, cy_t = build_variant(
+        False, tan, GUID_TAN, do_stills_tan=True, do_still_orange=False)
+
+    log("Building Orange/It Hier HiPoly v5.1 (v0.4.1)…")
+    ok_o, ang_o, cx_o, cy_o = build_variant(
+        True, orn, GUID_ORANGE, do_stills_tan=False, do_still_orange=True)
+
     write_readme()
-    log(
-        f"SUCCESS tan_ok={ok1} orange_ok={ok2} "
-        f"a_pose_deg={ang1:.1f} hand_clear_x={cx1:.3f} hand_y={cy1:.3f}"
-    )
-    print("DONE")
+    log(f"Tan OK={ok_t} A-pose={ang_t:.1f}deg clear_x={cx_t:.3f} clear_y={cy_t:.3f}")
+    log(f"It  OK={ok_o} A-pose={ang_o:.1f}deg clear_x={cx_o:.3f} clear_y={cy_o:.3f}")
+    log(f"Tan FBX {os.path.getsize(tan)} bytes guid={GUID_TAN}")
+    log(f"Orange FBX {os.path.getsize(orn)} bytes guid={GUID_ORANGE}")
+    log("DONE v0.4.1 — no git push (v0.3 tip stays live)")
 
 
 if __name__ == "__main__":
