@@ -546,7 +546,9 @@ Already on this branch: A hard land into a still crouch eases the absorb into th
 
 Already on this branch: A soft land into a still crouch eases the absorb into the guard. The guard then holds. A hard land into a still crouch is unchanged. A grapple release into a still crouch is unchanged. Land time is unchanged.
 
-This delta: An air crouch into a still crouch eases the dart into the guard. The guard then holds. A soft land into a still crouch is unchanged. A hard land into a still crouch is unchanged. Fall speed is unchanged.
+Already on this branch: An air crouch into a still crouch eases the dart into the guard. The guard then holds. A soft land into a still crouch is unchanged. A hard land into a still crouch is unchanged. Fall speed is unchanged.
+
+This delta: A climb into a still crouch eases the grab into the guard. The guard then holds. An air crouch into a still crouch is unchanged. A wall run into a still crouch is unchanged. Exit time is unchanged.
 
 ## Stack snapshot
 
@@ -938,6 +940,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 293. Hard land, then still crouch: the absorb should ease into the guard. The guard should then hold. A grapple release into a still crouch should feel the same. A dash ready into a still crouch should feel the same. The guard should not feel longer. The landing should not feel longer. Jet stays off.
 294. Soft land, then still crouch: the absorb should ease into the guard. The guard should then hold. A hard land into a still crouch should feel the same. A grapple release into a still crouch should feel the same. The guard should not feel longer. The landing should not feel longer. Jet stays off.
 295. Air crouch, then still crouch: the dart should ease into the guard. The guard should then hold. A soft land into a still crouch should feel the same. A hard land into a still crouch should feel the same. The guard should not feel longer. The fall should not feel faster. Jet stays off.
+296. Climb, then still crouch: the grab should ease into the guard. The guard should then hold. An air crouch into a still crouch should feel the same. A wall run into a still crouch should feel the same. The guard should not feel longer. The leave should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1253,6 +1256,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 283. A hard land into a still crouch eases the absorb into the guard. The guard then holds. A grapple release into a still crouch is unchanged. A dash ready into a still crouch is unchanged. Land time is unchanged. Jet stays off.
 284. A soft land into a still crouch eases the absorb into the guard. The guard then holds. A hard land into a still crouch is unchanged. A grapple release into a still crouch is unchanged. Land time is unchanged. Jet stays off.
 285. An air crouch into a still crouch eases the dart into the guard. The guard then holds. A soft land into a still crouch is unchanged. A hard land into a still crouch is unchanged. Fall speed is unchanged. Jet stays off.
+286. A climb into a still crouch eases the grab into the guard. The guard then holds. An air crouch into a still crouch is unchanged. A wall run into a still crouch is unchanged. Exit time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
