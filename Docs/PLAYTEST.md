@@ -208,7 +208,9 @@ Already on this branch: After a tag while sprinting, the arms settle into the st
 
 Already on this branch: After you become It while sprinting, the arms settle into the stride. They do not stay folded. One knee can still be up. Claim time is unchanged.
 
-This delta: Letting go of a grapple while sprinting returns the hands to the stride. They do not hitch. The gate stays off. Range and speed are unchanged.
+Already on this branch: Letting go of a grapple while sprinting returns the hands to the stride. They do not hitch. The gate stays off. Range and speed are unchanged.
+
+This delta: Letting a slide die into a walk brings the body up into the stride. The hips do not pop. A slide into a stand still rises into the idle breath. A slide into a sprint is unchanged. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -431,6 +433,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 124. Sprint and get tagged: the arms should settle into the stride. They should not stay folded. The catch should not feel longer.
 125. Sprint and become It: the arms should settle into the stride. They should not stay folded. One knee can still be up. The claim should not feel longer.
 126. If you turn the grapple on, hook, then let go while sprinting: the hands should return to the stride. They should not hitch. It should stay off unless you turn it on. The pull should feel the same.
+127. Slide, then let it die into a walk: the body should rise into the stride. The hips should not pop. A slide into a stand should still rise into the idle breath. A slide into a sprint should feel the same. Speed should feel the same.
 
 ## Known leftovers
 
@@ -577,6 +580,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 114. After a tag while sprinting, the arms settle into the stride. They do not stay folded. A walking tag still settles into the walk. Flinch time is unchanged.
 115. After you become It while sprinting, the arms settle into the stride. They do not stay folded. One knee can still be up. A walking claim still settles into the walk. Claim time is unchanged.
 116. Letting go of a grapple while sprinting returns the hands to the stride. They do not hitch. A walking release still returns to the walk. A stand keeps the old leave. The gate stays off. Range and speed are unchanged.
+117. Letting a slide die into a walk brings the body up into the stride. The hips do not pop. A slide into a stand still rises into the idle breath. A slide into a sprint is unchanged. Speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
