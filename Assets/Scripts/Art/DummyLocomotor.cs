@@ -110,6 +110,11 @@ namespace Tag.Art
         Quaternion _tagPunchUaL, _tagPunchUaR, _tagPunchLaL, _tagPunchLaR;
         Quaternion _tagPunchUlL, _tagPunchUlR, _tagPunchLlL, _tagPunchLlR;
         Quaternion _tagPunchSp, _tagPunchHp, _tagPunchHd;
+        bool _punchFromCrouch;
+        float _punchFromCrouchIn;
+        Quaternion _crouchPunchUaL, _crouchPunchUaR, _crouchPunchLaL, _crouchPunchLaR;
+        Quaternion _crouchPunchUlL, _crouchPunchUlR, _crouchPunchLlL, _crouchPunchLlR;
+        Quaternion _crouchPunchSp, _crouchPunchHp, _crouchPunchHd;
         bool _punchFromDash;
         float _punchFromDashIn;
         bool _tagFromDash;
@@ -1595,6 +1600,39 @@ namespace Tag.Art
                 _punchFromTagIn = Mathf.MoveTowards(_punchFromTagIn, 1f, dt / 0.04f);
             else if (!windupNow)
                 _punchFromTag = false;
+            bool stillCrouchPunch = windupNow && !_punchWindWas && !fromJumpPose && grounded && !sliding && !_dropSlide
+                && !dartAir && !jet && !_airDashPoseWas
+                && _crouchFromStand && !_crouchWalkArmed && speed <= 0.35f && _dropVis > 0.2f
+                && _itClaim <= 0.2f && _dashReady <= 0.2f && !_tagPunchHold
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && !_punchFromJump && !_punchFromDash && !_punchFromSoft && !_punchFromHard
+                && !_punchFromSki && !_punchFromSlide && !_punchFromClimb && !_punchFromWall && !_punchFromDart
+                && !_punchFromClaim && !_punchFromGrapple && !_punchFromReady && !_punchFromTag
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (stillCrouchPunch)
+            {
+                // The guard eases into the cock. A crouch walk into a punch keeps its windup.
+                // An air crouch into a punch keeps its ease. A slide into a punch keeps its ease.
+                // A crouch into a slide keeps its ease. A crouch claim keeps its pose.
+                // A crouch tag keeps its pose. Windup time is unchanged.
+                _punchFromCrouch = true;
+                _punchFromCrouchIn = 0f;
+                _crouchPunchUaL = _upperArmL.localRotation;
+                _crouchPunchUaR = _upperArmR.localRotation;
+                _crouchPunchLaL = _lowerArmL.localRotation;
+                _crouchPunchLaR = _lowerArmR.localRotation;
+                _crouchPunchUlL = _upperLegL.localRotation;
+                _crouchPunchUlR = _upperLegR.localRotation;
+                _crouchPunchLlL = _lowerLegL.localRotation;
+                _crouchPunchLlR = _lowerLegR.localRotation;
+                _crouchPunchSp = _spine.localRotation;
+                _crouchPunchHp = _hips.localRotation;
+                _crouchPunchHd = _head.localRotation;
+            }
+            if (windupNow && _punchFromCrouch)
+                _punchFromCrouchIn = Mathf.MoveTowards(_punchFromCrouchIn, 1f, dt / 0.04f);
+            else if (!windupNow)
+                _punchFromCrouch = false;
             _punchWindWas = windupNow;
             bool hitNow = punching && phase == PunchPhase.HitRecover;
             if (hitNow && !_tagHitWas && fromJumpPose && !crouch && !_jumpFromTag
@@ -6324,6 +6362,32 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_punchUlR, _ulRT, into);
                 _llLT = Quaternion.Slerp(_punchLlL, _llLT, into);
                 _llRT = Quaternion.Slerp(_punchLlR, _llRT, into);
+            }
+            if (_punchFromCrouch && !_punchFromTag && !_punchFromReady && !_punchFromGrapple && !_punchFromClaim && !_punchFromDart && !_punchFromWall && !_punchFromClimb && !_punchFromSlide && !_punchFromSki && !_punchFromHard && !_punchFromSoft && !_punchFromJump && !_punchFromDash && punching && phase == PunchPhase.Windup && _punchFromCrouchIn < 0.98f)
+            {
+                // The guard eases into the cock, then the windup holds.
+                // A crouch walk into a punch keeps its windup. An air crouch into a punch keeps its ease.
+                // A slide into a punch keeps its ease. A crouch into a slide keeps its ease.
+                // A crouch claim keeps its pose. A crouch tag keeps its pose. Windup time is unchanged.
+                float into = _punchFromCrouchIn;
+                float w = Mathf.Lerp(0.85f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg / 0.35f)));
+                Quaternion windL = _uaL0 * Quaternion.Euler(-28f, 14f, armZ + 18f);
+                Quaternion windR = _uaR0 * Quaternion.Euler(-58f * w, 46f * w, -armZ);
+                Quaternion windElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion windElR = _laR0 * Quaternion.Euler(-68f * w, 0f, 0f);
+                Quaternion windHp = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f);
+                Quaternion windSp = _spine0 * Quaternion.Euler(leanX + 12f * w, -36f * w, leanZ);
+                _uaLT = Quaternion.Slerp(_crouchPunchUaL, windL, into);
+                _uaRT = Quaternion.Slerp(_crouchPunchUaR, windR, into);
+                _laLT = Quaternion.Slerp(_crouchPunchLaL, windElL, into);
+                _laRT = Quaternion.Slerp(_crouchPunchLaR, windElR, into);
+                _hipsT = Quaternion.Slerp(_crouchPunchHp, windHp, into);
+                _spineT = Quaternion.Slerp(_crouchPunchSp, windSp, into);
+                _headT = Quaternion.Slerp(_crouchPunchHd, _headT, into);
+                _ulLT = Quaternion.Slerp(_crouchPunchUlL, _ulLT, into);
+                _ulRT = Quaternion.Slerp(_crouchPunchUlR, _ulRT, into);
+                _llLT = Quaternion.Slerp(_crouchPunchLlL, _llLT, into);
+                _llRT = Quaternion.Slerp(_crouchPunchLlR, _llRT, into);
             }
             if (airDashing && _dashFromHard && !_dashFromSoft && !_dashFromGrapple && !_dashFromClaim && !_dashFromTag && !_dashFromMiss && !_dashFromWall && !_dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromHardIn < 0.98f && !punching)
             {
