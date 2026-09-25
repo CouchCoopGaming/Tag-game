@@ -78,6 +78,7 @@ namespace Tag.Art
         float _surfPhase;
         float _surfIn;
         bool _wasSurf;
+        bool _surfFromCrouch;
         float _prevYaw;
         float _turnVis;
         bool _hasYaw;
@@ -165,7 +166,14 @@ namespace Tag.Art
             bool onSurf = wallRun || climb;
             bool leavingSurf = _wasSurf && !onSurf;
             if (onSurf && !_wasSurf)
+            {
                 _surfPhase = 0f;
+                // A still crouch meets the wall in the guard, then the climb or the run.
+                // A normal entry is unchanged. The meet time is unchanged.
+                _surfFromCrouch = _crouchFromStand && _dropVis > 0.2f && !_dropSlide;
+            }
+            else if (!onSurf)
+                _surfFromCrouch = false;
             if (onSurf)
             {
                 // Hand meets the surface, then the swing starts. A clock sine pops the arm.
@@ -1295,6 +1303,16 @@ namespace Tag.Art
                 }
             }
 
+            if (_surfFromCrouch && onSurf && _surfIn < 0.98f)
+            {
+                // The guard eases onto the wall. It does not snap into the climb or the run.
+                float intoSurf = _surfIn;
+                _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaLT, intoSurf);
+                _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-36f, -16f, -armZ), _uaRT, intoSurf);
+                _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-72f, 0f, 0f), _laLT, intoSurf);
+                _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-72f, 0f, 0f), _laRT, intoSurf);
+            }
+
             if (_punchTelegraph > 0.02f && !punching)
             {
                 // Dummy It cocks before QueuePunch. Same pose as the windup, clear of the chest.
@@ -1835,6 +1853,16 @@ namespace Tag.Art
                 }
             }
 
+            if (_surfFromCrouch && onSurf && _surfIn < 0.98f)
+            {
+                // The guard eases onto the wall. The feet do not snap into the step.
+                float intoSurf = _surfIn;
+                _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(56f, 0f, 0f), _ulLT, intoSurf);
+                _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(56f, 0f, 0f), _ulRT, intoSurf);
+                _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-68f, 0f, 0f), _llLT, intoSurf);
+                _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-68f, 0f, 0f), _llRT, intoSurf);
+            }
+
             if (_dropVis > 0.02f && !air && !dashing && !lunging && !jet && !wallRun && !climb && !mantle && !punching)
             {
                 // Chest and hips follow the drop, then rise back into the stride.
@@ -1912,6 +1940,14 @@ namespace Tag.Art
                 _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(10f, 0f, 0f), _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
                 _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
                 _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
+            }
+            if (_surfFromCrouch && onSurf && _surfIn < 0.98f && !punching)
+            {
+                // The guard pitch eases onto the wall. The hips do not pop flat.
+                float intoSurf = _surfIn;
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(10f, 0f, 0f), _spineT, intoSurf);
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hipsT, intoSurf);
+                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _headT, intoSurf);
             }
 
             if (wallRun || climb)
