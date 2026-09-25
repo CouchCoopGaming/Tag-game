@@ -2683,19 +2683,29 @@ namespace Tag.Art
             {
                 // The cooldown just ended. A short settle on the chest and the arms,
                 // then back into the stride. Standing, it is a small pulse, then the idle breath.
-                // A still crouch pulses inside the guard. A crouch walk keeps the moving pulse.
+                // A still crouch pulses inside the guard. A crouch walk pulses inside the low stride.
                 // Not a second whip. Duration and cooldown are unchanged.
                 float moving = grounded ? Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)) : 0f;
                 float standing = grounded ? 1f - moving : 0f;
                 float w = Mathf.Sin(Mathf.Clamp01(_dashReady) * Mathf.PI);
                 bool crouchReady = grounded && crouch && speed <= 0.35f;
-                if (crouchReady)
+                bool crouchWalkReady = grounded && crouch && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint;
+                if (crouchReady || crouchWalkReady)
                 {
-                    // A small fold inside the guard, then back. It does not rise into the idle breath.
+                    // A small fold inside the guard, then back. A crouch walk keeps that fold and the low stride.
                     _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-42f, 16f, armZ), w);
                     _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-42f, -16f, -armZ), w);
                     _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-80f, 0f, 0f), w);
                     _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-80f, 0f, 0f), w);
+                    if (crouchWalkReady)
+                    {
+                        float stepL = Mathf.Max(0f, sinC);
+                        float stepR = Mathf.Max(0f, -sinC);
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(50f + stepL * 12f - stepR * 6f, 0f, 0f), w);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(50f + stepR * 12f - stepL * 6f, 0f, 0f), w);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(66f + stepL * 8f), 0f, 0f), w);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(66f + stepR * 8f), 0f, 0f), w);
+                    }
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(14f, 0f, 0f), w);
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(26f, 0f, 0f), w);
                     _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-8f, 0f, 0f), w);
