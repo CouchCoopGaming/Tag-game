@@ -340,6 +340,11 @@ namespace Tag.Art
         Quaternion _whipRecoverUlL, _whipRecoverUlR, _whipRecoverLlL, _whipRecoverLlR;
         Quaternion _whipRecoverSp, _whipRecoverHp, _whipRecoverHd;
         float _armRecover;
+        bool _armSettleSnap;
+        float _armSettleIn;
+        Quaternion _armSettleUaL, _armSettleUaR, _armSettleLaL, _armSettleLaR;
+        Quaternion _armSettleUlL, _armSettleUlR, _armSettleLlL, _armSettleLlR;
+        Quaternion _armSettleSp, _armSettleHp, _armSettleHd;
         bool _airDashArms;
         bool _dashFromJump;
         float _dashFromJumpIn;
@@ -13699,12 +13704,56 @@ namespace Tag.Art
                 _armRecover = Mathf.MoveTowards(_armRecover, 0f, dt);
             // After the burst, ease the arms into the fall or the run. Slew 64 snaps them into a second throw.
             // The legs still take the stride once the feet are on the ground.
-            if (_armRecover > 0f && !airDashing && !dashing && !lunging && !punchWind && !handoff && !grappleTell)
+            bool armSettle = _armRecover > 0f && !airDashing && !dashing && !lunging && !punchWind && !handoff && !grappleTell;
+            if (armSettle && !_armSettleSnap
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                // The pose eases into the fall or the run, then that pose holds.
+                // The slow slew stays off this path. Dash time is unchanged.
+                _armSettleSnap = true;
+                _armSettleIn = 0f;
+                _armSettleUaL = _upperArmL.localRotation;
+                _armSettleUaR = _upperArmR.localRotation;
+                _armSettleLaL = _lowerArmL.localRotation;
+                _armSettleLaR = _lowerArmR.localRotation;
+                _armSettleUlL = _upperLegL.localRotation;
+                _armSettleUlR = _upperLegR.localRotation;
+                _armSettleLlL = _lowerLegL.localRotation;
+                _armSettleLlR = _lowerLegR.localRotation;
+                _armSettleSp = _spine.localRotation;
+                _armSettleHp = _hips.localRotation;
+                _armSettleHd = _head.localRotation;
+            }
+            if (_armSettleSnap && armSettle)
+            {
+                if (_armSettleIn < 0.98f)
+                    _armSettleIn = Mathf.MoveTowards(_armSettleIn, 1f, dt / 0.04f);
+            }
+            else if (!armSettle)
+                _armSettleSnap = false;
+            if (armSettle && !_armSettleSnap)
             {
                 armSlewL = 16f;
                 armSlewR = 16f;
                 torsoSlew = 16f;
                 legSlew = grounded ? 44f : 16f;
+            }
+            if (_armSettleSnap && _armSettleIn < 0.98f)
+            {
+                float intoSettle = _armSettleIn;
+                _uaLT = Quaternion.Slerp(_armSettleUaL, _uaLT, intoSettle);
+                _uaRT = Quaternion.Slerp(_armSettleUaR, _uaRT, intoSettle);
+                _laLT = Quaternion.Slerp(_armSettleLaL, _laLT, intoSettle);
+                _laRT = Quaternion.Slerp(_armSettleLaR, _laRT, intoSettle);
+                _spineT = Quaternion.Slerp(_armSettleSp, _spineT, intoSettle);
+                _hipsT = Quaternion.Slerp(_armSettleHp, _hipsT, intoSettle);
+                _headT = Quaternion.Slerp(_armSettleHd, _headT, intoSettle);
+                _ulLT = Quaternion.Slerp(_armSettleUlL, _ulLT, intoSettle);
+                _ulRT = Quaternion.Slerp(_armSettleUlR, _ulRT, intoSettle);
+                _llLT = Quaternion.Slerp(_armSettleLlL, _llLT, intoSettle);
+                _llRT = Quaternion.Slerp(_armSettleLlR, _llRT, intoSettle);
             }
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
