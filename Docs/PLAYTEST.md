@@ -86,7 +86,9 @@ Already on this branch: Walk into a sprint, and sprint back into a walk, eases t
 
 Already on this branch: A sharp turn while walking or standing plants the outside foot. The chest and the hips lean together, so the waist does not twist. The hands stay out from the hips. Look speed is unchanged.
 
-This delta: A short hop into a walk bends the knees, then the stride comes back under the hips. The arms stay in the walk. A hard landing still brings the arms out. Land time is unchanged.
+Already on this branch: A short hop into a walk bends the knees, then the stride comes back under the hips. The arms stay in the walk. A hard landing still brings the arms out. Land time is unchanged.
+
+This delta: Letting go of a sprint settles the last hip sway into the idle breath. The hips do not freeze flat, and they do not pop sideways when the sway starts. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -248,6 +250,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 63. Walk, then sprint, then drop back to a walk: the steps should get longer and quicker, then shorter, without a foot sticking or the hips popping. Speed should feel the same.
 64. Walk and turn hard, and turn in place: the outside foot should stay planted while the other leg steps. The waist should not twist. The hands should stay clear of the hips. Look should feel the same.
 65. From a walk, hop a short hop and keep walking: the knees should bend, then the stride should come back under the hips. The arms should stay in the walk, not flare out. A high drop should still bring the arms out. The landing should not feel longer.
+66. Sprint, then let go into a stand: after the feet close, the hips should ease into the idle side sway. They should not freeze flat and then jerk sideways. The breath should still be there. Speed should feel the same.
 
 ## Known leftovers
 
@@ -333,6 +336,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 53. Walk and sprint ease into each other. Stride length and step rate change together. The feet keep moving and the hips stay level. Speed is unchanged.
 54. A sharp turn plants the outside foot. The chest and the hips lean together. Hands stay clear of the hips. Look speed is unchanged.
 55. A short hop into a walk bends the knees, then the stride returns under the hips. The arms stay in the walk. A hard landing still flares the arms. Land time is unchanged.
+56. A stop from a sprint settles the last hip sway into the idle breath and sway. The hips do not freeze flat or pop. Speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
