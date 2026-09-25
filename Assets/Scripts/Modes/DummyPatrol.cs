@@ -30,7 +30,7 @@ namespace Tag.Modes
         [SerializeField] float decisionHz = 5.2f; // slightly snappier retargets
         [SerializeField] Vector3 centerOffset = Vector3.zero;
         [SerializeField] float closeChaseRange = 3.7f; // slightly earlier close-chase / punch pressure
-        [SerializeField] float leadSeconds = 0.35f; // slight extra lead so intercept cuts read
+        [SerializeField] float leadSeconds = 0.36f; // slight extra lead so intercept cuts read
         [SerializeField] float faceAlignDeg = 15f; // tighter face-up before punch commit
         [Tooltip("Fallback Hot Potato fuse warn window when HotPotatoTuning unavailable.")]
         [SerializeField] float hotPotatoUrgencySec = 10f;
@@ -39,7 +39,7 @@ namespace Tag.Modes
         [Tooltip("Blend of lateral strafe into flee dir so pure radial chase is harder.")]
         [SerializeField] float fleeStrafeBias = 0.42f; // slightly stronger kite strafe so peel reads
         [Tooltip("Seconds of threat velocity lead when computing flee-from point.")]
-        [SerializeField] float fleeLeadSeconds = 0.35f;
+        [SerializeField] float fleeLeadSeconds = 0.36f; // slight extra flee lead so kite peels read
         [Tooltip("Forward wish strength while wandering (motor treats y>0.4 as sprint).")]
         [SerializeField] float wanderMoveY = 0.35f;
         [Tooltip("Forward wish while fleeing under Hot Potato urgency.")]
