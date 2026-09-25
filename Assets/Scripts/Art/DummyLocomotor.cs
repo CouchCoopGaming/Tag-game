@@ -315,7 +315,7 @@ namespace Tag.Art
                 else // MissRecover - limp whiff: less extension, quicker drop vs HitRecover hold
                 {
                     // Cubed ease + soft shoulder sag so a whiff drops faster vs HitRecover hold.
-                    float r = Mathf.Lerp(0.58f, 0.04f, punchProg * punchProg * punchProg);
+                    float r = Mathf.Lerp(0.58f, 0.02f, punchProg * punchProg * punchProg); // fuller limp drop at end of MissRecover
                     _uaRT = _uaR0 * Quaternion.Euler(-18f - 40f * r, 10f * r, -8f); // softer limp shoulder so whiff reads in TP
                     _laRT = _laR0 * Quaternion.Euler(-14f * r, 0f, 0f);
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 6f * r, 0f, leanZ), 0.35f);
