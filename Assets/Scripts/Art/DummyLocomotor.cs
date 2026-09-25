@@ -56,6 +56,8 @@ namespace Tag.Art
         float _punchFromJumpIn;
         bool _punchFromDash;
         float _punchFromDashIn;
+        bool _tagFromDash;
+        float _tagFromDashIn;
         bool _punchWindWas;
         bool _tagFromJump;
         float _tagFromJumpIn;
@@ -968,6 +970,24 @@ namespace Tag.Art
             }
             else
                 _punchFromDash = false;
+            bool burstTag = punching && phase == PunchPhase.HitRecover && !crouch && !_jumpFromTag;
+            bool tagOnTail = burstTag && !_tagHitWas && !dashingAir && _airDashArms && _dashPulse > 0.04f;
+            if (!jumpPunch && !_punchFromDash && ((!dashingAir && _airDashPoseWas && burstTag) || tagOnTail))
+            {
+                // The burst eases into the connect. An air dash into a punch keeps its ease.
+                // A jump into a tag keeps its ease. A crouch tag keeps its pose.
+                // Duration and cooldown are unchanged.
+                _tagFromDash = true;
+                _tagFromDashIn = 0f;
+            }
+            if (_tagFromDash && !dashingAir && burstTag && !jumpPunch && !_punchFromDash)
+            {
+                _tagFromDashIn = Mathf.MoveTowards(_tagFromDashIn, 1f, dt / 0.04f);
+                if (_tagFromDashIn >= 0.98f && !dashTell)
+                    _tagFromDash = false;
+            }
+            else
+                _tagFromDash = false;
             _airDashPoseWas = dashingAir;
             bool windupNow = punching && phase == PunchPhase.Windup;
             bool fromJumpPose = (!grounded && _diveFromJump) || (_landedFromJump && _landSquash > 0.08f);
@@ -4050,7 +4070,7 @@ namespace Tag.Art
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
             // A punch from this jump eases into the windup. A tag from this jump eases into the connect.
             // Staying down still absorbs. Land time is unchanged.
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash)
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -5356,6 +5376,76 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(34f, 0f, 0f), intoDart);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
+            }
+            if (_tagFromDash && !_tagFromJump && !_punchFromDash && punching && phase == PunchPhase.HitRecover && !crouch)
+            {
+                // The burst eases into the connect, then the connect holds.
+                // An air dash into a punch keeps its ease. A jump into a tag keeps its ease.
+                // A crouch tag keeps its pose. Duration and cooldown are unchanged.
+                float intoTag = _tagFromDashIn;
+                float settle = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.28f, 1f, punchProg));
+                float tagLean = dashing ? (air ? 18f : breath) : leanX;
+                Quaternion burstL = _uaL0 * Quaternion.Euler(108f, 32f, armZ);
+                Quaternion burstR = _uaR0 * Quaternion.Euler(108f, -32f, -armZ);
+                Quaternion burstElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion burstElR = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion connectL = _uaL0 * Quaternion.Euler(-32f, 18f, armZ);
+                Quaternion connectR = _uaR0 * Quaternion.Euler(-118f, 52f, -22f);
+                Quaternion connectElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion connectElR = _laR0 * Quaternion.Euler(-18f, 0f, 0f);
+                Quaternion tagL;
+                Quaternion tagR;
+                Quaternion tagElL;
+                Quaternion tagElR;
+                Quaternion tagSp;
+                Quaternion tagHp;
+                if (claimAmt > 0.04f)
+                {
+                    tagR = Quaternion.Slerp(connectR, _uaR0 * Quaternion.Euler(-36f, -48f, -armZ), settle);
+                    tagElR = Quaternion.Slerp(connectElR, _laR0 * Quaternion.Euler(-12f, 0f, 0f), settle);
+                    tagL = Quaternion.Slerp(connectL, _uaL0 * Quaternion.Euler(-128f, 8f, armZ), settle);
+                    tagElL = Quaternion.Slerp(connectElL, _laL0 * Quaternion.Euler(-10f, 0f, 0f), settle);
+                    tagSp = Quaternion.Slerp(_spine0 * Quaternion.Euler(tagLean + 14f, 18f, leanZ), _spine0 * Quaternion.Euler(-22f, -16f, 0f), settle);
+                    tagHp = Quaternion.Slerp(_hips0 * Quaternion.Euler(18f, 22f, 0f), _hips0 * Quaternion.Euler(4f, 0f, 0f), settle);
+                }
+                else
+                {
+                    float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
+                    float idle = 1f - gait;
+                    float amp = Mathf.Lerp(36f, 64f, gait);
+                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float roll = Mathf.Lerp(0f, armZ, gait);
+                    float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                    float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
+                    float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
+                    float armBreath = breath * 0.55f * idle;
+                    Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll);
+                    Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll);
+                    float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
+                    float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
+                    float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
+                    float elbowR = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait);
+                    float plant = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg));
+                    Quaternion baseSp = _spine0 * Quaternion.Euler(tagLean, 0f, leanZ);
+                    Quaternion baseHp = _hips0 * Quaternion.Euler(air ? 8f : 0f, 0f, 0f);
+                    tagR = Quaternion.Slerp(connectR, runR, settle);
+                    tagElR = Quaternion.Slerp(connectElR, _laR0 * Quaternion.Euler(elbowR, 0f, 0f), settle);
+                    tagL = Quaternion.Slerp(connectL, runL, plant);
+                    tagElL = Quaternion.Slerp(connectElL, _laL0 * Quaternion.Euler(elbowL, 0f, 0f), plant);
+                    tagSp = Quaternion.Slerp(_spine0 * Quaternion.Euler(tagLean + 14f, 18f, leanZ), dashing ? baseSp : _spineT, plant);
+                    tagHp = Quaternion.Slerp(_hips0 * Quaternion.Euler(18f, 22f, 0f), dashing ? baseHp : _hipsT, plant);
+                }
+                _uaLT = Quaternion.Slerp(burstL, tagL, intoTag);
+                _uaRT = Quaternion.Slerp(burstR, tagR, intoTag);
+                _laLT = Quaternion.Slerp(burstElL, tagElL, intoTag);
+                _laRT = Quaternion.Slerp(burstElR, tagElR, intoTag);
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(58f, 0f, 0f), tagSp, intoTag);
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), tagHp, intoTag);
+                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(0f, 0f, 0f), _head0 * Quaternion.Euler(air ? -6f : -breath * 0.4f, 0f, 0f), intoTag);
+                _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(72f, 0f, 0f), _ulLT, intoTag);
+                _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulRT, intoTag);
+                _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llLT, intoTag);
+                _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llRT, intoTag);
             }
             if (punching && phase == PunchPhase.HitRecover && _tagFromJump && !_jumpFromTag && _tagFromJumpIn < 0.98f)
             {
