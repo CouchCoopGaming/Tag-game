@@ -278,6 +278,12 @@ namespace Tag.Art
             // is z=-4.72; the high end is z=-5.51 (0.79 m clear). East forts do not get this.
             // Soft-play world z 1.02-4.24. Astro yaw 180 puts it north of the tubes, 0.36 m east of Spawn_NW.
             pieces.Add(("Toy_Slide", new Vector3(5.90f, 0f, -5.53f), 0f));
+            // Round climb, west forts only. Stem -0.330 puts the feet on mulch; the top stays ~1.31.
+            // Local (-4.66, -6.70): 0.59 m south of the tube mesh, west of the south apron.
+            // Soft-play world x 7.95-10.73, z 1.66-4.44 (0.43 m off the apron mushrooms).
+            // Astro yaw 180: x 17.27-20.05, z 49.56-52.34, 0.45 m west of the west lane.
+            // East bunkers do not get this.
+            pieces.Add(("Toy_ClimberDome", new Vector3(-4.66f, 0f, -6.70f), 0f));
         }
 
         /// <summary>
@@ -923,6 +929,7 @@ namespace Tag.Art
             if (stem.StartsWith("Toy_Bumper")) return -0.17f;        // feet (minY~+0.17) SpawnLead
             if (stem.StartsWith("Toy_Goal")) return 0.05f;           // feet (minY~-0.05) Kickball lift
             if (stem.StartsWith("Toy_Slide")) return -0.095f;        // low mouth (minY~+0.095) play-place lawn
+            if (stem.StartsWith("Toy_ClimberDome")) return -0.330f;  // feet (minY~+0.330) west forts
             // minY * landmarkUniformScale * slotScale. Slot scales are baked in; change both together.
             if (stem.StartsWith("Landmark_NinjaBlade")) return -0.334f; // 0.40 * 1.15 * slot 0.725
             if (stem.StartsWith("Landmark_CrashTorso")) return -0.322f; // 1.001 * 1.15 * slot 0.28
