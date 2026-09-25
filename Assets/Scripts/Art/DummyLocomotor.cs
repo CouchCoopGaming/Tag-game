@@ -698,6 +698,22 @@ namespace Tag.Art
                     _uaRT = _uaR0 * Quaternion.Euler(-18f - 40f * r, 10f * r, -8f); // softer limp shoulder so whiff reads in TP
                     _laRT = _laR0 * Quaternion.Euler(-14f * r, 0f, 0f);
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 6f * r, 0f, leanZ), 0.35f);
+                    // Standing, both fists ease into the idle hang so they do not freeze and then pop.
+                    // A moving whiff keeps the limp. Windup time is unchanged.
+                    float moving = grounded ? Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)) : 0f;
+                    float standing = grounded ? 1f - moving : 0f;
+                    float intoIdle = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg)) * standing;
+                    if (intoIdle > 0.02f)
+                    {
+                        float armBreath = breath * 0.55f;
+                        float y = 12f + Mathf.Abs(_turnVis) * 5f;
+                        float elbowIdle = Mathf.Lerp(-10f, -6f, _runVis);
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-12f + armBreath, y, 0f), intoIdle);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-12f + armBreath, -y, 0f), intoIdle);
+                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(elbowIdle, 0f, 0f), intoIdle);
+                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(elbowIdle, 0f, 0f), intoIdle);
+                        _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX, 0f, leanZ), intoIdle);
+                    }
                 }
             }
             else if (air)
