@@ -210,7 +210,16 @@ namespace Tag.Art
             float runAmt = Mathf.InverseLerp(5.5f, 11.5f, speed);
             // Keep a soft air/vault cycle so limbs stay energetic off the ground.
             // Walk and sprint ease length and tempo. The cycle keeps advancing, so a plant does not freeze.
-            if (grounded && speed > 0.35f && !sliding && !crouch)
+            if (airDashing)
+            {
+                // The burst leads with the left thigh. Hold the stride there so the
+                // landing does not skate onto the other foot. Dash time is unchanged.
+                _runVis = runAmt;
+                _cycle = Mathf.PI * 0.5f;
+                _stopGait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                _stopRun = _runVis;
+            }
+            else if (grounded && speed > 0.35f && !sliding && !crouch)
             {
                 _runVis = Mathf.MoveTowards(_runVis, runAmt, dt / 0.2f);
                 float cadence = Mathf.Lerp(7.2f, 11.2f, _runVis);
@@ -228,8 +237,17 @@ namespace Tag.Art
             }
             else if (air && !jet)
             {
-                _runVis = runAmt;
-                _cycle += dt * Mathf.Lerp(5.5f, 9f, runAmt);
+                if (_armRecover > 0f)
+                {
+                    // Stay on the dash lead until the feet are back on the ground.
+                    _runVis = runAmt;
+                    _cycle = Mathf.PI * 0.5f;
+                }
+                else
+                {
+                    _runVis = runAmt;
+                    _cycle += dt * Mathf.Lerp(5.5f, 9f, runAmt);
+                }
             }
             else if (!jet)
             {
@@ -705,6 +723,20 @@ namespace Tag.Art
                     _llR0 * Quaternion.Euler(-8f, 0f, 0f),
                     _llR0 * Quaternion.Euler(-18f, 0f, 0f),
                     dashStretchPose);
+                if (_airDashArms && !airDashing && !lunging)
+                {
+                    // The burst is over. The same lead foot reaches into the stride
+                    // under the hips. Collapsing the split reads as a skate.
+                    float stride = Mathf.Lerp(0.96f, 1.16f, _runVis);
+                    float reach = Mathf.Lerp(34f, 58f, Mathf.Clamp01(Mathf.Max(walkAmt, runAmt))) * stride;
+                    float kneeAmt = Mathf.Lerp(48f, 90f, _runVis);
+                    float w = 1f - Mathf.Clamp01(dashStretchPose);
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(reach, 0f, 0f), w);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(-reach * 0.58f, 0f, 0f), w);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(2f + kneeAmt), 0f, 0f), w);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-2f, 0f, 0f), w);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0, w);
+                }
             }
             else if (jet)
             {
@@ -1045,13 +1077,14 @@ namespace Tag.Art
                 _airDashArms = false;
             if (!dashing && !lunging && _armRecover > 0f)
                 _armRecover = Mathf.MoveTowards(_armRecover, 0f, dt);
-            // After the burst, ease into the fall or the run. Slew 64 snaps the arms into a second throw.
+            // After the burst, ease the arms into the fall or the run. Slew 64 snaps them into a second throw.
+            // The legs still take the stride once the feet are on the ground.
             if (_armRecover > 0f && !airDashing && !dashing && !lunging && !punchWind && !handoff && !grappleTell)
             {
                 armSlewL = 16f;
                 armSlewR = 16f;
-                legSlew = 16f;
                 torsoSlew = 16f;
+                legSlew = grounded ? 44f : 16f;
             }
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
