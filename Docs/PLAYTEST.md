@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `f90f344`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `adf2c85`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. Footing colors are on that tip too: grass, cedar, bark, field green, and sidewalk tan. No new props. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
 
@@ -94,7 +94,9 @@ Already on this branch: From a stand, the first step pushes off the planted foot
 
 Already on this branch: From a run, a crouch or a slide drops into the pose. The speed you already have carries. Letting go returns to the stride under the hips. The slide does not speed up.
 
-This delta: After an air dash, the feet come back into the stride under the hips. They do not skate. The dash is still a short burst, and the cooldown is unchanged.
+Already on this branch: After an air dash, the feet come back into the stride under the hips. They do not skate. The dash is still a short burst, and the cooldown is unchanged.
+
+This delta: On a wall run or a climb, the hand meets the surface, then the swing starts. The arm does not pop. Letting go still returns under the hips. The exit time is unchanged.
 
 ## Stack snapshot
 
@@ -260,6 +262,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 67. Stand still, then walk: the first step should push off the foot that stays down, and the other leg should reach into the stride. The idle sway should fade out, not pop off. The feet should not skate. Speed should feel the same.
 68. Sprint, then crouch: the body should drop into the slide without a speed bump. Let go: the stride should come back under the hips, not skate. From a slower run, a crouch should drop into the guard and stand back into the stride. The slide should not speed up.
 69. Air dash, then land into a run or a walk: after the burst, the feet should be back in the stride under the hips. They should not skate. The dash should still be a short burst, and it should still have to recharge.
+70. Wall run and climb: the hand should meet the surface, then move. It should not pop when you touch the wall. Letting go should bring the stride back under the hips. The leave should not feel longer or shorter.
 
 ## Known leftovers
 
@@ -349,6 +352,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 57. A walk from idle pushes off the planted foot into the stride. Idle sway fades. The feet do not skate. Speed is unchanged.
 58. A crouch or a slide from a run drops into the pose. The speed you already have carries. Letting go returns to the stride under the hips. The slide does not speed up.
 59. After an air dash, the feet return to the stride under the hips. They do not skate. The burst stays short and the cooldown is unchanged.
+60. A wall run or a climb sets the hand on the surface, then the swing starts. The arm does not pop. The exit returns under the hips. Exit time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

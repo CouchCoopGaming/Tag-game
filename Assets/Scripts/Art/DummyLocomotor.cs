@@ -51,6 +51,9 @@ namespace Tag.Art
         float _stepIn;
         float _dropVis;
         bool _dropSlide;
+        float _surfPhase;
+        float _surfIn;
+        bool _wasSurf;
         float _prevYaw;
         float _turnVis;
         bool _hasYaw;
@@ -130,6 +133,18 @@ namespace Tag.Art
             bool climb = st == MoveState.WallClimb;
             bool mantle = st == MoveState.Mantle;
             bool air = st == MoveState.Air || (!grounded && !climb && !wallRun && !mantle);
+            bool onSurf = wallRun || climb;
+            if (onSurf && !_wasSurf)
+                _surfPhase = 0f;
+            if (onSurf)
+            {
+                // Hand meets the surface, then the swing starts. A clock sine pops the arm.
+                _surfIn = Mathf.MoveTowards(_surfIn, 1f, dt / 0.1f);
+                _surfPhase += dt * (climb ? 7.5f : 9.5f);
+            }
+            else
+                _surfIn = 0f;
+            _wasSurf = onSurf;
             // Jump holds a reach while rising. Fall trails the arms once drop speed builds.
             // The jet branch is separate and is not used here.
             float airRise = 0f;
@@ -440,14 +455,14 @@ namespace Tag.Art
             }
             else if (climb)
             {
-                // One hand reaches, the other pulls. Both stay a long line so the hand
-                // can be followed through the swap. A bent elbow at the bottom of the
-                // pull used to vanish into the chest. Pitch and the mild A flare only.
-                float climbPhase = Mathf.Sin(Time.time * 7.5f);
-                float up = (climbPhase + 1f) * 0.5f;
-                float down = (-climbPhase + 1f) * 0.5f;
-                _uaLT = _uaL0 * Quaternion.Euler(Mathf.Lerp(-52f, -118f, up), Mathf.Lerp(10f, 16f, up), armZ);
-                _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-52f, -118f, down), Mathf.Lerp(-10f, -16f, down), -armZ);
+                // One hand meets the surface, then they trade. The swing eases in
+                // so the grab does not pop. Pitch and the mild A flare only.
+                float climbLive = Mathf.Sin(_surfPhase);
+                float upLive = (climbLive + 1f) * 0.5f;
+                float up = Mathf.Lerp(0.8f, upLive, _surfIn);
+                float down = 1f - up;
+                _uaLT = _uaL0 * Quaternion.Euler(Mathf.Lerp(-52f, -118f, up), Mathf.Lerp(12f, 18f, up), armZ);
+                _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-52f, -118f, down), Mathf.Lerp(-12f, -18f, down), -armZ);
                 _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-18f, -8f, up), 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-18f, -8f, down), 0f, 0f);
             }
@@ -464,26 +479,28 @@ namespace Tag.Art
             }
             else if (wallRun)
             {
-                // Wall hand presses along the wall with the outer stride instead of locking.
-                // The outer arm opposes that leg and stays a long line. Pitch and the mild A flare only.
+                // Wall hand presses into the surface, then travels with the stride.
+                // The outer arm stays a long line. Pitch and the mild A flare only.
                 bool left = _motor != null && _motor.WallLeft;
-                float wallPhase = Mathf.Sin(Time.time * 9.5f);
-                float press = (wallPhase + 1f) * 0.5f;
+                float wallLive = Mathf.Sin(_surfPhase);
+                float pressLive = (wallLive + 1f) * 0.5f;
+                float press = Mathf.Lerp(0.55f, pressLive, _surfIn);
                 float outerFwd = 1f - press;
-                float wallPitch = Mathf.Lerp(-42f, -70f, press);
-                float wallElbow = Mathf.Lerp(-18f, -10f, press);
-                float outerArm = Mathf.Lerp(-28f, -84f, outerFwd);
+                float yaw = Mathf.Lerp(18f, 34f, _surfIn);
+                float wallPitch = Mathf.Lerp(-48f, -72f, press);
+                float wallElbow = Mathf.Lerp(-16f, -8f, press);
+                float outerArm = Mathf.Lerp(-36f, Mathf.Lerp(-28f, -84f, 1f - pressLive), _surfIn);
                 float outerElbow = Mathf.Lerp(-16f, -10f, outerFwd);
                 if (left)
                 {
-                    _uaLT = _uaL0 * Quaternion.Euler(wallPitch, 16f, armZ);
+                    _uaLT = _uaL0 * Quaternion.Euler(wallPitch, yaw, armZ);
                     _uaRT = _uaR0 * Quaternion.Euler(outerArm, -10f, -armZ);
                     _laLT = _laL0 * Quaternion.Euler(wallElbow, 0f, 0f);
                     _laRT = _laR0 * Quaternion.Euler(outerElbow, 0f, 0f);
                 }
                 else
                 {
-                    _uaRT = _uaR0 * Quaternion.Euler(wallPitch, -16f, -armZ);
+                    _uaRT = _uaR0 * Quaternion.Euler(wallPitch, -yaw, -armZ);
                     _uaLT = _uaL0 * Quaternion.Euler(outerArm, 10f, armZ);
                     _laRT = _laR0 * Quaternion.Euler(wallElbow, 0f, 0f);
                     _laLT = _laL0 * Quaternion.Euler(outerElbow, 0f, 0f);
@@ -758,19 +775,20 @@ namespace Tag.Art
             }
             else if (climb)
             {
-                // The leg opposite the reaching hand steps up. That knee bends. The plant leg stays long.
-                float climbPhase = Mathf.Sin(Time.time * 7.5f);
-                float up = (climbPhase + 1f) * 0.5f;
+                // The leg opposite the reaching hand steps up. Same phase as the hands, so the grab does not pop.
+                float climbPhase = Mathf.Sin(_surfPhase);
+                float up = Mathf.Lerp(0.8f, (climbPhase + 1f) * 0.5f, _surfIn);
+                float kneePhase = climbPhase * _surfIn;
                 _ulLT = _ulL0 * Quaternion.Euler(Mathf.Lerp(62f, 14f, up), 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(14f, 62f, up), 0f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(-(6f + Mathf.Max(0f, -climbPhase) * 72f), 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(-(6f + Mathf.Max(0f, climbPhase) * 72f), 0f, 0f);
+                _llLT = _llL0 * Quaternion.Euler(-(6f + Mathf.Max(0f, -kneePhase) * 72f), 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(-(6f + Mathf.Max(0f, kneePhase) * 72f), 0f, 0f);
             }
             else if (wallRun)
             {
-                // Outer leg steps. Its knee bends only on the way forward. The wall-side leg stays long.
+                // Outer leg steps with the same phase as the wall hand.
                 bool left = _motor != null && _motor.WallLeft;
-                float wallPhase = Mathf.Sin(Time.time * 9.5f);
+                float wallPhase = Mathf.Lerp(0f, Mathf.Sin(_surfPhase), _surfIn);
                 float outerThigh = 10f + wallPhase * 38f;
                 float outerKnee = -(6f + Mathf.Max(0f, wallPhase) * 68f);
                 if (left)
