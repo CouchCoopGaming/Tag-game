@@ -336,7 +336,9 @@ Already on this branch: A dash coming off cooldown into a jump eases the pulse i
 
 Already on this branch: A jump into a punch eases the apex or the landing into the windup. A punch from the ground is unchanged. Jump height is unchanged. Windup time is unchanged.
 
-This delta: A jump into a tag eases the apex or the landing into the connect. A crouch tag is unchanged. A jump into a punch is unchanged. A tag into a jump is unchanged. Jump height is unchanged.
+Already on this branch: A jump into a tag eases the apex or the landing into the connect. A crouch tag is unchanged. A jump into a punch is unchanged. A tag into a jump is unchanged. Jump height is unchanged.
+
+This delta: An air crouch into an air dash eases the dart into the burst. A moving fall uses the low stride. The burst still holds. Fall speed is unchanged. Duration and cooldown are unchanged. A jump into a tag is unchanged.
 
 ## Stack snapshot
 
@@ -623,6 +625,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 188. When the dash is ready, jump: the pulse should ease into the push. A crouch ready should feel the same. A grapple release into a jump should feel the same. The jump should not feel higher. The dash should not feel longer.
 189. Jump, then punch: the apex or the landing should ease into the windup. A punch from the ground should feel the same. The jump should not feel higher. The cock should not feel longer.
 190. Jump, then tag: the apex or the landing should ease into the connect. A crouch tag should feel the same. A jump into a punch should feel the same. A tag into a jump should feel the same. The jump should not feel higher.
+191. Fall in a crouch, then air dash: the dart should ease into the burst. A moving fall should ease from the low stride. The burst should still hold. The fall should not feel faster. The dash should not feel longer. A jump into a tag should feel the same.
 
 ## Known leftovers
 
@@ -833,6 +836,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 178. A dash coming off cooldown into a jump eases the pulse into the push. A crouch ready is unchanged. A grapple release into a jump is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
 179. A jump into a punch eases the apex or the landing into the windup. A punch from the ground is unchanged. Jump height is unchanged. Windup time is unchanged.
 180. A jump into a tag eases the apex or the landing into the connect. A crouch tag is unchanged. A jump into a punch is unchanged. A tag into a jump is unchanged. Jump height is unchanged.
+181. An air crouch into an air dash eases the dart into the burst. A moving fall uses the low stride. The burst still holds. Fall speed is unchanged. Duration and cooldown are unchanged. A jump into a tag is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
