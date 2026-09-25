@@ -1000,7 +1000,7 @@ namespace Tag.Art
             }
             else if (!fromPunchSlide && !fromTagSlide && !fromMissSlide && !fromCrouchSlide && !fromSkiSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromClaimSlide && !fromReadySlide)
             {
-                if (sliding && !_dropSlide && _crouchFromStand && _dropVis > 0.2f)
+                if (sliding && !_dropSlide && _crouchFromStand && _dropVis > 0.2f && !_slideFromCrouch)
                     _crouchToSlide = 1f;
                 if (sliding && !_dropSlide && _crouchFromWalk && _dropVis > 0.2f)
                     _crouchWalkToSlide = 1f;
@@ -1071,9 +1071,10 @@ namespace Tag.Art
                 // The guard eases into the wedge. A punch miss into a slide keeps its ease.
                 // A still crouch into a punch keeps its ease. A still crouch into a tag keeps its ease.
                 // A still crouch into a ski has its own ease. A crouch walk into a slide keeps its ease.
-                // slideBoost stays 0.
+                // The slow guard blend stays off this path. slideBoost stays 0.
                 _slideFromCrouch = true;
                 _slideFromCrouchIn = 0f;
+                _crouchToSlide = 0f;
                 _crouchSlideUaL = _upperArmL.localRotation;
                 _crouchSlideUaR = _upperArmR.localRotation;
                 _crouchSlideLaL = _lowerArmL.localRotation;
@@ -5945,10 +5946,11 @@ namespace Tag.Art
                     _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-8f, 0f, 0f), _laL0 * Quaternion.Euler(-72f, 0f, 0f), intoGuard);
                     _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-6f, 0f, 0f), _laR0 * Quaternion.Euler(-72f, 0f, 0f), intoGuard);
                 }
-                if (_crouchToSlide > 0.02f || _crouchWalkToSlide > 0.02f)
+                if ((_crouchToSlide > 0.02f && !_slideFromCrouch) || _crouchWalkToSlide > 0.02f)
                 {
                     // The guard eases into the wedge. A crouch walk uses the same arms.
-                    float intoWedge = 1f - (_crouchToSlide > 0.02f ? _crouchToSlide : _crouchWalkToSlide);
+                    // A still crouch keeps its snapshot.
+                    float intoWedge = 1f - ((_crouchToSlide > 0.02f && !_slideFromCrouch) ? _crouchToSlide : _crouchWalkToSlide);
                     _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaL0 * Quaternion.Euler(-70f, 28f, armZ), intoWedge);
                     _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-36f, -16f, -armZ), _uaR0 * Quaternion.Euler(-64f, -28f, -armZ), intoWedge);
                     _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-72f, 0f, 0f), _laL0 * Quaternion.Euler(-8f, 0f, 0f), intoWedge);
@@ -6641,7 +6643,7 @@ namespace Tag.Art
                     _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(bendL, 0f, 0f), _llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f), intoStride);
                     _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(bendR, 0f, 0f), _llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f), intoStride);
                 }
-                if (_crouchToSlide > 0.02f)
+                if (_crouchToSlide > 0.02f && !_slideFromCrouch)
                 {
                     // The guard eases into the wedge. The feet do not snap apart.
                     float intoWedge = 1f - _crouchToSlide;
@@ -6836,10 +6838,11 @@ namespace Tag.Art
                 _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(50f, 0f, 0f), _hips0 * Quaternion.Euler(22f, 0f, 0f), intoGuard);
                 _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-12f, 0f, 0f), _head0 * Quaternion.Euler(-6f, 0f, 0f), intoGuard);
             }
-            if ((_crouchToSlide > 0.02f || _crouchWalkToSlide > 0.02f) && !air && !dashing && !lunging && !jet && !punching)
+            if (((_crouchToSlide > 0.02f && !_slideFromCrouch) || _crouchWalkToSlide > 0.02f) && !air && !dashing && !lunging && !jet && !punching)
             {
                 // The guard pitch eases into the wedge. A crouch walk keeps this pitch.
-                float intoWedge = 1f - (_crouchToSlide > 0.02f ? _crouchToSlide : _crouchWalkToSlide);
+                // A still crouch keeps its snapshot.
+                float intoWedge = 1f - ((_crouchToSlide > 0.02f && !_slideFromCrouch) ? _crouchToSlide : _crouchWalkToSlide);
                 _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(10f, 0f, 0f), _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
                 _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
                 _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
@@ -10827,29 +10830,54 @@ namespace Tag.Art
                     _llRT = wedgeKneeR;
                 }
             }
-            if (_slideFromCrouch && !_slideFromSki && !_slideFromMiss && !_slideFromReady && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromCrouchIn < 0.98f)
+            if (_slideFromCrouch && !_slideFromSki && !_slideFromMiss && !_slideFromReady && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && !punching)
             {
                 // The guard eases into the wedge, then the wedge holds.
                 // A punch miss into a slide keeps its ease. A still crouch into a punch keeps its ease.
                 // A still crouch into a tag keeps its ease. A still crouch into a ski has its own ease.
-                // A crouch walk into a slide keeps its ease. slideBoost stays 0.
+                // A crouch walk into a slide keeps its ease. The slow guard blend stays off this path.
+                // slideBoost stays 0.
                 float intoWedge = _slideFromCrouchIn;
                 bool leadLeft = sinC >= 0f;
                 Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
                 Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
-                _uaLT = Quaternion.Slerp(_crouchSlideUaL, wedgeL, intoWedge);
-                _uaRT = Quaternion.Slerp(_crouchSlideUaR, wedgeR, intoWedge);
-                _laLT = Quaternion.Slerp(_crouchSlideLaL, wedgeElL, intoWedge);
-                _laRT = Quaternion.Slerp(_crouchSlideLaR, wedgeElR, intoWedge);
-                _spineT = Quaternion.Slerp(_crouchSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_crouchSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_crouchSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                _ulLT = Quaternion.Slerp(_crouchSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                _ulRT = Quaternion.Slerp(_crouchSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                _llLT = Quaternion.Slerp(_crouchSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                _llRT = Quaternion.Slerp(_crouchSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                Quaternion wedgeSp = _spine0 * Quaternion.Euler(62f, 0f, 0f);
+                Quaternion wedgeHp = _hips0 * Quaternion.Euler(50f, 0f, 0f);
+                Quaternion wedgeHd = _head0 * Quaternion.Euler(-12f, 0f, 0f);
+                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f);
+                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f);
+                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f);
+                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f);
+                if (intoWedge < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_crouchSlideUaL, wedgeL, intoWedge);
+                    _uaRT = Quaternion.Slerp(_crouchSlideUaR, wedgeR, intoWedge);
+                    _laLT = Quaternion.Slerp(_crouchSlideLaL, wedgeElL, intoWedge);
+                    _laRT = Quaternion.Slerp(_crouchSlideLaR, wedgeElR, intoWedge);
+                    _spineT = Quaternion.Slerp(_crouchSlideSp, wedgeSp, intoWedge);
+                    _hipsT = Quaternion.Slerp(_crouchSlideHp, wedgeHp, intoWedge);
+                    _headT = Quaternion.Slerp(_crouchSlideHd, wedgeHd, intoWedge);
+                    _ulLT = Quaternion.Slerp(_crouchSlideUlL, wedgeThighL, intoWedge);
+                    _ulRT = Quaternion.Slerp(_crouchSlideUlR, wedgeThighR, intoWedge);
+                    _llLT = Quaternion.Slerp(_crouchSlideLlL, wedgeKneeL, intoWedge);
+                    _llRT = Quaternion.Slerp(_crouchSlideLlR, wedgeKneeR, intoWedge);
+                }
+                else
+                {
+                    _uaLT = wedgeL;
+                    _uaRT = wedgeR;
+                    _laLT = wedgeElL;
+                    _laRT = wedgeElR;
+                    _spineT = wedgeSp;
+                    _hipsT = wedgeHp;
+                    _headT = wedgeHd;
+                    _ulLT = wedgeThighL;
+                    _ulRT = wedgeThighR;
+                    _llLT = wedgeKneeL;
+                    _llRT = wedgeKneeR;
+                }
             }
             if (_slideFromMiss && !_slideFromCrouch && !_slideFromReady && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromMissIn < 0.98f)
             {
