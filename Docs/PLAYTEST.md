@@ -190,7 +190,9 @@ Already on this branch: A walk into a ski eases the legs into the glide. They do
 
 Already on this branch: A sprint into a ski closes the stride into the glide. It does not pop. Speed is unchanged.
 
-This delta: Letting go of a ski into a sprint opens the glide into the stride. It does not pop. Speed is unchanged.
+Already on this branch: Letting go of a ski into a sprint opens the glide into the stride. It does not pop. Speed is unchanged.
+
+This delta: A crouch walk into a sprint raises the hips and opens the stride. It does not pop. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -404,6 +406,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 115. Walk, then ski: the legs should ease into the glide. They should not snap. Speed should feel the same.
 116. Sprint, then ski: the stride should close into the glide. It should not pop. Speed should feel the same.
 117. Ski, then let go into a sprint: the glide should open into the stride. It should not pop. Speed should feel the same.
+118. Crouch and walk, then sprint: the hips should rise and the stride should open. It should not pop. Speed should feel the same.
 
 ## Known leftovers
 
@@ -541,6 +544,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 105. A walk into a ski eases the legs into the glide. They do not snap. Speed is unchanged. Jet stays off.
 106. A sprint into a ski closes the stride into the glide. It does not pop. Speed is unchanged. Jet stays off.
 107. Letting go of a ski into a sprint opens the glide into the stride. It does not pop. Speed is unchanged. Jet stays off.
+108. A crouch walk into a sprint raises the hips and opens the stride. It does not pop. A crouch walk into a walk is unchanged. Speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

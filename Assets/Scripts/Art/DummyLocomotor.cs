@@ -206,6 +206,8 @@ namespace Tag.Art
             bool crouchIdleExit = !_dropSlide && !sliding && !crouch && speed <= 0.35f;
             // A crouch walk stands into the stride. The feet step while the hips are still rising.
             bool crouchWalkExit = !_dropSlide && !sliding && !crouch && speed > 0.35f;
+            // A crouch walk into a sprint opens the step as the hips rise. Speed is unchanged.
+            bool crouchSprintExit = crouchWalkExit && st == MoveState.Sprint;
             float footDrop = (slideExit || crouchIdleExit || crouchWalkExit) ? _dropVis * _dropVis : _dropVis;
             float hipDrop = (slideExit || crouchIdleExit || crouchWalkExit) ? Mathf.SmoothStep(0f, 1f, _dropVis) : _dropVis;
             bool skiing = st == MoveState.Ski;
@@ -999,10 +1001,12 @@ namespace Tag.Art
                     }
                     else
                     {
-                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), d);
-                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), d);
-                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-72f, 0f, 0f), d);
-                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-72f, 0f, 0f), d);
+                        // A sprint leaves the guard as the hips rise, so the arms do not stay folded.
+                        float armD = crouchSprintExit ? hipDrop : d;
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), armD);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), armD);
+                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-72f, 0f, 0f), armD);
+                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-72f, 0f, 0f), armD);
                     }
                 }
             }
@@ -1288,15 +1292,21 @@ namespace Tag.Art
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(bendL, 0f, 0f), d);
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(bendR, 0f, 0f), d);
                     }
-                    else if (crouch && speed > 0.35f)
+                    else if ((crouch && speed > 0.35f) || crouchSprintExit)
                     {
                         // Short steps under the hips. Both knees stay bent, so it is not a run or a skate.
+                        // A sprint opens that step as the hips rise. It does not plant, then pop.
                         float stepL = Mathf.Max(0f, sinC);
                         float stepR = Mathf.Max(0f, -sinC);
-                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f), d);
-                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(46f + stepR * 12f - stepL * 6f, 0f, 0f), d);
-                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f), d);
-                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f), d);
+                        float open = crouchSprintExit ? 1f - hipDrop : 0f;
+                        float thighBase = Mathf.Lerp(46f, 20f, open);
+                        float thighReach = Mathf.Lerp(12f, 34f, open);
+                        float kneeBase = Mathf.Lerp(60f, 10f, open);
+                        float kneeReach = Mathf.Lerp(8f, 36f, open);
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(thighBase + stepL * thighReach - stepR * thighReach * 0.5f, 0f, 0f), d);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(thighBase + stepR * thighReach - stepL * thighReach * 0.5f, 0f, 0f), d);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(kneeBase + stepL * kneeReach), 0f, 0f), d);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(kneeBase + stepR * kneeReach), 0f, 0f), d);
                     }
                     else
                     {
