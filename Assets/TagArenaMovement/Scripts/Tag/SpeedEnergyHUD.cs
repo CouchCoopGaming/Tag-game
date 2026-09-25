@@ -568,10 +568,14 @@ namespace TagArena.Movement
             bool muted = Tag.Audio.AudioMaster.Muted;
             bool musicOff = Tag.Audio.AudioMaster.MusicMuted;
             if (!muted && !musicOff) return;
-            string chip = muted ? "MUTED  (M)" : "MUSIC OFF  (N)";
+            // Show both when M+N are on so the chips do not hide each other.
+            string chip = muted && musicOff ? "MUTED  (M)   MUSIC OFF  (N)"
+                : muted ? "MUTED  (M)"
+                : "MUSIC OFF  (N)";
             var prev = GUI.color;
             GUI.color = muted ? new Color(1f, 0.45f, 0.4f) : new Color(1f, 0.82f, 0.45f);
-            GUI.Label(new Rect(Screen.width - 240, 16, 220, 32), chip, _big);
+            float w = muted && musicOff ? 360f : 220f;
+            GUI.Label(new Rect(Screen.width - w - 20f, 16, w, 32), chip, _big);
             GUI.color = prev;
         }
 
