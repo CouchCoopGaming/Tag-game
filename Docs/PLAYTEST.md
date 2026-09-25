@@ -482,7 +482,9 @@ Already on this branch: A punch into an air dash eases the punch into the burst.
 
 Already on this branch: A crouch walk into an air dash eases the low stride into the burst. The burst still holds. A hard landing into a jump is unchanged. A soft landing into a jump is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged.
 
-This delta: A dash coming off cooldown into an air dash eases the pulse into the burst. The burst still holds. A crouch walk into an air dash is unchanged. A dash coming off cooldown into a jump is unchanged. A dash coming off cooldown into a punch is unchanged. Duration and cooldown are unchanged.
+Already on this branch: A dash coming off cooldown into an air dash eases the pulse into the burst. The burst still holds. A crouch walk into an air dash is unchanged. A dash coming off cooldown into a jump is unchanged. A dash coming off cooldown into a punch is unchanged. Duration and cooldown are unchanged.
+
+This delta: A punch into a jump eases the punch into the jump. Becoming It into a jump is unchanged. A tag into a jump is unchanged. A punch miss into a jump is unchanged. Windup time is unchanged. Jump height is unchanged.
 
 ## Stack snapshot
 
@@ -842,6 +844,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 261. Punch, then air dash: the punch should ease into the burst. The burst should still hold. A still crouch into an air dash should feel the same. A punch miss into an air dash should feel the same. A tag into an air dash should feel the same. The cock should not feel longer. The dash should not feel longer. Jet stays off.
 262. Crouch walk, then air dash: the low stride should ease into the burst. The burst should still hold. A hard landing into a jump should feel the same. A soft landing into a jump should feel the same. A still crouch into an air dash should feel the same. The stride should not feel longer. The dash should not feel longer. Jet stays off.
 263. When the dash is ready, air dash: the pulse should ease into the burst. The burst should still hold. A crouch walk into an air dash should feel the same. A dash coming off cooldown into a jump should feel the same. A dash coming off cooldown into a punch should feel the same. The pulse should not feel longer. The dash should not feel longer. Jet stays off.
+264. Punch, then jump: the punch should ease into the jump. Becoming It into a jump should feel the same. A tag into a jump should feel the same. A punch miss into a jump should feel the same. The cock should not feel longer. The jump should not feel higher. Jet stays off.
 
 ## Known leftovers
 
@@ -1125,6 +1128,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 251. A punch into an air dash eases the punch into the burst. The burst still holds. A still crouch into an air dash is unchanged. A punch miss into an air dash is unchanged. A tag into an air dash is unchanged. Windup time is unchanged. Duration and cooldown are unchanged. Jet stays off.
 252. A crouch walk into an air dash eases the low stride into the burst. The burst still holds. A hard landing into a jump is unchanged. A soft landing into a jump is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged. Jet stays off.
 253. A dash coming off cooldown into an air dash eases the pulse into the burst. The burst still holds. A crouch walk into an air dash is unchanged. A dash coming off cooldown into a jump is unchanged. A dash coming off cooldown into a punch is unchanged. Duration and cooldown are unchanged. Jet stays off.
+254. A punch into a jump eases the punch into the jump. Becoming It into a jump is unchanged. A tag into a jump is unchanged. A punch miss into a jump is unchanged. Windup time is unchanged. Jump height is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
