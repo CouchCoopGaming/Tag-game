@@ -167,7 +167,7 @@ namespace Tag.Art
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
             // Spine / hips lean by state - jet reads clearly in TP
-            float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : sliding ? 58f : crouch ? 28f : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
+            float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : sliding ? 76f : crouch ? 28f : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : 0f;
             if (flinchAmt > 0.04f)
             {
@@ -188,7 +188,7 @@ namespace Tag.Art
             }
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
             float mantleAmt = mantle && _motor != null ? _motor.MantleProgress : 0f;
-            _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : sliding ? 36f : crouch ? 14f : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
+            _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : sliding ? 50f : crouch ? 14f : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
             _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? 18f : crouch ? 6f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
             // Arms - slight outward A-pose only (large +Z was V-ing hands into the butt)
@@ -298,18 +298,19 @@ namespace Tag.Art
                 else if (phase == PunchPhase.Active)
                 {
                     float e = Mathf.Lerp(0.8f, 1f, punchProg);
-                    // Stay in front of the chest. Past about -150 the fist wraps through the torso.
-                    _uaRT = _uaR0 * Quaternion.Euler(-48f - 88f * e, 48f * e, -28f);
-                    _laRT = _laR0 * Quaternion.Euler(-72f * e, 0f, 0f);
-                    _hipsT = _hips0 * Quaternion.Euler(18f, 16f * e, 0f);
-                    _spineT = _spine0 * Quaternion.Euler(leanX + 18f, 28f * e, leanZ);
+                    // Long line in front of the chest. A bent elbow disappears at chase distance.
+                    // Pitch stays above -150 so the fist does not wrap through the torso.
+                    _uaRT = _uaR0 * Quaternion.Euler(-118f, 58f * e, -22f);
+                    _laRT = _laR0 * Quaternion.Euler(-18f * e, 0f, 0f);
+                    _hipsT = _hips0 * Quaternion.Euler(18f, 22f * e, 0f);
+                    _spineT = _spine0 * Quaternion.Euler(leanX + 16f, 42f * e, leanZ);
                 }
                 else if (phase == PunchPhase.HitRecover)
                 {
                     // Hold the connect: arm stays punched out + slight overshoot, then eases toward idle faster late.
                     float r = Mathf.Lerp(1.2f, 0.35f, punchProg * punchProg);
-                    _uaRT = _uaR0 * Quaternion.Euler(-136f * Mathf.Clamp(r, 0.35f, 1f), 48f * Mathf.Min(r, 1f), -28f);
-                    _laRT = _laR0 * Quaternion.Euler(-78f * r, 0f, 0f);
+                    _uaRT = _uaR0 * Quaternion.Euler(-118f * Mathf.Clamp(r, 0.4f, 1f), 52f * Mathf.Min(r, 1f), -22f);
+                    _laRT = _laR0 * Quaternion.Euler(-20f * Mathf.Min(r, 1f), 0f, 0f);
                     _uaLT = _uaL0 * Quaternion.Euler(-32f, 18f, armZ + 22f);
                     _spineT = _spine0 * Quaternion.Euler(leanX + 14f * r, 18f * r, leanZ);
                 }
@@ -324,11 +325,11 @@ namespace Tag.Art
             }
             else if (sliding)
             {
-                // Dive: arms forward/low - never behind the hips
-                _uaLT = _uaL0 * Quaternion.Euler(-48f, -8f, armZ + 12f);
-                _uaRT = _uaR0 * Quaternion.Euler(-28f, 10f, -armZ - 8f);
-                _laLT = _laL0 * Quaternion.Euler(-42f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
+                // Flat wedge: both arms reach forward and low. No extra roll into the pelvis.
+                _uaLT = _uaL0 * Quaternion.Euler(-74f, -6f, armZ);
+                _uaRT = _uaR0 * Quaternion.Euler(-68f, 6f, -armZ);
+                _laLT = _laL0 * Quaternion.Euler(-34f, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(-28f, 0f, 0f);
             }
             else if (crouch)
             {
@@ -384,11 +385,11 @@ namespace Tag.Art
             }
             else if (sliding)
             {
-                // Low chase silhouette: lead knee tucked, trail leg long. Not a standing jog.
-                _ulLT = _ulL0 * Quaternion.Euler(88f, 8f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(22f, -6f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(-86f, 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(-12f, 0f, 0f);
+                // Flat chase silhouette: lead knee under the chest, trail leg straight behind.
+                _ulLT = _ulL0 * Quaternion.Euler(74f, 6f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(-28f, -4f, 0f);
+                _llLT = _llL0 * Quaternion.Euler(-94f, 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(-6f, 0f, 0f);
             }
             else if (crouch)
             {
@@ -545,7 +546,7 @@ namespace Tag.Art
 
             float step = Mathf.Pow(Mathf.Abs(sinRaw), 1.7f);
             float bob = grounded ? step * 0.085f * Mathf.Max(walkAmt, runAmt) : air ? step * 0.02f : 0f;
-            if (sliding) bob = -0.22f; else if (crouch) bob = -0.14f;
+            if (sliding) bob = -0.32f; else if (crouch) bob = -0.14f;
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
             if (_landSquash > 0f) bob -= 0.14f * _landSquash;
             if (dashing) bob += 0.04f * dashAmt;

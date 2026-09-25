@@ -12,7 +12,9 @@ Already on that tip (do not re-test as new): 2-frame look/punch resume gate (Res
 
 Already on this branch: Player and the bot prefer the curved Hier HiPoly mannequin over the flat Dummy_Runner / Dummy_It prefab. It uses the red Hier mesh. Run bends only the recovery knee. Dash whip is arm pitch. Slide is a low crouch. Land buckles. Punch connect stays in front of the chest.
 
-This delta: Run arms oppose the legs. When the left thigh swings forward, the right arm reaches and the left arm stays back. The stride and the forward arm are larger. Rearward arm travel stays short, with no extra roll, so the hands stay clear of the pelvis. Hier spawn is unchanged.
+Already on this branch: Run arms oppose the legs. The forward arm is the opposite thigh. Rearward swing stays short.
+
+This delta: A slide is a flat wedge. The chest pitches down, the lead knee tucks under, and the trail leg stays straight behind. Both arms reach forward without extra roll. A punch connect is a long straight arm in front of the chest, with a wider shoulder twist, so it still reads in the chase cam. The elbow does not stay folded.
 
 ## Stack snapshot
 
@@ -137,6 +139,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 26. Play: you and the bot should be the curved Hier mannequin, not the flat Dummy_Runner mesh. The console should say Hier mannequin, not Navy Spade, unless the FBX failed to bind. Becoming It should swap to the red Hier mesh. A run should show the knees bend. Arms should hang slightly out, not fold into the butt.
 27. Sprint: one knee should lift on the forward leg and the back leg should look straight, not two bent skates. Slide should look low, lead knee tucked. A hop should buckle the knees on landing. Air dash should throw the arms back without twisting the hands into the hips. A punch should cock the elbow out, then the fist should stay in front of the chest.
 28. Sprint from the chase cam: the arm that reaches forward should be opposite the leg that is forward. The other arm stays back and does not fold into the hips. You and the bot should still be the curved Hier mesh.
+29. Slide: the body should look flat, lead knee under the chest, trail leg straight back, arms forward. Punch: the fist should be a long line in front of the chest, not a folded elbow. It should not pass through the torso.
 
 ## Known leftovers
 
@@ -185,6 +188,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 16. Player and bot spawn the curved Hier HiPoly mannequin. It is the red Hier mesh. Flat Dummy_Runner on the Play scene does not win. Navy Spade only if Hier has no limb bones.
 17. Run: recovery knee flexes, stance leg stays nearly straight. Dash whip does not add arm roll. Slide is a low crouch. Land buckles. Punch connect stays in front of the chest.
 18. Run arms oppose the legs. Forward arm is the opposite side of the forward thigh. Hands stay clear of the pelvis. Hier spawn still wins over flat Dummy_Runner.
+19. Slide silhouette is flat (chest down, lead knee tucked, trail leg back). Punch connect is a long arm in front of the chest.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
