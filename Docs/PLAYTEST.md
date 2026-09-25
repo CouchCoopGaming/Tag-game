@@ -294,7 +294,9 @@ Already on this branch: An air crouch into a soft land opens the dart into the a
 
 Already on this branch: A still crouch into a jump eases the guard into the push. A standing jump is unchanged. A crouch walk into a jump is unchanged. Jump height is unchanged.
 
-This delta: A crouch walk into a jump eases the low stride into the push. A still crouch into a jump is unchanged. A standing jump is unchanged. Jump height is unchanged.
+Already on this branch: A crouch walk into a jump eases the low stride into the push. A still crouch into a jump is unchanged. A standing jump is unchanged. Jump height is unchanged.
+
+This delta: A ski into a jump eases the glide into the push. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A standing jump is unchanged. Jump height is unchanged. Ski speed is unchanged.
 
 ## Stack snapshot
 
@@ -560,6 +562,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 167. Jump, hold crouch, let go, and land soft: the dart should open into the absorb. A hard landing should keep the flare. A still crouch should keep the guard. The land should not feel longer.
 168. Crouch still, then jump: the guard should ease into the push. A standing jump should feel the same. A crouch walk into a jump should feel the same. The jump should not feel higher.
 169. Crouch walk, then jump: the low stride should ease into the push. A still crouch into a jump should feel the same. A standing jump should feel the same. The jump should not feel higher.
+170. Ski, then jump: the glide should ease into the push. A still crouch into a jump should feel the same. A crouch walk into a jump should feel the same. A standing jump should feel the same. The jump should not feel higher. Speed should feel the same.
 
 ## Known leftovers
 
@@ -749,6 +752,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 157. An air crouch into a soft land opens the dart into the absorb. A hard landing keeps the flare. A still crouch keeps the guard. A moving air crouch keeps the flare. Land time is unchanged.
 158. A still crouch into a jump eases the guard into the push. A standing jump is unchanged. A crouch walk into a jump is unchanged. Jump height is unchanged.
 159. A crouch walk into a jump eases the low stride into the push. A still crouch into a jump is unchanged. A standing jump is unchanged. Jump height is unchanged.
+160. A ski into a jump eases the glide into the push. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A standing jump is unchanged. Jump height is unchanged. Ski speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
