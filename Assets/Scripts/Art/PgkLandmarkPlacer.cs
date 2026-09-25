@@ -327,7 +327,7 @@ namespace Tag.Art
             pieces.Add(("Mega_CrawlTunnel", new Vector3(-2f, 0f, -4.5f), 0f));
             // Crate on the outer apron, not in either mouth. Crawl wall is local z=-5.896
             // (mesh z ±1.396). Center z=-6.81 leaves 0.56 m. Local x=-0.80 is 2.4 m off both
-            // mouths (x=-6 and x=+2). Army world (57.20, 2.94), 2.24 m west of Spawn_SE's bumper.
+            // mouths (x=-6 and x=+2). Army world (57.20, 2.94), 1.72 m west of Spawn_SE's bumper.
             // Knight yaw 180 world (58.80, 51.06): 0.56 m north of the crawl, 1.68 m west of the shield.
             pieces.Add(("Toy_Crate", new Vector3(-0.80f, 0f, -6.81f), 0f));
             pieces.Add(("Mega_ClimbNet", new Vector3(5f, 0f, -1.5f), 90f));
@@ -545,7 +545,11 @@ namespace Tag.Art
             {
                 ("Toy_SpringRider", new Vector3(-1f, 0f, -0.5f), -20f),
                 ("Toy_Seesaw", new Vector3(1f, 0f, 1f), 90f),
-                ("Toy_Bumper", new Vector3(-0.5f, 0f, 1.25f), 0f),
+                // South of the army crawl. The old seat was 0.09 m off the east mouth.
+                // World mesh x 59.27-60.73, z 1.83-3.29: 0.57 m off the crawl's southeast
+                // corner, so that mouth stays open. 0.57 m off the spring, 2.09 m off the
+                // seesaw, 1.72 m off the crate. Spines start at z=16.4.
+                ("Toy_Bumper", new Vector3(-2.136f, 0f, 0.565f), 0f),
             });
         }
 
@@ -906,7 +910,7 @@ namespace Tag.Art
         /// Mouth is x=64, z 47.35-50.15. Center (65.806, 48.75) puts the mesh at
         /// x 64.56-67.15, z 48.31-49.19: 0.56 m east of the opening, centered on it.
         /// The shield starts at z=51.58. Spawn_NE's bumper stays south of z=47.1.
-        /// Army's east mouth is inside Spawn_SE's bumper, so army does not get a copy.
+        /// Army does not get a copy. Spawn_SE's bumper is south of that mouth, 0.57 m off the crawl.
         /// </summary>
         int KnightEastMouthStep(Transform root)
         {
