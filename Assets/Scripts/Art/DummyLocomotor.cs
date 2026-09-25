@@ -130,6 +130,11 @@ namespace Tag.Art
         Quaternion _wallTagUaL, _wallTagUaR, _wallTagLaL, _wallTagLaR;
         Quaternion _wallTagUlL, _wallTagUlR, _wallTagLlL, _wallTagLlR;
         Quaternion _wallTagSp, _wallTagHp, _wallTagHd;
+        bool _tagFromDart;
+        float _tagFromDartIn;
+        Quaternion _dartTagUaL, _dartTagUaR, _dartTagLaL, _dartTagLaR;
+        Quaternion _dartTagUlL, _dartTagUlR, _dartTagLlL, _dartTagLlR;
+        Quaternion _dartTagSp, _dartTagHp, _dartTagHd;
         bool _landedFromJump;
         Quaternion _punchUaL, _punchUaR, _punchLaL, _punchLaR;
         Quaternion _punchSp, _punchHp, _punchHd;
@@ -1509,6 +1514,33 @@ namespace Tag.Art
                 _tagFromWallIn = Mathf.MoveTowards(_tagFromWallIn, 1f, dt / 0.04f);
             else if (!hitNow)
                 _tagFromWall = false;
+            bool dartTag = hitNow && !_tagHitWas && !fromJumpPose && !crouch && !_jumpFromTag && !_tagFromJump && !_tagFromDash && !_tagFromSoft && !_tagFromHard && !_tagFromSki && !_tagFromSlide && !_tagFromClimb && !_tagFromWall
+                && !_jumpFromAirCrouch && dartAir
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (dartTag)
+            {
+                // The dart eases into the connect. An air crouch into a punch keeps its ease.
+                // An air crouch into an air dash keeps its ease. An air crouch into a jump keeps its push.
+                // A jump into a tag keeps its ease. A crouch tag keeps its pose.
+                // Connect time is unchanged. Fall speed is unchanged.
+                _tagFromDart = true;
+                _tagFromDartIn = 0f;
+                _dartTagUaL = _upperArmL.localRotation;
+                _dartTagUaR = _upperArmR.localRotation;
+                _dartTagLaL = _lowerArmL.localRotation;
+                _dartTagLaR = _lowerArmR.localRotation;
+                _dartTagUlL = _upperLegL.localRotation;
+                _dartTagUlR = _upperLegR.localRotation;
+                _dartTagLlL = _lowerLegL.localRotation;
+                _dartTagLlR = _lowerLegR.localRotation;
+                _dartTagSp = _spine.localRotation;
+                _dartTagHp = _hips.localRotation;
+                _dartTagHd = _head.localRotation;
+            }
+            if (hitNow && _tagFromDart)
+                _tagFromDartIn = Mathf.MoveTowards(_tagFromDartIn, 1f, dt / 0.04f);
+            else if (!hitNow)
+                _tagFromDart = false;
             _tagHitWas = hitNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
             if (air)
@@ -4540,7 +4572,7 @@ namespace Tag.Art
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
             // A punch from this jump eases into the windup. A tag from this jump eases into the connect.
             // Staying down still absorbs. Land time is unchanged.
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide && !_tagFromSki && !_tagFromSlide && !_punchFromClimb && !_tagFromClimb && !_punchFromWall && !_tagFromWall && !_punchFromDart)
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide && !_tagFromSki && !_tagFromSlide && !_punchFromClimb && !_tagFromClimb && !_punchFromWall && !_tagFromWall && !_punchFromDart && !_tagFromDart)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -6061,6 +6093,25 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(34f, 0f, 0f), intoDart);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
+            }
+            if (_tagFromDart && !_tagFromWall && !_tagFromClimb && !_tagFromSlide && !_tagFromSki && !_tagFromHard && !_tagFromSoft && !_tagFromJump && !_tagFromDash && !_jumpFromTag && punching && phase == PunchPhase.HitRecover && !crouch && _tagFromDartIn < 0.98f)
+            {
+                // The dart eases into the connect, then the connect holds.
+                // An air crouch into a punch keeps its ease. An air crouch into an air dash keeps its ease.
+                // An air crouch into a jump keeps its push. A jump into a tag keeps its ease.
+                // A crouch tag keeps its pose. Connect time is unchanged. Fall speed is unchanged.
+                float intoTag = _tagFromDartIn;
+                _uaLT = Quaternion.Slerp(_dartTagUaL, _uaLT, intoTag);
+                _uaRT = Quaternion.Slerp(_dartTagUaR, _uaRT, intoTag);
+                _laLT = Quaternion.Slerp(_dartTagLaL, _laLT, intoTag);
+                _laRT = Quaternion.Slerp(_dartTagLaR, _laRT, intoTag);
+                _spineT = Quaternion.Slerp(_dartTagSp, _spineT, intoTag);
+                _hipsT = Quaternion.Slerp(_dartTagHp, _hipsT, intoTag);
+                _headT = Quaternion.Slerp(_dartTagHd, _headT, intoTag);
+                _ulLT = Quaternion.Slerp(_dartTagUlL, _ulLT, intoTag);
+                _ulRT = Quaternion.Slerp(_dartTagUlR, _ulRT, intoTag);
+                _llLT = Quaternion.Slerp(_dartTagLlL, _llLT, intoTag);
+                _llRT = Quaternion.Slerp(_dartTagLlR, _llRT, intoTag);
             }
             if (_tagFromWall && !_tagFromClimb && !_tagFromSlide && !_tagFromSki && !_tagFromHard && !_tagFromSoft && !_tagFromJump && !_tagFromDash && !_jumpFromTag && punching && phase == PunchPhase.HitRecover && !crouch)
             {
