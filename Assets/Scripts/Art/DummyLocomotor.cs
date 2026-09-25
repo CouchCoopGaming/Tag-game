@@ -80,6 +80,11 @@ namespace Tag.Art
         bool _airDashArms;
         bool _dashFromJump;
         float _dashFromJumpIn;
+        bool _dashFromDart;
+        float _dashFromDartIn;
+        bool _dashFromDartStride;
+        float _dartStepL;
+        float _dartStepR;
         bool _airDashPoseWas;
         float _dashTrailT;
         float _dashReady;
@@ -612,6 +617,24 @@ namespace Tag.Art
                 _dashFromJumpIn = Mathf.MoveTowards(_dashFromJumpIn, 1f, dt / 0.04f);
             else if (!dashingAir)
                 _dashFromJump = false;
+            bool dartAir = _diveVis > 0.2f && _input != null && _input.CrouchHeld && !jet;
+            if (dashingAir && !_airDashPoseWas && dartAir && !_jumpFromDash)
+            {
+                // The dart eases into the burst. A moving fall uses the low stride.
+                // The burst still holds. Fall speed stays doubled. Duration and cooldown are unchanged.
+                _dashFromDart = true;
+                _dashFromDartIn = 0f;
+                float runNow = Mathf.InverseLerp(5.5f, 11.5f, speed);
+                _dashFromDartStride = speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint && runNow <= 0.4f
+                    && !(_airDashArms || _armRecover > 0f);
+                float dartSin = Mathf.Sin(_cycle);
+                _dartStepL = Mathf.Max(0f, dartSin);
+                _dartStepR = Mathf.Max(0f, -dartSin);
+            }
+            if (dashingAir && _dashFromDart)
+                _dashFromDartIn = Mathf.MoveTowards(_dashFromDartIn, 1f, dt / 0.04f);
+            else if (!dashingAir)
+                _dashFromDart = false;
             _airDashPoseWas = dashingAir;
             bool windupNow = punching && phase == PunchPhase.Windup;
             bool fromJumpPose = (!grounded && _diveFromJump) || (_landedFromJump && _landSquash > 0.08f);
@@ -3340,6 +3363,62 @@ namespace Tag.Art
                 _spineT = Quaternion.Slerp(fromSp, _spineT, intoBurst);
                 _hipsT = Quaternion.Slerp(fromHp, _hipsT, intoBurst);
                 _headT = Quaternion.Slerp(fromHd, _headT, intoBurst);
+            }
+            if (airDashing && _dashFromDart && !_jumpFromDash && _dashFromDartIn < 0.98f && !punching)
+            {
+                // The dart eases into the burst, then the burst holds. A moving fall uses the low stride.
+                // A jump into a dash keeps its ease. Fall speed stays doubled. Duration and cooldown are unchanged.
+                float intoDart = _dashFromDartIn;
+                Quaternion fromL;
+                Quaternion fromR;
+                Quaternion fromElL;
+                Quaternion fromElR;
+                Quaternion fromSp;
+                Quaternion fromHp;
+                Quaternion fromHd;
+                Quaternion fromThighL;
+                Quaternion fromThighR;
+                Quaternion fromKneeL;
+                Quaternion fromKneeR;
+                if (_dashFromDartStride)
+                {
+                    fromL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                    fromR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                    fromElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                    fromElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                    fromSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                    fromHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                    fromHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                    fromThighL = _ulL0 * Quaternion.Euler(46f + _dartStepL * 12f - _dartStepR * 6f, 0f, 0f);
+                    fromThighR = _ulR0 * Quaternion.Euler(46f + _dartStepR * 12f - _dartStepL * 6f, 0f, 0f);
+                    fromKneeL = _llL0 * Quaternion.Euler(-(60f + _dartStepL * 8f), 0f, 0f);
+                    fromKneeR = _llR0 * Quaternion.Euler(-(60f + _dartStepR * 8f), 0f, 0f);
+                }
+                else
+                {
+                    fromL = _uaL0 * Quaternion.Euler(-16f, 12f, armZ);
+                    fromR = _uaR0 * Quaternion.Euler(-16f, -12f, -armZ);
+                    fromElL = _laL0 * Quaternion.Euler(-58f, 0f, 0f);
+                    fromElR = _laR0 * Quaternion.Euler(-58f, 0f, 0f);
+                    fromSp = _spine0 * Quaternion.Euler(46f, 0f, 0f);
+                    fromHp = _hips0 * Quaternion.Euler(24f, 0f, 0f);
+                    fromHd = _head0 * Quaternion.Euler(12f, 0f, 0f);
+                    fromThighL = _ulL0 * Quaternion.Euler(34f, 0f, 0f);
+                    fromThighR = _ulR0 * Quaternion.Euler(34f, 0f, 0f);
+                    fromKneeL = _llL0 * Quaternion.Euler(-50f, 0f, 0f);
+                    fromKneeR = _llR0 * Quaternion.Euler(-50f, 0f, 0f);
+                }
+                _uaLT = Quaternion.Slerp(fromL, _uaLT, intoDart);
+                _uaRT = Quaternion.Slerp(fromR, _uaRT, intoDart);
+                _laLT = Quaternion.Slerp(fromElL, _laLT, intoDart);
+                _laRT = Quaternion.Slerp(fromElR, _laRT, intoDart);
+                _ulLT = Quaternion.Slerp(fromThighL, _ulLT, intoDart);
+                _ulRT = Quaternion.Slerp(fromThighR, _ulRT, intoDart);
+                _llLT = Quaternion.Slerp(fromKneeL, _llLT, intoDart);
+                _llRT = Quaternion.Slerp(fromKneeR, _llRT, intoDart);
+                _spineT = Quaternion.Slerp(fromSp, _spineT, intoDart);
+                _hipsT = Quaternion.Slerp(fromHp, _hipsT, intoDart);
+                _headT = Quaternion.Slerp(fromHd, _headT, intoDart);
             }
             if (_jumpFromSoftLand && _pushOff > 0.02f && !punching && !wallRun && !climb)
             {
