@@ -93,6 +93,11 @@ namespace Tag.Art
         Quaternion _hardJumpUlL, _hardJumpUlR, _hardJumpLlL, _hardJumpLlR;
         Quaternion _hardJumpSp, _hardJumpHp, _hardJumpHd;
         bool _jumpFromMiss;
+        bool _jumpMissSnap;
+        float _jumpMissSnapIn;
+        Quaternion _missJumpUaL, _missJumpUaR, _missJumpLaL, _missJumpLaR;
+        Quaternion _missJumpUlL, _missJumpUlR, _missJumpLlL, _missJumpLlR;
+        Quaternion _missJumpSp, _missJumpHp, _missJumpHd;
         float _missR;
         bool _jumpFromTag;
         float _tagSettle;
@@ -3024,6 +3029,29 @@ namespace Tag.Art
                 _hardJumpHd = _head.localRotation;
                 _airArmIn = 1f;
             }
+            if (_jumpFromMiss && !_jumpMissSnap
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                // The whiff eases into the air pose, then the air pose holds.
+                // The slow push stays off this path. Whiff time is unchanged.
+                // Jump height is unchanged.
+                _jumpMissSnap = true;
+                _jumpMissSnapIn = 0f;
+                _missJumpUaL = _upperArmL.localRotation;
+                _missJumpUaR = _upperArmR.localRotation;
+                _missJumpLaL = _lowerArmL.localRotation;
+                _missJumpLaR = _lowerArmR.localRotation;
+                _missJumpUlL = _upperLegL.localRotation;
+                _missJumpUlR = _upperLegR.localRotation;
+                _missJumpLlL = _lowerLegL.localRotation;
+                _missJumpLlR = _lowerLegR.localRotation;
+                _missJumpSp = _spine.localRotation;
+                _missJumpHp = _hips.localRotation;
+                _missJumpHd = _head.localRotation;
+                _airArmIn = 1f;
+            }
             _prevVy = _motor != null ? _motor.Velocity.y : 0f;
             if (grounded || _pushOff <= 0.02f)
             {
@@ -3088,6 +3116,13 @@ namespace Tag.Art
             }
             else if (!_jumpFromHardLand)
                 _jumpHardLandSnap = false;
+            if (_jumpMissSnap && _jumpFromMiss)
+            {
+                if (_jumpMissSnapIn < 0.98f)
+                    _jumpMissSnapIn = Mathf.MoveTowards(_jumpMissSnapIn, 1f, dt / 0.04f);
+            }
+            else if (!_jumpFromMiss)
+                _jumpMissSnap = false;
             if (_jumpFromStill && _pushOff > 0.02f)
                 _jumpFromStillIn = Mathf.MoveTowards(_jumpFromStillIn, 1f, dt / 0.04f);
             if (_jumpFromCrouchWalk && _pushOff > 0.02f)
@@ -5881,7 +5916,7 @@ namespace Tag.Art
                     _laRT = _laR0 * Quaternion.Euler(-52f * k, 0f, 0f);
                 }
             }
-            else if (punching && !((_skiFromMiss || _slideFromMiss) && phase == PunchPhase.MissRecover) && !_jumpFromPunch)
+            else if (punching && !((_skiFromMiss || _slideFromMiss) && phase == PunchPhase.MissRecover) && !_jumpFromPunch && !_jumpMissSnap)
             {
                 // Clear windup -> connect pose (beyond HitRecover) so tags read in TP
                 _uaLT = _uaL0 * Quaternion.Euler(-28f, 14f, armZ + 18f);
@@ -8503,7 +8538,7 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_hardJumpLlL, _llLT, intoHardAir);
                 _llRT = Quaternion.Slerp(_hardJumpLlR, _llRT, intoHardAir);
             }
-            if (_jumpFromMiss && _pushOff > 0.02f && !wallRun && !climb)
+            if (_jumpFromMiss && _pushOff > 0.02f && !wallRun && !climb && !_jumpMissSnap)
             {
                 // The whiff eases into the push, then the air pose. A crouch miss keeps its jump.
                 // A soft landing and a hard landing keep their jump. Jump height is unchanged.
@@ -8567,6 +8602,31 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(Quaternion.Slerp(missThighR, pushThighR, intoPush), airThighR, leave);
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(missKneeL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(missKneeR, pushKneeR, intoPush), airKneeR, leave);
+            }
+            if (_jumpMissSnap && _jumpMissSnapIn < 0.98f && _jumpFromMiss
+                && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill
+                && !_jumpDashSnap && !_jumpWallSnap && !_jumpClimbSnap && !_jumpAirCrouchSnap
+                && !_jumpSoftLandSnap && !_jumpHardLandSnap)
+            {
+                // The whiff eases into the air pose, then the air pose holds.
+                // A hard landing into a jump has its own ease. A soft landing into a jump has its own ease.
+                // An air crouch into a jump has its own ease. A climb jump has its own ease.
+                // A wall jump has its own ease. An air dash into a jump has its own ease.
+                // A standing idle into a jump has its own ease. A sprint into the air has its own ease.
+                // A walk into a jump has its own ease. The slow push stays off this path.
+                // Whiff time is unchanged. Jump height is unchanged.
+                float intoMissAir = _jumpMissSnapIn;
+                _uaLT = Quaternion.Slerp(_missJumpUaL, _uaLT, intoMissAir);
+                _uaRT = Quaternion.Slerp(_missJumpUaR, _uaRT, intoMissAir);
+                _laLT = Quaternion.Slerp(_missJumpLaL, _laLT, intoMissAir);
+                _laRT = Quaternion.Slerp(_missJumpLaR, _laRT, intoMissAir);
+                _spineT = Quaternion.Slerp(_missJumpSp, _spineT, intoMissAir);
+                _hipsT = Quaternion.Slerp(_missJumpHp, _hipsT, intoMissAir);
+                _headT = Quaternion.Slerp(_missJumpHd, _headT, intoMissAir);
+                _ulLT = Quaternion.Slerp(_missJumpUlL, _ulLT, intoMissAir);
+                _ulRT = Quaternion.Slerp(_missJumpUlR, _ulRT, intoMissAir);
+                _llLT = Quaternion.Slerp(_missJumpLlL, _llLT, intoMissAir);
+                _llRT = Quaternion.Slerp(_missJumpLlR, _llRT, intoMissAir);
             }
 
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
