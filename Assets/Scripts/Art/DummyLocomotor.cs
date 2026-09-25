@@ -91,6 +91,8 @@ namespace Tag.Art
         bool _slideLeadLeft;
         bool _skiFromDash;
         float _skiFromDashIn;
+        bool _slideFromDash;
+        float _slideFromDashIn;
         float _dartStepL;
         float _dartStepR;
         bool _dartFromDash;
@@ -705,6 +707,22 @@ namespace Tag.Art
             }
             else
                 _skiFromDash = false;
+            if (!dashingAir && _airDashPoseWas && sliding && !jet && !skiing)
+            {
+                // The burst eases into the wedge. An air dash into a ski keeps its ease.
+                // A ski into a dash keeps its ease. A slide into a dash keeps its ease.
+                // slideBoost stays 0. Duration and cooldown are unchanged.
+                _slideFromDash = true;
+                _slideFromDashIn = 0f;
+            }
+            if (_slideFromDash && !dashingAir && sliding && !jet && !skiing)
+            {
+                _slideFromDashIn = Mathf.MoveTowards(_slideFromDashIn, 1f, dt / 0.16f);
+                if (_slideFromDashIn >= 0.98f && !dashTell)
+                    _slideFromDash = false;
+            }
+            else
+                _slideFromDash = false;
             _airDashPoseWas = dashingAir;
             bool windupNow = punching && phase == PunchPhase.Windup;
             bool fromJumpPose = (!grounded && _diveFromJump) || (_landedFromJump && _landSquash > 0.08f);
@@ -4772,6 +4790,34 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_punchUlR, _ulRT, into);
                 _llLT = Quaternion.Slerp(_punchLlL, _llLT, into);
                 _llRT = Quaternion.Slerp(_punchLlR, _llRT, into);
+            }
+            if (_slideFromDash && !_skiFromDash && !airDashing && !punching && !wallRun && !climb)
+            {
+                // The burst eases into the wedge, then the wedge holds.
+                // An air dash into a ski keeps its ease. A ski into a dash keeps its ease.
+                // A slide into a dash keeps its ease. slideBoost stays 0.
+                // Duration and cooldown are unchanged.
+                float intoWedge = _slideFromDashIn;
+                bool leadLeft = sinC >= 0f;
+                Quaternion burstL = _uaL0 * Quaternion.Euler(108f, 32f, armZ);
+                Quaternion burstR = _uaR0 * Quaternion.Euler(108f, -32f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion burstElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion burstElR = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
+                Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(burstL, wedgeL, intoWedge);
+                _uaRT = Quaternion.Slerp(burstR, wedgeR, intoWedge);
+                _laLT = Quaternion.Slerp(burstElL, wedgeElL, intoWedge);
+                _laRT = Quaternion.Slerp(burstElR, wedgeElR, intoWedge);
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(58f, 0f, 0f), _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(0f, 0f, 0f), _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(72f, 0f, 0f), _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
             }
             if (_skiFromDash && !airDashing && !punching && !wallRun && !climb)
             {
