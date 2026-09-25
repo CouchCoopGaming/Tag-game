@@ -240,7 +240,9 @@ Already on this branch: Letting go of a ski into a crouch walk eases the glide i
 
 Already on this branch: A crouch walk into a ski eases the low stride into the glide. It does not pop. A still crouch into a ski is unchanged. A walk into a ski is unchanged. Speed is unchanged. Jet stays off.
 
-This delta: A slide into a still crouch eases the wedge into the guard. It does not snap. A slide into a stand still rises into the idle breath. A slide into a walk is unchanged. Speed is unchanged.
+Already on this branch: A slide into a still crouch eases the wedge into the guard. It does not snap. A slide into a stand still rises into the idle breath. A slide into a walk is unchanged. Speed is unchanged.
+
+This delta: A still crouch into a slide eases the guard into the wedge. It does not snap. A slide into a still crouch still eases into the guard. A slide into a walk is unchanged. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -479,6 +481,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 140. Ski, then crouch walk: the glide should ease into the low stride. A still crouch should still end in the guard. A ski into a walk should feel the same. Speed should feel the same. Jet stays off.
 141. Crouch walk, then ski: the low stride should ease into the glide. It should not pop. A still crouch into a ski should feel the same. A walk into a ski should feel the same. Speed should feel the same. Jet stays off.
 142. Slide, then crouch still: the wedge should ease into the guard. It should not snap. A slide into a stand should still rise into the idle breath. A slide into a walk should feel the same. Speed should feel the same.
+143. Crouch still, then slide: the guard should ease into the wedge. It should not snap. A slide into a still crouch should still ease into the guard. A slide into a walk should feel the same. Speed should feel the same.
 
 ## Known leftovers
 
@@ -641,6 +644,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 130. Letting go of a ski into a crouch walk eases the glide into the low stride. A still crouch still ends in the guard. A walk out of a ski is unchanged. Speed is unchanged. Jet stays off.
 131. A crouch walk into a ski eases the low stride into the glide. It does not pop. A still crouch into a ski is unchanged. A walk into a ski is unchanged. Speed is unchanged. Jet stays off.
 132. A slide into a still crouch eases the wedge into the guard. It does not snap. A slide into a stand still rises into the idle breath. A slide into a walk is unchanged. Speed is unchanged.
+133. A still crouch into a slide eases the guard into the wedge. It does not snap. A slide into a still crouch still eases into the guard. A slide into a walk is unchanged. Speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
