@@ -48,6 +48,7 @@ namespace Tag.Art
         float _swayVis;
         float _idlePhase;
         bool _swayIdle;
+        float _stepIn;
         float _prevYaw;
         float _turnVis;
         bool _hasYaw;
@@ -231,9 +232,23 @@ namespace Tag.Art
             else
                 _runVis = runAmt;
 
+            bool stepping = grounded && speed > 0.35f && !sliding && !crouch;
+            if (air)
+                _stepIn = 1f;
+            else if (stepping)
+                _stepIn = Mathf.MoveTowards(_stepIn, 1f, dt / 0.32f);
+            else if (speed <= 0.35f)
+            {
+                float remain = Mathf.Abs(_cycle - Mathf.PI * Mathf.Round(_cycle / Mathf.PI));
+                if (remain < 0.25f)
+                    _stepIn = Mathf.MoveTowards(_stepIn, 0f, dt / 0.12f);
+            }
+
             // Hold the plant and the lift, then cross zero faster - a sine reads as skating.
+            // The first step uses the raw sine so it pushes off the plant instead of skating.
             float sinRaw = Mathf.Sin(_cycle);
-            float sinC = Mathf.Sign(sinRaw) * Mathf.Pow(Mathf.Abs(sinRaw), 0.40f);
+            float sinShaped = Mathf.Sign(sinRaw) * Mathf.Pow(Mathf.Abs(sinRaw), 0.40f);
+            float sinC = Mathf.Lerp(sinRaw, sinShaped, stepping ? Mathf.SmoothStep(0f, 1f, _stepIn) : 1f);
             float breath = Mathf.Sin(Time.time * 2.1f) * 2.4f;
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
@@ -267,7 +282,7 @@ namespace Tag.Art
             _swayVis = Mathf.MoveTowards(_swayVis, swayTarget, dt * 28f);
             if (idleW > 0.02f)
                 leanX = breath * (1f + idleW);
-            if (stopping || idleW > 0.02f)
+            if (atRest && (stopping || idleW > 0.02f || Mathf.Abs(_swayVis) > 0.2f))
                 leanZ = _swayVis;
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
                 leanX = Mathf.Lerp(leanX, 26f, _skiBlend);
@@ -293,8 +308,9 @@ namespace Tag.Art
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f, 0f, 0f), _skiBlend);
             _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? -12f : crouch ? -6f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
-            if (idleW > 0.02f)
-                _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-breath * 0.5f, 0f, -_swayVis * 0.35f), idleW);
+            float swayFade = Mathf.Max(idleW, atRest ? Mathf.Clamp01(Mathf.Abs(_swayVis) / 5f) : 0f);
+            if (swayFade > 0.02f)
+                _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-breath * 0.5f, 0f, -_swayVis * 0.35f), swayFade);
 
             Transform yawSrc = _motor != null ? _motor.transform : transform;
             float yawNow = yawSrc.eulerAngles.y;
@@ -807,6 +823,21 @@ namespace Tag.Art
                 float kneeR = -(2f + frontR * kneeAmt);
                 _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(kneeR, 0f, 0f);
+                // First step pushes off the foot that stays down. The other leg reaches into the stride.
+                float plantW = stepping ? 1f - Mathf.SmoothStep(0f, 1f, _stepIn) : 0f;
+                if (plantW > 0.04f && _skiBlend < 0.35f)
+                {
+                    if (Mathf.Cos(_cycle) >= 0f)
+                    {
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(-6f, 0f, 0f), plantW);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-4f, 0f, 0f), plantW);
+                    }
+                    else
+                    {
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(-6f, 0f, 0f), plantW);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-4f, 0f, 0f), plantW);
+                    }
+                }
                 if (_skiBlend > 0.02f)
                 {
                     float sFrontL = Mathf.Max(0f, sinC);
