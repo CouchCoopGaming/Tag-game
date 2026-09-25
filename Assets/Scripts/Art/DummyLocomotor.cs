@@ -1030,9 +1030,11 @@ namespace Tag.Art
             _grapplePose = Mathf.MoveTowards(_grapplePose, pulling ? 1f : 0f, dt / 0.12f);
             if (_grapplePose > 0.04f && !punching)
             {
-                // Experimental rope only. Both arms reach as a long line. Legs stay long so it is not a jump tuck.
-                // The gate stays off unless the component is added and enableGrapple is turned on.
-                float g = _grapplePose;
+                // Experimental rope only. Both arms reach as a long line. The chest and the
+                // hips settle together, with no yaw, so the line does not twist.
+                // Legs stay long so it is not a jump tuck. The gate stays off unless
+                // the component is added and enableGrapple is turned on.
+                float g = Mathf.SmoothStep(0f, 1f, _grapplePose);
                 _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-96f, 16f, armZ), g);
                 _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-96f, -16f, -armZ), g);
                 _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-14f, 0f, 0f), g);
@@ -1042,6 +1044,7 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-8f, 0f, 0f), g);
                 _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-8f, 0f, 0f), g);
                 _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(-12f, 0f, 0f), g);
+                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(6f, 0f, 0f), g);
             }
 
             if (flinchAmt > 0.04f)
@@ -1091,18 +1094,18 @@ namespace Tag.Art
             // 0.1s air dash never reached the whip pose at slew 42.
             bool punchWind = punching && phase == PunchPhase.Windup;
             bool handoff = flinchAmt > 0.2f || claimAmt > 0.2f;
-            bool grappleTell = _grapplePose > 0.2f && !punching;
+            bool grappleTell = _grapplePose > 0.04f && !punching;
             // A hop is short. Slew 18 never reached the tuck or the trail before the landing.
             bool apexHang = air && airRise < 0.2f && airFall < 0.2f;
             bool airDive = diveAmt > 0.12f;
             bool airTell = air && (airRise > 0.12f || airFall > 0.12f || apexHang || airDive);
-            float armSlewL = airDashing ? 78f : punchWind ? 90f : handoff || grappleTell ? 72f : airTell ? 64f : (punching || lunging || dashing ? 42f : slew);
-            float armSlewR = airDashing ? 78f : punchWind ? 90f : handoff || grappleTell ? 72f : airTell ? 64f : (punching || lunging || dashing ? 46f : slew);
+            float armSlewL = airDashing ? 78f : punchWind ? 90f : handoff ? 72f : grappleTell ? 36f : airTell ? 64f : (punching || lunging || dashing ? 42f : slew);
+            float armSlewR = airDashing ? 78f : punchWind ? 90f : handoff ? 72f : grappleTell ? 36f : airTell ? 64f : (punching || lunging || dashing ? 46f : slew);
             // Run knees have to arrive inside one stride or the flex never shows.
             bool runCycle = grounded && !air && !sliding && !crouch && !dashing && !lunging && speed > 2f;
             // Buckle has to arrive during the short absorb, then follow the ease back into the stride.
-            float legSlew = airDashing ? 78f : grappleTell ? 72f : airTell ? 64f : (_landSquash > 0.05f ? 46f : runCycle ? 44f : slew);
-            float torsoSlew = grappleTell ? 72f : airTell ? 64f : slew;
+            float legSlew = airDashing ? 78f : grappleTell ? 36f : airTell ? 64f : (_landSquash > 0.05f ? 46f : runCycle ? 44f : slew);
+            float torsoSlew = grappleTell ? 36f : airTell ? 64f : slew;
             if (!(lunging || dashing))
                 _airDashArms = false;
             if (!dashing && !lunging && _armRecover > 0f)
