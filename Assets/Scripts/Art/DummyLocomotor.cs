@@ -215,6 +215,9 @@ namespace Tag.Art
         bool _airDashArms;
         bool _dashFromJump;
         float _dashFromJumpIn;
+        Quaternion _jumpDashUaL, _jumpDashUaR, _jumpDashLaL, _jumpDashLaR;
+        Quaternion _jumpDashUlL, _jumpDashUlR, _jumpDashLlL, _jumpDashLlR;
+        Quaternion _jumpDashSp, _jumpDashHp, _jumpDashHd;
         bool _dashFromDart;
         float _dashFromDartIn;
         bool _dashFromDartStride;
@@ -1548,10 +1551,27 @@ namespace Tag.Art
             bool dashingAir = _motor != null && _motor.IsAirDashing;
             if (dashingAir && !_airDashPoseWas && _diveFromJump && !_jumpFromDash)
             {
-                // A jump eases the apex into the burst. The burst still holds.
-                // Duration and cooldown are unchanged.
+                // The jump eases into the burst. The burst still holds.
+                // A slide into an air dash keeps its ease. A ski into an air dash keeps its ease.
+                // Jump height is unchanged. Duration and cooldown are unchanged.
                 _dashFromJump = true;
                 _dashFromJumpIn = 0f;
+                if (_upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+                {
+                    _jumpDashUaL = _upperArmL.localRotation;
+                    _jumpDashUaR = _upperArmR.localRotation;
+                    _jumpDashLaL = _lowerArmL.localRotation;
+                    _jumpDashLaR = _lowerArmR.localRotation;
+                    _jumpDashUlL = _upperLegL.localRotation;
+                    _jumpDashUlR = _upperLegR.localRotation;
+                    _jumpDashLlL = _lowerLegL.localRotation;
+                    _jumpDashLlR = _lowerLegR.localRotation;
+                    _jumpDashSp = _spine.localRotation;
+                    _jumpDashHp = _hips.localRotation;
+                    _jumpDashHd = _head.localRotation;
+                }
+                else
+                    _dashFromJumpIn = 1f;
             }
             if (dashingAir && _dashFromJump)
                 _dashFromJumpIn = Mathf.MoveTowards(_dashFromJumpIn, 1f, dt / 0.04f);
@@ -5279,65 +5299,21 @@ namespace Tag.Art
             }
             if (airDashing && _dashFromJump && !_jumpFromDash && _dashFromJumpIn < 0.98f && !punching)
             {
-                // The apex eases into the burst. The burst still holds. An air dash into a jump is unchanged.
-                // Duration and cooldown are unchanged. Jump height is unchanged.
+                // The jump eases into the burst, then the burst holds.
+                // A slide into an air dash keeps its ease. A ski into an air dash keeps its ease.
+                // Jump height is unchanged. Duration and cooldown are unchanged.
                 float intoBurst = _dashFromJumpIn;
-                float airW = Mathf.Clamp01(airRise + airFall);
-                float riseShare = airW > 0.001f ? airRise / (airRise + airFall) : 0f;
-                float lookUp = Mathf.Clamp(-_lookArmVis, 0f, 25f);
-                float lookDown = Mathf.Clamp(_lookArmVis, 0f, 55f);
-                float fallPitch = 72f + (lookDown * 0.05f - lookUp * 0.2f);
-                float fallYaw = 16f + lookDown * 0.08f;
-                Quaternion upL = _uaL0 * Quaternion.Euler(-112f, 16f, armZ);
-                Quaternion upR = _uaR0 * Quaternion.Euler(-112f, -16f, -armZ);
-                Quaternion downL = _uaL0 * Quaternion.Euler(fallPitch, fallYaw, armZ);
-                Quaternion downR = _uaR0 * Quaternion.Euler(fallPitch, -fallYaw, -armZ);
-                Quaternion hangL = _uaL0 * Quaternion.Euler(-52f, 22f, armZ);
-                Quaternion hangR = _uaR0 * Quaternion.Euler(-52f, -22f, -armZ);
-                Quaternion fromL = Quaternion.Slerp(hangL, Quaternion.Slerp(downL, upL, riseShare), airW);
-                Quaternion fromR = Quaternion.Slerp(hangR, Quaternion.Slerp(downR, upR, riseShare), airW);
-                Quaternion elbowUp = Quaternion.Euler(-12f, 0f, 0f);
-                Quaternion elbowDown = Quaternion.Euler(-16f, 0f, 0f);
-                Quaternion elbowHang = Quaternion.Euler(-12f, 0f, 0f);
-                Quaternion elbow = Quaternion.Slerp(elbowHang, Quaternion.Slerp(elbowDown, elbowUp, riseShare), airW);
-                Quaternion fromElL = _laL0 * elbow;
-                Quaternion fromElR = _laR0 * elbow;
-                Quaternion tuckL = _ulL0 * Quaternion.Euler(58f, 0f, 0f);
-                Quaternion tuckR = _ulR0 * Quaternion.Euler(54f, 0f, 0f);
-                Quaternion longL = _ulL0 * Quaternion.Euler(4f, 0f, 0f);
-                Quaternion longR = _ulR0 * Quaternion.Euler(4f, 0f, 0f);
-                Quaternion hangThighL = _ulL0 * Quaternion.Euler(22f, 0f, 0f);
-                Quaternion hangThighR = _ulR0 * Quaternion.Euler(20f, 0f, 0f);
-                Quaternion fromThighL = Quaternion.Slerp(hangThighL, Quaternion.Slerp(longL, tuckL, riseShare), airW);
-                Quaternion fromThighR = Quaternion.Slerp(hangThighR, Quaternion.Slerp(longR, tuckR, riseShare), airW);
-                Quaternion kneeTuckL = _llL0 * Quaternion.Euler(-90f, 0f, 0f);
-                Quaternion kneeTuckR = _llR0 * Quaternion.Euler(-86f, 0f, 0f);
-                Quaternion kneeLongL = _llL0 * Quaternion.Euler(-6f, 0f, 0f);
-                Quaternion kneeLongR = _llR0 * Quaternion.Euler(-6f, 0f, 0f);
-                Quaternion kneeHangL = _llL0 * Quaternion.Euler(-28f, 0f, 0f);
-                Quaternion kneeHangR = _llR0 * Quaternion.Euler(-26f, 0f, 0f);
-                Quaternion fromKneeL = Quaternion.Slerp(kneeHangL, Quaternion.Slerp(kneeLongL, kneeTuckL, riseShare), airW);
-                Quaternion fromKneeR = Quaternion.Slerp(kneeHangR, Quaternion.Slerp(kneeLongR, kneeTuckR, riseShare), airW);
-                Quaternion fromSp = Quaternion.Slerp(
-                    _spine0 * Quaternion.Euler(-6f, 0f, 0f),
-                    Quaternion.Slerp(_spine0 * Quaternion.Euler(26f, 0f, 0f), _spine0 * Quaternion.Euler(-8f, 0f, 0f), riseShare),
-                    airW);
-                Quaternion fromHp = Quaternion.Slerp(
-                    _hips0 * Quaternion.Euler(6f, 0f, 0f),
-                    Quaternion.Slerp(_hips0 * Quaternion.Euler(8f, 0f, 0f), _hips0 * Quaternion.Euler(4f, 0f, 0f), riseShare),
-                    airW);
-                Quaternion fromHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
-                _uaLT = Quaternion.Slerp(fromL, _uaLT, intoBurst);
-                _uaRT = Quaternion.Slerp(fromR, _uaRT, intoBurst);
-                _laLT = Quaternion.Slerp(fromElL, _laLT, intoBurst);
-                _laRT = Quaternion.Slerp(fromElR, _laRT, intoBurst);
-                _ulLT = Quaternion.Slerp(fromThighL, _ulLT, intoBurst);
-                _ulRT = Quaternion.Slerp(fromThighR, _ulRT, intoBurst);
-                _llLT = Quaternion.Slerp(fromKneeL, _llLT, intoBurst);
-                _llRT = Quaternion.Slerp(fromKneeR, _llRT, intoBurst);
-                _spineT = Quaternion.Slerp(fromSp, _spineT, intoBurst);
-                _hipsT = Quaternion.Slerp(fromHp, _hipsT, intoBurst);
-                _headT = Quaternion.Slerp(fromHd, _headT, intoBurst);
+                _uaLT = Quaternion.Slerp(_jumpDashUaL, _uaLT, intoBurst);
+                _uaRT = Quaternion.Slerp(_jumpDashUaR, _uaRT, intoBurst);
+                _laLT = Quaternion.Slerp(_jumpDashLaL, _laLT, intoBurst);
+                _laRT = Quaternion.Slerp(_jumpDashLaR, _laRT, intoBurst);
+                _ulLT = Quaternion.Slerp(_jumpDashUlL, _ulLT, intoBurst);
+                _ulRT = Quaternion.Slerp(_jumpDashUlR, _ulRT, intoBurst);
+                _llLT = Quaternion.Slerp(_jumpDashLlL, _llLT, intoBurst);
+                _llRT = Quaternion.Slerp(_jumpDashLlR, _llRT, intoBurst);
+                _spineT = Quaternion.Slerp(_jumpDashSp, _spineT, intoBurst);
+                _hipsT = Quaternion.Slerp(_jumpDashHp, _hipsT, intoBurst);
+                _headT = Quaternion.Slerp(_jumpDashHd, _headT, intoBurst);
             }
             if (airDashing && _dashFromWall && !_dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromWallIn < 0.98f && !punching)
             {
