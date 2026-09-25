@@ -640,7 +640,9 @@ Already on this branch: A jump out of a ski eases the glide into the air pose. T
 
 Already on this branch: A wall bounce eases into the kick. The kick then holds. The slow fade stays off that path. Bounce time is unchanged.
 
-This delta: A super glide eases into the launch. The launch then holds. The slow fade stays off that path. Glide time is unchanged.
+Already on this branch: A super glide eases into the launch. The launch then holds. The slow fade stays off that path. Glide time is unchanged.
+
+This delta: An air dash eases the whip into the pose. The pose then holds. The slow fade stays off that path. Duration and cooldown are unchanged.
 
 ## Stack snapshot
 
@@ -1079,6 +1081,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 340. Ski, then jump: the glide should ease into the air pose. The air pose should then hold. The push should not ease back in. A dash-ready pulse into a jump should feel the same. The glide should not feel longer. The jump should not feel higher. Jet stays off.
 341. Bounce off a wall: the pose should ease into the kick. The kick should then hold. The fade should not ease back in. A ski into a jump should feel the same. The bounce should not feel longer. Jet stays off.
 342. Super glide off a mantle: the pose should ease into the launch. The launch should then hold. The fade should not ease back in. A wall bounce should feel the same. The glide should not feel longer. Jet stays off.
+343. Air dash, then keep going: the whip should ease into the pose. The pose should then hold. The fade should not ease back in. A dash into a ski should feel the same. The dash should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1441,6 +1444,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 330. A jump out of a ski eases the glide into the air pose. The air pose then holds. The slow push stays off that path. Ski speed is unchanged. Jump height is unchanged. Jet stays off.
 331. A wall bounce eases into the kick. The kick then holds. The slow fade stays off that path. Bounce time is unchanged. Jet stays off.
 332. A super glide eases into the launch. The launch then holds. The slow fade stays off that path. Glide time is unchanged. Jet stays off.
+333. An air dash eases the whip into the pose. The pose then holds. The slow fade stays off that path. Duration and cooldown are unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
