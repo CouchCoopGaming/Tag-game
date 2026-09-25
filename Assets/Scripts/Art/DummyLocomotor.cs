@@ -58,6 +58,7 @@ namespace Tag.Art
         float _prevYaw;
         float _turnVis;
         bool _hasYaw;
+        float _lookArmVis;
         float _grapplePose;
         float _wallExit;
         bool _exitLeadLeft;
@@ -398,6 +399,16 @@ namespace Tag.Art
 
             // Arms - slight outward A-pose only (large +Z was V-ing hands into the butt)
             float armZ = Mathf.Lerp(4f, 8f, _runVis);
+            // Camera pitch only. The look gate and the sensitivity stay on the camera.
+            float lookPitch = 0f;
+            Transform lookCam = _motor != null ? _motor.cam : null;
+            if (lookCam != null && lookCam.parent != null)
+            {
+                float x = lookCam.parent.localEulerAngles.x;
+                if (x > 180f) x -= 360f;
+                lookPitch = Mathf.Clamp(x, -25f, 55f);
+            }
+            _lookArmVis = Mathf.MoveTowards(_lookArmVis, lookPitch, dt * 240f);
             float lungeAmt = lunging && _motor != null ? _motor.LungeProgress : 0f;
             // 1 at the start of an air dash or lunge, 0 at the end. The pulse tail keeps easing after the burst.
             float dashStretchPose = 1f;
@@ -712,11 +723,21 @@ namespace Tag.Art
                 float turnOut = Mathf.Abs(_turnVis) * 5f;
                 yL += turnOut;
                 yR += turnOut;
+                // The reach follows the look. Look up lifts it. Look down stays short and out,
+                // so the hand does not enter the hip. The back arm stays the plant.
+                float lookUp = Mathf.Clamp(-_lookArmVis, 0f, 25f);
+                float lookDown = Mathf.Clamp(_lookArmVis, 0f, 55f);
+                float lookAdd = lookDown * 0.1f - lookUp * 0.5f;
+                float lookOut = lookDown * 0.1f;
+                float reachL = Mathf.Clamp01(-sinC) * gait;
+                float reachR = Mathf.Clamp01(sinC) * gait;
+                yL += lookOut * reachL;
+                yR += lookOut * reachR;
                 // Both hands rise a little with the breath. Yaw stays out, and roll stays 0 at rest,
                 // so the sway does not fold the hands into the hips.
                 float armBreath = breath * 0.55f * idle;
-                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll);
-                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll);
+                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath + lookAdd * reachL, yL, roll);
+                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath + lookAdd * reachR, -yR, -roll);
                 // Long line on the reach. The elbow fold sits on the back arm, short of the hip.
                 // The trail knee is unchanged and stays straight.
                 float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);

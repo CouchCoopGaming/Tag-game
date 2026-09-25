@@ -114,7 +114,9 @@ Already on this branch: An air crouch reads as a crouch in the air. The arms eas
 
 Already on this branch: An air dash pitches the chest and throws the arms wide for the short burst. They read, then ease back. The burst and the cooldown are unchanged.
 
-This delta: Leaving a wall eases the hips and the feet into the stride. They do not pop. The hands still take the same time to leave.
+Already on this branch: Leaving a wall eases the hips and the feet into the stride. They do not pop. The hands still take the same time to leave. A climb leaves the same way.
+
+This delta: While you run, the reaching arm follows the look and stays clear of the hip. It does not fight the stride. Look speed is unchanged.
 
 ## Stack snapshot
 
@@ -290,6 +292,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 77. Jump, hold crouch on the way down, and land: the body should read as a crouch in the air, with the arms in. On landing the arms should ease. They should not pop. The drop should still feel like the same fast fall. A jump with no crouch should feel the same height.
 78. Air dash: the chest should pitch and the arms should fly wide for the short burst. They should read, then ease back. The dash should not last longer, and it should still have to recharge.
 79. Wall-run, then drop into a run: the hips and the feet should ease into the stride under the hips. They should not pop. The hands should not snap, and the leave should not feel longer or shorter. A climb should leave the same way.
+80. Run and look up and down: the reaching arm should follow the look and stay clear of the hip. The other arm should stay in the stride. Look should feel the same.
 
 ## Known leftovers
 
@@ -389,6 +392,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 67. An air crouch reads as a crouch in the air. The arms ease into the landing and do not pop. The 2x fall speed is unchanged.
 68. An air dash pitches the chest and throws the arms wide for the short burst. They ease back after. Duration and cooldown are unchanged.
 69. Leaving a wall eases the hips and the feet into the stride. They do not pop. The hands still take the same time to leave. A climb leaves the same way.
+70. While running, the reaching arm follows the look and stays clear of the hip. It does not fight the stride. Look speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
