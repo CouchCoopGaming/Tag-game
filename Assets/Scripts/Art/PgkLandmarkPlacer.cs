@@ -184,6 +184,7 @@ namespace Tag.Art
             n += SoftRingWall(root);
             n += AstroRingWall(root);
             n += RingArmyBars(root);
+            n += RingKnightBars(root);
             n += EastSouthCluster(root);
             n += WestNorthCluster(root);
             // Overhead bars. West stays at x=11 (the mast owns x-9.5 around z 12-18).
@@ -806,6 +807,23 @@ namespace Tag.Art
             {
                 ("PGK_Monkey_4m_LOD0", new Vector3(-2.1f, 0f, 0f), 0f),
                 ("PGK_Monkey_4m_LOD0", new Vector3(2.1f, 0f, 0f), 0f),
+            });
+        }
+
+        /// <summary>
+        /// Three more 4.2 m monkeys continuing the north ring's east bar toward the knight crawl.
+        /// North ring centers are 31.8 / 36.0 / 40.2 at z=51, so the next seats are 44.4, 48.6, 52.8.
+        /// West edge x=42.3 abuts the ring monkey. East edge x=54.9 is 1.1 m west of the
+        /// knight crawl mouth (x=56, z 47.35-50.15). The bars sit north of that mouth.
+        /// </summary>
+        int RingKnightBars(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Bars_RingKnight", new Vector3(48.6f, 0f, 51f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("PGK_Monkey_4m_LOD0", new Vector3(-4.2f, 0f, 0f), 0f),
+                ("PGK_Monkey_4m_LOD0", new Vector3(0f, 0f, 0f), 0f),
+                ("PGK_Monkey_4m_LOD0", new Vector3(4.2f, 0f, 0f), 0f),
             });
         }
 
