@@ -302,6 +302,11 @@ namespace Tag.Art
         Quaternion _wallSlideUaL, _wallSlideUaR, _wallSlideLaL, _wallSlideLaR;
         Quaternion _wallSlideUlL, _wallSlideUlR, _wallSlideLlL, _wallSlideLlR;
         Quaternion _wallSlideSp, _wallSlideHp, _wallSlideHd;
+        bool _slideFromGrapple;
+        float _slideFromGrappleIn;
+        Quaternion _grappleSlideUaL, _grappleSlideUaR, _grappleSlideLaL, _grappleSlideLaR;
+        Quaternion _grappleSlideUlL, _grappleSlideUlR, _grappleSlideLlL, _grappleSlideLlR;
+        Quaternion _grappleSlideSp, _grappleSlideHp, _grappleSlideHd;
         bool _climbFromDash;
         float _climbFromDashIn;
         bool _wallFromDash;
@@ -544,6 +549,7 @@ namespace Tag.Art
             // A punch eases the cock or the strike into the wedge. A tag eases the connect into the wedge.
             // A soft landing eases the absorb into the wedge. A hard landing keeps the jump entry.
             // A climb eases the grab into the wedge. A wall run eases the leave into the wedge.
+            // A grapple release eases the line into the wedge. The gate stays off.
             // slideBoost stays 0. Exit time is unchanged.
             // The land numbers are written later this frame. Read the same impact here
             // so a soft touchdown is not filed as a jump.
@@ -564,13 +570,17 @@ namespace Tag.Art
             bool climbLeaveSlide = !wallRun && !_exitFromWall && (leavingSurf || _wallExit > 0.2f);
             bool fromClimbSlide = sliding && !_dropSlide && !fromWallSlide && climbLeaveSlide && !jet && !_airDashPoseWas && !_jumpFromClimb
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-            bool fromSoftSlide = sliding && !_dropSlide && !fromWallSlide && !fromClimbSlide && softSlideRecover && !jet && !_airDashPoseWas
+            bool grappleReleaseSlide = _grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f;
+            bool fromGrappleSlide = sliding && !_dropSlide && !fromWallSlide && !fromClimbSlide && grappleReleaseSlide && !jet && !_airDashPoseWas && !_jumpFromGrapple
+                && _punchPhaseWas != PunchPhase.Windup && _punchPhaseWas != PunchPhase.Active && _punchPhaseWas != PunchPhase.HitRecover
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-            bool jumpIntoSlide = sliding && !_dropSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && (!grounded || !_wasGrounded || _landSquash > 0.08f);
-            bool fromPunchSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !_airDashPoseWas
+            bool fromSoftSlide = sliding && !_dropSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && softSlideRecover && !jet && !_airDashPoseWas
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            bool jumpIntoSlide = sliding && !_dropSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && (!grounded || !_wasGrounded || _landSquash > 0.08f);
+            bool fromPunchSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !_airDashPoseWas
                 && (_punchPhaseWas == PunchPhase.Windup || _punchPhaseWas == PunchPhase.Active)
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-            bool fromTagSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromPunchSlide && !_airDashPoseWas && !_jumpFromTag
+            bool fromTagSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromPunchSlide && !_airDashPoseWas && !_jumpFromTag
                 && _punchPhaseWas == PunchPhase.HitRecover
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
             if (jumpIntoSlide)
@@ -578,7 +588,7 @@ namespace Tag.Art
                 _jumpToSlide = 1f;
                 _jumpToSlideLand = grounded;
             }
-            else if (!fromPunchSlide && !fromTagSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide)
+            else if (!fromPunchSlide && !fromTagSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide)
             {
                 if (sliding && !_dropSlide && _crouchFromStand && _dropVis > 0.2f)
                     _crouchToSlide = 1f;
@@ -666,6 +676,25 @@ namespace Tag.Art
                 _wallSlideHp = _hips.localRotation;
                 _wallSlideHd = _head.localRotation;
             }
+            if (fromGrappleSlide && !_slideFromGrapple)
+            {
+                // The line eases into the wedge. A grapple release into a ski keeps its ease.
+                // A grapple release into a jump keeps its push. A wall run into a slide keeps its ease.
+                // A soft landing into a slide keeps its ease. slideBoost stays 0. The gate stays off.
+                _slideFromGrapple = true;
+                _slideFromGrappleIn = 0f;
+                _grappleSlideUaL = _upperArmL.localRotation;
+                _grappleSlideUaR = _upperArmR.localRotation;
+                _grappleSlideLaL = _lowerArmL.localRotation;
+                _grappleSlideLaR = _lowerArmR.localRotation;
+                _grappleSlideUlL = _upperLegL.localRotation;
+                _grappleSlideUlR = _upperLegR.localRotation;
+                _grappleSlideLlL = _lowerLegL.localRotation;
+                _grappleSlideLlR = _lowerLegR.localRotation;
+                _grappleSlideSp = _spine.localRotation;
+                _grappleSlideHp = _hips.localRotation;
+                _grappleSlideHd = _head.localRotation;
+            }
             if (fromClimbSlide && !_slideFromClimb)
             {
                 // The grab eases into the wedge. A climb into a ski keeps its ease.
@@ -730,6 +759,7 @@ namespace Tag.Art
                 _slideFromSoft = false;
                 _slideFromClimb = false;
                 _slideFromWall = false;
+                _slideFromGrapple = false;
             }
             else if (_jumpToSlide > 0f)
                 _jumpToSlide = Mathf.MoveTowards(_jumpToSlide, 0f, dt / 0.16f);
@@ -743,6 +773,8 @@ namespace Tag.Art
                 _slideFromClimbIn = Mathf.MoveTowards(_slideFromClimbIn, 1f, dt / 0.04f);
             if (_slideFromWall && sliding)
                 _slideFromWallIn = Mathf.MoveTowards(_slideFromWallIn, 1f, dt / 0.04f);
+            if (_slideFromGrapple && sliding)
+                _slideFromGrappleIn = Mathf.MoveTowards(_slideFromGrappleIn, 1f, dt / 0.04f);
             if (crouch && !sliding && speed <= 0.35f)
                 _crouchFromStand = true;
             else if ((crouch && speed > 0.35f) || sliding || _dropVis <= 0.001f)
@@ -5712,7 +5744,7 @@ namespace Tag.Art
 
             bool pulling = _grapple != null && _grapple.IsPulling;
             _grapplePose = Mathf.MoveTowards(_grapplePose, pulling ? 1f : 0f, dt / 0.12f);
-            if (_grapplePose > 0.04f && !punching && !_skiFromGrapple)
+            if (_grapplePose > 0.04f && !punching && !_skiFromGrapple && !_slideFromGrapple)
             {
                 // Experimental rope only. Both arms reach as a long line. The chest and the
                 // hips settle together, with no yaw, so the line does not twist.
@@ -6964,7 +6996,31 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-(6f + Mathf.Max(0f, -kneePhase) * 72f), 0f, 0f), intoGrab);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-(6f + Mathf.Max(0f, kneePhase) * 72f), 0f, 0f), intoGrab);
             }
-            if (_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromWallIn < 0.98f)
+            if (_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromGrappleIn < 0.98f)
+            {
+                // The line eases into the wedge, then the wedge holds.
+                // A grapple release into a ski keeps its ease. A grapple release into a jump keeps its push.
+                // A wall run into a slide keeps its ease. A soft landing into a slide keeps its ease.
+                // slideBoost stays 0. The gate stays off.
+                float intoWedge = _slideFromGrappleIn;
+                bool leadLeft = sinC >= 0f;
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
+                Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(_grappleSlideUaL, wedgeL, intoWedge);
+                _uaRT = Quaternion.Slerp(_grappleSlideUaR, wedgeR, intoWedge);
+                _laLT = Quaternion.Slerp(_grappleSlideLaL, wedgeElL, intoWedge);
+                _laRT = Quaternion.Slerp(_grappleSlideLaR, wedgeElR, intoWedge);
+                _spineT = Quaternion.Slerp(_grappleSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_grappleSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_grappleSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_grappleSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_grappleSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_grappleSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_grappleSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+            }
+            if (_slideFromWall && !_slideFromGrapple && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromWallIn < 0.98f)
             {
                 // The leave eases into the wedge, then the wedge holds.
                 // A wall run into a ski keeps its ease. A climb into a slide keeps its ease.
