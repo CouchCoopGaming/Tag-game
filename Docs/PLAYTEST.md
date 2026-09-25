@@ -148,7 +148,9 @@ Already on this branch: When the dash is ready again, the chest and the arms set
 
 Already on this branch: A walk turn plants the outside foot at a medium turn. It does not wait for a sharp yaw. Look speed is unchanged.
 
-This delta: After an air dash, a soft landing bends the knees and keeps the arms in the stride. They do not flare. The burst and the cooldown are unchanged.
+Already on this branch: After an air dash, a soft landing bends the knees and keeps the arms in the stride. They do not flare. The burst and the cooldown are unchanged.
+
+This delta: Letting go of a crouch into a stand eases the hips into the idle breath. They do not pop. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -341,6 +343,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 94. Air dash, then wait for the bar: when it is ready, the chest and the arms should settle. The dash should not last longer, and it should still have to recharge.
 95. Walk and turn at a medium yaw: the outside foot should plant while the other leg steps. It should not wait for a sharp turn. Look should feel the same.
 96. Air dash, then land softly into a walk: the knees should bend and the arms should stay in the stride. They should not flare out. The dash should not last longer, and it should still have to recharge.
+97. Hold crouch while standing, then let go: the hips should ease into the idle breath and sway. They should not pop flat. Speed should feel the same.
 
 ## Known leftovers
 
@@ -457,6 +460,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 84. When the dash cooldown ends, the chest and the arms settle. It is not a second whip. Duration and cooldown are unchanged.
 85. A walk turn plants the outside foot at a medium yaw. It does not wait for a sharp turn. Look speed is unchanged.
 86. After an air dash, a soft landing bends the knees and keeps the arms in the stride. They do not flare. Duration and cooldown are unchanged.
+87. Letting go of a still crouch eases the hips into the idle breath and sway. They do not pop flat. Speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
