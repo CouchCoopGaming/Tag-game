@@ -230,7 +230,9 @@ Already on this branch: A jump into a still crouch settles into the guard in the
 
 Already on this branch: An air dash into a still crouch ends in the guard. A crouch walk keeps the stride leave. Duration and cooldown are unchanged.
 
-This delta: An air dash into a crouch walk ends in the low stride. A still crouch still ends in the guard. An upright walk still ends in the stride. Duration and cooldown are unchanged.
+Already on this branch: An air dash into a crouch walk ends in the low stride. A still crouch still ends in the guard. An upright walk still ends in the stride. Duration and cooldown are unchanged.
+
+This delta: A still crouch into a ski eases the guard into the glide. It does not pop. A walk into a ski is unchanged. A sprint into a ski is unchanged. Speed is unchanged. Jet stays off.
 
 ## Stack snapshot
 
@@ -464,6 +466,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 135. Jump while crouched and still: in the air, the body should settle into the guard. The push should still read. A fast fall should still use the dart. An air dash should feel the same. The jump should not feel higher.
 136. Air dash while crouched and still: the burst should end in the guard. A crouch walk should still end in the stride. The dash should not last longer, and it should still have to recharge.
 137. Air dash into a crouch walk: the burst should end in the low stride. A still crouch should still end in the guard. An upright walk should still end in the stride. The dash should not last longer, and it should still have to recharge.
+138. Crouch still, then ski: the guard should ease into the glide. It should not pop. A walk into a ski should feel the same. A sprint into a ski should feel the same. Speed should feel the same. Jet stays off.
 
 ## Known leftovers
 
@@ -621,6 +624,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 125. A jump into a still crouch settles into the guard in the air. The push still reads. The fall dart is unchanged. An air dash is unchanged. Jump height is unchanged.
 126. An air dash into a still crouch ends in the guard. A crouch walk keeps the stride leave. Duration and cooldown are unchanged.
 127. An air dash into a crouch walk ends in the low stride. A still crouch still ends in the guard. An upright walk still ends in the stride. Duration and cooldown are unchanged.
+128. A still crouch into a ski eases the guard into the glide. It does not pop. A walk into a ski is unchanged. A sprint into a ski is unchanged. Speed is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
