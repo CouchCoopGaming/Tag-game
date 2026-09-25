@@ -117,6 +117,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - Prefab/mat dirt after Hub visuals / URP regen -> do not commit unless intentional.
 - Flat HiPoly mannequins may skip hierarchical `DummyLocomotor` binds (primitive / bindable-bone path is the readable tell).
 - Legacy contact `TryTag` radius still exists on motor; play modes use punch transfer.
+- Trail avoid starts peeling ~9 m off a foreign ribbon (HUD TRAIL! still ~5 m).
 - AI punch tell drops for ~0.26 s after a juke/leave-cone whiff so the arm drop is readable (still needs a fuller human feel pass). No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent: `music_playground_bed_loop.wav` is meta only, so PlayMusic returns. No hitstop. Hot Potato flee may air-dash once while airborne if the motor CD is ready. A juke whiff also refreshes weave so they peel off the punch line.
 - Dash HUD: jet off = one cyan CD bar and one DASH line (DASH! while bursting). Jet on keeps a dash CD line under JET.
 - Dummy MissRecover: limp whiff drops faster than HitRecover hold (short shoulder sag). AI HoldPunchTelegraph matches the flared windup elbow.

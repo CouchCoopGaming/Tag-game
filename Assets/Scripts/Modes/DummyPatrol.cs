@@ -50,11 +50,11 @@ namespace Tag.Modes
         [SerializeField] float chaseUrgencyCooldownScale = 0.62f;
         [Header("Trail Tag avoid")]
         [Tooltip("Only active when TagModeController SelectedMode is TrailTag.")]
-        [SerializeField] float trailAvoidRange = 8f;
+        [SerializeField] float trailAvoidRange = 9f;
         [Tooltip("Lateral bias on trail flee (same idea as fleeStrafeBias).")]
         [SerializeField] float trailAvoidStrafeBias = 0.45f;
         [Tooltip("How hard trail flee blends into chase/flee/wander wish (0=off).")]
-        [SerializeField] float trailAvoidWeight = 0.7f;
+        [SerializeField] float trailAvoidWeight = 0.75f;
         [Header("Least It bias")]
         [Tooltip("When It in Least It: meters of chase cost per second of target TimeAsIt (higher = stronger preference for low-time leaders).")]
         [SerializeField] float leastItChaseTimeWeight = 0.75f;

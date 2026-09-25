@@ -98,7 +98,7 @@ Feel (read, not played here): slide clamps to entry speed (downhill only softens
 | Toy_NetFrame | 0.00 | yes | 0 | Spawn Astro |
 | PGK_Dome / BalanceBeam / Posts / Decks / Rail | ~0 | yes | 0 | decks elevated author Y intentional |
 | Toy_WallPanel / VaultRail | ~0 | yes | 0 | prior pass |
-| Toy_ClimberDome | **+0.33** | no | - | unused by placer; open if dressed later |
+| Toy_ClimberDome | **+0.33** | yes (west SoftPlay annex) | -0.330 | soft-play + astro only; east bunkers skip |
 | Toy_Ramp | **+0.17** | no | **DresserSeat -0.17** | dresser FoxholeTrench; world Y after FitToParent |
 | Toy_Slide_Hi | +0.09 | no | **DresserSeat -0.09** | dresser Toy_Slide_C1 -> Toy_Slide; PGK mouths still StemSeat |
 | Toy_TireStack | +0.06 | no | **DresserSeat -0.06** | unused today; hook ready if dressed |
