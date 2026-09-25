@@ -1,6 +1,6 @@
 # Campus smoke
 
-Place pass parked — quality over density. Do not add props until Art ships a kit piece or a playtest notes a blocker. SoftS aisles, the NE hop, and the merry-spine bar stay as they are. Spines, the crash cross, and the open crawl mouths stay clear.
+Place pass parked at `77126c8` — quality over density. Do not add props until Art ships a kit piece or a playtest notes a blocker. SoftS aisles, the NE hop, and the merry-spine bar stay as they are. Spines, the crash cross, and the open crawl mouths stay clear.
 
 After pull: **CutArenaBootstrap** Rebuild, then **PgkLandmarkPlacer -> Place**. Walk on foot. Spines and the crash cross stay empty. Soft-play and astro each have one `PGK_Slide_TubeDeck_2m` on the west 2.00 deck. Army has the same chute, 1.49 m off its spiral. Knight keeps the straight slide. Yaw 90, stem 0, pivot local z=5.90. The mesh is pitched -90 X so the FBX rise (mesh Z) stands on +Y: mouth center 1.91 m, shell top 2.48 m, low mouth on the mulch. `Mega_SlideTube` and `PGK_Slide_Tube90` are not placed. Each bunker apron has one crate. No new lane clusters. Feel was not edited.
 
@@ -63,8 +63,6 @@ No solid sits on the four spines or the crash cross. Army west, knight west, and
 | --- | --- | --- |
 | Play_Cluster_SoftS step | x 13.15-15.74, z 3.46-4.34 | mushroom under the tube wall |
 | Play_Beam_SoftSlide | (18.48, 2.97) yaw 90 | beam, 0.72 m off spring and slide |
-| Play_Spring_FortW | (8.53, 7.23) | spring, soft-play west approach |
-| Play_Spring_MerryW | (2.50, 24) | spring, merry west lawn, 2.15 m off the edge |
 | Play_Wall_SoftRing | z=1.70, x 21.40-26.20 | three wall panels |
 | Play_Bars_SoftMerry | (11, 17.78) yaw 90 | one monkey, posts outside the spine |
 | Play_Wall_AstroRing | z=51, x 21.36-24.56 | two wall panels |
@@ -76,4 +74,8 @@ No solid sits on the four spines or the crash cross. Army west, knight west, and
 | Play_Step_KnightEast | (65.81, 48.75) | mushroom, knight east mouth |
 | Bunker spring | local (2.80, -2.302) | spring on army and knight only |
 | Conn climb spring | local (2.80, 1.748) | spring from the conn up to the spiral |
-| Play_Beam_SwingW | (63.45, 31.20) yaw 90 | beam between east bars and swings |
+| Play_Beam_SwingW | (63.45, 31.20) yaw 90 | beam between east bars and swings, `52c6231` |
+| Play_Spring_FortW | (8.53, 7.23) | spring, soft-play west approach, `dcfe3a8` |
+| Play_Spring_MerryW | (2.50, 24) | spring, merry west lawn, 2.15 m off the edge, `625f8b2` |
+
+Spawn and mouths: Spawn_SE's bumper is 0.57 m off the army crawl, so that east mouth stays open. Army west, knight west, and knight east each keep 0.56 m in front of the mesh. Spawn_NE's bumper stays south of z=47.1. SwingW, FortW, and MerryW did not move a spawn or a mouth. Place pass parked at `77126c8`.
