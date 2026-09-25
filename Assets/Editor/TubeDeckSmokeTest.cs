@@ -7,7 +7,7 @@ using UnityEngine;
 
 /// <summary>
 /// Batchmode: Unity -batchmode -nographics -quit -projectPath . -executeMethod TubeDeckSmokeTest.Run -logFile _tubedeck_smoke.log
-/// Opens Play, Rebuild + Place, asserts one TubeDeck on soft-play and one on astro.
+/// Opens Play, Rebuild + Place, asserts one TubeDeck on soft-play, astro, and army.
 /// Mesh local Y runs from the mulch (~0) to the shell crown (~2.48). Mouth center is 1.91.
 /// </summary>
 public static class TubeDeckSmokeTest
@@ -48,22 +48,23 @@ public static class TubeDeckSmokeTest
         }
 
         Debug.Log("[TubeDeckSmoke] TubeDeck count=" + tubes.Count);
-        if (tubes.Count != 2)
+        if (tubes.Count != 3)
         {
-            Debug.LogError("[TubeDeckSmoke] FAIL expected 2 TubeDeck (soft-play+astro), got " + tubes.Count);
+            Debug.LogError("[TubeDeckSmoke] FAIL expected 3 TubeDeck (soft-play+astro+army), got " + tubes.Count);
             fail++;
         }
-        int soft = 0, astro = 0, other = 0;
+        int soft = 0, astro = 0, army = 0, other = 0;
         foreach (var tube in tubes)
         {
             string path = PathOf(tube);
             if (path.Contains("Play_SoftPlay/")) soft++;
             else if (path.Contains("Play_AstroLoft/")) astro++;
+            else if (path.Contains("Play_ArmyBunker/")) army++;
             else other++;
         }
-        if (soft != 1 || astro != 1 || other != 0)
+        if (soft != 1 || astro != 1 || army != 1 || other != 0)
         {
-            Debug.LogError("[TubeDeckSmoke] FAIL seats soft=" + soft + " astro=" + astro + " other=" + other);
+            Debug.LogError("[TubeDeckSmoke] FAIL seats soft=" + soft + " astro=" + astro + " army=" + army + " other=" + other);
             fail++;
         }
 

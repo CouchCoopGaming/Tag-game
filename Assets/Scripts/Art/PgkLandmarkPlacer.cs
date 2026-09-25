@@ -148,9 +148,9 @@ namespace Tag.Art
         /// Connected playground districts. Ski spines (x=24/48, z=18/36, 3.2 m wide) stay open.
         /// Fort slide mouths tuck inside the 2x2 lip; exits sit on a three-tile pit.
         /// PGK_Slide_TubeDeck_2m (yaw 90, stem 0, pivot z+5.90) is one chute each on
-        /// soft-play and astro. East forts keep the straight chute. Unity's mesh AABB
-        /// is still spanY ~1.14; do not add a rotation to fake the 1.91 crown.
-        /// Mega_SlideTube and PGK_Slide_Tube90 stay unspawned.
+        /// soft-play, astro, and army. The FBX rise is mesh +Z; StandTubeDeck pitches
+        /// the mesh -90 X so root-local Y is the crown (mouth center 1.91, shell top 2.48).
+        /// Knight keeps the straight chute. Mega_SlideTube and PGK_Slide_Tube90 stay unspawned.
         /// Horizontal Toy_TunnelTube / Mega_CrawlTunnel runs are the crawl instead.
         /// </summary>
         int PlaceChasePlayground(Transform root)
@@ -221,11 +221,10 @@ namespace Tag.Art
             var parent = MakeGroup(root, name, origin, yaw);
             var pieces = new List<(string id, Vector3 p, float y)>();
             // Inner pit wing would sit on the Conn ramp. Outer wing, plus a second outer column.
-            // One tube on each west fort. Same pivot as the seated pair: yaw 90, stem 0, z+5.90.
-            // East is not a second seat. In the FBX the rise is mesh Z (0.03..2.48) and Y is
-            // only ±0.57; Unity's placed AABB matches that (spanY ~1.14), so the crown is not
-            // on the 2.00 deck. No extra rotation. Knight and army keep the straight chute.
-            bool deckTube = name == "Play_SoftPlay" || name == "Play_AstroLoft";
+            // Yaw 90, stem 0, pivot z+5.90. Soft-play and astro are the west pair.
+            // Army is the one east chute: upright sleeve is 1.49 m off the spiral climber.
+            // Knight keeps the straight chute.
+            bool deckTube = name == "Play_SoftPlay" || name == "Play_AstroLoft" || name == "Play_ArmyBunker";
             AddDeckTower(pieces, 0f, 0f, true, OuterPitSide(origin.x, yaw), deckTube);
             // Stoop on the 0.40 grid, beside the ground stair.
             pieces.Add(("PGK_Deck_1x1_LOD0", new Vector3(1.5f, Deck040, -2.5f), 0f));
@@ -333,7 +332,7 @@ namespace Tag.Art
         /// Slide mouth tucks under the 2.00 deck; exit is on mulch (authored SlideGroundMouthY).
         /// </summary>
         /// <param name="pitSide">-1 or +1 = that local-X wing only. 2 = both wings (rings).</param>
-        /// <param name="deckTube">Soft-play and astro: PGK_Slide_TubeDeck_2m instead of the straight chute.</param>
+        /// <param name="deckTube">Soft-play, astro, and army: PGK_Slide_TubeDeck_2m instead of the straight chute.</param>
         static void AddDeckTower(List<(string id, Vector3 p, float y)> pieces, float cx, float cz, bool slidePositiveZ, int pitSide, bool deckTube = false)
         {
             pieces.Add(("PGK_Post_Square_3m_LOD0", new Vector3(cx - 1f, 0f, cz - 1f), 0f));
@@ -915,6 +914,8 @@ namespace Tag.Art
             go.transform.localPosition = localPos;
             go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
             go.transform.localScale = Vector3.one * scale;
+            if (name.StartsWith("PGK_Slide_TubeDeck"))
+                StandTubeDeck(go);
             StripImportCameras(go);
             SnapFeetToLocalY(go, authoredY);
             // Strip import/prefab colliders so Ensure can rebuild same-frame (ParkPropDresser path).
@@ -922,6 +923,74 @@ namespace Tag.Art
                 Object.DestroyImmediate(col);
             StaticPropColliders.EnsureStaticColliders(go);
             return go;
+        }
+
+        /// <summary>
+        /// FBX rise is mesh +Z (0.028..2.482) and the sleeve is Y (±0.572). SpawnFbx's yaw
+        /// replaces the node -90 X, which left root-local spanY at 1.14. Pitch the mesh
+        /// -90 X so +Z lands on +Y. High-mouth center is then y=1.91; shell top is 2.48.
+        /// Skips the pitch when spanY is already the rise.
+        /// </summary>
+        static void StandTubeDeck(GameObject root)
+        {
+            if (root == null || LocalSpanY(root) >= 2f) return;
+            var pitch = Quaternion.Euler(-90f, 0f, 0f);
+            var filters = root.GetComponentsInChildren<MeshFilter>(true);
+            for (int i = 0; i < filters.Length; i++)
+            {
+                var mf = filters[i];
+                if (mf == null) continue;
+                if (mf.transform == root.transform)
+                    LiftRootMesh(root, mf, pitch);
+                else
+                    mf.transform.localRotation = pitch * mf.transform.localRotation;
+            }
+        }
+
+        static void LiftRootMesh(GameObject root, MeshFilter mf, Quaternion pitch)
+        {
+            var sleeve = new GameObject("Sleeve");
+            sleeve.transform.SetParent(root.transform, false);
+            sleeve.transform.localRotation = pitch;
+            var copy = sleeve.AddComponent<MeshFilter>();
+            copy.sharedMesh = mf.sharedMesh;
+            var src = root.GetComponent<MeshRenderer>();
+            if (src != null)
+            {
+                var dst = sleeve.AddComponent<MeshRenderer>();
+                dst.sharedMaterials = src.sharedMaterials;
+                Object.DestroyImmediate(src);
+            }
+            Object.DestroyImmediate(mf);
+        }
+
+        static float LocalSpanY(GameObject root)
+        {
+            bool any = false;
+            float minY = 0f, maxY = 0f;
+            var filters = root.GetComponentsInChildren<MeshFilter>(true);
+            for (int i = 0; i < filters.Length; i++)
+            {
+                var mf = filters[i];
+                if (mf == null || mf.sharedMesh == null) continue;
+                var b = mf.sharedMesh.bounds;
+                var c = b.center;
+                var e = b.extents;
+                for (int x = -1; x <= 1; x += 2)
+                for (int y = -1; y <= 1; y += 2)
+                for (int z = -1; z <= 1; z += 2)
+                {
+                    var local = root.transform.InverseTransformPoint(
+                        mf.transform.TransformPoint(c + new Vector3(e.x * x, e.y * y, e.z * z)));
+                    if (!any) { minY = maxY = local.y; any = true; }
+                    else
+                    {
+                        if (local.y < minY) minY = local.y;
+                        if (local.y > maxY) maxY = local.y;
+                    }
+                }
+            }
+            return any ? maxY - minY : 0f;
         }
 
         /// <summary>
