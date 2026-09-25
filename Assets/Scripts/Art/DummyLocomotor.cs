@@ -49,6 +49,7 @@ namespace Tag.Art
         bool _jumpFromTag;
         float _tagSettle;
         bool _tagFromClaim;
+        bool _jumpFromClaim;
         float _prevVy;
         bool _crouchWalkArmed;
         float _airArmIn = 1f;
@@ -474,6 +475,14 @@ namespace Tag.Art
                     _tagSettle = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.28f, 1f, tagProg));
                     _tagFromClaim = _itClaim > 0.04f;
                 }
+                // The claim eases into this push. A crouch claim keeps its jump.
+                // A tag keeps its jump. Jump height is unchanged.
+                _jumpFromClaim = _itClaim > 0.2f
+                    && phase != PunchPhase.HitRecover
+                    && !_crouchFromStand && !_crouchWalkArmed
+                    && !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide
+                    && !_jumpFromDash && !_jumpFromWall && !_jumpFromClimb && !_jumpFromAirCrouch
+                    && !_jumpFromSoftLand && !_jumpFromHardLand && !_jumpFromMiss && !_jumpFromTag;
             }
             else if (!grounded && _motor != null && _motor.Velocity.y > 1.5f && _prevVy <= 1.5f
                 && (_airDashArms || _motor.IsAirDashing)
@@ -532,6 +541,7 @@ namespace Tag.Art
                 _jumpFromHardLand = false;
                 _jumpFromMiss = false;
                 _jumpFromTag = false;
+                _jumpFromClaim = false;
             }
             bool dashingAir = _motor != null && _motor.IsAirDashing;
             if (dashingAir && !_airDashPoseWas && _diveFromJump && !_jumpFromDash)
@@ -4231,6 +4241,70 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(Quaternion.Slerp(fromThighR, pushThighR, intoPush), airThighR, leave);
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(fromKneeL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(fromKneeR, pushKneeR, intoPush), airKneeR, leave);
+            }
+            if (_jumpFromClaim && _pushOff > 0.02f && !wallRun && !climb)
+            {
+                // The claim eases into the push, then the air pose. A crouch claim keeps its jump.
+                // A tag keeps its jump. Jump height is unchanged.
+                float t = 1f - Mathf.Clamp01(_pushOff);
+                float intoPush = Mathf.Clamp01(t * 2f);
+                float leave = Mathf.Clamp01(t * 2f - 1f);
+                Quaternion claimL = _uaL0 * Quaternion.Euler(-128f, 8f, armZ);
+                Quaternion claimR = _uaR0 * Quaternion.Euler(-36f, -48f, -armZ);
+                Quaternion pushL = _uaL0 * Quaternion.Euler(-36f, 14f, armZ);
+                Quaternion pushR = _uaR0 * Quaternion.Euler(-36f, -14f, -armZ);
+                Quaternion airL = _uaL0 * Quaternion.Euler(-52f, 22f, armZ);
+                Quaternion airR = _uaR0 * Quaternion.Euler(-52f, -22f, -armZ);
+                Quaternion claimElL = _laL0 * Quaternion.Euler(-10f, 0f, 0f);
+                Quaternion claimElR = _laR0 * Quaternion.Euler(-12f, 0f, 0f);
+                Quaternion pushEl = _laL0 * Quaternion.Euler(-14f, 0f, 0f);
+                Quaternion airEl = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(Quaternion.Slerp(claimL, pushL, intoPush), airL, leave);
+                _uaRT = Quaternion.Slerp(Quaternion.Slerp(claimR, pushR, intoPush), airR, leave);
+                _laLT = Quaternion.Slerp(Quaternion.Slerp(claimElL, pushEl, intoPush), airEl, leave);
+                _laRT = Quaternion.Slerp(Quaternion.Slerp(claimElR, pushEl, intoPush), airEl, leave);
+                Quaternion claimSp = _spine0 * Quaternion.Euler(-22f, -16f, 0f);
+                Quaternion pushSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion airSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion claimHp = _hips0 * Quaternion.Euler(4f, 0f, 0f);
+                Quaternion pushHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
+                Quaternion airHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
+                Quaternion claimHd = _head0 * Quaternion.Euler(0f, 0f, 0f);
+                Quaternion pushHd = _head0 * Quaternion.Euler(0f, 0f, 0f);
+                Quaternion airHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                _spineT = Quaternion.Slerp(Quaternion.Slerp(claimSp, pushSp, intoPush), airSp, leave);
+                _hipsT = Quaternion.Slerp(Quaternion.Slerp(claimHp, pushHp, intoPush), airHp, leave);
+                _headT = Quaternion.Slerp(Quaternion.Slerp(claimHd, pushHd, intoPush), airHd, leave);
+                Quaternion claimThighL = _ulL0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion claimThighR = _ulR0 * Quaternion.Euler(52f, 0f, 0f);
+                Quaternion claimKneeL = _llL0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion claimKneeR = _llR0 * Quaternion.Euler(-64f, 0f, 0f);
+                Quaternion pushThighL;
+                Quaternion pushThighR;
+                Quaternion pushKneeL;
+                Quaternion pushKneeR;
+                if (_pushLeft)
+                {
+                    pushThighL = _ulL0 * Quaternion.Euler(-8f, 0f, 0f);
+                    pushKneeL = _llL0 * Quaternion.Euler(-6f, 0f, 0f);
+                    pushThighR = _ulR0 * Quaternion.Euler(48f, 0f, 0f);
+                    pushKneeR = _llR0 * Quaternion.Euler(-62f, 0f, 0f);
+                }
+                else
+                {
+                    pushThighR = _ulR0 * Quaternion.Euler(-8f, 0f, 0f);
+                    pushKneeR = _llR0 * Quaternion.Euler(-6f, 0f, 0f);
+                    pushThighL = _ulL0 * Quaternion.Euler(48f, 0f, 0f);
+                    pushKneeL = _llL0 * Quaternion.Euler(-62f, 0f, 0f);
+                }
+                Quaternion airThighL = _ulL0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion airThighR = _ulR0 * Quaternion.Euler(20f, 0f, 0f);
+                Quaternion airKneeL = _llL0 * Quaternion.Euler(-28f, 0f, 0f);
+                Quaternion airKneeR = _llR0 * Quaternion.Euler(-26f, 0f, 0f);
+                _ulLT = Quaternion.Slerp(Quaternion.Slerp(claimThighL, pushThighL, intoPush), airThighL, leave);
+                _ulRT = Quaternion.Slerp(Quaternion.Slerp(claimThighR, pushThighR, intoPush), airThighR, leave);
+                _llLT = Quaternion.Slerp(Quaternion.Slerp(claimKneeL, pushKneeL, intoPush), airKneeL, leave);
+                _llRT = Quaternion.Slerp(Quaternion.Slerp(claimKneeR, pushKneeR, intoPush), airKneeR, leave);
             }
 
             float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f || claimAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
