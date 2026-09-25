@@ -199,7 +199,7 @@ namespace Tag.Art
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
             // Spine / hips lean by state - jet reads clearly in TP
-            float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : sliding ? 62f : crouch ? 28f : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
+            float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : sliding ? 62f : crouch ? 10f : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : 0f;
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
                 leanX = Mathf.Lerp(leanX, 26f, _skiBlend);
@@ -221,10 +221,10 @@ namespace Tag.Art
             }
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
             float mantleAmt = mantle && _motor != null ? _motor.MantleProgress : 0f;
-            _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : sliding ? 50f : crouch ? 14f : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
+            _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : sliding ? 50f : crouch ? 22f : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f, 0f, 0f), _skiBlend);
-            _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? -12f : crouch ? 6f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
+            _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? -12f : crouch ? -6f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
             // Arms - slight outward A-pose only (large +Z was V-ing hands into the butt)
             float armZ = Mathf.Lerp(4f, 8f, runAmt);
@@ -432,11 +432,12 @@ namespace Tag.Art
             }
             else if (crouch)
             {
-                // Low guard - hands forward of thighs
-                _uaLT = _uaL0 * Quaternion.Euler(-18f, -4f, armZ + 4f);
-                _uaRT = _uaR0 * Quaternion.Euler(-18f, 4f, -armZ - 4f);
-                _laLT = _laL0 * Quaternion.Euler(-28f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-28f, 0f, 0f);
+                // Guard, not the slide wedge. Forearms fold up in front of the chest.
+                // Yaw stays narrower than the slide's long line, and it points out so the hands clear the torso.
+                _uaLT = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                _uaRT = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                _laLT = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
             }
             else if (air)
             {
@@ -539,10 +540,11 @@ namespace Tag.Art
             }
             else if (crouch)
             {
-                _ulLT = _ulL0 * Quaternion.Euler(62f, 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(58f, 0f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(-52f, 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(-48f, 0f, 0f);
+                // Both knees down. A trail leg would read as the slide.
+                _ulLT = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
+                _llLT = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
             }
             else if (jet)
             {

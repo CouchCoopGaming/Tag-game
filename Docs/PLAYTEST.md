@@ -64,7 +64,9 @@ Already on this branch: At the top of a jump the arms hang out to the sides befo
 
 Already on this branch: Skiing stays a longer stride than the run, but the knee still bends and the arms keep a short swing. Letting go eases back into the sprint instead of popping. Ski speed is unchanged. Jet stays off.
 
-This delta: A slide stays a flat wedge with the trail leg straight. The arms sit out from the chest instead of stacking on it, and the head stays up off the knees. A crouch stays a low guard with bent elbows. Slide speed is unchanged.
+Already on this branch: A slide stays a flat wedge with the trail leg straight. The arms sit out from the chest instead of stacking on it, and the head stays up off the knees. Slide speed is unchanged.
+
+This delta: A held crouch is a low guard: chest up, both knees bent, elbows folded in front. A slide stays the flat wedge with straight arms and one trail leg. Holding crouch still slides only when you already have speed. Slide speed is unchanged.
 
 ## Stack snapshot
 
@@ -215,6 +217,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 52. Jump: the arms should tuck on the way up, hang out to the sides at the top, then trail back on the way down. The jump should not feel higher. Hands stay clear of the hips.
 53. Hold ski, then let go into a sprint: the glide should still show a knee and a short arm swing, not locked straight legs. The change into the run should ease. The run knee should still lift higher than the glide. Jet stays off.
 54. Slide, then crouch: the slide should show a flat back, head up, and both arms out in a long line clear of the chest. A crouch should stay a low guard with bent elbows. The slide should not speed up.
+55. From a standstill, hold crouch: both knees should bend and the elbows should fold in front of the chest. The back should stay up. Sprint and keep holding crouch: that becomes the flat slide, straight arms and one leg back, and it should not speed up. When the speed dies while crouch is still held, the guard should return.
 
 ## Known leftovers
 
@@ -289,6 +292,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 42. Jump apex hangs the arms out before the fall trail. The leave is still a tuck. Jump height is unchanged.
 43. Ski glide keeps a knee and a short arm swing. The run knee still lifts higher. The blend eases. Ski speed is unchanged. Jet stays off.
 44. Slide arms sit out from the chest on the flat wedge, and the head stays up. A crouch stays a bent-elbow guard. Slide speed is unchanged.
+45. Crouch is a low guard with both knees bent and the elbows folded in front. Slide stays the flat wedge with straight arms and a trail leg. Holding crouch still slides only with speed. Slide speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
