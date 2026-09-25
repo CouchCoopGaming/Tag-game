@@ -27,6 +27,7 @@ namespace Tag.Modes
     {
         public static TagModeController Instance { get; private set; }
         public const string PrefsModeKey = "Tag.SelectedMode";
+        const string CountdownHintKey = "Tag.CountdownHintSeen";
 
         [SerializeField] TagModeId selectedMode = TagModeId.LeastIt;
         [SerializeField] bool autoFindPlayers = true;
@@ -96,6 +97,8 @@ namespace Tag.Modes
             _ctx.Eliminate = p => EliminatePlayer(p, "mode");
             _ctx.EnterPostRound = EnterPostRound;
             _ctx.MatchTuning = matchTuning;
+            // One controls blurb on the first countdown ever. Rematch and later Boot visits stay short.
+            _firstCountdownHint = PlayerPrefs.GetInt(CountdownHintKey, 0) == 0;
         }
 
         void OnDestroy()
@@ -235,6 +238,11 @@ namespace Tag.Modes
 
         void BeginPlaying()
         {
+            if (_firstCountdownHint)
+            {
+                PlayerPrefs.SetInt(CountdownHintKey, 1);
+                PlayerPrefs.Save();
+            }
             _firstCountdownHint = false;
             _phase = MatchPhase.Playing;
             _ctx.RoundRunning = true;
@@ -402,6 +410,8 @@ namespace Tag.Modes
             Cursor.visible = true;
             TagSfx.UiClick();
             AudioCuePlayer.Ensure()?.StopMusic();
+            PlayerPrefs.SetInt("Tag.BootSeen", 1);
+            PlayerPrefs.Save();
             SceneManager.LoadScene("Boot");
         }
 

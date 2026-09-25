@@ -6,11 +6,11 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/playground-campus-zones-afc4` (integration tip). Includes mute-from-play + readable dash bar (`f45ace6`). CloseMenuPanels, campus smoke, KIT_REQUEST. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/features-focus-input-hud-238c` on campus tip `22f8a40`. Mute-from-play, the readable dash bar, and CloseMenuPanels are already on that tip. Campus smoke, KIT_REQUEST. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
-Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing when the cursor unlocks, HUD mute chip (MUTED and MUSIC OFF together), pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6 m (avoid weight 0.80), It hat beacon hidden on your own chase cam, It-hunt compass pulse from 13 m, warm OUT waiting line. No PgkLandmarkPlacer density adds. No MasterVolume type.
+Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing when the cursor unlocks, HUD mute chip (MUTED and MUSIC OFF together), M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.2 m (avoid ~9.2 m, weight 0.80), It hat beacon (hidden on your camera, heats with the fuse), It-hunt compass pulse from 13 m, warm OUT waiting line. No PgkLandmarkPlacer density adds. No MasterVolume type. Deck tube mesh is in the repo and is not placed.
 
-This delta: M and N mute during play, Boot, results, and subpanels (one listener, so the pause card does not toggle twice). The dash cooldown bar uses a dark track and a cyan fill (mint when ready or bursting). The It beacon heats toward white with the Hot Potato fuse, same as the hat tip.
+This delta: The first-run Boot line names the real punch key (LMB or E by default, not LMB/F). It goes away once a round starts or you return from results, including Direct Play back to Boot. The long countdown hint shows on the first countdown only. Rematch and later visits from Boot use the short "orange hat" line.
 
 ## Stack snapshot
 
@@ -117,6 +117,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 20. Who-plays and mode select no longer wrap. Up on the first row and Down on the last row stay put. Keys 1-4 still jump to that row. A click on Boot or Pause moves the highlight and uses that row only. Enter uses only the highlighted row.
 21. Pause, open Controls (or Look or Audio), then F1. The panel should be gone and the countdown should run. Esc pauses. After a round, that same panel should not cover Rematch / Menu, and Q should show Boot, not the panel. Direct Play: if a round ends while the local pause card is up, the results card should still take Left/Right and Enter.
 22. During play, M mutes all and N mutes music. The HUD chip should show. Pressing M on the pause card or the audio card still toggles once, not twice. After a dash, the bar is a dark track with a cyan fill that grows back; ready or the burst itself is mint. In Hot Potato the It beacon warms toward white as the fuse drops. Your own camera still hides that beacon.
+23. First Boot visit: the line names the punch key (LMB or E by default) and M/N. It should not say LMB/F. Play a round, then Q back to Boot: that first-run line should be gone, and Play should be highlighted. The first countdown lists the keys. Rematch, and the next countdown, should say to punch the dummy with the orange hat. Leave to Boot and play again: still the short line.
 
 ## Known leftovers
 
@@ -159,6 +160,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 10. Direct Play pause matches Boot, including Controls / Look / Audio highlight. Esc on a subpanel stays paused. Q back to Boot shows the cursor.
 11. Open Controls from pause, then F1: the panel closes and the round runs. Results and Boot are not covered by that panel. Direct Play results still accept keys if the local pause card was up.
 12. M during play mutes once and shows the chip. N mutes music. The dash bar fill is visible against a dark track. Hot Potato heats the It beacon with the fuse.
+13. First-run Boot copy names the punch key and clears after a round, including Direct Play back to Boot. The long countdown hint shows once. Rematch uses the short orange-hat line.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

@@ -80,6 +80,7 @@ namespace Tag.Core
             else
             {
                 State = GameFlowState.Play;
+                MarkBootSeen();
                 EnsurePlayHelpers();
                 LookSensitivity.Load();
                 LookSensitivity.Apply();
@@ -165,6 +166,7 @@ namespace Tag.Core
 
         public void GoToPlay()
         {
+            MarkBootSeen();
             CloseMenuPanels();
             State = GameFlowState.Play;
             LookSensitivity.Load();
@@ -232,6 +234,7 @@ namespace Tag.Core
 
         public void QuitToMenu()
         {
+            MarkBootSeen();
             Time.timeScale = 1f;
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
@@ -467,7 +470,7 @@ namespace Tag.Core
             {
                 GUI.Box(new Rect(cx - 210, cy - 170, 420, 360), "TAG - party slice");
                 string hello = _firstBoot
-                    ? "First run: you + 1 bot, Least It. LMB/F punch passes It.\nEsc pauses. Audio / M mute. R rematch after a round."
+                    ? "First run: you + 1 bot, Least It. " + ControlBinds.PunchName + " or E tags.\nEsc pauses. M mute. N music. R rematches."
                     : "Play is you and one bot. Couch is local humans.";
                 GUI.Label(new Rect(cx - 190, cy - 128, 380, 44), hello);
                 if (FocusButton(new Rect(cx - 90, cy - 76, 180, 32), 0, ref _bootFocus, "Play Tag (Least It)"))
