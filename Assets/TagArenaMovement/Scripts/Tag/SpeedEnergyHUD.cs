@@ -53,7 +53,7 @@ namespace TagArena.Movement
         float _sdFlashUntil;
 
         // Brief center flash when F1/F2/F3 (or menu) changes SelectedMode.
-        const float ModeFlashSec = 0.85f;
+        const float ModeFlashSec = 1.0f; // match It handoff beat so F1-F4 mode name reads
         bool _modeFlashPrimed;
         TagModeId _prevMode;
         float _modeFlashUntil;
