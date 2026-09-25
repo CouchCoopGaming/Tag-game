@@ -459,6 +459,10 @@ namespace Tag.Art
         Quaternion _dashClimbSp, _dashClimbHp, _dashClimbHd;
         bool _wallFromDash;
         float _wallFromDashIn;
+        bool _dashWallSnap;
+        Quaternion _dashWallUaL, _dashWallUaR, _dashWallLaL, _dashWallLaR;
+        Quaternion _dashWallUlL, _dashWallUlR, _dashWallLlL, _dashWallLlR;
+        Quaternion _dashWallSp, _dashWallHp, _dashWallHd;
         bool _dashFromMiss;
         float _dashFromMissIn;
         Quaternion _missUaL, _missUaR, _missLaL, _missLaR;
@@ -3040,7 +3044,7 @@ namespace Tag.Art
             {
                 // The whiff eases into the burst. The burst still holds.
                 // A punch miss into a jump keeps its push. A crouch miss keeps its pose.
-                // An air dash into a wall or a climb keeps its ease.
+                // An air dash into a wall or a climb has its own ease.
                 // Duration and cooldown are unchanged.
                 _dashFromMiss = true;
                 _dashFromMissIn = 0f;
@@ -3315,6 +3319,7 @@ namespace Tag.Art
             {
                 // The burst eases into the grab. A climb into a dash keeps its ease.
                 // A wall exit into a dash keeps its ease. An air dash into a slide has its own ease.
+                // An air dash into a wall run has its own ease.
                 // Exit time is unchanged. Duration and cooldown are unchanged.
                 if (!_climbFromDash && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
                 {
@@ -3353,17 +3358,38 @@ namespace Tag.Art
                 // The burst eases into the attach. An air dash into a climb has its own ease.
                 // A climb into a dash keeps its ease. A wall exit into a dash keeps its ease.
                 // Exit time is unchanged. Duration and cooldown are unchanged.
+                if (!_wallFromDash && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+                {
+                    _dashWallSnap = true;
+                    _dashWallUaL = _upperArmL.localRotation;
+                    _dashWallUaR = _upperArmR.localRotation;
+                    _dashWallLaL = _lowerArmL.localRotation;
+                    _dashWallLaR = _lowerArmR.localRotation;
+                    _dashWallUlL = _upperLegL.localRotation;
+                    _dashWallUlR = _upperLegR.localRotation;
+                    _dashWallLlL = _lowerLegL.localRotation;
+                    _dashWallLlR = _lowerLegR.localRotation;
+                    _dashWallSp = _spine.localRotation;
+                    _dashWallHp = _hips.localRotation;
+                    _dashWallHd = _head.localRotation;
+                }
                 _wallFromDash = true;
                 _wallFromDashIn = 0f;
             }
             if (_wallFromDash && !dashingAir && wallRun && !jet && !climb)
             {
-                _wallFromDashIn = Mathf.MoveTowards(_wallFromDashIn, 1f, dt / 0.16f);
+                _wallFromDashIn = Mathf.MoveTowards(_wallFromDashIn, 1f, dt / 0.04f);
                 if (_wallFromDashIn >= 0.98f && !dashTell)
+                {
                     _wallFromDash = false;
+                    _dashWallSnap = false;
+                }
             }
             else
+            {
                 _wallFromDash = false;
+                _dashWallSnap = false;
+            }
             bool burstPunch = punching && phase == PunchPhase.Windup;
             bool jumpPunch = (!grounded && _diveFromJump) || (_landedFromJump && _landSquash > 0.08f);
             bool windupOnTail = burstPunch && !_punchWindWas && !dashingAir && _airDashArms && _dashPulse > 0.04f;
@@ -9416,7 +9442,7 @@ namespace Tag.Art
             {
                 // The whiff eases into the burst, then the burst holds.
                 // A punch miss into a jump keeps its push. A crouch miss keeps its pose.
-                // An air dash into a wall or a climb keeps its ease.
+                // An air dash into a wall or a climb has its own ease.
                 // Duration and cooldown are unchanged.
                 float intoBurst = _dashFromMissIn;
                 _uaLT = Quaternion.Slerp(_missUaL, _uaLT, intoBurst);
@@ -9431,7 +9457,7 @@ namespace Tag.Art
                 _hipsT = Quaternion.Slerp(_missHp, _hipsT, intoBurst);
                 _headT = Quaternion.Slerp(_missHd, _headT, intoBurst);
             }
-            if (_wallFromDash && !airDashing && wallRun && !climb && !punching)
+            if (_wallFromDash && !airDashing && wallRun && !climb && !punching && _wallFromDashIn < 0.98f)
             {
                 // The burst eases into the attach, then the attach holds.
                 // An air dash into a climb has its own ease. A climb into a dash keeps its ease.
@@ -9486,23 +9512,43 @@ namespace Tag.Art
                     attachKneeR = _llR0 * Quaternion.Euler(-8f, 0f, 0f);
                     attachKneeL = _llL0 * Quaternion.Euler(outerKnee, 0f, 0f);
                 }
-                _uaLT = Quaternion.Slerp(burstL, attachL, intoAttach);
-                _uaRT = Quaternion.Slerp(burstR, attachR, intoAttach);
-                _laLT = Quaternion.Slerp(burstElL, attachElL, intoAttach);
-                _laRT = Quaternion.Slerp(burstElR, attachElR, intoAttach);
-                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(58f, 0f, 0f), _spine0 * Quaternion.Euler(22f, 0f, wallLean), intoAttach);
-                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(0f, 0f, -wallLean * 0.55f), intoAttach);
-                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(0f, 0f, 0f), _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), intoAttach);
-                _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(72f, 0f, 0f), attachThighL, intoAttach);
-                _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), attachThighR, intoAttach);
-                _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), attachKneeL, intoAttach);
-                _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), attachKneeR, intoAttach);
+                Quaternion attachSp = _spine0 * Quaternion.Euler(22f, 0f, wallLean);
+                Quaternion attachHp = _hips0 * Quaternion.Euler(0f, 0f, -wallLean * 0.55f);
+                Quaternion attachHd = _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f);
+                if (_dashWallSnap)
+                {
+                    _uaLT = Quaternion.Slerp(_dashWallUaL, attachL, intoAttach);
+                    _uaRT = Quaternion.Slerp(_dashWallUaR, attachR, intoAttach);
+                    _laLT = Quaternion.Slerp(_dashWallLaL, attachElL, intoAttach);
+                    _laRT = Quaternion.Slerp(_dashWallLaR, attachElR, intoAttach);
+                    _spineT = Quaternion.Slerp(_dashWallSp, attachSp, intoAttach);
+                    _hipsT = Quaternion.Slerp(_dashWallHp, attachHp, intoAttach);
+                    _headT = Quaternion.Slerp(_dashWallHd, attachHd, intoAttach);
+                    _ulLT = Quaternion.Slerp(_dashWallUlL, attachThighL, intoAttach);
+                    _ulRT = Quaternion.Slerp(_dashWallUlR, attachThighR, intoAttach);
+                    _llLT = Quaternion.Slerp(_dashWallLlL, attachKneeL, intoAttach);
+                    _llRT = Quaternion.Slerp(_dashWallLlR, attachKneeR, intoAttach);
+                }
+                else
+                {
+                    _uaLT = Quaternion.Slerp(burstL, attachL, intoAttach);
+                    _uaRT = Quaternion.Slerp(burstR, attachR, intoAttach);
+                    _laLT = Quaternion.Slerp(burstElL, attachElL, intoAttach);
+                    _laRT = Quaternion.Slerp(burstElR, attachElR, intoAttach);
+                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(58f, 0f, 0f), attachSp, intoAttach);
+                    _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), attachHp, intoAttach);
+                    _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(0f, 0f, 0f), attachHd, intoAttach);
+                    _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(72f, 0f, 0f), attachThighL, intoAttach);
+                    _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), attachThighR, intoAttach);
+                    _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), attachKneeL, intoAttach);
+                    _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), attachKneeR, intoAttach);
+                }
             }
             if (_climbFromDash && !airDashing && climb && !wallRun && !punching && _climbFromDashIn < 0.98f)
             {
                 // The burst eases into the grab, then the grab holds.
-                // An air dash into a slide has its own ease. A climb into a dash keeps its ease.
-                // A wall exit into a dash keeps its ease.
+                // An air dash into a slide has its own ease. An air dash into a wall run has its own ease.
+                // A climb into a dash keeps its ease. A wall exit into a dash keeps its ease.
                 // Exit time is unchanged. Duration and cooldown are unchanged.
                 float intoGrab = _climbFromDashIn;
                 float climbLive = Mathf.Sin(_surfPhase);
