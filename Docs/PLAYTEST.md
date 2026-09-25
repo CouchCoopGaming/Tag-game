@@ -140,6 +140,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 4. Results: 0.25s arm; R rematch; Q/Esc menu; Left/Right focus; Enter activates; one-shot.
 5. Trail Tag SD: HUD says SD; center flash on rising edge; rematch re-arms flash.
    Center SD flash holds ~1.0 s (same beat as It handoff / F-key mode flash).
+   It handoff flash re-arms after rematch so spawn-as-It and the first tag still read.
    Trail OUT! / TRAIL HIT flash also holds ~1.0 s.
    Near-miss soft edge + TRAIL! starts ~5.5 m from a foreign ribbon (readability only; hit rules unchanged).
 6. Play path, in order: SW exit → SoftS south apron (beam, mushrooms, spring, two hops) → west climber dome → tubes and the ground slide → merry-north (mushrooms, spring, two hops) → NW arch → NW cluster (mushrooms, spring, two hops) → hopscotch NW → SE cluster (mushrooms, spring, two hops) → army/knight spiral (top 2.40; west forts do not have it) → open kickball → NE cluster (net, mushrooms, spring, two hops) → hopscotch NE → crash cross. Swing tiles still clear the kickball fence. Three arches; piers still at least 1.3 m off courts and bars. Feel was not edited.

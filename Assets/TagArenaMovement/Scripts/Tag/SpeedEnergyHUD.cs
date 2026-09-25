@@ -196,6 +196,14 @@ namespace TagArena.Movement
         /// </summary>
         void TickItHandoffFlash()
         {
+            var modes = TagModeController.Instance;
+            // Rematch / menu leave Playing: clear edge so spawn-as-It and first handoff flash again.
+            if (modes == null || modes.Phase != MatchPhase.Playing)
+            {
+                _prevLocalIsIt = false;
+                _itFlashPrimed = true;
+                return;
+            }
             bool localIsIt = ResolveLocalIsIt();
             if (!_itFlashPrimed)
             {
@@ -223,7 +231,7 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// Cave-man center flash ~0.5s: YOU'RE IT / YOU'RE FREE (TAG! handoff beat).
+        /// Center flash ~1.0s: YOU'RE IT / YOU'RE FREE (TAG! handoff beat). Rematch re-arms.
         /// </summary>
         void DrawItHandoffFlash()
         {
