@@ -92,13 +92,13 @@ namespace TagArena.Movement
         /// <summary>Hard time cap — after this you slip down (no Spiderman stick).</summary>
         public float climbMaxTime = 1.00f;
         /// <summary>Climb up-speed begins decaying after this many seconds on the wall.</summary>
-        public float climbDecayStart = 0.16f;
-        // Rises ~3 m then vertical speed reverses (slip) before climbMaxHeight. Was 7.8 / 0.40, which hit the height cap while still going up.
+        public float climbDecayStart = 0.12f;
+        // Rises ~3 m then vertical speed reverses (slip) before climbMaxHeight. Decay starts earlier so the peel reads before the height cap.
         public float climbSpeed = 6.0f;
         public float climbAttachAngle = 55f;
         public float climbStickForce = 22f;
         public float climbSideSpeed = 3.7f;
-        public float climbSlipSpeed = 3.4f;
+        public float climbSlipSpeed = 3.6f;
         // Slightly taller / lower lips for mega-park rails + decks (was 2.35 / 0.55).
         public float mantleMaxLedgeHeight = 2.55f;
         public float mantleMinLedgeHeight = 0.45f;

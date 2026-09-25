@@ -78,12 +78,12 @@ MonoBehaviour:
   gravityWhileJetting: 0.15
   climbMaxHeight: 3.4
   climbMaxTime: 1
-  climbDecayStart: 0.16
+  climbDecayStart: 0.12
   climbSpeed: 6
   climbAttachAngle: 55
   climbStickForce: 22
   climbSideSpeed: 3.7
-  climbSlipSpeed: 3.4
+  climbSlipSpeed: 3.6
   mantleMaxLedgeHeight: 2.55
   mantleMinLedgeHeight: 0.45
   mantleDuration: 0.4
