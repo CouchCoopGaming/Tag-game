@@ -10,7 +10,7 @@ Branch: `cursor/features-focus-input-hud-238c` on campus tip `16e0d32`. Mega tub
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing when the cursor unlocks, HUD mute chip (MUTED and MUSIC OFF together when both are on), pause keys 1-5, AudioMaster (M mute, N music), Controls/Look/Audio subpanel Up/Down highlight matching Boot (PR #20). No PgkLandmarkPlacer density adds. No MasterVolume type.
 
-This delta: Controls / Look / Audio close when play, results, or Boot starts (F1–F4, rematch, Q). They no longer stay drawn over the round or hide the Boot card. Direct Play drops a local pause overlay when the results card appears.
+This delta: Controls / Look / Audio close when play, results, or Boot starts (F1-F4, rematch, Q). They no longer stay drawn over the round or hide the Boot card. Direct Play drops a local pause overlay when the results card appears.
 
 ## Stack snapshot
 
@@ -137,7 +137,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 ## Results
 - Rematch / Menu: results ignore activate keys for ~0.25s and one-shot R/Q/Esc/click (Esc mirrors menu) so the round-end key cannot rematch or quit early. Left/Right can move the highlight during that arm and still stop at the ends. Enter waits until the arm ends. A click during the arm only moves the highlight. Punch ForceEnd on results and pause.
 - Direct Play pause matches Boot: Left/Right arms Resume, Controls, Look, Audio, Quit. Enter or Space uses that row. Esc on the main card resumes. Esc inside Controls, Look, or Audio only closes the panel. Those three panels use the same Up/Down highlight as Boot. Q to Boot unlocks the cursor and stops the music bed.
-- Controls / Look / Audio close on play, results, and Boot (F1–F4, rematch, Q). A panel left open on the pause card does not stay drawn over the round or the Boot menu. Direct Play clears its pause overlay when results start so Left/Right still move Rematch / Menu.
+- Controls / Look / Audio close on play, results, and Boot (F1-F4, rematch, Q). A panel left open on the pause card does not stay drawn over the round or the Boot menu. Direct Play clears its pause overlay when results start so Left/Right still move Rematch / Menu.
 - Boot, pause, and subpanel clicks are mouse-only. Enter/Space uses the highlight.
 
 ## Shippable slice checklist

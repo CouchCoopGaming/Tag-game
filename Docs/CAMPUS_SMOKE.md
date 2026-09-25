@@ -1,6 +1,6 @@
 # Campus smoke
 
-After pull: **CutArenaBootstrap** Rebuild, then **PgkLandmarkPlacer → Place**. Walk on foot. Spines and the crash cross stay empty. `Mega_SlideTube` and `PGK_Slide_Tube90` are not placed. Feel was not edited.
+After pull: **CutArenaBootstrap** Rebuild, then **PgkLandmarkPlacer -> Place**. Walk on foot. Spines and the crash cross stay empty. `Mega_SlideTube` and `PGK_Slide_Tube90` are not placed. Feel was not edited.
 
 Parked until a deck-height tube lands or a human notes a blocker.
 
@@ -10,7 +10,7 @@ Spawn_SW faces northeast. Mushroom steps at (4.5, 6.94) sit beside that exit. Ho
 
 ## West
 
-South bar into soft-play. **SoftS south** at (14.5, 2.6): balance beam, mushrooms, spring, two hops. **West dome and slide** are west-only. The dome is local (−4.66, −6.70), feet seated, top about 1.31, south of the tubes (world x 7.95–10.73, z 1.66–4.44). The ground slide is local (5.90, −5.53): low mouth on the mulch, high end about 2.41, east of the tube cap. The tube street stays open. Cross the south spine. **Merry-north** at (7.2, 31.2): mushrooms, spring, two hops, 0.56 m west of the bar.
+South bar into soft-play. **SoftS south** at (14.5, 2.6): balance beam, mushrooms, spring, two hops. **West dome and slide** are west-only. The dome is local (-4.66, -6.70), feet seated, top about 1.31, south of the tubes (world x 7.95-10.73, z 1.66-4.44). The ground slide is local (5.90, -5.53): low mouth on the mulch, high end about 2.41, east of the tube cap. The tube street stays open. Cross the south spine. **Merry-north** at (7.2, 31.2): mushrooms, spring, two hops, 0.56 m west of the bar.
 
 ## NW
 
@@ -22,6 +22,6 @@ Spawn_SE, hopscotch SE, then the **SE arch** at (65.90, 10.5). **SE cluster** at
 
 ## Crash
 
-Cross the bowl east-west on z 24–30. Both lips and the middle are open lawn.
+Cross the bowl east-west on z 24-30. Both lips and the middle are open lawn.
 
 Pass: that order is walkable, the named pieces are where listed, and the three arches still clear courts and bars by at least 1.3 m.
