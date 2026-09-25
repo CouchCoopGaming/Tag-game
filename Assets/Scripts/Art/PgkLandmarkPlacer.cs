@@ -681,7 +681,7 @@ namespace Tag.Art
 
         /// <summary>
         /// South apron of soft-play. The tube mesh ends at z=5.03; the ground slide starts at x=19.26.
-        /// The lawn from there to the south map edge is empty for more than 4 m. Not a bench.
+        /// Beam, mushroom, spring, and two hop tiles on the open lawn. Not a bench.
         /// Astro is not copied: its local -Z points at the north edge, onto the helmet lawn.
         /// </summary>
         int SoftPlaySouthCluster(Transform root)
@@ -696,6 +696,9 @@ namespace Tag.Art
                 ("Toy_MushroomSteps", new Vector3(-2.9f, 0f, 0.6f), 90f),
                 // Feet y=0. x 16.85-17.70, 1.56 m west of the ground slide.
                 ("Toy_SpringRider", new Vector3(2.7f, 0f, 0.7f), 0f),
+                // Two hop tiles south of the beam on the open apron (merry/NE mirror).
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-0.6f, 0.02f, -1.35f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(0.6f, 0.02f, -1.35f), 0f),
             });
         }
 
