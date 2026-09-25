@@ -79,7 +79,7 @@ namespace TagArena.Movement
 
         // Flash full Least-It standings briefly every few seconds.
         const float AllStandingsShowSec = 4.4f; // slightly longer Least It board read
-        const float AllStandingsCycleSec = 8.6f; // slightly slower board flip
+        const float AllStandingsCycleSec = 8.7f; // slightly slower board flip
 
         // Compass close-range pulse (Prey hunt / It flee), flat meters.
         const float CompassPulseDistM = 14f; // earlier It-hunt compass pulse

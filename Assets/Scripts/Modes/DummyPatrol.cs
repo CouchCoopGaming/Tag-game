@@ -24,7 +24,7 @@ namespace Tag.Modes
         [Tooltip("Fallback full cone (deg). Prefer syncing from PunchTagTuning width/reach.")]
         [SerializeField] float punchConeDeg = 38f; // hair wider so lined-up tags land more often
         [SerializeField] float itGraceSec = 0.85f;
-        [SerializeField] float aggression = 0.92f;
+        [SerializeField] float aggression = 0.93f; // slightly hungrier chase punches
         [SerializeField] float cooldownMin = 0.5f;
         [SerializeField] float cooldownMax = 0.78f;
         [SerializeField] float decisionHz = 5.2f; // slightly snappier retargets
@@ -597,7 +597,7 @@ namespace Tag.Modes
                 }
                 else if (inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
                 {
-                    _punchTell = Mathf.Lerp(0.35f, 0.22f, urgency); // urgent cock still long enough to read in TP
+                    _punchTell = Mathf.Lerp(0.36f, 0.22f, urgency); // urgent cock still long enough to read in TP
                     HoldPunchTelegraph();
                 }
             }
