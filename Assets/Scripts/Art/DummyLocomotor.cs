@@ -1464,9 +1464,9 @@ namespace Tag.Art
                     }
                 }
                 // A hard landing into a walk absorbs, then the trail leg takes the step.
-                // It does not sit in the idle buckle. A sprint land is unchanged.
+                // It does not sit in the idle buckle. A sprint opens after the absorb.
                 float hardWalk = hard * Mathf.Clamp01(walkAmt) * (1f - Mathf.Clamp01(runAmt));
-                if (hardWalk > 0.02f)
+                if (hardWalk > 0.02f && st != MoveState.Sprint)
                 {
                     float trail = kneeBase * kneeBase;
                     if (sinC >= 0f)
@@ -1478,6 +1478,23 @@ namespace Tag.Art
                     {
                         kR = Mathf.Lerp(kR, kneeBase, hardWalk);
                         kL = Mathf.Lerp(kL, trail, hardWalk);
+                    }
+                }
+                // A hard landing into a sprint absorbs, then the front leg opens into the stride.
+                // A hard walk still takes one step. Hold time is unchanged.
+                float sprintHard = hard * (st == MoveState.Sprint ? 1f : 0f);
+                if (sprintHard > 0.02f)
+                {
+                    float open = 1f - Mathf.Clamp01(k);
+                    if (sinC >= 0f)
+                    {
+                        kL = Mathf.Lerp(kL, kL * kL, sprintHard * open);
+                        kR = Mathf.Lerp(kR, kR * kR, sprintHard);
+                    }
+                    else
+                    {
+                        kR = Mathf.Lerp(kR, kR * kR, sprintHard * open);
+                        kL = Mathf.Lerp(kL, kL * kL, sprintHard);
                     }
                 }
                 float armK = Mathf.Lerp(kRelease * kRelease, kneeStand * kneeStand, standing) * hard;

@@ -194,7 +194,9 @@ Already on this branch: Letting go of a ski into a sprint opens the glide into t
 
 Already on this branch: A crouch walk into a sprint raises the hips and opens the stride. It does not pop. Speed is unchanged.
 
-This delta: A soft landing into a sprint absorbs, then opens into the stride. It does not stop. A hard landing still absorbs.
+Already on this branch: A soft landing into a sprint absorbs, then opens into the stride. It does not stop. A hard landing still absorbs.
+
+This delta: A hard landing into a sprint absorbs, then opens into the stride. It does not sit in the buckle. A hard landing into a walk still takes a step.
 
 ## Stack snapshot
 
@@ -410,6 +412,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 117. Ski, then let go into a sprint: the glide should open into the stride. It should not pop. Speed should feel the same.
 118. Crouch and walk, then sprint: the hips should rise and the stride should open. It should not pop. Speed should feel the same.
 119. Sprint, hop a short hop, and keep sprinting: the knees should absorb, then the stride should open. It should not look like a stop. A hard landing should still absorb.
+120. Sprint, drop hard, and keep sprinting: the knees should absorb, then the stride should open. It should not sit in the buckle. A hard landing into a walk should still take a step.
 
 ## Known leftovers
 
@@ -549,6 +552,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 107. Letting go of a ski into a sprint opens the glide into the stride. It does not pop. Speed is unchanged. Jet stays off.
 108. A crouch walk into a sprint raises the hips and opens the stride. It does not pop. A crouch walk into a walk is unchanged. Speed is unchanged.
 109. A soft landing into a sprint absorbs, then opens into the stride. It does not come to a stop. A hard landing still absorbs. Land time is unchanged.
+110. A hard landing into a sprint absorbs, then opens into the stride. It does not sit in the buckle. A hard landing into a walk still takes a step. Land time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
