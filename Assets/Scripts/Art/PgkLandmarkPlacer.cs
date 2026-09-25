@@ -282,13 +282,13 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Bunker / keep ground floor: one 8 m crawl clear of the stair, climb net on the outer side.
-        /// No second spiral - that annex is the west play places. The 2.4 m rung matches soft-play
-        /// so the east towers can be climbed to the 2.00 deck, not only the 1.60.
+        /// Bunker / keep ground floor: crawl, outer net, short ladder, tall rung, and a spiral climber.
+        /// The slide spiral and the tube street stay on the west play places. This climber is the east verb:
+        /// feet on y=0, top at 2.40, so it reaches the 2.00 deck. West forts do not get a copy.
         /// </summary>
         static void AddBunkerAnnex(List<(string id, Vector3 p, float y)> pieces)
         {
-            // South rim misses Spawn_SE (x-60). North rim stays ~1 m off the ground stair.
+            // South rim misses Spawn_SE (x <= 60). North rim stays ~1 m off the ground stair.
             // Knight yaw 180 flips this clear of Spawn_NE.
             pieces.Add(("Mega_CrawlTunnel", new Vector3(-2f, 0f, -4.5f), 0f));
             pieces.Add(("Mega_ClimbNet", new Vector3(5f, 0f, -1.5f), 90f));
@@ -299,6 +299,10 @@ namespace Tag.Art
             // Side stair ends at local z=0.45; rung starts at z=0.62 (~0.17 m). Post gap stays ~0.07 m.
             // Army world x~56.8 is east of Conn_Army. Knight world z~43.1 is ~0.8 m north of hopscotch NE.
             pieces.Add(("PGK_Ladder_Rung_LOD0", new Vector3(-1.15f, 0f, 0.90f), 90f));
+            // Spiral climber on local +X, beside the deck. Near edge x=1.90 (deck face is x=1).
+            // Army: x 59.9–61.8, z 8.8–10.7, 0.40 m south of the south bar and 0.66 m west of it.
+            // Knight yaw 180: x 54.2–56.1, z 43.3–45.2, 1.7 m north of Conn_Knight.
+            pieces.Add(("Toy_SpiralClimber", new Vector3(2.80f, 0f, 0f), 0f));
         }
 
         /// <summary>
