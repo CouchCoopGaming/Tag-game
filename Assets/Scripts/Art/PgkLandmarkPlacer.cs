@@ -181,6 +181,7 @@ namespace Tag.Art
             n += MerryNorthCluster(root);
             n += EastNorthCluster(root);
             n += SoftPlaySouthCluster(root);
+            n += SoftRingWall(root);
             n += EastSouthCluster(root);
             n += WestNorthCluster(root);
             // Overhead bars. West stays at x=11 (the mast owns x-9.5 around z 12-18).
@@ -753,6 +754,24 @@ namespace Tag.Art
                 // Two hop tiles west of the spring. West edge x=64.5, 1.4 m east of the army net.
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1.2f, 0.02f, -1.0f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(-0.2f, 0.02f, -1.0f), 0f),
+            });
+        }
+
+        /// <summary>
+        /// East-west wall run from the soft-play ground-slide mouth to the south ring.
+        /// The mouth ends at world x=20.54, z=1.02. The ring ground stair starts at x=27.55.
+        /// Three panels (1.6 m centers, yaw 0) span x 21.40-26.20 at z=1.70: 0.86 m off the
+        /// slide, 1.35 m off that stair. The ring side stair is at z=2.55, 0.79 m north.
+        /// South of the pirate carpet and the outer lane. Not a Mega tube.
+        /// </summary>
+        int SoftRingWall(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Wall_SoftRing", new Vector3(23.80f, 0f, 1.70f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("Toy_WallPanel", new Vector3(-1.6f, 0f, 0f), 0f),
+                ("Toy_WallPanel", new Vector3(0f, 0f, 0f), 0f),
+                ("Toy_WallPanel", new Vector3(1.6f, 0f, 0f), 0f),
             });
         }
 
