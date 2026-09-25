@@ -2549,27 +2549,40 @@ namespace Tag.Art
                 bool punchHandoff = punching && phase == PunchPhase.HitRecover;
                 // A sprint settles the arms into the long stride. A walk settles them into the walk.
                 // A stand still eases into the idle breath. A still crouch eases into the guard.
-                // A crouch walk keeps the walk return. The raised knee stays on a walk or a sprint.
-                // Claim time is unchanged.
+                // A crouch walk keeps that guard and eases into the low stride.
+                // The raised knee stays on a walk or a sprint. Claim time is unchanged.
                 bool crouchClaim = grounded && crouch && speed <= 0.35f;
+                bool crouchWalkClaim = grounded && crouch && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint;
                 float walkClaim = grounded ? Mathf.Clamp01(walkAmt) * (1f - Mathf.Clamp01(runAmt)) : 0f;
                 float sprintClaim = grounded && (st == MoveState.Sprint || runAmt > 0.4f) ? 1f : 0f;
-                if (sprintClaim > 0.02f || crouchClaim)
+                if (sprintClaim > 0.02f || crouchClaim || crouchWalkClaim)
                     walkClaim = 0f;
-                if (crouchClaim)
+                if (crouchClaim || crouchWalkClaim)
                     sprintClaim = 0f;
-                if (!punchHandoff && crouchClaim)
+                if (!punchHandoff && (crouchClaim || crouchWalkClaim))
                 {
-                    // The claim eases into the guard. It does not rise into the idle breath.
+                    // The claim eases into the guard. A crouch walk keeps these arms and opens the low stride.
                     float hold = c * c;
                     _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaL0 * Quaternion.Euler(-128f, 8f, armZ), hold);
                     _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-36f, -16f, -armZ), _uaR0 * Quaternion.Euler(-36f, -48f, -armZ), hold);
                     _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-72f, 0f, 0f), _laL0 * Quaternion.Euler(-10f, 0f, 0f), hold);
                     _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-72f, 0f, 0f), _laR0 * Quaternion.Euler(-12f, 0f, 0f), hold);
-                    _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(56f, 0f, 0f), _ulL0 * Quaternion.Euler(10f, 0f, 0f), hold);
-                    _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(56f, 0f, 0f), _ulR0 * Quaternion.Euler(52f, 0f, 0f), hold);
-                    _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-68f, 0f, 0f), _llL0 * Quaternion.Euler(-6f, 0f, 0f), hold);
-                    _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-68f, 0f, 0f), _llR0 * Quaternion.Euler(-64f, 0f, 0f), hold);
+                    if (crouchWalkClaim)
+                    {
+                        float stepL = Mathf.Max(0f, sinC);
+                        float stepR = Mathf.Max(0f, -sinC);
+                        _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f), _ulL0 * Quaternion.Euler(10f, 0f, 0f), hold);
+                        _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(46f + stepR * 12f - stepL * 6f, 0f, 0f), _ulR0 * Quaternion.Euler(52f, 0f, 0f), hold);
+                        _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f), _llL0 * Quaternion.Euler(-6f, 0f, 0f), hold);
+                        _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f), _llR0 * Quaternion.Euler(-64f, 0f, 0f), hold);
+                    }
+                    else
+                    {
+                        _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(56f, 0f, 0f), _ulL0 * Quaternion.Euler(10f, 0f, 0f), hold);
+                        _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(56f, 0f, 0f), _ulR0 * Quaternion.Euler(52f, 0f, 0f), hold);
+                        _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-68f, 0f, 0f), _llL0 * Quaternion.Euler(-6f, 0f, 0f), hold);
+                        _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-68f, 0f, 0f), _llR0 * Quaternion.Euler(-64f, 0f, 0f), hold);
+                    }
                     _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(10f, 0f, 0f), _spine0 * Quaternion.Euler(-22f, -16f, 0f), hold);
                     _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(4f, 0f, 0f), hold);
                     _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _headT, hold);
@@ -2632,7 +2645,7 @@ namespace Tag.Art
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(-22f, -16f, 0f), cHands);
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(4f, 0f, 0f), cHands);
                 }
-                if (punchHandoff || !crouchClaim)
+                if (punchHandoff || (!crouchClaim && !crouchWalkClaim))
                 {
                     _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(10f, 0f, 0f), c);
                     _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(52f, 0f, 0f), c);
