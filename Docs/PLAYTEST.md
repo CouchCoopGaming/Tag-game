@@ -438,7 +438,9 @@ Already on this branch: A soft landing into a slide eases the absorb into the we
 
 Already on this branch: A climb into a ski eases the grab into the glide. A soft landing into a slide is unchanged. A wall run into a ski is unchanged. A climb into a jump is unchanged. A climb into a punch is unchanged. A jump into a ski is unchanged. Ski speed is unchanged. Exit time is unchanged.
 
-This delta: A climb into a slide eases the grab into the wedge. A climb into a ski is unchanged. A wall run into a slide is unchanged. A climb into a jump is unchanged. A soft landing into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Exit time is unchanged.
+Already on this branch: A climb into a slide eases the grab into the wedge. A climb into a ski is unchanged. A wall run into a slide is unchanged. A climb into a jump is unchanged. A soft landing into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Exit time is unchanged.
+
+This delta: A wall run into a ski eases the leave into the glide. A climb into a slide is unchanged. A climb into a ski is unchanged. A wall run into a jump is unchanged. A soft landing into a ski is unchanged. Ski speed is unchanged. Exit time is unchanged.
 
 ## Stack snapshot
 
@@ -776,6 +778,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 239. Soft land, then slide: the absorb should ease into the wedge. A soft landing into a ski should feel the same. A hard landing into a slide should feel the same. A jump into a slide should feel the same. A punch into a slide should feel the same. A crouch into a slide should feel the same. A ski into a slide should feel the same. The slide should not feel faster. The landing should not feel longer. Jet stays off.
 240. Climb, then ski: the grab should ease into the glide. A soft landing into a slide should feel the same. A wall run into a ski should feel the same. A climb into a jump should feel the same. A climb into a punch should feel the same. A jump into a ski should feel the same. The glide should not feel longer. The leave should not feel longer. Speed should feel the same. Jet stays off.
 241. Climb, then slide: the grab should ease into the wedge. A climb into a ski should feel the same. A wall run into a slide should feel the same. A climb into a jump should feel the same. A soft landing into a slide should feel the same. A jump into a slide should feel the same. The slide should not feel faster. The leave should not feel longer. Jet stays off.
+242. Wall run, then ski: the leave should ease into the glide. A climb into a slide should feel the same. A climb into a ski should feel the same. A wall run into a jump should feel the same. A soft landing into a ski should feel the same. The glide should not feel longer. The leave should not feel longer. Speed should feel the same. Jet stays off.
 
 ## Known leftovers
 
@@ -1037,6 +1040,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 229. A soft landing into a slide eases the absorb into the wedge. A soft landing into a ski is unchanged. A hard landing into a slide is unchanged. A jump into a slide is unchanged. A punch into a slide is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. slideBoost stays 0. Land time is unchanged. Jet stays off.
 230. A climb into a ski eases the grab into the glide. A soft landing into a slide is unchanged. A wall run into a ski is unchanged. A climb into a jump is unchanged. A climb into a punch is unchanged. A jump into a ski is unchanged. Ski speed is unchanged. Exit time is unchanged. Jet stays off.
 231. A climb into a slide eases the grab into the wedge. A climb into a ski is unchanged. A wall run into a slide is unchanged. A climb into a jump is unchanged. A soft landing into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Exit time is unchanged. Jet stays off.
+232. A wall run into a ski eases the leave into the glide. A climb into a slide is unchanged. A climb into a ski is unchanged. A wall run into a jump is unchanged. A soft landing into a ski is unchanged. Ski speed is unchanged. Exit time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
