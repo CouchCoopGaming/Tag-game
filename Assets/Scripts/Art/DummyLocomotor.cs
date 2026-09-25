@@ -1990,9 +1990,9 @@ namespace Tag.Art
                 // A wall run or a climb into a walk settles the hands with the feet.
                 // A wall run or a climb into a sprint opens the hands into the long stride.
                 // They do not stay on the surface and then hitch. A drop keeps the old leave.
-                // A climb into a still crouch eases into the guard. A wall leave is unchanged.
+                // A climb into a still crouch eases into the guard. A wall run does the same.
                 // A walk and a sprint leave are unchanged. Exit time is unchanged.
-                if (leavingSurf && !_exitFromWall && speed <= 0.35f && _input != null && _input.CrouchHeld)
+                if (leavingSurf && speed <= 0.35f && _input != null && _input.CrouchHeld)
                     _exitIntoCrouch = true;
                 if (leavingSurf && grounded && !air && !crouch && speed > 0.35f)
                 {
@@ -2007,7 +2007,7 @@ namespace Tag.Art
                 float handW = _exitIntoWalk ? body : w;
                 if (_exitIntoCrouch)
                 {
-                    // The climb eases into the guard. The hands do not stay on the wall.
+                    // The wall eases into the guard. The hands do not stay on the surface.
                     float intoGuard = 1f - body;
                     _uaLT = Quaternion.Slerp(_exitUaL, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), intoGuard);
                     _uaRT = Quaternion.Slerp(_exitUaR, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), intoGuard);
