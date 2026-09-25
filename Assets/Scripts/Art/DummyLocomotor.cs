@@ -108,6 +108,11 @@ namespace Tag.Art
         float _tagSettle;
         bool _tagFromClaim;
         bool _jumpFromClaim;
+        bool _jumpClaimSnap;
+        float _jumpClaimSnapIn;
+        Quaternion _claimJumpUaL, _claimJumpUaR, _claimJumpLaL, _claimJumpLaR;
+        Quaternion _claimJumpUlL, _claimJumpUlR, _claimJumpLlL, _claimJumpLlR;
+        Quaternion _claimJumpSp, _claimJumpHp, _claimJumpHd;
         bool _jumpFromGrapple;
         bool _jumpFromReady;
         bool _jumpFromPunch;
@@ -3080,6 +3085,29 @@ namespace Tag.Art
                 _hitJumpHd = _head.localRotation;
                 _airArmIn = 1f;
             }
+            if (_jumpFromClaim && !_jumpClaimSnap
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                // The claim eases into the air pose, then the air pose holds.
+                // The slow push stays off this path. Claim time is unchanged.
+                // Jump height is unchanged.
+                _jumpClaimSnap = true;
+                _jumpClaimSnapIn = 0f;
+                _claimJumpUaL = _upperArmL.localRotation;
+                _claimJumpUaR = _upperArmR.localRotation;
+                _claimJumpLaL = _lowerArmL.localRotation;
+                _claimJumpLaR = _lowerArmR.localRotation;
+                _claimJumpUlL = _upperLegL.localRotation;
+                _claimJumpUlR = _upperLegR.localRotation;
+                _claimJumpLlL = _lowerLegL.localRotation;
+                _claimJumpLlR = _lowerLegR.localRotation;
+                _claimJumpSp = _spine.localRotation;
+                _claimJumpHp = _hips.localRotation;
+                _claimJumpHd = _head.localRotation;
+                _airArmIn = 1f;
+            }
             _prevVy = _motor != null ? _motor.Velocity.y : 0f;
             if (grounded || _pushOff <= 0.02f)
             {
@@ -3158,6 +3186,13 @@ namespace Tag.Art
             }
             else if (!_jumpFromTag)
                 _jumpTagSnap = false;
+            if (_jumpClaimSnap && _jumpFromClaim)
+            {
+                if (_jumpClaimSnapIn < 0.98f)
+                    _jumpClaimSnapIn = Mathf.MoveTowards(_jumpClaimSnapIn, 1f, dt / 0.04f);
+            }
+            else if (!_jumpFromClaim)
+                _jumpClaimSnap = false;
             if (_jumpFromStill && _pushOff > 0.02f)
                 _jumpFromStillIn = Mathf.MoveTowards(_jumpFromStillIn, 1f, dt / 0.04f);
             if (_jumpFromCrouchWalk && _pushOff > 0.02f)
@@ -9248,7 +9283,7 @@ namespace Tag.Art
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(8f, 0f, 0f), fHands);
                 }
             }
-            if (claimAmt > 0f && !_skiFromClaim && !_slideFromClaim && !_jumpFromPunch)
+            if (claimAmt > 0f && !_skiFromClaim && !_slideFromClaim && !_jumpFromPunch && !_jumpClaimSnap)
             {
                 // New It: one arm up, the other out, chest open. Not the tagged runner's matching V.
                 // While moving, the hands and the chest ease into the stride. Standing, they
@@ -9538,7 +9573,7 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_hitJumpLlL, _llLT, intoTagAir);
                 _llRT = Quaternion.Slerp(_hitJumpLlR, _llRT, intoTagAir);
             }
-            if (_jumpFromClaim && _pushOff > 0.02f && !wallRun && !climb)
+            if (_jumpFromClaim && _pushOff > 0.02f && !wallRun && !climb && !_jumpClaimSnap)
             {
                 // The claim eases into the push, then the air pose. A crouch claim keeps its jump.
                 // A tag keeps its jump. Jump height is unchanged.
@@ -9601,6 +9636,32 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(Quaternion.Slerp(claimThighR, pushThighR, intoPush), airThighR, leave);
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(claimKneeL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(claimKneeR, pushKneeR, intoPush), airKneeR, leave);
+            }
+            if (_jumpClaimSnap && _jumpClaimSnapIn < 0.98f && _jumpFromClaim
+                && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill
+                && !_jumpDashSnap && !_jumpWallSnap && !_jumpClimbSnap && !_jumpAirCrouchSnap
+                && !_jumpSoftLandSnap && !_jumpHardLandSnap && !_jumpMissSnap && !_jumpTagSnap)
+            {
+                // The claim eases into the air pose, then the air pose holds.
+                // A tag into a jump has its own ease. A punch miss into a jump has its own ease.
+                // A hard landing into a jump has its own ease. A soft landing into a jump has its own ease.
+                // An air crouch into a jump has its own ease. A climb jump has its own ease.
+                // A wall jump has its own ease. An air dash into a jump has its own ease.
+                // A standing idle into a jump has its own ease. A sprint into the air has its own ease.
+                // A walk into a jump has its own ease. The slow push stays off this path.
+                // Claim time is unchanged. Jump height is unchanged.
+                float intoClaimAir = _jumpClaimSnapIn;
+                _uaLT = Quaternion.Slerp(_claimJumpUaL, _uaLT, intoClaimAir);
+                _uaRT = Quaternion.Slerp(_claimJumpUaR, _uaRT, intoClaimAir);
+                _laLT = Quaternion.Slerp(_claimJumpLaL, _laLT, intoClaimAir);
+                _laRT = Quaternion.Slerp(_claimJumpLaR, _laRT, intoClaimAir);
+                _spineT = Quaternion.Slerp(_claimJumpSp, _spineT, intoClaimAir);
+                _hipsT = Quaternion.Slerp(_claimJumpHp, _hipsT, intoClaimAir);
+                _headT = Quaternion.Slerp(_claimJumpHd, _headT, intoClaimAir);
+                _ulLT = Quaternion.Slerp(_claimJumpUlL, _ulLT, intoClaimAir);
+                _ulRT = Quaternion.Slerp(_claimJumpUlR, _ulRT, intoClaimAir);
+                _llLT = Quaternion.Slerp(_claimJumpLlL, _llLT, intoClaimAir);
+                _llRT = Quaternion.Slerp(_claimJumpLlR, _llRT, intoClaimAir);
             }
             if (_jumpFromGrapple && _pushOff > 0.02f && !wallRun && !climb)
             {
