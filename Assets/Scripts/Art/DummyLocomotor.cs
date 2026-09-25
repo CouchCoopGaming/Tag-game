@@ -293,7 +293,7 @@ namespace Tag.Art
                     _uaRT = _uaR0 * Quaternion.Euler(28f * w, -26f * w, -56f - 16f * w); // extra elbow yaw for TP cock read
                     _laRT = _laR0 * Quaternion.Euler(-40f - 72f * w, 0f, 0f);
                     _hipsT = _hips0 * Quaternion.Euler(14f + 8f * w, -28f * w, 0f); // clearer windup hip twist in TP
-                    _spineT = _spine0 * Quaternion.Euler(leanX + 12f * w, -32f * w, leanZ);
+                    _spineT = _spine0 * Quaternion.Euler(leanX + 12f * w, -34f * w, leanZ); // clearer windup spine twist in TP
                 }
                 else if (phase == PunchPhase.Active)
                 {
@@ -367,7 +367,7 @@ namespace Tag.Art
                 _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(28f, -26f, -72f), k); // match windup elbow yaw
                 _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-112f, 0f, 0f), k);
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f + 8f, -28f, 0f), k); // match windup hip twist
-                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 12f, -32f, leanZ), k);
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 12f, -34f, leanZ), k); // match windup spine twist
             }
 
             // Legs
