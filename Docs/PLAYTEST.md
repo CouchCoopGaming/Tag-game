@@ -152,7 +152,9 @@ Already on this branch: After an air dash, a soft landing bends the knees and ke
 
 Already on this branch: Letting go of a crouch into a stand eases the hips into the idle breath. They do not pop. Speed is unchanged.
 
-This delta: A walk into a sprint pushes off the back foot, then the stride opens. The feet do not skate. Speed is unchanged.
+Already on this branch: A walk into a sprint pushes off the back foot, then the stride opens. The feet do not skate. Speed is unchanged.
+
+This delta: A soft landing into a walk settles the knees into the stride. It does not come to a stop. A hard landing still absorbs.
 
 ## Stack snapshot
 
@@ -347,6 +349,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 96. Air dash, then land softly into a walk: the knees should bend and the arms should stay in the stride. They should not flare out. The dash should not last longer, and it should still have to recharge.
 97. Hold crouch while standing, then let go: the hips should ease into the idle breath and sway. They should not pop flat. Speed should feel the same.
 98. Walk, then sprint: the back foot should push, then the stride should open. The feet should not skate. Speed should feel the same.
+99. Walk, hop a short hop, and keep walking: the knees should settle into the stride. It should not look like a full stop. A hard landing should still absorb.
 
 ## Known leftovers
 
@@ -465,6 +468,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 86. After an air dash, a soft landing bends the knees and keeps the arms in the stride. They do not flare. Duration and cooldown are unchanged.
 87. Letting go of a still crouch eases the hips into the idle breath and sway. They do not pop flat. Speed is unchanged.
 88. A walk into a sprint pushes off the back foot, then the stride opens. The feet do not skate. Speed is unchanged.
+89. A soft landing into a walk settles the knees into the stride. It does not come to a stop. A hard landing still absorbs. Land time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
