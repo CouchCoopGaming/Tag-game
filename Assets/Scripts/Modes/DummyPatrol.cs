@@ -447,7 +447,7 @@ namespace Tag.Modes
                 return dir;
             if (_weaveT <= 0f)
             {
-                _weave = Random.Range(-0.5f, 0.5f);
+                _weave = Random.Range(-0.55f, 0.55f); // slightly wider for readable chase juke
                 _weaveT = Random.Range(0.45f, 0.8f);
             }
             if (!distHold)

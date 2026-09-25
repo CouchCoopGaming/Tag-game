@@ -305,8 +305,8 @@ namespace Tag.Art
                 }
                 else if (phase == PunchPhase.HitRecover)
                 {
-                    // Hold the connect: arm stays punched out + slight overshoot, then eases
-                    float r = Mathf.Lerp(1.2f, 0.45f, punchProg);
+                    // Hold the connect: arm stays punched out + slight overshoot, then eases toward idle faster late.
+                    float r = Mathf.Lerp(1.2f, 0.35f, punchProg * punchProg);
                     _uaRT = _uaR0 * Quaternion.Euler(-70f - 110f * r, 52f * r, -38f);
                     _laRT = _laR0 * Quaternion.Euler(-78f * r, 0f, 0f);
                     _uaLT = _uaL0 * Quaternion.Euler(-32f, 18f, armZ + 22f);
