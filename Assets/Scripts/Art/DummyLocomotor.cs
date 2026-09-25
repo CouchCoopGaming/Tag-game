@@ -946,22 +946,23 @@ namespace Tag.Art
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 6f * r, 0f, leanZ), 0.35f);
                     // Standing, both fists ease into the idle hang so they do not freeze and then pop.
                     // A walk returns them to the stride. A sprint returns them to the long stride.
-                    // A still crouch eases into the guard. A crouch walk keeps the walk return.
+                    // A still crouch eases into the guard. A crouch walk keeps that guard and the low stride.
                     // Windup time is unchanged.
                     float moving = grounded ? Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)) : 0f;
                     float standing = grounded ? 1f - moving : 0f;
                     bool crouchMiss = grounded && crouch && speed <= 0.35f;
+                    bool crouchWalkMiss = grounded && crouch && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint;
                     float walkMiss = grounded ? Mathf.Clamp01(walkAmt) * (1f - Mathf.Clamp01(runAmt)) : 0f;
                     float sprintMiss = grounded && (st == MoveState.Sprint || runAmt > 0.4f) ? 1f : 0f;
-                    if (sprintMiss > 0.02f || crouchMiss)
+                    if (sprintMiss > 0.02f || crouchMiss || crouchWalkMiss)
                         walkMiss = 0f;
-                    if (crouchMiss)
+                    if (crouchMiss || crouchWalkMiss)
                         sprintMiss = 0f;
                     float missEase = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg));
-                    float intoIdle = crouchMiss || walkMiss > 0.02f || sprintMiss > 0.02f ? 0f : missEase * standing;
-                    if (crouchMiss)
+                    float intoIdle = crouchMiss || crouchWalkMiss || walkMiss > 0.02f || sprintMiss > 0.02f ? 0f : missEase * standing;
+                    if (crouchMiss || crouchWalkMiss)
                     {
-                        // The whiff eases into the guard. It does not rise into the idle hang.
+                        // The whiff eases into the guard. A crouch walk keeps these arms. The feet stay on the low stride.
                         _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), missEase);
                         _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), missEase);
                         _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-72f, 0f, 0f), missEase);
