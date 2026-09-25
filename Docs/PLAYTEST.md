@@ -158,7 +158,9 @@ Already on this branch: A soft landing into a walk settles the knees into the st
 
 Already on this branch: Letting a slide die into a stand brings the body up into the idle breath. The hips do not pop. Speed is unchanged.
 
-This delta: Letting go of a crouch walk raises the hips into the stride. They do not hitch. Speed is unchanged.
+Already on this branch: Letting go of a crouch walk raises the hips into the stride. They do not hitch. Speed is unchanged.
+
+This delta: A sprint into a walk closes the stride with the step. The feet do not skate to a stop. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -356,6 +358,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 99. Walk, hop a short hop, and keep walking: the knees should settle into the stride. It should not look like a full stop. A hard landing should still absorb.
 100. Slide, then let it die into a stand: the body should come up into the idle breath. The hips should not pop. Speed should feel the same.
 101. Crouch and walk, then let go: the hips should rise into the stride. They should not hitch. Speed should feel the same.
+102. Sprint, then drop to a walk: the stride should close with the step. It should not skate to a stop. Speed should feel the same.
 
 ## Known leftovers
 
@@ -477,6 +480,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 89. A soft landing into a walk settles the knees into the stride. It does not come to a stop. A hard landing still absorbs. Land time is unchanged.
 90. Letting a slide die into a stand brings the body up into the idle breath. The hips do not pop. A slide into a run is unchanged. Speed is unchanged.
 91. Letting go of a crouch walk raises the hips into the stride. They do not hitch. The feet keep stepping. Speed is unchanged.
+92. A sprint into a walk closes the stride with the step. The feet do not skate to a stop. Speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
