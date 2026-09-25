@@ -264,6 +264,9 @@ namespace Tag.Art
         bool _airFromStride;
         float _airFromStrideIn;
         Quaternion _strideAirUaL, _strideAirUaR, _strideAirLaL, _strideAirLaR;
+        bool _airFromIdle;
+        float _airFromIdleIn;
+        Quaternion _idleAirUaL, _idleAirUaR, _idleAirLaL, _idleAirLaR;
         float _bouncePulse;
         bool _bounceWallLeft;
         float _glidePulse;
@@ -2792,6 +2795,25 @@ namespace Tag.Art
                     _strideAirLaR = _lowerArmR.localRotation;
                     _airArmIn = 1f;
                 }
+                if (!_airFromIdle && !_airFromStride && speed <= 0.35f && !_jumpFromStill && !_jumpFromWalk && !jet
+                    && !_crouchFromStand && !_crouchWalkArmed
+                    && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide
+                    && !_jumpFromDash && !_jumpFromWall && !_jumpFromClimb && !_jumpFromAirCrouch
+                    && !_jumpFromSoftLand && !_jumpFromHardLand && !_jumpFromMiss && !_jumpFromTag
+                    && !_jumpFromClaim && !_jumpFromGrapple && !_jumpFromReady && !_jumpFromPunch
+                    && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null)
+                {
+                    // The idle arms ease into the air pose, then the air pose holds.
+                    // A still crouch into a jump keeps its ease. A walk into a jump keeps its ease.
+                    // A sprint into the air keeps its ease. Jump height is unchanged.
+                    _airFromIdle = true;
+                    _airFromIdleIn = 0f;
+                    _idleAirUaL = _upperArmL.localRotation;
+                    _idleAirUaR = _upperArmR.localRotation;
+                    _idleAirLaL = _lowerArmL.localRotation;
+                    _idleAirLaR = _lowerArmR.localRotation;
+                    _airArmIn = 1f;
+                }
             }
             else if (!grounded && _motor != null && _motor.Velocity.y > 1.5f && _prevVy <= 1.5f
                 && (_airDashArms || _motor.IsAirDashing)
@@ -4901,6 +4923,12 @@ namespace Tag.Art
                 if (_airFromStrideIn >= 0.98f)
                     _airFromStride = false;
             }
+            else if (air && _airFromIdle && !_airDashArms && !_jumpFromWalk && !_jumpFromStill && !_airFromStride)
+            {
+                _airFromIdleIn = Mathf.MoveTowards(_airFromIdleIn, 1f, dt / 0.04f);
+                if (_airFromIdleIn >= 0.98f)
+                    _airFromIdle = false;
+            }
             else
             {
                 if (air)
@@ -4908,6 +4936,7 @@ namespace Tag.Art
                 else
                     _airArmIn = 1f;
                 _airFromStride = false;
+                _airFromIdle = false;
             }
             _wasGrounded = grounded;
             _prevSpeed = speed;
@@ -5832,7 +5861,7 @@ namespace Tag.Art
                 Quaternion elbow = Quaternion.Slerp(elbowHang, Quaternion.Slerp(elbowDown, elbowUp, riseShare), airW);
                 _laLT = _laL0 * elbow;
                 _laRT = _laR0 * elbow;
-                if (_airArmIn < 0.98f && !_airDashArms && !_airFromStride)
+                if (_airArmIn < 0.98f && !_airDashArms && !_airFromStride && !_airFromIdle)
                 {
                     // Short reach off the stride, then the tuck, the hang, or the look trail.
                     Quaternion takeL = _uaL0 * Quaternion.Euler(-36f, 14f, armZ);
@@ -5855,6 +5884,20 @@ namespace Tag.Art
                     _uaRT = Quaternion.Slerp(_strideAirUaR, _uaRT, intoAir);
                     _laLT = Quaternion.Slerp(_strideAirLaL, _laLT, intoAir);
                     _laRT = Quaternion.Slerp(_strideAirLaR, _laRT, intoAir);
+                }
+                if (_airFromIdle && _airFromIdleIn < 0.98f && !_airDashArms && !_airFromStride
+                    && !_jumpFromWalk && !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide
+                    && !_jumpFromDash && !_jumpFromWall && !_jumpFromClimb && !_jumpFromPunch)
+                {
+                    // The idle arms ease into the air pose, then the air pose holds.
+                    // A still crouch into a jump has its own ease. A walk into a jump has its own ease.
+                    // A sprint into the air has its own ease. The slow reach stays off this path.
+                    // Jump height is unchanged.
+                    float intoIdleAir = _airFromIdleIn;
+                    _uaLT = Quaternion.Slerp(_idleAirUaL, _uaLT, intoIdleAir);
+                    _uaRT = Quaternion.Slerp(_idleAirUaR, _uaRT, intoIdleAir);
+                    _laLT = Quaternion.Slerp(_idleAirLaL, _laLT, intoIdleAir);
+                    _laRT = Quaternion.Slerp(_idleAirLaR, _laRT, intoIdleAir);
                 }
                 _spineT = Quaternion.Slerp(
                     _spine0 * Quaternion.Euler(-6f, 0f, 0f),
