@@ -115,6 +115,8 @@ namespace Tag.Art
         Quaternion _claimJumpSp, _claimJumpHp, _claimJumpHd;
         bool _jumpFromGrapple;
         bool _jumpFromReady;
+        bool _jumpReadySnap;
+        float _jumpReadySnapIn;
         bool _jumpFromPunch;
         float _jumpFromPunchIn;
         Quaternion _punchJumpUaL, _punchJumpUaR, _punchJumpLaL, _punchJumpLaR;
@@ -2754,6 +2756,11 @@ namespace Tag.Art
                     && !_jumpFromClaim && !_jumpFromGrapple;
                 if (_jumpFromReady)
                 {
+                    // The pulse eases into the air pose, then the air pose holds.
+                    // The slow push stays off this path. Duration and cooldown are unchanged.
+                    // Jump height is unchanged.
+                    _jumpReadySnap = true;
+                    _jumpReadySnapIn = 0f;
                     _readyUaL = _upperArmL.localRotation;
                     _readyUaR = _upperArmR.localRotation;
                     _readyLaL = _lowerArmL.localRotation;
@@ -2766,6 +2773,7 @@ namespace Tag.Art
                     _readyLlL = _lowerLegL.localRotation;
                     _readyLlR = _lowerLegR.localRotation;
                     _dashReady = 0f;
+                    _airArmIn = 1f;
                 }
                 // A punch eases into this push. A miss, a tag, and the claim keep their jump.
                 // A jump into a punch keeps its windup. Windup time is unchanged. Jump height is unchanged.
@@ -3193,6 +3201,13 @@ namespace Tag.Art
             }
             else if (!_jumpFromClaim)
                 _jumpClaimSnap = false;
+            if (_jumpReadySnap && _jumpFromReady)
+            {
+                if (_jumpReadySnapIn < 0.98f)
+                    _jumpReadySnapIn = Mathf.MoveTowards(_jumpReadySnapIn, 1f, dt / 0.04f);
+            }
+            else if (!_jumpFromReady)
+                _jumpReadySnap = false;
             if (_jumpFromStill && _pushOff > 0.02f)
                 _jumpFromStillIn = Mathf.MoveTowards(_jumpFromStillIn, 1f, dt / 0.04f);
             if (_jumpFromCrouchWalk && _pushOff > 0.02f)
@@ -9729,7 +9744,7 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(lineKneeL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(lineKneeR, pushKneeR, intoPush), airKneeR, leave);
             }
-            if (_jumpFromReady && _pushOff > 0.02f && !wallRun && !climb)
+            if (_jumpFromReady && _pushOff > 0.02f && !wallRun && !climb && !_jumpReadySnap)
             {
                 // The pulse eases into the push, then the air pose. A crouch ready keeps its jump.
                 // A grapple release keeps its jump. Duration and cooldown are unchanged.
@@ -9783,6 +9798,34 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(Quaternion.Slerp(_readyUlR, pushThighR, intoPush), airThighR, leave);
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(_readyLlL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(_readyLlR, pushKneeR, intoPush), airKneeR, leave);
+            }
+            if (_jumpReadySnap && _jumpReadySnapIn < 0.98f && _jumpFromReady
+                && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill
+                && !_jumpDashSnap && !_jumpWallSnap && !_jumpClimbSnap && !_jumpAirCrouchSnap
+                && !_jumpSoftLandSnap && !_jumpHardLandSnap && !_jumpMissSnap && !_jumpTagSnap
+                && !_jumpClaimSnap)
+            {
+                // The pulse eases into the air pose, then the air pose holds.
+                // A claim into a jump has its own ease. A tag into a jump has its own ease.
+                // A punch miss into a jump has its own ease. A hard landing into a jump has its own ease.
+                // A soft landing into a jump has its own ease. An air crouch into a jump has its own ease.
+                // A climb jump has its own ease. A wall jump has its own ease.
+                // An air dash into a jump has its own ease. A standing idle into a jump has its own ease.
+                // A sprint into the air has its own ease. A walk into a jump has its own ease.
+                // The slow push stays off this path. Duration and cooldown are unchanged.
+                // Jump height is unchanged.
+                float intoReadyAir = _jumpReadySnapIn;
+                _uaLT = Quaternion.Slerp(_readyUaL, _uaLT, intoReadyAir);
+                _uaRT = Quaternion.Slerp(_readyUaR, _uaRT, intoReadyAir);
+                _laLT = Quaternion.Slerp(_readyLaL, _laLT, intoReadyAir);
+                _laRT = Quaternion.Slerp(_readyLaR, _laRT, intoReadyAir);
+                _spineT = Quaternion.Slerp(_readySp, _spineT, intoReadyAir);
+                _hipsT = Quaternion.Slerp(_readyHp, _hipsT, intoReadyAir);
+                _headT = Quaternion.Slerp(_readyHd, _headT, intoReadyAir);
+                _ulLT = Quaternion.Slerp(_readyUlL, _ulLT, intoReadyAir);
+                _ulRT = Quaternion.Slerp(_readyUlR, _ulRT, intoReadyAir);
+                _llLT = Quaternion.Slerp(_readyLlL, _llLT, intoReadyAir);
+                _llRT = Quaternion.Slerp(_readyLlR, _llRT, intoReadyAir);
             }
             if (_punchFromDash && !_punchFromJump && !_jumpFromPunch && punching && phase == PunchPhase.Windup && _punchFromDashIn < 0.98f)
             {
