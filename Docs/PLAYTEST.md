@@ -654,7 +654,9 @@ Already on this branch: A stop that is not a sprint or a walk eases into the idl
 
 Already on this branch: A landing eases into the absorb. The absorb then holds. The pop stays off that path. Land time is unchanged.
 
-This delta: A mantle eases into the vault. The vault then holds. The pop stays off that path. Mantle time is unchanged.
+Already on this branch: A mantle eases into the vault. The vault then holds. The pop stays off that path. Mantle time is unchanged.
+
+This delta: A walk or a run eases onto a climb or a wall run. That pose then holds. The pop stays off that path. The meet time is unchanged.
 
 ## Stack snapshot
 
@@ -1100,6 +1102,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 347. Come to a stop from a slow step: the pose should ease into the idle. The idle should then hold. The feet should not creep in. A sprint into a stop should feel the same. A walk into a stop should feel the same. Speed should feel the same. Jet stays off.
 348. Land and stay down: the pose should ease into the absorb. The absorb should then hold. The knees should not pop. A jump out of a landing should feel the same. Land time should feel the same. Jet stays off.
 349. Mantle a ledge: the pose should ease into the vault. The vault should then hold. The arms should not pop. A super glide should feel the same. Mantle time should feel the same. Jet stays off.
+350. Walk or run onto a climb or a wall: the pose should ease onto it. That pose should then hold. The hands should not pop. A crouch onto a wall should feel the same. A jump onto a wall should feel the same. The meet should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1469,6 +1472,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 337. A stop that is not a sprint or a walk eases into the idle. The idle then holds. The slow close stays off that path. A sprint into a stop is unchanged. A walk into a stop is unchanged. Speed is unchanged. Jet stays off.
 338. A landing eases into the absorb. The absorb then holds. The pop stays off that path. A jump out of a landing is unchanged. Land time is unchanged. Jet stays off.
 339. A mantle eases into the vault. The vault then holds. The pop stays off that path. A super glide is unchanged. Mantle time is unchanged. Jet stays off.
+340. A walk or a run eases onto a climb or a wall run. That pose then holds. The pop stays off that path. A crouch meet is unchanged. A jump meet is unchanged. The meet time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
