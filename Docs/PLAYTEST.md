@@ -308,7 +308,9 @@ Already on this branch: An air dash into a jump eases the burst into the push. A
 
 Already on this branch: A climb into a jump eases the climb into the push. An air dash into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Exit time is unchanged.
 
-This delta: A wall run into a jump eases the wall exit into the push. A climb into a jump is unchanged. An air dash into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Exit time is unchanged.
+Already on this branch: A wall run into a jump eases the wall exit into the push. A climb into a jump is unchanged. An air dash into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Exit time is unchanged.
+
+This delta: A jump into a climb eases the contact into the grab. A crouch onto the wall is unchanged. A wall run is unchanged. A climb into a jump is unchanged. Jump height is unchanged. The meet time is unchanged.
 
 ## Stack snapshot
 
@@ -581,6 +583,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 174. Air dash, then jump: the burst should ease into the push. A still crouch into a jump should feel the same. A crouch walk into a jump should feel the same. A ski into a jump should feel the same. A slide into a jump should feel the same. The jump should not feel higher. The dash should not feel longer.
 175. Climb, then jump: the climb should ease into the push. An air dash into a jump should feel the same. A still crouch into a jump should feel the same. The jump should not feel higher. The climb should not let go faster.
 176. Wall run, then jump: the wall exit should ease into the push. A climb into a jump should feel the same. An air dash into a jump should feel the same. The jump should not feel higher. The wall should not let go faster.
+177. Jump, then climb: the contact should ease into the grab. A crouch onto the wall should feel the same. A wall run should feel the same. A climb into a jump should feel the same. The jump should not feel higher. The grab should not feel slower.
 
 ## Known leftovers
 
@@ -777,6 +780,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 164. An air dash into a jump eases the burst into the push. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
 165. A climb into a jump eases the climb into the push. An air dash into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Exit time is unchanged.
 166. A wall run into a jump eases the wall exit into the push. A climb into a jump is unchanged. An air dash into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Exit time is unchanged.
+167. A jump into a climb eases the contact into the grab. A crouch onto the wall is unchanged. A wall run is unchanged. A climb into a jump is unchanged. Jump height is unchanged. The meet time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
