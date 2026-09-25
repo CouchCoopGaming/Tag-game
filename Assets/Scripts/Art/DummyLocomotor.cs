@@ -117,6 +117,11 @@ namespace Tag.Art
         Quaternion _tagUaL, _tagUaR, _tagLaL, _tagLaR;
         Quaternion _tagUlL, _tagUlR, _tagLlL, _tagLlR;
         Quaternion _tagSp, _tagHp, _tagHd;
+        bool _dashFromClaim;
+        float _dashFromClaimIn;
+        Quaternion _claimUaL, _claimUaR, _claimLaL, _claimLaR;
+        Quaternion _claimUlL, _claimUlR, _claimLlL, _claimLlR;
+        Quaternion _claimSp, _claimHp, _claimHd;
         float _dartStepL;
         float _dartStepR;
         bool _dartFromDash;
@@ -803,6 +808,33 @@ namespace Tag.Art
                 _dashFromTagIn = Mathf.MoveTowards(_dashFromTagIn, 1f, dt / 0.04f);
             else if (!dashingAir)
                 _dashFromTag = false;
+            bool claimPose = _itClaim > 0.2f && !_jumpFromClaim && phase != PunchPhase.HitRecover;
+            if (dashingAir && !_airDashPoseWas && claimPose && !jet && !_dashFromTag && !_dashFromMiss
+                && !_jumpFromDash && !_dashFromDart && !_dashFromSki && !_dashFromSlide && !_dashFromClimb && !_dashFromWall
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+            {
+                // The claim eases into the burst. The burst still holds.
+                // Becoming It into a jump keeps its push. A crouch claim keeps its pose.
+                // A tag into a dash keeps its ease.
+                // Duration and cooldown are unchanged.
+                _dashFromClaim = true;
+                _dashFromClaimIn = 0f;
+                _claimUaL = _upperArmL.localRotation;
+                _claimUaR = _upperArmR.localRotation;
+                _claimLaL = _lowerArmL.localRotation;
+                _claimLaR = _lowerArmR.localRotation;
+                _claimUlL = _upperLegL.localRotation;
+                _claimUlR = _upperLegR.localRotation;
+                _claimLlL = _lowerLegL.localRotation;
+                _claimLlR = _lowerLegR.localRotation;
+                _claimSp = _spine.localRotation;
+                _claimHp = _hips.localRotation;
+                _claimHd = _head.localRotation;
+            }
+            if (dashingAir && _dashFromClaim)
+                _dashFromClaimIn = Mathf.MoveTowards(_dashFromClaimIn, 1f, dt / 0.04f);
+            else if (!dashingAir)
+                _dashFromClaim = false;
             if (!dashingAir && _airDashPoseWas && !jet && air && _input != null && _input.CrouchHeld)
             {
                 // The burst eases into the dart. An air crouch into a dash keeps its ease.
@@ -4986,6 +5018,25 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_punchUlR, _ulRT, into);
                 _llLT = Quaternion.Slerp(_punchLlL, _llLT, into);
                 _llRT = Quaternion.Slerp(_punchLlR, _llRT, into);
+            }
+            if (airDashing && _dashFromClaim && !_dashFromTag && !_dashFromMiss && !_dashFromWall && !_dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromClaimIn < 0.98f)
+            {
+                // The claim eases into the burst, then the burst holds.
+                // Becoming It into a jump keeps its push. A crouch claim keeps its pose.
+                // A tag into a dash keeps its ease.
+                // Duration and cooldown are unchanged.
+                float intoBurst = _dashFromClaimIn;
+                _uaLT = Quaternion.Slerp(_claimUaL, _uaLT, intoBurst);
+                _uaRT = Quaternion.Slerp(_claimUaR, _uaRT, intoBurst);
+                _laLT = Quaternion.Slerp(_claimLaL, _laLT, intoBurst);
+                _laRT = Quaternion.Slerp(_claimLaR, _laRT, intoBurst);
+                _ulLT = Quaternion.Slerp(_claimUlL, _ulLT, intoBurst);
+                _ulRT = Quaternion.Slerp(_claimUlR, _ulRT, intoBurst);
+                _llLT = Quaternion.Slerp(_claimLlL, _llLT, intoBurst);
+                _llRT = Quaternion.Slerp(_claimLlR, _llRT, intoBurst);
+                _spineT = Quaternion.Slerp(_claimSp, _spineT, intoBurst);
+                _hipsT = Quaternion.Slerp(_claimHp, _hipsT, intoBurst);
+                _headT = Quaternion.Slerp(_claimHd, _headT, intoBurst);
             }
             if (airDashing && _dashFromTag && !_dashFromMiss && !_dashFromWall && !_dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromTagIn < 0.98f)
             {
