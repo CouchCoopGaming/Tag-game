@@ -142,6 +142,20 @@ namespace Tag.Modes
                 return;
             }
 
+            // Countdown and the results card: stay on the pad. Chase starts when the round is live.
+            var modes = _modes != null ? _modes : TagModeController.Instance;
+            if (modes != null)
+            {
+                var phase = modes.Phase;
+                if (phase == MatchPhase.Countdown || phase == MatchPhase.Results || phase == MatchPhase.Idle)
+                {
+                    _punchTell = 0f;
+                    CancelPunchTelegraph();
+                    StopWish();
+                    return;
+                }
+            }
+
             float dt = Time.fixedDeltaTime;
             _decisionTimer -= dt;
             if (_decisionTimer <= 0f)

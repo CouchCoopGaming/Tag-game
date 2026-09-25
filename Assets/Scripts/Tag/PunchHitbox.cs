@@ -79,17 +79,11 @@ namespace Tag.Gameplay
 
         void Update()
         {
-            if (Time.timeScale <= 0f)
+            // Pause freezes the clock. Results stay at timeScale 1 with the cursor unlocked.
+            // Either way a swing that started on the menu click must not finish into gameplay.
+            if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked)
             {
-                _bufferTimer = 0f;
-                return;
-            }
-            // Results stay at timeScale 1. A swing must not finish on the card.
-            if (Cursor.lockState != CursorLockMode.Locked)
-            {
-                _bufferTimer = 0f;
-                if (Phase != PunchPhase.Idle)
-                    EndPunch();
+                DropSwing();
                 return;
             }
             float dt = Time.deltaTime;
@@ -192,10 +186,15 @@ namespace Tag.Gameplay
         }
 
         /// <summary>Drop a swing that started on the results click so it does not carry into countdown.</summary>
-        public void ForceEnd()
+        public void ForceEnd() => DropSwing();
+
+        void DropSwing()
         {
             _bufferTimer = 0f;
-            EndPunch();
+            if (Phase != PunchPhase.Idle)
+                EndPunch();
+            var loco = GetComponentInChildren<DummyLocomotor>();
+            if (loco != null) loco.CancelPunchTelegraph();
         }
 
         void EndPunch()

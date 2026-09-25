@@ -120,10 +120,12 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - AI punch tell drops for ~0.26 s after a juke/leave-cone whiff so the arm drop is readable (still needs a fuller human feel pass). No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent: `music_playground_bed_loop.wav` is meta only, so PlayMusic returns. No hitstop. Hot Potato flee may air-dash once while airborne if the motor CD is ready. A juke whiff also refreshes weave so they peel off the punch line.
 - Dash HUD: jet off = one cyan CD bar and one DASH line (DASH! while bursting). Jet on keeps a dash CD line under JET.
 - Dummy MissRecover: limp whiff drops faster than HitRecover hold (short shoulder sag). AI HoldPunchTelegraph matches the flared windup elbow.
+- Bots hold still on countdown, results, and Idle (no chase until Playing).
 - Resume / leave-results: look and punch ignore two frames after the cursor locks so the menu click that closed the card cannot yaw or punch. Rematch / F-keys from Direct Play also arm that gate when the cursor locks.
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.
 
 ## Audio
+- HUD shows MUTED (M) or MUSIC OFF (N) when either mute is on.
 - Master volume / mute: Boot or pause Audio; Left/Right steps SFX; Up/Down steps the music bed (default 0.35); M mute all; N music only. Saved in PlayerPrefs.
 
 ## Results

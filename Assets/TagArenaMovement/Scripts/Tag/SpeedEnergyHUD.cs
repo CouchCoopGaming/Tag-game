@@ -73,7 +73,9 @@ namespace TagArena.Movement
             "F1 Hot Potato\n" +
             "F2 Least It\n" +
             "F3 Trail Tag\n" +
-            "F4 Free play";
+            "F4 Free play\n" +
+            "Esc pause\n" +
+            "M mute   N music";
 
         // Flash full Least-It standings briefly every few seconds.
         const float AllStandingsShowSec = 3.5f;
@@ -106,6 +108,7 @@ namespace TagArena.Movement
             float hs = motor.HorizSpeed;
             string kph = (hs * 3.6f).ToString("0");
             GUI.Label(new Rect(24, 16, 560, 36), kph + " km/h   " + LocoVerb(motor), _big);
+            DrawMuteChip();
 
             bool jetOn = motor.cfg != null && motor.cfg.enableJet;
             float maxE = 100f;
@@ -165,8 +168,8 @@ namespace TagArena.Movement
             string keys = Controls
                 .Replace("LMB/E punch", ControlBinds.PunchName + "/E punch")
                 .Replace("Q/Alt air dash", ControlBinds.DashName + "/Alt air dash");
-            GUI.Label(new Rect(24, y, 280, 230), keys, _keys);
-            y += 214f;
+            GUI.Label(new Rect(24, y, 300, 300), keys, _keys);
+            y += 292f;
 
             DrawMatchStatus(y);
             DrawFuseBanner();
@@ -552,6 +555,18 @@ namespace TagArena.Movement
             GUI.color = prev;
         }
 
+        void DrawMuteChip()
+        {
+            bool muted = Tag.Audio.AudioMaster.Muted;
+            bool musicOff = Tag.Audio.AudioMaster.MusicMuted;
+            if (!muted && !musicOff) return;
+            string chip = muted ? "MUTED  (M)" : "MUSIC OFF  (N)";
+            var prev = GUI.color;
+            GUI.color = muted ? new Color(1f, 0.45f, 0.4f) : new Color(1f, 0.82f, 0.45f);
+            GUI.Label(new Rect(Screen.width - 240, 16, 220, 32), chip, _big);
+            GUI.color = prev;
+        }
+
         void DrawMatchStatus(float y)
         {
             string modeName = "";
@@ -567,6 +582,8 @@ namespace TagArena.Movement
                     modeName += "  " + modes.Remaining.ToString("0") + "s  lowest wins";
                 if (modes.SelectedMode == TagModeId.TrailTag && modes.Phase == MatchPhase.Playing && modes.SuddenDeath)
                     modeName += "  SUDDEN DEATH";
+                if (modes.SelectedMode == TagModeId.FreePlay && modes.Phase == MatchPhase.Playing)
+                    modeName += "  no timer";
                 it = modes.CurrentIt;
                 if (it == null)
                     it = ScanItControllers();
