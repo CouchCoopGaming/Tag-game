@@ -86,6 +86,9 @@ namespace Tag.Art
         bool _dashFromSki;
         float _dashFromSkiIn;
         float _skiSin;
+        bool _dashFromSlide;
+        float _dashFromSlideIn;
+        bool _slideLeadLeft;
         float _dartStepL;
         float _dartStepR;
         bool _dartFromDash;
@@ -654,6 +657,20 @@ namespace Tag.Art
                 _dashFromSkiIn = Mathf.MoveTowards(_dashFromSkiIn, 1f, dt / 0.04f);
             else if (!dashingAir)
                 _dashFromSki = false;
+            bool slideWedge = _dropSlide && _dropVis > 0.2f && !dartAir && !jet;
+            if (dashingAir && !_airDashPoseWas && slideWedge && !_jumpFromDash && !_dashFromDart && !_dashFromSki)
+            {
+                // The wedge eases into the burst. The burst still holds.
+                // A ski into a dash keeps its ease. slideBoost stays 0.
+                // Duration and cooldown are unchanged.
+                _dashFromSlide = true;
+                _dashFromSlideIn = 0f;
+                _slideLeadLeft = Mathf.Sin(_cycle) >= 0f;
+            }
+            if (dashingAir && _dashFromSlide)
+                _dashFromSlideIn = Mathf.MoveTowards(_dashFromSlideIn, 1f, dt / 0.04f);
+            else if (!dashingAir)
+                _dashFromSlide = false;
             if (!dashingAir && _airDashPoseWas && !jet && air && _input != null && _input.CrouchHeld)
             {
                 // The burst eases into the dart. An air crouch into a dash keeps its ease.
@@ -3398,6 +3415,36 @@ namespace Tag.Art
                 _spineT = Quaternion.Slerp(fromSp, _spineT, intoBurst);
                 _hipsT = Quaternion.Slerp(fromHp, _hipsT, intoBurst);
                 _headT = Quaternion.Slerp(fromHd, _headT, intoBurst);
+            }
+            if (airDashing && _dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromSlideIn < 0.98f && !punching)
+            {
+                // The wedge eases into the burst, then the burst holds.
+                // A ski into a dash keeps its ease. slideBoost stays 0.
+                // Duration and cooldown are unchanged.
+                float intoSlide = _dashFromSlideIn;
+                bool leadLeft = _slideLeadLeft;
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
+                Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion wedgeSp = _spine0 * Quaternion.Euler(62f, 0f, 0f);
+                Quaternion wedgeHp = _hips0 * Quaternion.Euler(50f, 0f, 0f);
+                Quaternion wedgeHd = _head0 * Quaternion.Euler(-12f, 0f, 0f);
+                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f);
+                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f);
+                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f);
+                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(wedgeL, _uaLT, intoSlide);
+                _uaRT = Quaternion.Slerp(wedgeR, _uaRT, intoSlide);
+                _laLT = Quaternion.Slerp(wedgeElL, _laLT, intoSlide);
+                _laRT = Quaternion.Slerp(wedgeElR, _laRT, intoSlide);
+                _ulLT = Quaternion.Slerp(wedgeThighL, _ulLT, intoSlide);
+                _ulRT = Quaternion.Slerp(wedgeThighR, _ulRT, intoSlide);
+                _llLT = Quaternion.Slerp(wedgeKneeL, _llLT, intoSlide);
+                _llRT = Quaternion.Slerp(wedgeKneeR, _llRT, intoSlide);
+                _spineT = Quaternion.Slerp(wedgeSp, _spineT, intoSlide);
+                _hipsT = Quaternion.Slerp(wedgeHp, _hipsT, intoSlide);
+                _headT = Quaternion.Slerp(wedgeHd, _headT, intoSlide);
             }
             if (airDashing && _dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromSkiIn < 0.98f && !punching)
             {
