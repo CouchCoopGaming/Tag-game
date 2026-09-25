@@ -176,6 +176,9 @@ namespace Tag.Modes
             if (_input == null) return;
             _input.ExternalControl = true;
             _input.SetExternalMove(Vector2.zero, false);
+            // Elim / ragdoll / motor lock: drop a cocked arm so it does not linger frozen.
+            _punchTell = 0f;
+            CancelPunchTelegraph();
         }
 
         /// <summary>
