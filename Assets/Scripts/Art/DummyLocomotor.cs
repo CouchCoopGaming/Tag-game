@@ -317,6 +317,9 @@ namespace Tag.Art
             bool airStillCrouch = air && !jet && !airDashing
                 && speed <= 0.35f && _diveVis <= 0.02f
                 && _input != null && _input.CrouchHeld;
+            bool airCrouchWalk = air && !jet && !airDashing && (_airDashArms || _armRecover > 0f)
+                && speed > 0.35f && st != MoveState.Sprint && runAmt <= 0.4f && _diveVis <= 0.02f
+                && _input != null && _input.CrouchHeld;
             // Keep a soft air/vault cycle so limbs stay energetic off the ground.
             // Walk and sprint ease length and tempo. The cycle keeps advancing, so a plant does not freeze.
             if (airDashing)
@@ -534,6 +537,7 @@ namespace Tag.Art
             // A still crouch leaves it into the guard. A stand keeps the old leave.
             // Duration and cooldown are unchanged.
             bool dashWalk = _airDashArms && !airDashing && !lunging && speed > 0.35f && st != MoveState.Sprint && runAmt <= 0.4f;
+            bool dashCrouchWalk = dashWalk && _input != null && _input.CrouchHeld;
             bool dashSprint = _airDashArms && !airDashing && !lunging && !dashWalk && (st == MoveState.Sprint || runAmt > 0.4f || speed > 5.5f);
             bool dashCrouch = _airDashArms && !airDashing && !lunging && !dashWalk && !dashSprint
                 && speed <= 0.35f && _input != null && _input.CrouchHeld;
@@ -582,7 +586,18 @@ namespace Tag.Art
                         pose *= hardS;
                         intoStride = 1f - hardS;
                     }
-                    if (dashWalk)
+                    if (dashCrouchWalk)
+                    {
+                        // The burst ends in the low stride. A still crouch keeps the guard.
+                        _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaL0 * Quaternion.Euler(108f, 32f, armZ), pose);
+                        _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-36f, -16f, -armZ), _uaR0 * Quaternion.Euler(108f, -32f, -armZ), pose);
+                        _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-72f, 0f, 0f), _laL0 * Quaternion.Euler(-22f, 0f, 0f), pose);
+                        _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-72f, 0f, 0f), _laR0 * Quaternion.Euler(-22f, 0f, 0f), pose);
+                        _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(10f, 0f, 0f), _spine0 * Quaternion.Euler(58f, 0f, 0f), pose);
+                        _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(22f, 0f, 0f), pose);
+                        _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-6f, 0f, 0f), 1f - pose);
+                    }
+                    else if (dashWalk)
                     {
                         // The burst ends in the walk. It does not come to a stop.
                         float gait = Mathf.Max(Mathf.Clamp01(walkAmt), 0.65f);
@@ -628,7 +643,7 @@ namespace Tag.Art
                     }
                     else if (dashCrouch)
                     {
-                        // The burst ends in the guard. A crouch walk keeps the stride leave.
+                        // The burst ends in the guard. A crouch walk ends in the low stride.
                         _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaL0 * Quaternion.Euler(108f, 32f, armZ), pose);
                         _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-36f, -16f, -armZ), _uaR0 * Quaternion.Euler(108f, -32f, -armZ), pose);
                         _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-72f, 0f, 0f), _laL0 * Quaternion.Euler(-22f, 0f, 0f), pose);
@@ -1008,6 +1023,16 @@ namespace Tag.Art
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), g);
                     _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-6f, 0f, 0f), g);
                 }
+                if (airCrouchWalk)
+                {
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), 1f);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), 1f);
+                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-72f, 0f, 0f), 1f);
+                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-72f, 0f, 0f), 1f);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(10f, 0f, 0f), 1f);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), 1f);
+                    _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-6f, 0f, 0f), 1f);
+                }
             }
             else
             {
@@ -1224,6 +1249,16 @@ namespace Tag.Art
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-68f, 0f, 0f), w);
                         _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), w);
                     }
+                    else if (dashCrouchWalk)
+                    {
+                        float stepL = Mathf.Max(0f, sinC);
+                        float stepR = Mathf.Max(0f, -sinC);
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f), w);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(46f + stepR * 12f - stepL * 6f, 0f, 0f), w);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f), w);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f), w);
+                        _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), w);
+                    }
                     else
                     {
                     float openGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
@@ -1378,6 +1413,15 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(56f, 0f, 0f), g);
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-68f, 0f, 0f), g);
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-68f, 0f, 0f), g);
+                }
+                if (airCrouchWalk)
+                {
+                    float stepL = Mathf.Max(0f, sinC);
+                    float stepR = Mathf.Max(0f, -sinC);
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f), 1f);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(46f + stepR * 12f - stepL * 6f, 0f, 0f), 1f);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f), 1f);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f), 1f);
                 }
             }
             else
