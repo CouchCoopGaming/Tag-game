@@ -102,7 +102,9 @@ Already on this branch: After a punch, the arm opposite the front knee gets back
 
 Already on this branch: If a grapple is on, the hands and the chest settle into the long line. They do not twist. The grapple stays off unless you turn it on. Range and speed are unchanged.
 
-This delta: After a tag, the hands and the chest ease into the stride together, under the hips. They do not stay folded and then pop. One knee can still be up. Flinch time is unchanged.
+Already on this branch: After a tag, the hands and the chest ease into the stride together, under the hips. They do not stay folded and then pop. One knee can still be up. Flinch time is unchanged.
+
+This delta: After you become It, the hands and the chest ease into the stride. They do not stay in the claim and then pop. One knee can still be up. The claim time is unchanged.
 
 ## Stack snapshot
 
@@ -272,6 +274,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 71. Punch while sprinting, and miss or hit without becoming It: the arm opposite the front knee should get back into the stride. The hips should not stay twisted. The fist should still ease out, not snap. The cock should not feel longer.
 72. If you turn the grapple on and hook: the hands and the chest should settle into one long line. They should not twist. Turning it off should return to the stride. It should stay off unless you turn it on. The pull should feel the same.
 73. Get tagged while sprinting: the hands and the chest should ease into the stride together, under the hips. They should not stay folded and then pop. One knee can still be up. The catch should not feel longer.
+74. Become It while sprinting: the hands and the chest should ease into the stride. They should not stay in the claim and then pop. One knee can still be up. The claim should not feel longer.
 
 ## Known leftovers
 
@@ -365,6 +368,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 61. After a punch, the arm opposite the front knee returns to the stride. The hips do not stay twisted. The fist still eases out. Windup time is unchanged.
 62. A grapple, if turned on, settles the hands and the chest into the long line. They do not twist. The gate stays off. Range and speed are unchanged.
 63. After a tag, the hands and the chest ease into the stride together, under the hips. They do not stay folded and then pop. One knee can still be up. Flinch time is unchanged.
+64. After you become It, the hands and the chest ease into the stride. They do not stay in the claim and then pop. One knee can still be up. The claim time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
