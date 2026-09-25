@@ -307,7 +307,7 @@ namespace Tag.Gameplay
             // Readable TP punch connect: stronger camera kick + FOV punch on attacker
             var tps = GetComponentInChildren<TpsMoveCamera>(true);
             if (tps != null)
-                tps.AddKick(new Vector3(0f, 0.17f, -0.44f)); // connect kick reads a hair stronger in TP
+                tps.AddKick(new Vector3(0f, 0.18f, -0.45f)); // connect kick reads a hair stronger in TP
             // Victim's chase cam, lighter than the attacker's. No hitstop — nothing else freezes time.
             var victimCam = victim.GetComponentInChildren<TpsMoveCamera>(true);
             if (victimCam != null && victimCam != tps)
