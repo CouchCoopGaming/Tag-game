@@ -104,7 +104,9 @@ Already on this branch: If a grapple is on, the hands and the chest settle into 
 
 Already on this branch: After a tag, the hands and the chest ease into the stride together, under the hips. They do not stay folded and then pop. One knee can still be up. Flinch time is unchanged.
 
-This delta: After you become It, the hands and the chest ease into the stride. They do not stay in the claim and then pop. One knee can still be up. The claim time is unchanged.
+Already on this branch: After you become It, the hands and the chest ease into the stride. They do not stay in the claim and then pop. One knee can still be up. The claim time is unchanged.
+
+This delta: Going between a ski and a run eases the feet under the hips. They do not skate, and the hips do not pop. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -275,6 +277,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 72. If you turn the grapple on and hook: the hands and the chest should settle into one long line. They should not twist. Turning it off should return to the stride. It should stay off unless you turn it on. The pull should feel the same.
 73. Get tagged while sprinting: the hands and the chest should ease into the stride together, under the hips. They should not stay folded and then pop. One knee can still be up. The catch should not feel longer.
 74. Become It while sprinting: the hands and the chest should ease into the stride. They should not stay in the claim and then pop. One knee can still be up. The claim should not feel longer.
+75. Hold ski, then let go into a run, and go back into the ski: the feet should ease under the hips. They should not skate, and the hips should not pop. Speed should feel the same. Jet stays off.
 
 ## Known leftovers
 
@@ -369,6 +372,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 62. A grapple, if turned on, settles the hands and the chest into the long line. They do not twist. The gate stays off. Range and speed are unchanged.
 63. After a tag, the hands and the chest ease into the stride together, under the hips. They do not stay folded and then pop. One knee can still be up. Flinch time is unchanged.
 64. After you become It, the hands and the chest ease into the stride. They do not stay in the claim and then pop. One knee can still be up. The claim time is unchanged.
+65. A ski and a run ease the feet under the hips. They do not skate, and the hips do not pop. Speed is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
