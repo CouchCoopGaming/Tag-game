@@ -96,7 +96,9 @@ Already on this branch: From a run, a crouch or a slide drops into the pose. The
 
 Already on this branch: After an air dash, the feet come back into the stride under the hips. They do not skate. The dash is still a short burst, and the cooldown is unchanged.
 
-This delta: On a wall run or a climb, the hand meets the surface, then the swing starts. The arm does not pop. Letting go still returns under the hips. The exit time is unchanged.
+Already on this branch: On a wall run or a climb, the hand meets the surface, then the swing starts. The arm does not pop. Letting go still returns under the hips. The exit time is unchanged.
+
+This delta: After a punch, the arm opposite the front knee gets back into the stride. The hips do not stay twisted. The fist still eases out. Windup time is unchanged.
 
 ## Stack snapshot
 
@@ -263,6 +265,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 68. Sprint, then crouch: the body should drop into the slide without a speed bump. Let go: the stride should come back under the hips, not skate. From a slower run, a crouch should drop into the guard and stand back into the stride. The slide should not speed up.
 69. Air dash, then land into a run or a walk: after the burst, the feet should be back in the stride under the hips. They should not skate. The dash should still be a short burst, and it should still have to recharge.
 70. Wall run and climb: the hand should meet the surface, then move. It should not pop when you touch the wall. Letting go should bring the stride back under the hips. The leave should not feel longer or shorter.
+71. Punch while sprinting, and miss or hit without becoming It: the arm opposite the front knee should get back into the stride. The hips should not stay twisted. The fist should still ease out, not snap. The cock should not feel longer.
 
 ## Known leftovers
 
@@ -353,6 +356,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 58. A crouch or a slide from a run drops into the pose. The speed you already have carries. Letting go returns to the stride under the hips. The slide does not speed up.
 59. After an air dash, the feet return to the stride under the hips. They do not skate. The burst stays short and the cooldown is unchanged.
 60. A wall run or a climb sets the hand on the surface, then the swing starts. The arm does not pop. The exit returns under the hips. Exit time is unchanged.
+61. After a punch, the arm opposite the front knee returns to the stride. The hips do not stay twisted. The fist still eases out. Windup time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

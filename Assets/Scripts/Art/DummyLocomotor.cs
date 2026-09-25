@@ -578,19 +578,31 @@ namespace Tag.Art
                     }
                     else
                     {
-                        float gait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                        // The arm opposite the front knee goes back to the stride while the
+                        // fist is still out. The hips leave the punch twist with that arm.
+                        // Windup time is unchanged.
+                        float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
                         float idle = 1f - gait;
                         float amp = Mathf.Lerp(36f, 64f, gait);
                         float outY = Mathf.Lerp(12f, 8f, gait);
                         float roll = Mathf.Lerp(0f, armZ, gait);
-                        Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle, outY, roll);
-                        Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle, -outY, -roll);
-                        float elbowR = Mathf.Lerp(-18f, -8f, idle) - Mathf.Max(0f, sinC) * Mathf.Lerp(28f, 58f, runAmt);
+                        float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                        float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
+                        float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
+                        float armBreath = breath * 0.55f * idle;
+                        Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll);
+                        Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll);
+                        float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
+                        float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
+                        float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
+                        float elbowR = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait);
+                        float plant = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg));
                         _uaRT = Quaternion.Slerp(connectR, runR, settle);
                         _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-18f, 0f, 0f), _laR0 * Quaternion.Euler(elbowR, 0f, 0f), settle);
-                        _uaLT = Quaternion.Slerp(connectL, runL, settle);
-                        _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX + 14f, 18f, leanZ), _spineT, settle);
-                        _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(18f, 22f, 0f), _hipsT, settle);
+                        _uaLT = Quaternion.Slerp(connectL, runL, plant);
+                        _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-22f, 0f, 0f), _laL0 * Quaternion.Euler(elbowL, 0f, 0f), plant);
+                        _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX + 14f, 18f, leanZ), _spineT, plant);
+                        _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(18f, 22f, 0f), _hipsT, plant);
                     }
                 }
                 else // MissRecover - limp whiff: less extension, quicker drop vs HitRecover hold
