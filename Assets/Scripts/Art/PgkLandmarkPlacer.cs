@@ -147,10 +147,8 @@ namespace Tag.Art
         /// <summary>
         /// Connected playground districts. Ski spines (x=24/48, z=18/36, 3.2 m wide) stay open.
         /// Fort slide mouths tuck inside the 2x2 lip; exits sit on a three-tile pit.
-        /// Mega_SlideTube and PGK_Slide_Tube90 stay unspawned. Tube90 spans 3.450 m
-        /// in Y (stem +0.52 crowns at 3.445, 1.445 m above a 2.00 deck). The mega bed
-        /// spans 3.912 m (Y 0.693..4.605); the shell spans 5.468 m and sits 0.927 m
-        /// below the bed exit. No 0.40-2.00 pair seats either mouth without a bury.
+        /// West play places use PGK_Slide_TubeDeck_2m on the 2.00 deck lip (yaw 90,
+        /// stem 0). Mega_SlideTube and PGK_Slide_Tube90 stay unspawned and unscaled.
         /// Horizontal Toy_TunnelTube / Mega_CrawlTunnel runs are the crawl instead.
         /// </summary>
         int PlaceChasePlayground(Transform root)
@@ -221,7 +219,8 @@ namespace Tag.Art
             var parent = MakeGroup(root, name, origin, yaw);
             var pieces = new List<(string id, Vector3 p, float y)>();
             // Inner pit wing would sit on the Conn ramp. Outer wing, plus a second outer column.
-            AddDeckTower(pieces, 0f, 0f, true, OuterPitSide(origin.x, yaw));
+            // West play places take the deck tube. East bunkers keep the straight chute.
+            AddDeckTower(pieces, 0f, 0f, true, OuterPitSide(origin.x, yaw), playPlace);
             // Stoop on the 0.40 grid, beside the ground stair.
             pieces.Add(("PGK_Deck_1x1_LOD0", new Vector3(1.5f, Deck040, -2.5f), 0f));
 
@@ -328,7 +327,8 @@ namespace Tag.Art
         /// Slide mouth tucks under the 2.00 deck; exit is on mulch (authored SlideGroundMouthY).
         /// </summary>
         /// <param name="pitSide">-1 or +1 = that local-X wing only. 2 = both wings (rings).</param>
-        static void AddDeckTower(List<(string id, Vector3 p, float y)> pieces, float cx, float cz, bool slidePositiveZ, int pitSide)
+        /// <param name="deckTube">West play places: PGK_Slide_TubeDeck_2m instead of the straight chute.</param>
+        static void AddDeckTower(List<(string id, Vector3 p, float y)> pieces, float cx, float cz, bool slidePositiveZ, int pitSide, bool deckTube = false)
         {
             pieces.Add(("PGK_Post_Square_3m_LOD0", new Vector3(cx - 1f, 0f, cz - 1f), 0f));
             pieces.Add(("PGK_Post_Square_3m_LOD0", new Vector3(cx + 1f, 0f, cz - 1f), 0f));
@@ -349,7 +349,16 @@ namespace Tag.Art
             if (slidePositiveZ)
             {
                 pieces.Add(("PGK_Stairs_5_LOD0", new Vector3(cx, 0f, cz - 2f), 180f));
-                pieces.Add(("PGK_Slide_Straight_M_LOD0", new Vector3(cx, SlideGroundMouthY, cz + SlideLipOffset), 0f));
+                if (deckTube)
+                {
+                    // Mesh +X climbs. Yaw 90 sends that uphill toward -Z, into the open lip.
+                    // High-mouth center is mesh (5, 1.91, 0). Pivot z = cz+5.90 puts it at
+                    // cz+0.90, 0.10 inside the lip at cz+1. Stem 0; origin is the mulch.
+                    // Low mouth stays at cz+5.90, about 0.7 m short of the spine.
+                    pieces.Add(("PGK_Slide_TubeDeck_2m", new Vector3(cx, 0f, cz + 5.90f), 90f));
+                }
+                else
+                    pieces.Add(("PGK_Slide_Straight_M_LOD0", new Vector3(cx, SlideGroundMouthY, cz + SlideLipOffset), 0f));
                 AddSlidePit(pieces, cx, cz, 1f, pitSide);
             }
             else
@@ -923,7 +932,8 @@ namespace Tag.Art
             if (string.IsNullOrEmpty(stem)) return 0f;
             if (stem.StartsWith("PGK_Slide_Straight")) return -1.77f; // mouth -> authored Y
             if (stem.StartsWith("PGK_Slide_Spiral")) return -0.51f;   // feet -> authored Y
-            if (stem.StartsWith("PGK_Slide_Tube")) return 0.52f;      // feet (minY~-0.52)
+            if (stem.StartsWith("PGK_Slide_TubeDeck")) return 0f;    // origin is mulch; high mouth center y=1.91
+            if (stem.StartsWith("PGK_Slide_Tube")) return 0.52f;      // Tube90 feet (minY~-0.52); TubeDeck must stay above this
             if (stem.StartsWith("PGK_Stairs")) return -0.06f;         // first tread -> mulch
             if (stem.StartsWith("Mega_SlideTube")) return 0.24f;      // feet (minY~-0.24)
             if (stem.StartsWith("Mega_ParkourRamp")) return 0.26f;    // feet (minY~-0.26) Loop wall-run
@@ -968,22 +978,17 @@ namespace Tag.Art
             go.transform.localPosition = lp;
         }
 
-        static Dictionary<string, string> IndexHiPoly()
+        static void IndexFbxFolder(Dictionary<string, string> map, string relFolder)
         {
-            if (_hiIndex != null && Time.realtimeSinceStartup - _hiIndexTime < 30f)
-                return _hiIndex;
-
-            var dir = Path.Combine(Application.dataPath, "Art/Props/Playground/HiPoly");
-            var map = new Dictionary<string, string>();
-            if (!Directory.Exists(dir)) return map;
-
+            var dir = Path.Combine(Application.dataPath, relFolder.Substring("Assets/".Length).Replace('/', Path.DirectorySeparatorChar));
+            if (!Directory.Exists(dir)) return;
             foreach (var full in Directory.GetFiles(dir, "*.fbx"))
             {
                 var file = Path.GetFileName(full);
                 var baseName = Path.GetFileNameWithoutExtension(file);
                 foreach (var stem in StemsFor(baseName))
                 {
-                    var rel = HiPolyRel + "/" + file;
+                    var rel = relFolder + "/" + file;
                     if (!map.TryGetValue(stem, out var existing))
                     {
                         map[stem] = rel;
@@ -995,6 +1000,17 @@ namespace Tag.Art
                     if (tNew >= tOld) map[stem] = rel;
                 }
             }
+        }
+
+        static Dictionary<string, string> IndexHiPoly()
+        {
+            if (_hiIndex != null && Time.realtimeSinceStartup - _hiIndexTime < 30f)
+                return _hiIndex;
+
+            var map = new Dictionary<string, string>();
+            IndexFbxFolder(map, HiPolyRel);
+            // TubeDeck lives beside HiPoly, not inside it. Top-level only; HiPoly stays the first pass.
+            IndexFbxFolder(map, "Assets/Art/Props/Playground");
 
             _hiIndexTime = Time.realtimeSinceStartup;
             _hiIndex = map;

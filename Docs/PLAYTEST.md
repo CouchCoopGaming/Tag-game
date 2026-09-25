@@ -56,7 +56,7 @@ Punch is **not** a contact aura -> only active punch hits transfer It (`PunchHit
 
 ## Tube pieces left out (measured)
 
-`Mega_SlideTube` and `PGK_Slide_Tube90` are still not placed. Tube90 spans 3.450 m in Y (-0.525..2.925). Stem +0.52 puts the crown at 3.445, which is 1.445 m above the 2.00 deck if the feet are on mulch, and seating that crown on the deck buries the feet at -1.445. The mega bed spans Y 0.693..4.605 (3.912 m) over a 7.137 m run; the shell spans Y -0.234..5.234 and hangs 0.927 m below the bed exit, and at that exit the shell is up at Y 3.105..3.812, so it is not a sleeve on the bed. Grounding the shell floats the bed exit to 0.927. Grounding the bed buries the shell 0.927 m and leaves the crown 1.912 m above the 2.00 deck. The grid tops out at 2.00, so neither tube was seated. Crawls are `Toy_TunnelTube` (play places + north ring) and `Mega_CrawlTunnel` (bunkers + south ring). Art still needs a deck-compatible slide tube (mouth-to-crown <= 2.00 m, one sleeve, shared pivot) before Mega/Tube90 can be placed; see LOCAL_GRIND_HANDOFF KIT_REQUEST. No placer change until that mesh exists.
+`PGK_Slide_TubeDeck_2m` is the west deck tube on soft-play and astro only. Yaw 90, stem 0, pivot at local (0, 0, 5.90): the high-mouth center (mesh y=1.91) tucks to local z=0.90, 0.10 inside the 2.00 lip, and the low mouth stays on the pit about 0.7 m short of the spine. East forts, rings, and loops keep the straight chute. `Mega_SlideTube` and `PGK_Slide_Tube90` are still not placed and are not scaled. Crawls are `Toy_TunnelTube` (play places + north ring) and `Mega_CrawlTunnel` (bunkers + south ring).
 
 ## Human Play path
 
