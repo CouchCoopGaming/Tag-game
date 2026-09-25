@@ -497,6 +497,10 @@ namespace Tag.Art
         float _dartStepR;
         bool _dartFromDash;
         float _dartFromDashIn;
+        bool _dashDartSnap;
+        Quaternion _dashDartUaL, _dashDartUaR, _dashDartLaL, _dashDartLaR;
+        Quaternion _dashDartUlL, _dashDartUlR, _dashDartLlL, _dashDartLlR;
+        Quaternion _dashDartSp, _dashDartHp, _dashDartHd;
         bool _airDashPoseWas;
         float _dashTrailT;
         float _dashReady;
@@ -3236,19 +3240,41 @@ namespace Tag.Art
             if (!dashingAir && _airDashPoseWas && !jet && air && _input != null && _input.CrouchHeld)
             {
                 // The burst eases into the dart. An air crouch into a dash keeps its ease.
+                // An air dash into a wall run has its own ease.
                 // Fall speed stays doubled. Duration and cooldown are unchanged.
+                if (!_dartFromDash && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+                {
+                    _dashDartSnap = true;
+                    _dashDartUaL = _upperArmL.localRotation;
+                    _dashDartUaR = _upperArmR.localRotation;
+                    _dashDartLaL = _lowerArmL.localRotation;
+                    _dashDartLaR = _lowerArmR.localRotation;
+                    _dashDartUlL = _upperLegL.localRotation;
+                    _dashDartUlR = _upperLegR.localRotation;
+                    _dashDartLlL = _lowerLegL.localRotation;
+                    _dashDartLlR = _lowerLegR.localRotation;
+                    _dashDartSp = _spine.localRotation;
+                    _dashDartHp = _hips.localRotation;
+                    _dashDartHd = _head.localRotation;
+                }
                 _dartFromDash = true;
                 _dartFromDashIn = 0f;
             }
             bool dashTell = _dashPulse > 0.04f || lunging || dashingAir;
             if (_dartFromDash && !dashingAir && !jet && air && _input != null && _input.CrouchHeld)
             {
-                _dartFromDashIn = Mathf.MoveTowards(_dartFromDashIn, 1f, dt / 0.16f);
+                _dartFromDashIn = Mathf.MoveTowards(_dartFromDashIn, 1f, dt / 0.04f);
                 if (_dartFromDashIn >= 0.98f && !dashTell)
+                {
                     _dartFromDash = false;
+                    _dashDartSnap = false;
+                }
             }
             else
+            {
                 _dartFromDash = false;
+                _dashDartSnap = false;
+            }
             if (!dashingAir && _airDashPoseWas && skiing && !jet && !crouch
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
             {
@@ -9460,8 +9486,8 @@ namespace Tag.Art
             if (_wallFromDash && !airDashing && wallRun && !climb && !punching && _wallFromDashIn < 0.98f)
             {
                 // The burst eases into the attach, then the attach holds.
-                // An air dash into a climb has its own ease. A climb into a dash keeps its ease.
-                // A wall exit into a dash keeps its ease.
+                // An air dash into a climb has its own ease. An air dash into a dart has its own ease.
+                // A climb into a dash keeps its ease. A wall exit into a dash keeps its ease.
                 // Exit time is unchanged. Duration and cooldown are unchanged.
                 float intoAttach = _wallFromDashIn;
                 bool left = _motor != null && _motor.WallLeft;
@@ -11766,27 +11792,69 @@ namespace Tag.Art
             if (_dartFromDash && !airDashing && !punching && !wallRun && !climb)
             {
                 // The burst eases into the dart, then the dart holds. An air crouch into a dash keeps its ease.
+                // An air dash into a wall run has its own ease.
                 // Fall speed stays doubled. Duration and cooldown are unchanged.
                 float intoDart = _dartFromDashIn;
-                Quaternion burstL = _uaL0 * Quaternion.Euler(108f, 32f, armZ);
-                Quaternion burstR = _uaR0 * Quaternion.Euler(108f, -32f, -armZ);
                 Quaternion dartL = _uaL0 * Quaternion.Euler(-16f, 12f, armZ);
                 Quaternion dartR = _uaR0 * Quaternion.Euler(-16f, -12f, -armZ);
-                Quaternion burstElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
-                Quaternion burstElR = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
                 Quaternion dartElL = _laL0 * Quaternion.Euler(-58f, 0f, 0f);
                 Quaternion dartElR = _laR0 * Quaternion.Euler(-58f, 0f, 0f);
-                _uaLT = Quaternion.Slerp(burstL, dartL, intoDart);
-                _uaRT = Quaternion.Slerp(burstR, dartR, intoDart);
-                _laLT = Quaternion.Slerp(burstElL, dartElL, intoDart);
-                _laRT = Quaternion.Slerp(burstElR, dartElR, intoDart);
-                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(58f, 0f, 0f), _spine0 * Quaternion.Euler(46f, 0f, 0f), intoDart);
-                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(24f, 0f, 0f), intoDart);
-                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(0f, 0f, 0f), _head0 * Quaternion.Euler(12f, 0f, 0f), intoDart);
-                _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(72f, 0f, 0f), _ulL0 * Quaternion.Euler(34f, 0f, 0f), intoDart);
-                _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(34f, 0f, 0f), intoDart);
-                _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
-                _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
+                Quaternion dartSp = _spine0 * Quaternion.Euler(46f, 0f, 0f);
+                Quaternion dartHp = _hips0 * Quaternion.Euler(24f, 0f, 0f);
+                Quaternion dartHd = _head0 * Quaternion.Euler(12f, 0f, 0f);
+                Quaternion dartThighL = _ulL0 * Quaternion.Euler(34f, 0f, 0f);
+                Quaternion dartThighR = _ulR0 * Quaternion.Euler(34f, 0f, 0f);
+                Quaternion dartKneeL = _llL0 * Quaternion.Euler(-50f, 0f, 0f);
+                Quaternion dartKneeR = _llR0 * Quaternion.Euler(-50f, 0f, 0f);
+                if (intoDart < 0.98f)
+                {
+                    if (_dashDartSnap)
+                    {
+                        _uaLT = Quaternion.Slerp(_dashDartUaL, dartL, intoDart);
+                        _uaRT = Quaternion.Slerp(_dashDartUaR, dartR, intoDart);
+                        _laLT = Quaternion.Slerp(_dashDartLaL, dartElL, intoDart);
+                        _laRT = Quaternion.Slerp(_dashDartLaR, dartElR, intoDart);
+                        _spineT = Quaternion.Slerp(_dashDartSp, dartSp, intoDart);
+                        _hipsT = Quaternion.Slerp(_dashDartHp, dartHp, intoDart);
+                        _headT = Quaternion.Slerp(_dashDartHd, dartHd, intoDart);
+                        _ulLT = Quaternion.Slerp(_dashDartUlL, dartThighL, intoDart);
+                        _ulRT = Quaternion.Slerp(_dashDartUlR, dartThighR, intoDart);
+                        _llLT = Quaternion.Slerp(_dashDartLlL, dartKneeL, intoDart);
+                        _llRT = Quaternion.Slerp(_dashDartLlR, dartKneeR, intoDart);
+                    }
+                    else
+                    {
+                        Quaternion burstL = _uaL0 * Quaternion.Euler(108f, 32f, armZ);
+                        Quaternion burstR = _uaR0 * Quaternion.Euler(108f, -32f, -armZ);
+                        Quaternion burstElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                        Quaternion burstElR = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
+                        _uaLT = Quaternion.Slerp(burstL, dartL, intoDart);
+                        _uaRT = Quaternion.Slerp(burstR, dartR, intoDart);
+                        _laLT = Quaternion.Slerp(burstElL, dartElL, intoDart);
+                        _laRT = Quaternion.Slerp(burstElR, dartElR, intoDart);
+                        _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(58f, 0f, 0f), dartSp, intoDart);
+                        _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), dartHp, intoDart);
+                        _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(0f, 0f, 0f), dartHd, intoDart);
+                        _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(72f, 0f, 0f), dartThighL, intoDart);
+                        _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), dartThighR, intoDart);
+                        _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), dartKneeL, intoDart);
+                        _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), dartKneeR, intoDart);
+                    }
+                }
+                else
+                {
+                    _uaLT = dartL;
+                    _uaRT = dartR;
+                    _laLT = dartElL;
+                    _laRT = dartElR;
+                    _spineT = dartSp;
+                    _hipsT = dartHp;
+                    _headT = dartHd;
+                    _ulLT = dartThighL;
+                    _ulRT = dartThighR;
+                    _llLT = dartKneeL;
+                    _llRT = dartKneeR;
+                }
             }
             if (_tagFromCrouch && !_tagFromMiss && !_tagFromPunch && !_tagFromReady && !_tagFromGrapple && !_tagFromItClaim && !_tagFromDart && !_tagFromWall && !_tagFromClimb && !_tagFromSlide && !_tagFromSki && !_tagFromHard && !_tagFromSoft && !_tagFromJump && !_tagFromDash && !_jumpFromTag && punching && phase == PunchPhase.HitRecover && _tagFromCrouchIn < 0.98f)
             {
