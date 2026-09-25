@@ -229,6 +229,11 @@ namespace Tag.Art
         Quaternion _punchSkiSp, _punchSkiHp, _punchSkiHd;
         bool _slideFromDash;
         float _slideFromDashIn;
+        bool _slideFromPunch;
+        float _slideFromPunchIn;
+        Quaternion _punchSlideUaL, _punchSlideUaR, _punchSlideLaL, _punchSlideLaR;
+        Quaternion _punchSlideUlL, _punchSlideUlR, _punchSlideLlL, _punchSlideLlR;
+        Quaternion _punchSlideSp, _punchSlideHp, _punchSlideHd;
         bool _climbFromDash;
         float _climbFromDashIn;
         bool _wallFromDash;
@@ -469,12 +474,15 @@ namespace Tag.Art
             // A ski into a slide eases the glide into the wedge. Ski speed is unchanged.
             // A jump eases the glide or the landing into the wedge. slideBoost stays 0.
             bool jumpIntoSlide = sliding && !_dropSlide && (!grounded || !_wasGrounded || _landSquash > 0.08f);
+            bool fromPunchSlide = sliding && !_dropSlide && !jumpIntoSlide && !_airDashPoseWas
+                && (_punchPhaseWas == PunchPhase.Windup || _punchPhaseWas == PunchPhase.Active)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
             if (jumpIntoSlide)
             {
                 _jumpToSlide = 1f;
                 _jumpToSlideLand = grounded;
             }
-            else
+            else if (!fromPunchSlide)
             {
                 if (sliding && !_dropSlide && _crouchFromStand && _dropVis > 0.2f)
                     _crouchToSlide = 1f;
@@ -482,6 +490,25 @@ namespace Tag.Art
                     _crouchWalkToSlide = 1f;
                 if (sliding && !_dropSlide && _skiBlend > 0.2f)
                     _skiToSlide = _skiBlend;
+            }
+            if (fromPunchSlide && !_slideFromPunch)
+            {
+                // The cock or the strike eases into the wedge. A punch into a ski keeps its ease.
+                // A crouch into a slide keeps its ease. A ski into a slide keeps its ease.
+                // A jump into a slide keeps its ease. slideBoost stays 0. Windup time is unchanged.
+                _slideFromPunch = true;
+                _slideFromPunchIn = 0f;
+                _punchSlideUaL = _upperArmL.localRotation;
+                _punchSlideUaR = _upperArmR.localRotation;
+                _punchSlideLaL = _lowerArmL.localRotation;
+                _punchSlideLaR = _lowerArmR.localRotation;
+                _punchSlideUlL = _upperLegL.localRotation;
+                _punchSlideUlR = _upperLegR.localRotation;
+                _punchSlideLlL = _lowerLegL.localRotation;
+                _punchSlideLlR = _lowerLegR.localRotation;
+                _punchSlideSp = _spine.localRotation;
+                _punchSlideHp = _hips.localRotation;
+                _punchSlideHd = _head.localRotation;
             }
             if (sliding)
                 _dropSlide = true;
@@ -522,9 +549,12 @@ namespace Tag.Art
             {
                 _jumpToSlide = 0f;
                 _jumpToSlideLand = false;
+                _slideFromPunch = false;
             }
             else if (_jumpToSlide > 0f)
                 _jumpToSlide = Mathf.MoveTowards(_jumpToSlide, 0f, dt / 0.16f);
+            if (_slideFromPunch && sliding)
+                _slideFromPunchIn = Mathf.MoveTowards(_slideFromPunchIn, 1f, dt / 0.04f);
             if (crouch && !sliding && speed <= 0.35f)
                 _crouchFromStand = true;
             else if ((crouch && speed > 0.35f) || sliding || _dropVis <= 0.001f)
@@ -6441,6 +6471,30 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(Mathf.Lerp(14f, 62f, up), 0f, 0f), intoGrab);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-(6f + Mathf.Max(0f, -kneePhase) * 72f), 0f, 0f), intoGrab);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-(6f + Mathf.Max(0f, kneePhase) * 72f), 0f, 0f), intoGrab);
+            }
+            if (_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromPunchIn < 0.98f)
+            {
+                // The cock or the strike eases into the wedge, then the wedge holds.
+                // A punch into a ski keeps its ease. A crouch into a slide keeps its ease.
+                // A ski into a slide keeps its ease. A jump into a slide keeps its ease.
+                // slideBoost stays 0. Windup time is unchanged.
+                float intoWedge = _slideFromPunchIn;
+                bool leadLeft = sinC >= 0f;
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
+                Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(_punchSlideUaL, wedgeL, intoWedge);
+                _uaRT = Quaternion.Slerp(_punchSlideUaR, wedgeR, intoWedge);
+                _laLT = Quaternion.Slerp(_punchSlideLaL, wedgeElL, intoWedge);
+                _laRT = Quaternion.Slerp(_punchSlideLaR, wedgeElR, intoWedge);
+                _spineT = Quaternion.Slerp(_punchSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_punchSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_punchSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_punchSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_punchSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_punchSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_punchSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
             }
             if (_slideFromDash && !_skiFromDash && !airDashing && !punching && !wallRun && !climb)
             {
