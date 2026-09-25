@@ -185,6 +185,7 @@ namespace Tag.Art
             n += AstroRingWall(root);
             n += RingArmyBars(root);
             n += ArmyApronStep(root);
+            n += ArmyMouthStep(root);
             n += RingKnightBars(root);
             n += EastSouthCluster(root);
             n += WestNorthCluster(root);
@@ -837,6 +838,21 @@ namespace Tag.Art
         int ArmyApronStep(Transform root)
         {
             var parent = MakeGroup(root, "Play_Step_ArmyApron", new Vector3(53.73f, 0f, 2.85f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("Toy_MushroomSteps", Vector3.zero, 0f),
+            });
+        }
+
+        /// <summary>
+        /// One mushroom on the approach to the army crawl's west mouth.
+        /// Mouth is x=52, z 3.85-6.65. Edge rail south starts at z=6.23. Bars end at z=3.39.
+        /// Mesh x 48.85-51.44, z 4.56-5.44: 0.56 m west of the mouth, 0.78 m south of the rail.
+        /// The mouth stays open. Knight does not get a copy.
+        /// </summary>
+        int ArmyMouthStep(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Step_ArmyMouth", new Vector3(50.10f, 0f, 5.00f), 0f);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
                 ("Toy_MushroomSteps", Vector3.zero, 0f),
