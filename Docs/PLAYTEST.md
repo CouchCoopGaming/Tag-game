@@ -362,7 +362,9 @@ Already on this branch: A punch miss into an air dash eases the whiff into the b
 
 Already on this branch: A tag into an air dash eases the connect into the burst. The burst still holds. A punch miss into an air dash is unchanged. A tag into a jump is unchanged. A crouch tag is unchanged. Duration and cooldown are unchanged.
 
-This delta: Becoming It into an air dash eases the claim into the burst. The burst still holds. A tag into an air dash is unchanged. Becoming It into a jump is unchanged. A crouch claim is unchanged. Duration and cooldown are unchanged.
+Already on this branch: Becoming It into an air dash eases the claim into the burst. The burst still holds. A tag into an air dash is unchanged. Becoming It into a jump is unchanged. A crouch claim is unchanged. Duration and cooldown are unchanged.
+
+This delta: A grapple release into an air dash eases the line into the burst. The burst still holds. Becoming It into an air dash is unchanged. A grapple release into a jump is unchanged. A crouch release is unchanged. The gate stays off. Duration and cooldown are unchanged.
 
 ## Stack snapshot
 
@@ -662,6 +664,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 201. Miss a punch, then air dash: the whiff should ease into the burst. The burst should still hold. An air dash into a wall run should feel the same. An air dash into a climb should feel the same. A punch miss into a jump should feel the same. A crouch miss should feel the same. The dash should not feel longer. Jet stays off.
 202. Tag, then air dash: the connect should ease into the burst. The burst should still hold. A punch miss into an air dash should feel the same. A tag into a jump should feel the same. A crouch tag should feel the same. The dash should not feel longer. Jet stays off.
 203. Become It, then air dash: the claim should ease into the burst. The burst should still hold. A tag into an air dash should feel the same. Becoming It into a jump should feel the same. A crouch claim should feel the same. The dash should not feel longer. Jet stays off.
+204. Let go of a grapple, then air dash: the line should ease into the burst. The burst should still hold. Becoming It into an air dash should feel the same. A grapple release into a jump should feel the same. A crouch release should feel the same. The dash should not feel longer. The gate stays off. Jet stays off.
 
 ## Known leftovers
 
@@ -885,6 +888,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 191. A punch miss into an air dash eases the whiff into the burst. The burst still holds. An air dash into a wall run is unchanged. An air dash into a climb is unchanged. A climb into an air dash is unchanged. A wall exit into an air dash is unchanged. A punch miss into a jump is unchanged. A crouch miss is unchanged. Duration and cooldown are unchanged. Jet stays off.
 192. A tag into an air dash eases the connect into the burst. The burst still holds. A punch miss into an air dash is unchanged. A tag into a jump is unchanged. A crouch tag is unchanged. Duration and cooldown are unchanged. Jet stays off.
 193. Becoming It into an air dash eases the claim into the burst. The burst still holds. A tag into an air dash is unchanged. Becoming It into a jump is unchanged. A crouch claim is unchanged. Duration and cooldown are unchanged. Jet stays off.
+194. A grapple release into an air dash eases the line into the burst. The burst still holds. Becoming It into an air dash is unchanged. A grapple release into a jump is unchanged. A crouch release is unchanged. The gate stays off. Duration and cooldown are unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
