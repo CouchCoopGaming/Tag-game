@@ -1276,6 +1276,23 @@ namespace Tag.Art
                 float kneeStand = kneeBase * kneeBase;
                 float kL = sinC >= 0f ? Mathf.Lerp(kneeBase, kneeStand, standing) : kRelease;
                 float kR = sinC >= 0f ? kRelease : Mathf.Lerp(kneeBase, kneeStand, standing);
+                // A soft landing into a walk keeps going. The front knee absorbs and the
+                // trail leg stays in the stride, so it does not read as a stop.
+                // A hard land and a stand are unchanged. Hold time is unchanged.
+                float walkOn = (1f - hard) * Mathf.Clamp01(walkAmt) * (1f - Mathf.Clamp01(runAmt));
+                if (walkOn > 0.02f)
+                {
+                    if (sinC >= 0f)
+                    {
+                        kL = Mathf.Lerp(kL, kL * 0.5f, walkOn);
+                        kR = Mathf.Lerp(kR, kR * kR, walkOn);
+                    }
+                    else
+                    {
+                        kR = Mathf.Lerp(kR, kR * 0.5f, walkOn);
+                        kL = Mathf.Lerp(kL, kL * kL, walkOn);
+                    }
+                }
                 float armK = Mathf.Lerp(kRelease * kRelease, kneeStand * kneeStand, standing) * hard;
                 float hipMove = Mathf.Lerp(kneeBase * 0.2f, kRelease, hard);
                 float hipK = hipMove * hipMove;
