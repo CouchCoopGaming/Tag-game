@@ -565,6 +565,11 @@ namespace Tag.Art
         Quaternion _slideGuardUaL, _slideGuardUaR, _slideGuardLaL, _slideGuardLaR;
         Quaternion _slideGuardUlL, _slideGuardUlR, _slideGuardLlL, _slideGuardLlR;
         Quaternion _slideGuardSp, _slideGuardHp, _slideGuardHd;
+        bool _stillFromPunch;
+        float _stillFromPunchIn;
+        Quaternion _punchGuardUaL, _punchGuardUaR, _punchGuardLaL, _punchGuardLaR;
+        Quaternion _punchGuardUlL, _punchGuardUlR, _punchGuardLlL, _punchGuardLlR;
+        Quaternion _punchGuardSp, _punchGuardHp, _punchGuardHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -3592,6 +3597,37 @@ namespace Tag.Art
             }
             else if (!windupNow)
                 _tagPunchHold = false;
+            bool punchIntoStill = inStill && fromPunchPose
+                && phase != PunchPhase.Windup && phase != PunchPhase.Active
+                && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover
+                && !dashPoseNow && !_crouchFromJump && !_crouchFromDash && !_diveFromJump
+                && !wallRun && !climb
+                && _itClaim <= 0.2f && _dashReady <= 0.2f
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (punchIntoStill)
+            {
+                // The punch eases into the guard. A slide into a still crouch keeps its ease.
+                // A ski into a still crouch keeps its ease. A tag into a still crouch keeps its pose.
+                // Windup time is unchanged.
+                _stillFromPunch = true;
+                _stillFromPunchIn = 0f;
+                _punchGuardUaL = _upperArmL.localRotation;
+                _punchGuardUaR = _upperArmR.localRotation;
+                _punchGuardLaL = _lowerArmL.localRotation;
+                _punchGuardLaR = _lowerArmR.localRotation;
+                _punchGuardUlL = _upperLegL.localRotation;
+                _punchGuardUlR = _upperLegR.localRotation;
+                _punchGuardLlL = _lowerLegL.localRotation;
+                _punchGuardLlR = _lowerLegR.localRotation;
+                _punchGuardSp = _spine.localRotation;
+                _punchGuardHp = _hips.localRotation;
+                _punchGuardHd = _head.localRotation;
+            }
+            if (!inStill)
+                _stillFromPunch = false;
+            else if (_stillFromPunch)
+                _stillFromPunchIn = Mathf.MoveTowards(_stillFromPunchIn, 1f, dt / 0.04f);
             _punchPhaseWas = phase;
             _tagHitWas = hitNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
@@ -8562,6 +8598,52 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_slideGuardUlR, guardThighR, intoGuard);
                     _llLT = Quaternion.Slerp(_slideGuardLlL, guardKneeL, intoGuard);
                     _llRT = Quaternion.Slerp(_slideGuardLlR, guardKneeR, intoGuard);
+                }
+                else
+                {
+                    _uaLT = guardL;
+                    _uaRT = guardR;
+                    _laLT = guardElL;
+                    _laRT = guardElR;
+                    _spineT = guardSp;
+                    _hipsT = guardHp;
+                    _headT = guardHd;
+                    _ulLT = guardThighL;
+                    _ulRT = guardThighR;
+                    _llLT = guardKneeL;
+                    _llRT = guardKneeR;
+                }
+            }
+            if (_stillFromPunch && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The punch eases into the guard, then the guard holds.
+                // A slide into a still crouch keeps its ease. A ski into a still crouch keeps its ease.
+                // Windup time is unchanged.
+                float intoGuard = _stillFromPunchIn;
+                Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion guardR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion guardElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion guardHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion guardHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion guardThighL = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardThighR = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardKneeL = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
+                Quaternion guardKneeR = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
+                if (intoGuard < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_punchGuardUaL, guardL, intoGuard);
+                    _uaRT = Quaternion.Slerp(_punchGuardUaR, guardR, intoGuard);
+                    _laLT = Quaternion.Slerp(_punchGuardLaL, guardElL, intoGuard);
+                    _laRT = Quaternion.Slerp(_punchGuardLaR, guardElR, intoGuard);
+                    _spineT = Quaternion.Slerp(_punchGuardSp, guardSp, intoGuard);
+                    _hipsT = Quaternion.Slerp(_punchGuardHp, guardHp, intoGuard);
+                    _headT = Quaternion.Slerp(_punchGuardHd, guardHd, intoGuard);
+                    _ulLT = Quaternion.Slerp(_punchGuardUlL, guardThighL, intoGuard);
+                    _ulRT = Quaternion.Slerp(_punchGuardUlR, guardThighR, intoGuard);
+                    _llLT = Quaternion.Slerp(_punchGuardLlL, guardKneeL, intoGuard);
+                    _llRT = Quaternion.Slerp(_punchGuardLlR, guardKneeR, intoGuard);
                 }
                 else
                 {
