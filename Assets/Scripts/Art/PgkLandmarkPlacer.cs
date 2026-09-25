@@ -190,8 +190,9 @@ namespace Tag.Art
             n += WestNorthCluster(root);
             // Overhead bars. West stays at x=11 (the mast owns x-9.5 around z 12-18).
             // East sits at x=62.5, just inside the kickball pad's open west edge.
-            // Segments stop at the EW spines; you cross those on foot.
+            // Segments stop at the EW spines except one west span across the south spine.
             n += MonkeyLane(root, "Play_Bars_W", 11f, new[] { 12.6f, 22f, 26.2f, 30.4f, 40.2f });
+            n += SoftMerryBar(root);
             n += MonkeyLane(root, "Play_Bars_E", 62.5f, new[] { 13.2f, 22f, 26.2f, 30.4f, 40.2f, 44.4f });
             // Beams end 0.25 m short of the loop towers and stay off both EW spines.
             // West run z 20.75-29.75 (tower deck starts z=30). East run z 24.25-33.25
@@ -563,8 +564,8 @@ namespace Tag.Art
 
         /// <summary>
         /// Bars yaw 90 run along Z and abut at 4.2 m. Centers stop short of the EW spines
-        /// (z 16.4-19.6 and 34.4-37.6). West x=11 misses the pirate mast and the astro
-        /// spiral. East x=62.5 is on the kickball pad's open west edge.
+        /// (z 16.4-19.6 and 34.4-37.6) except SoftMerryBar. West x=11 misses the pirate mast
+        /// and the astro spiral. East x=62.5 is on the kickball pad's open west edge.
         /// </summary>
         int MonkeyLane(Transform root, string name, float x, float[] centersZ)
         {
@@ -573,6 +574,22 @@ namespace Tag.Art
             foreach (var z in centersZ)
                 pieces.Add(("PGK_Monkey_4m_LOD0", new Vector3(x, 0f, z), 90f));
             return SpawnList(parent, pieces);
+        }
+
+        /// <summary>
+        /// One overhead monkey linking soft-play to merry across the south spine.
+        /// Posts land at z 15.74-15.82 and z 19.74-19.82, outside the spine (z 16.4-19.6).
+        /// Rungs are at y=2, so the chase under them stays open. The south post is 0.58 m
+        /// south of the spine, the north post 0.14 m north of it and 0.14 m off the next bar.
+        /// Same x=11 line as the west bars.
+        /// </summary>
+        int SoftMerryBar(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Bars_SoftMerry", new Vector3(11f, 0f, 17.78f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("PGK_Monkey_4m_LOD0", Vector3.zero, 90f),
+            });
         }
 
         /// <summary>
