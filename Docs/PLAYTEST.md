@@ -56,7 +56,9 @@ Already on this branch: Leaving a climb eases into the fall or the run. The reac
 
 Already on this branch: A grapple pull, only while the gate is on, reaches both arms in a long line with the legs long. The default gate stays off.
 
-This delta: The new It raises one arm and holds the other out, with the chest open and one knee up. It should not match the tagged runner's two-arm V. The catch pose is unchanged.
+Already on this branch: The new It raises one arm and holds the other out, with the chest open and one knee up. It does not match the tagged runner's two-arm V.
+
+This delta: After a punch connects, the fist eases back into the run during the recover. It should not snap from the long line into the stride when the punch ends. Windup time is still 0.12s.
 
 ## Stack snapshot
 
@@ -203,6 +205,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 48. Climb, then drop or step off into a sprint: the reaching hand and the stepping knee should ease into the fall or the run. They should not snap off the wall in one frame.
 49. Only if you add ExperimentalGrapple and turn enableGrapple on: holding the rope should reach both arms in a long line, legs staying long. It should not look like a jump. With the gate off, RMB still does not hook. Jet stays off.
 50. Tag someone: the runner who was hit should still show the two-arm V with both knees bent. The new It should raise one arm, hold the other out, and lift one knee. The two poses should not match.
+51. Punch a connect, then keep sprinting: the fist should stay out for a moment, then ease into the run. It should not snap back when the punch ends. The cock should not feel longer.
 
 ## Known leftovers
 
@@ -273,6 +276,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 38. Leaving a climb eases into the fall or the run. The reaching hand and the stepping knee do not snap. Climb speed is unchanged.
 39. Grapple pose is a long two-arm reach with long legs, only while enableGrapple is on and a rope is attached. The default gate stays off. Jet stays off.
 40. The new It raises one arm and holds the other out, chest open, one knee up. The tagged runner still uses the two-arm V. The poses do not match.
+41. Punch connect eases into the run during the recover. The fist does not snap back when the punch ends. Windup time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
