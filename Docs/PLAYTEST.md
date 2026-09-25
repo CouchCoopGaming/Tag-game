@@ -34,7 +34,9 @@ Already on this branch: A jump shows a long arm line and a knee tuck before the 
 
 Already on this branch: The run plant holds. The front thigh reaches farther than the back thigh, and only that knee bends.
 
-This delta: A slide's arms are a long low line. The elbows stay nearly straight so the wedge reads at chase distance. Lead knee stays tucked and the trail leg stays long. No extra arm roll. Slide speed is unchanged.
+Already on this branch: A slide's arms are a long low line. Elbows stay nearly straight.
+
+This delta: On a landing the arms come out to the sides for balance while the knees stay buckled. The flare is the same mild A as the run, so the hands stay clear of the hips. The buckle still eases back into the stride. Land stun and jump height are unchanged.
 
 ## Stack snapshot
 
@@ -170,6 +172,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 37. Jump, including a short hop: both arms should be a long line up and the knees tucked before you reach the top. On the way down, even a short drop, the arms should trail back and the legs should lengthen before you land. Hands stay clear of the hips.
 38. Sprint: each plant should hold a moment, one knee up and the other leg long behind, not two straight legs sliding together. The forward arm should still be the opposite side. Hands stay clear of the hips.
 39. Slide: the arms should be a long line forward and low, not a folded pair at the chest. Lead knee stays under the chest and the trail leg stays straight. Hands stay clear of the hips.
+40. Land, including a small hop: knees buckle, and both arms should come out to the sides while that buckle holds. They should ease back into the run. Hands stay clear of the hips.
 
 ## Known leftovers
 
@@ -229,6 +232,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 27. Jump tuck and fall trail show before the landing, including a short hop. Hands stay clear of the hips.
 28. Run plant holds. Front knee bends, back leg stays long, arms still oppose the front leg. No extra arm roll.
 29. Slide arms are a long low line. Elbows stay nearly straight. Lead knee tucked, trail leg long.
+30. Land arms come out for balance during the buckle, then ease into the run. Hands stay clear of the hips.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
