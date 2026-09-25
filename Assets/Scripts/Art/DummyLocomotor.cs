@@ -12,6 +12,7 @@ namespace Tag.Art
     public class DummyLocomotor : MonoBehaviour
     {
         PlayerMotor _motor;
+        PlayerInputReader _input;
         PunchHitbox _punch;
         ExperimentalGrapple _grapple;
 
@@ -98,6 +99,7 @@ namespace Tag.Art
             float dt = Time.deltaTime;
             _punchTelegraph = Mathf.MoveTowards(_punchTelegraph, 0f, dt);
             if (_motor == null) _motor = GetComponentInParent<PlayerMotor>();
+            if (_input == null) _input = GetComponentInParent<PlayerInputReader>();
             if (_grapple == null) _grapple = GetComponentInParent<ExperimentalGrapple>();
             HookBounce();
             // Cyan dash tell must run even when the limb rig failed to bind.
@@ -119,6 +121,7 @@ namespace Tag.Art
             // The jet branch is separate and is not used here.
             float airRise = 0f;
             float airFall = 0f;
+            float diveAmt = 0f;
             if (air && _motor != null)
             {
                 float vy = _motor.Velocity.y;
@@ -126,6 +129,10 @@ namespace Tag.Art
                 // The quiet band around zero is the apex hang. Jump height is unchanged.
                 airRise = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(3.2f, 9f, vy));
                 airFall = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-3.2f, -9f, vy));
+                // Visual only. airCrouchFallMult stays 2. The dart starts as soon as the drop is readable.
+                bool airCrouch = !jet && _input != null && _input.CrouchHeld;
+                if (airCrouch)
+                    diveAmt = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-1.2f, -6.5f, vy));
             }
             bool crouch = st == MoveState.Crouch;
             bool skiing = st == MoveState.Ski;
@@ -467,6 +474,18 @@ namespace Tag.Art
                     _hips0 * Quaternion.Euler(6f, 0f, 0f),
                     Quaternion.Slerp(_hips0 * Quaternion.Euler(8f, 0f, 0f), _hips0 * Quaternion.Euler(4f, 0f, 0f), riseShare),
                     airW);
+                if (diveAmt > 0.02f)
+                {
+                    // Fast-fall dart. Arms fold in along the ribs so this is not the long trail,
+                    // and the chest pitches down so it is not the apex hang. Fall speed is unchanged.
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(28f, 6f, armZ), diveAmt);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(28f, -6f, -armZ), diveAmt);
+                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-52f, 0f, 0f), diveAmt);
+                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-52f, 0f, 0f), diveAmt);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(54f, 0f, 0f), diveAmt);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(16f, 0f, 0f), diveAmt);
+                    _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(18f, 0f, 0f), diveAmt);
+                }
             }
             else
             {
@@ -645,6 +664,14 @@ namespace Tag.Art
                 Quaternion kneeHangR = _llR0 * Quaternion.Euler(-26f, 0f, 0f);
                 _llLT = Quaternion.Slerp(kneeHangL, Quaternion.Slerp(kneeLongL, kneeTuckL, riseShare), airW);
                 _llRT = Quaternion.Slerp(kneeHangR, Quaternion.Slerp(kneeLongR, kneeTuckR, riseShare), airW);
+                if (diveAmt > 0.02f)
+                {
+                    // Both legs stay long. A deep knee would read as the jump tuck or the ground guard.
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(10f, 0f, 0f), diveAmt);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(10f, 0f, 0f), diveAmt);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-14f, 0f, 0f), diveAmt);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-14f, 0f, 0f), diveAmt);
+                }
             }
             else
             {
@@ -784,7 +811,8 @@ namespace Tag.Art
             bool grappleTell = _grapplePose > 0.2f && !punching;
             // A hop is short. Slew 18 never reached the tuck or the trail before the landing.
             bool apexHang = air && airRise < 0.2f && airFall < 0.2f;
-            bool airTell = air && (airRise > 0.12f || airFall > 0.12f || apexHang);
+            bool airDive = diveAmt > 0.12f;
+            bool airTell = air && (airRise > 0.12f || airFall > 0.12f || apexHang || airDive);
             float armSlewL = airDashing ? 78f : punchWind ? 90f : handoff || grappleTell ? 72f : airTell ? 64f : (punching || lunging || dashing ? 42f : slew);
             float armSlewR = airDashing ? 78f : punchWind ? 90f : handoff || grappleTell ? 72f : airTell ? 64f : (punching || lunging || dashing ? 46f : slew);
             // Run knees have to arrive inside one stride or the flex never shows.

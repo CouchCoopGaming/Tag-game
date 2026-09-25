@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `52c6231`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `a50646f`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
 
@@ -66,7 +66,9 @@ Already on this branch: Skiing stays a longer stride than the run, but the knee 
 
 Already on this branch: A slide stays a flat wedge with the trail leg straight. The arms sit out from the chest instead of stacking on it, and the head stays up off the knees. Slide speed is unchanged.
 
-This delta: A held crouch is a low guard: chest up, both knees bent, elbows folded in front. A slide stays the flat wedge with straight arms and one trail leg. Holding crouch still slides only when you already have speed. Slide speed is unchanged.
+Already on this branch: A held crouch is a low guard: chest up, both knees bent, elbows folded in front. A slide stays the flat wedge with straight arms and one trail leg. Holding crouch still slides only when you already have speed. Slide speed is unchanged.
+
+This delta: Holding crouch on the way down pitches the chest down and folds the arms in. A normal fall still trails the arms back. The fast-fall speed is unchanged.
 
 ## Stack snapshot
 
@@ -218,6 +220,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 53. Hold ski, then let go into a sprint: the glide should still show a knee and a short arm swing, not locked straight legs. The change into the run should ease. The run knee should still lift higher than the glide. Jet stays off.
 54. Slide, then crouch: the slide should show a flat back, head up, and both arms out in a long line clear of the chest. A crouch should stay a low guard with bent elbows. The slide should not speed up.
 55. From a standstill, hold crouch: both knees should bend and the elbows should fold in front of the chest. The back should stay up. Sprint and keep holding crouch: that becomes the flat slide, straight arms and one leg back, and it should not speed up. When the speed dies while crouch is still held, the guard should return.
+56. Jump, then hold crouch on the way down: the chest should pitch down and the arms should fold in, not trail out like a normal fall. The drop should still feel like the same fast fall. Letting go should return to the trail. A jump with no crouch should feel the same height.
 
 ## Known leftovers
 
@@ -293,6 +296,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 43. Ski glide keeps a knee and a short arm swing. The run knee still lifts higher. The blend eases. Ski speed is unchanged. Jet stays off.
 44. Slide arms sit out from the chest on the flat wedge, and the head stays up. A crouch stays a bent-elbow guard. Slide speed is unchanged.
 45. Crouch is a low guard with both knees bent and the elbows folded in front. Slide stays the flat wedge with straight arms and a trail leg. Holding crouch still slides only with speed. Slide speed is unchanged.
+46. Air-crouch fall is a nose-down dart with the arms in. A normal fall still trails the arms. The 2x fall speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
