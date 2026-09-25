@@ -81,7 +81,7 @@ namespace Tag.Gameplay
         {
             // Pause freezes the clock. Results stay at timeScale 1 with the cursor unlocked.
             // Either way a swing that started on the menu click must not finish into gameplay.
-            if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked)
+            if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked || ResumeInputGate.Blocking)
             {
                 DropSwing();
                 return;

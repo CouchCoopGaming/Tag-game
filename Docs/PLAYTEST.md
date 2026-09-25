@@ -122,7 +122,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - Dash HUD: jet off = one cyan CD bar and one DASH line (DASH! while bursting). Jet on keeps a dash CD line under JET.
 - Dummy MissRecover: limp whiff drops faster than HitRecover hold (short shoulder sag). AI HoldPunchTelegraph matches the flared windup elbow.
 - Bots hold still on countdown, results, and Idle (no chase until Playing).
-- Resume / leave-results: look and punch ignore two frames after the cursor locks so the menu click that closed the card cannot yaw or punch. Rematch / F-keys from Direct Play also arm that gate when the cursor locks.
+- Resume / leave-results: look, punch, jump, dash, and lunge ignore two frames after the cursor locks (shared resume gate + cameras) so the menu click that closed the card cannot yaw or punch. Rematch / F-keys from Direct Play also arm that gate when the cursor locks.
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.
 
 ## Audio

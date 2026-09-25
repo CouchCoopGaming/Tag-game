@@ -3,6 +3,7 @@ using Tag.Core;
 using Tag.Gameplay;
 using Tag.Trail;
 using UnityEngine;
+using TagArena.Movement;
 using UnityEngine.SceneManagement;
 using Tag.Audio;
 
@@ -170,8 +171,7 @@ namespace Tag.Modes
             if (GameFlow.Instance != null)
                 GameFlow.Instance.ReturnToPlay();
             // Direct Play has no flow to lock the cursor after the results card.
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            ResumeInputGate.LockPlayCursor();
             Time.timeScale = 1f;
             // Same Update as rematch click / R: swallow look+punch (rising-edge gate also covers this).
             foreach (var reader in Object.FindObjectsByType<TagArena.Movement.PlayerInputReader>(FindObjectsSortMode.None))
@@ -577,7 +577,7 @@ namespace Tag.Modes
             _localPaused = paused;
             if (!paused) _localHelp = false;
             Time.timeScale = paused ? 0f : 1f;
-            Cursor.lockState = paused ? CursorLockMode.None : CursorLockMode.Locked;
+            if (paused) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; } else ResumeInputGate.LockPlayCursor();
             Cursor.visible = paused;
             if (paused)
             {

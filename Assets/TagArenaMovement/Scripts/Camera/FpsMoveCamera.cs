@@ -46,8 +46,11 @@ namespace TagArena.Movement
         void LateUpdate()
         {
             float dt = Time.deltaTime;
-            _yaw += _in.Look.x * sensitivity;
-            _pitch -= _in.Look.y * sensitivity;
+            if (!ResumeInputGate.Blocking)
+            {
+                _yaw += _in.Look.x * sensitivity;
+                _pitch -= _in.Look.y * sensitivity;
+            }
             _pitch = Mathf.Clamp(_pitch, minPitch, maxPitch);
 
             motor.transform.rotation = Quaternion.Euler(0f, _yaw, 0f);

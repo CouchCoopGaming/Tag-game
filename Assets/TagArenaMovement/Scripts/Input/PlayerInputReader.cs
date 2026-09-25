@@ -94,7 +94,10 @@ namespace TagArena.Movement
 
             // Rising edge: menu/results just released play. Same-frame lock + Read would yaw/punch.
             if (!_wasCursorLocked)
+            {
                 _lookPunchGateFrames = Mathf.Max(_lookPunchGateFrames, 2);
+                ResumeInputGate.Arm();
+            }
             _wasCursorLocked = true;
 
             Move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
@@ -131,13 +134,35 @@ namespace TagArena.Movement
             AirDashPressed = Input.GetKeyDown(airDashKey) || Input.GetKeyDown(KeyCode.LeftAlt);
             PunchPressed = Input.GetKeyDown(punchKey) || Input.GetKeyDown(KeyCode.E);
 
-            if (_lookPunchGateFrames > 0)
+            if (_lookPunchGateFrames > 0 || ResumeInputGate.Blocking)
             {
-                _lookPunchGateFrames--;
-                // Consume residual mouse delta and the click that closed the menu/card.
-                Look = Vector2.zero;
-                PunchPressed = false;
+                if (_lookPunchGateFrames > 0)
+                    _lookPunchGateFrames--;
+                SuppressResumeOneShots();
             }
+        }
+
+        /// <summary>
+        /// Drop look and one-shot edges already latched this frame. Holds (move, sprint,
+        /// jump-held) stay so resume does not zero locomotion. Safe for AI: no-op when
+        /// ExternalControl is set.
+        /// </summary>
+        public void SuppressResumeOneShots()
+        {
+            if (ExternalControl) return;
+            Look = Vector2.zero;
+            CrouchPressed = false;
+            JumpPressed = false;
+            JetPressed = false;
+            LungePressed = false;
+            AirDashPressed = false;
+            PunchPressed = false;
+            TapForwardPulse = false;
+            // Re-latch hold edges so a menu hold is not a fresh press next frame.
+            _prevCrouch = (Input.GetKey(crouchKey) || Input.GetKey(KeyCode.LeftControl)) ? 1f : 0f;
+            _prevJump = (Input.GetButton("Jump") || Input.GetKey(KeyCode.Space)) ? 1f : 0f;
+            _prevJet = (Input.GetKey(jetKey) || Input.GetMouseButton(1)) ? 1f : 0f;
+            _prevW = Input.GetKey(tapStrafePulseKey);
         }
 
         /// <summary>Optional explicit arm (pause/results clear). Rising-edge lock also arms.</summary>
@@ -145,6 +170,7 @@ namespace TagArena.Movement
         {
             if (frames < 1) frames = 1;
             _lookPunchGateFrames = Mathf.Max(_lookPunchGateFrames, frames);
+            ResumeInputGate.Arm();
         }
 
         /// <summary>AI helper: set planar wish in body space and clear one-shot human buttons.</summary>

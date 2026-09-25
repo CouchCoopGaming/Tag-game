@@ -66,8 +66,11 @@ namespace TagArena.Movement
 
             if (_in != null)
             {
-                _yaw += _in.Look.x * sensitivity;
-                _pitch -= _in.Look.y * sensitivity;
+                if (!ResumeInputGate.Blocking)
+                {
+                    _yaw += _in.Look.x * sensitivity;
+                    _pitch -= _in.Look.y * sensitivity;
+                }
             }
             _pitch = Mathf.Clamp(_pitch, minPitch, maxPitch);
 

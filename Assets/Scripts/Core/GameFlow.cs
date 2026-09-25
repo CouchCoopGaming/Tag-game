@@ -219,8 +219,7 @@ namespace Tag.Core
                 return;
             State = GameFlowState.Play;
             Time.timeScale = 1f;
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            ResumeInputGate.LockPlayCursor();
             ArmLocalLookPunchGate();
         }
 
@@ -257,7 +256,7 @@ namespace Tag.Core
             {
                 State = GameFlowState.Play;
                 Time.timeScale = 1f;
-                Cursor.lockState = CursorLockMode.Locked;
+                ResumeInputGate.LockPlayCursor();
                 Cursor.visible = false;
                 _controlsOpen = false;
                 _settingsOpen = false;
