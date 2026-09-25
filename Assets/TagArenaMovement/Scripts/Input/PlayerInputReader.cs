@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace TagArena.Movement
 {
@@ -24,7 +24,7 @@ namespace TagArena.Movement
         public bool PunchPressed;
         public bool TapForwardPulse;
 
-        /// <summary>When true, Read() is a no-op — AI / tests own Move/Look/buttons.</summary>
+        /// <summary>When true, Read() is a no-op - AI / tests own Move/Look/buttons.</summary>
         public bool ExternalControl;
 
         [Header("Legacy key map")]
@@ -43,6 +43,10 @@ namespace TagArena.Movement
         float _prevLunge;
         bool _prevW;
         float _extPrevJump;
+        bool _wasCursorLocked;
+        // After pause/results unlock, locking the cursor in the same Update as Read can yaw+punch.
+        // Drop look/punch for one locked frame so the resume click / residual mouse delta die first.
+        int _lookPunchGateFrames;
 
         void Awake()
         {
@@ -61,7 +65,9 @@ namespace TagArena.Movement
             // Pause freezes the clock but Update still runs. Results keep timeScale at 1
             // and unlock the cursor, so a Rematch click (Mouse0) would also punch.
             // Look is not scaled by deltaTime, so an unlocked cursor must not yaw either.
-            if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked)
+            bool cursorLocked = Cursor.lockState == CursorLockMode.Locked;
+            bool playLive = Time.timeScale > 0f && cursorLocked;
+            if (!playLive)
             {
                 Move = Vector2.zero;
                 Look = Vector2.zero;
@@ -82,8 +88,14 @@ namespace TagArena.Movement
                 _prevJump = (Input.GetButton("Jump") || Input.GetKey(KeyCode.Space)) ? 1f : 0f;
                 _prevJet = (Input.GetKey(jetKey) || Input.GetMouseButton(1)) ? 1f : 0f;
                 _prevW = Input.GetKey(tapStrafePulseKey);
+                _wasCursorLocked = false;
                 return;
             }
+
+            // Rising edge: menu/results just released play. Same-frame lock + Read would yaw/punch.
+            if (!_wasCursorLocked)
+                _lookPunchGateFrames = Mathf.Max(_lookPunchGateFrames, 1);
+            _wasCursorLocked = true;
 
             Move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             if (Move.sqrMagnitude > 1f) Move.Normalize();
@@ -118,6 +130,21 @@ namespace TagArena.Movement
             // Q / Left Alt (docs); MMB also counts via LungePressed when airborne in motor.
             AirDashPressed = Input.GetKeyDown(airDashKey) || Input.GetKeyDown(KeyCode.LeftAlt);
             PunchPressed = Input.GetKeyDown(punchKey) || Input.GetKeyDown(KeyCode.E);
+
+            if (_lookPunchGateFrames > 0)
+            {
+                _lookPunchGateFrames--;
+                // Consume residual mouse delta and the click that closed the menu/card.
+                Look = Vector2.zero;
+                PunchPressed = false;
+            }
+        }
+
+        /// <summary>Optional explicit arm (pause/results clear). Rising-edge lock also arms.</summary>
+        public void ArmLookPunchGate(int frames = 1)
+        {
+            if (frames < 1) frames = 1;
+            _lookPunchGateFrames = Mathf.Max(_lookPunchGateFrames, frames);
         }
 
         /// <summary>AI helper: set planar wish in body space and clear one-shot human buttons.</summary>

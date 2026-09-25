@@ -221,6 +221,7 @@ namespace Tag.Core
             Time.timeScale = 1f;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            ArmLocalLookPunchGate();
         }
 
         public void QuitToMenu()
@@ -231,6 +232,13 @@ namespace Tag.Core
             SceneManager.LoadScene(bootSceneName);
             State = GameFlowState.Boot;
             _bootFocus = 0;
+        }
+
+
+        static void ArmLocalLookPunchGate()
+        {
+            foreach (var reader in Object.FindObjectsByType<TagArena.Movement.PlayerInputReader>(FindObjectsSortMode.None))
+                reader?.ArmLookPunchGate(1);
         }
 
         void TogglePause()
@@ -254,6 +262,7 @@ namespace Tag.Core
                 _controlsOpen = false;
                 _settingsOpen = false;
                 _audioOpen = false;
+                ArmLocalLookPunchGate();
                 AudioCuePlayer.Ensure()?.UiClick();
             }
         }

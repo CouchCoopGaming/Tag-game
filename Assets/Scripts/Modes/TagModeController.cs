@@ -420,7 +420,7 @@ namespace Tag.Modes
         void LoadBootMenu()
         {
             Time.timeScale = 1f;
-            Tag.Audio.TagSfx.UiClick();
+            TagSfx.UiClick();
             SceneManager.LoadScene("Boot");
         }
 
@@ -585,7 +585,12 @@ namespace Tag.Modes
                     if (punch != null) punch.ForceEnd();
                 }
             }
-            Tag.Audio.TagSfx.UiClick();
+            else
+            {
+                foreach (var reader in Object.FindObjectsByType<TagArena.Movement.PlayerInputReader>(FindObjectsSortMode.None))
+                    reader?.ArmLookPunchGate(1);
+            }
+            TagSfx.UiClick();
         }
 
         void DrawLocalPause()
