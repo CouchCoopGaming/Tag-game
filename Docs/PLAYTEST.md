@@ -464,7 +464,9 @@ Already on this branch: A dash coming off cooldown into a slide eases the pulse 
 
 Already on this branch: A punch miss into a ski eases the whiff into the glide. A dash coming off cooldown into a slide is unchanged. A punch into a ski is unchanged. A punch miss into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. Whiff time is unchanged. Ski speed is unchanged.
 
-This delta: A punch miss into a slide eases the whiff into the wedge. A punch miss into a ski is unchanged. A punch into a slide is unchanged. A punch miss into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. slideBoost stays 0. Whiff time is unchanged.
+Already on this branch: A punch miss into a slide eases the whiff into the wedge. A punch miss into a ski is unchanged. A punch into a slide is unchanged. A punch miss into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. slideBoost stays 0. Whiff time is unchanged.
+
+This delta: A still crouch into a slide eases the guard into the wedge. A punch miss into a slide is unchanged. A still crouch into a punch is unchanged. A still crouch into a tag is unchanged. A still crouch into a ski is unchanged. A crouch walk into a slide is unchanged. slideBoost stays 0.
 
 ## Stack snapshot
 
@@ -815,6 +817,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 252. When the dash is ready, slide: the pulse should ease into the wedge. A dash coming off cooldown into a ski should feel the same. A dash coming off cooldown into a punch should feel the same. A dash coming off cooldown into a tag should feel the same. A dash coming off cooldown into a jump should feel the same. The slide should not feel faster. The dash should not feel longer. Jet stays off.
 253. Miss a punch, then ski: the whiff should ease into the glide. A dash coming off cooldown into a slide should feel the same. A punch into a ski should feel the same. A punch miss into a tag should feel the same. A punch miss into a jump should feel the same. A punch miss into an air dash should feel the same. The glide should not feel longer. The whiff should not feel longer. Speed should feel the same. Jet stays off.
 254. Miss a punch, then slide: the whiff should ease into the wedge. A punch miss into a ski should feel the same. A punch into a slide should feel the same. A punch miss into a tag should feel the same. A punch miss into a jump should feel the same. A punch miss into an air dash should feel the same. The slide should not feel faster. The whiff should not feel longer. Jet stays off.
+255. Still crouch, then slide: the guard should ease into the wedge. A punch miss into a slide should feel the same. A still crouch into a punch should feel the same. A still crouch into a tag should feel the same. A still crouch into a ski should feel the same. A crouch walk into a slide should feel the same. The slide should not feel faster. The guard should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1089,6 +1092,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 242. A dash coming off cooldown into a slide eases the pulse into the wedge. A dash coming off cooldown into a ski is unchanged. A dash coming off cooldown into a punch is unchanged. A dash coming off cooldown into a tag is unchanged. A dash coming off cooldown into a jump is unchanged. slideBoost stays 0. Duration and cooldown are unchanged. Jet stays off.
 243. A punch miss into a ski eases the whiff into the glide. A dash coming off cooldown into a slide is unchanged. A punch into a ski is unchanged. A punch miss into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. Whiff time is unchanged. Ski speed is unchanged. Jet stays off.
 244. A punch miss into a slide eases the whiff into the wedge. A punch miss into a ski is unchanged. A punch into a slide is unchanged. A punch miss into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. slideBoost stays 0. Whiff time is unchanged. Jet stays off.
+245. A still crouch into a slide eases the guard into the wedge. A punch miss into a slide is unchanged. A still crouch into a punch is unchanged. A still crouch into a tag is unchanged. A still crouch into a ski is unchanged. A crouch walk into a slide is unchanged. slideBoost stays 0. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
