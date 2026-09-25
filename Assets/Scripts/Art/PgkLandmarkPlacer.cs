@@ -188,6 +188,7 @@ namespace Tag.Art
             n += ArmyMouthStep(root);
             n += RingKnightBars(root);
             n += KnightMouthStep(root);
+            n += KnightEastMouthStep(root);
             n += EastSouthCluster(root);
             n += WestNorthCluster(root);
             // Overhead bars. West stays at x=11 (the mast owns x-9.5 around z 12-18).
@@ -893,6 +894,22 @@ namespace Tag.Art
         int KnightMouthStep(Transform root)
         {
             var parent = MakeGroup(root, "Play_Step_KnightMouth", new Vector3(54.10f, 0f, 49.48f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("Toy_MushroomSteps", Vector3.zero, 0f),
+            });
+        }
+
+        /// <summary>
+        /// One mushroom on the approach to the knight crawl's east mouth.
+        /// Mouth is x=64, z 47.35-50.15. Center (65.806, 48.75) puts the mesh at
+        /// x 64.56-67.15, z 48.31-49.19: 0.56 m east of the opening, centered on it.
+        /// The shield starts at z=51.58. Spawn_NE's bumper stays south of z=47.1.
+        /// Army's east mouth is inside Spawn_SE's bumper, so army does not get a copy.
+        /// </summary>
+        int KnightEastMouthStep(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Step_KnightEast", new Vector3(65.806f, 0f, 48.75f), 0f);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
                 ("Toy_MushroomSteps", Vector3.zero, 0f),
