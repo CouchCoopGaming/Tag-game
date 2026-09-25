@@ -132,7 +132,7 @@ namespace Tag.Art
             float glideAmt = Mathf.Clamp01(_glidePulse);
 
             bool airDashing = _motor != null && _motor.IsAirDashing;
-            _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.32f);
+            _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.36f); // slightly longer so tag recoil reads in TP
             bool dashing = _dashPulse > 0.04f || lunging || airDashing;
             float dashAmt = Mathf.Max(
                 Mathf.Clamp01(_dashPulse),
@@ -171,7 +171,7 @@ namespace Tag.Art
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : 0f;
             if (flinchAmt > 0.04f)
             {
-                leanX = Mathf.Lerp(leanX, -28f, flinchAmt);
+                leanX = Mathf.Lerp(leanX, -32f, flinchAmt); // stronger tuck so tag recoil reads in TP
                 leanZ = Mathf.Lerp(leanZ, Mathf.Sin(Time.time * 40f) * 18f, flinchAmt);
             }
             if (bouncing)
