@@ -47,7 +47,7 @@ namespace TagArena.Movement
         bool _prevLocalAlive = true;
         float _trailOutFlashUntil;
         // Trail Tag sudden-death rising edge (mode line alone is easy to miss).
-        const float SdFlashSec = 0.85f;
+        const float SdFlashSec = 1.0f; // match It/Mode flash beat so SD reads on rising edge
         bool _sdFlashPrimed;
         bool _prevSuddenDeath;
         float _sdFlashUntil;

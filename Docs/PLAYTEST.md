@@ -136,6 +136,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 3. Audio: Left/Right SFX volume, Up/Down music bed, M mute all, N music mute.
 4. Results: 0.25s arm; R rematch; Q/Esc menu; Left/Right focus; Enter activates; one-shot.
 5. Trail Tag SD: HUD says SD; center flash on rising edge; rematch re-arms flash.
+   Center SD flash holds ~1.0 s (same beat as It handoff / F-key mode flash).
    Near-miss soft edge + TRAIL! starts ~5 m from a foreign ribbon (readability only; hit rules unchanged).
 6. Play path: SW exit, west loop (soft-play bench west of the tubes), NW exit, east loop (NE bench north of the arch, kickball field still open), then the crash cross. Hopscotch corners, swing fall tiles clear of the kickball fence, three Toy_Bridge arches, army/knight 2.4 m rungs plus a spiral climber (top 2.40) that west forts do not have. West forts add a ground slide beside the tubes that the east forts do not have. North of merry: mushroom, spring, and two hop tiles, not a bench. Feel was not edited.
 7. Boot Up/Down and pause Left/Right arm a row and stop at the ends. Enter uses it. Play stays the default Boot row.
