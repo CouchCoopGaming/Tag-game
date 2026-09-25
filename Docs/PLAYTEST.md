@@ -318,7 +318,9 @@ Already on this branch: An air crouch into a jump eases the dart into the push. 
 
 Already on this branch: A jump into an air crouch eases the apex and the descent into the dart. An air crouch into a jump is unchanged. A moving fall still ends in the low stride. A still crouch into a jump is unchanged. Jump height is unchanged. Fall speed is unchanged.
 
-This delta: A jump into an air dash eases the apex into the burst. The burst still holds. An air dash into a jump is unchanged. A jump into an air crouch is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+Already on this branch: A jump into an air dash eases the apex into the burst. The burst still holds. An air dash into a jump is unchanged. A jump into an air crouch is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+
+This delta: A soft landing into a jump eases the absorb into the push. A hard landing keeps its jump. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. The landing is unchanged when you stay down.
 
 ## Stack snapshot
 
@@ -596,6 +598,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 179. Fall in a crouch, then jump: the dart should ease into the push. A moving fall should ease from the low stride. A still crouch into a jump should feel the same. A crouch walk into a jump should feel the same. The jump should not feel higher. The fall should not feel faster.
 180. Jump, then hold crouch: the apex and the descent should ease into the dart. An air crouch into a jump should feel the same. A moving fall should still end in the low stride. A still crouch into a jump should feel the same. The jump should not feel higher. The fall should not feel faster.
 181. Jump, then air dash: the apex should ease into the burst. The burst should still hold. An air dash into a jump should feel the same. A jump into an air crouch should feel the same. The jump should not feel higher. The dash should not feel longer.
+182. Land soft, then jump: the absorb should ease into the push. A hard landing should keep its jump. A still crouch into a jump should feel the same. The jump should not feel higher. Staying down should feel the same.
 
 ## Known leftovers
 
@@ -797,6 +800,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 169. An air crouch into a jump eases the dart into the push. A moving fall uses the low stride. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. Fall speed is unchanged.
 170. A jump into an air crouch eases the apex and the descent into the dart. An air crouch into a jump is unchanged. A moving fall still ends in the low stride. A still crouch into a jump is unchanged. Jump height is unchanged. Fall speed is unchanged.
 171. A jump into an air dash eases the apex into the burst. The burst still holds. An air dash into a jump is unchanged. A jump into an air crouch is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+172. A soft landing into a jump eases the absorb into the push. A hard landing keeps its jump. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. The landing is unchanged when you stay down.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
