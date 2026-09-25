@@ -3,6 +3,23 @@
 Branch: `cursor/apex-party-movement-f5fd`  
 Parent pushes; **do not push** from casual local grind unless asked.
 
+## Campus density pause
+
+No new props this pass. Wait for the next instruction before adding kit.
+
+Seating audit (domes, ground slides, spiral climbers, beams, arches, benches): feet already meet the support plane. Dome stem −0.330 (minY 0.330). Ground-slide mouth stem −0.095 (minY 0.095). Spiral climber, balance beams, arches, benches, mushrooms, spring riders, and the net frame are within 0.5 mm of y=0 with no stem. Safety tiles stay at y=0.02 on purpose. Crawl and plastic caps sit about 4 mm high; snap sinks that. No y edit.
+
+Clearance audit: the three arch piers still clear courts and bars by ≥1.3 m. The SE arch is the minimum, about 1.32 m off the army net and about 1.35 m off hopscotch SE. Sub-0.5 m gaps are side clearances, not closed passages, so nothing moved:
+
+- SW bench to the climb net, 0.29 m. The bar passage stays east of the net.
+- Swing fall tiles to the kickball fence, 0.16 m.
+- SE spring to hopscotch SE, 0.35 m.
+- Army spiral to the south bar, 0.40 m.
+- West dome to the SoftS mushrooms, 0.43 m.
+- Astro dome to the west lane, 0.45 m.
+- NE hop tiles flush with the spawn seesaw, about 0.01 m, not an overlap.
+- NW mushrooms to the north bar, about 0.22 m. The bar line itself stays clear.
+
 ## Campus zone pass (place)
 
 Graybox pad cubes are gone (they were stretching HiPoly into a low-poly look). Flow stones are gone. The chase is kit districts:
@@ -24,7 +41,7 @@ Graybox pad cubes are gone (they were stretching HiPoly into a low-poly look). F
 - **Ring S** (36, 3): monkeys, wall, open 8 m crawl, west tower slide. **Ring N** (36, 51): tube chain with plastic collars, slide south. Ring pits grow a second column on local +X only (the west column meets SpineXw).
 - **Loop W** (16, 25) and **Loop E** (56, 29): wall-run plus end tower, same 3-tile pit with ±1 wings. A second ±Z wing clips the vault rail.
 
-Playtest: spawn SW → mushroom step → hopscotch SW → bench west of the climb net (9.26, 9) → south bar → soft-play bench (8.20, 5.75, west of the tubes) → south apron beam/mushrooms/spring/hops (14.5, 2.6) → climber dome west of that apron → soft-play, spring rider (19.20, 10.40) on the east shoulder → cross the south spine → bars or beams → merry (existing west bench and south picnic) → mushroom/spring/hop cluster (7.2, 31.2) → cross the north spine → north bar → arch (7.70, 42) → hopscotch NW → astro. East: hopscotch SE → arch (65.90, 10.5) → SE pocket (66.2, 7.5) → army (rung, 1.8 m ladder, or the spiral climber) → bars → kickball (sideline bench at 61.30, 21.05, field still open) → swings → bars, then knight to the west or arch (65.65, 41) and bench (65.65, 41.90) into hopscotch NE, with a net/mushroom/spring cluster and two hop tiles at (66.2, 45.0) north of that bench. Crash cross stays open. The torso is north of Spawn_NW, off the faced exit. Hopscotch, swings, merry, and kickball were not moved.
+Playtest, in order: spawn SW → mushroom step → hopscotch SW → bench west of the climb net (9.26, 9) → south bar → soft-play bench (8.20, 5.75) → SoftS south apron (14.5, 2.6: beam, mushrooms, spring, hops) → west climber dome → tubes and ground slide → spring rider (19.20, 10.40) → cross the south spine → bars or beams → merry → merry-north (7.2, 31.2) → cross the north spine → north bar → arch (7.70, 42) → NW cluster (9.4, 45.0) → hopscotch NW → astro (same dome, north of the tubes). East: hopscotch SE → arch (65.90, 10.5) → SE cluster (66.2, 7.5) → army spiral → bars → kickball (field still open) → swings → knight spiral, or arch (65.65, 41) and bench (65.65, 41.90) → NE cluster (66.2, 45.0) → hopscotch NE. Crash cross stays open. Density pause: no new props.
 
 `Mega_SlideTube` / `PGK_Slide_Tube90` stay unused. Tube90 is ~3.45 m tall; Mega_SlideTube's floor rises ~3.4 m. Neither meets 0.40–2.00 without burying the low end. Tron disc is scale 0.5 and shifted east of its Conn ramp.
 
@@ -157,6 +174,6 @@ Do not push; parent agent pushes.
 - Tune tube yaw/XZ if mouths misalign; stem Y offsets already at tip.
 - **Wall-run strips:** feel continuous run face in Play (Loop/WallRunStrip yaw 90; Ring_S 0 / Ring_N 180; Bank 90). Feel `Mega_ParkourRamp` StemSeat +0.26 on Loop (feet on mulch).
 - **SpawnLead Seesaw/Bumper + Kickball Goal:** StemSeat -0.10 / -0.17 / +0.05 applied; feel feet on mulch in Play after Place.
-- **DresserSeat applied:** `Toy_Ramp` -0.17 / `Toy_Slide*` -0.09 / `Toy_TireStack` -0.06 (hook). Feel FoxholeTrench ramp feet in Play after Dress. Still open: unused `Toy_ClimberDome` (+0.33) if ever dressed.
+- **DresserSeat applied:** `Toy_Ramp` -0.17 / `Toy_Slide*` -0.09 / `Toy_TireStack` -0.06 (hook). Feel FoxholeTrench ramp feet in Play after Dress. `Toy_ClimberDome` is placed on the west forts with stem −0.330 (was the unused +0.33 float).
 - Mannequin polish overnight OK.
 
