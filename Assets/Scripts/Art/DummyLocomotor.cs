@@ -122,6 +122,11 @@ namespace Tag.Art
         Quaternion _claimUaL, _claimUaR, _claimLaL, _claimLaR;
         Quaternion _claimUlL, _claimUlR, _claimLlL, _claimLlR;
         Quaternion _claimSp, _claimHp, _claimHd;
+        bool _dashFromGrapple;
+        float _dashFromGrappleIn;
+        Quaternion _grappleUaL, _grappleUaR, _grappleLaL, _grappleLaR;
+        Quaternion _grappleUlL, _grappleUlR, _grappleLlL, _grappleLlR;
+        Quaternion _grappleSp, _grappleHp, _grappleHd;
         float _dartStepL;
         float _dartStepR;
         bool _dartFromDash;
@@ -835,6 +840,33 @@ namespace Tag.Art
                 _dashFromClaimIn = Mathf.MoveTowards(_dashFromClaimIn, 1f, dt / 0.04f);
             else if (!dashingAir)
                 _dashFromClaim = false;
+            bool grappleLine = _grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f && !_jumpFromGrapple;
+            if (dashingAir && !_airDashPoseWas && grappleLine && !jet && !_dashFromClaim && !_dashFromTag && !_dashFromMiss
+                && !_jumpFromDash && !_dashFromDart && !_dashFromSki && !_dashFromSlide && !_dashFromClimb && !_dashFromWall
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+            {
+                // The line eases into the burst. The burst still holds.
+                // A grapple release into a jump keeps its push. A crouch release keeps its pose.
+                // Becoming It into a dash keeps its ease. The gate stays off.
+                // Duration and cooldown are unchanged.
+                _dashFromGrapple = true;
+                _dashFromGrappleIn = 0f;
+                _grappleUaL = _upperArmL.localRotation;
+                _grappleUaR = _upperArmR.localRotation;
+                _grappleLaL = _lowerArmL.localRotation;
+                _grappleLaR = _lowerArmR.localRotation;
+                _grappleUlL = _upperLegL.localRotation;
+                _grappleUlR = _upperLegR.localRotation;
+                _grappleLlL = _lowerLegL.localRotation;
+                _grappleLlR = _lowerLegR.localRotation;
+                _grappleSp = _spine.localRotation;
+                _grappleHp = _hips.localRotation;
+                _grappleHd = _head.localRotation;
+            }
+            if (dashingAir && _dashFromGrapple)
+                _dashFromGrappleIn = Mathf.MoveTowards(_dashFromGrappleIn, 1f, dt / 0.04f);
+            else if (!dashingAir)
+                _dashFromGrapple = false;
             if (!dashingAir && _airDashPoseWas && !jet && air && _input != null && _input.CrouchHeld)
             {
                 // The burst eases into the dart. An air crouch into a dash keeps its ease.
@@ -5018,6 +5050,25 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_punchUlR, _ulRT, into);
                 _llLT = Quaternion.Slerp(_punchLlL, _llLT, into);
                 _llRT = Quaternion.Slerp(_punchLlR, _llRT, into);
+            }
+            if (airDashing && _dashFromGrapple && !_dashFromClaim && !_dashFromTag && !_dashFromMiss && !_dashFromWall && !_dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromGrappleIn < 0.98f)
+            {
+                // The line eases into the burst, then the burst holds.
+                // A grapple release into a jump keeps its push. A crouch release keeps its pose.
+                // Becoming It into a dash keeps its ease. The gate stays off.
+                // Duration and cooldown are unchanged.
+                float intoBurst = _dashFromGrappleIn;
+                _uaLT = Quaternion.Slerp(_grappleUaL, _uaLT, intoBurst);
+                _uaRT = Quaternion.Slerp(_grappleUaR, _uaRT, intoBurst);
+                _laLT = Quaternion.Slerp(_grappleLaL, _laLT, intoBurst);
+                _laRT = Quaternion.Slerp(_grappleLaR, _laRT, intoBurst);
+                _ulLT = Quaternion.Slerp(_grappleUlL, _ulLT, intoBurst);
+                _ulRT = Quaternion.Slerp(_grappleUlR, _ulRT, intoBurst);
+                _llLT = Quaternion.Slerp(_grappleLlL, _llLT, intoBurst);
+                _llRT = Quaternion.Slerp(_grappleLlR, _llRT, intoBurst);
+                _spineT = Quaternion.Slerp(_grappleSp, _spineT, intoBurst);
+                _hipsT = Quaternion.Slerp(_grappleHp, _hipsT, intoBurst);
+                _headT = Quaternion.Slerp(_grappleHd, _headT, intoBurst);
             }
             if (airDashing && _dashFromClaim && !_dashFromTag && !_dashFromMiss && !_dashFromWall && !_dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromClaimIn < 0.98f)
             {
