@@ -36,7 +36,7 @@ namespace TagArena.Movement
         bool _itFlashGained;
 
         // Trail Tag near-miss (foreign ribbon) - soft edge warn before eliminate contact.
-        const float TrailNearMissWarnM = 6.3f; // earlier soft edge so TRAIL! reads before contact (AI peels ~9.3 m)
+        const float TrailNearMissWarnM = 6.4f; // earlier soft edge so TRAIL! reads before contact (AI peels ~9.3 m)
         readonly List<TrailSegment> _trailNearScratch = new List<TrailSegment>();
         float _trailNearDist = float.MaxValue;
         bool _trailNearActive;
@@ -85,7 +85,7 @@ namespace TagArena.Movement
         const float CompassPulseDistM = 13.5f; // earlier It-hunt compass pulse
 
         // Hot Potato fuse HUD warn fallback (matches ItMarker / DummyPatrol when tuning missing).
-        const float HotPotatoWarnSecFallback = 11f; // earlier fuse urgency fallback
+        const float HotPotatoWarnSecFallback = 11.5f; // earlier fuse urgency fallback
 
         // Relative to camera: forward = N, right = E (hunt direction, not world north).
         static readonly string[] Compass8 = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };

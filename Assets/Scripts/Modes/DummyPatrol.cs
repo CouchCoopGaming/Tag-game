@@ -37,7 +37,7 @@ namespace Tag.Modes
         [Tooltip("Only flee when It is within this planar distance; otherwise wander.")]
         [SerializeField] float fleeThreatRange = 14f;
         [Tooltip("Blend of lateral strafe into flee dir so pure radial chase is harder.")]
-        [SerializeField] float fleeStrafeBias = 0.40f; // slightly stronger kite strafe so peel reads
+        [SerializeField] float fleeStrafeBias = 0.42f; // slightly stronger kite strafe so peel reads
         [Tooltip("Seconds of threat velocity lead when computing flee-from point.")]
         [SerializeField] float fleeLeadSeconds = 0.35f;
         [Tooltip("Forward wish strength while wandering (motor treats y>0.4 as sprint).")]
@@ -447,7 +447,7 @@ namespace Tag.Modes
                 return dir;
             if (_weaveT <= 0f)
             {
-                _weave = Random.Range(-0.55f, 0.55f); // slightly wider for readable chase juke
+                _weave = Random.Range(-0.58f, 0.58f); // slightly wider for readable chase juke
                 _weaveT = Random.Range(0.40f, 0.75f); // slightly snappier weave retarget
             }
             if (!distHold)

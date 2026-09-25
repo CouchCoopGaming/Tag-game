@@ -132,7 +132,7 @@ namespace Tag.Art
             float glideAmt = Mathf.Clamp01(_glidePulse);
 
             bool airDashing = _motor != null && _motor.IsAirDashing;
-            _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.37f); // slightly longer so tag recoil reads in TP
+            _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.38f); // slightly longer so tag recoil reads in TP
             bool dashing = _dashPulse > 0.04f || lunging || airDashing;
             float dashAmt = Mathf.Max(
                 Mathf.Clamp01(_dashPulse),
@@ -290,7 +290,7 @@ namespace Tag.Art
                     float w = Mathf.Lerp(0.55f, 1f, punchProg);
                     // Fist behind the spine vanishes in the chase cam. Flare the elbow out beside the head.
                     // Timing stays the authored 0.12s windup; a bit more elbow yaw so the cock reads in TP.
-                    _uaRT = _uaR0 * Quaternion.Euler(28f * w, -27f * w, -56f - 16f * w); // extra elbow yaw for TP cock read
+                    _uaRT = _uaR0 * Quaternion.Euler(28f * w, -28f * w, -56f - 16f * w); // extra elbow yaw for TP cock read
                     _laRT = _laR0 * Quaternion.Euler(-40f - 72f * w, 0f, 0f);
                     _hipsT = _hips0 * Quaternion.Euler(14f + 8f * w, -28f * w, 0f); // clearer windup hip twist in TP
                     _spineT = _spine0 * Quaternion.Euler(leanX + 12f * w, -34f * w, leanZ); // clearer windup spine twist in TP
@@ -315,7 +315,7 @@ namespace Tag.Art
                 else // MissRecover - limp whiff: less extension, quicker drop vs HitRecover hold
                 {
                     // Cubed ease + soft shoulder sag so a whiff drops faster vs HitRecover hold.
-                    float r = Mathf.Lerp(0.58f, 0.02f, punchProg * punchProg * punchProg); // fuller limp drop at end of MissRecover
+                    float r = Mathf.Lerp(0.62f, 0.02f, punchProg * punchProg * punchProg); // fuller limp drop at end of MissRecover
                     _uaRT = _uaR0 * Quaternion.Euler(-18f - 40f * r, 10f * r, -8f); // softer limp shoulder so whiff reads in TP
                     _laRT = _laR0 * Quaternion.Euler(-14f * r, 0f, 0f);
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 6f * r, 0f, leanZ), 0.35f);
