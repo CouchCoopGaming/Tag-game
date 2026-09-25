@@ -974,6 +974,13 @@ namespace TagArena.Movement
             var modes = TagModeController.Instance;
             if (modes == null) return;
             var cur = modes.SelectedMode;
+            // Rematch / menu: re-prime so the next F1-F4 change still flashes.
+            if (modes.Phase != MatchPhase.Playing && modes.Phase != MatchPhase.Countdown)
+            {
+                _prevMode = cur;
+                _modeFlashPrimed = true;
+                return;
+            }
             if (!_modeFlashPrimed)
             {
                 _prevMode = cur;
