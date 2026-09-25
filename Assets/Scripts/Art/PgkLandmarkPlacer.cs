@@ -203,6 +203,7 @@ namespace Tag.Art
             // (tower deck ends z=24, north spine starts 34.4).
             n += BeamLane(root, "Play_Beam_W", 13.5f, new[] { 22.25f, 25.25f, 28.25f });
             n += BeamLane(root, "Play_Beam_E", 60.5f, new[] { 25.75f, 28.75f, 31.75f });
+            n += SwingWestBeam(root);
 
             // Outer ring: monkey run + tube/crawl + a deck tower whose slide feeds the ring lane.
             n += OuterRing(root, "Play_Ring_S", new Vector3(36f, 0f, 3f), true);
@@ -966,6 +967,22 @@ namespace Tag.Art
         int SoftSlideBeam(Transform root)
         {
             var parent = MakeGroup(root, "Play_Beam_SoftSlide", new Vector3(18.48f, 0f, 2.97f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("PGK_Balance_Beam_3m_LOD0", Vector3.zero, 90f),
+            });
+        }
+
+        /// <summary>
+        /// Balance beam between the east bars and the swing frame, north of the kickball fence.
+        /// Bar face is x=62.54. Swing's west bar starts at x=64.35. Yaw 90 is 0.12 m thick in X.
+        /// Center (63.45, 31.20): mesh x 63.39-63.51, z 29.70-32.70.
+        /// 0.85 m off the bars and 0.84 m off the swing. 1.16 m north of the kickball fence.
+        /// 1.70 m south of the north spine. The diamond stays open.
+        /// </summary>
+        int SwingWestBeam(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Beam_SwingW", new Vector3(63.45f, 0f, 31.20f), 0f);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
             {
                 ("PGK_Balance_Beam_3m_LOD0", Vector3.zero, 90f),
