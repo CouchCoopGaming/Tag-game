@@ -314,7 +314,9 @@ Already on this branch: A jump into a climb eases the contact into the grab. A c
 
 Already on this branch: A jump into a wall run eases the contact into the attach. A jump into a climb is unchanged. A crouch onto the wall is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. The meet time is unchanged.
 
-This delta: An air crouch into a jump eases the dart into the push. A moving fall uses the low stride. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. Fall speed is unchanged.
+Already on this branch: An air crouch into a jump eases the dart into the push. A moving fall uses the low stride. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. Fall speed is unchanged.
+
+This delta: A jump into an air crouch eases the apex and the descent into the dart. An air crouch into a jump is unchanged. A moving fall still ends in the low stride. A still crouch into a jump is unchanged. Jump height is unchanged. Fall speed is unchanged.
 
 ## Stack snapshot
 
@@ -590,6 +592,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 177. Jump, then climb: the contact should ease into the grab. A crouch onto the wall should feel the same. A wall run should feel the same. A climb into a jump should feel the same. The jump should not feel higher. The grab should not feel slower.
 178. Jump, then wall run: the contact should ease into the attach. A jump into a climb should feel the same. A crouch onto the wall should feel the same. A wall run into a jump should feel the same. The jump should not feel higher. The attach should not feel slower.
 179. Fall in a crouch, then jump: the dart should ease into the push. A moving fall should ease from the low stride. A still crouch into a jump should feel the same. A crouch walk into a jump should feel the same. The jump should not feel higher. The fall should not feel faster.
+180. Jump, then hold crouch: the apex and the descent should ease into the dart. An air crouch into a jump should feel the same. A moving fall should still end in the low stride. A still crouch into a jump should feel the same. The jump should not feel higher. The fall should not feel faster.
 
 ## Known leftovers
 
@@ -789,6 +792,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 167. A jump into a climb eases the contact into the grab. A crouch onto the wall is unchanged. A wall run is unchanged. A climb into a jump is unchanged. Jump height is unchanged. The meet time is unchanged.
 168. A jump into a wall run eases the contact into the attach. A jump into a climb is unchanged. A crouch onto the wall is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. The meet time is unchanged.
 169. An air crouch into a jump eases the dart into the push. A moving fall uses the low stride. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. Fall speed is unchanged.
+170. A jump into an air crouch eases the apex and the descent into the dart. An air crouch into a jump is unchanged. A moving fall still ends in the low stride. A still crouch into a jump is unchanged. Jump height is unchanged. Fall speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
