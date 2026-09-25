@@ -345,6 +345,8 @@ namespace Tag.Art
         Quaternion _groundWhipUlL, _groundWhipUlR, _groundWhipLlL, _groundWhipLlR;
         Quaternion _groundWhipSp, _groundWhipHp, _groundWhipHd;
         float _armRecover;
+        bool _airCycleSnap;
+        float _airCycleIn;
         bool _armSettleSnap;
         float _armSettleIn;
         Quaternion _armSettleUaL, _armSettleUaR, _armSettleLaL, _armSettleLaR;
@@ -5433,6 +5435,8 @@ namespace Tag.Art
                 && _input != null && _input.CrouchHeld;
             // Keep a soft air/vault cycle so limbs stay energetic off the ground.
             // Walk and sprint ease length and tempo. The cycle keeps advancing, so a plant does not freeze.
+            if (!(air && !jet && !airDashing && _armRecover > 0f))
+                _airCycleSnap = false;
             if (airDashing)
             {
                 // The burst leads with the left thigh. Hold the stride there so the
@@ -5490,9 +5494,18 @@ namespace Tag.Art
             {
                 if (_armRecover > 0f)
                 {
-                    // Stay on the dash lead until the feet are back on the ground.
+                    // The lead eases into the air stride, then the stride keeps going.
+                    // The pin stays off this path. Dash time is unchanged.
                     _runVis = runAmt;
-                    _cycle = Mathf.PI * 0.5f;
+                    if (!_airCycleSnap)
+                    {
+                        _airCycleSnap = true;
+                        _airCycleIn = 0f;
+                    }
+                    if (_airCycleIn < 0.98f)
+                        _airCycleIn = Mathf.MoveTowards(_airCycleIn, 1f, dt / 0.04f);
+                    float airStep = _airCycleIn;
+                    _cycle += dt * Mathf.Lerp(5.5f, 9f, runAmt) * airStep;
                 }
                 else
                 {

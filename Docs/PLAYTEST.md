@@ -646,7 +646,9 @@ Already on this branch: An air dash eases the whip into the pose. The pose then 
 
 Already on this branch: After an air dash, the pose eases into the fall or the run. That pose then holds. The slow slew stays off that path. Duration and cooldown are unchanged.
 
-This delta: A ground dash or lunge eases the whip into the hang. The hang then holds. The slow pulse stays off that path. Dash time is unchanged.
+Already on this branch: A ground dash or lunge eases the whip into the hang. The hang then holds. The slow pulse stays off that path. Dash time is unchanged.
+
+This delta: After an air dash, the lead eases into the air stride. The stride then keeps going. The pin stays off that path. Dash time is unchanged.
 
 ## Stack snapshot
 
@@ -1088,6 +1090,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 343. Air dash, then keep going: the whip should ease into the pose. The pose should then hold. The fade should not ease back in. A dash into a ski should feel the same. The dash should not feel longer. Jet stays off.
 344. Air dash, then land or fall: the pose should ease into the fall or the run. That pose should then hold. The arms should not crawl in. The dash should not feel longer. Jet stays off.
 345. Ground dash or lunge: the whip should ease into the hang. The hang should then hold. The pulse should not ease back in. An air dash should feel the same. The dash should not feel longer. Jet stays off.
+346. Air dash, then fall: the lead foot should ease into the stride. The stride should then keep going. The foot should not stay pinned. The dash should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1453,6 +1456,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 333. An air dash eases the whip into the pose. The pose then holds. The slow fade stays off that path. Duration and cooldown are unchanged. Jet stays off.
 334. After an air dash, the pose eases into the fall or the run. That pose then holds. The slow slew stays off that path. Duration and cooldown are unchanged. Jet stays off.
 335. A ground dash or lunge eases the whip into the hang. The hang then holds. The slow pulse stays off that path. Dash time is unchanged. Jet stays off.
+336. After an air dash, the lead eases into the air stride. The stride then keeps going. The pin stays off that path. Dash time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
