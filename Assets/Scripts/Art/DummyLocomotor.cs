@@ -50,6 +50,11 @@ namespace Tag.Art
         Quaternion _walkJumpUlL, _walkJumpUlR, _walkJumpLlL, _walkJumpLlR;
         Quaternion _walkJumpSp, _walkJumpHp, _walkJumpHd;
         bool _jumpFromSki;
+        bool _skiJumpSnap;
+        float _skiJumpSnapIn;
+        Quaternion _glideJumpUaL, _glideJumpUaR, _glideJumpLaL, _glideJumpLaR;
+        Quaternion _glideJumpUlL, _glideJumpUlR, _glideJumpLlL, _glideJumpLlR;
+        Quaternion _glideJumpSp, _glideJumpHp, _glideJumpHd;
         bool _jumpFromSlide;
         float _jumpFromSlideIn;
         Quaternion _slideJumpUaL, _slideJumpUaR, _slideJumpLaL, _slideJumpLaR;
@@ -3116,6 +3121,29 @@ namespace Tag.Art
                 _claimJumpHd = _head.localRotation;
                 _airArmIn = 1f;
             }
+            if (_jumpFromSki && !_skiJumpSnap
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                // The glide eases into the air pose, then the air pose holds.
+                // The slow push stays off this path. Ski speed is unchanged.
+                // Jump height is unchanged.
+                _skiJumpSnap = true;
+                _skiJumpSnapIn = 0f;
+                _glideJumpUaL = _upperArmL.localRotation;
+                _glideJumpUaR = _upperArmR.localRotation;
+                _glideJumpLaL = _lowerArmL.localRotation;
+                _glideJumpLaR = _lowerArmR.localRotation;
+                _glideJumpUlL = _upperLegL.localRotation;
+                _glideJumpUlR = _upperLegR.localRotation;
+                _glideJumpLlL = _lowerLegL.localRotation;
+                _glideJumpLlR = _lowerLegR.localRotation;
+                _glideJumpSp = _spine.localRotation;
+                _glideJumpHp = _hips.localRotation;
+                _glideJumpHd = _head.localRotation;
+                _airArmIn = 1f;
+            }
             _prevVy = _motor != null ? _motor.Velocity.y : 0f;
             if (grounded || _pushOff <= 0.02f)
             {
@@ -3208,6 +3236,13 @@ namespace Tag.Art
             }
             else if (!_jumpFromReady)
                 _jumpReadySnap = false;
+            if (_skiJumpSnap && _jumpFromSki)
+            {
+                if (_skiJumpSnapIn < 0.98f)
+                    _skiJumpSnapIn = Mathf.MoveTowards(_skiJumpSnapIn, 1f, dt / 0.04f);
+            }
+            else if (!_jumpFromSki)
+                _skiJumpSnap = false;
             if (_jumpFromStill && _pushOff > 0.02f)
                 _jumpFromStillIn = Mathf.MoveTowards(_jumpFromStillIn, 1f, dt / 0.04f);
             if (_jumpFromCrouchWalk && _pushOff > 0.02f)
@@ -6286,7 +6321,7 @@ namespace Tag.Art
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), 1f);
                     _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-6f, 0f, 0f), 1f);
                 }
-                if (_jumpFromSki && _pushOff > 0.02f && _diveVis < 0.2f)
+                if (_jumpFromSki && _pushOff > 0.02f && _diveVis < 0.2f && !_skiJumpSnap)
                 {
                     // The glide eases into the push, then the air pose. A still crouch and a crouch walk keep their push.
                     // A standing jump keeps the old push. Jump height is unchanged.
@@ -6874,7 +6909,7 @@ namespace Tag.Art
                     // A ski eases the glide into it. A slide eases the wedge into it.
                     // A standing jump keeps this push. slideBoost stays 0.
                     float p = _pushOff;
-                    if (_jumpFromSki)
+                    if (_jumpFromSki && !_skiJumpSnap)
                     {
                         float t = 1f - Mathf.Clamp01(p);
                         float intoPush = Mathf.Clamp01(t * 2f);
@@ -6908,14 +6943,14 @@ namespace Tag.Art
                         _llLT = Quaternion.Slerp(Quaternion.Slerp(skiKl, pushKl, intoPush), _llLT, leave);
                         _llRT = Quaternion.Slerp(Quaternion.Slerp(skiKr, pushKr, intoPush), _llRT, leave);
                     }
-                    else if (_pushLeft)
+                    else if (!_jumpFromSki && _pushLeft)
                     {
                         _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(-8f, 0f, 0f), p);
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-6f, 0f, 0f), p);
                         _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(48f, 0f, 0f), p);
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-62f, 0f, 0f), p);
                     }
-                    else
+                    else if (!_jumpFromSki)
                     {
                         _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(-8f, 0f, 0f), p);
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-6f, 0f, 0f), p);
@@ -9798,6 +9833,35 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(Quaternion.Slerp(_readyUlR, pushThighR, intoPush), airThighR, leave);
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(_readyLlL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(_readyLlR, pushKneeR, intoPush), airKneeR, leave);
+            }
+            if (_skiJumpSnap && _skiJumpSnapIn < 0.98f && _jumpFromSki
+                && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill
+                && !_jumpDashSnap && !_jumpWallSnap && !_jumpClimbSnap && !_jumpAirCrouchSnap
+                && !_jumpSoftLandSnap && !_jumpHardLandSnap && !_jumpMissSnap && !_jumpTagSnap
+                && !_jumpClaimSnap && !_jumpReadySnap)
+            {
+                // The glide eases into the air pose, then the air pose holds.
+                // A dash-ready pulse into a jump has its own ease. A claim into a jump has its own ease.
+                // A tag into a jump has its own ease. A punch miss into a jump has its own ease.
+                // A hard landing into a jump has its own ease. A soft landing into a jump has its own ease.
+                // An air crouch into a jump has its own ease. A climb jump has its own ease.
+                // A wall jump has its own ease. An air dash into a jump has its own ease.
+                // A standing idle into a jump has its own ease. A sprint into the air has its own ease.
+                // A walk into a jump has its own ease. A still crouch into a jump has its own ease.
+                // The slow push stays off this path. Ski speed is unchanged.
+                // Jump height is unchanged.
+                float intoSkiAir = _skiJumpSnapIn;
+                _uaLT = Quaternion.Slerp(_glideJumpUaL, _uaLT, intoSkiAir);
+                _uaRT = Quaternion.Slerp(_glideJumpUaR, _uaRT, intoSkiAir);
+                _laLT = Quaternion.Slerp(_glideJumpLaL, _laLT, intoSkiAir);
+                _laRT = Quaternion.Slerp(_glideJumpLaR, _laRT, intoSkiAir);
+                _spineT = Quaternion.Slerp(_glideJumpSp, _spineT, intoSkiAir);
+                _hipsT = Quaternion.Slerp(_glideJumpHp, _hipsT, intoSkiAir);
+                _headT = Quaternion.Slerp(_glideJumpHd, _headT, intoSkiAir);
+                _ulLT = Quaternion.Slerp(_glideJumpUlL, _ulLT, intoSkiAir);
+                _ulRT = Quaternion.Slerp(_glideJumpUlR, _ulRT, intoSkiAir);
+                _llLT = Quaternion.Slerp(_glideJumpLlL, _llLT, intoSkiAir);
+                _llRT = Quaternion.Slerp(_glideJumpLlR, _llRT, intoSkiAir);
             }
             if (_jumpReadySnap && _jumpReadySnapIn < 0.98f && _jumpFromReady
                 && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill
