@@ -194,6 +194,8 @@ namespace Tag.Art
             // slideBoost stays 0. The speed you already have carries.
             // A still crouch eases into the idle breath. The hips do not pop flat.
             bool slideExit = _dropSlide && !sliding && !crouch;
+            // A slide that dies into a stand rises into the idle breath. A slide into a run is unchanged.
+            bool slideIdleExit = slideExit && speed <= 0.35f;
             bool crouchIdleExit = !_dropSlide && !sliding && !crouch && speed <= 0.35f;
             float footDrop = (slideExit || crouchIdleExit) ? _dropVis * _dropVis : _dropVis;
             float hipDrop = (slideExit || crouchIdleExit) ? Mathf.SmoothStep(0f, 1f, _dropVis) : _dropVis;
@@ -887,10 +889,28 @@ namespace Tag.Art
                     float d = footDrop;
                     if (_dropSlide)
                     {
-                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-70f, 28f, armZ), d);
-                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-64f, -28f, -armZ), d);
-                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-8f, 0f, 0f), d);
-                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-6f, 0f, 0f), d);
+                        float lineL = -70f;
+                        float lineR = -64f;
+                        float lineYaw = 28f;
+                        float lineRoll = armZ;
+                        float lineElbL = -8f;
+                        float lineElbR = -6f;
+                        if (slideIdleExit)
+                        {
+                            // Hands leave the long line into the idle hang. They do not pop.
+                            float up = 1f - _dropVis;
+                            float hang = -12f + breath * 0.55f;
+                            lineL = Mathf.Lerp(-70f, hang, up);
+                            lineR = Mathf.Lerp(-64f, hang, up);
+                            lineYaw = Mathf.Lerp(28f, 12f, up);
+                            lineRoll = Mathf.Lerp(armZ, 0f, up);
+                            lineElbL = Mathf.Lerp(-8f, -10f, up);
+                            lineElbR = Mathf.Lerp(-6f, -10f, up);
+                        }
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(lineL, lineYaw, lineRoll), d);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(lineR, -lineYaw, -lineRoll), d);
+                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(lineElbL, 0f, 0f), d);
+                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(lineElbR, 0f, 0f), d);
                     }
                     else
                     {
@@ -1158,10 +1178,27 @@ namespace Tag.Art
                     if (_dropSlide)
                     {
                         bool leadLeft = sinC >= 0f;
-                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), d);
-                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), d);
-                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), d);
-                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), d);
+                        float wedgeL = leadLeft ? 74f : -28f;
+                        float wedgeR = leadLeft ? -28f : 74f;
+                        float bendL = leadLeft ? -94f : -6f;
+                        float bendR = leadLeft ? -6f : -94f;
+                        float footYawL = leadLeft ? 6f : -4f;
+                        float footYawR = leadLeft ? -4f : 6f;
+                        if (slideIdleExit)
+                        {
+                            // Both feet come under the hips. The trail leg does not pop in.
+                            float up = 1f - _dropVis;
+                            wedgeL = Mathf.Lerp(wedgeL, 8f, up);
+                            wedgeR = Mathf.Lerp(wedgeR, 8f, up);
+                            bendL = Mathf.Lerp(bendL, -10f, up);
+                            bendR = Mathf.Lerp(bendR, -10f, up);
+                            footYawL = Mathf.Lerp(footYawL, 0f, up);
+                            footYawR = Mathf.Lerp(footYawR, 0f, up);
+                        }
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), d);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(wedgeR, footYawR, 0f), d);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(bendL, 0f, 0f), d);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(bendR, 0f, 0f), d);
                     }
                     else if (crouch && speed > 0.35f)
                     {
@@ -1212,6 +1249,14 @@ namespace Tag.Art
                 float chest = _dropSlide ? 62f : 10f;
                 float hip = _dropSlide ? 50f : 22f;
                 float head = _dropSlide ? -12f : -6f;
+                if (slideIdleExit)
+                {
+                    // Rise into the idle breath. Holding the wedge pitch pops the hips flat.
+                    float up = 1f - _dropVis;
+                    chest = Mathf.Lerp(62f, 0f, up);
+                    hip = Mathf.Lerp(50f, 0f, up);
+                    head = Mathf.Lerp(-12f, 0f, up);
+                }
                 _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(chest, 0f, 0f), d);
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(hip, 0f, 0f), d);
                 _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(head, 0f, 0f), d);
