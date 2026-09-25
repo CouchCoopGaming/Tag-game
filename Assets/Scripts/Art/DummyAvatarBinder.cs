@@ -43,6 +43,7 @@ namespace Tag.Art
         GameObject _visualInstance;
         bool _showingIt;
         bool _resolved;
+        bool _loggedHier;
         Coroutine _hitPulseCo;
         Vector3 _visualBaseScale = Vector3.one;
 
@@ -60,12 +61,25 @@ namespace Tag.Art
             _resolved = true;
 
             string color = PickColor();
+            // Scene pawns serialize the flat Dummy_Runner / Dummy_It prefab. FirstRenderable
+            // keeps that prefab when it has a mesh, so Hier never won. Approved meshes are
+            // Tan runner and Orange It. The catalog covers player builds; the editor path
+            // loads the same FBX when the catalog ref is empty.
+            GameObject hierRunner = HierPrefab(false);
+            GameObject hierIt = HierPrefab(true);
 #if UNITY_EDITOR
-            // Assigned Dummy_Runner / Dummy_It prefabs are fallbacks. AD Hier wins when the FBX loads.
             var assignedRunner = runnerVisualPrefab;
             var assignedIt = itVisualPrefab;
-            if (preferMannequinOverRunnerIt)
+            if (!DummyPrimitiveFactory.PrefabHasRenderer(hierRunner))
+                hierRunner = LoadHiPoly("Dummy_Mannequin_Tan_Hier_Hi.fbx");
+            if (!DummyPrimitiveFactory.PrefabHasRenderer(hierIt))
+                hierIt = LoadHiPoly("Dummy_Mannequin_Orange_Hier_Hi.fbx");
+#endif
+            if (preferMannequinOverRunnerIt && DummyPrimitiveFactory.PrefabHasRenderer(hierRunner))
+                runnerVisualPrefab = hierRunner;
+            else
             {
+#if UNITY_EDITOR
                 runnerVisualPrefab = FirstRenderable(null,
                     LoadHiPoly("Dummy_Mannequin_Tan_Hier_Hi.fbx"),
                     LoadHiPoly($"Dummy_Mannequin_{color}_Hier_Hi.fbx"),
@@ -73,30 +87,24 @@ namespace Tag.Art
                     LoadHiPoly($"Dummy_Mannequin_{color}_Hi.fbx"),
                     LoadHiPoly("Dummy_Mannequin_Tan_Hi.fbx"),
                     LoadHiPoly("Dummy_Runner_Hi.fbx"));
+#endif
+                runnerVisualPrefab = FirstRenderable(runnerVisualPrefab, "Characters/Dummy_Runner");
+            }
+
+            if (preferMannequinOverRunnerIt && DummyPrimitiveFactory.PrefabHasRenderer(hierIt))
+                itVisualPrefab = hierIt;
+            else
+            {
+#if UNITY_EDITOR
                 itVisualPrefab = FirstRenderable(null,
                     LoadHiPoly("Dummy_Mannequin_Orange_Hier_Hi.fbx"),
                     assignedIt,
                     LoadHiPoly("Dummy_Mannequin_Orange_Hi.fbx"),
                     LoadHiPoly("Dummy_It_Hi.fbx"),
                     LoadHiPoly($"Dummy_Mannequin_{color}_Hier_Hi.fbx"));
-            }
-            else
-            {
-                runnerVisualPrefab = FirstRenderable(null,
-                    LoadHiPoly("Dummy_Mannequin_Tan_Hier_Hi.fbx"),
-                    LoadHiPoly($"Dummy_Mannequin_{color}_Hier_Hi.fbx"),
-                    assignedRunner,
-                    LoadHiPoly("Dummy_Runner_Hi.fbx"),
-                    LoadHiPoly($"Dummy_Mannequin_{color}_Hi.fbx"));
-                itVisualPrefab = FirstRenderable(null,
-                    LoadHiPoly("Dummy_Mannequin_Orange_Hier_Hi.fbx"),
-                    assignedIt,
-                    LoadHiPoly("Dummy_It_Hi.fbx"),
-                    LoadHiPoly("Dummy_Mannequin_Orange_Hi.fbx"));
-            }
 #endif
-            runnerVisualPrefab = FirstRenderable(runnerVisualPrefab, "Characters/Dummy_Runner");
-            itVisualPrefab = FirstRenderable(itVisualPrefab, "Characters/Dummy_It");
+                itVisualPrefab = FirstRenderable(itVisualPrefab, "Characters/Dummy_It");
+            }
 
             if (runnerBaseMat == null) runnerBaseMat = Resources.Load<Material>("Characters/Mat_Runner_Base");
             if (runnerAccentMat == null) runnerAccentMat = Resources.Load<Material>("Characters/Mat_Runner_Accent");
@@ -104,6 +112,13 @@ namespace Tag.Art
             if (itBaseMat == null) itBaseMat = Resources.Load<Material>("Characters/Mat_It_Base");
             if (itAccentMat == null) itAccentMat = Resources.Load<Material>("Characters/Mat_It_Accent");
             if (itOverrideMat == null) itOverrideMat = Resources.Load<Material>("Characters/Mat_It_ItOverride");
+        }
+
+        static GameObject HierPrefab(bool asIt)
+        {
+            var catalog = Resources.Load<HierMannequinCatalog>("Characters/HierMannequinCatalog");
+            if (catalog == null) return null;
+            return asIt ? catalog.It : catalog.Runner;
         }
 
 #if UNITY_EDITOR
@@ -236,6 +251,11 @@ namespace Tag.Art
 
             if (usedPrimitive)
                 Debug.Log($"[DummyAvatarBinder] Navy Spade primitive active on {gameObject.name} (asIt={asIt}).");
+            else if (!_loggedHier && prefab != null && prefab.name.IndexOf("Hier", System.StringComparison.Ordinal) >= 0)
+            {
+                _loggedHier = true;
+                Debug.Log($"[DummyAvatarBinder] Hier mannequin '{prefab.name}' on {gameObject.name} (asIt={asIt}).");
+            }
         }
 
         void ApplyCharacterMats(GameObject visual, bool asIt)
