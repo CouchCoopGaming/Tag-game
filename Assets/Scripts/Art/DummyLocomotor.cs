@@ -1396,11 +1396,11 @@ namespace Tag.Art
                 // Hands keep the full exit. Hips and feet ease into the stride
                 // so the wall roll does not pop. Exit time is unchanged.
                 // A wall run or a climb into a walk settles the hands with the feet.
-                // A wall run into a sprint opens the hands into the long stride.
+                // A wall run or a climb into a sprint opens the hands into the long stride.
                 // They do not stay on the surface and then hitch. A drop keeps the old leave.
                 if (leavingSurf && grounded && !air && !crouch && speed > 0.35f)
                 {
-                    if (_exitFromWall && (st == MoveState.Sprint || speed > 5.5f))
+                    if (st == MoveState.Sprint || speed > 5.5f)
                         _exitIntoSprint = true;
                     else
                         _exitIntoWalk = true;
