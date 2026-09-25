@@ -20,7 +20,7 @@ namespace Tag.Modes
         [SerializeField] float radius = 5.5f;
         [SerializeField] float turnSpeed = 220f;
         [Tooltip("Fallback when PunchHitbox/Tuning unavailable. Prefer syncing from PunchTagTuning.reach.")]
-        [SerializeField] float punchRange = 1.55f;
+        [SerializeField] float punchRange = 1.56f; // hair longer so tip tags connect
         [Tooltip("Fallback full cone (deg). Prefer syncing from PunchTagTuning width/reach.")]
         [SerializeField] float punchConeDeg = 38f; // hair wider so lined-up tags land more often
         [SerializeField] float itGraceSec = 0.85f;
@@ -50,7 +50,7 @@ namespace Tag.Modes
         [SerializeField] float chaseUrgencyCooldownScale = 0.62f;
         [Header("Trail Tag avoid")]
         [Tooltip("Only active when TagModeController SelectedMode is TrailTag.")]
-        [SerializeField] float trailAvoidRange = 9.3f; // earlier trail peel start
+        [SerializeField] float trailAvoidRange = 9.4f; // earlier trail peel start
         [Tooltip("Lateral bias on trail flee (same idea as fleeStrafeBias).")]
         [SerializeField] float trailAvoidStrafeBias = 0.45f;
         [Tooltip("How hard trail flee blends into chase/flee/wander wish (0=off).")]
