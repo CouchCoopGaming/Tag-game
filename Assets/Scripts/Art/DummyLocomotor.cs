@@ -89,6 +89,11 @@ namespace Tag.Art
         Quaternion _dartPunchUaL, _dartPunchUaR, _dartPunchLaL, _dartPunchLaR;
         Quaternion _dartPunchUlL, _dartPunchUlR, _dartPunchLlL, _dartPunchLlR;
         Quaternion _dartPunchSp, _dartPunchHp, _dartPunchHd;
+        bool _punchFromClaim;
+        float _punchFromClaimIn;
+        Quaternion _claimPunchUaL, _claimPunchUaR, _claimPunchLaL, _claimPunchLaR;
+        Quaternion _claimPunchUlL, _claimPunchUlR, _claimPunchLlL, _claimPunchLlR;
+        Quaternion _claimPunchSp, _claimPunchHp, _claimPunchHd;
         bool _punchFromDash;
         float _punchFromDashIn;
         bool _tagFromDash;
@@ -1329,6 +1334,32 @@ namespace Tag.Art
                 _punchFromDartIn = Mathf.MoveTowards(_punchFromDartIn, 1f, dt / 0.04f);
             else if (!windupNow)
                 _punchFromDart = false;
+            bool claimPunch = windupNow && !_punchWindWas && !fromJumpPose && !crouch && !_punchFromJump && !_punchFromDash && !_punchFromSoft && !_punchFromHard && !_punchFromSki && !_punchFromSlide && !_punchFromClimb && !_punchFromWall && !_punchFromDart
+                && !_jumpFromClaim && _itClaim > 0.2f && !jet
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (claimPunch)
+            {
+                // The claim eases into the cock. An air crouch into a tag keeps its ease.
+                // Becoming It into an air dash keeps its ease. Becoming It into a jump keeps its push.
+                // A crouch claim keeps its pose. Windup time is unchanged. Claim time is unchanged.
+                _punchFromClaim = true;
+                _punchFromClaimIn = 0f;
+                _claimPunchUaL = _upperArmL.localRotation;
+                _claimPunchUaR = _upperArmR.localRotation;
+                _claimPunchLaL = _lowerArmL.localRotation;
+                _claimPunchLaR = _lowerArmR.localRotation;
+                _claimPunchUlL = _upperLegL.localRotation;
+                _claimPunchUlR = _upperLegR.localRotation;
+                _claimPunchLlL = _lowerLegL.localRotation;
+                _claimPunchLlR = _lowerLegR.localRotation;
+                _claimPunchSp = _spine.localRotation;
+                _claimPunchHp = _hips.localRotation;
+                _claimPunchHd = _head.localRotation;
+            }
+            if (windupNow && _punchFromClaim)
+                _punchFromClaimIn = Mathf.MoveTowards(_punchFromClaimIn, 1f, dt / 0.04f);
+            else if (!windupNow)
+                _punchFromClaim = false;
             _punchWindWas = windupNow;
             bool hitNow = punching && phase == PunchPhase.HitRecover;
             if (hitNow && !_tagHitWas && fromJumpPose && !crouch && !_jumpFromTag
@@ -4572,7 +4603,7 @@ namespace Tag.Art
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
             // A punch from this jump eases into the windup. A tag from this jump eases into the connect.
             // Staying down still absorbs. Land time is unchanged.
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide && !_tagFromSki && !_tagFromSlide && !_punchFromClimb && !_tagFromClimb && !_punchFromWall && !_tagFromWall && !_punchFromDart && !_tagFromDart)
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide && !_tagFromSki && !_tagFromSlide && !_punchFromClimb && !_tagFromClimb && !_punchFromWall && !_tagFromWall && !_punchFromDart && !_tagFromDart && !_punchFromClaim)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -5597,6 +5628,32 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulRT, intoCock);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llLT, intoCock);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llRT, intoCock);
+            }
+            if (_punchFromClaim && !_punchFromDart && !_punchFromWall && !_punchFromClimb && !_punchFromSlide && !_punchFromSki && !_punchFromHard && !_punchFromSoft && !_punchFromJump && !_punchFromDash && punching && phase == PunchPhase.Windup)
+            {
+                // The claim eases into the cock, then the windup holds. The claim pose would cover it.
+                // An air crouch into a tag keeps its ease. Becoming It into an air dash keeps its ease.
+                // Becoming It into a jump keeps its push. A crouch claim keeps its pose.
+                // Windup time is unchanged. Claim time is unchanged.
+                float into = _punchFromClaimIn;
+                float w = Mathf.Lerp(0.85f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg / 0.35f)));
+                Quaternion windL = _uaL0 * Quaternion.Euler(-28f, 14f, armZ + 18f);
+                Quaternion windR = _uaR0 * Quaternion.Euler(-58f * w, 46f * w, -armZ);
+                Quaternion windElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion windElR = _laR0 * Quaternion.Euler(-68f * w, 0f, 0f);
+                Quaternion windHp = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f);
+                Quaternion windSp = _spine0 * Quaternion.Euler(leanX + 12f * w, -36f * w, leanZ);
+                _uaLT = Quaternion.Slerp(_claimPunchUaL, windL, into);
+                _uaRT = Quaternion.Slerp(_claimPunchUaR, windR, into);
+                _laLT = Quaternion.Slerp(_claimPunchLaL, windElL, into);
+                _laRT = Quaternion.Slerp(_claimPunchLaR, windElR, into);
+                _hipsT = Quaternion.Slerp(_claimPunchHp, windHp, into);
+                _spineT = Quaternion.Slerp(_claimPunchSp, windSp, into);
+                _headT = Quaternion.Slerp(_claimPunchHd, _headT, into);
+                _ulLT = Quaternion.Slerp(_claimPunchUlL, _ulLT, into);
+                _ulRT = Quaternion.Slerp(_claimPunchUlR, _ulRT, into);
+                _llLT = Quaternion.Slerp(_claimPunchLlL, _llLT, into);
+                _llRT = Quaternion.Slerp(_claimPunchLlR, _llRT, into);
             }
             if (_punchFromDart && !_punchFromWall && !_punchFromClimb && !_punchFromSlide && !_punchFromSki && !_punchFromHard && !_punchFromSoft && !_punchFromJump && !_punchFromDash && punching && phase == PunchPhase.Windup && _punchFromDartIn < 0.98f)
             {

@@ -400,7 +400,9 @@ Already on this branch: A wall exit into a tag eases the leave into the connect.
 
 Already on this branch: An air crouch into a punch eases the dart into the windup. A wall exit into a tag is unchanged. An air crouch into an air dash is unchanged. An air crouch into a jump is unchanged. A jump into a punch is unchanged. Windup time is unchanged. Fall speed is unchanged.
 
-This delta: An air crouch into a tag eases the dart into the connect. An air crouch into a punch is unchanged. An air crouch into an air dash is unchanged. An air crouch into a jump is unchanged. A jump into a tag is unchanged. A crouch tag is unchanged. Connect time is unchanged. Fall speed is unchanged.
+Already on this branch: An air crouch into a tag eases the dart into the connect. An air crouch into a punch is unchanged. An air crouch into an air dash is unchanged. An air crouch into a jump is unchanged. A jump into a tag is unchanged. A crouch tag is unchanged. Connect time is unchanged. Fall speed is unchanged.
+
+This delta: Becoming It into a punch eases the claim into the windup. An air crouch into a tag is unchanged. Becoming It into an air dash is unchanged. Becoming It into a jump is unchanged. A crouch claim is unchanged. Windup time is unchanged. Claim time is unchanged.
 
 ## Stack snapshot
 
@@ -719,6 +721,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 220. Wall run, then tag: the leave should ease into the connect. A wall exit into a punch should feel the same. A wall exit into an air dash should feel the same. A wall exit into a jump should feel the same. A climb into a tag should feel the same. The connect should not feel longer. The leave should not feel longer. Jet stays off.
 221. Air crouch, then punch: the dart should ease into the windup. A wall exit into a tag should feel the same. An air crouch into an air dash should feel the same. An air crouch into a jump should feel the same. A jump into a punch should feel the same. The cock should not feel longer. The fall should not feel faster. Jet stays off.
 222. Air crouch, then tag: the dart should ease into the connect. An air crouch into a punch should feel the same. An air crouch into an air dash should feel the same. An air crouch into a jump should feel the same. A jump into a tag should feel the same. A crouch tag should feel the same. The connect should not feel longer. The fall should not feel faster. Jet stays off.
+223. Become It, then punch: the claim should ease into the windup. An air crouch into a tag should feel the same. Becoming It into an air dash should feel the same. Becoming It into a jump should feel the same. A crouch claim should feel the same. The cock should not feel longer. The claim should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -961,6 +964,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 210. A wall exit into a tag eases the leave into the connect. A wall exit into a punch is unchanged. A wall exit into an air dash is unchanged. A wall exit into a jump is unchanged. A climb into a tag is unchanged. Connect time is unchanged. Exit time is unchanged. Jet stays off.
 211. An air crouch into a punch eases the dart into the windup. A wall exit into a tag is unchanged. An air crouch into an air dash is unchanged. An air crouch into a jump is unchanged. A jump into a punch is unchanged. Windup time is unchanged. Fall speed is unchanged. Jet stays off.
 212. An air crouch into a tag eases the dart into the connect. An air crouch into a punch is unchanged. An air crouch into an air dash is unchanged. An air crouch into a jump is unchanged. A jump into a tag is unchanged. A crouch tag is unchanged. Connect time is unchanged. Fall speed is unchanged. Jet stays off.
+213. Becoming It into a punch eases the claim into the windup. An air crouch into a tag is unchanged. Becoming It into an air dash is unchanged. Becoming It into a jump is unchanged. A crouch claim is unchanged. Windup time is unchanged. Claim time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
