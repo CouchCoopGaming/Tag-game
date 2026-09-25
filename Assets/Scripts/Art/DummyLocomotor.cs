@@ -112,6 +112,11 @@ namespace Tag.Art
         Quaternion _missUaL, _missUaR, _missLaL, _missLaR;
         Quaternion _missUlL, _missUlR, _missLlL, _missLlR;
         Quaternion _missSp, _missHp, _missHd;
+        bool _dashFromTag;
+        float _dashFromTagIn;
+        Quaternion _tagUaL, _tagUaR, _tagLaL, _tagLaR;
+        Quaternion _tagUlL, _tagUlR, _tagLlL, _tagLlR;
+        Quaternion _tagSp, _tagHp, _tagHd;
         float _dartStepL;
         float _dartStepR;
         bool _dartFromDash;
@@ -771,6 +776,33 @@ namespace Tag.Art
                 _dashFromMissIn = Mathf.MoveTowards(_dashFromMissIn, 1f, dt / 0.04f);
             else if (!dashingAir)
                 _dashFromMiss = false;
+            bool tagConnect = phase == PunchPhase.HitRecover && !_jumpFromTag;
+            if (dashingAir && !_airDashPoseWas && tagConnect && !jet && !_dashFromMiss
+                && !_jumpFromDash && !_dashFromDart && !_dashFromSki && !_dashFromSlide && !_dashFromClimb && !_dashFromWall
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+            {
+                // The connect eases into the burst. The burst still holds.
+                // A tag into a jump keeps its push. A crouch tag keeps its pose.
+                // A punch miss into a dash keeps its ease.
+                // Duration and cooldown are unchanged.
+                _dashFromTag = true;
+                _dashFromTagIn = 0f;
+                _tagUaL = _upperArmL.localRotation;
+                _tagUaR = _upperArmR.localRotation;
+                _tagLaL = _lowerArmL.localRotation;
+                _tagLaR = _lowerArmR.localRotation;
+                _tagUlL = _upperLegL.localRotation;
+                _tagUlR = _upperLegR.localRotation;
+                _tagLlL = _lowerLegL.localRotation;
+                _tagLlR = _lowerLegR.localRotation;
+                _tagSp = _spine.localRotation;
+                _tagHp = _hips.localRotation;
+                _tagHd = _head.localRotation;
+            }
+            if (dashingAir && _dashFromTag)
+                _dashFromTagIn = Mathf.MoveTowards(_dashFromTagIn, 1f, dt / 0.04f);
+            else if (!dashingAir)
+                _dashFromTag = false;
             if (!dashingAir && _airDashPoseWas && !jet && air && _input != null && _input.CrouchHeld)
             {
                 // The burst eases into the dart. An air crouch into a dash keeps its ease.
@@ -4954,6 +4986,25 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_punchUlR, _ulRT, into);
                 _llLT = Quaternion.Slerp(_punchLlL, _llLT, into);
                 _llRT = Quaternion.Slerp(_punchLlR, _llRT, into);
+            }
+            if (airDashing && _dashFromTag && !_dashFromMiss && !_dashFromWall && !_dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromTagIn < 0.98f)
+            {
+                // The connect eases into the burst, then the burst holds.
+                // A tag into a jump keeps its push. A crouch tag keeps its pose.
+                // A punch miss into a dash keeps its ease.
+                // Duration and cooldown are unchanged.
+                float intoBurst = _dashFromTagIn;
+                _uaLT = Quaternion.Slerp(_tagUaL, _uaLT, intoBurst);
+                _uaRT = Quaternion.Slerp(_tagUaR, _uaRT, intoBurst);
+                _laLT = Quaternion.Slerp(_tagLaL, _laLT, intoBurst);
+                _laRT = Quaternion.Slerp(_tagLaR, _laRT, intoBurst);
+                _ulLT = Quaternion.Slerp(_tagUlL, _ulLT, intoBurst);
+                _ulRT = Quaternion.Slerp(_tagUlR, _ulRT, intoBurst);
+                _llLT = Quaternion.Slerp(_tagLlL, _llLT, intoBurst);
+                _llRT = Quaternion.Slerp(_tagLlR, _llRT, intoBurst);
+                _spineT = Quaternion.Slerp(_tagSp, _spineT, intoBurst);
+                _hipsT = Quaternion.Slerp(_tagHp, _hipsT, intoBurst);
+                _headT = Quaternion.Slerp(_tagHd, _headT, intoBurst);
             }
             if (airDashing && _dashFromMiss && !_dashFromWall && !_dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromMissIn < 0.98f)
             {
