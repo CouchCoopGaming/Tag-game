@@ -365,11 +365,12 @@ namespace Tag.Art
             }
             else if (sliding)
             {
-                // Flat wedge: both arms reach forward and low. No extra roll into the pelvis.
+                // Flat wedge: a long low line. A bent elbow disappears into the chest at chase distance.
+                // Pitch and the mild A flare only.
                 _uaLT = _uaL0 * Quaternion.Euler(-74f, -6f, armZ);
                 _uaRT = _uaR0 * Quaternion.Euler(-68f, 6f, -armZ);
-                _laLT = _laL0 * Quaternion.Euler(-34f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-28f, 0f, 0f);
+                _laLT = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(-10f, 0f, 0f);
             }
             else if (crouch)
             {

@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `32e5b19`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `d6b060e`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
 
@@ -32,7 +32,9 @@ Already on this branch: At a standstill the arms hang slightly forward and out. 
 
 Already on this branch: A jump shows a long arm line and a knee tuck before the apex. A fall trails the arms before the landing.
 
-This delta: The run step is a little slower and holds the plant. The front thigh reaches farther than the back thigh, and only the front knee bends. The pass under the hips is short. Arm swing still opposes the front leg. No axis flip and no extra arm roll.
+Already on this branch: The run plant holds. The front thigh reaches farther than the back thigh, and only that knee bends.
+
+This delta: A slide's arms are a long low line. The elbows stay nearly straight so the wedge reads at chase distance. Lead knee stays tucked and the trail leg stays long. No extra arm roll. Slide speed is unchanged.
 
 ## Stack snapshot
 
@@ -167,6 +169,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 36. Stand still: the hands should hang just forward and outside the hips, not against the pelvis. Start sprinting: the opposite arm/leg stride should return, with no extra twist of the hands into the hips.
 37. Jump, including a short hop: both arms should be a long line up and the knees tucked before you reach the top. On the way down, even a short drop, the arms should trail back and the legs should lengthen before you land. Hands stay clear of the hips.
 38. Sprint: each plant should hold a moment, one knee up and the other leg long behind, not two straight legs sliding together. The forward arm should still be the opposite side. Hands stay clear of the hips.
+39. Slide: the arms should be a long line forward and low, not a folded pair at the chest. Lead knee stays under the chest and the trail leg stays straight. Hands stay clear of the hips.
 
 ## Known leftovers
 
@@ -225,6 +228,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 26. Idle hands hang forward and out of the hips. The offset is gone once the stride is up. No extra arm roll.
 27. Jump tuck and fall trail show before the landing, including a short hop. Hands stay clear of the hips.
 28. Run plant holds. Front knee bends, back leg stays long, arms still oppose the front leg. No extra arm roll.
+29. Slide arms are a long low line. Elbows stay nearly straight. Lead knee tucked, trail leg long.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
