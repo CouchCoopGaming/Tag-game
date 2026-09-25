@@ -321,6 +321,11 @@ namespace Tag.Art
         Quaternion _idleAirUaL, _idleAirUaR, _idleAirLaL, _idleAirLaR;
         float _bouncePulse;
         bool _bounceWallLeft;
+        bool _bounceKickSnap;
+        float _bounceKickIn;
+        Quaternion _bounceKickUaL, _bounceKickUaR, _bounceKickLaL, _bounceKickLaR;
+        Quaternion _bounceKickUlL, _bounceKickUlR, _bounceKickLlL, _bounceKickLlR;
+        Quaternion _bounceKickSp, _bounceKickHp, _bounceKickHd;
         float _glidePulse;
         float _dashPulse;
         float _dashRecover;
@@ -5316,6 +5321,34 @@ namespace Tag.Art
             _bouncePulse = Mathf.MoveTowards(_bouncePulse, 0f, dt / 0.22f);
             bool bouncing = _bouncePulse > 0.04f;
             float bounceAmt = Mathf.Clamp01(_bouncePulse);
+            if (bouncing && !_bounceKickSnap
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                // The pose eases into the kick, then the kick holds.
+                // The slow fade stays off this path. Bounce time is unchanged.
+                _bounceKickSnap = true;
+                _bounceKickIn = 0f;
+                _bounceKickUaL = _upperArmL.localRotation;
+                _bounceKickUaR = _upperArmR.localRotation;
+                _bounceKickLaL = _lowerArmL.localRotation;
+                _bounceKickLaR = _lowerArmR.localRotation;
+                _bounceKickUlL = _upperLegL.localRotation;
+                _bounceKickUlR = _upperLegR.localRotation;
+                _bounceKickLlL = _lowerLegL.localRotation;
+                _bounceKickLlR = _lowerLegR.localRotation;
+                _bounceKickSp = _spine.localRotation;
+                _bounceKickHp = _hips.localRotation;
+                _bounceKickHd = _head.localRotation;
+            }
+            if (_bounceKickSnap && bouncing)
+            {
+                if (_bounceKickIn < 0.98f)
+                    _bounceKickIn = Mathf.MoveTowards(_bounceKickIn, 1f, dt / 0.04f);
+            }
+            else if (!bouncing)
+                _bounceKickSnap = false;
             // Bible SuperGlide ~0.28s flat body + crouch hips - TP launch tell.
             _glidePulse = Mathf.MoveTowards(_glidePulse, 0f, dt / 0.28f);
             bool gliding = _glidePulse > 0.04f;
@@ -5678,8 +5711,10 @@ namespace Tag.Art
             if (bouncing)
             {
                 // Kick wall: spine opens opposite the wall normal (WallLeft = wall on left).
-                leanX = Mathf.Lerp(leanX, 28f, bounceAmt);
-                leanZ = Mathf.Lerp(leanZ, _bounceWallLeft ? -38f : 38f, bounceAmt);
+                // The kick holds after the ease. The slow fade stays off that path.
+                float k = _bounceKickSnap ? 1f : bounceAmt;
+                leanX = Mathf.Lerp(leanX, 28f, k);
+                leanZ = Mathf.Lerp(leanZ, _bounceWallLeft ? -38f : 38f, k);
             }
             if (gliding)
             {
@@ -6019,8 +6054,9 @@ namespace Tag.Art
             }
             else if (bouncing)
             {
-                // Brief push-off: wall-side arm plants/kicks, outer flings open
-                float k = bounceAmt;
+                // Brief push-off: wall-side arm plants/kicks, outer flings open.
+                // The pose eases into that kick, then the kick holds. Bounce time is unchanged.
+                float k = _bounceKickSnap ? 1f : bounceAmt;
                 if (_bounceWallLeft)
                 {
                     _uaLT = _uaL0 * Quaternion.Euler(Mathf.Lerp(-20f, -78f, k), 22f * k, 42f * k);
@@ -6034,6 +6070,17 @@ namespace Tag.Art
                     _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-20f, -78f, k), -22f * k, -42f * k);
                     _laLT = _laL0 * Quaternion.Euler(-24f * k, 0f, 0f);
                     _laRT = _laR0 * Quaternion.Euler(-52f * k, 0f, 0f);
+                }
+                if (_bounceKickSnap && _bounceKickIn < 0.98f)
+                {
+                    float intoKick = _bounceKickIn;
+                    _uaLT = Quaternion.Slerp(_bounceKickUaL, _uaLT, intoKick);
+                    _uaRT = Quaternion.Slerp(_bounceKickUaR, _uaRT, intoKick);
+                    _laLT = Quaternion.Slerp(_bounceKickLaL, _laLT, intoKick);
+                    _laRT = Quaternion.Slerp(_bounceKickLaR, _laRT, intoKick);
+                    _spineT = Quaternion.Slerp(_bounceKickSp, _spineT, intoKick);
+                    _hipsT = Quaternion.Slerp(_bounceKickHp, _hipsT, intoKick);
+                    _headT = Quaternion.Slerp(_bounceKickHd, _headT, intoKick);
                 }
             }
             else if (punching && !((_skiFromMiss || _slideFromMiss) && phase == PunchPhase.MissRecover) && !_jumpFromPunch && !_jumpMissSnap && !_jumpTagSnap)
@@ -6842,8 +6889,9 @@ namespace Tag.Art
             }
             else if (bouncing)
             {
-                // Wall-side leg kicks the face; outer tucks - readable off-wall impulse
-                float k = bounceAmt;
+                // Wall-side leg kicks the face; outer tucks - readable off-wall impulse.
+                // The pose eases into that kick, then the kick holds. Bounce time is unchanged.
+                float k = _bounceKickSnap ? 1f : bounceAmt;
                 if (_bounceWallLeft)
                 {
                     _ulLT = _ulL0 * Quaternion.Euler(Mathf.Lerp(18f, 62f, k), 0f, 12f * k);
@@ -6857,6 +6905,14 @@ namespace Tag.Art
                     _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(18f, 62f, k), 0f, -12f * k);
                     _llLT = _llL0 * Quaternion.Euler(Mathf.Lerp(-18f, -28f, k), 0f, 0f);
                     _llRT = _llR0 * Quaternion.Euler(Mathf.Lerp(-22f, -58f, k), 0f, 0f);
+                }
+                if (_bounceKickSnap && _bounceKickIn < 0.98f)
+                {
+                    float intoKick = _bounceKickIn;
+                    _ulLT = Quaternion.Slerp(_bounceKickUlL, _ulLT, intoKick);
+                    _ulRT = Quaternion.Slerp(_bounceKickUlR, _ulRT, intoKick);
+                    _llLT = Quaternion.Slerp(_bounceKickLlL, _llLT, intoKick);
+                    _llRT = Quaternion.Slerp(_bounceKickLlR, _llRT, intoKick);
                 }
             }
             else if (air)
@@ -13695,6 +13751,8 @@ namespace Tag.Art
         {
             _bouncePulse = 1f;
             _bounceWallLeft = _motor != null && _motor.WallLeft;
+            _bounceKickSnap = false;
+            _bounceKickIn = 0f;
             // The climb eases into the push. A wall run eases into its own push.
             // Exit time is unchanged. Jump height is unchanged.
             if (!_exitFromWall && _wallExit > 0.5f)
