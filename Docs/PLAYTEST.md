@@ -162,7 +162,9 @@ Already on this branch: Letting go of a crouch walk raises the hips into the str
 
 Already on this branch: A sprint into a walk closes the stride with the step. The feet do not skate to a stop. Speed is unchanged.
 
-This delta: A walk turn into a sprint plants the outside foot, then the stride opens. The feet do not skate. Speed is unchanged.
+Already on this branch: A walk turn into a sprint plants the outside foot, then the stride opens. The feet do not skate. Speed is unchanged.
+
+This delta: A hard landing into a walk absorbs, then takes a step. It does not sit in the idle. A stand still absorbs.
 
 ## Stack snapshot
 
@@ -362,6 +364,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 101. Crouch and walk, then let go: the hips should rise into the stride. They should not hitch. Speed should feel the same.
 102. Sprint, then drop to a walk: the stride should close with the step. It should not skate to a stop. Speed should feel the same.
 103. Walk and turn, then sprint: the outside foot should plant, then the stride should open. The feet should not skate. Speed should feel the same.
+104. Walk, then drop hard and keep walking: the knees should absorb, then take a step. It should not sit in the idle. A landing from a stand should still absorb.
 
 ## Known leftovers
 
@@ -485,6 +488,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 91. Letting go of a crouch walk raises the hips into the stride. They do not hitch. The feet keep stepping. Speed is unchanged.
 92. A sprint into a walk closes the stride with the step. The feet do not skate to a stop. Speed is unchanged.
 93. A walk turn into a sprint plants the outside foot, then the stride opens. The feet do not skate. Look speed is unchanged. Speed is unchanged.
+94. A hard landing into a walk absorbs, then takes a step. It does not sit in the idle. A stand still absorbs. Land time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
