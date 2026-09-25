@@ -142,7 +142,9 @@ Already on this branch: Becoming It while standing eases the hands and the chest
 
 Already on this branch: Letting go of a grapple eases the hands and the chest out of the long line. They do not twist. The grapple stays off unless you turn it on.
 
-This delta: A punch that misses while standing eases the fists into the idle hands. They do not freeze. The cock does not feel longer.
+Already on this branch: A punch that misses while standing eases the fists into the idle hands. They do not freeze. The cock does not feel longer.
+
+This delta: When the dash is ready again, the chest and the arms settle. The dash does not last longer, and it still has to recharge.
 
 ## Stack snapshot
 
@@ -332,6 +334,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 91. Stand still and become It: the hands and the chest should ease into the idle breath. They should not freeze and then pop. One knee can still be up. The claim should not feel longer.
 92. If you turn the grapple on, then let go: the hands and the chest should ease out of the long line into the run or the idle. They should not twist. It should stay off unless you turn it on. The pull should feel the same.
 93. Stand still and punch a miss: the fists should ease into the idle hands. They should not freeze and then pop. The cock should not feel longer.
+94. Air dash, then wait for the bar: when it is ready, the chest and the arms should settle. The dash should not last longer, and it should still have to recharge.
 
 ## Known leftovers
 
@@ -445,6 +448,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 81. Becoming It while standing eases the hands and the chest into the idle breath. They do not freeze and then pop. One knee can still be up. The claim time is unchanged.
 82. Letting go of a grapple eases the hands and the chest out of the long line into the run or the idle. They do not twist. The gate stays off. Range and speed are unchanged.
 83. A punch that misses while standing eases the fists into the idle hands. They do not freeze and then pop. Windup time is unchanged.
+84. When the dash cooldown ends, the chest and the arms settle. It is not a second whip. Duration and cooldown are unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
