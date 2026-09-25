@@ -99,7 +99,7 @@ MonoBehaviour:
   wallRunMinSpeed: 6
   wallRunSpeed: 9.5
   wallRunGravity: 6.5
-  wallRunGravityEndMult: 5.2
+  wallRunGravityEndMult: 5.4
   wallRunJumpOut: 8
   wallRunJumpUp: 6.2
   wallRunAttachAngle: 35

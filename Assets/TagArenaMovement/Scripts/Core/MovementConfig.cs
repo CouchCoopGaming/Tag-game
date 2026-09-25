@@ -120,7 +120,7 @@ namespace TagArena.Movement
         public float wallRunSpeed = 9.5f;
         public float wallRunGravity = 6.5f;
         /// <summary>Extra gravity multiplier reached at wallRunMaxTime (slides you down).</summary>
-        public float wallRunGravityEndMult = 5.2f;
+        public float wallRunGravityEndMult = 5.4f;
         public float wallRunJumpOut = 8.0f;
         public float wallRunJumpUp = 6.2f;
         public float wallRunAttachAngle = 35f;
