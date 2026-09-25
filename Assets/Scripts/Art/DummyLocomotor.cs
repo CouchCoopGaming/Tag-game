@@ -546,6 +546,11 @@ namespace Tag.Art
         Quaternion _slideSkiSp, _slideSkiHp, _slideSkiHd;
         bool _skiFromJump;
         bool _skiFromJumpLand;
+        float _skiFromJumpIn;
+        bool _jumpSkiSnap;
+        Quaternion _jumpSkiUaL, _jumpSkiUaR, _jumpSkiLaL, _jumpSkiLaR;
+        Quaternion _jumpSkiUlL, _jumpSkiUlR, _jumpSkiLlL, _jumpSkiLlR;
+        Quaternion _jumpSkiSp, _jumpSkiHp, _jumpSkiHd;
         bool _crouchFromStand;
         bool _crouchFromWalk;
         bool _stillCrouchWas;
@@ -1416,7 +1421,7 @@ namespace Tag.Art
                 && ((grounded && crouch) || (!grounded && _input != null && _input.CrouchHeld && _diveVis <= 0.02f));
             if (jumpStill && !_stillCrouchWas && !_crouchFromJump && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
             {
-                // The jump eases into the guard. A jump into a ski keeps its ease.
+                // The jump eases into the guard. A jump into a ski has its own ease.
                 // A jump into a slide keeps its ease. Jump height is unchanged.
                 _crouchFromJump = true;
                 _crouchFromJumpIn = 0f;
@@ -1737,12 +1742,32 @@ namespace Tag.Art
                     _skiFromCrouchWalkIn = 1f;
                 _skiFromCrouchWalk = crouchWalkSki;
                 _slideToSki = fromSlide;
+                if (fromJump && !_skiFromJump && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+                {
+                    // The hang or the absorb eases into the glide. A hard landing into a ski keeps its ease.
+                    // A walk into a ski keeps its ease. Ski speed is unchanged. Jump height is unchanged.
+                    _skiFromJumpIn = 0f;
+                    _jumpSkiSnap = true;
+                    _jumpSkiUaL = _upperArmL.localRotation;
+                    _jumpSkiUaR = _upperArmR.localRotation;
+                    _jumpSkiLaL = _lowerArmL.localRotation;
+                    _jumpSkiLaR = _lowerArmR.localRotation;
+                    _jumpSkiUlL = _upperLegL.localRotation;
+                    _jumpSkiUlR = _upperLegR.localRotation;
+                    _jumpSkiLlL = _lowerLegL.localRotation;
+                    _jumpSkiLlR = _lowerLegR.localRotation;
+                    _jumpSkiSp = _spine.localRotation;
+                    _jumpSkiHp = _hips.localRotation;
+                    _jumpSkiHd = _head.localRotation;
+                }
+                else if (fromJump && !_skiFromJump)
+                    _skiFromJumpIn = 1f;
                 _skiFromJump = fromJump;
                 _skiFromJumpLand = fromJump && grounded;
                 if (fromPunch && !_skiFromPunch)
                 {
                     // The cock or the strike eases into the glide. A ski into a punch keeps its ease.
-                    // A slide into a ski has its own ease. A jump into a ski keeps its ease.
+                    // A slide into a ski has its own ease. A jump into a ski has its own ease.
                     // Ski speed is unchanged. Windup time is unchanged.
                     _skiFromPunch = true;
                     _skiFromPunchIn = 0f;
@@ -1800,7 +1825,7 @@ namespace Tag.Art
                 if (fromSoft && !_skiFromSoft)
                 {
                     // The absorb eases into the glide. A hard landing into a ski keeps its own ease.
-                    // A jump into a ski keeps its ease. A punch into a ski keeps its ease.
+                    // A jump into a ski has its own ease. A punch into a ski keeps its ease.
                     // A slide into a ski has its own ease. Ski speed is unchanged. Land time is unchanged.
                     _skiFromSoft = true;
                     _skiFromSoftIn = 0f;
@@ -1819,7 +1844,7 @@ namespace Tag.Art
                 if (fromHard && !_skiFromHard)
                 {
                     // The deeper absorb eases into the glide. A soft landing into a ski keeps its ease.
-                    // A jump into a ski keeps its ease. An air dash into a ski keeps its ease.
+                    // A jump into a ski has its own ease. An air dash into a ski keeps its ease.
                     // A hard landing into a slide keeps its ease. Ski speed is unchanged. Land time is unchanged.
                     _skiFromHard = true;
                     _skiFromHardIn = 0f;
@@ -1838,7 +1863,7 @@ namespace Tag.Art
                 if (fromDart && !_skiFromDart)
                 {
                     // The dart eases into the glide. A hard landing into a ski keeps its ease.
-                    // An air dash into a ski keeps its ease. A jump into a ski keeps its ease.
+                    // An air dash into a ski keeps its ease. A jump into a ski has its own ease.
                     // An air crouch into a slide keeps its ease. Fall speed is unchanged. Ski speed is unchanged.
                     _skiFromDart = true;
                     _skiFromDartIn = 0f;
@@ -1917,7 +1942,7 @@ namespace Tag.Art
                 {
                     // The leave eases into the glide. A climb into a ski keeps its ease.
                     // A wall run into a jump keeps its push. A soft landing into a ski keeps its ease.
-                    // A jump into a ski keeps its ease. Ski speed is unchanged. Exit time is unchanged.
+                    // A jump into a ski has its own ease. Ski speed is unchanged. Exit time is unchanged.
                     _skiFromWall = true;
                     _skiFromWallIn = 0f;
                     _wallSkiUaL = _upperArmL.localRotation;
@@ -1936,7 +1961,7 @@ namespace Tag.Art
                 {
                     // The grab eases into the glide. A wall run into a ski keeps its own ease.
                     // A climb into a jump keeps its push. A climb into a punch keeps its ease.
-                    // A jump into a ski keeps its ease. Ski speed is unchanged. Exit time is unchanged.
+                    // A jump into a ski has its own ease. Ski speed is unchanged. Exit time is unchanged.
                     _skiFromClimb = true;
                     _skiFromClimbIn = 0f;
                     _climbSkiUaL = _upperArmL.localRotation;
@@ -1964,6 +1989,7 @@ namespace Tag.Art
                 _skiFromSlide = false;
                 _skiFromJump = false;
                 _skiFromJumpLand = false;
+                _jumpSkiSnap = false;
                 _skiFromPunch = false;
                 _skiFromTag = false;
                 _skiFromMiss = false;
@@ -1994,6 +2020,8 @@ namespace Tag.Art
                 _skiFromCrouchWalkIn = Mathf.MoveTowards(_skiFromCrouchWalkIn, 1f, dt / 0.04f);
             if (_skiFromCrouch && skiing)
                 _skiFromCrouchIn = Mathf.MoveTowards(_skiFromCrouchIn, 1f, dt / 0.04f);
+            if (_jumpSkiSnap && skiing)
+                _skiFromJumpIn = Mathf.MoveTowards(_skiFromJumpIn, 1f, dt / 0.04f);
             if (_skiFromPunch && skiing)
                 _skiFromPunchIn = Mathf.MoveTowards(_skiFromPunchIn, 1f, dt / 0.04f);
             if (_skiFromTag && skiing)
@@ -6738,10 +6766,10 @@ namespace Tag.Art
                 _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(50f, 0f, 0f), _hips0 * Quaternion.Euler(14f, 0f, 0f), intoGlide);
                 _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-12f, 0f, 0f), _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), intoGlide);
             }
-            if (_skiFromJump && skiing && _skiBlend < 0.98f && !punching)
+            if (_skiFromJump && !_jumpSkiSnap && skiing && _skiBlend < 0.98f && !punching)
             {
                 // The jump eases into the ski stride. A landing uses the absorb. The air glide uses the hang.
-                // A walk, a sprint, a crouch, and a slide keep their entry. Ski speed is unchanged.
+                // A jump into a ski has its own ease. Ski speed is unchanged.
                 float intoGlide = _skiBlend;
                 float glideL = RunArmPitch(-sinC, 16f);
                 float glideR = RunArmPitch(sinC, 16f);
@@ -9426,7 +9454,7 @@ namespace Tag.Art
             if (_crouchFromJump && !sliding && !jet && !punching && !wallRun && !climb)
             {
                 // The jump eases into the guard, then the guard holds.
-                // A run into a slide keeps its ease. A jump into a ski keeps its ease.
+                // A run into a slide keeps its ease. A jump into a ski has its own ease.
                 // A jump into a slide keeps its ease. Jump height is unchanged.
                 float intoGuard = _crouchFromJumpIn;
                 Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
@@ -10923,7 +10951,7 @@ namespace Tag.Art
             {
                 // The run eases into the glide, then the glide holds.
                 // A walk into a ski keeps its ease. A slide into a ski has its own ease.
-                // A jump into a ski keeps its ease. Ski speed is unchanged.
+                // A jump into a ski has its own ease. Ski speed is unchanged.
                 float intoGlide = _skiFromSprintIn;
                 float glideL = Mathf.Max(0f, sinC);
                 float glideR = Mathf.Max(0f, -sinC);
@@ -11173,11 +11201,61 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_glideIdleLlL, _llLT, intoIdle);
                 _llRT = Quaternion.Slerp(_glideIdleLlR, _llRT, intoIdle);
             }
+            if (_jumpSkiSnap && skiing && !jet && !crouch && !wallRun && !climb && !punching)
+            {
+                // The hang or the absorb eases into the glide, then the glide holds.
+                // A hard landing into a ski keeps its ease. A walk into a ski keeps its ease.
+                // Ski speed is unchanged. Jump height is unchanged.
+                float intoGlide = _skiFromJumpIn;
+                float glideL = Mathf.Max(0f, sinC);
+                float glideR = Mathf.Max(0f, -sinC);
+                float skateL = RunArmPitch(-sinC, 16f);
+                float skateR = RunArmPitch(sinC, 16f);
+                Quaternion skiL = _uaL0 * Quaternion.Euler(-18f + skateL, 22f, armZ);
+                Quaternion skiR = _uaR0 * Quaternion.Euler(-18f + skateR, -22f, -armZ);
+                Quaternion skiElL = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
+                Quaternion skiElR = _laR0 * Quaternion.Euler(-12f, 0f, 0f);
+                Quaternion skiSp = _spine0 * Quaternion.Euler(26f, 0f, 0f);
+                Quaternion skiHp = _hips0 * Quaternion.Euler(14f, 0f, 0f);
+                Quaternion skiHd = _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f);
+                Quaternion skiThighL = _ulL0 * Quaternion.Euler((glideL - glideR * 0.5f) * 32f, 0f, 0f);
+                Quaternion skiThighR = _ulR0 * Quaternion.Euler((glideR - glideL * 0.5f) * 32f, 0f, 0f);
+                Quaternion skiKneeL = _llL0 * Quaternion.Euler(-(6f + glideL * 32f), 0f, 0f);
+                Quaternion skiKneeR = _llR0 * Quaternion.Euler(-(6f + glideR * 32f), 0f, 0f);
+                if (intoGlide < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_jumpSkiUaL, skiL, intoGlide);
+                    _uaRT = Quaternion.Slerp(_jumpSkiUaR, skiR, intoGlide);
+                    _laLT = Quaternion.Slerp(_jumpSkiLaL, skiElL, intoGlide);
+                    _laRT = Quaternion.Slerp(_jumpSkiLaR, skiElR, intoGlide);
+                    _spineT = Quaternion.Slerp(_jumpSkiSp, skiSp, intoGlide);
+                    _hipsT = Quaternion.Slerp(_jumpSkiHp, skiHp, intoGlide);
+                    _headT = Quaternion.Slerp(_jumpSkiHd, skiHd, intoGlide);
+                    _ulLT = Quaternion.Slerp(_jumpSkiUlL, skiThighL, intoGlide);
+                    _ulRT = Quaternion.Slerp(_jumpSkiUlR, skiThighR, intoGlide);
+                    _llLT = Quaternion.Slerp(_jumpSkiLlL, skiKneeL, intoGlide);
+                    _llRT = Quaternion.Slerp(_jumpSkiLlR, skiKneeR, intoGlide);
+                }
+                else
+                {
+                    _uaLT = skiL;
+                    _uaRT = skiR;
+                    _laLT = skiElL;
+                    _laRT = skiElR;
+                    _spineT = skiSp;
+                    _hipsT = skiHp;
+                    _headT = skiHd;
+                    _ulLT = skiThighL;
+                    _ulRT = skiThighR;
+                    _llLT = skiKneeL;
+                    _llRT = skiKneeR;
+                }
+            }
             if (_skiFromWall && !_skiFromClimb && !_skiFromSoft && !_skiFromTag && !_skiFromPunch && !_skiFromDash && !_skiFromJump && skiing && !jet && !crouch && !wallRun && !climb && _skiFromWallIn < 0.98f)
             {
                 // The leave eases into the glide, then the glide holds.
                 // A climb into a ski keeps its ease. A wall run into a jump keeps its push.
-                // A soft landing into a ski keeps its ease. A jump into a ski keeps its ease.
+                // A soft landing into a ski keeps its ease. A jump into a ski has its own ease.
                 // Ski speed is unchanged. Exit time is unchanged.
                 float intoGlide = _skiFromWallIn;
                 float glideL = Mathf.Max(0f, sinC);
@@ -11204,7 +11282,7 @@ namespace Tag.Art
             {
                 // The grab eases into the glide, then the glide holds.
                 // A wall run into a ski keeps its own ease. A climb into a jump keeps its push.
-                // A climb into a punch keeps its ease. A jump into a ski keeps its ease.
+                // A climb into a punch keeps its ease. A jump into a ski has its own ease.
                 // Ski speed is unchanged. Exit time is unchanged.
                 float intoGlide = _skiFromClimbIn;
                 float glideL = Mathf.Max(0f, sinC);
@@ -11339,7 +11417,7 @@ namespace Tag.Art
             {
                 // The dart eases into the glide, then the glide holds.
                 // A hard landing into a ski keeps its ease. An air dash into a ski keeps its ease.
-                // A jump into a ski keeps its ease. An air crouch into a slide keeps its ease.
+                // A jump into a ski has its own ease. An air crouch into a slide keeps its ease.
                 // Fall speed is unchanged. Ski speed is unchanged.
                 float intoGlide = _skiFromDartIn;
                 float glideL = Mathf.Max(0f, sinC);
@@ -11365,7 +11443,7 @@ namespace Tag.Art
             if (_skiFromHard && !_skiFromDart && !_skiFromSoft && !_skiFromTag && !_skiFromPunch && !_skiFromDash && !_skiFromJump && skiing && !jet && !crouch && !wallRun && !climb && _skiFromHardIn < 0.98f)
             {
                 // The deeper absorb eases into the glide, then the glide holds.
-                // A soft landing into a ski keeps its ease. A jump into a ski keeps its ease.
+                // A soft landing into a ski keeps its ease. A jump into a ski has its own ease.
                 // An air dash into a ski keeps its ease. A hard landing into a slide keeps its ease.
                 // Ski speed is unchanged. Land time is unchanged.
                 float intoGlide = _skiFromHardIn;
@@ -11392,7 +11470,7 @@ namespace Tag.Art
             if (_skiFromSoft && !_skiFromHard && !_skiFromTag && !_skiFromPunch && !_skiFromDash && !_skiFromJump && skiing && !jet && !crouch && !wallRun && !climb && _skiFromSoftIn < 0.98f)
             {
                 // The absorb eases into the glide, then the glide holds.
-                // A hard landing into a ski keeps its own ease. A jump into a ski keeps its ease.
+                // A hard landing into a ski keeps its own ease. A jump into a ski has its own ease.
                 // A punch into a ski keeps its ease. A slide into a ski has its own ease.
                 // Ski speed is unchanged. Land time is unchanged.
                 float intoGlide = _skiFromSoftIn;
@@ -11447,7 +11525,7 @@ namespace Tag.Art
             {
                 // The cock or the strike eases into the glide, then the glide holds.
                 // A ski into a punch keeps its ease. A slide into a ski has its own ease.
-                // A jump into a ski keeps its ease. Ski speed is unchanged. Windup time is unchanged.
+                // A jump into a ski has its own ease. Ski speed is unchanged. Windup time is unchanged.
                 float intoGlide = _skiFromPunchIn;
                 float glideL = Mathf.Max(0f, sinC);
                 float glideR = Mathf.Max(0f, -sinC);
