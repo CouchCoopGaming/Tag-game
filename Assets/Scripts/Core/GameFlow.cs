@@ -388,7 +388,8 @@ namespace Tag.Core
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) SetFocus(ref _playerCountCursor, 3);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) Nudge(ref _playerCountCursor, -1, 3);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) Nudge(ref _playerCountCursor, 1, 3);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.Space))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
+                    UnityEngine.Input.GetKeyDown(KeyCode.Space))
                 {
                     LocalPlayerRoster.SetCount(_playerCountCursor + 1);
                     GoToModeSelect();
