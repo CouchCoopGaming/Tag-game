@@ -136,7 +136,9 @@ Already on this branch: Tagged while standing, the hands and the chest ease into
 
 Already on this branch: A hard landing into a sprint brings the arms into the stride under the hips. They flare, then ease, and do not lock. A short hop still does not flare. The landing does not feel longer.
 
-This delta: A turn while sprinting plants the outside foot. The chest and the hips lean together. The waist does not twist. Speed is unchanged.
+Already on this branch: A turn while sprinting plants the outside foot. The chest and the hips lean together. The waist does not twist. Speed is unchanged.
+
+This delta: Becoming It while standing eases the hands and the chest into the idle breath. They do not freeze and then pop. One knee can still be up. The claim does not feel longer.
 
 ## Stack snapshot
 
@@ -323,6 +325,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 88. Stand still and get tagged: the hands and the chest should ease into the idle breath. They should not freeze and then pop. Both knees can still bend. The catch should not feel longer.
 89. Sprint, jump, and land still holding sprint: the arms should flare, then ease into the stride under the hips. They should not stay locked out. A short hop should still keep the arms in the stride. The landing should not feel longer.
 90. Sprint and turn: the outside foot should plant while the other leg steps. The chest and the hips should lean together. The waist should not twist. Speed should feel the same. Look should feel the same.
+91. Stand still and become It: the hands and the chest should ease into the idle breath. They should not freeze and then pop. One knee can still be up. The claim should not feel longer.
 
 ## Known leftovers
 
@@ -433,6 +436,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 78. Tagged while standing, the hands and the chest ease into the idle breath. They do not freeze and then pop. Both knees can still bend. Flinch time is unchanged.
 79. A hard landing into a sprint brings the arms into the stride under the hips. They flare, then ease, and do not lock. A short hop does not flare the arms. Land time is unchanged.
 80. A turn while sprinting plants the outside foot. The chest and the hips lean together. The waist does not twist. Speed is unchanged. Look speed is unchanged.
+81. Becoming It while standing eases the hands and the chest into the idle breath. They do not freeze and then pop. One knee can still be up. The claim time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
