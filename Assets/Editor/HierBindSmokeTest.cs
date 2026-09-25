@@ -16,6 +16,23 @@ public static class HierBindSmokeTest
         string[] colors = { "Blue", "Mint", "Orange", "Lavender", "Tan", "Red" };
         int fail = 0;
         int ok = 0;
+
+        string runnerPath = ArtMeshPaths.PreferCharacterFbx(false);
+        string itPath = ArtMeshPaths.PreferCharacterFbx(true);
+        if (!runnerPath.EndsWith("Dummy_Mannequin_Tan_Hier_Hi.fbx") || !File.Exists(runnerPath))
+        {
+            Debug.LogError("[HierBindSmoke] Runner default is not Tan Hier: " + runnerPath);
+            fail++;
+        }
+        else
+            Debug.Log("[HierBindSmoke] OK Runner -> " + runnerPath);
+        if (!itPath.EndsWith("Dummy_Mannequin_Orange_Hier_Hi.fbx") || !File.Exists(itPath))
+        {
+            Debug.LogError("[HierBindSmoke] It default is not Orange Hier: " + itPath);
+            fail++;
+        }
+        else
+            Debug.Log("[HierBindSmoke] OK It -> " + itPath);
         foreach (var color in colors)
         {
             string path = HiPolyDir + "/Dummy_Mannequin_" + color + "_Hier_Hi.fbx";

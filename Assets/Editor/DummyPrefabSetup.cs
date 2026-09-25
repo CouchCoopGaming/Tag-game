@@ -26,6 +26,7 @@ namespace Tag.EditorTools
         [MenuItem("Tag/Setup Dummy Prefabs From FBX")]
         public static void SetupDummyPrefabs()
         {
+            // PreferCharacterFbx: Tan Hier for Runner, Orange Hier for It, then flat / Runner_Hi / It_Hi.
             BuildCharacter(ArtMeshPaths.PreferCharacterFbx(false), RunnerPrefab, new[]
             {
                 "Assets/Art/Characters/Mat_Runner_Base.mat",
