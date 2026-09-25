@@ -147,9 +147,10 @@ namespace Tag.Art
         /// <summary>
         /// Connected playground districts. Ski spines (x=24/48, z=18/36, 3.2 m wide) stay open.
         /// Fort slide mouths tuck inside the 2x2 lip; exits sit on a three-tile pit.
-        /// PGK_Slide_TubeDeck_2m (yaw 90, stem 0) is the 2.00 chute on soft-play and
-        /// the army bunker. Astro keeps the straight chute so its ground slide is not
-        /// a second deck tube. Mega_SlideTube and PGK_Slide_Tube90 stay unspawned.
+        /// PGK_Slide_TubeDeck_2m (yaw 90, stem 0, pivot z+5.90) is one chute each on
+        /// soft-play and astro. East forts keep the straight chute. Unity's mesh AABB
+        /// is still spanY ~1.14; do not add a rotation to fake the 1.91 crown.
+        /// Mega_SlideTube and PGK_Slide_Tube90 stay unspawned.
         /// Horizontal Toy_TunnelTube / Mega_CrawlTunnel runs are the crawl instead.
         /// </summary>
         int PlaceChasePlayground(Transform root)
@@ -220,13 +221,11 @@ namespace Tag.Art
             var parent = MakeGroup(root, name, origin, yaw);
             var pieces = new List<(string id, Vector3 p, float y)>();
             // Inner pit wing would sit on the Conn ramp. Outer wing, plus a second outer column.
-            // Soft-play: sleeve is 1.56 m off the slide spiral along the chute, 3.28 m
-            // north of the tube street, 2.39 m east of the west bars. The ground Toy_Slide
-            // stays on the south lawn. Astro is the same layout and already has that
-            // ground slide, so it keeps the straight chute.
-            // Army: 5.0 m from the lip to the low mouth, 1.49 m west of the spiral climber.
-            // Knight keeps the straight chute.
-            bool deckTube = name == "Play_SoftPlay" || name == "Play_ArmyBunker";
+            // One tube on each west fort. Same pivot as the seated pair: yaw 90, stem 0, z+5.90.
+            // East is not a second seat. In the FBX the rise is mesh Z (0.03..2.48) and Y is
+            // only ±0.57; Unity's placed AABB matches that (spanY ~1.14), so the crown is not
+            // on the 2.00 deck. No extra rotation. Knight and army keep the straight chute.
+            bool deckTube = name == "Play_SoftPlay" || name == "Play_AstroLoft";
             AddDeckTower(pieces, 0f, 0f, true, OuterPitSide(origin.x, yaw), deckTube);
             // Stoop on the 0.40 grid, beside the ground stair.
             pieces.Add(("PGK_Deck_1x1_LOD0", new Vector3(1.5f, Deck040, -2.5f), 0f));
@@ -334,7 +333,7 @@ namespace Tag.Art
         /// Slide mouth tucks under the 2.00 deck; exit is on mulch (authored SlideGroundMouthY).
         /// </summary>
         /// <param name="pitSide">-1 or +1 = that local-X wing only. 2 = both wings (rings).</param>
-        /// <param name="deckTube">Soft-play and army: PGK_Slide_TubeDeck_2m instead of the straight chute.</param>
+        /// <param name="deckTube">Soft-play and astro: PGK_Slide_TubeDeck_2m instead of the straight chute.</param>
         static void AddDeckTower(List<(string id, Vector3 p, float y)> pieces, float cx, float cz, bool slidePositiveZ, int pitSide, bool deckTube = false)
         {
             pieces.Add(("PGK_Post_Square_3m_LOD0", new Vector3(cx - 1f, 0f, cz - 1f), 0f));

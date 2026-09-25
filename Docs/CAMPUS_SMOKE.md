@@ -1,8 +1,8 @@
 # Campus smoke
 
-After pull: **CutArenaBootstrap** Rebuild, then **PgkLandmarkPlacer -> Place**. Walk on foot. Spines and the crash cross stay empty. Soft-play and the army bunker use `PGK_Slide_TubeDeck_2m` on the 2.00 deck. Astro keeps the straight chute. `Mega_SlideTube` and `PGK_Slide_Tube90` are not placed. Feel was not edited.
+After pull: **CutArenaBootstrap** Rebuild, then **PgkLandmarkPlacer -> Place**. Walk on foot. Spines and the crash cross stay empty. Soft-play and astro each have one `PGK_Slide_TubeDeck_2m` on the west 2.00 deck (yaw 90, stem 0, pivot local z=5.90). Army and knight keep the straight chute. `Mega_SlideTube` and `PGK_Slide_Tube90` are not placed. Props stay parked. Feel was not edited.
 
-TubeDeck axis blocker: Place smoke seats soft-play + army (count=2), but local mesh AABB is still spanY~1.14 (minY/maxY ~+/-0.57) instead of feet~0 / crown~1.91. Brief wants +Y up and high mouth at mesh y=1.91. Do not invent a placer rotation hack. Needs AD FBX re-export (Blender +Y up, pivot mulch under low mouth). Mega/Tube90 stay out.
+TubeDeck axis blocker: Unity's placed AABB is spanY ~1.14 (about +/-0.57), not feet at 0 and a crown at 1.91. In the FBX the rise is mesh Z (0.03..2.48) and Y is the sleeve width. Do not add a placer rotation. Needs an FBX re-export with +Y up. Mega/Tube90 stay out.
 
 ## SW
 
@@ -14,11 +14,11 @@ South bar into soft-play. **SoftS south** at (14.5, 2.6): balance beam, mushroom
 
 ## NW
 
-Cross the north spine. **NW arch** at (7.70, 42). Piers are about 1.7 m off hopscotch NW and the north bar. The deck is at 1.05 and the span underneath is open. NW cluster at (9.4, 45.0), then hopscotch NW. Astro carries the same dome north of its tubes, off Spawn_NW's exit. Its 2.00 chute stays the straight slide. West forts do not have the east spiral.
+Cross the north spine. **NW arch** at (7.70, 42). Piers are about 1.7 m off hopscotch NW and the north bar. The deck is at 1.05 and the span underneath is open. NW cluster at (9.4, 45.0), then hopscotch NW. Astro carries the same dome north of its tubes, off Spawn_NW's exit, and the same `PGK_Slide_TubeDeck_2m` on its 2.00 lip (yaw 90, stem 0, low mouth at local z=5.90). West forts do not have the east spiral.
 
 ## East
 
-Spawn_SE, hopscotch SE, then the **SE arch** at (65.90, 10.5). **SE cluster** at (66.2, 7.5): mushrooms, spring, two hops. **East spiral** on army and knight, local (2.80, 0): feet on the ground, top 2.40, a climb onto the 2.00 deck. Army's 2.00 chute is `PGK_Slide_TubeDeck_2m`, yaw 90, stem 0, low mouth at local z=5.90, 1.49 m off that spiral. Knight keeps the straight chute. Kickball's field stays open. **NE arch** at (65.65, 41), bench at (65.65, 41.90). NE cluster at (66.2, 45.0). **NE hops and seesaw**: hop east edge x=68.45, seesaw west edge x=69.01, gap 0.56 m. Then hopscotch NE. The arch span under the bench stays open.
+Spawn_SE, hopscotch SE, then the **SE arch** at (65.90, 10.5). **SE cluster** at (66.2, 7.5): mushrooms, spring, two hops. **East spiral** on army and knight, local (2.80, 0): feet on the ground, top 2.40, a climb onto the 2.00 deck. Army and knight keep the straight chute. The deck tube is west-only until the FBX crown is on Y. Kickball's field stays open. **NE arch** at (65.65, 41), bench at (65.65, 41.90). NE cluster at (66.2, 45.0). **NE hops and seesaw**: hop east edge x=68.45, seesaw west edge x=69.01, gap 0.56 m. Then hopscotch NE. The arch span under the bench stays open.
 
 ## Crash
 
