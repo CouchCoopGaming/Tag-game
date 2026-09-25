@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/features-focus-input-hud-238c` on campus tip `87abc8c`. PR #20 CloseMenuPanels is already on the tip. Campus smoke `5fc75d2`. Mega tubes unused (`0004d3e` + KIT_REQUEST). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/playground-campus-zones-afc4` (integration tip). Includes mute-from-play + readable dash bar (`f45ace6`). CloseMenuPanels, campus smoke, KIT_REQUEST. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing when the cursor unlocks, HUD mute chip (MUTED and MUSIC OFF together), pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6 m (avoid weight 0.80), It hat beacon hidden on your own chase cam, It-hunt compass pulse from 13 m, warm OUT waiting line. No PgkLandmarkPlacer density adds. No MasterVolume type.
 
