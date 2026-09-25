@@ -209,7 +209,13 @@ namespace Tag.Art
             bool skiing = st == MoveState.Ski;
             _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             // Feet stay in the short glide while the hips are still pitched, then the run opens under them.
+            // A walk returns the stride with the step, so the long glide does not skate off.
+            // Ski speed is unchanged. Jet stays off.
             float footSki = _skiBlend * (2f - _skiBlend);
+            float walkSki = !skiing && grounded
+                ? Mathf.Clamp01(speed / 5.5f) * (1f - Mathf.InverseLerp(5.5f, 11.5f, speed))
+                : 0f;
+            float legSki = walkSki > 0.02f ? footSki * footSki : footSki;
             bool punching = _punch != null && _punch.IsPunching;
             bool lunging = _motor != null && _motor.IsLunging;
             var phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
@@ -295,7 +301,7 @@ namespace Tag.Art
                 float runStep = runAmt < _runVis ? dt / 0.32f : dt / 0.2f;
                 _runVis = Mathf.MoveTowards(_runVis, runAmt, runStep);
                 float cadence = Mathf.Lerp(7.2f, 11.2f, _runVis);
-                float rate = Mathf.Lerp(cadence, 5.2f, footSki);
+                float rate = Mathf.Lerp(cadence, 5.2f, legSki);
                 _cycle += dt * rate;
                 _stopGait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
                 _stopRun = _runVis;
@@ -941,10 +947,10 @@ namespace Tag.Art
                     // Short swing while the feet are still in the glide, so the arms do not skate past the hips.
                     float skateL = RunArmPitch(-sinC, 16f);
                     float skateR = RunArmPitch(sinC, 16f);
-                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-18f + skateL, 22f, armZ), footSki);
-                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-18f + skateR, -22f, -armZ), footSki);
-                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-12f, 0f, 0f), footSki);
-                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-12f, 0f, 0f), footSki);
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-18f + skateL, 22f, armZ), legSki);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-18f + skateR, -22f, -armZ), legSki);
+                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-12f, 0f, 0f), legSki);
+                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-12f, 0f, 0f), legSki);
                 }
                 if (_dropVis > 0.02f)
                 {
@@ -1232,10 +1238,10 @@ namespace Tag.Art
                     float sFrontR = Mathf.Max(0f, -sinC);
                     float sThighL = (sFrontL - sFrontR * 0.5f) * 32f;
                     float sThighR = (sFrontR - sFrontL * 0.5f) * 32f;
-                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(sThighL, 0f, 0f), footSki);
-                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(sThighR, 0f, 0f), footSki);
-                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(6f + sFrontL * 32f), 0f, 0f), footSki);
-                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(6f + sFrontR * 32f), 0f, 0f), footSki);
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(sThighL, 0f, 0f), legSki);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(sThighR, 0f, 0f), legSki);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(6f + sFrontL * 32f), 0f, 0f), legSki);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(6f + sFrontR * 32f), 0f, 0f), legSki);
                 }
                 if (_dropVis > 0.02f)
                 {
