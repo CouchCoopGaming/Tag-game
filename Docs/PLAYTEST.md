@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `22822dc`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `116d0d8`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
 
@@ -44,7 +44,9 @@ Already on this branch: The punch windup cocks the fist beside the head, clear o
 
 Already on this branch: After an air dash the arms stay in the hang and ease into the fall or the run. They do not throw back a second time.
 
-This delta: A tag catch is a long V of arms in front of the chest, with both knees bent. The hands stay clear of the chest. It should not match the new It's one-knee claim or a landing buckle.
+Already on this branch: A tag catch is a long V of arms in front of the chest, with both knees bent. It stays distinct from the new It's claim.
+
+This delta: Starting a run keeps the hands out of the hips. The idle hang stays slightly forward, and a small outward flare remains once the stride is moving. Resting arms do not pick up extra roll.
 
 ## Stack snapshot
 
@@ -185,6 +187,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 42. Punch: the windup fist should sit beside the head, not inside the chest. The connect should still be a long line in front of the chest. The cock should not feel longer.
 43. Air dash: the arms throw back at the start, then ease down before the streak ends. When the streak ends they should keep easing forward. They should not throw back again. The burst should still feel short.
 44. Tag someone: the runner who was hit should show a long V of arms, not a fold at the chest, and both knees should bend. The new It should still raise both arms and lift one knee. The two poses should not match, and neither should look like a landing.
+45. Stand still, then sprint: the hands should stay outside the hips the whole way into the stride. They should not tuck in as the walk starts, and they should not twist into the pelvis at a standstill.
 
 ## Known leftovers
 
@@ -249,6 +252,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 32. Punch windup sits beside the head, clear of the chest. Connect stays a long line in front. Windup time is unchanged.
 33. After an air dash the arms ease out of the hang. They do not whip again when the burst ends. Dash time and cooldown are unchanged.
 34. Tag catch is a long V of arms with both knees bent. Hands stay clear of the chest. The new It still lifts one knee. Neither pose matches a landing.
+35. Idle into a run keeps the hands outside the hips. Resting arms have no extra roll. The stride still opposes the front leg.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

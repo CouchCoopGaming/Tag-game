@@ -447,10 +447,13 @@ namespace Tag.Art
                 float gait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
                 float idle = 1f - gait;
                 float amp = Mathf.Lerp(36f, 64f, gait);
-                // Idle hang sits slightly forward and out. It fades by the time the stride starts.
-                // Z stays 0 so this does not stack roll on the Hier A-pose.
-                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle, 10f * idle, 0f);
-                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle, -10f * idle, 0f);
+                // Idle hang sits slightly forward and out. The outward yaw stays on through the
+                // stride so the hands do not drop into the hips as the walk starts.
+                // Roll stays 0 at rest and only picks up the mild A once the stride is moving.
+                float outY = Mathf.Lerp(12f, 8f, gait);
+                float roll = Mathf.Lerp(0f, armZ, gait);
+                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle, outY, roll);
+                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle, -outY, -roll);
                 float elbowL = Mathf.Lerp(-18f, -8f, idle) - Mathf.Max(0f, -sinC) * Mathf.Lerp(28f, 58f, runAmt);
                 float elbowR = Mathf.Lerp(-18f, -8f, idle) - Mathf.Max(0f, sinC) * Mathf.Lerp(28f, 58f, runAmt);
                 _laLT = _laL0 * Quaternion.Euler(elbowL, 0f, 0f);
