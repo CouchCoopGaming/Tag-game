@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 """
-HiPoly hierarchical mannequin v5.1 — Hybrid III refine v0.4.1
+HiPoly hierarchical mannequin v6 — Hybrid III face v0.5 (body v0.4.1 locked)
 
-MIDDLE PATH (critical):
-  v0.3 = toy robot (fail)
-  v0.4 = smooth fashion mannequin (fail) — continuous remesh melted segmentation
-  v0.4.1 = Hybrid III SEGMENTATION + human athletic mass
+HEAD SHELL ONLY pass on shipping v0.4.1 body (v5_1):
+  Molded vinyl Hybrid III face relief on the egg — brow, nose (profile tell),
+  mouth slit/bead, slight cheek/chin volume. Keep sensor-dot eyes, temple row
+  of 3, temple quadrant cal. NO painted makeup / visor / cartoon face.
 
-Rebuild from Hybrid III segmentation language — NOT a smooth remesh of v0.4.
-Distinct vinyl shells with soft bead/lip seams, large hinge disks, large cals,
-inset bellows, 4 neck rings, separated fingers, warm bone tan in stills.
-
-DummyLocomotor bones unchanged. GUID-safe FBX overwrite. NO git push.
+Body code unchanged from v5_1. DummyLocomotor bones unchanged.
+GUID-safe FBX overwrite. NO git push.
 """
 import bpy
 import math
@@ -22,7 +19,7 @@ from mathutils import Vector, Euler
 OUT_DIR = "/workspace/tag-unity/Assets/Art/Characters/HiPoly"
 PREV = "/workspace/art-build/previews"
 BLEND = "/workspace/art-build/Dummy_Mannequin_Hier_Hi.blend"
-LOG = "/tmp/hipoly_v51_build.log"
+LOG = "/tmp/hipoly_v50_build.log"
 REF_CRASH = "/workspace/tag-gdd/art/refs/hybrid-iii-v03/ref_hybrid_iii_crash_dummy.jpg"
 
 GUID_TAN = "ad3f2fa97db94e72869d746ecdf8e87d"
@@ -228,6 +225,55 @@ def join(name, objs):
         bpy.ops.object.join()
     objs[0].name = name
     return objs[0]
+
+
+def boolean_union(target, tools):
+    """Union tool meshes into target (molded vinyl relief). Destroys tools."""
+    tools = [t for t in tools if t is not None]
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.context.view_layer.objects.active = target
+    target.select_set(True)
+    for i, tool in enumerate(tools):
+        mod = target.modifiers.new(f"BoolU_{i}", "BOOLEAN")
+        mod.operation = "UNION"
+        mod.solver = "EXACT"
+        mod.object = tool
+        try:
+            apply_mod(target, mod.name)
+        except Exception as e:
+            log(f"boolean_union fail on {tool.name}: {e} — joining instead")
+            if mod.name in target.modifiers:
+                target.modifiers.remove(mod)
+            join(target.name, [target, tool])
+            target = bpy.context.active_object
+            continue
+        bpy.data.objects.remove(tool, do_unlink=True)
+    shade_smooth(target)
+    return target
+
+
+def boolean_difference(target, tools):
+    """Carve tool meshes out of target (shallow eye recesses). Destroys tools."""
+    tools = [t for t in tools if t is not None]
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.context.view_layer.objects.active = target
+    target.select_set(True)
+    for i, tool in enumerate(tools):
+        mod = target.modifiers.new(f"BoolD_{i}", "BOOLEAN")
+        mod.operation = "DIFFERENCE"
+        mod.solver = "EXACT"
+        mod.object = tool
+        try:
+            apply_mod(target, mod.name)
+        except Exception as e:
+            log(f"boolean_difference fail on {tool.name}: {e} — skip recess")
+            if mod.name in target.modifiers:
+                target.modifiers.remove(mod)
+            bpy.data.objects.remove(tool, do_unlink=True)
+            continue
+        bpy.data.objects.remove(tool, do_unlink=True)
+    shade_smooth(target)
+    return target
 
 
 def light_smooth(ob, iterations=4):
@@ -627,7 +673,7 @@ def build_armature():
 
 
 def build_mesh_parts(is_it, mats):
-    """v0.4.1 — Hybrid III SEGMENTATION + athletic mass. NO continuous remesh."""
+    """v0.4.1 body + v0.5 molded Hybrid III face. NO continuous remesh."""
     base, accent, over, joint, sensor, metal, bellows_mat, cal_accent, lip_mat = mats
     groups = {k: [] for k in (
         "Hips", "Spine", "Chest", "Neck", "Head",
@@ -641,12 +687,46 @@ def build_mesh_parts(is_it, mats):
         set_mat(ob, m)
         groups[bone].append(ob)
 
-    # --- Head: egg + 2 eye dots + temple row of 3 (NO visor / painted face) ---
-    head = sph("Head", (0, -0.01, 1.73), (0.165, 0.148, 0.200), seg=36, ring=18, sub=True)
+    # --- Head: molded Hybrid III vinyl face on egg (v0.5) + sensors/cal ---
+    # Face toward -Y. Relief only — keep egg silhouette scale (not a glued human skull).
+    head = sph("Head", (0, -0.01, 1.73), (0.165, 0.148, 0.200), seg=40, ring=20, sub=True)
+
+    # Brow ridge — soft forehead break, elongated across X, proud ~10–12mm on Y-
+    brow = sph("BrowRidge", (0.0, -0.148, 1.808), (0.100, 0.024, 0.016), seg=28, ring=12)
+
+    # Nose — bridge + tip; tip clearly proud in PROFILE (primary tell vs blank egg)
+    nose_bridge = sph("NoseBridge", (0.0, -0.158, 1.760), (0.020, 0.040, 0.032), seg=18, ring=10)
+    nose_tip = sph("NoseTip", (0.0, -0.182, 1.722), (0.016, 0.030, 0.020), seg=16, ring=10)
+
+    # Soft cheek volume (slight — egg, not fashion mannequin)
+    cheek_l = sph("Cheek_L", (0.088, -0.118, 1.700), (0.042, 0.032, 0.038), seg=14, ring=8)
+    cheek_r = sph("Cheek_R", (-0.088, -0.118, 1.700), (0.042, 0.032, 0.038), seg=14, ring=8)
+
+    # Chin — slight lower break so egg isn't a sphere
+    chin = sph("Chin", (0.0, -0.128, 1.598), (0.048, 0.038, 0.034), seg=14, ring=8)
+
+    # Boolean-union relief into egg for continuous vinyl shell
+    head = boolean_union(head, [brow, nose_bridge, nose_tip, cheek_l, cheek_r, chin])
+    # Light smooth only — preserve brow/nose edges
+    light_smooth(head, iterations=2)
     add("Head", head, base)
+
+    # Shallow eye recesses (carve) then dark SENSOR DOTS (no iris/sclera/eyelids)
+    recess_tools = []
     for dx in (-0.048, 0.048):
-        e = sph(f"Eye_{dx}", (dx, -0.140, 1.735), (0.020, 0.010, 0.020), seg=12, ring=6)
+        recess_tools.append(
+            sph(f"EyeRecess_{dx}", (dx, -0.148, 1.738), (0.028, 0.018, 0.026), seg=12, ring=6)
+        )
+    boolean_difference(head, recess_tools)
+    for dx in (-0.048, 0.048):
+        e = sph(f"Eye_{dx}", (dx, -0.136, 1.735), (0.018, 0.010, 0.018), seg=12, ring=6)
         add("Head", e, sensor)
+
+    # Mouth — shallow horizontal dark slit/bead (neutral; NOT painted lips)
+    mouth = sph("MouthSlit", (0.0, -0.155, 1.662), (0.038, 0.005, 0.007), seg=14, ring=6)
+    add("Head", mouth, sensor)
+
+    # Temple row of 3 sensors (unchanged language)
     for i, z in enumerate([1.785, 1.735, 1.685]):
         t = sph(f"Temple_{i}", (0.152, -0.050, z), 0.013, seg=10, ring=5)
         add("Head", t, sensor)
@@ -1150,7 +1230,7 @@ def composite_vs_ref(idle_path, out_path):
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
     except Exception:
         font = ImageFont.load_default()
-    draw.text((20, 10), "v0.4.1 Tan idle", fill=(220, 220, 220, 255), font=font)
+    draw.text((20, 10), "v0.5 Tan idle (Hybrid III face)", fill=(220, 220, 220, 255), font=font)
     draw.text((20 + idle_f.width + gap, 10), "Hybrid III ref (PRIMARY)", fill=(220, 220, 220, 255), font=font)
     canvas.convert("RGB").save(out_path)
     log(f"Still {out_path} (vs ref composite)")
@@ -1228,23 +1308,29 @@ def build_variant(is_it, export_path, guid, do_stills_tan=False, do_still_orange
 
     if do_stills_tan:
         pose_idle(arm_ob)
-        idle_front = f"{PREV}/hipoly_v41_idle_front.png"
+        idle_front = f"{PREV}/hipoly_v50_idle_front.png"
         render_shot(idle_front, (0.15, -3.3, 1.40), (0, 0, 1.05))
-        render_shot(f"{PREV}/hipoly_v41_idle_34.png", (2.3, -2.5, 1.50), (0, 0, 1.05))
-        composite_vs_ref(idle_front, f"{PREV}/hipoly_v41_idle_vs_ref.png")
+        # PROFILE — nose must read (primary face tell vs blank egg)
+        render_shot(f"{PREV}/hipoly_v50_idle_profile.png", (3.4, 0.05, 1.45), (0, 0, 1.10))
+        render_shot(f"{PREV}/hipoly_v50_idle_34.png", (2.3, -2.5, 1.50), (0, 0, 1.05))
+        # Closer head profile for AD nose check
+        render_shot(f"{PREV}/hipoly_v50_head_profile.png", (1.55, 0.02, 1.72), (0, -0.02, 1.72))
+        composite_vs_ref(idle_front, f"{PREV}/hipoly_v50_idle_vs_ref.png")
         pose_run_knee(arm_ob)
-        render_shot(f"{PREV}/hipoly_v41_run_knee.png", (3.5, 0.1, 1.20), (0, 0, 0.95))
+        render_shot(f"{PREV}/hipoly_v50_run_knee.png", (3.5, 0.1, 1.20), (0, 0, 0.95))
         pose_slide(arm_ob)
         measure_slide_grounding(arm_ob)
-        render_shot(f"{PREV}/hipoly_v41_slide_crouch.png", (0.4, -3.8, 0.55), (0, 0, 0.35))
+        render_shot(f"{PREV}/hipoly_v50_slide_crouch.png", (0.4, -3.8, 0.55), (0, 0, 0.35))
         pose_punch(arm_ob)
-        render_shot(f"{PREV}/hipoly_v41_punch.png", (2.6, -2.2, 1.35), (0.05, -0.2, 1.25))
+        render_shot(f"{PREV}/hipoly_v50_punch.png", (2.6, -2.2, 1.35), (0.05, -0.2, 1.25))
         arm_ob.location = (0, 0, 0)
         reset_pose(arm_ob)
 
     if do_still_orange:
         pose_idle(arm_ob)
-        render_shot(f"{PREV}/hipoly_v41_it_idle_front.png", (0.15, -3.3, 1.40), (0, 0, 1.05))
+        render_shot(f"{PREV}/hipoly_v50_it_idle_front.png", (0.15, -3.3, 1.40), (0, 0, 1.05))
+        render_shot(f"{PREV}/hipoly_v50_it_idle_profile.png", (3.4, 0.05, 1.45), (0, 0, 1.10))
+        render_shot(f"{PREV}/hipoly_v50_it_head_profile.png", (1.55, 0.02, 1.72), (0, -0.02, 1.72))
         reset_pose(arm_ob)
 
     export_fbx(export_path, arm_ob)
@@ -1262,9 +1348,9 @@ def write_readme():
 DummyLocomotor-bindable **Hybrid III** crash-test dummies — segmented vinyl shells
 + athletic mass (middle path). v0.3 toy / v0.4 smooth mannequin both rejected.
 
-**Pass:** Hybrid III refine **v0.4.1** (segmented chest/pelvis/limb shells with bead
-lips, inset bellows, 4 neck rings, LARGE hinge disks + cal marks, separated fingers,
-warm bone tan Runner).
+**Pass:** Hybrid III face **v0.5** on body **v0.4.1** (molded vinyl brow/nose/mouth/
+cheek/chin relief on egg; sensor-dot eyes; temple row + cal). Body segmentation
+unchanged from v0.4.1.
 
 ## Assets
 | File | Paint |
@@ -1274,7 +1360,7 @@ warm bone tan Runner).
 
 ## Bind pose
 - Mild A-pose ~20–35°; hands clear pelvis.
-- Egg + 2 eye dots + temple row of 3 — no visor / painted face.
+- Molded Hybrid III face on egg + 2 sensor eyes + temple row of 3 — no visor / painted face.
 - Segmented chest plate + pelvis shell; inset waist bellows (~7 ribs); 4 neck rings.
 - Limb shells with soft bead/lip seams; LARGE dark metal hinges; shoe-pad feet.
 - Knees: LowerLeg nests in UpperLeg U-fork.
@@ -1293,15 +1379,15 @@ warm bone tan Runner).
 
 
 def main():
-    log("=== hipoly hier v5.1 Hybrid III refine v0.4.1 ===")
+    log("=== hipoly hier v6 Hybrid III face v0.5 (body v0.4.1) ===")
     tan = os.path.join(OUT_DIR, "Dummy_Mannequin_Tan_Hier_Hi.fbx")
     orn = os.path.join(OUT_DIR, "Dummy_Mannequin_Orange_Hier_Hi.fbx")
 
-    log("Building Tan/Runner Hier HiPoly v5.1 (v0.4.1)…")
+    log("Building Tan/Runner Hier HiPoly v6 (face v0.5)…")
     ok_t, ang_t, cx_t, cy_t = build_variant(
         False, tan, GUID_TAN, do_stills_tan=True, do_still_orange=False)
 
-    log("Building Orange/It Hier HiPoly v5.1 (v0.4.1)…")
+    log("Building Orange/It Hier HiPoly v6 (face v0.5)…")
     ok_o, ang_o, cx_o, cy_o = build_variant(
         True, orn, GUID_ORANGE, do_stills_tan=False, do_still_orange=True)
 
@@ -1310,7 +1396,7 @@ def main():
     log(f"It  OK={ok_o} A-pose={ang_o:.1f}deg clear_x={cx_o:.3f} clear_y={cy_o:.3f}")
     log(f"Tan FBX {os.path.getsize(tan)} bytes guid={GUID_TAN}")
     log(f"Orange FBX {os.path.getsize(orn)} bytes guid={GUID_ORANGE}")
-    log("DONE v0.4.1 — no git push (v0.3 tip stays live)")
+    log("DONE face v0.5 — no git push (v0.4.1 tip stays live until AD approve)")
 
 
 if __name__ == "__main__":
