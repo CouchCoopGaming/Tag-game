@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `6f86449`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `32e5b19`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
 
@@ -22,7 +22,9 @@ Already on this branch: An air dash holds the arm whip at the start, then the ar
 
 Already on this branch: Player and bot spawn the approved Tan Hier runner. It swaps to the Orange Hier mesh.
 
-This delta: A jump reaches both arms up and tucks the knees. A fall trails the arms back and lengthens the legs. The apex hangs slightly out. Hands stay on the mild A flare, clear of the pelvis. Jet numbers are unchanged.
+Already on this branch: A jump reaches both arms up and tucks the knees. A fall trails the arms back and lengthens the legs.
+
+This delta: A tag splits into two poses. The tagged runner guards with both forearms up and both knees bent. The new It raises both arms and lifts one knee. Hands stay on the mild A flare, clear of the pelvis.
 
 ## Stack snapshot
 
@@ -152,6 +154,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 31. Air dash: the arms should throw back at the start, then ease down before the streak ends. They should not stay fully whipped and then snap into the run. Hands stay clear of the hips.
 32. After the v0.1 Hier FBX: you and the bot are the tan mannequin, It is the orange mannequin, and the same poses still read (recovery knee, opposite arms, flat slide, long punch, land ease, dash settle).
 33. Jump: both arms should reach up and the knees should tuck. Fall: the arms should trail back and the legs should lengthen. Hands stay slightly out and clear of the hips.
+34. Tag someone: the runner who was hit should guard with both arms up and both knees bent. The new It should raise both arms and lift one knee. The two poses should not match. Hands stay clear of the hips.
 
 ## Known leftovers
 
@@ -205,6 +208,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 21. Air dash whip stretches early and settles before the burst ends. No extra arm roll into the pelvis.
 22. v0.1 Tan and Orange Hier still bind UpperArm / LowerArm / UpperLeg / LowerLeg. Pose drivers were not reverted.
 23. Jump arms reach up with a knee tuck. Fall arms trail back and the legs lengthen. Hands stay clear of the pelvis.
+24. Tag handoff: the tagged runner guards. The new It raises both arms and lifts one knee. Hands stay clear of the pelvis.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

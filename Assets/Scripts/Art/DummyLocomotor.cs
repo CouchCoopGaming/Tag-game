@@ -33,6 +33,7 @@ namespace Tag.Art
         float _dashPulse;
         float _dashTrailT;
         float _tagFlinch;
+        float _itClaim;
         bool _wasLunging;
         bool _wasAirDashing;
         bool _wasJetting;
@@ -150,13 +151,15 @@ namespace Tag.Art
             float glideAmt = Mathf.Clamp01(_glidePulse);
 
             bool airDashing = _motor != null && _motor.IsAirDashing;
-            _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.38f); // slightly longer so tag recoil reads in TP
+            _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.45f);
+            _itClaim = Mathf.MoveTowards(_itClaim, 0f, dt / 0.52f);
             bool dashing = _dashPulse > 0.04f || lunging || airDashing;
             float dashAmt = Mathf.Max(
                 Mathf.Clamp01(_dashPulse),
                 lunging && _motor != null ? _motor.LungeProgress : 0f,
                 airDashing && _motor != null ? _motor.AirDashProgress : 0f);
             float flinchAmt = Mathf.Clamp01(_tagFlinch);
+            float claimAmt = Mathf.Clamp01(_itClaim);
 
             float walkAmt = Mathf.Clamp01(speed / 5.5f);
             float runAmt = Mathf.InverseLerp(5.5f, 11.5f, speed);
@@ -188,10 +191,9 @@ namespace Tag.Art
             float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : sliding ? 76f : crouch ? 28f : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : 0f;
             if (flinchAmt > 0.04f)
-            {
-                leanX = Mathf.Lerp(leanX, -34f, flinchAmt); // stronger tuck so tag recoil reads in TP
-                leanZ = Mathf.Lerp(leanZ, Mathf.Sin(Time.time * 42f) * 22f, flinchAmt); // clearer tag flinch shake in TP
-            }
+                leanX = Mathf.Lerp(leanX, 22f, flinchAmt);
+            if (claimAmt > 0.04f)
+                leanX = Mathf.Lerp(leanX, -12f, claimAmt);
             if (bouncing)
             {
                 // Kick wall: spine opens opposite the wall normal (WallLeft = wall on left).
@@ -593,23 +595,41 @@ namespace Tag.Art
 
             if (flinchAmt > 0.04f)
             {
-                // Tagged victim recoils: open arms + crumpled torso/legs
+                // Tagged runner: both forearms up in a guard. Pitch and the mild A flare only.
                 float f = flinchAmt;
-                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-70f, 28f, 48f), f);
-                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-70f, -28f, -48f), f);
-                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-40f, 0f, 0f), f);
-                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-40f, 0f, 0f), f);
-                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(48f, 0f, 10f), f);
-                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(48f, 0f, -10f), f);
-                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-52f, 0f, 0f), f);
-                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-52f, 0f, 0f), f);
+                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-58f, 12f, armZ), f);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-58f, -12f, -armZ), f);
+                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-74f, 0f, 0f), f);
+                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-74f, 0f, 0f), f);
+                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(28f, 0f, 0f), f);
+                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(28f, 0f, 0f), f);
+                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-64f, 0f, 0f), f);
+                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-64f, 0f, 0f), f);
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(22f, 0f, 0f), f);
+                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(8f, 0f, 0f), f);
+            }
+            if (claimAmt > 0.04f)
+            {
+                // New It: both arms up and out, one knee lifted. Distinct from the guard and from a jump tuck.
+                float c = claimAmt;
+                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-108f, 24f, armZ), c);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-108f, -24f, -armZ), c);
+                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-16f, 0f, 0f), c);
+                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-16f, 0f, 0f), c);
+                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(16f, 0f, 0f), c);
+                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(40f, 0f, 0f), c);
+                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-8f, 0f, 0f), c);
+                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-52f, 0f, 0f), c);
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(-12f, 0f, 0f), c);
+                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(6f, 0f, 0f), c);
             }
 
-            float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
+            float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f || claimAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
             // 0.1s air dash never reached the whip pose at slew 42.
             bool punchWind = punching && phase == PunchPhase.Windup;
-            float armSlewL = airDashing ? 78f : punchWind ? 90f : (punching || lunging || dashing ? 42f : slew);
-            float armSlewR = airDashing ? 78f : punchWind ? 90f : (punching || lunging || dashing ? 46f : slew);
+            bool handoff = flinchAmt > 0.2f || claimAmt > 0.2f;
+            float armSlewL = airDashing ? 78f : punchWind ? 90f : handoff ? 72f : (punching || lunging || dashing ? 42f : slew);
+            float armSlewR = airDashing ? 78f : punchWind ? 90f : handoff ? 72f : (punching || lunging || dashing ? 46f : slew);
             // Run knees have to arrive inside one stride or the flex never shows.
             bool runCycle = grounded && !air && !sliding && !crouch && !dashing && !lunging && speed > 2f;
             // Buckle has to arrive during the short absorb, then follow the ease back into the stride.
@@ -639,7 +659,7 @@ namespace Tag.Art
             // Air-dash: strong stretch then brief squash; tag flinch compresses
             float dashStretch = airDashing ? 0.32f : 0.18f;
             float dashSquash = airDashing ? 0.16f : 0.1f;
-            float stretchY = 1f + dashStretch * dashAmt - 0.16f * flinchAmt;
+            float stretchY = 1f + dashStretch * dashAmt - 0.16f * flinchAmt + 0.06f * claimAmt;
             float stretchXZ = 1f - dashSquash * dashAmt + 0.12f * flinchAmt;
             transform.localScale = new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash);
         }
@@ -723,10 +743,16 @@ namespace Tag.Art
             _punchTelegraph = 0f;
         }
 
-        /// <summary>Victim tag / punch connect flinch - called from ItController / binder.</summary>
+        /// <summary>Tagged runner guard. The new It uses <see cref="PlayItClaim"/>.</summary>
         public void PlayTagFlinch()
         {
             _tagFlinch = 1f;
+        }
+
+        /// <summary>New It raises both arms. Separate from the tagged runner's guard.</summary>
+        public void PlayItClaim()
+        {
+            _itClaim = 1f;
         }
 
         void HookBounce()
