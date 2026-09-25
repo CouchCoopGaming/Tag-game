@@ -292,8 +292,8 @@ namespace Tag.Art
                     // Timing stays the authored 0.12s windup; a bit more elbow yaw so the cock reads in TP.
                     _uaRT = _uaR0 * Quaternion.Euler(28f * w, -28f * w, -56f - 16f * w); // extra elbow yaw for TP cock read
                     _laRT = _laR0 * Quaternion.Euler(-40f - 72f * w, 0f, 0f);
-                    _hipsT = _hips0 * Quaternion.Euler(14f + 8f * w, -28f * w, 0f); // clearer windup hip twist in TP
-                    _spineT = _spine0 * Quaternion.Euler(leanX + 12f * w, -34f * w, leanZ); // clearer windup spine twist in TP
+                    _hipsT = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f); // clearer windup hip twist in TP
+                    _spineT = _spine0 * Quaternion.Euler(leanX + 12f * w, -36f * w, leanZ); // clearer windup spine twist in TP
                 }
                 else if (phase == PunchPhase.Active)
                 {

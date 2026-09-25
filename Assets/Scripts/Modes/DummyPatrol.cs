@@ -29,7 +29,7 @@ namespace Tag.Modes
         [SerializeField] float cooldownMax = 0.78f;
         [SerializeField] float decisionHz = 5f;
         [SerializeField] Vector3 centerOffset = Vector3.zero;
-        [SerializeField] float closeChaseRange = 3.6f; // slightly earlier close-chase / punch pressure
+        [SerializeField] float closeChaseRange = 3.7f; // slightly earlier close-chase / punch pressure
         [SerializeField] float leadSeconds = 0.35f; // slight extra lead so intercept cuts read
         [SerializeField] float faceAlignDeg = 16f;
         [Tooltip("Fallback Hot Potato fuse warn window when HotPotatoTuning unavailable.")]
@@ -54,7 +54,7 @@ namespace Tag.Modes
         [Tooltip("Lateral bias on trail flee (same idea as fleeStrafeBias).")]
         [SerializeField] float trailAvoidStrafeBias = 0.45f;
         [Tooltip("How hard trail flee blends into chase/flee/wander wish (0=off).")]
-        [SerializeField] float trailAvoidWeight = 0.80f; // slightly stronger trail peel
+        [SerializeField] float trailAvoidWeight = 0.82f; // slightly stronger trail peel
         [Header("Least It bias")]
         [Tooltip("When It in Least It: meters of chase cost per second of target TimeAsIt (higher = stronger preference for low-time leaders).")]
         [SerializeField] float leastItChaseTimeWeight = 0.75f;
@@ -576,7 +576,7 @@ namespace Tag.Modes
                         CancelPunchTelegraph();
                         // Whiff / leave-cone: brief arm-drop before they can cock again.
                         if (juked || !inCone)
-                            _cooldown = Mathf.Max(_cooldown, 0.32f); // slightly longer arm drop so juke/leave-cone whiff reads
+                            _cooldown = Mathf.Max(_cooldown, 0.33f); // slightly longer arm drop so juke/leave-cone whiff reads
                         // Juke peel: refresh weave so they leave the punch line instead of re-cocking in place.
                         if (juked)
                         {
