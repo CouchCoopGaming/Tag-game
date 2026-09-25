@@ -601,6 +601,13 @@ namespace Tag.Art
         Quaternion _grappleGuardUaL, _grappleGuardUaR, _grappleGuardLaL, _grappleGuardLaR;
         Quaternion _grappleGuardUlL, _grappleGuardUlR, _grappleGuardLlL, _grappleGuardLlR;
         Quaternion _grappleGuardSp, _grappleGuardHp, _grappleGuardHd;
+        bool _stillFromHard;
+        float _stillFromHardIn;
+        bool _hardLandWas;
+        bool _hardStillHeld;
+        Quaternion _hardGuardUaL, _hardGuardUaR, _hardGuardLaL, _hardGuardLaR;
+        Quaternion _hardGuardUlL, _hardGuardUlR, _hardGuardLlL, _hardGuardLlR;
+        Quaternion _hardGuardSp, _hardGuardHp, _hardGuardHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -3817,6 +3824,39 @@ namespace Tag.Art
                 _stillFromGrapple = false;
             else if (_stillFromGrapple)
                 _stillFromGrappleIn = Mathf.MoveTowards(_stillFromGrappleIn, 1f, dt / 0.04f);
+            if (!_hardLandWas || !inStill)
+                _hardStillHeld = false;
+            bool hardIntoStill = inStill && _hardLandWas && !_hardStillHeld
+                && phase != PunchPhase.Windup && phase != PunchPhase.Active
+                && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover
+                && !dashPoseNow && !wallRun && !climb
+                && _itClaim <= 0.2f && _dashReady <= 0.2f
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (hardIntoStill)
+            {
+                // The absorb eases into the guard. A grapple release into a still crouch keeps its ease.
+                // A dash ready into a still crouch keeps its ease. A soft landing keeps its absorb.
+                // Land time is unchanged.
+                _stillFromHard = true;
+                _stillFromHardIn = 0f;
+                _hardStillHeld = true;
+                _hardGuardUaL = _upperArmL.localRotation;
+                _hardGuardUaR = _upperArmR.localRotation;
+                _hardGuardLaL = _lowerArmL.localRotation;
+                _hardGuardLaR = _lowerArmR.localRotation;
+                _hardGuardUlL = _upperLegL.localRotation;
+                _hardGuardUlR = _upperLegR.localRotation;
+                _hardGuardLlL = _lowerLegL.localRotation;
+                _hardGuardLlR = _lowerLegR.localRotation;
+                _hardGuardSp = _spine.localRotation;
+                _hardGuardHp = _hips.localRotation;
+                _hardGuardHd = _head.localRotation;
+            }
+            if (!inStill)
+                _stillFromHard = false;
+            else if (_stillFromHard)
+                _stillFromHardIn = Mathf.MoveTowards(_stillFromHardIn, 1f, dt / 0.04f);
             _punchPhaseWas = phase;
             _tagHitWas = hitNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
@@ -7037,14 +7077,17 @@ namespace Tag.Art
                 }
                 else if (crouchHardLand)
                 {
-                    float absorb = Mathf.Clamp01(k);
-                    float thigh = Mathf.Lerp(56f, 70f, absorb);
-                    float knee = Mathf.Lerp(68f, 96f, absorb);
-                    float w = absorb;
-                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(thigh, 0f, 0f), w);
-                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(thigh, 0f, 0f), w);
-                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-knee, 0f, 0f), w);
-                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-knee, 0f, 0f), w);
+                    if (!_stillFromHard)
+                    {
+                        float absorb = Mathf.Clamp01(k);
+                        float thigh = Mathf.Lerp(56f, 70f, absorb);
+                        float knee = Mathf.Lerp(68f, 96f, absorb);
+                        float w = absorb;
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(thigh, 0f, 0f), w);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(thigh, 0f, 0f), w);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-knee, 0f, 0f), w);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-knee, 0f, 0f), w);
+                    }
                 }
                 else
                 {
@@ -7180,15 +7223,19 @@ namespace Tag.Art
                 }
                 else if (crouchHardLand)
                 {
-                    // Deeper in the guard. The standing flare would pop the hips up.
-                    float dip = Mathf.Clamp01(k);
-                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), dip);
-                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), dip);
-                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-80f, 0f, 0f), dip);
-                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-80f, 0f, 0f), dip);
-                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(36f, 0f, 0f), dip);
-                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(18f, 0f, 0f), dip);
-                    _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-10f, 0f, 0f), dip);
+                    // Deeper in the guard. A still crouch keeps its snapshot. The standing flare would pop the hips up.
+                    // Land time is unchanged.
+                    if (!_stillFromHard)
+                    {
+                        float dip = Mathf.Clamp01(k);
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), dip);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), dip);
+                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-80f, 0f, 0f), dip);
+                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-80f, 0f, 0f), dip);
+                        _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(36f, 0f, 0f), dip);
+                        _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(18f, 0f, 0f), dip);
+                        _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-10f, 0f, 0f), dip);
+                    }
                 }
                 else
                 {
@@ -7199,7 +7246,10 @@ namespace Tag.Art
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(18f, 0f, 0f), hipK);
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(26f, 0f, 0f), hipK);
                 }
+                _hardLandWas = crouchHardLand;
             }
+            else
+                _hardLandWas = false;
 
             bool pulling = _grapple != null && _grapple.IsPulling;
             _grapplePose = Mathf.MoveTowards(_grapplePose, pulling ? 1f : 0f, dt / 0.12f);
@@ -9066,6 +9116,52 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_grappleGuardUlR, guardThighR, intoGuard);
                     _llLT = Quaternion.Slerp(_grappleGuardLlL, guardKneeL, intoGuard);
                     _llRT = Quaternion.Slerp(_grappleGuardLlR, guardKneeR, intoGuard);
+                }
+                else
+                {
+                    _uaLT = guardL;
+                    _uaRT = guardR;
+                    _laLT = guardElL;
+                    _laRT = guardElR;
+                    _spineT = guardSp;
+                    _hipsT = guardHp;
+                    _headT = guardHd;
+                    _ulLT = guardThighL;
+                    _ulRT = guardThighR;
+                    _llLT = guardKneeL;
+                    _llRT = guardKneeR;
+                }
+            }
+            if (_stillFromHard && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The absorb eases into the guard, then the guard holds.
+                // A grapple release into a still crouch keeps its ease. A dash ready into a still crouch keeps its ease.
+                // Land time is unchanged.
+                float intoGuard = _stillFromHardIn;
+                Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion guardR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion guardElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion guardHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion guardHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion guardThighL = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardThighR = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardKneeL = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
+                Quaternion guardKneeR = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
+                if (intoGuard < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_hardGuardUaL, guardL, intoGuard);
+                    _uaRT = Quaternion.Slerp(_hardGuardUaR, guardR, intoGuard);
+                    _laLT = Quaternion.Slerp(_hardGuardLaL, guardElL, intoGuard);
+                    _laRT = Quaternion.Slerp(_hardGuardLaR, guardElR, intoGuard);
+                    _spineT = Quaternion.Slerp(_hardGuardSp, guardSp, intoGuard);
+                    _hipsT = Quaternion.Slerp(_hardGuardHp, guardHp, intoGuard);
+                    _headT = Quaternion.Slerp(_hardGuardHd, guardHd, intoGuard);
+                    _ulLT = Quaternion.Slerp(_hardGuardUlL, guardThighL, intoGuard);
+                    _ulRT = Quaternion.Slerp(_hardGuardUlR, guardThighR, intoGuard);
+                    _llLT = Quaternion.Slerp(_hardGuardLlL, guardKneeL, intoGuard);
+                    _llRT = Quaternion.Slerp(_hardGuardLlR, guardKneeR, intoGuard);
                 }
                 else
                 {
