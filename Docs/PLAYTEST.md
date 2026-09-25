@@ -556,7 +556,9 @@ Already on this branch: A crouch walk into a still crouch eases the low stride i
 
 Already on this branch: A ski into a crouch walk eases the glide into the low stride. The stride then holds. A ski into a still crouch is unchanged. A crouch walk into a still crouch is unchanged. Ski speed is unchanged.
 
-This delta: A slide into a crouch walk eases the wedge into the low stride. The stride then holds. A ski into a crouch walk is unchanged. A slide into a still crouch is unchanged. slideBoost stays 0.
+Already on this branch: A slide into a crouch walk eases the wedge into the low stride. The stride then holds. A ski into a crouch walk is unchanged. A slide into a still crouch is unchanged. slideBoost stays 0.
+
+This delta: A walk into a crouch walk eases the walk into the low stride. The stride then holds. A slide into a crouch walk is unchanged. A walk into a still crouch is unchanged. The drop time is unchanged.
 
 ## Stack snapshot
 
@@ -953,6 +955,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 298. Crouch walk, then still crouch: the low stride should ease into the guard. The guard should then hold. A wall exit into a still crouch should feel the same. A climb into a still crouch should feel the same. The guard should not feel longer. The stride should not feel longer. Jet stays off.
 299. Ski, then crouch walk: the glide should ease into the low stride. The stride should then hold. A ski into a still crouch should feel the same. A crouch walk into a still crouch should feel the same. The stride should not feel longer. The glide should not feel longer. Jet stays off.
 300. Slide, then crouch walk: the wedge should ease into the low stride. The stride should then hold. A ski into a crouch walk should feel the same. A slide into a still crouch should feel the same. The stride should not feel longer. The slide should not feel faster. Jet stays off.
+301. Walk, then crouch walk: the walk should ease into the low stride. The stride should then hold. A slide into a crouch walk should feel the same. A walk into a still crouch should feel the same. The stride should not feel longer. The drop should not feel faster. Jet stays off.
 
 ## Known leftovers
 
@@ -1273,6 +1276,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 288. A crouch walk into a still crouch eases the low stride into the guard. The guard then holds. A wall exit into a still crouch is unchanged. A climb into a still crouch is unchanged. The stride is unchanged. Jet stays off.
 289. A ski into a crouch walk eases the glide into the low stride. The stride then holds. A ski into a still crouch is unchanged. A crouch walk into a still crouch is unchanged. Ski speed is unchanged. Jet stays off.
 290. A slide into a crouch walk eases the wedge into the low stride. The stride then holds. A ski into a crouch walk is unchanged. A slide into a still crouch is unchanged. slideBoost stays 0. Jet stays off.
+291. A walk into a crouch walk eases the walk into the low stride. The stride then holds. A slide into a crouch walk is unchanged. A walk into a still crouch is unchanged. The drop time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
