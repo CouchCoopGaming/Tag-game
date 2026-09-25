@@ -322,6 +322,11 @@ namespace Tag.Art
         Quaternion _claimSlideUaL, _claimSlideUaR, _claimSlideLaL, _claimSlideLaR;
         Quaternion _claimSlideUlL, _claimSlideUlR, _claimSlideLlL, _claimSlideLlR;
         Quaternion _claimSlideSp, _claimSlideHp, _claimSlideHd;
+        bool _slideFromReady;
+        float _slideFromReadyIn;
+        Quaternion _readySlideUaL, _readySlideUaR, _readySlideLaL, _readySlideLaR;
+        Quaternion _readySlideUlL, _readySlideUlR, _readySlideLlL, _readySlideLlR;
+        Quaternion _readySlideSp, _readySlideHp, _readySlideHd;
         bool _climbFromDash;
         float _climbFromDashIn;
         bool _wallFromDash;
@@ -566,6 +571,7 @@ namespace Tag.Art
             // A climb eases the grab into the wedge. A wall run eases the leave into the wedge.
             // A grapple release eases the line into the wedge. The gate stays off.
             // Becoming It eases the claim into the wedge. Claim time is unchanged.
+            // A dash coming off cooldown eases the pulse into the wedge. Duration and cooldown are unchanged.
             // slideBoost stays 0. Exit time is unchanged.
             // The land numbers are written later this frame. Read the same impact here
             // so a soft touchdown is not filed as a jump.
@@ -593,13 +599,19 @@ namespace Tag.Art
             bool fromClaimSlide = sliding && !_dropSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && _itClaim > 0.2f && !_jumpFromClaim && !jet && !_airDashPoseWas
                 && _punchPhaseWas != PunchPhase.Windup && _punchPhaseWas != PunchPhase.Active && _punchPhaseWas != PunchPhase.HitRecover
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-            bool fromSoftSlide = sliding && !_dropSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromClaimSlide && softSlideRecover && !jet && !_airDashPoseWas
+            bool fromReadySlide = sliding && !_dropSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromClaimSlide
+                && _dashReady > 0.2f && _grapplePose <= 0.04f && !_jumpFromReady
+                && !softSlideRecover && grounded && _wasGrounded && _landSquash <= 0.08f
+                && !jet && !crouch && !_airDashPoseWas
+                && _punchPhaseWas != PunchPhase.Windup && _punchPhaseWas != PunchPhase.Active && _punchPhaseWas != PunchPhase.HitRecover
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-            bool jumpIntoSlide = sliding && !_dropSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromClaimSlide && (!grounded || !_wasGrounded || _landSquash > 0.08f);
-            bool fromPunchSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromClaimSlide && !_airDashPoseWas
+            bool fromSoftSlide = sliding && !_dropSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromClaimSlide && !fromReadySlide && softSlideRecover && !jet && !_airDashPoseWas
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            bool jumpIntoSlide = sliding && !_dropSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromClaimSlide && !fromReadySlide && (!grounded || !_wasGrounded || _landSquash > 0.08f);
+            bool fromPunchSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromClaimSlide && !fromReadySlide && !_airDashPoseWas
                 && (_punchPhaseWas == PunchPhase.Windup || _punchPhaseWas == PunchPhase.Active)
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-            bool fromTagSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromClaimSlide && !fromPunchSlide && !_airDashPoseWas && !_jumpFromTag
+            bool fromTagSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromClaimSlide && !fromReadySlide && !fromPunchSlide && !_airDashPoseWas && !_jumpFromTag
                 && _punchPhaseWas == PunchPhase.HitRecover
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
             if (jumpIntoSlide)
@@ -607,7 +619,7 @@ namespace Tag.Art
                 _jumpToSlide = 1f;
                 _jumpToSlideLand = grounded;
             }
-            else if (!fromPunchSlide && !fromTagSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromClaimSlide)
+            else if (!fromPunchSlide && !fromTagSlide && !fromSoftSlide && !fromWallSlide && !fromClimbSlide && !fromGrappleSlide && !fromClaimSlide && !fromReadySlide)
             {
                 if (sliding && !_dropSlide && _crouchFromStand && _dropVis > 0.2f)
                     _crouchToSlide = 1f;
@@ -733,6 +745,27 @@ namespace Tag.Art
                 _claimSlideHp = _hips.localRotation;
                 _claimSlideHd = _head.localRotation;
             }
+            if (fromReadySlide && !_slideFromReady)
+            {
+                // The pulse eases into the wedge. A dash coming off cooldown into a ski keeps its ease.
+                // A dash coming off cooldown into a punch keeps its ease.
+                // A dash coming off cooldown into a tag keeps its ease.
+                // A dash coming off cooldown into a jump keeps its push.
+                // Becoming It into a slide keeps its ease. slideBoost stays 0. Duration and cooldown are unchanged.
+                _slideFromReady = true;
+                _slideFromReadyIn = 0f;
+                _readySlideUaL = _upperArmL.localRotation;
+                _readySlideUaR = _upperArmR.localRotation;
+                _readySlideLaL = _lowerArmL.localRotation;
+                _readySlideLaR = _lowerArmR.localRotation;
+                _readySlideUlL = _upperLegL.localRotation;
+                _readySlideUlR = _upperLegR.localRotation;
+                _readySlideLlL = _lowerLegL.localRotation;
+                _readySlideLlR = _lowerLegR.localRotation;
+                _readySlideSp = _spine.localRotation;
+                _readySlideHp = _hips.localRotation;
+                _readySlideHd = _head.localRotation;
+            }
             if (fromClimbSlide && !_slideFromClimb)
             {
                 // The grab eases into the wedge. A climb into a ski keeps its ease.
@@ -799,6 +832,7 @@ namespace Tag.Art
                 _slideFromWall = false;
                 _slideFromGrapple = false;
                 _slideFromClaim = false;
+                _slideFromReady = false;
             }
             else if (_jumpToSlide > 0f)
                 _jumpToSlide = Mathf.MoveTowards(_jumpToSlide, 0f, dt / 0.16f);
@@ -816,6 +850,8 @@ namespace Tag.Art
                 _slideFromGrappleIn = Mathf.MoveTowards(_slideFromGrappleIn, 1f, dt / 0.04f);
             if (_slideFromClaim && sliding)
                 _slideFromClaimIn = Mathf.MoveTowards(_slideFromClaimIn, 1f, dt / 0.04f);
+            if (_slideFromReady && sliding)
+                _slideFromReadyIn = Mathf.MoveTowards(_slideFromReadyIn, 1f, dt / 0.04f);
             if (crouch && !sliding && speed <= 0.35f)
                 _crouchFromStand = true;
             else if ((crouch && speed > 0.35f) || sliding || _dropVis <= 0.001f)
@@ -6207,7 +6243,7 @@ namespace Tag.Art
             bool readyBlocked = airDashing || punching || _grapplePose > 0.04f;
             if (!readyBlocked && _dashReady > 0f)
                 _dashReady = Mathf.MoveTowards(_dashReady, 0f, dt / 0.28f);
-            if (_dashReady > 0.02f && !readyBlocked && !_skiFromReady)
+            if (_dashReady > 0.02f && !readyBlocked && !_skiFromReady && !_slideFromReady)
             {
                 // The cooldown just ended. A short settle on the chest and the arms,
                 // then back into the stride. Standing, it is a small pulse, then the idle breath.
@@ -7094,7 +7130,31 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-(6f + Mathf.Max(0f, -kneePhase) * 72f), 0f, 0f), intoGrab);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-(6f + Mathf.Max(0f, kneePhase) * 72f), 0f, 0f), intoGrab);
             }
-            if (_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromClaimIn < 0.98f)
+            if (_slideFromReady && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromReadyIn < 0.98f)
+            {
+                // The pulse eases into the wedge, then the wedge holds.
+                // A dash coming off cooldown into a ski keeps its ease. A dash coming off cooldown into a punch keeps its ease.
+                // A dash coming off cooldown into a tag keeps its ease. A dash coming off cooldown into a jump keeps its push.
+                // Becoming It into a slide keeps its ease. slideBoost stays 0. Duration and cooldown are unchanged.
+                float intoWedge = _slideFromReadyIn;
+                bool leadLeft = sinC >= 0f;
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
+                Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(_readySlideUaL, wedgeL, intoWedge);
+                _uaRT = Quaternion.Slerp(_readySlideUaR, wedgeR, intoWedge);
+                _laLT = Quaternion.Slerp(_readySlideLaL, wedgeElL, intoWedge);
+                _laRT = Quaternion.Slerp(_readySlideLaR, wedgeElR, intoWedge);
+                _spineT = Quaternion.Slerp(_readySlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_readySlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_readySlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_readySlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_readySlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_readySlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_readySlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+            }
+            if (_slideFromClaim && !_slideFromReady && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromClaimIn < 0.98f)
             {
                 // The claim eases into the wedge, then the wedge holds.
                 // Becoming It into a ski keeps its ease. Becoming It into a punch keeps its ease.
