@@ -44,6 +44,8 @@ namespace Tag.Art
         bool _jumpFromAirCrouchStride;
         bool _jumpFromSoftLand;
         bool _jumpFromHardLand;
+        bool _jumpFromMiss;
+        float _missR;
         float _prevVy;
         bool _crouchWalkArmed;
         float _airArmIn = 1f;
@@ -444,6 +446,18 @@ namespace Tag.Art
                 _jumpFromHardLand = !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide
                     && !_jumpFromDash && !_jumpFromWall && !_jumpFromClimb && !_jumpFromAirCrouch && !_jumpFromSoftLand
                     && _landHard >= 0.4f && _landSquash > 0.08f;
+                // A punch miss eases the whiff into this push. A crouch miss keeps its jump.
+                // A soft landing and a hard landing keep their jump. Jump height is unchanged.
+                _jumpFromMiss = phase == PunchPhase.MissRecover
+                    && !_crouchFromStand && !_crouchWalkArmed
+                    && !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide
+                    && !_jumpFromDash && !_jumpFromWall && !_jumpFromClimb && !_jumpFromAirCrouch
+                    && !_jumpFromSoftLand && !_jumpFromHardLand;
+                if (_jumpFromMiss && _punch != null)
+                {
+                    float missProg = _punch.PhaseProgress;
+                    _missR = Mathf.Lerp(0.62f, 0.02f, missProg * missProg * missProg);
+                }
             }
             else if (!grounded && _motor != null && _motor.Velocity.y > 1.5f && _prevVy <= 1.5f
                 && (_airDashArms || _motor.IsAirDashing)
@@ -500,6 +514,7 @@ namespace Tag.Art
                 _jumpFromAirCrouchStride = false;
                 _jumpFromSoftLand = false;
                 _jumpFromHardLand = false;
+                _jumpFromMiss = false;
             }
             bool dashingAir = _motor != null && _motor.IsAirDashing;
             if (dashingAir && !_airDashPoseWas && _diveFromJump && !_jumpFromDash)
@@ -3319,6 +3334,71 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(Quaternion.Slerp(absorbThighR, pushThighR, intoPush), airThighR, leave);
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(absorbKneeL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(absorbKneeR, pushKneeR, intoPush), airKneeR, leave);
+            }
+            if (_jumpFromMiss && _pushOff > 0.02f && !wallRun && !climb)
+            {
+                // The whiff eases into the push, then the air pose. A crouch miss keeps its jump.
+                // A soft landing and a hard landing keep their jump. Jump height is unchanged.
+                float t = 1f - Mathf.Clamp01(_pushOff);
+                float intoPush = Mathf.Clamp01(t * 2f);
+                float leave = Mathf.Clamp01(t * 2f - 1f);
+                float r = _missR;
+                Quaternion missL = _uaL0 * Quaternion.Euler(-28f, 14f, armZ + 18f);
+                Quaternion missR = _uaR0 * Quaternion.Euler(-18f - 40f * r, 10f * r, -8f);
+                Quaternion pushL = _uaL0 * Quaternion.Euler(-36f, 14f, armZ);
+                Quaternion pushR = _uaR0 * Quaternion.Euler(-36f, -14f, -armZ);
+                Quaternion airL = _uaL0 * Quaternion.Euler(-52f, 22f, armZ);
+                Quaternion airR = _uaR0 * Quaternion.Euler(-52f, -22f, -armZ);
+                Quaternion missElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion missElR = _laR0 * Quaternion.Euler(-14f * r, 0f, 0f);
+                Quaternion pushEl = _laL0 * Quaternion.Euler(-14f, 0f, 0f);
+                Quaternion airEl = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(Quaternion.Slerp(missL, pushL, intoPush), airL, leave);
+                _uaRT = Quaternion.Slerp(Quaternion.Slerp(missR, pushR, intoPush), airR, leave);
+                _laLT = Quaternion.Slerp(Quaternion.Slerp(missElL, pushEl, intoPush), airEl, leave);
+                _laRT = Quaternion.Slerp(Quaternion.Slerp(missElR, pushEl, intoPush), airEl, leave);
+                Quaternion missSp = _spine0 * Quaternion.Euler(6f * r, 0f, 0f);
+                Quaternion pushSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion airSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion missHp = _hips0 * Quaternion.Euler(4f, 0f, 0f);
+                Quaternion pushHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
+                Quaternion airHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
+                Quaternion missHd = _head0 * Quaternion.Euler(0f, 0f, 0f);
+                Quaternion pushHd = _head0 * Quaternion.Euler(0f, 0f, 0f);
+                Quaternion airHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                _spineT = Quaternion.Slerp(Quaternion.Slerp(missSp, pushSp, intoPush), airSp, leave);
+                _hipsT = Quaternion.Slerp(Quaternion.Slerp(missHp, pushHp, intoPush), airHp, leave);
+                _headT = Quaternion.Slerp(Quaternion.Slerp(missHd, pushHd, intoPush), airHd, leave);
+                Quaternion missThighL = _ulL0 * Quaternion.Euler(14f, 0f, 0f);
+                Quaternion missThighR = _ulR0 * Quaternion.Euler(12f, 0f, 0f);
+                Quaternion missKneeL = _llL0 * Quaternion.Euler(-16f, 0f, 0f);
+                Quaternion missKneeR = _llR0 * Quaternion.Euler(-12f, 0f, 0f);
+                Quaternion pushThighL;
+                Quaternion pushThighR;
+                Quaternion pushKneeL;
+                Quaternion pushKneeR;
+                if (_pushLeft)
+                {
+                    pushThighL = _ulL0 * Quaternion.Euler(-8f, 0f, 0f);
+                    pushKneeL = _llL0 * Quaternion.Euler(-6f, 0f, 0f);
+                    pushThighR = _ulR0 * Quaternion.Euler(48f, 0f, 0f);
+                    pushKneeR = _llR0 * Quaternion.Euler(-62f, 0f, 0f);
+                }
+                else
+                {
+                    pushThighR = _ulR0 * Quaternion.Euler(-8f, 0f, 0f);
+                    pushKneeR = _llR0 * Quaternion.Euler(-6f, 0f, 0f);
+                    pushThighL = _ulL0 * Quaternion.Euler(48f, 0f, 0f);
+                    pushKneeL = _llL0 * Quaternion.Euler(-62f, 0f, 0f);
+                }
+                Quaternion airThighL = _ulL0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion airThighR = _ulR0 * Quaternion.Euler(20f, 0f, 0f);
+                Quaternion airKneeL = _llL0 * Quaternion.Euler(-28f, 0f, 0f);
+                Quaternion airKneeR = _llR0 * Quaternion.Euler(-26f, 0f, 0f);
+                _ulLT = Quaternion.Slerp(Quaternion.Slerp(missThighL, pushThighL, intoPush), airThighL, leave);
+                _ulRT = Quaternion.Slerp(Quaternion.Slerp(missThighR, pushThighR, intoPush), airThighR, leave);
+                _llLT = Quaternion.Slerp(Quaternion.Slerp(missKneeL, pushKneeL, intoPush), airKneeL, leave);
+                _llRT = Quaternion.Slerp(Quaternion.Slerp(missKneeR, pushKneeR, intoPush), airKneeR, leave);
             }
 
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
