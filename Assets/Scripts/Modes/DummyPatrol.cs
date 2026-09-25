@@ -79,6 +79,7 @@ namespace Tag.Modes
         float _jumpHoldT;
         float _jumpPulseCd;
         float _lungeGate;
+        float _airDashGate;
         float _weave;
         float _weaveT;
         float _punchTell;
@@ -444,10 +445,10 @@ namespace Tag.Modes
         /// Body-relative wish: AI has no TP cam, so PlayerMotor uses transform as wish basis.
         /// Face first, then push forward - matches human TP (yaw then Move.y).
         /// </summary>
-        void DriveWish(float moveY, bool sprint, float strafe = 0f, bool jump = false, bool lunge = false)
+        void DriveWish(float moveY, bool sprint, float strafe = 0f, bool jump = false, bool lunge = false, bool airDash = false)
         {
             if (_input == null) return;
-            _input.SetExternalMove(new Vector2(strafe, Mathf.Clamp(moveY, -1f, 1f)), sprint, jump, lunge);
+            _input.SetExternalMove(new Vector2(strafe, Mathf.Clamp(moveY, -1f, 1f)), sprint, jump, lunge, airDash);
         }
 
         float NextPunchCooldown(float urgency)
@@ -694,7 +695,16 @@ namespace Tag.Modes
                 float hopDy = Mathf.Max(fleeLip, panicDy);
                 float hopDist = Mathf.Clamp(threatDist, 1.2f, 8f);
                 bool jump = ConsumeHop(hopDy, hopDist, grounded, 0.85f, 9f);
-                DriveWish(urgent ? fleeUrgencyMoveY : 1f, sprint: true, jump: jump);
+                // Hot Potato dump panic: one air dash while airborne if CD is clear (same 30s motor CD).
+                _airDashGate -= dt;
+                bool airDash = false;
+                if (urgent && !grounded && _airDashGate <= 0f && _selfMotor != null
+                    && _selfMotor.AirDashCooldownRemaining <= 0.05f)
+                {
+                    airDash = true;
+                    _airDashGate = 1.1f;
+                }
+                DriveWish(urgent ? fleeUrgencyMoveY : 1f, sprint: true, jump: jump, airDash: airDash);
             }
             else
             {

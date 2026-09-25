@@ -117,7 +117,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - Prefab/mat dirt after Hub visuals / URP regen -> do not commit unless intentional.
 - Flat HiPoly mannequins may skip hierarchical `DummyLocomotor` binds (primitive / bindable-bone path is the readable tell).
 - Legacy contact `TryTag` radius still exists on motor; play modes use punch transfer.
-- AI punch tell drops for ~0.22 s after a juke/leave-cone whiff so the arm drop is readable (still needs a fuller human feel pass). No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent: `music_playground_bed_loop.wav` is meta only, so PlayMusic returns. No hitstop.
+- AI punch tell drops for ~0.22 s after a juke/leave-cone whiff so the arm drop is readable (still needs a fuller human feel pass). No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent: `music_playground_bed_loop.wav` is meta only, so PlayMusic returns. No hitstop. Hot Potato flee may air-dash once while airborne if the motor CD is ready.
 - Dash HUD: jet off = one cyan CD bar and one DASH line (DASH! while bursting). Jet on keeps a dash CD line under JET.
 - Dummy MissRecover: limp whiff drops faster than HitRecover hold (short shoulder sag).
 - Resume / leave-results: look and punch ignore one frame after the cursor locks so the same Update cannot yaw or punch.
@@ -139,6 +139,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 6. Play path: SW exit, west loop (soft-play bench west of the tubes), NW exit, east loop (NE bench north of the arch, kickball field still open), then the crash cross. Hopscotch corners, swing fall tiles clear of the kickball fence, three Toy_Bridge arches, army/knight 2.4 m rungs plus a spiral climber (top 2.40) that west forts do not have. Feel was not edited.
 7. Boot Up/Down and pause Left/Right arm a row and stop at the ends. Enter uses it. Play stays the default Boot row.
 8. Who-plays and mode select stop at the first and last row. A Boot or Pause click leaves that row highlighted.
+9. Resume or leave-results: look and punch ignore one frame after the cursor locks (no same-Update yaw or punch).
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

@@ -148,7 +148,7 @@ namespace TagArena.Movement
         }
 
         /// <summary>AI helper: set planar wish in body space and clear one-shot human buttons.</summary>
-        public void SetExternalMove(Vector2 move, bool sprint, bool jump = false, bool lunge = false)
+        public void SetExternalMove(Vector2 move, bool sprint, bool jump = false, bool lunge = false, bool airDash = false)
         {
             ExternalControl = true;
             Move = move.sqrMagnitude > 1f ? move.normalized : move;
@@ -163,7 +163,7 @@ namespace TagArena.Movement
             JetHeld = false;
             JetPressed = false;
             LungePressed = lunge;
-            AirDashPressed = false;
+            AirDashPressed = airDash;
             PunchPressed = false;
             TapForwardPulse = false;
         }
