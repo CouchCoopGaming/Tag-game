@@ -36,6 +36,7 @@ namespace Tag.Art
         bool _jumpFromStill;
         bool _jumpFromCrouchWalk;
         bool _jumpFromSki;
+        bool _jumpFromSlide;
         bool _crouchWalkArmed;
         float _airArmIn = 1f;
         float _bouncePulse;
@@ -355,11 +356,13 @@ namespace Tag.Art
                 _pushOff = 1f;
                 // Arms leave the stride into the air pose. A ledge step does not restart this.
                 // A still crouch eases the guard into that push. A crouch walk eases the low stride into it.
-                // A ski eases the glide into it. Jump height is unchanged.
+                // A ski eases the glide into it. A slide eases the wedge into it.
+                // slideBoost stays 0. Jump height is unchanged.
                 _airArmIn = 0f;
                 _jumpFromStill = _crouchFromStand && speed <= 0.35f;
                 _jumpFromCrouchWalk = !_jumpFromStill && _crouchWalkArmed && speed > 0.35f && speed <= 5.5f;
                 _jumpFromSki = !_jumpFromStill && !_jumpFromCrouchWalk && !_dropSlide && _skiBlend > 0.2f;
+                _jumpFromSlide = !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && _dropSlide && _dropVis > 0.2f;
             }
             else if (!grounded)
                 _pushOff = Mathf.MoveTowards(_pushOff, 0f, dt / 0.12f);
@@ -370,6 +373,7 @@ namespace Tag.Art
                 _jumpFromStill = false;
                 _jumpFromCrouchWalk = false;
                 _jumpFromSki = false;
+                _jumpFromSlide = false;
             }
             // Find the tuck, then the look trail. Look speed is unchanged.
             if (air)
@@ -1223,6 +1227,36 @@ namespace Tag.Art
                     _hipsT = Quaternion.Slerp(Quaternion.Slerp(skiHp, pushHp, intoPush), _hipsT, leave);
                     _headT = Quaternion.Slerp(Quaternion.Slerp(skiHd, pushHd, intoPush), _headT, leave);
                 }
+                if (_jumpFromSlide && _pushOff > 0.02f && _diveVis < 0.2f)
+                {
+                    // The wedge eases into the push, then the air pose.
+                    // A still crouch, a crouch walk, and a ski keep their push.
+                    // A standing jump keeps the old push. slideBoost stays 0. Jump height is unchanged.
+                    float t = 1f - Mathf.Clamp01(_pushOff);
+                    float intoPush = Mathf.Clamp01(t * 2f);
+                    float leave = Mathf.Clamp01(t * 2f - 1f);
+                    Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
+                    Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                    Quaternion pushL = _uaL0 * Quaternion.Euler(-36f, 14f, armZ);
+                    Quaternion pushR = _uaR0 * Quaternion.Euler(-36f, -14f, -armZ);
+                    Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
+                    Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
+                    Quaternion pushElL = _laL0 * Quaternion.Euler(-14f, 0f, 0f);
+                    Quaternion pushElR = _laR0 * Quaternion.Euler(-14f, 0f, 0f);
+                    _uaLT = Quaternion.Slerp(Quaternion.Slerp(wedgeL, pushL, intoPush), _uaLT, leave);
+                    _uaRT = Quaternion.Slerp(Quaternion.Slerp(wedgeR, pushR, intoPush), _uaRT, leave);
+                    _laLT = Quaternion.Slerp(Quaternion.Slerp(wedgeElL, pushElL, intoPush), _laLT, leave);
+                    _laRT = Quaternion.Slerp(Quaternion.Slerp(wedgeElR, pushElR, intoPush), _laRT, leave);
+                    Quaternion wedgeSp = _spine0 * Quaternion.Euler(62f, 0f, 0f);
+                    Quaternion pushSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
+                    Quaternion wedgeHp = _hips0 * Quaternion.Euler(50f, 0f, 0f);
+                    Quaternion pushHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
+                    Quaternion wedgeHd = _head0 * Quaternion.Euler(-12f, 0f, 0f);
+                    Quaternion pushHd = _head0 * Quaternion.Euler(0f, 0f, 0f);
+                    _spineT = Quaternion.Slerp(Quaternion.Slerp(wedgeSp, pushSp, intoPush), _spineT, leave);
+                    _hipsT = Quaternion.Slerp(Quaternion.Slerp(wedgeHp, pushHp, intoPush), _hipsT, leave);
+                    _headT = Quaternion.Slerp(Quaternion.Slerp(wedgeHd, pushHd, intoPush), _headT, leave);
+                }
             }
             else
             {
@@ -1644,7 +1678,8 @@ namespace Tag.Art
                 {
                     // The planted foot pushes. The other knee comes up, then the tuck.
                     // A still crouch eases the guard into that push. A crouch walk eases the low stride into it.
-                    // A ski eases the glide into it. A standing jump keeps this push.
+                    // A ski eases the glide into it. A slide eases the wedge into it.
+                    // A standing jump keeps this push. slideBoost stays 0.
                     float p = _pushOff;
                     if (_jumpFromStill)
                     {
@@ -1746,6 +1781,39 @@ namespace Tag.Art
                         _ulRT = Quaternion.Slerp(Quaternion.Slerp(skiR, pushR, intoPush), _ulRT, leave);
                         _llLT = Quaternion.Slerp(Quaternion.Slerp(skiKl, pushKl, intoPush), _llLT, leave);
                         _llRT = Quaternion.Slerp(Quaternion.Slerp(skiKr, pushKr, intoPush), _llRT, leave);
+                    }
+                    else if (_jumpFromSlide)
+                    {
+                        float t = 1f - Mathf.Clamp01(p);
+                        float intoPush = Mathf.Clamp01(t * 2f);
+                        float leave = Mathf.Clamp01(t * 2f - 1f);
+                        bool leadLeft = sinC >= 0f;
+                        Quaternion wedgeL = _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f);
+                        Quaternion wedgeR = _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f);
+                        Quaternion wedgeKl = _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f);
+                        Quaternion wedgeKr = _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f);
+                        Quaternion pushL;
+                        Quaternion pushR;
+                        Quaternion pushKl;
+                        Quaternion pushKr;
+                        if (_pushLeft)
+                        {
+                            pushL = _ulL0 * Quaternion.Euler(-8f, 0f, 0f);
+                            pushKl = _llL0 * Quaternion.Euler(-6f, 0f, 0f);
+                            pushR = _ulR0 * Quaternion.Euler(48f, 0f, 0f);
+                            pushKr = _llR0 * Quaternion.Euler(-62f, 0f, 0f);
+                        }
+                        else
+                        {
+                            pushR = _ulR0 * Quaternion.Euler(-8f, 0f, 0f);
+                            pushKr = _llR0 * Quaternion.Euler(-6f, 0f, 0f);
+                            pushL = _ulL0 * Quaternion.Euler(48f, 0f, 0f);
+                            pushKl = _llL0 * Quaternion.Euler(-62f, 0f, 0f);
+                        }
+                        _ulLT = Quaternion.Slerp(Quaternion.Slerp(wedgeL, pushL, intoPush), _ulLT, leave);
+                        _ulRT = Quaternion.Slerp(Quaternion.Slerp(wedgeR, pushR, intoPush), _ulRT, leave);
+                        _llLT = Quaternion.Slerp(Quaternion.Slerp(wedgeKl, pushKl, intoPush), _llLT, leave);
+                        _llRT = Quaternion.Slerp(Quaternion.Slerp(wedgeKr, pushKr, intoPush), _llRT, leave);
                     }
                     else if (_pushLeft)
                     {
