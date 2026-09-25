@@ -29,7 +29,7 @@ namespace TagArena.Movement
         GUIStyle _flash;
 
         // Brief center flash when local gains/loses It (SetIt / TransferIt / punch).
-        const float ItFlashSec = 0.85f;
+        const float ItFlashSec = 1.0f; // handoff beat: a hair longer so YOU ARE IT / FREE reads
         bool _itFlashPrimed;
         bool _prevLocalIsIt;
         float _itFlashUntil;
