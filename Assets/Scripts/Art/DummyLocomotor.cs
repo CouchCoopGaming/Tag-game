@@ -259,6 +259,11 @@ namespace Tag.Art
         Quaternion _tagSlideUaL, _tagSlideUaR, _tagSlideLaL, _tagSlideLaR;
         Quaternion _tagSlideUlL, _tagSlideUlR, _tagSlideLlL, _tagSlideLlR;
         Quaternion _tagSlideSp, _tagSlideHp, _tagSlideHd;
+        bool _slideFromSoft;
+        float _slideFromSoftIn;
+        Quaternion _softSlideUaL, _softSlideUaR, _softSlideLaL, _softSlideLaR;
+        Quaternion _softSlideUlL, _softSlideUlR, _softSlideLlL, _softSlideLlR;
+        Quaternion _softSlideSp, _softSlideHp, _softSlideHd;
         bool _climbFromDash;
         float _climbFromDashIn;
         bool _wallFromDash;
@@ -499,12 +504,28 @@ namespace Tag.Art
             // A ski into a slide eases the glide into the wedge. Ski speed is unchanged.
             // A jump eases the glide or the landing into the wedge.
             // A punch eases the cock or the strike into the wedge. A tag eases the connect into the wedge.
+            // A soft landing eases the absorb into the wedge. A hard landing keeps the jump entry.
             // slideBoost stays 0.
-            bool jumpIntoSlide = sliding && !_dropSlide && (!grounded || !_wasGrounded || _landSquash > 0.08f);
-            bool fromPunchSlide = sliding && !_dropSlide && !jumpIntoSlide && !_airDashPoseWas
+            // The land numbers are written later this frame. Read the same impact here
+            // so a soft touchdown is not filed as a jump.
+            float slideRecoverT = _landHard;
+            if (grounded && !_wasGrounded)
+            {
+                float impact = _motor != null ? _motor.LastLandImpactSpeed : 10f;
+                float softEdge = 5f;
+                float hardEdge = 24f;
+                if (_motor != null && _motor.cfg != null)
+                    hardEdge = Mathf.Max(softEdge + 1f, _motor.cfg.landStunSpeed);
+                slideRecoverT = Mathf.Clamp01(Mathf.InverseLerp(softEdge, hardEdge, impact));
+            }
+            bool softSlideRecover = grounded && slideRecoverT < 0.4f && ((grounded && !_wasGrounded) || _landSquash > 0.08f);
+            bool fromSoftSlide = sliding && !_dropSlide && softSlideRecover && !jet && !_airDashPoseWas
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            bool jumpIntoSlide = sliding && !_dropSlide && !fromSoftSlide && (!grounded || !_wasGrounded || _landSquash > 0.08f);
+            bool fromPunchSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !_airDashPoseWas
                 && (_punchPhaseWas == PunchPhase.Windup || _punchPhaseWas == PunchPhase.Active)
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-            bool fromTagSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromPunchSlide && !_airDashPoseWas && !_jumpFromTag
+            bool fromTagSlide = sliding && !_dropSlide && !jumpIntoSlide && !fromSoftSlide && !fromPunchSlide && !_airDashPoseWas && !_jumpFromTag
                 && _punchPhaseWas == PunchPhase.HitRecover
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
             if (jumpIntoSlide)
@@ -512,7 +533,7 @@ namespace Tag.Art
                 _jumpToSlide = 1f;
                 _jumpToSlideLand = grounded;
             }
-            else if (!fromPunchSlide && !fromTagSlide)
+            else if (!fromPunchSlide && !fromTagSlide && !fromSoftSlide)
             {
                 if (sliding && !_dropSlide && _crouchFromStand && _dropVis > 0.2f)
                     _crouchToSlide = 1f;
@@ -560,6 +581,26 @@ namespace Tag.Art
                 _tagSlideHp = _hips.localRotation;
                 _tagSlideHd = _head.localRotation;
             }
+            if (fromSoftSlide && !_slideFromSoft)
+            {
+                // The absorb eases into the wedge. A soft landing into a ski keeps its ease.
+                // A hard landing into a slide keeps its ease. A jump into a slide keeps its ease.
+                // A punch into a slide keeps its ease. A crouch into a slide keeps its ease.
+                // A ski into a slide keeps its ease. slideBoost stays 0. Land time is unchanged.
+                _slideFromSoft = true;
+                _slideFromSoftIn = 0f;
+                _softSlideUaL = _upperArmL.localRotation;
+                _softSlideUaR = _upperArmR.localRotation;
+                _softSlideLaL = _lowerArmL.localRotation;
+                _softSlideLaR = _lowerArmR.localRotation;
+                _softSlideUlL = _upperLegL.localRotation;
+                _softSlideUlR = _upperLegR.localRotation;
+                _softSlideLlL = _lowerLegL.localRotation;
+                _softSlideLlR = _lowerLegR.localRotation;
+                _softSlideSp = _spine.localRotation;
+                _softSlideHp = _hips.localRotation;
+                _softSlideHd = _head.localRotation;
+            }
             if (sliding)
                 _dropSlide = true;
             else if (crouch)
@@ -601,6 +642,7 @@ namespace Tag.Art
                 _jumpToSlideLand = false;
                 _slideFromPunch = false;
                 _slideFromTag = false;
+                _slideFromSoft = false;
             }
             else if (_jumpToSlide > 0f)
                 _jumpToSlide = Mathf.MoveTowards(_jumpToSlide, 0f, dt / 0.16f);
@@ -608,6 +650,8 @@ namespace Tag.Art
                 _slideFromPunchIn = Mathf.MoveTowards(_slideFromPunchIn, 1f, dt / 0.04f);
             if (_slideFromTag && sliding)
                 _slideFromTagIn = Mathf.MoveTowards(_slideFromTagIn, 1f, dt / 0.04f);
+            if (_slideFromSoft && sliding)
+                _slideFromSoftIn = Mathf.MoveTowards(_slideFromSoftIn, 1f, dt / 0.04f);
             if (crouch && !sliding && speed <= 0.35f)
                 _crouchFromStand = true;
             else if ((crouch && speed > 0.35f) || sliding || _dropVis <= 0.001f)
@@ -6681,6 +6725,31 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(Mathf.Lerp(14f, 62f, up), 0f, 0f), intoGrab);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-(6f + Mathf.Max(0f, -kneePhase) * 72f), 0f, 0f), intoGrab);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-(6f + Mathf.Max(0f, kneePhase) * 72f), 0f, 0f), intoGrab);
+            }
+            if (_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromSoftIn < 0.98f)
+            {
+                // The absorb eases into the wedge, then the wedge holds.
+                // A soft landing into a ski keeps its ease. A hard landing into a slide keeps its ease.
+                // A jump into a slide keeps its ease. A punch into a slide keeps its ease.
+                // A crouch into a slide keeps its ease. A ski into a slide keeps its ease.
+                // slideBoost stays 0. Land time is unchanged.
+                float intoWedge = _slideFromSoftIn;
+                bool leadLeft = sinC >= 0f;
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
+                Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(_softSlideUaL, wedgeL, intoWedge);
+                _uaRT = Quaternion.Slerp(_softSlideUaR, wedgeR, intoWedge);
+                _laLT = Quaternion.Slerp(_softSlideLaL, wedgeElL, intoWedge);
+                _laRT = Quaternion.Slerp(_softSlideLaR, wedgeElR, intoWedge);
+                _spineT = Quaternion.Slerp(_softSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_softSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_softSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_softSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_softSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_softSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_softSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
             }
             if (_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromTagIn < 0.98f)
             {
