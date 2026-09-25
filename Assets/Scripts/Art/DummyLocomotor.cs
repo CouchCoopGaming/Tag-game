@@ -525,6 +525,9 @@ namespace Tag.Art
             }
             _lookArmVis = Mathf.MoveTowards(_lookArmVis, lookPitch, dt * 240f);
             float lungeAmt = lunging && _motor != null ? _motor.LungeProgress : 0f;
+            // A walk leaves the burst into the stride. A sprint and a stand keep the old leave.
+            // Duration and cooldown are unchanged.
+            bool dashWalk = _airDashArms && !airDashing && !lunging && speed > 0.35f && st != MoveState.Sprint && runAmt <= 0.4f;
             // 1 at the start of an air dash or lunge, 0 at the end. The pulse tail keeps easing after the burst.
             float dashStretchPose = 1f;
             if (lunging || dashing)
@@ -564,12 +567,38 @@ namespace Tag.Art
                     // A soft landing after the burst keeps the arms in the stride. The knees still absorb.
                     float pose = dashStretchPose;
                     float intoStride = 0f;
-                    if (grounded && !airDashing && _landSquash > 0.08f)
+                    if (!dashWalk && grounded && !airDashing && _landSquash > 0.08f)
                     {
                         float hardS = Mathf.SmoothStep(0f, 1f, _landHard);
                         pose *= hardS;
                         intoStride = 1f - hardS;
                     }
+                    if (dashWalk)
+                    {
+                        // The burst ends in the walk. It does not come to a stop.
+                        float gait = Mathf.Max(Mathf.Clamp01(walkAmt), 0.65f);
+                        float idle = 0f;
+                        float amp = Mathf.Lerp(36f, 64f, gait);
+                        float outY = Mathf.Lerp(12f, 8f, gait);
+                        float roll = Mathf.Lerp(0f, armZ, gait);
+                        float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                        float turnOut = Mathf.Abs(_turnVis) * 5f;
+                        float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
+                        float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
+                        float armBreath = breath * 0.55f * idle;
+                        float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
+                        float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
+                        float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
+                        float elbowR = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait);
+                        _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll), _uaL0 * Quaternion.Euler(108f, 32f, armZ), pose);
+                        _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll), _uaR0 * Quaternion.Euler(108f, -32f, -armZ), pose);
+                        _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(elbowL, 0f, 0f), _laL0 * Quaternion.Euler(-22f, 0f, 0f), pose);
+                        _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(elbowR, 0f, 0f), _laR0 * Quaternion.Euler(-22f, 0f, 0f), pose);
+                        _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(58f, 0f, 0f), pose);
+                        _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), pose);
+                    }
+                    else
+                    {
                     _uaLT = Quaternion.Slerp(
                         _uaL0 * Quaternion.Euler(-16f, 0f, armZ),
                         _uaL0 * Quaternion.Euler(108f, 32f, armZ),
@@ -605,6 +634,7 @@ namespace Tag.Art
                         _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll), intoStride);
                         _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait), 0f, 0f), intoStride);
                         _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait), 0f, 0f), intoStride);
+                    }
                     }
                 }
                 else
@@ -1131,10 +1161,14 @@ namespace Tag.Art
                 {
                     // The burst is over. The same lead foot reaches into the stride
                     // under the hips. Collapsing the split reads as a skate.
-                    float stride = Mathf.Lerp(0.96f, 1.16f, _runVis);
-                    float reach = Mathf.Lerp(34f, 58f, Mathf.Clamp01(Mathf.Max(walkAmt, runAmt))) * stride;
-                    float kneeAmt = Mathf.Lerp(48f, 90f, _runVis);
+                    // A walk keeps that stride. A sprint and a stand keep the old leave.
                     float w = 1f - Mathf.Clamp01(dashStretchPose);
+                    float stride = Mathf.Lerp(0.96f, 1.16f, _runVis);
+                    float reachGait = dashWalk
+                        ? Mathf.Max(Mathf.Clamp01(walkAmt), 0.65f)
+                        : Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                    float reach = Mathf.Lerp(34f, 58f, reachGait) * stride;
+                    float kneeAmt = Mathf.Lerp(48f, 90f, _runVis);
                     _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(reach, 0f, 0f), w);
                     _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(-reach * 0.58f, 0f, 0f), w);
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(2f + kneeAmt), 0f, 0f), w);
