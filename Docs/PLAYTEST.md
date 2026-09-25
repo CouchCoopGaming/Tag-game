@@ -390,7 +390,9 @@ Already on this branch: A ski into a tag eases the glide into the connect. A sli
 
 Already on this branch: A slide into a tag eases the wedge into the connect. A ski into a tag is unchanged. A slide into a punch is unchanged. A slide into a jump is unchanged. A crouch tag is unchanged. slideBoost stays 0. Connect time is unchanged.
 
-This delta: A climb into a punch eases the grab into the windup. A slide into a tag is unchanged. A climb into an air dash is unchanged. A climb into a jump is unchanged. A wall run is unchanged. Windup time is unchanged. Exit time is unchanged.
+Already on this branch: A climb into a punch eases the grab into the windup. A slide into a tag is unchanged. A climb into an air dash is unchanged. A climb into a jump is unchanged. A wall run is unchanged. Windup time is unchanged. Exit time is unchanged.
+
+This delta: A climb into a tag eases the grab into the connect. A climb into a punch is unchanged. A climb into an air dash is unchanged. A climb into a jump is unchanged. A wall run is unchanged. Connect time is unchanged. Exit time is unchanged.
 
 ## Stack snapshot
 
@@ -704,6 +706,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 215. Ski, then tag: the glide should ease into the connect. A slide into a punch should feel the same. A ski into a punch should feel the same. A ski into a jump should feel the same. A jump into a tag should feel the same. A crouch tag should feel the same. The connect should not feel longer. Speed should feel the same. Jet stays off.
 216. Slide, then tag: the wedge should ease into the connect. A ski into a tag should feel the same. A slide into a punch should feel the same. A slide into a jump should feel the same. A crouch tag should feel the same. The slide should not feel faster. The connect should not feel longer. Jet stays off.
 217. Climb, then punch: the grab should ease into the windup. A slide into a tag should feel the same. A climb into an air dash should feel the same. A climb into a jump should feel the same. A wall run should feel the same. The cock should not feel longer. The leave should not feel longer. Jet stays off.
+218. Climb, then tag: the grab should ease into the connect. A climb into a punch should feel the same. A climb into an air dash should feel the same. A climb into a jump should feel the same. A wall run should feel the same. The connect should not feel longer. The leave should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -941,6 +944,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 205. A ski into a tag eases the glide into the connect. A slide into a punch is unchanged. A ski into a punch is unchanged. A ski into a jump is unchanged. A jump into a tag is unchanged. A crouch tag is unchanged. Connect time is unchanged. Ski speed is unchanged. Jet stays off.
 206. A slide into a tag eases the wedge into the connect. A ski into a tag is unchanged. A slide into a punch is unchanged. A slide into a jump is unchanged. A crouch tag is unchanged. slideBoost stays 0. Connect time is unchanged. Jet stays off.
 207. A climb into a punch eases the grab into the windup. A slide into a tag is unchanged. A climb into an air dash is unchanged. A climb into a jump is unchanged. A wall run is unchanged. Windup time is unchanged. Exit time is unchanged. Jet stays off.
+208. A climb into a tag eases the grab into the connect. A climb into a punch is unchanged. A climb into an air dash is unchanged. A climb into a jump is unchanged. A wall run is unchanged. Connect time is unchanged. Exit time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
