@@ -38,6 +38,9 @@ namespace Tag.Core
         int _bootFocus;
         int _pauseFocus;
         int _looseResultsFocus;
+        int _controlsFocus;
+        int _lookFocus;
+        int _audioFocus;
         bool _settingsOpen;
         bool _controlsOpen;
         bool _audioOpen;
@@ -305,55 +308,19 @@ namespace Tag.Core
         {
             if (_audioOpen)
             {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
-                {
-                    _audioOpen = false;
-                    AudioCuePlayer.Ensure()?.UiClick();
-                }
-                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
-                    AudioMaster.CycleVolume(-1);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
-                    AudioMaster.CycleVolume(1);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.M))
-                    AudioMaster.ToggleMute();
-                if (UnityEngine.Input.GetKeyDown(KeyCode.N))
-                    AudioMaster.ToggleMusicMute();
-                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
-                    AudioMaster.CycleMusic(1);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))
-                    AudioMaster.CycleMusic(-1);
+                PollAudioKeys();
                 return;
             }
 
             if (_controlsOpen)
             {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
-                {
-                    _controlsOpen = false;
-                    AudioCuePlayer.Ensure()?.UiClick();
-                }
-                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
-                    ControlBinds.CycleDash(-1);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
-                    ControlBinds.CycleDash(1);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
-                    ControlBinds.CyclePunch(-1);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))
-                    ControlBinds.CyclePunch(1);
+                PollControlsKeys();
                 return;
             }
 
             if (_settingsOpen)
             {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
-                {
-                    _settingsOpen = false;
-                    AudioCuePlayer.Ensure()?.UiClick();
-                }
-                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow))
-                    LookSensitivity.Cycle(-1);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow))
-                    LookSensitivity.Cycle(1);
+                PollLookKeys();
                 return;
             }
 
@@ -549,58 +516,202 @@ namespace Tag.Core
             }
         }
 
+        void PollControlsKeys()
+        {
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+            {
+                _controlsOpen = false;
+                AudioCuePlayer.Ensure()?.UiClick();
+            }
+            if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) Nudge(ref _controlsFocus, -1, 2);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) Nudge(ref _controlsFocus, 1, 2);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _controlsFocus, 0);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _controlsFocus, 1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _controlsFocus, 2);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) StepControls(-1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) StepControls(1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
+                UnityEngine.Input.GetKeyDown(KeyCode.Space))
+            {
+                if (_controlsFocus >= 2)
+                {
+                    _controlsOpen = false;
+                    AudioCuePlayer.Ensure()?.UiClick();
+                }
+                else StepControls(1);
+            }
+        }
+
+        void StepControls(int dir)
+        {
+            if (_controlsFocus == 0) ControlBinds.CycleDash(dir);
+            else if (_controlsFocus == 1) ControlBinds.CyclePunch(dir);
+        }
+
+        void PollLookKeys()
+        {
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+            {
+                _settingsOpen = false;
+                AudioCuePlayer.Ensure()?.UiClick();
+            }
+            if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) Nudge(ref _lookFocus, -1, 1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) Nudge(ref _lookFocus, 1, 1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _lookFocus, 0);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _lookFocus, 1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) && _lookFocus == 0)
+                LookSensitivity.Cycle(-1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) && _lookFocus == 0)
+                LookSensitivity.Cycle(1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
+                UnityEngine.Input.GetKeyDown(KeyCode.Space))
+            {
+                if (_lookFocus >= 1)
+                {
+                    _settingsOpen = false;
+                    AudioCuePlayer.Ensure()?.UiClick();
+                }
+                else LookSensitivity.Cycle(1);
+            }
+        }
+
+        void PollAudioKeys()
+        {
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+            {
+                _audioOpen = false;
+                AudioCuePlayer.Ensure()?.UiClick();
+            }
+            if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) Nudge(ref _audioFocus, -1, 4);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) Nudge(ref _audioFocus, 1, 4);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _audioFocus, 0);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _audioFocus, 1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _audioFocus, 2);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) SetFocus(ref _audioFocus, 3);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha5)) SetFocus(ref _audioFocus, 4);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) StepAudio(-1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) StepAudio(1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.M)) AudioMaster.ToggleMute();
+            if (UnityEngine.Input.GetKeyDown(KeyCode.N)) AudioMaster.ToggleMusicMute();
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
+                UnityEngine.Input.GetKeyDown(KeyCode.Space))
+            {
+                if (_audioFocus >= 4)
+                {
+                    _audioOpen = false;
+                    AudioCuePlayer.Ensure()?.UiClick();
+                }
+                else StepAudio(1);
+            }
+        }
+
+        void StepAudio(int dir)
+        {
+            switch (_audioFocus)
+            {
+                case 0: AudioMaster.CycleVolume(dir); break;
+                case 1: AudioMaster.CycleMusic(dir); break;
+                case 2: AudioMaster.ToggleMute(); break;
+                case 3: AudioMaster.ToggleMusicMute(); break;
+            }
+        }
+
         void DrawControls()
         {
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
-            GUI.Box(new Rect(cx - 240, cy - 200, 480, 390), "Controls");
-            GUI.Label(new Rect(cx - 220, cy - 170, 440, 250), ControlBinds.Help);
-            if (MenuClick.Button(new Rect(cx - 220, cy + 88, 100, 26), "Dash <"))
-                ControlBinds.CycleDash(-1);
-            if (MenuClick.Button(new Rect(cx - 112, cy + 88, 100, 26), "Dash >"))
-                ControlBinds.CycleDash(1);
-            if (MenuClick.Button(new Rect(cx + 4, cy + 88, 100, 26), "Punch <"))
-                ControlBinds.CyclePunch(-1);
-            if (MenuClick.Button(new Rect(cx + 112, cy + 88, 100, 26), "Punch >"))
-                ControlBinds.CyclePunch(1);
-            GUI.Label(new Rect(cx - 220, cy + 122, 440, 48),
-                "Left / Right dash. Up / Down punch. E still punches.\nAlt still dashes. Volume is the Audio card. Esc back.");
+            GUI.Box(new Rect(cx - 240, cy - 210, 480, 430), "Controls");
+            GUI.Label(new Rect(cx - 220, cy - 180, 440, 200), ControlBinds.Help);
+            SubRow(cx, cy + 28, 0, ref _controlsFocus, "Dash   " + ControlBinds.DashName);
+            if (SideStep(cx, cy + 60))
+            {
+                _controlsFocus = 0;
+                ControlBinds.CycleDash(SideDir());
+            }
+            SubRow(cx, cy + 96, 1, ref _controlsFocus, "Punch  " + ControlBinds.PunchName);
+            if (SideStep(cx, cy + 128))
+            {
+                _controlsFocus = 1;
+                ControlBinds.CyclePunch(SideDir());
+            }
+            if (SubRow(cx, cy + 164, 2, ref _controlsFocus, "Back"))
+            {
+                _controlsOpen = false;
+                AudioCuePlayer.Ensure()?.UiClick();
+            }
+            GUI.Label(new Rect(cx - 220, cy + 198, 440, 36),
+                "Up / Down picks. Left / Right steps it. 1-3 highlight.\nEnter uses the row. Esc back. E punches. Alt dashes.");
         }
 
         void DrawLookSettings()
         {
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
-            GUI.Box(new Rect(cx - 200, cy - 90, 400, 180), "Look sensitivity");
-            GUI.Label(new Rect(cx - 180, cy - 48, 360, 28), LookSensitivity.Label);
-            if (MenuClick.Button(new Rect(cx - 150, cy - 10, 80, 28), "<"))
-                LookSensitivity.Cycle(-1);
-            if (MenuClick.Button(new Rect(cx + 70, cy - 10, 80, 28), ">"))
-                LookSensitivity.Cycle(1);
-            GUI.Label(new Rect(cx - 180, cy + 28, 360, 48),
-                "Left / Right    Esc back\nDefault is the current camera feel");
+            GUI.Box(new Rect(cx - 200, cy - 110, 400, 230), "Look sensitivity");
+            SubRow(cx, cy - 70, 0, ref _lookFocus, LookSensitivity.Label);
+            if (SideStep(cx, cy - 36))
+            {
+                _lookFocus = 0;
+                LookSensitivity.Cycle(SideDir());
+            }
+            if (SubRow(cx, cy + 8, 1, ref _lookFocus, "Back"))
+            {
+                _settingsOpen = false;
+                AudioCuePlayer.Ensure()?.UiClick();
+            }
+            GUI.Label(new Rect(cx - 180, cy + 44, 360, 48),
+                "Up / Down picks. Left / Right steps look.\n1-2 highlight. Enter uses the row. Esc back.");
         }
 
         void DrawAudioSettings()
         {
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
-            GUI.Box(new Rect(cx - 200, cy - 140, 400, 280), "Audio");
-            GUI.Label(new Rect(cx - 180, cy - 108, 360, 28), "SFX  " + AudioMaster.Label);
-            if (MenuClick.Button(new Rect(cx - 150, cy - 74, 80, 28), "<"))
-                AudioMaster.CycleVolume(-1);
-            if (MenuClick.Button(new Rect(cx + 70, cy - 74, 80, 28), ">"))
-                AudioMaster.CycleVolume(1);
-            GUI.Label(new Rect(cx - 180, cy - 36, 360, 28), "Music  " + AudioMaster.MusicLabel);
-            if (MenuClick.Button(new Rect(cx - 150, cy - 4, 80, 28), "<"))
-                AudioMaster.CycleMusic(-1);
-            if (MenuClick.Button(new Rect(cx + 70, cy - 4, 80, 28), ">"))
-                AudioMaster.CycleMusic(1);
+            GUI.Box(new Rect(cx - 210, cy - 170, 420, 360), "Audio");
+            SubRow(cx, cy - 130, 0, ref _audioFocus, "SFX   " + AudioMaster.Label);
+            if (SideStep(cx, cy - 96))
+            {
+                _audioFocus = 0;
+                AudioMaster.CycleVolume(SideDir());
+            }
+            SubRow(cx, cy - 60, 1, ref _audioFocus, "Music   " + AudioMaster.MusicLabel);
+            if (SideStep(cx, cy - 26))
+            {
+                _audioFocus = 1;
+                AudioMaster.CycleMusic(SideDir());
+            }
             string muteLabel = AudioMaster.Muted ? "Unmute (M)" : "Mute (M)";
-            if (MenuClick.Button(new Rect(cx - 150, cy + 36, 140, 28), muteLabel))
+            if (SubRow(cx, cy + 12, 2, ref _audioFocus, muteLabel))
                 AudioMaster.ToggleMute();
             string musicLabel = AudioMaster.MusicMuted ? "Music on (N)" : "Music off (N)";
-            if (MenuClick.Button(new Rect(cx + 10, cy + 36, 140, 28), musicLabel))
+            if (SubRow(cx, cy + 46, 3, ref _audioFocus, musicLabel))
                 AudioMaster.ToggleMusicMute();
-            GUI.Label(new Rect(cx - 180, cy + 74, 360, 48),
-                "Left / Right SFX    Up / Down music\nM mute all    N music    Esc back");
+            if (SubRow(cx, cy + 80, 4, ref _audioFocus, "Back"))
+            {
+                _audioOpen = false;
+                AudioCuePlayer.Ensure()?.UiClick();
+            }
+            GUI.Label(new Rect(cx - 190, cy + 116, 380, 48),
+                "Up / Down picks. Left / Right steps the row.\n1-5 highlight. M mute. N music. Enter uses it. Esc back.");
+        }
+
+        static int _sideDir;
+
+        static bool SideStep(float cx, float y)
+        {
+            _sideDir = 0;
+            if (MenuClick.Button(new Rect(cx - 150, y, 80, 26), "<")) { _sideDir = -1; return true; }
+            if (MenuClick.Button(new Rect(cx + 70, y, 80, 26), ">")) { _sideDir = 1; return true; }
+            return false;
+        }
+
+        static int SideDir() => _sideDir == 0 ? 1 : _sideDir;
+
+        static bool SubRow(float cx, float y, int index, ref int cursor, string label)
+        {
+            var r = new Rect(cx - 170, y, 340, 28);
+            bool sel = cursor == index;
+            if (sel) GUI.Box(new Rect(r.x - 4f, r.y - 4f, r.width + 8f, r.height + 8f), "");
+            if (!MenuClick.Button(r, (sel ? "> " : "  ") + label)) return false;
+            cursor = index;
+            return true;
         }
 
         static void Nudge(ref int cursor, int dir, int maxInclusive)
@@ -651,6 +762,7 @@ namespace Tag.Core
             _settingsOpen = false;
             _audioOpen = false;
             _controlsOpen = true;
+            _controlsFocus = 0;
         }
 
         void OpenLook()
@@ -658,6 +770,7 @@ namespace Tag.Core
             _controlsOpen = false;
             _audioOpen = false;
             _settingsOpen = true;
+            _lookFocus = 0;
         }
 
         void OpenAudio()
@@ -665,14 +778,14 @@ namespace Tag.Core
             _controlsOpen = false;
             _settingsOpen = false;
             _audioOpen = true;
+            _audioFocus = 0;
         }
 
         static bool FocusButton(Rect r, int index, ref int cursor, string label)
         {
             bool sel = cursor == index;
             if (sel) GUI.Box(new Rect(r.x - 4f, r.y - 4f, r.width + 8f, r.height + 8f), "");
-            // Mouse only. Enter/Space is handled in Update from the highlight, so a
-            // different IMGUI focus cannot fire a second row on the same key.
+            // Mouse only. Enter/Space is handled in Update from the highlight.
             if (!MenuClick.Button(r, (sel ? "> " : "  ") + label)) return false;
             cursor = index;
             return true;
