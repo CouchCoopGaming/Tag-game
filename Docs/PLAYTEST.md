@@ -534,7 +534,9 @@ Already on this branch: A punch into a still crouch eases the punch into the gua
 
 Already on this branch: A tag into a still crouch eases the connect into the guard. The guard then holds. A punch into a still crouch is unchanged. A slide into a still crouch is unchanged. Connect time is unchanged.
 
-This delta: A whiff into a still crouch eases the miss into the guard. The guard then holds. A tag into a still crouch is unchanged. A punch into a still crouch is unchanged. Whiff time is unchanged.
+Already on this branch: A whiff into a still crouch eases the miss into the guard. The guard then holds. A tag into a still crouch is unchanged. A punch into a still crouch is unchanged. Whiff time is unchanged.
+
+This delta: An It claim into a still crouch eases the claim into the guard. The guard then holds. A whiff into a still crouch is unchanged. A tag into a still crouch is unchanged. Claim time is unchanged.
 
 ## Stack snapshot
 
@@ -920,6 +922,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 287. Punch, then still crouch: the punch should ease into the guard. The guard should then hold. A slide into a still crouch should feel the same. A ski into a still crouch should feel the same. The guard should not feel longer. The cock should not feel longer. Jet stays off.
 288. Tag, then still crouch: the connect should ease into the guard. The guard should then hold. A punch into a still crouch should feel the same. A slide into a still crouch should feel the same. The guard should not feel longer. The connect should not feel longer. Jet stays off.
 289. Whiff, then still crouch: the miss should ease into the guard. The guard should then hold. A tag into a still crouch should feel the same. A punch into a still crouch should feel the same. The guard should not feel longer. The whiff should not feel longer. Jet stays off.
+290. Become It, then still crouch: the claim should ease into the guard. The guard should then hold. A whiff into a still crouch should feel the same. A tag into a still crouch should feel the same. The guard should not feel longer. The claim should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1229,6 +1232,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 277. A punch into a still crouch eases the punch into the guard. The guard then holds. A slide into a still crouch is unchanged. A ski into a still crouch is unchanged. Windup time is unchanged. Jet stays off.
 278. A tag into a still crouch eases the connect into the guard. The guard then holds. A punch into a still crouch is unchanged. A slide into a still crouch is unchanged. Connect time is unchanged. Jet stays off.
 279. A whiff into a still crouch eases the miss into the guard. The guard then holds. A tag into a still crouch is unchanged. A punch into a still crouch is unchanged. Whiff time is unchanged. Jet stays off.
+280. An It claim into a still crouch eases the claim into the guard. The guard then holds. A whiff into a still crouch is unchanged. A tag into a still crouch is unchanged. Claim time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

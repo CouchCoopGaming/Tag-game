@@ -580,6 +580,13 @@ namespace Tag.Art
         Quaternion _missGuardUaL, _missGuardUaR, _missGuardLaL, _missGuardLaR;
         Quaternion _missGuardUlL, _missGuardUlR, _missGuardLlL, _missGuardLlR;
         Quaternion _missGuardSp, _missGuardHp, _missGuardHd;
+        bool _stillFromClaim;
+        float _stillFromClaimIn;
+        bool _claimWas;
+        bool _claimStillHeld;
+        Quaternion _claimGuardUaL, _claimGuardUaR, _claimGuardLaL, _claimGuardLaR;
+        Quaternion _claimGuardUlL, _claimGuardUlR, _claimGuardLlL, _claimGuardLlR;
+        Quaternion _claimGuardSp, _claimGuardHp, _claimGuardHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -3698,6 +3705,39 @@ namespace Tag.Art
                 _stillFromMiss = false;
             else if (_stillFromMiss)
                 _stillFromMissIn = Mathf.MoveTowards(_stillFromMissIn, 1f, dt / 0.04f);
+            if (!_claimWas || !inStill)
+                _claimStillHeld = false;
+            bool claimIntoStill = inStill && _claimWas && !_claimStillHeld && !_jumpFromClaim
+                && phase != PunchPhase.Windup && phase != PunchPhase.Active
+                && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover
+                && !dashPoseNow && !wallRun && !climb
+                && _dashReady <= 0.2f
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (claimIntoStill)
+            {
+                // The claim eases into the guard. A whiff into a still crouch keeps its ease.
+                // A tag into a still crouch keeps its ease. A crouch walk keeps its slow blend.
+                // Claim time is unchanged.
+                _stillFromClaim = true;
+                _stillFromClaimIn = 0f;
+                _claimStillHeld = true;
+                _claimGuardUaL = _upperArmL.localRotation;
+                _claimGuardUaR = _upperArmR.localRotation;
+                _claimGuardLaL = _lowerArmL.localRotation;
+                _claimGuardLaR = _lowerArmR.localRotation;
+                _claimGuardUlL = _upperLegL.localRotation;
+                _claimGuardUlR = _upperLegR.localRotation;
+                _claimGuardLlL = _lowerLegL.localRotation;
+                _claimGuardLlR = _lowerLegR.localRotation;
+                _claimGuardSp = _spine.localRotation;
+                _claimGuardHp = _hips.localRotation;
+                _claimGuardHd = _head.localRotation;
+            }
+            if (!inStill)
+                _stillFromClaim = false;
+            else if (_stillFromClaim)
+                _stillFromClaimIn = Mathf.MoveTowards(_stillFromClaimIn, 1f, dt / 0.04f);
             _punchPhaseWas = phase;
             _tagHitWas = hitNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
@@ -3726,6 +3766,7 @@ namespace Tag.Art
             bool airDashing = _motor != null && _motor.IsAirDashing;
             _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.45f);
             _itClaim = Mathf.MoveTowards(_itClaim, 0f, dt / 0.52f);
+            _claimWas = _itClaim > 0.2f;
             bool dashing = _dashPulse > 0.04f || lunging || airDashing;
             float dashAmt = Mathf.Max(
                 Mathf.Clamp01(_dashPulse),
@@ -7342,9 +7383,9 @@ namespace Tag.Art
                     walkClaim = 0f;
                 if (crouchClaim || crouchWalkClaim)
                     sprintClaim = 0f;
-                if (!punchHandoff && (crouchClaim || crouchWalkClaim))
+                if (!punchHandoff && ((crouchClaim && !_stillFromClaim) || crouchWalkClaim))
                 {
-                    // The claim eases into the guard. A crouch walk keeps these arms and opens the low stride.
+                    // The claim eases into the guard. A still crouch keeps its snapshot. A crouch walk keeps these arms and opens the low stride.
                     float hold = c * c;
                     _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaL0 * Quaternion.Euler(-128f, 8f, armZ), hold);
                     _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-36f, -16f, -armZ), _uaR0 * Quaternion.Euler(-36f, -48f, -armZ), hold);
@@ -8806,6 +8847,52 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_missGuardUlR, guardThighR, intoGuard);
                     _llLT = Quaternion.Slerp(_missGuardLlL, guardKneeL, intoGuard);
                     _llRT = Quaternion.Slerp(_missGuardLlR, guardKneeR, intoGuard);
+                }
+                else
+                {
+                    _uaLT = guardL;
+                    _uaRT = guardR;
+                    _laLT = guardElL;
+                    _laRT = guardElR;
+                    _spineT = guardSp;
+                    _hipsT = guardHp;
+                    _headT = guardHd;
+                    _ulLT = guardThighL;
+                    _ulRT = guardThighR;
+                    _llLT = guardKneeL;
+                    _llRT = guardKneeR;
+                }
+            }
+            if (_stillFromClaim && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The claim eases into the guard, then the guard holds.
+                // A whiff into a still crouch keeps its ease. A tag into a still crouch keeps its ease.
+                // Claim time is unchanged.
+                float intoGuard = _stillFromClaimIn;
+                Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion guardR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion guardElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion guardHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion guardHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion guardThighL = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardThighR = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardKneeL = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
+                Quaternion guardKneeR = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
+                if (intoGuard < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_claimGuardUaL, guardL, intoGuard);
+                    _uaRT = Quaternion.Slerp(_claimGuardUaR, guardR, intoGuard);
+                    _laLT = Quaternion.Slerp(_claimGuardLaL, guardElL, intoGuard);
+                    _laRT = Quaternion.Slerp(_claimGuardLaR, guardElR, intoGuard);
+                    _spineT = Quaternion.Slerp(_claimGuardSp, guardSp, intoGuard);
+                    _hipsT = Quaternion.Slerp(_claimGuardHp, guardHp, intoGuard);
+                    _headT = Quaternion.Slerp(_claimGuardHd, guardHd, intoGuard);
+                    _ulLT = Quaternion.Slerp(_claimGuardUlL, guardThighL, intoGuard);
+                    _ulRT = Quaternion.Slerp(_claimGuardUlR, guardThighR, intoGuard);
+                    _llLT = Quaternion.Slerp(_claimGuardLlL, guardKneeL, intoGuard);
+                    _llRT = Quaternion.Slerp(_claimGuardLlR, guardKneeR, intoGuard);
                 }
                 else
                 {
