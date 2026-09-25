@@ -59,7 +59,7 @@ namespace Tag.Modes
         [Tooltip("When It in Least It: meters of chase cost per second of target TimeAsIt (higher = stronger preference for low-time leaders).")]
         [SerializeField] float leastItChaseTimeWeight = 0.75f;
         [Tooltip("When not It in Least It: blend flee/wander toward nearest non-It ally (0=off).")]
-        [SerializeField] float leastItAllySeekWeight = 0.45f;
+        [SerializeField] float leastItAllySeekWeight = 0.48f; // slightly stronger buddy seek when Least It
 
         PlayerInputReader _input;
         PlayerRagdoll _ragdoll;
