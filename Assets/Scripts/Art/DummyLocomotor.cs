@@ -366,6 +366,7 @@ namespace Tag.Art
                 float k = Mathf.Clamp01(_punchTelegraph / 0.2f);
                 _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(28f, -26f, -72f), k); // match windup elbow yaw
                 _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-112f, 0f, 0f), k);
+                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f + 8f, -28f, 0f), k); // match windup hip twist
                 _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 12f, -32f, leanZ), k);
             }
 
