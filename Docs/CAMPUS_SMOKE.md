@@ -2,6 +2,8 @@
 
 After pull: **CutArenaBootstrap** Rebuild, then **PgkLandmarkPlacer -> Place**. Walk on foot. Spines and the crash cross stay empty. Soft-play and the army bunker use `PGK_Slide_TubeDeck_2m` on the 2.00 deck. Astro keeps the straight chute. `Mega_SlideTube` and `PGK_Slide_Tube90` are not placed. Feel was not edited.
 
+TubeDeck axis blocker: Place smoke seats soft-play + army (count=2), but local mesh AABB is still spanY~1.14 (minY/maxY ~+/-0.57) instead of feet~0 / crown~1.91. Brief wants +Y up and high mouth at mesh y=1.91. Do not invent a placer rotation hack. Needs AD FBX re-export (Blender +Y up, pivot mulch under low mouth). Mega/Tube90 stay out.
+
 ## SW
 
 Spawn_SW faces northeast. Mushroom steps at (4.5, 6.94) sit beside that exit. Hopscotch SW is the court. The bench at (9.26, 9) is west of the climb net; the passage east of the net, toward the south bar, stays open. No arch here.
