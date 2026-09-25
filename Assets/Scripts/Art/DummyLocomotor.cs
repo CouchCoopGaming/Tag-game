@@ -157,7 +157,7 @@ namespace Tag.Art
             float sinC = Mathf.Sign(sinRaw) * Mathf.Pow(Mathf.Abs(sinRaw), 0.55f);
             float cosC = Mathf.Cos(_cycle);
             // Natural hang/swing - keep amplitude human (not arms-into-butt flares)
-            float swing = sinC * Mathf.Lerp(28f, 52f, Mathf.Max(walkAmt, runAmt));
+            float swing = sinC * Mathf.Lerp(34f, 60f, Mathf.Max(walkAmt, runAmt));
             if (air) swing *= 0.72f;
             if (sliding) swing *= 0.08f; else if (crouch) swing *= 0.18f;
             if (jet) swing = 0f;
@@ -342,20 +342,22 @@ namespace Tag.Art
             {
                 // Air / vault limb tells: residual run energy + open arms (slight loft for crest leave)
                 float airKick = sinC * Mathf.Lerp(28f, 48f, runAmt);
-                _uaLT = _uaL0 * Quaternion.Euler(-32f - airKick * 0.55f, 0f, 8f);
-                _uaRT = _uaR0 * Quaternion.Euler(-32f + airKick * 0.55f, 0f, -8f);
+                // Opposite the legs: left thigh follows +sinC, so the left arm goes the other way.
+                _uaLT = _uaL0 * Quaternion.Euler(-32f + airKick * 0.7f, 0f, 8f);
+                _uaRT = _uaR0 * Quaternion.Euler(-32f - airKick * 0.7f, 0f, -8f);
                 _laLT = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
             }
             else
             {
-                // Mostly forward. A full -swing plus extra Z roll put both hands back into the hips.
-                // Rest pose already carries the outward A; do not stack more roll on the run.
-                float amp = Mathf.Lerp(24f, 46f, Mathf.Max(walkAmt, runAmt));
-                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(sinC, amp), 0f, 0f);
-                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(-sinC, amp), 0f, 0f);
-                float elbowL = -18f - Mathf.Max(0f, sinC) * Mathf.Lerp(22f, 48f, runAmt);
-                float elbowR = -18f - Mathf.Max(0f, -sinC) * Mathf.Lerp(22f, 48f, runAmt);
+                // Opposite the legs. sinC>0 puts the left thigh forward, so the right arm reaches
+                // and the left arm stays back. Same-side swing reads as a skate from the chase cam.
+                // Rearward travel stays short so the hands do not fold into the pelvis. No extra roll.
+                float amp = Mathf.Lerp(36f, 64f, Mathf.Max(walkAmt, runAmt));
+                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp), 0f, 0f);
+                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp), 0f, 0f);
+                float elbowL = -18f - Mathf.Max(0f, -sinC) * Mathf.Lerp(28f, 58f, runAmt);
+                float elbowR = -18f - Mathf.Max(0f, sinC) * Mathf.Lerp(28f, 58f, runAmt);
                 _laLT = _laL0 * Quaternion.Euler(elbowL, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(elbowR, 0f, 0f);
             }
