@@ -346,7 +346,9 @@ Already on this branch: A ski into an air dash eases the glide into the burst. T
 
 Already on this branch: A slide into an air dash eases the wedge into the burst. The burst still holds. A ski into an air dash is unchanged. The slide does not speed up. Duration and cooldown are unchanged.
 
-This delta: An air dash into a ski eases the burst into the glide. A slide into an air dash is unchanged. A ski into an air dash is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged.
+Already on this branch: An air dash into a ski eases the burst into the glide. A slide into an air dash is unchanged. A ski into an air dash is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged.
+
+This delta: An air dash into a slide eases the burst into the wedge. An air dash into a ski is unchanged. A ski into an air dash is unchanged. A slide into an air dash is unchanged. The slide does not speed up. Duration and cooldown are unchanged.
 
 ## Stack snapshot
 
@@ -638,6 +640,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 193. Ski, then air dash: the glide should ease into the burst. The burst should still hold. An air crouch into an air dash should feel the same. An air dash into an air crouch should feel the same. Speed should feel the same. The dash should not feel longer. Jet stays off.
 194. Slide, then air dash: the wedge should ease into the burst. The burst should still hold. A ski into an air dash should feel the same. The slide should not feel faster. The dash should not feel longer. Jet stays off.
 195. Air dash, then ski: the burst should ease into the glide. A slide into an air dash should feel the same. A ski into an air dash should feel the same. Speed should feel the same. The dash should not feel longer. Jet stays off.
+196. Air dash, then slide: the burst should ease into the wedge. An air dash into a ski should feel the same. A ski into an air dash should feel the same. A slide into an air dash should feel the same. The slide should not feel faster. The dash should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -853,6 +856,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 183. A ski into an air dash eases the glide into the burst. The burst still holds. An air crouch into an air dash is unchanged. An air dash into an air crouch is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged. Jet stays off.
 184. A slide into an air dash eases the wedge into the burst. The burst still holds. A ski into an air dash is unchanged. slideBoost stays 0. Duration and cooldown are unchanged. Jet stays off.
 185. An air dash into a ski eases the burst into the glide. A slide into an air dash is unchanged. A ski into an air dash is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged. Jet stays off.
+186. An air dash into a slide eases the burst into the wedge. An air dash into a ski is unchanged. A ski into an air dash is unchanged. A slide into an air dash is unchanged. The slide does not speed up. Duration and cooldown are unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
