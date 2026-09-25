@@ -182,7 +182,9 @@ Already on this branch: After you become It while walking, the arms settle into 
 
 Already on this branch: Letting go of a grapple while walking returns the hands to the stride. They do not hitch. The grapple stays off unless you turn it on.
 
-This delta: When the dash is ready and you are standing, the chest and the arms give a small pulse, then the idle breath. The dash does not last longer, and it still has to recharge.
+Already on this branch: When the dash is ready and you are standing, the chest and the arms give a small pulse, then the idle breath. The dash does not last longer, and it still has to recharge.
+
+This delta: Letting go of a ski into a walk returns the stride. The feet do not skate. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -392,6 +394,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 111. Walk and become It: the arms should settle into the stride. They should not drop into the idle. One knee can still be up. The claim should not feel longer.
 112. If you turn the grapple on, hook, then let go while walking: the hands should return to the stride. They should not hitch. It should stay off unless you turn it on. The pull should feel the same.
 113. Stand and wait for the dash bar: when it is ready, the chest and the arms should give a small pulse, then the idle breath. The dash should not last longer, and it should still have to recharge.
+114. Ski, then let go into a walk: the stride should come back. The feet should not skate. Speed should feel the same.
 
 ## Known leftovers
 
@@ -525,6 +528,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 101. After you become It while walking, the arms settle into the stride. They do not drop into the idle. One knee can still be up. A standing claim still eases into the idle breath. Claim time is unchanged.
 102. Letting go of a grapple while walking returns the hands to the stride. They do not hitch. A sprint and a stand keep the old leave. The gate stays off. Range and speed are unchanged.
 103. When the dash is ready and you are standing, the chest and the arms give a small pulse, then the idle breath. It is not a second whip. Duration and cooldown are unchanged.
+104. Letting go of a ski into a walk returns the stride. The feet do not skate. A ski into a run is unchanged. Speed is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
