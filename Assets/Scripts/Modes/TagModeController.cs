@@ -721,6 +721,7 @@ namespace Tag.Modes
                 _localHelp = true;
                 _localControlsFocus = 0;
                 TagSfx.UiClick();
+                return;
             }
             if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) NudgeLocalPause(-1);
             if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) NudgeLocalPause(1);

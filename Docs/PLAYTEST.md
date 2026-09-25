@@ -10,7 +10,7 @@ Branch: `cursor/playground-campus-zones-afc4` (integration tip). PR #20 Boot tip
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.3 m (avoid ~9.3 m), It hat beacon, west TubeDeck on the 2.00 lips. Soft-play/astro only; Mega/Tube90 still out. No MasterVolume type.
 
-This delta: Opening Couch or Mode select no longer clears the first-run line. Digits on Boot, who-plays, and mode select only move the highlight. Enter / Space confirms. Boot pause H opens Controls, same as Direct Play. The first countdown says WASD move and Shift sprint. Also: windup elbow yaw -26->-27, tag flinch 0.36->0.37s, chase lead 0.34->0.35s; TubeDeck batch smoke helper in Assets/Editor.
+This delta: Opening Couch or Mode select no longer clears the first-run line. Digits on Boot, who-plays, and mode select only move the highlight. Enter / Space confirms. Who-plays Esc returns to Boot with Couch highlighted (no double-advance). Mode select Esc steps back to who-plays when you came from Couch, and back to Boot on the Mode row when you opened it there. That Mode row keeps the saved player count. Highlights match the last count and mode. Boot pause H opens Controls only (same as Direct Play). The first countdown says WASD move and Shift sprint. Also: windup elbow yaw -26->-27, tag flinch 0.36->0.37s, chase lead 0.34->0.35s; TubeDeck batch smoke helper in Assets/Editor.
 
 ## Stack snapshot
 
@@ -118,6 +118,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 21. Pause, open Controls (or Look or Audio), then F1. The panel should be gone and the countdown should run. Esc pauses. After a round, that same panel should not cover Rematch / Menu, and Q should show Boot, not the panel. Direct Play: if a round ends while the local pause card is up, the results card should still take Left/Right and Enter.
 22. During play, M mutes all and N mutes music. The HUD chip should show. Pressing M on the pause card or the audio card still toggles once, not twice. After a dash, the bar is a dark track with a cyan fill that grows back; ready or the burst itself is mint. In Hot Potato the It beacon warms toward white as the fuse drops. Your own camera still hides that beacon.
 23. First Boot visit: the line names the punch key (LMB or E by default) and M/N. It should not say LMB/F. Open Couch or Mode select, then Esc: the first-run line should still be there. Play a round, then Q back to Boot: that line should be gone, and Play should be highlighted. The first countdown says WASD move and Shift sprint. Rematch, and the next countdown, should say to punch the dummy with the orange hat. On the pause card, H opens Controls and stays paused. Digits on who-plays and mode select only move the highlight. Enter or Space confirms.
+24. Set 3 humans on who-plays, then Esc from mode select: you should be back on who-plays with 3 highlighted, not Boot. Esc again: Boot, Couch highlighted, and the next Mode select should still say 3 humans. Opening Mode select from Boot should not change that count. The highlighted mode should be the one you played last.
 
 ## Known leftovers
 
@@ -161,6 +162,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 11. Open Controls from pause, then F1: the panel closes and the round runs. Results and Boot are not covered by that panel. Direct Play results still accept keys if the local pause card was up.
 12. M during play mutes once and shows the chip. N mutes music. The dash bar fill is visible against a dark track. Hot Potato heats the It beacon with the fuse.
 13. First-run Boot copy names the punch key and clears after a round, including Direct Play back to Boot. Opening Couch or Mode select does not clear it. The long countdown hint shows once and says move versus sprint. Rematch uses the short orange-hat line. Boot pause H opens Controls. Digits highlight. Enter / Space confirms.
+14. Who-plays Esc returns to Boot on Couch. Mode select Esc returns to who-plays after Couch, and to Boot after the Mode row. The Mode row does not reset the player count. Highlights match the saved count and the last mode.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

@@ -36,6 +36,7 @@ namespace Tag.Core
         int _menuCursor = 1;
         int _playerCountCursor;
         int _bootFocus;
+        bool _modeFromWhoPlays;
         int _pauseFocus;
         int _looseResultsFocus;
         int _controlsFocus;
@@ -126,6 +127,7 @@ namespace Tag.Core
 
         public void GoToPlayerCount()
         {
+            _playerCountCursor = Mathf.Clamp(LocalPlayerRoster.PlayerCount - 1, 0, 3);
             State = GameFlowState.PlayerCount;
             AudioCuePlayer.Ensure()?.UiClick();
         }
@@ -149,6 +151,7 @@ namespace Tag.Core
 
         public void GoToModeSelect()
         {
+            _menuCursor = Mathf.Clamp((int)SelectedMode, 0, 3);
             State = GameFlowState.ModeSelect;
             AudioCuePlayer.Ensure()?.UiClick();
         }
@@ -374,7 +377,9 @@ namespace Tag.Core
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
                 {
                     AudioCuePlayer.Ensure()?.UiClick();
+                    _bootFocus = 5;
                     State = GameFlowState.Boot;
+                    return;
                 }
                 // Rows are 1..4. Keys used to highlight row 0 while Enter started 2 players.
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _playerCountCursor, 0);
@@ -387,6 +392,7 @@ namespace Tag.Core
                     UnityEngine.Input.GetKeyDown(KeyCode.Space))
                 {
                     LocalPlayerRoster.SetCount(_playerCountCursor + 1);
+                    _modeFromWhoPlays = true;
                     GoToModeSelect();
                 }
             }
@@ -395,7 +401,14 @@ namespace Tag.Core
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
                 {
                     AudioCuePlayer.Ensure()?.UiClick();
-                    State = GameFlowState.Boot;
+                    if (_modeFromWhoPlays)
+                        State = GameFlowState.PlayerCount;
+                    else
+                    {
+                        _bootFocus = 4;
+                        State = GameFlowState.Boot;
+                    }
+                    return;
                 }
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _menuCursor, 0);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _menuCursor, 1);
@@ -438,6 +451,7 @@ namespace Tag.Core
                 {
                     OpenControls();
                     AudioCuePlayer.Ensure()?.UiClick();
+                    return;
                 }
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
                     UnityEngine.Input.GetKeyDown(KeyCode.Space))
@@ -486,7 +500,7 @@ namespace Tag.Core
                     OpenAudio();
                 if (FocusButton(new Rect(cx - 90, cy + 64, 180, 28), 4, ref _bootFocus, "Mode select..."))
                 {
-                    LocalPlayerRoster.SetCount(1);
+                    _modeFromWhoPlays = false;
                     GoToModeSelect();
                 }
                 if (FocusButton(new Rect(cx - 90, cy + 98, 180, 28), 5, ref _bootFocus, "Couch..."))
@@ -502,7 +516,7 @@ namespace Tag.Core
                 DrawRow(cx, cy - 10, 2, "3 humans (bot off)");
                 DrawRow(cx, cy + 25, 3, "4 humans (bot off)");
                 GUI.Label(new Rect(cx - 170, cy + 62, 340, 64),
-                    "1 is solo versus the bot.\n2-4 is couch and the bot stays off.\n1-4 highlights. Enter / Space next. Esc back.");
+                    "1 is solo versus the bot.\n2-4 is couch and the bot stays off.\n1-4 highlights. Enter / Space next. Esc to Boot.");
             }
             else if (State == GameFlowState.ModeSelect)
             {
@@ -515,7 +529,7 @@ namespace Tag.Core
                 DrawMode(cx, cy - 20, 2, "3  Trail Tag   (ribbons eliminate - last standing)");
                 DrawMode(cx, cy + 20, 3, "4  Free play   (punch transfers It - no timer)");
                 GUI.Label(new Rect(cx - 180, cy + 70, 360, 48),
-                    "1-4 highlights. Enter / Space plays.\nEsc back. Up / Down stops at the ends.");
+                    "1-4 highlights. Enter / Space plays.\nEsc steps back. Up / Down stops at the ends.");
             }
             else if (State == GameFlowState.Paused)
             {
@@ -765,7 +779,7 @@ namespace Tag.Core
                 case 2: OpenLook(); break;
                 case 3: OpenAudio(); break;
                 case 4:
-                    LocalPlayerRoster.SetCount(1);
+                    _modeFromWhoPlays = false;
                     GoToModeSelect();
                     break;
                 case 5: GoToPlayerCount(); break;
@@ -829,6 +843,7 @@ namespace Tag.Core
             {
                 _playerCountCursor = index;
                 LocalPlayerRoster.SetCount(index + 1);
+                _modeFromWhoPlays = true;
                 GoToModeSelect();
             }
         }
