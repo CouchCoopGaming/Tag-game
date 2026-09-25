@@ -282,7 +282,9 @@ Already on this branch: A soft landing into a crouch walk absorbs into the low s
 
 Already on this branch: A hard landing into a crouch walk absorbs deeper into the low stride. A soft landing into a crouch walk stays lighter. A hard landing into a still crouch is unchanged. Land time is unchanged.
 
-This delta: A ski into a slide eases the glide into the wedge. A walk into a ski is unchanged. A slide into a stand is unchanged. Ski speed is unchanged. Jet stays off.
+Already on this branch: A ski into a slide eases the glide into the wedge. A walk into a ski is unchanged. A slide into a stand is unchanged. Ski speed is unchanged. Jet stays off.
+
+This delta: A slide into a ski eases the wedge into the glide. A ski into a slide is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
 
 ## Stack snapshot
 
@@ -542,6 +544,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 161. Jump, then crouch walk and land soft: the absorb should stay in the low stride. A hard landing into a crouch walk should feel the same. A soft landing into a still crouch should feel the same. The land should not feel longer.
 162. Jump, then crouch walk and land hard: the absorb should go deeper in the low stride. A soft landing into a crouch walk should stay lighter. A hard landing into a still crouch should feel the same. The land should not feel longer.
 163. Ski, then slide: the glide should ease into the wedge. A walk into a ski should feel the same. A slide into a stand should feel the same. Speed should feel the same. Jet stays off.
+164. Slide, then ski: the wedge should ease into the glide. A ski into a slide should feel the same. A walk into a ski should feel the same. Speed should feel the same. Jet stays off.
 
 ## Known leftovers
 
@@ -725,6 +728,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 151. A soft landing into a crouch walk absorbs into the low stride. A hard landing into a crouch walk is unchanged. A soft landing into a still crouch is unchanged. Land time is unchanged.
 152. A hard landing into a crouch walk absorbs deeper into the low stride. A soft landing into a crouch walk stays lighter. A hard landing into a still crouch is unchanged. Land time is unchanged.
 153. A ski into a slide eases the glide into the wedge. A walk into a ski is unchanged. A slide into a stand is unchanged. Ski speed is unchanged. Jet stays off.
+154. A slide into a ski eases the wedge into the glide. A ski into a slide is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
