@@ -469,6 +469,12 @@ namespace Tag.Art
         bool _skiFromJumpLand;
         bool _crouchFromStand;
         bool _crouchFromWalk;
+        bool _stillCrouchWas;
+        bool _crouchFromJump;
+        float _crouchFromJumpIn;
+        Quaternion _jumpCrouchUaL, _jumpCrouchUaR, _jumpCrouchLaL, _jumpCrouchLaR;
+        Quaternion _jumpCrouchUlL, _jumpCrouchUlR, _jumpCrouchLlL, _jumpCrouchLlR;
+        Quaternion _jumpCrouchSp, _jumpCrouchHp, _jumpCrouchHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -1028,6 +1034,42 @@ namespace Tag.Art
                 _crouchFromStand = true;
             else if ((crouch && speed > 0.35f) || sliding || _dropVis <= 0.001f)
                 _crouchFromStand = false;
+            bool dashPoseNow = (_motor != null && _motor.IsAirDashing) || _airDashPoseWas || _airDashArms;
+            bool jumpStill = !sliding && !jet && speed <= 0.35f && !dashPoseNow && !_jumpFromStill && !_jumpFromCrouchWalk
+                && _diveFromJump
+                && _punchPhaseWas != PunchPhase.Windup && _punchPhaseWas != PunchPhase.Active
+                && _punchPhaseWas != PunchPhase.HitRecover && _punchPhaseWas != PunchPhase.MissRecover
+                && ((grounded && crouch) || (!grounded && _input != null && _input.CrouchHeld && _diveVis <= 0.02f));
+            if (jumpStill && !_stillCrouchWas && !_crouchFromJump && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+            {
+                // The jump eases into the guard. A jump into a ski keeps its ease.
+                // A jump into a slide keeps its ease. Jump height is unchanged.
+                _crouchFromJump = true;
+                _crouchFromJumpIn = 0f;
+                _jumpCrouchUaL = _upperArmL.localRotation;
+                _jumpCrouchUaR = _upperArmR.localRotation;
+                _jumpCrouchLaL = _lowerArmL.localRotation;
+                _jumpCrouchLaR = _lowerArmR.localRotation;
+                _jumpCrouchUlL = _upperLegL.localRotation;
+                _jumpCrouchUlR = _upperLegR.localRotation;
+                _jumpCrouchLlL = _lowerLegL.localRotation;
+                _jumpCrouchLlR = _lowerLegR.localRotation;
+                _jumpCrouchSp = _spine.localRotation;
+                _jumpCrouchHp = _hips.localRotation;
+                _jumpCrouchHd = _head.localRotation;
+            }
+            else if (jumpStill && !_stillCrouchWas && !_crouchFromJump)
+            {
+                _crouchFromJump = true;
+                _crouchFromJumpIn = 1f;
+            }
+            bool inStill = !sliding && !jet && speed <= 0.35f
+                && ((grounded && crouch) || (!grounded && _input != null && _input.CrouchHeld));
+            if (!inStill)
+                _crouchFromJump = false;
+            else if (_crouchFromJump)
+                _crouchFromJumpIn = Mathf.MoveTowards(_crouchFromJumpIn, 1f, dt / 0.04f);
+            _stillCrouchWas = inStill;
             if (crouch && !sliding && speed > 0.35f && speed <= 5.5f && !_dropSlide)
                 _crouchFromWalk = true;
             else if (!crouch || sliding || speed <= 0.35f || speed > 5.5f || _dropVis <= 0.001f)
@@ -2983,7 +3025,7 @@ namespace Tag.Art
             // A still crouch in the air uses the guard. The fall dart stays as it is.
             // A moving crouch eases that fall into the low stride. A still crouch keeps the dart.
             // After an air dash, a still crouch keeps that guard. Jump height is unchanged.
-            bool airStillCrouch = air && !jet && !airDashing
+            bool airStillCrouch = air && !jet && !airDashing && !_crouchFromJump
                 && speed <= 0.35f && _diveVis <= 0.02f
                 && _input != null && _input.CrouchHeld;
             bool airCrouchWalk = air && !jet && !airDashing && (_airDashArms || _armRecover > 0f)
@@ -7553,6 +7595,52 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(Mathf.Lerp(14f, 62f, up), 0f, 0f), intoGrab);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-(6f + Mathf.Max(0f, -kneePhase) * 72f), 0f, 0f), intoGrab);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-(6f + Mathf.Max(0f, kneePhase) * 72f), 0f, 0f), intoGrab);
+            }
+            if (_crouchFromJump && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The jump eases into the guard, then the guard holds.
+                // A run into a slide keeps its ease. A jump into a ski keeps its ease.
+                // A jump into a slide keeps its ease. Jump height is unchanged.
+                float intoGuard = _crouchFromJumpIn;
+                Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion guardR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion guardElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion guardHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion guardHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion guardThighL = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardThighR = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardKneeL = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
+                Quaternion guardKneeR = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
+                if (intoGuard < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_jumpCrouchUaL, guardL, intoGuard);
+                    _uaRT = Quaternion.Slerp(_jumpCrouchUaR, guardR, intoGuard);
+                    _laLT = Quaternion.Slerp(_jumpCrouchLaL, guardElL, intoGuard);
+                    _laRT = Quaternion.Slerp(_jumpCrouchLaR, guardElR, intoGuard);
+                    _spineT = Quaternion.Slerp(_jumpCrouchSp, guardSp, intoGuard);
+                    _hipsT = Quaternion.Slerp(_jumpCrouchHp, guardHp, intoGuard);
+                    _headT = Quaternion.Slerp(_jumpCrouchHd, guardHd, intoGuard);
+                    _ulLT = Quaternion.Slerp(_jumpCrouchUlL, guardThighL, intoGuard);
+                    _ulRT = Quaternion.Slerp(_jumpCrouchUlR, guardThighR, intoGuard);
+                    _llLT = Quaternion.Slerp(_jumpCrouchLlL, guardKneeL, intoGuard);
+                    _llRT = Quaternion.Slerp(_jumpCrouchLlR, guardKneeR, intoGuard);
+                }
+                else
+                {
+                    _uaLT = guardL;
+                    _uaRT = guardR;
+                    _laLT = guardElL;
+                    _laRT = guardElR;
+                    _spineT = guardSp;
+                    _hipsT = guardHp;
+                    _headT = guardHd;
+                    _ulLT = guardThighL;
+                    _ulRT = guardThighR;
+                    _llLT = guardKneeL;
+                    _llRT = guardKneeR;
+                }
             }
             if (_slideFromSprint && !_slideFromSki && !_slideFromCrouch && !_slideFromMiss && !_slideFromReady && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && !punching)
             {
