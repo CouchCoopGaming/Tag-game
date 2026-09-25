@@ -198,7 +198,9 @@ Already on this branch: A soft landing into a sprint absorbs, then opens into th
 
 Already on this branch: A hard landing into a sprint absorbs, then opens into the stride. It does not sit in the buckle. A hard landing into a walk still takes a step.
 
-This delta: Leaving a wall into a sprint opens the hands into the stride. They do not hitch. The leave time is unchanged.
+Already on this branch: Leaving a wall into a sprint opens the hands into the stride. They do not hitch. The leave time is unchanged.
+
+This delta: Leaving a climb into a sprint opens the hands into the stride. They do not hitch. The leave time is unchanged.
 
 ## Stack snapshot
 
@@ -416,6 +418,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 119. Sprint, hop a short hop, and keep sprinting: the knees should absorb, then the stride should open. It should not look like a stop. A hard landing should still absorb.
 120. Sprint, drop hard, and keep sprinting: the knees should absorb, then the stride should open. It should not sit in the buckle. A hard landing into a walk should still take a step.
 121. Wall-run, then sprint off: the hands should open into the stride. They should not hitch. The leave should not feel longer or shorter.
+122. Climb, then sprint off: the hands should open into the stride. They should not hitch. The leave should not feel longer or shorter.
 
 ## Known leftovers
 
@@ -556,7 +559,8 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 108. A crouch walk into a sprint raises the hips and opens the stride. It does not pop. A crouch walk into a walk is unchanged. Speed is unchanged.
 109. A soft landing into a sprint absorbs, then opens into the stride. It does not come to a stop. A hard landing still absorbs. Land time is unchanged.
 110. A hard landing into a sprint absorbs, then opens into the stride. It does not sit in the buckle. A hard landing into a walk still takes a step. Land time is unchanged.
-111. Leaving a wall into a sprint opens the hands into the stride. They do not hitch. The leave time is unchanged. A climb leaves as before.
+111. Leaving a wall into a sprint opens the hands into the stride. They do not hitch. The leave time is unchanged.
+112. Leaving a climb into a sprint opens the hands into the stride. They do not hitch. The leave time is unchanged. A climb into a walk is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
