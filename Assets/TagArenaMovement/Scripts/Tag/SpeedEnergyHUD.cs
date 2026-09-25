@@ -42,7 +42,7 @@ namespace TagArena.Movement
         bool _trailNearActive;
 
         // Trail Tag eliminate - brief center flash when local IsAlive drops (trail hit).
-        const float TrailOutFlashSec = 0.65f;
+        const float TrailOutFlashSec = 1.0f; // match It/Mode/SD flash beat so OUT! / TRAIL HIT reads
         bool _aliveFlashPrimed;
         bool _prevLocalAlive = true;
         float _trailOutFlashUntil;
