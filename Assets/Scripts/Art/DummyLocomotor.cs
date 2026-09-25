@@ -64,6 +64,11 @@ namespace Tag.Art
         Quaternion _hardPunchUaL, _hardPunchUaR, _hardPunchLaL, _hardPunchLaR;
         Quaternion _hardPunchUlL, _hardPunchUlR, _hardPunchLlL, _hardPunchLlR;
         Quaternion _hardPunchSp, _hardPunchHp, _hardPunchHd;
+        bool _punchFromSki;
+        float _punchFromSkiIn;
+        Quaternion _skiPunchUaL, _skiPunchUaR, _skiPunchLaL, _skiPunchLaR;
+        Quaternion _skiPunchUlL, _skiPunchUlR, _skiPunchLlL, _skiPunchLlR;
+        Quaternion _skiPunchSp, _skiPunchHp, _skiPunchHd;
         bool _punchFromDash;
         float _punchFromDashIn;
         bool _tagFromDash;
@@ -1149,6 +1154,32 @@ namespace Tag.Art
                 _punchFromHardIn = Mathf.MoveTowards(_punchFromHardIn, 1f, dt / 0.04f);
             else if (!windupNow)
                 _punchFromHard = false;
+            bool skiPunch = windupNow && !_punchWindWas && !fromJumpPose && !_punchFromJump && !_punchFromDash && !_punchFromSoft && !_punchFromHard
+                && !_jumpFromSki && _skiBlend > 0.2f && !dartAir && !jet && !_dropSlide
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (skiPunch)
+            {
+                // The glide eases into the cock. A ski into a jump keeps its push.
+                // A ski into an air dash keeps its ease. A hard landing into a tag keeps its ease.
+                // Windup time is unchanged. Ski speed is unchanged.
+                _punchFromSki = true;
+                _punchFromSkiIn = 0f;
+                _skiPunchUaL = _upperArmL.localRotation;
+                _skiPunchUaR = _upperArmR.localRotation;
+                _skiPunchLaL = _lowerArmL.localRotation;
+                _skiPunchLaR = _lowerArmR.localRotation;
+                _skiPunchUlL = _upperLegL.localRotation;
+                _skiPunchUlR = _upperLegR.localRotation;
+                _skiPunchLlL = _lowerLegL.localRotation;
+                _skiPunchLlR = _lowerLegR.localRotation;
+                _skiPunchSp = _spine.localRotation;
+                _skiPunchHp = _hips.localRotation;
+                _skiPunchHd = _head.localRotation;
+            }
+            if (windupNow && _punchFromSki)
+                _punchFromSkiIn = Mathf.MoveTowards(_punchFromSkiIn, 1f, dt / 0.04f);
+            else if (!windupNow)
+                _punchFromSki = false;
             _punchWindWas = windupNow;
             bool hitNow = punching && phase == PunchPhase.HitRecover;
             if (hitNow && !_tagHitWas && fromJumpPose && !crouch && !_jumpFromTag
@@ -4257,7 +4288,7 @@ namespace Tag.Art
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
             // A punch from this jump eases into the windup. A tag from this jump eases into the connect.
             // Staying down still absorbs. Land time is unchanged.
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard)
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -5282,6 +5313,31 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulRT, intoCock);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llLT, intoCock);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llRT, intoCock);
+            }
+            if (_punchFromSki && !_punchFromHard && !_punchFromSoft && !_punchFromJump && !_punchFromDash && punching && phase == PunchPhase.Windup && _punchFromSkiIn < 0.98f)
+            {
+                // The glide eases into the cock, then the windup holds.
+                // A ski into a jump keeps its push. A ski into an air dash keeps its ease.
+                // A hard landing into a tag keeps its ease. Windup time is unchanged. Ski speed is unchanged.
+                float into = _punchFromSkiIn;
+                float w = Mathf.Lerp(0.85f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg / 0.35f)));
+                Quaternion windL = _uaL0 * Quaternion.Euler(-28f, 14f, armZ + 18f);
+                Quaternion windR = _uaR0 * Quaternion.Euler(-58f * w, 46f * w, -armZ);
+                Quaternion windElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion windElR = _laR0 * Quaternion.Euler(-68f * w, 0f, 0f);
+                Quaternion windHp = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f);
+                Quaternion windSp = _spine0 * Quaternion.Euler(leanX + 12f * w, -36f * w, leanZ);
+                _uaLT = Quaternion.Slerp(_skiPunchUaL, windL, into);
+                _uaRT = Quaternion.Slerp(_skiPunchUaR, windR, into);
+                _laLT = Quaternion.Slerp(_skiPunchLaL, windElL, into);
+                _laRT = Quaternion.Slerp(_skiPunchLaR, windElR, into);
+                _hipsT = Quaternion.Slerp(_skiPunchHp, windHp, into);
+                _spineT = Quaternion.Slerp(_skiPunchSp, windSp, into);
+                _headT = Quaternion.Slerp(_skiPunchHd, _headT, into);
+                _ulLT = Quaternion.Slerp(_skiPunchUlL, _ulLT, into);
+                _ulRT = Quaternion.Slerp(_skiPunchUlR, _ulRT, into);
+                _llLT = Quaternion.Slerp(_skiPunchLlL, _llLT, into);
+                _llRT = Quaternion.Slerp(_skiPunchLlR, _llRT, into);
             }
             if (_punchFromHard && !_punchFromSoft && !_punchFromJump && !_punchFromDash && punching && phase == PunchPhase.Windup && _punchFromHardIn < 0.98f)
             {
