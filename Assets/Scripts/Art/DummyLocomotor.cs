@@ -176,6 +176,11 @@ namespace Tag.Art
         Quaternion _punchTagUaL, _punchTagUaR, _punchTagLaL, _punchTagLaR;
         Quaternion _punchTagUlL, _punchTagUlR, _punchTagLlL, _punchTagLlR;
         Quaternion _punchTagSp, _punchTagHp, _punchTagHd;
+        bool _tagFromMiss;
+        float _tagFromMissIn;
+        Quaternion _missTagUaL, _missTagUaR, _missTagLaL, _missTagLaR;
+        Quaternion _missTagUlL, _missTagUlR, _missTagLlL, _missTagLlR;
+        Quaternion _missTagSp, _missTagHp, _missTagHd;
         PunchPhase _punchPhaseWas;
         bool _landedFromJump;
         Quaternion _punchUaL, _punchUaR, _punchLaL, _punchLaR;
@@ -1786,6 +1791,32 @@ namespace Tag.Art
                 _tagFromPunchIn = Mathf.MoveTowards(_tagFromPunchIn, 1f, dt / 0.04f);
             else if (!hitNow)
                 _tagFromPunch = false;
+            bool missTag = hitNow && !_tagHitWas && _punchPhaseWas == PunchPhase.MissRecover && !fromJumpPose && !crouch && !_jumpFromTag && !_jumpFromMiss && !_tagFromJump && !_tagFromDash && !_tagFromSoft && !_tagFromHard && !_tagFromSki && !_tagFromSlide && !_tagFromClimb && !_tagFromWall && !_tagFromDart && !_tagFromItClaim && !_tagFromGrapple && !_tagFromReady && !_tagFromPunch
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (missTag)
+            {
+                // The whiff eases into the connect. A tag into a punch keeps its ease.
+                // A punch into a tag keeps its ease. A punch miss into a jump keeps its push.
+                // A punch miss into an air dash keeps its ease. A crouch miss keeps its pose.
+                // Connect time is unchanged.
+                _tagFromMiss = true;
+                _tagFromMissIn = 0f;
+                _missTagUaL = _upperArmL.localRotation;
+                _missTagUaR = _upperArmR.localRotation;
+                _missTagLaL = _lowerArmL.localRotation;
+                _missTagLaR = _lowerArmR.localRotation;
+                _missTagUlL = _upperLegL.localRotation;
+                _missTagUlR = _upperLegR.localRotation;
+                _missTagLlL = _lowerLegL.localRotation;
+                _missTagLlR = _lowerLegR.localRotation;
+                _missTagSp = _spine.localRotation;
+                _missTagHp = _hips.localRotation;
+                _missTagHd = _head.localRotation;
+            }
+            if (hitNow && _tagFromMiss)
+                _tagFromMissIn = Mathf.MoveTowards(_tagFromMissIn, 1f, dt / 0.04f);
+            else if (!hitNow)
+                _tagFromMiss = false;
             bool tagFell = _tagHitWas && !hitNow && !crouch && !_jumpFromTag
                 && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
             if (tagFell)
@@ -4839,7 +4870,7 @@ namespace Tag.Art
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
             // A punch from this jump eases into the windup. A tag from this jump eases into the connect.
             // Staying down still absorbs. Land time is unchanged.
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide && !_tagFromSki && !_tagFromSlide && !_punchFromClimb && !_tagFromClimb && !_punchFromWall && !_tagFromWall && !_punchFromDart && !_tagFromDart && !_punchFromClaim && !_tagFromItClaim && !_punchFromGrapple && !_tagFromGrapple && !_punchFromReady && !_tagFromReady && !_tagFromPunch && !_punchFromTag)
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide && !_tagFromSki && !_tagFromSlide && !_punchFromClimb && !_tagFromClimb && !_punchFromWall && !_tagFromWall && !_punchFromDart && !_tagFromDart && !_punchFromClaim && !_tagFromItClaim && !_punchFromGrapple && !_tagFromGrapple && !_punchFromReady && !_tagFromReady && !_tagFromPunch && !_punchFromTag && !_tagFromMiss)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -6463,6 +6494,25 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(34f, 0f, 0f), intoDart);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
+            }
+            if (_tagFromMiss && !_tagFromPunch && !_tagFromReady && !_tagFromGrapple && !_tagFromItClaim && !_tagFromDart && !_tagFromWall && !_tagFromClimb && !_tagFromSlide && !_tagFromSki && !_tagFromHard && !_tagFromSoft && !_tagFromJump && !_tagFromDash && !_jumpFromTag && punching && phase == PunchPhase.HitRecover && !crouch && _tagFromMissIn < 0.98f)
+            {
+                // The whiff eases into the connect, then the connect holds.
+                // A tag into a punch keeps its ease. A punch into a tag keeps its ease.
+                // A punch miss into a jump keeps its push. A punch miss into an air dash keeps its ease.
+                // A crouch miss keeps its pose. Connect time is unchanged.
+                float intoTag = _tagFromMissIn;
+                _uaLT = Quaternion.Slerp(_missTagUaL, _uaLT, intoTag);
+                _uaRT = Quaternion.Slerp(_missTagUaR, _uaRT, intoTag);
+                _laLT = Quaternion.Slerp(_missTagLaL, _laLT, intoTag);
+                _laRT = Quaternion.Slerp(_missTagLaR, _laRT, intoTag);
+                _spineT = Quaternion.Slerp(_missTagSp, _spineT, intoTag);
+                _hipsT = Quaternion.Slerp(_missTagHp, _hipsT, intoTag);
+                _headT = Quaternion.Slerp(_missTagHd, _headT, intoTag);
+                _ulLT = Quaternion.Slerp(_missTagUlL, _ulLT, intoTag);
+                _ulRT = Quaternion.Slerp(_missTagUlR, _ulRT, intoTag);
+                _llLT = Quaternion.Slerp(_missTagLlL, _llLT, intoTag);
+                _llRT = Quaternion.Slerp(_missTagLlR, _llRT, intoTag);
             }
             if (_tagFromPunch && !_tagFromReady && !_tagFromGrapple && !_tagFromItClaim && !_tagFromDart && !_tagFromWall && !_tagFromClimb && !_tagFromSlide && !_tagFromSki && !_tagFromHard && !_tagFromSoft && !_tagFromJump && !_tagFromDash && !_jumpFromTag && punching && phase == PunchPhase.HitRecover && !crouch && _tagFromPunchIn < 0.98f)
             {
