@@ -1433,7 +1433,7 @@ namespace Tag.Art
                 // trail leg stays in the stride, so it does not read as a stop.
                 // A stand is unchanged. Hold time is unchanged.
                 float walkOn = (1f - hard) * Mathf.Clamp01(walkAmt) * (1f - Mathf.Clamp01(runAmt));
-                if (walkOn > 0.02f)
+                if (walkOn > 0.02f && st != MoveState.Sprint)
                 {
                     if (sinC >= 0f)
                     {
@@ -1444,6 +1444,23 @@ namespace Tag.Art
                     {
                         kR = Mathf.Lerp(kR, kR * 0.5f, walkOn);
                         kL = Mathf.Lerp(kL, kL * kL, walkOn);
+                    }
+                }
+                // A soft landing into a sprint absorbs, then the front leg opens into the stride.
+                // A hard landing still absorbs. Hold time is unchanged.
+                float sprintSoft = (1f - hard) * (st == MoveState.Sprint ? 1f : 0f);
+                if (sprintSoft > 0.02f)
+                {
+                    float open = 1f - Mathf.Clamp01(k);
+                    if (sinC >= 0f)
+                    {
+                        kL = Mathf.Lerp(kL, kL * kL, sprintSoft * open);
+                        kR = Mathf.Lerp(kR, kR * kR, sprintSoft);
+                    }
+                    else
+                    {
+                        kR = Mathf.Lerp(kR, kR * kR, sprintSoft * open);
+                        kL = Mathf.Lerp(kL, kL * kL, sprintSoft);
                     }
                 }
                 // A hard landing into a walk absorbs, then the trail leg takes the step.
