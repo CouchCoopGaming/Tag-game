@@ -6,7 +6,9 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/playground-campus-zones-afc4` (integration tip). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/features-focus-input-hud-238c` — deltas only, rebased on campus tip `9b109ed` (at or after `bc77f45`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+
+Already on that tip (do not re-test as new): 2-frame look/punch resume gate, bots hold on countdown/results/idle, punch DropSwing when the cursor unlocks, HUD MUTED / MUSIC OFF, pause keys 1-5, AudioMaster (M mute, N music). This PR does not change `PgkLandmarkPlacer`, the gate, or AudioMaster.
 
 ## Stack snapshot
 
@@ -104,13 +106,13 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 11. From across a fort the orange hat and beacon should still read. Your punch windup should flare the elbow out beside the head within the same short windup. Holding LMB as It should still cock the fist before the swing.
 12. When a round ends, a center card names the result. One R (or Rematch click) starts the next round from a pad (a second R in the same moment does not restart it again). Esc pause, then F1: the countdown should move. Q, Esc, or Menu from the card returns to Boot, including a direct Play scene. In Trail Tag, after OUT you should see "waiting for the round" until the match ends.
 13. Your own hat should sit on your head without a tall spike in the camera. The dummy's beacon should still read from across a fort. When the dummy is It, you should see the arm cock before the punch, and leaving that range should cancel it. Getting tagged should nudge your camera. Pause resume and quit should click.
-14. Esc during Play pauses. Mouse look should stop and a click on Resume should not punch. A jump you buffered just before Esc should not fire when you resume. HUD flashes should freeze while paused. Direct Play (opened without Boot) still pauses, and Q loads Boot. Left/Right on that pause card changes look speed. Boot's player and mode screens: Esc steps back. Row 1 is you + 1 bot. Rows 2-4 are humans and the bot stays off. The countdown names the mode and counts 3, then 2, then 1. No music bed is expected. A ski entry still makes a tone.
+14. Esc during Play pauses. Mouse look should stop and a click on Resume should not punch. A jump you buffered just before Esc should not fire when you resume. HUD flashes should freeze while paused. Direct Play (opened without Boot) still pauses, and Q loads Boot with the cursor unlocked and the music bed stopped. Direct Play pause matches Boot: Left/Right highlights Resume, Controls, Look, Audio, Quit and stops at the ends. Enter or Space uses that row. Look speed is the Look row (Left/Right there, Esc back without resuming). Keys 1-5 only move the highlight. Boot's player and mode screens: Esc steps back. Row 1 is you + 1 bot. Rows 2-4 are humans and the bot stays off. The countdown names the mode and counts 3, then 2, then 1. No music bed is expected. A ski entry still makes a tone.
 15. Boot and the pause menu have Look sensitivity. Default should feel like the current camera. Left/Right or the arrows step Low, Lower, Default, Higher, High. Esc leaves the panel without unpausing if you opened it from pause. Quit and relaunch: the same step should still be selected. When a solo round ends, the card should say YOU WIN, YOU LOSE, or DRAW, and name the mode and the winners. Rematch and Menu still click.
 16. First Boot visit should say Play is you and one bot in Least It. Controls lists the real keys. Left/Right on that card steps the air dash key (Q, V, Mouse4). Alt still dashes. Default Q should feel the same. Holding jump through Esc should not hop when you resume. Direct Play pause: H opens the same card.
 17. Controls steps punch (LMB, F, Mouse3) with Up/Down or Punch buttons. E still punches. Default LMB should feel the same. Volume stays on the Audio card (Off, Low, Med, Default, Max, M mute). On the results card, clicking Rematch should not punch and the mouse should not turn you. The next countdown should not still be swinging. Direct Play results should unlock the cursor the same way. Direct Play pause: H still changes dash and punch; - / + changes that same volume; M mutes.
-18. Audio: Left/Right is SFX (the master). Up/Down is the music bed only (Low, Default 0.35, High). N still mutes music and leaves SFX. Default bed should sound the same. On the results card, wait a beat, then Left/Right highlights Rematch then Menu and stops at the ends. Enter uses the highlighted button. R still rematches even if Menu is highlighted, and a second R does not. Q and Esc still return to Boot.
-19. Boot: Up/Down highlights Play, Controls, Look, Audio, Mode, Couch and stops at the ends. Enter uses it. With Play highlighted, Enter still starts you and one bot. Keys 1-6 only move the highlight. Pause: Left/Right or 1-5 picks highlights Resume through Quit and stops at the ends. Enter or Space uses it. Esc still resumes and Q still quits. Up/Down on pause is still the music bed.
-20. Who-plays and mode select no longer wrap. Up on the first row and Down on the last row stay put. Keys 1-4 still jump to that row. A click on Boot or Pause moves the highlight, so Esc back from a panel returns to the row you opened.
+18. Audio: Left/Right is SFX (the master). Up/Down is the music bed only (Low, Default 0.35, High). N still mutes music and leaves SFX. Default bed should sound the same. On the results card, Left/Right can move Rematch / Menu during the short arm; Enter does nothing until the arm ends. R still rematches even if Menu is highlighted, and a second R does not. Q and Esc still return to Boot.
+19. Boot: Up/Down highlights Play, Controls, Look, Audio, Mode, Couch and stops at the ends. Enter uses it. With Play highlighted, Enter still starts you and one bot. Keys 1-6 only move the highlight. Pause: Left/Right or 1-5 picks highlights Resume through Quit and stops at the ends. Enter or Space uses it. Esc still resumes and Q still quits. Up/Down on pause is still the music bed. Enter does not also fire a different button than the highlight.
+20. Who-plays and mode select no longer wrap. Up on the first row and Down on the last row stay put. Keys 1-4 still jump to that row. A click on Boot or Pause moves the highlight, so Esc back from a panel returns to the row you opened. Enter uses only the highlighted row. A click uses the row you clicked.
 
 ## Known leftovers
 
@@ -130,8 +132,9 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - Master volume / mute: Boot or pause Audio; Left/Right steps SFX; Up/Down steps the music bed (default 0.35); M mute all; N music only. Saved in PlayerPrefs.
 
 ## Results
-- Rematch / Menu: results ignore input for ~0.25s and one-shot R/Q/Esc/click (Esc mirrors menu) so the round-end key cannot rematch or quit early. Left/Right arms Rematch or Menu (no wrap). Enter uses the armed button. Punch ForceEnd on results and pause.
-- Direct Play pause / Boot pause: M mute, N music, Up/Down music bed; H controls lists N. Boot pause Left/Right arms Resume, Controls, Look, Audio, Quit and stops at the ends. Enter uses that row. Esc still resumes.
+- Rematch / Menu: results ignore activate keys for ~0.25s and one-shot R/Q/Esc/click (Esc mirrors menu) so the round-end key cannot rematch or quit early. Left/Right can move the highlight during that arm and still stop at the ends. Enter waits until the arm ends. A click during the arm only moves the highlight. Punch ForceEnd on results and pause.
+- Direct Play pause matches Boot pause: Left/Right arms Resume, Controls, Look, Audio, Quit and stops at the ends. Enter or Space uses that row. Esc on the main card resumes. Esc inside Controls, Look, or Audio only closes the panel. M mute, N music, Up/Down music bed. H opens Controls. Keys 1-5 only move the highlight. Q to Boot unlocks the cursor and stops the music bed.
+- Boot and pause clicks are mouse-only. Enter/Space uses the highlight and does not also press a different IMGUI button.
 
 ## Shippable slice checklist
 1. F1 Hot Potato / F2 Least It / F3 Trail Tag / F4 Free play start a clean round (menu cursor syncs).
@@ -144,8 +147,9 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
    Near-miss soft edge + TRAIL! starts ~5 m from a foreign ribbon (readability only; hit rules unchanged).
 6. Play path: SW exit, west loop (soft-play bench west of the tubes), NW exit, east loop (NE bench north of the arch, kickball field still open), then the crash cross. Hopscotch corners, swing fall tiles clear of the kickball fence, three Toy_Bridge arches, army/knight 2.4 m rungs plus a spiral climber (top 2.40) that west forts do not have. West forts add a ground slide beside the tubes that the east forts do not have. North of merry: mushroom, spring, and two hop tiles, not a bench. North of the NE arch: a net frame, mushroom steps, a spring rider, and two hop tiles, east of the bars. Soft-play south apron: beam, mushroom, spring, and two hop tiles. West forts add a grounded climber dome (top ~1.31) that the east bunkers do not have. SE pocket south of the SE arch: mushroom, spring, and two hop tiles. Feel was not edited.
 7. Boot Up/Down and pause Left/Right arm a row and stop at the ends. Enter uses it. Play stays the default Boot row.
-8. Who-plays and mode select stop at the first and last row. A Boot or Pause click leaves that row highlighted.
-9. Resume or leave-results: look and punch ignore two frames after the cursor locks (no menu-click yaw or punch).
+8. Who-plays and mode select stop at the first and last row. A Boot or Pause click leaves that row highlighted. Enter does not also fire a different button.
+9. Resume or leave-results: look and punch ignore two frames after the cursor locks (no menu-click yaw or punch). That gate is the tip's `ArmLookPunchGate`, unchanged here.
+10. Direct Play pause uses the same row highlight as Boot pause. Look speed is inside Look. Esc on a subpanel stays paused. Q back to Boot shows the cursor.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

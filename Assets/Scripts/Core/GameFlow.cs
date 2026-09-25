@@ -227,6 +227,8 @@ namespace Tag.Core
         public void QuitToMenu()
         {
             Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
             AudioCuePlayer.Ensure()?.UiClick();
             AudioCuePlayer.Ensure()?.StopMusic();
             SceneManager.LoadScene(bootSceneName);
@@ -553,13 +555,13 @@ namespace Tag.Core
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
             GUI.Box(new Rect(cx - 240, cy - 200, 480, 390), "Controls");
             GUI.Label(new Rect(cx - 220, cy - 170, 440, 250), ControlBinds.Help);
-            if (GUI.Button(new Rect(cx - 220, cy + 88, 100, 26), "Dash <"))
+            if (MenuClick.Button(new Rect(cx - 220, cy + 88, 100, 26), "Dash <"))
                 ControlBinds.CycleDash(-1);
-            if (GUI.Button(new Rect(cx - 112, cy + 88, 100, 26), "Dash >"))
+            if (MenuClick.Button(new Rect(cx - 112, cy + 88, 100, 26), "Dash >"))
                 ControlBinds.CycleDash(1);
-            if (GUI.Button(new Rect(cx + 4, cy + 88, 100, 26), "Punch <"))
+            if (MenuClick.Button(new Rect(cx + 4, cy + 88, 100, 26), "Punch <"))
                 ControlBinds.CyclePunch(-1);
-            if (GUI.Button(new Rect(cx + 112, cy + 88, 100, 26), "Punch >"))
+            if (MenuClick.Button(new Rect(cx + 112, cy + 88, 100, 26), "Punch >"))
                 ControlBinds.CyclePunch(1);
             GUI.Label(new Rect(cx - 220, cy + 122, 440, 48),
                 "Left / Right dash. Up / Down punch. E still punches.\nAlt still dashes. Volume is the Audio card. Esc back.");
@@ -570,9 +572,9 @@ namespace Tag.Core
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
             GUI.Box(new Rect(cx - 200, cy - 90, 400, 180), "Look sensitivity");
             GUI.Label(new Rect(cx - 180, cy - 48, 360, 28), LookSensitivity.Label);
-            if (GUI.Button(new Rect(cx - 150, cy - 10, 80, 28), "<"))
+            if (MenuClick.Button(new Rect(cx - 150, cy - 10, 80, 28), "<"))
                 LookSensitivity.Cycle(-1);
-            if (GUI.Button(new Rect(cx + 70, cy - 10, 80, 28), ">"))
+            if (MenuClick.Button(new Rect(cx + 70, cy - 10, 80, 28), ">"))
                 LookSensitivity.Cycle(1);
             GUI.Label(new Rect(cx - 180, cy + 28, 360, 48),
                 "Left / Right    Esc back\nDefault is the current camera feel");
@@ -583,20 +585,20 @@ namespace Tag.Core
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
             GUI.Box(new Rect(cx - 200, cy - 140, 400, 280), "Audio");
             GUI.Label(new Rect(cx - 180, cy - 108, 360, 28), "SFX  " + AudioMaster.Label);
-            if (GUI.Button(new Rect(cx - 150, cy - 74, 80, 28), "<"))
+            if (MenuClick.Button(new Rect(cx - 150, cy - 74, 80, 28), "<"))
                 AudioMaster.CycleVolume(-1);
-            if (GUI.Button(new Rect(cx + 70, cy - 74, 80, 28), ">"))
+            if (MenuClick.Button(new Rect(cx + 70, cy - 74, 80, 28), ">"))
                 AudioMaster.CycleVolume(1);
             GUI.Label(new Rect(cx - 180, cy - 36, 360, 28), "Music  " + AudioMaster.MusicLabel);
-            if (GUI.Button(new Rect(cx - 150, cy - 4, 80, 28), "<"))
+            if (MenuClick.Button(new Rect(cx - 150, cy - 4, 80, 28), "<"))
                 AudioMaster.CycleMusic(-1);
-            if (GUI.Button(new Rect(cx + 70, cy - 4, 80, 28), ">"))
+            if (MenuClick.Button(new Rect(cx + 70, cy - 4, 80, 28), ">"))
                 AudioMaster.CycleMusic(1);
             string muteLabel = AudioMaster.Muted ? "Unmute (M)" : "Mute (M)";
-            if (GUI.Button(new Rect(cx - 150, cy + 36, 140, 28), muteLabel))
+            if (MenuClick.Button(new Rect(cx - 150, cy + 36, 140, 28), muteLabel))
                 AudioMaster.ToggleMute();
             string musicLabel = AudioMaster.MusicMuted ? "Music on (N)" : "Music off (N)";
-            if (GUI.Button(new Rect(cx + 10, cy + 36, 140, 28), musicLabel))
+            if (MenuClick.Button(new Rect(cx + 10, cy + 36, 140, 28), musicLabel))
                 AudioMaster.ToggleMusicMute();
             GUI.Label(new Rect(cx - 180, cy + 74, 360, 48),
                 "Left / Right SFX    Up / Down music\nM mute all    N music    Esc back");
@@ -670,7 +672,9 @@ namespace Tag.Core
         {
             bool sel = cursor == index;
             if (sel) GUI.Box(new Rect(r.x - 4f, r.y - 4f, r.width + 8f, r.height + 8f), "");
-            if (!GUI.Button(r, (sel ? "> " : "  ") + label)) return false;
+            // Mouse only. Enter/Space is handled in Update from the highlight, so a
+            // different IMGUI focus cannot fire a second row on the same key.
+            if (!MenuClick.Button(r, (sel ? "> " : "  ") + label)) return false;
             cursor = index;
             return true;
         }
@@ -680,7 +684,7 @@ namespace Tag.Core
             bool sel = _playerCountCursor == index;
             var r = new Rect(cx - 120, y, 240, 28);
             if (sel) GUI.Box(r, "");
-            if (GUI.Button(r, (sel ? "> " : "  ") + label))
+            if (MenuClick.Button(r, (sel ? "> " : "  ") + label))
             {
                 _playerCountCursor = index;
                 LocalPlayerRoster.SetCount(index + 1);
@@ -693,11 +697,28 @@ namespace Tag.Core
             bool sel = _menuCursor == index;
             var r = new Rect(cx - 200, y, 400, 28);
             if (sel) GUI.Box(r, "");
-            if (GUI.Button(r, (sel ? "> " : "  ") + label))
+            if (MenuClick.Button(r, (sel ? "> " : "  ") + label))
             {
                 _menuCursor = index;
                 ConfirmModeAndPlay();
             }
+        }
+    }
+
+    /// <summary>
+    /// IMGUI buttons also activate on Enter/Space when Unity's control focus differs
+    /// from the highlight. Menu rows use this so only a real click selects them.
+    /// </summary>
+    public static class MenuClick
+    {
+        public static bool Button(Rect r, string label)
+        {
+            var e = Event.current;
+            bool mouse = e != null
+                && e.type == EventType.MouseUp
+                && e.button == 0
+                && r.Contains(e.mousePosition);
+            return GUI.Button(r, label) && mouse;
         }
     }
 }
