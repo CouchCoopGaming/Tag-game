@@ -738,19 +738,24 @@ namespace Tag.Art
 
             if (_landSquash > 0.08f && grounded && !sliding && !dashing)
             {
-                // Ease into the run targets already in _ulLT. SmoothStep keeps the last bit from popping.
-                // Balance arms come out so the absorb reads at chase distance. Mild A flare only.
+                // Peak absorb is still both knees and the arms out. While moving, the trail
+                // leg and the arms hand off into the live stride first, so the recover is
+                // already a plant. Hold time is unchanged. Mild A flare only.
                 float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_landSquash));
-                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(48f, 0f, 0f), k);
-                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(40f, 0f, 0f), k);
-                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-78f, 0f, 0f), k);
-                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-70f, 0f, 0f), k);
-                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-40f, 18f, armZ), k);
-                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-40f, -18f, -armZ), k);
-                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-22f, 0f, 0f), k);
-                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-22f, 0f, 0f), k);
-                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(18f, 0f, 0f), k);
-                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(26f, 0f, 0f), k);
+                float moving = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                float kRelease = Mathf.Lerp(k, k * k, moving);
+                float kL = sinC >= 0f ? k : kRelease;
+                float kR = sinC >= 0f ? kRelease : k;
+                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(48f, 0f, 0f), kL);
+                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(40f, 0f, 0f), kR);
+                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-78f, 0f, 0f), kL);
+                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-70f, 0f, 0f), kR);
+                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-40f, 18f, armZ), kRelease);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-40f, -18f, -armZ), kRelease);
+                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-22f, 0f, 0f), kRelease);
+                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-22f, 0f, 0f), kRelease);
+                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(18f, 0f, 0f), kRelease);
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(26f, 0f, 0f), kRelease);
             }
 
             bool pulling = _grapple != null && _grapple.IsPulling;
