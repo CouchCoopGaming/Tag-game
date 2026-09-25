@@ -31,6 +31,7 @@ namespace Tag.Art
         float _landHard;
         float _punchTelegraph;
         bool _wasGrounded = true;
+        float _prevSpeed;
         float _pushOff;
         bool _pushLeft;
         bool _jumpFromStill;
@@ -247,6 +248,11 @@ namespace Tag.Art
         Quaternion _crouchWalkDashUaL, _crouchWalkDashUaR, _crouchWalkDashLaL, _crouchWalkDashLaR;
         Quaternion _crouchWalkDashUlL, _crouchWalkDashUlR, _crouchWalkDashLlL, _crouchWalkDashLlR;
         Quaternion _crouchWalkDashSp, _crouchWalkDashHp, _crouchWalkDashHd;
+        bool _dashFromWalk;
+        float _dashFromWalkIn;
+        Quaternion _walkDashUaL, _walkDashUaR, _walkDashLaL, _walkDashLaR;
+        Quaternion _walkDashUlL, _walkDashUlR, _walkDashLlL, _walkDashLlR;
+        Quaternion _walkDashSp, _walkDashHp, _walkDashHd;
         bool _dashFromReady;
         float _dashFromReadyIn;
         Quaternion _readyDashUaL, _readyDashUaR, _readyDashLaL, _readyDashLaR;
@@ -2247,6 +2253,41 @@ namespace Tag.Art
                 _dashFromHardIn = Mathf.MoveTowards(_dashFromHardIn, 1f, dt / 0.04f);
             else if (!dashingAir)
                 _dashFromHard = false;
+            bool walkStride = _wasGrounded && _prevSpeed > 0.35f && _prevSpeed <= 5.5f
+                && !_crouchFromStand && !_crouchWalkArmed && !crouchWalkPose
+                && !_diveFromJump && !dartAir && !jet
+                && _skiBlend <= 0.2f && !_dropSlide && _landSquash <= 0.08f
+                && _dashReady <= 0.2f && _itClaim <= 0.2f && _grapplePose <= 0.04f
+                && phase != PunchPhase.Windup && phase != PunchPhase.Active
+                && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover;
+            if (dashingAir && !_airDashPoseWas && walkStride && !jet
+                && !_jumpFromDash && !_dashFromJump && !_dashFromDart && !_dashFromSki && !_dashFromSlide
+                && !_dashFromClimb && !_dashFromWall && !_dashFromCrouch && !_dashFromPunch && !_dashFromCrouchWalk
+                && !_dashFromReady && !_dashFromMiss && !_dashFromTag && !_dashFromClaim && !_dashFromGrapple
+                && !_dashFromSoft && !_dashFromHard
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+            {
+                // The walk eases into the burst. The burst still holds.
+                // A walk into a jump keeps its ease. A crouch walk into a dash keeps its ease.
+                // A still crouch into a dash keeps its ease. Duration and cooldown are unchanged.
+                _dashFromWalk = true;
+                _dashFromWalkIn = 0f;
+                _walkDashUaL = _upperArmL.localRotation;
+                _walkDashUaR = _upperArmR.localRotation;
+                _walkDashLaL = _lowerArmL.localRotation;
+                _walkDashLaR = _lowerArmR.localRotation;
+                _walkDashUlL = _upperLegL.localRotation;
+                _walkDashUlR = _upperLegR.localRotation;
+                _walkDashLlL = _lowerLegL.localRotation;
+                _walkDashLlR = _lowerLegR.localRotation;
+                _walkDashSp = _spine.localRotation;
+                _walkDashHp = _hips.localRotation;
+                _walkDashHd = _head.localRotation;
+            }
+            if (dashingAir && _dashFromWalk)
+                _dashFromWalkIn = Mathf.MoveTowards(_dashFromWalkIn, 1f, dt / 0.04f);
+            else if (!dashingAir)
+                _dashFromWalk = false;
             if (!dashingAir && _airDashPoseWas && !jet && air && _input != null && _input.CrouchHeld)
             {
                 // The burst eases into the dart. An air crouch into a dash keeps its ease.
@@ -3122,6 +3163,7 @@ namespace Tag.Art
             else
                 _airArmIn = 1f;
             _wasGrounded = grounded;
+            _prevSpeed = speed;
             if (_landHold > 0f)
                 _landHold = Mathf.Max(0f, _landHold - dt);
             else
@@ -5861,6 +5903,24 @@ namespace Tag.Art
                 _spineT = Quaternion.Slerp(_readyDashSp, _spineT, intoBurst);
                 _hipsT = Quaternion.Slerp(_readyDashHp, _hipsT, intoBurst);
                 _headT = Quaternion.Slerp(_readyDashHd, _headT, intoBurst);
+            }
+            if (airDashing && _dashFromWalk && !_dashFromReady && !_dashFromCrouchWalk && !_dashFromPunch && !_dashFromCrouch && !_dashFromJump && !_dashFromDart && !_dashFromSki && !_dashFromSlide && !_dashFromClimb && !_dashFromWall && !_dashFromHard && !_dashFromSoft && !_jumpFromDash && _dashFromWalkIn < 0.98f && !punching)
+            {
+                // The walk eases into the burst, then the burst holds.
+                // A walk into a jump keeps its ease. A crouch walk into a dash keeps its ease.
+                // A still crouch into a dash keeps its ease. Duration and cooldown are unchanged.
+                float intoBurst = _dashFromWalkIn;
+                _uaLT = Quaternion.Slerp(_walkDashUaL, _uaLT, intoBurst);
+                _uaRT = Quaternion.Slerp(_walkDashUaR, _uaRT, intoBurst);
+                _laLT = Quaternion.Slerp(_walkDashLaL, _laLT, intoBurst);
+                _laRT = Quaternion.Slerp(_walkDashLaR, _laRT, intoBurst);
+                _ulLT = Quaternion.Slerp(_walkDashUlL, _ulLT, intoBurst);
+                _ulRT = Quaternion.Slerp(_walkDashUlR, _ulRT, intoBurst);
+                _llLT = Quaternion.Slerp(_walkDashLlL, _llLT, intoBurst);
+                _llRT = Quaternion.Slerp(_walkDashLlR, _llRT, intoBurst);
+                _spineT = Quaternion.Slerp(_walkDashSp, _spineT, intoBurst);
+                _hipsT = Quaternion.Slerp(_walkDashHp, _hipsT, intoBurst);
+                _headT = Quaternion.Slerp(_walkDashHd, _headT, intoBurst);
             }
             if (airDashing && _dashFromWall && !_dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromWallIn < 0.98f && !punching)
             {
