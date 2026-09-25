@@ -218,7 +218,9 @@ Already on this branch: A still crouch into a sprint raises the hips into the lo
 
 Already on this branch: An air dash into a walk ends in the stride. It does not come to a stop. An air dash into a sprint is unchanged. Duration and cooldown are unchanged.
 
-This delta: An air dash into a sprint ends in the long stride. It does not come to a stop. An air dash into a walk still ends in the walk. Duration and cooldown are unchanged.
+Already on this branch: An air dash into a sprint ends in the long stride. It does not come to a stop. An air dash into a walk still ends in the walk. Duration and cooldown are unchanged.
+
+This delta: A jump into a crouch walk absorbs into the low stride. The hips stay down. A still crouch keeps the old absorb. Land time is unchanged.
 
 ## Stack snapshot
 
@@ -446,6 +448,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 129. Crouch still, then sprint: the hips should rise into the long stride. They should not pop. A still crouch into a stand should still rise into the idle breath. A crouch walk into a sprint should feel the same. Speed should feel the same.
 130. Air dash, then walk: the burst should end in the stride. It should not come to a stop. An air dash into a sprint should feel the same. The dash should not last longer, and it should still have to recharge.
 131. Air dash, then sprint: the burst should end in the long stride. It should not come to a stop. An air dash into a walk should still end in the walk. The dash should not last longer, and it should still have to recharge.
+132. Jump, then land into a crouch walk: the landing should absorb into the low stride. The hips should stay down. A still crouch should still use the old absorb. The landing should not feel longer.
 
 ## Known leftovers
 
@@ -597,6 +600,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 119. A still crouch into a sprint raises the hips into the long stride. They do not pop. A still crouch into a stand still rises into the idle breath. A crouch walk into a sprint is unchanged. Speed is unchanged.
 120. An air dash into a walk ends in the stride. It does not come to a stop. An air dash into a sprint is unchanged. Duration and cooldown are unchanged.
 121. An air dash into a sprint ends in the long stride. It does not come to a stop. An air dash into a walk still ends in the walk. Duration and cooldown are unchanged.
+122. A jump into a crouch walk absorbs into the low stride. The hips stay down. A still crouch keeps the old absorb. Land time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
