@@ -570,6 +570,11 @@ namespace Tag.Art
         Quaternion _walkStopUaL, _walkStopUaR, _walkStopLaL, _walkStopLaR;
         Quaternion _walkStopUlL, _walkStopUlR, _walkStopLlL, _walkStopLlR;
         Quaternion _walkStopSp, _walkStopHp, _walkStopHd;
+        bool _walkFromIdle;
+        float _walkFromIdleIn;
+        Quaternion _idleWalkUaL, _idleWalkUaR, _idleWalkLaL, _idleWalkLaR;
+        Quaternion _idleWalkUlL, _idleWalkUlR, _idleWalkLlL, _idleWalkLlR;
+        Quaternion _idleWalkSp, _idleWalkHp, _idleWalkHd;
         float _dropVis;
         bool _dropSlide;
         float _slideToCrouch;
@@ -5069,7 +5074,7 @@ namespace Tag.Art
 
             bool stepping = grounded && speed > 0.35f && !sliding && !crouch;
             // Walk into a sprint eases the walk into the stride, then the sprint holds.
-            // Speed is unchanged. An idle start still uses its own plant.
+            // Speed is unchanged. An idle into a walk has its own ease. A sprint start still uses the plant.
             if (stepping && !air && !dashing && !_airDashArms && runAmt > 0.4f && _prevRunAmt < 0.2f && _runVis < 0.35f)
             {
                 _sprintIn = 0f;
@@ -5135,10 +5140,35 @@ namespace Tag.Art
             }
             else
                 _stopFromWalk = false;
+            // An idle into a walk eases the idle into the stride, then the walk holds.
+            // A still crouch into a walk keeps its ease. A sprint start still uses the plant. Speed is unchanged.
+            if (!_walkFromIdle && !_walkFromStill && !_walkFromCrouchWalk && !_walkFromSki && !_runFromStill && !_runFromCrouchWalk
+                && stepping && !air && !dashing && !_airDashArms && runAmt <= 0.4f && _stepIn < 0.35f
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+            {
+                _walkFromIdle = true;
+                _walkFromIdleIn = 0f;
+                _idleWalkUaL = _upperArmL.localRotation;
+                _idleWalkUaR = _upperArmR.localRotation;
+                _idleWalkLaL = _lowerArmL.localRotation;
+                _idleWalkLaR = _lowerArmR.localRotation;
+                _idleWalkUlL = _upperLegL.localRotation;
+                _idleWalkUlR = _upperLegR.localRotation;
+                _idleWalkLlL = _lowerLegL.localRotation;
+                _idleWalkLlR = _lowerLegR.localRotation;
+                _idleWalkSp = _spine.localRotation;
+                _idleWalkHp = _hips.localRotation;
+                _idleWalkHd = _head.localRotation;
+            }
             if (air)
                 _stepIn = 1f;
             else if (stepping)
-                _stepIn = Mathf.MoveTowards(_stepIn, 1f, dt / 0.32f);
+            {
+                if (_walkFromIdle)
+                    _stepIn = 1f;
+                else
+                    _stepIn = Mathf.MoveTowards(_stepIn, 1f, dt / 0.32f);
+            }
             else if (crouch)
             {
                 float remain = Mathf.Abs(_cycle - Mathf.PI * Mathf.Round(_cycle / Mathf.PI));
@@ -5151,6 +5181,18 @@ namespace Tag.Art
                 if (remain < 0.25f)
                     _stepIn = Mathf.MoveTowards(_stepIn, 0f, dt / 0.12f);
             }
+            if (_walkFromIdle && stepping && !air && !dashing && !_airDashArms && runAmt <= 0.4f
+                && !_walkFromStill && !_walkFromCrouchWalk && !_walkFromSki && !_runFromStill && !_runFromCrouchWalk)
+            {
+                _walkFromIdleIn = Mathf.MoveTowards(_walkFromIdleIn, 1f, dt / 0.04f);
+                if (_walkFromIdleIn >= 0.98f)
+                {
+                    _walkFromIdle = false;
+                    _stepIn = 1f;
+                }
+            }
+            else
+                _walkFromIdle = false;
 
             // Hold the plant and the lift, then cross zero faster - a sine reads as skating.
             // The first step uses the raw sine so it pushes off the plant instead of skating.
@@ -5969,7 +6011,7 @@ namespace Tag.Art
                 float pitchR = RunArmPitch(sinC, amp) - 12f * idle + armBreath + lookAdd * reachR;
                 // Stop and the first step. Hands stay forward and out so they do not drift into the hips.
                 float stopBlend = (!stepping && !air && !sliding && !crouch) ? _stopGait : 0f;
-                float startBlend = (stepping && !air)
+                float startBlend = (stepping && !air && !_walkFromIdle)
                     ? (1f - Mathf.SmoothStep(0f, 1f, _stepIn)) * Mathf.Clamp01(walkAmt + runAmt)
                     : 0f;
                 float armHold = Mathf.Clamp01(Mathf.Max(stopBlend, startBlend));
@@ -6556,7 +6598,7 @@ namespace Tag.Art
                 _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(kneeR, 0f, 0f);
                 // First step pushes off the foot that stays down. The other leg reaches into the stride.
-                float plantW = stepping ? 1f - Mathf.SmoothStep(0f, 1f, _stepIn) : 0f;
+                float plantW = (stepping && !_walkFromIdle) ? 1f - Mathf.SmoothStep(0f, 1f, _stepIn) : 0f;
                 if (plantW > 0.04f && footSki < 0.35f)
                 {
                     if (Mathf.Cos(_cycle) >= 0f)
@@ -10916,6 +10958,26 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_walkStopUlR, _ulRT, intoStop);
                 _llLT = Quaternion.Slerp(_walkStopLlL, _llLT, intoStop);
                 _llRT = Quaternion.Slerp(_walkStopLlR, _llRT, intoStop);
+            }
+            if (_walkFromIdle && _walkFromIdleIn < 0.98f && stepping && !crouch && !sliding && !jet && !punching && !wallRun && !climb
+                && runAmt <= 0.4f && !_walkFromStill && !_walkFromCrouchWalk && !_walkFromSki
+                && !_runFromStill && !_runFromCrouchWalk && !_sprintFromWalk && !_stopFromWalk && !_stopFromSprint)
+            {
+                // The idle eases into the walk, then the walk holds.
+                // A still crouch into a walk has its own ease. A crouch walk into a walk has its own ease.
+                // A ski into a walk has its own ease. The slow plant stays off this path. Speed is unchanged.
+                float intoIdleWalk = _walkFromIdleIn;
+                _uaLT = Quaternion.Slerp(_idleWalkUaL, _uaLT, intoIdleWalk);
+                _uaRT = Quaternion.Slerp(_idleWalkUaR, _uaRT, intoIdleWalk);
+                _laLT = Quaternion.Slerp(_idleWalkLaL, _laLT, intoIdleWalk);
+                _laRT = Quaternion.Slerp(_idleWalkLaR, _laRT, intoIdleWalk);
+                _spineT = Quaternion.Slerp(_idleWalkSp, _spineT, intoIdleWalk);
+                _hipsT = Quaternion.Slerp(_idleWalkHp, _hipsT, intoIdleWalk);
+                _headT = Quaternion.Slerp(_idleWalkHd, _headT, intoIdleWalk);
+                _ulLT = Quaternion.Slerp(_idleWalkUlL, _ulLT, intoIdleWalk);
+                _ulRT = Quaternion.Slerp(_idleWalkUlR, _ulRT, intoIdleWalk);
+                _llLT = Quaternion.Slerp(_idleWalkLlL, _llLT, intoIdleWalk);
+                _llRT = Quaternion.Slerp(_idleWalkLlR, _llRT, intoIdleWalk);
             }
             if (_walkFromStill && _walkFromStillIn < 0.98f && !crouch && !sliding && !jet && !punching && !wallRun && !climb)
             {
