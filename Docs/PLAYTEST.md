@@ -562,7 +562,9 @@ Already on this branch: A walk into a crouch walk eases the walk into the low st
 
 Already on this branch: A run into a crouch walk eases the run into the low stride. The stride then holds. A walk into a crouch walk is unchanged. A run into a still crouch is unchanged. The drop time is unchanged.
 
-This delta: A still crouch into a crouch walk eases the planted guard into the low stride. The stride then holds. A walk into a crouch walk is unchanged. A run into a crouch walk is unchanged. A crouch walk into a still crouch is unchanged.
+Already on this branch: A still crouch into a crouch walk eases the planted guard into the low stride. The stride then holds. A walk into a crouch walk is unchanged. A run into a crouch walk is unchanged. A crouch walk into a still crouch is unchanged.
+
+This delta: A crouch walk into a walk eases the low stride into the walk. The walk then holds. A crouch walk into a run is unchanged. A still crouch into a walk is unchanged. The drop time is unchanged.
 
 ## Stack snapshot
 
@@ -962,6 +964,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 301. Walk, then crouch walk: the walk should ease into the low stride. The stride should then hold. A slide into a crouch walk should feel the same. A walk into a still crouch should feel the same. The stride should not feel longer. The drop should not feel faster. Jet stays off.
 302. Run, then crouch walk: the run should ease into the low stride. The stride should then hold. A walk into a crouch walk should feel the same. A run into a still crouch should feel the same. The stride should not feel longer. The drop should not feel faster. Jet stays off.
 303. Still crouch, then crouch walk: the planted guard should ease into the low stride. The stride should then hold. A walk into a crouch walk should feel the same. A run into a crouch walk should feel the same. A crouch walk into a still crouch should feel the same. The stride should not feel longer. Jet stays off.
+304. Crouch walk, then walk: the low stride should ease into the walk. The walk should then hold. A crouch walk into a run should feel the same. A still crouch into a walk should feel the same. The walk should not feel longer. The drop should not feel faster. Jet stays off.
 
 ## Known leftovers
 
@@ -1285,6 +1288,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 291. A walk into a crouch walk eases the walk into the low stride. The stride then holds. A slide into a crouch walk is unchanged. A walk into a still crouch is unchanged. The drop time is unchanged. Jet stays off.
 292. A run into a crouch walk eases the run into the low stride. The stride then holds. A walk into a crouch walk is unchanged. A run into a still crouch is unchanged. The drop time is unchanged. Jet stays off.
 293. A still crouch into a crouch walk eases the planted guard into the low stride. The stride then holds. A walk into a crouch walk is unchanged. A run into a crouch walk is unchanged. A crouch walk into a still crouch is unchanged. Jet stays off.
+294. A crouch walk into a walk eases the low stride into the walk. The walk then holds. A crouch walk into a run is unchanged. A still crouch into a walk is unchanged. The drop time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
