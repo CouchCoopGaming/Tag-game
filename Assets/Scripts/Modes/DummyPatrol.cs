@@ -27,11 +27,11 @@ namespace Tag.Modes
         [SerializeField] float aggression = 0.92f;
         [SerializeField] float cooldownMin = 0.5f;
         [SerializeField] float cooldownMax = 0.78f;
-        [SerializeField] float decisionHz = 5f;
+        [SerializeField] float decisionHz = 5.2f; // slightly snappier retargets
         [SerializeField] Vector3 centerOffset = Vector3.zero;
         [SerializeField] float closeChaseRange = 3.7f; // slightly earlier close-chase / punch pressure
         [SerializeField] float leadSeconds = 0.35f; // slight extra lead so intercept cuts read
-        [SerializeField] float faceAlignDeg = 16f;
+        [SerializeField] float faceAlignDeg = 15f; // tighter face-up before punch commit
         [Tooltip("Fallback Hot Potato fuse warn window when HotPotatoTuning unavailable.")]
         [SerializeField] float hotPotatoUrgencySec = 10f;
         [Tooltip("Only flee when It is within this planar distance; otherwise wander.")]
