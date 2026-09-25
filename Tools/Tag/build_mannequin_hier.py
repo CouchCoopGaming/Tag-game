@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
-HiPoly hierarchical mannequin v6 — Hybrid III face v0.5 (body v0.4.1 locked)
+HiPoly hierarchical mannequin v6.1 — Hybrid III face v0.5.1 (body v0.4.1 locked)
 
-HEAD SHELL ONLY pass on shipping v0.4.1 body (v5_1):
-  Molded vinyl Hybrid III face relief on the egg — brow, nose (profile tell),
-  mouth slit/bead, slight cheek/chin volume. Keep sensor-dot eyes, temple row
-  of 3, temple quadrant cal. NO painted makeup / visor / cartoon face.
+HEAD SHELL ONLY pass on shipping v0.4.1 body. Supersedes v0.5 orb face.
+  Continuous molded vinyl face — brow/nose/mouth/chin as RELIEF in shell.
+  Eyes = flush dark oval insets (ZERO protruding spheres).
+  Nose = wedge/bridge with defined tip (NOT blob sphere).
+  Mouth = shallow horizontal slit only (NO center bead).
+  Temple row = flat dark disk caps ≤3mm (NOT glossy half-spheres).
+  Temple quadrant cal stays flat decal disk.
 
-Body code unchanged from v5_1. DummyLocomotor bones unchanged.
+Body code unchanged from v5_1 / v6. DummyLocomotor bones unchanged.
 GUID-safe FBX overwrite. NO git push.
 """
 import bpy
@@ -19,7 +22,7 @@ from mathutils import Vector, Euler
 OUT_DIR = "/workspace/tag-unity/Assets/Art/Characters/HiPoly"
 PREV = "/workspace/art-build/previews"
 BLEND = "/workspace/art-build/Dummy_Mannequin_Hier_Hi.blend"
-LOG = "/tmp/hipoly_v50_build.log"
+LOG = "/tmp/hipoly_v51_build.log"
 REF_CRASH = "/workspace/tag-gdd/art/refs/hybrid-iii-v03/ref_hybrid_iii_crash_dummy.jpg"
 
 GUID_TAN = "ad3f2fa97db94e72869d746ecdf8e87d"
@@ -673,7 +676,7 @@ def build_armature():
 
 
 def build_mesh_parts(is_it, mats):
-    """v0.4.1 body + v0.5 molded Hybrid III face. NO continuous remesh."""
+    """v0.4.1 body + v0.5.1 molded Hybrid III face (no orbs). NO continuous remesh."""
     base, accent, over, joint, sensor, metal, bellows_mat, cal_accent, lip_mat = mats
     groups = {k: [] for k in (
         "Hips", "Spine", "Chest", "Neck", "Head",
@@ -687,54 +690,80 @@ def build_mesh_parts(is_it, mats):
         set_mat(ob, m)
         groups[bone].append(ob)
 
-    # --- Head: molded Hybrid III vinyl face on egg (v0.5) + sensors/cal ---
-    # Face toward -Y. Relief only — keep egg silhouette scale (not a glued human skull).
+    # --- Head: molded Hybrid III vinyl face on egg (v0.5.1) — NO orbs ---
+    # Face toward -Y. Brow/nose/mouth/chin = relief IN shell. Eyes/temples = flush pits.
     head = sph("Head", (0, -0.01, 1.73), (0.165, 0.148, 0.200), seg=40, ring=20, sub=True)
 
-    # Brow ridge — soft forehead break, elongated across X, proud ~10–12mm on Y-
-    brow = sph("BrowRidge", (0.0, -0.148, 1.808), (0.100, 0.024, 0.016), seg=28, ring=12)
+    # Brow — continuous soft ridge (one elongated form), low-relief
+    brow = sph("BrowRidge", (0.0, -0.138, 1.814), (0.110, 0.014, 0.010), seg=28, ring=12)
 
-    # Nose — bridge + tip; tip clearly proud in PROFILE (primary tell vs blank egg)
-    nose_bridge = sph("NoseBridge", (0.0, -0.158, 1.760), (0.020, 0.040, 0.032), seg=18, ring=10)
-    nose_tip = sph("NoseTip", (0.0, -0.182, 1.722), (0.016, 0.030, 0.020), seg=16, ring=10)
+    # Nose — Hybrid III wedge: narrow bridge ridge + tapered tip (NOT blob / NOT fat block).
+    # Bridge is a thin vertical slab; tip is a sharp-ish cone pointing -Y.
+    nose_bridge = cube(
+        "NoseBridge", (0.0, -0.158, 1.752),
+        (0.010, 0.042, 0.040), bevel=0.0025)
+    bpy.ops.object.select_all(action="DESELECT")
+    nose_bridge.select_set(True)
+    bpy.context.view_layer.objects.active = nose_bridge
+    nose_bridge.scale = (0.55, 1.0, 1.0)  # very narrow ridge
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    nose_tip = cone(
+        "NoseTip", (0.0, -0.182, 1.718),
+        r1=0.014, r2=0.0025, depth=0.042,
+        rot=(math.radians(90), 0, 0), v=18)
+    bpy.ops.object.select_all(action="DESELECT")
+    nose_tip.select_set(True)
+    bpy.context.view_layer.objects.active = nose_tip
+    nose_tip.scale = (0.62, 1.0, 1.35)  # narrow + taller so tip reads in profile
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
 
-    # Soft cheek volume (slight — egg, not fashion mannequin)
-    cheek_l = sph("Cheek_L", (0.088, -0.118, 1.700), (0.042, 0.032, 0.038), seg=14, ring=8)
-    cheek_r = sph("Cheek_R", (-0.088, -0.118, 1.700), (0.042, 0.032, 0.038), seg=14, ring=8)
+    # Mild chin break only — no cheek orbs
+    chin = sph("Chin", (0.0, -0.115, 1.585), (0.036, 0.024, 0.020), seg=12, ring=8)
 
-    # Chin — slight lower break so egg isn't a sphere
-    chin = sph("Chin", (0.0, -0.128, 1.598), (0.048, 0.038, 0.034), seg=14, ring=8)
-
-    # Boolean-union relief into egg for continuous vinyl shell
-    head = boolean_union(head, [brow, nose_bridge, nose_tip, cheek_l, cheek_r, chin])
-    # Light smooth only — preserve brow/nose edges
-    light_smooth(head, iterations=2)
+    head = boolean_union(head, [brow, nose_bridge, nose_tip, chin])
+    light_smooth(head, iterations=1)
     add("Head", head, base)
 
-    # Shallow eye recesses (carve) then dark SENSOR DOTS (no iris/sclera/eyelids)
+    # Eyes — deep oval recesses + FLAT dark oval PLATES (cube, not cylinder) ≤1.2mm.
+    # Cylinder sidewalls were reading as beads; flat plates stay flush paint-like.
     recess_tools = []
-    for dx in (-0.048, 0.048):
+    for dx in (-0.052, 0.052):
         recess_tools.append(
-            sph(f"EyeRecess_{dx}", (dx, -0.148, 1.738), (0.028, 0.018, 0.026), seg=12, ring=6)
+            sph(f"EyeRecess_{dx}", (dx, -0.152, 1.738), (0.036, 0.030, 0.028), seg=16, ring=10)
         )
     boolean_difference(head, recess_tools)
-    for dx in (-0.048, 0.048):
-        e = sph(f"Eye_{dx}", (dx, -0.136, 1.735), (0.018, 0.010, 0.018), seg=12, ring=6)
+    for dx in (-0.052, 0.052):
+        e = cube(
+            f"Eye_{dx}", (dx, -0.126, 1.735),
+            (0.028, 0.0006, 0.016), bevel=0.0015)
         add("Head", e, sensor)
 
-    # Mouth — shallow horizontal dark slit/bead (neutral; NOT painted lips)
-    mouth = sph("MouthSlit", (0.0, -0.155, 1.662), (0.038, 0.005, 0.007), seg=14, ring=6)
+    # Mouth — shallow horizontal SLIT only (carve + flush strip ≤1mm). No center bead.
+    mouth_carve = cube(
+        "MouthCarve", (0.0, -0.145, 1.652), (0.050, 0.034, 0.0036), bevel=0.0006)
+    boolean_difference(head, [mouth_carve])
+    mouth = cube(
+        "MouthSlit", (0.0, -0.140, 1.652), (0.046, 0.0007, 0.0020), bevel=0.0002)
     add("Head", mouth, sensor)
 
-    # Temple row of 3 sensors (unchanged language)
+    # Temple row of 3 — shallow PIT carve + flat dark disk at pit floor (≤1.8mm).
+    temple_pits = []
     for i, z in enumerate([1.785, 1.735, 1.685]):
-        t = sph(f"Temple_{i}", (0.152, -0.050, z), 0.013, seg=10, ring=5)
+        temple_pits.append(
+            cyl(f"TemplePit_{i}", (0.160, -0.050, z), 0.0125, 0.022,
+                rot=(0, math.radians(90), 0), v=16)
+        )
+    boolean_difference(head, temple_pits)
+    for i, z in enumerate([1.785, 1.735, 1.685]):
+        t = cyl(
+            f"Temple_{i}", (0.146, -0.050, z), 0.010, 0.0015,
+            rot=(0, math.radians(90), 0), v=16)
         add("Head", t, sensor)
 
-    # LARGE temple cal (Hybrid III size) — protrude for front+3/4 read
+    # Temple cal — flat decal disk
     cal_t = cal_quadrant_disk(
-        "CalTemple", (-0.175, -0.020, 1.75),
-        radius=0.048, thick=0.014,
+        "CalTemple", (-0.166, -0.020, 1.75),
+        radius=0.048, thick=0.007,
         accent_mat=cal_accent, black_mat=sensor, axis="X")
     groups["Head"].append(cal_t)
 
@@ -905,7 +934,7 @@ def make_mats(is_it):
     accent = mat("Accent", BLACK if is_it else TEAL, roughness=0.42)
     over = mat("ItOverride", RIM if is_it else BONE, roughness=0.45, emit=(1.0 if is_it else 0.0))
     joint = mat("Joint" + suffix, JOINT, metallic=0.45, roughness=0.32)
-    sensor = mat("Sensor" + suffix, SENSOR, roughness=0.25)
+    sensor = mat("Sensor" + suffix, SENSOR, roughness=0.62)
     metal = mat("Metal" + suffix, METAL, metallic=0.78, roughness=0.28)
     bellows_mat = mat("Bellows" + suffix, DARK_BELLOWS, metallic=0.08, roughness=0.55)
     cal_col = TEAL if not is_it else CAL_YELLOW
@@ -1230,7 +1259,7 @@ def composite_vs_ref(idle_path, out_path):
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
     except Exception:
         font = ImageFont.load_default()
-    draw.text((20, 10), "v0.5 Tan idle (Hybrid III face)", fill=(220, 220, 220, 255), font=font)
+    draw.text((20, 10), "v0.5.1 Tan idle (Hybrid III face)", fill=(220, 220, 220, 255), font=font)
     draw.text((20 + idle_f.width + gap, 10), "Hybrid III ref (PRIMARY)", fill=(220, 220, 220, 255), font=font)
     canvas.convert("RGB").save(out_path)
     log(f"Still {out_path} (vs ref composite)")
@@ -1308,29 +1337,18 @@ def build_variant(is_it, export_path, guid, do_stills_tan=False, do_still_orange
 
     if do_stills_tan:
         pose_idle(arm_ob)
-        idle_front = f"{PREV}/hipoly_v50_idle_front.png"
-        render_shot(idle_front, (0.15, -3.3, 1.40), (0, 0, 1.05))
-        # PROFILE — nose must read (primary face tell vs blank egg)
-        render_shot(f"{PREV}/hipoly_v50_idle_profile.png", (3.4, 0.05, 1.45), (0, 0, 1.10))
-        render_shot(f"{PREV}/hipoly_v50_idle_34.png", (2.3, -2.5, 1.50), (0, 0, 1.05))
-        # Closer head profile for AD nose check
-        render_shot(f"{PREV}/hipoly_v50_head_profile.png", (1.55, 0.02, 1.72), (0, -0.02, 1.72))
-        composite_vs_ref(idle_front, f"{PREV}/hipoly_v50_idle_vs_ref.png")
-        pose_run_knee(arm_ob)
-        render_shot(f"{PREV}/hipoly_v50_run_knee.png", (3.5, 0.1, 1.20), (0, 0, 0.95))
-        pose_slide(arm_ob)
-        measure_slide_grounding(arm_ob)
-        render_shot(f"{PREV}/hipoly_v50_slide_crouch.png", (0.4, -3.8, 0.55), (0, 0, 0.35))
-        pose_punch(arm_ob)
-        render_shot(f"{PREV}/hipoly_v50_punch.png", (2.6, -2.2, 1.35), (0.05, -0.2, 1.25))
-        arm_ob.location = (0, 0, 0)
+        render_shot(f"{PREV}/hipoly_v51_idle_front.png", (0.15, -3.3, 1.40), (0, 0, 1.05))
+        # PROFILE — wedge nose must break egg (primary face tell)
+        render_shot(f"{PREV}/hipoly_v51_idle_profile.png", (3.4, 0.05, 1.45), (0, 0, 1.10))
+        # Closer head profile for AD nose / slit check
+        render_shot(f"{PREV}/hipoly_v51_head_profile.png", (1.55, 0.02, 1.72), (0, -0.02, 1.72))
         reset_pose(arm_ob)
 
     if do_still_orange:
         pose_idle(arm_ob)
-        render_shot(f"{PREV}/hipoly_v50_it_idle_front.png", (0.15, -3.3, 1.40), (0, 0, 1.05))
-        render_shot(f"{PREV}/hipoly_v50_it_idle_profile.png", (3.4, 0.05, 1.45), (0, 0, 1.10))
-        render_shot(f"{PREV}/hipoly_v50_it_head_profile.png", (1.55, 0.02, 1.72), (0, -0.02, 1.72))
+        render_shot(f"{PREV}/hipoly_v51_it_idle_front.png", (0.15, -3.3, 1.40), (0, 0, 1.05))
+        render_shot(f"{PREV}/hipoly_v51_it_idle_profile.png", (3.4, 0.05, 1.45), (0, 0, 1.10))
+        render_shot(f"{PREV}/hipoly_v51_it_head_profile.png", (1.55, 0.02, 1.72), (0, -0.02, 1.72))
         reset_pose(arm_ob)
 
     export_fbx(export_path, arm_ob)
@@ -1348,9 +1366,9 @@ def write_readme():
 DummyLocomotor-bindable **Hybrid III** crash-test dummies — segmented vinyl shells
 + athletic mass (middle path). v0.3 toy / v0.4 smooth mannequin both rejected.
 
-**Pass:** Hybrid III face **v0.5** on body **v0.4.1** (molded vinyl brow/nose/mouth/
-cheek/chin relief on egg; sensor-dot eyes; temple row + cal). Body segmentation
-unchanged from v0.4.1.
+**Pass:** Hybrid III face **v0.5.1** on body **v0.4.1** (molded vinyl brow/nose wedge/
+mouth slit/cheek/chin relief; flush oval eye insets; flat temple disks + cal).
+Supersedes v0.5 orb face. Body segmentation unchanged from v0.4.1.
 
 ## Assets
 | File | Paint |
@@ -1360,7 +1378,7 @@ unchanged from v0.4.1.
 
 ## Bind pose
 - Mild A-pose ~20–35°; hands clear pelvis.
-- Molded Hybrid III face on egg + 2 sensor eyes + temple row of 3 — no visor / painted face.
+- Molded Hybrid III face on egg: wedge nose, mouth slit, flush oval eyes, flat temple disks — no orbs / visor / painted face.
 - Segmented chest plate + pelvis shell; inset waist bellows (~7 ribs); 4 neck rings.
 - Limb shells with soft bead/lip seams; LARGE dark metal hinges; shoe-pad feet.
 - Knees: LowerLeg nests in UpperLeg U-fork.
@@ -1379,15 +1397,15 @@ unchanged from v0.4.1.
 
 
 def main():
-    log("=== hipoly hier v6 Hybrid III face v0.5 (body v0.4.1) ===")
+    log("=== hipoly hier v6.1 Hybrid III face v0.5.1 (body v0.4.1) ===")
     tan = os.path.join(OUT_DIR, "Dummy_Mannequin_Tan_Hier_Hi.fbx")
     orn = os.path.join(OUT_DIR, "Dummy_Mannequin_Orange_Hier_Hi.fbx")
 
-    log("Building Tan/Runner Hier HiPoly v6 (face v0.5)…")
+    log("Building Tan/Runner Hier HiPoly v6.1 (face v0.5.1)…")
     ok_t, ang_t, cx_t, cy_t = build_variant(
         False, tan, GUID_TAN, do_stills_tan=True, do_still_orange=False)
 
-    log("Building Orange/It Hier HiPoly v6 (face v0.5)…")
+    log("Building Orange/It Hier HiPoly v6.1 (face v0.5.1)…")
     ok_o, ang_o, cx_o, cy_o = build_variant(
         True, orn, GUID_ORANGE, do_stills_tan=False, do_still_orange=True)
 
@@ -1396,7 +1414,7 @@ def main():
     log(f"It  OK={ok_o} A-pose={ang_o:.1f}deg clear_x={cx_o:.3f} clear_y={cy_o:.3f}")
     log(f"Tan FBX {os.path.getsize(tan)} bytes guid={GUID_TAN}")
     log(f"Orange FBX {os.path.getsize(orn)} bytes guid={GUID_ORANGE}")
-    log("DONE face v0.5 — no git push (v0.4.1 tip stays live until AD approve)")
+    log("DONE face v0.5.1 — no git push (await AD approve)")
 
 
 if __name__ == "__main__":
