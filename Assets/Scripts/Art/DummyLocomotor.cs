@@ -55,6 +55,12 @@ namespace Tag.Art
         bool _punchFromJump;
         float _punchFromJumpIn;
         bool _punchWindWas;
+        bool _tagFromJump;
+        float _tagFromJumpIn;
+        bool _tagHitWas;
+        Quaternion _tagJumpUaL, _tagJumpUaR, _tagJumpLaL, _tagJumpLaR;
+        Quaternion _tagJumpSp, _tagJumpHp, _tagJumpHd;
+        Quaternion _tagJumpUlL, _tagJumpUlR, _tagJumpLlL, _tagJumpLlR;
         bool _landedFromJump;
         Quaternion _punchUaL, _punchUaR, _punchLaL, _punchLaR;
         Quaternion _punchSp, _punchHp, _punchHd;
@@ -633,6 +639,31 @@ namespace Tag.Art
             else if (!windupNow)
                 _punchFromJump = false;
             _punchWindWas = windupNow;
+            bool hitNow = punching && phase == PunchPhase.HitRecover;
+            if (hitNow && !_tagHitWas && fromJumpPose && !crouch && !_jumpFromTag
+                && _upperArmL != null && _spine != null && _upperLegL != null && _head != null)
+            {
+                // The apex or the landing eases into the connect. A crouch tag keeps its pose.
+                // A tag into a jump keeps its push. Jump height is unchanged.
+                _tagFromJump = true;
+                _tagFromJumpIn = 0f;
+                _tagJumpUaL = _upperArmL.localRotation;
+                _tagJumpUaR = _upperArmR.localRotation;
+                _tagJumpLaL = _lowerArmL.localRotation;
+                _tagJumpLaR = _lowerArmR.localRotation;
+                _tagJumpSp = _spine.localRotation;
+                _tagJumpHp = _hips.localRotation;
+                _tagJumpHd = _head.localRotation;
+                _tagJumpUlL = _upperLegL.localRotation;
+                _tagJumpUlR = _upperLegR.localRotation;
+                _tagJumpLlL = _lowerLegL.localRotation;
+                _tagJumpLlR = _lowerLegR.localRotation;
+            }
+            if (hitNow && _tagFromJump)
+                _tagFromJumpIn = Mathf.MoveTowards(_tagFromJumpIn, 1f, dt / 0.04f);
+            else if (!hitNow)
+                _tagFromJump = false;
+            _tagHitWas = hitNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
             if (air)
                 _airArmIn = Mathf.MoveTowards(_airArmIn, 1f, dt / 0.18f);
@@ -3506,8 +3537,9 @@ namespace Tag.Art
             }
 
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
-            // A punch from this jump eases into the windup. Staying down still absorbs. Land time is unchanged.
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump)
+            // A punch from this jump eases into the windup. A tag from this jump eases into the connect.
+            // Staying down still absorbs. Land time is unchanged.
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -4528,6 +4560,23 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_punchUlR, _ulRT, into);
                 _llLT = Quaternion.Slerp(_punchLlL, _llLT, into);
                 _llRT = Quaternion.Slerp(_punchLlR, _llRT, into);
+            }
+            if (punching && phase == PunchPhase.HitRecover && _tagFromJump && !_jumpFromTag && _tagFromJumpIn < 0.98f)
+            {
+                // The apex or the landing eases into the connect, then the connect holds.
+                // A crouch tag keeps its pose. A tag into a jump keeps its push. Jump height is unchanged.
+                float intoTag = _tagFromJumpIn;
+                _uaLT = Quaternion.Slerp(_tagJumpUaL, _uaLT, intoTag);
+                _uaRT = Quaternion.Slerp(_tagJumpUaR, _uaRT, intoTag);
+                _laLT = Quaternion.Slerp(_tagJumpLaL, _laLT, intoTag);
+                _laRT = Quaternion.Slerp(_tagJumpLaR, _laRT, intoTag);
+                _spineT = Quaternion.Slerp(_tagJumpSp, _spineT, intoTag);
+                _hipsT = Quaternion.Slerp(_tagJumpHp, _hipsT, intoTag);
+                _headT = Quaternion.Slerp(_tagJumpHd, _headT, intoTag);
+                _ulLT = Quaternion.Slerp(_tagJumpUlL, _ulLT, intoTag);
+                _ulRT = Quaternion.Slerp(_tagJumpUlR, _ulRT, intoTag);
+                _llLT = Quaternion.Slerp(_tagJumpLlL, _llLT, intoTag);
+                _llRT = Quaternion.Slerp(_tagJumpLlR, _llRT, intoTag);
             }
 
             float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f || claimAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
