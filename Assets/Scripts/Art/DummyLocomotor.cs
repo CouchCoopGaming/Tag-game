@@ -615,6 +615,13 @@ namespace Tag.Art
         Quaternion _softGuardUaL, _softGuardUaR, _softGuardLaL, _softGuardLaR;
         Quaternion _softGuardUlL, _softGuardUlR, _softGuardLlL, _softGuardLlR;
         Quaternion _softGuardSp, _softGuardHp, _softGuardHd;
+        bool _stillFromDart;
+        float _stillFromDartIn;
+        bool _dartStillWas;
+        bool _dartStillHeld;
+        Quaternion _dartGuardUaL, _dartGuardUaR, _dartGuardLaL, _dartGuardLaR;
+        Quaternion _dartGuardUlL, _dartGuardUlR, _dartGuardLlL, _dartGuardLlR;
+        Quaternion _dartGuardSp, _dartGuardHp, _dartGuardHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -3833,7 +3840,7 @@ namespace Tag.Art
                 _stillFromGrappleIn = Mathf.MoveTowards(_stillFromGrappleIn, 1f, dt / 0.04f);
             if (!_hardLandWas || !inStill)
                 _hardStillHeld = false;
-            bool hardIntoStill = inStill && _hardLandWas && !_hardStillHeld
+            bool hardIntoStill = inStill && _hardLandWas && !_hardStillHeld && !_stillFromDart
                 && phase != PunchPhase.Windup && phase != PunchPhase.Active
                 && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover
                 && !dashPoseNow && !wallRun && !climb
@@ -3866,7 +3873,7 @@ namespace Tag.Art
                 _stillFromHardIn = Mathf.MoveTowards(_stillFromHardIn, 1f, dt / 0.04f);
             if (!_softLandWas || !inStill)
                 _softStillHeld = false;
-            bool softIntoStill = inStill && _softLandWas && !_softStillHeld
+            bool softIntoStill = inStill && _softLandWas && !_softStillHeld && !_stillFromDart
                 && phase != PunchPhase.Windup && phase != PunchPhase.Active
                 && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover
                 && !dashPoseNow && !wallRun && !climb
@@ -3897,6 +3904,39 @@ namespace Tag.Art
                 _stillFromSoft = false;
             else if (_stillFromSoft)
                 _stillFromSoftIn = Mathf.MoveTowards(_stillFromSoftIn, 1f, dt / 0.04f);
+            if (!_dartStillWas || !inStill || !grounded)
+                _dartStillHeld = false;
+            bool dartIntoStill = inStill && grounded && _dartStillWas && !_dartStillHeld
+                && phase != PunchPhase.Windup && phase != PunchPhase.Active
+                && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover
+                && !dashPoseNow && !wallRun && !climb
+                && _itClaim <= 0.2f && _dashReady <= 0.2f
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (dartIntoStill)
+            {
+                // The dart eases into the guard. A soft land into a still crouch keeps its ease.
+                // A hard land into a still crouch keeps its ease. A moving air crouch keeps the flare.
+                // Fall speed is unchanged.
+                _stillFromDart = true;
+                _stillFromDartIn = 0f;
+                _dartStillHeld = true;
+                _dartGuardUaL = _upperArmL.localRotation;
+                _dartGuardUaR = _upperArmR.localRotation;
+                _dartGuardLaL = _lowerArmL.localRotation;
+                _dartGuardLaR = _lowerArmR.localRotation;
+                _dartGuardUlL = _upperLegL.localRotation;
+                _dartGuardUlR = _upperLegR.localRotation;
+                _dartGuardLlL = _lowerLegL.localRotation;
+                _dartGuardLlR = _lowerLegR.localRotation;
+                _dartGuardSp = _spine.localRotation;
+                _dartGuardHp = _hips.localRotation;
+                _dartGuardHd = _head.localRotation;
+            }
+            if (!inStill || !grounded)
+                _stillFromDart = false;
+            else if (_stillFromDart)
+                _stillFromDartIn = Mathf.MoveTowards(_stillFromDartIn, 1f, dt / 0.04f);
             _punchPhaseWas = phase;
             _tagHitWas = hitNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
@@ -7152,37 +7192,41 @@ namespace Tag.Art
                     bool dartStill = crouch && speed <= 0.35f;
                     if (dartStill)
                     {
-                        float into = 1f - hand;
-                        bool hardStill = _landHard >= 0.4f;
-                        float elbow = hardStill ? -80f : -72f;
-                        float hips = hardStill ? 36f : 26f;
-                        float spine = hardStill ? 18f : 12f;
-                        float head = hardStill ? -10f : -8f;
-                        float absorb = Mathf.Clamp01(k);
-                        float thigh = hardStill ? Mathf.Lerp(56f, 70f, absorb) : Mathf.Lerp(56f, 62f, absorb);
-                        float knee = hardStill ? Mathf.Lerp(68f, 96f, absorb) : Mathf.Lerp(68f, 82f, absorb);
-                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-16f, 12f, armZ), hand);
-                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-16f, -12f, -armZ), hand);
-                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-58f, 0f, 0f), hand);
-                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-58f, 0f, 0f), hand);
-                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), into);
-                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), into);
-                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(elbow, 0f, 0f), into);
-                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(elbow, 0f, 0f), into);
-                        _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(46f, 0f, 0f), hand);
-                        _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(24f, 0f, 0f), hand);
-                        _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(12f, 0f, 0f), hand);
-                        _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(spine, 0f, 0f), into);
-                        _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(hips, 0f, 0f), into);
-                        _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(head, 0f, 0f), into);
-                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(34f, 0f, 0f), hand);
-                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(34f, 0f, 0f), hand);
-                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-50f, 0f, 0f), hand);
-                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-50f, 0f, 0f), hand);
-                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(thigh, 0f, 0f), into);
-                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(thigh, 0f, 0f), into);
-                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-knee, 0f, 0f), into);
-                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-knee, 0f, 0f), into);
+                        // The snapshot ease owns this landing. A moving air crouch keeps the flare.
+                        if (!_stillFromDart)
+                        {
+                            float into = 1f - hand;
+                            bool hardStill = _landHard >= 0.4f;
+                            float elbow = hardStill ? -80f : -72f;
+                            float hips = hardStill ? 36f : 26f;
+                            float spine = hardStill ? 18f : 12f;
+                            float head = hardStill ? -10f : -8f;
+                            float absorb = Mathf.Clamp01(k);
+                            float thigh = hardStill ? Mathf.Lerp(56f, 70f, absorb) : Mathf.Lerp(56f, 62f, absorb);
+                            float knee = hardStill ? Mathf.Lerp(68f, 96f, absorb) : Mathf.Lerp(68f, 82f, absorb);
+                            _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-16f, 12f, armZ), hand);
+                            _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-16f, -12f, -armZ), hand);
+                            _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-58f, 0f, 0f), hand);
+                            _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-58f, 0f, 0f), hand);
+                            _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), into);
+                            _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), into);
+                            _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(elbow, 0f, 0f), into);
+                            _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(elbow, 0f, 0f), into);
+                            _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(46f, 0f, 0f), hand);
+                            _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(24f, 0f, 0f), hand);
+                            _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(12f, 0f, 0f), hand);
+                            _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(spine, 0f, 0f), into);
+                            _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(hips, 0f, 0f), into);
+                            _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(head, 0f, 0f), into);
+                            _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(34f, 0f, 0f), hand);
+                            _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(34f, 0f, 0f), hand);
+                            _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-50f, 0f, 0f), hand);
+                            _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-50f, 0f, 0f), hand);
+                            _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(thigh, 0f, 0f), into);
+                            _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(thigh, 0f, 0f), into);
+                            _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-knee, 0f, 0f), into);
+                            _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-knee, 0f, 0f), into);
+                        }
                     }
                     else if (softOpen && !crouch)
                     {
@@ -7301,6 +7345,12 @@ namespace Tag.Art
                 _hardLandWas = false;
                 _softLandWas = false;
             }
+
+            // Last frame's air crouch is the dart a still landing eases from.
+            // A dash recover stays on the dash path. Fall speed is unchanged.
+            _dartStillWas = air && !jet && !airDashing && !(_airDashArms || _armRecover > 0f)
+                && _diveVis > 0.02f
+                && _input != null && _input.CrouchHeld;
 
             bool pulling = _grapple != null && _grapple.IsPulling;
             _grapplePose = Mathf.MoveTowards(_grapplePose, pulling ? 1f : 0f, dt / 0.12f);
@@ -9259,6 +9309,52 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_softGuardUlR, guardThighR, intoGuard);
                     _llLT = Quaternion.Slerp(_softGuardLlL, guardKneeL, intoGuard);
                     _llRT = Quaternion.Slerp(_softGuardLlR, guardKneeR, intoGuard);
+                }
+                else
+                {
+                    _uaLT = guardL;
+                    _uaRT = guardR;
+                    _laLT = guardElL;
+                    _laRT = guardElR;
+                    _spineT = guardSp;
+                    _hipsT = guardHp;
+                    _headT = guardHd;
+                    _ulLT = guardThighL;
+                    _ulRT = guardThighR;
+                    _llLT = guardKneeL;
+                    _llRT = guardKneeR;
+                }
+            }
+            if (_stillFromDart && grounded && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The dart eases into the guard, then the guard holds.
+                // A soft land into a still crouch keeps its ease. A hard land into a still crouch keeps its ease.
+                // Fall speed is unchanged.
+                float intoGuard = _stillFromDartIn;
+                Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion guardR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion guardElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion guardHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion guardHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion guardThighL = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardThighR = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardKneeL = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
+                Quaternion guardKneeR = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
+                if (intoGuard < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_dartGuardUaL, guardL, intoGuard);
+                    _uaRT = Quaternion.Slerp(_dartGuardUaR, guardR, intoGuard);
+                    _laLT = Quaternion.Slerp(_dartGuardLaL, guardElL, intoGuard);
+                    _laRT = Quaternion.Slerp(_dartGuardLaR, guardElR, intoGuard);
+                    _spineT = Quaternion.Slerp(_dartGuardSp, guardSp, intoGuard);
+                    _hipsT = Quaternion.Slerp(_dartGuardHp, guardHp, intoGuard);
+                    _headT = Quaternion.Slerp(_dartGuardHd, guardHd, intoGuard);
+                    _ulLT = Quaternion.Slerp(_dartGuardUlL, guardThighL, intoGuard);
+                    _ulRT = Quaternion.Slerp(_dartGuardUlR, guardThighR, intoGuard);
+                    _llLT = Quaternion.Slerp(_dartGuardLlL, guardKneeL, intoGuard);
+                    _llRT = Quaternion.Slerp(_dartGuardLlR, guardKneeR, intoGuard);
                 }
                 else
                 {
