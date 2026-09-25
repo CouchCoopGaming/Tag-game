@@ -69,6 +69,11 @@ namespace Tag.Art
         Quaternion _skiPunchUaL, _skiPunchUaR, _skiPunchLaL, _skiPunchLaR;
         Quaternion _skiPunchUlL, _skiPunchUlR, _skiPunchLlL, _skiPunchLlR;
         Quaternion _skiPunchSp, _skiPunchHp, _skiPunchHd;
+        bool _punchFromSlide;
+        float _punchFromSlideIn;
+        Quaternion _slidePunchUaL, _slidePunchUaR, _slidePunchLaL, _slidePunchLaR;
+        Quaternion _slidePunchUlL, _slidePunchUlR, _slidePunchLlL, _slidePunchLlR;
+        Quaternion _slidePunchSp, _slidePunchHp, _slidePunchHd;
         bool _punchFromDash;
         float _punchFromDashIn;
         bool _tagFromDash;
@@ -1180,6 +1185,32 @@ namespace Tag.Art
                 _punchFromSkiIn = Mathf.MoveTowards(_punchFromSkiIn, 1f, dt / 0.04f);
             else if (!windupNow)
                 _punchFromSki = false;
+            bool slidePunch = windupNow && !_punchWindWas && !fromJumpPose && !_punchFromJump && !_punchFromDash && !_punchFromSoft && !_punchFromHard && !_punchFromSki
+                && !_jumpFromSlide && _dropSlide && _dropVis > 0.2f && !dartAir && !jet
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (slidePunch)
+            {
+                // The wedge eases into the cock. A ski into a punch keeps its ease.
+                // A slide into a jump keeps its push. A slide into an air dash keeps its ease.
+                // slideBoost stays 0. Windup time is unchanged.
+                _punchFromSlide = true;
+                _punchFromSlideIn = 0f;
+                _slidePunchUaL = _upperArmL.localRotation;
+                _slidePunchUaR = _upperArmR.localRotation;
+                _slidePunchLaL = _lowerArmL.localRotation;
+                _slidePunchLaR = _lowerArmR.localRotation;
+                _slidePunchUlL = _upperLegL.localRotation;
+                _slidePunchUlR = _upperLegR.localRotation;
+                _slidePunchLlL = _lowerLegL.localRotation;
+                _slidePunchLlR = _lowerLegR.localRotation;
+                _slidePunchSp = _spine.localRotation;
+                _slidePunchHp = _hips.localRotation;
+                _slidePunchHd = _head.localRotation;
+            }
+            if (windupNow && _punchFromSlide)
+                _punchFromSlideIn = Mathf.MoveTowards(_punchFromSlideIn, 1f, dt / 0.04f);
+            else if (!windupNow)
+                _punchFromSlide = false;
             _punchWindWas = windupNow;
             bool hitNow = punching && phase == PunchPhase.HitRecover;
             if (hitNow && !_tagHitWas && fromJumpPose && !crouch && !_jumpFromTag
@@ -4288,7 +4319,7 @@ namespace Tag.Art
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
             // A punch from this jump eases into the windup. A tag from this jump eases into the connect.
             // Staying down still absorbs. Land time is unchanged.
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki)
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -5313,6 +5344,31 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulRT, intoCock);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llLT, intoCock);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llRT, intoCock);
+            }
+            if (_punchFromSlide && !_punchFromSki && !_punchFromHard && !_punchFromSoft && !_punchFromJump && !_punchFromDash && punching && phase == PunchPhase.Windup && _punchFromSlideIn < 0.98f)
+            {
+                // The wedge eases into the cock, then the windup holds.
+                // A ski into a punch keeps its ease. A slide into a jump keeps its push.
+                // A slide into an air dash keeps its ease. slideBoost stays 0. Windup time is unchanged.
+                float into = _punchFromSlideIn;
+                float w = Mathf.Lerp(0.85f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg / 0.35f)));
+                Quaternion windL = _uaL0 * Quaternion.Euler(-28f, 14f, armZ + 18f);
+                Quaternion windR = _uaR0 * Quaternion.Euler(-58f * w, 46f * w, -armZ);
+                Quaternion windElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion windElR = _laR0 * Quaternion.Euler(-68f * w, 0f, 0f);
+                Quaternion windHp = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f);
+                Quaternion windSp = _spine0 * Quaternion.Euler(leanX + 12f * w, -36f * w, leanZ);
+                _uaLT = Quaternion.Slerp(_slidePunchUaL, windL, into);
+                _uaRT = Quaternion.Slerp(_slidePunchUaR, windR, into);
+                _laLT = Quaternion.Slerp(_slidePunchLaL, windElL, into);
+                _laRT = Quaternion.Slerp(_slidePunchLaR, windElR, into);
+                _hipsT = Quaternion.Slerp(_slidePunchHp, windHp, into);
+                _spineT = Quaternion.Slerp(_slidePunchSp, windSp, into);
+                _headT = Quaternion.Slerp(_slidePunchHd, _headT, into);
+                _ulLT = Quaternion.Slerp(_slidePunchUlL, _ulLT, into);
+                _ulRT = Quaternion.Slerp(_slidePunchUlR, _ulRT, into);
+                _llLT = Quaternion.Slerp(_slidePunchLlL, _llLT, into);
+                _llRT = Quaternion.Slerp(_slidePunchLlR, _llRT, into);
             }
             if (_punchFromSki && !_punchFromHard && !_punchFromSoft && !_punchFromJump && !_punchFromDash && punching && phase == PunchPhase.Windup && _punchFromSkiIn < 0.98f)
             {
