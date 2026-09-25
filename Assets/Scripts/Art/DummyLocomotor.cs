@@ -60,6 +60,7 @@ namespace Tag.Art
         bool _hasYaw;
         float _grapplePose;
         float _wallExit;
+        bool _exitLeadLeft;
         Quaternion _exitUaL, _exitUaR, _exitLaL, _exitLaR;
         Quaternion _exitUlL, _exitUlR, _exitLlL, _exitLlR;
         Quaternion _exitSpine, _exitHips;
@@ -135,6 +136,7 @@ namespace Tag.Art
             bool mantle = st == MoveState.Mantle;
             bool air = st == MoveState.Air || (!grounded && !climb && !wallRun && !mantle);
             bool onSurf = wallRun || climb;
+            bool leavingSurf = _wasSurf && !onSurf;
             if (onSurf && !_wasSurf)
                 _surfPhase = 0f;
             if (onSurf)
@@ -146,6 +148,8 @@ namespace Tag.Art
             else
                 _surfIn = 0f;
             _wasSurf = onSurf;
+            if (leavingSurf)
+                _cycle = _exitLeadLeft ? Mathf.PI * 0.5f : Mathf.PI * 1.5f;
             // Jump holds a reach while rising. Fall trails the arms once drop speed builds.
             // The jet branch is separate and is not used here.
             float airRise = 0f;
@@ -1003,6 +1007,13 @@ namespace Tag.Art
             if (wallRun || climb)
             {
                 _wallExit = 1f;
+                if (climb)
+                {
+                    float up = Mathf.Lerp(0.8f, (Mathf.Sin(_surfPhase) + 1f) * 0.5f, _surfIn);
+                    _exitLeadLeft = up < 0.5f;
+                }
+                else
+                    _exitLeadLeft = _motor == null || !_motor.WallLeft;
                 _exitUaL = _uaLT;
                 _exitUaR = _uaRT;
                 _exitLaL = _laLT;
@@ -1018,19 +1029,21 @@ namespace Tag.Art
                 _wallExit = 0f;
             else if (_wallExit > 0f)
             {
-                // Leaving a wall run or a climb used to swap onto the run or the fall in one frame.
+                // Hands keep the full exit. Hips and feet ease into the stride
+                // so the wall roll does not pop. Exit time is unchanged.
                 _wallExit = Mathf.MoveTowards(_wallExit, 0f, dt / 0.18f);
                 float w = _wallExit;
+                float body = Mathf.SmoothStep(0f, 1f, w);
                 _uaLT = Quaternion.Slerp(_uaLT, _exitUaL, w);
                 _uaRT = Quaternion.Slerp(_uaRT, _exitUaR, w);
                 _laLT = Quaternion.Slerp(_laLT, _exitLaL, w);
                 _laRT = Quaternion.Slerp(_laRT, _exitLaR, w);
-                _ulLT = Quaternion.Slerp(_ulLT, _exitUlL, w);
-                _ulRT = Quaternion.Slerp(_ulRT, _exitUlR, w);
-                _llLT = Quaternion.Slerp(_llLT, _exitLlL, w);
-                _llRT = Quaternion.Slerp(_llRT, _exitLlR, w);
-                _spineT = Quaternion.Slerp(_spineT, _exitSpine, w);
-                _hipsT = Quaternion.Slerp(_hipsT, _exitHips, w);
+                _ulLT = Quaternion.Slerp(_ulLT, _exitUlL, body);
+                _ulRT = Quaternion.Slerp(_ulRT, _exitUlR, body);
+                _llLT = Quaternion.Slerp(_llLT, _exitLlL, body);
+                _llRT = Quaternion.Slerp(_llRT, _exitLlR, body);
+                _spineT = Quaternion.Slerp(_spineT, _exitSpine, body);
+                _hipsT = Quaternion.Slerp(_hipsT, _exitHips, body);
             }
 
             if (_landSquash > 0.08f && grounded && !sliding && !dashing)
