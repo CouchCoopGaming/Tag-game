@@ -224,12 +224,13 @@ namespace Tag.Art
             _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             // Feet stay in the short glide while the hips are still pitched, then the run opens under them.
             // A walk returns the stride with the step, so the long glide does not skate off.
-            // Ski speed is unchanged. Jet stays off.
+            // A sprint opens that glide into the long stride. Ski speed is unchanged. Jet stays off.
             float footSki = _skiBlend * (2f - _skiBlend);
             float walkSki = !skiing && grounded
                 ? Mathf.Clamp01(speed / 5.5f) * (1f - Mathf.InverseLerp(5.5f, 11.5f, speed))
                 : 0f;
-            float legSki = walkSki > 0.02f || _skiFromWalk || _skiFromSprint ? footSki * footSki : footSki;
+            bool sprintExit = !skiing && grounded && speed > 5.5f;
+            float legSki = walkSki > 0.02f || sprintExit || _skiFromWalk || _skiFromSprint ? footSki * footSki : footSki;
             bool punching = _punch != null && _punch.IsPunching;
             bool lunging = _motor != null && _motor.IsLunging;
             var phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
