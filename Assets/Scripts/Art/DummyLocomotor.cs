@@ -44,6 +44,9 @@ namespace Tag.Art
         float _stopGait;
         float _stopRun;
         float _runVis;
+        float _prevYaw;
+        float _turnVis;
+        bool _hasYaw;
         float _grapplePose;
         float _wallExit;
         Quaternion _exitUaL, _exitUaR, _exitLaL, _exitLaR;
@@ -268,6 +271,28 @@ namespace Tag.Art
             _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? -12f : crouch ? -6f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
             if (idleW > 0.02f)
                 _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-breath * 0.5f, 0f, -sway * 0.35f), idleW);
+
+            Transform yawSrc = _motor != null ? _motor.transform : transform;
+            float yawNow = yawSrc.eulerAngles.y;
+            if (!_hasYaw)
+            {
+                _prevYaw = yawNow;
+                _hasYaw = true;
+            }
+            float yawRate = dt > 0.0001f ? Mathf.DeltaAngle(_prevYaw, yawNow) / dt : 0f;
+            _prevYaw = yawNow;
+            // Positive yaw is a right turn. Visual only. Look speed is unchanged.
+            bool canTurn = grounded && !air && !sliding && !crouch && !dashing && !jet && !wallRun && !climb && !mantle;
+            float turnTarget = canTurn ? Mathf.Clamp(yawRate / 280f, -1f, 1f) : 0f;
+            _turnVis = Mathf.MoveTowards(_turnVis, turnTarget, dt / 0.1f);
+            if (Mathf.Abs(_turnVis) > 0.12f && canTurn)
+            {
+                // Same roll on the chest and the hips. A counter-roll reads as a twist at the waist.
+                float w = Mathf.Clamp01(Mathf.Abs(_turnVis));
+                Quaternion lean = Quaternion.Euler(0f, 0f, _turnVis * 4.5f);
+                _spineT = Quaternion.Slerp(_spineT, _spineT * lean, w);
+                _hipsT = Quaternion.Slerp(_hipsT, _hipsT * lean, w);
+            }
 
             // Arms - slight outward A-pose only (large +Z was V-ing hands into the butt)
             float armZ = Mathf.Lerp(4f, 8f, _runVis);
@@ -557,6 +582,10 @@ namespace Tag.Art
                 float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
                 float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
                 float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
+                // A turn opens both hands a little more. No extra roll, so they stay off the hips.
+                float turnOut = Mathf.Abs(_turnVis) * 5f;
+                yL += turnOut;
+                yR += turnOut;
                 // Both hands rise a little with the breath. Yaw stays out, and roll stays 0 at rest,
                 // so the sway does not fold the hands into the hips.
                 float armBreath = breath * 0.55f * idle;
@@ -764,6 +793,21 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(sThighR, 0f, 0f), _skiBlend);
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(6f + sFrontL * 32f), 0f, 0f), _skiBlend);
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(6f + sFrontR * 32f), 0f, 0f), _skiBlend);
+                }
+                if (Mathf.Abs(_turnVis) > 0.18f && _skiBlend < 0.35f)
+                {
+                    // Outside foot plants. Positive turn is to the right, so the left foot stays down.
+                    float w = Mathf.Clamp01((Mathf.Abs(_turnVis) - 0.15f) / 0.55f);
+                    if (_turnVis > 0f)
+                    {
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(6f, 0f, 0f), w);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-4f, 0f, 0f), w);
+                    }
+                    else
+                    {
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(6f, 0f, 0f), w);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-4f, 0f, 0f), w);
+                    }
                 }
             }
 
