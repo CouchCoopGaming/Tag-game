@@ -72,6 +72,7 @@ namespace Tag.Art
         float _slideToCrouchWalk;
         float _crouchToSlide;
         float _crouchWalkToSlide;
+        float _skiToSlide;
         bool _crouchFromStand;
         bool _crouchFromWalk;
         float _diveVis;
@@ -212,10 +213,13 @@ namespace Tag.Art
             _dropVis = Mathf.MoveTowards(_dropVis, sliding || crouch ? 1f : 0f, dt / 0.16f);
             // A still crouch into a slide eases the guard into the wedge.
             // A crouch walk into a slide eases the low stride into the wedge.
+            // A ski into a slide eases the glide into the wedge. Ski speed is unchanged.
             if (sliding && !_dropSlide && _crouchFromStand && _dropVis > 0.2f)
                 _crouchToSlide = 1f;
             if (sliding && !_dropSlide && _crouchFromWalk && _dropVis > 0.2f)
                 _crouchWalkToSlide = 1f;
+            if (sliding && !_dropSlide && _skiBlend > 0.2f)
+                _skiToSlide = _skiBlend;
             if (sliding)
                 _dropSlide = true;
             else if (crouch)
@@ -247,6 +251,10 @@ namespace Tag.Art
                 _crouchWalkToSlide = 0f;
             else if (_crouchWalkToSlide > 0f)
                 _crouchWalkToSlide = Mathf.MoveTowards(_crouchWalkToSlide, 0f, dt / 0.16f);
+            if (!sliding)
+                _skiToSlide = 0f;
+            else if (_skiToSlide > 0f)
+                _skiToSlide = Mathf.MoveTowards(_skiToSlide, 0f, dt / 0.22f);
             if (crouch && !sliding && speed <= 0.35f)
                 _crouchFromStand = true;
             else if ((crouch && speed > 0.35f) || sliding || _dropVis <= 0.001f)
@@ -1958,6 +1966,33 @@ namespace Tag.Art
                 _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(10f, 0f, 0f), _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
                 _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
                 _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
+            }
+            if (_skiToSlide > 0.02f && sliding && !punching)
+            {
+                // The glide eases into the wedge. A walk into a ski is unchanged.
+                float intoWedge = 1f - _skiToSlide;
+                float glideL = RunArmPitch(-sinC, 16f);
+                float glideR = RunArmPitch(sinC, 16f);
+                bool leadLeft = sinC >= 0f;
+                float wedgeL = leadLeft ? 74f : -28f;
+                float wedgeR = leadLeft ? -28f : 74f;
+                float bendL = leadLeft ? -94f : -6f;
+                float bendR = leadLeft ? -6f : -94f;
+                float footYawL = leadLeft ? 6f : -4f;
+                float footYawR = leadLeft ? -4f : 6f;
+                float glideFrontL = Mathf.Max(0f, sinC);
+                float glideFrontR = Mathf.Max(0f, -sinC);
+                _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-18f + glideL, 22f, armZ), _uaL0 * Quaternion.Euler(-70f, 28f, armZ), intoWedge);
+                _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-18f + glideR, -22f, -armZ), _uaR0 * Quaternion.Euler(-64f, -28f, -armZ), intoWedge);
+                _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-12f, 0f, 0f), _laL0 * Quaternion.Euler(-8f, 0f, 0f), intoWedge);
+                _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-12f, 0f, 0f), _laR0 * Quaternion.Euler(-6f, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler((glideFrontL - glideFrontR * 0.5f) * 32f, 0f, 0f), _ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler((glideFrontR - glideFrontL * 0.5f) * 32f, 0f, 0f), _ulR0 * Quaternion.Euler(wedgeR, footYawR, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-(6f + glideFrontL * 32f), 0f, 0f), _llL0 * Quaternion.Euler(bendL, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-(6f + glideFrontR * 32f), 0f, 0f), _llR0 * Quaternion.Euler(bendR, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(26f, 0f, 0f), _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(14f, 0f, 0f), _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
             }
             if (_surfFromCrouch && onSurf && _surfIn < 0.98f && !punching)
             {
