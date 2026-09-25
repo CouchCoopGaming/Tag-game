@@ -454,7 +454,9 @@ Already on this branch: A grapple release into a ski eases the line into the gli
 
 Already on this branch: A grapple release into a slide eases the line into the wedge. A grapple release into a ski is unchanged. A grapple release into a jump is unchanged. A wall run into a slide is unchanged. A soft landing into a slide is unchanged. slideBoost stays 0. The gate stays off.
 
-This delta: Becoming It into a ski eases the claim into the glide. A grapple release into a slide is unchanged. Becoming It into a punch is unchanged. Becoming It into a jump is unchanged. A grapple release into a ski is unchanged. Claim time is unchanged. Ski speed is unchanged.
+Already on this branch: Becoming It into a ski eases the claim into the glide. A grapple release into a slide is unchanged. Becoming It into a punch is unchanged. Becoming It into a jump is unchanged. A grapple release into a ski is unchanged. Claim time is unchanged. Ski speed is unchanged.
+
+This delta: Becoming It into a slide eases the claim into the wedge. Becoming It into a ski is unchanged. Becoming It into a punch is unchanged. Becoming It into a jump is unchanged. A grapple release into a slide is unchanged. slideBoost stays 0. Claim time is unchanged.
 
 ## Stack snapshot
 
@@ -800,6 +802,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 247. Let go of a grapple, then ski: the line should ease into the glide. An air crouch into a ski should feel the same. A grapple release into a jump should feel the same. A grapple release into a punch should feel the same. An air dash into a ski should feel the same. The glide should not feel longer. The line should not feel longer. The gate stays off. Jet stays off.
 248. Let go of a grapple, then slide: the line should ease into the wedge. A grapple release into a ski should feel the same. A grapple release into a jump should feel the same. A wall run into a slide should feel the same. A soft landing into a slide should feel the same. The slide should not feel faster. The line should not feel longer. The gate stays off. Jet stays off.
 249. Become It, then ski: the claim should ease into the glide. A grapple release into a slide should feel the same. Becoming It into a punch should feel the same. Becoming It into a jump should feel the same. A grapple release into a ski should feel the same. The glide should not feel longer. The claim should not feel longer. Speed should feel the same. Jet stays off.
+250. Become It, then slide: the claim should ease into the wedge. Becoming It into a ski should feel the same. Becoming It into a punch should feel the same. Becoming It into a jump should feel the same. A grapple release into a slide should feel the same. The slide should not feel faster. The claim should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1069,6 +1072,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 237. A grapple release into a ski eases the line into the glide. An air crouch into a ski is unchanged. A grapple release into a jump is unchanged. A grapple release into a punch is unchanged. An air dash into a ski is unchanged. The gate stays off. Ski speed is unchanged. Jet stays off.
 238. A grapple release into a slide eases the line into the wedge. A grapple release into a ski is unchanged. A grapple release into a jump is unchanged. A wall run into a slide is unchanged. A soft landing into a slide is unchanged. slideBoost stays 0. The gate stays off. Jet stays off.
 239. Becoming It into a ski eases the claim into the glide. A grapple release into a slide is unchanged. Becoming It into a punch is unchanged. Becoming It into a jump is unchanged. A grapple release into a ski is unchanged. Claim time is unchanged. Ski speed is unchanged. Jet stays off.
+240. Becoming It into a slide eases the claim into the wedge. Becoming It into a ski is unchanged. Becoming It into a punch is unchanged. Becoming It into a jump is unchanged. A grapple release into a slide is unchanged. slideBoost stays 0. Claim time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
