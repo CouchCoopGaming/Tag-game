@@ -1,16 +1,32 @@
-﻿# HiPoly (Blender 5.2)
-High-subdivision crash dummies / mannequins.
+# HiPoly Hierarchical Mannequins
 
-## Prefer hierarchical for limb anim
-- `Dummy_Mannequin_<Color>_Hier_Hi.fbx` — parented empties (Hips/Spine/Head/UpperArm_*/LowerArm_*/UpperLeg_*/LowerLeg_*) for `DummyLocomotor`.
-- Flat `Dummy_Mannequin_<Color>_Hi.fbx` / `Dummy_Runner_Hi.fbx` / `Dummy_It_Hi.fbx` — sibling meshes only (no limb hierarchy).
+DummyLocomotor-bindable curved crash-test dummies (Navy Spade soft foam + polymer panels + matte rubber joints).
 
-`DummyAvatarBinder` prefers `*_Hier_Hi`, then flat HiPoly, then Navy Spade primitive when `HasBindableBones` fails.
+## Assets
+| File | Paint |
+|------|-------|
+| `Dummy_Mannequin_Tan_Hier_Hi.fbx` | Runner — Base `#E8D9C0`, Accent `#2BB3A3` chest band + limb stripes |
+| `Dummy_Mannequin_Orange_Hier_Hi.fbx` | It — Base `#FF6A00`, Accent black nested downward-V chevrons chest + outer thighs |
 
-Rebuild: Blender 5.2 `--background --python Tools/Tag/build_mannequin_hier.py`
-(Scratch mirror: `C:\Users\Zubal\Dev\_ororo_scratch\Tag\hipoly\build_mannequin_hier.py`)
+## Bind pose
+- **Mild A-pose** — upper arms ~25–30° off torso, elbows soft, wrists neutral.
+- Hands / forearms **clear pelvis / butt** (no V-into-butt).
+- Mitten hands; egg head + black sensor dots only — **no visor**.
 
-Colors: Blue, Mint, Orange, Lavender, Tan, Red. Export `-Z` forward, `Y` up.
+## Bone hierarchy (DummyLocomotor — names unchanged)
+`Root` → `Hips` → `Spine` → `Chest` → `Neck` → `Head`  
+`Hips` → `UpperLeg_L/R` → `LowerLeg_L/R` → `Foot_L/R`  
+`Chest` → `Shoulder_L/R` → `UpperArm_L/R` → `LowerArm_L/R` → `Hand_L/R`
 
-Navy Spade look: soft body foam + saturated polymer panel inlays + near-black matte rubber joints
-(chest/pelvis/neck/hands/feet). Bone names unchanged for `DummyLocomotor`.
+Required aliases present: `Hips`, `Spine`, `Head`, `UpperArm_*`, `LowerArm_*`, `UpperLeg_*`, `LowerLeg_*`.  
+**LowerLeg is a real bend joint under UpperLeg** (knee hinge readable).
+
+## Mat slots
+`Base`, `Accent`, `ItOverride` (match Dummy_Runner / Dummy_It).
+
+## Export
+`-Z` forward, `+Y` up. Rebuild: Blender 4.x  
+`blender -b -P /workspace/art-build/scripts/build_mannequin_hier_v2.py`
+
+## Stills
+`/workspace/art-build/previews/hipoly_*.png` — idle front/3-4, run knee, slide crouch, punch, It idle.
