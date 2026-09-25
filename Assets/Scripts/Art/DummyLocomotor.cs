@@ -946,16 +946,31 @@ namespace Tag.Art
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 6f * r, 0f, leanZ), 0.35f);
                     // Standing, both fists ease into the idle hang so they do not freeze and then pop.
                     // A walk returns them to the stride. A sprint returns them to the long stride.
+                    // A still crouch eases into the guard. A crouch walk keeps the walk return.
                     // Windup time is unchanged.
                     float moving = grounded ? Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)) : 0f;
                     float standing = grounded ? 1f - moving : 0f;
+                    bool crouchMiss = grounded && crouch && speed <= 0.35f;
                     float walkMiss = grounded ? Mathf.Clamp01(walkAmt) * (1f - Mathf.Clamp01(runAmt)) : 0f;
                     float sprintMiss = grounded && (st == MoveState.Sprint || runAmt > 0.4f) ? 1f : 0f;
-                    if (sprintMiss > 0.02f)
+                    if (sprintMiss > 0.02f || crouchMiss)
                         walkMiss = 0f;
+                    if (crouchMiss)
+                        sprintMiss = 0f;
                     float missEase = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg));
-                    float intoIdle = walkMiss > 0.02f || sprintMiss > 0.02f ? 0f : missEase * standing;
-                    if (sprintMiss > 0.02f)
+                    float intoIdle = crouchMiss || walkMiss > 0.02f || sprintMiss > 0.02f ? 0f : missEase * standing;
+                    if (crouchMiss)
+                    {
+                        // The whiff eases into the guard. It does not rise into the idle hang.
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), missEase);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), missEase);
+                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-72f, 0f, 0f), missEase);
+                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-72f, 0f, 0f), missEase);
+                        _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(10f, 0f, 0f), missEase);
+                        _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), missEase);
+                        _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-6f, 0f, 0f), missEase);
+                    }
+                    else if (sprintMiss > 0.02f)
                     {
                         float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
                         float amp = Mathf.Lerp(36f, 64f, gait);

@@ -256,7 +256,9 @@ Already on this branch: A wall run into a still crouch eases into the guard. A c
 
 Already on this branch: A climb into a crouch walk eases into the low stride. A still crouch still ends in the guard. A wall run into a crouch walk is unchanged. The leave time is unchanged.
 
-This delta: A wall run into a crouch walk eases into the low stride. A climb into a crouch walk is unchanged. A still crouch still ends in the guard. The leave time is unchanged.
+Already on this branch: A wall run into a crouch walk eases into the low stride. A climb into a crouch walk is unchanged. A still crouch still ends in the guard. The leave time is unchanged.
+
+This delta: A punch that misses in a still crouch eases into the guard. A standing miss still eases into the idle hang. A walk miss and a sprint miss are unchanged. Windup time is unchanged.
 
 ## Stack snapshot
 
@@ -503,6 +505,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 148. Wall-run, then crouch still: the body should ease into the guard. It should not stay on the wall. A climb into a still crouch should feel the same. A wall run into a walk should feel the same. The leave should not feel longer.
 149. Climb, then crouch walk: the body should ease into the low stride. A still crouch should still end in the guard. A wall run into a crouch walk should feel the same. The leave should not feel longer.
 150. Wall-run, then crouch walk: the body should ease into the low stride. A climb into a crouch walk should feel the same. A still crouch should still end in the guard. The leave should not feel longer.
+151. Crouch still, then miss a punch: the fists should ease into the guard. A standing miss should still ease into the idle hang. A walk miss and a sprint miss should feel the same. The cock should not feel longer.
 
 ## Known leftovers
 
@@ -673,6 +676,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 138. A wall run into a still crouch eases into the guard. A climb into a still crouch is unchanged. A wall run into a walk is unchanged. The leave time is unchanged.
 139. A climb into a crouch walk eases into the low stride. A still crouch still ends in the guard. A wall run into a crouch walk is unchanged. The leave time is unchanged.
 140. A wall run into a crouch walk eases into the low stride. A climb into a crouch walk is unchanged. A still crouch still ends in the guard. The leave time is unchanged.
+141. A punch that misses in a still crouch eases into the guard. A standing miss still eases into the idle hang. A walk miss and a sprint miss are unchanged. Windup time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
