@@ -57,6 +57,8 @@ namespace Tag.Art
         float _idlePhase;
         bool _swayIdle;
         float _stepIn;
+        float _sprintIn = 1f;
+        float _prevRunAmt;
         float _dropVis;
         bool _dropSlide;
         float _diveVis;
@@ -325,6 +327,13 @@ namespace Tag.Art
                 _runVis = runAmt;
 
             bool stepping = grounded && speed > 0.35f && !sliding && !crouch;
+            // Walk into a sprint pushes off the back foot, then the stride opens.
+            // Speed is unchanged. An idle start still uses its own plant.
+            if (stepping && !air && !dashing && !_airDashArms && runAmt > 0.4f && _prevRunAmt < 0.2f && _runVis < 0.35f)
+                _sprintIn = 0f;
+            _prevRunAmt = runAmt;
+            if (_sprintIn < 1f)
+                _sprintIn = Mathf.MoveTowards(_sprintIn, 1f, dt / 0.32f);
             if (air)
                 _stepIn = 1f;
             else if (stepping)
@@ -1097,6 +1106,21 @@ namespace Tag.Art
                     {
                         _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(-6f, 0f, 0f), plantW);
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-4f, 0f, 0f), plantW);
+                    }
+                }
+                float pushW = (_sprintIn < 0.98f && stepping && footSki < 0.35f) ? 1f - Mathf.SmoothStep(0f, 1f, _sprintIn) : 0f;
+                if (pushW > 0.04f)
+                {
+                    // The back foot pushes. The front leg keeps the reach into the sprint.
+                    if (sinC >= 0f)
+                    {
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(-6f, 0f, 0f), pushW);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-4f, 0f, 0f), pushW);
+                    }
+                    else
+                    {
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(-6f, 0f, 0f), pushW);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-4f, 0f, 0f), pushW);
                     }
                 }
                 if (stopping && _stopPlant > 0.02f && footSki < 0.35f && _dropVis < 0.35f)
