@@ -290,7 +290,7 @@ namespace Tag.Art
                     float w = Mathf.Lerp(0.55f, 1f, punchProg);
                     // Fist behind the spine vanishes in the chase cam. Flare the elbow out beside the head.
                     // Timing stays the authored 0.12s windup; a bit more elbow yaw so the cock reads in TP.
-                    _uaRT = _uaR0 * Quaternion.Euler(28f * w, -22f * w, -56f - 16f * w);
+                    _uaRT = _uaR0 * Quaternion.Euler(28f * w, -26f * w, -56f - 16f * w); // extra elbow yaw for TP cock read
                     _laRT = _laR0 * Quaternion.Euler(-40f - 72f * w, 0f, 0f);
                     _hipsT = _hips0 * Quaternion.Euler(14f + 8f * w, -24f * w, 0f);
                     _spineT = _spine0 * Quaternion.Euler(leanX + 12f * w, -32f * w, leanZ);
@@ -364,7 +364,7 @@ namespace Tag.Art
                 // Dummy It cocks before QueuePunch. Match the flared windup elbow so the tell reads in TP.
                 // The real windup is still only 0.12s; this is the hold pose before QueuePunch.
                 float k = Mathf.Clamp01(_punchTelegraph / 0.2f);
-                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(28f, -22f, -72f), k);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(28f, -26f, -72f), k); // match windup elbow yaw
                 _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-112f, 0f, 0f), k);
                 _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 12f, -32f, leanZ), k);
             }
