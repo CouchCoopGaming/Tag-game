@@ -37,6 +37,7 @@ namespace Tag.Art
         float _dashTrailT;
         float _tagFlinch;
         float _itClaim;
+        float _skiBlend;
         bool _wasLunging;
         bool _wasAirDashing;
         bool _wasJetting;
@@ -119,6 +120,8 @@ namespace Tag.Art
                 airFall = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-0.4f, -5.5f, vy));
             }
             bool crouch = st == MoveState.Crouch;
+            bool skiing = st == MoveState.Ski;
+            _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.16f);
             bool punching = _punch != null && _punch.IsPunching;
             bool lunging = _motor != null && _motor.IsLunging;
             var phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
@@ -172,7 +175,10 @@ namespace Tag.Art
             float cadence = Mathf.Lerp(7.2f, 11.2f, runAmt);
             // Keep a soft air/vault cycle so limbs stay energetic off the ground
             if (grounded && speed > 0.35f && !sliding && !crouch)
-                _cycle += dt * cadence;
+            {
+                float rate = Mathf.Lerp(cadence, 5.2f, _skiBlend);
+                _cycle += dt * rate;
+            }
             else if (air && !jet)
                 _cycle += dt * Mathf.Lerp(5.5f, 9f, runAmt);
             else if (!jet)
@@ -187,6 +193,8 @@ namespace Tag.Art
             // Spine / hips lean by state - jet reads clearly in TP
             float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : sliding ? 76f : crouch ? 28f : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : 0f;
+            if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
+                leanX = Mathf.Lerp(leanX, 26f, _skiBlend);
             if (flinchAmt > 0.04f)
                 leanX = Mathf.Lerp(leanX, 22f, flinchAmt);
             if (claimAmt > 0.04f)
@@ -206,6 +214,8 @@ namespace Tag.Art
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
             float mantleAmt = mantle && _motor != null ? _motor.MantleProgress : 0f;
             _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : sliding ? 50f : crouch ? 14f : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
+            if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
+                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f, 0f, 0f), _skiBlend);
             _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? 18f : crouch ? 6f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
             // Arms - slight outward A-pose only (large +Z was V-ing hands into the butt)
@@ -458,6 +468,14 @@ namespace Tag.Art
                 float elbowR = Mathf.Lerp(-18f, -8f, idle) - Mathf.Max(0f, sinC) * Mathf.Lerp(28f, 58f, runAmt);
                 _laLT = _laL0 * Quaternion.Euler(elbowL, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(elbowR, 0f, 0f);
+                if (_skiBlend > 0.02f)
+                {
+                    // Skate is a wide balance, not the run's opposing swing. The blend eases both ways.
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-22f, 30f, armZ), _skiBlend);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-22f, -30f, -armZ), _skiBlend);
+                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-12f, 0f, 0f), _skiBlend);
+                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-12f, 0f, 0f), _skiBlend);
+                }
             }
 
             if (_punchTelegraph > 0.02f && !punching)
@@ -623,6 +641,17 @@ namespace Tag.Art
                 float kneeR = -(2f + frontR * kneeAmt);
                 _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(kneeR, 0f, 0f);
+                if (_skiBlend > 0.02f)
+                {
+                    float sFrontL = Mathf.Max(0f, sinC);
+                    float sFrontR = Mathf.Max(0f, -sinC);
+                    float sThighL = (sFrontL - sFrontR * 0.4f) * 16f;
+                    float sThighR = (sFrontR - sFrontL * 0.4f) * 16f;
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(sThighL, 0f, 0f), _skiBlend);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(sThighR, 0f, 0f), _skiBlend);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(4f + sFrontL * 14f), 0f, 0f), _skiBlend);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(4f + sFrontR * 14f), 0f, 0f), _skiBlend);
+                }
             }
 
             if (_landSquash > 0.08f && grounded && !sliding && !dashing)

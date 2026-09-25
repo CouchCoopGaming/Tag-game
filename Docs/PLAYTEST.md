@@ -46,7 +46,9 @@ Already on this branch: After an air dash the arms stay in the hang and ease int
 
 Already on this branch: A tag catch is a long V of arms in front of the chest, with both knees bent. It stays distinct from the new It's claim.
 
-This delta: Starting a run keeps the hands out of the hips. The idle hang stays slightly forward, and a small outward flare remains once the stride is moving. Resting arms do not pick up extra roll.
+Already on this branch: Starting a run keeps the hands out of the hips. Resting arms do not pick up extra roll.
+
+This delta: Skiing eases into a lower, longer skate with the arms out for balance. Letting go eases back into the run stride. It should not pop, and it should not look like the sprint. Jet stays off. Ski speed is unchanged.
 
 ## Stack snapshot
 
@@ -188,6 +190,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 43. Air dash: the arms throw back at the start, then ease down before the streak ends. When the streak ends they should keep easing forward. They should not throw back again. The burst should still feel short.
 44. Tag someone: the runner who was hit should show a long V of arms, not a fold at the chest, and both knees should bend. The new It should still raise both arms and lift one knee. The two poses should not match, and neither should look like a landing.
 45. Stand still, then sprint: the hands should stay outside the hips the whole way into the stride. They should not tuck in as the walk starts, and they should not twist into the pelvis at a standstill.
+46. Hold ski, then let go into a sprint: the body should ease into a lower glide with the arms out, then ease back into the run. It should not pop, and the glide should not look like the sprint. Jet stays off.
 
 ## Known leftovers
 
@@ -253,6 +256,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 33. After an air dash the arms ease out of the hang. They do not whip again when the burst ends. Dash time and cooldown are unchanged.
 34. Tag catch is a long V of arms with both knees bent. Hands stay clear of the chest. The new It still lifts one knee. Neither pose matches a landing.
 35. Idle into a run keeps the hands outside the hips. Resting arms have no extra roll. The stride still opposes the front leg.
+36. Ski eases into a lower glide with the arms out, then eases back into the run. It does not pop. Jet stays off. Ski speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
