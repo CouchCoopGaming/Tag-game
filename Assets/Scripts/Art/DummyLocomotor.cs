@@ -117,7 +117,7 @@ namespace Tag.Art
                 float t = Mathf.Clamp01(Mathf.InverseLerp(soft, hard, impact));
                 // Ease-in so mid falls stay readable but terminal velocity punches.
                 // Slightly stronger mid-band so a park hop-off reads without waiting for stun speed.
-                _landSquash = Mathf.Clamp(Mathf.Lerp(0.28f, 1.35f, t * t), 0.28f, 1.35f);
+                _landSquash = Mathf.Clamp(Mathf.Lerp(0.28f, 1.40f, t * t), 0.28f, 1.40f); // park hop-off punchier mid squash
             }
             _wasGrounded = grounded;
             float recover = Mathf.Lerp(8.2f, 5.4f, Mathf.Clamp01(_landSquash)); // snappier park hop-off settle
