@@ -6,11 +6,11 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/playground-campus-zones-afc4` (integration tip). PR #20 CloseMenuPanels (`c9e1066` / `fe2f574`) on tip. Campus smoke `5fc75d2`. Mega tubes unused (`0004d3e` + KIT_REQUEST). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/features-focus-input-hud-238c` on campus tip `87abc8c`. PR #20 CloseMenuPanels is already on the tip. Campus smoke `5fc75d2`. Mega tubes unused (`0004d3e` + KIT_REQUEST). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
-Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing when the cursor unlocks, HUD mute chip (MUTED and MUSIC OFF together when both are on), pause keys 1-5, AudioMaster (M mute, N music), Controls/Look/Audio subpanel Up/Down highlight matching Boot (PR #20). No PgkLandmarkPlacer density adds. No MasterVolume type.
+Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing when the cursor unlocks, HUD mute chip (MUTED and MUSIC OFF together), pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6 m (avoid weight 0.80), It hat beacon hidden on your own chase cam, It-hunt compass pulse from 13 m, warm OUT waiting line. No PgkLandmarkPlacer density adds. No MasterVolume type.
 
-This delta: Controls / Look / Audio close when play, results, or Boot starts (F1-F4, rematch, Q). They no longer stay drawn over the round or hide the Boot card. Direct Play drops a local pause overlay when the results card appears.
+This delta: M and N mute during play, Boot, results, and subpanels (one listener, so the pause card does not toggle twice). The dash cooldown bar uses a dark track and a cyan fill (mint when ready or bursting). The It beacon heats toward white with the Hot Potato fuse, same as the hat tip.
 
 ## Stack snapshot
 
@@ -23,7 +23,7 @@ This delta: Controls / Look / Audio close when play, results, or Boot starts (F1
 | **Void / XZ** | `VoidRespawn`: Y < -20 **or** mega-park XZ AABB (+~20 m) -> nearest `LocalPlayerSpawner` pad; clear ragdoll/stun, zero vel, ~1 s punch i-frames. **F1-F4 / rematch** also `ForceRecover`, cancel land-stun, and place every pawn on a pad (P1->pad 0) so a mode switch does not resume a ragdoll in the void. |
 | **Playground** | Four hopscotch courts, one per corner. West run: spawn SW, mushroom step, hopscotch SW, a low bench west of the climb net, south bar, soft-play (a bench west of the tube street, a ground slide east of the tube cap, a balance beam with mushrooms, a spring, and two hop tiles on the south apron, a climber dome west of that apron, a spring rider on the east shoulder, then rung to the 2.00 deck), spine, bars or beams, merry (west bench and south picnic already; no extra seat), then a mushroom, spring, and two hop tiles north of merry and west of the bars, spine, north bar, arch to a mushroom/spring/hop cluster at (9.4, 45.0) then hopscotch NW, astro. East forts use that same 2.4 m rung opposite a 1.8 m ladder, plus a spiral climber (feet on the ground, top at 2.40) that the west forts do not have. East run: hopscotch SE, arch (with a mushroom/spring/hop cluster at (66.2, 7.5) south of that arch), army, bars onto open kickball (a low bench west of the bars, not in the field), swings (fall tiles clear of the north fence), bars, then knight to the west or the arch and a low bench into hopscotch NE. North of that arch, a net frame, mushroom steps, and a spring rider sit east of the bars. Crash bowl stays open. Spawn_NW faces southeast; the torso is north of that pad and off the exit. After pull: **CutArenaBootstrap** Rebuild / **PgkLandmarkPlacer -> Place**. |
 | **Colliders** | `StaticPropColliders.EnsureStaticColliders` after dress/place so HiPoly/PGK toys keep Mesh/Box collision |
-| **Trail Tag** | Wide bright light-cycle walls (mega-park WorldScale 10); Stay + Default-layer triggers so RB motor still eliminates; near-miss **TRAIL!** <4.5 m foreign; elim **OUT!** / TRAIL HIT, then a persistent **OUT / waiting** line while you are frozen and the round is still going. It ribbon is brighter and ~1.35x wider (line only; collider width unchanged). Self-grace is still age **and** distance. |
+| **Trail Tag** | Wide bright light-cycle walls (mega-park WorldScale 10); Stay + Default-layer triggers so RB motor still eliminates; near-miss **TRAIL!** ~6 m foreign; elim **OUT!** / TRAIL HIT, then a persistent **OUT / waiting** line while you are frozen and the round is still going. It ribbon is brighter and ~1.35x wider (line only; collider width unchanged). Self-grace is still age **and** distance. |
 | **SFX** | `TagSfx` procedural tones when a Resources clip is missing. `AudioCuePlayer` (round, trail elim, ragdoll, UI) falls back to those tones instead of staying silent. Air dash is a shorter higher whoosh than the grounded lunge. Soft land (below stun) thuds; hard land still uses `MoveAnimDriver`. Rematch from the round-end card with **R**. |
 | **Ski spines** | Thicker mega-park ski spines (~3 m wide / 0.12 m thick) + zone approach ramps (pad -> nearest spine); denser PGK connectors (`CutArenaBootstrap.BuildSkiSpines`) |
 | **Ski crest** | Tribes leave: outward ski launch factor **1.0**, threshold `skiLaunchLeaveDot` ~0.12; DummyLocomotor air loft tell |
@@ -34,7 +34,7 @@ This delta: Controls / Look / Audio close when play, results, or Boot starts (F1
 | **Jump / land** | Fixed height (`jumpSpeed` launch, not speed-tied / additive); coyote ~0.10 s, buffer ~0.16 s; hard land -> LandStun; DummyLocomotor land squash plus a knee-buckle / arms-out recovery pose |
 | **Motor knobs** | Live on `Assets/Resources/TagArena/MovementConfig.asset` (`Resources.Load` `TagArena/MovementConfig`); recreate via **Tag -> Create MovementConfig Asset** (won't overwrite) |
 | **Mantle / climb / glide / bounce** | Stickier mega-park mantle + wall-climb, fairer super-glide window, punchier wall bounce (TP vault/climb/glide/kick tells) |
-| **AI** | `DummyPatrol`: chase/flee turn (no 16deg snap, capped ~150deg/s) plus a half-second weave outside punch range so a juke is not tracked perfectly. Lead intercept capped at 0.18 s. A fast strafe across the fist (~7.5 m/s lateral) usually whiffs. Before the swing the dummy cocks its arm (~0.34 s, shorter on a hot fuse) and cancels if you leave the fist. Punch connect kicks the attacker's camera and a lighter kick on the victim's (no hitstop). Still hops for decks (probe + panic), lunges just outside reach, retargets the moment It changes hands. Punch cone matches `PunchHitbox`. Least It still prefers low TimeAsIt. |
+| **AI** | `DummyPatrol`: chase/flee turn (no 16deg snap, capped ~150deg/s) plus a half-second weave outside punch range so a juke is not tracked perfectly. Lead intercept capped at 0.18 s. A fast strafe across the fist (~7 m/s lateral) usually whiffs. Before the swing the dummy cocks its arm (~0.34 s, down to 0.22 s on a hot fuse) and cancels if you leave the fist. Punch connect kicks the attacker's camera and a lighter kick on the victim's (no hitstop). Still hops for decks (probe + panic), lunges just outside reach, retargets the moment It changes hands. Punch cone matches `PunchHitbox`. Least It still prefers low TimeAsIt. |
 
 ## Controls (`PlayerInputReader`)
 
@@ -116,6 +116,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 19. Boot: Up/Down highlights Play, Controls, Look, Audio, Mode, Couch and stops at the ends. Enter uses it. With Play highlighted, Enter still starts you and one bot and does not also open another row. Keys 1-6 only move the highlight. Pause: Left/Right or 1-5 picks highlights Resume through Quit and stops at the ends. Enter or Space uses it. Esc still resumes and Q still quits. Up/Down on the main pause card is still the music bed.
 20. Who-plays and mode select no longer wrap. Up on the first row and Down on the last row stay put. Keys 1-4 still jump to that row. A click on Boot or Pause moves the highlight and uses that row only. Enter uses only the highlighted row.
 21. Pause, open Controls (or Look or Audio), then F1. The panel should be gone and the countdown should run. Esc pauses. After a round, that same panel should not cover Rematch / Menu, and Q should show Boot, not the panel. Direct Play: if a round ends while the local pause card is up, the results card should still take Left/Right and Enter.
+22. During play, M mutes all and N mutes music. The HUD chip should show. Pressing M on the pause card or the audio card still toggles once, not twice. After a dash, the bar is a dark track with a cyan fill that grows back; ready or the burst itself is mint. In Hot Potato the It beacon warms toward white as the fuse drops. Your own camera still hides that beacon.
 
 ## Known leftovers
 
@@ -124,14 +125,15 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 - Legacy contact `TryTag` radius still exists on motor; play modes use punch transfer.
 - Trail avoid starts peeling ~9.2 m (weight 0.80) off a foreign ribbon (HUD TRAIL! soft warn ~6.2 m).
 - AI punch tell drops for ~0.32 s after a juke/leave-cone whiff so the arm drop is readable (still needs a fuller human feel pass). No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent: `music_playground_bed_loop.wav` is meta only, so PlayMusic returns. No hitstop. Hot Potato flee may air-dash once while airborne if the motor CD is ready. A juke whiff also refreshes weave so they peel off the punch line.
-- Dash HUD: jet off = one cyan CD bar and one DASH line (DASH! while bursting). Jet on keeps a dash CD line under JET.
+- Dash HUD: jet off = one CD bar (dark track, cyan fill, mint when ready or bursting) and one DASH line (DASH! while bursting). Jet on keeps a dash CD line under JET. Cooldown stays 30 s.
 - Dummy MissRecover: limp whiff drops faster than HitRecover hold (short shoulder sag). AI HoldPunchTelegraph matches the flared windup elbow.
 - Bots hold still on countdown, results, and Idle (no chase until Playing).
 - Resume / leave-results: look, punch, jump, dash, and lunge ignore two frames after the cursor locks (shared resume gate + cameras) so the menu click that closed the card cannot yaw or punch. Rematch / F-keys from Direct Play also arm that gate when the cursor locks.
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.
 
 ## Audio
-- HUD shows MUTED (M), MUSIC OFF (N), or both chips when both mutes are on.
+- HUD shows MUTED (M), MUSIC OFF (N), or both chips when both mutes are on. M and N work during play, Boot, results, and the subpanels. Pause and the audio card use that same listener, so one press toggles once.
+- Dash cooldown bar: dark track, cyan fill while cooling, mint when ready or during the burst. Label still says DASH, the seconds, or DASH ready. Cooldown stays 30 s.
 - Master volume / mute: Boot or pause Audio. Up/Down highlights SFX, Music, Mute, Music mute, Back. Left/Right steps the highlighted SFX or music bed (default bed 0.35). M mute all. N music only. On the main pause card, Up/Down is still the music bed. Saved in PlayerPrefs on AudioMaster.
 
 ## Results
@@ -156,6 +158,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 9. Resume or leave-results: the tip's shared resume gate still drops look and one-shots for two frames after the cursor locks. This merge does not change that gate.
 10. Direct Play pause matches Boot, including Controls / Look / Audio highlight. Esc on a subpanel stays paused. Q back to Boot shows the cursor.
 11. Open Controls from pause, then F1: the panel closes and the round runs. Results and Boot are not covered by that panel. Direct Play results still accept keys if the local pause card was up.
+12. M during play mutes once and shows the chip. N mutes music. The dash bar fill is visible against a dark track. Hot Potato heats the It beacon with the fuse.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

@@ -78,6 +78,16 @@ namespace Tag.Audio
             TagSfx.UiClick();
         }
 
+        /// <summary>
+        /// One listener for M/N. Pause and the audio card used to be the only callers,
+        /// so play, Boot, and results ignored the keys the HUD lists.
+        /// </summary>
+        public static void PollMuteHotkeys()
+        {
+            if (UnityEngine.Input.GetKeyDown(KeyCode.M)) ToggleMute();
+            if (UnityEngine.Input.GetKeyDown(KeyCode.N)) ToggleMusicMute();
+        }
+
         public static void ToggleMute()
         {
             Load();

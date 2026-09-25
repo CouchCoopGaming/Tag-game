@@ -260,6 +260,9 @@ namespace Tag.Modes
 
         void Update()
         {
+            // GameFlow owns M/N when Boot is in the session. Direct Play has no flow.
+            if (GameFlow.Instance == null)
+                Tag.Audio.AudioMaster.PollMuteHotkeys();
             PollLocalPause();
             if (_localPaused) return;
             PollPlaytestModeHotkeys();
@@ -667,8 +670,6 @@ namespace Tag.Modes
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha5)) SetLocal(ref _localAudioFocus, 4);
             if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) StepLocalAudio(-1);
             if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) StepLocalAudio(1);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.M)) Tag.Audio.AudioMaster.ToggleMute();
-            if (UnityEngine.Input.GetKeyDown(KeyCode.N)) Tag.Audio.AudioMaster.ToggleMusicMute();
             if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
                 UnityEngine.Input.GetKeyDown(KeyCode.Space))
             {
@@ -723,10 +724,6 @@ namespace Tag.Modes
                 ActivateLocalPause();
             else if (UnityEngine.Input.GetKeyDown(KeyCode.Q))
                 LoadBootMenu();
-            if (UnityEngine.Input.GetKeyDown(KeyCode.M))
-                Tag.Audio.AudioMaster.ToggleMute();
-            if (UnityEngine.Input.GetKeyDown(KeyCode.N))
-                Tag.Audio.AudioMaster.ToggleMusicMute();
             if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow))
                 Tag.Audio.AudioMaster.CycleMusic(1);
             if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow))

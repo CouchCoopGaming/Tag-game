@@ -130,10 +130,15 @@ namespace TagArena.Movement
             {
                 float cdMax = motor.cfg != null ? Mathf.Max(0.01f, motor.cfg.airDashCooldown) : 30f;
                 float rem = motor.AirDashCooldownRemaining;
-                float ready = 1f - Mathf.Clamp01(rem / cdMax);
+                // Burst reads full. A cooling bar grows from empty. Track stays dark so the fill is visible.
+                bool bursting = motor.IsAirDashing;
+                float ready = bursting ? 1f : 1f - Mathf.Clamp01(rem / cdMax);
                 Color prev = GUI.color;
-                GUI.color = new Color(0.45f, 0.9f, 1f, 1f);
+                GUI.color = new Color(0.12f, 0.16f, 0.2f, 0.95f);
                 GUI.Box(new Rect(24, 56, 240, 20), GUIContent.none);
+                GUI.color = bursting || rem <= 0.05f
+                    ? new Color(0.45f, 1f, 0.72f, 1f)
+                    : new Color(0.35f, 0.82f, 1f, 1f);
                 GUI.Box(new Rect(24, 56, 240 * ready, 20), GUIContent.none);
                 GUI.color = prev;
                 // Active burst wins the label; otherwise ready / CD (no second DASH line below).

@@ -35,6 +35,7 @@ namespace Tag.Art
         bool _wasOn;
         float _pop;
         Transform _beacon;
+        Renderer _beaconRend;
 
         void Awake()
         {
@@ -112,6 +113,7 @@ namespace Tag.Art
             ApplyRuntimeColor(_hatRend, hatCol, emitMul);
             ApplyRuntimeColor(_brimRend, hatCol, emitMul * 0.92f);
             ApplyRuntimeColor(_tipRend, Color.Lerp(new Color(1f, 0.85f, 0.15f, 1f), Color.white, urgency), emitMul * 1.15f);
+            ApplyRuntimeColor(_beaconRend, Color.Lerp(new Color(1f, 0.45f, 0.05f), Color.white, urgency), emitMul * 1.2f);
             ApplyRuntimeColor(_haloRend, glowCol, 2.8f + 4f * urgency * pulse);
         }
 
@@ -175,7 +177,7 @@ namespace Tag.Art
             beacon.transform.localPosition = new Vector3(0f, 2.4f, 0f);
             beacon.transform.localScale = new Vector3(0.22f, 2.8f, 0.22f);
             DestroyCollider(beacon);
-            ApplyMat(beacon, new Color(1f, 0.45f, 0.05f, 1f), emissive: true, emissionMul: 3.4f);
+            _beaconRend = ApplyMat(beacon, new Color(1f, 0.45f, 0.05f, 1f), emissive: true, emissionMul: 3.4f);
             _beacon = beacon.transform;
 
             var haloGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);

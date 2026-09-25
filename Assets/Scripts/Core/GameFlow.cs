@@ -321,6 +321,9 @@ namespace Tag.Core
 
         void Update()
         {
+            // Before panel returns, so M/N still work on Controls, Look, Boot, and results.
+            AudioMaster.PollMuteHotkeys();
+
             // Subpanels belong on Boot and the pause card. Any other state drops them
             // before Esc/Enter can hit both the panel and results or play.
             if (_audioOpen || _controlsOpen || _settingsOpen)
@@ -434,8 +437,6 @@ namespace Tag.Core
                     UnityEngine.Input.GetKeyDown(KeyCode.Space))
                     ActivatePause();
                 else if (UnityEngine.Input.GetKeyDown(KeyCode.Q)) QuitToMenu();
-                if (UnityEngine.Input.GetKeyDown(KeyCode.M)) AudioMaster.ToggleMute();
-                if (UnityEngine.Input.GetKeyDown(KeyCode.N)) AudioMaster.ToggleMusicMute();
                 if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) AudioMaster.CycleMusic(1);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) AudioMaster.CycleMusic(-1);
             }
@@ -614,8 +615,6 @@ namespace Tag.Core
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha5)) SetFocus(ref _audioFocus, 4);
             if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) StepAudio(-1);
             if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) StepAudio(1);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.M)) AudioMaster.ToggleMute();
-            if (UnityEngine.Input.GetKeyDown(KeyCode.N)) AudioMaster.ToggleMusicMute();
             if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
                 UnityEngine.Input.GetKeyDown(KeyCode.Space))
             {
