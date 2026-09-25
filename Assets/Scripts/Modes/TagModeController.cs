@@ -350,19 +350,14 @@ namespace Tag.Modes
             if (_resultsActionTaken) return;
             // Highlight can move during the arm. Activate still waits.
             // Ends stay put. Left on Rematch and Right on Menu do not wrap or leak.
-            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) && _resultsFocus != 0)
-            {
-                _resultsFocus = 0;
-                TagSfx.UiClick();
-            }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) && _resultsFocus != 1)
-            {
-                _resultsFocus = 1;
-                TagSfx.UiClick();
-            }
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) SetResultsFocus(0);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) SetResultsFocus(1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetResultsFocus(0);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetResultsFocus(1);
             if (Time.unscaledTime < _resultsInputReadyAt) return;
             var flow = GameFlow.Instance;
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
+                UnityEngine.Input.GetKeyDown(KeyCode.Space))
             {
                 ActivateResultsFocus();
                 return;
@@ -383,6 +378,13 @@ namespace Tag.Modes
                 if (flow != null) flow.QuitToMenu();
                 else LoadBootMenu();
             }
+        }
+
+        void SetResultsFocus(int index)
+        {
+            if (_resultsFocus == index) return;
+            _resultsFocus = index;
+            TagSfx.UiClick();
         }
 
         void ActivateResultsFocus()
@@ -1029,7 +1031,7 @@ namespace Tag.Modes
             GUI.Label(new Rect(x, y + 12, w, 56), title, _countStyle);
             _countStyle.fontSize = 54;
             GUI.Label(new Rect(x + 16, y + 72, w - 32, 96),
-                (_resultDetail ?? "") + "\n\nLeft / Right picks. Enter uses it.\nR rematch    Q / Esc menu");
+                (_resultDetail ?? "") + "\n\n1-2 or Left / Right picks. Enter / Space uses it.\nR rematch    Q / Esc menu");
             float bw = 140f;
             float by = y + h - 44f;
             bool canAct = !_resultsActionTaken && Time.unscaledTime >= _resultsInputReadyAt;

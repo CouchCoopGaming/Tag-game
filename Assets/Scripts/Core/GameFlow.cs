@@ -39,6 +39,7 @@ namespace Tag.Core
         bool _modeFromWhoPlays;
         int _pauseFocus;
         int _looseResultsFocus;
+        float _looseResultsReadyAt;
         int _controlsFocus;
         int _lookFocus;
         int _audioFocus;
@@ -188,6 +189,7 @@ namespace Tag.Core
             LastResultMessage = result ?? "";
             State = GameFlowState.RoundEnd;
             _looseResultsFocus = 0;
+            _looseResultsReadyAt = Time.unscaledTime + 0.25f;
             Time.timeScale = 1f;
             // Unlock so Rematch/Menu clicks on the results card work (pause already unlocks).
             Cursor.lockState = CursorLockMode.None;
@@ -427,15 +429,25 @@ namespace Tag.Core
                 if (modes != null && modes.Phase == MatchPhase.Results)
                     return;
                 // Fallback card when no mode controller is showing results.
+                // Same arm as the main card: highlight can move, activate waits.
                 if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) Nudge(ref _looseResultsFocus, -1, 1);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) Nudge(ref _looseResultsFocus, 1, 1);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _looseResultsFocus, 0);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _looseResultsFocus, 1);
+                if (Time.unscaledTime < _looseResultsReadyAt) return;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
+                    UnityEngine.Input.GetKeyDown(KeyCode.Space))
                 {
                     if (_looseResultsFocus == 0) Rematch();
                     else QuitToMenu();
+                    return;
                 }
-                else if (UnityEngine.Input.GetKeyDown(KeyCode.R)) Rematch();
-                else if (UnityEngine.Input.GetKeyDown(KeyCode.Q) || UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.R))
+                {
+                    Rematch();
+                    return;
+                }
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Q) || UnityEngine.Input.GetKeyDown(KeyCode.Escape))
                     QuitToMenu();
             }
             else if (State == GameFlowState.Paused)
@@ -555,7 +567,7 @@ namespace Tag.Core
                     string arm = _looseResultsFocus == 0 ? "> Rematch" : "Rematch";
                     string menu = _looseResultsFocus == 1 ? "> Menu" : "Menu";
                     GUI.Label(new Rect(cx - 200, cy - 36, 400, 70),
-                        $"{LastResultMessage}\n\n{arm}    {menu}\nLeft / Right    Enter    R    Q");
+                        $"{LastResultMessage}\n\n{arm}    {menu}\n1-2 or Left / Right    Enter / Space    R    Q");
                 }
             }
         }
