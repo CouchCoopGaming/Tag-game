@@ -419,11 +419,15 @@ namespace Tag.Art
                 // Opposite the legs. sinC>0 puts the left thigh forward, so the right arm reaches
                 // and the left arm stays back. Same-side swing reads as a skate from the chase cam.
                 // Rearward travel stays short so the hands do not fold into the pelvis. No extra roll.
-                float amp = Mathf.Lerp(36f, 64f, Mathf.Max(walkAmt, runAmt));
-                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp), 0f, 0f);
-                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp), 0f, 0f);
-                float elbowL = -18f - Mathf.Max(0f, -sinC) * Mathf.Lerp(28f, 58f, runAmt);
-                float elbowR = -18f - Mathf.Max(0f, sinC) * Mathf.Lerp(28f, 58f, runAmt);
+                float gait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                float idle = 1f - gait;
+                float amp = Mathf.Lerp(36f, 64f, gait);
+                // Idle hang sits slightly forward and out. It fades by the time the stride starts.
+                // Z stays 0 so this does not stack roll on the Hier A-pose.
+                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle, 10f * idle, 0f);
+                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle, -10f * idle, 0f);
+                float elbowL = Mathf.Lerp(-18f, -8f, idle) - Mathf.Max(0f, -sinC) * Mathf.Lerp(28f, 58f, runAmt);
+                float elbowR = Mathf.Lerp(-18f, -8f, idle) - Mathf.Max(0f, sinC) * Mathf.Lerp(28f, 58f, runAmt);
                 _laLT = _laL0 * Quaternion.Euler(elbowL, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(elbowR, 0f, 0f);
             }

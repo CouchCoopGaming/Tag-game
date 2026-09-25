@@ -26,7 +26,9 @@ Already on this branch: A jump reaches both arms up and tucks the knees. A fall 
 
 Already on this branch: A tag splits into two poses. The tagged runner guards. The new It raises both arms and lifts one knee.
 
-This delta: A climb is hand-over-hand. The reaching arm is opposite the stepping leg, and only that knee bends. A wall run plants the wall hand and steps with the outer leg. That knee bends only on the way forward. Hands stay on the mild A flare, clear of the hips.
+Already on this branch: A climb is hand-over-hand. A wall run plants the wall hand and steps with the outer leg.
+
+This delta: At a standstill the arms hang slightly forward and out, with a soft elbow, so the hands sit clear of the hips. That offset fades as the walk starts. The sprint stride is unchanged, and no extra roll is added on the Hier A-pose.
 
 ## Stack snapshot
 
@@ -158,6 +160,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 33. Jump: both arms should reach up and the knees should tuck. Fall: the arms should trail back and the legs should lengthen. Hands stay slightly out and clear of the hips.
 34. Tag someone: the runner who was hit should guard with both arms up and both knees bent. The new It should raise both arms and lift one knee. The two poses should not match. Hands stay clear of the hips.
 35. Climb a wall: one hand should reach while the other pulls, and the opposite knee should step. The lower leg should look long. Wall-run: the wall hand stays on the wall, the outer leg steps, and that knee bends only while it swings forward. Hands stay clear of the hips.
+36. Stand still: the hands should hang just forward and outside the hips, not against the pelvis. Start sprinting: the opposite arm/leg stride should return, with no extra twist of the hands into the hips.
 
 ## Known leftovers
 
@@ -213,6 +216,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 23. Jump arms reach up with a knee tuck. Fall arms trail back and the legs lengthen. Hands stay clear of the pelvis.
 24. Tag handoff: the tagged runner guards. The new It raises both arms and lifts one knee. Hands stay clear of the pelvis.
 25. Climb is hand-over-hand with one bent knee. Wall-run plants the wall hand and steps the outer leg. Hands stay clear of the hips.
+26. Idle hands hang forward and out of the hips. The offset is gone once the stride is up. No extra arm roll.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
