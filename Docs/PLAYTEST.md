@@ -146,7 +146,9 @@ Already on this branch: A punch that misses while standing eases the fists into 
 
 Already on this branch: When the dash is ready again, the chest and the arms settle. The dash does not last longer, and it still has to recharge.
 
-This delta: A walk turn plants the outside foot at a medium turn. It does not wait for a sharp yaw. Look speed is unchanged.
+Already on this branch: A walk turn plants the outside foot at a medium turn. It does not wait for a sharp yaw. Look speed is unchanged.
+
+This delta: After an air dash, a soft landing bends the knees and keeps the arms in the stride. They do not flare. The burst and the cooldown are unchanged.
 
 ## Stack snapshot
 
@@ -338,6 +340,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 93. Stand still and punch a miss: the fists should ease into the idle hands. They should not freeze and then pop. The cock should not feel longer.
 94. Air dash, then wait for the bar: when it is ready, the chest and the arms should settle. The dash should not last longer, and it should still have to recharge.
 95. Walk and turn at a medium yaw: the outside foot should plant while the other leg steps. It should not wait for a sharp turn. Look should feel the same.
+96. Air dash, then land softly into a walk: the knees should bend and the arms should stay in the stride. They should not flare out. The dash should not last longer, and it should still have to recharge.
 
 ## Known leftovers
 
@@ -453,6 +456,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 83. A punch that misses while standing eases the fists into the idle hands. They do not freeze and then pop. Windup time is unchanged.
 84. When the dash cooldown ends, the chest and the arms settle. It is not a second whip. Duration and cooldown are unchanged.
 85. A walk turn plants the outside foot at a medium yaw. It does not wait for a sharp turn. Look speed is unchanged.
+86. After an air dash, a soft landing bends the knees and keeps the arms in the stride. They do not flare. Duration and cooldown are unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

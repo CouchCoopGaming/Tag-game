@@ -491,24 +491,51 @@ namespace Tag.Art
                 {
                     // Wide and back, clear of the fall trail, so the short burst reads from behind.
                     // The same pose eases out after the burst. It does not whip a second time.
+                    // A soft landing after the burst keeps the arms in the stride. The knees still absorb.
+                    float pose = dashStretchPose;
+                    float intoStride = 0f;
+                    if (grounded && !airDashing && _landSquash > 0.08f)
+                    {
+                        float hardS = Mathf.SmoothStep(0f, 1f, _landHard);
+                        pose *= hardS;
+                        intoStride = 1f - hardS;
+                    }
                     _uaLT = Quaternion.Slerp(
                         _uaL0 * Quaternion.Euler(-16f, 0f, armZ),
                         _uaL0 * Quaternion.Euler(108f, 32f, armZ),
-                        dashStretchPose);
+                        pose);
                     _uaRT = Quaternion.Slerp(
                         _uaR0 * Quaternion.Euler(-12f, 0f, -armZ),
                         _uaR0 * Quaternion.Euler(108f, -32f, -armZ),
-                        dashStretchPose);
+                        pose);
                     _laLT = Quaternion.Slerp(
                         _laL0 * Quaternion.Euler(-14f, 0f, 0f),
                         _laL0 * Quaternion.Euler(-22f, 0f, 0f),
-                        dashStretchPose);
+                        pose);
                     _laRT = Quaternion.Slerp(
                         _laR0 * Quaternion.Euler(-12f, 0f, 0f),
                         _laR0 * Quaternion.Euler(-22f, 0f, 0f),
-                        dashStretchPose);
-                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(58f, 0f, 0f), dashStretchPose);
-                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), dashStretchPose);
+                        pose);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(58f, 0f, 0f), pose);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), pose);
+                    if (intoStride > 0.02f)
+                    {
+                        float gait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                        float idle = 1f - gait;
+                        float amp = Mathf.Lerp(36f, 64f, gait);
+                        float outY = Mathf.Lerp(12f, 8f, gait);
+                        float roll = Mathf.Lerp(0f, armZ, gait);
+                        float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
+                        float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
+                        float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
+                        float armBreath = breath * 0.55f * idle;
+                        float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
+                        float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll), intoStride);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll), intoStride);
+                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait), 0f, 0f), intoStride);
+                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait), 0f, 0f), intoStride);
+                    }
                 }
                 else
                 {
@@ -1205,12 +1232,14 @@ namespace Tag.Art
                 _hipsT = Quaternion.Slerp(_hipsT, _exitHips, body);
             }
 
-            if (_landSquash > 0.08f && grounded && !sliding && !dashing)
+            bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash))
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
                 // the hips so they do not lock. A stand eases into the idle breath.
-                // Hold time is unchanged.
+                // A soft landing after an air dash absorbs in the knees and keeps the arms
+                // in the stride. Hold time is unchanged.
                 float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_landSquash));
                 float hard = Mathf.SmoothStep(0f, 1f, _landHard);
                 float moving = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
