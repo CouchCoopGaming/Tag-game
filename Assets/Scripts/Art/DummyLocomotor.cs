@@ -87,6 +87,11 @@ namespace Tag.Art
         Quaternion _softJumpUlL, _softJumpUlR, _softJumpLlL, _softJumpLlR;
         Quaternion _softJumpSp, _softJumpHp, _softJumpHd;
         bool _jumpFromHardLand;
+        bool _jumpHardLandSnap;
+        float _jumpHardLandSnapIn;
+        Quaternion _hardJumpUaL, _hardJumpUaR, _hardJumpLaL, _hardJumpLaR;
+        Quaternion _hardJumpUlL, _hardJumpUlR, _hardJumpLlL, _hardJumpLlR;
+        Quaternion _hardJumpSp, _hardJumpHp, _hardJumpHd;
         bool _jumpFromMiss;
         float _missR;
         bool _jumpFromTag;
@@ -2996,6 +3001,29 @@ namespace Tag.Art
                 _softJumpHd = _head.localRotation;
                 _airArmIn = 1f;
             }
+            if (_jumpFromHardLand && !_jumpHardLandSnap && !punching
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                // The deep absorb eases into the air pose, then the air pose holds.
+                // The slow push stays off this path. Land time is unchanged when you stay down.
+                // Jump height is unchanged.
+                _jumpHardLandSnap = true;
+                _jumpHardLandSnapIn = 0f;
+                _hardJumpUaL = _upperArmL.localRotation;
+                _hardJumpUaR = _upperArmR.localRotation;
+                _hardJumpLaL = _lowerArmL.localRotation;
+                _hardJumpLaR = _lowerArmR.localRotation;
+                _hardJumpUlL = _upperLegL.localRotation;
+                _hardJumpUlR = _upperLegR.localRotation;
+                _hardJumpLlL = _lowerLegL.localRotation;
+                _hardJumpLlR = _lowerLegR.localRotation;
+                _hardJumpSp = _spine.localRotation;
+                _hardJumpHp = _hips.localRotation;
+                _hardJumpHd = _head.localRotation;
+                _airArmIn = 1f;
+            }
             _prevVy = _motor != null ? _motor.Velocity.y : 0f;
             if (grounded || _pushOff <= 0.02f)
             {
@@ -3053,6 +3081,13 @@ namespace Tag.Art
             }
             else if (!_jumpFromSoftLand)
                 _jumpSoftLandSnap = false;
+            if (_jumpHardLandSnap && _jumpFromHardLand && !punching)
+            {
+                if (_jumpHardLandSnapIn < 0.98f)
+                    _jumpHardLandSnapIn = Mathf.MoveTowards(_jumpHardLandSnapIn, 1f, dt / 0.04f);
+            }
+            else if (!_jumpFromHardLand)
+                _jumpHardLandSnap = false;
             if (_jumpFromStill && _pushOff > 0.02f)
                 _jumpFromStillIn = Mathf.MoveTowards(_jumpFromStillIn, 1f, dt / 0.04f);
             if (_jumpFromCrouchWalk && _pushOff > 0.02f)
@@ -8379,7 +8414,7 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_softJumpLlL, _llLT, intoSoftAir);
                 _llRT = Quaternion.Slerp(_softJumpLlR, _llRT, intoSoftAir);
             }
-            if (_jumpFromHardLand && _pushOff > 0.02f && !punching && !wallRun && !climb)
+            if (_jumpFromHardLand && _pushOff > 0.02f && !punching && !wallRun && !climb && !_jumpHardLandSnap)
             {
                 // The hard absorb eases into the push, then the air pose. A soft landing keeps its jump.
                 // A still crouch, a crouch walk, a ski, a slide, an air dash, a climb, and a wall run keep their jump.
@@ -8442,6 +8477,31 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(Quaternion.Slerp(absorbThighR, pushThighR, intoPush), airThighR, leave);
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(absorbKneeL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(absorbKneeR, pushKneeR, intoPush), airKneeR, leave);
+            }
+            if (_jumpHardLandSnap && _jumpHardLandSnapIn < 0.98f && _jumpFromHardLand && !punching
+                && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill
+                && !_jumpDashSnap && !_jumpWallSnap && !_jumpClimbSnap && !_jumpAirCrouchSnap
+                && !_jumpSoftLandSnap)
+            {
+                // The deep absorb eases into the air pose, then the air pose holds.
+                // A soft landing into a jump has its own ease. An air crouch into a jump has its own ease.
+                // A climb jump has its own ease. A wall jump has its own ease.
+                // An air dash into a jump has its own ease. A standing idle into a jump has its own ease.
+                // A sprint into the air has its own ease. A walk into a jump has its own ease.
+                // The slow push stays off this path. Land time is unchanged when you stay down.
+                // Jump height is unchanged.
+                float intoHardAir = _jumpHardLandSnapIn;
+                _uaLT = Quaternion.Slerp(_hardJumpUaL, _uaLT, intoHardAir);
+                _uaRT = Quaternion.Slerp(_hardJumpUaR, _uaRT, intoHardAir);
+                _laLT = Quaternion.Slerp(_hardJumpLaL, _laLT, intoHardAir);
+                _laRT = Quaternion.Slerp(_hardJumpLaR, _laRT, intoHardAir);
+                _spineT = Quaternion.Slerp(_hardJumpSp, _spineT, intoHardAir);
+                _hipsT = Quaternion.Slerp(_hardJumpHp, _hipsT, intoHardAir);
+                _headT = Quaternion.Slerp(_hardJumpHd, _headT, intoHardAir);
+                _ulLT = Quaternion.Slerp(_hardJumpUlL, _ulLT, intoHardAir);
+                _ulRT = Quaternion.Slerp(_hardJumpUlR, _ulRT, intoHardAir);
+                _llLT = Quaternion.Slerp(_hardJumpLlL, _llLT, intoHardAir);
+                _llRT = Quaternion.Slerp(_hardJumpLlR, _llRT, intoHardAir);
             }
             if (_jumpFromMiss && _pushOff > 0.02f && !wallRun && !climb)
             {
