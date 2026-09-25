@@ -342,8 +342,6 @@ namespace Tag.Art
                 leanZ = _swayVis;
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet)
                 leanX = Mathf.Lerp(leanX, 26f, _skiBlend);
-            if (flinchAmt > 0.04f)
-                leanX = Mathf.Lerp(leanX, 22f, flinchAmt);
             if (claimAmt > 0.04f)
                 leanX = Mathf.Lerp(leanX, -12f, claimAmt);
             if (bouncing)
@@ -1047,11 +1045,12 @@ namespace Tag.Art
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(6f, 0f, 0f), g);
             }
 
-            if (flinchAmt > 0.04f)
+            if (flinchAmt > 0f)
             {
                 // Tagged runner: a long V in front of the chest. Both knees bend at the hit, so it
-                // stays distinct from the new It's one-knee claim. While running, the arms and the
-                // trail leg hand off into the live stride first. Flinch time is unchanged. Mild A only.
+                // stays distinct from the new It's one-knee claim. While running, the hands, the
+                // chest, and the hips leave together. A second chest pitch used to stay folded
+                // and then pop. Flinch time is unchanged. Mild A only.
                 float f = flinchAmt;
                 float moving = grounded ? Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)) : 0f;
                 float fRelease = Mathf.Lerp(f, f * f, moving);
