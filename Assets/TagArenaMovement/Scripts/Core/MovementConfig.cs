@@ -98,7 +98,7 @@ namespace TagArena.Movement
         public float climbAttachAngle = 55f;
         public float climbStickForce = 22f;
         public float climbSideSpeed = 3.7f;
-        public float climbSlipSpeed = 3.6f;
+        public float climbSlipSpeed = 3.7f;
         // Slightly taller / lower lips for mega-park rails + decks (was 2.35 / 0.55).
         public float mantleMaxLedgeHeight = 2.55f;
         public float mantleMinLedgeHeight = 0.45f;

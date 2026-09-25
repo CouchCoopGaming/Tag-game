@@ -83,7 +83,7 @@ MonoBehaviour:
   climbAttachAngle: 55
   climbStickForce: 22
   climbSideSpeed: 3.7
-  climbSlipSpeed: 3.6
+  climbSlipSpeed: 3.7
   mantleMaxLedgeHeight: 2.55
   mantleMinLedgeHeight: 0.45
   mantleDuration: 0.4
