@@ -590,7 +590,9 @@ Already on this branch: A jump into a slide eases the hang or the absorb into th
 
 Already on this branch: An air dash into a slide eases the burst into the wedge. The wedge then holds. An air dash into a ski is unchanged. Duration and cooldown are unchanged. slideBoost stays 0.
 
-This delta: An air dash into a climb eases the burst into the grab. The grab then holds. An air dash into a slide is unchanged. Duration and cooldown are unchanged. Exit time is unchanged.
+Already on this branch: An air dash into a climb eases the burst into the grab. The grab then holds. An air dash into a slide is unchanged. Duration and cooldown are unchanged. Exit time is unchanged.
+
+This delta: An air dash into a wall run eases the burst into the attach. The attach then holds. An air dash into a climb is unchanged. Duration and cooldown are unchanged. Exit time is unchanged.
 
 ## Stack snapshot
 
@@ -1004,6 +1006,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 315. Jump, then slide: the hang or the absorb should ease into the wedge. The wedge should then hold. A hard landing that shares this entry should feel the same. A soft landing into a slide should feel the same. The wedge should not feel longer. The slide should not feel faster. The jump should not feel higher. Jet stays off.
 316. Air dash, then slide: the burst should ease into the wedge. The wedge should then hold. An air dash into a ski should feel the same. The wedge should not feel longer. The dash should not feel longer. The slide should not feel faster. Jet stays off.
 317. Air dash, then climb: the burst should ease into the grab. The grab should then hold. An air dash into a slide should feel the same. The grab should not feel longer. The dash should not feel longer. The leave should not feel longer. Jet stays off.
+318. Air dash, then wall run: the burst should ease into the attach. The attach should then hold. An air dash into a climb should feel the same. The attach should not feel longer. The dash should not feel longer. The leave should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1341,6 +1344,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 305. A jump into a slide eases the hang or the absorb into the wedge. The wedge then holds. A hard landing that shares this entry eases the same way. A soft landing into a slide is unchanged. slideBoost stays 0. Jump height is unchanged. Jet stays off.
 306. An air dash into a slide eases the burst into the wedge. The wedge then holds. An air dash into a ski is unchanged. Duration and cooldown are unchanged. slideBoost stays 0. Jet stays off.
 307. An air dash into a climb eases the burst into the grab. The grab then holds. An air dash into a slide is unchanged. Duration and cooldown are unchanged. Exit time is unchanged. Jet stays off.
+308. An air dash into a wall run eases the burst into the attach. The attach then holds. An air dash into a climb is unchanged. Duration and cooldown are unchanged. Exit time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
