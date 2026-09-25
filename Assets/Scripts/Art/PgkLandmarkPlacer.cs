@@ -306,8 +306,8 @@ namespace Tag.Art
             // Army world x~56.8 is east of Conn_Army. Knight world z~43.1 is ~0.8 m north of hopscotch NE.
             pieces.Add(("PGK_Ladder_Rung_LOD0", new Vector3(-1.15f, 0f, 0.90f), 90f));
             // Spiral climber on local +X, beside the deck. Near edge x=1.90 (deck face is x=1).
-            // Army: x 59.9–61.8, z 8.8–10.7, 0.40 m south of the south bar and 0.66 m west of it.
-            // Knight yaw 180: x 54.2–56.1, z 43.3–45.2, 1.7 m north of Conn_Knight.
+            // Army: x 59.9-61.8, z 8.8-10.7, 0.40 m south of the south bar and 0.66 m west of it.
+            // Knight yaw 180: x 54.2-56.1, z 43.3-45.2, 1.7 m north of Conn_Knight.
             pieces.Add(("Toy_SpiralClimber", new Vector3(2.80f, 0f, 0f), 0f));
         }
 

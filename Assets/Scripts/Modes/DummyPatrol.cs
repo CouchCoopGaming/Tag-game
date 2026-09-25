@@ -560,6 +560,12 @@ namespace Tag.Modes
                         // Whiff / leave-cone: brief arm-drop before they can cock again.
                         if (juked || !inCone)
                             _cooldown = Mathf.Max(_cooldown, 0.22f);
+                        // Juke peel: refresh weave so they leave the punch line instead of re-cocking in place.
+                        if (juked)
+                        {
+                            _weave = Random.Range(0.35f, 0.55f) * (Random.value < 0.5f ? -1f : 1f);
+                            _weaveT = Random.Range(0.35f, 0.55f);
+                        }
                     }
                     else
                     {
