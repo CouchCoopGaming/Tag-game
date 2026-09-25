@@ -179,6 +179,7 @@ namespace Tag.Art
             n += PathCues(root);
             n += MerryNorthCluster(root);
             n += EastNorthCluster(root);
+            n += SoftPlaySouthCluster(root);
             // Overhead bars. West stays at x=11 (the mast owns x-9.5 around z 12-18).
             // East sits at x=62.5, just inside the kickball pad's open west edge.
             // Segments stop at the EW spines; you cross those on foot.
@@ -675,6 +676,26 @@ namespace Tag.Art
                 // Two hop tiles east of the net. East edge x=68.25, flush with the spawn seesaw.
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.55f, 0.02f, -0.95f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.55f, 0.02f, 0.55f), 0f),
+            });
+        }
+
+        /// <summary>
+        /// South apron of soft-play. The tube mesh ends at z=5.03; the ground slide starts at x=19.26.
+        /// The lawn from there to the south map edge is empty for more than 4 m. Not a bench.
+        /// Astro is not copied: its local -Z points at the north edge, onto the helmet lawn.
+        /// </summary>
+        int SoftPlaySouthCluster(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Cluster_SoftS", new Vector3(14.5f, 0f, 2.6f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                // 3.2 m run along X. z 2.43-2.77. The tube street stays 2.2 m north.
+                ("Toy_BalanceBeam", Vector3.zero, 0f),
+                // Yaw 90: length along Z. x 11.16-12.04, z 1.86-4.45.
+                // 0.58 m south of the tube mesh. 0.86 m west of the beam.
+                ("Toy_MushroomSteps", new Vector3(-2.9f, 0f, 0.6f), 90f),
+                // Feet y=0. x 16.85-17.70, 1.56 m west of the ground slide.
+                ("Toy_SpringRider", new Vector3(2.7f, 0f, 0.7f), 0f),
             });
         }
 
