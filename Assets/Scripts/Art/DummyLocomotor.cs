@@ -663,6 +663,12 @@ namespace Tag.Art
         Quaternion _sprintCrouchUaL, _sprintCrouchUaR, _sprintCrouchLaL, _sprintCrouchLaR;
         Quaternion _sprintCrouchUlL, _sprintCrouchUlR, _sprintCrouchLlL, _sprintCrouchLlR;
         Quaternion _sprintCrouchSp, _sprintCrouchHp, _sprintCrouchHd;
+        bool _crouchWalkFromStill;
+        float _crouchWalkFromStillIn;
+        bool _stillStrideHeld;
+        Quaternion _stillStrideUaL, _stillStrideUaR, _stillStrideLaL, _stillStrideLaR;
+        Quaternion _stillStrideUlL, _stillStrideUlR, _stillStrideLlL, _stillStrideLlR;
+        Quaternion _stillStrideSp, _stillStrideHp, _stillStrideHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -1311,11 +1317,41 @@ namespace Tag.Art
             bool standRun = _wasGrounded && _prevSpeed > 5.5f
                 && !_crouchFromStand && !crouchWalkPose && !_crouchWalkArmed
                 && !_dropSlide && _skiBlend <= 0.2f && _landSquash <= 0.08f;
+            // Read before the clear below. Starting to move leaves the planted guard in one frame.
+            bool stillWasPlanted = _crouchFromStand && _stillCrouchWas && _dropVis > 0.2f && _skiBlend <= 0.2f;
             if (crouch && !sliding && speed <= 0.35f)
                 _crouchFromStand = true;
             else if ((crouch && speed > 0.35f) || sliding || _dropVis <= 0.001f)
                 _crouchFromStand = false;
             bool dashPoseNow = (_motor != null && _motor.IsAirDashing) || _airDashPoseWas || _airDashArms;
+            if (stillWasPlanted && crouch && grounded && !sliding && !jet
+                && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint && !_dropSlide
+                && !_stillStrideHeld
+                && !_crouchWalkFromWalk && !_crouchWalkFromSprint && !_crouchWalkFromSki && !_crouchWalkFromSlide
+                && !dashPoseNow && !wallRun && !climb
+                && _punchPhaseWas != PunchPhase.Windup && _punchPhaseWas != PunchPhase.Active
+                && _punchPhaseWas != PunchPhase.HitRecover && _punchPhaseWas != PunchPhase.MissRecover
+                && _itClaim <= 0.2f && _dashReady <= 0.2f
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+            {
+                // The planted guard eases into the low stride. A walk into a crouch walk keeps its ease.
+                // A run into a crouch walk keeps its ease. A crouch walk into a still crouch keeps its ease.
+                _crouchWalkFromStill = true;
+                _crouchWalkFromStillIn = 0f;
+                _stillStrideHeld = true;
+                _stillStrideUaL = _upperArmL.localRotation;
+                _stillStrideUaR = _upperArmR.localRotation;
+                _stillStrideLaL = _lowerArmL.localRotation;
+                _stillStrideLaR = _lowerArmR.localRotation;
+                _stillStrideUlL = _upperLegL.localRotation;
+                _stillStrideUlR = _upperLegR.localRotation;
+                _stillStrideLlL = _lowerLegL.localRotation;
+                _stillStrideLlR = _lowerLegR.localRotation;
+                _stillStrideSp = _spine.localRotation;
+                _stillStrideHp = _hips.localRotation;
+                _stillStrideHd = _head.localRotation;
+            }
             bool jumpStill = !sliding && !jet && speed <= 0.35f && !dashPoseNow && !_jumpFromStill && !_jumpFromCrouchWalk
                 && _diveFromJump
                 && _punchPhaseWas != PunchPhase.Windup && _punchPhaseWas != PunchPhase.Active
@@ -1908,7 +1944,7 @@ namespace Tag.Art
             if (!walkCrouch)
                 _walkCrouchHeld = false;
             bool walkIntoCrouchWalk = walkCrouch && standWalk && !_walkCrouchHeld
-                && !_crouchWalkFromSki && !_crouchWalkFromSlide && !_crouchWalkFromSprint
+                && !_crouchWalkFromSki && !_crouchWalkFromSlide && !_crouchWalkFromSprint && !_crouchWalkFromStill
                 && !_stillFromWalk && !_stillFromSprint && !_stillFromSki && !_stillFromSlide
                 && !_crouchFromJump && !_crouchFromDash && !dashPoseNow && !wallRun && !climb
                 && phase != PunchPhase.Windup && phase != PunchPhase.Active
@@ -1945,7 +1981,7 @@ namespace Tag.Art
             if (!sprintCrouch)
                 _sprintCrouchHeld = false;
             bool sprintIntoCrouchWalk = sprintCrouch && standRun && !standWalk && !_sprintCrouchHeld
-                && !_crouchWalkFromWalk && !_crouchWalkFromSki && !_crouchWalkFromSlide
+                && !_crouchWalkFromWalk && !_crouchWalkFromSki && !_crouchWalkFromSlide && !_crouchWalkFromStill
                 && !_stillFromWalk && !_stillFromSprint && !_stillFromSki && !_stillFromSlide
                 && !_crouchFromJump && !_crouchFromDash && !dashPoseNow && !wallRun && !climb
                 && phase != PunchPhase.Windup && phase != PunchPhase.Active
@@ -1976,6 +2012,13 @@ namespace Tag.Art
                 _crouchWalkFromSprint = false;
             else if (_crouchWalkFromSprint)
                 _crouchWalkFromSprintIn = Mathf.MoveTowards(_crouchWalkFromSprintIn, 1f, dt / 0.04f);
+            if (!walkCrouch)
+            {
+                _crouchWalkFromStill = false;
+                _stillStrideHeld = false;
+            }
+            else if (_crouchWalkFromStill)
+                _crouchWalkFromStillIn = Mathf.MoveTowards(_crouchWalkFromStillIn, 1f, dt / 0.04f);
 
             if (grounded && !_wasGrounded)
             {
@@ -5308,8 +5351,8 @@ namespace Tag.Art
                     else
                     {
                         // A sprint leaves the guard as the hips rise, so the arms do not stay folded.
-                        // A walk or a run into a crouch walk writes the guard now. The drop timer stays dt/0.16.
-                        float armD = (_crouchWalkFromWalk || _crouchWalkFromSprint) ? 1f : (crouchSprintExit ? hipDrop : d);
+                        // A walk, a run, or a still crouch into a crouch walk writes the guard now. The drop timer stays dt/0.16.
+                        float armD = (_crouchWalkFromWalk || _crouchWalkFromSprint || _crouchWalkFromStill) ? 1f : (crouchSprintExit ? hipDrop : d);
                         _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), armD);
                         _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), armD);
                         _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-72f, 0f, 0f), armD);
@@ -5910,8 +5953,8 @@ namespace Tag.Art
                         float thighReach = Mathf.Lerp(12f, 34f, open);
                         float kneeBase = Mathf.Lerp(60f, 10f, open);
                         float kneeReach = Mathf.Lerp(8f, 36f, open);
-                        // A walk or a run into a crouch walk writes the low stride now. The drop timer stays dt/0.16.
-                        float legD = (_crouchWalkFromWalk || _crouchWalkFromSprint) ? 1f : d;
+                        // A walk, a run, or a still crouch into a crouch walk writes the low stride now. The drop timer stays dt/0.16.
+                        float legD = (_crouchWalkFromWalk || _crouchWalkFromSprint || _crouchWalkFromStill) ? 1f : d;
                         _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(thighBase + stepL * thighReach - stepR * thighReach * 0.5f, 0f, 0f), legD);
                         _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(thighBase + stepR * thighReach - stepL * thighReach * 0.5f, 0f, 0f), legD);
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(kneeBase + stepL * kneeReach), 0f, 0f), legD);
@@ -6161,8 +6204,8 @@ namespace Tag.Art
                 // A slide stand-up eases the hips so they do not pop flat.
                 // Letting go of a still crouch eases them into the idle breath.
                 float d = (_dropSlide || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? hipDrop : _dropVis;
-                // A walk or a run into a crouch walk writes the guard pitch now. The drop timer stays dt/0.16.
-                if (_crouchWalkFromWalk || _crouchWalkFromSprint)
+                // A walk, a run, or a still crouch into a crouch walk writes the guard pitch now. The drop timer stays dt/0.16.
+                if (_crouchWalkFromWalk || _crouchWalkFromSprint || _crouchWalkFromStill)
                     d = 1f;
                 float chest = _dropSlide ? 62f : 10f;
                 float hip = _dropSlide ? 50f : 22f;
@@ -9927,6 +9970,37 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_sprintCrouchUlR, strideThighR, intoStride);
                 _llLT = Quaternion.Slerp(_sprintCrouchLlL, strideKneeL, intoStride);
                 _llRT = Quaternion.Slerp(_sprintCrouchLlR, strideKneeR, intoStride);
+            }
+            if (_crouchWalkFromStill && walkCrouch && _crouchWalkFromStillIn < 0.98f && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The planted guard eases into the low stride, then the stride holds.
+                // A walk into a crouch walk keeps its ease. A run into a crouch walk keeps its ease.
+                // A crouch walk into a still crouch keeps its ease.
+                float intoStride = _crouchWalkFromStillIn;
+                float stepL = Mathf.Max(0f, sinC);
+                float stepR = Mathf.Max(0f, -sinC);
+                Quaternion strideL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion strideR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion strideElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion strideElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion strideSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion strideHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion strideHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion strideThighL = _ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f);
+                Quaternion strideThighR = _ulR0 * Quaternion.Euler(46f + stepR * 12f - stepL * 6f, 0f, 0f);
+                Quaternion strideKneeL = _llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f);
+                Quaternion strideKneeR = _llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f);
+                _uaLT = Quaternion.Slerp(_stillStrideUaL, strideL, intoStride);
+                _uaRT = Quaternion.Slerp(_stillStrideUaR, strideR, intoStride);
+                _laLT = Quaternion.Slerp(_stillStrideLaL, strideElL, intoStride);
+                _laRT = Quaternion.Slerp(_stillStrideLaR, strideElR, intoStride);
+                _spineT = Quaternion.Slerp(_stillStrideSp, strideSp, intoStride);
+                _hipsT = Quaternion.Slerp(_stillStrideHp, strideHp, intoStride);
+                _headT = Quaternion.Slerp(_stillStrideHd, strideHd, intoStride);
+                _ulLT = Quaternion.Slerp(_stillStrideUlL, strideThighL, intoStride);
+                _ulRT = Quaternion.Slerp(_stillStrideUlR, strideThighR, intoStride);
+                _llLT = Quaternion.Slerp(_stillStrideLlL, strideKneeL, intoStride);
+                _llRT = Quaternion.Slerp(_stillStrideLlR, strideKneeR, intoStride);
             }
             if (_slideFromWalk && !_slideFromSprint && !_slideFromSki && !_slideFromCrouch && !_slideFromMiss && !_slideFromReady && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && !punching)
             {
