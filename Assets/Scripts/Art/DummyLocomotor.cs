@@ -1003,16 +1003,20 @@ namespace Tag.Art
             if (_landSquash > 0.08f && grounded && !sliding && !dashing)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
-                // is for a hard landing. Hold time is unchanged.
+                // is for a hard landing. A stand eases both knees into the idle breath,
+                // and the arms leave the flare so they do not lock. Hold time is unchanged.
                 float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_landSquash));
                 float hard = Mathf.SmoothStep(0f, 1f, _landHard);
                 float moving = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                float standing = 1f - moving;
                 float kneeBase = Mathf.Lerp(k * 0.62f, k, hard);
                 float kRelease = Mathf.Lerp(kneeBase, kneeBase * kneeBase, moving);
-                float kL = sinC >= 0f ? kneeBase : kRelease;
-                float kR = sinC >= 0f ? kRelease : kneeBase;
-                float armK = kRelease * hard;
-                float hipK = Mathf.Lerp(kneeBase * 0.2f, kRelease, hard);
+                float kneeStand = kneeBase * kneeBase;
+                float kL = sinC >= 0f ? Mathf.Lerp(kneeBase, kneeStand, standing) : kRelease;
+                float kR = sinC >= 0f ? kRelease : Mathf.Lerp(kneeBase, kneeStand, standing);
+                float armK = Mathf.Lerp(kRelease, kneeStand * kneeStand, standing) * hard;
+                float hipMove = Mathf.Lerp(kneeBase * 0.2f, kRelease, hard);
+                float hipK = Mathf.Lerp(hipMove, hipMove * hipMove, standing);
                 _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(48f, 0f, 0f), kL);
                 _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(40f, 0f, 0f), kR);
                 _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-78f, 0f, 0f), kL);
