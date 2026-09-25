@@ -550,6 +550,11 @@ namespace Tag.Art
         Quaternion _walkGuardUaL, _walkGuardUaR, _walkGuardLaL, _walkGuardLaR;
         Quaternion _walkGuardUlL, _walkGuardUlR, _walkGuardLlL, _walkGuardLlR;
         Quaternion _walkGuardSp, _walkGuardHp, _walkGuardHd;
+        bool _stillFromSprint;
+        float _stillFromSprintIn;
+        Quaternion _sprintGuardUaL, _sprintGuardUaR, _sprintGuardLaL, _sprintGuardLaR;
+        Quaternion _sprintGuardUlL, _sprintGuardUlR, _sprintGuardLlL, _sprintGuardLlR;
+        Quaternion _sprintGuardSp, _sprintGuardHp, _sprintGuardHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -1137,6 +1142,9 @@ namespace Tag.Art
             bool standWalk = _wasGrounded && _prevSpeed > 0.35f && _prevSpeed <= 5.5f
                 && !_crouchFromStand && !crouchWalkPose && !_crouchWalkArmed
                 && !_dropSlide && _skiBlend <= 0.2f && _landSquash <= 0.08f;
+            bool standRun = _wasGrounded && _prevSpeed > 5.5f
+                && !_crouchFromStand && !crouchWalkPose && !_crouchWalkArmed
+                && !_dropSlide && _skiBlend <= 0.2f && _landSquash <= 0.08f;
             if (crouch && !sliding && speed <= 0.35f)
                 _crouchFromStand = true;
             else if ((crouch && speed > 0.35f) || sliding || _dropVis <= 0.001f)
@@ -1206,6 +1214,36 @@ namespace Tag.Art
                 _stillFromWalk = false;
             else if (_stillFromWalk)
                 _stillFromWalkIn = Mathf.MoveTowards(_stillFromWalkIn, 1f, dt / 0.04f);
+            bool sprintIntoStill = inStill && !_stillCrouchWas && standRun && !standWalk
+                && !_stillFromWalk && !_crouchFromJump && !_crouchFromDash && !dashPoseNow && !_diveFromJump
+                && !sliding && !jet && !wallRun && !climb
+                && _punchPhaseWas != PunchPhase.Windup && _punchPhaseWas != PunchPhase.Active
+                && _punchPhaseWas != PunchPhase.HitRecover && _punchPhaseWas != PunchPhase.MissRecover
+                && _itClaim <= 0.2f && _dashReady <= 0.2f
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (sprintIntoStill)
+            {
+                // The run eases into the guard. A walk into a still crouch keeps its ease.
+                // A jump into a still crouch keeps its ease. An air dash into a still crouch keeps its ease.
+                _stillFromSprint = true;
+                _stillFromSprintIn = 0f;
+                _sprintGuardUaL = _upperArmL.localRotation;
+                _sprintGuardUaR = _upperArmR.localRotation;
+                _sprintGuardLaL = _lowerArmL.localRotation;
+                _sprintGuardLaR = _lowerArmR.localRotation;
+                _sprintGuardUlL = _upperLegL.localRotation;
+                _sprintGuardUlR = _upperLegR.localRotation;
+                _sprintGuardLlL = _lowerLegL.localRotation;
+                _sprintGuardLlR = _lowerLegR.localRotation;
+                _sprintGuardSp = _spine.localRotation;
+                _sprintGuardHp = _hips.localRotation;
+                _sprintGuardHd = _head.localRotation;
+            }
+            if (!inStill)
+                _stillFromSprint = false;
+            else if (_stillFromSprint)
+                _stillFromSprintIn = Mathf.MoveTowards(_stillFromSprintIn, 1f, dt / 0.04f);
             _stillCrouchWas = inStill;
             if (crouch && !sliding && speed > 0.35f && speed <= 5.5f && !_dropSlide)
                 _crouchFromWalk = true;
@@ -8315,6 +8353,52 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_walkGuardUlR, guardThighR, intoGuard);
                     _llLT = Quaternion.Slerp(_walkGuardLlL, guardKneeL, intoGuard);
                     _llRT = Quaternion.Slerp(_walkGuardLlR, guardKneeR, intoGuard);
+                }
+                else
+                {
+                    _uaLT = guardL;
+                    _uaRT = guardR;
+                    _laLT = guardElL;
+                    _laRT = guardElR;
+                    _spineT = guardSp;
+                    _hipsT = guardHp;
+                    _headT = guardHd;
+                    _ulLT = guardThighL;
+                    _ulRT = guardThighR;
+                    _llLT = guardKneeL;
+                    _llRT = guardKneeR;
+                }
+            }
+            if (_stillFromSprint && !_stillFromWalk && !_crouchFromDash && !_crouchFromJump && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The run eases into the guard, then the guard holds.
+                // A walk into a still crouch keeps its ease. A jump into a still crouch keeps its ease.
+                // An air dash into a still crouch keeps its ease.
+                float intoGuard = _stillFromSprintIn;
+                Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion guardR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion guardElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion guardHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion guardHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion guardThighL = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardThighR = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardKneeL = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
+                Quaternion guardKneeR = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
+                if (intoGuard < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_sprintGuardUaL, guardL, intoGuard);
+                    _uaRT = Quaternion.Slerp(_sprintGuardUaR, guardR, intoGuard);
+                    _laLT = Quaternion.Slerp(_sprintGuardLaL, guardElL, intoGuard);
+                    _laRT = Quaternion.Slerp(_sprintGuardLaR, guardElR, intoGuard);
+                    _spineT = Quaternion.Slerp(_sprintGuardSp, guardSp, intoGuard);
+                    _hipsT = Quaternion.Slerp(_sprintGuardHp, guardHp, intoGuard);
+                    _headT = Quaternion.Slerp(_sprintGuardHd, guardHd, intoGuard);
+                    _ulLT = Quaternion.Slerp(_sprintGuardUlL, guardThighL, intoGuard);
+                    _ulRT = Quaternion.Slerp(_sprintGuardUlR, guardThighR, intoGuard);
+                    _llLT = Quaternion.Slerp(_sprintGuardLlL, guardKneeL, intoGuard);
+                    _llRT = Quaternion.Slerp(_sprintGuardLlR, guardKneeR, intoGuard);
                 }
                 else
                 {
