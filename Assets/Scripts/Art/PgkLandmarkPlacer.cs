@@ -25,7 +25,7 @@ namespace Tag.Art
         static float _hiIndexTime;
 
         [SerializeField] bool placeLandmarks = true;
-        /// <summary>ON — connected kit districts along the chase (not graybox flow stones).</summary>
+        /// <summary>ON - connected kit districts along the chase (not graybox flow stones).</summary>
         [SerializeField] bool placePgkStructures = true;
         [SerializeField] float landmarkUniformScale = 1.15f;
         [SerializeField] float pgkUniformScale = 1f;
@@ -45,8 +45,8 @@ namespace Tag.Art
         const float SlideGroundMouthY = 1.91f;
 
         /// <summary>
-        /// Mouth band is ~1.10 m behind the pivot (local −Z). A 2.00 m offset from the
-        /// tower center tucks that mouth ~0.10 m inside the 2×2 lip (0.25 m grid).
+        /// Mouth band is ~1.10 m behind the pivot (local -Z). A 2.00 m offset from the
+        /// tower center tucks that mouth ~0.10 m inside the 2x2 lip (0.25 m grid).
         /// </summary>
         const float SlideLipOffset = 2.00f;
 
@@ -65,10 +65,10 @@ namespace Tag.Art
         // covered Spawn_NW / Spawn_SE. Shield is shifted north of Spawn_NE.
         static readonly (string stem, Vector3 pos, float yaw, float scale)[] LandmarkSlots =
         {
-            // Off every chase lane. The west lip (x 28.5–31.1, z 31–33) still sat on the
+            // Off every chase lane. The west lip (x 28.5-31.1, z 31-33) still sat on the
             // west junction of the cross, so it walled that tag line. Scale 0.28 yaw 0
             // does not fit between the outer lanes and the spines (those gaps are ~1.2 m
-            // and the mesh is ~2.0 m deep). NW lawn: x 10.7–13.3, z 51.1–53.1, 1.0 m
+            // and the mesh is ~2.0 m deep). NW lawn: x 10.7-13.3, z 51.1-53.1, 1.0 m
             // north of Spawn_NW, west of the north ring, south of the map edge.
             // Stem seats minY 1.001. Crash bowl stays open.
             ("Landmark_CrashTorso_Hi", new Vector3(12f, 0f, 52.12f), 0f, 0.28f),
@@ -76,15 +76,15 @@ namespace Tag.Art
             // Foxhole sits east of Spawn_SE (pad ends x=67.1). Scale 0.35 is the
             // largest yaw-0 footprint that stays on the map and off that pad.
             ("Landmark_ArmyFoxhole_Hi", new Vector3(69.55f, 0f, 2.55f), 0f, 0.35f),
-            // Helmet yaw 0 scale 0.30 already fills x 0.44–4.56. Larger covers Spawn_NW or leaves the map.
+            // Helmet yaw 0 scale 0.30 already fills x 0.44-4.56. Larger covers Spawn_NW or leaves the map.
             ("Landmark_AstroHelmet_Hi", new Vector3(2.5f, 0f, 51.2f), 0f, 0.30f),
             ("Landmark_KnightShield_Hi", new Vector3(66f, 0f, 52.2f), 180f, 0.9f),
             // Disc is east of Conn_Tron (ends x=37.8) and west of SpineXe (starts x=46.4).
             ("Landmark_TronDisc_Hi", new Vector3(42.1f, 0f, 11.5f), 0f, 0.5f),
             // Full scale yaw 0 was a 1.38-tall wall along the west chase (z through Spawn_NW).
             // Slot 0.725 yaw 90: length runs along X, height matches PGK_Rail (~1.0), grounded.
-            // North rim (x 31–41, z ~48.5–48.9): ~0.76 m north of EdgeRail_N so it does not
-            // read as a second curb, ~0.43 m south of the ring wall. The mesh is 10× longer
+            // North rim (x 31-41, z ~48.5-48.9): ~0.76 m north of EdgeRail_N so it does not
+            // read as a second curb, ~0.43 m south of the ring wall. The mesh is 10- longer
             // than it is tall, so rail height (~1.0) cannot also be rail length. This z is the
             // only band clear of the outer lane, Conn_Ninja, and SpineZn.
             ("Landmark_NinjaBladeRail_Hi", new Vector3(36f, 0f, 48.70f), 90f, 0.725f),
@@ -146,10 +146,10 @@ namespace Tag.Art
 
         /// <summary>
         /// Connected playground districts. Ski spines (x=24/48, z=18/36, 3.2 m wide) stay open.
-        /// Fort slide mouths tuck inside the 2×2 lip; exits sit on a three-tile pit.
+        /// Fort slide mouths tuck inside the 2x2 lip; exits sit on a three-tile pit.
         /// Mega_SlideTube and PGK_Slide_Tube90 stay unspawned: the mega tube's floor
         /// rises ~3.4 m over 10 m, and Tube90's opening span is ~3.45 m. Neither end
-        /// pair lands on the 0.40–2.00 deck grid without burying the low mouth.
+        /// pair lands on the 0.40-2.00 deck grid without burying the low mouth.
         /// Horizontal Toy_TunnelTube / Mega_CrawlTunnel runs are the crawl instead.
         /// </summary>
         int PlaceChasePlayground(Transform root)
@@ -177,13 +177,13 @@ namespace Tag.Art
             n += GroundAccent(root, "Play_Mushroom_SW", new Vector3(4.5f, 0f, 6.94f), 0f, "Toy_MushroomSteps");
             n += PathBridges(root);
             n += PathCues(root);
-            // Overhead bars. West stays at x=11 (the mast owns x≤9.5 around z 12–18).
+            // Overhead bars. West stays at x=11 (the mast owns x-9.5 around z 12-18).
             // East sits at x=62.5, just inside the kickball pad's open west edge.
             // Segments stop at the EW spines; you cross those on foot.
             n += MonkeyLane(root, "Play_Bars_W", 11f, new[] { 12.6f, 22f, 26.2f, 30.4f, 40.2f });
             n += MonkeyLane(root, "Play_Bars_E", 62.5f, new[] { 13.2f, 22f, 26.2f, 30.4f, 40.2f, 44.4f });
             // Beams end 0.25 m short of the loop towers and stay off both EW spines.
-            // West run z 20.75–29.75 (tower deck starts z=30). East run z 24.25–33.25
+            // West run z 20.75-29.75 (tower deck starts z=30). East run z 24.25-33.25
             // (tower deck ends z=24, north spine starts 34.4).
             n += BeamLane(root, "Play_Beam_W", 13.5f, new[] { 22.25f, 25.25f, 28.25f });
             n += BeamLane(root, "Play_Beam_E", 60.5f, new[] { 25.75f, 28.75f, 31.75f });
@@ -239,7 +239,7 @@ namespace Tag.Art
         /// <summary>
         /// McDonald's ground floor: spiral you step into off the 1.60 deck, then a tube street.
         /// Spiral at x=2.50 yaw 180: entrance overlaps the deck by 0.25 m. Corner posts
-        /// (±1, ±1) have no mesh within 0.15 m. Plastic end caps insert ~0.36 m.
+        /// (-1, -1) have no mesh within 0.15 m. Plastic end caps insert ~0.36 m.
         /// North mouth at z=-3 collars the tube by ~0.31 m and stays ~0.28 m off the stair.
         /// </summary>
         static void AddPlayPlaceAnnex(List<(string id, Vector3 p, float y)> pieces)
@@ -264,7 +264,7 @@ namespace Tag.Art
             // Closer in z hits the post. Top is 0.41, the same band as the 0.40 stoop.
             pieces.Add(("PGK_Balance_Beam_3m_LOD0", new Vector3(-2.52f, 0f, -1.19f), 0f));
             // 2.4 m rung on the west shoulder, yaw 90 so it faces the decks.
-            // x=-1.15: ~0.12 m off the 2×2 edge, ~0.07 m off the corner post, clear of the side stair.
+            // x=-1.15: ~0.12 m off the 2-2 edge, ~0.07 m off the corner post, clear of the side stair.
             // Closer (x=-1.12) closes the post gap to ~0.04 m. Leave it.
             pieces.Add(("PGK_Ladder_Rung_LOD0", new Vector3(-1.15f, 0f, 0.90f), 90f));
         }
@@ -283,12 +283,12 @@ namespace Tag.Art
 
         /// <summary>
         /// Bunker / keep ground floor: one 8 m crawl clear of the stair, climb net on the outer side.
-        /// No second spiral — that annex is the west play places. The 2.4 m rung matches soft-play
+        /// No second spiral - that annex is the west play places. The 2.4 m rung matches soft-play
         /// so the east towers can be climbed to the 2.00 deck, not only the 1.60.
         /// </summary>
         static void AddBunkerAnnex(List<(string id, Vector3 p, float y)> pieces)
         {
-            // South rim misses Spawn_SE (x≤60). North rim stays ~1 m off the ground stair.
+            // South rim misses Spawn_SE (x-60). North rim stays ~1 m off the ground stair.
             // Knight yaw 180 flips this clear of Spawn_NE.
             pieces.Add(("Mega_CrawlTunnel", new Vector3(-2f, 0f, -4.5f), 0f));
             pieces.Add(("Mega_ClimbNet", new Vector3(5f, 0f, -1.5f), 90f));
@@ -344,8 +344,8 @@ namespace Tag.Art
         /// Three tiles down the chute. Mid and far gain a side wing, plus a second column
         /// on the outer side, so the pit reads wider. No fourth tile down the chute:
         /// far edge 6.25 is already ~0.4 m off the spine.
-        /// pitSide 2 (rings) adds the second column on local +X only. Local −X at |2|
-        /// meets SpineXw (tower world x=28, tile would be x 25.5–26.5).
+        /// pitSide 2 (rings) adds the second column on local +X only. Local -X at |2|
+        /// meets SpineXw (tower world x=28, tile would be x 25.5-26.5).
         /// A third fort column (|x|=3) meets the west bars (x=11). Two columns is the max.
         /// </summary>
         static void AddSlidePit(List<(string id, Vector3 p, float y)> pieces, float cx, float cz, float dir, int pitSide)
@@ -436,7 +436,7 @@ namespace Tag.Art
             pieces.Add(("PGK_Rail_2m_LOD0", new Vector3(towerX, Deck200, towerZ - 1f), 0f));
             pieces.Add(("PGK_Rail_2m_LOD0", new Vector3(towerX, Deck200, towerZ + 1f), 0f));
 
-            // Ground flight on the outer side (0 → 0.80). Upper flight on the outer Z end (0.80 → 1.60).
+            // Ground flight on the outer side (0 - 0.80). Upper flight on the outer Z end (0.80 - 1.60).
             float groundX = slideExitsEast ? towerX - 2f : towerX + 2f;
             float groundYaw = slideExitsEast ? -90f : 90f;
             pieces.Add(("PGK_Stairs_5_LOD0", new Vector3(groundX, 0f, towerZ), groundYaw));
@@ -452,7 +452,7 @@ namespace Tag.Art
             pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(towerX + slideSign * SlideLandingNear, 0.02f, towerZ), 0f));
             pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(towerX + slideSign * SlideLandingMid, 0.02f, towerZ), 0f));
             pieces.Add(("PGK_Safety_Tile_1m_LOD0", new Vector3(towerX + slideSign * SlideLandingFar, 0.02f, towerZ), 0f));
-            // Side wings on the mid and far tiles. A second ±Z column clips the vault at local z=3.
+            // Side wings on the mid and far tiles. A second -Z column clips the vault at local z=3.
             // Do not lengthen toward the spine.
             float midX = towerX + slideSign * SlideLandingMid;
             float farX = towerX + slideSign * SlideLandingFar;
@@ -514,7 +514,7 @@ namespace Tag.Art
 
         /// <summary>
         /// Bars yaw 90 run along Z and abut at 4.2 m. Centers stop short of the EW spines
-        /// (z 16.4–19.6 and 34.4–37.6). West x=11 misses the pirate mast and the astro
+        /// (z 16.4-19.6 and 34.4-37.6). West x=11 misses the pirate mast and the astro
         /// spiral. East x=62.5 is on the kickball pad's open west edge.
         /// </summary>
         int MonkeyLane(Transform root, string name, float x, float[] centersZ)
@@ -543,7 +543,7 @@ namespace Tag.Art
         int MerryGoRound(Transform root, string name, Vector3 origin, float yaw)
         {
             // Stand-on spinner. East apron runs out to the west bars (world x=11).
-            // Tiles at local x=4, z=±1 and ±2 sit under the two middle bar spans.
+            // Tiles at local x=4, z=-1 and -2 sit under the two middle bar spans.
             // Local (4, 0) is omitted: that tile would bury the feet where those bars meet.
             var parent = MakeGroup(root, name, origin, yaw);
             return SpawnList(parent, new List<(string id, Vector3 p, float y)>
@@ -593,7 +593,7 @@ namespace Tag.Art
 
         /// <summary>
         /// Low marks on the play path. Benches are Toy_Bench (feet y=0, 0.46 tall).
-        /// The SW bench used to sit on the climb net (x≈9.85). It is now west of that net.
+        /// The SW bench used to sit on the climb net (x-9.85). It is now west of that net.
         /// Soft-play's bench is west of the tube street, not in it.
         /// NE is a bench, not a second arch: the existing arch already clears bars and court by ~1.6 m.
         /// Merry already has a west bench and a south picnic, so no extra seat there.
@@ -662,7 +662,7 @@ namespace Tag.Art
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(-2f, 0.02f, 0f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(0f, 0.02f, 0f), 0f),
                 // South fence is behind the goal (goal back ~z=-3.83) and off SpineZs (ends 19.6).
-                // z=-4.0 → world 20.0: ~0.36 m off the spine, ~0.13 m behind the goal. West stays open.
+                // z=-4.0 - world 20.0: ~0.36 m off the spine, ~0.13 m behind the goal. West stays open.
                 ("Toy_Fence", new Vector3(-2.6f, 0f, 4.5f), 0f),
                 ("Toy_Fence", new Vector3(0f, 0f, 4.5f), 0f),
                 ("Toy_Fence", new Vector3(2.6f, 0f, 4.5f), 0f),
@@ -817,7 +817,7 @@ namespace Tag.Art
             Bounds b = rends[0].bounds;
             for (int i = 1; i < rends.Length; i++)
                 b.Encapsulate(rends[i].bounds);
-            // Parent yaw-only — world Y of support is uniform across local XZ.
+            // Parent yaw-only - world Y of support is uniform across local XZ.
             float targetY = go.transform.parent.TransformPoint(new Vector3(0f, localGroundY, 0f)).y;
             float dy = targetY - b.min.y;
             if (Mathf.Abs(dy) < 0.001f) return;
@@ -862,10 +862,10 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Toy_Goal_Hi_000219 → Toy_Goal_Hi_000219, Toy_Goal_Hi, Toy_Goal
-        /// Mega_ClimbNet_Hi_205615 → Mega_ClimbNet_Hi_205615, Mega_ClimbNet_Hi, Mega_ClimbNet
-        /// PGK_Slide_Straight_M_LOD0 → full + without _LOD0
-        /// Landmark_TronDisc_Hi → Landmark_TronDisc_Hi, Landmark_TronDisc
+        /// Toy_Goal_Hi_000219 - Toy_Goal_Hi_000219, Toy_Goal_Hi, Toy_Goal
+        /// Mega_ClimbNet_Hi_205615 - Mega_ClimbNet_Hi_205615, Mega_ClimbNet_Hi, Mega_ClimbNet
+        /// PGK_Slide_Straight_M_LOD0 - full + without _LOD0
+        /// Landmark_TronDisc_Hi - Landmark_TronDisc_Hi, Landmark_TronDisc
         /// </summary>
         static IEnumerable<string> StemsFor(string baseName)
         {
