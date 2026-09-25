@@ -128,7 +128,9 @@ Already on this branch: Stopping from a sprint plants the last foot under the hi
 
 Already on this branch: In the air, the arms stay clear of the torso. The jump tuck is unchanged. Look speed is unchanged.
 
-This delta: Starting or stopping a walk keeps the hands forward and out. They do not drift into the hips. Speed is unchanged.
+Already on this branch: Starting or stopping a walk keeps the hands forward and out. They do not drift into the hips. Speed is unchanged.
+
+This delta: A crouch walk is a short shuffle under the hips. The feet do not skate. The crouch does not speed up.
 
 ## Stack snapshot
 
@@ -311,6 +313,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 84. Sprint, then let go: the last foot should plant under the hip before the idle sway. It should not skate. Speed should feel the same.
 85. Jump and look around: the arms should stay clear of the torso on the way down. The tuck on the way up should stay the tuck. Look should feel the same.
 86. Stand, then walk, then stop: the hands should stay forward and out the whole way. They should not drift into the hips. The idle sway and the first step should still be there. Speed should feel the same.
+87. Hold crouch and walk: the feet should take short steps under the hips. They should not skate, and you should not speed up. Standing still in a crouch should stay the guard. A fast crouch should still be the slide.
 
 ## Known leftovers
 
@@ -417,6 +420,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 74. A stop from a sprint plants the last foot under the hip, then the idle sway. The foot does not skate. Speed is unchanged.
 75. In the air, the arms stay clear of the torso. The jump tuck is unchanged. Look speed is unchanged.
 76. Starting or stopping a walk keeps the hands forward and out. They do not drift into the hips. Speed is unchanged.
+77. A crouch walk is a short shuffle under the hips. The feet do not skate. The crouch does not speed up. A still crouch stays the guard.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
