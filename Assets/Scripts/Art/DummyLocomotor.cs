@@ -39,6 +39,7 @@ namespace Tag.Art
         bool _jumpFromSlide;
         bool _jumpFromDash;
         bool _jumpFromClimb;
+        bool _jumpFromWall;
         float _prevVy;
         bool _crouchWalkArmed;
         float _airArmIn = 1f;
@@ -400,6 +401,7 @@ namespace Tag.Art
                 _jumpFromSlide = !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && _dropSlide && _dropVis > 0.2f;
                 bool dashPose = _airDashArms || _motor.IsAirDashing;
                 _jumpFromDash = dashPose && !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide;
+                _jumpFromWall = _exitFromWall && _wallExit > 0.2f && !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide && !_jumpFromDash && !_jumpFromClimb;
             }
             else if (!grounded && _motor != null && _motor.Velocity.y > 1.5f && _prevVy <= 1.5f
                 && (_airDashArms || _motor.IsAirDashing)
@@ -411,6 +413,17 @@ namespace Tag.Art
                 _pushOff = 1f;
                 _airArmIn = 0f;
                 _jumpFromDash = true;
+            }
+            else if (!grounded && _motor != null && _motor.Velocity.y > 1.5f && _prevVy <= 1.5f
+                && _exitFromWall && _wallExit > 0.2f
+                && !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide && !_jumpFromDash && !_jumpFromClimb)
+            {
+                // A wall run eases into the push. A climb keeps its own leave.
+                // Exit time is unchanged. Jump height is unchanged.
+                _pushLeft = !_exitLeadLeft;
+                _pushOff = 1f;
+                _airArmIn = 0f;
+                _jumpFromWall = true;
             }
             else if (!grounded)
                 _pushOff = Mathf.MoveTowards(_pushOff, 0f, dt / 0.12f);
@@ -425,6 +438,7 @@ namespace Tag.Art
                 _jumpFromSlide = false;
                 _jumpFromDash = false;
                 _jumpFromClimb = false;
+                _jumpFromWall = false;
             }
             // Find the tuck, then the look trail. Look speed is unchanged.
             if (air)
@@ -2737,6 +2751,62 @@ namespace Tag.Art
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(_exitLlR, pushKneeR, intoPush), airKneeR, leave);
             }
 
+            if (_jumpFromWall && _pushOff > 0.02f && !punching)
+            {
+                // The wall run eases into the push, then the air pose. A climb keeps its own leave.
+                // Exit time is unchanged. Jump height is unchanged.
+                float t = 1f - Mathf.Clamp01(_pushOff);
+                float intoPush = Mathf.Clamp01(t * 2f);
+                float leave = Mathf.Clamp01(t * 2f - 1f);
+                Quaternion pushL = _uaL0 * Quaternion.Euler(-36f, 14f, armZ);
+                Quaternion pushR = _uaR0 * Quaternion.Euler(-36f, -14f, -armZ);
+                Quaternion airL = _uaL0 * Quaternion.Euler(-52f, 22f, armZ);
+                Quaternion airR = _uaR0 * Quaternion.Euler(-52f, -22f, -armZ);
+                Quaternion pushElL = _laL0 * Quaternion.Euler(-14f, 0f, 0f);
+                Quaternion pushElR = _laR0 * Quaternion.Euler(-14f, 0f, 0f);
+                Quaternion airElL = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
+                Quaternion airElR = _laR0 * Quaternion.Euler(-12f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(Quaternion.Slerp(_exitUaL, pushL, intoPush), airL, leave);
+                _uaRT = Quaternion.Slerp(Quaternion.Slerp(_exitUaR, pushR, intoPush), airR, leave);
+                _laLT = Quaternion.Slerp(Quaternion.Slerp(_exitLaL, pushElL, intoPush), airElL, leave);
+                _laRT = Quaternion.Slerp(Quaternion.Slerp(_exitLaR, pushElR, intoPush), airElR, leave);
+                Quaternion pushSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion airSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion pushHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
+                Quaternion airHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
+                Quaternion pushHd = _head0 * Quaternion.Euler(0f, 0f, 0f);
+                Quaternion airHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                _spineT = Quaternion.Slerp(Quaternion.Slerp(_exitSpine, pushSp, intoPush), airSp, leave);
+                _hipsT = Quaternion.Slerp(Quaternion.Slerp(_exitHips, pushHp, intoPush), airHp, leave);
+                _headT = Quaternion.Slerp(Quaternion.Slerp(_headT, pushHd, intoPush), airHd, leave);
+                Quaternion pushThighL;
+                Quaternion pushThighR;
+                Quaternion pushKneeL;
+                Quaternion pushKneeR;
+                if (_pushLeft)
+                {
+                    pushThighL = _ulL0 * Quaternion.Euler(-8f, 0f, 0f);
+                    pushKneeL = _llL0 * Quaternion.Euler(-6f, 0f, 0f);
+                    pushThighR = _ulR0 * Quaternion.Euler(48f, 0f, 0f);
+                    pushKneeR = _llR0 * Quaternion.Euler(-62f, 0f, 0f);
+                }
+                else
+                {
+                    pushThighR = _ulR0 * Quaternion.Euler(-8f, 0f, 0f);
+                    pushKneeR = _llR0 * Quaternion.Euler(-6f, 0f, 0f);
+                    pushThighL = _ulL0 * Quaternion.Euler(48f, 0f, 0f);
+                    pushKneeL = _llL0 * Quaternion.Euler(-62f, 0f, 0f);
+                }
+                Quaternion airThighL = _ulL0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion airThighR = _ulR0 * Quaternion.Euler(20f, 0f, 0f);
+                Quaternion airKneeL = _llL0 * Quaternion.Euler(-28f, 0f, 0f);
+                Quaternion airKneeR = _llR0 * Quaternion.Euler(-26f, 0f, 0f);
+                _ulLT = Quaternion.Slerp(Quaternion.Slerp(_exitUlL, pushThighL, intoPush), airThighL, leave);
+                _ulRT = Quaternion.Slerp(Quaternion.Slerp(_exitUlR, pushThighR, intoPush), airThighR, leave);
+                _llLT = Quaternion.Slerp(Quaternion.Slerp(_exitLlL, pushKneeL, intoPush), airKneeL, leave);
+                _llRT = Quaternion.Slerp(Quaternion.Slerp(_exitLlR, pushKneeR, intoPush), airKneeR, leave);
+            }
+
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
             if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash))
             {
@@ -3649,11 +3719,19 @@ namespace Tag.Art
         {
             _bouncePulse = 1f;
             _bounceWallLeft = _motor != null && _motor.WallLeft;
-            // The climb eases into the push. A wall run keeps the old kick.
+            // The climb eases into the push. A wall run eases into its own push.
             // Exit time is unchanged. Jump height is unchanged.
             if (!_exitFromWall && _wallExit > 0.5f)
             {
                 _jumpFromClimb = true;
+                _pushOff = 1f;
+                _pushLeft = !_exitLeadLeft;
+            }
+            else if (_exitFromWall && _wallExit > 0.5f)
+            {
+                // The wall run eases into the push. A climb keeps its own leave.
+                // Exit time is unchanged. Jump height is unchanged.
+                _jumpFromWall = true;
                 _pushOff = 1f;
                 _pushLeft = !_exitLeadLeft;
             }
