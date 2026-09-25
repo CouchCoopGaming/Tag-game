@@ -29,7 +29,7 @@ namespace Tag.Modes
         [SerializeField] float cooldownMax = 0.78f;
         [SerializeField] float decisionHz = 5f;
         [SerializeField] Vector3 centerOffset = Vector3.zero;
-        [SerializeField] float closeChaseRange = 3.5f;
+        [SerializeField] float closeChaseRange = 3.6f; // slightly earlier close-chase / punch pressure
         [SerializeField] float leadSeconds = 0.34f; // slight extra lead so intercept cuts read
         [SerializeField] float faceAlignDeg = 16f;
         [Tooltip("Fallback Hot Potato fuse warn window when HotPotatoTuning unavailable.")]
