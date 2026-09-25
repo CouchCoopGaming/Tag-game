@@ -38,6 +38,10 @@ namespace Tag.Art
         float _tagFlinch;
         float _itClaim;
         float _skiBlend;
+        float _wallExit;
+        Quaternion _exitUaL, _exitUaR, _exitLaL, _exitLaR;
+        Quaternion _exitUlL, _exitUlR, _exitLlL, _exitLlR;
+        Quaternion _exitSpine, _exitHips;
         bool _wasLunging;
         bool _wasAirDashing;
         bool _wasJetting;
@@ -652,6 +656,39 @@ namespace Tag.Art
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(4f + sFrontL * 14f), 0f, 0f), _skiBlend);
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(4f + sFrontR * 14f), 0f, 0f), _skiBlend);
                 }
+            }
+
+            if (wallRun)
+            {
+                _wallExit = 1f;
+                _exitUaL = _uaLT;
+                _exitUaR = _uaRT;
+                _exitLaL = _laLT;
+                _exitLaR = _laRT;
+                _exitUlL = _ulLT;
+                _exitUlR = _ulRT;
+                _exitLlL = _llLT;
+                _exitLlR = _llRT;
+                _exitSpine = _spineT;
+                _exitHips = _hipsT;
+            }
+            else if (dashing || punching || sliding || jet || climb || mantle)
+                _wallExit = 0f;
+            else if (_wallExit > 0f)
+            {
+                // Leaving the wall used to swap onto the run or the fall in one frame.
+                _wallExit = Mathf.MoveTowards(_wallExit, 0f, dt / 0.18f);
+                float w = _wallExit;
+                _uaLT = Quaternion.Slerp(_uaLT, _exitUaL, w);
+                _uaRT = Quaternion.Slerp(_uaRT, _exitUaR, w);
+                _laLT = Quaternion.Slerp(_laLT, _exitLaL, w);
+                _laRT = Quaternion.Slerp(_laRT, _exitLaR, w);
+                _ulLT = Quaternion.Slerp(_ulLT, _exitUlL, w);
+                _ulRT = Quaternion.Slerp(_ulRT, _exitUlR, w);
+                _llLT = Quaternion.Slerp(_llLT, _exitLlL, w);
+                _llRT = Quaternion.Slerp(_llRT, _exitLlR, w);
+                _spineT = Quaternion.Slerp(_spineT, _exitSpine, w);
+                _hipsT = Quaternion.Slerp(_hipsT, _exitHips, w);
             }
 
             if (_landSquash > 0.08f && grounded && !sliding && !dashing)
