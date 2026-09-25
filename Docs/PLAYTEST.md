@@ -632,7 +632,9 @@ Already on this branch: A jump out of a punch miss eases the whiff into the air 
 
 Already on this branch: A jump out of a tag eases the connect into the air pose. The air pose then holds. The slow push stays off that path. Flinch time is unchanged. Jump height is unchanged.
 
-This delta: A jump out of a claim eases the claim into the air pose. The air pose then holds. The slow push stays off that path. Claim time is unchanged. Jump height is unchanged.
+Already on this branch: A jump out of a claim eases the claim into the air pose. The air pose then holds. The slow push stays off that path. Claim time is unchanged. Jump height is unchanged.
+
+This delta: A jump out of a dash-ready pulse eases the pulse into the air pose. The air pose then holds. The slow push stays off that path. Duration and cooldown are unchanged. Jump height is unchanged.
 
 ## Stack snapshot
 
@@ -1067,6 +1069,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 336. Miss a punch, then jump: the whiff should ease into the air pose. The air pose should then hold. The push should not ease back in. A hard landing into a jump should feel the same. The whiff should not feel longer. The jump should not feel higher. Jet stays off.
 337. Get tagged, then jump: the connect should ease into the air pose. The air pose should then hold. The push should not ease back in. A punch miss into a jump should feel the same. The flinch should not feel longer. The jump should not feel higher. Jet stays off.
 338. Claim It, then jump: the claim should ease into the air pose. The air pose should then hold. The push should not ease back in. A tag into a jump should feel the same. The claim should not feel longer. The jump should not feel higher. Jet stays off.
+339. Dash ready, then jump: the pulse should ease into the air pose. The air pose should then hold. The push should not ease back in. A claim into a jump should feel the same. The dash should not feel longer. The jump should not feel higher. Jet stays off.
 
 ## Known leftovers
 
@@ -1425,6 +1428,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 326. A jump out of a punch miss eases the whiff into the air pose. The air pose then holds. The slow push stays off that path. Whiff time is unchanged. Jump height is unchanged. Jet stays off.
 327. A jump out of a tag eases the connect into the air pose. The air pose then holds. The slow push stays off that path. Flinch time is unchanged. Jump height is unchanged. Jet stays off.
 328. A jump out of a claim eases the claim into the air pose. The air pose then holds. The slow push stays off that path. Claim time is unchanged. Jump height is unchanged. Jet stays off.
+329. A jump out of a dash-ready pulse eases the pulse into the air pose. The air pose then holds. The slow push stays off that path. Duration and cooldown are unchanged. Jump height is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
