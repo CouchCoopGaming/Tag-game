@@ -307,11 +307,11 @@ namespace Tag.Gameplay
             // Readable TP punch connect: stronger camera kick + FOV punch on attacker
             var tps = GetComponentInChildren<TpsMoveCamera>(true);
             if (tps != null)
-                tps.AddKick(new Vector3(0f, 0.16f, -0.42f)); // connect kick reads a hair stronger in TP
+                tps.AddKick(new Vector3(0f, 0.17f, -0.44f)); // connect kick reads a hair stronger in TP
             // Victim's chase cam, lighter than the attacker's. No hitstop — nothing else freezes time.
             var victimCam = victim.GetComponentInChildren<TpsMoveCamera>(true);
             if (victimCam != null && victimCam != tps)
-                victimCam.AddKick(new Vector3(0.05f, 0.10f, -0.22f)); // clearer tag recoil in TP
+                victimCam.AddKick(new Vector3(0.05f, 0.11f, -0.24f)); // clearer tag recoil in TP
 
             // Target ragdoll / kinematic stun proxy + i-frames; hit pulse fires on It visual swap
             victim.ReceiveTagHit(knock, tuning);

@@ -298,7 +298,7 @@ namespace Tag.Art
                 else if (phase == PunchPhase.Active)
                 {
                     float e = Mathf.Lerp(0.8f, 1f, punchProg);
-                    _uaRT = _uaR0 * Quaternion.Euler(-55f - 130f * e, 52f * e, -34f); // slightly more elbow flare so Active reads in TP
+                    _uaRT = _uaR0 * Quaternion.Euler(-55f - 130f * e, 54f * e, -34f); // slightly more elbow flare so Active reads in TP
                     _laRT = _laR0 * Quaternion.Euler(-72f * e, 0f, 0f);
                     _hipsT = _hips0 * Quaternion.Euler(18f, 16f * e, 0f);
                     _spineT = _spine0 * Quaternion.Euler(leanX + 18f, 28f * e, leanZ);
@@ -307,7 +307,7 @@ namespace Tag.Art
                 {
                     // Hold the connect: arm stays punched out + slight overshoot, then eases toward idle faster late.
                     float r = Mathf.Lerp(1.2f, 0.35f, punchProg * punchProg);
-                    _uaRT = _uaR0 * Quaternion.Euler(-70f - 110f * r, 54f * r, -38f); // match Active flare so HitRecover still reads in TP
+                    _uaRT = _uaR0 * Quaternion.Euler(-70f - 110f * r, 56f * r, -38f); // match Active flare so HitRecover still reads in TP
                     _laRT = _laR0 * Quaternion.Euler(-78f * r, 0f, 0f);
                     _uaLT = _uaL0 * Quaternion.Euler(-32f, 18f, armZ + 22f);
                     _spineT = _spine0 * Quaternion.Euler(leanX + 14f * r, 18f * r, leanZ);
@@ -576,7 +576,7 @@ namespace Tag.Art
             if (airDashing && !_wasAirDashing)
             {
                 _dashPulse = 1f;
-                _dashTrailT = 0.30f; // slightly longer air-dash ribbon read
+                _dashTrailT = 0.32f; // slightly longer air-dash ribbon read
                 EnsureDashTrail();
             }
             if (jet && !_wasJetting) _dashPulse = Mathf.Max(_dashPulse, 0.85f);
@@ -596,7 +596,7 @@ namespace Tag.Art
             go.transform.SetParent(transform, false);
             go.transform.localPosition = new Vector3(0f, 0.9f, -0.15f);
             _dashTrail = go.AddComponent<TrailRenderer>();
-            _dashTrail.time = 0.30f;
+            _dashTrail.time = 0.32f;
             _dashTrail.minVertexDistance = 0.04f;
             _dashTrail.widthMultiplier = 0.36f;
             _dashTrail.emitting = false;
