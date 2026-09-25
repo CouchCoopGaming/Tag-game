@@ -302,7 +302,9 @@ Already on this branch: A slide into a jump eases the wedge into the push. A sti
 
 Already on this branch: A jump into a ski eases the glide or the landing into the stride. A walk into a ski is unchanged. A sprint into a ski is unchanged. A crouch into a ski is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Jump height is unchanged.
 
-This delta: A jump into a slide eases the glide or the landing into the wedge. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a ski is unchanged. Jump height is unchanged. slideBoost stays 0.
+Already on this branch: A jump into a slide eases the glide or the landing into the wedge. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a ski is unchanged. Jump height is unchanged. slideBoost stays 0.
+
+This delta: An air dash into a jump eases the burst into the push. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
 
 ## Stack snapshot
 
@@ -572,6 +574,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 171. Slide, then jump: the wedge should ease into the push. A still crouch into a jump should feel the same. A crouch walk into a jump should feel the same. A ski into a jump should feel the same. A standing jump should feel the same. The jump should not feel higher. The slide should not feel faster.
 172. Jump, then ski: the glide or the landing should ease into the stride. A walk into a ski should feel the same. A crouch into a ski should feel the same. A slide into a ski should feel the same. Speed should feel the same. The jump should not feel higher.
 173. Jump, then slide: the glide or the landing should ease into the wedge. A crouch into a slide should feel the same. A ski into a slide should feel the same. A jump into a ski should feel the same. The jump should not feel higher. The slide should not feel faster.
+174. Air dash, then jump: the burst should ease into the push. A still crouch into a jump should feel the same. A crouch walk into a jump should feel the same. A ski into a jump should feel the same. A slide into a jump should feel the same. The jump should not feel higher. The dash should not feel longer.
 
 ## Known leftovers
 
@@ -765,6 +768,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 161. A slide into a jump eases the wedge into the push. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A standing jump is unchanged. Jump height is unchanged. slideBoost stays 0.
 162. A jump into a ski eases the glide or the landing into the stride. A walk into a ski is unchanged. A sprint into a ski is unchanged. A crouch into a ski is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Jump height is unchanged.
 163. A jump into a slide eases the glide or the landing into the wedge. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a ski is unchanged. Jump height is unchanged. slideBoost stays 0.
+164. An air dash into a jump eases the burst into the push. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
