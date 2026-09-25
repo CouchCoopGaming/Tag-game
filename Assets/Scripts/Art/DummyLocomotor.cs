@@ -500,10 +500,19 @@ namespace Tag.Art
                 // Roll stays 0 at rest and only picks up the mild A once the stride is moving.
                 float outY = Mathf.Lerp(12f, 8f, gait);
                 float roll = Mathf.Lerp(0f, armZ, gait);
-                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle, outY, roll);
-                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle, -outY, -roll);
-                float elbowL = Mathf.Lerp(-18f, -8f, idle) - Mathf.Max(0f, -sinC) * Mathf.Lerp(28f, 58f, runAmt);
-                float elbowR = Mathf.Lerp(-18f, -8f, idle) - Mathf.Max(0f, sinC) * Mathf.Lerp(28f, 58f, runAmt);
+                // The reach opposite the front knee opens a little wider. The back arm keeps the
+                // shorter yaw so the hand stays out of the hip. Rearward pitch stays short.
+                float reachY = Mathf.Lerp(outY, outY + 6f, runAmt);
+                float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
+                float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
+                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle, yL, roll);
+                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle, -yR, -roll);
+                // Long line on the reach. The elbow fold sits on the back arm, short of the hip.
+                // The trail knee is unchanged and stays straight.
+                float elbowReach = Mathf.Lerp(-10f, -6f, runAmt);
+                float elbowPull = Mathf.Lerp(-18f, -30f, runAmt);
+                float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
+                float elbowR = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait);
                 _laLT = _laL0 * Quaternion.Euler(elbowL, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(elbowR, 0f, 0f);
                 if (_skiBlend > 0.02f)
