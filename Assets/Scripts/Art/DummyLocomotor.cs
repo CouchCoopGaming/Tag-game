@@ -641,16 +641,17 @@ namespace Tag.Art
 
             if (flinchAmt > 0.04f)
             {
-                // Tagged runner: both forearms up in a guard. Pitch and the mild A flare only.
+                // Tagged runner: a long V in front of the chest. A bent elbow disappears at chase distance.
+                // Both knees still bend, so it stays distinct from the new It's one-knee claim. Mild A only.
                 float f = flinchAmt;
-                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-58f, 12f, armZ), f);
-                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-58f, -12f, -armZ), f);
-                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-74f, 0f, 0f), f);
-                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-74f, 0f, 0f), f);
-                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(28f, 0f, 0f), f);
-                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(28f, 0f, 0f), f);
-                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-64f, 0f, 0f), f);
-                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-64f, 0f, 0f), f);
+                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-78f, 22f, armZ), f);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-78f, -22f, -armZ), f);
+                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-16f, 0f, 0f), f);
+                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-16f, 0f, 0f), f);
+                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(22f, 0f, 0f), f);
+                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(22f, 0f, 0f), f);
+                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-48f, 0f, 0f), f);
+                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-48f, 0f, 0f), f);
                 _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(22f, 0f, 0f), f);
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(8f, 0f, 0f), f);
             }
