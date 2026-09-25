@@ -360,11 +360,12 @@ namespace Tag.Art
 
             if (_punchTelegraph > 0.02f && !punching)
             {
-                // Dummy It cocks before QueuePunch. The real windup is only 0.12s.
+                // Dummy It cocks before QueuePunch. Match the flared windup elbow so the tell reads in TP.
+                // The real windup is still only 0.12s; this is the hold pose before QueuePunch.
                 float k = Mathf.Clamp01(_punchTelegraph / 0.2f);
-                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(78f, -30f, -8f), k);
-                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-74f, 0f, 0f), k);
-                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 10f, -18f, leanZ), k);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(28f, -22f, -72f), k);
+                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-112f, 0f, 0f), k);
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 12f, -32f, leanZ), k);
             }
 
             // Legs
