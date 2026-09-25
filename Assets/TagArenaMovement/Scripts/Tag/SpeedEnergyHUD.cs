@@ -36,7 +36,7 @@ namespace TagArena.Movement
         bool _itFlashGained;
 
         // Trail Tag near-miss (foreign ribbon) - soft edge warn before eliminate contact.
-        const float TrailNearMissWarnM = 5.0f; // slightly earlier soft edge so TRAIL! reads before contact
+        const float TrailNearMissWarnM = 5.5f; // earlier soft edge so TRAIL! reads before contact (AI peels ~9 m)
         readonly List<TrailSegment> _trailNearScratch = new List<TrailSegment>();
         float _trailNearDist = float.MaxValue;
         bool _trailNearActive;

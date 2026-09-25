@@ -151,7 +151,8 @@ namespace TagArena.Movement
             _in.Read();
             // Pause stops FixedUpdate, so a buffered jump would fire on resume.
             // Results keep timeScale at 1 with the cursor unlocked; drop that buffer too.
-            if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked)
+            // ResumeInputGate covers the lock-frame recenter so a resume click cannot hop.
+            if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked || ResumeInputGate.Blocking)
             {
                 _jumpBuf = 0f;
                 return;
