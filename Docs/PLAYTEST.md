@@ -170,7 +170,9 @@ Already on this branch: After a jump, the arms ease into the look pose in the ai
 
 Already on this branch: Leaving a wall into a walk eases the hands into the stride. They do not hitch. The leave time is unchanged.
 
-This delta: Leaving a climb into a walk eases the hands into the stride. They do not hitch. The leave time is unchanged.
+Already on this branch: Leaving a climb into a walk eases the hands into the stride. They do not hitch. The leave time is unchanged.
+
+This delta: An air crouch into a soft landing opens into the absorb. It does not stay folded and then pop. The fast fall is unchanged.
 
 ## Stack snapshot
 
@@ -374,6 +376,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 105. Jump and look: the arms should ease into the pose in the air. They should not snap. Look should feel the same. The jump should not go higher.
 106. Wall-run, then step off into a walk: the hands should ease into the stride. They should not hitch. The leave should not feel longer or shorter.
 107. Climb, then step off into a walk: the hands should ease into the stride. They should not hitch. The leave should not feel longer or shorter.
+108. Hold crouch in the air, then land softly: the fall pose should open into the absorb. It should not stay folded and then pop. The drop should still feel like the same fast fall.
 
 ## Known leftovers
 
@@ -501,6 +504,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 95. After a jump, the arms ease into the look pose in the air. They do not snap. Look speed is unchanged. Jump height is unchanged.
 96. Leaving a wall into a walk eases the hands into the stride. They do not hitch. The leave time is unchanged.
 97. Leaving a climb into a walk eases the hands into the stride. They do not hitch. The leave time is unchanged. A drop keeps the old leave.
+98. An air crouch into a soft landing opens into the absorb. It does not stay folded and then pop. The fast fall is unchanged. Land time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
