@@ -56,6 +56,11 @@ namespace Tag.Art
         Quaternion _slideJumpUlL, _slideJumpUlR, _slideJumpLlL, _slideJumpLlR;
         Quaternion _slideJumpSp, _slideJumpHp, _slideJumpHd;
         bool _jumpFromDash;
+        bool _jumpDashSnap;
+        float _jumpDashSnapIn;
+        Quaternion _burstJumpUaL, _burstJumpUaR, _burstJumpLaL, _burstJumpLaR;
+        Quaternion _burstJumpUlL, _burstJumpUlR, _burstJumpLlL, _burstJumpLlR;
+        Quaternion _burstJumpSp, _burstJumpHp, _burstJumpHd;
         bool _jumpFromClimb;
         bool _jumpFromWall;
         bool _jumpFromAirCrouch;
@@ -2856,6 +2861,29 @@ namespace Tag.Art
                 _pushOff = Mathf.MoveTowards(_pushOff, 0f, dt / 0.12f);
             else
                 _pushOff = 0f;
+            if (_jumpFromDash && !_jumpDashSnap && !punching
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                // The burst eases into the air pose, then the air pose holds.
+                // The slow push stays off this path. Duration and cooldown are unchanged.
+                // Jump height is unchanged.
+                _jumpDashSnap = true;
+                _jumpDashSnapIn = 0f;
+                _burstJumpUaL = _upperArmL.localRotation;
+                _burstJumpUaR = _upperArmR.localRotation;
+                _burstJumpLaL = _lowerArmL.localRotation;
+                _burstJumpLaR = _lowerArmR.localRotation;
+                _burstJumpUlL = _upperLegL.localRotation;
+                _burstJumpUlR = _upperLegR.localRotation;
+                _burstJumpLlL = _lowerLegL.localRotation;
+                _burstJumpLlR = _lowerLegR.localRotation;
+                _burstJumpSp = _spine.localRotation;
+                _burstJumpHp = _hips.localRotation;
+                _burstJumpHd = _head.localRotation;
+                _airArmIn = 1f;
+            }
             _prevVy = _motor != null ? _motor.Velocity.y : 0f;
             if (grounded || _pushOff <= 0.02f)
             {
@@ -2878,6 +2906,13 @@ namespace Tag.Art
                 _jumpFromReady = false;
                 _jumpFromPunch = false;
             }
+            if (_jumpDashSnap && _jumpFromDash && !punching)
+            {
+                if (_jumpDashSnapIn < 0.98f)
+                    _jumpDashSnapIn = Mathf.MoveTowards(_jumpDashSnapIn, 1f, dt / 0.04f);
+            }
+            else if (!_jumpFromDash)
+                _jumpDashSnap = false;
             if (_jumpFromStill && _pushOff > 0.02f)
                 _jumpFromStillIn = Mathf.MoveTowards(_jumpFromStillIn, 1f, dt / 0.04f);
             if (_jumpFromCrouchWalk && _pushOff > 0.02f)
@@ -7335,7 +7370,7 @@ namespace Tag.Art
                 _hipsT = Quaternion.Slerp(fromHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
                 _headT = Quaternion.Slerp(fromHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
             }
-            if (_jumpFromDash && _pushOff > 0.02f && !punching)
+            if (_jumpFromDash && _pushOff > 0.02f && !punching && !_jumpDashSnap)
             {
                 // The burst eases into the push, then the air pose.
                 // A still crouch, a crouch walk, a ski, and a slide keep their jump.
@@ -7401,6 +7436,26 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(Quaternion.Slerp(burstThighR, pushThighR, intoPush), airThighR, leave);
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(burstKneeL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(burstKneeR, pushKneeR, intoPush), airKneeR, leave);
+            }
+            if (_jumpDashSnap && _jumpDashSnapIn < 0.98f && _jumpFromDash && !punching
+                && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill)
+            {
+                // The burst eases into the air pose, then the air pose holds.
+                // A standing idle into a jump has its own ease. A sprint into the air has its own ease.
+                // A walk into a jump has its own ease. The slow push stays off this path.
+                // Duration and cooldown are unchanged. Jump height is unchanged.
+                float intoAir = _jumpDashSnapIn;
+                _uaLT = Quaternion.Slerp(_burstJumpUaL, _uaLT, intoAir);
+                _uaRT = Quaternion.Slerp(_burstJumpUaR, _uaRT, intoAir);
+                _laLT = Quaternion.Slerp(_burstJumpLaL, _laLT, intoAir);
+                _laRT = Quaternion.Slerp(_burstJumpLaR, _laRT, intoAir);
+                _spineT = Quaternion.Slerp(_burstJumpSp, _spineT, intoAir);
+                _hipsT = Quaternion.Slerp(_burstJumpHp, _hipsT, intoAir);
+                _headT = Quaternion.Slerp(_burstJumpHd, _headT, intoAir);
+                _ulLT = Quaternion.Slerp(_burstJumpUlL, _ulLT, intoAir);
+                _ulRT = Quaternion.Slerp(_burstJumpUlR, _ulRT, intoAir);
+                _llLT = Quaternion.Slerp(_burstJumpLlL, _llLT, intoAir);
+                _llRT = Quaternion.Slerp(_burstJumpLlR, _llRT, intoAir);
             }
             if (_surfFromCrouch && onSurf && _surfIn < 0.98f && !punching)
             {
