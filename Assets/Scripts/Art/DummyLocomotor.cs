@@ -587,6 +587,13 @@ namespace Tag.Art
         Quaternion _claimGuardUaL, _claimGuardUaR, _claimGuardLaL, _claimGuardLaR;
         Quaternion _claimGuardUlL, _claimGuardUlR, _claimGuardLlL, _claimGuardLlR;
         Quaternion _claimGuardSp, _claimGuardHp, _claimGuardHd;
+        bool _stillFromReady;
+        float _stillFromReadyIn;
+        bool _readyWas;
+        bool _readyStillHeld;
+        Quaternion _readyGuardUaL, _readyGuardUaR, _readyGuardLaL, _readyGuardLaR;
+        Quaternion _readyGuardUlL, _readyGuardUlR, _readyGuardLlL, _readyGuardLlR;
+        Quaternion _readyGuardSp, _readyGuardHp, _readyGuardHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -3738,6 +3745,39 @@ namespace Tag.Art
                 _stillFromClaim = false;
             else if (_stillFromClaim)
                 _stillFromClaimIn = Mathf.MoveTowards(_stillFromClaimIn, 1f, dt / 0.04f);
+            if (!_readyWas || !inStill)
+                _readyStillHeld = false;
+            bool readyIntoStill = inStill && _readyWas && !_readyStillHeld
+                && phase != PunchPhase.Windup && phase != PunchPhase.Active
+                && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover
+                && !dashPoseNow && !wallRun && !climb
+                && _itClaim <= 0.2f
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (readyIntoStill)
+            {
+                // The pulse eases into the guard. An It claim into a still crouch keeps its ease.
+                // A whiff into a still crouch keeps its ease. A crouch walk keeps its pulse.
+                // Duration and cooldown are unchanged.
+                _stillFromReady = true;
+                _stillFromReadyIn = 0f;
+                _readyStillHeld = true;
+                _readyGuardUaL = _upperArmL.localRotation;
+                _readyGuardUaR = _upperArmR.localRotation;
+                _readyGuardLaL = _lowerArmL.localRotation;
+                _readyGuardLaR = _lowerArmR.localRotation;
+                _readyGuardUlL = _upperLegL.localRotation;
+                _readyGuardUlR = _upperLegR.localRotation;
+                _readyGuardLlL = _lowerLegL.localRotation;
+                _readyGuardLlR = _lowerLegR.localRotation;
+                _readyGuardSp = _spine.localRotation;
+                _readyGuardHp = _hips.localRotation;
+                _readyGuardHd = _head.localRotation;
+            }
+            if (!inStill)
+                _stillFromReady = false;
+            else if (_stillFromReady)
+                _stillFromReadyIn = Mathf.MoveTowards(_stillFromReadyIn, 1f, dt / 0.04f);
             _punchPhaseWas = phase;
             _tagHitWas = hitNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
@@ -7493,16 +7533,16 @@ namespace Tag.Art
             {
                 // The cooldown just ended. A short settle on the chest and the arms,
                 // then back into the stride. Standing, it is a small pulse, then the idle breath.
-                // A still crouch pulses inside the guard. A crouch walk pulses inside the low stride.
+                // A still crouch keeps the pulse for the snapshot ease. A crouch walk pulses inside the low stride.
                 // Not a second whip. Duration and cooldown are unchanged.
                 float moving = grounded ? Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)) : 0f;
                 float standing = grounded ? 1f - moving : 0f;
                 float w = Mathf.Sin(Mathf.Clamp01(_dashReady) * Mathf.PI);
                 bool crouchReady = grounded && crouch && speed <= 0.35f;
                 bool crouchWalkReady = grounded && crouch && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint;
-                if (crouchReady || crouchWalkReady)
+                if ((crouchReady && !_stillFromReady) || crouchWalkReady)
                 {
-                    // A small fold inside the guard, then back. A crouch walk keeps that fold and the low stride.
+                    // A small fold inside the guard, then back. A still crouch keeps its snapshot. A crouch walk keeps that fold and the low stride.
                     _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-42f, 16f, armZ), w);
                     _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-42f, -16f, -armZ), w);
                     _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-80f, 0f, 0f), w);
@@ -7535,6 +7575,7 @@ namespace Tag.Art
                     _hipsT = Quaternion.Slerp(_hipsT, _hipsT * Quaternion.Euler(hip, 0f, 0f), w);
                 }
             }
+            _readyWas = _dashReady > 0.2f && !readyBlocked && !_skiFromReady && !_slideFromReady;
 
             if (_jumpFromTag && _pushOff > 0.02f && !wallRun && !climb)
             {
@@ -8893,6 +8934,52 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_claimGuardUlR, guardThighR, intoGuard);
                     _llLT = Quaternion.Slerp(_claimGuardLlL, guardKneeL, intoGuard);
                     _llRT = Quaternion.Slerp(_claimGuardLlR, guardKneeR, intoGuard);
+                }
+                else
+                {
+                    _uaLT = guardL;
+                    _uaRT = guardR;
+                    _laLT = guardElL;
+                    _laRT = guardElR;
+                    _spineT = guardSp;
+                    _hipsT = guardHp;
+                    _headT = guardHd;
+                    _ulLT = guardThighL;
+                    _ulRT = guardThighR;
+                    _llLT = guardKneeL;
+                    _llRT = guardKneeR;
+                }
+            }
+            if (_stillFromReady && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The pulse eases into the guard, then the guard holds.
+                // An It claim into a still crouch keeps its ease. A whiff into a still crouch keeps its ease.
+                // Duration and cooldown are unchanged.
+                float intoGuard = _stillFromReadyIn;
+                Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion guardR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion guardElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion guardHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion guardHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion guardThighL = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardThighR = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardKneeL = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
+                Quaternion guardKneeR = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
+                if (intoGuard < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_readyGuardUaL, guardL, intoGuard);
+                    _uaRT = Quaternion.Slerp(_readyGuardUaR, guardR, intoGuard);
+                    _laLT = Quaternion.Slerp(_readyGuardLaL, guardElL, intoGuard);
+                    _laRT = Quaternion.Slerp(_readyGuardLaR, guardElR, intoGuard);
+                    _spineT = Quaternion.Slerp(_readyGuardSp, guardSp, intoGuard);
+                    _hipsT = Quaternion.Slerp(_readyGuardHp, guardHp, intoGuard);
+                    _headT = Quaternion.Slerp(_readyGuardHd, guardHd, intoGuard);
+                    _ulLT = Quaternion.Slerp(_readyGuardUlL, guardThighL, intoGuard);
+                    _ulRT = Quaternion.Slerp(_readyGuardUlR, guardThighR, intoGuard);
+                    _llLT = Quaternion.Slerp(_readyGuardLlL, guardKneeL, intoGuard);
+                    _llRT = Quaternion.Slerp(_readyGuardLlR, guardKneeR, intoGuard);
                 }
                 else
                 {
