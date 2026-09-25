@@ -658,7 +658,7 @@ namespace Tag.Art
                 }
             }
 
-            if (wallRun)
+            if (wallRun || climb)
             {
                 _wallExit = 1f;
                 _exitUaL = _uaLT;
@@ -672,11 +672,11 @@ namespace Tag.Art
                 _exitSpine = _spineT;
                 _exitHips = _hipsT;
             }
-            else if (dashing || punching || sliding || jet || climb || mantle)
+            else if (dashing || punching || sliding || jet || mantle)
                 _wallExit = 0f;
             else if (_wallExit > 0f)
             {
-                // Leaving the wall used to swap onto the run or the fall in one frame.
+                // Leaving a wall run or a climb used to swap onto the run or the fall in one frame.
                 _wallExit = Mathf.MoveTowards(_wallExit, 0f, dt / 0.18f);
                 float w = _wallExit;
                 _uaLT = Quaternion.Slerp(_uaLT, _exitUaL, w);
