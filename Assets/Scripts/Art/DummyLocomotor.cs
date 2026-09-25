@@ -116,7 +116,8 @@ namespace Tag.Art
                     hard = Mathf.Max(soft + 1f, _motor.cfg.landStunSpeed);
                 float t = Mathf.Clamp01(Mathf.InverseLerp(soft, hard, impact));
                 // Ease-in so mid falls stay readable but terminal velocity punches.
-                _landSquash = Mathf.Clamp(Mathf.Lerp(0.2f, 1.25f, t * t), 0.2f, 1.25f);
+                // Slightly stronger mid-band so a park hop-off reads without waiting for stun speed.
+                _landSquash = Mathf.Clamp(Mathf.Lerp(0.28f, 1.35f, t * t), 0.28f, 1.35f);
             }
             _wasGrounded = grounded;
             float recover = Mathf.Lerp(7.5f, 5f, Mathf.Clamp01(_landSquash));
@@ -541,11 +542,11 @@ namespace Tag.Art
             float bob = grounded ? step * 0.085f * Mathf.Max(walkAmt, runAmt) : air ? step * 0.02f : 0f;
             if (sliding) bob = -0.22f; else if (crouch) bob = -0.14f;
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
-            if (_landSquash > 0f) bob -= 0.12f * _landSquash;
+            if (_landSquash > 0f) bob -= 0.14f * _landSquash;
             if (dashing) bob += 0.04f * dashAmt;
             if (flinchAmt > 0.04f) bob -= 0.1f * flinchAmt;
             transform.localPosition = _root0 + new Vector3(0f, bob, 0f);
-            float squash = 1f - 0.12f * _landSquash;
+            float squash = 1f - 0.14f * _landSquash;
             // Air-dash: strong stretch then brief squash; tag flinch compresses
             float dashStretch = airDashing ? 0.32f : 0.18f;
             float dashSquash = airDashing ? 0.16f : 0.1f;
