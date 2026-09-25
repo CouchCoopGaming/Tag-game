@@ -594,6 +594,13 @@ namespace Tag.Art
         Quaternion _readyGuardUaL, _readyGuardUaR, _readyGuardLaL, _readyGuardLaR;
         Quaternion _readyGuardUlL, _readyGuardUlR, _readyGuardLlL, _readyGuardLlR;
         Quaternion _readyGuardSp, _readyGuardHp, _readyGuardHd;
+        bool _stillFromGrapple;
+        float _stillFromGrappleIn;
+        bool _grappleReleaseWas;
+        bool _grappleStillHeld;
+        Quaternion _grappleGuardUaL, _grappleGuardUaR, _grappleGuardLaL, _grappleGuardLaR;
+        Quaternion _grappleGuardUlL, _grappleGuardUlR, _grappleGuardLlL, _grappleGuardLlR;
+        Quaternion _grappleGuardSp, _grappleGuardHp, _grappleGuardHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -3778,6 +3785,38 @@ namespace Tag.Art
                 _stillFromReady = false;
             else if (_stillFromReady)
                 _stillFromReadyIn = Mathf.MoveTowards(_stillFromReadyIn, 1f, dt / 0.04f);
+            if (!_grappleReleaseWas || !inStill)
+                _grappleStillHeld = false;
+            bool grappleIntoStill = inStill && _grappleReleaseWas && !_grappleStillHeld && !_jumpFromGrapple
+                && phase != PunchPhase.Windup && phase != PunchPhase.Active
+                && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover
+                && !dashPoseNow && !wallRun && !climb
+                && _itClaim <= 0.2f && _dashReady <= 0.2f
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (grappleIntoStill)
+            {
+                // The line eases into the guard. A dash ready into a still crouch keeps its ease.
+                // An It claim into a still crouch keeps its ease. A crouch walk keeps its slow leave.
+                // The gate stays off.
+                _stillFromGrapple = true;
+                _stillFromGrappleIn = 0f;
+                _grappleStillHeld = true;
+                _grappleGuardUaL = _upperArmL.localRotation;
+                _grappleGuardUaR = _upperArmR.localRotation;
+                _grappleGuardLaL = _lowerArmL.localRotation;
+                _grappleGuardLaR = _lowerArmR.localRotation;
+                _grappleGuardUlL = _upperLegL.localRotation;
+                _grappleGuardUlR = _upperLegR.localRotation;
+                _grappleGuardLlL = _lowerLegL.localRotation;
+                _grappleGuardLlR = _lowerLegR.localRotation;
+                _grappleGuardSp = _spine.localRotation;
+                _grappleGuardHp = _hips.localRotation;
+                _grappleGuardHd = _head.localRotation;
+            }
+            if (!inStill)
+                _stillFromGrapple = false;
+            else if (_stillFromGrapple)
+                _stillFromGrappleIn = Mathf.MoveTowards(_stillFromGrappleIn, 1f, dt / 0.04f);
             _punchPhaseWas = phase;
             _tagHitWas = hitNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
@@ -7174,7 +7213,7 @@ namespace Tag.Art
                 float g = Mathf.SmoothStep(0f, 1f, _grapplePose);
                 float outW = pulling ? g : g * g;
                 // A sprint returns the hands to the long stride. A walk returns them to the walk.
-                // A stand keeps the old leave. A still crouch eases into the guard.
+                // A stand keeps the old leave. A still crouch keeps the line for the snapshot ease.
                 // A crouch walk keeps that guard and eases into the low stride.
                 // The pull is unchanged. The gate stays off.
                 bool crouchGrapple = !pulling && grounded && crouch && speed <= 0.35f;
@@ -7185,9 +7224,9 @@ namespace Tag.Art
                     walkGrapple = 0f;
                 if (crouchGrapple || crouchWalkGrapple)
                     sprintGrapple = 0f;
-                if (crouchGrapple || crouchWalkGrapple)
+                if ((crouchGrapple && !_stillFromGrapple) || crouchWalkGrapple)
                 {
-                    // The line eases into the guard. A crouch walk keeps these arms and opens the low stride.
+                    // The line eases into the guard. A still crouch keeps its snapshot. A crouch walk keeps these arms and opens the low stride.
                     _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaL0 * Quaternion.Euler(-96f, 16f, armZ), outW);
                     _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-36f, -16f, -armZ), _uaR0 * Quaternion.Euler(-96f, -16f, -armZ), outW);
                     _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-72f, 0f, 0f), _laL0 * Quaternion.Euler(-14f, 0f, 0f), outW);
@@ -7275,6 +7314,7 @@ namespace Tag.Art
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(6f, 0f, 0f), outW);
                 }
             }
+            _grappleReleaseWas = !pulling && _grapplePose > 0.2f && !punching && !_skiFromGrapple && !_slideFromGrapple && !_jumpFromGrapple;
 
             if (flinchAmt > 0f)
             {
@@ -8980,6 +9020,52 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_readyGuardUlR, guardThighR, intoGuard);
                     _llLT = Quaternion.Slerp(_readyGuardLlL, guardKneeL, intoGuard);
                     _llRT = Quaternion.Slerp(_readyGuardLlR, guardKneeR, intoGuard);
+                }
+                else
+                {
+                    _uaLT = guardL;
+                    _uaRT = guardR;
+                    _laLT = guardElL;
+                    _laRT = guardElR;
+                    _spineT = guardSp;
+                    _hipsT = guardHp;
+                    _headT = guardHd;
+                    _ulLT = guardThighL;
+                    _ulRT = guardThighR;
+                    _llLT = guardKneeL;
+                    _llRT = guardKneeR;
+                }
+            }
+            if (_stillFromGrapple && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The line eases into the guard, then the guard holds.
+                // A dash ready into a still crouch keeps its ease. An It claim into a still crouch keeps its ease.
+                // The gate stays off.
+                float intoGuard = _stillFromGrappleIn;
+                Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion guardR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion guardElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion guardHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion guardHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion guardThighL = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardThighR = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardKneeL = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
+                Quaternion guardKneeR = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
+                if (intoGuard < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_grappleGuardUaL, guardL, intoGuard);
+                    _uaRT = Quaternion.Slerp(_grappleGuardUaR, guardR, intoGuard);
+                    _laLT = Quaternion.Slerp(_grappleGuardLaL, guardElL, intoGuard);
+                    _laRT = Quaternion.Slerp(_grappleGuardLaR, guardElR, intoGuard);
+                    _spineT = Quaternion.Slerp(_grappleGuardSp, guardSp, intoGuard);
+                    _hipsT = Quaternion.Slerp(_grappleGuardHp, guardHp, intoGuard);
+                    _headT = Quaternion.Slerp(_grappleGuardHd, guardHd, intoGuard);
+                    _ulLT = Quaternion.Slerp(_grappleGuardUlL, guardThighL, intoGuard);
+                    _ulRT = Quaternion.Slerp(_grappleGuardUlR, guardThighR, intoGuard);
+                    _llLT = Quaternion.Slerp(_grappleGuardLlL, guardKneeL, intoGuard);
+                    _llRT = Quaternion.Slerp(_grappleGuardLlR, guardKneeR, intoGuard);
                 }
                 else
                 {
