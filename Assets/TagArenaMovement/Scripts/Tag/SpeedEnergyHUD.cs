@@ -78,7 +78,7 @@ namespace TagArena.Movement
             "M mute   N music";
 
         // Flash full Least-It standings briefly every few seconds.
-        const float AllStandingsShowSec = 4.3f; // slightly longer Least It board read
+        const float AllStandingsShowSec = 4.4f; // slightly longer Least It board read
         const float AllStandingsCycleSec = 8.6f; // slightly slower board flip
 
         // Compass close-range pulse (Prey hunt / It flee), flat meters.
@@ -316,7 +316,7 @@ namespace TagArena.Movement
                 var prevA = _status.alignment;
                 var prevC = GUI.color;
                 _status.alignment = TextAnchor.MiddleCenter;
-                GUI.color = new Color(1f, 0.55f, 0.35f, 1f); // warm so OUT waiting reads vs other status
+                GUI.color = new Color(1f, 0.58f, 0.32f, 1f); // warm so OUT waiting reads vs other status
                 GUI.Label(r, "OUT    waiting for the round", _status);
                 GUI.color = prevC;
                 _status.alignment = prevA;
@@ -324,7 +324,7 @@ namespace TagArena.Movement
             else
             {
                 var prevC = GUI.color;
-                GUI.color = new Color(1f, 0.55f, 0.35f, 1f);
+                GUI.color = new Color(1f, 0.58f, 0.32f, 1f);
                 GUI.Label(r, "OUT    waiting for the round");
                 GUI.color = prevC;
             }
