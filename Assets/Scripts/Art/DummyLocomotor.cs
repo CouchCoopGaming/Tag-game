@@ -220,6 +220,9 @@ namespace Tag.Art
         bool _dashFromSlide;
         float _dashFromSlideIn;
         bool _slideLeadLeft;
+        Quaternion _slideDashUaL, _slideDashUaR, _slideDashLaL, _slideDashLaR;
+        Quaternion _slideDashUlL, _slideDashUlR, _slideDashLlL, _slideDashLlR;
+        Quaternion _slideDashSp, _slideDashHp, _slideDashHd;
         bool _dashFromClimb;
         float _dashFromClimbIn;
         Quaternion _climbUaL, _climbUaR, _climbLaL, _climbLaR;
@@ -1562,14 +1565,26 @@ namespace Tag.Art
             else if (!dashingAir)
                 _dashFromSki = false;
             bool slideWedge = _dropSlide && _dropVis > 0.2f && !dartAir && !jet;
-            if (dashingAir && !_airDashPoseWas && slideWedge && !_jumpFromDash && !_dashFromDart && !_dashFromSki)
+            if (dashingAir && !_airDashPoseWas && slideWedge && !_jumpFromDash && !_dashFromDart && !_dashFromSki
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
             {
                 // The wedge eases into the burst. The burst still holds.
-                // A ski into a dash keeps its ease. slideBoost stays 0.
-                // Duration and cooldown are unchanged.
+                // A ski into a dash keeps its ease. A ski into a slide keeps its ease.
+                // slideBoost stays 0. Duration and cooldown are unchanged.
                 _dashFromSlide = true;
                 _dashFromSlideIn = 0f;
                 _slideLeadLeft = Mathf.Sin(_cycle) >= 0f;
+                _slideDashUaL = _upperArmL.localRotation;
+                _slideDashUaR = _upperArmR.localRotation;
+                _slideDashLaL = _lowerArmL.localRotation;
+                _slideDashLaR = _lowerArmR.localRotation;
+                _slideDashUlL = _upperLegL.localRotation;
+                _slideDashUlR = _upperLegR.localRotation;
+                _slideDashLlL = _lowerLegL.localRotation;
+                _slideDashLlR = _lowerLegR.localRotation;
+                _slideDashSp = _spine.localRotation;
+                _slideDashHp = _hips.localRotation;
+                _slideDashHd = _head.localRotation;
             }
             if (dashingAir && _dashFromSlide)
                 _dashFromSlideIn = Mathf.MoveTowards(_dashFromSlideIn, 1f, dt / 0.04f);
@@ -5376,32 +5391,20 @@ namespace Tag.Art
             if (airDashing && _dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromSlideIn < 0.98f && !punching)
             {
                 // The wedge eases into the burst, then the burst holds.
-                // A ski into a dash keeps its ease. slideBoost stays 0.
-                // Duration and cooldown are unchanged.
-                float intoSlide = _dashFromSlideIn;
-                bool leadLeft = _slideLeadLeft;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
-                Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
-                Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
-                Quaternion wedgeSp = _spine0 * Quaternion.Euler(62f, 0f, 0f);
-                Quaternion wedgeHp = _hips0 * Quaternion.Euler(50f, 0f, 0f);
-                Quaternion wedgeHd = _head0 * Quaternion.Euler(-12f, 0f, 0f);
-                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f);
-                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f);
-                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f);
-                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f);
-                _uaLT = Quaternion.Slerp(wedgeL, _uaLT, intoSlide);
-                _uaRT = Quaternion.Slerp(wedgeR, _uaRT, intoSlide);
-                _laLT = Quaternion.Slerp(wedgeElL, _laLT, intoSlide);
-                _laRT = Quaternion.Slerp(wedgeElR, _laRT, intoSlide);
-                _ulLT = Quaternion.Slerp(wedgeThighL, _ulLT, intoSlide);
-                _ulRT = Quaternion.Slerp(wedgeThighR, _ulRT, intoSlide);
-                _llLT = Quaternion.Slerp(wedgeKneeL, _llLT, intoSlide);
-                _llRT = Quaternion.Slerp(wedgeKneeR, _llRT, intoSlide);
-                _spineT = Quaternion.Slerp(wedgeSp, _spineT, intoSlide);
-                _hipsT = Quaternion.Slerp(wedgeHp, _hipsT, intoSlide);
-                _headT = Quaternion.Slerp(wedgeHd, _headT, intoSlide);
+                // A ski into a dash keeps its ease. A ski into a slide keeps its ease.
+                // slideBoost stays 0. Duration and cooldown are unchanged.
+                float intoBurst = _dashFromSlideIn;
+                _uaLT = Quaternion.Slerp(_slideDashUaL, _uaLT, intoBurst);
+                _uaRT = Quaternion.Slerp(_slideDashUaR, _uaRT, intoBurst);
+                _laLT = Quaternion.Slerp(_slideDashLaL, _laLT, intoBurst);
+                _laRT = Quaternion.Slerp(_slideDashLaR, _laRT, intoBurst);
+                _ulLT = Quaternion.Slerp(_slideDashUlL, _ulLT, intoBurst);
+                _ulRT = Quaternion.Slerp(_slideDashUlR, _ulRT, intoBurst);
+                _llLT = Quaternion.Slerp(_slideDashLlL, _llLT, intoBurst);
+                _llRT = Quaternion.Slerp(_slideDashLlR, _llRT, intoBurst);
+                _spineT = Quaternion.Slerp(_slideDashSp, _spineT, intoBurst);
+                _hipsT = Quaternion.Slerp(_slideDashHp, _hipsT, intoBurst);
+                _headT = Quaternion.Slerp(_slideDashHd, _headT, intoBurst);
             }
             if (airDashing && _dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromSkiIn < 0.98f && !punching)
             {
