@@ -255,6 +255,11 @@ namespace Tag.Art
         Quaternion _hardSkiUaL, _hardSkiUaR, _hardSkiLaL, _hardSkiLaR;
         Quaternion _hardSkiUlL, _hardSkiUlR, _hardSkiLlL, _hardSkiLlR;
         Quaternion _hardSkiSp, _hardSkiHp, _hardSkiHd;
+        bool _skiFromDart;
+        float _skiFromDartIn;
+        Quaternion _dartSkiUaL, _dartSkiUaR, _dartSkiLaL, _dartSkiLaR;
+        Quaternion _dartSkiUlL, _dartSkiUlR, _dartSkiLlL, _dartSkiLlR;
+        Quaternion _dartSkiSp, _dartSkiHp, _dartSkiHd;
         bool _skiFromClimb;
         float _skiFromClimbIn;
         Quaternion _climbSkiUaL, _climbSkiUaR, _climbSkiLaL, _climbSkiLaR;
@@ -763,6 +768,7 @@ namespace Tag.Art
             // A slide eases the wedge into the glide. A jump eases the glide or the landing into it.
             // A punch eases the cock or the strike into the glide. A tag eases the connect into the glide.
             // A soft landing eases the absorb into the glide. A hard landing eases the deeper absorb into it.
+            // An air crouch eases the dart into the glide. Fall speed is unchanged.
             // A climb eases the grab into the glide. A wall run eases the leave into the glide.
             // Ski speed is unchanged. Exit time is unchanged.
             if (skiing && _skiBlend <= 0.02f)
@@ -788,21 +794,24 @@ namespace Tag.Art
                 bool climbLeaveNow = !wallRun && !_exitFromWall && (leavingSurf || _wallExit > 0.2f);
                 bool fromClimb = !fromSlide && !fromWall && climbLeaveNow && !jet && !crouch && !_airDashPoseWas && !_jumpFromClimb
                     && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-                bool fromHard = !fromSlide && !fromWall && !fromClimb && hardRecover && !crouch && !jet && !_airDashPoseWas
+                bool fromDart = !fromSlide && !fromWall && !fromClimb && _diveVis > 0.2f && !jet && !crouch && !_airDashPoseWas && !_jumpFromAirCrouch
+                    && _punchPhaseWas != PunchPhase.Windup && _punchPhaseWas != PunchPhase.Active && _punchPhaseWas != PunchPhase.HitRecover
                     && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-                bool fromSoft = !fromSlide && !fromWall && !fromClimb && !fromHard && softRecover && !crouch && !jet && !_airDashPoseWas
+                bool fromHard = !fromSlide && !fromWall && !fromClimb && !fromDart && hardRecover && !crouch && !jet && !_airDashPoseWas
                     && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-                bool fromJump = !fromSlide && !fromSoft && !fromHard && !fromWall && !fromClimb && !_airDashPoseWas && (!grounded || !_wasGrounded || _landSquash > 0.08f);
-                bool fromCrouchWalk = !fromSlide && !fromJump && !fromSoft && !fromHard && !fromWall && !fromClimb && !_airDashPoseWas && !_dropSlide && speed > 0.35f && speed <= 5.5f && _dropVis > 0.2f;
-                bool fromPunch = !fromSlide && !fromJump && !fromSoft && !fromHard && !fromWall && !fromClimb && !crouch && !_airDashPoseWas
+                bool fromSoft = !fromSlide && !fromWall && !fromClimb && !fromDart && !fromHard && softRecover && !crouch && !jet && !_airDashPoseWas
+                    && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+                bool fromJump = !fromSlide && !fromSoft && !fromHard && !fromDart && !fromWall && !fromClimb && !_airDashPoseWas && (!grounded || !_wasGrounded || _landSquash > 0.08f);
+                bool fromCrouchWalk = !fromSlide && !fromJump && !fromSoft && !fromHard && !fromDart && !fromWall && !fromClimb && !_airDashPoseWas && !_dropSlide && speed > 0.35f && speed <= 5.5f && _dropVis > 0.2f;
+                bool fromPunch = !fromSlide && !fromJump && !fromSoft && !fromHard && !fromDart && !fromWall && !fromClimb && !crouch && !_airDashPoseWas
                     && (_punchPhaseWas == PunchPhase.Windup || _punchPhaseWas == PunchPhase.Active)
                     && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-                bool fromTag = !fromSlide && !fromJump && !fromSoft && !fromHard && !fromWall && !fromClimb && !fromPunch && !crouch && !_airDashPoseWas && !_jumpFromTag
+                bool fromTag = !fromSlide && !fromJump && !fromSoft && !fromHard && !fromDart && !fromWall && !fromClimb && !fromPunch && !crouch && !_airDashPoseWas && !_jumpFromTag
                     && _punchPhaseWas == PunchPhase.HitRecover
                     && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
-                _skiFromWalk = !fromSlide && !fromJump && !fromSoft && !fromHard && !fromWall && !fromClimb && !fromPunch && !fromTag && !_airDashPoseWas && speed > 0.35f && speed <= 5.5f && !fromCrouchWalk;
-                _skiFromSprint = !fromSlide && !fromJump && !fromSoft && !fromHard && !fromWall && !fromClimb && !fromPunch && !fromTag && !_airDashPoseWas && speed > 5.5f;
-                _skiFromCrouch = !fromSlide && !fromJump && !fromSoft && !fromHard && !fromWall && !fromClimb && !fromPunch && !fromTag && !_airDashPoseWas && !_dropSlide && speed <= 0.35f && _dropVis > 0.2f;
+                _skiFromWalk = !fromSlide && !fromJump && !fromSoft && !fromHard && !fromDart && !fromWall && !fromClimb && !fromPunch && !fromTag && !_airDashPoseWas && speed > 0.35f && speed <= 5.5f && !fromCrouchWalk;
+                _skiFromSprint = !fromSlide && !fromJump && !fromSoft && !fromHard && !fromDart && !fromWall && !fromClimb && !fromPunch && !fromTag && !_airDashPoseWas && speed > 5.5f;
+                _skiFromCrouch = !fromSlide && !fromJump && !fromSoft && !fromHard && !fromDart && !fromWall && !fromClimb && !fromPunch && !fromTag && !_airDashPoseWas && !_dropSlide && speed <= 0.35f && _dropVis > 0.2f;
                 _skiFromCrouchWalk = fromCrouchWalk && !fromPunch && !fromTag;
                 _slideToSki = fromSlide;
                 _skiFromJump = fromJump;
@@ -883,6 +892,25 @@ namespace Tag.Art
                     _hardSkiHp = _hips.localRotation;
                     _hardSkiHd = _head.localRotation;
                 }
+                if (fromDart && !_skiFromDart)
+                {
+                    // The dart eases into the glide. A hard landing into a ski keeps its ease.
+                    // An air dash into a ski keeps its ease. A jump into a ski keeps its ease.
+                    // An air crouch into a slide keeps its ease. Fall speed is unchanged. Ski speed is unchanged.
+                    _skiFromDart = true;
+                    _skiFromDartIn = 0f;
+                    _dartSkiUaL = _upperArmL.localRotation;
+                    _dartSkiUaR = _upperArmR.localRotation;
+                    _dartSkiLaL = _lowerArmL.localRotation;
+                    _dartSkiLaR = _lowerArmR.localRotation;
+                    _dartSkiUlL = _upperLegL.localRotation;
+                    _dartSkiUlR = _upperLegR.localRotation;
+                    _dartSkiLlL = _lowerLegL.localRotation;
+                    _dartSkiLlR = _lowerLegR.localRotation;
+                    _dartSkiSp = _spine.localRotation;
+                    _dartSkiHp = _hips.localRotation;
+                    _dartSkiHd = _head.localRotation;
+                }
                 if (fromWall && !_skiFromWall)
                 {
                     // The leave eases into the glide. A climb into a ski keeps its ease.
@@ -935,6 +963,7 @@ namespace Tag.Art
                 _skiFromTag = false;
                 _skiFromSoft = false;
                 _skiFromHard = false;
+                _skiFromDart = false;
                 _skiFromClimb = false;
                 _skiFromWall = false;
             }
@@ -954,6 +983,8 @@ namespace Tag.Art
                 _skiFromSoftIn = Mathf.MoveTowards(_skiFromSoftIn, 1f, dt / 0.04f);
             if (_skiFromHard && skiing)
                 _skiFromHardIn = Mathf.MoveTowards(_skiFromHardIn, 1f, dt / 0.04f);
+            if (_skiFromDart && skiing)
+                _skiFromDartIn = Mathf.MoveTowards(_skiFromDartIn, 1f, dt / 0.04f);
             if (_skiFromClimb && skiing)
                 _skiFromClimbIn = Mathf.MoveTowards(_skiFromClimbIn, 1f, dt / 0.04f);
             if (_skiFromWall && skiing)
@@ -5333,7 +5364,7 @@ namespace Tag.Art
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
             // A punch from this jump eases into the windup. A tag from this jump eases into the connect.
             // Staying down still absorbs. Land time is unchanged.
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide && !_tagFromSki && !_tagFromSlide && !_punchFromClimb && !_tagFromClimb && !_punchFromWall && !_tagFromWall && !_punchFromDart && !_tagFromDart && !_punchFromClaim && !_tagFromItClaim && !_punchFromGrapple && !_tagFromGrapple && !_punchFromReady && !_tagFromReady && !_tagFromPunch && !_punchFromTag && !_tagFromMiss && !_skiFromSoft && !_skiFromHard && !_skiFromWall && !_skiFromDash)
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide && !_tagFromSki && !_tagFromSlide && !_punchFromClimb && !_tagFromClimb && !_punchFromWall && !_tagFromWall && !_punchFromDart && !_tagFromDart && !_punchFromClaim && !_tagFromItClaim && !_punchFromGrapple && !_tagFromGrapple && !_punchFromReady && !_tagFromReady && !_tagFromPunch && !_punchFromTag && !_tagFromMiss && !_skiFromSoft && !_skiFromHard && !_skiFromDart && !_skiFromWall && !_skiFromDash)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -7105,7 +7136,34 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_climbSkiLlL, _llL0 * Quaternion.Euler(-(6f + glideL * 32f), 0f, 0f), intoGlide);
                 _llRT = Quaternion.Slerp(_climbSkiLlR, _llR0 * Quaternion.Euler(-(6f + glideR * 32f), 0f, 0f), intoGlide);
             }
-            if (_skiFromHard && !_skiFromSoft && !_skiFromTag && !_skiFromPunch && !_skiFromDash && !_skiFromJump && skiing && !jet && !crouch && !wallRun && !climb && _skiFromHardIn < 0.98f)
+            if (_skiFromDart && !_skiFromHard && !_skiFromSoft && !_skiFromTag && !_skiFromPunch && !_skiFromDash && !_skiFromJump && skiing && !jet && !crouch && !wallRun && !climb && _skiFromDartIn < 0.98f)
+            {
+                // The dart eases into the glide, then the glide holds.
+                // A hard landing into a ski keeps its ease. An air dash into a ski keeps its ease.
+                // A jump into a ski keeps its ease. An air crouch into a slide keeps its ease.
+                // Fall speed is unchanged. Ski speed is unchanged.
+                float intoGlide = _skiFromDartIn;
+                float glideL = Mathf.Max(0f, sinC);
+                float glideR = Mathf.Max(0f, -sinC);
+                float skateL = RunArmPitch(-sinC, 16f);
+                float skateR = RunArmPitch(sinC, 16f);
+                Quaternion skiL = _uaL0 * Quaternion.Euler(-18f + skateL, 22f, armZ);
+                Quaternion skiR = _uaR0 * Quaternion.Euler(-18f + skateR, -22f, -armZ);
+                Quaternion skiElL = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
+                Quaternion skiElR = _laR0 * Quaternion.Euler(-12f, 0f, 0f);
+                _uaLT = Quaternion.Slerp(_dartSkiUaL, skiL, intoGlide);
+                _uaRT = Quaternion.Slerp(_dartSkiUaR, skiR, intoGlide);
+                _laLT = Quaternion.Slerp(_dartSkiLaL, skiElL, intoGlide);
+                _laRT = Quaternion.Slerp(_dartSkiLaR, skiElR, intoGlide);
+                _spineT = Quaternion.Slerp(_dartSkiSp, _spine0 * Quaternion.Euler(26f, 0f, 0f), intoGlide);
+                _hipsT = Quaternion.Slerp(_dartSkiHp, _hips0 * Quaternion.Euler(14f, 0f, 0f), intoGlide);
+                _headT = Quaternion.Slerp(_dartSkiHd, _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), intoGlide);
+                _ulLT = Quaternion.Slerp(_dartSkiUlL, _ulL0 * Quaternion.Euler((glideL - glideR * 0.5f) * 32f, 0f, 0f), intoGlide);
+                _ulRT = Quaternion.Slerp(_dartSkiUlR, _ulR0 * Quaternion.Euler((glideR - glideL * 0.5f) * 32f, 0f, 0f), intoGlide);
+                _llLT = Quaternion.Slerp(_dartSkiLlL, _llL0 * Quaternion.Euler(-(6f + glideL * 32f), 0f, 0f), intoGlide);
+                _llRT = Quaternion.Slerp(_dartSkiLlR, _llR0 * Quaternion.Euler(-(6f + glideR * 32f), 0f, 0f), intoGlide);
+            }
+            if (_skiFromHard && !_skiFromDart && !_skiFromSoft && !_skiFromTag && !_skiFromPunch && !_skiFromDash && !_skiFromJump && skiing && !jet && !crouch && !wallRun && !climb && _skiFromHardIn < 0.98f)
             {
                 // The deeper absorb eases into the glide, then the glide holds.
                 // A soft landing into a ski keeps its ease. A jump into a ski keeps its ease.
