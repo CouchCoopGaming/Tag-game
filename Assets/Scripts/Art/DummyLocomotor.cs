@@ -75,6 +75,11 @@ namespace Tag.Art
         Quaternion _tagJumpUaL, _tagJumpUaR, _tagJumpLaL, _tagJumpLaR;
         Quaternion _tagJumpSp, _tagJumpHp, _tagJumpHd;
         Quaternion _tagJumpUlL, _tagJumpUlR, _tagJumpLlL, _tagJumpLlR;
+        bool _tagFromSoft;
+        float _tagFromSoftIn;
+        Quaternion _softTagUaL, _softTagUaR, _softTagLaL, _softTagLaR;
+        Quaternion _softTagUlL, _softTagUlR, _softTagLlL, _softTagLlR;
+        Quaternion _softTagSp, _softTagHp, _softTagHd;
         bool _landedFromJump;
         Quaternion _punchUaL, _punchUaR, _punchLaL, _punchLaR;
         Quaternion _punchSp, _punchHp, _punchHd;
@@ -1164,6 +1169,32 @@ namespace Tag.Art
                 _tagFromJumpIn = Mathf.MoveTowards(_tagFromJumpIn, 1f, dt / 0.04f);
             else if (!hitNow)
                 _tagFromJump = false;
+            bool softTag = hitNow && !_tagHitWas && !fromJumpPose && !crouch && !_jumpFromTag && !_tagFromJump && !_tagFromDash
+                && !_jumpFromSoftLand && _landHard < 0.4f && _landSquash > 0.08f
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (softTag)
+            {
+                // The absorb eases into the connect. A jump into a tag keeps its ease.
+                // A soft landing into a jump keeps its push. A hard landing keeps its pose.
+                // A crouch tag keeps its pose. Connect time is unchanged. Land time is unchanged.
+                _tagFromSoft = true;
+                _tagFromSoftIn = 0f;
+                _softTagUaL = _upperArmL.localRotation;
+                _softTagUaR = _upperArmR.localRotation;
+                _softTagLaL = _lowerArmL.localRotation;
+                _softTagLaR = _lowerArmR.localRotation;
+                _softTagUlL = _upperLegL.localRotation;
+                _softTagUlR = _upperLegR.localRotation;
+                _softTagLlL = _lowerLegL.localRotation;
+                _softTagLlR = _lowerLegR.localRotation;
+                _softTagSp = _spine.localRotation;
+                _softTagHp = _hips.localRotation;
+                _softTagHd = _head.localRotation;
+            }
+            if (hitNow && _tagFromSoft)
+                _tagFromSoftIn = Mathf.MoveTowards(_tagFromSoftIn, 1f, dt / 0.04f);
+            else if (!hitNow)
+                _tagFromSoft = false;
             _tagHitWas = hitNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
             if (air)
@@ -4195,7 +4226,7 @@ namespace Tag.Art
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
             // A punch from this jump eases into the windup. A tag from this jump eases into the connect.
             // Staying down still absorbs. Land time is unchanged.
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard)
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -5588,6 +5619,25 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(34f, 0f, 0f), intoDart);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(-50f, 0f, 0f), intoDart);
+            }
+            if (_tagFromSoft && !_tagFromJump && !_tagFromDash && !_jumpFromTag && punching && phase == PunchPhase.HitRecover && !crouch && _tagFromSoftIn < 0.98f)
+            {
+                // The absorb eases into the connect, then the connect holds.
+                // A jump into a tag keeps its ease. A soft landing into a jump keeps its push.
+                // A hard landing keeps its pose. A crouch tag keeps its pose.
+                // Connect time is unchanged. Land time is unchanged.
+                float intoTag = _tagFromSoftIn;
+                _uaLT = Quaternion.Slerp(_softTagUaL, _uaLT, intoTag);
+                _uaRT = Quaternion.Slerp(_softTagUaR, _uaRT, intoTag);
+                _laLT = Quaternion.Slerp(_softTagLaL, _laLT, intoTag);
+                _laRT = Quaternion.Slerp(_softTagLaR, _laRT, intoTag);
+                _spineT = Quaternion.Slerp(_softTagSp, _spineT, intoTag);
+                _hipsT = Quaternion.Slerp(_softTagHp, _hipsT, intoTag);
+                _headT = Quaternion.Slerp(_softTagHd, _headT, intoTag);
+                _ulLT = Quaternion.Slerp(_softTagUlL, _ulLT, intoTag);
+                _ulRT = Quaternion.Slerp(_softTagUlR, _ulRT, intoTag);
+                _llLT = Quaternion.Slerp(_softTagLlL, _llLT, intoTag);
+                _llRT = Quaternion.Slerp(_softTagLlR, _llRT, intoTag);
             }
             if (_tagFromDash && !_tagFromJump && !_punchFromDash && punching && phase == PunchPhase.HitRecover && !crouch)
             {
