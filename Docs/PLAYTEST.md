@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/features-focus-input-hud-238c` on campus tip `16e0d32`. Mega tubes stay unused (`0004d3e`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/playground-campus-zones-afc4` (integration tip). PR #20 CloseMenuPanels (`c9e1066` / `fe2f574`) on tip. Campus smoke `5fc75d2`. Mega tubes unused (`0004d3e` + KIT_REQUEST). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing when the cursor unlocks, HUD mute chip (MUTED and MUSIC OFF together when both are on), pause keys 1-5, AudioMaster (M mute, N music), Controls/Look/Audio subpanel Up/Down highlight matching Boot (PR #20). No PgkLandmarkPlacer density adds. No MasterVolume type.
 
