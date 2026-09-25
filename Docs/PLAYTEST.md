@@ -540,7 +540,9 @@ Already on this branch: An It claim into a still crouch eases the claim into the
 
 Already on this branch: A dash ready into a still crouch eases the pulse into the guard. The guard then holds. An It claim into a still crouch is unchanged. A whiff into a still crouch is unchanged. Duration and cooldown are unchanged.
 
-This delta: A grapple release into a still crouch eases the line into the guard. The guard then holds. A dash ready into a still crouch is unchanged. An It claim into a still crouch is unchanged. The gate stays off.
+Already on this branch: A grapple release into a still crouch eases the line into the guard. The guard then holds. A dash ready into a still crouch is unchanged. An It claim into a still crouch is unchanged. The gate stays off.
+
+This delta: A hard land into a still crouch eases the absorb into the guard. The guard then holds. A grapple release into a still crouch is unchanged. A dash ready into a still crouch is unchanged. Land time is unchanged.
 
 ## Stack snapshot
 
@@ -929,6 +931,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 290. Become It, then still crouch: the claim should ease into the guard. The guard should then hold. A whiff into a still crouch should feel the same. A tag into a still crouch should feel the same. The guard should not feel longer. The claim should not feel longer. Jet stays off.
 291. Dash ready, then still crouch: the pulse should ease into the guard. The guard should then hold. An It claim into a still crouch should feel the same. A whiff into a still crouch should feel the same. The guard should not feel longer. The dash should not feel longer. Jet stays off.
 292. Grapple release, then still crouch: the line should ease into the guard. The guard should then hold. A dash ready into a still crouch should feel the same. An It claim into a still crouch should feel the same. The guard should not feel longer. The grapple should stay off. Jet stays off.
+293. Hard land, then still crouch: the absorb should ease into the guard. The guard should then hold. A grapple release into a still crouch should feel the same. A dash ready into a still crouch should feel the same. The guard should not feel longer. The landing should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1241,6 +1244,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 280. An It claim into a still crouch eases the claim into the guard. The guard then holds. A whiff into a still crouch is unchanged. A tag into a still crouch is unchanged. Claim time is unchanged. Jet stays off.
 281. A dash ready into a still crouch eases the pulse into the guard. The guard then holds. An It claim into a still crouch is unchanged. A whiff into a still crouch is unchanged. Duration and cooldown are unchanged. Jet stays off.
 282. A grapple release into a still crouch eases the line into the guard. The guard then holds. A dash ready into a still crouch is unchanged. An It claim into a still crouch is unchanged. The gate stays off. Jet stays off.
+283. A hard land into a still crouch eases the absorb into the guard. The guard then holds. A grapple release into a still crouch is unchanged. A dash ready into a still crouch is unchanged. Land time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
