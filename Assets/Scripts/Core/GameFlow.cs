@@ -530,7 +530,7 @@ namespace Tag.Core
                 if (FocusButton(new Rect(cx - 70, cy + 46, 140, 28), 4, ref _pauseFocus, "Quit to Menu"))
                     QuitToMenu();
                 GUI.Label(new Rect(cx - 140, cy + 78, 280, 64),
-                    "Left / Right picks    Enter / Space\nEsc resume    Q menu\nM mute    N music    Up / Down bed");
+                    "Left / Right or 1-5 picks    Enter / Space\nEsc resume    Q menu\nM mute    N music    Up / Down bed");
             }
             else if (State == GameFlowState.RoundEnd)
             {

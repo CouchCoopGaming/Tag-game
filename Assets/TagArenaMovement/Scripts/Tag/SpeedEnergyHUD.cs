@@ -78,7 +78,7 @@ namespace TagArena.Movement
             "M mute   N music";
 
         // Flash full Least-It standings briefly every few seconds.
-        const float AllStandingsShowSec = 3.5f;
+        const float AllStandingsShowSec = 4.0f;
         const float AllStandingsCycleSec = 8f;
 
         // Compass close-range pulse (Prey hunt / It flee), flat meters.
