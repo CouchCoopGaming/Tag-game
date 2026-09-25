@@ -582,7 +582,9 @@ Already on this branch: A ski into a walk eases the glide into the walk. The wal
 
 Already on this branch: A ski into a run eases the glide into the run. The run then holds. A ski into a walk is unchanged. A run into a ski is unchanged. Ski speed is unchanged.
 
-This delta: A ski into an idle eases the glide into the idle. The idle then holds. A ski into a walk is unchanged. A ski into a still crouch is unchanged. Ski speed is unchanged.
+Already on this branch: A ski into an idle eases the glide into the idle. The idle then holds. A ski into a walk is unchanged. A ski into a still crouch is unchanged. Ski speed is unchanged.
+
+This delta: A jump into a ski eases the hang or the absorb into the glide. The glide then holds. A hard landing into a ski is unchanged. A walk into a ski is unchanged. Jump height is unchanged.
 
 ## Stack snapshot
 
@@ -992,6 +994,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 311. Ski, then walk: the glide should ease into the walk. The walk should then hold. A ski into a run should feel the same. A walk into a ski should feel the same. The walk should not feel longer. The glide should not feel longer. Jet stays off.
 312. Ski, then run: the glide should ease into the run. The run should then hold. A ski into a walk should feel the same. A run into a ski should feel the same. The run should not feel longer. The glide should not feel longer. Jet stays off.
 313. Ski, then idle: the glide should ease into the idle. The idle should then hold. A ski into a walk should feel the same. A ski into a still crouch should feel the same. The idle should not feel longer. The glide should not feel longer. Jet stays off.
+314. Jump, then ski: the hang or the absorb should ease into the glide. The glide should then hold. A hard landing into a ski should feel the same. A walk into a ski should feel the same. The glide should not feel longer. The jump should not feel higher. Jet stays off.
 
 ## Known leftovers
 
@@ -1325,6 +1328,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 301. A ski into a walk eases the glide into the walk. The walk then holds. A ski into a run is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
 302. A ski into a run eases the glide into the run. The run then holds. A ski into a walk is unchanged. A run into a ski is unchanged. Ski speed is unchanged. Jet stays off.
 303. A ski into an idle eases the glide into the idle. The idle then holds. A ski into a walk is unchanged. A ski into a still crouch is unchanged. Ski speed is unchanged. Jet stays off.
+304. A jump into a ski eases the hang or the absorb into the glide. The glide then holds. A hard landing into a ski is unchanged. A walk into a ski is unchanged. Jump height is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
