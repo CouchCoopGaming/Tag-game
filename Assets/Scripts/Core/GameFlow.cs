@@ -126,7 +126,6 @@ namespace Tag.Core
 
         public void GoToPlayerCount()
         {
-            MarkBootSeen();
             State = GameFlowState.PlayerCount;
             AudioCuePlayer.Ensure()?.UiClick();
         }
@@ -150,7 +149,6 @@ namespace Tag.Core
 
         public void GoToModeSelect()
         {
-            MarkBootSeen();
             State = GameFlowState.ModeSelect;
             AudioCuePlayer.Ensure()?.UiClick();
         }
@@ -436,6 +434,11 @@ namespace Tag.Core
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _pauseFocus, 2);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) SetFocus(ref _pauseFocus, 3);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha5)) SetFocus(ref _pauseFocus, 4);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.H))
+                {
+                    OpenControls();
+                    AudioCuePlayer.Ensure()?.UiClick();
+                }
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
                     UnityEngine.Input.GetKeyDown(KeyCode.Space))
                     ActivatePause();
@@ -489,7 +492,7 @@ namespace Tag.Core
                 if (FocusButton(new Rect(cx - 90, cy + 98, 180, 28), 5, ref _bootFocus, "Couch..."))
                     GoToPlayerCount();
                 GUI.Label(new Rect(cx - 190, cy + 132, 380, 36),
-                    "Up / Down picks. Enter uses it. Stops at the ends.");
+                    "Up / Down or 1-6 picks. Enter / Space uses it.");
             }
             else if (State == GameFlowState.PlayerCount)
             {
@@ -499,7 +502,7 @@ namespace Tag.Core
                 DrawRow(cx, cy - 10, 2, "3 humans (bot off)");
                 DrawRow(cx, cy + 25, 3, "4 humans (bot off)");
                 GUI.Label(new Rect(cx - 170, cy + 62, 340, 64),
-                    "1 is solo versus the bot.\n2-4 is couch and the bot stays off.\n1-4  Enter    Esc back    Up/Down stop");
+                    "1 is solo versus the bot.\n2-4 is couch and the bot stays off.\n1-4 highlights. Enter / Space next. Esc back.");
             }
             else if (State == GameFlowState.ModeSelect)
             {
@@ -512,7 +515,7 @@ namespace Tag.Core
                 DrawMode(cx, cy - 20, 2, "3  Trail Tag   (ribbons eliminate - last standing)");
                 DrawMode(cx, cy + 20, 3, "4  Free play   (punch transfers It - no timer)");
                 GUI.Label(new Rect(cx - 180, cy + 70, 360, 48),
-                    "1/2/3/4  Enter to play    Esc back\nUp / Down stops at the ends.");
+                    "1-4 highlights. Enter / Space plays.\nEsc back. Up / Down stops at the ends.");
             }
             else if (State == GameFlowState.Paused)
             {
@@ -527,7 +530,7 @@ namespace Tag.Core
                 if (FocusButton(new Rect(cx - 70, cy + 46, 140, 28), 4, ref _pauseFocus, "Quit to Menu"))
                     QuitToMenu();
                 GUI.Label(new Rect(cx - 140, cy + 78, 280, 64),
-                    "Left / Right or 1-5 picks    Enter / Space\nEsc resume    Q menu\nM mute    N music    Up / Down bed");
+                    "Left / Right or 1-5 picks    Enter / Space\nEsc resume    Q menu    H controls\nM mute    N music    Up / Down bed");
             }
             else if (State == GameFlowState.RoundEnd)
             {

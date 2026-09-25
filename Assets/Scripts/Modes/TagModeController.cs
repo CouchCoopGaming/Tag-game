@@ -977,8 +977,8 @@ namespace Tag.Modes
             _countStyle.normal.textColor = Color.white;
             GUI.Label(new Rect(x, y + 28, w, 70), show.ToString(), _countStyle);
             string hint = _firstCountdownHint
-                ? "WASD sprint   Ctrl slide   " + TagArena.Movement.ControlBinds.DashName + " dash\n" +
-                  TagArena.Movement.ControlBinds.PunchName + " punch transfers It"
+                ? "WASD move   Shift sprint   Ctrl slide   " + TagArena.Movement.ControlBinds.DashName + " dash\n" +
+                  TagArena.Movement.ControlBinds.PunchName + " or E tags"
                 : "Punch the dummy with the orange hat";
             GUI.Label(new Rect(x + 16, y + 104, w - 32, 48), hint);
         }
