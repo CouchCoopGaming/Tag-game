@@ -177,6 +177,7 @@ namespace Tag.Art
             n += GroundAccent(root, "Play_Mushroom_SW", new Vector3(4.5f, 0f, 6.94f), 0f, "Toy_MushroomSteps");
             n += PathBridges(root);
             n += PathCues(root);
+            n += MerryNorthCluster(root);
             // Overhead bars. West stays at x=11 (the mast owns x-9.5 around z 12-18).
             // East sits at x=62.5, just inside the kickball pad's open west edge.
             // Segments stop at the EW spines; you cross those on foot.
@@ -629,6 +630,26 @@ namespace Tag.Art
             // Conn_Pirate starts z=12.4. Feet are on y=0. North pit still exits to the spine.
             n += GroundAccent(root, "Play_Mark_SoftPlay", new Vector3(19.20f, 0f, 10.40f), 0f, "Toy_SpringRider");
             return n;
+        }
+
+        /// <summary>
+        /// Pocket north of merry and west of the bars. The lawn is about x 4-10, z 29-33:
+        /// merry pad ends z=28, the bar face is x=10.96, the north spine starts z=34.4.
+        /// Mushroom, spring, and two hop tiles. Not a bench.
+        /// </summary>
+        int MerryNorthCluster(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Cluster_MerryN", new Vector3(7.2f, 0f, 31.2f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                // Yaw 90: length along Z. z 29.86-32.45, x 6.76-7.64. Spine is 1.9 m north.
+                ("Toy_MushroomSteps", new Vector3(0f, 0f, 0f), 90f),
+                // Feet y=0. x 8.45-9.30, z 31.86-32.34.
+                ("Toy_SpringRider", new Vector3(1.6f, 0f, 0.9f), 0f),
+                // Two hop tiles. East edge x=10.4, 0.56 m west of the bar.
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.7f, 0.02f, -0.7f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(2.7f, 0.02f, -0.7f), 0f),
+            });
         }
 
         int GroundAccent(Transform root, string name, Vector3 origin, float yaw, string id)
