@@ -6,11 +6,11 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `6906fb4`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `4576ac0`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
 
-Already on this branch: Player and the bot prefer the curved Hier HiPoly mannequin over the flat Dummy_Runner / Dummy_It prefab. It uses the red Hier mesh. Run bends only the recovery knee. Dash whip is arm pitch. Slide is a low crouch. Land buckles. Punch connect stays in front of the chest.
+Already on this branch: Player and the bot prefer the curved Hier HiPoly mannequin over the flat Dummy_Runner / Dummy_It prefab. Run bends only the recovery knee. Dash whip is arm pitch. Slide is a low crouch. Land buckles. Punch connect stays in front of the chest.
 
 Already on this branch: Run arms oppose the legs. The forward arm is the opposite thigh. Rearward swing stays short.
 
@@ -18,7 +18,9 @@ Already on this branch: A slide is a flat wedge. Punch connect is a long straigh
 
 Already on this branch: A landing holds a short knee buckle, then eases into the run.
 
-This delta: An air dash holds the arm whip at the start, then the arms and legs ease toward a hang before the burst ends. The settle is pitch only, so the hands do not fold into the pelvis. The run does not pop in on the last frame.
+Already on this branch: An air dash holds the arm whip at the start, then the arms and legs ease toward a hang.
+
+This delta: Player and bot spawn the approved Tan Hier runner (bone + teal). It swaps to the Orange Hier mesh (orange + black nested Vs). The catalog points at those new FBX guids. Bone names still match DummyLocomotor, so knee run, opposite swing, slide, punch, land, and dash settle are unchanged.
 
 ## Stack snapshot
 
@@ -140,12 +142,13 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 23. First Boot visit: the line names the punch key (LMB or E by default) and M/N. It should not say LMB/F. Open Couch or Mode select, then Esc: the first-run line should still be there. Play a round, then Q back to Boot: that line should be gone, and Play should be highlighted. The first countdown says WASD move and Shift sprint. Rematch, and the next countdown, should say to punch the dummy with the orange hat. On the pause card, H opens Controls and stays paused. Digits on who-plays and mode select only move the highlight. Enter or Space confirms.
 24. Set 3 humans on who-plays, then Esc from mode select: you should be back on who-plays with 3 highlighted, not Boot. Esc again: Boot, Couch highlighted, and the next Mode select should still say 3 humans. Opening Mode select from Boot should not change that count. The highlighted mode should be the one you played last.
 25. On the results card, 1 and 2 only move Rematch / Menu. During the short arm, Enter and Space do nothing. After it, Enter or Space uses the highlight. R still rematches even if Menu is highlighted. Q and Esc still return to Boot. A click during the arm only moves the highlight. The same keys work on the loose round-end card if no mode controller is showing results.
-26. Play: you and the bot should be the curved Hier mannequin, not the flat Dummy_Runner mesh. The console should say Hier mannequin, not Navy Spade, unless the FBX failed to bind. Becoming It should swap to the red Hier mesh. A run should show the knees bend. Arms should hang slightly out, not fold into the butt.
+26. Play: you and the bot should be the curved Hier mannequin, not the flat Dummy_Runner mesh. The console should say Hier mannequin, not Navy Spade, unless the FBX failed to bind. The runner is tan with a teal band. Becoming It should swap to the orange Hier mesh with black Vs. A run should show the knees bend. Arms should hang slightly out, not fold into the butt.
 27. Sprint: one knee should lift on the forward leg and the back leg should look straight, not two bent skates. Slide should look low, lead knee tucked. A hop should buckle the knees on landing. Air dash should throw the arms back without twisting the hands into the hips. A punch should cock the elbow out, then the fist should stay in front of the chest.
 28. Sprint from the chase cam: the arm that reaches forward should be opposite the leg that is forward. The other arm stays back and does not fold into the hips. You and the bot should still be the curved Hier mesh.
 29. Slide: the body should look flat, lead knee under the chest, trail leg straight back, arms forward. Punch: the fist should be a long line in front of the chest, not a folded elbow. It should not pass through the torso.
 30. Jump and keep sprinting: knees buckle on the landing, then open back into the run over a short moment. They should not snap straight on the first frame. A small hop still buckles. Arms stay slightly out and do not fold into the hips.
 31. Air dash: the arms should throw back at the start, then ease down before the streak ends. They should not stay fully whipped and then snap into the run. Hands stay clear of the hips.
+32. After the v0.1 Hier FBX: you and the bot are the tan mannequin, It is the orange mannequin, and the same poses still read (recovery knee, opposite arms, flat slide, long punch, land ease, dash settle).
 
 ## Known leftovers
 
@@ -191,12 +194,13 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 13. First-run Boot copy names the punch key and clears after a round, including Direct Play back to Boot. Opening Couch or Mode select does not clear it. The long countdown hint shows once and says move versus sprint. Rematch uses the short orange-hat line. Boot pause H opens Controls. Digits highlight. Enter / Space confirms.
 14. Who-plays Esc returns to Boot on Couch. Mode select Esc returns to who-plays after Couch, and to Boot after the Mode row. The Mode row does not reset the player count. Highlights match the saved count and the last mode.
 15. Results: keys 1-2 highlight Rematch and Menu. Enter or Space activates after the 0.25s arm. R rematches. Q/Esc menu. A click during the arm only moves the highlight.
-16. Player and bot spawn the curved Hier HiPoly mannequin. It is the red Hier mesh. Flat Dummy_Runner on the Play scene does not win. Navy Spade only if Hier has no limb bones.
+16. Player and bot spawn the curved Hier HiPoly mannequin. Runner is Tan Hier. It is Orange Hier. Flat Dummy_Runner on the Play scene does not win. Navy Spade only if Hier has no limb bones.
 17. Run: recovery knee flexes, stance leg stays nearly straight. Dash whip does not add arm roll. Slide is a low crouch. Land buckles. Punch connect stays in front of the chest.
 18. Run arms oppose the legs. Forward arm is the opposite side of the forward thigh. Hands stay clear of the pelvis. Hier spawn still wins over flat Dummy_Runner.
 19. Slide silhouette is flat (chest down, lead knee tucked, trail leg back). Punch connect is a long arm in front of the chest.
 20. Land holds a short buckle, then eases into the run. A hop still buckles. Arms stay clear of the pelvis.
 21. Air dash whip stretches early and settles before the burst ends. No extra arm roll into the pelvis.
+22. v0.1 Tan and Orange Hier still bind UpperArm / LowerArm / UpperLeg / LowerLeg. Pose drivers were not reverted.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
