@@ -606,7 +606,9 @@ Already on this branch: A walk into a sprint eases the walk into the sprint. The
 
 Already on this branch: A sprint into a walk eases the sprint into the walk. The walk then holds. The slow stride close stays off that path. A walk into a sprint is unchanged. Speed is unchanged.
 
-This delta: A sprint into a stop eases the sprint into the idle. The idle then holds. The slow close stays off that path. A sprint into a walk is unchanged. A walk into a stop is unchanged. Speed is unchanged.
+Already on this branch: A sprint into a stop eases the sprint into the idle. The idle then holds. The slow close stays off that path. A sprint into a walk is unchanged. A walk into a stop is unchanged. Speed is unchanged.
+
+This delta: A walk into a stop eases the walk into the idle. The idle then holds. The slow close stays off that path. A sprint into a stop is unchanged. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -1028,6 +1030,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 323. Walk, then sprint: the walk should ease into the sprint. The sprint should then hold. The push should not ease back in. A crouch walk into a run should feel the same. The sprint should not feel longer. Speed should feel the same. Jet stays off.
 324. Sprint, then walk: the sprint should ease into the walk. The walk should then hold. The stride should not ease back in. A walk into a sprint should feel the same. The walk should not feel longer. Speed should feel the same. Jet stays off.
 325. Sprint, then stop: the sprint should ease into the idle. The idle should then hold. The stride should not ease back in. A sprint into a walk should feel the same. A walk into a stop should feel the same. The idle should not feel longer. Speed should feel the same. Jet stays off.
+326. Walk, then stop: the walk should ease into the idle. The idle should then hold. The stride should not ease back in. A sprint into a stop should feel the same. The idle should not feel longer. Speed should feel the same. Jet stays off.
 
 ## Known leftovers
 
@@ -1373,6 +1376,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 313. A walk into a sprint eases the walk into the sprint. The sprint then holds. The slow push stays off that path. A crouch walk into a run is unchanged. Speed is unchanged. Jet stays off.
 314. A sprint into a walk eases the sprint into the walk. The walk then holds. The slow stride close stays off that path. A walk into a sprint is unchanged. Speed is unchanged. Jet stays off.
 315. A sprint into a stop eases the sprint into the idle. The idle then holds. The slow close stays off that path. A sprint into a walk is unchanged. A walk into a stop is unchanged. Speed is unchanged. Jet stays off.
+316. A walk into a stop eases the walk into the idle. The idle then holds. The slow close stays off that path. A sprint into a stop is unchanged. Speed is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
