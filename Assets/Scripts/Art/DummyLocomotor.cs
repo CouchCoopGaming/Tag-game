@@ -78,6 +78,7 @@ namespace Tag.Art
         float _wallExit;
         bool _exitFromWall;
         bool _exitIntoWalk;
+        bool _exitIntoSprint;
         bool _exitLeadLeft;
         Quaternion _exitUaL, _exitUaR, _exitLaL, _exitLaR;
         Quaternion _exitUlL, _exitUlR, _exitLlL, _exitLlR;
@@ -1365,6 +1366,7 @@ namespace Tag.Art
                 _wallExit = 1f;
                 _exitFromWall = wallRun;
                 _exitIntoWalk = false;
+                _exitIntoSprint = false;
                 if (climb)
                 {
                     float up = Mathf.Lerp(0.8f, (Mathf.Sin(_surfPhase) + 1f) * 0.5f, _surfIn);
@@ -1387,23 +1389,54 @@ namespace Tag.Art
             {
                 _wallExit = 0f;
                 _exitIntoWalk = false;
+                _exitIntoSprint = false;
             }
             else if (_wallExit > 0f)
             {
                 // Hands keep the full exit. Hips and feet ease into the stride
                 // so the wall roll does not pop. Exit time is unchanged.
                 // A wall run or a climb into a walk settles the hands with the feet.
+                // A wall run into a sprint opens the hands into the long stride.
                 // They do not stay on the surface and then hitch. A drop keeps the old leave.
                 if (leavingSurf && grounded && !air && !crouch && speed > 0.35f)
-                    _exitIntoWalk = true;
+                {
+                    if (_exitFromWall && (st == MoveState.Sprint || speed > 5.5f))
+                        _exitIntoSprint = true;
+                    else
+                        _exitIntoWalk = true;
+                }
                 _wallExit = Mathf.MoveTowards(_wallExit, 0f, dt / 0.18f);
                 float w = _wallExit;
                 float body = Mathf.SmoothStep(0f, 1f, w);
                 float handW = _exitIntoWalk ? body : w;
-                _uaLT = Quaternion.Slerp(_uaLT, _exitUaL, handW);
-                _uaRT = Quaternion.Slerp(_uaRT, _exitUaR, handW);
-                _laLT = Quaternion.Slerp(_laLT, _exitLaL, handW);
-                _laRT = Quaternion.Slerp(_laRT, _exitLaR, handW);
+                if (_exitIntoSprint)
+                {
+                    float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), 0.85f);
+                    float amp = Mathf.Lerp(36f, 64f, gait);
+                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float roll = Mathf.Lerp(0f, armZ, gait);
+                    float reachY = outY + 6f;
+                    float turnOut = Mathf.Abs(_turnVis) * 5f;
+                    float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
+                    float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
+                    float pitchL = RunArmPitch(-sinC, amp);
+                    float pitchR = RunArmPitch(sinC, amp);
+                    float elbowReach = -6f;
+                    float elbowPull = -30f;
+                    float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
+                    float elbowR = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait);
+                    _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(pitchL, yL, roll), _exitUaL, body);
+                    _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(pitchR, -yR, -roll), _exitUaR, body);
+                    _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(elbowL, 0f, 0f), _exitLaL, body);
+                    _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(elbowR, 0f, 0f), _exitLaR, body);
+                }
+                else
+                {
+                    _uaLT = Quaternion.Slerp(_uaLT, _exitUaL, handW);
+                    _uaRT = Quaternion.Slerp(_uaRT, _exitUaR, handW);
+                    _laLT = Quaternion.Slerp(_laLT, _exitLaL, handW);
+                    _laRT = Quaternion.Slerp(_laRT, _exitLaR, handW);
+                }
                 _ulLT = Quaternion.Slerp(_ulLT, _exitUlL, body);
                 _ulRT = Quaternion.Slerp(_ulRT, _exitUlR, body);
                 _llLT = Quaternion.Slerp(_llLT, _exitLlL, body);
