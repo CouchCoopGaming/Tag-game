@@ -525,9 +525,10 @@ namespace Tag.Art
             }
             _lookArmVis = Mathf.MoveTowards(_lookArmVis, lookPitch, dt * 240f);
             float lungeAmt = lunging && _motor != null ? _motor.LungeProgress : 0f;
-            // A walk leaves the burst into the stride. A sprint and a stand keep the old leave.
-            // Duration and cooldown are unchanged.
+            // A walk leaves the burst into the stride. A sprint leaves it into the long stride.
+            // A stand keeps the old leave. Duration and cooldown are unchanged.
             bool dashWalk = _airDashArms && !airDashing && !lunging && speed > 0.35f && st != MoveState.Sprint && runAmt <= 0.4f;
+            bool dashSprint = _airDashArms && !airDashing && !lunging && !dashWalk && (st == MoveState.Sprint || runAmt > 0.4f || speed > 5.5f);
             // 1 at the start of an air dash or lunge, 0 at the end. The pulse tail keeps easing after the burst.
             float dashStretchPose = 1f;
             if (lunging || dashing)
@@ -567,7 +568,7 @@ namespace Tag.Art
                     // A soft landing after the burst keeps the arms in the stride. The knees still absorb.
                     float pose = dashStretchPose;
                     float intoStride = 0f;
-                    if (!dashWalk && grounded && !airDashing && _landSquash > 0.08f)
+                    if (!dashWalk && !dashSprint && grounded && !airDashing && _landSquash > 0.08f)
                     {
                         float hardS = Mathf.SmoothStep(0f, 1f, _landHard);
                         pose *= hardS;
@@ -592,6 +593,26 @@ namespace Tag.Art
                         float elbowR = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait);
                         _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath, yL, roll), _uaL0 * Quaternion.Euler(108f, 32f, armZ), pose);
                         _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll), _uaR0 * Quaternion.Euler(108f, -32f, -armZ), pose);
+                        _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(elbowL, 0f, 0f), _laL0 * Quaternion.Euler(-22f, 0f, 0f), pose);
+                        _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(elbowR, 0f, 0f), _laR0 * Quaternion.Euler(-22f, 0f, 0f), pose);
+                        _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(58f, 0f, 0f), pose);
+                        _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), pose);
+                    }
+                    else if (dashSprint)
+                    {
+                        // The burst ends in the long stride. It does not come to a stop.
+                        float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                        float amp = Mathf.Lerp(36f, 64f, gait);
+                        float outY = Mathf.Lerp(12f, 8f, gait);
+                        float roll = Mathf.Lerp(0f, armZ, gait);
+                        float reachY = outY + 6f;
+                        float turnOut = Mathf.Abs(_turnVis) * 5f;
+                        float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
+                        float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
+                        float elbowL = Mathf.Lerp(-6f, -30f, Mathf.Clamp01(sinC) * gait);
+                        float elbowR = Mathf.Lerp(-6f, -30f, Mathf.Clamp01(-sinC) * gait);
+                        _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp), yL, roll), _uaL0 * Quaternion.Euler(108f, 32f, armZ), pose);
+                        _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp), -yR, -roll), _uaR0 * Quaternion.Euler(108f, -32f, -armZ), pose);
                         _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(elbowL, 0f, 0f), _laL0 * Quaternion.Euler(-22f, 0f, 0f), pose);
                         _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(elbowR, 0f, 0f), _laR0 * Quaternion.Euler(-22f, 0f, 0f), pose);
                         _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(58f, 0f, 0f), pose);
@@ -1161,14 +1182,17 @@ namespace Tag.Art
                 {
                     // The burst is over. The same lead foot reaches into the stride
                     // under the hips. Collapsing the split reads as a skate.
-                    // A walk keeps that stride. A sprint and a stand keep the old leave.
+                    // A walk keeps that stride. A sprint opens the long stride. A stand keeps the old leave.
                     float w = 1f - Mathf.Clamp01(dashStretchPose);
-                    float stride = Mathf.Lerp(0.96f, 1.16f, _runVis);
-                    float reachGait = dashWalk
-                        ? Mathf.Max(Mathf.Clamp01(walkAmt), 0.65f)
-                        : Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                    float openGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                    float stride = Mathf.Lerp(0.96f, 1.16f, dashSprint ? openGait : _runVis);
+                    float reachGait = dashSprint
+                        ? openGait
+                        : dashWalk
+                            ? Mathf.Max(Mathf.Clamp01(walkAmt), 0.65f)
+                            : Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
                     float reach = Mathf.Lerp(34f, 58f, reachGait) * stride;
-                    float kneeAmt = Mathf.Lerp(48f, 90f, _runVis);
+                    float kneeAmt = Mathf.Lerp(48f, 90f, dashSprint ? openGait : _runVis);
                     _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(reach, 0f, 0f), w);
                     _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(-reach * 0.58f, 0f, 0f), w);
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(2f + kneeAmt), 0f, 0f), w);
