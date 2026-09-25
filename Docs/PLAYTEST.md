@@ -486,7 +486,9 @@ Already on this branch: A dash coming off cooldown into an air dash eases the pu
 
 Already on this branch: A punch into a jump eases the punch into the jump. Becoming It into a jump is unchanged. A tag into a jump is unchanged. A punch miss into a jump is unchanged. Windup time is unchanged. Jump height is unchanged.
 
-This delta: A run into a ski eases the stride into the glide. The glide then holds. A walk into a ski is unchanged. A slide into a ski is unchanged. A jump into a ski is unchanged. Ski speed is unchanged.
+Already on this branch: A run into a ski eases the stride into the glide. The glide then holds. A walk into a ski is unchanged. A slide into a ski is unchanged. A jump into a ski is unchanged. Ski speed is unchanged.
+
+This delta: A run into a slide eases the stride into the wedge. The wedge then holds. A run into a ski is unchanged. A ski into a slide is unchanged. A still crouch into a slide is unchanged. slideBoost stays 0.
 
 ## Stack snapshot
 
@@ -848,6 +850,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 263. When the dash is ready, air dash: the pulse should ease into the burst. The burst should still hold. A crouch walk into an air dash should feel the same. A dash coming off cooldown into a jump should feel the same. A dash coming off cooldown into a punch should feel the same. The pulse should not feel longer. The dash should not feel longer. Jet stays off.
 264. Punch, then jump: the punch should ease into the jump. Becoming It into a jump should feel the same. A tag into a jump should feel the same. A punch miss into a jump should feel the same. The cock should not feel longer. The jump should not feel higher. Jet stays off.
 265. Run, then ski: the stride should ease into the glide. The glide should then hold. A walk into a ski should feel the same. A slide into a ski should feel the same. A jump into a ski should feel the same. The glide should not feel longer. Speed should feel the same. Jet stays off.
+266. Run, then slide: the stride should ease into the wedge. The wedge should then hold. A run into a ski should feel the same. A ski into a slide should feel the same. A still crouch into a slide should feel the same. The slide should not feel faster. The wedge should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1133,6 +1136,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 253. A dash coming off cooldown into an air dash eases the pulse into the burst. The burst still holds. A crouch walk into an air dash is unchanged. A dash coming off cooldown into a jump is unchanged. A dash coming off cooldown into a punch is unchanged. Duration and cooldown are unchanged. Jet stays off.
 254. A punch into a jump eases the punch into the jump. Becoming It into a jump is unchanged. A tag into a jump is unchanged. A punch miss into a jump is unchanged. Windup time is unchanged. Jump height is unchanged. Jet stays off.
 255. A run into a ski eases the stride into the glide. The glide then holds. A walk into a ski is unchanged. A slide into a ski is unchanged. A jump into a ski is unchanged. Ski speed is unchanged. Jet stays off.
+256. A run into a slide eases the stride into the wedge. The wedge then holds. A run into a ski is unchanged. A ski into a slide is unchanged. A still crouch into a slide is unchanged. slideBoost stays 0. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
