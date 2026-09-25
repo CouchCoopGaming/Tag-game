@@ -132,7 +132,9 @@ Already on this branch: Starting or stopping a walk keeps the hands forward and 
 
 Already on this branch: A crouch walk is a short shuffle under the hips. The feet do not skate. The crouch does not speed up.
 
-This delta: Tagged while standing, the hands and the chest ease into the idle breath. They do not freeze and then pop. Flinch time is unchanged.
+Already on this branch: Tagged while standing, the hands and the chest ease into the idle breath. They do not freeze and then pop. Flinch time is unchanged.
+
+This delta: A hard landing into a sprint brings the arms into the stride under the hips. They flare, then ease, and do not lock. A short hop still does not flare. The landing does not feel longer.
 
 ## Stack snapshot
 
@@ -317,6 +319,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 86. Stand, then walk, then stop: the hands should stay forward and out the whole way. They should not drift into the hips. The idle sway and the first step should still be there. Speed should feel the same.
 87. Hold crouch and walk: the feet should take short steps under the hips. They should not skate, and you should not speed up. Standing still in a crouch should stay the guard. A fast crouch should still be the slide.
 88. Stand still and get tagged: the hands and the chest should ease into the idle breath. They should not freeze and then pop. Both knees can still bend. The catch should not feel longer.
+89. Sprint, jump, and land still holding sprint: the arms should flare, then ease into the stride under the hips. They should not stay locked out. A short hop should still keep the arms in the stride. The landing should not feel longer.
 
 ## Known leftovers
 
@@ -425,6 +428,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 76. Starting or stopping a walk keeps the hands forward and out. They do not drift into the hips. Speed is unchanged.
 77. A crouch walk is a short shuffle under the hips. The feet do not skate. The crouch does not speed up. A still crouch stays the guard.
 78. Tagged while standing, the hands and the chest ease into the idle breath. They do not freeze and then pop. Both knees can still bend. Flinch time is unchanged.
+79. A hard landing into a sprint brings the arms into the stride under the hips. They flare, then ease, and do not lock. A short hop does not flare the arms. Land time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
