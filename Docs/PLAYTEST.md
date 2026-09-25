@@ -470,7 +470,9 @@ Already on this branch: A still crouch into a slide eases the guard into the wed
 
 Already on this branch: A ski into a slide eases the glide into the wedge. A still crouch into a slide is unchanged. A crouch walk into a ski is unchanged. A crouch walk into a slide is unchanged. A slide into a ski is unchanged. slideBoost stays 0. Ski speed is unchanged.
 
-This delta: A slide into an air dash eases the wedge into the burst. A ski into a slide is unchanged. A ski into an air dash is unchanged. An air dash into a slide is unchanged. slideBoost stays 0. Duration and cooldown are unchanged.
+Already on this branch: A slide into an air dash eases the wedge into the burst. A ski into a slide is unchanged. A ski into an air dash is unchanged. An air dash into a slide is unchanged. slideBoost stays 0. Duration and cooldown are unchanged.
+
+This delta: A slide into a jump eases the wedge into the jump. A slide into an air dash is unchanged. A ski into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A standing jump is unchanged. slideBoost stays 0. Jump height is unchanged.
 
 ## Stack snapshot
 
@@ -824,6 +826,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 255. Still crouch, then slide: the guard should ease into the wedge. A punch miss into a slide should feel the same. A still crouch into a punch should feel the same. A still crouch into a tag should feel the same. A still crouch into a ski should feel the same. A crouch walk into a slide should feel the same. The slide should not feel faster. The guard should not feel longer. Jet stays off.
 256. Ski, then slide: the glide should ease into the wedge. A still crouch into a slide should feel the same. A crouch walk into a ski should feel the same. A crouch walk into a slide should feel the same. A slide into a ski should feel the same. The slide should not feel faster. The glide should not feel longer. Jet stays off.
 257. Slide, then air dash: the wedge should ease into the burst. The burst should still hold. A ski into a slide should feel the same. A ski into an air dash should feel the same. An air dash into a slide should feel the same. The slide should not feel faster. The dash should not feel longer. Jet stays off.
+258. Slide, then jump: the wedge should ease into the jump. A ski into a jump should feel the same. A still crouch into a jump should feel the same. A crouch walk into a jump should feel the same. A standing jump should feel the same. A slide into an air dash should feel the same. The jump should not feel higher. The slide should not feel faster. Jet stays off.
 
 ## Known leftovers
 
@@ -1101,6 +1104,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 245. A still crouch into a slide eases the guard into the wedge. A punch miss into a slide is unchanged. A still crouch into a punch is unchanged. A still crouch into a tag is unchanged. A still crouch into a ski is unchanged. A crouch walk into a slide is unchanged. slideBoost stays 0. Jet stays off.
 246. A ski into a slide eases the glide into the wedge. A still crouch into a slide is unchanged. A crouch walk into a ski is unchanged. A crouch walk into a slide is unchanged. A slide into a ski is unchanged. slideBoost stays 0. Ski speed is unchanged. Jet stays off.
 247. A slide into an air dash eases the wedge into the burst. A ski into a slide is unchanged. A ski into an air dash is unchanged. An air dash into a slide is unchanged. slideBoost stays 0. Duration and cooldown are unchanged. Jet stays off.
+248. A slide into a jump eases the wedge into the jump. A slide into an air dash is unchanged. A ski into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A standing jump is unchanged. slideBoost stays 0. Jump height is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
