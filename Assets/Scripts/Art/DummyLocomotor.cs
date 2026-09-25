@@ -43,6 +43,7 @@ namespace Tag.Art
         float _skiBlend;
         float _stopGait;
         float _stopRun;
+        float _runVis;
         float _grapplePose;
         float _wallExit;
         Quaternion _exitUaL, _exitUaR, _exitLaL, _exitLaR;
@@ -188,18 +189,22 @@ namespace Tag.Art
 
             float walkAmt = Mathf.Clamp01(speed / 5.5f);
             float runAmt = Mathf.InverseLerp(5.5f, 11.5f, speed);
-            // Human-ish run cadence - knees drive the cycle, not ice-skate lock
-            float cadence = Mathf.Lerp(7.2f, 11.2f, runAmt);
-            // Keep a soft air/vault cycle so limbs stay energetic off the ground
+            // Keep a soft air/vault cycle so limbs stay energetic off the ground.
+            // Walk and sprint ease length and tempo. The cycle keeps advancing, so a plant does not freeze.
             if (grounded && speed > 0.35f && !sliding && !crouch)
             {
+                _runVis = Mathf.MoveTowards(_runVis, runAmt, dt / 0.2f);
+                float cadence = Mathf.Lerp(7.2f, 11.2f, _runVis);
                 float rate = Mathf.Lerp(cadence, 5.2f, _skiBlend);
                 _cycle += dt * rate;
                 _stopGait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
-                _stopRun = runAmt;
+                _stopRun = _runVis;
             }
             else if (air && !jet)
+            {
+                _runVis = runAmt;
                 _cycle += dt * Mathf.Lerp(5.5f, 9f, runAmt);
+            }
             else if (!jet)
             {
                 // Close onto a stride where the sine is 0. Rounding to an integer left a leg stuck out,
@@ -209,9 +214,14 @@ namespace Tag.Art
                 if (!sliding && !crouch)
                 {
                     _stopGait = Mathf.MoveTowards(_stopGait, 0f, dt / 0.28f);
-                    _stopRun = Mathf.MoveTowards(_stopRun, 0f, dt / 0.28f);
+                    _runVis = Mathf.MoveTowards(_runVis, 0f, dt / 0.28f);
+                    _stopRun = _runVis;
                 }
+                else
+                    _runVis = runAmt;
             }
+            else
+                _runVis = runAmt;
 
             // Hold the plant and the lift, then cross zero faster - a sine reads as skating.
             float sinRaw = Mathf.Sin(_cycle);
@@ -260,7 +270,7 @@ namespace Tag.Art
                 _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-breath * 0.5f, 0f, -sway * 0.35f), idleW);
 
             // Arms - slight outward A-pose only (large +Z was V-ing hands into the butt)
-            float armZ = Mathf.Lerp(4f, 8f, runAmt);
+            float armZ = Mathf.Lerp(4f, 8f, _runVis);
             float lungeAmt = lunging && _motor != null ? _motor.LungeProgress : 0f;
             // 1 at the start of an air dash or lunge, 0 at the end. The pulse tail keeps easing after the burst.
             float dashStretchPose = 1f;
@@ -544,7 +554,7 @@ namespace Tag.Art
                 float roll = Mathf.Lerp(0f, armZ, gait);
                 // The reach opposite the front knee opens a little wider. The back arm keeps the
                 // shorter yaw so the hand stays out of the hip. Rearward pitch stays short.
-                float reachY = Mathf.Lerp(outY, outY + 6f, Mathf.Max(runAmt, _stopRun));
+                float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
                 float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
                 float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
                 // Both hands rise a little with the breath. Yaw stays out, and roll stays 0 at rest,
@@ -554,8 +564,8 @@ namespace Tag.Art
                 _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath, -yR, -roll);
                 // Long line on the reach. The elbow fold sits on the back arm, short of the hip.
                 // The trail knee is unchanged and stays straight.
-                float elbowReach = Mathf.Lerp(-10f, -6f, Mathf.Max(runAmt, _stopRun));
-                float elbowPull = Mathf.Lerp(-18f, -30f, Mathf.Max(runAmt, _stopRun));
+                float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
+                float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                 float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
                 float elbowR = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait);
                 _laLT = _laL0 * Quaternion.Euler(elbowL, 0f, 0f);
@@ -731,7 +741,7 @@ namespace Tag.Art
             {
                 // Recovery leg takes the knee. The back thigh stays shorter than the front reach
                 // so the pair does not meet straight under the hips. Stance knee stays nearly straight.
-                float stride = Mathf.Lerp(0.96f, 1.16f, Mathf.Max(runAmt, _stopRun));
+                float stride = Mathf.Lerp(0.96f, 1.16f, _runVis);
                 float reach = Mathf.Lerp(34f, 58f, Mathf.Max(Mathf.Max(walkAmt, runAmt), _stopGait)) * stride;
                 float frontL = Mathf.Max(0f, sinC);
                 float frontR = Mathf.Max(0f, -sinC);
@@ -739,7 +749,7 @@ namespace Tag.Art
                 float thighR = (frontR - frontL * 0.58f) * reach;
                 _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
-                float kneeAmt = Mathf.Lerp(48f, 90f, Mathf.Max(runAmt, _stopRun));
+                float kneeAmt = Mathf.Lerp(48f, 90f, _runVis);
                 float kneeL = -(2f + frontL * kneeAmt);
                 float kneeR = -(2f + frontR * kneeAmt);
                 _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);

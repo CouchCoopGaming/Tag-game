@@ -80,7 +80,9 @@ Already on this branch: After a tag, the runner's V holds with both knees bent, 
 
 Already on this branch: At a standstill the chest breathes and sways slightly side to side. The hands stay forward and out of the hips, with no extra twist. The sway fades as the stride starts.
 
-This delta: Letting go of a sprint or a walk closes the stride under the hips instead of freezing a leg out. The last step eases into the idle sway, or into the shorter walk if you are still moving. Speed is unchanged.
+Already on this branch: Letting go of a sprint or a walk closes the stride under the hips instead of freezing a leg out. The last step eases into the idle sway, or into the shorter walk if you are still moving. Speed is unchanged.
+
+This delta: Walk into a sprint, and sprint back into a walk, eases the stride length and the step rate. The feet keep moving, and the hips stay level. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -239,6 +241,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 60. Get tagged while sprinting: both arms should come up in a V and both knees should bend, then the arms and the back leg should already be in the stride while one knee is still up. They should not both snap straight and then start the run. Standing still, both legs should open together. The new It should still raise one arm and hold the other out. The catch should not feel longer.
 61. Stand still: the chest should breathe and rock slightly side to side. The hands should stay just forward and outside the hips, not against the pelvis. Start sprinting: the sway should fade and the opposite arm/leg stride should return. They should not twist into the hips at a standstill.
 62. Sprint, then let go: the last step should close under the hips, then the idle sway should return. Drop to a walk instead: the stride should shorten into the walk, not freeze one leg out. It should not feel like a skate stop. Speed should feel the same.
+63. Walk, then sprint, then drop back to a walk: the steps should get longer and quicker, then shorter, without a foot sticking or the hips popping. Speed should feel the same.
 
 ## Known leftovers
 
@@ -321,6 +324,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 50. The tagged runner's V eases into the stride: arms and the trail leg first, one knee still up. A standstill catch opens both legs together. Flinch time is unchanged. The new It claim is unchanged.
 51. Idle breath and a slight side sway. Hands stay clear of the hips. No extra arm roll. The sway is gone once the stride is up.
 52. A stop closes the stride under the hips, then idle. Braking into a walk shortens the stride. A leg does not freeze out. Speed is unchanged.
+53. Walk and sprint ease into each other. Stride length and step rate change together. The feet keep moving and the hips stay level. Speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
