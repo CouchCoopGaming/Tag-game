@@ -1131,9 +1131,10 @@ namespace Tag.Art
                 if (Mathf.Abs(_turnVis) > 0.18f && footSki < 0.35f)
                 {
                     // Outside foot plants. Positive turn is to the right, so the left foot stays down.
-                    // A sprint stride is long, so the plant arrives sooner or the foot keeps swinging.
+                    // A walk plants at a medium turn. The old curve stayed soft until the yaw was sharp.
+                    // A sprint stride is long, so that plant still arrives sooner. Look speed is unchanged.
                     float turnAbs = Mathf.Abs(_turnVis);
-                    float walkW = Mathf.Clamp01((turnAbs - 0.15f) / 0.55f);
+                    float walkW = Mathf.Clamp01((turnAbs - 0.12f) / 0.28f);
                     float sprintW = Mathf.Clamp01((turnAbs - 0.12f) / 0.22f);
                     float w = Mathf.Lerp(walkW, sprintW, Mathf.Clamp01(_runVis));
                     if (_turnVis > 0f)
