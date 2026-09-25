@@ -102,6 +102,16 @@ namespace Tag.Art
             bool climb = st == MoveState.WallClimb;
             bool mantle = st == MoveState.Mantle;
             bool air = st == MoveState.Air || (!grounded && !climb && !wallRun && !mantle);
+            // Jump holds a reach while rising. Fall trails the arms once drop speed builds.
+            // The jet branch is separate and is not used here.
+            float airRise = 0f;
+            float airFall = 0f;
+            if (air && _motor != null)
+            {
+                float vy = _motor.Velocity.y;
+                airRise = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(1.5f, 12f, vy));
+                airFall = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-1.5f, -14f, vy));
+            }
             bool crouch = st == MoveState.Crouch;
             bool punching = _punch != null && _punch.IsPunching;
             bool lunging = _motor != null && _motor.IsLunging;
@@ -368,13 +378,32 @@ namespace Tag.Art
             }
             else if (air)
             {
-                // Air / vault limb tells: residual run energy + open arms (slight loft for crest leave)
-                float airKick = sinC * Mathf.Lerp(28f, 48f, runAmt);
-                // Opposite the legs: left thigh follows +sinC, so the left arm goes the other way.
-                _uaLT = _uaL0 * Quaternion.Euler(-32f + airKick * 0.7f, 0f, 8f);
-                _uaRT = _uaR0 * Quaternion.Euler(-32f - airKick * 0.7f, 0f, -8f);
-                _laLT = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
+                // Rise: both arms up in front. Fall: both arms trail back. Apex hangs slightly out.
+                // Pitch plus the run's mild A flare only, so the hands stay clear of the pelvis.
+                float airW = Mathf.Clamp01(airRise + airFall);
+                float riseShare = airW > 0.001f ? airRise / (airRise + airFall) : 0f;
+                Quaternion upL = _uaL0 * Quaternion.Euler(-82f, -6f, armZ);
+                Quaternion upR = _uaR0 * Quaternion.Euler(-82f, 6f, -armZ);
+                Quaternion downL = _uaL0 * Quaternion.Euler(58f, -4f, armZ);
+                Quaternion downR = _uaR0 * Quaternion.Euler(58f, 4f, -armZ);
+                Quaternion hangL = _uaL0 * Quaternion.Euler(-16f, 0f, armZ);
+                Quaternion hangR = _uaR0 * Quaternion.Euler(-16f, 0f, -armZ);
+                _uaLT = Quaternion.Slerp(hangL, Quaternion.Slerp(downL, upL, riseShare), airW);
+                _uaRT = Quaternion.Slerp(hangR, Quaternion.Slerp(downR, upR, riseShare), airW);
+                Quaternion elbowUp = Quaternion.Euler(-42f, 0f, 0f);
+                Quaternion elbowDown = Quaternion.Euler(-14f, 0f, 0f);
+                Quaternion elbowHang = Quaternion.Euler(-20f, 0f, 0f);
+                Quaternion elbow = Quaternion.Slerp(elbowHang, Quaternion.Slerp(elbowDown, elbowUp, riseShare), airW);
+                _laLT = _laL0 * elbow;
+                _laRT = _laR0 * elbow;
+                _spineT = Quaternion.Slerp(
+                    _spine0 * Quaternion.Euler(12f, 0f, 0f),
+                    Quaternion.Slerp(_spine0 * Quaternion.Euler(22f, 0f, 0f), _spine0 * Quaternion.Euler(4f, 0f, 0f), riseShare),
+                    airW);
+                _hipsT = Quaternion.Slerp(
+                    _hips0 * Quaternion.Euler(6f, 0f, 0f),
+                    Quaternion.Slerp(_hips0 * Quaternion.Euler(10f, 0f, 0f), _hips0 * Quaternion.Euler(4f, 0f, 0f), riseShare),
+                    airW);
             }
             else
             {
@@ -512,11 +541,25 @@ namespace Tag.Art
             }
             else if (air)
             {
-                float airKick = sinC * Mathf.Lerp(32f, 55f, runAmt);
-                _ulLT = _ulL0 * Quaternion.Euler(22f + airKick, 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(18f - airKick, 0f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(-35f - Mathf.Abs(airKick) * 0.35f, 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(-28f - Mathf.Abs(airKick) * 0.25f, 0f, 0f);
+                // Tuck on the way up so a hop reads. Lengthen on the way down so a fall is not a skate.
+                float airW = Mathf.Clamp01(airRise + airFall);
+                float riseShare = airW > 0.001f ? airRise / (airRise + airFall) : 0f;
+                Quaternion tuckL = _ulL0 * Quaternion.Euler(42f, 0f, 0f);
+                Quaternion tuckR = _ulR0 * Quaternion.Euler(38f, 0f, 0f);
+                Quaternion longL = _ulL0 * Quaternion.Euler(8f, 0f, 0f);
+                Quaternion longR = _ulR0 * Quaternion.Euler(6f, 0f, 0f);
+                Quaternion hangThighL = _ulL0 * Quaternion.Euler(16f, 0f, 0f);
+                Quaternion hangThighR = _ulR0 * Quaternion.Euler(14f, 0f, 0f);
+                _ulLT = Quaternion.Slerp(hangThighL, Quaternion.Slerp(longL, tuckL, riseShare), airW);
+                _ulRT = Quaternion.Slerp(hangThighR, Quaternion.Slerp(longR, tuckR, riseShare), airW);
+                Quaternion kneeTuckL = _llL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion kneeTuckR = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
+                Quaternion kneeLongL = _llL0 * Quaternion.Euler(-10f, 0f, 0f);
+                Quaternion kneeLongR = _llR0 * Quaternion.Euler(-8f, 0f, 0f);
+                Quaternion kneeHangL = _llL0 * Quaternion.Euler(-24f, 0f, 0f);
+                Quaternion kneeHangR = _llR0 * Quaternion.Euler(-22f, 0f, 0f);
+                _llLT = Quaternion.Slerp(kneeHangL, Quaternion.Slerp(kneeLongL, kneeTuckL, riseShare), airW);
+                _llRT = Quaternion.Slerp(kneeHangR, Quaternion.Slerp(kneeLongR, kneeTuckR, riseShare), airW);
             }
             else
             {
