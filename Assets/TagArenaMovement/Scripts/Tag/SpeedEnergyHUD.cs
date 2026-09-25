@@ -82,7 +82,7 @@ namespace TagArena.Movement
         const float AllStandingsCycleSec = 8.6f; // slightly slower board flip
 
         // Compass close-range pulse (Prey hunt / It flee), flat meters.
-        const float CompassPulseDistM = 13.5f; // earlier It-hunt compass pulse
+        const float CompassPulseDistM = 14f; // earlier It-hunt compass pulse
 
         // Hot Potato fuse HUD warn fallback (matches ItMarker / DummyPatrol when tuning missing).
         const float HotPotatoWarnSecFallback = 11.5f; // earlier fuse urgency fallback
