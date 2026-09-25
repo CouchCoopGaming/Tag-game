@@ -24,9 +24,22 @@ Cross the bowl east-west on z 24-30. Both lips and the middle are open lawn.
 
 Pass: that order is walkable, the named pieces are where listed, and the three arches still clear courts and bars by at least 1.3 m.
 
+## Zones
+
+West forts are the play places. Soft-play and astro share the tube street, the dome, the ground slide, and one deck tube. Army and knight are the bunkers: crawl, climb net, ground spiral, a spring on each side of that spiral, and one crate. Army's chute is the deck tube. Knight's is the straight slide.
+
+Soft-play reaches merry on the overhead bar. Merry keeps its west bench and south picnic; the lawn west of that bench runs to the map edge. Kickball is entered from the open west, and the bench at (61.30, 21.05) is that approach. The field stays empty. Swings are reached from the beam at (63.45, 31.20). The swing bench is the east seat.
+
+No new prop this pass:
+- Kickball bench to the east bars is 0.94 m, to the loop stair 0.80 m, and to the south spine 0.75 m. A 0.12 m beam needs 1.24 m. The 0.16 m fall-tile gap stays empty.
+- Swing east bar to the swing bench is 1.13 m. The north monkey is 0.66 m south of the north spine.
+- Between the soft-play bench and hopscotch SW is 1.78 m in Z. A 3 m beam cannot also clear the SW mushroom and the climb net: that slot is 2.81 m wide. The mushroom at (4.5, 6.94) stays the exit step. Astro's west approach is the NW arch and the NW cluster.
+
+SoftS aisles, the NE hop, and the merry-spine bar stay as they are.
+
 ## Clearance
 
-No solid sits on the four spines or the crash cross. Army west, knight west, and knight east mouths each have 0.56 m of open approach. Spawn_SE's bumper is local (-2.136, 0.565): mesh x 59.27-60.73, z 1.83-3.29, 0.57 m off the army crawl, so the east mouth stays open. It is 0.57 m off the spawn spring and 2.09 m off the seesaw. Slide pits stay 0.4 m off the spines. Soft-merry posts stay outside the south spine, rungs overhead. West beams and the loop walls sit on the loop pads beside the spines and do not pinch a chase under 0.5 m. SoftS aisles, the NE hop, and the merry-spine bar were left as they are.
+No solid sits on the four spines or the crash cross. Army west, knight west, and knight east mouths each have 0.56 m of open approach. Spawn_SE's bumper is local (-2.136, 0.565): mesh x 59.27-60.73, z 1.83-3.29, 0.57 m off the army crawl, so the east mouth stays open. It is 0.57 m off the spawn spring and 2.09 m off the seesaw. Slide pits stay 0.4 m off the spines. Soft-merry posts stay outside the south spine, rungs overhead. West beams and the loop walls sit on the loop pads beside the spines and do not pinch a chase under 0.5 m. SoftS aisles, the NE hop, and the merry-spine bar were left as they are. Kickball's open west, swing-east, merry-west, and fort-west were measured and left open; see Zones.
 
 ## Place inventory
 
