@@ -418,7 +418,9 @@ Already on this branch: A punch into a tag eases the cock or the strike into the
 
 Already on this branch: A tag into a punch eases the connect into the windup. A punch into a tag is unchanged. A dash coming off cooldown into a punch is unchanged. A crouch tag is unchanged. A tag into a jump is unchanged. Windup time is unchanged. Connect time is unchanged.
 
-This delta: A punch miss into a tag eases the whiff into the connect. A tag into a punch is unchanged. A punch into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. A crouch miss is unchanged. Connect time is unchanged.
+Already on this branch: A punch miss into a tag eases the whiff into the connect. A tag into a punch is unchanged. A punch into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. A crouch miss is unchanged. Connect time is unchanged.
+
+This delta: A punch into a ski eases the cock or the strike into the glide. A ski into a punch is unchanged. A punch miss into a tag is unchanged. A slide into a ski is unchanged. A jump into a ski is unchanged. Ski speed is unchanged. Windup time is unchanged.
 
 ## Stack snapshot
 
@@ -746,6 +748,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 229. Punch, then tag: the cock or the strike should ease into the connect. A dash coming off cooldown into a tag should feel the same. A dash coming off cooldown into a punch should feel the same. A crouch tag should feel the same. The connect should not feel longer. The cock should not feel longer. Jet stays off.
 230. Tag, then punch: the connect should ease into the windup. A punch into a tag should feel the same. A dash coming off cooldown into a punch should feel the same. A crouch tag should feel the same. A tag into a jump should feel the same. The cock should not feel longer. The connect should not feel longer. Jet stays off.
 231. Miss a punch, then tag: the whiff should ease into the connect. A tag into a punch should feel the same. A punch into a tag should feel the same. A punch miss into a jump should feel the same. A punch miss into an air dash should feel the same. A crouch miss should feel the same. The connect should not feel longer. The whiff should not feel longer. Jet stays off.
+232. Punch, then ski: the cock or the strike should ease into the glide. A ski into a punch should feel the same. A punch miss into a tag should feel the same. A slide into a ski should feel the same. A jump into a ski should feel the same. The glide should not feel longer. The cock should not feel longer. Speed should feel the same. Jet stays off.
 
 ## Known leftovers
 
@@ -997,6 +1000,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 219. A punch into a tag eases the cock or the strike into the connect. A dash coming off cooldown into a tag is unchanged. A dash coming off cooldown into a punch is unchanged. A crouch tag is unchanged. Connect time is unchanged. Windup time is unchanged. Jet stays off.
 220. A tag into a punch eases the connect into the windup. A punch into a tag is unchanged. A dash coming off cooldown into a punch is unchanged. A crouch tag is unchanged. A tag into a jump is unchanged. Windup time is unchanged. Connect time is unchanged. Jet stays off.
 221. A punch miss into a tag eases the whiff into the connect. A tag into a punch is unchanged. A punch into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. A crouch miss is unchanged. Connect time is unchanged. Jet stays off.
+222. A punch into a ski eases the cock or the strike into the glide. A ski into a punch is unchanged. A punch miss into a tag is unchanged. A slide into a ski is unchanged. A jump into a ski is unchanged. Ski speed is unchanged. Windup time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
