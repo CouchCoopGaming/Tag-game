@@ -176,7 +176,9 @@ Already on this branch: An air crouch into a soft landing opens into the absorb.
 
 Already on this branch: A punch that misses while walking returns the hands to the stride. They do not drop into the idle. The cock does not feel longer.
 
-This delta: After a tag while walking, the arms settle into the stride. They do not drop into the idle. Flinch time is unchanged.
+Already on this branch: After a tag while walking, the arms settle into the stride. They do not drop into the idle. Flinch time is unchanged.
+
+This delta: After you become It while walking, the arms settle into the stride. They do not drop into the idle. The claim does not feel longer.
 
 ## Stack snapshot
 
@@ -383,6 +385,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 108. Hold crouch in the air, then land softly: the fall pose should open into the absorb. It should not stay folded and then pop. The drop should still feel like the same fast fall.
 109. Walk and punch a miss: the hands should return to the stride. They should not drop into the idle. The cock should not feel longer.
 110. Walk and get tagged: the arms should settle into the stride. They should not drop into the idle. The catch should not feel longer.
+111. Walk and become It: the arms should settle into the stride. They should not drop into the idle. One knee can still be up. The claim should not feel longer.
 
 ## Known leftovers
 
@@ -513,6 +516,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 98. An air crouch into a soft landing opens into the absorb. It does not stay folded and then pop. The fast fall is unchanged. Land time is unchanged.
 99. A punch that misses while walking returns the hands to the stride. They do not drop into the idle. A standing miss still eases into the idle hands. Windup time is unchanged.
 100. After a tag while walking, the arms settle into the stride. They do not drop into the idle. A standing catch still eases into the idle breath. Flinch time is unchanged.
+101. After you become It while walking, the arms settle into the stride. They do not drop into the idle. One knee can still be up. A standing claim still eases into the idle breath. Claim time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
