@@ -59,6 +59,8 @@ namespace Tag.Art
         float _stepIn;
         float _sprintIn = 1f;
         float _prevRunAmt;
+        bool _sprintFromTurn;
+        bool _sprintOutLeft;
         float _dropVis;
         bool _dropSlide;
         float _diveVis;
@@ -337,7 +339,12 @@ namespace Tag.Art
             // Walk into a sprint pushes off the back foot, then the stride opens.
             // Speed is unchanged. An idle start still uses its own plant.
             if (stepping && !air && !dashing && !_airDashArms && runAmt > 0.4f && _prevRunAmt < 0.2f && _runVis < 0.35f)
+            {
                 _sprintIn = 0f;
+                // A walk turn keeps the outside foot down, then the sprint opens.
+                _sprintFromTurn = Mathf.Abs(_turnVis) > 0.18f;
+                _sprintOutLeft = _turnVis > 0f;
+            }
             _prevRunAmt = runAmt;
             if (_sprintIn < 1f)
                 _sprintIn = Mathf.MoveTowards(_sprintIn, 1f, dt / 0.32f);
@@ -1139,16 +1146,17 @@ namespace Tag.Art
                 float pushW = (_sprintIn < 0.98f && stepping && footSki < 0.35f) ? 1f - Mathf.SmoothStep(0f, 1f, _sprintIn) : 0f;
                 if (pushW > 0.04f)
                 {
-                    // The back foot pushes. The front leg keeps the reach into the sprint.
-                    if (sinC >= 0f)
-                    {
-                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(-6f, 0f, 0f), pushW);
-                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-4f, 0f, 0f), pushW);
-                    }
-                    else
+                    // The back foot pushes. A walk turn plants the outside foot, then the sprint opens.
+                    bool pushLeft = _sprintFromTurn ? _sprintOutLeft : sinC < 0f;
+                    if (pushLeft)
                     {
                         _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(-6f, 0f, 0f), pushW);
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-4f, 0f, 0f), pushW);
+                    }
+                    else
+                    {
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(-6f, 0f, 0f), pushW);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-4f, 0f, 0f), pushW);
                     }
                 }
                 if (stopping && _stopPlant > 0.02f && footSki < 0.35f && _dropVis < 0.35f)
@@ -1226,7 +1234,7 @@ namespace Tag.Art
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-68f, 0f, 0f), d);
                     }
                 }
-                if (Mathf.Abs(_turnVis) > 0.18f && footSki < 0.35f)
+                if (Mathf.Abs(_turnVis) > 0.18f && footSki < 0.35f && !(_sprintFromTurn && _sprintIn < 0.98f))
                 {
                     // Outside foot plants. Positive turn is to the right, so the left foot stays down.
                     // A walk plants at a medium turn. The old curve stayed soft until the yaw was sharp.
