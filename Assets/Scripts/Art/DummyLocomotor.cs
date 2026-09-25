@@ -46,6 +46,9 @@ namespace Tag.Art
         float _skiBlend;
         float _stopGait;
         float _stopRun;
+        float _stopPlant;
+        bool _stopPlanted;
+        bool _stopPlantLeft;
         float _runVis;
         float _swayVis;
         float _idlePhase;
@@ -347,6 +350,19 @@ namespace Tag.Art
             // A clock sine pops the hips. Holding them flat until the sway starts reads as a freeze.
             float strideRemain = Mathf.Abs(_cycle - Mathf.PI * Mathf.Round(_cycle / Mathf.PI));
             bool stopping = atRest && speed <= 0.35f;
+            if (!stopping)
+            {
+                _stopPlanted = false;
+                _stopPlant = 0f;
+            }
+            else if (!_stopPlanted)
+            {
+                // The back foot is the one that stays. The front foot finishes the close.
+                _stopPlanted = true;
+                _stopPlantLeft = sinC < 0f;
+            }
+            if (stopping)
+                _stopPlant = Mathf.MoveTowards(_stopPlant, 1f, dt / 0.12f);
             float closeRoll = 0f;
             if (stopping && !_swayIdle)
                 closeRoll = sinC * Mathf.Lerp(3.2f, 5.5f, _stopRun) * Mathf.Max(_stopGait, Mathf.Clamp01(strideRemain / 0.55f));
@@ -999,6 +1015,21 @@ namespace Tag.Art
                     {
                         _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(-6f, 0f, 0f), plantW);
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-4f, 0f, 0f), plantW);
+                    }
+                }
+                if (stopping && _stopPlant > 0.02f && footSki < 0.35f && _dropVis < 0.35f)
+                {
+                    // Last foot under the hip before the idle sway. The other foot finishes the close.
+                    float p = _stopPlant;
+                    if (_stopPlantLeft)
+                    {
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(-4f, 0f, 0f), p);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-4f, 0f, 0f), p);
+                    }
+                    else
+                    {
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(-4f, 0f, 0f), p);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-4f, 0f, 0f), p);
                     }
                 }
                 if (footSki > 0.001f)

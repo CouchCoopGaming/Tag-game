@@ -122,7 +122,9 @@ Already on this branch: Letting go of a slide stands up into the run under the h
 
 Already on this branch: A jump pushes off the planted foot. The other knee comes up, then the tuck. The jump does not go higher.
 
-This delta: A punch cocks beside the head and holds that beat, then strikes. The cock does not feel longer.
+Already on this branch: A punch cocks beside the head and holds that beat, then strikes. The cock does not feel longer.
+
+This delta: Stopping from a sprint plants the last foot under the hip, then the idle sway. The foot does not skate. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -302,6 +304,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 81. Slide down a slope, then let go: the body should stand up into the run under the hips. The feet should not pop. The slide should not speed up.
 82. Jump from a walk or a run: the foot that was down should push, and the other knee should come up, then the tuck. The jump should not go higher.
 83. Punch: the fist should cock beside the head and hold that beat, then strike. It should not feel like a longer cock. The strike should still come out.
+84. Sprint, then let go: the last foot should plant under the hip before the idle sway. It should not skate. Speed should feel the same.
 
 ## Known leftovers
 
@@ -405,6 +408,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 71. Letting go of a slide stands up into the run under the hips. The feet do not pop. The slide does not speed up.
 72. A jump pushes off the planted foot. The other knee comes up, then the tuck. Jump height is unchanged.
 73. A punch cocks beside the head and holds that beat, then strikes. Windup time is unchanged.
+74. A stop from a sprint plants the last foot under the hip, then the idle sway. The foot does not skate. Speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
