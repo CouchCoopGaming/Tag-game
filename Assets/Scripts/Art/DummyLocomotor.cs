@@ -66,6 +66,7 @@ namespace Tag.Art
         bool _sprintOutLeft;
         float _dropVis;
         bool _dropSlide;
+        bool _crouchFromStand;
         float _diveVis;
         float _surfPhase;
         float _surfIn;
@@ -198,6 +199,10 @@ namespace Tag.Art
                 _dropSlide = false;
             else if (_dropVis <= 0.001f)
                 _dropSlide = false;
+            if (crouch && !sliding && speed <= 0.35f)
+                _crouchFromStand = true;
+            else if ((crouch && speed > 0.35f) || sliding || _dropVis <= 0.001f)
+                _crouchFromStand = false;
             // Stand-up from a slide: the feet enter the stride while the hips are still low.
             // slideBoost stays 0. The speed you already have carries.
             // A still crouch eases into the idle breath. The hips do not pop flat.
@@ -208,13 +213,15 @@ namespace Tag.Art
             bool slideIdleExit = slideExit && speed <= 0.35f;
             bool slideWalkExit = slideExit && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint;
             bool slideSprintExit = slideExit && !slideIdleExit && !slideWalkExit;
-            bool crouchIdleExit = !_dropSlide && !sliding && !crouch && speed <= 0.35f;
+            // A still crouch eases into the idle breath. A still crouch into a sprint rises into the long stride.
+            bool crouchStandSprint = _crouchFromStand && !_dropSlide && !sliding && !crouch && st == MoveState.Sprint;
+            bool crouchIdleExit = !_dropSlide && !sliding && !crouch && speed <= 0.35f && !crouchStandSprint;
             // A crouch walk stands into the stride. The feet step while the hips are still rising.
-            bool crouchWalkExit = !_dropSlide && !sliding && !crouch && speed > 0.35f;
+            bool crouchWalkExit = !_dropSlide && !sliding && !crouch && speed > 0.35f && !crouchStandSprint;
             // A crouch walk into a sprint opens the step as the hips rise. Speed is unchanged.
             bool crouchSprintExit = crouchWalkExit && st == MoveState.Sprint;
-            float footDrop = (slideExit || crouchIdleExit || crouchWalkExit) ? _dropVis * _dropVis : _dropVis;
-            float hipDrop = (slideExit || crouchIdleExit || crouchWalkExit) ? Mathf.SmoothStep(0f, 1f, _dropVis) : _dropVis;
+            float footDrop = (slideExit || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? _dropVis * _dropVis : _dropVis;
+            float hipDrop = (slideExit || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? Mathf.SmoothStep(0f, 1f, _dropVis) : _dropVis;
             bool skiing = st == MoveState.Ski;
             // A walk eases into the glide. A sprint closes the long stride into it.
             // Ski speed is unchanged.
@@ -1061,6 +1068,23 @@ namespace Tag.Art
                         _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(lineElbL, 0f, 0f), d);
                         _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(lineElbR, 0f, 0f), d);
                     }
+                    else if (crouchStandSprint)
+                    {
+                        // The guard opens into the long stride as the hips rise. It does not stay folded.
+                        float up = 1f - _dropVis;
+                        float openGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                        float openAmp = Mathf.Lerp(36f, 64f, openGait);
+                        float openOut = Mathf.Lerp(12f, 8f, openGait);
+                        float openRoll = Mathf.Lerp(0f, armZ, openGait);
+                        float openReachY = openOut + 6f;
+                        float openTurn = Mathf.Abs(_turnVis) * 5f;
+                        float openYL = Mathf.Lerp(openOut, openReachY, Mathf.Clamp01(-sinC) * openGait) + openTurn;
+                        float openYR = Mathf.Lerp(openOut, openReachY, Mathf.Clamp01(sinC) * openGait) + openTurn;
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(Mathf.Lerp(-36f, RunArmPitch(-sinC, openAmp), up), Mathf.Lerp(16f, openYL, up), Mathf.Lerp(armZ, openRoll, up)), hipDrop);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(Mathf.Lerp(-36f, RunArmPitch(sinC, openAmp), up), -Mathf.Lerp(16f, openYR, up), -Mathf.Lerp(armZ, openRoll, up)), hipDrop);
+                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(Mathf.Lerp(-72f, Mathf.Lerp(-6f, -30f, Mathf.Clamp01(sinC) * openGait), up), 0f, 0f), hipDrop);
+                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(Mathf.Lerp(-72f, Mathf.Lerp(-6f, -30f, Mathf.Clamp01(-sinC) * openGait), up), 0f, 0f), hipDrop);
+                    }
                     else
                     {
                         // A sprint leaves the guard as the hips rise, so the arms do not stay folded.
@@ -1382,6 +1406,21 @@ namespace Tag.Art
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(bendL, 0f, 0f), d);
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(bendR, 0f, 0f), d);
                     }
+                    else if (crouchStandSprint)
+                    {
+                        // The guard opens into the long stride as the hips rise. It does not plant, then pop.
+                        float up = 1f - _dropVis;
+                        float openGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                        float openStride = Mathf.Lerp(0.96f, 1.16f, openGait);
+                        float openReach = Mathf.Lerp(34f, 58f, openGait) * openStride;
+                        float openFrontL = Mathf.Max(0f, sinC);
+                        float openFrontR = Mathf.Max(0f, -sinC);
+                        float openKnee = Mathf.Lerp(48f, 90f, openGait);
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(Mathf.Lerp(56f, (openFrontL - openFrontR * 0.58f) * openReach, up), 0f, 0f), d);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(Mathf.Lerp(56f, (openFrontR - openFrontL * 0.58f) * openReach, up), 0f, 0f), d);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(Mathf.Lerp(-68f, -(2f + openFrontL * openKnee), up), 0f, 0f), d);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(Mathf.Lerp(-68f, -(2f + openFrontR * openKnee), up), 0f, 0f), d);
+                    }
                     else if ((crouch && speed > 0.35f) || crouchSprintExit)
                     {
                         // Short steps under the hips. Both knees stay bent, so it is not a run or a skate.
@@ -1433,7 +1472,7 @@ namespace Tag.Art
                 // Chest and hips follow the drop, then rise back into the stride.
                 // A slide stand-up eases the hips so they do not pop flat.
                 // Letting go of a still crouch eases them into the idle breath.
-                float d = (_dropSlide || crouchIdleExit || crouchWalkExit) ? hipDrop : _dropVis;
+                float d = (_dropSlide || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? hipDrop : _dropVis;
                 float chest = _dropSlide ? 62f : 10f;
                 float hip = _dropSlide ? 50f : 22f;
                 float head = _dropSlide ? -12f : -6f;
@@ -1460,6 +1499,14 @@ namespace Tag.Art
                     chest = Mathf.Lerp(62f, leanX, up);
                     hip = Mathf.Lerp(50f, 0f, up);
                     head = Mathf.Lerp(-12f, -breath * 0.4f, up);
+                }
+                else if (crouchStandSprint)
+                {
+                    // Rise into the sprint. Holding the guard pitch pops the hips flat.
+                    float up = 1f - _dropVis;
+                    chest = Mathf.Lerp(10f, leanX, up);
+                    hip = Mathf.Lerp(22f, 0f, up);
+                    head = Mathf.Lerp(-6f, -breath * 0.4f, up);
                 }
                 _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(chest, 0f, 0f), d);
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(hip, 0f, 0f), d);
@@ -2009,7 +2056,7 @@ namespace Tag.Art
             float bobGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
             float bob = grounded ? step * 0.085f * bobGait : air ? step * 0.02f : 0f;
             if (_dropVis > 0.02f && !air && !jet)
-                bob = Mathf.Lerp(bob, _dropSlide ? -0.32f : -0.14f, (_dropSlide || crouchIdleExit || crouchWalkExit) ? hipDrop : _dropVis);
+                bob = Mathf.Lerp(bob, _dropSlide ? -0.32f : -0.14f, (_dropSlide || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? hipDrop : _dropVis);
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
             if (_landSquash > 0f) bob -= 0.14f * _landSquash;
             if (dashing) bob += 0.04f * dashAmt;
