@@ -244,7 +244,9 @@ Already on this branch: A slide into a still crouch eases the wedge into the gua
 
 Already on this branch: A still crouch into a slide eases the guard into the wedge. It does not snap. A slide into a still crouch still eases into the guard. A slide into a walk is unchanged. Speed is unchanged.
 
-This delta: A slide into a crouch walk eases the wedge into the low stride. A still crouch still ends in the guard. A slide into a walk is unchanged. Speed is unchanged.
+Already on this branch: A slide into a crouch walk eases the wedge into the low stride. A still crouch still ends in the guard. A slide into a walk is unchanged. Speed is unchanged.
+
+This delta: A crouch walk into a slide eases the low stride into the wedge. It does not snap. A still crouch into a slide is unchanged. A slide into a crouch walk is unchanged. Speed is unchanged.
 
 ## Stack snapshot
 
@@ -485,6 +487,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 142. Slide, then crouch still: the wedge should ease into the guard. It should not snap. A slide into a stand should still rise into the idle breath. A slide into a walk should feel the same. Speed should feel the same.
 143. Crouch still, then slide: the guard should ease into the wedge. It should not snap. A slide into a still crouch should still ease into the guard. A slide into a walk should feel the same. Speed should feel the same.
 144. Slide, then crouch walk: the wedge should ease into the low stride. A still crouch should still end in the guard. A slide into a walk should feel the same. Speed should feel the same.
+145. Crouch walk, then slide: the low stride should ease into the wedge. It should not snap. A still crouch into a slide should feel the same. A slide into a crouch walk should feel the same. Speed should feel the same.
 
 ## Known leftovers
 
@@ -649,6 +652,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 132. A slide into a still crouch eases the wedge into the guard. It does not snap. A slide into a stand still rises into the idle breath. A slide into a walk is unchanged. Speed is unchanged.
 133. A still crouch into a slide eases the guard into the wedge. It does not snap. A slide into a still crouch still eases into the guard. A slide into a walk is unchanged. Speed is unchanged.
 134. A slide into a crouch walk eases the wedge into the low stride. A still crouch still ends in the guard. A slide into a walk is unchanged. Speed is unchanged.
+135. A crouch walk into a slide eases the low stride into the wedge. It does not snap. A still crouch into a slide is unchanged. A slide into a crouch walk is unchanged. Speed is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
