@@ -52,6 +52,13 @@ namespace Tag.Art
         bool _jumpFromClaim;
         bool _jumpFromGrapple;
         bool _jumpFromReady;
+        bool _punchFromJump;
+        float _punchFromJumpIn;
+        bool _punchWindWas;
+        bool _landedFromJump;
+        Quaternion _punchUaL, _punchUaR, _punchLaL, _punchLaR;
+        Quaternion _punchSp, _punchHp, _punchHd;
+        Quaternion _punchUlL, _punchUlR, _punchLlL, _punchLlR;
         Quaternion _readyUaL, _readyUaR, _readyLaL, _readyLaR;
         Quaternion _readySp, _readyHp, _readyHd;
         Quaternion _readyUlL, _readyUlR, _readyLlL, _readyLlR;
@@ -426,8 +433,12 @@ namespace Tag.Art
             }
             if (!grounded && _motor != null && _motor.Velocity.y > 1.5f && (_wasGrounded || _prevVy <= 1.5f))
                 _diveFromJump = true;
+            if (grounded && _diveFromJump)
+                _landedFromJump = true;
             if (grounded)
                 _diveFromJump = false;
+            if (!grounded || _landSquash <= 0.02f)
+                _landedFromJump = false;
             if (!grounded && _wasGrounded && _motor != null && _motor.Velocity.y > 1.5f)
             {
                 // Push off the foot that was down. Jump height is unchanged.
@@ -596,6 +607,32 @@ namespace Tag.Art
             else if (!dashingAir)
                 _dashFromJump = false;
             _airDashPoseWas = dashingAir;
+            bool windupNow = punching && phase == PunchPhase.Windup;
+            bool fromJumpPose = (!grounded && _diveFromJump) || (_landedFromJump && _landSquash > 0.08f);
+            if (windupNow && !_punchWindWas && fromJumpPose
+                && _upperArmL != null && _spine != null && _upperLegL != null && _head != null)
+            {
+                // The apex or the landing eases into the cock. A punch from the ground keeps its windup.
+                // Windup time is unchanged. Jump height is unchanged.
+                _punchFromJump = true;
+                _punchFromJumpIn = 0f;
+                _punchUaL = _upperArmL.localRotation;
+                _punchUaR = _upperArmR.localRotation;
+                _punchLaL = _lowerArmL.localRotation;
+                _punchLaR = _lowerArmR.localRotation;
+                _punchSp = _spine.localRotation;
+                _punchHp = _hips.localRotation;
+                _punchHd = _head.localRotation;
+                _punchUlL = _upperLegL.localRotation;
+                _punchUlR = _upperLegR.localRotation;
+                _punchLlL = _lowerLegL.localRotation;
+                _punchLlR = _lowerLegR.localRotation;
+            }
+            if (windupNow && _punchFromJump)
+                _punchFromJumpIn = Mathf.MoveTowards(_punchFromJumpIn, 1f, dt / 0.04f);
+            else if (!windupNow)
+                _punchFromJump = false;
+            _punchWindWas = windupNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
             if (air)
                 _airArmIn = Mathf.MoveTowards(_airArmIn, 1f, dt / 0.18f);
@@ -3469,7 +3506,8 @@ namespace Tag.Art
             }
 
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash))
+            // A punch from this jump eases into the windup. Staying down still absorbs. Land time is unchanged.
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -4466,6 +4504,30 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(Quaternion.Slerp(_readyUlR, pushThighR, intoPush), airThighR, leave);
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(_readyLlL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(_readyLlR, pushKneeR, intoPush), airKneeR, leave);
+            }
+            if (punching && phase == PunchPhase.Windup && _punchFromJump && _punchFromJumpIn < 0.98f)
+            {
+                // The apex or the landing eases into the cock, then the windup holds.
+                // A punch from the ground keeps its windup. Windup time is unchanged.
+                float into = _punchFromJumpIn;
+                float w = Mathf.Lerp(0.85f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg / 0.35f)));
+                Quaternion windL = _uaL0 * Quaternion.Euler(-28f, 14f, armZ + 18f);
+                Quaternion windR = _uaR0 * Quaternion.Euler(-58f * w, 46f * w, -armZ);
+                Quaternion windElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion windElR = _laR0 * Quaternion.Euler(-68f * w, 0f, 0f);
+                Quaternion windHp = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f);
+                Quaternion windSp = _spine0 * Quaternion.Euler(leanX + 12f * w, -36f * w, leanZ);
+                _uaLT = Quaternion.Slerp(_punchUaL, windL, into);
+                _uaRT = Quaternion.Slerp(_punchUaR, windR, into);
+                _laLT = Quaternion.Slerp(_punchLaL, windElL, into);
+                _laRT = Quaternion.Slerp(_punchLaR, windElR, into);
+                _hipsT = Quaternion.Slerp(_punchHp, windHp, into);
+                _spineT = Quaternion.Slerp(_punchSp, windSp, into);
+                _headT = Quaternion.Slerp(_punchHd, _headT, into);
+                _ulLT = Quaternion.Slerp(_punchUlL, _ulLT, into);
+                _ulRT = Quaternion.Slerp(_punchUlR, _ulRT, into);
+                _llLT = Quaternion.Slerp(_punchLlL, _llLT, into);
+                _llRT = Quaternion.Slerp(_punchLlR, _llRT, into);
             }
 
             float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f || claimAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
