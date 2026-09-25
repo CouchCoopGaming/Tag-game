@@ -51,6 +51,7 @@ namespace Tag.Art
         float _stepIn;
         float _dropVis;
         bool _dropSlide;
+        float _diveVis;
         float _surfPhase;
         float _surfIn;
         bool _wasSurf;
@@ -162,6 +163,9 @@ namespace Tag.Art
                 if (airCrouch)
                     diveAmt = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-1.2f, -6.5f, vy));
             }
+            // The crouch arrives with the fall. Leaving it eases, so the arms do not pop on the land.
+            float diveStep = diveAmt >= _diveVis ? 1f : dt / 0.16f;
+            _diveVis = Mathf.MoveTowards(_diveVis, diveAmt, diveStep);
             bool crouch = st == MoveState.Crouch;
             // Drop into the guard or the wedge, then rise back out. Speed is unchanged.
             _dropVis = Mathf.MoveTowards(_dropVis, sliding || crouch ? 1f : 0f, dt / 0.16f);
@@ -640,17 +644,18 @@ namespace Tag.Art
                     _hips0 * Quaternion.Euler(6f, 0f, 0f),
                     Quaternion.Slerp(_hips0 * Quaternion.Euler(8f, 0f, 0f), _hips0 * Quaternion.Euler(4f, 0f, 0f), riseShare),
                     airW);
-                if (diveAmt > 0.02f)
+                if (_diveVis > 0.02f)
                 {
-                    // Fast-fall dart. Arms fold in along the ribs so this is not the long trail,
-                    // and the chest pitches down so it is not the apex hang. Fall speed is unchanged.
-                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(28f, 6f, armZ), diveAmt);
-                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(28f, -6f, -armZ), diveAmt);
-                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-52f, 0f, 0f), diveAmt);
-                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-52f, 0f, 0f), diveAmt);
-                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(54f, 0f, 0f), diveAmt);
-                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(16f, 0f, 0f), diveAmt);
-                    _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(18f, 0f, 0f), diveAmt);
+                    // Air crouch: knees up and arms in, short of the jump tuck and the ground guard.
+                    // The chest stays nose-down so it is not the apex hang. Fall speed is unchanged.
+                    float d = _diveVis;
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-16f, 12f, armZ), d);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-16f, -12f, -armZ), d);
+                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-58f, 0f, 0f), d);
+                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-58f, 0f, 0f), d);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(46f, 0f, 0f), d);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(24f, 0f, 0f), d);
+                    _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(12f, 0f, 0f), d);
                 }
             }
             else
@@ -865,13 +870,14 @@ namespace Tag.Art
                 Quaternion kneeHangR = _llR0 * Quaternion.Euler(-26f, 0f, 0f);
                 _llLT = Quaternion.Slerp(kneeHangL, Quaternion.Slerp(kneeLongL, kneeTuckL, riseShare), airW);
                 _llRT = Quaternion.Slerp(kneeHangR, Quaternion.Slerp(kneeLongR, kneeTuckR, riseShare), airW);
-                if (diveAmt > 0.02f)
+                if (_diveVis > 0.02f)
                 {
-                    // Both legs stay long. A deep knee would read as the jump tuck or the ground guard.
-                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(10f, 0f, 0f), diveAmt);
-                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(10f, 0f, 0f), diveAmt);
-                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-14f, 0f, 0f), diveAmt);
-                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-14f, 0f, 0f), diveAmt);
+                    // Knees come up enough to read as a crouch. Still short of the jump tuck and the ground guard.
+                    float d = _diveVis;
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(34f, 0f, 0f), d);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(34f, 0f, 0f), d);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-50f, 0f, 0f), d);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-50f, 0f, 0f), d);
                 }
             }
             else
@@ -1021,12 +1027,35 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(40f, 0f, 0f), kR);
                 _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-78f, 0f, 0f), kL);
                 _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-70f, 0f, 0f), kR);
-                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-40f, 18f, armZ), armK);
-                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-40f, -18f, -armZ), armK);
-                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-22f, 0f, 0f), armK);
-                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-22f, 0f, 0f), armK);
-                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(18f, 0f, 0f), hipK);
-                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(26f, 0f, 0f), hipK);
+                if (_diveVis > 0.02f)
+                {
+                    // The air crouch eases into the landing. The flare comes in as the dart leaves,
+                    // so a soft hop still does not flare and the arms do not pop.
+                    float hand = _diveVis;
+                    float flareIn = armK * (1f - hand);
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-16f, 12f, armZ), hand);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-16f, -12f, -armZ), hand);
+                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-58f, 0f, 0f), hand);
+                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-58f, 0f, 0f), hand);
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-40f, 18f, armZ), flareIn);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-40f, -18f, -armZ), flareIn);
+                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-22f, 0f, 0f), flareIn);
+                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-22f, 0f, 0f), flareIn);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(46f, 0f, 0f), hand);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(24f, 0f, 0f), hand);
+                    _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(12f, 0f, 0f), hand);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(26f, 0f, 0f), hipK * (1f - hand));
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(18f, 0f, 0f), hipK * (1f - hand));
+                }
+                else
+                {
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-40f, 18f, armZ), armK);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-40f, -18f, -armZ), armK);
+                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-22f, 0f, 0f), armK);
+                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-22f, 0f, 0f), armK);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(18f, 0f, 0f), hipK);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(26f, 0f, 0f), hipK);
+                }
             }
 
             bool pulling = _grapple != null && _grapple.IsPulling;
@@ -1105,7 +1134,7 @@ namespace Tag.Art
             bool grappleTell = _grapplePose > 0.04f && !punching;
             // A hop is short. Slew 18 never reached the tuck or the trail before the landing.
             bool apexHang = air && airRise < 0.2f && airFall < 0.2f;
-            bool airDive = diveAmt > 0.12f;
+            bool airDive = _diveVis > 0.12f;
             bool airTell = air && (airRise > 0.12f || airFall > 0.12f || apexHang || airDive);
             float armSlewL = airDashing ? 78f : punchWind ? 90f : handoff ? 72f : grappleTell ? 36f : airTell ? 64f : (punching || lunging || dashing ? 42f : slew);
             float armSlewR = airDashing ? 78f : punchWind ? 90f : handoff ? 72f : grappleTell ? 36f : airTell ? 64f : (punching || lunging || dashing ? 46f : slew);
