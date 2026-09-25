@@ -602,9 +602,9 @@ namespace Tag.Art
                 _laLT = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
                 if (phase == PunchPhase.Windup)
                 {
-                    float w = Mathf.Lerp(0.55f, 1f, punchProg);
-                    // Cock beside the head. The old back-pitch and heavy roll put the fist through the chest.
+                    // The cock arrives in the first beat and holds, so the tell reads before the strike.
                     // Yaw carries the elbow out. Roll stays the mild A. Timing stays the authored 0.12s windup.
+                    float w = Mathf.Lerp(0.85f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg / 0.35f)));
                     _uaRT = _uaR0 * Quaternion.Euler(-58f * w, 46f * w, -armZ);
                     _laRT = _laR0 * Quaternion.Euler(-68f * w, 0f, 0f);
                     _hipsT = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f); // clearer windup hip twist in TP
