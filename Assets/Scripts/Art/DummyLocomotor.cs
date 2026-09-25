@@ -89,6 +89,11 @@ namespace Tag.Art
         bool _dashFromSlide;
         float _dashFromSlideIn;
         bool _slideLeadLeft;
+        bool _dashFromClimb;
+        float _dashFromClimbIn;
+        Quaternion _climbUaL, _climbUaR, _climbLaL, _climbLaR;
+        Quaternion _climbUlL, _climbUlR, _climbLlL, _climbLlR;
+        Quaternion _climbSp, _climbHp, _climbHd;
         bool _skiFromDash;
         float _skiFromDashIn;
         bool _slideFromDash;
@@ -675,6 +680,31 @@ namespace Tag.Art
                 _dashFromSlideIn = Mathf.MoveTowards(_dashFromSlideIn, 1f, dt / 0.04f);
             else if (!dashingAir)
                 _dashFromSlide = false;
+            bool climbLeave = !wallRun && !_exitFromWall && (leavingSurf || _wallExit > 0.2f);
+            if (dashingAir && !_airDashPoseWas && climbLeave && !jet && !_jumpFromDash && !_dashFromDart && !_dashFromSki && !_dashFromSlide
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+            {
+                // The climb eases into the burst. The burst still holds.
+                // An air dash into a slide keeps its ease. A ski and a slide into a dash keep their ease.
+                // Exit time is unchanged. Duration and cooldown are unchanged.
+                _dashFromClimb = true;
+                _dashFromClimbIn = 0f;
+                _climbUaL = _upperArmL.localRotation;
+                _climbUaR = _upperArmR.localRotation;
+                _climbLaL = _lowerArmL.localRotation;
+                _climbLaR = _lowerArmR.localRotation;
+                _climbUlL = _upperLegL.localRotation;
+                _climbUlR = _upperLegR.localRotation;
+                _climbLlL = _lowerLegL.localRotation;
+                _climbLlR = _lowerLegR.localRotation;
+                _climbSp = _spine.localRotation;
+                _climbHp = _hips.localRotation;
+                _climbHd = _head.localRotation;
+            }
+            if (dashingAir && _dashFromClimb)
+                _dashFromClimbIn = Mathf.MoveTowards(_dashFromClimbIn, 1f, dt / 0.04f);
+            else if (!dashingAir)
+                _dashFromClimb = false;
             if (!dashingAir && _airDashPoseWas && !jet && air && _input != null && _input.CrouchHeld)
             {
                 // The burst eases into the dart. An air crouch into a dash keeps its ease.
@@ -3451,6 +3481,24 @@ namespace Tag.Art
                 _spineT = Quaternion.Slerp(fromSp, _spineT, intoBurst);
                 _hipsT = Quaternion.Slerp(fromHp, _hipsT, intoBurst);
                 _headT = Quaternion.Slerp(fromHd, _headT, intoBurst);
+            }
+            if (airDashing && _dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromClimbIn < 0.98f && !punching)
+            {
+                // The climb eases into the burst, then the burst holds.
+                // An air dash into a slide keeps its ease. A ski and a slide into a dash keep their ease.
+                // Exit time is unchanged. Duration and cooldown are unchanged.
+                float intoBurst = _dashFromClimbIn;
+                _uaLT = Quaternion.Slerp(_climbUaL, _uaLT, intoBurst);
+                _uaRT = Quaternion.Slerp(_climbUaR, _uaRT, intoBurst);
+                _laLT = Quaternion.Slerp(_climbLaL, _laLT, intoBurst);
+                _laRT = Quaternion.Slerp(_climbLaR, _laRT, intoBurst);
+                _ulLT = Quaternion.Slerp(_climbUlL, _ulLT, intoBurst);
+                _ulRT = Quaternion.Slerp(_climbUlR, _ulRT, intoBurst);
+                _llLT = Quaternion.Slerp(_climbLlL, _llLT, intoBurst);
+                _llRT = Quaternion.Slerp(_climbLlR, _llRT, intoBurst);
+                _spineT = Quaternion.Slerp(_climbSp, _spineT, intoBurst);
+                _hipsT = Quaternion.Slerp(_climbHp, _hipsT, intoBurst);
+                _headT = Quaternion.Slerp(_climbHd, _headT, intoBurst);
             }
             if (airDashing && _dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromSlideIn < 0.98f && !punching)
             {
