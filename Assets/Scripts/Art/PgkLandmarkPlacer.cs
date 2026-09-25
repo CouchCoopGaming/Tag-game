@@ -592,11 +592,13 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Low marks on the play path. All are Toy_Bench (feet y=0, 0.46 tall).
+        /// Low marks on the play path. Benches are Toy_Bench (feet y=0, 0.46 tall).
         /// The SW bench used to sit on the climb net (x≈9.85). It is now west of that net.
         /// Soft-play's bench is west of the tube street, not in it.
         /// NE is a bench, not a second arch: the existing arch already clears bars and court by ~1.6 m.
         /// Merry already has a west bench and a south picnic, so no extra seat there.
+        /// Soft-play's east shoulder gets a spring rider. The tube street, the north pit,
+        /// and the west side of the net all still have an exit, so nothing was removed.
         /// </summary>
         int PathCues(Transform root)
         {
@@ -613,6 +615,9 @@ namespace Tag.Art
             // North of the NE arch (arch z ends 41.40). Yaw 0 is 1.4 m long in X.
             // 2.4 m off the east bars (x=62.54) and off hopscotch NE (x=68.75).
             n += GroundAccent(root, "Play_Cue_NE", new Vector3(65.65f, 0f, 41.90f), 0f, "Toy_Bench");
+            // East shoulder of soft-play. Spiral ends x=18.08, west lane starts x=20.5,
+            // Conn_Pirate starts z=12.4. Feet are on y=0. North pit still exits to the spine.
+            n += GroundAccent(root, "Play_Mark_SoftPlay", new Vector3(19.20f, 0f, 10.40f), 0f, "Toy_SpringRider");
             return n;
         }
 
