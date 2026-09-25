@@ -278,7 +278,10 @@ namespace Tag.Art
             }
             else if (grounded && speed > 0.35f && !sliding && !crouch)
             {
-                _runVis = Mathf.MoveTowards(_runVis, runAmt, dt / 0.2f);
+                // A sprint into a walk closes the stride with the step. Snapping the length skates.
+                // Opening into a sprint stays on the shorter ease. Speed is unchanged.
+                float runStep = runAmt < _runVis ? dt / 0.32f : dt / 0.2f;
+                _runVis = Mathf.MoveTowards(_runVis, runAmt, runStep);
                 float cadence = Mathf.Lerp(7.2f, 11.2f, _runVis);
                 float rate = Mathf.Lerp(cadence, 5.2f, footSki);
                 _cycle += dt * rate;
@@ -814,7 +817,8 @@ namespace Tag.Art
                 // and the left arm stays back. Same-side swing reads as a skate from the chase cam.
                 // Rearward travel stays short so the hands do not fold into the pelvis. No extra roll.
                 // _stopGait holds the last stride while the feet close, so a brake does not pop the arms idle.
-                float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
+                // _runVis keeps the sprint swing while it eases into the walk, so the arms do not snap.
+                float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_stopGait, _runVis));
                 float idle = 1f - gait;
                 float amp = Mathf.Lerp(36f, 64f, gait);
                 // Idle hang sits slightly forward and out. The outward yaw stays on through the
@@ -1103,7 +1107,9 @@ namespace Tag.Art
                 // Recovery leg takes the knee. The back thigh stays shorter than the front reach
                 // so the pair does not meet straight under the hips. Stance knee stays nearly straight.
                 float stride = Mathf.Lerp(0.96f, 1.16f, _runVis);
-                float reach = Mathf.Lerp(34f, 58f, Mathf.Max(Mathf.Max(walkAmt, runAmt), _stopGait)) * stride;
+                // Keep the long stride while it eases into the walk. A live snap reads as a skate stop.
+                float reachGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_stopGait, _runVis));
+                float reach = Mathf.Lerp(34f, 58f, reachGait) * stride;
                 float frontL = Mathf.Max(0f, sinC);
                 float frontR = Mathf.Max(0f, -sinC);
                 float thighL = (frontL - frontR * 0.58f) * reach;
