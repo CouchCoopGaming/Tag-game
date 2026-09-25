@@ -1676,7 +1676,7 @@ namespace Tag.Art
                 // trail leg stays in the stride, so it does not read as a stop.
                 // A stand is unchanged. Hold time is unchanged.
                 float walkOn = (1f - hard) * Mathf.Clamp01(walkAmt) * (1f - Mathf.Clamp01(runAmt));
-                if (walkOn > 0.02f && st != MoveState.Sprint)
+                if (walkOn > 0.02f && st != MoveState.Sprint && !crouch)
                 {
                     if (sinC >= 0f)
                     {
@@ -1709,7 +1709,7 @@ namespace Tag.Art
                 // A hard landing into a walk absorbs, then the trail leg takes the step.
                 // It does not sit in the idle buckle. A sprint opens after the absorb.
                 float hardWalk = hard * Mathf.Clamp01(walkAmt) * (1f - Mathf.Clamp01(runAmt));
-                if (hardWalk > 0.02f && st != MoveState.Sprint)
+                if (hardWalk > 0.02f && st != MoveState.Sprint && !crouch)
                 {
                     float trail = kneeBase * kneeBase;
                     if (sinC >= 0f)
@@ -1743,10 +1743,34 @@ namespace Tag.Art
                 float armK = Mathf.Lerp(kRelease * kRelease, kneeStand * kneeStand, standing) * hard;
                 float hipMove = Mathf.Lerp(kneeBase * 0.2f, kRelease, hard);
                 float hipK = hipMove * hipMove;
-                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(48f, 0f, 0f), kL);
-                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(40f, 0f, 0f), kR);
-                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-78f, 0f, 0f), kL);
-                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-70f, 0f, 0f), kR);
+                // A jump into a crouch walk absorbs in the low stride. A still crouch keeps the old absorb.
+                // Land time is unchanged.
+                bool crouchWalkLand = crouch && speed > 0.35f && st != MoveState.Sprint && _diveVis <= 0.02f;
+                if (crouchWalkLand)
+                {
+                    float stepL = Mathf.Max(0f, sinC);
+                    float stepR = Mathf.Max(0f, -sinC);
+                    float absorb = Mathf.Clamp01(k);
+                    float thighL = 46f + stepL * 12f - stepR * 6f;
+                    float thighR = 46f + stepR * 12f - stepL * 6f;
+                    float kneeL = 60f + stepL * 8f;
+                    float kneeR = 60f + stepR * 8f;
+                    if (sinC >= 0f)
+                        kneeL += 18f * absorb;
+                    else
+                        kneeR += 18f * absorb;
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(thighL, 0f, 0f), kL);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(thighR, 0f, 0f), kR);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-kneeL, 0f, 0f), kL);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-kneeR, 0f, 0f), kR);
+                }
+                else
+                {
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(48f, 0f, 0f), kL);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(40f, 0f, 0f), kR);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-78f, 0f, 0f), kL);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-70f, 0f, 0f), kR);
+                }
                 if (_diveVis > 0.02f)
                 {
                     // The air crouch eases into the landing. The flare comes in as the dart leaves,
@@ -1776,6 +1800,18 @@ namespace Tag.Art
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-50f, 0f, 0f), hand);
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-50f, 0f, 0f), hand);
                     }
+                }
+                else if (crouchWalkLand)
+                {
+                    // Stay in the crouch. The standing flare would pop the hips up.
+                    float dip = Mathf.Clamp01(k);
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), dip);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), dip);
+                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-72f, 0f, 0f), dip);
+                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-72f, 0f, 0f), dip);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(28f, 0f, 0f), dip);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(14f, 0f, 0f), dip);
+                    _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-8f, 0f, 0f), dip);
                 }
                 else
                 {
