@@ -42,7 +42,9 @@ Already on this branch: A climb keeps both hands on a long line while they swap 
 
 Already on this branch: The punch windup cocks the fist beside the head, clear of the chest. Windup time is still 0.12s.
 
-This delta: After an air dash the arms stay in the hang and ease into the fall or the run. They do not throw back a second time when the burst ends. Dash time and the 30s cooldown are unchanged.
+Already on this branch: After an air dash the arms stay in the hang and ease into the fall or the run. They do not throw back a second time.
+
+This delta: A tag catch is a long V of arms in front of the chest, with both knees bent. The hands stay clear of the chest. It should not match the new It's one-knee claim or a landing buckle.
 
 ## Stack snapshot
 
@@ -182,6 +184,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 41. Climb: both hands should stay visible as they swap, the low hand a line and not a fold at the chest. Wall-run: the wall hand should move up and down the wall with the step, and the outer arm should stay straight. Hands stay clear of the hips.
 42. Punch: the windup fist should sit beside the head, not inside the chest. The connect should still be a long line in front of the chest. The cock should not feel longer.
 43. Air dash: the arms throw back at the start, then ease down before the streak ends. When the streak ends they should keep easing forward. They should not throw back again. The burst should still feel short.
+44. Tag someone: the runner who was hit should show a long V of arms, not a fold at the chest, and both knees should bend. The new It should still raise both arms and lift one knee. The two poses should not match, and neither should look like a landing.
 
 ## Known leftovers
 
@@ -245,6 +248,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 31. Climb hands stay a long line through the reach and the pull. The wall-run hand presses with the stride. The outer arm stays straight. Hands stay clear of the hips.
 32. Punch windup sits beside the head, clear of the chest. Connect stays a long line in front. Windup time is unchanged.
 33. After an air dash the arms ease out of the hang. They do not whip again when the burst ends. Dash time and cooldown are unchanged.
+34. Tag catch is a long V of arms with both knees bent. Hands stay clear of the chest. The new It still lifts one knee. Neither pose matches a landing.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
