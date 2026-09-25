@@ -1,3 +1,4 @@
+using Tag.Experimental;
 using Tag.Gameplay;
 using TagArena.Movement;
 using UnityEngine;
@@ -12,6 +13,7 @@ namespace Tag.Art
     {
         PlayerMotor _motor;
         PunchHitbox _punch;
+        ExperimentalGrapple _grapple;
 
         Transform _hips, _spine, _head;
         Transform _upperArmL, _upperArmR, _lowerArmL, _lowerArmR;
@@ -38,6 +40,7 @@ namespace Tag.Art
         float _tagFlinch;
         float _itClaim;
         float _skiBlend;
+        float _grapplePose;
         float _wallExit;
         Quaternion _exitUaL, _exitUaR, _exitLaL, _exitLaR;
         Quaternion _exitUlL, _exitUlR, _exitLlL, _exitLlR;
@@ -95,6 +98,7 @@ namespace Tag.Art
             float dt = Time.deltaTime;
             _punchTelegraph = Mathf.MoveTowards(_punchTelegraph, 0f, dt);
             if (_motor == null) _motor = GetComponentInParent<PlayerMotor>();
+            if (_grapple == null) _grapple = GetComponentInParent<ExperimentalGrapple>();
             HookBounce();
             // Cyan dash tell must run even when the limb rig failed to bind.
             TickAirDashTell(dt);
@@ -708,6 +712,24 @@ namespace Tag.Art
                 _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(26f, 0f, 0f), k);
             }
 
+            bool pulling = _grapple != null && _grapple.IsPulling;
+            _grapplePose = Mathf.MoveTowards(_grapplePose, pulling ? 1f : 0f, dt / 0.12f);
+            if (_grapplePose > 0.04f && !punching)
+            {
+                // Experimental rope only. Both arms reach as a long line. Legs stay long so it is not a jump tuck.
+                // The gate stays off unless the component is added and enableGrapple is turned on.
+                float g = _grapplePose;
+                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-96f, 16f, armZ), g);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-96f, -16f, -armZ), g);
+                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-14f, 0f, 0f), g);
+                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-14f, 0f, 0f), g);
+                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(8f, 0f, 0f), g);
+                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(6f, 0f, 0f), g);
+                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-8f, 0f, 0f), g);
+                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-8f, 0f, 0f), g);
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(-12f, 0f, 0f), g);
+            }
+
             if (flinchAmt > 0.04f)
             {
                 // Tagged runner: a long V in front of the chest. A bent elbow disappears at chase distance.
@@ -744,21 +766,22 @@ namespace Tag.Art
             // 0.1s air dash never reached the whip pose at slew 42.
             bool punchWind = punching && phase == PunchPhase.Windup;
             bool handoff = flinchAmt > 0.2f || claimAmt > 0.2f;
+            bool grappleTell = _grapplePose > 0.2f && !punching;
             // A hop is short. Slew 18 never reached the tuck or the trail before the landing.
             bool airTell = air && (airRise > 0.12f || airFall > 0.12f);
-            float armSlewL = airDashing ? 78f : punchWind ? 90f : handoff ? 72f : airTell ? 64f : (punching || lunging || dashing ? 42f : slew);
-            float armSlewR = airDashing ? 78f : punchWind ? 90f : handoff ? 72f : airTell ? 64f : (punching || lunging || dashing ? 46f : slew);
+            float armSlewL = airDashing ? 78f : punchWind ? 90f : handoff || grappleTell ? 72f : airTell ? 64f : (punching || lunging || dashing ? 42f : slew);
+            float armSlewR = airDashing ? 78f : punchWind ? 90f : handoff || grappleTell ? 72f : airTell ? 64f : (punching || lunging || dashing ? 46f : slew);
             // Run knees have to arrive inside one stride or the flex never shows.
             bool runCycle = grounded && !air && !sliding && !crouch && !dashing && !lunging && speed > 2f;
             // Buckle has to arrive during the short absorb, then follow the ease back into the stride.
-            float legSlew = airDashing ? 78f : airTell ? 64f : (_landSquash > 0.05f ? 46f : runCycle ? 44f : slew);
-            float torsoSlew = airTell ? 64f : slew;
+            float legSlew = airDashing ? 78f : grappleTell ? 72f : airTell ? 64f : (_landSquash > 0.05f ? 46f : runCycle ? 44f : slew);
+            float torsoSlew = grappleTell ? 72f : airTell ? 64f : slew;
             if (!(lunging || dashing))
                 _airDashArms = false;
             if (!dashing && !lunging && _armRecover > 0f)
                 _armRecover = Mathf.MoveTowards(_armRecover, 0f, dt);
             // After the burst, ease into the fall or the run. Slew 64 snaps the arms into a second throw.
-            if (_armRecover > 0f && !airDashing && !dashing && !lunging && !punchWind && !handoff)
+            if (_armRecover > 0f && !airDashing && !dashing && !lunging && !punchWind && !handoff && !grappleTell)
             {
                 armSlewL = 16f;
                 armSlewR = 16f;

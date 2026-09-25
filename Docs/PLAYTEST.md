@@ -52,7 +52,9 @@ Already on this branch: Skiing eases into a lower glide with the arms out, then 
 
 Already on this branch: Leaving a wall run eases into the fall or the run. The wall hand does not snap off the wall.
 
-This delta: Leaving a climb eases into the fall or the run. The reaching hand and the stepping knee should not snap off the wall in one frame. Climb speed is unchanged.
+Already on this branch: Leaving a climb eases into the fall or the run. The reaching hand does not snap off the wall.
+
+This delta: If ExperimentalGrapple is on the pawn and enableGrapple is turned on, a pull reaches both arms as a long line and keeps the legs long. It should not look like a jump tuck. The gate stays off unless you turn it on. Jet stays off.
 
 ## Stack snapshot
 
@@ -197,6 +199,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 46. Hold ski, then let go into a sprint: the body should ease into a lower glide with the arms out, then ease back into the run. It should not pop, and the glide should not look like the sprint. Jet stays off.
 47. Wall-run, then drop or land into a sprint: the wall hand and the outer leg should ease into the fall or the run. They should not snap off the wall in one frame.
 48. Climb, then drop or step off into a sprint: the reaching hand and the stepping knee should ease into the fall or the run. They should not snap off the wall in one frame.
+49. Only if you add ExperimentalGrapple and turn enableGrapple on: holding the rope should reach both arms in a long line, legs staying long. It should not look like a jump. With the gate off, RMB still does not hook. Jet stays off.
 
 ## Known leftovers
 
@@ -265,6 +268,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 36. Ski eases into a lower glide with the arms out, then eases back into the run. It does not pop. Jet stays off. Ski speed is unchanged.
 37. Leaving a wall run eases into the fall or the run. The wall hand and the outer leg do not snap. Wall-run speed is unchanged.
 38. Leaving a climb eases into the fall or the run. The reaching hand and the stepping knee do not snap. Climb speed is unchanged.
+39. Grapple pose is a long two-arm reach with long legs, only while enableGrapple is on and a rope is attached. The default gate stays off. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
