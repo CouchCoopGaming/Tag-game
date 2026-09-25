@@ -408,7 +408,9 @@ Already on this branch: Becoming It into a tag eases the claim into the connect.
 
 Already on this branch: A grapple release into a punch eases the line into the windup. Becoming It into a tag is unchanged. A grapple release into an air dash is unchanged. A grapple release into a jump is unchanged. A crouch release is unchanged. Windup time is unchanged. The gate stays off.
 
-This delta: A grapple release into a tag eases the line into the connect. A grapple release into a punch is unchanged. A grapple release into an air dash is unchanged. A grapple release into a jump is unchanged. Becoming It into a tag is unchanged. A crouch release is unchanged. Connect time is unchanged. The gate stays off.
+Already on this branch: A grapple release into a tag eases the line into the connect. A grapple release into a punch is unchanged. A grapple release into an air dash is unchanged. A grapple release into a jump is unchanged. Becoming It into a tag is unchanged. A crouch release is unchanged. Connect time is unchanged. The gate stays off.
+
+This delta: A dash coming off cooldown into a punch eases the pulse into the windup. A grapple release into a tag is unchanged. A dash coming off cooldown into a jump is unchanged. A crouch ready is unchanged. Windup time is unchanged. Duration and cooldown are unchanged.
 
 ## Stack snapshot
 
@@ -731,6 +733,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 224. Become It, then tag: the claim should ease into the connect. Becoming It into a punch should feel the same. Becoming It into an air dash should feel the same. Becoming It into a jump should feel the same. An air crouch into a tag should feel the same. A crouch claim should feel the same. The connect should not feel longer. The claim should not feel longer. Jet stays off.
 225. Let go of a grapple, then punch: the line should ease into the windup. Becoming It into a tag should feel the same. A grapple release into an air dash should feel the same. A grapple release into a jump should feel the same. A crouch release should feel the same. The cock should not feel longer. The gate stays off. Jet stays off.
 226. Let go of a grapple, then tag: the line should ease into the connect. A grapple release into a punch should feel the same. A grapple release into an air dash should feel the same. A grapple release into a jump should feel the same. Becoming It into a tag should feel the same. A crouch release should feel the same. The connect should not feel longer. The gate stays off. Jet stays off.
+227. When the dash is ready, punch: the pulse should ease into the windup. A grapple release into a tag should feel the same. A dash coming off cooldown into a jump should feel the same. A crouch ready should feel the same. The cock should not feel longer. The dash should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -977,6 +980,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 214. Becoming It into a tag eases the claim into the connect. Becoming It into a punch is unchanged. Becoming It into an air dash is unchanged. Becoming It into a jump is unchanged. An air crouch into a tag is unchanged. A crouch claim is unchanged. Connect time is unchanged. Claim time is unchanged. Jet stays off.
 215. A grapple release into a punch eases the line into the windup. Becoming It into a tag is unchanged. A grapple release into an air dash is unchanged. A grapple release into a jump is unchanged. A crouch release is unchanged. Windup time is unchanged. The gate stays off. Jet stays off.
 216. A grapple release into a tag eases the line into the connect. A grapple release into a punch is unchanged. A grapple release into an air dash is unchanged. A grapple release into a jump is unchanged. Becoming It into a tag is unchanged. A crouch release is unchanged. Connect time is unchanged. The gate stays off. Jet stays off.
+217. A dash coming off cooldown into a punch eases the pulse into the windup. A grapple release into a tag is unchanged. A dash coming off cooldown into a jump is unchanged. A crouch ready is unchanged. Windup time is unchanged. Duration and cooldown are unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
