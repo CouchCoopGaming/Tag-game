@@ -267,6 +267,12 @@ namespace Tag.Art
             // x=-1.15: ~0.12 m off the 2-2 edge, ~0.07 m off the corner post, clear of the side stair.
             // Closer (x=-1.12) closes the post gap to ~0.04 m. Leave it.
             pieces.Add(("PGK_Ladder_Rung_LOD0", new Vector3(-1.15f, 0f, 0.90f), 90f));
+            // Ground slide east of the tube cap. Low mouth is local -Z (away from the fort).
+            // Stem -0.095 puts that mouth on mulch; the high end stays ~2.41. Not on the 2.00 deck.
+            // East plastic ends x=4.60. Slide x is 5.26-6.54 (0.66 m off). South edge of the tubes
+            // is z=-4.72; the high end is z=-5.51 (0.79 m clear). East forts do not get this.
+            // Soft-play world z 1.02-4.24. Astro yaw 180 puts it north of the tubes, 0.36 m east of Spawn_NW.
+            pieces.Add(("Toy_Slide", new Vector3(5.90f, 0f, -5.53f), 0f));
         }
 
         /// <summary>
@@ -799,6 +805,7 @@ namespace Tag.Art
             if (stem.StartsWith("Toy_Seesaw")) return -0.10f;        // feet (minY~+0.10) SpawnLead
             if (stem.StartsWith("Toy_Bumper")) return -0.17f;        // feet (minY~+0.17) SpawnLead
             if (stem.StartsWith("Toy_Goal")) return 0.05f;           // feet (minY~-0.05) Kickball lift
+            if (stem.StartsWith("Toy_Slide")) return -0.095f;        // low mouth (minY~+0.095) play-place lawn
             // minY * landmarkUniformScale * slotScale. Slot scales are baked in; change both together.
             if (stem.StartsWith("Landmark_NinjaBlade")) return -0.334f; // 0.40 * 1.15 * slot 0.725
             if (stem.StartsWith("Landmark_CrashTorso")) return -0.322f; // 1.001 * 1.15 * slot 0.28
