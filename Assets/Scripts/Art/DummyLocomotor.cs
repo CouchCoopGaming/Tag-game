@@ -1755,10 +1755,35 @@ namespace Tag.Art
                 float cRelease = Mathf.Lerp(c, c * c, moving);
                 float cHands = Mathf.Lerp(cRelease, c * c, standing);
                 bool punchHandoff = punching && phase == PunchPhase.HitRecover;
-                // A walk settles the arms into the stride. A stand still eases into the idle breath.
-                // A sprint keeps its release. The raised knee stays on the claim. Claim time is unchanged.
+                // A sprint settles the arms into the long stride. A walk settles them into the walk.
+                // A stand still eases into the idle breath. The raised knee stays on the claim. Claim time is unchanged.
                 float walkClaim = grounded ? Mathf.Clamp01(walkAmt) * (1f - Mathf.Clamp01(runAmt)) : 0f;
-                if (!punchHandoff && walkClaim > 0.02f)
+                float sprintClaim = grounded && (st == MoveState.Sprint || runAmt > 0.4f) ? 1f : 0f;
+                if (sprintClaim > 0.02f)
+                    walkClaim = 0f;
+                if (!punchHandoff && sprintClaim > 0.02f)
+                {
+                    float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                    float amp = Mathf.Lerp(36f, 64f, gait);
+                    float outY = Mathf.Lerp(12f, 8f, gait);
+                    float roll = Mathf.Lerp(0f, armZ, gait);
+                    float reachY = outY + 6f;
+                    float turnOut = Mathf.Abs(_turnVis) * 5f;
+                    float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait) + turnOut;
+                    float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait) + turnOut;
+                    float pitchL = RunArmPitch(-sinC, amp);
+                    float pitchR = RunArmPitch(sinC, amp);
+                    float elbowL = Mathf.Lerp(-6f, -30f, Mathf.Clamp01(sinC) * gait);
+                    float elbowR = Mathf.Lerp(-6f, -30f, Mathf.Clamp01(-sinC) * gait);
+                    float hold = c * c;
+                    _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(pitchL, yL, roll), _uaL0 * Quaternion.Euler(-128f, 8f, armZ), hold);
+                    _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(pitchR, -yR, -roll), _uaR0 * Quaternion.Euler(-36f, -48f, -armZ), hold);
+                    _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(elbowL, 0f, 0f), _laL0 * Quaternion.Euler(-10f, 0f, 0f), hold);
+                    _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(elbowR, 0f, 0f), _laR0 * Quaternion.Euler(-12f, 0f, 0f), hold);
+                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX, 0f, leanZ), _spine0 * Quaternion.Euler(-22f, -16f, 0f), hold);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(4f, 0f, 0f), hold);
+                }
+                else if (!punchHandoff && walkClaim > 0.02f)
                 {
                     float gait = Mathf.Max(Mathf.Clamp01(walkAmt), Mathf.Max(_stopGait, _runVis));
                     gait = Mathf.Lerp(gait, 1f, walkClaim);
