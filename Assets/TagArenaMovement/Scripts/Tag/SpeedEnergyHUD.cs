@@ -133,17 +133,25 @@ namespace TagArena.Movement
                 GUI.Box(new Rect(24, 56, 240, 20), GUIContent.none);
                 GUI.Box(new Rect(24, 56, 240 * ready, 20), GUIContent.none);
                 GUI.color = prev;
-                string dash = rem <= 0.05f ? "DASH ready" : "DASH " + rem.ToString("0.0") + "s";
+                // Active burst wins the label; otherwise ready / CD (no second DASH line below).
+                string dash = motor.IsAirDashing
+                    ? "DASH!"
+                    : (rem <= 0.05f ? "DASH ready" : "DASH " + rem.ToString("0.0") + "s");
                 GUI.Label(new Rect(24, 80, 480, 26), dash + "   " + ski, _small);
             }
 
-            float dashCd = motor.AirDashCooldownRemaining;
-            string dashLine = dashCd > 0.05f
-                ? ("DASH CD " + dashCd.ToString("0.0") + "s")
-                : (motor.IsAirDashing ? "DASH!" : "DASH ready");
-            GUI.Label(new Rect(24, 102, 480, 22), dashLine, _small);
-
-            float y = 124f;
+            // When jet is on, the primary row is JET - keep a dedicated dash CD / active line.
+            // When jet is off, dash already owns the primary row; skip the duplicate.
+            float y = 102f;
+            if (jetOn)
+            {
+                float dashCd = motor.AirDashCooldownRemaining;
+                string dashLine = dashCd > 0.05f
+                    ? ("DASH CD " + dashCd.ToString("0.0") + "s")
+                    : (motor.IsAirDashing ? "DASH!" : "DASH ready");
+                GUI.Label(new Rect(24, 102, 480, 22), dashLine, _small);
+                y = 124f;
+            }
             string zone = ZoneNameMarkers.GetNearestZoneName(motor.transform.position);
             GUI.Label(new Rect(24, y, 480, 22), "Zone: " + zone, _small);
             y += 24f;
