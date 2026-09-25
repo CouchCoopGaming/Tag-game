@@ -616,7 +616,9 @@ Already on this branch: A sprint into the air eases the stride arms into the air
 
 Already on this branch: A standing idle into a jump eases the idle arms into the air pose. The air pose then holds. The slow reach stays off that path. A still crouch into a jump is unchanged. A walk into a jump is unchanged. A sprint into the air is unchanged. Jump height is unchanged.
 
-This delta: A jump during an air dash eases the burst into the air pose. The air pose then holds. The slow push stays off that path. Duration and cooldown are unchanged. Jump height is unchanged.
+Already on this branch: A jump during an air dash eases the burst into the air pose. The air pose then holds. The slow push stays off that path. Duration and cooldown are unchanged. Jump height is unchanged.
+
+This delta: A wall jump eases the wall pose into the air pose. The air pose then holds. The slow push stays off that path. Exit time is unchanged. Jump height is unchanged.
 
 ## Stack snapshot
 
@@ -1043,6 +1045,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 328. Sprint, then jump: the stride arms should ease into the air pose. The air pose should then hold. The reach should not ease back in. A walk into a jump should feel the same. The jump should not feel higher. Jet stays off.
 329. Stand still, then jump: the idle arms should ease into the air pose. The air pose should then hold. The reach should not ease back in. A still crouch into a jump should feel the same. A walk into a jump should feel the same. A sprint into the air should feel the same. The jump should not feel higher. Jet stays off.
 330. Air dash, then jump: the burst should ease into the air pose. The air pose should then hold. The push should not ease back in. A standing idle into a jump should feel the same. The dash should not feel longer. The jump should not feel higher. Jet stays off.
+331. Wall run, then jump: the wall pose should ease into the air pose. The air pose should then hold. The push should not ease back in. An air dash into a jump should feel the same. The leave should not feel longer. The jump should not feel higher. Jet stays off.
 
 ## Known leftovers
 
@@ -1393,6 +1396,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 318. A sprint into the air eases the stride arms into the air pose. The air pose then holds. The slow reach stays off that path. A walk into a jump is unchanged. Jump height is unchanged. Jet stays off.
 319. A standing idle into a jump eases the idle arms into the air pose. The air pose then holds. The slow reach stays off that path. A still crouch into a jump is unchanged. A walk into a jump is unchanged. A sprint into the air is unchanged. Jump height is unchanged. Jet stays off.
 320. A jump during an air dash eases the burst into the air pose. The air pose then holds. The slow push stays off that path. Duration and cooldown are unchanged. Jump height is unchanged. Jet stays off.
+321. A wall jump eases the wall pose into the air pose. The air pose then holds. The slow push stays off that path. Exit time is unchanged. Jump height is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
