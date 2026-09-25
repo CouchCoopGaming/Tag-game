@@ -432,7 +432,9 @@ Already on this branch: A still crouch into a punch eases the guard into the win
 
 Already on this branch: A still crouch into a tag eases the guard into the connect. A still crouch into a punch is unchanged. A crouch walk into a tag is unchanged. An air crouch into a tag is unchanged. A slide into a tag is unchanged. A crouch claim is unchanged. A punch into a tag is unchanged. Connect time is unchanged.
 
-This delta: A soft landing into a ski eases the absorb into the glide. A still crouch into a tag is unchanged. A hard landing into a ski is unchanged. A jump into a ski is unchanged. A punch into a ski is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Land time is unchanged.
+Already on this branch: A soft landing into a ski eases the absorb into the glide. A still crouch into a tag is unchanged. A hard landing into a ski is unchanged. A jump into a ski is unchanged. A punch into a ski is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Land time is unchanged.
+
+This delta: A soft landing into a slide eases the absorb into the wedge. A soft landing into a ski is unchanged. A hard landing into a slide is unchanged. A jump into a slide is unchanged. A punch into a slide is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. slideBoost stays 0. Land time is unchanged.
 
 ## Stack snapshot
 
@@ -767,6 +769,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 236. Still crouch, then punch: the guard should ease into the windup. A tag into a slide should feel the same. A crouch walk into a punch should feel the same. An air crouch into a punch should feel the same. A slide into a punch should feel the same. A crouch into a slide should feel the same. The cock should not feel longer. The guard should not feel longer. Jet stays off.
 237. Still crouch, then tag: the guard should ease into the connect. A still crouch into a punch should feel the same. A crouch walk into a tag should feel the same. An air crouch into a tag should feel the same. A slide into a tag should feel the same. The connect should not feel longer. The guard should not feel longer. Jet stays off.
 238. Soft land, then ski: the absorb should ease into the glide. A still crouch into a tag should feel the same. A hard landing into a ski should feel the same. A jump into a ski should feel the same. A punch into a ski should feel the same. A slide into a ski should feel the same. The glide should not feel longer. The landing should not feel longer. Speed should feel the same. Jet stays off.
+239. Soft land, then slide: the absorb should ease into the wedge. A soft landing into a ski should feel the same. A hard landing into a slide should feel the same. A jump into a slide should feel the same. A punch into a slide should feel the same. A crouch into a slide should feel the same. A ski into a slide should feel the same. The slide should not feel faster. The landing should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1025,6 +1028,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 226. A still crouch into a punch eases the guard into the windup. A tag into a slide is unchanged. A crouch walk into a punch is unchanged. An air crouch into a punch is unchanged. A slide into a punch is unchanged. A crouch into a slide is unchanged. A crouch claim is unchanged. Windup time is unchanged. Jet stays off.
 227. A still crouch into a tag eases the guard into the connect. A still crouch into a punch is unchanged. A crouch walk into a tag is unchanged. An air crouch into a tag is unchanged. A slide into a tag is unchanged. A crouch claim is unchanged. A punch into a tag is unchanged. Connect time is unchanged. Jet stays off.
 228. A soft landing into a ski eases the absorb into the glide. A still crouch into a tag is unchanged. A hard landing into a ski is unchanged. A jump into a ski is unchanged. A punch into a ski is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Land time is unchanged. Jet stays off.
+229. A soft landing into a slide eases the absorb into the wedge. A soft landing into a ski is unchanged. A hard landing into a slide is unchanged. A jump into a slide is unchanged. A punch into a slide is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. slideBoost stays 0. Land time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
