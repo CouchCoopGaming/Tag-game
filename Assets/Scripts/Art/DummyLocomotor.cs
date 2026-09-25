@@ -48,6 +48,7 @@ namespace Tag.Art
         float _tagFlinch;
         float _itClaim;
         float _skiBlend;
+        bool _skiFromWalk;
         float _stopGait;
         float _stopRun;
         float _stopPlant;
@@ -207,6 +208,11 @@ namespace Tag.Art
             float footDrop = (slideExit || crouchIdleExit || crouchWalkExit) ? _dropVis * _dropVis : _dropVis;
             float hipDrop = (slideExit || crouchIdleExit || crouchWalkExit) ? Mathf.SmoothStep(0f, 1f, _dropVis) : _dropVis;
             bool skiing = st == MoveState.Ski;
+            // A walk eases into the glide. A sprint keeps the old entry. Ski speed is unchanged.
+            if (skiing && _skiBlend <= 0.02f)
+                _skiFromWalk = speed > 0.35f && speed <= 5.5f;
+            else if (!skiing)
+                _skiFromWalk = false;
             _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             // Feet stay in the short glide while the hips are still pitched, then the run opens under them.
             // A walk returns the stride with the step, so the long glide does not skate off.
@@ -215,7 +221,7 @@ namespace Tag.Art
             float walkSki = !skiing && grounded
                 ? Mathf.Clamp01(speed / 5.5f) * (1f - Mathf.InverseLerp(5.5f, 11.5f, speed))
                 : 0f;
-            float legSki = walkSki > 0.02f ? footSki * footSki : footSki;
+            float legSki = walkSki > 0.02f || _skiFromWalk ? footSki * footSki : footSki;
             bool punching = _punch != null && _punch.IsPunching;
             bool lunging = _motor != null && _motor.IsLunging;
             var phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
