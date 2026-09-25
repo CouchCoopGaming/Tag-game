@@ -1334,9 +1334,9 @@ namespace Tag.Art
             {
                 // Hands keep the full exit. Hips and feet ease into the stride
                 // so the wall roll does not pop. Exit time is unchanged.
-                // A wall run into a walk settles the hands with the feet. They do not
-                // stay on the wall and then hitch. A climb and a drop keep the old leave.
-                if (leavingSurf && _exitFromWall && grounded && !air && !crouch && speed > 0.35f)
+                // A wall run or a climb into a walk settles the hands with the feet.
+                // They do not stay on the surface and then hitch. A drop keeps the old leave.
+                if (leavingSurf && grounded && !air && !crouch && speed > 0.35f)
                     _exitIntoWalk = true;
                 _wallExit = Mathf.MoveTowards(_wallExit, 0f, dt / 0.18f);
                 float w = _wallExit;
