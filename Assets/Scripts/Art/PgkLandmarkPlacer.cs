@@ -656,7 +656,8 @@ namespace Tag.Art
         /// <summary>
         /// Pocket north of the NE arch and east of the bars. Prop-free lawn is about
         /// x 62.6-68.2 and z 42.2-47.3. The spawn lead stays on the west edge, so this
-        /// cluster sits east of it. Not a bench. Spawn_NE's southwest exit stays north.
+        /// cluster sits east of it. Net, mushroom, spring, and two hop tiles (merry-north
+        /// mirror). Not a bench. Spawn_NE's southwest exit stays north.
         /// </summary>
         int EastNorthCluster(Transform root)
         {
@@ -671,6 +672,9 @@ namespace Tag.Art
                 ("Toy_MushroomSteps", new Vector3(0.3f, 0f, -1.85f), 0f),
                 // Feet y=0. x 64.40-65.25, 1.86 m east of the bar face (x=62.54).
                 ("Toy_SpringRider", new Vector3(-1.45f, 0f, 0f), 0f),
+                // Two hop tiles east of the net. East edge x=68.25, flush with the spawn seesaw.
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.55f, 0.02f, -0.95f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.55f, 0.02f, 0.55f), 0f),
             });
         }
 
