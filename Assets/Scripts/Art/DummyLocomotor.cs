@@ -31,6 +31,9 @@ namespace Tag.Art
         bool _bounceWallLeft;
         float _glidePulse;
         float _dashPulse;
+        float _dashRecover;
+        float _armRecover;
+        bool _airDashArms;
         float _dashTrailT;
         float _tagFlinch;
         float _itClaim;
@@ -212,10 +215,32 @@ namespace Tag.Art
             float dashStretchPose = 1f;
             if (lunging || dashing)
             {
-                float raw = airDashing && _motor != null
-                    ? _motor.AirDashProgress
-                    : lunging ? lungeAmt : Mathf.Clamp01(_dashPulse);
-                dashStretchPose = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Mathf.InverseLerp(0.08f, 0.62f, raw)));
+                if (airDashing && _motor != null)
+                {
+                    float raw = _motor.AirDashProgress;
+                    dashStretchPose = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Mathf.InverseLerp(0.08f, 0.62f, raw)));
+                    _dashRecover = dashStretchPose;
+                    _airDashArms = true;
+                    _armRecover = 0.28f;
+                }
+                else if (lunging)
+                {
+                    float raw = lungeAmt;
+                    dashStretchPose = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Mathf.InverseLerp(0.08f, 0.62f, raw)));
+                    _dashRecover = dashStretchPose;
+                }
+                else if (_airDashArms)
+                {
+                    // The burst already settled toward a hang. The leftover pulse is still high,
+                    // and feeding it back in throws the arms into a second whip.
+                    _dashRecover = Mathf.MoveTowards(_dashRecover, 0f, dt / 0.12f);
+                    dashStretchPose = _dashRecover;
+                }
+                else
+                {
+                    float raw = Mathf.Clamp01(_dashPulse);
+                    dashStretchPose = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Mathf.InverseLerp(0.08f, 0.62f, raw)));
+                }
                 // Early frames hold the whip. The back half settles toward a hang so the run does not pop in.
                 // Pitch only. Extra roll on the Hier A-pose folds the hands into the pelvis.
                 _uaLT = Quaternion.Slerp(
@@ -658,6 +683,18 @@ namespace Tag.Art
             // Buckle has to arrive during the short absorb, then follow the ease back into the stride.
             float legSlew = airDashing ? 78f : airTell ? 64f : (_landSquash > 0.05f ? 46f : runCycle ? 44f : slew);
             float torsoSlew = airTell ? 64f : slew;
+            if (!(lunging || dashing))
+                _airDashArms = false;
+            if (!dashing && !lunging && _armRecover > 0f)
+                _armRecover = Mathf.MoveTowards(_armRecover, 0f, dt);
+            // After the burst, ease into the fall or the run. Slew 64 snaps the arms into a second throw.
+            if (_armRecover > 0f && !airDashing && !dashing && !lunging && !punchWind && !handoff)
+            {
+                armSlewL = 16f;
+                armSlewR = 16f;
+                legSlew = 16f;
+                torsoSlew = 16f;
+            }
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
             Slew(ref _head, _headT, slew, dt);
