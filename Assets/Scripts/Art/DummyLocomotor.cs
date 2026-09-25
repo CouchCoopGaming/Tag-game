@@ -197,8 +197,10 @@ namespace Tag.Art
             // A slide that dies into a stand rises into the idle breath. A slide into a run is unchanged.
             bool slideIdleExit = slideExit && speed <= 0.35f;
             bool crouchIdleExit = !_dropSlide && !sliding && !crouch && speed <= 0.35f;
-            float footDrop = (slideExit || crouchIdleExit) ? _dropVis * _dropVis : _dropVis;
-            float hipDrop = (slideExit || crouchIdleExit) ? Mathf.SmoothStep(0f, 1f, _dropVis) : _dropVis;
+            // A crouch walk stands into the stride. The feet step while the hips are still rising.
+            bool crouchWalkExit = !_dropSlide && !sliding && !crouch && speed > 0.35f;
+            float footDrop = (slideExit || crouchIdleExit || crouchWalkExit) ? _dropVis * _dropVis : _dropVis;
+            float hipDrop = (slideExit || crouchIdleExit || crouchWalkExit) ? Mathf.SmoothStep(0f, 1f, _dropVis) : _dropVis;
             bool skiing = st == MoveState.Ski;
             _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             // Feet stay in the short glide while the hips are still pitched, then the run opens under them.
@@ -1245,7 +1247,7 @@ namespace Tag.Art
                 // Chest and hips follow the drop, then rise back into the stride.
                 // A slide stand-up eases the hips so they do not pop flat.
                 // Letting go of a still crouch eases them into the idle breath.
-                float d = (_dropSlide || crouchIdleExit) ? hipDrop : _dropVis;
+                float d = (_dropSlide || crouchIdleExit || crouchWalkExit) ? hipDrop : _dropVis;
                 float chest = _dropSlide ? 62f : 10f;
                 float hip = _dropSlide ? 50f : 22f;
                 float head = _dropSlide ? -12f : -6f;
@@ -1523,7 +1525,7 @@ namespace Tag.Art
             float bobGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
             float bob = grounded ? step * 0.085f * bobGait : air ? step * 0.02f : 0f;
             if (_dropVis > 0.02f && !air && !jet)
-                bob = Mathf.Lerp(bob, _dropSlide ? -0.32f : -0.14f, (_dropSlide || crouchIdleExit) ? hipDrop : _dropVis);
+                bob = Mathf.Lerp(bob, _dropSlide ? -0.32f : -0.14f, (_dropSlide || crouchIdleExit || crouchWalkExit) ? hipDrop : _dropVis);
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
             if (_landSquash > 0f) bob -= 0.14f * _landSquash;
             if (dashing) bob += 0.04f * dashAmt;
