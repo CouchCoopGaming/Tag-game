@@ -570,6 +570,11 @@ namespace Tag.Art
         Quaternion _punchGuardUaL, _punchGuardUaR, _punchGuardLaL, _punchGuardLaR;
         Quaternion _punchGuardUlL, _punchGuardUlR, _punchGuardLlL, _punchGuardLlR;
         Quaternion _punchGuardSp, _punchGuardHp, _punchGuardHd;
+        bool _stillFromTag;
+        float _stillFromTagIn;
+        Quaternion _tagGuardUaL, _tagGuardUaR, _tagGuardLaL, _tagGuardLaR;
+        Quaternion _tagGuardUlL, _tagGuardUlR, _tagGuardLlL, _tagGuardLlR;
+        Quaternion _tagGuardSp, _tagGuardHp, _tagGuardHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -3608,7 +3613,7 @@ namespace Tag.Art
             if (punchIntoStill)
             {
                 // The punch eases into the guard. A slide into a still crouch keeps its ease.
-                // A ski into a still crouch keeps its ease. A tag into a still crouch keeps its pose.
+                // A ski into a still crouch keeps its ease. A tag into a still crouch keeps its ease.
                 // Windup time is unchanged.
                 _stillFromPunch = true;
                 _stillFromPunchIn = 0f;
@@ -3628,6 +3633,36 @@ namespace Tag.Art
                 _stillFromPunch = false;
             else if (_stillFromPunch)
                 _stillFromPunchIn = Mathf.MoveTowards(_stillFromPunchIn, 1f, dt / 0.04f);
+            bool tagIntoStill = inStill && _punchPhaseWas == PunchPhase.HitRecover
+                && phase != PunchPhase.HitRecover
+                && phase != PunchPhase.Windup && phase != PunchPhase.Active && phase != PunchPhase.MissRecover
+                && !dashPoseNow && !wallRun && !climb
+                && _dashReady <= 0.2f
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (tagIntoStill)
+            {
+                // The connect eases into the guard. A punch into a still crouch keeps its ease.
+                // A slide into a still crouch keeps its ease. A whiff into a still crouch keeps its pose.
+                // Connect time is unchanged.
+                _stillFromTag = true;
+                _stillFromTagIn = 0f;
+                _tagGuardUaL = _upperArmL.localRotation;
+                _tagGuardUaR = _upperArmR.localRotation;
+                _tagGuardLaL = _lowerArmL.localRotation;
+                _tagGuardLaR = _lowerArmR.localRotation;
+                _tagGuardUlL = _upperLegL.localRotation;
+                _tagGuardUlR = _upperLegR.localRotation;
+                _tagGuardLlL = _lowerLegL.localRotation;
+                _tagGuardLlR = _lowerLegR.localRotation;
+                _tagGuardSp = _spine.localRotation;
+                _tagGuardHp = _hips.localRotation;
+                _tagGuardHd = _head.localRotation;
+            }
+            if (!inStill)
+                _stillFromTag = false;
+            else if (_stillFromTag)
+                _stillFromTagIn = Mathf.MoveTowards(_stillFromTagIn, 1f, dt / 0.04f);
             _punchPhaseWas = phase;
             _tagHitWas = hitNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
@@ -8644,6 +8679,52 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_punchGuardUlR, guardThighR, intoGuard);
                     _llLT = Quaternion.Slerp(_punchGuardLlL, guardKneeL, intoGuard);
                     _llRT = Quaternion.Slerp(_punchGuardLlR, guardKneeR, intoGuard);
+                }
+                else
+                {
+                    _uaLT = guardL;
+                    _uaRT = guardR;
+                    _laLT = guardElL;
+                    _laRT = guardElR;
+                    _spineT = guardSp;
+                    _hipsT = guardHp;
+                    _headT = guardHd;
+                    _ulLT = guardThighL;
+                    _ulRT = guardThighR;
+                    _llLT = guardKneeL;
+                    _llRT = guardKneeR;
+                }
+            }
+            if (_stillFromTag && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The connect eases into the guard, then the guard holds.
+                // A punch into a still crouch keeps its ease. A slide into a still crouch keeps its ease.
+                // Connect time is unchanged.
+                float intoGuard = _stillFromTagIn;
+                Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion guardR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion guardElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion guardHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion guardHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion guardThighL = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardThighR = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardKneeL = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
+                Quaternion guardKneeR = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
+                if (intoGuard < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_tagGuardUaL, guardL, intoGuard);
+                    _uaRT = Quaternion.Slerp(_tagGuardUaR, guardR, intoGuard);
+                    _laLT = Quaternion.Slerp(_tagGuardLaL, guardElL, intoGuard);
+                    _laRT = Quaternion.Slerp(_tagGuardLaR, guardElR, intoGuard);
+                    _spineT = Quaternion.Slerp(_tagGuardSp, guardSp, intoGuard);
+                    _hipsT = Quaternion.Slerp(_tagGuardHp, guardHp, intoGuard);
+                    _headT = Quaternion.Slerp(_tagGuardHd, guardHd, intoGuard);
+                    _ulLT = Quaternion.Slerp(_tagGuardUlL, guardThighL, intoGuard);
+                    _ulRT = Quaternion.Slerp(_tagGuardUlR, guardThighR, intoGuard);
+                    _llLT = Quaternion.Slerp(_tagGuardLlL, guardKneeL, intoGuard);
+                    _llRT = Quaternion.Slerp(_tagGuardLlR, guardKneeR, intoGuard);
                 }
                 else
                 {
