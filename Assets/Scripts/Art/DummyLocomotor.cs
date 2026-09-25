@@ -203,9 +203,11 @@ namespace Tag.Art
             // A still crouch eases into the idle breath. The hips do not pop flat.
             bool slideExit = _dropSlide && !sliding && !crouch;
             // A slide that dies into a stand rises into the idle breath.
-            // A slide that dies into a walk rises into the stride. A slide into a sprint is unchanged.
+            // A slide that dies into a walk rises into the stride.
+            // A slide that dies into a sprint rises into the long stride.
             bool slideIdleExit = slideExit && speed <= 0.35f;
             bool slideWalkExit = slideExit && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint;
+            bool slideSprintExit = slideExit && !slideIdleExit && !slideWalkExit;
             bool crouchIdleExit = !_dropSlide && !sliding && !crouch && speed <= 0.35f;
             // A crouch walk stands into the stride. The feet step while the hips are still rising.
             bool crouchWalkExit = !_dropSlide && !sliding && !crouch && speed > 0.35f;
@@ -1034,6 +1036,26 @@ namespace Tag.Art
                             lineElbL = Mathf.Lerp(-8f, elbowL, up);
                             lineElbR = Mathf.Lerp(-6f, elbowR, up);
                         }
+                        else if (slideSprintExit)
+                        {
+                            // Hands leave the long line into the open stride. They do not stay in the line.
+                            float up = 1f - _dropVis;
+                            float openGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                            float openAmp = Mathf.Lerp(36f, 64f, openGait);
+                            float openOut = Mathf.Lerp(12f, 8f, openGait);
+                            float openRoll = Mathf.Lerp(0f, armZ, openGait);
+                            float openReachY = openOut + 6f;
+                            float openTurn = Mathf.Abs(_turnVis) * 5f;
+                            float openYL = Mathf.Lerp(openOut, openReachY, Mathf.Clamp01(-sinC) * openGait) + openTurn;
+                            float openYR = Mathf.Lerp(openOut, openReachY, Mathf.Clamp01(sinC) * openGait) + openTurn;
+                            lineL = Mathf.Lerp(-70f, RunArmPitch(-sinC, openAmp), up);
+                            lineR = Mathf.Lerp(-64f, RunArmPitch(sinC, openAmp), up);
+                            lineYaw = Mathf.Lerp(28f, openYL, up);
+                            lineYawR = Mathf.Lerp(28f, openYR, up);
+                            lineRoll = Mathf.Lerp(armZ, openRoll, up);
+                            lineElbL = Mathf.Lerp(-8f, Mathf.Lerp(-6f, -30f, Mathf.Clamp01(sinC) * openGait), up);
+                            lineElbR = Mathf.Lerp(-6f, Mathf.Lerp(-6f, -30f, Mathf.Clamp01(-sinC) * openGait), up);
+                        }
                         _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(lineL, lineYaw, lineRoll), d);
                         _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(lineR, -lineYawR, -lineRoll), d);
                         _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(lineElbL, 0f, 0f), d);
@@ -1338,6 +1360,23 @@ namespace Tag.Art
                             footYawL = Mathf.Lerp(footYawL, 0f, up);
                             footYawR = Mathf.Lerp(footYawR, 0f, up);
                         }
+                        else if (slideSprintExit)
+                        {
+                            // The wedge opens into the long stride. The feet do not stay split, then pop.
+                            float up = 1f - _dropVis;
+                            float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                            float openStride = Mathf.Lerp(0.96f, 1.16f, gait);
+                            float openReach = Mathf.Lerp(34f, 58f, gait) * openStride;
+                            float openFrontL = Mathf.Max(0f, sinC);
+                            float openFrontR = Mathf.Max(0f, -sinC);
+                            float openKnee = Mathf.Lerp(48f, 90f, gait);
+                            wedgeL = Mathf.Lerp(wedgeL, (openFrontL - openFrontR * 0.58f) * openReach, up);
+                            wedgeR = Mathf.Lerp(wedgeR, (openFrontR - openFrontL * 0.58f) * openReach, up);
+                            bendL = Mathf.Lerp(bendL, -(2f + openFrontL * openKnee), up);
+                            bendR = Mathf.Lerp(bendR, -(2f + openFrontR * openKnee), up);
+                            footYawL = Mathf.Lerp(footYawL, 0f, up);
+                            footYawR = Mathf.Lerp(footYawR, 0f, up);
+                        }
                         _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), d);
                         _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(wedgeR, footYawR, 0f), d);
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(bendL, 0f, 0f), d);
@@ -1409,6 +1448,14 @@ namespace Tag.Art
                 else if (slideWalkExit)
                 {
                     // Rise into the walk. Holding the wedge pitch pops the hips flat.
+                    float up = 1f - _dropVis;
+                    chest = Mathf.Lerp(62f, leanX, up);
+                    hip = Mathf.Lerp(50f, 0f, up);
+                    head = Mathf.Lerp(-12f, -breath * 0.4f, up);
+                }
+                else if (slideSprintExit)
+                {
+                    // Rise into the sprint. Holding the wedge pitch pops the hips flat.
                     float up = 1f - _dropVis;
                     chest = Mathf.Lerp(62f, leanX, up);
                     hip = Mathf.Lerp(50f, 0f, up);
