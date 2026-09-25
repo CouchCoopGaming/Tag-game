@@ -376,7 +376,9 @@ Already on this branch: A hard landing into an air dash eases the deeper absorb 
 
 Already on this branch: A soft landing into a punch eases the absorb into the windup. A hard landing into an air dash is unchanged. A jump into a punch is unchanged. A soft landing into a jump is unchanged. Windup time is unchanged. Land time is unchanged.
 
-This delta: A hard landing into a punch eases the deeper absorb into the windup. A soft landing into a punch is unchanged. A jump into a punch is unchanged. A hard landing into a jump is unchanged. Windup time is unchanged. Land time is unchanged.
+Already on this branch: A hard landing into a punch eases the deeper absorb into the windup. A soft landing into a punch is unchanged. A jump into a punch is unchanged. A hard landing into a jump is unchanged. Windup time is unchanged. Land time is unchanged.
+
+This delta: A soft landing into a tag eases the absorb into the connect. A hard landing into a punch is unchanged. A jump into a tag is unchanged. A soft landing into a jump is unchanged. A crouch tag is unchanged. Connect time is unchanged. Land time is unchanged.
 
 ## Stack snapshot
 
@@ -683,6 +685,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 208. Hard land, then air dash: the deeper absorb should ease into the burst. The burst should still hold. A soft landing into an air dash should feel the same. A hard landing into a jump should feel the same. The landing should not feel longer. The dash should not feel longer. Jet stays off.
 209. Soft land, then punch: the absorb should ease into the windup. A hard landing into an air dash should feel the same. A jump into a punch should feel the same. A soft landing into a jump should feel the same. The cock should not feel longer. The landing should not feel longer.
 210. Hard land, then punch: the deeper absorb should ease into the windup. A soft landing into a punch should feel the same. A jump into a punch should feel the same. A hard landing into a jump should feel the same. The cock should not feel longer. The landing should not feel longer.
+211. Soft land, then tag: the absorb should ease into the connect. A hard landing into a punch should feel the same. A jump into a tag should feel the same. A soft landing into a jump should feel the same. A crouch tag should feel the same. The connect should not feel longer. The landing should not feel longer.
 
 ## Known leftovers
 
@@ -913,6 +916,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 198. A hard landing into an air dash eases the deeper absorb into the burst. The burst still holds. A soft landing into an air dash is unchanged. A hard landing into a jump is unchanged. Land time is unchanged. Duration and cooldown are unchanged. Jet stays off.
 199. A soft landing into a punch eases the absorb into the windup. A hard landing into an air dash is unchanged. A jump into a punch is unchanged. A soft landing into a jump is unchanged. Windup time is unchanged. Land time is unchanged.
 200. A hard landing into a punch eases the deeper absorb into the windup. A soft landing into a punch is unchanged. A jump into a punch is unchanged. A hard landing into a jump is unchanged. Windup time is unchanged. Land time is unchanged.
+201. A soft landing into a tag eases the absorb into the connect. A hard landing into a punch is unchanged. A jump into a tag is unchanged. A soft landing into a jump is unchanged. A crouch tag is unchanged. Connect time is unchanged. Land time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
