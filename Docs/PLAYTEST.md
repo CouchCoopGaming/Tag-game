@@ -178,7 +178,9 @@ Already on this branch: A punch that misses while walking returns the hands to t
 
 Already on this branch: After a tag while walking, the arms settle into the stride. They do not drop into the idle. Flinch time is unchanged.
 
-This delta: After you become It while walking, the arms settle into the stride. They do not drop into the idle. The claim does not feel longer.
+Already on this branch: After you become It while walking, the arms settle into the stride. They do not drop into the idle. The claim does not feel longer.
+
+This delta: Letting go of a grapple while walking returns the hands to the stride. They do not hitch. The grapple stays off unless you turn it on.
 
 ## Stack snapshot
 
@@ -386,6 +388,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 109. Walk and punch a miss: the hands should return to the stride. They should not drop into the idle. The cock should not feel longer.
 110. Walk and get tagged: the arms should settle into the stride. They should not drop into the idle. The catch should not feel longer.
 111. Walk and become It: the arms should settle into the stride. They should not drop into the idle. One knee can still be up. The claim should not feel longer.
+112. If you turn the grapple on, hook, then let go while walking: the hands should return to the stride. They should not hitch. It should stay off unless you turn it on. The pull should feel the same.
 
 ## Known leftovers
 
@@ -517,6 +520,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 99. A punch that misses while walking returns the hands to the stride. They do not drop into the idle. A standing miss still eases into the idle hands. Windup time is unchanged.
 100. After a tag while walking, the arms settle into the stride. They do not drop into the idle. A standing catch still eases into the idle breath. Flinch time is unchanged.
 101. After you become It while walking, the arms settle into the stride. They do not drop into the idle. One knee can still be up. A standing claim still eases into the idle breath. Claim time is unchanged.
+102. Letting go of a grapple while walking returns the hands to the stride. They do not hitch. A sprint and a stand keep the old leave. The gate stays off. Range and speed are unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
