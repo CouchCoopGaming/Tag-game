@@ -187,6 +187,7 @@ namespace Tag.Art
             n += ArmyApronStep(root);
             n += ArmyMouthStep(root);
             n += RingKnightBars(root);
+            n += KnightMouthStep(root);
             n += EastSouthCluster(root);
             n += WestNorthCluster(root);
             // Overhead bars. West stays at x=11 (the mast owns x-9.5 around z 12-18).
@@ -873,6 +874,21 @@ namespace Tag.Art
                 ("PGK_Monkey_4m_LOD0", new Vector3(-4.2f, 0f, 0f), 0f),
                 ("PGK_Monkey_4m_LOD0", new Vector3(0f, 0f, 0f), 0f),
                 ("PGK_Monkey_4m_LOD0", new Vector3(4.2f, 0f, 0f), 0f),
+            });
+        }
+
+        /// <summary>
+        /// One mushroom on the approach to the knight crawl's west mouth.
+        /// Mouth is x=56, z 47.35-50.15. Ring-knight bars sit at z=50.96. The climb net ends at z=48.
+        /// Mesh x 52.85-55.44, z 49.04-49.92: 0.56 m west of the mouth, 1.04 m off the net and the bars.
+        /// Army does not get a copy.
+        /// </summary>
+        int KnightMouthStep(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Step_KnightMouth", new Vector3(54.10f, 0f, 49.48f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                ("Toy_MushroomSteps", Vector3.zero, 0f),
             });
         }
 
