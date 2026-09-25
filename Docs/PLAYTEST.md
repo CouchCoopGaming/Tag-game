@@ -6,11 +6,11 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: cursor/playground-campus-zones-afc4 (integration tip). PR #20 Boot tip survives Couch/Mode; digits highlight-only; Boot pause H Controls; results 1-2 highlight like Boot. Mute-from-play, readable dash bar, CloseMenuPanels, TubeDeck on soft-play and astro. Deeper notes: Docs/MOVEMENT.md / Docs/PLAY-SLICE.md.
+Branch: `cursor/features-focus-input-hud-238c` on campus tip `e748c4a`. Results 1-2 highlight, who-plays and mode Esc, couch count, Boot pause H, first-run Boot copy, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play and astro are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
-Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play and astro (yaw 90, stem 0, z+5.90). Army and knight keep the straight chute. Unity spanY is still ~1.14 (FBX rise on Z); needs +Y re-export, no placer hack. Mega/Tube90 still out. No MasterVolume type.
+Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play and astro (yaw 90, stem 0, z+5.90). Army and knight keep the straight chute. Unity spanY is still ~1.14 (FBX rise on Z); needs +Y re-export, no placer hack. Mega/Tube90 still out. No MasterVolume type.
 
-This delta: The results card and the loose round-end card match Boot. Keys 1 and 2 only move Rematch / Menu. Enter, keypad Enter, and Space use that highlight after the ~0.25s arm and do nothing during it. R still rematches. Q and Esc still return to the menu. A click during the arm only moves the highlight.
+This delta: The first countdown still teaches WASD move, Shift sprint, Ctrl slide, and the dash and punch keys, and the punch line names the orange hat. Later countdowns stay one short line. Solo says punch the dummy with the orange hat. Couch (2-4 humans) says punch the player with the orange hat.
 
 ## Stack snapshot
 
@@ -120,6 +120,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 23. First Boot visit: the line names the punch key (LMB or E by default) and M/N. It should not say LMB/F. Open Couch or Mode select, then Esc: the first-run line should still be there. Play a round, then Q back to Boot: that line should be gone, and Play should be highlighted. The first countdown says WASD move and Shift sprint. Rematch, and the next countdown, should say to punch the dummy with the orange hat. On the pause card, H opens Controls and stays paused. Digits on who-plays and mode select only move the highlight. Enter or Space confirms.
 24. Set 3 humans on who-plays, then Esc from mode select: you should be back on who-plays with 3 highlighted, not Boot. Esc again: Boot, Couch highlighted, and the next Mode select should still say 3 humans. Opening Mode select from Boot should not change that count. The highlighted mode should be the one you played last.
 25. On the results card, 1 and 2 only move Rematch / Menu. During the short arm, Enter and Space do nothing. After it, Enter or Space uses the highlight. R still rematches even if Menu is highlighted. Q and Esc still return to Boot. A click during the arm only moves the highlight. The same keys work on the loose round-end card if no mode controller is showing results.
+26. The first countdown says WASD move and Shift sprint, and the punch line says the orange hat. Rematch as you + 1 bot: punch the dummy with the orange hat. Set 2 humans and rematch: that line says player, not dummy.
 
 ## Known leftovers
 
@@ -165,6 +166,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 13. First-run Boot copy names the punch key and clears after a round, including Direct Play back to Boot. Opening Couch or Mode select does not clear it. The long countdown hint shows once and says move versus sprint. Rematch uses the short orange-hat line. Boot pause H opens Controls. Digits highlight. Enter / Space confirms.
 14. Who-plays Esc returns to Boot on Couch. Mode select Esc returns to who-plays after Couch, and to Boot after the Mode row. The Mode row does not reset the player count. Highlights match the saved count and the last mode.
 15. Results: keys 1-2 highlight Rematch and Menu. Enter or Space activates after the 0.25s arm. R rematches. Q/Esc menu. A click during the arm only moves the highlight.
+16. First countdown names the orange hat on the punch line. A later countdown says dummy for you + 1 bot, and player when the roster is 2-4 humans.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

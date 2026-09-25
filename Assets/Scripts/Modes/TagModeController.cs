@@ -979,10 +979,13 @@ namespace Tag.Modes
             GUI.Box(new Rect(x, y, w, h), ModeTitle(selectedMode));
             _countStyle.normal.textColor = Color.white;
             GUI.Label(new Rect(x, y + 28, w, 70), show.ToString(), _countStyle);
+            // First countdown teaches the keys and names the hat. Later countdowns stay one short line.
+            // Couch has no bot, so that line says player. Solo still says dummy.
+            string hatTarget = Tag.Local.LocalPlayerRoster.IsCouch ? "player" : "dummy";
             string hint = _firstCountdownHint
                 ? "WASD move   Shift sprint   Ctrl slide   " + TagArena.Movement.ControlBinds.DashName + " dash\n" +
-                  TagArena.Movement.ControlBinds.PunchName + " or E tags"
-                : "Punch the dummy with the orange hat";
+                  TagArena.Movement.ControlBinds.PunchName + " or E tags the orange hat"
+                : "Punch the " + hatTarget + " with the orange hat";
             GUI.Label(new Rect(x + 16, y + 104, w - 32, 48), hint);
         }
 
