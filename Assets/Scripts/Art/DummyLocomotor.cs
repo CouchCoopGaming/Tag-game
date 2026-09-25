@@ -628,6 +628,12 @@ namespace Tag.Art
         Quaternion _climbGuardUaL, _climbGuardUaR, _climbGuardLaL, _climbGuardLaR;
         Quaternion _climbGuardUlL, _climbGuardUlR, _climbGuardLlL, _climbGuardLlR;
         Quaternion _climbGuardSp, _climbGuardHp, _climbGuardHd;
+        bool _stillFromWall;
+        float _stillFromWallIn;
+        bool _wallStillHeld;
+        Quaternion _wallGuardUaL, _wallGuardUaR, _wallGuardLaL, _wallGuardLaR;
+        Quaternion _wallGuardUlL, _wallGuardUlR, _wallGuardLlL, _wallGuardLlR;
+        Quaternion _wallGuardSp, _wallGuardHp, _wallGuardHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -1286,7 +1292,7 @@ namespace Tag.Art
                 _crouchFromJumpIn = Mathf.MoveTowards(_crouchFromJumpIn, 1f, dt / 0.04f);
             bool walkIntoStill = inStill && !_stillCrouchWas && standWalk && !_stillFromSlide
                 && !_crouchFromJump && !_crouchFromDash && !dashPoseNow && !_diveFromJump
-                && !sliding && !jet && !wallRun && !climb && !(leavingSurf && !_exitFromWall)
+                && !sliding && !jet && !wallRun && !climb && !leavingSurf
                 && _punchPhaseWas != PunchPhase.Windup && _punchPhaseWas != PunchPhase.Active
                 && _punchPhaseWas != PunchPhase.HitRecover && _punchPhaseWas != PunchPhase.MissRecover
                 && _itClaim <= 0.2f && _dashReady <= 0.2f
@@ -1316,7 +1322,7 @@ namespace Tag.Art
                 _stillFromWalkIn = Mathf.MoveTowards(_stillFromWalkIn, 1f, dt / 0.04f);
             bool sprintIntoStill = inStill && !_stillCrouchWas && standRun && !standWalk
                 && !_stillFromWalk && !_stillFromSlide && !_crouchFromJump && !_crouchFromDash && !dashPoseNow && !_diveFromJump
-                && !sliding && !jet && !wallRun && !climb && !(leavingSurf && !_exitFromWall)
+                && !sliding && !jet && !wallRun && !climb && !leavingSurf
                 && _punchPhaseWas != PunchPhase.Windup && _punchPhaseWas != PunchPhase.Active
                 && _punchPhaseWas != PunchPhase.HitRecover && _punchPhaseWas != PunchPhase.MissRecover
                 && _itClaim <= 0.2f && _dashReady <= 0.2f
@@ -1346,7 +1352,7 @@ namespace Tag.Art
                 _stillFromSprintIn = Mathf.MoveTowards(_stillFromSprintIn, 1f, dt / 0.04f);
             bool skiIntoStill = inStill && grounded && !_stillCrouchWas && _skiBlend > 0.2f && !_dropSlide
                 && !_stillFromWalk && !_stillFromSprint && !_stillFromSlide && !_crouchFromJump && !_crouchFromDash
-                && !dashPoseNow && !_diveFromJump && !sliding && !jet && !wallRun && !climb && !(leavingSurf && !_exitFromWall)
+                && !dashPoseNow && !_diveFromJump && !sliding && !jet && !wallRun && !climb && !leavingSurf
                 && _punchPhaseWas != PunchPhase.Windup && _punchPhaseWas != PunchPhase.Active
                 && _punchPhaseWas != PunchPhase.HitRecover && _punchPhaseWas != PunchPhase.MissRecover
                 && _itClaim <= 0.2f && _dashReady <= 0.2f
@@ -3978,6 +3984,41 @@ namespace Tag.Art
                 _stillFromClimb = false;
             else if (_stillFromClimb)
                 _stillFromClimbIn = Mathf.MoveTowards(_stillFromClimbIn, 1f, dt / 0.04f);
+            if (!leavingSurf || !inStill)
+                _wallStillHeld = false;
+            bool wallIntoStill = inStill && leavingSurf && _exitFromWall && !_wallStillHeld
+                && !wallRun && !climb && !skiing
+                && !_jumpFromWall && !_dashFromWall && !_skiFromWall && !_slideFromWall
+                && phase != PunchPhase.Windup && phase != PunchPhase.Active
+                && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover
+                && !dashPoseNow
+                && _itClaim <= 0.2f && _dashReady <= 0.2f
+                && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (wallIntoStill)
+            {
+                // The leave eases into the guard. A climb into a still crouch keeps its ease.
+                // An air crouch into a still crouch keeps its ease. A crouch walk keeps its low stride.
+                // Exit time is unchanged.
+                _stillFromWall = true;
+                _stillFromWallIn = 0f;
+                _wallStillHeld = true;
+                _wallGuardUaL = _upperArmL.localRotation;
+                _wallGuardUaR = _upperArmR.localRotation;
+                _wallGuardLaL = _lowerArmL.localRotation;
+                _wallGuardLaR = _lowerArmR.localRotation;
+                _wallGuardUlL = _upperLegL.localRotation;
+                _wallGuardUlR = _upperLegR.localRotation;
+                _wallGuardLlL = _lowerLegL.localRotation;
+                _wallGuardLlR = _lowerLegR.localRotation;
+                _wallGuardSp = _spine.localRotation;
+                _wallGuardHp = _hips.localRotation;
+                _wallGuardHd = _head.localRotation;
+            }
+            if (!inStill || (air && _diveVis > 0.2f) || _jumpFromWall)
+                _stillFromWall = false;
+            else if (_stillFromWall)
+                _stillFromWallIn = Mathf.MoveTowards(_stillFromWallIn, 1f, dt / 0.04f);
             _punchPhaseWas = phase;
             _tagHitWas = hitNow;
             // Find the tuck, then the look trail. Look speed is unchanged.
@@ -6321,9 +6362,9 @@ namespace Tag.Art
                 float handW = _exitIntoWalk ? body : w;
                 if (_exitIntoCrouch || _exitIntoCrouchWalk)
                 {
-                    // A climb into a still crouch keeps the snapshot. A wall run and a crouch walk keep this leave.
-                    // Exit time is unchanged.
-                    if (!(_stillFromClimb && !_exitFromWall && !_exitIntoCrouchWalk))
+                    // A climb into a still crouch keeps its snapshot. A wall exit into a still crouch keeps its own.
+                    // A crouch walk keeps this leave. Exit time is unchanged.
+                    if (!((_stillFromClimb && !_exitFromWall) || (_stillFromWall && _exitFromWall)) || _exitIntoCrouchWalk)
                     {
                     // The leave eases into the guard. A crouch walk keeps these arms and opens the low stride.
                     float intoGuard = 1f - body;
@@ -9420,7 +9461,7 @@ namespace Tag.Art
             if (_stillFromClimb && !sliding && !jet && !punching && !wallRun && !climb)
             {
                 // The grab eases into the guard, then the guard holds.
-                // An air crouch into a still crouch keeps its ease. A wall run into a still crouch keeps its leave.
+                // An air crouch into a still crouch keeps its ease. A wall exit into a still crouch keeps its own ease.
                 // Exit time is unchanged.
                 float intoGuard = _stillFromClimbIn;
                 Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
@@ -9447,6 +9488,52 @@ namespace Tag.Art
                     _ulRT = Quaternion.Slerp(_climbGuardUlR, guardThighR, intoGuard);
                     _llLT = Quaternion.Slerp(_climbGuardLlL, guardKneeL, intoGuard);
                     _llRT = Quaternion.Slerp(_climbGuardLlR, guardKneeR, intoGuard);
+                }
+                else
+                {
+                    _uaLT = guardL;
+                    _uaRT = guardR;
+                    _laLT = guardElL;
+                    _laRT = guardElR;
+                    _spineT = guardSp;
+                    _hipsT = guardHp;
+                    _headT = guardHd;
+                    _ulLT = guardThighL;
+                    _ulRT = guardThighR;
+                    _llLT = guardKneeL;
+                    _llRT = guardKneeR;
+                }
+            }
+            if (_stillFromWall && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The leave eases into the guard, then the guard holds.
+                // A climb into a still crouch keeps its ease. An air crouch into a still crouch keeps its ease.
+                // Exit time is unchanged.
+                float intoGuard = _stillFromWallIn;
+                Quaternion guardL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion guardR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion guardElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion guardSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion guardHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion guardHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion guardThighL = _ulL0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardThighR = _ulR0 * Quaternion.Euler(56f, 0f, 0f);
+                Quaternion guardKneeL = _llL0 * Quaternion.Euler(-68f, 0f, 0f);
+                Quaternion guardKneeR = _llR0 * Quaternion.Euler(-68f, 0f, 0f);
+                if (intoGuard < 0.98f)
+                {
+                    _uaLT = Quaternion.Slerp(_wallGuardUaL, guardL, intoGuard);
+                    _uaRT = Quaternion.Slerp(_wallGuardUaR, guardR, intoGuard);
+                    _laLT = Quaternion.Slerp(_wallGuardLaL, guardElL, intoGuard);
+                    _laRT = Quaternion.Slerp(_wallGuardLaR, guardElR, intoGuard);
+                    _spineT = Quaternion.Slerp(_wallGuardSp, guardSp, intoGuard);
+                    _hipsT = Quaternion.Slerp(_wallGuardHp, guardHp, intoGuard);
+                    _headT = Quaternion.Slerp(_wallGuardHd, guardHd, intoGuard);
+                    _ulLT = Quaternion.Slerp(_wallGuardUlL, guardThighL, intoGuard);
+                    _ulRT = Quaternion.Slerp(_wallGuardUlR, guardThighR, intoGuard);
+                    _llLT = Quaternion.Slerp(_wallGuardLlL, guardKneeL, intoGuard);
+                    _llRT = Quaternion.Slerp(_wallGuardLlR, guardKneeR, intoGuard);
                 }
                 else
                 {
