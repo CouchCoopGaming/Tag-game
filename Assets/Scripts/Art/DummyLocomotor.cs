@@ -75,6 +75,11 @@ namespace Tag.Art
         Quaternion _wallJumpSp, _wallJumpHp, _wallJumpHd;
         bool _jumpFromAirCrouch;
         bool _jumpFromAirCrouchStride;
+        bool _jumpAirCrouchSnap;
+        float _jumpAirCrouchSnapIn;
+        Quaternion _dartJumpUaL, _dartJumpUaR, _dartJumpLaL, _dartJumpLaR;
+        Quaternion _dartJumpUlL, _dartJumpUlR, _dartJumpLlL, _dartJumpLlR;
+        Quaternion _dartJumpSp, _dartJumpHp, _dartJumpHd;
         bool _jumpFromSoftLand;
         bool _jumpFromHardLand;
         bool _jumpFromMiss;
@@ -2940,6 +2945,29 @@ namespace Tag.Art
                 _climbJumpHd = _head.localRotation;
                 _airArmIn = 1f;
             }
+            if (_jumpFromAirCrouch && !_jumpAirCrouchSnap && !punching
+                && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                && _spine != null && _hips != null && _head != null
+                && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+            {
+                // The dart eases into the air pose, then the air pose holds.
+                // The slow push stays off this path. Fall speed stays doubled.
+                // Jump height is unchanged.
+                _jumpAirCrouchSnap = true;
+                _jumpAirCrouchSnapIn = 0f;
+                _dartJumpUaL = _upperArmL.localRotation;
+                _dartJumpUaR = _upperArmR.localRotation;
+                _dartJumpLaL = _lowerArmL.localRotation;
+                _dartJumpLaR = _lowerArmR.localRotation;
+                _dartJumpUlL = _upperLegL.localRotation;
+                _dartJumpUlR = _upperLegR.localRotation;
+                _dartJumpLlL = _lowerLegL.localRotation;
+                _dartJumpLlR = _lowerLegR.localRotation;
+                _dartJumpSp = _spine.localRotation;
+                _dartJumpHp = _hips.localRotation;
+                _dartJumpHd = _head.localRotation;
+                _airArmIn = 1f;
+            }
             _prevVy = _motor != null ? _motor.Velocity.y : 0f;
             if (grounded || _pushOff <= 0.02f)
             {
@@ -2983,6 +3011,13 @@ namespace Tag.Art
             }
             else if (!_jumpFromClimb)
                 _jumpClimbSnap = false;
+            if (_jumpAirCrouchSnap && _jumpFromAirCrouch && !punching)
+            {
+                if (_jumpAirCrouchSnapIn < 0.98f)
+                    _jumpAirCrouchSnapIn = Mathf.MoveTowards(_jumpAirCrouchSnapIn, 1f, dt / 0.04f);
+            }
+            else if (!_jumpFromAirCrouch)
+                _jumpAirCrouchSnap = false;
             if (_jumpFromStill && _pushOff > 0.02f)
                 _jumpFromStillIn = Mathf.MoveTowards(_jumpFromStillIn, 1f, dt / 0.04f);
             if (_jumpFromCrouchWalk && _pushOff > 0.02f)
@@ -6012,7 +6047,7 @@ namespace Tag.Art
                     _hips0 * Quaternion.Euler(6f, 0f, 0f),
                     Quaternion.Slerp(_hips0 * Quaternion.Euler(8f, 0f, 0f), _hips0 * Quaternion.Euler(4f, 0f, 0f), riseShare),
                     airW);
-                if (_diveVis > 0.02f)
+                if (_diveVis > 0.02f && !_jumpAirCrouchSnap)
                 {
                     // Air crouch: knees up and arms in, short of the jump tuck and the ground guard.
                     // A moving fall eases into the low stride. A still crouch keeps the dart.
@@ -6620,7 +6655,7 @@ namespace Tag.Art
                 Quaternion kneeHangR = _llR0 * Quaternion.Euler(-26f, 0f, 0f);
                 _llLT = Quaternion.Slerp(kneeHangL, Quaternion.Slerp(kneeLongL, kneeTuckL, riseShare), airW);
                 _llRT = Quaternion.Slerp(kneeHangR, Quaternion.Slerp(kneeLongR, kneeTuckR, riseShare), airW);
-                if (_diveVis > 0.02f)
+                if (_diveVis > 0.02f && !_jumpAirCrouchSnap)
                 {
                     // Knees come up enough to read as a crouch. Still short of the jump tuck and the ground guard.
                     // A moving fall eases into the low stride. A still crouch keeps these knees.
@@ -7848,7 +7883,7 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_wallJumpLlL, _llLT, intoWallAir);
                 _llRT = Quaternion.Slerp(_wallJumpLlR, _llRT, intoWallAir);
             }
-            if (_jumpFromAirCrouch && _pushOff > 0.02f && !punching && !wallRun && !climb)
+            if (_jumpFromAirCrouch && _pushOff > 0.02f && !punching && !wallRun && !climb && !_jumpAirCrouchSnap)
             {
                 // The dart eases into the push, then the air pose. A moving fall uses the low stride.
                 // A still crouch, a crouch walk, a ski, a slide, an air dash, a climb, and a wall run keep their jump.
@@ -7944,6 +7979,28 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(Quaternion.Slerp(fromThighR, pushThighR, intoPush), airThighR, leave);
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(fromKneeL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(fromKneeR, pushKneeR, intoPush), airKneeR, leave);
+            }
+            if (_jumpAirCrouchSnap && _jumpAirCrouchSnapIn < 0.98f && _jumpFromAirCrouch && !punching
+                && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill
+                && !_jumpDashSnap && !_jumpWallSnap && !_jumpClimbSnap)
+            {
+                // The dart eases into the air pose, then the air pose holds.
+                // A climb jump has its own ease. A wall jump has its own ease.
+                // An air dash into a jump has its own ease. A standing idle into a jump has its own ease.
+                // A sprint into the air has its own ease. A walk into a jump has its own ease.
+                // The slow push stays off this path. Fall speed stays doubled. Jump height is unchanged.
+                float intoDartAir = _jumpAirCrouchSnapIn;
+                _uaLT = Quaternion.Slerp(_dartJumpUaL, _uaLT, intoDartAir);
+                _uaRT = Quaternion.Slerp(_dartJumpUaR, _uaRT, intoDartAir);
+                _laLT = Quaternion.Slerp(_dartJumpLaL, _laLT, intoDartAir);
+                _laRT = Quaternion.Slerp(_dartJumpLaR, _laRT, intoDartAir);
+                _spineT = Quaternion.Slerp(_dartJumpSp, _spineT, intoDartAir);
+                _hipsT = Quaternion.Slerp(_dartJumpHp, _hipsT, intoDartAir);
+                _headT = Quaternion.Slerp(_dartJumpHd, _headT, intoDartAir);
+                _ulLT = Quaternion.Slerp(_dartJumpUlL, _ulLT, intoDartAir);
+                _ulRT = Quaternion.Slerp(_dartJumpUlR, _ulRT, intoDartAir);
+                _llLT = Quaternion.Slerp(_dartJumpLlL, _llLT, intoDartAir);
+                _llRT = Quaternion.Slerp(_dartJumpLlR, _llRT, intoDartAir);
             }
             if (airDashing && _dashFromJump && !_jumpFromDash && _dashFromJumpIn < 0.98f && !punching)
             {
