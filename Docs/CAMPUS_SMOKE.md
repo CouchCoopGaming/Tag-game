@@ -44,3 +44,4 @@ No solid sits on the four spines or the crash cross. Army west, knight west, and
 | Play_Step_KnightMouth | (54.10, 49.48) | mushroom, knight west mouth |
 | Play_Step_KnightEast | (65.81, 48.75) | mushroom, knight east mouth |
 | Bunker spring | local (2.80, -2.302) | spring on army and knight only |
+| Conn climb spring | local (2.80, 1.748) | spring from the conn up to the spiral |
