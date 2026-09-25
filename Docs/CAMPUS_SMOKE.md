@@ -1,5 +1,7 @@
 # Campus smoke
 
+Place pass parked — quality over density. Do not add props until Art ships a kit piece or a playtest notes a blocker. SoftS aisles, the NE hop, and the merry-spine bar stay as they are. Spines, the crash cross, and the open crawl mouths stay clear.
+
 After pull: **CutArenaBootstrap** Rebuild, then **PgkLandmarkPlacer -> Place**. Walk on foot. Spines and the crash cross stay empty. Soft-play and astro each have one `PGK_Slide_TubeDeck_2m` on the west 2.00 deck. Army has the same chute, 1.49 m off its spiral. Knight keeps the straight slide. Yaw 90, stem 0, pivot local z=5.90. The mesh is pitched -90 X so the FBX rise (mesh Z) stands on +Y: mouth center 1.91 m, shell top 2.48 m, low mouth on the mulch. `Mega_SlideTube` and `PGK_Slide_Tube90` are not placed. Each bunker apron has one crate. No new lane clusters. Feel was not edited.
 
 ## SW
