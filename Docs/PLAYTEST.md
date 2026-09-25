@@ -356,7 +356,9 @@ Already on this branch: A wall run into an air dash eases the wall exit into the
 
 Already on this branch: An air dash into a climb eases the burst into the grab. A wall run into an air dash is unchanged. A climb into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged.
 
-This delta: An air dash into a wall run eases the burst into the attach. An air dash into a climb is unchanged. A climb into an air dash is unchanged. A wall exit into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged.
+Already on this branch: An air dash into a wall run eases the burst into the attach. An air dash into a climb is unchanged. A climb into an air dash is unchanged. A wall exit into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged.
+
+This delta: A punch miss into an air dash eases the whiff into the burst. The burst still holds. An air dash into a wall run is unchanged. An air dash into a climb is unchanged. A climb into an air dash is unchanged. A wall exit into an air dash is unchanged. A punch miss into a jump is unchanged. A crouch miss is unchanged. Duration and cooldown are unchanged.
 
 ## Stack snapshot
 
@@ -653,6 +655,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 198. Wall run, then air dash: the wall exit should ease into the burst. The burst should still hold. A climb into an air dash should feel the same. The leave should not feel longer. The dash should not feel longer. Jet stays off.
 199. Air dash, then climb: the burst should ease into the grab. A wall run into an air dash should feel the same. A climb into an air dash should feel the same. The leave should not feel longer. The dash should not feel longer. Jet stays off.
 200. Air dash, then wall run: the burst should ease into the attach. An air dash into a climb should feel the same. A climb into an air dash should feel the same. A wall exit into an air dash should feel the same. The leave should not feel longer. The dash should not feel longer. Jet stays off.
+201. Miss a punch, then air dash: the whiff should ease into the burst. The burst should still hold. An air dash into a wall run should feel the same. An air dash into a climb should feel the same. A punch miss into a jump should feel the same. A crouch miss should feel the same. The dash should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -873,6 +876,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 188. A wall run into an air dash eases the wall exit into the burst. The burst still holds. A climb into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged. Jet stays off.
 189. An air dash into a climb eases the burst into the grab. A wall run into an air dash is unchanged. A climb into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged. Jet stays off.
 190. An air dash into a wall run eases the burst into the attach. An air dash into a climb is unchanged. A climb into an air dash is unchanged. A wall exit into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+191. A punch miss into an air dash eases the whiff into the burst. The burst still holds. An air dash into a wall run is unchanged. An air dash into a climb is unchanged. A climb into an air dash is unchanged. A wall exit into an air dash is unchanged. A punch miss into a jump is unchanged. A crouch miss is unchanged. Duration and cooldown are unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

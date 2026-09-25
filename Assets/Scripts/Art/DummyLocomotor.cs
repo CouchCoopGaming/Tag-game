@@ -107,6 +107,11 @@ namespace Tag.Art
         float _climbFromDashIn;
         bool _wallFromDash;
         float _wallFromDashIn;
+        bool _dashFromMiss;
+        float _dashFromMissIn;
+        Quaternion _missUaL, _missUaR, _missLaL, _missLaR;
+        Quaternion _missUlL, _missUlR, _missLlL, _missLlR;
+        Quaternion _missSp, _missHp, _missHd;
         float _dartStepL;
         float _dartStepR;
         bool _dartFromDash;
@@ -739,6 +744,33 @@ namespace Tag.Art
                 _dashFromWallIn = Mathf.MoveTowards(_dashFromWallIn, 1f, dt / 0.04f);
             else if (!dashingAir)
                 _dashFromWall = false;
+            bool missWhiff = phase == PunchPhase.MissRecover && !_jumpFromMiss;
+            if (dashingAir && !_airDashPoseWas && missWhiff && !jet
+                && !_jumpFromDash && !_dashFromDart && !_dashFromSki && !_dashFromSlide && !_dashFromClimb && !_dashFromWall
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+            {
+                // The whiff eases into the burst. The burst still holds.
+                // A punch miss into a jump keeps its push. A crouch miss keeps its pose.
+                // An air dash into a wall or a climb keeps its ease.
+                // Duration and cooldown are unchanged.
+                _dashFromMiss = true;
+                _dashFromMissIn = 0f;
+                _missUaL = _upperArmL.localRotation;
+                _missUaR = _upperArmR.localRotation;
+                _missLaL = _lowerArmL.localRotation;
+                _missLaR = _lowerArmR.localRotation;
+                _missUlL = _upperLegL.localRotation;
+                _missUlR = _upperLegR.localRotation;
+                _missLlL = _lowerLegL.localRotation;
+                _missLlR = _lowerLegR.localRotation;
+                _missSp = _spine.localRotation;
+                _missHp = _hips.localRotation;
+                _missHd = _head.localRotation;
+            }
+            if (dashingAir && _dashFromMiss)
+                _dashFromMissIn = Mathf.MoveTowards(_dashFromMissIn, 1f, dt / 0.04f);
+            else if (!dashingAir)
+                _dashFromMiss = false;
             if (!dashingAir && _airDashPoseWas && !jet && air && _input != null && _input.CrouchHeld)
             {
                 // The burst eases into the dart. An air crouch into a dash keeps its ease.
@@ -4922,6 +4954,25 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_punchUlR, _ulRT, into);
                 _llLT = Quaternion.Slerp(_punchLlL, _llLT, into);
                 _llRT = Quaternion.Slerp(_punchLlR, _llRT, into);
+            }
+            if (airDashing && _dashFromMiss && !_dashFromWall && !_dashFromClimb && !_dashFromSlide && !_dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromMissIn < 0.98f)
+            {
+                // The whiff eases into the burst, then the burst holds.
+                // A punch miss into a jump keeps its push. A crouch miss keeps its pose.
+                // An air dash into a wall or a climb keeps its ease.
+                // Duration and cooldown are unchanged.
+                float intoBurst = _dashFromMissIn;
+                _uaLT = Quaternion.Slerp(_missUaL, _uaLT, intoBurst);
+                _uaRT = Quaternion.Slerp(_missUaR, _uaRT, intoBurst);
+                _laLT = Quaternion.Slerp(_missLaL, _laLT, intoBurst);
+                _laRT = Quaternion.Slerp(_missLaR, _laRT, intoBurst);
+                _ulLT = Quaternion.Slerp(_missUlL, _ulLT, intoBurst);
+                _ulRT = Quaternion.Slerp(_missUlR, _ulRT, intoBurst);
+                _llLT = Quaternion.Slerp(_missLlL, _llLT, intoBurst);
+                _llRT = Quaternion.Slerp(_missLlR, _llRT, intoBurst);
+                _spineT = Quaternion.Slerp(_missSp, _spineT, intoBurst);
+                _hipsT = Quaternion.Slerp(_missHp, _hipsT, intoBurst);
+                _headT = Quaternion.Slerp(_missHd, _headT, intoBurst);
             }
             if (_wallFromDash && !airDashing && wallRun && !climb && !punching)
             {
