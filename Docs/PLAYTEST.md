@@ -326,7 +326,9 @@ Already on this branch: A hard landing into a jump eases the absorb into the pus
 
 Already on this branch: A punch miss into a jump eases the whiff into the push. A crouch miss is unchanged. A soft landing into a jump is unchanged. A hard landing into a jump is unchanged. Jump height is unchanged.
 
-This delta: A tag into a jump eases the connect into the push. A crouch tag is unchanged. A punch miss into a jump is unchanged. Jump height is unchanged.
+Already on this branch: A tag into a jump eases the connect into the push. A crouch tag is unchanged. A punch miss into a jump is unchanged. Jump height is unchanged.
+
+This delta: Becoming It into a jump eases the claim into the push. A crouch claim is unchanged. A tag into a jump is unchanged. Jump height is unchanged.
 
 ## Stack snapshot
 
@@ -608,6 +610,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 183. Land hard, then jump: the absorb should ease into the push. A soft landing into a jump should feel the same. A still crouch into a jump should feel the same. The jump should not feel higher. Staying down should feel the same.
 184. Miss a punch, then jump: the whiff should ease into the push. A crouch miss should feel the same. A soft landing into a jump should feel the same. A hard landing into a jump should feel the same. The jump should not feel higher.
 185. Tag, then jump: the connect should ease into the push. A crouch tag should feel the same. A punch miss into a jump should feel the same. The jump should not feel higher.
+186. Become It, then jump: the claim should ease into the push. A crouch claim should feel the same. A tag into a jump should feel the same. The jump should not feel higher.
 
 ## Known leftovers
 
@@ -813,6 +816,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 173. A hard landing into a jump eases the absorb into the push. A soft landing into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. The landing is unchanged when you stay down.
 174. A punch miss into a jump eases the whiff into the push. A crouch miss is unchanged. A soft landing into a jump is unchanged. A hard landing into a jump is unchanged. Jump height is unchanged.
 175. A tag into a jump eases the connect into the push. A crouch tag is unchanged. A punch miss into a jump is unchanged. Jump height is unchanged.
+176. Becoming It into a jump eases the claim into the push. A crouch claim is unchanged. A tag into a jump is unchanged. Jump height is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
