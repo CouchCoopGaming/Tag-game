@@ -202,15 +202,34 @@ namespace Tag.Art
             // Arms - slight outward A-pose only (large +Z was V-ing hands into the butt)
             float armZ = Mathf.Lerp(4f, 8f, runAmt);
             float lungeAmt = lunging && _motor != null ? _motor.LungeProgress : 0f;
+            // 1 at the start of an air dash or lunge, 0 at the end. The pulse tail keeps easing after the burst.
+            float dashStretchPose = 1f;
             if (lunging || dashing)
             {
-                // MMB dash / air-dodge tell: hard whip + stretch early, settle late
-                float snap = Mathf.Lerp(0.55f, 1f, Mathf.Max(lungeAmt, dashAmt));
-                // Whip is pitch, not roll. Extra +Z on the Hier A-pose folds the hands into the pelvis.
-                _uaLT = _uaL0 * Quaternion.Euler(92f * snap, -8f, armZ);
-                _uaRT = _uaR0 * Quaternion.Euler(64f * snap, 8f, -armZ);
-                _laLT = _laL0 * Quaternion.Euler(-38f - 28f * snap, 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(-38f - 28f * snap, 0f, 0f);
+                float raw = airDashing && _motor != null
+                    ? _motor.AirDashProgress
+                    : lunging ? lungeAmt : Mathf.Clamp01(_dashPulse);
+                dashStretchPose = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Mathf.InverseLerp(0.08f, 0.62f, raw)));
+                // Early frames hold the whip. The back half settles toward a hang so the run does not pop in.
+                // Pitch only. Extra roll on the Hier A-pose folds the hands into the pelvis.
+                _uaLT = Quaternion.Slerp(
+                    _uaL0 * Quaternion.Euler(-16f, 0f, armZ),
+                    _uaL0 * Quaternion.Euler(96f, -6f, armZ),
+                    dashStretchPose);
+                _uaRT = Quaternion.Slerp(
+                    _uaR0 * Quaternion.Euler(-12f, 0f, -armZ),
+                    _uaR0 * Quaternion.Euler(70f, 6f, -armZ),
+                    dashStretchPose);
+                _laLT = Quaternion.Slerp(
+                    _laL0 * Quaternion.Euler(-14f, 0f, 0f),
+                    _laL0 * Quaternion.Euler(-58f, 0f, 0f),
+                    dashStretchPose);
+                _laRT = Quaternion.Slerp(
+                    _laR0 * Quaternion.Euler(-12f, 0f, 0f),
+                    _laR0 * Quaternion.Euler(-46f, 0f, 0f),
+                    dashStretchPose);
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(14f, 0f, 0f), _spineT, Mathf.Lerp(0.4f, 1f, dashStretchPose));
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(8f, 0f, 0f), _hipsT, Mathf.Lerp(0.4f, 1f, dashStretchPose));
             }
             else if (jet)
             {
@@ -385,11 +404,22 @@ namespace Tag.Art
             // Legs
             if (lunging || dashing)
             {
-                float stride = Mathf.Lerp(0.7f, 1.15f, Mathf.Max(lungeAmt, dashAmt));
-                _ulLT = _ulL0 * Quaternion.Euler(68f * stride, 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(-38f * stride, 0f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(-58f * stride, 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(-22f * stride, 0f, 0f);
+                _ulLT = Quaternion.Slerp(
+                    _ulL0 * Quaternion.Euler(16f, 0f, 0f),
+                    _ulL0 * Quaternion.Euler(72f, 0f, 0f),
+                    dashStretchPose);
+                _ulRT = Quaternion.Slerp(
+                    _ulR0 * Quaternion.Euler(-6f, 0f, 0f),
+                    _ulR0 * Quaternion.Euler(-34f, 0f, 0f),
+                    dashStretchPose);
+                _llLT = Quaternion.Slerp(
+                    _llL0 * Quaternion.Euler(-14f, 0f, 0f),
+                    _llL0 * Quaternion.Euler(-62f, 0f, 0f),
+                    dashStretchPose);
+                _llRT = Quaternion.Slerp(
+                    _llR0 * Quaternion.Euler(-8f, 0f, 0f),
+                    _llR0 * Quaternion.Euler(-18f, 0f, 0f),
+                    dashStretchPose);
             }
             else if (sliding)
             {
