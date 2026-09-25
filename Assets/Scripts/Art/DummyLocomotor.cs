@@ -334,6 +334,11 @@ namespace Tag.Art
         Quaternion _glideLaunchSp, _glideLaunchHp, _glideLaunchHd;
         float _dashPulse;
         float _dashRecover;
+        bool _whipRecoverSnap;
+        float _whipRecoverIn;
+        Quaternion _whipRecoverUaL, _whipRecoverUaR, _whipRecoverLaL, _whipRecoverLaR;
+        Quaternion _whipRecoverUlL, _whipRecoverUlR, _whipRecoverLlL, _whipRecoverLlR;
+        Quaternion _whipRecoverSp, _whipRecoverHp, _whipRecoverHd;
         float _armRecover;
         bool _airDashArms;
         bool _dashFromJump;
@@ -5845,6 +5850,8 @@ namespace Tag.Art
             _dashCrouchWas = dashCrouch;
             // 1 at the start of an air dash or lunge, 0 at the end. The pulse tail keeps easing after the burst.
             float dashStretchPose = 1f;
+            if (!(_airDashArms && !airDashing && !lunging))
+                _whipRecoverSnap = false;
             if (lunging || dashing)
             {
                 if (airDashing && _motor != null)
@@ -5866,8 +5873,30 @@ namespace Tag.Art
                 {
                     // The burst already settled toward a hang. The leftover pulse is still high,
                     // and feeding it back in throws the arms into a second whip.
+                    // The whip eases into the pose, then the pose holds. Dash time is unchanged.
                     _dashRecover = Mathf.MoveTowards(_dashRecover, 0f, dt / 0.12f);
                     dashStretchPose = _dashRecover;
+                    if (!_whipRecoverSnap
+                        && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                        && _spine != null && _hips != null && _head != null
+                        && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+                    {
+                        _whipRecoverSnap = true;
+                        _whipRecoverIn = 0f;
+                        _whipRecoverUaL = _upperArmL.localRotation;
+                        _whipRecoverUaR = _upperArmR.localRotation;
+                        _whipRecoverLaL = _lowerArmL.localRotation;
+                        _whipRecoverLaR = _lowerArmR.localRotation;
+                        _whipRecoverUlL = _upperLegL.localRotation;
+                        _whipRecoverUlR = _upperLegR.localRotation;
+                        _whipRecoverLlL = _lowerLegL.localRotation;
+                        _whipRecoverLlR = _lowerLegR.localRotation;
+                        _whipRecoverSp = _spine.localRotation;
+                        _whipRecoverHp = _hips.localRotation;
+                        _whipRecoverHd = _head.localRotation;
+                    }
+                    if (_whipRecoverSnap && _whipRecoverIn < 0.98f)
+                        _whipRecoverIn = Mathf.MoveTowards(_whipRecoverIn, 1f, dt / 0.04f);
                 }
                 else
                 {
@@ -5880,7 +5909,7 @@ namespace Tag.Art
                     // Wide and back, clear of the fall trail, so the short burst reads from behind.
                     // The same pose eases out after the burst. It does not whip a second time.
                     // A soft landing after the burst keeps the arms in the stride. The knees still absorb.
-                    float pose = dashStretchPose;
+                    float pose = _whipRecoverSnap ? 0f : dashStretchPose;
                     float intoStride = 0f;
                     if (!dashWalk && !dashSprint && !dashCrouch && grounded && !airDashing && _landSquash > 0.08f)
                     {
@@ -5992,6 +6021,20 @@ namespace Tag.Art
                         _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait), 0f, 0f), intoStride);
                         _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait), 0f, 0f), intoStride);
                     }
+                    }
+                    if (_whipRecoverSnap && _whipRecoverIn < 0.98f)
+                    {
+                        // The whip eases into the pose, then the pose holds.
+                        // A ski, a slide, a climb, a wall, a dart, and a jump keep their own exits.
+                        // Dash time is unchanged.
+                        float intoWhip = _whipRecoverIn;
+                        _uaLT = Quaternion.Slerp(_whipRecoverUaL, _uaLT, intoWhip);
+                        _uaRT = Quaternion.Slerp(_whipRecoverUaR, _uaRT, intoWhip);
+                        _laLT = Quaternion.Slerp(_whipRecoverLaL, _laLT, intoWhip);
+                        _laRT = Quaternion.Slerp(_whipRecoverLaR, _laRT, intoWhip);
+                        _spineT = Quaternion.Slerp(_whipRecoverSp, _spineT, intoWhip);
+                        _hipsT = Quaternion.Slerp(_whipRecoverHp, _hipsT, intoWhip);
+                        _headT = Quaternion.Slerp(_whipRecoverHd, _headT, intoWhip);
                     }
                 }
                 else
@@ -6815,29 +6858,30 @@ namespace Tag.Art
             // Legs
             if (lunging || dashing)
             {
+                float legPose = _whipRecoverSnap ? 0f : dashStretchPose;
                 _ulLT = Quaternion.Slerp(
                     _ulL0 * Quaternion.Euler(16f, 0f, 0f),
                     _ulL0 * Quaternion.Euler(72f, 0f, 0f),
-                    dashStretchPose);
+                    legPose);
                 _ulRT = Quaternion.Slerp(
                     _ulR0 * Quaternion.Euler(-6f, 0f, 0f),
                     _ulR0 * Quaternion.Euler(-34f, 0f, 0f),
-                    dashStretchPose);
+                    legPose);
                 _llLT = Quaternion.Slerp(
                     _llL0 * Quaternion.Euler(-14f, 0f, 0f),
                     _llL0 * Quaternion.Euler(-62f, 0f, 0f),
-                    dashStretchPose);
+                    legPose);
                 _llRT = Quaternion.Slerp(
                     _llR0 * Quaternion.Euler(-8f, 0f, 0f),
                     _llR0 * Quaternion.Euler(-18f, 0f, 0f),
-                    dashStretchPose);
+                    legPose);
                 if (_airDashArms && !airDashing && !lunging)
                 {
                     // The burst is over. The same lead foot reaches into the stride
                     // under the hips. Collapsing the split reads as a skate.
                     // A walk keeps that stride. A sprint opens the long stride.
                     // A still crouch ends in the guard. A stand keeps the old leave.
-                    float w = 1f - Mathf.Clamp01(dashStretchPose);
+                    float w = 1f - Mathf.Clamp01(legPose);
                     if (dashCrouch && !_crouchFromDash)
                     {
                         _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(56f, 0f, 0f), w);
@@ -6873,6 +6917,14 @@ namespace Tag.Art
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-2f, 0f, 0f), w);
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0, w);
                     }
+                }
+                if (_whipRecoverSnap && _whipRecoverIn < 0.98f)
+                {
+                    float intoWhip = _whipRecoverIn;
+                    _ulLT = Quaternion.Slerp(_whipRecoverUlL, _ulLT, intoWhip);
+                    _ulRT = Quaternion.Slerp(_whipRecoverUlR, _ulRT, intoWhip);
+                    _llLT = Quaternion.Slerp(_whipRecoverLlL, _llLT, intoWhip);
+                    _llRT = Quaternion.Slerp(_whipRecoverLlR, _llRT, intoWhip);
                 }
             }
             else if (jet)
