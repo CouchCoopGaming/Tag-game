@@ -214,6 +214,8 @@ namespace Tag.Modes
                 if (e != null) { e.ClearTrail(); e.SetEmitting(false); }
                 var punch = p.GetComponent<PunchHitbox>();
                 if (punch != null) punch.ForceEnd();
+                var loco = p.GetComponentInChildren<Tag.Art.DummyLocomotor>();
+                loco?.CancelPunchTelegraph();
             }
 
             PlacePlayersOnPads();
