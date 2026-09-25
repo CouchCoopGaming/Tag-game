@@ -388,12 +388,17 @@ namespace Tag.Art
             float walkAmt = Mathf.Clamp01(speed / 5.5f);
             float runAmt = Mathf.InverseLerp(5.5f, 11.5f, speed);
             // A still crouch in the air uses the guard. The fall dart stays as it is.
+            // A moving crouch eases that fall into the low stride. A still crouch keeps the dart.
             // After an air dash, a still crouch keeps that guard. Jump height is unchanged.
             bool airStillCrouch = air && !jet && !airDashing
                 && speed <= 0.35f && _diveVis <= 0.02f
                 && _input != null && _input.CrouchHeld;
             bool airCrouchWalk = air && !jet && !airDashing && (_airDashArms || _armRecover > 0f)
                 && speed > 0.35f && st != MoveState.Sprint && runAmt <= 0.4f && _diveVis <= 0.02f
+                && _input != null && _input.CrouchHeld;
+            bool airDartWalk = air && !jet && !airDashing && !(_airDashArms || _armRecover > 0f)
+                && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint && runAmt <= 0.4f
+                && _diveVis > 0.02f
                 && _input != null && _input.CrouchHeld;
             // Keep a soft air/vault cycle so limbs stay energetic off the ground.
             // Walk and sprint ease length and tempo. The cycle keeps advancing, so a plant does not freeze.
@@ -1092,15 +1097,29 @@ namespace Tag.Art
                 if (_diveVis > 0.02f)
                 {
                     // Air crouch: knees up and arms in, short of the jump tuck and the ground guard.
-                    // The chest stays nose-down so it is not the apex hang. Fall speed is unchanged.
+                    // A moving fall eases into the low stride. A still crouch keeps the dart.
+                    // The chest stays nose-down on that dart. Fall speed is unchanged.
                     float d = _diveVis;
-                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-16f, 12f, armZ), d);
-                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-16f, -12f, -armZ), d);
-                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-58f, 0f, 0f), d);
-                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-58f, 0f, 0f), d);
-                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(46f, 0f, 0f), d);
-                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(24f, 0f, 0f), d);
-                    _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(12f, 0f, 0f), d);
+                    if (airDartWalk)
+                    {
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), d);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), d);
+                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-72f, 0f, 0f), d);
+                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-72f, 0f, 0f), d);
+                        _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(10f, 0f, 0f), d);
+                        _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), d);
+                        _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-6f, 0f, 0f), d);
+                    }
+                    else
+                    {
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-16f, 12f, armZ), d);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-16f, -12f, -armZ), d);
+                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-58f, 0f, 0f), d);
+                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-58f, 0f, 0f), d);
+                        _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(46f, 0f, 0f), d);
+                        _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(24f, 0f, 0f), d);
+                        _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(12f, 0f, 0f), d);
+                    }
                 }
                 if (airStillCrouch)
                 {
@@ -1522,11 +1541,24 @@ namespace Tag.Art
                 if (_diveVis > 0.02f)
                 {
                     // Knees come up enough to read as a crouch. Still short of the jump tuck and the ground guard.
+                    // A moving fall eases into the low stride. A still crouch keeps these knees.
                     float d = _diveVis;
-                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(34f, 0f, 0f), d);
-                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(34f, 0f, 0f), d);
-                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-50f, 0f, 0f), d);
-                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-50f, 0f, 0f), d);
+                    if (airDartWalk)
+                    {
+                        float stepL = Mathf.Max(0f, sinC);
+                        float stepR = Mathf.Max(0f, -sinC);
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f), d);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(46f + stepR * 12f - stepL * 6f, 0f, 0f), d);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f), d);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f), d);
+                    }
+                    else
+                    {
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(34f, 0f, 0f), d);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(34f, 0f, 0f), d);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-50f, 0f, 0f), d);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-50f, 0f, 0f), d);
+                    }
                 }
                 if (_pushOff > 0.02f && _diveVis < 0.2f)
                 {
