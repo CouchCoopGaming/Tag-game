@@ -166,7 +166,7 @@ namespace Tag.Gameplay
                 TagSfx.PunchMiss(transform.position);
                 var tpsMiss = GetComponentInChildren<TpsMoveCamera>(true);
                 if (tpsMiss != null)
-                    tpsMiss.AddKick(new Vector3(0f, 0.03f, -0.08f)); // whiff recoil reads a hair clearer in TP
+                    tpsMiss.AddKick(new Vector3(0f, 0.04f, -0.09f)); // whiff recoil reads a hair clearer in TP
                 _phaseDuration = tuning.missRecover;
                 _phaseTimer = _phaseDuration;
             }

@@ -598,7 +598,7 @@ namespace Tag.Art
             _dashTrail = go.AddComponent<TrailRenderer>();
             _dashTrail.time = 0.32f;
             _dashTrail.minVertexDistance = 0.04f;
-            _dashTrail.widthMultiplier = 0.36f;
+            _dashTrail.widthMultiplier = 0.38f; // slightly wider so air-dash ribbon reads in TP
             _dashTrail.emitting = false;
             _dashTrail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _dashTrail.receiveShadows = false;
