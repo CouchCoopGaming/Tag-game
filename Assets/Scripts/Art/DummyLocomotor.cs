@@ -550,6 +550,11 @@ namespace Tag.Art
         float _prevRunAmt;
         bool _sprintFromTurn;
         bool _sprintOutLeft;
+        bool _sprintFromWalk;
+        float _sprintFromWalkIn;
+        Quaternion _walkSprintUaL, _walkSprintUaR, _walkSprintLaL, _walkSprintLaR;
+        Quaternion _walkSprintUlL, _walkSprintUlR, _walkSprintLlL, _walkSprintLlR;
+        Quaternion _walkSprintSp, _walkSprintHp, _walkSprintHd;
         float _dropVis;
         bool _dropSlide;
         float _slideToCrouch;
@@ -4967,7 +4972,7 @@ namespace Tag.Art
                 _runVis = runAmt;
 
             bool stepping = grounded && speed > 0.35f && !sliding && !crouch;
-            // Walk into a sprint pushes off the back foot, then the stride opens.
+            // Walk into a sprint eases the walk into the stride, then the sprint holds.
             // Speed is unchanged. An idle start still uses its own plant.
             if (stepping && !air && !dashing && !_airDashArms && runAmt > 0.4f && _prevRunAmt < 0.2f && _runVis < 0.35f)
             {
@@ -4975,10 +4980,37 @@ namespace Tag.Art
                 // A walk turn keeps the outside foot down, then the sprint opens.
                 _sprintFromTurn = Mathf.Abs(_turnVis) > 0.18f;
                 _sprintOutLeft = _turnVis > 0f;
+                if (!_sprintFromWalk && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+                {
+                    _sprintFromWalk = true;
+                    _sprintFromWalkIn = 0f;
+                    _walkSprintUaL = _upperArmL.localRotation;
+                    _walkSprintUaR = _upperArmR.localRotation;
+                    _walkSprintLaL = _lowerArmL.localRotation;
+                    _walkSprintLaR = _lowerArmR.localRotation;
+                    _walkSprintUlL = _upperLegL.localRotation;
+                    _walkSprintUlR = _upperLegR.localRotation;
+                    _walkSprintLlL = _lowerLegL.localRotation;
+                    _walkSprintLlR = _lowerLegR.localRotation;
+                    _walkSprintSp = _spine.localRotation;
+                    _walkSprintHp = _hips.localRotation;
+                    _walkSprintHd = _head.localRotation;
+                }
             }
             _prevRunAmt = runAmt;
             if (_sprintIn < 1f)
                 _sprintIn = Mathf.MoveTowards(_sprintIn, 1f, dt / 0.32f);
+            if (_sprintFromWalk && stepping && !air && !dashing && !_airDashArms)
+            {
+                _sprintFromWalkIn = Mathf.MoveTowards(_sprintFromWalkIn, 1f, dt / 0.04f);
+                if (_sprintFromWalkIn >= 0.98f)
+                {
+                    _sprintFromWalk = false;
+                    _sprintIn = 1f;
+                }
+            }
+            else
+                _sprintFromWalk = false;
             if (air)
                 _stepIn = 1f;
             else if (stepping)
@@ -6414,7 +6446,7 @@ namespace Tag.Art
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-4f, 0f, 0f), plantW);
                     }
                 }
-                float pushW = (_sprintIn < 0.98f && stepping && footSki < 0.35f) ? 1f - Mathf.SmoothStep(0f, 1f, _sprintIn) : 0f;
+                float pushW = (_sprintIn < 0.98f && !_sprintFromWalk && stepping && footSki < 0.35f) ? 1f - Mathf.SmoothStep(0f, 1f, _sprintIn) : 0f;
                 if (pushW > 0.04f)
                 {
                     // The back foot pushes. A walk turn plants the outside foot, then the sprint opens.
@@ -10681,6 +10713,25 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_runUpUlR, _ulRT, intoRun);
                 _llLT = Quaternion.Slerp(_runUpLlL, _llLT, intoRun);
                 _llRT = Quaternion.Slerp(_runUpLlR, _llRT, intoRun);
+            }
+            if (_sprintFromWalk && _sprintFromWalkIn < 0.98f && stepping && !crouch && !sliding && !jet && !punching && !wallRun && !climb
+                && !_runFromCrouchWalk && !_runFromStill && !_runFromSki)
+            {
+                // The walk eases into the sprint, then the sprint holds.
+                // A crouch walk into a run has its own ease. A still crouch into a run has its own ease.
+                // A ski into a run has its own ease. The slow push stays off this path. Speed is unchanged.
+                float intoSprint = _sprintFromWalkIn;
+                _uaLT = Quaternion.Slerp(_walkSprintUaL, _uaLT, intoSprint);
+                _uaRT = Quaternion.Slerp(_walkSprintUaR, _uaRT, intoSprint);
+                _laLT = Quaternion.Slerp(_walkSprintLaL, _laLT, intoSprint);
+                _laRT = Quaternion.Slerp(_walkSprintLaR, _laRT, intoSprint);
+                _spineT = Quaternion.Slerp(_walkSprintSp, _spineT, intoSprint);
+                _hipsT = Quaternion.Slerp(_walkSprintHp, _hipsT, intoSprint);
+                _headT = Quaternion.Slerp(_walkSprintHd, _headT, intoSprint);
+                _ulLT = Quaternion.Slerp(_walkSprintUlL, _ulLT, intoSprint);
+                _ulRT = Quaternion.Slerp(_walkSprintUlR, _ulRT, intoSprint);
+                _llLT = Quaternion.Slerp(_walkSprintLlL, _llLT, intoSprint);
+                _llRT = Quaternion.Slerp(_walkSprintLlR, _llRT, intoSprint);
             }
             if (_walkFromStill && _walkFromStillIn < 0.98f && !crouch && !sliding && !jet && !punching && !wallRun && !climb)
             {
