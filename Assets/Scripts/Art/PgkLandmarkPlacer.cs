@@ -180,6 +180,7 @@ namespace Tag.Art
             n += MerryNorthCluster(root);
             n += EastNorthCluster(root);
             n += SoftPlaySouthCluster(root);
+            n += EastSouthCluster(root);
             // Overhead bars. West stays at x=11 (the mast owns x-9.5 around z 12-18).
             // East sits at x=62.5, just inside the kickball pad's open west edge.
             // Segments stop at the EW spines; you cross those on foot.
@@ -676,6 +677,28 @@ namespace Tag.Art
                 // Two hop tiles east of the net. East edge x=68.25, flush with the spawn seesaw.
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.55f, 0.02f, -0.95f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.55f, 0.02f, 0.55f), 0f),
+            });
+        }
+
+
+        /// <summary>
+        /// Pocket south of the SE arch and west of hopscotch SE. Lawn is about
+        /// x 63.5-68.5 and z 5.5-9.2: army net face x=63.08, hopscotch SE starts x=68.75,
+        /// SE arch center z=10.5, foxhole at z=2.55. Mushroom, spring, two hop tiles.
+        /// Not a bench. Army crawl and SE arch span stay clear.
+        /// </summary>
+        int EastSouthCluster(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Cluster_SE", new Vector3(66.2f, 0f, 7.5f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                // Length along X. z 7.06-7.94, 2.1 m south of the SE arch center.
+                ("Toy_MushroomSteps", new Vector3(0f, 0f, 0f), 0f),
+                // Feet y=0. x 67.55-68.40, 0.35 m west of hopscotch SE.
+                ("Toy_SpringRider", new Vector3(1.7f, 0f, -0.8f), 0f),
+                // Two hop tiles west of the spring. West edge x=64.5, 1.4 m east of the army net.
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-1.2f, 0.02f, -1.0f), 0f),
+                ("PGK_Safety_Tile_1m_LOD0", new Vector3(-0.2f, 0.02f, -1.0f), 0f),
             });
         }
 
