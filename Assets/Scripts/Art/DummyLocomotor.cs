@@ -248,15 +248,16 @@ namespace Tag.Art
             }
             else if (climb)
             {
-                // One hand reaches, the other pulls. Pitch stays above the torso wrap.
-                // Flare is the run's mild A only, so the hands stay clear of the pelvis.
+                // One hand reaches, the other pulls. Both stay a long line so the hand
+                // can be followed through the swap. A bent elbow at the bottom of the
+                // pull used to vanish into the chest. Pitch and the mild A flare only.
                 float climbPhase = Mathf.Sin(Time.time * 7.5f);
                 float up = (climbPhase + 1f) * 0.5f;
                 float down = (-climbPhase + 1f) * 0.5f;
-                _uaLT = _uaL0 * Quaternion.Euler(Mathf.Lerp(-36f, -120f, up), 8f, armZ);
-                _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-36f, -120f, down), -8f, -armZ);
-                _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-72f, -12f, up), 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-72f, -12f, down), 0f, 0f);
+                _uaLT = _uaL0 * Quaternion.Euler(Mathf.Lerp(-52f, -118f, up), Mathf.Lerp(10f, 16f, up), armZ);
+                _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-52f, -118f, down), Mathf.Lerp(-10f, -16f, down), -armZ);
+                _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-18f, -8f, up), 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-18f, -8f, down), 0f, 0f);
             }
             else if (mantle)
             {
@@ -271,25 +272,29 @@ namespace Tag.Art
             }
             else if (wallRun)
             {
-                // Wall hand stays planted. The outer arm opposes the stepping leg.
-                // Pitch and the mild A flare only — the old roll folded the hand into the wall hip.
+                // Wall hand presses along the wall with the outer stride instead of locking.
+                // The outer arm opposes that leg and stays a long line. Pitch and the mild A flare only.
                 bool left = _motor != null && _motor.WallLeft;
                 float wallPhase = Mathf.Sin(Time.time * 9.5f);
-                float outerFwd = (-wallPhase + 1f) * 0.5f;
-                float outerArm = Mathf.Lerp(-22f, -80f, outerFwd);
+                float press = (wallPhase + 1f) * 0.5f;
+                float outerFwd = 1f - press;
+                float wallPitch = Mathf.Lerp(-42f, -70f, press);
+                float wallElbow = Mathf.Lerp(-18f, -10f, press);
+                float outerArm = Mathf.Lerp(-28f, -84f, outerFwd);
+                float outerElbow = Mathf.Lerp(-16f, -10f, outerFwd);
                 if (left)
                 {
-                    _uaLT = _uaL0 * Quaternion.Euler(-50f, 16f, armZ);
-                    _uaRT = _uaR0 * Quaternion.Euler(outerArm, -8f, -armZ);
-                    _laLT = _laL0 * Quaternion.Euler(-46f, 0f, 0f);
-                    _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-16f, -34f, (wallPhase + 1f) * 0.5f), 0f, 0f);
+                    _uaLT = _uaL0 * Quaternion.Euler(wallPitch, 16f, armZ);
+                    _uaRT = _uaR0 * Quaternion.Euler(outerArm, -10f, -armZ);
+                    _laLT = _laL0 * Quaternion.Euler(wallElbow, 0f, 0f);
+                    _laRT = _laR0 * Quaternion.Euler(outerElbow, 0f, 0f);
                 }
                 else
                 {
-                    _uaRT = _uaR0 * Quaternion.Euler(-50f, -16f, -armZ);
-                    _uaLT = _uaL0 * Quaternion.Euler(outerArm, 8f, armZ);
-                    _laRT = _laR0 * Quaternion.Euler(-46f, 0f, 0f);
-                    _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-16f, -34f, (wallPhase + 1f) * 0.5f), 0f, 0f);
+                    _uaRT = _uaR0 * Quaternion.Euler(wallPitch, -16f, -armZ);
+                    _uaLT = _uaL0 * Quaternion.Euler(outerArm, 10f, armZ);
+                    _laRT = _laR0 * Quaternion.Euler(wallElbow, 0f, 0f);
+                    _laLT = _laL0 * Quaternion.Euler(outerElbow, 0f, 0f);
                 }
             }
             else if (gliding)
