@@ -92,6 +92,7 @@ namespace Tag.Art
         bool _crouchFromStand;
         bool _crouchFromWalk;
         float _diveVis;
+        bool _diveFromJump;
         float _surfPhase;
         float _surfIn;
         bool _wasSurf;
@@ -239,7 +240,10 @@ namespace Tag.Art
                     diveAmt = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-1.2f, -6.5f, vy));
             }
             // The crouch arrives with the fall. Leaving it eases, so the arms do not pop on the land.
+            // A jump eases the apex and the descent into that dart. Fall speed stays doubled.
             float diveStep = diveAmt >= _diveVis ? 1f : dt / 0.16f;
+            if (_diveFromJump && !_jumpFromAirCrouch && diveAmt > _diveVis)
+                diveStep = dt / 0.16f;
             _diveVis = Mathf.MoveTowards(_diveVis, diveAmt, diveStep);
             bool crouch = st == MoveState.Crouch;
             // Drop into the guard or the wedge, then rise back out. Speed is unchanged.
@@ -404,6 +408,10 @@ namespace Tag.Art
                 _landHold = Mathf.Lerp(0.05f, 0.11f, t);
                 _landHard = t;
             }
+            if (!grounded && _motor != null && _motor.Velocity.y > 1.5f && (_wasGrounded || _prevVy <= 1.5f))
+                _diveFromJump = true;
+            if (grounded)
+                _diveFromJump = false;
             if (!grounded && _wasGrounded && _motor != null && _motor.Velocity.y > 1.5f)
             {
                 // Push off the foot that was down. Jump height is unchanged.
