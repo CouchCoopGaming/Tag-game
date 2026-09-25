@@ -39,6 +39,11 @@ namespace Tag.Art
         Quaternion _crouchWalkJumpUaL, _crouchWalkJumpUaR, _crouchWalkJumpLaL, _crouchWalkJumpLaR;
         Quaternion _crouchWalkJumpUlL, _crouchWalkJumpUlR, _crouchWalkJumpLlL, _crouchWalkJumpLlR;
         Quaternion _crouchWalkJumpSp, _crouchWalkJumpHp, _crouchWalkJumpHd;
+        bool _jumpFromWalk;
+        float _jumpFromWalkIn;
+        Quaternion _walkJumpUaL, _walkJumpUaR, _walkJumpLaL, _walkJumpLaR;
+        Quaternion _walkJumpUlL, _walkJumpUlR, _walkJumpLlL, _walkJumpLlR;
+        Quaternion _walkJumpSp, _walkJumpHp, _walkJumpHd;
         bool _jumpFromSki;
         bool _jumpFromSlide;
         float _jumpFromSlideIn;
@@ -1726,6 +1731,35 @@ namespace Tag.Art
                 }
                 else if (_jumpFromPunch)
                     _jumpFromPunchIn = 1f;
+                _jumpFromWalk = !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide
+                    && !_jumpFromDash && !_jumpFromWall && !_jumpFromClimb && !_jumpFromAirCrouch
+                    && !_jumpFromSoftLand && !_jumpFromHardLand && !_jumpFromMiss && !_jumpFromTag
+                    && !_jumpFromClaim && !_jumpFromGrapple && !_jumpFromReady && !_jumpFromPunch
+                    && !_crouchFromStand && !_crouchWalkArmed && !_airDashPoseWas && !jet
+                    && _landSquash <= 0.08f && _skiBlend <= 0.2f && !_dropSlide
+                    && speed > 0.35f && speed <= 5.5f
+                    && phase != PunchPhase.Windup && phase != PunchPhase.Active
+                    && phase != PunchPhase.HitRecover && phase != PunchPhase.MissRecover;
+                if (_jumpFromWalk && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+                {
+                    // The walk eases into the jump. A crouch walk into a jump keeps its ease.
+                    // A still crouch into a jump keeps its push. A walk into a ski keeps its ease.
+                    // Jump height is unchanged.
+                    _jumpFromWalkIn = 0f;
+                    _walkJumpUaL = _upperArmL.localRotation;
+                    _walkJumpUaR = _upperArmR.localRotation;
+                    _walkJumpLaL = _lowerArmL.localRotation;
+                    _walkJumpLaR = _lowerArmR.localRotation;
+                    _walkJumpUlL = _upperLegL.localRotation;
+                    _walkJumpUlR = _upperLegR.localRotation;
+                    _walkJumpLlL = _lowerLegL.localRotation;
+                    _walkJumpLlR = _lowerLegR.localRotation;
+                    _walkJumpSp = _spine.localRotation;
+                    _walkJumpHp = _hips.localRotation;
+                    _walkJumpHd = _head.localRotation;
+                }
+                else if (_jumpFromWalk)
+                    _jumpFromWalkIn = 1f;
             }
             else if (!grounded && _motor != null && _motor.Velocity.y > 1.5f && _prevVy <= 1.5f
                 && (_airDashArms || _motor.IsAirDashing)
@@ -1773,6 +1807,7 @@ namespace Tag.Art
             {
                 _jumpFromStill = false;
                 _jumpFromCrouchWalk = false;
+                _jumpFromWalk = false;
                 _jumpFromSki = false;
                 _jumpFromSlide = false;
                 _jumpFromDash = false;
@@ -1791,6 +1826,8 @@ namespace Tag.Art
             }
             if (_jumpFromCrouchWalk && _pushOff > 0.02f)
                 _jumpFromCrouchWalkIn = Mathf.MoveTowards(_jumpFromCrouchWalkIn, 1f, dt / 0.04f);
+            if (_jumpFromWalk && _pushOff > 0.02f)
+                _jumpFromWalkIn = Mathf.MoveTowards(_jumpFromWalkIn, 1f, dt / 0.04f);
             if (_jumpFromSlide && _pushOff > 0.02f)
                 _jumpFromSlideIn = Mathf.MoveTowards(_jumpFromSlideIn, 1f, dt / 0.04f);
             if (_jumpFromPunch && _pushOff > 0.02f)
@@ -3889,7 +3926,7 @@ namespace Tag.Art
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), g);
                     _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-6f, 0f, 0f), g);
                 }
-                if (airCrouchWalk && !_jumpFromCrouchWalk)
+                if (airCrouchWalk && !_jumpFromCrouchWalk && !_jumpFromWalk)
                 {
                     _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-36f, 16f, armZ), 1f);
                     _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), 1f);
@@ -4002,6 +4039,20 @@ namespace Tag.Art
                     _spineT = Quaternion.Slerp(_crouchWalkJumpSp, _spineT, intoJump);
                     _hipsT = Quaternion.Slerp(_crouchWalkJumpHp, _hipsT, intoJump);
                     _headT = Quaternion.Slerp(_crouchWalkJumpHd, _headT, intoJump);
+                }
+                if (_jumpFromWalk && !_jumpFromCrouchWalk && !_jumpFromStill && _pushOff > 0.02f && _diveVis < 0.2f && _jumpFromWalkIn < 0.98f)
+                {
+                    // The walk eases into the jump, then the jump holds.
+                    // A crouch walk into a jump keeps its ease. A still crouch into a jump keeps its push.
+                    // A walk into a ski keeps its ease. Jump height is unchanged.
+                    float intoJump = _jumpFromWalkIn;
+                    _uaLT = Quaternion.Slerp(_walkJumpUaL, _uaLT, intoJump);
+                    _uaRT = Quaternion.Slerp(_walkJumpUaR, _uaRT, intoJump);
+                    _laLT = Quaternion.Slerp(_walkJumpLaL, _laLT, intoJump);
+                    _laRT = Quaternion.Slerp(_walkJumpLaR, _laRT, intoJump);
+                    _spineT = Quaternion.Slerp(_walkJumpSp, _spineT, intoJump);
+                    _hipsT = Quaternion.Slerp(_walkJumpHp, _hipsT, intoJump);
+                    _headT = Quaternion.Slerp(_walkJumpHd, _headT, intoJump);
                 }
             }
             else
@@ -4598,6 +4649,17 @@ namespace Tag.Art
                     _llLT = Quaternion.Slerp(_crouchWalkJumpLlL, _llLT, intoJump);
                     _llRT = Quaternion.Slerp(_crouchWalkJumpLlR, _llRT, intoJump);
                 }
+                if (_jumpFromWalk && !_jumpFromCrouchWalk && !_jumpFromStill && _pushOff > 0.02f && _diveVis < 0.2f && _jumpFromWalkIn < 0.98f)
+                {
+                    // The walk eases into the jump, then the jump holds.
+                    // A crouch walk into a jump keeps its ease. A still crouch into a jump keeps its push.
+                    // A walk into a ski keeps its ease. Jump height is unchanged.
+                    float intoJump = _jumpFromWalkIn;
+                    _ulLT = Quaternion.Slerp(_walkJumpUlL, _ulLT, intoJump);
+                    _ulRT = Quaternion.Slerp(_walkJumpUlR, _ulRT, intoJump);
+                    _llLT = Quaternion.Slerp(_walkJumpLlL, _llLT, intoJump);
+                    _llRT = Quaternion.Slerp(_walkJumpLlR, _llRT, intoJump);
+                }
                 if (airStillCrouch)
                 {
                     float g = 1f - Mathf.Clamp01(_pushOff);
@@ -4606,7 +4668,7 @@ namespace Tag.Art
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-68f, 0f, 0f), g);
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-68f, 0f, 0f), g);
                 }
-                if (airCrouchWalk && !_jumpFromCrouchWalk)
+                if (airCrouchWalk && !_jumpFromCrouchWalk && !_jumpFromWalk)
                 {
                     float stepL = Mathf.Max(0f, sinC);
                     float stepR = Mathf.Max(0f, -sinC);
