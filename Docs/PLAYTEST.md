@@ -478,7 +478,9 @@ Already on this branch: A jump into an air dash eases the jump into the burst. T
 
 Already on this branch: A still crouch into an air dash eases the guard into the burst. The burst still holds. A jump into an air dash is unchanged. A slide into an air dash is unchanged. An air crouch into an air dash is unchanged. Duration and cooldown are unchanged.
 
-This delta: A punch into an air dash eases the punch into the burst. The burst still holds. A still crouch into an air dash is unchanged. A punch miss into an air dash is unchanged. A tag into an air dash is unchanged. Windup time is unchanged. Duration and cooldown are unchanged.
+Already on this branch: A punch into an air dash eases the punch into the burst. The burst still holds. A still crouch into an air dash is unchanged. A punch miss into an air dash is unchanged. A tag into an air dash is unchanged. Windup time is unchanged. Duration and cooldown are unchanged.
+
+This delta: A crouch walk into an air dash eases the low stride into the burst. The burst still holds. A hard landing into a jump is unchanged. A soft landing into a jump is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged.
 
 ## Stack snapshot
 
@@ -836,6 +838,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 259. Jump, then air dash: the jump should ease into the burst. The burst should still hold. A slide into a jump should feel the same. A ski into a jump should feel the same. A slide into an air dash should feel the same. The jump should not feel higher. The dash should not feel longer. Jet stays off.
 260. Still crouch, then air dash: the guard should ease into the burst. The burst should still hold. A jump into an air dash should feel the same. A slide into an air dash should feel the same. An air crouch into an air dash should feel the same. The guard should not feel longer. The dash should not feel longer. Jet stays off.
 261. Punch, then air dash: the punch should ease into the burst. The burst should still hold. A still crouch into an air dash should feel the same. A punch miss into an air dash should feel the same. A tag into an air dash should feel the same. The cock should not feel longer. The dash should not feel longer. Jet stays off.
+262. Crouch walk, then air dash: the low stride should ease into the burst. The burst should still hold. A hard landing into a jump should feel the same. A soft landing into a jump should feel the same. A still crouch into an air dash should feel the same. The stride should not feel longer. The dash should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -1117,6 +1120,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 249. A jump into an air dash eases the jump into the burst. The burst still holds. A slide into a jump is unchanged. A ski into a jump is unchanged. A slide into an air dash is unchanged. Jump height is unchanged. Duration and cooldown are unchanged. Jet stays off.
 250. A still crouch into an air dash eases the guard into the burst. The burst still holds. A jump into an air dash is unchanged. A slide into an air dash is unchanged. An air crouch into an air dash is unchanged. Duration and cooldown are unchanged. Jet stays off.
 251. A punch into an air dash eases the punch into the burst. The burst still holds. A still crouch into an air dash is unchanged. A punch miss into an air dash is unchanged. A tag into an air dash is unchanged. Windup time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+252. A crouch walk into an air dash eases the low stride into the burst. The burst still holds. A hard landing into a jump is unchanged. A soft landing into a jump is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
