@@ -650,7 +650,9 @@ Already on this branch: A ground dash or lunge eases the whip into the hang. The
 
 Already on this branch: After an air dash, the lead eases into the air stride. The stride then keeps going. The pin stays off that path. Dash time is unchanged.
 
-This delta: A stop that is not a sprint or a walk eases into the idle. The idle then holds. The slow close stays off that path. Speed is unchanged.
+Already on this branch: A stop that is not a sprint or a walk eases into the idle. The idle then holds. The slow close stays off that path. Speed is unchanged.
+
+This delta: A landing eases into the absorb. The absorb then holds. The pop stays off that path. Land time is unchanged.
 
 ## Stack snapshot
 
@@ -1094,6 +1096,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 345. Ground dash or lunge: the whip should ease into the hang. The hang should then hold. The pulse should not ease back in. An air dash should feel the same. The dash should not feel longer. Jet stays off.
 346. Air dash, then fall: the lead foot should ease into the stride. The stride should then keep going. The foot should not stay pinned. The dash should not feel longer. Jet stays off.
 347. Come to a stop from a slow step: the pose should ease into the idle. The idle should then hold. The feet should not creep in. A sprint into a stop should feel the same. A walk into a stop should feel the same. Speed should feel the same. Jet stays off.
+348. Land and stay down: the pose should ease into the absorb. The absorb should then hold. The knees should not pop. A jump out of a landing should feel the same. Land time should feel the same. Jet stays off.
 
 ## Known leftovers
 
@@ -1461,6 +1464,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 335. A ground dash or lunge eases the whip into the hang. The hang then holds. The slow pulse stays off that path. Dash time is unchanged. Jet stays off.
 336. After an air dash, the lead eases into the air stride. The stride then keeps going. The pin stays off that path. Dash time is unchanged. Jet stays off.
 337. A stop that is not a sprint or a walk eases into the idle. The idle then holds. The slow close stays off that path. A sprint into a stop is unchanged. A walk into a stop is unchanged. Speed is unchanged. Jet stays off.
+338. A landing eases into the absorb. The absorb then holds. The pop stays off that path. A jump out of a landing is unchanged. Land time is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

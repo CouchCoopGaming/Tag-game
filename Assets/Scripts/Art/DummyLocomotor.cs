@@ -29,6 +29,11 @@ namespace Tag.Art
         float _landSquash;
         float _landHold;
         float _landHard;
+        bool _landAbsorbSnap;
+        float _landAbsorbIn;
+        Quaternion _landAbsorbUaL, _landAbsorbUaR, _landAbsorbLaL, _landAbsorbLaR;
+        Quaternion _landAbsorbUlL, _landAbsorbUlR, _landAbsorbLlL, _landAbsorbLlR;
+        Quaternion _landAbsorbSp, _landAbsorbHp, _landAbsorbHd;
         float _punchTelegraph;
         bool _wasGrounded = true;
         float _prevSpeed;
@@ -9047,6 +9052,36 @@ namespace Tag.Art
                 // the hips so they do not lock. A stand eases into the idle breath.
                 // A soft landing after an air dash absorbs in the knees and keeps the arms
                 // in the stride. Hold time is unchanged.
+                // A crouch, a dart, and a leave into a jump, ski, slide, punch, or tag keep their ease.
+                bool plainAbsorb = !crouch && _diveVis <= 0.02f;
+                if (plainAbsorb && !_landAbsorbSnap
+                    && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
+                    && _spine != null && _hips != null && _head != null
+                    && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
+                {
+                    // The pose eases into the absorb, then the absorb holds.
+                    // The squash fade stays. Land time is unchanged.
+                    _landAbsorbSnap = true;
+                    _landAbsorbIn = 0f;
+                    _landAbsorbUaL = _upperArmL.localRotation;
+                    _landAbsorbUaR = _upperArmR.localRotation;
+                    _landAbsorbLaL = _lowerArmL.localRotation;
+                    _landAbsorbLaR = _lowerArmR.localRotation;
+                    _landAbsorbUlL = _upperLegL.localRotation;
+                    _landAbsorbUlR = _upperLegR.localRotation;
+                    _landAbsorbLlL = _lowerLegL.localRotation;
+                    _landAbsorbLlR = _lowerLegR.localRotation;
+                    _landAbsorbSp = _spine.localRotation;
+                    _landAbsorbHp = _hips.localRotation;
+                    _landAbsorbHd = _head.localRotation;
+                }
+                if (_landAbsorbSnap && plainAbsorb)
+                {
+                    if (_landAbsorbIn < 0.98f)
+                        _landAbsorbIn = Mathf.MoveTowards(_landAbsorbIn, 1f, dt / 0.04f);
+                }
+                else
+                    _landAbsorbSnap = false;
                 float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_landSquash));
                 float hard = Mathf.SmoothStep(0f, 1f, _landHard);
                 float moving = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
@@ -9370,11 +9405,29 @@ namespace Tag.Art
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(18f, 0f, 0f), hipK);
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(26f, 0f, 0f), hipK);
                 }
+                if (_landAbsorbSnap && _landAbsorbIn < 0.98f && plainAbsorb)
+                {
+                    // The pose eases into the absorb, then the absorb holds.
+                    // A crouch and a dart keep their landings. The squash fade stays. Land time is unchanged.
+                    float intoAbsorb = _landAbsorbIn;
+                    _uaLT = Quaternion.Slerp(_landAbsorbUaL, _uaLT, intoAbsorb);
+                    _uaRT = Quaternion.Slerp(_landAbsorbUaR, _uaRT, intoAbsorb);
+                    _laLT = Quaternion.Slerp(_landAbsorbLaL, _laLT, intoAbsorb);
+                    _laRT = Quaternion.Slerp(_landAbsorbLaR, _laRT, intoAbsorb);
+                    _spineT = Quaternion.Slerp(_landAbsorbSp, _spineT, intoAbsorb);
+                    _hipsT = Quaternion.Slerp(_landAbsorbHp, _hipsT, intoAbsorb);
+                    _headT = Quaternion.Slerp(_landAbsorbHd, _headT, intoAbsorb);
+                    _ulLT = Quaternion.Slerp(_landAbsorbUlL, _ulLT, intoAbsorb);
+                    _ulRT = Quaternion.Slerp(_landAbsorbUlR, _ulRT, intoAbsorb);
+                    _llLT = Quaternion.Slerp(_landAbsorbLlL, _llLT, intoAbsorb);
+                    _llRT = Quaternion.Slerp(_landAbsorbLlR, _llRT, intoAbsorb);
+                }
                 _hardLandWas = crouchHardLand;
                 _softLandWas = crouchSoftLand;
             }
             else
             {
+                _landAbsorbSnap = false;
                 _hardLandWas = false;
                 _softLandWas = false;
             }
