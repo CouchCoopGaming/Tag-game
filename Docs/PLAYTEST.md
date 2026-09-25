@@ -74,7 +74,9 @@ Already on this branch: Landing into a run still buckles both knees, then the tr
 
 Already on this branch: On a run plant the arm opposite the front knee stays a long reach, a little wider than the back arm. The elbow fold sits on the back arm. Only the front knee bends. The back swing still stays short of the hip.
 
-This delta: A punch that tags holds the fist, then eases it into the new It's claim: one arm up, the other out, one knee up. A hit that does not tag still eases into the run. The tagged runner still uses the two-arm V. Windup time is unchanged.
+Already on this branch: A punch that tags holds the fist, then eases it into the new It's claim: one arm up, the other out, one knee up. A hit that does not tag still eases into the run. The tagged runner still uses the two-arm V. Windup time is unchanged.
+
+This delta: After a tag, the runner's V holds with both knees bent, then the arms and the trail leg enter the stride while one knee is still up. Standing still, both legs open together. The new It claim is unchanged. Flinch time is unchanged.
 
 ## Stack snapshot
 
@@ -230,6 +232,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 57. Land while sprinting: both knees should buckle, then the back leg and the arms should already be in the stride while the front knee is still up. They should not both snap straight and then start the run. A small hop still buckles. Standing still, both legs should open together. The land should not feel longer.
 58. Sprint: the arm opposite the lifted knee should be a long reach, wider than the back arm. The back elbow may bend, but that hand should stay clear of the hip. The back leg should stay straight. Only the front knee should lift.
 59. Punch someone so you become It: the fist should stay out, then ease into one arm up and the other held out, with one knee up. It should not snap into the run. The runner who was hit should still show the two-arm V with both knees bent. The two poses should not match. The cock should not feel longer.
+60. Get tagged while sprinting: both arms should come up in a V and both knees should bend, then the arms and the back leg should already be in the stride while one knee is still up. They should not both snap straight and then start the run. Standing still, both legs should open together. The new It should still raise one arm and hold the other out. The catch should not feel longer.
 
 ## Known leftovers
 
@@ -309,6 +312,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 47. Landing into a run opens the trail leg and the arms into the stride while the front knee is still up. A standstill land opens both legs together. Land time is unchanged.
 48. The run arm opposite the front knee is a long reach, wider than the back arm. The back elbow bends short of the hip. Only the front knee lifts.
 49. A tagging punch eases the fist into the It claim. A hit that does not tag still eases into the run. The catch stays the two-arm V. Windup time is unchanged.
+50. The tagged runner's V eases into the stride: arms and the trail leg first, one knee still up. A standstill catch opens both legs together. Flinch time is unchanged. The new It claim is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
