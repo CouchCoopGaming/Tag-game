@@ -6,7 +6,7 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `da44b0d`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `1172ce2`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
 Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
 
@@ -58,7 +58,9 @@ Already on this branch: A grapple pull, only while the gate is on, reaches both 
 
 Already on this branch: The new It raises one arm and holds the other out, with the chest open and one knee up. It does not match the tagged runner's two-arm V.
 
-This delta: After a punch connects, the fist eases back into the run during the recover. It should not snap from the long line into the stride when the punch ends. Windup time is still 0.12s.
+Already on this branch: After a punch connects, the fist eases back into the run during the recover. Windup time is still 0.12s.
+
+This delta: At the top of a jump the arms hang out to the sides for a moment before the fall trail. The leave is still a tuck. Jump height is unchanged.
 
 ## Stack snapshot
 
@@ -206,6 +208,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 49. Only if you add ExperimentalGrapple and turn enableGrapple on: holding the rope should reach both arms in a long line, legs staying long. It should not look like a jump. With the gate off, RMB still does not hook. Jet stays off.
 50. Tag someone: the runner who was hit should still show the two-arm V with both knees bent. The new It should raise one arm, hold the other out, and lift one knee. The two poses should not match.
 51. Punch a connect, then keep sprinting: the fist should stay out for a moment, then ease into the run. It should not snap back when the punch ends. The cock should not feel longer.
+52. Jump: the arms should tuck on the way up, hang out to the sides at the top, then trail back on the way down. The jump should not feel higher. Hands stay clear of the hips.
 
 ## Known leftovers
 
@@ -277,6 +280,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 39. Grapple pose is a long two-arm reach with long legs, only while enableGrapple is on and a rope is attached. The default gate stays off. Jet stays off.
 40. The new It raises one arm and holds the other out, chest open, one knee up. The tagged runner still uses the two-arm V. The poses do not match.
 41. Punch connect eases into the run during the recover. The fist does not snap back when the punch ends. Windup time is unchanged.
+42. Jump apex hangs the arms out before the fall trail. The leave is still a tuck. Jump height is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
