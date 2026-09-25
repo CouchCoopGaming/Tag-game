@@ -33,6 +33,7 @@ namespace Tag.Art
         bool _wasGrounded = true;
         float _pushOff;
         bool _pushLeft;
+        float _airArmIn = 1f;
         float _bouncePulse;
         bool _bounceWallLeft;
         float _glidePulse;
@@ -232,11 +233,18 @@ namespace Tag.Art
                 // Push off the foot that was down. Jump height is unchanged.
                 _pushLeft = Mathf.Cos(_cycle) < 0f;
                 _pushOff = 1f;
+                // Arms leave the stride into the air pose. A ledge step does not restart this.
+                _airArmIn = 0f;
             }
             else if (!grounded)
                 _pushOff = Mathf.MoveTowards(_pushOff, 0f, dt / 0.12f);
             else
                 _pushOff = 0f;
+            // Find the tuck, then the look trail. Look speed is unchanged.
+            if (air)
+                _airArmIn = Mathf.MoveTowards(_airArmIn, 1f, dt / 0.18f);
+            else
+                _airArmIn = 1f;
             _wasGrounded = grounded;
             if (_landHold > 0f)
                 _landHold = Mathf.Max(0f, _landHold - dt);
@@ -774,14 +782,17 @@ namespace Tag.Art
             else if (air)
             {
                 // Rise: a long line up and out. Fall: both arms trail back, wide of the torso.
-                // The tuck pitch is unchanged. Look speed is unchanged.
+                // The tuck pitch is unchanged once the arms have settled. Look speed is unchanged.
                 // Apex hangs out to the sides so the top reads before the trail. Mild A only.
                 float airW = Mathf.Clamp01(airRise + airFall);
                 float riseShare = airW > 0.001f ? airRise / (airRise + airFall) : 0f;
                 float lookUp = Mathf.Clamp(-_lookArmVis, 0f, 25f);
                 float lookDown = Mathf.Clamp(_lookArmVis, 0f, 55f);
-                float fallPitch = 72f + lookDown * 0.05f - lookUp * 0.2f;
-                float fallYaw = 16f + lookDown * 0.08f;
+                // Look lives on the fall only, and it arrives with the settle so the trail does not pop.
+                // An air dash keeps the burst pose. Jump height is unchanged.
+                float armIn = _airDashArms ? 1f : Mathf.SmoothStep(0f, 1f, _airArmIn);
+                float fallPitch = 72f + (lookDown * 0.05f - lookUp * 0.2f) * armIn;
+                float fallYaw = 16f + lookDown * 0.08f * armIn;
                 Quaternion upL = _uaL0 * Quaternion.Euler(-112f, 16f, armZ);
                 Quaternion upR = _uaR0 * Quaternion.Euler(-112f, -16f, -armZ);
                 Quaternion downL = _uaL0 * Quaternion.Euler(fallPitch, fallYaw, armZ);
@@ -796,6 +807,17 @@ namespace Tag.Art
                 Quaternion elbow = Quaternion.Slerp(elbowHang, Quaternion.Slerp(elbowDown, elbowUp, riseShare), airW);
                 _laLT = _laL0 * elbow;
                 _laRT = _laR0 * elbow;
+                if (_airArmIn < 0.98f && !_airDashArms)
+                {
+                    // Short reach off the stride, then the tuck, the hang, or the look trail.
+                    Quaternion takeL = _uaL0 * Quaternion.Euler(-36f, 14f, armZ);
+                    Quaternion takeR = _uaR0 * Quaternion.Euler(-36f, -14f, -armZ);
+                    _uaLT = Quaternion.Slerp(takeL, _uaLT, armIn);
+                    _uaRT = Quaternion.Slerp(takeR, _uaRT, armIn);
+                    Quaternion elbowTake = Quaternion.Euler(-14f, 0f, 0f);
+                    _laLT = Quaternion.Slerp(_laL0 * elbowTake, _laLT, armIn);
+                    _laRT = Quaternion.Slerp(_laR0 * elbowTake, _laRT, armIn);
+                }
                 _spineT = Quaternion.Slerp(
                     _spine0 * Quaternion.Euler(-6f, 0f, 0f),
                     Quaternion.Slerp(_spine0 * Quaternion.Euler(26f, 0f, 0f), _spine0 * Quaternion.Euler(-8f, 0f, 0f), riseShare),
