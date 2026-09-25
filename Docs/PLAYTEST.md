@@ -332,7 +332,9 @@ Already on this branch: Becoming It into a jump eases the claim into the push. A
 
 Already on this branch: A grapple release into a jump eases the line into the push. A crouch release is unchanged. Becoming It into a jump is unchanged. Jump height is unchanged. The gate stays off.
 
-This delta: A dash coming off cooldown into a jump eases the pulse into the push. A crouch ready is unchanged. A grapple release into a jump is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+Already on this branch: A dash coming off cooldown into a jump eases the pulse into the push. A crouch ready is unchanged. A grapple release into a jump is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+
+This delta: A jump into a punch eases the apex or the landing into the windup. A punch from the ground is unchanged. Jump height is unchanged. Windup time is unchanged.
 
 ## Stack snapshot
 
@@ -617,6 +619,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 186. Become It, then jump: the claim should ease into the push. A crouch claim should feel the same. A tag into a jump should feel the same. The jump should not feel higher.
 187. Let go of a grapple, then jump: the line should ease into the push. A crouch release should feel the same. Becoming It into a jump should feel the same. The jump should not feel higher. The gate stays off.
 188. When the dash is ready, jump: the pulse should ease into the push. A crouch ready should feel the same. A grapple release into a jump should feel the same. The jump should not feel higher. The dash should not feel longer.
+189. Jump, then punch: the apex or the landing should ease into the windup. A punch from the ground should feel the same. The jump should not feel higher. The cock should not feel longer.
 
 ## Known leftovers
 
@@ -825,6 +828,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 176. Becoming It into a jump eases the claim into the push. A crouch claim is unchanged. A tag into a jump is unchanged. Jump height is unchanged.
 177. A grapple release into a jump eases the line into the push. A crouch release is unchanged. Becoming It into a jump is unchanged. Jump height is unchanged. The gate stays off.
 178. A dash coming off cooldown into a jump eases the pulse into the push. A crouch ready is unchanged. A grapple release into a jump is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+179. A jump into a punch eases the apex or the landing into the windup. A punch from the ground is unchanged. Jump height is unchanged. Windup time is unchanged.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
