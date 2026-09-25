@@ -646,6 +646,11 @@ namespace Tag.Art
         Quaternion _skiWalkUaL, _skiWalkUaR, _skiWalkLaL, _skiWalkLaR;
         Quaternion _skiWalkUlL, _skiWalkUlR, _skiWalkLlL, _skiWalkLlR;
         Quaternion _skiWalkSp, _skiWalkHp, _skiWalkHd;
+        bool _crouchWalkFromSlide;
+        float _crouchWalkFromSlideIn;
+        Quaternion _slideWalkUaL, _slideWalkUaR, _slideWalkLaL, _slideWalkLaR;
+        Quaternion _slideWalkUlL, _slideWalkUlR, _slideWalkLlL, _slideWalkLlR;
+        Quaternion _slideWalkSp, _slideWalkHp, _slideWalkHd;
         float _diveVis;
         bool _diveFromJump;
         float _surfPhase;
@@ -1184,7 +1189,33 @@ namespace Tag.Art
                     }
                 }
                 else if (_dropSlide && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint)
+                {
                     _slideToCrouchWalk = 1f;
+                    if (!_stillFromSlide && !_crouchFromJump && !_crouchFromDash && !_airDashPoseWas && !_airDashArms
+                        && !jet && !wallRun && !climb
+                        && _punchPhaseWas != PunchPhase.Windup && _punchPhaseWas != PunchPhase.Active
+                        && _punchPhaseWas != PunchPhase.HitRecover && _punchPhaseWas != PunchPhase.MissRecover
+                        && _itClaim <= 0.2f && _dashReady <= 0.2f
+                        && !(_grapple != null && !_grapple.IsPulling && _grapplePose > 0.2f)
+                        && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
+                    {
+                        // The wedge eases into the low stride. A slide into a still crouch keeps its ease.
+                        // A ski into a crouch walk keeps its ease. slideBoost stays 0.
+                        _crouchWalkFromSlide = true;
+                        _crouchWalkFromSlideIn = 0f;
+                        _slideWalkUaL = _upperArmL.localRotation;
+                        _slideWalkUaR = _upperArmR.localRotation;
+                        _slideWalkLaL = _lowerArmL.localRotation;
+                        _slideWalkLaR = _lowerArmR.localRotation;
+                        _slideWalkUlL = _upperLegL.localRotation;
+                        _slideWalkUlR = _upperLegR.localRotation;
+                        _slideWalkLlL = _lowerLegL.localRotation;
+                        _slideWalkLlR = _lowerLegR.localRotation;
+                        _slideWalkSp = _spine.localRotation;
+                        _slideWalkHp = _hips.localRotation;
+                        _slideWalkHd = _head.localRotation;
+                    }
+                }
                 _dropSlide = false;
             }
             else if (_dropVis <= 0.001f)
@@ -1194,9 +1225,14 @@ namespace Tag.Art
             else if (_slideToCrouch > 0f)
                 _slideToCrouch = Mathf.MoveTowards(_slideToCrouch, 0f, dt / 0.16f);
             if (sliding || !crouch || speed <= 0.35f || speed > 5.5f || st == MoveState.Sprint)
+            {
                 _slideToCrouchWalk = 0f;
+                _crouchWalkFromSlide = false;
+            }
             else if (_slideToCrouchWalk > 0f)
                 _slideToCrouchWalk = Mathf.MoveTowards(_slideToCrouchWalk, 0f, dt / 0.16f);
+            if (_crouchWalkFromSlide)
+                _crouchWalkFromSlideIn = Mathf.MoveTowards(_crouchWalkFromSlideIn, 1f, dt / 0.04f);
             if (!sliding)
                 _crouchToSlide = 0f;
             else if (_crouchToSlide > 0f)
@@ -5215,7 +5251,7 @@ namespace Tag.Art
                     _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-12f, 0f, 0f), _laL0 * Quaternion.Euler(-72f, 0f, 0f), intoGuard);
                     _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-12f, 0f, 0f), _laR0 * Quaternion.Euler(-72f, 0f, 0f), intoGuard);
                 }
-                if ((_slideToCrouch > 0.02f && !_stillFromSlide) || _slideToCrouchWalk > 0.02f)
+                if ((_slideToCrouch > 0.02f && !_stillFromSlide) || (_slideToCrouchWalk > 0.02f && !_crouchWalkFromSlide))
                 {
                     // The wedge eases into the guard. A crouch walk keeps these arms. A still crouch keeps its snapshot.
                     float intoGuard = 1f - (_slideToCrouch > 0.02f ? _slideToCrouch : _slideToCrouchWalk);
@@ -5892,7 +5928,7 @@ namespace Tag.Art
                     _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(bendL, 0f, 0f), _llL0 * Quaternion.Euler(-68f, 0f, 0f), intoGuard);
                     _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(bendR, 0f, 0f), _llR0 * Quaternion.Euler(-68f, 0f, 0f), intoGuard);
                 }
-                if (_slideToCrouchWalk > 0.02f)
+                if (_slideToCrouchWalk > 0.02f && !_crouchWalkFromSlide)
                 {
                     // The wedge eases into the low stride. The feet do not snap under the hips.
                     float intoStride = 1f - _slideToCrouchWalk;
@@ -6092,7 +6128,7 @@ namespace Tag.Art
                 _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(14f, 0f, 0f), _hips0 * Quaternion.Euler(22f, 0f, 0f), intoGuard);
                 _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), _head0 * Quaternion.Euler(-6f, 0f, 0f), intoGuard);
             }
-            if (((_slideToCrouch > 0.02f && !_stillFromSlide) || _slideToCrouchWalk > 0.02f) && !air && !dashing && !lunging && !jet && !sliding && !punching)
+            if (((_slideToCrouch > 0.02f && !_stillFromSlide) || (_slideToCrouchWalk > 0.02f && !_crouchWalkFromSlide)) && !air && !dashing && !lunging && !jet && !sliding && !punching)
             {
                 // The wedge pitch eases into the guard. A crouch walk keeps this pitch. A still crouch keeps its snapshot.
                 float intoGuard = 1f - (_slideToCrouch > 0.02f ? _slideToCrouch : _slideToCrouchWalk);
@@ -9706,6 +9742,37 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_skiWalkUlR, strideThighR, intoStride);
                 _llLT = Quaternion.Slerp(_skiWalkLlL, strideKneeL, intoStride);
                 _llRT = Quaternion.Slerp(_skiWalkLlR, strideKneeR, intoStride);
+            }
+            if (_crouchWalkFromSlide && _crouchWalkFromSlideIn < 0.98f && !sliding && !jet && !punching && !wallRun && !climb)
+            {
+                // The wedge eases into the low stride, then the stride holds.
+                // A ski into a crouch walk keeps its ease. A slide into a still crouch keeps its ease.
+                // slideBoost stays 0.
+                float intoStride = _crouchWalkFromSlideIn;
+                float stepL = Mathf.Max(0f, sinC);
+                float stepR = Mathf.Max(0f, -sinC);
+                Quaternion strideL = _uaL0 * Quaternion.Euler(-36f, 16f, armZ);
+                Quaternion strideR = _uaR0 * Quaternion.Euler(-36f, -16f, -armZ);
+                Quaternion strideElL = _laL0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion strideElR = _laR0 * Quaternion.Euler(-72f, 0f, 0f);
+                Quaternion strideSp = _spine0 * Quaternion.Euler(10f, 0f, 0f);
+                Quaternion strideHp = _hips0 * Quaternion.Euler(22f, 0f, 0f);
+                Quaternion strideHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion strideThighL = _ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f);
+                Quaternion strideThighR = _ulR0 * Quaternion.Euler(46f + stepR * 12f - stepL * 6f, 0f, 0f);
+                Quaternion strideKneeL = _llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f);
+                Quaternion strideKneeR = _llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f);
+                _uaLT = Quaternion.Slerp(_slideWalkUaL, strideL, intoStride);
+                _uaRT = Quaternion.Slerp(_slideWalkUaR, strideR, intoStride);
+                _laLT = Quaternion.Slerp(_slideWalkLaL, strideElL, intoStride);
+                _laRT = Quaternion.Slerp(_slideWalkLaR, strideElR, intoStride);
+                _spineT = Quaternion.Slerp(_slideWalkSp, strideSp, intoStride);
+                _hipsT = Quaternion.Slerp(_slideWalkHp, strideHp, intoStride);
+                _headT = Quaternion.Slerp(_slideWalkHd, strideHd, intoStride);
+                _ulLT = Quaternion.Slerp(_slideWalkUlL, strideThighL, intoStride);
+                _ulRT = Quaternion.Slerp(_slideWalkUlR, strideThighR, intoStride);
+                _llLT = Quaternion.Slerp(_slideWalkLlL, strideKneeL, intoStride);
+                _llRT = Quaternion.Slerp(_slideWalkLlR, strideKneeR, intoStride);
             }
             if (_slideFromWalk && !_slideFromSprint && !_slideFromSki && !_slideFromCrouch && !_slideFromMiss && !_slideFromReady && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && !punching)
             {
