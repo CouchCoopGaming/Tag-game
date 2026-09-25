@@ -59,6 +59,11 @@ namespace Tag.Art
         Quaternion _landPunchUaL, _landPunchUaR, _landPunchLaL, _landPunchLaR;
         Quaternion _landPunchUlL, _landPunchUlR, _landPunchLlL, _landPunchLlR;
         Quaternion _landPunchSp, _landPunchHp, _landPunchHd;
+        bool _punchFromHard;
+        float _punchFromHardIn;
+        Quaternion _hardPunchUaL, _hardPunchUaR, _hardPunchLaL, _hardPunchLaR;
+        Quaternion _hardPunchUlL, _hardPunchUlR, _hardPunchLlL, _hardPunchLlR;
+        Quaternion _hardPunchSp, _hardPunchHp, _hardPunchHd;
         bool _punchFromDash;
         float _punchFromDashIn;
         bool _tagFromDash;
@@ -1108,6 +1113,32 @@ namespace Tag.Art
                 _punchFromSoftIn = Mathf.MoveTowards(_punchFromSoftIn, 1f, dt / 0.04f);
             else if (!windupNow)
                 _punchFromSoft = false;
+            bool hardPunch = windupNow && !_punchWindWas && !fromJumpPose && !_punchFromJump && !_punchFromDash && !_punchFromSoft
+                && !_jumpFromHardLand && _landHard >= 0.4f && _landSquash > 0.08f
+                && _upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null;
+            if (hardPunch)
+            {
+                // The deeper absorb eases into the cock. A soft landing into a punch keeps its ease.
+                // A hard landing into a jump keeps its push. A jump into a punch keeps its ease.
+                // Windup time is unchanged. Land time is unchanged.
+                _punchFromHard = true;
+                _punchFromHardIn = 0f;
+                _hardPunchUaL = _upperArmL.localRotation;
+                _hardPunchUaR = _upperArmR.localRotation;
+                _hardPunchLaL = _lowerArmL.localRotation;
+                _hardPunchLaR = _lowerArmR.localRotation;
+                _hardPunchUlL = _upperLegL.localRotation;
+                _hardPunchUlR = _upperLegR.localRotation;
+                _hardPunchLlL = _lowerLegL.localRotation;
+                _hardPunchLlR = _lowerLegR.localRotation;
+                _hardPunchSp = _spine.localRotation;
+                _hardPunchHp = _hips.localRotation;
+                _hardPunchHd = _head.localRotation;
+            }
+            if (windupNow && _punchFromHard)
+                _punchFromHardIn = Mathf.MoveTowards(_punchFromHardIn, 1f, dt / 0.04f);
+            else if (!windupNow)
+                _punchFromHard = false;
             _punchWindWas = windupNow;
             bool hitNow = punching && phase == PunchPhase.HitRecover;
             if (hitNow && !_tagHitWas && fromJumpPose && !crouch && !_jumpFromTag
@@ -4164,7 +4195,7 @@ namespace Tag.Art
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
             // A punch from this jump eases into the windup. A tag from this jump eases into the connect.
             // Staying down still absorbs. Land time is unchanged.
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft)
+            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -5189,6 +5220,31 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulRT, intoCock);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llLT, intoCock);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llRT, intoCock);
+            }
+            if (_punchFromHard && !_punchFromSoft && !_punchFromJump && !_punchFromDash && punching && phase == PunchPhase.Windup && _punchFromHardIn < 0.98f)
+            {
+                // The deeper absorb eases into the cock, then the windup holds.
+                // A soft landing into a punch keeps its ease. A hard landing into a jump keeps its push.
+                // A jump into a punch keeps its ease. Windup time is unchanged. Land time is unchanged.
+                float into = _punchFromHardIn;
+                float w = Mathf.Lerp(0.85f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg / 0.35f)));
+                Quaternion windL = _uaL0 * Quaternion.Euler(-28f, 14f, armZ + 18f);
+                Quaternion windR = _uaR0 * Quaternion.Euler(-58f * w, 46f * w, -armZ);
+                Quaternion windElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                Quaternion windElR = _laR0 * Quaternion.Euler(-68f * w, 0f, 0f);
+                Quaternion windHp = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f);
+                Quaternion windSp = _spine0 * Quaternion.Euler(leanX + 12f * w, -36f * w, leanZ);
+                _uaLT = Quaternion.Slerp(_hardPunchUaL, windL, into);
+                _uaRT = Quaternion.Slerp(_hardPunchUaR, windR, into);
+                _laLT = Quaternion.Slerp(_hardPunchLaL, windElL, into);
+                _laRT = Quaternion.Slerp(_hardPunchLaR, windElR, into);
+                _hipsT = Quaternion.Slerp(_hardPunchHp, windHp, into);
+                _spineT = Quaternion.Slerp(_hardPunchSp, windSp, into);
+                _headT = Quaternion.Slerp(_hardPunchHd, _headT, into);
+                _ulLT = Quaternion.Slerp(_hardPunchUlL, _ulLT, into);
+                _ulRT = Quaternion.Slerp(_hardPunchUlR, _ulRT, into);
+                _llLT = Quaternion.Slerp(_hardPunchLlL, _llLT, into);
+                _llRT = Quaternion.Slerp(_hardPunchLlR, _llRT, into);
             }
             if (_punchFromSoft && !_punchFromJump && !_punchFromDash && punching && phase == PunchPhase.Windup && _punchFromSoftIn < 0.98f)
             {
