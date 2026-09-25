@@ -402,22 +402,37 @@ namespace Tag.Art
                 }
                 else if (phase == PunchPhase.HitRecover)
                 {
-                    // Hold the connect, then ease into the run so the fist does not snap back when the phase ends.
+                    // Hold the connect, then ease onward so the fist does not snap when the phase ends.
+                    // A tag eases into the new It's claim. A clean hit still eases into the run.
                     // Timing is unchanged. Pitch on the connect stays above a torso wrap.
                     float settle = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.28f, 1f, punchProg));
-                    float gait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
-                    float idle = 1f - gait;
-                    float amp = Mathf.Lerp(36f, 64f, gait);
-                    float outY = Mathf.Lerp(12f, 8f, gait);
-                    float roll = Mathf.Lerp(0f, armZ, gait);
-                    Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle, outY, roll);
-                    Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle, -outY, -roll);
-                    float elbowR = Mathf.Lerp(-18f, -8f, idle) - Mathf.Max(0f, sinC) * Mathf.Lerp(28f, 58f, runAmt);
-                    _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-118f, 52f, -22f), runR, settle);
-                    _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-18f, 0f, 0f), _laR0 * Quaternion.Euler(elbowR, 0f, 0f), settle);
-                    _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-32f, 18f, armZ), runL, settle);
-                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX + 14f, 18f, leanZ), _spineT, settle);
-                    _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(18f, 22f, 0f), _hipsT, settle);
+                    Quaternion connectR = _uaR0 * Quaternion.Euler(-118f, 52f, -22f);
+                    Quaternion connectL = _uaL0 * Quaternion.Euler(-32f, 18f, armZ);
+                    if (claimAmt > 0.04f)
+                    {
+                        _uaRT = Quaternion.Slerp(connectR, _uaR0 * Quaternion.Euler(-36f, -48f, -armZ), settle);
+                        _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-18f, 0f, 0f), _laR0 * Quaternion.Euler(-12f, 0f, 0f), settle);
+                        _uaLT = Quaternion.Slerp(connectL, _uaL0 * Quaternion.Euler(-128f, 8f, armZ), settle);
+                        _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-22f, 0f, 0f), _laL0 * Quaternion.Euler(-10f, 0f, 0f), settle);
+                        _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX + 14f, 18f, leanZ), _spine0 * Quaternion.Euler(-22f, -16f, 0f), settle);
+                        _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(18f, 22f, 0f), _hips0 * Quaternion.Euler(4f, 0f, 0f), settle);
+                    }
+                    else
+                    {
+                        float gait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                        float idle = 1f - gait;
+                        float amp = Mathf.Lerp(36f, 64f, gait);
+                        float outY = Mathf.Lerp(12f, 8f, gait);
+                        float roll = Mathf.Lerp(0f, armZ, gait);
+                        Quaternion runL = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle, outY, roll);
+                        Quaternion runR = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle, -outY, -roll);
+                        float elbowR = Mathf.Lerp(-18f, -8f, idle) - Mathf.Max(0f, sinC) * Mathf.Lerp(28f, 58f, runAmt);
+                        _uaRT = Quaternion.Slerp(connectR, runR, settle);
+                        _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-18f, 0f, 0f), _laR0 * Quaternion.Euler(elbowR, 0f, 0f), settle);
+                        _uaLT = Quaternion.Slerp(connectL, runL, settle);
+                        _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX + 14f, 18f, leanZ), _spineT, settle);
+                        _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(18f, 22f, 0f), _hipsT, settle);
+                    }
                 }
                 else // MissRecover - limp whiff: less extension, quicker drop vs HitRecover hold
                 {
@@ -804,18 +819,23 @@ namespace Tag.Art
             if (claimAmt > 0.04f)
             {
                 // New It: one arm up, the other out, chest open. Not the tagged runner's matching V.
-                // Pitch stays above a torso wrap. Mild A on the raised arm only.
+                // During HitRecover the punch block eases the fist into that claim. Applying it
+                // again here would snap the connect away. The knee still comes up immediately.
                 float c = claimAmt;
-                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-128f, 8f, armZ), c);
-                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -48f, -armZ), c);
-                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-10f, 0f, 0f), c);
-                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-12f, 0f, 0f), c);
+                bool punchHandoff = punching && phase == PunchPhase.HitRecover;
+                if (!punchHandoff)
+                {
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-128f, 8f, armZ), c);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-36f, -48f, -armZ), c);
+                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-10f, 0f, 0f), c);
+                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-12f, 0f, 0f), c);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(-22f, -16f, 0f), c);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(4f, 0f, 0f), c);
+                }
                 _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(10f, 0f, 0f), c);
                 _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(52f, 0f, 0f), c);
                 _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-6f, 0f, 0f), c);
                 _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-64f, 0f, 0f), c);
-                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(-22f, -16f, 0f), c);
-                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(4f, 0f, 0f), c);
             }
 
             float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f || claimAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
