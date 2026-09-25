@@ -6,9 +6,9 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: `cursor/playground-campus-zones-afc4` (integration tip). Includes UX subpanel highlight from features tip `91da997`. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
+Branch: `cursor/playground-campus-zones-afc4` (integration tip). PR #20 (`6b8d4b9`) Controls/Look/Audio Boot-style row highlight merged. Mega tubes stay unused (`0004d3e`). Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
-Already on that tip (do not re-test as new): 2-frame look/punch resume gate, bots hold on countdown/results/idle, punch DropSwing when the cursor unlocks, HUD MUTED / MUSIC OFF, pause keys 1-5, AudioMaster (M mute, N music), Controls/Look/Audio subpanel Up/Down highlight matching Boot. No PgkLandmarkPlacer density adds. No MasterVolume type.
+Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing when the cursor unlocks, HUD MUTED / MUSIC OFF, pause keys 1-5, AudioMaster (M mute, N music), Controls/Look/Audio subpanel Up/Down highlight matching Boot (PR #20). No PgkLandmarkPlacer density adds. No MasterVolume type.
 
 ## Stack snapshot
 

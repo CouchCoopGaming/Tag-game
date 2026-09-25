@@ -785,7 +785,8 @@ namespace Tag.Core
         {
             bool sel = cursor == index;
             if (sel) GUI.Box(new Rect(r.x - 4f, r.y - 4f, r.width + 8f, r.height + 8f), "");
-            // Mouse only. Enter/Space is handled in Update from the highlight.
+            // Mouse only. Enter/Space is handled in Update from the highlight, so a
+            // different IMGUI focus cannot fire a second row on the same key.
             if (!MenuClick.Button(r, (sel ? "> " : "  ") + label)) return false;
             cursor = index;
             return true;
