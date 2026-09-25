@@ -576,7 +576,7 @@ namespace Tag.Art
             if (airDashing && !_wasAirDashing)
             {
                 _dashPulse = 1f;
-                _dashTrailT = 0.28f;
+                _dashTrailT = 0.30f; // slightly longer air-dash ribbon read
                 EnsureDashTrail();
             }
             if (jet && !_wasJetting) _dashPulse = Mathf.Max(_dashPulse, 0.85f);
@@ -596,7 +596,7 @@ namespace Tag.Art
             go.transform.SetParent(transform, false);
             go.transform.localPosition = new Vector3(0f, 0.9f, -0.15f);
             _dashTrail = go.AddComponent<TrailRenderer>();
-            _dashTrail.time = 0.28f;
+            _dashTrail.time = 0.30f;
             _dashTrail.minVertexDistance = 0.04f;
             _dashTrail.widthMultiplier = 0.36f;
             _dashTrail.emitting = false;
