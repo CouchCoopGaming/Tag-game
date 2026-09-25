@@ -774,14 +774,34 @@ namespace Tag.Art
                 // Both hands rise a little with the breath. Yaw stays out, and roll stays 0 at rest,
                 // so the sway does not fold the hands into the hips.
                 float armBreath = breath * 0.55f * idle;
-                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(-sinC, amp) - 12f * idle + armBreath + lookAdd * reachL, yL, roll);
-                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(sinC, amp) - 12f * idle + armBreath + lookAdd * reachR, -yR, -roll);
+                float pitchL = RunArmPitch(-sinC, amp) - 12f * idle + armBreath + lookAdd * reachL;
+                float pitchR = RunArmPitch(sinC, amp) - 12f * idle + armBreath + lookAdd * reachR;
+                // Stop and the first step. Hands stay forward and out so they do not drift into the hips.
+                float stopBlend = (!stepping && !air && !sliding && !crouch) ? _stopGait : 0f;
+                float startBlend = (stepping && !air)
+                    ? (1f - Mathf.SmoothStep(0f, 1f, _stepIn)) * Mathf.Clamp01(walkAmt + runAmt)
+                    : 0f;
+                float armHold = Mathf.Clamp01(Mathf.Max(stopBlend, startBlend));
+                if (armHold > 0.02f)
+                {
+                    pitchL = Mathf.Lerp(pitchL, Mathf.Min(pitchL, -6f), armHold);
+                    pitchR = Mathf.Lerp(pitchR, Mathf.Min(pitchR, -6f), armHold);
+                    yL += 5f * armHold;
+                    yR += 5f * armHold;
+                }
+                _uaLT = _uaL0 * Quaternion.Euler(pitchL, yL, roll);
+                _uaRT = _uaR0 * Quaternion.Euler(pitchR, -yR, -roll);
                 // Long line on the reach. The elbow fold sits on the back arm, short of the hip.
                 // The trail knee is unchanged and stays straight.
                 float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                 float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
                 float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
                 float elbowR = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait);
+                if (armHold > 0.02f)
+                {
+                    elbowL = Mathf.Lerp(elbowL, Mathf.Max(elbowL, -12f), armHold);
+                    elbowR = Mathf.Lerp(elbowR, Mathf.Max(elbowR, -12f), armHold);
+                }
                 _laLT = _laL0 * Quaternion.Euler(elbowL, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(elbowR, 0f, 0f);
                 if (footSki > 0.001f)
