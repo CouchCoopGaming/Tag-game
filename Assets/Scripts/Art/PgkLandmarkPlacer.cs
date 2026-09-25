@@ -178,6 +178,7 @@ namespace Tag.Art
             n += PathBridges(root);
             n += PathCues(root);
             n += MerryNorthCluster(root);
+            n += EastNorthCluster(root);
             // Overhead bars. West stays at x=11 (the mast owns x-9.5 around z 12-18).
             // East sits at x=62.5, just inside the kickball pad's open west edge.
             // Segments stop at the EW spines; you cross those on foot.
@@ -649,6 +650,27 @@ namespace Tag.Art
                 // Two hop tiles. East edge x=10.4, 0.56 m west of the bar.
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(1.7f, 0.02f, -0.7f), 0f),
                 ("PGK_Safety_Tile_1m_LOD0", new Vector3(2.7f, 0.02f, -0.7f), 0f),
+            });
+        }
+
+        /// <summary>
+        /// Pocket north of the NE arch and east of the bars. Prop-free lawn is about
+        /// x 62.6-68.2 and z 42.2-47.3. The spawn lead stays on the west edge, so this
+        /// cluster sits east of it. Not a bench. Spawn_NE's southwest exit stays north.
+        /// </summary>
+        int EastNorthCluster(Transform root)
+        {
+            var parent = MakeGroup(root, "Play_Cluster_NE", new Vector3(66.2f, 0f, 45.0f), 0f);
+            return SpawnList(parent, new List<(string id, Vector3 p, float y)>
+            {
+                // Yaw 90: the 2.2 m frame runs along Z. World x 65.65-67.35, z 44.1-46.3.
+                // 1.05 m south of the knight crawl and 0.8 m west of the spawn spring.
+                ("Toy_NetFrame", new Vector3(0.3f, 0f, 0.2f), 90f),
+                // Length along X. z 42.71-43.59, 0.58 m north of the NE bench.
+                // East end x=67.84, 0.42 m west of the spawn seesaw.
+                ("Toy_MushroomSteps", new Vector3(0.3f, 0f, -1.85f), 0f),
+                // Feet y=0. x 64.40-65.25, 1.86 m east of the bar face (x=62.54).
+                ("Toy_SpringRider", new Vector3(-1.45f, 0f, 0f), 0f),
             });
         }
 
