@@ -1416,7 +1416,10 @@ namespace Tag.Art
                 {
                     // The air crouch eases into the landing. The flare comes in as the dart leaves,
                     // so a soft hop still does not flare and the arms do not pop.
-                    float hand = _diveVis;
+                    // A soft landing opens the fall into the absorb. It does not stay folded.
+                    // Fall speed and land time are unchanged.
+                    bool softOpen = _landHard < 0.4f;
+                    float hand = softOpen ? Mathf.SmoothStep(0f, 1f, _diveVis) : _diveVis;
                     float flareIn = armK * (1f - hand);
                     _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-16f, 12f, armZ), hand);
                     _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-16f, -12f, -armZ), hand);
@@ -1431,6 +1434,13 @@ namespace Tag.Art
                     _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(12f, 0f, 0f), hand);
                     _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(26f, 0f, 0f), hipK * (1f - hand));
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(18f, 0f, 0f), hipK * (1f - hand));
+                    if (softOpen)
+                    {
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(34f, 0f, 0f), hand);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(34f, 0f, 0f), hand);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-50f, 0f, 0f), hand);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-50f, 0f, 0f), hand);
+                    }
                 }
                 else
                 {
