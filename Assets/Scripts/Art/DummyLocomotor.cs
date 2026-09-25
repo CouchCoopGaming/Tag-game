@@ -172,7 +172,7 @@ namespace Tag.Art
             if (flinchAmt > 0.04f)
             {
                 leanX = Mathf.Lerp(leanX, -32f, flinchAmt); // stronger tuck so tag recoil reads in TP
-                leanZ = Mathf.Lerp(leanZ, Mathf.Sin(Time.time * 40f) * 18f, flinchAmt);
+                leanZ = Mathf.Lerp(leanZ, Mathf.Sin(Time.time * 40f) * 20f, flinchAmt); // clearer tag flinch shake in TP
             }
             if (bouncing)
             {
