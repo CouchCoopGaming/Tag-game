@@ -79,6 +79,8 @@ namespace Tag.Art
         float _crouchWalkToSlide;
         float _skiToSlide;
         bool _slideToSki;
+        bool _skiFromJump;
+        bool _skiFromJumpLand;
         bool _crouchFromStand;
         bool _crouchFromWalk;
         float _diveVis;
@@ -288,16 +290,20 @@ namespace Tag.Art
             bool skiing = st == MoveState.Ski;
             // A walk eases into the glide. A sprint closes the long stride into it.
             // A still crouch eases the guard into the glide. A crouch walk eases the low stride into it.
-            // A slide eases the wedge into the glide. Ski speed is unchanged.
+            // A slide eases the wedge into the glide. A jump eases the glide or the landing into it.
+            // Ski speed is unchanged.
             if (skiing && _skiBlend <= 0.02f)
             {
                 bool fromSlide = _dropSlide;
-                bool fromCrouchWalk = !fromSlide && !_dropSlide && speed > 0.35f && speed <= 5.5f && _dropVis > 0.2f;
-                _skiFromWalk = !fromSlide && speed > 0.35f && speed <= 5.5f && !fromCrouchWalk;
-                _skiFromSprint = !fromSlide && speed > 5.5f;
-                _skiFromCrouch = !fromSlide && !_dropSlide && speed <= 0.35f && _dropVis > 0.2f;
+                bool fromJump = !fromSlide && (!grounded || !_wasGrounded || _landSquash > 0.08f);
+                bool fromCrouchWalk = !fromSlide && !fromJump && !_dropSlide && speed > 0.35f && speed <= 5.5f && _dropVis > 0.2f;
+                _skiFromWalk = !fromSlide && !fromJump && speed > 0.35f && speed <= 5.5f && !fromCrouchWalk;
+                _skiFromSprint = !fromSlide && !fromJump && speed > 5.5f;
+                _skiFromCrouch = !fromSlide && !fromJump && !_dropSlide && speed <= 0.35f && _dropVis > 0.2f;
                 _skiFromCrouchWalk = fromCrouchWalk;
                 _slideToSki = fromSlide;
+                _skiFromJump = fromJump;
+                _skiFromJumpLand = fromJump && grounded;
             }
             else if (!skiing)
             {
@@ -306,6 +312,8 @@ namespace Tag.Art
                 _skiFromCrouch = false;
                 _skiFromCrouchWalk = false;
                 _slideToSki = false;
+                _skiFromJump = false;
+                _skiFromJumpLand = false;
             }
             bool crouchIdleExit = !_dropSlide && !sliding && !crouch && speed <= 0.35f && !crouchStandSprint && !_skiFromCrouch;
             // A crouch walk stands into the stride. The feet step while the hips are still rising.
@@ -317,6 +325,11 @@ namespace Tag.Art
             _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             if (_slideToSki && _skiBlend >= 0.98f)
                 _slideToSki = false;
+            if (_skiFromJump && _skiBlend >= 0.98f)
+            {
+                _skiFromJump = false;
+                _skiFromJumpLand = false;
+            }
             // Feet stay in the short glide while the hips are still pitched, then the run opens under them.
             // A walk returns the stride with the step, so the long glide does not skate off.
             // A sprint opens that glide into the long stride. Ski speed is unchanged. Jet stays off.
@@ -2309,6 +2322,66 @@ namespace Tag.Art
                 _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(62f, 0f, 0f), _spine0 * Quaternion.Euler(26f, 0f, 0f), intoGlide);
                 _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(50f, 0f, 0f), _hips0 * Quaternion.Euler(14f, 0f, 0f), intoGlide);
                 _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-12f, 0f, 0f), _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), intoGlide);
+            }
+            if (_skiFromJump && skiing && _skiBlend < 0.98f && !punching)
+            {
+                // The jump eases into the ski stride. A landing uses the absorb. The air glide uses the hang.
+                // A walk, a sprint, a crouch, and a slide keep their entry. Ski speed is unchanged.
+                float intoGlide = _skiBlend;
+                float glideL = RunArmPitch(-sinC, 16f);
+                float glideR = RunArmPitch(sinC, 16f);
+                float glideFrontL = Mathf.Max(0f, sinC);
+                float glideFrontR = Mathf.Max(0f, -sinC);
+                Quaternion fromL;
+                Quaternion fromR;
+                Quaternion fromElL;
+                Quaternion fromElR;
+                Quaternion fromThighL;
+                Quaternion fromThighR;
+                Quaternion fromKneeL;
+                Quaternion fromKneeR;
+                Quaternion fromSp;
+                Quaternion fromHp;
+                Quaternion fromHd;
+                if (_skiFromJumpLand)
+                {
+                    fromL = _uaL0 * Quaternion.Euler(-40f, 18f, armZ);
+                    fromR = _uaR0 * Quaternion.Euler(-40f, -18f, -armZ);
+                    fromElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                    fromElR = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
+                    fromThighL = _ulL0 * Quaternion.Euler(48f, 0f, 0f);
+                    fromThighR = _ulR0 * Quaternion.Euler(40f, 0f, 0f);
+                    fromKneeL = _llL0 * Quaternion.Euler(-78f, 0f, 0f);
+                    fromKneeR = _llR0 * Quaternion.Euler(-70f, 0f, 0f);
+                    fromSp = _spine0 * Quaternion.Euler(26f, 0f, 0f);
+                    fromHp = _hips0 * Quaternion.Euler(18f, 0f, 0f);
+                    fromHd = _head0 * Quaternion.Euler(0f, 0f, 0f);
+                }
+                else
+                {
+                    fromL = _uaL0 * Quaternion.Euler(-52f, 22f, armZ);
+                    fromR = _uaR0 * Quaternion.Euler(-52f, -22f, -armZ);
+                    fromElL = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
+                    fromElR = _laR0 * Quaternion.Euler(-12f, 0f, 0f);
+                    fromThighL = _ulL0 * Quaternion.Euler(22f, 0f, 0f);
+                    fromThighR = _ulR0 * Quaternion.Euler(20f, 0f, 0f);
+                    fromKneeL = _llL0 * Quaternion.Euler(-28f, 0f, 0f);
+                    fromKneeR = _llR0 * Quaternion.Euler(-26f, 0f, 0f);
+                    fromSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
+                    fromHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
+                    fromHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
+                }
+                _uaLT = Quaternion.Slerp(fromL, _uaL0 * Quaternion.Euler(-18f + glideL, 22f, armZ), intoGlide);
+                _uaRT = Quaternion.Slerp(fromR, _uaR0 * Quaternion.Euler(-18f + glideR, -22f, -armZ), intoGlide);
+                _laLT = Quaternion.Slerp(fromElL, _laL0 * Quaternion.Euler(-12f, 0f, 0f), intoGlide);
+                _laRT = Quaternion.Slerp(fromElR, _laR0 * Quaternion.Euler(-12f, 0f, 0f), intoGlide);
+                _ulLT = Quaternion.Slerp(fromThighL, _ulL0 * Quaternion.Euler((glideFrontL - glideFrontR * 0.5f) * 32f, 0f, 0f), intoGlide);
+                _ulRT = Quaternion.Slerp(fromThighR, _ulR0 * Quaternion.Euler((glideFrontR - glideFrontL * 0.5f) * 32f, 0f, 0f), intoGlide);
+                _llLT = Quaternion.Slerp(fromKneeL, _llL0 * Quaternion.Euler(-(6f + glideFrontL * 32f), 0f, 0f), intoGlide);
+                _llRT = Quaternion.Slerp(fromKneeR, _llR0 * Quaternion.Euler(-(6f + glideFrontR * 32f), 0f, 0f), intoGlide);
+                _spineT = Quaternion.Slerp(fromSp, _spine0 * Quaternion.Euler(26f, 0f, 0f), intoGlide);
+                _hipsT = Quaternion.Slerp(fromHp, _hips0 * Quaternion.Euler(14f, 0f, 0f), intoGlide);
+                _headT = Quaternion.Slerp(fromHd, _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), intoGlide);
             }
             if (_surfFromCrouch && onSurf && _surfIn < 0.98f && !punching)
             {
