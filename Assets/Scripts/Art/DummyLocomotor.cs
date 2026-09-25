@@ -83,6 +83,9 @@ namespace Tag.Art
         bool _dashFromDart;
         float _dashFromDartIn;
         bool _dashFromDartStride;
+        bool _dashFromSki;
+        float _dashFromSkiIn;
+        float _skiSin;
         float _dartStepL;
         float _dartStepR;
         bool _dartFromDash;
@@ -637,6 +640,20 @@ namespace Tag.Art
                 _dashFromDartIn = Mathf.MoveTowards(_dashFromDartIn, 1f, dt / 0.04f);
             else if (!dashingAir)
                 _dashFromDart = false;
+            bool skiGlide = _skiBlend > 0.2f && !dartAir && !jet;
+            if (dashingAir && !_airDashPoseWas && skiGlide && !_jumpFromDash && !_dashFromDart)
+            {
+                // The glide eases into the burst. The burst still holds.
+                // An air crouch into a dash keeps its ease. Ski speed is unchanged.
+                // Duration and cooldown are unchanged.
+                _dashFromSki = true;
+                _dashFromSkiIn = 0f;
+                _skiSin = Mathf.Sin(_cycle);
+            }
+            if (dashingAir && _dashFromSki)
+                _dashFromSkiIn = Mathf.MoveTowards(_dashFromSkiIn, 1f, dt / 0.04f);
+            else if (!dashingAir)
+                _dashFromSki = false;
             if (!dashingAir && _airDashPoseWas && !jet && air && _input != null && _input.CrouchHeld)
             {
                 // The burst eases into the dart. An air crouch into a dash keeps its ease.
@@ -3381,6 +3398,39 @@ namespace Tag.Art
                 _spineT = Quaternion.Slerp(fromSp, _spineT, intoBurst);
                 _hipsT = Quaternion.Slerp(fromHp, _hipsT, intoBurst);
                 _headT = Quaternion.Slerp(fromHd, _headT, intoBurst);
+            }
+            if (airDashing && _dashFromSki && !_dashFromDart && !_jumpFromDash && _dashFromSkiIn < 0.98f && !punching)
+            {
+                // The glide eases into the burst, then the burst holds.
+                // An air crouch into a dash keeps its ease. Ski speed is unchanged.
+                // Duration and cooldown are unchanged.
+                float intoSki = _dashFromSkiIn;
+                float glideL = Mathf.Max(0f, _skiSin);
+                float glideR = Mathf.Max(0f, -_skiSin);
+                float skateL = RunArmPitch(-_skiSin, 16f);
+                float skateR = RunArmPitch(_skiSin, 16f);
+                Quaternion skiL = _uaL0 * Quaternion.Euler(-18f + skateL, 22f, armZ);
+                Quaternion skiR = _uaR0 * Quaternion.Euler(-18f + skateR, -22f, -armZ);
+                Quaternion skiElL = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
+                Quaternion skiElR = _laR0 * Quaternion.Euler(-12f, 0f, 0f);
+                Quaternion skiSp = _spine0 * Quaternion.Euler(26f, 0f, 0f);
+                Quaternion skiHp = _hips0 * Quaternion.Euler(14f, 0f, 0f);
+                Quaternion skiHd = _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f);
+                Quaternion skiThighL = _ulL0 * Quaternion.Euler((glideL - glideR * 0.5f) * 32f, 0f, 0f);
+                Quaternion skiThighR = _ulR0 * Quaternion.Euler((glideR - glideL * 0.5f) * 32f, 0f, 0f);
+                Quaternion skiKneeL = _llL0 * Quaternion.Euler(-(6f + glideL * 32f), 0f, 0f);
+                Quaternion skiKneeR = _llR0 * Quaternion.Euler(-(6f + glideR * 32f), 0f, 0f);
+                _uaLT = Quaternion.Slerp(skiL, _uaLT, intoSki);
+                _uaRT = Quaternion.Slerp(skiR, _uaRT, intoSki);
+                _laLT = Quaternion.Slerp(skiElL, _laLT, intoSki);
+                _laRT = Quaternion.Slerp(skiElR, _laRT, intoSki);
+                _ulLT = Quaternion.Slerp(skiThighL, _ulLT, intoSki);
+                _ulRT = Quaternion.Slerp(skiThighR, _ulRT, intoSki);
+                _llLT = Quaternion.Slerp(skiKneeL, _llLT, intoSki);
+                _llRT = Quaternion.Slerp(skiKneeR, _llRT, intoSki);
+                _spineT = Quaternion.Slerp(skiSp, _spineT, intoSki);
+                _hipsT = Quaternion.Slerp(skiHp, _hipsT, intoSki);
+                _headT = Quaternion.Slerp(skiHd, _headT, intoSki);
             }
             if (airDashing && _dashFromDart && !_jumpFromDash && _dashFromDartIn < 0.98f && !punching)
             {

@@ -340,7 +340,9 @@ Already on this branch: A jump into a tag eases the apex or the landing into the
 
 Already on this branch: An air crouch into an air dash eases the dart into the burst. A moving fall uses the low stride. The burst still holds. Fall speed is unchanged. Duration and cooldown are unchanged. A jump into a tag is unchanged.
 
-This delta: An air dash into an air crouch eases the burst into the dart. An air crouch into an air dash is unchanged. The burst still holds. Fall speed is unchanged. Duration and cooldown are unchanged.
+Already on this branch: An air dash into an air crouch eases the burst into the dart. An air crouch into an air dash is unchanged. The burst still holds. Fall speed is unchanged. Duration and cooldown are unchanged.
+
+This delta: A ski into an air dash eases the glide into the burst. The burst still holds. An air crouch into an air dash is unchanged. An air dash into an air crouch is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged.
 
 ## Stack snapshot
 
@@ -629,6 +631,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 190. Jump, then tag: the apex or the landing should ease into the connect. A crouch tag should feel the same. A jump into a punch should feel the same. A tag into a jump should feel the same. The jump should not feel higher.
 191. Fall in a crouch, then air dash: the dart should ease into the burst. A moving fall should ease from the low stride. The burst should still hold. The fall should not feel faster. The dash should not feel longer. A jump into a tag should feel the same.
 192. Air dash, then hold crouch: the burst should ease into the dart. An air crouch into an air dash should feel the same. The burst should still hold. The fall should not feel faster. The dash should not feel longer.
+193. Ski, then air dash: the glide should ease into the burst. The burst should still hold. An air crouch into an air dash should feel the same. An air dash into an air crouch should feel the same. Speed should feel the same. The dash should not feel longer. Jet stays off.
 
 ## Known leftovers
 
@@ -841,6 +844,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 180. A jump into a tag eases the apex or the landing into the connect. A crouch tag is unchanged. A jump into a punch is unchanged. A tag into a jump is unchanged. Jump height is unchanged.
 181. An air crouch into an air dash eases the dart into the burst. A moving fall uses the low stride. The burst still holds. Fall speed is unchanged. Duration and cooldown are unchanged. A jump into a tag is unchanged.
 182. An air dash into an air crouch eases the burst into the dart. An air crouch into an air dash is unchanged. The burst still holds. Fall speed is unchanged. Duration and cooldown are unchanged.
+183. A ski into an air dash eases the glide into the burst. The burst still holds. An air crouch into an air dash is unchanged. An air dash into an air crouch is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
