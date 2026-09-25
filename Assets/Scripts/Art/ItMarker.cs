@@ -58,13 +58,13 @@ namespace Tag.Art
             else if (on && !_wasOn)
                 _pop = 1f;
             _wasOn = on;
-            _pop = Mathf.MoveTowards(_pop, 0f, Time.deltaTime / 0.32f);
+            _pop = Mathf.MoveTowards(_pop, 0f, Time.deltaTime / 0.34f); // slightly longer handoff pop so It read sticks
             if (!on) return;
 
             float urgency = HotPotatoFuseUrgency();
             float t = Time.time;
             float pulseHz = Mathf.Lerp(7.5f, 22f, urgency);
-            float pulseAmp = 0.22f + 0.45f * urgency;
+            float pulseAmp = 0.24f + 0.48f * urgency; // hotter fuse pulse for Hot Potato read
             float pulse = (0.78f - 0.12f * urgency) + pulseAmp * Mathf.Sin(t * pulseHz);
             float bob = Mathf.Sin(t * (Mathf.PI * 2f * (bobHz + 3.5f * urgency))) * (bobAmp * (1f + 0.8f * urgency));
 
