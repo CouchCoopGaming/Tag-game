@@ -1097,13 +1097,21 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
-    meshOptimizationFlags: -1
+    meshOptimizationFlags: 0
     autoGenerateAvatarMappingIfUnspecified: 1
     animationType: 2
     humanoidOversampling: 1
     avatarSetup: 0
     addHumanoidExtraBoneInCheck: 0
     additionalBone: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
   importAnimation: 0
   humanDescription:
     serializedVersion: 3
