@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 """
-HiPoly hierarchical mannequin v6.1 — Hybrid III face v0.5.1 (body v0.4.1 locked)
+HiPoly hierarchical mannequin v6.2 — Hybrid III body v0.6 on face v0.5.1
 
-HEAD SHELL ONLY pass on shipping v0.4.1 body. Supersedes v0.5 orb face.
-  Continuous molded vinyl face — brow/nose/mouth/chin as RELIEF in shell.
+BODY REALISM pass. Face v0.5.1 stays (no eye orbs).
+  Slick curved vinyl shells — subsurf on chest, pelvis, and limbs.
+  Human proportion: narrower waist bellows, tapered chest, belled thigh/calf/bicep.
+  Muscle mass lives in the shell curve, not stuck-on spheres.
   Eyes = flush dark oval insets (ZERO protruding spheres).
-  Nose = wedge/bridge with defined tip (NOT blob sphere).
-  Mouth = shallow horizontal slit only (NO center bead).
-  Temple row = flat dark disk caps ≤3mm (NOT glossy half-spheres).
-  Temple quadrant cal stays flat decal disk.
+  Nose = wedge/bridge. Mouth = slit. Temple disks stay flat.
 
-Body code unchanged from v5_1 / v6. DummyLocomotor bones unchanged.
-GUID-safe FBX overwrite. NO git push.
+DummyLocomotor bones unchanged. GUID-safe FBX overwrite.
 """
 import bpy
 import math
@@ -19,10 +17,10 @@ import os
 import uuid
 from mathutils import Vector, Euler
 
-OUT_DIR = "/workspace/tag-unity/Assets/Art/Characters/HiPoly"
-PREV = "/workspace/art-build/previews"
-BLEND = "/workspace/art-build/Dummy_Mannequin_Hier_Hi.blend"
-LOG = "/tmp/hipoly_v51_build.log"
+OUT_DIR = "/workspace/Assets/Art/Characters/HiPoly"
+PREV = "/tmp/hipoly-previews"
+BLEND = "/tmp/Dummy_Mannequin_Hier_Hi.blend"
+LOG = "/tmp/hipoly_v06_build.log"
 REF_CRASH = "/workspace/tag-gdd/art/refs/hybrid-iii-v03/ref_hybrid_iii_crash_dummy.jpg"
 
 GUID_TAN = "ad3f2fa97db94e72869d746ecdf8e87d"
@@ -286,23 +284,38 @@ def light_smooth(ob, iterations=4):
     return ob
 
 
-def tapered_limb(name, a, b, r0, r1, v=CYL_V):
-    """Segmented limb shell volume (upper→lower taper). Soft end caps, NO remesh."""
+def tapered_limb(name, a, b, r0, r1, v=CYL_V, r_mid=None):
+    """Curved vinyl limb: end taper plus a sine belly so it is not a straight cone."""
     a, b = Vector(a), Vector(b)
     mid = (a + b) * 0.5
     direction = b - a
     length = direction.length
     if length < 1e-6:
         return sph(name, mid, r0)
-    body = cone(name, mid, r0, r1, max(length * 0.88, 0.05), v=v)
+    body = cone(name, mid, r0, r1, max(length * 0.92, 0.05), v=max(v, 32))
     quat = direction.normalized().to_track_quat("Z", "Y")
     body.rotation_euler = quat.to_euler()
     bpy.ops.object.select_all(action="DESELECT")
     body.select_set(True)
     bpy.context.view_layer.objects.active = body
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
-    c0 = sph(f"{name}_cap0", a, r0 * 0.92, seg=16, ring=8)
-    c1 = sph(f"{name}_cap1", b, r1 * 0.92, seg=16, ring=8)
+    if r_mid is not None:
+        axis = direction.normalized()
+        extra = max(0.0, r_mid - (r0 + r1) * 0.5)
+        for vert in body.data.vertices:
+            rel = Vector(vert.co) - a
+            t = max(0.0, min(1.0, rel.dot(axis) / length))
+            along = axis * (t * length)
+            radial = rel - axis * rel.dot(axis)
+            cur = radial.length
+            if cur < 1e-6:
+                continue
+            base_r = r0 * (1.0 - t) + r1 * t
+            target = base_r + math.sin(math.pi * t) * extra
+            vert.co = a + along + radial * (target / cur)
+        body.data.update()
+    c0 = sph(f"{name}_cap0", a, r0 * 0.90, seg=18, ring=9)
+    c1 = sph(f"{name}_cap1", b, r1 * 0.90, seg=18, ring=9)
     return join(name, [body, c0, c1])
 
 
@@ -536,64 +549,59 @@ def shoe_foot(name, an, toe, sx, base_mat, joint_mat):
 
 
 def segmented_chest_shell(name):
-    """DISTINCT chest plate vinyl shell with soft bottom bead lip.
-    Athletic pec/delt mass UNDER the shell — NOT remeshed into fashion mannequin."""
+    """Curved chest plate. Narrower than the barrel v0.4 shell, tapering into the waist."""
     parts = []
-    # Main thoracic plate — slightly flattened athletic chest
-    thorax = sph(f"{name}_Thorax", (0, 0.015, 1.40), (0.225, 0.140, 0.175), seg=36, ring=18)
+    # Thoracic oval — wide shoulders, less depth than a stacked-sphere barrel
+    thorax = sph(f"{name}_Thorax", (0, 0.008, 1.39), (0.198, 0.132, 0.162), seg=40, ring=20)
     parts.append(thorax)
-    # Soft lower chest taper ending ABOVE bellows (distinct shell end)
-    lower = sph(f"{name}_Lower", (0, 0.012, 1.22), (0.195, 0.125, 0.090), seg=28, ring=14)
+    # Lower chest pulls in toward the bellows
+    lower = sph(f"{name}_Lower", (0, 0.006, 1.22), (0.158, 0.108, 0.078), seg=32, ring=16)
     parts.append(lower)
-    # Pec volumes (athletic mass under vinyl)
     for sx in (1, -1):
-        pec = sph(f"{name}_Pec{sx}", (sx * 0.090, -0.088, 1.42),
-                  (0.095, 0.055, 0.070), seg=18, ring=10)
+        pec = sph(f"{name}_Pec{sx}", (sx * 0.072, -0.078, 1.40),
+                  (0.070, 0.038, 0.052), seg=20, ring=12)
         parts.append(pec)
-    # Lat / side volume
-    for sx in (1, -1):
-        lat = sph(f"{name}_Lat{sx}", (sx * 0.180, 0.015, 1.34),
-                  (0.065, 0.085, 0.100), seg=16, ring=8)
+        lat = sph(f"{name}_Lat{sx}", (sx * 0.155, 0.018, 1.32),
+                  (0.046, 0.062, 0.078), seg=16, ring=10)
         parts.append(lat)
-    # Deltoid roots as part of chest plate (Hybrid III shoulder shelf)
-    for sx in (1, -1):
-        delt = sph(f"{name}_Delt{sx}", (sx * 0.225, 0.0, 1.47),
-                   (0.090, 0.080, 0.085), seg=18, ring=10)
+        delt = sph(f"{name}_Delt{sx}", (sx * 0.210, 0.0, 1.48),
+                   (0.068, 0.060, 0.064), seg=18, ring=10)
         parts.append(delt)
-    # Soft bottom overhang lip toward bellows — DISTINCT shell terminus
-    flare = sph(f"{name}_Flare", (0, 0.01, 1.145), (0.185, 0.120, 0.040), seg=24, ring=10)
+    flare = sph(f"{name}_Flare", (0, 0.006, 1.148), (0.148, 0.100, 0.028), seg=28, ring=12)
     parts.append(flare)
 
     shell = join(name, parts)
-    light_smooth(shell, iterations=5)
+    apply_subsurf(shell, levels=1)
+    light_smooth(shell, iterations=3)
     return shell
 
 
 def segmented_pelvis_shell(name):
-    """DISTINCT pelvis vinyl shell with soft top bead lip — NOT continuous with chest."""
+    """Curved pelvis shell, wider than the waist, tapering toward the thighs."""
     parts = []
-    bowl = sph(f"{name}_Bowl", (0, 0.02, 0.92), (0.198, 0.142, 0.112), seg=32, ring=16)
+    bowl = sph(f"{name}_Bowl", (0, 0.012, 0.915), (0.168, 0.122, 0.096), seg=36, ring=18)
     parts.append(bowl)
-    # Upper rim that meets bellows from below
-    upper = sph(f"{name}_Upper", (0, 0.015, 0.990), (0.175, 0.125, 0.045), seg=24, ring=10)
+    upper = sph(f"{name}_Upper", (0, 0.008, 0.985), (0.142, 0.100, 0.036), seg=28, ring=12)
     parts.append(upper)
     for sx in (1, -1):
-        wing = sph(f"{name}_Wing{sx}", (sx * 0.158, 0.02, 0.93),
-                   (0.088, 0.095, 0.082), seg=18, ring=10)
+        wing = sph(f"{name}_Wing{sx}", (sx * 0.132, 0.010, 0.925),
+                   (0.064, 0.072, 0.062), seg=18, ring=10)
         parts.append(wing)
-    lower = sph(f"{name}_Lower", (0, 0.01, 0.84), (0.118, 0.098, 0.052), seg=20, ring=10)
+    lower = sph(f"{name}_Lower", (0, 0.004, 0.845), (0.100, 0.082, 0.042), seg=22, ring=12)
     parts.append(lower)
 
     shell = join(name, parts)
-    light_smooth(shell, iterations=5)
+    apply_subsurf(shell, levels=1)
+    light_smooth(shell, iterations=3)
     return shell
 
 
-def limb_shell_with_lips(name, a, b, r0, r1, lip_mat=None):
+def limb_shell_with_lips(name, a, b, r0, r1, lip_mat=None, r_mid=None):
     """Upper or lower limb shell with soft bead lips at both ends — segmented read."""
     a, b = Vector(a), Vector(b)
     direction = (b - a).normalized()
-    body = tapered_limb(name + "_body", a, b, r0, r1, v=24)
+    body = tapered_limb(name + "_body", a, b, r0, r1, v=32, r_mid=r_mid)
+    apply_subsurf(body, levels=1)
     # Bead lips near ends (inset slightly so hinge disks sit outside)
     lip0_loc = a + direction * 0.018
     lip1_loc = b - direction * 0.018
@@ -676,7 +684,7 @@ def build_armature():
 
 
 def build_mesh_parts(is_it, mats):
-    """v0.4.1 body + v0.5.1 molded Hybrid III face (no orbs). NO continuous remesh."""
+    """v0.6 curved body + v0.5.1 molded face (no orbs). Bones unchanged."""
     base, accent, over, joint, sensor, metal, bellows_mat, cal_accent, lip_mat = mats
     groups = {k: [] for k in (
         "Hips", "Spine", "Chest", "Neck", "Head",
@@ -796,18 +804,18 @@ def build_mesh_parts(is_it, mats):
         add("Chest", tick, accent)
 
     # Soft DARK bead lips at shell termini (Hybrid III seam — not tan faux-ribs)
-    chest_lip = bead_lip("ChestBotLip", (0, 0.01, 1.125), radius=0.178, axis="Z",
+    chest_lip = bead_lip("ChestBotLip", (0, 0.01, 1.125), radius=0.155, axis="Z",
                          thick=0.012, flare=1.06)
     add("Chest", chest_lip, joint)
 
-    # --- WAIST BELLOWS INSET (~8 fine dark ribs) between chest plate and pelvis ---
-    bellows = waist_bellows("WaistBellows", z_top=1.118, z_bot=1.000, radius=0.108, n_ribs=8)
+    # --- WAIST BELLOWS — narrower than chest and pelvis so the waist reads human ---
+    bellows = waist_bellows("WaistBellows", z_top=1.118, z_bot=1.000, radius=0.092, n_ribs=8)
     add("Spine", bellows, bellows_mat)
 
     # --- DISTINCT PELVIS SHELL ---
     pelvis = segmented_pelvis_shell("PelvisShell")
     add("Hips", pelvis, base)
-    pelvis_lip = bead_lip("PelvisTopLip", (0, 0.01, 1.005), radius=0.168, axis="Z",
+    pelvis_lip = bead_lip("PelvisTopLip", (0, 0.01, 1.005), radius=0.148, axis="Z",
                           thick=0.012, flare=1.06)
     add("Hips", pelvis_lip, joint)
 
@@ -832,12 +840,10 @@ def build_mesh_parts(is_it, mats):
 
         # Upper arm shell — stop short of elbow so hinge gap reads
         ua_end = el + (sh - el).normalized() * 0.028
-        ua = limb_shell_with_lips(f"UA_{side}", sh + (el - sh).normalized() * 0.035,
-                                  ua_end, 0.060, 0.046)
+        ua = limb_shell_with_lips(
+            f"UA_{side}", sh + (el - sh).normalized() * 0.035,
+            ua_end, 0.058, 0.042, r_mid=0.064)
         add(f"UpperArm_{side}", ua, base)
-        delt_arm = sph(f"UADelt_{side}", sh + Vector((sx * 0.02, 0, -0.025)),
-                       (0.058, 0.052, 0.058), seg=14, ring=7)
-        add(f"UpperArm_{side}", delt_arm, base)
 
         # LARGE elbow hinge
         elj = hinge_disk(f"ElbowJ_{side}", el, axis="X", radius=0.058, thick=0.028, rivets=3)
@@ -845,7 +851,7 @@ def build_mesh_parts(is_it, mats):
 
         la_start = el + (wr - el).normalized() * 0.030
         la_end = wr + (el - wr).normalized() * 0.022
-        la = limb_shell_with_lips(f"LA_{side}", la_start, la_end, 0.044, 0.033)
+        la = limb_shell_with_lips(f"LA_{side}", la_start, la_end, 0.040, 0.030, r_mid=0.042)
         add(f"LowerArm_{side}", la, base)
 
         h = hybrid_hand(f"Hand_{side}", wr, hand, sx, base, joint)
@@ -860,12 +866,9 @@ def build_mesh_parts(is_it, mats):
 
         thigh_start = hip + Vector((0, 0, -0.040))
         thigh_end = kn + Vector((0, 0, 0.065))
-        thigh = limb_shell_with_lips(f"Thigh_{side}", thigh_start, thigh_end, 0.080, 0.056)
+        thigh = limb_shell_with_lips(
+            f"Thigh_{side}", thigh_start, thigh_end, 0.086, 0.052, r_mid=0.090)
         add(f"UpperLeg_{side}", thigh, base)
-
-        quad = sph(f"Quad_{side}", hip.lerp(kn, 0.35) + Vector((0, -0.022, 0)),
-                   (0.068, 0.058, 0.082), seg=14, ring=7)
-        add(f"UpperLeg_{side}", quad, base)
 
         seam_th = bead_lip(
             f"ThighSeam_{side}",
@@ -894,12 +897,10 @@ def build_mesh_parts(is_it, mats):
         add(f"LowerLeg_{side}", nest, joint)
 
         shin_start = kn + Vector((0, 0, -0.040))
-        shin = limb_shell_with_lips(f"Shin_{side}", shin_start, an + Vector((0, 0, 0.030)),
-                                    0.050, 0.036)
+        shin = limb_shell_with_lips(
+            f"Shin_{side}", shin_start, an + Vector((0, 0, 0.030)),
+            0.046, 0.032, r_mid=0.050)
         add(f"LowerLeg_{side}", shin, base)
-        calf = sph(f"Calf_{side}", kn.lerp(an, 0.35) + Vector((0, 0.028, 0)),
-                   (0.044, 0.052, 0.068), seg=12, ring=6)
-        add(f"LowerLeg_{side}", calf, base)
 
         ft = shoe_foot(f"Foot_{side}", an, toe, sx, base, joint)
         groups[f"Foot_{side}"].append(ft)
@@ -1360,36 +1361,19 @@ def build_variant(is_it, export_path, guid, do_stills_tan=False, do_still_orange
 
 
 def write_readme():
-    path = os.path.join(OUT_DIR, "README.md")
+    path = "/tmp/hipoly_v06_readme.md"
     text = """# HiPoly Hierarchical Mannequins
 
-DummyLocomotor-bindable **Hybrid III** crash-test dummies — segmented vinyl shells
-+ athletic mass (middle path). v0.3 toy / v0.4 smooth mannequin both rejected.
+DummyLocomotor-bindable **Hybrid III** crash-test dummies.
 
-**Pass:** Hybrid III face **v0.5.1** on body **v0.4.1** (molded vinyl brow/nose wedge/
-mouth slit/cheek/chin relief; flush oval eye insets; flat temple disks + cal).
-Supersedes v0.5 orb face. Body segmentation unchanged from v0.4.1.
-
-## Assets
-| File | Paint |
-|------|-------|
-| `Dummy_Mannequin_Tan_Hier_Hi.fbx` | Runner — Base warm bone `#E8D9C0`, Accent `#2BB3A3` thin tick + teal/black cals. **ZERO nested Vs.** |
-| `Dummy_Mannequin_Orange_Hier_Hi.fbx` | It — Base `#FF6A00`, Accent black nested Vs chest + outer thighs |
-
-## Bind pose
-- Mild A-pose ~20–35°; hands clear pelvis.
-- Molded Hybrid III face on egg: wedge nose, mouth slit, flush oval eyes, flat temple disks — no orbs / visor / painted face.
-- Segmented chest plate + pelvis shell; inset waist bellows (~7 ribs); 4 neck rings.
-- Limb shells with soft bead/lip seams; LARGE dark metal hinges; shoe-pad feet.
-- Knees: LowerLeg nests in UpperLeg U-fork.
+**Pass:** body **v0.6** on face **v0.5.1**. Curved vinyl shells, human waist taper,
+belled thigh / calf / bicep. Face stays molded (wedge nose, slit mouth, flush eyes).
+No eye orbs.
 
 ## Bone hierarchy (DummyLocomotor — names unchanged)
-`Root` → `Hips` → `Spine` → `Chest` → `Neck` → `Head`  
-`Hips` → `UpperLeg_L/R` → `LowerLeg_L/R` → `Foot_L/R`  
+`Root` → `Hips` → `Spine` → `Chest` → `Neck` → `Head`
+`Hips` → `UpperLeg_L/R` → `LowerLeg_L/R` → `Foot_L/R`
 `Chest` → `Shoulder_L/R` → `UpperArm_L/R` → `LowerArm_L/R` → `Hand_L/R`
-
-## Export
-`-Z` forward, `+Y` up. Materials: `Base`, `Accent`, `ItOverride`.
 """
     with open(path, "w") as f:
         f.write(text)
@@ -1397,24 +1381,24 @@ Supersedes v0.5 orb face. Body segmentation unchanged from v0.4.1.
 
 
 def main():
-    log("=== hipoly hier v6.1 Hybrid III face v0.5.1 (body v0.4.1) ===")
+    log("=== hipoly hier v6.2 body v0.6 on face v0.5.1 ===")
     tan = os.path.join(OUT_DIR, "Dummy_Mannequin_Tan_Hier_Hi.fbx")
     orn = os.path.join(OUT_DIR, "Dummy_Mannequin_Orange_Hier_Hi.fbx")
 
-    log("Building Tan/Runner Hier HiPoly v6.1 (face v0.5.1)…")
+    log("Building Tan/Runner Hier HiPoly v6.2…")
     ok_t, ang_t, cx_t, cy_t = build_variant(
-        False, tan, GUID_TAN, do_stills_tan=True, do_still_orange=False)
+        False, tan, GUID_TAN, do_stills_tan=False, do_still_orange=False)
 
-    log("Building Orange/It Hier HiPoly v6.1 (face v0.5.1)…")
+    log("Building Orange/It Hier HiPoly v6.2…")
     ok_o, ang_o, cx_o, cy_o = build_variant(
-        True, orn, GUID_ORANGE, do_stills_tan=False, do_still_orange=True)
+        True, orn, GUID_ORANGE, do_stills_tan=False, do_still_orange=False)
 
     write_readme()
     log(f"Tan OK={ok_t} A-pose={ang_t:.1f}deg clear_x={cx_t:.3f} clear_y={cy_t:.3f}")
     log(f"It  OK={ok_o} A-pose={ang_o:.1f}deg clear_x={cx_o:.3f} clear_y={cy_o:.3f}")
     log(f"Tan FBX {os.path.getsize(tan)} bytes guid={GUID_TAN}")
     log(f"Orange FBX {os.path.getsize(orn)} bytes guid={GUID_ORANGE}")
-    log("DONE face v0.5.1 — no git push (await AD approve)")
+    log("DONE body v0.6")
 
 
 if __name__ == "__main__":
