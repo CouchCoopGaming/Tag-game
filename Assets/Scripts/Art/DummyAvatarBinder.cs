@@ -299,14 +299,16 @@ namespace Tag.Art
             Sensor,
             Metal,
             Bellows,
-            Cal
+            Cal,
+            Rubber,
+            Wear
         }
 
         void ApplyCharacterMats(GameObject visual, bool asIt)
         {
             // Phong / Standard / Default-Material are magenta under URP. Every shell gets
-            // a URP Lit instance: warm vinyl or orange body, darker hinges and matte
-            // bellows so a swing reads as separate parts. Eyes stay flat dark paint.
+            // a URP Lit instance: warm vinyl or orange body, darker hinges, matte
+            // bellows, rubber soles, and dirt wear. Eyes stay flat dark paint.
             foreach (var r in visual.GetComponentsInChildren<Renderer>(true))
             {
                 if (r == null) continue;
@@ -344,6 +346,8 @@ namespace Tag.Art
         static VinylRole RoleOf(Material src)
         {
             string n = src != null ? src.name : "";
+            if (Contains(n, "Wear")) return VinylRole.Wear;
+            if (Contains(n, "Rubber")) return VinylRole.Rubber;
             if (Contains(n, "Bellow")) return VinylRole.Bellows;
             if (Contains(n, "Joint") || Contains(n, "Lip")) return VinylRole.Joint;
             if (Contains(n, "Metal")) return VinylRole.Metal;
@@ -378,6 +382,10 @@ namespace Tag.Art
                     return new Color(0.34f, 0.34f, 0.36f);
                 case VinylRole.Bellows:
                     return new Color(0.07f, 0.07f, 0.08f);
+                case VinylRole.Rubber:
+                    return new Color(0.08f, 0.08f, 0.09f);
+                case VinylRole.Wear:
+                    return new Color(0.05f, 0.045f, 0.04f);
                 case VinylRole.Cal:
                     return asIt ? new Color(0.90f, 0.78f, 0.10f) : new Color(0.12f, 0.52f, 0.48f);
                 default:
@@ -413,6 +421,14 @@ namespace Tag.Art
                 case VinylRole.Bellows:
                     smoothness = 0.22f;
                     metallic = 0.04f;
+                    return;
+                case VinylRole.Rubber:
+                    smoothness = 0.18f;
+                    metallic = 0f;
+                    return;
+                case VinylRole.Wear:
+                    smoothness = 0.12f;
+                    metallic = 0f;
                     return;
                 case VinylRole.Accent:
                 case VinylRole.Cal:
