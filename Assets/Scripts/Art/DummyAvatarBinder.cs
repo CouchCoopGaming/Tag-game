@@ -290,87 +290,157 @@ namespace Tag.Art
             return null;
         }
 
+        enum VinylRole
+        {
+            Base,
+            Accent,
+            Override,
+            Joint,
+            Sensor,
+            Metal,
+            Bellows,
+            Cal
+        }
+
         void ApplyCharacterMats(GameObject visual, bool asIt)
         {
-            // Hier FBX paint is Phong / Standard. Under URP that shader is magenta.
-            // Keep a real URP material. Swap only broken slots, and keep their albedo
-            // so Tan bone and Orange It do not collapse onto one chevron color.
-            bool anyBroken = false;
-            foreach (var r in visual.GetComponentsInChildren<Renderer>(true))
-            {
-                if (r == null) continue;
-                var shared = r.sharedMaterials;
-                if (shared == null) continue;
-                for (int i = 0; i < shared.Length; i++)
-                {
-                    if (MaterialNeedsUrp(shared[i]))
-                    {
-                        anyBroken = true;
-                        break;
-                    }
-                }
-                if (anyBroken) break;
-            }
-            if (!anyBroken) return;
-
-            Color body = asIt ? new Color(1f, 0.416f, 0f) : new Color(0.91f, 0.851f, 0.753f);
-            Color accent = asIt ? new Color(0.04f, 0.04f, 0.04f) : new Color(0.169f, 0.702f, 0.639f);
-            var fallback = asIt
-                ? new[]
-                {
-                    itBaseMat ?? DummyPrimitiveFactory.MakeMat(body),
-                    itAccentMat ?? DummyPrimitiveFactory.MakeMat(accent),
-                    itOverrideMat ?? DummyPrimitiveFactory.MakeMat(body)
-                }
-                : new[]
-                {
-                    runnerBaseMat ?? DummyPrimitiveFactory.MakeMat(body),
-                    runnerAccentMat ?? DummyPrimitiveFactory.MakeMat(accent),
-                    runnerOverrideMat ?? DummyPrimitiveFactory.MakeMat(body)
-                };
-
+            // Phong / Standard / Default-Material are magenta under URP. Every shell gets
+            // a URP Lit instance: warm vinyl or orange body, darker hinges and matte
+            // bellows so a swing reads as separate parts. Eyes stay flat dark paint.
             foreach (var r in visual.GetComponentsInChildren<Renderer>(true))
             {
                 if (r == null) continue;
                 if (r.gameObject.name.StartsWith("ItHat") || r.gameObject.name.StartsWith("ItHalo"))
                     continue;
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                r.receiveShadows = true;
                 var shared = r.sharedMaterials;
                 int n = shared != null && shared.Length > 0 ? shared.Length : 1;
                 var next = new Material[n];
                 for (int i = 0; i < n; i++)
                 {
                     var src = shared != null && i < shared.Length ? shared[i] : null;
-                    if (!MaterialNeedsUrp(src))
-                    {
-                        next[i] = src;
-                        continue;
-                    }
-                    Color albedo = ReadAlbedo(src, fallback[Mathf.Min(i, fallback.Length - 1)].color);
-                    next[i] = DummyPrimitiveFactory.MakeMat(albedo);
+                    next[i] = VinylMat(src, asIt);
                 }
                 r.sharedMaterials = next;
             }
         }
 
-        static bool MaterialNeedsUrp(Material m)
+        Material VinylMat(Material src, bool asIt)
         {
-            if (m == null) return true;
-            if (m.name == "Default-Material") return true;
-            var shader = m.shader;
-            if (shader == null) return true;
-            string n = shader.name;
-            if (n.IndexOf("Universal Render Pipeline", System.StringComparison.Ordinal) >= 0)
-                return false;
-            return true;
+            var role = RoleOf(src);
+            Color albedo = Palette(role, asIt);
+            Color authored = ReadAlbedo(src);
+            if (UsableAlbedo(authored))
+                albedo = authored;
+            float smooth;
+            float metal;
+            VinylSurface(role, out smooth, out metal);
+            var m = DummyPrimitiveFactory.MakeMat(albedo, smooth, metal);
+            m.name = "HierVinyl_" + role;
+            return m;
         }
 
-        static Color ReadAlbedo(Material m, Color fallback)
+        static VinylRole RoleOf(Material src)
         {
-            if (m == null || m.name == "Default-Material") return fallback;
-            // Standard / Phong expose _Color. URP slots that we keep are not read here.
-            if (m.HasProperty("_Color") || m.HasProperty("_BaseColor"))
+            string n = src != null ? src.name : "";
+            if (Contains(n, "Bellow")) return VinylRole.Bellows;
+            if (Contains(n, "Joint") || Contains(n, "Lip")) return VinylRole.Joint;
+            if (Contains(n, "Metal")) return VinylRole.Metal;
+            if (Contains(n, "Sensor") || Contains(n, "Eye") || Contains(n, "Mouth") || Contains(n, "Temple"))
+                return VinylRole.Sensor;
+            if (Contains(n, "Cal")) return VinylRole.Cal;
+            if (Contains(n, "Accent")) return VinylRole.Accent;
+            if (Contains(n, "Override")) return VinylRole.Override;
+            return VinylRole.Base;
+        }
+
+        static bool Contains(string n, string token)
+        {
+            return n.IndexOf(token, System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        Color Palette(VinylRole role, bool asIt)
+        {
+            switch (role)
+            {
+                case VinylRole.Accent:
+                    return FirstColor(asIt ? itAccentMat : runnerAccentMat,
+                        asIt ? new Color(0.06f, 0.06f, 0.065f) : new Color(0.12f, 0.52f, 0.48f));
+                case VinylRole.Override:
+                    return FirstColor(asIt ? itOverrideMat : runnerOverrideMat,
+                        asIt ? new Color(1f, 0.45f, 0.08f) : new Color(0.93f, 0.84f, 0.70f));
+                case VinylRole.Joint:
+                    return new Color(0.11f, 0.11f, 0.13f);
+                case VinylRole.Sensor:
+                    return new Color(0.035f, 0.035f, 0.04f);
+                case VinylRole.Metal:
+                    return new Color(0.34f, 0.34f, 0.36f);
+                case VinylRole.Bellows:
+                    return new Color(0.07f, 0.07f, 0.08f);
+                case VinylRole.Cal:
+                    return asIt ? new Color(0.90f, 0.78f, 0.10f) : new Color(0.12f, 0.52f, 0.48f);
+                default:
+                    return FirstColor(asIt ? itBaseMat : runnerBaseMat,
+                        asIt ? new Color(0.93f, 0.38f, 0.07f) : new Color(0.91f, 0.80f, 0.66f));
+            }
+        }
+
+        static Color FirstColor(Material m, Color fallback)
+        {
+            if (m == null) return fallback;
+            Color c = m.color;
+            return UsableAlbedo(c) ? c : fallback;
+        }
+
+        static void VinylSurface(VinylRole role, out float smoothness, out float metallic)
+        {
+            switch (role)
+            {
+                case VinylRole.Joint:
+                    smoothness = 0.58f;
+                    metallic = 0.42f;
+                    return;
+                case VinylRole.Metal:
+                    smoothness = 0.66f;
+                    metallic = 0.72f;
+                    return;
+                case VinylRole.Sensor:
+                    // Flat dark plates. A glossy sensor reads as an eye orb.
+                    smoothness = 0.16f;
+                    metallic = 0f;
+                    return;
+                case VinylRole.Bellows:
+                    smoothness = 0.22f;
+                    metallic = 0.04f;
+                    return;
+                case VinylRole.Accent:
+                case VinylRole.Cal:
+                    smoothness = 0.38f;
+                    metallic = 0.02f;
+                    return;
+                default:
+                    // Soft vinyl, not chalk and not a toy plastic.
+                    smoothness = 0.40f;
+                    metallic = 0.02f;
+                    return;
+            }
+        }
+
+        static Color ReadAlbedo(Material m)
+        {
+            if (m == null || m.name == "Default-Material") return new Color(0f, 0f, 0f, 0f);
+            if (m.HasProperty("_BaseColor") || m.HasProperty("_Color"))
                 return m.color;
-            return fallback;
+            return new Color(0f, 0f, 0f, 0f);
+        }
+
+        static bool UsableAlbedo(Color c)
+        {
+            if (c.a < 0.5f) return false;
+            if (c.r > 0.92f && c.b > 0.92f && c.g < 0.25f) return false;
+            if (c.r > 0.97f && c.g > 0.97f && c.b > 0.97f) return false;
+            return true;
         }
 
 

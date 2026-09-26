@@ -184,9 +184,11 @@ namespace Tag.Art
                 _panelMats[colorKey] = MakeMat(PanelColors[colorKey], 0.72f);
         }
 
-        public static Material MakeMat(Color c) => MakeMat(c, 0.42f);
+        public static Material MakeMat(Color c) => MakeMat(c, 0.42f, 0f);
 
-        public static Material MakeMat(Color c, float smoothness)
+        public static Material MakeMat(Color c, float smoothness) => MakeMat(c, smoothness, 0f);
+
+        public static Material MakeMat(Color c, float smoothness, float metallic)
         {
             var shader = Shader.Find("Universal Render Pipeline/Lit")
                          ?? Shader.Find("Standard")
@@ -196,7 +198,9 @@ namespace Tag.Art
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
             if (m.HasProperty("_Color")) m.SetColor("_Color", c);
             if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", smoothness);
-            if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", 0f);
+            if (m.HasProperty("_Metallic")) m.SetFloat("_Metallic", metallic);
+            if (m.HasProperty("_SpecularHighlights")) m.SetFloat("_SpecularHighlights", 1f);
+            if (m.HasProperty("_EnvironmentReflections")) m.SetFloat("_EnvironmentReflections", 1f);
             return m;
         }
     }
