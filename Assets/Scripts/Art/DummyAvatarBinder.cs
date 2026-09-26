@@ -332,9 +332,14 @@ namespace Tag.Art
         {
             var role = RoleOf(src);
             Color albedo = Palette(role, asIt);
-            Color authored = ReadAlbedo(src);
-            if (UsableAlbedo(authored))
-                albedo = authored;
+            // Dirt and rubber must stay dark. A washed import color is still "usable"
+            // and was painting those slots the same as the shell, so the body stayed flat.
+            if (role != VinylRole.Wear && role != VinylRole.Rubber && role != VinylRole.Joint)
+            {
+                Color authored = ReadAlbedo(src);
+                if (UsableAlbedo(authored))
+                    albedo = authored;
+            }
             float smooth;
             float metal;
             VinylSurface(role, out smooth, out metal);
@@ -406,12 +411,13 @@ namespace Tag.Art
             switch (role)
             {
                 case VinylRole.Joint:
-                    smoothness = 0.58f;
-                    metallic = 0.42f;
+                    // Hinge disk. Higher metal so it flashes as the limb turns.
+                    smoothness = 0.64f;
+                    metallic = 0.72f;
                     return;
                 case VinylRole.Metal:
-                    smoothness = 0.66f;
-                    metallic = 0.72f;
+                    smoothness = 0.70f;
+                    metallic = 0.80f;
                     return;
                 case VinylRole.Sensor:
                     // Flat dark plates. A glossy sensor reads as an eye orb.
@@ -436,8 +442,9 @@ namespace Tag.Art
                     metallic = 0.02f;
                     return;
                 default:
-                    // Soft vinyl, not chalk and not a toy plastic.
-                    smoothness = 0.40f;
+                    // Satin vinyl (roughness ~0.44). Chalk at 0.40 smoothness does not
+                    // throw a highlight when the limb swings, so the shell reads flat.
+                    smoothness = 0.56f;
                     metallic = 0.02f;
                     return;
             }
