@@ -10,7 +10,7 @@ namespace TagArena.Movement
 {
     /// <summary>
     /// Cave-man OnGUI: speed, move state, jet fuel, ski on/off + P0 controls cheat-sheet
-    /// + nearest mega-park zone + It / mode / Hot Potato fuse / Least It times (LEAD/LAG tint)
+    /// + nearest mega-park zone + It / mode / Hot Potato fuse / Least It times (lowest time wins)
     /// + bearing/distance to CurrentIt when you are not It
     /// + bearing/distance to nearest non-It when you ARE It (Prey)
     /// + brief YOU'RE IT / YOU'RE FREE OnGUI flash on local It handoff
@@ -29,47 +29,63 @@ namespace TagArena.Movement
         GUIStyle _flash;
 
         // Brief center flash when local gains/loses It (SetIt / TransferIt / punch).
-        const float ItFlashSec = 0.5f;
+        const float ItFlashSec = 1.0f; // handoff beat: a hair longer so YOU ARE IT / FREE reads
         bool _itFlashPrimed;
         bool _prevLocalIsIt;
         float _itFlashUntil;
         bool _itFlashGained;
 
-        // Trail Tag near-miss (foreign ribbon) — soft edge warn before eliminate contact.
-        const float TrailNearMissWarnM = 4.5f;
+        // Trail Tag near-miss (foreign ribbon) - soft edge warn before eliminate contact.
+        const float TrailNearMissWarnM = 6.6f; // earlier soft edge so TRAIL! reads before contact (AI peels ~9.4 m)
         readonly List<TrailSegment> _trailNearScratch = new List<TrailSegment>();
         float _trailNearDist = float.MaxValue;
         bool _trailNearActive;
 
-        // Trail Tag eliminate — brief center flash when local IsAlive drops (trail hit).
-        const float TrailOutFlashSec = 0.65f;
+        // Trail Tag eliminate - brief center flash when local IsAlive drops (trail hit).
+        const float TrailOutFlashSec = 1.05f; // match It/Mode/SD flash beat so OUT! / TRAIL HIT reads
         bool _aliveFlashPrimed;
         bool _prevLocalAlive = true;
         float _trailOutFlashUntil;
+        // Trail Tag sudden-death rising edge (mode line alone is easy to miss).
+        const float SdFlashSec = 1.0f; // match It/Mode flash beat so SD reads on rising edge
+        bool _sdFlashPrimed;
+        bool _prevSuddenDeath;
+        float _sdFlashUntil;
+
+        // Brief center flash when F1/F2/F3 (or menu) changes SelectedMode.
+        const float ModeFlashSec = 1.0f; // match It handoff beat so F1-F4 mode name reads
+        bool _modeFlashPrimed;
+        TagModeId _prevMode;
+        float _modeFlashUntil;
+        string _modeFlashLabel = "";
 
         // Labels mirror PlayerInputReader defaults (skiKey/jetKey/crouchKey/punchKey/lungeKey + hard-coded alts).
         const string Controls =
             "WASD move\n" +
             "Shift ski\n" +
-            "RMB jet\n" +
+            "RMB jet (off)\n" +
             "Space jump\n" +
-            "Ctrl/C crouch\n" +
+            "Ctrl/C slide (hold + speed)\n" +
+            "Ctrl in air = fast fall\n" +
             "LMB/E punch\n" +
-            "Q/Alt air dash 30s\n" +
-            "MMB lunge\n" +
+            "Q/Alt air dash\n" +
+            "MMB lunge (It, ground)\n" +
             "F1 Hot Potato\n" +
             "F2 Least It\n" +
-            "F3 Trail Tag";
+            "F3 Trail Tag\n" +
+            "F4 Free play\n" +
+            "Esc pause\n" +
+            "M mute   N music";
 
         // Flash full Least-It standings briefly every few seconds.
-        const float AllStandingsShowSec = 3.5f;
-        const float AllStandingsCycleSec = 8f;
+        const float AllStandingsShowSec = 4.4f; // slightly longer Least It board read
+        const float AllStandingsCycleSec = 8.7f; // slightly slower board flip
 
         // Compass close-range pulse (Prey hunt / It flee), flat meters.
-        const float CompassPulseDistM = 12f;
+        const float CompassPulseDistM = 14f; // earlier It-hunt compass pulse
 
         // Hot Potato fuse HUD warn fallback (matches ItMarker / DummyPatrol when tuning missing).
-        const float HotPotatoWarnSecFallback = 10f;
+        const float HotPotatoWarnSecFallback = 11.5f; // earlier fuse urgency fallback
 
         // Relative to camera: forward = N, right = E (hunt direction, not world north).
         static readonly string[] Compass8 = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
@@ -91,23 +107,59 @@ namespace TagArena.Movement
 
             float hs = motor.HorizSpeed;
             string kph = (hs * 3.6f).ToString("0");
-            GUI.Label(new Rect(24, 16, 520, 36), kph + " km/h   " + motor.State, _big);
+            GUI.Label(new Rect(24, 16, 560, 36), kph + " km/h   " + LocoVerb(motor), _big);
+            DrawMuteChip();
 
+            bool jetOn = motor.cfg != null && motor.cfg.enableJet;
             float maxE = 100f;
             if (motor.cfg != null)
                 maxE = motor.cfg.jetEnergyMax + 0.001f;
-            float e = Mathf.Clamp01(motor.Energy / maxE);
-            GUI.Box(new Rect(24, 56, 240, 20), GUIContent.none);
-            GUI.Box(new Rect(24, 56, 240 * e, 20), GUIContent.none);
-
-            string jet = motor.Jetting ? "JETTING" : "jet";
             string ski = motor.Skiing ? "SKI ON" : "ski off";
-            GUI.Label(
-                new Rect(24, 80, 480, 26),
-                "JET " + motor.Energy.ToString("0") + "/" + maxE.ToString("0") + "  " + jet + "   " + ski,
-                _small);
+            if (jetOn)
+            {
+                float e = Mathf.Clamp01(motor.Energy / maxE);
+                GUI.Box(new Rect(24, 56, 240, 20), GUIContent.none);
+                GUI.Box(new Rect(24, 56, 240 * e, 20), GUIContent.none);
+                string jet = motor.Jetting ? "JETTING" : "jet";
+                GUI.Label(
+                    new Rect(24, 80, 480, 26),
+                    "JET " + motor.Energy.ToString("0") + "/" + maxE.ToString("0") + "  " + jet + "   " + ski,
+                    _small);
+            }
+            else
+            {
+                float cdMax = motor.cfg != null ? Mathf.Max(0.01f, motor.cfg.airDashCooldown) : 30f;
+                float rem = motor.AirDashCooldownRemaining;
+                // Burst reads full. A cooling bar grows from empty. Track stays dark so the fill is visible.
+                bool bursting = motor.IsAirDashing;
+                float ready = bursting ? 1f : 1f - Mathf.Clamp01(rem / cdMax);
+                Color prev = GUI.color;
+                GUI.color = new Color(0.12f, 0.16f, 0.2f, 0.95f);
+                GUI.Box(new Rect(24, 56, 240, 20), GUIContent.none);
+                GUI.color = bursting || rem <= 0.05f
+                    ? new Color(0.45f, 1f, 0.72f, 1f)
+                    : new Color(0.35f, 0.82f, 1f, 1f);
+                GUI.Box(new Rect(24, 56, 240 * ready, 20), GUIContent.none);
+                GUI.color = prev;
+                // Active burst wins the label; otherwise ready / CD (no second DASH line below).
+                string dash = motor.IsAirDashing
+                    ? "DASH!"
+                    : (rem <= 0.05f ? "DASH ready" : "DASH " + FormatDashCd(rem));
+                GUI.Label(new Rect(24, 80, 480, 26), dash + "   " + ski, _small);
+            }
 
-            float y = 110f;
+            // When jet is on, the primary row is JET - keep a dedicated dash CD / active line.
+            // When jet is off, dash already owns the primary row; skip the duplicate.
+            float y = 102f;
+            if (jetOn)
+            {
+                float dashCd = motor.AirDashCooldownRemaining;
+                string dashLine = dashCd > 0.05f
+                    ? ("DASH CD " + FormatDashCd(dashCd))
+                    : (motor.IsAirDashing ? "DASH!" : "DASH ready");
+                GUI.Label(new Rect(24, 102, 480, 22), dashLine, _small);
+                y = 124f;
+            }
             string zone = ZoneNameMarkers.GetNearestZoneName(motor.transform.position);
             GUI.Label(new Rect(24, y, 480, 22), "Zone: " + zone, _small);
             y += 24f;
@@ -118,13 +170,21 @@ namespace TagArena.Movement
                 y += 32f;
             }
 
-            GUI.Label(new Rect(24, y, 220, 200), Controls, _keys);
-            y += 178f;
+            string keys = Controls
+                .Replace("LMB/E punch", ControlBinds.PunchName + "/E punch")
+                .Replace("Q/Alt air dash", ControlBinds.DashName + "/Alt air dash");
+            GUI.Label(new Rect(24, y, 300, 300), keys, _keys);
+            y += 292f;
 
             DrawMatchStatus(y);
+            DrawFuseBanner();
+            DrawWaitingBanner();
+            TickSuddenDeathFlash();
+            DrawSuddenDeathFlash();
             DrawItHandoffFlash();
             DrawTrailNearMissWarn();
             DrawTrailEliminateFlash();
+            DrawModeChangeFlash();
         }
 
         void Update()
@@ -132,14 +192,23 @@ namespace TagArena.Movement
             TickItHandoffFlash();
             TickTrailNearMiss();
             TickTrailEliminateFlash();
+            TickModeChangeFlash();
         }
 
         /// <summary>
-        /// Watch local ItController.IsIt — same flag SetIt / TransferIt / PunchHitbox mutate.
+        /// Watch local ItController.IsIt - same flag SetIt / TransferIt / PunchHitbox mutate.
         /// Skip first sample so spawn / HUD enable does not false-flash.
         /// </summary>
         void TickItHandoffFlash()
         {
+            var modes = TagModeController.Instance;
+            // Rematch / menu leave Playing: clear edge so spawn-as-It and first handoff flash again.
+            if (modes == null || modes.Phase != MatchPhase.Playing)
+            {
+                _prevLocalIsIt = false;
+                _itFlashPrimed = true;
+                return;
+            }
             bool localIsIt = ResolveLocalIsIt();
             if (!_itFlashPrimed)
             {
@@ -150,7 +219,7 @@ namespace TagArena.Movement
             if (localIsIt == _prevLocalIsIt)
                 return;
             _itFlashGained = localIsIt;
-            _itFlashUntil = Time.unscaledTime + ItFlashSec;
+            _itFlashUntil = Time.time + ItFlashSec;
             _prevLocalIsIt = localIsIt;
         }
 
@@ -167,11 +236,11 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// Cave-man center flash ~0.5s: YOU'RE IT / YOU'RE FREE (TAG! handoff beat).
+        /// Center flash ~1.0s: YOU'RE IT / YOU'RE FREE (TAG! handoff beat). Rematch re-arms.
         /// </summary>
         void DrawItHandoffFlash()
         {
-            float rem = _itFlashUntil - Time.unscaledTime;
+            float rem = _itFlashUntil - Time.time;
             if (rem <= 0f) return;
 
             if (_flash == null)
@@ -213,12 +282,12 @@ namespace TagArena.Movement
             GUI.Label(r, msg, _flash);
             if (_status != null)
             {
-                var sub = new Rect(r.x, r.yMax - 8f, r.width, 28f);
+                var sub = new Rect(r.x, r.yMax - 4f, r.width, 28f);
                 Color prevStatus = _status.normal.textColor;
                 _status.normal.textColor = new Color(1f, 0.92f, 0.55f, a * 0.9f);
                 var prevAlign = _status.alignment;
                 _status.alignment = TextAnchor.MiddleCenter;
-                GUI.Label(sub, "TAG!", _status);
+                GUI.Label(sub, HandoffSubtitle(), _status);
                 _status.alignment = prevAlign;
                 _status.normal.textColor = prevStatus;
             }
@@ -226,10 +295,75 @@ namespace TagArena.Movement
             GUI.color = prev;
         }
 
+        /// <summary>
+        /// Trail eliminate locks the motor and the OUT flash lasts under a second.
+        /// Keep a waiting line until the round ends so the freeze is explained.
+        /// </summary>
+        void DrawWaitingBanner()
+        {
+            ItController self = null;
+            if (motor != null) self = motor.GetComponent<ItController>();
+            if (self == null) self = GetComponent<ItController>();
+            if (self == null || self.IsAlive) return;
+            var modes = TagModeController.Instance;
+            if (modes == null || modes.Phase != MatchPhase.Playing) return;
+
+            float w = 420f;
+            var r = new Rect((Screen.width - w) * 0.5f, Screen.height * 0.62f, w, 52f);
+            GUI.Box(r, "");
+            if (_status != null)
+            {
+                var prevA = _status.alignment;
+                var prevC = GUI.color;
+                _status.alignment = TextAnchor.MiddleCenter;
+                GUI.color = new Color(1f, 0.58f, 0.32f, 1f); // warm so OUT waiting reads vs other status
+                GUI.Label(r, "OUT    waiting for the round", _status);
+                GUI.color = prevC;
+                _status.alignment = prevA;
+            }
+            else
+            {
+                var prevC = GUI.color;
+                GUI.color = new Color(1f, 0.58f, 0.32f, 1f);
+                GUI.Label(r, "OUT    waiting for the round");
+                GUI.color = prevC;
+            }
+        }
+
+        string HandoffSubtitle()
+        {
+            var modes = TagModeController.Instance;
+            if (modes == null) return "TAG!";
+            if (_itFlashGained)
+            {
+                string from = modes.LastFromId;
+                return string.IsNullOrEmpty(from) ? "TAG!" : "from " + from;
+            }
+            string to = modes.LastToId;
+            return string.IsNullOrEmpty(to) ? "TAG!" : to + " is It";
+        }
+
+        /// <summary>
+        /// Top-center fuse so a runner sees the potato even when they are not It.
+        /// Stays below the It banner (y=16, h=46). Hidden while Remaining is 0 (countdown).
+        /// </summary>
+        void DrawFuseBanner()
+        {
+            var modes = TagModeController.Instance;
+            if (modes == null || modes.SelectedMode != TagModeId.HotPotato || modes.Phase != MatchPhase.Playing)
+                return;
+            float remain = modes.Remaining;
+            float urgency = HotPotatoFuseUrgency(modes);
+            if (remain <= 0f || urgency <= 0.02f) return;
+
+            float w = 280f;
+            var r = new Rect((Screen.width - w) * 0.5f, 68f, w, 36f);
+            DrawFuseUrgencyLabel(r, "FUSE  " + remain.ToString("0.0"), urgency);
+        }
 
         /// <summary>
         /// Trail Tag only: closest foreign TrailSegment via CopyActive + ClosestPointOnSegment
-        /// (same helpers DummyPatrol trail avoid uses). Warn under TrailNearMissWarnM — soft
+        /// (same helpers DummyPatrol trail avoid uses). Warn under TrailNearMissWarnM - soft
         /// readability cue before BoxCollider eliminate; does not change hit rules.
         /// </summary>
         void TickTrailNearMiss()
@@ -257,7 +391,7 @@ namespace TagArena.Movement
             {
                 var seg = _trailNearScratch[i];
                 if (seg == null) continue;
-                // Foreign only — own ribbon is self-grace / separate fairness case.
+                // Foreign only - own ribbon is self-grace / separate fairness case.
                 if (seg.Owner != null && seg.Owner == self) continue;
                 if (seg.Owner == null && !string.IsNullOrEmpty(seg.OwnerId)
                     && seg.OwnerId == self.PlayerId) continue;
@@ -284,12 +418,12 @@ namespace TagArena.Movement
 
             float urgency = 1f - Mathf.Clamp01(_trailNearDist / TrailNearMissWarnM);
             float hz = Mathf.Lerp(2.5f, 8f, urgency);
-            float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
+            float wave = 0.5f + 0.5f * Mathf.Sin(Time.time * hz * Mathf.PI * 2f);
             float pulse = Mathf.Lerp(0.3f, 1f, wave);
             float a = Mathf.Lerp(0.12f, 0.42f, urgency * pulse);
 
             Color prev = GUI.color;
-            // Cyan edge → hot warn as you close in (same family as It flee compass).
+            // Cyan edge - hot warn as you close in (same family as It flee compass).
             Color calm = new Color(0.2f, 0.95f, 1f, a);
             Color hot = new Color(1f, 0.35f, 0.45f, a);
             GUI.color = Color.Lerp(calm, hot, urgency * pulse);
@@ -341,7 +475,7 @@ namespace TagArena.Movement
 
 
         /// <summary>
-        /// Watch local ItController.IsAlive — same flag TrailSegment hit / EliminatePlayer mutate.
+        /// Watch local ItController.IsAlive - same flag TrailSegment hit / EliminatePlayer mutate.
         /// Trail Tag only. Skip first sample so spawn / HUD enable does not false-flash.
         /// Does not invent trail rules; mirrors IsAlive edge after existing eliminate path.
         /// </summary>
@@ -360,7 +494,7 @@ namespace TagArena.Movement
 
             // Rising edge of eliminate: was alive, now dead, while Trail Tag is selected.
             if (trailMode && _prevLocalAlive && !alive)
-                _trailOutFlashUntil = Time.unscaledTime + TrailOutFlashSec;
+                _trailOutFlashUntil = Time.time + TrailOutFlashSec;
 
             _prevLocalAlive = alive;
         }
@@ -378,13 +512,13 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// Cave-man center flash ~0.65s on trail eliminate: OUT! + TRAIL HIT.
-        /// Distinct from TAG handoff (YOU'RE IT / FREE) and near-miss TRAIL! edge pulse —
+        /// Center flash ~1.0s on trail eliminate: OUT! + TRAIL HIT.
+        /// Distinct from TAG handoff (YOU'RE IT / FREE) and near-miss TRAIL! edge pulse -
         /// lower screen, hot red, no edge bars.
         /// </summary>
         void DrawTrailEliminateFlash()
         {
-            float rem = _trailOutFlashUntil - Time.unscaledTime;
+            float rem = _trailOutFlashUntil - Time.time;
             if (rem <= 0f) return;
 
             if (_flash == null)
@@ -442,6 +576,22 @@ namespace TagArena.Movement
             GUI.color = prev;
         }
 
+        void DrawMuteChip()
+        {
+            bool muted = Tag.Audio.AudioMaster.Muted;
+            bool musicOff = Tag.Audio.AudioMaster.MusicMuted;
+            if (!muted && !musicOff) return;
+            // Show both when M+N are on so the chips do not hide each other.
+            string chip = muted && musicOff ? "MUTED  (M)   MUSIC OFF  (N)"
+                : muted ? "MUTED  (M)"
+                : "MUSIC OFF  (N)";
+            var prev = GUI.color;
+            GUI.color = muted ? new Color(1f, 0.45f, 0.4f) : new Color(1f, 0.82f, 0.45f);
+            float w = muted && musicOff ? 360f : 220f;
+            GUI.Label(new Rect(Screen.width - w - 20f, 16, w, 32), chip, _big);
+            GUI.color = prev;
+        }
+
         void DrawMatchStatus(float y)
         {
             string modeName = "";
@@ -452,7 +602,13 @@ namespace TagArena.Movement
             var modes = TagModeController.Instance;
             if (modes != null)
             {
-                modeName = FriendlyModeName(modes.SelectedMode);
+                modeName = FriendlyModeName(modes.SelectedMode) + " | " + PhaseLabel(modes.Phase);
+                if (modes.SelectedMode == TagModeId.LeastIt && modes.Phase == MatchPhase.Playing && modes.Remaining > 0f)
+                    modeName += "  " + modes.Remaining.ToString("0") + "s  lowest wins";
+                if (modes.SelectedMode == TagModeId.TrailTag && modes.Phase == MatchPhase.Playing && modes.SuddenDeath)
+                    modeName += "  SUDDEN DEATH";
+                if (modes.SelectedMode == TagModeId.FreePlay && modes.Phase == MatchPhase.Playing)
+                    modeName += "  no timer";
                 it = modes.CurrentIt;
                 if (it == null)
                     it = ScanItControllers();
@@ -473,15 +629,16 @@ namespace TagArena.Movement
                 modeName = "default";
             }
 
-            // Hot Potato + local is It: pulse fuse/It lines as Remaining approaches warnSec
-            // (same urgency curve as ItMarker / DummyPatrol).
-            bool localIsIt = it != null && IsLocalPlayer(it);
-            float fuseUrgency = (localIsIt && modes != null && modes.SelectedMode == TagModeId.HotPotato)
+            // Hot Potato fuse pulses for everyone once Remaining is inside warnSec.
+            // (Previously only the local It saw the pulse, so runners missed the pop.)
+
+            float fuseUrgency = (modes != null && modes.SelectedMode == TagModeId.HotPotato && modes.Phase == MatchPhase.Playing)
                 ? HotPotatoFuseUrgency(modes)
                 : 0f;
             bool pulseFuse = fuseUrgency > 0.01f;
 
-            GUI.Label(new Rect(24, y, 480, 22), "Mode " + modeName, _status);
+            GUI.Label(new Rect(24, y, 640, 22), "Mode " + modeName, _status);
+
             y += 22f;
 
             if (pulseFuse)
@@ -519,6 +676,13 @@ namespace TagArena.Movement
         /// 0 = calm / not in warn window; 1 = fuse about to pop (Remaining near 0).
         /// Matches ItMarker / DummyPatrol: Remaining vs HotPotatoTuning.warnSec (fallback 10s).
         /// </summary>
+        /// <summary>Whole seconds above 10s (30s air-dash CD); one decimal under that.</summary>
+        static string FormatDashCd(float rem)
+        {
+            if (rem >= 10f) return rem.ToString("0") + "s";
+            return rem.ToString("0.0") + "s";
+        }
+
         static float HotPotatoFuseUrgency(TagModeController modes)
         {
             if (modes == null || modes.SelectedMode != TagModeId.HotPotato)
@@ -535,7 +699,7 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// Pulse fuse/It status text: scale + amber→hot tint, faster as urgency rises.
+        /// Pulse fuse/It status text: scale + amber-hot tint, faster as urgency rises.
         /// </summary>
         void DrawFuseUrgencyLabel(Rect r, string text, float urgency)
         {
@@ -543,10 +707,10 @@ namespace TagArena.Movement
             Matrix4x4 prevMatrix = GUI.matrix;
 
             float hz = Mathf.Lerp(4f, 11f, urgency);
-            float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
+            float wave = 0.5f + 0.5f * Mathf.Sin(Time.time * hz * Mathf.PI * 2f);
             float pulse = Mathf.Lerp(0.35f, 1f, wave);
 
-            // Status amber → hot-potato warn (magenta-orange), same family as It flee compass.
+            // Status amber - hot-potato warn (magenta-orange), same family as It flee compass.
             Color calm = new Color(1f, 0.92f, 0.55f, 1f);
             Color hot = new Color(1f, 0.35f, 0.55f, 1f);
             Color tint = Color.Lerp(calm, hot, urgency * pulse);
@@ -564,7 +728,7 @@ namespace TagArena.Movement
 
         /// <summary>
         /// Cave-man compass toward It: camera-relative 8-way + flat meters.
-        /// Pulses under ~12m (cyan/white → hot-potato warn) so close flee reads distinct from Prey hunt.
+        /// Pulses under ~12m (cyan/white - hot-potato warn) so close flee reads distinct from Prey hunt.
         /// </summary>
         float DrawItBearing(ItController it, float y)
         {
@@ -628,7 +792,7 @@ namespace TagArena.Movement
         /// Shared cave-man compass: camera-relative 8-way + flat meters.
         /// Label examples: "It ->  SW  18m" / "Prey ->  SW  18m".
         /// When pulseClose and dist &lt; CompassPulseDistM: scale/alpha/color urgency pulse.
-        /// itWarnTint: cyan/white → magenta-orange (flee); else amber → red (hunt).
+        /// itWarnTint: cyan/white - magenta-orange (flee); else amber - red (hunt).
         /// </summary>
         float DrawCompassBearing(string label, Vector3 to, float y, bool pulseClose, bool itWarnTint = false)
         {
@@ -665,23 +829,23 @@ namespace TagArena.Movement
             Matrix4x4 prevMatrix = GUI.matrix;
             if (pulseClose && dist < CompassPulseDistM)
             {
-                // 0 at threshold, 1 at contact — closer = hotter / bigger / faster pulse.
+                // 0 at threshold, 1 at contact - closer = hotter / bigger / faster pulse.
                 float urgency = 1f - Mathf.Clamp01(dist / CompassPulseDistM);
                 float hz = Mathf.Lerp(3.5f, 9f, urgency);
-                float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * hz * Mathf.PI * 2f);
+                float wave = 0.5f + 0.5f * Mathf.Sin(Time.time * hz * Mathf.PI * 2f);
                 float pulse = Mathf.Lerp(0.35f, 1f, wave);
 
                 Color calm;
                 Color hot;
                 if (itWarnTint)
                 {
-                    // Fleeing It: cyan/white → hot-potato warn (magenta-orange), distinct from Prey hunt.
+                    // Fleeing It: cyan/white - hot-potato warn (magenta-orange), distinct from Prey hunt.
                     calm = new Color(0.55f, 0.95f, 1f, 1f);
                     hot = new Color(1f, 0.35f, 0.55f, 1f);
                 }
                 else
                 {
-                    // Hunting Prey: amber → red.
+                    // Hunting Prey: amber - red.
                     calm = new Color(1f, 0.92f, 0.55f, 1f);
                     hot = new Color(1f, 0.28f, 0.12f, 1f);
                 }
@@ -736,7 +900,7 @@ namespace TagArena.Movement
             }
 
             float youT = self != null ? self.TimeAsIt : 0f;
-            // Soft standings cue: lowest It-time = LEAD (mint), highest/near-highest = LAG (coral).
+            // Soft standings cue: lowest It-time is winning (mint); more It-time is behind (coral).
             bool leading = false;
             bool lagging = false;
             if (self != null && living.Count > 0)
@@ -763,14 +927,14 @@ namespace TagArena.Movement
             if (leading)
             {
                 GUI.color = new Color(0.45f, 1f, 0.7f, 1f);
-                youTag = "  LEAD";
+                youTag = "  WINNING (least)";
             }
             else if (lagging)
             {
                 GUI.color = new Color(1f, 0.55f, 0.42f, 1f);
-                youTag = "  LAG";
+                youTag = "  BEHIND (more It)";
             }
-            GUI.Label(new Rect(24, y, 520, 22),
+            GUI.Label(new Rect(24, y, 640, 22),
                 "You " + youT.ToString("0.0") + "s" + youTag, _status);
             GUI.color = prev;
             y += 22f;
@@ -782,14 +946,14 @@ namespace TagArena.Movement
                 if (leading)
                     GUI.color = new Color(0.45f, 1f, 0.7f, 1f);
                 GUI.Label(new Rect(24, y, 520, 22),
-                    "Lead " + leadName + " " + leader.TimeAsIt.ToString("0.0") + "s" + leadMark,
+                    "Least " + leadName + " " + leader.TimeAsIt.ToString("0.0") + "s" + leadMark,
                     _status);
                 GUI.color = prev;
                 y += 22f;
             }
 
             // Briefly show all players' times on a compact line (cycle).
-            float cycle = Mathf.Repeat(Time.unscaledTime, AllStandingsCycleSec);
+            float cycle = Mathf.Repeat(Time.time, AllStandingsCycleSec);
             if (living.Count > 0 && cycle < AllStandingsShowSec)
             {
                 var sb = new StringBuilder(64);
@@ -821,6 +985,71 @@ namespace TagArena.Movement
             return false;
         }
 
+
+        void TickModeChangeFlash()
+        {
+            var modes = TagModeController.Instance;
+            if (modes == null) return;
+            var cur = modes.SelectedMode;
+            // Rematch / menu: re-prime so the next F1-F4 change still flashes.
+            if (modes.Phase != MatchPhase.Playing && modes.Phase != MatchPhase.Countdown)
+            {
+                _prevMode = cur;
+                _modeFlashPrimed = true;
+                return;
+            }
+            if (!_modeFlashPrimed)
+            {
+                _prevMode = cur;
+                _modeFlashPrimed = true;
+                return;
+            }
+            if (cur == _prevMode) return;
+            _prevMode = cur;
+            _modeFlashLabel = FriendlyModeName(cur);
+            _modeFlashUntil = Time.time + ModeFlashSec;
+        }
+
+        void DrawModeChangeFlash()
+        {
+            float rem = _modeFlashUntil - Time.time;
+            if (rem <= 0f || string.IsNullOrEmpty(_modeFlashLabel)) return;
+
+            if (_flash == null)
+            {
+                _flash = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 52,
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+
+            float elapsed = ModeFlashSec - rem;
+            float fadeIn = 0.08f;
+            float fadeOut = 0.22f;
+            float a;
+            if (elapsed < fadeIn) a = elapsed / fadeIn;
+            else if (rem < fadeOut) a = rem / fadeOut;
+            else a = 1f;
+
+            _flash.normal.textColor = new Color(1f, 0.92f, 0.45f, a);
+            float w = 720f;
+            float h = 70f;
+            var r = new Rect((Screen.width - w) * 0.5f, Screen.height * 0.18f, w, h);
+            GUI.Label(r, "MODE  " + _modeFlashLabel, _flash);
+            if (_status != null)
+            {
+                var prev = _status.normal.textColor;
+                var prevA = _status.alignment;
+                _status.alignment = TextAnchor.MiddleCenter;
+                _status.normal.textColor = new Color(0.85f, 0.9f, 1f, a * 0.9f);
+                GUI.Label(new Rect(r.x, r.yMax - 4f, r.width, 24f), "F1 Hot Potato  |  F2 Least It  |  F3 Trail Tag  |  F4 Free play", _status);
+                _status.alignment = prevA;
+                _status.normal.textColor = prev;
+            }
+        }
+
         static string FriendlyModeName(TagModeId id)
         {
             switch (id)
@@ -828,7 +1057,40 @@ namespace TagArena.Movement
                 case TagModeId.HotPotato: return "Hot Potato";
                 case TagModeId.LeastIt: return "Least It";
                 case TagModeId.TrailTag: return "Trail Tag";
+                case TagModeId.FreePlay: return "Free play";
                 default: return id.ToString();
+            }
+        }
+
+        static string PhaseLabel(MatchPhase phase)
+        {
+            switch (phase)
+            {
+                case MatchPhase.Countdown: return "Countdown";
+                case MatchPhase.Playing: return "Playing";
+                case MatchPhase.PostRound: return "Post-round";
+                case MatchPhase.Results: return "Results";
+                default: return "Idle";
+            }
+        }
+
+        static string LocoVerb(PlayerMotor motor)
+        {
+            if (motor.IsAirDashing) return "DASH";
+            switch (motor.State)
+            {
+                case MoveState.Sprint: return "RUN";
+                case MoveState.Slide: return "SLIDE";
+                case MoveState.WallRun: return "WALL";
+                case MoveState.WallClimb: return "CLIMB";
+                case MoveState.LandStun: return "LAND";
+                case MoveState.Air: return "AIR";
+                case MoveState.Ski: return "SKI";
+                case MoveState.Crouch: return "CROUCH";
+                case MoveState.Mantle: return "VAULT";
+                case MoveState.Jet: return "JET";
+                case MoveState.Walk: return "WALK";
+                default: return "IDLE";
             }
         }
 
@@ -850,6 +1112,52 @@ namespace TagArena.Movement
                     return c;
             }
             return null;
+        }
+        void TickSuddenDeathFlash()
+        {
+            var modes = TagModeController.Instance;
+            bool trailPlay = modes != null && modes.SelectedMode == TagModeId.TrailTag && modes.Phase == MatchPhase.Playing;
+            bool sd = trailPlay && modes.SuddenDeath;
+            if (!_sdFlashPrimed)
+            {
+                _prevSuddenDeath = sd;
+                _sdFlashPrimed = true;
+                return;
+            }
+            // Rematch / menu leave Playing: clear edge so the next SD rising edge flashes again.
+            if (!trailPlay)
+            {
+                _prevSuddenDeath = false;
+                return;
+            }
+            if (sd && !_prevSuddenDeath)
+                _sdFlashUntil = Time.time + SdFlashSec;
+            _prevSuddenDeath = sd;
+        }
+
+        void DrawSuddenDeathFlash()
+        {
+            float rem = _sdFlashUntil - Time.time;
+            if (rem <= 0f) return;
+            if (_flash == null)
+            {
+                _flash = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 48,
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+            float elapsed = SdFlashSec - rem;
+            float a = 1f;
+            if (elapsed < 0.08f) a = elapsed / 0.08f;
+            else if (rem < 0.22f) a = rem / 0.22f;
+            Color prev = GUI.color;
+            GUI.color = new Color(1f, 0.35f, 0.2f, a);
+            float w = 640f;
+            var r = new Rect((Screen.width - w) * 0.5f, Screen.height * 0.22f, w, 56f);
+            GUI.Label(r, "SUDDEN DEATH", _flash);
+            GUI.color = prev;
         }
     }
 }

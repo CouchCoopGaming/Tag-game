@@ -20,6 +20,15 @@ namespace Tag.Audio
         static AudioClip _jump;
         static AudioClip _miss;
         static AudioClip _lunge;
+        static AudioClip _airDash;
+        static AudioClip _trail;
+        static AudioClip _roundStart;
+        static AudioClip _roundEnd;
+        static AudioClip _roundWin;
+        static AudioClip _roundLose;
+        static AudioClip _uiClick;
+        static AudioClip _uiConfirm;
+        static AudioSource _flat;
 
         public static AudioClip Punch => _punch ??= Resolve("SFX/sfx_punch_hit", () => MakeImpact(180f, 0.07f, 0.55f));
         public static AudioClip Tag => _tag ??= Resolve("SFX/sfx_tag_transfer", () => MakeChirp(520f, 780f, 0.12f, 0.4f));
@@ -30,6 +39,14 @@ namespace Tag.Audio
         public static AudioClip Jump => _jump ??= MakeBlip(320f, 0.06f, 0.28f);
         public static AudioClip Miss => _miss ??= Resolve("SFX/sfx_punch_miss", () => MakeBlip(300f, 0.045f, 0.14f));
         public static AudioClip Lunge => _lunge ??= Resolve("SFX/sfx_air_dodge", () => MakeNoiseWhoosh(0.13f, 0.42f, 1100f));
+        public static AudioClip AirDash => _airDash ??= MakeNoiseWhoosh(0.08f, 0.36f, 1800f);
+        public static AudioClip TrailElimClip => _trail ??= MakeChirp(880f, 220f, 0.16f, 0.45f);
+        public static AudioClip RoundStartClip => _roundStart ??= MakeChirp(440f, 880f, 0.18f, 0.4f);
+        public static AudioClip RoundEndClip => _roundEnd ??= MakeChirp(520f, 180f, 0.22f, 0.4f);
+        public static AudioClip RoundWinClip => _roundWin ??= MakeChirp(660f, 990f, 0.2f, 0.42f);
+        public static AudioClip RoundLoseClip => _roundLose ??= MakeThud(70f, 0.16f, 0.45f);
+        public static AudioClip UiClickClip => _uiClick ??= MakeBlip(680f, 0.04f, 0.22f);
+        public static AudioClip UiConfirmClip => _uiConfirm ??= MakeChirp(520f, 740f, 0.08f, 0.28f);
 
         public static AudioSource EnsureSource(GameObject host)
         {
@@ -47,6 +64,7 @@ namespace Tag.Audio
         public static void Play(AudioSource src, AudioClip clip, float vol = DefaultVol)
         {
             if (clip == null) return;
+            AudioMaster.Apply();
             vol = Mathf.Clamp01(vol);
             if (src != null)
             {
@@ -60,6 +78,7 @@ namespace Tag.Audio
         public static void PlayAt(AudioClip clip, Vector3 pos, float vol = DefaultVol)
         {
             if (clip == null) return;
+            AudioMaster.Apply();
             AudioSource.PlayClipAtPoint(clip, pos, Mathf.Clamp01(vol));
         }
 
@@ -76,6 +95,7 @@ namespace Tag.Audio
             src.spatialBlend = 0.65f;
             src.rolloffMode = AudioRolloffMode.Linear;
             src.maxDistance = 22f;
+            AudioMaster.Apply();
             src.pitch = 1.15f + Random.Range(-0.04f, 0.04f);
             src.volume = 0.28f;
             src.clip = clip;
@@ -87,6 +107,30 @@ namespace Tag.Audio
         public static void JetStart(AudioSource src) => Play(src, Jet, 0.38f);
         public static void LandImpact(AudioSource src) => Play(src, Land, 0.42f);
         public static void LungeWhoosh(Vector3 pos) => PlayAt(Lunge, pos, 0.42f);
+        public static void PlayAirDash(Vector3 pos) => PlayAt(AirDash, pos, 0.4f);
+        public static void TrailElim(Vector3 pos) => PlayAt(TrailElimClip, pos, 0.5f);
+        public static void LandAt(Vector3 pos, float vol = 0.32f) => PlayAt(Land, pos, vol);
+        public static void RoundStart() => PlayFlat(RoundStartClip, 0.45f);
+        public static void RoundEnd() => PlayFlat(RoundEndClip, 0.45f);
+        public static void RoundWin() => PlayFlat(RoundWinClip, 0.48f);
+        public static void RoundLose() => PlayFlat(RoundLoseClip, 0.48f);
+        public static void UiClick() => PlayFlat(UiClickClip, 0.4f);
+        public static void UiConfirm() => PlayFlat(UiConfirmClip, 0.42f);
+
+        /// <summary>2D bed so round/UI tones are not played at world origin on a mega park.</summary>
+        public static void PlayFlat(AudioClip clip, float vol = DefaultVol)
+        {
+            if (clip == null) return;
+            if (_flat == null)
+            {
+                var go = new GameObject("TagSfx2D");
+                Object.DontDestroyOnLoad(go);
+                _flat = go.AddComponent<AudioSource>();
+                _flat.playOnAwake = false;
+                _flat.spatialBlend = 0f;
+            }
+            Play(_flat, clip, vol);
+        }
 
         static AudioClip Resolve(string resourcesPath, System.Func<AudioClip> procedural)
         {

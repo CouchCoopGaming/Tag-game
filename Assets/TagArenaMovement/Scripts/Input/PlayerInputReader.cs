@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace TagArena.Movement
 {
@@ -24,7 +24,7 @@ namespace TagArena.Movement
         public bool PunchPressed;
         public bool TapForwardPulse;
 
-        /// <summary>When true, Read() is a no-op — AI / tests own Move/Look/buttons.</summary>
+        /// <summary>When true, Read() is a no-op - AI / tests own Move/Look/buttons.</summary>
         public bool ExternalControl;
 
         [Header("Legacy key map")]
@@ -42,10 +42,63 @@ namespace TagArena.Movement
         float _prevJet;
         float _prevLunge;
         bool _prevW;
+        float _extPrevJump;
+        bool _wasCursorLocked;
+        // After pause/results unlock, locking the cursor in the same Update as Read can yaw+punch.
+        // Drop look/punch for one locked frame so the resume click / residual mouse delta die first.
+        int _lookPunchGateFrames;
+
+        void Awake()
+        {
+            ControlBinds.Load();
+            airDashKey = ControlBinds.AirDash;
+            punchKey = ControlBinds.Punch;
+        }
 
         public void Read()
         {
             if (ExternalControl) return;
+
+            airDashKey = ControlBinds.AirDash;
+            punchKey = ControlBinds.Punch;
+
+            // Pause freezes the clock but Update still runs. Results keep timeScale at 1
+            // and unlock the cursor, so a Rematch click (Mouse0) would also punch.
+            // Look is not scaled by deltaTime, so an unlocked cursor must not yaw either.
+            bool cursorLocked = Cursor.lockState == CursorLockMode.Locked;
+            bool playLive = Time.timeScale > 0f && cursorLocked;
+            if (!playLive)
+            {
+                Move = Vector2.zero;
+                Look = Vector2.zero;
+                SprintHeld = false;
+                CrouchHeld = false;
+                CrouchPressed = false;
+                JumpHeld = false;
+                JumpPressed = false;
+                SkiHeld = false;
+                JetHeld = false;
+                JetPressed = false;
+                LungePressed = false;
+                AirDashPressed = false;
+                PunchPressed = false;
+                TapForwardPulse = false;
+                // A hold that started in the menu must not look like a fresh press on resume.
+                _prevCrouch = (Input.GetKey(crouchKey) || Input.GetKey(KeyCode.LeftControl)) ? 1f : 0f;
+                _prevJump = (Input.GetButton("Jump") || Input.GetKey(KeyCode.Space)) ? 1f : 0f;
+                _prevJet = (Input.GetKey(jetKey) || Input.GetMouseButton(1)) ? 1f : 0f;
+                _prevW = Input.GetKey(tapStrafePulseKey);
+                _wasCursorLocked = false;
+                return;
+            }
+
+            // Rising edge: menu/results just released play. Same-frame lock + Read would yaw/punch.
+            if (!_wasCursorLocked)
+            {
+                _lookPunchGateFrames = Mathf.Max(_lookPunchGateFrames, 2);
+                ResumeInputGate.Arm();
+            }
+            _wasCursorLocked = true;
 
             Move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             if (Move.sqrMagnitude > 1f) Move.Normalize();
@@ -80,10 +133,48 @@ namespace TagArena.Movement
             // Q / Left Alt (docs); MMB also counts via LungePressed when airborne in motor.
             AirDashPressed = Input.GetKeyDown(airDashKey) || Input.GetKeyDown(KeyCode.LeftAlt);
             PunchPressed = Input.GetKeyDown(punchKey) || Input.GetKeyDown(KeyCode.E);
+
+            if (_lookPunchGateFrames > 0 || ResumeInputGate.Blocking)
+            {
+                if (_lookPunchGateFrames > 0)
+                    _lookPunchGateFrames--;
+                SuppressResumeOneShots();
+            }
+        }
+
+        /// <summary>
+        /// Drop look and one-shot edges already latched this frame. Holds (move, sprint,
+        /// jump-held) stay so resume does not zero locomotion. Safe for AI: no-op when
+        /// ExternalControl is set.
+        /// </summary>
+        public void SuppressResumeOneShots()
+        {
+            if (ExternalControl) return;
+            Look = Vector2.zero;
+            CrouchPressed = false;
+            JumpPressed = false;
+            JetPressed = false;
+            LungePressed = false;
+            AirDashPressed = false;
+            PunchPressed = false;
+            TapForwardPulse = false;
+            // Re-latch hold edges so a menu hold is not a fresh press next frame.
+            _prevCrouch = (Input.GetKey(crouchKey) || Input.GetKey(KeyCode.LeftControl)) ? 1f : 0f;
+            _prevJump = (Input.GetButton("Jump") || Input.GetKey(KeyCode.Space)) ? 1f : 0f;
+            _prevJet = (Input.GetKey(jetKey) || Input.GetMouseButton(1)) ? 1f : 0f;
+            _prevW = Input.GetKey(tapStrafePulseKey);
+        }
+
+        /// <summary>Optional explicit arm (pause/results clear). Rising-edge lock also arms.</summary>
+        public void ArmLookPunchGate(int frames = 2)
+        {
+            if (frames < 1) frames = 1;
+            _lookPunchGateFrames = Mathf.Max(_lookPunchGateFrames, frames);
+            ResumeInputGate.Arm();
         }
 
         /// <summary>AI helper: set planar wish in body space and clear one-shot human buttons.</summary>
-        public void SetExternalMove(Vector2 move, bool sprint)
+        public void SetExternalMove(Vector2 move, bool sprint, bool jump = false, bool lunge = false, bool airDash = false)
         {
             ExternalControl = true;
             Move = move.sqrMagnitude > 1f ? move.normalized : move;
@@ -91,13 +182,14 @@ namespace TagArena.Movement
             Look = Vector2.zero;
             CrouchHeld = false;
             CrouchPressed = false;
-            JumpHeld = false;
-            JumpPressed = false;
+            JumpHeld = jump;
+            JumpPressed = jump && _extPrevJump <= 0f;
+            _extPrevJump = jump ? 1f : 0f;
             SkiHeld = false;
             JetHeld = false;
             JetPressed = false;
-            LungePressed = false;
-            AirDashPressed = false;
+            LungePressed = lunge;
+            AirDashPressed = airDash;
             PunchPressed = false;
             TapForwardPulse = false;
         }

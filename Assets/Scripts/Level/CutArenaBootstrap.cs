@@ -14,8 +14,10 @@ namespace Tag.Level
     ///   Pass3: stronger ring tint + spawn lead lanes; playground gear lives in PgkLandmarkPlacer.
     ///   Pass4: named play-area floor pads (soft-play / swing / merry / kickball / hopscotch).
     ///   Pass5: thin theme pads — clear pad -> PadSlideExit -> Conn run-outs.
-    ///   Pass6: Conn corridor ramps catch PadSlide landings; Flow stones hand off to spines.
-    ///   Pass7: Crash bowl open for EW chase; SoftPlay nudged SW off SpineXw/Xe.
+    ///   Pass6: Conn corridor ramps catch slide landings.
+    ///   Pass7: Crash bowl open for EW chase.
+    ///   Pass8: zone cubes removed (they stretched HiPoly). Kit forts, courts, ring
+    ///   tube/monkey runs, and wall-run towers live in PgkLandmarkPlacer. No Flow stones.
     /// </summary>
     public class CutArenaBootstrap : MonoBehaviour
     {
@@ -42,31 +44,39 @@ namespace Tag.Level
         const float SpineXw = 24f; // west NS
         const float SpineXe = 48f; // east NS
 
-        static readonly Color ColFloor = new Color(0x5C / 255f, 0x3A / 255f, 0x2E / 255f, 1f);
-        static readonly Color ColBowl = new Color(0x5C / 255f, 0x3A / 255f, 0x2E / 255f, 1f);
-        static readonly Color ColLoft = new Color(0xC5 / 255f, 0xCB / 255f, 0xD1 / 255f, 1f);
-        static readonly Color ColWallRun = new Color(0x3D / 255f, 0x7E / 255f, 1f, 1f);
-        static readonly Color ColSlide = new Color(0x2A / 255f, 0x2A / 255f, 0x2E / 255f, 1f);
-        static readonly Color ColPadEdge = new Color(0x2A / 255f, 0x2A / 255f, 0x2E / 255f, 1f);
+        // Lawn grass. Play carpets sit on top of this so the campus reads from chase height.
+        static readonly Color ColFloor = new Color(0x4F / 255f, 0x7D / 255f, 0x45 / 255f, 1f);
+        static readonly Color ColBowl = new Color(0xD9 / 255f, 0xC4 / 255f, 0x9A / 255f, 1f);
+        // Sidewalk tan. The old near-black read as an unfinished gray box.
+        static readonly Color ColSlide = new Color(0xE2 / 255f, 0xD2 / 255f, 0xB0 / 255f, 1f);
         static readonly Color ColVault = new Color(0xF5 / 255f, 0xD5 / 255f, 0x47 / 255f, 1f);
         static readonly Color ColRamp = new Color(0xB8 / 255f, 0xC0 / 255f, 0xC8 / 255f, 1f);
-        static readonly Color ColOob = new Color(0x3F / 255f, 0x7A / 255f, 0x4A / 255f, 1f);
-        static readonly Color ColPath = new Color(0x6E / 255f, 0x4A / 255f, 0x38 / 255f, 1f);
+        static readonly Color ColOob = new Color(0x2E / 255f, 0x4A / 255f, 0x32 / 255f, 1f);
+        static readonly Color ColPath = new Color(0x8A / 255f, 0x6A / 255f, 0x48 / 255f, 1f);
         // Warmer outer-ring chase tint (readability without clutter)
-        static readonly Color ColRing = new Color(0x8A / 255f, 0x5A / 255f, 0x3C / 255f, 1f);
-        static readonly Color ColSpawnLead = new Color(0x7A / 255f, 0x6A / 255f, 0x48 / 255f, 1f);
-        // Named play-area floors (mulch vs rubber) — read as zones beside chase lanes
-        static readonly Color ColPlayMulch = new Color(0x7A / 255f, 0x4E / 255f, 0x32 / 255f, 1f);
-        static readonly Color ColPlayRubber = new Color(0x3A / 255f, 0x4A / 255f, 0x5C / 255f, 1f);
+        static readonly Color ColRing = new Color(0xA6 / 255f, 0x7C / 255f, 0x52 / 255f, 1f);
+        // Named play-area floors. Soft-play/astro are brighter than the bunker bark.
+        static readonly Color ColSoftMulch = new Color(0xD4 / 255f, 0x89 / 255f, 0x4A / 255f, 1f);
+        static readonly Color ColFortMulch = new Color(0x6B / 255f, 0x44 / 255f, 0x28 / 255f, 1f);
+        static readonly Color ColPlayMulch = new Color(0xC4 / 255f, 0x7A / 255f, 0x45 / 255f, 1f);
+        static readonly Color ColPlayRubber = new Color(0x8A / 255f, 0x93 / 255f, 0x9C / 255f, 1f);
+        static readonly Color ColKickball = new Color(0x3C / 255f, 0x9A / 255f, 0x58 / 255f, 1f);
 
         // Match ParkPropDresser Toy_SpawnPad_* palette (SW Teal, SE Coral, NW Violet, NE Lime)
         static readonly Color ColSpawnTeal = new Color(0x2E / 255f, 0xC4 / 255f, 0xB6 / 255f, 1f);
         static readonly Color ColSpawnCoral = new Color(0xFF / 255f, 0x6B / 255f, 0x4A / 255f, 1f);
         static readonly Color ColSpawnViolet = new Color(0x9B / 255f, 0x5C / 255f, 0xE6 / 255f, 1f);
         static readonly Color ColSpawnLime = new Color(0xA8 / 255f, 0xE6 / 255f, 0x1A / 255f, 1f);
+        // Dirt stripes toward each corner pad. Not a second spawn slab.
+        static readonly Color ColLeadSW = new Color(0x3E / 255f, 0x8A / 255f, 0x78 / 255f, 1f);
+        static readonly Color ColLeadSE = new Color(0xC4 / 255f, 0x6A / 255f, 0x48 / 255f, 1f);
+        static readonly Color ColLeadNW = new Color(0x7A / 255f, 0x5A / 255f, 0x9A / 255f, 1f);
+        static readonly Color ColLeadNE = new Color(0x7A / 255f, 0x9A / 255f, 0x40 / 255f, 1f);
 
         Transform _root;
-        Material _matFloor, _matBowl, _matLoft, _matWall, _matSlide, _matPad, _matVault, _matRamp, _matOob, _matPath, _matRing, _matSpawnLead, _matPlayMulch, _matPlayRubber;
+        Material _matFloor, _matBowl, _matSlide, _matVault, _matRamp, _matOob, _matPath, _matRing;
+        Material _matSoftMulch, _matFortMulch, _matPlayMulch, _matPlayRubber, _matKickball;
+        Material _matLeadSW, _matLeadSE, _matLeadNW, _matLeadNE;
 
         void Awake()
         {
@@ -92,8 +102,7 @@ namespace Tag.Level
             BuildGround();
             BuildChaseLanes();    // figure-8 + stronger outer-ring tint
             BuildSkiSpines();     // cardinal ski highways + pad connectors
-            BuildFlowSteps();     // sparse mid-height run→jump→slide stones
-            BuildSpawnLeads();    // spawn -> nearest spine/Flow in first seconds
+            BuildSpawnLeads();    // spawn -> nearest spine in the first seconds
             BuildNamedPlayPads(); // mulch/rubber under named playground courts
             BuildCrashCore();     // center X
             BuildPiratePad();     // SW
@@ -129,20 +138,23 @@ namespace Tag.Level
         void EnsureMaterials()
         {
             if (_matFloor != null) return;
-            _matFloor = MakeMat(ColFloor);
-            _matBowl = MakeMat(ColBowl);
-            _matLoft = MakeMat(ColLoft);
-            _matWall = MakeMat(ColWallRun);
-            _matSlide = MakeMat(ColSlide);
-            _matPad = MakeMat(ColPadEdge);
+            _matFloor = MakeGroundMat(ColFloor);
+            _matBowl = MakeGroundMat(ColBowl);
+            _matSlide = MakeGroundMat(ColSlide);
             _matVault = MakeMat(ColVault);
             _matRamp = MakeMat(ColRamp);
-            _matOob = MakeMat(ColOob);
-            _matPath = MakeMat(ColPath);
-            _matRing = MakeMat(ColRing);
-            _matSpawnLead = MakeMat(ColSpawnLead);
-            _matPlayMulch = MakeMat(ColPlayMulch);
-            _matPlayRubber = MakeMat(ColPlayRubber);
+            _matOob = MakeGroundMat(ColOob);
+            _matPath = MakeGroundMat(ColPath);
+            _matRing = MakeGroundMat(ColRing);
+            _matSoftMulch = MakeGroundMat(ColSoftMulch);
+            _matFortMulch = MakeGroundMat(ColFortMulch);
+            _matPlayMulch = MakeGroundMat(ColPlayMulch);
+            _matPlayRubber = MakeGroundMat(ColPlayRubber);
+            _matKickball = MakeGroundMat(ColKickball);
+            _matLeadSW = MakeGroundMat(ColLeadSW);
+            _matLeadSE = MakeGroundMat(ColLeadSE);
+            _matLeadNW = MakeGroundMat(ColLeadNW);
+            _matLeadNE = MakeGroundMat(ColLeadNE);
         }
 
         static Material MakeMat(Color c)
@@ -153,6 +165,19 @@ namespace Tag.Level
             var m = new Material(shader) { color = c, name = "CUT_" + ColorUtility.ToHtmlStringRGB(c) };
             if (m.HasProperty("_BaseColor"))
                 m.SetColor("_BaseColor", c);
+            return m;
+        }
+
+        /// <summary>Matte footing. The default Lit smoothness reads as plastic from above.</summary>
+        static Material MakeGroundMat(Color c)
+        {
+            var m = MakeMat(c);
+            if (m.HasProperty("_Smoothness"))
+                m.SetFloat("_Smoothness", 0.06f);
+            if (m.HasProperty("_Glossiness"))
+                m.SetFloat("_Glossiness", 0.06f);
+            if (m.HasProperty("_Metallic"))
+                m.SetFloat("_Metallic", 0f);
             return m;
         }
 
@@ -247,28 +272,8 @@ namespace Tag.Level
         }
 
         /// <summary>
-        /// Conn→spine handoff stones only (W/E NS). Outer-ring + Crash Core + mid stones
-        /// dropped — HiPoly Ring/Loop banks cover height flow; graybox cubes read as clutter.
-        /// jumpSpeed 24.7 / gravity 22 → apex ≈ 1.39 graybox (WorldScale 10).
-        /// </summary>
-        void BuildFlowSteps()
-        {
-            // West NS — west of SpineXw; near Conn crest → SpineZs/Zn
-            FlowStone("Flow_W_S", new Vector3(SpineXw - 2.2f, 0.55f, 19.8f), new Vector3(2.2f, 0.20f, 2.2f));
-            FlowStone("Flow_W_N", new Vector3(SpineXw - 2.2f, 0.55f, 34.2f), new Vector3(2.2f, 0.20f, 2.2f));
-            // East NS — east of SpineXe
-            FlowStone("Flow_E_S", new Vector3(SpineXe + 2.2f, 0.55f, 19.8f), new Vector3(2.2f, 0.20f, 2.2f));
-            FlowStone("Flow_E_N", new Vector3(SpineXe + 2.2f, 0.55f, 34.2f), new Vector3(2.2f, 0.20f, 2.2f));
-        }
-
-        void FlowStone(string name, Vector3 localPos, Vector3 scale)
-        {
-            Box(name, localPos, scale, _matLoft);
-        }
-
-        /// <summary>
-        /// Short tinted leads from corner spawns toward nearest spine / Flow / Conn.
-        /// Readable in the first ~3s of a run; playground toys sit beside these in placer.
+        /// Short tinted leads from corner spawns toward the nearest spine / Conn.
+        /// Readable in the first ~3s of a run; kit forts sit beside these.
         /// </summary>
         void BuildSpawnLeads()
         {
@@ -276,36 +281,44 @@ namespace Tag.Level
             float y = t * 0.5f + 0.015f;
             const float w = 3.2f;
             // SW teal (6,5) → Pirate Conn / SW jct (SpineXw, SpineZs)
-            Box("SpawnLead_SW", new Vector3(11f, y, 10f), new Vector3(10f, t, w), _matSpawnLead)
+            Box("SpawnLead_SW", new Vector3(11f, y, 10f), new Vector3(10f, t, w), _matLeadSW)
                 .transform.localRotation = Quaternion.Euler(0f, 40f, 0f);
             // SE coral (66,5) → Army Conn / SE jct
-            Box("SpawnLead_SE", new Vector3(61f, y, 10f), new Vector3(10f, t, w), _matSpawnLead)
+            Box("SpawnLead_SE", new Vector3(61f, y, 10f), new Vector3(10f, t, w), _matLeadSE)
                 .transform.localRotation = Quaternion.Euler(0f, -40f, 0f);
             // NW violet (6,49) → Astro Conn / NW jct
-            Box("SpawnLead_NW", new Vector3(11f, y, 44f), new Vector3(10f, t, w), _matSpawnLead)
+            Box("SpawnLead_NW", new Vector3(11f, y, 44f), new Vector3(10f, t, w), _matLeadNW)
                 .transform.localRotation = Quaternion.Euler(0f, 140f, 0f);
             // NE lime (66,49) → Knight Conn / NE jct
-            Box("SpawnLead_NE", new Vector3(61f, y, 44f), new Vector3(10f, t, w), _matSpawnLead)
+            Box("SpawnLead_NE", new Vector3(61f, y, 44f), new Vector3(10f, t, w), _matLeadNE)
                 .transform.localRotation = Quaternion.Euler(0f, -140f, 0f);
         }
 
         /// <summary>
-        /// Soft floor pads under named play areas (coords match PgkLandmarkPlacer groups).
-        /// Tint only — sit beside spines so chase midlines stay clear.
+        /// Mulch / rubber carpets under kit districts (centers match PgkLandmarkPlacer).
+        /// Tint only — kept off ski-spine midlines so the chase stays readable.
         /// </summary>
         void BuildNamedPlayPads()
         {
             const float t = 0.1f;
             float y = -t * 0.5f + 0.004f;
-            Box("PlayPad_SoftPlay", new Vector3(18.5f, y, 13.5f), new Vector3(14f, t, 12f), _matPlayMulch);
-            // Merry mulch — spinner apron; east edge stops short of SpineXw
-            Box("PlayPad_Merry", new Vector3(15.5f, y, 22f), new Vector3(14f, t, 14f), _matPlayMulch);
-            // Swing mulch — fall-zone apron; west edge stops short of SpineXe
-            Box("PlayPad_Swing", new Vector3(60.5f, y, 33.5f), new Vector3(14f, t, 12f), _matPlayMulch);
-            // Kickball rubber — between Loop_E and Ring_E; apron for run-through (west face open)
-            Box("PlayPad_Kickball", new Vector3(56.5f, y, 27f), new Vector3(14f, t, 16f), _matPlayRubber);
-            // Hopscotch rubber — SW only (succinct map; SE dropped)
-            Box("PlayPad_Hopscotch_SW", new Vector3(9.5f, y, 9f), new Vector3(8f, t, 11f), _matPlayRubber);
+            // Forts sit on the theme-pad floors. These carpets are the courts and runs.
+            // Merry reaches the west bars (apron tiles end at x=11.5) and stops short of Loop W (x=12).
+            Box("PlayPad_Merry", new Vector3(7.4f, y, 24f), new Vector3(8.8f, t, 8f), _matPlayMulch);
+            Box("PlayPad_Swing", new Vector3(67f, y, 31.5f), new Vector3(10f, t, 5.4f), _matPlayMulch);
+            Box("PlayPad_Kickball", new Vector3(67f, y, 24f), new Vector3(10f, t, 10f), _matKickball);
+            // East-west court between Spawn_SW and the mast. East edge stops short of the pirate carpet (x=9).
+            Box("PlayPad_Hopscotch_SW", new Vector3(4.5f, y, 9.4f), new Vector3(8.6f, t, 4f), _matPlayRubber);
+            Box("PlayPad_Hopscotch_SE", new Vector3(70f, y, 11.5f), new Vector3(4f, t, 8f), _matPlayRubber);
+            Box("PlayPad_Hopscotch_NE", new Vector3(70f, y, 38f), new Vector3(4f, t, 8f), _matPlayRubber);
+            // North-south court south of Spawn_NW. Stops at z=46.5, 1.4 m short of the pad.
+            Box("PlayPad_Hopscotch_NW", new Vector3(3.0f, y, 42f), new Vector3(4.6f, t, 9f), _matPlayRubber);
+            // South ring stays below the outer lane; north ring stays inside the map edge.
+            Box("PlayPad_Ring_S", new Vector3(36f, y, 3f), new Vector3(22f, t, 5.5f), _matPlayMulch);
+            Box("PlayPad_Ring_N", new Vector3(36f, y, 51f), new Vector3(20f, t, 4.5f), _matPlayMulch);
+            Box("PlayPad_Loop_W", new Vector3(16f, y, 26.5f), new Vector3(8f, t, 12f), _matPlayMulch);
+            // East edge covers the beam lane (x=60.5) and stops 1 m short of the kickball pad (x=62).
+            Box("PlayPad_Loop_E", new Vector3(56.5f, y, 27.5f), new Vector3(9f, t, 12f), _matPlayMulch);
         }
 
         // --- Zone pads (3–5 signature toys; open sightlines to campus) --------------
@@ -323,118 +336,58 @@ namespace Tag.Level
             ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, 0f), new Vector3(w, 0.16f, d), mat);
         }
 
-        /// <summary>Crash = figure-8 X. Open bowl for EW chase; toys only on N/W flanks.</summary>
+        /// <summary>Crash = figure-8 X. Open mulch bowl; kit gear stays off the EW chase.</summary>
         void BuildCrashCore()
         {
             var z = Zone("Zone_Crash", CxCrash, CzCrash);
-            PadFloor(z, 16f, 14f, _matBowl);
-
-            // Sunken bowl — open E/W + corners so SpineXw/Xe cross stays runnable
+            PadFloor(z, 12f, 10f, _matBowl);
+            // Sunken bowl only — stretched tower cubes used to dress as low-poly heroes.
             ChildBox(z, "Toy_Sandbox", new Vector3(0f, -0.9f, 0f), new Vector3(8f, 0.2f, 8f), _matBowl);
-            ChildBox(z, "Toy_SandboxRim_S", new Vector3(0f, 0.35f, -4.2f), new Vector3(6f, 0.7f, 0.3f), _matVault);
-            ChildBox(z, "Toy_SandboxRim_N", new Vector3(0f, 0.35f, 4.2f), new Vector3(6f, 0.7f, 0.3f), _matVault);
-            // No E/W rims, no center vault — keep EW figure-8 chase sightline clear
-
-            // Twin towers + loft pulled north of bowl (off EW mid at local z=0)
-            ChildBox(z, "Toy_TwinTower_W", new Vector3(-4.5f, 2.0f, 4.8f), new Vector3(2.0f, 4f, 2.0f), _matWall);
-            ChildBox(z, "Toy_TwinTower_E", new Vector3(4.5f, 2.0f, 4.8f), new Vector3(2.0f, 4f, 2.0f), _matWall);
-            ChildBox(z, "Toy_Tower", new Vector3(0f, 3.1f, 4.8f), new Vector3(7f, 0.3f, 3.0f), _matLoft);
-
-            // Climb face west + north-biased — clear of EW chase lane through Crash
-            ChildBox(z, "Toy_ClimbWall_West", new Vector3(-7.6f, 1.4f, 2.8f), new Vector3(0.35f, 2.8f, 3.2f), _matWall);
         }
 
-        /// <summary>
-        /// Pirate SW — mast/decks west + climb; east face open to PadSlideExit -> Conn_Pirate_N.
-        /// </summary>
+        /// <summary>Pirate SW carpet under Play_SoftPlay. Kit fort owns the structure.</summary>
         void BuildPiratePad()
         {
             var z = Zone("Zone_Pirate", CxPirate, CzPirate);
-            PadFloor(z, 14f, 12f, _matFloor);
-            // Cluster west — leave +X corridor clear for Play_Slide_Pirate (16.5,12)
-            ChildBox(z, "MastBase", new Vector3(-3.2f, 0.45f, 0.6f), new Vector3(2.2f, 0.9f, 2.2f), _matVault);
-            ChildBox(z, "Deck_Low", new Vector3(-2.4f, 1.1f, 0.6f), new Vector3(5.0f, 0.28f, 3.6f), _matLoft);
-            ChildBox(z, "Deck_High", new Vector3(-3.4f, 2.2f, 2.0f), new Vector3(2.8f, 0.28f, 2.4f), _matLoft);
-            ChildBox(z, "ClimbNetWall", new Vector3(-5.8f, 1.5f, 0.4f), new Vector3(0.3f, 3f, 4.5f), _matWall);
-            // Dropped Plank_Run + Slide_Ramp — PadSlideExit owns the east exit
+            // Covers the tube street south of Play_SoftPlay (14, 9.75). Stops short of SpineZs.
+            ChildBox(z, "PadFloor", new Vector3(1f, -0.08f, -2f), new Vector3(12f, 0.16f, 11f), _matSoftMulch);
         }
 
-        /// <summary>
-        /// Army SE — bunkers + trench; west/north open to PadSlideExit -> Conn_Army_N.
-        /// </summary>
+        /// <summary>Army SE carpet under Play_ArmyBunker.</summary>
         void BuildArmyPad()
         {
             var z = Zone("Zone_Army", CxArmy, CzArmy);
-            PadFloor(z, 14f, 12f, _matFloor);
-            // Staggered bunkers south/east — mid + NW clear for Play_Slide_Army (55.5,12) / Conn
-            ChildBox(z, "Bunker_A", new Vector3(-2.8f, 0.65f, -3.2f), new Vector3(3.2f, 1.3f, 2.4f), _matPad);
-            ChildBox(z, "Bunker_B", new Vector3(3.8f, 0.65f, 1.2f), new Vector3(3.2f, 1.3f, 2.4f), _matPad);
-            ChildBox(z, "FoxholeTrench", new Vector3(1.2f, -0.35f, -0.8f), new Vector3(7f, 0.7f, 1.6f), _matBowl);
-            ChildBox(z, "Wall_Cover", new Vector3(5.8f, 1.1f, -1.5f), new Vector3(0.35f, 2.2f, 5.5f), _matWall);
-            // Dropped Vault_Low + Ramp_Up — sat on Conn_Army_N / west slide run-out
+            // Covers the bunker crawl and the east climb net. Stops short of SpineZs.
+            ChildBox(z, "PadFloor", new Vector3(-1f, -0.08f, -2.5f), new Vector3(14f, 0.16f, 12f), _matFortMulch);
         }
 
-        /// <summary>
-        /// Astro NW — loft + west pipe; east/south open to PadSlideExit -> Conn_Astro_S.
-        /// </summary>
+        /// <summary>Astro NW carpet under Play_AstroLoft, north of SpineZn.</summary>
         void BuildAstroPad()
         {
             var z = Zone("Zone_Astro", CxAstro, CzAstro);
-            PadFloor(z, 14f, 12f, _matFloor);
-            // Loft north; one west half-pipe — no east pipe on Play_Slide_Astro
-            ChildBox(z, "Loft_Ring", new Vector3(-0.5f, 2.0f, 2.6f), new Vector3(7f, 0.28f, 4.2f), _matLoft);
-            ChildBox(z, "VisorPipe_A", new Vector3(-4.0f, 0.95f, -0.8f), new Vector3(1.5f, 1.9f, 4.0f), _matWall)
-                .transform.localRotation = Quaternion.Euler(0f, 35f, 0f);
-            ChildBox(z, "HalfPipe_L", new Vector3(-5.5f, 0.75f, 1.2f), new Vector3(0.45f, 2.2f, 5.5f), _matSlide);
-            ChildBox(z, "Ladder_Stub", new Vector3(-4.2f, 1.0f, -3.6f), new Vector3(1.1f, 2f, 0.35f), _matVault);
-            // Dropped HalfPipe_R — blocked east PadSlideExit
+            // Covers Play_AstroLoft tubes (world z ~48) and stays north of SpineZn.
+            ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, 2f), new Vector3(12f, 0.16f, 12f), _matSoftMulch);
         }
 
-        /// <summary>
-        /// Knight NE — keep NE + north shield; west/south open to PadSlideExit -> Conn_Knight_S.
-        /// </summary>
+        /// <summary>Knight NE carpet under Play_KnightKeep.</summary>
         void BuildKnightPad()
         {
             var z = Zone("Zone_Knight", CxKnight, CzKnight);
-            PadFloor(z, 14f, 12f, _matFloor);
-            ChildBox(z, "Courtyard", new Vector3(0.8f, 0.05f, 0.6f), new Vector3(7.5f, 0.1f, 6f), _matLoft);
-            ChildBox(z, "ShieldWall_N", new Vector3(1.0f, 1.4f, 4.6f), new Vector3(8f, 2.8f, 0.4f), _matWall);
-            ChildBox(z, "Keep_Tower", new Vector3(4.0f, 2.4f, 2.8f), new Vector3(2.6f, 4.8f, 2.6f), _matPad);
-            ChildBox(z, "Battlement", new Vector3(4.0f, 5.0f, 2.8f), new Vector3(3.2f, 0.35f, 3.2f), _matLoft);
-            ChildBox(z, "Ramp_Keep", new Vector3(4.0f, 1.1f, -0.8f), new Vector3(2.4f, 0.28f, 4.2f), _matRamp)
-                .transform.localRotation = Quaternion.Euler(-15f, 0f, 0f);
-            // Dropped VaultGate — sat on south/west run-out to Play_Slide_Knight / Conn
+            ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, 2f), new Vector3(14f, 0.16f, 12f), _matFortMulch);
         }
 
-        /// <summary>
-        /// Tron S — disc + wall-run south; north face open to Conn_Tron_N.
-        /// </summary>
+        /// <summary>Tron disc lawn between the south ring and SpineZs. Ring gear is Play_Ring_S.</summary>
         void BuildTronPad()
         {
             var z = Zone("Zone_Tron", CxTron, CzTron);
-            PadFloor(z, 12f, 9f, _matPad);
-            // Posts + neon south of mid — clear +Z toward Conn_Tron_N (36,12.5)
-            ChildBox(z, "GridPost_0", new Vector3(-3.2f, 1.1f, -1.2f), new Vector3(0.3f, 2.2f, 0.3f), _matWall);
-            ChildBox(z, "GridPost_1", new Vector3(3.2f, 1.1f, -1.2f), new Vector3(0.3f, 2.2f, 0.3f), _matWall);
-            ChildBox(z, "NeonTube_EW", new Vector3(0f, 2.4f, -1.6f), new Vector3(8f, 0.16f, 0.16f), _matVault);
-            ChildBox(z, "DiscPad", new Vector3(0f, 0.12f, -2.4f), new Vector3(3.0f, 0.24f, 3.0f), _matSlide);
-            ChildBox(z, "WallRun_S", new Vector3(0f, 1.3f, -3.8f), new Vector3(9f, 2.6f, 0.3f), _matWall);
+            ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, 3.5f), new Vector3(8f, 0.16f, 6f), _matRing);
         }
 
-        /// <summary>
-        /// Ninja N — towers + climb west; south courtyard open to Conn_Ninja_S.
-        /// </summary>
+        /// <summary>Ninja approach south of Play_Ring_N. Blade landmark is a rail on the north rim.</summary>
         void BuildNinjaPad()
         {
             var z = Zone("Zone_Ninja", CxNinja, CzNinja);
-            PadFloor(z, 12f, 9f, _matFloor);
-            ChildBox(z, "SilentTower_A", new Vector3(-3.8f, 2.4f, 1.2f), new Vector3(1.8f, 4.8f, 1.8f), _matPad);
-            ChildBox(z, "SilentTower_B", new Vector3(3.8f, 1.9f, 2.0f), new Vector3(1.8f, 3.8f, 1.8f), _matPad);
-            // One blade rail north — leave -Z run-out to Conn_Ninja_S clear
-            ChildBox(z, "BladeRail", new Vector3(0f, 1.6f, 2.6f), new Vector3(6f, 0.22f, 0.3f), _matVault);
-            ChildBox(z, "ClimbFace", new Vector3(-5.6f, 1.7f, 1.6f), new Vector3(0.35f, 3.4f, 3.6f), _matWall);
-            ChildBox(z, "LandingDeck", new Vector3(3.8f, 4.0f, 2.0f), new Vector3(2.6f, 0.28f, 2.6f), _matLoft);
-            // Dropped BladeRail_High — thin to 3–5 toys; south exit already open
+            ChildBox(z, "PadFloor", new Vector3(0f, -0.08f, -1.5f), new Vector3(10f, 0.16f, 5f), _matPlayMulch);
         }
 
         void BuildSpawns()
