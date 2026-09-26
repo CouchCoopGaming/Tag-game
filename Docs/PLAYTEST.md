@@ -662,7 +662,9 @@ Already on this branch: A mantle eases into the stand or the run. That pose then
 
 Already on this branch: Play spawns the Tan Hier mannequin. The feet sit on the pad. Walking moves the limbs. It swaps to the Orange Hier. The capsule mesh stays off.
 
-This delta: Tan and Orange Hier use URP Lit vinyl. The body is warm bone or orange, the hinges are darker metal, the waist bellows stay matte, and the eye plates stay flat dark. A walk should show those parts moving. No magenta capsule. Face v0.5.1 stays.
+Already on this branch: Tan and Orange Hier use URP Lit vinyl. The body is warm bone or orange, the hinges are darker metal, the waist bellows stay matte, and the eye plates stay flat dark.
+
+This delta: The pawn mesh is body v0.6 (curved vinyl, human waist) with face v0.5.1. Rubber soles stay dark and matte. Wear stays dark. No magenta capsule. Walking still moves the limbs.
 
 ## Stack snapshot
 
@@ -1112,6 +1114,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 351. Finish a mantle into a stand or a run: the vault should ease into that pose. That pose should then hold. The body should not pop. A super glide should feel the same. Mantle time should feel the same. Jet stays off.
 352. Play the Play scene: the body should be the Tan Hier mannequin, not a pink capsule. The feet should sit on the pad. Walking should move the limbs. Tagging should swap to the Orange Hier. Jet stays off.
 353. Walk and tag: the Tan body should read as warm vinyl, with darker hinges and a matte waist. The eye plates should stay flat and dark. It should swap to orange vinyl. No magenta. The molded face should stay. Jet stays off.
+354. The body should be the v0.6 curved vinyl with a human waist. Soles should stay dark rubber. The face should stay the flat-eyed molded face. Feet on the pad. Limbs move. No magenta capsule. Jet stays off.
 
 ## Known leftovers
 
@@ -1486,6 +1489,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 341. A mantle eases into the stand or the run. That pose then holds. The pop stays off that path. A super glide is unchanged. Mantle time is unchanged. Jet stays off.
 342. The pawn spawns the Tan Hier mannequin. The feet sit on the pad. Walking moves the limbs. It swaps to the Orange Hier. The pink capsule stays off. Jet stays off.
 343. Tan vinyl, darker hinges, and a matte waist read while walking. Eye plates stay flat and dark. It is orange vinyl. No magenta. The molded face stays. Jet stays off.
+344. Body v0.6 curved vinyl and a human waist spawn on the pad. Soles stay dark rubber. The face stays flat-eyed. Limbs move. No magenta capsule. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
