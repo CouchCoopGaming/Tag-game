@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 """
-HiPoly hierarchical mannequin v7 / skin realism v0.6
-Builds on body v0.4.1 + face v0.5.1 (shipping baseline).
+HiPoly hierarchical mannequin v7.1 / hands v0.6.1
+Builds on body v0.6 + face v0.5.1 (shipping baseline). Hands-only pass.
 
-v0.6 changes vs v6.1:
-  - Vinyl skin response: matte-to-satin Principled (roughness ~0.40–0.46),
-    soft SSS / warm edge glow on Runner + It vinyl shells.
-  - Material split: Base vinyl ≠ Joint/Metal hinges ≠ Rubber shoe pads ≠ Bellows.
-  - Panel fidelity: thicker bead lips / clearer shell overlaps (Hybrid III plate).
-  - Hinge realism: large disks kept; flat/cyl rivet caps + darker wear rim.
-  - Micro wear: light stamp-ink dirt disks in seam recesses only (no gore).
-  - Nose tip sharpened (narrower/taller cone); finger gaps + thumb opposition.
-  - Face stays v0.5.1 language: flat oval eye insets, ZERO protruding orbs.
+v0.6.1 hands (vs v0.6 / v7):
+  - Longer finger shells (~35–40% tip reach) — Hybrid III crash-dummy hand length.
+  - Wider lateral finger gaps — distinct shells readable at game cam (not mitten).
+  - Clearer opposing thumb — longer, more out+forward, thicker base mass.
+  - Tip spheres remain soft vinyl pads (NOT orb beads).
+  - Face v0.5.1 + body v0.6 untouched. No per-finger bones.
 
 DummyLocomotor bones / hierarchy / GUIDs / FBX paths unchanged.
 GUID-safe FBX overwrite. NO git push.
@@ -25,7 +22,7 @@ from mathutils import Vector, Euler
 OUT_DIR = "/workspace/tag-unity/Assets/Art/Characters/HiPoly"
 PREV = "/workspace/art-build/previews"
 BLEND = "/workspace/art-build/Dummy_Mannequin_Hier_Hi.blend"
-LOG = "/tmp/hipoly_v60_build.log"
+LOG = "/tmp/hipoly_v61_build.log"
 REF_CRASH = "/workspace/tag-gdd/art/refs/hybrid-iii-v03/ref_hybrid_iii_crash_dummy.jpg"
 
 GUID_TAN = "ad3f2fa97db94e72869d746ecdf8e87d"
@@ -472,7 +469,11 @@ def u_knee_fork(name, kn, sx):
 
 
 def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
-    """Thumb + SEPARATED fingers (v0.6: more gap, clearer Hybrid III opposition)."""
+    """Thumb + SEPARATED fingers (v0.6.1: longer shells, wider gaps, clearer thumb).
+
+    Hands-only pass — static shells parented to Hand_L/R (no per-finger bones).
+    Tip spheres are soft vinyl pads, NOT orb beads.
+    """
     parts = []
     wrj = hinge_disk(f"{name}_WristJ", wr, axis="X", radius=0.042, thick=0.020, rivets=3)
     set_mat(wrj, joint_mat)
@@ -480,45 +481,52 @@ def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
 
     palm = sph(f"{name}_Palm",
                hand + Vector((0, -0.008, 0.008)),
-               (0.040, 0.028, 0.046), seg=18, ring=10)
+               (0.042, 0.030, 0.048), seg=18, ring=10)
     set_mat(palm, base_mat)
     parts.append(palm)
 
-    # Wider lateral spread + slightly longer tips — not fused paddle
+    # v0.6.1: wider lateral spread + ~38% longer tip reach, slightly more distal
     finger_offsets = [
-        (-0.034, -0.052, -0.008),
-        (-0.012, -0.068, -0.010),
-        (0.012, -0.070, -0.010),
-        (0.034, -0.052, -0.008),
+        (-0.044, -0.058, -0.010),
+        (-0.015, -0.074, -0.012),
+        (0.015, -0.076, -0.012),
+        (0.044, -0.058, -0.010),
     ]
     tip_extra = [
-        (-0.038, -0.112, -0.040),
-        (-0.012, -0.126, -0.044),
-        (0.012, -0.128, -0.044),
-        (0.038, -0.112, -0.040),
+        (-0.050, -0.162, -0.056),
+        (-0.016, -0.182, -0.060),
+        (0.016, -0.185, -0.060),
+        (0.050, -0.162, -0.056),
     ]
     for i, (ox, oy, oz) in enumerate(finger_offsets):
         start = hand + Vector((ox, oy * 0.28, oz * 0.30))
         end = hand + Vector(tip_extra[i])
-        r0 = 0.0115 if i in (1, 2) else 0.0105
-        r1 = 0.008
+        r0 = 0.0120 if i in (1, 2) else 0.0110
+        r1 = 0.0082
         fing = tapered_limb(f"{name}_F{i}", start, end, r0, r1, v=10)
         set_mat(fing, base_mat)
         parts.append(fing)
-        tip = sph(f"{name}_Tip{i}", end, 0.009, seg=8, ring=4)
+        # Soft vinyl pad tip — NOT an orb bead
+        tip = sph(f"{name}_Tip{i}", end, 0.0095, seg=8, ring=4)
         set_mat(tip, base_mat)
         parts.append(tip)
 
-    # Clearer thumb opposition (out + forward, not glued to palm)
+    # v0.6.1: longer opposing thumb (out + forward), thicker base / thenar mass
+    thumb_start = hand + Vector((sx * 0.030, 0.008, 0.024))
+    thumb_end = hand + Vector((sx * 0.115, 0.055, -0.062))
+    thenar = sph(f"{name}_Thenar",
+                 hand + Vector((sx * 0.032, 0.006, 0.012)),
+                 (0.022, 0.018, 0.024), seg=10, ring=5)
+    set_mat(thenar, base_mat)
+    parts.append(thenar)
     thumb = tapered_limb(
         f"{name}_Thumb",
-        hand + Vector((sx * 0.022, 0.012, 0.016)),
-        hand + Vector((sx * 0.082, 0.038, -0.032)),
-        0.014, 0.009, v=10)
+        thumb_start,
+        thumb_end,
+        0.018, 0.010, v=10)
     set_mat(thumb, base_mat)
     parts.append(thumb)
-    tip_th = sph(f"{name}_ThumbTip", hand + Vector((sx * 0.082, 0.038, -0.032)),
-                 0.010, seg=8, ring=4)
+    tip_th = sph(f"{name}_ThumbTip", thumb_end, 0.011, seg=8, ring=4)
     set_mat(tip_th, base_mat)
     parts.append(tip_th)
     return join(name, parts)
@@ -1283,6 +1291,14 @@ def pose_punch(arm_ob):
     set_bone_euler(arm_ob, "LowerLeg_R", (8, 0, 0))
 
 
+def hand_world(arm_ob, side="L"):
+    """World-space tip of Hand_L/R for close still framing."""
+    pb = arm_ob.pose.bones.get(f"Hand_{side}")
+    if not pb:
+        return Vector((0.35 if side == "L" else -0.35, -0.25, 1.05))
+    return Vector(arm_ob.matrix_world @ pb.tail)
+
+
 def render_shot(path, cam_loc, look=(0, 0, 1.05)):
     setup_render()
     place_camera(cam_loc, look)
@@ -1317,7 +1333,7 @@ def composite_vs_ref(idle_path, out_path):
             " f = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 22)\n"
             "except Exception:\n"
             " f = ImageFont.load_default()\n"
-            "d.text((20, 10), 'v0.6 Tan idle (Hybrid III skin)', fill=(220, 220, 220, 255), font=f)\n"
+            "d.text((20, 10), 'v0.6.1 Tan idle (Hybrid III hands)', fill=(220, 220, 220, 255), font=f)\n"
             "d.text((20 + a.width + gap, 10), 'Hybrid III ref (PRIMARY)', fill=(220, 220, 220, 255), font=f)\n"
             "c.convert('RGB').save(out_path)\n"
         )
@@ -1357,7 +1373,7 @@ def composite_vs_ref(idle_path, out_path):
         font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
     except Exception:
         font = ImageFont.load_default()
-    draw.text((20, 10), "v0.6 Tan idle (Hybrid III skin)", fill=(220, 220, 220, 255), font=font)
+    draw.text((20, 10), "v0.6.1 Tan idle (Hybrid III hands)", fill=(220, 220, 220, 255), font=font)
     draw.text((20 + idle_f.width + gap, 10), "Hybrid III ref (PRIMARY)", fill=(220, 220, 220, 255), font=font)
     canvas.convert("RGB").save(out_path)
     log(f"Still {out_path} (vs ref composite)")
@@ -1435,23 +1451,34 @@ def build_variant(is_it, export_path, guid, do_stills_tan=False, do_still_orange
 
     if do_stills_tan:
         pose_idle(arm_ob)
-        idle_front = f"{PREV}/hipoly_v60_idle_front.png"
+        idle_front = f"{PREV}/hipoly_v61_idle_front.png"
         render_shot(idle_front, (0.15, -3.3, 1.40), (0, 0, 1.05))
-        # ¾ idle
-        render_shot(f"{PREV}/hipoly_v60_idle_34.png", (2.2, -2.6, 1.45), (0, 0, 1.10))
-        # PROFILE — wedge nose must break egg
-        render_shot(f"{PREV}/hipoly_v60_idle_profile.png", (3.4, 0.05, 1.45), (0, 0, 1.10))
-        # Face close front + profile (flat insets / sharper nose check)
-        render_shot(f"{PREV}/hipoly_v60_face_close_front.png", (0.05, -0.95, 1.72), (0, -0.05, 1.72))
-        render_shot(f"{PREV}/hipoly_v60_face_close_profile.png", (0.95, 0.02, 1.72), (0, -0.05, 1.72))
-        composite_vs_ref(idle_front, f"{PREV}/hipoly_v60_idle_vs_ref.png")
+        # ¾ idle — hands readable
+        render_shot(f"{PREV}/hipoly_v61_idle_34.png", (2.2, -2.6, 1.45), (0, 0, 1.10))
+        # Hand close — fingers + opposing thumb must read
+        hl = hand_world(arm_ob, "L")
+        # Dorsal-front: above + front so finger length reads (avoid tip-on foreshorten)
+        render_shot(
+            f"{PREV}/hipoly_v61_hand_close_front.png",
+            (hl.x - 0.05, hl.y - 0.52, hl.z + 0.28),
+            (hl.x + 0.02, hl.y + 0.02, hl.z - 0.02),
+        )
+        render_shot(
+            f"{PREV}/hipoly_v61_hand_close_34.png",
+            (hl.x + 0.42, hl.y - 0.38, hl.z + 0.18),
+            (hl.x, hl.y + 0.02, hl.z - 0.01),
+        )
         reset_pose(arm_ob)
 
     if do_still_orange:
         pose_idle(arm_ob)
-        render_shot(f"{PREV}/hipoly_v60_it_idle_front.png", (0.15, -3.3, 1.40), (0, 0, 1.05))
-        render_shot(f"{PREV}/hipoly_v60_it_idle_profile.png", (3.4, 0.05, 1.45), (0, 0, 1.10))
-        render_shot(f"{PREV}/hipoly_v60_it_face_close_front.png", (0.05, -0.95, 1.72), (0, -0.05, 1.72))
+        render_shot(f"{PREV}/hipoly_v61_it_idle_front.png", (0.15, -3.3, 1.40), (0, 0, 1.05))
+        hl = hand_world(arm_ob, "L")
+        render_shot(
+            f"{PREV}/hipoly_v61_it_hand_close_front.png",
+            (hl.x - 0.05, hl.y - 0.52, hl.z + 0.28),
+            (hl.x + 0.02, hl.y + 0.02, hl.z - 0.02),
+        )
         reset_pose(arm_ob)
 
     export_fbx(export_path, arm_ob)
@@ -1469,8 +1496,8 @@ def write_readme():
 DummyLocomotor-bindable **Hybrid III** crash-test dummies — segmented vinyl shells
 + athletic mass (middle path). v0.3 toy / v0.4 smooth mannequin / v0.5 orb face all rejected.
 
-**Pass:** skin realism **v0.6** on body **v0.4.1** + face **v0.5.1** (flat oval eye insets,
-sharper wedge nose, ZERO protruding orbs). Vinyl SSS + metal/rubber/bellows material split.
+**Pass:** hands **v0.6.1** on skin **v0.6** + body **v0.4.1** + face **v0.5.1** (flat oval eye insets,
+ZERO protruding orbs). Longer separated finger shells + clearer opposing thumb; static under Hand_L/R.
 
 ## Assets
 | File | Paint |
@@ -1500,15 +1527,15 @@ sharper wedge nose, ZERO protruding orbs). Vinyl SSS + metal/rubber/bellows mate
 
 
 def main():
-    log("=== hipoly hier v7 / skin realism v0.6 (body v0.4.1 + face v0.5.1) ===")
+    log("=== hipoly hier v7.1 / hands v0.6.1 (body v0.6 + face v0.5.1 locked) ===")
     tan = os.path.join(OUT_DIR, "Dummy_Mannequin_Tan_Hier_Hi.fbx")
     orn = os.path.join(OUT_DIR, "Dummy_Mannequin_Orange_Hier_Hi.fbx")
 
-    log("Building Tan/Runner Hier HiPoly v0.6…")
+    log("Building Tan/Runner Hier HiPoly v0.6.1 hands…")
     ok_t, ang_t, cx_t, cy_t = build_variant(
         False, tan, GUID_TAN, do_stills_tan=True, do_still_orange=False)
 
-    log("Building Orange/It Hier HiPoly v0.6…")
+    log("Building Orange/It Hier HiPoly v0.6.1 hands…")
     ok_o, ang_o, cx_o, cy_o = build_variant(
         True, orn, GUID_ORANGE, do_stills_tan=False, do_still_orange=True)
 
@@ -1517,7 +1544,7 @@ def main():
     log(f"It  OK={ok_o} A-pose={ang_o:.1f}deg clear_x={cx_o:.3f} clear_y={cy_o:.3f}")
     log(f"Tan FBX {os.path.getsize(tan)} bytes guid={GUID_TAN}")
     log(f"Orange FBX {os.path.getsize(orn)} bytes guid={GUID_ORANGE}")
-    log("DONE skin v0.6 — no git push (await AD approve)")
+    log("DONE hands v0.6.1 — no git push (await AD approve)")
 
 
 if __name__ == "__main__":
