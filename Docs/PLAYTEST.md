@@ -660,7 +660,9 @@ Already on this branch: A walk or a run eases onto a climb or a wall run. That p
 
 Already on this branch: A mantle eases into the stand or the run. That pose then holds. The pop stays off that path. Mantle time is unchanged.
 
-This delta: Play spawns the Tan Hier mannequin, not the pink capsule. The feet sit on the pad. Walking moves the limbs. It swaps to the Orange Hier. The capsule mesh stays off.
+Already on this branch: Play spawns the Tan Hier mannequin. The feet sit on the pad. Walking moves the limbs. It swaps to the Orange Hier. The capsule mesh stays off.
+
+This delta: Tan and Orange Hier use URP Lit vinyl. The body is warm bone or orange, the hinges are darker metal, the waist bellows stay matte, and the eye plates stay flat dark. A walk should show those parts moving. No magenta capsule. Face v0.5.1 stays.
 
 ## Stack snapshot
 
@@ -1109,10 +1111,12 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 350. Walk or run onto a climb or a wall: the pose should ease onto it. That pose should then hold. The hands should not pop. A crouch onto a wall should feel the same. A jump onto a wall should feel the same. The meet should not feel longer. Jet stays off.
 351. Finish a mantle into a stand or a run: the vault should ease into that pose. That pose should then hold. The body should not pop. A super glide should feel the same. Mantle time should feel the same. Jet stays off.
 352. Play the Play scene: the body should be the Tan Hier mannequin, not a pink capsule. The feet should sit on the pad. Walking should move the limbs. Tagging should swap to the Orange Hier. Jet stays off.
+353. Walk and tag: the Tan body should read as warm vinyl, with darker hinges and a matte waist. The eye plates should stay flat and dark. It should swap to orange vinyl. No magenta. The molded face should stay. Jet stays off.
 
 ## Known leftovers
 
 - Prefab/mat dirt after Hub visuals / URP regen -> do not commit unless intentional.
+- Hier catalog color slots are empty on purpose (Prefab fileID 100100000 does not resolve on an FBX). Editor Play loads Tan and Orange by path. A player build still needs those six model roots assigned in Unity. Do not hand-write fileIDs.
 - Flat HiPoly mannequins may skip hierarchical `DummyLocomotor` binds (primitive / bindable-bone path is the readable tell).
 - Legacy contact `TryTag` radius still exists on motor; play modes use punch transfer.
 - Trail avoid starts peeling ~9.2 m (weight 0.80) off a foreign ribbon (HUD TRAIL! soft warn ~6.2 m).
@@ -1481,6 +1485,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 340. A walk or a run eases onto a climb or a wall run. That pose then holds. The pop stays off that path. A crouch meet is unchanged. A jump meet is unchanged. The meet time is unchanged. Jet stays off.
 341. A mantle eases into the stand or the run. That pose then holds. The pop stays off that path. A super glide is unchanged. Mantle time is unchanged. Jet stays off.
 342. The pawn spawns the Tan Hier mannequin. The feet sit on the pad. Walking moves the limbs. It swaps to the Orange Hier. The pink capsule stays off. Jet stays off.
+343. Tan vinyl, darker hinges, and a matte waist read while walking. Eye plates stay flat and dark. It is orange vinyl. No magenta. The molded face stays. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
