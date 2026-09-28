@@ -31,7 +31,7 @@ namespace TagArena.Movement
             Punch.ToString();
 
         public static string Help =>
-            "WASD move\n" +
+            "WASD move. In air, tap forward while strafing\n" +
             "Shift ski, or sprint when ski does not catch\n" +
             "Space jump\n" +
             "Ctrl or C slide (hold with speed)\n" +

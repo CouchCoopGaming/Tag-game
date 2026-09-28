@@ -42,6 +42,7 @@ namespace TagArena.Movement
         float _prevJet;
         float _prevLunge;
         bool _prevW;
+        float _prevMoveY;
         float _extPrevJump;
         bool _wasCursorLocked;
         // After pause/results unlock, locking the cursor in the same Update as Read can yaw+punch.
@@ -88,6 +89,7 @@ namespace TagArena.Movement
                 _prevJump = (Input.GetButton("Jump") || Input.GetKey(KeyCode.Space)) ? 1f : 0f;
                 _prevJet = (Input.GetKey(jetKey) || Input.GetMouseButton(1)) ? 1f : 0f;
                 _prevW = Input.GetKey(tapStrafePulseKey);
+                _prevMoveY = Input.GetAxisRaw("Vertical");
                 _wasCursorLocked = false;
                 return;
             }
@@ -106,8 +108,12 @@ namespace TagArena.Movement
             Look = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
 
             bool w = Input.GetKey(tapStrafePulseKey);
-            TapForwardPulse = w && !_prevW;
+            // W tap, or a stick that snaps forward in one frame. A slow push does not pulse.
+            // Same air redirect. Impulse and cooldown stay on the motor.
+            bool stickFlick = Move.y > 0.75f && _prevMoveY <= 0.45f;
+            TapForwardPulse = (w && !_prevW) || stickFlick;
             _prevW = w;
+            _prevMoveY = Move.y;
 
             CrouchHeld = Input.GetKey(crouchKey) || Input.GetKey(KeyCode.LeftControl);
             CrouchPressed = CrouchHeld && _prevCrouch <= 0f;
@@ -163,6 +169,7 @@ namespace TagArena.Movement
             _prevJump = (Input.GetButton("Jump") || Input.GetKey(KeyCode.Space)) ? 1f : 0f;
             _prevJet = (Input.GetKey(jetKey) || Input.GetMouseButton(1)) ? 1f : 0f;
             _prevW = Input.GetKey(tapStrafePulseKey);
+            _prevMoveY = Move.y;
         }
 
         /// <summary>Optional explicit arm (pause/results clear). Rising-edge lock also arms.</summary>

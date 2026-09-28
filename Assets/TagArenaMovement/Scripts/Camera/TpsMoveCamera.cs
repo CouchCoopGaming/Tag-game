@@ -94,10 +94,21 @@ namespace TagArena.Movement
                 ApplyBoomWithCollision();
 
                 // Look toward upper chest + slight velocity look-ahead (readable speed).
-                // A slide ducks the wedge, so the look point drops with it. Mouse look is unchanged.
-                float wantLookH = motor.State == MoveState.Slide ? lookAtHeight - 0.32f : lookAtHeight;
+                // A slide ducks the wedge, so the look point drops with it.
+                // A climb reaches up, so the look point rises with the hands. Mouse look is unchanged.
+                float wantLookH = lookAtHeight;
+                if (motor.State == MoveState.Slide)
+                    wantLookH = lookAtHeight - 0.32f;
+                else if (motor.State == MoveState.WallClimb)
+                    wantLookH = lookAtHeight + 0.28f;
                 _lookH = Mathf.Lerp(_lookH, wantLookH, 1f - Mathf.Exp(-8f * dt));
                 Vector3 lookAt = motor.transform.position + Vector3.up * _lookH;
+                if (motor.State == MoveState.WallRun && motor.WallNormal.sqrMagnitude > 0.01f)
+                {
+                    Vector3 wallInto = Vector3.ProjectOnPlane(-motor.WallNormal, Vector3.up);
+                    if (wallInto.sqrMagnitude > 0.01f)
+                        lookAt += wallInto.normalized * 0.42f;
+                }
                 float lo = cfg != null ? cfg.walkSpeed : lookAheadSpeedLo;
                 float hi = lookAheadSpeedHi;
                 float speedT = Mathf.InverseLerp(lo, hi, motor.HorizSpeed);

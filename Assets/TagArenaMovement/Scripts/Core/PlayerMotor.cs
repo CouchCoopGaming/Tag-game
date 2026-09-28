@@ -449,8 +449,8 @@ namespace TagArena.Movement
                 hv = WishAccel.Accelerate(hv, wish, cap, accel / Mathf.Max(cap, 1f), dt);
             }
 
-            // Tap-strafe analog: a discrete forward pulse while holding a side key
-            // redirects a slice of speed into the current wish. MnK skill ceiling.
+            // Tap-strafe: a forward pulse (W or a stick flick) while holding a side key
+            // redirects a slice of speed into the current wish. Impulse and cooldown are unchanged.
             if (cfg.enableTapStrafe && _in.TapForwardPulse && _tapCd <= 0f && Mathf.Abs(_in.Move.x) > 0.4f)
             {
                 Vector3 side = wish.sqrMagnitude > 0.01f ? wish.normalized : transform.right * Mathf.Sign(_in.Move.x);
