@@ -966,6 +966,59 @@ namespace Tag.Art
             return false;
         }
 
+        /// <summary>
+        /// Tan runner / Orange It spawn contract. Hands live under the forearms,
+        /// the head mesh under Head, the shin under the thigh, and a foot is present.
+        /// Finger bones are not required.
+        /// </summary>
+        public static bool HierSpawnContract(Transform root)
+        {
+            if (!HasBindableBones(root)) return false;
+            if (!BoneUnder(root, "Hand_L", "LowerArm_L")) return false;
+            if (!BoneUnder(root, "Hand_R", "LowerArm_R")) return false;
+            if (!BoneUnder(root, "Mesh_Head", "Head")) return false;
+            if (!BoneUnder(root, "LowerLeg_L", "UpperLeg_L")) return false;
+            if (!BoneUnder(root, "LowerLeg_R", "UpperLeg_R")) return false;
+            if (FindBone(root, "Foot_L", "Mesh_Foot_L") == null) return false;
+            if (FindBone(root, "Foot_R", "Mesh_Foot_R") == null) return false;
+            return true;
+        }
+
+        public static string HierSpawnContractReport(Transform root)
+        {
+            if (root == null) return "root null";
+            var missing = new System.Text.StringBuilder();
+            void Need(string label, bool ok)
+            {
+                if (!ok) missing.Append(label).Append("; ");
+            }
+            Need("HasBindableBones", HasBindableBones(root));
+            Need("Hand_L under LowerArm_L", BoneUnder(root, "Hand_L", "LowerArm_L"));
+            Need("Hand_R under LowerArm_R", BoneUnder(root, "Hand_R", "LowerArm_R"));
+            Need("Mesh_Head under Head", BoneUnder(root, "Mesh_Head", "Head"));
+            Need("LowerLeg_L under UpperLeg_L", BoneUnder(root, "LowerLeg_L", "UpperLeg_L"));
+            Need("LowerLeg_R under UpperLeg_R", BoneUnder(root, "LowerLeg_R", "UpperLeg_R"));
+            Need("Foot_L", FindBone(root, "Foot_L", "Mesh_Foot_L") != null);
+            Need("Foot_R", FindBone(root, "Foot_R", "Mesh_Foot_R") != null);
+            int fingers = 0;
+            var all = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < all.Length; i++)
+            {
+                if (all[i].name.IndexOf("Finger_", System.StringComparison.Ordinal) >= 0)
+                    fingers++;
+            }
+            if (missing.Length == 0)
+                return "ok fingers=" + fingers + " (not required)";
+            return missing.ToString() + "fingers=" + fingers + " (not required)";
+        }
+
+        static bool BoneUnder(Transform root, string childName, string parentName)
+        {
+            var child = FindBone(root, childName);
+            var parent = FindBone(root, parentName);
+            return child != null && parent != null && child != parent && child.IsChildOf(parent);
+        }
+
         void LateUpdate()
         {
             float dt = Time.deltaTime;
@@ -6600,6 +6653,24 @@ namespace Tag.Art
                         _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX, 0f, leanZ), intoIdle);
                     }
                 }
+                if (sliding && _dropSlide)
+                {
+                    // The wedge stays low. A folded elbow disappears at chase distance,
+                    // so the fist stays a long line. A tag still uses the claim arms.
+                    // Windup, connect, and whiff times are unchanged. slideBoost stays 0.
+                    bool claimArms = phase == PunchPhase.HitRecover && claimAmt > 0.04f;
+                    SlidePunchPose(phase, punchProg, armZ, out Quaternion slideUaL, out Quaternion slideUaR, out Quaternion slideLaL, out Quaternion slideLaR, out Quaternion slideHp, out Quaternion slideSp, out Quaternion slideHd);
+                    if (!claimArms)
+                    {
+                        _uaLT = slideUaL;
+                        _uaRT = slideUaR;
+                        _laLT = slideLaL;
+                        _laRT = slideLaR;
+                    }
+                    _hipsT = slideHp;
+                    _spineT = slideSp;
+                    _headT = slideHd;
+                }
             }
             else if (air)
             {
@@ -10609,24 +10680,19 @@ namespace Tag.Art
             }
             if (_punchFromSlide && !_punchFromSki && !_punchFromHard && !_punchFromSoft && !_punchFromJump && !_jumpFromPunch && !_punchFromDash && punching && phase == PunchPhase.Windup && _punchFromSlideIn < 0.98f)
             {
-                // The wedge eases into the cock, then the windup holds.
-                // A ski into a punch keeps its ease. A slide into a jump keeps its push.
-                // A slide into an air dash keeps its ease. slideBoost stays 0. Windup time is unchanged.
+                // The wedge eases into the low cock, then the windup holds.
+                // The chest stays in the wedge. A ski into a punch keeps its ease.
+                // A slide into a jump keeps its push. A slide into an air dash keeps its ease.
+                // slideBoost stays 0. Windup time is unchanged.
                 float into = _punchFromSlideIn;
-                float w = Mathf.Lerp(0.85f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg / 0.35f)));
-                Quaternion windL = _uaL0 * Quaternion.Euler(-28f, 14f, armZ + 18f);
-                Quaternion windR = _uaR0 * Quaternion.Euler(-58f * w, 46f * w, -armZ);
-                Quaternion windElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
-                Quaternion windElR = _laR0 * Quaternion.Euler(-68f * w, 0f, 0f);
-                Quaternion windHp = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f);
-                Quaternion windSp = _spine0 * Quaternion.Euler(leanX + 12f * w, -36f * w, leanZ);
+                SlidePunchPose(PunchPhase.Windup, punchProg, armZ, out Quaternion windL, out Quaternion windR, out Quaternion windElL, out Quaternion windElR, out Quaternion windHp, out Quaternion windSp, out Quaternion windHd);
                 _uaLT = Quaternion.Slerp(_slidePunchUaL, windL, into);
                 _uaRT = Quaternion.Slerp(_slidePunchUaR, windR, into);
                 _laLT = Quaternion.Slerp(_slidePunchLaL, windElL, into);
                 _laRT = Quaternion.Slerp(_slidePunchLaR, windElR, into);
                 _hipsT = Quaternion.Slerp(_slidePunchHp, windHp, into);
                 _spineT = Quaternion.Slerp(_slidePunchSp, windSp, into);
-                _headT = Quaternion.Slerp(_slidePunchHd, _headT, into);
+                _headT = Quaternion.Slerp(_slidePunchHd, windHd, into);
                 _ulLT = Quaternion.Slerp(_slidePunchUlL, _ulLT, into);
                 _ulRT = Quaternion.Slerp(_slidePunchUlR, _ulRT, into);
                 _llLT = Quaternion.Slerp(_slidePunchLlL, _llLT, into);
@@ -14328,6 +14394,61 @@ namespace Tag.Art
         {
             if (t == null) return;
             t.localRotation = Quaternion.Slerp(t.localRotation, target, 1f - Mathf.Exp(-speed * dt));
+        }
+
+        void SlidePunchPose(PunchPhase phase, float punchProg, float armZ, out Quaternion uaL, out Quaternion uaR, out Quaternion laL, out Quaternion laR, out Quaternion hips, out Quaternion spine, out Quaternion head)
+        {
+            // Wedge chest (62) and hips (50). The strike elbow stays near straight
+            // so the fist reads at chase distance. Phase times are unchanged.
+            float w = Mathf.Lerp(0.85f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg / 0.35f)));
+            float e = Mathf.Lerp(0.8f, 1f, punchProg);
+            float settle = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.28f, 1f, punchProg));
+            float missEase = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg));
+            Quaternion lineL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
+            Quaternion lineElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
+            Quaternion lineR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+            Quaternion lineElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
+            Quaternion strikeR = _uaR0 * Quaternion.Euler(-118f, 58f * e, -22f);
+            Quaternion strikeEl = _laR0 * Quaternion.Euler(-18f, 0f, 0f);
+            float spineYaw = 0f;
+            float hipYaw = 0f;
+            if (phase == PunchPhase.Windup)
+            {
+                spineYaw = -24f * w;
+                hipYaw = -16f * w;
+                uaL = lineL;
+                laL = lineElL;
+                uaR = _uaR0 * Quaternion.Euler(-86f * w, 46f * w, -armZ);
+                laR = _laR0 * Quaternion.Euler(-18f * w, 0f, 0f);
+            }
+            else if (phase == PunchPhase.Active)
+            {
+                spineYaw = 28f * e;
+                hipYaw = 14f * e;
+                uaL = lineL;
+                laL = lineElL;
+                uaR = strikeR;
+                laR = strikeEl;
+            }
+            else if (phase == PunchPhase.HitRecover)
+            {
+                spineYaw = Mathf.Lerp(28f, 0f, settle);
+                hipYaw = Mathf.Lerp(14f, 0f, settle);
+                uaL = lineL;
+                laL = lineElL;
+                uaR = Quaternion.Slerp(strikeR, lineR, settle);
+                laR = Quaternion.Slerp(strikeEl, lineElR, settle);
+            }
+            else
+            {
+                uaL = lineL;
+                laL = lineElL;
+                uaR = Quaternion.Slerp(strikeR, lineR, missEase);
+                laR = Quaternion.Slerp(strikeEl, lineElR, missEase);
+            }
+            hips = _hips0 * Quaternion.Euler(50f, hipYaw, 0f);
+            spine = _spine0 * Quaternion.Euler(62f, spineYaw, 0f);
+            head = _head0 * Quaternion.Euler(-12f, 0f, 0f);
         }
 
         void Cache(Transform root)
