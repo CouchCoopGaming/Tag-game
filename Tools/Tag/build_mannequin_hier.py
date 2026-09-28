@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 """
-HiPoly hierarchical mannequin v8.5 / Bionicle-style limb joints v0.7.5
+HiPoly hierarchical mannequin v8.7 / Hybrid III body + finger joints v0.7.7
 
-KEEP locked from v0.7.4 (Landon CLEAR tip f3bf987):
+KEEP locked (v0.7.5 Bionicle + v0.7.6/b joint direction Landon-cleared):
   - FLAT continuous hard chest plate
   - Dense dark accordion waist (~6-8 ribs) + hard pelvis
   - Long hard limb shells / satin vinyl
   - Accordion neck rings / metal neck (NOT limb joints -- leave as-is)
-  - Human proportions: longer legs, narrower torso, limb taper, smaller head
   - Paint LOCKED: Runner cream #E8D9C0 / It warm tan + black nested Vs
+  - Bionicle knob-and-slot / ball-socket language (NOT flat discs)
   - NO soft egg / mid-freq boil / inflated flesh
+  - Joints SMALL: shoulder~0.022 elbow/ankle~0.017 wrist~0.012 hip~0.023 knee~0.019
+  - Shoulders DOWN + BACK: SHOULDER_Z≈1.40, SHOULDER_Y≈0.06 (+Y=back)
+  - SOLID vinyl capsule/sleeve cover (NO thin torus hole) — metal barely peeks
+  - NO Finger_ bones (finger detail mesh-only)
 
-CHANGE = limb joints ONLY (kill big flat circular hinge discs):
-  - Replace hinge_disk at shoulders/elbows/wrists/hips/knees/ankles
-  - Smaller dark knob-and-slot / Bionicle ball-socket connectors
-  - Dark metal JOINT mat vs satin vinyl shells (high contrast, not chrome neon)
-  - Joint mass ~55-70% of prior disc radii -- shells dominate silhouette
-  - ROM readable in idle front / 3/4 (do not vanish into shell gaps)
+CHANGE v0.7.7:
+  - Body shape/proportions → full-body Hybrid III crash dummy vs PRIMARY ref
+    (broader flat chest, brief pelvis, thicker hard limb shells — not toy cylinders)
+  - ADD knuckles + mid-finger joints on mesh (opposed thumb stays); no tip-orb stacks
+  - Fold v0.7.6b joint/cover/shoulder fixes (stop orphan v76b tip)
 
 DummyLocomotor bones / hierarchy / GUIDs / FBX paths unchanged.
 GUID-safe FBX overwrite (do NOT rewrite .meta). NO git push.
@@ -30,7 +33,7 @@ from mathutils import Vector, Euler
 OUT_DIR = "/workspace/tag-unity/Assets/Art/Characters/HiPoly"
 PREV = "/workspace/art-build/previews"
 BLEND = "/workspace/art-build/Dummy_Mannequin_Hier_Hi.blend"
-LOG = "/tmp/hipoly_v75_build.log"
+LOG = "/tmp/hipoly_v77_build.log"
 REF_CRASH = "/workspace/tag-gdd/art/refs/hybrid-iii-v03/ref_hybrid_iii_crash_dummy.jpg"
 
 GUID_TAN = "ad3f2fa97db94e72869d746ecdf8e87d"
@@ -56,15 +59,19 @@ CYL_V = 28
 # Mild A-pose 20–35°; hands clear pelvis
 # v0.7.4 human mannequin proportions (store-mannequin anatomy):
 # longer legs, narrower torso, real shoulder>hip width, smaller head.
-SHOULDER_Z = 1.46
-SHOULDER_X = 0.275
+# v0.7.6b: shoulders DOWN + BACK harder (Art: not clear vs tip 3322317).
+# Face = -Y so back = +Y.
+# v0.7.7: shoulders DOWN+BACK (from v0.7.6b); girdle width for Hybrid III mass
+SHOULDER_Z = 1.400
+SHOULDER_Y = 0.060
+SHOULDER_X = 0.285
 UA_LEN = 0.370
 LA_LEN = 0.330
 ARM_OUT = math.radians(24.0)
 ARM_FWD = math.radians(10.0)
 
 HIP_Z = 1.05
-HIP_X = 0.105
+HIP_X = 0.118
 UL_LEN = 0.540
 LL_LEN = 0.490
 
@@ -346,12 +353,13 @@ def bead_lip(name, loc, radius, axis="Z", thick=0.015, flare=1.14):
 
 
 
-def bionicle_joint(name, loc, axis="X", size=0.040):
-    """Smaller Bionicle-style knob-and-slot / ball-socket joint.
+def bionicle_joint(name, loc, axis="X", size=0.019, simple=False):
+    """Bionicle-style knob-and-slot / ball-socket joint (v0.7.6 smaller).
 
-    size = ball/knob radius (~55-70% of prior hinge_disk radii).
+    size = ball/knob radius (~70-80% of v0.7.5; shells dominate).
     Geometry: central ball seated between paired cup flanges + thin axle pin.
     NO large flat riveted disc / hockey-puck silhouette.
+    simple=True: single knob-slot (wrist) — less dual-disc under sleeve.
     """
     loc = Vector(loc)
     if axis == "X":
@@ -369,43 +377,103 @@ def bionicle_joint(name, loc, axis="X", size=0.040):
     ball = sph(f"{name}_ball", loc, ball_r, seg=16, ring=8)
 
     # Thin axle pin through the ball (hinge axis)
-    pin = cyl(f"{name}_pin", loc, ball_r * 0.22, ball_r * 2.55, rot=rot, v=12)
+    pin = cyl(f"{name}_pin", loc, ball_r * 0.20, ball_r * 2.20, rot=rot, v=12)
+
+    if simple:
+        # Single cup/slot + thin collar — less dual-disc wrist read under sleeve
+        cup_off = ball_r * 0.55
+        cup_r = ball_r * 0.78
+        cup_thick = ball_r * 0.38
+        c1 = cyl(f"{name}_cupA", loc + side(cup_off), cup_r, cup_thick, rot=rot, v=14)
+        collar = cyl(f"{name}_collar", loc, ball_r * 1.05, ball_r * 0.16, rot=rot, v=16)
+        nub = sph(
+            f"{name}_nub",
+            loc + side(cup_off + cup_thick * 0.50),
+            ball_r * 0.22,
+            seg=10,
+            ring=5,
+        )
+        return join(name, [ball, pin, c1, collar, nub])
 
     # Paired cup/slot flanges -- grip the ball from both sides (not plate-sized pucks)
     flange_off = ball_r * 0.88
-    flange_r = ball_r * 0.92
-    flange_thick = ball_r * 0.32
+    flange_r = ball_r * 0.90
+    flange_thick = ball_r * 0.30
     f1 = cyl(f"{name}_flangeA", loc + side(flange_off), flange_r, flange_thick, rot=rot, v=18)
     f2 = cyl(f"{name}_flangeB", loc + side(-flange_off), flange_r, flange_thick, rot=rot, v=18)
 
     # Inner seating cups closer to the ball (C-socket walls)
     cup_off = ball_r * 0.52
-    cup_r = ball_r * 0.70
-    cup_thick = ball_r * 0.42
+    cup_r = ball_r * 0.68
+    cup_thick = ball_r * 0.40
     c1 = cyl(f"{name}_cupA", loc + side(cup_off), cup_r, cup_thick, rot=rot, v=14)
     c2 = cyl(f"{name}_cupB", loc + side(-cup_off), cup_r, cup_thick, rot=rot, v=14)
 
     # Thin mid collar -- slot ring around equator, NOT a large face disc
-    collar = cyl(f"{name}_collar", loc, ball_r * 1.08, ball_r * 0.18, rot=rot, v=18)
+    collar = cyl(f"{name}_collar", loc, ball_r * 1.06, ball_r * 0.16, rot=rot, v=18)
 
     # Small outer knob nub on one flange (Bionicle connector read)
     nub = sph(
         f"{name}_nub",
         loc + side(flange_off + flange_thick * 0.55),
-        ball_r * 0.26,
+        ball_r * 0.24,
         seg=10,
         ring=5,
     )
 
     # Tiny pin end-caps so axle reads through flanges
-    cap_r = ball_r * 0.16
-    cap_d = ball_r * 0.14
+    cap_r = ball_r * 0.15
+    cap_d = ball_r * 0.13
     cap1 = cyl(f"{name}_capA", loc + side(flange_off + flange_thick * 0.55),
                cap_r, cap_d, rot=rot, v=10)
     cap2 = cyl(f"{name}_capB", loc + side(-(flange_off + flange_thick * 0.55)),
                cap_r, cap_d, rot=rot, v=10)
 
     return join(name, [ball, pin, f1, f2, c1, c2, collar, nub, cap1, cap2])
+
+
+def joint_skin_cover(name, loc, axis="X", size=0.019):
+    """SOLID vinyl capsule/sleeve enveloping ball-socket (v0.7.7 — no torus hole).
+
+    LOCAL to joint region only (shoulders/elbows/wrists/hips/knees/ankles).
+    Same Base mat as limb shells (NOT joint metal). Subordinate to hard shells —
+    NO soft-egg torso regression. ADD AFTER dark joint so cover sits outside.
+    Solid envelope + capsule + tube (NO open torus hole — that was the v76 fail).
+    Radius >= ball*1.40; length bridges shell gap. Metal only barely peeks under cover.
+    """
+    loc = Vector(loc)
+    if axis == "X":
+        rot = (0, math.radians(90), 0)
+        fill_scale = (size * 1.08, size * 1.55, size * 1.55)
+        tube_rot = (math.radians(90), 0, 0)  # along Z for upright limbs
+    elif axis == "Y":
+        rot = (math.radians(90), 0, 0)
+        fill_scale = (size * 1.55, size * 1.08, size * 1.55)
+        tube_rot = (0, 0, 0)
+    else:
+        rot = (0, 0, 0)
+        fill_scale = (size * 1.55, size * 1.55, size * 1.08)
+        tube_rot = (0, math.radians(90), 0)
+
+    # Outer SOLID envelope sphere — FULLY covers ball (r >= ball * 1.45)
+    envelope = sph(
+        f"{name}_env", loc,
+        size * 1.48, seg=20, ring=12)
+
+    # Elongated vinyl capsule bridging the shell gap (solid, not hollow)
+    fill = sph(
+        f"{name}_fill", loc,
+        fill_scale, seg=16, ring=8)
+
+    # Solid bridging tube — radius >= ball*1.38, length spans shell termini
+    tube = cyl(
+        f"{name}_tube", loc,
+        size * 1.40, size * 1.70, rot=tube_rot, v=24)
+
+    # End-cap spheres blend sleeve toward shell lips (LOCAL only — not torso boil)
+    cap_a = sph(f"{name}_capA", loc, size * 1.32, seg=14, ring=8)
+    cap_b = sph(f"{name}_capB", loc, (size * 1.22, size * 1.22, size * 1.05), seg=12, ring=6)
+    return join(name, [envelope, fill, tube, cap_a, cap_b])
 
 
 
@@ -513,32 +581,36 @@ def u_knee_fork(name, kn, sx):
 
 
 def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
-    """Thumb + SEPARATED fingers — human mannequin proportion (v0.7.4).
+    """Thumb + SEPARATED fingers with knuckles + mid joints (v0.7.7).
 
-    Hands-only pass — static shells parented to Hand_L/R (no per-finger bones).
-    AD soft: KILL digit tip-orb stacks — tapered shells end clean (no tip spheres).
+    Hands-only pass — static shells parented to Hand_L/R (no Finger_ bones).
+    Readable MCP knuckle bumps + PIP mid-segment rings under vinyl.
+    AD soft: NO tip-orb stacks — tapered shells end clean.
     Opposed thumb + thenar mass; molded palm; clear finger separation.
     """
     parts = []
-    wrj = bionicle_joint(f"{name}_WristJ", wr, axis="X", size=0.024)
+    # wrist 0.012 simple + SOLID vinyl envelope
+    wrj = bionicle_joint(f"{name}_WristJ", wr, axis="X", size=0.012, simple=True)
     set_mat(wrj, joint_mat)
     parts.append(wrj)
+    wr_cover = joint_skin_cover(f"{name}_WristCover", wr, axis="X", size=0.012)
+    set_mat(wr_cover, base_mat)
+    parts.append(wr_cover)
 
-    # Molded hard-shell palm — flatter human proportion (not blob sphere)
+    # Molded hard-shell palm — Hybrid III flatter plate (not blob)
     palm = sph(f"{name}_Palm",
                hand + Vector((0, -0.006, 0.006)),
-               (0.038, 0.024, 0.044), seg=18, ring=10)
+               (0.040, 0.026, 0.046), seg=18, ring=10)
     set_mat(palm, base_mat)
     parts.append(palm)
-    # Slight dorsal plate for hard-shell read
     dorsum = cube(
         f"{name}_Dorsum",
-        hand + Vector((0, -0.010, 0.018)),
-        (0.034, 0.014, 0.022), bevel=0.004)
+        hand + Vector((0, -0.012, 0.020)),
+        (0.036, 0.014, 0.024), bevel=0.004)
     set_mat(dorsum, base_mat)
     parts.append(dorsum)
 
-    # Separated fingers — human length + taper; flat distal pads (NO tip orbs)
+    # Separated fingers — knuckle bump (MCP) + mid joint ring (PIP); NO tip orbs
     finger_offsets = [
         (-0.038, -0.048, -0.006),
         (-0.012, -0.062, -0.008),
@@ -554,14 +626,48 @@ def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
     for i, (ox, oy, oz) in enumerate(finger_offsets):
         start = hand + Vector((ox, oy * 0.28, oz * 0.30))
         end = hand + Vector(tip_extra[i])
-        r0 = 0.0105 if i in (1, 2) else 0.0095
+        direction = (end - start)
+        length = direction.length
+        dirc = direction.normalized() if length > 1e-6 else Vector((0, -1, 0))
+        r0 = 0.0110 if i in (1, 2) else 0.0100
         r1 = 0.0055
         fing = tapered_limb(f"{name}_F{i}", start, end, r0, r1, v=12, caps=False)
         set_mat(fing, base_mat)
         parts.append(fing)
+
+        # MCP knuckle bump — dorsal vinyl sphere at finger root (readable at hand close)
+        kn_r = r0 * 1.35
+        knuckle = sph(
+            f"{name}_Knuckle{i}",
+            start + dirc * (length * 0.06) + Vector((0, -0.004, 0.003)),
+            (kn_r, kn_r * 0.85, kn_r * 0.95), seg=10, ring=6)
+        set_mat(knuckle, base_mat)
+        parts.append(knuckle)
+
+        # PIP mid-finger joint — vinyl crease ring + small nest ball under shell
+        mid = start + dirc * (length * 0.42)
+        mid_r = (r0 + r1) * 0.55
+        mid_ball = sph(
+            f"{name}_MidJ{i}", mid,
+            mid_r * 1.15, seg=10, ring=5)
+        set_mat(mid_ball, base_mat)
+        parts.append(mid_ball)
+        # thin crease collar (solid cyl, not open torus hole)
+        axis_guess = "Y" if abs(dirc.y) > 0.55 else ("Z" if abs(dirc.z) > 0.55 else "X")
+        if axis_guess == "Y":
+            mid_rot = (math.radians(90), 0, 0)
+        elif axis_guess == "X":
+            mid_rot = (0, math.radians(90), 0)
+        else:
+            mid_rot = (0, 0, 0)
+        mid_ring = cyl(
+            f"{name}_MidRing{i}", mid,
+            mid_r * 1.28, mid_r * 0.55, rot=mid_rot, v=12)
+        set_mat(mid_ring, base_mat)
+        parts.append(mid_ring)
         # Clean tapered terminus only — no tip orb / pad stack
 
-    # Opposed thumb — thenar mass + tapered shell, flat distal pad (no tip orb)
+    # Opposed thumb — thenar + knuckle + mid joint; flat distal (no tip orb)
     thumb_start = hand + Vector((sx * 0.026, 0.006, 0.020))
     thumb_end = hand + Vector((sx * 0.098, 0.045, -0.050))
     thenar = sph(f"{name}_Thenar",
@@ -576,6 +682,21 @@ def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
         0.014, 0.007, v=12, caps=False)
     set_mat(thumb, base_mat)
     parts.append(thumb)
+    tdir = (thumb_end - thumb_start)
+    tlen = tdir.length
+    td = tdir.normalized() if tlen > 1e-6 else Vector((sx, 0, -1))
+    t_knuckle = sph(
+        f"{name}_ThumbKnuckle",
+        thumb_start + td * (tlen * 0.12),
+        0.012, seg=10, ring=5)
+    set_mat(t_knuckle, base_mat)
+    parts.append(t_knuckle)
+    t_mid = sph(
+        f"{name}_ThumbMid",
+        thumb_start + td * (tlen * 0.48),
+        0.0095, seg=8, ring=4)
+    set_mat(t_mid, base_mat)
+    parts.append(t_mid)
     return join(name, parts)
 
 
@@ -583,9 +704,12 @@ def shoe_foot(name, an, toe, sx, base_mat, joint_mat, rubber_mat=None):
     """Heel/toe shoe pads with small Bionicle ankle joint. Sole/pads use rubber material."""
     rub = rubber_mat or base_mat
     parts = []
-    anj = bionicle_joint(f"{name}_AnkleJ", an, axis="X", size=0.034)
+    anj = bionicle_joint(f"{name}_AnkleJ", an, axis="X", size=0.017)
     set_mat(anj, joint_mat)
     parts.append(anj)
+    an_cover = joint_skin_cover(f"{name}_AnkleCover", an, axis="X", size=0.017)
+    set_mat(an_cover, base_mat)
+    parts.append(an_cover)
     heel = sph(f"{name}_Heel",
                an + Vector((0, 0.038, -0.028)),
                (0.042, 0.040, 0.036), seg=14, ring=7)
@@ -615,58 +739,58 @@ def shoe_foot(name, an, toe, sx, base_mat, joint_mat, rubber_mat=None):
 
 
 def flat_chest_plate(name):
-    """Hybrid III FLAT chest plate — planar shield/slab, clear hard edge.
-    v0.7.4: NARROWER torso + anatomical V-taper (store mannequin proportions).
-    Still FLAT hard plate — NO pec/lat/delt sphere pillows / soft flesh.
-    Clear bottom edge ABOVE accordion.
+    """Hybrid III FLAT chest plate — broader crash-dummy shield (v0.7.7).
+
+    Hard planar volumes matching PRIMARY Hybrid III ref: broader shoulder girdle,
+    flat front slab, clear V-taper to accordion. NO pec/lat/delt sphere pillows.
+    Shelves sit at SHOULDER_Z/Y (down+back). Clear bottom edge ABOVE accordion.
     """
     parts = []
-    # Front planar plate — narrower human-proportion shield
+    # Front planar plate — Hybrid III broader hard shield (not toy-narrow)
     front = cube(
-        f"{name}_Front", (0.0, -0.080, 1.295),
-        (0.125, 0.024, 0.135), bevel=0.010)
+        f"{name}_Front", (0.0, -0.082, 1.285),
+        (0.148, 0.026, 0.145), bevel=0.010)
     parts.append(front)
-    # Mild upper clavicle flare (still planar, not pillows) — real shoulder width
+    # Upper clavicle flare — broad hard shelf, planar (not pillows)
     clav = cube(
-        f"{name}_Clav", (0.0, -0.070, 1.405),
-        (0.155, 0.028, 0.038), bevel=0.009)
+        f"{name}_Clav", (0.0, -0.072, 1.355),
+        (0.175, 0.030, 0.040), bevel=0.009)
     parts.append(clav)
-    # Lower taper slab ending clean ABOVE bellows — narrow waist read
+    # Lower taper slab ending clean ABOVE bellows
     lower = cube(
-        f"{name}_Lower", (0.0, -0.066, 1.160),
-        (0.108, 0.022, 0.042), bevel=0.007)
+        f"{name}_Lower", (0.0, -0.068, 1.155),
+        (0.118, 0.024, 0.044), bevel=0.007)
     parts.append(lower)
     # Side walls — hard wrap, taper inward toward waist (not soft lats)
     for sx in (1, -1):
         side = cube(
-            f"{name}_Side{sx}", (sx * 0.132, -0.006, 1.290),
-            (0.020, 0.072, 0.120), bevel=0.007)
+            f"{name}_Side{sx}", (sx * 0.155, -0.004, 1.280),
+            (0.024, 0.078, 0.130), bevel=0.007)
         parts.append(side)
-        # mild lower taper wing
         side_lo = cube(
-            f"{name}_SideLo{sx}", (sx * 0.118, -0.004, 1.165),
-            (0.018, 0.062, 0.036), bevel=0.005)
+            f"{name}_SideLo{sx}", (sx * 0.132, -0.002, 1.160),
+            (0.020, 0.066, 0.038), bevel=0.005)
         parts.append(side_lo)
-    # Back plate (shallower, narrower)
+    # Back plate — Hybrid III depth
     back = cube(
-        f"{name}_Back", (0.0, 0.070, 1.290),
-        (0.115, 0.020, 0.125), bevel=0.009)
+        f"{name}_Back", (0.0, 0.078, 1.280),
+        (0.138, 0.024, 0.135), bevel=0.009)
     parts.append(back)
-    # Shoulder shelves — HARD squared stubs at real shoulder breadth
+    # Shoulder shelves — HARD squared stubs matching SHOULDER_Z/Y (down+back)
     for sx in (1, -1):
         shelf = cube(
-            f"{name}_Shelf{sx}", (sx * 0.228, 0.0, 1.400),
-            (0.048, 0.048, 0.036), bevel=0.009)
+            f"{name}_Shelf{sx}", (sx * 0.245, SHOULDER_Y, SHOULDER_Z - 0.055),
+            (0.052, 0.052, 0.038), bevel=0.009)
         parts.append(shelf)
-    # Thin fill core so plate doesn't look hollow from ¾
+    # Fill core — hard plate mass, not hollow egg
     core = cube(
-        f"{name}_Core", (0.0, 0.0, 1.290),
-        (0.100, 0.052, 0.118), bevel=0.005)
+        f"{name}_Core", (0.0, 0.0, 1.280),
+        (0.118, 0.058, 0.125), bevel=0.005)
     parts.append(core)
     # Sharp bottom edge bead (distinct shell terminus above accordion)
     bot_edge = cube(
-        f"{name}_BotEdge", (0.0, -0.006, 1.120),
-        (0.118, 0.078, 0.010), bevel=0.003)
+        f"{name}_BotEdge", (0.0, -0.004, 1.118),
+        (0.132, 0.085, 0.010), bevel=0.003)
     parts.append(bot_edge)
 
     shell = join(name, parts)
@@ -676,46 +800,52 @@ def flat_chest_plate(name):
 
 
 def hard_pelvis_shell(name):
-    """Hard Hybrid III pelvis shell — clear top edge into accordion.
-    v0.7.4: slight Hybrid III rounded hip curve (was too boxy) — still HARD
-    shell, NOT balloon soft flesh. Briefs-like side cutouts for hip hinges.
+    """Hard Hybrid III pelvis — brief-shaped shell with hip cutouts (v0.7.7).
+
+    Wider crash-dummy hip mass vs toy cylinder; clear top rim into accordion;
+    U-shaped side cutouts for hip hinges. HARD shell — NOT balloon soft flesh.
     """
     parts = []
-    # Main hard bowl — flatter front, less egg; raised for longer-leg hip
+    # Main hard bowl — Hybrid III wider flatter front
     front = cube(
-        f"{name}_Front", (0.0, -0.060, 0.975),
-        (0.118, 0.026, 0.078), bevel=0.010)
+        f"{name}_Front", (0.0, -0.062, 0.970),
+        (0.138, 0.028, 0.082), bevel=0.010)
     parts.append(front)
     back = cube(
-        f"{name}_Back", (0.0, 0.065, 0.975),
-        (0.110, 0.024, 0.072), bevel=0.010)
+        f"{name}_Back", (0.0, 0.070, 0.970),
+        (0.128, 0.026, 0.076), bevel=0.010)
     parts.append(back)
     # Clear TOP rim into accordion (hard edge read)
     top_rim = cube(
-        f"{name}_TopRim", (0.0, 0.0, 1.060),
-        (0.122, 0.088, 0.014), bevel=0.004)
+        f"{name}_TopRim", (0.0, 0.0, 1.058),
+        (0.140, 0.095, 0.014), bevel=0.004)
     parts.append(top_rim)
-    # Side wings — hard squared + mild Hybrid III rounded hip bowl (hard shell)
+    # Side wings — brief cutouts + hard hip bowl (match wider HIP_X)
     for sx in (1, -1):
         wing = cube(
-            f"{name}_Wing{sx}", (sx * 0.125, 0.006, 0.980),
-            (0.038, 0.065, 0.070), bevel=0.010)
+            f"{name}_Wing{sx}", (sx * 0.145, 0.006, 0.975),
+            (0.042, 0.070, 0.072), bevel=0.010)
         parts.append(wing)
-        # slight rounded hip curve — hard vinyl bowl, NOT soft flesh pillow
+        # hard vinyl hip bowl — NOT soft flesh pillow
         hip_curve = sph(
             f"{name}_HipCurve{sx}",
-            (sx * 0.138, 0.008, 0.960),
-            (0.055, 0.058, 0.052), seg=16, ring=8)
+            (sx * 0.158, 0.010, 0.955),
+            (0.062, 0.062, 0.055), seg=16, ring=8)
         parts.append(hip_curve)
+        # brief-cutout lip (hard edge around hip joint pocket)
+        cut_lip = cube(
+            f"{name}_CutLip{sx}", (sx * 0.168, 0.0, 0.990),
+            (0.012, 0.055, 0.048), bevel=0.004)
+        parts.append(cut_lip)
     # Lower crotch plate
     crotch = cube(
-        f"{name}_Crotch", (0.0, 0.0, 0.900),
-        (0.072, 0.055, 0.032), bevel=0.007)
+        f"{name}_Crotch", (0.0, 0.0, 0.895),
+        (0.080, 0.058, 0.034), bevel=0.007)
     parts.append(crotch)
-    # Mild fill core
+    # Fill core — hard plate mass
     core = cube(
-        f"{name}_Core", (0.0, 0.006, 0.975),
-        (0.092, 0.055, 0.060), bevel=0.005)
+        f"{name}_Core", (0.0, 0.006, 0.970),
+        (0.105, 0.058, 0.062), bevel=0.005)
     parts.append(core)
 
     shell = join(name, parts)
@@ -752,7 +882,8 @@ def limb_shell_with_lips(name, a, b, r0, r1, lip_mat=None, mid_bulge=0.0):
 
 
 def arm_points(sx):
-    sh = Vector((sx * SHOULDER_X, 0.0, SHOULDER_Z))
+    # v0.7.6: shoulder DOWN (Z) + BACK (+Y); face is -Y
+    sh = Vector((sx * SHOULDER_X, SHOULDER_Y, SHOULDER_Z))
     out = math.sin(ARM_OUT)
     down = math.cos(ARM_OUT)
     fwd = math.sin(ARM_FWD)
@@ -804,7 +935,7 @@ def build_armature():
 
     for side, sx in (("L", 1), ("R", -1)):
         sh, el, wr, hand = arm_points(sx)
-        bone(f"Shoulder_{side}", "Chest", (sx * 0.12, 0, SHOULDER_Z), sh)
+        bone(f"Shoulder_{side}", "Chest", (sx * 0.12, SHOULDER_Y * 0.5, SHOULDER_Z), sh)
         bone(f"UpperArm_{side}", f"Shoulder_{side}", sh, el)
         bone(f"LowerArm_{side}", f"UpperArm_{side}", el, wr)
         bone(f"Hand_{side}", f"LowerArm_{side}", wr, hand)
@@ -819,7 +950,7 @@ def build_armature():
 
 
 def build_mesh_parts(is_it, mats):
-    """v0.7.4 hard shells KEEP + human mannequin proportions (narrower torso, longer legs, limb taper)."""
+    """v0.7.7: Hybrid III body volumes + tiny joints under SOLID vinyl cover; knuckles on hands."""
     (base, accent, over, joint, sensor, metal, bellows_mat, cal_accent, lip_mat,
      rubber, wear) = mats
     groups = {k: [] for k in (
@@ -920,73 +1051,77 @@ def build_mesh_parts(is_it, mats):
     chest = flat_chest_plate("ChestShell")
     add("Chest", chest, base)
 
-    # Shoulder plate seams (dark bead at delt roots) — real shoulder breadth
+    # Shoulder plate seams (dark bead at delt roots) — v0.7.6 DOWN + BACK
     for side, sx in (("L", 1), ("R", -1)):
         seam = bead_lip(
             f"ShoulderSeam_{side}",
-            (sx * 0.228, 0.0, 1.420),
-            radius=0.048, thick=0.010, axis="X", flare=1.10)
+            (sx * 0.245, SHOULDER_Y, SHOULDER_Z - 0.040),
+            radius=0.052, thick=0.010, axis="X", flare=1.10)
         add("Chest", seam, joint)
 
     # LARGE chest cal
     cal_c = cal_quadrant_disk(
-        "CalChest", (0.062, -0.108, 1.360),
-        radius=0.038, thick=0.008,
+        "CalChest", (0.072, -0.112, 1.350),
+        radius=0.040, thick=0.008,
         accent_mat=cal_accent, black_mat=sensor, axis="Y")
     groups["Chest"].append(cal_c)
 
     # Thin teal tick ONLY on Runner — NOT fat racing stripe
     if not is_it:
-        tick = cube("ChestTick", (0.0, -0.108, 1.200), (0.026, 0.0035, 0.0035), bevel=0.001)
+        tick = cube("ChestTick", (0.0, -0.112, 1.195), (0.028, 0.0035, 0.0035), bevel=0.001)
         add("Chest", tick, accent)
 
     # Soft DARK bead lips at shell termini (Hybrid III seam — not tan faux-ribs)
-    chest_lip = bead_lip("ChestBotLip", (0, 0.01, 1.118), radius=0.118, axis="Z",
+    chest_lip = bead_lip("ChestBotLip", (0, 0.01, 1.118), radius=0.132, axis="Z",
                          thick=0.012, flare=1.08)
     add("Chest", chest_lip, joint)
 
     # --- WAIST BELLOWS INSET (~8 fine dark ribs) — narrower human waist ---
-    bellows = waist_bellows("WaistBellows", z_top=1.115, z_bot=1.065, radius=0.082, n_ribs=8)
+    bellows = waist_bellows("WaistBellows", z_top=1.115, z_bot=1.065, radius=0.092, n_ribs=8)
     add("Spine", bellows, bellows_mat)
 
     # --- DISTINCT PELVIS SHELL ---
     pelvis = hard_pelvis_shell("PelvisShell")
     add("Hips", pelvis, base)
-    pelvis_lip = bead_lip("PelvisTopLip", (0, 0.01, 1.068), radius=0.118, axis="Z",
+    pelvis_lip = bead_lip("PelvisTopLip", (0, 0.01, 1.068), radius=0.135, axis="Z",
                           thick=0.012, flare=1.08)
     add("Hips", pelvis_lip, joint)
 
     # It nested black Vs on flat chest plate + outer thighs — ZERO on Tan/Runner
     if is_it:
         for i, z in enumerate([1.400, 1.340, 1.280]):
-            half = 0.070 - i * 0.009
-            bars = chevron_v(f"ChC{i}", 0.0, -0.108, z, half, bar_len=half * 1.18,
+            half = 0.082 - i * 0.010
+            bars = chevron_v(f"ChC{i}", 0.0, -0.112, z, half, bar_len=half * 1.18,
                              thick=0.012, depth=0.014, ang_deg=34.0)
             for b in bars:
                 add("Chest", b, accent)
 
-    # --- Arms: DISTINCT upper/lower shells + small Bionicle joints ---
+    # --- Arms: DISTINCT upper/lower shells + smaller Bionicle joints + vinyl cover ---
     for side, sx in (("L", 1), ("R", -1)):
         sh, el, wr, hand = arm_points(sx)
 
-        # Small Bionicle shoulder joint (was disc r=0.068 -> ball ~0.044)
-        shj = bionicle_joint(f"ShoulderJ_{side}", sh, axis="X", size=0.044)
+        # v0.7.6b: shoulder 0.022 + FULL vinyl envelope cover
+        shj = bionicle_joint(f"ShoulderJ_{side}", sh, axis="X", size=0.022)
         add(f"Shoulder_{side}", shj, joint)
+        sh_cover = joint_skin_cover(f"ShoulderCover_{side}", sh, axis="X", size=0.022)
+        add(f"Shoulder_{side}", sh_cover, base)
 
         # Upper arm LONG hard shell — athletic taper (deltoid mass → elbow), not equal tube
         ua_end = el + (sh - el).normalized() * 0.038
-        ua = limb_shell_with_lips(f"UA_{side}", sh + (el - sh).normalized() * 0.050,
-                                  ua_end, 0.060, 0.030)
+        ua = limb_shell_with_lips(f"UA_{side}", sh + (el - sh).normalized() * 0.048,
+                                  ua_end, 0.072, 0.038)
         add(f"UpperArm_{side}", ua, base)
 
-        # Small Bionicle elbow joint (was disc r=0.052 -> ball ~0.034)
-        elj = bionicle_joint(f"ElbowJ_{side}", el, axis="X", size=0.034)
+        # v0.7.6b: elbow 0.017 + FULL vinyl envelope cover
+        elj = bionicle_joint(f"ElbowJ_{side}", el, axis="X", size=0.017)
         add(f"LowerArm_{side}", elj, joint)
+        el_cover = joint_skin_cover(f"ElbowCover_{side}", el, axis="X", size=0.017)
+        add(f"LowerArm_{side}", el_cover, base)
 
         la_start = el + (wr - el).normalized() * 0.038
         la_end = wr + (el - wr).normalized() * 0.028
         # Forearm taper: thicker near elbow → slim wrist
-        la = limb_shell_with_lips(f"LA_{side}", la_start, la_end, 0.036, 0.022)
+        la = limb_shell_with_lips(f"LA_{side}", la_start, la_end, 0.044, 0.026)
         add(f"LowerArm_{side}", la, base)
 
         h = hybrid_hand(f"Hand_{side}", wr, hand, sx, base, joint)
@@ -996,20 +1131,22 @@ def build_mesh_parts(is_it, mats):
     for side, sx in (("L", 1), ("R", -1)):
         hip, kn, an, toe = leg_points(sx)
 
-        # Small Bionicle hip joint (was disc r=0.072 -> ball ~0.046)
-        hipj = bionicle_joint(f"HipJ_{side}", hip, axis="X", size=0.046)
+        # v0.7.6b: hip 0.023 + FULL vinyl envelope cover
+        hipj = bionicle_joint(f"HipJ_{side}", hip, axis="X", size=0.023)
         add(f"UpperLeg_{side}", hipj, joint)
+        hip_cover = joint_skin_cover(f"HipCover_{side}", hip, axis="X", size=0.023)
+        add(f"UpperLeg_{side}", hip_cover, base)
 
         # LONG hard thigh shell — athletic mass (thick proximal → taper to knee)
         thigh_start = hip + Vector((0, 0, -0.048))
         thigh_end = kn + Vector((0, 0, 0.045))
-        thigh = limb_shell_with_lips(f"Thigh_{side}", thigh_start, thigh_end, 0.080, 0.038)
+        thigh = limb_shell_with_lips(f"Thigh_{side}", thigh_start, thigh_end, 0.092, 0.048)
         add(f"UpperLeg_{side}", thigh, base)
 
         seam_th = bead_lip(
             f"ThighSeam_{side}",
             hip + Vector((0, 0, -0.048)),
-            radius=0.086, thick=0.012, axis="Z", flare=1.10)
+            radius=0.098, thick=0.012, axis="Z", flare=1.10)
         add(f"UpperLeg_{side}", seam_th, joint)
 
         fork = u_knee_fork(f"KneeFork_{side}", kn, sx)
@@ -1026,9 +1163,11 @@ def build_mesh_parts(is_it, mats):
                 for b in bars:
                     add(f"UpperLeg_{side}", b, accent)
 
-        # Small Bionicle knee joint inside U-fork (was disc r=0.062 -> ball ~0.040)
-        knj = bionicle_joint(f"KneeJ_{side}", kn, axis="X", size=0.040)
+        # v0.7.6b: knee 0.019 + FULL vinyl envelope cover
+        knj = bionicle_joint(f"KneeJ_{side}", kn, axis="X", size=0.019)
         add(f"LowerLeg_{side}", knj, joint)
+        kn_cover = joint_skin_cover(f"KneeCover_{side}", kn, axis="X", size=0.019)
+        add(f"LowerLeg_{side}", kn_cover, base)
 
         nest = sph(f"KneeNest_{side}", kn + Vector((0, 0, 0.008)), 0.028, seg=14, ring=7)
         add(f"LowerLeg_{side}", nest, joint)
@@ -1036,7 +1175,7 @@ def build_mesh_parts(is_it, mats):
         # LONG hard shin — mild calf mass then taper to ankle (hard shell, not soft pillow)
         shin_start = kn + Vector((0, 0, -0.042))
         shin = limb_shell_with_lips(f"Shin_{side}", shin_start, an + Vector((0, 0, 0.032)),
-                                    0.046, 0.022)
+                                    0.054, 0.028)
         add(f"LowerLeg_{side}", shin, base)
 
         ft = shoe_foot(f"Foot_{side}", an, toe, sx, base, joint, rubber_mat=rubber)
@@ -1584,27 +1723,27 @@ def build_variant(is_it, export_path, guid, do_stills=False):
     tag = "it_" if is_it else ""
     if do_stills:
         pose_idle(arm_ob)
-        render_shot(f"{PREV}/hipoly_v75_{tag}idle_front.png",
+        render_shot(f"{PREV}/hipoly_v77_{tag}idle_front.png",
                     (0.10, -3.4, 1.28), (0, 0, 0.98))
-        render_shot(f"{PREV}/hipoly_v75_{tag}idle_34.png",
+        render_shot(f"{PREV}/hipoly_v77_{tag}idle_34.png",
                     (2.2, -2.6, 1.32), (0, 0, 1.00))
         hl = hand_world(arm_ob, "L")
         render_shot(
-            f"{PREV}/hipoly_v75_{tag}hand_close.png",
+            f"{PREV}/hipoly_v77_{tag}hand_close.png",
             (hl.x + 0.32, hl.y - 0.38, hl.z + 0.14),
             (hl.x - 0.02, hl.y + 0.02, hl.z - 0.01),
         )
         render_shot(
-            f"{PREV}/hipoly_v75_{tag}face_close.png",
+            f"{PREV}/hipoly_v77_{tag}face_close.png",
             (0.06, -0.46, 1.665),
             (0.0, -0.04, 1.650),
         )
-        # Limb/joint close -- L shoulder sells new Bionicle knob-and-slot
+        # Limb/joint close -- L shoulder sells smaller joint + vinyl skin cover
         sh = arm_ob.pose.bones.get("Shoulder_L")
         if sh is not None:
             sw = arm_ob.matrix_world @ sh.head
             render_shot(
-                f"{PREV}/hipoly_v75_{tag}joint_close.png",
+                f"{PREV}/hipoly_v77_{tag}joint_close.png",
                 (sw.x + 0.42, sw.y - 0.55, sw.z + 0.08),
                 (sw.x, sw.y, sw.z),
             )
@@ -1622,8 +1761,8 @@ def write_readme():
     path = os.path.join(OUT_DIR, "README.md")
     text = """# HiPoly Hierarchical Mannequins
 
-DummyLocomotor-bindable **Hybrid III hard-shell** crash-test dummies (v0.7.5).
-Hard shells + human proportions KEEP from v0.7.4; limb joints = Bionicle knob-and-slot.
+DummyLocomotor-bindable **Hybrid III hard-shell** crash-test dummies (v0.7.7).
+Hybrid III body volumes; tiny Bionicle joints under SOLID vinyl capsule cover; knuckles + mid-finger mesh joints; shoulders down/back.
 
 ## Assets
 | File | Paint |
@@ -1635,7 +1774,7 @@ Hard shells + human proportions KEEP from v0.7.4; limb joints = Bionicle knob-an
 - Mild A-pose ~20–35°; hands clear pelvis.
 - Human head scale + molded face; flat dark eye insets — zero orbs / tip stacks.
 - Flat chest plate (narrower); dense accordion bellows; hard pelvis w/ mild hip curve.
-- Long athletic-taper limb shells; small dark Bionicle ball-socket joints; hard-shell hands.
+- Hybrid III limb shell mass; tiny dark Bionicle joints under SOLID vinyl capsule; hard-shell hands w/ knuckles + mid joints (no Finger_ bones).
 - Materials: satin vinyl Base / Accent / ItOverride + Joint metal + Rubber + Bellows.
 
 ## Bone hierarchy (DummyLocomotor — names unchanged)
@@ -1652,23 +1791,22 @@ Hard shells + human proportions KEEP from v0.7.4; limb joints = Bionicle knob-an
 
 
 def main():
-    log("=== hipoly hier v8.5 / Bionicle-style limb joints v0.7.5 ===")
+    log("=== hipoly hier v8.7 / Hybrid III body + finger joints v0.7.7 ===")
     tan = os.path.join(OUT_DIR, "Dummy_Mannequin_Tan_Hier_Hi.fbx")
     orn = os.path.join(OUT_DIR, "Dummy_Mannequin_Orange_Hier_Hi.fbx")
 
-    log("Building Tan/Runner Hier HiPoly v0.7.5 Bionicle joints…")
-    # EXPEDITE: Art approved v0.7.5 — skip stills, FBX exports only
-    ok_t, ang_t, cx_t, cy_t = build_variant(False, tan, GUID_TAN, do_stills=False)
+    log("Building Tan/Runner Hier HiPoly v0.7.7 Hybrid III body + knuckles…")
+    ok_t, ang_t, cx_t, cy_t = build_variant(False, tan, GUID_TAN, do_stills=True)
 
-    log("Building It/Orange Hier HiPoly v0.7.5 Bionicle joints…")
-    ok_o, ang_o, cx_o, cy_o = build_variant(True, orn, GUID_ORANGE, do_stills=False)
+    log("Building It/Orange Hier HiPoly v0.7.7 Hybrid III body + knuckles…")
+    ok_o, ang_o, cx_o, cy_o = build_variant(True, orn, GUID_ORANGE, do_stills=True)
 
     write_readme()
     log(f"Tan OK={ok_t} A-pose={ang_t:.1f}deg clear_x={cx_t:.3f} clear_y={cy_t:.3f}")
     log(f"It  OK={ok_o} A-pose={ang_o:.1f}deg clear_x={cx_o:.3f} clear_y={cy_o:.3f}")
     log(f"Tan FBX {os.path.getsize(tan)} bytes guid={GUID_TAN}")
     log(f"Orange FBX {os.path.getsize(orn)} bytes guid={GUID_ORANGE}")
-    log("DONE v0.7.5 Bionicle joints — no git push (await AD / Landon HOLD)")
+    log("DONE v0.7.7 Hybrid III body + knuckles — no git push (await Art / Ororo; Eng HOLD)")
 
 
 if __name__ == "__main__":
