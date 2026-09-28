@@ -840,8 +840,9 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// Systems v0.1. ClingHeld is wish into the wall: dot(wishDir, -wallNormal) greater than 0.25.
-        /// Not JumpHeld. Not a Grab or Cling button.
+        /// Systems lock. ClingHeld is the Move wish into the wall: dot(wishDir, -wallNormal) greater than 0.25.
+        /// Face-on climb is forward while the body faces the wall. A sideways run keeps the same dot
+        /// with an into-wall strafe or a forward-strafe diagonal. JumpHeld is not cling. No Cling action.
         /// </summary>
         const float ClingIntoWall = 0.25f;
 
