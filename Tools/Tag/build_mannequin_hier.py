@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
-HiPoly hierarchical mannequin v8.1 / realism v0.7.1
-Body topography smooth on v0.7 base — continuous high-realism store mannequin.
-Kill soft-toy / unfinished body topo: joint gaps, seam ridges, wear bumps.
+HiPoly hierarchical mannequin v8.2 / realism v0.7.2
+HARD continuous mannequin shells — kill mid-freq subsurface boil from v0.7.1.
 
-LOCKED from v0.7: slick athletic proportions, vinyl SSS, slim metal hinges,
-anatomical_hand, molded human face, Runner cream / It warm tan + Vs,
-DummyLocomotor bind tree + GUIDs / FBX paths.
+v0.7.1 failure: heavy remesh_smooth on soft mass spheres (pecs/delts/quads/
+calves + limb bulge) → organic boil under vinyl. Fix = few hard primitives,
+larger voxel OR light smooth only, bulge≈0, restore athletic limb radii.
 
-DummyLocomotor bones / hierarchy / GUIDs / FBX paths unchanged.
+LOCKED: human athletic proportions (do NOT thin vs v8_1), vinyl SSS materials,
+slim flush hinges, deep sleeve overlaps, waist bridge, anatomical_hand,
+face v0.7, Runner cream / It warm tan + Vs, DummyLocomotor + GUIDs / FBX paths.
+
 GUID-safe FBX overwrite. NO git push.
 """
 import bpy
@@ -21,7 +23,7 @@ from mathutils import Vector, Euler, Matrix
 OUT_DIR = "/workspace/tag-unity/Assets/Art/Characters/HiPoly"
 PREV = "/workspace/art-build/previews"
 BLEND = "/workspace/art-build/Dummy_Mannequin_Hier_Hi.blend"
-LOG = "/tmp/hipoly_v71_build.log"
+LOG = "/tmp/hipoly_v72_build.log"
 REF_STORE = "/workspace/tag-gdd/art/refs/hybrid-iii-v03/ref_store_mannequin_anatomy.jpg"
 
 GUID_TAN = "ad3f2fa97db94e72869d746ecdf8e87d"
@@ -167,7 +169,7 @@ def light_smooth(ob, iterations=6, factor=0.5):
 
 
 def voxel_remesh(ob, size=0.012):
-    """Continuous slick shell — voxel remesh then smooth."""
+    """Legacy voxel+smooth — kept for palm (hands untouched). Body uses hard_shell."""
     bpy.ops.object.select_all(action="DESELECT")
     ob.select_set(True)
     bpy.context.view_layer.objects.active = ob
@@ -181,12 +183,27 @@ def voxel_remesh(ob, size=0.012):
     return ob
 
 
-def remesh_smooth(ob, size=0.010, iterations=10, factor=0.55):
-    """v0.7.1 body topo pass — voxel remesh + extra smooth for continuous vinyl."""
-    voxel_remesh(ob, size=size)
+def hard_shell(ob, size=0.016, iterations=3, factor=0.32):
+    """Hard continuous mannequin shell (v0.7.2).
+    Larger voxel + light smooth only — no mid-freq organic boil.
+    Prefer few hard primitives joined, then ONE controlled remesh.
+    """
+    bpy.ops.object.select_all(action="DESELECT")
+    ob.select_set(True)
+    bpy.context.view_layer.objects.active = ob
+    mod = ob.modifiers.new("Remesh", "REMESH")
+    mod.mode = "VOXEL"
+    mod.voxel_size = size
+    mod.adaptivity = 0.0
+    apply_mod(ob, mod.name)
     light_smooth(ob, iterations=iterations, factor=factor)
     shade_smooth(ob)
     return ob
+
+
+def remesh_smooth(ob, size=0.016, iterations=3, factor=0.32):
+    """Compat → hard_shell (v0.7.2 hard-surface pass)."""
+    return hard_shell(ob, size=size, iterations=iterations, factor=factor)
 
 
 def sph(name, loc, scale, seg=SEG, ring=RING, sub=False):
@@ -291,7 +308,7 @@ def orient_along(ob, direction):
 
 
 def tapered_limb(name, a, b, r0, r1, v=CYL_V, bulge=0.0, bulge_t=0.35, caps=True):
-    """Sculpted tapered limb with optional muscle bulge — continuous soft shell."""
+    """Hard tapered limb shell. Bulge default 0 (v0.7.2 — no soft muscle pillows)."""
     a, b = Vector(a), Vector(b)
     direction = b - a
     length = direction.length
@@ -549,74 +566,44 @@ def shoe_foot(name, an, toe, sx, base_mat, joint_mat, rubber_mat=None):
 
 
 def athletic_torso(name):
-    """Slick continuous athletic torso — pecs/abs/delts as soft mass, NOT plate armor."""
+    """Hard continuous athletic torso — ONE tall mass + deep-overlap waist/stubs.
+    No stacked soft pillows; deep overlaps so remesh cannot leave mid-freq grooves.
+    """
     parts = []
-    # Main thorax
-    thorax = sph(f"{name}_Thorax", (0, 0.01, 1.36), (0.195, 0.125, 0.165), seg=36, ring=18)
+    # ONE tall elliptical capsule covering clavicle → lower abs (kills pillow stack)
+    thorax = sph(f"{name}_Thorax", (0, 0.008, 1.26), (0.200, 0.122, 0.275), seg=40, ring=24)
     parts.append(thorax)
-    # Soft lower ribs / abs taper
-    abs_shell = sph(f"{name}_Abs", (0, 0.008, 1.14), (0.160, 0.105, 0.100), seg=28, ring=14)
-    parts.append(abs_shell)
-    # Soft waist — extends down to meet pelvis
-    waist = sph(f"{name}_Waist", (0, 0.01, 1.00), (0.140, 0.100, 0.070), seg=24, ring=12)
+    # Mild front chest fill — single shallow ellipsoid, deep into thorax (not pec pillows)
+    front = sph(f"{name}_Front", (0, -0.040, 1.32), (0.140, 0.055, 0.160), seg=28, ring=16)
+    parts.append(front)
+    # Waist bridge — deep overlap into thorax AND pelvis (v0.7.1 closed-waist win)
+    waist = sph(f"{name}_Waist", (0, 0.010, 0.98), (0.148, 0.105, 0.100), seg=28, ring=16)
     parts.append(waist)
-    # Pec volumes — soft continuous mass (no plate/bump noise)
+    # Shoulder stubs deep into thorax — sleeve continuity, not soft delt pillows
     for sx in (1, -1):
-        pec = sph(f"{name}_Pec{sx}", (sx * 0.070, -0.070, 1.37),
-                  (0.090, 0.052, 0.070), seg=20, ring=12)
-        parts.append(pec)
-    # v0.7.1: NO discrete ab bump spheres (were soft-toy noise)
-    # Soft continuous abs plane instead
-    abs_plane = sph(f"{name}_AbsPlane", (0, -0.075, 1.16),
-                    (0.070, 0.022, 0.080), seg=18, ring=10)
-    parts.append(abs_plane)
-    # Lats / side — blended
-    for sx in (1, -1):
-        lat = sph(f"{name}_Lat{sx}", (sx * 0.150, 0.015, 1.28),
-                  (0.060, 0.080, 0.095), seg=16, ring=10)
-        parts.append(lat)
-    # Deltoid shelves — smaller, deeper into thorax so not reading as exposed ShBall
-    for sx in (1, -1):
-        delt = sph(f"{name}_Delt{sx}", (sx * 0.175, 0.0, 1.450),
-                   (0.065, 0.062, 0.068), seg=18, ring=10)
-        parts.append(delt)
-        # Sleeve stub toward arm so shoulder reads continuous into UA
-        stub = sph(f"{name}_DeltStub{sx}", (sx * 0.215, 0.0, 1.448),
-                   (0.042, 0.040, 0.042), seg=14, ring=8)
+        stub = sph(f"{name}_DeltStub{sx}", (sx * 0.200, 0.0, 1.445),
+                   (0.055, 0.050, 0.055), seg=16, ring=10)
         parts.append(stub)
-    # Soft clavicle / upper chest
-    clav = sph(f"{name}_Clav", (0, -0.02, 1.48), (0.145, 0.058, 0.038), seg=22, ring=12)
-    parts.append(clav)
-    # Waist bridge down into pelvis (closes soft waist cleft)
-    waist_bridge = sph(f"{name}_WaistBridge", (0, 0.01, 0.94),
-                       (0.145, 0.105, 0.055), seg=22, ring=12)
-    parts.append(waist_bridge)
 
     shell = join(name, parts)
-    remesh_smooth(shell, size=0.010, iterations=14, factor=0.58)
+    hard_shell(shell, size=0.017, iterations=2, factor=0.25)
     return shell
 
 
 def athletic_pelvis(name):
-    """Continuous pelvis / hip bowl — soft athletic mass."""
+    """Hard continuous pelvis — ONE bowl + deep-overlap waist fill + hip stubs."""
     parts = []
-    bowl = sph(f"{name}_Bowl", (0, 0.015, 0.92), (0.170, 0.128, 0.115), seg=30, ring=16)
+    bowl = sph(f"{name}_Bowl", (0, 0.012, 0.90), (0.172, 0.128, 0.130), seg=32, ring=18)
     parts.append(bowl)
-    for sx in (1, -1):
-        wing = sph(f"{name}_Wing{sx}", (sx * 0.125, 0.015, 0.90),
-                   (0.065, 0.078, 0.072), seg=18, ring=10)
-        parts.append(wing)
-        # Hip sleeve stub — continuous into thigh
-        stub = sph(f"{name}_HipStub{sx}", (sx * 0.115, 0.015, 0.95),
-                   (0.050, 0.048, 0.048), seg=14, ring=8)
-        parts.append(stub)
-    lower = sph(f"{name}_Lower", (0, 0.01, 0.82), (0.105, 0.088, 0.050), seg=20, ring=12)
-    parts.append(lower)
-    # Upward waist fill into chest bridge
-    up = sph(f"{name}_UpWaist", (0, 0.012, 0.98), (0.140, 0.100, 0.045), seg=22, ring=12)
+    # Deep overlap into torso waist bridge
+    up = sph(f"{name}_UpWaist", (0, 0.012, 0.99), (0.148, 0.105, 0.070), seg=24, ring=12)
     parts.append(up)
+    for sx in (1, -1):
+        stub = sph(f"{name}_HipStub{sx}", (sx * 0.115, 0.012, 0.92),
+                   (0.055, 0.052, 0.055), seg=14, ring=8)
+        parts.append(stub)
     shell = join(name, parts)
-    remesh_smooth(shell, size=0.010, iterations=14, factor=0.58)
+    hard_shell(shell, size=0.017, iterations=2, factor=0.25)
     return shell
 
 
@@ -766,7 +753,7 @@ def build_armature():
 
 
 def build_mesh_parts(is_it, mats):
-    """v0.7.1 — smooth body topo on v0.7 base: deep sleeve overlaps, flush hinges, no soft-toy seams."""
+    """v0.7.2 — hard continuous shells: deep sleeve overlaps, flush hinges, no soft-mass boil."""
     (base, accent, over, joint, sensor, metal, rubber, wear) = mats
     groups = {k: [] for k in (
         "Hips", "Spine", "Chest", "Neck", "Head",
@@ -789,13 +776,13 @@ def build_mesh_parts(is_it, mats):
     neck_fill = sph("NeckFill", (0, 0.0, 1.490), (0.058, 0.055, 0.040), seg=20, ring=12)
     neck_top = sph("NeckTop", (0, 0.0, 1.590), (0.052, 0.050, 0.030), seg=18, ring=10)
     neck_shell = join("NeckShell", [neck, neck_fill, neck_top])
-    remesh_smooth(neck_shell, size=0.007, iterations=10, factor=0.55)
+    hard_shell(neck_shell, size=0.016, iterations=2, factor=0.28)
     add("Neck", neck_shell, base)
 
     # --- Chest / torso continuous athletic shell ---
     chest = athletic_torso("ChestShell")
     add("Chest", chest, base)
-    # v0.7.1: NO ShSeam shoulder rings (were soft-toy ridges)
+    # v0.7.1/v0.7.2: NO ShSeam shoulder rings (were soft-toy ridges)
 
     # Thin teal tick on Runner only
     if not is_it:
@@ -803,8 +790,8 @@ def build_mesh_parts(is_it, mats):
         add("Chest", tick, accent)
 
     # Continuous waist fill — NO WaistSeam ridge
-    spine_fill = sph("SpineFill", (0, 0.01, 0.995), (0.138, 0.102, 0.080), seg=26, ring=14)
-    remesh_smooth(spine_fill, size=0.009, iterations=12, factor=0.55)
+    spine_fill = sph("SpineFill", (0, 0.01, 0.995), (0.145, 0.105, 0.095), seg=26, ring=14)
+    hard_shell(spine_fill, size=0.017, iterations=2, factor=0.25)
     add("Spine", spine_fill, base)
 
     # --- Pelvis ---
@@ -830,34 +817,34 @@ def build_mesh_parts(is_it, mats):
         shj = slim_hinge(f"ShoulderJ_{side}", sh, axis="X", radius=0.030, thick=0.0016)
         add(f"Shoulder_{side}", shj, joint)
 
-        # Upper arm: deep past shoulder into chest delt stub and past elbow into forearm
+        # Upper arm: deep sleeve past shoulder/elbow; hard taper; NO delt pillow / bulge
+        # Radii restored toward v0.7 (v8) athletic mass — not thinner than v8_1
         ua_a = sh - dir_ua * 0.045
         ua_b = el + dir_ua * 0.048
-        ua = tapered_limb(f"UA_{side}", ua_a, ua_b, 0.045, 0.035, v=24,
-                          bulge=0.22, bulge_t=0.40)
-        delt = sph(f"UADelt_{side}", sh + Vector((sx * 0.008, 0, -0.012)),
-                   (0.050, 0.046, 0.052), seg=18, ring=12)
+        ua = tapered_limb(f"UA_{side}", ua_a, ua_b, 0.048, 0.037, v=24,
+                          bulge=0.0)
         el_sleeve_ua = sph(f"UAElSlv_{side}", el,
                            (0.036, 0.034, 0.036), seg=16, ring=10)
         sh_sleeve = sph(f"UAShSlv_{side}", sh,
                         (0.044, 0.042, 0.044), seg=16, ring=10)
-        ua_shell = join(f"UAShell_{side}", [ua, delt, el_sleeve_ua, sh_sleeve])
-        remesh_smooth(ua_shell, size=0.008, iterations=12, factor=0.58)
+        ua_shell = join(f"UAShell_{side}", [ua, el_sleeve_ua, sh_sleeve])
+        # ONE large-voxel remesh — melts sleeves without mid-freq muscle boil
+        hard_shell(ua_shell, size=0.018, iterations=2, factor=0.28)
         set_mat(ua_shell, base)
         add(f"UpperArm_{side}", ua_shell, base)
 
         elj = slim_hinge(f"ElbowJ_{side}", el, axis="X", radius=0.024, thick=0.0015)
         add(f"LowerArm_{side}", elj, joint)
 
-        # Forearm: deep past elbow and into wrist sleeve
+        # Forearm: deep past elbow into wrist; hard taper; no muscle bulge
         la_a = el - dir_la * 0.045
         la_b = wr + (hand - wr).normalized() * 0.025
-        la = tapered_limb(f"LA_{side}", la_a, la_b, 0.033, 0.024, v=22,
-                          bulge=0.12, bulge_t=0.35, caps=False)
+        la = tapered_limb(f"LA_{side}", la_a, la_b, 0.036, 0.026, v=22,
+                          bulge=0.0, caps=False)
         la_prox = sph(f"LAProx_{side}", el, (0.034, 0.032, 0.034), seg=16, ring=10)
         la_dist = sph(f"LADist_{side}", wr, (0.026, 0.024, 0.024), seg=14, ring=8)
         la_shell = join(f"LAShell_{side}", [la, la_prox, la_dist])
-        remesh_smooth(la_shell, size=0.007, iterations=12, factor=0.58)
+        hard_shell(la_shell, size=0.017, iterations=2, factor=0.28)
         set_mat(la_shell, base)
         add(f"LowerArm_{side}", la_shell, base)
 
@@ -874,18 +861,18 @@ def build_mesh_parts(is_it, mats):
         hipj = slim_hinge(f"HipJ_{side}", hip, axis="X", radius=0.034, thick=0.0016)
         add(f"UpperLeg_{side}", hipj, joint)
 
+        # Thigh: hard taper, restored athletic radii; NO quad pillow / bulge
         thigh_a = hip - dir_ul * 0.048
         thigh_b = kn + dir_ul * 0.050
-        thigh = tapered_limb(f"Thigh_{side}", thigh_a, thigh_b, 0.066, 0.045, v=26,
-                             bulge=0.20, bulge_t=0.32)
-        quad = sph(f"Quad_{side}", hip.lerp(kn, 0.35) + Vector((0, -0.016, 0)),
-                   (0.058, 0.050, 0.070), seg=18, ring=10)
-        kneecap = sph(f"Kneecap_{side}", kn + Vector((0, -0.022, 0.002)),
-                      (0.026, 0.016, 0.022), seg=14, ring=8)
+        thigh = tapered_limb(f"Thigh_{side}", thigh_a, thigh_b, 0.070, 0.048, v=26,
+                             bulge=0.0)
+        # Flat hard kneecap hint (not soft joint pillow)
+        kneecap = sph(f"Kneecap_{side}", kn + Vector((0, -0.018, 0.002)),
+                      (0.024, 0.012, 0.018), seg=12, ring=6)
         kn_sleeve_ul = sph(f"ThKnSlv_{side}", kn, (0.042, 0.038, 0.040), seg=16, ring=10)
         hip_sleeve = sph(f"ThHipSlv_{side}", hip, (0.055, 0.052, 0.052), seg=16, ring=10)
-        thigh_shell = join(f"ThighShell_{side}", [thigh, quad, kneecap, kn_sleeve_ul, hip_sleeve])
-        remesh_smooth(thigh_shell, size=0.009, iterations=12, factor=0.58)
+        thigh_shell = join(f"ThighShell_{side}", [thigh, kneecap, kn_sleeve_ul, hip_sleeve])
+        hard_shell(thigh_shell, size=0.018, iterations=2, factor=0.28)
         set_mat(thigh_shell, base)
         add(f"UpperLeg_{side}", thigh_shell, base)
 
@@ -903,22 +890,21 @@ def build_mesh_parts(is_it, mats):
         knj = slim_hinge(f"KneeJ_{side}", kn, axis="X", radius=0.026, thick=0.0015)
         add(f"LowerLeg_{side}", knj, joint)
 
+        # Shin: hard taper, restored radii; NO calf pillow / bulge
         shin_a = kn - dir_ll * 0.045
         shin_b = an + dir_ll * 0.030
-        shin = tapered_limb(f"Shin_{side}", shin_a, shin_b, 0.039, 0.027, v=22,
-                            bulge=0.14, bulge_t=0.40)
-        calf = sph(f"Calf_{side}", kn.lerp(an, 0.35) + Vector((0, 0.022, 0)),
-                   (0.040, 0.046, 0.062), seg=16, ring=10)
+        shin = tapered_limb(f"Shin_{side}", shin_a, shin_b, 0.042, 0.029, v=22,
+                            bulge=0.0)
         shin_prox = sph(f"ShinProx_{side}", kn, (0.038, 0.036, 0.038), seg=16, ring=10)
-        shin_shell = join(f"ShinShell_{side}", [shin, calf, shin_prox])
-        remesh_smooth(shin_shell, size=0.008, iterations=12, factor=0.58)
+        shin_shell = join(f"ShinShell_{side}", [shin, shin_prox])
+        hard_shell(shin_shell, size=0.017, iterations=2, factor=0.28)
         set_mat(shin_shell, base)
         add(f"LowerLeg_{side}", shin_shell, base)
 
         ft = shoe_foot(f"Foot_{side}", an, toe, sx, base, joint, rubber_mat=rubber)
         groups[f"Foot_{side}"].append(ft)
 
-    # v0.7.1: NO wear cylinders (soft-toy noise)
+    # v0.7.1/v0.7.2: NO wear cylinders (soft-toy noise)
 
     return groups
 
@@ -1262,19 +1248,19 @@ def build_variant(is_it, export_path, guid, do_stills=False):
     tag = "it_" if is_it else ""
     if do_stills:
         pose_idle(arm_ob)
-        render_shot(f"{PREV}/hipoly_v71_{tag}idle_front.png",
+        render_shot(f"{PREV}/hipoly_v72_{tag}idle_front.png",
                     (0.12, -3.2, 1.35), (0, 0, 1.00))
-        render_shot(f"{PREV}/hipoly_v71_{tag}idle_34.png",
+        render_shot(f"{PREV}/hipoly_v72_{tag}idle_34.png",
                     (2.1, -2.5, 1.40), (0, 0, 1.05))
         hl = hand_world(arm_ob, "L")
         render_shot(
-            f"{PREV}/hipoly_v71_{tag}hand_close.png",
+            f"{PREV}/hipoly_v72_{tag}hand_close.png",
             (hl.x + 0.32, hl.y - 0.38, hl.z + 0.14),
             (hl.x - 0.02, hl.y + 0.02, hl.z - 0.01),
         )
         # Optional face close
         render_shot(
-            f"{PREV}/hipoly_v71_{tag}face_close.png",
+            f"{PREV}/hipoly_v72_{tag}face_close.png",
             (0.08, -0.55, HEAD_Z + 0.02),
             (0.0, -0.05, HEAD_Z - 0.02),
         )
@@ -1292,7 +1278,7 @@ def write_readme():
     path = os.path.join(OUT_DIR, "README.md")
     text = """# HiPoly Hierarchical Mannequins
 
-DummyLocomotor-bindable **athletic store mannequin** (v0.7.1 body topography smooth).
+DummyLocomotor-bindable **athletic store mannequin** (v0.7.2 hard-surface clean shells).
 NOT Hybrid III toy kit / sphere-palm / cylinder-finger / egg-head / LEGO hinges.
 
 ## Assets
@@ -1304,7 +1290,7 @@ NOT Hybrid III toy kit / sphere-palm / cylinder-finger / egg-head / LEGO hinges.
 ## Bind pose
 - Mild A-pose ~20–30°; hands clear pelvis.
 - Molded human face: brow, nose, lip volume, chin, ears; flat dark eye insets — no orbs/makeup/goatee.
-- Continuous athletic torso/limbs; deep sleeve joint overlaps; nearly-flush slim metal hinges.
+- Hard continuous athletic torso/limbs (no soft-mass boil); deep sleeve overlaps; flush slim metal hinges.
 - Anatomical hands: flattened palm, knuckled fingers, opposed thumb + thenar; parented to Hand_L/R.
 - Materials: soft vinyl SSS Base / Accent / ItOverride + Joint metal + Rubber soles.
 
@@ -1322,14 +1308,14 @@ NOT Hybrid III toy kit / sphere-palm / cylinder-finger / egg-head / LEGO hinges.
 
 
 def main():
-    log("=== hipoly hier v8.1 / realism v0.7.1 body topography smooth ===")
+    log("=== hipoly hier v8.2 / realism v0.7.2 hard-surface clean ===")
     tan = os.path.join(OUT_DIR, "Dummy_Mannequin_Tan_Hier_Hi.fbx")
     orn = os.path.join(OUT_DIR, "Dummy_Mannequin_Orange_Hier_Hi.fbx")
 
-    log("Building Tan/Runner Hier HiPoly v0.7.1…")
+    log("Building Tan/Runner Hier HiPoly v0.7.2…")
     ok_t, ang_t, cx_t, cy_t = build_variant(False, tan, GUID_TAN, do_stills=True)
 
-    log("Building Orange/It Hier HiPoly v0.7.1…")
+    log("Building Orange/It Hier HiPoly v0.7.2…")
     ok_o, ang_o, cx_o, cy_o = build_variant(True, orn, GUID_ORANGE, do_stills=True)
 
     write_readme()
@@ -1337,7 +1323,7 @@ def main():
     log(f"It  OK={ok_o} A-pose={ang_o:.1f}deg clear_x={cx_o:.3f} clear_y={cy_o:.3f}")
     log(f"Tan FBX {os.path.getsize(tan)} bytes guid={GUID_TAN}")
     log(f"Orange FBX {os.path.getsize(orn)} bytes guid={GUID_ORANGE}")
-    log("DONE v0.7.1 body topo smooth — no git push (await AD approve)")
+    log("DONE v0.7.2 hard-surface clean — no git push (await AD approve)")
 
 
 if __name__ == "__main__":
