@@ -1,65 +1,68 @@
 #!/usr/bin/env python3
 """
-HiPoly hierarchical mannequin v8.2 / realism v0.7.2
-HARD continuous mannequin shells — kill mid-freq subsurface boil from v0.7.1.
+HiPoly hierarchical mannequin v8.3 / Hybrid III hard-shells v0.7.3
 
-v0.7.1 failure: heavy remesh_smooth on soft mass spheres (pecs/delts/quads/
-calves + limb bulge) → organic boil under vinyl. Fix = few hard primitives,
-larger voxel OR light smooth only, bulge≈0, restore athletic limb radii.
+RESTORE Hybrid III hard-shell language (vs soft egg / pillows of v0.7.2).
+Base = v7.1 segmented Hybrid III (waist_bellows, hinge_disk, neck_ring_stack,
+limb shells) HARDENED:
 
-LOCKED: human athletic proportions (do NOT thin vs v8_1), vinyl SSS materials,
-slim flush hinges, deep sleeve overlaps, waist bridge, anatomical_hand,
-face v0.7, Runner cream / It warm tan + Vs, DummyLocomotor + GUIDs / FBX paths.
+  - FLAT chest plate (planar shield/slab) — kill pec/lat/delt sphere pillows
+  - Dense dark accordion waist (~6–8 ribs) between chest + pelvis
+  - Hard pelvis shell with clear top edge into accordion
+  - Long rigid tapered cylindrical limb shells + LARGE dark metal hinge disks
+  - Segmented neck ring stack
+  - Paint LOCKED from v8.2: Runner cream #E8D9C0 · It warm tan + black nested Vs
+    (NOT ref orange #FF6A00)
+  - Face: Hybrid III hard-shell head silhouette + molded relief, flat dark eye insets
+  - Hands: hard-shell separated fingers + opposed thumb (no sphere-palm stacks)
 
-GUID-safe FBX overwrite. NO git push.
+DummyLocomotor bones / hierarchy / GUIDs / FBX paths unchanged.
+GUID-safe FBX overwrite (do NOT rewrite .meta). NO git push.
 """
 import bpy
-import bmesh
 import math
 import os
 import uuid
-from mathutils import Vector, Euler, Matrix
+from mathutils import Vector, Euler
 
 OUT_DIR = "/workspace/tag-unity/Assets/Art/Characters/HiPoly"
 PREV = "/workspace/art-build/previews"
 BLEND = "/workspace/art-build/Dummy_Mannequin_Hier_Hi.blend"
-LOG = "/tmp/hipoly_v72_build.log"
-REF_STORE = "/workspace/tag-gdd/art/refs/hybrid-iii-v03/ref_store_mannequin_anatomy.jpg"
+LOG = "/tmp/hipoly_v73_build.log"
+REF_CRASH = "/workspace/tag-gdd/art/refs/hybrid-iii-v03/ref_hybrid_iii_crash_dummy.jpg"
 
 GUID_TAN = "ad3f2fa97db94e72869d746ecdf8e87d"
 GUID_ORANGE = "b33974ad57284ef28a7564e3bdf00540"
 
-# Runner cream #E8D9C0
-BONE = (0.95, 0.88, 0.76, 1.0)  # warmer #E8D9C0 stills read
-# It warm tan body (NOT toy-orange #FF6A00)
-WARM_TAN = (0.82, 0.66, 0.50, 1.0)  # warm tan, not toy-orange
-TEAL = (0.169, 0.702, 0.639, 1.0)
+# Paint LOCKED (v8.2 stills read) — Runner cream / It warm tan — NOT ref orange.
+BONE = (0.95, 0.88, 0.76, 1.0)         # Runner cream #E8D9C0 stills read
+WARM_TAN = (0.82, 0.66, 0.50, 1.0)     # It warm tan (NOT #FF6A00)
+TEAL = (0.169, 0.702, 0.639, 1.0)      # #2BB3A3
 BLACK = (0.04, 0.04, 0.045, 1.0)
-JOINT = (0.12, 0.12, 0.14, 1.0)
-METAL = (0.28, 0.28, 0.30, 1.0)
-SENSOR = (0.02, 0.02, 0.02, 1.0)
+JOINT = (0.10, 0.10, 0.12, 1.0)        # dark metal hinges
+METAL = (0.32, 0.32, 0.34, 1.0)        # neck rings — readable dark metal
+DARK_BELLOWS = (0.06, 0.06, 0.07, 1.0)
 RIM = (0.15, 0.12, 0.10, 1.0)
+SENSOR = (0.02, 0.02, 0.02, 1.0)
+CAL_YELLOW = (0.95, 0.82, 0.08, 1.0)
+LIP = (0.12, 0.12, 0.13, 1.0)          # dark bead/lip seam edge
 
-SEG = 32
-RING = 16
-CYL_V = 24
+SEG = 36
+RING = 18
+CYL_V = 28
 
-# Human athletic proportions (~1.82m). Mild A-pose.
-SHOULDER_Z = 1.48
-SHOULDER_X = 0.22
-UA_LEN = 0.30
-LA_LEN = 0.27
-ARM_OUT = math.radians(26.0)
-ARM_FWD = math.radians(10.0)
+# Mild A-pose 20–35°; hands clear pelvis
+SHOULDER_Z = 1.50
+SHOULDER_X = 0.295
+UA_LEN = 0.350
+LA_LEN = 0.310
+ARM_OUT = math.radians(28.0)
+ARM_FWD = math.radians(14.0)
 
-HIP_Z = 0.95
-HIP_X = 0.11
-UL_LEN = 0.455
-LL_LEN = 0.430
-
-# Human head (NOT oversized egg) — top ~1.78, chin ~1.58
-HEAD_Z = 1.70
-HEAD_SCALE = (0.098, 0.105, 0.112)  # width, depth, height — human skull (not egg toy)
+HIP_Z = 0.97
+HIP_X = 0.125
+UL_LEN = 0.480
+LL_LEN = 0.440
 
 os.makedirs(OUT_DIR, exist_ok=True)
 os.makedirs(PREV, exist_ok=True)
@@ -82,8 +85,9 @@ def clear_scene():
             coll.remove(x)
 
 
-def mat(name, color, metallic=0.02, roughness=0.42, emit=0.0, subsurface=0.0,
+def mat(name, color, metallic=0.02, roughness=0.45, emit=0.0, subsurface=0.0,
         ss_color=None, ss_radius=(1.0, 0.45, 0.20)):
+    """Principled helper. Vinyl uses moderate roughness + soft SSS; metal/rubber separate."""
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     m.diffuse_color = color
@@ -92,12 +96,13 @@ def mat(name, color, metallic=0.02, roughness=0.42, emit=0.0, subsurface=0.0,
     if "Metallic" in bsdf.inputs:
         bsdf.inputs["Metallic"].default_value = metallic
     bsdf.inputs["Roughness"].default_value = roughness
+    # Soft SSS / edge glow for crash-dummy vinyl (not chalky, not car-paint)
     if subsurface > 0:
         if ss_color is None:
             ss_color = (
-                min(1.0, color[0] * 1.05),
-                min(1.0, color[1] * 0.95),
-                min(1.0, color[2] * 0.75),
+                min(1.0, color[0] * 1.08),
+                min(1.0, color[1] * 0.92),
+                min(1.0, color[2] * 0.65),
                 1.0,
             )
         if "Subsurface Weight" in bsdf.inputs:
@@ -106,8 +111,9 @@ def mat(name, color, metallic=0.02, roughness=0.42, emit=0.0, subsurface=0.0,
                 bsdf.inputs["Subsurface Radius"].default_value = ss_radius
             if "Subsurface Color" in bsdf.inputs:
                 bsdf.inputs["Subsurface Color"].default_value = ss_color
+            # Blender 4.x may use Subsurface Scale
             if "Subsurface Scale" in bsdf.inputs:
-                bsdf.inputs["Subsurface Scale"].default_value = 0.06
+                bsdf.inputs["Subsurface Scale"].default_value = 0.08
         elif "Subsurface" in bsdf.inputs:
             bsdf.inputs["Subsurface"].default_value = subsurface
             if "Subsurface Color" in bsdf.inputs:
@@ -124,8 +130,6 @@ def mat(name, color, metallic=0.02, roughness=0.42, emit=0.0, subsurface=0.0,
 
 
 def set_mat(ob, m):
-    if ob is None:
-        return
     ob.data.materials.clear()
     ob.data.materials.append(m)
 
@@ -137,7 +141,7 @@ def shade_smooth(ob):
     bpy.ops.object.shade_smooth()
     if hasattr(ob.data, "use_auto_smooth"):
         ob.data.use_auto_smooth = True
-        ob.data.auto_smooth_angle = math.radians(50)
+        ob.data.auto_smooth_angle = math.radians(42)
 
 
 def apply_mod(ob, mod_name):
@@ -152,58 +156,20 @@ def apply_subsurf(ob, levels=1):
     apply_mod(ob, mod.name)
 
 
-def apply_bevel(ob, width=0.006, segments=2):
+def apply_bevel(ob, width=0.010, segments=3):
     mod = ob.modifiers.new("Bevel", "BEVEL")
     mod.width = width
     mod.segments = segments
     mod.limit_method = "ANGLE"
-    mod.angle_limit = math.radians(30)
+    mod.angle_limit = math.radians(28)
     apply_mod(ob, mod.name)
 
 
-def light_smooth(ob, iterations=6, factor=0.5):
+def apply_smooth_corrective(ob, factor=0.5, iterations=8):
     mod = ob.modifiers.new("Smooth", "SMOOTH")
     mod.factor = factor
     mod.iterations = iterations
     apply_mod(ob, mod.name)
-
-
-def voxel_remesh(ob, size=0.012):
-    """Legacy voxel+smooth — kept for palm (hands untouched). Body uses hard_shell."""
-    bpy.ops.object.select_all(action="DESELECT")
-    ob.select_set(True)
-    bpy.context.view_layer.objects.active = ob
-    mod = ob.modifiers.new("Remesh", "REMESH")
-    mod.mode = "VOXEL"
-    mod.voxel_size = size
-    mod.adaptivity = 0.0
-    apply_mod(ob, mod.name)
-    light_smooth(ob, iterations=8, factor=0.6)
-    shade_smooth(ob)
-    return ob
-
-
-def hard_shell(ob, size=0.016, iterations=3, factor=0.32):
-    """Hard continuous mannequin shell (v0.7.2).
-    Larger voxel + light smooth only — no mid-freq organic boil.
-    Prefer few hard primitives joined, then ONE controlled remesh.
-    """
-    bpy.ops.object.select_all(action="DESELECT")
-    ob.select_set(True)
-    bpy.context.view_layer.objects.active = ob
-    mod = ob.modifiers.new("Remesh", "REMESH")
-    mod.mode = "VOXEL"
-    mod.voxel_size = size
-    mod.adaptivity = 0.0
-    apply_mod(ob, mod.name)
-    light_smooth(ob, iterations=iterations, factor=factor)
-    shade_smooth(ob)
-    return ob
-
-
-def remesh_smooth(ob, size=0.016, iterations=3, factor=0.32):
-    """Compat → hard_shell (v0.7.2 hard-surface pass)."""
-    return hard_shell(ob, size=size, iterations=iterations, factor=factor)
 
 
 def sph(name, loc, scale, seg=SEG, ring=RING, sub=False):
@@ -241,6 +207,18 @@ def cone(name, loc, r1, r2, depth, rot=(0, 0, 0), v=CYL_V):
     return o
 
 
+def torus_ring(name, loc, major=0.08, minor=0.012, rot=(0, 0, 0)):
+    bpy.ops.mesh.primitive_torus_add(
+        major_radius=major, minor_radius=minor,
+        major_segments=28, minor_segments=10, location=loc)
+    o = bpy.context.active_object
+    o.name = name
+    o.rotation_euler = rot
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+    shade_smooth(o)
+    return o
+
+
 def cube(name, loc, scale, rot=(0, 0, 0), bevel=0.0):
     bpy.ops.mesh.primitive_cube_add(location=loc)
     o = bpy.context.active_object
@@ -249,7 +227,7 @@ def cube(name, loc, scale, rot=(0, 0, 0), bevel=0.0):
     o.rotation_euler = rot
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
     if bevel > 0:
-        apply_bevel(o, width=bevel, segments=2)
+        apply_bevel(o, width=bevel, segments=3)
     shade_smooth(o)
     return o
 
@@ -258,108 +236,178 @@ def join(name, objs):
     objs = [o for o in objs if o is not None]
     if not objs:
         return None
-    if len(objs) == 1:
-        objs[0].name = name
-        return objs[0]
     bpy.ops.object.select_all(action="DESELECT")
     for o in objs:
         o.select_set(True)
     bpy.context.view_layer.objects.active = objs[0]
-    bpy.ops.object.join()
+    if len(objs) > 1:
+        bpy.ops.object.join()
     objs[0].name = name
     return objs[0]
 
 
 def boolean_union(target, tools):
+    """Union tool meshes into target (molded vinyl relief). Destroys tools."""
     tools = [t for t in tools if t is not None]
-    for i, t in enumerate(tools):
-        mod = target.modifiers.new(f"BU{i}", "BOOLEAN")
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.context.view_layer.objects.active = target
+    target.select_set(True)
+    for i, tool in enumerate(tools):
+        mod = target.modifiers.new(f"BoolU_{i}", "BOOLEAN")
         mod.operation = "UNION"
         mod.solver = "EXACT"
-        mod.object = t
-        apply_mod(target, mod.name)
-        bpy.data.objects.remove(t, do_unlink=True)
+        mod.object = tool
+        try:
+            apply_mod(target, mod.name)
+        except Exception as e:
+            log(f"boolean_union fail on {tool.name}: {e} — joining instead")
+            if mod.name in target.modifiers:
+                target.modifiers.remove(mod)
+            join(target.name, [target, tool])
+            target = bpy.context.active_object
+            continue
+        bpy.data.objects.remove(tool, do_unlink=True)
+    shade_smooth(target)
     return target
 
 
 def boolean_difference(target, tools):
+    """Carve tool meshes out of target (shallow eye recesses). Destroys tools."""
     tools = [t for t in tools if t is not None]
-    for i, t in enumerate(tools):
-        mod = target.modifiers.new(f"BD{i}", "BOOLEAN")
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.context.view_layer.objects.active = target
+    target.select_set(True)
+    for i, tool in enumerate(tools):
+        mod = target.modifiers.new(f"BoolD_{i}", "BOOLEAN")
         mod.operation = "DIFFERENCE"
         mod.solver = "EXACT"
-        mod.object = t
-        apply_mod(target, mod.name)
-        bpy.data.objects.remove(t, do_unlink=True)
+        mod.object = tool
+        try:
+            apply_mod(target, mod.name)
+        except Exception as e:
+            log(f"boolean_difference fail on {tool.name}: {e} — skip recess")
+            if mod.name in target.modifiers:
+                target.modifiers.remove(mod)
+            bpy.data.objects.remove(tool, do_unlink=True)
+            continue
+        bpy.data.objects.remove(tool, do_unlink=True)
+    shade_smooth(target)
     return target
 
 
-def orient_along(ob, direction):
-    """Rotate object so local +Z aligns with direction."""
-    direction = Vector(direction)
-    if direction.length < 1e-8:
-        return
-    quat = direction.normalized().to_track_quat("Z", "Y")
-    ob.rotation_euler = quat.to_euler()
-    bpy.ops.object.select_all(action="DESELECT")
-    ob.select_set(True)
-    bpy.context.view_layer.objects.active = ob
-    bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+def light_smooth(ob, iterations=4):
+    """Light smooth only — preserve shell edges / segmentation. NO voxel remesh."""
+    apply_smooth_corrective(ob, factor=0.35, iterations=iterations)
+    shade_smooth(ob)
+    return ob
 
 
-def tapered_limb(name, a, b, r0, r1, v=CYL_V, bulge=0.0, bulge_t=0.35, caps=True):
-    """Hard tapered limb shell. Bulge default 0 (v0.7.2 — no soft muscle pillows)."""
+def tapered_limb(name, a, b, r0, r1, v=CYL_V):
+    """Segmented limb shell volume (upper→lower taper). Soft end caps, NO remesh."""
     a, b = Vector(a), Vector(b)
+    mid = (a + b) * 0.5
     direction = b - a
     length = direction.length
     if length < 1e-6:
-        return sph(name, a, r0)
-    mid = a.lerp(b, 0.5)
-    body = cone(name + "_shaft", mid, r0, r1, max(length * 0.92, 0.04), v=v)
-    orient_along(body, direction)
-    parts = [body]
-    if caps:
-        c0 = sph(f"{name}_c0", a, r0 * 0.95, seg=16, ring=8)
-        c1 = sph(f"{name}_c1", b, r1 * 0.95, seg=16, ring=8)
-        parts.extend([c0, c1])
-    else:
-        # Soft proximal cap only — distal open for mannequin wrist attach
-        c0 = sph(f"{name}_c0", a, r0 * 0.95, seg=16, ring=8)
-        parts.append(c0)
-    if bulge > 0:
-        bp = a.lerp(b, bulge_t)
-        br = (r0 + r1) * 0.5 * (1.0 + bulge)
-        mus = sph(f"{name}_mus", bp, (br * 1.05, br * 0.92, br * 1.15), seg=16, ring=8)
-        parts.append(mus)
-    return join(name, parts)
+        return sph(name, mid, r0)
+    body = cone(name, mid, r0, r1, max(length * 0.88, 0.05), v=v)
+    quat = direction.normalized().to_track_quat("Z", "Y")
+    body.rotation_euler = quat.to_euler()
+    bpy.ops.object.select_all(action="DESELECT")
+    body.select_set(True)
+    bpy.context.view_layer.objects.active = body
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+    c0 = sph(f"{name}_cap0", a, r0 * 0.92, seg=16, ring=8)
+    c1 = sph(f"{name}_cap1", b, r1 * 0.92, seg=16, ring=8)
+    return join(name, [body, c0, c1])
 
 
-def slim_hinge(name, loc, axis="X", radius=0.038, thick=0.010):
-    """Nearly-flush metal articulation line — thin ring, not ridge / LEGO disk."""
-    if axis == "X":
-        rot = (0, math.radians(90), 0)
-    elif axis == "Y":
-        rot = (math.radians(90), 0, 0)
-    else:
-        rot = (0, 0, 0)
-    # Single thin disk — no outer rim ridge (v0.7.1 flush)
-    disk = cyl(f"{name}_d", loc, radius, thick, rot=rot, v=28)
-    return disk
-
-
-def seam_ring(name, loc, radius, axis="Z", thick=0.006):
-    """Subtle assembly seam — panel join, not plate armor."""
+def bead_lip(name, loc, radius, axis="Z", thick=0.015, flare=1.14):
+    """Soft Hybrid III bead/lip seam at shell terminus — thicker v0.6 plate read, not toy stripe."""
     if axis == "Z":
         rot = (0, 0, 0)
     elif axis == "X":
         rot = (0, math.radians(90), 0)
     else:
         rot = (math.radians(90), 0, 0)
-    outer = cyl(f"{name}_o", loc, radius * 1.02, thick, rot=rot, v=28)
-    return outer
+    outer = cyl(f"{name}_outer", loc, radius * flare, thick, rot=rot, v=28)
+    mid = cyl(f"{name}_mid", loc, radius * 1.02, thick * 0.72, rot=rot, v=28)
+    inner = cyl(f"{name}_inner", loc, radius * 0.90, thick * 1.20, rot=rot, v=24)
+    return join(name, [outer, mid, inner])
 
 
-def chevron_v(tag, cx, cy, cz, half_w, bar_len, thick=0.010, depth=0.012, ang_deg=34.0):
+def hinge_disk(name, loc, axis="X", radius=0.078, thick=0.032, rivets=4):
+    """LARGE dark metal Hybrid III hinge disk — keep size; flat/cyl rivet caps + wear rim."""
+    if axis == "X":
+        rot = (0, math.radians(90), 0)
+        riv_plane = lambda ang, r: Vector((0, math.cos(ang) * r, math.sin(ang) * r))
+        face_nudge = Vector((thick * 0.55, 0, 0))
+    elif axis == "Y":
+        rot = (math.radians(90), 0, 0)
+        riv_plane = lambda ang, r: Vector((math.cos(ang) * r, 0, math.sin(ang) * r))
+        face_nudge = Vector((0, thick * 0.55, 0))
+    else:
+        rot = (0, 0, 0)
+        riv_plane = lambda ang, r: Vector((math.cos(ang) * r, math.sin(ang) * r, 0))
+        face_nudge = Vector((0, 0, thick * 0.55))
+    core = sph(f"{name}_core", loc, radius * 0.48, seg=14, ring=7)
+    disk = cyl(f"{name}_disk", loc, radius, thick, rot=rot, v=28)
+    # Wear edge ring — slightly larger, thinner, reads darker when joint mat applied
+    rim = cyl(f"{name}_rim", loc, radius * 1.10, thick * 0.38, rot=rot, v=28)
+    wear = cyl(f"{name}_wear", loc, radius * 1.14, thick * 0.18, rot=rot, v=28)
+    pin = cyl(f"{name}_pin", loc, thick * 0.32, thick * 1.35, rot=rot, v=12)
+    parts = [core, disk, rim, wear, pin]
+    for i in range(rivets):
+        ang = (2 * math.pi * i) / rivets + math.radians(18)
+        offset = riv_plane(ang, radius * 0.62) + face_nudge * 0.85
+        # Flat/cyl rivet cap (not glossy sphere bead)
+        rv = cyl(f"{name}_riv{i}", Vector(loc) + offset, 0.009, thick * 0.22, rot=rot, v=10)
+        parts.append(rv)
+        # Tiny recessed dark center punch
+        punch = cyl(f"{name}_punch{i}", Vector(loc) + offset + face_nudge * 0.15,
+                    0.004, thick * 0.08, rot=rot, v=8)
+        parts.append(punch)
+    return join(name, parts)
+
+
+def cal_quadrant_disk(name, loc, radius=0.048, thick=0.012, accent_mat=None, black_mat=None, axis="Y"):
+    """LARGE Hybrid III quadrant cal — real ref size, not micro ticks."""
+    if axis == "Y":
+        rot = (math.radians(90), 0, 0)
+    elif axis == "X":
+        rot = (0, math.radians(90), 0)
+    else:
+        rot = (0, 0, 0)
+    base = cyl(f"{name}_base", loc, radius, thick, rot=rot, v=28)
+    set_mat(base, black_mat)
+    q = radius * 0.42
+    if axis == "Y":
+        w1 = cube(f"{name}_q1",
+                  Vector(loc) + Vector((radius * 0.30, -thick * 0.55, radius * 0.30)),
+                  (q, thick * 0.38, q), bevel=0.001)
+        w2 = cube(f"{name}_q2",
+                  Vector(loc) + Vector((-radius * 0.30, -thick * 0.55, -radius * 0.30)),
+                  (q, thick * 0.38, q), bevel=0.001)
+    elif axis == "X":
+        w1 = cube(f"{name}_q1",
+                  Vector(loc) + Vector((thick * 0.55, radius * 0.30, radius * 0.30)),
+                  (thick * 0.38, q, q), bevel=0.001)
+        w2 = cube(f"{name}_q2",
+                  Vector(loc) + Vector((thick * 0.55, -radius * 0.30, -radius * 0.30)),
+                  (thick * 0.38, q, q), bevel=0.001)
+    else:
+        w1 = cube(f"{name}_q1",
+                  Vector(loc) + Vector((radius * 0.30, radius * 0.30, thick * 0.55)),
+                  (q, q, thick * 0.38), bevel=0.001)
+        w2 = cube(f"{name}_q2",
+                  Vector(loc) + Vector((-radius * 0.30, -radius * 0.30, thick * 0.55)),
+                  (q, q, thick * 0.38), bevel=0.001)
+    set_mat(w1, accent_mat)
+    set_mat(w2, accent_mat)
+    return join(name, [base, w1, w2])
+
+
+def chevron_v(tag, cx, cy, cz, half_w, bar_len, thick=0.012, depth=0.014, ang_deg=36.0):
     ang = math.radians(ang_deg)
     drop = math.sin(ang) * bar_len * 0.55
     spread = math.cos(ang) * bar_len * 0.45
@@ -370,319 +418,273 @@ def chevron_v(tag, cx, cy, cz, half_w, bar_len, thick=0.010, depth=0.012, ang_de
     return [left, right]
 
 
-def phalanx(name, a, b, r0, r1, knuckle_r=None):
-    """Single finger phalanx: tapered shell + proximal knuckle thickening."""
-    a, b = Vector(a), Vector(b)
+def waist_bellows(name, z_top, z_bot, radius=0.118, n_ribs=8):
+    """Dark inset waist bellows ~6–8 fine ribs between chest plate and pelvis shell."""
     parts = []
-    shaft = tapered_limb(f"{name}_sh", a, b, r0, r1, v=12, bulge=0.0)
-    parts.append(shaft)
-    kr = knuckle_r if knuckle_r is not None else r0 * 1.22
-    kn = sph(f"{name}_kn", a, (kr * 1.05, kr * 0.95, kr * 1.10), seg=12, ring=6)
-    parts.append(kn)
+    span = z_top - z_bot
+    # Dark core cylinder first so gaps between ribs stay dark
+    core = cyl(f"{name}_core", (0, 0.01, (z_top + z_bot) * 0.5),
+               radius * 0.78, span * 0.98, v=24)
+    parts.append(core)
+    for i in range(n_ribs):
+        t = (i + 0.5) / n_ribs
+        z = z_top - t * span
+        # Alternating major/minor Hybrid III bellows ridges
+        r = radius * (1.10 if i % 2 == 0 else 0.86)
+        depth = span / n_ribs * (0.55 if i % 2 == 0 else 0.38)
+        rib = cyl(f"{name}_rib{i}", (0, 0.01, z), r, depth, v=28)
+        parts.append(rib)
     return join(name, parts)
 
 
-def continuous_digit(name, a, b, r0, r1, n_seg=16, n_rings=22, tip_flat=0.48):
-    """ONE continuous tapered digit — radius profile knuckles (subtle), flattened tip pad.
-    No separate sphere parts.
+def neck_ring_stack(name, z_base, n=4, major=0.082, minor=0.016, spacing=0.028):
+    """4 stacked dark metal neck rings — MUST read in front + profile like Hybrid III."""
+    parts = []
+    for i in range(n):
+        z = z_base + i * spacing
+        maj = major * (1.0 - i * 0.025)
+        # Thick torus ring
+        ring = torus_ring(f"{name}_r{i}", (0, 0, z), major=maj, minor=minor)
+        parts.append(ring)
+        # Flat disk face so rings read as stacked plates from front
+        disk = cyl(f"{name}_d{i}", (0, 0, z), maj * 1.02, minor * 1.1, v=28)
+        parts.append(disk)
+        if i < n - 1:
+            filler = cyl(f"{name}_f{i}", (0, 0, z + spacing * 0.5),
+                         maj * 0.70, spacing * 0.22, v=18)
+            parts.append(filler)
+    col = cyl(f"{name}_col", (0, 0, z_base + (n - 1) * spacing * 0.5),
+              major * 0.42, (n - 1) * spacing + 0.04, v=14)
+    parts.append(col)
+    return join(name, parts)
+
+
+def u_knee_fork(name, kn, sx):
+    """UpperLeg distal U-nest — LowerLeg pivots inside."""
+    left = sph(f"{name}_padL",
+               kn + Vector((-0.040, 0.0, 0.012)),
+               (0.034, 0.050, 0.050), seg=14, ring=7)
+    right = sph(f"{name}_padR",
+                kn + Vector((0.040, 0.0, 0.012)),
+                (0.034, 0.050, 0.050), seg=14, ring=7)
+    bridge = sph(f"{name}_bridge",
+                 kn + Vector((0, 0.0, 0.050)),
+                 (0.062, 0.054, 0.032), seg=14, ring=7)
+    return join(name, [left, right, bridge])
+
+
+def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
+    """Thumb + SEPARATED fingers (v0.6.1: longer shells, wider gaps, clearer thumb).
+
+    Hands-only pass — static shells parented to Hand_L/R (no per-finger bones).
+    Tip spheres are soft vinyl pads, NOT orb beads.
     """
-    a, b = Vector(a), Vector(b)
-    direction = b - a
-    length = direction.length
-    if length < 1e-6:
-        return sph(name, a, r0)
-    direction_n = direction.normalized()
-
-    def radius_at(t):
-        # Gentle taper + subtle knuckle thickenings (NOT bead lobes)
-        base = r0 * (1.0 - t) + r1 * t
-        kn_mcp = math.exp(-((t - 0.12) ** 2) / (2 * 0.045 ** 2)) * r0 * 0.14
-        kn_pip = math.exp(-((t - 0.45) ** 2) / (2 * 0.050 ** 2)) * r0 * 0.11
-        kn_dip = math.exp(-((t - 0.75) ** 2) / (2 * 0.040 ** 2)) * r0 * 0.07
-        return base + kn_mcp + kn_pip + kn_dip
-
-    bm = bmesh.new()
-    ring_verts = []
-    for i in range(n_rings + 1):
-        tparm = i / n_rings
-        z = (tparm - 0.5) * length
-        r = radius_at(tparm)
-        flat = 1.0
-        if tparm > 0.80:
-            u = (tparm - 0.80) / 0.20
-            flat = 1.0 - (1.0 - tip_flat) * (u * u)
-            # Soft pad mass — slightly fatter but flattened, not spherical
-            r = r * (1.0 + 0.08 * u)
-        row = []
-        for j in range(n_seg):
-            ang = (2 * math.pi * j) / n_seg
-            x = math.cos(ang) * r
-            y = math.sin(ang) * r * flat
-            row.append(bm.verts.new((x, y, z)))
-        ring_verts.append(row)
-    bm.verts.ensure_lookup_table()
-    for i in range(n_rings):
-        for j in range(n_seg):
-            j2 = (j + 1) % n_seg
-            bm.faces.new((ring_verts[i][j], ring_verts[i][j2],
-                          ring_verts[i + 1][j2], ring_verts[i + 1][j]))
-    for cap_i, rev in ((0, True), (n_rings, False)):
-        fverts = list(ring_verts[cap_i])
-        if rev:
-            fverts = list(reversed(fverts))
-        ctr = bm.verts.new((0, 0, (cap_i / n_rings - 0.5) * length))
-        for j in range(n_seg):
-            j2 = (j + 1) % n_seg
-            if rev:
-                bm.faces.new((ctr, fverts[j2], fverts[j]))
-            else:
-                bm.faces.new((ctr, fverts[j], fverts[j2]))
-    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    mesh = bpy.data.meshes.new(name + "_mesh")
-    bm.to_mesh(mesh)
-    bm.free()
-    ob = bpy.data.objects.new(name, mesh)
-    bpy.context.collection.objects.link(ob)
-    mid = a.lerp(b, 0.5)
-    ob.location = mid
-    ob.rotation_euler = direction_n.to_track_quat("Z", "Y").to_euler()
-    bpy.ops.object.select_all(action="DESELECT")
-    ob.select_set(True)
-    bpy.context.view_layer.objects.active = ob
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-    shade_smooth(ob)
-    return ob
-
-
-def anatomical_hand(name, wr, hand, sx, base_mat, joint_mat):
-    """Store-mannequin hand via deep-overlap continuous digits + soft palm sleeve.
-    Digits = single lofted shells (knuckle radius profile + flattened tip pads).
-    Palm remeshed alone; digits NOT remeshed/booleaned (preserves tips).
-    Bases planted deep in palm so junctions read continuous. Slim wrist ring only.
-    """
-    # Thin metal wrist seam — nearly flush inside sleeve
-    wrj = slim_hinge(f"{name}_WristJ", wr, axis="X", radius=0.020, thick=0.0022)
+    parts = []
+    wrj = hinge_disk(f"{name}_WristJ", wr, axis="X", radius=0.042, thick=0.020, rivets=3)
     set_mat(wrj, joint_mat)
+    parts.append(wrj)
 
-    palm_parts = []
-    # Wrist sleeve — continuous vinyl into forearm (kills floating ball gap)
-    mid_sl = wr.lerp(hand, 0.45)
-    dir_sl = (hand - wr)
-    sleeve = cyl(f"{name}_Sleeve", mid_sl, 0.027, max(dir_sl.length * 1.05, 0.05), v=22)
-    orient_along(sleeve, dir_sl)
-    palm_parts.append(sleeve)
-    # Soft anatomical palm (flattened)
-    palm_parts.append(sph(f"{name}_Palm",
-                          hand + Vector((0, -0.008, 0.002)),
-                          (0.042, 0.016, 0.044), seg=28, ring=16))
-    palm_parts.append(sph(f"{name}_Belly",
-                          hand + Vector((0, -0.022, -0.006)),
-                          (0.034, 0.010, 0.036), seg=18, ring=10))
-    palm_parts.append(sph(f"{name}_Dors",
-                          hand + Vector((0, 0.002, 0.014)),
-                          (0.038, 0.013, 0.030), seg=18, ring=10))
-    # Thenar + hypothenar
-    palm_parts.append(sph(f"{name}_Thenar",
-                          hand + Vector((sx * 0.032, -0.002, 0.010)),
-                          (0.026, 0.017, 0.030), seg=16, ring=10))
-    palm_parts.append(sph(f"{name}_Hypo",
-                          hand + Vector((sx * -0.030, -0.006, 0.0)),
-                          (0.017, 0.013, 0.022), seg=12, ring=6))
-    # Distal palm cups that swallow finger bases
-    for i, lx in enumerate((-0.028, -0.009, 0.010, 0.028)):
-        lx_s = lx if sx > 0 else -lx
-        palm_parts.append(sph(f"{name}_Cup{i}",
-                              hand + Vector((lx_s, -0.030, 0.010)),
-                              (0.014, 0.014, 0.014), seg=12, ring=6))
-
-    palm = join(f"{name}_PalmBody", palm_parts)
+    palm = sph(f"{name}_Palm",
+               hand + Vector((0, -0.008, 0.008)),
+               (0.042, 0.030, 0.048), seg=18, ring=10)
     set_mat(palm, base_mat)
-    voxel_remesh(palm, size=0.005)
-    light_smooth(palm, iterations=3, factor=0.45)
-    set_mat(palm, base_mat)
+    parts.append(palm)
 
-    # Continuous digits — start INSIDE palm cups; NO remesh / NO boolean
-    parts = [wrj, palm]
-    finger_specs = [
-        # lx, base_y (deep in palm), base_z, tip_y, tip_z, r0, r1
-        (-0.028, -0.022, 0.012, -0.125, -0.014, 0.0130, 0.0070),
-        (-0.009, -0.026, 0.014, -0.140, -0.016, 0.0135, 0.0072),
-        (0.010, -0.024, 0.012, -0.132, -0.014, 0.0128, 0.0068),
-        (0.028, -0.018, 0.006, -0.112, -0.008, 0.0115, 0.0060),
+    # v0.6.1: wider lateral spread + ~38% longer tip reach, slightly more distal
+    finger_offsets = [
+        (-0.044, -0.058, -0.010),
+        (-0.015, -0.074, -0.012),
+        (0.015, -0.076, -0.012),
+        (0.044, -0.058, -0.010),
     ]
-    for i, (lx, by, bz, ty, tz, r0, r1) in enumerate(finger_specs):
-        lx_s = lx if sx > 0 else -lx
-        base = hand + Vector((lx_s, by, bz))
-        tip = hand + Vector((lx_s * 1.04, ty, tz))
-        fing = continuous_digit(f"{name}_F{i}", base, tip, r0, r1,
-                                n_seg=16, n_rings=24, tip_flat=0.42)
+    tip_extra = [
+        (-0.050, -0.162, -0.056),
+        (-0.016, -0.182, -0.060),
+        (0.016, -0.185, -0.060),
+        (0.050, -0.162, -0.056),
+    ]
+    for i, (ox, oy, oz) in enumerate(finger_offsets):
+        start = hand + Vector((ox, oy * 0.28, oz * 0.30))
+        end = hand + Vector(tip_extra[i])
+        r0 = 0.0120 if i in (1, 2) else 0.0110
+        r1 = 0.0082
+        fing = tapered_limb(f"{name}_F{i}", start, end, r0, r1, v=10)
         set_mat(fing, base_mat)
-        light_smooth(fing, iterations=1, factor=0.25)
         parts.append(fing)
+        # Soft vinyl pad tip — NOT an orb bead
+        tip = sph(f"{name}_Tip{i}", end, 0.0095, seg=8, ring=4)
+        set_mat(tip, base_mat)
+        parts.append(tip)
 
-    # Opposed thumb — base deep in thenar
-    t0 = hand + Vector((sx * 0.018, 0.000, 0.014))
-    t2 = hand + Vector((sx * 0.082, 0.048, -0.032))
-    thumb = continuous_digit(f"{name}_Thumb", t0, t2, 0.0155, 0.0078,
-                             n_seg=16, n_rings=22, tip_flat=0.45)
+    # v0.6.1: longer opposing thumb (out + forward), thicker base / thenar mass
+    thumb_start = hand + Vector((sx * 0.030, 0.008, 0.024))
+    thumb_end = hand + Vector((sx * 0.115, 0.055, -0.062))
+    thenar = sph(f"{name}_Thenar",
+                 hand + Vector((sx * 0.032, 0.006, 0.012)),
+                 (0.022, 0.018, 0.024), seg=10, ring=5)
+    set_mat(thenar, base_mat)
+    parts.append(thenar)
+    thumb = tapered_limb(
+        f"{name}_Thumb",
+        thumb_start,
+        thumb_end,
+        0.018, 0.010, v=10)
     set_mat(thumb, base_mat)
-    light_smooth(thumb, iterations=1, factor=0.25)
     parts.append(thumb)
-
+    tip_th = sph(f"{name}_ThumbTip", thumb_end, 0.011, seg=8, ring=4)
+    set_mat(tip_th, base_mat)
+    parts.append(tip_th)
     return join(name, parts)
 
 
 def shoe_foot(name, an, toe, sx, base_mat, joint_mat, rubber_mat=None):
-    """Heel/toe foot pad — readable shoe sole, slim ankle hinge."""
+    """Heel/toe shoe pads with LARGE ankle hinge. Sole/pads use rubber material."""
     rub = rubber_mat or base_mat
     parts = []
-    # Core hidden in shin sleeve overlap; flush ankle line
-    an_ball = sph(f"{name}_AnBall", an, 0.024, seg=12, ring=6)
-    set_mat(an_ball, base_mat)
-    parts.append(an_ball)
-    anj = slim_hinge(f"{name}_AnkleJ", an, axis="X", radius=0.028, thick=0.0018)
+    anj = hinge_disk(f"{name}_AnkleJ", an, axis="X", radius=0.052, thick=0.024, rivets=3)
     set_mat(anj, joint_mat)
     parts.append(anj)
-    # Foot shell continuous
-    heel = sph(f"{name}_Heel", an + Vector((0, 0.030, -0.022)),
-               (0.036, 0.038, 0.030), seg=14, ring=8)
-    set_mat(heel, base_mat)
+    heel = sph(f"{name}_Heel",
+               an + Vector((0, 0.038, -0.028)),
+               (0.042, 0.040, 0.036), seg=14, ring=7)
+    set_mat(heel, rub)
     parts.append(heel)
-    mid = sph(f"{name}_Mid", an + Vector((0, -0.040, -0.024)),
-              (0.042, 0.070, 0.024), seg=16, ring=8)
-    set_mat(mid, base_mat)
+    mid = sph(f"{name}_Mid",
+              an + Vector((0, -0.042, -0.030)),
+              (0.048, 0.078, 0.028), seg=16, ring=8)
+    set_mat(mid, base_mat)  # upper shoe shell stays vinyl
     parts.append(mid)
-    # Soft toe volume with slight toe separation read
-    toe_pad = sph(f"{name}_Toe", an + Vector((0, -0.115, -0.014)),
-                  (0.034, 0.038, 0.018), seg=12, ring=6)
-    set_mat(toe_pad, base_mat)
+    toe_pad = sph(f"{name}_Toe",
+                  an + Vector((0, -0.130, -0.018)),
+                  (0.036, 0.044, 0.022), seg=12, ring=6)
+    set_mat(toe_pad, rub)
     parts.append(toe_pad)
-    # Thin sole pad
-    sole = sph(f"{name}_Sole", an + Vector((0, -0.040, -0.042)),
-               (0.038, 0.090, 0.008), seg=12, ring=6)
+    sole = sph(f"{name}_Sole",
+               an + Vector((0, -0.045, -0.050)),
+               (0.044, 0.098, 0.011), seg=14, ring=6)
     set_mat(sole, rub)
     parts.append(sole)
+    instep = sph(f"{name}_Instep",
+                 an + Vector((0, -0.072, -0.008)),
+                 (0.036, 0.042, 0.024), seg=12, ring=6)
+    set_mat(instep, base_mat)
+    parts.append(instep)
     return join(name, parts)
 
 
-def athletic_torso(name):
-    """Hard continuous athletic torso — ONE tall mass + deep-overlap waist/stubs.
-    No stacked soft pillows; deep overlaps so remesh cannot leave mid-freq grooves.
+def flat_chest_plate(name):
+    """Hybrid III FLAT chest plate — planar shield/slab, clear hard edge.
+    NO pec/lat/delt sphere pillows. Clear bottom edge ABOVE accordion.
     """
     parts = []
-    # ONE tall elliptical capsule covering clavicle → lower abs (kills pillow stack)
-    thorax = sph(f"{name}_Thorax", (0, 0.008, 1.26), (0.200, 0.122, 0.275), seg=40, ring=24)
-    parts.append(thorax)
-    # Mild front chest fill — single shallow ellipsoid, deep into thorax (not pec pillows)
-    front = sph(f"{name}_Front", (0, -0.040, 1.32), (0.140, 0.055, 0.160), seg=28, ring=16)
+    # Front planar plate (thin in Y) — hard shield read
+    front = cube(
+        f"{name}_Front", (0.0, -0.095, 1.355),
+        (0.195, 0.028, 0.195), bevel=0.012)
     parts.append(front)
-    # Waist bridge — deep overlap into thorax AND pelvis (v0.7.1 closed-waist win)
-    waist = sph(f"{name}_Waist", (0, 0.010, 0.98), (0.148, 0.105, 0.100), seg=28, ring=16)
-    parts.append(waist)
-    # Shoulder stubs deep into thorax — sleeve continuity, not soft delt pillows
+    # Mild upper clavicle flare (still planar, not pillows)
+    clav = cube(
+        f"{name}_Clav", (0.0, -0.085, 1.495),
+        (0.210, 0.032, 0.055), bevel=0.010)
+    parts.append(clav)
+    # Lower taper slab ending clean ABOVE bellows (~1.145)
+    lower = cube(
+        f"{name}_Lower", (0.0, -0.080, 1.185),
+        (0.175, 0.026, 0.055), bevel=0.008)
+    parts.append(lower)
+    # Side walls — hard wrap, not soft lats
     for sx in (1, -1):
-        stub = sph(f"{name}_DeltStub{sx}", (sx * 0.200, 0.0, 1.445),
-                   (0.055, 0.050, 0.055), seg=16, ring=10)
-        parts.append(stub)
+        side = cube(
+            f"{name}_Side{sx}", (sx * 0.195, -0.010, 1.340),
+            (0.030, 0.095, 0.175), bevel=0.008)
+        parts.append(side)
+    # Back plate (shallower)
+    back = cube(
+        f"{name}_Back", (0.0, 0.085, 1.340),
+        (0.180, 0.024, 0.180), bevel=0.010)
+    parts.append(back)
+    # Shoulder shelves — HARD squared stubs (not soft delt spheres)
+    for sx in (1, -1):
+        shelf = cube(
+            f"{name}_Shelf{sx}", (sx * 0.245, 0.0, 1.470),
+            (0.055, 0.055, 0.048), bevel=0.010)
+        parts.append(shelf)
+    # Thin fill core so plate doesn't look hollow from ¾
+    core = cube(
+        f"{name}_Core", (0.0, 0.0, 1.340),
+        (0.155, 0.070, 0.165), bevel=0.006)
+    parts.append(core)
+    # Sharp bottom edge bead (distinct shell terminus above accordion)
+    bot_edge = cube(
+        f"{name}_BotEdge", (0.0, -0.010, 1.132),
+        (0.178, 0.100, 0.012), bevel=0.003)
+    parts.append(bot_edge)
 
     shell = join(name, parts)
-    hard_shell(shell, size=0.017, iterations=2, factor=0.25)
+    apply_bevel(shell, width=0.006, segments=2)
+    light_smooth(shell, iterations=2)
     return shell
 
 
-def athletic_pelvis(name):
-    """Hard continuous pelvis — ONE bowl + deep-overlap waist fill + hip stubs."""
-    parts = []
-    bowl = sph(f"{name}_Bowl", (0, 0.012, 0.90), (0.172, 0.128, 0.130), seg=32, ring=18)
-    parts.append(bowl)
-    # Deep overlap into torso waist bridge
-    up = sph(f"{name}_UpWaist", (0, 0.012, 0.99), (0.148, 0.105, 0.070), seg=24, ring=12)
-    parts.append(up)
-    for sx in (1, -1):
-        stub = sph(f"{name}_HipStub{sx}", (sx * 0.115, 0.012, 0.92),
-                   (0.055, 0.052, 0.055), seg=14, ring=8)
-        parts.append(stub)
-    shell = join(name, parts)
-    hard_shell(shell, size=0.017, iterations=2, factor=0.25)
-    return shell
-
-
-def human_head(name, base_mat, sensor_mat):
-    """Molded human face — brow, nose, lips, chin, ears. Flat dark eye insets. ZERO orbs.
-    No makeup / goatee. Human scale (not oversized egg).
-    Returns list of (bone, ob, mat) — caller adds Head group.
+def hard_pelvis_shell(name):
+    """Hard Hybrid III pelvis shell — clear top edge into accordion.
+    Briefs-like side cutouts OK via hip hinge recesses. NOT balloon hips.
     """
-    out = []
-    # Human skull proportions — slightly wider than deep egg; natural scale
-    skull = sph(f"{name}_Skull", (0, -0.01, HEAD_Z), HEAD_SCALE, seg=40, ring=22, sub=True)
-    # Soft forehead flatten slightly via second mass
-    forehead = sph(f"{name}_Fore", (0, -0.04, HEAD_Z + 0.055),
-                   (0.090, 0.070, 0.050), seg=24, ring=12)
-    # Jaw / cheek volume
-    jaw = sph(f"{name}_Jaw", (0, -0.02, HEAD_Z - 0.070),
-              (0.078, 0.085, 0.055), seg=24, ring=12)
-    cheeks = []
+    parts = []
+    # Main hard bowl — flatter front, less egg
+    front = cube(
+        f"{name}_Front", (0.0, -0.070, 0.900),
+        (0.155, 0.030, 0.095), bevel=0.010)
+    parts.append(front)
+    back = cube(
+        f"{name}_Back", (0.0, 0.075, 0.900),
+        (0.145, 0.028, 0.090), bevel=0.010)
+    parts.append(back)
+    # Clear TOP rim into accordion (hard edge read)
+    top_rim = cube(
+        f"{name}_TopRim", (0.0, 0.0, 0.995),
+        (0.160, 0.105, 0.018), bevel=0.004)
+    parts.append(top_rim)
+    # Side wings with briefs cutout feel (recessed for hip hinges)
     for sx in (1, -1):
-        cheeks.append(sph(f"{name}_Cheek{sx}", (sx * 0.055, -0.055, HEAD_Z - 0.020),
-                          (0.038, 0.040, 0.040), seg=14, ring=8))
+        wing = cube(
+            f"{name}_Wing{sx}", (sx * 0.155, 0.010, 0.910),
+            (0.050, 0.080, 0.085), bevel=0.010)
+        parts.append(wing)
+    # Lower crotch plate
+    crotch = cube(
+        f"{name}_Crotch", (0.0, 0.0, 0.820),
+        (0.090, 0.070, 0.040), bevel=0.008)
+    parts.append(crotch)
+    # Mild fill core
+    core = cube(
+        f"{name}_Core", (0.0, 0.010, 0.900),
+        (0.120, 0.070, 0.075), bevel=0.006)
+    parts.append(core)
 
-    # Brow ridge
-    brow = sph(f"{name}_Brow", (0.0, -0.098, HEAD_Z + 0.032),
-               (0.072, 0.012, 0.010), seg=24, ring=10)
+    shell = join(name, parts)
+    apply_bevel(shell, width=0.006, segments=2)
+    light_smooth(shell, iterations=2)
+    return shell
 
-    # Nose bridge + tip (molded human, not wedge toy)
-    nose_bridge = sph(f"{name}_NBridge", (0.0, -0.115, HEAD_Z - 0.005),
-                      (0.012, 0.035, 0.030), seg=14, ring=8)
-    nose_tip = sph(f"{name}_NTip", (0.0, -0.138, HEAD_Z - 0.035),
-                   (0.014, 0.018, 0.014), seg=12, ring=8)
 
-    # Lip volume (upper + lower) — soft mouth mass, not slit-only
-    upper_lip = sph(f"{name}_ULip", (0.0, -0.108, HEAD_Z - 0.062),
-                    (0.028, 0.012, 0.008), seg=14, ring=8)
-    lower_lip = sph(f"{name}_LLip", (0.0, -0.105, HEAD_Z - 0.075),
-                    (0.026, 0.011, 0.008), seg=12, ring=6)
-
-    # Chin
-    chin = sph(f"{name}_Chin", (0.0, -0.085, HEAD_Z - 0.105),
-               (0.028, 0.030, 0.022), seg=14, ring=8)
-
-    # Ears
-    ear_parts = []
-    for sx in (1, -1):
-        ear_parts.append(sph(f"{name}_Ear{sx}", (sx * 0.100, 0.005, HEAD_Z - 0.005),
-                             (0.014, 0.022, 0.030), seg=12, ring=8))
-
-    # Boolean-union face features into skull
-    extras = [forehead, jaw, brow, nose_bridge, nose_tip, upper_lip, lower_lip, chin] + ear_parts + cheeks
-    head = boolean_union(skull, extras)
-    light_smooth(head, iterations=3, factor=0.4)
-    shade_smooth(head)
-    set_mat(head, base_mat)
-    out.append(("Head", head, base_mat))
-
-    # Eye sockets: carve recesses, then flat dark oval insets (NOT beads/orbs)
-    recess_tools = []
-    for dx in (-0.032, 0.032):
-        recess_tools.append(
-            sph(f"{name}_EyeRec{dx}", (dx, -0.108, HEAD_Z + 0.012),
-                (0.022, 0.018, 0.016), seg=14, ring=8)
-        )
-    boolean_difference(head, recess_tools)
-    for dx in (-0.032, 0.032):
-        # Flat dark oval plate — very thin in Y
-        eye = sph(f"{name}_Eye{dx}", (dx, -0.095, HEAD_Z + 0.010),
-                  (0.016, 0.0025, 0.011), seg=14, ring=8)
-        set_mat(eye, sensor_mat)
-        out.append(("Head", eye, sensor_mat))
-
-    # Mouth crease — shallow dark line between lips (not painted goatee)
-    # Soft mouth crease only — avoid painted-goatee read
-    mouth = cube(f"{name}_Mouth", (0.0, -0.112, HEAD_Z - 0.068),
-                 (0.018, 0.0008, 0.0014), bevel=0.0003)
-    set_mat(mouth, sensor_mat)
-    out.append(("Head", mouth, sensor_mat))
-
-    return out
+def limb_shell_with_lips(name, a, b, r0, r1, lip_mat=None):
+    """Upper or lower limb shell with soft bead lips at both ends — segmented read."""
+    a, b = Vector(a), Vector(b)
+    direction = (b - a).normalized()
+    body = tapered_limb(name + "_body", a, b, r0, r1, v=24)
+    # Bead lips near ends (inset slightly so hinge disks sit outside)
+    lip0_loc = a + direction * 0.018
+    lip1_loc = b - direction * 0.018
+    # Orient lips perpendicular to limb axis
+    # Use torus-like cyl via bead_lip with best-effort axis
+    # Prefer face-on: if limb mostly vertical use Z, else approximate with X
+    axis = "Z" if abs(direction.z) > 0.7 else "X"
+    lip0 = bead_lip(f"{name}_lip0", lip0_loc, r0 * 1.04, axis=axis, thick=0.014, flare=1.14)
+    lip1 = bead_lip(f"{name}_lip1", lip1_loc, r1 * 1.04, axis=axis, thick=0.014, flare=1.14)
+    shell = join(name, [body, lip0, lip1])
+    light_smooth(shell, iterations=3)
+    return shell
 
 
 def arm_points(sx):
@@ -692,18 +694,18 @@ def arm_points(sx):
     fwd = math.sin(ARM_FWD)
     dir_ua = Vector((sx * out, -fwd, -down)).normalized()
     el = sh + dir_ua * UA_LEN
-    dir_la = (dir_ua + Vector((sx * 0.06, -0.18, -0.08))).normalized()
-    dir_la = Vector((sx * abs(dir_la.x) + sx * 0.04, dir_la.y - 0.04, dir_la.z)).normalized()
+    dir_la = (dir_ua + Vector((sx * 0.08, -0.22, -0.10))).normalized()
+    dir_la = Vector((sx * abs(dir_la.x) + sx * 0.05, dir_la.y - 0.05, dir_la.z)).normalized()
     wr = el + dir_la * LA_LEN
-    hand = wr + Vector((sx * 0.012, -0.045, -0.040))
+    hand = wr + Vector((sx * 0.015, -0.050, -0.050))
     return sh, el, wr, hand
 
 
 def leg_points(sx):
-    hip = Vector((sx * HIP_X, 0.015, HIP_Z))
-    kn = hip + Vector((sx * 0.010, 0.015, -UL_LEN))
+    hip = Vector((sx * HIP_X, 0.02, HIP_Z))
+    kn = hip + Vector((sx * 0.012, 0.020, -UL_LEN))
     an = kn + Vector((0.0, 0.0, -LL_LEN))
-    toe = an + Vector((0.0, -0.12, -0.012))
+    toe = an + Vector((0.0, -0.13, -0.015))
     return hip, kn, an, toe
 
 
@@ -730,15 +732,15 @@ def build_armature():
             b.use_connect = connect
         return b
 
-    bone("Hips", "Root", (0, 0, HIP_Z - 0.04), (0, 0, HIP_Z + 0.08))
-    bone("Spine", "Hips", (0, 0, HIP_Z + 0.08), (0, 0, 1.16))
-    bone("Chest", "Spine", (0, 0, 1.16), (0, 0, SHOULDER_Z))
+    bone("Hips", "Root", (0, 0, HIP_Z - 0.04), (0, 0, HIP_Z + 0.10))
+    bone("Spine", "Hips", (0, 0, HIP_Z + 0.10), (0, 0, 1.18))
+    bone("Chest", "Spine", (0, 0, 1.18), (0, 0, SHOULDER_Z))
     bone("Neck", "Chest", (0, 0, SHOULDER_Z), (0, 0, 1.58))
-    bone("Head", "Neck", (0, 0, 1.58), (0, 0, 1.82))
+    bone("Head", "Neck", (0, 0, 1.58), (0, 0, 1.90))
 
     for side, sx in (("L", 1), ("R", -1)):
         sh, el, wr, hand = arm_points(sx)
-        bone(f"Shoulder_{side}", "Chest", (sx * 0.10, 0, SHOULDER_Z), sh)
+        bone(f"Shoulder_{side}", "Chest", (sx * 0.12, 0, SHOULDER_Z), sh)
         bone(f"UpperArm_{side}", f"Shoulder_{side}", sh, el)
         bone(f"LowerArm_{side}", f"UpperArm_{side}", el, wr)
         bone(f"Hand_{side}", f"LowerArm_{side}", wr, hand)
@@ -753,8 +755,9 @@ def build_armature():
 
 
 def build_mesh_parts(is_it, mats):
-    """v0.7.2 — hard continuous shells: deep sleeve overlaps, flush hinges, no soft-mass boil."""
-    (base, accent, over, joint, sensor, metal, rubber, wear) = mats
+    """v0.7.3 Hybrid III hard shells: flat chest + accordion + hard pelvis + long limb plates."""
+    (base, accent, over, joint, sensor, metal, bellows_mat, cal_accent, lip_mat,
+     rubber, wear) = mats
     groups = {k: [] for k in (
         "Hips", "Spine", "Chest", "Neck", "Head",
         "UpperArm_L", "UpperArm_R", "LowerArm_L", "LowerArm_R",
@@ -767,144 +770,233 @@ def build_mesh_parts(is_it, mats):
         set_mat(ob, m)
         groups[bone].append(ob)
 
-    # --- Head: molded human face (UNCHANGED from v0.7) ---
-    for bone, ob, m in human_head("Head", base, sensor):
-        add(bone, ob, m)
+    # --- Head: molded Hybrid III vinyl face on egg (v0.5.1) — NO orbs ---
+    # Face toward -Y. Brow/nose/mouth/chin = relief IN shell. Eyes/temples = flush pits.
+    head = sph("Head", (0, -0.01, 1.73), (0.165, 0.148, 0.200), seg=40, ring=20, sub=True)
 
-    # --- Neck: continuous vinyl column — NO seam ring ridge ---
-    neck = cyl("NeckCol", (0, 0.0, 1.540), 0.050, 0.125, v=26)
-    neck_fill = sph("NeckFill", (0, 0.0, 1.490), (0.058, 0.055, 0.040), seg=20, ring=12)
-    neck_top = sph("NeckTop", (0, 0.0, 1.590), (0.052, 0.050, 0.030), seg=18, ring=10)
-    neck_shell = join("NeckShell", [neck, neck_fill, neck_top])
-    hard_shell(neck_shell, size=0.016, iterations=2, factor=0.28)
-    add("Neck", neck_shell, base)
+    # Brow — continuous soft ridge (one elongated form), low-relief
+    brow = sph("BrowRidge", (0.0, -0.138, 1.814), (0.110, 0.014, 0.010), seg=28, ring=12)
 
-    # --- Chest / torso continuous athletic shell ---
-    chest = athletic_torso("ChestShell")
+    # Nose — Hybrid III wedge v0.6: narrower/taller tip cone so profile breaks egg clearly.
+    # Bridge is a thin vertical slab; tip is a sharp point (NOT flat block / NOT blob).
+    nose_bridge = cube(
+        "NoseBridge", (0.0, -0.160, 1.754),
+        (0.009, 0.044, 0.042), bevel=0.0020)
+    bpy.ops.object.select_all(action="DESELECT")
+    nose_bridge.select_set(True)
+    bpy.context.view_layer.objects.active = nose_bridge
+    nose_bridge.scale = (0.48, 1.05, 1.0)  # narrower ridge
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    nose_tip = cone(
+        "NoseTip", (0.0, -0.192, 1.716),
+        r1=0.011, r2=0.0015, depth=0.052,
+        rot=(math.radians(90), 0, 0), v=18)
+    bpy.ops.object.select_all(action="DESELECT")
+    nose_tip.select_set(True)
+    bpy.context.view_layer.objects.active = nose_tip
+    nose_tip.scale = (0.52, 1.08, 1.55)  # narrower + taller Hybrid III point
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+
+    # Mild chin break only — no cheek orbs
+    chin = sph("Chin", (0.0, -0.115, 1.585), (0.036, 0.024, 0.020), seg=12, ring=8)
+
+    head = boolean_union(head, [brow, nose_bridge, nose_tip, chin])
+    light_smooth(head, iterations=1)
+    add("Head", head, base)
+
+    # Eyes — deep oval recesses + FLAT dark oval PLATES (cube, not cylinder) ≤1.2mm.
+    # Cylinder sidewalls were reading as beads; flat plates stay flush paint-like.
+    recess_tools = []
+    for dx in (-0.052, 0.052):
+        recess_tools.append(
+            sph(f"EyeRecess_{dx}", (dx, -0.152, 1.738), (0.036, 0.030, 0.028), seg=16, ring=10)
+        )
+    boolean_difference(head, recess_tools)
+    for dx in (-0.052, 0.052):
+        e = cube(
+            f"Eye_{dx}", (dx, -0.126, 1.735),
+            (0.028, 0.0006, 0.016), bevel=0.0015)
+        add("Head", e, sensor)
+
+    # Mouth — shallow horizontal SLIT only (carve + flush strip ≤1mm). No center bead.
+    mouth_carve = cube(
+        "MouthCarve", (0.0, -0.145, 1.652), (0.050, 0.034, 0.0036), bevel=0.0006)
+    boolean_difference(head, [mouth_carve])
+    mouth = cube(
+        "MouthSlit", (0.0, -0.140, 1.652), (0.046, 0.0007, 0.0020), bevel=0.0002)
+    add("Head", mouth, sensor)
+
+    # Temple row of 3 — shallow PIT carve + flat dark disk at pit floor (≤1.8mm).
+    temple_pits = []
+    for i, z in enumerate([1.785, 1.735, 1.685]):
+        temple_pits.append(
+            cyl(f"TemplePit_{i}", (0.160, -0.050, z), 0.0125, 0.022,
+                rot=(0, math.radians(90), 0), v=16)
+        )
+    boolean_difference(head, temple_pits)
+    for i, z in enumerate([1.785, 1.735, 1.685]):
+        t = cyl(
+            f"Temple_{i}", (0.146, -0.050, z), 0.010, 0.0015,
+            rot=(0, math.radians(90), 0), v=16)
+        add("Head", t, sensor)
+
+    # Temple cal — flat decal disk
+    cal_t = cal_quadrant_disk(
+        "CalTemple", (-0.166, -0.020, 1.75),
+        radius=0.048, thick=0.007,
+        accent_mat=cal_accent, black_mat=sensor, axis="X")
+    groups["Head"].append(cal_t)
+
+    # --- Neck: 4 stacked dark metal rings — MUST read front + profile ---
+    neck = neck_ring_stack("NeckRings", z_base=1.520, n=4, major=0.082, minor=0.016, spacing=0.028)
+    add("Neck", neck, metal)
+
+    # --- DISTINCT CHEST PLATE (segmented, soft bottom lip) ---
+    chest = flat_chest_plate("ChestShell")
     add("Chest", chest, base)
-    # v0.7.1/v0.7.2: NO ShSeam shoulder rings (were soft-toy ridges)
 
-    # Thin teal tick on Runner only
+    # Shoulder plate seams (dark bead at delt roots)
+    for side, sx in (("L", 1), ("R", -1)):
+        seam = bead_lip(
+            f"ShoulderSeam_{side}",
+            (sx * 0.255, 0.0, 1.470),
+            radius=0.058, thick=0.012, axis="X", flare=1.10)
+        add("Chest", seam, joint)
+
+    # LARGE chest cal
+    cal_c = cal_quadrant_disk(
+        "CalChest", (0.090, -0.128, 1.42),
+        radius=0.048, thick=0.010,
+        accent_mat=cal_accent, black_mat=sensor, axis="Y")
+    groups["Chest"].append(cal_c)
+
+    # Thin teal tick ONLY on Runner — NOT fat racing stripe
     if not is_it:
-        tick = cube("ChestTick", (0.0, -0.125, 1.22), (0.030, 0.004, 0.005), bevel=0.001)
+        tick = cube("ChestTick", (0.0, -0.128, 1.24), (0.036, 0.004, 0.005), bevel=0.001)
         add("Chest", tick, accent)
 
-    # Continuous waist fill — NO WaistSeam ridge
-    spine_fill = sph("SpineFill", (0, 0.01, 0.995), (0.145, 0.105, 0.095), seg=26, ring=14)
-    hard_shell(spine_fill, size=0.017, iterations=2, factor=0.25)
-    add("Spine", spine_fill, base)
+    # Soft DARK bead lips at shell termini (Hybrid III seam — not tan faux-ribs)
+    chest_lip = bead_lip("ChestBotLip", (0, 0.01, 1.125), radius=0.170, axis="Z",
+                         thick=0.014, flare=1.08)
+    add("Chest", chest_lip, joint)
 
-    # --- Pelvis ---
-    pelvis = athletic_pelvis("PelvisShell")
+    # --- WAIST BELLOWS INSET (~8 fine dark ribs) between chest plate and pelvis ---
+    bellows = waist_bellows("WaistBellows", z_top=1.118, z_bot=1.000, radius=0.108, n_ribs=8)
+    add("Spine", bellows, bellows_mat)
+
+    # --- DISTINCT PELVIS SHELL ---
+    pelvis = hard_pelvis_shell("PelvisShell")
     add("Hips", pelvis, base)
+    pelvis_lip = bead_lip("PelvisTopLip", (0, 0.01, 1.005), radius=0.158, axis="Z",
+                          thick=0.014, flare=1.08)
+    add("Hips", pelvis_lip, joint)
 
-    # It nested black Vs on chest + outer thighs
+    # It nested black Vs on flat chest plate + outer thighs — ZERO on Tan/Runner
     if is_it:
-        for i, z in enumerate([1.42, 1.34, 1.26]):
-            half = 0.095 - i * 0.012
-            bars = chevron_v(f"ChC{i}", 0.0, -0.130, z, half, bar_len=half * 1.15,
-                             thick=0.012, depth=0.014, ang_deg=34.0)
+        for i, z in enumerate([1.46, 1.38, 1.30]):
+            half = 0.100 - i * 0.012
+            bars = chevron_v(f"ChC{i}", 0.0, -0.128, z, half, bar_len=half * 1.18,
+                             thick=0.014, depth=0.016, ang_deg=34.0)
             for b in bars:
                 add("Chest", b, accent)
 
-    # --- Arms: deep sleeve overlap past joints + flush hinges; no exposed balls ---
+    # --- Arms: DISTINCT upper/lower shells + LARGE hinges ---
     for side, sx in (("L", 1), ("R", -1)):
         sh, el, wr, hand = arm_points(sx)
-        dir_ua = (el - sh).normalized()
-        dir_la = (wr - el).normalized()
 
-        # Nearly-flush hinge only — no separate ShBall / ShCore (sleeves cover joint)
-        shj = slim_hinge(f"ShoulderJ_{side}", sh, axis="X", radius=0.030, thick=0.0016)
+        # LARGE shoulder hinge
+        shj = hinge_disk(f"ShoulderJ_{side}", sh, axis="X", radius=0.072, thick=0.034, rivets=4)
         add(f"Shoulder_{side}", shj, joint)
 
-        # Upper arm: deep sleeve past shoulder/elbow; hard taper; NO delt pillow / bulge
-        # Radii restored toward v0.7 (v8) athletic mass — not thinner than v8_1
-        ua_a = sh - dir_ua * 0.045
-        ua_b = el + dir_ua * 0.048
-        ua = tapered_limb(f"UA_{side}", ua_a, ua_b, 0.048, 0.037, v=24,
-                          bulge=0.0)
-        el_sleeve_ua = sph(f"UAElSlv_{side}", el,
-                           (0.036, 0.034, 0.036), seg=16, ring=10)
-        sh_sleeve = sph(f"UAShSlv_{side}", sh,
-                        (0.044, 0.042, 0.044), seg=16, ring=10)
-        ua_shell = join(f"UAShell_{side}", [ua, el_sleeve_ua, sh_sleeve])
-        # ONE large-voxel remesh — melts sleeves without mid-freq muscle boil
-        hard_shell(ua_shell, size=0.018, iterations=2, factor=0.28)
-        set_mat(ua_shell, base)
-        add(f"UpperArm_{side}", ua_shell, base)
+        # Upper arm LONG hard shell — clear gap at elbow for large hinge
+        ua_end = el + (sh - el).normalized() * 0.038
+        ua = limb_shell_with_lips(f"UA_{side}", sh + (el - sh).normalized() * 0.045,
+                                  ua_end, 0.055, 0.042)
+        add(f"UpperArm_{side}", ua, base)
 
-        elj = slim_hinge(f"ElbowJ_{side}", el, axis="X", radius=0.024, thick=0.0015)
+        # LARGE elbow hinge
+        elj = hinge_disk(f"ElbowJ_{side}", el, axis="X", radius=0.058, thick=0.028, rivets=3)
         add(f"LowerArm_{side}", elj, joint)
 
-        # Forearm: deep past elbow into wrist; hard taper; no muscle bulge
-        la_a = el - dir_la * 0.045
-        la_b = wr + (hand - wr).normalized() * 0.025
-        la = tapered_limb(f"LA_{side}", la_a, la_b, 0.036, 0.026, v=22,
-                          bulge=0.0, caps=False)
-        la_prox = sph(f"LAProx_{side}", el, (0.034, 0.032, 0.034), seg=16, ring=10)
-        la_dist = sph(f"LADist_{side}", wr, (0.026, 0.024, 0.024), seg=14, ring=8)
-        la_shell = join(f"LAShell_{side}", [la, la_prox, la_dist])
-        hard_shell(la_shell, size=0.017, iterations=2, factor=0.28)
-        set_mat(la_shell, base)
-        add(f"LowerArm_{side}", la_shell, base)
+        la_start = el + (wr - el).normalized() * 0.038
+        la_end = wr + (el - wr).normalized() * 0.028
+        la = limb_shell_with_lips(f"LA_{side}", la_start, la_end, 0.040, 0.030)
+        add(f"LowerArm_{side}", la, base)
 
-        # Hands UNCHANGED from v0.7 anatomical_hand
-        h = anatomical_hand(f"Hand_{side}", wr, hand, sx, base, joint)
+        h = hybrid_hand(f"Hand_{side}", wr, hand, sx, base, joint)
         groups[f"Hand_{side}"].append(h)
 
-    # --- Legs: deep sleeve overlap + flush hinges; no exposed balls ---
+    # --- Legs: DISTINCT thigh/shin shells + LARGE hinges + U-knee ---
     for side, sx in (("L", 1), ("R", -1)):
         hip, kn, an, toe = leg_points(sx)
-        dir_ul = (kn - hip).normalized()
-        dir_ll = (an - kn).normalized()
 
-        hipj = slim_hinge(f"HipJ_{side}", hip, axis="X", radius=0.034, thick=0.0016)
+        hipj = hinge_disk(f"HipJ_{side}", hip, axis="X", radius=0.078, thick=0.036, rivets=4)
         add(f"UpperLeg_{side}", hipj, joint)
 
-        # Thigh: hard taper, restored athletic radii; NO quad pillow / bulge
-        thigh_a = hip - dir_ul * 0.048
-        thigh_b = kn + dir_ul * 0.050
-        thigh = tapered_limb(f"Thigh_{side}", thigh_a, thigh_b, 0.070, 0.048, v=26,
-                             bulge=0.0)
-        # Flat hard kneecap hint (not soft joint pillow)
-        kneecap = sph(f"Kneecap_{side}", kn + Vector((0, -0.018, 0.002)),
-                      (0.024, 0.012, 0.018), seg=12, ring=6)
-        kn_sleeve_ul = sph(f"ThKnSlv_{side}", kn, (0.042, 0.038, 0.040), seg=16, ring=10)
-        hip_sleeve = sph(f"ThHipSlv_{side}", hip, (0.055, 0.052, 0.052), seg=16, ring=10)
-        thigh_shell = join(f"ThighShell_{side}", [thigh, kneecap, kn_sleeve_ul, hip_sleeve])
-        hard_shell(thigh_shell, size=0.018, iterations=2, factor=0.28)
-        set_mat(thigh_shell, base)
-        add(f"UpperLeg_{side}", thigh_shell, base)
+        # LONG hard thigh shell — clear gap at knee for large hinge (no quad pillow)
+        thigh_start = hip + Vector((0, 0, -0.050))
+        thigh_end = kn + Vector((0, 0, 0.055))
+        thigh = limb_shell_with_lips(f"Thigh_{side}", thigh_start, thigh_end, 0.072, 0.050)
+        add(f"UpperLeg_{side}", thigh, base)
+
+        seam_th = bead_lip(
+            f"ThighSeam_{side}",
+            hip + Vector((0, 0, -0.045)),
+            radius=0.078, thick=0.014, axis="Z", flare=1.10)
+        add(f"UpperLeg_{side}", seam_th, joint)
+
+        fork = u_knee_fork(f"KneeFork_{side}", kn, sx)
+        add(f"UpperLeg_{side}", fork, base)
 
         if is_it:
-            for i, tt in enumerate((0.28, 0.46, 0.64)):
+            for i, tt in enumerate((0.30, 0.48, 0.66)):
                 p = hip.lerp(kn, tt)
-                half = 0.045 - i * 0.005
-                cx = p.x + sx * 0.038
-                cy = p.y - 0.065
-                bars = chevron_v(f"ChT{side}{i}", cx, cy, p.z, half, bar_len=half * 1.10,
-                                 thick=0.010, depth=0.011, ang_deg=34.0)
+                half = 0.050 - i * 0.005
+                cx = p.x + sx * 0.040
+                cy = p.y - 0.078
+                bars = chevron_v(f"ChT{side}{i}", cx, cy, p.z, half, bar_len=half * 1.12,
+                                 thick=0.011, depth=0.013, ang_deg=34.0)
                 for b in bars:
                     add(f"UpperLeg_{side}", b, accent)
 
-        knj = slim_hinge(f"KneeJ_{side}", kn, axis="X", radius=0.026, thick=0.0015)
+        knj = hinge_disk(f"KneeJ_{side}", kn, axis="X", radius=0.068, thick=0.032, rivets=4)
         add(f"LowerLeg_{side}", knj, joint)
 
-        # Shin: hard taper, restored radii; NO calf pillow / bulge
-        shin_a = kn - dir_ll * 0.045
-        shin_b = an + dir_ll * 0.030
-        shin = tapered_limb(f"Shin_{side}", shin_a, shin_b, 0.042, 0.029, v=22,
-                            bulge=0.0)
-        shin_prox = sph(f"ShinProx_{side}", kn, (0.038, 0.036, 0.038), seg=16, ring=10)
-        shin_shell = join(f"ShinShell_{side}", [shin, shin_prox])
-        hard_shell(shin_shell, size=0.017, iterations=2, factor=0.28)
-        set_mat(shin_shell, base)
-        add(f"LowerLeg_{side}", shin_shell, base)
+        nest = sph(f"KneeNest_{side}", kn + Vector((0, 0, 0.008)), 0.042, seg=14, ring=7)
+        add(f"LowerLeg_{side}", nest, joint)
+
+        # LONG hard shin shell — no calf pillow
+        shin_start = kn + Vector((0, 0, -0.048))
+        shin = limb_shell_with_lips(f"Shin_{side}", shin_start, an + Vector((0, 0, 0.035)),
+                                    0.046, 0.032)
+        add(f"LowerLeg_{side}", shin, base)
 
         ft = shoe_foot(f"Foot_{side}", an, toe, sx, base, joint, rubber_mat=rubber)
         groups[f"Foot_{side}"].append(ft)
 
-    # v0.7.1/v0.7.2: NO wear cylinders (soft-toy noise)
+    # --- Micro wear: light stamp-ink dirt in seam recesses only (no gore) ---
+    wear_spots = [
+        ("Chest", (0.0, -0.145, 1.130), 0.014),
+        ("Chest", (0.12, -0.130, 1.28), 0.010),
+        ("Chest", (-0.12, -0.130, 1.28), 0.010),
+        ("Hips", (0.0, -0.120, 1.000), 0.012),
+        ("Hips", (0.10, -0.100, 0.92), 0.009),
+        ("Spine", (0.08, -0.090, 1.060), 0.008),
+        ("Spine", (-0.08, -0.090, 1.060), 0.008),
+    ]
+    for i, (bone, loc, r) in enumerate(wear_spots):
+        d = cyl(f"WearDisk_{i}", loc, r, 0.0035, rot=(math.radians(90), 0, 0), v=12)
+        add(bone, d, wear)
+    # Shallow dark cubes in hinge recess pockets (elbow/knee vicinity)
+    for side, sx in (("L", 1), ("R", -1)):
+        sh, el, wr, hand = arm_points(sx)
+        sc = cube(f"WearElbow_{side}", el + Vector((sx * 0.02, -0.035, 0)),
+                  (0.008, 0.004, 0.010), bevel=0.001)
+        add(f"LowerArm_{side}", sc, wear)
+        hip, kn, an, toe = leg_points(sx)
+        sk = cube(f"WearKnee_{side}", kn + Vector((sx * 0.025, -0.040, 0)),
+                  (0.010, 0.004, 0.012), bevel=0.001)
+        add(f"LowerLeg_{side}", sk, wear)
 
     return groups
 
@@ -927,27 +1019,38 @@ def parent_groups(groups, arm_ob):
 
 
 def make_mats(is_it):
-    """Soft vinyl / skin-like satin SSS. Darker metal hinges. It = warm tan + black Vs."""
+    """Satin vinyl hard shells ≠ darker metal hinges ≠ rubber pads ≠ dark bellows.
+    Paint LOCKED: Runner cream / It warm tan + black Vs. Slot names preserved."""
     suffix = "_It" if is_it else "_Tan"
     if is_it:
         base = mat(
-            "Base", WARM_TAN, metallic=0.015, roughness=0.40, subsurface=0.18,
+            "Base", WARM_TAN, metallic=0.015, roughness=0.40, subsurface=0.12,
             ss_color=(0.90, 0.55, 0.35, 1.0), ss_radius=(1.0, 0.45, 0.20), emit=0.02)
     else:
         base = mat(
-            "Base", BONE, metallic=0.012, roughness=0.38, subsurface=0.22,
+            "Base", BONE, metallic=0.012, roughness=0.38, subsurface=0.16,
             ss_color=(1.0, 0.80, 0.55, 1.0), ss_radius=(1.0, 0.50, 0.22), emit=0.04)
     accent = mat("Accent", BLACK if is_it else TEAL, roughness=0.44)
     over = mat("ItOverride", RIM if is_it else BONE, roughness=0.45, emit=0.0)
-    joint = mat("Joint" + suffix, JOINT, metallic=0.70, roughness=0.32)
-    sensor = mat("Sensor" + suffix, SENSOR, metallic=0.0, roughness=0.70)
-    metal = mat("Metal" + suffix, METAL, metallic=0.80, roughness=0.28)
-    rubber = mat("Rubber" + suffix, (0.08, 0.08, 0.09, 1.0), metallic=0.0, roughness=0.82)
+    # Metal hinges: metallic 0.65–0.85, roughness 0.28–0.38
+    joint = mat("Joint" + suffix, JOINT, metallic=0.72, roughness=0.34)
+    sensor = mat("Sensor" + suffix, SENSOR, metallic=0.0, roughness=0.68)
+    metal = mat("Metal" + suffix, METAL, metallic=0.82, roughness=0.30)
+    # Bellows: very dark, low metal, mid-high roughness
+    bellows_mat = mat("Bellows" + suffix, DARK_BELLOWS, metallic=0.04, roughness=0.72)
+    cal_col = TEAL if not is_it else CAL_YELLOW
+    cal_accent = mat("CalAccent" + suffix, cal_col, roughness=0.40)
+    lip_mat = mat("Lip" + suffix, LIP, metallic=0.25, roughness=0.42)
+    # Rubber shoe pads: high roughness, non-metal
+    RUBBER_COL = (0.08, 0.08, 0.09, 1.0)
+    rubber = mat("Rubber" + suffix, RUBBER_COL, metallic=0.0, roughness=0.80)
+    # Micro-wear dirt (stamp-ink in recesses)
     wear = mat("Wear" + suffix, (0.05, 0.045, 0.04, 1.0), metallic=0.0, roughness=0.88)
     base.name = "Base"
     accent.name = "Accent"
     over.name = "ItOverride"
-    return (base, accent, over, joint, sensor, metal, rubber, wear)
+    return (base, accent, over, joint, sensor, metal, bellows_mat, cal_accent, lip_mat,
+            rubber, wear)
 
 
 def export_fbx(path, arm_ob):
@@ -979,22 +1082,10 @@ def export_fbx(path, arm_ob):
     log(f"Exported {path} ({os.path.getsize(path)} bytes)")
 
 
-def ensure_meta_guid(fbx_path, guid):
-    """Keep existing .meta if present (preserve Unity importer + GUID); else write minimal."""
+def write_meta(fbx_path, guid=None):
     meta = fbx_path + ".meta"
-    if os.path.isfile(meta):
-        with open(meta, "r") as f:
-            text = f.read()
-        if f"guid: {guid}" in text:
-            log(f"Meta GUID intact {meta} guid={guid}")
-            return
-        # Rewrite GUID line only
-        import re
-        text2 = re.sub(r"guid: [0-9a-f]+", f"guid: {guid}", text, count=1)
-        with open(meta, "w") as f:
-            f.write(text2)
-        log(f"Meta GUID restored {meta} guid={guid}")
-        return
+    if guid is None:
+        guid = uuid.uuid4().hex
     content = f"""fileFormatVersion: 2
 guid: {guid}
 ModelImporter:
@@ -1012,6 +1103,10 @@ ModelImporter:
     resampleCurves: 1
     optimizeGameObjects: 0
     motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
   meshes:
     lODScreenPercentages: []
     globalScale: 1
@@ -1069,8 +1164,30 @@ ModelImporter:
     log(f"Wrote meta {meta} guid={guid}")
 
 
+
+def ensure_meta_guid(fbx_path, guid):
+    """Keep existing .meta if present (preserve Unity importer + GUID); else write minimal.
+    Do NOT rewrite .meta content when GUID already matches.
+    """
+    meta = fbx_path + ".meta"
+    if os.path.isfile(meta):
+        with open(meta, "r") as f:
+            text = f.read()
+        if f"guid: {guid}" in text:
+            log(f"Meta GUID intact {meta} guid={guid}")
+            return
+        import re
+        text2 = re.sub(r"guid: [0-9a-f]+", f"guid: {guid}", text, count=1)
+        with open(meta, "w") as f:
+            f.write(text2)
+        log(f"Meta GUID restored {meta} guid={guid}")
+        return
+    write_meta(fbx_path, guid=guid)
+
+
 def setup_render(engine="BLENDER_EEVEE_NEXT", res=1100):
     sc = bpy.context.scene
+    # Prefer EEVEE for warmer material color read; fall back to workbench
     available = {e.identifier for e in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items}
     if engine not in available:
         if "BLENDER_EEVEE" in available:
@@ -1092,33 +1209,34 @@ def setup_render(engine="BLENDER_EEVEE_NEXT", res=1100):
         sc.world.use_nodes = True
         bg = sc.world.node_tree.nodes.get("Background")
         if bg:
-            bg.inputs[0].default_value = (0.70, 0.68, 0.64, 1.0)
-            bg.inputs[1].default_value = 0.65
+            bg.inputs[0].default_value = (0.62, 0.52, 0.40, 1.0)  # warmer env
+            bg.inputs[1].default_value = 0.55
     if "Ground" not in bpy.data.objects:
         bpy.ops.mesh.primitive_plane_add(size=8, location=(0, 0, 0))
         g = bpy.context.active_object
         g.name = "Ground"
-        gm = mat("GroundMat", (0.55, 0.54, 0.52, 1), roughness=0.92)
+        gm = mat("GroundMat", (0.42, 0.40, 0.38, 1), roughness=0.92)
         set_mat(g, gm)
     if "KeySun" not in bpy.data.objects:
         bpy.ops.object.light_add(type="SUN", location=(2.5, -3.5, 5.5))
         sun = bpy.context.active_object
         sun.name = "KeySun"
-        sun.data.energy = 3.4
-        sun.data.color = (1.0, 0.92, 0.82)
+        sun.data.energy = 3.2
+        sun.data.color = (1.0, 0.88, 0.70)  # warmer key
         sun.rotation_euler = (math.radians(48), math.radians(12), math.radians(-18))
         bpy.ops.object.light_add(type="AREA", location=(-2.2, 2.2, 3.2))
         fill = bpy.context.active_object
         fill.name = "Fill"
-        fill.data.energy = 60
+        fill.data.energy = 55
         fill.data.size = 3.5
-        fill.data.color = (1.0, 0.96, 0.92)
+        fill.data.color = (1.0, 0.95, 0.88)
         bpy.ops.object.light_add(type="AREA", location=(0.5, -1.5, 2.0))
         warm = bpy.context.active_object
         warm.name = "WarmFill"
-        warm.data.energy = 50
+        warm.data.energy = 35
         warm.data.size = 2.0
-        warm.data.color = (1.0, 0.85, 0.65)
+        warm.data.color = (1.0, 0.80, 0.55)
+        warm.data.energy = 55
 
 
 def place_camera(loc, look_at=(0, 0, 1.0)):
@@ -1163,7 +1281,74 @@ def pose_idle(arm_ob):
     set_bone_euler(arm_ob, "LowerArm_R", (-8, 0, 0))
 
 
+def pose_run_knee(arm_ob):
+    reset_pose(arm_ob)
+    set_bone_euler(arm_ob, "Spine", (10, 0, 0))
+    set_bone_euler(arm_ob, "Hips", (6, 0, 0))
+    set_bone_euler(arm_ob, "UpperLeg_L", (-48, 0, 0))
+    set_bone_euler(arm_ob, "LowerLeg_L", (22, 0, 0))
+    set_bone_euler(arm_ob, "UpperLeg_R", (52, 0, 0))
+    set_bone_euler(arm_ob, "LowerLeg_R", (98, 0, 0))
+    set_bone_euler(arm_ob, "UpperArm_L", (58, 0, 12))
+    set_bone_euler(arm_ob, "LowerArm_L", (-75, 0, 0))
+    set_bone_euler(arm_ob, "UpperArm_R", (-55, 0, -12))
+    set_bone_euler(arm_ob, "LowerArm_R", (-38, 0, 0))
+    set_bone_euler(arm_ob, "Head", (-4, 0, 0))
+
+
+def ground_feet(arm_ob, target_z=0.02):
+    bpy.context.view_layer.update()
+    zs = []
+    for side in ("L", "R"):
+        pb = arm_ob.pose.bones.get(f"Foot_{side}")
+        if pb:
+            zs.append((arm_ob.matrix_world @ pb.tail).z)
+            zs.append((arm_ob.matrix_world @ pb.head).z)
+    if not zs:
+        return
+    arm_ob.location.z += (target_z - min(zs))
+    bpy.context.view_layer.update()
+
+
+def pose_slide(arm_ob):
+    reset_pose(arm_ob)
+    set_bone_euler(arm_ob, "Hips", (12, 0, 0))
+    set_bone_euler(arm_ob, "Spine", (40, 0, 0))
+    set_bone_euler(arm_ob, "Chest", (12, 0, 0))
+    set_bone_euler(arm_ob, "Head", (-20, 0, 0))
+    set_bone_euler(arm_ob, "UpperLeg_L", (-70, 14, 6))
+    set_bone_euler(arm_ob, "LowerLeg_L", (135, 0, 0))
+    set_bone_euler(arm_ob, "Foot_L", (-45, 0, 8))
+    set_bone_euler(arm_ob, "UpperLeg_R", (-65, -14, -6))
+    set_bone_euler(arm_ob, "LowerLeg_R", (130, 0, 0))
+    set_bone_euler(arm_ob, "Foot_R", (-42, 0, -8))
+    set_bone_euler(arm_ob, "UpperArm_L", (55, -30, 35))
+    set_bone_euler(arm_ob, "LowerArm_L", (-35, 0, 0))
+    set_bone_euler(arm_ob, "UpperArm_R", (55, 30, -35))
+    set_bone_euler(arm_ob, "LowerArm_R", (-35, 0, 0))
+    ground_feet(arm_ob, target_z=0.025)
+
+
+def pose_punch(arm_ob):
+    reset_pose(arm_ob)
+    set_bone_euler(arm_ob, "Hips", (4, -18, 0))
+    set_bone_euler(arm_ob, "Spine", (6, -25, 0))
+    set_bone_euler(arm_ob, "Chest", (2, -12, 0))
+    set_bone_euler(arm_ob, "Head", (0, -8, 0))
+    set_bone_euler(arm_ob, "Shoulder_R", (0, 0, -15))
+    set_bone_euler(arm_ob, "UpperArm_R", (-75, 15, -55))
+    set_bone_euler(arm_ob, "LowerArm_R", (-8, 0, 0))
+    set_bone_euler(arm_ob, "Hand_R", (0, 0, 0))
+    set_bone_euler(arm_ob, "UpperArm_L", (50, -20, 35))
+    set_bone_euler(arm_ob, "LowerArm_L", (-85, 0, 0))
+    set_bone_euler(arm_ob, "UpperLeg_L", (-18, 0, 0))
+    set_bone_euler(arm_ob, "LowerLeg_L", (12, 0, 0))
+    set_bone_euler(arm_ob, "UpperLeg_R", (15, 0, 0))
+    set_bone_euler(arm_ob, "LowerLeg_R", (8, 0, 0))
+
+
 def hand_world(arm_ob, side="L"):
+    """World-space tip of Hand_L/R for close still framing."""
     pb = arm_ob.pose.bones.get(f"Hand_{side}")
     if not pb:
         return Vector((0.35 if side == "L" else -0.35, -0.25, 1.05))
@@ -1176,6 +1361,78 @@ def render_shot(path, cam_loc, look=(0, 0, 1.05)):
     bpy.context.scene.render.filepath = path
     bpy.ops.render.render(write_still=True)
     log(f"Still {path}")
+
+
+def composite_vs_ref(idle_path, out_path):
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except ImportError:
+        # Blender's embedded Python often lacks Pillow — shell out to system python3
+        import subprocess, shutil
+        helper = (
+            "from PIL import Image, ImageDraw, ImageFont\n"
+            "import sys\n"
+            "idle_path, out_path, ref = sys.argv[1:4]\n"
+            "idle = Image.open(idle_path).convert('RGBA')\n"
+            "ref = Image.open(ref).convert('RGBA')\n"
+            "w, h = ref.size\n"
+            "\n"
+            "ref = ref.crop((0, 0, w // 2, h)) if w > h * 1.2 else ref\n"
+            "th = 1100\n"
+            "fit = lambda im: im.resize((max(1, int(im.width * th / im.height)), th), Image.Resampling.LANCZOS)\n"
+            "a, b = fit(idle), fit(ref)\n"
+            "gap = 24\n"
+            "c = Image.new('RGBA', (a.width + gap + b.width + 40, th + 60), (48, 48, 52, 255))\n"
+            "c.paste(a, (20, 40), a); c.paste(b, (20 + a.width + gap, 40), b)\n"
+            "d = ImageDraw.Draw(c)\n"
+            "try:\n"
+            " f = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 22)\n"
+            "except Exception:\n"
+            " f = ImageFont.load_default()\n"
+            "d.text((20, 10), 'v0.6.1 Tan idle (Hybrid III hands)', fill=(220, 220, 220, 255), font=f)\n"
+            "d.text((20 + a.width + gap, 10), 'Hybrid III ref (PRIMARY)', fill=(220, 220, 220, 255), font=f)\n"
+            "c.convert('RGB').save(out_path)\n"
+        )
+        try:
+            r = subprocess.run(
+                ["python3", "-c", helper, idle_path, out_path, REF_CRASH],
+                capture_output=True, text=True, timeout=60)
+            if r.returncode == 0 and os.path.isfile(out_path):
+                log(f"Still {out_path} (vs ref composite via system PIL)")
+                return
+            log(f"system PIL fail: {r.stderr[:200]} — copying idle as vs_ref fallback")
+        except Exception as e:
+            log(f"PIL missing ({e}) — copying idle as vs_ref fallback")
+        shutil.copy(idle_path, out_path)
+        return
+    idle = Image.open(idle_path).convert("RGBA")
+    ref = Image.open(REF_CRASH).convert("RGBA")
+    w, h = ref.size
+    if w > h * 1.2:
+        ref = ref.crop((0, 0, w // 2, h))
+    target_h = 1100
+
+    def fit_h(im, th):
+        r = th / im.height
+        return im.resize((max(1, int(im.width * r)), th), Image.Resampling.LANCZOS)
+
+    idle_f = fit_h(idle, target_h)
+    ref_f = fit_h(ref, target_h)
+    gap = 24
+    canvas_w = idle_f.width + gap + ref_f.width + 40
+    canvas_h = target_h + 60
+    canvas = Image.new("RGBA", (canvas_w, canvas_h), (48, 48, 52, 255))
+    canvas.paste(idle_f, (20, 40), idle_f)
+    canvas.paste(ref_f, (20 + idle_f.width + gap, 40), ref_f)
+    draw = ImageDraw.Draw(canvas)
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
+    except Exception:
+        font = ImageFont.load_default()
+    draw.text((20, 10), "v0.6.1 Tan idle (Hybrid III hands)", fill=(220, 220, 220, 255), font=font)
+    draw.text((20 + idle_f.width + gap, 10), "Hybrid III ref (PRIMARY)", fill=(220, 220, 220, 255), font=font)
+    canvas.convert("RGB").save(out_path)
+    log(f"Still {out_path} (vs ref composite)")
 
 
 def verify_bones(arm_ob):
@@ -1207,9 +1464,7 @@ def verify_bones(arm_ob):
         ("Shoulder_L under Chest", parent_of("Shoulder_L") == "Chest"),
         ("UpperArm_L under Shoulder_L", parent_of("UpperArm_L") == "Shoulder_L"),
         ("Foot_L under LowerLeg_L", parent_of("Foot_L") == "LowerLeg_L"),
-        ("Mesh_Head parent Head", True),
     ]
-    # Mesh_Head parent check
     mesh_head = bpy.data.objects.get("Mesh_Head")
     mh_ok = (mesh_head is not None
              and mesh_head.parent == arm_ob
@@ -1229,11 +1484,24 @@ def measure_a_pose(arm_ob):
     ua = (el_l - sh_l).normalized()
     vertical = Vector((0, 0, -1))
     ang = math.degrees(ua.angle(vertical))
-    clear_x = abs(hand_l.x) - 0.18
+    clear_x = abs(hand_l.x) - 0.20
     clear_y = hand_l.y
     log(f"A-pose UpperArm_L angle off vertical: {ang:.1f} deg")
     log(f"Hand_L world: {tuple(round(c, 3) for c in hand_l)} clear_x={clear_x:.3f}m y={clear_y:.3f}")
     return ang, clear_x, clear_y
+
+
+def measure_slide_grounding(arm_ob):
+    bpy.context.view_layer.update()
+    feet_z = []
+    for side in ("L", "R"):
+        pb = arm_ob.pose.bones.get(f"Foot_{side}")
+        if pb:
+            tip = Vector(arm_ob.matrix_world @ pb.tail)
+            feet_z.append(tip.z)
+    hips = Vector(arm_ob.matrix_world @ arm_ob.pose.bones["Hips"].head)
+    log(f"Slide feet_z={ [round(z, 3) for z in feet_z] } hips_z={hips.z:.3f}")
+    return feet_z, hips.z
 
 
 def build_variant(is_it, export_path, guid, do_stills=False):
@@ -1248,21 +1516,20 @@ def build_variant(is_it, export_path, guid, do_stills=False):
     tag = "it_" if is_it else ""
     if do_stills:
         pose_idle(arm_ob)
-        render_shot(f"{PREV}/hipoly_v72_{tag}idle_front.png",
+        render_shot(f"{PREV}/hipoly_v73_{tag}idle_front.png",
                     (0.12, -3.2, 1.35), (0, 0, 1.00))
-        render_shot(f"{PREV}/hipoly_v72_{tag}idle_34.png",
+        render_shot(f"{PREV}/hipoly_v73_{tag}idle_34.png",
                     (2.1, -2.5, 1.40), (0, 0, 1.05))
         hl = hand_world(arm_ob, "L")
         render_shot(
-            f"{PREV}/hipoly_v72_{tag}hand_close.png",
+            f"{PREV}/hipoly_v73_{tag}hand_close.png",
             (hl.x + 0.32, hl.y - 0.38, hl.z + 0.14),
             (hl.x - 0.02, hl.y + 0.02, hl.z - 0.01),
         )
-        # Optional face close
         render_shot(
-            f"{PREV}/hipoly_v72_{tag}face_close.png",
-            (0.08, -0.55, HEAD_Z + 0.02),
-            (0.0, -0.05, HEAD_Z - 0.02),
+            f"{PREV}/hipoly_v73_{tag}face_close.png",
+            (0.08, -0.55, 1.73),
+            (0.0, -0.05, 1.70),
         )
         reset_pose(arm_ob)
 
@@ -1278,21 +1545,21 @@ def write_readme():
     path = os.path.join(OUT_DIR, "README.md")
     text = """# HiPoly Hierarchical Mannequins
 
-DummyLocomotor-bindable **athletic store mannequin** (v0.7.2 hard-surface clean shells).
-NOT Hybrid III toy kit / sphere-palm / cylinder-finger / egg-head / LEGO hinges.
+DummyLocomotor-bindable **Hybrid III hard-shell** crash-test dummies (v0.7.3).
+Flat chest plate + accordion waist + hard pelvis + long limb shells + dark metal hinges.
 
 ## Assets
 | File | Paint |
 |------|-------|
 | `Dummy_Mannequin_Tan_Hier_Hi.fbx` | Runner — cream `#E8D9C0`, Accent teal tick. **ZERO nested Vs.** |
-| `Dummy_Mannequin_Orange_Hier_Hi.fbx` | It — warm tan body + black nested Vs chest + outer thighs |
+| `Dummy_Mannequin_Orange_Hier_Hi.fbx` | It — warm tan body + black nested Vs chest + outer thighs (NOT #FF6A00) |
 
 ## Bind pose
-- Mild A-pose ~20–30°; hands clear pelvis.
-- Molded human face: brow, nose, lip volume, chin, ears; flat dark eye insets — no orbs/makeup/goatee.
-- Hard continuous athletic torso/limbs (no soft-mass boil); deep sleeve overlaps; flush slim metal hinges.
-- Anatomical hands: flattened palm, knuckled fingers, opposed thumb + thenar; parented to Hand_L/R.
-- Materials: soft vinyl SSS Base / Accent / ItOverride + Joint metal + Rubber soles.
+- Mild A-pose ~20–35°; hands clear pelvis.
+- Hard-shell Hybrid III head + molded face; flat dark eye insets — zero orbs.
+- Flat chest plate; dense accordion bellows; hard pelvis; 4 neck rings.
+- Long tapered limb shells; LARGE dark metal hinges; hard-shell hands.
+- Materials: satin vinyl Base / Accent / ItOverride + Joint metal + Rubber + Bellows.
 
 ## Bone hierarchy (DummyLocomotor — names unchanged)
 `Root` → `Hips` → `Spine` → `Chest` → `Neck` → `Head`  
@@ -1308,14 +1575,14 @@ NOT Hybrid III toy kit / sphere-palm / cylinder-finger / egg-head / LEGO hinges.
 
 
 def main():
-    log("=== hipoly hier v8.2 / realism v0.7.2 hard-surface clean ===")
+    log("=== hipoly hier v8.3 / Hybrid III hard-shells v0.7.3 ===")
     tan = os.path.join(OUT_DIR, "Dummy_Mannequin_Tan_Hier_Hi.fbx")
     orn = os.path.join(OUT_DIR, "Dummy_Mannequin_Orange_Hier_Hi.fbx")
 
-    log("Building Tan/Runner Hier HiPoly v0.7.2…")
+    log("Building Tan/Runner Hier HiPoly v0.7.3 hard-shells…")
     ok_t, ang_t, cx_t, cy_t = build_variant(False, tan, GUID_TAN, do_stills=True)
 
-    log("Building Orange/It Hier HiPoly v0.7.2…")
+    log("Building It/Orange Hier HiPoly v0.7.3 hard-shells…")
     ok_o, ang_o, cx_o, cy_o = build_variant(True, orn, GUID_ORANGE, do_stills=True)
 
     write_readme()
@@ -1323,7 +1590,7 @@ def main():
     log(f"It  OK={ok_o} A-pose={ang_o:.1f}deg clear_x={cx_o:.3f} clear_y={cy_o:.3f}")
     log(f"Tan FBX {os.path.getsize(tan)} bytes guid={GUID_TAN}")
     log(f"Orange FBX {os.path.getsize(orn)} bytes guid={GUID_ORANGE}")
-    log("DONE v0.7.2 hard-surface clean — no git push (await AD approve)")
+    log("DONE v0.7.3 hard-shells — no git push (await AD / Landon HOLD)")
 
 
 if __name__ == "__main__":
