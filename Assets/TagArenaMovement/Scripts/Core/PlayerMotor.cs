@@ -522,13 +522,15 @@ namespace TagArena.Movement
 
             if (State == MoveState.WallClimb)
             {
-                DoWallBounce(ref v);
+                if (_in.WallClingHeld)
+                    DoWallBounce(ref v);
                 return;
             }
 
             if (State == MoveState.WallRun)
             {
-                DoWallRunJump(ref v);
+                if (_in.WallClingHeld)
+                    DoWallRunJump(ref v);
                 return;
             }
 
@@ -623,12 +625,11 @@ namespace TagArena.Movement
         {
             if (!_probe.Wall.hit) return false;
             if (State == MoveState.WallClimb || State == MoveState.Mantle) return false;
+            // WallCling is the grab. Facing the wall still matters. Jump is the wall jump, not the stick.
+            if (!_in.WallClingHeld) return false;
 
             float face = Vector3.Angle(Vector3.ProjectOnPlane(transform.forward, Vector3.up), -Vector3.ProjectOnPlane(_probe.Wall.normal, Vector3.up));
-            bool holdingIn = _in.Move.y > 0.2f || _in.JumpHeld;
-            if (!holdingIn) return false;
             if (face > cfg.climbAttachAngle) return false;
-            if (grounded && !_in.JumpHeld && !_in.JumpPressed) return false;
 
             // Ledge grab is not a stick - still allowed after a climb has decayed off.
             if (_probe.Ledge.hit && _probe.Ledge.height < cfg.mantleMaxLedgeHeight && v.y > -8f)
@@ -656,6 +657,13 @@ namespace TagArena.Movement
                 return v;
             }
 
+            // Releasing WallCling drops immediately, before a ledge can catch you.
+            if (!_in.WallClingHeld)
+            {
+                ReleaseWall(ref v, climb: true, forced: false);
+                return v;
+            }
+
             _climbT += dt;
             ClimbHeightUsed = transform.position.y - _climbStartY;
 
@@ -665,17 +673,17 @@ namespace TagArena.Movement
                 return v;
             }
 
+            if (_jumpBuf > 0f)
+            {
+                DoWallBounce(ref v);
+                return v;
+            }
+
             bool timeOut = cfg.climbMaxTime > 0f && _climbT >= cfg.climbMaxTime;
             bool heightOut = ClimbHeightUsed >= cfg.climbMaxHeight;
-            bool released = !_in.JumpHeld && _in.Move.y < 0.1f && _climbT > 0.08f;
-            if (timeOut || heightOut || released)
+            if (timeOut || heightOut)
             {
-                // Drop / slip off - stronger after a long cling so you cannot stick forever.
-                _climbBlocked = true;
-                v = Vector3.ProjectOnPlane(v, _probe.Wall.normal);
-                float slip = cfg.climbSlipSpeed * (timeOut || heightOut ? 1.6f : 1f);
-                v.y = Mathf.Min(v.y, -slip);
-                SetState(MoveState.Air);
+                ReleaseWall(ref v, climb: true, forced: true);
                 return v;
             }
 
@@ -766,6 +774,7 @@ namespace TagArena.Movement
             if (!cfg.enableWallRun) return false;
             if (_wallRunBlocked) return false;
             if (grounded) return false;
+            if (!_in.WallClingHeld) return false;
             if (!_probe.Wall.hit) return false;
             if (State == MoveState.WallClimb || State == MoveState.Mantle) return false;
             if (WishAccel.HorizSpeed(v) < cfg.wallRunMinSpeed) return false;
@@ -782,14 +791,17 @@ namespace TagArena.Movement
 
         Vector3 TickWallRun(float dt, Vector3 v, Vector3 wish)
         {
+            if (!_in.WallClingHeld)
+            {
+                ReleaseWall(ref v, climb: false, forced: false);
+                return v;
+            }
+
             if (!_probe.Wall.hit || _wallRunT > cfg.wallRunMaxTime)
             {
                 // Block re-entry until the wall is actually left. Air accel used to
                 // climb back over wallRunMinSpeed in ~2 frames and reset the timer.
-                _wallRunBlocked = true;
-                if (_wallRunT > cfg.wallRunMaxTime)
-                    v.y = Mathf.Min(v.y, -4.5f);
-                SetState(MoveState.Air);
+                ReleaseWall(ref v, climb: false, forced: _wallRunT > cfg.wallRunMaxTime);
                 return v;
             }
             _wallRunT += dt;
@@ -812,8 +824,23 @@ namespace TagArena.Movement
             // Slightly stronger into-wall stick so sticky probe + run stay glued in TP
             v = hv + Vector3.up * y - _probe.Wall.normal * 2.8f;
 
-            if (_in.JumpPressed) DoWallRunJump(ref v);
+            // Wall jump is WallCling plus Jump. Cling was already required to still be on the wall.
+            if (_jumpBuf > 0f) DoWallRunJump(ref v);
             return v;
+        }
+
+        void ReleaseWall(ref Vector3 v, bool climb, bool forced)
+        {
+            if (climb) _climbBlocked = true;
+            else _wallRunBlocked = true;
+            Vector3 n = _probe.Wall.hit ? _probe.Wall.normal : transform.forward;
+            Vector3 hv = Vector3.ProjectOnPlane(v, n);
+            hv += n * 1.5f;
+            v = hv;
+            float slip = climb ? cfg.climbSlipSpeed : 4.5f;
+            if (forced) slip *= 1.6f;
+            v.y = Mathf.Min(v.y, -slip);
+            SetState(MoveState.Air);
         }
 
         #endregion
