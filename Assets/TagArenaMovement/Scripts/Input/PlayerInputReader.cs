@@ -16,11 +16,6 @@ namespace TagArena.Movement
         public bool CrouchPressed;
         public bool JumpHeld;
         public bool JumpPressed;
-        /// <summary>
-        /// <see cref="ControlBinds.WallClingAction"/>. Held to stay on a wall.
-        /// Release drops the climb or wall-run. Wall jump is this hold plus Jump.
-        /// </summary>
-        public bool WallClingHeld;
         public bool SkiHeld;
         public bool JetHeld;
         public bool JetPressed;
@@ -40,10 +35,6 @@ namespace TagArena.Movement
         public KeyCode airDashKey = KeyCode.Q;
         public KeyCode punchKey = KeyCode.Mouse0;
         public KeyCode tapStrafePulseKey = KeyCode.W;
-        /// <summary>Primary <see cref="ControlBinds.WallClingAction"/> bind. RMB. Does not jet.</summary>
-        public KeyCode wallClingKey = KeyCode.Mouse1;
-        /// <summary>Alternate WallCling bind so a keyboard can cling without the mouse.</summary>
-        public KeyCode wallClingKeyAlt = KeyCode.G;
         public bool useShiftAsSprintWhenNotSkiing = true;
 
         float _prevCrouch;
@@ -85,7 +76,6 @@ namespace TagArena.Movement
                 CrouchPressed = false;
                 JumpHeld = false;
                 JumpPressed = false;
-                WallClingHeld = false;
                 SkiHeld = false;
                 JetHeld = false;
                 JetPressed = false;
@@ -126,8 +116,6 @@ namespace TagArena.Movement
             JumpHeld = Input.GetButton("Jump") || Input.GetKey(KeyCode.Space);
             JumpPressed = JumpHeld && _prevJump <= 0f;
             _prevJump = JumpHeld ? 1f : 0f;
-
-            WallClingHeld = Input.GetKey(wallClingKey) || Input.GetKey(wallClingKeyAlt);
 
             SkiHeld = Input.GetKey(skiKey);
             // Shift may also mean ski; PlayerMotor.WantsSki decides if ski engages.
@@ -186,7 +174,7 @@ namespace TagArena.Movement
         }
 
         /// <summary>AI helper: set planar wish in body space and clear one-shot human buttons.</summary>
-        public void SetExternalMove(Vector2 move, bool sprint, bool jump = false, bool lunge = false, bool airDash = false, bool wallCling = false)
+        public void SetExternalMove(Vector2 move, bool sprint, bool jump = false, bool lunge = false, bool airDash = false)
         {
             ExternalControl = true;
             Move = move.sqrMagnitude > 1f ? move.normalized : move;
@@ -197,7 +185,6 @@ namespace TagArena.Movement
             JumpHeld = jump;
             JumpPressed = jump && _extPrevJump <= 0f;
             _extPrevJump = jump ? 1f : 0f;
-            WallClingHeld = wallCling;
             SkiHeld = false;
             JetHeld = false;
             JetPressed = false;

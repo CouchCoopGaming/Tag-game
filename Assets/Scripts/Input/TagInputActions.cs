@@ -20,12 +20,11 @@ namespace Tag.Input
         readonly InputAction _slide;
         readonly InputAction _punch;
         readonly InputAction _airDash;
-        readonly InputAction _wallCling;
 
         public bool IsValid => _asset != null && _move != null;
 
         TagInputActions(InputActionAsset asset, InputAction move, InputAction look, InputAction jump,
-            InputAction sprint, InputAction slide, InputAction punch, InputAction airDash, InputAction wallCling)
+            InputAction sprint, InputAction slide, InputAction punch, InputAction airDash)
         {
             _asset = asset;
             _move = move;
@@ -35,7 +34,6 @@ namespace Tag.Input
             _slide = slide;
             _punch = punch;
             _airDash = airDash;
-            _wallCling = wallCling;
         }
 
         public static TagInputActions Bind(int playerIndex)
@@ -52,8 +50,6 @@ namespace Tag.Input
             var slide = map.AddAction("Slide", InputActionType.Button);
             var punch = map.AddAction("Punch", InputActionType.Button);
             var airDash = map.AddAction("AirDash", InputActionType.Button);
-            // Name locked for Systems: WallCling. Hold to climb or wall-run. Release falls off.
-            var wallCling = map.AddAction(TagArena.Movement.ControlBinds.WallClingAction, InputActionType.Button);
             move.expectedControlType = "Vector2";
             look.expectedControlType = "Vector2";
 
@@ -73,8 +69,6 @@ namespace Tag.Input
                 punch.AddBinding("<Mouse>/leftButton");
                 airDash.AddBinding("<Keyboard>/leftAlt");
                 airDash.AddBinding("<Keyboard>/q");
-                wallCling.AddBinding("<Mouse>/rightButton");
-                wallCling.AddBinding("<Keyboard>/g");
             }
             else if (playerIndex == 1)
             {
@@ -96,7 +90,6 @@ namespace Tag.Input
                 punch.AddBinding("<Keyboard>/rightBracket");
                 airDash.AddBinding("<Keyboard>/rightAlt");
                 airDash.AddBinding("<Keyboard>/quote");
-                wallCling.AddBinding("<Keyboard>/backslash");
             }
 
             move.AddBinding("<Gamepad>/leftStick");
@@ -107,14 +100,13 @@ namespace Tag.Input
             slide.AddBinding("<Gamepad>/buttonEast");
             punch.AddBinding("<Gamepad>/buttonWest");
             airDash.AddBinding("<Gamepad>/rightShoulder");
-            wallCling.AddBinding("<Gamepad>/leftTrigger");
 
             var devices = DevicesFor(playerIndex);
             if (devices != null && devices.Length > 0)
                 asset.devices = devices;
 
             map.Enable();
-            return new TagInputActions(asset, move, look, jump, sprint, slide, punch, airDash, wallCling);
+            return new TagInputActions(asset, move, look, jump, sprint, slide, punch, airDash);
         }
 
         static InputDevice[] DevicesFor(int playerIndex)
@@ -134,7 +126,7 @@ namespace Tag.Input
         }
 
         public void Read(out Vector2 move, out Vector2 look, out bool sprint, out bool jump,
-            out bool slideHeld, out bool slidePressed, out bool punch, out bool airDash, out bool wallClingHeld)
+            out bool slideHeld, out bool slidePressed, out bool punch, out bool airDash)
         {
             move = Vector2.ClampMagnitude(_move.ReadValue<Vector2>(), 1f);
             look = _look.ReadValue<Vector2>();
@@ -151,7 +143,6 @@ namespace Tag.Input
             slidePressed = _slide.WasPressedThisFrame();
             punch = _punch.WasPressedThisFrame();
             airDash = _airDash.WasPressedThisFrame();
-            wallClingHeld = _wallCling.IsPressed();
         }
 
         public void Dispose()

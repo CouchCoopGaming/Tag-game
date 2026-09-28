@@ -11,13 +11,6 @@ namespace TagArena.Movement
         public const string DashPrefsKey = "Tag.AirDashKey";
         public const string PunchPrefsKey = "Tag.PunchKey";
 
-        /// <summary>
-        /// Action name Systems lock. Hold to climb or wall-run. Release falls off.
-        /// Wall jump is this hold plus Jump. Default binds are RMB and G.
-        /// RMB still does not jet.
-        /// </summary>
-        public const string WallClingAction = "WallCling";
-
         static readonly KeyCode[] DashSteps = { KeyCode.Q, KeyCode.V, KeyCode.Mouse4 };
         static readonly KeyCode[] PunchSteps = { KeyCode.Mouse0, KeyCode.F, KeyCode.Mouse3 };
 
@@ -40,8 +33,8 @@ namespace TagArena.Movement
             PunchName + " or E punch (passes It)\n" +
             DashName + " or Left Alt air dash (0.1 s, then 30 s)\n" +
             "MMB lunge when you are It, on the ground\n" +
-            "WallCling hold: RMB or G (climb and wall-run). Release falls off\n" +
-            "Wall jump: hold WallCling and press Space\n" +
+            "Wall cling: push into the wall (climb and wall-run). Let the stick go to drop\n" +
+            "Wall jump: push into the wall and press Space\n" +
             "RMB does not jet\n" +
             "F1 Hot Potato   F2 Least It   F3 Trail Tag   F4 Free play\n" +
             "Esc pause\n" +

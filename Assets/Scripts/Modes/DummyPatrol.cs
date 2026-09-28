@@ -465,9 +465,8 @@ namespace Tag.Modes
         void DriveWish(float moveY, bool sprint, float strafe = 0f, bool jump = false, bool lunge = false, bool airDash = false)
         {
             if (_input == null) return;
-            // Same WallCling rule as a player. Airborne or a hop holds the wall. A grounded walk does not.
-            bool wallCling = jump || (_selfMotor != null && !_selfMotor.IsGrounded);
-            _input.SetExternalMove(new Vector2(strafe, Mathf.Clamp(moveY, -1f, 1f)), sprint, jump, lunge, airDash, wallCling);
+            // Cling is the wish into the wall, not a button. Drive the stick; the motor dots it.
+            _input.SetExternalMove(new Vector2(strafe, Mathf.Clamp(moveY, -1f, 1f)), sprint, jump, lunge, airDash);
         }
 
         float NextPunchCooldown(float urgency)
