@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-HiPoly hierarchical mannequin v8.7 / Hybrid III body + finger joints v0.7.7
+HiPoly hierarchical mannequin v8.8 / Hier v0.7.8 resting-fist + shoulders in
 
 KEEP locked (v0.7.5 Bionicle + v0.7.6/b joint direction Landon-cleared):
   - FLAT continuous hard chest plate
@@ -14,12 +14,14 @@ KEEP locked (v0.7.5 Bionicle + v0.7.6/b joint direction Landon-cleared):
   - Shoulders DOWN + BACK: SHOULDER_Z≈1.40, SHOULDER_Y≈0.06 (+Y=back)
   - SOLID vinyl capsule/sleeve cover (NO thin torus hole) — metal barely peeks
   - NO Finger_ bones (finger detail mesh-only)
+  - Hybrid III body volumes + MCP knuckles + PIP mid joints (from v0.7.7)
 
-CHANGE v0.7.7:
-  - Body shape/proportions → full-body Hybrid III crash dummy vs PRIMARY ref
-    (broader flat chest, brief pelvis, thicker hard limb shells — not toy cylinders)
-  - ADD knuckles + mid-finger joints on mesh (opposed thumb stays); no tip-orb stacks
-  - Fold v0.7.6b joint/cover/shoulder fixes (stop orphan v76b tip)
+CHANGE v0.7.8:
+  - Shoulders notably narrower: SHOULDER_X 0.285 → 0.235; chest/clav/shelf
+    girdle half-widths brought in so idle front reads less ape-shelf
+  - Resting-fist soft finger curl (mesh-only): tip_extra / segment endpoints
+    arc palm-ward (less -Y stretch, MCP+PIP flex); thumb tucked alongside
+    index — soft closed fist at rest, NOT outstretched/splayed, NOT clenched rock
 
 DummyLocomotor bones / hierarchy / GUIDs / FBX paths unchanged.
 GUID-safe FBX overwrite (do NOT rewrite .meta). NO git push.
@@ -33,7 +35,7 @@ from mathutils import Vector, Euler
 OUT_DIR = "/workspace/tag-unity/Assets/Art/Characters/HiPoly"
 PREV = "/workspace/art-build/previews"
 BLEND = "/workspace/art-build/Dummy_Mannequin_Hier_Hi.blend"
-LOG = "/tmp/hipoly_v77_build.log"
+LOG = "/tmp/hipoly_v78_build.log"
 REF_CRASH = "/workspace/tag-gdd/art/refs/hybrid-iii-v03/ref_hybrid_iii_crash_dummy.jpg"
 
 GUID_TAN = "ad3f2fa97db94e72869d746ecdf8e87d"
@@ -61,10 +63,10 @@ CYL_V = 28
 # longer legs, narrower torso, real shoulder>hip width, smaller head.
 # v0.7.6b: shoulders DOWN + BACK harder (Art: not clear vs tip 3322317).
 # Face = -Y so back = +Y.
-# v0.7.7: shoulders DOWN+BACK (from v0.7.6b); girdle width for Hybrid III mass
+# v0.7.8: shoulders DOWN+BACK kept; girdle narrowed (SHOULDER_X 0.235)
 SHOULDER_Z = 1.400
 SHOULDER_Y = 0.060
-SHOULDER_X = 0.285
+SHOULDER_X = 0.235
 UA_LEN = 0.370
 LA_LEN = 0.330
 ARM_OUT = math.radians(24.0)
@@ -581,12 +583,12 @@ def u_knee_fork(name, kn, sx):
 
 
 def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
-    """Thumb + SEPARATED fingers with knuckles + mid joints (v0.7.7).
+    """Thumb + SEPARATED fingers with knuckles + mid joints (v0.7.8 resting fist).
 
     Hands-only pass — static shells parented to Hand_L/R (no Finger_ bones).
     Readable MCP knuckle bumps + PIP mid-segment rings under vinyl.
     AD soft: NO tip-orb stacks — tapered shells end clean.
-    Opposed thumb + thenar mass; molded palm; clear finger separation.
+    Soft resting-fist curl at MCP+PIP (palm-ward); thumb tucked alongside index.
     """
     parts = []
     # wrist 0.012 simple + SOLID vinyl envelope
@@ -610,42 +612,59 @@ def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
     set_mat(dorsum, base_mat)
     parts.append(dorsum)
 
-    # Separated fingers — knuckle bump (MCP) + mid joint ring (PIP); NO tip orbs
+    # Separated fingers — soft resting-fist curl (MCP + PIP flex palm-ward).
+    # Dorsum is +Z → palm faces -Z; curl tips toward palm: less -Y reach, more -Z.
+    # Two-segment shells (prox MCP→PIP, dist PIP→tip) so arc reads at hand_close.
+    # NO tip orbs. Soft fist — not outstretched, not clenched rock.
     finger_offsets = [
-        (-0.038, -0.048, -0.006),
-        (-0.012, -0.062, -0.008),
-        (0.012, -0.064, -0.008),
-        (0.038, -0.048, -0.006),
+        (-0.036, -0.042, -0.004),
+        (-0.012, -0.054, -0.006),
+        (0.012, -0.056, -0.006),
+        (0.036, -0.042, -0.004),
     ]
+    # PIP mid joints — partial curl (~35–40° flex feel)
+    pip_extra = [
+        (-0.038, -0.058, -0.036),
+        (-0.012, -0.068, -0.040),
+        (0.012, -0.070, -0.042),
+        (0.038, -0.058, -0.036),
+    ]
+    # Distal tips — soft closed fist (less -Y than v0.7.7 ~-0.15; more -Z tuck)
     tip_extra = [
-        (-0.044, -0.140, -0.042),
-        (-0.013, -0.158, -0.046),
-        (0.013, -0.160, -0.046),
-        (0.044, -0.140, -0.042),
+        (-0.030, -0.062, -0.078),
+        (-0.009, -0.070, -0.088),
+        (0.009, -0.072, -0.090),
+        (0.030, -0.062, -0.078),
     ]
     for i, (ox, oy, oz) in enumerate(finger_offsets):
         start = hand + Vector((ox, oy * 0.28, oz * 0.30))
+        mid = hand + Vector(pip_extra[i])
         end = hand + Vector(tip_extra[i])
-        direction = (end - start)
-        length = direction.length
-        dirc = direction.normalized() if length > 1e-6 else Vector((0, -1, 0))
+        dir_prox = (mid - start)
+        len_prox = dir_prox.length
+        dirc = dir_prox.normalized() if len_prox > 1e-6 else Vector((0, -1, 0))
+        dir_dist = (end - mid)
+        dird = dir_dist.normalized() if dir_dist.length > 1e-6 else dirc
         r0 = 0.0110 if i in (1, 2) else 0.0100
+        r_mid = 0.0080 if i in (1, 2) else 0.0075
         r1 = 0.0055
-        fing = tapered_limb(f"{name}_F{i}", start, end, r0, r1, v=12, caps=False)
-        set_mat(fing, base_mat)
-        parts.append(fing)
+        fing0 = tapered_limb(f"{name}_F{i}a", start, mid, r0, r_mid, v=12, caps=False)
+        set_mat(fing0, base_mat)
+        parts.append(fing0)
+        fing1 = tapered_limb(f"{name}_F{i}b", mid, end, r_mid, r1, v=12, caps=False)
+        set_mat(fing1, base_mat)
+        parts.append(fing1)
 
         # MCP knuckle bump — dorsal vinyl sphere at finger root (readable at hand close)
         kn_r = r0 * 1.35
         knuckle = sph(
             f"{name}_Knuckle{i}",
-            start + dirc * (length * 0.06) + Vector((0, -0.004, 0.003)),
+            start + dirc * (len_prox * 0.08) + Vector((0, -0.003, 0.004)),
             (kn_r, kn_r * 0.85, kn_r * 0.95), seg=10, ring=6)
         set_mat(knuckle, base_mat)
         parts.append(knuckle)
 
         # PIP mid-finger joint — vinyl crease ring + small nest ball under shell
-        mid = start + dirc * (length * 0.42)
         mid_r = (r0 + r1) * 0.55
         mid_ball = sph(
             f"{name}_MidJ{i}", mid,
@@ -653,7 +672,7 @@ def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
         set_mat(mid_ball, base_mat)
         parts.append(mid_ball)
         # thin crease collar (solid cyl, not open torus hole)
-        axis_guess = "Y" if abs(dirc.y) > 0.55 else ("Z" if abs(dirc.z) > 0.55 else "X")
+        axis_guess = "Y" if abs(dird.y) > 0.55 else ("Z" if abs(dird.z) > 0.55 else "X")
         if axis_guess == "Y":
             mid_rot = (math.radians(90), 0, 0)
         elif axis_guess == "X":
@@ -667,9 +686,9 @@ def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
         parts.append(mid_ring)
         # Clean tapered terminus only — no tip orb / pad stack
 
-    # Opposed thumb — thenar + knuckle + mid joint; flat distal (no tip orb)
-    thumb_start = hand + Vector((sx * 0.026, 0.006, 0.020))
-    thumb_end = hand + Vector((sx * 0.098, 0.045, -0.050))
+    # Thumb — rest natural alongside index (tucked); less extreme opposition stretch
+    thumb_start = hand + Vector((sx * 0.024, 0.002, 0.016))
+    thumb_end = hand + Vector((sx * 0.048, -0.022, -0.032))
     thenar = sph(f"{name}_Thenar",
                  hand + Vector((sx * 0.026, 0.004, 0.010)),
                  (0.018, 0.014, 0.020), seg=10, ring=5)
@@ -739,58 +758,59 @@ def shoe_foot(name, an, toe, sx, base_mat, joint_mat, rubber_mat=None):
 
 
 def flat_chest_plate(name):
-    """Hybrid III FLAT chest plate — broader crash-dummy shield (v0.7.7).
+    """Hybrid III FLAT chest plate — narrower girdle (v0.7.8).
 
-    Hard planar volumes matching PRIMARY Hybrid III ref: broader shoulder girdle,
-    flat front slab, clear V-taper to accordion. NO pec/lat/delt sphere pillows.
-    Shelves sit at SHOULDER_Z/Y (down+back). Clear bottom edge ABOVE accordion.
+    Hard planar volumes matching PRIMARY Hybrid III ref: flat front slab,
+    clear V-taper to accordion. NO pec/lat/delt sphere pillows.
+    Shelves track SHOULDER_X/Z/Y (down+back, notably narrower biacromial).
+    Clear bottom edge ABOVE accordion. KEEP hard shells — just less wide girdle.
     """
     parts = []
-    # Front planar plate — Hybrid III broader hard shield (not toy-narrow)
+    # Front planar plate — narrowed with shoulder girdle (was 0.148)
     front = cube(
         f"{name}_Front", (0.0, -0.082, 1.285),
-        (0.148, 0.026, 0.145), bevel=0.010)
+        (0.125, 0.026, 0.145), bevel=0.010)
     parts.append(front)
-    # Upper clavicle flare — broad hard shelf, planar (not pillows)
+    # Upper clavicle flare — narrowed half-width (was 0.175)
     clav = cube(
         f"{name}_Clav", (0.0, -0.072, 1.355),
-        (0.175, 0.030, 0.040), bevel=0.009)
+        (0.145, 0.030, 0.040), bevel=0.009)
     parts.append(clav)
     # Lower taper slab ending clean ABOVE bellows
     lower = cube(
         f"{name}_Lower", (0.0, -0.068, 1.155),
-        (0.118, 0.024, 0.044), bevel=0.007)
+        (0.105, 0.024, 0.044), bevel=0.007)
     parts.append(lower)
     # Side walls — hard wrap, taper inward toward waist (not soft lats)
     for sx in (1, -1):
         side = cube(
-            f"{name}_Side{sx}", (sx * 0.155, -0.004, 1.280),
+            f"{name}_Side{sx}", (sx * 0.125, -0.004, 1.280),
             (0.024, 0.078, 0.130), bevel=0.007)
         parts.append(side)
         side_lo = cube(
-            f"{name}_SideLo{sx}", (sx * 0.132, -0.002, 1.160),
+            f"{name}_SideLo{sx}", (sx * 0.108, -0.002, 1.160),
             (0.020, 0.066, 0.038), bevel=0.005)
         parts.append(side_lo)
-    # Back plate — Hybrid III depth
+    # Back plate — narrowed with front (was 0.138)
     back = cube(
         f"{name}_Back", (0.0, 0.078, 1.280),
-        (0.138, 0.024, 0.135), bevel=0.009)
+        (0.115, 0.024, 0.135), bevel=0.009)
     parts.append(back)
-    # Shoulder shelves — HARD squared stubs matching SHOULDER_Z/Y (down+back)
+    # Shoulder shelves — HARD stubs at SHOULDER_X (was hardcoded 0.245)
     for sx in (1, -1):
         shelf = cube(
-            f"{name}_Shelf{sx}", (sx * 0.245, SHOULDER_Y, SHOULDER_Z - 0.055),
-            (0.052, 0.052, 0.038), bevel=0.009)
+            f"{name}_Shelf{sx}", (sx * SHOULDER_X, SHOULDER_Y, SHOULDER_Z - 0.055),
+            (0.046, 0.048, 0.036), bevel=0.009)
         parts.append(shelf)
     # Fill core — hard plate mass, not hollow egg
     core = cube(
         f"{name}_Core", (0.0, 0.0, 1.280),
-        (0.118, 0.058, 0.125), bevel=0.005)
+        (0.100, 0.058, 0.125), bevel=0.005)
     parts.append(core)
     # Sharp bottom edge bead (distinct shell terminus above accordion)
     bot_edge = cube(
         f"{name}_BotEdge", (0.0, -0.004, 1.118),
-        (0.132, 0.085, 0.010), bevel=0.003)
+        (0.110, 0.085, 0.010), bevel=0.003)
     parts.append(bot_edge)
 
     shell = join(name, parts)
@@ -1055,8 +1075,8 @@ def build_mesh_parts(is_it, mats):
     for side, sx in (("L", 1), ("R", -1)):
         seam = bead_lip(
             f"ShoulderSeam_{side}",
-            (sx * 0.245, SHOULDER_Y, SHOULDER_Z - 0.040),
-            radius=0.052, thick=0.010, axis="X", flare=1.10)
+            (sx * SHOULDER_X, SHOULDER_Y, SHOULDER_Z - 0.040),
+            radius=0.046, thick=0.010, axis="X", flare=1.10)
         add("Chest", seam, joint)
 
     # LARGE chest cal
@@ -1072,7 +1092,7 @@ def build_mesh_parts(is_it, mats):
         add("Chest", tick, accent)
 
     # Soft DARK bead lips at shell termini (Hybrid III seam — not tan faux-ribs)
-    chest_lip = bead_lip("ChestBotLip", (0, 0.01, 1.118), radius=0.132, axis="Z",
+    chest_lip = bead_lip("ChestBotLip", (0, 0.01, 1.118), radius=0.110, axis="Z",
                          thick=0.012, flare=1.08)
     add("Chest", chest_lip, joint)
 
@@ -1723,18 +1743,18 @@ def build_variant(is_it, export_path, guid, do_stills=False):
     tag = "it_" if is_it else ""
     if do_stills:
         pose_idle(arm_ob)
-        render_shot(f"{PREV}/hipoly_v77_{tag}idle_front.png",
+        render_shot(f"{PREV}/hipoly_v78_{tag}idle_front.png",
                     (0.10, -3.4, 1.28), (0, 0, 0.98))
-        render_shot(f"{PREV}/hipoly_v77_{tag}idle_34.png",
+        render_shot(f"{PREV}/hipoly_v78_{tag}idle_34.png",
                     (2.2, -2.6, 1.32), (0, 0, 1.00))
         hl = hand_world(arm_ob, "L")
         render_shot(
-            f"{PREV}/hipoly_v77_{tag}hand_close.png",
+            f"{PREV}/hipoly_v78_{tag}hand_close.png",
             (hl.x + 0.32, hl.y - 0.38, hl.z + 0.14),
             (hl.x - 0.02, hl.y + 0.02, hl.z - 0.01),
         )
         render_shot(
-            f"{PREV}/hipoly_v77_{tag}face_close.png",
+            f"{PREV}/hipoly_v78_{tag}face_close.png",
             (0.06, -0.46, 1.665),
             (0.0, -0.04, 1.650),
         )
@@ -1743,7 +1763,7 @@ def build_variant(is_it, export_path, guid, do_stills=False):
         if sh is not None:
             sw = arm_ob.matrix_world @ sh.head
             render_shot(
-                f"{PREV}/hipoly_v77_{tag}joint_close.png",
+                f"{PREV}/hipoly_v78_{tag}joint_close.png",
                 (sw.x + 0.42, sw.y - 0.55, sw.z + 0.08),
                 (sw.x, sw.y, sw.z),
             )
@@ -1761,8 +1781,8 @@ def write_readme():
     path = os.path.join(OUT_DIR, "README.md")
     text = """# HiPoly Hierarchical Mannequins
 
-DummyLocomotor-bindable **Hybrid III hard-shell** crash-test dummies (v0.7.7).
-Hybrid III body volumes; tiny Bionicle joints under SOLID vinyl capsule cover; knuckles + mid-finger mesh joints; shoulders down/back.
+DummyLocomotor-bindable **Hybrid III hard-shell** crash-test dummies (v0.7.8).
+Narrower shoulders; soft resting-fist finger curl; tiny Bionicle joints under SOLID vinyl capsule; knuckles + mid-finger mesh; shoulders down/back.
 
 ## Assets
 | File | Paint |
@@ -1774,7 +1794,7 @@ Hybrid III body volumes; tiny Bionicle joints under SOLID vinyl capsule cover; k
 - Mild A-pose ~20–35°; hands clear pelvis.
 - Human head scale + molded face; flat dark eye insets — zero orbs / tip stacks.
 - Flat chest plate (narrower); dense accordion bellows; hard pelvis w/ mild hip curve.
-- Hybrid III limb shell mass; tiny dark Bionicle joints under SOLID vinyl capsule; hard-shell hands w/ knuckles + mid joints (no Finger_ bones).
+- Hybrid III limb shell mass; tiny dark Bionicle joints under SOLID vinyl capsule; hard-shell hands w/ soft resting-fist curl + knuckles/mid joints (no Finger_ bones).
 - Materials: satin vinyl Base / Accent / ItOverride + Joint metal + Rubber + Bellows.
 
 ## Bone hierarchy (DummyLocomotor — names unchanged)
@@ -1791,14 +1811,14 @@ Hybrid III body volumes; tiny Bionicle joints under SOLID vinyl capsule cover; k
 
 
 def main():
-    log("=== hipoly hier v8.7 / Hybrid III body + finger joints v0.7.7 ===")
+    log("=== hipoly hier v8.8 / Hier v0.7.8 resting-fist + shoulders in ===")
     tan = os.path.join(OUT_DIR, "Dummy_Mannequin_Tan_Hier_Hi.fbx")
     orn = os.path.join(OUT_DIR, "Dummy_Mannequin_Orange_Hier_Hi.fbx")
 
-    log("Building Tan/Runner Hier HiPoly v0.7.7 Hybrid III body + knuckles…")
+    log("Building Tan/Runner Hier HiPoly v0.7.8 resting-fist + shoulders in…")
     ok_t, ang_t, cx_t, cy_t = build_variant(False, tan, GUID_TAN, do_stills=True)
 
-    log("Building It/Orange Hier HiPoly v0.7.7 Hybrid III body + knuckles…")
+    log("Building It/Orange Hier HiPoly v0.7.8 resting-fist + shoulders in…")
     ok_o, ang_o, cx_o, cy_o = build_variant(True, orn, GUID_ORANGE, do_stills=True)
 
     write_readme()
@@ -1806,7 +1826,7 @@ def main():
     log(f"It  OK={ok_o} A-pose={ang_o:.1f}deg clear_x={cx_o:.3f} clear_y={cy_o:.3f}")
     log(f"Tan FBX {os.path.getsize(tan)} bytes guid={GUID_TAN}")
     log(f"Orange FBX {os.path.getsize(orn)} bytes guid={GUID_ORANGE}")
-    log("DONE v0.7.7 Hybrid III body + knuckles — no git push (await Art / Ororo; Eng HOLD)")
+    log("DONE v0.7.8 resting-fist + shoulders in — no git push (await Art / Ororo; Eng HOLD)")
 
 
 if __name__ == "__main__":
