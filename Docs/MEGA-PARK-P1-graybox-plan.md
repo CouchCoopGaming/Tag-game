@@ -6,7 +6,7 @@
 **Date:** 2026-09-30 · P1 only · No playtest · No Amaterasu · No HeroCity
 **Supersedes:** `PARK-densify-brief-v0.md` as the long-term place fantasy (36×28). Do not revive it. Do not densify the campus.
 
-**Scene:** Not in this branch. A `.unity` scene would need the editor. Eng wires an empty host (see below). Do not add `MegaParkP1Bootstrap` to the campus scene.
+**Scene:** `Assets/Scenes/MegaParkP1.unity` is only the host. It is not in Editor Build Settings. Boot still loads Play. Do not add `MegaParkP1Bootstrap` to the campus scene. Do not make this the default play scene.
 
 Blueprint meters below are locks. Anything marked **graybox** is a stand-in so P1 can be built, not a new lock.
 
@@ -214,9 +214,9 @@ The blueprint’s ~380 m is an **estimate, not this centerline**. At 12 m/s, 380
 - Four spawn transforms with facing. Eight loop empties.
 - No `ParkPropDresser`, no `PgkLandmarkPlacer`, no `ExperimentalFanPlacer`, no Flow stones, no campus edit.
 
-**Eng wires (not done here):**
+**Eng wires (host scene is in; the rest is still open):**
 
-- A **new** scene or a disabled host. Empty GameObject at world origin, identity, scale 1, component `Tag.Level.MegaParkP1Bootstrap`. Context menu “Rebuild Mega Park P1”, or Play. **Do not add it to the campus scene.**
+- Host scene `Assets/Scenes/MegaParkP1.unity`. One GameObject, `MegaParkP1Host`, at world origin, rotation identity, scale 1, component `Tag.Level.MegaParkP1Bootstrap`. The script builds the graybox on Awake or the context menu “Rebuild Mega Park P1”. Not in Boot, Play, or the build list. **Do not add it to the campus scene.**
 - Spawn system reads `Spawn_SW/SE/NE/NW` world position and `transform.rotation` (forward = trail at t=0).
 - Trail Tag follows `LoopCcw` / `WP_00`–`WP_07`, length 472 m. Crossings A and B are not that polyline.
 - OOB on the collar is Eng’s (kill / respawn). The fence collider is only a boundary.
