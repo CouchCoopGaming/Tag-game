@@ -57,8 +57,12 @@ namespace TagArena.Movement
         public float landStunSpeed = 28f;
         public float landStunDuration = 0.20f;
 
-        [Header("Air control — Quake/Apex lurch + tap-strafe analog")]
+        [Header("Air control — steer carried speed, do not add it")]
         public float airAccel = 30f;
+        /// <summary>
+        /// Legacy Quake wish-speed. Not an air target. Steering cannot accelerate toward this
+        /// or a walk jump catches sprint before it lands.
+        /// </summary>
         public float airSpeedCap = 12.0f;
         public float airStrafeBonus = 1.35f;
         public float tapStrafeImpulse = 9.5f;
