@@ -97,9 +97,8 @@ namespace Tag.Modes
             if (_selfMotor != null && _selfMotor.IsMotorLocked)
                 _selfMotor.SetMotorLocked(false);
 
-            // Never enable legacy CharacterController - TagArena is RB-only.
             var cc = GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
+            if (cc != null) cc.enabled = true;
 
             _it = GetComponent<ItController>();
             if (_it == null) _it = gameObject.AddComponent<ItController>();

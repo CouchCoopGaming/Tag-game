@@ -79,21 +79,29 @@ namespace Tag.Local
             go.transform.position = Spawns[Mathf.Clamp(index, 0, Spawns.Length - 1)];
             go.transform.rotation = Quaternion.Euler(0f, Yaws[Mathf.Clamp(index, 0, Yaws.Length - 1)], 0f);
 
-            // Strip legacy CharacterController motor path
+            // CharacterController is the motor. The rigidbody wakes only for the ragdoll window.
             var legacyCc = go.GetComponent<CharacterController>();
-            if (legacyCc != null) legacyCc.enabled = false;
+            if (legacyCc == null) legacyCc = go.AddComponent<CharacterController>();
+            legacyCc.enabled = true;
+            legacyCc.height = 1.8f;
+            legacyCc.radius = 0.35f;
+            legacyCc.center = new Vector3(0f, 0.9f, 0f);
+            legacyCc.slopeLimit = 90f;
 
             var cap = go.GetComponent<CapsuleCollider>();
             if (cap == null) cap = go.AddComponent<CapsuleCollider>();
             cap.height = 1.8f;
             cap.radius = 0.35f;
             cap.center = new Vector3(0f, 0.9f, 0f);
+            cap.enabled = false;
 
             var rb = go.GetComponent<Rigidbody>();
             if (rb == null) rb = go.AddComponent<Rigidbody>();
             rb.useGravity = false;
+            rb.isKinematic = true;
+            rb.detectCollisions = false;
             rb.constraints = RigidbodyConstraints.FreezeRotation;
-            rb.interpolation = RigidbodyInterpolation.Interpolate;
+            rb.interpolation = RigidbodyInterpolation.None;
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             rb.mass = 80f;
 

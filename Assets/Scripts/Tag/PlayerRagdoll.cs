@@ -75,14 +75,13 @@ namespace Tag.Gameplay
         {
             _ragdolling = true;
             AudioCuePlayer.Ensure()?.Ragdoll(transform.position);
-            if (_motor != null) _motor.SetMotorLocked(true);
+            if (_motor != null)
+            {
+                _motor.SetMotorLocked(true);
+                _motor.OpenRagdollBody();
+            }
 
             EnsureBodyRb();
-            // Motor already owns non-kinematic RB; keep gravity on during stun.
-            bodyRb.isKinematic = false;
-            bodyRb.useGravity = true;
-            bodyRb.linearVelocity = Vector3.zero;
-            bodyRb.angularVelocity = Vector3.zero;
             bodyRb.AddForce(knockVelocity, ForceMode.VelocityChange);
 
             yield return new WaitForSeconds(duration);
@@ -91,7 +90,6 @@ namespace Tag.Gameplay
             Quaternion rot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
             bodyRb.linearVelocity = Vector3.zero;
             bodyRb.angularVelocity = Vector3.zero;
-            // Keep non-kinematic for TagArena motor; just settle yaw.
             transform.SetPositionAndRotation(pos, rot);
             Physics.SyncTransforms();
 
