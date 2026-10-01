@@ -57,11 +57,12 @@ namespace TagArena.Movement
         public float landStunSpeed = 28f;
         public float landStunDuration = 0.20f;
 
-        [Header("Air control — steer carried speed, do not add it")]
+        [Header("Air control — wish-aligned cap (strafe can add speed)")]
         public float airAccel = 30f;
         /// <summary>
-        /// Legacy Quake wish-speed. Not an air target. Steering cannot accelerate toward this
-        /// or a walk jump catches sprint before it lands.
+        /// Legacy field. Not a total air-speed clamp and not an air target.
+        /// Wish speed is the ground gait. Only the component along the held keys is capped,
+        /// so a turned strafe can exceed sprint. A straight wish does not pull a walk up to sprint.
         /// </summary>
         public float airSpeedCap = 12.0f;
         public float airStrafeBonus = 1.35f;

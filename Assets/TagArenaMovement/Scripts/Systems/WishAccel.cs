@@ -4,8 +4,9 @@ namespace TagArena.Movement
 {
     /// <summary>
     /// Quake-style acceleration along wishdir, up to a wish speed chosen by the caller.
-    /// Ground and ski pass a gait cap. Air must not: an off-axis wish lengthens the
-    /// vector past the speed you already have (Source air-strafe). Use <see cref="SteerNoGain"/> there.
+    /// The cap is the component along the wish, not the length of the velocity.
+    /// An off-axis wish can therefore lengthen the vector. That is the strafe-jump.
+    /// <see cref="SteerNoGain"/> strips that extra. Air steer must not call it.
     /// </summary>
     public static class WishAccel
     {
@@ -67,9 +68,19 @@ namespace TagArena.Movement
         {
             Vector3 f = Vector3.ProjectOnPlane(cam.forward, Vector3.up);
             Vector3 r = Vector3.ProjectOnPlane(cam.right, Vector3.up);
-            if (f.sqrMagnitude < 0.001f) f = Vector3.forward;
-            f.Normalize(); r.Normalize();
-            Vector3 w = f * move.y + r * move.x;
+            return PlanarWish(f, r, move);
+        }
+
+        /// <summary>
+        /// Camera-space stick on the ground plane. A diagonal longer than 1 is normalized.
+        /// Shorter input keeps its direction. Air speed is capped on that direction, not by this length.
+        /// </summary>
+        public static Vector3 PlanarWish(Vector3 forward, Vector3 right, Vector2 move)
+        {
+            if (forward.sqrMagnitude < 0.001f) forward = Vector3.forward;
+            forward.Normalize();
+            right.Normalize();
+            Vector3 w = forward * move.y + right * move.x;
             if (w.sqrMagnitude > 1f) w.Normalize();
             return w;
         }
