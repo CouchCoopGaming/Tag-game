@@ -69,6 +69,10 @@ namespace TagArena.Movement
         SurfaceProbe _probe;
         Locomotion _mode = Locomotion.Ground;
         Vector3 _velocity;
+        /// <summary>Horizontal speed latched the last time air steering did not run. Air cannot exceed it.</summary>
+        float _airCarrySpeed;
+        bool _airCarryLatched;
+        bool _steeredAir;
 
         float _height;
         float _coyote;
@@ -164,6 +168,7 @@ namespace TagArena.Movement
 
         void Update()
         {
+            _steeredAir = false;
             if (_in == null || cfg == null) return;
             _in.Read();
             // Edges are latched in this same Update, then the move consumes them.
@@ -254,6 +259,14 @@ namespace TagArena.Movement
             _velocity = v;
             if (_cc != null && _cc.enabled)
                 _cc.Move(_velocity * dt);
+
+            // Frames that did not steer record the horizontal speed this step moved.
+            // Air frames keep that record, so steering cannot raise it.
+            if (!_steeredAir)
+            {
+                _airCarrySpeed = WishAccel.HorizSpeed(_velocity);
+                _airCarryLatched = true;
+            }
 
             if (tagRole != null && tagRole.IsIt)
                 TryTag();
@@ -496,6 +509,10 @@ namespace TagArena.Movement
 
         Vector3 AirMove(float dt, Vector3 v, Vector3 wish)
         {
+            // Carry was latched on the ground (or by a verb that writes speed, such as air dash).
+            // This frame may steer that speed. It must not raise the latch.
+            _steeredAir = true;
+
             float g = cfg.gravity * (v.y < 0f ? cfg.fallGravityMult : 1f);
             if (Jetting) g *= cfg.gravityWhileJetting;
             // Air crouch = dive: ~2x fall rate while crouch held and falling/rising into dive.
@@ -506,25 +523,34 @@ namespace TagArena.Movement
             if (v.y < -fallCap) v.y = -fallCap;
 
             Vector3 hv = WishAccel.Horizontal(v);
+            float entered = hv.magnitude;
+            // airSpeedCap is not a target. max(airSpeedCap, speed) used to pull a walk up to sprint
+            // for most of the arc, so a faster run did not jump farther.
+            float ceiling = _airCarryLatched ? Mathf.Min(entered, _airCarrySpeed) : entered;
+            hv = WishAccel.ClampPlanarSpeed(hv, ceiling);
+
             if (wish.sqrMagnitude > 0.01f)
             {
-                float cap = Mathf.Max(cfg.airSpeedCap, hv.magnitude);
                 float accel = cfg.airAccel * (_in.Move.x != 0f && Mathf.Abs(_in.Move.y) < 0.2f ? cfg.airStrafeBonus : 1f);
-                hv = WishAccel.Accelerate(hv, wish, cap, accel / Mathf.Max(cap, 1f), dt);
+                hv = WishAccel.SteerNoGain(hv, wish, accel, dt);
             }
 
             // Tap-strafe: a forward pulse (W or a stick flick) while holding a side key
             // redirects a slice of speed into the current wish. Impulse and cooldown are unchanged.
+            // The redirect keeps the speed you already have. It does not add a side boost.
             if (cfg.enableTapStrafe && _in.TapForwardPulse && _tapCd <= 0f && Mathf.Abs(_in.Move.x) > 0.4f)
             {
+                float kept = hv.magnitude;
                 Vector3 side = wish.sqrMagnitude > 0.01f ? wish.normalized : transform.right * Mathf.Sign(_in.Move.x);
                 float donate = Mathf.Min(cfg.tapStrafeImpulse, hv.magnitude);
                 hv += side * donate * 0.65f;
                 hv -= Vector3.Project(hv, transform.forward) * 0.25f;
+                hv = WishAccel.ClampPlanarSpeed(hv, kept);
                 _tapCd = cfg.tapStrafeCooldown;
                 _in.ConsumeTapPulse();
             }
 
+            hv = WishAccel.ClampPlanarSpeed(hv, ceiling);
             v = WishAccel.SetHoriz(v, hv);
             return v;
         }
@@ -596,7 +622,9 @@ namespace TagArena.Movement
             float h = JumpHeightNow();
             bool fromSlide = State == MoveState.Slide && _slideT <= cfg.slideJumpWindow && HorizSpeed <= cfg.slideJumpSpeedCap;
 
-            // Fixed launch: not additive with residual up from run/sprint/ski slopes.
+            // Vertical impulse only. Walk and sprint keep the horizontal speed they already
+            // have, so a faster run jumps farther. Height is not a speed bonus.
+            // A slide hop still multiplies by slideHopRetain. That spends slide speed. It is not a boost.
             v.y = h;
             if (fromSlide)
             {
