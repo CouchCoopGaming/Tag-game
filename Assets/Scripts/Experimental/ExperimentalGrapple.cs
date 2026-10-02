@@ -32,6 +32,9 @@ namespace Tag.Experimental
         Material _mat;
         bool _attached;
         Vector3 _anchor;
+
+        /// <summary>True only while the gate is on and a rope is attached. The default gate stays off.</summary>
+        public bool IsPulling => enableGrapple && _attached;
         bool _built;
 
         void Awake()

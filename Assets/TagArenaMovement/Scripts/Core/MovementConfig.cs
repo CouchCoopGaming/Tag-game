@@ -114,7 +114,13 @@ namespace TagArena.Movement
         public float superGlideSpeed = 10.3f;
 
         [Header("Wall run — short arena parkour, not Titanfall infinite")]
+        /// <summary>Wall-run still needs ClingHeld (stick into the wall). Glance and speed alone do not attach.</summary>
         public bool enableWallRun = true;
+        /// <summary>
+        /// Feel lock. After the into-wall wish drops, a wall jump stays legal this long
+        /// while the wall probe is still true. Does not keep climb or wall-run alive.
+        /// </summary>
+        public float clingReleaseGrace = 0.08f;
         public float wallRunMaxTime = 0.62f;
         public float wallRunMinSpeed = 6.0f;
         public float wallRunSpeed = 9.5f;

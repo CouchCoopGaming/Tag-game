@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4a1e8b27f0d4e6a9b3c5d7e1f2a4b60, type: 3}
+  m_Name: HierMannequinCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.HierMannequinCatalog
+  blue: {fileID: 0}
+  mint: {fileID: 0}
+  orange: {fileID: 0}
+  lavender: {fileID: 0}
+  tan: {fileID: 0}
+  red: {fileID: 0}

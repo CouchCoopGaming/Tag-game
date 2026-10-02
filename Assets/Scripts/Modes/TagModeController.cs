@@ -476,6 +476,12 @@ namespace Tag.Modes
                 used[idx] = true;
 
                 Vector3 pad = pads[idx];
+                var motor = p.GetComponent<PlayerMotor>();
+                if (motor != null)
+                {
+                    motor.Place(pad);
+                    continue;
+                }
                 var rb = p.GetComponent<Rigidbody>();
                 if (rb != null)
                 {

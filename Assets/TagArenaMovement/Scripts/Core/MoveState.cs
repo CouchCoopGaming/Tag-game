@@ -20,4 +20,22 @@ namespace TagArena.Movement
         WallRun,
         LandStun
     }
+
+    /// <summary>
+    /// Sole owner of player velocity. Presentation <see cref="MoveState"/> is derived from this.
+    /// Illegal pairs cannot both be true.
+    /// </summary>
+    public enum Locomotion
+    {
+        Ground,
+        Slide,
+        Air,
+        AirDash,
+        Climb,
+        WallRun,
+        Ski,
+        Vault,
+        LandStun,
+        Ragdoll
+    }
 }

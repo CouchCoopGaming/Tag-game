@@ -6,11 +6,667 @@
 2. Open scene **Play** (`Assets/Scenes/Play.unity`) -> **Play**.
 3. Optional first-time art: **Tag -> Ensure URP Pipeline**, then **Tag -> Setup Hub Visuals**.
 
-Branch: cursor/playground-campus-zones-afc4 (integration tip). PR #20 Boot tip survives Couch/Mode; digits highlight-only; Boot pause H Controls; results 1-2 highlight like Boot. Mute-from-play, readable dash bar, CloseMenuPanels, TubeDeck on soft-play, astro, and army. Deeper notes: Docs/MOVEMENT.md / Docs/PLAY-SLICE.md.
+Branch: `cursor/character-anim-hier-spawn-238c` on campus tip `adf2c85`. Results focus, Boot/pause keys, mute-from-play, the readable dash bar, CloseMenuPanels, and TubeDeck on soft-play, astro, and army are already on that tip. Footing colors are on that tip too: grass, cedar, bark, field green, and sidewalk tan. No new props. This branch does not edit the placer. Deeper notes: `Docs/MOVEMENT.md` / `Docs/PLAY-SLICE.md`.
 
-Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
+Already on that tip (do not re-test as new): 2-frame look/punch resume gate (ResumeInputGate + ArmLookPunchGate), bots hold on countdown/results/idle, punch DropSwing, HUD mute chip, M/N during play, dash bar dark track / cyan fill, pause keys 1-5, AudioMaster, Controls/Look/Audio row highlight, panels close when play/results/Boot starts, first-run line survives Couch/Mode and clears after a round, who-plays Esc returns to Boot on Couch, mode select Esc steps back and keeps the player count, Boot pause H opens Controls only, first countdown says WASD move and Shift sprint, results keys 1-2 highlight only and Enter or Space confirms after the arm, punch-tell floor 0.22s with strafe cancel, TRAIL soft warn ~6.6 m (avoid ~9.4 m), It hat beacon, TubeDeck on soft-play, astro, and army (yaw 90, stem 0, z+5.90, mesh pitched -90 X). Mouth center 1.91 m. Knight keeps the straight chute. Mega/Tube90 still out. No MasterVolume type.
 
-This delta: The results card and the loose round-end card match Boot. Keys 1 and 2 only move Rematch / Menu. Enter, keypad Enter, and Space use that highlight after the ~0.25s arm and do nothing during it. R still rematches. Q and Esc still return to the menu. A click during the arm only moves the highlight. TubeDeck mesh is pitched -90 X so the crown is on Y (mouth center 1.91 m, shell top 2.48 m).
+Already on this branch: Player and the bot prefer the curved Hier HiPoly mannequin over the flat Dummy_Runner / Dummy_It prefab. Run bends only the recovery knee. Dash whip is arm pitch. Slide is a low crouch. Land buckles. Punch connect stays in front of the chest.
+
+Already on this branch: Run arms oppose the legs. The forward arm is the opposite thigh. Rearward swing stays short.
+
+Already on this branch: A slide is a flat wedge. Punch connect is a long straight arm in front of the chest.
+
+Already on this branch: A landing holds a short knee buckle, then eases into the run.
+
+Already on this branch: An air dash holds the arm whip at the start, then the arms and legs ease toward a hang.
+
+Already on this branch: Player and bot spawn the approved Tan Hier runner. It swaps to the Orange Hier mesh.
+
+Already on this branch: A jump reaches both arms up and tucks the knees. A fall trails the arms back and lengthens the legs.
+
+Already on this branch: A tag splits into two poses. The tagged runner guards. The new It lifts one knee.
+
+Already on this branch: A climb is hand-over-hand. A wall run plants the wall hand and steps with the outer leg.
+
+Already on this branch: At a standstill the arms hang slightly forward and out. That offset fades as the walk starts.
+
+Already on this branch: A jump shows a long arm line and a knee tuck before the apex. A fall trails the arms before the landing.
+
+Already on this branch: The run plant holds. The front thigh reaches farther than the back thigh, and only that knee bends.
+
+Already on this branch: A slide's arms are a long low line. Elbows stay nearly straight.
+
+Already on this branch: On a landing the arms come out to the sides for balance while the knees stay buckled, then ease back into the stride.
+
+Already on this branch: A climb keeps both hands on a long line while they swap reach and pull. A wall run presses the wall hand with the stride, and the outer hand stays straight.
+
+Already on this branch: The punch windup cocks the fist beside the head, clear of the chest. Windup time is still 0.12s.
+
+Already on this branch: After an air dash the arms stay in the hang and ease into the fall or the run. They do not throw back a second time.
+
+Already on this branch: A tag catch is a long V of arms in front of the chest, with both knees bent. It stays distinct from the new It's claim.
+
+Already on this branch: Starting a run keeps the hands out of the hips. Resting arms do not pick up extra roll.
+
+Already on this branch: Skiing eases into a lower glide with the arms out, then eases back into the run. Jet stays off.
+
+Already on this branch: Leaving a wall run eases into the fall or the run. The wall hand does not snap off the wall.
+
+Already on this branch: Leaving a climb eases into the fall or the run. The reaching hand does not snap off the wall.
+
+Already on this branch: A grapple pull, only while the gate is on, reaches both arms in a long line with the legs long. The default gate stays off.
+
+Already on this branch: The new It raises one arm and holds the other out, with the chest open and one knee up. It does not match the tagged runner's two-arm V.
+
+Already on this branch: After a punch connects, the fist eases back into the run during the recover. Windup time is still 0.12s.
+
+Already on this branch: At the top of a jump the arms hang out to the sides before the fall trail. Jump height is unchanged.
+
+Already on this branch: Skiing stays a longer stride than the run, but the knee still bends and the arms keep a short swing. Letting go eases back into the sprint instead of popping. Ski speed is unchanged. Jet stays off.
+
+Already on this branch: A slide stays a flat wedge with the trail leg straight. The arms sit out from the chest instead of stacking on it, and the head stays up off the knees. Slide speed is unchanged.
+
+Already on this branch: A held crouch is a low guard: chest up, both knees bent, elbows folded in front. A slide stays the flat wedge with straight arms and one trail leg. Holding crouch still slides only when you already have speed. Slide speed is unchanged.
+
+Already on this branch: Holding crouch on the way down pitches the chest down and folds the arms in. A normal fall still trails the arms back. The fast-fall speed is unchanged.
+
+Already on this branch: Landing into a run still buckles both knees, then the trail leg and the arms enter the stride while the front knee is still up. A standstill land still opens both legs together. Land time is unchanged.
+
+Already on this branch: On a run plant the arm opposite the front knee stays a long reach, a little wider than the back arm. The elbow fold sits on the back arm. Only the front knee bends. The back swing still stays short of the hip.
+
+Already on this branch: A punch that tags holds the fist, then eases it into the new It's claim: one arm up, the other out, one knee up. A hit that does not tag still eases into the run. The tagged runner still uses the two-arm V. Windup time is unchanged.
+
+Already on this branch: After a tag, the runner's V holds with both knees bent, then the arms and the trail leg enter the stride while one knee is still up. Standing still, both legs open together. The new It claim is unchanged. Flinch time is unchanged.
+
+Already on this branch: At a standstill the chest breathes and sways slightly side to side. The hands stay forward and out of the hips, with no extra twist. The sway fades as the stride starts.
+
+Already on this branch: Letting go of a sprint or a walk closes the stride under the hips instead of freezing a leg out. The last step eases into the idle sway, or into the shorter walk if you are still moving. Speed is unchanged.
+
+Already on this branch: Walk into a sprint, and sprint back into a walk, eases the stride length and the step rate. The feet keep moving, and the hips stay level. Speed is unchanged.
+
+Already on this branch: A sharp turn while walking or standing plants the outside foot. The chest and the hips lean together, so the waist does not twist. The hands stay out from the hips. Look speed is unchanged.
+
+Already on this branch: A short hop into a walk bends the knees, then the stride comes back under the hips. The arms stay in the walk. A hard landing still brings the arms out. Land time is unchanged.
+
+Already on this branch: Letting go of a sprint settles the last hip sway into the idle breath. The hips do not freeze flat, and they do not pop sideways when the sway starts. Speed is unchanged.
+
+Already on this branch: From a stand, the first step pushes off the planted foot into the stride. The idle sway fades as the walk starts. The feet do not skate. Speed is unchanged.
+
+Already on this branch: From a run, a crouch or a slide drops into the pose. The speed you already have carries. Letting go returns to the stride under the hips. The slide does not speed up.
+
+Already on this branch: After an air dash, the feet come back into the stride under the hips. They do not skate. The dash is still a short burst, and the cooldown is unchanged.
+
+Already on this branch: On a wall run or a climb, the hand meets the surface, then the swing starts. The arm does not pop. Letting go still returns under the hips. The exit time is unchanged.
+
+Already on this branch: After a punch, the arm opposite the front knee gets back into the stride. The hips do not stay twisted. The fist still eases out. Windup time is unchanged.
+
+Already on this branch: If a grapple is on, the hands and the chest settle into the long line. They do not twist. The grapple stays off unless you turn it on. Range and speed are unchanged.
+
+Already on this branch: After a tag, the hands and the chest ease into the stride together, under the hips. They do not stay folded and then pop. One knee can still be up. Flinch time is unchanged.
+
+Already on this branch: After you become It, the hands and the chest ease into the stride. They do not stay in the claim and then pop. One knee can still be up. The claim time is unchanged.
+
+Already on this branch: Going between a ski and a run eases the feet under the hips. They do not skate, and the hips do not pop. Speed is unchanged.
+
+Already on this branch: A hard landing from a stand eases the knees into the idle breath and sway. The arms do not lock in the flare. A short hop still does not flare the arms. The landing does not feel longer.
+
+Already on this branch: An air crouch reads as a crouch in the air. The arms ease into the landing. They do not pop. The fast fall is unchanged.
+
+Already on this branch: An air dash pitches the chest and throws the arms wide for the short burst. They read, then ease back. The burst and the cooldown are unchanged.
+
+Already on this branch: Leaving a wall eases the hips and the feet into the stride. They do not pop. The hands still take the same time to leave. A climb leaves the same way.
+
+Already on this branch: While you run, the reaching arm follows the look and stays clear of the hip. It does not fight the stride. Look speed is unchanged.
+
+Already on this branch: Letting go of a slide stands up into the run under the hips. The feet do not pop. The slide does not speed up.
+
+Already on this branch: A jump pushes off the planted foot. The other knee comes up, then the tuck. The jump does not go higher.
+
+Already on this branch: A punch cocks beside the head and holds that beat, then strikes. The cock does not feel longer.
+
+Already on this branch: Stopping from a sprint plants the last foot under the hip, then the idle sway. The foot does not skate. Speed is unchanged.
+
+Already on this branch: In the air, the arms stay clear of the torso. The jump tuck is unchanged. Look speed is unchanged.
+
+Already on this branch: Starting or stopping a walk keeps the hands forward and out. They do not drift into the hips. Speed is unchanged.
+
+Already on this branch: A crouch walk is a short shuffle under the hips. The feet do not skate. The crouch does not speed up.
+
+Already on this branch: Tagged while standing, the hands and the chest ease into the idle breath. They do not freeze and then pop. Flinch time is unchanged.
+
+Already on this branch: A hard landing into a sprint brings the arms into the stride under the hips. They flare, then ease, and do not lock. A short hop still does not flare. The landing does not feel longer.
+
+Already on this branch: A turn while sprinting plants the outside foot. The chest and the hips lean together. The waist does not twist. Speed is unchanged.
+
+Already on this branch: Becoming It while standing eases the hands and the chest into the idle breath. They do not freeze and then pop. One knee can still be up. The claim does not feel longer.
+
+Already on this branch: Letting go of a grapple eases the hands and the chest out of the long line. They do not twist. The grapple stays off unless you turn it on.
+
+Already on this branch: A punch that misses while standing eases the fists into the idle hands. They do not freeze. The cock does not feel longer.
+
+Already on this branch: When the dash is ready again, the chest and the arms settle. The dash does not last longer, and it still has to recharge.
+
+Already on this branch: A walk turn plants the outside foot at a medium turn. It does not wait for a sharp yaw. Look speed is unchanged.
+
+Already on this branch: After an air dash, a soft landing bends the knees and keeps the arms in the stride. They do not flare. The burst and the cooldown are unchanged.
+
+Already on this branch: Letting go of a crouch into a stand eases the hips into the idle breath. They do not pop. Speed is unchanged.
+
+Already on this branch: A walk into a sprint pushes off the back foot, then the stride opens. The feet do not skate. Speed is unchanged.
+
+Already on this branch: A soft landing into a walk settles the knees into the stride. It does not come to a stop. A hard landing still absorbs.
+
+Already on this branch: Letting a slide die into a stand brings the body up into the idle breath. The hips do not pop. Speed is unchanged.
+
+Already on this branch: Letting go of a crouch walk raises the hips into the stride. They do not hitch. Speed is unchanged.
+
+Already on this branch: A sprint into a walk closes the stride with the step. The feet do not skate to a stop. Speed is unchanged.
+
+Already on this branch: A walk turn into a sprint plants the outside foot, then the stride opens. The feet do not skate. Speed is unchanged.
+
+Already on this branch: A hard landing into a walk absorbs, then takes a step. It does not sit in the idle. A stand still absorbs.
+
+Already on this branch: After a jump, the arms ease into the look pose in the air. They do not snap. Look speed is unchanged. Jump height is unchanged.
+
+Already on this branch: Leaving a wall into a walk eases the hands into the stride. They do not hitch. The leave time is unchanged.
+
+Already on this branch: Leaving a climb into a walk eases the hands into the stride. They do not hitch. The leave time is unchanged.
+
+Already on this branch: An air crouch into a soft landing opens into the absorb. It does not stay folded and then pop. The fast fall is unchanged.
+
+Already on this branch: A punch that misses while walking returns the hands to the stride. They do not drop into the idle. The cock does not feel longer.
+
+Already on this branch: After a tag while walking, the arms settle into the stride. They do not drop into the idle. Flinch time is unchanged.
+
+Already on this branch: After you become It while walking, the arms settle into the stride. They do not drop into the idle. The claim does not feel longer.
+
+Already on this branch: Letting go of a grapple while walking returns the hands to the stride. They do not hitch. The grapple stays off unless you turn it on.
+
+Already on this branch: When the dash is ready and you are standing, the chest and the arms give a small pulse, then the idle breath. The dash does not last longer, and it still has to recharge.
+
+Already on this branch: Letting go of a ski into a walk returns the stride. The feet do not skate. Speed is unchanged.
+
+Already on this branch: A walk into a ski eases the legs into the glide. They do not snap. Speed is unchanged.
+
+Already on this branch: A sprint into a ski closes the stride into the glide. It does not pop. Speed is unchanged.
+
+Already on this branch: Letting go of a ski into a sprint opens the glide into the stride. It does not pop. Speed is unchanged.
+
+Already on this branch: A crouch walk into a sprint raises the hips and opens the stride. It does not pop. Speed is unchanged.
+
+Already on this branch: A soft landing into a sprint absorbs, then opens into the stride. It does not stop. A hard landing still absorbs.
+
+Already on this branch: A hard landing into a sprint absorbs, then opens into the stride. It does not sit in the buckle. A hard landing into a walk still takes a step.
+
+Already on this branch: Leaving a wall into a sprint opens the hands into the stride. They do not hitch. The leave time is unchanged.
+
+Already on this branch: Leaving a climb into a sprint opens the hands into the stride. They do not hitch. The leave time is unchanged.
+
+Already on this branch: A punch that misses while sprinting returns the hands to the stride. They do not stay in the limp. The cock does not feel longer.
+
+Already on this branch: After a tag while sprinting, the arms settle into the stride. They do not stay folded. Flinch time is unchanged.
+
+Already on this branch: After you become It while sprinting, the arms settle into the stride. They do not stay folded. One knee can still be up. Claim time is unchanged.
+
+Already on this branch: Letting go of a grapple while sprinting returns the hands to the stride. They do not hitch. The gate stays off. Range and speed are unchanged.
+
+Already on this branch: Letting a slide die into a walk brings the body up into the stride. The hips do not pop. A slide into a stand still rises into the idle breath. A slide into a sprint is unchanged. Speed is unchanged.
+
+Already on this branch: Letting a slide die into a sprint brings the body up into the long stride. The hips do not pop. A slide into a walk still rises into the walk. A slide into a stand still rises into the idle breath. Speed is unchanged.
+
+Already on this branch: A still crouch into a sprint raises the hips into the long stride. They do not pop. A still crouch into a stand still rises into the idle breath. A crouch walk into a sprint is unchanged. Speed is unchanged.
+
+Already on this branch: An air dash into a walk ends in the stride. It does not come to a stop. An air dash into a sprint is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: An air dash into a sprint ends in the long stride. It does not come to a stop. An air dash into a walk still ends in the walk. Duration and cooldown are unchanged.
+
+Already on this branch: A jump into a crouch walk absorbs into the low stride. The hips stay down. A still crouch keeps the old absorb. Land time is unchanged.
+
+Already on this branch: A soft landing into a still crouch absorbs into the guard. The hips stay down. A hard landing keeps the old absorb. A crouch walk still absorbs into the low stride. Land time is unchanged.
+
+Already on this branch: A hard landing into a still crouch absorbs deeper into the guard. The hips stay down. A soft landing still uses the lighter guard. A crouch walk still absorbs into the low stride. Land time is unchanged.
+
+Already on this branch: A jump into a still crouch settles into the guard in the air. The push still reads. The fall dart is unchanged. An air dash is unchanged. Jump height is unchanged.
+
+Already on this branch: An air dash into a still crouch ends in the guard. A crouch walk keeps the stride leave. Duration and cooldown are unchanged.
+
+Already on this branch: An air dash into a crouch walk ends in the low stride. A still crouch still ends in the guard. An upright walk still ends in the stride. Duration and cooldown are unchanged.
+
+Already on this branch: A still crouch into a ski eases the guard into the glide. It does not pop. A walk into a ski is unchanged. A sprint into a ski is unchanged. Speed is unchanged. Jet stays off.
+
+Already on this branch: Letting go of a ski into a still crouch eases the glide into the guard. It does not pop. A still crouch into a ski is unchanged. A walk out of a ski is unchanged. Speed is unchanged. Jet stays off.
+
+Already on this branch: Letting go of a ski into a crouch walk eases the glide into the low stride. A still crouch still ends in the guard. A walk out of a ski is unchanged. Speed is unchanged. Jet stays off.
+
+Already on this branch: A crouch walk into a ski eases the low stride into the glide. It does not pop. A still crouch into a ski is unchanged. A walk into a ski is unchanged. Speed is unchanged. Jet stays off.
+
+Already on this branch: A slide into a still crouch eases the wedge into the guard. It does not snap. A slide into a stand still rises into the idle breath. A slide into a walk is unchanged. Speed is unchanged.
+
+Already on this branch: A still crouch into a slide eases the guard into the wedge. It does not snap. A slide into a still crouch still eases into the guard. A slide into a walk is unchanged. Speed is unchanged.
+
+Already on this branch: A slide into a crouch walk eases the wedge into the low stride. A still crouch still ends in the guard. A slide into a walk is unchanged. Speed is unchanged.
+
+Already on this branch: A crouch walk into a slide eases the low stride into the wedge. It does not snap. A still crouch into a slide is unchanged. A slide into a crouch walk is unchanged. Speed is unchanged.
+
+Already on this branch: A still crouch into a climb eases the guard onto the wall. A wall run from that crouch does the same. A normal climb is unchanged. The entry time is unchanged.
+
+Already on this branch: A climb into a still crouch eases into the guard. A wall leave is unchanged. A climb into a walk is unchanged. The leave time is unchanged.
+
+Already on this branch: A wall run into a still crouch eases into the guard. A climb into a still crouch is unchanged. A wall run into a walk is unchanged. The leave time is unchanged.
+
+Already on this branch: A climb into a crouch walk eases into the low stride. A still crouch still ends in the guard. A wall run into a crouch walk is unchanged. The leave time is unchanged.
+
+Already on this branch: A wall run into a crouch walk eases into the low stride. A climb into a crouch walk is unchanged. A still crouch still ends in the guard. The leave time is unchanged.
+
+Already on this branch: A punch that misses in a still crouch eases into the guard. A standing miss still eases into the idle hang. A walk miss and a sprint miss are unchanged. Windup time is unchanged.
+
+Already on this branch: A tag in a still crouch eases the V into the guard. A standing tag still eases into the idle breath. A walk tag and a sprint tag are unchanged. Flinch time is unchanged.
+
+Already on this branch: Becoming It in a still crouch eases the claim into the guard. A standing claim still eases into the idle breath. A walk claim and a sprint claim are unchanged. Claim time is unchanged.
+
+Already on this branch: Letting go of a grapple in a still crouch eases the line into the guard. A standing release is unchanged. A walk release and a sprint release are unchanged. The pull is unchanged. The gate stays off.
+
+Already on this branch: A dash coming off cooldown in a still crouch pulses inside the guard. A standing ready still pulses into the idle breath. A moving ready is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A punch that misses in a crouch walk eases into the guard and the low stride. A still crouch still ends in the guard. A walk miss and a sprint miss are unchanged. Windup time is unchanged.
+
+Already on this branch: A tag in a crouch walk eases the V into the guard and the low stride. A still crouch still ends in the guard. A walk tag and a sprint tag are unchanged. Flinch time is unchanged.
+
+Already on this branch: Becoming It in a crouch walk eases the claim into the guard and the low stride. A still crouch still ends in the guard. A walk claim and a sprint claim are unchanged. Claim time is unchanged.
+
+Already on this branch: Letting go of a grapple in a crouch walk eases the line into the guard and the low stride. A still crouch still ends in the guard. A walk release and a sprint release are unchanged. The pull is unchanged. The gate stays off.
+
+Already on this branch: A dash coming off cooldown in a crouch walk pulses inside the guard and the low stride. A still crouch still pulses inside the guard. A standing ready still pulses into the idle breath. A moving ready is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A soft landing into a crouch walk absorbs into the low stride. A hard landing into a crouch walk is unchanged. A soft landing into a still crouch is unchanged. Land time is unchanged.
+
+Already on this branch: A hard landing into a crouch walk absorbs deeper into the low stride. A soft landing into a crouch walk stays lighter. A hard landing into a still crouch is unchanged. Land time is unchanged.
+
+Already on this branch: A ski into a slide eases the glide into the wedge. A walk into a ski is unchanged. A slide into a stand is unchanged. Ski speed is unchanged. Jet stays off.
+
+Already on this branch: A slide into a ski eases the wedge into the glide. A ski into a slide is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
+
+Already on this branch: An air crouch into a crouch walk eases into the low stride. A still air crouch keeps the dart. An air dash into a crouch walk is unchanged. Fall speed is unchanged. Jump height is unchanged.
+
+Already on this branch: An air crouch into a still crouch lands the dart into the guard. A moving air crouch keeps the flare. A still crouch without the dart is unchanged. Fall speed is unchanged. Land time is unchanged.
+
+Already on this branch: An air crouch into a soft land opens the dart into the absorb. A hard landing keeps the flare. A still crouch keeps the guard. A moving air crouch keeps the flare. Land time is unchanged.
+
+Already on this branch: A still crouch into a jump eases the guard into the push. A standing jump is unchanged. A crouch walk into a jump is unchanged. Jump height is unchanged.
+
+Already on this branch: A crouch walk into a jump eases the low stride into the push. A still crouch into a jump is unchanged. A standing jump is unchanged. Jump height is unchanged.
+
+Already on this branch: A ski into a jump eases the glide into the push. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A standing jump is unchanged. Jump height is unchanged. Ski speed is unchanged.
+
+Already on this branch: A slide into a jump eases the wedge into the push. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A standing jump is unchanged. Jump height is unchanged. slideBoost stays 0.
+
+Already on this branch: A jump into a ski eases the glide or the landing into the stride. A walk into a ski is unchanged. A sprint into a ski is unchanged. A crouch into a ski is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Jump height is unchanged.
+
+Already on this branch: A jump into a slide eases the glide or the landing into the wedge. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a ski is unchanged. Jump height is unchanged. slideBoost stays 0.
+
+Already on this branch: An air dash into a jump eases the burst into the push. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A climb into a jump eases the climb into the push. An air dash into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Exit time is unchanged.
+
+Already on this branch: A wall run into a jump eases the wall exit into the push. A climb into a jump is unchanged. An air dash into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Exit time is unchanged.
+
+Already on this branch: A jump into a climb eases the contact into the grab. A crouch onto the wall is unchanged. A wall run is unchanged. A climb into a jump is unchanged. Jump height is unchanged. The meet time is unchanged.
+
+Already on this branch: A jump into a wall run eases the contact into the attach. A jump into a climb is unchanged. A crouch onto the wall is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. The meet time is unchanged.
+
+Already on this branch: An air crouch into a jump eases the dart into the push. A moving fall uses the low stride. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. Fall speed is unchanged.
+
+Already on this branch: A jump into an air crouch eases the apex and the descent into the dart. An air crouch into a jump is unchanged. A moving fall still ends in the low stride. A still crouch into a jump is unchanged. Jump height is unchanged. Fall speed is unchanged.
+
+Already on this branch: A jump into an air dash eases the apex into the burst. The burst still holds. An air dash into a jump is unchanged. A jump into an air crouch is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A soft landing into a jump eases the absorb into the push. A hard landing keeps its jump. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. The landing is unchanged when you stay down.
+
+Already on this branch: A hard landing into a jump eases the absorb into the push. A soft landing into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. The landing is unchanged when you stay down.
+
+Already on this branch: A punch miss into a jump eases the whiff into the push. A crouch miss is unchanged. A soft landing into a jump is unchanged. A hard landing into a jump is unchanged. Jump height is unchanged.
+
+Already on this branch: A tag into a jump eases the connect into the push. A crouch tag is unchanged. A punch miss into a jump is unchanged. Jump height is unchanged.
+
+Already on this branch: Becoming It into a jump eases the claim into the push. A crouch claim is unchanged. A tag into a jump is unchanged. Jump height is unchanged.
+
+Already on this branch: A grapple release into a jump eases the line into the push. A crouch release is unchanged. Becoming It into a jump is unchanged. Jump height is unchanged. The gate stays off.
+
+Already on this branch: A dash coming off cooldown into a jump eases the pulse into the push. A crouch ready is unchanged. A grapple release into a jump is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A jump into a punch eases the apex or the landing into the windup. A punch from the ground is unchanged. Jump height is unchanged. Windup time is unchanged.
+
+Already on this branch: A jump into a tag eases the apex or the landing into the connect. A crouch tag is unchanged. A jump into a punch is unchanged. A tag into a jump is unchanged. Jump height is unchanged.
+
+Already on this branch: An air crouch into an air dash eases the dart into the burst. A moving fall uses the low stride. The burst still holds. Fall speed is unchanged. Duration and cooldown are unchanged. A jump into a tag is unchanged.
+
+Already on this branch: An air dash into an air crouch eases the burst into the dart. An air crouch into an air dash is unchanged. The burst still holds. Fall speed is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A ski into an air dash eases the glide into the burst. The burst still holds. An air crouch into an air dash is unchanged. An air dash into an air crouch is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A slide into an air dash eases the wedge into the burst. The burst still holds. A ski into an air dash is unchanged. The slide does not speed up. Duration and cooldown are unchanged.
+
+Already on this branch: An air dash into a ski eases the burst into the glide. A slide into an air dash is unchanged. A ski into an air dash is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: An air dash into a slide eases the burst into the wedge. An air dash into a ski is unchanged. A ski into an air dash is unchanged. A slide into an air dash is unchanged. The slide does not speed up. Duration and cooldown are unchanged.
+
+Already on this branch: A climb into an air dash eases the climb into the burst. The burst still holds. An air dash into a slide is unchanged. A ski into an air dash is unchanged. A slide into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A wall run into an air dash eases the wall exit into the burst. The burst still holds. A climb into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: An air dash into a climb eases the burst into the grab. A wall run into an air dash is unchanged. A climb into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: An air dash into a wall run eases the burst into the attach. An air dash into a climb is unchanged. A climb into an air dash is unchanged. A wall exit into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A punch miss into an air dash eases the whiff into the burst. The burst still holds. An air dash into a wall run is unchanged. An air dash into a climb is unchanged. A climb into an air dash is unchanged. A wall exit into an air dash is unchanged. A punch miss into a jump is unchanged. A crouch miss is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A tag into an air dash eases the connect into the burst. The burst still holds. A punch miss into an air dash is unchanged. A tag into a jump is unchanged. A crouch tag is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: Becoming It into an air dash eases the claim into the burst. The burst still holds. A tag into an air dash is unchanged. Becoming It into a jump is unchanged. A crouch claim is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A grapple release into an air dash eases the line into the burst. The burst still holds. Becoming It into an air dash is unchanged. A grapple release into a jump is unchanged. A crouch release is unchanged. The gate stays off. Duration and cooldown are unchanged.
+
+Already on this branch: An air dash into a punch eases the burst into the windup. A grapple release into an air dash is unchanged. A jump into a punch is unchanged. Windup time is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: An air dash into a tag eases the burst into the connect. An air dash into a punch is unchanged. A jump into a tag is unchanged. A crouch tag is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A soft landing into an air dash eases the absorb into the burst. The burst still holds. An air dash into a tag is unchanged. A soft landing into a jump is unchanged. A hard landing is unchanged. Land time is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A hard landing into an air dash eases the deeper absorb into the burst. The burst still holds. A soft landing into an air dash is unchanged. A hard landing into a jump is unchanged. Land time is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A soft landing into a punch eases the absorb into the windup. A hard landing into an air dash is unchanged. A jump into a punch is unchanged. A soft landing into a jump is unchanged. Windup time is unchanged. Land time is unchanged.
+
+Already on this branch: A hard landing into a punch eases the deeper absorb into the windup. A soft landing into a punch is unchanged. A jump into a punch is unchanged. A hard landing into a jump is unchanged. Windup time is unchanged. Land time is unchanged.
+
+Already on this branch: A soft landing into a tag eases the absorb into the connect. A hard landing into a punch is unchanged. A jump into a tag is unchanged. A soft landing into a jump is unchanged. A crouch tag is unchanged. Connect time is unchanged. Land time is unchanged.
+
+Already on this branch: A hard landing into a tag eases the deeper absorb into the connect. A soft landing into a tag is unchanged. A jump into a tag is unchanged. A hard landing into a jump is unchanged. A crouch tag is unchanged. Connect time is unchanged. Land time is unchanged.
+
+Already on this branch: A ski into a punch eases the glide into the windup. A hard landing into a tag is unchanged. A ski into a jump is unchanged. A ski into an air dash is unchanged. A jump into a punch is unchanged. Windup time is unchanged. Ski speed is unchanged.
+
+Already on this branch: A slide into a punch eases the wedge into the windup. A ski into a punch is unchanged. A slide into a jump is unchanged. A slide into an air dash is unchanged. slideBoost stays 0. Windup time is unchanged.
+
+Already on this branch: A ski into a tag eases the glide into the connect. A slide into a punch is unchanged. A ski into a punch is unchanged. A ski into a jump is unchanged. A jump into a tag is unchanged. A crouch tag is unchanged. Connect time is unchanged. Ski speed is unchanged.
+
+Already on this branch: A slide into a tag eases the wedge into the connect. A ski into a tag is unchanged. A slide into a punch is unchanged. A slide into a jump is unchanged. A crouch tag is unchanged. slideBoost stays 0. Connect time is unchanged.
+
+Already on this branch: A climb into a punch eases the grab into the windup. A slide into a tag is unchanged. A climb into an air dash is unchanged. A climb into a jump is unchanged. A wall run is unchanged. Windup time is unchanged. Exit time is unchanged.
+
+Already on this branch: A climb into a tag eases the grab into the connect. A climb into a punch is unchanged. A climb into an air dash is unchanged. A climb into a jump is unchanged. A wall run is unchanged. Connect time is unchanged. Exit time is unchanged.
+
+Already on this branch: A wall exit into a punch eases the leave into the windup. A climb into a tag is unchanged. A wall exit into an air dash is unchanged. A wall exit into a jump is unchanged. A climb into a punch is unchanged. Windup time is unchanged. Exit time is unchanged.
+
+Already on this branch: A wall exit into a tag eases the leave into the connect. A wall exit into a punch is unchanged. A wall exit into an air dash is unchanged. A wall exit into a jump is unchanged. A climb into a tag is unchanged. Connect time is unchanged. Exit time is unchanged.
+
+Already on this branch: An air crouch into a punch eases the dart into the windup. A wall exit into a tag is unchanged. An air crouch into an air dash is unchanged. An air crouch into a jump is unchanged. A jump into a punch is unchanged. Windup time is unchanged. Fall speed is unchanged.
+
+Already on this branch: An air crouch into a tag eases the dart into the connect. An air crouch into a punch is unchanged. An air crouch into an air dash is unchanged. An air crouch into a jump is unchanged. A jump into a tag is unchanged. A crouch tag is unchanged. Connect time is unchanged. Fall speed is unchanged.
+
+Already on this branch: Becoming It into a punch eases the claim into the windup. An air crouch into a tag is unchanged. Becoming It into an air dash is unchanged. Becoming It into a jump is unchanged. A crouch claim is unchanged. Windup time is unchanged. Claim time is unchanged.
+
+Already on this branch: Becoming It into a tag eases the claim into the connect. Becoming It into a punch is unchanged. Becoming It into an air dash is unchanged. Becoming It into a jump is unchanged. An air crouch into a tag is unchanged. A crouch claim is unchanged. Connect time is unchanged. Claim time is unchanged.
+
+Already on this branch: A grapple release into a punch eases the line into the windup. Becoming It into a tag is unchanged. A grapple release into an air dash is unchanged. A grapple release into a jump is unchanged. A crouch release is unchanged. Windup time is unchanged. The gate stays off.
+
+Already on this branch: A grapple release into a tag eases the line into the connect. A grapple release into a punch is unchanged. A grapple release into an air dash is unchanged. A grapple release into a jump is unchanged. Becoming It into a tag is unchanged. A crouch release is unchanged. Connect time is unchanged. The gate stays off.
+
+Already on this branch: A dash coming off cooldown into a punch eases the pulse into the windup. A grapple release into a tag is unchanged. A dash coming off cooldown into a jump is unchanged. A crouch ready is unchanged. Windup time is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A dash coming off cooldown into a tag eases the pulse into the connect. A dash coming off cooldown into a punch is unchanged. A dash coming off cooldown into a jump is unchanged. A crouch ready is unchanged. A grapple release into a tag is unchanged. Connect time is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A punch into a tag eases the cock or the strike into the connect. A dash coming off cooldown into a tag is unchanged. A dash coming off cooldown into a punch is unchanged. A crouch tag is unchanged. Connect time is unchanged. Windup time is unchanged.
+
+Already on this branch: A tag into a punch eases the connect into the windup. A punch into a tag is unchanged. A dash coming off cooldown into a punch is unchanged. A crouch tag is unchanged. A tag into a jump is unchanged. Windup time is unchanged. Connect time is unchanged.
+
+Already on this branch: A punch miss into a tag eases the whiff into the connect. A tag into a punch is unchanged. A punch into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. A crouch miss is unchanged. Connect time is unchanged.
+
+Already on this branch: A punch into a ski eases the cock or the strike into the glide. A ski into a punch is unchanged. A punch miss into a tag is unchanged. A slide into a ski is unchanged. A jump into a ski is unchanged. Ski speed is unchanged. Windup time is unchanged.
+
+Already on this branch: A punch into a slide eases the cock or the strike into the wedge. A punch into a ski is unchanged. A slide into a punch is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Windup time is unchanged.
+
+Already on this branch: A tag into a ski eases the connect into the glide. A punch into a slide is unchanged. A punch into a ski is unchanged. A tag into a jump is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Connect time is unchanged.
+
+Already on this branch: A tag into a slide eases the connect into the wedge. A tag into a ski is unchanged. A punch into a slide is unchanged. A slide into a tag is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Connect time is unchanged.
+
+Already on this branch: A still crouch into a punch eases the guard into the windup. A tag into a slide is unchanged. A crouch walk into a punch is unchanged. An air crouch into a punch is unchanged. A slide into a punch is unchanged. A crouch into a slide is unchanged. A crouch claim is unchanged. Windup time is unchanged.
+
+Already on this branch: A still crouch into a tag eases the guard into the connect. A still crouch into a punch is unchanged. A crouch walk into a tag is unchanged. An air crouch into a tag is unchanged. A slide into a tag is unchanged. A crouch claim is unchanged. A punch into a tag is unchanged. Connect time is unchanged.
+
+Already on this branch: A soft landing into a ski eases the absorb into the glide. A still crouch into a tag is unchanged. A hard landing into a ski is unchanged. A jump into a ski is unchanged. A punch into a ski is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Land time is unchanged.
+
+Already on this branch: A soft landing into a slide eases the absorb into the wedge. A soft landing into a ski is unchanged. A hard landing into a slide is unchanged. A jump into a slide is unchanged. A punch into a slide is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. slideBoost stays 0. Land time is unchanged.
+
+Already on this branch: A climb into a ski eases the grab into the glide. A soft landing into a slide is unchanged. A wall run into a ski is unchanged. A climb into a jump is unchanged. A climb into a punch is unchanged. A jump into a ski is unchanged. Ski speed is unchanged. Exit time is unchanged.
+
+Already on this branch: A climb into a slide eases the grab into the wedge. A climb into a ski is unchanged. A wall run into a slide is unchanged. A climb into a jump is unchanged. A soft landing into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Exit time is unchanged.
+
+Already on this branch: A wall run into a ski eases the leave into the glide. A climb into a slide is unchanged. A climb into a ski is unchanged. A wall run into a jump is unchanged. A soft landing into a ski is unchanged. Ski speed is unchanged. Exit time is unchanged.
+
+Already on this branch: A wall run into a slide eases the leave into the wedge. A wall run into a ski is unchanged. A climb into a slide is unchanged. A wall run into a jump is unchanged. A soft landing into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Exit time is unchanged.
+
+Already on this branch: An air dash into a ski eases the burst into the glide. A wall run into a slide is unchanged. A wall run into a ski is unchanged. A climb into a ski is unchanged. An air dash into a slide is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A hard landing into a ski eases the absorb into the glide. An air dash into a ski is unchanged. A soft landing into a ski is unchanged. A jump into a ski is unchanged. A hard landing into a slide is unchanged. Ski speed is unchanged. Land time is unchanged.
+
+Already on this branch: An air crouch into a ski eases the dart into the glide. A hard landing into a ski is unchanged. An air dash into a ski is unchanged. A jump into a ski is unchanged. An air crouch into a slide is unchanged. Fall speed is unchanged. Ski speed is unchanged.
+
+Already on this branch: A grapple release into a ski eases the line into the glide. An air crouch into a ski is unchanged. A grapple release into a jump is unchanged. A grapple release into a punch is unchanged. An air dash into a ski is unchanged. The gate stays off. Ski speed is unchanged.
+
+Already on this branch: A grapple release into a slide eases the line into the wedge. A grapple release into a ski is unchanged. A grapple release into a jump is unchanged. A wall run into a slide is unchanged. A soft landing into a slide is unchanged. slideBoost stays 0. The gate stays off.
+
+Already on this branch: Becoming It into a ski eases the claim into the glide. A grapple release into a slide is unchanged. Becoming It into a punch is unchanged. Becoming It into a jump is unchanged. A grapple release into a ski is unchanged. Claim time is unchanged. Ski speed is unchanged.
+
+Already on this branch: Becoming It into a slide eases the claim into the wedge. Becoming It into a ski is unchanged. Becoming It into a punch is unchanged. Becoming It into a jump is unchanged. A grapple release into a slide is unchanged. slideBoost stays 0. Claim time is unchanged.
+
+Already on this branch: A dash coming off cooldown into a ski eases the pulse into the glide. Becoming It into a slide is unchanged. A dash coming off cooldown into a punch is unchanged. A dash coming off cooldown into a tag is unchanged. A dash coming off cooldown into a jump is unchanged. Duration and cooldown are unchanged. Ski speed is unchanged.
+
+Already on this branch: A dash coming off cooldown into a slide eases the pulse into the wedge. A dash coming off cooldown into a ski is unchanged. A dash coming off cooldown into a punch is unchanged. A dash coming off cooldown into a tag is unchanged. A dash coming off cooldown into a jump is unchanged. slideBoost stays 0. Duration and cooldown are unchanged.
+
+Already on this branch: A punch miss into a ski eases the whiff into the glide. A dash coming off cooldown into a slide is unchanged. A punch into a ski is unchanged. A punch miss into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. Whiff time is unchanged. Ski speed is unchanged.
+
+Already on this branch: A punch miss into a slide eases the whiff into the wedge. A punch miss into a ski is unchanged. A punch into a slide is unchanged. A punch miss into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. slideBoost stays 0. Whiff time is unchanged.
+
+Already on this branch: A still crouch into a slide eases the guard into the wedge. A punch miss into a slide is unchanged. A still crouch into a punch is unchanged. A still crouch into a tag is unchanged. A still crouch into a ski is unchanged. A crouch walk into a slide is unchanged. slideBoost stays 0.
+
+Already on this branch: A ski into a slide eases the glide into the wedge. A still crouch into a slide is unchanged. A crouch walk into a ski is unchanged. A crouch walk into a slide is unchanged. A slide into a ski is unchanged. slideBoost stays 0. Ski speed is unchanged.
+
+Already on this branch: A slide into an air dash eases the wedge into the burst. A ski into a slide is unchanged. A ski into an air dash is unchanged. An air dash into a slide is unchanged. slideBoost stays 0. Duration and cooldown are unchanged.
+
+Already on this branch: A slide into a jump eases the wedge into the jump. A slide into an air dash is unchanged. A ski into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A standing jump is unchanged. slideBoost stays 0. Jump height is unchanged.
+
+Already on this branch: A jump into an air dash eases the jump into the burst. The burst still holds. A slide into a jump is unchanged. A ski into a jump is unchanged. A slide into an air dash is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A still crouch into an air dash eases the guard into the burst. The burst still holds. A jump into an air dash is unchanged. A slide into an air dash is unchanged. An air crouch into an air dash is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A punch into an air dash eases the punch into the burst. The burst still holds. A still crouch into an air dash is unchanged. A punch miss into an air dash is unchanged. A tag into an air dash is unchanged. Windup time is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A crouch walk into an air dash eases the low stride into the burst. The burst still holds. A hard landing into a jump is unchanged. A soft landing into a jump is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A dash coming off cooldown into an air dash eases the pulse into the burst. The burst still holds. A crouch walk into an air dash is unchanged. A dash coming off cooldown into a jump is unchanged. A dash coming off cooldown into a punch is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A punch into a jump eases the punch into the jump. Becoming It into a jump is unchanged. A tag into a jump is unchanged. A punch miss into a jump is unchanged. Windup time is unchanged. Jump height is unchanged.
+
+Already on this branch: A run into a ski eases the stride into the glide. The glide then holds. A walk into a ski is unchanged. A slide into a ski is unchanged. A jump into a ski is unchanged. Ski speed is unchanged.
+
+Already on this branch: A run into a slide eases the stride into the wedge. The wedge then holds. A run into a ski is unchanged. A ski into a slide is unchanged. A still crouch into a slide is unchanged. slideBoost stays 0.
+
+Already on this branch: A jump into a still crouch eases the jump into the guard. The guard then holds. A run into a slide is unchanged. A jump into a ski is unchanged. A jump into a slide is unchanged. Jump height is unchanged.
+
+Already on this branch: An air dash into a still crouch eases the burst into the guard. The guard then holds. A jump into a still crouch is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A walk into a slide eases the walk into the wedge. The wedge then holds. An air dash into a still crouch is unchanged. A run into a slide is unchanged. A crouch walk into a slide is unchanged. slideBoost stays 0.
+
+Already on this branch: A walk into a ski eases the walk into the glide. The glide then holds. A walk into a slide is unchanged. A run into a ski is unchanged. A crouch walk into a ski is unchanged. Ski speed is unchanged.
+
+Already on this branch: A crouch walk into a jump eases the low stride into the jump. The jump then holds. A walk into a ski is unchanged. A still crouch into a jump is unchanged. A crouch walk into an air dash is unchanged. Jump height is unchanged.
+
+Already on this branch: A walk into a jump eases the walk into the jump. The jump then holds. A crouch walk into a jump is unchanged. A walk into a ski is unchanged. A still crouch into a jump is unchanged. Jump height is unchanged.
+
+Already on this branch: A walk into an air dash eases the walk into the burst. The burst then holds. A walk into a jump is unchanged. A crouch walk into an air dash is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A still crouch into a jump eases the guard into the jump. The jump then holds. A walk into an air dash is unchanged. A crouch walk into a jump is unchanged. A jump into a still crouch is unchanged. Jump height is unchanged.
+
+Already on this branch: A walk into a punch eases the walk into the cock. The windup then holds. The strike is unchanged. A still crouch into a jump is unchanged. A jump into a punch is unchanged. A still crouch into a punch is unchanged. Windup time is unchanged.
+
+Already on this branch: A walk into a tag eases the walk into the connect. The connect then holds. A walk into a punch is unchanged. A jump into a tag is unchanged. A still crouch into a tag is unchanged. Connect time is unchanged.
+
+Already on this branch: A run into a punch eases the stride into the cock. The windup then holds. The strike is unchanged. A walk into a tag is unchanged. A walk into a punch is unchanged. A jump into a punch is unchanged. Windup time is unchanged.
+
+Already on this branch: A run into a tag eases the stride into the connect. The connect then holds. A run into a punch is unchanged. A walk into a tag is unchanged. A jump into a tag is unchanged. Connect time is unchanged.
+
+Already on this branch: A crouch walk into a punch eases the low stride into the cock. The windup then holds. The strike is unchanged. A run into a tag is unchanged. A still crouch into a punch is unchanged. A walk into a punch is unchanged. Windup time is unchanged.
+
+Already on this branch: A crouch walk into a tag eases the low stride into the connect. The connect then holds. A crouch walk into a punch is unchanged. A run into a tag is unchanged. A still crouch into a tag is unchanged. Connect time is unchanged.
+
+Already on this branch: An air dash into a punch eases the burst into the cock. The windup then holds. The strike is unchanged. A slide into a punch is unchanged. A ski into a tag is unchanged. A slide into a tag is unchanged. Windup time is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: An air dash into a tag eases the burst into the connect. The connect then holds. An air dash into a punch is unchanged. A climb into a punch is unchanged. A jump into a tag is unchanged. Connect time is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A walk into a still crouch eases the walk into the guard. The guard then holds. A soft landing into a punch is unchanged. A soft landing into a tag is unchanged. An air crouch into a punch is unchanged.
+
+Already on this branch: A run into a still crouch eases the stride into the guard. The guard then holds. A walk into a still crouch is unchanged. A jump into a still crouch is unchanged. An air dash into a still crouch is unchanged.
+
+Already on this branch: A ski into a still crouch eases the glide into the guard. The guard then holds. A run into a still crouch is unchanged. A walk into a still crouch is unchanged. Ski speed is unchanged.
+
+Already on this branch: A slide into a still crouch eases the wedge into the guard. The guard then holds. A ski into a still crouch is unchanged. A run into a still crouch is unchanged. slideBoost stays 0.
+
+Already on this branch: A punch into a still crouch eases the punch into the guard. The guard then holds. A slide into a still crouch is unchanged. A ski into a still crouch is unchanged. Windup time is unchanged.
+
+Already on this branch: A tag into a still crouch eases the connect into the guard. The guard then holds. A punch into a still crouch is unchanged. A slide into a still crouch is unchanged. Connect time is unchanged.
+
+Already on this branch: A whiff into a still crouch eases the miss into the guard. The guard then holds. A tag into a still crouch is unchanged. A punch into a still crouch is unchanged. Whiff time is unchanged.
+
+Already on this branch: An It claim into a still crouch eases the claim into the guard. The guard then holds. A whiff into a still crouch is unchanged. A tag into a still crouch is unchanged. Claim time is unchanged.
+
+Already on this branch: A dash ready into a still crouch eases the pulse into the guard. The guard then holds. An It claim into a still crouch is unchanged. A whiff into a still crouch is unchanged. Duration and cooldown are unchanged.
+
+Already on this branch: A grapple release into a still crouch eases the line into the guard. The guard then holds. A dash ready into a still crouch is unchanged. An It claim into a still crouch is unchanged. The gate stays off.
+
+Already on this branch: A hard land into a still crouch eases the absorb into the guard. The guard then holds. A grapple release into a still crouch is unchanged. A dash ready into a still crouch is unchanged. Land time is unchanged.
+
+Already on this branch: A soft land into a still crouch eases the absorb into the guard. The guard then holds. A hard land into a still crouch is unchanged. A grapple release into a still crouch is unchanged. Land time is unchanged.
+
+Already on this branch: An air crouch into a still crouch eases the dart into the guard. The guard then holds. A soft land into a still crouch is unchanged. A hard land into a still crouch is unchanged. Fall speed is unchanged.
+
+Already on this branch: A climb into a still crouch eases the grab into the guard. The guard then holds. An air crouch into a still crouch is unchanged. A wall run into a still crouch is unchanged. Exit time is unchanged.
+
+Already on this branch: A wall exit into a still crouch eases the leave into the guard. The guard then holds. A climb into a still crouch is unchanged. An air crouch into a still crouch is unchanged. Exit time is unchanged.
+
+Already on this branch: A crouch walk into a still crouch eases the low stride into the guard. The guard then holds. A wall exit into a still crouch is unchanged. A climb into a still crouch is unchanged. The stride is unchanged.
+
+Already on this branch: A ski into a crouch walk eases the glide into the low stride. The stride then holds. A ski into a still crouch is unchanged. A crouch walk into a still crouch is unchanged. Ski speed is unchanged.
+
+Already on this branch: A slide into a crouch walk eases the wedge into the low stride. The stride then holds. A ski into a crouch walk is unchanged. A slide into a still crouch is unchanged. slideBoost stays 0.
+
+Already on this branch: A walk into a crouch walk eases the walk into the low stride. The stride then holds. A slide into a crouch walk is unchanged. A walk into a still crouch is unchanged. The drop time is unchanged.
+
+Already on this branch: A run into a crouch walk eases the run into the low stride. The stride then holds. A walk into a crouch walk is unchanged. A run into a still crouch is unchanged. The drop time is unchanged.
+
+Already on this branch: A still crouch into a crouch walk eases the planted guard into the low stride. The stride then holds. A walk into a crouch walk is unchanged. A run into a crouch walk is unchanged. A crouch walk into a still crouch is unchanged.
+
+Already on this branch: A crouch walk into a walk eases the low stride into the walk. The walk then holds. A crouch walk into a run is unchanged. A still crouch into a walk is unchanged. The drop time is unchanged.
+
+Already on this branch: A crouch walk into a run eases the low stride into the run. The run then holds. A crouch walk into a walk is unchanged. A still crouch into a run is unchanged. The drop time is unchanged.
+
+Already on this branch: A still crouch into a walk eases the planted guard into the walk. The walk then holds. A crouch walk into a walk is unchanged. A still crouch into a run is unchanged. The drop time is unchanged.
+
+Already on this branch: A still crouch into a run eases the planted guard into the run. The run then holds. A still crouch into a walk is unchanged. A crouch walk into a run is unchanged. The drop time is unchanged.
+
+Already on this branch: A slide into a ski eases the wedge into the glide. The glide then holds. A ski into a slide is unchanged. A walk into a ski is unchanged. Ski speed is unchanged.
+
+Already on this branch: A crouch walk into a ski eases the low stride into the glide. The glide then holds. A still crouch into a ski is unchanged. A walk into a ski is unchanged. Ski speed is unchanged.
+
+Already on this branch: A still crouch into a ski eases the planted guard into the glide. The glide then holds. A crouch walk into a ski is unchanged. A walk into a ski is unchanged. Ski speed is unchanged.
+
+Already on this branch: A ski into a walk eases the glide into the walk. The walk then holds. A ski into a run is unchanged. A walk into a ski is unchanged. Ski speed is unchanged.
+
+Already on this branch: A ski into a run eases the glide into the run. The run then holds. A ski into a walk is unchanged. A run into a ski is unchanged. Ski speed is unchanged.
+
+Already on this branch: A ski into an idle eases the glide into the idle. The idle then holds. A ski into a walk is unchanged. A ski into a still crouch is unchanged. Ski speed is unchanged.
+
+Already on this branch: A jump into a ski eases the hang or the absorb into the glide. The glide then holds. A hard landing into a ski is unchanged. A walk into a ski is unchanged. Jump height is unchanged.
+
+Already on this branch: A jump into a slide eases the hang or the absorb into the wedge. The wedge then holds. A hard landing that shares this entry eases the same way. A soft landing into a slide is unchanged. slideBoost stays 0. Jump height is unchanged.
+
+Already on this branch: An air dash into a slide eases the burst into the wedge. The wedge then holds. An air dash into a ski is unchanged. Duration and cooldown are unchanged. slideBoost stays 0.
+
+Already on this branch: An air dash into a climb eases the burst into the grab. The grab then holds. An air dash into a slide is unchanged. Duration and cooldown are unchanged. Exit time is unchanged.
+
+Already on this branch: An air dash into a wall run eases the burst into the attach. The attach then holds. An air dash into a climb is unchanged. Duration and cooldown are unchanged. Exit time is unchanged.
+
+Already on this branch: An air dash into a dart eases the burst into the dart. The dart then holds. An air dash into a wall run is unchanged. Duration and cooldown are unchanged. Fall speed stays doubled.
+
+Already on this branch: A ski into a slide eases the glide into the wedge. The wedge then holds. The slow glide blend stays off that path. A slide into a ski is unchanged. Ski speed is unchanged. slideBoost stays 0.
+
+Already on this branch: A still crouch into a slide eases the guard into the wedge. The wedge then holds. The slow guard blend stays off that path. A crouch walk into a slide is unchanged. slideBoost stays 0.
+
+Already on this branch: A crouch walk into a slide eases the low stride into the wedge. The wedge then holds. The slow stride blend stays off that path. A still crouch into a slide is unchanged. A walk into a slide is unchanged. slideBoost stays 0.
+
+Already on this branch: A walk into a sprint eases the walk into the sprint. The sprint then holds. The slow push stays off that path. A crouch walk into a run is unchanged. Speed is unchanged.
+
+Already on this branch: A sprint into a walk eases the sprint into the walk. The walk then holds. The slow stride close stays off that path. A walk into a sprint is unchanged. Speed is unchanged.
+
+Already on this branch: A sprint into a stop eases the sprint into the idle. The idle then holds. The slow close stays off that path. A sprint into a walk is unchanged. A walk into a stop is unchanged. Speed is unchanged.
+
+Already on this branch: A walk into a stop eases the walk into the idle. The idle then holds. The slow close stays off that path. A sprint into a stop is unchanged. Speed is unchanged.
+
+Already on this branch: An idle into a walk eases the idle into the walk. The walk then holds. The slow plant stays off that path. A still crouch into a walk is unchanged. A sprint start is unchanged. Speed is unchanged.
+
+Already on this branch: A sprint into the air eases the stride arms into the air pose. The air pose then holds. The slow reach stays off that path. A walk into a jump is unchanged. Jump height is unchanged.
+
+Already on this branch: A standing idle into a jump eases the idle arms into the air pose. The air pose then holds. The slow reach stays off that path. A still crouch into a jump is unchanged. A walk into a jump is unchanged. A sprint into the air is unchanged. Jump height is unchanged.
+
+Already on this branch: A jump during an air dash eases the burst into the air pose. The air pose then holds. The slow push stays off that path. Duration and cooldown are unchanged. Jump height is unchanged.
+
+Already on this branch: A wall jump eases the wall pose into the air pose. The air pose then holds. The slow push stays off that path. Exit time is unchanged. Jump height is unchanged.
+
+Already on this branch: A climb jump eases the climb pose into the air pose. The air pose then holds. The slow push stays off that path. Exit time is unchanged. Jump height is unchanged.
+
+Already on this branch: A jump during an air crouch eases the dart into the air pose. The air pose then holds. The slow push stays off that path. Fall speed stays doubled. Jump height is unchanged.
+
+Already on this branch: A jump out of a soft landing eases the absorb into the air pose. The air pose then holds. The slow push stays off that path. Land time is unchanged when you stay down. Jump height is unchanged.
+
+Already on this branch: A jump out of a hard landing eases the deep absorb into the air pose. The air pose then holds. The slow push stays off that path. Land time is unchanged when you stay down. Jump height is unchanged.
+
+Already on this branch: A jump out of a punch miss eases the whiff into the air pose. The air pose then holds. The slow push stays off that path. Whiff time is unchanged. Jump height is unchanged.
+
+Already on this branch: A jump out of a tag eases the connect into the air pose. The air pose then holds. The slow push stays off that path. Flinch time is unchanged. Jump height is unchanged.
+
+Already on this branch: A jump out of a claim eases the claim into the air pose. The air pose then holds. The slow push stays off that path. Claim time is unchanged. Jump height is unchanged.
+
+Already on this branch: A jump out of a dash-ready pulse eases the pulse into the air pose. The air pose then holds. The slow push stays off that path. Duration and cooldown are unchanged. Jump height is unchanged.
+
+Already on this branch: A jump out of a ski eases the glide into the air pose. The air pose then holds. The slow push stays off that path. Ski speed is unchanged. Jump height is unchanged.
+
+Already on this branch: A wall bounce eases into the kick. The kick then holds. The slow fade stays off that path. Bounce time is unchanged.
+
+Already on this branch: A super glide eases into the launch. The launch then holds. The slow fade stays off that path. Glide time is unchanged.
+
+Already on this branch: An air dash eases the whip into the pose. The pose then holds. The slow fade stays off that path. Duration and cooldown are unchanged.
+
+Already on this branch: After an air dash, the pose eases into the fall or the run. That pose then holds. The slow slew stays off that path. Duration and cooldown are unchanged.
+
+Already on this branch: A ground dash or lunge eases the whip into the hang. The hang then holds. The slow pulse stays off that path. Dash time is unchanged.
+
+Already on this branch: After an air dash, the lead eases into the air stride. The stride then keeps going. The pin stays off that path. Dash time is unchanged.
+
+Already on this branch: A stop that is not a sprint or a walk eases into the idle. The idle then holds. The slow close stays off that path. Speed is unchanged.
+
+Already on this branch: A landing eases into the absorb. The absorb then holds. The pop stays off that path. Land time is unchanged.
+
+Already on this branch: A mantle eases into the vault. The vault then holds. The pop stays off that path. Mantle time is unchanged.
+
+Already on this branch: A walk or a run eases onto a climb or a wall run. That pose then holds. The pop stays off that path. The meet time is unchanged.
+
+Already on this branch: A mantle eases into the stand or the run. That pose then holds. The pop stays off that path. Mantle time is unchanged.
+
+Already on this branch: Play spawns the Tan Hier mannequin. The feet sit on the pad. Walking moves the limbs. It swaps to the Orange Hier. The capsule mesh stays off.
+
+Already on this branch: Tan and Orange Hier use URP Lit vinyl. The body is warm bone or orange, the hinges are darker metal, the waist bellows stay matte, and the eye plates stay flat dark.
+
+Already on this branch: The pawn mesh is body v0.6 (curved vinyl, human waist) with face v0.5.1. Rubber soles stay dark and matte. Wear stays dark. No magenta capsule. Walking still moves the limbs.
+
+This delta: The vinyl shell is satin, so a swing throws a highlight. Hinges flash darker metal. Wear and the rubber soles stay dark even if the import color is washed out. Face and pose timing stay.
 
 ## Stack snapshot
 
@@ -132,16 +788,347 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 23. First Boot visit: the line names the punch key (LMB or E by default) and M/N. It should not say LMB/F. Open Couch or Mode select, then Esc: the first-run line should still be there. Play a round, then Q back to Boot: that line should be gone, and Play should be highlighted. The first countdown says WASD move and Shift sprint. Rematch, and the next countdown, should say to punch the dummy with the orange hat. On the pause card, H opens Controls and stays paused. Digits on who-plays and mode select only move the highlight. Enter or Space confirms.
 24. Set 3 humans on who-plays, then Esc from mode select: you should be back on who-plays with 3 highlighted, not Boot. Esc again: Boot, Couch highlighted, and the next Mode select should still say 3 humans. Opening Mode select from Boot should not change that count. The highlighted mode should be the one you played last.
 25. On the results card, 1 and 2 only move Rematch / Menu. During the short arm, Enter and Space do nothing. After it, Enter or Space uses the highlight. R still rematches even if Menu is highlighted. Q and Esc still return to Boot. A click during the arm only moves the highlight. The same keys work on the loose round-end card if no mode controller is showing results.
+26. Play: you and the bot should be the curved Hier mannequin, not the flat Dummy_Runner mesh. The console should say Hier mannequin, not Navy Spade, unless the FBX failed to bind. The runner is tan with a teal band. Becoming It should swap to the orange Hier mesh with black Vs. A run should show the knees bend. Arms should hang slightly out, not fold into the butt.
+27. Sprint: one knee should lift on the forward leg and the back leg should look straight, not two bent skates. Slide should look low, lead knee tucked. A hop should buckle the knees on landing. Air dash should throw the arms back without twisting the hands into the hips. A punch should cock the elbow out, then the fist should stay in front of the chest.
+28. Sprint from the chase cam: the arm that reaches forward should be opposite the leg that is forward. The other arm stays back and does not fold into the hips. You and the bot should still be the curved Hier mesh.
+29. Slide: the body should look flat, lead knee under the chest, trail leg straight back, arms forward. Punch: the fist should be a long line in front of the chest, not a folded elbow. It should not pass through the torso.
+30. Jump and keep sprinting: knees buckle on the landing, then open back into the run over a short moment. They should not snap straight on the first frame. A small hop still buckles. Arms stay slightly out and do not fold into the hips.
+31. Air dash: the arms should throw back at the start, then ease down before the streak ends. They should not stay fully whipped and then snap into the run. Hands stay clear of the hips.
+32. After the v0.1 Hier FBX: you and the bot are the tan mannequin, It is the orange mannequin, and the same poses still read (recovery knee, opposite arms, flat slide, long punch, land ease, dash settle).
+33. Jump: both arms should reach up and the knees should tuck. Fall: the arms should trail back and the legs should lengthen. Hands stay slightly out and clear of the hips.
+34. Tag someone: the runner who was hit should guard with both arms up and both knees bent. The new It should raise both arms and lift one knee. The two poses should not match. Hands stay clear of the hips.
+35. Climb a wall: one hand should reach while the other pulls, and the opposite knee should step. The lower leg should look long. Wall-run: the wall hand stays on the wall, the outer leg steps, and that knee bends only while it swings forward. Hands stay clear of the hips.
+36. Stand still: the hands should hang just forward and outside the hips, not against the pelvis. Start sprinting: the opposite arm/leg stride should return, with no extra twist of the hands into the hips.
+37. Jump, including a short hop: both arms should be a long line up and the knees tucked before you reach the top. On the way down, even a short drop, the arms should trail back and the legs should lengthen before you land. Hands stay clear of the hips.
+38. Sprint: each plant should hold a moment, one knee up and the other leg long behind, not two straight legs sliding together. The forward arm should still be the opposite side. Hands stay clear of the hips.
+39. Slide: the arms should be a long line forward and low, not a folded pair at the chest. Lead knee stays under the chest and the trail leg stays straight. Hands stay clear of the hips.
+40. Land, including a small hop: knees buckle, and both arms should come out to the sides while that buckle holds. They should ease back into the run. Hands stay clear of the hips.
+41. Climb: both hands should stay visible as they swap, the low hand a line and not a fold at the chest. Wall-run: the wall hand should move up and down the wall with the step, and the outer arm should stay straight. Hands stay clear of the hips.
+42. Punch: the windup fist should sit beside the head, not inside the chest. The connect should still be a long line in front of the chest. The cock should not feel longer.
+43. Air dash: the arms throw back at the start, then ease down before the streak ends. When the streak ends they should keep easing forward. They should not throw back again. The burst should still feel short.
+44. Tag someone: the runner who was hit should show a long V of arms, not a fold at the chest, and both knees should bend. The new It should still raise both arms and lift one knee. The two poses should not match, and neither should look like a landing.
+45. Stand still, then sprint: the hands should stay outside the hips the whole way into the stride. They should not tuck in as the walk starts, and they should not twist into the pelvis at a standstill.
+46. Hold ski, then let go into a sprint: the body should ease into a lower glide with the arms out, then ease back into the run. It should not pop, and the glide should not look like the sprint. Jet stays off.
+47. Wall-run, then drop or land into a sprint: the wall hand and the outer leg should ease into the fall or the run. They should not snap off the wall in one frame.
+48. Climb, then drop or step off into a sprint: the reaching hand and the stepping knee should ease into the fall or the run. They should not snap off the wall in one frame.
+49. Only if you add ExperimentalGrapple and turn enableGrapple on: holding the rope should reach both arms in a long line, legs staying long. It should not look like a jump. With the gate off, RMB still does not hook. Jet stays off.
+50. Tag someone: the runner who was hit should still show the two-arm V with both knees bent. The new It should raise one arm, hold the other out, and lift one knee. The two poses should not match.
+51. Punch a connect, then keep sprinting: the fist should stay out for a moment, then ease into the run. It should not snap back when the punch ends. The cock should not feel longer.
+52. Jump: the arms should tuck on the way up, hang out to the sides at the top, then trail back on the way down. The jump should not feel higher. Hands stay clear of the hips.
+53. Hold ski, then let go into a sprint: the glide should still show a knee and a short arm swing, not locked straight legs. The change into the run should ease. The run knee should still lift higher than the glide. Jet stays off.
+54. Slide, then crouch: the slide should show a flat back, head up, and both arms out in a long line clear of the chest. A crouch should stay a low guard with bent elbows. The slide should not speed up.
+55. From a standstill, hold crouch: both knees should bend and the elbows should fold in front of the chest. The back should stay up. Sprint and keep holding crouch: that becomes the flat slide, straight arms and one leg back, and it should not speed up. When the speed dies while crouch is still held, the guard should return.
+56. Jump, then hold crouch on the way down: the chest should pitch down and the arms should fold in, not trail out like a normal fall. The drop should still feel like the same fast fall. Letting go should return to the trail. A jump with no crouch should feel the same height.
+57. Land while sprinting: both knees should buckle, then the back leg and the arms should already be in the stride while the front knee is still up. They should not both snap straight and then start the run. A small hop still buckles. Standing still, both legs should open together. The land should not feel longer.
+58. Sprint: the arm opposite the lifted knee should be a long reach, wider than the back arm. The back elbow may bend, but that hand should stay clear of the hip. The back leg should stay straight. Only the front knee should lift.
+59. Punch someone so you become It: the fist should stay out, then ease into one arm up and the other held out, with one knee up. It should not snap into the run. The runner who was hit should still show the two-arm V with both knees bent. The two poses should not match. The cock should not feel longer.
+60. Get tagged while sprinting: both arms should come up in a V and both knees should bend, then the arms and the back leg should already be in the stride while one knee is still up. They should not both snap straight and then start the run. Standing still, both legs should open together. The new It should still raise one arm and hold the other out. The catch should not feel longer.
+61. Stand still: the chest should breathe and rock slightly side to side. The hands should stay just forward and outside the hips, not against the pelvis. Start sprinting: the sway should fade and the opposite arm/leg stride should return. They should not twist into the hips at a standstill.
+62. Sprint, then let go: the last step should close under the hips, then the idle sway should return. Drop to a walk instead: the stride should shorten into the walk, not freeze one leg out. It should not feel like a skate stop. Speed should feel the same.
+63. Walk, then sprint, then drop back to a walk: the steps should get longer and quicker, then shorter, without a foot sticking or the hips popping. Speed should feel the same.
+64. Walk and turn hard, and turn in place: the outside foot should stay planted while the other leg steps. The waist should not twist. The hands should stay clear of the hips. Look should feel the same.
+65. From a walk, hop a short hop and keep walking: the knees should bend, then the stride should come back under the hips. The arms should stay in the walk, not flare out. A high drop should still bring the arms out. The landing should not feel longer.
+66. Sprint, then let go into a stand: after the feet close, the hips should ease into the idle side sway. They should not freeze flat and then jerk sideways. The breath should still be there. Speed should feel the same.
+67. Stand still, then walk: the first step should push off the foot that stays down, and the other leg should reach into the stride. The idle sway should fade out, not pop off. The feet should not skate. Speed should feel the same.
+68. Sprint, then crouch: the body should drop into the slide without a speed bump. Let go: the stride should come back under the hips, not skate. From a slower run, a crouch should drop into the guard and stand back into the stride. The slide should not speed up.
+69. Air dash, then land into a run or a walk: after the burst, the feet should be back in the stride under the hips. They should not skate. The dash should still be a short burst, and it should still have to recharge.
+70. Wall run and climb: the hand should meet the surface, then move. It should not pop when you touch the wall. Letting go should bring the stride back under the hips. The leave should not feel longer or shorter.
+71. Punch while sprinting, and miss or hit without becoming It: the arm opposite the front knee should get back into the stride. The hips should not stay twisted. The fist should still ease out, not snap. The cock should not feel longer.
+72. If you turn the grapple on and hook: the hands and the chest should settle into one long line. They should not twist. Turning it off should return to the stride. It should stay off unless you turn it on. The pull should feel the same.
+73. Get tagged while sprinting: the hands and the chest should ease into the stride together, under the hips. They should not stay folded and then pop. One knee can still be up. The catch should not feel longer.
+74. Become It while sprinting: the hands and the chest should ease into the stride. They should not stay in the claim and then pop. One knee can still be up. The claim should not feel longer.
+75. Hold ski, then let go into a run, and go back into the ski: the feet should ease under the hips. They should not skate, and the hips should not pop. Speed should feel the same. Jet stays off.
+76. Drop from a height and land standing still: the knees should ease into the idle breath and sway. The arms should flare, then ease, and should not stay locked out. A short hop should still keep the arms in the idle pose. The landing should not feel longer.
+77. Jump, hold crouch on the way down, and land: the body should read as a crouch in the air, with the arms in. On landing the arms should ease. They should not pop. The drop should still feel like the same fast fall. A jump with no crouch should feel the same height.
+78. Air dash: the chest should pitch and the arms should fly wide for the short burst. They should read, then ease back. The dash should not last longer, and it should still have to recharge.
+79. Wall-run, then drop into a run: the hips and the feet should ease into the stride under the hips. They should not pop. The hands should not snap, and the leave should not feel longer or shorter. A climb should leave the same way.
+80. Run and look up and down: the reaching arm should follow the look and stay clear of the hip. The other arm should stay in the stride. Look should feel the same.
+81. Slide down a slope, then let go: the body should stand up into the run under the hips. The feet should not pop. The slide should not speed up.
+82. Jump from a walk or a run: the foot that was down should push, and the other knee should come up, then the tuck. The jump should not go higher.
+83. Punch: the fist should cock beside the head and hold that beat, then strike. It should not feel like a longer cock. The strike should still come out.
+84. Sprint, then let go: the last foot should plant under the hip before the idle sway. It should not skate. Speed should feel the same.
+85. Jump and look around: the arms should stay clear of the torso on the way down. The tuck on the way up should stay the tuck. Look should feel the same.
+86. Stand, then walk, then stop: the hands should stay forward and out the whole way. They should not drift into the hips. The idle sway and the first step should still be there. Speed should feel the same.
+87. Hold crouch and walk: the feet should take short steps under the hips. They should not skate, and you should not speed up. Standing still in a crouch should stay the guard. A fast crouch should still be the slide.
+88. Stand still and get tagged: the hands and the chest should ease into the idle breath. They should not freeze and then pop. Both knees can still bend. The catch should not feel longer.
+89. Sprint, jump, and land still holding sprint: the arms should flare, then ease into the stride under the hips. They should not stay locked out. A short hop should still keep the arms in the stride. The landing should not feel longer.
+90. Sprint and turn: the outside foot should plant while the other leg steps. The chest and the hips should lean together. The waist should not twist. Speed should feel the same. Look should feel the same.
+91. Stand still and become It: the hands and the chest should ease into the idle breath. They should not freeze and then pop. One knee can still be up. The claim should not feel longer.
+92. If you turn the grapple on, then let go: the hands and the chest should ease out of the long line into the run or the idle. They should not twist. It should stay off unless you turn it on. The pull should feel the same.
+93. Stand still and punch a miss: the fists should ease into the idle hands. They should not freeze and then pop. The cock should not feel longer.
+94. Air dash, then wait for the bar: when it is ready, the chest and the arms should settle. The dash should not last longer, and it should still have to recharge.
+95. Walk and turn at a medium yaw: the outside foot should plant while the other leg steps. It should not wait for a sharp turn. Look should feel the same.
+96. Air dash, then land softly into a walk: the knees should bend and the arms should stay in the stride. They should not flare out. The dash should not last longer, and it should still have to recharge.
+97. Hold crouch while standing, then let go: the hips should ease into the idle breath and sway. They should not pop flat. Speed should feel the same.
+98. Walk, then sprint: the back foot should push, then the stride should open. The feet should not skate. Speed should feel the same.
+99. Walk, hop a short hop, and keep walking: the knees should settle into the stride. It should not look like a full stop. A hard landing should still absorb.
+100. Slide, then let it die into a stand: the body should come up into the idle breath. The hips should not pop. Speed should feel the same.
+101. Crouch and walk, then let go: the hips should rise into the stride. They should not hitch. Speed should feel the same.
+102. Sprint, then drop to a walk: the stride should close with the step. It should not skate to a stop. Speed should feel the same.
+103. Walk and turn, then sprint: the outside foot should plant, then the stride should open. The feet should not skate. Speed should feel the same.
+104. Walk, then drop hard and keep walking: the knees should absorb, then take a step. It should not sit in the idle. A landing from a stand should still absorb.
+105. Jump and look: the arms should ease into the pose in the air. They should not snap. Look should feel the same. The jump should not go higher.
+106. Wall-run, then step off into a walk: the hands should ease into the stride. They should not hitch. The leave should not feel longer or shorter.
+107. Climb, then step off into a walk: the hands should ease into the stride. They should not hitch. The leave should not feel longer or shorter.
+108. Hold crouch in the air, then land softly: the fall pose should open into the absorb. It should not stay folded and then pop. The drop should still feel like the same fast fall.
+109. Walk and punch a miss: the hands should return to the stride. They should not drop into the idle. The cock should not feel longer.
+110. Walk and get tagged: the arms should settle into the stride. They should not drop into the idle. The catch should not feel longer.
+111. Walk and become It: the arms should settle into the stride. They should not drop into the idle. One knee can still be up. The claim should not feel longer.
+112. If you turn the grapple on, hook, then let go while walking: the hands should return to the stride. They should not hitch. It should stay off unless you turn it on. The pull should feel the same.
+113. Stand and wait for the dash bar: when it is ready, the chest and the arms should give a small pulse, then the idle breath. The dash should not last longer, and it should still have to recharge.
+114. Ski, then let go into a walk: the stride should come back. The feet should not skate. Speed should feel the same.
+115. Walk, then ski: the legs should ease into the glide. They should not snap. Speed should feel the same.
+116. Sprint, then ski: the stride should close into the glide. It should not pop. Speed should feel the same.
+117. Ski, then let go into a sprint: the glide should open into the stride. It should not pop. Speed should feel the same.
+118. Crouch and walk, then sprint: the hips should rise and the stride should open. It should not pop. Speed should feel the same.
+119. Sprint, hop a short hop, and keep sprinting: the knees should absorb, then the stride should open. It should not look like a stop. A hard landing should still absorb.
+120. Sprint, drop hard, and keep sprinting: the knees should absorb, then the stride should open. It should not sit in the buckle. A hard landing into a walk should still take a step.
+121. Wall-run, then sprint off: the hands should open into the stride. They should not hitch. The leave should not feel longer or shorter.
+122. Climb, then sprint off: the hands should open into the stride. They should not hitch. The leave should not feel longer or shorter.
+123. Sprint and punch a miss: the hands should return to the stride. They should not stay in the limp. The cock should not feel longer.
+124. Sprint and get tagged: the arms should settle into the stride. They should not stay folded. The catch should not feel longer.
+125. Sprint and become It: the arms should settle into the stride. They should not stay folded. One knee can still be up. The claim should not feel longer.
+126. If you turn the grapple on, hook, then let go while sprinting: the hands should return to the stride. They should not hitch. It should stay off unless you turn it on. The pull should feel the same.
+127. Slide, then let it die into a walk: the body should rise into the stride. The hips should not pop. A slide into a stand should still rise into the idle breath. A slide into a sprint should feel the same. Speed should feel the same.
+128. Slide, then let it die into a sprint: the body should rise into the long stride. The hips should not pop. A slide into a walk should still rise into the walk. A slide into a stand should still rise into the idle breath. Speed should feel the same.
+129. Crouch still, then sprint: the hips should rise into the long stride. They should not pop. A still crouch into a stand should still rise into the idle breath. A crouch walk into a sprint should feel the same. Speed should feel the same.
+130. Air dash, then walk: the burst should end in the stride. It should not come to a stop. An air dash into a sprint should feel the same. The dash should not last longer, and it should still have to recharge.
+131. Air dash, then sprint: the burst should end in the long stride. It should not come to a stop. An air dash into a walk should still end in the walk. The dash should not last longer, and it should still have to recharge.
+132. Jump, then land into a crouch walk: the landing should absorb into the low stride. The hips should stay down. A still crouch should still use the old absorb. The landing should not feel longer.
+133. Hop, then land into a still crouch: the landing should absorb into the guard. The hips should stay down. A hard landing should still use the old absorb. A crouch walk should still absorb into the low stride. The landing should not feel longer.
+134. Drop hard into a still crouch: the landing should absorb deeper into the guard. The hips should stay down. A soft landing should still use the lighter guard. A crouch walk should still absorb into the low stride. The landing should not feel longer.
+135. Jump while crouched and still: in the air, the body should settle into the guard. The push should still read. A fast fall should still use the dart. An air dash should feel the same. The jump should not feel higher.
+136. Air dash while crouched and still: the burst should end in the guard. A crouch walk should still end in the stride. The dash should not last longer, and it should still have to recharge.
+137. Air dash into a crouch walk: the burst should end in the low stride. A still crouch should still end in the guard. An upright walk should still end in the stride. The dash should not last longer, and it should still have to recharge.
+138. Crouch still, then ski: the guard should ease into the glide. It should not pop. A walk into a ski should feel the same. A sprint into a ski should feel the same. Speed should feel the same. Jet stays off.
+139. Ski, then crouch still: the glide should ease into the guard. It should not pop. A still crouch into a ski should feel the same. A ski into a walk should feel the same. Speed should feel the same. Jet stays off.
+140. Ski, then crouch walk: the glide should ease into the low stride. A still crouch should still end in the guard. A ski into a walk should feel the same. Speed should feel the same. Jet stays off.
+141. Crouch walk, then ski: the low stride should ease into the glide. It should not pop. A still crouch into a ski should feel the same. A walk into a ski should feel the same. Speed should feel the same. Jet stays off.
+142. Slide, then crouch still: the wedge should ease into the guard. It should not snap. A slide into a stand should still rise into the idle breath. A slide into a walk should feel the same. Speed should feel the same.
+143. Crouch still, then slide: the guard should ease into the wedge. It should not snap. A slide into a still crouch should still ease into the guard. A slide into a walk should feel the same. Speed should feel the same.
+144. Slide, then crouch walk: the wedge should ease into the low stride. A still crouch should still end in the guard. A slide into a walk should feel the same. Speed should feel the same.
+145. Crouch walk, then slide: the low stride should ease into the wedge. It should not snap. A still crouch into a slide should feel the same. A slide into a crouch walk should feel the same. Speed should feel the same.
+146. Crouch still, then climb: the guard should ease onto the wall. It should not snap. A wall run from that crouch should do the same. A normal climb should feel the same. The entry should not feel longer.
+147. Climb, then crouch still: the body should ease into the guard. It should not stay on the wall. A wall leave should feel the same. A climb into a walk should feel the same. The leave should not feel longer.
+148. Wall-run, then crouch still: the body should ease into the guard. It should not stay on the wall. A climb into a still crouch should feel the same. A wall run into a walk should feel the same. The leave should not feel longer.
+149. Climb, then crouch walk: the body should ease into the low stride. A still crouch should still end in the guard. A wall run into a crouch walk should feel the same. The leave should not feel longer.
+150. Wall-run, then crouch walk: the body should ease into the low stride. A climb into a crouch walk should feel the same. A still crouch should still end in the guard. The leave should not feel longer.
+151. Crouch still, then miss a punch: the fists should ease into the guard. A standing miss should still ease into the idle hang. A walk miss and a sprint miss should feel the same. The cock should not feel longer.
+152. Crouch still, then get tagged: the V should ease into the guard. A standing tag should still ease into the idle breath. A walk tag and a sprint tag should feel the same. The flinch should not feel longer.
+153. Crouch still, then become It: the claim should ease into the guard. A standing claim should still ease into the idle breath. A walk claim and a sprint claim should feel the same. The claim should not feel longer.
+154. Crouch still, then let go of a grapple: the line should ease into the guard. A standing release should feel the same. A walk release and a sprint release should feel the same. The pull should feel the same. The gate stays off.
+155. Crouch still, then wait out a dash cooldown: the settle should stay inside the guard. A standing ready should still pulse into the idle breath. A moving ready should feel the same. The dash should not feel longer.
+156. Crouch walk, then miss a punch: the body should ease into the guard and the low stride. A still crouch should still end in the guard. A walk miss and a sprint miss should feel the same. The cock should not feel longer.
+157. Crouch walk, then get tagged: the V should ease into the guard and the low stride. A still crouch should still end in the guard. A walk tag and a sprint tag should feel the same. The flinch should not feel longer.
+158. Crouch walk, then become It: the claim should ease into the guard and the low stride. A still crouch should still end in the guard. A walk claim and a sprint claim should feel the same. The claim should not feel longer.
+159. Crouch walk, then let go of a grapple: the line should ease into the guard and the low stride. A still crouch should still end in the guard. A walk release and a sprint release should feel the same. The pull should feel the same. The gate stays off.
+160. Crouch walk, then wait out a dash cooldown: the settle should stay inside the guard and the low stride. A still crouch should still pulse inside the guard. A standing ready should still pulse into the idle breath. The dash should not feel longer.
+161. Jump, then crouch walk and land soft: the absorb should stay in the low stride. A hard landing into a crouch walk should feel the same. A soft landing into a still crouch should feel the same. The land should not feel longer.
+162. Jump, then crouch walk and land hard: the absorb should go deeper in the low stride. A soft landing into a crouch walk should stay lighter. A hard landing into a still crouch should feel the same. The land should not feel longer.
+163. Ski, then slide: the glide should ease into the wedge. A walk into a ski should feel the same. A slide into a stand should feel the same. Speed should feel the same. Jet stays off.
+164. Slide, then ski: the wedge should ease into the glide. A ski into a slide should feel the same. A walk into a ski should feel the same. Speed should feel the same. Jet stays off.
+165. Jump, hold crouch, and move: the fall should ease into the low stride. A still air crouch should keep the dart. An air dash into a crouch walk should feel the same. The fall should not feel faster.
+166. Jump, hold crouch, and land still: the dart should ease into the guard. A moving air crouch should keep the flare. A still crouch without the dart should feel the same. The land should not feel longer.
+167. Jump, hold crouch, let go, and land soft: the dart should open into the absorb. A hard landing should keep the flare. A still crouch should keep the guard. The land should not feel longer.
+168. Crouch still, then jump: the guard should ease into the push. A standing jump should feel the same. A crouch walk into a jump should feel the same. The jump should not feel higher.
+169. Crouch walk, then jump: the low stride should ease into the push. A still crouch into a jump should feel the same. A standing jump should feel the same. The jump should not feel higher.
+170. Ski, then jump: the glide should ease into the push. A still crouch into a jump should feel the same. A crouch walk into a jump should feel the same. A standing jump should feel the same. The jump should not feel higher. Speed should feel the same.
+171. Slide, then jump: the wedge should ease into the push. A still crouch into a jump should feel the same. A crouch walk into a jump should feel the same. A ski into a jump should feel the same. A standing jump should feel the same. The jump should not feel higher. The slide should not feel faster.
+172. Jump, then ski: the glide or the landing should ease into the stride. A walk into a ski should feel the same. A crouch into a ski should feel the same. A slide into a ski should feel the same. Speed should feel the same. The jump should not feel higher.
+173. Jump, then slide: the glide or the landing should ease into the wedge. A crouch into a slide should feel the same. A ski into a slide should feel the same. A jump into a ski should feel the same. The jump should not feel higher. The slide should not feel faster.
+174. Air dash, then jump: the burst should ease into the push. A still crouch into a jump should feel the same. A crouch walk into a jump should feel the same. A ski into a jump should feel the same. A slide into a jump should feel the same. The jump should not feel higher. The dash should not feel longer.
+175. Climb, then jump: the climb should ease into the push. An air dash into a jump should feel the same. A still crouch into a jump should feel the same. The jump should not feel higher. The climb should not let go faster.
+176. Wall run, then jump: the wall exit should ease into the push. A climb into a jump should feel the same. An air dash into a jump should feel the same. The jump should not feel higher. The wall should not let go faster.
+177. Jump, then climb: the contact should ease into the grab. A crouch onto the wall should feel the same. A wall run should feel the same. A climb into a jump should feel the same. The jump should not feel higher. The grab should not feel slower.
+178. Jump, then wall run: the contact should ease into the attach. A jump into a climb should feel the same. A crouch onto the wall should feel the same. A wall run into a jump should feel the same. The jump should not feel higher. The attach should not feel slower.
+179. Fall in a crouch, then jump: the dart should ease into the push. A moving fall should ease from the low stride. A still crouch into a jump should feel the same. A crouch walk into a jump should feel the same. The jump should not feel higher. The fall should not feel faster.
+180. Jump, then hold crouch: the apex and the descent should ease into the dart. An air crouch into a jump should feel the same. A moving fall should still end in the low stride. A still crouch into a jump should feel the same. The jump should not feel higher. The fall should not feel faster.
+181. Jump, then air dash: the apex should ease into the burst. The burst should still hold. An air dash into a jump should feel the same. A jump into an air crouch should feel the same. The jump should not feel higher. The dash should not feel longer.
+182. Land soft, then jump: the absorb should ease into the push. A hard landing should keep its jump. A still crouch into a jump should feel the same. The jump should not feel higher. Staying down should feel the same.
+183. Land hard, then jump: the absorb should ease into the push. A soft landing into a jump should feel the same. A still crouch into a jump should feel the same. The jump should not feel higher. Staying down should feel the same.
+184. Miss a punch, then jump: the whiff should ease into the push. A crouch miss should feel the same. A soft landing into a jump should feel the same. A hard landing into a jump should feel the same. The jump should not feel higher.
+185. Tag, then jump: the connect should ease into the push. A crouch tag should feel the same. A punch miss into a jump should feel the same. The jump should not feel higher.
+186. Become It, then jump: the claim should ease into the push. A crouch claim should feel the same. A tag into a jump should feel the same. The jump should not feel higher.
+187. Let go of a grapple, then jump: the line should ease into the push. A crouch release should feel the same. Becoming It into a jump should feel the same. The jump should not feel higher. The gate stays off.
+188. When the dash is ready, jump: the pulse should ease into the push. A crouch ready should feel the same. A grapple release into a jump should feel the same. The jump should not feel higher. The dash should not feel longer.
+189. Jump, then punch: the apex or the landing should ease into the windup. A punch from the ground should feel the same. The jump should not feel higher. The cock should not feel longer.
+190. Jump, then tag: the apex or the landing should ease into the connect. A crouch tag should feel the same. A jump into a punch should feel the same. A tag into a jump should feel the same. The jump should not feel higher.
+191. Fall in a crouch, then air dash: the dart should ease into the burst. A moving fall should ease from the low stride. The burst should still hold. The fall should not feel faster. The dash should not feel longer. A jump into a tag should feel the same.
+192. Air dash, then hold crouch: the burst should ease into the dart. An air crouch into an air dash should feel the same. The burst should still hold. The fall should not feel faster. The dash should not feel longer.
+193. Ski, then air dash: the glide should ease into the burst. The burst should still hold. An air crouch into an air dash should feel the same. An air dash into an air crouch should feel the same. Speed should feel the same. The dash should not feel longer. Jet stays off.
+194. Slide, then air dash: the wedge should ease into the burst. The burst should still hold. A ski into an air dash should feel the same. The slide should not feel faster. The dash should not feel longer. Jet stays off.
+195. Air dash, then ski: the burst should ease into the glide. A slide into an air dash should feel the same. A ski into an air dash should feel the same. Speed should feel the same. The dash should not feel longer. Jet stays off.
+196. Air dash, then slide: the burst should ease into the wedge. An air dash into a ski should feel the same. A ski into an air dash should feel the same. A slide into an air dash should feel the same. The slide should not feel faster. The dash should not feel longer. Jet stays off.
+197. Climb, then air dash: the climb should ease into the burst. The burst should still hold. An air dash into a slide should feel the same. A ski into an air dash should feel the same. A slide into an air dash should feel the same. The leave should not feel longer. The dash should not feel longer. Jet stays off.
+198. Wall run, then air dash: the wall exit should ease into the burst. The burst should still hold. A climb into an air dash should feel the same. The leave should not feel longer. The dash should not feel longer. Jet stays off.
+199. Air dash, then climb: the burst should ease into the grab. A wall run into an air dash should feel the same. A climb into an air dash should feel the same. The leave should not feel longer. The dash should not feel longer. Jet stays off.
+200. Air dash, then wall run: the burst should ease into the attach. An air dash into a climb should feel the same. A climb into an air dash should feel the same. A wall exit into an air dash should feel the same. The leave should not feel longer. The dash should not feel longer. Jet stays off.
+201. Miss a punch, then air dash: the whiff should ease into the burst. The burst should still hold. An air dash into a wall run should feel the same. An air dash into a climb should feel the same. A punch miss into a jump should feel the same. A crouch miss should feel the same. The dash should not feel longer. Jet stays off.
+202. Tag, then air dash: the connect should ease into the burst. The burst should still hold. A punch miss into an air dash should feel the same. A tag into a jump should feel the same. A crouch tag should feel the same. The dash should not feel longer. Jet stays off.
+203. Become It, then air dash: the claim should ease into the burst. The burst should still hold. A tag into an air dash should feel the same. Becoming It into a jump should feel the same. A crouch claim should feel the same. The dash should not feel longer. Jet stays off.
+204. Let go of a grapple, then air dash: the line should ease into the burst. The burst should still hold. Becoming It into an air dash should feel the same. A grapple release into a jump should feel the same. A crouch release should feel the same. The dash should not feel longer. The gate stays off. Jet stays off.
+205. Air dash, then punch: the burst should ease into the windup. A grapple release into an air dash should feel the same. A jump into a punch should feel the same. The cock should not feel longer. The dash should not feel longer. Jet stays off.
+206. Air dash, then tag: the burst should ease into the connect. An air dash into a punch should feel the same. A jump into a tag should feel the same. A crouch tag should feel the same. The dash should not feel longer. Jet stays off.
+207. Soft land, then air dash: the absorb should ease into the burst. The burst should still hold. An air dash into a tag should feel the same. A soft landing into a jump should feel the same. A hard landing should feel the same. The landing should not feel longer. The dash should not feel longer. Jet stays off.
+208. Hard land, then air dash: the deeper absorb should ease into the burst. The burst should still hold. A soft landing into an air dash should feel the same. A hard landing into a jump should feel the same. The landing should not feel longer. The dash should not feel longer. Jet stays off.
+209. Soft land, then punch: the absorb should ease into the windup. A hard landing into an air dash should feel the same. A jump into a punch should feel the same. A soft landing into a jump should feel the same. The cock should not feel longer. The landing should not feel longer.
+210. Hard land, then punch: the deeper absorb should ease into the windup. A soft landing into a punch should feel the same. A jump into a punch should feel the same. A hard landing into a jump should feel the same. The cock should not feel longer. The landing should not feel longer.
+211. Soft land, then tag: the absorb should ease into the connect. A hard landing into a punch should feel the same. A jump into a tag should feel the same. A soft landing into a jump should feel the same. A crouch tag should feel the same. The connect should not feel longer. The landing should not feel longer.
+212. Hard land, then tag: the deeper absorb should ease into the connect. A soft landing into a tag should feel the same. A jump into a tag should feel the same. A hard landing into a jump should feel the same. A crouch tag should feel the same. The connect should not feel longer. The landing should not feel longer.
+213. Ski, then punch: the glide should ease into the windup. A hard landing into a tag should feel the same. A ski into a jump should feel the same. A ski into an air dash should feel the same. A jump into a punch should feel the same. The cock should not feel longer. Speed should feel the same. Jet stays off.
+214. Slide, then punch: the wedge should ease into the windup. A ski into a punch should feel the same. A slide into a jump should feel the same. A slide into an air dash should feel the same. The slide should not feel faster. The cock should not feel longer. Jet stays off.
+215. Ski, then tag: the glide should ease into the connect. A slide into a punch should feel the same. A ski into a punch should feel the same. A ski into a jump should feel the same. A jump into a tag should feel the same. A crouch tag should feel the same. The connect should not feel longer. Speed should feel the same. Jet stays off.
+216. Slide, then tag: the wedge should ease into the connect. A ski into a tag should feel the same. A slide into a punch should feel the same. A slide into a jump should feel the same. A crouch tag should feel the same. The slide should not feel faster. The connect should not feel longer. Jet stays off.
+217. Climb, then punch: the grab should ease into the windup. A slide into a tag should feel the same. A climb into an air dash should feel the same. A climb into a jump should feel the same. A wall run should feel the same. The cock should not feel longer. The leave should not feel longer. Jet stays off.
+218. Climb, then tag: the grab should ease into the connect. A climb into a punch should feel the same. A climb into an air dash should feel the same. A climb into a jump should feel the same. A wall run should feel the same. The connect should not feel longer. The leave should not feel longer. Jet stays off.
+219. Wall run, then punch: the leave should ease into the windup. A climb into a tag should feel the same. A wall exit into an air dash should feel the same. A wall exit into a jump should feel the same. A climb into a punch should feel the same. The cock should not feel longer. The leave should not feel longer. Jet stays off.
+220. Wall run, then tag: the leave should ease into the connect. A wall exit into a punch should feel the same. A wall exit into an air dash should feel the same. A wall exit into a jump should feel the same. A climb into a tag should feel the same. The connect should not feel longer. The leave should not feel longer. Jet stays off.
+221. Air crouch, then punch: the dart should ease into the windup. A wall exit into a tag should feel the same. An air crouch into an air dash should feel the same. An air crouch into a jump should feel the same. A jump into a punch should feel the same. The cock should not feel longer. The fall should not feel faster. Jet stays off.
+222. Air crouch, then tag: the dart should ease into the connect. An air crouch into a punch should feel the same. An air crouch into an air dash should feel the same. An air crouch into a jump should feel the same. A jump into a tag should feel the same. A crouch tag should feel the same. The connect should not feel longer. The fall should not feel faster. Jet stays off.
+223. Become It, then punch: the claim should ease into the windup. An air crouch into a tag should feel the same. Becoming It into an air dash should feel the same. Becoming It into a jump should feel the same. A crouch claim should feel the same. The cock should not feel longer. The claim should not feel longer. Jet stays off.
+224. Become It, then tag: the claim should ease into the connect. Becoming It into a punch should feel the same. Becoming It into an air dash should feel the same. Becoming It into a jump should feel the same. An air crouch into a tag should feel the same. A crouch claim should feel the same. The connect should not feel longer. The claim should not feel longer. Jet stays off.
+225. Let go of a grapple, then punch: the line should ease into the windup. Becoming It into a tag should feel the same. A grapple release into an air dash should feel the same. A grapple release into a jump should feel the same. A crouch release should feel the same. The cock should not feel longer. The gate stays off. Jet stays off.
+226. Let go of a grapple, then tag: the line should ease into the connect. A grapple release into a punch should feel the same. A grapple release into an air dash should feel the same. A grapple release into a jump should feel the same. Becoming It into a tag should feel the same. A crouch release should feel the same. The connect should not feel longer. The gate stays off. Jet stays off.
+227. When the dash is ready, punch: the pulse should ease into the windup. A grapple release into a tag should feel the same. A dash coming off cooldown into a jump should feel the same. A crouch ready should feel the same. The cock should not feel longer. The dash should not feel longer. Jet stays off.
+228. When the dash is ready, tag: the pulse should ease into the connect. A dash coming off cooldown into a punch should feel the same. A dash coming off cooldown into a jump should feel the same. A crouch ready should feel the same. A grapple release into a tag should feel the same. The connect should not feel longer. The dash should not feel longer. Jet stays off.
+229. Punch, then tag: the cock or the strike should ease into the connect. A dash coming off cooldown into a tag should feel the same. A dash coming off cooldown into a punch should feel the same. A crouch tag should feel the same. The connect should not feel longer. The cock should not feel longer. Jet stays off.
+230. Tag, then punch: the connect should ease into the windup. A punch into a tag should feel the same. A dash coming off cooldown into a punch should feel the same. A crouch tag should feel the same. A tag into a jump should feel the same. The cock should not feel longer. The connect should not feel longer. Jet stays off.
+231. Miss a punch, then tag: the whiff should ease into the connect. A tag into a punch should feel the same. A punch into a tag should feel the same. A punch miss into a jump should feel the same. A punch miss into an air dash should feel the same. A crouch miss should feel the same. The connect should not feel longer. The whiff should not feel longer. Jet stays off.
+232. Punch, then ski: the cock or the strike should ease into the glide. A ski into a punch should feel the same. A punch miss into a tag should feel the same. A slide into a ski should feel the same. A jump into a ski should feel the same. The glide should not feel longer. The cock should not feel longer. Speed should feel the same. Jet stays off.
+233. Punch, then slide: the cock or the strike should ease into the wedge. A punch into a ski should feel the same. A slide into a punch should feel the same. A crouch into a slide should feel the same. A ski into a slide should feel the same. A jump into a slide should feel the same. The slide should not feel faster. The cock should not feel longer. Jet stays off.
+234. Tag, then ski: the connect should ease into the glide. A punch into a slide should feel the same. A punch into a ski should feel the same. A tag into a jump should feel the same. A slide into a ski should feel the same. The glide should not feel longer. The connect should not feel longer. Speed should feel the same. Jet stays off.
+235. Tag, then slide: the connect should ease into the wedge. A tag into a ski should feel the same. A punch into a slide should feel the same. A slide into a tag should feel the same. A crouch into a slide should feel the same. A ski into a slide should feel the same. A jump into a slide should feel the same. The slide should not feel faster. The connect should not feel longer. Jet stays off.
+236. Still crouch, then punch: the guard should ease into the windup. A tag into a slide should feel the same. A crouch walk into a punch should feel the same. An air crouch into a punch should feel the same. A slide into a punch should feel the same. A crouch into a slide should feel the same. The cock should not feel longer. The guard should not feel longer. Jet stays off.
+237. Still crouch, then tag: the guard should ease into the connect. A still crouch into a punch should feel the same. A crouch walk into a tag should feel the same. An air crouch into a tag should feel the same. A slide into a tag should feel the same. The connect should not feel longer. The guard should not feel longer. Jet stays off.
+238. Soft land, then ski: the absorb should ease into the glide. A still crouch into a tag should feel the same. A hard landing into a ski should feel the same. A jump into a ski should feel the same. A punch into a ski should feel the same. A slide into a ski should feel the same. The glide should not feel longer. The landing should not feel longer. Speed should feel the same. Jet stays off.
+239. Soft land, then slide: the absorb should ease into the wedge. A soft landing into a ski should feel the same. A hard landing into a slide should feel the same. A jump into a slide should feel the same. A punch into a slide should feel the same. A crouch into a slide should feel the same. A ski into a slide should feel the same. The slide should not feel faster. The landing should not feel longer. Jet stays off.
+240. Climb, then ski: the grab should ease into the glide. A soft landing into a slide should feel the same. A wall run into a ski should feel the same. A climb into a jump should feel the same. A climb into a punch should feel the same. A jump into a ski should feel the same. The glide should not feel longer. The leave should not feel longer. Speed should feel the same. Jet stays off.
+241. Climb, then slide: the grab should ease into the wedge. A climb into a ski should feel the same. A wall run into a slide should feel the same. A climb into a jump should feel the same. A soft landing into a slide should feel the same. A jump into a slide should feel the same. The slide should not feel faster. The leave should not feel longer. Jet stays off.
+242. Wall run, then ski: the leave should ease into the glide. A climb into a slide should feel the same. A climb into a ski should feel the same. A wall run into a jump should feel the same. A soft landing into a ski should feel the same. The glide should not feel longer. The leave should not feel longer. Speed should feel the same. Jet stays off.
+243. Wall run, then slide: the leave should ease into the wedge. A wall run into a ski should feel the same. A climb into a slide should feel the same. A wall run into a jump should feel the same. A soft landing into a slide should feel the same. A jump into a slide should feel the same. The slide should not feel faster. The leave should not feel longer. Jet stays off.
+244. Air dash, then ski: the burst should ease into the glide. A wall run into a slide should feel the same. A wall run into a ski should feel the same. A climb into a ski should feel the same. An air dash into a slide should feel the same. The glide should not feel longer. The dash should not feel longer. Speed should feel the same. Jet stays off.
+245. Hard land, then ski: the absorb should ease into the glide. An air dash into a ski should feel the same. A soft landing into a ski should feel the same. A jump into a ski should feel the same. A hard landing into a slide should feel the same. The glide should not feel longer. The landing should not feel longer. Speed should feel the same. Jet stays off.
+246. Air crouch, then ski: the dart should ease into the glide. A hard landing into a ski should feel the same. An air dash into a ski should feel the same. A jump into a ski should feel the same. An air crouch into a slide should feel the same. The glide should not feel longer. The fall should not feel longer. Speed should feel the same. Jet stays off.
+247. Let go of a grapple, then ski: the line should ease into the glide. An air crouch into a ski should feel the same. A grapple release into a jump should feel the same. A grapple release into a punch should feel the same. An air dash into a ski should feel the same. The glide should not feel longer. The line should not feel longer. The gate stays off. Jet stays off.
+248. Let go of a grapple, then slide: the line should ease into the wedge. A grapple release into a ski should feel the same. A grapple release into a jump should feel the same. A wall run into a slide should feel the same. A soft landing into a slide should feel the same. The slide should not feel faster. The line should not feel longer. The gate stays off. Jet stays off.
+249. Become It, then ski: the claim should ease into the glide. A grapple release into a slide should feel the same. Becoming It into a punch should feel the same. Becoming It into a jump should feel the same. A grapple release into a ski should feel the same. The glide should not feel longer. The claim should not feel longer. Speed should feel the same. Jet stays off.
+250. Become It, then slide: the claim should ease into the wedge. Becoming It into a ski should feel the same. Becoming It into a punch should feel the same. Becoming It into a jump should feel the same. A grapple release into a slide should feel the same. The slide should not feel faster. The claim should not feel longer. Jet stays off.
+251. When the dash is ready, ski: the pulse should ease into the glide. Becoming It into a slide should feel the same. A dash coming off cooldown into a punch should feel the same. A dash coming off cooldown into a tag should feel the same. A dash coming off cooldown into a jump should feel the same. The glide should not feel longer. The dash should not feel longer. Speed should feel the same. Jet stays off.
+252. When the dash is ready, slide: the pulse should ease into the wedge. A dash coming off cooldown into a ski should feel the same. A dash coming off cooldown into a punch should feel the same. A dash coming off cooldown into a tag should feel the same. A dash coming off cooldown into a jump should feel the same. The slide should not feel faster. The dash should not feel longer. Jet stays off.
+253. Miss a punch, then ski: the whiff should ease into the glide. A dash coming off cooldown into a slide should feel the same. A punch into a ski should feel the same. A punch miss into a tag should feel the same. A punch miss into a jump should feel the same. A punch miss into an air dash should feel the same. The glide should not feel longer. The whiff should not feel longer. Speed should feel the same. Jet stays off.
+254. Miss a punch, then slide: the whiff should ease into the wedge. A punch miss into a ski should feel the same. A punch into a slide should feel the same. A punch miss into a tag should feel the same. A punch miss into a jump should feel the same. A punch miss into an air dash should feel the same. The slide should not feel faster. The whiff should not feel longer. Jet stays off.
+255. Still crouch, then slide: the guard should ease into the wedge. A punch miss into a slide should feel the same. A still crouch into a punch should feel the same. A still crouch into a tag should feel the same. A still crouch into a ski should feel the same. A crouch walk into a slide should feel the same. The slide should not feel faster. The guard should not feel longer. Jet stays off.
+256. Ski, then slide: the glide should ease into the wedge. A still crouch into a slide should feel the same. A crouch walk into a ski should feel the same. A crouch walk into a slide should feel the same. A slide into a ski should feel the same. The slide should not feel faster. The glide should not feel longer. Jet stays off.
+257. Slide, then air dash: the wedge should ease into the burst. The burst should still hold. A ski into a slide should feel the same. A ski into an air dash should feel the same. An air dash into a slide should feel the same. The slide should not feel faster. The dash should not feel longer. Jet stays off.
+258. Slide, then jump: the wedge should ease into the jump. A ski into a jump should feel the same. A still crouch into a jump should feel the same. A crouch walk into a jump should feel the same. A standing jump should feel the same. A slide into an air dash should feel the same. The jump should not feel higher. The slide should not feel faster. Jet stays off.
+259. Jump, then air dash: the jump should ease into the burst. The burst should still hold. A slide into a jump should feel the same. A ski into a jump should feel the same. A slide into an air dash should feel the same. The jump should not feel higher. The dash should not feel longer. Jet stays off.
+260. Still crouch, then air dash: the guard should ease into the burst. The burst should still hold. A jump into an air dash should feel the same. A slide into an air dash should feel the same. An air crouch into an air dash should feel the same. The guard should not feel longer. The dash should not feel longer. Jet stays off.
+261. Punch, then air dash: the punch should ease into the burst. The burst should still hold. A still crouch into an air dash should feel the same. A punch miss into an air dash should feel the same. A tag into an air dash should feel the same. The cock should not feel longer. The dash should not feel longer. Jet stays off.
+262. Crouch walk, then air dash: the low stride should ease into the burst. The burst should still hold. A hard landing into a jump should feel the same. A soft landing into a jump should feel the same. A still crouch into an air dash should feel the same. The stride should not feel longer. The dash should not feel longer. Jet stays off.
+263. When the dash is ready, air dash: the pulse should ease into the burst. The burst should still hold. A crouch walk into an air dash should feel the same. A dash coming off cooldown into a jump should feel the same. A dash coming off cooldown into a punch should feel the same. The pulse should not feel longer. The dash should not feel longer. Jet stays off.
+264. Punch, then jump: the punch should ease into the jump. Becoming It into a jump should feel the same. A tag into a jump should feel the same. A punch miss into a jump should feel the same. The cock should not feel longer. The jump should not feel higher. Jet stays off.
+265. Run, then ski: the stride should ease into the glide. The glide should then hold. A walk into a ski should feel the same. A slide into a ski should feel the same. A jump into a ski should feel the same. The glide should not feel longer. Speed should feel the same. Jet stays off.
+266. Run, then slide: the stride should ease into the wedge. The wedge should then hold. A run into a ski should feel the same. A ski into a slide should feel the same. A still crouch into a slide should feel the same. The slide should not feel faster. The wedge should not feel longer. Jet stays off.
+267. Jump, then still crouch: the jump should ease into the guard. The guard should then hold. A run into a slide should feel the same. A jump into a ski should feel the same. A jump into a slide should feel the same. The jump should not feel higher. The guard should not feel longer. Jet stays off.
+268. Air dash, then still crouch: the burst should ease into the guard. The guard should then hold. A jump into a still crouch should feel the same. A still crouch into an air dash should feel the same. The dash should not feel longer. The guard should not feel longer. Jet stays off.
+269. Walk, then slide: the walk should ease into the wedge. The wedge should then hold. An air dash into a still crouch should feel the same. A run into a slide should feel the same. A crouch walk into a slide should feel the same. The slide should not feel faster. The wedge should not feel longer. Jet stays off.
+270. Walk, then ski: the walk should ease into the glide. The glide should then hold. A walk into a slide should feel the same. A run into a ski should feel the same. A crouch walk into a ski should feel the same. The glide should not feel longer. Speed should feel the same. Jet stays off.
+271. Crouch walk, then jump: the low stride should ease into the jump. The jump should then hold. A walk into a ski should feel the same. A still crouch into a jump should feel the same. A crouch walk into an air dash should feel the same. The jump should not feel higher. The stride should not feel longer. Jet stays off.
+272. Walk, then jump: the walk should ease into the jump. The jump should then hold. A crouch walk into a jump should feel the same. A walk into a ski should feel the same. A still crouch into a jump should feel the same. The jump should not feel higher. The stride should not feel longer. Jet stays off.
+273. Walk, then air dash: the walk should ease into the burst. The burst should then hold. A walk into a jump should feel the same. A crouch walk into an air dash should feel the same. A still crouch into an air dash should feel the same. The dash should not feel longer. The stride should not feel longer. Jet stays off.
+274. Still crouch, then jump: the guard should ease into the jump. The jump should then hold. A walk into an air dash should feel the same. A crouch walk into a jump should feel the same. A jump into a still crouch should feel the same. The jump should not feel higher. The guard should not feel longer. Jet stays off.
+275. Walk, then punch: the walk should ease into the cock. The windup should then hold. The strike should feel the same. A still crouch into a jump should feel the same. A jump into a punch should feel the same. A still crouch into a punch should feel the same. The cock should not feel longer. The stride should not feel longer. Jet stays off.
+276. Walk, then tag: the walk should ease into the connect. The connect should then hold. A walk into a punch should feel the same. A jump into a tag should feel the same. A still crouch into a tag should feel the same. The connect should not feel longer. The stride should not feel longer. Jet stays off.
+277. Run, then punch: the stride should ease into the cock. The windup should then hold. The strike should feel the same. A walk into a tag should feel the same. A walk into a punch should feel the same. A jump into a punch should feel the same. The cock should not feel longer. The stride should not feel longer. Jet stays off.
+278. Run, then tag: the stride should ease into the connect. The connect should then hold. A run into a punch should feel the same. A walk into a tag should feel the same. A jump into a tag should feel the same. The connect should not feel longer. The stride should not feel longer. Jet stays off.
+279. Crouch walk, then punch: the low stride should ease into the cock. The windup should then hold. The strike should feel the same. A run into a tag should feel the same. A still crouch into a punch should feel the same. A walk into a punch should feel the same. The cock should not feel longer. The stride should not feel longer. Jet stays off.
+280. Crouch walk, then tag: the low stride should ease into the connect. The connect should then hold. A crouch walk into a punch should feel the same. A run into a tag should feel the same. A still crouch into a tag should feel the same. The connect should not feel longer. The stride should not feel longer. Jet stays off.
+281. Air dash, then punch: the burst should ease into the cock. The windup should then hold. The strike should feel the same. A slide into a punch should feel the same. A ski into a tag should feel the same. A slide into a tag should feel the same. The cock should not feel longer. The dash should not feel longer. Jet stays off.
+282. Air dash, then tag: the burst should ease into the connect. The connect should then hold. An air dash into a punch should feel the same. A climb into a punch should feel the same. A jump into a tag should feel the same. The connect should not feel longer. The dash should not feel longer. Jet stays off.
+283. Walk, then still crouch: the walk should ease into the guard. The guard should then hold. A soft landing into a punch should feel the same. A soft landing into a tag should feel the same. An air crouch into a punch should feel the same. The guard should not feel longer. The stride should not feel longer. Jet stays off.
+284. Run, then still crouch: the stride should ease into the guard. The guard should then hold. A walk into a still crouch should feel the same. A jump into a still crouch should feel the same. An air dash into a still crouch should feel the same. The guard should not feel longer. The stride should not feel longer. Jet stays off.
+285. Ski, then still crouch: the glide should ease into the guard. The guard should then hold. A run into a still crouch should feel the same. A walk into a still crouch should feel the same. The guard should not feel longer. The glide should not feel longer. Jet stays off.
+286. Slide, then still crouch: the wedge should ease into the guard. The guard should then hold. A ski into a still crouch should feel the same. A run into a still crouch should feel the same. The guard should not feel longer. The slide should not feel faster. Jet stays off.
+287. Punch, then still crouch: the punch should ease into the guard. The guard should then hold. A slide into a still crouch should feel the same. A ski into a still crouch should feel the same. The guard should not feel longer. The cock should not feel longer. Jet stays off.
+288. Tag, then still crouch: the connect should ease into the guard. The guard should then hold. A punch into a still crouch should feel the same. A slide into a still crouch should feel the same. The guard should not feel longer. The connect should not feel longer. Jet stays off.
+289. Whiff, then still crouch: the miss should ease into the guard. The guard should then hold. A tag into a still crouch should feel the same. A punch into a still crouch should feel the same. The guard should not feel longer. The whiff should not feel longer. Jet stays off.
+290. Become It, then still crouch: the claim should ease into the guard. The guard should then hold. A whiff into a still crouch should feel the same. A tag into a still crouch should feel the same. The guard should not feel longer. The claim should not feel longer. Jet stays off.
+291. Dash ready, then still crouch: the pulse should ease into the guard. The guard should then hold. An It claim into a still crouch should feel the same. A whiff into a still crouch should feel the same. The guard should not feel longer. The dash should not feel longer. Jet stays off.
+292. Grapple release, then still crouch: the line should ease into the guard. The guard should then hold. A dash ready into a still crouch should feel the same. An It claim into a still crouch should feel the same. The guard should not feel longer. The grapple should stay off. Jet stays off.
+293. Hard land, then still crouch: the absorb should ease into the guard. The guard should then hold. A grapple release into a still crouch should feel the same. A dash ready into a still crouch should feel the same. The guard should not feel longer. The landing should not feel longer. Jet stays off.
+294. Soft land, then still crouch: the absorb should ease into the guard. The guard should then hold. A hard land into a still crouch should feel the same. A grapple release into a still crouch should feel the same. The guard should not feel longer. The landing should not feel longer. Jet stays off.
+295. Air crouch, then still crouch: the dart should ease into the guard. The guard should then hold. A soft land into a still crouch should feel the same. A hard land into a still crouch should feel the same. The guard should not feel longer. The fall should not feel faster. Jet stays off.
+296. Climb, then still crouch: the grab should ease into the guard. The guard should then hold. An air crouch into a still crouch should feel the same. A wall run into a still crouch should feel the same. The guard should not feel longer. The leave should not feel longer. Jet stays off.
+297. Wall exit, then still crouch: the leave should ease into the guard. The guard should then hold. A climb into a still crouch should feel the same. An air crouch into a still crouch should feel the same. The guard should not feel longer. The leave should not feel longer. Jet stays off.
+298. Crouch walk, then still crouch: the low stride should ease into the guard. The guard should then hold. A wall exit into a still crouch should feel the same. A climb into a still crouch should feel the same. The guard should not feel longer. The stride should not feel longer. Jet stays off.
+299. Ski, then crouch walk: the glide should ease into the low stride. The stride should then hold. A ski into a still crouch should feel the same. A crouch walk into a still crouch should feel the same. The stride should not feel longer. The glide should not feel longer. Jet stays off.
+300. Slide, then crouch walk: the wedge should ease into the low stride. The stride should then hold. A ski into a crouch walk should feel the same. A slide into a still crouch should feel the same. The stride should not feel longer. The slide should not feel faster. Jet stays off.
+301. Walk, then crouch walk: the walk should ease into the low stride. The stride should then hold. A slide into a crouch walk should feel the same. A walk into a still crouch should feel the same. The stride should not feel longer. The drop should not feel faster. Jet stays off.
+302. Run, then crouch walk: the run should ease into the low stride. The stride should then hold. A walk into a crouch walk should feel the same. A run into a still crouch should feel the same. The stride should not feel longer. The drop should not feel faster. Jet stays off.
+303. Still crouch, then crouch walk: the planted guard should ease into the low stride. The stride should then hold. A walk into a crouch walk should feel the same. A run into a crouch walk should feel the same. A crouch walk into a still crouch should feel the same. The stride should not feel longer. Jet stays off.
+304. Crouch walk, then walk: the low stride should ease into the walk. The walk should then hold. A crouch walk into a run should feel the same. A still crouch into a walk should feel the same. The walk should not feel longer. The drop should not feel faster. Jet stays off.
+305. Crouch walk, then run: the low stride should ease into the run. The run should then hold. A crouch walk into a walk should feel the same. A still crouch into a run should feel the same. The run should not feel longer. The drop should not feel faster. Jet stays off.
+306. Still crouch, then walk: the planted guard should ease into the walk. The walk should then hold. A crouch walk into a walk should feel the same. A still crouch into a run should feel the same. The walk should not feel longer. The drop should not feel faster. Jet stays off.
+307. Still crouch, then run: the planted guard should ease into the run. The run should then hold. A still crouch into a walk should feel the same. A crouch walk into a run should feel the same. The run should not feel longer. The drop should not feel faster. Jet stays off.
+308. Slide, then ski: the wedge should ease into the glide. The glide should then hold. A ski into a slide should feel the same. A walk into a ski should feel the same. The glide should not feel longer. The slide should not feel faster. Jet stays off.
+309. Crouch walk, then ski: the low stride should ease into the glide. The glide should then hold. A still crouch into a ski should feel the same. A walk into a ski should feel the same. The glide should not feel longer. The stride should not feel longer. Jet stays off.
+310. Still crouch, then ski: the planted guard should ease into the glide. The glide should then hold. A crouch walk into a ski should feel the same. A walk into a ski should feel the same. The glide should not feel longer. The guard should not feel longer. Jet stays off.
+311. Ski, then walk: the glide should ease into the walk. The walk should then hold. A ski into a run should feel the same. A walk into a ski should feel the same. The walk should not feel longer. The glide should not feel longer. Jet stays off.
+312. Ski, then run: the glide should ease into the run. The run should then hold. A ski into a walk should feel the same. A run into a ski should feel the same. The run should not feel longer. The glide should not feel longer. Jet stays off.
+313. Ski, then idle: the glide should ease into the idle. The idle should then hold. A ski into a walk should feel the same. A ski into a still crouch should feel the same. The idle should not feel longer. The glide should not feel longer. Jet stays off.
+314. Jump, then ski: the hang or the absorb should ease into the glide. The glide should then hold. A hard landing into a ski should feel the same. A walk into a ski should feel the same. The glide should not feel longer. The jump should not feel higher. Jet stays off.
+315. Jump, then slide: the hang or the absorb should ease into the wedge. The wedge should then hold. A hard landing that shares this entry should feel the same. A soft landing into a slide should feel the same. The wedge should not feel longer. The slide should not feel faster. The jump should not feel higher. Jet stays off.
+316. Air dash, then slide: the burst should ease into the wedge. The wedge should then hold. An air dash into a ski should feel the same. The wedge should not feel longer. The dash should not feel longer. The slide should not feel faster. Jet stays off.
+317. Air dash, then climb: the burst should ease into the grab. The grab should then hold. An air dash into a slide should feel the same. The grab should not feel longer. The dash should not feel longer. The leave should not feel longer. Jet stays off.
+318. Air dash, then wall run: the burst should ease into the attach. The attach should then hold. An air dash into a climb should feel the same. The attach should not feel longer. The dash should not feel longer. The leave should not feel longer. Jet stays off.
+319. Air dash, then dart: the burst should ease into the dart. The dart should then hold. An air dash into a wall run should feel the same. The dart should not feel longer. The dash should not feel longer. The fall should not feel faster. Jet stays off.
+320. Ski, then slide: the glide should ease into the wedge. The wedge should then hold. The glide should not ease back in. A slide into a ski should feel the same. The wedge should not feel longer. The slide should not feel faster. Jet stays off.
+321. Still crouch, then slide: the guard should ease into the wedge. The wedge should then hold. The guard should not ease back in. A crouch walk into a slide should feel the same. The wedge should not feel longer. The slide should not feel faster. Jet stays off.
+322. Crouch walk, then slide: the low stride should ease into the wedge. The wedge should then hold. The stride should not ease back in. A still crouch into a slide should feel the same. A walk into a slide should feel the same. The wedge should not feel longer. The slide should not feel faster. Jet stays off.
+323. Walk, then sprint: the walk should ease into the sprint. The sprint should then hold. The push should not ease back in. A crouch walk into a run should feel the same. The sprint should not feel longer. Speed should feel the same. Jet stays off.
+324. Sprint, then walk: the sprint should ease into the walk. The walk should then hold. The stride should not ease back in. A walk into a sprint should feel the same. The walk should not feel longer. Speed should feel the same. Jet stays off.
+325. Sprint, then stop: the sprint should ease into the idle. The idle should then hold. The stride should not ease back in. A sprint into a walk should feel the same. A walk into a stop should feel the same. The idle should not feel longer. Speed should feel the same. Jet stays off.
+326. Walk, then stop: the walk should ease into the idle. The idle should then hold. The stride should not ease back in. A sprint into a stop should feel the same. The idle should not feel longer. Speed should feel the same. Jet stays off.
+327. Idle, then walk: the idle should ease into the walk. The walk should then hold. The plant should not ease back in. A still crouch into a walk should feel the same. A sprint start should feel the same. The walk should not feel longer. Speed should feel the same. Jet stays off.
+328. Sprint, then jump: the stride arms should ease into the air pose. The air pose should then hold. The reach should not ease back in. A walk into a jump should feel the same. The jump should not feel higher. Jet stays off.
+329. Stand still, then jump: the idle arms should ease into the air pose. The air pose should then hold. The reach should not ease back in. A still crouch into a jump should feel the same. A walk into a jump should feel the same. A sprint into the air should feel the same. The jump should not feel higher. Jet stays off.
+330. Air dash, then jump: the burst should ease into the air pose. The air pose should then hold. The push should not ease back in. A standing idle into a jump should feel the same. The dash should not feel longer. The jump should not feel higher. Jet stays off.
+331. Wall run, then jump: the wall pose should ease into the air pose. The air pose should then hold. The push should not ease back in. An air dash into a jump should feel the same. The leave should not feel longer. The jump should not feel higher. Jet stays off.
+332. Climb, then jump: the climb pose should ease into the air pose. The air pose should then hold. The push should not ease back in. A wall run into a jump should feel the same. The leave should not feel longer. The jump should not feel higher. Jet stays off.
+333. Air crouch, then jump: the dart should ease into the air pose. The air pose should then hold. The push should not ease back in. A climb into a jump should feel the same. The fall should not feel faster. The jump should not feel higher. Jet stays off.
+334. Soft land, then jump: the absorb should ease into the air pose. The air pose should then hold. The push should not ease back in. An air crouch into a jump should feel the same. The landing should not feel longer when you stay down. The jump should not feel higher. Jet stays off.
+335. Hard land, then jump: the deep absorb should ease into the air pose. The air pose should then hold. The push should not ease back in. A soft landing into a jump should feel the same. The landing should not feel longer when you stay down. The jump should not feel higher. Jet stays off.
+336. Miss a punch, then jump: the whiff should ease into the air pose. The air pose should then hold. The push should not ease back in. A hard landing into a jump should feel the same. The whiff should not feel longer. The jump should not feel higher. Jet stays off.
+337. Get tagged, then jump: the connect should ease into the air pose. The air pose should then hold. The push should not ease back in. A punch miss into a jump should feel the same. The flinch should not feel longer. The jump should not feel higher. Jet stays off.
+338. Claim It, then jump: the claim should ease into the air pose. The air pose should then hold. The push should not ease back in. A tag into a jump should feel the same. The claim should not feel longer. The jump should not feel higher. Jet stays off.
+339. Dash ready, then jump: the pulse should ease into the air pose. The air pose should then hold. The push should not ease back in. A claim into a jump should feel the same. The dash should not feel longer. The jump should not feel higher. Jet stays off.
+340. Ski, then jump: the glide should ease into the air pose. The air pose should then hold. The push should not ease back in. A dash-ready pulse into a jump should feel the same. The glide should not feel longer. The jump should not feel higher. Jet stays off.
+341. Bounce off a wall: the pose should ease into the kick. The kick should then hold. The fade should not ease back in. A ski into a jump should feel the same. The bounce should not feel longer. Jet stays off.
+342. Super glide off a mantle: the pose should ease into the launch. The launch should then hold. The fade should not ease back in. A wall bounce should feel the same. The glide should not feel longer. Jet stays off.
+343. Air dash, then keep going: the whip should ease into the pose. The pose should then hold. The fade should not ease back in. A dash into a ski should feel the same. The dash should not feel longer. Jet stays off.
+344. Air dash, then land or fall: the pose should ease into the fall or the run. That pose should then hold. The arms should not crawl in. The dash should not feel longer. Jet stays off.
+345. Ground dash or lunge: the whip should ease into the hang. The hang should then hold. The pulse should not ease back in. An air dash should feel the same. The dash should not feel longer. Jet stays off.
+346. Air dash, then fall: the lead foot should ease into the stride. The stride should then keep going. The foot should not stay pinned. The dash should not feel longer. Jet stays off.
+347. Come to a stop from a slow step: the pose should ease into the idle. The idle should then hold. The feet should not creep in. A sprint into a stop should feel the same. A walk into a stop should feel the same. Speed should feel the same. Jet stays off.
+348. Land and stay down: the pose should ease into the absorb. The absorb should then hold. The knees should not pop. A jump out of a landing should feel the same. Land time should feel the same. Jet stays off.
+349. Mantle a ledge: the pose should ease into the vault. The vault should then hold. The arms should not pop. A super glide should feel the same. Mantle time should feel the same. Jet stays off.
+350. Walk or run onto a climb or a wall: the pose should ease onto it. That pose should then hold. The hands should not pop. A crouch onto a wall should feel the same. A jump onto a wall should feel the same. The meet should not feel longer. Jet stays off.
+351. Finish a mantle into a stand or a run: the vault should ease into that pose. That pose should then hold. The body should not pop. A super glide should feel the same. Mantle time should feel the same. Jet stays off.
+352. Play the Play scene: the body should be the Tan Hier mannequin, not a pink capsule. The feet should sit on the pad. Walking should move the limbs. Tagging should swap to the Orange Hier. Jet stays off.
+353. Walk and tag: the Tan body should read as warm vinyl, with darker hinges and a matte waist. The eye plates should stay flat and dark. It should swap to orange vinyl. No magenta. The molded face should stay. Jet stays off.
+354. The body should be the v0.6 curved vinyl with a human waist. Soles should stay dark rubber. The face should stay the flat-eyed molded face. Feet on the pad. Limbs move. No magenta capsule. Jet stays off.
+355. Walk and swing the arms: the shell should catch a soft highlight. The hinges should read darker than the vinyl. Dirt and the soles should stay dark. The face should stay. Pose timing should feel the same. Jet stays off.
 
 ## Known leftovers
 
 - Prefab/mat dirt after Hub visuals / URP regen -> do not commit unless intentional.
+- Hier catalog color slots are empty on purpose (Prefab fileID 100100000 does not resolve on an FBX). Editor Play loads Tan and Orange by path. A player build still needs those six model roots assigned in Unity. Do not hand-write fileIDs.
 - Flat HiPoly mannequins may skip hierarchical `DummyLocomotor` binds (primitive / bindable-bone path is the readable tell).
 - Legacy contact `TryTag` radius still exists on motor; play modes use punch transfer.
 - Trail avoid starts peeling ~9.2 m (weight 0.80) off a foreign ribbon (HUD TRAIL! soft warn ~6.2 m).
 - AI punch tell drops for ~0.32 s after a juke/leave-cone whiff so the arm drop is readable (still needs a fuller human feel pass). No spectator camera: an eliminated player stays on their body with a waiting line. Playground music stays silent: `music_playground_bed_loop.wav` is meta only, so PlayMusic returns. No hitstop. Hot Potato flee may air-dash once while airborne if the motor CD is ready. A juke whiff also refreshes weave so they peel off the punch line.
 - Dash HUD: jet off = one CD bar (dark track, cyan fill, mint when ready or bursting) and one DASH line (DASH! while bursting). Jet on keeps a dash CD line under JET. Cooldown stays 30 s.
-- Dummy MissRecover: limp whiff drops faster than HitRecover hold (short shoulder sag). AI HoldPunchTelegraph matches the flared windup elbow.
+- Dummy MissRecover: limp whiff drops faster than HitRecover hold (short shoulder sag). AI HoldPunchTelegraph matches the windup cock beside the head.
 - Bots hold still on countdown, results, and Idle (no chase until Playing).
 - Resume / leave-results: look, punch, jump, dash, and lunge ignore two frames after the cursor locks (shared resume gate + cameras) so the menu click that closed the card cannot yaw or punch. Rematch / F-keys from Direct Play also arm that gate when the cursor locks.
 - Do not hand-author `TagURP*.asset` YAML; use **Ensure URP Pipeline**.
@@ -177,6 +1164,336 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 13. First-run Boot copy names the punch key and clears after a round, including Direct Play back to Boot. Opening Couch or Mode select does not clear it. The long countdown hint shows once and says move versus sprint. Rematch uses the short orange-hat line. Boot pause H opens Controls. Digits highlight. Enter / Space confirms.
 14. Who-plays Esc returns to Boot on Couch. Mode select Esc returns to who-plays after Couch, and to Boot after the Mode row. The Mode row does not reset the player count. Highlights match the saved count and the last mode.
 15. Results: keys 1-2 highlight Rematch and Menu. Enter or Space activates after the 0.25s arm. R rematches. Q/Esc menu. A click during the arm only moves the highlight.
+16. Player and bot spawn the curved Hier HiPoly mannequin. Runner is Tan Hier. It is Orange Hier. Flat Dummy_Runner on the Play scene does not win. Navy Spade only if Hier has no limb bones.
+17. Run: recovery knee flexes, stance leg stays nearly straight. Dash whip does not add arm roll. Slide is a low crouch. Land buckles. Punch connect stays in front of the chest.
+18. Run arms oppose the legs. Forward arm is the opposite side of the forward thigh. Hands stay clear of the pelvis. Hier spawn still wins over flat Dummy_Runner.
+19. Slide silhouette is flat (chest down, lead knee tucked, trail leg back). Punch connect is a long arm in front of the chest.
+20. Land holds a short buckle, then eases into the run. A hop still buckles. Arms stay clear of the pelvis.
+21. Air dash whip stretches early and settles before the burst ends. No extra arm roll into the pelvis.
+22. v0.1 Tan and Orange Hier still bind UpperArm / LowerArm / UpperLeg / LowerLeg. Pose drivers were not reverted.
+23. Jump arms reach up with a knee tuck. Fall arms trail back and the legs lengthen. Hands stay clear of the pelvis.
+24. Tag handoff: the tagged runner guards. The new It lifts one knee. Hands stay clear of the pelvis.
+25. Climb is hand-over-hand with one bent knee. Wall-run plants the wall hand and steps the outer leg. Hands stay clear of the hips.
+26. Idle hands hang forward and out of the hips. The offset is gone once the stride is up. No extra arm roll.
+27. Jump tuck and fall trail show before the landing, including a short hop. Hands stay clear of the hips.
+28. Run plant holds. Front knee bends, back leg stays long, arms still oppose the front leg. No extra arm roll.
+29. Slide arms are a long low line. Elbows stay nearly straight. Lead knee tucked, trail leg long.
+30. Land arms come out for balance during the buckle, then ease into the run. Hands stay clear of the hips.
+31. Climb hands stay a long line through the reach and the pull. The wall-run hand presses with the stride. The outer arm stays straight. Hands stay clear of the hips.
+32. Punch windup sits beside the head, clear of the chest. Connect stays a long line in front. Windup time is unchanged.
+33. After an air dash the arms ease out of the hang. They do not whip again when the burst ends. Dash time and cooldown are unchanged.
+34. Tag catch is a long V of arms with both knees bent. Hands stay clear of the chest. The new It still lifts one knee. Neither pose matches a landing.
+35. Idle into a run keeps the hands outside the hips. Resting arms have no extra roll. The stride still opposes the front leg.
+36. Ski eases into a lower glide with the arms out, then eases back into the run. It does not pop. Jet stays off. Ski speed is unchanged.
+37. Leaving a wall run eases into the fall or the run. The wall hand and the outer leg do not snap. Wall-run speed is unchanged.
+38. Leaving a climb eases into the fall or the run. The reaching hand and the stepping knee do not snap. Climb speed is unchanged.
+39. Grapple pose is a long two-arm reach with long legs, only while enableGrapple is on and a rope is attached. The default gate stays off. Jet stays off.
+40. The new It raises one arm and holds the other out, chest open, one knee up. The tagged runner still uses the two-arm V. The poses do not match.
+41. Punch connect eases into the run during the recover. The fist does not snap back when the punch ends. Windup time is unchanged.
+42. Jump apex hangs the arms out before the fall trail. The leave is still a tuck. Jump height is unchanged.
+43. Ski glide keeps a knee and a short arm swing. The run knee still lifts higher. The blend eases. Ski speed is unchanged. Jet stays off.
+44. Slide arms sit out from the chest on the flat wedge, and the head stays up. A crouch stays a bent-elbow guard. Slide speed is unchanged.
+45. Crouch is a low guard with both knees bent and the elbows folded in front. Slide stays the flat wedge with straight arms and a trail leg. Holding crouch still slides only with speed. Slide speed is unchanged.
+46. Air-crouch fall is a nose-down dart with the arms in. A normal fall still trails the arms. The 2x fall speed is unchanged.
+47. Landing into a run opens the trail leg and the arms into the stride while the front knee is still up. A standstill land opens both legs together. Land time is unchanged.
+48. The run arm opposite the front knee is a long reach, wider than the back arm. The back elbow bends short of the hip. Only the front knee lifts.
+49. A tagging punch eases the fist into the It claim. A hit that does not tag still eases into the run. The catch stays the two-arm V. Windup time is unchanged.
+50. The tagged runner's V eases into the stride: arms and the trail leg first, one knee still up. A standstill catch opens both legs together. Flinch time is unchanged. The new It claim is unchanged.
+51. Idle breath and a slight side sway. Hands stay clear of the hips. No extra arm roll. The sway is gone once the stride is up.
+52. A stop closes the stride under the hips, then idle. Braking into a walk shortens the stride. A leg does not freeze out. Speed is unchanged.
+53. Walk and sprint ease into each other. Stride length and step rate change together. The feet keep moving and the hips stay level. Speed is unchanged.
+54. A sharp turn plants the outside foot. The chest and the hips lean together. Hands stay clear of the hips. Look speed is unchanged.
+55. A short hop into a walk bends the knees, then the stride returns under the hips. The arms stay in the walk. A hard landing still flares the arms. Land time is unchanged.
+56. A stop from a sprint settles the last hip sway into the idle breath and sway. The hips do not freeze flat or pop. Speed is unchanged.
+57. A walk from idle pushes off the planted foot into the stride. Idle sway fades. The feet do not skate. Speed is unchanged.
+58. A crouch or a slide from a run drops into the pose. The speed you already have carries. Letting go returns to the stride under the hips. The slide does not speed up.
+59. After an air dash, the feet return to the stride under the hips. They do not skate. The burst stays short and the cooldown is unchanged.
+60. A wall run or a climb sets the hand on the surface, then the swing starts. The arm does not pop. The exit returns under the hips. Exit time is unchanged.
+61. After a punch, the arm opposite the front knee returns to the stride. The hips do not stay twisted. The fist still eases out. Windup time is unchanged.
+62. A grapple, if turned on, settles the hands and the chest into the long line. They do not twist. The gate stays off. Range and speed are unchanged.
+63. After a tag, the hands and the chest ease into the stride together, under the hips. They do not stay folded and then pop. One knee can still be up. Flinch time is unchanged.
+64. After you become It, the hands and the chest ease into the stride. They do not stay in the claim and then pop. One knee can still be up. The claim time is unchanged.
+65. A ski and a run ease the feet under the hips. They do not skate, and the hips do not pop. Speed is unchanged. Jet stays off.
+66. A hard landing from a stand eases the knees into the idle breath and sway. The arms flare, then ease, and do not lock. A short hop does not flare the arms. Land time is unchanged.
+67. An air crouch reads as a crouch in the air. The arms ease into the landing and do not pop. The 2x fall speed is unchanged.
+68. An air dash pitches the chest and throws the arms wide for the short burst. They ease back after. Duration and cooldown are unchanged.
+69. Leaving a wall eases the hips and the feet into the stride. They do not pop. The hands still take the same time to leave. A climb leaves the same way.
+70. While running, the reaching arm follows the look and stays clear of the hip. It does not fight the stride. Look speed is unchanged.
+71. Letting go of a slide stands up into the run under the hips. The feet do not pop. The slide does not speed up.
+72. A jump pushes off the planted foot. The other knee comes up, then the tuck. Jump height is unchanged.
+73. A punch cocks beside the head and holds that beat, then strikes. Windup time is unchanged.
+74. A stop from a sprint plants the last foot under the hip, then the idle sway. The foot does not skate. Speed is unchanged.
+75. In the air, the arms stay clear of the torso. The jump tuck is unchanged. Look speed is unchanged.
+76. Starting or stopping a walk keeps the hands forward and out. They do not drift into the hips. Speed is unchanged.
+77. A crouch walk is a short shuffle under the hips. The feet do not skate. The crouch does not speed up. A still crouch stays the guard.
+78. Tagged while standing, the hands and the chest ease into the idle breath. They do not freeze and then pop. Both knees can still bend. Flinch time is unchanged.
+79. A hard landing into a sprint brings the arms into the stride under the hips. They flare, then ease, and do not lock. A short hop does not flare the arms. Land time is unchanged.
+80. A turn while sprinting plants the outside foot. The chest and the hips lean together. The waist does not twist. Speed is unchanged. Look speed is unchanged.
+81. Becoming It while standing eases the hands and the chest into the idle breath. They do not freeze and then pop. One knee can still be up. The claim time is unchanged.
+82. Letting go of a grapple eases the hands and the chest out of the long line into the run or the idle. They do not twist. The gate stays off. Range and speed are unchanged.
+83. A punch that misses while standing eases the fists into the idle hands. They do not freeze and then pop. Windup time is unchanged.
+84. When the dash cooldown ends, the chest and the arms settle. It is not a second whip. Duration and cooldown are unchanged.
+85. A walk turn plants the outside foot at a medium yaw. It does not wait for a sharp turn. Look speed is unchanged.
+86. After an air dash, a soft landing bends the knees and keeps the arms in the stride. They do not flare. Duration and cooldown are unchanged.
+87. Letting go of a still crouch eases the hips into the idle breath and sway. They do not pop flat. Speed is unchanged.
+88. A walk into a sprint pushes off the back foot, then the stride opens. The feet do not skate. Speed is unchanged.
+89. A soft landing into a walk settles the knees into the stride. It does not come to a stop. A hard landing still absorbs. Land time is unchanged.
+90. Letting a slide die into a stand brings the body up into the idle breath. The hips do not pop. A slide into a run is unchanged. Speed is unchanged.
+91. Letting go of a crouch walk raises the hips into the stride. They do not hitch. The feet keep stepping. Speed is unchanged.
+92. A sprint into a walk closes the stride with the step. The feet do not skate to a stop. Speed is unchanged.
+93. A walk turn into a sprint plants the outside foot, then the stride opens. The feet do not skate. Look speed is unchanged. Speed is unchanged.
+94. A hard landing into a walk absorbs, then takes a step. It does not sit in the idle. A stand still absorbs. Land time is unchanged.
+95. After a jump, the arms ease into the look pose in the air. They do not snap. Look speed is unchanged. Jump height is unchanged.
+96. Leaving a wall into a walk eases the hands into the stride. They do not hitch. The leave time is unchanged.
+97. Leaving a climb into a walk eases the hands into the stride. They do not hitch. The leave time is unchanged. A drop keeps the old leave.
+98. An air crouch into a soft landing opens into the absorb. It does not stay folded and then pop. The fast fall is unchanged. Land time is unchanged.
+99. A punch that misses while walking returns the hands to the stride. They do not drop into the idle. A standing miss still eases into the idle hands. Windup time is unchanged.
+100. After a tag while walking, the arms settle into the stride. They do not drop into the idle. A standing catch still eases into the idle breath. Flinch time is unchanged.
+101. After you become It while walking, the arms settle into the stride. They do not drop into the idle. One knee can still be up. A standing claim still eases into the idle breath. Claim time is unchanged.
+102. Letting go of a grapple while walking returns the hands to the stride. They do not hitch. A sprint and a stand keep the old leave. The gate stays off. Range and speed are unchanged.
+103. When the dash is ready and you are standing, the chest and the arms give a small pulse, then the idle breath. It is not a second whip. Duration and cooldown are unchanged.
+104. Letting go of a ski into a walk returns the stride. The feet do not skate. A ski into a run is unchanged. Speed is unchanged. Jet stays off.
+105. A walk into a ski eases the legs into the glide. They do not snap. Speed is unchanged. Jet stays off.
+106. A sprint into a ski closes the stride into the glide. It does not pop. Speed is unchanged. Jet stays off.
+107. Letting go of a ski into a sprint opens the glide into the stride. It does not pop. Speed is unchanged. Jet stays off.
+108. A crouch walk into a sprint raises the hips and opens the stride. It does not pop. A crouch walk into a walk is unchanged. Speed is unchanged.
+109. A soft landing into a sprint absorbs, then opens into the stride. It does not come to a stop. A hard landing still absorbs. Land time is unchanged.
+110. A hard landing into a sprint absorbs, then opens into the stride. It does not sit in the buckle. A hard landing into a walk still takes a step. Land time is unchanged.
+111. Leaving a wall into a sprint opens the hands into the stride. They do not hitch. The leave time is unchanged.
+112. Leaving a climb into a sprint opens the hands into the stride. They do not hitch. The leave time is unchanged. A climb into a walk is unchanged.
+113. A punch that misses while sprinting returns the hands to the stride. They do not stay in the limp. A walking miss still returns to the walk. Windup time is unchanged.
+114. After a tag while sprinting, the arms settle into the stride. They do not stay folded. A walking tag still settles into the walk. Flinch time is unchanged.
+115. After you become It while sprinting, the arms settle into the stride. They do not stay folded. One knee can still be up. A walking claim still settles into the walk. Claim time is unchanged.
+116. Letting go of a grapple while sprinting returns the hands to the stride. They do not hitch. A walking release still returns to the walk. A stand keeps the old leave. The gate stays off. Range and speed are unchanged.
+117. Letting a slide die into a walk brings the body up into the stride. The hips do not pop. A slide into a stand still rises into the idle breath. A slide into a sprint is unchanged. Speed is unchanged.
+118. Letting a slide die into a sprint brings the body up into the long stride. The hips do not pop. A slide into a walk still rises into the walk. A slide into a stand still rises into the idle breath. Speed is unchanged.
+119. A still crouch into a sprint raises the hips into the long stride. They do not pop. A still crouch into a stand still rises into the idle breath. A crouch walk into a sprint is unchanged. Speed is unchanged.
+120. An air dash into a walk ends in the stride. It does not come to a stop. An air dash into a sprint is unchanged. Duration and cooldown are unchanged.
+121. An air dash into a sprint ends in the long stride. It does not come to a stop. An air dash into a walk still ends in the walk. Duration and cooldown are unchanged.
+122. A jump into a crouch walk absorbs into the low stride. The hips stay down. A still crouch keeps the old absorb. Land time is unchanged.
+123. A soft landing into a still crouch absorbs into the guard. The hips stay down. A hard landing keeps the old absorb. A crouch walk still absorbs into the low stride. Land time is unchanged.
+124. A hard landing into a still crouch absorbs deeper into the guard. The hips stay down. A soft landing still uses the lighter guard. A crouch walk still absorbs into the low stride. Land time is unchanged.
+125. A jump into a still crouch settles into the guard in the air. The push still reads. The fall dart is unchanged. An air dash is unchanged. Jump height is unchanged.
+126. An air dash into a still crouch ends in the guard. A crouch walk keeps the stride leave. Duration and cooldown are unchanged.
+127. An air dash into a crouch walk ends in the low stride. A still crouch still ends in the guard. An upright walk still ends in the stride. Duration and cooldown are unchanged.
+128. A still crouch into a ski eases the guard into the glide. It does not pop. A walk into a ski is unchanged. A sprint into a ski is unchanged. Speed is unchanged. Jet stays off.
+129. Letting go of a ski into a still crouch eases the glide into the guard. It does not pop. A still crouch into a ski is unchanged. A walk out of a ski is unchanged. Speed is unchanged. Jet stays off.
+130. Letting go of a ski into a crouch walk eases the glide into the low stride. A still crouch still ends in the guard. A walk out of a ski is unchanged. Speed is unchanged. Jet stays off.
+131. A crouch walk into a ski eases the low stride into the glide. It does not pop. A still crouch into a ski is unchanged. A walk into a ski is unchanged. Speed is unchanged. Jet stays off.
+132. A slide into a still crouch eases the wedge into the guard. It does not snap. A slide into a stand still rises into the idle breath. A slide into a walk is unchanged. Speed is unchanged.
+133. A still crouch into a slide eases the guard into the wedge. It does not snap. A slide into a still crouch still eases into the guard. A slide into a walk is unchanged. Speed is unchanged.
+134. A slide into a crouch walk eases the wedge into the low stride. A still crouch still ends in the guard. A slide into a walk is unchanged. Speed is unchanged.
+135. A crouch walk into a slide eases the low stride into the wedge. It does not snap. A still crouch into a slide is unchanged. A slide into a crouch walk is unchanged. Speed is unchanged.
+136. A still crouch into a climb eases the guard onto the wall. A wall run from that crouch does the same. A normal climb is unchanged. The entry time is unchanged.
+137. A climb into a still crouch eases into the guard. A wall leave is unchanged. A climb into a walk is unchanged. The leave time is unchanged.
+138. A wall run into a still crouch eases into the guard. A climb into a still crouch is unchanged. A wall run into a walk is unchanged. The leave time is unchanged.
+139. A climb into a crouch walk eases into the low stride. A still crouch still ends in the guard. A wall run into a crouch walk is unchanged. The leave time is unchanged.
+140. A wall run into a crouch walk eases into the low stride. A climb into a crouch walk is unchanged. A still crouch still ends in the guard. The leave time is unchanged.
+141. A punch that misses in a still crouch eases into the guard. A standing miss still eases into the idle hang. A walk miss and a sprint miss are unchanged. Windup time is unchanged.
+142. A tag in a still crouch eases the V into the guard. A standing tag still eases into the idle breath. A walk tag and a sprint tag are unchanged. Flinch time is unchanged.
+143. Becoming It in a still crouch eases the claim into the guard. A standing claim still eases into the idle breath. A walk claim and a sprint claim are unchanged. Claim time is unchanged.
+144. Letting go of a grapple in a still crouch eases the line into the guard. A standing release is unchanged. A walk release and a sprint release are unchanged. The pull is unchanged. The gate stays off.
+145. A dash coming off cooldown in a still crouch pulses inside the guard. A standing ready still pulses into the idle breath. A moving ready is unchanged. Duration and cooldown are unchanged.
+146. A punch that misses in a crouch walk eases into the guard and the low stride. A still crouch still ends in the guard. A walk miss and a sprint miss are unchanged. Windup time is unchanged.
+147. A tag in a crouch walk eases the V into the guard and the low stride. A still crouch still ends in the guard. A walk tag and a sprint tag are unchanged. Flinch time is unchanged.
+148. Becoming It in a crouch walk eases the claim into the guard and the low stride. A still crouch still ends in the guard. A walk claim and a sprint claim are unchanged. Claim time is unchanged.
+149. Letting go of a grapple in a crouch walk eases the line into the guard and the low stride. A still crouch still ends in the guard. A walk release and a sprint release are unchanged. The pull is unchanged. The gate stays off.
+150. A dash coming off cooldown in a crouch walk pulses inside the guard and the low stride. A still crouch still pulses inside the guard. A standing ready still pulses into the idle breath. A moving ready is unchanged. Duration and cooldown are unchanged.
+151. A soft landing into a crouch walk absorbs into the low stride. A hard landing into a crouch walk is unchanged. A soft landing into a still crouch is unchanged. Land time is unchanged.
+152. A hard landing into a crouch walk absorbs deeper into the low stride. A soft landing into a crouch walk stays lighter. A hard landing into a still crouch is unchanged. Land time is unchanged.
+153. A ski into a slide eases the glide into the wedge. A walk into a ski is unchanged. A slide into a stand is unchanged. Ski speed is unchanged. Jet stays off.
+154. A slide into a ski eases the wedge into the glide. A ski into a slide is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
+155. An air crouch into a crouch walk eases into the low stride. A still air crouch keeps the dart. An air dash into a crouch walk is unchanged. Fall speed is unchanged. Jump height is unchanged.
+156. An air crouch into a still crouch lands the dart into the guard. A moving air crouch keeps the flare. A still crouch without the dart is unchanged. Fall speed is unchanged. Land time is unchanged.
+157. An air crouch into a soft land opens the dart into the absorb. A hard landing keeps the flare. A still crouch keeps the guard. A moving air crouch keeps the flare. Land time is unchanged.
+158. A still crouch into a jump eases the guard into the push. A standing jump is unchanged. A crouch walk into a jump is unchanged. Jump height is unchanged.
+159. A crouch walk into a jump eases the low stride into the push. A still crouch into a jump is unchanged. A standing jump is unchanged. Jump height is unchanged.
+160. A ski into a jump eases the glide into the push. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A standing jump is unchanged. Jump height is unchanged. Ski speed is unchanged.
+161. A slide into a jump eases the wedge into the push. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A standing jump is unchanged. Jump height is unchanged. slideBoost stays 0.
+162. A jump into a ski eases the glide or the landing into the stride. A walk into a ski is unchanged. A sprint into a ski is unchanged. A crouch into a ski is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Jump height is unchanged.
+163. A jump into a slide eases the glide or the landing into the wedge. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a ski is unchanged. Jump height is unchanged. slideBoost stays 0.
+164. An air dash into a jump eases the burst into the push. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+165. A climb into a jump eases the climb into the push. An air dash into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Exit time is unchanged.
+166. A wall run into a jump eases the wall exit into the push. A climb into a jump is unchanged. An air dash into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. Jump height is unchanged. Exit time is unchanged.
+167. A jump into a climb eases the contact into the grab. A crouch onto the wall is unchanged. A wall run is unchanged. A climb into a jump is unchanged. Jump height is unchanged. The meet time is unchanged.
+168. A jump into a wall run eases the contact into the attach. A jump into a climb is unchanged. A crouch onto the wall is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. The meet time is unchanged.
+169. An air crouch into a jump eases the dart into the push. A moving fall uses the low stride. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. Fall speed is unchanged.
+170. A jump into an air crouch eases the apex and the descent into the dart. An air crouch into a jump is unchanged. A moving fall still ends in the low stride. A still crouch into a jump is unchanged. Jump height is unchanged. Fall speed is unchanged.
+171. A jump into an air dash eases the apex into the burst. The burst still holds. An air dash into a jump is unchanged. A jump into an air crouch is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+172. A soft landing into a jump eases the absorb into the push. A hard landing keeps its jump. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. The landing is unchanged when you stay down.
+173. A hard landing into a jump eases the absorb into the push. A soft landing into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A ski into a jump is unchanged. A slide into a jump is unchanged. An air dash into a jump is unchanged. A climb into a jump is unchanged. A wall run into a jump is unchanged. Jump height is unchanged. The landing is unchanged when you stay down.
+174. A punch miss into a jump eases the whiff into the push. A crouch miss is unchanged. A soft landing into a jump is unchanged. A hard landing into a jump is unchanged. Jump height is unchanged.
+175. A tag into a jump eases the connect into the push. A crouch tag is unchanged. A punch miss into a jump is unchanged. Jump height is unchanged.
+176. Becoming It into a jump eases the claim into the push. A crouch claim is unchanged. A tag into a jump is unchanged. Jump height is unchanged.
+177. A grapple release into a jump eases the line into the push. A crouch release is unchanged. Becoming It into a jump is unchanged. Jump height is unchanged. The gate stays off.
+178. A dash coming off cooldown into a jump eases the pulse into the push. A crouch ready is unchanged. A grapple release into a jump is unchanged. Jump height is unchanged. Duration and cooldown are unchanged.
+179. A jump into a punch eases the apex or the landing into the windup. A punch from the ground is unchanged. Jump height is unchanged. Windup time is unchanged.
+180. A jump into a tag eases the apex or the landing into the connect. A crouch tag is unchanged. A jump into a punch is unchanged. A tag into a jump is unchanged. Jump height is unchanged.
+181. An air crouch into an air dash eases the dart into the burst. A moving fall uses the low stride. The burst still holds. Fall speed is unchanged. Duration and cooldown are unchanged. A jump into a tag is unchanged.
+182. An air dash into an air crouch eases the burst into the dart. An air crouch into an air dash is unchanged. The burst still holds. Fall speed is unchanged. Duration and cooldown are unchanged.
+183. A ski into an air dash eases the glide into the burst. The burst still holds. An air crouch into an air dash is unchanged. An air dash into an air crouch is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged. Jet stays off.
+184. A slide into an air dash eases the wedge into the burst. The burst still holds. A ski into an air dash is unchanged. slideBoost stays 0. Duration and cooldown are unchanged. Jet stays off.
+185. An air dash into a ski eases the burst into the glide. A slide into an air dash is unchanged. A ski into an air dash is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged. Jet stays off.
+186. An air dash into a slide eases the burst into the wedge. An air dash into a ski is unchanged. A ski into an air dash is unchanged. A slide into an air dash is unchanged. The slide does not speed up. Duration and cooldown are unchanged. Jet stays off.
+187. A climb into an air dash eases the climb into the burst. The burst still holds. An air dash into a slide is unchanged. A ski into an air dash is unchanged. A slide into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+188. A wall run into an air dash eases the wall exit into the burst. The burst still holds. A climb into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+189. An air dash into a climb eases the burst into the grab. A wall run into an air dash is unchanged. A climb into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+190. An air dash into a wall run eases the burst into the attach. An air dash into a climb is unchanged. A climb into an air dash is unchanged. A wall exit into an air dash is unchanged. Exit time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+191. A punch miss into an air dash eases the whiff into the burst. The burst still holds. An air dash into a wall run is unchanged. An air dash into a climb is unchanged. A climb into an air dash is unchanged. A wall exit into an air dash is unchanged. A punch miss into a jump is unchanged. A crouch miss is unchanged. Duration and cooldown are unchanged. Jet stays off.
+192. A tag into an air dash eases the connect into the burst. The burst still holds. A punch miss into an air dash is unchanged. A tag into a jump is unchanged. A crouch tag is unchanged. Duration and cooldown are unchanged. Jet stays off.
+193. Becoming It into an air dash eases the claim into the burst. The burst still holds. A tag into an air dash is unchanged. Becoming It into a jump is unchanged. A crouch claim is unchanged. Duration and cooldown are unchanged. Jet stays off.
+194. A grapple release into an air dash eases the line into the burst. The burst still holds. Becoming It into an air dash is unchanged. A grapple release into a jump is unchanged. A crouch release is unchanged. The gate stays off. Duration and cooldown are unchanged. Jet stays off.
+195. An air dash into a punch eases the burst into the windup. A grapple release into an air dash is unchanged. A jump into a punch is unchanged. Windup time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+196. An air dash into a tag eases the burst into the connect. An air dash into a punch is unchanged. A jump into a tag is unchanged. A crouch tag is unchanged. Duration and cooldown are unchanged. Jet stays off.
+197. A soft landing into an air dash eases the absorb into the burst. The burst still holds. An air dash into a tag is unchanged. A soft landing into a jump is unchanged. A hard landing is unchanged. Land time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+198. A hard landing into an air dash eases the deeper absorb into the burst. The burst still holds. A soft landing into an air dash is unchanged. A hard landing into a jump is unchanged. Land time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+199. A soft landing into a punch eases the absorb into the windup. A hard landing into an air dash is unchanged. A jump into a punch is unchanged. A soft landing into a jump is unchanged. Windup time is unchanged. Land time is unchanged.
+200. A hard landing into a punch eases the deeper absorb into the windup. A soft landing into a punch is unchanged. A jump into a punch is unchanged. A hard landing into a jump is unchanged. Windup time is unchanged. Land time is unchanged.
+201. A soft landing into a tag eases the absorb into the connect. A hard landing into a punch is unchanged. A jump into a tag is unchanged. A soft landing into a jump is unchanged. A crouch tag is unchanged. Connect time is unchanged. Land time is unchanged.
+202. A hard landing into a tag eases the deeper absorb into the connect. A soft landing into a tag is unchanged. A jump into a tag is unchanged. A hard landing into a jump is unchanged. A crouch tag is unchanged. Connect time is unchanged. Land time is unchanged.
+203. A ski into a punch eases the glide into the windup. A hard landing into a tag is unchanged. A ski into a jump is unchanged. A ski into an air dash is unchanged. A jump into a punch is unchanged. Windup time is unchanged. Ski speed is unchanged. Jet stays off.
+204. A slide into a punch eases the wedge into the windup. A ski into a punch is unchanged. A slide into a jump is unchanged. A slide into an air dash is unchanged. slideBoost stays 0. Windup time is unchanged. Jet stays off.
+205. A ski into a tag eases the glide into the connect. A slide into a punch is unchanged. A ski into a punch is unchanged. A ski into a jump is unchanged. A jump into a tag is unchanged. A crouch tag is unchanged. Connect time is unchanged. Ski speed is unchanged. Jet stays off.
+206. A slide into a tag eases the wedge into the connect. A ski into a tag is unchanged. A slide into a punch is unchanged. A slide into a jump is unchanged. A crouch tag is unchanged. slideBoost stays 0. Connect time is unchanged. Jet stays off.
+207. A climb into a punch eases the grab into the windup. A slide into a tag is unchanged. A climb into an air dash is unchanged. A climb into a jump is unchanged. A wall run is unchanged. Windup time is unchanged. Exit time is unchanged. Jet stays off.
+208. A climb into a tag eases the grab into the connect. A climb into a punch is unchanged. A climb into an air dash is unchanged. A climb into a jump is unchanged. A wall run is unchanged. Connect time is unchanged. Exit time is unchanged. Jet stays off.
+209. A wall exit into a punch eases the leave into the windup. A climb into a tag is unchanged. A wall exit into an air dash is unchanged. A wall exit into a jump is unchanged. A climb into a punch is unchanged. Windup time is unchanged. Exit time is unchanged. Jet stays off.
+210. A wall exit into a tag eases the leave into the connect. A wall exit into a punch is unchanged. A wall exit into an air dash is unchanged. A wall exit into a jump is unchanged. A climb into a tag is unchanged. Connect time is unchanged. Exit time is unchanged. Jet stays off.
+211. An air crouch into a punch eases the dart into the windup. A wall exit into a tag is unchanged. An air crouch into an air dash is unchanged. An air crouch into a jump is unchanged. A jump into a punch is unchanged. Windup time is unchanged. Fall speed is unchanged. Jet stays off.
+212. An air crouch into a tag eases the dart into the connect. An air crouch into a punch is unchanged. An air crouch into an air dash is unchanged. An air crouch into a jump is unchanged. A jump into a tag is unchanged. A crouch tag is unchanged. Connect time is unchanged. Fall speed is unchanged. Jet stays off.
+213. Becoming It into a punch eases the claim into the windup. An air crouch into a tag is unchanged. Becoming It into an air dash is unchanged. Becoming It into a jump is unchanged. A crouch claim is unchanged. Windup time is unchanged. Claim time is unchanged. Jet stays off.
+214. Becoming It into a tag eases the claim into the connect. Becoming It into a punch is unchanged. Becoming It into an air dash is unchanged. Becoming It into a jump is unchanged. An air crouch into a tag is unchanged. A crouch claim is unchanged. Connect time is unchanged. Claim time is unchanged. Jet stays off.
+215. A grapple release into a punch eases the line into the windup. Becoming It into a tag is unchanged. A grapple release into an air dash is unchanged. A grapple release into a jump is unchanged. A crouch release is unchanged. Windup time is unchanged. The gate stays off. Jet stays off.
+216. A grapple release into a tag eases the line into the connect. A grapple release into a punch is unchanged. A grapple release into an air dash is unchanged. A grapple release into a jump is unchanged. Becoming It into a tag is unchanged. A crouch release is unchanged. Connect time is unchanged. The gate stays off. Jet stays off.
+217. A dash coming off cooldown into a punch eases the pulse into the windup. A grapple release into a tag is unchanged. A dash coming off cooldown into a jump is unchanged. A crouch ready is unchanged. Windup time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+218. A dash coming off cooldown into a tag eases the pulse into the connect. A dash coming off cooldown into a punch is unchanged. A dash coming off cooldown into a jump is unchanged. A crouch ready is unchanged. A grapple release into a tag is unchanged. Connect time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+219. A punch into a tag eases the cock or the strike into the connect. A dash coming off cooldown into a tag is unchanged. A dash coming off cooldown into a punch is unchanged. A crouch tag is unchanged. Connect time is unchanged. Windup time is unchanged. Jet stays off.
+220. A tag into a punch eases the connect into the windup. A punch into a tag is unchanged. A dash coming off cooldown into a punch is unchanged. A crouch tag is unchanged. A tag into a jump is unchanged. Windup time is unchanged. Connect time is unchanged. Jet stays off.
+221. A punch miss into a tag eases the whiff into the connect. A tag into a punch is unchanged. A punch into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. A crouch miss is unchanged. Connect time is unchanged. Jet stays off.
+222. A punch into a ski eases the cock or the strike into the glide. A ski into a punch is unchanged. A punch miss into a tag is unchanged. A slide into a ski is unchanged. A jump into a ski is unchanged. Ski speed is unchanged. Windup time is unchanged. Jet stays off.
+223. A punch into a slide eases the cock or the strike into the wedge. A punch into a ski is unchanged. A slide into a punch is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Windup time is unchanged. Jet stays off.
+224. A tag into a ski eases the connect into the glide. A punch into a slide is unchanged. A punch into a ski is unchanged. A tag into a jump is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Connect time is unchanged. Jet stays off.
+225. A tag into a slide eases the connect into the wedge. A tag into a ski is unchanged. A punch into a slide is unchanged. A slide into a tag is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Connect time is unchanged. Jet stays off.
+226. A still crouch into a punch eases the guard into the windup. A tag into a slide is unchanged. A crouch walk into a punch is unchanged. An air crouch into a punch is unchanged. A slide into a punch is unchanged. A crouch into a slide is unchanged. A crouch claim is unchanged. Windup time is unchanged. Jet stays off.
+227. A still crouch into a tag eases the guard into the connect. A still crouch into a punch is unchanged. A crouch walk into a tag is unchanged. An air crouch into a tag is unchanged. A slide into a tag is unchanged. A crouch claim is unchanged. A punch into a tag is unchanged. Connect time is unchanged. Jet stays off.
+228. A soft landing into a ski eases the absorb into the glide. A still crouch into a tag is unchanged. A hard landing into a ski is unchanged. A jump into a ski is unchanged. A punch into a ski is unchanged. A slide into a ski is unchanged. Ski speed is unchanged. Land time is unchanged. Jet stays off.
+229. A soft landing into a slide eases the absorb into the wedge. A soft landing into a ski is unchanged. A hard landing into a slide is unchanged. A jump into a slide is unchanged. A punch into a slide is unchanged. A crouch into a slide is unchanged. A ski into a slide is unchanged. slideBoost stays 0. Land time is unchanged. Jet stays off.
+230. A climb into a ski eases the grab into the glide. A soft landing into a slide is unchanged. A wall run into a ski is unchanged. A climb into a jump is unchanged. A climb into a punch is unchanged. A jump into a ski is unchanged. Ski speed is unchanged. Exit time is unchanged. Jet stays off.
+231. A climb into a slide eases the grab into the wedge. A climb into a ski is unchanged. A wall run into a slide is unchanged. A climb into a jump is unchanged. A soft landing into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Exit time is unchanged. Jet stays off.
+232. A wall run into a ski eases the leave into the glide. A climb into a slide is unchanged. A climb into a ski is unchanged. A wall run into a jump is unchanged. A soft landing into a ski is unchanged. Ski speed is unchanged. Exit time is unchanged. Jet stays off.
+233. A wall run into a slide eases the leave into the wedge. A wall run into a ski is unchanged. A climb into a slide is unchanged. A wall run into a jump is unchanged. A soft landing into a slide is unchanged. A jump into a slide is unchanged. slideBoost stays 0. Exit time is unchanged. Jet stays off.
+234. An air dash into a ski eases the burst into the glide. A wall run into a slide is unchanged. A wall run into a ski is unchanged. A climb into a ski is unchanged. An air dash into a slide is unchanged. Ski speed is unchanged. Duration and cooldown are unchanged. Jet stays off.
+235. A hard landing into a ski eases the absorb into the glide. An air dash into a ski is unchanged. A soft landing into a ski is unchanged. A jump into a ski is unchanged. A hard landing into a slide is unchanged. Ski speed is unchanged. Land time is unchanged. Jet stays off.
+236. An air crouch into a ski eases the dart into the glide. A hard landing into a ski is unchanged. An air dash into a ski is unchanged. A jump into a ski is unchanged. An air crouch into a slide is unchanged. Fall speed is unchanged. Ski speed is unchanged. Jet stays off.
+237. A grapple release into a ski eases the line into the glide. An air crouch into a ski is unchanged. A grapple release into a jump is unchanged. A grapple release into a punch is unchanged. An air dash into a ski is unchanged. The gate stays off. Ski speed is unchanged. Jet stays off.
+238. A grapple release into a slide eases the line into the wedge. A grapple release into a ski is unchanged. A grapple release into a jump is unchanged. A wall run into a slide is unchanged. A soft landing into a slide is unchanged. slideBoost stays 0. The gate stays off. Jet stays off.
+239. Becoming It into a ski eases the claim into the glide. A grapple release into a slide is unchanged. Becoming It into a punch is unchanged. Becoming It into a jump is unchanged. A grapple release into a ski is unchanged. Claim time is unchanged. Ski speed is unchanged. Jet stays off.
+240. Becoming It into a slide eases the claim into the wedge. Becoming It into a ski is unchanged. Becoming It into a punch is unchanged. Becoming It into a jump is unchanged. A grapple release into a slide is unchanged. slideBoost stays 0. Claim time is unchanged. Jet stays off.
+241. A dash coming off cooldown into a ski eases the pulse into the glide. Becoming It into a slide is unchanged. A dash coming off cooldown into a punch is unchanged. A dash coming off cooldown into a tag is unchanged. A dash coming off cooldown into a jump is unchanged. Duration and cooldown are unchanged. Ski speed is unchanged. Jet stays off.
+242. A dash coming off cooldown into a slide eases the pulse into the wedge. A dash coming off cooldown into a ski is unchanged. A dash coming off cooldown into a punch is unchanged. A dash coming off cooldown into a tag is unchanged. A dash coming off cooldown into a jump is unchanged. slideBoost stays 0. Duration and cooldown are unchanged. Jet stays off.
+243. A punch miss into a ski eases the whiff into the glide. A dash coming off cooldown into a slide is unchanged. A punch into a ski is unchanged. A punch miss into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. Whiff time is unchanged. Ski speed is unchanged. Jet stays off.
+244. A punch miss into a slide eases the whiff into the wedge. A punch miss into a ski is unchanged. A punch into a slide is unchanged. A punch miss into a tag is unchanged. A punch miss into a jump is unchanged. A punch miss into an air dash is unchanged. slideBoost stays 0. Whiff time is unchanged. Jet stays off.
+245. A still crouch into a slide eases the guard into the wedge. A punch miss into a slide is unchanged. A still crouch into a punch is unchanged. A still crouch into a tag is unchanged. A still crouch into a ski is unchanged. A crouch walk into a slide is unchanged. slideBoost stays 0. Jet stays off.
+246. A ski into a slide eases the glide into the wedge. A still crouch into a slide is unchanged. A crouch walk into a ski is unchanged. A crouch walk into a slide is unchanged. A slide into a ski is unchanged. slideBoost stays 0. Ski speed is unchanged. Jet stays off.
+247. A slide into an air dash eases the wedge into the burst. A ski into a slide is unchanged. A ski into an air dash is unchanged. An air dash into a slide is unchanged. slideBoost stays 0. Duration and cooldown are unchanged. Jet stays off.
+248. A slide into a jump eases the wedge into the jump. A slide into an air dash is unchanged. A ski into a jump is unchanged. A still crouch into a jump is unchanged. A crouch walk into a jump is unchanged. A standing jump is unchanged. slideBoost stays 0. Jump height is unchanged. Jet stays off.
+249. A jump into an air dash eases the jump into the burst. The burst still holds. A slide into a jump is unchanged. A ski into a jump is unchanged. A slide into an air dash is unchanged. Jump height is unchanged. Duration and cooldown are unchanged. Jet stays off.
+250. A still crouch into an air dash eases the guard into the burst. The burst still holds. A jump into an air dash is unchanged. A slide into an air dash is unchanged. An air crouch into an air dash is unchanged. Duration and cooldown are unchanged. Jet stays off.
+251. A punch into an air dash eases the punch into the burst. The burst still holds. A still crouch into an air dash is unchanged. A punch miss into an air dash is unchanged. A tag into an air dash is unchanged. Windup time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+252. A crouch walk into an air dash eases the low stride into the burst. The burst still holds. A hard landing into a jump is unchanged. A soft landing into a jump is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged. Jet stays off.
+253. A dash coming off cooldown into an air dash eases the pulse into the burst. The burst still holds. A crouch walk into an air dash is unchanged. A dash coming off cooldown into a jump is unchanged. A dash coming off cooldown into a punch is unchanged. Duration and cooldown are unchanged. Jet stays off.
+254. A punch into a jump eases the punch into the jump. Becoming It into a jump is unchanged. A tag into a jump is unchanged. A punch miss into a jump is unchanged. Windup time is unchanged. Jump height is unchanged. Jet stays off.
+255. A run into a ski eases the stride into the glide. The glide then holds. A walk into a ski is unchanged. A slide into a ski is unchanged. A jump into a ski is unchanged. Ski speed is unchanged. Jet stays off.
+256. A run into a slide eases the stride into the wedge. The wedge then holds. A run into a ski is unchanged. A ski into a slide is unchanged. A still crouch into a slide is unchanged. slideBoost stays 0. Jet stays off.
+257. A jump into a still crouch eases the jump into the guard. The guard then holds. A run into a slide is unchanged. A jump into a ski is unchanged. A jump into a slide is unchanged. Jump height is unchanged. Jet stays off.
+258. An air dash into a still crouch eases the burst into the guard. The guard then holds. A jump into a still crouch is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged. Jet stays off.
+259. A walk into a slide eases the walk into the wedge. The wedge then holds. An air dash into a still crouch is unchanged. A run into a slide is unchanged. A crouch walk into a slide is unchanged. slideBoost stays 0. Jet stays off.
+260. A walk into a ski eases the walk into the glide. The glide then holds. A walk into a slide is unchanged. A run into a ski is unchanged. A crouch walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
+261. A crouch walk into a jump eases the low stride into the jump. The jump then holds. A walk into a ski is unchanged. A still crouch into a jump is unchanged. A crouch walk into an air dash is unchanged. Jump height is unchanged. Jet stays off.
+262. A walk into a jump eases the walk into the jump. The jump then holds. A crouch walk into a jump is unchanged. A walk into a ski is unchanged. A still crouch into a jump is unchanged. Jump height is unchanged. Jet stays off.
+263. A walk into an air dash eases the walk into the burst. The burst then holds. A walk into a jump is unchanged. A crouch walk into an air dash is unchanged. A still crouch into an air dash is unchanged. Duration and cooldown are unchanged. Jet stays off.
+264. A still crouch into a jump eases the guard into the jump. The jump then holds. A walk into an air dash is unchanged. A crouch walk into a jump is unchanged. A jump into a still crouch is unchanged. Jump height is unchanged. Jet stays off.
+265. A walk into a punch eases the walk into the cock. The windup then holds. The strike is unchanged. A still crouch into a jump is unchanged. A jump into a punch is unchanged. A still crouch into a punch is unchanged. Windup time is unchanged. Jet stays off.
+266. A walk into a tag eases the walk into the connect. The connect then holds. A walk into a punch is unchanged. A jump into a tag is unchanged. A still crouch into a tag is unchanged. Connect time is unchanged. Jet stays off.
+267. A run into a punch eases the stride into the cock. The windup then holds. The strike is unchanged. A walk into a tag is unchanged. A walk into a punch is unchanged. A jump into a punch is unchanged. Windup time is unchanged. Jet stays off.
+268. A run into a tag eases the stride into the connect. The connect then holds. A run into a punch is unchanged. A walk into a tag is unchanged. A jump into a tag is unchanged. Connect time is unchanged. Jet stays off.
+269. A crouch walk into a punch eases the low stride into the cock. The windup then holds. The strike is unchanged. A run into a tag is unchanged. A still crouch into a punch is unchanged. A walk into a punch is unchanged. Windup time is unchanged. Jet stays off.
+270. A crouch walk into a tag eases the low stride into the connect. The connect then holds. A crouch walk into a punch is unchanged. A run into a tag is unchanged. A still crouch into a tag is unchanged. Connect time is unchanged. Jet stays off.
+271. An air dash into a punch eases the burst into the cock. The windup then holds. The strike is unchanged. A slide into a punch is unchanged. A ski into a tag is unchanged. A slide into a tag is unchanged. Windup time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+272. An air dash into a tag eases the burst into the connect. The connect then holds. An air dash into a punch is unchanged. A climb into a punch is unchanged. A jump into a tag is unchanged. Connect time is unchanged. Duration and cooldown are unchanged. Jet stays off.
+273. A walk into a still crouch eases the walk into the guard. The guard then holds. A soft landing into a punch is unchanged. A soft landing into a tag is unchanged. An air crouch into a punch is unchanged. Jet stays off.
+274. A run into a still crouch eases the stride into the guard. The guard then holds. A walk into a still crouch is unchanged. A jump into a still crouch is unchanged. An air dash into a still crouch is unchanged. Jet stays off.
+275. A ski into a still crouch eases the glide into the guard. The guard then holds. A run into a still crouch is unchanged. A walk into a still crouch is unchanged. Ski speed is unchanged. Jet stays off.
+276. A slide into a still crouch eases the wedge into the guard. The guard then holds. A ski into a still crouch is unchanged. A run into a still crouch is unchanged. slideBoost stays 0. Jet stays off.
+277. A punch into a still crouch eases the punch into the guard. The guard then holds. A slide into a still crouch is unchanged. A ski into a still crouch is unchanged. Windup time is unchanged. Jet stays off.
+278. A tag into a still crouch eases the connect into the guard. The guard then holds. A punch into a still crouch is unchanged. A slide into a still crouch is unchanged. Connect time is unchanged. Jet stays off.
+279. A whiff into a still crouch eases the miss into the guard. The guard then holds. A tag into a still crouch is unchanged. A punch into a still crouch is unchanged. Whiff time is unchanged. Jet stays off.
+280. An It claim into a still crouch eases the claim into the guard. The guard then holds. A whiff into a still crouch is unchanged. A tag into a still crouch is unchanged. Claim time is unchanged. Jet stays off.
+281. A dash ready into a still crouch eases the pulse into the guard. The guard then holds. An It claim into a still crouch is unchanged. A whiff into a still crouch is unchanged. Duration and cooldown are unchanged. Jet stays off.
+282. A grapple release into a still crouch eases the line into the guard. The guard then holds. A dash ready into a still crouch is unchanged. An It claim into a still crouch is unchanged. The gate stays off. Jet stays off.
+283. A hard land into a still crouch eases the absorb into the guard. The guard then holds. A grapple release into a still crouch is unchanged. A dash ready into a still crouch is unchanged. Land time is unchanged. Jet stays off.
+284. A soft land into a still crouch eases the absorb into the guard. The guard then holds. A hard land into a still crouch is unchanged. A grapple release into a still crouch is unchanged. Land time is unchanged. Jet stays off.
+285. An air crouch into a still crouch eases the dart into the guard. The guard then holds. A soft land into a still crouch is unchanged. A hard land into a still crouch is unchanged. Fall speed is unchanged. Jet stays off.
+286. A climb into a still crouch eases the grab into the guard. The guard then holds. An air crouch into a still crouch is unchanged. A wall run into a still crouch is unchanged. Exit time is unchanged. Jet stays off.
+287. A wall exit into a still crouch eases the leave into the guard. The guard then holds. A climb into a still crouch is unchanged. An air crouch into a still crouch is unchanged. Exit time is unchanged. Jet stays off.
+288. A crouch walk into a still crouch eases the low stride into the guard. The guard then holds. A wall exit into a still crouch is unchanged. A climb into a still crouch is unchanged. The stride is unchanged. Jet stays off.
+289. A ski into a crouch walk eases the glide into the low stride. The stride then holds. A ski into a still crouch is unchanged. A crouch walk into a still crouch is unchanged. Ski speed is unchanged. Jet stays off.
+290. A slide into a crouch walk eases the wedge into the low stride. The stride then holds. A ski into a crouch walk is unchanged. A slide into a still crouch is unchanged. slideBoost stays 0. Jet stays off.
+291. A walk into a crouch walk eases the walk into the low stride. The stride then holds. A slide into a crouch walk is unchanged. A walk into a still crouch is unchanged. The drop time is unchanged. Jet stays off.
+292. A run into a crouch walk eases the run into the low stride. The stride then holds. A walk into a crouch walk is unchanged. A run into a still crouch is unchanged. The drop time is unchanged. Jet stays off.
+293. A still crouch into a crouch walk eases the planted guard into the low stride. The stride then holds. A walk into a crouch walk is unchanged. A run into a crouch walk is unchanged. A crouch walk into a still crouch is unchanged. Jet stays off.
+294. A crouch walk into a walk eases the low stride into the walk. The walk then holds. A crouch walk into a run is unchanged. A still crouch into a walk is unchanged. The drop time is unchanged. Jet stays off.
+295. A crouch walk into a run eases the low stride into the run. The run then holds. A crouch walk into a walk is unchanged. A still crouch into a run is unchanged. The drop time is unchanged. Jet stays off.
+296. A still crouch into a walk eases the planted guard into the walk. The walk then holds. A crouch walk into a walk is unchanged. A still crouch into a run is unchanged. The drop time is unchanged. Jet stays off.
+297. A still crouch into a run eases the planted guard into the run. The run then holds. A still crouch into a walk is unchanged. A crouch walk into a run is unchanged. The drop time is unchanged. Jet stays off.
+298. A slide into a ski eases the wedge into the glide. The glide then holds. A ski into a slide is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. slideBoost stays 0. Jet stays off.
+299. A crouch walk into a ski eases the low stride into the glide. The glide then holds. A still crouch into a ski is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
+300. A still crouch into a ski eases the planted guard into the glide. The glide then holds. A crouch walk into a ski is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
+301. A ski into a walk eases the glide into the walk. The walk then holds. A ski into a run is unchanged. A walk into a ski is unchanged. Ski speed is unchanged. Jet stays off.
+302. A ski into a run eases the glide into the run. The run then holds. A ski into a walk is unchanged. A run into a ski is unchanged. Ski speed is unchanged. Jet stays off.
+303. A ski into an idle eases the glide into the idle. The idle then holds. A ski into a walk is unchanged. A ski into a still crouch is unchanged. Ski speed is unchanged. Jet stays off.
+304. A jump into a ski eases the hang or the absorb into the glide. The glide then holds. A hard landing into a ski is unchanged. A walk into a ski is unchanged. Jump height is unchanged. Jet stays off.
+305. A jump into a slide eases the hang or the absorb into the wedge. The wedge then holds. A hard landing that shares this entry eases the same way. A soft landing into a slide is unchanged. slideBoost stays 0. Jump height is unchanged. Jet stays off.
+306. An air dash into a slide eases the burst into the wedge. The wedge then holds. An air dash into a ski is unchanged. Duration and cooldown are unchanged. slideBoost stays 0. Jet stays off.
+307. An air dash into a climb eases the burst into the grab. The grab then holds. An air dash into a slide is unchanged. Duration and cooldown are unchanged. Exit time is unchanged. Jet stays off.
+308. An air dash into a wall run eases the burst into the attach. The attach then holds. An air dash into a climb is unchanged. Duration and cooldown are unchanged. Exit time is unchanged. Jet stays off.
+309. An air dash into a dart eases the burst into the dart. The dart then holds. An air dash into a wall run is unchanged. Duration and cooldown are unchanged. Fall speed stays doubled. Jet stays off.
+310. A ski into a slide eases the glide into the wedge. The wedge then holds. The slow glide blend stays off that path. A slide into a ski is unchanged. Ski speed is unchanged. slideBoost stays 0. Jet stays off.
+311. A still crouch into a slide eases the guard into the wedge. The wedge then holds. The slow guard blend stays off that path. A crouch walk into a slide is unchanged. slideBoost stays 0. Jet stays off.
+312. A crouch walk into a slide eases the low stride into the wedge. The wedge then holds. The slow stride blend stays off that path. A still crouch into a slide is unchanged. A walk into a slide is unchanged. slideBoost stays 0. Jet stays off.
+313. A walk into a sprint eases the walk into the sprint. The sprint then holds. The slow push stays off that path. A crouch walk into a run is unchanged. Speed is unchanged. Jet stays off.
+314. A sprint into a walk eases the sprint into the walk. The walk then holds. The slow stride close stays off that path. A walk into a sprint is unchanged. Speed is unchanged. Jet stays off.
+315. A sprint into a stop eases the sprint into the idle. The idle then holds. The slow close stays off that path. A sprint into a walk is unchanged. A walk into a stop is unchanged. Speed is unchanged. Jet stays off.
+316. A walk into a stop eases the walk into the idle. The idle then holds. The slow close stays off that path. A sprint into a stop is unchanged. Speed is unchanged. Jet stays off.
+317. An idle into a walk eases the idle into the walk. The walk then holds. The slow plant stays off that path. A still crouch into a walk is unchanged. A sprint start is unchanged. Speed is unchanged. Jet stays off.
+318. A sprint into the air eases the stride arms into the air pose. The air pose then holds. The slow reach stays off that path. A walk into a jump is unchanged. Jump height is unchanged. Jet stays off.
+319. A standing idle into a jump eases the idle arms into the air pose. The air pose then holds. The slow reach stays off that path. A still crouch into a jump is unchanged. A walk into a jump is unchanged. A sprint into the air is unchanged. Jump height is unchanged. Jet stays off.
+320. A jump during an air dash eases the burst into the air pose. The air pose then holds. The slow push stays off that path. Duration and cooldown are unchanged. Jump height is unchanged. Jet stays off.
+321. A wall jump eases the wall pose into the air pose. The air pose then holds. The slow push stays off that path. Exit time is unchanged. Jump height is unchanged. Jet stays off.
+322. A climb jump eases the climb pose into the air pose. The air pose then holds. The slow push stays off that path. Exit time is unchanged. Jump height is unchanged. Jet stays off.
+323. A jump during an air crouch eases the dart into the air pose. The air pose then holds. The slow push stays off that path. Fall speed stays doubled. Jump height is unchanged. Jet stays off.
+324. A jump out of a soft landing eases the absorb into the air pose. The air pose then holds. The slow push stays off that path. Land time is unchanged when you stay down. Jump height is unchanged. Jet stays off.
+325. A jump out of a hard landing eases the deep absorb into the air pose. The air pose then holds. The slow push stays off that path. Land time is unchanged when you stay down. Jump height is unchanged. Jet stays off.
+326. A jump out of a punch miss eases the whiff into the air pose. The air pose then holds. The slow push stays off that path. Whiff time is unchanged. Jump height is unchanged. Jet stays off.
+327. A jump out of a tag eases the connect into the air pose. The air pose then holds. The slow push stays off that path. Flinch time is unchanged. Jump height is unchanged. Jet stays off.
+328. A jump out of a claim eases the claim into the air pose. The air pose then holds. The slow push stays off that path. Claim time is unchanged. Jump height is unchanged. Jet stays off.
+329. A jump out of a dash-ready pulse eases the pulse into the air pose. The air pose then holds. The slow push stays off that path. Duration and cooldown are unchanged. Jump height is unchanged. Jet stays off.
+330. A jump out of a ski eases the glide into the air pose. The air pose then holds. The slow push stays off that path. Ski speed is unchanged. Jump height is unchanged. Jet stays off.
+331. A wall bounce eases into the kick. The kick then holds. The slow fade stays off that path. Bounce time is unchanged. Jet stays off.
+332. A super glide eases into the launch. The launch then holds. The slow fade stays off that path. Glide time is unchanged. Jet stays off.
+333. An air dash eases the whip into the pose. The pose then holds. The slow fade stays off that path. Duration and cooldown are unchanged. Jet stays off.
+334. After an air dash, the pose eases into the fall or the run. That pose then holds. The slow slew stays off that path. Duration and cooldown are unchanged. Jet stays off.
+335. A ground dash or lunge eases the whip into the hang. The hang then holds. The slow pulse stays off that path. Dash time is unchanged. Jet stays off.
+336. After an air dash, the lead eases into the air stride. The stride then keeps going. The pin stays off that path. Dash time is unchanged. Jet stays off.
+337. A stop that is not a sprint or a walk eases into the idle. The idle then holds. The slow close stays off that path. A sprint into a stop is unchanged. A walk into a stop is unchanged. Speed is unchanged. Jet stays off.
+338. A landing eases into the absorb. The absorb then holds. The pop stays off that path. A jump out of a landing is unchanged. Land time is unchanged. Jet stays off.
+339. A mantle eases into the vault. The vault then holds. The pop stays off that path. A super glide is unchanged. Mantle time is unchanged. Jet stays off.
+340. A walk or a run eases onto a climb or a wall run. That pose then holds. The pop stays off that path. A crouch meet is unchanged. A jump meet is unchanged. The meet time is unchanged. Jet stays off.
+341. A mantle eases into the stand or the run. That pose then holds. The pop stays off that path. A super glide is unchanged. Mantle time is unchanged. Jet stays off.
+342. The pawn spawns the Tan Hier mannequin. The feet sit on the pad. Walking moves the limbs. It swaps to the Orange Hier. The pink capsule stays off. Jet stays off.
+343. Tan vinyl, darker hinges, and a matte waist read while walking. Eye plates stay flat and dark. It is orange vinyl. No magenta. The molded face stays. Jet stays off.
+344. Body v0.6 curved vinyl and a human waist spawn on the pad. Soles stay dark rubber. The face stays flat-eyed. Limbs move. No magenta capsule. Jet stays off.
+345. A swing catches a soft highlight on the vinyl. Hinges read darker than the shell. Dirt and the soles stay dark. The face stays. Pose timing is unchanged. Jet stays off.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.

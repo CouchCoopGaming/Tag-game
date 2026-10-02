@@ -4,12 +4,12 @@ using Tag.Audio;
 namespace TagArena.Movement
 {
     /// <summary>
-    /// Rigidbody motor: Apex parkour grafted onto Tribes skiing.
-    /// Velocity is sacred. States decorate velocity; they do not overwrite it
-    /// except for authored cinematic windows (mantle warp, super-glide launch).
+    /// Kinematic motor. One CharacterController.Move per Update.
+    /// Gravity, jump, slide friction, and cling live here. The rigidbody is the ragdoll window only.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(CapsuleCollider))]
+    [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(PlayerInputReader))]
     [RequireComponent(typeof(SurfaceProbe))]
     public class PlayerMotor : MonoBehaviour
@@ -20,9 +20,10 @@ namespace TagArena.Movement
         public TagRole tagRole;
 
         public MoveState State { get; private set; } = MoveState.Idle;
-        public Vector3 Velocity => _rb.linearVelocity;
+        public Locomotion Mode => _mode;
+        public Vector3 Velocity => _mode == Locomotion.Ragdoll && _rb != null ? _rb.linearVelocity : _velocity;
         public float Energy { get; private set; }
-        public float HorizSpeed => WishAccel.HorizSpeed(_rb.linearVelocity);
+        public float HorizSpeed => WishAccel.HorizSpeed(Velocity);
         public GroundInfo Ground => _probe.Ground;
         public bool Skiing { get; private set; }
         public bool Jetting { get; private set; }
@@ -35,7 +36,7 @@ namespace TagArena.Movement
         public bool IsWallRunning => State == MoveState.WallRun;
         public bool IsVaulting => State == MoveState.Mantle;
         public bool IsAirDodgeLocked => State == MoveState.Jet && Jetting;
-        public bool IsAirDashing => _airDashT > 0f;
+        public bool IsAirDashing => _mode == Locomotion.AirDash;
         public bool HasAirDodgeIFrames => IsAirDodgeLocked || _airDashIFramesT > 0f;
         /// <summary>1 at air-dash start, 0 at end (TP whip).</summary>
         public float AirDashProgress =>
@@ -63,12 +64,18 @@ namespace TagArena.Movement
 
         Rigidbody _rb;
         CapsuleCollider _cap;
+        CharacterController _cc;
         PlayerInputReader _in;
         SurfaceProbe _probe;
+        Locomotion _mode = Locomotion.Ground;
+        Vector3 _velocity;
 
         float _height;
         float _coyote;
-        float _jumpBuf;
+        float _jumpSlot;
+        float _wallJumpSlot;
+        float _clingGrace;
+        bool _wallJumpFromClimb;
         float _lastLanded;
         float _slideT;
         float _slideStartSpeed;
@@ -116,14 +123,23 @@ namespace TagArena.Movement
         {
             _rb = GetComponent<Rigidbody>();
             _cap = GetComponent<CapsuleCollider>();
+            _cc = GetComponent<CharacterController>();
+            if (_cc == null) _cc = gameObject.AddComponent<CharacterController>();
             _in = GetComponent<PlayerInputReader>();
             _probe = GetComponent<SurfaceProbe>();
 
-            _rb.interpolation = RigidbodyInterpolation.Interpolate;
-            _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-            _rb.constraints = RigidbodyConstraints.FreezeRotation;
-            _rb.useGravity = false;
-            _rb.mass = 80f;
+            // Solver does not integrate this body. Ragdoll turns it dynamic for the stun window.
+            if (_rb != null)
+            {
+                _rb.interpolation = RigidbodyInterpolation.None;
+                _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+                _rb.constraints = RigidbodyConstraints.FreezeRotation;
+                _rb.isKinematic = true;
+                _rb.useGravity = false;
+                _rb.detectCollisions = false;
+                _rb.mass = 80f;
+            }
+            if (_cap != null) _cap.enabled = false;
 
             if (cfg != null)
             {
@@ -132,6 +148,7 @@ namespace TagArena.Movement
                 ApplyCapsule();
                 _probe.Init(cfg, transform, _cap);
             }
+            if (animator != null) animator.applyRootMotion = false;
         }
 
         void Start()
@@ -149,59 +166,69 @@ namespace TagArena.Movement
         {
             if (_in == null || cfg == null) return;
             _in.Read();
-            // Pause stops FixedUpdate, so a buffered jump would fire on resume.
-            // Results keep timeScale at 1 with the cursor unlocked; drop that buffer too.
-            // ResumeInputGate covers the lock-frame recenter so a resume click cannot hop.
+            // Edges are latched in this same Update, then the move consumes them.
+            // A paused or unlocked frame drops the slots so a menu click cannot hop.
             if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked || ResumeInputGate.Blocking)
             {
-                _jumpBuf = 0f;
+                _jumpSlot = 0f;
+                _wallJumpSlot = 0f;
+                _clingGrace = 0f;
                 return;
             }
-            if (_in.JumpPressed) _jumpBuf = cfg.jumpBuffer;
-        }
-
-        void FixedUpdate()
-        {
-            if (cfg == null) return;
             if (_motorLocked) return;
-            float dt = Time.fixedDeltaTime;
+
+            float dt = Time.deltaTime;
+            if (dt <= 0f) return;
             TickTimers(dt);
 
-            _probe.Refresh(_height, _rb.linearVelocity);
-            if (_probe.Ground.grounded) _coyote = cfg.coyoteTime;
+            _probe.Refresh(_height, _velocity);
+            bool feet = _probe.Ground.grounded;
+            if (feet && _mode != Locomotion.Climb && _mode != Locomotion.WallRun && _mode != Locomotion.Vault)
+                _coyote = cfg.coyoteTime;
             LatchLandImpact();
             TickWallContactGates(dt);
-
             Vector3 wish = WishAccel.CameraWish(cam ? cam : transform, _in.Move);
-            Vector3 v = _rb.linearVelocity;
+            if (!_probe.Wall.hit)
+            {
+                _clingGrace = 0f;
+                _wallJumpSlot = 0f;
+            }
+            else if ((_mode == Locomotion.Climb || _mode == Locomotion.WallRun) && ClingHeld(wish))
+                _clingGrace = Mathf.Max(0.01f, cfg.clingReleaseGrace);
+            else if (_clingGrace > 0f)
+                _clingGrace -= dt;
+            LatchSlots();
 
-            bool grounded = _probe.Ground.grounded && State != MoveState.Mantle && State != MoveState.WallClimb && State != MoveState.WallRun;
+            Vector3 v = _velocity;
+
+            bool grounded = feet && _mode != Locomotion.Vault && _mode != Locomotion.Climb && _mode != Locomotion.WallRun;
 
             TickEnergy(dt);
             TickHeight(dt);
 
-            switch (State)
+            switch (_mode)
             {
-                case MoveState.Mantle:
+                case Locomotion.Vault:
                     v = TickMantle(dt, v);
                     break;
-                case MoveState.WallClimb:
+                case Locomotion.Climb:
                     v = TickClimb(dt, v, wish);
                     break;
-                case MoveState.WallRun:
+                case Locomotion.WallRun:
                     v = TickWallRun(dt, v, wish);
                     break;
-                case MoveState.LandStun:
+                case Locomotion.LandStun:
                     v = TickLandStun(dt, v);
                     break;
+                case Locomotion.Ragdoll:
+                    return;
                 default:
                     v = TickLocomotion(dt, v, wish, grounded);
                     break;
             }
 
             v = ClampAndDrag(v, dt);
-            // Punch speed buff is walk/sprint. Never multiply a slide - entry speed only decays.
-            if (_speedBoostMul > 1.001f && State != MoveState.LandStun && State != MoveState.Slide)
+            if (_speedBoostMul > 1.001f && _mode != Locomotion.LandStun && _mode != Locomotion.Slide)
             {
                 Vector3 hv = WishAccel.Horizontal(v) * _speedBoostMul;
                 v = WishAccel.SetHoriz(v, hv);
@@ -211,16 +238,22 @@ namespace TagArena.Movement
                 Vector3 hv = WishAccel.Horizontal(v) * _punchMoveScale;
                 v = WishAccel.SetHoriz(v, hv);
             }
-            if (State == MoveState.Slide)
+            if (_mode == Locomotion.Slide)
             {
                 Vector3 sh = WishAccel.Horizontal(v);
                 float scap = Mathf.Max(0.01f, _slideStartSpeed);
                 if (sh.magnitude > scap)
                     v = WishAccel.SetHoriz(v, sh * (scap / sh.magnitude));
             }
-            if (_slideBlocked && State == MoveState.Slide)
+            if (_slideBlocked && _mode == Locomotion.Slide)
                 SetState(MoveState.Crouch);
-            _rb.linearVelocity = v;
+            if ((_mode == Locomotion.Ground || _mode == Locomotion.Slide || _mode == Locomotion.Ski)
+                && feet && v.y > -0.5f && v.y < 1.5f)
+                v.y = -2f;
+
+            _velocity = v;
+            if (_cc != null && _cc.enabled)
+                _cc.Move(_velocity * dt);
 
             if (tagRole != null && tagRole.IsIt)
                 TryTag();
@@ -228,13 +261,44 @@ namespace TagArena.Movement
             DriveAnimator();
         }
 
+        /// <summary>
+        /// One slot each. The latest press replaces that slot. A wall press does not become a ground jump.
+        /// </summary>
+        void LatchSlots()
+        {
+            if (_in.JumpPressed)
+            {
+                bool onWall = _probe != null && _probe.Wall.hit
+                    && (_mode == Locomotion.Climb || _mode == Locomotion.WallRun || _clingGrace > 0f);
+                if (onWall)
+                {
+                    _wallJumpSlot = cfg.jumpBuffer;
+                    _jumpSlot = 0f;
+                }
+                else
+                {
+                    _jumpSlot = cfg.jumpBuffer;
+                    _wallJumpSlot = 0f;
+                }
+            }
+            if (_probe == null || !_probe.Wall.hit)
+                _wallJumpSlot = 0f;
+        }
+
         Vector3 TickLocomotion(float dt, Vector3 v, Vector3 wish, bool grounded)
         {
             Skiing = WantsSki(grounded);
             Jetting = WantsJet();
 
-            if (TryEnterClimb(v, grounded)) return _rb.linearVelocity;
-            if (TryEnterWallRun(v, grounded, wish)) return _rb.linearVelocity;
+            if (TryEnterClimb(v, grounded, wish)) return _velocity;
+            if (TryEnterWallRun(v, grounded, wish)) return _velocity;
+            if (_clingGrace > 0f && _probe.Wall.hit && _wallJumpSlot > 0f
+                && _mode != Locomotion.Climb && _mode != Locomotion.WallRun)
+            {
+                if (_wallJumpFromClimb) DoWallBounce(ref v);
+                else DoWallRunJump(ref v);
+                return v;
+            }
             if (TryAirDash(ref v, wish, dt, grounded)) return v;
             if (TryLunge(ref v, wish, dt)) return v;
 
@@ -449,8 +513,8 @@ namespace TagArena.Movement
                 hv = WishAccel.Accelerate(hv, wish, cap, accel / Mathf.Max(cap, 1f), dt);
             }
 
-            // Tap-strafe analog: a discrete forward pulse while holding a side key
-            // redirects a slice of speed into the current wish. MnK skill ceiling.
+            // Tap-strafe: a forward pulse (W or a stick flick) while holding a side key
+            // redirects a slice of speed into the current wish. Impulse and cooldown are unchanged.
             if (cfg.enableTapStrafe && _in.TapForwardPulse && _tapCd <= 0f && Mathf.Abs(_in.Move.x) > 0.4f)
             {
                 Vector3 side = wish.sqrMagnitude > 0.01f ? wish.normalized : transform.right * Mathf.Sign(_in.Move.x);
@@ -511,7 +575,7 @@ namespace TagArena.Movement
 
         void TryJump(ref Vector3 v, bool grounded)
         {
-            if (_jumpBuf <= 0f) return;
+            if (_jumpSlot <= 0f) return;
 
             // Super-glide: jump at mantle peak (crouch optional; height follows CrouchHeld)
             if (State == MoveState.Mantle && SuperGlideT >= 0f && SuperGlideT <= cfg.superGlideWindow)
@@ -520,15 +584,9 @@ namespace TagArena.Movement
                 return;
             }
 
-            if (State == MoveState.WallClimb)
+            if (_mode == Locomotion.Climb || _mode == Locomotion.WallRun)
             {
-                DoWallBounce(ref v);
-                return;
-            }
-
-            if (State == MoveState.WallRun)
-            {
-                DoWallRunJump(ref v);
+                // Wall jump is its own slot. A ground slot must not bounce, and this slot must not hop in air.
                 return;
             }
 
@@ -546,7 +604,8 @@ namespace TagArena.Movement
                 v = WishAccel.SetHoriz(v, hv * cfg.slideHopRetain);
             }
 
-            _jumpBuf = 0f;
+            _jumpSlot = 0f;
+            _wallJumpSlot = 0f;
             _coyote = 0f;
             _jumpFatigued = true;
             _lastLanded = Time.time;
@@ -584,7 +643,9 @@ namespace TagArena.Movement
             launch += hv * 0.4f;
 
             v = launch;
-            _jumpBuf = 0f;
+            _jumpSlot = 0f;
+            _wallJumpSlot = 0f;
+            _clingGrace = 0f;
             ClimbHeightUsed = 0f;
             _jumpFatigued = false; // climb clears fatigue, matching Apex
             SetState(MoveState.Air);
@@ -597,7 +658,8 @@ namespace TagArena.Movement
             if (_in.Move.sqrMagnitude > 0.1f)
                 dir = WishAccel.CameraWish(cam ? cam : transform, _in.Move);
             v = dir * cfg.superGlideSpeed + Vector3.up * 1.85f;
-            _jumpBuf = 0f;
+            _jumpSlot = 0f;
+            _wallJumpSlot = 0f;
             SuperGlideT = -1f;
             SetState(MoveState.Air);
             SetHeight(_in.CrouchHeld ? cfg.crouchHeight : cfg.standingHeight);
@@ -610,7 +672,9 @@ namespace TagArena.Movement
             Vector3 away = _probe.Wall.hit ? _probe.Wall.normal : -transform.right;
             Vector3 look = cam ? Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized : transform.forward;
             v = away * cfg.wallRunJumpOut + Vector3.up * cfg.wallRunJumpUp + look * 3.5f;
-            _jumpBuf = 0f;
+            _jumpSlot = 0f;
+            _wallJumpSlot = 0f;
+            _clingGrace = 0f;
             SetState(MoveState.Air);
             OnWallBounced?.Invoke();
         }
@@ -619,23 +683,24 @@ namespace TagArena.Movement
 
         #region Climb / Mantle / WallRun
 
-        bool TryEnterClimb(Vector3 v, bool grounded)
+        bool TryEnterClimb(Vector3 v, bool grounded, Vector3 wish)
         {
             if (!_probe.Wall.hit) return false;
             if (State == MoveState.WallClimb || State == MoveState.Mantle) return false;
 
             float face = Vector3.Angle(Vector3.ProjectOnPlane(transform.forward, Vector3.up), -Vector3.ProjectOnPlane(_probe.Wall.normal, Vector3.up));
+            // Mantle entry stays the old gate. JumpHeld is not climb cling.
             bool holdingIn = _in.Move.y > 0.2f || _in.JumpHeld;
-            if (!holdingIn) return false;
-            if (face > cfg.climbAttachAngle) return false;
-            if (grounded && !_in.JumpHeld && !_in.JumpPressed) return false;
-
-            // Ledge grab is not a stick - still allowed after a climb has decayed off.
-            if (_probe.Ledge.hit && _probe.Ledge.height < cfg.mantleMaxLedgeHeight && v.y > -8f)
+            bool mantleOk = holdingIn && face <= cfg.climbAttachAngle && !(grounded && !_in.JumpHeld && !_in.JumpPressed);
+            if (mantleOk && _probe.Ledge.hit && _probe.Ledge.height < cfg.mantleMaxLedgeHeight && v.y > -8f)
             {
                 BeginMantle();
                 return true;
             }
+
+            // Climb stick is move-into-wall. A grounded walk that is not into the wall does not grab.
+            if (!ClingHeld(wish)) return false;
+            if (face > cfg.climbAttachAngle) return false;
 
             // Same-wall reattach is what made climb feel like a spider. Leave the surface first.
             if (_climbBlocked) return false;
@@ -643,6 +708,7 @@ namespace TagArena.Movement
 
             _climbT = 0f;
             _climbStartY = transform.position.y;
+            _wallJumpFromClimb = true;
             SetState(MoveState.WallClimb);
             return true;
         }
@@ -652,6 +718,8 @@ namespace TagArena.Movement
             if (!_probe.Wall.hit)
             {
                 _climbBlocked = true;
+                _clingGrace = 0f;
+                _wallJumpSlot = 0f;
                 SetState(MoveState.Air);
                 return v;
             }
@@ -665,13 +733,25 @@ namespace TagArena.Movement
                 return v;
             }
 
+            // Release does not keep the climb. Grace only covers the jump, and only while this probe is still true.
+            if (_wallJumpSlot > 0f && (ClingHeld(wish) || _clingGrace > 0f))
+            {
+                _wallJumpFromClimb = true;
+                DoWallBounce(ref v);
+                return v;
+            }
+
             bool timeOut = cfg.climbMaxTime > 0f && _climbT >= cfg.climbMaxTime;
             bool heightOut = ClimbHeightUsed >= cfg.climbMaxHeight;
-            bool released = !_in.JumpHeld && _in.Move.y < 0.1f && _climbT > 0.08f;
-            if (timeOut || heightOut || released)
+            if (timeOut || heightOut || !ClingHeld(wish))
             {
-                // Drop / slip off - stronger after a long cling so you cannot stick forever.
                 _climbBlocked = true;
+                _wallJumpFromClimb = true;
+                if (timeOut || heightOut || !_probe.Wall.hit)
+                {
+                    _clingGrace = 0f;
+                    _wallJumpSlot = 0f;
+                }
                 v = Vector3.ProjectOnPlane(v, _probe.Wall.normal);
                 float slip = cfg.climbSlipSpeed * (timeOut || heightOut ? 1.6f : 1f);
                 v.y = Mathf.Min(v.y, -slip);
@@ -695,7 +775,9 @@ namespace TagArena.Movement
             Vector3 up = Vector3.up * climbVy;
             // Stronger into-wall glue so sticky probe + climb stay attached (was *0.05).
             Vector3 stick = -_probe.Wall.normal * cfg.climbStickForce * 0.09f;
-            Vector3 side = Vector3.Cross(_probe.Wall.normal, Vector3.up).normalized * (_in.Move.x * cfg.climbSideSpeed);
+            Vector3 tangent = WallTangent();
+            float sideAmt = Vector3.Dot(wish, tangent);
+            Vector3 side = tangent * sideAmt * cfg.climbSideSpeed;
 
             v = up + side + stick;
             SetHeight(cfg.standingHeight);
@@ -746,7 +828,7 @@ namespace TagArena.Movement
                 SuperGlideT = -1f;
 
             // Jump buffer so early taps still catch the window (party-fair).
-            if (_jumpBuf > 0f && SuperGlideT >= 0f)
+            if (_jumpSlot > 0f && SuperGlideT >= 0f)
             {
                 DoSuperGlide(ref v);
                 return v;
@@ -767,6 +849,7 @@ namespace TagArena.Movement
             if (_wallRunBlocked) return false;
             if (grounded) return false;
             if (!_probe.Wall.hit) return false;
+            if (!ClingHeld(wish)) return false;
             if (State == MoveState.WallClimb || State == MoveState.Mantle) return false;
             if (WishAccel.HorizSpeed(v) < cfg.wallRunMinSpeed) return false;
 
@@ -776,26 +859,54 @@ namespace TagArena.Movement
             if (_in.Move.y < 0.1f && Mathf.Abs(_in.Move.x) < 0.1f) return false;
 
             _wallRunT = 0f;
+            _wallJumpFromClimb = false;
             SetState(MoveState.WallRun);
             return true;
         }
 
         Vector3 TickWallRun(float dt, Vector3 v, Vector3 wish)
         {
+            if (_probe.Wall.hit && _wallJumpSlot > 0f && (ClingHeld(wish) || _clingGrace > 0f))
+            {
+                _wallJumpFromClimb = false;
+                DoWallRunJump(ref v);
+                return v;
+            }
+
             if (!_probe.Wall.hit || _wallRunT > cfg.wallRunMaxTime)
             {
                 // Block re-entry until the wall is actually left. Air accel used to
                 // climb back over wallRunMinSpeed in ~2 frames and reset the timer.
                 _wallRunBlocked = true;
+                _wallJumpFromClimb = false;
+                if (!_probe.Wall.hit)
+                {
+                    _clingGrace = 0f;
+                    _wallJumpSlot = 0f;
+                }
                 if (_wallRunT > cfg.wallRunMaxTime)
                     v.y = Mathf.Min(v.y, -4.5f);
                 SetState(MoveState.Air);
                 return v;
             }
+
+            // Release drops the run the same tick. Grace does not keep the run alive.
+            if (!ClingHeld(wish))
+            {
+                _wallRunBlocked = true;
+                _wallJumpFromClimb = false;
+                SetState(MoveState.Air);
+                return v;
+            }
             _wallRunT += dt;
 
-            Vector3 along = Vector3.Cross(_probe.Wall.normal, Vector3.up);
-            if (Vector3.Dot(along, WishAccel.Horizontal(v)) < 0f) along = -along;
+            Vector3 along = WallTangent();
+            float wishAlong = Vector3.Dot(wish, along);
+            float velAlong = Vector3.Dot(WishAccel.Horizontal(v), along);
+            float sideSign = Mathf.Abs(wishAlong) > 0.2f
+                ? Mathf.Sign(wishAlong)
+                : (Mathf.Abs(velAlong) > 0.05f ? Mathf.Sign(velAlong) : 1f);
+            along *= sideSign;
 
             // Speed fades near the end of the window so the exit reads as a drop, not a glue peel.
             float tNorm = Mathf.Clamp01(_wallRunT / Mathf.Max(0.05f, cfg.wallRunMaxTime));
@@ -812,8 +923,31 @@ namespace TagArena.Movement
             // Slightly stronger into-wall stick so sticky probe + run stay glued in TP
             v = hv + Vector3.up * y - _probe.Wall.normal * 2.8f;
 
-            if (_in.JumpPressed) DoWallRunJump(ref v);
+            // Held cling plus the wall-jump slot. A release already returned above.
+            if (ClingHeld(wish) && _wallJumpSlot > 0f) DoWallRunJump(ref v);
             return v;
+        }
+
+        /// <summary>
+        /// Systems lock. ClingHeld is the Move wish into the wall: dot(wishDir, -wallNormal) greater than 0.25.
+        /// Face-on climb is forward while the body faces the wall. A sideways run keeps the same dot
+        /// with an into-wall strafe or a forward-strafe diagonal. JumpHeld is not cling. No Cling action.
+        /// </summary>
+        const float ClingIntoWall = 0.25f;
+
+        bool ClingHeld(Vector3 wish)
+        {
+            if (!_probe.Wall.hit) return false;
+            if (wish.sqrMagnitude < 0.0001f) return false;
+            Vector3 wishDir = wish.normalized;
+            return Vector3.Dot(wishDir, -_probe.Wall.normal) > ClingIntoWall;
+        }
+
+        Vector3 WallTangent()
+        {
+            Vector3 tangent = Vector3.Cross(_probe.Wall.normal, Vector3.up);
+            if (tangent.sqrMagnitude < 0.0001f) tangent = transform.right;
+            return tangent.normalized;
         }
 
         #endregion
@@ -828,7 +962,10 @@ namespace TagArena.Movement
                 v = WishAccel.SetHoriz(v, _airDashDir * cfg.airDashSpeed);
                 // Keep vertical - burst, not hover/jet.
                 if (_airDashT <= 0f && State != MoveState.Slide)
+                {
+                    _mode = grounded ? Locomotion.Ground : Locomotion.Air;
                     SetState(grounded ? MoveState.Sprint : MoveState.Air);
+                }
                 return true;
             }
 
@@ -848,6 +985,7 @@ namespace TagArena.Movement
             _airDashIFramesT = cfg.airDashIFrames;
             _airDashCd = Mathf.Max(0.01f, cfg.airDashCooldown);
             v = WishAccel.SetHoriz(v, dir * cfg.airDashSpeed);
+            _mode = Locomotion.AirDash;
             SetState(MoveState.Air);
             TagSfx.PlayAirDash(transform.position);
             OnAirDashed?.Invoke();
@@ -903,10 +1041,10 @@ namespace TagArena.Movement
             Vector3 hv = WishAccel.Friction(WishAccel.Horizontal(v), 14f, dt);
             v = WishAccel.SetHoriz(v, hv);
             v.y -= cfg.gravity * dt;
-            if (_landStunT <= 0f || _jumpBuf > 0f)
+            if (_landStunT <= 0f || _jumpSlot > 0f)
             {
                 SetState(_probe.Ground.grounded ? MoveState.Idle : MoveState.Air);
-                if (_jumpBuf > 0f) TryJump(ref v, true);
+                if (_jumpSlot > 0f) TryJump(ref v, true);
             }
             return v;
         }
@@ -932,7 +1070,77 @@ namespace TagArena.Movement
         {
             bool rising = locked && !_motorLocked;
             _motorLocked = locked;
-            if (rising && _rb != null) _rb.linearVelocity = Vector3.zero;
+            if (rising)
+                _velocity = Vector3.zero;
+            if (!locked)
+                CloseRagdollBody();
+        }
+
+        /// <summary>Ragdoll window only. CharacterController is off until the stun ends.</summary>
+        public void OpenRagdollBody()
+        {
+            _mode = Locomotion.Ragdoll;
+            _velocity = Vector3.zero;
+            _clingGrace = 0f;
+            _wallJumpSlot = 0f;
+            _jumpSlot = 0f;
+            if (_cc != null) _cc.enabled = false;
+            if (_cap != null) _cap.enabled = true;
+            if (_rb != null)
+            {
+                _rb.detectCollisions = true;
+                _rb.isKinematic = false;
+                _rb.useGravity = true;
+                _rb.linearVelocity = Vector3.zero;
+                _rb.angularVelocity = Vector3.zero;
+            }
+        }
+
+        void CloseRagdollBody()
+        {
+            if (_rb != null)
+            {
+                _rb.linearVelocity = Vector3.zero;
+                _rb.angularVelocity = Vector3.zero;
+                _rb.useGravity = false;
+                _rb.isKinematic = true;
+                _rb.detectCollisions = false;
+            }
+            if (_cap != null) _cap.enabled = false;
+            if (_cc != null) _cc.enabled = true;
+            _velocity = Vector3.zero;
+            bool feet = _probe != null && _probe.Ground.grounded;
+            _mode = feet ? Locomotion.Ground : Locomotion.Air;
+            State = feet ? MoveState.Idle : MoveState.Air;
+        }
+
+        public void Halt()
+        {
+            _velocity = Vector3.zero;
+            _jumpSlot = 0f;
+            _wallJumpSlot = 0f;
+            _clingGrace = 0f;
+        }
+
+        /// <summary>
+        /// Snap the pawn. CharacterController ignores a transform write while it is enabled,
+        /// so the capsule is toggled around the move. Velocity and both jump slots die.
+        /// </summary>
+        public void Place(Vector3 worldPos)
+        {
+            Halt();
+            if (_cc != null) _cc.enabled = false;
+            transform.position = worldPos;
+            if (_rb != null)
+            {
+                _rb.linearVelocity = Vector3.zero;
+                _rb.angularVelocity = Vector3.zero;
+                _rb.useGravity = false;
+                _rb.isKinematic = true;
+                _rb.detectCollisions = false;
+                _rb.position = worldPos;
+            }
+            if (_cc != null) _cc.enabled = _mode != Locomotion.Ragdoll;
         }
 
         public void SetPunchMoveScale(float scale) => _punchMoveScale = Mathf.Clamp(scale, 0.05f, 1.5f);
@@ -953,11 +1161,9 @@ namespace TagArena.Movement
         public void BeginStunProxy(float duration, Vector3 knock)
         {
             SetMotorLocked(true);
+            OpenRagdollBody();
             if (_rb != null)
-            {
-                _rb.linearVelocity = Vector3.zero;
                 _rb.AddForce(knock, ForceMode.VelocityChange);
-            }
             CancelInvoke(nameof(EndStunProxy));
             Invoke(nameof(EndStunProxy), Mathf.Max(0.05f, duration));
         }
@@ -1008,7 +1214,7 @@ namespace TagArena.Movement
             bool g = _probe.Ground.grounded;
             if (g && !_wasProbeGrounded)
             {
-                float impact = Mathf.Max(0f, -_rb.linearVelocity.y);
+                float impact = Mathf.Max(0f, -_velocity.y);
                 _lastLandImpactSpeed = impact;
                 _lastLanded = Time.time;
                 // Air dash uses time cooldown (not land refresh).
@@ -1050,6 +1256,8 @@ namespace TagArena.Movement
 
         void SetState(MoveState next)
         {
+            if (_mode != Locomotion.AirDash || next != MoveState.Air)
+                _mode = ModeFor(next);
             if (State == next) return;
             var prev = State;
             State = next;
@@ -1061,6 +1269,22 @@ namespace TagArena.Movement
             OnStateChanged?.Invoke(prev, next);
         }
 
+        static Locomotion ModeFor(MoveState next)
+        {
+            switch (next)
+            {
+                case MoveState.Slide: return Locomotion.Slide;
+                case MoveState.Ski: return Locomotion.Ski;
+                case MoveState.Air:
+                case MoveState.Jet: return Locomotion.Air;
+                case MoveState.WallClimb: return Locomotion.Climb;
+                case MoveState.Mantle: return Locomotion.Vault;
+                case MoveState.WallRun: return Locomotion.WallRun;
+                case MoveState.LandStun: return Locomotion.LandStun;
+                default: return Locomotion.Ground;
+            }
+        }
+
         void TickTimers(float dt)
         {
             if (_speedBoostT > 0f)
@@ -1069,7 +1293,8 @@ namespace TagArena.Movement
                 if (_speedBoostT <= 0f) ClearSpeedBoost();
             }
             if (_coyote > 0f) _coyote -= dt;
-            if (_jumpBuf > 0f) _jumpBuf -= dt;
+            if (_jumpSlot > 0f) _jumpSlot -= dt;
+            if (_wallJumpSlot > 0f) _wallJumpSlot -= dt;
             if (_tapCd > 0f) _tapCd -= dt;
             if (_lungeCd > 0f) _lungeCd -= dt;
             if (_airDashCd > 0f) _airDashCd -= dt;
@@ -1102,8 +1327,15 @@ namespace TagArena.Movement
 
         void TickHeight(float dt)
         {
+            if (_cap == null) return;
             _cap.height = Mathf.MoveTowards(_cap.height, _height, 8f * dt);
             _cap.center = new Vector3(0f, _cap.height * 0.5f, 0f);
+            if (_cc == null) return;
+            _cc.height = _cap.height;
+            _cc.radius = _cap.radius;
+            _cc.center = _cap.center;
+            float stepCap = Mathf.Max(0.05f, _cc.height * 0.2f);
+            if (_cc.stepOffset > stepCap) _cc.stepOffset = stepCap;
         }
 
         void SetHeight(float h) => _height = h;
@@ -1114,14 +1346,24 @@ namespace TagArena.Movement
             _cap.radius = cfg.radius;
             _cap.center = new Vector3(0f, cfg.standingHeight * 0.5f, 0f);
             _cap.direction = 1;
+            _cap.enabled = _mode == Locomotion.Ragdoll;
+            if (_cc == null) return;
+            _cc.height = _cap.height;
+            _cc.radius = _cap.radius;
+            _cc.center = _cap.center;
+            _cc.slopeLimit = 90f;
+            _cc.stepOffset = 0.2f;
+            _cc.skinWidth = Mathf.Max(0.02f, cfg.skin);
+            _cc.minMoveDistance = 0f;
         }
 
         void DriveAnimator()
         {
             if (!animator) return;
+            animator.applyRootMotion = false;
             animator.SetInteger(AnimIds.State, (int)State);
             animator.SetFloat(AnimIds.Speed, HorizSpeed);
-            animator.SetFloat(AnimIds.VertSpeed, _rb.linearVelocity.y);
+            animator.SetFloat(AnimIds.VertSpeed, _velocity.y);
             animator.SetBool(AnimIds.Grounded, _probe.Ground.grounded);
             animator.SetBool(AnimIds.Ski, Skiing);
             animator.SetBool(AnimIds.Jet, Jetting);
@@ -1134,20 +1376,18 @@ namespace TagArena.Movement
             animator.SetFloat(AnimIds.Slope, _probe.Ground.slopeAngle);
         }
 
-        void OnCollisionStay(Collision col)
+        void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            // Soft wall cancel if we slam a front wall at ski speed
-            if (State != MoveState.Ski && State != MoveState.Slide) return;
-            foreach (var c in col.contacts)
-            {
-                if (Vector3.Angle(c.normal, Vector3.up) < 55f) continue;
-                if (Vector3.Dot(WishAccel.Horizontal(_rb.linearVelocity).normalized, -c.normal) > 0.72f)
-                {
-                    Vector3 v = _rb.linearVelocity;
-                    Vector3 bounced = Vector3.Reflect(WishAccel.Horizontal(v), Vector3.ProjectOnPlane(c.normal, Vector3.up).normalized);
-                    _rb.linearVelocity = WishAccel.SetHoriz(v, bounced * 0.45f);
-                }
-            }
+            if (_mode != Locomotion.Ski && _mode != Locomotion.Slide) return;
+            if (hit == null || hit.normal.sqrMagnitude < 0.01f) return;
+            if (Vector3.Angle(hit.normal, Vector3.up) < 55f) return;
+            Vector3 hv = WishAccel.Horizontal(_velocity);
+            if (hv.sqrMagnitude < 0.01f) return;
+            if (Vector3.Dot(hv.normalized, -hit.normal) <= 0.72f) return;
+            Vector3 n = Vector3.ProjectOnPlane(hit.normal, Vector3.up);
+            if (n.sqrMagnitude < 0.01f) return;
+            Vector3 bounced = Vector3.Reflect(hv, n.normalized);
+            _velocity = WishAccel.SetHoriz(_velocity, bounced * 0.45f);
         }
 
         void OnDrawGizmosSelected()

@@ -41,9 +41,18 @@ namespace Tag.Gameplay
             _rb = GetComponent<Rigidbody>();
             _bodyCol = GetComponent<CapsuleCollider>();
             if (_bodyCol == null) _bodyCol = GetComponent<Collider>();
-            if (accentRenderer == null)
-                accentRenderer = GetComponentInChildren<Renderer>();
+            // The scene accent is the pawn capsule (built-in mesh, Default-Material).
+            // Under URP that mesh is magenta, and it is centered on the motor origin
+            // so it sits halfway in the ground. Do not adopt it. Hier carries the color.
+            ReleaseRootAccent();
             ApplyVisual();
+        }
+
+        /// <summary>Drop a tint target that is the pawn root capsule, not a mannequin part.</summary>
+        public void ReleaseRootAccent()
+        {
+            if (accentRenderer != null && accentRenderer.transform == transform)
+                accentRenderer = null;
         }
 
         void Update()
@@ -67,9 +76,9 @@ namespace Tag.Gameplay
                 // Drive MoveAnimDriver / HUD listeners (legacy TryTag path was the only NotifyBecameIt caller).
                 if (_motor != null)
                     _motor.NotifyBecameIt();
-                // Brief pose tell on the new It (victim already flinches in ReceiveTagHit).
+                // New It raises both arms. The tagged runner guards in ReceiveTagHit.
                 var loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
-                if (loco != null) loco.PlayTagFlinch();
+                if (loco != null) loco.PlayItClaim();
             }
             if (wasIt && !value && _motor != null)
             {
@@ -141,7 +150,8 @@ namespace Tag.Gameplay
             if (_motor != null) _motor.SetMotorLocked(false);
             if (_rb == null) _rb = GetComponent<Rigidbody>();
             Physics.SyncTransforms();
-            if (accentRenderer != null) accentRenderer.enabled = true;
+            if (accentRenderer != null && accentRenderer.transform != transform)
+                accentRenderer.enabled = true;
             ApplyVisual();
         }
 

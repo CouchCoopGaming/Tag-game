@@ -11,6 +11,12 @@ namespace TagArena.Movement
         public const string DashPrefsKey = "Tag.AirDashKey";
         public const string PunchPrefsKey = "Tag.PunchKey";
 
+        /// <summary>
+        /// Systems copy lock. Move owns cling. Not an InputAction.
+        /// Face-on forward and an into-wall strafe both count.
+        /// </summary>
+        public const string ClingCopy = "Cling — hold into wall";
+
         static readonly KeyCode[] DashSteps = { KeyCode.Q, KeyCode.V, KeyCode.Mouse4 };
         static readonly KeyCode[] PunchSteps = { KeyCode.Mouse0, KeyCode.F, KeyCode.Mouse3 };
 
@@ -25,7 +31,7 @@ namespace TagArena.Movement
             Punch.ToString();
 
         public static string Help =>
-            "WASD move\n" +
+            "WASD move. In air, tap forward while strafing\n" +
             "Shift ski, or sprint when ski does not catch\n" +
             "Space jump\n" +
             "Ctrl or C slide (hold with speed)\n" +
@@ -33,6 +39,8 @@ namespace TagArena.Movement
             PunchName + " or E punch (passes It)\n" +
             DashName + " or Left Alt air dash (0.1 s, then 30 s)\n" +
             "MMB lunge when you are It, on the ground\n" +
+            ClingCopy + "\n" +
+            "Wall jump: cling and Space\n" +
             "RMB does not jet\n" +
             "F1 Hot Potato   F2 Least It   F3 Trail Tag   F4 Free play\n" +
             "Esc pause\n" +

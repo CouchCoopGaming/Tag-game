@@ -358,7 +358,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5000}
-  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 0}
 --- !u!23 &5004
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -366,7 +366,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5000}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -452,7 +452,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isIt: 0
-  accentRenderer: {fileID: 5004}
+  accentRenderer: {fileID: 0}
   itColor: {r: 1, g: 0.25, b: 0.2, a: 1}
   runnerColor: {r: 0.3, g: 0.7, b: 1, a: 1}
   eliminatedColor: {r: 0.25, g: 0.25, b: 0.25, a: 0.55}
@@ -682,7 +682,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6000}
-  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 0}
 --- !u!23 &6004
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -690,7 +690,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6000}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -745,7 +745,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isIt: 0
-  accentRenderer: {fileID: 6004}
+  accentRenderer: {fileID: 0}
   itColor: {r: 1, g: 0.25, b: 0.2, a: 1}
   runnerColor: {r: 0.3, g: 0.7, b: 1, a: 1}
   eliminatedColor: {r: 0.25, g: 0.25, b: 0.25, a: 0.55}

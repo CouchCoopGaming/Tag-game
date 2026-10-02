@@ -55,18 +55,21 @@ namespace Tag.Local
             if (_ragdoll != null)
                 _ragdoll.ForceRecover();
             if (_motor != null)
-                _motor.ClearStun();
-
-            if (_rb != null)
             {
-                _rb.linearVelocity = Vector3.zero;
-                _rb.angularVelocity = Vector3.zero;
-                // Motor owns gravity; ragdoll may have flipped this on.
-                _rb.useGravity = false;
-                _rb.position = pad;
+                _motor.ClearStun();
+                _motor.Place(pad);
             }
-
-            transform.position = pad;
+            else
+            {
+                if (_rb != null)
+                {
+                    _rb.linearVelocity = Vector3.zero;
+                    _rb.angularVelocity = Vector3.zero;
+                    _rb.useGravity = false;
+                    _rb.position = pad;
+                }
+                transform.position = pad;
+            }
             Physics.SyncTransforms();
 
             // Brief punch i-frames so spawn-camp / mid-void teleports aren't free tags.

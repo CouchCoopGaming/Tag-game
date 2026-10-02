@@ -95,6 +95,7 @@ MonoBehaviour:
   superGlideWindow: 0.1
   superGlideSpeed: 10.3
   enableWallRun: 1
+  clingReleaseGrace: 0.08
   wallRunMaxTime: 0.62
   wallRunMinSpeed: 6
   wallRunSpeed: 9.5
