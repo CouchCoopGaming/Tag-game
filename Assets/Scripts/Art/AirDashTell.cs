@@ -5,7 +5,6 @@ namespace Tag.Art
     /// <summary>
     /// Third-person read for an air dash. Presentation only: no speed, cooldown, or jump numbers.
     /// Side ribbons sit outside the capsule. The ankle streak stays under the feet.
-    /// The chase camera widens and leads; the boom does not come in.
     /// </summary>
     public static class AirDashTell
     {
@@ -18,10 +17,6 @@ namespace Tag.Art
         /// <summary>Fraction of the shell replaced by the cyan sheen. Below half so the pawn stays itself.</summary>
         public const float FlashMix = 0.42f;
         public const float FlashSeconds = 0.24f;
-        public const float CameraFovPop = 7f;
-        public const float CameraAheadPop = 1.05f;
-        /// <summary>Matches the existing chase boom stretch per metre of look-ahead. Always outward.</summary>
-        public const float CameraBoomPerAhead = 0.35f;
 
         public static bool Place(Vector3 origin, Vector3 dashDir, out Vector3 left, out Vector3 right, out Vector3 ankle)
         {
@@ -54,9 +49,6 @@ namespace Tag.Art
             flat.y = 0f;
             return flat.magnitude;
         }
-
-        /// <summary>Extra boom distance. Never negative, so the lens does not crop the pawn.</summary>
-        public static float BoomExtra(float ahead) => Mathf.Max(0f, ahead) * CameraBoomPerAhead;
 
         public static float WingInnerEdge => WingOffset - WingWidth * 0.5f;
     }

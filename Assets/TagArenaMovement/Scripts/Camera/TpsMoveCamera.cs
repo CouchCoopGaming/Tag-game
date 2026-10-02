@@ -1,4 +1,3 @@
-using Tag.Art;
 using UnityEngine;
 
 namespace TagArena.Movement
@@ -43,9 +42,6 @@ namespace TagArena.Movement
         Vector3 _aheadSmoothed;
         Vector3 _kick;
         float _fovKick;
-        bool _wasAirDashing;
-        float _dashFov;
-        float _dashAhead;
 
         PlayerInputReader _in;
 
@@ -69,19 +65,6 @@ namespace TagArena.Movement
             if (motor == null) return;
             if (_in == null) _in = motor.GetComponent<PlayerInputReader>();
             float dt = Time.deltaTime;
-
-            // Widen and lead on the dash edge. The boom stretch stays outward, so the pawn stays in frame.
-            bool airDash = motor.IsAirDashing;
-            if (airDash && !_wasAirDashing)
-            {
-                _dashFov = AirDashTell.CameraFovPop;
-                _dashAhead = AirDashTell.CameraAheadPop;
-                _fov += AirDashTell.CameraFovPop;
-                _lookAhead += AirDashTell.CameraAheadPop;
-            }
-            _wasAirDashing = airDash;
-            _dashFov = Mathf.Lerp(_dashFov, 0f, 1f - Mathf.Exp(-14f * dt));
-            _dashAhead = Mathf.Lerp(_dashAhead, 0f, 1f - Mathf.Exp(-9f * dt));
 
             if (_in != null)
             {
@@ -141,7 +124,6 @@ namespace TagArena.Movement
                     case MoveState.Crouch:
                     case MoveState.Idle: wantAhead *= 0.35f; break;
                 }
-                wantAhead += _dashAhead;
                 _lookAhead = Mathf.Lerp(_lookAhead, wantAhead, 1f - Mathf.Exp(-8f * dt));
                 Vector3 hv = motor.Velocity; hv.y = 0f;
                 // Direction is smoothed. An instant velocity flip was yawing the look-at
@@ -172,7 +154,6 @@ namespace TagArena.Movement
                     }
                     targetFov += speedFovBoostMax * speedT;
                 }
-                targetFov += _dashFov;
                 targetFov += _fovKick;
                 _fov = Mathf.Lerp(_fov, targetFov, 1f - Mathf.Exp(-6f * dt));
                 cam.fieldOfView = _fov;
@@ -209,7 +190,7 @@ namespace TagArena.Movement
             }
 
             // Slight boom stretch at speed so look-ahead has room without clipping feel
-            float wantDist = Mathf.Abs(boomOffset.z) + _lookAhead * AirDashTell.CameraBoomPerAhead;
+            float wantDist = Mathf.Abs(boomOffset.z) + _lookAhead * 0.35f;
             Vector3 localDir = new Vector3(boomOffset.x, boomOffset.y, -wantDist);
             Vector3 worldDesired = pitchPivot.TransformPoint(localDir);
             Vector3 origin = pitchPivot.position;

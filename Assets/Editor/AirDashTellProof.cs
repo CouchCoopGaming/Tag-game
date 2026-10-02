@@ -6,7 +6,7 @@ using UnityEngine;
 
 /// <summary>
 /// Headless check that the air-dash read frames the pawn and does not retune feel.
-/// Wings stay outside the capsule. The camera pop widens and the boom only goes out.
+/// Wings stay outside the capsule.
 /// </summary>
 public static class AirDashTellProof
 {
@@ -75,13 +75,6 @@ public static class AirDashTellProof
         if (Mathf.Abs((sideA - origin).x) > 0.001f || Mathf.Abs((sideB - origin).x) > 0.001f)
             report.Fail("a right dash put a wing on the travel axis");
 
-        float boom = AirDashTell.BoomExtra(AirDashTell.CameraAheadPop);
-        float boomIn = AirDashTell.BoomExtra(-2f);
-        report.BoomExtra = boom;
-        if (boom <= 0f)
-            report.Fail("boom comes in on a dash");
-        if (boomIn != 0f)
-            report.Fail("negative look-ahead pulled the boom in");
         if (AirDashTell.RibbonTime < cfg.airDashDuration)
             report.Fail("ribbon dies inside the burst");
         if (AirDashTell.WingInnerEdge <= cfg.radius)
@@ -105,7 +98,6 @@ public sealed class AirDashTellReport
     public float ClingGrace;
     public float JumpSpeed;
     public float WingGap;
-    public float BoomExtra;
     public bool Ok => _failures.Length == 0;
     readonly StringBuilder _failures = new StringBuilder();
 
@@ -129,7 +121,6 @@ public sealed class AirDashTellReport
         text.Append(" clingGrace=").Append(ClingGrace.ToString("0.###", c));
         text.Append(" jumpSpeed=").Append(JumpSpeed.ToString("0.###", c));
         text.Append(" wingGap_m=").Append(WingGap.ToString("0.###", c));
-        text.Append(" boomExtra_m=").Append(BoomExtra.ToString("0.###", c));
         if (!Ok)
         {
             text.Append('\n');
