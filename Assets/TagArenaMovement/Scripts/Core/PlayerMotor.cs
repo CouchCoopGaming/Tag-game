@@ -45,6 +45,8 @@ namespace TagArena.Movement
                 : 0f;
         /// <summary>Seconds left before air dash is usable again (0 = ready).</summary>
         public float AirDashCooldownRemaining => Mathf.Max(0f, _airDashCd);
+        /// <summary>Planar direction of the current or most recent air dash. Read by the tell only.</summary>
+        public Vector3 AirDashDirection => _airDashDir;
         public bool IsGrounded => _probe != null && _probe.Ground.grounded;
         public float HorizontalSpeed => HorizSpeed;
         public bool IsLunging => _lungeT > 0f;
@@ -69,10 +71,6 @@ namespace TagArena.Movement
         SurfaceProbe _probe;
         Locomotion _mode = Locomotion.Ground;
         Vector3 _velocity;
-        /// <summary>Horizontal speed latched the last time air steering did not run. Air cannot exceed it.</summary>
-        float _airCarrySpeed;
-        bool _airCarryLatched;
-        bool _steeredAir;
 
         float _height;
         float _coyote;
@@ -168,7 +166,6 @@ namespace TagArena.Movement
 
         void Update()
         {
-            _steeredAir = false;
             if (_in == null || cfg == null) return;
             _in.Read();
             // Edges are latched in this same Update, then the move consumes them.
@@ -260,14 +257,6 @@ namespace TagArena.Movement
             if (_cc != null && _cc.enabled)
                 _cc.Move(_velocity * dt);
 
-            // Frames that did not steer record the horizontal speed this step moved.
-            // Air frames keep that record, so steering cannot raise it.
-            if (!_steeredAir)
-            {
-                _airCarrySpeed = WishAccel.HorizSpeed(_velocity);
-                _airCarryLatched = true;
-            }
-
             if (tagRole != null && tagRole.IsIt)
                 TryTag();
 
@@ -348,17 +337,14 @@ namespace TagArena.Movement
                 return SlideMove(dt, v, wish);
 
             Vector3 hv = WishAccel.Horizontal(v);
-            float max = wantCrouch ? cfg.crouchSpeed
-                      : (_in.SprintHeld || _in.Move.y > 0.4f) ? cfg.sprintSpeed
-                      : cfg.walkSpeed;
+            float max = KinematicStep.GaitCap(wantCrouch, _in.SprintHeld, _in.Move.y, cfg.crouchSpeed, cfg.sprintSpeed, cfg.walkSpeed);
 
             if (tagRole != null && tagRole.IsIt)
                 max += cfg.taggerSprintBonus;
 
-            if (wish.sqrMagnitude > 0.01f)
-                hv = WishAccel.Accelerate(hv, wish, max, cfg.groundAccel / Mathf.Max(max, 1f), dt);
-            else
-                hv = WishAccel.Friction(hv, cfg.groundDecel / Mathf.Max(hv.magnitude, 1f), dt);
+            // A jump this frame leaves before friction, which is how a landing hop keeps air speed.
+            bool hop = _jumpSlot > 0f;
+            hv = KinematicStep.GroundSteer(hv, wish, max, cfg.groundAccel, cfg.groundDecel, dt, hop);
 
             // Stick to slope without launching
             if (_probe.Ground.walkable)
@@ -509,30 +495,22 @@ namespace TagArena.Movement
 
         Vector3 AirMove(float dt, Vector3 v, Vector3 wish)
         {
-            // Carry was latched on the ground (or by a verb that writes speed, such as air dash).
-            // This frame may steer that speed. It must not raise the latch.
-            _steeredAir = true;
-
-            float g = cfg.gravity * (v.y < 0f ? cfg.fallGravityMult : 1f);
+            float g = KinematicStep.AirGravity(v.y, cfg.gravity, cfg.fallGravityMult);
             if (Jetting) g *= cfg.gravityWhileJetting;
             // Air crouch = dive: ~2x fall rate while crouch held and falling/rising into dive.
             if (!Jetting && _in.CrouchHeld)
                 g *= Mathf.Max(1f, cfg.airCrouchFallMult);
-            v.y -= g * dt;
             float fallCap = cfg.maxFallSpeed * (_in.CrouchHeld && !Jetting ? Mathf.Max(1f, cfg.airCrouchFallMult) : 1f);
-            if (v.y < -fallCap) v.y = -fallCap;
+            v.y = KinematicStep.IntegrateVertical(v.y, g, dt, fallCap);
 
             Vector3 hv = WishAccel.Horizontal(v);
-            float entered = hv.magnitude;
-            // airSpeedCap is not a target. max(airSpeedCap, speed) used to pull a walk up to sprint
-            // for most of the arc, so a faster run did not jump farther.
-            float ceiling = _airCarryLatched ? Mathf.Min(entered, _airCarrySpeed) : entered;
-            hv = WishAccel.ClampPlanarSpeed(hv, ceiling);
-
+            // Wish speed is the gait of the keys held, not max(airSpeedCap, current speed).
+            // A straight run keeps its speed. A turned strafe can add speed past sprint.
             if (wish.sqrMagnitude > 0.01f)
             {
+                float wishSpeed = KinematicStep.GaitCap(_in.CrouchHeld, _in.SprintHeld, _in.Move.y, cfg.crouchSpeed, cfg.sprintSpeed, cfg.walkSpeed);
                 float accel = cfg.airAccel * (_in.Move.x != 0f && Mathf.Abs(_in.Move.y) < 0.2f ? cfg.airStrafeBonus : 1f);
-                hv = WishAccel.SteerNoGain(hv, wish, accel, dt);
+                hv = KinematicStep.AirSteer(hv, wish, wishSpeed, accel, dt);
             }
 
             // Tap-strafe: a forward pulse (W or a stick flick) while holding a side key
@@ -550,7 +528,6 @@ namespace TagArena.Movement
                 _in.ConsumeTapPulse();
             }
 
-            hv = WishAccel.ClampPlanarSpeed(hv, ceiling);
             v = WishAccel.SetHoriz(v, hv);
             return v;
         }
@@ -617,7 +594,7 @@ namespace TagArena.Movement
             }
 
             // Coyote is jump-only - walk-off should fall immediately (Apex snappy, not air-walk).
-            if (!grounded && _coyote <= 0f) return;
+            if (!KinematicStep.CoyoteJumpAllowed(grounded, _coyote)) return;
 
             float h = JumpHeightNow();
             bool fromSlide = State == MoveState.Slide && _slideT <= cfg.slideJumpWindow && HorizSpeed <= cfg.slideJumpSpeedCap;
@@ -1320,7 +1297,7 @@ namespace TagArena.Movement
                 _speedBoostT -= dt;
                 if (_speedBoostT <= 0f) ClearSpeedBoost();
             }
-            if (_coyote > 0f) _coyote -= dt;
+            _coyote = KinematicStep.DecayCoyote(_coyote, dt);
             if (_jumpSlot > 0f) _jumpSlot -= dt;
             if (_wallJumpSlot > 0f) _wallJumpSlot -= dt;
             if (_tapCd > 0f) _tapCd -= dt;
@@ -1341,11 +1318,9 @@ namespace TagArena.Movement
         Vector3 ClampAndDrag(Vector3 v, float dt)
         {
             Vector3 hv = WishAccel.Horizontal(v);
-            float cap = State == MoveState.Ski || State == MoveState.Jet || State == MoveState.Slide
-                ? cfg.skiMaxSpeed
-                : cfg.skiMaxSpeed * 0.7f;
-            if (hv.magnitude > cap)
-                hv = hv.normalized * cap;
+            bool skiJetOrSlide = State == MoveState.Ski || State == MoveState.Jet || State == MoveState.Slide;
+            float cap = KinematicStep.LocomotionPlanarCap(cfg.skiMaxSpeed, skiJetOrSlide);
+            hv = WishAccel.ClampPlanarSpeed(hv, cap);
 
             if (!_probe.Ground.grounded && !Jetting)
                 hv = Vector3.Lerp(hv, hv.normalized * Mathf.Min(hv.magnitude, cfg.skiMaxSpeed), cfg.skiAirDrag * dt);

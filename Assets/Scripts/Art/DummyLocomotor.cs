@@ -924,7 +924,17 @@ namespace Tag.Art
         bool _wasAirDashing;
         bool _wasJetting;
         PlayerMotor _bounceHooked;
-        TrailRenderer _dashTrail;
+        Transform _tellRoot;
+        TrailRenderer _wingL;
+        TrailRenderer _wingR;
+        TrailRenderer _ankleTrail;
+        Material _ribbonMat;
+        Vector3 _dashTellDir = Vector3.forward;
+        bool _dashTellArmed;
+        float _dashFlash;
+        Renderer[] _flashRenderers;
+        MaterialPropertyBlock _flashBlock;
+        bool _flashBlockOn;
 
         Quaternion _spineT, _hipsT, _headT;
         Quaternion _uaLT, _uaRT, _laLT, _laRT;
@@ -14287,54 +14297,194 @@ namespace Tag.Art
             bool jet = _motor != null && (_motor.State == MoveState.Jet || _motor.Jetting);
             if (lunging && !_wasLunging) _dashPulse = 1f;
             if (airDashing && !_wasAirDashing)
-            {
-                _dashPulse = 1f;
-                _dashTrailT = 0.33f; // slightly longer air-dash ribbon read
-                EnsureDashTrail();
-            }
+                BeginAirDashTell();
+            if (!airDashing)
+                _dashTellArmed = false;
             if (jet && !_wasJetting) _dashPulse = Mathf.Max(_dashPulse, 0.85f);
             _wasLunging = lunging;
             _wasAirDashing = airDashing;
             _wasJetting = jet;
             _dashPulse = Mathf.MoveTowards(_dashPulse, 0f, dt / 0.18f);
             if (_dashTrailT > 0f) _dashTrailT = Mathf.MoveTowards(_dashTrailT, 0f, dt);
-            if (_dashTrail != null)
-                _dashTrail.emitting = _dashTrailT > 0.01f || airDashing;
+            bool ribbon = _dashTrailT > 0.01f || airDashing;
+            if (_wingL != null) _wingL.emitting = ribbon;
+            if (_wingR != null) _wingR.emitting = ribbon;
+            if (_ankleTrail != null) _ankleTrail.emitting = ribbon;
+            if (ribbon)
+                PlaceAirDashRibbon();
+            TickDashFlash(dt);
         }
 
-        void EnsureDashTrail()
+        void BeginAirDashTell()
         {
-            if (_dashTrail != null) return;
-            var go = new GameObject("AirDashTrail");
-            go.transform.SetParent(transform, false);
-            go.transform.localPosition = new Vector3(0f, 0.9f, -0.15f);
-            _dashTrail = go.AddComponent<TrailRenderer>();
-            _dashTrail.time = 0.33f;
-            _dashTrail.minVertexDistance = 0.04f;
-            _dashTrail.widthMultiplier = 0.38f; // slightly wider so air-dash ribbon reads in TP
-            _dashTrail.emitting = false;
-            _dashTrail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            _dashTrail.receiveShadows = false;
+            // The event and the rising edge can both land on the start frame. One burst, one tell.
+            if (_dashTellArmed) return;
+            _dashTellArmed = true;
+            _dashPulse = 1f;
+            _dashTrailT = AirDashTell.RibbonTime;
+            _dashFlash = 1f;
+            _flashRenderers = null;
+            Vector3 dir = Vector3.forward;
+            if (_motor != null)
+            {
+                dir = _motor.AirDashDirection;
+                if (dir.sqrMagnitude < 0.0001f)
+                {
+                    dir = _motor.Velocity;
+                    dir.y = 0f;
+                }
+                if (dir.sqrMagnitude < 0.0001f)
+                    dir = _motor.transform.forward;
+            }
+            else
+                dir = transform.forward;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.0001f) dir = Vector3.forward;
+            _dashTellDir = dir.normalized;
+            EnsureDashTell();
+            // Park the emitters on the pawn before they emit, so the ribbon does not slash in from the origin.
+            PlaceAirDashRibbon();
+            ArmRibbon(_wingL);
+            ArmRibbon(_wingR);
+            ArmRibbon(_ankleTrail);
+        }
+
+        static void ArmRibbon(TrailRenderer trail)
+        {
+            if (trail == null) return;
+            trail.emitting = false;
+            trail.Clear();
+            trail.emitting = true;
+        }
+
+        void PlaceAirDashRibbon()
+        {
+            if (_wingL == null) return;
+            Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
+            AirDashTell.Place(origin, _dashTellDir, out Vector3 left, out Vector3 right, out Vector3 ankle);
+            _wingL.transform.position = left;
+            if (_wingR != null) _wingR.transform.position = right;
+            if (_ankleTrail != null) _ankleTrail.transform.position = ankle;
+        }
+
+        void EnsureDashTell()
+        {
+            if (_wingL != null) return;
+            if (_ribbonMat == null)
+                _ribbonMat = MakeRibbonMat();
+            _tellRoot = new GameObject("AirDashTell").transform;
+            _wingL = MakeRibbon("AirDashWingL", AirDashTell.WingWidth);
+            _wingR = MakeRibbon("AirDashWingR", AirDashTell.WingWidth);
+            _ankleTrail = MakeRibbon("AirDashAnkle", AirDashTell.AnkleWidth);
+        }
+
+        TrailRenderer MakeRibbon(string name, float width)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_tellRoot, false);
+            var trail = go.AddComponent<TrailRenderer>();
+            trail.time = AirDashTell.RibbonTime;
+            trail.minVertexDistance = 0.03f;
+            trail.widthMultiplier = width;
+            trail.emitting = false;
+            trail.autodestruct = false;
+            trail.alignment = LineAlignment.View;
+            trail.numCornerVertices = 2;
+            trail.numCapVertices = 2;
+            trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            trail.receiveShadows = false;
             var grad = new Gradient();
             grad.SetKeys(
                 new[] {
-                    new GradientColorKey(new Color(0.55f, 0.95f, 1f), 0f),
-                    new GradientColorKey(new Color(0.2f, 0.55f, 1f), 1f)
+                    new GradientColorKey(new Color(0.82f, 1f, 1f), 0f),
+                    new GradientColorKey(new Color(0.15f, 0.55f, 1f), 1f)
                 },
                 new[] {
-                    new GradientAlphaKey(0.85f, 0f),
+                    new GradientAlphaKey(0.8f, 0f),
                     new GradientAlphaKey(0f, 1f)
                 });
-            _dashTrail.colorGradient = grad;
-            var shader = Shader.Find("Universal Render Pipeline/Unlit")
+            trail.colorGradient = grad;
+            trail.sharedMaterial = _ribbonMat;
+            return trail;
+        }
+
+        static Material MakeRibbonMat()
+        {
+            var shader = Shader.Find("Sprites/Default")
+                         ?? Shader.Find("Universal Render Pipeline/Unlit")
+                         ?? Shader.Find("Unlit/Transparent")
                          ?? Shader.Find("Unlit/Color")
-                         ?? Shader.Find("Sprites/Default")
                          ?? Shader.Find("Standard");
-            var mat = new Material(shader);
-            var c = new Color(0.45f, 0.9f, 1f, 0.9f);
+            var mat = new Material(shader) { name = "AirDashRibbon" };
+            var c = new Color(0.55f, 0.95f, 1f, 0.8f);
             if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
             if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
-            _dashTrail.sharedMaterial = mat;
+            if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+            if (mat.HasProperty("_ZWrite")) mat.SetFloat("_ZWrite", 0f);
+            if (mat.HasProperty("_SrcBlend")) mat.SetFloat("_SrcBlend", 5f);
+            if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", 10f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = 3000;
+            return mat;
+        }
+
+        void TickDashFlash(float dt)
+        {
+            if (_dashFlash <= 0f)
+            {
+                if (_flashBlockOn)
+                    ClearDashFlash();
+                return;
+            }
+
+            _dashFlash = Mathf.MoveTowards(_dashFlash, 0f, dt / Mathf.Max(0.01f, AirDashTell.FlashSeconds));
+            ApplyDashFlash(_dashFlash);
+            if (_dashFlash <= 0f)
+                ClearDashFlash();
+        }
+
+        void ApplyDashFlash(float amt)
+        {
+            if (_flashRenderers == null)
+                _flashRenderers = GetComponentsInChildren<Renderer>(true);
+            if (_flashBlock == null)
+                _flashBlock = new MaterialPropertyBlock();
+            float mix = AirDashTell.FlashMix * Mathf.Clamp01(amt);
+            var tint = new Color(0.62f, 0.96f, 1f, 1f);
+            for (int i = 0; i < _flashRenderers.Length; i++)
+            {
+                var r = _flashRenderers[i];
+                if (r == null || r is TrailRenderer || r is ParticleSystemRenderer || r is LineRenderer)
+                    continue;
+                string n = r.gameObject.name;
+                if (n.StartsWith("ItHat") || n.StartsWith("ItHalo") || n.StartsWith("AirDash"))
+                    continue;
+                var mat = r.sharedMaterial;
+                if (mat == null) continue;
+                bool hasBase = mat.HasProperty("_BaseColor");
+                bool hasColor = mat.HasProperty("_Color");
+                if (!hasBase && !hasColor) continue;
+                Color baseC = hasBase ? mat.GetColor("_BaseColor") : mat.GetColor("_Color");
+                Color c = Color.Lerp(baseC, tint, mix);
+                _flashBlock.Clear();
+                if (mat.HasProperty("_BaseColor")) _flashBlock.SetColor("_BaseColor", c);
+                if (mat.HasProperty("_Color")) _flashBlock.SetColor("_Color", c);
+                r.SetPropertyBlock(_flashBlock);
+            }
+            _flashBlockOn = true;
+        }
+
+        void ClearDashFlash()
+        {
+            if (_flashRenderers != null)
+            {
+                for (int i = 0; i < _flashRenderers.Length; i++)
+                {
+                    if (_flashRenderers[i] != null)
+                        _flashRenderers[i].SetPropertyBlock(null);
+                }
+            }
+            _flashBlockOn = false;
         }
 
         /// <summary>Called while the dummy is committed to a punch but has not swung yet.</summary>
@@ -14380,10 +14530,7 @@ namespace Tag.Art
 
         void HandleAirDashed()
         {
-            _dashPulse = 1f;
-            _dashTrailT = 0.22f;
-            EnsureDashTrail();
-            if (_dashTrail != null) _dashTrail.emitting = true;
+            BeginAirDashTell();
         }
 
         void HandleWallBounced()
@@ -14425,6 +14572,20 @@ namespace Tag.Art
                 _bounceHooked.OnSuperGlide -= HandleSuperGlide;
                 _bounceHooked.OnAirDashed -= HandleAirDashed;
                 _bounceHooked = null;
+            }
+            ClearDashFlash();
+            if (_tellRoot != null)
+            {
+                Destroy(_tellRoot.gameObject);
+                _tellRoot = null;
+                _wingL = null;
+                _wingR = null;
+                _ankleTrail = null;
+            }
+            if (_ribbonMat != null)
+            {
+                Destroy(_ribbonMat);
+                _ribbonMat = null;
             }
         }
 
