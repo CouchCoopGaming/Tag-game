@@ -75,6 +75,7 @@ namespace Tag.Art
             ("Landmark_PirateMast_Hi", new Vector3(5f, 0f, 15f), 25f, 1.0f),
             // Foxhole sits east of Spawn_SE (pad ends x=67.1). Scale 0.35 is the
             // largest yaw-0 footprint that stays on the map and off that pad.
+            // Stood minY is -1.574; stem +0.634 (see StemSeatYOffset) puts that berm on the lawn.
             ("Landmark_ArmyFoxhole_Hi", new Vector3(69.55f, 0f, 2.55f), 0f, 0.35f),
             // Helmet yaw 0 scale 0.30 already fills x 0.44-4.56. Larger covers Spawn_NW or leaves the map.
             ("Landmark_AstroHelmet_Hi", new Vector3(2.5f, 0f, 51.2f), 0f, 0.30f),
@@ -1156,6 +1157,11 @@ namespace Tag.Art
             if (prefab == null) return null;
             var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
             if (go == null) go = Instantiate(prefab);
+            // Single-node FBX keeps the stand-up rotation on this root (bakeAxisConversion is off).
+            // Yaw below replaces it. Capture first so decks, tiles, crawls, and shields stay upright.
+            var importRot = go.transform.localRotation;
+            var importPos = go.transform.localPosition;
+            var importScale = go.transform.localScale;
             go.name = name;
             go.transform.SetParent(parent, false);
             // Author Y = support/attach plane; stem offset fixes FBX pivot quirks (slide mouth, stair tread).
@@ -1164,6 +1170,7 @@ namespace Tag.Art
             go.transform.localPosition = localPos;
             go.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
             go.transform.localScale = Vector3.one * scale;
+            BakeImportPose(go, importRot, importPos, importScale);
             if (name.StartsWith("PGK_Slide_TubeDeck"))
                 StandTubeDeck(go);
             StripImportCameras(go);
@@ -1176,10 +1183,43 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// FBX rise is mesh +Z (0.028..2.482) and the sleeve is Y (±0.572). SpawnFbx's yaw
-        /// replaces the node -90 X, which left root-local spanY at 1.14. Pitch the mesh
+        /// Single-node imports store the mesh on the root, with the Blender -90 X (and any
+        /// Lcl translation) on that same transform. Multi-node imports use an empty root, so
+        /// this is a no-op and the children keep their own poses. Root stays yaw-only.
+        /// </summary>
+        static void BakeImportPose(GameObject root, Quaternion importRot, Vector3 importPos, Vector3 importScale)
+        {
+            if (root == null) return;
+            var mf = root.GetComponent<MeshFilter>();
+            if (mf == null || mf.sharedMesh == null) return;
+            bool rot = Quaternion.Angle(importRot, Quaternion.identity) > 0.05f;
+            bool pos = importPos.sqrMagnitude > 1e-8f;
+            bool scl = (importScale - Vector3.one).sqrMagnitude > 1e-8f;
+            if (!rot && !pos && !scl) return;
+
+            var pose = new GameObject("Pose");
+            pose.transform.SetParent(root.transform, false);
+            pose.transform.localPosition = importPos;
+            pose.transform.localRotation = importRot;
+            pose.transform.localScale = importScale;
+            var copy = pose.AddComponent<MeshFilter>();
+            copy.sharedMesh = mf.sharedMesh;
+            var src = root.GetComponent<MeshRenderer>();
+            if (src != null)
+            {
+                var dst = pose.AddComponent<MeshRenderer>();
+                dst.sharedMaterials = src.sharedMaterials;
+                dst.shadowCastingMode = src.shadowCastingMode;
+                dst.receiveShadows = src.receiveShadows;
+                Object.DestroyImmediate(src);
+            }
+            Object.DestroyImmediate(mf);
+        }
+
+        /// <summary>
+        /// FBX rise is mesh +Z (0.028..2.482) and the sleeve is Y (±0.572). If BakeImportPose
+        /// already stood the mesh up, spanY is the rise and this returns. Otherwise pitch
         /// -90 X so +Z lands on +Y. High-mouth center is then y=1.91; shell top is 2.48.
-        /// Skips the pitch when spanY is already the rise.
         /// </summary>
         static void StandTubeDeck(GameObject root)
         {
@@ -1250,7 +1290,8 @@ namespace Tag.Art
         /// Mega_ParkourRamp feet ~-0.26, Toy_TunnelTube ~-0.02, Mega_CrawlTunnel ~0, Toy_Bars ~+0.23,
         /// Seesaw ~+0.10, Bumper ~+0.17, Goal ~-0.05; Bars_Rail / Spinner / Monkey / Bench /
         /// VaultRail / WallPanel / SpringRider / Tower / Picnic / Safety_Tile / RubberTrack(~0.02) /
-        /// NetFrame / posts/decks ~0. Offset = -feetOrMouthY. Coarse - tune in Play if needed.
+        /// NetFrame / posts/decks ~0. Army foxhole stood minY -1.574 (buried until the stem lift).
+        /// Offset = -feetOrMouthY. Coarse - tune in Play if needed.
         /// </summary>
         static float StemSeatYOffset(string stem)
         {
@@ -1273,6 +1314,7 @@ namespace Tag.Art
             // minY * landmarkUniformScale * slotScale. Slot scales are baked in; change both together.
             if (stem.StartsWith("Landmark_NinjaBlade")) return -0.334f; // 0.40 * 1.15 * slot 0.725
             if (stem.StartsWith("Landmark_CrashTorso")) return -0.322f; // 1.001 * 1.15 * slot 0.28
+            if (stem.StartsWith("Landmark_ArmyFoxhole")) return 0.634f; // 1.574 * 1.15 * slot 0.35
             // Mega_Spinner / Monkey / Bench / WallPanel / VaultRail / SpringRider / Tower / Picnic ~0
             return 0f;
         }
