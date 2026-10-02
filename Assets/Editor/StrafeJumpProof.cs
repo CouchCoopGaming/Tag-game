@@ -6,7 +6,7 @@ using UnityEngine;
 /// <summary>
 /// 60 Hz flat-ground step of the kinematic air steer. Same helpers PlayerMotor calls.
 /// Takeoff frame is ground steer then the jump impulse (no air gravity). Later frames
-/// are AirGravity, IntegrateVertical, AirSteer, then the non-ski planar cap.
+/// are AirGravity, IntegrateVertical, and AirSteer. Non-ski locomotion has no planar cap.
 /// </summary>
 public static class StrafeJumpProof
 {
@@ -45,8 +45,12 @@ public static class StrafeJumpProof
 
         if (!(strafe.TakeoffSpeed <= 12.05f))
             report.Fail("strafe takeoff was already above sprint");
-        if (!(strafe.AfterHop > 12f))
-            report.Fail("air strafe did not raise horizontal speed above 12");
+        if (!(strafe.AfterHop > 16.8f))
+            report.Fail("air strafe did not pass the old 16.8 planar cap");
+        if (!(KinematicStep.LocomotionPlanarCap(24f, false) > 16.8f))
+            report.Fail("non-ski planar cap still stops a strafe at 16.8");
+        if (Mathf.Abs(KinematicStep.LocomotionPlanarCap(24f, true) - 24f) > 0.001f)
+            report.Fail("ski planar cap changed");
         if (Mathf.Abs(strafe.AfterHop - strafe.LandSpeed) > 0.02f)
             report.Fail("landing hop did not keep the air speed");
         if (!(strafe.AfterNoHop < strafe.LandSpeed - 0.4f))
@@ -158,7 +162,6 @@ public static class StrafeJumpProof
             }
 
             hv = KinematicStep.AirSteer(hv, wish, wishSpeed, airAccel, dt);
-            hv = WishAccel.ClampPlanarSpeed(hv, KinematicStep.LocomotionPlanarCap(24f, false));
 
             float ny = y + vy * dt;
             x += hv.x * dt;

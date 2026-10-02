@@ -73,10 +73,13 @@ namespace TagArena.Movement
             return grounded || coyote > 0f;
         }
 
-        /// <summary>ClampAndDrag planar cap. Ski, jet, and slide use the full ski max.</summary>
+        /// <summary>
+        /// Ski, jet, and slide still cap the whole planar vector at ski max.
+        /// Every other mode has no total-speed cap. Air speed is limited along the wish only.
+        /// </summary>
         public static float LocomotionPlanarCap(float skiMaxSpeed, bool skiJetOrSlide)
         {
-            return skiJetOrSlide ? skiMaxSpeed : skiMaxSpeed * 0.7f;
+            return skiJetOrSlide ? skiMaxSpeed : float.PositiveInfinity;
         }
     }
 }
