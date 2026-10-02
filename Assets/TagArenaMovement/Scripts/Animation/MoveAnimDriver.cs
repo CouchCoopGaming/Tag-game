@@ -101,7 +101,7 @@ namespace TagArena.Movement
 
         void HandleBecameIt()
         {
-            TagSfx.BecomeIt(transform.position);
+            // SFX owned by ItController.SetIt(true); keep hook for future anim triggers.
         }
 
         void HandleState(MoveState prev, MoveState next)

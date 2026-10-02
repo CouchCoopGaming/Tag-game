@@ -62,7 +62,15 @@ namespace Tag.Gameplay
             isIt = value;
             ApplyVisual();
             if (!wasIt && value)
+            {
                 TagSfx.BecomeIt(transform.position);
+                // Drive MoveAnimDriver / HUD listeners (legacy TryTag path was the only NotifyBecameIt caller).
+                if (_motor != null)
+                    _motor.NotifyBecameIt();
+                // Brief pose tell on the new It (victim already flinches in ReceiveTagHit).
+                var loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
+                if (loco != null) loco.PlayTagFlinch();
+            }
             if (wasIt && !value && _motor != null)
             {
                 if (_lastPunchTuning == null || _lastPunchTuning.speedBuffClearsOnLosingIt)

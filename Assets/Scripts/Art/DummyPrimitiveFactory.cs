@@ -44,12 +44,12 @@ namespace Tag.Art
 
         /// <param name="colorKey">
         /// Runner foam/panel key (Blue/Mint/Orange/Lavender/Tan/Red). Ignored when asIt —
-        /// It uses Red body/panels to match Dummy_Mannequin_Red_Hier_Hi.
+        /// It uses Orange body/panels to match Dummy_Mannequin_Orange_Hier_Hi.
         /// </param>
         public static GameObject Build(Transform parent, bool asIt, string colorKey = null)
         {
-            // It: Red foam + Red panels (match Hier Dummy_Mannequin_Red_Hier_Hi). Runner: PickColor key.
-            string key = asIt ? "Red" : NormalizeColorKey(colorKey);
+            // It: Orange foam + Orange panels (match Hier Dummy_Mannequin_Orange_Hier_Hi). Runner: PickColor key.
+            string key = asIt ? "Orange" : NormalizeColorKey(colorKey);
             EnsureMaterials(key);
             var bodyMat = _bodyMats[key];
             var panelMat = _panelMats[key];

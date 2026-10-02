@@ -15,11 +15,23 @@ namespace Tag.Art
 
         public static string PreferCharacterFbx(bool asIt)
         {
-            string stem = asIt ? "Dummy_It" : "Dummy_Runner";
+            // AD paint: It is Orange Hier, Runner is Tan Hier. Both live in CharactersHi.
+            // Flat *_Hi and Dummy_It/Runner_Hi stay fallbacks (no limb hierarchy).
+            if (asIt)
+            {
+                return FirstExisting(
+                    CharactersHi + "/Dummy_Mannequin_Orange_Hier_Hi.fbx",
+                    CharactersHi + "/Dummy_Mannequin_Orange_Hi.fbx",
+                    CharactersHi + "/Dummy_It_Hi.fbx",
+                    CharactersHi + "/Dummy_It.fbx",
+                    Characters + "/Dummy_It.fbx");
+            }
             return FirstExisting(
-                CharactersHi + "/" + stem + "_Hi.fbx",
-                CharactersHi + "/" + stem + ".fbx",
-                Characters + "/" + stem + ".fbx");
+                CharactersHi + "/Dummy_Mannequin_Tan_Hier_Hi.fbx",
+                CharactersHi + "/Dummy_Mannequin_Tan_Hi.fbx",
+                CharactersHi + "/Dummy_Runner_Hi.fbx",
+                CharactersHi + "/Dummy_Runner.fbx",
+                Characters + "/Dummy_Runner.fbx");
         }
 
         public static string PreferPropFbx(string toyName)

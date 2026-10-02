@@ -8,7 +8,7 @@ namespace Tag.Modes
 {
     /// <summary>
     /// Trail collision eliminates; last standing wins.
-    /// Emitters All (default) vs ItOnly. MatchTimeCap → sudden death (self-grace halved).
+    /// Emitters All (default) vs ItOnly. MatchTimeCap --- sudden death (self-grace halved).
     /// Punch/It stay. Dodge i-frames do NOT ignore trails.
     /// </summary>
     public class TrailTagMode : ITagMode
@@ -85,7 +85,7 @@ namespace Tag.Modes
                 }
             }
 
-            // Stall failsafe: ≥2 alive, no lethal segments for 8s → SD
+            // Stall failsafe: ---2 alive, no lethal segments for 8s --- SD
             if (!_suddenDeath && !_ended && ctx.LivingCount() >= 2)
             {
                 bool anyLethal = false;
@@ -102,7 +102,7 @@ namespace Tag.Modes
                     float stall = _tuning.stallFailsafeSec > 0f ? _tuning.stallFailsafeSec : 8f;
                     if (_stallTimer >= stall)
                     {
-                        Debug.Log("[TrailTag] Stall failsafe — forcing sudden death emit All");
+                        Debug.Log("[TrailTag] Stall failsafe --- forcing sudden death emit All");
                         ForceEmitAll(ctx);
                         EnterSuddenDeath(ctx);
                     }
@@ -136,7 +136,7 @@ namespace Tag.Modes
                 var e = p.GetComponent<PlayerTrailEmitter>();
                 if (e != null) e.SetSuddenDeath(true);
             }
-            Debug.Log("[TrailTag] Sudden death — next trail hit eliminates (self-grace halved)");
+            Debug.Log("[TrailTag] Sudden death --- next trail hit eliminates (self-grace halved)");
         }
 
         void RefreshEmitterGates(TagModeContext ctx)
@@ -168,19 +168,28 @@ namespace Tag.Modes
 
         public void OnPunchTransfer(TagModeContext ctx, ItController from, ItController to)
         {
-            if (_tuning.emitters != TrailEmitterMode.ItOnly) return;
+            // Emphasis is visual only. Self-grace and hit rules stay on the segment.
             if (from != null)
             {
                 var fe = from.GetComponent<PlayerTrailEmitter>();
-                if (fe != null) fe.SetEmitting(false);
+                if (fe != null)
+                {
+                    fe.SetItEmphasis(false, _tuning.itTrailBrightness);
+                    if (_tuning.emitters == TrailEmitterMode.ItOnly)
+                        fe.SetEmitting(false);
+                }
             }
             if (to != null)
             {
                 var te = to.GetComponent<PlayerTrailEmitter>();
                 if (te != null)
                 {
-                    te.BeginSpawnDelay(_tuning.spawnTrailDelay);
-                    te.SetEmitting(true);
+                    te.SetItEmphasis(true, _tuning.itTrailBrightness);
+                    if (_tuning.emitters == TrailEmitterMode.ItOnly)
+                    {
+                        te.BeginSpawnDelay(_tuning.spawnTrailDelay);
+                        te.SetEmitting(true);
+                    }
                 }
             }
         }
@@ -190,6 +199,27 @@ namespace Tag.Modes
             if (player == null) return;
             var e = player.GetComponent<PlayerTrailEmitter>();
             if (e != null) e.SetEmitting(false);
+
+            // EliminatePlayer clears CurrentIt when the victim was It. Re-pick so ItOnly
+            // emitters and the It hat stay coherent while 2+ runners remain.
+            if (ctx.CurrentIt == null && ctx.LivingCount() >= 2)
+            {
+                var living = new List<ItController>();
+                foreach (var p in ctx.LivingPlayers()) living.Add(p);
+                if (living.Count > 0)
+                {
+                    var next = living[Random.Range(0, living.Count)];
+                    var modes = TagModeController.Instance;
+                    if (modes != null) modes.TransferIt(null, next);
+                    else
+                    {
+                        next.SetIt(true);
+                        ctx.CurrentIt = next;
+                    }
+                    RefreshEmitterGates(ctx);
+                }
+            }
+
             if (ctx.LivingCount() <= 1)
             {
                 _ended = true;
@@ -206,19 +236,41 @@ namespace Tag.Modes
             return winners;
         }
 
-                public string GetHud(TagModeContext ctx)
+        public string GetHud(TagModeContext ctx)
         {
-            string it = ctx.CurrentIt != null ? ctx.CurrentIt.PlayerId : "-";
-            string timer = _suddenDeath ? "SUDDEN DEATH"
+            string itId = ctx.CurrentIt != null ? ctx.CurrentIt.PlayerId : "-";
+            bool youAreIt = IsLocalHuman(ctx.CurrentIt);
+            string timer = _suddenDeath ? "SD"
                 : (_tuning.matchTimeCap > 0f ? $"Time {ctx.RemainingTime:0.0}s" : "No cap");
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine($"TrailTag | {timer} | Alive {ctx.LivingCount()} | Emit:{_tuning.emitters} | It:{it}");
+            string itLabel = youAreIt ? "YOU" : itId;
+            sb.AppendLine($"TrailTag | {timer} | Alive {ctx.LivingCount()} | Emit:{_tuning.emitters} | It:{itLabel}");
+            if (_suddenDeath)
+                sb.AppendLine("SD: next ribbon hit eliminates (self-grace halved)");
+            // Local OUT line first so spectating is obvious under the It banner.
+            foreach (var p in ctx.Players)
+            {
+                if (p == null || !IsLocalHuman(p) || p.IsAlive) continue;
+                sb.AppendLine("YOU: OUT - waiting for round");
+            }
             foreach (var p in ctx.Players)
             {
                 if (p == null) continue;
-                sb.AppendLine($"{p.PlayerId}: {(p.IsAlive ? "alive" : "OUT")}{(p.IsIt ? " *" : "")}");
+                if (IsLocalHuman(p) && !p.IsAlive) continue; // already listed
+                string who = IsLocalHuman(p) ? "YOU" : p.PlayerId;
+                string state = !p.IsAlive ? "OUT - waiting for round"
+                    : (p.IsIt ? "alive It" : "alive");
+                sb.AppendLine($"{who}: {state}");
             }
             return sb.ToString().TrimEnd();
         }
+
+        static bool IsLocalHuman(ItController p)
+        {
+            if (p == null) return false;
+            if (p.GetComponent<DummyPatrol>() != null) return false;
+            return p.GetComponent<TagArena.Movement.PlayerInputReader>() != null;
+        }
     }
 }
+

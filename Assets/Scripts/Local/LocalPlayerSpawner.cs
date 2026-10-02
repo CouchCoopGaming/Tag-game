@@ -236,8 +236,7 @@ namespace Tag.Local
             tps.pivotHeight = 1.4f;
             motor.cam = camComp.transform;
 
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            ResumeInputGate.LockPlayCursor();
         }
     }
 }

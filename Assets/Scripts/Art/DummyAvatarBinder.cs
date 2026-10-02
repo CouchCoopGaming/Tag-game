@@ -10,8 +10,8 @@ namespace Tag.Art
 {
     /// <summary>
     /// Replaces capsule mesh with HiPoly crash-dummy / mannequin visual.
-    /// Load order: SerializeField -> Hier HiPoly -> flat HiPoly -> Resources -> primitive fallback.
-    /// Prefers hierarchical HiPoly (*_Hier_Hi). Falls back to flat HiPoly, then Navy Spade primitive when unbound.
+    /// Load order: Tan/Orange Hier -> other Hier -> assigned prefab -> flat HiPoly -> Resources -> primitive.
+    /// Defaults: Runner Tan Hier, It Orange Hier. Other *_Hier_Hi, flat HiPoly, then Navy Spade primitive.
     /// </summary>
     public class DummyAvatarBinder : MonoBehaviour
     {
@@ -61,30 +61,38 @@ namespace Tag.Art
 
             string color = PickColor();
 #if UNITY_EDITOR
+            // Assigned Dummy_Runner / Dummy_It prefabs are fallbacks. AD Hier wins when the FBX loads.
+            var assignedRunner = runnerVisualPrefab;
+            var assignedIt = itVisualPrefab;
             if (preferMannequinOverRunnerIt)
             {
-                // Prefer hierarchical HiPoly (*_Hier_Hi) so DummyLocomotor can swing limbs;
-                // flat HiPoly remains as secondary before Runner/It legacy meshes.
-                runnerVisualPrefab = FirstRenderable(runnerVisualPrefab,
+                runnerVisualPrefab = FirstRenderable(null,
+                    LoadHiPoly("Dummy_Mannequin_Tan_Hier_Hi.fbx"),
                     LoadHiPoly($"Dummy_Mannequin_{color}_Hier_Hi.fbx"),
+                    assignedRunner,
                     LoadHiPoly($"Dummy_Mannequin_{color}_Hi.fbx"),
+                    LoadHiPoly("Dummy_Mannequin_Tan_Hi.fbx"),
                     LoadHiPoly("Dummy_Runner_Hi.fbx"));
-                itVisualPrefab = FirstRenderable(itVisualPrefab,
-                    LoadHiPoly("Dummy_Mannequin_Red_Hier_Hi.fbx"),
-                    LoadHiPoly("Dummy_Mannequin_Red_Hi.fbx"),
+                itVisualPrefab = FirstRenderable(null,
+                    LoadHiPoly("Dummy_Mannequin_Orange_Hier_Hi.fbx"),
+                    assignedIt,
+                    LoadHiPoly("Dummy_Mannequin_Orange_Hi.fbx"),
                     LoadHiPoly("Dummy_It_Hi.fbx"),
                     LoadHiPoly($"Dummy_Mannequin_{color}_Hier_Hi.fbx"));
             }
             else
             {
-                runnerVisualPrefab = FirstRenderable(runnerVisualPrefab,
+                runnerVisualPrefab = FirstRenderable(null,
+                    LoadHiPoly("Dummy_Mannequin_Tan_Hier_Hi.fbx"),
                     LoadHiPoly($"Dummy_Mannequin_{color}_Hier_Hi.fbx"),
+                    assignedRunner,
                     LoadHiPoly("Dummy_Runner_Hi.fbx"),
                     LoadHiPoly($"Dummy_Mannequin_{color}_Hi.fbx"));
-                itVisualPrefab = FirstRenderable(itVisualPrefab,
-                    LoadHiPoly("Dummy_Mannequin_Red_Hier_Hi.fbx"),
+                itVisualPrefab = FirstRenderable(null,
+                    LoadHiPoly("Dummy_Mannequin_Orange_Hier_Hi.fbx"),
+                    assignedIt,
                     LoadHiPoly("Dummy_It_Hi.fbx"),
-                    LoadHiPoly("Dummy_Mannequin_Red_Hi.fbx"));
+                    LoadHiPoly("Dummy_Mannequin_Orange_Hi.fbx"));
             }
 #endif
             runnerVisualPrefab = FirstRenderable(runnerVisualPrefab, "Characters/Dummy_Runner");
@@ -232,8 +240,8 @@ namespace Tag.Art
 
         void ApplyCharacterMats(GameObject visual, bool asIt)
         {
-            // HiPoly mannequins already authored with color — only tint if mats exist
-            // and mesh looks uncolored (skip heavy override when FBX has materials).
+            // Hier FBX already carries AD paint (Tan runner, Orange It with nested Vs).
+            // Do not restamp slots — a one-material chevron renderer would turn orange.
             bool hasAuthored = false;
             foreach (var r in visual.GetComponentsInChildren<Renderer>(true))
             {
@@ -243,7 +251,7 @@ namespace Tag.Art
                     break;
                 }
             }
-            if (hasAuthored && !asIt) return;
+            if (hasAuthored) return;
 
             var mats = asIt
                 ? new[]

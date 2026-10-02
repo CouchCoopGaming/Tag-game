@@ -149,10 +149,14 @@ namespace Tag.Modes
 
         public string GetHud(TagModeContext ctx)
         {
-            string it = ctx.CurrentIt != null ? ctx.CurrentIt.PlayerId : "-";
-            string warn = (ctx.RemainingTime > 0f && ctx.RemainingTime <= _tuning.warnSec) ? " !!WARN!!" : "";
+            string itId = ctx.CurrentIt != null ? ctx.CurrentIt.PlayerId : "-";
+            bool youHold = IsLocalHuman(ctx.CurrentIt);
+            string warn = (ctx.RemainingTime > 0f && ctx.RemainingTime <= _tuning.warnSec) ? "  FUSE HOT" : "";
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine($"HotPotato R{_roundIndex}/{_tuning.maxRounds} | Fuse {ctx.RemainingTime:0.0}s{warn} | It:{it}");
+            if (youHold)
+                sb.AppendLine($"HotPotato R{_roundIndex}/{_tuning.maxRounds} | YOU HOLD THE FUSE {ctx.RemainingTime:0.0}s{warn}");
+            else
+                sb.AppendLine($"HotPotato R{_roundIndex}/{_tuning.maxRounds} | Fuse {ctx.RemainingTime:0.0}s{warn} | It:{itId}");
             sb.Append("Wins: ");
             bool first = true;
             foreach (var p in ctx.Players)
@@ -161,9 +165,18 @@ namespace Tag.Modes
                 int w = _roundWins.TryGetValue(p.PlayerId, out var v) ? v : 0;
                 if (!first) sb.Append("  ");
                 first = false;
-                sb.Append($"{p.PlayerId}:{w}");
+                string mark = IsLocalHuman(p) ? "*" : "";
+                sb.Append($"{p.PlayerId}{mark}:{w}");
             }
             return sb.ToString();
         }
+
+        static bool IsLocalHuman(ItController p)
+        {
+            if (p == null) return false;
+            if (p.GetComponent<DummyPatrol>() != null) return false;
+            return p.GetComponent<TagArena.Movement.PlayerInputReader>() != null;
+        }
     }
 }
+

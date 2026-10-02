@@ -49,6 +49,13 @@ namespace Tag.Experimental
                 return;
             }
 
+            // Pause and the results card must not keep pulling.
+            if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked)
+            {
+                Cancel();
+                return;
+            }
+
             EnsureRope();
             bool fire = ReadFire();
             if (!fire)

@@ -2,6 +2,7 @@ using UnityEngine;
 using Tag.Audio;
 using TagArena.Movement;
 using Tag.Modes;
+using Tag.Art;
 
 namespace Tag.Gameplay
 {
@@ -78,12 +79,24 @@ namespace Tag.Gameplay
 
         void Update()
         {
+            // Pause freezes the clock. Results stay at timeScale 1 with the cursor unlocked.
+            // Either way a swing that started on the menu click must not finish into gameplay.
+            if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked || ResumeInputGate.Blocking)
+            {
+                DropSwing();
+                return;
+            }
             float dt = Time.deltaTime;
 
             if (_input != null && _input.PunchPressed)
                 _bufferTimer = tuning.inputBuffer;
             else
                 _bufferTimer = Mathf.Max(0f, _bufferTimer - dt);
+
+            // Local It: cock the fist while the punch buffer is armed (same tell AI uses).
+            if (Phase == PunchPhase.Idle && _bufferTimer > 0f &&
+                _it != null && _it.IsIt && !_it.IsEliminated)
+                HoldLocalPunchTell();
 
             bool canStart =
                 Phase == PunchPhase.Idle
@@ -109,6 +122,7 @@ namespace Tag.Gameplay
         {
             _bufferTimer = 0f;
             _hitThisSwing = false;
+            HoldLocalPunchTell();
             Phase = PunchPhase.Windup;
             _phaseDuration = tuning.windup;
             _phaseTimer = _phaseDuration;
@@ -152,7 +166,7 @@ namespace Tag.Gameplay
                 TagSfx.PunchMiss(transform.position);
                 var tpsMiss = GetComponentInChildren<TpsMoveCamera>(true);
                 if (tpsMiss != null)
-                    tpsMiss.AddKick(new Vector3(0f, 0.025f, -0.06f));
+                    tpsMiss.AddKick(new Vector3(0f, 0.04f, -0.09f)); // whiff recoil reads a hair clearer in TP
                 _phaseDuration = tuning.missRecover;
                 _phaseTimer = _phaseDuration;
             }
@@ -163,6 +177,24 @@ namespace Tag.Gameplay
             _phaseTimer -= dt;
             if (_phaseTimer <= 0f)
                 EndPunch();
+        }
+
+        void HoldLocalPunchTell()
+        {
+            var loco = GetComponentInChildren<DummyLocomotor>();
+            if (loco != null) loco.HoldPunchTelegraph();
+        }
+
+        /// <summary>Drop a swing that started on the results click so it does not carry into countdown.</summary>
+        public void ForceEnd() => DropSwing();
+
+        void DropSwing()
+        {
+            _bufferTimer = 0f;
+            if (Phase != PunchPhase.Idle)
+                EndPunch();
+            var loco = GetComponentInChildren<DummyLocomotor>();
+            if (loco != null) loco.CancelPunchTelegraph();
         }
 
         void EndPunch()
@@ -275,7 +307,11 @@ namespace Tag.Gameplay
             // Readable TP punch connect: stronger camera kick + FOV punch on attacker
             var tps = GetComponentInChildren<TpsMoveCamera>(true);
             if (tps != null)
-                tps.AddKick(new Vector3(0f, 0.14f, -0.38f));
+                tps.AddKick(new Vector3(0f, 0.18f, -0.45f)); // connect kick reads a hair stronger in TP
+            // Victim's chase cam, lighter than the attacker's. No hitstop — nothing else freezes time.
+            var victimCam = victim.GetComponentInChildren<TpsMoveCamera>(true);
+            if (victimCam != null && victimCam != tps)
+                victimCam.AddKick(new Vector3(0.05f, 0.11f, -0.24f)); // clearer tag recoil in TP
 
             // Target ragdoll / kinematic stun proxy + i-frames; hit pulse fires on It visual swap
             victim.ReceiveTagHit(knock, tuning);

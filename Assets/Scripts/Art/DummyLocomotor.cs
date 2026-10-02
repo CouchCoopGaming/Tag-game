@@ -5,8 +5,8 @@ using UnityEngine;
 namespace Tag.Art
 {
     /// <summary>
-    /// Procedural parkour body driven by TagArena MoveState (Apex×Tribes).
-    /// No AnimationClips required — readable limb tells for third-person views.
+    /// Procedural parkour body driven by TagArena MoveState (Apex-Tribes).
+    /// No AnimationClips required - readable limb tells for third-person views.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
     {
@@ -24,6 +24,7 @@ namespace Tag.Art
         bool _loggedBindFail;
         float _cycle;
         float _landSquash;
+        float _punchTelegraph;
         bool _wasGrounded = true;
         float _bouncePulse;
         bool _bounceWallLeft;
@@ -51,7 +52,7 @@ namespace Tag.Art
             if (!_bound && !_loggedBindFail)
             {
                 _loggedBindFail = true;
-                Debug.LogWarning($"[DummyLocomotor] Bone bind failed on '{(visualRoot != null ? visualRoot.name : "null")}' — no hierarchical UpperArm/UpperLeg.");
+                Debug.LogWarning($"[DummyLocomotor] Bone bind failed on '{(visualRoot != null ? visualRoot.name : "null")}' - no hierarchical UpperArm/UpperLeg.");
             }
         }
 
@@ -81,13 +82,16 @@ namespace Tag.Art
 
         void LateUpdate()
         {
-            if (!_bound) Cache(transform);
-            if (!_bound) return;
+            float dt = Time.deltaTime;
+            _punchTelegraph = Mathf.MoveTowards(_punchTelegraph, 0f, dt);
             if (_motor == null) _motor = GetComponentInParent<PlayerMotor>();
             HookBounce();
+            // Cyan dash tell must run even when the limb rig failed to bind.
+            TickAirDashTell(dt);
+            if (!_bound) Cache(transform);
+            if (!_bound) return;
             if (_punch == null) _punch = GetComponentInParent<PunchHitbox>();
 
-            float dt = Time.deltaTime;
             float speed = _motor != null ? _motor.HorizontalSpeed : 0f;
             bool grounded = _motor == null || _motor.IsGrounded;
             var st = _motor != null ? _motor.State : MoveState.Idle;
@@ -112,38 +116,23 @@ namespace Tag.Art
                     hard = Mathf.Max(soft + 1f, _motor.cfg.landStunSpeed);
                 float t = Mathf.Clamp01(Mathf.InverseLerp(soft, hard, impact));
                 // Ease-in so mid falls stay readable but terminal velocity punches.
-                _landSquash = Mathf.Clamp(Mathf.Lerp(0.2f, 1.25f, t * t), 0.2f, 1.25f);
+                // Slightly stronger mid-band so a park hop-off reads without waiting for stun speed.
+                _landSquash = Mathf.Clamp(Mathf.Lerp(0.28f, 1.42f, t * t), 0.28f, 1.42f); // park hop-off punchier mid squash
             }
             _wasGrounded = grounded;
-            float recover = Mathf.Lerp(7.5f, 5f, Mathf.Clamp01(_landSquash));
+            float recover = Mathf.Lerp(8.8f, 5.8f, Mathf.Clamp01(_landSquash)); // snappier park hop-off settle
             _landSquash = Mathf.MoveTowards(_landSquash, 0f, dt * recover);
-            // Bible WallBounce ~0.22s kick flash — brief TP limb tell after OnWallBounced.
+            // Bible WallBounce ~0.22s kick flash - brief TP limb tell after OnWallBounced.
             _bouncePulse = Mathf.MoveTowards(_bouncePulse, 0f, dt / 0.22f);
             bool bouncing = _bouncePulse > 0.04f;
             float bounceAmt = Mathf.Clamp01(_bouncePulse);
-            // Bible SuperGlide ~0.28s flat body + crouch hips — TP launch tell.
+            // Bible SuperGlide ~0.28s flat body + crouch hips - TP launch tell.
             _glidePulse = Mathf.MoveTowards(_glidePulse, 0f, dt / 0.28f);
             bool gliding = _glidePulse > 0.04f;
             float glideAmt = Mathf.Clamp01(_glidePulse);
 
-            // MMB lunge / air-dash tell + brief jet pop
             bool airDashing = _motor != null && _motor.IsAirDashing;
-            if (lunging && !_wasLunging) _dashPulse = 1f;
-            if (airDashing && !_wasAirDashing)
-            {
-                _dashPulse = 1f;
-                _dashTrailT = 0.22f;
-                EnsureDashTrail();
-            }
-            if (jet && !_wasJetting) _dashPulse = Mathf.Max(_dashPulse, 0.85f);
-            _wasLunging = lunging;
-            _wasAirDashing = airDashing;
-            _wasJetting = jet;
-            _dashPulse = Mathf.MoveTowards(_dashPulse, 0f, dt / 0.18f);
-            if (_dashTrailT > 0f) _dashTrailT = Mathf.MoveTowards(_dashTrailT, 0f, dt);
-            if (_dashTrail != null)
-                _dashTrail.emitting = _dashTrailT > 0.01f || airDashing;
-            _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.32f);
+            _tagFlinch = Mathf.MoveTowards(_tagFlinch, 0f, dt / 0.38f); // slightly longer so tag recoil reads in TP
             bool dashing = _dashPulse > 0.04f || lunging || airDashing;
             float dashAmt = Mathf.Max(
                 Mathf.Clamp01(_dashPulse),
@@ -153,8 +142,8 @@ namespace Tag.Art
 
             float walkAmt = Mathf.Clamp01(speed / 5.5f);
             float runAmt = Mathf.InverseLerp(5.5f, 11.5f, speed);
-            // Human-ish run cadence — knees drive the cycle, not ice-skate lock
-            float cadence = Mathf.Lerp(7.2f, 13.2f, runAmt);
+            // Human-ish run cadence - knees drive the cycle, not ice-skate lock
+            float cadence = Mathf.Lerp(8.0f, 14.5f, runAmt);
             // Keep a soft air/vault cycle so limbs stay energetic off the ground
             if (grounded && speed > 0.35f && !sliding && !crouch)
                 _cycle += dt * cadence;
@@ -163,24 +152,27 @@ namespace Tag.Art
             else if (!jet)
                 _cycle = Mathf.MoveTowards(_cycle, Mathf.Round(_cycle), dt * 8f);
 
-            // Natural hang/swing — keep amplitude human (not arms-into-butt flares)
-            float swing = Mathf.Sin(_cycle) * Mathf.Lerp(28f, 52f, Mathf.Max(walkAmt, runAmt));
+            // Hold the plant and the lift, then cross zero faster - a sine reads as skating.
+            float sinRaw = Mathf.Sin(_cycle);
+            float sinC = Mathf.Sign(sinRaw) * Mathf.Pow(Mathf.Abs(sinRaw), 0.55f);
+            float cosC = Mathf.Cos(_cycle);
+            // Natural hang/swing - keep amplitude human (not arms-into-butt flares)
+            float swing = sinC * Mathf.Lerp(28f, 52f, Mathf.Max(walkAmt, runAmt));
             if (air) swing *= 0.72f;
             if (sliding) swing *= 0.08f; else if (crouch) swing *= 0.18f;
             if (jet) swing = 0f;
-            float sinC = Mathf.Sin(_cycle);
-            float cosC = Mathf.Cos(_cycle);
+
 
             float breath = Mathf.Sin(Time.time * 2.1f) * 2.4f;
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
-            // Spine / hips lean by state — jet reads clearly in TP
+            // Spine / hips lean by state - jet reads clearly in TP
             float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : sliding ? 48f : crouch ? 28f : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : 0f;
             if (flinchAmt > 0.04f)
             {
-                leanX = Mathf.Lerp(leanX, -28f, flinchAmt);
-                leanZ = Mathf.Lerp(leanZ, Mathf.Sin(Time.time * 40f) * 18f, flinchAmt);
+                leanX = Mathf.Lerp(leanX, -34f, flinchAmt); // stronger tuck so tag recoil reads in TP
+                leanZ = Mathf.Lerp(leanZ, Mathf.Sin(Time.time * 42f) * 22f, flinchAmt); // clearer tag flinch shake in TP
             }
             if (bouncing)
             {
@@ -190,7 +182,7 @@ namespace Tag.Art
             }
             if (gliding)
             {
-                // Flat launch silhouette — hips read a crouch even if capsule stands.
+                // Flat launch silhouette - hips read a crouch even if capsule stands.
                 leanX = Mathf.Lerp(leanX, 42f, glideAmt);
                 leanZ = Mathf.Lerp(leanZ, 0f, glideAmt);
             }
@@ -199,15 +191,16 @@ namespace Tag.Art
             _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : sliding ? 28f : crouch ? 14f : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
             _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : sliding ? 18f : crouch ? 6f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
 
-            // Arms — slight outward A-pose only (large +Z was V-ing hands into the butt)
-            float armZ = Mathf.Lerp(6f, 10f, runAmt);
+            // Arms - slight outward A-pose only (large +Z was V-ing hands into the butt)
+            float armZ = Mathf.Lerp(4f, 8f, runAmt);
             float lungeAmt = lunging && _motor != null ? _motor.LungeProgress : 0f;
             if (lunging || dashing)
             {
                 // MMB dash / air-dodge tell: hard whip + stretch early, settle late
                 float snap = Mathf.Lerp(0.55f, 1f, Mathf.Max(lungeAmt, dashAmt));
-                _uaLT = _uaL0 * Quaternion.Euler(78f * snap, -22f, armZ + 34f);
-                _uaRT = _uaR0 * Quaternion.Euler(78f * snap, 22f, -armZ - 34f);
+                // Keep whip readable but limit +Z flare (large +Z V's hands into the butt on Hier/primitive).
+                _uaLT = _uaL0 * Quaternion.Euler(78f * snap, -18f, armZ + 12f);
+                _uaRT = _uaR0 * Quaternion.Euler(78f * snap, 18f, -armZ - 12f);
                 _laLT = _laL0 * Quaternion.Euler(-38f - 28f * snap, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(-38f - 28f * snap, 0f, 0f);
             }
@@ -222,16 +215,16 @@ namespace Tag.Art
             }
             else if (climb)
             {
-                // Hand-over-hand reach — louder than idle freeze; opposite phase to legs.
+                // Hand-over-hand reach - louder than idle freeze; opposite phase to legs.
                 float climbSwing = Mathf.Sin(Time.time * 7.5f) * 48f;
-                _uaLT = _uaL0 * Quaternion.Euler(-138f + climbSwing, 16f, 28f);
-                _uaRT = _uaR0 * Quaternion.Euler(-138f - climbSwing, -16f, -28f);
+                _uaLT = _uaL0 * Quaternion.Euler(-138f + climbSwing, 16f, 12f);
+                _uaRT = _uaR0 * Quaternion.Euler(-138f - climbSwing, -16f, -12f);
                 _laLT = _laL0 * Quaternion.Euler(-55f - Mathf.Abs(climbSwing) * 0.12f, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(-55f - Mathf.Abs(climbSwing) * 0.12f, 0f, 0f);
             }
             else if (mantle)
             {
-                // Progress pull-up → plant: syncs with motor mantle arc (not free Time.sin).
+                // Progress pull-up - plant: syncs with motor mantle arc (not free Time.sin).
                 float m = _motor != null ? _motor.MantleProgress : 0.5f;
                 float reach = Mathf.Lerp(-155f, -78f, m);
                 float flare = Mathf.Lerp(32f, 14f, m);
@@ -261,7 +254,7 @@ namespace Tag.Art
             }
             else if (gliding)
             {
-                // Flat forward reach — reads as mantle→glide launch, not air flail
+                // Flat forward reach - reads as mantle-glide launch, not air flail
                 float g = glideAmt;
                 _uaLT = _uaL0 * Quaternion.Euler(Mathf.Lerp(-20f, -72f, g), 12f * g, Mathf.Lerp(14f, 38f, g));
                 _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-20f, -72f, g), -12f * g, Mathf.Lerp(-14f, -38f, g));
@@ -294,39 +287,43 @@ namespace Tag.Art
                 _laLT = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
                 if (phase == PunchPhase.Windup)
                 {
-                    float w = Mathf.Lerp(0.35f, 1f, punchProg);
-                    _uaRT = _uaR0 * Quaternion.Euler(58f + 62f * w, -48f * w, 28f);
-                    _laRT = _laR0 * Quaternion.Euler(-88f * w, 0f, 0f);
-                    _hipsT = _hips0 * Quaternion.Euler(12f + 10f * w, -18f * w, 0f);
-                    _spineT = _spine0 * Quaternion.Euler(leanX + 10f * w, -22f * w, leanZ);
+                    float w = Mathf.Lerp(0.55f, 1f, punchProg);
+                    // Fist behind the spine vanishes in the chase cam. Flare the elbow out beside the head.
+                    // Timing stays the authored 0.12s windup; a bit more elbow yaw so the cock reads in TP.
+                    _uaRT = _uaR0 * Quaternion.Euler(28f * w, -29f * w, -56f - 16f * w); // extra elbow yaw for TP cock read
+                    _laRT = _laR0 * Quaternion.Euler(-40f - 72f * w, 0f, 0f);
+                    _hipsT = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f); // clearer windup hip twist in TP
+                    _spineT = _spine0 * Quaternion.Euler(leanX + 12f * w, -36f * w, leanZ); // clearer windup spine twist in TP
                 }
                 else if (phase == PunchPhase.Active)
                 {
                     float e = Mathf.Lerp(0.8f, 1f, punchProg);
-                    _uaRT = _uaR0 * Quaternion.Euler(-55f - 130f * e, 48f * e, -34f);
+                    _uaRT = _uaR0 * Quaternion.Euler(-55f - 130f * e, 55f * e, -34f); // slightly more elbow flare so Active reads in TP
                     _laRT = _laR0 * Quaternion.Euler(-72f * e, 0f, 0f);
                     _hipsT = _hips0 * Quaternion.Euler(18f, 16f * e, 0f);
                     _spineT = _spine0 * Quaternion.Euler(leanX + 18f, 28f * e, leanZ);
                 }
                 else if (phase == PunchPhase.HitRecover)
                 {
-                    // Hold the connect: arm stays punched out + slight overshoot, then eases
-                    float r = Mathf.Lerp(1.2f, 0.45f, punchProg);
-                    _uaRT = _uaR0 * Quaternion.Euler(-70f - 110f * r, 52f * r, -38f);
+                    // Hold the connect: arm stays punched out + slight overshoot, then eases toward idle faster late.
+                    float r = Mathf.Lerp(1.2f, 0.35f, punchProg * punchProg);
+                    _uaRT = _uaR0 * Quaternion.Euler(-70f - 110f * r, 57f * r, -38f); // match Active flare so HitRecover still reads in TP
                     _laRT = _laR0 * Quaternion.Euler(-78f * r, 0f, 0f);
                     _uaLT = _uaL0 * Quaternion.Euler(-32f, 18f, armZ + 22f);
                     _spineT = _spine0 * Quaternion.Euler(leanX + 14f * r, 18f * r, leanZ);
                 }
-                else // MissRecover — limp whiff: less extension, quicker drop vs HitRecover hold
+                else // MissRecover - limp whiff: less extension, quicker drop vs HitRecover hold
                 {
-                    float r = Mathf.Lerp(0.7f, 0.08f, punchProg * punchProg);
-                    _uaRT = _uaR0 * Quaternion.Euler(-18f - 48f * r, 10f * r, -8f);
-                    _laRT = _laR0 * Quaternion.Euler(-18f * r, 0f, 0f);
+                    // Cubed ease + soft shoulder sag so a whiff drops faster vs HitRecover hold.
+                    float r = Mathf.Lerp(0.62f, 0.02f, punchProg * punchProg * punchProg); // fuller limp drop at end of MissRecover
+                    _uaRT = _uaR0 * Quaternion.Euler(-18f - 40f * r, 10f * r, -8f); // softer limp shoulder so whiff reads in TP
+                    _laRT = _laR0 * Quaternion.Euler(-14f * r, 0f, 0f);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 6f * r, 0f, leanZ), 0.35f);
                 }
             }
             else if (sliding)
             {
-                // Dive: arms forward/low — never behind the hips
+                // Dive: arms forward/low - never behind the hips
                 _uaLT = _uaL0 * Quaternion.Euler(-48f, -8f, armZ + 12f);
                 _uaRT = _uaR0 * Quaternion.Euler(-28f, 10f, -armZ - 8f);
                 _laLT = _laL0 * Quaternion.Euler(-42f, 0f, 0f);
@@ -334,7 +331,7 @@ namespace Tag.Art
             }
             else if (crouch)
             {
-                // Low guard — hands forward of thighs
+                // Low guard - hands forward of thighs
                 _uaLT = _uaL0 * Quaternion.Euler(-18f, -4f, armZ + 4f);
                 _uaRT = _uaR0 * Quaternion.Euler(-18f, 4f, -armZ - 4f);
                 _laLT = _laL0 * Quaternion.Euler(-28f, 0f, 0f);
@@ -343,22 +340,34 @@ namespace Tag.Art
             else if (air)
             {
                 // Air / vault limb tells: residual run energy + open arms (slight loft for crest leave)
-                float airKick = Mathf.Sin(_cycle) * Mathf.Lerp(28f, 48f, runAmt);
-                _uaLT = _uaL0 * Quaternion.Euler(-32f - airKick * 0.55f, 0f, armZ + 14f);
-                _uaRT = _uaR0 * Quaternion.Euler(-32f + airKick * 0.55f, 0f, -armZ - 14f);
+                float airKick = sinC * Mathf.Lerp(28f, 48f, runAmt);
+                _uaLT = _uaL0 * Quaternion.Euler(-32f - airKick * 0.55f, 0f, 8f);
+                _uaRT = _uaR0 * Quaternion.Euler(-32f + airKick * 0.55f, 0f, -8f);
                 _laLT = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(-22f, 0f, 0f);
             }
             else
             {
-                // Opposite-phase hang swing; elbows bend on the forward arm
-                float armSwing = swing;
-                _uaLT = _uaL0 * Quaternion.Euler(-armSwing, 0f, armZ);
-                _uaRT = _uaR0 * Quaternion.Euler(armSwing, 0f, -armZ);
-                float elbowL = -18f - Mathf.Max(0f, -sinC) * Mathf.Lerp(18f, 42f, runAmt);
-                float elbowR = -18f - Mathf.Max(0f, sinC) * Mathf.Lerp(18f, 42f, runAmt);
+                // Mostly forward. A full -swing plus extra Z roll put both hands back into the hips.
+                // Rest pose already carries the outward A; do not stack more roll on the run.
+                float amp = Mathf.Lerp(24f, 46f, Mathf.Max(walkAmt, runAmt));
+                _uaLT = _uaL0 * Quaternion.Euler(RunArmPitch(sinC, amp), 0f, 0f);
+                _uaRT = _uaR0 * Quaternion.Euler(RunArmPitch(-sinC, amp), 0f, 0f);
+                float elbowL = -18f - Mathf.Max(0f, sinC) * Mathf.Lerp(22f, 48f, runAmt);
+                float elbowR = -18f - Mathf.Max(0f, -sinC) * Mathf.Lerp(22f, 48f, runAmt);
                 _laLT = _laL0 * Quaternion.Euler(elbowL, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(elbowR, 0f, 0f);
+            }
+
+            if (_punchTelegraph > 0.02f && !punching)
+            {
+                // Dummy It cocks before QueuePunch. Match the flared windup elbow so the tell reads in TP.
+                // The real windup is still only 0.12s; this is the hold pose before QueuePunch.
+                float k = Mathf.Clamp01(_punchTelegraph / 0.2f);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(28f, -26f, -72f), k); // match windup elbow yaw
+                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-112f, 0f, 0f), k);
+                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f + 8f, -30f, 0f), k); // match windup hip twist
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 12f, -36f, leanZ), k); // match windup spine twist
             }
 
             // Legs
@@ -387,7 +396,7 @@ namespace Tag.Art
             }
             else if (jet)
             {
-                // Knees slightly extended — hover, not a tuck
+                // Knees slightly extended - hover, not a tuck
                 float hover = Mathf.Sin(Time.time * 6.5f) * 5f;
                 _ulLT = _ulL0 * Quaternion.Euler(14f + hover, 0f, 8f);
                 _ulRT = _ulR0 * Quaternion.Euler(12f - hover, 0f, -8f);
@@ -396,7 +405,7 @@ namespace Tag.Art
             }
             else if (mantle)
             {
-                // Tuck early, lead-leg plant late — readable vault in TP
+                // Tuck early, lead-leg plant late - readable vault in TP
                 float m = _motor != null ? _motor.MantleProgress : 0.5f;
                 _ulLT = _ulL0 * Quaternion.Euler(Mathf.Lerp(72f, 28f, m), 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(58f, 42f, m), 0f, 0f);
@@ -405,7 +414,7 @@ namespace Tag.Art
             }
             else if (climb)
             {
-                // Opposite to arms: drive / plant — vertical climb silhouette in TP.
+                // Opposite to arms: drive / plant - vertical climb silhouette in TP.
                 float stride = Mathf.Sin(Time.time * 7.5f) * 28f;
                 _ulLT = _ulL0 * Quaternion.Euler(52f - stride, 0f, 8f);
                 _ulRT = _ulR0 * Quaternion.Euler(52f + stride, 0f, -8f);
@@ -433,7 +442,7 @@ namespace Tag.Art
             }
             else if (gliding)
             {
-                // Crouch-hip tuck in air — bible: crouch in hips even if capsule stands
+                // Crouch-hip tuck in air - bible: crouch in hips even if capsule stands
                 float g = glideAmt;
                 _ulLT = _ulL0 * Quaternion.Euler(Mathf.Lerp(18f, 58f, g), 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(16f, 52f, g), 0f, 0f);
@@ -442,7 +451,7 @@ namespace Tag.Art
             }
             else if (bouncing)
             {
-                // Wall-side leg kicks the face; outer tucks — readable off-wall impulse
+                // Wall-side leg kicks the face; outer tucks - readable off-wall impulse
                 float k = bounceAmt;
                 if (_bounceWallLeft)
                 {
@@ -461,7 +470,7 @@ namespace Tag.Art
             }
             else if (air)
             {
-                float airKick = Mathf.Sin(_cycle) * Mathf.Lerp(32f, 55f, runAmt);
+                float airKick = sinC * Mathf.Lerp(32f, 55f, runAmt);
                 _ulLT = _ulL0 * Quaternion.Euler(22f + airKick, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(18f - airKick, 0f, 0f);
                 _llLT = _llL0 * Quaternion.Euler(-35f - Mathf.Abs(airKick) * 0.35f, 0f, 0f);
@@ -470,18 +479,31 @@ namespace Tag.Art
             else
             {
                 // Human run: thigh stride + recovery-leg knee bend (stance more extended)
-                float stride = Mathf.Lerp(1.05f, 1.35f, runAmt);
+                float stride = Mathf.Lerp(0.98f, 1.28f, runAmt);
                 float thighL = swing * stride;
                 float thighR = -swing * stride;
                 _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
-                float kneeAmt = Mathf.Lerp(22f, 58f, runAmt);
-                float baseFlex = Mathf.Lerp(8f, 14f, runAmt);
+                float kneeAmt = Mathf.Lerp(32f, 74f, runAmt);
+                float baseFlex = Mathf.Lerp(10f, 18f, runAmt);
                 // Forward thigh (sin>0 left) flexes; trailing extends
                 float kneeL = -(baseFlex + Mathf.Max(0f, sinC) * kneeAmt + Mathf.Max(0f, -cosC) * kneeAmt * 0.25f);
                 float kneeR = -(baseFlex + Mathf.Max(0f, -sinC) * kneeAmt + Mathf.Max(0f, cosC) * kneeAmt * 0.25f);
                 _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(kneeR, 0f, 0f);
+            }
+
+            if (_landSquash > 0.08f && grounded && !sliding && !dashing)
+            {
+                // Recovery the squash scale never showed: knees buckle, arms out for balance.
+                float k = Mathf.Clamp01(_landSquash);
+                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(42f, 0f, 8f), k);
+                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(36f, 0f, -8f), k);
+                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-62f, 0f, 0f), k);
+                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-48f, 0f, 0f), k);
+                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(-22f, 10f, 22f), k);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-22f, -10f, -22f), k);
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(26f, 0f, 0f), k);
             }
 
             if (flinchAmt > 0.04f)
@@ -499,32 +521,72 @@ namespace Tag.Art
             }
 
             float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
+            // 0.1s air dash never reached the whip pose at slew 42.
+            bool punchWind = punching && phase == PunchPhase.Windup;
+            float armSlewL = airDashing ? 78f : punchWind ? 90f : (punching || lunging || dashing ? 42f : slew);
+            float armSlewR = airDashing ? 78f : punchWind ? 90f : (punching || lunging || dashing ? 46f : slew);
+            float legSlew = airDashing ? 78f : slew;
             Slew(ref _spine, _spineT, slew, dt);
             Slew(ref _hips, _hipsT, slew, dt);
             Slew(ref _head, _headT, slew, dt);
-            Slew(ref _upperArmL, _uaLT, punching || lunging || dashing ? 42f : slew, dt);
-            Slew(ref _upperArmR, _uaRT, punching || lunging || dashing ? 46f : slew, dt);
-            Slew(ref _lowerArmL, _laLT, punching || lunging || dashing ? 42f : slew, dt);
-            Slew(ref _lowerArmR, _laRT, punching || lunging || dashing ? 46f : slew, dt);
-            Slew(ref _upperLegL, _ulLT, slew, dt);
-            Slew(ref _upperLegR, _ulRT, slew, dt);
-            Slew(ref _lowerLegL, _llLT, slew, dt);
-            Slew(ref _lowerLegR, _llRT, slew, dt);
+            Slew(ref _upperArmL, _uaLT, armSlewL, dt);
+            Slew(ref _upperArmR, _uaRT, armSlewR, dt);
+            Slew(ref _lowerArmL, _laLT, armSlewL, dt);
+            Slew(ref _lowerArmR, _laRT, armSlewR, dt);
+            Slew(ref _upperLegL, _ulLT, legSlew, dt);
+            Slew(ref _upperLegR, _ulRT, legSlew, dt);
+            Slew(ref _lowerLegL, _llLT, legSlew, dt);
+            Slew(ref _lowerLegR, _llRT, legSlew, dt);
 
-            float bob = grounded ? Mathf.Abs(Mathf.Sin(_cycle)) * 0.07f * Mathf.Max(walkAmt, runAmt) : air ? Mathf.Abs(Mathf.Sin(_cycle)) * 0.02f : 0f;
+
+            float step = Mathf.Pow(Mathf.Abs(sinRaw), 1.7f);
+            float bob = grounded ? step * 0.085f * Mathf.Max(walkAmt, runAmt) : air ? step * 0.02f : 0f;
             if (sliding) bob = -0.22f; else if (crouch) bob = -0.14f;
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
-            if (_landSquash > 0f) bob -= 0.12f * _landSquash;
+            if (_landSquash > 0f) bob -= 0.14f * _landSquash;
             if (dashing) bob += 0.04f * dashAmt;
             if (flinchAmt > 0.04f) bob -= 0.1f * flinchAmt;
             transform.localPosition = _root0 + new Vector3(0f, bob, 0f);
-            float squash = 1f - 0.12f * _landSquash;
+            float squash = 1f - 0.14f * _landSquash;
             // Air-dash: strong stretch then brief squash; tag flinch compresses
             float dashStretch = airDashing ? 0.32f : 0.18f;
             float dashSquash = airDashing ? 0.16f : 0.1f;
             float stretchY = 1f + dashStretch * dashAmt - 0.16f * flinchAmt;
             float stretchXZ = 1f - dashSquash * dashAmt + 0.12f * flinchAmt;
             transform.localScale = new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash);
+        }
+
+        /// <summary>
+        /// Negative pitch is forward on the hanging arm. Rearward recovery stays short
+        /// so the hands do not fold back into the hips.
+        /// </summary>
+        static float RunArmPitch(float phase, float amp)
+        {
+            float fwd = Mathf.Max(0f, phase) * amp;
+            float back = Mathf.Max(0f, -phase) * amp * 0.22f;
+            return -(fwd - back);
+        }
+
+        void TickAirDashTell(float dt)
+        {
+            bool lunging = _motor != null && _motor.IsLunging;
+            bool airDashing = _motor != null && _motor.IsAirDashing;
+            bool jet = _motor != null && (_motor.State == MoveState.Jet || _motor.Jetting);
+            if (lunging && !_wasLunging) _dashPulse = 1f;
+            if (airDashing && !_wasAirDashing)
+            {
+                _dashPulse = 1f;
+                _dashTrailT = 0.33f; // slightly longer air-dash ribbon read
+                EnsureDashTrail();
+            }
+            if (jet && !_wasJetting) _dashPulse = Mathf.Max(_dashPulse, 0.85f);
+            _wasLunging = lunging;
+            _wasAirDashing = airDashing;
+            _wasJetting = jet;
+            _dashPulse = Mathf.MoveTowards(_dashPulse, 0f, dt / 0.18f);
+            if (_dashTrailT > 0f) _dashTrailT = Mathf.MoveTowards(_dashTrailT, 0f, dt);
+            if (_dashTrail != null)
+                _dashTrail.emitting = _dashTrailT > 0.01f || airDashing;
         }
 
         void EnsureDashTrail()
@@ -534,9 +596,9 @@ namespace Tag.Art
             go.transform.SetParent(transform, false);
             go.transform.localPosition = new Vector3(0f, 0.9f, -0.15f);
             _dashTrail = go.AddComponent<TrailRenderer>();
-            _dashTrail.time = 0.18f;
-            _dashTrail.minVertexDistance = 0.05f;
-            _dashTrail.widthMultiplier = 0.22f;
+            _dashTrail.time = 0.33f;
+            _dashTrail.minVertexDistance = 0.04f;
+            _dashTrail.widthMultiplier = 0.38f; // slightly wider so air-dash ribbon reads in TP
             _dashTrail.emitting = false;
             _dashTrail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             _dashTrail.receiveShadows = false;
@@ -562,7 +624,18 @@ namespace Tag.Art
             _dashTrail.sharedMaterial = mat;
         }
 
-        /// <summary>Victim tag / punch connect flinch — called from ItController / binder.</summary>
+        /// <summary>Called while the dummy is committed to a punch but has not swung yet.</summary>
+        public void HoldPunchTelegraph()
+        {
+            _punchTelegraph = 0.2f;
+        }
+
+        public void CancelPunchTelegraph()
+        {
+            _punchTelegraph = 0f;
+        }
+
+        /// <summary>Victim tag / punch connect flinch - called from ItController / binder.</summary>
         public void PlayTagFlinch()
         {
             _tagFlinch = 1f;
@@ -611,6 +684,7 @@ namespace Tag.Art
             {
                 _bounceHooked.OnWallBounced -= HandleWallBounced;
                 _bounceHooked.OnSuperGlide -= HandleSuperGlide;
+                _bounceHooked.OnAirDashed -= HandleAirDashed;
                 _bounceHooked = null;
             }
         }
@@ -627,14 +701,14 @@ namespace Tag.Art
             _hips = FindBone(root, "Hips", "Pelvis", "mixamorig:Hips", "hip");
             _spine = FindBone(root, "Spine", "Torso", "Spine1", "mixamorig:Spine", "Chest");
             _head = FindBone(root, "Head", "mixamorig:Head", "head");
-            _upperArmL = FindBone(root, "UpperArm_L", "UpperArm.L", "LeftArm", "LeftUpperArm", "mixamorig:LeftArm", "Arm_L", "upperarm_l");
-            _upperArmR = FindBone(root, "UpperArm_R", "UpperArm.R", "RightArm", "RightUpperArm", "mixamorig:RightArm", "Arm_R", "upperarm_r");
-            _lowerArmL = FindBone(root, "LowerArm_L", "LowerArm.L", "LeftForeArm", "LeftLowerArm", "mixamorig:LeftForeArm", "ForeArm_L", "lowerarm_l");
-            _lowerArmR = FindBone(root, "LowerArm_R", "LowerArm.R", "RightForeArm", "RightLowerArm", "mixamorig:RightForeArm", "ForeArm_R", "lowerarm_r");
-            _upperLegL = FindBone(root, "UpperLeg_L", "UpperLeg.L", "LeftUpLeg", "LeftUpperLeg", "mixamorig:LeftUpLeg", "Thigh_L", "upperleg_l");
-            _upperLegR = FindBone(root, "UpperLeg_R", "UpperLeg.R", "RightUpLeg", "RightUpperLeg", "mixamorig:RightUpLeg", "Thigh_R", "upperleg_r");
-            _lowerLegL = FindBone(root, "LowerLeg_L", "LowerLeg.L", "LeftLeg", "LeftLowerLeg", "mixamorig:LeftLeg", "Calf_L", "lowerleg_l");
-            _lowerLegR = FindBone(root, "LowerLeg_R", "LowerLeg.R", "RightLeg", "RightLowerLeg", "mixamorig:RightLeg", "Calf_R", "lowerleg_r");
+            _upperArmL = FindBone(root, "UpperArm_L", "UpperArm.L", "LeftArm", "LeftUpperArm", "mixamorig:LeftArm", "Arm_L", "upperarm_l", "Upper_Arm_L");
+            _upperArmR = FindBone(root, "UpperArm_R", "UpperArm.R", "RightArm", "RightUpperArm", "mixamorig:RightArm", "Arm_R", "upperarm_r", "Upper_Arm_R");
+            _lowerArmL = FindBone(root, "LowerArm_L", "LowerArm.L", "LeftForeArm", "LeftLowerArm", "mixamorig:LeftForeArm", "ForeArm_L", "lowerarm_l", "Lower_Arm_L");
+            _lowerArmR = FindBone(root, "LowerArm_R", "LowerArm.R", "RightForeArm", "RightLowerArm", "mixamorig:RightForeArm", "ForeArm_R", "lowerarm_r", "Lower_Arm_R");
+            _upperLegL = FindBone(root, "UpperLeg_L", "UpperLeg.L", "LeftUpLeg", "LeftUpperLeg", "mixamorig:LeftUpLeg", "Thigh_L", "upperleg_l", "Upper_Leg_L");
+            _upperLegR = FindBone(root, "UpperLeg_R", "UpperLeg.R", "RightUpLeg", "RightUpperLeg", "mixamorig:RightUpLeg", "Thigh_R", "upperleg_r", "Upper_Leg_R");
+            _lowerLegL = FindBone(root, "LowerLeg_L", "LowerLeg.L", "LeftLeg", "LeftLowerLeg", "mixamorig:LeftLeg", "Calf_L", "lowerleg_l", "Lower_Leg_L");
+            _lowerLegR = FindBone(root, "LowerLeg_R", "LowerLeg.R", "RightLeg", "RightLowerLeg", "mixamorig:RightLeg", "Calf_R", "lowerleg_r", "Lower_Leg_R");
             _bound = _upperArmL != null || _upperLegL != null || _spine != null;
             if (!_bound) return;
             if (_hips) _hips0 = _hips.localRotation;

@@ -31,6 +31,11 @@ namespace Tag.Art
         Vector3 _hatBaseScale;
         Vector3 _haloBaseScale;
         bool _built;
+        bool _popPrimed;
+        bool _wasOn;
+        float _pop;
+        Transform _beacon;
+        Renderer _beaconRend;
 
         void Awake()
         {
@@ -45,20 +50,47 @@ namespace Tag.Art
             if (_hat != null) _hat.gameObject.SetActive(on);
             if (_halo != null) _halo.gameObject.SetActive(on);
             if (_light != null) _light.enabled = on;
+            if (!_popPrimed)
+            {
+                _wasOn = on;
+                _popPrimed = true;
+            }
+            else if (on && !_wasOn)
+                _pop = 1f;
+            _wasOn = on;
+            _pop = Mathf.MoveTowards(_pop, 0f, Time.deltaTime / 0.34f); // slightly longer handoff pop so It read sticks
             if (!on) return;
 
             float urgency = HotPotatoFuseUrgency();
             float t = Time.time;
             float pulseHz = Mathf.Lerp(7.5f, 22f, urgency);
-            float pulseAmp = 0.22f + 0.45f * urgency;
+            float pulseAmp = 0.24f + 0.48f * urgency; // hotter fuse pulse for Hot Potato read
             float pulse = (0.78f - 0.12f * urgency) + pulseAmp * Mathf.Sin(t * pulseHz);
             float bob = Mathf.Sin(t * (Mathf.PI * 2f * (bobHz + 3.5f * urgency))) * (bobAmp * (1f + 0.8f * urgency));
 
-            float scaleMul = 0.96f + 0.08f * pulse + 0.22f * urgency * pulse;
+            float scaleMul = (0.96f + 0.08f * pulse + 0.22f * urgency * pulse) * (1f + 0.7f * _pop);
+            // Mega park: a 0.5 m hat disappears past a fort. Grow with camera distance, clamp up close.
+            // The chase cam is a child of this body — hide the beacon so it does not fill your own lens.
+            float distMul = 1f;
+            bool ownView = false;
+            var cam = Camera.main;
+            if (cam != null)
+            {
+                ownView = cam.transform.IsChildOf(transform);
+                if (!ownView && _hat != null)
+                {
+                    float d = Vector3.Distance(cam.transform.position, _hat.position);
+                    distMul = Mathf.Clamp(d / 16f, 1f, 4.5f);
+                }
+            }
+            if (ownView) scaleMul *= 0.82f;
+            else scaleMul *= distMul;
+            if (_beacon != null) _beacon.gameObject.SetActive(!ownView);
             if (_hat != null)
             {
-                _hat.localPosition = _hatBaseLocal + new Vector3(0f, bob, 0f);
-                _hat.localRotation = Quaternion.Euler(0f, t * (55f + 90f * urgency), 0f);
+                _hat.localPosition = _hatBaseLocal + new Vector3(0f, ownView ? bob * 0.35f : bob, 0f);
+                float spin = ownView ? 12f : (55f + 90f * urgency);
+                _hat.localRotation = Quaternion.Euler(0f, t * spin, 0f);
                 _hat.localScale = _hatBaseScale * scaleMul;
             }
 
@@ -68,7 +100,9 @@ namespace Tag.Art
             if (_light != null)
             {
                 _light.intensity = (2.8f + 5.5f * urgency) * pulse;
-                _light.range = 7.5f + 1.2f * pulse + 4f * urgency;
+                _light.range = ownView
+                    ? 4.5f
+                    : (14f + 1.2f * pulse + 6f * urgency) * Mathf.Lerp(1f, 1.6f, (distMul - 1f) / 3.5f);
                 _light.color = Color.Lerp(new Color(1f, 0.4f, 0.08f), new Color(1f, 0.95f, 0.55f), urgency);
             }
 
@@ -79,6 +113,7 @@ namespace Tag.Art
             ApplyRuntimeColor(_hatRend, hatCol, emitMul);
             ApplyRuntimeColor(_brimRend, hatCol, emitMul * 0.92f);
             ApplyRuntimeColor(_tipRend, Color.Lerp(new Color(1f, 0.85f, 0.15f, 1f), Color.white, urgency), emitMul * 1.15f);
+            ApplyRuntimeColor(_beaconRend, Color.Lerp(new Color(1f, 0.45f, 0.05f), Color.white, urgency), emitMul * 1.2f);
             ApplyRuntimeColor(_haloRend, glowCol, 2.8f + 4f * urgency * pulse);
         }
 
@@ -135,6 +170,16 @@ namespace Tag.Art
             DestroyCollider(tip);
             _tipRend = ApplyMat(tip, new Color(1f, 0.85f, 0.15f, 1f), emissive: true, emissionMul: 3.2f);
 
+            // Tall emissive spike so the It reads before the brim does.
+            var beacon = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            beacon.name = "ItHatBeacon";
+            beacon.transform.SetParent(_hat, false);
+            beacon.transform.localPosition = new Vector3(0f, 2.4f, 0f);
+            beacon.transform.localScale = new Vector3(0.22f, 2.8f, 0.22f);
+            DestroyCollider(beacon);
+            _beaconRend = ApplyMat(beacon, new Color(1f, 0.45f, 0.05f, 1f), emissive: true, emissionMul: 3.4f);
+            _beacon = beacon.transform;
+
             var haloGo = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             haloGo.name = "ItHalo";
             haloGo.transform.SetParent(transform, false);
@@ -151,7 +196,7 @@ namespace Tag.Art
             _light = lightGo.AddComponent<Light>();
             _light.type = LightType.Point;
             _light.color = new Color(1f, 0.4f, 0.08f);
-            _light.range = 8f;
+            _light.range = 18f;
             _light.intensity = 2.8f;
             _light.shadows = LightShadows.None;
 
