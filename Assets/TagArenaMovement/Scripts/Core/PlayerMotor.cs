@@ -45,6 +45,8 @@ namespace TagArena.Movement
                 : 0f;
         /// <summary>Seconds left before air dash is usable again (0 = ready).</summary>
         public float AirDashCooldownRemaining => Mathf.Max(0f, _airDashCd);
+        /// <summary>Planar direction of the current or most recent air dash. Read by the tell only.</summary>
+        public Vector3 AirDashDirection => _airDashDir;
         public bool IsGrounded => _probe != null && _probe.Ground.grounded;
         public float HorizontalSpeed => HorizSpeed;
         public bool IsLunging => _lungeT > 0f;
