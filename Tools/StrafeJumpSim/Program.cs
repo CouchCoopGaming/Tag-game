@@ -32,6 +32,31 @@ static class Program
             return 1;
         }
 
+        GrappleRopeTellReport ropeRead = GrappleRopeTellProof.Run();
+        Console.WriteLine(ropeRead.ToString());
+        if (!ropeRead.Ok)
+        {
+            Console.Error.WriteLine(ropeRead.FailureText);
+            return 1;
+        }
+
+        const string grapplePath = "Assets/Scripts/Experimental/ExperimentalGrapple.cs";
+        if (!AssetHas(grapplePath, "GrappleRopeTell.AttachedSpan", "GrappleRopeTell.AimSpan", "enableGrapple = false"))
+        {
+            Console.Error.WriteLine("grapple rope tell is not what the component draws");
+            return 1;
+        }
+
+        string grappleSrc = File.ReadAllText(grapplePath);
+        if (grappleSrc.IndexOf("jumpSpeed", StringComparison.Ordinal) >= 0
+            || grappleSrc.IndexOf(".Move(", StringComparison.Ordinal) >= 0
+            || grappleSrc.IndexOf("_velocity", StringComparison.Ordinal) >= 0
+            || grappleSrc.IndexOf("AddForce", StringComparison.Ordinal) >= 0)
+        {
+            Console.Error.WriteLine("grapple visual pass wrote motor code");
+            return 1;
+        }
+
         if (!SoloGrappleGate.EnableFor(false, false, 0, SoloGrappleGate.SoloPawnName))
         {
             Console.Error.WriteLine("solo pawn grapple is off");
