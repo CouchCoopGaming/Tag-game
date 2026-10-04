@@ -140,6 +140,8 @@ namespace Tag.Local
             if (go.GetComponent<PlayerTrailEmitter>() == null) go.AddComponent<PlayerTrailEmitter>();
             if (go.GetComponent<DummyAvatarBinder>() == null) go.AddComponent<DummyAvatarBinder>();
             if (go.GetComponent<ItMarker>() == null) go.AddComponent<ItMarker>();
+            // Both pawns can show the handoff flash. It does not tag on touch.
+            if (go.GetComponent<TagLandFlash>() == null) go.AddComponent<TagLandFlash>();
             if (go.GetComponent<ItController>() == null) go.AddComponent<ItController>();
             var it = go.GetComponent<ItController>();
             if (it != null) it.PlayerId = $"P{index + 1}";

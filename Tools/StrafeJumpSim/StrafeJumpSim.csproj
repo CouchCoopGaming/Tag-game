@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RootNamespace>TagLandSim</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="UnityStub/UnityEngine.cs" />
+    <Compile Include="../../Assets/Editor/StrafeJumpProof.cs" />
+    <Compile Include="../../Assets/Editor/GrappleProof.cs" />
+    <Compile Include="../../Assets/Editor/VerbPoseClipProof.cs" />
+    <Compile Include="../../Assets/Editor/GrappleRopeTellProof.cs" />
+    <Compile Include="../../Assets/Editor/TagLandTellProof.cs" />
+    <Compile Include="../../Assets/Scripts/Art/VerbPoseClips.cs" />
+    <Compile Include="../../Assets/Scripts/Art/GrappleRopeTell.cs" />
+    <Compile Include="../../Assets/Scripts/Art/TagLandTell.cs" />
+    <Compile Include="../../Assets/Scripts/Local/SoloGrappleGate.cs" />
+    <Compile Include="../../Assets/Scripts/Tag/PunchTagTuning.cs" />
+    <Compile Include="../../Assets/TagArenaMovement/Scripts/Core/MovementConfig.cs" />
+    <Compile Include="../../Assets/TagArenaMovement/Scripts/Systems/KinematicStep.cs" />
+    <Compile Include="../../Assets/TagArenaMovement/Scripts/Systems/WishAccel.cs" />
+  </ItemGroup>
+</Project>

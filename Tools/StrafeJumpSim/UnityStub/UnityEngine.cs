@@ -106,6 +106,7 @@ namespace UnityEngine
     public static class Mathf
     {
         public const float Deg2Rad = 0.0174532924f;
+        public const float Rad2Deg = 57.29578f;
 
         public static float Min(float a, float b) => a < b ? a : b;
         public static float Max(float a, float b) => a > b ? a : b;
@@ -114,6 +115,7 @@ namespace UnityEngine
         public static float Sin(float rad) => (float)Math.Sin(rad);
         public static float Cos(float rad) => (float)Math.Cos(rad);
         public static float Clamp01(float v) => v < 0f ? 0f : (v > 1f ? 1f : v);
+        public static float Atan(float v) => (float)Math.Atan(v);
         public static float Lerp(float a, float b, float t) => a + (b - a) * Clamp01(t);
 
         public static float SmoothStep(float from, float to, float t)
@@ -149,7 +151,12 @@ namespace UnityEngine
         public static implicit operator LayerMask(int v) => new LayerMask { value = v };
     }
 
-    public class ScriptableObject
+    public class Object
+    {
+        public string name;
+    }
+
+    public class ScriptableObject : Object
     {
         public static T CreateInstance<T>() where T : ScriptableObject, new() => new T();
     }
@@ -159,11 +166,18 @@ namespace UnityEngine
     {
         public string menuName { get; set; }
         public string fileName { get; set; }
+        public int order { get; set; }
     }
 
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
     public sealed class HeaderAttribute : Attribute
     {
         public HeaderAttribute(string header) { }
+    }
+
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+    public sealed class RangeAttribute : Attribute
+    {
+        public RangeAttribute(float min, float max) { }
     }
 }
