@@ -1,5 +1,6 @@
 using UnityEngine;
 using Tag.Audio;
+using Tag.Experimental;
 
 namespace TagArena.Movement
 {
@@ -112,6 +113,9 @@ namespace TagArena.Movement
         float _punchMoveScale = 1f;
         float _speedBoostMul = 1f;
         float _speedBoostT;
+        bool _grappleSearched;
+        ExperimentalGrapple _grapple;
+        bool _grappleYieldDash;
 
         public event System.Action<MoveState, MoveState> OnStateChanged;
         public event System.Action OnJumped;
@@ -177,12 +181,19 @@ namespace TagArena.Movement
                 _jumpSlot = 0f;
                 _wallJumpSlot = 0f;
                 _clingGrace = 0f;
+                ReleaseGrapple();
                 return;
             }
-            if (_motorLocked) return;
+            if (_motorLocked)
+            {
+                ReleaseGrapple();
+                return;
+            }
 
             float dt = Time.deltaTime;
             if (dt <= 0f) return;
+            _grappleYieldDash = false;
+            ResolveGrapple();
             TickTimers(dt);
 
             _probe.Refresh(_height, _velocity);
@@ -225,6 +236,7 @@ namespace TagArena.Movement
                     v = TickLandStun(dt, v);
                     break;
                 case Locomotion.Ragdoll:
+                    ReleaseGrapple();
                     return;
                 default:
                     v = TickLocomotion(dt, v, wish, grounded);
@@ -255,6 +267,10 @@ namespace TagArena.Movement
                 && feet && v.y > -0.5f && v.y < 1.5f)
                 v.y = -2f;
 
+            // After TryJump. That write is v.y = jumpSpeed (24.7 when not fatigued).
+            // The rope replaces horizontal only, then the one Move below consumes it.
+            v = ApplyGrappleHorizontal(v);
+
             _velocity = v;
             if (_cc != null && _cc.enabled)
                 _cc.Move(_velocity * dt);
@@ -263,6 +279,44 @@ namespace TagArena.Movement
                 TryTag();
 
             DriveAnimator();
+        }
+
+        ExperimentalGrapple GrappleOrNull()
+        {
+            if (_grappleSearched) return _grapple;
+            _grappleSearched = true;
+            _grapple = GetComponent<ExperimentalGrapple>();
+            return _grapple;
+        }
+
+        void ResolveGrapple()
+        {
+            ExperimentalGrapple grapple = GrappleOrNull();
+            if (grapple != null) grapple.ResolveAttach();
+        }
+
+        void ReleaseGrapple()
+        {
+            ExperimentalGrapple grapple = GrappleOrNull();
+            if (grapple != null) grapple.Release();
+        }
+
+        /// <summary>
+        /// One horizontal write. WishAccel.SetHoriz keeps v.y, which TryJump set from jumpSpeed.
+        /// Air dash already returned its own horizontal for this Move. Climb, wall run, vault,
+        /// land stun, and ragdoll keep the velocity they wrote.
+        /// </summary>
+        Vector3 ApplyGrappleHorizontal(Vector3 v)
+        {
+            if (_grappleYieldDash) return v;
+            if (_mode == Locomotion.Climb || _mode == Locomotion.WallRun || _mode == Locomotion.Vault
+                || _mode == Locomotion.Ragdoll || _mode == Locomotion.LandStun)
+                return v;
+            ExperimentalGrapple grapple = GrappleOrNull();
+            if (grapple == null || !grapple.TryGetRope(out Vector3 anchor, out float length, out float slack))
+                return v;
+            Vector3 hv = KinematicStep.GrappleHorizontal(WishAccel.Horizontal(v), transform.position, anchor, length, slack);
+            return WishAccel.SetHoriz(v, hv);
         }
 
         /// <summary>
@@ -303,7 +357,12 @@ namespace TagArena.Movement
                 else DoWallRunJump(ref v);
                 return v;
             }
-            if (TryAirDash(ref v, wish, dt, grounded)) return v;
+            if (TryAirDash(ref v, wish, dt, grounded))
+            {
+                // This frame's Move keeps airDashSpeed. The rope does not retune that window.
+                _grappleYieldDash = true;
+                return v;
+            }
             if (TryLunge(ref v, wish, dt)) return v;
 
             if (grounded && !Skiing)

@@ -4,74 +4,109 @@ using UnityEngine;
 namespace Tag.Experimental
 {
     /// <summary>
-    /// EXPERIMENTAL — optional grapple hook. Core tag loop works without this.
+    /// EXPERIMENTAL — optional rope. Core tag loop works without this.
     /// Off by default (enableGrapple=false). Add to a player with PlayerMotor +
-    /// PlayerInputReader, set enableGrapple=true. Hold fire (default RMB / JetHeld
-    /// while jet is disabled) to attach a LineRenderer rope and pull toward the hit;
-    /// release cancels.
+    /// PlayerInputReader, set enableGrapple=true.
+    /// Button: RMB (Mouse1), the same hold as JetHeld. Jet stays off, so RMB does not jet.
+    /// The hook attaches to the nearest collider along the camera forward ray that is not
+    /// this pawn. A miss attaches to nothing: there is no stand-in swing.
+    /// PlayerMotor strips outward horizontal speed against that hit. This component does
+    /// not write velocity, does not Move, and does not touch vertical speed.
     /// </summary>
     [DisallowMultipleComponent]
     public class ExperimentalGrapple : MonoBehaviour
     {
+        public const string FireButton = "RMB";
+
         [Header("EXPERIMENTAL — off by default")]
         public bool enableGrapple = false;
         [Tooltip("If true, uses PlayerInputReader.JetHeld (RMB). Safe while MovementConfig.enableJet=false.")]
         public bool useJetHeldAsFire = true;
         public KeyCode fireKey = KeyCode.Mouse1;
         public float maxRange = 28f;
-        public float pullAccel = 38f;
-        public float maxPullSpeed = 22f;
         public float attachSlack = 0.35f;
         public LayerMask hitMask = ~0;
         public Color ropeColor = new Color(0.95f, 0.85f, 0.35f, 0.95f);
 
         PlayerMotor _motor;
         PlayerInputReader _input;
-        Rigidbody _rb;
         LineRenderer _rope;
         Material _mat;
         bool _attached;
         Vector3 _anchor;
+        float _ropeLength;
+        readonly RaycastHit[] _hits = new RaycastHit[16];
+        bool _built;
 
         /// <summary>True only while the gate is on and a rope is attached. The default gate stays off.</summary>
         public bool IsPulling => enableGrapple && _attached;
-        bool _built;
 
         void Awake()
         {
             _motor = GetComponent<PlayerMotor>();
             _input = GetComponent<PlayerInputReader>();
-            _rb = GetComponent<Rigidbody>();
         }
 
-        void LateUpdate()
+        /// <summary>Called from PlayerMotor after input is read, before the single Move.</summary>
+        public void ResolveAttach()
         {
             if (!enableGrapple)
             {
-                Cancel();
+                Release();
                 return;
             }
 
-            // Pause and the results card must not keep pulling.
             if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked)
             {
-                Cancel();
+                Release();
                 return;
             }
 
             EnsureRope();
-            bool fire = ReadFire();
-            if (!fire)
+            if (_attached && (_anchor - transform.position).magnitude > _ropeLength + 3f)
+                Release();
+
+            if (!ReadFire())
             {
-                Cancel();
+                Release();
                 return;
             }
 
             if (!_attached)
                 TryAttach();
+        }
 
-            if (_attached)
-                PullAndDraw();
+        public void Release()
+        {
+            _attached = false;
+            _ropeLength = 0f;
+            if (_rope != null) _rope.enabled = false;
+        }
+
+        public bool TryGetRope(out Vector3 anchor, out float length, out float slack)
+        {
+            anchor = _anchor;
+            length = _ropeLength;
+            slack = attachSlack;
+            if (!IsPulling || length <= 0.05f)
+                return false;
+            return true;
+        }
+
+        void LateUpdate()
+        {
+            if (!IsPulling)
+            {
+                if (_rope != null) _rope.enabled = false;
+                return;
+            }
+
+            EnsureRope();
+            if (_rope == null) return;
+            _rope.enabled = true;
+            Vector3 hand = transform.position + Vector3.up * 1.1f + transform.forward * 0.2f;
+            _rope.SetPosition(0, hand);
+            _rope.SetPosition(1, _anchor);
         }
 
         bool ReadFire()
@@ -83,58 +118,35 @@ namespace Tag.Experimental
 
         void TryAttach()
         {
-            Transform cam = _motor != null && _motor.cam != null ? _motor.cam : Camera.main != null ? Camera.main.transform : null;
+            Transform cam = _motor != null && _motor.cam != null
+                ? _motor.cam
+                : Camera.main != null ? Camera.main.transform : null;
             if (cam == null) return;
-            Vector3 origin = cam.position;
-            Vector3 dir = cam.forward;
-            if (!Physics.Raycast(origin, dir, out RaycastHit hit, maxRange, hitMask, QueryTriggerInteraction.Ignore))
-                return;
-            // Don't latch onto self
-            if (hit.rigidbody != null && hit.rigidbody == _rb) return;
-            if (hit.collider != null && hit.collider.transform.IsChildOf(transform)) return;
-            _anchor = hit.point;
+
+            int count = Physics.RaycastNonAlloc(cam.position, cam.forward, _hits, maxRange, hitMask, QueryTriggerInteraction.Ignore);
+            int best = -1;
+            float bestDist = float.MaxValue;
+            for (int i = 0; i < count; i++)
+            {
+                Collider col = _hits[i].collider;
+                if (col == null) continue;
+                Transform hitTransform = col.transform;
+                if (hitTransform == transform || hitTransform.IsChildOf(transform)) continue;
+                if (_hits[i].distance < bestDist)
+                {
+                    bestDist = _hits[i].distance;
+                    best = i;
+                }
+            }
+
+            if (best < 0) return;
+            _anchor = _hits[best].point;
+            _ropeLength = (_anchor - transform.position).magnitude;
+            if (_ropeLength <= 0.05f) return;
             _attached = true;
         }
 
-        void PullAndDraw()
-        {
-            if (_rb == null) return;
-            Vector3 to = _anchor - transform.position;
-            float dist = to.magnitude;
-            if (dist < 0.05f)
-            {
-                Cancel();
-                return;
-            }
-
-            Vector3 dir = to / dist;
-            // Soft pull — accelerate toward anchor, clamp planar+vertical blend
-            Vector3 v = _rb.linearVelocity;
-            v += dir * (pullAccel * Time.deltaTime);
-            if (v.magnitude > maxPullSpeed)
-                v = v.normalized * maxPullSpeed;
-            // Mild length spring so rope does not overshoot forever
-            float over = dist - attachSlack;
-            if (over > 0f)
-                v += dir * (over * 8f * Time.deltaTime);
-            _rb.linearVelocity = v;
-
-            if (_rope != null)
-            {
-                _rope.enabled = true;
-                Vector3 hand = transform.position + Vector3.up * 1.1f + transform.forward * 0.2f;
-                _rope.SetPosition(0, hand);
-                _rope.SetPosition(1, _anchor);
-            }
-        }
-
-        void Cancel()
-        {
-            _attached = false;
-            if (_rope != null) _rope.enabled = false;
-        }
-
-        void OnDisable() => Cancel();
+        void OnDisable() => Release();
 
         void EnsureRope()
         {

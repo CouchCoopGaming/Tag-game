@@ -42,6 +42,7 @@ namespace TagArena.Movement
             ClingCopy + "\n" +
             "Wall jump: cling and Space\n" +
             "RMB does not jet\n" +
+            "RMB grapple is experimental and stays off\n" +
             "F1 Hot Potato   F2 Least It   F3 Trail Tag   F4 Free play\n" +
             "Esc pause\n" +
             "Air dash key: " + DashName + "    Punch key: " + PunchName + "\n" +
