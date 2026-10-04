@@ -1,5 +1,6 @@
 using Tag.Experimental;
 using Tag.Gameplay;
+using Tag.Local;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -944,6 +945,12 @@ namespace Tag.Art
         Renderer[] _flashRenderers;
         MaterialPropertyBlock _flashBlock;
         bool _flashBlockOn;
+        bool _dashCdSeen;
+        float _dashReadyAge = -1f;
+        Transform _dashCdRoot;
+        LineRenderer _dashCdArc;
+        Material _dashCdMat;
+        Vector3[] _dashCdPts;
         bool _scrapeWas;
         Transform _scrapeRoot;
         TrailRenderer _scrapeL;
@@ -1076,6 +1083,8 @@ namespace Tag.Art
             HookBounce();
             // Cyan dash tell must run even when the limb rig failed to bind.
             TickAirDashTell(dt);
+            // Refill arc and the ready wink. Solo pawn only. The burst ribbons stay as they are.
+            TickAirDashCooldown(dt);
             // Ground scrape keys off MoveState.Slide, the same state that selects SlideBody.
             // It still runs if the limb rig failed to bind. Speed and slideBoost stay put.
             TickSlideScrape();
@@ -14550,6 +14559,148 @@ namespace Tag.Art
             _flashBlockOn = false;
         }
 
+        void TickAirDashCooldown(float dt)
+        {
+            bool solo = DashCooldownSolo();
+            float remaining = 0f;
+            float cooldown = 30f;
+            if (_motor != null)
+            {
+                remaining = _motor.AirDashCooldownRemaining;
+                if (_motor.cfg != null)
+                    cooldown = _motor.cfg.airDashCooldown;
+            }
+
+            AirDashCooldownTell.Note(ref _dashCdSeen, ref _dashReadyAge, solo, remaining);
+            bool ring = AirDashCooldownTell.ShowRing(solo, remaining, _dashReadyAge);
+            bool flash = AirDashCooldownTell.ShowFlash(solo, _dashReadyAge);
+            if (!ring && !flash)
+            {
+                HideDashCooldown();
+                AirDashCooldownTell.StepFlash(ref _dashCdSeen, ref _dashReadyAge, dt, solo);
+                return;
+            }
+
+            EnsureDashCooldown();
+            float fill = flash ? 1f : AirDashCooldownTell.Fill(remaining, cooldown);
+            float alpha = flash ? AirDashCooldownTell.FlashAlpha(_dashReadyAge) : AirDashCooldownTell.MaxAlpha;
+            PlaceDashCooldown(fill, alpha);
+            AirDashCooldownTell.StepFlash(ref _dashCdSeen, ref _dashReadyAge, dt, solo);
+        }
+
+        bool DashCooldownSolo()
+        {
+            Transform pawn = _motor != null ? _motor.transform : transform.root;
+            if (pawn == null) return false;
+            string pawnName = pawn.name;
+            if (string.IsNullOrEmpty(pawnName)) return false;
+            int index = 0;
+            const string couchPrefix = "Player_P";
+            if (pawnName.StartsWith(couchPrefix))
+            {
+                int parsed;
+                if (int.TryParse(pawnName.Substring(couchPrefix.Length), out parsed))
+                    index = parsed;
+            }
+
+            bool ai = pawnName == SoloGrappleGate.OpponentPawnName;
+            return AirDashCooldownTell.ForPawn(LocalPlayerRoster.IsCouch, ai, index, pawnName);
+        }
+
+        void PlaceDashCooldown(float fill, float alpha)
+        {
+            if (_dashCdArc == null) return;
+            Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
+            if (_dashCdPts == null || _dashCdPts.Length < AirDashCooldownTell.MaxPoints)
+                _dashCdPts = new Vector3[AirDashCooldownTell.MaxPoints];
+            float visible = AirDashCooldownTell.VisibleFill(fill);
+            if (!AirDashCooldownTell.Arc(origin, visible, _dashCdPts, out int count))
+            {
+                _dashCdArc.enabled = false;
+                return;
+            }
+
+            _dashCdArc.enabled = true;
+            _dashCdArc.positionCount = count;
+            _dashCdArc.startWidth = AirDashCooldownTell.RingWidth;
+            _dashCdArc.endWidth = AirDashCooldownTell.RingWidth;
+            for (int i = 0; i < count; i++)
+                _dashCdArc.SetPosition(i, _dashCdPts[i]);
+            var c = new Color(AirDashCooldownTell.MarkR, AirDashCooldownTell.MarkG, AirDashCooldownTell.MarkB, alpha);
+            _dashCdArc.startColor = c;
+            _dashCdArc.endColor = c;
+            PaintDashCooldown(alpha);
+        }
+
+        void EnsureDashCooldown()
+        {
+            if (_dashCdArc != null) return;
+            var rootGo = new GameObject(AirDashCooldownTell.MarkerName);
+            Transform parent = _motor != null ? _motor.transform : transform;
+            rootGo.transform.SetParent(parent, false);
+            _dashCdRoot = rootGo.transform;
+            _dashCdMat = MakeDashCooldownMat();
+            _dashCdArc = MakeDashCooldownArc("AirDashCooldownArc");
+            _dashCdPts = new Vector3[AirDashCooldownTell.MaxPoints];
+        }
+
+        LineRenderer MakeDashCooldownArc(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_dashCdRoot, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.positionCount = 2;
+            line.numCapVertices = 3;
+            line.numCornerVertices = 2;
+            line.useWorldSpace = true;
+            line.loop = false;
+            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            line.receiveShadows = false;
+            line.alignment = LineAlignment.View;
+            line.textureMode = LineTextureMode.Stretch;
+            line.startWidth = AirDashCooldownTell.RingWidth;
+            line.endWidth = AirDashCooldownTell.RingWidth;
+            if (_dashCdMat != null) line.sharedMaterial = _dashCdMat;
+            var c = new Color(AirDashCooldownTell.MarkR, AirDashCooldownTell.MarkG, AirDashCooldownTell.MarkB, AirDashCooldownTell.MaxAlpha);
+            line.startColor = c;
+            line.endColor = c;
+            line.enabled = false;
+            return line;
+        }
+
+        static Material MakeDashCooldownMat()
+        {
+            var shader = Shader.Find("Sprites/Default")
+                         ?? Shader.Find("Universal Render Pipeline/Unlit")
+                         ?? Shader.Find("Unlit/Transparent")
+                         ?? Shader.Find("Unlit/Color")
+                         ?? Shader.Find("Standard");
+            var mat = new Material(shader) { name = "AirDashCooldown" };
+            var c = new Color(AirDashCooldownTell.MarkR, AirDashCooldownTell.MarkG, AirDashCooldownTell.MarkB, AirDashCooldownTell.MaxAlpha);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
+            if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+            if (mat.HasProperty("_ZWrite")) mat.SetFloat("_ZWrite", 0f);
+            if (mat.HasProperty("_SrcBlend")) mat.SetFloat("_SrcBlend", 5f);
+            if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", 10f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = 3000;
+            return mat;
+        }
+
+        void HideDashCooldown()
+        {
+            if (_dashCdArc != null) _dashCdArc.enabled = false;
+        }
+
+        void PaintDashCooldown(float alpha)
+        {
+            if (_dashCdMat == null) return;
+            var c = new Color(AirDashCooldownTell.MarkR, AirDashCooldownTell.MarkG, AirDashCooldownTell.MarkB, alpha);
+            if (_dashCdMat.HasProperty("_BaseColor")) _dashCdMat.SetColor("_BaseColor", c);
+            if (_dashCdMat.HasProperty("_Color")) _dashCdMat.SetColor("_Color", c);
+        }
+
         /// <summary>Called while the dummy is committed to a punch but has not swung yet.</summary>
         public void HoldPunchTelegraph()
         {
@@ -15178,6 +15329,20 @@ namespace Tag.Art
                 Destroy(_ribbonMat);
                 _ribbonMat = null;
             }
+            if (_dashCdRoot != null)
+            {
+                Destroy(_dashCdRoot.gameObject);
+                _dashCdRoot = null;
+                _dashCdArc = null;
+                _dashCdPts = null;
+            }
+            if (_dashCdMat != null)
+            {
+                Destroy(_dashCdMat);
+                _dashCdMat = null;
+            }
+            _dashCdSeen = false;
+            _dashReadyAge = -1f;
             if (_scrapeRoot != null)
             {
                 Destroy(_scrapeRoot.gameObject);
