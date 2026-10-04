@@ -112,6 +112,14 @@ static class Program
             return 1;
         }
 
+        WallJumpPushTellReport wallPush = WallJumpPushTellProof.Run();
+        Console.WriteLine(wallPush.ToString());
+        if (!wallPush.Ok)
+        {
+            Console.Error.WriteLine(wallPush.FailureText);
+            return 1;
+        }
+
         const string grapplePath = "Assets/Scripts/Experimental/ExperimentalGrapple.cs";
         if (!AssetHas(grapplePath, "GrappleRopeTell.AttachedSpan", "GrappleRopeTell.AimSpan", "enableGrapple = false"))
         {
