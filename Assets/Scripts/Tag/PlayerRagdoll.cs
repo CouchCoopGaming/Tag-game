@@ -49,8 +49,11 @@ namespace Tag.Gameplay
             EnsureBodyRb();
             if (bodyRb != null)
             {
-                bodyRb.linearVelocity = Vector3.zero;
-                bodyRb.angularVelocity = Vector3.zero;
+                if (!bodyRb.isKinematic)
+                {
+                    bodyRb.linearVelocity = Vector3.zero;
+                    bodyRb.angularVelocity = Vector3.zero;
+                }
                 bodyRb.useGravity = false;
                 Quaternion rot = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
                 transform.rotation = rot;
