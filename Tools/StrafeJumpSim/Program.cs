@@ -1,4 +1,8 @@
 using System;
+using System.IO;
+using Tag.Local;
+using TagArena.Movement;
+using UnityEngine;
 
 static class Program
 {
@@ -20,6 +24,72 @@ static class Program
             return 1;
         }
 
+        VerbPoseClipReport clips = VerbPoseClipProof.Run();
+        Console.WriteLine(clips.ToString());
+        if (!clips.Ok)
+        {
+            Console.Error.WriteLine(string.Join(" | ", clips.Failures));
+            return 1;
+        }
+
+        if (!SoloGrappleGate.EnableFor(false, false, 0, SoloGrappleGate.SoloPawnName))
+        {
+            Console.Error.WriteLine("solo pawn grapple is off");
+            return 1;
+        }
+
+        if (SoloGrappleGate.EnableFor(false, true, 1, SoloGrappleGate.OpponentPawnName)
+            || SoloGrappleGate.EnableFor(false, false, 0, SoloGrappleGate.OpponentPawnName)
+            || SoloGrappleGate.EnableFor(true, false, 0, SoloGrappleGate.SoloPawnName)
+            || SoloGrappleGate.EnableFor(true, false, 1, "Player_P1")
+            || SoloGrappleGate.EnableFor(false, false, 2, SoloGrappleGate.SoloPawnName))
+        {
+            Console.Error.WriteLine("grapple leaked off the solo pawn");
+            return 1;
+        }
+
+        MovementConfig cfg = ScriptableObject.CreateInstance<MovementConfig>();
+        if (cfg.enableJet)
+        {
+            Console.Error.WriteLine("jet default is on");
+            return 1;
+        }
+
+        if (!Locked(cfg.coyoteTime, 0.10f) || !Locked(cfg.jumpBuffer, 0.16f) || !Locked(cfg.clingReleaseGrace, 0.08f)
+            || !Locked(cfg.jumpSpeed, 24.7f) || cfg.slideBoost != 0f
+            || !Locked(cfg.airDashDuration, 0.10f) || !Locked(cfg.airDashSpeed, 15f) || !Locked(cfg.airDashCooldown, 30f)
+            || !Locked(cfg.airCrouchFallMult, 2f) || !Locked(cfg.maxFallSpeed, 52f))
+        {
+            Console.Error.WriteLine("locked feel numbers drifted");
+            return 1;
+        }
+
+        if (!AssetHas("Assets/Resources/TagArena/MovementConfig.asset",
+                "coyoteTime: 0.1", "jumpBuffer: 0.16", "clingReleaseGrace: 0.08",
+                "jumpSpeed: 24.7", "slideBoost: 0", "enableJet: 0",
+                "airDashDuration: 0.1", "airDashSpeed: 15", "airDashCooldown: 30",
+                "airCrouchFallMult: 2", "maxFallSpeed: 52")
+            || !AssetHas("Assets/ScriptableObjects/PunchTagTuning.asset", "reach: 1.55"))
+        {
+            Console.Error.WriteLine("locked asset numbers drifted");
+            return 1;
+        }
+
+        Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
+    }
+
+    static bool Locked(float value, float expect) => Math.Abs(value - expect) <= 0.001f;
+
+    static bool AssetHas(string path, params string[] needles)
+    {
+        if (!File.Exists(path)) return false;
+        string text = File.ReadAllText(path);
+        for (int i = 0; i < needles.Length; i++)
+        {
+            if (text.IndexOf(needles[i], StringComparison.Ordinal) < 0)
+                return false;
+        }
+        return true;
     }
 }

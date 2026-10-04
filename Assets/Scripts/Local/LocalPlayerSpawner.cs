@@ -1,4 +1,5 @@
 using Tag.Art;
+using Tag.Experimental;
 using Tag.Gameplay;
 using Tag.Modes;
 using Tag.Trail;
@@ -12,8 +13,10 @@ namespace Tag.Local
     /// </summary>
     public class LocalPlayerSpawner : MonoBehaviour
     {
+        /// <summary>Solo human. Couch clones and the campus opponent do not get a rope.</summary>
+        public const string SoloPawnName = SoloGrappleGate.SoloPawnName;
         /// <summary>Solo campus opponent. Couch play turns this pawn off.</summary>
-        public const string OpponentPawnName = "DummyRunner";
+        public const string OpponentPawnName = SoloGrappleGate.OpponentPawnName;
         /// <summary>Coral corner pad. Graybox meters; world position is Spawns[1].</summary>
         public const string OpponentPadName = "Spawn_SE";
         public const float OpponentPadGrayX = 66f;
@@ -37,7 +40,7 @@ namespace Tag.Local
         {
             LocalPlayerRoster.Load();
             if (playerTemplate == null)
-                playerTemplate = GameObject.Find("Player");
+                playerTemplate = GameObject.Find(SoloPawnName);
 
             var dummy = GameObject.Find(OpponentPawnName);
             if (LocalPlayerRoster.IsCouch)
@@ -48,7 +51,7 @@ namespace Tag.Local
             else
             {
                 if (dummy != null) dummy.SetActive(true);
-                var p0 = GameObject.Find("Player");
+                var p0 = GameObject.Find(SoloPawnName);
                 if (p0 != null) ConfigurePawn(p0, 0);
                 if (dummy != null) ConfigurePawn(dummy, 1, ai: true);
             }
@@ -57,7 +60,7 @@ namespace Tag.Local
         public void SpawnAll(int count)
         {
             count = Mathf.Clamp(count, 2, 4);
-            GameObject p0 = GameObject.Find("Player") ?? playerTemplate;
+            GameObject p0 = GameObject.Find(SoloPawnName) ?? playerTemplate;
             if (p0 == null)
             {
                 Debug.LogError("[LocalPlayerSpawner] No Player template");
@@ -166,6 +169,9 @@ namespace Tag.Local
             if (ai && go.GetComponent<DummyPatrol>() == null)
                 go.AddComponent<DummyPatrol>();
 
+            // Rope is the solo human only. Jet stays off, so RMB hooks and does not jet.
+            ApplySoloGrapple(go, index, ai);
+
             // Hide capsule mesh if present
             var mr = go.GetComponent<MeshRenderer>();
             if (mr != null) mr.enabled = false;
@@ -188,6 +194,23 @@ namespace Tag.Local
             }
 
             return _sharedCfg;
+        }
+
+        static void ApplySoloGrapple(GameObject go, int index, bool ai)
+        {
+            bool on = SoloGrappleGate.EnableFor(LocalPlayerRoster.IsCouch, ai, index, go.name);
+            var rope = go.GetComponent<ExperimentalGrapple>();
+            if (on)
+            {
+                if (rope == null)
+                    rope = go.AddComponent<ExperimentalGrapple>();
+                rope.enableGrapple = true;
+                return;
+            }
+
+            if (rope == null) return;
+            rope.enableGrapple = false;
+            Destroy(rope);
         }
 
         static void SetupTpCamera(GameObject go, PlayerMotor motor)

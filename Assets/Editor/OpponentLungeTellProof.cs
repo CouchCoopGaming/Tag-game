@@ -33,6 +33,18 @@ public static class OpponentLungeTellProof
         report.Pad = LocalPlayerSpawner.OpponentPadName;
         if (report.Pawn != "DummyRunner")
             report.Fail("opponent pawn is not DummyRunner");
+        if (LocalPlayerSpawner.SoloPawnName != SoloGrappleGate.SoloPawnName)
+            report.Fail("solo pawn name drifted");
+        if (!SoloGrappleGate.EnableFor(false, false, 0, LocalPlayerSpawner.SoloPawnName))
+            report.Fail("solo pawn does not get the grapple");
+        if (SoloGrappleGate.EnableFor(false, true, 1, LocalPlayerSpawner.OpponentPawnName))
+            report.Fail("opponent gets a grapple");
+        if (SoloGrappleGate.EnableFor(false, false, 0, LocalPlayerSpawner.OpponentPawnName))
+            report.Fail("opponent name gets a grapple");
+        if (SoloGrappleGate.EnableFor(true, false, 0, LocalPlayerSpawner.SoloPawnName))
+            report.Fail("couch player gets a grapple");
+        if (SoloGrappleGate.EnableFor(true, false, 1, "Player_P1"))
+            report.Fail("couch clone gets a grapple");
         if (report.Pad != "Spawn_SE")
             report.Fail("opponent pad is not Spawn_SE");
 
@@ -124,6 +136,8 @@ public static class OpponentLungeTellProof
             report.Fail(label + " air crouch fall is not x2");
         if (Mathf.Abs(cfg.maxFallSpeed - 52f) > 0.001f)
             report.Fail(label + " maxFall is not 52");
+        if (cfg.enableJet)
+            report.Fail(label + " jet is on");
     }
 }
 
