@@ -74,6 +74,19 @@ namespace TagArena.Movement
         }
 
         /// <summary>
+        /// One press for keyboard Space and the gamepad Jump button.
+        /// spaceHeld is that key. jumpHeld includes it and the pad.
+        /// A new Space hold still counts when the jump axis was already high, so the axis cannot swallow the key.
+        /// The same hold reported again does not jump a second time.
+        /// </summary>
+        public static bool JumpEdge(bool jumpHeld, bool spaceHeld, bool prevJumpHeld, bool prevSpaceHeld)
+        {
+            bool spaceEdge = spaceHeld && !prevSpaceHeld;
+            bool padEdge = jumpHeld && !prevJumpHeld;
+            return spaceEdge || padEdge;
+        }
+
+        /// <summary>
         /// Ski, jet, and slide still cap the whole planar vector at ski max.
         /// Every other mode has no total-speed cap. Air speed is limited along the wish only.
         /// </summary>

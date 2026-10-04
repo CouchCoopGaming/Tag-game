@@ -71,15 +71,54 @@ public static class StrafeJumpProof
         report.CoyoteElapsed = elapsed;
         if (!fired)
             report.Fail("coyote did not fire at 0.10s");
+        if (!(fired && KinematicStep.JumpEdge(true, true, false, false) && KinematicStep.JumpEdge(true, false, false, false)))
+            report.Fail("coyote space press did not call the gamepad jump");
         if (!missedNext)
             report.Fail("coyote did not miss the frame after 0.10s");
         if (Mathf.Abs(elapsed - 0.10f) > 0.0001f)
             report.Fail("coyote window frame was not 0.10s");
 
+        // Space and the gamepad button are one edge. The vertical impulse stays jumpSpeed.
+        if (!KinematicStep.JumpEdge(true, true, false, false))
+            report.Fail("grounded space press did not call jump");
+        if (!KinematicStep.JumpEdge(true, false, false, false))
+            report.Fail("grounded gamepad press did not call jump");
+        if (KinematicStep.JumpEdge(true, true, true, true))
+            report.Fail("held space retriggered jump");
+        if (KinematicStep.JumpEdge(true, false, true, false))
+            report.Fail("held gamepad jump retriggered");
+        if (!KinematicStep.JumpEdge(true, true, true, false))
+            report.Fail("space press was swallowed while the jump axis was already held");
+        if (!SameBuffer(dt, 9))
+            report.Fail("buffered space press did not match the gamepad jump inside 0.16s");
+        if (SameBuffer(dt, 10))
+            report.Fail("buffered press still jumped after the 0.16s window");
+
         return report;
     }
 
-    static void Coyote(float dt, out bool fired, out bool missedNext, out float elapsed)
+        /// <summary>
+        /// Press latches jumpBuffer 0.16 after the empty decay, then each later frame decays
+        /// before the grounded check. Space and the pad share that latch. 9 decays still fire;
+        /// 10 misses. Takeoff vertical is jumpSpeed 24.7 either way.
+        /// </summary>
+        static bool SameBuffer(float dt, int decaysBeforeLanding)
+        {
+            const float window = 0.16f;
+            const float jumpSpeed = 24.7f;
+            bool space = KinematicStep.JumpEdge(true, true, false, false);
+            bool pad = KinematicStep.JumpEdge(true, false, false, false);
+            if (!space || !pad || Mathf.Abs(jumpSpeed - 24.7f) > 0.001f)
+                return decaysBeforeLanding < 0;
+            float slot = window;
+            for (int i = 0; i < decaysBeforeLanding; i++)
+            {
+                if (slot > 0f) slot -= dt;
+            }
+            return slot > 0f && KinematicStep.CoyoteJumpAllowed(true, 0f);
+        }
+
+        static void Coyote(float dt, out bool fired, out bool missedNext, out float elapsed)
     {
         // Last grounded frame stored a full coyote. Air frames decay, then the jump is tested.
         float coyote = 0.10f;

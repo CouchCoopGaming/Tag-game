@@ -39,6 +39,7 @@ namespace TagArena.Movement
 
         float _prevCrouch;
         float _prevJump;
+        float _prevSpace;
         float _prevJet;
         float _prevLunge;
         bool _prevW;
@@ -86,7 +87,8 @@ namespace TagArena.Movement
                 TapForwardPulse = false;
                 // A hold that started in the menu must not look like a fresh press on resume.
                 _prevCrouch = (Input.GetKey(crouchKey) || Input.GetKey(KeyCode.LeftControl)) ? 1f : 0f;
-                _prevJump = (Input.GetButton("Jump") || Input.GetKey(KeyCode.Space)) ? 1f : 0f;
+                _prevJump = JumpHeldNow() ? 1f : 0f;
+                _prevSpace = SpaceHeld() ? 1f : 0f;
                 _prevJet = (Input.GetKey(jetKey) || Input.GetMouseButton(1)) ? 1f : 0f;
                 _prevW = Input.GetKey(tapStrafePulseKey);
                 _prevMoveY = Input.GetAxisRaw("Vertical");
@@ -101,6 +103,9 @@ namespace TagArena.Movement
                 ResumeInputGate.Arm();
             }
             _wasCursorLocked = true;
+            // Drop leftover menu focus before sampling Space. Jump owns that key in play.
+            if (GUIUtility.keyboardControl != 0)
+                GUIUtility.keyboardControl = 0;
 
             Move = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
             if (Move.sqrMagnitude > 1f) Move.Normalize();
@@ -119,9 +124,14 @@ namespace TagArena.Movement
             CrouchPressed = CrouchHeld && _prevCrouch <= 0f;
             _prevCrouch = CrouchHeld ? 1f : 0f;
 
-            JumpHeld = Input.GetButton("Jump") || Input.GetKey(KeyCode.Space);
-            JumpPressed = JumpHeld && _prevJump <= 0f;
-            _prevJump = JumpHeld ? 1f : 0f;
+            // Same press the gamepad Jump button uses. Space is already bound; a new
+            // hold of that key still counts when the legacy axis was already high.
+            bool spaceHeld = SpaceHeld();
+            bool jumpHeld = Input.GetButton("Jump") || spaceHeld;
+            JumpHeld = jumpHeld;
+            JumpPressed = KinematicStep.JumpEdge(jumpHeld, spaceHeld, _prevJump > 0f, _prevSpace > 0f);
+            _prevJump = jumpHeld ? 1f : 0f;
+            _prevSpace = spaceHeld ? 1f : 0f;
 
             SkiHeld = Input.GetKey(skiKey);
             // Shift may also mean ski; PlayerMotor.WantsSki decides if ski engages.
@@ -166,7 +176,8 @@ namespace TagArena.Movement
             TapForwardPulse = false;
             // Re-latch hold edges so a menu hold is not a fresh press next frame.
             _prevCrouch = (Input.GetKey(crouchKey) || Input.GetKey(KeyCode.LeftControl)) ? 1f : 0f;
-            _prevJump = (Input.GetButton("Jump") || Input.GetKey(KeyCode.Space)) ? 1f : 0f;
+            _prevJump = JumpHeldNow() ? 1f : 0f;
+            _prevSpace = SpaceHeld() ? 1f : 0f;
             _prevJet = (Input.GetKey(jetKey) || Input.GetMouseButton(1)) ? 1f : 0f;
             _prevW = Input.GetKey(tapStrafePulseKey);
             _prevMoveY = Move.y;
@@ -202,6 +213,29 @@ namespace TagArena.Movement
         }
 
         public void ConsumeJumpPress() => JumpPressed = false;
+
+        /// <summary>
+        /// Legacy Jump axis (keyboard space and joystick button 3) plus the keyboard
+        /// control already bound on Gameplay/Jump in Assets/Input/Tag.inputactions
+        /// (Keyboard/space). No second binding.
+        /// </summary>
+        static bool JumpHeldNow()
+        {
+            return Input.GetButton("Jump") || SpaceHeld();
+        }
+
+        static bool SpaceHeld()
+        {
+            if (Input.GetKey(KeyCode.Space) || Input.GetKeyDown(KeyCode.Space))
+                return true;
+#if ENABLE_INPUT_SYSTEM
+            var keyboard = UnityEngine.InputSystem.Keyboard.current;
+            if (keyboard != null && (keyboard.spaceKey.isPressed || keyboard.spaceKey.wasPressedThisFrame))
+                return true;
+#endif
+            return false;
+        }
+
         public void ConsumeCrouchPress() => CrouchPressed = false;
         public void ConsumeTapPulse() => TapForwardPulse = false;
     }

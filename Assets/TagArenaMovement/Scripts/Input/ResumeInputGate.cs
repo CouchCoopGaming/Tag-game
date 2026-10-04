@@ -27,6 +27,8 @@ namespace TagArena.Movement
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            // A menu row can keep keyboard focus. Space is jump; do not leave that focus up.
+            GUIUtility.keyboardControl = 0;
             Arm();
             var readers = Object.FindObjectsByType<PlayerInputReader>(FindObjectsSortMode.None);
             for (int i = 0; i < readers.Length; i++)
