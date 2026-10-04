@@ -64,6 +64,14 @@ static class Program
             return 1;
         }
 
+        OpponentChaseTellReport chase = OpponentChaseTellProof.Run();
+        Console.WriteLine(chase.ToString());
+        if (!chase.Ok)
+        {
+            Console.Error.WriteLine(chase.FailureText);
+            return 1;
+        }
+
         const string grapplePath = "Assets/Scripts/Experimental/ExperimentalGrapple.cs";
         if (!AssetHas(grapplePath, "GrappleRopeTell.AttachedSpan", "GrappleRopeTell.AimSpan", "enableGrapple = false"))
         {
