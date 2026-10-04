@@ -16,6 +16,8 @@ namespace Tag.Art
                     it.gameObject.AddComponent<DummyAvatarBinder>();
                 if (it.GetComponent<ItMarker>() == null)
                     it.gameObject.AddComponent<ItMarker>();
+                if (it.GetComponent<TagLandFlash>() == null)
+                    it.gameObject.AddComponent<TagLandFlash>();
             }
         }
     }

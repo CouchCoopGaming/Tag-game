@@ -291,6 +291,7 @@ namespace Tag.Gameplay
             Vector3 knock = flat * tuning.knockbackHorizontal + Vector3.up * tuning.knockbackUp;
 
             // Transfer-It
+            bool puncherWasIt = _it != null && _it.IsIt;
             if (_mode != null)
                 _mode.OnSuccessfulPunch(_it, victim);
             else if (_roundLegacy != null)
@@ -300,6 +301,11 @@ namespace Tag.Gameplay
                 _it.SetIt(false);
                 victim.SetIt(true);
             }
+
+            // Handoff flash only when It actually moved. A miss never reaches here.
+            // SetIt(true) already played BecomeIt and will pop ItMarker. This is the world read.
+            if (TagLandTell.Transferred(puncherWasIt, victim != null && victim.IsIt, _it != null && _it.IsIt))
+                TagLandFlash.PlayOn(victim);
 
             // Punch impact (TagSfx has Resources clip + procedural fallback); become-It chirp from SetIt(true)
             TagSfx.PunchConnect(transform.position);
