@@ -1,4 +1,5 @@
 using Tag.Art;
+using Tag.Local;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -13,9 +14,9 @@ namespace Tag.Experimental
     /// this pawn. A miss attaches to nothing: there is no stand-in swing.
     /// PlayerMotor strips outward horizontal speed against that hit. This component does
     /// not write velocity, does not Move, and does not touch vertical speed.
-    /// The line, the mesh, the aim cue, and the latch flash are presentation.
+    /// The line, the mesh, the aim cue, the latch flash, and the miss cue are presentation.
     /// A successful latch flashes the knot and runs a short pulse along the rope.
-    /// A miss still latches nothing and plays no flash.
+    /// A miss still latches nothing. A fired miss flicks a short cool stub, not the latch flash.
     /// </summary>
     [DisallowMultipleComponent]
     public class ExperimentalGrapple : MonoBehaviour
@@ -54,6 +55,15 @@ namespace Tag.Experimental
         LineRenderer _latchPulse;
         Material _latchMat;
         static Mesh _latchSphere;
+        bool _fireWas;
+        bool _rayMiss;
+        float _missAge = -1f;
+        bool _missBuilt;
+        Transform _missRoot;
+        Transform _missKnot;
+        LineRenderer _missStub;
+        Material _missMat;
+        static Mesh _missDiamond;
 
         /// <summary>True only while enableGrapple is on and a rope is attached. A miss leaves this false.</summary>
         public bool IsPulling => enableGrapple && _attached;
@@ -67,15 +77,22 @@ namespace Tag.Experimental
         /// <summary>Called from PlayerMotor after input is read, before the single Move.</summary>
         public void ResolveAttach()
         {
+            bool gateOpen = enableGrapple && Time.timeScale > 0f && Cursor.lockState == CursorLockMode.Locked;
+            bool held = gateOpen && ReadFire();
+            bool fired = held && !_fireWas;
+            _fireWas = held;
+
             if (!enableGrapple)
             {
                 Release();
+                GrappleMissTell.Clear(ref _missAge);
                 return;
             }
 
             if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked)
             {
                 Release();
+                GrappleMissTell.Clear(ref _missAge);
                 return;
             }
 
@@ -86,12 +103,18 @@ namespace Tag.Experimental
             if (!ReadFire())
             {
                 Release();
+                _rayMiss = false;
+                GrappleMissTell.Note(ref _missAge, MissAvailable(), false, false, false);
                 return;
             }
 
             if (!_attached)
                 TryAttach();
+            else
+                _rayMiss = false;
+
             _casting = !_attached;
+            GrappleMissTell.Note(ref _missAge, MissAvailable(), fired, _rayMiss && !_attached, _attached);
         }
 
         public void Release()
@@ -115,7 +138,17 @@ namespace Tag.Experimental
 
         void LateUpdate()
         {
-            if (!enableGrapple || (!_attached && !_casting))
+            if (!enableGrapple)
+            {
+                GrappleMissTell.Clear(ref _missAge);
+                HideMiss();
+                HideAll();
+                return;
+            }
+
+            TickMissTell();
+
+            if (!_attached && !_casting)
             {
                 HideAll();
                 return;
@@ -162,6 +195,7 @@ namespace Tag.Experimental
 
         void TryAttach()
         {
+            _rayMiss = false;
             Transform cam = AimCamera();
             if (cam == null) return;
 
@@ -181,6 +215,7 @@ namespace Tag.Experimental
                 }
             }
 
+            _rayMiss = best < 0;
             if (best < 0) return;
             _anchor = _hits[best].point;
             _ropeLength = (_anchor - transform.position).magnitude;
@@ -202,7 +237,12 @@ namespace Tag.Experimental
             return cam != null ? cam.forward : transform.forward;
         }
 
-        void OnDisable() => Release();
+        void OnDisable()
+        {
+            Release();
+            GrappleMissTell.Clear(ref _missAge);
+            HideMiss();
+        }
 
         void EnsureRope()
         {
@@ -568,6 +608,166 @@ namespace Tag.Experimental
             mesh.triangles = tris;
             mesh.RecalculateNormals();
             _latchSphere = mesh;
+            return mesh;
+        }
+
+        bool MissAvailable()
+        {
+            return enableGrapple && GrappleMissTell.ForPawn(LocalPlayerRoster.IsCouch, false, 0, gameObject.name);
+        }
+
+        void TickMissTell()
+        {
+            bool available = MissAvailable();
+            if (!GrappleMissTell.Show(available, _attached, _missAge))
+            {
+                HideMiss();
+                if (!available || _attached)
+                    GrappleMissTell.Clear(ref _missAge);
+                return;
+            }
+
+            EnsureMissTell();
+            Vector3 hand = GrappleRopeTell.Hand(transform.position, transform.forward);
+            float alpha = GrappleMissTell.Alpha(_missAge);
+            float fade = GrappleMissTell.Fade(_missAge);
+            if (GrappleMissTell.Knot(available, _attached, hand, _missAge, out Vector3 at))
+                PlaceMissKnot(at, GrappleMissTell.KnotScale(fade), alpha);
+            if (GrappleMissTell.Stub(available, _attached, hand, AimDirection(), _missAge, out Vector3 from, out Vector3 to))
+                PlaceMissStub(from, to, alpha);
+            else if (_missStub != null)
+                _missStub.enabled = false;
+            GrappleMissTell.Step(ref _missAge, Time.deltaTime, available, _attached);
+        }
+
+        void PlaceMissKnot(Vector3 point, float size, float alpha)
+        {
+            if (_missKnot == null) return;
+            _missKnot.gameObject.SetActive(true);
+            _missKnot.position = point;
+            SetWorldScale(_missKnot, size, size, size);
+            PaintMiss(alpha);
+        }
+
+        void PlaceMissStub(Vector3 a, Vector3 b, float alpha)
+        {
+            if (_missStub == null) return;
+            _missStub.enabled = true;
+            _missStub.startWidth = GrappleMissTell.StubWidth;
+            _missStub.endWidth = GrappleMissTell.StubWidth;
+            _missStub.SetPosition(0, a);
+            _missStub.SetPosition(1, b);
+            var c = new Color(GrappleMissTell.MarkR, GrappleMissTell.MarkG, GrappleMissTell.MarkB, alpha);
+            _missStub.startColor = c;
+            _missStub.endColor = c;
+            PaintMiss(alpha);
+        }
+
+        void HideMiss()
+        {
+            if (_missKnot != null) _missKnot.gameObject.SetActive(false);
+            if (_missStub != null) _missStub.enabled = false;
+        }
+
+        void EnsureMissTell()
+        {
+            if (_missBuilt) return;
+            _missBuilt = true;
+            var rootGo = new GameObject(GrappleMissTell.MarkerName);
+            rootGo.transform.SetParent(transform, false);
+            _missRoot = rootGo.transform;
+            _missMat = MakeMissMat();
+            _missKnot = MakeMissKnot("GrappleMissKnot");
+            _missStub = MakeMissStub("GrappleMissStub");
+        }
+
+        Transform MakeMissKnot(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_missRoot, false);
+            var filter = go.AddComponent<MeshFilter>();
+            filter.sharedMesh = MissDiamond();
+            var rend = go.AddComponent<MeshRenderer>();
+            rend.sharedMaterial = _missMat;
+            rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rend.receiveShadows = false;
+            go.transform.localScale = Vector3.one * GrappleMissTell.KnotSize;
+            go.SetActive(false);
+            return go.transform;
+        }
+
+        LineRenderer MakeMissStub(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_missRoot, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.positionCount = 2;
+            line.numCapVertices = 4;
+            line.useWorldSpace = true;
+            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            line.receiveShadows = false;
+            line.alignment = LineAlignment.View;
+            line.textureMode = LineTextureMode.Stretch;
+            line.startWidth = GrappleMissTell.StubWidth;
+            line.endWidth = GrappleMissTell.StubWidth;
+            if (_missMat != null) line.sharedMaterial = _missMat;
+            var c = new Color(GrappleMissTell.MarkR, GrappleMissTell.MarkG, GrappleMissTell.MarkB, GrappleMissTell.MaxAlpha);
+            line.startColor = c;
+            line.endColor = c;
+            line.enabled = false;
+            return line;
+        }
+
+        static Material MakeMissMat()
+        {
+            var shader = Shader.Find("Sprites/Default")
+                         ?? Shader.Find("Universal Render Pipeline/Unlit")
+                         ?? Shader.Find("Unlit/Transparent")
+                         ?? Shader.Find("Unlit/Color")
+                         ?? Shader.Find("Standard");
+            var mat = new Material(shader) { name = "GrappleMissFail" };
+            var c = new Color(GrappleMissTell.MarkR, GrappleMissTell.MarkG, GrappleMissTell.MarkB, GrappleMissTell.MaxAlpha);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
+            if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+            if (mat.HasProperty("_ZWrite")) mat.SetFloat("_ZWrite", 0f);
+            if (mat.HasProperty("_SrcBlend")) mat.SetFloat("_SrcBlend", 5f);
+            if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", 10f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = 3000;
+            return mat;
+        }
+
+        void PaintMiss(float alpha)
+        {
+            if (_missMat == null) return;
+            var c = new Color(GrappleMissTell.MarkR, GrappleMissTell.MarkG, GrappleMissTell.MarkB, alpha);
+            if (_missMat.HasProperty("_BaseColor")) _missMat.SetColor("_BaseColor", c);
+            if (_missMat.HasProperty("_Color")) _missMat.SetColor("_Color", c);
+        }
+
+        static Mesh MissDiamond()
+        {
+            if (_missDiamond != null) return _missDiamond;
+            var verts = new[]
+            {
+                new Vector3(0f, 0.5f, 0f),
+                new Vector3(0.5f, 0f, 0f),
+                new Vector3(0f, 0f, 0.5f),
+                new Vector3(-0.5f, 0f, 0f),
+                new Vector3(0f, 0f, -0.5f),
+                new Vector3(0f, -0.5f, 0f),
+            };
+            var tris = new[]
+            {
+                0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1,
+                5, 2, 1, 5, 3, 2, 5, 4, 3, 5, 1, 4,
+            };
+            var mesh = new Mesh { name = "GrappleMissKnot" };
+            mesh.vertices = verts;
+            mesh.triangles = tris;
+            mesh.RecalculateNormals();
+            _missDiamond = mesh;
             return mesh;
         }
     }
