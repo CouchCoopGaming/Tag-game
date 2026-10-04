@@ -177,7 +177,7 @@ Feel (read, not played here): slide clamps to entry speed (downhill only softens
 ## How to enable experimental grapple
 1. Add `Tag.Experimental.ExperimentalGrapple` to a player with `PlayerMotor` + `PlayerInputReader`.
 2. Set `enableGrapple = true` (leave `useJetHeldAsFire=true` ? RMB/JetHeld; safe while jet is off).
-3. Hold fire to attach LineRenderer rope + pull; release cancels.
+3. Hold fire to attach. A gold rope runs from the hands to the hit, with a knot on the latch. While the hook is still casting, a short aim line shows. Release cancels. The draw does not change jump height.
 4. Core tag loop must work with component absent or `enableGrapple=false`.
 
 ## Re-enable jet (if ever needed)
