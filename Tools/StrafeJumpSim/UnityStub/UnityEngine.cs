@@ -113,5 +113,57 @@ namespace UnityEngine
         public static float Sqrt(float v) => (float)Math.Sqrt(v);
         public static float Sin(float rad) => (float)Math.Sin(rad);
         public static float Cos(float rad) => (float)Math.Cos(rad);
+        public static float Clamp01(float v) => v < 0f ? 0f : (v > 1f ? 1f : v);
+        public static float Lerp(float a, float b, float t) => a + (b - a) * Clamp01(t);
+
+        public static float SmoothStep(float from, float to, float t)
+        {
+            t = Clamp01(t);
+            t = t * t * (3f - 2f * t);
+            return from + (to - from) * t;
+        }
+    }
+
+    public struct Quaternion
+    {
+        public float x, y, z, w;
+
+        public Quaternion(float x, float y, float z, float w)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        }
+
+        public static Quaternion identity => new Quaternion(0f, 0f, 0f, 1f);
+
+        public static Quaternion Euler(float x, float y, float z) => identity;
+
+        public static Quaternion operator *(Quaternion a, Quaternion b) => a;
+    }
+
+    public struct LayerMask
+    {
+        public int value;
+        public static implicit operator LayerMask(int v) => new LayerMask { value = v };
+    }
+
+    public class ScriptableObject
+    {
+        public static T CreateInstance<T>() where T : ScriptableObject, new() => new T();
+    }
+
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+    public sealed class CreateAssetMenuAttribute : Attribute
+    {
+        public string menuName { get; set; }
+        public string fileName { get; set; }
+    }
+
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
+    public sealed class HeaderAttribute : Attribute
+    {
+        public HeaderAttribute(string header) { }
     }
 }

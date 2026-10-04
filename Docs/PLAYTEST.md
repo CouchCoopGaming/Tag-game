@@ -753,7 +753,7 @@ Seats: SW bench (9.26, 9), soft-play bench (8.20, 5.75), merry bench (4, 24) and
 - Punch can be LMB (default), F, or Mouse3; E still punches. That choice is `Tag.PunchKey`. Volume and mute stay on the Boot and pause Audio card (`AudioMaster`, default 0.8). On the results card the cursor is unlocked and gameplay input is zeroed, so a Rematch click does not punch or yaw. StartRound locks the cursor and ends any swing that was still out. Windup stays 0.12 s. Slide, jump, dash, and jet numbers are unchanged.
 
 ## Feel check (code, not a Unity play)
-- Jetpack off: `MovementConfig.enableJet` is false (asset enableJet: 0). RMB does not jet.
+- Jetpack off: `MovementConfig.enableJet` is false (asset enableJet: 0). RMB does not jet. Solo play puts `ExperimentalGrapple` on the Player pawn with `enableGrapple` true, so holding RMB hooks. Couch pawns and DummyRunner do not get a rope. A miss latches nothing.
 
 Slide keeps entry planar speed: `SlideMove` only applies friction (softer downhill) and clamps to `_slideStartSpeed`. The punch +8% speed buff is skipped while `State == Slide`, then the same cap is applied again. `slideDownhillAccel` is 0 and unused. Jump sets `v.y` from `jumpSpeed` / fatigue, not from horizontal speed. Air dash is a short planar burst with `airDashCooldown` 30 and a cyan trail on `DummyLocomotor` (trail updates even if the limb bind fails). The near-zero speed floor inside `EnterSlide` cannot run: crouch only enters a slide at `slideEntrySpeed` (7.5).
 
@@ -1495,7 +1495,9 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 344. Body v0.6 curved vinyl and a human waist spawn on the pad. Soles stay dark rubber. The face stays flat-eyed. Limbs move. No magenta capsule. Jet stays off.
 345. A swing catches a soft highlight on the vinyl. Hinges read darker than the shell. Dirt and the soles stay dark. The face stays. Pose timing is unchanged. Jet stays off.
 346. A slide plays SlideBody in state Slide: the chest is flat, the lead shin tucks along the ground, and the trail leg stays straight back. It should not look like a crouch. A punch plays PunchStrike in PunchWindup, then PunchActive: the fist cocks beside the head, then the arm goes straight out. A tag plays TagCatch in state Tag on the runner who was hit: both arms up in a long V, both knees bent. Windup, reach, and flinch time are unchanged. slideBoost stays 0.
+347. Solo play: the Player pawn has ExperimentalGrapple and enableGrapple is on, so holding RMB hooks. The opponent does not get a grapple. Couch pawns do not get one. A miss latches nothing. Jet stays off. SlideBody, PunchStrike, and TagCatch still play. Coyote, jump buffer, cling, jump height, slideBoost, air dash, air-crouch fall, max fall, and punch reach are unchanged.
 
-## Grapple (experimental, off)
-- Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
-- If you add the component and turn it on, hold RMB (JetHeld) for a rope pull. Release drops it. Pause or the results card drops it too. Slide, jump, dash, and jet numbers stay the same. Audio stays on AudioMaster.
+## Grapple (experimental, solo)
+- Solo play puts `ExperimentalGrapple` on the Player pawn and sets `enableGrapple` true. Hold RMB (JetHeld). The hook latches the nearest collider on the camera-forward ray, out to 28 m, skipping this pawn. A miss latches nothing. Release drops the rope. Pause or the results card drops it too.
+- Couch pawns and DummyRunner do not get the component. Jet stays off (`enableJet` false), so RMB does not jet.
+- While the rope is taut, outward planar speed is removed. The rope does not add speed and does not change jump height. Slide, jump, dash, and jet numbers stay the same. Audio stays on AudioMaster.

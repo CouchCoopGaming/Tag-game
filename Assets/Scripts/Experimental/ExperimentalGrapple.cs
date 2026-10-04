@@ -5,8 +5,8 @@ namespace Tag.Experimental
 {
     /// <summary>
     /// EXPERIMENTAL — optional rope. Core tag loop works without this.
-    /// Off by default (enableGrapple=false). Add to a player with PlayerMotor +
-    /// PlayerInputReader, set enableGrapple=true.
+    /// The field starts off (enableGrapple=false). LocalPlayerSpawner turns it on
+    /// for the solo Player pawn only. Couch pawns and DummyRunner do not get one.
     /// Button: RMB (Mouse1), the same hold as JetHeld. Jet stays off, so RMB does not jet.
     /// The hook attaches to the nearest collider along the camera forward ray that is not
     /// this pawn. A miss attaches to nothing: there is no stand-in swing.
@@ -38,7 +38,7 @@ namespace Tag.Experimental
         readonly RaycastHit[] _hits = new RaycastHit[16];
         bool _built;
 
-        /// <summary>True only while the gate is on and a rope is attached. The default gate stays off.</summary>
+        /// <summary>True only while enableGrapple is on and a rope is attached. A miss leaves this false.</summary>
         public bool IsPulling => enableGrapple && _attached;
 
         void Awake()
