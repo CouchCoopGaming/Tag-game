@@ -72,6 +72,14 @@ static class Program
             return 1;
         }
 
+        GrappleLatchTellReport latch = GrappleLatchTellProof.Run();
+        Console.WriteLine(latch.ToString());
+        if (!latch.Ok)
+        {
+            Console.Error.WriteLine(latch.FailureText);
+            return 1;
+        }
+
         const string grapplePath = "Assets/Scripts/Experimental/ExperimentalGrapple.cs";
         if (!AssetHas(grapplePath, "GrappleRopeTell.AttachedSpan", "GrappleRopeTell.AimSpan", "enableGrapple = false"))
         {
