@@ -12,6 +12,13 @@ namespace Tag.Local
     /// </summary>
     public class LocalPlayerSpawner : MonoBehaviour
     {
+        /// <summary>Solo campus opponent. Couch play turns this pawn off.</summary>
+        public const string OpponentPawnName = "DummyRunner";
+        /// <summary>Coral corner pad. Graybox meters; world position is Spawns[1].</summary>
+        public const string OpponentPadName = "Spawn_SE";
+        public const float OpponentPadGrayX = 66f;
+        public const float OpponentPadGrayZ = 5f;
+
         public static readonly Vector3[] Spawns =
         {
             new Vector3(60f, 1.5f, 50f),
@@ -32,7 +39,7 @@ namespace Tag.Local
             if (playerTemplate == null)
                 playerTemplate = GameObject.Find("Player");
 
-            var dummy = GameObject.Find("DummyRunner");
+            var dummy = GameObject.Find(OpponentPawnName);
             if (LocalPlayerRoster.IsCouch)
             {
                 if (dummy != null) dummy.SetActive(false);
