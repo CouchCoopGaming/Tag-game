@@ -984,6 +984,13 @@ namespace Tag.Art
         Vector3 _chaseTravel = Vector3.forward;
         Vector3 _chaseAim = Vector3.forward;
         static Mesh _chaseChevronMesh;
+        float _jumpLandAge = -1f;
+        float _jumpLandAir;
+        Transform _jumpLandRoot;
+        Transform _jumpLandL;
+        Transform _jumpLandR;
+        Material _jumpLandMat;
+        static Mesh _jumpLandDisc;
 
         Quaternion _spineT, _hipsT, _headT;
         Quaternion _uaLT, _uaRT, _laLT, _laRT;
@@ -1106,6 +1113,9 @@ namespace Tag.Art
             // The solo pawn shares this locomotor and does not get the streak.
             // LungeTell, the lunge, and punch Active still own contact. Feel numbers stay put.
             TickOpponentChase();
+            // Thud and heel dust after a real landing. Solo pawn only.
+            // It still runs if the limb rig failed to bind. Jump height stays put.
+            TickJumpLand(dt);
             if (!_bound) Cache(transform);
             if (!_bound) return;
             if (_punch == null) _punch = GetComponentInParent<PunchHitbox>();
@@ -14359,7 +14369,7 @@ namespace Tag.Art
             float dashSquash = airDashing ? 0.16f : 0.1f;
             float stretchY = 1f + dashStretch * dashAmt - 0.16f * flinchAmt + 0.06f * claimAmt;
             float stretchXZ = 1f - dashSquash * dashAmt + 0.12f * flinchAmt;
-            transform.localScale = new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash);
+            transform.localScale = JumpLandScale(new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash));
         }
 
         /// <summary>
@@ -14945,6 +14955,174 @@ namespace Tag.Art
             _glidePulse = 1f;
             _glideLaunchSnap = false;
             _glideLaunchIn = 0f;
+        }
+
+        void TickJumpLand(float dt)
+        {
+            bool solo = JumpLandSolo();
+            bool grounded = _motor != null && _motor.IsGrounded;
+            var st = _motor != null ? _motor.State : MoveState.Idle;
+            bool slide = st == MoveState.Slide;
+            bool cling = st == MoveState.WallClimb || st == MoveState.WallRun || st == MoveState.Mantle;
+            JumpLandTell.Note(ref _jumpLandAge, ref _jumpLandAir, solo, grounded, _wasGrounded, slide, cling, dt);
+            if (!JumpLandTell.Show(solo, _jumpLandAge))
+            {
+                HideJumpLand();
+                JumpLandTell.Step(ref _jumpLandAge, dt, solo);
+                return;
+            }
+
+            EnsureJumpLand();
+            float fade = JumpLandTell.Fade(_jumpLandAge);
+            PlaceJumpLand(JumpLandTell.Alpha(_jumpLandAge), fade);
+            JumpLandTell.Step(ref _jumpLandAge, dt, solo);
+        }
+
+        bool JumpLandSolo()
+        {
+            Transform pawn = _motor != null ? _motor.transform : transform.root;
+            if (pawn == null) return false;
+            string pawnName = pawn.name;
+            if (string.IsNullOrEmpty(pawnName)) return false;
+            int index = 0;
+            const string couchPrefix = "Player_P";
+            if (pawnName.StartsWith(couchPrefix))
+            {
+                int parsed;
+                if (int.TryParse(pawnName.Substring(couchPrefix.Length), out parsed))
+                    index = parsed;
+            }
+
+            bool ai = pawnName == SoloGrappleGate.OpponentPawnName;
+            return JumpLandTell.ForPawn(LocalPlayerRoster.IsCouch, ai, index, pawnName);
+        }
+
+        /// <summary>
+        /// Pose scale, then the landing thud. A quiet frame leaves the pose scale as it is.
+        /// </summary>
+        Vector3 JumpLandScale(Vector3 poseScale)
+        {
+            float fade = JumpLandTell.Show(JumpLandSolo(), _jumpLandAge)
+                ? JumpLandTell.Fade(_jumpLandAge)
+                : 0f;
+            JumpLandTell.ThudScale(fade, out float y, out float xz);
+            return new Vector3(poseScale.x * xz, poseScale.y * y, poseScale.z * xz);
+        }
+
+        void PlaceJumpLand(float alpha, float fade)
+        {
+            if (_jumpLandL == null || _jumpLandR == null) return;
+            Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
+            Vector3 dir = Vector3.forward;
+            if (_motor != null)
+            {
+                dir = _motor.Velocity;
+                dir.y = 0f;
+                if (dir.sqrMagnitude < 0.0001f)
+                    dir = _motor.transform.forward;
+            }
+
+            if (!JumpLandTell.Heels(origin, dir, out Vector3 left, out Vector3 right))
+            {
+                HideJumpLand();
+                return;
+            }
+
+            float diameter = JumpLandTell.PuffDiameter(fade);
+            var size = new Vector3(diameter, diameter, 1f);
+            var flat = Quaternion.Euler(90f, 0f, 0f);
+            _jumpLandL.SetPositionAndRotation(left, flat);
+            _jumpLandR.SetPositionAndRotation(right, flat);
+            _jumpLandL.localScale = size;
+            _jumpLandR.localScale = size;
+            PaintJumpLand(alpha);
+            _jumpLandL.gameObject.SetActive(true);
+            _jumpLandR.gameObject.SetActive(true);
+        }
+
+        void EnsureJumpLand()
+        {
+            if (_jumpLandL != null && _jumpLandR != null) return;
+            if (_jumpLandMat == null)
+                _jumpLandMat = MakeJumpLandMat();
+            Transform host = _motor != null ? _motor.transform : transform;
+            var rootGo = new GameObject(JumpLandTell.MarkerName);
+            rootGo.transform.SetParent(host, false);
+            _jumpLandRoot = rootGo.transform;
+            _jumpLandL = MakeJumpLandPuff("JumpLandHeelL");
+            _jumpLandR = MakeJumpLandPuff("JumpLandHeelR");
+        }
+
+        Transform MakeJumpLandPuff(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_jumpLandRoot, false);
+            var filter = go.AddComponent<MeshFilter>();
+            filter.sharedMesh = JumpLandDisc();
+            var rend = go.AddComponent<MeshRenderer>();
+            rend.sharedMaterial = _jumpLandMat;
+            rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rend.receiveShadows = false;
+            go.SetActive(false);
+            return go.transform;
+        }
+
+        static Mesh JumpLandDisc()
+        {
+            if (_jumpLandDisc != null) return _jumpLandDisc;
+            var mesh = new Mesh { name = JumpLandTell.MarkerName };
+            mesh.vertices = new[]
+            {
+                new Vector3(-0.5f, -0.5f, 0f),
+                new Vector3(0.5f, -0.5f, 0f),
+                new Vector3(-0.5f, 0.5f, 0f),
+                new Vector3(0.5f, 0.5f, 0f)
+            };
+            mesh.uv = new[]
+            {
+                new Vector2(0f, 0f),
+                new Vector2(1f, 0f),
+                new Vector2(0f, 1f),
+                new Vector2(1f, 1f)
+            };
+            mesh.triangles = new[] { 0, 1, 2, 1, 3, 2 };
+            mesh.RecalculateNormals();
+            _jumpLandDisc = mesh;
+            return mesh;
+        }
+
+        static Material MakeJumpLandMat()
+        {
+            var shader = Shader.Find("Sprites/Default")
+                         ?? Shader.Find("Universal Render Pipeline/Unlit")
+                         ?? Shader.Find("Unlit/Transparent")
+                         ?? Shader.Find("Unlit/Color")
+                         ?? Shader.Find("Standard");
+            var mat = new Material(shader) { name = "JumpLandDust" };
+            var c = new Color(JumpLandTell.MarkR, JumpLandTell.MarkG, JumpLandTell.MarkB, JumpLandTell.MaxAlpha);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
+            if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+            if (mat.HasProperty("_ZWrite")) mat.SetFloat("_ZWrite", 0f);
+            if (mat.HasProperty("_SrcBlend")) mat.SetFloat("_SrcBlend", 5f);
+            if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", 10f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = 3000;
+            return mat;
+        }
+
+        void PaintJumpLand(float alpha)
+        {
+            if (_jumpLandMat == null) return;
+            var c = new Color(JumpLandTell.MarkR, JumpLandTell.MarkG, JumpLandTell.MarkB, alpha);
+            if (_jumpLandMat.HasProperty("_BaseColor")) _jumpLandMat.SetColor("_BaseColor", c);
+            if (_jumpLandMat.HasProperty("_Color")) _jumpLandMat.SetColor("_Color", c);
+        }
+
+        void HideJumpLand()
+        {
+            if (_jumpLandL != null) _jumpLandL.gameObject.SetActive(false);
+            if (_jumpLandR != null) _jumpLandR.gameObject.SetActive(false);
         }
 
         void TickSlideScrape()
@@ -15570,6 +15748,20 @@ namespace Tag.Art
                 _chaseMat = null;
             }
             _chaseWas = false;
+            if (_jumpLandRoot != null)
+            {
+                Destroy(_jumpLandRoot.gameObject);
+                _jumpLandRoot = null;
+                _jumpLandL = null;
+                _jumpLandR = null;
+            }
+            if (_jumpLandMat != null)
+            {
+                Destroy(_jumpLandMat);
+                _jumpLandMat = null;
+            }
+            _jumpLandAge = -1f;
+            _jumpLandAir = 0f;
         }
 
         static void Slew(ref Transform t, Quaternion target, float speed, float dt)
