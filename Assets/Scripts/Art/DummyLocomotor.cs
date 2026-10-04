@@ -991,6 +991,16 @@ namespace Tag.Art
         Transform _jumpLandR;
         Material _jumpLandMat;
         static Mesh _jumpLandDisc;
+        float _wallJumpAge = -1f;
+        float _sinceWall = 1f;
+        bool _wallJumpEdge;
+        Vector3 _wallJumpNormal = Vector3.back;
+        Vector3 _wallJumpOrigin;
+        Transform _wallJumpRoot;
+        Transform _wallJumpL;
+        Transform _wallJumpR;
+        Material _wallJumpMat;
+        static Mesh _wallJumpDisc;
 
         Quaternion _spineT, _hipsT, _headT;
         Quaternion _uaLT, _uaRT, _laLT, _laRT;
@@ -1115,7 +1125,12 @@ namespace Tag.Art
             TickOpponentChase();
             // Thud and heel dust after a real landing. Solo pawn only.
             // It still runs if the limb rig failed to bind. Jump height stays put.
+            float landAirSnap = _jumpLandAir;
             TickJumpLand(dt);
+            // Foot scuffs and a short pose kick when cling plus Jump leaves the wall.
+            // Solo pawn only. It still runs if the limb rig failed to bind.
+            // Jump height, coyote, and cling grace stay put.
+            TickWallJumpPush(dt, landAirSnap);
             if (!_bound) Cache(transform);
             if (!_bound) return;
             if (_punch == null) _punch = GetComponentInParent<PunchHitbox>();
@@ -14362,14 +14377,14 @@ namespace Tag.Art
             if (_landSquash > 0f) bob -= 0.14f * _landSquash;
             if (dashing) bob += 0.04f * dashAmt;
             if (flinchAmt > 0.04f) bob -= 0.1f * flinchAmt;
-            transform.localPosition = _root0 + new Vector3(0f, bob, 0f);
+            transform.localPosition = _root0 + new Vector3(0f, bob, 0f) + WallJumpNudge();
             float squash = 1f - 0.14f * _landSquash;
             // Air-dash: strong stretch then brief squash; tag flinch compresses
             float dashStretch = airDashing ? 0.32f : 0.18f;
             float dashSquash = airDashing ? 0.16f : 0.1f;
             float stretchY = 1f + dashStretch * dashAmt - 0.16f * flinchAmt + 0.06f * claimAmt;
             float stretchXZ = 1f - dashSquash * dashAmt + 0.12f * flinchAmt;
-            transform.localScale = JumpLandScale(new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash));
+            transform.localScale = WallJumpPushScale(JumpLandScale(new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash)));
         }
 
         /// <summary>
@@ -14928,6 +14943,8 @@ namespace Tag.Art
 
         void HandleWallBounced()
         {
+            _wallJumpEdge = true;
+            RememberPushNormal();
             _bouncePulse = 1f;
             _bounceWallLeft = _motor != null && _motor.WallLeft;
             _bounceKickSnap = false;
@@ -15123,6 +15140,229 @@ namespace Tag.Art
         {
             if (_jumpLandL != null) _jumpLandL.gameObject.SetActive(false);
             if (_jumpLandR != null) _jumpLandR.gameObject.SetActive(false);
+        }
+
+        void TickWallJumpPush(float dt, float landAirBefore)
+        {
+            bool solo = WallJumpSolo();
+            var st = _motor != null ? _motor.State : MoveState.Idle;
+            bool grounded = _motor != null && _motor.IsGrounded;
+            float grace = 0.08f;
+            float coyote = 0.10f;
+            if (_motor != null && _motor.cfg != null)
+            {
+                grace = _motor.cfg.clingReleaseGrace;
+                coyote = _motor.cfg.coyoteTime;
+            }
+
+            if (st == MoveState.WallClimb || st == MoveState.WallRun || _wallJumpEdge)
+                RememberPushNormal();
+
+            bool recentCling = _sinceWall <= grace;
+            bool airborne = !grounded && st == MoveState.Air;
+            bool leftWall = st != MoveState.WallClimb && st != MoveState.WallRun && st != MoveState.Mantle;
+            bool slide = st == MoveState.Slide;
+            bool mantle = st == MoveState.Mantle;
+            bool coyoteReground = grounded && !_wasGrounded && landAirBefore > 0f && landAirBefore <= coyote + 0.001f;
+            bool groundJump = _input != null && _input.JumpPressed && !_wallJumpEdge && _sinceWall > grace;
+            bool landBusy = JumpLandTell.Show(solo, _jumpLandAge);
+            bool qualifies = WallJumpPushTell.Qualifies(
+                solo, recentCling, recentCling, _wallJumpEdge, airborne, leftWall,
+                slide, mantle, coyoteReground, groundJump, landBusy);
+            if (qualifies && _wallJumpAge < 0f)
+            {
+                _wallJumpOrigin = _motor != null ? _motor.transform.position : transform.position;
+                RememberPushNormal();
+            }
+
+            WallJumpPushTell.Note(ref _wallJumpAge, qualifies, solo);
+            if (!WallJumpPushTell.Show(solo, _wallJumpAge))
+            {
+                HideWallJump();
+                WallJumpPushTell.Step(ref _wallJumpAge, dt, solo);
+            }
+            else
+            {
+                EnsureWallJump();
+                float fade = WallJumpPushTell.Fade(_wallJumpAge);
+                PlaceWallJump(WallJumpPushTell.Alpha(_wallJumpAge), fade);
+                WallJumpPushTell.Step(ref _wallJumpAge, dt, solo);
+            }
+
+            bool holdEdge = _wallJumpEdge && !qualifies && solo && recentCling
+                && !slide && !mantle && !landBusy && !coyoteReground && !groundJump && !airborne;
+            if (!holdEdge)
+                _wallJumpEdge = false;
+            if (st == MoveState.WallClimb || st == MoveState.WallRun)
+                _sinceWall = 0f;
+            else if (dt > 0f)
+                _sinceWall += dt;
+        }
+
+        bool WallJumpSolo()
+        {
+            Transform pawn = _motor != null ? _motor.transform : transform.root;
+            if (pawn == null) return false;
+            string pawnName = pawn.name;
+            if (string.IsNullOrEmpty(pawnName)) return false;
+            int index = 0;
+            const string couchPrefix = "Player_P";
+            if (pawnName.StartsWith(couchPrefix))
+            {
+                int parsed;
+                if (int.TryParse(pawnName.Substring(couchPrefix.Length), out parsed))
+                    index = parsed;
+            }
+
+            bool ai = pawnName == SoloGrappleGate.OpponentPawnName;
+            return WallJumpPushTell.ForPawn(LocalPlayerRoster.IsCouch, ai, index, pawnName);
+        }
+
+        /// <summary>
+        /// Pose scale, then the wall-jump kick. A quiet frame leaves the pose scale as it is.
+        /// </summary>
+        Vector3 WallJumpPushScale(Vector3 poseScale)
+        {
+            float fade = WallJumpPushTell.Show(WallJumpSolo(), _wallJumpAge)
+                ? WallJumpPushTell.Fade(_wallJumpAge)
+                : 0f;
+            WallJumpPushTell.PushScale(fade, out float y, out float xz);
+            return new Vector3(poseScale.x * xz, poseScale.y * y, poseScale.z * xz);
+        }
+
+        Vector3 WallJumpNudge()
+        {
+            if (!WallJumpPushTell.Show(WallJumpSolo(), _wallJumpAge))
+                return Vector3.zero;
+            float fade = WallJumpPushTell.Fade(_wallJumpAge);
+            Vector3 world = WallJumpPushTell.PushWorld(_wallJumpNormal, fade);
+            if (world.sqrMagnitude < 0.0001f)
+                return Vector3.zero;
+            return transform.InverseTransformDirection(world);
+        }
+
+        void RememberPushNormal()
+        {
+            Vector3 n = Vector3.zero;
+            if (_motor != null)
+                n = _motor.WallNormal;
+            n.y = 0f;
+            if (n.sqrMagnitude < 0.0001f)
+                n = _clingNormal;
+            n.y = 0f;
+            if (n.sqrMagnitude < 0.0001f)
+                return;
+            _wallJumpNormal = n.normalized;
+        }
+
+        void PlaceWallJump(float alpha, float fade)
+        {
+            if (_wallJumpL == null || _wallJumpR == null) return;
+            if (!WallJumpPushTell.Feet(_wallJumpOrigin, _wallJumpNormal, out Vector3 left, out Vector3 right))
+            {
+                HideWallJump();
+                return;
+            }
+
+            float diameter = WallJumpPushTell.PuffDiameter(fade);
+            var size = new Vector3(diameter, diameter, 1f);
+            Vector3 n = _wallJumpNormal;
+            n.y = 0f;
+            if (n.sqrMagnitude < 0.0001f)
+                n = Vector3.back;
+            var face = Quaternion.LookRotation(n.normalized, Vector3.up);
+            _wallJumpL.SetPositionAndRotation(left, face);
+            _wallJumpR.SetPositionAndRotation(right, face);
+            _wallJumpL.localScale = size;
+            _wallJumpR.localScale = size;
+            PaintWallJump(alpha);
+            _wallJumpL.gameObject.SetActive(true);
+            _wallJumpR.gameObject.SetActive(true);
+        }
+
+        void EnsureWallJump()
+        {
+            if (_wallJumpL != null && _wallJumpR != null) return;
+            if (_wallJumpMat == null)
+                _wallJumpMat = MakeWallJumpMat();
+            Transform host = _motor != null ? _motor.transform : transform;
+            var rootGo = new GameObject(WallJumpPushTell.MarkerName);
+            rootGo.transform.SetParent(host, false);
+            _wallJumpRoot = rootGo.transform;
+            _wallJumpL = MakeWallJumpPuff("WallJumpFootL");
+            _wallJumpR = MakeWallJumpPuff("WallJumpFootR");
+        }
+
+        Transform MakeWallJumpPuff(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_wallJumpRoot, false);
+            var filter = go.AddComponent<MeshFilter>();
+            filter.sharedMesh = WallJumpDisc();
+            var rend = go.AddComponent<MeshRenderer>();
+            rend.sharedMaterial = _wallJumpMat;
+            rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rend.receiveShadows = false;
+            go.SetActive(false);
+            return go.transform;
+        }
+
+        static Mesh WallJumpDisc()
+        {
+            if (_wallJumpDisc != null) return _wallJumpDisc;
+            var mesh = new Mesh { name = WallJumpPushTell.MarkerName };
+            mesh.vertices = new[]
+            {
+                new Vector3(-0.5f, -0.5f, 0f),
+                new Vector3(0.5f, -0.5f, 0f),
+                new Vector3(-0.5f, 0.5f, 0f),
+                new Vector3(0.5f, 0.5f, 0f)
+            };
+            mesh.uv = new[]
+            {
+                new Vector2(0f, 0f),
+                new Vector2(1f, 0f),
+                new Vector2(0f, 1f),
+                new Vector2(1f, 1f)
+            };
+            mesh.triangles = new[] { 0, 1, 2, 1, 3, 2 };
+            mesh.RecalculateNormals();
+            _wallJumpDisc = mesh;
+            return mesh;
+        }
+
+        static Material MakeWallJumpMat()
+        {
+            var shader = Shader.Find("Sprites/Default")
+                         ?? Shader.Find("Universal Render Pipeline/Unlit")
+                         ?? Shader.Find("Unlit/Transparent")
+                         ?? Shader.Find("Unlit/Color")
+                         ?? Shader.Find("Standard");
+            var mat = new Material(shader) { name = "WallJumpPushDust" };
+            var c = new Color(WallJumpPushTell.MarkR, WallJumpPushTell.MarkG, WallJumpPushTell.MarkB, WallJumpPushTell.MaxAlpha);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
+            if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+            if (mat.HasProperty("_ZWrite")) mat.SetFloat("_ZWrite", 0f);
+            if (mat.HasProperty("_SrcBlend")) mat.SetFloat("_SrcBlend", 5f);
+            if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", 10f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = 3000;
+            return mat;
+        }
+
+        void PaintWallJump(float alpha)
+        {
+            if (_wallJumpMat == null) return;
+            var c = new Color(WallJumpPushTell.MarkR, WallJumpPushTell.MarkG, WallJumpPushTell.MarkB, alpha);
+            if (_wallJumpMat.HasProperty("_BaseColor")) _wallJumpMat.SetColor("_BaseColor", c);
+            if (_wallJumpMat.HasProperty("_Color")) _wallJumpMat.SetColor("_Color", c);
+        }
+
+        void HideWallJump()
+        {
+            if (_wallJumpL != null) _wallJumpL.gameObject.SetActive(false);
+            if (_wallJumpR != null) _wallJumpR.gameObject.SetActive(false);
         }
 
         void TickSlideScrape()
@@ -15762,6 +16002,21 @@ namespace Tag.Art
             }
             _jumpLandAge = -1f;
             _jumpLandAir = 0f;
+            if (_wallJumpRoot != null)
+            {
+                Destroy(_wallJumpRoot.gameObject);
+                _wallJumpRoot = null;
+                _wallJumpL = null;
+                _wallJumpR = null;
+            }
+            if (_wallJumpMat != null)
+            {
+                Destroy(_wallJumpMat);
+                _wallJumpMat = null;
+            }
+            _wallJumpAge = -1f;
+            _wallJumpEdge = false;
+            _sinceWall = 1f;
         }
 
         static void Slew(ref Transform t, Quaternion target, float speed, float dt)

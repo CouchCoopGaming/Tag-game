@@ -23,6 +23,7 @@
     <Compile Include="../../Assets/Editor/HitConfirmTellProof.cs" />
     <Compile Include="../../Assets/Editor/GrappleMissTellProof.cs" />
     <Compile Include="../../Assets/Editor/JumpLandTellProof.cs" />
+    <Compile Include="../../Assets/Editor/WallJumpPushTellProof.cs" />
     <Compile Include="../../Assets/Scripts/Art/SlideScrapeTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/WallClingTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/OpponentChaseTell.cs" />
@@ -33,6 +34,7 @@
     <Compile Include="../../Assets/Scripts/Art/HitConfirmTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/GrappleMissTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/JumpLandTell.cs" />
+    <Compile Include="../../Assets/Scripts/Art/WallJumpPushTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/TagLandTell.cs" />
     <Compile Include="../../Assets/Scripts/Local/SoloGrappleGate.cs" />
     <Compile Include="../../Assets/Scripts/Tag/PunchTagTuning.cs" />
