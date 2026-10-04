@@ -96,6 +96,14 @@ static class Program
             return 1;
         }
 
+        GrappleMissTellReport miss = GrappleMissTellProof.Run();
+        Console.WriteLine(miss.ToString());
+        if (!miss.Ok)
+        {
+            Console.Error.WriteLine(miss.FailureText);
+            return 1;
+        }
+
         const string grapplePath = "Assets/Scripts/Experimental/ExperimentalGrapple.cs";
         if (!AssetHas(grapplePath, "GrappleRopeTell.AttachedSpan", "GrappleRopeTell.AimSpan", "enableGrapple = false"))
         {
