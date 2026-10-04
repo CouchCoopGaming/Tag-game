@@ -231,8 +231,9 @@ namespace Tag.Local
                 if (!underRig)
                 {
                     cam.enabled = false;
+                    // A disabled listener still counts, so the follow camera would log two listeners.
                     var al = cam.GetComponent<AudioListener>();
-                    if (al) al.enabled = false;
+                    if (al) DestroyImmediate(al);
                 }
             }
 

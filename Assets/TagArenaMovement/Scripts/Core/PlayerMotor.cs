@@ -1178,8 +1178,7 @@ namespace TagArena.Movement
         {
             if (_rb != null)
             {
-                _rb.linearVelocity = Vector3.zero;
-                _rb.angularVelocity = Vector3.zero;
+                ClearDynamicVelocity(_rb);
                 _rb.useGravity = false;
                 _rb.isKinematic = true;
                 _rb.detectCollisions = false;
@@ -1211,14 +1210,23 @@ namespace TagArena.Movement
             transform.position = worldPos;
             if (_rb != null)
             {
-                _rb.linearVelocity = Vector3.zero;
-                _rb.angularVelocity = Vector3.zero;
+                ClearDynamicVelocity(_rb);
                 _rb.useGravity = false;
                 _rb.isKinematic = true;
                 _rb.detectCollisions = false;
                 _rb.position = worldPos;
             }
             if (_cc != null) _cc.enabled = _mode != Locomotion.Ragdoll;
+        }
+
+        /// <summary>
+        /// Kinematic bodies reject velocity writes and log. A dynamic ragdoll still stops before the kinematic swap.
+        /// </summary>
+        static void ClearDynamicVelocity(Rigidbody rb)
+        {
+            if (rb == null || rb.isKinematic) return;
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
         }
 
         public void SetPunchMoveScale(float scale) => _punchMoveScale = Mathf.Clamp(scale, 0.05f, 1.5f);
