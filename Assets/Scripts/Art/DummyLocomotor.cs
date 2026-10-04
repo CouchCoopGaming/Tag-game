@@ -7,7 +7,8 @@ namespace Tag.Art
 {
     /// <summary>
     /// Procedural parkour body driven by TagArena MoveState (Apex-Tribes).
-    /// No AnimationClips required - readable limb tells for third-person views.
+    /// Slide, punch, and tag play named clips from <see cref="VerbPoseClips"/>
+    /// on top of the stride. Those clips do not change feel numbers.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
     {
@@ -15,6 +16,11 @@ namespace Tag.Art
         PlayerInputReader _input;
         PunchHitbox _punch;
         ExperimentalGrapple _grapple;
+
+        /// <summary>Clip playing this frame. Null when no verb clip is on.</summary>
+        public string VerbClip { get; private set; }
+        /// <summary>State that selected <see cref="VerbClip"/>.</summary>
+        public string VerbState { get; private set; }
 
         Transform _hips, _spine, _head;
         Transform _upperArmL, _upperArmR, _lowerArmL, _lowerArmR;
@@ -14246,6 +14252,7 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_armSettleLlL, _llLT, intoSettle);
                 _llRT = Quaternion.Slerp(_armSettleLlR, _llRT, intoSettle);
             }
+            ApplyVerbClips(sliding, punching, phase, punchProg, flinchAmt, sinC);
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
             Slew(ref _head, _headT, slew, dt);
@@ -14264,7 +14271,7 @@ namespace Tag.Art
             float bobGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
             float bob = grounded ? step * 0.085f * bobGait : air ? step * 0.02f : 0f;
             if (_dropVis > 0.02f && !air && !jet)
-                bob = Mathf.Lerp(bob, _dropSlide ? -0.32f : -0.14f, (_dropSlide || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? hipDrop : _dropVis);
+                bob = Mathf.Lerp(bob, _dropSlide ? -VerbPoseClips.SlideBodyDrop : -0.14f, (_dropSlide || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? hipDrop : _dropVis);
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
             if (_landSquash > 0f) bob -= 0.14f * _landSquash;
             if (dashing) bob += 0.04f * dashAmt;
@@ -14593,6 +14600,84 @@ namespace Tag.Art
         {
             if (t == null) return;
             t.localRotation = Quaternion.Slerp(t.localRotation, target, 1f - Mathf.Exp(-speed * dt));
+        }
+
+        void ApplyVerbClips(bool sliding, bool punching, PunchPhase phase, float punchProg, float flinchAmt, float sinC)
+        {
+            // These clips win over the stride so the verb is what you see.
+            // Slide plays SlideBody. PunchWindup and PunchActive play PunchStrike.
+            // Tag plays TagCatch. Phase times and slideBoost stay as they are.
+            VerbClip = null;
+            VerbState = null;
+            var bind = new VerbPoseClips.Bind
+            {
+                UaL = _uaL0, UaR = _uaR0, LaL = _laL0, LaR = _laR0,
+                UlL = _ulL0, UlR = _ulR0, LlL = _llL0, LlR = _llR0,
+                Spine = _spine0, Hips = _hips0, Head = _head0,
+            };
+            if (flinchAmt > 0.04f)
+            {
+                float w = flinchAmt >= 0.55f ? 1f : Mathf.Clamp01(flinchAmt / 0.55f);
+                BlendVerb(VerbPoseClips.TagCatchPose(bind), w);
+                VerbClip = VerbPoseClips.TagCatch;
+                VerbState = VerbPoseClips.StateTag;
+                return;
+            }
+            if (punching && phase != PunchPhase.Idle)
+            {
+                float sample;
+                float w = 1f;
+                string state;
+                if (phase == PunchPhase.Windup)
+                {
+                    sample = Mathf.Lerp(0.15f, 0.38f, Mathf.Clamp01(punchProg));
+                    state = VerbPoseClips.StatePunchWindup;
+                }
+                else if (phase == PunchPhase.Active)
+                {
+                    sample = Mathf.Lerp(0.38f, 1f, Mathf.Clamp01(punchProg));
+                    state = VerbPoseClips.StatePunchActive;
+                }
+                else
+                {
+                    sample = 1f;
+                    w = 1f - Mathf.SmoothStep(0.28f, 1f, Mathf.Clamp01(punchProg));
+                    state = VerbPoseClips.StatePunchActive;
+                }
+                if (w > 0.02f)
+                {
+                    BlendVerb(VerbPoseClips.PunchStrikePose(bind, sample), w);
+                    VerbClip = VerbPoseClips.PunchStrike;
+                    VerbState = state;
+                    return;
+                }
+            }
+            if (sliding)
+            {
+                float w = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_dropVis));
+                if (w > 0.02f)
+                {
+                    BlendVerb(VerbPoseClips.SlideBodyPose(bind, sinC >= 0f), w);
+                    VerbClip = VerbPoseClips.SlideBody;
+                    VerbState = VerbPoseClips.StateSlide;
+                }
+            }
+        }
+
+        void BlendVerb(VerbPoseClips.Pose pose, float w)
+        {
+            if (w <= 0.001f) return;
+            _uaLT = Quaternion.Slerp(_uaLT, pose.UaL, w);
+            _uaRT = Quaternion.Slerp(_uaRT, pose.UaR, w);
+            _laLT = Quaternion.Slerp(_laLT, pose.LaL, w);
+            _laRT = Quaternion.Slerp(_laRT, pose.LaR, w);
+            _ulLT = Quaternion.Slerp(_ulLT, pose.UlL, w);
+            _ulRT = Quaternion.Slerp(_ulRT, pose.UlR, w);
+            _llLT = Quaternion.Slerp(_llLT, pose.LlL, w);
+            _llRT = Quaternion.Slerp(_llRT, pose.LlR, w);
+            _spineT = Quaternion.Slerp(_spineT, pose.Spine, w);
+            _hipsT = Quaternion.Slerp(_hipsT, pose.Hips, w);
+            _headT = Quaternion.Slerp(_headT, pose.Head, w);
         }
 
         void SlidePunchPose(PunchPhase phase, float punchProg, float armZ, out Quaternion uaL, out Quaternion uaR, out Quaternion laL, out Quaternion laR, out Quaternion hips, out Quaternion spine, out Quaternion head)
