@@ -951,6 +951,14 @@ namespace Tag.Art
         LineRenderer _dashCdArc;
         Material _dashCdMat;
         Vector3[] _dashCdPts;
+        float _hitConfirmAge = -1f;
+        bool _hitConfirmPunchWas;
+        bool _hitConfirmTagWas;
+        Transform _hitConfirmRoot;
+        LineRenderer _hitConfirmInner;
+        LineRenderer _hitConfirmOuter;
+        Material _hitConfirmMat;
+        Vector3[] _hitConfirmPts;
         bool _scrapeWas;
         Transform _scrapeRoot;
         TrailRenderer _scrapeL;
@@ -1085,6 +1093,9 @@ namespace Tag.Art
             TickAirDashTell(dt);
             // Refill arc and the ready wink. Solo pawn only. The burst ribbons stay as they are.
             TickAirDashCooldown(dt);
+            // Contact rings when a punch hits or a tag lands. Solo pawn only.
+            // A whiff stays quiet. Reach and the clips stay as they are.
+            TickHitConfirm(dt);
             // Ground scrape keys off MoveState.Slide, the same state that selects SlideBody.
             // It still runs if the limb rig failed to bind. Speed and slideBoost stay put.
             TickSlideScrape();
@@ -14701,6 +14712,164 @@ namespace Tag.Art
             if (_dashCdMat.HasProperty("_Color")) _dashCdMat.SetColor("_Color", c);
         }
 
+        void TickHitConfirm(float dt)
+        {
+            bool solo = HitConfirmSolo();
+            if (_punch == null) _punch = GetComponentInParent<PunchHitbox>();
+            PunchPhase phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
+            bool punchHit = phase == PunchPhase.HitRecover;
+            bool tag = HitConfirmTell.TagConnect(_tagFlinch, _itClaim);
+            HitConfirmTell.Note(ref _hitConfirmAge, solo, punchHit, tag, _hitConfirmPunchWas, _hitConfirmTagWas);
+            _hitConfirmPunchWas = punchHit;
+            _hitConfirmTagWas = tag;
+            if (!HitConfirmTell.Show(solo, _hitConfirmAge))
+            {
+                HideHitConfirm();
+                HitConfirmTell.Step(ref _hitConfirmAge, dt, solo);
+                return;
+            }
+
+            EnsureHitConfirm();
+            Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
+            Vector3 forward = _motor != null ? _motor.transform.forward : transform.forward;
+            PlaceHitConfirm(origin, forward, HitConfirmTell.Alpha(_hitConfirmAge));
+            HitConfirmTell.Step(ref _hitConfirmAge, dt, solo);
+        }
+
+        bool HitConfirmSolo()
+        {
+            Transform pawn = _motor != null ? _motor.transform : transform.root;
+            if (pawn == null) return false;
+            string pawnName = pawn.name;
+            if (string.IsNullOrEmpty(pawnName)) return false;
+            int index = 0;
+            const string couchPrefix = "Player_P";
+            if (pawnName.StartsWith(couchPrefix))
+            {
+                int parsed;
+                if (int.TryParse(pawnName.Substring(couchPrefix.Length), out parsed))
+                    index = parsed;
+            }
+
+            bool ai = pawnName == SoloGrappleGate.OpponentPawnName;
+            return HitConfirmTell.ForPawn(LocalPlayerRoster.IsCouch, ai, index, pawnName);
+        }
+
+        void PlaceHitConfirm(Vector3 origin, Vector3 forward, float alpha)
+        {
+            if (_hitConfirmInner == null || _hitConfirmOuter == null) return;
+            float reach = _punch != null ? _punch.Reach : 0f;
+            if (reach <= 0.01f)
+            {
+                HideHitConfirm();
+                return;
+            }
+
+            Vector3 contact = HitConfirmTell.Contact(origin, forward, reach);
+            if (_hitConfirmPts == null || _hitConfirmPts.Length < HitConfirmTell.MaxPoints)
+                _hitConfirmPts = new Vector3[HitConfirmTell.MaxPoints];
+            if (!HitConfirmTell.Ring(contact, forward, HitConfirmTell.InnerRadius, _hitConfirmPts, out int count))
+            {
+                HideHitConfirm();
+                return;
+            }
+
+            ApplyHitRing(_hitConfirmInner, count, alpha);
+            if (!HitConfirmTell.Ring(contact, forward, HitConfirmTell.OuterRadius, _hitConfirmPts, out count))
+            {
+                HideHitConfirm();
+                return;
+            }
+
+            ApplyHitRing(_hitConfirmOuter, count, alpha);
+            PaintHitConfirm(alpha);
+        }
+
+        void ApplyHitRing(LineRenderer line, int count, float alpha)
+        {
+            if (line == null) return;
+            line.enabled = true;
+            line.positionCount = count;
+            line.startWidth = HitConfirmTell.RingWidth;
+            line.endWidth = HitConfirmTell.RingWidth;
+            for (int i = 0; i < count; i++)
+                line.SetPosition(i, _hitConfirmPts[i]);
+            var c = new Color(HitConfirmTell.MarkR, HitConfirmTell.MarkG, HitConfirmTell.MarkB, alpha);
+            line.startColor = c;
+            line.endColor = c;
+        }
+
+        void EnsureHitConfirm()
+        {
+            if (_hitConfirmInner != null && _hitConfirmOuter != null) return;
+            var rootGo = new GameObject(HitConfirmTell.MarkerName);
+            Transform parent = _motor != null ? _motor.transform : transform;
+            rootGo.transform.SetParent(parent, false);
+            _hitConfirmRoot = rootGo.transform;
+            _hitConfirmMat = MakeHitConfirmMat();
+            _hitConfirmInner = MakeHitConfirmRing("HitConfirmRingInner");
+            _hitConfirmOuter = MakeHitConfirmRing("HitConfirmRingOuter");
+            _hitConfirmPts = new Vector3[HitConfirmTell.MaxPoints];
+        }
+
+        LineRenderer MakeHitConfirmRing(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_hitConfirmRoot, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.positionCount = 2;
+            line.numCapVertices = 3;
+            line.numCornerVertices = 2;
+            line.useWorldSpace = true;
+            line.loop = false;
+            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            line.receiveShadows = false;
+            line.alignment = LineAlignment.View;
+            line.textureMode = LineTextureMode.Stretch;
+            line.startWidth = HitConfirmTell.RingWidth;
+            line.endWidth = HitConfirmTell.RingWidth;
+            if (_hitConfirmMat != null) line.sharedMaterial = _hitConfirmMat;
+            var c = new Color(HitConfirmTell.MarkR, HitConfirmTell.MarkG, HitConfirmTell.MarkB, HitConfirmTell.MaxAlpha);
+            line.startColor = c;
+            line.endColor = c;
+            line.enabled = false;
+            return line;
+        }
+
+        static Material MakeHitConfirmMat()
+        {
+            var shader = Shader.Find("Sprites/Default")
+                         ?? Shader.Find("Universal Render Pipeline/Unlit")
+                         ?? Shader.Find("Unlit/Transparent")
+                         ?? Shader.Find("Unlit/Color")
+                         ?? Shader.Find("Standard");
+            var mat = new Material(shader) { name = "HitConfirmRing" };
+            var c = new Color(HitConfirmTell.MarkR, HitConfirmTell.MarkG, HitConfirmTell.MarkB, HitConfirmTell.MaxAlpha);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
+            if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+            if (mat.HasProperty("_ZWrite")) mat.SetFloat("_ZWrite", 0f);
+            if (mat.HasProperty("_SrcBlend")) mat.SetFloat("_SrcBlend", 5f);
+            if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", 10f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = 3000;
+            return mat;
+        }
+
+        void HideHitConfirm()
+        {
+            if (_hitConfirmInner != null) _hitConfirmInner.enabled = false;
+            if (_hitConfirmOuter != null) _hitConfirmOuter.enabled = false;
+        }
+
+        void PaintHitConfirm(float alpha)
+        {
+            if (_hitConfirmMat == null) return;
+            var c = new Color(HitConfirmTell.MarkR, HitConfirmTell.MarkG, HitConfirmTell.MarkB, alpha);
+            if (_hitConfirmMat.HasProperty("_BaseColor")) _hitConfirmMat.SetColor("_BaseColor", c);
+            if (_hitConfirmMat.HasProperty("_Color")) _hitConfirmMat.SetColor("_Color", c);
+        }
+
         /// <summary>Called while the dummy is committed to a punch but has not swung yet.</summary>
         public void HoldPunchTelegraph()
         {
@@ -15343,6 +15512,22 @@ namespace Tag.Art
             }
             _dashCdSeen = false;
             _dashReadyAge = -1f;
+            if (_hitConfirmRoot != null)
+            {
+                Destroy(_hitConfirmRoot.gameObject);
+                _hitConfirmRoot = null;
+                _hitConfirmInner = null;
+                _hitConfirmOuter = null;
+                _hitConfirmPts = null;
+            }
+            if (_hitConfirmMat != null)
+            {
+                Destroy(_hitConfirmMat);
+                _hitConfirmMat = null;
+            }
+            _hitConfirmAge = -1f;
+            _hitConfirmPunchWas = false;
+            _hitConfirmTagWas = false;
             if (_scrapeRoot != null)
             {
                 Destroy(_scrapeRoot.gameObject);
