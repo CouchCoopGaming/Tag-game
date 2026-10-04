@@ -94,5 +94,35 @@ namespace TagArena.Movement
         {
             return skiJetOrSlide ? skiMaxSpeed : float.PositiveInfinity;
         }
+
+        /// <summary>
+        /// Horizontal rope against a world hit. Vertical speed is not an input and not an output.
+        /// Slack: the rope is taut once distance reaches the length latched at attach, minus slack.
+        /// Outward planar speed is removed. The leftover is the tangent around that hit, so a
+        /// different hit or a different incoming speed is a different path. A miss is not this
+        /// function's problem: callers pass no rope, and no arc is invented here.
+        /// Straight away from the hit, the horizontal result is zero. That cancels travel.
+        /// </summary>
+        public static Vector3 GrappleHorizontal(Vector3 horiz, Vector3 pawn, Vector3 anchor, float ropeLength, float slack)
+        {
+            horiz.y = 0f;
+            if (ropeLength <= 0.05f) return horiz;
+
+            Vector3 to = anchor - pawn;
+            float dist = to.magnitude;
+            float limit = ropeLength - (slack > 0f ? slack : 0f);
+            if (limit < 0.05f) limit = 0.05f;
+            if (dist < limit) return horiz;
+
+            Vector3 planar = new Vector3(to.x, 0f, to.z);
+            float planarDist = planar.magnitude;
+            // Under the hit there is no tangent. Cancel horizontal travel.
+            if (planarDist < 0.05f) return Vector3.zero;
+
+            Vector3 inward = planar * (1f / planarDist);
+            float outward = -Vector3.Dot(horiz, inward);
+            if (outward <= 0f) return horiz;
+            return horiz + inward * outward;
+        }
     }
 }
