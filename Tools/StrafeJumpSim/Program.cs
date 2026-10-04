@@ -104,6 +104,14 @@ static class Program
             return 1;
         }
 
+        JumpLandTellReport jumpLand = JumpLandTellProof.Run();
+        Console.WriteLine(jumpLand.ToString());
+        if (!jumpLand.Ok)
+        {
+            Console.Error.WriteLine(jumpLand.FailureText);
+            return 1;
+        }
+
         const string grapplePath = "Assets/Scripts/Experimental/ExperimentalGrapple.cs";
         if (!AssetHas(grapplePath, "GrappleRopeTell.AttachedSpan", "GrappleRopeTell.AimSpan", "enableGrapple = false"))
         {
