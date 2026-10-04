@@ -960,6 +960,15 @@ namespace Tag.Art
         Material _clingMat;
         Vector3 _clingNormal = Vector3.back;
         static Mesh _clingQuad;
+        bool _chaseWas;
+        Transform _chaseRoot;
+        TrailRenderer _chaseL;
+        TrailRenderer _chaseR;
+        Transform _chaseChevron;
+        Material _chaseMat;
+        Vector3 _chaseTravel = Vector3.forward;
+        Vector3 _chaseAim = Vector3.forward;
+        static Mesh _chaseChevronMesh;
 
         Quaternion _spineT, _hipsT, _headT;
         Quaternion _uaLT, _uaRT, _laLT, _laRT;
@@ -1073,6 +1082,10 @@ namespace Tag.Art
             // Hand marks key off MoveState.WallClimb and WallRun (Locomotion.Climb and WallRun).
             // They still run if the limb rig failed to bind. Climb speed and the jump stay put.
             TickWallCling();
+            // Heel streak and chest chevron while DummyRunner is It and closing.
+            // The solo pawn shares this locomotor and does not get the streak.
+            // LungeTell, the lunge, and punch Active still own contact. Feel numbers stay put.
+            TickOpponentChase();
             if (!_bound) Cache(transform);
             if (!_bound) return;
             if (_punch == null) _punch = GetComponentInParent<PunchHitbox>();
@@ -14921,6 +14934,227 @@ namespace Tag.Art
             return mat;
         }
 
+        void TickOpponentChase()
+        {
+            if (!ChaseTellWanted(out Vector3 travel, out Vector3 aim))
+            {
+                if (_chaseWas)
+                    EndOpponentChase();
+                _chaseWas = false;
+                return;
+            }
+
+            _chaseTravel = travel;
+            _chaseAim = aim;
+            if (!_chaseWas)
+                BeginOpponentChase();
+            _chaseWas = true;
+            PlaceOpponentChase();
+        }
+
+        void BeginOpponentChase()
+        {
+            EnsureOpponentChase();
+            PlaceOpponentChase();
+            ArmRibbon(_chaseL);
+            ArmRibbon(_chaseR);
+            if (_chaseChevron != null)
+                _chaseChevron.gameObject.SetActive(true);
+        }
+
+        void EndOpponentChase()
+        {
+            if (_chaseL != null) _chaseL.emitting = false;
+            if (_chaseR != null) _chaseR.emitting = false;
+            if (_chaseChevron != null)
+                _chaseChevron.gameObject.SetActive(false);
+        }
+
+        void PlaceOpponentChase()
+        {
+            if (_chaseL == null) return;
+            Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
+            if (OpponentChaseTell.PlaceHeels(origin, _chaseTravel, out Vector3 left, out Vector3 right))
+            {
+                _chaseL.transform.position = left;
+                if (_chaseR != null) _chaseR.transform.position = right;
+            }
+            if (_chaseChevron != null && OpponentChaseTell.PlaceChevron(origin, _chaseAim, out Vector3 chest, out Vector3 aimDir))
+            {
+                _chaseChevron.position = chest;
+                _chaseChevron.rotation = Quaternion.LookRotation(aimDir, Vector3.up);
+            }
+        }
+
+        bool ChaseTellWanted(out Vector3 travel, out Vector3 aim)
+        {
+            travel = Vector3.forward;
+            aim = Vector3.forward;
+            Transform pawn = _motor != null ? _motor.transform : transform.root;
+            if (pawn == null || !OpponentChaseTell.IsOpponentPawn(pawn.name))
+                return false;
+
+            var it = pawn.GetComponent<ItController>();
+            bool isIt = it != null && it.IsIt && it.IsAlive;
+            bool grounded = _motor != null && _motor.IsGrounded;
+            bool lunging = _motor != null && _motor.IsLunging;
+            bool airDash = _motor != null && (_motor.IsAirDashing || _dashTrailT > 0.01f);
+            bool sliding = _motor != null && _motor.State == MoveState.Slide;
+            if (_punch == null)
+                _punch = GetComponentInParent<PunchHitbox>();
+            bool punchActive = _punch != null && _punch.Phase == PunchPhase.Active;
+            var lungeMark = pawn.GetComponent<OpponentLungeTell>();
+            bool lungeTell = lungeMark != null && lungeMark.IsShowing;
+
+            bool targetLive = false;
+            Vector3 targetPos = pawn.position;
+            if (isIt)
+                targetLive = TryNearestRunner(pawn, out targetPos);
+
+            Vector3 flat = targetPos - pawn.position;
+            flat.y = 0f;
+            float dist = flat.magnitude;
+            Vector3 vel = _motor != null ? _motor.Velocity : Vector3.zero;
+            bool closing = targetLive && OpponentChaseTell.Closing(pawn.position, targetPos, vel);
+            if (!OpponentChaseTell.Show(
+                true, isIt, grounded, targetLive, dist, closing,
+                lungeTell, lunging, punchActive, airDash, sliding))
+                return false;
+
+            Vector3 move = vel;
+            move.y = 0f;
+            if (move.sqrMagnitude < 0.0001f)
+                move = pawn.forward;
+            move.y = 0f;
+            if (move.sqrMagnitude < 0.0001f)
+                move = Vector3.forward;
+            travel = move.normalized;
+            aim = flat.sqrMagnitude > 1e-6f ? flat.normalized : travel;
+            return true;
+        }
+
+        bool TryNearestRunner(Transform self, out Vector3 targetPos)
+        {
+            targetPos = self != null ? self.position : Vector3.zero;
+            var all = UnityEngine.Object.FindObjectsByType<ItController>(FindObjectsSortMode.None);
+            float best = float.MaxValue;
+            bool found = false;
+            for (int i = 0; i < all.Length; i++)
+            {
+                var p = all[i];
+                if (p == null || self == null || p.transform == self)
+                    continue;
+                if (!p.IsAlive || p.IsEliminated)
+                    continue;
+                if (p.IsIt)
+                    continue;
+                Vector3 d = p.transform.position - self.position;
+                d.y = 0f;
+                float m = d.sqrMagnitude;
+                if (m < best)
+                {
+                    best = m;
+                    targetPos = p.transform.position;
+                    found = true;
+                }
+            }
+            return found;
+        }
+
+        void EnsureOpponentChase()
+        {
+            if (_chaseL != null) return;
+            if (_chaseMat == null)
+                _chaseMat = MakeChaseMat();
+            _chaseRoot = new GameObject(OpponentChaseTell.MarkerName).transform;
+            _chaseL = MakeChaseRibbon("ChaseHeelL");
+            _chaseR = MakeChaseRibbon("ChaseHeelR");
+            _chaseChevron = MakeChaseChevron("ChaseChevron");
+        }
+
+        TrailRenderer MakeChaseRibbon(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_chaseRoot, false);
+            var trail = go.AddComponent<TrailRenderer>();
+            trail.time = OpponentChaseTell.RibbonTime;
+            trail.minVertexDistance = 0.02f;
+            trail.widthMultiplier = OpponentChaseTell.RibbonWidth;
+            trail.emitting = false;
+            trail.autodestruct = false;
+            trail.alignment = LineAlignment.View;
+            trail.numCornerVertices = 2;
+            trail.numCapVertices = 2;
+            trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            trail.receiveShadows = false;
+            var mark = new Color(OpponentChaseTell.MarkR, OpponentChaseTell.MarkG, OpponentChaseTell.MarkB);
+            var grad = new Gradient();
+            grad.SetKeys(
+                new[] {
+                    new GradientColorKey(mark, 0f),
+                    new GradientColorKey(mark * 0.7f, 1f)
+                },
+                new[] {
+                    new GradientAlphaKey(OpponentChaseTell.MaxAlpha, 0f),
+                    new GradientAlphaKey(0f, 1f)
+                });
+            trail.colorGradient = grad;
+            trail.sharedMaterial = _chaseMat;
+            return trail;
+        }
+
+        Transform MakeChaseChevron(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_chaseRoot, false);
+            var filter = go.AddComponent<MeshFilter>();
+            filter.sharedMesh = ChaseChevronMesh();
+            var rend = go.AddComponent<MeshRenderer>();
+            rend.sharedMaterial = _chaseMat;
+            rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rend.receiveShadows = false;
+            go.transform.localScale = Vector3.one * OpponentChaseTell.ChevronSize;
+            go.SetActive(false);
+            return go.transform;
+        }
+
+        static Mesh ChaseChevronMesh()
+        {
+            if (_chaseChevronMesh != null) return _chaseChevronMesh;
+            var mesh = new Mesh { name = "OpponentChaseChevron" };
+            mesh.vertices = new[]
+            {
+                new Vector3(0f, 0f, 0.65f),
+                new Vector3(-0.55f, 0f, -0.35f),
+                new Vector3(0f, 0f, -0.05f),
+                new Vector3(0.55f, 0f, -0.35f)
+            };
+            mesh.triangles = new[] { 0, 2, 1, 0, 3, 2 };
+            mesh.RecalculateNormals();
+            _chaseChevronMesh = mesh;
+            return mesh;
+        }
+
+        static Material MakeChaseMat()
+        {
+            var shader = Shader.Find("Sprites/Default")
+                         ?? Shader.Find("Universal Render Pipeline/Unlit")
+                         ?? Shader.Find("Unlit/Transparent")
+                         ?? Shader.Find("Unlit/Color")
+                         ?? Shader.Find("Standard");
+            var mat = new Material(shader) { name = "OpponentChaseMark" };
+            var c = new Color(OpponentChaseTell.MarkR, OpponentChaseTell.MarkG, OpponentChaseTell.MarkB, OpponentChaseTell.MaxAlpha);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
+            if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+            if (mat.HasProperty("_ZWrite")) mat.SetFloat("_ZWrite", 0f);
+            if (mat.HasProperty("_SrcBlend")) mat.SetFloat("_SrcBlend", 5f);
+            if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", 10f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = 3000;
+            return mat;
+        }
+
         void OnDisable()
         {
             if (_bounceHooked != null)
@@ -14972,6 +15206,20 @@ namespace Tag.Art
                 _clingMat = null;
             }
             _clingWas = false;
+            if (_chaseRoot != null)
+            {
+                Destroy(_chaseRoot.gameObject);
+                _chaseRoot = null;
+                _chaseL = null;
+                _chaseR = null;
+                _chaseChevron = null;
+            }
+            if (_chaseMat != null)
+            {
+                Destroy(_chaseMat);
+                _chaseMat = null;
+            }
+            _chaseWas = false;
         }
 
         static void Slew(ref Transform t, Quaternion target, float speed, float dt)

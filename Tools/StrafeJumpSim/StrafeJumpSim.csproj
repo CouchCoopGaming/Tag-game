@@ -17,8 +17,10 @@
     <Compile Include="../../Assets/Editor/TagLandTellProof.cs" />
     <Compile Include="../../Assets/Editor/SlideScrapeTellProof.cs" />
     <Compile Include="../../Assets/Editor/WallClingTellProof.cs" />
+    <Compile Include="../../Assets/Editor/OpponentChaseTellProof.cs" />
     <Compile Include="../../Assets/Scripts/Art/SlideScrapeTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/WallClingTell.cs" />
+    <Compile Include="../../Assets/Scripts/Art/OpponentChaseTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/VerbPoseClips.cs" />
     <Compile Include="../../Assets/Scripts/Art/GrappleRopeTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/TagLandTell.cs" />
