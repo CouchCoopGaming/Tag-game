@@ -874,19 +874,54 @@ namespace Tag.Core
     }
 
     /// <summary>
-    /// IMGUI buttons also activate on Enter/Space when Unity's control focus differs
-    /// from the highlight. Menu rows use this so only a real click selects them.
+    /// IMGUI's GUI.Button activates on Enter/Space when a control has keyboard focus,
+    /// and that Use() eats the key before jump can see it. Menu rows are mouse-only.
+    /// Enter/Space still follows the highlight from Update.
     /// </summary>
     public static class MenuClick
     {
+        static readonly int ButtonHint = "Tag.MenuClick".GetHashCode();
+
         public static bool Button(Rect r, string label)
         {
+            int id = GUIUtility.GetControlID(ButtonHint, FocusType.Passive, r);
             var e = Event.current;
-            bool mouse = e != null
-                && e.type == EventType.MouseUp
-                && e.button == 0
-                && r.Contains(e.mousePosition);
-            return GUI.Button(r, label) && mouse;
+            if (e == null)
+                return false;
+
+            switch (e.GetTypeForControl(id))
+            {
+                case EventType.Repaint:
+                    GUI.skin.button.Draw(
+                        r,
+                        new GUIContent(label),
+                        r.Contains(e.mousePosition),
+                        GUIUtility.hotControl == id,
+                        false,
+                        false);
+                    break;
+                case EventType.MouseDown:
+                    if (e.button == 0 && r.Contains(e.mousePosition))
+                    {
+                        GUIUtility.hotControl = id;
+                        e.Use();
+                    }
+                    break;
+                case EventType.MouseUp:
+                    if (GUIUtility.hotControl == id)
+                    {
+                        GUIUtility.hotControl = 0;
+                        e.Use();
+                        return e.button == 0 && r.Contains(e.mousePosition);
+                    }
+                    break;
+                case EventType.MouseDrag:
+                    if (GUIUtility.hotControl == id)
+                        e.Use();
+                    break;
+            }
+
+            return false;
         }
     }
 }
