@@ -25,9 +25,11 @@ namespace Tag.Art
         Transform _hips, _spine, _head;
         Transform _upperArmL, _upperArmR, _lowerArmL, _lowerArmR;
         Transform _upperLegL, _upperLegR, _lowerLegL, _lowerLegR;
+        Transform _footL, _footR;
         Quaternion _hips0, _spine0, _head0;
         Quaternion _uaL0, _uaR0, _laL0, _laR0;
         Quaternion _ulL0, _ulR0, _llL0, _llR0;
+        Quaternion _ftL0, _ftR0;
         Vector3 _root0;
         bool _bound;
         bool _loggedBindFail;
@@ -688,6 +690,7 @@ namespace Tag.Art
         Quaternion _idleWalkUlL, _idleWalkUlR, _idleWalkLlL, _idleWalkLlR;
         Quaternion _idleWalkSp, _idleWalkHp, _idleWalkHd;
         float _dropVis;
+        float _slidePose;
         bool _dropSlide;
         float _slideToCrouch;
         float _slideToCrouchWalk;
@@ -945,6 +948,7 @@ namespace Tag.Art
         Quaternion _spineT, _hipsT, _headT;
         Quaternion _uaLT, _uaRT, _laLT, _laRT;
         Quaternion _ulLT, _ulRT, _llLT, _llRT;
+        Quaternion _ftLT, _ftRT;
 
         public void Bind(Transform visualRoot, PlayerMotor motor, PunchHitbox punch, CharacterController ccIgnored = null)
         {
@@ -1119,8 +1123,11 @@ namespace Tag.Art
                 diveStep = dt / 0.16f;
             _diveVis = Mathf.MoveTowards(_diveVis, diveAmt, diveStep);
             bool crouch = st == MoveState.Crouch;
-            // Drop into the guard or the wedge, then rise back out. Speed is unchanged.
-            _dropVis = Mathf.MoveTowards(_dropVis, sliding || crouch ? 1f : 0f, dt / 0.16f);
+            // Crouch keeps the 0.16s drop. A slide snaps in and back out in about four frames.
+            // Speed is unchanged. slideBoost stays 0.
+            float dropDur = (!crouch && (sliding || _dropSlide)) ? VerbPoseClips.SlideBlendSeconds : 0.16f;
+            _dropVis = Mathf.MoveTowards(_dropVis, sliding || crouch ? 1f : 0f, dt / dropDur);
+            _slidePose = Mathf.MoveTowards(_slidePose, sliding ? 1f : 0f, dt / VerbPoseClips.SlideBlendSeconds);
             // A still crouch into a slide eases the guard into the wedge.
             // A crouch walk into a slide eases the low stride into the wedge.
             // A ski into a slide eases the glide into the wedge. Ski speed is unchanged.
@@ -7000,37 +7007,37 @@ namespace Tag.Art
                     float d = footDrop;
                     if (_dropSlide)
                     {
-                        float lineL = -70f;
-                        float lineR = -64f;
-                        float lineYaw = 28f;
+                        float lineL = VerbPoseClips.SlideArmPitch;
+                        float lineR = VerbPoseClips.SlideArmPitch;
+                        float lineYaw = VerbPoseClips.SlideArmYaw;
                         float lineRoll = armZ;
-                        float lineElbL = -8f;
-                        float lineElbR = -6f;
+                        float lineElbL = VerbPoseClips.SlideElbow;
+                        float lineElbR = VerbPoseClips.SlideElbow;
                         float lineYawR = lineYaw;
                         if (slideIdleExit)
                         {
                             // Hands leave the long line into the idle hang. They do not pop.
                             float up = 1f - _dropVis;
                             float hang = -12f + breath * 0.55f;
-                            lineL = Mathf.Lerp(-70f, hang, up);
-                            lineR = Mathf.Lerp(-64f, hang, up);
-                            lineYaw = Mathf.Lerp(28f, 12f, up);
+                            lineL = Mathf.Lerp(VerbPoseClips.SlideArmPitch, hang, up);
+                            lineR = Mathf.Lerp(VerbPoseClips.SlideArmPitch, hang, up);
+                            lineYaw = Mathf.Lerp(VerbPoseClips.SlideArmYaw, 12f, up);
                             lineYawR = lineYaw;
                             lineRoll = Mathf.Lerp(armZ, 0f, up);
-                            lineElbL = Mathf.Lerp(-8f, -10f, up);
-                            lineElbR = Mathf.Lerp(-6f, -10f, up);
+                            lineElbL = Mathf.Lerp(VerbPoseClips.SlideElbow, -10f, up);
+                            lineElbR = Mathf.Lerp(VerbPoseClips.SlideElbow, -10f, up);
                         }
                         else if (slideWalkExit)
                         {
                             // Hands leave the long line into the walk. They do not stay in the line.
                             float up = 1f - _dropVis;
-                            lineL = Mathf.Lerp(-70f, pitchL, up);
-                            lineR = Mathf.Lerp(-64f, pitchR, up);
-                            lineYaw = Mathf.Lerp(28f, yL, up);
-                            lineYawR = Mathf.Lerp(28f, yR, up);
+                            lineL = Mathf.Lerp(VerbPoseClips.SlideArmPitch, pitchL, up);
+                            lineR = Mathf.Lerp(VerbPoseClips.SlideArmPitch, pitchR, up);
+                            lineYaw = Mathf.Lerp(VerbPoseClips.SlideArmYaw, yL, up);
+                            lineYawR = Mathf.Lerp(VerbPoseClips.SlideArmYaw, yR, up);
                             lineRoll = Mathf.Lerp(armZ, roll, up);
-                            lineElbL = Mathf.Lerp(-8f, elbowL, up);
-                            lineElbR = Mathf.Lerp(-6f, elbowR, up);
+                            lineElbL = Mathf.Lerp(VerbPoseClips.SlideElbow, elbowL, up);
+                            lineElbR = Mathf.Lerp(VerbPoseClips.SlideElbow, elbowR, up);
                         }
                         else if (slideSprintExit)
                         {
@@ -7044,13 +7051,13 @@ namespace Tag.Art
                             float openTurn = Mathf.Abs(_turnVis) * 5f;
                             float openYL = Mathf.Lerp(openOut, openReachY, Mathf.Clamp01(-sinC) * openGait) + openTurn;
                             float openYR = Mathf.Lerp(openOut, openReachY, Mathf.Clamp01(sinC) * openGait) + openTurn;
-                            lineL = Mathf.Lerp(-70f, RunArmPitch(-sinC, openAmp), up);
-                            lineR = Mathf.Lerp(-64f, RunArmPitch(sinC, openAmp), up);
-                            lineYaw = Mathf.Lerp(28f, openYL, up);
-                            lineYawR = Mathf.Lerp(28f, openYR, up);
+                            lineL = Mathf.Lerp(VerbPoseClips.SlideArmPitch, RunArmPitch(-sinC, openAmp), up);
+                            lineR = Mathf.Lerp(VerbPoseClips.SlideArmPitch, RunArmPitch(sinC, openAmp), up);
+                            lineYaw = Mathf.Lerp(VerbPoseClips.SlideArmYaw, openYL, up);
+                            lineYawR = Mathf.Lerp(VerbPoseClips.SlideArmYaw, openYR, up);
                             lineRoll = Mathf.Lerp(armZ, openRoll, up);
-                            lineElbL = Mathf.Lerp(-8f, Mathf.Lerp(-6f, -30f, Mathf.Clamp01(sinC) * openGait), up);
-                            lineElbR = Mathf.Lerp(-6f, Mathf.Lerp(-6f, -30f, Mathf.Clamp01(-sinC) * openGait), up);
+                            lineElbL = Mathf.Lerp(VerbPoseClips.SlideElbow, Mathf.Lerp(-6f, -30f, Mathf.Clamp01(sinC) * openGait), up);
+                            lineElbR = Mathf.Lerp(VerbPoseClips.SlideElbow, Mathf.Lerp(-6f, -30f, Mathf.Clamp01(-sinC) * openGait), up);
                         }
                         _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(lineL, lineYaw, lineRoll), d);
                         _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(lineR, -lineYawR, -lineRoll), d);
@@ -7115,8 +7122,8 @@ namespace Tag.Art
                 {
                     // The wedge eases into the guard. A crouch walk keeps these arms. A still crouch keeps its snapshot.
                     float intoGuard = 1f - (_slideToCrouch > 0.02f ? _slideToCrouch : _slideToCrouchWalk);
-                    _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-70f, 28f, armZ), _uaL0 * Quaternion.Euler(-36f, 16f, armZ), intoGuard);
-                    _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-64f, -28f, -armZ), _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), intoGuard);
+                    _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ), _uaL0 * Quaternion.Euler(-36f, 16f, armZ), intoGuard);
+                    _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ), _uaR0 * Quaternion.Euler(-36f, -16f, -armZ), intoGuard);
                     _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-8f, 0f, 0f), _laL0 * Quaternion.Euler(-72f, 0f, 0f), intoGuard);
                     _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-6f, 0f, 0f), _laR0 * Quaternion.Euler(-72f, 0f, 0f), intoGuard);
                 }
@@ -7125,8 +7132,8 @@ namespace Tag.Art
                     // The guard eases into the wedge. A crouch walk has its own ease.
                     // A still crouch keeps its snapshot.
                     float intoWedge = 1f - ((_crouchToSlide > 0.02f && !_slideFromCrouch) ? _crouchToSlide : _crouchWalkToSlide);
-                    _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaL0 * Quaternion.Euler(-70f, 28f, armZ), intoWedge);
-                    _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-36f, -16f, -armZ), _uaR0 * Quaternion.Euler(-64f, -28f, -armZ), intoWedge);
+                    _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-36f, 16f, armZ), _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ), intoWedge);
+                    _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-36f, -16f, -armZ), _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ), intoWedge);
                     _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-72f, 0f, 0f), _laL0 * Quaternion.Euler(-8f, 0f, 0f), intoWedge);
                     _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-72f, 0f, 0f), _laR0 * Quaternion.Euler(-6f, 0f, 0f), intoWedge);
                 }
@@ -7668,12 +7675,12 @@ namespace Tag.Art
                     if (_dropSlide)
                     {
                         bool leadLeft = sinC >= 0f;
-                        float wedgeL = leadLeft ? 74f : -28f;
-                        float wedgeR = leadLeft ? -28f : 74f;
-                        float bendL = leadLeft ? -94f : -6f;
-                        float bendR = leadLeft ? -6f : -94f;
-                        float footYawL = leadLeft ? 6f : -4f;
-                        float footYawR = leadLeft ? -4f : 6f;
+                        float wedgeL = leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh;
+                        float wedgeR = leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh;
+                        float bendL = leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee;
+                        float bendR = leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee;
+                        float footYawL = leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw;
+                        float footYawR = leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw;
                         if (slideIdleExit)
                         {
                             // Both feet come under the hips. The trail leg does not pop in.
@@ -7847,12 +7854,12 @@ namespace Tag.Art
                     // The wedge eases into the guard. The feet do not snap under the hips. A still crouch keeps its snapshot.
                     float intoGuard = 1f - _slideToCrouch;
                     bool leadLeft = sinC >= 0f;
-                    float wedgeL = leadLeft ? 74f : -28f;
-                    float wedgeR = leadLeft ? -28f : 74f;
-                    float bendL = leadLeft ? -94f : -6f;
-                    float bendR = leadLeft ? -6f : -94f;
-                    float footYawL = leadLeft ? 6f : -4f;
-                    float footYawR = leadLeft ? -4f : 6f;
+                    float wedgeL = leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh;
+                    float wedgeR = leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh;
+                    float bendL = leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee;
+                    float bendR = leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee;
+                    float footYawL = leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw;
+                    float footYawR = leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw;
                     _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), _ulL0 * Quaternion.Euler(56f, 0f, 0f), intoGuard);
                     _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(wedgeR, footYawR, 0f), _ulR0 * Quaternion.Euler(56f, 0f, 0f), intoGuard);
                     _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(bendL, 0f, 0f), _llL0 * Quaternion.Euler(-68f, 0f, 0f), intoGuard);
@@ -7863,12 +7870,12 @@ namespace Tag.Art
                     // The wedge eases into the low stride. The feet do not snap under the hips.
                     float intoStride = 1f - _slideToCrouchWalk;
                     bool leadLeft = sinC >= 0f;
-                    float wedgeL = leadLeft ? 74f : -28f;
-                    float wedgeR = leadLeft ? -28f : 74f;
-                    float bendL = leadLeft ? -94f : -6f;
-                    float bendR = leadLeft ? -6f : -94f;
-                    float footYawL = leadLeft ? 6f : -4f;
-                    float footYawR = leadLeft ? -4f : 6f;
+                    float wedgeL = leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh;
+                    float wedgeR = leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh;
+                    float bendL = leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee;
+                    float bendR = leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee;
+                    float footYawL = leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw;
+                    float footYawR = leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw;
                     float stepL = Mathf.Max(0f, sinC);
                     float stepR = Mathf.Max(0f, -sinC);
                     _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), _ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f), intoStride);
@@ -7881,12 +7888,12 @@ namespace Tag.Art
                     // The guard eases into the wedge. The feet do not snap apart.
                     float intoWedge = 1f - _crouchToSlide;
                     bool leadLeft = sinC >= 0f;
-                    float wedgeL = leadLeft ? 74f : -28f;
-                    float wedgeR = leadLeft ? -28f : 74f;
-                    float bendL = leadLeft ? -94f : -6f;
-                    float bendR = leadLeft ? -6f : -94f;
-                    float footYawL = leadLeft ? 6f : -4f;
-                    float footYawR = leadLeft ? -4f : 6f;
+                    float wedgeL = leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh;
+                    float wedgeR = leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh;
+                    float bendL = leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee;
+                    float bendR = leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee;
+                    float footYawL = leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw;
+                    float footYawR = leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw;
                     _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(56f, 0f, 0f), _ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), intoWedge);
                     _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(56f, 0f, 0f), _ulR0 * Quaternion.Euler(wedgeR, footYawR, 0f), intoWedge);
                     _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-68f, 0f, 0f), _llL0 * Quaternion.Euler(bendL, 0f, 0f), intoWedge);
@@ -7897,12 +7904,12 @@ namespace Tag.Art
                     // The low stride eases into the wedge. The feet do not snap apart.
                     float intoWedge = 1f - _crouchWalkToSlide;
                     bool leadLeft = sinC >= 0f;
-                    float wedgeL = leadLeft ? 74f : -28f;
-                    float wedgeR = leadLeft ? -28f : 74f;
-                    float bendL = leadLeft ? -94f : -6f;
-                    float bendR = leadLeft ? -6f : -94f;
-                    float footYawL = leadLeft ? 6f : -4f;
-                    float footYawR = leadLeft ? -4f : 6f;
+                    float wedgeL = leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh;
+                    float wedgeR = leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh;
+                    float bendL = leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee;
+                    float bendR = leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee;
+                    float footYawL = leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw;
+                    float footYawR = leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw;
                     float stepL = Mathf.Max(0f, sinC);
                     float stepR = Mathf.Max(0f, -sinC);
                     _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(46f + stepL * 12f - stepR * 6f, 0f, 0f), _ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), intoWedge);
@@ -8007,32 +8014,32 @@ namespace Tag.Art
                     d = 1f;
                 if (_walkFromCrouchWalk || _runFromCrouchWalk || _walkFromStill || _runFromStill)
                     d = 0f;
-                float chest = _dropSlide ? 62f : 10f;
-                float hip = _dropSlide ? 50f : 22f;
-                float head = _dropSlide ? -12f : -6f;
+                float chest = _dropSlide ? VerbPoseClips.SlideSpine : 10f;
+                float hip = _dropSlide ? VerbPoseClips.SlideHip : 22f;
+                float head = _dropSlide ? VerbPoseClips.SlideHead : -6f;
                 if (slideIdleExit)
                 {
                     // Rise into the idle breath. Holding the wedge pitch pops the hips flat.
                     float up = 1f - _dropVis;
-                    chest = Mathf.Lerp(62f, 0f, up);
-                    hip = Mathf.Lerp(50f, 0f, up);
-                    head = Mathf.Lerp(-12f, 0f, up);
+                    chest = Mathf.Lerp(VerbPoseClips.SlideSpine, 0f, up);
+                    hip = Mathf.Lerp(VerbPoseClips.SlideHip, 0f, up);
+                    head = Mathf.Lerp(VerbPoseClips.SlideHead, 0f, up);
                 }
                 else if (slideWalkExit)
                 {
                     // Rise into the walk. Holding the wedge pitch pops the hips flat.
                     float up = 1f - _dropVis;
-                    chest = Mathf.Lerp(62f, leanX, up);
-                    hip = Mathf.Lerp(50f, 0f, up);
-                    head = Mathf.Lerp(-12f, -breath * 0.4f, up);
+                    chest = Mathf.Lerp(VerbPoseClips.SlideSpine, leanX, up);
+                    hip = Mathf.Lerp(VerbPoseClips.SlideHip, 0f, up);
+                    head = Mathf.Lerp(VerbPoseClips.SlideHead, -breath * 0.4f, up);
                 }
                 else if (slideSprintExit)
                 {
                     // Rise into the sprint. Holding the wedge pitch pops the hips flat.
                     float up = 1f - _dropVis;
-                    chest = Mathf.Lerp(62f, leanX, up);
-                    hip = Mathf.Lerp(50f, 0f, up);
-                    head = Mathf.Lerp(-12f, -breath * 0.4f, up);
+                    chest = Mathf.Lerp(VerbPoseClips.SlideSpine, leanX, up);
+                    hip = Mathf.Lerp(VerbPoseClips.SlideHip, 0f, up);
+                    head = Mathf.Lerp(VerbPoseClips.SlideHead, -breath * 0.4f, up);
                 }
                 else if (crouchStandSprint)
                 {
@@ -8067,18 +8074,18 @@ namespace Tag.Art
             {
                 // The wedge pitch eases into the guard. A crouch walk keeps this pitch. A still crouch keeps its snapshot.
                 float intoGuard = 1f - (_slideToCrouch > 0.02f ? _slideToCrouch : _slideToCrouchWalk);
-                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(62f, 0f, 0f), _spine0 * Quaternion.Euler(10f, 0f, 0f), intoGuard);
-                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(50f, 0f, 0f), _hips0 * Quaternion.Euler(22f, 0f, 0f), intoGuard);
-                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-12f, 0f, 0f), _head0 * Quaternion.Euler(-6f, 0f, 0f), intoGuard);
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), _spine0 * Quaternion.Euler(10f, 0f, 0f), intoGuard);
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), _hips0 * Quaternion.Euler(22f, 0f, 0f), intoGuard);
+                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), _head0 * Quaternion.Euler(-6f, 0f, 0f), intoGuard);
             }
             if (((_crouchToSlide > 0.02f && !_slideFromCrouch) || (_crouchWalkToSlide > 0.02f && !_slideFromCrouchWalk)) && !air && !dashing && !lunging && !jet && !punching)
             {
                 // The guard pitch eases into the wedge. A crouch walk has its own ease.
                 // A still crouch keeps its snapshot.
                 float intoWedge = 1f - ((_crouchToSlide > 0.02f && !_slideFromCrouch) ? _crouchToSlide : _crouchWalkToSlide);
-                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(10f, 0f, 0f), _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(10f, 0f, 0f), _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
             }
             if (_skiToSlide > 0.02f && !_slideFromSki && sliding && !punching)
             {
@@ -8087,25 +8094,25 @@ namespace Tag.Art
                 float glideL = RunArmPitch(-sinC, 16f);
                 float glideR = RunArmPitch(sinC, 16f);
                 bool leadLeft = sinC >= 0f;
-                float wedgeL = leadLeft ? 74f : -28f;
-                float wedgeR = leadLeft ? -28f : 74f;
-                float bendL = leadLeft ? -94f : -6f;
-                float bendR = leadLeft ? -6f : -94f;
-                float footYawL = leadLeft ? 6f : -4f;
-                float footYawR = leadLeft ? -4f : 6f;
+                float wedgeL = leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh;
+                float wedgeR = leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh;
+                float bendL = leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee;
+                float bendR = leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee;
+                float footYawL = leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw;
+                float footYawR = leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw;
                 float glideFrontL = Mathf.Max(0f, sinC);
                 float glideFrontR = Mathf.Max(0f, -sinC);
-                _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-18f + glideL, 22f, armZ), _uaL0 * Quaternion.Euler(-70f, 28f, armZ), intoWedge);
-                _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-18f + glideR, -22f, -armZ), _uaR0 * Quaternion.Euler(-64f, -28f, -armZ), intoWedge);
+                _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-18f + glideL, 22f, armZ), _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ), intoWedge);
+                _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-18f + glideR, -22f, -armZ), _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ), intoWedge);
                 _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-12f, 0f, 0f), _laL0 * Quaternion.Euler(-8f, 0f, 0f), intoWedge);
                 _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-12f, 0f, 0f), _laR0 * Quaternion.Euler(-6f, 0f, 0f), intoWedge);
                 _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler((glideFrontL - glideFrontR * 0.5f) * 32f, 0f, 0f), _ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), intoWedge);
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler((glideFrontR - glideFrontL * 0.5f) * 32f, 0f, 0f), _ulR0 * Quaternion.Euler(wedgeR, footYawR, 0f), intoWedge);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-(6f + glideFrontL * 32f), 0f, 0f), _llL0 * Quaternion.Euler(bendL, 0f, 0f), intoWedge);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-(6f + glideFrontR * 32f), 0f, 0f), _llR0 * Quaternion.Euler(bendR, 0f, 0f), intoWedge);
-                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(26f, 0f, 0f), _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(14f, 0f, 0f), _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(26f, 0f, 0f), _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(14f, 0f, 0f), _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
             }
             if (_slideToSki && !_skiFromSlide && skiing && _skiBlend < 0.98f && !punching)
             {
@@ -8114,25 +8121,25 @@ namespace Tag.Art
                 float glideL = RunArmPitch(-sinC, 16f);
                 float glideR = RunArmPitch(sinC, 16f);
                 bool leadLeft = sinC >= 0f;
-                float wedgeL = leadLeft ? 74f : -28f;
-                float wedgeR = leadLeft ? -28f : 74f;
-                float bendL = leadLeft ? -94f : -6f;
-                float bendR = leadLeft ? -6f : -94f;
-                float footYawL = leadLeft ? 6f : -4f;
-                float footYawR = leadLeft ? -4f : 6f;
+                float wedgeL = leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh;
+                float wedgeR = leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh;
+                float bendL = leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee;
+                float bendR = leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee;
+                float footYawL = leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw;
+                float footYawR = leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw;
                 float glideFrontL = Mathf.Max(0f, sinC);
                 float glideFrontR = Mathf.Max(0f, -sinC);
-                _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(-70f, 28f, armZ), _uaL0 * Quaternion.Euler(-18f + glideL, 22f, armZ), intoGlide);
-                _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(-64f, -28f, -armZ), _uaR0 * Quaternion.Euler(-18f + glideR, -22f, -armZ), intoGlide);
+                _uaLT = Quaternion.Slerp(_uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ), _uaL0 * Quaternion.Euler(-18f + glideL, 22f, armZ), intoGlide);
+                _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ), _uaR0 * Quaternion.Euler(-18f + glideR, -22f, -armZ), intoGlide);
                 _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-8f, 0f, 0f), _laL0 * Quaternion.Euler(-12f, 0f, 0f), intoGlide);
                 _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-6f, 0f, 0f), _laR0 * Quaternion.Euler(-12f, 0f, 0f), intoGlide);
                 _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), _ulL0 * Quaternion.Euler((glideFrontL - glideFrontR * 0.5f) * 32f, 0f, 0f), intoGlide);
                 _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(wedgeR, footYawR, 0f), _ulR0 * Quaternion.Euler((glideFrontR - glideFrontL * 0.5f) * 32f, 0f, 0f), intoGlide);
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(bendL, 0f, 0f), _llL0 * Quaternion.Euler(-(6f + glideFrontL * 32f), 0f, 0f), intoGlide);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(bendR, 0f, 0f), _llR0 * Quaternion.Euler(-(6f + glideFrontR * 32f), 0f, 0f), intoGlide);
-                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(62f, 0f, 0f), _spine0 * Quaternion.Euler(26f, 0f, 0f), intoGlide);
-                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(50f, 0f, 0f), _hips0 * Quaternion.Euler(14f, 0f, 0f), intoGlide);
-                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-12f, 0f, 0f), _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), intoGlide);
+                _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), _spine0 * Quaternion.Euler(26f, 0f, 0f), intoGlide);
+                _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), _hips0 * Quaternion.Euler(14f, 0f, 0f), intoGlide);
+                _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), _head0 * Quaternion.Euler(-breath * 0.4f, 0f, 0f), intoGlide);
             }
             if (_skiFromJump && !_jumpSkiSnap && skiing && _skiBlend < 0.98f && !punching)
             {
@@ -8239,17 +8246,17 @@ namespace Tag.Art
                     fromHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
                     fromHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
                 }
-                _uaLT = Quaternion.Slerp(fromL, _uaL0 * Quaternion.Euler(-70f, 28f, armZ), intoWedge);
-                _uaRT = Quaternion.Slerp(fromR, _uaR0 * Quaternion.Euler(-64f, -28f, -armZ), intoWedge);
+                _uaLT = Quaternion.Slerp(fromL, _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ), intoWedge);
+                _uaRT = Quaternion.Slerp(fromR, _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ), intoWedge);
                 _laLT = Quaternion.Slerp(fromElL, _laL0 * Quaternion.Euler(-8f, 0f, 0f), intoWedge);
                 _laRT = Quaternion.Slerp(fromElR, _laR0 * Quaternion.Euler(-6f, 0f, 0f), intoWedge);
-                _ulLT = Quaternion.Slerp(fromThighL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                _ulRT = Quaternion.Slerp(fromThighR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                _llLT = Quaternion.Slerp(fromKneeL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                _llRT = Quaternion.Slerp(fromKneeR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
-                _spineT = Quaternion.Slerp(fromSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(fromHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(fromHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(fromThighL, _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(fromThighR, _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(fromKneeL, _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(fromKneeR, _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(fromSp, _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(fromHp, _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(fromHd, _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
             }
             if (_jumpFromDash && _pushOff > 0.02f && !punching && !_jumpDashSnap)
             {
@@ -12391,17 +12398,17 @@ namespace Tag.Art
                 // An air dash into a still crouch keeps its ease. slideBoost stays 0.
                 float intoWedge = _slideFromWalkIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
-                Quaternion wedgeSp = _spine0 * Quaternion.Euler(62f, 0f, 0f);
-                Quaternion wedgeHp = _hips0 * Quaternion.Euler(50f, 0f, 0f);
-                Quaternion wedgeHd = _head0 * Quaternion.Euler(-12f, 0f, 0f);
-                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f);
-                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f);
-                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f);
-                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f);
+                Quaternion wedgeSp = _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f);
+                Quaternion wedgeHp = _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f);
+                Quaternion wedgeHd = _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f);
+                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f);
+                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f);
+                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f);
+                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f);
                 if (intoWedge < 0.98f)
                 {
                     _uaLT = Quaternion.Slerp(_walkSlideUaL, wedgeL, intoWedge);
@@ -12438,17 +12445,17 @@ namespace Tag.Art
                 // A still crouch into a slide keeps its ease. slideBoost stays 0.
                 float intoWedge = _slideFromSprintIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
-                Quaternion wedgeSp = _spine0 * Quaternion.Euler(62f, 0f, 0f);
-                Quaternion wedgeHp = _hips0 * Quaternion.Euler(50f, 0f, 0f);
-                Quaternion wedgeHd = _head0 * Quaternion.Euler(-12f, 0f, 0f);
-                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f);
-                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f);
-                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f);
-                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f);
+                Quaternion wedgeSp = _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f);
+                Quaternion wedgeHp = _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f);
+                Quaternion wedgeHd = _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f);
+                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f);
+                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f);
+                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f);
+                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f);
                 if (intoWedge < 0.98f)
                 {
                     _uaLT = Quaternion.Slerp(_sprintSlideUaL, wedgeL, intoWedge);
@@ -12486,17 +12493,17 @@ namespace Tag.Art
                 // The slow glide blend stays off this path. slideBoost stays 0. Ski speed is unchanged.
                 float intoWedge = _slideFromSkiIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
-                Quaternion wedgeSp = _spine0 * Quaternion.Euler(62f, 0f, 0f);
-                Quaternion wedgeHp = _hips0 * Quaternion.Euler(50f, 0f, 0f);
-                Quaternion wedgeHd = _head0 * Quaternion.Euler(-12f, 0f, 0f);
-                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f);
-                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f);
-                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f);
-                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f);
+                Quaternion wedgeSp = _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f);
+                Quaternion wedgeHp = _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f);
+                Quaternion wedgeHd = _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f);
+                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f);
+                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f);
+                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f);
+                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f);
                 if (intoWedge < 0.98f)
                 {
                     _uaLT = Quaternion.Slerp(_skiSlideUaL, wedgeL, intoWedge);
@@ -12535,17 +12542,17 @@ namespace Tag.Art
                 // slideBoost stays 0.
                 float intoWedge = _slideFromCrouchIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
-                Quaternion wedgeSp = _spine0 * Quaternion.Euler(62f, 0f, 0f);
-                Quaternion wedgeHp = _hips0 * Quaternion.Euler(50f, 0f, 0f);
-                Quaternion wedgeHd = _head0 * Quaternion.Euler(-12f, 0f, 0f);
-                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f);
-                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f);
-                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f);
-                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f);
+                Quaternion wedgeSp = _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f);
+                Quaternion wedgeHp = _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f);
+                Quaternion wedgeHd = _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f);
+                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f);
+                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f);
+                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f);
+                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f);
                 if (intoWedge < 0.98f)
                 {
                     _uaLT = Quaternion.Slerp(_crouchSlideUaL, wedgeL, intoWedge);
@@ -12582,17 +12589,17 @@ namespace Tag.Art
                 // The slow stride blend stays off this path. slideBoost stays 0.
                 float intoWedge = _slideFromCrouchWalkIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
-                Quaternion wedgeSp = _spine0 * Quaternion.Euler(62f, 0f, 0f);
-                Quaternion wedgeHp = _hips0 * Quaternion.Euler(50f, 0f, 0f);
-                Quaternion wedgeHd = _head0 * Quaternion.Euler(-12f, 0f, 0f);
-                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f);
-                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f);
-                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f);
-                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f);
+                Quaternion wedgeSp = _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f);
+                Quaternion wedgeHp = _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f);
+                Quaternion wedgeHd = _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f);
+                Quaternion wedgeThighL = _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f);
+                Quaternion wedgeThighR = _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f);
+                Quaternion wedgeKneeL = _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f);
+                Quaternion wedgeKneeR = _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f);
                 if (intoWedge < 0.98f)
                 {
                     _uaLT = Quaternion.Slerp(_crouchWalkSlideUaL, wedgeL, intoWedge);
@@ -12630,21 +12637,21 @@ namespace Tag.Art
                 // A punch miss into an air dash keeps its ease. slideBoost stays 0. Whiff time is unchanged.
                 float intoWedge = _slideFromMissIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
                 _uaLT = Quaternion.Slerp(_missSlideUaL, wedgeL, intoWedge);
                 _uaRT = Quaternion.Slerp(_missSlideUaR, wedgeR, intoWedge);
                 _laLT = Quaternion.Slerp(_missSlideLaL, wedgeElL, intoWedge);
                 _laRT = Quaternion.Slerp(_missSlideLaR, wedgeElR, intoWedge);
-                _spineT = Quaternion.Slerp(_missSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_missSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_missSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                _ulLT = Quaternion.Slerp(_missSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                _ulRT = Quaternion.Slerp(_missSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                _llLT = Quaternion.Slerp(_missSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                _llRT = Quaternion.Slerp(_missSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_missSlideSp, _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_missSlideHp, _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_missSlideHd, _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_missSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_missSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_missSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_missSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
             }
             if (_slideFromReady && !_slideFromMiss && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromReadyIn < 0.98f)
             {
@@ -12654,21 +12661,21 @@ namespace Tag.Art
                 // Becoming It into a slide keeps its ease. slideBoost stays 0. Duration and cooldown are unchanged.
                 float intoWedge = _slideFromReadyIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
                 _uaLT = Quaternion.Slerp(_readySlideUaL, wedgeL, intoWedge);
                 _uaRT = Quaternion.Slerp(_readySlideUaR, wedgeR, intoWedge);
                 _laLT = Quaternion.Slerp(_readySlideLaL, wedgeElL, intoWedge);
                 _laRT = Quaternion.Slerp(_readySlideLaR, wedgeElR, intoWedge);
-                _spineT = Quaternion.Slerp(_readySlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_readySlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_readySlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                _ulLT = Quaternion.Slerp(_readySlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                _ulRT = Quaternion.Slerp(_readySlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                _llLT = Quaternion.Slerp(_readySlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                _llRT = Quaternion.Slerp(_readySlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_readySlideSp, _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_readySlideHp, _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_readySlideHd, _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_readySlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_readySlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_readySlideLlL, _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_readySlideLlR, _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
             }
             if (_slideFromClaim && !_slideFromReady && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromClaimIn < 0.98f)
             {
@@ -12678,21 +12685,21 @@ namespace Tag.Art
                 // slideBoost stays 0. Claim time is unchanged.
                 float intoWedge = _slideFromClaimIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
                 _uaLT = Quaternion.Slerp(_claimSlideUaL, wedgeL, intoWedge);
                 _uaRT = Quaternion.Slerp(_claimSlideUaR, wedgeR, intoWedge);
                 _laLT = Quaternion.Slerp(_claimSlideLaL, wedgeElL, intoWedge);
                 _laRT = Quaternion.Slerp(_claimSlideLaR, wedgeElR, intoWedge);
-                _spineT = Quaternion.Slerp(_claimSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_claimSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_claimSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                _ulLT = Quaternion.Slerp(_claimSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                _ulRT = Quaternion.Slerp(_claimSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                _llLT = Quaternion.Slerp(_claimSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                _llRT = Quaternion.Slerp(_claimSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_claimSlideSp, _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_claimSlideHp, _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_claimSlideHd, _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_claimSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_claimSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_claimSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_claimSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
             }
             if (_slideFromGrapple && !_slideFromClaim && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromGrappleIn < 0.98f)
             {
@@ -12702,21 +12709,21 @@ namespace Tag.Art
                 // slideBoost stays 0. The gate stays off.
                 float intoWedge = _slideFromGrappleIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
                 _uaLT = Quaternion.Slerp(_grappleSlideUaL, wedgeL, intoWedge);
                 _uaRT = Quaternion.Slerp(_grappleSlideUaR, wedgeR, intoWedge);
                 _laLT = Quaternion.Slerp(_grappleSlideLaL, wedgeElL, intoWedge);
                 _laRT = Quaternion.Slerp(_grappleSlideLaR, wedgeElR, intoWedge);
-                _spineT = Quaternion.Slerp(_grappleSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_grappleSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_grappleSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                _ulLT = Quaternion.Slerp(_grappleSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                _ulRT = Quaternion.Slerp(_grappleSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                _llLT = Quaternion.Slerp(_grappleSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                _llRT = Quaternion.Slerp(_grappleSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_grappleSlideSp, _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_grappleSlideHp, _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_grappleSlideHd, _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_grappleSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_grappleSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_grappleSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_grappleSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
             }
             if (_slideFromWall && !_slideFromGrapple && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromWallIn < 0.98f)
             {
@@ -12726,21 +12733,21 @@ namespace Tag.Art
                 // A jump into a slide has its own ease. slideBoost stays 0. Exit time is unchanged.
                 float intoWedge = _slideFromWallIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
                 _uaLT = Quaternion.Slerp(_wallSlideUaL, wedgeL, intoWedge);
                 _uaRT = Quaternion.Slerp(_wallSlideUaR, wedgeR, intoWedge);
                 _laLT = Quaternion.Slerp(_wallSlideLaL, wedgeElL, intoWedge);
                 _laRT = Quaternion.Slerp(_wallSlideLaR, wedgeElR, intoWedge);
-                _spineT = Quaternion.Slerp(_wallSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_wallSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_wallSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                _ulLT = Quaternion.Slerp(_wallSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                _ulRT = Quaternion.Slerp(_wallSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                _llLT = Quaternion.Slerp(_wallSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                _llRT = Quaternion.Slerp(_wallSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_wallSlideSp, _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_wallSlideHp, _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_wallSlideHd, _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_wallSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_wallSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_wallSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_wallSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
             }
             if (_slideFromClimb && !_slideFromWall && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromClimbIn < 0.98f)
             {
@@ -12750,21 +12757,21 @@ namespace Tag.Art
                 // A jump into a slide has its own ease. slideBoost stays 0. Exit time is unchanged.
                 float intoWedge = _slideFromClimbIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
                 _uaLT = Quaternion.Slerp(_climbSlideUaL, wedgeL, intoWedge);
                 _uaRT = Quaternion.Slerp(_climbSlideUaR, wedgeR, intoWedge);
                 _laLT = Quaternion.Slerp(_climbSlideLaL, wedgeElL, intoWedge);
                 _laRT = Quaternion.Slerp(_climbSlideLaR, wedgeElR, intoWedge);
-                _spineT = Quaternion.Slerp(_climbSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_climbSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_climbSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                _ulLT = Quaternion.Slerp(_climbSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                _ulRT = Quaternion.Slerp(_climbSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                _llLT = Quaternion.Slerp(_climbSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                _llRT = Quaternion.Slerp(_climbSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_climbSlideSp, _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_climbSlideHp, _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_climbSlideHd, _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_climbSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_climbSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_climbSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_climbSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
             }
             if (_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromSoftIn < 0.98f)
             {
@@ -12775,21 +12782,21 @@ namespace Tag.Art
                 // slideBoost stays 0. Land time is unchanged.
                 float intoWedge = _slideFromSoftIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
                 _uaLT = Quaternion.Slerp(_softSlideUaL, wedgeL, intoWedge);
                 _uaRT = Quaternion.Slerp(_softSlideUaR, wedgeR, intoWedge);
                 _laLT = Quaternion.Slerp(_softSlideLaL, wedgeElL, intoWedge);
                 _laRT = Quaternion.Slerp(_softSlideLaR, wedgeElR, intoWedge);
-                _spineT = Quaternion.Slerp(_softSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_softSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_softSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                _ulLT = Quaternion.Slerp(_softSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                _ulRT = Quaternion.Slerp(_softSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                _llLT = Quaternion.Slerp(_softSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                _llRT = Quaternion.Slerp(_softSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_softSlideSp, _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_softSlideHp, _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_softSlideHd, _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_softSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_softSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_softSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_softSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
             }
             if (_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromTagIn < 0.98f)
             {
@@ -12800,21 +12807,21 @@ namespace Tag.Art
                 // slideBoost stays 0. Connect time is unchanged.
                 float intoWedge = _slideFromTagIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
                 _uaLT = Quaternion.Slerp(_tagSlideUaL, wedgeL, intoWedge);
                 _uaRT = Quaternion.Slerp(_tagSlideUaR, wedgeR, intoWedge);
                 _laLT = Quaternion.Slerp(_tagSlideLaL, wedgeElL, intoWedge);
                 _laRT = Quaternion.Slerp(_tagSlideLaR, wedgeElR, intoWedge);
-                _spineT = Quaternion.Slerp(_tagSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_tagSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_tagSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                _ulLT = Quaternion.Slerp(_tagSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                _ulRT = Quaternion.Slerp(_tagSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                _llLT = Quaternion.Slerp(_tagSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                _llRT = Quaternion.Slerp(_tagSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_tagSlideSp, _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_tagSlideHp, _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_tagSlideHd, _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_tagSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_tagSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_tagSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_tagSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
             }
             if (_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && _slideFromPunchIn < 0.98f)
             {
@@ -12824,21 +12831,21 @@ namespace Tag.Art
                 // slideBoost stays 0. Windup time is unchanged.
                 float intoWedge = _slideFromPunchIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
                 _uaLT = Quaternion.Slerp(_punchSlideUaL, wedgeL, intoWedge);
                 _uaRT = Quaternion.Slerp(_punchSlideUaR, wedgeR, intoWedge);
                 _laLT = Quaternion.Slerp(_punchSlideLaL, wedgeElL, intoWedge);
                 _laRT = Quaternion.Slerp(_punchSlideLaR, wedgeElR, intoWedge);
-                _spineT = Quaternion.Slerp(_punchSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_punchSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_punchSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                _ulLT = Quaternion.Slerp(_punchSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                _ulRT = Quaternion.Slerp(_punchSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                _llLT = Quaternion.Slerp(_punchSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                _llRT = Quaternion.Slerp(_punchSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_punchSlideSp, _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_punchSlideHp, _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_punchSlideHd, _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_punchSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_punchSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_punchSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_punchSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
             }
             if (_slideFromDash && !_skiFromDash && !airDashing && !punching && !wallRun && !climb && _slideFromDashIn < 0.98f)
             {
@@ -12848,8 +12855,8 @@ namespace Tag.Art
                 // Duration and cooldown are unchanged.
                 float intoWedge = _slideFromDashIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
                 if (_dashSlideSnap)
@@ -12858,13 +12865,13 @@ namespace Tag.Art
                     _uaRT = Quaternion.Slerp(_dashSlideUaR, wedgeR, intoWedge);
                     _laLT = Quaternion.Slerp(_dashSlideLaL, wedgeElL, intoWedge);
                     _laRT = Quaternion.Slerp(_dashSlideLaR, wedgeElR, intoWedge);
-                    _spineT = Quaternion.Slerp(_dashSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                    _hipsT = Quaternion.Slerp(_dashSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                    _headT = Quaternion.Slerp(_dashSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                    _ulLT = Quaternion.Slerp(_dashSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                    _ulRT = Quaternion.Slerp(_dashSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                    _llLT = Quaternion.Slerp(_dashSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                    _llRT = Quaternion.Slerp(_dashSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                    _spineT = Quaternion.Slerp(_dashSlideSp, _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                    _hipsT = Quaternion.Slerp(_dashSlideHp, _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                    _headT = Quaternion.Slerp(_dashSlideHd, _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
+                    _ulLT = Quaternion.Slerp(_dashSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                    _ulRT = Quaternion.Slerp(_dashSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                    _llLT = Quaternion.Slerp(_dashSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                    _llRT = Quaternion.Slerp(_dashSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
                 }
                 else
                 {
@@ -12876,13 +12883,13 @@ namespace Tag.Art
                     _uaRT = Quaternion.Slerp(burstR, wedgeR, intoWedge);
                     _laLT = Quaternion.Slerp(burstElL, wedgeElL, intoWedge);
                     _laRT = Quaternion.Slerp(burstElR, wedgeElR, intoWedge);
-                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(58f, 0f, 0f), _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                    _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                    _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(0f, 0f, 0f), _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                    _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(72f, 0f, 0f), _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                    _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                    _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                    _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(58f, 0f, 0f), _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                    _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                    _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(0f, 0f, 0f), _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
+                    _ulLT = Quaternion.Slerp(_ulL0 * Quaternion.Euler(72f, 0f, 0f), _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                    _ulRT = Quaternion.Slerp(_ulR0 * Quaternion.Euler(-34f, 0f, 0f), _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                    _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-62f, 0f, 0f), _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                    _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-18f, 0f, 0f), _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
                 }
             }
             if (_slideFromJump && sliding && !jet && !skiing && !wallRun && !climb && !punching && _slideFromJumpIn < 0.98f)
@@ -12892,21 +12899,21 @@ namespace Tag.Art
                 // slideBoost stays 0. Jump height is unchanged.
                 float intoWedge = _slideFromJumpIn;
                 bool leadLeft = sinC >= 0f;
-                Quaternion wedgeL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
-                Quaternion wedgeR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+                Quaternion wedgeL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
+                Quaternion wedgeR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
                 Quaternion wedgeElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
                 Quaternion wedgeElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
                 _uaLT = Quaternion.Slerp(_jumpSlideUaL, wedgeL, intoWedge);
                 _uaRT = Quaternion.Slerp(_jumpSlideUaR, wedgeR, intoWedge);
                 _laLT = Quaternion.Slerp(_jumpSlideLaL, wedgeElL, intoWedge);
                 _laRT = Quaternion.Slerp(_jumpSlideLaR, wedgeElR, intoWedge);
-                _spineT = Quaternion.Slerp(_jumpSlideSp, _spine0 * Quaternion.Euler(62f, 0f, 0f), intoWedge);
-                _hipsT = Quaternion.Slerp(_jumpSlideHp, _hips0 * Quaternion.Euler(50f, 0f, 0f), intoWedge);
-                _headT = Quaternion.Slerp(_jumpSlideHd, _head0 * Quaternion.Euler(-12f, 0f, 0f), intoWedge);
-                _ulLT = Quaternion.Slerp(_jumpSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? 74f : -28f, leadLeft ? 6f : -4f, 0f), intoWedge);
-                _ulRT = Quaternion.Slerp(_jumpSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? -28f : 74f, leadLeft ? -4f : 6f, 0f), intoWedge);
-                _llLT = Quaternion.Slerp(_jumpSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? -94f : -6f, 0f, 0f), intoWedge);
-                _llRT = Quaternion.Slerp(_jumpSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? -6f : -94f, 0f, 0f), intoWedge);
+                _spineT = Quaternion.Slerp(_jumpSlideSp, _spine0 * Quaternion.Euler(VerbPoseClips.SlideSpine, 0f, 0f), intoWedge);
+                _hipsT = Quaternion.Slerp(_jumpSlideHp, _hips0 * Quaternion.Euler(VerbPoseClips.SlideHip, 0f, 0f), intoWedge);
+                _headT = Quaternion.Slerp(_jumpSlideHd, _head0 * Quaternion.Euler(VerbPoseClips.SlideHead, 0f, 0f), intoWedge);
+                _ulLT = Quaternion.Slerp(_jumpSlideUlL, _ulL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadThigh : VerbPoseClips.SlideTrailThigh, leadLeft ? VerbPoseClips.SlideLeadYaw : VerbPoseClips.SlideTrailYaw, 0f), intoWedge);
+                _ulRT = Quaternion.Slerp(_jumpSlideUlR, _ulR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailThigh : VerbPoseClips.SlideLeadThigh, leadLeft ? -VerbPoseClips.SlideTrailYaw : -VerbPoseClips.SlideLeadYaw, 0f), intoWedge);
+                _llLT = Quaternion.Slerp(_jumpSlideLlL, _llL0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideLeadKnee : VerbPoseClips.SlideTrailKnee, 0f, 0f), intoWedge);
+                _llRT = Quaternion.Slerp(_jumpSlideLlR, _llR0 * Quaternion.Euler(leadLeft ? VerbPoseClips.SlideTrailKnee : VerbPoseClips.SlideLeadKnee, 0f, 0f), intoWedge);
             }
             if (_skiFromWalk && !_skiFromSprint && !_skiFromCrouch && !_skiFromCrouchWalk && skiing && !jet && !crouch && !wallRun && !climb && !punching)
             {
@@ -14162,7 +14169,7 @@ namespace Tag.Art
                 _llRT = Quaternion.Slerp(_tagJumpLlR, _llRT, intoTag);
             }
 
-            float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || flinchAmt > 0.04f || claimAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
+            float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || _slidePose > 0.02f || flinchAmt > 0.04f || claimAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
             // 0.1s air dash never reached the whip pose at slew 42.
             bool punchWind = punching && phase == PunchPhase.Windup;
             bool handoff = flinchAmt > 0.2f || claimAmt > 0.2f;
@@ -14178,6 +14185,15 @@ namespace Tag.Art
             // Buckle has to arrive during the short absorb, then follow the ease back into the stride.
             float legSlew = airDashing ? 78f : grappleTell ? 36f : airTell ? 64f : (_landSquash > 0.05f ? 46f : runCycle ? 44f : slew);
             float torsoSlew = airDashing ? 78f : grappleTell ? 36f : airTell ? 64f : slew;
+            // Slide has to arrive inside a few frames or it reads as a crouch on the way down.
+            if ((sliding || _slidePose > 0.02f) && !punching && flinchAmt < 0.04f && !airDashing)
+            {
+                slew = Mathf.Max(slew, 64f);
+                armSlewL = Mathf.Max(armSlewL, 64f);
+                armSlewR = Mathf.Max(armSlewR, 64f);
+                legSlew = Mathf.Max(legSlew, 64f);
+                torsoSlew = Mathf.Max(torsoSlew, 64f);
+            }
             if (!(lunging || dashing))
                 _airDashArms = false;
             if (!dashing && !lunging && _armRecover > 0f)
@@ -14264,6 +14280,11 @@ namespace Tag.Art
             Slew(ref _upperLegR, _ulRT, legSlew, dt);
             Slew(ref _lowerLegL, _llLT, legSlew, dt);
             Slew(ref _lowerLegR, _llRT, legSlew, dt);
+            if (_footL != null && _footR != null)
+            {
+                Slew(ref _footL, _ftLT, legSlew, dt);
+                Slew(ref _footR, _ftRT, legSlew, dt);
+            }
 
 
             float step = Mathf.Pow(Mathf.Abs(sinRaw), 1.7f);
@@ -14609,10 +14630,18 @@ namespace Tag.Art
             // Tag plays TagCatch. Phase times and slideBoost stay as they are.
             VerbClip = null;
             VerbState = null;
+            // Rest first. Punch and tag return before the slide clip, so a
+            // punch during a slide must not leave the shoes in the slide pose.
+            if (_footL != null && _footR != null)
+            {
+                _ftLT = _ftL0;
+                _ftRT = _ftR0;
+            }
             var bind = new VerbPoseClips.Bind
             {
                 UaL = _uaL0, UaR = _uaR0, LaL = _laL0, LaR = _laR0,
                 UlL = _ulL0, UlR = _ulR0, LlL = _llL0, LlR = _llR0,
+                FtL = _ftL0, FtR = _ftR0,
                 Spine = _spine0, Hips = _hips0, Head = _head0,
             };
             if (flinchAmt > 0.04f)
@@ -14652,15 +14681,20 @@ namespace Tag.Art
                     return;
                 }
             }
-            if (sliding)
+            if (_slidePose > 0.02f)
             {
-                float w = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_dropVis));
-                if (w > 0.02f)
+                // Full clip while the slide holds. The leave fades with _slidePose
+                // so the exit does not pass through the old crouch wedge.
+                float w = sliding ? 1f : _slidePose;
+                var pose = VerbPoseClips.SlideBodyPose(bind, sinC >= 0f);
+                BlendVerb(pose, w);
+                if (_footL != null && _footR != null)
                 {
-                    BlendVerb(VerbPoseClips.SlideBodyPose(bind, sinC >= 0f), w);
-                    VerbClip = VerbPoseClips.SlideBody;
-                    VerbState = VerbPoseClips.StateSlide;
+                    _ftLT = Quaternion.Slerp(_ftL0, pose.FtL, w);
+                    _ftRT = Quaternion.Slerp(_ftR0, pose.FtR, w);
                 }
+                VerbClip = VerbPoseClips.SlideBody;
+                VerbState = VerbPoseClips.StateSlide;
             }
         }
 
@@ -14688,9 +14722,9 @@ namespace Tag.Art
             float e = Mathf.Lerp(0.8f, 1f, punchProg);
             float settle = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.28f, 1f, punchProg));
             float missEase = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg));
-            Quaternion lineL = _uaL0 * Quaternion.Euler(-70f, 28f, armZ);
+            Quaternion lineL = _uaL0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, VerbPoseClips.SlideArmYaw, armZ);
             Quaternion lineElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
-            Quaternion lineR = _uaR0 * Quaternion.Euler(-64f, -28f, -armZ);
+            Quaternion lineR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
             Quaternion lineElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
             Quaternion strikeR = _uaR0 * Quaternion.Euler(-118f, 58f * e, -22f);
             Quaternion strikeEl = _laR0 * Quaternion.Euler(-18f, 0f, 0f);
@@ -14749,6 +14783,8 @@ namespace Tag.Art
             _upperLegR = FindBone(root, "UpperLeg_R", "UpperLeg.R", "RightUpLeg", "RightUpperLeg", "mixamorig:RightUpLeg", "Thigh_R", "upperleg_r", "Upper_Leg_R");
             _lowerLegL = FindBone(root, "LowerLeg_L", "LowerLeg.L", "LeftLeg", "LeftLowerLeg", "mixamorig:LeftLeg", "Calf_L", "lowerleg_l", "Lower_Leg_L");
             _lowerLegR = FindBone(root, "LowerLeg_R", "LowerLeg.R", "RightLeg", "RightLowerLeg", "mixamorig:RightLeg", "Calf_R", "lowerleg_r", "Lower_Leg_R");
+            _footL = FindBone(root, "Foot_L", "Foot.L", "LeftFoot", "mixamorig:LeftFoot", "foot_l");
+            _footR = FindBone(root, "Foot_R", "Foot.R", "RightFoot", "mixamorig:RightFoot", "foot_r");
             _bound = _upperArmL != null || _upperLegL != null || _spine != null;
             if (!_bound) return;
             if (_hips) _hips0 = _hips.localRotation;
@@ -14762,9 +14798,12 @@ namespace Tag.Art
             if (_upperLegR) _ulR0 = _upperLegR.localRotation;
             if (_lowerLegL) _llL0 = _lowerLegL.localRotation;
             if (_lowerLegR) _llR0 = _lowerLegR.localRotation;
+            if (_footL) _ftL0 = _footL.localRotation;
+            if (_footR) _ftR0 = _footR.localRotation;
             _spineT = _spine0; _hipsT = _hips0; _headT = _head0;
             _uaLT = _uaL0; _uaRT = _uaR0; _laLT = _laL0; _laRT = _laR0;
             _ulLT = _ulL0; _ulRT = _ulR0; _llLT = _llL0; _llRT = _llR0;
+            _ftLT = _ftL0; _ftRT = _ftR0;
         }
 
         static Transform FindBone(Transform root, params string[] names)
