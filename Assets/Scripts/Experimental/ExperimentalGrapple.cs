@@ -13,7 +13,9 @@ namespace Tag.Experimental
     /// this pawn. A miss attaches to nothing: there is no stand-in swing.
     /// PlayerMotor strips outward horizontal speed against that hit. This component does
     /// not write velocity, does not Move, and does not touch vertical speed.
-    /// The line, the mesh, and the aim cue are presentation. A miss still latches nothing.
+    /// The line, the mesh, the aim cue, and the latch flash are presentation.
+    /// A successful latch flashes the knot and runs a short pulse along the rope.
+    /// A miss still latches nothing and plays no flash.
     /// </summary>
     [DisallowMultipleComponent]
     public class ExperimentalGrapple : MonoBehaviour
@@ -45,6 +47,13 @@ namespace Tag.Experimental
         float _ropeLength;
         readonly RaycastHit[] _hits = new RaycastHit[16];
         bool _built;
+        float _latchAge = -1f;
+        bool _latchBuilt;
+        Transform _latchRoot;
+        Transform _latchKnot;
+        LineRenderer _latchPulse;
+        Material _latchMat;
+        static Mesh _latchSphere;
 
         /// <summary>True only while enableGrapple is on and a rope is attached. A miss leaves this false.</summary>
         public bool IsPulling => enableGrapple && _attached;
@@ -90,6 +99,7 @@ namespace Tag.Experimental
             _attached = false;
             _casting = false;
             _ropeLength = 0f;
+            GrappleLatchTell.Clear(ref _latchAge);
             HideAll();
         }
 
@@ -127,9 +137,11 @@ namespace Tag.Experimental
                 PlaceSpan(_rope, _halo, _mesh, hand, end, GrappleRopeTell.RopeStartWidth, GrappleRopeTell.RopeEndWidth, GrappleRopeTell.HaloWidth);
                 HideSpan(_aim, null, _aimMesh);
                 PlaceKnot(end, GrappleRopeTell.HookMarkerSize);
+                TickLatchFlash(hand, end);
                 return;
             }
 
+            HideLatchFlash();
             if (!GrappleRopeTell.AimSpan(origin, face, AimDirection(), out Vector3 from, out Vector3 tip))
             {
                 HideAll();
@@ -174,6 +186,7 @@ namespace Tag.Experimental
             _ropeLength = (_anchor - transform.position).magnitude;
             if (_ropeLength <= 0.05f) return;
             _attached = true;
+            GrappleLatchTell.Arm(ref _latchAge);
         }
 
         Transform AimCamera()
@@ -293,6 +306,7 @@ namespace Tag.Experimental
             HideSpan(_rope, _halo, _mesh);
             HideSpan(_aim, null, _aimMesh);
             if (_knot != null) _knot.gameObject.SetActive(false);
+            HideLatchFlash();
         }
 
         static LineRenderer MakeLine(string name, Transform parent, Material mat, Color start, Color end)
@@ -385,6 +399,176 @@ namespace Tag.Experimental
             m.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             m.renderQueue = 3000;
             return m;
+        }
+
+        void TickLatchFlash(Vector3 hand, Vector3 knot)
+        {
+            if (!GrappleLatchTell.Show(true, _latchAge)
+                || !GrappleLatchTell.Knot(true, knot, _latchAge, out Vector3 at))
+            {
+                HideLatchFlash();
+                return;
+            }
+
+            EnsureLatchFlash();
+            float alpha = GrappleLatchTell.Alpha(_latchAge);
+            PlaceLatchKnot(at, GrappleLatchTell.KnotScale(GrappleLatchTell.Fade(_latchAge)), alpha);
+            if (GrappleLatchTell.Pulse(true, hand, knot, _latchAge, out Vector3 from, out Vector3 to))
+                PlaceLatchPulse(from, to, alpha);
+            else if (_latchPulse != null)
+                _latchPulse.enabled = false;
+            GrappleLatchTell.Step(ref _latchAge, Time.deltaTime, true);
+        }
+
+        void PlaceLatchKnot(Vector3 point, float size, float alpha)
+        {
+            if (_latchKnot == null) return;
+            _latchKnot.gameObject.SetActive(true);
+            _latchKnot.position = point;
+            SetWorldScale(_latchKnot, size, size, size);
+            PaintLatch(alpha);
+        }
+
+        void PlaceLatchPulse(Vector3 a, Vector3 b, float alpha)
+        {
+            if (_latchPulse == null) return;
+            _latchPulse.enabled = true;
+            _latchPulse.startWidth = GrappleLatchTell.PulseWidth;
+            _latchPulse.endWidth = GrappleLatchTell.PulseWidth;
+            _latchPulse.SetPosition(0, a);
+            _latchPulse.SetPosition(1, b);
+            var c = new Color(GrappleLatchTell.MarkR, GrappleLatchTell.MarkG, GrappleLatchTell.MarkB, alpha);
+            _latchPulse.startColor = c;
+            _latchPulse.endColor = c;
+            PaintLatch(alpha);
+        }
+
+        void HideLatchFlash()
+        {
+            if (_latchKnot != null) _latchKnot.gameObject.SetActive(false);
+            if (_latchPulse != null) _latchPulse.enabled = false;
+        }
+
+        void EnsureLatchFlash()
+        {
+            if (_latchBuilt) return;
+            _latchBuilt = true;
+            var rootGo = new GameObject(GrappleLatchTell.MarkerName);
+            rootGo.transform.SetParent(transform, false);
+            _latchRoot = rootGo.transform;
+            _latchMat = MakeLatchMat();
+            _latchKnot = MakeLatchKnot("GrappleLatchKnot");
+            _latchPulse = MakeLatchPulse("GrappleLatchPulse");
+        }
+
+        Transform MakeLatchKnot(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_latchRoot, false);
+            var filter = go.AddComponent<MeshFilter>();
+            filter.sharedMesh = LatchSphere();
+            var rend = go.AddComponent<MeshRenderer>();
+            rend.sharedMaterial = _latchMat;
+            rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rend.receiveShadows = false;
+            go.transform.localScale = Vector3.one * GrappleLatchTell.KnotSize;
+            go.SetActive(false);
+            return go.transform;
+        }
+
+        LineRenderer MakeLatchPulse(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_latchRoot, false);
+            var line = go.AddComponent<LineRenderer>();
+            line.positionCount = 2;
+            line.numCapVertices = 4;
+            line.useWorldSpace = true;
+            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            line.receiveShadows = false;
+            line.alignment = LineAlignment.View;
+            line.textureMode = LineTextureMode.Stretch;
+            line.startWidth = GrappleLatchTell.PulseWidth;
+            line.endWidth = GrappleLatchTell.PulseWidth;
+            if (_latchMat != null) line.sharedMaterial = _latchMat;
+            var c = new Color(GrappleLatchTell.MarkR, GrappleLatchTell.MarkG, GrappleLatchTell.MarkB, GrappleLatchTell.MaxAlpha);
+            line.startColor = c;
+            line.endColor = c;
+            line.enabled = false;
+            return line;
+        }
+
+        static Material MakeLatchMat()
+        {
+            var shader = Shader.Find("Sprites/Default")
+                         ?? Shader.Find("Universal Render Pipeline/Unlit")
+                         ?? Shader.Find("Unlit/Transparent")
+                         ?? Shader.Find("Unlit/Color")
+                         ?? Shader.Find("Standard");
+            var mat = new Material(shader) { name = "GrappleLatchFlash" };
+            var c = new Color(GrappleLatchTell.MarkR, GrappleLatchTell.MarkG, GrappleLatchTell.MarkB, GrappleLatchTell.MaxAlpha);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
+            if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+            if (mat.HasProperty("_ZWrite")) mat.SetFloat("_ZWrite", 0f);
+            if (mat.HasProperty("_SrcBlend")) mat.SetFloat("_SrcBlend", 5f);
+            if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", 10f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = 3000;
+            return mat;
+        }
+
+        void PaintLatch(float alpha)
+        {
+            if (_latchMat == null) return;
+            var c = new Color(GrappleLatchTell.MarkR, GrappleLatchTell.MarkG, GrappleLatchTell.MarkB, alpha);
+            if (_latchMat.HasProperty("_BaseColor")) _latchMat.SetColor("_BaseColor", c);
+            if (_latchMat.HasProperty("_Color")) _latchMat.SetColor("_Color", c);
+        }
+
+        static Mesh LatchSphere()
+        {
+            if (_latchSphere != null) return _latchSphere;
+            const int slices = 12;
+            const int stacks = 8;
+            var verts = new Vector3[(stacks + 1) * (slices + 1)];
+            var tris = new int[stacks * slices * 6];
+            int vi = 0;
+            for (int y = 0; y <= stacks; y++)
+            {
+                float phi = Mathf.PI * y / stacks;
+                float yPos = Mathf.Cos(phi) * 0.5f;
+                float r = Mathf.Sin(phi) * 0.5f;
+                for (int x = 0; x <= slices; x++)
+                {
+                    float theta = Mathf.PI * 2f * x / slices;
+                    verts[vi++] = new Vector3(Mathf.Cos(theta) * r, yPos, Mathf.Sin(theta) * r);
+                }
+            }
+
+            int ti = 0;
+            int row = slices + 1;
+            for (int y = 0; y < stacks; y++)
+            {
+                for (int x = 0; x < slices; x++)
+                {
+                    int a = y * row + x;
+                    int b = a + row;
+                    tris[ti++] = a;
+                    tris[ti++] = b;
+                    tris[ti++] = a + 1;
+                    tris[ti++] = a + 1;
+                    tris[ti++] = b;
+                    tris[ti++] = b + 1;
+                }
+            }
+
+            var mesh = new Mesh { name = "GrappleLatchKnot" };
+            mesh.vertices = verts;
+            mesh.triangles = tris;
+            mesh.RecalculateNormals();
+            _latchSphere = mesh;
+            return mesh;
         }
     }
 }
