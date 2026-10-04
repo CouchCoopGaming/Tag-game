@@ -950,6 +950,16 @@ namespace Tag.Art
         TrailRenderer _scrapeR;
         Material _scrapeMat;
         Vector3 _scrapeDir = Vector3.forward;
+        bool _clingWas;
+        bool _clingClimb;
+        Transform _clingRoot;
+        TrailRenderer _clingL;
+        TrailRenderer _clingR;
+        Transform _clingMarkL;
+        Transform _clingMarkR;
+        Material _clingMat;
+        Vector3 _clingNormal = Vector3.back;
+        static Mesh _clingQuad;
 
         Quaternion _spineT, _hipsT, _headT;
         Quaternion _uaLT, _uaRT, _laLT, _laRT;
@@ -1060,6 +1070,9 @@ namespace Tag.Art
             // Ground scrape keys off MoveState.Slide, the same state that selects SlideBody.
             // It still runs if the limb rig failed to bind. Speed and slideBoost stay put.
             TickSlideScrape();
+            // Hand marks key off MoveState.WallClimb and WallRun (Locomotion.Climb and WallRun).
+            // They still run if the limb rig failed to bind. Climb speed and the jump stay put.
+            TickWallCling();
             if (!_bound) Cache(transform);
             if (!_bound) return;
             if (_punch == null) _punch = GetComponentInParent<PunchHitbox>();
@@ -14717,6 +14730,197 @@ namespace Tag.Art
             return mat;
         }
 
+        void TickWallCling()
+        {
+            var st = _motor != null ? _motor.State : MoveState.Idle;
+            bool cling = st == MoveState.WallClimb || st == MoveState.WallRun;
+            if (cling && !_clingWas)
+                BeginWallCling();
+            if (!cling && _clingWas)
+                EndWallCling();
+            _clingWas = cling;
+            if (!cling || _clingL == null) return;
+            RefreshClingFace();
+            PlaceWallCling();
+        }
+
+        void BeginWallCling()
+        {
+            RefreshClingFace();
+            EnsureWallCling();
+            PlaceWallCling();
+            ArmRibbon(_clingL);
+            ArmRibbon(_clingR);
+            SetClingMarks(true);
+        }
+
+        void EndWallCling()
+        {
+            if (_clingL != null) _clingL.emitting = false;
+            if (_clingR != null) _clingR.emitting = false;
+            SetClingMarks(false);
+        }
+
+        void RefreshClingFace()
+        {
+            _clingClimb = _motor != null && _motor.State == MoveState.WallClimb;
+            Vector3 n = Vector3.zero;
+            if (_motor != null)
+            {
+                n = _motor.WallNormal;
+                n.y = 0f;
+            }
+            if (n.sqrMagnitude < 0.0001f)
+            {
+                Transform basis = _motor != null ? _motor.transform : transform;
+                if (_clingClimb)
+                    n = -basis.forward;
+                else
+                    n = (_motor != null && _motor.WallLeft) ? basis.right : -basis.right;
+            }
+            n.y = 0f;
+            if (n.sqrMagnitude < 0.0001f)
+                n = Vector3.back;
+            _clingNormal = n.normalized;
+        }
+
+        void PlaceWallCling()
+        {
+            if (_clingL == null) return;
+            Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
+            if (!WallClingTell.Place(origin, _clingNormal, _clingClimb, out Vector3 left, out Vector3 right))
+                return;
+            _clingL.transform.position = left;
+            if (_clingR != null) _clingR.transform.position = right;
+            if (_clingMarkL != null)
+            {
+                _clingMarkL.position = left;
+                OrientClingMark(_clingMarkL, _clingNormal);
+            }
+            if (_clingMarkR != null)
+            {
+                _clingMarkR.position = right;
+                OrientClingMark(_clingMarkR, _clingNormal);
+            }
+        }
+
+        static void OrientClingMark(Transform mark, Vector3 wallNormal)
+        {
+            if (mark == null) return;
+            Vector3 n = wallNormal;
+            n.y = 0f;
+            if (n.sqrMagnitude < 1e-6f) return;
+            mark.rotation = Quaternion.LookRotation(n.normalized, Vector3.up);
+        }
+
+        void SetClingMarks(bool on)
+        {
+            if (_clingMarkL != null) _clingMarkL.gameObject.SetActive(on);
+            if (_clingMarkR != null) _clingMarkR.gameObject.SetActive(on);
+        }
+
+        void EnsureWallCling()
+        {
+            if (_clingL != null) return;
+            if (_clingMat == null)
+                _clingMat = MakeClingMat();
+            _clingRoot = new GameObject(WallClingTell.MarkerName).transform;
+            _clingL = MakeClingRibbon("WallClingL");
+            _clingR = MakeClingRibbon("WallClingR");
+            _clingMarkL = MakeClingMark("WallClingMarkL");
+            _clingMarkR = MakeClingMark("WallClingMarkR");
+        }
+
+        TrailRenderer MakeClingRibbon(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_clingRoot, false);
+            var trail = go.AddComponent<TrailRenderer>();
+            trail.time = WallClingTell.RibbonTime;
+            trail.minVertexDistance = 0.02f;
+            trail.widthMultiplier = WallClingTell.RibbonWidth;
+            trail.emitting = false;
+            trail.autodestruct = false;
+            trail.alignment = LineAlignment.View;
+            trail.numCornerVertices = 2;
+            trail.numCapVertices = 2;
+            trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            trail.receiveShadows = false;
+            var dust = new Color(WallClingTell.DustR, WallClingTell.DustG, WallClingTell.DustB);
+            var grad = new Gradient();
+            grad.SetKeys(
+                new[] {
+                    new GradientColorKey(dust, 0f),
+                    new GradientColorKey(dust * 0.7f, 1f)
+                },
+                new[] {
+                    new GradientAlphaKey(WallClingTell.MaxAlpha, 0f),
+                    new GradientAlphaKey(0f, 1f)
+                });
+            trail.colorGradient = grad;
+            trail.sharedMaterial = _clingMat;
+            return trail;
+        }
+
+        Transform MakeClingMark(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_clingRoot, false);
+            var filter = go.AddComponent<MeshFilter>();
+            filter.sharedMesh = ClingQuad();
+            var rend = go.AddComponent<MeshRenderer>();
+            rend.sharedMaterial = _clingMat;
+            rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rend.receiveShadows = false;
+            go.transform.localScale = new Vector3(WallClingTell.MarkSize, WallClingTell.MarkSize * 1.15f, 1f);
+            go.SetActive(false);
+            return go.transform;
+        }
+
+        static Mesh ClingQuad()
+        {
+            if (_clingQuad != null) return _clingQuad;
+            var mesh = new Mesh { name = "WallClingMark" };
+            mesh.vertices = new[]
+            {
+                new Vector3(-0.5f, -0.5f, 0f),
+                new Vector3(0.5f, -0.5f, 0f),
+                new Vector3(-0.5f, 0.5f, 0f),
+                new Vector3(0.5f, 0.5f, 0f)
+            };
+            mesh.uv = new[]
+            {
+                new Vector2(0f, 0f),
+                new Vector2(1f, 0f),
+                new Vector2(0f, 1f),
+                new Vector2(1f, 1f)
+            };
+            mesh.triangles = new[] { 0, 1, 2, 1, 3, 2 };
+            mesh.RecalculateNormals();
+            _clingQuad = mesh;
+            return mesh;
+        }
+
+        static Material MakeClingMat()
+        {
+            var shader = Shader.Find("Sprites/Default")
+                         ?? Shader.Find("Universal Render Pipeline/Unlit")
+                         ?? Shader.Find("Unlit/Transparent")
+                         ?? Shader.Find("Unlit/Color")
+                         ?? Shader.Find("Standard");
+            var mat = new Material(shader) { name = "WallClingDust" };
+            var c = new Color(WallClingTell.DustR, WallClingTell.DustG, WallClingTell.DustB, WallClingTell.MaxAlpha);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
+            if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+            if (mat.HasProperty("_ZWrite")) mat.SetFloat("_ZWrite", 0f);
+            if (mat.HasProperty("_SrcBlend")) mat.SetFloat("_SrcBlend", 5f);
+            if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", 10f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = 3000;
+            return mat;
+        }
+
         void OnDisable()
         {
             if (_bounceHooked != null)
@@ -14753,6 +14957,21 @@ namespace Tag.Art
                 _scrapeMat = null;
             }
             _scrapeWas = false;
+            if (_clingRoot != null)
+            {
+                Destroy(_clingRoot.gameObject);
+                _clingRoot = null;
+                _clingL = null;
+                _clingR = null;
+                _clingMarkL = null;
+                _clingMarkR = null;
+            }
+            if (_clingMat != null)
+            {
+                Destroy(_clingMat);
+                _clingMat = null;
+            }
+            _clingWas = false;
         }
 
         static void Slew(ref Transform t, Quaternion target, float speed, float dt)
