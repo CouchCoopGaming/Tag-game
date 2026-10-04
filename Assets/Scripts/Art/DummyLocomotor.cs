@@ -944,6 +944,12 @@ namespace Tag.Art
         Renderer[] _flashRenderers;
         MaterialPropertyBlock _flashBlock;
         bool _flashBlockOn;
+        bool _scrapeWas;
+        Transform _scrapeRoot;
+        TrailRenderer _scrapeL;
+        TrailRenderer _scrapeR;
+        Material _scrapeMat;
+        Vector3 _scrapeDir = Vector3.forward;
 
         Quaternion _spineT, _hipsT, _headT;
         Quaternion _uaLT, _uaRT, _laLT, _laRT;
@@ -1051,6 +1057,9 @@ namespace Tag.Art
             HookBounce();
             // Cyan dash tell must run even when the limb rig failed to bind.
             TickAirDashTell(dt);
+            // Ground scrape keys off MoveState.Slide, the same state that selects SlideBody.
+            // It still runs if the limb rig failed to bind. Speed and slideBoost stay put.
+            TickSlideScrape();
             if (!_bound) Cache(transform);
             if (!_bound) return;
             if (_punch == null) _punch = GetComponentInParent<PunchHitbox>();
@@ -14592,6 +14601,122 @@ namespace Tag.Art
             _glideLaunchIn = 0f;
         }
 
+        void TickSlideScrape()
+        {
+            bool sliding = _motor != null && _motor.State == MoveState.Slide;
+            if (sliding && !_scrapeWas)
+                BeginSlideScrape();
+            if (!sliding && _scrapeWas)
+                EndSlideScrape();
+            _scrapeWas = sliding;
+            if (!sliding || _scrapeL == null) return;
+            RefreshScrapeDir();
+            PlaceSlideScrape();
+        }
+
+        void BeginSlideScrape()
+        {
+            RefreshScrapeDir();
+            EnsureSlideScrape();
+            PlaceSlideScrape();
+            ArmRibbon(_scrapeL);
+            ArmRibbon(_scrapeR);
+        }
+
+        void EndSlideScrape()
+        {
+            if (_scrapeL != null) _scrapeL.emitting = false;
+            if (_scrapeR != null) _scrapeR.emitting = false;
+        }
+
+        void RefreshScrapeDir()
+        {
+            Vector3 dir = Vector3.zero;
+            if (_motor != null)
+            {
+                dir = _motor.Velocity;
+                dir.y = 0f;
+                if (dir.sqrMagnitude < 0.0001f)
+                    dir = _motor.transform.forward;
+            }
+            else
+                dir = transform.forward;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.0001f)
+                dir = Vector3.forward;
+            _scrapeDir = dir.normalized;
+        }
+
+        void PlaceSlideScrape()
+        {
+            if (_scrapeL == null) return;
+            Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
+            if (!SlideScrapeTell.Place(origin, _scrapeDir, out Vector3 left, out Vector3 right))
+                return;
+            _scrapeL.transform.position = left;
+            if (_scrapeR != null) _scrapeR.transform.position = right;
+        }
+
+        void EnsureSlideScrape()
+        {
+            if (_scrapeL != null) return;
+            if (_scrapeMat == null)
+                _scrapeMat = MakeScrapeMat();
+            _scrapeRoot = new GameObject(SlideScrapeTell.MarkerName).transform;
+            _scrapeL = MakeScrape("SlideScrapeL");
+            _scrapeR = MakeScrape("SlideScrapeR");
+        }
+
+        TrailRenderer MakeScrape(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_scrapeRoot, false);
+            var trail = go.AddComponent<TrailRenderer>();
+            trail.time = SlideScrapeTell.RibbonTime;
+            trail.minVertexDistance = 0.02f;
+            trail.widthMultiplier = SlideScrapeTell.RibbonWidth;
+            trail.emitting = false;
+            trail.autodestruct = false;
+            trail.alignment = LineAlignment.View;
+            trail.numCornerVertices = 2;
+            trail.numCapVertices = 2;
+            trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            trail.receiveShadows = false;
+            var grad = new Gradient();
+            grad.SetKeys(
+                new[] {
+                    new GradientColorKey(new Color(0.82f, 0.70f, 0.48f), 0f),
+                    new GradientColorKey(new Color(0.55f, 0.46f, 0.32f), 1f)
+                },
+                new[] {
+                    new GradientAlphaKey(0.5f, 0f),
+                    new GradientAlphaKey(0f, 1f)
+                });
+            trail.colorGradient = grad;
+            trail.sharedMaterial = _scrapeMat;
+            return trail;
+        }
+
+        static Material MakeScrapeMat()
+        {
+            var shader = Shader.Find("Sprites/Default")
+                         ?? Shader.Find("Universal Render Pipeline/Unlit")
+                         ?? Shader.Find("Unlit/Transparent")
+                         ?? Shader.Find("Unlit/Color")
+                         ?? Shader.Find("Standard");
+            var mat = new Material(shader) { name = "SlideScrapeDust" };
+            var c = new Color(0.78f, 0.66f, 0.44f, 0.5f);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", c);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", c);
+            if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+            if (mat.HasProperty("_ZWrite")) mat.SetFloat("_ZWrite", 0f);
+            if (mat.HasProperty("_SrcBlend")) mat.SetFloat("_SrcBlend", 5f);
+            if (mat.HasProperty("_DstBlend")) mat.SetFloat("_DstBlend", 10f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = 3000;
+            return mat;
+        }
+
         void OnDisable()
         {
             if (_bounceHooked != null)
@@ -14615,6 +14740,19 @@ namespace Tag.Art
                 Destroy(_ribbonMat);
                 _ribbonMat = null;
             }
+            if (_scrapeRoot != null)
+            {
+                Destroy(_scrapeRoot.gameObject);
+                _scrapeRoot = null;
+                _scrapeL = null;
+                _scrapeR = null;
+            }
+            if (_scrapeMat != null)
+            {
+                Destroy(_scrapeMat);
+                _scrapeMat = null;
+            }
+            _scrapeWas = false;
         }
 
         static void Slew(ref Transform t, Quaternion target, float speed, float dt)

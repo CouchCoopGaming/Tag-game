@@ -48,6 +48,14 @@ static class Program
             return 1;
         }
 
+        SlideScrapeTellReport scrape = SlideScrapeTellProof.Run();
+        Console.WriteLine(scrape.ToString());
+        if (!scrape.Ok)
+        {
+            Console.Error.WriteLine(scrape.FailureText);
+            return 1;
+        }
+
         const string grapplePath = "Assets/Scripts/Experimental/ExperimentalGrapple.cs";
         if (!AssetHas(grapplePath, "GrappleRopeTell.AttachedSpan", "GrappleRopeTell.AimSpan", "enableGrapple = false"))
         {
