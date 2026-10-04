@@ -1494,6 +1494,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 343. Tan vinyl, darker hinges, and a matte waist read while walking. Eye plates stay flat and dark. It is orange vinyl. No magenta. The molded face stays. Jet stays off.
 344. Body v0.6 curved vinyl and a human waist spawn on the pad. Soles stay dark rubber. The face stays flat-eyed. Limbs move. No magenta capsule. Jet stays off.
 345. A swing catches a soft highlight on the vinyl. Hinges read darker than the shell. Dirt and the soles stay dark. The face stays. Pose timing is unchanged. Jet stays off.
+346. A slide plays SlideBody in state Slide: the chest is flat, the lead shin tucks along the ground, and the trail leg stays straight back. It should not look like a crouch. A punch plays PunchStrike in PunchWindup, then PunchActive: the fist cocks beside the head, then the arm goes straight out. A tag plays TagCatch in state Tag on the runner who was hit: both arms up in a long V, both knees bent. Windup, reach, and flinch time are unchanged. slideBoost stays 0.
 
 ## Grapple (experimental, off)
 - Not part of the default tag loop. The spawned pawn does not get `ExperimentalGrapple` unless you add it. `enableGrapple` stays false, so RMB does not hook and does not jet.
