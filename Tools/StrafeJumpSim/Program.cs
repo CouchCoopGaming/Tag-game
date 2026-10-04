@@ -80,6 +80,14 @@ static class Program
             return 1;
         }
 
+        AirDashCooldownTellReport dashCd = AirDashCooldownTellProof.Run();
+        Console.WriteLine(dashCd.ToString());
+        if (!dashCd.Ok)
+        {
+            Console.Error.WriteLine(dashCd.FailureText);
+            return 1;
+        }
+
         const string grapplePath = "Assets/Scripts/Experimental/ExperimentalGrapple.cs";
         if (!AssetHas(grapplePath, "GrappleRopeTell.AttachedSpan", "GrappleRopeTell.AimSpan", "enableGrapple = false"))
         {
