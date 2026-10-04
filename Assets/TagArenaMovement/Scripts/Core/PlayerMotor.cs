@@ -96,6 +96,8 @@ namespace TagArena.Movement
         float _tapCd;
         float _lungeCd;
         float _lungeT;
+        /// <summary>AI It flag. Human lunge still requires TagRole. Not a new button.</summary>
+        bool _externalTagger;
         float _airDashT;
         float _airDashIFramesT;
         float _airDashCd;
@@ -1028,7 +1030,7 @@ namespace TagArena.Movement
 
             // Ground It burst only - airborne MMB is consumed by TryAirDash.
             if (!_probe.Ground.grounded) return false;
-            if (tagRole == null || !tagRole.IsIt) return false;
+            if (!CanTaggerLunge()) return false;
             if (!_in.LungePressed || _lungeCd > 0f) return false;
             _lungeT = cfg.taggerLungeDuration;
             _lungeCd = cfg.taggerLungeCooldown;
@@ -1038,6 +1040,18 @@ namespace TagArena.Movement
             if (State != MoveState.Slide) SetState(MoveState.Sprint);
             TagSfx.LungeWhoosh(transform.position);
             return true;
+        }
+
+        /// <summary>
+        /// Human MMB still needs TagRole. The campus opponent has no TagRole;
+        /// PunchHitbox owns the tag, and this flag only arms the existing lunge.
+        /// </summary>
+        public void SetExternalTagger(bool isIt) => _externalTagger = isIt;
+
+        bool CanTaggerLunge()
+        {
+            if (tagRole != null && tagRole.IsIt) return true;
+            return _in != null && _in.ExternalControl && _externalTagger;
         }
 
         Vector3 TickLandStun(float dt, Vector3 v)

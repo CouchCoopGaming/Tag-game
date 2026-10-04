@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Tag.Art;
 using Tag.Gameplay;
 using Tag.Trail;
 using TagArena.Movement;
@@ -8,6 +9,8 @@ namespace Tag.Modes
 {
     /// <summary>
     /// Dummy AI v1 (SP demo): chase+punch when It; flee when not.
+    /// Solo campus play is this pawn (DummyRunner) on the coral Spawn_SE pad.
+    /// The lunge lead is OpponentLungeTell.LeadSeconds and does not scale.
     /// Feeds TagArena PlayerMotor via PlayerInputReader.ExternalControl (no RB velocity fight).
     /// Trail Tag: samples nearby TrailSegments and blends a lateral flee wish into steering.
     /// Hot Potato: when fuse Remaining is low (warnSec ~10), It chases harder to dump the tag;
@@ -79,6 +82,9 @@ namespace Tag.Modes
         float _jumpHoldT;
         float _jumpPulseCd;
         float _lungeGate;
+        float _lungeTellT;
+        float _lungeArm;
+        OpponentLungeTell _lungeMark;
         float _airDashGate;
         float _weave;
         float _weaveT;
@@ -124,6 +130,7 @@ namespace Tag.Modes
 
         void FixedUpdate()
         {
+            EnsureOpponentRefs();
             if (_it != null && _it.IsEliminated)
             {
                 StopWish();
@@ -177,6 +184,8 @@ namespace Tag.Modes
                 Retarget();
             }
             _wasIt = isIt;
+            if (_selfMotor != null)
+                _selfMotor.SetExternalTagger(isIt && !_it.IsEliminated);
 
             if (isIt)
                 TickChase(dt);
@@ -186,6 +195,9 @@ namespace Tag.Modes
 
         void StopWish()
         {
+            CancelLungeTell();
+            if (_selfMotor != null)
+                _selfMotor.SetExternalTagger(false);
             if (_input == null) return;
             _input.ExternalControl = true;
             _input.SetExternalMove(Vector2.zero, false);
@@ -595,7 +607,7 @@ namespace Tag.Modes
                         }
                     }
                 }
-                else if (inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
+                else if (_lungeTellT <= 0f && _lungeArm <= 0f && inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
                 {
                     _punchTell = Mathf.Lerp(0.36f, 0.22f, urgency); // urgent cock still long enough to read in TP
                     HoldPunchTelegraph();
@@ -605,6 +617,7 @@ namespace Tag.Modes
             {
                 _punchTell = 0f;
                 CancelPunchTelegraph();
+                CancelLungeTell();
                 _angle += (6f / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
                 moveY = wanderMoveY;
                 sprint = false;
@@ -631,14 +644,9 @@ namespace Tag.Modes
                 ? Vector3.Angle(transform.forward, chaseFlat.normalized)
                 : 0f;
             _lungeGate -= dt;
-            bool chaseLunge = false;
             float reach = EffectivePunchRange();
             float chaseDist = chaseFlat.magnitude;
-            if (chaseDist > reach + 0.35f && chaseDist < reach + 4.2f && chaseAng <= 22f && _lungeGate <= 0f)
-            {
-                chaseLunge = true;
-                _lungeGate = 1.35f;
-            }
+            bool chaseLunge = ConsumeChaseLunge(dt, chaseDist, chaseAng, reach);
             float chaseStrafe = chaseDist > closeChaseRange
                 ? Mathf.Sin(Time.time * 1.6f + transform.GetInstanceID() * 0.017f) * 0.18f
                 : 0f;
@@ -647,6 +655,7 @@ namespace Tag.Modes
 
         void TickFleeOrWander(float dt)
         {
+            CancelLungeTell();
             Vector3 moveDir = transform.forward;
             ItController threat = null;
             // Prefer Retarget lock (updated on lose-It) when it still points at a living It.
@@ -751,6 +760,95 @@ namespace Tag.Modes
             to = BlendTrailAvoid(to);
             FaceAndSteer(to, dt, out moveDir);
             DriveWish(wanderMoveY, sprint: false);
+        }
+
+        void EnsureOpponentRefs()
+        {
+            if (_selfMotor == null)
+                _selfMotor = GetComponent<PlayerMotor>();
+            if (_punch == null)
+                _punch = GetComponent<PunchHitbox>();
+            if (_lungeMark == null)
+            {
+                _lungeMark = GetComponent<OpponentLungeTell>();
+                if (_lungeMark == null)
+                    _lungeMark = gameObject.AddComponent<OpponentLungeTell>();
+            }
+        }
+
+        void CancelLungeTell()
+        {
+            _lungeTellT = 0f;
+            _lungeArm = 0f;
+            if (_lungeMark != null)
+                _lungeMark.Hide();
+        }
+
+        /// <summary>
+        /// Fixed lead, then the existing ground lunge. The press is held across Update
+        /// so the kinematic motor sees it. Airborne presses are not sent (that path is air dash).
+        /// Lead time does not scale with score, fuse, or misses.
+        /// </summary>
+        bool ConsumeChaseLunge(float dt, float dist, float ang, float reach)
+        {
+            if (_selfMotor == null || _lungeMark == null)
+                return false;
+
+            bool startWindow = OpponentLungeTell.InLungeWindow(dist, ang, reach);
+            // Once the ring is up, closing the gap still commits. Leaving the line cancels.
+            bool stillOnLine = ang <= OpponentLungeTell.MaxAngleDeg
+                && dist < reach + OpponentLungeTell.MaxGapBeyondReach;
+            bool busy = (_punch != null && _punch.IsPunching) || _punchTell > 0f;
+            bool grounded = _selfMotor.IsGrounded;
+
+            if (_lungeArm > 0f)
+            {
+                _lungeArm -= dt;
+                if (grounded && _selfMotor.IsLunging)
+                {
+                    _lungeArm = 0f;
+                    _lungeGate = 1.35f;
+                    _lungeMark.Hide();
+                    return false;
+                }
+                if (_lungeArm <= 0f)
+                {
+                    _lungeMark.Hide();
+                    _lungeGate = Mathf.Max(_lungeGate, 0.35f);
+                    return false;
+                }
+                _lungeMark.Show(1f);
+                // Airborne lunge input is an air dash. Withhold the press until the feet are down.
+                if (!grounded)
+                    return false;
+                return true;
+            }
+
+            if (_lungeTellT > 0f)
+            {
+                if (!stillOnLine || busy || !grounded)
+                {
+                    _lungeTellT = 0f;
+                    _lungeMark.Hide();
+                    return false;
+                }
+                _lungeTellT -= dt;
+                float lead = Mathf.Max(0.01f, OpponentLungeTell.LeadSeconds);
+                _lungeMark.Show(1f - Mathf.Clamp01(_lungeTellT / lead));
+                if (_lungeTellT <= 0f && _lungeGate <= 0f)
+                {
+                    _lungeArm = 0.15f;
+                    return true;
+                }
+                return false;
+            }
+
+            if (startWindow && !busy && grounded && _lungeGate <= 0f)
+            {
+                _lungeTellT = OpponentLungeTell.LeadSeconds;
+                _lungeMark.Show(0f);
+            }
+            return false;
         }
     }
 }
