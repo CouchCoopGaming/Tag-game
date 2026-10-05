@@ -122,6 +122,7 @@ static class Program
         Console.WriteLine(Tag.Art.PoseHandoff.ProofLine());
         Console.WriteLine(Tag.Art.PoseHandoff.ProofLine2());
         Console.WriteLine(Tag.Art.PoseHandoff.ProofLine3());
+        Console.WriteLine(Tag.Art.PoseHandoff.ProofLine4());
         if (!Tag.Art.PoseHandoff.Holds())
         {
             Console.Error.WriteLine("pose handoff weights do not sum");

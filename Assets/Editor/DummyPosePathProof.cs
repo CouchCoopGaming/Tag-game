@@ -100,6 +100,11 @@ public static class DummyPosePathProof
             || !loco.Contains("PoseHandoff.AimBecome") || !loco.Contains("PoseHandoff.LeanDashExit")
             || !loco.Contains("BlendHopTakeoff") || !loco.Contains("BlendLeanVerb"))
             report.Fail("dummy is not using the third handoff set");
+        if (!loco.Contains("PoseHandoff.IdleGait") || !loco.Contains("PoseHandoff.GaitJump")
+            || !loco.Contains("PoseHandoff.JumpLand") || !loco.Contains("PoseHandoff.WallGrace")
+            || !loco.Contains("PoseHandoff.WallJumpBeat") || !loco.Contains("PoseHandoff.SlideEdge")
+            || !loco.Contains("PoseHandoff.AimReturn") || !loco.Contains("PoseHandoff.BecomeIdle"))
+            report.Fail("dummy is not using the fourth handoff set");
         if (!loco.Contains("DummyPosePaths.Grapple") || !loco.Contains("DummyPosePaths.Dash"))
             report.Fail("grapple or air dash was not denied on the dummy");
 
