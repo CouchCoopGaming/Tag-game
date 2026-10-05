@@ -92,6 +92,11 @@ public static class DummyPosePathProof
             || !loco.Contains("PoseHandoff.LungeEnter") || !loco.Contains("PoseHandoff.PunchBecome")
             || !loco.Contains("BlendLungeEnter") || !loco.Contains("BlendSwapFromCaptured"))
             report.Fail("dummy is not using the second handoff set");
+        if (!loco.Contains("PoseHandoff.IdlePivot") || !loco.Contains("PoseHandoff.LeanDash")
+            || !loco.Contains("PoseHandoff.LeanVerb") || !loco.Contains("PoseHandoff.HopTakeoff")
+            || !loco.Contains("PoseHandoff.AimBecome") || !loco.Contains("PoseHandoff.LeanDashExit")
+            || !loco.Contains("BlendHopTakeoff") || !loco.Contains("BlendLeanVerb"))
+            report.Fail("dummy is not using the third handoff set");
         if (!loco.Contains("DummyPosePaths.Grapple") || !loco.Contains("DummyPosePaths.Dash"))
             report.Fail("grapple or air dash was not denied on the dummy");
 

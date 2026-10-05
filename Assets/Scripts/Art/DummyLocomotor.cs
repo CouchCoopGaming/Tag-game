@@ -76,6 +76,14 @@ namespace Tag.Art
         float _jumpPoseAge = -1f;
         bool _jumpDriveLeft;
         float _airStrafeLean;
+        float _leanSide = 1f;
+        bool _leanDashFrom;
+        bool _leanVerbFrom;
+        float _leanVerbIn;
+        bool _hopTakeoffFrom;
+        Quaternion _hopUaL, _hopUaR, _hopLaL, _hopLaR;
+        Quaternion _hopUlL, _hopUlR, _hopLlL, _hopLlR;
+        Quaternion _hopSp, _hopHp, _hopHd;
         float _jumpPoseCycle;
         bool _jumpFromStill;
         float _jumpFromStillIn;
@@ -694,6 +702,7 @@ namespace Tag.Art
         bool _stopPlantLeft;
         float _stopPlantAge = -1f;
         float _stopPlantW;
+        float _stopIdleW;
         bool _hardStopLeadLeft;
         bool _strideLeadLeft = true;
         StopPlantPose.Memory _stopMemory;
@@ -972,6 +981,8 @@ namespace Tag.Art
         float _prevYaw;
         float _turnVis;
         float _pivotW;
+        float _pivotApply;
+        float _idleShare = 1f;
         float _pivotLead;
         float _pivotSign = 1f;
         float _idlePoseW;
@@ -988,6 +999,9 @@ namespace Tag.Art
         float _grappleFallIn;
         float _grapplePullW;
         float _aimTorsoW;
+        float _aimAtSwap;
+        bool _aimIntoSwap;
+        Quaternion _aimFromSp, _aimFromHd;
         float _aimYaw;
         float _aimPitch;
         float _wallExit;
@@ -3605,6 +3619,8 @@ namespace Tag.Art
                 // Jump height is unchanged. Duration and cooldown are unchanged.
                 _dashFromJump = true;
                 _dashFromJumpIn = 0f;
+                // A bank already on the fall eases into the dash. A plain jump keeps the short leave.
+                _leanDashFrom = _airStrafeLean > 0.02f;
                 if (_upperArmL != null && _spine != null && _hips != null && _upperLegL != null && _head != null)
                 {
                     _jumpDashUaL = _upperArmL.localRotation;
@@ -3623,9 +3639,16 @@ namespace Tag.Art
                     _dashFromJumpIn = 1f;
             }
             if (dashingAir && _dashFromJump)
-                _dashFromJumpIn = Mathf.MoveTowards(_dashFromJumpIn, 1f, dt / 0.04f);
+            {
+                float dashStep = _leanDashFrom ? dt / PoseHandoff.LeanDashSeconds : dt / 0.04f;
+                _dashFromJumpIn = Mathf.MoveTowards(_dashFromJumpIn, 1f, dashStep);
+            }
             else if (!dashingAir)
+            {
                 _dashFromJump = false;
+                if (!_dashPoseHeld)
+                    _leanDashFrom = false;
+            }
             bool dartAir = _diveVis > 0.2f && _input != null && _input.CrouchHeld && !jet;
             if (dashingAir && !_airDashPoseWas && dartAir && !_jumpFromDash)
             {
@@ -6378,19 +6401,19 @@ namespace Tag.Art
             bool sprintLean = PivotPose.KeepsSprintLean(speed);
             bool pivotGate = canTurn && !sprintLean && !lunging && !gliding && !bouncing && _skiBlend < 0.02f
                 && !punching && _swapAge < 0f && PoseAllowed(DummyPosePaths.Pivot);
-            if (!pivotGate)
+            // Leaving the gate used to zero the plant on one frame. The same smoothstep runs both ways.
+            float pivotTarget = 0f;
+            float leadTarget = 0f;
+            if (pivotGate)
             {
-                _pivotW = 0f;
-                _pivotLead = 0f;
-            }
-            else
-            {
-                float pivotTarget = PivotPose.Weight(speed, turnAbs);
+                pivotTarget = PivotPose.Weight(speed, turnAbs);
+                leadTarget = PivotPose.Lead01(speed);
                 if (pivotTarget > 0.001f && turnAbs > 0.08f)
                     _pivotSign = _turnVis < 0f ? -1f : 1f;
-                _pivotW = Mathf.MoveTowards(_pivotW, pivotTarget, dt / PivotPose.BlendSeconds);
-                _pivotLead = Mathf.MoveTowards(_pivotLead, PivotPose.Lead01(speed), dt / PivotPose.BlendSeconds);
             }
+            _pivotW = Mathf.MoveTowards(_pivotW, pivotTarget, dt / PoseHandoff.IdlePivotSeconds);
+            _pivotLead = Mathf.MoveTowards(_pivotLead, leadTarget, dt / PoseHandoff.IdlePivotSeconds);
+            PoseHandoff.IdlePivot(_pivotW, out _idleShare, out _pivotApply);
             // Alive idle. Speed under the gait gate eases off in FadeSeconds once a walk builds.
             // Pivot, crouch, and Become-It zero it on the same frame so they own the bones.
             float becomeW = _swapAge >= 0f ? BecomeItPose.PoseWeight(_swapAge) : 0f;
@@ -6417,14 +6440,14 @@ namespace Tag.Art
                 _stopFromWalkIn = 1f;
                 _stopFromIdleIn = 1f;
             }
-            float stopIdleW = 0f;
+            _stopIdleW = 0f;
             if (_stopPlantAge >= 0f)
             {
                 // Keep the generic stop ease from taking the bones back on a later frame of this window.
                 _stopFromSprintIn = 1f;
                 _stopFromWalkIn = 1f;
                 _stopFromIdleIn = 1f;
-                PoseHandoff.StopIdle(_stopPlantAge / StopPlantPose.WindowSeconds, out _stopPlantW, out stopIdleW);
+                PoseHandoff.StopIdle(_stopPlantAge / StopPlantPose.WindowSeconds, out _stopPlantW, out _stopIdleW);
                 _stopPlantAge += dt;
             }
             else
@@ -6438,19 +6461,20 @@ namespace Tag.Art
                 && flinchAmt < 0.04f && claimAmt < 0.04f
                 && !stopBlend
                 && PoseAllowed(DummyPosePaths.Idle);
-            float idleTarget = idleBody ? IdlePose.Weight(speed, _pivotW, crouch ? 1f : 0f, becomeW) : 0f;
-            if (_stopPlantW > 0.001f || stopIdleW > 0.001f)
+            float idleTarget = idleBody ? IdlePose.Weight(speed, 0f, crouch ? 1f : 0f, becomeW) : 0f;
+            if (_stopPlantW > 0.001f || _stopIdleW > 0.001f)
             {
                 // One curve. The plant leads, then the idle weight shift wins.
-                float yield = IdlePose.Yield(_pivotW, crouch ? 1f : 0f, becomeW);
-                idleTarget = hardStopGate ? IdlePose.SpeedWeight(speed) * yield * stopIdleW : 0f;
+                // Pivot is a separate pair, so it does not hard-cut this handoff.
+                float yield = IdlePose.Yield(0f, crouch ? 1f : 0f, becomeW);
+                idleTarget = hardStopGate ? IdlePose.SpeedWeight(speed) * yield * _stopIdleW : 0f;
                 _idlePoseW = idleTarget;
                 _idleApply = idleTarget;
             }
             else
             {
                 _idlePoseW = Mathf.MoveTowards(_idlePoseW, idleTarget, dt / IdlePose.FadeSeconds);
-                _idleApply = idleBody ? _idlePoseW * IdlePose.Yield(_pivotW, crouch ? 1f : 0f, becomeW) : 0f;
+                _idleApply = _idlePoseW * _idleShare;
             }
             if (_idlePoseW > 0.001f || idleTarget > 0.001f)
             {
@@ -6460,7 +6484,7 @@ namespace Tag.Art
                 if (_idleShift > cycle) _idleShift -= cycle;
                 if (_idleBreath > cycle) _idleBreath -= cycle;
             }
-            float pivotBlend = PoseHandoff.Ease(_pivotW);
+            float pivotBlend = _pivotApply;
             if (canTurn && turnIn > 0.001f)
             {
                 // Same roll on the chest and the hips. A counter-roll reads as a twist at the waist.
@@ -9259,9 +9283,14 @@ namespace Tag.Art
             if (airDashing && _dashFromJump && !_jumpFromDash && _dashFromJumpIn < 0.98f && !punching)
             {
                 // The jump eases into the burst, then the burst holds.
+                // A strafe lean uses one smoothstep into the dash. A plain jump keeps the short leave.
                 // A slide into an air dash keeps its ease. A ski into an air dash keeps its ease.
                 // Jump height is unchanged. Duration and cooldown are unchanged.
-                float intoBurst = _dashFromJumpIn;
+                float intoBurst;
+                if (_leanDashFrom)
+                    PoseHandoff.LeanDash(_dashFromJumpIn, out _, out intoBurst);
+                else
+                    intoBurst = _dashFromJumpIn;
                 _uaLT = Quaternion.Slerp(_jumpDashUaL, _uaLT, intoBurst);
                 _uaRT = Quaternion.Slerp(_jumpDashUaR, _uaRT, intoBurst);
                 _laLT = Quaternion.Slerp(_jumpDashLaL, _laLT, intoBurst);
@@ -14856,23 +14885,30 @@ namespace Tag.Art
                 _ftLT = _ftL0 * Quaternion.Euler(_solePitchL, 0f, 0f);
                 _ftRT = _ftR0 * Quaternion.Euler(_solePitchR, 0f, 0f);
             }
-            if (_stopPlantW > 0.001f && PoseAllowed(DummyPosePaths.Stop))
+            if ((_stopPlantW > 0.001f || _stopIdleW > 0.001f) && PoseAllowed(DummyPosePaths.Stop))
             {
-                // After the stance sole, so the plant does not pitch the shoe through the ground.
+                // One curve from the plant sole into the idle settle.
                 StopPlantPose.Sample planted = StopPlantPose.At();
-                float shoe = _stopPlantW;
+                IdlePose.Sample feet = IdlePose.At(_idleShift, _idleBreath);
+                float idleW = _stopIdleW;
+                Quaternion plantL;
+                Quaternion plantR;
                 if (_hardStopLeadLeft)
                 {
-                    _ftLT = Quaternion.Slerp(_ftLT, _ftL0 * Quaternion.Euler(planted.LeadFoot, 0f, 0f), shoe);
-                    _ftRT = Quaternion.Slerp(_ftRT, _ftR0 * Quaternion.Euler(planted.TrailFoot, 0f, 0f), shoe);
+                    plantL = _ftL0 * Quaternion.Euler(planted.LeadFoot, 0f, 0f);
+                    plantR = _ftR0 * Quaternion.Euler(planted.TrailFoot, 0f, 0f);
                 }
                 else
                 {
-                    _ftRT = Quaternion.Slerp(_ftRT, _ftR0 * Quaternion.Euler(planted.LeadFoot, 0f, 0f), shoe);
-                    _ftLT = Quaternion.Slerp(_ftLT, _ftL0 * Quaternion.Euler(planted.TrailFoot, 0f, 0f), shoe);
+                    plantR = _ftR0 * Quaternion.Euler(planted.LeadFoot, 0f, 0f);
+                    plantL = _ftL0 * Quaternion.Euler(planted.TrailFoot, 0f, 0f);
                 }
+                Quaternion idleL = _ftLT * Quaternion.Euler(feet.FootL, 0f, 0f);
+                Quaternion idleR = _ftRT * Quaternion.Euler(feet.FootR, 0f, 0f);
+                _ftLT = Quaternion.Slerp(plantL, idleL, idleW);
+                _ftRT = Quaternion.Slerp(plantR, idleR, idleW);
             }
-            if (_idleApply > 0.001f && PoseAllowed(DummyPosePaths.Idle))
+            else if (_idleApply > 0.001f && _pivotApply <= 0.02f && PoseAllowed(DummyPosePaths.Idle))
             {
                 // After the stance sole, so the settle does not pitch the shoe through the ground.
                 IdlePose.Sample feet = IdlePose.At(_idleShift, _idleBreath);
@@ -14886,7 +14922,7 @@ namespace Tag.Art
             bool wallOwns = wallRun || climb || _wallFallHold || _jumpFromWall || _jumpFromClimb;
             bool dashOwns = airDashing || _dashPoseHeld;
             bool punchOwns = punching || _punchTelegraph > 0.02f || _aimTorsoW > 0.02f;
-            ApplyAirStrafeLean(armZ, speed, jumpPoseOn, dashOwns, wallOwns, grappleOwns, punchOwns);
+            ApplyAirStrafeLean(armZ, speed, jumpPoseOn, dashOwns, wallOwns, grappleOwns, punchOwns, dt);
             if (_airStrafeLean > 0.02f)
             {
                 torsoSlew = Mathf.Max(torsoSlew, AirStrafeLeanPose.Slew);
@@ -15215,6 +15251,20 @@ namespace Tag.Art
         /// </summary>
         void ApplyAimTorso()
         {
+            if (_swapAge >= 0f && _aimIntoSwap)
+            {
+                // Chest and head leave the aim on one curve. A punch swap already owns that blend.
+                PoseHandoff.AimBecome(Mathf.Clamp01(_swapAge / PoseHandoff.AimBecomeSeconds), out float aimW, out float becomeW);
+                _aimTorsoW = _aimAtSwap * aimW;
+                if (!_swapFromPunch)
+                {
+                    _spineT = Quaternion.Slerp(_aimFromSp, _spineT, becomeW);
+                    _headT = Quaternion.Slerp(_aimFromHd, _headT, becomeW);
+                }
+                return;
+            }
+            if (_swapAge < 0f)
+                _aimIntoSwap = false;
             float apply = AimTorsoPose.Ease(_aimTorsoW);
             if (apply <= 0.001f) return;
             AimTorsoPose.Sample aim = AimTorsoPose.At(_aimYaw, _aimPitch);
@@ -15228,33 +15278,71 @@ namespace Tag.Art
         /// </summary>
         void ApplyStopPlant()
         {
-            if (_stopPlantW <= 0.001f) return;
+            if (_stopPlantW <= 0.001f && _stopIdleW <= 0.001f) return;
             if (!PoseAllowed(DummyPosePaths.Stop)) return;
             StopPlantPose.Sample pose = StopPlantPose.At();
-            float w = _stopPlantW;
-            _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(pose.HipPitch, 0f, 0f), w);
-            _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(pose.ChestPitch, 0f, 0f), w);
-            _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(pose.HeadPitch, 0f, 0f), w);
-            float dampL = StopPlantPose.DampSwing(1f, w);
-            float armW = 1f - dampL;
-            _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(pose.ArmPitch, pose.ArmYaw, 0f), armW);
-            _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(pose.ArmPitch, -pose.ArmYaw, 0f), armW);
-            _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(pose.Elbow, 0f, 0f), armW);
-            _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(pose.Elbow, 0f, 0f), armW);
+            IdlePose.Sample idle = IdlePose.At(_idleShift, _idleBreath);
+            float idleW = _stopIdleW;
+            float plantW = _stopPlantW;
+            float armPlant = 1f - StopPlantPose.DampSwing(1f, plantW);
+            Quaternion gaitHips = _hipsT;
+            Quaternion gaitSpine = _spineT;
+            Quaternion gaitHead = _headT;
+            Quaternion gaitUaL = _uaLT;
+            Quaternion gaitUaR = _uaRT;
+            Quaternion gaitLaL = _laLT;
+            Quaternion gaitLaR = _laRT;
+            Quaternion gaitUlL = _ulLT;
+            Quaternion gaitUlR = _ulRT;
+            Quaternion gaitLlL = _llLT;
+            Quaternion gaitLlR = _llRT;
+            Quaternion plantHips = _hips0 * Quaternion.Euler(pose.HipPitch, 0f, 0f);
+            Quaternion plantSpine = _spine0 * Quaternion.Euler(pose.ChestPitch, 0f, 0f);
+            Quaternion plantHead = _head0 * Quaternion.Euler(pose.HeadPitch, 0f, 0f);
+            Quaternion plantUaL = Quaternion.Slerp(gaitUaL, _uaL0 * Quaternion.Euler(pose.ArmPitch, pose.ArmYaw, 0f), armPlant);
+            Quaternion plantUaR = Quaternion.Slerp(gaitUaR, _uaR0 * Quaternion.Euler(pose.ArmPitch, -pose.ArmYaw, 0f), armPlant);
+            Quaternion plantLaL = Quaternion.Slerp(gaitLaL, _laL0 * Quaternion.Euler(pose.Elbow, 0f, 0f), armPlant);
+            Quaternion plantLaR = Quaternion.Slerp(gaitLaR, _laR0 * Quaternion.Euler(pose.Elbow, 0f, 0f), armPlant);
+            Quaternion plantUlL;
+            Quaternion plantUlR;
+            Quaternion plantLlL;
+            Quaternion plantLlR;
             if (_hardStopLeadLeft)
             {
-                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(pose.LeadThigh, 0f, 0f), w);
-                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(pose.LeadKnee, 0f, 0f), w);
-                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(pose.TrailThigh, 0f, 0f), w);
-                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(pose.TrailKnee, 0f, 0f), w);
+                plantUlL = _ulL0 * Quaternion.Euler(pose.LeadThigh, 0f, 0f);
+                plantLlL = _llL0 * Quaternion.Euler(pose.LeadKnee, 0f, 0f);
+                plantUlR = _ulR0 * Quaternion.Euler(pose.TrailThigh, 0f, 0f);
+                plantLlR = _llR0 * Quaternion.Euler(pose.TrailKnee, 0f, 0f);
             }
             else
             {
-                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(pose.LeadThigh, 0f, 0f), w);
-                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(pose.LeadKnee, 0f, 0f), w);
-                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(pose.TrailThigh, 0f, 0f), w);
-                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(pose.TrailKnee, 0f, 0f), w);
+                plantUlR = _ulR0 * Quaternion.Euler(pose.LeadThigh, 0f, 0f);
+                plantLlR = _llR0 * Quaternion.Euler(pose.LeadKnee, 0f, 0f);
+                plantUlL = _ulL0 * Quaternion.Euler(pose.TrailThigh, 0f, 0f);
+                plantLlL = _llL0 * Quaternion.Euler(pose.TrailKnee, 0f, 0f);
             }
+            Quaternion idleHips = gaitHips * Quaternion.Euler(0f, 0f, idle.HipRoll);
+            Quaternion idleSpine = gaitSpine * Quaternion.Euler(idle.ChestPitch, 0f, idle.ChestRoll);
+            Quaternion idleHead = gaitHead * Quaternion.Euler(idle.HeadPitch, 0f, -idle.ChestRoll);
+            Quaternion idleUaL = gaitUaL * Quaternion.Euler(idle.Shoulder, 0f, 0f);
+            Quaternion idleUaR = gaitUaR * Quaternion.Euler(idle.Shoulder, 0f, 0f);
+            Quaternion idleLaL = gaitLaL;
+            Quaternion idleLaR = gaitLaR;
+            Quaternion idleUlL = gaitUlL * Quaternion.Euler(idle.ThighL, 0f, 0f);
+            Quaternion idleUlR = gaitUlR * Quaternion.Euler(idle.ThighR, 0f, 0f);
+            Quaternion idleLlL = gaitLlL * Quaternion.Euler(idle.KneeL, 0f, 0f);
+            Quaternion idleLlR = gaitLlR * Quaternion.Euler(idle.KneeR, 0f, 0f);
+            _hipsT = Quaternion.Slerp(plantHips, idleHips, idleW);
+            _spineT = Quaternion.Slerp(plantSpine, idleSpine, idleW);
+            _headT = Quaternion.Slerp(plantHead, idleHead, idleW);
+            _uaLT = Quaternion.Slerp(plantUaL, idleUaL, idleW);
+            _uaRT = Quaternion.Slerp(plantUaR, idleUaR, idleW);
+            _laLT = Quaternion.Slerp(plantLaL, idleLaL, idleW);
+            _laRT = Quaternion.Slerp(plantLaR, idleLaR, idleW);
+            _ulLT = Quaternion.Slerp(plantUlL, idleUlL, idleW);
+            _ulRT = Quaternion.Slerp(plantUlR, idleUlR, idleW);
+            _llLT = Quaternion.Slerp(plantLlL, idleLlL, idleW);
+            _llRT = Quaternion.Slerp(plantLlR, idleLlR, idleW);
         }
 
         /// <summary>
@@ -15263,7 +15351,9 @@ namespace Tag.Art
         /// </summary>
         void ApplyIdlePose()
         {
+            if (_stopPlantW > 0.001f || _stopIdleW > 0.001f) return;
             if (_idleApply <= 0.001f) return;
+            if (_pivotApply > 0.02f) return;
             if (!PoseAllowed(DummyPosePaths.Idle)) return;
             IdlePose.Sample pose = IdlePose.At(_idleShift, _idleBreath);
             float w = _idleApply;
@@ -15285,9 +15375,14 @@ namespace Tag.Art
         /// </summary>
         void ApplyPivotPose(float speed)
         {
-            if (_pivotW <= 0.001f || PivotPose.KeepsSprintLean(speed)) return;
+            if (_pivotApply <= 0.001f || PivotPose.KeepsSprintLean(speed)) return;
             if (!PoseAllowed(DummyPosePaths.Pivot)) return;
-            float blend = PoseHandoff.Ease(_pivotW);
+            if (_idleApply > 0.02f)
+            {
+                ApplyIdlePivotPair(speed);
+                return;
+            }
+            float blend = _pivotApply;
             if (blend <= 0.001f) return;
             PivotPose.Twist(_pivotW, out float hip01, out float chest01);
             float sign = _pivotSign < 0f ? -1f : 1f;
@@ -15318,6 +15413,77 @@ namespace Tag.Art
                 _ftRT = Quaternion.Slerp(_ftRT, _ftR0 * Quaternion.Euler(plantSole, 0f, 0f), blend);
                 _ftLT = Quaternion.Slerp(_ftLT, _ftL0 * Quaternion.Euler(leadSole, 0f, 0f), blend);
             }
+        }
+
+        /// <summary>
+        /// Idle and pivot own the same bones. One smoothstep. Pivot wins as it rises.
+        /// </summary>
+        void ApplyIdlePivotPair(float speed)
+        {
+            if (PivotPose.KeepsSprintLean(speed)) return;
+            PoseHandoff.IdlePivot(_pivotW, out float idleW, out float pivotW);
+            float idle = _idlePoseW * idleW;
+            float sum = idle + pivotW;
+            if (sum < 0.001f) return;
+            float toPivot = pivotW / sum;
+            IdlePose.Sample idlePose = IdlePose.At(_idleShift, _idleBreath);
+            Quaternion idleHips = _hipsT * Quaternion.Euler(0f, 0f, idlePose.HipRoll);
+            Quaternion idleSpine = _spineT * Quaternion.Euler(idlePose.ChestPitch, 0f, idlePose.ChestRoll);
+            Quaternion idleHead = _headT * Quaternion.Euler(idlePose.HeadPitch, 0f, -idlePose.ChestRoll);
+            Quaternion idleUaL = _uaLT * Quaternion.Euler(idlePose.Shoulder, 0f, 0f);
+            Quaternion idleUaR = _uaRT * Quaternion.Euler(idlePose.Shoulder, 0f, 0f);
+            Quaternion idleUlL = _ulLT * Quaternion.Euler(idlePose.ThighL, 0f, 0f);
+            Quaternion idleUlR = _ulRT * Quaternion.Euler(idlePose.ThighR, 0f, 0f);
+            Quaternion idleLlL = _llLT * Quaternion.Euler(idlePose.KneeL, 0f, 0f);
+            Quaternion idleLlR = _llRT * Quaternion.Euler(idlePose.KneeR, 0f, 0f);
+            Quaternion idleFtL = _ftLT * Quaternion.Euler(idlePose.FootL, 0f, 0f);
+            Quaternion idleFtR = _ftRT * Quaternion.Euler(idlePose.FootR, 0f, 0f);
+            PivotPose.Twist(_pivotW, out float hip01, out float chest01);
+            float sign = _pivotSign < 0f ? -1f : 1f;
+            Quaternion pivotHips = _hipsT * Quaternion.Euler(0f, sign * PivotPose.HipYaw * hip01, 0f);
+            Quaternion pivotSpine = _spineT * Quaternion.Euler(0f, sign * PivotPose.ChestYaw * chest01, 0f);
+            float lead = _pivotLead;
+            float leadThigh = PivotPose.LeadThigh * lead;
+            float leadKnee = Mathf.Lerp(PivotPose.StandKnee, PivotPose.LeadKnee, lead);
+            float plantYaw = -sign * PivotPose.PlantYaw;
+            float plantSole = GaitBlend.SoleLevelDeg(PivotPose.PlantThigh, PivotPose.PlantKnee);
+            float leadSole = GaitBlend.SoleLevelDeg(leadThigh, leadKnee);
+            bool plantLeft = sign > 0f;
+            Quaternion pivotUlL;
+            Quaternion pivotUlR;
+            Quaternion pivotLlL;
+            Quaternion pivotLlR;
+            Quaternion pivotFtL;
+            Quaternion pivotFtR;
+            if (plantLeft)
+            {
+                pivotUlL = _ulL0 * Quaternion.Euler(PivotPose.PlantThigh, plantYaw, 0f);
+                pivotLlL = _llL0 * Quaternion.Euler(PivotPose.PlantKnee, 0f, 0f);
+                pivotUlR = _ulR0 * Quaternion.Euler(leadThigh, 0f, 0f);
+                pivotLlR = _llR0 * Quaternion.Euler(leadKnee, 0f, 0f);
+                pivotFtL = _ftL0 * Quaternion.Euler(plantSole, 0f, 0f);
+                pivotFtR = _ftR0 * Quaternion.Euler(leadSole, 0f, 0f);
+            }
+            else
+            {
+                pivotUlR = _ulR0 * Quaternion.Euler(PivotPose.PlantThigh, plantYaw, 0f);
+                pivotLlR = _llR0 * Quaternion.Euler(PivotPose.PlantKnee, 0f, 0f);
+                pivotUlL = _ulL0 * Quaternion.Euler(leadThigh, 0f, 0f);
+                pivotLlL = _llL0 * Quaternion.Euler(leadKnee, 0f, 0f);
+                pivotFtR = _ftR0 * Quaternion.Euler(plantSole, 0f, 0f);
+                pivotFtL = _ftL0 * Quaternion.Euler(leadSole, 0f, 0f);
+            }
+            _hipsT = Quaternion.Slerp(idleHips, pivotHips, toPivot);
+            _spineT = Quaternion.Slerp(idleSpine, pivotSpine, toPivot);
+            _headT = Quaternion.Slerp(idleHead, _headT, toPivot);
+            _uaLT = Quaternion.Slerp(idleUaL, _uaLT, toPivot);
+            _uaRT = Quaternion.Slerp(idleUaR, _uaRT, toPivot);
+            _ulLT = Quaternion.Slerp(idleUlL, pivotUlL, toPivot);
+            _ulRT = Quaternion.Slerp(idleUlR, pivotUlR, toPivot);
+            _llLT = Quaternion.Slerp(idleLlL, pivotLlL, toPivot);
+            _llRT = Quaternion.Slerp(idleLlR, pivotLlR, toPivot);
+            _ftLT = Quaternion.Slerp(idleFtL, pivotFtL, toPivot);
+            _ftRT = Quaternion.Slerp(idleFtR, pivotFtR, toPivot);
         }
 
         /// <summary>
@@ -15735,22 +15901,90 @@ namespace Tag.Art
             _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
             _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, 0f);
             _hipsT = _hips0 * Quaternion.Euler(pose.Hip, 0f, 0f);
+            if (_hopChain && _hopTakeoffFrom && _jumpPoseAge >= 0f && _jumpPoseAge <= PoseHandoff.HopTakeoffSeconds)
+                BlendHopTakeoff(_jumpPoseAge);
+            else if (!_hopChain)
+                _hopTakeoffFrom = false;
+        }
+
+        void CaptureHopTakeoff()
+        {
+            _hopTakeoffFrom = false;
+            if (_upperArmL == null || _upperArmR == null || _lowerArmL == null || _lowerArmR == null) return;
+            if (_upperLegL == null || _upperLegR == null || _lowerLegL == null || _lowerLegR == null) return;
+            if (_spine == null || _hips == null || _head == null) return;
+            _hopTakeoffFrom = true;
+            _hopUaL = _upperArmL.localRotation;
+            _hopUaR = _upperArmR.localRotation;
+            _hopLaL = _lowerArmL.localRotation;
+            _hopLaR = _lowerArmR.localRotation;
+            _hopUlL = _upperLegL.localRotation;
+            _hopUlR = _upperLegR.localRotation;
+            _hopLlL = _lowerLegL.localRotation;
+            _hopLlR = _lowerLegR.localRotation;
+            _hopSp = _spine.localRotation;
+            _hopHp = _hips.localRotation;
+            _hopHd = _head.localRotation;
+        }
+
+        /// <summary>
+        /// The fall that was already showing eases into this takeoff.
+        /// Age 0 keeps that pose. The takeoff wins. Jump height is unchanged.
+        /// </summary>
+        void BlendHopTakeoff(float age)
+        {
+            PoseHandoff.HopTakeoff(age, out _, out float takeW);
+            _uaLT = Quaternion.Slerp(_hopUaL, _uaLT, takeW);
+            _uaRT = Quaternion.Slerp(_hopUaR, _uaRT, takeW);
+            _laLT = Quaternion.Slerp(_hopLaL, _laLT, takeW);
+            _laRT = Quaternion.Slerp(_hopLaR, _laRT, takeW);
+            _ulLT = Quaternion.Slerp(_hopUlL, _ulLT, takeW);
+            _ulRT = Quaternion.Slerp(_hopUlR, _ulRT, takeW);
+            _llLT = Quaternion.Slerp(_hopLlL, _llLT, takeW);
+            _llRT = Quaternion.Slerp(_hopLlR, _llRT, takeW);
+            _spineT = Quaternion.Slerp(_hopSp, _spineT, takeW);
+            _hipsT = Quaternion.Slerp(_hopHp, _hipsT, takeW);
+            _headT = Quaternion.Slerp(_hopHd, _headT, takeW);
         }
 
         /// <summary>
         /// Jump beats stay. A side wish that is adding horizontal speed banks the
         /// chest and hips into that side on the fall blend, and the arms counter.
         /// A bunny-hop chain keeps the bank that was already on until this jump's
-        /// fall blend catches it. Air dash, wall, grapple, and punch are left as they were written.
+        /// fall blend catches it. Air dash, punch, and grapple take the bank on one smoothstep.
         /// </summary>
-        void ApplyAirStrafeLean(float armZ, float speed, bool jumpBase, bool airDash, bool wall, bool grapple, bool punch)
+        void ApplyAirStrafeLean(float armZ, float speed, bool jumpBase, bool airDash, bool wall, bool grapple, bool punch, float dt)
         {
+            float heldLean = _airStrafeLean;
             _airStrafeLean = 0f;
-            if (!jumpBase || !PoseAllowed(DummyPosePaths.AirStrafe)) return;
-            if (AirStrafeLeanPose.Yield(airDash, wall, grapple, punch) <= 0f) return;
-            // Claim and lunge already wrote. A strafe bank does not replace them.
+            if (!PoseAllowed(DummyPosePaths.AirStrafe)) return;
+            // Wall keeps its own pose. Punch, grapple, and the dash use the handoff below.
+            if (AirStrafeLeanPose.Yield(false, wall, false, false) <= 0f) return;
             if (_swapPoseOn || _lungePoseOn) return;
-            if (_motor == null) return;
+            bool airDashing = _motor != null && _motor.IsAirDashing;
+            if (airDash && airDashing)
+            {
+                // LeanDash already eases the captured bank into the dash.
+                return;
+            }
+            if (airDash && _dashPoseHeld)
+            {
+                BlendLeanDashExit();
+                return;
+            }
+            bool verb = punch || grapple;
+            if (verb && heldLean > 0.02f)
+                _leanVerbFrom = true;
+            float verbStep = PoseHandoff.LeanVerbSeconds > 0.0001f ? dt / PoseHandoff.LeanVerbSeconds : 1f;
+            _leanVerbIn = Mathf.MoveTowards(_leanVerbIn, verb ? 1f : 0f, verbStep);
+            if (!verb && _leanVerbIn <= 0.001f)
+                _leanVerbFrom = false;
+            if (_leanVerbFrom && (verb || _leanVerbIn > 0.001f))
+            {
+                BlendLeanVerb(armZ, speed);
+                return;
+            }
+            if (!jumpBase || _motor == null) return;
             Vector2 move = _input != null ? _input.Move : Vector2.zero;
             float side = AirStrafeLeanPose.Side(move.x);
             if (side == 0f) return;
@@ -15779,6 +16013,25 @@ namespace Tag.Art
             if (!adds && !_hopChain) return;
             _airStrafeLean = w;
             _leanCarry = w;
+            _leanSide = side;
+
+            bool hopTakeoff = _hopChain && _hopTakeoffFrom && _jumpPoseAge >= 0f && _jumpPoseAge <= PoseHandoff.HopTakeoffSeconds;
+            if (hopTakeoff)
+            {
+                // BlendHopTakeoff already owns the bones. The capture has the bank.
+                // Add it back only as the takeoff wins, so the two curves do not stack.
+                PoseHandoff.HopTakeoff(_jumpPoseAge, out _, out float takeW);
+                AirStrafeLeanPose.Sample held = AirStrafeLeanPose.At(side);
+                float back = w * takeW;
+                _spineT = _spineT * Quaternion.Euler(0f, 0f, held.Roll * back);
+                _hipsT = _hipsT * Quaternion.Euler(0f, 0f, held.HipRoll * back);
+                _headT = _headT * Quaternion.Euler(0f, 0f, held.HeadRoll * back);
+                _uaLT = _uaLT * Quaternion.Euler(held.ArmPitchL * back, held.ArmYawL * back, 0f);
+                _uaRT = _uaRT * Quaternion.Euler(held.ArmPitchR * back, -held.ArmYawR * back, 0f);
+                _laLT = _laLT * Quaternion.Euler(held.ElbowL * back, 0f, 0f);
+                _laRT = _laRT * Quaternion.Euler(held.ElbowR * back, 0f, 0f);
+                return;
+            }
 
             float cycle = _hopChain ? _cycle : (_jumpPoseAge <= JumpPose.StrideBlendSeconds ? _jumpPoseCycle : _cycle);
             float sinC = Mathf.Sin(cycle);
@@ -15791,6 +16044,97 @@ namespace Tag.Art
             _uaRT = _uaR0 * Quaternion.Euler(beat.ArmPitchR + lean.ArmPitchR * w, -(beat.ArmYawR + lean.ArmYawR * w), -armZ);
             _laLT = _laL0 * Quaternion.Euler(beat.ElbowL + lean.ElbowL * w, 0f, 0f);
             _laRT = _laR0 * Quaternion.Euler(beat.ElbowR + lean.ElbowR * w, 0f, 0f);
+        }
+
+        /// <summary>
+        /// Dash exit and the strafe bank. Sum to 1 with the unbanked jump share.
+        /// The dash wins while it is up. The bank returns on the same curve.
+        /// </summary>
+        void BlendLeanDashExit()
+        {
+            if (_motor == null) return;
+            Vector2 move = _input != null ? _input.Move : Vector2.zero;
+            float side = AirStrafeLeanPose.Side(move.x);
+            float want = 0f;
+            if (side != 0f && StrafeAddsSpeed(move))
+                want = AirStrafeLeanPose.FallBlend(_motor.Velocity.y, 1f);
+            float dashAge = _dashPoseAge < 0f ? 0f : _dashPoseAge;
+            float dashW = AirDashPose.DashWeight(dashAge);
+            PoseHandoff.LeanDashExit(dashW, want, out float leanW, out _);
+            _airStrafeLean = leanW;
+            if (leanW <= 0.001f) return;
+            // dashW stays on the dash pose already written. leanW is the bank on the exit share.
+            AirStrafeLeanPose.Sample lean = AirStrafeLeanPose.At(side);
+            _spineT = Quaternion.Slerp(_spineT, _spineT * Quaternion.Euler(0f, 0f, lean.Roll), leanW);
+            _hipsT = Quaternion.Slerp(_hipsT, _hipsT * Quaternion.Euler(0f, 0f, lean.HipRoll), leanW);
+            _headT = Quaternion.Slerp(_headT, _headT * Quaternion.Euler(0f, 0f, lean.HeadRoll), leanW);
+            _uaLT = Quaternion.Slerp(_uaLT, _uaLT * Quaternion.Euler(lean.ArmPitchL, lean.ArmYawL, 0f), leanW);
+            _uaRT = Quaternion.Slerp(_uaRT, _uaRT * Quaternion.Euler(lean.ArmPitchR, -lean.ArmYawR, 0f), leanW);
+            _laLT = Quaternion.Slerp(_laLT, _laLT * Quaternion.Euler(lean.ElbowL, 0f, 0f), leanW);
+            _laRT = Quaternion.Slerp(_laRT, _laRT * Quaternion.Euler(lean.ElbowR, 0f, 0f), leanW);
+        }
+
+        /// <summary>
+        /// Punch or grapple and the strafe bank. Sum to 1.
+        /// The bank leads. The verb wins. Reach and the pull are unchanged.
+        /// </summary>
+        void BlendLeanVerb(float armZ, float speed)
+        {
+            PoseHandoff.LeanVerb(_leanVerbIn, out float leanW, out float verbW);
+            if (leanW <= 0.001f || _motor == null)
+            {
+                _airStrafeLean = 0f;
+                return;
+            }
+            Vector2 move = _input != null ? _input.Move : Vector2.zero;
+            float side = AirStrafeLeanPose.Side(move.x);
+            if (side == 0f) side = _leanSide;
+            if (side == 0f)
+            {
+                _airStrafeLean = 0f;
+                return;
+            }
+            float vy = _motor.Velocity.y;
+            float fall = AirStrafeLeanPose.FallBlend(vy, 1f);
+            float sinC = Mathf.Sin(_cycle);
+            JumpPose.Sample beat = JumpPose.Mixed(vy, 1f, _jumpDriveLeft, speed, sinC, _cycle);
+            AirStrafeLeanPose.Sample lean = AirStrafeLeanPose.At(side);
+            Quaternion leanSp = _spine0 * Quaternion.Euler(beat.Spine, 0f, lean.Roll * fall);
+            Quaternion leanHp = _hips0 * Quaternion.Euler(beat.Hip, 0f, lean.HipRoll * fall);
+            Quaternion leanHd = _headT * Quaternion.Euler(0f, 0f, lean.HeadRoll * fall);
+            Quaternion leanUaL = _uaL0 * Quaternion.Euler(beat.ArmPitchL + lean.ArmPitchL * fall, beat.ArmYawL + lean.ArmYawL * fall, armZ);
+            Quaternion leanUaR = _uaR0 * Quaternion.Euler(beat.ArmPitchR + lean.ArmPitchR * fall, -(beat.ArmYawR + lean.ArmYawR * fall), -armZ);
+            Quaternion leanLaL = _laL0 * Quaternion.Euler(beat.ElbowL + lean.ElbowL * fall, 0f, 0f);
+            Quaternion leanLaR = _laR0 * Quaternion.Euler(beat.ElbowR + lean.ElbowR * fall, 0f, 0f);
+            _spineT = Quaternion.Slerp(leanSp, _spineT, verbW);
+            _hipsT = Quaternion.Slerp(leanHp, _hipsT, verbW);
+            _headT = Quaternion.Slerp(leanHd, _headT, verbW);
+            _uaLT = Quaternion.Slerp(leanUaL, _uaLT, verbW);
+            _uaRT = Quaternion.Slerp(leanUaR, _uaRT, verbW);
+            _laLT = Quaternion.Slerp(leanLaL, _laLT, verbW);
+            _laRT = Quaternion.Slerp(leanLaR, _laRT, verbW);
+            _airStrafeLean = leanW * fall;
+        }
+
+        bool StrafeAddsSpeed(Vector2 move)
+        {
+            if (_motor == null || move.x == 0f) return false;
+            Transform basis = _motor.cam != null ? _motor.cam : _motor.transform;
+            Vector3 wish = WishAccel.CameraWish(basis, move);
+            Vector3 hv = WishAccel.Horizontal(_motor.Velocity);
+            MovementConfig cfg = _motor.cfg;
+            float airAccel = cfg != null ? cfg.airAccel : 30f;
+            float bonus = cfg != null ? cfg.airStrafeBonus : 1.35f;
+            float crouchSpeed = cfg != null ? cfg.crouchSpeed : 3.2f;
+            float sprintSpeed = cfg != null ? cfg.sprintSpeed : 12f;
+            float walkSpeed = cfg != null ? cfg.walkSpeed : 6f;
+            bool crouchHeld = _input != null && _input.CrouchHeld;
+            bool sprintHeld = _input != null && _input.SprintHeld;
+            float wishSpeed = KinematicStep.GaitCap(crouchHeld, sprintHeld, move.y, crouchSpeed, sprintSpeed, walkSpeed);
+            float accel = airAccel;
+            if (Mathf.Abs(move.y) < AirStrafeLeanPose.SideGate)
+                accel *= bonus;
+            return AirStrafeLeanPose.AddsSpeed(hv, wish, wishSpeed, accel, 1f / 60f);
         }
 
         /// <summary>
@@ -16339,6 +16683,13 @@ namespace Tag.Art
             _swapClaim = claim;
             _swapAge = 0f;
             _swapFromPunch = false;
+            _aimIntoSwap = _aimTorsoW > 0.02f;
+            _aimAtSwap = _aimTorsoW;
+            if (_aimIntoSwap && _spine != null && _head != null)
+            {
+                _aimFromSp = _spine.localRotation;
+                _aimFromHd = _head.localRotation;
+            }
             if (PoseAllowed(DummyPosePaths.Become))
                 _becomeCatch = true;
             if ((_punch != null && _punch.IsPunching) || _tagFlinch > 0.04f)
@@ -16448,6 +16799,8 @@ namespace Tag.Art
             _hopChainFrame = chain;
             if (chain)
             {
+                if (!_hopChain)
+                    CaptureHopTakeoff();
                 _hopChain = true;
                 if (_airStrafeLean > _leanCarry)
                     _leanCarry = _airStrafeLean;
@@ -16455,6 +16808,7 @@ namespace Tag.Art
             else if (grounded && !BunnyHopPose.InWindow(since, dt))
             {
                 _hopChain = false;
+                _hopTakeoffFrom = false;
                 _leanCarry = 0f;
             }
 
