@@ -111,6 +111,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.BecomeItPose.ProofLine());
+        if (!Tag.Art.BecomeItPose.Holds())
+        {
+            Console.Error.WriteLine("become-it pose is not held");
+            return 1;
+        }
+
         DummyPosePathReport dummyPose = DummyPosePathProof.Run();
         Console.WriteLine(dummyPose.ToString());
         if (!dummyPose.Ok)

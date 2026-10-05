@@ -76,7 +76,7 @@ namespace Tag.Gameplay
                 // Drive MoveAnimDriver / HUD listeners (legacy TryTag path was the only NotifyBecameIt caller).
                 if (_motor != null)
                     _motor.NotifyBecameIt();
-                // New It raises both arms. The tagged runner guards in ReceiveTagHit.
+                // New It plays the claim pose. The tagged runner still guards in ReceiveTagHit.
                 var loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
                 if (loco != null) loco.PlayItClaim();
             }

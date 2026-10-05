@@ -304,8 +304,16 @@ namespace Tag.Gameplay
 
             // Handoff flash only when It actually moved. A miss never reaches here.
             // SetIt(true) already played BecomeIt and will pop ItMarker. This is the world read.
+            // The old It's give-up is visual. The transfer above already decided the roles.
             if (TagLandTell.Transferred(puncherWasIt, victim != null && victim.IsIt, _it != null && _it.IsIt))
+            {
                 TagLandFlash.PlayOn(victim);
+                if (_it != null)
+                {
+                    DummyLocomotor oldLoco = _it.GetComponentInChildren<DummyLocomotor>();
+                    if (oldLoco != null) oldLoco.PlayItGiveUp();
+                }
+            }
 
             // Punch impact (TagSfx has Resources clip + procedural fallback); become-It chirp from SetIt(true)
             TagSfx.PunchConnect(transform.position);

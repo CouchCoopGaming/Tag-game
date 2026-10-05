@@ -53,6 +53,10 @@ public static class DummyPosePathProof
             report.Fail("mantle pose is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Land") || !loco.Contains("JumpLandTell.ForPawn"))
             report.Fail("land thud is not on the dummy pose path");
+        if (!loco.Contains("DummyPosePaths.Become") || !loco.Contains("ApplyBecomeItPose")
+            || !loco.Contains("BecomeItPose.Claim") || !loco.Contains("BecomeItPose.GiveUp")
+            || !loco.Contains("PlayItGiveUp"))
+            report.Fail("become-it pose is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Grapple") || !loco.Contains("DummyPosePaths.Dash"))
             report.Fail("grapple or air dash was not denied on the dummy");
 
