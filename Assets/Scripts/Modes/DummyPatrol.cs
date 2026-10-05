@@ -11,6 +11,8 @@ namespace Tag.Modes
     /// Dummy AI v1 (SP demo): chase+punch when It; flee when not.
     /// Solo campus play is this pawn (DummyRunner) on the coral Spawn_SE pad.
     /// The lunge lead is OpponentLungeTell.LeadSeconds and does not scale.
+    /// Chase steering is OpponentChaseSteer: sprint outside the lunge band, air-strafe a corner,
+    /// jump a gap, cling a wall on the line, and lunge only after that lead. No grapple, air dash, or couch tool.
     /// Feeds TagArena PlayerMotor via PlayerInputReader.ExternalControl (no RB velocity fight).
     /// Trail Tag: samples nearby TrailSegments and blends a lateral flee wish into steering.
     /// Hot Potato: when fuse Remaining is low (warnSec ~10), It chases harder to dump the tag;
@@ -440,7 +442,7 @@ namespace Tag.Modes
             desired.Normalize();
             // Always turn. The old 16 deg snap made a juke useless once they were lined up.
             Quaternion look = Quaternion.LookRotation(desired, Vector3.up);
-            float rate = Mathf.Min(turnSpeed, 150f);
+            float rate = Mathf.Min(turnSpeed, OpponentChaseSteer.MaxYawDegPerSec);
             if (Vector3.Angle(transform.forward, desired) <= faceAlignDeg)
                 rate *= 0.65f;
             transform.rotation = Quaternion.RotateTowards(transform.rotation, look, rate * dt);
@@ -546,111 +548,192 @@ namespace Tag.Modes
         {
             if (_target == null || !_target.IsAlive) Retarget();
             Vector3 moveDir = transform.forward;
-            float moveY = 1f;
-            bool sprint = true;
             float urgency = HotPotatoFuseUrgency();
 
-            if (_target != null)
-            {
-                Vector3 toAim = AimPoint(_target) - transform.position;
-                toAim.y = 0f;
-                toAim = BlendTrailAvoid(toAim);
-                toAim = ApplyWeave(toAim, dt, distHold: toAim.magnitude > closeChaseRange);
-
-                FaceAndSteer(toAim, dt, out moveDir);
-
-                Vector3 toBody = _target.transform.position - transform.position;
-                toBody.y = 0f;
-                float dist = toBody.magnitude;
-                // Close range: keep sprinting in; motor owns accel (no velocity overwrite).
-                if (dist <= closeChaseRange)
-                    moveY = 1f;
-
-                float ang = Vector3.Angle(transform.forward, toBody.sqrMagnitude > 0.001f ? toBody.normalized : transform.forward);
-                _cooldown -= dt;
-                if (_itGraceTimer > 0f)
-                    _itGraceTimer -= dt;
-                float range = EffectivePunchRange();
-                // Slightly wider decision cone when dumping a low fuse.
-                float cone = EffectivePunchConeHalfDeg() * (1f + 0.2f * urgency);
-                bool inCone = dist <= range && ang <= cone;
-                // A hard strafe past the fist should whiff - not a guaranteed tag.
-                Vector3 juke = TargetPlanarVelocity();
-                float lateral = Mathf.Abs(Vector3.Dot(juke, transform.right));
-                bool juked = lateral > 6.8f && Random.value < 0.78f; // easier cancel when prey strafes
-                // Windup on the punch itself is 0.12s. Cock the arm first so the swing is readable,
-                // and drop it if they leave the fist.
-                if (_punchTell > 0f)
-                {
-                    if (!inCone || juked || _itGraceTimer > 0f)
-                    {
-                        _punchTell = 0f;
-                        CancelPunchTelegraph();
-                        // Whiff / leave-cone: brief arm-drop before they can cock again.
-                        if (juked || !inCone)
-                            _cooldown = Mathf.Max(_cooldown, 0.33f); // slightly longer arm drop so juke/leave-cone whiff reads
-                        // Juke peel: refresh weave so they leave the punch line instead of re-cocking in place.
-                        if (juked)
-                        {
-                            _weave = Random.Range(0.35f, 0.55f) * (Random.value < 0.5f ? -1f : 1f);
-                            _weaveT = Random.Range(0.35f, 0.55f);
-                        }
-                    }
-                    else
-                    {
-                        HoldPunchTelegraph();
-                        _punchTell -= dt;
-                        if (_punchTell <= 0f)
-                        {
-                            _punch?.QueuePunch();
-                            _cooldown = NextPunchCooldown(urgency);
-                        }
-                    }
-                }
-                else if (_lungeTellT <= 0f && _lungeArm <= 0f && inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
-                {
-                    _punchTell = Mathf.Lerp(0.36f, 0.22f, urgency); // urgent cock still long enough to read in TP
-                    HoldPunchTelegraph();
-                }
-            }
-            else
+            if (_target == null)
             {
                 _punchTell = 0f;
                 CancelPunchTelegraph();
                 CancelLungeTell();
                 _angle += (6f / Mathf.Max(0.5f, radius)) * Mathf.Rad2Deg * dt;
-                moveY = wanderMoveY;
-                sprint = false;
                 // Still peel off ribbons while hunting with no target.
                 Vector3 peel = BlendTrailAvoid(transform.forward);
                 FaceAndSteer(peel, dt, out moveDir);
-            }
-
-            // Keep facing coherent even when moveDir came from FaceAndSteer.
-            _ = moveDir;
-            if (_target == null)
-            {
-                DriveWish(moveY, sprint);
+                _ = moveDir;
+                DriveWish(wanderMoveY, sprint: false);
                 return;
             }
-            float chaseDy = _target.transform.position.y - transform.position.y;
-            Vector3 chaseFlat = _target.transform.position - transform.position;
-            chaseFlat.y = 0f;
-            bool chaseGrounded = _selfMotor == null || _selfMotor.IsGrounded;
-            // After weave, target dy alone can miss a lip between us; probe ahead along chase flat.
-            float chaseLip = ProbeAheadDeckDy(chaseFlat);
-            bool chaseJump = ConsumeHop(Mathf.Max(chaseDy, chaseLip), chaseFlat.magnitude, chaseGrounded, 0.7f, 9f);
-            float chaseAng = chaseFlat.sqrMagnitude > 0.001f
-                ? Vector3.Angle(transform.forward, chaseFlat.normalized)
-                : 0f;
-            _lungeGate -= dt;
+
+            Vector3 toBody = _target.transform.position - transform.position;
+            toBody.y = 0f;
+            float dist = toBody.magnitude;
             float reach = EffectivePunchRange();
-            float chaseDist = chaseFlat.magnitude;
-            bool chaseLunge = ConsumeChaseLunge(dt, chaseDist, chaseAng, reach);
-            float chaseStrafe = chaseDist > closeChaseRange
-                ? Mathf.Sin(Time.time * 1.6f + transform.GetInstanceID() * 0.017f) * 0.18f
-                : 0f;
-            DriveWish(moveY, sprint, chaseStrafe, chaseJump, chaseLunge);
+            bool grounded = _selfMotor == null || _selfMotor.IsGrounded;
+            bool wall = ProbeWallBetween(_target.transform.position, out Vector3 wallNormal, out float wallDist);
+            bool wallCommit = wall && wallDist <= OpponentChaseSteer.ClingCommitMeters;
+            if (wallCommit)
+                CancelLungeTell();
+
+            Vector3 rawAim = AimPoint(_target) - transform.position;
+            rawAim.y = 0f;
+            bool holdLine = _lungeTellT > 0f;
+            bool arming = _lungeArm > 0f && grounded && !wallCommit;
+            float farMeters = reach + OpponentLungeTell.MaxGapBeyondReach;
+            bool gap = grounded && !holdLine && !arming && !wallCommit && ProbeGapAhead(rawAim);
+            Vector3 aim = rawAim;
+            if (!wallCommit && !holdLine)
+                aim = BlendTrailAvoid(aim);
+            // Weave only outside the lunge band. Inside it the 0.45 s tell needs the line held.
+            if (!wallCommit && !gap && grounded && !holdLine && !arming && dist > farMeters)
+                aim = ApplyWeave(aim, dt, dist > closeChaseRange);
+
+            OpponentChaseInput chase;
+            chase.Aim = aim;
+            chase.Velocity = _selfMotor != null ? _selfMotor.Velocity : Vector3.zero;
+            chase.BodyForward = transform.forward;
+            chase.WallNormal = wall ? wallNormal : Vector3.zero;
+            chase.WallDistance = wall ? wallDist : 999f;
+            chase.Grounded = grounded;
+            chase.GapAhead = gap;
+            chase.LungeCommit = arming;
+            chase.HoldLine = holdLine;
+            chase.PlanarDistance = dist;
+            chase.FarMeters = farMeters;
+
+            OpponentChaseWish wish = OpponentChaseSteer.Decide(chase);
+            Vector3 face = wish.Face.sqrMagnitude > 0.001f ? wish.Face : aim;
+            FaceAndSteer(face, dt, out moveDir);
+            _ = moveDir;
+
+            float ang = Vector3.Angle(transform.forward, toBody.sqrMagnitude > 0.001f ? toBody.normalized : transform.forward);
+            _cooldown -= dt;
+            if (_itGraceTimer > 0f)
+                _itGraceTimer -= dt;
+            float range = reach;
+            // Slightly wider decision cone when dumping a low fuse.
+            float cone = EffectivePunchConeHalfDeg() * (1f + 0.2f * urgency);
+            bool inCone = dist <= range && ang <= cone;
+            // A hard strafe past the fist should whiff - not a guaranteed tag.
+            Vector3 juke = TargetPlanarVelocity();
+            float lateral = Mathf.Abs(Vector3.Dot(juke, transform.right));
+            bool juked = lateral > 6.8f && Random.value < 0.78f; // easier cancel when prey strafes
+            // Windup on the punch itself is 0.12s. Cock the arm first so the swing is readable,
+            // and drop it if they leave the fist.
+            if (_punchTell > 0f)
+            {
+                if (!inCone || juked || _itGraceTimer > 0f)
+                {
+                    _punchTell = 0f;
+                    CancelPunchTelegraph();
+                    // Whiff / leave-cone: brief arm-drop before they can cock again.
+                    if (juked || !inCone)
+                        _cooldown = Mathf.Max(_cooldown, 0.33f); // slightly longer arm drop so juke/leave-cone whiff reads
+                    // Juke peel: refresh weave so they leave the punch line instead of re-cocking in place.
+                    if (juked)
+                    {
+                        _weave = Random.Range(0.35f, 0.55f) * (Random.value < 0.5f ? -1f : 1f);
+                        _weaveT = Random.Range(0.35f, 0.55f);
+                    }
+                }
+                else
+                {
+                    HoldPunchTelegraph();
+                    _punchTell -= dt;
+                    if (_punchTell <= 0f)
+                    {
+                        _punch?.QueuePunch();
+                        _cooldown = NextPunchCooldown(urgency);
+                    }
+                }
+            }
+            else if (_lungeTellT <= 0f && _lungeArm <= 0f && inCone && !juked && _itGraceTimer <= 0f && _cooldown <= 0f && Random.value <= EffectiveAggression())
+            {
+                _punchTell = Mathf.Lerp(0.36f, 0.22f, urgency); // urgent cock still long enough to read in TP
+                HoldPunchTelegraph();
+            }
+
+            float chaseAng = toBody.sqrMagnitude > 0.001f
+                ? Vector3.Angle(transform.forward, toBody.normalized)
+                : ang;
+            _lungeGate -= dt;
+            // Punch windup runs first, so a cocked fist blocks a new tell. The press itself
+            // stays inside ConsumeChaseLunge, which waits out OpponentLungeTell.LeadSeconds.
+            bool lungePress = ConsumeChaseLunge(dt, dist, chaseAng, reach);
+            if (wallCommit)
+            {
+                CancelLungeTell();
+                lungePress = false;
+            }
+
+            float chaseDy = _target.transform.position.y - transform.position.y;
+            // Lip hop still uses the motor jump. A gap, a wall, and the lunge line do not.
+            float chaseLip = ProbeAheadDeckDy(toBody.sqrMagnitude > 0.001f ? toBody : transform.forward);
+            bool lip = ConsumeHop(Mathf.Max(chaseDy, chaseLip), dist, grounded, 0.7f, 9f);
+            bool jump = wish.Jump && !lungePress;
+            if (!jump && wish.Verb != OpponentChaseVerb.WallCling && wish.Verb != OpponentChaseVerb.Lunge
+                && wish.Verb != OpponentChaseVerb.AirStrafe && _lungeTellT <= 0f && _lungeArm <= 0f && !lungePress)
+                jump = lip;
+            // Chase does not take air dash, grapple, ski, jet, or crouch. The motor steps the capsule.
+            DriveWish(wish.MoveY, wish.Sprint, wish.Strafe, jump, lungePress, airDash: false);
+        }
+
+        /// <summary>
+        /// True when the floor ahead of a grounded chase is missing or drops farther than a step.
+        /// Two samples must agree so a crack is not a jump.
+        /// </summary>
+        bool ProbeGapAhead(Vector3 planarDir)
+        {
+            if (planarDir.sqrMagnitude < 0.01f) return false;
+            planarDir.Normalize();
+            int open = 0;
+            float[] dists = { 1.2f, 2.0f, 2.8f };
+            for (int i = 0; i < dists.Length; i++)
+            {
+                Vector3 origin = transform.position + planarDir * dists[i] + Vector3.up * 0.35f;
+                if (!Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 2.6f, ~0, QueryTriggerInteraction.Ignore))
+                    open++;
+                else if (hit.point.y < transform.position.y - 1.15f)
+                    open++;
+            }
+            return open >= 2;
+        }
+
+        /// <summary>
+        /// A wall on the line to the target. The pawn capsule and the target body are not walls.
+        /// </summary>
+        bool ProbeWallBetween(Vector3 targetPos, out Vector3 normal, out float distance)
+        {
+            normal = Vector3.zero;
+            distance = 999f;
+            Vector3 to = targetPos - transform.position;
+            to.y = 0f;
+            float dist = to.magnitude;
+            if (dist < 0.75f) return false;
+            Vector3 dir = to / dist;
+            Vector3 origin = transform.position + Vector3.up * 0.95f;
+            float cast = Mathf.Min(dist - 0.35f, 12f);
+            if (cast < 0.4f) return false;
+            if (!Physics.Raycast(origin, dir, out RaycastHit hit, cast, ~0, QueryTriggerInteraction.Ignore))
+                return false;
+            if (hit.collider is CharacterController)
+                return false;
+            if (hit.collider != null)
+            {
+                Transform hitTransform = hit.collider.transform;
+                if (hitTransform == transform || hitTransform.IsChildOf(transform))
+                    return false;
+                if (_target != null && (hitTransform == _target.transform || hitTransform.IsChildOf(_target.transform)))
+                    return false;
+            }
+            Vector3 atTarget = hit.point - targetPos;
+            atTarget.y = 0f;
+            if (atTarget.sqrMagnitude < 0.64f)
+                return false;
+            if (!OpponentChaseSteer.IsWallNormal(hit.normal))
+                return false;
+            normal = hit.normal;
+            distance = hit.distance;
+            return true;
         }
 
         void TickFleeOrWander(float dt)
