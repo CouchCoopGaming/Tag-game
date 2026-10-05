@@ -119,6 +119,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.PivotPose.ProofLine());
+        if (!Tag.Art.PivotPose.Holds())
+        {
+            Console.Error.WriteLine("pivot pose is not held");
+            return 1;
+        }
+
         DummyPosePathReport dummyPose = DummyPosePathProof.Run();
         Console.WriteLine(dummyPose.ToString());
         if (!dummyPose.Ok)

@@ -13,6 +13,7 @@ namespace Tag.Art
     public static class DummyPosePaths
     {
         public const string Gait = "gait";
+        public const string Pivot = "pivot";
         public const string Jump = "jump";
         public const string Wall = "wall";
         public const string Punch = "punch";
@@ -31,7 +32,7 @@ namespace Tag.Art
 
         public static readonly string[] Shared =
         {
-            Gait, Jump, Wall, Punch, Tag, Lunge, Slide, Crouch, Mantle, Land, Become
+            Gait, Jump, Wall, Punch, Tag, Lunge, Slide, Crouch, Mantle, Land, Become, Pivot
         };
 
         public static readonly string[] Denied = { Grapple, Dash };
@@ -58,10 +59,10 @@ namespace Tag.Art
 
         public static bool Holds()
         {
-            if (Shared.Length != 11 || Denied.Length != 2) return false;
+            if (Shared.Length != 12 || Denied.Length != 2) return false;
             if (Shared[0] != Gait || Shared[1] != Jump || Shared[2] != Wall || Shared[3] != Punch
                 || Shared[4] != Tag || Shared[5] != Lunge || Shared[6] != Slide || Shared[7] != Crouch
-                || Shared[8] != Mantle || Shared[9] != Land || Shared[10] != Become)
+                || Shared[8] != Mantle || Shared[9] != Land || Shared[10] != Become || Shared[11] != Pivot)
                 return false;
             if (Denied[0] != Grapple || Denied[1] != Dash) return false;
             if (Mathf.Abs(LungeTellSeconds - 0.45f) > 0.001f) return false;
@@ -97,7 +98,7 @@ namespace Tag.Art
             if (JumpPose.RootMotion || WallPose.RootMotion || PunchTagPose.RootMotion
                 || CrouchPose.RootMotion || MantlePose.RootMotion || AirDashPose.RootMotion
                 || GrapplePose.RootMotion || PoseHandoff.RootMotion || LungePose.RootMotion
-                || BecomeItPose.RootMotion)
+                || BecomeItPose.RootMotion || PivotPose.RootMotion)
                 return false;
             if (Mathf.Abs(PunchTagPose.ReachMeters - 1.55f) > 0.001f) return false;
             if (Mathf.Abs(AirDashPose.WindowSeconds - 0.10f) > 0.001f) return false;
@@ -105,6 +106,8 @@ namespace Tag.Art
             if (Mathf.Abs(LungePose.BurstSeconds - 0.20f) > 0.001f) return false;
             if (!LungePose.Holds()) return false;
             if (!BecomeItPose.Holds()) return false;
+            if (!PivotPose.Holds()) return false;
+            if (PivotPose.BlendSeconds < 0.10f || PivotPose.BlendSeconds > 0.18f) return false;
             if (BecomeItPose.HoldSeconds < 0.30f || BecomeItPose.HoldSeconds > 0.50f) return false;
 
             MovementConfig cfg = ScriptableObject.CreateInstance<MovementConfig>();
@@ -133,6 +136,7 @@ namespace Tag.Art
             return "dummy pose"
                 + " pawn=" + SoloGrappleGate.OpponentPawnName
                 + " gait=GaitBlend speed"
+                + " pivot=PivotPose plant/hips-then-chest/lead"
                 + " jump=JumpPose beats"
                 + " wall=WallPose climb/run"
                 + " punch=PunchTagPose windup"
