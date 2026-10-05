@@ -96,6 +96,13 @@ static class Program
             Console.Error.WriteLine("crouch pose is not held");
             return 1;
         }
+
+        Console.WriteLine(Tag.Art.MantlePose.ProofLine());
+        if (!Tag.Art.MantlePose.Holds())
+        {
+            Console.Error.WriteLine("mantle pose is not held");
+            return 1;
+        }
         if (!clips.Ok)
         {
             Console.Error.WriteLine(string.Join(" | ", clips.Failures));
