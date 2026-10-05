@@ -12,7 +12,7 @@ namespace Tag.Art
     /// on top of the stride. Wall climb and wall run read <see cref="WallPose"/>.
     /// Air dash reads <see cref="AirDashPose"/>. Crouch reads <see cref="CrouchPose"/>.
     /// Mantle reads <see cref="MantlePose"/>. Those clips do not change feel numbers. No root motion.
-    /// DummyRunner shares gait, jump, wall, punch, tag, lunge, slide, crouch, mantle, and the land thud.
+    /// DummyRunner shares gait, the grounded pivot, jump, wall, punch, tag, lunge, slide, crouch, mantle, and the land thud.
     /// Grapple and air dash stay on the solo human. See <see cref="DummyPosePaths"/>.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
@@ -952,6 +952,9 @@ namespace Tag.Art
         Quaternion _strideSurfSp, _strideSurfHp, _strideSurfHd;
         float _prevYaw;
         float _turnVis;
+        float _pivotW;
+        float _pivotLead;
+        float _pivotSign = 1f;
         bool _hasYaw;
         float _lookArmVis;
         float _grapplePose;
@@ -6287,14 +6290,34 @@ namespace Tag.Art
             // The roll eases in with the turn. A hard gate popped the chest at chase distance.
             float turnAbs = Mathf.Abs(_turnVis);
             float turnIn = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(turnAbs / 0.55f));
+            // Pivot is a bone layer on this slew. The 280 scale and the 0.1s follow stay.
+            bool sprintLean = PivotPose.KeepsSprintLean(speed);
+            bool pivotGate = canTurn && !sprintLean && !lunging && !gliding && !bouncing && _skiBlend < 0.02f
+                && !punching && _swapAge < 0f && PoseAllowed(DummyPosePaths.Pivot);
+            if (!pivotGate)
+            {
+                _pivotW = 0f;
+                _pivotLead = 0f;
+            }
+            else
+            {
+                float pivotTarget = PivotPose.Weight(speed, turnAbs);
+                if (pivotTarget > 0.001f && turnAbs > 0.08f)
+                    _pivotSign = _turnVis < 0f ? -1f : 1f;
+                _pivotW = Mathf.MoveTowards(_pivotW, pivotTarget, dt / PivotPose.BlendSeconds);
+                _pivotLead = Mathf.MoveTowards(_pivotLead, PivotPose.Lead01(speed), dt / PivotPose.BlendSeconds);
+            }
+            float pivotBlend = PoseHandoff.Ease(_pivotW);
             if (canTurn && turnIn > 0.001f)
             {
                 // Same roll on the chest and the hips. A counter-roll reads as a twist at the waist.
                 // A sprint leans a little more so the pair still reads through the long stride.
+                // A planted pivot takes the roll while it owns the bones. Sprint leaves it.
+                float leanIn = turnIn * (1f - pivotBlend);
                 float leanDeg = Mathf.Lerp(GaitBlend.TurnLeanWalk, GaitBlend.TurnLeanSprint, gaitW);
                 Quaternion lean = Quaternion.Euler(0f, 0f, Mathf.Sign(_turnVis) * leanDeg);
-                _spineT = Quaternion.Slerp(_spineT, _spineT * lean, turnIn);
-                _hipsT = Quaternion.Slerp(_hipsT, _hipsT * lean, turnIn);
+                _spineT = Quaternion.Slerp(_spineT, _spineT * lean, leanIn);
+                _hipsT = Quaternion.Slerp(_hipsT, _hipsT * lean, leanIn);
             }
 
             // Arms - slight outward A-pose only (large +Z was V-ing hands into the butt)
@@ -8017,15 +8040,18 @@ namespace Tag.Art
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(CrouchPose.Knee, 0f, 0f), plantD);
                     }
                 }
-                if (Mathf.Abs(_turnVis) > 0.18f && footSki < 0.35f && !(_sprintFromTurn && _sprintIn < 0.98f))
+                if (Mathf.Abs(_turnVis) > 0.18f && footSki < 0.35f && !(_sprintFromTurn && _sprintIn < 0.98f)
+                    && _pivotW <= 0.001f && !PivotPose.Engaged(speed, Mathf.Abs(_turnVis)))
                 {
                     // Outside foot plants. Positive turn is to the right, so the left foot stays down.
                     // A walk plants at a medium turn. The old curve stayed soft until the yaw was sharp.
-                    // A sprint stride is long, so that plant still arrives sooner. Look speed is unchanged.
-                    float turnAbs = Mathf.Abs(_turnVis);
-                    float walkW = Mathf.Clamp01((turnAbs - 0.12f) / 0.28f);
-                    float sprintW = Mathf.Clamp01((turnAbs - 0.12f) / 0.22f);
+                    // Sprint keeps the GaitBlend lean, so this plant is gone by sprint speed.
+                    // A low-speed large turn is PivotPose. Look speed is unchanged.
+                    float plantTurn = Mathf.Abs(_turnVis);
+                    float walkW = Mathf.Clamp01((plantTurn - 0.12f) / 0.28f);
+                    float sprintW = Mathf.Clamp01((plantTurn - 0.12f) / 0.22f);
                     float w = Mathf.Lerp(walkW, sprintW, Mathf.Clamp01(_runVis));
+                    w *= 1f - PivotPose.SprintLean01(speed);
                     if (_turnVis > 0f)
                     {
                         _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(6f, 0f, 0f), w);
@@ -14640,11 +14666,17 @@ namespace Tag.Art
                 torsoSlew = Mathf.Max(torsoSlew, BecomeItPose.Slew);
                 slew = Mathf.Max(slew, BecomeItPose.Slew);
             }
+            if (_pivotW > 0.02f)
+            {
+                legSlew = Mathf.Max(legSlew, PivotPose.Slew);
+                torsoSlew = Mathf.Max(torsoSlew, PivotPose.Slew);
+            }
             if (_stanceSole && !ShoesOwned(sliding, punching, flinchAmt))
             {
                 _ftLT = _ftL0 * Quaternion.Euler(_solePitchL, 0f, 0f);
                 _ftRT = _ftR0 * Quaternion.Euler(_solePitchR, 0f, 0f);
             }
+            ApplyPivotPose(speed);
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
             Slew(ref _head, _headT, slew, dt);
@@ -14880,6 +14912,48 @@ namespace Tag.Art
                 _ulRT = Quaternion.Slerp(_ulRT, ulR, weight);
                 _llLT = Quaternion.Slerp(_llLT, llL, weight);
                 _llRT = Quaternion.Slerp(_llRT, llR, weight);
+            }
+        }
+
+        /// <summary>
+        /// Outside foot stays, hips yaw toward the heading, then the chest.
+        /// The inside foot takes a short step once speed builds. Sprint
+        /// returns before any plant. No root motion.
+        /// </summary>
+        void ApplyPivotPose(float speed)
+        {
+            if (_pivotW <= 0.001f || PivotPose.KeepsSprintLean(speed)) return;
+            if (!PoseAllowed(DummyPosePaths.Pivot)) return;
+            float blend = PoseHandoff.Ease(_pivotW);
+            if (blend <= 0.001f) return;
+            PivotPose.Twist(_pivotW, out float hip01, out float chest01);
+            float sign = _pivotSign < 0f ? -1f : 1f;
+            _hipsT = _hipsT * Quaternion.Euler(0f, sign * PivotPose.HipYaw * hip01, 0f);
+            _spineT = _spineT * Quaternion.Euler(0f, sign * PivotPose.ChestYaw * chest01, 0f);
+            float lead = _pivotLead;
+            float leadThigh = PivotPose.LeadThigh * lead;
+            float leadKnee = Mathf.Lerp(PivotPose.StandKnee, PivotPose.LeadKnee, lead);
+            float plantYaw = -sign * PivotPose.PlantYaw;
+            float plantSole = GaitBlend.SoleLevelDeg(PivotPose.PlantThigh, PivotPose.PlantKnee);
+            float leadSole = GaitBlend.SoleLevelDeg(leadThigh, leadKnee);
+            bool plantLeft = sign > 0f;
+            if (plantLeft)
+            {
+                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(PivotPose.PlantThigh, plantYaw, 0f), blend);
+                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(PivotPose.PlantKnee, 0f, 0f), blend);
+                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(leadThigh, 0f, 0f), blend);
+                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(leadKnee, 0f, 0f), blend);
+                _ftLT = Quaternion.Slerp(_ftLT, _ftL0 * Quaternion.Euler(plantSole, 0f, 0f), blend);
+                _ftRT = Quaternion.Slerp(_ftRT, _ftR0 * Quaternion.Euler(leadSole, 0f, 0f), blend);
+            }
+            else
+            {
+                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(PivotPose.PlantThigh, plantYaw, 0f), blend);
+                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(PivotPose.PlantKnee, 0f, 0f), blend);
+                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(leadThigh, 0f, 0f), blend);
+                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(leadKnee, 0f, 0f), blend);
+                _ftRT = Quaternion.Slerp(_ftRT, _ftR0 * Quaternion.Euler(plantSole, 0f, 0f), blend);
+                _ftLT = Quaternion.Slerp(_ftLT, _ftL0 * Quaternion.Euler(leadSole, 0f, 0f), blend);
             }
         }
 

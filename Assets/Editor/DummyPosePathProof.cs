@@ -33,6 +33,12 @@ public static class DummyPosePathProof
 
         if (!loco.Contains("DummyPosePaths.Gait") || !loco.Contains("GaitBlend.PoseWeight"))
             report.Fail("gait is not on the dummy pose path");
+        if (!loco.Contains("DummyPosePaths.Pivot") || !loco.Contains("ApplyPivotPose")
+            || !loco.Contains("PivotPose.Weight") || !loco.Contains("PivotPose.Twist")
+            || !loco.Contains("PivotPose.KeepsSprintLean"))
+            report.Fail("pivot pose is not on the dummy pose path");
+        if (!loco.Contains("yawRate / 280f") || !loco.Contains("dt / 0.1f"))
+            report.Fail("yaw slew was retuned");
         if (!loco.Contains("DummyPosePaths.Jump") || !loco.Contains("JumpPose.PoseActive"))
             report.Fail("jump beats are not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Wall") || !loco.Contains("WallPose.Climb"))
