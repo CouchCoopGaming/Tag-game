@@ -59,21 +59,22 @@ namespace Tag.Art
         // Visual mesh drop only. The capsule and slideBoost stay put.
         public const float SlideBodyDrop = 0.82f;
         // Enter from run, leave to run or crouch, and a jump cancel.
-        // Crouch keeps its own 0.16s drop.
+        // Crouch keeps its own tenth-second blend. See CrouchPose.
         public const float SlideBlendSeconds = 0.10f;
         // The clip weight eases the run enter. The old wedge overlay is off
         // so it cannot snap underneath that weight.
         public const bool RunSlideOverlay = false;
 
-        // The crouch this slide must not match: both knees bent, elbows folded, chest up.
-        public const float CrouchHip = 22f;
-        public const float CrouchSpine = 10f;
-        public const float CrouchThigh = 56f;
-        public const float CrouchKnee = -68f;
-        public const float CrouchElbow = -72f;
-        public const float CrouchArmPitch = -36f;
-        public const float CrouchArmYaw = 16f;
-        public const float CrouchDrop = 0.14f;
+        // The crouch this slide must not match: both knees bent, elbows folded, chest forward.
+        // Same numbers as CrouchPose. The slide leans back. This one leans toward the face.
+        public const float CrouchHip = 28f;
+        public const float CrouchSpine = 18f;
+        public const float CrouchThigh = 64f;
+        public const float CrouchKnee = -80f;
+        public const float CrouchElbow = -90f;
+        public const float CrouchArmPitch = -44f;
+        public const float CrouchArmYaw = 18f;
+        public const float CrouchDrop = 0.22f;
 
         // Idle hang on this rig: a little forward, a little out, elbows nearly straight.
         // A change that stays inside this hang is an arm twitch.
@@ -318,7 +319,7 @@ namespace Tag.Art
             var fails = new List<string>();
             float chest = SlideHip + SlideSpine;
             float crouchChest = CrouchHip + CrouchSpine;
-            // Negative hip + spine reclines the chest. A crouch chest stays near +32.
+            // Negative hip + spine reclines the chest. A crouch chest stays forward, near +46.
             if (SlideHip > -24f || SlideHip < -48f || SlideSpine > -6f || SlideSpine < -22f || chest > -36f || chest < -64f)
                 fails.Add("SlideBody torso is not leaned back");
             if (chest > crouchChest - 50f)
