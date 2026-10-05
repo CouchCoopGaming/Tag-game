@@ -1203,7 +1203,7 @@ namespace Tag.Art
                 diveStep = dt / 0.16f;
             _diveVis = Mathf.MoveTowards(_diveVis, diveAmt, diveStep);
             bool crouch = st == MoveState.Crouch;
-            // Crouch keeps the 0.16s drop. A slide snaps in and back out in about four frames.
+            // Crouch keeps the 0.16s drop. A slide eases in and out over SlideBlendSeconds.
             // Speed is unchanged. slideBoost stays 0.
             float dropDur = (!crouch && (sliding || _dropSlide)) ? VerbPoseClips.SlideBlendSeconds : 0.16f;
             _dropVis = Mathf.MoveTowards(_dropVis, sliding || crouch ? 1f : 0f, dt / dropDur);
@@ -1678,7 +1678,7 @@ namespace Tag.Art
             else if (_slideToCrouchWalk > 0f)
                 _slideToCrouchWalk = Mathf.MoveTowards(_slideToCrouchWalk, 0f, dt / 0.16f);
             if (_crouchWalkFromSlide)
-                _crouchWalkFromSlideIn = Mathf.MoveTowards(_crouchWalkFromSlideIn, 1f, dt / 0.04f);
+                _crouchWalkFromSlideIn = Mathf.MoveTowards(_crouchWalkFromSlideIn, 1f, dt / VerbPoseClips.SlideBlendSeconds);
             if (!sliding)
                 _crouchToSlide = 0f;
             else if (_crouchToSlide > 0f)
@@ -1740,9 +1740,9 @@ namespace Tag.Art
             if (_slideFromSki && sliding)
                 _slideFromSkiIn = Mathf.MoveTowards(_slideFromSkiIn, 1f, dt / 0.04f);
             if (_slideFromSprint && sliding)
-                _slideFromSprintIn = Mathf.MoveTowards(_slideFromSprintIn, 1f, dt / 0.04f);
+                _slideFromSprintIn = Mathf.MoveTowards(_slideFromSprintIn, 1f, dt / VerbPoseClips.SlideBlendSeconds);
             if (_slideFromWalk && sliding)
-                _slideFromWalkIn = Mathf.MoveTowards(_slideFromWalkIn, 1f, dt / 0.04f);
+                _slideFromWalkIn = Mathf.MoveTowards(_slideFromWalkIn, 1f, dt / VerbPoseClips.SlideBlendSeconds);
             // Read before the clear below. An air dash raises speed and leaves crouch the same frame.
             bool crouchWalkPose = _crouchFromWalk && _dropVis > 0.2f && !sliding;
             bool standWalk = _wasGrounded && _prevSpeed > 0.35f && _prevSpeed <= 5.5f
@@ -1913,7 +1913,7 @@ namespace Tag.Art
             if (!inStill)
                 _stillFromSlide = false;
             else if (_stillFromSlide)
-                _stillFromSlideIn = Mathf.MoveTowards(_stillFromSlideIn, 1f, dt / 0.04f);
+                _stillFromSlideIn = Mathf.MoveTowards(_stillFromSlideIn, 1f, dt / VerbPoseClips.SlideBlendSeconds);
             bool enterStill = inStill && !_stillCrouchWas;
             _stillCrouchWas = inStill;
             if (crouch && !sliding && speed > 0.35f && speed <= 5.5f && !_dropSlide)
@@ -2381,6 +2381,8 @@ namespace Tag.Art
             bool crouchSprintExit = crouchWalkExit && st == MoveState.Sprint;
             float footDrop = (slideExit || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? _dropVis * _dropVis : _dropVis;
             float hipDrop = (slideExit || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? Mathf.SmoothStep(0f, 1f, _dropVis) : _dropVis;
+            // Run leave: 0 while the slide holds, 1 in the stride. The height still uses hipDrop.
+            float slideLeave = slideExit ? 1f - Mathf.SmoothStep(0f, 1f, _dropVis) : 0f;
             _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             if (_skiFromWalk && skiing)
                 _skiFromWalkIn = Mathf.MoveTowards(_skiFromWalkIn, 1f, dt / 0.04f);
@@ -3461,7 +3463,7 @@ namespace Tag.Art
             if (_jumpFromWalk && _pushOff > 0.02f)
                 _jumpFromWalkIn = Mathf.MoveTowards(_jumpFromWalkIn, 1f, dt / 0.04f);
             if (_jumpFromSlide && _pushOff > 0.02f)
-                _jumpFromSlideIn = Mathf.MoveTowards(_jumpFromSlideIn, 1f, dt / 0.04f);
+                _jumpFromSlideIn = Mathf.MoveTowards(_jumpFromSlideIn, 1f, dt / VerbPoseClips.SlideBlendSeconds);
             if (_jumpFromPunch && _pushOff > 0.02f)
                 _jumpFromPunchIn = Mathf.MoveTowards(_jumpFromPunchIn, 1f, dt / 0.04f);
             bool dashingAir = _motor != null && _motor.IsAirDashing;
@@ -7085,44 +7087,49 @@ namespace Tag.Art
                     // The stride drops into the wedge or the guard. A slide stand-up
                     // brings the arms back with the feet, under the hips.
                     float d = footDrop;
+                    // The clip eases the enter. This pull would arrive early and then pop.
+                    if (sliding && _slidePose < 0.98f)
+                        d = 0f;
                     if (_dropSlide)
                     {
-                        float lineL = VerbPoseClips.SlideArmPitch;
-                        float lineR = VerbPoseClips.SlideArmPitch;
-                        float lineYaw = VerbPoseClips.SlideArmYaw;
-                        float lineRoll = armZ;
-                        float lineElbL = VerbPoseClips.SlideElbow;
-                        float lineElbR = VerbPoseClips.SlideElbow;
-                        float lineYawR = lineYaw;
+                        bool leadLeftArms = sinC >= 0f;
+                        VerbPoseClips.SlideArmOffsets(leadLeftArms, out float slidePitchL, out float slideYawL, out float slideElbL, out float slidePitchR, out float slideYawR, out float slideElbR);
+                        float lineL = slidePitchL;
+                        float lineR = slidePitchR;
+                        float lineYaw = slideYawL;
+                        float lineRoll = 0f;
+                        float lineElbL = slideElbL;
+                        float lineElbR = slideElbR;
+                        float lineYawR = slideYawR;
                         if (slideIdleExit)
                         {
-                            // Hands leave the long line into the idle hang. They do not pop.
-                            float up = 1f - _dropVis;
+                            // Hands leave the slide into the idle hang. They do not pop.
+                            float up = slideLeave;
                             float hang = -12f + breath * 0.55f;
-                            lineL = Mathf.Lerp(VerbPoseClips.SlideArmPitch, hang, up);
-                            lineR = Mathf.Lerp(VerbPoseClips.SlideArmPitch, hang, up);
-                            lineYaw = Mathf.Lerp(VerbPoseClips.SlideArmYaw, 12f, up);
-                            lineYawR = lineYaw;
-                            lineRoll = Mathf.Lerp(armZ, 0f, up);
-                            lineElbL = Mathf.Lerp(VerbPoseClips.SlideElbow, -10f, up);
-                            lineElbR = Mathf.Lerp(VerbPoseClips.SlideElbow, -10f, up);
+                            lineL = Mathf.Lerp(slidePitchL, hang, up);
+                            lineR = Mathf.Lerp(slidePitchR, hang, up);
+                            lineYaw = Mathf.Lerp(slideYawL, 12f, up);
+                            lineYawR = Mathf.Lerp(slideYawR, 12f, up);
+                            lineRoll = Mathf.Lerp(0f, 0f, up);
+                            lineElbL = Mathf.Lerp(slideElbL, -10f, up);
+                            lineElbR = Mathf.Lerp(slideElbR, -10f, up);
                         }
                         else if (slideWalkExit)
                         {
-                            // Hands leave the long line into the walk. They do not stay in the line.
-                            float up = 1f - _dropVis;
-                            lineL = Mathf.Lerp(VerbPoseClips.SlideArmPitch, pitchL, up);
-                            lineR = Mathf.Lerp(VerbPoseClips.SlideArmPitch, pitchR, up);
-                            lineYaw = Mathf.Lerp(VerbPoseClips.SlideArmYaw, yL, up);
-                            lineYawR = Mathf.Lerp(VerbPoseClips.SlideArmYaw, yR, up);
-                            lineRoll = Mathf.Lerp(armZ, roll, up);
-                            lineElbL = Mathf.Lerp(VerbPoseClips.SlideElbow, elbowL, up);
-                            lineElbR = Mathf.Lerp(VerbPoseClips.SlideElbow, elbowR, up);
+                            // Hands leave the slide into the walk. They do not stay in the line.
+                            float up = slideLeave;
+                            lineL = Mathf.Lerp(slidePitchL, pitchL, up);
+                            lineR = Mathf.Lerp(slidePitchR, pitchR, up);
+                            lineYaw = Mathf.Lerp(slideYawL, yL, up);
+                            lineYawR = Mathf.Lerp(slideYawR, yR, up);
+                            lineRoll = Mathf.Lerp(0f, roll, up);
+                            lineElbL = Mathf.Lerp(slideElbL, elbowL, up);
+                            lineElbR = Mathf.Lerp(slideElbR, elbowR, up);
                         }
                         else if (slideSprintExit)
                         {
-                            // Hands leave the long line into the open stride. They do not stay in the line.
-                            float up = 1f - _dropVis;
+                            // Hands leave the slide into the open stride. They do not stay in the line.
+                            float up = slideLeave;
                             float openGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
                             float openAmp = Mathf.Lerp(36f, 64f, openGait);
                             float openOut = Mathf.Lerp(12f, 8f, openGait);
@@ -7131,18 +7138,19 @@ namespace Tag.Art
                             float openTurn = Mathf.Abs(_turnVis) * 5f;
                             float openYL = Mathf.Lerp(openOut, openReachY, Mathf.Clamp01(-sinC) * openGait) + openTurn;
                             float openYR = Mathf.Lerp(openOut, openReachY, Mathf.Clamp01(sinC) * openGait) + openTurn;
-                            lineL = Mathf.Lerp(VerbPoseClips.SlideArmPitch, RunArmPitch(-sinC, openAmp), up);
-                            lineR = Mathf.Lerp(VerbPoseClips.SlideArmPitch, RunArmPitch(sinC, openAmp), up);
-                            lineYaw = Mathf.Lerp(VerbPoseClips.SlideArmYaw, openYL, up);
-                            lineYawR = Mathf.Lerp(VerbPoseClips.SlideArmYaw, openYR, up);
-                            lineRoll = Mathf.Lerp(armZ, openRoll, up);
-                            lineElbL = Mathf.Lerp(VerbPoseClips.SlideElbow, Mathf.Lerp(-6f, -30f, Mathf.Clamp01(sinC) * openGait), up);
-                            lineElbR = Mathf.Lerp(VerbPoseClips.SlideElbow, Mathf.Lerp(-6f, -30f, Mathf.Clamp01(-sinC) * openGait), up);
+                            lineL = Mathf.Lerp(slidePitchL, RunArmPitch(-sinC, openAmp), up);
+                            lineR = Mathf.Lerp(slidePitchR, RunArmPitch(sinC, openAmp), up);
+                            lineYaw = Mathf.Lerp(slideYawL, openYL, up);
+                            lineYawR = Mathf.Lerp(slideYawR, openYR, up);
+                            lineRoll = Mathf.Lerp(0f, openRoll, up);
+                            lineElbL = Mathf.Lerp(slideElbL, Mathf.Lerp(-6f, -30f, Mathf.Clamp01(sinC) * openGait), up);
+                            lineElbR = Mathf.Lerp(slideElbR, Mathf.Lerp(-6f, -30f, Mathf.Clamp01(-sinC) * openGait), up);
                         }
-                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(lineL, lineYaw, lineRoll), d);
-                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(lineR, -lineYawR, -lineRoll), d);
-                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(lineElbL, 0f, 0f), d);
-                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(lineElbR, 0f, 0f), d);
+                        float armW = slideExit ? 1f : d;
+                        _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(lineL, lineYaw, lineRoll), armW);
+                        _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(lineR, -lineYawR, -lineRoll), armW);
+                        _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(lineElbL, 0f, 0f), armW);
+                        _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(lineElbR, 0f, 0f), armW);
                     }
                     else if (crouchStandSprint)
                     {
@@ -7752,6 +7760,9 @@ namespace Tag.Art
                     // The stride drops into the pose. On a stand-up the feet come back
                     // under the hips while the chest is still low. The lead foot stays forward.
                     float d = footDrop;
+                    // The clip eases the enter. This pull would arrive early and then pop.
+                    if (sliding && _slidePose < 0.98f)
+                        d = 0f;
                     if (_dropSlide)
                     {
                         bool leadLeft = sinC >= 0f;
@@ -7764,7 +7775,7 @@ namespace Tag.Art
                         if (slideIdleExit)
                         {
                             // Both feet come under the hips. The trail leg does not pop in.
-                            float up = 1f - _dropVis;
+                            float up = slideLeave;
                             wedgeL = Mathf.Lerp(wedgeL, 8f, up);
                             wedgeR = Mathf.Lerp(wedgeR, 8f, up);
                             bendL = Mathf.Lerp(bendL, -10f, up);
@@ -7775,7 +7786,7 @@ namespace Tag.Art
                         else if (slideWalkExit)
                         {
                             // The wedge opens into the walk. The feet do not stay split, then pop.
-                            float up = 1f - _dropVis;
+                            float up = slideLeave;
                             wedgeL = Mathf.Lerp(wedgeL, thighL, up);
                             wedgeR = Mathf.Lerp(wedgeR, thighR, up);
                             bendL = Mathf.Lerp(bendL, kneeL, up);
@@ -7786,7 +7797,7 @@ namespace Tag.Art
                         else if (slideSprintExit)
                         {
                             // The wedge opens into the long stride. The feet do not stay split, then pop.
-                            float up = 1f - _dropVis;
+                            float up = slideLeave;
                             float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
                             float openStride = Mathf.Lerp(0.96f, 1.16f, gait);
                             float openReach = Mathf.Lerp(34f, 58f, gait) * openStride;
@@ -7800,10 +7811,11 @@ namespace Tag.Art
                             footYawL = Mathf.Lerp(footYawL, 0f, up);
                             footYawR = Mathf.Lerp(footYawR, 0f, up);
                         }
-                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), d);
-                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(wedgeR, footYawR, 0f), d);
-                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(bendL, 0f, 0f), d);
-                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(bendR, 0f, 0f), d);
+                        float legW = slideExit ? 1f : d;
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), legW);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(wedgeR, footYawR, 0f), legW);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(bendL, 0f, 0f), legW);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(bendR, 0f, 0f), legW);
                     }
                     else if (crouchStandSprint)
                     {
@@ -8089,6 +8101,9 @@ namespace Tag.Art
                 // A slide stand-up eases the hips so they do not pop flat.
                 // Letting go of a still crouch eases them into the idle breath.
                 float d = (_dropSlide || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? hipDrop : _dropVis;
+                // The clip eases the enter. This pull would arrive early and then pop.
+                if (sliding && _slidePose < 0.98f)
+                    d = 0f;
                 // A walk, a run, or a still crouch into a crouch walk writes the guard pitch now. The drop timer stays dt/0.16.
                 if (_crouchWalkFromWalk || _crouchWalkFromSprint || _crouchWalkFromStill)
                     d = 1f;
@@ -8100,7 +8115,7 @@ namespace Tag.Art
                 if (slideIdleExit)
                 {
                     // Rise into the idle breath. Holding the wedge pitch pops the hips flat.
-                    float up = 1f - _dropVis;
+                    float up = slideLeave;
                     chest = Mathf.Lerp(VerbPoseClips.SlideSpine, 0f, up);
                     hip = Mathf.Lerp(VerbPoseClips.SlideHip, 0f, up);
                     head = Mathf.Lerp(VerbPoseClips.SlideHead, 0f, up);
@@ -8108,7 +8123,7 @@ namespace Tag.Art
                 else if (slideWalkExit)
                 {
                     // Rise into the walk. Holding the wedge pitch pops the hips flat.
-                    float up = 1f - _dropVis;
+                    float up = slideLeave;
                     chest = Mathf.Lerp(VerbPoseClips.SlideSpine, leanX, up);
                     hip = Mathf.Lerp(VerbPoseClips.SlideHip, 0f, up);
                     head = Mathf.Lerp(VerbPoseClips.SlideHead, -breath * 0.4f, up);
@@ -8116,7 +8131,7 @@ namespace Tag.Art
                 else if (slideSprintExit)
                 {
                     // Rise into the sprint. Holding the wedge pitch pops the hips flat.
-                    float up = 1f - _dropVis;
+                    float up = slideLeave;
                     chest = Mathf.Lerp(VerbPoseClips.SlideSpine, leanX, up);
                     hip = Mathf.Lerp(VerbPoseClips.SlideHip, 0f, up);
                     head = Mathf.Lerp(VerbPoseClips.SlideHead, -breath * 0.4f, up);
@@ -8129,9 +8144,10 @@ namespace Tag.Art
                     hip = Mathf.Lerp(22f, 0f, up);
                     head = Mathf.Lerp(-6f, -breath * 0.4f, up);
                 }
-                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(chest, 0f, 0f), d);
-                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(hip, 0f, 0f), d);
-                _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(head, 0f, 0f), d);
+                float torsoW = slideExit ? 1f : d;
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(chest, 0f, 0f), torsoW);
+                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(hip, 0f, 0f), torsoW);
+                _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(head, 0f, 0f), torsoW);
             }
 
             if (((_skiFromCrouch && !_stillSkiSnap) || (_skiFromCrouchWalk && !_crouchWalkSkiSnap)) && _skiBlend < 0.98f && !air && !dashing && !lunging && !jet && !sliding && !punching)
@@ -12470,7 +12486,7 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_stillRunLlL, _llLT, intoRun);
                 _llRT = Quaternion.Slerp(_stillRunLlR, _llRT, intoRun);
             }
-            if (_slideFromWalk && !_slideFromSprint && !_slideFromSki && !_slideFromCrouch && !_slideFromMiss && !_slideFromReady && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && !punching)
+            if (VerbPoseClips.RunSlideOverlay && _slideFromWalk && !_slideFromSprint && !_slideFromSki && !_slideFromCrouch && !_slideFromMiss && !_slideFromReady && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && !punching)
             {
                 // The walk eases into the wedge, then the wedge holds.
                 // A run into a slide keeps its ease. A crouch walk into a slide has its own ease.
@@ -12518,7 +12534,7 @@ namespace Tag.Art
                     _llRT = wedgeKneeR;
                 }
             }
-            if (_slideFromSprint && !_slideFromWalk && !_slideFromSki && !_slideFromCrouch && !_slideFromMiss && !_slideFromReady && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && !punching)
+            if (VerbPoseClips.RunSlideOverlay && _slideFromSprint && !_slideFromWalk && !_slideFromSki && !_slideFromCrouch && !_slideFromMiss && !_slideFromReady && !_slideFromClaim && !_slideFromGrapple && !_slideFromWall && !_slideFromClimb && !_slideFromSoft && !_slideFromTag && !_slideFromPunch && !_slideFromDash && sliding && !jet && !skiing && !wallRun && !climb && !punching)
             {
                 // The run eases into the wedge, then the wedge holds.
                 // A run into a ski keeps its ease. A ski into a slide keeps its ease.
@@ -14372,7 +14388,12 @@ namespace Tag.Art
             float bobGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
             float bob = grounded ? step * 0.085f * bobGait : air ? step * 0.02f : 0f;
             if (_dropVis > 0.02f && !air && !jet)
-                bob = Mathf.Lerp(bob, _dropSlide ? -VerbPoseClips.SlideBodyDrop : -0.14f, (_dropSlide || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? hipDrop : _dropVis);
+            {
+                float dropTarget = _dropSlide ? -VerbPoseClips.SlideBodyDrop : -0.14f;
+                if (!_dropSlide && _slidePose > 0.02f)
+                    dropTarget = Mathf.Lerp(-0.14f, -VerbPoseClips.SlideBodyDrop, Mathf.SmoothStep(0f, 1f, _slidePose));
+                bob = Mathf.Lerp(bob, dropTarget, (_dropSlide || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? hipDrop : _dropVis);
+            }
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
             if (_landSquash > 0f) bob -= 0.14f * _landSquash;
             if (dashing) bob += 0.04f * dashAmt;
@@ -16083,11 +16104,21 @@ namespace Tag.Art
                     return;
                 }
             }
-            if (_slidePose > 0.02f)
+            if (_jumpFromSlide)
             {
-                // Full clip while the slide holds. The leave fades with _slidePose
-                // so the exit does not pass through the old crouch wedge.
-                float w = sliding ? 1f : _slidePose;
+                // Jump cancel owns the body. The shoes leave the slide with that same ease.
+                float leave = Mathf.SmoothStep(0f, 1f, _jumpFromSlideIn);
+                var pose = VerbPoseClips.SlideBodyPose(bind, sinC >= 0f);
+                if (_footL != null && _footR != null)
+                {
+                    _ftLT = Quaternion.Slerp(pose.FtL, _ftL0, leave);
+                    _ftRT = Quaternion.Slerp(pose.FtR, _ftR0, leave);
+                }
+            }
+            else if (sliding && _slidePose > 0.02f)
+            {
+                // Ease in from the run, then hold the clip. A jump cancel stays out of this branch.
+                float w = Mathf.SmoothStep(0f, 1f, _slidePose);
                 var pose = VerbPoseClips.SlideBodyPose(bind, sinC >= 0f);
                 BlendVerb(pose, w);
                 if (_footL != null && _footR != null)
@@ -16097,6 +16128,28 @@ namespace Tag.Art
                 }
                 VerbClip = VerbPoseClips.SlideBody;
                 VerbState = VerbPoseClips.StateSlide;
+            }
+            else if (!sliding && _dropSlide && _dropVis > 0.02f)
+            {
+                // Run or stand leave. The body blend is 1-SmoothStep(_dropVis). Shoes follow it.
+                float stay = Mathf.SmoothStep(0f, 1f, _dropVis);
+                var pose = VerbPoseClips.SlideBodyPose(bind, sinC >= 0f);
+                if (_footL != null && _footR != null)
+                {
+                    _ftLT = Quaternion.Slerp(_ftL0, pose.FtL, stay);
+                    _ftRT = Quaternion.Slerp(_ftR0, pose.FtR, stay);
+                }
+            }
+            else if (!sliding && _slidePose > 0.02f)
+            {
+                // Crouch leave. The captured guard blend owns the body. Shoes follow the clip weight.
+                float stay = Mathf.SmoothStep(0f, 1f, _slidePose);
+                var pose = VerbPoseClips.SlideBodyPose(bind, sinC >= 0f);
+                if (_footL != null && _footR != null)
+                {
+                    _ftLT = Quaternion.Slerp(_ftL0, pose.FtL, stay);
+                    _ftRT = Quaternion.Slerp(_ftR0, pose.FtR, stay);
+                }
             }
         }
 
