@@ -263,6 +263,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.JumpLandTell.ProofLine());
+        if (!Tag.Art.JumpLandTell.ScaleHolds())
+        {
+            Console.Error.WriteLine("land scale is not held");
+            return 1;
+        }
+
         WallJumpPushTellReport wallPush = WallJumpPushTellProof.Run();
         Console.WriteLine(wallPush.ToString());
         if (!wallPush.Ok)

@@ -95,6 +95,7 @@ namespace Tag.Art
             if (JumpLandTell.ForPawn(false, true, 1, opponent)) return false;
             if (!Allows(opponent, Land)) return false;
             if (!JumpLandTell.ForPawn(false, false, 0, solo)) return false;
+            if (!JumpLandTell.ScaleHolds()) return false;
 
             if (!OpponentChaseTell.IsOpponentPawn(opponent)) return false;
             if (OpponentChaseTell.IsOpponentPawn(solo)) return false;
@@ -169,7 +170,7 @@ namespace Tag.Art
                 + " slide=SlideBody"
                 + " crouch=CrouchPose if used"
                 + " mantle=MantlePose"
-                + " land=JumpLandTell thud"
+                + " land=JumpLandTell thud/air-scale"
                 + " become=BecomeItPose claim/give-up"
                 + " denied=grapple+airdash"
                 + " chase=OpponentChaseTell"
