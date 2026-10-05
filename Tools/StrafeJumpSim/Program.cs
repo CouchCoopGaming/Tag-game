@@ -62,6 +62,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.BunnyHopPose.ProofLine());
+        if (!Tag.Art.BunnyHopPose.Holds())
+        {
+            Console.Error.WriteLine("bunny-hop pose is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.WallPose.ProofLine());
         if (!Tag.Art.WallPose.Holds())
         {
