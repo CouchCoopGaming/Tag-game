@@ -27,6 +27,12 @@ static class Program
         VerbPoseClipReport clips = VerbPoseClipProof.Run();
         Console.WriteLine(clips.ToString());
         Console.WriteLine(Tag.Art.VerbPoseClips.SlideProofLine());
+        Console.WriteLine(Tag.Art.VerbPoseClips.PolishProofLine());
+        if (!Tag.Art.VerbPoseClips.PolishHolds())
+        {
+            Console.Error.WriteLine("slide pose polish is not held");
+            return 1;
+        }
         Console.WriteLine(Tag.Art.GaitBlend.ProofLine());
         if (!Tag.Art.GaitBlend.Holds())
         {

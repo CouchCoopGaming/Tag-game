@@ -94,13 +94,14 @@ namespace Tag.Art
             if (Knee > -70f || Thigh < 50f) return false;
             if (Elbow > -80f || ArmPitch > -30f || ArmPitch < -50f) return false;
             if (Drop < 0.18f || Drop > 0.30f) return false;
-            if (VerbPoseClips.SlideBodyDrop < Drop + 0.5f) return false;
+            if (VerbPoseClips.SlideBodyDrop < Drop + 0.16f) return false;
 
             float slideChest = VerbPoseClips.SlideHip + VerbPoseClips.SlideSpine;
-            if (slideChest > 0f || chest < 0f) return false;
-            if (Mathf.Abs(slideChest - chest) < 60f) return false;
-            if (Mathf.Abs(VerbPoseClips.SlideLeadThigh - Thigh) < 40f) return false;
-            if (Mathf.Abs(VerbPoseClips.SlideTrailKnee - Knee) < 24f) return false;
+            // Both lean forward. The slide is lower and split: one plant, one free trail.
+            if (slideChest < chest + 8f || chest < 40f) return false;
+            if (VerbPoseClips.SlideLeadThigh < 60f || VerbPoseClips.SlideTrailThigh > -30f) return false;
+            if (Mathf.Abs(VerbPoseClips.SlideLeadThigh - VerbPoseClips.SlideTrailThigh) < 100f) return false;
+            if (Mathf.Abs(VerbPoseClips.SlideTrailKnee - Knee) < 48f) return false;
             if (Mathf.Abs(Hip - VerbPoseClips.CrouchHip) > 0.01f) return false;
             if (Mathf.Abs(Spine - VerbPoseClips.CrouchSpine) > 0.01f) return false;
             if (Mathf.Abs(Thigh - VerbPoseClips.CrouchThigh) > 0.01f) return false;
