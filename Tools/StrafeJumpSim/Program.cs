@@ -77,6 +77,7 @@ static class Program
         }
 
         Console.WriteLine(Tag.Art.PoseHandoff.ProofLine());
+        Console.WriteLine(Tag.Art.PoseHandoff.ProofLine2());
         if (!Tag.Art.PoseHandoff.Holds())
         {
             Console.Error.WriteLine("pose handoff weights do not sum");
