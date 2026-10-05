@@ -56,6 +56,10 @@ Already on this branch: Leaving a climb eases into the fall or the run. The reac
 
 Already on this branch: A grapple pull, only while the gate is on, reaches both arms in a long line with the legs long. The default gate stays off.
 
+Already on this branch: A grapple miss throws the lead arm and the chest, then snaps them back. Nothing latches. The camera does not pop. Jet stays off.
+
+Already on this branch: A taut grapple keeps both hands on one line, readable from the chase camera. A punch return and the aim chest do not sit in that line. The pull is still planar. DummyRunner uses the same pose if it grapples.
+
 Already on this branch: The new It raises one arm and holds the other out, with the chest open and one knee up. It does not match the tagged runner's two-arm V.
 
 Already on this branch: After a punch connects, the fist eases back into the run during the recover. Windup time is still 0.12s.
@@ -1498,6 +1502,7 @@ No Unity play on this pass (no Unity / `dotnet` on the VM). After pull, open **P
 347. Solo play: the Player pawn has ExperimentalGrapple and enableGrapple is on, so holding RMB hooks. The opponent does not get a grapple. Couch pawns do not get one. A miss latches nothing. Jet stays off. SlideBody, PunchStrike, and TagCatch still play. Coyote, jump buffer, cling, jump height, slideBoost, air dash, air-crouch fall, max fall, and punch reach are unchanged.
 348. A punch plays PunchStrike: the fist starts beside the head with the chest coiled, then one arm is a long line and the chest unwinds. The other arm stays back. A tag plays TagCatch: both arms reach to the same contact in front of the chest, elbows nearly straight, knees soft but not a crouch. Idle hang and the crouch guard stay apart from both. Windup, reach, and flinch time are unchanged. slideBoost stays 0. SlideBody stays the low forward split.
 349. Solo play, hold RMB: before the hook hits, a short gold aim line leaves the hands along the look. On a hit, a gold rope runs from the hands to that point and a knot sits on the attach. A miss still latches nothing. The rope does not change jump height. Coyote 0.10, jump buffer 0.16, cling 0.08, jumpSpeed 24.7, slideBoost 0, and air dash 0.10s / 15 / 30 stay. Jet stays off. SlideBody, PunchStrike, and TagCatch still play.
+350. Fire RMB at open air: the lead arm and the chest throw forward, then snap back, and nothing latches. The camera does not pop. Jet stays off. On a real hook, both hands stay on one line at chase-cam distance. That line should not look like the punch return. The pull stays planar. DummyRunner plays the same pose only if it grapples. Coyote 0.10, jump buffer 0.16, cling 0.08, jumpSpeed 24.7, slideBoost 0, air dash 0.10/15/30, punch reach 1.55, lunge 16/0.20/1, climb 6.0, slip 3.7, and wall-run 9.5 stay.
 
 ## Grapple (experimental, solo)
 - Solo play puts `ExperimentalGrapple` on the Player pawn and sets `enableGrapple` true. Hold RMB (JetHeld). The hook latches the nearest collider on the camera-forward ray, out to 28 m, skipping this pawn. A miss latches nothing. Release drops the rope. Pause or the results card drops it too.
