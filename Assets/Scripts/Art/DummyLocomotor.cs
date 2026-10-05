@@ -973,6 +973,11 @@ namespace Tag.Art
         Quaternion _wallAirUlL, _wallAirUlR, _wallAirLlL, _wallAirLlR;
         Quaternion _wallAirSp, _wallAirHp, _wallAirHd;
         bool _wallFallHold;
+        bool _gracePose;
+        bool _graceBody;
+        bool _wasGracePose;
+        bool _graceArmed;
+        bool _graceClimb;
         bool _strideSurfSnap;
         float _strideSurfIn;
         Quaternion _strideSurfUaL, _strideSurfUaR, _strideSurfLaL, _strideSurfLaR;
@@ -1278,17 +1283,51 @@ namespace Tag.Art
             }
             else
                 _surfIn = 0f;
+            if (climb || wallRun)
+            {
+                _graceArmed = true;
+                _graceClimb = climb;
+            }
+            float graceLeft = 0f;
+            bool wallContact = false;
+            if (_motor != null)
+            {
+                graceLeft = _motor.ClingGraceRemaining;
+                wallContact = _motor.WallContact;
+            }
+            // Stick slipped, grace is still running, and the probe is still on the wall.
+            // The motor is already Air. The body stays on the climb, slip, or wall run.
+            // DummyRunner uses this same locomotor. Cling grace stays 0.08.
+            _gracePose = _graceArmed && PoseAllowed(DummyPosePaths.Wall)
+                && WallPose.GraceCommit(graceLeft, wallContact)
+                && !climb && !wallRun && air && !mantle
+                && !_jumpFromClimb && !_jumpFromWall
+                && (_input == null || !_input.CrouchHeld)
+                && (_motor == null || !_motor.IsAirDashing);
             if (!air || _jumpFromClimb || _jumpFromWall || (_motor != null && _motor.IsAirDashing)
                 || (_input != null && _input.CrouchHeld))
                 _wallFallHold = false;
-            if (leavingSurf && air && !_jumpFromClimb && !_jumpFromWall
+            if (_gracePose)
+                _wallFallHold = false;
+            else if (_wasGracePose && air && !_jumpFromClimb && !_jumpFromWall
                 && (_input == null || !_input.CrouchHeld)
                 && (_motor == null || !_motor.IsAirDashing))
             {
-                // Release, or grace with no jump. The fall beat takes the body.
+                // Grace ran out, or the probe left the wall. The fall beat takes the body.
                 // A wall jump keeps the push-off. Cling grace stays 0.08.
                 _wallFallHold = true;
             }
+            else if (leavingSurf && air && !_jumpFromClimb && !_jumpFromWall
+                && (_input == null || !_input.CrouchHeld)
+                && (_motor == null || !_motor.IsAirDashing))
+            {
+                // A real leave with no grace left. The fall beat takes the body.
+                // A wall jump keeps the push-off. Cling grace stays 0.08.
+                _wallFallHold = true;
+            }
+            _wasGracePose = _gracePose;
+            if (!_gracePose && !onSurf)
+                _graceArmed = false;
             _wasSurf = onSurf;
             if (leavingSurf)
                 _cycle = _exitLeadLeft ? Mathf.PI * 0.5f : Mathf.PI * 1.5f;
@@ -5898,7 +5937,7 @@ namespace Tag.Art
                 && _input != null && _input.CrouchHeld;
             bool jumpPoseOn = PoseAllowed(DummyPosePaths.Jump) && JumpPose.PoseActive(air && !jet, _jumpFromWall, _jumpFromSlide,
                 !air || jet || punching || JumpPoseBlocked() || airStillCrouch || airCrouchWalk || _diveVis >= 0.2f
-                || airDashing || _dashPoseHeld || _jumpPoseAge < 0f || _wallFallHold || _grappleFallHold);
+                || airDashing || _dashPoseHeld || _jumpPoseAge < 0f || _wallFallHold || _gracePose || _grappleFallHold);
             // Keep a soft air/vault cycle so limbs stay energetic off the ground.
             // Walk and sprint ease length and tempo. The cycle keeps advancing, so a plant does not freeze.
             if (!(air && !jet && !airDashing && _armRecover > 0f))
@@ -8834,7 +8873,21 @@ namespace Tag.Art
                 _headT = Quaternion.Slerp(fromHd, _headT, intoAttach);
             }
 
-            if (_wallFallHold && air && !wallRun && !climb && !mantle && !punching && !jet && !sliding
+            _graceBody = _gracePose && !punching && !jet && !sliding && !dashing && !lunging && !mantle;
+            if (_graceBody)
+            {
+                // Grace still owns the wall. Keep the climb, the slip, or the wall run.
+                // The fall blend waits until grace expires or the probe leaves.
+                // Cadence and the samples are unchanged. No root motion.
+                float vyGrace = _motor != null ? _motor.Velocity.y : 0f;
+                float alongGrace = _motor != null ? _motor.HorizontalSpeed : 0f;
+                _surfPhase += dt * WallPose.SurfRate(_graceClimb, vyGrace, alongGrace);
+                if (_graceClimb)
+                    ApplyWallSample(WallPose.Climb(Mathf.Sin(_surfPhase), vyGrace), armZ);
+                else
+                    ApplyWallSample(WallPose.Run(Mathf.Sin(_surfPhase), _motor != null && _motor.WallLeft), armZ);
+            }
+            else if (_wallFallHold && air && !wallRun && !climb && !mantle && !punching && !jet && !sliding
                 && !dashing && !lunging
                 && !_jumpFromClimb && !_jumpFromWall
                 && (_motor == null || !_motor.IsAirDashing))
@@ -8845,16 +8898,19 @@ namespace Tag.Art
             if (_wallAirSnap && (wallRun || climb) && _wallAirIn < 0.98f && !punching)
                 BlendWallAir();
 
-            if (wallRun || climb)
+            if (wallRun || climb || _graceBody)
             {
                 _wallExit = 1f;
                 _wallDropSnap = false;
-                _exitFromWall = wallRun;
+                if (wallRun || climb)
+                    _exitFromWall = wallRun;
+                else
+                    _exitFromWall = !_graceClimb;
                 _exitIntoWalk = false;
                 _exitIntoSprint = false;
                 _exitIntoCrouch = false;
                 _exitIntoCrouchWalk = false;
-                if (climb)
+                if (climb || (_graceBody && _graceClimb))
                 {
                     // The driving knee is the lead. Left hand up means the right knee is forward.
                     _exitLeadLeft = Mathf.Sin(_surfPhase) < 0f;
@@ -8872,6 +8928,10 @@ namespace Tag.Art
                 _exitSpine = _spineT;
                 _exitHips = _hipsT;
                 _exitHead = _headT;
+            }
+            else if (_gracePose)
+            {
+                // A punch or another verb owns this frame. Keep the wall exit for the detach.
             }
             else if (dashing || punching || sliding || jet || mantle)
             {
@@ -8989,11 +9049,14 @@ namespace Tag.Art
                         _wallDropIn = Mathf.MoveTowards(_wallDropIn, 1f, dt / WallPose.ReleaseBlendSeconds);
                     if (_wallDropIn < 0.98f)
                     {
-                        // Release, or grace with no jump, eases into the fall beat.
+                        // Grace expiry, or a real leave, eases into the fall beat.
                         // The fall owns the bones. A grounded leave still eases into the pose already written.
                         float intoWallDrop = PoseHandoff.ToWeight(_wallDropIn);
                         if (_wallFallHold)
+                        {
+                            intoWallDrop = WallPose.GraceFallWeight(graceLeft, wallContact, _wallDropIn * WallPose.ReleaseBlendSeconds);
                             ApplyWallFallBlend(intoWallDrop, armZ);
+                        }
                         else
                         {
                             _uaLT = Quaternion.Slerp(_exitUaL, _uaLT, intoWallDrop);
@@ -14671,7 +14734,7 @@ namespace Tag.Art
                 _llRT = Quaternion.Slerp(_tagJumpLlR, _llRT, intoTag);
             }
 
-            float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || sliding || _slidePose > 0.02f || flinchAmt > 0.04f || claimAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
+            float slew = bouncing || gliding || jet || punching || lunging || dashing || mantle || wallRun || climb || _graceBody || sliding || _slidePose > 0.02f || flinchAmt > 0.04f || claimAmt > 0.04f ? 42f : crouch ? 24f : air ? 18f : 20f;
             // After the window, this is the owner. During the window the enter blends
             // still ease into the dash, so this stays off until the burst ends.
             if (dashAirOwns && !airDashing)
@@ -14683,7 +14746,7 @@ namespace Tag.Art
             // A hop is short. Slew 18 never reached the tuck or the trail before the landing.
             bool apexHang = air && airRise < 0.2f && airFall < 0.2f;
             bool airDive = _diveVis > 0.12f;
-            bool airTell = air && (airRise > 0.12f || airFall > 0.12f || apexHang || airDive);
+            bool airTell = air && !_graceBody && (airRise > 0.12f || airFall > 0.12f || apexHang || airDive);
             float armSlewL = airDashing ? 78f : punchWind ? 90f : handoff ? 72f : grappleTell ? 36f : airTell ? 64f : (punching || lunging || dashing ? 42f : slew);
             float armSlewR = airDashing ? 78f : punchWind ? 90f : handoff ? 72f : grappleTell ? 36f : airTell ? 64f : (punching || lunging || dashing ? 46f : slew);
             // Run knees have to arrive inside one stride or the flex never shows.
@@ -14921,10 +14984,20 @@ namespace Tag.Art
             ApplyAimTorso();
             bool grappleOwns = _grappleFallHold || _grapplePose > 0.02f
                 || (_grapple != null && (_grapple.IsAiming || _grapple.IsPulling));
-            bool wallOwns = wallRun || climb || _wallFallHold || _jumpFromWall || _jumpFromClimb;
+            bool wallOwns = wallRun || climb || _graceBody || _wallFallHold || _jumpFromWall || _jumpFromClimb;
             bool dashOwns = airDashing || _dashPoseHeld;
             bool punchOwns = punching || _punchTelegraph > 0.02f || _aimTorsoW > 0.02f;
             ApplyAirStrafeLean(armZ, speed, jumpPoseOn, dashOwns, wallOwns, grappleOwns, punchOwns, dt);
+            if (_graceBody)
+            {
+                // Overlays above write the air pose while the motor is already Air.
+                // Put the wall sample back so the body does not fall off during grace.
+                float vyGrace = _motor != null ? _motor.Velocity.y : 0f;
+                if (_graceClimb)
+                    ApplyWallSample(WallPose.Climb(Mathf.Sin(_surfPhase), vyGrace), armZ);
+                else
+                    ApplyWallSample(WallPose.Run(Mathf.Sin(_surfPhase), _motor != null && _motor.WallLeft), armZ);
+            }
             if (_airStrafeLean > 0.02f)
             {
                 torsoSlew = Mathf.Max(torsoSlew, AirStrafeLeanPose.Slew);
