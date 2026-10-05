@@ -59,6 +59,9 @@ namespace Tag.Art
         float _prevSpeed;
         float _pushOff;
         bool _pushLeft;
+        float _jumpPoseAge = -1f;
+        bool _jumpDriveLeft;
+        float _jumpPoseCycle;
         bool _jumpFromStill;
         float _jumpFromStillIn;
         Quaternion _stillJumpUaL, _stillJumpUaR, _stillJumpLaL, _stillJumpLaR;
@@ -2914,15 +2917,19 @@ namespace Tag.Art
                 bool dashPose = _airDashArms || _motor.IsAirDashing;
                 _jumpFromDash = dashPose && !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide;
                 _jumpFromWall = _exitFromWall && _wallExit > 0.2f && !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide && !_jumpFromDash && !_jumpFromClimb;
-                // A soft landing eases the absorb into this push. A hard landing keeps its jump.
-                // Land time is unchanged when you stay down. Jump height is unchanged.
+                // A still absorb eases into this push. A walk or a sprint chain keeps the stride phase.
+                // A hard landing keeps its jump. Land time is unchanged when you stay down.
+                // Jump height is unchanged.
                 _jumpFromSoftLand = !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide
                     && !_jumpFromDash && !_jumpFromWall && !_jumpFromClimb && !_jumpFromAirCrouch
+                    && speed <= 0.35f
                     && _landHard < 0.4f && _landSquash > 0.08f;
                 // A hard landing eases the deeper absorb into this push. A soft landing keeps its jump.
-                // Land time is unchanged when you stay down. Jump height is unchanged.
+                // A moving chain keeps the stride phase. Land time is unchanged when you stay down.
+                // Jump height is unchanged.
                 _jumpFromHardLand = !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide
                     && !_jumpFromDash && !_jumpFromWall && !_jumpFromClimb && !_jumpFromAirCrouch && !_jumpFromSoftLand
+                    && speed <= 0.35f
                     && _landHard >= 0.4f && _landSquash > 0.08f;
                 // A punch miss eases the whiff into this push. A crouch miss keeps its jump.
                 // A soft landing and a hard landing keep their jump. Jump height is unchanged.
@@ -3360,6 +3367,7 @@ namespace Tag.Art
                 _glideJumpHd = _head.localRotation;
                 _airArmIn = 1f;
             }
+            bool jumpEdge = !grounded && _motor != null && _motor.Velocity.y > 1.5f && (_wasGrounded || _prevVy <= 1.5f);
             _prevVy = _motor != null ? _motor.Velocity.y : 0f;
             if (grounded || _pushOff <= 0.02f)
             {
@@ -3381,6 +3389,13 @@ namespace Tag.Art
                 _jumpFromGrapple = false;
                 _jumpFromReady = false;
                 _jumpFromPunch = false;
+            }
+            if (jumpEdge && !JumpPoseBlocked() && !jet && !punching)
+            {
+                // Crouch, drive knee, and arms start this frame. The impulse already fired.
+                _jumpPoseAge = 0f;
+                _jumpPoseCycle = _cycle;
+                _jumpDriveLeft = Mathf.Sin(_cycle) >= 0f;
             }
             if (_jumpDashSnap && _jumpFromDash && !punching)
             {
@@ -5717,6 +5732,9 @@ namespace Tag.Art
                 && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint && runAmt <= 0.4f
                 && _diveVis > 0.02f
                 && _input != null && _input.CrouchHeld;
+            bool jumpPoseOn = JumpPose.PoseActive(air && !jet, _jumpFromWall, _jumpFromSlide,
+                !air || jet || punching || JumpPoseBlocked() || airStillCrouch || airCrouchWalk || _diveVis >= 0.2f
+                || airDashing || _jumpPoseAge < 0f);
             // Keep a soft air/vault cycle so limbs stay energetic off the ground.
             // Walk and sprint ease length and tempo. The cycle keeps advancing, so a plant does not freeze.
             if (!(air && !jet && !airDashing && _armRecover > 0f))
@@ -7717,6 +7735,8 @@ namespace Tag.Art
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(60f + stepL * 8f), 0f, 0f), 1f);
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(60f + stepR * 8f), 0f, 0f), 1f);
                 }
+                if (jumpPoseOn)
+                    ApplyJumpPose(armZ, speed);
             }
             else
             {
@@ -14424,6 +14444,13 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_armSettleLlL, _llLT, intoSettle);
                 _llRT = Quaternion.Slerp(_armSettleLlR, _llRT, intoSettle);
             }
+            if (jumpPoseOn && _jumpPoseAge >= 0f && _jumpPoseAge < JumpPose.TakeoffSeconds)
+            {
+                armSlewL = Mathf.Max(armSlewL, JumpPose.TakeoffSlew);
+                armSlewR = Mathf.Max(armSlewR, JumpPose.TakeoffSlew);
+                legSlew = Mathf.Max(legSlew, JumpPose.TakeoffSlew);
+                torsoSlew = Mathf.Max(torsoSlew, JumpPose.TakeoffSlew);
+            }
             ApplyVerbClips(sliding, punching, phase, punchProg, flinchAmt, sinC);
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
@@ -14466,6 +14493,44 @@ namespace Tag.Art
             float stretchY = 1f + dashStretch * dashAmt - 0.16f * flinchAmt + 0.06f * claimAmt;
             float stretchXZ = 1f - dashSquash * dashAmt + 0.12f * flinchAmt;
             transform.localScale = WallJumpPushScale(JumpLandScale(new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash)));
+            if (jumpPoseOn && _jumpPoseAge >= 0f)
+                _jumpPoseAge += dt;
+            else
+                _jumpPoseAge = -1f;
+        }
+
+        /// <summary>
+        /// Wall, slide-cancel, and the other verb tells keep the poses they already have.
+        /// </summary>
+        bool JumpPoseBlocked()
+        {
+            return _jumpFromWall || _jumpFromSlide || _jumpFromSki || _jumpFromDash || _jumpFromClimb
+                || _jumpFromAirCrouch || _jumpFromPunch || _jumpFromMiss || _jumpFromTag
+                || _jumpFromClaim || _jumpFromGrapple || _jumpFromReady
+                || _jumpFromSoftLand || _jumpFromHardLand || _jumpFromCrouchWalk || _jumpFromStill
+                || _airDashArms || (_motor != null && _motor.IsAirDashing);
+        }
+
+        /// <summary>
+        /// Takeoff, tuck, then the fall. Blended from the stride phase. No root motion.
+        /// The landing thud picks up once the feet are down.
+        /// </summary>
+        void ApplyJumpPose(float armZ, float speed)
+        {
+            float cycle = _jumpPoseAge <= JumpPose.StrideBlendSeconds ? _jumpPoseCycle : _cycle;
+            float sinC = Mathf.Sin(cycle);
+            float vy = _motor != null ? _motor.Velocity.y : 0f;
+            JumpPose.Sample pose = JumpPose.Mixed(vy, _jumpPoseAge, _jumpDriveLeft, speed, sinC, cycle);
+            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
+            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
+            _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
+            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ);
+            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, -pose.ArmYawR, -armZ);
+            _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
+            _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
+            _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, 0f);
+            _hipsT = _hips0 * Quaternion.Euler(pose.Hip, 0f, 0f);
         }
 
         /// <summary>

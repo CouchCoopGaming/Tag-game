@@ -33,6 +33,13 @@ static class Program
             Console.Error.WriteLine("gait blend is not continuous");
             return 1;
         }
+
+        Console.WriteLine(Tag.Art.JumpPose.ProofLine());
+        if (!Tag.Art.JumpPose.Holds())
+        {
+            Console.Error.WriteLine("jump pose beats are not held");
+            return 1;
+        }
         if (!clips.Ok)
         {
             Console.Error.WriteLine(string.Join(" | ", clips.Failures));
