@@ -47,6 +47,21 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(TagArena.Movement.EnginePass2.ProofLine());
+        if (!TagArena.Movement.EnginePass2.Holds())
+        {
+            Console.Error.WriteLine("engine pass 2 is not held");
+            return 1;
+        }
+
+        string motorSrc = File.ReadAllText("Assets/TagArenaMovement/Scripts/Core/PlayerMotor.cs");
+        string probeSrc = File.ReadAllText("Assets/TagArenaMovement/Scripts/Detection/SurfaceProbe.cs");
+        if (!TagArena.Movement.EnginePass2.Wired(motorSrc, probeSrc))
+        {
+            Console.Error.WriteLine("engine pass 2 is not wired");
+            return 1;
+        }
+
         Console.WriteLine(TagArena.Movement.ChaseCam.ProofLine());
         if (!TagArena.Movement.ChaseCam.Holds())
         {

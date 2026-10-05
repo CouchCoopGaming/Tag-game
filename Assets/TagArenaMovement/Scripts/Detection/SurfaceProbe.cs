@@ -9,6 +9,7 @@ namespace TagArena.Movement
         public Vector3 point;
         public Vector3 normal;
         public float slopeAngle;
+        public float feetGap; // feet Y minus surface Y. Negative is buried.
         public float downhillDot; // 1 = facing straight down the fall line
         public Vector3 fallLine;  // gravity projected on plane, normalized
         public Collider collider;
@@ -43,8 +44,10 @@ namespace TagArena.Movement
         public GroundInfo Ground;
         public WallHit Wall;
         public LedgeHit Ledge;
+        public float CeilingGap { get; private set; } = KinematicStep.OpenCeiling;
 
         CapsuleCollider _cap;
+        bool _edgePlanted;
         // Brief wall memory so one-frame SphereCast misses do not drop wall-run/climb.
         float _wallStickyUntil;
         Vector3 _stickyNormal;
@@ -62,6 +65,7 @@ namespace TagArena.Movement
             ProbeGround(currentHeight);
             ProbeWall(velocity);
             ProbeLedge(currentHeight);
+            ProbeCeiling(currentHeight);
         }
 
         void ProbeGround(float height)
@@ -75,15 +79,27 @@ namespace TagArena.Movement
             if (!cast)
             {
                 // A sphere that starts inside the floor returns no hit. A ray from above still finds it.
-                TryEmbeddedGround();
+                if (!TryEmbeddedGround(height))
+                    _edgePlanted = false;
                 return;
             }
 
             bool grounded = KinematicStep.ProbeGrounded(true, hit.distance, cfg.groundProbe, radius, false);
+            grounded = FilterStepEdge(hit, grounded, height);
             FillGround(hit, grounded);
+            _edgePlanted = grounded;
         }
 
-        bool TryEmbeddedGround()
+        bool FilterStepEdge(RaycastHit hit, bool grounded, float height)
+        {
+            if (!grounded) return false;
+            if (Vector3.Angle(hit.normal, Vector3.up) > cfg.maxWalkableAngle) return true;
+            float gap = body.position.y - hit.point.y;
+            float step = KinematicStep.StepOffset(height, cfg.radius, cfg.skin, false);
+            return KinematicStep.StepEdgePlant(gap, step, cfg.groundProbe, _edgePlanted);
+        }
+
+        bool TryEmbeddedGround(float height)
         {
             float above = cfg.standingHeight + 0.2f;
             Vector3 start = body.position + Vector3.up * above;
@@ -94,7 +110,9 @@ namespace TagArena.Movement
                 return false;
             if (!KinematicStep.NearFeet(body.position.y, hit.point.y, cfg.groundProbe, 0.2f))
                 return false;
-            FillGround(hit, true);
+            bool grounded = FilterStepEdge(hit, true, height);
+            FillGround(hit, grounded);
+            _edgePlanted = grounded;
             return true;
         }
 
@@ -103,6 +121,7 @@ namespace TagArena.Movement
             Ground.grounded = grounded;
             Ground.point = hit.point;
             Ground.normal = hit.normal;
+            Ground.feetGap = body.position.y - hit.point.y;
             Ground.slopeAngle = Vector3.Angle(hit.normal, Vector3.up);
             Ground.walkable = Ground.slopeAngle <= cfg.maxWalkableAngle;
             Ground.collider = hit.collider;
@@ -227,6 +246,28 @@ namespace TagArena.Movement
             Ledge.standPoint = best.point + Vector3.up * 0.03f;
             Ledge.wallNormal = Wall.normal;
             Ledge.height = best.point.y - body.position.y;
+        }
+
+        /// <summary>
+        /// Clearance above the upper hemisphere. A miss stays OpenCeiling.
+        /// Starting inside the ceiling reports one skin of overlap, not the full depth.
+        /// </summary>
+        void ProbeCeiling(float height)
+        {
+            CeilingGap = KinematicStep.OpenCeiling;
+            if (cfg == null || body == null) return;
+            float radius = cfg.radius;
+            float safeHeight = height > radius + 0.05f ? height : cfg.standingHeight;
+            Vector3 center = body.position + Vector3.up * (safeHeight - radius);
+            float reach = radius + KinematicStep.OpenCeiling;
+            if (Physics.Raycast(center, Vector3.up, out RaycastHit hit, reach, cfg.groundMask, QueryTriggerInteraction.Ignore)
+                && hit.normal.y < -0.5f)
+            {
+                CeilingGap = hit.distance - radius;
+                return;
+            }
+            if (Physics.CheckSphere(center, radius * 0.45f, cfg.groundMask, QueryTriggerInteraction.Ignore))
+                CeilingGap = -Mathf.Max(0.02f, cfg.skin);
         }
 
         public static Vector3 ProjectOnPlanePreserveMag(Vector3 vel, Vector3 normal)

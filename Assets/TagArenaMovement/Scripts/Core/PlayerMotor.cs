@@ -273,18 +273,17 @@ namespace TagArena.Movement
             }
             if (_slideBlocked && _mode == Locomotion.Slide)
                 SetState(MoveState.Crouch);
-            if ((_mode == Locomotion.Ground || _mode == Locomotion.Slide || _mode == Locomotion.Ski)
-                && feet && v.y > -0.5f && v.y < 1.5f)
-                v.y = -2f;
-
             // After TryJump. That write is v.y = jumpSpeed (24.7 when not fatigued).
             // The rope replaces horizontal only, then the one Move below consumes it.
             v = ApplyGrappleHorizontal(v);
+            v = ApplyGroundRead(v, dt);
 
             _velocity = v;
-            FitController(v.y);
+            FitController(v.y, CeilingClose());
+            CollisionFlags flags = CollisionFlags.None;
             if (_cc != null && _cc.enabled)
-                _cc.Move(_velocity * dt);
+                flags = _cc.Move(_velocity * dt);
+            _velocity.y = KinematicStep.CeilingBlockedVy(_velocity.y, (flags & CollisionFlags.Above) != 0);
 
             if (tagRole != null && tagRole.IsIt)
                 TryTag();
@@ -1432,19 +1431,62 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// One writer for skin, slope, and step. A launch or a wall contact drops the
-        /// step so the controller cannot snap the jump or hop up the face. On the
-        /// ground, slope follows the walkable angle. Climb and wall-run keep 90° so
-        /// their into-wall stick is not rejected. Skin stays the config value.
+        /// Plant stick, bury ease, and ceiling kiss. All of them rewrite velocity for the
+        /// one Move. None of them write the transform.
         /// </summary>
-        void FitController(float verticalVelocity)
+        Vector3 ApplyGroundRead(Vector3 v, float dt)
+        {
+            if (cfg == null) return v;
+            bool feet = _stableFeet;
+            bool walkable = _probe != null && _probe.Ground.walkable && _probe.Ground.normal.sqrMagnitude > 0.01f;
+            bool stickMode = _mode == Locomotion.Ground || _mode == Locomotion.Slide || _mode == Locomotion.Ski
+                || _mode == Locomotion.LandStun;
+            if (stickMode && feet && walkable)
+                v.y = KinematicStep.SteepLandStick(v.y, Vector3.Dot(v, _probe.Ground.normal));
+            if ((_mode == Locomotion.Ground || _mode == Locomotion.Slide || _mode == Locomotion.Ski)
+                && feet && v.y > -0.5f && v.y < KinematicStep.LaunchVy)
+                v.y = KinematicStep.PlantStickVy;
+
+            if (_probe != null && _probe.Ground.grounded && _probe.Ground.walkable)
+                v.y = KinematicStep.BuriedEaseVy(v.y, _probe.Ground.feetGap, cfg.skin, dt);
+
+            float skin = Mathf.Max(0.02f, cfg.skin);
+            float rise = v.y > 0f ? v.y * dt : 0f;
+            float gap = _probe != null ? _probe.CeilingGap : KinematicStep.OpenCeiling;
+            float kissed = KinematicStep.CeilingKissRise(rise, gap, skin);
+            if (kissed < rise - 0.0001f || kissed < -0.0001f)
+            {
+                float vy = dt > 1e-6f ? kissed / dt : 0f;
+                v.y = KinematicStep.CapKissVy(vy);
+            }
+            return v;
+        }
+
+        bool CeilingClose()
+        {
+            if (cfg == null) return false;
+            float skin = Mathf.Max(0.02f, cfg.skin);
+            float height = _cc != null && _cc.height > 0.05f ? _cc.height : cfg.standingHeight;
+            float radius = _cc != null && _cc.radius > 0.01f ? _cc.radius : cfg.radius;
+            float gap = _probe != null ? _probe.CeilingGap : KinematicStep.OpenCeiling;
+            float step = KinematicStep.StepOffset(height, radius, skin, false);
+            return KinematicStep.CeilingSuppressStep(gap, skin, step);
+        }
+
+        /// <summary>
+        /// One writer for skin, slope, and step. A launch, a low ceiling, or a wall contact
+        /// drops the step so the controller cannot snap the jump, kiss the ceiling, or hop
+        /// up the face. On the ground, slope follows the walkable angle. Climb and wall-run
+        /// keep 90° so their into-wall stick is not rejected. Skin stays the config value.
+        /// </summary>
+        void FitController(float verticalVelocity, bool ceilingClose)
         {
             if (_cc == null || cfg == null) return;
             float skin = Mathf.Max(0.02f, cfg.skin);
             float height = _cc.height > 0.05f ? _cc.height : cfg.standingHeight;
             float radius = _cc.radius > 0.01f ? _cc.radius : cfg.radius;
             bool wall = _mode == Locomotion.Climb || _mode == Locomotion.WallRun || _mode == Locomotion.Vault;
-            bool rising = verticalVelocity > KinematicStep.LaunchVy;
+            bool rising = verticalVelocity > KinematicStep.LaunchVy || ceilingClose;
             _cc.skinWidth = skin;
             _cc.slopeLimit = KinematicStep.SlopeLimit(cfg.maxWalkableAngle, wall);
             _cc.minMoveDistance = 0f;
@@ -1464,7 +1506,7 @@ namespace TagArena.Movement
             _cc.height = _cap.height;
             _cc.radius = _cap.radius;
             _cc.center = _cap.center;
-            FitController(0f);
+            FitController(0f, false);
         }
 
         void DriveAnimator()
