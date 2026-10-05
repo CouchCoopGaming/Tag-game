@@ -39,6 +39,8 @@ namespace TagArena.Movement
         float _boomDist;
         float _lookAhead;
         float _lookH = 1.25f;
+        float _catchT;
+        MoveState _prevState = MoveState.Idle;
         Vector3 _aheadSmoothed;
         Vector3 _kick;
         float _fovKick;
@@ -79,6 +81,13 @@ namespace TagArena.Movement
             // Body yaw only — camera boom owns pitch
             motor.transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
 
+            MoveState state = motor.State;
+            bool enteredSlide = state == MoveState.Slide && _prevState != MoveState.Slide;
+            bool wallToAir = state == MoveState.Air && (_prevState == MoveState.WallRun || _prevState == MoveState.WallClimb);
+            if (ChaseCam.WantsCatchup(enteredSlide, wallToAir))
+                _catchT = ChaseCam.CatchSeconds;
+            _prevState = state;
+
             // CamRig stays at player root; pivot at chest/shoulder height
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
@@ -101,7 +110,8 @@ namespace TagArena.Movement
                     wantLookH = lookAtHeight - 0.32f;
                 else if (motor.State == MoveState.WallClimb)
                     wantLookH = lookAtHeight + 0.28f;
-                _lookH = Mathf.Lerp(_lookH, wantLookH, 1f - Mathf.Exp(-8f * dt));
+                float lookRate = ChaseCam.LookRateFor(_catchT);
+                _lookH = Mathf.Lerp(_lookH, wantLookH, 1f - Mathf.Exp(-lookRate * dt));
                 Vector3 lookAt = motor.transform.position + Vector3.up * _lookH;
                 if (motor.State == MoveState.WallRun && motor.WallNormal.sqrMagnitude > 0.01f)
                 {
@@ -124,13 +134,15 @@ namespace TagArena.Movement
                     case MoveState.Crouch:
                     case MoveState.Idle: wantAhead *= 0.35f; break;
                 }
-                _lookAhead = Mathf.Lerp(_lookAhead, wantAhead, 1f - Mathf.Exp(-8f * dt));
+                _lookAhead = Mathf.Lerp(_lookAhead, wantAhead, 1f - Mathf.Exp(-lookRate * dt));
                 Vector3 hv = motor.Velocity; hv.y = 0f;
                 // Direction is smoothed. An instant velocity flip was yawing the look-at
                 // point 180° in one frame (the distance lerp was already smooth).
+                // A wall jump or a slide uses the pose window so the look arrives with the body.
                 Vector3 rawAhead = hv.sqrMagnitude > 1f ? hv.normalized : motor.transform.forward;
                 if (_aheadSmoothed.sqrMagnitude < 0.001f) _aheadSmoothed = rawAhead;
-                _aheadSmoothed = Vector3.Slerp(_aheadSmoothed, rawAhead, 1f - Mathf.Exp(-4.5f * dt));
+                float aheadRate = ChaseCam.AheadRateFor(_catchT);
+                _aheadSmoothed = Vector3.Slerp(_aheadSmoothed, rawAhead, 1f - Mathf.Exp(-aheadRate * dt));
                 if (_aheadSmoothed.sqrMagnitude > 0.001f)
                     lookAt += _aheadSmoothed.normalized * _lookAhead;
 
@@ -169,6 +181,8 @@ namespace TagArena.Movement
 
             _kick = Vector3.Lerp(_kick, Vector3.zero, 1f - Mathf.Exp(-12f * dt));
             _fovKick = Mathf.Lerp(_fovKick, 0f, 1f - Mathf.Exp(-10f * dt));
+            if (_catchT > 0f)
+                _catchT = Mathf.Max(0f, _catchT - dt);
 
             if (motor.cam == null && cam != null)
                 motor.cam = cam.transform;
@@ -208,7 +222,7 @@ namespace TagArena.Movement
                 }
             }
 
-            _boomDist = Mathf.Lerp(_boomDist, dist, 1f - Mathf.Exp(-18f * Time.deltaTime));
+            _boomDist = ChaseCam.BoomDistance(_boomDist, dist, Time.deltaTime, _catchT > 0f);
             float t = maxDist > 0.01f ? (_boomDist / maxDist) : 1f;
             cam.transform.position = origin + delta * t;
         }

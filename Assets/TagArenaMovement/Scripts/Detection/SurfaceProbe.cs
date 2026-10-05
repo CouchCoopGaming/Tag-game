@@ -71,22 +71,48 @@ namespace TagArena.Movement
             Vector3 origin = body.position + Vector3.up * (radius + 0.05f);
             float dist = cfg.groundProbe + 0.12f;
 
-            if (Physics.SphereCast(origin, radius, Vector3.down, out RaycastHit hit, dist, cfg.groundMask, QueryTriggerInteraction.Ignore))
+            bool cast = Physics.SphereCast(origin, radius, Vector3.down, out RaycastHit hit, dist, cfg.groundMask, QueryTriggerInteraction.Ignore);
+            if (!cast)
             {
-                Ground.grounded = hit.distance <= cfg.groundProbe + radius * 0.15f;
-                Ground.point = hit.point;
-                Ground.normal = hit.normal;
-                Ground.slopeAngle = Vector3.Angle(hit.normal, Vector3.up);
-                Ground.walkable = Ground.slopeAngle <= cfg.maxWalkableAngle;
-                Ground.collider = hit.collider;
-
-                Vector3 g = Vector3.ProjectOnPlane(Vector3.down, hit.normal);
-                Ground.fallLine = g.sqrMagnitude > 0.0001f ? g.normalized : Vector3.zero;
-                Vector3 flatVel = Vector3.ProjectOnPlane(body.forward, Vector3.up);
-                Ground.downhillDot = Ground.fallLine.sqrMagnitude > 0f
-                    ? Vector3.Dot(flatVel.normalized, Vector3.ProjectOnPlane(Ground.fallLine, Vector3.up).normalized)
-                    : 0f;
+                // A sphere that starts inside the floor returns no hit. A ray from above still finds it.
+                TryEmbeddedGround();
+                return;
             }
+
+            bool grounded = KinematicStep.ProbeGrounded(true, hit.distance, cfg.groundProbe, radius, false);
+            FillGround(hit, grounded);
+        }
+
+        bool TryEmbeddedGround()
+        {
+            float above = cfg.standingHeight + 0.2f;
+            Vector3 start = body.position + Vector3.up * above;
+            float rayLen = above + cfg.groundProbe;
+            if (!Physics.Raycast(start, Vector3.down, out RaycastHit hit, rayLen, cfg.groundMask, QueryTriggerInteraction.Ignore))
+                return false;
+            if (Vector3.Angle(hit.normal, Vector3.up) > cfg.maxWalkableAngle + 4f)
+                return false;
+            if (!KinematicStep.NearFeet(body.position.y, hit.point.y, cfg.groundProbe, 0.2f))
+                return false;
+            FillGround(hit, true);
+            return true;
+        }
+
+        void FillGround(RaycastHit hit, bool grounded)
+        {
+            Ground.grounded = grounded;
+            Ground.point = hit.point;
+            Ground.normal = hit.normal;
+            Ground.slopeAngle = Vector3.Angle(hit.normal, Vector3.up);
+            Ground.walkable = Ground.slopeAngle <= cfg.maxWalkableAngle;
+            Ground.collider = hit.collider;
+
+            Vector3 g = Vector3.ProjectOnPlane(Vector3.down, hit.normal);
+            Ground.fallLine = g.sqrMagnitude > 0.0001f ? g.normalized : Vector3.zero;
+            Vector3 flatVel = Vector3.ProjectOnPlane(body.forward, Vector3.up);
+            Ground.downhillDot = Ground.fallLine.sqrMagnitude > 0f
+                ? Vector3.Dot(flatVel.normalized, Vector3.ProjectOnPlane(Ground.fallLine, Vector3.up).normalized)
+                : 0f;
         }
 
         void ProbeWall(Vector3 velocity)

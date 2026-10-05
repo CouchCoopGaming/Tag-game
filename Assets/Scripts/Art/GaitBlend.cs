@@ -26,6 +26,8 @@ namespace Tag.Art
         public const float CadenceGateSpan = 2.4f;
         public const float PlantCapDeg = 26f;
         public const float PlantDuty = 0.42f;
+        /// <summary>Share of the reach already pitched back on the stance thigh.</summary>
+        public const float StrideTrail = 0.58f;
 
         /// <summary>
         /// 0 at the idle gate, 1 at sprint. Ease-out, so a walk is already a stride
@@ -76,6 +78,37 @@ namespace Tag.Art
             float moved = (planarSpeed < 0f ? 0f : planarSpeed) * stanceTime;
             float deg = Mathf.Atan(moved / LegLength) * Mathf.Rad2Deg;
             return Mathf.Min(deg, PlantCapDeg);
+        }
+
+        /// <summary>Rearward pitch the stride already applies at this contact. 0..1 contact.</summary>
+        public static float StrideRearDeg(float thighReach, float contact01)
+        {
+            float reach = thighReach < 0f ? 0f : thighReach;
+            float contact = contact01 < 0f ? 0f : (contact01 > 1f ? 1f : contact01);
+            return StrideTrail * reach * contact;
+        }
+
+        /// <summary>
+        /// Plant angle the stride does not already cover. Adding the full plant
+        /// on top of the trail pitches the sole through the ground.
+        /// </summary>
+        public static float PlantResidualDeg(float strideRearDeg, float plantDeg)
+        {
+            float rear = strideRearDeg < 0f ? 0f : strideRearDeg;
+            float plant = plantDeg < 0f ? 0f : plantDeg;
+            float extra = plant - rear;
+            return extra > 0f ? extra : 0f;
+        }
+
+        /// <summary>Local foot pitch that cancels thigh + knee so the sole stays level.</summary>
+        public static float SoleLevelDeg(float thighPitchDeg, float kneePitchDeg)
+        {
+            return -(thighPitchDeg + kneePitchDeg);
+        }
+
+        public static float StanceWorldPitch(float thighPitchDeg, float kneePitchDeg, float footPitchDeg)
+        {
+            return thighPitchDeg + kneePitchDeg + footPitchDeg;
         }
 
         /// <summary>Spine pitch from forward accel, m/s^2. Positive leans into the push.</summary>
@@ -136,6 +169,21 @@ namespace Tag.Art
             if (TurnLeanDeg(1f, 0f) < TurnLeanWalk - 0.01f) return false;
             if (TurnLeanDeg(1f, 1f) < TurnLeanSprint - 0.01f) return false;
             if (IdleBlendSeconds < 0.12f) return false;
+
+            float reachWalk = ThighReach(poseWalk);
+            float rearWalk = StrideRearDeg(reachWalk, 1f);
+            float residual = PlantResidualDeg(rearWalk, plant);
+            float totalRear = rearWalk + residual;
+            if (Mathf.Abs(totalRear - Mathf.Max(rearWalk, plant)) > 0.05f) return false;
+            if (residual > plant + 0.01f) return false;
+            float thigh = -totalRear;
+            float knee = -2f;
+            float sole = SoleLevelDeg(thigh, knee);
+            if (Mathf.Abs(StanceWorldPitch(thigh, knee, sole)) > 0.05f) return false;
+            float dug = StanceWorldPitch(-(rearWalk + plant), -(2f + plant * 0.4f), 0f);
+            if (!(dug < -25f)) return false;
+            if (Mathf.Abs(PlantResidualDeg(4f, 20f) - 16f) > 0.01f) return false;
+            if (PlantResidualDeg(30f, 10f) > 0.01f) return false;
             return true;
         }
 
@@ -148,6 +196,12 @@ namespace Tag.Art
             float cadRun = CadenceAt(RunSpeed);
             float cadSprint = CadenceAt(SprintSpeed);
             float plant = PlantCounterDeg(WalkSpeed, cadWalk, 0.5f);
+            float rearWalk = StrideRearDeg(ThighReach(poseWalk), 1f);
+            float residual = PlantResidualDeg(rearWalk, plant);
+            float thigh = -(rearWalk + residual);
+            float knee = -2f;
+            float sole = SoleLevelDeg(thigh, knee);
+            float dug = StanceWorldPitch(-(rearWalk + plant), -(2f + plant * 0.4f), 0f);
             return "gait blend"
                 + " poseWalk=" + poseWalk.ToString("0.00")
                 + " poseRun=" + poseRun.ToString("0.00")
@@ -162,6 +216,10 @@ namespace Tag.Art
                 + " kneeWalk=" + KneeBend(poseWalk).ToString("0.0")
                 + " kneeSprint=" + KneeBend(poseSprint).ToString("0.0")
                 + " plant=" + plant.ToString("0.0")
+                + " rear=" + rearWalk.ToString("0.0")
+                + " residual=" + residual.ToString("0.0")
+                + " sole=" + StanceWorldPitch(thigh, knee, sole).ToString("0.0")
+                + " dugWas=" + dug.ToString("0.0")
                 + " accelLean=" + AccelLeanDeg.ToString("0.0")
                 + " turnLean=" + TurnLeanWalk.ToString("0.0") + "-" + TurnLeanSprint.ToString("0.0")
                 + " idleBlend=" + IdleBlendSeconds.ToString("0.00")

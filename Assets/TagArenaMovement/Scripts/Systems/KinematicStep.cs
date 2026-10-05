@@ -74,6 +74,77 @@ namespace TagArena.Movement
         }
 
         /// <summary>
+        /// Above this, vertical speed is a launch. Ground stick uses the same gate.
+        /// Coyote time is not an input.
+        /// </summary>
+        public const float LaunchVy = 1.5f;
+
+        /// <summary>
+        /// Grounded step stays at 0.2 m, and never above the radius or the skin.
+        /// A launch or a wall contact uses 0. CharacterController treats an upward
+        /// move that fits inside stepOffset as a step, then snaps the body back down.
+        /// The same step also hops a capsule up a wall.
+        /// </summary>
+        public static float StepOffset(float height, float radius, float skin, bool suppress)
+        {
+            if (suppress) return 0f;
+            float safeSkin = skin < 0f ? 0f : skin;
+            float cap = height > 0f ? height : 0f;
+            if (radius > 0f && cap > radius) cap = radius;
+            float belowCap = height - radius - safeSkin;
+            if (belowCap > safeSkin && cap > belowCap) cap = belowCap;
+            const float desired = 0.2f;
+            float step = desired;
+            if (step > cap) step = cap;
+            if (step < safeSkin) step = safeSkin;
+            if (step < 0f) step = 0f;
+            return step;
+        }
+
+        /// <summary>
+        /// On the ground, walls are not floors. During climb, wall-run, and vault the
+        /// motor's into-wall stick still needs the steep limit, or the controller rejects it.
+        /// </summary>
+        public static float SlopeLimit(float maxWalkableAngle, bool wallContact)
+        {
+            if (wallContact) return 90f;
+            float angle = maxWalkableAngle;
+            if (angle < 1f) angle = 1f;
+            if (angle > 60f) angle = 60f;
+            return angle;
+        }
+
+        /// <summary>
+        /// SphereCast that starts inside the floor returns no hit. That is contact.
+        /// The hit path keeps the old distance test. A far miss stays air.
+        /// </summary>
+        public static bool ProbeGrounded(bool castHit, float castDistance, float groundProbe, float radius, bool feetNear)
+        {
+            if (castHit)
+                return castDistance <= groundProbe + radius * 0.15f;
+            return feetNear;
+        }
+
+        /// <summary>Feet gap vs a walkable surface. Positive is floor below the origin. Negative is penetration.</summary>
+        public static bool NearFeet(float feetY, float surfaceY, float groundProbe, float maxPenetration)
+        {
+            float gap = feetY - surfaceY;
+            float pen = maxPenetration < 0f ? 0f : maxPenetration;
+            return gap <= groundProbe && gap >= -pen;
+        }
+
+        /// <summary>
+        /// One missed probe does not flap into air. A launch leaves immediately.
+        /// The following miss is a real walk-off. Coyote is not refreshed here.
+        /// </summary>
+        public static bool StableGround(bool rawGrounded, bool previousRawGrounded, float verticalSpeed)
+        {
+            if (rawGrounded) return true;
+            if (verticalSpeed > LaunchVy) return false;
+            return previousRawGrounded;
+        }
+
+        /// <summary>
         /// One press for keyboard Space and the gamepad Jump button.
         /// spaceHeld is that key. jumpHeld includes it and the pad.
         /// A new Space hold still counts when the jump axis was already high, so the axis cannot swallow the key.
@@ -123,6 +194,91 @@ namespace TagArena.Movement
             float outward = -Vector3.Dot(horiz, inward);
             if (outward <= 0f) return horiz;
             return horiz + inward * outward;
+        }
+    }
+
+    /// <summary>Proofs for the controller, probe, and one-frame ground hold. Feel locks are not inputs.</summary>
+    public static class MoveGrounding
+    {
+        public static bool StepEatsRise(float stepOffset, float rise)
+        {
+            return rise > 0f && rise <= stepOffset + 0.0001f;
+        }
+
+        public static bool Holds()
+        {
+            const float height = 1.8f;
+            const float radius = 0.38f;
+            const float skin = 0.02f;
+            const float probeRadius = radius * 0.92f;
+            float fatigueRise = 9.8f / 60f;
+            float freshHiHz = 24.7f / 144f;
+            if (!StepEatsRise(0.2f, fatigueRise)) return false;
+            if (!StepEatsRise(0.2f, freshHiHz)) return false;
+            float rising = KinematicStep.StepOffset(height, radius, skin, true);
+            if (StepEatsRise(rising, fatigueRise) || StepEatsRise(rising, freshHiHz)) return false;
+            float groundedStep = KinematicStep.StepOffset(height, radius, skin, false);
+            if (Mathf.Abs(groundedStep - 0.2f) > 0.001f) return false;
+            float crouchStep = KinematicStep.StepOffset(1.05f, radius, skin, false);
+            if (Mathf.Abs(crouchStep - 0.2f) > 0.001f) return false;
+            // A one-way height cap used to leave the step small after the capsule grew back.
+            float stuck = 0.8f * 0.2f;
+            if (!(groundedStep > stuck + 0.02f)) return false;
+
+            float slope = KinematicStep.SlopeLimit(48f, false);
+            if (Mathf.Abs(slope - 48f) > 0.001f) return false;
+            if (!(90f > slope)) return false;
+            if (Mathf.Abs(KinematicStep.SlopeLimit(48f, true) - 90f) > 0.001f) return false;
+            if (KinematicStep.SlopeLimit(90f, false) > 60f) return false;
+            if (KinematicStep.StepOffset(height, radius, skin, true) > 0.0001f) return false;
+
+            if (!KinematicStep.ProbeGrounded(true, 0.07f, 0.28f, probeRadius, false)) return false;
+            if (KinematicStep.ProbeGrounded(true, 0.50f, 0.28f, probeRadius, false)) return false;
+            if (!KinematicStep.ProbeGrounded(false, 0f, 0.28f, probeRadius, true)) return false;
+            if (KinematicStep.ProbeGrounded(false, 0f, 0.28f, probeRadius, false)) return false;
+            if (!KinematicStep.NearFeet(0.02f, 0f, 0.28f, 0.2f)) return false;
+            if (KinematicStep.NearFeet(1.2f, 0f, 0.28f, 0.2f)) return false;
+            if (!KinematicStep.NearFeet(-0.08f, 0f, 0.28f, 0.2f)) return false;
+
+            if (!KinematicStep.StableGround(false, true, -2f)) return false;
+            if (KinematicStep.StableGround(false, true, 24.7f)) return false;
+            if (KinematicStep.StableGround(false, false, -2f)) return false;
+            if (!KinematicStep.StableGround(true, false, -2f)) return false;
+            float coyote = KinematicStep.DecayCoyote(0.10f, 1f / 60f);
+            if (Mathf.Abs(coyote - (0.10f - 1f / 60f)) > 0.0001f) return false;
+            if (Mathf.Abs(KinematicStep.LaunchVy - 1.5f) > 0.001f) return false;
+            return true;
+        }
+
+        public static string ProofLine()
+        {
+            float fatigueRise = 9.8f / 60f;
+            float freshHiHz = 24.7f / 144f;
+            float rising = KinematicStep.StepOffset(1.8f, 0.38f, 0.02f, true);
+            float groundedStep = KinematicStep.StepOffset(1.8f, 0.38f, 0.02f, false);
+            float coyote = KinematicStep.DecayCoyote(0.10f, 1f / 60f);
+            return "controller step"
+                + " grounded=" + groundedStep.ToString("0.00")
+                + " rising=" + rising.ToString("0.00")
+                + " fatigue60=" + fatigueRise.ToString("0.000")
+                + " fresh144=" + freshHiHz.ToString("0.000")
+                + " eats0.2=" + (StepEatsRise(0.2f, fatigueRise) ? "yes" : "no")
+                + " eatsRising=" + (StepEatsRise(rising, fatigueRise) ? "yes" : "no")
+                + " slopeGround=" + KinematicStep.SlopeLimit(48f, false).ToString("0")
+                + " slopeWall=" + KinematicStep.SlopeLimit(48f, true).ToString("0")
+                + " stepWall=" + KinematicStep.StepOffset(1.8f, 0.38f, 0.02f, true).ToString("0.00")
+                + " wall90rejected=" + (90f > KinematicStep.SlopeLimit(48f, false) ? "yes" : "no")
+                + "\nprobe overlap"
+                + " nearMiss=ground"
+                + " farMiss=air"
+                + " cast0.07=ground"
+                + " cast0.50=air"
+                + "\nground flap"
+                + " oneMiss=hold"
+                + " launch=leave"
+                + " secondMiss=air"
+                + " coyoteAfter1f=" + coyote.ToString("0.0000")
+                + " window=0.10";
         }
     }
 }

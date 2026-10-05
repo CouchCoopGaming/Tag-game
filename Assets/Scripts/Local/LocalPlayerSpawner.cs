@@ -96,7 +96,9 @@ namespace Tag.Local
             legacyCc.height = 1.8f;
             legacyCc.radius = 0.35f;
             legacyCc.center = new Vector3(0f, 0.9f, 0f);
-            legacyCc.slopeLimit = 90f;
+            legacyCc.slopeLimit = TagArena.Movement.KinematicStep.SlopeLimit(48f, false);
+            legacyCc.stepOffset = TagArena.Movement.KinematicStep.StepOffset(1.8f, 0.38f, 0.02f, false);
+            legacyCc.skinWidth = 0.02f;
 
             var cap = go.GetComponent<CapsuleCollider>();
             if (cap == null) cap = go.AddComponent<CapsuleCollider>();
