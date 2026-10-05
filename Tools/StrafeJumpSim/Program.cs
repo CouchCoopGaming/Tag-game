@@ -107,6 +107,14 @@ static class Program
             return 1;
         }
 
+        OpponentChaseSteerReport chaseSteer = OpponentChaseSteerProof.Run();
+        Console.WriteLine(chaseSteer.ToString());
+        if (!chaseSteer.Ok)
+        {
+            Console.Error.WriteLine(chaseSteer.FailureText);
+            return 1;
+        }
+
         GrappleLatchTellReport latch = GrappleLatchTellProof.Run();
         Console.WriteLine(latch.ToString());
         if (!latch.Ok)
