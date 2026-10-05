@@ -1,0 +1,143 @@
+using Tag.Gameplay;
+using Tag.Local;
+using TagArena.Movement;
+using UnityEngine;
+
+namespace Tag.Art
+{
+    /// <summary>
+    /// Visual pose layers DummyRunner shares with the solo human.
+    /// Grapple and air dash stay off. Feel numbers are not written here.
+    /// Opponent chase ribbons and the lunge tell stay on their own paths.
+    /// </summary>
+    public static class DummyPosePaths
+    {
+        public const string Gait = "gait";
+        public const string Jump = "jump";
+        public const string Wall = "wall";
+        public const string Punch = "punch";
+        public const string Tag = "tag";
+        public const string Lunge = "lunge";
+        public const string Slide = "slide";
+        public const string Crouch = "crouch";
+        public const string Mantle = "mantle";
+        public const string Land = "land";
+        public const string Grapple = "grapple";
+        public const string Dash = "dash";
+
+        /// <summary>Same lead as OpponentLungeTell. This file does not set it.</summary>
+        public const float LungeTellSeconds = 0.45f;
+
+        public static readonly string[] Shared =
+        {
+            Gait, Jump, Wall, Punch, Tag, Lunge, Slide, Crouch, Mantle, Land
+        };
+
+        public static readonly string[] Denied = { Grapple, Dash };
+
+        public static bool IsOpponent(string pawnName)
+        {
+            return pawnName == SoloGrappleGate.OpponentPawnName;
+        }
+
+        /// <summary>
+        /// The solo human and couch clones keep every layer they already had.
+        /// DummyRunner keeps the shared list. Grapple and air dash return false.
+        /// </summary>
+        public static bool Allows(string pawnName, string layer)
+        {
+            if (!IsOpponent(pawnName)) return true;
+            if (string.IsNullOrEmpty(layer)) return false;
+            for (int i = 0; i < Shared.Length; i++)
+            {
+                if (Shared[i] == layer) return true;
+            }
+            return false;
+        }
+
+        public static bool Holds()
+        {
+            if (Shared.Length != 10 || Denied.Length != 2) return false;
+            if (Shared[0] != Gait || Shared[1] != Jump || Shared[2] != Wall || Shared[3] != Punch
+                || Shared[4] != Tag || Shared[5] != Lunge || Shared[6] != Slide || Shared[7] != Crouch
+                || Shared[8] != Mantle || Shared[9] != Land)
+                return false;
+            if (Denied[0] != Grapple || Denied[1] != Dash) return false;
+            if (Mathf.Abs(LungeTellSeconds - 0.45f) > 0.001f) return false;
+
+            string opponent = SoloGrappleGate.OpponentPawnName;
+            string solo = SoloGrappleGate.SoloPawnName;
+            if (opponent != "DummyRunner" || solo != "Player") return false;
+            if (!IsOpponent(opponent) || IsOpponent(solo) || IsOpponent("Player_P1")) return false;
+
+            for (int i = 0; i < Shared.Length; i++)
+            {
+                if (!Allows(opponent, Shared[i])) return false;
+                if (!Allows(solo, Shared[i])) return false;
+                if (!Allows("Player_P1", Shared[i])) return false;
+            }
+
+            if (Allows(opponent, Grapple) || Allows(opponent, Dash)) return false;
+            if (!Allows(solo, Grapple) || !Allows(solo, Dash)) return false;
+            if (Allows(opponent, null) || Allows(opponent, "")) return false;
+
+            if (SoloGrappleGate.EnableFor(false, true, 1, opponent)
+                || SoloGrappleGate.EnableFor(false, false, 0, opponent))
+                return false;
+            if (!SoloGrappleGate.EnableFor(false, false, 0, solo)) return false;
+
+            if (JumpLandTell.ForPawn(false, true, 1, opponent)) return false;
+            if (!Allows(opponent, Land)) return false;
+            if (!JumpLandTell.ForPawn(false, false, 0, solo)) return false;
+
+            if (!OpponentChaseTell.IsOpponentPawn(opponent)) return false;
+            if (OpponentChaseTell.IsOpponentPawn(solo)) return false;
+
+            if (JumpPose.RootMotion || WallPose.RootMotion || PunchTagPose.RootMotion
+                || CrouchPose.RootMotion || MantlePose.RootMotion || AirDashPose.RootMotion
+                || GrapplePose.RootMotion || PoseHandoff.RootMotion)
+                return false;
+            if (Mathf.Abs(PunchTagPose.ReachMeters - 1.55f) > 0.001f) return false;
+            if (Mathf.Abs(AirDashPose.WindowSeconds - 0.10f) > 0.001f) return false;
+
+            MovementConfig cfg = ScriptableObject.CreateInstance<MovementConfig>();
+            PunchTagTuning punch = ScriptableObject.CreateInstance<PunchTagTuning>();
+            if (Mathf.Abs(cfg.coyoteTime - 0.10f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.jumpBuffer - 0.16f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.clingReleaseGrace - 0.08f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.jumpSpeed - 24.7f) > 0.001f) return false;
+            if (cfg.slideBoost != 0f) return false;
+            if (Mathf.Abs(cfg.airDashDuration - 0.10f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.airDashSpeed - 15f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.airDashCooldown - 30f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.climbSpeed - 6.0f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.climbSlipSpeed - 3.7f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.wallRunSpeed - 9.5f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.taggerLungeSpeed - 16f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.taggerLungeDuration - 0.20f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.taggerLungeCooldown - 1f) > 0.001f) return false;
+            if (Mathf.Abs(punch.reach - 1.55f) > 0.001f) return false;
+            if (cfg.enableJet) return false;
+            return true;
+        }
+
+        public static string ProofLine()
+        {
+            return "dummy pose"
+                + " pawn=" + SoloGrappleGate.OpponentPawnName
+                + " gait=GaitBlend speed"
+                + " jump=JumpPose beats"
+                + " wall=WallPose climb/run"
+                + " punch=PunchTagPose windup"
+                + " tag=PunchTagPose catch"
+                + " lunge=motor lunge + LungeTell " + LungeTellSeconds.ToString("0.00") + "s"
+                + " slide=SlideBody"
+                + " crouch=CrouchPose if used"
+                + " mantle=MantlePose"
+                + " land=JumpLandTell thud"
+                + " denied=grapple+airdash"
+                + " chase=OpponentChaseTell"
+                + " numbers=player";
+        }
+    }
+}

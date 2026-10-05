@@ -103,6 +103,14 @@ static class Program
             Console.Error.WriteLine("mantle pose is not held");
             return 1;
         }
+
+        DummyPosePathReport dummyPose = DummyPosePathProof.Run();
+        Console.WriteLine(dummyPose.ToString());
+        if (!dummyPose.Ok)
+        {
+            Console.Error.WriteLine(dummyPose.FailureText);
+            return 1;
+        }
         if (!clips.Ok)
         {
             Console.Error.WriteLine(string.Join(" | ", clips.Failures));
