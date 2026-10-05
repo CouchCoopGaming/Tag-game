@@ -9,7 +9,8 @@ namespace Tag.Art
     /// <summary>
     /// Procedural parkour body driven by TagArena MoveState (Apex-Tribes).
     /// Slide, punch, and tag play named clips from <see cref="VerbPoseClips"/>
-    /// on top of the stride. Those clips do not change feel numbers.
+    /// on top of the stride. Wall climb and wall run read <see cref="WallPose"/>.
+    /// Those clips do not change feel numbers. No root motion.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
     {
@@ -914,6 +915,13 @@ namespace Tag.Art
         bool _surfFromJumpPush;
         bool _surfFromJumpWall;
         bool _surfFromJumpWallPush;
+        bool _wallAirWant;
+        bool _wallAirSnap;
+        float _wallAirIn;
+        Quaternion _wallAirUaL, _wallAirUaR, _wallAirLaL, _wallAirLaR;
+        Quaternion _wallAirUlL, _wallAirUlR, _wallAirLlL, _wallAirLlR;
+        Quaternion _wallAirSp, _wallAirHp, _wallAirHd;
+        bool _wallFallHold;
         bool _strideSurfSnap;
         float _strideSurfIn;
         Quaternion _strideSurfUaL, _strideSurfUaR, _strideSurfLaL, _strideSurfLaR;
@@ -1165,6 +1173,10 @@ namespace Tag.Art
                 _surfFromJumpPush = _surfFromJump && _pushOff > 0.02f;
                 _surfFromJumpWall = wallRun && !_surfFromCrouch && !_surfFromJump && (meetVy > 1.5f || _prevVy > 1.5f || _pushOff > 0.02f);
                 _surfFromJumpWallPush = _surfFromJumpWall && _pushOff > 0.02f;
+                // Air eases onto the wall. A crouch meet and a dash meet keep their own blends.
+                // A same-frame jump still counts as air when the feet were down last frame.
+                _wallAirWant = !_surfFromCrouch && !_airDashPoseWas
+                    && (!_wasGrounded || meetVy > 1.5f || _pushOff > 0.02f);
             }
             else if (!onSurf)
             {
@@ -1173,15 +1185,31 @@ namespace Tag.Art
                 _surfFromJumpPush = false;
                 _surfFromJumpWall = false;
                 _surfFromJumpWallPush = false;
+                _wallAirWant = false;
+                _wallAirSnap = false;
             }
             if (onSurf)
             {
-                // Hand meets the surface, then the swing starts. A clock sine pops the arm.
-                _surfIn = Mathf.MoveTowards(_surfIn, 1f, dt / 0.1f);
-                _surfPhase += dt * (climb ? 7.5f : 9.5f);
+                // Hands and knees follow climb speed or wall-run speed. A fixed clock skates.
+                _surfIn = Mathf.MoveTowards(_surfIn, 1f, dt / WallPose.AirBlendSeconds);
+                float vySurf = _motor != null ? _motor.Velocity.y : 0f;
+                _surfPhase += dt * WallPose.SurfRate(climb, vySurf, speed);
+                if (_wallAirSnap && _wallAirIn < 0.98f)
+                    _wallAirIn = Mathf.MoveTowards(_wallAirIn, 1f, dt / WallPose.AirBlendSeconds);
             }
             else
                 _surfIn = 0f;
+            if (!air || _jumpFromClimb || _jumpFromWall || (_motor != null && _motor.IsAirDashing)
+                || (_input != null && _input.CrouchHeld))
+                _wallFallHold = false;
+            if (leavingSurf && air && !_jumpFromClimb && !_jumpFromWall
+                && (_input == null || !_input.CrouchHeld)
+                && (_motor == null || !_motor.IsAirDashing))
+            {
+                // Release, or grace with no jump. The fall beat takes the body.
+                // A wall jump keeps the push-off. Cling grace stays 0.08.
+                _wallFallHold = true;
+            }
             _wasSurf = onSurf;
             if (leavingSurf)
                 _cycle = _exitLeadLeft ? Mathf.PI * 0.5f : Mathf.PI * 1.5f;
@@ -3407,14 +3435,14 @@ namespace Tag.Art
             if (_jumpWallSnap && _jumpFromWall && !punching)
             {
                 if (_jumpWallSnapIn < 0.98f)
-                    _jumpWallSnapIn = Mathf.MoveTowards(_jumpWallSnapIn, 1f, dt / 0.04f);
+                    _jumpWallSnapIn = Mathf.MoveTowards(_jumpWallSnapIn, 1f, dt / WallPose.PushBlendSeconds);
             }
             else if (!_jumpFromWall)
                 _jumpWallSnap = false;
             if (_jumpClimbSnap && _jumpFromClimb && !punching)
             {
                 if (_jumpClimbSnapIn < 0.98f)
-                    _jumpClimbSnapIn = Mathf.MoveTowards(_jumpClimbSnapIn, 1f, dt / 0.04f);
+                    _jumpClimbSnapIn = Mathf.MoveTowards(_jumpClimbSnapIn, 1f, dt / WallPose.PushBlendSeconds);
             }
             else if (!_jumpFromClimb)
                 _jumpClimbSnap = false;
@@ -5640,7 +5668,7 @@ namespace Tag.Art
             // A walk or a run eases onto the wall, then the climb or the run holds.
             // A crouch meet keeps its ease. A jump meet keeps its ease. A dash meet keeps its ease.
             // The meet time is unchanged.
-            bool strideSurf = onSurf && !_surfFromCrouch && !_surfFromJump && !_surfFromJumpWall
+            bool strideSurf = onSurf && !_wallAirWant && !_surfFromCrouch && !_surfFromJump && !_surfFromJumpWall
                 && !_wallFromDash && !_climbFromDash;
             if (strideSurf && !_strideSurfSnap
                 && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
@@ -6076,7 +6104,7 @@ namespace Tag.Art
 
             // Spine / hips lean by state - jet reads clearly in TP
             float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
-            float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? 32f : -32f) : 0f;
+            float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? -WallPose.RunTilt : WallPose.RunTilt) : 0f;
             float idleW = 0f;
             bool atRest = grounded && !dashing && !sliding && !crouch && !jet && !wallRun && !climb && !mantle && !air && !lunging && flinchAmt < 0.04f && claimAmt < 0.04f;
             if (atRest)
@@ -6516,20 +6544,16 @@ namespace Tag.Art
             }
             else if (climb)
             {
-                // One hand meets the surface, then they trade. The swing eases in
-                // so the grab does not pop. Pitch and the mild A flare only.
-                float climbLive = Mathf.Sin(_surfPhase);
-                float upLive = (climbLive + 1f) * 0.5f;
-                float up = Mathf.Lerp(0.8f, upLive, _surfIn);
-                float down = 1f - up;
-                _uaLT = _uaL0 * Quaternion.Euler(Mathf.Lerp(-52f, -118f, up), Mathf.Lerp(12f, 18f, up), armZ);
-                _uaRT = _uaR0 * Quaternion.Euler(Mathf.Lerp(-52f, -118f, down), Mathf.Lerp(-12f, -18f, down), -armZ);
-                _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-18f, -8f, up), 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-18f, -8f, down), 0f, 0f);
-                if (_strideSurfSnap && _strideSurfIn < 0.98f)
+                // Hand over hand. The reach and the opposite knee follow climb speed.
+                // A slip drags both hands. The chest stays on the wall and the head stays up.
+                // Air eases in over WallPose.AirBlendSeconds. No root motion.
+                CaptureWallAir();
+                float vyClimb = _motor != null ? _motor.Velocity.y : WallPose.ClimbSpeedRef;
+                ApplyWallSample(WallPose.Climb(Mathf.Sin(_surfPhase), vyClimb), armZ);
+                if (_strideSurfSnap && !_wallAirSnap && _strideSurfIn < 0.98f)
                 {
-                    // The pose eases onto the climb, then the climb holds.
-                    // A crouch meet keeps its ease. A jump meet keeps its ease. The meet time is unchanged.
+                    // A walk or a run eases onto the climb, then the climb holds.
+                    // Air uses the air blend. A crouch meet keeps its ease.
                     float intoStrideSurf = _strideSurfIn;
                     _uaLT = Quaternion.Slerp(_strideSurfUaL, _uaLT, intoStrideSurf);
                     _uaRT = Quaternion.Slerp(_strideSurfUaR, _uaRT, intoStrideSurf);
@@ -6566,36 +6590,15 @@ namespace Tag.Art
             }
             else if (wallRun)
             {
-                // Wall hand presses into the surface, then travels with the stride.
-                // The outer arm stays a long line. Pitch and the mild A flare only.
+                // Running along the wall. The chest rolls off the face, the inner arm stays low,
+                // and the outer arm pumps with wall-run speed. No root motion.
+                CaptureWallAir();
                 bool left = _motor != null && _motor.WallLeft;
-                float wallLive = Mathf.Sin(_surfPhase);
-                float pressLive = (wallLive + 1f) * 0.5f;
-                float press = Mathf.Lerp(0.55f, pressLive, _surfIn);
-                float outerFwd = 1f - press;
-                float yaw = Mathf.Lerp(18f, 34f, _surfIn);
-                float wallPitch = Mathf.Lerp(-48f, -72f, press);
-                float wallElbow = Mathf.Lerp(-16f, -8f, press);
-                float outerArm = Mathf.Lerp(-36f, Mathf.Lerp(-28f, -84f, 1f - pressLive), _surfIn);
-                float outerElbow = Mathf.Lerp(-16f, -10f, outerFwd);
-                if (left)
+                ApplyWallSample(WallPose.Run(Mathf.Sin(_surfPhase), left), armZ);
+                if (_strideSurfSnap && !_wallAirSnap && _strideSurfIn < 0.98f)
                 {
-                    _uaLT = _uaL0 * Quaternion.Euler(wallPitch, yaw, armZ);
-                    _uaRT = _uaR0 * Quaternion.Euler(outerArm, -10f, -armZ);
-                    _laLT = _laL0 * Quaternion.Euler(wallElbow, 0f, 0f);
-                    _laRT = _laR0 * Quaternion.Euler(outerElbow, 0f, 0f);
-                }
-                else
-                {
-                    _uaRT = _uaR0 * Quaternion.Euler(wallPitch, -yaw, -armZ);
-                    _uaLT = _uaL0 * Quaternion.Euler(outerArm, 10f, armZ);
-                    _laRT = _laR0 * Quaternion.Euler(wallElbow, 0f, 0f);
-                    _laLT = _laL0 * Quaternion.Euler(outerElbow, 0f, 0f);
-                }
-                if (_strideSurfSnap && _strideSurfIn < 0.98f)
-                {
-                    // The pose eases onto the wall run, then the run holds.
-                    // A crouch meet keeps its ease. A jump meet keeps its ease. The meet time is unchanged.
+                    // A walk or a run eases onto the wall run, then the run holds.
+                    // Air uses the air blend. A crouch meet keeps its ease.
                     float intoStrideSurf = _strideSurfIn;
                     _uaLT = Quaternion.Slerp(_strideSurfUaL, _uaLT, intoStrideSurf);
                     _uaRT = Quaternion.Slerp(_strideSurfUaR, _uaRT, intoStrideSurf);
@@ -7295,7 +7298,7 @@ namespace Tag.Art
                 _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-72f, 0f, 0f), _laLT, intoSurf);
                 _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-72f, 0f, 0f), _laRT, intoSurf);
             }
-            if (_surfFromJump && climb && _surfIn < 0.98f)
+            if (_surfFromJump && climb && _surfIn < 0.98f && !_wallAirWant)
             {
                 // The jump eases into the grab. A crouch onto the wall is unchanged.
                 // A wall run is unchanged. The meet time is unchanged.
@@ -7323,7 +7326,7 @@ namespace Tag.Art
                 _laLT = Quaternion.Slerp(fromElL, _laLT, intoGrab);
                 _laRT = Quaternion.Slerp(fromElR, _laRT, intoGrab);
             }
-            if (_surfFromJumpWall && wallRun && _surfIn < 0.98f)
+            if (_surfFromJumpWall && wallRun && _surfIn < 0.98f && !_wallAirWant)
             {
                 // The jump eases into the wall-run attach. A jump into a climb is unchanged.
                 // A crouch onto the wall is unchanged. The meet time is unchanged.
@@ -7471,15 +7474,11 @@ namespace Tag.Art
             }
             else if (climb)
             {
-                // The leg opposite the reaching hand steps up. Same phase as the hands, so the grab does not pop.
-                float climbPhase = Mathf.Sin(_surfPhase);
-                float up = Mathf.Lerp(0.8f, (climbPhase + 1f) * 0.5f, _surfIn);
-                float kneePhase = climbPhase * _surfIn;
-                _ulLT = _ulL0 * Quaternion.Euler(Mathf.Lerp(62f, 14f, up), 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(14f, 62f, up), 0f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(-(6f + Mathf.Max(0f, -kneePhase) * 72f), 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(-(6f + Mathf.Max(0f, kneePhase) * 72f), 0f, 0f);
-                if (_strideSurfSnap && _strideSurfIn < 0.98f)
+                // The knee opposite the reaching hand drives. Same phase as the hands.
+                // Speed scales the phase. A slip keeps both knees in the drag.
+                float vyClimb = _motor != null ? _motor.Velocity.y : WallPose.ClimbSpeedRef;
+                ApplyWallLegs(WallPose.Climb(Mathf.Sin(_surfPhase), vyClimb));
+                if (_strideSurfSnap && !_wallAirSnap && _strideSurfIn < 0.98f)
                 {
                     float intoStrideSurfLegs = _strideSurfIn;
                     _ulLT = Quaternion.Slerp(_strideSurfUlL, _ulLT, intoStrideSurfLegs);
@@ -7490,26 +7489,10 @@ namespace Tag.Art
             }
             else if (wallRun)
             {
-                // Outer leg steps with the same phase as the wall hand.
+                // Outer leg strides. Inner leg stays shorter against the wall. Same phase as the arms.
                 bool left = _motor != null && _motor.WallLeft;
-                float wallPhase = Mathf.Lerp(0f, Mathf.Sin(_surfPhase), _surfIn);
-                float outerThigh = 10f + wallPhase * 38f;
-                float outerKnee = -(6f + Mathf.Max(0f, wallPhase) * 68f);
-                if (left)
-                {
-                    _ulLT = _ulL0 * Quaternion.Euler(16f, 0f, 0f);
-                    _ulRT = _ulR0 * Quaternion.Euler(outerThigh, 0f, 0f);
-                    _llLT = _llL0 * Quaternion.Euler(-8f, 0f, 0f);
-                    _llRT = _llR0 * Quaternion.Euler(outerKnee, 0f, 0f);
-                }
-                else
-                {
-                    _ulRT = _ulR0 * Quaternion.Euler(16f, 0f, 0f);
-                    _ulLT = _ulL0 * Quaternion.Euler(outerThigh, 0f, 0f);
-                    _llRT = _llR0 * Quaternion.Euler(-8f, 0f, 0f);
-                    _llLT = _llL0 * Quaternion.Euler(outerKnee, 0f, 0f);
-                }
-                if (_strideSurfSnap && _strideSurfIn < 0.98f)
+                ApplyWallLegs(WallPose.Run(Mathf.Sin(_surfPhase), left));
+                if (_strideSurfSnap && !_wallAirSnap && _strideSurfIn < 0.98f)
                 {
                     float intoStrideSurfLegs = _strideSurfIn;
                     _ulLT = Quaternion.Slerp(_strideSurfUlL, _ulLT, intoStrideSurfLegs);
@@ -8100,7 +8083,7 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(-68f, 0f, 0f), _llLT, intoSurf);
                 _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(-68f, 0f, 0f), _llRT, intoSurf);
             }
-            if (_surfFromJump && climb && _surfIn < 0.98f)
+            if (_surfFromJump && climb && _surfIn < 0.98f && !_wallAirWant)
             {
                 // The jump eases into the grab. The feet do not snap onto the wall.
                 float intoGrab = _surfIn;
@@ -8137,7 +8120,7 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(fromKl, _llLT, intoGrab);
                 _llRT = Quaternion.Slerp(fromKr, _llRT, intoGrab);
             }
-            if (_surfFromJumpWall && wallRun && _surfIn < 0.98f)
+            if (_surfFromJumpWall && wallRun && _surfIn < 0.98f && !_wallAirWant)
             {
                 // The jump eases into the wall-run attach. The feet do not snap onto the wall.
                 float intoAttach = _surfIn;
@@ -8529,7 +8512,7 @@ namespace Tag.Art
                 _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(22f, 0f, 0f), _hipsT, intoSurf);
                 _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _headT, intoSurf);
             }
-            if (_surfFromJump && climb && _surfIn < 0.98f && !punching)
+            if (_surfFromJump && climb && _surfIn < 0.98f && !punching && !_wallAirWant)
             {
                 // The jump pitch eases into the grab. The hips do not pop onto the wall.
                 float intoGrab = _surfIn;
@@ -8540,7 +8523,7 @@ namespace Tag.Art
                 _hipsT = Quaternion.Slerp(fromHp, _hipsT, intoGrab);
                 _headT = Quaternion.Slerp(fromHd, _headT, intoGrab);
             }
-            if (_surfFromJumpWall && wallRun && _surfIn < 0.98f && !punching)
+            if (_surfFromJumpWall && wallRun && _surfIn < 0.98f && !punching && !_wallAirWant)
             {
                 // The jump pitch eases into the wall-run attach. The hips do not pop onto the wall.
                 float intoAttach = _surfIn;
@@ -8551,6 +8534,17 @@ namespace Tag.Art
                 _hipsT = Quaternion.Slerp(fromHp, _hipsT, intoAttach);
                 _headT = Quaternion.Slerp(fromHd, _headT, intoAttach);
             }
+
+            if (_wallFallHold && air && !wallRun && !climb && !mantle && !punching && !jet && !sliding
+                && !dashing && !lunging
+                && !_jumpFromClimb && !_jumpFromWall
+                && (_motor == null || !_motor.IsAirDashing))
+            {
+                // Legs down, arms wide. This is the fall beat, held until the ground or another verb.
+                ApplyWallSample(WallPose.Fall(), armZ);
+            }
+            if (_wallAirSnap && (wallRun || climb) && _wallAirIn < 0.98f && !punching)
+                BlendWallAir();
 
             if (wallRun || climb)
             {
@@ -8563,8 +8557,8 @@ namespace Tag.Art
                 _exitIntoCrouchWalk = false;
                 if (climb)
                 {
-                    float up = Mathf.Lerp(0.8f, (Mathf.Sin(_surfPhase) + 1f) * 0.5f, _surfIn);
-                    _exitLeadLeft = up < 0.5f;
+                    // The driving knee is the lead. Left hand up means the right knee is forward.
+                    _exitLeadLeft = Mathf.Sin(_surfPhase) < 0f;
                 }
                 else
                     _exitLeadLeft = _motor == null || !_motor.WallLeft;
@@ -8693,10 +8687,11 @@ namespace Tag.Art
                         _wallDropIn = 0f;
                     }
                     if (_wallDropIn < 0.98f)
-                        _wallDropIn = Mathf.MoveTowards(_wallDropIn, 1f, dt / 0.04f);
+                        _wallDropIn = Mathf.MoveTowards(_wallDropIn, 1f, dt / WallPose.ReleaseBlendSeconds);
                     if (_wallDropIn < 0.98f)
                     {
-                        float intoWallDrop = _wallDropIn;
+                        // Release, or grace with no jump, eases into the fall beat.
+                        float intoWallDrop = WallPose.Ease(_wallDropIn);
                         _uaLT = Quaternion.Slerp(_exitUaL, _uaLT, intoWallDrop);
                         _uaRT = Quaternion.Slerp(_exitUaR, _uaRT, intoWallDrop);
                         _laLT = Quaternion.Slerp(_exitLaL, _laLT, intoWallDrop);
@@ -8784,12 +8779,10 @@ namespace Tag.Art
                 && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill
                 && !_jumpDashSnap && !_jumpWallSnap)
             {
-                // The climb pose eases into the air pose, then the air pose holds.
-                // A wall jump has its own ease. An air dash into a jump has its own ease.
-                // A standing idle into a jump has its own ease. A sprint into the air has its own ease.
-                // A walk into a jump has its own ease. The slow push stays off this path.
-                // Exit time is unchanged. Jump height is unchanged.
-                float intoClimbAir = _jumpClimbSnapIn;
+                // The climb eases into the push-off, then the air pose holds.
+                // WallJumpPushTell stays. Jump height is unchanged.
+                ApplyWallSample(WallPose.PushOff(_pushLeft), armZ);
+                float intoClimbAir = WallPose.Ease(_jumpClimbSnapIn);
                 _uaLT = Quaternion.Slerp(_climbJumpUaL, _uaLT, intoClimbAir);
                 _uaRT = Quaternion.Slerp(_climbJumpUaR, _uaRT, intoClimbAir);
                 _laLT = Quaternion.Slerp(_climbJumpLaL, _laLT, intoClimbAir);
@@ -8861,11 +8854,10 @@ namespace Tag.Art
             if (_jumpWallSnap && _jumpWallSnapIn < 0.98f && _jumpFromWall && !punching
                 && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill && !_jumpDashSnap)
             {
-                // The wall pose eases into the air pose, then the air pose holds.
-                // An air dash into a jump has its own ease. A standing idle into a jump has its own ease.
-                // A sprint into the air has its own ease. A walk into a jump has its own ease.
-                // The slow push stays off this path. Exit time is unchanged. Jump height is unchanged.
-                float intoWallAir = _jumpWallSnapIn;
+                // The wall run eases into the push-off, then the air pose holds.
+                // WallJumpPushTell stays. Jump height is unchanged.
+                ApplyWallSample(WallPose.PushOff(_pushLeft), armZ);
+                float intoWallAir = WallPose.Ease(_jumpWallSnapIn);
                 _uaLT = Quaternion.Slerp(_wallJumpUaL, _uaLT, intoWallAir);
                 _uaRT = Quaternion.Slerp(_wallJumpUaR, _uaRT, intoWallAir);
                 _laLT = Quaternion.Slerp(_wallJumpLaL, _laLT, intoWallAir);
@@ -14451,6 +14443,14 @@ namespace Tag.Art
                 legSlew = Mathf.Max(legSlew, JumpPose.TakeoffSlew);
                 torsoSlew = Mathf.Max(torsoSlew, JumpPose.TakeoffSlew);
             }
+            if (WallPoseTracking())
+            {
+                armSlewL = Mathf.Max(armSlewL, WallPose.BlendSlew);
+                armSlewR = Mathf.Max(armSlewR, WallPose.BlendSlew);
+                legSlew = Mathf.Max(legSlew, WallPose.BlendSlew);
+                torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
+                slew = Mathf.Max(slew, WallPose.BlendSlew);
+            }
             ApplyVerbClips(sliding, punching, phase, punchProg, flinchAmt, sinC);
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
@@ -14497,6 +14497,72 @@ namespace Tag.Art
                 _jumpPoseAge += dt;
             else
                 _jumpPoseAge = -1f;
+        }
+
+        void ApplyWallSample(WallPose.Sample pose, float armZ)
+        {
+            ApplyWallLegs(pose);
+            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ);
+            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ);
+            _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
+            _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
+            _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, pose.LeanZ);
+            _hipsT = _hips0 * Quaternion.Euler(pose.Hip, 0f, -pose.LeanZ * WallPose.HipRollShare);
+            _headT = _head0 * Quaternion.Euler(pose.Head, 0f, -pose.LeanZ * WallPose.HeadRollShare);
+        }
+
+        void ApplyWallLegs(WallPose.Sample pose)
+        {
+            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
+            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
+            _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
+        }
+
+        void CaptureWallAir()
+        {
+            if (!_wallAirWant || _wallAirSnap || _climbFromDash || _wallFromDash) return;
+            if (_upperArmL == null || _upperArmR == null || _lowerArmL == null || _lowerArmR == null) return;
+            if (_upperLegL == null || _upperLegR == null || _lowerLegL == null || _lowerLegR == null) return;
+            if (_spine == null || _hips == null || _head == null) return;
+            _wallAirSnap = true;
+            _wallAirIn = 0f;
+            _wallAirUaL = _upperArmL.localRotation;
+            _wallAirUaR = _upperArmR.localRotation;
+            _wallAirLaL = _lowerArmL.localRotation;
+            _wallAirLaR = _lowerArmR.localRotation;
+            _wallAirUlL = _upperLegL.localRotation;
+            _wallAirUlR = _upperLegR.localRotation;
+            _wallAirLlL = _lowerLegL.localRotation;
+            _wallAirLlR = _lowerLegR.localRotation;
+            _wallAirSp = _spine.localRotation;
+            _wallAirHp = _hips.localRotation;
+            _wallAirHd = _head.localRotation;
+        }
+
+        void BlendWallAir()
+        {
+            float intoWall = WallPose.Ease(_wallAirIn);
+            _uaLT = Quaternion.Slerp(_wallAirUaL, _uaLT, intoWall);
+            _uaRT = Quaternion.Slerp(_wallAirUaR, _uaRT, intoWall);
+            _laLT = Quaternion.Slerp(_wallAirLaL, _laLT, intoWall);
+            _laRT = Quaternion.Slerp(_wallAirLaR, _laRT, intoWall);
+            _ulLT = Quaternion.Slerp(_wallAirUlL, _ulLT, intoWall);
+            _ulRT = Quaternion.Slerp(_wallAirUlR, _ulRT, intoWall);
+            _llLT = Quaternion.Slerp(_wallAirLlL, _llLT, intoWall);
+            _llRT = Quaternion.Slerp(_wallAirLlR, _llRT, intoWall);
+            _spineT = Quaternion.Slerp(_wallAirSp, _spineT, intoWall);
+            _hipsT = Quaternion.Slerp(_wallAirHp, _hipsT, intoWall);
+            _headT = Quaternion.Slerp(_wallAirHd, _headT, intoWall);
+        }
+
+        bool WallPoseTracking()
+        {
+            if (_wallAirSnap && _wallAirIn < 0.98f) return true;
+            if (_wallFallHold && _wallDropSnap && _wallDropIn < 0.98f) return true;
+            if (_jumpClimbSnap && _jumpFromClimb && _jumpClimbSnapIn < 0.98f) return true;
+            if (_jumpWallSnap && _jumpFromWall && _jumpWallSnapIn < 0.98f) return true;
+            return false;
         }
 
         /// <summary>
