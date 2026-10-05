@@ -30,6 +30,7 @@
     <Compile Include="../../Assets/Scripts/Art/VerbPoseClips.cs" />
     <Compile Include="../../Assets/Scripts/Art/GaitBlend.cs" />
     <Compile Include="../../Assets/Scripts/Art/JumpPose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/PunchTagPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/WallPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/GrappleRopeTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/GrappleLatchTell.cs" />

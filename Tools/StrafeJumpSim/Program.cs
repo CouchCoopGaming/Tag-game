@@ -47,6 +47,13 @@ static class Program
             Console.Error.WriteLine("wall pose is not held");
             return 1;
         }
+
+        Console.WriteLine(Tag.Art.PunchTagPose.ProofLine());
+        if (!Tag.Art.PunchTagPose.Holds())
+        {
+            Console.Error.WriteLine("punch tag pose beats are not held");
+            return 1;
+        }
         if (!clips.Ok)
         {
             Console.Error.WriteLine(string.Join(" | ", clips.Failures));
