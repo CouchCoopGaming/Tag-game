@@ -133,6 +133,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.StopPlantPose.ProofLine());
+        if (!Tag.Art.StopPlantPose.Holds())
+        {
+            Console.Error.WriteLine("stop plant pose is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.AimTorsoPose.ProofLine());
         if (!Tag.Art.AimTorsoPose.Holds())
         {
