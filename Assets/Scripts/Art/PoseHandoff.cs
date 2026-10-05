@@ -47,6 +47,16 @@ namespace Tag.Art
         public const float PunchBecomeSeconds = 0.10f;
         /// <summary>Hard-brake plant into the idle weight shift. Idle wins.</summary>
         public const float StopIdleSeconds = StopPlantPose.WindowSeconds;
+        /// <summary>Idle weight shift and the pivot. One curve both ways.</summary>
+        public const float IdlePivotSeconds = PivotPose.BlendSeconds;
+        /// <summary>Air-strafe lean into the air dash, and back out on the dash exit. The dash wins. Dash time is unchanged.</summary>
+        public const float LeanDashSeconds = 0.08f;
+        /// <summary>Air-strafe lean into a punch or a grapple. The verb wins. Reach and the pull are unchanged.</summary>
+        public const float LeanVerbSeconds = 0.10f;
+        /// <summary>Skipped land into the next takeoff. The takeoff wins. Jump height is unchanged.</summary>
+        public const float HopTakeoffSeconds = JumpPose.TakeoffSeconds;
+        /// <summary>Aim chest and the role swap. The swap wins. Chest and head only.</summary>
+        public const float AimBecomeSeconds = 0.10f;
 
         /// <summary>Smoothstep. 0 at the start of the blend, 1 at the end.</summary>
         public static float Ease(float u)
@@ -151,6 +161,72 @@ namespace Tag.Art
             StopPlantPose.IntoIdle(timer01, out plantW, out idleW);
         }
 
+        /// <summary>
+        /// Idle weight shift and the pivot. Sum to 1.
+        /// timer 0 is idle. Pivot wins as the timer rises. The same curve runs backward.
+        /// </summary>
+        public static void IdlePivot(float timer01, out float idleW, out float pivotW)
+        {
+            pivotW = Ease(timer01);
+            idleW = 1f - pivotW;
+        }
+
+        /// <summary>
+        /// Air-strafe lean and the air dash. Sum to 1.
+        /// timer 0 is the lean. The dash wins.
+        /// </summary>
+        public static void LeanDash(float timer01, out float leanW, out float dashW)
+        {
+            dashW = Ease(timer01);
+            leanW = 1f - dashW;
+        }
+
+        /// <summary>
+        /// Dash weight from <see cref="AirDashPose.DashWeight"/> and the lean that should return.
+        /// leanW + jumpW + dashW = 1. The jump share is the exit pose with no bank.
+        /// </summary>
+        public static void LeanDashExit(float dashW, float leanWant, out float leanW, out float jumpW)
+        {
+            float dash = dashW < 0f ? 0f : (dashW > 1f ? 1f : dashW);
+            float want = leanWant < 0f ? 0f : (leanWant > 1f ? 1f : leanWant);
+            float rest = 1f - dash;
+            leanW = rest * want;
+            jumpW = rest - leanW;
+        }
+
+        /// <summary>
+        /// Air-strafe lean and a punch or grapple. Sum to 1.
+        /// timer 0 is the lean. The verb wins. The same curve runs backward.
+        /// </summary>
+        public static void LeanVerb(float timer01, out float leanW, out float verbW)
+        {
+            verbW = Ease(timer01);
+            leanW = 1f - verbW;
+        }
+
+        /// <summary>
+        /// Skipped land and the next takeoff. Sum to 1.
+        /// Age 0 keeps the airborne pose. The takeoff wins. A stay-down landing is not this edge.
+        /// </summary>
+        public static void HopTakeoff(float age, out float airW, out float takeW)
+        {
+            float u = 1f;
+            if (HopTakeoffSeconds > 0.0001f)
+                u = age / HopTakeoffSeconds;
+            takeW = Ease(u);
+            airW = 1f - takeW;
+        }
+
+        /// <summary>
+        /// Aim chest and the role swap. Sum to 1.
+        /// timer 0 is the aim. The swap wins. The same curve runs backward.
+        /// </summary>
+        public static void AimBecome(float timer01, out float aimW, out float becomeW)
+        {
+            becomeW = Ease(timer01);
+            aimW = 1f - becomeW;
+        }
+
         public static bool Holds()
         {
             if (RootMotion) return false;
@@ -181,6 +257,13 @@ namespace Tag.Art
             if (Mathf.Abs(PunchBecomeSeconds - 0.10f) > 0.001f) return false;
             if (Mathf.Abs(StopIdleSeconds - StopPlantPose.WindowSeconds) > 0.001f) return false;
             if (StopIdleSeconds < 0.12f || StopIdleSeconds > 0.20f) return false;
+            if (Mathf.Abs(IdlePivotSeconds - PivotPose.BlendSeconds) > 0.001f) return false;
+            if (IdlePivotSeconds < 0.10f || IdlePivotSeconds > 0.18f) return false;
+            if (LeanDashSeconds < 0.06f || LeanDashSeconds >= AirDashPose.WindowSeconds) return false;
+            if (Mathf.Abs(LeanVerbSeconds - 0.10f) > 0.001f) return false;
+            if (Mathf.Abs(HopTakeoffSeconds - JumpPose.TakeoffSeconds) > 0.001f) return false;
+            if (HopTakeoffSeconds >= 0.10f) return false;
+            if (Mathf.Abs(AimBecomeSeconds - 0.10f) > 0.001f) return false;
             if (Ease(0f) > 0.0001f || Mathf.Abs(Ease(1f) - 1f) > 0.0001f) return false;
             if (Mathf.Abs(Ease(0.5f) - 0.5f) > 0.0001f) return false;
             if (Mathf.Abs(ToWeight(0f)) > 0.0001f || Mathf.Abs(ToWeight(1f) - 1f) > 0.0001f) return false;
@@ -288,7 +371,93 @@ namespace Tag.Art
             if (Mathf.Abs(BecomeItPose.PoseWeight(BecomeItPose.HoldSeconds) - 1f) > 0.0001f) return false;
             if (BecomeItPose.PoseWeight(BecomeItPose.HoldSeconds + BecomeGaitSeconds) > 0.0001f) return false;
 
+            IdlePivot(0f, out float idleFull, out float pivotOff);
+            IdlePivot(1f, out float idleGone, out float pivotFull);
+            if (idleFull < 0.999f || pivotOff > 0.0001f) return false;
+            if (idleGone > 0.0001f || pivotFull < 0.999f) return false;
+            prev = -1f;
+            for (int i = 0; i <= 8; i++)
+            {
+                IdlePivot(i / 8f, out float idleW, out float pivotW);
+                if (Mathf.Abs(idleW + pivotW - 1f) > 0.0001f) return false;
+                if (pivotW + 0.0001f < prev) return false;
+                prev = pivotW;
+            }
+
+            LeanDash(0f, out float leanFull, out float dashOff);
+            LeanDash(1f, out float leanGone, out float dashFull);
+            if (leanFull < 0.999f || dashOff > 0.0001f) return false;
+            if (leanGone > 0.0001f || dashFull < 0.999f) return false;
+            LeanDashExit(1f, 1f, out float leanAtDash, out float jumpAtDash);
+            LeanDashExit(0f, 1f, out float leanAfter, out float jumpAfter);
+            LeanDashExit(0.5f, 0.4f, out float leanMidExit, out float jumpMidExit);
+            if (leanAtDash > 0.0001f || jumpAtDash > 0.0001f) return false;
+            if (Mathf.Abs(leanAfter - 1f) > 0.0001f || jumpAfter > 0.0001f) return false;
+            if (Mathf.Abs(leanMidExit + jumpMidExit + 0.5f - 1f) > 0.0001f) return false;
+            if (Mathf.Abs(leanMidExit - 0.2f) > 0.0001f || Mathf.Abs(jumpMidExit - 0.3f) > 0.0001f) return false;
+
+            LeanVerb(0f, out float leanVerbFull, out float verbOff);
+            LeanVerb(1f, out float leanVerbGone, out float verbFull);
+            if (leanVerbFull < 0.999f || verbOff > 0.0001f) return false;
+            if (leanVerbGone > 0.0001f || verbFull < 0.999f) return false;
+            prev = -1f;
+            for (int i = 0; i <= 8; i++)
+            {
+                LeanVerb(i / 8f, out float leanW, out float verbW);
+                if (Mathf.Abs(leanW + verbW - 1f) > 0.0001f) return false;
+                if (verbW + 0.0001f < prev) return false;
+                prev = verbW;
+            }
+
+            HopTakeoff(0f, out float airFull, out float takeOff);
+            HopTakeoff(HopTakeoffSeconds, out float airGone, out float takeFull);
+            if (airFull < 0.999f || takeOff > 0.0001f) return false;
+            if (airGone > 0.0001f || takeFull < 0.999f) return false;
+            prev = -1f;
+            for (int i = 0; i <= 8; i++)
+            {
+                HopTakeoff(HopTakeoffSeconds * i / 8f, out float airW, out float takeW);
+                if (Mathf.Abs(airW + takeW - 1f) > 0.0001f) return false;
+                if (takeW + 0.0001f < prev) return false;
+                prev = takeW;
+            }
+
+            AimBecome(0f, out float aimFull, out float becomeAimOff);
+            AimBecome(1f, out float aimGone, out float becomeAimFull);
+            if (aimFull < 0.999f || becomeAimOff > 0.0001f) return false;
+            if (aimGone > 0.0001f || becomeAimFull < 0.999f) return false;
+            prev = -1f;
+            for (int i = 0; i <= 8; i++)
+            {
+                AimBecome(i / 8f, out float aimW, out float becomeW);
+                if (Mathf.Abs(aimW + becomeW - 1f) > 0.0001f) return false;
+                if (becomeW + 0.0001f < prev) return false;
+                prev = becomeW;
+            }
+
             return true;
+        }
+
+        /// <summary>Third set. The newest layers, after the second handoff line.</summary>
+        public static string ProofLine3()
+        {
+            IdlePivot(0.5f, out float idleW, out float pivotW);
+            LeanDash(0.5f, out float leanW, out float dashW);
+            HopTakeoff(HopTakeoffSeconds * 0.5f, out float airW, out float takeW);
+            AimBecome(0.5f, out float aimW, out float becomeW);
+            return "pose handoff 3"
+                + " stop->idle " + StopIdleSeconds.ToString("0.00") + "s idle wins"
+                + " idle<->pivot " + IdlePivotSeconds.ToString("0.00") + "s idle or pivot wins"
+                + " lean<->dash " + LeanDashSeconds.ToString("0.00") + "s dash wins"
+                + " lean->punch/grapple " + LeanVerbSeconds.ToString("0.00") + "s punch or grapple wins"
+                + " hop skip->takeoff " + HopTakeoffSeconds.ToString("0.00") + "s takeoff wins"
+                + " aim<->become " + AimBecomeSeconds.ToString("0.00") + "s become wins"
+                + " dummy=shared"
+                + " mid=" + idleW.ToString("0.00") + "+" + pivotW.ToString("0.00")
+                + " lean=" + leanW.ToString("0.00") + "+" + dashW.ToString("0.00")
+                + " hop=" + airW.ToString("0.00") + "+" + takeW.ToString("0.00")
+                + " aim=" + aimW.ToString("0.00") + "+" + becomeW.ToString("0.00")
+                + " sum=1 smoothstep";
         }
 
         /// <summary>Second set. The newer verb layers, after the first handoff line.</summary>
