@@ -34,6 +34,20 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(TagArena.Movement.MoveGrounding.ProofLine());
+        if (!TagArena.Movement.MoveGrounding.Holds())
+        {
+            Console.Error.WriteLine("grounding fixes are not held");
+            return 1;
+        }
+
+        Console.WriteLine(TagArena.Movement.ChaseCam.ProofLine());
+        if (!TagArena.Movement.ChaseCam.Holds())
+        {
+            Console.Error.WriteLine("chase cam catch-up is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.JumpPose.ProofLine());
         if (!Tag.Art.JumpPose.Holds())
         {

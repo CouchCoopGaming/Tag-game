@@ -1027,6 +1027,8 @@ namespace Tag.Art
         Quaternion _uaLT, _uaRT, _laLT, _laRT;
         Quaternion _ulLT, _ulRT, _llLT, _llRT;
         Quaternion _ftLT, _ftRT;
+        bool _stanceSole;
+        float _solePitchL, _solePitchR;
 
         public void Bind(Transform visualRoot, PlayerMotor motor, PunchHitbox punch, CharacterController ccIgnored = null)
         {
@@ -1122,6 +1124,7 @@ namespace Tag.Art
         void LateUpdate()
         {
             float dt = Time.deltaTime;
+            _stanceSole = false;
             _punchTelegraph = Mathf.MoveTowards(_punchTelegraph, 0f, dt);
             if (_motor == null) _motor = GetComponentInParent<PlayerMotor>();
             if (_input == null) _input = GetComponentInParent<PlayerInputReader>();
@@ -7747,29 +7750,37 @@ namespace Tag.Art
                 float reach = Mathf.Lerp(34f, 58f, reachGait) * stride;
                 float frontL = Mathf.Max(0f, sinC);
                 float frontR = Mathf.Max(0f, -sinC);
-                float thighL = (frontL - frontR * 0.58f) * reach;
-                float thighR = (frontR - frontL * 0.58f) * reach;
+                float thighL = (frontL - frontR * GaitBlend.StrideTrail) * reach;
+                float thighR = (frontR - frontL * GaitBlend.StrideTrail) * reach;
                 float kneeAmt = Mathf.Lerp(48f, 90f, reachGait);
                 float kneeL = -(2f + frontL * kneeAmt);
                 float kneeR = -(2f + frontR * kneeAmt);
-                // Stance thigh pitches back with the distance the body travels, so the sole
-                // stays with the ground. Swing phase is unchanged. No root motion.
+                // The stride already trails the stance thigh. Adding the full plant on top
+                // digs the sole, and an extra knee bend lifts that foot off the gait.
+                // The residual is only the angle the stride does not already cover.
+                // The stance foot then levels. Swing phase is unchanged. No root motion.
                 if (stepping && footSki < 0.35f && _dropVis < 0.2f)
                 {
                     float plantScale = _walkFromIdle ? Mathf.SmoothStep(0f, 1f, _walkFromIdleIn) : 1f;
                     float tau = Mathf.PI * 2f;
                     float phase = _cycle % tau;
                     if (phase < 0f) phase += tau;
+                    float rear = GaitBlend.StrideRearDeg(reach, Mathf.Abs(sinC));
                     float plantL = 0f;
                     float plantR = 0f;
-                    if (phase >= Mathf.PI)
-                        plantL = GaitBlend.PlantCounterDeg(speed, posedCadence, (phase - Mathf.PI) / Mathf.PI);
+                    bool leftStance = phase >= Mathf.PI;
+                    if (leftStance)
+                        plantL = GaitBlend.PlantResidualDeg(rear, GaitBlend.PlantCounterDeg(speed, posedCadence, (phase - Mathf.PI) / Mathf.PI));
                     else
-                        plantR = GaitBlend.PlantCounterDeg(speed, posedCadence, phase / Mathf.PI);
+                        plantR = GaitBlend.PlantResidualDeg(rear, GaitBlend.PlantCounterDeg(speed, posedCadence, phase / Mathf.PI));
                     thighL -= plantL * plantScale;
                     thighR -= plantR * plantScale;
-                    kneeL -= plantL * 0.4f * plantScale;
-                    kneeR -= plantR * 0.4f * plantScale;
+                    if (footSki < 0.02f)
+                    {
+                        _stanceSole = true;
+                        _solePitchL = leftStance ? GaitBlend.SoleLevelDeg(thighL, kneeL) : 0f;
+                        _solePitchR = leftStance ? 0f : GaitBlend.SoleLevelDeg(thighR, kneeR);
+                    }
                 }
                 _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
@@ -14591,6 +14602,11 @@ namespace Tag.Art
                 slew = Mathf.Max(slew, _grappleSlew);
             }
             ApplyVerbClips(sliding, punching, phase, punchProg, flinchAmt, sinC);
+            if (_stanceSole && !ShoesOwned(sliding, punching, flinchAmt))
+            {
+                _ftLT = _ftL0 * Quaternion.Euler(_solePitchL, 0f, 0f);
+                _ftRT = _ftR0 * Quaternion.Euler(_solePitchR, 0f, 0f);
+            }
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
             Slew(ref _head, _headT, slew, dt);
@@ -16479,6 +16495,16 @@ namespace Tag.Art
             _wallJumpAge = -1f;
             _wallJumpEdge = false;
             _sinceWall = 1f;
+        }
+
+        bool ShoesOwned(bool sliding, bool punching, float flinchAmt)
+        {
+            if (flinchAmt > 0.04f || punching) return true;
+            if (_jumpFromSlide) return true;
+            if (sliding && _slidePose > 0.02f) return true;
+            if (!sliding && _dropSlide && _dropVis > 0.02f) return true;
+            if (!sliding && _slidePose > 0.02f) return true;
+            return false;
         }
 
         static void Slew(ref Transform t, Quaternion target, float speed, float dt)

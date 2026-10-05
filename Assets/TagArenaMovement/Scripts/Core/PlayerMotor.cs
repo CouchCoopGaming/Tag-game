@@ -48,7 +48,7 @@ namespace TagArena.Movement
         public float AirDashCooldownRemaining => Mathf.Max(0f, _airDashCd);
         /// <summary>Planar direction of the current or most recent air dash. Read by the tell only.</summary>
         public Vector3 AirDashDirection => _airDashDir;
-        public bool IsGrounded => _probe != null && _probe.Ground.grounded;
+        public bool IsGrounded => _probe != null && _stableFeet;
         public float HorizontalSpeed => HorizSpeed;
         public bool IsLunging => _lungeT > 0f;
         /// <summary>1 at lunge start, 0 at end (TP whip->settle).</summary>
@@ -106,6 +106,8 @@ namespace TagArena.Movement
         float _landStunT;
         float _lastLandImpactSpeed;
         bool _wasProbeGrounded = true;
+        bool _rawFeetPrev;
+        bool _stableFeet = true;
         bool _jumpFatigued;
         int _airJumpsFromFatigue;
         bool _motorLocked;
@@ -197,8 +199,12 @@ namespace TagArena.Movement
             TickTimers(dt);
 
             _probe.Refresh(_height, _velocity);
-            bool feet = _probe.Ground.grounded;
-            if (feet && _mode != Locomotion.Climb && _mode != Locomotion.WallRun && _mode != Locomotion.Vault)
+            // Raw contact refreshes coyote. One missed sample does not flap locomotion into air.
+            bool rawFeet = _probe.Ground.grounded;
+            bool feet = KinematicStep.StableGround(rawFeet, _rawFeetPrev, _velocity.y);
+            _rawFeetPrev = rawFeet;
+            _stableFeet = feet;
+            if (rawFeet && _mode != Locomotion.Climb && _mode != Locomotion.WallRun && _mode != Locomotion.Vault)
                 _coyote = cfg.coyoteTime;
             LatchLandImpact();
             TickWallContactGates(dt);
@@ -272,6 +278,7 @@ namespace TagArena.Movement
             v = ApplyGrappleHorizontal(v);
 
             _velocity = v;
+            FitController(v.y);
             if (_cc != null && _cc.enabled)
                 _cc.Move(_velocity * dt);
 
@@ -1403,7 +1410,7 @@ namespace TagArena.Movement
             float cap = KinematicStep.LocomotionPlanarCap(cfg.skiMaxSpeed, skiJetOrSlide);
             hv = WishAccel.ClampPlanarSpeed(hv, cap);
 
-            if (!_probe.Ground.grounded && !Jetting)
+            if (!_stableFeet && !Jetting)
                 hv = Vector3.Lerp(hv, hv.normalized * Mathf.Min(hv.magnitude, cfg.skiMaxSpeed), cfg.skiAirDrag * dt);
 
             return WishAccel.SetHoriz(v, hv);
@@ -1418,8 +1425,26 @@ namespace TagArena.Movement
             _cc.height = _cap.height;
             _cc.radius = _cap.radius;
             _cc.center = _cap.center;
-            float stepCap = Mathf.Max(0.05f, _cc.height * 0.2f);
-            if (_cc.stepOffset > stepCap) _cc.stepOffset = stepCap;
+        }
+
+        /// <summary>
+        /// One writer for skin, slope, and step. A launch or a wall contact drops the
+        /// step so the controller cannot snap the jump or hop up the face. On the
+        /// ground, slope follows the walkable angle. Climb and wall-run keep 90° so
+        /// their into-wall stick is not rejected. Skin stays the config value.
+        /// </summary>
+        void FitController(float verticalVelocity)
+        {
+            if (_cc == null || cfg == null) return;
+            float skin = Mathf.Max(0.02f, cfg.skin);
+            float height = _cc.height > 0.05f ? _cc.height : cfg.standingHeight;
+            float radius = _cc.radius > 0.01f ? _cc.radius : cfg.radius;
+            bool wall = _mode == Locomotion.Climb || _mode == Locomotion.WallRun || _mode == Locomotion.Vault;
+            bool rising = verticalVelocity > KinematicStep.LaunchVy;
+            _cc.skinWidth = skin;
+            _cc.slopeLimit = KinematicStep.SlopeLimit(cfg.maxWalkableAngle, wall);
+            _cc.minMoveDistance = 0f;
+            _cc.stepOffset = KinematicStep.StepOffset(height, radius, skin, rising || wall);
         }
 
         void SetHeight(float h) => _height = h;
@@ -1435,10 +1460,7 @@ namespace TagArena.Movement
             _cc.height = _cap.height;
             _cc.radius = _cap.radius;
             _cc.center = _cap.center;
-            _cc.slopeLimit = 90f;
-            _cc.stepOffset = 0.2f;
-            _cc.skinWidth = Mathf.Max(0.02f, cfg.skin);
-            _cc.minMoveDistance = 0f;
+            FitController(0f);
         }
 
         void DriveAnimator()
@@ -1448,7 +1470,7 @@ namespace TagArena.Movement
             animator.SetInteger(AnimIds.State, (int)State);
             animator.SetFloat(AnimIds.Speed, HorizSpeed);
             animator.SetFloat(AnimIds.VertSpeed, _velocity.y);
-            animator.SetBool(AnimIds.Grounded, _probe.Ground.grounded);
+            animator.SetBool(AnimIds.Grounded, _stableFeet);
             animator.SetBool(AnimIds.Ski, Skiing);
             animator.SetBool(AnimIds.Jet, Jetting);
             animator.SetBool(AnimIds.Slide, State == MoveState.Slide);
