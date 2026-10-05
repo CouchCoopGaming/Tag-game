@@ -44,6 +44,9 @@ namespace Tag.Art
 
         public bool IsShowing => _root != null && _root.gameObject.activeSelf;
 
+        /// <summary>Same 0..1 the ring paints. 0 when hidden. The lead length is unchanged.</summary>
+        public float Charge01 { get; private set; }
+
         /// <param name="charge01">0 when the tell starts, 1 on the frame the lunge is allowed.</param>
         public void Show(float charge01)
         {
@@ -52,6 +55,7 @@ namespace Tag.Art
             _root.gameObject.SetActive(true);
 
             float charge = Mathf.Clamp01(charge01);
+            Charge01 = charge;
             float hz = Mathf.Lerp(2.5f, 11f, charge);
             float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * hz * Mathf.PI * 2f);
             float amp = Mathf.Lerp(0.08f, 0.28f, charge);
@@ -74,6 +78,7 @@ namespace Tag.Art
 
         public void Hide()
         {
+            Charge01 = 0f;
             if (_root != null)
                 _root.gameObject.SetActive(false);
             if (_light != null)

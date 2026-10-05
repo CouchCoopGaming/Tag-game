@@ -95,10 +95,13 @@ namespace Tag.Art
 
             if (JumpPose.RootMotion || WallPose.RootMotion || PunchTagPose.RootMotion
                 || CrouchPose.RootMotion || MantlePose.RootMotion || AirDashPose.RootMotion
-                || GrapplePose.RootMotion || PoseHandoff.RootMotion)
+                || GrapplePose.RootMotion || PoseHandoff.RootMotion || LungePose.RootMotion)
                 return false;
             if (Mathf.Abs(PunchTagPose.ReachMeters - 1.55f) > 0.001f) return false;
             if (Mathf.Abs(AirDashPose.WindowSeconds - 0.10f) > 0.001f) return false;
+            if (Mathf.Abs(LungePose.LeadSeconds - LungeTellSeconds) > 0.001f) return false;
+            if (Mathf.Abs(LungePose.BurstSeconds - 0.20f) > 0.001f) return false;
+            if (!LungePose.Holds()) return false;
 
             MovementConfig cfg = ScriptableObject.CreateInstance<MovementConfig>();
             PunchTagTuning punch = ScriptableObject.CreateInstance<PunchTagTuning>();
@@ -130,7 +133,7 @@ namespace Tag.Art
                 + " wall=WallPose climb/run"
                 + " punch=PunchTagPose windup"
                 + " tag=PunchTagPose catch"
-                + " lunge=motor lunge + LungeTell " + LungeTellSeconds.ToString("0.00") + "s"
+                + " lunge=LungePose telegraph/burst/recover + LungeTell " + LungeTellSeconds.ToString("0.00") + "s"
                 + " slide=SlideBody"
                 + " crouch=CrouchPose if used"
                 + " mantle=MantlePose"
