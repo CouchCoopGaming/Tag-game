@@ -12,7 +12,7 @@ namespace Tag.Art
     /// on top of the stride. Wall climb and wall run read <see cref="WallPose"/>.
     /// Air dash reads <see cref="AirDashPose"/>. Crouch reads <see cref="CrouchPose"/>.
     /// Mantle reads <see cref="MantlePose"/>. Those clips do not change feel numbers. No root motion.
-    /// DummyRunner shares gait, the grounded pivot, the idle weight shift, the hard-brake stop plant, jump, wall, punch, tag, lunge, slide, crouch, mantle, the land thud, and punch aim.
+    /// DummyRunner shares gait, the grounded pivot, the idle weight shift, the hard-brake stop plant, jump, the airborne strafe lean, wall, punch, tag, lunge, slide, crouch, mantle, the land thud, and punch aim.
     /// Grapple and air dash stay on the solo human. See <see cref="DummyPosePaths"/>.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
@@ -67,6 +67,7 @@ namespace Tag.Art
         bool _pushLeft;
         float _jumpPoseAge = -1f;
         bool _jumpDriveLeft;
+        float _airStrafeLean;
         float _jumpPoseCycle;
         bool _jumpFromStill;
         float _jumpFromStillIn;
@@ -14844,6 +14845,19 @@ namespace Tag.Art
             }
             ApplyPivotPose(speed);
             ApplyAimTorso();
+            bool grappleOwns = _grappleFallHold || _grapplePose > 0.02f
+                || (_grapple != null && (_grapple.IsAiming || _grapple.IsPulling));
+            bool wallOwns = wallRun || climb || _wallFallHold || _jumpFromWall || _jumpFromClimb;
+            bool dashOwns = airDashing || _dashPoseHeld;
+            bool punchOwns = punching || _punchTelegraph > 0.02f || _aimTorsoW > 0.02f;
+            ApplyAirStrafeLean(armZ, speed, jumpPoseOn, dashOwns, wallOwns, grappleOwns, punchOwns);
+            if (_airStrafeLean > 0.02f)
+            {
+                torsoSlew = Mathf.Max(torsoSlew, AirStrafeLeanPose.Slew);
+                armSlewL = Mathf.Max(armSlewL, AirStrafeLeanPose.Slew);
+                armSlewR = Mathf.Max(armSlewR, AirStrafeLeanPose.Slew);
+                slew = Mathf.Max(slew, AirStrafeLeanPose.Slew);
+            }
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
             Slew(ref _head, _headT, slew, dt);
@@ -15666,7 +15680,8 @@ namespace Tag.Art
 
         /// <summary>
         /// Takeoff, tuck, then the fall. Blended from the stride phase. No root motion.
-        /// The landing thud picks up once the feet are down.
+        /// The landing thud picks up once the feet are down. The air-strafe lean is a
+        /// later overlay and does not change these beats.
         /// </summary>
         void ApplyJumpPose(float armZ, float speed)
         {
@@ -15684,6 +15699,59 @@ namespace Tag.Art
             _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
             _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, 0f);
             _hipsT = _hips0 * Quaternion.Euler(pose.Hip, 0f, 0f);
+        }
+
+        /// <summary>
+        /// Jump beats stay. A side wish that is adding horizontal speed banks the
+        /// chest and hips into that side on the fall blend, and the arms counter.
+        /// Air dash, wall, grapple, and punch are left as they were written.
+        /// </summary>
+        void ApplyAirStrafeLean(float armZ, float speed, bool jumpBase, bool airDash, bool wall, bool grapple, bool punch)
+        {
+            _airStrafeLean = 0f;
+            if (!jumpBase || !PoseAllowed(DummyPosePaths.AirStrafe)) return;
+            if (AirStrafeLeanPose.Yield(airDash, wall, grapple, punch) <= 0f) return;
+            // Claim and lunge already wrote. A strafe bank does not replace them.
+            if (_swapPoseOn || _lungePoseOn) return;
+            if (_motor == null) return;
+            Vector2 move = _input != null ? _input.Move : Vector2.zero;
+            float side = AirStrafeLeanPose.Side(move.x);
+            if (side == 0f) return;
+
+            Transform basis = _motor.cam != null ? _motor.cam : _motor.transform;
+            Vector3 wish = WishAccel.CameraWish(basis, move);
+            Vector3 hv = WishAccel.Horizontal(_motor.Velocity);
+            MovementConfig cfg = _motor.cfg;
+            float airAccel = cfg != null ? cfg.airAccel : 30f;
+            float bonus = cfg != null ? cfg.airStrafeBonus : 1.35f;
+            float crouchSpeed = cfg != null ? cfg.crouchSpeed : 3.2f;
+            float sprintSpeed = cfg != null ? cfg.sprintSpeed : 12f;
+            float walkSpeed = cfg != null ? cfg.walkSpeed : 6f;
+            bool crouchHeld = _input != null && _input.CrouchHeld;
+            bool sprintHeld = _input != null && _input.SprintHeld;
+            float wishSpeed = KinematicStep.GaitCap(crouchHeld, sprintHeld, move.y, crouchSpeed, sprintSpeed, walkSpeed);
+            float accel = airAccel;
+            if (move.x != 0f && Mathf.Abs(move.y) < AirStrafeLeanPose.SideGate)
+                accel *= bonus;
+            const float step = 1f / 60f;
+            if (!AirStrafeLeanPose.AddsSpeed(hv, wish, wishSpeed, accel, step)) return;
+
+            float vy = _motor.Velocity.y;
+            float w = AirStrafeLeanPose.FallBlend(vy, _jumpPoseAge);
+            if (w <= 0.001f) return;
+            _airStrafeLean = w;
+
+            float cycle = _jumpPoseAge <= JumpPose.StrideBlendSeconds ? _jumpPoseCycle : _cycle;
+            float sinC = Mathf.Sin(cycle);
+            JumpPose.Sample beat = JumpPose.Mixed(vy, _jumpPoseAge, _jumpDriveLeft, speed, sinC, cycle);
+            AirStrafeLeanPose.Sample lean = AirStrafeLeanPose.At(side);
+            _spineT = _spine0 * Quaternion.Euler(beat.Spine, 0f, lean.Roll * w);
+            _hipsT = _hips0 * Quaternion.Euler(beat.Hip, 0f, lean.HipRoll * w);
+            _headT = _headT * Quaternion.Euler(0f, 0f, lean.HeadRoll * w);
+            _uaLT = _uaL0 * Quaternion.Euler(beat.ArmPitchL + lean.ArmPitchL * w, beat.ArmYawL + lean.ArmYawL * w, armZ);
+            _uaRT = _uaR0 * Quaternion.Euler(beat.ArmPitchR + lean.ArmPitchR * w, -(beat.ArmYawR + lean.ArmYawR * w), -armZ);
+            _laLT = _laL0 * Quaternion.Euler(beat.ElbowL + lean.ElbowL * w, 0f, 0f);
+            _laRT = _laR0 * Quaternion.Euler(beat.ElbowR + lean.ElbowR * w, 0f, 0f);
         }
 
         /// <summary>

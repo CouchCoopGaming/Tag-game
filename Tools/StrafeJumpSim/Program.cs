@@ -55,6 +55,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.AirStrafeLeanPose.ProofLine());
+        if (!Tag.Art.AirStrafeLeanPose.Holds())
+        {
+            Console.Error.WriteLine("air strafe lean is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.WallPose.ProofLine());
         if (!Tag.Art.WallPose.Holds())
         {
