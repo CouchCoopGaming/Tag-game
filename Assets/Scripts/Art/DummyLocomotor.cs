@@ -12,6 +12,8 @@ namespace Tag.Art
     /// on top of the stride. Wall climb and wall run read <see cref="WallPose"/>.
     /// Air dash reads <see cref="AirDashPose"/>. Crouch reads <see cref="CrouchPose"/>.
     /// Mantle reads <see cref="MantlePose"/>. Those clips do not change feel numbers. No root motion.
+    /// DummyRunner shares gait, jump, wall, punch, tag, lunge, slide, crouch, mantle, and the land thud.
+    /// Grapple and air dash stay on the solo human. See <see cref="DummyPosePaths"/>.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
     {
@@ -1166,11 +1168,11 @@ namespace Tag.Art
             float speed = _motor != null ? _motor.HorizontalSpeed : 0f;
             bool grounded = _motor == null || _motor.IsGrounded;
             var st = _motor != null ? _motor.State : MoveState.Idle;
-            bool sliding = st == MoveState.Slide;
+            bool sliding = st == MoveState.Slide && PoseAllowed(DummyPosePaths.Slide);
             bool jet = st == MoveState.Jet || (_motor != null && _motor.Jetting);
-            bool wallRun = st == MoveState.WallRun;
-            bool climb = st == MoveState.WallClimb;
-            bool mantle = st == MoveState.Mantle;
+            bool wallRun = st == MoveState.WallRun && PoseAllowed(DummyPosePaths.Wall);
+            bool climb = st == MoveState.WallClimb && PoseAllowed(DummyPosePaths.Wall);
+            bool mantle = st == MoveState.Mantle && PoseAllowed(DummyPosePaths.Mantle);
             bool air = st == MoveState.Air || (!grounded && !climb && !wallRun && !mantle);
             bool onSurf = wallRun || climb;
             bool leavingSurf = _wasSurf && !onSurf;
@@ -1250,7 +1252,7 @@ namespace Tag.Art
             if (_diveFromJump && !_jumpFromAirCrouch && diveAmt > _diveVis)
                 diveStep = dt / 0.16f;
             _diveVis = Mathf.MoveTowards(_diveVis, diveAmt, diveStep);
-            bool crouch = st == MoveState.Crouch;
+            bool crouch = st == MoveState.Crouch && PoseAllowed(DummyPosePaths.Crouch);
             // Crouch blends over CrouchPose.BlendSeconds. A slide eases in and out over SlideBlendSeconds.
             // Speed is unchanged. slideBoost stays 0.
             float dropDur = (!crouch && (sliding || _dropSlide)) ? VerbPoseClips.SlideBlendSeconds : CrouchPose.BlendSeconds;
@@ -2485,8 +2487,8 @@ namespace Tag.Art
                 : 0f;
             bool sprintExit = !skiing && grounded && speed > 5.5f;
             float legSki = walkSki > 0.02f || sprintExit || _skiFromWalk || _skiFromSprint ? footSki * footSki : footSki;
-            bool punching = _punch != null && _punch.IsPunching;
-            bool lunging = _motor != null && _motor.IsLunging;
+            bool punching = _punch != null && _punch.IsPunching && PoseAllowed(DummyPosePaths.Punch);
+            bool lunging = _motor != null && _motor.IsLunging && PoseAllowed(DummyPosePaths.Lunge);
             var phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
             if (!skiCrouchWalk)
                 _skiWalkHeld = false;
@@ -5712,7 +5714,7 @@ namespace Tag.Art
             else
                 _strideSurfSnap = false;
 
-            bool airDashing = _motor != null && _motor.IsAirDashing;
+            bool airDashing = _motor != null && _motor.IsAirDashing && PoseAllowed(DummyPosePaths.Dash);
             if (airDashing && !_dashPoseHeld)
             {
                 _dashPoseHeld = true;
@@ -5772,8 +5774,9 @@ namespace Tag.Art
             float runAmt = Mathf.InverseLerp(5.5f, 11.5f, speed);
             // One curve of planar speed. Walk, run, and sprint are samples on it.
             // Tell gates still read walkAmt and runAmt. Speed is unchanged.
-            float gaitW = GaitBlend.PoseWeight(speed);
-            float gaitCadence = GaitBlend.CadenceAt(speed);
+            bool gaitPose = PoseAllowed(DummyPosePaths.Gait);
+            float gaitW = gaitPose ? GaitBlend.PoseWeight(speed) : 0f;
+            float gaitCadence = gaitPose ? GaitBlend.CadenceAt(speed) : 0f;
             float posedCadence = gaitCadence;
             // A still crouch in the air uses the guard. The fall dart stays as it is.
             // A moving crouch eases that fall into the low stride. A still crouch keeps the dart.
@@ -5788,7 +5791,7 @@ namespace Tag.Art
                 && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint && runAmt <= 0.4f
                 && _diveVis > 0.02f
                 && _input != null && _input.CrouchHeld;
-            bool jumpPoseOn = JumpPose.PoseActive(air && !jet, _jumpFromWall, _jumpFromSlide,
+            bool jumpPoseOn = PoseAllowed(DummyPosePaths.Jump) && JumpPose.PoseActive(air && !jet, _jumpFromWall, _jumpFromSlide,
                 !air || jet || punching || JumpPoseBlocked() || airStillCrouch || airCrouchWalk || _diveVis >= 0.2f
                 || airDashing || _dashPoseHeld || _jumpPoseAge < 0f || _wallFallHold || _grappleFallHold);
             // Keep a soft air/vault cycle so limbs stay energetic off the ground.
@@ -7387,7 +7390,7 @@ namespace Tag.Art
                 _laRT = Quaternion.Slerp(fromElR, _laRT, intoAttach);
             }
 
-            if (_punchTelegraph > 0.02f && !punching)
+            if (PoseAllowed(DummyPosePaths.Punch) && _punchTelegraph > 0.02f && !punching)
             {
                 // The coil starts when the strike arms, before QueuePunch. Same pose as the windup.
                 // The real windup is still only 0.12s; this is the hold pose before the swing.
@@ -9947,9 +9950,10 @@ namespace Tag.Art
                 && _diveVis > 0.02f
                 && _input != null && _input.CrouchHeld;
 
-            bool pulling = _grapple != null && _grapple.IsPulling;
-            bool aiming = _grapple != null && _grapple.IsAiming && !pulling;
-            bool missOn = _grapple != null && _grapple.MissFlickOn && !pulling;
+            bool grapplePose = PoseAllowed(DummyPosePaths.Grapple);
+            bool pulling = grapplePose && _grapple != null && _grapple.IsPulling;
+            bool aiming = grapplePose && _grapple != null && _grapple.IsAiming && !pulling;
+            bool missOn = grapplePose && _grapple != null && _grapple.MissFlickOn && !pulling;
             _grappleSlew = 0f;
             _grapplePose = Mathf.MoveTowards(_grapplePose, pulling ? 1f : 0f, dt / 0.12f);
             if (aiming)
@@ -14825,6 +14829,7 @@ namespace Tag.Art
         /// </summary>
         void ApplyAirDashPose(float armZ, float speed, float sinC)
         {
+            if (!PoseAllowed(DummyPosePaths.Dash)) return;
             Vector3 dir = Vector3.forward;
             Transform yawSrc = _motor != null ? _motor.transform : transform;
             if (_motor != null)
@@ -14942,7 +14947,7 @@ namespace Tag.Art
         void TickAirDashTell(float dt)
         {
             bool lunging = _motor != null && _motor.IsLunging;
-            bool airDashing = _motor != null && _motor.IsAirDashing;
+            bool airDashing = _motor != null && _motor.IsAirDashing && PoseAllowed(DummyPosePaths.Dash);
             bool jet = _motor != null && (_motor.State == MoveState.Jet || _motor.Jetting);
             if (lunging && !_wasLunging) _dashPulse = 1f;
             if (airDashing && !_wasAirDashing)
@@ -15552,7 +15557,18 @@ namespace Tag.Art
             }
 
             bool ai = pawnName == SoloGrappleGate.OpponentPawnName;
-            return JumpLandTell.ForPawn(LocalPlayerRoster.IsCouch, ai, index, pawnName);
+            bool soloHuman = JumpLandTell.ForPawn(LocalPlayerRoster.IsCouch, ai, index, pawnName);
+            return soloHuman || (ai && DummyPosePaths.Allows(pawnName, DummyPosePaths.Land));
+        }
+
+        /// <summary>
+        /// Solo human keeps every layer. DummyRunner keeps <see cref="DummyPosePaths.Shared"/>.
+        /// </summary>
+        bool PoseAllowed(string layer)
+        {
+            Transform pawn = _motor != null ? _motor.transform : transform.root;
+            string pawnName = pawn != null ? pawn.name : null;
+            return DummyPosePaths.Allows(pawnName, layer);
         }
 
         /// <summary>
@@ -16597,7 +16613,7 @@ namespace Tag.Art
                 FtL = _ftL0, FtR = _ftR0,
                 Spine = _spine0, Hips = _hips0, Head = _head0,
             };
-            if (flinchAmt > 0.04f)
+            if (flinchAmt > 0.04f && PoseAllowed(DummyPosePaths.Tag))
             {
                 PunchTagPose.Beat tag = PunchTagPose.Tag(flinchAmt);
                 if (tag.Weight > 0.02f)

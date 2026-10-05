@@ -87,7 +87,6 @@ namespace Tag.Modes
         float _lungeTellT;
         float _lungeArm;
         OpponentLungeTell _lungeMark;
-        float _airDashGate;
         float _weave;
         float _weaveT;
         float _punchTell;
@@ -810,16 +809,8 @@ namespace Tag.Modes
                 float hopDy = Mathf.Max(fleeLip, panicDy);
                 float hopDist = Mathf.Clamp(threatDist, 1.2f, 8f);
                 bool jump = ConsumeHop(hopDy, hopDist, grounded, 0.85f, 9f);
-                // Hot Potato dump panic: one air dash while airborne if CD is clear (same 30s motor CD).
-                _airDashGate -= dt;
-                bool airDash = false;
-                if (urgent && !grounded && _airDashGate <= 0f && _selfMotor != null
-                    && _selfMotor.AirDashCooldownRemaining <= 0.05f)
-                {
-                    airDash = true;
-                    _airDashGate = 1.1f;
-                }
-                DriveWish(urgent ? fleeUrgencyMoveY : 1f, sprint: true, jump: jump, airDash: airDash);
+                // Flee uses the same motor. It does not take air dash or grapple.
+                DriveWish(urgent ? fleeUrgencyMoveY : 1f, sprint: true, jump: jump, airDash: false);
             }
             else
             {
