@@ -57,6 +57,11 @@ public static class DummyPosePathProof
             || !loco.Contains("BecomeItPose.Claim") || !loco.Contains("BecomeItPose.GiveUp")
             || !loco.Contains("PlayItGiveUp"))
             report.Fail("become-it pose is not on the dummy pose path");
+        if (!loco.Contains("PoseHandoff.CrouchGait") || !loco.Contains("PoseHandoff.CrouchSlide")
+            || !loco.Contains("PoseHandoff.DashExit") || !loco.Contains("PoseHandoff.MantleLand")
+            || !loco.Contains("PoseHandoff.LungeEnter") || !loco.Contains("PoseHandoff.PunchBecome")
+            || !loco.Contains("BlendLungeEnter") || !loco.Contains("BlendSwapFromCaptured"))
+            report.Fail("dummy is not using the second handoff set");
         if (!loco.Contains("DummyPosePaths.Grapple") || !loco.Contains("DummyPosePaths.Dash"))
             report.Fail("grapple or air dash was not denied on the dummy");
 
