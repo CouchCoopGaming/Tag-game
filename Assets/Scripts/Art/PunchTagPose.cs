@@ -4,10 +4,10 @@ namespace Tag.Art
 {
     /// <summary>
     /// Visual punch and tag only. Three beats at chase-cam distance.
-    /// Windup is the pull-back, and it is the target the frame the strike arms.
-    /// Active is the committed reach drawn for the locked punch reach.
-    /// Recovery eases the weight back onto the run or the idle. No root motion.
-    /// Phase times, reach, and the hit window are not written here.
+    /// Windup cocks the fist beside the head. Active is the chest-high line for the locked reach.
+    /// Recovery folds that line into a rib chamber, then eases onto the gait.
+    /// TagCatch gathers both hands at the chest, then both arms claim one contact.
+    /// Phase times, reach, and the hit window are not written here. No root motion.
     /// </summary>
     public static class PunchTagPose
     {
@@ -179,13 +179,14 @@ namespace Tag.Art
                 prevW = step.Weight;
             }
 
-            if (VerbPoseClips.PunchCockPitch > -80f || VerbPoseClips.PunchCockSpineYaw > -50f) return false;
-            if (VerbPoseClips.PunchStrikePitch > -124f || Mathf.Abs(VerbPoseClips.PunchStrikeElbow) > 6f) return false;
+            if (VerbPoseClips.PunchCockPitch > -72f || VerbPoseClips.PunchCockYaw > -8f || VerbPoseClips.PunchCockSpineYaw > -50f) return false;
+            if (VerbPoseClips.PunchStrikePitch > -64f || VerbPoseClips.PunchStrikePitch < -90f || Mathf.Abs(VerbPoseClips.PunchStrikeElbow) > 8f) return false;
             if (VerbPoseClips.PunchGuardPitchStrike < 72f) return false;
-            if (VerbPoseClips.PunchGuardPitchStrike - VerbPoseClips.PunchStrikePitch < 180f) return false;
-            if (VerbPoseClips.TagWindupArmPitch < 48f || VerbPoseClips.TagWindupHipYaw != 0f) return false;
-            if (VerbPoseClips.TagArmPitch > -100f || Mathf.Abs(VerbPoseClips.TagElbow) > 8f) return false;
-            if (Mathf.Abs(VerbPoseClips.TagArmPitch - VerbPoseClips.PunchStrikePitch) < 12f) return false;
+            if (VerbPoseClips.PunchGuardPitchStrike - VerbPoseClips.PunchStrikePitch < 140f) return false;
+            if (VerbPoseClips.PunchRecoverElbow > -60f || VerbPoseClips.RecoverOpen(0f) > 0.02f) return false;
+            if (VerbPoseClips.TagWindupArmPitch > -20f || VerbPoseClips.TagWindupHipYaw != 0f) return false;
+            if (VerbPoseClips.TagArmPitch > -52f || Mathf.Abs(VerbPoseClips.TagElbow) > 12f) return false;
+            if (Mathf.Abs(VerbPoseClips.TagArmPitch - VerbPoseClips.PunchStrikePitch) < 8f) return false;
             if (VerbPoseClips.ClipForState(VerbPoseClips.StatePunchRecover) != VerbPoseClips.PunchStrike) return false;
             if (VerbPoseClips.ClipForState(VerbPoseClips.StateTag) != VerbPoseClips.TagCatch) return false;
             if (VerbPoseClips.SilhouetteFailures().Count > 0) return false;
@@ -234,12 +235,13 @@ namespace Tag.Art
                 + " tagCoilSample=" + tagCoil.Sample.ToString("0.00")
                 + " tagReachSample=" + tagReach.Sample.ToString("0.00")
                 + " tagHomeWeight=" + tagHome.Weight.ToString("0.00")
+                + " recoverOpen=" + VerbPoseClips.RecoverOpen(1f).ToString("0.00")
                 + " slew=" + PoseSlew.ToString("0")
-                + " gate=punch-windup:sample 0 weight 1 for the whole 0.12s, coil starts the frame the strike arms"
-                + "; punch-active:Commit(phase) sample 0→1 weight 1, striking arm extended, free arm back, reach " + ReachMeters.ToString("0.00")
-                + "; punch-recover:sample 1, weight 1-SmoothStep(0..1) across hit 0.15s and miss 0.32s, clip off at 0"
-                + "; tag-windup:flinch life 0.." + TagWindupEnd.ToString("0.00") + " sample 0 weight 1, both shoulders back, no yaw"
-                + "; tag-active:life " + TagWindupEnd.ToString("0.00") + ".." + TagActiveEnd.ToString("0.00") + " Commit sample, weight 1, both hands to the contact"
+                + " gate=punch-windup:sample 0 weight 1 for the whole 0.12s, fist beside the head, not a wide float"
+                + "; punch-active:Commit(phase) sample 0→1 weight 1, chest-high line, free arm back, reach " + ReachMeters.ToString("0.00")
+                + "; punch-recover:sample 1, beat weight 1-SmoothStep across hit 0.15s and miss 0.32s, clip eases strike into the rib chamber then off"
+                + "; tag-windup:flinch life 0.." + TagWindupEnd.ToString("0.00") + " sample 0 weight 1, both hands gathered at the chest, no yaw"
+                + "; tag-active:life " + TagWindupEnd.ToString("0.00") + ".." + TagActiveEnd.ToString("0.00") + " Commit sample, weight 1, both hands meet at the contact"
                 + "; tag-recover:life " + TagActiveEnd.ToString("0.00") + "..1 weight 1-SmoothStep, gate flinch>0.04 unchanged"
                 + "; clips PunchStrike and TagCatch; HitConfirmTell and LungeTell untouched"
                 + "; rootMotion=0";
