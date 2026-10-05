@@ -41,6 +41,12 @@ public static class DummyPosePathProof
             || !loco.Contains("IdlePose.Weight") || !loco.Contains("IdlePose.Yield")
             || !loco.Contains("IdlePose.At") || !loco.Contains("dt / IdlePose.FadeSeconds"))
             report.Fail("idle pose is not on the dummy pose path");
+        if (!loco.Contains("ApplyAimTorso") || !loco.Contains("TrackAimTorso")
+            || !loco.Contains("AimTorsoPose.At") || !loco.Contains("AimTorsoPose.Ease")
+            || !loco.Contains("dt / AimTorsoPose.BlendSeconds")
+            || !loco.Contains("DummyPosePaths.Punch") || !loco.Contains("DummyPosePaths.Grapple")
+            || !loco.Contains("IsAiming") || !loco.Contains("IsPulling"))
+            report.Fail("aim torso is not on the punch and grapple paths");
         if (!loco.Contains("yawRate / 280f") || !loco.Contains("dt / 0.1f"))
             report.Fail("yaw slew was retuned");
         if (!loco.Contains("DummyPosePaths.Jump") || !loco.Contains("JumpPose.PoseActive"))

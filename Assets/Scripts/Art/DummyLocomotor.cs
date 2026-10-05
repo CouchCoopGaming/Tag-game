@@ -12,7 +12,7 @@ namespace Tag.Art
     /// on top of the stride. Wall climb and wall run read <see cref="WallPose"/>.
     /// Air dash reads <see cref="AirDashPose"/>. Crouch reads <see cref="CrouchPose"/>.
     /// Mantle reads <see cref="MantlePose"/>. Those clips do not change feel numbers. No root motion.
-    /// DummyRunner shares gait, the grounded pivot, the idle weight shift, jump, wall, punch, tag, lunge, slide, crouch, mantle, and the land thud.
+    /// DummyRunner shares gait, the grounded pivot, the idle weight shift, jump, wall, punch, tag, lunge, slide, crouch, mantle, the land thud, and punch aim.
     /// Grapple and air dash stay on the solo human. See <see cref="DummyPosePaths"/>.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
@@ -968,6 +968,9 @@ namespace Tag.Art
         bool _grappleFallHold;
         float _grappleFallIn;
         float _grapplePullW;
+        float _aimTorsoW;
+        float _aimYaw;
+        float _aimPitch;
         float _wallExit;
         bool _exitFromWall;
         bool _exitIntoWalk;
@@ -10063,6 +10066,7 @@ namespace Tag.Art
                 && _diveVis > 0.02f
                 && _input != null && _input.CrouchHeld;
 
+            TrackAimTorso(dt, phase);
             bool grapplePose = PoseAllowed(DummyPosePaths.Grapple);
             bool pulling = grapplePose && _grapple != null && _grapple.IsPulling;
             bool aiming = grapplePose && _grapple != null && _grapple.IsAiming && !pulling;
@@ -10183,9 +10187,9 @@ namespace Tag.Art
                         _llLT = Quaternion.Slerp(_llL0 * Quaternion.Euler(CrouchPose.Knee, 0f, 0f), _llL0 * Quaternion.Euler(linePose.KneeL, 0f, 0f), outW);
                         _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(CrouchPose.Knee, 0f, 0f), _llR0 * Quaternion.Euler(linePose.KneeR, 0f, 0f), outW);
                     }
-                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(CrouchPose.Spine, 0f, 0f), _spine0 * Quaternion.Euler(linePose.Spine, linePose.SpineYaw, 0f), outW);
+                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(CrouchPose.Spine, 0f, 0f), _spine0 * Quaternion.Euler(linePose.Spine, linePose.SpineYaw * AimTorsoKeep(), 0f), outW);
                     _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(CrouchPose.Hip, 0f, 0f), _hips0 * Quaternion.Euler(linePose.Hip, linePose.HipYaw, 0f), outW);
-                    _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _head0 * Quaternion.Euler(linePose.Head, linePose.HeadYaw, 0f), outW);
+                    _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _head0 * Quaternion.Euler(linePose.Head, linePose.HeadYaw * AimTorsoKeep(), 0f), outW);
                 }
                 else if (sprintGrapple > 0.02f)
                 {
@@ -10205,7 +10209,7 @@ namespace Tag.Art
                     _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(pitchR, -yR, -roll), _uaR0 * Quaternion.Euler(linePose.ArmPitchR, linePose.ArmYawR, -armZ), outW);
                     _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(elbowL, 0f, 0f), _laL0 * Quaternion.Euler(linePose.ElbowL, 0f, 0f), outW);
                     _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(elbowR, 0f, 0f), _laR0 * Quaternion.Euler(linePose.ElbowR, 0f, 0f), outW);
-                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX, 0f, leanZ), _spine0 * Quaternion.Euler(linePose.Spine, linePose.SpineYaw, 0f), outW);
+                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX, 0f, leanZ), _spine0 * Quaternion.Euler(linePose.Spine, linePose.SpineYaw * AimTorsoKeep(), 0f), outW);
                 }
                 else if (walkGrapple > 0.02f)
                 {
@@ -10230,7 +10234,7 @@ namespace Tag.Art
                     _uaRT = Quaternion.Slerp(_uaR0 * Quaternion.Euler(pitchR, -yR, -roll), _uaR0 * Quaternion.Euler(linePose.ArmPitchR, linePose.ArmYawR, -armZ), outW);
                     _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(elbowL, 0f, 0f), _laL0 * Quaternion.Euler(linePose.ElbowL, 0f, 0f), outW);
                     _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(elbowR, 0f, 0f), _laR0 * Quaternion.Euler(linePose.ElbowR, 0f, 0f), outW);
-                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX, 0f, leanZ), _spine0 * Quaternion.Euler(linePose.Spine, linePose.SpineYaw, 0f), outW);
+                    _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX, 0f, leanZ), _spine0 * Quaternion.Euler(linePose.Spine, linePose.SpineYaw * AimTorsoKeep(), 0f), outW);
                 }
                 else
                 {
@@ -10246,7 +10250,7 @@ namespace Tag.Art
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(linePose.KneeL, 0f, 0f), outW);
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(linePose.KneeR, 0f, 0f), outW);
                     if (walkGrapple <= 0.02f && sprintGrapple <= 0.02f)
-                        _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(linePose.Spine, linePose.SpineYaw, 0f), outW);
+                        _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(linePose.Spine, linePose.SpineYaw * AimTorsoKeep(), 0f), outW);
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(linePose.Hip, linePose.HipYaw, 0f), outW);
                 }
                 }
@@ -14726,6 +14730,11 @@ namespace Tag.Art
                 armSlewL = Mathf.Max(armSlewL, IdlePose.Slew);
                 armSlewR = Mathf.Max(armSlewR, IdlePose.Slew);
             }
+            if (_aimTorsoW > 0.02f)
+            {
+                torsoSlew = Mathf.Max(torsoSlew, AimTorsoPose.Slew);
+                slew = Mathf.Max(slew, AimTorsoPose.Slew);
+            }
             if (_stanceSole && !ShoesOwned(sliding, punching, flinchAmt))
             {
                 _ftLT = _ftL0 * Quaternion.Euler(_solePitchL, 0f, 0f);
@@ -14739,6 +14748,7 @@ namespace Tag.Art
                 _ftRT = Quaternion.Slerp(_ftRT, _ftRT * Quaternion.Euler(feet.FootR, 0f, 0f), _idleApply);
             }
             ApplyPivotPose(speed);
+            ApplyAimTorso();
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
             Slew(ref _head, _headT, slew, dt);
@@ -14933,9 +14943,12 @@ namespace Tag.Art
             Quaternion uaR = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ);
             Quaternion laL = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             Quaternion laR = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
-            Quaternion spine = _spine0 * Quaternion.Euler(pose.Spine, pose.SpineYaw, 0f);
+            // Chest and head yaw yield to AimTorso so the two turns do not stack.
+            // The arms, the hips, and the pose pitch stay on this sample.
+            float yawKeep = AimTorsoKeep();
+            Quaternion spine = _spine0 * Quaternion.Euler(pose.Spine, pose.SpineYaw * yawKeep, 0f);
             Quaternion hips = _hips0 * Quaternion.Euler(pose.Hip, pose.HipYaw, 0f);
-            Quaternion head = _head0 * Quaternion.Euler(pose.Head, pose.HeadYaw, 0f);
+            Quaternion head = _head0 * Quaternion.Euler(pose.Head, pose.HeadYaw * yawKeep, 0f);
             if (weight >= 0.999f)
             {
                 _uaLT = uaL;
@@ -14975,6 +14988,87 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_llLT, llL, weight);
                 _llRT = Quaternion.Slerp(_llRT, llR, weight);
             }
+        }
+
+        /// <summary>
+        /// 1 while aim is quiet, so a grapple sample keeps its own chest yaw.
+        /// While aim is on, that yaw steps aside and <see cref="ApplyAimTorso"/> owns it.
+        /// </summary>
+        float AimTorsoKeep()
+        {
+            return 1f - AimTorsoPose.Ease(_aimTorsoW);
+        }
+
+        /// <summary>
+        /// Punch telegraph and windup, or a planar grapple aim / latch.
+        /// DummyRunner shares the punch. Grapple stays on the solo pawn.
+        /// The last aim is held while the weight eases out.
+        /// </summary>
+        void TrackAimTorso(float dt, PunchPhase phase)
+        {
+            bool grappleOk = PoseAllowed(DummyPosePaths.Grapple) && _grapple != null;
+            bool pulling = grappleOk && _grapple.IsPulling;
+            bool aiming = grappleOk && _grapple.IsAiming && !pulling;
+            bool punchAim = PoseAllowed(DummyPosePaths.Punch) && !pulling && !aiming
+                && ((_punchTelegraph > 0.02f && phase == PunchPhase.Idle) || phase == PunchPhase.Windup);
+            bool on = pulling || aiming || punchAim;
+            if (on)
+            {
+                Transform basis = _motor != null ? _motor.transform : transform;
+                Vector3 dir;
+                if (pulling && _grapple.TryGetRope(out Vector3 anchor, out _, out _))
+                    dir = anchor - basis.position;
+                else if (aiming)
+                    dir = _grapple.PresentationAim();
+                else
+                    dir = PunchAimDirection(basis);
+                Vector3 local = basis.InverseTransformDirection(dir);
+                _aimYaw = AimTorsoPose.YawToward(local.x, local.z);
+                _aimPitch = AimTorsoPose.PitchToward(GrapplePose.ElevDegrees(local.y, local.x, local.z));
+            }
+
+            float target = on ? 1f : 0f;
+            float step = AimTorsoPose.BlendSeconds > 0.0001f ? dt / AimTorsoPose.BlendSeconds : 1f;
+            _aimTorsoW = Mathf.MoveTowards(_aimTorsoW, target, step);
+        }
+
+        /// <summary>
+        /// Where the punch is going. The solo pawn uses the camera. DummyRunner
+        /// has none, so the chest turns toward the other pawn. No reach change.
+        /// </summary>
+        Vector3 PunchAimDirection(Transform basis)
+        {
+            if (_motor != null && _motor.cam != null)
+                return _motor.cam.forward;
+
+            ItController self = basis.GetComponentInParent<ItController>();
+            Vector3 origin = basis.position + Vector3.up * 1.25f;
+            Vector3 best = basis.forward;
+            float bestSq = 36f;
+            foreach (ItController pawn in Object.FindObjectsByType<ItController>(FindObjectsSortMode.None))
+            {
+                if (pawn == null || pawn == self || !pawn.IsAlive) continue;
+                if (self != null && self.IsIt && pawn.IsIt) continue;
+                Vector3 to = pawn.transform.position + Vector3.up * 1.25f - origin;
+                float sq = to.sqrMagnitude;
+                if (sq < 0.04f || sq >= bestSq) continue;
+                bestSq = sq;
+                best = to;
+            }
+            return best;
+        }
+
+        /// <summary>
+        /// Chest and head ease toward the stored aim. Arms are not written.
+        /// Grapple samples already dropped their yaw by the same weight.
+        /// </summary>
+        void ApplyAimTorso()
+        {
+            float apply = AimTorsoPose.Ease(_aimTorsoW);
+            if (apply <= 0.001f) return;
+            AimTorsoPose.Sample aim = AimTorsoPose.At(_aimYaw, _aimPitch);
+            _spineT = Quaternion.Slerp(_spineT, _spineT * Quaternion.Euler(aim.ChestPitch, aim.ChestYaw, 0f), apply);
+            _headT = Quaternion.Slerp(_headT, _headT * Quaternion.Euler(aim.HeadPitch, aim.HeadYaw, 0f), apply);
         }
 
         /// <summary>
