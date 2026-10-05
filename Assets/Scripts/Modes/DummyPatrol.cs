@@ -12,7 +12,8 @@ namespace Tag.Modes
     /// Solo campus play is this pawn (DummyRunner) on the coral Spawn_SE pad.
     /// The lunge lead is OpponentLungeTell.LeadSeconds and does not scale.
     /// Chase steering is OpponentChaseSteer: sprint outside the lunge band, air-strafe a corner,
-    /// jump a gap, cling a wall on the line, and lunge only after that lead. No grapple, air dash, or couch tool.
+    /// jump a gap only when speed and jump reach clear it, cling a wall on the line,
+    /// and lunge only after that lead when the landing stays under the pawn. No grapple, air dash, or couch tool.
     /// Feeds TagArena PlayerMotor via PlayerInputReader.ExternalControl (no RB velocity fight).
     /// Trail Tag: samples nearby TrailSegments and blends a lateral flee wish into steering.
     /// Hot Potato: when fuse Remaining is low (warnSec ~10), It chases harder to dump the tag;
@@ -90,6 +91,7 @@ namespace Tag.Modes
         float _weave;
         float _weaveT;
         float _punchTell;
+        float _gapSide;
         readonly List<TrailSegment> _trailActiveScratch = new List<TrailSegment>();
 
         void Awake()
@@ -575,20 +577,47 @@ namespace Tag.Modes
 
             Vector3 rawAim = AimPoint(_target) - transform.position;
             rawAim.y = 0f;
-            bool holdLine = _lungeTellT > 0f;
-            bool arming = _lungeArm > 0f && grounded && !wallCommit;
             float farMeters = reach + OpponentLungeTell.MaxGapBeyondReach;
-            bool gap = grounded && !holdLine && !arming && !wallCommit && ProbeGapAhead(rawAim);
+            Vector3 velocity = _selfMotor != null ? _selfMotor.Velocity : Vector3.zero;
+            MovementConfig moveCfg = _selfMotor != null ? _selfMotor.cfg : null;
+            float dropMax = LandingDropMax(moveCfg);
+            ChaseGap measured = MeasureChaseGap(rawAim, dropMax);
+            bool gapShape = ProbeGapAhead(measured);
+            bool targetVoid = TargetOverVoid(_target.transform.position, dropMax);
+            float toward = OpponentChaseSteer.SpeedToward(velocity, rawAim);
+            float jumpV = moveCfg != null ? moveCfg.jumpSpeed : 0f;
+            float grav = moveCfg != null ? moveCfg.gravity : 0f;
+            float fallG = moveCfg != null ? moveCfg.fallGravityMult : 1f;
+            float sprintCap = moveCfg != null ? moveCfg.sprintSpeed : 0f;
+            float walkCap = moveCfg != null ? moveCfg.walkSpeed : 0f;
+            float accel = moveCfg != null ? moveCfg.groundAccel : 0f;
+            float decel = moveCfg != null ? moveCfg.groundDecel : 0f;
+            OpponentChaseSteer.ReadLungeBurst(moveCfg, out float lungeSpeed, out float lungeDuration);
+            float reachNow = OpponentChaseSteer.JumpReachMeters(toward, jumpV, grav, fallG);
+            float reachRun = OpponentChaseSteer.JumpReachMeters(Mathf.Max(toward, sprintCap), jumpV, grav, fallG);
+            bool ledgeBetween = gapShape && measured.Lip < dist + 0.05f;
+            bool ledgeBeyond = ledgeBetween && OpponentChaseSteer.LedgeBeyondReach(measured.Span, Mathf.Max(reachNow, reachRun));
+            bool strands = gapShape && OpponentChaseSteer.LungeStrands(
+                toward, walkCap, accel, decel, OpponentLungeTell.LeadSeconds,
+                lungeSpeed, lungeDuration, measured.Lip, measured.Landing);
+            bool lungeBlocked = !OpponentChaseSteer.LungeAllowed(targetVoid, ledgeBeyond, strands);
+            if (lungeBlocked || wallCommit)
+                CancelLungeTell();
+
+            bool holdLine = _lungeTellT > 0f;
+            bool arming = _lungeArm > 0f && grounded && !wallCommit && !lungeBlocked;
+            bool gap = grounded && !holdLine && !arming && !wallCommit && gapShape;
             Vector3 aim = rawAim;
             if (!wallCommit && !holdLine)
                 aim = BlendTrailAvoid(aim);
             // Weave only outside the lunge band. Inside it the 0.45 s tell needs the line held.
+            // A measured gap keeps the line so the jump, the brake, or the side route is not woven off the lip.
             if (!wallCommit && !gap && grounded && !holdLine && !arming && dist > farMeters)
                 aim = ApplyWeave(aim, dt, dist > closeChaseRange);
 
             OpponentChaseInput chase;
             chase.Aim = aim;
-            chase.Velocity = _selfMotor != null ? _selfMotor.Velocity : Vector3.zero;
+            chase.Velocity = velocity;
             chase.BodyForward = transform.forward;
             chase.WallNormal = wall ? wallNormal : Vector3.zero;
             chase.WallDistance = wall ? wallDist : 999f;
@@ -598,6 +627,13 @@ namespace Tag.Modes
             chase.HoldLine = holdLine;
             chase.PlanarDistance = dist;
             chase.FarMeters = farMeters;
+            chase.GapSpan = measured.Span;
+            chase.LipDistance = measured.Lip;
+            chase.JumpReachMeters = reachNow;
+            chase.RunUpReachMeters = reachRun;
+            chase.PathStrafe = measured.PathStrafe;
+            chase.GroundDecel = decel;
+            chase.LungeBlocked = lungeBlocked;
 
             OpponentChaseWish wish = OpponentChaseSteer.Decide(chase);
             Vector3 face = wish.Face.sqrMagnitude > 0.001f ? wish.Face : aim;
@@ -657,8 +693,8 @@ namespace Tag.Modes
             _lungeGate -= dt;
             // Punch windup runs first, so a cocked fist blocks a new tell. The press itself
             // stays inside ConsumeChaseLunge, which waits out OpponentLungeTell.LeadSeconds.
-            bool lungePress = ConsumeChaseLunge(dt, dist, chaseAng, reach);
-            if (wallCommit)
+            bool lungePress = ConsumeChaseLunge(dt, dist, chaseAng, reach, lungeBlocked || wish.Verb == OpponentChaseVerb.GapJump);
+            if (wallCommit || lungeBlocked || wish.Verb == OpponentChaseVerb.GapJump)
             {
                 CancelLungeTell();
                 lungePress = false;
@@ -669,32 +705,200 @@ namespace Tag.Modes
             float chaseLip = ProbeAheadDeckDy(toBody.sqrMagnitude > 0.001f ? toBody : transform.forward);
             bool lip = ConsumeHop(Mathf.Max(chaseDy, chaseLip), dist, grounded, 0.7f, 9f);
             bool jump = wish.Jump && !lungePress;
-            if (!jump && wish.Verb != OpponentChaseVerb.WallCling && wish.Verb != OpponentChaseVerb.Lunge
+            // A measured gap uses the reach test. The deck hop must not jump it anyway.
+            if (!jump && !gapShape && wish.Verb != OpponentChaseVerb.WallCling && wish.Verb != OpponentChaseVerb.Lunge
                 && wish.Verb != OpponentChaseVerb.AirStrafe && _lungeTellT <= 0f && _lungeArm <= 0f && !lungePress)
                 jump = lip;
             // Chase does not take air dash, grapple, ski, jet, or crouch. The motor steps the capsule.
             DriveWish(wish.MoveY, wish.Sprint, wish.Strafe, jump, lungePress, airDash: false);
         }
 
-        /// <summary>
-        /// True when the floor ahead of a grounded chase is missing or drops farther than a step.
-        /// Two samples must agree so a crack is not a jump.
-        /// </summary>
-        bool ProbeGapAhead(Vector3 planarDir)
+        struct ChaseGap
         {
-            if (planarDir.sqrMagnitude < 0.01f) return false;
+            public bool Ahead;
+            public float Span;
+            public float Lip;
+            public float Landing;
+            public float PathStrafe;
+        }
+
+        static float LandingDropMax(MovementConfig cfg)
+        {
+            if (cfg == null)
+                return 8f;
+            return OpponentChaseSteer.JumpApexMeters(cfg.jumpSpeed, cfg.gravity) + 2f;
+        }
+
+        /// <summary>
+        /// True when the measured opening is a real gap, not a crack.
+        /// The samples live in <see cref="MeasureChaseGap"/>.
+        /// </summary>
+        bool ProbeGapAhead(ChaseGap measured)
+        {
+            return measured.Ahead && measured.Span > OpponentChaseSteer.GapMinSpan;
+        }
+
+        /// <summary>
+        /// Lip, open span, and the next floor along the chase. A side route is set when
+        /// the forward opening is real and that side still has shallow floor.
+        /// </summary>
+        ChaseGap MeasureChaseGap(Vector3 planarDir, float dropMax)
+        {
+            ChaseGap gap;
+            gap.Ahead = false;
+            gap.Span = 0f;
+            gap.Lip = 999f;
+            gap.Landing = -1f;
+            gap.PathStrafe = 0f;
+            if (planarDir.sqrMagnitude < 0.01f)
+                return gap;
             planarDir.Normalize();
-            int open = 0;
-            float[] dists = { 1.2f, 2.0f, 2.8f };
+            if (dropMax < 2f)
+                dropMax = 2f;
+
+            float lip = -1f;
+            float far = -1f;
+            float landing = -1f;
+            const float step = 0.5f;
+            const float max = 28f;
+            for (float d = 0.5f; d <= max; d += step)
+            {
+                bool solid = ShallowFloor(planarDir, d);
+                if (!solid)
+                {
+                    if (lip < 0f)
+                        lip = d;
+                    if (landing < 0f && DeepFloor(planarDir, d, dropMax))
+                        landing = d;
+                }
+                else if (lip >= 0f)
+                {
+                    far = d;
+                    landing = d;
+                    break;
+                }
+            }
+
+            if (lip < 0f)
+                return gap;
+            gap.Ahead = true;
+            gap.Lip = lip;
+            if (far >= 0f)
+            {
+                gap.Span = far - lip;
+                gap.Landing = far;
+            }
+            else if (landing >= 0f)
+            {
+                gap.Span = landing - lip;
+                gap.Landing = landing;
+            }
+            else
+            {
+                // No floor inside the probe. Treat the opening as longer than any jump.
+                gap.Span = 1000f;
+                gap.Landing = -1f;
+            }
+            if (gap.Span > OpponentChaseSteer.GapMinSpan)
+                gap.PathStrafe = SideRoute(planarDir);
+            return gap;
+        }
+
+        bool ShallowFloor(Vector3 dir, float distance)
+        {
+            return FloorWithin(dir, distance, 2.6f, 1.15f);
+        }
+
+        bool DeepFloor(Vector3 dir, float distance, float dropMax)
+        {
+            return FloorWithin(dir, distance, dropMax + 0.5f, dropMax);
+        }
+
+        bool FloorWithin(Vector3 dir, float distance, float down, float maxDrop)
+        {
+            if (!TryGroundHit(transform.position + dir * distance + Vector3.up * 0.35f, down, out RaycastHit hit))
+                return false;
+            return transform.position.y - hit.point.y <= maxDrop;
+        }
+
+        /// <summary>
+        /// The target body is over open air. A jump above a deck still has a floor under it.
+        /// </summary>
+        bool TargetOverVoid(Vector3 targetPos, float dropMax)
+        {
+            if (dropMax < 2f)
+                dropMax = 2f;
+            Vector3 origin = targetPos + Vector3.up * 2.2f;
+            if (!TryGroundHit(origin, 2.2f + dropMax, out RaycastHit hit))
+                return true;
+            return targetPos.y - hit.point.y > dropMax;
+        }
+
+        float SideRoute(Vector3 dir)
+        {
+            bool left = RouteSolid(OpponentChaseSteer.YawOffset(dir, -OpponentChaseSteer.PathAroundDegrees));
+            bool right = RouteSolid(OpponentChaseSteer.YawOffset(dir, OpponentChaseSteer.PathAroundDegrees));
+            float side = 0f;
+            if (left && !right)
+                side = -1f;
+            else if (right && !left)
+                side = 1f;
+            else if (left && right)
+                side = _gapSide < 0f ? -1f : 1f;
+            if (side != 0f)
+                _gapSide = side;
+            return side;
+        }
+
+        bool RouteSolid(Vector3 dir)
+        {
+            if (dir.sqrMagnitude < 0.01f)
+                return false;
+            dir.Normalize();
+            float[] dists = { 1.1f, 2.1f, 3.2f };
             for (int i = 0; i < dists.Length; i++)
             {
-                Vector3 origin = transform.position + planarDir * dists[i] + Vector3.up * 0.35f;
-                if (!Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 2.6f, ~0, QueryTriggerInteraction.Ignore))
-                    open++;
-                else if (hit.point.y < transform.position.y - 1.15f)
-                    open++;
+                if (!ShallowFloor(dir, dists[i]))
+                    return false;
             }
-            return open >= 2;
+            return true;
+        }
+
+        bool TryGroundHit(Vector3 origin, float down, out RaycastHit ground)
+        {
+            ground = default;
+            float remain = down;
+            Vector3 from = origin;
+            for (int n = 0; n < 4 && remain > 0.05f; n++)
+            {
+                if (!Physics.Raycast(from, Vector3.down, out RaycastHit hit, remain, ~0, QueryTriggerInteraction.Ignore))
+                    return false;
+                if (!IgnoreBody(hit.collider))
+                {
+                    ground = hit;
+                    return true;
+                }
+                float step = hit.distance + 0.08f;
+                if (step < 0.08f)
+                    step = 0.08f;
+                from += Vector3.down * step;
+                remain -= step;
+            }
+            return false;
+        }
+
+        bool IgnoreBody(Collider col)
+        {
+            if (col == null)
+                return false;
+            if (col is CharacterController)
+                return true;
+            Transform hitTransform = col.transform;
+            if (hitTransform == transform || hitTransform.IsChildOf(transform))
+                return true;
+            if (_target != null && (hitTransform == _target.transform || hitTransform.IsChildOf(_target.transform)))
+                return true;
+            return false;
         }
 
         /// <summary>
@@ -863,8 +1067,13 @@ namespace Tag.Modes
         /// so the kinematic motor sees it. Airborne presses are not sent (that path is air dash).
         /// Lead time does not scale with score, fuse, or misses.
         /// </summary>
-        bool ConsumeChaseLunge(float dt, float dist, float ang, float reach)
+        bool ConsumeChaseLunge(float dt, float dist, float ang, float reach, bool blocked)
         {
+            if (blocked)
+            {
+                CancelLungeTell();
+                return false;
+            }
             if (_selfMotor == null || _lungeMark == null)
                 return false;
 

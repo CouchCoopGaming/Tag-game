@@ -7,6 +7,9 @@ namespace Tag.Modes
     /// Chase stick for DummyRunner. The motor already owns the verbs.
     /// This only picks a facing and a body-space stick. It does not move the body,
     /// write a velocity, or raise a feel number.
+    /// A gap jump commits only when the measured span fits inside horizontal speed
+    /// times the jump hang, plus a small margin. Otherwise the chase clings, brakes,
+    /// or turns onto a side route. Sprint, air strafe, and cling stay the default.
     /// </summary>
     public enum OpponentChaseVerb
     {
@@ -31,6 +34,20 @@ namespace Tag.Modes
         public bool HoldLine;
         public float PlanarDistance;
         public float FarMeters;
+        /// <summary>Open floor between the near lip and the next landing. 0 when the probe found no gap.</summary>
+        public float GapSpan;
+        /// <summary>Meters from the pawn to the near lip. Large when no lip was measured.</summary>
+        public float LipDistance;
+        /// <summary>How far the current horizontal speed carries a jump. The motor still writes the impulse.</summary>
+        public float JumpReachMeters;
+        /// <summary>Same hang time at sprint speed, or at the current speed when that is already faster.</summary>
+        public float RunUpReachMeters;
+        /// <summary>Signed side route when a gap will not clear. Positive is to the pawn's right. 0 is none.</summary>
+        public float PathStrafe;
+        /// <summary>Ground decel used only to decide when to brake. 0 leaves the brake to the lip window.</summary>
+        public float GroundDecel;
+        /// <summary>Target is over a void, the ledge will not clear, or the tell would leave the pawn in the air.</summary>
+        public bool LungeBlocked;
     }
 
     public struct OpponentChaseWish
@@ -63,6 +80,18 @@ namespace Tag.Modes
         public const float SprintMoveY = 1f;
         /// <summary>Matches OpponentLungeTell.LeadSeconds. The press is illegal before this.</summary>
         public const float LungeLeadSeconds = 0.45f;
+        /// <summary>Meters of landing past the measured span. A jump that only just meets the lip does not commit.</summary>
+        public const float GapClearMargin = 0.40f;
+        /// <summary>Commit the jump only this close to the near lip, so the arc leaves from the edge.</summary>
+        public const float GapCommitLip = 1.25f;
+        /// <summary>Narrower than this is a crack. The chase does not jump it.</summary>
+        public const float GapMinSpan = 0.55f;
+        /// <summary>Extra meters in front of the stopping distance. Braking starts before the lip.</summary>
+        public const float BrakeMargin = 0.35f;
+        /// <summary>Yaw applied when a side of the gap still has floor.</summary>
+        public const float PathAroundDegrees = 55f;
+        /// <summary>A tell or a lunge that ends this close to a missing landing is a strand.</summary>
+        public const float LungeStrandMargin = 0.35f;
         /// <summary>FaceAndSteer cap. A corner is a turn, not a snap.</summary>
         public const float MaxYawDegPerSec = 150f;
         /// <summary>cos(52°). Steeper than walkable + 4, which is what the motor calls a wall.</summary>
@@ -88,6 +117,162 @@ namespace Tag.Modes
             return secondsSinceTellStart + 0.0001f >= LungeLeadSeconds;
         }
 
+        /// <summary>Time from the jump impulse back to the same height. Apex does not depend on horizontal speed.</summary>
+        public static float JumpHangSeconds(float verticalImpulse, float gravity, float fallGravityMult)
+        {
+            if (verticalImpulse <= 0.01f || gravity <= 0.01f)
+                return 0f;
+            float fall = fallGravityMult < 0.01f ? 1f : fallGravityMult;
+            float tUp = verticalImpulse / gravity;
+            float height = verticalImpulse * tUp * 0.5f;
+            float tDown = Mathf.Sqrt(Mathf.Max(0f, 2f * height / (gravity * fall)));
+            return tUp + tDown;
+        }
+
+        public static float JumpApexMeters(float verticalImpulse, float gravity)
+        {
+            if (verticalImpulse <= 0.01f || gravity <= 0.01f)
+                return 0f;
+            return verticalImpulse * verticalImpulse / (2f * gravity);
+        }
+
+        /// <summary>Horizontal speed carried through the jump hang. This is the jump reach.</summary>
+        public static float JumpReachMeters(float horizontalSpeed, float verticalImpulse, float gravity, float fallGravityMult)
+        {
+            float speed = horizontalSpeed > 0f ? horizontalSpeed : 0f;
+            return speed * JumpHangSeconds(verticalImpulse, gravity, fallGravityMult);
+        }
+
+        public static float SpeedToward(Vector3 velocity, Vector3 aim)
+        {
+            Vector3 v = Flat(velocity);
+            Vector3 a = Flat(aim);
+            if (a.sqrMagnitude < 1e-6f)
+                return v.magnitude;
+            a.Normalize();
+            float toward = Vector3.Dot(v, a);
+            return toward > 0f ? toward : 0f;
+        }
+
+        public static bool ClearsGap(float reachMeters, float gapSpan)
+        {
+            if (gapSpan <= GapMinSpan)
+                return false;
+            return reachMeters + 0.0001f >= gapSpan + GapClearMargin;
+        }
+
+        public static float StopMeters(float speed, float decel)
+        {
+            float v = speed > 0f ? speed : 0f;
+            float a = decel > 0.01f ? decel : 0.01f;
+            return v * v / (2f * a);
+        }
+
+        /// <summary>
+        /// True when the pawn is still moving toward a lip it should not jump, or is already in the commit window.
+        /// </summary>
+        public static bool ShouldBrakeForGap(float speedToward, float decel, float lipDistance)
+        {
+            if (lipDistance <= GapCommitLip)
+                return true;
+            if (decel <= 0.01f)
+                return false;
+            return lipDistance <= StopMeters(speedToward, decel) + BrakeMargin;
+        }
+
+        /// <summary>
+        /// The motor's lunge burst, read so the chase can predict a landing.
+        /// The speed, duration, and cooldown stay on the config.
+        /// </summary>
+        public static void ReadLungeBurst(MovementConfig cfg, out float speed, out float duration)
+        {
+            speed = 0f;
+            duration = 0f;
+            if (cfg == null)
+                return;
+            speed = cfg.taggerLungeSpeed;
+            duration = cfg.taggerLungeDuration;
+        }
+
+        /// <summary>Approach distance across the lunge tell while the gait cap is the walk.</summary>
+        public static float TellApproachMeters(float speed, float walkCap, float accel, float decel, float tellSeconds)
+        {
+            float v = speed > 0f ? speed : 0f;
+            float cap = walkCap > 0f ? walkCap : 0f;
+            float t = tellSeconds > 0f ? tellSeconds : 0f;
+            float dist = 0f;
+            if (v > cap && decel > 0.01f)
+            {
+                float brakeT = (v - cap) / decel;
+                if (brakeT >= t)
+                    return Mathf.Max(0f, v * t - 0.5f * decel * t * t);
+                dist += (v + cap) * 0.5f * brakeT;
+                t -= brakeT;
+                v = cap;
+            }
+            else if (v < cap && accel > 0.01f)
+            {
+                float accelT = (cap - v) / accel;
+                if (accelT >= t)
+                    return Mathf.Max(0f, v * t + 0.5f * accel * t * t);
+                dist += (v + cap) * 0.5f * accelT;
+                t -= accelT;
+                v = cap;
+            }
+            dist += v * t;
+            return Mathf.Max(0f, dist);
+        }
+
+        /// <summary>
+        /// The tell or the burst would leave the lip and the next floor is not under that path.
+        /// No measured lip (negative or very large) stays on the deck.
+        /// </summary>
+        public static bool LungeStrands(
+            float speed,
+            float walkCap,
+            float accel,
+            float decel,
+            float tellSeconds,
+            float lungeSpeed,
+            float lungeDuration,
+            float ledgeMeters,
+            float landingMeters)
+        {
+            if (ledgeMeters < 0f || ledgeMeters >= 80f)
+                return false;
+            float tell = TellApproachMeters(speed, walkCap, accel, decel, tellSeconds);
+            float burst = (lungeSpeed > 0f ? lungeSpeed : 0f) * (lungeDuration > 0f ? lungeDuration : 0f);
+            float margin = LungeStrandMargin;
+            if (tell + margin > ledgeMeters && (landingMeters < 0f || landingMeters > tell + margin))
+                return true;
+            float end = tell + burst;
+            if (end + margin > ledgeMeters && (landingMeters < 0f || landingMeters > end + margin))
+                return true;
+            return false;
+        }
+
+        public static bool LedgeBeyondReach(float gapSpan, float jumpReach)
+        {
+            return gapSpan > GapMinSpan && !ClearsGap(jumpReach, gapSpan);
+        }
+
+        public static bool LungeAllowed(bool targetOverVoid, bool ledgeBeyondReach, bool tellStrands)
+        {
+            return !targetOverVoid && !ledgeBeyondReach && !tellStrands;
+        }
+
+        public static Vector3 YawOffset(Vector3 forward, float degrees)
+        {
+            Vector3 v = Flat(forward);
+            if (v.sqrMagnitude < 1e-6f)
+                v = new Vector3(0f, 0f, 1f);
+            v.Normalize();
+            float r = degrees * Mathf.Deg2Rad;
+            float c = Mathf.Cos(r);
+            float s = Mathf.Sin(r);
+            return new Vector3(v.x * c + v.z * s, 0f, -v.x * s + v.z * c);
+        }
+
         public static OpponentChaseWish Decide(OpponentChaseInput s)
         {
             float far = s.FarMeters > 0.5f ? s.FarMeters : FarSprintMeters;
@@ -101,7 +286,7 @@ namespace Tag.Modes
 
             bool wallClose = IsWallNormal(s.WallNormal) && s.WallDistance <= ClingCommitMeters && s.WallDistance >= 0f;
             // Ground only. An airborne lunge press is the air dash, and chase does not take that.
-            if (s.LungeCommit && s.Grounded && !wallClose)
+            if (s.LungeCommit && s.Grounded && !wallClose && !s.LungeBlocked)
                 return Make(OpponentChaseVerb.Lunge, aim, SprintMoveY, 0f, false, false, true);
 
             if (wallClose)
@@ -114,8 +299,31 @@ namespace Tag.Modes
                 return Make(s.PlanarDistance > far ? OpponentChaseVerb.Sprint : OpponentChaseVerb.Close,
                     aim, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
 
-            if (s.Grounded && s.GapAhead)
-                return Make(OpponentChaseVerb.GapJump, aim, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, true, false);
+            if (s.Grounded && s.GapAhead && s.GapSpan > GapMinSpan)
+            {
+                bool clearNow = ClearsGap(s.JumpReachMeters, s.GapSpan);
+                bool clearRun = ClearsGap(Mathf.Max(s.JumpReachMeters, s.RunUpReachMeters), s.GapSpan);
+                bool atLip = s.LipDistance >= 0f && s.LipDistance <= GapCommitLip;
+                if (clearNow && atLip)
+                    return Make(OpponentChaseVerb.GapJump, aim, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, true, false);
+
+                // Far enough, and a faster run still lands: keep sprinting up to the lip.
+                if (!(clearRun && !atLip))
+                {
+                    if (Mathf.Abs(s.PathStrafe) > 0.2f)
+                    {
+                        float yaw = s.PathStrafe > 0f ? PathAroundDegrees : -PathAroundDegrees;
+                        Vector3 face = YawOffset(aim, yaw);
+                        return Make(sprintRange ? OpponentChaseVerb.Sprint : OpponentChaseVerb.Close, face,
+                            sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
+                    }
+
+                    float toward = SpeedToward(s.Velocity, aim);
+                    if (atLip || ShouldBrakeForGap(toward, s.GroundDecel, s.LipDistance))
+                        return Make(OpponentChaseVerb.Close, aim, -CloseMoveY, 0f, false, false, false);
+                    return Make(OpponentChaseVerb.Close, aim, 0f, 0f, false, false, false);
+                }
+            }
 
             if (TryAirStrafe(s, aim, sprintRange, out Vector3 strafeFace, out float moveY, out float strafe, out bool sprintHeld))
                 return Make(OpponentChaseVerb.AirStrafe, strafeFace, moveY, strafe, sprintHeld, false, false);
