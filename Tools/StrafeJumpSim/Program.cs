@@ -70,6 +70,7 @@ static class Program
         }
 
         Console.WriteLine(Tag.Art.WallPose.ProofLine());
+        Console.WriteLine(Tag.Art.WallPose.GraceProofLine());
         if (!Tag.Art.WallPose.Holds())
         {
             Console.Error.WriteLine("wall pose is not held");

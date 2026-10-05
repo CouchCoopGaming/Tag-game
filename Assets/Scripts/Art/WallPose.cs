@@ -15,8 +15,10 @@ namespace Tag.Art
         public const float AirBlendSeconds = 0.10f;
         /// <summary>Climb or wall run into the wall-jump push-off. The scuff tell stays.</summary>
         public const float PushBlendSeconds = 0.10f;
-        /// <summary>Release, or cling grace with no jump, back to the fall beat.</summary>
+        /// <summary>Grace expiry, or a real leave, back to the fall beat.</summary>
         public const float ReleaseBlendSeconds = 0.10f;
+        /// <summary>Locked cling grace. Read for the visual hold only. The motor timer is not written.</summary>
+        public const float ClingGraceSeconds = 0.08f;
         /// <summary>Slew while a wall blend is in progress, so the curve is the blend.</summary>
         public const float BlendSlew = 170f;
 
@@ -287,6 +289,27 @@ namespace Tag.Art
             };
         }
 
+        /// <summary>
+        /// Stick has slipped, grace is still running, and the probe is still on the wall.
+        /// The body stays on the climb, slip, or wall-run sample. A spent grace or a lost
+        /// contact is the fall blend. Nothing here writes velocity, cling, or the root.
+        /// </summary>
+        public static bool GraceCommit(float graceRemaining, bool wallContact)
+        {
+            return wallContact && graceRemaining > 0f;
+        }
+
+        /// <summary>
+        /// 0 while <see cref="GraceCommit"/> is true, so one leftover frame of grace
+        /// does not start the fall. After grace expires or the probe leaves, the same
+        /// release curve into <see cref="Fall"/>. Age 0 is the detach frame.
+        /// </summary>
+        public static float GraceFallWeight(float graceRemaining, bool wallContact, float detachAge)
+        {
+            if (GraceCommit(graceRemaining, wallContact)) return 0f;
+            return BlendWeight(detachAge, ReleaseBlendSeconds);
+        }
+
         /// <summary>Smoothstep. 0 at the start of the blend, 1 at the end.</summary>
         public static float Ease(float u)
         {
@@ -408,7 +431,57 @@ namespace Tag.Art
             if (fall.Spine != JumpPose.FallSpine || fall.Hip != JumpPose.FallHip) return false;
             if (fall.Head != ReleaseHead) return false;
             if (fall.ArmYawL <= push.ArmYawL + 20f) return false;
+
+            if (Mathf.Abs(ClingGraceSeconds - 0.08f) > 0.001f) return false;
+            if (!GraceCommit(ClingGraceSeconds, true)) return false;
+            // One frame at 60 Hz still has grace left. The body stays on the wall.
+            float frame = 1f / 60f;
+            if (!GraceCommit(ClingGraceSeconds - frame, true)) return false;
+            if (GraceFallWeight(ClingGraceSeconds - frame, true, ReleaseBlendSeconds) > 0.0001f) return false;
+            if (GraceCommit(0f, true)) return false;
+            if (GraceCommit(ClingGraceSeconds, false)) return false;
+            if (GraceCommit(-frame, true)) return false;
+            if (GraceFallWeight(ClingGraceSeconds, true, 0f) > 0.0001f) return false;
+            if (GraceFallWeight(0f, true, 0f) > 0.0001f) return false;
+            if (GraceFallWeight(ClingGraceSeconds, false, 0f) > 0.0001f) return false;
+            if (Mathf.Abs(GraceFallWeight(0f, true, ReleaseBlendSeconds) - 1f) > 0.0001f) return false;
+            if (Mathf.Abs(GraceFallWeight(ClingGraceSeconds, false, ReleaseBlendSeconds) - 1f) > 0.0001f) return false;
+            if (Mathf.Abs(GraceFallWeight(0f, true, ReleaseBlendSeconds * 0.5f) - 0.5f) > 0.0001f) return false;
+            float prevFall = -1f;
+            for (int i = 0; i <= 8; i++)
+            {
+                float w = GraceFallWeight(0f, false, ReleaseBlendSeconds * (i / 8f));
+                if (w + 0.0001f < prevFall) return false;
+                prevFall = w;
+            }
+            if (Mathf.Abs(reach.ArmPitchL - fall.ArmPitchL) < 20f) return false;
+            if (Mathf.Abs(runL.LeanZ - fall.LeanZ) < 20f) return false;
             return true;
+        }
+
+        public static string GraceProofLine()
+        {
+            float frame = 1f / 60f;
+            bool frameHolds = GraceCommit(ClingGraceSeconds - frame, true)
+                && GraceFallWeight(ClingGraceSeconds - frame, true, ReleaseBlendSeconds) <= 0.0001f;
+            bool expiryDetaches = !GraceCommit(0f, true)
+                && GraceFallWeight(0f, true, ReleaseBlendSeconds) >= 0.999f;
+            bool leaveDetaches = !GraceCommit(ClingGraceSeconds, false)
+                && GraceFallWeight(ClingGraceSeconds, false, ReleaseBlendSeconds) >= 0.999f;
+            Sample fall = Fall();
+            bool fallStack = fall.ThighL == JumpPose.FallThigh
+                && fall.ArmPitchL == JumpPose.FallArmPitch
+                && fall.Spine == JumpPose.FallSpine;
+            return "cling-grace-pose"
+                + " grace=" + ClingGraceSeconds.ToString("0.00")
+                + " frameHolds=" + (frameHolds ? "1" : "0")
+                + " expiryDetaches=" + (expiryDetaches ? "1" : "0")
+                + " leaveDetaches=" + (leaveDetaches ? "1" : "0")
+                + " fallStack=" + (fallStack ? "1" : "0")
+                + " commit while grace>0 and wallContact, body stays climb/slip/run"
+                + " detach:Ease(t/" + ReleaseBlendSeconds.ToString("0.00") + ") into JumpPose fall"
+                + " shared=DummyLocomotor"
+                + " rootMotion=0";
         }
 
         public static string ProofLine()
@@ -472,7 +545,11 @@ namespace Tag.Art
                 + " releaseBlend=" + ReleaseBlendSeconds.ToString("0.00")
                 + " gate=air:Ease(t/" + AirBlendSeconds.ToString("0.00") + ") on enter from air, not crouch, not dash"
                 + "; push:Ease(t/" + PushBlendSeconds.ToString("0.00") + ") cling+Jump from climb or wall run into push-off, WallJumpPushTell unchanged"
-                + "; release:Ease(t/" + ReleaseBlendSeconds.ToString("0.00") + ") on release or cling-grace expiry with no jump, target JumpPose fall"
+                + "; release:Ease(t/" + ReleaseBlendSeconds.ToString("0.00") + ") when cling grace expires or the probe leaves the wall, target JumpPose fall"
+                + "; cling-grace-pose grace=" + ClingGraceSeconds.ToString("0.00")
+                + " commit while grace>0 and wallContact, body stays climb/slip/run"
+                + "; detach:Ease(t/" + ReleaseBlendSeconds.ToString("0.00") + ") on grace expiry or lost contact, target JumpPose fall"
+                + "; one frame of grace still commits"
                 + "; cadence:climb vy/" + ClimbSpeedRef.ToString("0.0") + "*" + ClimbCadenceFull.ToString("0.0")
                 + " slip |vy|/" + SlipSpeedRef.ToString("0.0") + "*" + SlipCadenceFull.ToString("0.0")
                 + " run speed/" + WallRunSpeedRef.ToString("0.0") + "*" + RunCadenceFull.ToString("0.0")

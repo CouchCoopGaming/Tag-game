@@ -32,6 +32,10 @@ namespace TagArena.Movement
         public float SuperGlideT { get; private set; } = -1f;
         public Vector3 WallNormal => _probe.Wall.normal;
         public bool WallLeft => _probe.Wall.left;
+        /// <summary>Seconds of cling-release grace still running. The pose reads this. The timer is not written here.</summary>
+        public float ClingGraceRemaining => _clingGrace;
+        /// <summary>True while the wall probe is in contact. The pose reads this.</summary>
+        public bool WallContact => _probe != null && _probe.Wall.hit;
         public bool IsMotorLocked => _motorLocked;
         public bool IsSliding => State == MoveState.Slide;
         public bool IsWallRunning => State == MoveState.WallRun;
