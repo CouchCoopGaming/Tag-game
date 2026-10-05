@@ -56,6 +56,11 @@ public static class DummyPosePathProof
             report.Fail("yaw slew was retuned");
         if (!loco.Contains("DummyPosePaths.Jump") || !loco.Contains("JumpPose.PoseActive"))
             report.Fail("jump beats are not on the dummy pose path");
+        if (!loco.Contains("DummyPosePaths.AirStrafe") || !loco.Contains("ApplyAirStrafeLean")
+            || !loco.Contains("AirStrafeLeanPose.Side") || !loco.Contains("AirStrafeLeanPose.AddsSpeed")
+            || !loco.Contains("AirStrafeLeanPose.FallBlend") || !loco.Contains("AirStrafeLeanPose.Yield")
+            || !loco.Contains("AirStrafeLeanPose.At"))
+            report.Fail("air strafe lean is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Wall") || !loco.Contains("WallPose.Climb"))
             report.Fail("wall climb/run is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Punch") || !loco.Contains("PunchTagPose.PunchWindup"))
