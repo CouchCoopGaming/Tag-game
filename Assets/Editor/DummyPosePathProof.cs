@@ -67,6 +67,9 @@ public static class DummyPosePathProof
             report.Fail("bunny-hop chain pose is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Wall") || !loco.Contains("WallPose.Climb"))
             report.Fail("wall climb/run is not on the dummy pose path");
+        if (!loco.Contains("WallJumpPose.At") || !loco.Contains("WallJumpPose.Slew")
+            || !loco.Contains("WallJumpPose.Settled") || !loco.Contains("HandleWallBounced"))
+            report.Fail("wall-jump pose is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Punch") || !loco.Contains("PunchTagPose.PunchWindup"))
             report.Fail("punch windup is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Tag") || !loco.Contains("PunchTagPose.Tag"))

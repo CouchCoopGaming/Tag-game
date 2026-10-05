@@ -77,6 +77,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.WallJumpPose.ProofLine());
+        if (!Tag.Art.WallJumpPose.Holds())
+        {
+            Console.Error.WriteLine("wall-jump pose is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.PunchTagPose.ProofLine());
         if (!Tag.Art.PunchTagPose.Holds())
         {

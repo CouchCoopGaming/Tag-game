@@ -5,8 +5,9 @@ namespace Tag.Art
     /// <summary>
     /// Visual jump only. Three beats at chase-cam distance: a crouch and a drive
     /// knee on the frame the jump fires, a tuck while rising, then legs down and
-    /// arms wide as vertical speed falls. The impulse is not delayed. Wall jumps
-    /// and slide-cancel jumps do not use this. The landing thud owns the ground.
+    /// arms wide as vertical speed falls. The impulse is not delayed. A wall jump
+    /// plays WallJumpPose first, then this rise and fall. Slide-cancel jumps do
+    /// not use this. The landing thud owns the ground.
     /// </summary>
     public static class JumpPose
     {
