@@ -54,6 +54,13 @@ static class Program
             Console.Error.WriteLine("punch tag pose beats are not held");
             return 1;
         }
+
+        Console.WriteLine(Tag.Art.GrapplePose.ProofLine());
+        if (!Tag.Art.GrapplePose.Holds())
+        {
+            Console.Error.WriteLine("grapple pose is not held");
+            return 1;
+        }
         if (!clips.Ok)
         {
             Console.Error.WriteLine(string.Join(" | ", clips.Failures));

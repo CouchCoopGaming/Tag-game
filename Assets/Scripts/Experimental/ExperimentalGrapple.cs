@@ -68,6 +68,21 @@ namespace Tag.Experimental
         /// <summary>True only while enableGrapple is on and a rope is attached. A miss leaves this false.</summary>
         public bool IsPulling => enableGrapple && _attached;
 
+        /// <summary>Fire is held and nothing is latched. The aim preview is up. Presentation only.</summary>
+        public bool IsAiming => enableGrapple && _casting && !_attached;
+
+        /// <summary>Seconds since the latch flash armed. Negative when the flash is quiet.</summary>
+        public float LatchAge => _latchAge;
+
+        /// <summary>Seconds since a fired miss. Negative when the flick is quiet.</summary>
+        public float MissAge => _missAge;
+
+        /// <summary>True while GrappleMissTell is drawing the stub. A latch stays false.</summary>
+        public bool MissFlickOn => GrappleMissTell.Show(MissAvailable(), _attached, _missAge);
+
+        /// <summary>Camera aim used by the preview and the miss stub. Does not cast.</summary>
+        public Vector3 PresentationAim() => AimDirection();
+
         void Awake()
         {
             _motor = GetComponent<PlayerMotor>();
