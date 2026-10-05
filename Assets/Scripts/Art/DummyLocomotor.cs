@@ -153,6 +153,7 @@ namespace Tag.Art
         float _jumpReadySnapIn;
         bool _jumpFromPunch;
         float _jumpFromPunchIn;
+        bool _punchYield;
         Quaternion _punchJumpUaL, _punchJumpUaR, _punchJumpLaL, _punchJumpLaR;
         Quaternion _punchJumpUlL, _punchJumpUlR, _punchJumpLlL, _punchJumpLlR;
         Quaternion _punchJumpSp, _punchJumpHp, _punchJumpHd;
@@ -3515,9 +3516,9 @@ namespace Tag.Art
             if (_jumpFromWalk && _pushOff > 0.02f)
                 _jumpFromWalkIn = Mathf.MoveTowards(_jumpFromWalkIn, 1f, dt / 0.04f);
             if (_jumpFromSlide && _pushOff > 0.02f)
-                _jumpFromSlideIn = Mathf.MoveTowards(_jumpFromSlideIn, 1f, dt / VerbPoseClips.SlideBlendSeconds);
+                _jumpFromSlideIn = Mathf.MoveTowards(_jumpFromSlideIn, 1f, dt / PoseHandoff.SlideJumpSeconds);
             if (_jumpFromPunch && _pushOff > 0.02f)
-                _jumpFromPunchIn = Mathf.MoveTowards(_jumpFromPunchIn, 1f, dt / 0.04f);
+                _jumpFromPunchIn = Mathf.MoveTowards(_jumpFromPunchIn, 1f, dt / PoseHandoff.PunchJumpSeconds);
             bool dashingAir = _motor != null && _motor.IsAirDashing;
             if (dashingAir && !_airDashPoseWas && _diveFromJump && !_jumpFromDash)
             {
@@ -3708,7 +3709,7 @@ namespace Tag.Art
                 _punchDashHd = _head.localRotation;
             }
             if (dashingAir && _dashFromPunch)
-                _dashFromPunchIn = Mathf.MoveTowards(_dashFromPunchIn, 1f, dt / 0.04f);
+                _dashFromPunchIn = Mathf.MoveTowards(_dashFromPunchIn, 1f, dt / PoseHandoff.PunchDashSeconds);
             else if (!dashingAir)
                 _dashFromPunch = false;
             if (dashingAir && !_airDashPoseWas && crouchWalkPose && !dartAir && !jet
@@ -5768,7 +5769,7 @@ namespace Tag.Art
                 && _input != null && _input.CrouchHeld;
             bool jumpPoseOn = JumpPose.PoseActive(air && !jet, _jumpFromWall, _jumpFromSlide,
                 !air || jet || punching || JumpPoseBlocked() || airStillCrouch || airCrouchWalk || _diveVis >= 0.2f
-                || airDashing || _jumpPoseAge < 0f);
+                || airDashing || _jumpPoseAge < 0f || _wallFallHold || _grappleFallHold);
             // Keep a soft air/vault cycle so limbs stay energetic off the ground.
             // Walk and sprint ease length and tempo. The cycle keeps advancing, so a plant does not freeze.
             if (!(air && !jet && !airDashing && _armRecover > 0f))
@@ -6283,6 +6284,10 @@ namespace Tag.Art
             else if (_crouchFromDash)
                 _crouchFromDashIn = Mathf.MoveTowards(_crouchFromDashIn, 1f, dt / 0.04f);
             _dashCrouchWas = dashCrouch;
+            if (_dashFromPunch || _jumpFromPunch)
+                _punchYield = true;
+            if (phase == PunchPhase.Idle)
+                _punchYield = false;
             // 1 at the start of an air dash or lunge, 0 at the end. The pulse tail keeps easing after the burst.
             float dashStretchPose = 1f;
             if (!(_airDashArms && !airDashing && !lunging))
@@ -6667,7 +6672,7 @@ namespace Tag.Art
                     _headT = Quaternion.Slerp(_bounceKickHd, _headT, intoKick);
                 }
             }
-            else if (punching && !((_skiFromMiss || _slideFromMiss) && phase == PunchPhase.MissRecover) && !_jumpFromPunch && !_jumpMissSnap && !_jumpTagSnap)
+            else if (punching && !_punchYield && !((_skiFromMiss || _slideFromMiss) && phase == PunchPhase.MissRecover) && !_jumpFromPunch && !_jumpMissSnap && !_jumpTagSnap)
             {
                 // Same coil and reach as PunchStrike, so the clip fade does not pop to a smaller pose.
                 // Windup time, the hit window, and reach stay as they are.
@@ -7009,7 +7014,7 @@ namespace Tag.Art
                     // The wedge eases into the jump, then the jump holds.
                     // A ski into a jump keeps its ease. A still crouch and a crouch walk keep their push.
                     // A standing jump keeps the old push. slideBoost stays 0. Jump height is unchanged.
-                    float intoJump = _jumpFromSlideIn;
+                    float intoJump = PoseHandoff.ToWeight(_jumpFromSlideIn);
                     _uaLT = Quaternion.Slerp(_slideJumpUaL, _uaLT, intoJump);
                     _uaRT = Quaternion.Slerp(_slideJumpUaR, _uaRT, intoJump);
                     _laLT = Quaternion.Slerp(_slideJumpLaL, _laLT, intoJump);
@@ -7023,7 +7028,7 @@ namespace Tag.Art
                     // The punch eases into the jump, then the jump holds.
                     // Becoming It into a jump keeps its ease. A tag into a jump keeps its ease.
                     // A punch miss into a jump keeps its ease. Windup time is unchanged. Jump height is unchanged.
-                    float intoJump = _jumpFromPunchIn;
+                    float intoJump = PoseHandoff.ToWeight(_jumpFromPunchIn);
                     _uaLT = Quaternion.Slerp(_punchJumpUaL, _uaLT, intoJump);
                     _uaRT = Quaternion.Slerp(_punchJumpUaR, _uaRT, intoJump);
                     _laLT = Quaternion.Slerp(_punchJumpLaL, _laLT, intoJump);
@@ -7601,11 +7606,11 @@ namespace Tag.Art
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-50f, 0f, 0f), d);
                     }
                 }
-                if (_pushOff > 0.02f && _diveVis < 0.2f)
+                if (_pushOff > 0.02f && _diveVis < 0.2f && !_jumpFromSlide)
                 {
                     // The planted foot pushes. The other knee comes up, then the tuck.
                     // A still crouch eases the guard into that push. A crouch walk eases the low stride into it.
-                    // A ski eases the glide into it. A slide eases the wedge into it.
+                    // A ski eases the glide into it. A slide cancel owns its own ease into the jump.
                     // A standing jump keeps this push. slideBoost stays 0.
                     float p = _pushOff;
                     if (_jumpFromSki && !_skiJumpSnap)
@@ -7662,7 +7667,7 @@ namespace Tag.Art
                     // The wedge eases into the jump, then the jump holds.
                     // A ski into a jump keeps its ease. A still crouch and a crouch walk keep their push.
                     // A standing jump keeps the old push. slideBoost stays 0. Jump height is unchanged.
-                    float intoJump = _jumpFromSlideIn;
+                    float intoJump = PoseHandoff.ToWeight(_jumpFromSlideIn);
                     _ulLT = Quaternion.Slerp(_slideJumpUlL, _ulLT, intoJump);
                     _ulRT = Quaternion.Slerp(_slideJumpUlR, _ulRT, intoJump);
                     _llLT = Quaternion.Slerp(_slideJumpLlL, _llLT, intoJump);
@@ -7673,7 +7678,7 @@ namespace Tag.Art
                     // The punch eases into the jump, then the jump holds.
                     // Becoming It into a jump keeps its ease. A tag into a jump keeps its ease.
                     // A punch miss into a jump keeps its ease. Windup time is unchanged. Jump height is unchanged.
-                    float intoJump = _jumpFromPunchIn;
+                    float intoJump = PoseHandoff.ToWeight(_jumpFromPunchIn);
                     _ulLT = Quaternion.Slerp(_punchJumpUlL, _ulLT, intoJump);
                     _ulRT = Quaternion.Slerp(_punchJumpUlR, _ulRT, intoJump);
                     _llLT = Quaternion.Slerp(_punchJumpLlL, _llLT, intoJump);
@@ -7771,7 +7776,9 @@ namespace Tag.Art
                 _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(kneeR, 0f, 0f);
                 // First step pushes off the foot that stays down. The other leg reaches into the stride.
-                float plantW = (stepping && !_walkFromIdle) ? 1f - Mathf.SmoothStep(0f, 1f, _stepIn) : 0f;
+                // The landing thud owns the legs. The first-step plant returns as the absorb eases.
+                float landFade = 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_landSquash));
+                float plantW = (stepping && !_walkFromIdle) ? (1f - Mathf.SmoothStep(0f, 1f, _stepIn)) * landFade : 0f;
                 if (plantW > 0.04f && footSki < 0.35f)
                 {
                     if (Mathf.Cos(_cycle) >= 0f)
@@ -7785,7 +7792,7 @@ namespace Tag.Art
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-4f, 0f, 0f), plantW);
                     }
                 }
-                float pushW = (_sprintIn < 0.98f && !_sprintFromWalk && stepping && footSki < 0.35f) ? 1f - Mathf.SmoothStep(0f, 1f, _sprintIn) : 0f;
+                float pushW = (_sprintIn < 0.98f && !_sprintFromWalk && stepping && footSki < 0.35f) ? (1f - Mathf.SmoothStep(0f, 1f, _sprintIn)) * landFade : 0f;
                 if (pushW > 0.04f)
                 {
                     // The back foot pushes. A walk turn plants the outside foot, then the sprint opens.
@@ -7804,7 +7811,8 @@ namespace Tag.Art
                 if (stopping && !_stopFromSprint && !_stopFromWalk && !_stopFromIdle && _stopPlant > 0.02f && footSki < 0.35f && _dropVis < 0.35f)
                 {
                     // Last foot under the hip before the idle sway. The other foot finishes the close.
-                    float p = _stopPlant;
+                    // The landing absorb keeps this plant off until the thud eases.
+                    float p = _stopPlant * landFade;
                     if (_stopPlantLeft)
                     {
                         _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(-4f, 0f, 0f), p);
@@ -8702,18 +8710,24 @@ namespace Tag.Art
                     if (_wallDropIn < 0.98f)
                     {
                         // Release, or grace with no jump, eases into the fall beat.
-                        float intoWallDrop = WallPose.Ease(_wallDropIn);
-                        _uaLT = Quaternion.Slerp(_exitUaL, _uaLT, intoWallDrop);
-                        _uaRT = Quaternion.Slerp(_exitUaR, _uaRT, intoWallDrop);
-                        _laLT = Quaternion.Slerp(_exitLaL, _laLT, intoWallDrop);
-                        _laRT = Quaternion.Slerp(_exitLaR, _laRT, intoWallDrop);
-                        _ulLT = Quaternion.Slerp(_exitUlL, _ulLT, intoWallDrop);
-                        _ulRT = Quaternion.Slerp(_exitUlR, _ulRT, intoWallDrop);
-                        _llLT = Quaternion.Slerp(_exitLlL, _llLT, intoWallDrop);
-                        _llRT = Quaternion.Slerp(_exitLlR, _llRT, intoWallDrop);
-                        _spineT = Quaternion.Slerp(_exitSpine, _spineT, intoWallDrop);
-                        _hipsT = Quaternion.Slerp(_exitHips, _hipsT, intoWallDrop);
-                        _headT = Quaternion.Slerp(_exitHead, _headT, intoWallDrop);
+                        // The fall owns the bones. A grounded leave still eases into the pose already written.
+                        float intoWallDrop = PoseHandoff.ToWeight(_wallDropIn);
+                        if (_wallFallHold)
+                            ApplyWallFallBlend(intoWallDrop, armZ);
+                        else
+                        {
+                            _uaLT = Quaternion.Slerp(_exitUaL, _uaLT, intoWallDrop);
+                            _uaRT = Quaternion.Slerp(_exitUaR, _uaRT, intoWallDrop);
+                            _laLT = Quaternion.Slerp(_exitLaL, _laLT, intoWallDrop);
+                            _laRT = Quaternion.Slerp(_exitLaR, _laRT, intoWallDrop);
+                            _ulLT = Quaternion.Slerp(_exitUlL, _ulLT, intoWallDrop);
+                            _ulRT = Quaternion.Slerp(_exitUlR, _ulRT, intoWallDrop);
+                            _llLT = Quaternion.Slerp(_exitLlL, _llLT, intoWallDrop);
+                            _llRT = Quaternion.Slerp(_exitLlR, _llRT, intoWallDrop);
+                            _spineT = Quaternion.Slerp(_exitSpine, _spineT, intoWallDrop);
+                            _hipsT = Quaternion.Slerp(_exitHips, _hipsT, intoWallDrop);
+                            _headT = Quaternion.Slerp(_exitHead, _headT, intoWallDrop);
+                        }
                     }
                 }
                 if (!_exitIntoCrouch && !_exitIntoCrouchWalk && (_exitIntoWalk || _exitIntoSprint))
@@ -8863,23 +8877,11 @@ namespace Tag.Art
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(_exitLlR, pushKneeR, intoPush), airKneeR, leave);
             }
             if (_jumpWallSnap && _jumpWallSnapIn < 0.98f && _jumpFromWall && !punching
-                && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill && !_jumpDashSnap)
+                && !_airFromIdle && !_jumpFromWalk && !_jumpFromStill && !_jumpDashSnap)
             {
-                // The wall run eases into the push-off, then the air pose holds.
+                // Wall, push-off, and the air stride. The weights sum to 1 and the stride wins.
                 // WallJumpPushTell stays. Jump height is unchanged.
-                ApplyWallSample(WallPose.PushOff(_pushLeft), armZ);
-                float intoWallAir = WallPose.Ease(_jumpWallSnapIn);
-                _uaLT = Quaternion.Slerp(_wallJumpUaL, _uaLT, intoWallAir);
-                _uaRT = Quaternion.Slerp(_wallJumpUaR, _uaRT, intoWallAir);
-                _laLT = Quaternion.Slerp(_wallJumpLaL, _laLT, intoWallAir);
-                _laRT = Quaternion.Slerp(_wallJumpLaR, _laRT, intoWallAir);
-                _spineT = Quaternion.Slerp(_wallJumpSp, _spineT, intoWallAir);
-                _hipsT = Quaternion.Slerp(_wallJumpHp, _hipsT, intoWallAir);
-                _headT = Quaternion.Slerp(_wallJumpHd, _headT, intoWallAir);
-                _ulLT = Quaternion.Slerp(_wallJumpUlL, _ulLT, intoWallAir);
-                _ulRT = Quaternion.Slerp(_wallJumpUlR, _ulRT, intoWallAir);
-                _llLT = Quaternion.Slerp(_wallJumpLlL, _llLT, intoWallAir);
-                _llRT = Quaternion.Slerp(_wallJumpLlR, _llRT, intoWallAir);
+                BlendWallJumpStride(armZ);
             }
             if (_jumpFromAirCrouch && _pushOff > 0.02f && !punching && !wallRun && !climb && !_jumpAirCrouchSnap)
             {
@@ -9042,7 +9044,7 @@ namespace Tag.Art
                 // A punch miss into a dash keeps its ease. A tag into a dash keeps its ease.
                 // A still crouch into a dash keeps its ease. Windup time is unchanged.
                 // Duration and cooldown are unchanged.
-                float intoBurst = _dashFromPunchIn;
+                float intoBurst = PoseHandoff.ToWeight(_dashFromPunchIn);
                 _uaLT = Quaternion.Slerp(_punchDashUaL, _uaLT, intoBurst);
                 _uaRT = Quaternion.Slerp(_punchDashUaR, _uaRT, intoBurst);
                 _laLT = Quaternion.Slerp(_punchDashLaL, _laLT, intoBurst);
@@ -9558,7 +9560,7 @@ namespace Tag.Art
                 if (_landAbsorbSnap && plainAbsorb)
                 {
                     if (_landAbsorbIn < 0.98f)
-                        _landAbsorbIn = Mathf.MoveTowards(_landAbsorbIn, 1f, dt / 0.04f);
+                        _landAbsorbIn = Mathf.MoveTowards(_landAbsorbIn, 1f, dt / PoseHandoff.LandGaitSeconds);
                 }
                 else
                     _landAbsorbSnap = false;
@@ -9887,9 +9889,9 @@ namespace Tag.Art
                 }
                 if (_landAbsorbSnap && _landAbsorbIn < 0.98f && plainAbsorb)
                 {
-                    // The pose eases into the absorb, then the absorb holds.
+                    // The pose eases into the absorb, then the gait takes the legs back.
                     // A crouch and a dart keep their landings. The squash fade stays. Land time is unchanged.
-                    float intoAbsorb = _landAbsorbIn;
+                    float intoAbsorb = PoseHandoff.ToWeight(_landAbsorbIn);
                     _uaLT = Quaternion.Slerp(_landAbsorbUaL, _uaLT, intoAbsorb);
                     _uaRT = Quaternion.Slerp(_landAbsorbUaR, _uaRT, intoAbsorb);
                     _laLT = Quaternion.Slerp(_landAbsorbLaL, _laLT, intoAbsorb);
@@ -9994,10 +9996,9 @@ namespace Tag.Art
                 float outW = g * g;
                 if (fallRoom)
                 {
-                    float intoFall = GrapplePose.ReleaseWeight(_grappleFallIn);
-                    float w = Mathf.Lerp(_grapplePullW, 1f, intoFall);
+                    // The line eases onto the fall beat. The air pose underneath does not share the bones.
                     GrapplePose.Sample drop = GrapplePose.Release(sinC, vyG, lean, _grappleFallIn);
-                    BlendGrappleSample(drop, armZ, w, true);
+                    BlendGrappleSample(drop, armZ, 1f, true);
                     _grappleSlew = GrapplePose.ActiveSlew(false, false, false, true);
                 }
                 else
@@ -10133,7 +10134,12 @@ namespace Tag.Art
             }
             else if (_grappleFallHold && poseGate)
             {
-                BlendGrappleSample(GrapplePose.Fall(), armZ, 1f, true);
+                // The same release curve, after the pull weight has gone. No snap onto the fall.
+                float intoFall = GrapplePose.ReleaseWeight(_grappleFallIn);
+                GrapplePose.Sample drop = intoFall >= 0.999f
+                    ? GrapplePose.Fall()
+                    : GrapplePose.Release(sinC, vyG, lean, _grappleFallIn);
+                BlendGrappleSample(drop, armZ, 1f, true);
                 _grappleSlew = GrapplePose.ActiveSlew(false, false, false, true);
             }
             _grappleReleaseWas = !pulling && _grapplePose > 0.2f && !punching && !_skiFromGrapple && !_slideFromGrapple && !_jumpFromGrapple;
@@ -14607,6 +14613,9 @@ namespace Tag.Art
             // Keep the last bounce while the feet close. Cutting it with speed freezes the hips, then the idle sway pops.
             float bobGait = Mathf.Max(gaitW, _stopGait);
             float bob = grounded ? step * 0.085f * bobGait : air ? step * 0.02f : 0f;
+            float landBob = 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_landSquash));
+            if (grounded && _landSquash > 0.02f)
+                bob *= landBob;
             if (_dropVis > 0.02f && !air && !jet)
             {
                 float dropTarget = _dropSlide ? -VerbPoseClips.SlideBodyDrop : -0.14f;
@@ -14615,7 +14624,8 @@ namespace Tag.Art
                 bob = Mathf.Lerp(bob, dropTarget, (_dropSlide || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? hipDrop : _dropVis);
             }
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
-            if (_landSquash > 0f) bob -= 0.14f * _landSquash;
+            if (_landSquash > 0f && !JumpLandTell.Show(JumpLandSolo(), _jumpLandAge))
+                bob -= 0.14f * _landSquash;
             if (dashing) bob += 0.04f * dashAmt;
             if (flinchAmt > 0.04f) bob -= 0.1f * flinchAmt;
             transform.localPosition = _root0 + new Vector3(0f, bob, 0f) + WallJumpNudge();
@@ -14630,6 +14640,58 @@ namespace Tag.Art
                 _jumpPoseAge += dt;
             else
                 _jumpPoseAge = -1f;
+        }
+
+        void ApplyWallFallBlend(float toW, float armZ)
+        {
+            WallPose.Sample fall = WallPose.Fall();
+            _uaLT = Quaternion.Slerp(_exitUaL, _uaL0 * Quaternion.Euler(fall.ArmPitchL, fall.ArmYawL, armZ), toW);
+            _uaRT = Quaternion.Slerp(_exitUaR, _uaR0 * Quaternion.Euler(fall.ArmPitchR, fall.ArmYawR, -armZ), toW);
+            _laLT = Quaternion.Slerp(_exitLaL, _laL0 * Quaternion.Euler(fall.ElbowL, 0f, 0f), toW);
+            _laRT = Quaternion.Slerp(_exitLaR, _laR0 * Quaternion.Euler(fall.ElbowR, 0f, 0f), toW);
+            _ulLT = Quaternion.Slerp(_exitUlL, _ulL0 * Quaternion.Euler(fall.ThighL, 0f, 0f), toW);
+            _ulRT = Quaternion.Slerp(_exitUlR, _ulR0 * Quaternion.Euler(fall.ThighR, 0f, 0f), toW);
+            _llLT = Quaternion.Slerp(_exitLlL, _llL0 * Quaternion.Euler(fall.KneeL, 0f, 0f), toW);
+            _llRT = Quaternion.Slerp(_exitLlR, _llR0 * Quaternion.Euler(fall.KneeR, 0f, 0f), toW);
+            _spineT = Quaternion.Slerp(_exitSpine, _spine0 * Quaternion.Euler(fall.Spine, 0f, fall.LeanZ), toW);
+            _hipsT = Quaternion.Slerp(_exitHips, _hips0 * Quaternion.Euler(fall.Hip, 0f, -fall.LeanZ * WallPose.HipRollShare), toW);
+            _headT = Quaternion.Slerp(_exitHead, _head0 * Quaternion.Euler(fall.Head, 0f, -fall.LeanZ * WallPose.HeadRollShare), toW);
+        }
+
+        void BlendWallJumpStride(float armZ)
+        {
+            Quaternion strideUaL = _uaLT;
+            Quaternion strideUaR = _uaRT;
+            Quaternion strideLaL = _laLT;
+            Quaternion strideLaR = _laRT;
+            Quaternion strideUlL = _ulLT;
+            Quaternion strideUlR = _ulRT;
+            Quaternion strideLlL = _llLT;
+            Quaternion strideLlR = _llRT;
+            Quaternion strideSp = _spineT;
+            Quaternion strideHp = _hipsT;
+            Quaternion strideHd = _headT;
+            WallPose.Sample push = WallPose.PushOff(_pushLeft);
+            PoseHandoff.WallJump01(_jumpWallSnapIn, out float wallW, out float pushW, out float strideW);
+            _uaLT = Blend3(_wallJumpUaL, _uaL0 * Quaternion.Euler(push.ArmPitchL, push.ArmYawL, armZ), strideUaL, wallW, pushW, strideW);
+            _uaRT = Blend3(_wallJumpUaR, _uaR0 * Quaternion.Euler(push.ArmPitchR, push.ArmYawR, -armZ), strideUaR, wallW, pushW, strideW);
+            _laLT = Blend3(_wallJumpLaL, _laL0 * Quaternion.Euler(push.ElbowL, 0f, 0f), strideLaL, wallW, pushW, strideW);
+            _laRT = Blend3(_wallJumpLaR, _laR0 * Quaternion.Euler(push.ElbowR, 0f, 0f), strideLaR, wallW, pushW, strideW);
+            _ulLT = Blend3(_wallJumpUlL, _ulL0 * Quaternion.Euler(push.ThighL, 0f, 0f), strideUlL, wallW, pushW, strideW);
+            _ulRT = Blend3(_wallJumpUlR, _ulR0 * Quaternion.Euler(push.ThighR, 0f, 0f), strideUlR, wallW, pushW, strideW);
+            _llLT = Blend3(_wallJumpLlL, _llL0 * Quaternion.Euler(push.KneeL, 0f, 0f), strideLlL, wallW, pushW, strideW);
+            _llRT = Blend3(_wallJumpLlR, _llR0 * Quaternion.Euler(push.KneeR, 0f, 0f), strideLlR, wallW, pushW, strideW);
+            _spineT = Blend3(_wallJumpSp, _spine0 * Quaternion.Euler(push.Spine, 0f, push.LeanZ), strideSp, wallW, pushW, strideW);
+            _hipsT = Blend3(_wallJumpHp, _hips0 * Quaternion.Euler(push.Hip, 0f, -push.LeanZ * WallPose.HipRollShare), strideHp, wallW, pushW, strideW);
+            _headT = Blend3(_wallJumpHd, _head0 * Quaternion.Euler(push.Head, 0f, -push.LeanZ * WallPose.HeadRollShare), strideHd, wallW, pushW, strideW);
+        }
+
+        static Quaternion Blend3(Quaternion from, Quaternion mid, Quaternion to, float fromW, float midW, float toW)
+        {
+            float stay = fromW + midW;
+            if (stay <= 0.0001f) return to;
+            float midShare = midW / stay;
+            return Quaternion.Slerp(Quaternion.Slerp(from, mid, midShare), to, toW);
         }
 
         void ApplyWallSample(WallPose.Sample pose, float armZ)
@@ -16459,6 +16521,9 @@ namespace Tag.Art
             }
             if (punching && phase != PunchPhase.Idle)
             {
+                // A dash or a jump already owns the bones. The clip would snap back on top.
+                if (_dashFromPunch || _jumpFromPunch || _punchYield)
+                    return;
                 PunchTagPose.Beat punch = phase == PunchPhase.Windup
                     ? PunchTagPose.PunchWindup(punchProg)
                     : phase == PunchPhase.Active

@@ -61,6 +61,13 @@ static class Program
             Console.Error.WriteLine("grapple pose is not held");
             return 1;
         }
+
+        Console.WriteLine(Tag.Art.PoseHandoff.ProofLine());
+        if (!Tag.Art.PoseHandoff.Holds())
+        {
+            Console.Error.WriteLine("pose handoff weights do not sum");
+            return 1;
+        }
         if (!clips.Ok)
         {
             Console.Error.WriteLine(string.Join(" | ", clips.Failures));
