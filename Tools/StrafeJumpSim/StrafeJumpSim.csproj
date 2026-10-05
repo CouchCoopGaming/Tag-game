@@ -43,6 +43,7 @@
     <Compile Include="../../Assets/Scripts/Art/LungePose.cs" />
     <Compile Include="../../Assets/Scripts/Art/BecomeItPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/PivotPose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/IdlePose.cs" />
     <Compile Include="../../Assets/Scripts/Art/DummyPosePaths.cs" />
     <Compile Include="../../Assets/Scripts/Art/GrappleRopeTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/GrappleLatchTell.cs" />

@@ -37,6 +37,10 @@ public static class DummyPosePathProof
             || !loco.Contains("PivotPose.Weight") || !loco.Contains("PivotPose.Twist")
             || !loco.Contains("PivotPose.KeepsSprintLean"))
             report.Fail("pivot pose is not on the dummy pose path");
+        if (!loco.Contains("DummyPosePaths.Idle") || !loco.Contains("ApplyIdlePose")
+            || !loco.Contains("IdlePose.Weight") || !loco.Contains("IdlePose.Yield")
+            || !loco.Contains("IdlePose.At") || !loco.Contains("dt / IdlePose.FadeSeconds"))
+            report.Fail("idle pose is not on the dummy pose path");
         if (!loco.Contains("yawRate / 280f") || !loco.Contains("dt / 0.1f"))
             report.Fail("yaw slew was retuned");
         if (!loco.Contains("DummyPosePaths.Jump") || !loco.Contains("JumpPose.PoseActive"))
