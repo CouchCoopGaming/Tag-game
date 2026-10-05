@@ -11,7 +11,7 @@ namespace Tag.Art
     /// Slide, punch, and tag play named clips from <see cref="VerbPoseClips"/>
     /// on top of the stride. Wall climb and wall run read <see cref="WallPose"/>.
     /// Air dash reads <see cref="AirDashPose"/>. Crouch reads <see cref="CrouchPose"/>.
-    /// Those clips do not change feel numbers. No root motion.
+    /// Mantle reads <see cref="MantlePose"/>. Those clips do not change feel numbers. No root motion.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
     {
@@ -51,6 +51,7 @@ namespace Tag.Art
         Quaternion _mantleUlL, _mantleUlR, _mantleLlL, _mantleLlR;
         Quaternion _mantleSp, _mantleHp, _mantleHd;
         bool _wasMantle;
+        bool _mantleLeadLeft = true;
         bool _mantleExitSnap;
         float _mantleExitIn;
         Quaternion _mantleExitUaL, _mantleExitUaR, _mantleExitLaL, _mantleExitLaR;
@@ -5655,10 +5656,11 @@ namespace Tag.Art
                 && _spine != null && _hips != null && _head != null
                 && _upperLegL != null && _lowerLegL != null && _upperLegR != null && _lowerLegR != null)
             {
-                // The pose eases into the vault, then the vault holds.
+                // Climb, wall run, or air eases into the plant. The vault then plays.
                 // The super glide keeps its ease. Mantle time is unchanged.
                 _mantleSnap = true;
                 _mantleSnapIn = 0f;
+                _mantleLeadLeft = leavingSurf ? _exitLeadLeft : true;
                 _mantleUaL = _upperArmL.localRotation;
                 _mantleUaR = _upperArmR.localRotation;
                 _mantleLaL = _lowerArmL.localRotation;
@@ -5674,7 +5676,7 @@ namespace Tag.Art
             if (_mantleSnap && mantle)
             {
                 if (_mantleSnapIn < 0.98f)
-                    _mantleSnapIn = Mathf.MoveTowards(_mantleSnapIn, 1f, dt / 0.04f);
+                    _mantleSnapIn = Mathf.MoveTowards(_mantleSnapIn, 1f, dt / MantlePose.EnterBlendSeconds);
             }
             else
                 _mantleSnap = false;
@@ -5726,10 +5728,12 @@ namespace Tag.Art
             _itClaim = Mathf.MoveTowards(_itClaim, 0f, dt / 0.52f);
             _claimWas = _itClaim > 0.2f;
             bool dashing = _dashPulse > 0.04f || lunging || airDashing;
-            // A mantle eases into the stand or the run, then that pose holds.
-            // The super glide keeps its ease. Mantle time is unchanged.
-            bool mantleGround = !mantle && !gliding && grounded && !air && !wallRun && !climb
-                && !sliding && !jet && !crouch && !dashing && !punching;
+            // A mantle eases into the gait or a crouch. A land thud keeps its absorb.
+            // A wall climb and a wall-jump push-off keep their poses. Mantle time is unchanged.
+            bool wallOwns = climb || wallRun || _jumpFromClimb || _jumpFromWall;
+            bool landThud = _landSquash > 0.08f && !crouch;
+            bool mantleGround = !mantle && !gliding && grounded && !air && !wallOwns
+                && !sliding && !jet && !dashing && !punching && !landThud;
             if (_wasMantle && mantleGround && !_mantleExitSnap
                 && _upperArmL != null && _lowerArmL != null && _upperArmR != null && _lowerArmR != null
                 && _spine != null && _hips != null && _head != null
@@ -5752,7 +5756,7 @@ namespace Tag.Art
             if (_mantleExitSnap && mantleGround)
             {
                 if (_mantleExitIn < 0.98f)
-                    _mantleExitIn = Mathf.MoveTowards(_mantleExitIn, 1f, dt / 0.04f);
+                    _mantleExitIn = Mathf.MoveTowards(_mantleExitIn, 1f, dt / MantlePose.ExitBlendSeconds);
             }
             else
                 _mantleExitSnap = false;
@@ -6127,7 +6131,9 @@ namespace Tag.Art
             float punchProg = _punch != null ? _punch.PhaseProgress : 0f;
 
             // Spine / hips lean by state - jet reads clearly in TP
-            float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? Mathf.Lerp(42f, 22f, _motor != null ? _motor.MantleProgress : 0.5f) : air ? 18f : breath;
+            float mantleU = mantle && _motor != null ? _motor.MantleProgress : 0f;
+            MantlePose.Sample vault = mantle ? MantlePose.At(mantleU, _mantleLeadLeft) : default;
+            float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? vault.Spine : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? -WallPose.RunTilt : WallPose.RunTilt) : 0f;
             float idleW = 0f;
             bool atRest = grounded && !dashing && !sliding && !crouch && !jet && !wallRun && !climb && !mantle && !air && !lunging && flinchAmt < 0.04f && claimAmt < 0.04f;
@@ -6214,13 +6220,12 @@ namespace Tag.Art
             if (bodyLean)
                 leanX += _accelLean;
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
-            float mantleAmt = mantle && _motor != null ? _motor.MantleProgress : 0f;
-            _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
+            _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? vault.Hip : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
             if (bodyLean && Mathf.Abs(_accelLean) > 0.05f)
                 _hipsT = _hipsT * Quaternion.Euler(_accelLean * 0.7f, 0f, 0f);
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet && !_walkFromSki && !_runFromSki && !_idleFromSki)
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f, 0f, 0f), _skiBlend);
-            _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
+            _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : mantle ? vault.Head : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
             float swayFade = Mathf.Max(idleW, atRest ? Mathf.Clamp01(Mathf.Abs(_swayVis) / 5f) : 0f);
             if (swayFade > 0.02f)
                 _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-breath * 0.5f, 0f, -_swayVis * 0.35f), swayFade);
@@ -6594,19 +6599,15 @@ namespace Tag.Art
             }
             else if (mantle)
             {
-                // Progress pull-up - plant: syncs with motor mantle arc (not free Time.sin).
-                float m = _motor != null ? _motor.MantleProgress : 0.5f;
-                float reach = Mathf.Lerp(-155f, -78f, m);
-                float flare = Mathf.Lerp(32f, 14f, m);
-                _uaLT = _uaL0 * Quaternion.Euler(reach, Mathf.Lerp(20f, 8f, m), flare);
-                _uaRT = _uaR0 * Quaternion.Euler(reach - 4f, Mathf.Lerp(-20f, -8f, m), -flare);
-                _laLT = _laL0 * Quaternion.Euler(Mathf.Lerp(-62f, -28f, m), 0f, 0f);
-                _laRT = _laR0 * Quaternion.Euler(Mathf.Lerp(-62f, -28f, m), 0f, 0f);
+                // Hands on the lip, then the chest comes over. Synced to mantle progress.
+                // Climb, wall run, or air eases in. Mantle time is unchanged.
+                _uaLT = _uaL0 * Quaternion.Euler(vault.ArmPitchL, vault.ArmYawL, armZ);
+                _uaRT = _uaR0 * Quaternion.Euler(vault.ArmPitchR, vault.ArmYawR, -armZ);
+                _laLT = _laL0 * Quaternion.Euler(vault.ElbowL, 0f, 0f);
+                _laRT = _laR0 * Quaternion.Euler(vault.ElbowR, 0f, 0f);
                 if (_mantleSnap && _mantleSnapIn < 0.98f)
                 {
-                    // The pose eases into the vault, then the vault holds.
-                    // The super glide keeps its ease. Mantle time is unchanged.
-                    float intoMantle = _mantleSnapIn;
+                    float intoMantle = PoseHandoff.Ease(_mantleSnapIn);
                     _uaLT = Quaternion.Slerp(_mantleUaL, _uaLT, intoMantle);
                     _uaRT = Quaternion.Slerp(_mantleUaR, _uaRT, intoMantle);
                     _laLT = Quaternion.Slerp(_mantleLaL, _laLT, intoMantle);
@@ -7492,15 +7493,14 @@ namespace Tag.Art
             }
             else if (mantle)
             {
-                // Tuck early, lead-leg plant late - readable vault in TP
-                float m = _motor != null ? _motor.MantleProgress : 0.5f;
-                _ulLT = _ulL0 * Quaternion.Euler(Mathf.Lerp(72f, 28f, m), 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(Mathf.Lerp(58f, 42f, m), 0f, 0f);
-                _llLT = _llL0 * Quaternion.Euler(Mathf.Lerp(-82f, -22f, m), 0f, 0f);
-                _llRT = _llR0 * Quaternion.Euler(Mathf.Lerp(-64f, -38f, m), 0f, 0f);
+                // Lead knee drives up, then both feet settle for the land.
+                _ulLT = _ulL0 * Quaternion.Euler(vault.ThighL, 0f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(vault.ThighR, 0f, 0f);
+                _llLT = _llL0 * Quaternion.Euler(vault.KneeL, 0f, 0f);
+                _llRT = _llR0 * Quaternion.Euler(vault.KneeR, 0f, 0f);
                 if (_mantleSnap && _mantleSnapIn < 0.98f)
                 {
-                    float intoMantleLegs = _mantleSnapIn;
+                    float intoMantleLegs = PoseHandoff.Ease(_mantleSnapIn);
                     _ulLT = Quaternion.Slerp(_mantleUlL, _ulLT, intoMantleLegs);
                     _ulRT = Quaternion.Slerp(_mantleUlR, _ulRT, intoMantleLegs);
                     _llLT = Quaternion.Slerp(_mantleLlL, _llLT, intoMantleLegs);
@@ -8771,7 +8771,7 @@ namespace Tag.Art
             if (_wallExit <= 0f && !wallRun && !climb)
                 _wallDropSnap = false;
 
-            if (_jumpFromClimb && _pushOff > 0.02f && !punching && !_jumpClimbSnap)
+            if (_jumpFromClimb && _pushOff > 0.02f && !punching && !_jumpClimbSnap && !mantle)
             {
                 // The climb eases into the push, then the air pose.
                 // A still crouch, a crouch walk, a ski, a slide, and an air dash keep their jump.
@@ -8827,7 +8827,7 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(_exitLlL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(_exitLlR, pushKneeR, intoPush), airKneeR, leave);
             }
-            if (_jumpClimbSnap && _jumpClimbSnapIn < 0.98f && _jumpFromClimb && !punching
+            if (_jumpClimbSnap && _jumpClimbSnapIn < 0.98f && _jumpFromClimb && !punching && !mantle
                 && !_airFromIdle && !_airFromStride && !_jumpFromWalk && !_jumpFromStill
                 && !_jumpDashSnap && !_jumpWallSnap)
             {
@@ -8848,7 +8848,7 @@ namespace Tag.Art
                 _llRT = Quaternion.Slerp(_climbJumpLlR, _llRT, intoClimbAir);
             }
 
-            if (_jumpFromWall && _pushOff > 0.02f && !punching && !_jumpWallSnap)
+            if (_jumpFromWall && _pushOff > 0.02f && !punching && !_jumpWallSnap && !mantle)
             {
                 // The wall run eases into the push, then the air pose. A climb keeps its own leave.
                 // Exit time is unchanged. Jump height is unchanged.
@@ -8903,7 +8903,7 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(Quaternion.Slerp(_exitLlL, pushKneeL, intoPush), airKneeL, leave);
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(_exitLlR, pushKneeR, intoPush), airKneeR, leave);
             }
-            if (_jumpWallSnap && _jumpWallSnapIn < 0.98f && _jumpFromWall && !punching
+            if (_jumpWallSnap && _jumpWallSnapIn < 0.98f && _jumpFromWall && !punching && !mantle
                 && !_airFromIdle && !_jumpFromWalk && !_jumpFromStill && !_jumpDashSnap)
             {
                 // Wall, push-off, and the air stride. The weights sum to 1 and the stride wins.
@@ -14506,9 +14506,9 @@ namespace Tag.Art
             }
             if (_mantleExitSnap && _mantleExitIn < 0.98f)
             {
-                // The vault eases into the stand or the run, then that pose holds.
-                // The super glide keeps its ease. Mantle time is unchanged.
-                float intoMantleGround = _mantleExitIn;
+                // The vault eases into the gait or the crouch. A land thud keeps its absorb.
+                // A wall climb and a wall-jump push-off keep their poses. Mantle time is unchanged.
+                float intoMantleGround = PoseHandoff.Ease(_mantleExitIn);
                 _uaLT = Quaternion.Slerp(_mantleExitUaL, _uaLT, intoMantleGround);
                 _uaRT = Quaternion.Slerp(_mantleExitUaR, _uaRT, intoMantleGround);
                 _laLT = Quaternion.Slerp(_mantleExitLaL, _laLT, intoMantleGround);
@@ -14550,6 +14550,14 @@ namespace Tag.Art
                 legSlew = Mathf.Max(legSlew, WallPose.BlendSlew);
                 torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
                 slew = Mathf.Max(slew, WallPose.BlendSlew);
+            }
+            if (mantle || (_mantleExitSnap && _mantleExitIn < 0.98f))
+            {
+                armSlewL = Mathf.Max(armSlewL, MantlePose.Slew);
+                armSlewR = Mathf.Max(armSlewR, MantlePose.Slew);
+                legSlew = Mathf.Max(legSlew, MantlePose.Slew);
+                torsoSlew = Mathf.Max(torsoSlew, MantlePose.Slew);
+                slew = Mathf.Max(slew, MantlePose.Slew);
             }
             if ((punching && phase != PunchPhase.Idle) || flinchAmt > 0.04f)
             {

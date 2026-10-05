@@ -29,6 +29,10 @@ namespace Tag.Art
         public const float CrouchSlideSeconds = 0.10f;
         /// <summary>Air dash into the air stride or the fall beat. Stride or fall wins.</summary>
         public const float DashAirSeconds = 0.10f;
+        /// <summary>Wall climb, wall run, or air into the vault. The vault wins.</summary>
+        public const float MantleEnterSeconds = MantlePose.EnterBlendSeconds;
+        /// <summary>Vault into the gait or a crouch. A land thud keeps its absorb.</summary>
+        public const float MantleExitSeconds = MantlePose.ExitBlendSeconds;
 
         /// <summary>Smoothstep. 0 at the start of the blend, 1 at the end.</summary>
         public static float Ease(float u)
@@ -82,6 +86,10 @@ namespace Tag.Art
             if (CrouchSlideSeconds < 0.08f || CrouchSlideSeconds > 0.12f) return false;
             if (Mathf.Abs(DashAirSeconds - AirDashPose.HandoffSeconds) > 0.001f) return false;
             if (DashAirSeconds < 0.08f || DashAirSeconds > 0.12f) return false;
+            if (Mathf.Abs(MantleEnterSeconds - MantlePose.EnterBlendSeconds) > 0.001f) return false;
+            if (MantleEnterSeconds < 0.08f || MantleEnterSeconds > 0.12f) return false;
+            if (Mathf.Abs(MantleExitSeconds - MantlePose.ExitBlendSeconds) > 0.001f) return false;
+            if (MantleExitSeconds < 0.08f || MantleExitSeconds > 0.12f) return false;
             if (Ease(0f) > 0.0001f || Mathf.Abs(Ease(1f) - 1f) > 0.0001f) return false;
             if (Mathf.Abs(Ease(0.5f) - 0.5f) > 0.0001f) return false;
             if (Mathf.Abs(ToWeight(0f)) > 0.0001f || Mathf.Abs(ToWeight(1f) - 1f) > 0.0001f) return false;
@@ -133,6 +141,8 @@ namespace Tag.Art
                 + " walljump->stride " + WallStrideSeconds.ToString("0.00") + "s stride wins"
                 + " crouch->slide " + CrouchSlideSeconds.ToString("0.00") + "s slide wins"
                 + " dash->air " + DashAirSeconds.ToString("0.00") + "s stride or fall wins"
+                + " climb/run/air->mantle " + MantleEnterSeconds.ToString("0.00") + "s mantle wins"
+                + " mantle->gait " + MantleExitSeconds.ToString("0.00") + "s gait or crouch wins"
                 + " mid=" + wallW.ToString("0.00") + "+" + pushW.ToString("0.00") + "+" + strideW.ToString("0.00")
                 + " sum=1 smoothstep";
         }
