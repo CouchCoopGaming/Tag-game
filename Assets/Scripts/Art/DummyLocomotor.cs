@@ -75,6 +75,9 @@ namespace Tag.Art
         bool _pushLeft;
         float _jumpPoseAge = -1f;
         bool _jumpDriveLeft;
+        float _wallJumpPoseAge = -1f;
+        bool _wallJumpPosePlant;
+        bool _wallJumpHandoff;
         float _airStrafeLean;
         float _leanSide = 1f;
         bool _leanDashFrom;
@@ -1302,6 +1305,7 @@ namespace Tag.Art
                 && WallPose.GraceCommit(graceLeft, wallContact)
                 && !climb && !wallRun && air && !mantle
                 && !_jumpFromClimb && !_jumpFromWall
+                && _wallJumpPoseAge < 0f
                 && (_input == null || !_input.CrouchHeld)
                 && (_motor == null || !_motor.IsAirDashing);
             if (!air || _jumpFromClimb || _jumpFromWall || (_motor != null && _motor.IsAirDashing)
@@ -1310,6 +1314,7 @@ namespace Tag.Art
             if (_gracePose)
                 _wallFallHold = false;
             else if (_wasGracePose && air && !_jumpFromClimb && !_jumpFromWall
+                && _wallJumpPoseAge < 0f
                 && (_input == null || !_input.CrouchHeld)
                 && (_motor == null || !_motor.IsAirDashing))
             {
@@ -1318,6 +1323,7 @@ namespace Tag.Art
                 _wallFallHold = true;
             }
             else if (leavingSurf && air && !_jumpFromClimb && !_jumpFromWall
+                && _wallJumpPoseAge < 0f
                 && (_input == null || !_input.CrouchHeld)
                 && (_motor == null || !_motor.IsAirDashing))
             {
@@ -14876,6 +14882,14 @@ namespace Tag.Art
                 torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
                 slew = Mathf.Max(slew, WallPose.BlendSlew);
             }
+            if (_wallJumpPoseAge >= 0f && !(WallJumpPose.Settled(_wallJumpPoseAge) && jumpPoseOn))
+            {
+                armSlewL = Mathf.Max(armSlewL, WallJumpPose.Slew);
+                armSlewR = Mathf.Max(armSlewR, WallJumpPose.Slew);
+                legSlew = Mathf.Max(legSlew, WallJumpPose.Slew);
+                torsoSlew = Mathf.Max(torsoSlew, WallJumpPose.Slew);
+                slew = Mathf.Max(slew, WallJumpPose.Slew);
+            }
             if (mantle || (_mantleExitSnap && _mantleExitIn < 0.98f))
             {
                 armSlewL = Mathf.Max(armSlewL, MantlePose.Slew);
@@ -14984,7 +14998,8 @@ namespace Tag.Art
             ApplyAimTorso();
             bool grappleOwns = _grappleFallHold || _grapplePose > 0.02f
                 || (_grapple != null && (_grapple.IsAiming || _grapple.IsPulling));
-            bool wallOwns = wallRun || climb || _graceBody || _wallFallHold || _jumpFromWall || _jumpFromClimb;
+            bool wallJumpBeat = _wallJumpPoseAge >= 0f && !WallJumpPose.Settled(_wallJumpPoseAge);
+            bool wallOwns = wallRun || climb || _graceBody || _wallFallHold || _jumpFromWall || _jumpFromClimb || wallJumpBeat;
             bool dashOwns = airDashing || _dashPoseHeld;
             bool punchOwns = punching || _punchTelegraph > 0.02f || _aimTorsoW > 0.02f;
             ApplyAirStrafeLean(armZ, speed, jumpPoseOn, dashOwns, wallOwns, grappleOwns, punchOwns, dt);
@@ -14998,6 +15013,7 @@ namespace Tag.Art
                 else
                     ApplyWallSample(WallPose.Run(Mathf.Sin(_surfPhase), _motor != null && _motor.WallLeft), armZ);
             }
+            TickWallJumpPose(armZ, grounded, mantle, sliding, punching, climb, wallRun, airDashing, jet, jumpPoseOn);
             if (_airStrafeLean > 0.02f)
             {
                 torsoSlew = Mathf.Max(torsoSlew, AirStrafeLeanPose.Slew);
@@ -15054,8 +15070,73 @@ namespace Tag.Art
                 _jumpPoseAge += dt;
             else
                 _jumpPoseAge = -1f;
+            if (_wallJumpHandoff)
+            {
+                // The shove has eased out. Rise and fall take the stack from here.
+                // The ground crouch stays off. Jump height is unchanged.
+                _jumpPoseAge = JumpPose.TakeoffSeconds;
+                _jumpDriveLeft = !_wallJumpPosePlant;
+                _wallJumpHandoff = false;
+            }
             if (_dashPoseHeld && _dashPoseAge >= 0f)
                 _dashPoseAge += dt;
+        }
+
+        /// <summary>
+        /// Shove holds, then Ease into the jump rise and fall. A ground jump,
+        /// a slide, a punch, and a dash keep their poses. Jump height is unchanged.
+        /// </summary>
+        void TickWallJumpPose(float armZ, bool grounded, bool mantle, bool sliding, bool punching, bool climb, bool wallRun, bool airDashing, bool jet, bool jumpPoseOn)
+        {
+            if (_wallJumpPoseAge < 0f) return;
+            if (!PoseAllowed(DummyPosePaths.Wall) || !PoseAllowed(DummyPosePaths.Jump))
+            {
+                _wallJumpPoseAge = -1f;
+                _wallJumpHandoff = false;
+                return;
+            }
+
+            bool yield = grounded || mantle || sliding || punching || climb || wallRun || airDashing || jet
+                || (_input != null && _input.CrouchHeld)
+                || (_grapple != null && (_grapple.IsAiming || _grapple.IsPulling));
+            if (yield)
+            {
+                _wallJumpPoseAge = -1f;
+                _wallJumpHandoff = false;
+                return;
+            }
+
+            bool settled = WallJumpPose.Settled(_wallJumpPoseAge);
+            if (settled && jumpPoseOn)
+            {
+                // Rise and fall already wrote this frame. The lean can stay on them.
+                _wallJumpPoseAge = -1f;
+                return;
+            }
+
+            ApplyWallJumpPose(armZ);
+            if (settled)
+                _wallJumpHandoff = true;
+            float dt = Time.deltaTime;
+            if (dt > 0f) _wallJumpPoseAge += dt;
+        }
+
+        void ApplyWallJumpPose(float armZ)
+        {
+            float vy = _motor != null ? _motor.Velocity.y : 0f;
+            float speed = _motor != null ? _motor.HorizontalSpeed : 0f;
+            WallJumpPose.Sample pose = WallJumpPose.At(_wallJumpPoseAge, vy, _wallJumpPosePlant, speed);
+            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
+            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
+            _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
+            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ);
+            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ);
+            _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
+            _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
+            _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, pose.LeanZ);
+            _hipsT = _hips0 * Quaternion.Euler(pose.Hip, 0f, -pose.LeanZ * WallPose.HipRollShare);
+            _headT = _head0 * Quaternion.Euler(pose.Head, 0f, -pose.LeanZ * WallPose.HeadRollShare);
         }
 
         void ApplyWallFallBlend(float toW, float armZ)
@@ -16824,6 +16905,11 @@ namespace Tag.Art
             _bounceWallLeft = _motor != null && _motor.WallLeft;
             _bounceKickSnap = false;
             _bounceKickIn = 0f;
+            // Cling plus Jump, including cling grace. The shove holds, then eases
+            // into the jump rise and fall. Impulse and cling grace stay put.
+            _wallJumpPoseAge = 0f;
+            _wallJumpPosePlant = _wallExit > 0.5f ? !_exitLeadLeft : (_motor != null && _motor.WallLeft);
+            _wallJumpHandoff = false;
             // The climb eases into the push. A wall run eases into its own push.
             // Exit time is unchanged. Jump height is unchanged.
             if (!_exitFromWall && _wallExit > 0.5f)
@@ -18004,6 +18090,8 @@ namespace Tag.Art
             _wallJumpAge = -1f;
             _wallJumpEdge = false;
             _sinceWall = 1f;
+            _wallJumpPoseAge = -1f;
+            _wallJumpHandoff = false;
         }
 
         bool ShoesOwned(bool sliding, bool punching, float flinchAmt)

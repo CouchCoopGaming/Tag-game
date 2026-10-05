@@ -100,13 +100,14 @@ namespace Tag.Art
             if (!OpponentChaseTell.IsOpponentPawn(opponent)) return false;
             if (OpponentChaseTell.IsOpponentPawn(solo)) return false;
 
-            if (JumpPose.RootMotion || WallPose.RootMotion || PunchTagPose.RootMotion
+            if (JumpPose.RootMotion || WallPose.RootMotion || WallJumpPose.RootMotion || PunchTagPose.RootMotion
                 || CrouchPose.RootMotion || MantlePose.RootMotion || AirDashPose.RootMotion
                 || GrapplePose.RootMotion || PoseHandoff.RootMotion || LungePose.RootMotion
                 || BecomeItPose.RootMotion || PivotPose.RootMotion || IdlePose.RootMotion
                 || AimTorsoPose.RootMotion || StopPlantPose.RootMotion
                 || AirStrafeLeanPose.RootMotion || BunnyHopPose.RootMotion)
                 return false;
+            if (!WallJumpPose.Holds()) return false;
             if (!AirStrafeLeanPose.Holds()) return false;
             if (!BunnyHopPose.Holds()) return false;
             if (AirStrafeLeanPose.Roll >= WallPose.RunTilt) return false;
@@ -163,6 +164,7 @@ namespace Tag.Art
                 + " airstrafe=AirStrafeLeanPose roll/hip/arms"
                 + " hop=BunnyHopPose chain/phase/lean"
                 + " wall=WallPose climb/run"
+                + " walljump=WallJumpPose push then JumpPose rise/fall"
                 + " punch=PunchTagPose windup + AimTorsoPose chest/head"
                 + " aim=punch shared, grapple solo"
                 + " tag=PunchTagPose catch"
