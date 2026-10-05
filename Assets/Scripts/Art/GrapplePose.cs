@@ -1,4 +1,6 @@
 using System;
+using Tag.Local;
+using TagArena.Movement;
 using UnityEngine;
 
 namespace Tag.Art
@@ -6,8 +8,10 @@ namespace Tag.Art
     /// <summary>
     /// Visual grapple only. The solo pawn reaches along the aim, snaps the
     /// grappling hand to the rope, then hangs both hands on the line while the
-    /// chest leans toward the latch. Legs trail. Nothing here writes velocity,
-    /// the rope, or the root. The hook still adds no vertical impulse.
+    /// chest leans toward the latch. A miss throws that hand and the chest,
+    /// then snaps them back, and latches nothing. Legs trail on a pull.
+    /// Nothing here writes velocity, the rope, the camera, or the root.
+    /// The hook still adds no vertical impulse and no jet.
     /// </summary>
     public static class GrapplePose
     {
@@ -27,12 +31,25 @@ namespace Tag.Art
         public const float PoseSlew = 170f;
         public const float AimSlew = 480f;
         public const float LatchSlew = 2400f;
-        public const float MissSlew = 1600f;
+        /// <summary>Fast enough that the recoil arrives inside the snap window.</summary>
+        public const float MissSlew = 2400f;
+
+        /// <summary>Throw. The lead arm and the chest open along the aim.</summary>
+        public const float MissWhipSeconds = 0.07f;
+        /// <summary>Recoil. The line breaks and the chest rocks back.</summary>
+        public const float MissSnapSeconds = 0.09f;
 
         /// <summary>Outward planar speed that reads as a full pull. Vertical speed is not an input.</summary>
         public const float PlanarFull = 7f;
         /// <summary>A taut rope keeps the hands on the line even when outward speed is zero.</summary>
         public const float TautFloor = 0.70f;
+        /// <summary>
+        /// Chase-cam weight for that taut line. PullBlend stays the speed response.
+        /// This lifts 0.70 off the gait so the arms are the line, not a punch return.
+        /// </summary>
+        public const float TautRead = 0.96f;
+        /// <summary>No camera punch on a miss or a pull.</summary>
+        public const float FovPop = 0f;
 
         /// <summary>Tuck weight is 0 at and above this vertical speed. The air-stride holds.</summary>
         public const float StrideVy = 3f;
@@ -64,15 +81,15 @@ namespace Tag.Art
         public const float LatchHip = 20f;
         public const float LatchHead = -18f;
 
-        public const float PullPitchL = -114f;
-        public const float PullPitchR = -122f;
-        public const float PullYawL = 14f;
-        public const float PullYawR = -14f;
-        public const float PullElbowL = -8f;
-        public const float PullElbowR = -4f;
-        public const float PullSpine = 48f;
-        public const float PullHip = 30f;
-        public const float PullHead = -14f;
+        public const float PullPitchL = -126f;
+        public const float PullPitchR = -134f;
+        public const float PullYawL = 8f;
+        public const float PullYawR = -8f;
+        public const float PullElbowL = -4f;
+        public const float PullElbowR = -2f;
+        public const float PullSpine = 56f;
+        public const float PullHip = 36f;
+        public const float PullHead = -20f;
         public const float HipYawShare = 0.40f;
         public const float HeadYawShare = 0.55f;
 
@@ -84,15 +101,30 @@ namespace Tag.Art
         public const float TuckKnee = -94f;
         public const float TuckAlt = 7f;
 
-        public const float MissPitchR = 42f;
-        public const float MissYawR = -62f;
-        public const float MissElbowR = -84f;
-        public const float MissPitchL = -10f;
-        public const float MissYawL = 18f;
-        public const float MissElbowL = -28f;
-        public const float MissSpine = -12f;
-        public const float MissHip = 4f;
-        public const float MissHead = 8f;
+        public const float WhipPitchR = -106f;
+        public const float WhipYawR = -6f;
+        public const float WhipElbowR = -6f;
+        public const float WhipPitchL = 28f;
+        public const float WhipYawL = 18f;
+        public const float WhipElbowL = -36f;
+        public const float WhipSpine = 28f;
+        public const float WhipHip = 16f;
+        public const float WhipHead = -12f;
+        public const float WhipSpineYaw = -14f;
+        public const float WhipHeadYaw = -8f;
+
+        public const float MissPitchR = 76f;
+        public const float MissYawR = -40f;
+        public const float MissElbowR = -112f;
+        public const float MissPitchL = 12f;
+        public const float MissYawL = 16f;
+        public const float MissElbowL = -32f;
+        public const float MissSpine = -32f;
+        public const float MissHip = -10f;
+        public const float MissHead = 18f;
+        public const float MissSpineYaw = 18f;
+        public const float MissHeadYaw = 10f;
+        public const float MissHipYaw = 6f;
 
         public struct Sample
         {
@@ -109,6 +141,25 @@ namespace Tag.Art
             float speed = Mathf.SmoothStep(0f, 1f, Cap01(outwardPlanar / PlanarFull));
             if (!taut) return speed;
             return Mathf.Lerp(TautFloor, 1f, speed);
+        }
+
+        /// <summary>
+        /// Visual weight for the hang. PullBlend is unchanged.
+        /// A taut rope lifts that blend onto the two-arm line so the gait
+        /// and a punch return cannot sit in the arms. Slack stays on PullBlend.
+        /// </summary>
+        public static float ReadWeight(float outwardPlanar, bool taut, float latchWeight)
+        {
+            float pull = PullBlend(outwardPlanar, taut);
+            float latch = latchWeight < 0f ? 0f : (latchWeight > 1f ? 1f : latchWeight);
+            float hung = pull + (1f - pull) * latch;
+            if (!taut) return hung;
+            if (hung >= 1f) return 1f;
+            float span = 1f - TautFloor;
+            float t = span > 0.0001f ? (hung - TautFloor) / span : 1f;
+            if (t < 0f) t = 0f;
+            if (t > 1f) t = 1f;
+            return TautRead + (1f - TautRead) * t;
         }
 
         /// <summary>0 in the air-stride, 1 in the tucked trail. Planar speed is ignored.</summary>
@@ -145,8 +196,24 @@ namespace Tag.Art
             return Ease(age / ReleaseBlendSeconds);
         }
 
-        /// <summary>Same fade as the miss stub, so the hand and the flick leave together.</summary>
+        /// <summary>Same fade as the miss stub. The stub still uses this. The body uses <see cref="MissBeat"/>.</summary>
         public static float MissWeight(float age) => GrappleMissTell.Fade(age);
+
+        /// <summary>End of the recoil. The return uses the rest of the miss stub window.</summary>
+        public static float MissSnapAge => MissWhipSeconds + MissSnapSeconds;
+
+        /// <summary>
+        /// 1 through the throw and the recoil, then eases off with the stub's tail.
+        /// A latch stays at 0 because the miss age is cleared.
+        /// </summary>
+        public static float MissBeat(float age)
+        {
+            if (age < 0f || age >= GrappleMissTell.FlashSeconds) return 0f;
+            if (age <= MissSnapAge) return 1f;
+            float span = GrappleMissTell.FlashSeconds - MissSnapAge;
+            float u = span > 0.0001f ? (age - MissSnapAge) / span : 1f;
+            return 1f - Ease(u);
+        }
 
         public static float ActiveSlew(bool latching, bool aiming, bool miss, bool releasing)
         {
@@ -293,7 +360,33 @@ namespace Tag.Art
             return Lerp(Pull(phaseSin, verticalSpeed, leanYaw), Latch(leanYaw), LatchWeight(latchAge));
         }
 
-        /// <summary>Lead hand whipped back. The miss stub uses the same age.</summary>
+        /// <summary>Lead arm straight along the aim. The off arm stays back. The chest follows the throw.</summary>
+        public static Sample Whip(float aimElevDeg, float aimYawDeg)
+        {
+            float elev = Clamp(aimElevDeg, -40f, 35f);
+            float yaw = Clamp(aimYawDeg, -LeanYawMax, LeanYawMax);
+            return new Sample
+            {
+                ThighL = AimThigh,
+                ThighR = AimThigh - 2f,
+                KneeL = AimKnee,
+                KneeR = AimKnee,
+                ArmPitchL = WhipPitchL,
+                ArmPitchR = WhipPitchR - elev * AimElevShare,
+                ArmYawL = WhipYawL,
+                ArmYawR = WhipYawR - yaw * AimYawShare,
+                ElbowL = WhipElbowL,
+                ElbowR = WhipElbowR,
+                Hip = WhipHip,
+                Spine = WhipSpine,
+                Head = WhipHead,
+                HipYaw = yaw * 0.20f,
+                SpineYaw = WhipSpineYaw + yaw * 0.25f,
+                HeadYaw = WhipHeadYaw + yaw * 0.20f,
+            };
+        }
+
+        /// <summary>Lead hand and chest snapped back. Nothing is on the line.</summary>
         public static Sample Flick()
         {
             return new Sample
@@ -311,16 +404,34 @@ namespace Tag.Art
                 Hip = MissHip,
                 Spine = MissSpine,
                 Head = MissHead,
-                HipYaw = 0f,
-                SpineYaw = -8f,
-                HeadYaw = -6f,
+                HipYaw = MissHipYaw,
+                SpineYaw = MissSpineYaw,
+                HeadYaw = MissHeadYaw,
             };
         }
 
-        /// <summary>The lead hand whips back across the miss stub. Age 0 is the flick.</summary>
+        /// <summary>
+        /// Throw, then snap back, then ease onto the aim. Age 0 is the throw.
+        /// The recoil is in by <see cref="MissSnapAge"/>. The stub window still ends the beat.
+        /// A latch does not call this.
+        /// </summary>
         public static Sample Miss(float aimElevDeg, float aimYawDeg, float age)
         {
-            return Lerp(Aim(aimElevDeg, aimYawDeg), Flick(), MissWeight(age));
+            Sample whip = Whip(aimElevDeg, aimYawDeg);
+            Sample back = Flick();
+            Sample home = Aim(aimElevDeg, aimYawDeg);
+            if (age <= MissWhipSeconds) return whip;
+            if (age < MissSnapAge)
+            {
+                float u = (age - MissWhipSeconds) / MissSnapSeconds;
+                return Lerp(whip, back, SnapEase(u));
+            }
+
+            float span = GrappleMissTell.FlashSeconds - MissSnapAge;
+            float r = span > 0.0001f ? (age - MissSnapAge) / span : 1f;
+            if (r < 0f) r = 0f;
+            if (r > 1f) r = 1f;
+            return Lerp(back, home, Ease(r));
         }
 
         /// <summary>JumpPose fall beat. Legs down, arms wide. Release blends here.</summary>
@@ -362,6 +473,11 @@ namespace Tag.Art
             if (LatchSnapSeconds < 0.05f || LatchSnapSeconds > 0.10f) return false;
             if (ReleaseBlendSeconds < 0.08f || ReleaseBlendSeconds > 0.12f) return false;
             if (PoseSlew < 120f || AimSlew < PoseSlew || MissSlew < 800f || LatchSlew < 1200f) return false;
+            if (MissWhipSeconds < 0.05f || MissWhipSeconds > 0.10f) return false;
+            if (MissSnapSeconds < 0.07f || MissSnapSeconds > 0.12f) return false;
+            if (MissSnapAge >= GrappleMissTell.FlashSeconds - 0.05f) return false;
+            if (TautRead < 0.90f || TautRead > 0.99f) return false;
+            if (FovPop != 0f) return false;
             if (PlanarFull < 4f || PlanarFull > 12f) return false;
             if (TautFloor < 0.55f || TautFloor > 0.85f) return false;
 
@@ -378,6 +494,11 @@ namespace Tag.Art
             if (Mathf.Abs(PullBlend(0f, true) - TautFloor) > 0.0001f) return false;
             if (Mathf.Abs(PullBlend(PlanarFull, true) - 1f) > 0.0001f) return false;
             if (Mathf.Abs(PullBlend(PlanarFull, false) - 1f) > 0.0001f) return false;
+            if (ReadWeight(0f, false, 0f) > 0.0001f) return false;
+            if (ReadWeight(0f, true, 0f) < TautRead - 0.001f) return false;
+            if (Mathf.Abs(ReadWeight(PlanarFull, true, 0f) - 1f) > 0.0001f) return false;
+            if (Mathf.Abs(ReadWeight(0f, true, 1f) - 1f) > 0.0001f) return false;
+            if (ReadWeight(0f, true, 0f) <= TautFloor) return false;
             if (Mathf.Abs(PullBlend(PlanarFull * 0.5f, false) - 0.5f) > 0.02f) return false;
             if (PullBlend(-4f, false) > 0.0001f) return false;
             float prevPull = -1f;
@@ -454,12 +575,36 @@ namespace Tag.Art
             if (Mathf.Abs(held.ArmPitchL - stride.ArmPitchL) > 0.05f) return false;
             if (Mathf.Abs(held.ThighL - stride.ThighL) > 0.05f) return false;
 
-            Sample flick = Miss(0f, 0f, 0f);
-            if (flick.ArmPitchR <= aim.ArmPitchR + 60f) return false;
-            if (flick.ElbowR >= aim.ElbowR) return false;
+            Sample whip = Miss(0f, 0f, 0f);
+            if (whip.ArmPitchR >= aim.ArmPitchR - 30f) return false;
+            if (whip.ElbowR <= aim.ElbowR) return false;
+            if (whip.Spine <= aim.Spine + 8f) return false;
+            if (whip.ArmPitchL <= 0f) return false;
+            Sample whipUp = Whip(30f, 0f);
+            if (whipUp.ArmPitchR >= whip.ArmPitchR) return false;
+            Sample snapped = Miss(0f, 0f, MissSnapAge);
+            if (snapped.ArmPitchR < 60f) return false;
+            if (snapped.ElbowR > -90f) return false;
+            if (snapped.Spine >= -20f || snapped.Spine >= whip.Spine) return false;
+            if (snapped.ArmPitchR - whip.ArmPitchR < 150f) return false;
+            if (Mathf.Abs(snapped.ArmPitchR - LatchPitchR) < 40f) return false;
+            if (Mathf.Abs(snapped.ElbowR - LatchElbowR) < 60f) return false;
+            Sample midSnap = Miss(0f, 0f, MissWhipSeconds + MissSnapSeconds * 0.35f);
+            if (midSnap.ArmPitchR <= whip.ArmPitchR + 40f) return false;
             Sample flickGone = Miss(0f, 0f, GrappleMissTell.FlashSeconds);
             if (Mathf.Abs(flickGone.ArmPitchR - aim.ArmPitchR) > 0.05f) return false;
             if (Mathf.Abs(flickGone.ElbowR - aim.ElbowR) > 0.05f) return false;
+            if (Mathf.Abs(flickGone.Spine - aim.Spine) > 0.05f) return false;
+            if (Mathf.Abs(MissBeat(0f) - 1f) > 0.0001f || Mathf.Abs(MissBeat(MissSnapAge) - 1f) > 0.0001f) return false;
+            if (MissBeat(-0.01f) > 0.0001f || MissBeat(GrappleMissTell.FlashSeconds) > 0.0001f) return false;
+            float prevBeat = 2f;
+            for (int i = 0; i <= 8; i++)
+            {
+                float age = MissSnapAge + (GrappleMissTell.FlashSeconds - MissSnapAge) * (i / 8f);
+                float beat = MissBeat(age);
+                if (beat > prevBeat + 0.0001f) return false;
+                prevBeat = beat;
+            }
 
             Sample fall = Fall();
             if (fall.ThighL != JumpPose.FallThigh || fall.ThighR != JumpPose.FallThigh) return false;
@@ -478,13 +623,121 @@ namespace Tag.Art
             return true;
         }
 
+        /// <summary>
+        /// Miss reads as a throw then a recoil. A taut pull reads as both hands
+        /// on one line, past a punch. No latch, no FOV pop, no jet, no root motion.
+        /// </summary>
+        public static string PolishProofLine()
+        {
+            Sample whip = Whip(0f, 0f);
+            Sample snap = Flick();
+            Sample home = Miss(0f, 0f, GrappleMissTell.FlashSeconds);
+            Sample pull = Pull(1f, 24.7f, 0f);
+            Vector3 whipHand = LeadHand(whip.Hip + whip.Spine, whip.ArmPitchR, whip.ArmYawR, whip.ElbowR);
+            Vector3 snapHand = LeadHand(snap.Hip + snap.Spine, snap.ArmPitchR, snap.ArmYawR, snap.ElbowR);
+            Vector3 pullR = LeadHand(pull.Hip + pull.Spine, pull.ArmPitchR, pull.ArmYawR, pull.ElbowR);
+            Vector3 pullL = OffHand(pull.Hip + pull.Spine, pull.ArmPitchL, pull.ArmYawL, pull.ElbowL);
+            return "grapple-pose-polish"
+                + " miss=whip-snap-return"
+                + " whipS=" + MissWhipSeconds.ToString("0.00")
+                + " snapS=" + MissSnapSeconds.ToString("0.00")
+                + " whipPitch=" + whip.ArmPitchR.ToString("0")
+                + " whipElbow=" + whip.ElbowR.ToString("0")
+                + " whipSpine=" + whip.Spine.ToString("0")
+                + " whipZ=" + whipHand.z.ToString("0.00")
+                + " snapPitch=" + snap.ArmPitchR.ToString("0")
+                + " snapElbow=" + snap.ElbowR.ToString("0")
+                + " snapSpine=" + snap.Spine.ToString("0")
+                + " snapZ=" + snapHand.z.ToString("0.00")
+                + " returnPitch=" + home.ArmPitchR.ToString("0")
+                + " pull=two-hand-line"
+                + " pullPitch=" + pull.ArmPitchR.ToString("0") + "/" + pull.ArmPitchL.ToString("0")
+                + " pullChest=" + (pull.Hip + pull.Spine).ToString("0")
+                + " pullZ=" + pullR.z.ToString("0.00") + "/" + pullL.z.ToString("0.00")
+                + " tautRead=" + ReadWeight(0f, true, 0f).ToString("0.00")
+                + " latch=0"
+                + " fovPop=0"
+                + " jet=0"
+                + " impulse=0"
+                + " dummy=shared-if-grapple"
+                + " rootMotion=0";
+        }
+
+        public static bool PolishHolds()
+        {
+            if (RootMotion || VerticalImpulse != 0f || FovPop != 0f || !LeadRight) return false;
+            if (GrappleMissTell.VerticalImpulse != 0f || GrappleMissTell.Glow != 0f) return false;
+            if (GrappleMissTell.Show(true, true, 0f)) return false;
+            if (GrappleLatchTell.Show(false, 0f)) return false;
+
+            Sample aim = Aim(0f, 0f);
+            Sample whip = Miss(0f, 0f, 0f);
+            Sample snap = Miss(0f, 0f, MissSnapAge);
+            Sample back = Miss(0f, 0f, GrappleMissTell.FlashSeconds);
+            if (Mathf.Abs(whip.ArmPitchR - Whip(0f, 0f).ArmPitchR) > 0.05f) return false;
+            if (Mathf.Abs(snap.ArmPitchR - Flick().ArmPitchR) > 0.05f) return false;
+            if (Mathf.Abs(back.ArmPitchR - aim.ArmPitchR) > 0.05f) return false;
+            if (whip.ArmPitchR >= -90f || whip.ElbowR < -16f || whip.Spine < 20f) return false;
+            if (snap.ArmPitchR < 60f || snap.ElbowR > -96f || snap.Spine > -24f) return false;
+            if (whip.ArmPitchL <= 8f || snap.ArmPitchL <= 0f) return false;
+            if (snap.SpineYaw <= 0f || whip.SpineYaw >= 0f) return false;
+            if (MissBeat(0f) < 0.99f || MissBeat(MissSnapAge) < 0.99f) return false;
+            if (MissBeat(GrappleMissTell.FlashSeconds) > 0.001f) return false;
+
+            Vector3 whipHand = LeadHand(whip.Hip + whip.Spine, whip.ArmPitchR, whip.ArmYawR, whip.ElbowR);
+            Vector3 snapHand = LeadHand(snap.Hip + snap.Spine, snap.ArmPitchR, snap.ArmYawR, snap.ElbowR);
+            if (whipHand.z < snapHand.z + 0.35f) return false;
+            if (snapHand.z > 0.15f) return false;
+
+            Sample pull = Pull(0f, 0f, 0f);
+            if (pull.ArmPitchL > -120f || pull.ArmPitchR > -124f) return false;
+            if (Mathf.Abs(pull.ArmPitchL - pull.ArmPitchR) > 14f) return false;
+            if (pull.ElbowL < -12f || pull.ElbowR < -12f) return false;
+            if (pull.Spine + pull.Hip < 80f) return false;
+            if (pull.ArmPitchR >= VerbPoseClips.PunchStrikePitch - 40f) return false;
+            if (pull.Spine + pull.Hip <= VerbPoseClips.PunchHipPitch + VerbPoseClips.PunchSpinePitch + 40f) return false;
+            if (snap.ArmPitchR <= VerbPoseClips.PunchRecoverPitch) return false;
+            if (Mathf.Abs(whip.ElbowR - VerbPoseClips.PunchCockElbow) < 70f) return false;
+
+            Vector3 pullR = LeadHand(pull.Hip + pull.Spine, pull.ArmPitchR, pull.ArmYawR, pull.ElbowR);
+            Vector3 pullL = OffHand(pull.Hip + pull.Spine, pull.ArmPitchL, pull.ArmYawL, pull.ElbowL);
+            if (pullR.z < 0.35f || pullL.z < 0.35f) return false;
+            if (Mathf.Abs(pullR.z - pullL.z) > 0.22f) return false;
+            if (Mathf.Abs(pullR.y - pullL.y) > 0.28f) return false;
+
+            if (ReadWeight(0f, true, 0f) < 0.94f) return false;
+            if (ReadWeight(0f, false, 0f) > 0.001f) return false;
+            if (Mathf.Abs(ReadWeight(PlanarFull, false, 0f) - PullBlend(PlanarFull, false)) > 0.001f) return false;
+
+            MovementConfig cfg = ScriptableObject.CreateInstance<MovementConfig>();
+            Tag.Gameplay.PunchTagTuning tuning = ScriptableObject.CreateInstance<Tag.Gameplay.PunchTagTuning>();
+            if (cfg.enableJet || cfg.slideBoost != 0f) return false;
+            if (Mathf.Abs(cfg.coyoteTime - 0.10f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.jumpBuffer - 0.16f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.clingReleaseGrace - 0.08f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.jumpSpeed - 24.7f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.airDashDuration - 0.10f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.airDashSpeed - 15f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.airDashCooldown - 30f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.climbSpeed - 6.0f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.climbSlipSpeed - 3.7f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.wallRunSpeed - 9.5f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.taggerLungeSpeed - 16f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.taggerLungeDuration - 0.20f) > 0.001f) return false;
+            if (Mathf.Abs(cfg.taggerLungeCooldown - 1f) > 0.001f) return false;
+            if (Mathf.Abs(tuning.reach - 1.55f) > 0.001f) return false;
+            if (DummyPosePaths.Allows(SoloGrappleGate.OpponentPawnName, DummyPosePaths.Grapple)) return false;
+            if (!DummyPosePaths.Allows(SoloGrappleGate.SoloPawnName, DummyPosePaths.Grapple)) return false;
+            return true;
+        }
+
         public static string ProofLine()
         {
             Sample aim = Aim(0f, 0f);
             Sample latch = Latch(0f);
             Sample stride = Pull(1f, 24.7f, 0f);
             Sample tuck = Pull(1f, -16f, 0f);
-            Sample flick = Miss(0f, 0f, 0f);
+            Sample flick = Miss(0f, 0f, MissSnapAge);
             Sample fall = Fall();
             return "grapple pose"
                 + " aimPitch=" + AimPitchR.ToString("0") + "/" + AimPitchL.ToString("0")
@@ -531,7 +784,7 @@ namespace Tag.Art
                 + "; pull:PullBlend outward/" + PlanarFull.ToString("0") + " SmoothStep, taut floor " + TautFloor.ToString("0.00") + ", ignores vertical speed"
                 + "; legs:TuckWeight SmoothStep InverseLerp(vy " + StrideVy.ToString("0") + ".." + TuckVy.ToString("0") + ") air-stride or tucked trail, ignores planar speed"
                 + "; release:Ease(t/" + ReleaseBlendSeconds.ToString("0.00") + ") onto JumpPose fall, airborne, not a jump-from-grapple"
-                + "; miss:GrappleMissTell.Fade over " + GrappleMissTell.FlashSeconds.ToString("0.00") + " lead hand flicks back, stub unchanged"
+                + "; miss:whip " + MissWhipSeconds.ToString("0.00") + "s then snap " + MissSnapSeconds.ToString("0.00") + "s then return, stub Fade " + GrappleMissTell.FlashSeconds.ToString("0.00") + " unchanged, latches nothing"
                 + "; slew aim " + AimSlew.ToString("0") + " latch " + LatchSlew.ToString("0") + " pull " + PoseSlew.ToString("0") + " miss " + MissSlew.ToString("0")
                 + "; verticalImpulse=0 rootMotion=0";
         }
@@ -564,6 +817,59 @@ namespace Tag.Art
             if (u <= 0f) return 0f;
             if (u >= 1f) return 1f;
             return u * u * (3f - 2f * u);
+        }
+
+        /// <summary>Steep early, so the recoil reads as a snap.</summary>
+        static float SnapEase(float u)
+        {
+            if (u <= 0f) return 0f;
+            if (u >= 1f) return 1f;
+            float s = 1f - u;
+            return 1f - s * s * s;
+        }
+
+        static Vector3 LeadHand(float chestPitch, float pitch, float yaw, float elbow)
+        {
+            return PoseHand(1f, chestPitch, pitch, yaw, elbow);
+        }
+
+        static Vector3 OffHand(float chestPitch, float pitch, float yaw, float elbow)
+        {
+            return PoseHand(-1f, chestPitch, pitch, -yaw, elbow);
+        }
+
+        static Vector3 PoseHand(float sx, float chestPitch, float pitch, float yawOut, float elbow)
+        {
+            const float hipY = 1.05f;
+            const float upper = 0.37f;
+            const float lower = 0.33f;
+            const float shX = 0.235f;
+            const float shZ = -0.06f;
+            Vector3 up = Rx(new Vector3(0f, 1f, 0f), chestPitch);
+            Vector3 basis = new Vector3(0f, hipY, 0f) + up * (1.40f - hipY);
+            Vector3 shoulder = basis + Rx(new Vector3(sx * shX, 0f, shZ), chestPitch);
+            float outA = 24f * Mathf.Deg2Rad;
+            float fwdA = 10f * Mathf.Deg2Rad;
+            Vector3 rest = new Vector3(sx * Mathf.Sin(outA), -Mathf.Cos(outA), Mathf.Sin(fwdA));
+            Vector3 dir = Ry(Rx(rest, pitch), yawOut * sx).normalized;
+            Vector3 elbowP = shoulder + dir * upper;
+            return elbowP + Rx(dir, elbow).normalized * lower;
+        }
+
+        static Vector3 Rx(Vector3 v, float deg)
+        {
+            float a = deg * Mathf.Deg2Rad;
+            float c = Mathf.Cos(a);
+            float s = Mathf.Sin(a);
+            return new Vector3(v.x, v.y * c - v.z * s, v.y * s + v.z * c);
+        }
+
+        static Vector3 Ry(Vector3 v, float deg)
+        {
+            float a = deg * Mathf.Deg2Rad;
+            float c = Mathf.Cos(a);
+            float s = Mathf.Sin(a);
+            return new Vector3(v.x * c + v.z * s, v.y, -v.x * s + v.z * c);
         }
 
         static float Clamp(float v, float lo, float hi)

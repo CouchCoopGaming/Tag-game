@@ -1013,6 +1013,7 @@ namespace Tag.Art
         bool _grappleFallHold;
         float _grappleFallIn;
         float _grapplePullW;
+        bool _grappleMissOwns;
         float _aimTorsoW;
         float _aimAtSwap;
         bool _aimIntoSwap;
@@ -10362,7 +10363,7 @@ namespace Tag.Art
                 && _input != null && _input.CrouchHeld;
 
             TrackAimTorso(dt, phase);
-            bool grapplePose = PoseAllowed(DummyPosePaths.Grapple);
+            bool grapplePose = GrappleVisual();
             bool pulling = grapplePose && _grapple != null && _grapple.IsPulling;
             bool aiming = grapplePose && _grapple != null && _grapple.IsAiming && !pulling;
             bool missOn = grapplePose && _grapple != null && _grapple.MissFlickOn && !pulling;
@@ -10419,16 +10420,16 @@ namespace Tag.Art
             GrapplePose.Sample linePose = GrapplePose.Pull(sinC, vyG, lean);
             bool poseGate = !punching && !_skiFromGrapple && !_slideFromGrapple;
             bool latching = pulling && GrapplePose.LatchWeight(_grapple != null ? _grapple.LatchAge : -1f) > 0.02f;
+            _grappleMissOwns = false;
             if (pulling && poseGate)
             {
-                // Hands on the line, chest toward the latch. The weight is the planar
-                // strip only. Vertical speed picks the trail. The hook adds no impulse.
+                // Hands on the line, chest toward the latch. ReadWeight keeps a taut
+                // rope on that line. PullBlend stays the speed response. No impulse.
                 float latchW = GrapplePose.LatchWeight(_grapple.LatchAge);
-                float pullW = GrapplePose.PullBlend(outward, taut);
-                float w = Mathf.Lerp(pullW, 1f, latchW);
+                float w = GrapplePose.ReadWeight(outward, taut, latchW);
                 _grapplePullW = w;
                 GrapplePose.Sample hung = GrapplePose.Latched(sinC, vyG, lean, _grapple.LatchAge);
-                BlendGrappleSample(hung, armZ, w, true);
+                BlendGrappleSample(hung, armZ, w, true, true);
                 _grappleSlew = GrapplePose.ActiveSlew(latching, false, false, false);
             }
             else if (_grapplePose > 0.04f && poseGate)
@@ -10442,7 +10443,7 @@ namespace Tag.Art
                 {
                     // The line eases onto the fall beat. The air pose underneath does not share the bones.
                     GrapplePose.Sample drop = GrapplePose.Release(sinC, vyG, lean, _grappleFallIn);
-                    BlendGrappleSample(drop, armZ, 1f, true);
+                    BlendGrappleSample(drop, armZ, 1f, true, true);
                     _grappleSlew = GrapplePose.ActiveSlew(false, false, false, true);
                 }
                 else
@@ -10484,7 +10485,7 @@ namespace Tag.Art
                         _llRT = Quaternion.Slerp(_llR0 * Quaternion.Euler(CrouchPose.Knee, 0f, 0f), _llR0 * Quaternion.Euler(linePose.KneeR, 0f, 0f), outW);
                     }
                     _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(CrouchPose.Spine, 0f, 0f), _spine0 * Quaternion.Euler(linePose.Spine, linePose.SpineYaw * AimTorsoKeep(), 0f), outW);
-                    _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(CrouchPose.Hip, 0f, 0f), _hips0 * Quaternion.Euler(linePose.Hip, linePose.HipYaw, 0f), outW);
+                    _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(CrouchPose.Hip, 0f, 0f), _hips0 * Quaternion.Euler(linePose.Hip, linePose.HipYaw * AimTorsoKeep(), 0f), outW);
                     _headT = Quaternion.Slerp(_head0 * Quaternion.Euler(-6f, 0f, 0f), _head0 * Quaternion.Euler(linePose.Head, linePose.HeadYaw * AimTorsoKeep(), 0f), outW);
                 }
                 else if (sprintGrapple > 0.02f)
@@ -10547,26 +10548,25 @@ namespace Tag.Art
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(linePose.KneeR, 0f, 0f), outW);
                     if (walkGrapple <= 0.02f && sprintGrapple <= 0.02f)
                         _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(linePose.Spine, linePose.SpineYaw * AimTorsoKeep(), 0f), outW);
-                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(linePose.Hip, linePose.HipYaw, 0f), outW);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(linePose.Hip, linePose.HipYaw * AimTorsoKeep(), 0f), outW);
                 }
                 }
             }
             else if ((aiming || missOn) && poseGate && !_grappleFallHold)
             {
-                // Aim is a short reach. A miss flicks that hand back with the stub.
+                // Aim is a short reach. A miss throws, snaps back, then returns.
+                // The beat owns the chest so the aim return does not twist through it.
                 GrapplePose.Sample reach;
                 float aimW;
-                if (missOn && !aiming)
+                bool yieldYaw = true;
+                if (missOn)
                 {
-                    reach = GrapplePose.Flick();
-                    aimW = GrapplePose.MissWeight(_grapple.MissAge);
-                    _grappleSlew = GrapplePose.ActiveSlew(false, false, true, false);
-                }
-                else if (missOn)
-                {
+                    _grappleMissOwns = true;
+                    yieldYaw = false;
                     reach = GrapplePose.Miss(aimElev, aimYaw, _grapple.MissAge);
-                    aimW = Mathf.Max(GrapplePose.AimWeight(_grappleAimAge), GrapplePose.MissWeight(_grapple.MissAge));
-                    _grappleSlew = GrapplePose.ActiveSlew(false, true, true, false);
+                    float beat = GrapplePose.MissBeat(_grapple.MissAge);
+                    aimW = aiming ? Mathf.Max(GrapplePose.AimWeight(_grappleAimAge), beat) : beat;
+                    _grappleSlew = GrapplePose.ActiveSlew(false, aiming, true, false);
                 }
                 else
                 {
@@ -10574,7 +10574,7 @@ namespace Tag.Art
                     aimW = GrapplePose.AimWeight(_grappleAimAge);
                     _grappleSlew = GrapplePose.ActiveSlew(false, true, false, false);
                 }
-                BlendGrappleSample(reach, armZ, aimW, false);
+                BlendGrappleSample(reach, armZ, aimW, false, yieldYaw);
             }
             else if (_grappleFallHold && poseGate)
             {
@@ -10583,7 +10583,7 @@ namespace Tag.Art
                 GrapplePose.Sample drop = intoFall >= 0.999f
                     ? GrapplePose.Fall()
                     : GrapplePose.Release(sinC, vyG, lean, _grappleFallIn);
-                BlendGrappleSample(drop, armZ, 1f, true);
+                BlendGrappleSample(drop, armZ, 1f, true, true);
                 _grappleSlew = GrapplePose.ActiveSlew(false, false, false, true);
             }
             _grappleReleaseWas = !pulling && _grapplePose > 0.2f && !punching && !_skiFromGrapple && !_slideFromGrapple && !_jumpFromGrapple;
@@ -15084,8 +15084,8 @@ namespace Tag.Art
             }
             ApplyPivotPose(speed);
             ApplyAimTorso();
-            bool grappleOwns = _grappleFallHold || _grapplePose > 0.02f
-                || (_grapple != null && (_grapple.IsAiming || _grapple.IsPulling));
+            bool grappleOwns = _grappleFallHold || _grapplePose > 0.02f || _grappleMissOwns
+                || (_grapple != null && (_grapple.IsAiming || _grapple.IsPulling || _grapple.MissFlickOn));
             bool wallJumpBeat = _wallJumpPoseAge >= 0f && !WallJumpPose.Settled(_wallJumpPoseAge);
             bool wallOwns = wallRun || climb || _graceBody || _wallFallHold || _jumpFromWall || _jumpFromClimb || wallJumpBeat;
             bool dashOwns = airDashing || _dashPoseHeld;
@@ -15195,7 +15195,7 @@ namespace Tag.Art
             bool yield = grounded || mantle || sliding || punching || climb || wallRun || airDashing || jet
                 || _tagFlinch > 0.04f
                 || (_input != null && _input.CrouchHeld)
-                || (_grapple != null && (_grapple.IsAiming || _grapple.IsPulling));
+                || (_grapple != null && (_grapple.IsAiming || _grapple.IsPulling || _grapple.MissFlickOn));
             if (yield)
             {
                 _wallJumpPoseAge = -1f;
@@ -15369,20 +15369,21 @@ namespace Tag.Art
 
         /// <summary>
         /// Procedural grapple. Weight below 1 leaves the pose already written.
-        /// Legs stay on that pose during aim and the miss flick.
+        /// Legs stay on the gait during aim and the miss beat.
+        /// yieldYaw lets AimTorso own the turn. A miss keeps its own twist.
         /// </summary>
-        void BlendGrappleSample(GrapplePose.Sample pose, float armZ, float weight, bool legs)
+        void BlendGrappleSample(GrapplePose.Sample pose, float armZ, float weight, bool legs, bool yieldYaw)
         {
             if (weight <= 0.001f) return;
             Quaternion uaL = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ);
             Quaternion uaR = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ);
             Quaternion laL = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             Quaternion laR = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
-            // Chest and head yaw yield to AimTorso so the two turns do not stack.
-            // The arms, the hips, and the pose pitch stay on this sample.
-            float yawKeep = AimTorsoKeep();
+            // Chest, head, and hip yaw yield to AimTorso so the turns do not stack.
+            // A miss keeps the recoil twist. Pose pitch stays on this sample.
+            float yawKeep = yieldYaw ? AimTorsoKeep() : 1f;
             Quaternion spine = _spine0 * Quaternion.Euler(pose.Spine, pose.SpineYaw * yawKeep, 0f);
-            Quaternion hips = _hips0 * Quaternion.Euler(pose.Hip, pose.HipYaw, 0f);
+            Quaternion hips = _hips0 * Quaternion.Euler(pose.Hip, pose.HipYaw * yawKeep, 0f);
             Quaternion head = _head0 * Quaternion.Euler(pose.Head, pose.HeadYaw * yawKeep, 0f);
             if (weight >= 0.999f)
             {
@@ -15437,13 +15438,33 @@ namespace Tag.Art
         }
 
         /// <summary>
+        /// True for the solo pawn, and for DummyRunner when a grapple is actually on.
+        /// The opponent does not get the component. The samples are the same.
+        /// </summary>
+        bool GrappleVisual()
+        {
+            if (PoseAllowed(DummyPosePaths.Grapple)) return true;
+            if (_grapple == null) return false;
+            return _grapple.IsPulling || _grapple.IsAiming || _grapple.MissFlickOn
+                || _grapplePose > 0.04f || _grappleFallHold;
+        }
+
+        /// <summary>Pull, aim, or the miss beat owns the bones. Idle and a plant stay off.</summary>
+        bool GrappleBeatOwns()
+        {
+            if (_grappleMissOwns) return true;
+            if (_grapple == null) return false;
+            return _grapple.IsPulling || _grapple.IsAiming || _grapple.MissFlickOn;
+        }
+
+        /// <summary>
         /// Punch telegraph and windup, or a planar grapple aim / latch.
-        /// DummyRunner shares the punch. Grapple stays on the solo pawn.
+        /// DummyRunner shares the punch, and the grapple aim when it grapples.
         /// The last aim is held while the weight eases out.
         /// </summary>
         void TrackAimTorso(float dt, PunchPhase phase)
         {
-            bool grappleOk = PoseAllowed(DummyPosePaths.Grapple) && _grapple != null;
+            bool grappleOk = _grapple != null && (PoseAllowed(DummyPosePaths.Grapple) || _grapple.IsPulling || _grapple.IsAiming);
             bool pulling = grappleOk && _grapple.IsPulling;
             bool aiming = grappleOk && _grapple.IsAiming && !pulling;
             bool punchAim = PoseAllowed(DummyPosePaths.Punch) && !pulling && !aiming
@@ -15507,6 +15528,8 @@ namespace Tag.Art
         /// </summary>
         void ApplyAimTorso()
         {
+            // The miss beat owns the chest for its throw and recoil.
+            if (_grappleMissOwns) return;
             if (_swapAge >= 0f && _aimIntoSwap)
             {
                 // Chest and head leave the aim on one curve. A punch swap already owns that blend.
@@ -15524,8 +15547,13 @@ namespace Tag.Art
             PoseHandoff.AimReturn(_aimTorsoW, out _, out float apply);
             if (apply <= 0.001f) return;
             AimTorsoPose.Sample aim = AimTorsoPose.At(_aimYaw, _aimPitch);
-            _spineT = Quaternion.Slerp(_spineT, _spineT * Quaternion.Euler(aim.ChestPitch, aim.ChestYaw, 0f), apply);
-            _headT = Quaternion.Slerp(_headT, _headT * Quaternion.Euler(aim.HeadPitch, aim.HeadYaw, 0f), apply);
+            // A pull keeps its hang pitch. Aim still yaws the chest toward the latch.
+            // Punch aim keeps both, so the #74 return is unchanged.
+            bool pullHang = _grapple != null && _grapple.IsPulling;
+            float chestPitch = pullHang ? 0f : aim.ChestPitch;
+            float headPitch = pullHang ? 0f : aim.HeadPitch;
+            _spineT = Quaternion.Slerp(_spineT, _spineT * Quaternion.Euler(chestPitch, aim.ChestYaw, 0f), apply);
+            _headT = Quaternion.Slerp(_headT, _headT * Quaternion.Euler(headPitch, aim.HeadYaw, 0f), apply);
         }
 
         /// <summary>
@@ -15536,9 +15564,10 @@ namespace Tag.Art
         {
             if (_stopPlantW <= 0.001f && _stopIdleW <= 0.001f) return;
             if (!PoseAllowed(DummyPosePaths.Stop)) return;
-            // Punch and TagCatch already own the bones. A plant on top would hide the beat.
+            // Punch, TagCatch, and a grapple beat already own the bones. A plant on top would hide them.
             if (_punch != null && _punch.IsPunching) return;
             if (_tagFlinch > 0.04f) return;
+            if (GrappleBeatOwns()) return;
             StopPlantPose.Sample pose = StopPlantPose.At();
             IdlePose.Sample idle = IdlePose.At(_idleShift, _idleBreath);
             float idleW = _stopIdleW;
@@ -15614,9 +15643,10 @@ namespace Tag.Art
             if (_idleApply <= 0.001f) return;
             if (_pivotApply > 0.02f) return;
             if (!PoseAllowed(DummyPosePaths.Idle)) return;
-            // The idle fade is a tenth of a second. Leaving it on the punch hides the cock.
+            // The idle fade is a tenth of a second. Leaving it on the punch or the grapple hides the beat.
             if (_punch != null && _punch.IsPunching) return;
             if (_tagFlinch > 0.04f) return;
+            if (GrappleBeatOwns()) return;
             IdlePose.Sample pose = IdlePose.At(_idleShift, _idleBreath);
             float w = _idleApply;
             _hipsT = Quaternion.Slerp(_hipsT, _hipsT * Quaternion.Euler(0f, 0f, pose.HipRoll), w);
@@ -15641,6 +15671,7 @@ namespace Tag.Art
             if (!PoseAllowed(DummyPosePaths.Pivot)) return;
             if (_punch != null && _punch.IsPunching) return;
             if (_tagFlinch > 0.04f) return;
+            if (GrappleBeatOwns()) return;
             if (_idleApply > 0.02f)
             {
                 ApplyIdlePivotPair(speed);

@@ -126,6 +126,24 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.GrapplePose.PolishProofLine());
+        if (!Tag.Art.GrapplePose.PolishHolds())
+        {
+            Console.Error.WriteLine("grapple pose polish is not held");
+            return 1;
+        }
+
+        if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
+                "GrapplePose.Miss(",
+                "GrapplePose.MissBeat",
+                "GrapplePose.ReadWeight",
+                "GrappleVisual()",
+                "_grappleMissOwns"))
+        {
+            Console.Error.WriteLine("grapple pose polish is not on the shared locomotor");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.PoseHandoff.ProofLine());
         Console.WriteLine(Tag.Art.PoseHandoff.ProofLine2());
         Console.WriteLine(Tag.Art.PoseHandoff.ProofLine3());
