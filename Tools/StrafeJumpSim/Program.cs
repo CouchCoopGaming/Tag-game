@@ -104,6 +104,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.LungePose.ProofLine());
+        if (!Tag.Art.LungePose.Holds())
+        {
+            Console.Error.WriteLine("lunge pose beats are not held");
+            return 1;
+        }
+
         DummyPosePathReport dummyPose = DummyPosePathProof.Run();
         Console.WriteLine(dummyPose.ToString());
         if (!dummyPose.Ok)

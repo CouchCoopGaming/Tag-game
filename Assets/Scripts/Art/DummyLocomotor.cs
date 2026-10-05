@@ -378,6 +378,11 @@ namespace Tag.Art
         Quaternion _groundWhipUaL, _groundWhipUaR, _groundWhipLaL, _groundWhipLaR;
         Quaternion _groundWhipUlL, _groundWhipUlR, _groundWhipLlL, _groundWhipLlR;
         Quaternion _groundWhipSp, _groundWhipHp, _groundWhipHd;
+        float _lungeEaseAge = -1f;
+        float _lungeEaseFrom;
+        bool _lungeEaseBurst;
+        bool _lungePoseOn;
+        OpponentLungeTell _lungeTell;
         float _armRecover;
         bool _airCycleSnap;
         float _airCycleIn;
@@ -957,7 +962,6 @@ namespace Tag.Art
         Quaternion _exitUaL, _exitUaR, _exitLaL, _exitLaR;
         Quaternion _exitUlL, _exitUlR, _exitLlL, _exitLlR;
         Quaternion _exitSpine, _exitHips, _exitHead;
-        bool _wasLunging;
         bool _wasAirDashing;
         bool _wasJetting;
         PlayerMotor _bounceHooked;
@@ -6271,7 +6275,6 @@ namespace Tag.Art
                 lookPitch = Mathf.Clamp(x, -25f, 55f);
             }
             _lookArmVis = Mathf.MoveTowards(_lookArmVis, lookPitch, dt * 240f);
-            float lungeAmt = lunging && _motor != null ? _motor.LungeProgress : 0f;
             // A walk leaves the burst into the stride. A sprint leaves it into the long stride.
             // A still crouch leaves it into the guard. A stand keeps the old leave.
             // Duration and cooldown are unchanged.
@@ -6313,13 +6316,14 @@ namespace Tag.Art
                 _punchYield = true;
             if (phase == PunchPhase.Idle)
                 _punchYield = false;
-            // 1 at the start of an air dash or lunge, 0 at the end. The pulse tail keeps easing after the burst.
+            // 1 at the start of an air dash, 0 at the end. The pulse tail keeps easing after the burst.
+            // The lunge is LungePose, not this whip.
             float dashStretchPose = 1f;
             if (!(_airDashArms && !airDashing && !lunging))
                 _whipRecoverSnap = false;
-            if (!(lunging || dashing) || airDashing || (_airDashArms && !lunging))
+            if (!(dashing && !lunging) || airDashing || _airDashArms)
                 _groundWhipSnap = false;
-            if (lunging || dashing)
+            if (dashing && !lunging)
             {
                 if (airDashing && _motor != null)
                 {
@@ -6329,12 +6333,6 @@ namespace Tag.Art
                     _dashRecover = 1f;
                     _airDashArms = true;
                     _armRecover = 0.28f;
-                }
-                else if (lunging)
-                {
-                    float raw = lungeAmt;
-                    dashStretchPose = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(Mathf.InverseLerp(0.08f, 0.62f, raw)));
-                    _dashRecover = dashStretchPose;
                 }
                 else if (_airDashArms)
                 {
@@ -7403,8 +7401,8 @@ namespace Tag.Art
                 _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(VerbPoseClips.PunchSpinePitch, VerbPoseClips.PunchCockSpineYaw, leanZ), k);
             }
 
-            // Legs
-            if (lunging || dashing)
+            // Legs. A lunge keeps the gait here and LungePose replaces it.
+            if (dashing && !lunging)
             {
                 float legPose = _whipRecoverSnap || _groundWhipSnap ? 0f : dashStretchPose;
                 _ulLT = Quaternion.Slerp(
@@ -14579,6 +14577,15 @@ namespace Tag.Art
                 torsoSlew = Mathf.Max(torsoSlew, _grappleSlew);
                 slew = Mathf.Max(slew, _grappleSlew);
             }
+            ApplyLungePose(dt);
+            if (_lungePoseOn)
+            {
+                armSlewL = Mathf.Max(armSlewL, LungePose.Slew);
+                armSlewR = Mathf.Max(armSlewR, LungePose.Slew);
+                legSlew = Mathf.Max(legSlew, LungePose.Slew);
+                torsoSlew = Mathf.Max(torsoSlew, LungePose.Slew);
+                slew = Mathf.Max(slew, LungePose.Slew);
+            }
             ApplyVerbClips(sliding, punching, phase, punchProg, flinchAmt, sinC);
             if (_stanceSole && !ShoesOwned(sliding, punching, flinchAmt))
             {
@@ -14824,6 +14831,129 @@ namespace Tag.Art
         }
 
         /// <summary>
+        /// Coil during the lunge tell, committed stretch while the motor lunges,
+        /// then an ease back onto the gait. Punch and air dash keep their poses.
+        /// No root motion.
+        /// </summary>
+        void ApplyLungePose(float dt)
+        {
+            _lungePoseOn = false;
+            if (!PoseAllowed(DummyPosePaths.Lunge))
+            {
+                _lungeEaseAge = -1f;
+                _lungeEaseFrom = 0f;
+                return;
+            }
+
+            bool punching = _punch != null && _punch.IsPunching;
+            bool airDash = _motor != null && _motor.IsAirDashing;
+            if (punching || airDash)
+            {
+                _lungeEaseAge = -1f;
+                _lungeEaseFrom = 0f;
+                return;
+            }
+
+            bool lunging = _motor != null && _motor.IsLunging;
+            OpponentLungeTell mark = LungeTellMark();
+            bool tell = mark != null && mark.IsShowing && !lunging;
+            if (lunging)
+            {
+                _lungeEaseAge = -1f;
+                _lungeEaseFrom = 1f;
+                _lungeEaseBurst = true;
+                _lungePoseOn = true;
+                BlendLungeSample(LungePose.Burst(), 1f);
+                return;
+            }
+
+            if (tell)
+            {
+                float w = LungePose.TelegraphWeight(mark.Charge01);
+                _lungeEaseAge = -1f;
+                _lungeEaseFrom = w;
+                _lungeEaseBurst = false;
+                if (w > 0.001f)
+                {
+                    _lungePoseOn = true;
+                    BlendLungeSample(LungePose.Telegraph(), w);
+                }
+                return;
+            }
+
+            if (_lungeEaseFrom > 0.001f && _lungeEaseAge < 0f)
+                _lungeEaseAge = 0f;
+            if (_lungeEaseAge < 0f)
+                return;
+
+            float recover = LungePose.RecoverWeight(_lungeEaseAge, _lungeEaseFrom);
+            if (recover > 0.001f)
+            {
+                _lungePoseOn = true;
+                BlendLungeSample(_lungeEaseBurst ? LungePose.Burst() : LungePose.Telegraph(), recover);
+            }
+            _lungeEaseAge += dt;
+            if (_lungeEaseAge >= LungePose.RecoverSeconds || recover <= 0.001f)
+            {
+                _lungeEaseAge = -1f;
+                _lungeEaseFrom = 0f;
+            }
+        }
+
+        void BlendLungeSample(LungePose.Sample pose, float weight)
+        {
+            if (weight <= 0.001f) return;
+            Quaternion uaL = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, pose.ArmRollL);
+            Quaternion uaR = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, pose.ArmRollR);
+            Quaternion laL = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
+            Quaternion laR = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
+            Quaternion ulL = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
+            Quaternion ulR = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            Quaternion llL = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
+            Quaternion llR = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
+            Quaternion spine = _spine0 * Quaternion.Euler(pose.Spine, pose.SpineYaw, 0f);
+            Quaternion hips = _hips0 * Quaternion.Euler(pose.Hip, pose.HipYaw, 0f);
+            Quaternion head = _head0 * Quaternion.Euler(pose.Head, pose.HeadYaw, 0f);
+            if (weight >= 0.999f)
+            {
+                _uaLT = uaL;
+                _uaRT = uaR;
+                _laLT = laL;
+                _laRT = laR;
+                _ulLT = ulL;
+                _ulRT = ulR;
+                _llLT = llL;
+                _llRT = llR;
+                _spineT = spine;
+                _hipsT = hips;
+                _headT = head;
+                return;
+            }
+
+            _uaLT = Quaternion.Slerp(_uaLT, uaL, weight);
+            _uaRT = Quaternion.Slerp(_uaRT, uaR, weight);
+            _laLT = Quaternion.Slerp(_laLT, laL, weight);
+            _laRT = Quaternion.Slerp(_laRT, laR, weight);
+            _ulLT = Quaternion.Slerp(_ulLT, ulL, weight);
+            _ulRT = Quaternion.Slerp(_ulRT, ulR, weight);
+            _llLT = Quaternion.Slerp(_llLT, llL, weight);
+            _llRT = Quaternion.Slerp(_llRT, llR, weight);
+            _spineT = Quaternion.Slerp(_spineT, spine, weight);
+            _hipsT = Quaternion.Slerp(_hipsT, hips, weight);
+            _headT = Quaternion.Slerp(_headT, head, weight);
+        }
+
+        OpponentLungeTell LungeTellMark()
+        {
+            if (_lungeTell != null) return _lungeTell;
+            Transform pawn = _motor != null ? _motor.transform : transform.root;
+            if (pawn == null) return null;
+            OpponentLungeTell mark = pawn.GetComponent<OpponentLungeTell>();
+            if (mark != null) _lungeTell = mark;
+            return mark;
+        }
+
+        /// <summary>
         /// Committed lean for the dash window, then the air stride or the fall beat.
         /// Ribbons stay on AirDashTell. No root motion.
         /// </summary>
@@ -14946,16 +15076,13 @@ namespace Tag.Art
 
         void TickAirDashTell(float dt)
         {
-            bool lunging = _motor != null && _motor.IsLunging;
             bool airDashing = _motor != null && _motor.IsAirDashing && PoseAllowed(DummyPosePaths.Dash);
             bool jet = _motor != null && (_motor.State == MoveState.Jet || _motor.Jetting);
-            if (lunging && !_wasLunging) _dashPulse = 1f;
             if (airDashing && !_wasAirDashing)
                 BeginAirDashTell();
             if (!airDashing)
                 _dashTellArmed = false;
             if (jet && !_wasJetting) _dashPulse = Mathf.Max(_dashPulse, 0.85f);
-            _wasLunging = lunging;
             _wasAirDashing = airDashing;
             _wasJetting = jet;
             _dashPulse = Mathf.MoveTowards(_dashPulse, 0f, dt / 0.18f);

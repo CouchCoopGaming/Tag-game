@@ -41,7 +41,9 @@ public static class DummyPosePathProof
             report.Fail("punch windup is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Tag") || !loco.Contains("PunchTagPose.Tag"))
             report.Fail("tag catch is not on the dummy pose path");
-        if (!loco.Contains("DummyPosePaths.Lunge") || !loco.Contains("IsLunging"))
+        if (!loco.Contains("DummyPosePaths.Lunge") || !loco.Contains("IsLunging")
+            || !loco.Contains("ApplyLungePose") || !loco.Contains("LungePose.Burst")
+            || !loco.Contains("LungePose.Telegraph"))
             report.Fail("lunge pose is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Slide") || !loco.Contains("SlideBody"))
             report.Fail("slide pose is not on the dummy pose path");
