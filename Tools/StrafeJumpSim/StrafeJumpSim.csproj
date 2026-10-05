@@ -35,6 +35,7 @@
     <Compile Include="../../Assets/Scripts/Art/PunchTagPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/WallPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/GrapplePose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/PoseHandoff.cs" />
     <Compile Include="../../Assets/Scripts/Art/GrappleRopeTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/GrappleLatchTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/AirDashCooldownTell.cs" />

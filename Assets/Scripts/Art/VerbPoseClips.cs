@@ -249,7 +249,7 @@ namespace Tag.Art
                 + " gate=run-enter+hold:SmoothStep(_slidePose)/SlideBlendSeconds while sliding"
                 + "; run-exit:slideLeave=1-SmoothStep(_dropVis) full weight, clip off"
                 + "; crouch-exit:captured still/crouch-walk dt/SlideBlendSeconds, clip off"
-                + "; jump-cancel:_jumpFromSlideIn dt/SlideBlendSeconds, clip off";
+                + "; jump-cancel:SmoothStep(_jumpFromSlideIn) dt/SlideBlendSeconds, jump wins, clip off";
         }
 
         /// <summary>0 is the shoulder-and-chest coil. 1 is one long arm, chest unwound, the free arm back.</summary>
