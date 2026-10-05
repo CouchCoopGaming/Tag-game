@@ -25,6 +25,10 @@ namespace Tag.Art
         public const float LandGaitSeconds = GaitBlend.IdleBlendSeconds;
         /// <summary>Wall-jump push-off into the air stride. Stride wins.</summary>
         public const float WallStrideSeconds = WallPose.PushBlendSeconds;
+        /// <summary>Crouch into SlideBody. Slide wins. Crouch blend time is unchanged.</summary>
+        public const float CrouchSlideSeconds = 0.10f;
+        /// <summary>Air dash into the air stride or the fall beat. Stride or fall wins.</summary>
+        public const float DashAirSeconds = 0.10f;
 
         /// <summary>Smoothstep. 0 at the start of the blend, 1 at the end.</summary>
         public static float Ease(float u)
@@ -74,6 +78,10 @@ namespace Tag.Art
             if (Mathf.Abs(LandGaitSeconds - GaitBlend.IdleBlendSeconds) > 0.001f) return false;
             if (LandGaitSeconds > JumpLandTell.FlashSeconds) return false;
             if (Mathf.Abs(WallStrideSeconds - 0.10f) > 0.001f) return false;
+            if (Mathf.Abs(CrouchSlideSeconds - CrouchPose.SlideHandoffSeconds) > 0.001f) return false;
+            if (CrouchSlideSeconds < 0.08f || CrouchSlideSeconds > 0.12f) return false;
+            if (Mathf.Abs(DashAirSeconds - AirDashPose.HandoffSeconds) > 0.001f) return false;
+            if (DashAirSeconds < 0.08f || DashAirSeconds > 0.12f) return false;
             if (Ease(0f) > 0.0001f || Mathf.Abs(Ease(1f) - 1f) > 0.0001f) return false;
             if (Mathf.Abs(Ease(0.5f) - 0.5f) > 0.0001f) return false;
             if (Mathf.Abs(ToWeight(0f)) > 0.0001f || Mathf.Abs(ToWeight(1f) - 1f) > 0.0001f) return false;
@@ -123,6 +131,8 @@ namespace Tag.Art
                 + " grapple->fall " + GrappleFallSeconds.ToString("0.00") + "s fall wins"
                 + " land->gait " + LandGaitSeconds.ToString("0.00") + "s gait wins"
                 + " walljump->stride " + WallStrideSeconds.ToString("0.00") + "s stride wins"
+                + " crouch->slide " + CrouchSlideSeconds.ToString("0.00") + "s slide wins"
+                + " dash->air " + DashAirSeconds.ToString("0.00") + "s stride or fall wins"
                 + " mid=" + wallW.ToString("0.00") + "+" + pushW.ToString("0.00") + "+" + strideW.ToString("0.00")
                 + " sum=1 smoothstep";
         }

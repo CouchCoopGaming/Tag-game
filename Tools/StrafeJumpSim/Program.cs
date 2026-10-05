@@ -82,6 +82,20 @@ static class Program
             Console.Error.WriteLine("pose handoff weights do not sum");
             return 1;
         }
+
+        Console.WriteLine(Tag.Art.AirDashPose.ProofLine());
+        if (!Tag.Art.AirDashPose.Holds())
+        {
+            Console.Error.WriteLine("air dash pose is not held");
+            return 1;
+        }
+
+        Console.WriteLine(Tag.Art.CrouchPose.ProofLine());
+        if (!Tag.Art.CrouchPose.Holds())
+        {
+            Console.Error.WriteLine("crouch pose is not held");
+            return 1;
+        }
         if (!clips.Ok)
         {
             Console.Error.WriteLine(string.Join(" | ", clips.Failures));
