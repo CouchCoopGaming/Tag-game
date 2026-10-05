@@ -126,6 +126,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.IdlePose.ProofLine());
+        if (!Tag.Art.IdlePose.Holds())
+        {
+            Console.Error.WriteLine("idle pose is not held");
+            return 1;
+        }
+
         DummyPosePathReport dummyPose = DummyPosePathProof.Run();
         Console.WriteLine(dummyPose.ToString());
         if (!dummyPose.Ok)

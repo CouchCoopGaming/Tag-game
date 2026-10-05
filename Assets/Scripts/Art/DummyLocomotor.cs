@@ -12,7 +12,7 @@ namespace Tag.Art
     /// on top of the stride. Wall climb and wall run read <see cref="WallPose"/>.
     /// Air dash reads <see cref="AirDashPose"/>. Crouch reads <see cref="CrouchPose"/>.
     /// Mantle reads <see cref="MantlePose"/>. Those clips do not change feel numbers. No root motion.
-    /// DummyRunner shares gait, the grounded pivot, jump, wall, punch, tag, lunge, slide, crouch, mantle, and the land thud.
+    /// DummyRunner shares gait, the grounded pivot, the idle weight shift, jump, wall, punch, tag, lunge, slide, crouch, mantle, and the land thud.
     /// Grapple and air dash stay on the solo human. See <see cref="DummyPosePaths"/>.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
@@ -955,6 +955,10 @@ namespace Tag.Art
         float _pivotW;
         float _pivotLead;
         float _pivotSign = 1f;
+        float _idlePoseW;
+        float _idleApply;
+        float _idleShift;
+        float _idleBreath;
         bool _hasYaw;
         float _lookArmVis;
         float _grapplePose;
@@ -6215,9 +6219,20 @@ namespace Tag.Art
             }
             if (_swayIdle)
                 _idlePhase += dt * 0.8f;
-            float swayTarget = !atRest ? 0f : _swayIdle ? Mathf.Sin(_idlePhase) * 5f : closeRoll;
-            _swayVis = Mathf.MoveTowards(_swayVis, swayTarget, dt * 28f);
-            if (idleW > 0.02f)
+            // The alive shift is IdlePose. This sine was a chest wag, and it fought the pivot.
+            bool idleShift = _swayIdle && PoseAllowed(DummyPosePaths.Idle);
+            float swayAmp = idleShift ? 0f : 5f;
+            float swayTarget = !atRest ? 0f : _swayIdle ? Mathf.Sin(_idlePhase) * swayAmp : closeRoll;
+            float swayRate = idleShift ? 5f / IdlePose.FadeSeconds : 28f;
+            _swayVis = Mathf.MoveTowards(_swayVis, swayTarget, dt * swayRate);
+            bool idleLayer = PoseAllowed(DummyPosePaths.Idle);
+            if (idleLayer && atRest && speed <= GaitBlend.IdleGate)
+            {
+                // IdlePose owns the chest. The old boost would stack, and it would
+                // come back under a pivot while this weight fades.
+                leanX = 0f;
+            }
+            else if (idleW > 0.02f)
                 leanX = breath * (1f + idleW);
             if (atRest && (stopping || idleW > 0.02f || Mathf.Abs(_swayVis) > 0.2f))
                 leanZ = _swayVis;
@@ -6273,6 +6288,10 @@ namespace Tag.Art
             float swayFade = Mathf.Max(idleW, atRest ? Mathf.Clamp01(Mathf.Abs(_swayVis) / 5f) : 0f);
             if (swayFade > 0.02f)
                 _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-breath * 0.5f, 0f, -_swayVis * 0.35f), swayFade);
+            if (idleLayer && atRest && speed <= GaitBlend.IdleGate)
+                _headT = _head0;
+            else if (atRest && _idlePoseW > 0.001f)
+                _headT = Quaternion.Slerp(_headT, _head0, _idlePoseW);
 
             Transform yawSrc = _motor != null ? _motor.transform : transform;
             float yawNow = yawSrc.eulerAngles.y;
@@ -6306,6 +6325,29 @@ namespace Tag.Art
                     _pivotSign = _turnVis < 0f ? -1f : 1f;
                 _pivotW = Mathf.MoveTowards(_pivotW, pivotTarget, dt / PivotPose.BlendSeconds);
                 _pivotLead = Mathf.MoveTowards(_pivotLead, PivotPose.Lead01(speed), dt / PivotPose.BlendSeconds);
+            }
+            // Alive idle. Speed under the gait gate eases off in FadeSeconds once a walk builds.
+            // Pivot, crouch, and Become-It zero it on the same frame so they own the bones.
+            float becomeW = _swapAge >= 0f ? BecomeItPose.PoseWeight(_swapAge) : 0f;
+            bool stopBlend = (_stopFromSprint && _stopFromSprintIn < 0.98f)
+                || (_stopFromWalk && _stopFromWalkIn < 0.98f)
+                || (_stopFromIdle && _stopFromIdleIn < 0.98f);
+            bool idleBody = grounded && !air && !crouch && !sliding && !dashing && !jet
+                && !wallRun && !climb && !mantle && !lunging && !punching
+                && !bouncing && !gliding && _skiBlend < 0.02f
+                && flinchAmt < 0.04f && claimAmt < 0.04f
+                && !stopBlend
+                && PoseAllowed(DummyPosePaths.Idle);
+            float idleTarget = idleBody ? IdlePose.Weight(speed, _pivotW, crouch ? 1f : 0f, becomeW) : 0f;
+            _idlePoseW = Mathf.MoveTowards(_idlePoseW, idleTarget, dt / IdlePose.FadeSeconds);
+            _idleApply = idleBody ? _idlePoseW * IdlePose.Yield(_pivotW, crouch ? 1f : 0f, becomeW) : 0f;
+            if (_idlePoseW > 0.001f || idleTarget > 0.001f)
+            {
+                _idleShift += dt * IdlePose.ShiftRate;
+                _idleBreath += dt * IdlePose.BreathRate;
+                const float cycle = 6.2831853f;
+                if (_idleShift > cycle) _idleShift -= cycle;
+                if (_idleBreath > cycle) _idleBreath -= cycle;
             }
             float pivotBlend = PoseHandoff.Ease(_pivotW);
             if (canTurn && turnIn > 0.001f)
@@ -7199,7 +7241,12 @@ namespace Tag.Art
                 yR += lookOut * reachR;
                 // Both hands rise a little with the breath. Yaw stays out, and roll stays 0 at rest,
                 // so the sway does not fold the hands into the hips.
+                // IdlePose owns the shoulder breath under the gait idle gate.
                 float armBreath = breath * 0.55f * idle;
+                if (PoseAllowed(DummyPosePaths.Idle) && speed <= GaitBlend.IdleGate)
+                    armBreath = 0f;
+                else
+                    armBreath *= 1f - _idlePoseW;
                 float pitchL = RunArmPitch(-sinC, amp) - 12f * idle + armBreath + lookAdd * reachL;
                 float pitchR = RunArmPitch(sinC, amp) - 12f * idle + armBreath + lookAdd * reachR;
                 // Stop and the first step. Hands stay forward and out so they do not drift into the hips.
@@ -14657,6 +14704,7 @@ namespace Tag.Art
                 slew = Mathf.Max(slew, LungePose.Slew);
             }
             ApplyVerbClips(sliding, punching, phase, punchProg, flinchAmt, sinC);
+            ApplyIdlePose();
             ApplyBecomeItPose(dt);
             if (_swapPoseOn)
             {
@@ -14671,10 +14719,24 @@ namespace Tag.Art
                 legSlew = Mathf.Max(legSlew, PivotPose.Slew);
                 torsoSlew = Mathf.Max(torsoSlew, PivotPose.Slew);
             }
+            if (_idleApply > 0.02f)
+            {
+                legSlew = Mathf.Max(legSlew, IdlePose.Slew);
+                torsoSlew = Mathf.Max(torsoSlew, IdlePose.Slew);
+                armSlewL = Mathf.Max(armSlewL, IdlePose.Slew);
+                armSlewR = Mathf.Max(armSlewR, IdlePose.Slew);
+            }
             if (_stanceSole && !ShoesOwned(sliding, punching, flinchAmt))
             {
                 _ftLT = _ftL0 * Quaternion.Euler(_solePitchL, 0f, 0f);
                 _ftRT = _ftR0 * Quaternion.Euler(_solePitchR, 0f, 0f);
+            }
+            if (_idleApply > 0.001f && PoseAllowed(DummyPosePaths.Idle))
+            {
+                // After the stance sole, so the settle does not pitch the shoe through the ground.
+                IdlePose.Sample feet = IdlePose.At(_idleShift, _idleBreath);
+                _ftLT = Quaternion.Slerp(_ftLT, _ftLT * Quaternion.Euler(feet.FootL, 0f, 0f), _idleApply);
+                _ftRT = Quaternion.Slerp(_ftRT, _ftRT * Quaternion.Euler(feet.FootR, 0f, 0f), _idleApply);
             }
             ApplyPivotPose(speed);
             Slew(ref _spine, _spineT, torsoSlew, dt);
@@ -14913,6 +14975,27 @@ namespace Tag.Art
                 _llLT = Quaternion.Slerp(_llLT, llL, weight);
                 _llRT = Quaternion.Slerp(_llRT, llR, weight);
             }
+        }
+
+        /// <summary>
+        /// Hips shift, the loaded knee settles, and the chest and shoulders breathe.
+        /// Pivot, crouch, and Become-It have already zeroed the weight. No root motion.
+        /// </summary>
+        void ApplyIdlePose()
+        {
+            if (_idleApply <= 0.001f) return;
+            if (!PoseAllowed(DummyPosePaths.Idle)) return;
+            IdlePose.Sample pose = IdlePose.At(_idleShift, _idleBreath);
+            float w = _idleApply;
+            _hipsT = Quaternion.Slerp(_hipsT, _hipsT * Quaternion.Euler(0f, 0f, pose.HipRoll), w);
+            _spineT = Quaternion.Slerp(_spineT, _spineT * Quaternion.Euler(pose.ChestPitch, 0f, pose.ChestRoll), w);
+            _headT = Quaternion.Slerp(_headT, _headT * Quaternion.Euler(pose.HeadPitch, 0f, -pose.ChestRoll), w);
+            _uaLT = Quaternion.Slerp(_uaLT, _uaLT * Quaternion.Euler(pose.Shoulder, 0f, 0f), w);
+            _uaRT = Quaternion.Slerp(_uaRT, _uaRT * Quaternion.Euler(pose.Shoulder, 0f, 0f), w);
+            _ulLT = Quaternion.Slerp(_ulLT, _ulLT * Quaternion.Euler(pose.ThighL, 0f, 0f), w);
+            _ulRT = Quaternion.Slerp(_ulRT, _ulRT * Quaternion.Euler(pose.ThighR, 0f, 0f), w);
+            _llLT = Quaternion.Slerp(_llLT, _llLT * Quaternion.Euler(pose.KneeL, 0f, 0f), w);
+            _llRT = Quaternion.Slerp(_llRT, _llRT * Quaternion.Euler(pose.KneeR, 0f, 0f), w);
         }
 
         /// <summary>
