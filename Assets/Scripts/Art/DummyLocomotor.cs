@@ -99,6 +99,7 @@ namespace Tag.Art
         Quaternion _crouchWalkJumpUlL, _crouchWalkJumpUlR, _crouchWalkJumpLlL, _crouchWalkJumpLlR;
         Quaternion _crouchWalkJumpSp, _crouchWalkJumpHp, _crouchWalkJumpHd;
         bool _jumpFromWalk;
+        bool _walkJumpFull;
         float _jumpFromWalkIn;
         Quaternion _walkJumpUaL, _walkJumpUaR, _walkJumpLaL, _walkJumpLaR;
         Quaternion _walkJumpUlL, _walkJumpUlR, _walkJumpLlL, _walkJumpLlR;
@@ -370,10 +371,16 @@ namespace Tag.Art
         float _airArmIn = 1f;
         bool _airFromStride;
         float _airFromStrideIn;
+        bool _strideAirFull;
         Quaternion _strideAirUaL, _strideAirUaR, _strideAirLaL, _strideAirLaR;
+        Quaternion _strideAirUlL, _strideAirUlR, _strideAirLlL, _strideAirLlR;
+        Quaternion _strideAirSp, _strideAirHp, _strideAirHd;
         bool _airFromIdle;
         float _airFromIdleIn;
+        bool _idleAirFull;
         Quaternion _idleAirUaL, _idleAirUaR, _idleAirLaL, _idleAirLaR;
+        Quaternion _idleAirUlL, _idleAirUlR, _idleAirLlL, _idleAirLlR;
+        Quaternion _idleAirSp, _idleAirHp, _idleAirHd;
         float _bouncePulse;
         bool _bounceWallLeft;
         bool _bounceKickSnap;
@@ -2552,7 +2559,9 @@ namespace Tag.Art
                 hipDrop = (slideExit || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? Mathf.SmoothStep(0f, 1f, _dropVis) : _dropVis;
             }
             // Run leave: 0 while the slide holds, 1 in the stride. The height still uses hipDrop.
-            float slideLeave = slideExit ? 1f - Mathf.SmoothStep(0f, 1f, _dropVis) : 0f;
+            float slideLeave = 0f;
+            if (slideExit)
+                PoseHandoff.SlideEdge(_dropVis, out slideLeave, out _);
             _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             if (_skiFromWalk && skiing)
                 _skiFromWalkIn = Mathf.MoveTowards(_skiFromWalkIn, 1f, dt / 0.04f);
@@ -3212,6 +3221,7 @@ namespace Tag.Art
                     // A still crouch into a jump keeps its push. A walk into a ski keeps its ease.
                     // Jump height is unchanged.
                     _jumpFromWalkIn = 0f;
+                    _walkJumpFull = true;
                     _walkJumpUaL = _upperArmL.localRotation;
                     _walkJumpUaR = _upperArmR.localRotation;
                     _walkJumpLaL = _lowerArmL.localRotation;
@@ -3225,7 +3235,10 @@ namespace Tag.Art
                     _walkJumpHd = _head.localRotation;
                 }
                 else if (_jumpFromWalk)
+                {
                     _jumpFromWalkIn = 1f;
+                    _walkJumpFull = false;
+                }
                 if (!_airFromStride && speed > 5.5f && !_jumpFromWalk && !jet
                     && !_jumpFromStill && !_jumpFromCrouchWalk && !_jumpFromSki && !_jumpFromSlide
                     && !_jumpFromDash && !_jumpFromWall && !_jumpFromClimb && !_jumpFromAirCrouch
@@ -3241,6 +3254,18 @@ namespace Tag.Art
                     _strideAirUaR = _upperArmR.localRotation;
                     _strideAirLaL = _lowerArmL.localRotation;
                     _strideAirLaR = _lowerArmR.localRotation;
+                    _strideAirFull = _spine != null && _hips != null && _head != null
+                        && _upperLegL != null && _upperLegR != null && _lowerLegL != null && _lowerLegR != null;
+                    if (_strideAirFull)
+                    {
+                        _strideAirUlL = _upperLegL.localRotation;
+                        _strideAirUlR = _upperLegR.localRotation;
+                        _strideAirLlL = _lowerLegL.localRotation;
+                        _strideAirLlR = _lowerLegR.localRotation;
+                        _strideAirSp = _spine.localRotation;
+                        _strideAirHp = _hips.localRotation;
+                        _strideAirHd = _head.localRotation;
+                    }
                     _airArmIn = 1f;
                 }
                 if (!_airFromIdle && !_airFromStride && speed <= 0.35f && !_jumpFromStill && !_jumpFromWalk && !jet
@@ -3260,6 +3285,18 @@ namespace Tag.Art
                     _idleAirUaR = _upperArmR.localRotation;
                     _idleAirLaL = _lowerArmL.localRotation;
                     _idleAirLaR = _lowerArmR.localRotation;
+                    _idleAirFull = _spine != null && _hips != null && _head != null
+                        && _upperLegL != null && _upperLegR != null && _lowerLegL != null && _lowerLegR != null;
+                    if (_idleAirFull)
+                    {
+                        _idleAirUlL = _upperLegL.localRotation;
+                        _idleAirUlR = _upperLegR.localRotation;
+                        _idleAirLlL = _lowerLegL.localRotation;
+                        _idleAirLlR = _lowerLegR.localRotation;
+                        _idleAirSp = _spine.localRotation;
+                        _idleAirHp = _hips.localRotation;
+                        _idleAirHd = _head.localRotation;
+                    }
                     _airArmIn = 1f;
                 }
             }
@@ -3541,6 +3578,7 @@ namespace Tag.Art
                 _jumpFromStill = false;
                 _jumpFromCrouchWalk = false;
                 _jumpFromWalk = false;
+                _walkJumpFull = false;
                 _jumpFromSki = false;
                 _jumpFromSlide = false;
                 _jumpFromDash = false;
@@ -5696,17 +5734,31 @@ namespace Tag.Art
             // Find the tuck, then the look trail. Look speed is unchanged.
             // A sprint into the air eases the stride arms, then the air pose holds.
             // A walk into a jump keeps its ease. Jump height is unchanged.
+            bool gaitJumpHold = _jumpPoseAge >= 0f && _jumpPoseAge <= PoseHandoff.GaitJumpSeconds;
             if (air && _airFromStride && !_airDashArms && !_jumpFromWalk)
             {
-                _airFromStrideIn = Mathf.MoveTowards(_airFromStrideIn, 1f, dt / 0.04f);
-                if (_airFromStrideIn >= 0.98f)
-                    _airFromStride = false;
+                // The jump beat eases the captured stride. This 0.04s clock would clear it first.
+                if (!gaitJumpHold || !_strideAirFull)
+                {
+                    _airFromStrideIn = Mathf.MoveTowards(_airFromStrideIn, 1f, dt / 0.04f);
+                    if (_airFromStrideIn >= 0.98f)
+                    {
+                        _airFromStride = false;
+                        _strideAirFull = false;
+                    }
+                }
             }
             else if (air && _airFromIdle && !_airDashArms && !_jumpFromWalk && !_jumpFromStill && !_airFromStride)
             {
-                _airFromIdleIn = Mathf.MoveTowards(_airFromIdleIn, 1f, dt / 0.04f);
-                if (_airFromIdleIn >= 0.98f)
-                    _airFromIdle = false;
+                if (!gaitJumpHold || !_idleAirFull)
+                {
+                    _airFromIdleIn = Mathf.MoveTowards(_airFromIdleIn, 1f, dt / 0.04f);
+                    if (_airFromIdleIn >= 0.98f)
+                    {
+                        _airFromIdle = false;
+                        _idleAirFull = false;
+                    }
+                }
             }
             else
             {
@@ -5716,6 +5768,8 @@ namespace Tag.Art
                     _airArmIn = 1f;
                 _airFromStride = false;
                 _airFromIdle = false;
+                _strideAirFull = false;
+                _idleAirFull = false;
             }
             _wasGrounded = grounded;
             _prevSpeed = speed;
@@ -6522,6 +6576,36 @@ namespace Tag.Art
             {
                 _idlePoseW = Mathf.MoveTowards(_idlePoseW, idleTarget, dt / IdlePose.FadeSeconds);
                 _idleApply = _idlePoseW * _idleShare;
+            }
+            bool intoGait = _walkFromIdle && _walkFromIdleIn < 0.98f;
+            bool intoIdle = (_stopFromSprint && _stopFromSprintIn < 0.98f)
+                || (_stopFromWalk && _stopFromWalkIn < 0.98f)
+                || (_stopFromIdle && _stopFromIdleIn < 0.98f);
+            if ((intoGait || intoIdle) && _stopPlantW <= 0.001f && _stopIdleW <= 0.001f)
+            {
+                // One curve. The 0.12s fade would stack a second idle on the 0.18s gait clock.
+                float timer = intoGait
+                    ? _walkFromIdleIn
+                    : (_stopFromSprint && _stopFromSprintIn < 0.98f)
+                        ? _stopFromSprintIn
+                        : (_stopFromWalk && _stopFromWalkIn < 0.98f)
+                            ? _stopFromWalkIn
+                            : _stopFromIdleIn;
+                PoseHandoff.IdleGait(timer, out _, out float arrive);
+                float idleW = intoGait ? 0f : arrive;
+                _idlePoseW = idleW;
+                _idleApply = idleW * _idleShare;
+            }
+            if (_swapAge >= 0f && idleBody && speed <= GaitBlend.IdleGate && _stopPlantW <= 0.001f)
+            {
+                float become = BecomeItPose.PoseWeight(_swapAge);
+                if (become > 0.001f)
+                {
+                    // Idle rises on the recover curve. A second fade after the pose ends pops the hips flat.
+                    PoseHandoff.BecomeIdle(become, out float idleSide, out _);
+                    _idlePoseW = idleSide;
+                    _idleApply = idleSide * _idleShare;
+                }
             }
             if (_idlePoseW > 0.001f || idleTarget > 0.001f)
             {
@@ -9060,7 +9144,8 @@ namespace Tag.Art
                         float intoWallDrop = PoseHandoff.ToWeight(_wallDropIn);
                         if (_wallFallHold)
                         {
-                            intoWallDrop = WallPose.GraceFallWeight(graceLeft, wallContact, _wallDropIn * WallPose.ReleaseBlendSeconds);
+                            // Grace keeps the wall. After it, one ease into the fall. Cling time is unchanged.
+                            PoseHandoff.WallGrace(graceLeft, wallContact, _wallDropIn * WallPose.ReleaseBlendSeconds, out _, out intoWallDrop);
                             ApplyWallFallBlend(intoWallDrop, armZ);
                         }
                         else
@@ -9226,9 +9311,11 @@ namespace Tag.Art
                 _llRT = Quaternion.Slerp(Quaternion.Slerp(_exitLlR, pushKneeR, intoPush), airKneeR, leave);
             }
             if (_jumpWallSnap && _jumpWallSnapIn < 0.98f && _jumpFromWall && !punching && !mantle
-                && !_airFromIdle && !_jumpFromWalk && !_jumpFromStill && !_jumpDashSnap)
+                && !_airFromIdle && !_jumpFromWalk && !_jumpFromStill && !_jumpDashSnap
+                && _wallJumpPoseAge < 0f)
             {
                 // Wall, push-off, and the air stride. The weights sum to 1 and the stride wins.
+                // The wall-jump beat owns this leave, so the old three-weight does not fight it.
                 // WallJumpPushTell stays. Jump height is unchanged.
                 BlendWallJumpStride(armZ);
             }
@@ -10245,7 +10332,7 @@ namespace Tag.Art
                 {
                     // The pose eases into the absorb, then the gait takes the legs back.
                     // A crouch and a dart keep their landings. The squash fade stays. Land time is unchanged.
-                    float intoAbsorb = PoseHandoff.ToWeight(_landAbsorbIn);
+                    PoseHandoff.JumpLand(_landAbsorbIn, out _, out float intoAbsorb);
                     _uaLT = Quaternion.Slerp(_landAbsorbUaL, _uaLT, intoAbsorb);
                     _uaRT = Quaternion.Slerp(_landAbsorbUaR, _uaRT, intoAbsorb);
                     _laLT = Quaternion.Slerp(_landAbsorbLaL, _laLT, intoAbsorb);
@@ -10280,7 +10367,7 @@ namespace Tag.Art
             bool aiming = grapplePose && _grapple != null && _grapple.IsAiming && !pulling;
             bool missOn = grapplePose && _grapple != null && _grapple.MissFlickOn && !pulling;
             _grappleSlew = 0f;
-            _grapplePose = Mathf.MoveTowards(_grapplePose, pulling ? 1f : 0f, dt / 0.12f);
+            _grapplePose = Mathf.MoveTowards(_grapplePose, pulling ? 1f : 0f, dt / GrapplePose.ReleaseBlendSeconds);
             if (aiming)
                 _grappleAimAge = _grappleAimAge < 0f ? dt : _grappleAimAge + dt;
             else
@@ -10348,8 +10435,9 @@ namespace Tag.Art
             {
                 // Letting go eases the line out. In the air that target is the fall beat.
                 // A jump off the rope keeps its push. The gate stays off.
-                float g = Mathf.SmoothStep(0f, 1f, _grapplePose);
-                float outW = g * g;
+                // Same 0.10s ease as the aim chest. The old squared curve popped the hands off the line.
+                // Latch and pull weights stay on their own blend. The gate stays off.
+                PoseHandoff.AimReturn(_grapplePose, out _, out float outW);
                 if (fallRoom)
                 {
                     // The line eases onto the fall beat. The air pose underneath does not share the bones.
@@ -12098,7 +12186,7 @@ namespace Tag.Art
                 // The wedge eases into the guard, then the guard holds.
                 // A ski into a still crouch keeps its ease. A run into a still crouch keeps its ease.
                 // slideBoost stays 0.
-                float intoGuard = _stillFromSlideIn;
+                PoseHandoff.SlideEdge(_stillFromSlideIn, out _, out float intoGuard);
                 Quaternion guardL = _uaL0 * Quaternion.Euler(CrouchPose.ArmPitch, CrouchPose.ArmYaw, armZ);
                 Quaternion guardR = _uaR0 * Quaternion.Euler(CrouchPose.ArmPitch, -CrouchPose.ArmYaw, -armZ);
                 Quaternion guardElL = _laL0 * Quaternion.Euler(CrouchPose.Elbow, 0f, 0f);
@@ -12110,7 +12198,7 @@ namespace Tag.Art
                 Quaternion guardThighR = _ulR0 * Quaternion.Euler(CrouchPose.Thigh, 0f, 0f);
                 Quaternion guardKneeL = _llL0 * Quaternion.Euler(CrouchPose.Knee, 0f, 0f);
                 Quaternion guardKneeR = _llR0 * Quaternion.Euler(CrouchPose.Knee, 0f, 0f);
-                if (intoGuard < 0.98f)
+                if (_stillFromSlideIn < 0.98f)
                 {
                     _uaLT = Quaternion.Slerp(_slideGuardUaL, guardL, intoGuard);
                     _uaRT = Quaternion.Slerp(_slideGuardUaR, guardR, intoGuard);
@@ -12727,7 +12815,7 @@ namespace Tag.Art
                 // The wedge eases into the low stride, then the stride holds.
                 // A ski into a crouch walk keeps its ease. A slide into a still crouch keeps its ease.
                 // slideBoost stays 0.
-                float intoStride = _crouchWalkFromSlideIn;
+                PoseHandoff.SlideEdge(_crouchWalkFromSlideIn, out _, out float intoStride);
                 float stepL = Mathf.Max(0f, sinC);
                 float stepR = Mathf.Max(0f, -sinC);
                 Quaternion strideL = _uaL0 * Quaternion.Euler(CrouchPose.ArmPitch, CrouchPose.ArmYaw, armZ);
@@ -12928,7 +13016,7 @@ namespace Tag.Art
                 // The sprint eases into the idle, then the idle holds.
                 // A sprint into a walk has its own ease. A walk into a stop has its own ease.
                 // A ski into an idle has its own ease. The slow close stays off this path. Speed is unchanged.
-                float intoStop = _stopFromSprintIn;
+                PoseHandoff.IdleGait(_stopFromSprintIn, out _, out float intoStop);
                 _uaLT = Quaternion.Slerp(_sprintStopUaL, _uaLT, intoStop);
                 _uaRT = Quaternion.Slerp(_sprintStopUaR, _uaRT, intoStop);
                 _laLT = Quaternion.Slerp(_sprintStopLaL, _laLT, intoStop);
@@ -12948,7 +13036,7 @@ namespace Tag.Art
                 // The walk eases into the idle, then the idle holds.
                 // A sprint into a stop has its own ease. A sprint into a walk has its own ease.
                 // A ski into an idle has its own ease. The slow close stays off this path. Speed is unchanged.
-                float intoStop = _stopFromWalkIn;
+                PoseHandoff.IdleGait(_stopFromWalkIn, out _, out float intoStop);
                 _uaLT = Quaternion.Slerp(_walkStopUaL, _uaLT, intoStop);
                 _uaRT = Quaternion.Slerp(_walkStopUaR, _uaRT, intoStop);
                 _laLT = Quaternion.Slerp(_walkStopLaL, _laLT, intoStop);
@@ -12968,7 +13056,7 @@ namespace Tag.Art
                 // The pose eases into the idle, then the idle holds.
                 // A sprint into a stop has its own ease. A walk into a stop has its own ease.
                 // A ski into an idle has its own ease. The slow close stays off this path. Speed is unchanged.
-                float intoIdleStop = _stopFromIdleIn;
+                PoseHandoff.IdleGait(_stopFromIdleIn, out _, out float intoIdleStop);
                 _uaLT = Quaternion.Slerp(_idleStopUaL, _uaLT, intoIdleStop);
                 _uaRT = Quaternion.Slerp(_idleStopUaR, _uaRT, intoIdleStop);
                 _laLT = Quaternion.Slerp(_idleStopLaL, _laLT, intoIdleStop);
@@ -12988,7 +13076,7 @@ namespace Tag.Art
                 // The idle eases into the walk, then the walk holds.
                 // A still crouch into a walk has its own ease. A crouch walk into a walk has its own ease.
                 // A ski into a walk has its own ease. The slow plant stays off this path. Speed is unchanged.
-                float intoIdleWalk = _walkFromIdleIn;
+                PoseHandoff.IdleGait(_walkFromIdleIn, out _, out float intoIdleWalk);
                 _uaLT = Quaternion.Slerp(_idleWalkUaL, _uaLT, intoIdleWalk);
                 _uaRT = Quaternion.Slerp(_idleWalkUaR, _uaRT, intoIdleWalk);
                 _laLT = Quaternion.Slerp(_idleWalkLaL, _laLT, intoIdleWalk);
@@ -15066,18 +15154,26 @@ namespace Tag.Art
             float stretchY = 1f + dashStretch * dashAmt - 0.16f * flinchAmt + 0.06f * claimAmt;
             float stretchXZ = 1f - dashSquash * dashAmt + 0.12f * flinchAmt;
             transform.localScale = WallJumpPushScale(JumpLandScale(new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash)));
-            if (jumpPoseOn && _jumpPoseAge >= 0f)
-                _jumpPoseAge += dt;
-            else
-                _jumpPoseAge = -1f;
+            bool wallJumpSeed = false;
             if (_wallJumpHandoff)
             {
                 // The shove has eased out. Rise and fall take the stack from here.
+                // Clearing the wall flags lets the jump own the next frame, so this
+                // seed is not wiped and the air-strafe lean is not overwritten.
                 // The ground crouch stays off. Jump height is unchanged.
                 _jumpPoseAge = JumpPose.TakeoffSeconds;
                 _jumpDriveLeft = !_wallJumpPosePlant;
+                _jumpFromWall = false;
+                _jumpFromClimb = false;
+                _jumpWallSnap = false;
+                _jumpClimbSnap = false;
                 _wallJumpHandoff = false;
+                wallJumpSeed = true;
             }
+            if (jumpPoseOn && _jumpPoseAge >= 0f)
+                _jumpPoseAge += dt;
+            else if (!wallJumpSeed)
+                _jumpPoseAge = -1f;
             if (_dashPoseHeld && _dashPoseAge >= 0f)
                 _dashPoseAge += dt;
         }
@@ -15106,7 +15202,8 @@ namespace Tag.Art
                 return;
             }
 
-            bool settled = WallJumpPose.Settled(_wallJumpPoseAge);
+            PoseHandoff.WallJumpBeat(_wallJumpPoseAge, out _, out float beatJump);
+            bool settled = beatJump >= 0.999f || WallJumpPose.Settled(_wallJumpPoseAge);
             if (settled && jumpPoseOn)
             {
                 // Rise and fall already wrote this frame. The lean can stay on them.
@@ -15333,7 +15430,9 @@ namespace Tag.Art
         /// </summary>
         float AimTorsoKeep()
         {
-            return 1f - AimTorsoPose.Ease(_aimTorsoW);
+            // Same curve as AimTorsoPose.Ease. The pair owns it so the return matches the rise.
+            PoseHandoff.AimReturn(_aimTorsoW, out float underW, out _);
+            return underW;
         }
 
         /// <summary>
@@ -15421,7 +15520,7 @@ namespace Tag.Art
             }
             if (_swapAge < 0f)
                 _aimIntoSwap = false;
-            float apply = AimTorsoPose.Ease(_aimTorsoW);
+            PoseHandoff.AimReturn(_aimTorsoW, out _, out float apply);
             if (apply <= 0.001f) return;
             AimTorsoPose.Sample aim = AimTorsoPose.At(_aimYaw, _aimPitch);
             _spineT = Quaternion.Slerp(_spineT, _spineT * Quaternion.Euler(aim.ChestPitch, aim.ChestYaw, 0f), apply);
@@ -16046,7 +16145,12 @@ namespace Tag.Art
             float cycle = _hopChain ? _cycle : (_jumpPoseAge <= JumpPose.StrideBlendSeconds ? _jumpPoseCycle : _cycle);
             float sinC = Mathf.Sin(cycle);
             float vy = _motor != null ? _motor.Velocity.y : 0f;
-            JumpPose.Sample pose = JumpPose.Mixed(vy, _jumpPoseAge, _jumpDriveLeft, speed, sinC, cycle);
+            // A captured walk, sprint, or idle eases in from that pose. Mixed would open at the 0.62 stride lead.
+            // A hop keeps its own takeoff. Jump height is unchanged.
+            bool gaitJump = !_hopChain && HasGaitJumpCapture();
+            JumpPose.Sample pose = gaitJump
+                ? JumpPose.At(vy, _jumpPoseAge, _jumpDriveLeft)
+                : JumpPose.Mixed(vy, _jumpPoseAge, _jumpDriveLeft, speed, sinC, cycle);
             _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
             _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
@@ -16057,10 +16161,60 @@ namespace Tag.Art
             _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
             _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, 0f);
             _hipsT = _hips0 * Quaternion.Euler(pose.Hip, 0f, 0f);
-            if (_hopChain && _hopTakeoffFrom && _jumpPoseAge >= 0f && _jumpPoseAge <= PoseHandoff.HopTakeoffSeconds)
+            if (gaitJump)
+                BlendGaitJumpCapture();
+            else if (_hopChain && _hopTakeoffFrom && _jumpPoseAge >= 0f && _jumpPoseAge <= PoseHandoff.HopTakeoffSeconds)
                 BlendHopTakeoff(_jumpPoseAge);
             else if (!_hopChain)
                 _hopTakeoffFrom = false;
+        }
+
+        bool HasGaitJumpCapture()
+        {
+            if (_jumpPoseAge < 0f || _jumpPoseAge > PoseHandoff.GaitJumpSeconds) return false;
+            if (_jumpFromWalk && _walkJumpFull) return true;
+            if (_airFromStride && _strideAirFull && !_jumpFromWalk) return true;
+            if (_airFromIdle && _idleAirFull && !_jumpFromWalk && !_airFromStride) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Age 0 keeps the captured gait or idle. The jump beat wins.
+        /// The 0.62 stride lead stays off this edge. Jump height is unchanged.
+        /// </summary>
+        void BlendGaitJumpCapture()
+        {
+            PoseHandoff.GaitJump(_jumpPoseAge, out _, out float jumpW);
+            Quaternion uaL, uaR, laL, laR, ulL, ulR, llL, llR, sp, hp, hd;
+            if (_jumpFromWalk && _walkJumpFull)
+            {
+                uaL = _walkJumpUaL; uaR = _walkJumpUaR; laL = _walkJumpLaL; laR = _walkJumpLaR;
+                ulL = _walkJumpUlL; ulR = _walkJumpUlR; llL = _walkJumpLlL; llR = _walkJumpLlR;
+                sp = _walkJumpSp; hp = _walkJumpHp; hd = _walkJumpHd;
+            }
+            else if (_airFromStride && _strideAirFull)
+            {
+                uaL = _strideAirUaL; uaR = _strideAirUaR; laL = _strideAirLaL; laR = _strideAirLaR;
+                ulL = _strideAirUlL; ulR = _strideAirUlR; llL = _strideAirLlL; llR = _strideAirLlR;
+                sp = _strideAirSp; hp = _strideAirHp; hd = _strideAirHd;
+            }
+            else
+            {
+                uaL = _idleAirUaL; uaR = _idleAirUaR; laL = _idleAirLaL; laR = _idleAirLaR;
+                ulL = _idleAirUlL; ulR = _idleAirUlR; llL = _idleAirLlL; llR = _idleAirLlR;
+                sp = _idleAirSp; hp = _idleAirHp; hd = _idleAirHd;
+            }
+            _uaLT = Quaternion.Slerp(uaL, _uaLT, jumpW);
+            _uaRT = Quaternion.Slerp(uaR, _uaRT, jumpW);
+            _laLT = Quaternion.Slerp(laL, _laLT, jumpW);
+            _laRT = Quaternion.Slerp(laR, _laRT, jumpW);
+            _ulLT = Quaternion.Slerp(ulL, _ulLT, jumpW);
+            _ulRT = Quaternion.Slerp(ulR, _ulRT, jumpW);
+            _llLT = Quaternion.Slerp(llL, _llLT, jumpW);
+            _llRT = Quaternion.Slerp(llR, _llRT, jumpW);
+            _spineT = Quaternion.Slerp(sp, _spineT, jumpW);
+            _hipsT = Quaternion.Slerp(hp, _hipsT, jumpW);
+            _headT = Quaternion.Slerp(hd, _headT, jumpW);
         }
 
         void CaptureHopTakeoff()
@@ -18189,7 +18343,7 @@ namespace Tag.Art
                 else
                 {
                 // Ease in from the run, then hold the clip. A jump cancel stays out of this branch.
-                float w = Mathf.SmoothStep(0f, 1f, _slidePose);
+                PoseHandoff.SlideEdge(_slidePose, out _, out float w);
                 var pose = VerbPoseClips.SlideBodyPose(bind, sinC >= 0f);
                 BlendVerb(pose, w);
                 if (_footL != null && _footR != null)
@@ -18203,8 +18357,8 @@ namespace Tag.Art
             }
             else if (!sliding && _dropSlide && _dropVis > 0.02f)
             {
-                // Run or stand leave. The body blend is 1-SmoothStep(_dropVis). Shoes follow it.
-                float stay = Mathf.SmoothStep(0f, 1f, _dropVis);
+                // Run or stand leave. The body blend is the complement. Shoes keep the same curve.
+                PoseHandoff.SlideEdge(_dropVis, out _, out float stay);
                 var pose = VerbPoseClips.SlideBodyPose(bind, sinC >= 0f);
                 if (_footL != null && _footR != null)
                 {
@@ -18214,8 +18368,8 @@ namespace Tag.Art
             }
             else if (!sliding && _slidePose > 0.02f)
             {
-                // Crouch leave. The captured guard blend owns the body. Shoes follow the clip weight.
-                float stay = Mathf.SmoothStep(0f, 1f, _slidePose);
+                // Crouch leave. The captured guard blend owns the body. Shoes follow the same curve.
+                PoseHandoff.SlideEdge(_slidePose, out _, out float stay);
                 var pose = VerbPoseClips.SlideBodyPose(bind, sinC >= 0f);
                 if (_footL != null && _footR != null)
                 {

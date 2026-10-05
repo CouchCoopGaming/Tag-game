@@ -227,6 +227,101 @@ namespace Tag.Art
             aimW = 1f - becomeW;
         }
 
+        /// <summary>
+        /// Idle weight shift and the gait. One curve both ways.
+        /// The 0.12s idle fade yields, so it does not stack on this 0.18s clock.
+        /// timer 0 is the pose we left. The pose we entered wins.
+        /// </summary>
+        public const float IdleGaitSeconds = GaitBlend.IdleBlendSeconds;
+
+        /// <summary>
+        /// Captured gait or idle into the jump beat. Jump wins.
+        /// Starts on the captured pose. The 0.62 stride lead stays off this edge.
+        /// </summary>
+        public const float GaitJumpSeconds = JumpPose.StrideBlendSeconds;
+
+        /// <summary>Jump beat into the land absorb. Land wins. Then land to gait keeps its own ease.</summary>
+        public const float JumpLandSeconds = LandGaitSeconds;
+
+        /// <summary>Slide enter and slide exit. One curve. The pose the timer is moving toward wins.</summary>
+        public const float SlideEnterSeconds = VerbPoseClips.SlideBlendSeconds;
+
+        /// <summary>Aim chest back onto the pose under it. Same window as the ease in.</summary>
+        public const float AimReturnSeconds = AimTorsoPose.BlendSeconds;
+
+        /// <summary>timer 0 is the pose we left. fromW + toW = 1. The pose we entered wins.</summary>
+        public static void IdleGait(float timer01, out float fromW, out float toW)
+        {
+            toW = Ease(timer01);
+            fromW = 1f - toW;
+        }
+
+        /// <summary>
+        /// Captured gait into the jump beat. Sum to 1.
+        /// Age 0 keeps the gait. The jump wins. Jump height is unchanged.
+        /// </summary>
+        public static void GaitJump(float age, out float gaitW, out float jumpW)
+        {
+            Pair(age, GaitJumpSeconds, out gaitW, out jumpW);
+        }
+
+        /// <summary>Jump beat and the land absorb. Sum to 1. The land wins.</summary>
+        public static void JumpLand(float timer01, out float jumpW, out float landW)
+        {
+            landW = Ease(timer01);
+            jumpW = 1f - landW;
+        }
+
+        /// <summary>
+        /// Cling grace and the fall beat. Sum to 1.
+        /// Grace still running on the wall keeps the wall. After that, the fall wins.
+        /// </summary>
+        public static void WallGrace(float graceRemaining, bool wallContact, float detachAge, out float wallW, out float fallW)
+        {
+            fallW = WallPose.GraceFallWeight(graceRemaining, wallContact, detachAge);
+            wallW = 1f - fallW;
+        }
+
+        /// <summary>
+        /// Wall-jump shove and the jump beat. Sum to 1 for age &gt;= 0.
+        /// The hold is the shove. The jump wins after the ease.
+        /// </summary>
+        public static void WallJumpBeat(float age, out float pushW, out float jumpW)
+        {
+            WallJumpPose.IntoJump(age, out pushW, out jumpW);
+        }
+
+        /// <summary>
+        /// Slide and the pose on the other side of the enter or the exit.
+        /// Sum to 1. timer 0 is the pose we left. The pose we entered wins.
+        /// </summary>
+        public static void SlideEdge(float timer01, out float fromW, out float toW)
+        {
+            toW = Ease(timer01);
+            fromW = 1f - toW;
+        }
+
+        /// <summary>
+        /// Aim chest and the pose under it. Sum to 1.
+        /// timer 0 is the pose under the aim. Aim wins as the timer rises. The same curve runs backward.
+        /// </summary>
+        public static void AimReturn(float timer01, out float underW, out float aimW)
+        {
+            aimW = Ease(timer01);
+            underW = 1f - aimW;
+        }
+
+        /// <summary>
+        /// Become-it and the idle weight shift. Sum to 1.
+        /// becomeWeight is <see cref="BecomeItPose.PoseWeight"/>. Idle wins as that weight falls.
+        /// A moving gait is not this edge.
+        /// </summary>
+        public static void BecomeIdle(float becomeWeight, out float idleW, out float becomeW)
+        {
+            becomeW = becomeWeight < 0f ? 0f : (becomeWeight > 1f ? 1f : becomeWeight);
+            idleW = 1f - becomeW;
+        }
+
         public static bool Holds()
         {
             if (RootMotion) return false;
@@ -435,7 +530,136 @@ namespace Tag.Art
                 prev = becomeW;
             }
 
+            if (Mathf.Abs(IdleGaitSeconds - GaitBlend.IdleBlendSeconds) > 0.001f) return false;
+            if (IdleGaitSeconds < IdlePose.FadeSeconds) return false;
+            if (Mathf.Abs(GaitJumpSeconds - JumpPose.StrideBlendSeconds) > 0.001f) return false;
+            if (GaitJumpSeconds >= 0.10f) return false;
+            if (Mathf.Abs(JumpLandSeconds - LandGaitSeconds) > 0.001f) return false;
+            if (Mathf.Abs(SlideEnterSeconds - 0.10f) > 0.001f) return false;
+            if (Mathf.Abs(AimReturnSeconds - AimTorsoPose.BlendSeconds) > 0.001f) return false;
+
+            IdleGait(0f, out float idleFrom, out float idleGaitOff);
+            IdleGait(1f, out float idleGoneEdge, out float gaitFullEdge);
+            if (idleFrom < 0.999f || idleGaitOff > 0.0001f) return false;
+            if (idleGoneEdge > 0.0001f || gaitFullEdge < 0.999f) return false;
+            prev = -1f;
+            for (int i = 0; i <= 8; i++)
+            {
+                IdleGait(i / 8f, out float fromW, out float toW);
+                if (Mathf.Abs(fromW + toW - 1f) > 0.0001f) return false;
+                if (toW + 0.0001f < prev) return false;
+                prev = toW;
+            }
+
+            GaitJump(0f, out float gaitAtJump, out float jumpAtGait);
+            GaitJump(GaitJumpSeconds, out float gaitAfterJump, out float jumpAfterGait);
+            if (gaitAtJump < 0.999f || jumpAtGait > 0.0001f) return false;
+            if (gaitAfterJump > 0.0001f || jumpAfterGait < 0.999f) return false;
+            // The synthetic stride lead is still 0.62 on frame 0. This edge does not use it.
+            if (JumpPose.FromStride(0f) <= jumpAtGait + 0.5f) return false;
+            prev = -1f;
+            for (int i = 0; i <= 8; i++)
+            {
+                GaitJump(GaitJumpSeconds * i / 8f, out float gaitW, out float jumpW);
+                if (Mathf.Abs(gaitW + jumpW - 1f) > 0.0001f) return false;
+                if (jumpW + 0.0001f < prev) return false;
+                prev = jumpW;
+            }
+
+            JumpLand(0f, out float jumpFullLand, out float landAbsorbOff);
+            JumpLand(1f, out float jumpGoneLand, out float landAbsorbFull);
+            if (jumpFullLand < 0.999f || landAbsorbOff > 0.0001f) return false;
+            if (jumpGoneLand > 0.0001f || landAbsorbFull < 0.999f) return false;
+
+            WallGrace(WallPose.ClingGraceSeconds, true, WallPose.ReleaseBlendSeconds, out float graceWall, out float graceFall);
+            if (graceWall < 0.999f || graceFall > 0.0001f) return false;
+            WallGrace(0f, true, 0f, out float detachWall, out float detachFall);
+            if (detachWall < 0.999f || detachFall > 0.0001f) return false;
+            WallGrace(0f, false, WallPose.ReleaseBlendSeconds, out float fallWall, out float fallFullW);
+            if (fallWall > 0.0001f || fallFullW < 0.999f) return false;
+            prev = -1f;
+            for (int i = 0; i <= 8; i++)
+            {
+                WallGrace(0f, false, WallPose.ReleaseBlendSeconds * (i / 8f), out float wallW, out float fallW);
+                if (Mathf.Abs(wallW + fallW - 1f) > 0.0001f) return false;
+                if (fallW + 0.0001f < prev) return false;
+                prev = fallW;
+            }
+
+            WallJumpBeat(0f, out float shoveFull, out float beatOff);
+            WallJumpBeat(WallJumpPose.BeatSeconds, out float shoveHeld, out float beatHeld);
+            float beatEnd = WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds;
+            WallJumpBeat(beatEnd, out float shoveGone, out float beatFull);
+            if (shoveFull < 0.999f || beatOff > 0.0001f) return false;
+            if (shoveHeld < 0.999f || beatHeld > 0.0001f) return false;
+            if (shoveGone > 0.0001f || beatFull < 0.999f) return false;
+            prev = -1f;
+            for (int i = 0; i <= 8; i++)
+            {
+                WallJumpBeat(WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds * (i / 8f), out float pushW, out float jumpW);
+                if (Mathf.Abs(pushW + jumpW - 1f) > 0.0001f) return false;
+                if (jumpW + 0.0001f < prev) return false;
+                prev = jumpW;
+            }
+
+            SlideEdge(0.25f, out float slideFromA, out float slideToA);
+            SlideEdge(0.75f, out float slideFromB, out float slideToB);
+            if (Mathf.Abs(slideToA - slideFromB) > 0.0001f) return false;
+            if (Mathf.Abs(slideFromA - slideToB) > 0.0001f) return false;
+            prev = -1f;
+            for (int i = 0; i <= 8; i++)
+            {
+                SlideEdge(i / 8f, out float fromW, out float toW);
+                if (Mathf.Abs(fromW + toW - 1f) > 0.0001f) return false;
+                if (toW + 0.0001f < prev) return false;
+                prev = toW;
+            }
+
+            AimReturn(0f, out float underFull, out float aimOffEdge);
+            AimReturn(1f, out float underGone, out float aimFullEdge);
+            if (underFull < 0.999f || aimOffEdge > 0.0001f) return false;
+            if (underGone > 0.0001f || aimFullEdge < 0.999f) return false;
+
+            BecomeIdle(1f, out float idleOffBecome, out float becomeFullIdle);
+            BecomeIdle(0f, out float idleFullBecome, out float becomeOffIdle);
+            BecomeIdle(0.5f, out float idleMidBecome, out float becomeMidIdle);
+            if (idleOffBecome > 0.0001f || becomeFullIdle < 0.999f) return false;
+            if (idleFullBecome < 0.999f || becomeOffIdle > 0.0001f) return false;
+            if (Mathf.Abs(idleMidBecome + becomeMidIdle - 1f) > 0.0001f) return false;
+
             return true;
+        }
+
+        /// <summary>Fourth set. The seams the later pose layers still shared a bone on.</summary>
+        public static string ProofLine4()
+        {
+            IdleGait(0.5f, out float idleW, out float gaitW);
+            GaitJump(GaitJumpSeconds * 0.5f, out float fromGait, out float jumpW);
+            JumpLand(0.5f, out float jumpLand, out float landW);
+            WallGrace(0f, false, WallPose.ReleaseBlendSeconds * 0.5f, out float wallW, out float fallW);
+            WallJumpBeat(WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds * 0.5f, out float pushW, out float beatJump);
+            SlideEdge(0.5f, out float slideFrom, out float slideW);
+            AimReturn(0.5f, out float underW, out float aimW);
+            BecomeIdle(0.5f, out float becomeIdle, out float becomeW);
+            return "pose handoff 4"
+                + " idle<->gait " + IdleGaitSeconds.ToString("0.00") + "s gait or idle wins"
+                + " gait->jump " + GaitJumpSeconds.ToString("0.00") + "s jump wins"
+                + " jump->land " + JumpLandSeconds.ToString("0.00") + "s land wins"
+                + " wall grace->fall " + WallPose.ReleaseBlendSeconds.ToString("0.00") + "s fall wins"
+                + " walljump beat->jump " + WallJumpPose.EaseSeconds.ToString("0.00") + "s jump wins"
+                + " slide enter/exit " + SlideEnterSeconds.ToString("0.00") + "s slide or gait wins"
+                + " aim return " + AimReturnSeconds.ToString("0.00") + "s pose under wins"
+                + " become->idle " + BecomeItPose.RecoverSeconds.ToString("0.00") + "s idle wins"
+                + " dummy=shared"
+                + " mid=" + idleW.ToString("0.00") + "+" + gaitW.ToString("0.00")
+                + " jump=" + fromGait.ToString("0.00") + "+" + jumpW.ToString("0.00")
+                + " land=" + jumpLand.ToString("0.00") + "+" + landW.ToString("0.00")
+                + " wall=" + wallW.ToString("0.00") + "+" + fallW.ToString("0.00")
+                + " beat=" + pushW.ToString("0.00") + "+" + beatJump.ToString("0.00")
+                + " slide=" + slideFrom.ToString("0.00") + "+" + slideW.ToString("0.00")
+                + " aim=" + underW.ToString("0.00") + "+" + aimW.ToString("0.00")
+                + " become=" + becomeIdle.ToString("0.00") + "+" + becomeW.ToString("0.00")
+                + " sum=1 smoothstep";
         }
 
         /// <summary>Third set. The newest layers, after the second handoff line.</summary>
