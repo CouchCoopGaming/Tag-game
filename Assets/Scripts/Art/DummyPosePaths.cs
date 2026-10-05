@@ -104,9 +104,10 @@ namespace Tag.Art
                 || GrapplePose.RootMotion || PoseHandoff.RootMotion || LungePose.RootMotion
                 || BecomeItPose.RootMotion || PivotPose.RootMotion || IdlePose.RootMotion
                 || AimTorsoPose.RootMotion || StopPlantPose.RootMotion
-                || AirStrafeLeanPose.RootMotion)
+                || AirStrafeLeanPose.RootMotion || BunnyHopPose.RootMotion)
                 return false;
             if (!AirStrafeLeanPose.Holds()) return false;
+            if (!BunnyHopPose.Holds()) return false;
             if (AirStrafeLeanPose.Roll >= WallPose.RunTilt) return false;
             if (AirStrafeLeanPose.HipLean >= AirStrafeLeanPose.Roll) return false;
             if (Mathf.Abs(PunchTagPose.ReachMeters - 1.55f) > 0.001f) return false;
@@ -159,6 +160,7 @@ namespace Tag.Art
                 + " stop=StopPlantPose plant/hips/arms"
                 + " jump=JumpPose beats"
                 + " airstrafe=AirStrafeLeanPose roll/hip/arms"
+                + " hop=BunnyHopPose chain/phase/lean"
                 + " wall=WallPose climb/run"
                 + " punch=PunchTagPose windup + AimTorsoPose chest/head"
                 + " aim=punch shared, grapple solo"

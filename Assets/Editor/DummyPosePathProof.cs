@@ -61,6 +61,10 @@ public static class DummyPosePathProof
             || !loco.Contains("AirStrafeLeanPose.FallBlend") || !loco.Contains("AirStrafeLeanPose.Yield")
             || !loco.Contains("AirStrafeLeanPose.At"))
             report.Fail("air strafe lean is not on the dummy pose path");
+        if (!loco.Contains("NoteHopChain") || !loco.Contains("BunnyHopPose.Chain")
+            || !loco.Contains("BunnyHopPose.Phase") || !loco.Contains("BunnyHopPose.LeanHand")
+            || !loco.Contains("BunnyHopPose.Absorb"))
+            report.Fail("bunny-hop chain pose is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Wall") || !loco.Contains("WallPose.Climb"))
             report.Fail("wall climb/run is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Punch") || !loco.Contains("PunchTagPose.PunchWindup"))

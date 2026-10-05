@@ -12,7 +12,7 @@ namespace Tag.Art
     /// on top of the stride. Wall climb and wall run read <see cref="WallPose"/>.
     /// Air dash reads <see cref="AirDashPose"/>. Crouch reads <see cref="CrouchPose"/>.
     /// Mantle reads <see cref="MantlePose"/>. Those clips do not change feel numbers. No root motion.
-    /// DummyRunner shares gait, the grounded pivot, the idle weight shift, the hard-brake stop plant, jump, the airborne strafe lean, wall, punch, tag, lunge, slide, crouch, mantle, the land thud, and punch aim.
+    /// DummyRunner shares gait, the grounded pivot, the idle weight shift, the hard-brake stop plant, jump, the airborne strafe lean, the bunny-hop chain, wall, punch, tag, lunge, slide, crouch, mantle, the land thud, and punch aim.
     /// Grapple and air dash stay on the solo human. See <see cref="DummyPosePaths"/>.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
@@ -42,6 +42,14 @@ namespace Tag.Art
         float _landSquash;
         float _landHold;
         float _landHard;
+        float _secondsSinceLand = -1f;
+        float _landSampleAge = -1f;
+        float _landImpactPending = -1f;
+        bool _hopChain;
+        bool _hopChainFrame;
+        float _leanCarry;
+        bool _landTellDefer;
+        float _landTellAir;
         bool _landAbsorbSnap;
         float _landAbsorbIn;
         Quaternion _landAbsorbUaL, _landAbsorbUaR, _landAbsorbLaL, _landAbsorbLaR;
@@ -1189,6 +1197,9 @@ namespace Tag.Art
             // The solo pawn shares this locomotor and does not get the streak.
             // LungeTell, the lunge, and punch Active still own contact. Feel numbers stay put.
             TickOpponentChase();
+            // Buffered hop, or a jump within about one frame, skips the thud.
+            // Coyote, the jump buffer, and jump speed stay put.
+            NoteHopChain(dt);
             // Thud and heel dust after a real landing. Solo pawn only.
             // It still runs if the limb rig failed to bind. Jump height stays put.
             float landAirSnap = _jumpLandAir;
@@ -2909,21 +2920,21 @@ namespace Tag.Art
             else if (_runFromStill)
                 _runFromStillIn = Mathf.MoveTowards(_runFromStillIn, 1f, dt / CrouchPose.BlendSeconds);
 
-            if (grounded && !_wasGrounded)
+            if (_hopChainFrame)
             {
-                // Soft landings = mild squash; hard (near landStunSpeed) = punchier. Clamped.
-                float impact = _motor != null ? _motor.LastLandImpactSpeed : 10f;
-                float soft = 5f;
-                float hard = 24f;
-                if (_motor != null && _motor.cfg != null)
-                    hard = Mathf.Max(soft + 1f, _motor.cfg.landStunSpeed);
-                float t = Mathf.Clamp01(Mathf.InverseLerp(soft, hard, impact));
-                // Ease-in so mid falls stay readable but terminal velocity punches.
-                // Slightly stronger mid-band so a park hop-off reads without waiting for stun speed.
-                _landSquash = Mathf.Clamp(Mathf.Lerp(0.55f, 1.35f, t * t), 0.55f, 1.35f);
-                // Brief absorb, then the pose eases into the run instead of popping off.
-                _landHold = Mathf.Lerp(0.05f, 0.11f, t);
-                _landHard = t;
+                // The hop is already in the air. A thud here pops against the takeoff.
+                ClearHopLand();
+            }
+            else if (grounded && !_wasGrounded)
+            {
+                // Hold the absorb off this sample. A jump on the next sample still chains.
+                // Staying down arms the same squash one frame later. Land time is unchanged.
+                _landImpactPending = _motor != null ? _motor.LastLandImpactSpeed : 10f;
+            }
+            else if (grounded && _landImpactPending >= 0f && BunnyHopPose.Absorb(false, _landSampleAge) > 0.5f)
+            {
+                ArmLandSquash(_landImpactPending);
+                _landImpactPending = -1f;
             }
             if (!grounded && _motor != null && _motor.Velocity.y > 1.5f && (_wasGrounded || _prevVy <= 1.5f))
                 _diveFromJump = true;
@@ -2933,7 +2944,10 @@ namespace Tag.Art
                 _diveFromJump = false;
             if (!grounded || _landSquash <= 0.02f)
                 _landedFromJump = false;
-            if (!grounded && _wasGrounded && _motor != null && _motor.Velocity.y > 1.5f)
+            // A plain hop keeps the jump pose. Slide, ski, dive, and wall leaves still ease.
+            bool hopOwnsLeave = _hopChain && !_dropSlide && _skiBlend <= 0.2f && _diveVis < 0.2f
+                && !(_exitFromWall && _wallExit > 0.2f);
+            if (!hopOwnsLeave && !grounded && _wasGrounded && _motor != null && _motor.Velocity.y > 1.5f)
             {
                 // Push off the foot that was down. Jump height is unchanged.
                 _pushLeft = Mathf.Cos(_cycle) < 0f;
@@ -3482,9 +3496,16 @@ namespace Tag.Art
                 _jumpFromReady = false;
                 _jumpFromPunch = false;
             }
-            if (jumpEdge && !JumpPoseBlocked() && !jet && !punching)
+            if (jumpEdge && !_hopChain && !JumpPoseBlocked() && !jet && !punching)
             {
                 // Crouch, drive knee, and arms start this frame. The impulse already fired.
+                _jumpPoseAge = 0f;
+                _jumpPoseCycle = _cycle;
+                _jumpDriveLeft = Mathf.Sin(_cycle) >= 0f;
+            }
+            if (_hopChainFrame && !JumpPoseBlocked() && !jet && !punching)
+            {
+                // The hop's takeoff starts this frame. The stride phase is not replanted.
                 _jumpPoseAge = 0f;
                 _jumpPoseCycle = _cycle;
                 _jumpDriveLeft = Mathf.Sin(_cycle) >= 0f;
@@ -5865,6 +5886,21 @@ namespace Tag.Art
                 _cycle = Mathf.PI * 0.5f;
                 _stopGait = gaitW;
                 _stopRun = _runVis;
+            }
+            else if (grounded && !sliding && (_hopChainFrame || (_landSampleAge >= 0f && _landSampleAge <= 0.0001f)))
+            {
+                // The contact keeps the air cadence. Planting here restarts the gait into the takeoff.
+                _runVis = runAmt;
+                float airRate = Mathf.Lerp(5.5f, 9f, runAmt);
+                _cycle = BunnyHopPose.Phase(_cycle, airRate, dt, true);
+                _strideLeadLeft = Mathf.Sin(_cycle) >= 0f;
+                _stopGait = gaitW;
+                _stopRun = _runVis;
+                if (_hopChainFrame)
+                {
+                    _jumpPoseCycle = _cycle;
+                    _jumpDriveLeft = _strideLeadLeft;
+                }
             }
             else if (grounded && speed > 0.35f && !sliding && !crouch)
             {
@@ -9744,8 +9780,8 @@ namespace Tag.Art
 
             bool softAfterDash = _airDashArms && !airDashing && _landHard < 0.4f;
             // A punch from this jump eases into the windup. A tag from this jump eases into the connect.
-            // Staying down still absorbs. Land time is unchanged.
-            if (_landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide && !_tagFromSki && !_tagFromSlide && !_punchFromClimb && !_tagFromClimb && !_punchFromWall && !_tagFromWall && !_punchFromDart && !_tagFromDart && !_punchFromClaim && !_tagFromItClaim && !_punchFromGrapple && !_tagFromGrapple && !_punchFromReady && !_tagFromReady && !_tagFromPunch && !_punchFromTag && !_tagFromMiss && !_skiFromSoft && !_skiFromHard && !_skiFromDart && !_skiFromGrapple && !_skiFromClaim && !_skiFromReady && !_skiFromMiss && !_skiFromWall && !_skiFromDash)
+            // Staying down still absorbs. A buffered or one-frame hop does not. Land time is unchanged.
+            if (BunnyHopPose.Absorb(_hopChainFrame, _landSampleAge) > 0.5f && _landSquash > 0.08f && grounded && !sliding && (!dashing || softAfterDash) && !_punchFromJump && !_tagFromJump && !_punchFromDash && !_tagFromDash && !_punchFromSoft && !_punchFromHard && !_tagFromSoft && !_tagFromHard && !_punchFromSki && !_punchFromSlide && !_tagFromSki && !_tagFromSlide && !_punchFromClimb && !_tagFromClimb && !_punchFromWall && !_tagFromWall && !_punchFromDart && !_tagFromDart && !_punchFromClaim && !_tagFromItClaim && !_punchFromGrapple && !_tagFromGrapple && !_punchFromReady && !_tagFromReady && !_tagFromPunch && !_punchFromTag && !_tagFromMiss && !_skiFromSoft && !_skiFromHard && !_skiFromDart && !_skiFromGrapple && !_skiFromClaim && !_skiFromReady && !_skiFromMiss && !_skiFromWall && !_skiFromDash)
             {
                 // A short hop bends the knees and stays in the stride. The arms-out flare
                 // is for a hard landing. A sprint brings the arms into the stride under
@@ -15680,12 +15716,12 @@ namespace Tag.Art
 
         /// <summary>
         /// Takeoff, tuck, then the fall. Blended from the stride phase. No root motion.
-        /// The landing thud picks up once the feet are down. The air-strafe lean is a
-        /// later overlay and does not change these beats.
+        /// The landing thud picks up once the feet are down. A bunny-hop chain keeps
+        /// the live phase instead. The air-strafe lean is a later overlay.
         /// </summary>
         void ApplyJumpPose(float armZ, float speed)
         {
-            float cycle = _jumpPoseAge <= JumpPose.StrideBlendSeconds ? _jumpPoseCycle : _cycle;
+            float cycle = _hopChain ? _cycle : (_jumpPoseAge <= JumpPose.StrideBlendSeconds ? _jumpPoseCycle : _cycle);
             float sinC = Mathf.Sin(cycle);
             float vy = _motor != null ? _motor.Velocity.y : 0f;
             JumpPose.Sample pose = JumpPose.Mixed(vy, _jumpPoseAge, _jumpDriveLeft, speed, sinC, cycle);
@@ -15704,7 +15740,8 @@ namespace Tag.Art
         /// <summary>
         /// Jump beats stay. A side wish that is adding horizontal speed banks the
         /// chest and hips into that side on the fall blend, and the arms counter.
-        /// Air dash, wall, grapple, and punch are left as they were written.
+        /// A bunny-hop chain keeps the bank that was already on until this jump's
+        /// fall blend catches it. Air dash, wall, grapple, and punch are left as they were written.
         /// </summary>
         void ApplyAirStrafeLean(float armZ, float speed, bool jumpBase, bool airDash, bool wall, bool grapple, bool punch)
         {
@@ -15734,14 +15771,16 @@ namespace Tag.Art
             if (move.x != 0f && Mathf.Abs(move.y) < AirStrafeLeanPose.SideGate)
                 accel *= bonus;
             const float step = 1f / 60f;
-            if (!AirStrafeLeanPose.AddsSpeed(hv, wish, wishSpeed, accel, step)) return;
-
+            bool adds = AirStrafeLeanPose.AddsSpeed(hv, wish, wishSpeed, accel, step);
             float vy = _motor.Velocity.y;
-            float w = AirStrafeLeanPose.FallBlend(vy, _jumpPoseAge);
+            float fall = AirStrafeLeanPose.FallBlend(vy, _jumpPoseAge);
+            float w = BunnyHopPose.LeanHand(_leanCarry, fall, _hopChain);
             if (w <= 0.001f) return;
+            if (!adds && !_hopChain) return;
             _airStrafeLean = w;
+            _leanCarry = w;
 
-            float cycle = _jumpPoseAge <= JumpPose.StrideBlendSeconds ? _jumpPoseCycle : _cycle;
+            float cycle = _hopChain ? _cycle : (_jumpPoseAge <= JumpPose.StrideBlendSeconds ? _jumpPoseCycle : _cycle);
             float sinC = Mathf.Sin(cycle);
             JumpPose.Sample beat = JumpPose.Mixed(vy, _jumpPoseAge, _jumpDriveLeft, speed, sinC, cycle);
             AirStrafeLeanPose.Sample lean = AirStrafeLeanPose.At(side);
@@ -16384,6 +16423,73 @@ namespace Tag.Art
             _glideLaunchIn = 0f;
         }
 
+        /// <summary>
+        /// A buffered landing, or a jump within about one frame, is a bunny-hop chain.
+        /// The stride phase and the air-strafe lean stay. Coyote and the buffer are not written.
+        /// </summary>
+        void NoteHopChain(float dt)
+        {
+            bool grounded = _motor != null && _motor.IsGrounded;
+            var st = _motor != null ? _motor.State : MoveState.Idle;
+            float vy = _motor != null ? _motor.Velocity.y : 0f;
+            bool sliding = st == MoveState.Slide || _dropSlide;
+            bool surf = st == MoveState.WallRun || st == MoveState.WallClimb || st == MoveState.Mantle;
+            bool jet = st == MoveState.Jet || (_motor != null && _motor.Jetting);
+            bool dashing = _airDashArms || (_motor != null && _motor.IsAirDashing);
+            bool punching = _punch != null && _punch.IsPunching;
+            bool landing = grounded && !_wasGrounded;
+            float since = landing ? 0f : _secondsSinceLand;
+            _landSampleAge = since;
+            bool jumped = st == MoveState.Air && vy > 1.5f;
+            bool buffered = jumped && landing;
+            bool jumpFires = jumped && (landing || _wasGrounded);
+            bool plain = !sliding && !surf && !jet && !dashing && !punching && _skiBlend <= 0.2f && _diveVis < 0.2f;
+            bool chain = plain && BunnyHopPose.Chain(buffered, since, jumpFires, dt);
+            _hopChainFrame = chain;
+            if (chain)
+            {
+                _hopChain = true;
+                if (_airStrafeLean > _leanCarry)
+                    _leanCarry = _airStrafeLean;
+            }
+            else if (grounded && !BunnyHopPose.InWindow(since, dt))
+            {
+                _hopChain = false;
+                _leanCarry = 0f;
+            }
+
+            if (chain || !grounded)
+                _secondsSinceLand = -1f;
+            else if (landing)
+                _secondsSinceLand = dt > 0f ? dt : 0f;
+            else if (_secondsSinceLand >= 0f && dt > 0f)
+                _secondsSinceLand += dt;
+        }
+
+        void ArmLandSquash(float impact)
+        {
+            float soft = 5f;
+            float hard = 24f;
+            if (_motor != null && _motor.cfg != null)
+                hard = Mathf.Max(soft + 1f, _motor.cfg.landStunSpeed);
+            float t = Mathf.Clamp01(Mathf.InverseLerp(soft, hard, impact));
+            // Ease-in so mid falls stay readable but terminal velocity punches.
+            // Slightly stronger mid-band so a park hop-off reads without waiting for stun speed.
+            _landSquash = Mathf.Clamp(Mathf.Lerp(0.55f, 1.35f, t * t), 0.55f, 1.35f);
+            // Brief absorb, then the pose eases into the run instead of popping off.
+            _landHold = Mathf.Lerp(0.05f, 0.11f, t);
+            _landHard = t;
+        }
+
+        void ClearHopLand()
+        {
+            _landSquash = 0f;
+            _landHold = 0f;
+            _landHard = 0f;
+            _landImpactPending = -1f;
+            _landAbsorbSnap = false;
+        }
+
         void TickJumpLand(float dt)
         {
             bool solo = JumpLandSolo();
@@ -16391,7 +16497,35 @@ namespace Tag.Art
             var st = _motor != null ? _motor.State : MoveState.Idle;
             bool slide = st == MoveState.Slide;
             bool cling = st == MoveState.WallClimb || st == MoveState.WallRun || st == MoveState.Mantle;
-            JumpLandTell.Note(ref _jumpLandAge, ref _jumpLandAir, solo, grounded, _wasGrounded, slide, cling, dt);
+            if (_hopChainFrame)
+            {
+                // The hop does not thud. A stay-down landing still arms on the next sample.
+                JumpLandTell.Clear(ref _jumpLandAge);
+                _landTellDefer = false;
+                _jumpLandAir = 0f;
+                HideJumpLand();
+                return;
+            }
+
+            bool landing = grounded && !_wasGrounded;
+            if (landing)
+            {
+                // Quiet for one frame so a rejump never flashes the puff against the takeoff.
+                _landTellDefer = true;
+                _landTellAir = _jumpLandAir;
+                HideJumpLand();
+                return;
+            }
+
+            if (_landTellDefer && grounded)
+            {
+                _landTellDefer = false;
+                JumpLandTell.Note(ref _jumpLandAge, ref _landTellAir, solo, true, false, slide, cling, dt);
+                _jumpLandAir = _landTellAir;
+            }
+            else
+                JumpLandTell.Note(ref _jumpLandAge, ref _jumpLandAir, solo, grounded, _wasGrounded, slide, cling, dt);
+
             if (!JumpLandTell.Show(solo, _jumpLandAge))
             {
                 HideJumpLand();
