@@ -6501,7 +6501,7 @@ namespace Tag.Art
             // Pivot is a bone layer on this slew. The 280 scale and the 0.1s follow stay.
             bool sprintLean = PivotPose.KeepsSprintLean(speed);
             bool pivotGate = canTurn && !sprintLean && !lunging && !gliding && !bouncing && _skiBlend < 0.02f
-                && !punching && _swapAge < 0f && PoseAllowed(DummyPosePaths.Pivot);
+                && !punching && flinchAmt < 0.04f && _swapAge < 0f && PoseAllowed(DummyPosePaths.Pivot);
             // Leaving the gate used to zero the plant on one frame. The same smoothstep runs both ways.
             float pivotTarget = 0f;
             float leadTarget = 0f;
@@ -15089,7 +15089,7 @@ namespace Tag.Art
             bool wallJumpBeat = _wallJumpPoseAge >= 0f && !WallJumpPose.Settled(_wallJumpPoseAge);
             bool wallOwns = wallRun || climb || _graceBody || _wallFallHold || _jumpFromWall || _jumpFromClimb || wallJumpBeat;
             bool dashOwns = airDashing || _dashPoseHeld;
-            bool punchOwns = punching || _punchTelegraph > 0.02f || _aimTorsoW > 0.02f;
+            bool punchOwns = punching || _punchTelegraph > 0.02f || _aimTorsoW > 0.02f || flinchAmt > 0.04f;
             ApplyAirStrafeLean(armZ, speed, jumpPoseOn, dashOwns, wallOwns, grappleOwns, punchOwns, dt);
             if (_graceBody)
             {
@@ -15193,6 +15193,7 @@ namespace Tag.Art
             }
 
             bool yield = grounded || mantle || sliding || punching || climb || wallRun || airDashing || jet
+                || _tagFlinch > 0.04f
                 || (_input != null && _input.CrouchHeld)
                 || (_grapple != null && (_grapple.IsAiming || _grapple.IsPulling));
             if (yield)
@@ -15535,6 +15536,9 @@ namespace Tag.Art
         {
             if (_stopPlantW <= 0.001f && _stopIdleW <= 0.001f) return;
             if (!PoseAllowed(DummyPosePaths.Stop)) return;
+            // Punch and TagCatch already own the bones. A plant on top would hide the beat.
+            if (_punch != null && _punch.IsPunching) return;
+            if (_tagFlinch > 0.04f) return;
             StopPlantPose.Sample pose = StopPlantPose.At();
             IdlePose.Sample idle = IdlePose.At(_idleShift, _idleBreath);
             float idleW = _stopIdleW;
@@ -15610,6 +15614,9 @@ namespace Tag.Art
             if (_idleApply <= 0.001f) return;
             if (_pivotApply > 0.02f) return;
             if (!PoseAllowed(DummyPosePaths.Idle)) return;
+            // The idle fade is a tenth of a second. Leaving it on the punch hides the cock.
+            if (_punch != null && _punch.IsPunching) return;
+            if (_tagFlinch > 0.04f) return;
             IdlePose.Sample pose = IdlePose.At(_idleShift, _idleBreath);
             float w = _idleApply;
             _hipsT = Quaternion.Slerp(_hipsT, _hipsT * Quaternion.Euler(0f, 0f, pose.HipRoll), w);
@@ -15632,6 +15639,8 @@ namespace Tag.Art
         {
             if (_pivotApply <= 0.001f || PivotPose.KeepsSprintLean(speed)) return;
             if (!PoseAllowed(DummyPosePaths.Pivot)) return;
+            if (_punch != null && _punch.IsPunching) return;
+            if (_tagFlinch > 0.04f) return;
             if (_idleApply > 0.02f)
             {
                 ApplyIdlePivotPair(speed);
@@ -18306,9 +18315,16 @@ namespace Tag.Art
                     : phase == PunchPhase.Active
                         ? PunchTagPose.PunchActive(punchProg)
                         : PunchTagPose.PunchRecover(punchProg);
-                if (punch.Weight > 0.02f)
+                bool recover = phase != PunchPhase.Windup && phase != PunchPhase.Active;
+                float clipW = recover
+                    ? VerbPoseClips.RecoverKeep(punchProg, punch.Weight)
+                    : punch.Weight;
+                if (clipW > 0.02f)
                 {
-                    BlendVerb(VerbPoseClips.PunchStrikePose(bind, punch.Sample), punch.Weight);
+                    VerbPoseClips.Pose pose = recover
+                        ? VerbPoseClips.PunchRecoverPose(bind, punchProg)
+                        : VerbPoseClips.PunchStrikePose(bind, punch.Sample);
+                    BlendVerb(pose, clipW);
                     VerbClip = VerbPoseClips.PunchStrike;
                     VerbState = punch.State;
                     return;
@@ -18417,8 +18433,8 @@ namespace Tag.Art
                 hipYaw = -16f * w;
                 uaL = lineL;
                 laL = lineElL;
-                uaR = _uaR0 * Quaternion.Euler(-86f * w, 46f * w, -armZ);
-                laR = _laR0 * Quaternion.Euler(-18f * w, 0f, 0f);
+                uaR = _uaR0 * Quaternion.Euler(VerbPoseClips.PunchCockPitch * w, VerbPoseClips.PunchCockYaw * w, VerbPoseClips.PunchCockRoll * w);
+                laR = _laR0 * Quaternion.Euler(VerbPoseClips.PunchCockElbow * w, 0f, 0f);
             }
             else if (phase == PunchPhase.Active)
             {

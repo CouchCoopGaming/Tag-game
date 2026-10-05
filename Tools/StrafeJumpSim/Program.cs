@@ -112,6 +112,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.VerbPoseClips.PunchTagPolishProofLine());
+        if (!Tag.Art.VerbPoseClips.PunchTagPolishHolds())
+        {
+            Console.Error.WriteLine("punch tag polish is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.GrapplePose.ProofLine());
         if (!Tag.Art.GrapplePose.Holds())
         {
