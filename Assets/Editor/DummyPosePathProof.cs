@@ -41,6 +41,11 @@ public static class DummyPosePathProof
             || !loco.Contains("IdlePose.Weight") || !loco.Contains("IdlePose.Yield")
             || !loco.Contains("IdlePose.At") || !loco.Contains("dt / IdlePose.FadeSeconds"))
             report.Fail("idle pose is not on the dummy pose path");
+        if (!loco.Contains("DummyPosePaths.Stop") || !loco.Contains("ApplyStopPlant")
+            || !loco.Contains("StopPlantPose.Fires") || !loco.Contains("StopPlantPose.Remember")
+            || !loco.Contains("PoseHandoff.StopIdle") || !loco.Contains("StopPlantPose.At")
+            || !loco.Contains("StopPlantPose.DampSwing"))
+            report.Fail("stop plant pose is not on the dummy pose path");
         if (!loco.Contains("ApplyAimTorso") || !loco.Contains("TrackAimTorso")
             || !loco.Contains("AimTorsoPose.At") || !loco.Contains("AimTorsoPose.Ease")
             || !loco.Contains("dt / AimTorsoPose.BlendSeconds")

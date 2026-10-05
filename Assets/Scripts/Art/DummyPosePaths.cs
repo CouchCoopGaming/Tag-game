@@ -15,6 +15,7 @@ namespace Tag.Art
         public const string Gait = "gait";
         public const string Pivot = "pivot";
         public const string Idle = "idle";
+        public const string Stop = "stop";
         public const string Jump = "jump";
         public const string Wall = "wall";
         public const string Punch = "punch";
@@ -33,7 +34,7 @@ namespace Tag.Art
 
         public static readonly string[] Shared =
         {
-            Gait, Jump, Wall, Punch, Tag, Lunge, Slide, Crouch, Mantle, Land, Become, Pivot, Idle
+            Gait, Jump, Wall, Punch, Tag, Lunge, Slide, Crouch, Mantle, Land, Become, Pivot, Idle, Stop
         };
 
         public static readonly string[] Denied = { Grapple, Dash };
@@ -60,11 +61,11 @@ namespace Tag.Art
 
         public static bool Holds()
         {
-            if (Shared.Length != 13 || Denied.Length != 2) return false;
+            if (Shared.Length != 14 || Denied.Length != 2) return false;
             if (Shared[0] != Gait || Shared[1] != Jump || Shared[2] != Wall || Shared[3] != Punch
                 || Shared[4] != Tag || Shared[5] != Lunge || Shared[6] != Slide || Shared[7] != Crouch
                 || Shared[8] != Mantle || Shared[9] != Land || Shared[10] != Become || Shared[11] != Pivot
-                || Shared[12] != Idle)
+                || Shared[12] != Idle || Shared[13] != Stop)
                 return false;
             if (Denied[0] != Grapple || Denied[1] != Dash) return false;
             if (Mathf.Abs(LungeTellSeconds - 0.45f) > 0.001f) return false;
@@ -101,7 +102,7 @@ namespace Tag.Art
                 || CrouchPose.RootMotion || MantlePose.RootMotion || AirDashPose.RootMotion
                 || GrapplePose.RootMotion || PoseHandoff.RootMotion || LungePose.RootMotion
                 || BecomeItPose.RootMotion || PivotPose.RootMotion || IdlePose.RootMotion
-                || AimTorsoPose.RootMotion)
+                || AimTorsoPose.RootMotion || StopPlantPose.RootMotion)
                 return false;
             if (Mathf.Abs(PunchTagPose.ReachMeters - 1.55f) > 0.001f) return false;
             if (Mathf.Abs(AirDashPose.WindowSeconds - 0.10f) > 0.001f) return false;
@@ -113,6 +114,8 @@ namespace Tag.Art
             if (PivotPose.BlendSeconds < 0.10f || PivotPose.BlendSeconds > 0.18f) return false;
             if (!IdlePose.Holds()) return false;
             if (Mathf.Abs(IdlePose.FadeSeconds - 0.12f) > 0.001f) return false;
+            if (!StopPlantPose.Holds()) return false;
+            if (StopPlantPose.WindowSeconds < 0.12f || StopPlantPose.WindowSeconds > 0.20f) return false;
             if (!AimTorsoPose.Holds()) return false;
             if (Mathf.Abs(AimTorsoPose.BlendSeconds - 0.10f) > 0.001f) return false;
             if (Mathf.Abs(AimTorsoPose.YawMax - 45f) > 0.001f) return false;
@@ -148,6 +151,7 @@ namespace Tag.Art
                 + " gait=GaitBlend speed"
                 + " pivot=PivotPose plant/hips-then-chest/lead"
                 + " idle=IdlePose shift/knee/breath"
+                + " stop=StopPlantPose plant/hips/arms"
                 + " jump=JumpPose beats"
                 + " wall=WallPose climb/run"
                 + " punch=PunchTagPose windup + AimTorsoPose chest/head"

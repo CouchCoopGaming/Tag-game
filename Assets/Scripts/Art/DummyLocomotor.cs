@@ -12,7 +12,7 @@ namespace Tag.Art
     /// on top of the stride. Wall climb and wall run read <see cref="WallPose"/>.
     /// Air dash reads <see cref="AirDashPose"/>. Crouch reads <see cref="CrouchPose"/>.
     /// Mantle reads <see cref="MantlePose"/>. Those clips do not change feel numbers. No root motion.
-    /// DummyRunner shares gait, the grounded pivot, the idle weight shift, jump, wall, punch, tag, lunge, slide, crouch, mantle, the land thud, and punch aim.
+    /// DummyRunner shares gait, the grounded pivot, the idle weight shift, the hard-brake stop plant, jump, wall, punch, tag, lunge, slide, crouch, mantle, the land thud, and punch aim.
     /// Grapple and air dash stay on the solo human. See <see cref="DummyPosePaths"/>.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
@@ -683,6 +683,11 @@ namespace Tag.Art
         float _stopPlant;
         bool _stopPlanted;
         bool _stopPlantLeft;
+        float _stopPlantAge = -1f;
+        float _stopPlantW;
+        bool _hardStopLeadLeft;
+        bool _strideLeadLeft = true;
+        StopPlantPose.Memory _stopMemory;
         float _runVis;
         Vector3 _prevPlanarVel;
         bool _hasPlanarVel;
@@ -5899,6 +5904,7 @@ namespace Tag.Art
                 float rate = Mathf.Lerp(cadence, 5.2f, (_walkFromSki || _runFromSki) ? 0f : legSki);
                 posedCadence = rate;
                 _cycle += dt * rate;
+                _strideLeadLeft = Mathf.Sin(_cycle) >= 0f;
                 _stopGait = gaitW;
                 _stopRun = _runVis;
             }
@@ -5931,6 +5937,7 @@ namespace Tag.Art
                     _runVis = runAmt;
                     _cycle += dt * Mathf.Lerp(5.5f, 9f, runAmt);
                 }
+                _strideLeadLeft = Mathf.Sin(_cycle) >= 0f;
             }
             else if (crouch && grounded && speed > 0.35f)
             {
@@ -6280,6 +6287,19 @@ namespace Tag.Art
                 if (fwd.sqrMagnitude > 0.0001f)
                     accelFwd = Vector3.Dot(dv, fwd.normalized);
             }
+            float prevPlanar = 0f;
+            if (_hasPlanarVel)
+            {
+                Vector3 prev = _prevPlanarVel;
+                prev.y = 0f;
+                prevPlanar = prev.magnitude;
+            }
+            float speedDrop = 0f;
+            if (_hasPlanarVel && dt > 0.0001f)
+                speedDrop = (prevPlanar - speed) / dt;
+            if (speedDrop < 0f) speedDrop = 0f;
+            // Read only. groundDecel and the accel lean below are unchanged.
+            StopPlantPose.Remember(ref _stopMemory, speed, speedDrop, dt);
             _prevPlanarVel = planarVel;
             _hasPlanarVel = true;
             float accelTarget = bodyLean ? GaitBlend.AccelLean(accelFwd) : 0f;
@@ -6337,6 +6357,41 @@ namespace Tag.Art
             // Alive idle. Speed under the gait gate eases off in FadeSeconds once a walk builds.
             // Pivot, crouch, and Become-It zero it on the same frame so they own the bones.
             float becomeW = _swapAge >= 0f ? BecomeItPose.PoseWeight(_swapAge) : 0f;
+            OpponentLungeTell lungeMark = LungeTellMark();
+            bool lungeBusy = lunging || _lungeEaseAge >= 0f || _lungeEaseFrom > 0.001f
+                || (lungeMark != null && lungeMark.IsShowing);
+            bool hardStopGate = grounded && !air && !crouch && !sliding && !dashing && !jet
+                && !wallRun && !climb && !mantle && !lunging && !lungeBusy && !punching
+                && !bouncing && !gliding && _skiBlend < 0.02f && _slidePose <= 0.02f
+                && flinchAmt < 0.04f && claimAmt < 0.04f
+                && becomeW <= 0.02f && _pivotW <= 0.02f
+                && speed <= StopPlantPose.ArriveSpeed + 1.5f
+                && PoseAllowed(DummyPosePaths.Stop);
+            if (_stopPlantAge >= 0f && (!hardStopGate || _stopPlantAge >= StopPlantPose.WindowSeconds))
+                _stopPlantAge = -1f;
+            if (_stopPlantAge < 0f && hardStopGate
+                && StopPlantPose.Fires(_stopMemory, speed, sliding, crouch, lunging || lungeBusy))
+            {
+                // The plant owns this stop. Gentle slows still ease through the gait blends.
+                _stopPlantAge = 0f;
+                _hardStopLeadLeft = _strideLeadLeft;
+                _stopMemory.Armed = false;
+                _stopFromSprintIn = 1f;
+                _stopFromWalkIn = 1f;
+                _stopFromIdleIn = 1f;
+            }
+            float stopIdleW = 0f;
+            if (_stopPlantAge >= 0f)
+            {
+                // Keep the generic stop ease from taking the bones back on a later frame of this window.
+                _stopFromSprintIn = 1f;
+                _stopFromWalkIn = 1f;
+                _stopFromIdleIn = 1f;
+                PoseHandoff.StopIdle(_stopPlantAge / StopPlantPose.WindowSeconds, out _stopPlantW, out stopIdleW);
+                _stopPlantAge += dt;
+            }
+            else
+                _stopPlantW = 0f;
             bool stopBlend = (_stopFromSprint && _stopFromSprintIn < 0.98f)
                 || (_stopFromWalk && _stopFromWalkIn < 0.98f)
                 || (_stopFromIdle && _stopFromIdleIn < 0.98f);
@@ -6347,8 +6402,19 @@ namespace Tag.Art
                 && !stopBlend
                 && PoseAllowed(DummyPosePaths.Idle);
             float idleTarget = idleBody ? IdlePose.Weight(speed, _pivotW, crouch ? 1f : 0f, becomeW) : 0f;
-            _idlePoseW = Mathf.MoveTowards(_idlePoseW, idleTarget, dt / IdlePose.FadeSeconds);
-            _idleApply = idleBody ? _idlePoseW * IdlePose.Yield(_pivotW, crouch ? 1f : 0f, becomeW) : 0f;
+            if (_stopPlantW > 0.001f || stopIdleW > 0.001f)
+            {
+                // One curve. The plant leads, then the idle weight shift wins.
+                float yield = IdlePose.Yield(_pivotW, crouch ? 1f : 0f, becomeW);
+                idleTarget = hardStopGate ? IdlePose.SpeedWeight(speed) * yield * stopIdleW : 0f;
+                _idlePoseW = idleTarget;
+                _idleApply = idleTarget;
+            }
+            else
+            {
+                _idlePoseW = Mathf.MoveTowards(_idlePoseW, idleTarget, dt / IdlePose.FadeSeconds);
+                _idleApply = idleBody ? _idlePoseW * IdlePose.Yield(_pivotW, crouch ? 1f : 0f, becomeW) : 0f;
+            }
             if (_idlePoseW > 0.001f || idleTarget > 0.001f)
             {
                 _idleShift += dt * IdlePose.ShiftRate;
@@ -7956,7 +8022,7 @@ namespace Tag.Art
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-4f, 0f, 0f), pushW);
                     }
                 }
-                if (stopping && !_stopFromSprint && !_stopFromWalk && !_stopFromIdle && _stopPlant > 0.02f && footSki < 0.35f && _dropVis < 0.35f)
+                if (stopping && !_stopFromSprint && !_stopFromWalk && !_stopFromIdle && _stopPlant > 0.02f && footSki < 0.35f && _dropVis < 0.35f && _stopPlantW <= 0.02f)
                 {
                     // Last foot under the hip before the idle sway. The other foot finishes the close.
                     // The landing absorb keeps this plant off until the thud eases.
@@ -14713,6 +14779,7 @@ namespace Tag.Art
                 slew = Mathf.Max(slew, LungePose.Slew);
             }
             ApplyVerbClips(sliding, punching, phase, punchProg, flinchAmt, sinC);
+            ApplyStopPlant();
             ApplyIdlePose();
             ApplyBecomeItPose(dt);
             if (_swapPoseOn)
@@ -14735,6 +14802,13 @@ namespace Tag.Art
                 armSlewL = Mathf.Max(armSlewL, IdlePose.Slew);
                 armSlewR = Mathf.Max(armSlewR, IdlePose.Slew);
             }
+            if (_stopPlantW > 0.02f)
+            {
+                legSlew = Mathf.Max(legSlew, StopPlantPose.Slew);
+                torsoSlew = Mathf.Max(torsoSlew, StopPlantPose.Slew);
+                armSlewL = Mathf.Max(armSlewL, StopPlantPose.Slew);
+                armSlewR = Mathf.Max(armSlewR, StopPlantPose.Slew);
+            }
             if (_aimTorsoW > 0.02f)
             {
                 torsoSlew = Mathf.Max(torsoSlew, AimTorsoPose.Slew);
@@ -14744,6 +14818,22 @@ namespace Tag.Art
             {
                 _ftLT = _ftL0 * Quaternion.Euler(_solePitchL, 0f, 0f);
                 _ftRT = _ftR0 * Quaternion.Euler(_solePitchR, 0f, 0f);
+            }
+            if (_stopPlantW > 0.001f && PoseAllowed(DummyPosePaths.Stop))
+            {
+                // After the stance sole, so the plant does not pitch the shoe through the ground.
+                StopPlantPose.Sample planted = StopPlantPose.At();
+                float shoe = _stopPlantW;
+                if (_hardStopLeadLeft)
+                {
+                    _ftLT = Quaternion.Slerp(_ftLT, _ftL0 * Quaternion.Euler(planted.LeadFoot, 0f, 0f), shoe);
+                    _ftRT = Quaternion.Slerp(_ftRT, _ftR0 * Quaternion.Euler(planted.TrailFoot, 0f, 0f), shoe);
+                }
+                else
+                {
+                    _ftRT = Quaternion.Slerp(_ftRT, _ftR0 * Quaternion.Euler(planted.LeadFoot, 0f, 0f), shoe);
+                    _ftLT = Quaternion.Slerp(_ftLT, _ftL0 * Quaternion.Euler(planted.TrailFoot, 0f, 0f), shoe);
+                }
             }
             if (_idleApply > 0.001f && PoseAllowed(DummyPosePaths.Idle))
             {
@@ -15080,6 +15170,41 @@ namespace Tag.Art
             AimTorsoPose.Sample aim = AimTorsoPose.At(_aimYaw, _aimPitch);
             _spineT = Quaternion.Slerp(_spineT, _spineT * Quaternion.Euler(aim.ChestPitch, aim.ChestYaw, 0f), apply);
             _headT = Quaternion.Slerp(_headT, _headT * Quaternion.Euler(aim.HeadPitch, aim.HeadYaw, 0f), apply);
+        }
+
+        /// <summary>
+        /// Lead foot plants, hips settle back, and the gait arm swing damps out.
+        /// Idle then takes the bones on the same curve. No root motion.
+        /// </summary>
+        void ApplyStopPlant()
+        {
+            if (_stopPlantW <= 0.001f) return;
+            if (!PoseAllowed(DummyPosePaths.Stop)) return;
+            StopPlantPose.Sample pose = StopPlantPose.At();
+            float w = _stopPlantW;
+            _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(pose.HipPitch, 0f, 0f), w);
+            _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(pose.ChestPitch, 0f, 0f), w);
+            _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(pose.HeadPitch, 0f, 0f), w);
+            float dampL = StopPlantPose.DampSwing(1f, w);
+            float armW = 1f - dampL;
+            _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(pose.ArmPitch, pose.ArmYaw, 0f), armW);
+            _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(pose.ArmPitch, -pose.ArmYaw, 0f), armW);
+            _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(pose.Elbow, 0f, 0f), armW);
+            _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(pose.Elbow, 0f, 0f), armW);
+            if (_hardStopLeadLeft)
+            {
+                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(pose.LeadThigh, 0f, 0f), w);
+                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(pose.LeadKnee, 0f, 0f), w);
+                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(pose.TrailThigh, 0f, 0f), w);
+                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(pose.TrailKnee, 0f, 0f), w);
+            }
+            else
+            {
+                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(pose.LeadThigh, 0f, 0f), w);
+                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(pose.LeadKnee, 0f, 0f), w);
+                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(pose.TrailThigh, 0f, 0f), w);
+                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(pose.TrailKnee, 0f, 0f), w);
+            }
         }
 
         /// <summary>

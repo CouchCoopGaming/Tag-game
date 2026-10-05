@@ -45,6 +45,8 @@ namespace Tag.Art
         public const float BecomeGaitSeconds = BecomeItPose.RecoverSeconds;
         /// <summary>Punch and the role swap on the same frame. The swap wins.</summary>
         public const float PunchBecomeSeconds = 0.10f;
+        /// <summary>Hard-brake plant into the idle weight shift. Idle wins.</summary>
+        public const float StopIdleSeconds = StopPlantPose.WindowSeconds;
 
         /// <summary>Smoothstep. 0 at the start of the blend, 1 at the end.</summary>
         public static float Ease(float u)
@@ -140,6 +142,15 @@ namespace Tag.Art
             Pair(age, PunchBecomeSeconds, out punchW, out becomeW);
         }
 
+        /// <summary>
+        /// Hard-brake plant and the idle weight shift. Sum to 1.
+        /// The plant leads. Idle wins. A gentle slow does not use this edge.
+        /// </summary>
+        public static void StopIdle(float timer01, out float plantW, out float idleW)
+        {
+            StopPlantPose.IntoIdle(timer01, out plantW, out idleW);
+        }
+
         public static bool Holds()
         {
             if (RootMotion) return false;
@@ -168,6 +179,8 @@ namespace Tag.Art
             if (Mathf.Abs(LungeRecoverSeconds - LungePose.RecoverSeconds) > 0.001f) return false;
             if (Mathf.Abs(BecomeGaitSeconds - BecomeItPose.RecoverSeconds) > 0.001f) return false;
             if (Mathf.Abs(PunchBecomeSeconds - 0.10f) > 0.001f) return false;
+            if (Mathf.Abs(StopIdleSeconds - StopPlantPose.WindowSeconds) > 0.001f) return false;
+            if (StopIdleSeconds < 0.12f || StopIdleSeconds > 0.20f) return false;
             if (Ease(0f) > 0.0001f || Mathf.Abs(Ease(1f) - 1f) > 0.0001f) return false;
             if (Mathf.Abs(Ease(0.5f) - 0.5f) > 0.0001f) return false;
             if (Mathf.Abs(ToWeight(0f)) > 0.0001f || Mathf.Abs(ToWeight(1f) - 1f) > 0.0001f) return false;
@@ -255,6 +268,21 @@ namespace Tag.Art
             PunchBecome(PunchBecomeSeconds, out float punchGone, out float becomeFull);
             if (punchFull < 0.999f || becomeOff > 0.0001f) return false;
             if (punchGone > 0.0001f || becomeFull < 0.999f) return false;
+            StopIdle(0f, out float stopFull, out float idleOff);
+            StopIdle(StopPlantPose.IdleAt, out float stopHeld, out float idleEarly);
+            StopIdle(1f, out float stopGone, out float idleWon);
+            if (stopFull < 0.999f || idleOff > 0.0001f) return false;
+            if (stopHeld < 0.999f || idleEarly > 0.0001f) return false;
+            if (stopGone > 0.0001f || idleWon < 0.999f) return false;
+            prev = -1f;
+            for (int i = 0; i <= 8; i++)
+            {
+                StopIdle(i / 8f, out float plantW, out float idleW);
+                if (Mathf.Abs(plantW + idleW - 1f) > 0.0001f) return false;
+                if (idleW + 0.0001f < prev) return false;
+                prev = idleW;
+            }
+
             if (Mathf.Abs(LungePose.RecoverWeight(0f, 1f) + 0f - 1f) > 0.0001f) return false;
             if (LungePose.RecoverWeight(LungeRecoverSeconds, 1f) > 0.0001f) return false;
             if (Mathf.Abs(BecomeItPose.PoseWeight(BecomeItPose.HoldSeconds) - 1f) > 0.0001f) return false;
@@ -278,6 +306,7 @@ namespace Tag.Art
                 + " lunge->gait " + LungeRecoverSeconds.ToString("0.00") + "s gait wins"
                 + " become->gait " + BecomeGaitSeconds.ToString("0.00") + "s gait wins"
                 + " punch->become " + PunchBecomeSeconds.ToString("0.00") + "s become wins"
+                + " stop->idle " + StopIdleSeconds.ToString("0.00") + "s idle wins"
                 + " dummy=shared"
                 + " mid=" + tellW.ToString("0.00") + "+" + burstW.ToString("0.00") + "+" + gaitW.ToString("0.00")
                 + " dash=" + dashW.ToString("0.00") + "+" + strideW.ToString("0.00") + "+" + fallW.ToString("0.00")
