@@ -382,6 +382,9 @@ namespace Tag.Art
         float _lungeEaseFrom;
         bool _lungeEaseBurst;
         bool _lungePoseOn;
+        float _swapAge = -1f;
+        bool _swapClaim;
+        bool _swapPoseOn;
         OpponentLungeTell _lungeTell;
         float _armRecover;
         bool _airCycleSnap;
@@ -14587,6 +14590,15 @@ namespace Tag.Art
                 slew = Mathf.Max(slew, LungePose.Slew);
             }
             ApplyVerbClips(sliding, punching, phase, punchProg, flinchAmt, sinC);
+            ApplyBecomeItPose(dt);
+            if (_swapPoseOn)
+            {
+                armSlewL = Mathf.Max(armSlewL, BecomeItPose.Slew);
+                armSlewR = Mathf.Max(armSlewR, BecomeItPose.Slew);
+                legSlew = Mathf.Max(legSlew, BecomeItPose.Slew);
+                torsoSlew = Mathf.Max(torsoSlew, BecomeItPose.Slew);
+                slew = Mathf.Max(slew, BecomeItPose.Slew);
+            }
             if (_stanceSole && !ShoesOwned(sliding, punching, flinchAmt))
             {
                 _ftLT = _ftL0 * Quaternion.Euler(_solePitchL, 0f, 0f);
@@ -14898,6 +14910,82 @@ namespace Tag.Art
                 _lungeEaseAge = -1f;
                 _lungeEaseFrom = 0f;
             }
+        }
+
+        /// <summary>
+        /// New It raises one arm and beats the chest. Old It flinches.
+        /// Both hold, then ease onto whatever the gait already wrote.
+        /// Punch phase time and the tag flinch clock stay as they are.
+        /// No root motion.
+        /// </summary>
+        void ApplyBecomeItPose(float dt)
+        {
+            _swapPoseOn = false;
+            if (!PoseAllowed(DummyPosePaths.Become))
+            {
+                _swapAge = -1f;
+                return;
+            }
+
+            if (_swapAge < 0f)
+                return;
+
+            float weight = BecomeItPose.PoseWeight(_swapAge);
+            if (weight > 0.001f)
+            {
+                _swapPoseOn = true;
+                BecomeItPose.Sample pose = _swapClaim
+                    ? BecomeItPose.Claim(BecomeItPose.Beat01(_swapAge))
+                    : BecomeItPose.GiveUp();
+                BlendBecomeSample(pose, weight);
+            }
+
+            _swapAge += dt;
+            if (weight <= 0.001f || _swapAge >= BecomeItPose.HoldSeconds + BecomeItPose.RecoverSeconds)
+                _swapAge = -1f;
+        }
+
+        void BlendBecomeSample(BecomeItPose.Sample pose, float weight)
+        {
+            if (weight <= 0.001f) return;
+            Quaternion uaL = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, pose.ArmRollL);
+            Quaternion uaR = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, pose.ArmRollR);
+            Quaternion laL = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
+            Quaternion laR = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
+            Quaternion ulL = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
+            Quaternion ulR = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            Quaternion llL = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
+            Quaternion llR = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
+            Quaternion spine = _spine0 * Quaternion.Euler(pose.Spine, pose.SpineYaw, 0f);
+            Quaternion hips = _hips0 * Quaternion.Euler(pose.Hip, pose.HipYaw, 0f);
+            Quaternion head = _head0 * Quaternion.Euler(pose.Head, pose.HeadYaw, 0f);
+            if (weight >= 0.999f)
+            {
+                _uaLT = uaL;
+                _uaRT = uaR;
+                _laLT = laL;
+                _laRT = laR;
+                _ulLT = ulL;
+                _ulRT = ulR;
+                _llLT = llL;
+                _llRT = llR;
+                _spineT = spine;
+                _hipsT = hips;
+                _headT = head;
+                return;
+            }
+
+            _uaLT = Quaternion.Slerp(_uaLT, uaL, weight);
+            _uaRT = Quaternion.Slerp(_uaRT, uaR, weight);
+            _laLT = Quaternion.Slerp(_laLT, laL, weight);
+            _laRT = Quaternion.Slerp(_laRT, laR, weight);
+            _ulLT = Quaternion.Slerp(_ulLT, ulL, weight);
+            _ulRT = Quaternion.Slerp(_ulRT, ulR, weight);
+            _llLT = Quaternion.Slerp(_llLT, llL, weight);
+            _llRT = Quaternion.Slerp(_llRT, llR, weight);
+            _spineT = Quaternion.Slerp(_spineT, spine, weight);
+            _hipsT = Quaternion.Slerp(_hipsT, hips, weight);
+            _headT = Quaternion.Slerp(_headT, head, weight);
         }
 
         void BlendLungeSample(LungePose.Sample pose, float weight)
@@ -15585,10 +15673,26 @@ namespace Tag.Art
             _tagFlinch = 1f;
         }
 
-        /// <summary>New It raises both arms. Separate from the tagged runner's guard.</summary>
+        /// <summary>
+        /// New It. The claim timer stays for the connect rings.
+        /// The body is the one-arm raise and the chest beat.
+        /// </summary>
         public void PlayItClaim()
         {
             _itClaim = 1f;
+            BeginRoleSwap(true);
+        }
+
+        /// <summary>Old It. Shoulders drop. The punch phase clock is unchanged.</summary>
+        public void PlayItGiveUp()
+        {
+            BeginRoleSwap(false);
+        }
+
+        void BeginRoleSwap(bool claim)
+        {
+            _swapClaim = claim;
+            _swapAge = 0f;
         }
 
         void HookBounce()

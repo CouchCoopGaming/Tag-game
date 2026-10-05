@@ -22,6 +22,7 @@ namespace Tag.Art
         public const string Crouch = "crouch";
         public const string Mantle = "mantle";
         public const string Land = "land";
+        public const string Become = "become";
         public const string Grapple = "grapple";
         public const string Dash = "dash";
 
@@ -30,7 +31,7 @@ namespace Tag.Art
 
         public static readonly string[] Shared =
         {
-            Gait, Jump, Wall, Punch, Tag, Lunge, Slide, Crouch, Mantle, Land
+            Gait, Jump, Wall, Punch, Tag, Lunge, Slide, Crouch, Mantle, Land, Become
         };
 
         public static readonly string[] Denied = { Grapple, Dash };
@@ -57,10 +58,10 @@ namespace Tag.Art
 
         public static bool Holds()
         {
-            if (Shared.Length != 10 || Denied.Length != 2) return false;
+            if (Shared.Length != 11 || Denied.Length != 2) return false;
             if (Shared[0] != Gait || Shared[1] != Jump || Shared[2] != Wall || Shared[3] != Punch
                 || Shared[4] != Tag || Shared[5] != Lunge || Shared[6] != Slide || Shared[7] != Crouch
-                || Shared[8] != Mantle || Shared[9] != Land)
+                || Shared[8] != Mantle || Shared[9] != Land || Shared[10] != Become)
                 return false;
             if (Denied[0] != Grapple || Denied[1] != Dash) return false;
             if (Mathf.Abs(LungeTellSeconds - 0.45f) > 0.001f) return false;
@@ -95,13 +96,16 @@ namespace Tag.Art
 
             if (JumpPose.RootMotion || WallPose.RootMotion || PunchTagPose.RootMotion
                 || CrouchPose.RootMotion || MantlePose.RootMotion || AirDashPose.RootMotion
-                || GrapplePose.RootMotion || PoseHandoff.RootMotion || LungePose.RootMotion)
+                || GrapplePose.RootMotion || PoseHandoff.RootMotion || LungePose.RootMotion
+                || BecomeItPose.RootMotion)
                 return false;
             if (Mathf.Abs(PunchTagPose.ReachMeters - 1.55f) > 0.001f) return false;
             if (Mathf.Abs(AirDashPose.WindowSeconds - 0.10f) > 0.001f) return false;
             if (Mathf.Abs(LungePose.LeadSeconds - LungeTellSeconds) > 0.001f) return false;
             if (Mathf.Abs(LungePose.BurstSeconds - 0.20f) > 0.001f) return false;
             if (!LungePose.Holds()) return false;
+            if (!BecomeItPose.Holds()) return false;
+            if (BecomeItPose.HoldSeconds < 0.30f || BecomeItPose.HoldSeconds > 0.50f) return false;
 
             MovementConfig cfg = ScriptableObject.CreateInstance<MovementConfig>();
             PunchTagTuning punch = ScriptableObject.CreateInstance<PunchTagTuning>();
@@ -138,6 +142,7 @@ namespace Tag.Art
                 + " crouch=CrouchPose if used"
                 + " mantle=MantlePose"
                 + " land=JumpLandTell thud"
+                + " become=BecomeItPose claim/give-up"
                 + " denied=grapple+airdash"
                 + " chase=OpponentChaseTell"
                 + " numbers=player";
