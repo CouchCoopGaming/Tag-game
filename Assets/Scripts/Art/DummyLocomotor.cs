@@ -388,6 +388,11 @@ namespace Tag.Art
         bool _lungePoseOn;
         float _swapAge = -1f;
         bool _swapClaim;
+        bool _becomeCatch;
+        bool _aimCatch;
+        bool _aimOnWas;
+        bool _aimPullWas;
+        bool _punchAimWas;
         bool _swapFromPunch;
         bool _swapPoseOn;
         Quaternion _swapFromUaL, _swapFromUaR, _swapFromLaL, _swapFromLaR;
@@ -15012,6 +15017,12 @@ namespace Tag.Art
             bool punchAim = PoseAllowed(DummyPosePaths.Punch) && !pulling && !aiming
                 && ((_punchTelegraph > 0.02f && phase == PunchPhase.Idle) || phase == PunchPhase.Windup);
             bool on = pulling || aiming || punchAim;
+            // Rising edges only. Holding the aim, or a normal turn, does not re-arm the chase cam.
+            if ((on && !_aimOnWas) || (pulling && !_aimPullWas) || (punchAim && !_punchAimWas))
+                _aimCatch = true;
+            _aimOnWas = on;
+            _aimPullWas = pulling;
+            _punchAimWas = punchAim;
             if (on)
             {
                 Transform basis = _motor != null ? _motor.transform : transform;
@@ -16096,8 +16107,32 @@ namespace Tag.Art
             _swapClaim = claim;
             _swapAge = 0f;
             _swapFromPunch = false;
+            if (PoseAllowed(DummyPosePaths.Become))
+                _becomeCatch = true;
             if ((_punch != null && _punch.IsPunching) || _tagFlinch > 0.04f)
                 ArmSwapFromPose();
+        }
+
+        /// <summary>
+        /// Claim or give-up just opened. This pawn's chase cam reads it once.
+        /// DummyRunner has no chase cam. A couch cam is a different pawn.
+        /// </summary>
+        public bool ConsumeBecomeCatch()
+        {
+            if (!_becomeCatch) return false;
+            _becomeCatch = false;
+            return true;
+        }
+
+        /// <summary>
+        /// Punch telegraph or windup, or grapple aim or latch, just started.
+        /// Same gates as <see cref="AimTorsoPose"/>. The cam does not read another pawn.
+        /// </summary>
+        public bool ConsumeAimCatch()
+        {
+            if (!_aimCatch) return false;
+            _aimCatch = false;
+            return true;
         }
 
         void HookBounce()
