@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace TagArena.Movement
@@ -195,6 +196,100 @@ namespace TagArena.Movement
             if (outward <= 0f) return horiz;
             return horiz + inward * outward;
         }
+
+        /// <summary>No ceiling within one jump. A real gap is shorter than this.</summary>
+        public const float OpenCeiling = 8f;
+
+        /// <summary>Downward speed that keeps a planted capsule on the floor. Same write the gentle band already uses.</summary>
+        public const float PlantStickVy = -2f;
+
+        /// <summary>
+        /// Shorten an upward move so it stops a skin short of the ceiling.
+        /// Overlap eases out by at most one skin this frame. The full overlap is not returned.
+        /// </summary>
+        public static float CeilingKissRise(float requestedRise, float gap, float skin)
+        {
+            float safe = skin < 0.02f ? 0.02f : skin;
+            if (requestedRise < 0f) requestedRise = 0f;
+            if (gap >= OpenCeiling) return requestedRise;
+            float room = gap - safe;
+            if (requestedRise <= room) return requestedRise;
+            if (room >= 0f) return room;
+            float depth = -room;
+            return depth < safe ? -depth : -safe;
+        }
+
+        /// <summary>A ceiling hit spends upward speed. Falling is left alone. No position write.</summary>
+        public static float CeilingBlockedVy(float vy, bool ceilingHit)
+        {
+            if (ceilingHit && vy > 0f) return 0f;
+            return vy;
+        }
+
+        /// <summary>Recover speed after a kiss. Downward ease stays under a launch.</summary>
+        public static float CapKissVy(float vy)
+        {
+            const float maxDown = 1.2f;
+            if (vy < -maxDown) return -maxDown;
+            return vy;
+        }
+
+        /// <summary>
+        /// A ceiling inside the step height would turn the rise into a downward snap.
+        /// Open air keeps the stair step.
+        /// </summary>
+        public static bool CeilingSuppressStep(float gap, float skin, float stepOffset)
+        {
+            float safe = skin < 0.02f ? 0.02f : skin;
+            float step = stepOffset > 0f ? stepOffset : 0f;
+            return gap < step + safe;
+        }
+
+        /// <summary>
+        /// A fall that is still moving into the floor becomes the plant stick.
+        /// Speed along the slope (into the surface near zero) is kept. A launch is kept.
+        /// </summary>
+        public static float SteepLandStick(float vy, float intoSurface)
+        {
+            if (vy > LaunchVy) return vy;
+            if (intoSurface < -0.35f && vy < -0.5f) return PlantStickVy;
+            return vy;
+        }
+
+        /// <summary>
+        /// Contact, a bury inside 0.20 m, and a drop the step can absorb stay planted.
+        /// A lip inside the probe but past the step is a fall, so the stick does not hover there.
+        /// The band between the step and a slightly higher leave line does not flip every frame.
+        /// </summary>
+        public static bool StepEdgePlant(float feetGap, float stepOffset, float groundProbe, bool wasPlanted)
+        {
+            const float bury = 0.2f;
+            float step = stepOffset > 0f ? stepOffset : 0f;
+            if (feetGap < -bury) return false;
+            if (feetGap > groundProbe) return false;
+            float grab = step;
+            float leave = step + 0.04f;
+            if (wasPlanted) return feetGap <= leave;
+            return feetGap <= grab;
+        }
+
+        /// <summary>
+        /// Buried past the skin, move up by at most one skin this frame and stay under launch speed.
+        /// A jump already faster than that ease is kept. Inside the skin, the velocity is unchanged.
+        /// </summary>
+        public static float BuriedEaseVy(float vy, float feetGap, float skin, float dt)
+        {
+            float safe = skin < 0.02f ? 0.02f : skin;
+            if (feetGap >= -safe) return vy;
+            if (dt < 1e-6f) return vy;
+            float depth = -feetGap - safe;
+            float distance = depth < safe ? depth : safe;
+            float up = distance / dt;
+            const float maxUp = 1.2f;
+            if (up > maxUp) up = maxUp;
+            if (vy >= up) return vy;
+            return up;
+        }
     }
 
     /// <summary>Proofs for the controller, probe, and one-frame ground hold. Feel locks are not inputs.</summary>
@@ -279,6 +374,121 @@ namespace TagArena.Movement
                 + " secondMiss=air"
                 + " coyoteAfter1f=" + coyote.ToString("0.0000")
                 + " window=0.10";
+        }
+    }
+
+    /// <summary>Second controller pass. Feel locks are not inputs. One Move stays in the motor.</summary>
+    public static class EnginePass2
+    {
+        public static bool Holds()
+        {
+            const float skin = 0.02f;
+            const float step = 0.20f;
+            const float probe = 0.28f;
+            const float dt = 1f / 60f;
+
+            float kiss = KinematicStep.CeilingKissRise(0.40f, 0.05f, skin);
+            if (Mathf.Abs(kiss - 0.03f) > 0.001f) return false;
+            float open = KinematicStep.CeilingKissRise(0.40f, KinematicStep.OpenCeiling, skin);
+            if (Mathf.Abs(open - 0.40f) > 0.001f) return false;
+            float overlap = KinematicStep.CeilingKissRise(0.40f, -0.20f, skin);
+            if (Mathf.Abs(overlap - (-skin)) > 0.001f) return false;
+            if (overlap <= -0.20f) return false;
+            if (Mathf.Abs(KinematicStep.CeilingBlockedVy(24.7f, true)) > 0.001f) return false;
+            if (Mathf.Abs(KinematicStep.CeilingBlockedVy(24.7f, false) - 24.7f) > 0.001f) return false;
+            if (Mathf.Abs(KinematicStep.CeilingBlockedVy(-4f, true) - (-4f)) > 0.001f) return false;
+            float hiHz = KinematicStep.CapKissVy(-skin / (1f / 144f));
+            if (hiHz < -1.2f - 0.001f || hiHz > -1.2f + 0.001f) return false;
+            if (!(Mathf.Abs(hiHz) < KinematicStep.LaunchVy)) return false;
+            if (!KinematicStep.CeilingSuppressStep(0.10f, skin, step)) return false;
+            if (KinematicStep.CeilingSuppressStep(KinematicStep.OpenCeiling, skin, step)) return false;
+            if (KinematicStep.StepOffset(1.8f, 0.38f, skin, true) > 0.0001f) return false;
+            if (Mathf.Abs(KinematicStep.StepOffset(1.8f, 0.38f, skin, false) - step) > 0.001f) return false;
+
+            if (Mathf.Abs(KinematicStep.SteepLandStick(-30f, -22f) - KinematicStep.PlantStickVy) > 0.001f) return false;
+            if (Mathf.Abs(KinematicStep.SteepLandStick(-7f, -0.05f) - (-7f)) > 0.001f) return false;
+            if (Mathf.Abs(KinematicStep.SteepLandStick(24.7f, -5f) - 24.7f) > 0.001f) return false;
+            if (Mathf.Abs(KinematicStep.SteepLandStick(-0.2f, -0.2f) - (-0.2f)) > 0.001f) return false;
+
+            const float castRadius = 0.38f * 0.92f;
+            if (!KinematicStep.ProbeGrounded(true, 0.25f, probe, castRadius, false)) return false;
+            if (KinematicStep.StepEdgePlant(0.25f, step, probe, true)) return false;
+            if (!KinematicStep.StepEdgePlant(0.10f, step, probe, true)) return false;
+            if (!KinematicStep.StepEdgePlant(0.188f, step, probe, false)) return false;
+            if (!KinematicStep.StepEdgePlant(0.22f, step, probe, true)) return false;
+            if (KinematicStep.StepEdgePlant(0.22f, step, probe, false)) return false;
+            if (!KinematicStep.StepEdgePlant(-0.08f, step, probe, true)) return false;
+            if (!KinematicStep.NearFeet(-0.08f, 0f, probe, 0.2f)) return false;
+
+            float eased = KinematicStep.BuriedEaseVy(-2f, -0.15f, skin, dt);
+            if (Mathf.Abs(eased - 1.2f) > 0.001f) return false;
+            float easedStep = eased * dt;
+            if (easedStep > skin + 0.001f) return false;
+            if (easedStep >= 0.15f - 0.05f) return false;
+            if (Mathf.Abs(KinematicStep.BuriedEaseVy(-2f, -0.01f, skin, dt) - (-2f)) > 0.001f) return false;
+            if (Mathf.Abs(KinematicStep.BuriedEaseVy(24.7f, -0.15f, skin, dt) - 24.7f) > 0.001f) return false;
+            if (!(eased < KinematicStep.LaunchVy)) return false;
+            return true;
+        }
+
+        public static string ProofLine()
+        {
+            const float skin = 0.02f;
+            const float dt = 1f / 60f;
+            float kiss = KinematicStep.CeilingKissRise(0.40f, 0.05f, skin);
+            float open = KinematicStep.CeilingKissRise(0.40f, KinematicStep.OpenCeiling, skin);
+            float overlap = KinematicStep.CeilingKissRise(0.40f, -0.20f, skin);
+            float eased = KinematicStep.BuriedEaseVy(-2f, -0.15f, skin, dt);
+            bool curb = KinematicStep.StepEdgePlant(0.25f, 0.20f, 0.28f, true);
+            bool stair = KinematicStep.StepEdgePlant(0.10f, 0.20f, 0.28f, true);
+            bool band = KinematicStep.StepEdgePlant(0.22f, 0.20f, 0.28f, true);
+            bool regrab = KinematicStep.StepEdgePlant(0.22f, 0.20f, 0.28f, false);
+            float stepHeld = KinematicStep.StepOffset(1.8f, 0.38f, skin, KinematicStep.CeilingSuppressStep(0.10f, skin, 0.20f));
+            bool teleport = overlap <= -0.20f || eased * dt > skin + 0.001f;
+            return "engine-pass-2"
+                + " ceiling-kiss rise=" + kiss.ToString("0.000")
+                + " open=" + open.ToString("0.000")
+                + " overlap=" + overlap.ToString("0.000")
+                + " blockedVy=" + KinematicStep.CeilingBlockedVy(24.7f, true).ToString("0.0")
+                + " stepHeld=" + stepHeld.ToString("0.00")
+                + " steep-land-stick fall=" + KinematicStep.SteepLandStick(-30f, -22f).ToString("0.0")
+                + " slide=" + KinematicStep.SteepLandStick(-7f, -0.05f).ToString("0.0")
+                + " jump=" + KinematicStep.SteepLandStick(24.7f, -5f).ToString("0.0")
+                + " step-edge curb=" + (curb ? "plant" : "fall")
+                + " stair=" + (stair ? "plant" : "fall")
+                + " band=" + (band ? "hold" : "fall")
+                + " regrab=" + (regrab ? "plant" : "no")
+                + " buried-ease up=" + eased.ToString("0.00")
+                + " step=" + (eased * dt).ToString("0.000")
+                + " teleport=" + (teleport ? "yes" : "no");
+        }
+
+        public static bool Wired(string motor, string probe)
+        {
+            if (string.IsNullOrEmpty(motor) || string.IsNullOrEmpty(probe)) return false;
+            if (Count(motor, "_cc.Move(") != 1) return false;
+            if (motor.IndexOf("SteepLandStick", StringComparison.Ordinal) < 0) return false;
+            if (motor.IndexOf("BuriedEaseVy", StringComparison.Ordinal) < 0) return false;
+            if (motor.IndexOf("CeilingKissRise", StringComparison.Ordinal) < 0) return false;
+            if (motor.IndexOf("CeilingBlockedVy", StringComparison.Ordinal) < 0) return false;
+            if (motor.IndexOf("CeilingSuppressStep", StringComparison.Ordinal) < 0) return false;
+            if (probe.IndexOf("StepEdgePlant", StringComparison.Ordinal) < 0) return false;
+            if (probe.IndexOf("CeilingGap", StringComparison.Ordinal) < 0) return false;
+            return true;
+        }
+
+        static int Count(string text, string needle)
+        {
+            int n = 0;
+            int i = 0;
+            while (i >= 0 && i < text.Length)
+            {
+                i = text.IndexOf(needle, i, StringComparison.Ordinal);
+                if (i < 0) break;
+                n++;
+                i += needle.Length;
+            }
+            return n;
         }
     }
 }
