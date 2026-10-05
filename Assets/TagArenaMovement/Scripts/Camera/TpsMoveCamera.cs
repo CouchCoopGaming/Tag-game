@@ -1,3 +1,4 @@
+using Tag.Art;
 using UnityEngine;
 
 namespace TagArena.Movement
@@ -40,6 +41,7 @@ namespace TagArena.Movement
         float _lookAhead;
         float _lookH = 1.25f;
         float _catchT;
+        bool _wasLunging;
         MoveState _prevState = MoveState.Idle;
         Vector3 _aheadSmoothed;
         Vector3 _kick;
@@ -84,8 +86,19 @@ namespace TagArena.Movement
             MoveState state = motor.State;
             bool enteredSlide = state == MoveState.Slide && _prevState != MoveState.Slide;
             bool wallToAir = state == MoveState.Air && (_prevState == MoveState.WallRun || _prevState == MoveState.WallClimb);
-            if (ChaseCam.WantsCatchup(enteredSlide, wallToAir))
-                _catchT = ChaseCam.CatchSeconds;
+            bool enteredMantle = state == MoveState.Mantle && _prevState != MoveState.Mantle;
+            bool lungeBurst = motor.IsLunging && !_wasLunging;
+            _wasLunging = motor.IsLunging;
+            bool becomeIt = false;
+            bool aim = false;
+            // This pawn's visual only. A scene search would let a couch or DummyRunner pose move the solo rig.
+            DummyLocomotor loco = motor.GetComponentInChildren<DummyLocomotor>(true);
+            if (loco != null)
+            {
+                becomeIt = loco.ConsumeBecomeCatch();
+                aim = loco.ConsumeAimCatch();
+            }
+            ChaseCam.Arm(ref _catchT, enteredSlide, wallToAir, enteredMantle, becomeIt, lungeBurst, aim, motor.gameObject.name);
             _prevState = state;
 
             // CamRig stays at player root; pivot at chest/shoulder height
@@ -138,7 +151,8 @@ namespace TagArena.Movement
                 Vector3 hv = motor.Velocity; hv.y = 0f;
                 // Direction is smoothed. An instant velocity flip was yawing the look-at
                 // point 180° in one frame (the distance lerp was already smooth).
-                // A wall jump or a slide uses the pose window so the look arrives with the body.
+                // A pose gate uses its short window so the look arrives with the body.
+                // A normal turn leaves the slow slew alone.
                 Vector3 rawAhead = hv.sqrMagnitude > 1f ? hv.normalized : motor.transform.forward;
                 if (_aheadSmoothed.sqrMagnitude < 0.001f) _aheadSmoothed = rawAhead;
                 float aheadRate = ChaseCam.AheadRateFor(_catchT);
