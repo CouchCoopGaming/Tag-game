@@ -12,7 +12,7 @@ namespace Tag.Art
     /// on top of the stride. Wall climb and wall run read <see cref="WallPose"/>.
     /// Air dash reads <see cref="AirDashPose"/>. Crouch reads <see cref="CrouchPose"/>.
     /// Mantle reads <see cref="MantlePose"/>. Those clips do not change feel numbers. No root motion.
-    /// DummyRunner shares gait, the grounded pivot, the idle weight shift, the hard-brake stop plant, jump, the airborne strafe lean, the bunny-hop chain, wall, punch, tag, lunge, slide, crouch, mantle, the land thud, and punch aim.
+    /// DummyRunner shares gait, the grounded pivot, the idle weight shift, the hard-brake stop plant, jump, the airborne strafe lean, the bunny-hop chain, wall, punch, tag, lunge, slide, crouch, mantle, the air-scaled land thud, and punch aim.
     /// Grapple and air dash stay on the solo human. See <see cref="DummyPosePaths"/>.
     /// </summary>
     public class DummyLocomotor : MonoBehaviour
@@ -1071,6 +1071,7 @@ namespace Tag.Art
         static Mesh _chaseChevronMesh;
         float _jumpLandAge = -1f;
         float _jumpLandAir;
+        float _jumpLandWeight;
         Transform _jumpLandRoot;
         Transform _jumpLandL;
         Transform _jumpLandR;
@@ -1214,7 +1215,8 @@ namespace Tag.Art
             // Buffered hop, or a jump within about one frame, skips the thud.
             // Coyote, the jump buffer, and jump speed stay put.
             NoteHopChain(dt);
-            // Thud and heel dust after a real landing. Solo pawn only.
+            // Thud and heel dust after a real landing. Solo pawn and DummyRunner.
+            // Longer air hits harder. The squash and the dust stop at a cap.
             // It still runs if the limb rig failed to bind. Jump height stays put.
             float landAirSnap = _jumpLandAir;
             TickJumpLand(dt);
@@ -16857,6 +16859,7 @@ namespace Tag.Art
                 JumpLandTell.Clear(ref _jumpLandAge);
                 _landTellDefer = false;
                 _jumpLandAir = 0f;
+                _jumpLandWeight = 0f;
                 HideJumpLand();
                 return;
             }
@@ -16874,11 +16877,11 @@ namespace Tag.Art
             if (_landTellDefer && grounded)
             {
                 _landTellDefer = false;
-                JumpLandTell.Note(ref _jumpLandAge, ref _landTellAir, solo, true, false, slide, cling, dt);
+                JumpLandTell.Note(ref _jumpLandAge, ref _landTellAir, solo, true, false, slide, cling, dt, ref _jumpLandWeight);
                 _jumpLandAir = _landTellAir;
             }
             else
-                JumpLandTell.Note(ref _jumpLandAge, ref _jumpLandAir, solo, grounded, _wasGrounded, slide, cling, dt);
+                JumpLandTell.Note(ref _jumpLandAge, ref _jumpLandAir, solo, grounded, _wasGrounded, slide, cling, dt, ref _jumpLandWeight);
 
             if (!JumpLandTell.Show(solo, _jumpLandAge))
             {
@@ -16889,7 +16892,7 @@ namespace Tag.Art
 
             EnsureJumpLand();
             float fade = JumpLandTell.Fade(_jumpLandAge);
-            PlaceJumpLand(JumpLandTell.Alpha(_jumpLandAge), fade);
+            PlaceJumpLand(JumpLandTell.Alpha(_jumpLandAge, _jumpLandWeight), fade);
             JumpLandTell.Step(ref _jumpLandAge, dt, solo);
         }
 
@@ -16924,14 +16927,15 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Pose scale, then the landing thud. A quiet frame leaves the pose scale as it is.
+        /// Pose scale, then the landing thud. Longer air squashes harder and the dust
+        /// is brighter, both capped. A quiet frame leaves the pose scale as it is.
         /// </summary>
         Vector3 JumpLandScale(Vector3 poseScale)
         {
             float fade = JumpLandTell.Show(JumpLandSolo(), _jumpLandAge)
                 ? JumpLandTell.Fade(_jumpLandAge)
                 : 0f;
-            JumpLandTell.ThudScale(fade, out float y, out float xz);
+            JumpLandTell.ThudScale(fade, _jumpLandWeight, out float y, out float xz);
             return new Vector3(poseScale.x * xz, poseScale.y * y, poseScale.z * xz);
         }
 
@@ -17911,6 +17915,7 @@ namespace Tag.Art
             }
             _jumpLandAge = -1f;
             _jumpLandAir = 0f;
+            _jumpLandWeight = 0f;
             if (_wallJumpRoot != null)
             {
                 Destroy(_wallJumpRoot.gameObject);

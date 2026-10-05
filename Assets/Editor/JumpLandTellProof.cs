@@ -58,6 +58,9 @@ public static class JumpLandTellProof
             report.Fail("dust does not open at peak alpha");
         if (JumpLandTell.Alpha(JumpLandTell.FlashSeconds) != 0f || JumpLandTell.Alpha(-1f) != 0f)
             report.Fail("dust alpha stays up after the window");
+        if (!JumpLandTell.ScaleHolds())
+            report.Fail("air-time land scale is not held");
+        CheckAirScale(report);
         if (JumpLandTell.PuffCount != 2)
             report.Fail("land tell is not two heel puffs");
         if (Mathf.Abs(JumpLandTell.PuffDiameter(1f) - JumpLandTell.PuffTight) > 0.001f)
@@ -189,6 +192,93 @@ public static class JumpLandTellProof
         if (air != 0f && solo)
             report.Fail("a landing left air time running");
         return show;
+    }
+
+    /// <summary>
+    /// A gate landing stays light. A long fall reaches the floor and the dust ceiling
+    /// and does not go past them. Standing keeps the weight. A slide clears it.
+    /// </summary>
+    static void CheckAirScale(JumpLandTellReport report)
+    {
+        if (JumpLandTell.ThudYFloor < 0.60f || JumpLandTell.ThudYFloor > 0.66f)
+            report.Fail("heavy thud floor is a pancake or no heavier than a hop");
+        if (JumpLandTell.ThudYFloor >= JumpLandTell.ThudY)
+            report.Fail("a long fall is not a deeper squash");
+        if (JumpLandTell.AlphaCap <= JumpLandTell.MaxAlpha || JumpLandTell.AlphaCap > 0.70f)
+            report.Fail("heavy dust is no brighter or hides the feet");
+        if (JumpLandTell.ThudXZCap <= JumpLandTell.ThudXZ || JumpLandTell.ThudXZCap > 1.24f)
+            report.Fail("heavy thud width is flat or a blob");
+        if (JumpLandTell.HeavyAirSeconds <= JumpLandTell.MinAirSeconds)
+            report.Fail("heavy air is not past the gate");
+
+        float age = -1f;
+        float air = JumpLandTell.MinAirSeconds;
+        float weight = 5f;
+        JumpLandTell.Note(ref age, ref air, true, true, false, false, false, Dt, ref weight);
+        if (!JumpLandTell.Show(true, age) || weight > 0.001f)
+            report.Fail("a gate landing was not the light thud");
+        JumpLandTell.ThudScale(1f, weight, out float hopY, out float hopXZ);
+        if (Mathf.Abs(hopY - JumpLandTell.ThudY) > 0.001f || Mathf.Abs(hopXZ - JumpLandTell.ThudXZ) > 0.001f)
+            report.Fail("a gate landing left the light squash");
+        if (Mathf.Abs(JumpLandTell.Alpha(0f, weight) - JumpLandTell.MaxAlpha) > 0.001f)
+            report.Fail("a gate landing left the light dust");
+        float held = weight;
+        JumpLandTell.Note(ref age, ref air, true, true, true, false, false, Dt, ref weight);
+        if (Mathf.Abs(weight - held) > 0.001f || !JumpLandTell.Show(true, age))
+            report.Fail("standing on the landing changed the thud weight");
+
+        age = -1f;
+        air = JumpLandTell.HeavyAirSeconds + 3f;
+        weight = -1f;
+        JumpLandTell.Note(ref age, ref air, true, true, false, false, false, Dt, ref weight);
+        if (!JumpLandTell.Show(true, age) || Mathf.Abs(weight - 1f) > 0.001f)
+            report.Fail("a long fall did not reach the heavy cap");
+        JumpLandTell.ThudScale(1f, weight, out float fallY, out float fallXZ);
+        if (fallY < JumpLandTell.ThudYFloor - 0.001f || Mathf.Abs(fallY - JumpLandTell.ThudYFloor) > 0.001f)
+            report.Fail("a long fall broke the squash floor");
+        if (Mathf.Abs(fallXZ - JumpLandTell.ThudXZCap) > 0.001f || fallXZ > 1.24f)
+            report.Fail("a long fall broke the width cap");
+        if (JumpLandTell.Alpha(0f, weight) > JumpLandTell.AlphaCap + 0.001f
+            || Mathf.Abs(JumpLandTell.Alpha(0f, weight) - JumpLandTell.AlphaCap) > 0.001f)
+            report.Fail("a long fall broke the dust ceiling");
+        if (fallY >= hopY)
+            report.Fail("a long fall is not heavier than a short hop");
+        if (JumpLandTell.Alpha(0f, 1f) <= JumpLandTell.Alpha(0f, 0f))
+            report.Fail("heavy dust is not brighter than hop dust");
+
+        float mid = JumpLandTell.Weight((JumpLandTell.MinAirSeconds + JumpLandTell.HeavyAirSeconds) * 0.5f);
+        JumpLandTell.ThudScale(1f, mid, out float midY, out _);
+        if (midY <= fallY || midY >= hopY)
+            report.Fail("a mid fall is not between the hop and the cap");
+        JumpLandTell.ThudScale(0f, 1f, out float restY, out float restXZ);
+        if (Mathf.Abs(restY - 1f) > 0.001f || Mathf.Abs(restXZ - 1f) > 0.001f)
+            report.Fail("a heavy weight still squashes a quiet frame");
+
+        JumpLandTell.Note(ref age, ref air, true, true, true, true, false, Dt, ref weight);
+        if (JumpLandTell.Show(true, age) || weight != 0f)
+            report.Fail("a slide landing kept the heavy thud");
+
+        age = -1f;
+        air = 0f;
+        weight = 1f;
+        bool was = true;
+        for (int i = 0; i < 8; i++)
+        {
+            JumpLandTell.Note(ref age, ref air, true, false, was, false, false, Dt, ref weight);
+            was = false;
+            if (JumpLandTell.Show(true, age) || weight != 0f)
+            {
+                report.Fail("air time armed the thud before the landing");
+                break;
+            }
+        }
+
+        if (air < JumpLandTell.MinAirSeconds)
+        {
+            JumpLandTell.Note(ref age, ref air, true, true, false, false, false, Dt, ref weight);
+            if (JumpLandTell.Show(true, age))
+                report.Fail("a short hop under the gate played the scaled thud");
+        }
     }
 
     static float PlayLand(JumpLandTellReport report, Vector3 origin, Vector3 travel)
@@ -362,8 +452,20 @@ public static class JumpLandTellProof
             report.Fail("land tell is not gated to the solo pawn");
         if (!place.Contains("JumpLandTell.Heels") || !place.Contains("JumpLandTell.PuffDiameter"))
             report.Fail("puffs are not placed by the tell");
-        if (!scale.Contains("JumpLandTell.ThudScale") || !scale.Contains("JumpLandTell.Fade"))
-            report.Fail("the thud does not use the tell scale");
+        if (!scale.Contains("JumpLandTell.ThudScale") || !scale.Contains("JumpLandTell.Fade")
+            || !scale.Contains("_jumpLandWeight"))
+            report.Fail("the thud does not scale with air time");
+        if (!tick.Contains("JumpLandTell.Alpha(_jumpLandAge, _jumpLandWeight)"))
+            report.Fail("heel dust does not scale with air time");
+        if (Count(tick, "ref _jumpLandWeight") < 2)
+            report.Fail("the landing does not remember its air time");
+        int hop = tick.IndexOf("if (_hopChainFrame)", StringComparison.Ordinal);
+        int clear = tick.IndexOf("JumpLandTell.Clear", StringComparison.Ordinal);
+        int note = tick.IndexOf("JumpLandTell.Note", StringComparison.Ordinal);
+        if (hop < 0 || clear < 0 || note < 0 || hop > clear || clear > note)
+            report.Fail("a bunny-hop chain can still thud");
+        if (!tick.Contains("_jumpLandWeight = 0f"))
+            report.Fail("a bunny-hop chain kept the heavy thud");
         if (!mat.Contains("JumpLandTell.MaxAlpha") || !puff.Contains("JumpLandTell.MarkerName") && !ensure.Contains("JumpLandTell.MarkerName"))
             report.Fail("puffs do not use the tell marker");
         if (Count(locoSrc, "MakeJumpLandPuff(\"") != JumpLandTell.PuffCount)
