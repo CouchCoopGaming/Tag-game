@@ -100,7 +100,8 @@ namespace Tag.Art
             if (JumpPose.RootMotion || WallPose.RootMotion || PunchTagPose.RootMotion
                 || CrouchPose.RootMotion || MantlePose.RootMotion || AirDashPose.RootMotion
                 || GrapplePose.RootMotion || PoseHandoff.RootMotion || LungePose.RootMotion
-                || BecomeItPose.RootMotion || PivotPose.RootMotion || IdlePose.RootMotion)
+                || BecomeItPose.RootMotion || PivotPose.RootMotion || IdlePose.RootMotion
+                || AimTorsoPose.RootMotion)
                 return false;
             if (Mathf.Abs(PunchTagPose.ReachMeters - 1.55f) > 0.001f) return false;
             if (Mathf.Abs(AirDashPose.WindowSeconds - 0.10f) > 0.001f) return false;
@@ -112,6 +113,10 @@ namespace Tag.Art
             if (PivotPose.BlendSeconds < 0.10f || PivotPose.BlendSeconds > 0.18f) return false;
             if (!IdlePose.Holds()) return false;
             if (Mathf.Abs(IdlePose.FadeSeconds - 0.12f) > 0.001f) return false;
+            if (!AimTorsoPose.Holds()) return false;
+            if (Mathf.Abs(AimTorsoPose.BlendSeconds - 0.10f) > 0.001f) return false;
+            if (Mathf.Abs(AimTorsoPose.YawMax - 45f) > 0.001f) return false;
+            if (AimTorsoPose.PitchMax > 22f) return false;
             if (IdlePose.HipRoll > 4.0f || IdlePose.KneeRest + IdlePose.KneeSettle > 12f) return false;
             if (BecomeItPose.HoldSeconds < 0.30f || BecomeItPose.HoldSeconds > 0.50f) return false;
 
@@ -145,7 +150,8 @@ namespace Tag.Art
                 + " idle=IdlePose shift/knee/breath"
                 + " jump=JumpPose beats"
                 + " wall=WallPose climb/run"
-                + " punch=PunchTagPose windup"
+                + " punch=PunchTagPose windup + AimTorsoPose chest/head"
+                + " aim=punch shared, grapple solo"
                 + " tag=PunchTagPose catch"
                 + " lunge=LungePose telegraph/burst/recover + LungeTell " + LungeTellSeconds.ToString("0.00") + "s"
                 + " slide=SlideBody"

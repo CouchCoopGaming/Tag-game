@@ -133,6 +133,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.AimTorsoPose.ProofLine());
+        if (!Tag.Art.AimTorsoPose.Holds())
+        {
+            Console.Error.WriteLine("aim torso is not held");
+            return 1;
+        }
+
         DummyPosePathReport dummyPose = DummyPosePathProof.Run();
         Console.WriteLine(dummyPose.ToString());
         if (!dummyPose.Ok)
