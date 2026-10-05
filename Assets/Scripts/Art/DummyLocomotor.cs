@@ -6663,45 +6663,48 @@ namespace Tag.Art
             }
             else if (punching && !((_skiFromMiss || _slideFromMiss) && phase == PunchPhase.MissRecover) && !_jumpFromPunch && !_jumpMissSnap && !_jumpTagSnap)
             {
-                // Clear windup -> connect pose (beyond HitRecover) so tags read in TP
-                _uaLT = _uaL0 * Quaternion.Euler(-28f, 14f, armZ + 18f);
-                _laLT = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
+                // Same coil and reach as PunchStrike, so the clip fade does not pop to a smaller pose.
+                // Windup time, the hit window, and reach stay as they are.
+                _uaLT = _uaL0 * Quaternion.Euler(VerbPoseClips.PunchGuardPitchCock, VerbPoseClips.PunchGuardYawCock, armZ);
+                _laLT = _laL0 * Quaternion.Euler(VerbPoseClips.PunchGuardElbowCock, 0f, 0f);
                 if (phase == PunchPhase.Windup)
                 {
-                    // The cock arrives in the first beat and holds, so the tell reads before the strike.
-                    // Yaw carries the elbow out. Roll stays the mild A. Timing stays the authored 0.12s windup.
-                    float w = Mathf.Lerp(0.85f, 1f, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg / 0.35f)));
-                    _uaRT = _uaR0 * Quaternion.Euler(-58f * w, 46f * w, -armZ);
-                    _laRT = _laR0 * Quaternion.Euler(-68f * w, 0f, 0f);
-                    _hipsT = _hips0 * Quaternion.Euler(14f + 8f * w, -30f * w, 0f); // clearer windup hip twist in TP
-                    _spineT = _spine0 * Quaternion.Euler(leanX + 12f * w, -36f * w, leanZ); // clearer windup spine twist in TP
+                    // The coil is the target the frame the strike arms. The slew is the pull-back.
+                    // Timing stays the authored 0.12s windup.
+                    _uaRT = _uaR0 * Quaternion.Euler(VerbPoseClips.PunchCockPitch, VerbPoseClips.PunchCockYaw, VerbPoseClips.PunchCockRoll);
+                    _laRT = _laR0 * Quaternion.Euler(VerbPoseClips.PunchCockElbow, 0f, 0f);
+                    _uaLT = _uaL0 * Quaternion.Euler(VerbPoseClips.PunchGuardPitchCock, VerbPoseClips.PunchGuardYawCock, VerbPoseClips.PunchGuardRoll);
+                    _laLT = _laL0 * Quaternion.Euler(VerbPoseClips.PunchGuardElbowCock, 0f, 0f);
+                    _hipsT = _hips0 * Quaternion.Euler(VerbPoseClips.PunchHipPitch, VerbPoseClips.PunchCockHipYaw, 0f);
+                    _spineT = _spine0 * Quaternion.Euler(VerbPoseClips.PunchSpinePitch, VerbPoseClips.PunchCockSpineYaw, leanZ);
                 }
                 else if (phase == PunchPhase.Active)
                 {
-                    float e = Mathf.Lerp(0.8f, 1f, punchProg);
-                    // Long line in front of the chest. A bent elbow disappears at chase distance.
+                    // Long line in front of the chest. The free arm counters. Elbow stays nearly straight.
                     // Pitch stays above -150 so the fist does not wrap through the torso.
-                    _uaRT = _uaR0 * Quaternion.Euler(-118f, 58f * e, -22f);
-                    _laRT = _laR0 * Quaternion.Euler(-18f * e, 0f, 0f);
-                    _hipsT = _hips0 * Quaternion.Euler(18f, 22f * e, 0f);
-                    _spineT = _spine0 * Quaternion.Euler(leanX + 16f, 42f * e, leanZ);
+                    _uaRT = _uaR0 * Quaternion.Euler(VerbPoseClips.PunchStrikePitch, VerbPoseClips.PunchStrikeYaw, VerbPoseClips.PunchStrikeRoll);
+                    _laRT = _laR0 * Quaternion.Euler(VerbPoseClips.PunchStrikeElbow, 0f, 0f);
+                    _uaLT = _uaL0 * Quaternion.Euler(VerbPoseClips.PunchGuardPitchStrike, VerbPoseClips.PunchGuardYawStrike, -VerbPoseClips.PunchGuardRoll);
+                    _laLT = _laL0 * Quaternion.Euler(VerbPoseClips.PunchGuardElbowStrike, 0f, 0f);
+                    _hipsT = _hips0 * Quaternion.Euler(VerbPoseClips.PunchHipPitch, VerbPoseClips.PunchStrikeHipYaw, 0f);
+                    _spineT = _spine0 * Quaternion.Euler(VerbPoseClips.PunchSpinePitch, VerbPoseClips.PunchStrikeSpineYaw, leanZ);
                 }
                 else if (phase == PunchPhase.HitRecover)
                 {
-                    // Hold the connect, then ease onward so the fist does not snap when the phase ends.
+                    // Ease off the same reach the clip holds, so the fist does not snap when the phase ends.
                     // A tag eases into the new It's claim. A clean hit still eases into the run.
                     // Timing is unchanged. Pitch on the connect stays above a torso wrap.
                     float settle = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(0.28f, 1f, punchProg));
-                    Quaternion connectR = _uaR0 * Quaternion.Euler(-118f, 52f, -22f);
-                    Quaternion connectL = _uaL0 * Quaternion.Euler(-32f, 18f, armZ);
+                    Quaternion connectR = _uaR0 * Quaternion.Euler(VerbPoseClips.PunchStrikePitch, VerbPoseClips.PunchStrikeYaw, VerbPoseClips.PunchStrikeRoll);
+                    Quaternion connectL = _uaL0 * Quaternion.Euler(VerbPoseClips.PunchGuardPitchStrike, VerbPoseClips.PunchGuardYawStrike, -VerbPoseClips.PunchGuardRoll);
                     if (claimAmt > 0.04f)
                     {
                         _uaRT = Quaternion.Slerp(connectR, _uaR0 * Quaternion.Euler(-36f, -48f, -armZ), settle);
-                        _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-18f, 0f, 0f), _laR0 * Quaternion.Euler(-12f, 0f, 0f), settle);
+                        _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(VerbPoseClips.PunchStrikeElbow, 0f, 0f), _laR0 * Quaternion.Euler(-12f, 0f, 0f), settle);
                         _uaLT = Quaternion.Slerp(connectL, _uaL0 * Quaternion.Euler(-128f, 8f, armZ), settle);
-                        _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-22f, 0f, 0f), _laL0 * Quaternion.Euler(-10f, 0f, 0f), settle);
-                        _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX + 14f, 18f, leanZ), _spine0 * Quaternion.Euler(-22f, -16f, 0f), settle);
-                        _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(18f, 22f, 0f), _hips0 * Quaternion.Euler(4f, 0f, 0f), settle);
+                        _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(VerbPoseClips.PunchGuardElbowStrike, 0f, 0f), _laL0 * Quaternion.Euler(-10f, 0f, 0f), settle);
+                        _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(VerbPoseClips.PunchSpinePitch, VerbPoseClips.PunchStrikeSpineYaw, leanZ), _spine0 * Quaternion.Euler(-22f, -16f, 0f), settle);
+                        _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(VerbPoseClips.PunchHipPitch, VerbPoseClips.PunchStrikeHipYaw, 0f), _hips0 * Quaternion.Euler(4f, 0f, 0f), settle);
                     }
                     else
                     {
@@ -6725,11 +6728,11 @@ namespace Tag.Art
                         float elbowR = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait);
                         float plant = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(punchProg));
                         _uaRT = Quaternion.Slerp(connectR, runR, settle);
-                        _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(-18f, 0f, 0f), _laR0 * Quaternion.Euler(elbowR, 0f, 0f), settle);
+                        _laRT = Quaternion.Slerp(_laR0 * Quaternion.Euler(VerbPoseClips.PunchStrikeElbow, 0f, 0f), _laR0 * Quaternion.Euler(elbowR, 0f, 0f), settle);
                         _uaLT = Quaternion.Slerp(connectL, runL, plant);
-                        _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(-22f, 0f, 0f), _laL0 * Quaternion.Euler(elbowL, 0f, 0f), plant);
-                        _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(leanX + 14f, 18f, leanZ), _spineT, plant);
-                        _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(18f, 22f, 0f), _hipsT, plant);
+                        _laLT = Quaternion.Slerp(_laL0 * Quaternion.Euler(VerbPoseClips.PunchGuardElbowStrike, 0f, 0f), _laL0 * Quaternion.Euler(elbowL, 0f, 0f), plant);
+                        _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(VerbPoseClips.PunchSpinePitch, VerbPoseClips.PunchStrikeSpineYaw, leanZ), _spineT, plant);
+                        _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(VerbPoseClips.PunchHipPitch, VerbPoseClips.PunchStrikeHipYaw, 0f), _hipsT, plant);
                     }
                 }
                 else // MissRecover - limp whiff: less extension, quicker drop vs HitRecover hold
@@ -7357,13 +7360,15 @@ namespace Tag.Art
 
             if (_punchTelegraph > 0.02f && !punching)
             {
-                // Dummy It cocks before QueuePunch. Same pose as the windup, clear of the chest.
-                // The real windup is still only 0.12s; this is the hold pose before QueuePunch.
+                // The coil starts when the strike arms, before QueuePunch. Same pose as the windup.
+                // The real windup is still only 0.12s; this is the hold pose before the swing.
                 float k = Mathf.Clamp01(_punchTelegraph / 0.2f);
-                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(-58f, 46f, -armZ), k);
-                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-68f, 0f, 0f), k);
-                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f + 8f, -30f, 0f), k); // match windup hip twist
-                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(leanX + 12f, -36f, leanZ), k); // match windup spine twist
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(VerbPoseClips.PunchCockPitch, VerbPoseClips.PunchCockYaw, VerbPoseClips.PunchCockRoll), k);
+                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(VerbPoseClips.PunchCockElbow, 0f, 0f), k);
+                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(VerbPoseClips.PunchGuardPitchCock, VerbPoseClips.PunchGuardYawCock, VerbPoseClips.PunchGuardRoll), k);
+                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(VerbPoseClips.PunchGuardElbowCock, 0f, 0f), k);
+                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(VerbPoseClips.PunchHipPitch, VerbPoseClips.PunchCockHipYaw, 0f), k);
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(VerbPoseClips.PunchSpinePitch, VerbPoseClips.PunchCockSpineYaw, leanZ), k);
             }
 
             // Legs
@@ -14451,6 +14456,14 @@ namespace Tag.Art
                 torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
                 slew = Mathf.Max(slew, WallPose.BlendSlew);
             }
+            if ((punching && phase != PunchPhase.Idle) || flinchAmt > 0.04f)
+            {
+                armSlewL = Mathf.Max(armSlewL, PunchTagPose.PoseSlew);
+                armSlewR = Mathf.Max(armSlewR, PunchTagPose.PoseSlew);
+                legSlew = Mathf.Max(legSlew, PunchTagPose.PoseSlew);
+                torsoSlew = Mathf.Max(torsoSlew, PunchTagPose.PoseSlew);
+                slew = Mathf.Max(slew, PunchTagPose.PoseSlew);
+            }
             ApplyVerbClips(sliding, punching, phase, punchProg, flinchAmt, sinC);
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
@@ -16240,8 +16253,8 @@ namespace Tag.Art
         void ApplyVerbClips(bool sliding, bool punching, PunchPhase phase, float punchProg, float flinchAmt, float sinC)
         {
             // These clips win over the stride so the verb is what you see.
-            // Slide plays SlideBody. PunchWindup and PunchActive play PunchStrike.
-            // Tag plays TagCatch. Phase times and slideBoost stay as they are.
+            // Slide plays SlideBody. PunchStrike coils, reaches, then eases home.
+            // TagCatch gathers, then both hands meet. Phase times and slideBoost stay as they are.
             VerbClip = null;
             VerbState = null;
             // Rest first. Punch and tag return before the slide clip, so a
@@ -16260,38 +16273,27 @@ namespace Tag.Art
             };
             if (flinchAmt > 0.04f)
             {
-                float w = flinchAmt >= 0.55f ? 1f : Mathf.Clamp01(flinchAmt / 0.55f);
-                BlendVerb(VerbPoseClips.TagCatchPose(bind), w);
-                VerbClip = VerbPoseClips.TagCatch;
-                VerbState = VerbPoseClips.StateTag;
-                return;
+                PunchTagPose.Beat tag = PunchTagPose.Tag(flinchAmt);
+                if (tag.Weight > 0.02f)
+                {
+                    BlendVerb(VerbPoseClips.TagCatchPose(bind, tag.Sample), tag.Weight);
+                    VerbClip = VerbPoseClips.TagCatch;
+                    VerbState = VerbPoseClips.StateTag;
+                    return;
+                }
             }
             if (punching && phase != PunchPhase.Idle)
             {
-                float sample;
-                float w = 1f;
-                string state;
-                if (phase == PunchPhase.Windup)
+                PunchTagPose.Beat punch = phase == PunchPhase.Windup
+                    ? PunchTagPose.PunchWindup(punchProg)
+                    : phase == PunchPhase.Active
+                        ? PunchTagPose.PunchActive(punchProg)
+                        : PunchTagPose.PunchRecover(punchProg);
+                if (punch.Weight > 0.02f)
                 {
-                    sample = Mathf.Lerp(0.15f, 0.38f, Mathf.Clamp01(punchProg));
-                    state = VerbPoseClips.StatePunchWindup;
-                }
-                else if (phase == PunchPhase.Active)
-                {
-                    sample = Mathf.Lerp(0.38f, 1f, Mathf.Clamp01(punchProg));
-                    state = VerbPoseClips.StatePunchActive;
-                }
-                else
-                {
-                    sample = 1f;
-                    w = 1f - Mathf.SmoothStep(0.28f, 1f, Mathf.Clamp01(punchProg));
-                    state = VerbPoseClips.StatePunchActive;
-                }
-                if (w > 0.02f)
-                {
-                    BlendVerb(VerbPoseClips.PunchStrikePose(bind, sample), w);
+                    BlendVerb(VerbPoseClips.PunchStrikePose(bind, punch.Sample), punch.Weight);
                     VerbClip = VerbPoseClips.PunchStrike;
-                    VerbState = state;
+                    VerbState = punch.State;
                     return;
                 }
             }
@@ -16372,8 +16374,8 @@ namespace Tag.Art
             Quaternion lineElL = _laL0 * Quaternion.Euler(-8f, 0f, 0f);
             Quaternion lineR = _uaR0 * Quaternion.Euler(VerbPoseClips.SlideArmPitch, -VerbPoseClips.SlideArmYaw, -armZ);
             Quaternion lineElR = _laR0 * Quaternion.Euler(-6f, 0f, 0f);
-            Quaternion strikeR = _uaR0 * Quaternion.Euler(-118f, 58f * e, -22f);
-            Quaternion strikeEl = _laR0 * Quaternion.Euler(-18f, 0f, 0f);
+            Quaternion strikeR = _uaR0 * Quaternion.Euler(VerbPoseClips.PunchStrikePitch, VerbPoseClips.PunchStrikeYaw, VerbPoseClips.PunchStrikeRoll);
+            Quaternion strikeEl = _laR0 * Quaternion.Euler(VerbPoseClips.PunchStrikeElbow, 0f, 0f);
             float spineYaw = 0f;
             float hipYaw = 0f;
             if (phase == PunchPhase.Windup)

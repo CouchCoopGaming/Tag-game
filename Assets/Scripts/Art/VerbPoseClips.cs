@@ -6,8 +6,8 @@ namespace Tag.Art
     /// <summary>
     /// Named body clips. DummyLocomotor plays them from verb states.
     /// SlideBody is a feet-first baseball slide: torso leaned back, lead leg out, trail leg tucked, one arm back.
-    /// PunchStrike cocks the fist beside the head, then extends one arm while the chest unwinds.
-    /// TagCatch reaches both hands to one contact. Feel numbers are not in here.
+    /// PunchStrike coils the shoulder and the chest, then one arm reaches while the other counters.
+    /// TagCatch gathers both shoulders, then both hands meet at one contact. Feel numbers are not in here.
     /// </summary>
     public static class VerbPoseClips
     {
@@ -18,6 +18,7 @@ namespace Tag.Art
         public const string StateSlide = "Slide";
         public const string StatePunchWindup = "PunchWindup";
         public const string StatePunchActive = "PunchActive";
+        public const string StatePunchRecover = "PunchRecover";
         public const string StateTag = "Tag";
 
         // Hier Tan rest: hips +X pitches the chest toward +Z (the face).
@@ -86,55 +87,68 @@ namespace Tag.Art
         // Hier upper arm: negative pitch reaches toward +Z (the face). Yaw carries the
         // elbow out from the chest. Pitch below about -150 wraps the fist through the
         // torso. Extra roll folds the hand into the pelvis, so the strike roll stays mild.
-        // Positive pitch is the back arm. The right arm strikes. The left arm trails.
-        public const float PunchCockPitch = -78f;
-        public const float PunchCockYaw = 64f;
-        public const float PunchCockRoll = -24f;
-        public const float PunchCockElbow = -104f;
-        public const float PunchStrikePitch = -118f;
-        public const float PunchStrikeYaw = 54f;
-        public const float PunchStrikeRoll = -16f;
-        public const float PunchStrikeElbow = -6f;
-        public const float PunchGuardPitchCock = -28f;
-        public const float PunchGuardYawCock = -20f;
-        public const float PunchGuardElbowCock = -68f;
-        public const float PunchGuardPitchStrike = 68f;
-        public const float PunchGuardYawStrike = -34f;
-        public const float PunchGuardElbowStrike = -36f;
-        public const float PunchGuardRoll = 10f;
+        // Positive pitch is the back arm. The right arm strikes. The left arm counters.
+        // The cock is the pull-back. The strike is the long line for reach 1.55.
+        public const float PunchCockPitch = -88f;
+        public const float PunchCockYaw = 72f;
+        public const float PunchCockRoll = -22f;
+        public const float PunchCockElbow = -112f;
+        public const float PunchStrikePitch = -130f;
+        public const float PunchStrikeYaw = 46f;
+        public const float PunchStrikeRoll = -14f;
+        public const float PunchStrikeElbow = -2f;
+        public const float PunchGuardPitchCock = -32f;
+        public const float PunchGuardYawCock = -18f;
+        public const float PunchGuardElbowCock = -78f;
+        public const float PunchGuardPitchStrike = 84f;
+        public const float PunchGuardYawStrike = -46f;
+        public const float PunchGuardElbowStrike = -28f;
+        public const float PunchGuardRoll = 12f;
         // Coil, then unwind. Opposite signs so the chest does not stay twisted one way.
-        public const float PunchCockHipYaw = -36f;
-        public const float PunchStrikeHipYaw = 28f;
-        public const float PunchCockSpineYaw = -48f;
-        public const float PunchStrikeSpineYaw = 44f;
-        public const float PunchHipPitch = 8f;
-        public const float PunchSpinePitch = 8f;
-        public const float PunchHeadPitch = -4f;
-        public const float PunchCockHeadYaw = -18f;
-        public const float PunchStrikeHeadYaw = 12f;
+        public const float PunchCockHipYaw = -44f;
+        public const float PunchStrikeHipYaw = 36f;
+        public const float PunchCockSpineYaw = -58f;
+        public const float PunchStrikeSpineYaw = 52f;
+        public const float PunchHipPitch = 10f;
+        public const float PunchSpinePitch = 6f;
+        public const float PunchHeadPitch = -6f;
+        public const float PunchCockHeadYaw = -22f;
+        public const float PunchStrikeHeadYaw = 18f;
         // A stance, not a crouch. The knees stay far from CrouchKnee.
-        public const float PunchCockLeadThigh = 10f;
-        public const float PunchStrikeLeadThigh = 16f;
-        public const float PunchCockTrailThigh = -8f;
-        public const float PunchStrikeTrailThigh = -14f;
-        public const float PunchCockLeadKnee = -16f;
-        public const float PunchStrikeLeadKnee = -10f;
-        public const float PunchCockTrailKnee = -8f;
+        public const float PunchCockLeadThigh = 14f;
+        public const float PunchStrikeLeadThigh = 20f;
+        public const float PunchCockTrailThigh = -12f;
+        public const float PunchStrikeTrailThigh = -18f;
+        public const float PunchCockLeadKnee = -18f;
+        public const float PunchStrikeLeadKnee = -8f;
+        public const float PunchCockTrailKnee = -12f;
         public const float PunchStrikeTrailKnee = -6f;
 
         // Both arms share one pitch and meet in front. Not an overhead V, not one fist.
         // The chest leans into the touch. The knees soften and stay clear of the crouch.
-        public const float TagArmPitch = -96f;
-        public const float TagArmYaw = 26f;
-        public const float TagArmRoll = 6f;
-        public const float TagElbow = -12f;
-        public const float TagSpine = 14f;
-        public const float TagHip = 4f;
+        // The windup is a symmetric gather. No yaw, so it is not the punch coil.
+        public const float TagWindupArmPitch = 58f;
+        public const float TagWindupArmYaw = 36f;
+        public const float TagWindupArmRoll = 8f;
+        public const float TagWindupElbow = -96f;
+        public const float TagWindupSpine = -12f;
+        public const float TagWindupHip = -8f;
+        public const float TagWindupSpineYaw = 0f;
+        public const float TagWindupHipYaw = 0f;
+        public const float TagWindupThigh = 8f;
+        public const float TagWindupKnee = -20f;
+        public const float TagWindupHead = -8f;
+        public const float TagArmPitch = -108f;
+        public const float TagArmYaw = 20f;
+        public const float TagArmRoll = 4f;
+        public const float TagElbow = -4f;
+        public const float TagSpine = 18f;
+        public const float TagHip = 6f;
         public const float TagSpineYaw = 0f;
         public const float TagHipYaw = 0f;
-        public const float TagThigh = 14f;
-        public const float TagKnee = -44f;
-        public const float TagHead = 12f;
+        public const float TagThigh = 18f;
+        public const float TagKnee = -46f;
+        public const float TagHead = 8f;
 
         public struct Bind
         {
@@ -155,7 +169,7 @@ namespace Tag.Art
         public static string ClipForState(string state)
         {
             if (state == StateSlide) return SlideBody;
-            if (state == StatePunchWindup || state == StatePunchActive) return PunchStrike;
+            if (state == StatePunchWindup || state == StatePunchActive || state == StatePunchRecover) return PunchStrike;
             if (state == StateTag) return TagCatch;
             return null;
         }
@@ -238,7 +252,7 @@ namespace Tag.Art
                 + "; jump-cancel:_jumpFromSlideIn dt/SlideBlendSeconds, clip off";
         }
 
-        /// <summary>0 is the fist beside the head. 1 is one long arm, chest unwound, the other arm back.</summary>
+        /// <summary>0 is the shoulder-and-chest coil. 1 is one long arm, chest unwound, the free arm back.</summary>
         public static Pose PunchStrikePose(Bind bind, float sample)
         {
             float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(sample));
@@ -267,21 +281,35 @@ namespace Tag.Art
             };
         }
 
-        public static Pose TagCatchPose(Bind bind)
+        /// <summary>The active catch. Both hands at the contact.</summary>
+        public static Pose TagCatchPose(Bind bind) => TagCatchPose(bind, 1f);
+
+        /// <summary>0 is both shoulders gathered. 1 is both hands at the contact. No torso twist.</summary>
+        public static Pose TagCatchPose(Bind bind, float sample)
         {
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(sample));
+            float pitch = Mathf.Lerp(TagWindupArmPitch, TagArmPitch, t);
+            float yaw = Mathf.Lerp(TagWindupArmYaw, TagArmYaw, t);
+            float roll = Mathf.Lerp(TagWindupArmRoll, TagArmRoll, t);
+            float elbow = Mathf.Lerp(TagWindupElbow, TagElbow, t);
+            float thigh = Mathf.Lerp(TagWindupThigh, TagThigh, t);
+            float knee = Mathf.Lerp(TagWindupKnee, TagKnee, t);
+            float spine = Mathf.Lerp(TagWindupSpine, TagSpine, t);
+            float hip = Mathf.Lerp(TagWindupHip, TagHip, t);
+            float head = Mathf.Lerp(TagWindupHead, TagHead, t);
             return new Pose
             {
-                UaL = bind.UaL * Quaternion.Euler(TagArmPitch, TagArmYaw, TagArmRoll),
-                UaR = bind.UaR * Quaternion.Euler(TagArmPitch, -TagArmYaw, -TagArmRoll),
-                LaL = bind.LaL * Quaternion.Euler(TagElbow, 0f, 0f),
-                LaR = bind.LaR * Quaternion.Euler(TagElbow, 0f, 0f),
-                UlL = bind.UlL * Quaternion.Euler(TagThigh, 0f, 0f),
-                UlR = bind.UlR * Quaternion.Euler(TagThigh, 0f, 0f),
-                LlL = bind.LlL * Quaternion.Euler(TagKnee, 0f, 0f),
-                LlR = bind.LlR * Quaternion.Euler(TagKnee, 0f, 0f),
-                Spine = bind.Spine * Quaternion.Euler(TagSpine, TagSpineYaw, 0f),
-                Hips = bind.Hips * Quaternion.Euler(TagHip, TagHipYaw, 0f),
-                Head = bind.Head * Quaternion.Euler(TagHead, 0f, 0f),
+                UaL = bind.UaL * Quaternion.Euler(pitch, yaw, roll),
+                UaR = bind.UaR * Quaternion.Euler(pitch, -yaw, -roll),
+                LaL = bind.LaL * Quaternion.Euler(elbow, 0f, 0f),
+                LaR = bind.LaR * Quaternion.Euler(elbow, 0f, 0f),
+                UlL = bind.UlL * Quaternion.Euler(thigh, 0f, 0f),
+                UlR = bind.UlR * Quaternion.Euler(thigh, 0f, 0f),
+                LlL = bind.LlL * Quaternion.Euler(knee, 0f, 0f),
+                LlR = bind.LlR * Quaternion.Euler(knee, 0f, 0f),
+                Spine = bind.Spine * Quaternion.Euler(spine, TagSpineYaw, 0f),
+                Hips = bind.Hips * Quaternion.Euler(hip, TagHipYaw, 0f),
+                Head = bind.Head * Quaternion.Euler(head, 0f, 0f),
             };
         }
 
@@ -410,9 +438,20 @@ namespace Tag.Art
                 fails.Add("TagCatch matches PunchStrike");
             if (Mathf.Abs(PunchStrikePitch - PunchGuardPitchStrike) < 80f || Mathf.Abs(TagArmPitch - PunchGuardPitchStrike) < 40f)
                 fails.Add("PunchStrike reads as a two-hand catch");
+            if (TagWindupArmPitch < 40f || TagWindupArmPitch > 80f || TagWindupElbow > -80f)
+                fails.Add("TagCatch windup is not a gather");
+            if (TagWindupHipYaw != 0f || TagWindupSpineYaw != 0f)
+                fails.Add("TagCatch windup twists like a punch");
+            if (Mathf.Abs(TagWindupArmPitch - TagArmPitch) < 140f)
+                fails.Add("TagCatch does not open from the gather");
+            if (Mathf.Abs(TagWindupArmPitch - PunchCockPitch) < 100f)
+                fails.Add("TagCatch windup matches the punch coil");
+            if (Mathf.Abs(TagWindupKnee) > 28f || Mathf.Abs(TagWindupKnee - CrouchKnee) < 30f)
+                fails.Add("TagCatch windup matches the crouch");
             if (ClipForState(StateSlide) != SlideBody)
                 fails.Add("Slide does not play SlideBody");
-            if (ClipForState(StatePunchWindup) != PunchStrike || ClipForState(StatePunchActive) != PunchStrike)
+            if (ClipForState(StatePunchWindup) != PunchStrike || ClipForState(StatePunchActive) != PunchStrike
+                || ClipForState(StatePunchRecover) != PunchStrike)
                 fails.Add("punch states do not play PunchStrike");
             if (ClipForState(StateTag) != TagCatch)
                 fails.Add("Tag does not play TagCatch");
