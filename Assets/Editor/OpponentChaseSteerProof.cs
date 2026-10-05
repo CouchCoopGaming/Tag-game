@@ -8,8 +8,9 @@ using TagArena.Movement;
 using UnityEngine;
 
 /// <summary>
-/// Headless chase: sprint outside the lunge band, air-strafe a corner, jump a gap,
-/// cling a wall, and lunge only after the 0.45 s tell. Steps stay inside the motor.
+/// Headless chase: sprint outside the lunge band, air-strafe a corner, jump a gap
+/// only when the reach clears it, cling a wall, brake or path when it does not,
+/// and lunge only after the 0.45 s tell when a landing remains. Steps stay inside the motor.
 /// </summary>
 public static class OpponentChaseSteerProof
 {
@@ -28,6 +29,7 @@ public static class OpponentChaseSteerProof
         SimulateAirStrafe(report, cfg, far, dt);
         SimulateGap(report, cfg, far, dt);
         SimulateWall(report, cfg, far, dt);
+        CheckDummyRunnerChase(report, cfg, far, dt);
         CheckSources(report);
 
         report.Line = "opponent chase: sprint " + report.ClosedMeters.ToString("0.00", CultureInfo.InvariantCulture)
@@ -124,6 +126,11 @@ public static class OpponentChaseSteerProof
         OpponentChaseInput gap = Blank(far);
         gap.PlanarDistance = 10f;
         gap.GapAhead = true;
+        gap.GapSpan = 6f;
+        gap.LipDistance = 1f;
+        gap.JumpReachMeters = 20f;
+        gap.RunUpReachMeters = 24f;
+        gap.Velocity = new Vector3(0f, 0f, 12f);
         OpponentChaseWish hop = OpponentChaseSteer.Decide(gap);
         if (hop.Verb != OpponentChaseVerb.GapJump || !hop.Jump || hop.Lunge || hop.AirDash)
             report.Fail("a gap did not jump");
@@ -335,9 +342,14 @@ public static class OpponentChaseSteerProof
 
     static void SimulateGap(OpponentChaseSteerReport report, MovementConfig cfg, float far, float dt)
     {
+        float sprintReach = OpponentChaseSteer.JumpReachMeters(cfg.sprintSpeed, cfg.jumpSpeed, cfg.gravity, cfg.fallGravityMult);
         OpponentChaseInput gap = Blank(far);
         gap.PlanarDistance = 10f;
         gap.GapAhead = true;
+        gap.GapSpan = 6f;
+        gap.LipDistance = 1f;
+        gap.JumpReachMeters = sprintReach;
+        gap.RunUpReachMeters = sprintReach;
         gap.Velocity = new Vector3(0f, 0f, cfg.sprintSpeed);
         OpponentChaseWish hop = OpponentChaseSteer.Decide(gap);
         Vector3 hv = gap.Velocity;
@@ -412,6 +424,174 @@ public static class OpponentChaseSteerProof
             report.Fail("wall chase did not stop on the capsule");
     }
 
+    static void CheckDummyRunnerChase(OpponentChaseSteerReport report, MovementConfig cfg, float far, float dt)
+    {
+        float reach = OpponentChaseSteer.JumpReachMeters(cfg.sprintSpeed, cfg.jumpSpeed, cfg.gravity, cfg.fallGravityMult);
+        float margin = OpponentChaseSteer.GapClearMargin;
+        const float span = 8f;
+        if (!(reach > span + margin))
+            report.Fail("sprint jump reach could not clear a short gap");
+        if (OpponentChaseSteer.ClearsGap(reach, reach))
+            report.Fail("a gap the size of the reach still committed");
+        if (Mathf.Abs(OpponentChaseSteer.GapClearMargin - 0.40f) > 0.001f)
+            report.Fail("gap margin is not 0.40m");
+        if (Mathf.Abs(cfg.taggerLungeSpeed - 16f) > 0.001f || Mathf.Abs(cfg.taggerLungeDuration - 0.20f) > 0.001f
+            || Mathf.Abs(cfg.taggerLungeCooldown - 1f) > 0.001f)
+            report.Fail("lunge gate numbers changed");
+        if (Mathf.Abs(OpponentChaseSteer.LungeLeadSeconds - 0.45f) > 0.001f)
+            report.Fail("lunge tell is not 0.45s");
+        OpponentChaseSteer.ReadLungeBurst(cfg, out float burstSpeed, out float burstDuration);
+        if (Mathf.Abs(burstSpeed - 16f) > 0.001f || Mathf.Abs(burstDuration - 0.20f) > 0.001f)
+            report.Fail("lunge burst reader changed 16/0.20");
+
+        OpponentChaseInput commit = Blank(far);
+        commit.PlanarDistance = 12f;
+        commit.GapAhead = true;
+        commit.GapSpan = span;
+        commit.LipDistance = 1f;
+        commit.JumpReachMeters = reach;
+        commit.RunUpReachMeters = reach;
+        commit.Velocity = new Vector3(0f, 0f, cfg.sprintSpeed);
+        OpponentChaseWish hop = OpponentChaseSteer.Decide(commit);
+        if (hop.Verb != OpponentChaseVerb.GapJump || !hop.Jump || hop.Lunge || hop.AirDash)
+            report.Fail("a clearable gap did not jump");
+
+        OpponentChaseInput early = commit;
+        early.LipDistance = 6f;
+        OpponentChaseWish runUp = OpponentChaseSteer.Decide(early);
+        if (runUp.Verb != OpponentChaseVerb.Sprint || runUp.Jump || runUp.Lunge || runUp.AirDash)
+            report.Fail("a far clearable gap jumped early");
+
+        OpponentChaseInput refused = commit;
+        refused.GapSpan = reach;
+        refused.JumpReachMeters = reach;
+        refused.RunUpReachMeters = reach;
+        refused.PathStrafe = 0f;
+        refused.GroundDecel = cfg.groundDecel;
+        refused.LipDistance = 1f;
+        OpponentChaseWish noHop = OpponentChaseSteer.Decide(refused);
+        if (noHop.Jump || noHop.Verb == OpponentChaseVerb.GapJump || noHop.Lunge || noHop.AirDash)
+            report.Fail("an uncleared gap still jumped");
+        if (noHop.MoveY >= 0f || noHop.Sprint)
+            report.Fail("an uncleared gap did not brake");
+
+        OpponentChaseInput around = refused;
+        around.PathStrafe = 1f;
+        around.PlanarDistance = 12f;
+        OpponentChaseWish path = OpponentChaseSteer.Decide(around);
+        Vector3 pathFlat = Flat(path.Face);
+        pathFlat.Normalize();
+        float pathDot = Vector3.Dot(new Vector3(0f, 0f, 1f), pathFlat);
+        if (pathDot > 1f) pathDot = 1f;
+        if (pathDot < -1f) pathDot = -1f;
+        float pathYaw = (float)Math.Acos(pathDot) * Mathf.Rad2Deg;
+        if (path.Jump || path.Lunge || path.AirDash || path.Verb != OpponentChaseVerb.Sprint)
+            report.Fail("an uncleared gap did not path around");
+        if (pathYaw < OpponentChaseSteer.PathAroundDegrees - 1f)
+            report.Fail("the side route did not turn");
+
+        Vector3 wallNormal = new Vector3(0f, 0f, -1f);
+        OpponentChaseInput cling = refused;
+        cling.PathStrafe = 0f;
+        cling.WallNormal = wallNormal;
+        cling.WallDistance = 1.2f;
+        cling.LungeCommit = true;
+        cling.LungeBlocked = true;
+        OpponentChaseWish clung = OpponentChaseSteer.Decide(cling);
+        if (clung.Verb != OpponentChaseVerb.WallCling || clung.Jump || clung.Lunge)
+            report.Fail("a wall lost to an uncleared gap");
+
+        OpponentChaseInput corner = refused;
+        corner.Grounded = false;
+        corner.GapAhead = true;
+        corner.Velocity = new Vector3(12f, 0f, 0f);
+        corner.BodyForward = new Vector3(1f, 0f, 0f);
+        corner.Aim = new Vector3(0f, 0f, 1f);
+        OpponentChaseWish strafe = OpponentChaseSteer.Decide(corner);
+        if (strafe.Verb != OpponentChaseVerb.AirStrafe || strafe.Jump || strafe.Lunge || strafe.AirDash)
+            report.Fail("an airborne gap replaced the air strafe");
+
+        if (OpponentChaseSteer.LungeAllowed(true, false, false))
+            report.Fail("lunge fired over a void");
+        if (OpponentChaseSteer.LungeAllowed(false, true, false))
+            report.Fail("lunge fired past an uncleared ledge");
+        if (OpponentChaseSteer.LungeAllowed(false, false, true))
+            report.Fail("lunge fired when the tell would strand");
+        bool strand = OpponentChaseSteer.LungeStrands(
+            cfg.walkSpeed, cfg.walkSpeed, cfg.groundAccel, cfg.groundDecel,
+            OpponentChaseSteer.LungeLeadSeconds, cfg.taggerLungeSpeed, cfg.taggerLungeDuration,
+            1.2f, -1f);
+        if (!strand)
+            report.Fail("a tell into a void was treated as a landing");
+        bool deck = OpponentChaseSteer.LungeStrands(
+            cfg.walkSpeed, cfg.walkSpeed, cfg.groundAccel, cfg.groundDecel,
+            OpponentChaseSteer.LungeLeadSeconds, cfg.taggerLungeSpeed, cfg.taggerLungeDuration,
+            40f, -1f);
+        if (deck)
+            report.Fail("a lunge on open deck was blocked");
+
+        OpponentChaseInput safeLunge = Blank(far);
+        safeLunge.PlanarDistance = 3f;
+        safeLunge.LungeCommit = true;
+        safeLunge.LungeBlocked = false;
+        safeLunge.GapAhead = false;
+        OpponentChaseWish kept = OpponentChaseSteer.Decide(safeLunge);
+        if (kept.Verb != OpponentChaseVerb.Lunge || !kept.Lunge || kept.AirDash || kept.Jump)
+            report.Fail("a safe tell did not keep the lunge");
+        safeLunge.LungeBlocked = true;
+        if (OpponentChaseSteer.Decide(safeLunge).Lunge || OpponentChaseSteer.Decide(safeLunge).AirDash)
+            report.Fail("a blocked lunge still fired");
+
+        float lip = 2.2f;
+        Vector3 pos = Vector3.zero;
+        Vector3 hv = new Vector3(0f, 0f, cfg.sprintSpeed);
+        float clearance = lip;
+        bool braked = false;
+        for (int frame = 0; frame < 90; frame++)
+        {
+            float lipDist = lip - pos.z;
+            if (lipDist < clearance)
+                clearance = lipDist;
+            OpponentChaseInput input = Blank(far);
+            input.Aim = new Vector3(0f, 0f, 1f);
+            input.PlanarDistance = 14f;
+            input.Grounded = true;
+            input.GapAhead = true;
+            input.GapSpan = reach + 4f;
+            input.LipDistance = lipDist;
+            input.JumpReachMeters = OpponentChaseSteer.JumpReachMeters(hv.z, cfg.jumpSpeed, cfg.gravity, cfg.fallGravityMult);
+            input.RunUpReachMeters = input.JumpReachMeters;
+            input.Velocity = hv;
+            input.GroundDecel = cfg.groundDecel;
+            input.PathStrafe = 0f;
+            OpponentChaseWish wish = OpponentChaseSteer.Decide(input);
+            if (wish.Jump || wish.Lunge || wish.AirDash || wish.Verb == OpponentChaseVerb.GapJump)
+                report.Fail("the brake run jumped the void");
+            if (wish.MoveY < 0f)
+                braked = true;
+            Vector3 world = OpponentChaseSteer.WorldWish(input.Aim, wish.MoveY, wish.Strafe);
+            float gait = KinematicStep.GaitCap(false, wish.Sprint, wish.MoveY, cfg.crouchSpeed, cfg.sprintSpeed, cfg.walkSpeed);
+            hv = KinematicStep.GroundSteer(hv, world, gait, cfg.groundAccel, cfg.groundDecel, dt, false);
+            pos.z += hv.z * dt;
+            if (pos.z >= lip - 0.05f)
+                report.Fail("the chase crossed the lip");
+        }
+
+        if (!braked)
+            report.Fail("the chase never braked");
+        if (clearance < 0.15f)
+            report.Fail("the brake stopped on the lip");
+        report.BrakeClearance = clearance;
+
+        report.DummyLine = "DummyRunner chase: gap " + reach.ToString("0.00", CultureInfo.InvariantCulture)
+            + ">=" + (span + margin).ToString("0.00", CultureInfo.InvariantCulture)
+            + " refuse " + reach.ToString("0.00", CultureInfo.InvariantCulture)
+            + "<" + (reach + margin).ToString("0.00", CultureInfo.InvariantCulture)
+            + " brake " + clearance.ToString("0.00", CultureInfo.InvariantCulture)
+            + "m path " + pathYaw.ToString("0", CultureInfo.InvariantCulture)
+            + " lunge void ledge strand kept " + OpponentChaseSteer.LungeLeadSeconds.ToString("0.00", CultureInfo.InvariantCulture) + "s";
+    }
+
     static void CheckSources(OpponentChaseSteerReport report)
     {
         string steer = ReadRepo("Assets/Scripts/Modes/OpponentChaseSteer.cs");
@@ -430,12 +610,19 @@ public static class OpponentChaseSteerProof
             report.Fail("lunge lead drifted from 0.45s");
         if (!patrol.Contains("OpponentLungeTell.LeadSeconds") || !patrol.Contains("OpponentChaseSteer.Decide"))
             report.Fail("patrol does not use the lead and the steer");
-        if (!patrol.Contains("airDash: false") || !patrol.Contains("ProbeGapAhead") || !patrol.Contains("ProbeWallBetween"))
+        if (!patrol.Contains("airDash: false") || !patrol.Contains("ProbeGapAhead") || !patrol.Contains("MeasureChaseGap")
+            || !patrol.Contains("ProbeWallBetween"))
             report.Fail("patrol chase does not probe gaps and walls");
+        if (!patrol.Contains("LungeStrands") || !patrol.Contains("TargetOverVoid") || !patrol.Contains("LungeAllowed"))
+            report.Fail("patrol does not gate the lunge on a landing");
+        if (!steer.Contains("ClearsGap") || !steer.Contains("GapClearMargin") || !steer.Contains("LungeStrands"))
+            report.Fail("steer is missing the gap and lunge gates");
         if (!patrol.Contains("OpponentChaseSteer.MaxYawDegPerSec"))
             report.Fail("patrol yaw is not capped");
-        if (patrol.Contains("taggerLungeSpeed") || steer.Contains("taggerLungeSpeed") || steer.Contains("jumpSpeed"))
+        if (steer.Contains("taggerLungeSpeed =") || steer.Contains("jumpSpeed =") || steer.Contains("jumpSpeed:"))
             report.Fail("chase writes a feel number");
+        if (patrol.Contains("taggerLungeSpeed =") || patrol.Contains("jumpSpeed ="))
+            report.Fail("patrol writes a feel number");
         if (steer.Contains("AirDash = true") || steer.Contains("Rigidbody") || steer.Contains("CharacterController")
             || steer.Contains(".Move(") || steer.Contains("transform.position"))
             report.Fail("steer moves the body");
@@ -536,6 +723,13 @@ public static class OpponentChaseSteerProof
         s.HoldLine = false;
         s.PlanarDistance = 12f;
         s.FarMeters = far;
+        s.GapSpan = 0f;
+        s.LipDistance = 999f;
+        s.JumpReachMeters = 0f;
+        s.RunUpReachMeters = 0f;
+        s.PathStrafe = 0f;
+        s.GroundDecel = 0f;
+        s.LungeBlocked = false;
         return s;
     }
 
@@ -586,7 +780,9 @@ public sealed class OpponentChaseSteerReport
     public float ClingDot;
     public float LungeElapsed;
     public float MaxStep;
+    public float BrakeClearance;
     public string Line = "";
+    public string DummyLine = "";
     public bool Ok => _failures.Length == 0;
     readonly StringBuilder _failures = new StringBuilder();
 
@@ -603,6 +799,11 @@ public sealed class OpponentChaseSteerReport
         var text = new StringBuilder();
         text.Append(Ok ? "PASS " : "FAIL ");
         text.Append(Line);
+        if (DummyLine.Length > 0)
+        {
+            text.Append('\n');
+            text.Append(DummyLine);
+        }
         if (!Ok)
         {
             text.Append('\n');
