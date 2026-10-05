@@ -652,6 +652,9 @@ namespace Tag.Art
         bool _stopPlanted;
         bool _stopPlantLeft;
         float _runVis;
+        Vector3 _prevPlanarVel;
+        bool _hasPlanarVel;
+        float _accelLean;
         float _swayVis;
         float _idlePhase;
         bool _swayIdle;
@@ -5696,6 +5699,11 @@ namespace Tag.Art
 
             float walkAmt = Mathf.Clamp01(speed / 5.5f);
             float runAmt = Mathf.InverseLerp(5.5f, 11.5f, speed);
+            // One curve of planar speed. Walk, run, and sprint are samples on it.
+            // Tell gates still read walkAmt and runAmt. Speed is unchanged.
+            float gaitW = GaitBlend.PoseWeight(speed);
+            float gaitCadence = GaitBlend.CadenceAt(speed);
+            float posedCadence = gaitCadence;
             // A still crouch in the air uses the guard. The fall dart stays as it is.
             // A moving crouch eases that fall into the low stride. A still crouch keeps the dart.
             // After an air dash, a still crouch keeps that guard. Jump height is unchanged.
@@ -5719,7 +5727,7 @@ namespace Tag.Art
                 // landing does not skate onto the other foot. Dash time is unchanged.
                 _runVis = runAmt;
                 _cycle = Mathf.PI * 0.5f;
-                _stopGait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                _stopGait = gaitW;
                 _stopRun = _runVis;
             }
             else if (grounded && speed > 0.35f && !sliding && !crouch)
@@ -5752,18 +5760,23 @@ namespace Tag.Art
                     _runVis = runAmt;
                 else
                     _runVis = Mathf.MoveTowards(runBefore, runAmt, runStep);
-                float cadence = Mathf.Lerp(7.2f, 11.2f, _runVis);
+                // Cadence follows planar speed. The idle start eases the rate in
+                // so the first step does not buzz under the blend.
+                float cadence = gaitCadence;
+                if (_walkFromIdle)
+                    cadence *= Mathf.Lerp(0.35f, 1f, Mathf.SmoothStep(0f, 1f, _walkFromIdleIn));
                 // A ski into a walk keeps the walk step. A ski into a run keeps the run step.
                 float rate = Mathf.Lerp(cadence, 5.2f, (_walkFromSki || _runFromSki) ? 0f : legSki);
+                posedCadence = rate;
                 _cycle += dt * rate;
-                _stopGait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                _stopGait = gaitW;
                 _stopRun = _runVis;
             }
             else if (sliding)
             {
                 // Keep the stride that entered the slide. Closing it skates the exit.
                 // slideBoost stays 0. Speed is unchanged.
-                _stopGait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                _stopGait = gaitW;
                 _stopRun = _runVis;
             }
             else if (air && !jet)
@@ -5959,7 +5972,7 @@ namespace Tag.Art
             if (_stopFromSprint && grounded && speed <= 0.35f && !air && !dashing && !_airDashArms && !crouch && !sliding && !jet)
             {
                 if (_stopFromSprintIn < 0.98f)
-                    _stopFromSprintIn = Mathf.MoveTowards(_stopFromSprintIn, 1f, dt / 0.04f);
+                    _stopFromSprintIn = Mathf.MoveTowards(_stopFromSprintIn, 1f, dt / GaitBlend.IdleBlendSeconds);
             }
             else
                 _stopFromSprint = false;
@@ -5968,7 +5981,7 @@ namespace Tag.Art
             if (_stopFromWalk && grounded && speed <= 0.35f && !air && !dashing && !_airDashArms && !crouch && !sliding && !jet)
             {
                 if (_stopFromWalkIn < 0.98f)
-                    _stopFromWalkIn = Mathf.MoveTowards(_stopFromWalkIn, 1f, dt / 0.04f);
+                    _stopFromWalkIn = Mathf.MoveTowards(_stopFromWalkIn, 1f, dt / GaitBlend.IdleBlendSeconds);
             }
             else
                 _stopFromWalk = false;
@@ -5977,7 +5990,7 @@ namespace Tag.Art
             if (_stopFromIdle && !_stopFromSprint && !_stopFromWalk && grounded && speed <= 0.35f && !air && !dashing && !_airDashArms && !crouch && !sliding && !jet)
             {
                 if (_stopFromIdleIn < 0.98f)
-                    _stopFromIdleIn = Mathf.MoveTowards(_stopFromIdleIn, 1f, dt / 0.04f);
+                    _stopFromIdleIn = Mathf.MoveTowards(_stopFromIdleIn, 1f, dt / GaitBlend.IdleBlendSeconds);
             }
             else
                 _stopFromIdle = false;
@@ -6025,7 +6038,7 @@ namespace Tag.Art
             if (_walkFromIdle && stepping && !air && !dashing && !_airDashArms && runAmt <= 0.4f
                 && !_walkFromStill && !_walkFromCrouchWalk && !_walkFromSki && !_runFromStill && !_runFromCrouchWalk)
             {
-                _walkFromIdleIn = Mathf.MoveTowards(_walkFromIdleIn, 1f, dt / 0.04f);
+                _walkFromIdleIn = Mathf.MoveTowards(_walkFromIdleIn, 1f, dt / GaitBlend.IdleBlendSeconds);
                 if (_walkFromIdleIn >= 0.98f)
                 {
                     _walkFromIdle = false;
@@ -6049,7 +6062,7 @@ namespace Tag.Art
             float idleW = 0f;
             bool atRest = grounded && !dashing && !sliding && !crouch && !jet && !wallRun && !climb && !mantle && !air && !lunging && flinchAmt < 0.04f && claimAmt < 0.04f;
             if (atRest)
-                idleW = 1f - Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
+                idleW = 1f - Mathf.Max(gaitW, _stopGait);
             // After the feet close, the last hip roll eases into the idle sway.
             // A clock sine pops the hips. Holding them flat until the sway starts reads as a freeze.
             float strideRemain = Mathf.Abs(_cycle - Mathf.PI * Mathf.Round(_cycle / Mathf.PI));
@@ -6105,9 +6118,36 @@ namespace Tag.Art
                 leanX = Mathf.Lerp(leanX, 42f, glideAmt);
                 leanZ = Mathf.Lerp(leanZ, 0f, glideAmt);
             }
+            // Body only. A push leans the chest and the hips forward. A brake leans them back.
+            // Speed and acceleration are unchanged.
+            bool bodyLean = grounded && !air && !sliding && !crouch && !dashing && !jet && !wallRun && !climb && !mantle && !gliding && !bouncing && !lunging && _skiBlend < 0.02f;
+            Vector3 planarVel = Vector3.zero;
+            if (_motor != null)
+            {
+                planarVel = _motor.Velocity;
+                planarVel.y = 0f;
+            }
+            Transform leanSrc = _motor != null ? _motor.transform : transform;
+            float accelFwd = 0f;
+            if (_hasPlanarVel && dt > 0.0001f)
+            {
+                Vector3 dv = (planarVel - _prevPlanarVel) / dt;
+                Vector3 fwd = leanSrc.forward;
+                fwd.y = 0f;
+                if (fwd.sqrMagnitude > 0.0001f)
+                    accelFwd = Vector3.Dot(dv, fwd.normalized);
+            }
+            _prevPlanarVel = planarVel;
+            _hasPlanarVel = true;
+            float accelTarget = bodyLean ? GaitBlend.AccelLean(accelFwd) : 0f;
+            _accelLean = Mathf.MoveTowards(_accelLean, accelTarget, dt / 0.08f);
+            if (bodyLean)
+                leanX += _accelLean;
             _spineT = _spine0 * Quaternion.Euler(leanX, 0f, leanZ);
             float mantleAmt = mantle && _motor != null ? _motor.MantleProgress : 0f;
             _hipsT = _hips0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(18f, 28f, dashAmt) : gliding ? Mathf.Lerp(8f, 22f, glideAmt) : bouncing ? 14f : mantle ? Mathf.Lerp(18f, 8f, mantleAmt) : jet ? -10f : climb ? 12f : air ? 8f : 0f, 0f, -leanZ * 0.55f);
+            if (bodyLean && Mathf.Abs(_accelLean) > 0.05f)
+                _hipsT = _hipsT * Quaternion.Euler(_accelLean * 0.7f, 0f, 0f);
             if (_skiBlend > 0.02f && !dashing && !sliding && !jet && !_walkFromSki && !_runFromSki && !_idleFromSki)
                 _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(14f, 0f, 0f), _skiBlend);
             _headT = _head0 * Quaternion.Euler(lunging || dashing ? Mathf.Lerp(16f, 22f, dashAmt) : gliding ? Mathf.Lerp(-4f, 8f, glideAmt) : bouncing ? 10f : jet ? -8f : air ? -6f : -breath * 0.4f, 0f, 0f);
@@ -6128,20 +6168,21 @@ namespace Tag.Art
             bool canTurn = grounded && !air && !sliding && !crouch && !dashing && !jet && !wallRun && !climb && !mantle;
             float turnTarget = canTurn ? Mathf.Clamp(yawRate / 280f, -1f, 1f) : 0f;
             _turnVis = Mathf.MoveTowards(_turnVis, turnTarget, dt / 0.1f);
-            if (Mathf.Abs(_turnVis) > 0.12f && canTurn)
+            // The roll eases in with the turn. A hard gate popped the chest at chase distance.
+            float turnAbs = Mathf.Abs(_turnVis);
+            float turnIn = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(turnAbs / 0.55f));
+            if (canTurn && turnIn > 0.001f)
             {
                 // Same roll on the chest and the hips. A counter-roll reads as a twist at the waist.
                 // A sprint leans a little more so the pair still reads through the long stride.
-                float sprint = Mathf.Clamp01(_runVis);
-                float leanDeg = Mathf.Lerp(4.5f, 10f, sprint);
-                float w = Mathf.Clamp01(Mathf.Abs(_turnVis) * Mathf.Lerp(1f, 1.7f, sprint));
-                Quaternion lean = Quaternion.Euler(0f, 0f, _turnVis * leanDeg);
-                _spineT = Quaternion.Slerp(_spineT, _spineT * lean, w);
-                _hipsT = Quaternion.Slerp(_hipsT, _hipsT * lean, w);
+                float leanDeg = Mathf.Lerp(GaitBlend.TurnLeanWalk, GaitBlend.TurnLeanSprint, gaitW);
+                Quaternion lean = Quaternion.Euler(0f, 0f, Mathf.Sign(_turnVis) * leanDeg);
+                _spineT = Quaternion.Slerp(_spineT, _spineT * lean, turnIn);
+                _hipsT = Quaternion.Slerp(_hipsT, _hipsT * lean, turnIn);
             }
 
             // Arms - slight outward A-pose only (large +Z was V-ing hands into the butt)
-            float armZ = Mathf.Lerp(4f, 8f, _runVis);
+            float armZ = Mathf.Lerp(4f, 8f, Mathf.Max(gaitW, _runVis));
             // Camera pitch only. The look gate and the sensitivity stay on the camera.
             float lookPitch = 0f;
             Transform lookCam = _motor != null ? _motor.cam : null;
@@ -6304,7 +6345,7 @@ namespace Tag.Art
                     else if (dashWalk)
                     {
                         // The burst ends in the walk. It does not come to a stop.
-                        float gait = Mathf.Max(Mathf.Clamp01(walkAmt), 0.65f);
+                        float gait = gaitW;
                         float idle = 0f;
                         float amp = Mathf.Lerp(36f, 64f, gait);
                         float outY = Mathf.Lerp(12f, 8f, gait);
@@ -6328,7 +6369,7 @@ namespace Tag.Art
                     else if (dashSprint)
                     {
                         // The burst ends in the long stride. It does not come to a stop.
-                        float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                        float gait = Mathf.Max(gaitW, _runVis);
                         float amp = Mathf.Lerp(36f, 64f, gait);
                         float outY = Mathf.Lerp(12f, 8f, gait);
                         float roll = Mathf.Lerp(0f, armZ, gait);
@@ -6378,7 +6419,7 @@ namespace Tag.Art
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(22f, 0f, 0f), pose);
                     if (intoStride > 0.02f)
                     {
-                        float gait = Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                        float gait = gaitW;
                         float idle = 1f - gait;
                         float amp = Mathf.Lerp(36f, 64f, gait);
                         float outY = Mathf.Lerp(12f, 8f, gait);
@@ -6646,7 +6687,7 @@ namespace Tag.Art
                         // The arm opposite the front knee goes back to the stride while the
                         // fist is still out. The hips leave the punch twist with that arm.
                         // Windup time is unchanged.
-                        float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
+                        float gait = Mathf.Max(gaitW, _stopGait);
                         float idle = 1f - gait;
                         float amp = Mathf.Lerp(36f, 64f, gait);
                         float outY = Mathf.Lerp(12f, 8f, gait);
@@ -6706,7 +6747,7 @@ namespace Tag.Art
                     }
                     else if (sprintMiss > 0.02f)
                     {
-                        float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                        float gait = Mathf.Max(gaitW, _runVis);
                         float amp = Mathf.Lerp(36f, 64f, gait);
                         float outY = Mathf.Lerp(12f, 8f, gait);
                         float roll = Mathf.Lerp(0f, armZ, gait);
@@ -6726,7 +6767,7 @@ namespace Tag.Art
                     }
                     else if (walkMiss > 0.02f)
                     {
-                        float gait = Mathf.Max(Mathf.Clamp01(walkAmt), Mathf.Max(_stopGait, _runVis));
+                        float gait = Mathf.Max(gaitW, Mathf.Max(_stopGait, _runVis));
                         float idle = 1f - gait;
                         float amp = Mathf.Lerp(36f, 64f, gait);
                         float outY = Mathf.Lerp(12f, 8f, gait);
@@ -7011,7 +7052,7 @@ namespace Tag.Art
                 // Rearward travel stays short so the hands do not fold into the pelvis. No extra roll.
                 // _stopGait holds the last stride while the feet close, so a brake does not pop the arms idle.
                 // A sprint into a walk eases on its own, then the walk holds. Other slows still close with the step.
-                float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_stopGait, _runVis));
+                float gait = Mathf.Max(gaitW, Mathf.Max(_stopGait, _runVis));
                 float idle = 1f - gait;
                 float amp = Mathf.Lerp(36f, 64f, gait);
                 // Idle hang sits slightly forward and out. The outward yaw stays on through the
@@ -7130,7 +7171,7 @@ namespace Tag.Art
                         {
                             // Hands leave the slide into the open stride. They do not stay in the line.
                             float up = slideLeave;
-                            float openGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                            float openGait = Mathf.Max(gaitW, _runVis);
                             float openAmp = Mathf.Lerp(36f, 64f, openGait);
                             float openOut = Mathf.Lerp(12f, 8f, openGait);
                             float openRoll = Mathf.Lerp(0f, armZ, openGait);
@@ -7159,7 +7200,7 @@ namespace Tag.Art
                         if (!_runFromStill)
                         {
                         float up = 1f - _dropVis;
-                        float openGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                        float openGait = Mathf.Max(gaitW, _runVis);
                         float openAmp = Mathf.Lerp(36f, 64f, openGait);
                         float openOut = Mathf.Lerp(12f, 8f, openGait);
                         float openRoll = Mathf.Lerp(0f, armZ, openGait);
@@ -7359,15 +7400,15 @@ namespace Tag.Art
                     }
                     else
                     {
-                    float openGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
-                    float stride = Mathf.Lerp(0.96f, 1.16f, dashSprint ? openGait : _runVis);
+                    float openGait = Mathf.Max(gaitW, _runVis);
                     float reachGait = dashSprint
                         ? openGait
                         : dashWalk
-                            ? Mathf.Max(Mathf.Clamp01(walkAmt), 0.65f)
-                            : Mathf.Clamp01(Mathf.Max(walkAmt, runAmt));
+                            ? gaitW
+                            : Mathf.Max(gaitW, _stopGait);
+                    float stride = Mathf.Lerp(0.96f, 1.16f, reachGait);
                     float reach = Mathf.Lerp(34f, 58f, reachGait) * stride;
-                    float kneeAmt = Mathf.Lerp(48f, 90f, dashSprint ? openGait : _runVis);
+                    float kneeAmt = Mathf.Lerp(48f, 90f, reachGait);
                     _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(reach, 0f, 0f), w);
                     _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(-reach * 0.58f, 0f, 0f), w);
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(2f + kneeAmt), 0f, 0f), w);
@@ -7681,19 +7722,38 @@ namespace Tag.Art
             {
                 // Recovery leg takes the knee. The back thigh stays shorter than the front reach
                 // so the pair does not meet straight under the hips. Stance knee stays nearly straight.
-                float stride = Mathf.Lerp(0.96f, 1.16f, _runVis);
-                // A sprint into a walk eases on its own, then the walk holds. Other slows still close with the step.
-                float reachGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_stopGait, _runVis));
+                // Reach, knee, and stride scale with the same speed curve, so gaits do not pop.
+                float reachGait = Mathf.Max(gaitW, Mathf.Max(_stopGait, _runVis));
+                float stride = Mathf.Lerp(0.96f, 1.16f, reachGait);
                 float reach = Mathf.Lerp(34f, 58f, reachGait) * stride;
                 float frontL = Mathf.Max(0f, sinC);
                 float frontR = Mathf.Max(0f, -sinC);
                 float thighL = (frontL - frontR * 0.58f) * reach;
                 float thighR = (frontR - frontL * 0.58f) * reach;
-                _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
-                float kneeAmt = Mathf.Lerp(48f, 90f, _runVis);
+                float kneeAmt = Mathf.Lerp(48f, 90f, reachGait);
                 float kneeL = -(2f + frontL * kneeAmt);
                 float kneeR = -(2f + frontR * kneeAmt);
+                // Stance thigh pitches back with the distance the body travels, so the sole
+                // stays with the ground. Swing phase is unchanged. No root motion.
+                if (stepping && footSki < 0.35f && _dropVis < 0.2f)
+                {
+                    float plantScale = _walkFromIdle ? Mathf.SmoothStep(0f, 1f, _walkFromIdleIn) : 1f;
+                    float tau = Mathf.PI * 2f;
+                    float phase = _cycle % tau;
+                    if (phase < 0f) phase += tau;
+                    float plantL = 0f;
+                    float plantR = 0f;
+                    if (phase >= Mathf.PI)
+                        plantL = GaitBlend.PlantCounterDeg(speed, posedCadence, (phase - Mathf.PI) / Mathf.PI);
+                    else
+                        plantR = GaitBlend.PlantCounterDeg(speed, posedCadence, phase / Mathf.PI);
+                    thighL -= plantL * plantScale;
+                    thighR -= plantR * plantScale;
+                    kneeL -= plantL * 0.4f * plantScale;
+                    kneeR -= plantR * 0.4f * plantScale;
+                }
+                _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
                 _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(kneeR, 0f, 0f);
                 // First step pushes off the foot that stays down. The other leg reaches into the stride.
@@ -7798,7 +7858,7 @@ namespace Tag.Art
                         {
                             // The wedge opens into the long stride. The feet do not stay split, then pop.
                             float up = slideLeave;
-                            float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                            float gait = Mathf.Max(gaitW, _runVis);
                             float openStride = Mathf.Lerp(0.96f, 1.16f, gait);
                             float openReach = Mathf.Lerp(34f, 58f, gait) * openStride;
                             float openFrontL = Mathf.Max(0f, sinC);
@@ -7824,7 +7884,7 @@ namespace Tag.Art
                         if (!_runFromStill)
                         {
                         float up = 1f - _dropVis;
-                        float openGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                        float openGait = Mathf.Max(gaitW, _runVis);
                         float openStride = Mathf.Lerp(0.96f, 1.16f, openGait);
                         float openReach = Mathf.Lerp(34f, 58f, openGait) * openStride;
                         float openFrontL = Mathf.Max(0f, sinC);
@@ -8576,7 +8636,7 @@ namespace Tag.Art
                 else if (_exitIntoSprint)
                 {
                     _wallDropSnap = false;
-                    float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), 0.85f);
+                    float gait = Mathf.Max(gaitW, _runVis);
                     float amp = Mathf.Lerp(36f, 64f, gait);
                     float outY = Mathf.Lerp(12f, 8f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
@@ -9887,7 +9947,7 @@ namespace Tag.Art
                 }
                 else if (sprintGrapple > 0.02f)
                 {
-                    float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                    float gait = Mathf.Max(gaitW, _runVis);
                     float amp = Mathf.Lerp(36f, 64f, gait);
                     float outY = Mathf.Lerp(12f, 8f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
@@ -9907,7 +9967,7 @@ namespace Tag.Art
                 }
                 else if (walkGrapple > 0.02f)
                 {
-                    float gait = Mathf.Max(Mathf.Clamp01(walkAmt), Mathf.Max(_stopGait, _runVis));
+                    float gait = Mathf.Max(gaitW, Mathf.Max(_stopGait, _runVis));
                     gait = Mathf.Lerp(gait, 1f, walkGrapple);
                     float idle = (1f - gait) * (1f - walkGrapple);
                     float amp = Mathf.Lerp(36f, 64f, gait);
@@ -10004,7 +10064,7 @@ namespace Tag.Art
                 }
                 else if (sprintTag > 0.02f)
                 {
-                    float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                    float gait = Mathf.Max(gaitW, _runVis);
                     float amp = Mathf.Lerp(36f, 64f, gait);
                     float outY = Mathf.Lerp(12f, 8f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
@@ -10026,7 +10086,7 @@ namespace Tag.Art
                 }
                 else if (walkTag > 0.02f)
                 {
-                    float gait = Mathf.Max(Mathf.Clamp01(walkAmt), Mathf.Max(_stopGait, _runVis));
+                    float gait = Mathf.Max(gaitW, Mathf.Max(_stopGait, _runVis));
                     gait = Mathf.Lerp(gait, 1f, walkTag);
                     float idle = (1f - gait) * (1f - walkTag);
                     float amp = Mathf.Lerp(36f, 64f, gait);
@@ -10127,7 +10187,7 @@ namespace Tag.Art
                 }
                 else if (!punchHandoff && sprintClaim > 0.02f)
                 {
-                    float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), Mathf.Max(_runVis, 0.85f));
+                    float gait = Mathf.Max(gaitW, _runVis);
                     float amp = Mathf.Lerp(36f, 64f, gait);
                     float outY = Mathf.Lerp(12f, 8f, gait);
                     float roll = Mathf.Lerp(0f, armZ, gait);
@@ -10149,7 +10209,7 @@ namespace Tag.Art
                 }
                 else if (!punchHandoff && walkClaim > 0.02f)
                 {
-                    float gait = Mathf.Max(Mathf.Clamp01(walkAmt), Mathf.Max(_stopGait, _runVis));
+                    float gait = Mathf.Max(gaitW, Mathf.Max(_stopGait, _runVis));
                     gait = Mathf.Lerp(gait, 1f, walkClaim);
                     float idle = (1f - gait) * (1f - walkClaim);
                     float amp = Mathf.Lerp(36f, 64f, gait);
@@ -13879,7 +13939,7 @@ namespace Tag.Art
                 Quaternion connectR = _uaR0 * Quaternion.Euler(-118f, 52f, -22f);
                 Quaternion connectElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
                 Quaternion connectElR = _laR0 * Quaternion.Euler(-18f, 0f, 0f);
-                float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
+                float gait = Mathf.Max(gaitW, _stopGait);
                 float idle = 1f - gait;
                 float amp = Mathf.Lerp(36f, 64f, gait);
                 float outY = Mathf.Lerp(12f, 8f, gait);
@@ -13925,7 +13985,7 @@ namespace Tag.Art
                 Quaternion connectR = _uaR0 * Quaternion.Euler(-118f, 52f, -22f);
                 Quaternion connectElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
                 Quaternion connectElR = _laR0 * Quaternion.Euler(-18f, 0f, 0f);
-                float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
+                float gait = Mathf.Max(gaitW, _stopGait);
                 float idle = 1f - gait;
                 float amp = Mathf.Lerp(36f, 64f, gait);
                 float outY = Mathf.Lerp(12f, 8f, gait);
@@ -13971,7 +14031,7 @@ namespace Tag.Art
                 Quaternion connectR = _uaR0 * Quaternion.Euler(-118f, 52f, -22f);
                 Quaternion connectElL = _laL0 * Quaternion.Euler(-22f, 0f, 0f);
                 Quaternion connectElR = _laR0 * Quaternion.Euler(-18f, 0f, 0f);
-                float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
+                float gait = Mathf.Max(gaitW, _stopGait);
                 float idle = 1f - gait;
                 float amp = Mathf.Lerp(36f, 64f, gait);
                 float outY = Mathf.Lerp(12f, 8f, gait);
@@ -14053,7 +14113,7 @@ namespace Tag.Art
                 }
                 else
                 {
-                    float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
+                    float gait = Mathf.Max(gaitW, _stopGait);
                     float idle = 1f - gait;
                     float amp = Mathf.Lerp(36f, 64f, gait);
                     float outY = Mathf.Lerp(12f, 8f, gait);
@@ -14117,7 +14177,7 @@ namespace Tag.Art
                 }
                 else
                 {
-                    float gait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
+                    float gait = Mathf.Max(gaitW, _stopGait);
                     float idle = 1f - gait;
                     float amp = Mathf.Lerp(36f, 64f, gait);
                     float outY = Mathf.Lerp(12f, 8f, gait);
@@ -14385,7 +14445,7 @@ namespace Tag.Art
 
             float step = Mathf.Pow(Mathf.Abs(sinRaw), 1.7f);
             // Keep the last bounce while the feet close. Cutting it with speed freezes the hips, then the idle sway pops.
-            float bobGait = Mathf.Max(Mathf.Clamp01(Mathf.Max(walkAmt, runAmt)), _stopGait);
+            float bobGait = Mathf.Max(gaitW, _stopGait);
             float bob = grounded ? step * 0.085f * bobGait : air ? step * 0.02f : 0f;
             if (_dropVis > 0.02f && !air && !jet)
             {

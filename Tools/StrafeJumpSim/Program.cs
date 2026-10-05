@@ -27,6 +27,12 @@ static class Program
         VerbPoseClipReport clips = VerbPoseClipProof.Run();
         Console.WriteLine(clips.ToString());
         Console.WriteLine(Tag.Art.VerbPoseClips.SlideProofLine());
+        Console.WriteLine(Tag.Art.GaitBlend.ProofLine());
+        if (!Tag.Art.GaitBlend.Holds())
+        {
+            Console.Error.WriteLine("gait blend is not continuous");
+            return 1;
+        }
         if (!clips.Ok)
         {
             Console.Error.WriteLine(string.Join(" | ", clips.Failures));
