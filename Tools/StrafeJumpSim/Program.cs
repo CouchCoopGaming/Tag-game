@@ -26,6 +26,7 @@ static class Program
 
         VerbPoseClipReport clips = VerbPoseClipProof.Run();
         Console.WriteLine(clips.ToString());
+        Console.WriteLine(Tag.Art.VerbPoseClips.SlideProofLine());
         if (!clips.Ok)
         {
             Console.Error.WriteLine(string.Join(" | ", clips.Failures));
