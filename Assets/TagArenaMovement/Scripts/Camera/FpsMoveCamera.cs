@@ -1,3 +1,4 @@
+using Tag.Settings;
 using UnityEngine;
 
 namespace TagArena.Movement
@@ -46,10 +47,11 @@ namespace TagArena.Movement
         void LateUpdate()
         {
             float dt = Time.deltaTime;
-            if (!ResumeInputGate.Blocking)
+            if (!ResumeInputGate.Blocking && _in != null)
             {
-                _yaw += _in.Look.x * sensitivity;
-                _pitch -= _in.Look.y * sensitivity;
+                bool padLook = _in.LookFromGamepad;
+                _yaw += LookFeel.YawDelta(_in.Look.x, padLook);
+                _pitch -= LookFeel.PitchDelta(_in.Look.y, padLook);
             }
             _pitch = Mathf.Clamp(_pitch, minPitch, maxPitch);
 
@@ -71,6 +73,7 @@ namespace TagArena.Movement
                     targetFov = Mathf.Lerp(cfg.fovIdle, cfg.fovSki, Mathf.InverseLerp(8f, 24f, motor.HorizSpeed));
                     break;
             }
+            targetFov = LookFeel.ScaleFov(targetFov);
             _fov = Mathf.Lerp(_fov, targetFov, 1f - Mathf.Exp(-6f * dt));
             if (cam) cam.fieldOfView = _fov;
 

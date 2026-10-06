@@ -1,3 +1,4 @@
+using Tag.Settings;
 using UnityEngine;
 
 namespace Tag.Audio
@@ -67,7 +68,7 @@ namespace Tag.Audio
         {
             if (clip == null) return;
             AudioMaster.Apply();
-            vol = Mathf.Clamp01(vol);
+            vol = Mathf.Clamp01(vol * SfxGain());
             if (src != null)
             {
                 src.pitch = 1f + Random.Range(-0.04f, 0.04f);
@@ -81,7 +82,7 @@ namespace Tag.Audio
         {
             if (clip == null) return;
             AudioMaster.Apply();
-            AudioSource.PlayClipAtPoint(clip, pos, Mathf.Clamp01(vol));
+            AudioSource.PlayClipAtPoint(clip, pos, Mathf.Clamp01(vol * SfxGain()));
         }
 
         public static void PunchConnect(Vector3 pos) => PlayAt(Punch, pos, 0.62f);
@@ -99,7 +100,7 @@ namespace Tag.Audio
             src.maxDistance = 22f;
             AudioMaster.Apply();
             src.pitch = 1.15f + Random.Range(-0.04f, 0.04f);
-            src.volume = 0.28f;
+            src.volume = 0.28f * SfxGain();
             src.clip = clip;
             src.Play();
             Object.Destroy(go, clip.length / Mathf.Max(0.5f, src.pitch) + 0.08f);
@@ -121,6 +122,11 @@ namespace Tag.Audio
         public static void UiClick() => PlayFlat(UiClickClip, 0.4f);
         public static void UiConfirm() => PlayFlat(UiConfirmClip, 0.42f);
         public static void CountdownBeep() => PlayFlat(CountdownBeepClip, 0.42f);
+
+        static float SfxGain()
+        {
+            return GameSettings.Current != null ? GameSettings.Current.Sfx : 1f;
+        }
 
         static AudioClip _countBeep;
         static AudioClip CountdownBeepClip => _countBeep ??= MakeBlip(880f, 0.05f, 0.3f);

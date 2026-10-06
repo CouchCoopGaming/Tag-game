@@ -191,6 +191,14 @@ static class Program
             return 1;
         }
 
+        SettingsInputReport settings = SettingsInputProof.Run();
+        Console.WriteLine(settings.Line);
+        if (!settings.Ok)
+        {
+            Console.Error.WriteLine(settings.Failure);
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.VerbPoseClips.PunchTagPolishProofLine());
         if (!Tag.Art.VerbPoseClips.PunchTagPolishHolds())
         {

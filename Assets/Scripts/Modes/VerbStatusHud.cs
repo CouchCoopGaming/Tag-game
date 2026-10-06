@@ -1,4 +1,5 @@
 using Tag.Gameplay;
+using Tag.Settings;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -31,25 +32,38 @@ namespace Tag.Modes
             float sw = Screen.width;
             float sh = Screen.height;
             VerbHudLayout.Box cluster = VerbHudLayout.Cluster(sw, sh);
+            float hudScale = GameSettings.Current != null ? GameSettings.Current.HudScale : 1f;
+            bool scaled = hudScale < 0.999f || hudScale > 1.001f;
+            Matrix4x4 prevMatrix = GUI.matrix;
+            if (scaled)
+                GUIUtility.ScaleAroundPivot(new Vector2(hudScale, hudScale), new Vector2(cluster.Right, cluster.Y));
+            bool colorblind = GameSettings.Current != null && GameSettings.Current.Colorblind;
             ItController self = motor.GetComponent<ItController>();
             float dashMax = motor.cfg != null ? Mathf.Max(0.01f, motor.cfg.airDashCooldown) : 30f;
             float dashRem = motor.AirDashCooldownRemaining;
             float dashFill = motor.IsAirDashing ? 1f : 1f - Mathf.Clamp01(dashRem / dashMax);
             string dashText = motor.IsAirDashing ? "GO" : (dashRem <= 0.05f ? "READY" : dashRem.ToString("0.0"));
-            DrawRing(VerbHudLayout.Row(cluster, 0), dashFill, new Color(0.25f, 0.55f, 0.95f, 1f), "DASH", dashText, false);
+            DrawRing(VerbHudLayout.Row(cluster, 0), dashFill, VerbColor(colorblind, 0), "DASH", dashText, false);
 
             float safe = self != null ? self.TagBackRemaining : 0f;
             float safeFill = safe > 0.001f ? Mathf.Clamp01(safe / TagBackImmunity.DefaultSeconds) : 0f;
             string safeText = safe > 0.001f ? safe.ToString("0.0") : "—";
-            DrawRing(VerbHudLayout.Row(cluster, 1), safeFill, new Color(0.95f, 0.72f, 0.22f, 1f), "SAFE", safeText, true);
+            DrawRing(VerbHudLayout.Row(cluster, 1), safeFill, VerbColor(colorblind, 1), "SAFE", safeText, true);
 
             float stag = motor.StaggerRemaining;
             float stagFill = stag > 0.001f ? Mathf.Clamp01(stag / PunchStagger.Duration) : 0f;
             string stagText = stag > 0.001f ? stag.ToString("0.00") : "—";
-            DrawRing(VerbHudLayout.Row(cluster, 2), stagFill, new Color(0.62f, 0.45f, 0.95f, 1f), "STAGGER", stagText, false);
+            DrawRing(VerbHudLayout.Row(cluster, 2), stagFill, VerbColor(colorblind, 2), "STAGGER", stagText, false);
 
             bool cling = motor.ClingHeldActive;
-            DrawRing(VerbHudLayout.Row(cluster, 3), cling ? 1f : 0f, new Color(0.93f, 0.95f, 0.98f, 1f), "CLING", cling ? "HELD" : "—", false);
+            DrawRing(VerbHudLayout.Row(cluster, 3), cling ? 1f : 0f, VerbColor(colorblind, 3), "CLING", cling ? "HELD" : "—", false);
+            if (scaled) GUI.matrix = prevMatrix;
+        }
+
+        static Color VerbColor(bool colorblind, int index)
+        {
+            GameSettings.VerbMark(colorblind, index, out float r, out float g, out float b);
+            return new Color(r, g, b, 1f);
         }
 
         void EnsureStyles()

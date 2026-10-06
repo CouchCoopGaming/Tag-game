@@ -1,4 +1,8 @@
+using Tag.Settings;
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace TagArena.Movement
 {
@@ -23,6 +27,7 @@ namespace TagArena.Movement
         public bool AirDashPressed;
         public bool PunchPressed;
         public bool TapForwardPulse;
+        public bool LookFromGamepad;
 
         /// <summary>When true, Read() is a no-op - AI / tests own Move/Look/buttons.</summary>
         public bool ExternalControl;
@@ -49,6 +54,11 @@ namespace TagArena.Movement
         // After pause/results unlock, locking the cursor in the same Update as Read can yaw+punch.
         // Drop look/punch for one locked frame so the resume click / residual mouse delta die first.
         int _lookPunchGateFrames;
+        HoldSample _menuLatch;
+        bool _resumeGate;
+        bool _swallowResumeJump;
+        bool _clearSprintOnResume;
+        bool _clearClingOnResume;
 
         void Awake()
         {
@@ -69,10 +79,14 @@ namespace TagArena.Movement
             // Look is not scaled by deltaTime, so an unlocked cursor must not yaw either.
             bool cursorLocked = Cursor.lockState == CursorLockMode.Locked;
             bool playLive = Time.timeScale > 0f && cursorLocked;
+            bool clingPhys = Input.GetKey(KeyCode.W) || Input.GetAxisRaw("Vertical") > 0.25f;
+            bool sprintPhys = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftAlt);
+            bool jumpPhys = JumpHeldNow();
             if (!playLive)
             {
                 Move = Vector2.zero;
                 Look = Vector2.zero;
+                LookFromGamepad = false;
                 SprintHeld = false;
                 CrouchHeld = false;
                 CrouchPressed = false;
@@ -85,15 +99,28 @@ namespace TagArena.Movement
                 AirDashPressed = false;
                 PunchPressed = false;
                 TapForwardPulse = false;
+                // Latch the physical holds. Resume uses this so a released cling or
+                // sprint cannot stay down, and the menu's jump cannot fire.
+                _menuLatch = MenuHoldGate.WhileOpen(clingPhys, sprintPhys, jumpPhys);
+                _resumeGate = true;
                 // A hold that started in the menu must not look like a fresh press on resume.
                 _prevCrouch = (Input.GetKey(crouchKey) || Input.GetKey(KeyCode.LeftControl)) ? 1f : 0f;
-                _prevJump = JumpHeldNow() ? 1f : 0f;
+                _prevJump = jumpPhys ? 1f : 0f;
                 _prevSpace = SpaceHeld() ? 1f : 0f;
                 _prevJet = (Input.GetKey(jetKey) || Input.GetMouseButton(1)) ? 1f : 0f;
                 _prevW = Input.GetKey(tapStrafePulseKey);
                 _prevMoveY = Input.GetAxisRaw("Vertical");
                 _wasCursorLocked = false;
                 return;
+            }
+
+            if (_resumeGate)
+            {
+                HoldResult step = MenuHoldGate.OnResume(_menuLatch, clingPhys, sprintPhys, jumpPhys);
+                _resumeGate = false;
+                _swallowResumeJump = true;
+                _clearSprintOnResume = !step.Sprint;
+                _clearClingOnResume = !step.Cling;
             }
 
             // Rising edge: menu/results just released play. Same-frame lock + Read would yaw/punch.
@@ -149,6 +176,25 @@ namespace TagArena.Movement
             // Q / Left Alt (docs); MMB also counts via LungePressed when airborne in motor.
             AirDashPressed = Input.GetKeyDown(airDashKey) || Input.GetKeyDown(KeyCode.LeftAlt);
             PunchPressed = Input.GetKeyDown(punchKey) || Input.GetKeyDown(KeyCode.E);
+            LookFromGamepad = StickLookActive();
+            ApplyReboundOverrides();
+            if (_swallowResumeJump)
+            {
+                JumpPressed = false;
+                _swallowResumeJump = false;
+                _prevJump = JumpHeld ? 1f : 0f;
+                _prevSpace = JumpHeld ? 1f : 0f;
+            }
+            if (_clearSprintOnResume)
+            {
+                SprintHeld = false;
+                _clearSprintOnResume = false;
+            }
+            if (_clearClingOnResume)
+            {
+                if (!clingPhys && Move.y > 0f) Move.y = 0f;
+                _clearClingOnResume = false;
+            }
 
             if (_lookPunchGateFrames > 0 || ResumeInputGate.Blocking)
             {
@@ -210,6 +256,54 @@ namespace TagArena.Movement
             AirDashPressed = airDash;
             PunchPressed = false;
             TapForwardPulse = false;
+        }
+
+        void ApplyReboundOverrides()
+        {
+            ActionBinds binds = ActionBinds.Current;
+            if (binds == null) return;
+            if (!binds.UsesLegacy(PlayAction.Move))
+                Move = BindSampler.MoveVector();
+            if (!binds.UsesLegacy(PlayAction.Look))
+            {
+                Look = BindSampler.LookVector();
+                LookFromGamepad = !binds.GamepadIsDefault(PlayAction.Look) || LookFromGamepad;
+            }
+            if (!binds.UsesLegacy(PlayAction.Jump))
+            {
+                bool held = BindSampler.Held(PlayAction.Jump);
+                JumpHeld = held;
+                JumpPressed = held && _prevJump <= 0f;
+                _prevJump = held ? 1f : 0f;
+                _prevSpace = held ? 1f : 0f;
+            }
+            if (!binds.UsesLegacy(PlayAction.Slide))
+            {
+                bool held = BindSampler.Held(PlayAction.Slide);
+                CrouchPressed = held && _prevCrouch <= 0f;
+                CrouchHeld = held;
+                _prevCrouch = held ? 1f : 0f;
+            }
+            if (!binds.UsesLegacy(PlayAction.AirDash))
+                AirDashPressed = BindSampler.Pressed(PlayAction.AirDash) || Input.GetKeyDown(KeyCode.LeftAlt);
+            if (!binds.UsesLegacy(PlayAction.Punch))
+                PunchPressed = BindSampler.Pressed(PlayAction.Punch) || Input.GetKeyDown(KeyCode.E);
+            if (!binds.UsesLegacy(PlayAction.Sprint))
+                SprintHeld = BindSampler.Held(PlayAction.Sprint);
+            if (!binds.UsesLegacy(PlayAction.Cling) && BindSampler.Held(PlayAction.Cling))
+            {
+                if (Move.y < 0.85f) Move.y = 1f;
+            }
+        }
+
+        static bool StickLookActive()
+        {
+#if ENABLE_INPUT_SYSTEM
+            var pad = Gamepad.current;
+            if (pad != null && pad.rightStick.ReadValue().sqrMagnitude > 0.04f)
+                return true;
+#endif
+            return false;
         }
 
         public void ConsumeJumpPress() => JumpPressed = false;

@@ -40,7 +40,20 @@ namespace TagArena.Movement
             PlayerPrefs.SetFloat(PrefsKey, Current);
             PlayerPrefs.Save();
             Apply();
+            Tag.Settings.SettingsRuntime.NoteMouse(Current);
             Tag.Audio.TagSfx.UiClick();
+        }
+
+        /// <summary>Settings menu writes the live value without snapping to a step first.</summary>
+        public static void Assign(float value)
+        {
+            Current = Mathf.Clamp(value, 0.5f, 5f);
+            PlayerPrefs.SetFloat(PrefsKey, Current);
+            PlayerPrefs.Save();
+            foreach (var cam in Object.FindObjectsByType<TpsMoveCamera>(FindObjectsSortMode.None))
+                cam.sensitivity = Current;
+            foreach (var cam in Object.FindObjectsByType<FpsMoveCamera>(FindObjectsSortMode.None))
+                cam.sensitivity = Current;
         }
 
         public static void Apply()
