@@ -534,9 +534,18 @@ static class Program
 
         Tag.Core.FrameBudget.Report budget = Tag.Core.FrameBudget.Run();
         Console.WriteLine(budget.Line);
+
+        Tag.Audio.AudioReport audio = Tag.Audio.AudioProof.Run();
+        Console.WriteLine(audio.Line);
+
         if (!budget.Ok)
         {
             Console.Error.WriteLine(budget.Failure);
+            return 1;
+        }
+        if (!audio.Ok)
+        {
+            Console.Error.WriteLine(audio.Failure);
             return 1;
         }
 

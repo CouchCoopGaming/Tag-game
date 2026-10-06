@@ -16,8 +16,8 @@ namespace Tag.Audio
 
         static readonly float[] Steps = { 0f, 0.25f, 0.5f, 0.8f, 1f };
         static readonly string[] Names = { "Off", "Low", "Med", "Default", "Max" };
-        static readonly float[] MusicSteps = { 0.15f, 0.35f, 0.55f };
-        static readonly string[] MusicNames = { "Low", "Default", "High" };
+        static readonly float[] MusicSteps = { 0f, 0.15f, 0.35f, 0.55f, 1f };
+        static readonly string[] MusicNames = { "Off", "Low", "Default", "High", "Max" };
 
         public static float Volume { get; private set; } = DefaultVolume;
         public static float MusicVolume { get; private set; } = DefaultMusicVolume;
@@ -143,7 +143,17 @@ namespace Tag.Audio
             PlayerPrefs.SetFloat(MusicVolumePrefsKey, MusicVolume);
             PlayerPrefs.Save();
             Apply();
+            Tag.Settings.SettingsRuntime.NoteMusic(MusicVolume);
             TagSfx.UiClick();
+        }
+
+        /// <summary>Settings music slider. Does not snap to a step.</summary>
+        public static void ApplyMusicFromSettings(float music)
+        {
+            MusicVolume = Mathf.Clamp01(music);
+            PlayerPrefs.SetFloat(MusicVolumePrefsKey, MusicVolume);
+            PlayerPrefs.Save();
+            Apply();
         }
 
         public static void ResetStatics()

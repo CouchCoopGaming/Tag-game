@@ -48,6 +48,8 @@ ExportedObj/
 Tools/StrafeJumpSim/bin/
 !Tools/ScriptCompileCheck/ScriptCompileCheck.csproj
 Tools/ScriptCompileCheck/bin/
+!Tools/AudioSynth/AudioSynth.csproj
+Tools/AudioSynth/bin/
 .consulo/
 *.apk
 *.aab

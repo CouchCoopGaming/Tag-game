@@ -22,6 +22,8 @@ namespace Tag.Settings
             Line(text, "fov", s.Fov);
             Line(text, "master", s.Master);
             Line(text, "sfx", s.Sfx);
+            Line(text, "ui", s.Ui);
+            Line(text, "music", s.Music);
             Line(text, "mute", s.Muted ? 1f : 0f);
             Line(text, "hud", s.HudScale);
             Line(text, "colorblind", s.Colorblind ? 1f : 0f);
@@ -69,6 +71,8 @@ namespace Tag.Settings
             else if (key == "fov") settings.Fov = Num(value, settings.Fov);
             else if (key == "master") settings.Master = Num(value, settings.Master);
             else if (key == "sfx") settings.Sfx = Num(value, settings.Sfx);
+            else if (key == "ui") settings.Ui = Num(value, settings.Ui);
+            else if (key == "music") settings.Music = Num(value, settings.Music);
             else if (key == "mute") settings.Muted = Flag(value);
             else if (key == "hud") settings.HudScale = Num(value, settings.HudScale);
             else if (key == "colorblind") settings.Colorblind = Flag(value);

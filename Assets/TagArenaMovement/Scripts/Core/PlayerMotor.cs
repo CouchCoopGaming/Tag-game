@@ -402,6 +402,7 @@ namespace TagArena.Movement
                 TryTag();
 
             DriveAnimator();
+            PawnAudio.Step(this, dt);
         }
 
         ExperimentalGrapple GrappleOrNull()
