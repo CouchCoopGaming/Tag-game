@@ -170,6 +170,9 @@ namespace Tag.Modes
             s.InputOpen = false;
             s.Arm = ResultsArmSeconds;
             s.Latch = false;
+            s.TagBack = 0f;
+            s.ImmuneWho = -1;
+            s.ImmuneFrom = -1;
         }
 
         /// <summary>One It swap. Countdown, results, tag-back, and a second call this step are refused.</summary>

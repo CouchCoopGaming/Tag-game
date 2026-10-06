@@ -32,9 +32,31 @@ namespace Tag.Settings
 
         public static ActionBinds Current = Defaults();
 
+        static ActionBinds _template;
+
+        /// <summary>One table for default compares. Per-frame rebind checks must not allocate.</summary>
+        static ActionBinds Template()
+        {
+            if (_template != null) return _template;
+            _template = new ActionBinds();
+            Fill(_template);
+            return _template;
+        }
+
         public static ActionBinds Defaults()
         {
             var b = new ActionBinds();
+            ActionBinds template = Template();
+            for (int i = 0; i < (int)PlayAction.Count; i++)
+            {
+                b.Keyboard[i] = template.Keyboard[i];
+                b.Gamepad[i] = template.Gamepad[i];
+            }
+            return b;
+        }
+
+        static void Fill(ActionBinds b)
+        {
             Set(b, PlayAction.Move, "wasd", "leftStick");
             Set(b, PlayAction.Look, "mouse", "rightStick");
             Set(b, PlayAction.Jump, "space", "buttonSouth");
@@ -47,7 +69,6 @@ namespace Tag.Settings
             Set(b, PlayAction.Minimap, "m", "select");
             Set(b, PlayAction.Arena1, "alpha1", "dpadLeft");
             Set(b, PlayAction.Arena2, "alpha2", "dpadRight");
-            return b;
         }
 
         public static string Name(PlayAction action)
@@ -119,12 +140,12 @@ namespace Tag.Settings
 
         public bool KeyboardIsDefault(PlayAction action)
         {
-            return Keyboard[(int)action] == Defaults().Keyboard[(int)action];
+            return Keyboard[(int)action] == Template().Keyboard[(int)action];
         }
 
         public bool GamepadIsDefault(PlayAction action)
         {
-            return Gamepad[(int)action] == Defaults().Gamepad[(int)action];
+            return Gamepad[(int)action] == Template().Gamepad[(int)action];
         }
 
         public bool UsesLegacy(PlayAction action)

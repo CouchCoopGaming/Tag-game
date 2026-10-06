@@ -1,3 +1,4 @@
+using Tag.Core;
 using Tag.Gameplay;
 using Tag.Settings;
 using TagArena.Movement;
@@ -13,6 +14,7 @@ namespace Tag.Modes
     public class VerbStatusHud : MonoBehaviour
     {
         public PlayerMotor motor;
+        ItController _self;
         GUIStyle _label;
         GUIStyle _caption;
 
@@ -21,14 +23,36 @@ namespace Tag.Modes
             if (motor == null) motor = GetComponent<PlayerMotor>();
         }
 
+        void Start()
+        {
+            if (motor == null) motor = GetComponent<PlayerMotor>();
+            if (motor != null) _self = motor.GetComponent<ItController>();
+            if (_self == null) _self = GetComponent<ItController>();
+            BootStyles();
+        }
+
+        void BootStyles()
+        {
+            _label = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 16,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleLeft
+            };
+            _label.normal.textColor = Color.white;
+            _caption = new GUIStyle(_label) { alignment = TextAnchor.MiddleRight };
+        }
+
         void OnGUI()
         {
-            if (motor == null) return;
+            if (motor == null || _label == null) return;
             var modes = TagModeController.Instance;
             if (modes != null && modes.Phase != MatchPhase.Playing && modes.Phase != MatchPhase.PostRound)
                 return;
 
-            EnsureStyles();
+            int size = Screen.height >= 1000 ? 16 : 14;
+            _label.fontSize = size;
+            _caption.fontSize = size;
             float sw = Screen.width;
             float sh = Screen.height;
             VerbHudLayout.Box cluster = VerbHudLayout.Cluster(sw, sh);
@@ -38,21 +62,21 @@ namespace Tag.Modes
             if (scaled)
                 GUIUtility.ScaleAroundPivot(new Vector2(hudScale, hudScale), new Vector2(cluster.Right, cluster.Y));
             bool colorblind = GameSettings.Current != null && GameSettings.Current.Colorblind;
-            ItController self = motor.GetComponent<ItController>();
+            ItController self = _self;
             float dashMax = motor.cfg != null ? Mathf.Max(0.01f, motor.cfg.airDashCooldown) : 30f;
             float dashRem = motor.AirDashCooldownRemaining;
             float dashFill = motor.IsAirDashing ? 1f : 1f - Mathf.Clamp01(dashRem / dashMax);
-            string dashText = motor.IsAirDashing ? "GO" : (dashRem <= 0.05f ? "READY" : dashRem.ToString("0.0"));
+            string dashText = motor.IsAirDashing ? "GO" : (dashRem <= 0.05f ? "READY" : HudDigits.Tenth0(dashRem));
             DrawRing(VerbHudLayout.Row(cluster, 0), dashFill, VerbColor(colorblind, 0), "DASH", dashText, false);
 
             float safe = self != null ? self.TagBackRemaining : 0f;
             float safeFill = safe > 0.001f ? Mathf.Clamp01(safe / TagBackImmunity.DefaultSeconds) : 0f;
-            string safeText = safe > 0.001f ? safe.ToString("0.0") : "—";
+            string safeText = safe > 0.001f ? HudDigits.Tenth0(safe) : "—";
             DrawRing(VerbHudLayout.Row(cluster, 1), safeFill, VerbColor(colorblind, 1), "SAFE", safeText, true);
 
             float stag = motor.StaggerRemaining;
             float stagFill = stag > 0.001f ? Mathf.Clamp01(stag / PunchStagger.Duration) : 0f;
-            string stagText = stag > 0.001f ? stag.ToString("0.00") : "—";
+            string stagText = stag > 0.001f ? HudDigits.Hundredth0(stag) : "—";
             DrawRing(VerbHudLayout.Row(cluster, 2), stagFill, VerbColor(colorblind, 2), "STAGGER", stagText, false);
 
             bool cling = motor.ClingHeldActive;
@@ -64,20 +88,6 @@ namespace Tag.Modes
         {
             GameSettings.VerbMark(colorblind, index, out float r, out float g, out float b);
             return new Color(r, g, b, 1f);
-        }
-
-        void EnsureStyles()
-        {
-            int size = Screen.height >= 1000 ? 16 : 14;
-            if (_label != null && _label.fontSize == size) return;
-            _label = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = size,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleLeft
-            };
-            _label.normal.textColor = Color.white;
-            _caption = new GUIStyle(_label) { alignment = TextAnchor.MiddleRight };
         }
 
         void DrawRing(VerbHudLayout.Box row, float fill, Color mark, string name, string value, bool dotted)

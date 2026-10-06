@@ -24,6 +24,11 @@ namespace Tag.Core
     {
         public static GameFlow Instance { get; private set; }
 
+        public static void ResetStatics()
+        {
+            Instance = null;
+        }
+
         [SerializeField] string bootSceneName = "Boot";
         [SerializeField] string playSceneName = "Play";
 
@@ -73,7 +78,9 @@ namespace Tag.Core
 
         void OnDestroy()
         {
-            if (Instance == this) SceneManager.sceneLoaded -= OnSceneLoaded;
+            if (Instance != this) return;
+            Instance = null;
+            SceneManager.sceneLoaded -= OnSceneLoaded;
         }
 
         void Start()
@@ -247,6 +254,31 @@ namespace Tag.Core
         /// leave that card without TogglePause, so the panel would stay up over play,
         /// steal results arrows, and hide Boot after Q.
         /// </summary>
+        static string CouchRoster(int count)
+        {
+            if (count <= 1) return "1 human, bot off";
+            if (count == 2) return "2 humans, bot off";
+            if (count == 3) return "3 humans, bot off";
+            return "4 humans, bot off";
+        }
+
+        string _looseLine;
+        string _looseArm;
+        string _looseMenu;
+        string _looseMsg;
+
+        string LooseResultsLine(string arm, string menu)
+        {
+            if (_looseLine != null && _looseArm == arm && _looseMenu == menu && _looseMsg == LastResultMessage)
+                return _looseLine;
+            _looseArm = arm;
+            _looseMenu = menu;
+            _looseMsg = LastResultMessage;
+            _looseLine = LastResultMessage + "\n\n" + arm + "    " + menu
+                + "\n1-2 or Left / Right    Enter / Space    R    Q";
+            return _looseLine;
+        }
+
         void CloseMenuPanels()
         {
             _controlsOpen = false;
@@ -549,7 +581,7 @@ namespace Tag.Core
             else if (State == GameFlowState.ModeSelect)
             {
                 string roster = LocalPlayerRoster.IsCouch
-                    ? $"{LocalPlayerRoster.PlayerCount} humans, bot off"
+                    ? CouchRoster(LocalPlayerRoster.PlayerCount)
                     : "you + 1 bot";
                 GUI.Box(new Rect(cx - 220, cy - 150, 440, 300), "Mode  " + roster);
                 DrawMode(cx, cy - 100, 0, "1  Hot Potato  (first to 2 - fuse 45/40/35s)");
@@ -589,7 +621,7 @@ namespace Tag.Core
                     string arm = _looseResultsFocus == 0 ? "> Rematch" : "Rematch";
                     string menu = _looseResultsFocus == 1 ? "> Menu" : "Menu";
                     GUI.Label(new Rect(cx - 200, cy - 36, 400, 70),
-                        $"{LastResultMessage}\n\n{arm}    {menu}\n1-2 or Left / Right    Enter / Space    R    Q");
+                        LooseResultsLine(arm, menu));
                 }
             }
         }

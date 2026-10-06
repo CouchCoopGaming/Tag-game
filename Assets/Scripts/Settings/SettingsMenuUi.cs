@@ -36,6 +36,16 @@ namespace Tag.Settings
             _conflict = "";
         }
 
+        public static void ResetStatics()
+        {
+            Which = Panel.None;
+            Capturing = false;
+            _focus = 0;
+            _captureAction = -1;
+            _captureFrame = -1;
+            _conflict = "";
+        }
+
         public static void Close()
         {
             Which = Panel.None;

@@ -24,6 +24,9 @@ namespace Tag.Gameplay
         static int _nextTagPawnId = 1;
         MaterialPropertyBlock _mpb;
         PlayerMotor _motor;
+        PlayerInputReader _reader;
+        Tag.Modes.DummyPatrol _patrol;
+        bool _humanKnown;
         Rigidbody _rb;
         Collider _bodyCol;
         PunchTagTuning _lastPunchTuning;
@@ -45,6 +48,17 @@ namespace Tag.Gameplay
                 if (_tagPawnId == 0) _tagPawnId = _nextTagPawnId++;
                 return _tagPawnId;
             }
+        }
+        public PlayerMotor Motor => _motor;
+
+        /// <summary>Local human: has a reader and is not the dummy. Cached so the HUD does not search every frame.</summary>
+        public bool LooksLocal()
+        {
+            if (_humanKnown) return _reader != null && _patrol == null;
+            _humanKnown = true;
+            _reader = GetComponent<PlayerInputReader>();
+            _patrol = GetComponent<Tag.Modes.DummyPatrol>();
+            return _reader != null && _patrol == null;
         }
         public float TagBackRemaining => _tagBack.Remaining;
         public float TagBackGlow01(float time) => TagBackImmunity.GlowPulse(_tagBack, time);
@@ -99,14 +113,24 @@ namespace Tag.Gameplay
         void Update()
         {
             if (_eliminated) return;
-            if (isIt && RoundClockOpen())
+            bool playing = RoundClockOpen();
+            if (isIt && playing)
                 _timeAsIt += Time.deltaTime;
             if (_iFrameTimer > 0f)
                 _iFrameTimer -= Time.deltaTime;
-            _tagBack = TagBackImmunity.Tick(_tagBack, Time.deltaTime);
+            // Pause freezes with timeScale 0. Results and the next countdown do not keep the window.
+            if (playing)
+                _tagBack = TagBackImmunity.Tick(_tagBack, Time.deltaTime);
+            else
+                ClearTagBackImmunity();
             // The window is only from the specific new It. Once they are not It, the glow ends.
             if (_tagBack.Remaining <= 0f || _tagBackFrom == null || !_tagBackFrom.IsIt)
                 ClearTagBackImmunity();
+        }
+
+        public static void ResetPawnIds()
+        {
+            _nextTagPawnId = 1;
         }
 
         public void SetIt(bool value)

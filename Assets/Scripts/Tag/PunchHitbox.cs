@@ -181,9 +181,7 @@ namespace Tag.Gameplay
                 Phase = PunchPhase.MissRecover;
                 // Soft fail: quieter/higher TagSfx + light cam nudge (connect keeps strong kick)
                 AudioBus.Raise(AudioBus.Hook.PunchWhiff, transform.position);
-                var tpsMiss = GetComponentInChildren<TpsMoveCamera>(true);
-                if (tpsMiss != null)
-                    tpsMiss.AddKick(new Vector3(0f, 0.04f, -0.09f)); // whiff recoil reads a hair clearer in TP
+                WhiffKick();
                 _phaseDuration = tuning.missRecover;
                 _phaseTimer = _phaseDuration;
             }
@@ -196,9 +194,29 @@ namespace Tag.Gameplay
                 EndPunch();
         }
 
+        DummyLocomotor _loco;
+
+        DummyLocomotor Loco()
+        {
+            if (_loco == null) FindLoco();
+            return _loco;
+        }
+
+        void FindLoco()
+        {
+            _loco = GetComponentInChildren<DummyLocomotor>();
+        }
+
+        void WhiffKick()
+        {
+            var tpsMiss = GetComponentInChildren<TpsMoveCamera>(true);
+            if (tpsMiss != null)
+                tpsMiss.AddKick(new Vector3(0f, 0.04f, -0.09f)); // whiff recoil reads a hair clearer in TP
+        }
+
         void HoldLocalPunchTell()
         {
-            var loco = GetComponentInChildren<DummyLocomotor>();
+            var loco = Loco();
             if (loco != null) loco.HoldPunchTelegraph();
         }
 
@@ -210,7 +228,7 @@ namespace Tag.Gameplay
             _bufferTimer = 0f;
             if (Phase != PunchPhase.Idle)
                 EndPunch();
-            var loco = GetComponentInChildren<DummyLocomotor>();
+            var loco = Loco();
             if (loco != null) loco.CancelPunchTelegraph();
         }
 

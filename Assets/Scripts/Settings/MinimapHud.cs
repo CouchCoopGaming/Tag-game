@@ -12,6 +12,11 @@ namespace Tag.Settings
     {
         static int _frame = -1;
 
+        public static void ResetStatics()
+        {
+            _frame = -1;
+        }
+
         public static void Draw()
         {
             if (_frame == Time.frameCount) return;
