@@ -36,6 +36,13 @@ namespace Tag.Gameplay
         public float knockbackHorizontal = 4.0f;
         public float knockbackUp = 2.0f;
 
+        [Header("Tag-back")]
+        /// <summary>
+        /// After It moves from A to B, B cannot tag A for this many seconds.
+        /// Only that pair. Other runners stay open. 0 turns the window off.
+        /// </summary>
+        public float tagBackImmunity = 1.0f;
+
         [Header("Puncher Buff")]
         public float speedBuffPercent = 0.08f;
         public float speedBuffDuration = 2.0f;

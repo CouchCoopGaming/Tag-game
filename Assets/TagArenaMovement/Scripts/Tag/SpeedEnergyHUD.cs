@@ -14,6 +14,7 @@ namespace TagArena.Movement
     /// + bearing/distance to CurrentIt when you are not It
     /// + bearing/distance to nearest non-It when you ARE It (Prey)
     /// + brief YOU'RE IT / YOU'RE FREE OnGUI flash on local It handoff
+    /// + tag-back window on the It line (safe / no tag-back) while it is open
     /// + Trail Tag soft near-miss TRAIL! edge pulse when near a foreign ribbon
     /// + brief OUT! / TRAIL HIT OnGUI flash when local IsAlive drops (trail eliminate)
     /// (reads TagModeController, falls back to ItController scan).
@@ -612,7 +613,7 @@ namespace TagArena.Movement
                 it = modes.CurrentIt;
                 if (it == null)
                     it = ScanItControllers();
-                itLabel = FormatIt(it);
+                itLabel = FormatIt(it) + TagBackHudSuffix();
 
                 if (modes.SelectedMode == TagModeId.HotPotato)
                 {
@@ -625,7 +626,7 @@ namespace TagArena.Movement
             else
             {
                 it = ScanItControllers();
-                itLabel = FormatIt(it);
+                itLabel = FormatIt(it) + TagBackHudSuffix();
                 modeName = "default";
             }
 
@@ -756,10 +757,12 @@ namespace TagArena.Movement
             ItController best = null;
             float bestSq = float.MaxValue;
 
+            ItController hunter = motor != null ? motor.GetComponent<ItController>() : null;
             void Consider(ItController p)
             {
                 if (p == null || !p.IsAlive || p.IsIt) return;
                 if (IsLocalPlayer(p)) return;
+                if (hunter != null && p.BlocksTagBackFrom(hunter)) return;
                 Vector3 d = p.transform.position - from;
                 d.y = 0f;
                 float sq = d.sqrMagnitude;
@@ -1100,6 +1103,28 @@ namespace TagArena.Movement
             if (IsLocalPlayer(it))
                 return "YOU";
             return string.IsNullOrEmpty(it.PlayerId) ? it.gameObject.name : it.PlayerId;
+        }
+
+        /// <summary>It-line note while the tag-back window is open. Empty when it is shut.</summary>
+        string TagBackHudSuffix()
+        {
+            ItController self = null;
+            if (motor != null) self = motor.GetComponent<ItController>();
+            if (self == null) self = GetComponent<ItController>();
+            if (self == null) return "";
+            if (!self.IsIt && self.TagBackRemaining > 0.001f)
+                return "  safe " + self.TagBackRemaining.ToString("0.0") + "s";
+            if (!self.IsIt) return "";
+            float best = 0f;
+            var all = Object.FindObjectsByType<ItController>(FindObjectsSortMode.None);
+            for (int i = 0; i < all.Length; i++)
+            {
+                var p = all[i];
+                if (p == null || !p.BlocksTagBackFrom(self)) continue;
+                if (p.TagBackRemaining > best) best = p.TagBackRemaining;
+            }
+            if (best <= 0.001f) return "";
+            return "  no tag-back " + best.ToString("0.0") + "s";
         }
 
         static ItController ScanItControllers()
