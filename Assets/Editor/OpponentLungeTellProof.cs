@@ -69,11 +69,12 @@ public static class OpponentLungeTellProof
 
         Vector3 spawn = LocalPlayerSpawner.Spawns[1];
         report.Spawn = spawn;
-        float scale = CutArenaBootstrap.WorldScale;
-        float expectX = LocalPlayerSpawner.OpponentPadGrayX * scale;
-        float expectZ = LocalPlayerSpawner.OpponentPadGrayZ * scale;
+        float expectX = LocalPlayerSpawner.OpponentPadGrayX;
+        float expectZ = LocalPlayerSpawner.OpponentPadGrayZ;
         if (Mathf.Abs(spawn.x - expectX) > 0.01f || Mathf.Abs(spawn.z - expectZ) > 0.01f)
-            report.Fail("Spawns[1] is not the Spawn_SE coral pad");
+            report.Fail("Spawns[1] is not the Mega Park Spawn_SE pad");
+        if (Mathf.Abs(spawn.y - MegaParkP1Layout.SpawnY) > 0.01f)
+            report.Fail("Spawn_SE is buried or floating");
 
         var host = new GameObject("OpponentLungeTellProofHost");
         try

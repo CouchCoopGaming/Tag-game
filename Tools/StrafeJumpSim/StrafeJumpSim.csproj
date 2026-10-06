@@ -9,6 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.cs" />
     <Compile Include="UnityStub/UnityEngine.cs" />
     <Compile Include="../../Assets/Editor/StrafeJumpProof.cs" />
     <Compile Include="../../Assets/Editor/DummyPosePathProof.cs" />

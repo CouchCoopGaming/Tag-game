@@ -13,15 +13,15 @@ namespace Tag.Local
     {
         [SerializeField] float killY = -20f;
         [SerializeField] float punchInvulnAfterTeleport = 1f;
-        /// <summary>World-space margin past floor edge (MapW/MapD * WorldScale).</summary>
-        [SerializeField] float xzMargin = 20f;
+        /// <summary>Meters past the 160×100 playable edge before a respawn. The grass collar is 3 m.</summary>
+        [SerializeField] float xzMargin = 4f;
 
         Rigidbody _rb;
         PlayerMotor _motor;
         PlayerRagdoll _ragdoll;
         ItController _it;
 
-        // Derived from CutArenaBootstrap: origin = SW corner, +X east, +Z north.
+        // Mega Park origin = SW corner, +X east, +Z north. Real meters, scale 1.
         float _minX, _maxX, _minZ, _maxZ;
 
         void Awake()
@@ -31,12 +31,11 @@ namespace Tag.Local
             _ragdoll = GetComponent<PlayerRagdoll>();
             _it = GetComponent<ItController>();
 
-            float worldW = CutArenaBootstrap.MapW * CutArenaBootstrap.WorldScale;
-            float worldD = CutArenaBootstrap.MapD * CutArenaBootstrap.WorldScale;
-            _minX = -xzMargin;
-            _maxX = worldW + xzMargin;
-            _minZ = -xzMargin;
-            _maxZ = worldD + xzMargin;
+            float pad = xzMargin;
+            _minX = -pad;
+            _maxX = MegaParkP1Layout.MapW + pad;
+            _minZ = -pad;
+            _maxZ = MegaParkP1Layout.MapD + pad;
         }
 
         void FixedUpdate()
