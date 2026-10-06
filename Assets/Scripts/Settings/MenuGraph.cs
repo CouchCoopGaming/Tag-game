@@ -41,7 +41,7 @@ namespace Tag.Settings
     public static class MenuGraph
     {
         public const int PauseRows = 9;
-        public const int SettingsRows = 13;
+        public const int SettingsRows = GameSettings.RowCount;
         public const int RebindRows = 15;
         public const int ArenaRows = 4;
         public const int HowToRows = 1;

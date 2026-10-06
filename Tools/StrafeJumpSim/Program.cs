@@ -573,6 +573,14 @@ static class Program
             }
         }
 
+        Tag.Audio.AudioReport audio = Tag.Audio.AudioProof.Run();
+        Console.WriteLine(audio.Line);
+        if (!audio.Ok)
+        {
+            Console.Error.WriteLine(audio.Failure);
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }

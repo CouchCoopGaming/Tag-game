@@ -487,6 +487,7 @@ namespace Tag.Modes
             _ctx.Elapsed += dt;
             if (_ctx.CurrentIt != null) _chase += dt;
             _mode.Tick(_ctx, dt);
+            RoundChime.Tick(_ctx.RemainingTime);
             if (_mode.ShouldEndRound(_ctx))
                 EndMatch();
         }

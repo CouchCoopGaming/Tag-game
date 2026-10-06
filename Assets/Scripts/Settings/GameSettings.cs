@@ -25,12 +25,33 @@ namespace Tag.Settings
         public const float PadLookMax = 8f;
         public const float MasterDefault = 0.8f;
         public const float SfxDefault = 1f;
+        public const float UiDefault = 1f;
+        public const float MusicDefault = 0.35f;
+
+        public const int RowMouse = 0;
+        public const int RowPad = 1;
+        public const int RowInvert = 2;
+        public const int RowFov = 3;
+        public const int RowMaster = 4;
+        public const int RowSfx = 5;
+        public const int RowUi = 6;
+        public const int RowMusic = 7;
+        public const int RowMute = 8;
+        public const int RowHud = 9;
+        public const int RowColorblind = 10;
+        public const int RowMinimap = 11;
+        public const int RowReset = 12;
+        public const int RowReplay = 13;
+        public const int RowBack = 14;
+        public const int RowCount = 15;
 
         public static readonly float[] MouseSteps = { 1.0f, 1.4f, 1.8f, 2.4f, 3.2f };
         public static readonly float[] PadLookSteps = { 1.0f, 1.6f, 2.2f, 3.0f, 4.5f };
         public static readonly float[] FovSteps = { 60f, 70f, 78f, 90f, 100f };
         public static readonly float[] VolumeSteps = { 0f, 0.25f, 0.5f, 0.8f, 1f };
         public static readonly float[] SfxSteps = { 0f, 0.5f, 0.75f, 1f };
+        public static readonly float[] UiSteps = { 0f, 0.5f, 0.75f, 1f };
+        public static readonly float[] MusicSteps = { 0f, 0.15f, 0.35f, 0.55f, 1f };
         public static readonly float[] HudSteps = { 0.75f, 1f, 1.25f, 1.5f };
 
         public static GameSettings Current = Defaults();
@@ -41,6 +62,8 @@ namespace Tag.Settings
         public float Fov = FovDefault;
         public float Master = MasterDefault;
         public float Sfx = SfxDefault;
+        public float Ui = UiDefault;
+        public float Music = MusicDefault;
         public bool Muted;
         public float HudScale = HudDefault;
         public bool Colorblind;
@@ -60,6 +83,8 @@ namespace Tag.Settings
             Fov = other.Fov;
             Master = other.Master;
             Sfx = other.Sfx;
+            Ui = other.Ui;
+            Music = other.Music;
             Muted = other.Muted;
             HudScale = other.HudScale;
             Colorblind = other.Colorblind;
@@ -79,6 +104,8 @@ namespace Tag.Settings
             Fov = ClampFloat(Fov, FovMin, FovMax);
             Master = ClampFloat(Master, 0f, 1f);
             Sfx = ClampFloat(Sfx, 0f, 1f);
+            Ui = ClampFloat(Ui, 0f, 1f);
+            Music = ClampFloat(Music, 0f, 1f);
             HudScale = ClampFloat(HudScale, HudMin, HudMax);
             if (Arena < 0) Arena = 0;
             if (Arena > Tag.Level.ParkArena.Stack) Arena = Tag.Level.ParkArena.Stack;
@@ -93,12 +120,14 @@ namespace Tag.Settings
                 case 1: GamepadLook = Step(GamepadLook, dir, PadLookSteps); break;
                 case 2: InvertY = !InvertY; break;
                 case 3: Fov = Step(Fov, dir, FovSteps); break;
-                case 4: Master = Step(Master, dir, VolumeSteps); break;
-                case 5: Sfx = Step(Sfx, dir, SfxSteps); break;
-                case 6: Muted = !Muted; break;
-                case 7: HudScale = Step(HudScale, dir, HudSteps); break;
-                case 8: Colorblind = !Colorblind; break;
-                case 9: Minimap = !Minimap; break;
+                case RowMaster: Master = Step(Master, dir, VolumeSteps); break;
+                case RowSfx: Sfx = Step(Sfx, dir, SfxSteps); break;
+                case RowUi: Ui = Step(Ui, dir, UiSteps); break;
+                case RowMusic: Music = Step(Music, dir, MusicSteps); break;
+                case RowMute: Muted = !Muted; break;
+                case RowHud: HudScale = Step(HudScale, dir, HudSteps); break;
+                case RowColorblind: Colorblind = !Colorblind; break;
+                case RowMinimap: Minimap = !Minimap; break;
             }
             Clamp();
         }
@@ -111,14 +140,16 @@ namespace Tag.Settings
                 case 1: return "Gamepad look  " + GamepadLook.ToString("0.0", CultureInfo.InvariantCulture);
                 case 2: return "Invert Y  " + (InvertY ? "On" : "Off");
                 case 3: return "FOV  " + Fov.ToString("0", CultureInfo.InvariantCulture);
-                case 4: return "Master  " + Master.ToString("0.00", CultureInfo.InvariantCulture);
-                case 5: return "SFX  " + Sfx.ToString("0.00", CultureInfo.InvariantCulture);
-                case 6: return Muted ? "Unmute  (Comma)" : "Mute  (Comma)";
-                case 7: return "HUD scale  " + HudScale.ToString("0.00", CultureInfo.InvariantCulture);
-                case 8: return "Colorblind palette  " + (Colorblind ? "On" : "Off");
-                case 9: return "Minimap  " + (Minimap ? "On  (M)" : "Off  (M)");
-                case 10: return "Reset to defaults";
-                case 11: return "Replay tips";
+                case RowMaster: return "Master  " + Master.ToString("0.00", CultureInfo.InvariantCulture);
+                case RowSfx: return "SFX  " + Sfx.ToString("0.00", CultureInfo.InvariantCulture);
+                case RowUi: return "UI  " + Ui.ToString("0.00", CultureInfo.InvariantCulture);
+                case RowMusic: return "Music  " + Music.ToString("0.00", CultureInfo.InvariantCulture);
+                case RowMute: return Muted ? "Unmute  (Comma)" : "Mute  (Comma)";
+                case RowHud: return "HUD scale  " + HudScale.ToString("0.00", CultureInfo.InvariantCulture);
+                case RowColorblind: return "Colorblind palette  " + (Colorblind ? "On" : "Off");
+                case RowMinimap: return "Minimap  " + (Minimap ? "On  (M)" : "Off  (M)");
+                case RowReset: return "Reset to defaults";
+                case RowReplay: return "Replay tips";
                 default: return "Back";
             }
         }
