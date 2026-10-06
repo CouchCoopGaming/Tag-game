@@ -51,8 +51,8 @@ def norm(v):
     return v / n
 
 
-def limb(sx, thigh, yaw_out, knee):
-    hip = np.array([sx * HIP_X, HIP_Y, -0.02], dtype=np.float64)
+def limb(sx, thigh, yaw_out, knee, drop=0.0):
+    hip = np.array([sx * HIP_X, HIP_Y - drop, -0.02], dtype=np.float64)
     down = np.array([0.0, -1.0, 0.0])
     d = norm(ry(rx(down, -thigh), yaw_out * sx))
     knee_p = hip + d * UL
@@ -61,9 +61,9 @@ def limb(sx, thigh, yaw_out, knee):
     return hip, knee_p, ankle, ds
 
 
-def arm(sx, chest_pitch, pitch, yaw_out, elbow):
+def arm(sx, chest_pitch, pitch, yaw_out, elbow, drop=0.0):
     up = rx(np.array([0.0, 1.0, 0.0]), chest_pitch)
-    basis = np.array([0.0, HIP_Y, 0.0]) + up * (1.40 - HIP_Y)
+    basis = np.array([0.0, HIP_Y - drop, 0.0]) + up * (1.40 - HIP_Y)
     shoulder = basis + rx(np.array([sx * SH_X, 0.0, SH_Z]), chest_pitch)
     out_a = math.radians(24.0)
     fwd_a = math.radians(10.0)
@@ -484,13 +484,189 @@ def save(rig, view, name, title, subtitle):
     print(f"wrote {path} {im.size}")
 
 
+def add_wall_x(rig, x):
+    col = np.array([0.62, 0.64, 0.66])
+    for z in (-0.35, 0.05, 0.45):
+        rig.c(np.array([x, 0.15, z]), np.array([x, 2.15, z]), 0.045, col, frame=False)
+
+
+def add_wall_z(rig, z):
+    col = np.array([0.62, 0.64, 0.66])
+    for x in (-0.28, 0.0, 0.28):
+        rig.c(np.array([x, 0.2, z]), np.array([x, 2.2, z]), 0.04, col, frame=False)
+
+
+def build_wallrun():
+    rig = Rig()
+    chest = 18.0
+    add_body(rig, chest, -4.0)
+    add_leg(rig, -1.0, 11.6, 0.0, -87.0, "tuck")
+    add_leg(rig, 1.0, -10.0, 0.0, -5.0, "plant")
+    add_arm(rig, -1.0, chest, 5.0, 36.0, -18.0)
+    add_arm(rig, 1.0, chest, -61.0, 12.0, -16.0)
+    rig.roll(-20.0)
+    add_wall_x(rig, -0.59)
+    return rig
+
+
+def build_climb():
+    rig = Rig()
+    rig.ground = False
+    chest = 22.0
+    add_body(rig, chest, -26.0)
+    add_leg(rig, -1.0, 56.0, 0.0, -60.0, "plant")
+    add_leg(rig, 1.0, 76.0, 0.0, -88.0, "plant")
+    add_arm(rig, -1.0, chest, -120.0, -16.0, -16.0)
+    add_arm(rig, 1.0, chest, -70.0, 16.0, -48.0)
+    add_wall_z(rig, 0.60)
+    return rig
+
+
+def build_slip():
+    rig = Rig()
+    rig.drop = 0.18
+    chest = 16.0
+    add_body(rig, chest, -6.0)
+    add_leg(rig, -1.0, 46.0, 0.0, -90.0, "tuck")
+    add_leg(rig, 1.0, 34.0, 0.0, -90.0, "tuck")
+    add_arm(rig, -1.0, chest, -106.0, 8.0, -14.0)
+    add_arm(rig, 1.0, chest, -118.0, -8.0, -14.0)
+    rig.apply_drop()
+    add_wall_z(rig, 0.57)
+    return rig
+
+
+def build_walljump():
+    rig = Rig()
+    rig.ground = False
+    chest = -32.0
+    add_body(rig, chest, -16.0)
+    add_leg(rig, -1.0, 44.0, 0.0, -64.0, "tuck")
+    add_leg(rig, 1.0, 82.0, 0.0, -110.0, "tuck")
+    add_arm(rig, -1.0, chest, 46.0, 20.0, -16.0)
+    add_arm(rig, 1.0, chest, 30.0, 14.0, -20.0)
+    rig.roll(-18.0)
+    add_wall_z(rig, 0.62)
+    return rig
+
+
+def build_airdash():
+    rig = Rig()
+    rig.ground = False
+    chest = 82.0
+    add_body(rig, chest, 6.0)
+    add_leg(rig, -1.0, -16.0, 0.0, -12.0, "tuck")
+    add_leg(rig, 1.0, -16.0, 0.0, -12.0, "tuck")
+    add_arm(rig, -1.0, chest, 70.0, 10.0, -18.0)
+    add_arm(rig, 1.0, chest, 70.0, 10.0, -18.0)
+    return rig
+
+
+def build_land_soft():
+    rig = Rig()
+    rig.drop = 0.02
+    chest = 14.0
+    add_body(rig, chest, -4.0)
+    add_leg(rig, -1.0, 18.0, 0.0, -26.0, "plant")
+    add_leg(rig, 1.0, 18.0, 0.0, -26.0, "plant")
+    add_arm(rig, -1.0, chest, -16.0, 12.0, -14.0)
+    add_arm(rig, 1.0, chest, -16.0, 12.0, -14.0)
+    rig.apply_drop()
+    return rig
+
+
+def build_land_hard():
+    rig = Rig()
+    rig.drop = 0.50
+    chest = 74.0
+    add_body(rig, chest, 8.0)
+    add_leg(rig, -1.0, 74.0, 0.0, -125.0, "plant")
+    add_leg(rig, 1.0, 74.0, 0.0, -125.0, "plant")
+    add_arm(rig, -1.0, chest, 18.0, 16.0, -16.0)
+    add_arm(rig, 1.0, chest, -30.0, 12.0, -40.0)
+    rig.apply_drop()
+    return rig
+
+
+def mech_checks():
+    hand = roll(arm(-1.0, 18.0, 5.0, 36.0, -18.0)[2], -20.0)
+    ankle = roll(limb(1.0, -10.0, 0.0, -5.0)[2], -20.0)
+    print(f"wallrun hand={hand[0]:.3f},{hand[1]:.3f} ankle={ankle[1]:.3f}")
+    if hand[0] > -0.50 or ankle[1] > 0.12 or ankle[1] < -0.02:
+        raise SystemExit("wall-run contact failed")
+
+    high = arm(-1.0, 22.0, -120.0, -16.0, -16.0)[2]
+    low = arm(1.0, 22.0, -70.0, 16.0, -48.0)[2]
+    foot_lo = limb(-1.0, 56.0, 0.0, -60.0)[2]
+    foot_hi = limb(1.0, 76.0, 0.0, -88.0)[2]
+    print(f"climb high={high[2]:.3f} low={low[2]:.3f} feet={foot_lo[2]:.3f},{foot_hi[2]:.3f}")
+    if high[2] < 0.45 or low[2] < 0.48 or foot_lo[2] < 0.30 or foot_hi[2] < 0.30:
+        raise SystemExit("climb contact failed")
+    if high[1] < low[1] + 0.25:
+        raise SystemExit("climb hands do not alternate")
+
+    slip_l = arm(-1.0, 16.0, -106.0, 8.0, -14.0, drop=0.18)[2]
+    slip_r = arm(1.0, 16.0, -118.0, -8.0, -14.0, drop=0.18)[2]
+    sag = limb(-1.0, 46.0, 0.0, -90.0, drop=0.18)[2]
+    print(f"slip hands={slip_l[1]:.3f},{slip_r[1]:.3f} foot={sag[1]:.3f} pelvis={HIP_Y - 0.18:.3f}")
+    if slip_l[1] < 1.4 or slip_r[1] < 1.4 or sag[1] < 0.05:
+        raise SystemExit("slip pose failed")
+    if slip_l[2] < 0.48 or slip_r[2] < 0.48:
+        raise SystemExit("slip hands left the wall")
+
+    kick_l = limb(-1.0, 44.0, 0.0, -64.0)[2]
+    kick_r = limb(1.0, 82.0, 0.0, -110.0)[2]
+    away_l = arm(-1.0, -32.0, 46.0, 20.0, -16.0)[2]
+    away_r = arm(1.0, -32.0, 30.0, 14.0, -20.0)[2]
+    print(f"walljump feet={kick_l[2]:.3f},{kick_r[2]:.3f} arms={away_l[2]:.3f},{away_r[2]:.3f}")
+    if kick_l[2] + 0.12 > 0.55 or kick_r[2] + 0.12 > 0.55:
+        raise SystemExit("wall-jump feet still on the wall")
+    if kick_l[1] < 0.10 or kick_r[1] < 0.10:
+        raise SystemExit("wall-jump feet on the ground")
+    if away_l[2] > -0.15 or away_r[2] > -0.15:
+        raise SystemExit("wall-jump arms not away")
+
+    dash_arm = arm(-1.0, 82.0, 70.0, 10.0, -18.0)[2]
+    dash_foot = limb(-1.0, -16.0, 0.0, -12.0)[2]
+    print(f"airdash arm={dash_arm[2]:.3f} foot={dash_foot[2]:.3f}")
+    if dash_arm[2] > -0.10 or dash_foot[2] > -0.20:
+        raise SystemExit("air-dash pose failed")
+
+    soft_hand = arm(-1.0, 14.0, -16.0, 12.0, -14.0, drop=0.02)[2]
+    soft_foot = limb(-1.0, 18.0, 0.0, -26.0, drop=0.02)[2]
+    hard_hand = arm(-1.0, 74.0, 18.0, 16.0, -16.0, drop=0.50)[2]
+    hard_free = arm(1.0, 74.0, -30.0, 12.0, -40.0, drop=0.50)[2]
+    hard_foot = limb(-1.0, 74.0, 0.0, -125.0, drop=0.50)[2]
+    print(f"soft hand={soft_hand[1]:.3f} foot={soft_foot[1]:.3f} hard hand={hard_hand[1]:.3f} free={hard_free[1]:.3f} foot={hard_foot[1]:.3f}")
+    if soft_hand[1] < 0.5 or soft_foot[1] > 0.12:
+        raise SystemExit("soft land failed")
+    if hard_hand[1] > 0.10 or hard_foot[1] > 0.16 or hard_free[1] < 0.25:
+        raise SystemExit("hard land failed")
+
+
+def roll(p, deg, drop=0.0):
+    a = math.radians(deg)
+    c, s = math.cos(a), math.sin(a)
+    pivot = np.array([0.0, HIP_Y - drop, 0.0])
+    q = p - pivot
+    return pivot + np.array([q[0] * c - q[1] * s, q[0] * s + q[1] * c, q[2]])
+
+
 def main():
     slide_checks()
+    mech_checks()
     shots = [
         (build_slide, "slide", "Slide — baseball / parkour", "Lead extended, trail tucked, chest back, trail hand down. Pelvis at crouch center."),
         (build_launch, "launch_apex", "Launch pad — apex tuck", "Arms up, knees tucked. Not the jump rise. Opens again on the way down."),
         (build_zip, "zip_hang", "Zip line — two-hand hang", "Hands under the cable, legs forward, sway at the 14 m/s ride."),
         (build_stagger, "stagger", "Punch stagger — 0.25 s", "Head and chest snap back. One leg steps. Window matches the motor."),
+        (build_wallrun, "wallrun", "Wall run — lean 20°", "Chest off the wall, inner hand brushing, outer foot planted. Cadence matches 9.5."),
+        (build_climb, "climb", "Cling climb — hand over hand", "High hand reaches, low hand pulls. Feet on the wall. Synced to climb 6.0."),
+        (build_slip, "slip", "Cling slip — hands dragging", "Hands stay high and slide. Hips sag. Feet come off the floor. Slip speed 3.7."),
+        (build_walljump, "walljump", "Wall jump — both feet off", "Kick leaves the wall. Arms swing away, then the jump pose takes over."),
+        (build_airdash, "airdash", "Air dash — 0.10 s", "Body horizontal, arms back, legs trailing. Returns on the handoff."),
+        (build_land_soft, "land_soft", "Soft land", "Small knee bend. Hands stay up. Impact at the soft audio floor, 5."),
+        (build_land_hard, "land_hard", "Hard land", "Deep crouch, one hand down. Impact at land-stun speed, 28. Control is not delayed."),
     ]
     for build, name, title, subtitle in shots:
         rig = build()
