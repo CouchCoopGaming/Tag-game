@@ -14,7 +14,9 @@ namespace Tag.EditorTools
     /// <summary>
     /// Editor-only. The asmdef includes the Editor platform only, so player
     /// builds do not compile this menu. Tag/Smoke Check opens every scene in
-    /// Build Settings and writes Logs/SmokeCheck.txt.
+    /// Build Settings and writes Logs/SmokeCheck.txt. Registry ok means arenas
+    /// 0 Mega Park, 1 Pocket Park, and 2 Stack Yard, plus the 13 zones and the
+    /// kill boxes. The headless compile check reads the same files.
     /// </summary>
     public static class SmokeCheck
     {
@@ -23,6 +25,41 @@ namespace Tag.EditorTools
         static readonly string[] BuiltinTags =
         {
             "Untagged", "Respawn", "Finish", "EditorOnly", "MainCamera", "Player", "GameController"
+        };
+
+        static readonly string[] ArenaNames = { "Mega Park", "Pocket Park", "Stack Yard" };
+
+        static readonly string[] RouteIds =
+        {
+            "mega-beginner", "mega-wall", "mega-toy",
+            "pocket-beginner", "pocket-toy",
+            "stack-beginner", "stack-toy"
+        };
+
+        static readonly string[] RouteArenas =
+        {
+            "Mega Park", "Mega Park", "Mega Park",
+            "Pocket Park", "Pocket Park",
+            "Stack Yard", "Stack Yard"
+        };
+
+        static readonly string[] MegaZones = { "West Yard", "North Bowl", "Mid Court", "South Court", "East Forts" };
+        static readonly string[] PocketZones = { "West Lawn", "Center Court", "Fast Lane", "East Sand" };
+        static readonly string[] StackZones = { "South Yard", "East Lane", "West Stack", "North Roof" };
+        static readonly string[] ZoneMats = { "zbrick", "zwine", "zindigo", "zolive", "zslate" };
+
+        static readonly string[] LandmarkMethods =
+        {
+            "Water", "Crane", "Clock", "Sign", "Light",
+            "Windmill", "Archway", "Board", "Buoy",
+            "Chimney", "Gantry", "Radio", "Billboard"
+        };
+
+        static readonly string[] LandmarkTags =
+        {
+            "Water", "Crane", "Clock", "Sign", "Light",
+            "Mill", "Arch", "Board", "Buoy",
+            "Chimney", "Gantry", "Mast", "Bill"
         };
 
         static readonly string[] RuntimeFilled =
@@ -51,6 +88,7 @@ namespace Tag.EditorTools
             {
                 var names = new List<string>();
                 if (!ReadRegistry(names, log)) registryOk = false;
+                if (!CheckZones(log) || !CheckKill(log)) registryOk = false;
                 if (!CheckJson(names, log)) jsonOk = false;
                 if (!CheckResources(log)) resourcesOk = false;
                 CheckTagManager(log, ref extrasOk);
@@ -222,24 +260,221 @@ namespace Tag.EditorTools
 
         static bool ReadRegistry(List<string> names, StringBuilder log)
         {
-            string path = Path.Combine(Application.dataPath, "Scripts", "Onboard", "ArenaRegistry.cs");
-            if (!File.Exists(path))
+            string parkPath = Path.Combine(Application.dataPath, "Scripts", "Level", "ParkArena.cs");
+            string regPath = Path.Combine(Application.dataPath, "Scripts", "Onboard", "ArenaRegistry.cs");
+            if (!File.Exists(parkPath) || !File.Exists(regPath))
             {
-                log.AppendLine("ArenaRegistry.cs missing");
+                log.AppendLine("ArenaRegistry.cs or ParkArena.cs missing");
                 return false;
             }
-            var rx = new Regex("Name\\s*=\\s*\"([^\"]+)\"\\s*,\\s*Root\\s*=\\s*\"([^\"]+)\"");
-            foreach (Match m in rx.Matches(File.ReadAllText(path)))
+            string park = File.ReadAllText(parkPath);
+            string reg = File.ReadAllText(regPath);
+            if (!HasConstInt(park, "Mega", "0") || !HasConstInt(park, "Pocket", "1")
+                || !HasConstInt(park, "Stack", "2") || !HasConstInt(park, "Count", "3"))
             {
-                names.Add(m.Groups[1].Value);
-                log.AppendLine("registry " + m.Groups[1].Value + " root=" + m.Groups[2].Value);
+                log.AppendLine("registry arena ids are not 0 Mega, 1 Pocket, 2 Stack");
+                return false;
             }
+            if (!Regex.IsMatch(park, "if\\s*\\(\\s*id\\s*==\\s*Pocket\\s*\\)\\s*return\\s*\"Pocket Park\"\\s*;")
+                || !Regex.IsMatch(park, "if\\s*\\(\\s*id\\s*==\\s*Stack\\s*\\)\\s*return\\s*\"Stack Yard\"\\s*;")
+                || !Regex.IsMatch(park, "return\\s*\"Mega Park\"\\s*;"))
+            {
+                log.AppendLine("registry names are not Mega Park, Pocket Park, Stack Yard");
+                return false;
+            }
+            if (reg.IndexOf("ParkArena.Count", StringComparison.Ordinal) < 0
+                || reg.IndexOf("ParkArena.NameOf", StringComparison.Ordinal) < 0
+                || reg.IndexOf("PlayAction.Arena1", StringComparison.Ordinal) < 0
+                || reg.IndexOf("PlayAction.Arena2", StringComparison.Ordinal) < 0
+                || reg.IndexOf("PlayAction.Arena3", StringComparison.Ordinal) < 0
+                || reg.IndexOf("\"MegaPark\"", StringComparison.Ordinal) < 0
+                || reg.IndexOf("\"1\"", StringComparison.Ordinal) < 0
+                || reg.IndexOf("\"2\"", StringComparison.Ordinal) < 0
+                || reg.IndexOf("\"3\"", StringComparison.Ordinal) < 0)
+            {
+                log.AppendLine("registry is not wired to ParkArena keys 1/2/3");
+                return false;
+            }
+            for (int i = 0; i < ArenaNames.Length; i++)
+            {
+                names.Add(ArenaNames[i]);
+                log.AppendLine("registry " + i + " " + ArenaNames[i] + " key=" + (i + 1) + " root=MegaPark");
+            }
+            log.AppendLine("registry arenas=3");
+            return true;
+        }
+
+        static bool HasConstInt(string text, string name, string value)
+        {
+            return Regex.IsMatch(text, "const\\s+int\\s+" + name + "\\s*=\\s*" + value + "\\s*;");
+        }
+
+        static bool CheckZones(StringBuilder log)
+        {
+            string path = Path.Combine(Application.dataPath, "Scripts", "Level", "ZoneReadability.cs");
+            if (!File.Exists(path))
+            {
+                log.AppendLine("ZoneReadability.cs missing");
+                return false;
+            }
+            string text = File.ReadAllText(path);
+            if (!QuotedArray(text, "MegaNames", MegaZones, log)
+                || !QuotedArray(text, "PocketNames", PocketZones, log)
+                || !QuotedArray(text, "StackNames", StackZones, log)
+                || !QuotedArray(text, "ZoneMats", ZoneMats, log))
+                return false;
+            string[] all = new string[MegaZones.Length + PocketZones.Length + StackZones.Length];
+            MegaZones.CopyTo(all, 0);
+            PocketZones.CopyTo(all, MegaZones.Length);
+            StackZones.CopyTo(all, MegaZones.Length + PocketZones.Length);
             var seen = new HashSet<string>();
-            for (int i = 0; i < names.Count; i++)
+            for (int i = 0; i < all.Length; i++)
             {
-                if (names[i].Length == 0 || !seen.Add(names[i])) return false;
+                if (!seen.Add(all[i]) || text.IndexOf("Name = \"" + all[i] + "\"", StringComparison.Ordinal) < 0)
+                {
+                    log.AppendLine("zone band missing " + all[i]);
+                    return false;
+                }
             }
-            return seen.Contains("PARK") && seen.Contains("Mega Park");
+            var call = new Regex(
+                "(Water|Crane|Clock|Sign|Light|Windmill|Archway|Board|Buoy|Chimney|Gantry|Radio|Billboard)\\(\\s*list\\s*,\\s*\"([^\"]+)\"\\s*,\\s*\"[^\"]+\"\\s*,\\s*\"[^\"]+\"\\s*,\\s*-?\\d+(?:\\.\\d+)?f\\s*,\\s*-?\\d+(?:\\.\\d+)?f\\s*,\\s*(\\d+(?:\\.\\d+)?)f\\s*\\)");
+            MatchCollection marks = call.Matches(text);
+            if (marks.Count != LandmarkTags.Length)
+            {
+                log.AppendLine("landmarks=" + marks.Count);
+                return false;
+            }
+            var found = new bool[LandmarkTags.Length];
+            for (int i = 0; i < marks.Count; i++)
+            {
+                string method = marks[i].Groups[1].Value;
+                string tag = marks[i].Groups[2].Value;
+                int slot = -1;
+                for (int j = 0; j < LandmarkTags.Length; j++)
+                {
+                    if (method == LandmarkMethods[j] && tag == LandmarkTags[j]) slot = j;
+                }
+                if (slot < 0 || found[slot])
+                {
+                    log.AppendLine("landmark " + method + " " + tag);
+                    return false;
+                }
+                found[slot] = true;
+                double top;
+                if (!double.TryParse(marks[i].Groups[3].Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out top)
+                    || top < 12d || top > 25d)
+                {
+                    log.AppendLine("landmark height " + tag);
+                    return false;
+                }
+            }
+            if (text.IndexOf("\"Landmark_Crown_\"", StringComparison.Ordinal) < 0)
+            {
+                log.AppendLine("landmark crowns missing");
+                return false;
+            }
+            log.AppendLine("zones arenas=3 zones=13 landmarks=13");
+            return true;
+        }
+
+        static bool QuotedArray(string text, string field, string[] expect, StringBuilder log)
+        {
+            Match m = Regex.Match(text, "string\\[\\]\\s+" + field + "\\s*=\\s*\\{([^}]*)\\}");
+            if (!m.Success)
+            {
+                log.AppendLine("zones missing " + field);
+                return false;
+            }
+            MatchCollection got = Regex.Matches(m.Groups[1].Value, "\"([^\"]+)\"");
+            if (got.Count != expect.Length)
+            {
+                log.AppendLine("zones " + field + " count " + got.Count);
+                return false;
+            }
+            for (int i = 0; i < expect.Length; i++)
+            {
+                if (got[i].Groups[1].Value != expect[i])
+                {
+                    log.AppendLine("zones " + field + " " + got[i].Groups[1].Value);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        static bool CheckKill(StringBuilder log)
+        {
+            string mega = ReadLayout("MegaParkP1Layout.cs", log);
+            string pocket = ReadLayout("PocketParkLayout.cs", log);
+            string stack = ReadLayout("StackYardLayout.cs", log);
+            string park = ReadLayout("ParkArena.cs", log);
+            string boot = ReadLayout("MegaParkP1Bootstrap.cs", log);
+            if (mega == null || pocket == null || stack == null || park == null || boot == null)
+                return false;
+            if (!Regex.IsMatch(mega, "const\\s+float\\s+FenceTop\\s*=\\s*33f\\s*;")
+                || !Regex.IsMatch(mega, "const\\s+float\\s+FenceRail\\s*=\\s*2\\.75f\\s*;")
+                || !Regex.IsMatch(mega, "const\\s+float\\s+KillPlaneY\\s*=\\s*-2\\.5f\\s*;"))
+            {
+                log.AppendLine("kill box Mega Park fence, rail, or plane drifted");
+                return false;
+            }
+            if (!AliasesKill(pocket) || !AliasesKill(stack))
+            {
+                log.AppendLine("kill box Pocket or Stack does not share the Mega plane and fence");
+                return false;
+            }
+            if (!HasFences(mega) || !HasFences(pocket) || !HasFences(stack))
+            {
+                log.AppendLine("kill box missing a fence side");
+                return false;
+            }
+            if (park.IndexOf("killY = MegaParkP1Layout.KillPlaneY", StringComparison.Ordinal) < 0)
+            {
+                log.AppendLine("kill box containment is not the shared plane");
+                return false;
+            }
+            if (boot.IndexOf("s.Kind == \"fence\"", StringComparison.Ordinal) < 0
+                || boot.IndexOf("r.enabled = false", StringComparison.Ordinal) < 0
+                || boot.IndexOf("MegaParkP1Layout.FenceRail", StringComparison.Ordinal) < 0
+                || boot.IndexOf("MegaParkP1Layout.FenceTop - rail", StringComparison.Ordinal) < 0
+                || boot.IndexOf("StripCollider(cube)", StringComparison.Ordinal) < 0)
+            {
+                log.AppendLine("kill box rail is not the low visible rail over the invisible collider");
+                return false;
+            }
+            log.AppendLine("kill fence=33 rail=2.75 plane=-2.5 arenas=3");
+            return true;
+        }
+
+        static string ReadLayout(string file, StringBuilder log)
+        {
+            string path = Path.Combine(Application.dataPath, "Scripts", "Level", file);
+            if (!File.Exists(path))
+            {
+                log.AppendLine("missing " + file);
+                return null;
+            }
+            return File.ReadAllText(path);
+        }
+
+        static bool AliasesKill(string text)
+        {
+            return Regex.IsMatch(text, "const\\s+float\\s+FenceTop\\s*=\\s*MegaParkP1Layout\\.FenceTop\\s*;")
+                && Regex.IsMatch(text, "const\\s+float\\s+KillPlaneY\\s*=\\s*MegaParkP1Layout\\.KillPlaneY\\s*;");
+        }
+
+        static bool HasFences(string text)
+        {
+            string[] sides = { "Fence_S", "Fence_N", "Fence_W", "Fence_E" };
+            for (int i = 0; i < sides.Length; i++)
+            {
+                int at = text.IndexOf("\"" + sides[i] + "\"", StringComparison.Ordinal);
+                if (at < 0) return false;
+                int end = text.IndexOf(';', at);
+                if (end < 0 || text.IndexOf("FenceTop", at, end - at, StringComparison.Ordinal) < 0)
+                    return false;
+            }
+            return text.IndexOf("KillPlaneY", StringComparison.Ordinal) >= 0;
         }
 
         static bool CheckJson(List<string> arenas, StringBuilder log)
@@ -255,7 +490,7 @@ namespace Tag.EditorTools
                 string json = File.ReadAllText(path);
                 int routes = json.IndexOf("\"routes\"", StringComparison.Ordinal);
                 if (routes < 0) return false;
-                int n = 0;
+                var seen = new HashSet<string>();
                 int i = json.IndexOf('[', routes);
                 if (i < 0) return false;
                 while (i < json.Length)
@@ -271,6 +506,12 @@ namespace Tag.EditorTools
                     if (!arenas.Contains(arena))
                     {
                         log.AppendLine("route arena not in registry: " + arena);
+                        return false;
+                    }
+                    int slot = RouteSlot(id);
+                    if (slot < 0 || RouteArenas[slot] != arena || !seen.Add(id))
+                    {
+                        log.AppendLine("route " + id + " arena " + arena);
                         return false;
                     }
                     int gates = 0;
@@ -292,17 +533,30 @@ namespace Tag.EditorTools
                         log.AppendLine("route " + id + " needs a start and a finish");
                         return false;
                     }
-                    n++;
                     i = end + 1;
                 }
-                log.AppendLine("json routes=" + n);
-                return n > 0;
+                if (seen.Count != RouteIds.Length)
+                {
+                    log.AppendLine("json routes=" + seen.Count);
+                    return false;
+                }
+                log.AppendLine("json routes=7");
+                return true;
             }
             catch (Exception e)
             {
                 log.AppendLine("json " + e.Message);
                 return false;
             }
+        }
+
+        static int RouteSlot(string id)
+        {
+            for (int i = 0; i < RouteIds.Length; i++)
+            {
+                if (RouteIds[i] == id) return i;
+            }
+            return -1;
         }
 
         static int MatchBrace(string text, int open)
