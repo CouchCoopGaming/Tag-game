@@ -12,8 +12,10 @@ namespace Tag.Level
     /// so the headless sim can audit grounding, spawns, and the sprint-12 timing.
     ///
     /// Traversal pass: cling wall-jump chain, bar vault rhythm, and one elevated rim
-    /// from the soft-play decks through slide mountain to the twin forts. Motor numbers
-    /// are not stored here and are not retuned.
+    /// from the soft-play decks through slide mountain to the twin forts.
+    /// Vertical pass: slide and fort decks each have two ways down (chute, drop,
+    /// spiral, crawl). The +5 tower stays on the slide rim. Motor numbers are not
+    /// stored here and are not retuned.
     /// </summary>
     public static class MegaParkP1Layout
     {
@@ -28,14 +30,17 @@ namespace Tag.Level
         public const float BarUnderClear = 1.05f;
         public const float SpawnY = 0.2f;
 
+        // Equal arc on the 472 m loop (118 m). Corner waypoints stay put; these pads
+        // are the starts. Every It sees runners at 118 / 118 / 236, so no corner is
+        // a shorter chase than the others.
         public const float SpawnSwX = 8f;
         public const float SpawnSwZ = 8f;
-        public const float SpawnSeX = 152f;
-        public const float SpawnSeZ = 8f;
-        public const float SpawnNwX = 8f;
+        public const float SpawnSeX = 118f;
+        public const float SpawnSeZ = 16f;
+        public const float SpawnNwX = 42f;
         public const float SpawnNwZ = 92f;
         public const float SpawnNeX = 152f;
-        public const float SpawnNeZ = 92f;
+        public const float SpawnNeZ = 84f;
 
         public struct Pt
         {
@@ -62,12 +67,21 @@ namespace Tag.Level
         }
 
         // Index order matches LocalPlayerSpawner: SW, SE, NW, NE.
+        // Yaw is the outgoing CCW direction at that arc point.
         public static readonly SpawnPad[] Spawns =
         {
             new SpawnPad { Name = "Spawn_SW", X = SpawnSwX, Z = SpawnSwZ, YawDeg = 90f },
-            new SpawnPad { Name = "Spawn_SE", X = SpawnSeX, Z = SpawnSeZ, YawDeg = 0f },
-            new SpawnPad { Name = "Spawn_NW", X = SpawnNwX, Z = SpawnNwZ, YawDeg = 180f },
-            new SpawnPad { Name = "Spawn_NE", X = SpawnNeX, Z = SpawnNeZ, YawDeg = -90f },
+            new SpawnPad { Name = "Spawn_SE", X = SpawnSeX, Z = SpawnSeZ, YawDeg = 180f },
+            new SpawnPad { Name = "Spawn_NW", X = SpawnNwX, Z = SpawnNwZ, YawDeg = -90f },
+            new SpawnPad { Name = "Spawn_NE", X = SpawnNeX, Z = SpawnNeZ, YawDeg = 0f },
+        };
+
+        // Overflow runner pads for a 5–6 player lobby. Not It starts. RunS sits just
+        // north of the bar spine so a standing capsule is not spawned under a beam.
+        public static readonly SpawnPad[] RunnerSpawns =
+        {
+            new SpawnPad { Name = "Spawn_RunS", X = 59f, Z = 20.5f, YawDeg = 90f },
+            new SpawnPad { Name = "Spawn_RunN", X = 101f, Z = 92f, YawDeg = -90f },
         };
 
         public struct Solid
@@ -213,8 +227,11 @@ namespace Tag.Level
             if (!Route(solids, "Slide_T2Step", "Slide_T2", 0.45f, 2.0f))
                 fail.Append("slide T2 step does not reach the mid tower; ");
 
-            if (!SpawnsOk(out string spawnWhy))
-                fail.Append(spawnWhy);
+            string levelNote = FloorReport(solids, ramps, fail);
+            string pairNote = SpawnReport(fail);
+            ToyReport(solids, fail);
+            SightReport(solids, fail);
+            ColorReport(solids, fail);
 
             int anchors = 0;
             for (int i = 0; i < solids.Length; i++)
@@ -247,9 +264,9 @@ namespace Tag.Level
             };
             audit.Line = string.Format(
                 CultureInfo.InvariantCulture,
-                "MegaPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns 4; solids {3} grounded; cling walls {4}; vaults {5}; bar under-clear {6:0.00} m; crossings A+B open; routes {7}; rim {8}, max gap {9:0.00} m",
+                "MegaPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns 4+2; solids {3} grounded; cling walls {4}; vaults {5}; bar under-clear {6:0.00} m; crossings A+B open; routes {7}; rim {8}, max gap {9:0.00} m; {10}; {11}",
                 audit.LoopM, SprintSpeed, audit.Seconds, audit.SolidCount, audit.WallCount, audit.VaultCount, audit.BarClear,
-                audit.RouteCount, audit.RimContinuous ? "continuous" : "broken", audit.RimGapMax);
+                audit.RouteCount, audit.RimContinuous ? "continuous" : "broken", audit.RimGapMax, levelNote, pairNote);
             audit.Failure = fail.ToString();
             return audit;
         }
@@ -299,15 +316,15 @@ namespace Tag.Level
             Add(list, "Fence_W", "Fence", "fence", "rubber", -0.04f, 1.2f, 50f, 0.08f, 2.4f, 100f, 0f);
             Add(list, "Fence_E", "Fence", "fence", "rubber", 160.04f, 1.2f, 50f, 0.08f, 2.4f, 100f, 0f);
 
-            // Z1 Soft-Play. South fringe z=8 and the x=38 corner stay clear.
-            Add(list, "SoftPlay_DeckLow", "Z1", "block", "cedar", 14f, 1f, 26f, 10f, 2f, 8f, 0f);
-            Add(list, "SoftPlay_DeckHigh", "Z1", "cap", "cedar", 14f, 2.75f, 26f, 6f, 1.5f, 5f, 2f);
-            Add(list, "SoftPlay_TubeL", "Z1", "block", "cedar", 14f, 1f, 16.9f, 8f, 2f, 0.2f, 0f);
-            Add(list, "SoftPlay_TubeR", "Z1", "block", "cedar", 14f, 1f, 19.5f, 8f, 2f, 0.2f, 0f);
-            Add(list, "SoftPlay_TubeRoof", "Z1", "cap", "cedar", 14f, 2.1f, 18.2f, 8f, 0.2f, 2.9f, 2f);
-            Add(list, "SoftPlay_CubeA", "Z1", "vault", "cedar", 26f, 0.55f, 20f, 1.4f, 1.1f, 1.4f, 0f);
-            Add(list, "SoftPlay_CubeB", "Z1", "vault", "cedar", 30f, 0.4f, 28f, 1.6f, 0.8f, 1.6f, 0f);
-            Add(list, "SoftPlay_CubeC", "Z1", "vault", "cedar", 24f, 0.85f, 32f, 1.2f, 1.7f, 1.2f, 0f);
+            // Z1 Soft-Play. South fringe z=8 and the x=38 corner stay clear. Coral, not rim brown.
+            Add(list, "SoftPlay_DeckLow", "Z1", "block", "soft", 14f, 1f, 26f, 10f, 2f, 8f, 0f);
+            Add(list, "SoftPlay_DeckHigh", "Z1", "cap", "soft", 14f, 2.75f, 26f, 6f, 1.5f, 5f, 2f);
+            Add(list, "SoftPlay_TubeL", "Z1", "block", "soft", 14f, 1f, 16.9f, 8f, 2f, 0.2f, 0f);
+            Add(list, "SoftPlay_TubeR", "Z1", "block", "soft", 14f, 1f, 19.5f, 8f, 2f, 0.2f, 0f);
+            Add(list, "SoftPlay_TubeRoof", "Z1", "cap", "soft", 14f, 2.1f, 18.2f, 8f, 0.2f, 2.9f, 2f);
+            Add(list, "SoftPlay_CubeA", "Z1", "vault", "soft", 26f, 0.55f, 20f, 1.4f, 1.1f, 1.4f, 0f);
+            Add(list, "SoftPlay_CubeB", "Z1", "vault", "soft", 30f, 0.4f, 28f, 1.6f, 0.8f, 1.6f, 0f);
+            Add(list, "SoftPlay_CubeC", "Z1", "vault", "soft", 24f, 0.85f, 32f, 1.2f, 1.7f, 1.2f, 0f);
 
             // Z2 Cling arena, west of the x=8 loop. Eight flat identical faces.
             // Lanes x=2.55 and x=6.15 (3.20 m face-to-face). Each face is 6.40 m,
@@ -316,23 +333,26 @@ namespace Tag.Level
             // the open band east of the walls (the loop at x=8 and the lawn).
             AddClingChain(list);
 
-            // Z3 Merry. Crossing B is the open band z[44,52].
-            Add(list, "Merry_Podium", "Z3", "bump", "rubber", 34f, 0.15f, 39f, 5f, 0.3f, 5f, 0f);
+            // Z3 Merry. Crossing B is the open band z[44,52]. Grapple toy is north of that band.
+            Add(list, "Merry_Podium", "Z3", "bump", "merry", 34f, 0.15f, 39f, 5f, 0.3f, 5f, 0f);
             Add(list, "Merry_Post_SW", "Z3", "anchor", "steel", 31.2f, 1.2f, 36.6f, 0.25f, 2.4f, 0.25f, 0f);
             Add(list, "Merry_Post_SE", "Z3", "anchor", "steel", 36.8f, 1.2f, 36.6f, 0.25f, 2.4f, 0.25f, 0f);
             Add(list, "Merry_Post_NW", "Z3", "anchor", "steel", 31.2f, 1.2f, 41.4f, 0.25f, 2.4f, 0.25f, 0f);
             Add(list, "Merry_Post_NE", "Z3", "anchor", "steel", 36.8f, 1.2f, 41.4f, 0.25f, 2.4f, 0.25f, 0f);
-            Add(list, "Merry_TableW", "Z3", "vault", "rubber", 28f, 0.42f, 56f, 2.4f, 0.84f, 1.2f, 0f);
-            Add(list, "Merry_TableE", "Z3", "vault", "rubber", 40f, 0.42f, 56f, 2.4f, 0.84f, 1.2f, 0f);
+            Add(list, "Merry_TableW", "Z3", "vault", "merry", 28f, 0.42f, 56f, 2.4f, 0.84f, 1.2f, 0f);
+            Add(list, "Merry_TableE", "Z3", "vault", "merry", 40f, 0.42f, 56f, 2.4f, 0.84f, 1.2f, 0f);
+            AddMerryGrapple(list);
 
             // Z4 Slide mountain on the rim, south of the z=92 loop and the north spine.
-            Add(list, "Slide_T1", "Z4", "block", "rim", 28f, 1f, 78f, 4f, 2f, 4f, 0f);
-            Add(list, "Slide_T2", "Z4", "block", "rim", 38f, 1.75f, 79f, 4f, 3.5f, 4f, 0f);
-            Add(list, "Slide_T2Step", "Z4", "block", "rim", 40.8f, 1f, 79f, 1.6f, 2f, 2.2f, 0f);
-            Add(list, "Slide_T3", "Z4", "block", "rim", 48f, 2.5f, 78f, 4f, 5f, 4f, 0f);
+            // Amber structure. Yellow is only the chutes. The +5 top stays this zone.
+            Add(list, "Slide_T1", "Z4", "block", "amber", 28f, 1f, 78f, 4f, 2f, 4f, 0f);
+            Add(list, "Slide_T2", "Z4", "block", "amber", 38f, 1.75f, 79f, 4f, 3.5f, 4f, 0f);
+            Add(list, "Slide_T2Step", "Z4", "block", "amber", 40.8f, 1f, 79f, 1.6f, 2f, 2.2f, 0f);
+            Add(list, "Slide_T3", "Z4", "block", "amber", 48f, 2.5f, 78f, 4f, 5f, 4f, 0f);
             // Step A ends on Step B's south face. The old z=77.2 overlapped Step B by 0.2 m.
-            Add(list, "Slide_StepA", "Z4", "block", "rim", 45.1f, 1f, 77.0f, 1.8f, 2f, 1.8f, 0f);
-            Add(list, "Slide_StepB", "Z4", "block", "rim", 45.1f, 1.75f, 78.8f, 1.8f, 3.5f, 1.8f, 0f);
+            Add(list, "Slide_StepA", "Z4", "block", "amber", 45.1f, 1f, 77.0f, 1.8f, 2f, 1.8f, 0f);
+            Add(list, "Slide_StepB", "Z4", "block", "amber", 45.1f, 1.75f, 78.8f, 1.8f, 3.5f, 1.8f, 0f);
+            AddSlideVertical(list);
 
             // Z5 Swing grove, south of the north spine (z>=83) and the loop.
             AddSwing(list, 66f);
@@ -340,18 +360,22 @@ namespace Tag.Level
             AddSwing(list, 90f);
 
             // Z6 Twin forts. East spine x[130,138] and the loop x=152 stay empty.
-            AddCrawl(list, "Army", 123f, 28.2f);
-            AddSpiral(list, "Army", 143f, 28f);
-            AddCrawl(list, "Knight", 123f, 64.2f);
-            AddSpiral(list, "Knight", 143f, 70f);
+            // Army is olive, knight is plum, so a callout can name the fort.
+            AddCrawl(list, "Army", 123f, 28.2f, "army");
+            AddSpiral(list, "Army", 143f, 28f, "army");
+            AddCrawl(list, "Knight", 123f, 64.2f, "knight");
+            AddSpiral(list, "Knight", 143f, 70f, "knight");
+            AddFortDecks(list);
 
             // Z7 Kickball. East rail is the vault. Bases stay under mantle height.
-            Add(list, "Base_Home", "Z7", "bump", "rubber", 96f, 0.1f, 34f, 0.9f, 0.2f, 0.9f, 0f);
-            Add(list, "Base_First", "Z7", "bump", "rubber", 110f, 0.1f, 48f, 0.9f, 0.2f, 0.9f, 0f);
-            Add(list, "Base_Second", "Z7", "bump", "rubber", 96f, 0.1f, 62f, 0.9f, 0.2f, 0.9f, 0f);
-            Add(list, "Base_Third", "Z7", "bump", "rubber", 82f, 0.1f, 48f, 0.9f, 0.2f, 0.9f, 0f);
-            Add(list, "Mound", "Z7", "bump", "rubber", 96f, 0.125f, 48f, 2.4f, 0.25f, 2.4f, 0f);
-            Add(list, "Rail_East", "Z7", "vault", "rubber", 114f, 0.45f, 48f, 0.12f, 0.9f, 40f, 0f);
+            // Clay reads against the green field paint. The dugout bar is the toy line.
+            Add(list, "Base_Home", "Z7", "bump", "kick", 96f, 0.1f, 34f, 0.9f, 0.2f, 0.9f, 0f);
+            Add(list, "Base_First", "Z7", "bump", "kick", 110f, 0.1f, 48f, 0.9f, 0.2f, 0.9f, 0f);
+            Add(list, "Base_Second", "Z7", "bump", "kick", 96f, 0.1f, 62f, 0.9f, 0.2f, 0.9f, 0f);
+            Add(list, "Base_Third", "Z7", "bump", "kick", 82f, 0.1f, 48f, 0.9f, 0.2f, 0.9f, 0f);
+            Add(list, "Mound", "Z7", "bump", "kick", 96f, 0.125f, 48f, 2.4f, 0.25f, 2.4f, 0f);
+            Add(list, "Rail_East", "Z7", "vault", "kick", 114f, 0.45f, 48f, 0.12f, 0.9f, 40f, 0f);
+            AddKickDugout(list);
 
             // Z8 toys, outside the open rect, sitting on the sand top.
             Add(list, "Toy_Sandbox_Bucket_SW", "Z8", "toy", "rubber", 51f, -0.825f, 42.5f, 0.4f, 0.35f, 0.4f, BowlFloorY);
@@ -364,14 +388,16 @@ namespace Tag.Level
             // stand-up mantle. The z=16 centerline stays open.
             AddBarHighway(list);
 
-            // Z10 hopscotch lips, north of the z=8 approach.
+            // Z10 hopscotch. One straight mantle line, chalk blue, off the z=8 loop.
             for (int i = 0; i < 8; i++)
             {
-                float x = 124f + i * 3f;
-                float z = (i % 2 == 0) ? 13.5f : 16.2f;
-                Add(list, "Hop_" + i.ToString(CultureInfo.InvariantCulture), "Z10", "vault", "concrete", x, 0.32f, z, 1.05f, 0.64f, 1.05f, 0f);
+                float x = 124f + i * 3.1f;
+                float lip = 0.72f + (i % 4) * 0.22f;
+                Add(list, "Hop_" + i.ToString(CultureInfo.InvariantCulture), "Z10", "vault", "hop", x, lip * 0.5f, 15f, 1.15f, lip, 1.15f, 0f);
             }
 
+            AddSwingLine(list);
+            AddSightCover(list);
             AddRimRoute(list);
             return list.ToArray();
         }
@@ -417,45 +443,48 @@ namespace Tag.Level
         // Drop spurs end on the bowl lip and do not enter the open rect.
         static void AddRimRoute(List<Solid> list)
         {
-            Add(list, "Rim_SoftN", "Z1", "block", "rim", 14.3f, 1f, 33.2f, 8.6f, 2f, 5.6f, 0f);
-            Add(list, "Rim_W1", "Z2", "block", "rim", 20f, 1.25f, 40.4f, 4f, 2.5f, 8f, 0f);
-            Add(list, "Rim_W2", "Z2", "block", "rim", 20f, 1.5f, 48.8f, 4f, 3f, 8f, 0f);
-            Add(list, "Rim_W3", "Z2", "block", "rim", 20f, 1.75f, 57.2f, 4f, 3.5f, 8f, 0f);
-            Add(list, "Rim_W4", "Z4", "block", "rim", 20f, 1.75f, 65.6f, 4f, 3.5f, 8f, 0f);
-            Add(list, "Rim_W5", "Z4", "block", "rim", 20f, 1.75f, 74f, 4f, 3.5f, 8f, 0f);
-            Add(list, "Rim_W6", "Z4", "block", "rim", 20f, 1.75f, 80.3f, 4f, 3.5f, 3.8f, 0f);
-            Add(list, "Rim_SlideIn", "Z4", "block", "rim", 29f, 1.75f, 81.2f, 13.6f, 3.5f, 2f, 0f);
-            Add(list, "Rim_Link", "Z4", "block", "rim", 42.10f, 1.75f, 77.125f, 4.04f, 3.5f, 1.25f, 0f);
+            // Rim segments take the zone tint so a callout can name where you are.
+            // Grapple plates stay orange, added by AddHook, and are not this tint.
+            Add(list, "Rim_SoftN", "Z1", "block", "soft", 14.3f, 1f, 33.2f, 8.6f, 2f, 5.6f, 0f);
+            Add(list, "Rim_W1", "Z2", "block", "pad", 20f, 1.25f, 40.4f, 4f, 2.5f, 8f, 0f);
+            Add(list, "Rim_W2", "Z2", "block", "pad", 20f, 1.5f, 48.8f, 4f, 3f, 8f, 0f);
+            Add(list, "Rim_W3", "Z2", "block", "pad", 20f, 1.75f, 57.2f, 4f, 3.5f, 8f, 0f);
+            Add(list, "Rim_W4", "Z4", "block", "amber", 20f, 1.75f, 65.6f, 4f, 3.5f, 8f, 0f);
+            Add(list, "Rim_W5", "Z4", "block", "amber", 20f, 1.75f, 74f, 4f, 3.5f, 8f, 0f);
+            Add(list, "Rim_W6", "Z4", "block", "amber", 20f, 1.75f, 80.3f, 4f, 3.5f, 3.8f, 0f);
+            Add(list, "Rim_SlideIn", "Z4", "block", "amber", 29f, 1.75f, 81.2f, 13.6f, 3.5f, 2f, 0f);
+            Add(list, "Rim_Link", "Z4", "block", "amber", 42.10f, 1.75f, 77.125f, 4.04f, 3.5f, 1.25f, 0f);
 
-            Add(list, "Rim_N1", "Z4", "block", "rim", 58f, 2f, 78f, 8f, 4f, 4f, 0f);
+            Add(list, "Rim_N1", "Z4", "block", "amber", 58f, 2f, 78f, 8f, 4f, 4f, 0f);
             AddHook(list, "Hook_Rim_N1", "Z4", 4f, 54.2f, 78f, 0.30f, 3f);
-            Add(list, "Rim_N2", "Z5", "block", "rim", 72f, 1.75f, 77f, 8f, 3.5f, 4f, 0f);
+            Add(list, "Rim_N2", "Z5", "block", "swing", 72f, 1.75f, 77f, 8f, 3.5f, 4f, 0f);
             AddHook(list, "Hook_Rim_N2", "Z5", 3.5f, 68.2f, 77f, 0.30f, 3f);
-            Add(list, "Rim_N3", "Z5", "block", "rim", 86f, 1.75f, 77f, 8f, 3.5f, 4f, 0f);
+            Add(list, "Rim_N3", "Z5", "block", "swing", 86f, 1.75f, 77f, 8f, 3.5f, 4f, 0f);
             AddHook(list, "Hook_Rim_N3", "Z5", 3.5f, 82.2f, 77f, 0.30f, 3f);
-            Add(list, "Rim_N4", "Z5", "block", "rim", 100f, 1.6f, 77f, 8f, 3.2f, 4f, 0f);
+            Add(list, "Rim_N4", "Z5", "block", "swing", 100f, 1.6f, 77f, 8f, 3.2f, 4f, 0f);
             AddHook(list, "Hook_Rim_N4", "Z5", 3.2f, 96.2f, 77f, 0.30f, 3f);
-            Add(list, "Rim_Corner", "Z6", "block", "rim", 112f, 1.5f, 72.7f, 8f, 3f, 7f, 0f);
+            Add(list, "Rim_Corner", "Z6", "block", "knight", 112f, 1.5f, 72.7f, 8f, 3f, 7f, 0f);
             AddHook(list, "Hook_Rim_Corner", "Z6", 3f, 108.2f, 75.2f, 0.30f, 2f);
-            Add(list, "Rim_Knight", "Z6", "block", "rim", 122f, 1.4f, 68.2f, 6f, 2.8f, 5f, 0f);
+            Add(list, "Rim_Knight", "Z6", "block", "knight", 122f, 1.4f, 68.2f, 6f, 2.8f, 5f, 0f);
             AddHook(list, "Hook_Rim_Knight", "Z6", 2.8f, 119.2f, 70f, 0.30f, 1.2f);
 
-            Add(list, "Rim_Ksouth", "Z6", "block", "rim", 122f, 1.1f, 58.15f, 5f, 2.2f, 8.3f, 0f);
+            Add(list, "Rim_Ksouth", "Z6", "block", "knight", 122f, 1.1f, 58.15f, 5f, 2.2f, 8.3f, 0f);
             AddHook(list, "Hook_Rim_Ksouth", "Z6", 2.2f, 122f, 54.2f, 3f, 0.30f);
-            Add(list, "Rim_GapS", "Z6", "block", "rim", 122f, 1.1f, 43.2f, 5f, 2.2f, 5.6f, 0f);
+            Add(list, "Rim_GapS", "Z6", "block", "army", 122f, 1.1f, 43.2f, 5f, 2.2f, 5.6f, 0f);
             AddHook(list, "Hook_Rim_GapS", "Z6", 2.2f, 122f, 45.75f, 3f, 0.30f);
-            Add(list, "Rim_Army", "Z6", "block", "rim", 122f, 1f, 34.85f, 5f, 2f, 10.3f, 0f);
+            Add(list, "Rim_Army", "Z6", "block", "army", 122f, 1f, 34.85f, 5f, 2f, 10.3f, 0f);
 
             // North lip of the bowl, off Rim_N1. South face stops on the mulch side of z=66.
-            Add(list, "Rim_DropN", "Z4", "block", "rim", 58f, 1.25f, 71.1f, 4f, 2.5f, 9.4f, 0f);
+            Add(list, "Rim_DropN", "Z4", "block", "amber", 58f, 1.25f, 71.1f, 4f, 2.5f, 9.4f, 0f);
             // East lip of the bowl, off Rim_N3. West face stops 2 m east of the sand edge x=78.
-            Add(list, "Rim_DropE", "Z7", "block", "rim", 83f, 1.15f, 70.4f, 6f, 2.3f, 8.8f, 0f);
+            Add(list, "Rim_DropE", "Z7", "block", "kick", 83f, 1.15f, 70.4f, 6f, 2.3f, 8.8f, 0f);
         }
 
         static void AddHook(List<Solid> list, string name, string zone, float deckTop,
             float x, float z, float sx, float sz)
         {
-            Add(list, name, zone, "anchor", "steel", x, deckTop + 1f, z, sx, 2f, sz, deckTop);
+            // Orange plate, not bar steel. The face is the grapple target.
+            Add(list, name, zone, "anchor", "plate", x, deckTop + 1f, z, sx, 2f, sz, deckTop);
         }
 
         public static Ramp[] BuildRamps()
@@ -469,6 +498,13 @@ namespace Tag.Level
                 RampOf("Slide_Chute1", "Z4", "yellow", 28f, 2f, 76f, 28f, 0f, 68f, 1.6f),
                 RampOf("Slide_Chute2", "Z4", "yellow", 38f, 3.5f, 77f, 38f, 0f, 68f, 1.6f),
                 RampOf("Slide_Chute3", "Z4", "yellow", 48f, 5f, 76f, 48f, 0f, 66f, 1.6f),
+                // Second way off the west +2 landing. Lands on the north lawn, in view of the bowl.
+                RampOf("Slide_ChuteL2", "Z4", "yellow", 24f, 2f, 76.5f, 24f, 0f, 69f, 1.2f),
+                // Fort decks. East of the spine, short of the x=152 loop.
+                RampOf("Slide_ArmyLo", "Z6", "yellow", 146.2f, 2f, 26.3f, 146.2f, 0f, 21.2f, 1.3f),
+                RampOf("Slide_ArmyHi", "Z6", "yellow", 148.2f, 3.7f, 29.5f, 148.2f, 0f, 34.8f, 1.3f),
+                RampOf("Slide_KnightLo", "Z6", "yellow", 146.2f, 2f, 69.6f, 146.2f, 0f, 63.6f, 1.3f),
+                RampOf("Slide_KnightHi", "Z6", "yellow", 148.2f, 3.7f, 71.1f, 148.2f, 0f, 76.6f, 1.3f),
             };
         }
 
@@ -478,23 +514,95 @@ namespace Tag.Level
             Add(list, "Swing_PostL_" + id, "Z5", "anchor", "steel", x - 1.2f, 1.035f, 81f, 0.2f, 2.07f, 0.2f, 0f);
             Add(list, "Swing_PostR_" + id, "Z5", "anchor", "steel", x + 1.2f, 1.035f, 81f, 0.2f, 2.07f, 0.2f, 0f);
             Add(list, "Swing_Beam_" + id, "Z5", "cap", "steel", x, 2.15f, 81f, 2.6f, 0.16f, 0.2f, 2.07f);
-            Add(list, "Swing_Rail_" + id, "Z5", "vault", "rubber", x, 0.45f, 82.3f, 2.2f, 0.9f, 0.16f, 0f);
+            Add(list, "Swing_Rail_" + id, "Z5", "vault", "swing", x, 0.45f, 82.3f, 2.2f, 0.9f, 0.16f, 0f);
         }
 
-        static void AddCrawl(List<Solid> list, string fort, float x, float z)
+        static void AddCrawl(List<Solid> list, string fort, float x, float z, string mat)
         {
-            Add(list, fort + "_CrawlL", "Z6", "block", "bark", x, 0.6f, z - 0.9f, 7f, 1.2f, 0.22f, 0f);
-            Add(list, fort + "_CrawlR", "Z6", "block", "bark", x, 0.6f, z + 0.9f, 7f, 1.2f, 0.22f, 0f);
-            Add(list, fort + "_CrawlRoof", "Z6", "cap", "bark", x, 1.29f, z, 7f, 0.18f, 2.02f, 1.2f);
+            string zone = fort == "Slide" ? "Z4" : "Z6";
+            Add(list, fort + "_CrawlL", zone, "block", mat, x, 0.6f, z - 0.9f, 7f, 1.2f, 0.22f, 0f);
+            Add(list, fort + "_CrawlR", zone, "block", mat, x, 0.6f, z + 0.9f, 7f, 1.2f, 0.22f, 0f);
+            Add(list, fort + "_CrawlRoof", zone, "cap", mat, x, 1.29f, z, 7f, 0.18f, 2.02f, 1.2f);
         }
 
-        static void AddSpiral(List<Solid> list, string fort, float x, float z)
+        static void AddSpiral(List<Solid> list, string fort, float x, float z, string mat)
         {
-            Add(list, fort + "_Core", "Z6", "anchor", "bark", x, 1.4f, z, 0.5f, 2.8f, 0.5f, 0f);
-            Add(list, fort + "_L1", "Z6", "vault", "bark", x - 1.5f, 0.35f, z - 1.4f, 1.5f, 0.7f, 1.5f, 0f);
-            Add(list, fort + "_L2", "Z6", "vault", "bark", x + 1.5f, 0.7f, z - 1.4f, 1.5f, 1.4f, 1.5f, 0f);
-            Add(list, fort + "_L3", "Z6", "vault", "bark", x + 1.5f, 1.05f, z + 1.4f, 1.5f, 2.1f, 1.5f, 0f);
-            Add(list, fort + "_L4", "Z6", "block", "bark", x - 1.5f, 1.4f, z + 1.4f, 1.5f, 2.8f, 1.5f, 0f);
+            Add(list, fort + "_Core", "Z6", "anchor", mat, x, 1.4f, z, 0.5f, 2.8f, 0.5f, 0f);
+            Add(list, fort + "_L1", "Z6", "vault", mat, x - 1.5f, 0.35f, z - 1.4f, 1.5f, 0.7f, 1.5f, 0f);
+            Add(list, fort + "_L2", "Z6", "vault", mat, x + 1.5f, 0.7f, z - 1.4f, 1.5f, 1.4f, 1.5f, 0f);
+            Add(list, fort + "_L3", "Z6", "vault", mat, x + 1.5f, 1.05f, z + 1.4f, 1.5f, 2.1f, 1.5f, 0f);
+            Add(list, fort + "_L4", "Z6", "block", mat, x - 1.5f, 1.4f, z + 1.4f, 1.5f, 2.8f, 1.5f, 0f);
+        }
+
+        // West +2 landing, a ground crawl under T1, and a spiral that meets T2's south face.
+        // Two downs per floor: chute plus a lower landing. Spiral and crawl are in that set.
+        static void AddSlideVertical(List<Solid> list)
+        {
+            Add(list, "Slide_Deck2", "Z4", "block", "amber", 24f, 1f, 78f, 2.6f, 2f, 3f, 0f);
+            Add(list, "Slide_Deck2Step", "Z4", "vault", "amber", 25.5f, 0.45f, 75.2f, 1.6f, 0.9f, 1.4f, 0f);
+            AddCrawl(list, "Slide", 33.2f, 74.4f, "amber");
+
+            float x = 41.3f;
+            float z = 74.4f;
+            float o = 1.25f;
+            float s = 1.2f;
+            Add(list, "Slide_Spire", "Z4", "anchor", "amber", x, 1.4f, z, 0.4f, 2.8f, 0.4f, 0f);
+            Add(list, "Slide_Sp1", "Z4", "vault", "amber", x - o, 0.4f, z - o, s, 0.8f, s, 0f);
+            Add(list, "Slide_Sp2", "Z4", "vault", "amber", x + o, 0.8f, z - o, s, 1.6f, s, 0f);
+            Add(list, "Slide_Sp3", "Z4", "vault", "amber", x + o, 1.2f, z + o, s, 2.4f, s, 0f);
+            Add(list, "Slide_Sp4", "Z4", "block", "amber", x - o, 1.25f, z + o, s, 2.5f, s, 0f);
+        }
+
+        // East of each spiral, clear of the x[130,138] spine and the x=152 loop.
+        // Low deck exposed around a smaller high deck, so the high floor can be walked off.
+        static void AddFortDecks(List<Solid> list)
+        {
+            Add(list, "Army_Lo", "Z6", "block", "army", 147.4f, 1f, 28f, 3.6f, 2f, 3.4f, 0f);
+            Add(list, "Army_Hi", "Z6", "block", "army", 148.2f, 2.85f, 28.8f, 1.6f, 1.7f, 1.4f, 2f);
+            Add(list, "Knight_Lo", "Z6", "block", "knight", 147.4f, 1f, 71.2f, 3.6f, 2f, 3.2f, 0f);
+            Add(list, "Knight_Hi", "Z6", "block", "knight", 148.2f, 2.85f, 70.4f, 1.6f, 1.7f, 1.4f, 2f);
+        }
+
+        // North of crossing B. 4.8 m gap, plate on the east deck's west lip. Max grapple 8 m.
+        static void AddMerryGrapple(List<Solid> list)
+        {
+            Add(list, "Merry_A", "Z3", "block", "merry", 25.6f, 1f, 58.2f, 3f, 2f, 2.2f, 0f);
+            Add(list, "Merry_B", "Z3", "block", "merry", 33.4f, 1.15f, 58.2f, 3f, 2.3f, 2.2f, 0f);
+            Add(list, "Hook_Merry_B", "Z3", "anchor", "plate", 32.05f, 3.3f, 58.2f, 0.3f, 2f, 1.8f, 2.3f);
+        }
+
+        // One vault cadence in the grove, south of the swing posts and north of the rim.
+        static void AddSwingLine(List<Solid> list)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                float x = 64f + i * 3.2f;
+                Add(list, "Swing_Line" + i.ToString(CultureInfo.InvariantCulture), "Z5", "vault", "swing",
+                    x, 0.48f, 79.95f, 1.3f, 0.96f, 0.5f, 0f);
+            }
+        }
+
+        // N-S slide-under on the infield. Chest-high bar, mantle lip beside it. Not a wall.
+        static void AddKickDugout(List<Solid> list)
+        {
+            Add(list, "Kick_PostS", "Z7", "post", "steel", 106f, 0.57f, 43.2f, 0.22f, 1.14f, 0.22f, 0f);
+            Add(list, "Kick_PostN", "Z7", "post", "steel", 106f, 0.57f, 52.8f, 0.22f, 1.14f, 0.22f, 0f);
+            Add(list, "Kick_Bar", "Z7", "bar", "steel", 106f, 1.2f, 48f, 0.14f, 0.12f, 10.2f, 1.14f);
+            Add(list, "Kick_Lip", "Z7", "vault", "concrete", 107.6f, 0.48f, 48f, 0.9f, 0.96f, 2.2f, 0f);
+        }
+
+        // Low vault cover. Breaks long ground sightlines. Stays out of the bowl, crossing B,
+        // and the rim-to-bowl slot x[52,72] z[58,76].
+        static void AddSightCover(List<Solid> list)
+        {
+            Add(list, "Cover_S1", "Z9", "vault", "cover", 48f, 0.675f, 26.5f, 2.4f, 1.35f, 1.15f, 0f);
+            Add(list, "Cover_S2", "Z7", "vault", "cover", 78f, 0.675f, 25.5f, 2.2f, 1.35f, 1.15f, 0f);
+            Add(list, "Cover_S3", "Z10", "vault", "cover", 104f, 0.675f, 26.5f, 2.4f, 1.35f, 1.15f, 0f);
+            Add(list, "Cover_W", "Z3", "vault", "cover", 40f, 0.675f, 30f, 1.8f, 1.35f, 1.2f, 0f);
+            Add(list, "Cover_K1", "Z7", "vault", "cover", 88f, 0.675f, 40f, 1.5f, 1.35f, 1.5f, 0f);
+            Add(list, "Cover_K2", "Z7", "vault", "cover", 100f, 0.675f, 58f, 1.5f, 1.35f, 1.5f, 0f);
+            // East of Rim_Corner (x to 116) and north of Rim_Knight (z to 70.7).
+            Add(list, "Cover_N", "Z6", "vault", "cover", 124f, 0.675f, 73.2f, 2.2f, 1.35f, 1.15f, 0f);
         }
 
         static void Add(List<Solid> list, string name, string zone, string kind, string mat,
@@ -745,45 +853,443 @@ namespace Tag.Level
                 && Math.Abs(a.Z - b.Z) <= (a.Sz + b.Sz) * 0.5f + 0.2f;
         }
 
-        static bool SpawnsOk(out string why)
+        static readonly string[] FloorNames =
         {
-            why = null;
-            if (Spawns.Length != 4)
+            "Slide_T1", "Slide_Deck2", "Slide_T2", "Slide_T3",
+            "Army_Lo", "Army_Hi", "Knight_Lo", "Knight_Hi",
+        };
+
+        static string FloorReport(Solid[] solids, Ramp[] ramps, StringBuilder fail)
+        {
+            var sb = new StringBuilder();
+            bool slideChute = false, slideDrop = false, slideSpiral = false, slideCrawl = false;
+            bool armyChute = false, armyDrop = false, armySpiral = false;
+            bool knightChute = false, knightDrop = false, knightSpiral = false;
+            float tallestOffRim = 0f;
+
+            for (int i = 0; i < solids.Length; i++)
             {
-                why = "expected 4 spawns; ";
-                return false;
+                Solid s = solids[i];
+                if (s.Kind == "ground" || s.Kind == "fence" || s.Kind == "wall" || s.Kind == "anchor")
+                    continue;
+                float top = s.Y + s.Sy * 0.5f;
+                if (top >= 4.5f && s.Zone != "Z4" && top > tallestOffRim)
+                    tallestOffRim = top;
             }
+            if (tallestOffRim > 0f)
+                fail.Append("height left the slide rim at ").Append(tallestOffRim.ToString("0.00", CultureInfo.InvariantCulture)).Append("; ");
+
+            for (int f = 0; f < FloorNames.Length; f++)
+            {
+                string id = FloorNames[f];
+                if (!TryFind(solids, id, out Solid deck))
+                {
+                    fail.Append("level missing ").Append(id).Append("; ");
+                    sb.Append(id).Append(" 0");
+                    if (f + 1 < FloorNames.Length) sb.Append(' ');
+                    continue;
+                }
+                float top = deck.Y + deck.Sy * 0.5f;
+                int exits = 0;
+                for (int i = 0; i < ramps.Length; i++)
+                {
+                    Ramp r = ramps[i];
+                    if (r.Mat != "yellow") continue;
+                    bool aHigh = r.Y0 >= r.Y1;
+                    float hy = aHigh ? r.Y0 : r.Y1;
+                    float ly = aHigh ? r.Y1 : r.Y0;
+                    float hx = aHigh ? r.X0 : r.X1;
+                    float hz = aHigh ? r.Z0 : r.Z1;
+                    if (hy - ly < 1.4f) continue;
+                    if (Math.Abs(hy - top) > 0.25f) continue;
+                    if (DistXZ(hx, hz, deck) > 0.45f) continue;
+                    exits++;
+                    NoteExit(id, "chute", ref slideChute, ref slideDrop, ref slideSpiral, ref slideCrawl,
+                        ref armyChute, ref armyDrop, ref armySpiral, ref knightChute, ref knightDrop, ref knightSpiral);
+                }
+                for (int i = 0; i < solids.Length; i++)
+                {
+                    Solid s = solids[i];
+                    if (s.Name == deck.Name || s.Kind == "ground" || s.Kind == "fence") continue;
+                    float st = s.Y + s.Sy * 0.5f;
+                    float dy = top - st;
+                    if (dy < 0.55f || dy > 3.3f) continue;
+                    if (s.Sx < 1.05f || s.Sz < 1.05f) continue;
+                    if (AabbGap(deck, s) > 1.15f) continue;
+                    exits++;
+                    string kind = "drop";
+                    if (s.Name.IndexOf("Crawl", StringComparison.Ordinal) >= 0) kind = "crawl";
+                    else if (s.Name.IndexOf("_Sp", StringComparison.Ordinal) >= 0
+                        || s.Name.EndsWith("_L1", StringComparison.Ordinal)
+                        || s.Name.EndsWith("_L2", StringComparison.Ordinal)
+                        || s.Name.EndsWith("_L3", StringComparison.Ordinal)
+                        || s.Name.EndsWith("_L4", StringComparison.Ordinal))
+                        kind = "spiral";
+                    NoteExit(id, kind, ref slideChute, ref slideDrop, ref slideSpiral, ref slideCrawl,
+                        ref armyChute, ref armyDrop, ref armySpiral, ref knightChute, ref knightDrop, ref knightSpiral);
+                }
+                if (exits < 2)
+                    fail.Append(id).Append(" has ").Append(exits.ToString(CultureInfo.InvariantCulture)).Append(" exits; ");
+                sb.Append(id).Append(' ').Append(exits.ToString(CultureInfo.InvariantCulture));
+                if (f + 1 < FloorNames.Length) sb.Append(' ');
+            }
+
+            if (!slideChute || !slideDrop || !slideSpiral || !slideCrawl)
+                fail.Append("slide mountain is missing a chute, drop, spiral, or crawl; ");
+            if (!armyChute || !armyDrop || !armySpiral)
+                fail.Append("army deck is missing a chute, drop, or spiral; ");
+            if (!knightChute || !knightDrop || !knightSpiral)
+                fail.Append("knight deck is missing a chute, drop, or spiral; ");
+            CrawlLinked(solids, "Rim_Army", "Army_CrawlRoof", fail);
+            CrawlLinked(solids, "Rim_Knight", "Knight_CrawlRoof", fail);
+            return "levels " + sb.ToString();
+        }
+
+        static void NoteExit(string floor, string kind,
+            ref bool slideChute, ref bool slideDrop, ref bool slideSpiral, ref bool slideCrawl,
+            ref bool armyChute, ref bool armyDrop, ref bool armySpiral,
+            ref bool knightChute, ref bool knightDrop, ref bool knightSpiral)
+        {
+            bool slide = floor.StartsWith("Slide", StringComparison.Ordinal);
+            bool army = floor.StartsWith("Army", StringComparison.Ordinal);
+            bool knight = floor.StartsWith("Knight", StringComparison.Ordinal);
+            if (kind == "chute")
+            {
+                if (slide) slideChute = true;
+                if (army) armyChute = true;
+                if (knight) knightChute = true;
+            }
+            else if (kind == "spiral")
+            {
+                if (slide) slideSpiral = true;
+                if (army) armySpiral = true;
+                if (knight) knightSpiral = true;
+            }
+            else if (kind == "crawl")
+            {
+                if (slide) slideCrawl = true;
+            }
+            else
+            {
+                if (slide) slideDrop = true;
+                if (army) armyDrop = true;
+                if (knight) knightDrop = true;
+            }
+        }
+
+        static void CrawlLinked(Solid[] solids, string rimName, string roofName, StringBuilder fail)
+        {
+            if (!TryFind(solids, rimName, out Solid rim) || !TryFind(solids, roofName, out Solid roof))
+            {
+                fail.Append(rimName).Append(" crawl link missing; ");
+                return;
+            }
+            float rimTop = rim.Y + rim.Sy * 0.5f;
+            float roofTop = roof.Y + roof.Sy * 0.5f;
+            if (AabbGap(rim, roof) > 1.05f || rimTop - roofTop < 0.4f)
+                fail.Append(roofName).Append(" is not a drop off ").Append(rimName).Append("; ");
+        }
+
+        static void ToyReport(Solid[] solids, StringBuilder fail)
+        {
+            float z0 = 0f;
+            for (int i = 0; i < 5; i++)
+            {
+                string name = "Swing_Line" + i.ToString(CultureInfo.InvariantCulture);
+                if (!TryFind(solids, name, out Solid s))
+                {
+                    fail.Append("swing toy line missing; ");
+                    return;
+                }
+                float top = s.Y + s.Sy * 0.5f;
+                if (Math.Abs(top - 0.96f) > 0.04f || Math.Abs(s.Z - 79.95f) > 0.05f)
+                    fail.Append(name).Append(" left the swing vault line; ");
+                if (Math.Abs(s.X - (64f + i * 3.2f)) > 0.05f)
+                    fail.Append(name).Append(" left the 3.2 m cadence; ");
+                if (i == 0) z0 = s.Z;
+                else if (Math.Abs(s.Z - z0) > 0.05f)
+                    fail.Append(name).Append(" is not collinear; ");
+            }
+
+            if (!TryFind(solids, "Kick_Bar", out Solid bar))
+                fail.Append("kickball toy line missing; ");
+            else
+            {
+                float bottom = bar.Y - bar.Sy * 0.5f;
+                if (bottom < BarUnderClear - 0.001f || bar.Sz < 8f)
+                    fail.Append("kickball bar is not a slide-under line; ");
+            }
+            if (!TryFind(solids, "Kick_Lip", out Solid lip))
+                fail.Append("kickball mantle lip missing; ");
+            else if (lip.Kind != "vault")
+                fail.Append("kickball lip is not a vault; ");
+
+            float prevX = -1f;
+            float hopZ = 0f;
+            for (int i = 0; i < 8; i++)
+            {
+                if (!TryFind(solids, "Hop_" + i.ToString(CultureInfo.InvariantCulture), out Solid hop))
+                {
+                    fail.Append("hopscotch line missing; ");
+                    return;
+                }
+                if (hop.Kind != "vault" || hop.Mat != "hop")
+                    fail.Append(hop.Name).Append(" is not the chalk mantle line; ");
+                if (i == 0) hopZ = hop.Z;
+                else if (Math.Abs(hop.Z - hopZ) > 0.05f || hop.X <= prevX)
+                    fail.Append(hop.Name).Append(" left the straight hop line; ");
+                prevX = hop.X;
+            }
+
+            if (!TryFind(solids, "Merry_A", out Solid a) || !TryFind(solids, "Merry_B", out Solid b))
+            {
+                fail.Append("merry grapple line missing; ");
+                return;
+            }
+            float gap = AabbGap(a, b);
+            if (gap < 3f || gap > 8f)
+                fail.Append("merry grapple gap ").Append(gap.ToString("0.00", CultureInfo.InvariantCulture)).Append("; ");
+            if (!HookFaces(solids, a, b, fail))
+                fail.Append("merry plate does not face the gap; ");
+        }
+
+        static void SightReport(Solid[] solids, StringBuilder fail)
+        {
+            int covers = 0;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (!s.Name.StartsWith("Cover_", StringComparison.Ordinal)) continue;
+                covers++;
+                float top = s.Y + s.Sy * 0.5f;
+                if (s.Kind != "vault" || top < 0.9f || top > 1.6f)
+                    fail.Append(s.Name).Append(" is not low vault cover; ");
+                if (OverlapsOpen(s) || OverlapsCrossingB(s))
+                    fail.Append(s.Name).Append(" blocks a crossing; ");
+                if (AabbHits(s, 52f, 72f, 58f, 76f))
+                    fail.Append(s.Name).Append(" hides the bowl from the rim; ");
+            }
+            if (covers < 6)
+                fail.Append("sightline cover is thin; ");
+        }
+
+        static void ColorReport(Solid[] solids, StringBuilder fail)
+        {
+            bool soft = false, pad = false, merry = false, amber = false, swing = false;
+            bool army = false, knight = false, kick = false, hop = false, plate = false, blueWall = false;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (s.Mat == "soft" && s.Zone == "Z1") soft = true;
+                if (s.Mat == "pad" && s.Zone == "Z2") pad = true;
+                if (s.Mat == "merry" && s.Zone == "Z3") merry = true;
+                if (s.Mat == "amber" && s.Zone == "Z4") amber = true;
+                if (s.Mat == "swing" && s.Zone == "Z5") swing = true;
+                if (s.Mat == "army" && s.Zone == "Z6") army = true;
+                if (s.Mat == "knight" && s.Zone == "Z6") knight = true;
+                if (s.Mat == "kick" && s.Zone == "Z7") kick = true;
+                if (s.Mat == "hop" && s.Zone == "Z10") hop = true;
+                if (s.Mat == "plate")
+                {
+                    plate = true;
+                    if (!s.Name.StartsWith("Hook_", StringComparison.Ordinal) || s.Kind != "anchor")
+                        fail.Append(s.Name).Append(" uses the grapple plate color; ");
+                }
+                if (s.Name.StartsWith("Hook_", StringComparison.Ordinal) && s.Mat != "plate")
+                    fail.Append(s.Name).Append(" plate is not orange; ");
+                if (s.Kind == "wall" && s.Mat == "blue") blueWall = true;
+                if (s.Mat == "blue" && s.Kind != "wall")
+                    fail.Append(s.Name).Append(" cling blue is on a non-wall; ");
+            }
+            if (!soft || !pad || !merry || !amber || !swing || !army || !knight || !kick || !hop || !plate || !blueWall)
+                fail.Append("a zone tint or verb color is missing; ");
+        }
+
+        static string SpawnReport(StringBuilder fail)
+        {
+            if (Spawns.Length != 4)
+                fail.Append("expected 4 primary spawns; ");
+            if (RunnerSpawns == null || RunnerSpawns.Length != 2)
+                fail.Append("expected 2 runner spawns; ");
+            if (Math.Abs(SpawnY) < 0.05f || SpawnY > 1f)
+                fail.Append("spawn Y is buried or floating; ");
+            if (Spawns.Length >= 4 && (Spawns[0].YawDeg != 90f || Spawns[1].YawDeg != 180f || Spawns[2].YawDeg != -90f || Spawns[3].YawDeg != 0f))
+                fail.Append("spawn facing drifted; ");
+
+            var all = new List<SpawnPad>(8);
+            for (int i = 0; i < Spawns.Length; i++) all.Add(Spawns[i]);
+            if (RunnerSpawns != null)
+            {
+                for (int i = 0; i < RunnerSpawns.Length; i++) all.Add(RunnerSpawns[i]);
+            }
+
+            for (int i = 0; i < all.Count; i++)
+            {
+                SpawnPad s = all[i];
+                if (s.X < 1f || s.X > MapW - 1f || s.Z < 1f || s.Z > MapD - 1f)
+                    fail.Append(s.Name).Append(" is outside the park; ");
+                float lat;
+                float t = ProjectLoop(s.X, s.Z, out lat);
+                bool primary = i < Spawns.Length;
+                if (primary && lat > 0.05f)
+                    fail.Append(s.Name).Append(" left the loop; ");
+                if (!primary && lat > 6f)
+                    fail.Append(s.Name).Append(" is far off the loop; ");
+                if (PadBlocked(s))
+                    fail.Append(s.Name).Append(" is inside a solid; ");
+                if (!FacesCcw(s, t, primary, out string faceWhy))
+                    fail.Append(s.Name).Append(' ').Append(faceWhy).Append("; ");
+            }
+
+            string pairs = PairClause(fail);
+            return pairs;
+        }
+
+        static string PairClause(StringBuilder fail)
+        {
+            if (Spawns.Length < 4)
+                return "pairs missing";
+            // SW SE NW NE indices 0 1 2 3. Expected min-arc: adjacent 118, diagonal 236.
+            float swSe = PathDist(Spawns[0], Spawns[1]);
+            float swNw = PathDist(Spawns[0], Spawns[2]);
+            float swNe = PathDist(Spawns[0], Spawns[3]);
+            float seNw = PathDist(Spawns[1], Spawns[2]);
+            float seNe = PathDist(Spawns[1], Spawns[3]);
+            float neNw = PathDist(Spawns[3], Spawns[2]);
+            ExpectPair("SW-SE", swSe, 118f, fail);
+            ExpectPair("SW-NW", swNw, 118f, fail);
+            ExpectPair("SW-NE", swNe, 236f, fail);
+            ExpectPair("SE-NW", seNw, 236f, fail);
+            ExpectPair("SE-NE", seNe, 118f, fail);
+            ExpectPair("NE-NW", neNw, 118f, fail);
+
+            float runS = 0f, runN = 0f;
+            if (RunnerSpawns != null && RunnerSpawns.Length >= 2)
+            {
+                runS = NearestPrimary(RunnerSpawns[0]);
+                runN = NearestPrimary(RunnerSpawns[1]);
+                if (runS < 50f || runN < 50f)
+                    fail.Append("a runner pad is stacked on a primary; ");
+            }
+
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "pairs SW-SE {0:0.0} SW-NW {1:0.0} SW-NE {2:0.0} SE-NW {3:0.0} SE-NE {4:0.0} NE-NW {5:0.0}; runners S {6:0.0} N {7:0.0}",
+                swSe, swNw, swNe, seNw, seNe, neNw, runS, runN);
+        }
+
+        static void ExpectPair(string name, float got, float want, StringBuilder fail)
+        {
+            if (Math.Abs(got - want) > 0.2f)
+                fail.Append(name).Append(" path ").Append(got.ToString("0.00", CultureInfo.InvariantCulture))
+                    .Append(" != ").Append(want.ToString("0.0", CultureInfo.InvariantCulture)).Append("; ");
+        }
+
+        static float NearestPrimary(SpawnPad pad)
+        {
+            float best = float.MaxValue;
             for (int i = 0; i < Spawns.Length; i++)
             {
-                SpawnPad s = Spawns[i];
-                bool onLoop = false;
-                for (int p = 0; p < LoopCcw.Length; p++)
-                {
-                    if (Math.Abs(LoopCcw[p].X - s.X) < 0.01f && Math.Abs(LoopCcw[p].Z - s.Z) < 0.01f)
-                        onLoop = true;
-                }
-                if (!onLoop)
-                {
-                    why = s.Name + " is not a loop vertex; ";
-                    return false;
-                }
-                if (s.X < 1f || s.X > MapW - 1f || s.Z < 1f || s.Z > MapD - 1f)
-                {
-                    why = s.Name + " is outside the park; ";
-                    return false;
-                }
+                float d = PathDist(pad, Spawns[i]);
+                if (d < best) best = d;
             }
-            if (Math.Abs(SpawnY) < 0.05f || SpawnY > 1f)
+            return best;
+        }
+
+        static float PathDist(SpawnPad a, SpawnPad b)
+        {
+            float latA, latB;
+            float ta = ProjectLoop(a.X, a.Z, out latA);
+            float tb = ProjectLoop(b.X, b.Z, out latB);
+            float along = Math.Abs(ta - tb);
+            if (along > LoopLengthM * 0.5f) along = LoopLengthM - along;
+            return along + latA + latB;
+        }
+
+        static float ProjectLoop(float x, float z, out float lateral)
+        {
+            float bestLat = float.MaxValue;
+            float bestT = 0f;
+            float t0 = 0f;
+            for (int i = 0; i < LoopCcw.Length; i++)
             {
-                why = "spawn Y is buried or floating; ";
+                Pt a = LoopCcw[i];
+                Pt b = LoopCcw[(i + 1) % LoopCcw.Length];
+                float dx = b.X - a.X;
+                float dz = b.Z - a.Z;
+                float seg = (float)Math.Sqrt(dx * dx + dz * dz);
+                float u = 0f;
+                if (seg > 0.001f)
+                {
+                    u = ((x - a.X) * dx + (z - a.Z) * dz) / (seg * seg);
+                    if (u < 0f) u = 0f;
+                    if (u > 1f) u = 1f;
+                }
+                float px = a.X + dx * u;
+                float pz = a.Z + dz * u;
+                float lat = DistPoint(x, z, px, pz);
+                if (lat < bestLat)
+                {
+                    bestLat = lat;
+                    bestT = t0 + seg * u;
+                }
+                t0 += seg;
+            }
+            lateral = bestLat;
+            return bestT;
+        }
+
+        static float DistPoint(float x0, float z0, float x1, float z1)
+        {
+            float dx = x0 - x1;
+            float dz = z0 - z1;
+            return (float)Math.Sqrt(dx * dx + dz * dz);
+        }
+
+        static bool FacesCcw(SpawnPad s, float t, bool primary, out string why)
+        {
+            why = null;
+            float fx, fz;
+            YawForward(s.YawDeg, out fx, out fz);
+            float lat;
+            float t2 = ProjectLoop(s.X + fx * 6f, s.Z + fz * 6f, out lat);
+            float dt = t2 - t;
+            if (dt < -200f) dt += LoopLengthM;
+            if (dt < 4f)
+            {
+                why = "does not face CCW";
                 return false;
             }
-            if (Spawns[0].YawDeg != 90f || Spawns[1].YawDeg != 0f || Spawns[2].YawDeg != 180f || Spawns[3].YawDeg != -90f)
+            if (primary && lat > 1.5f)
             {
-                why = "spawn facing drifted; ";
+                why = "facing leaves the loop";
                 return false;
             }
             return true;
+        }
+
+        static void YawForward(float yawDeg, out float fx, out float fz)
+        {
+            double r = yawDeg * Math.PI / 180.0;
+            fx = (float)Math.Sin(r);
+            fz = (float)Math.Cos(r);
+        }
+
+        static bool PadBlocked(SpawnPad s)
+        {
+            Solid[] solids = BuildSolids();
+            const float radius = 0.45f;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid b = solids[i];
+                if (b.Kind == "ground" || b.Kind == "fence") continue;
+                float bottom = b.Y - b.Sy * 0.5f;
+                float top = b.Y + b.Sy * 0.5f;
+                if (top < 0.05f || bottom > 1.7f) continue;
+                if (DistXZ(s.X, s.Z, b) < radius)
+                    return true;
+            }
+            return false;
         }
 
         static bool Has(HashSet<string> zones, string id)
@@ -1140,7 +1646,7 @@ namespace Tag.Level
             }
             float destTop = dest.Y + dest.Sy * 0.5f;
             float hookBottom = hook.Y - hook.Sy * 0.5f;
-            if (hook.Mat != "steel" || hook.Kind != "anchor" || Math.Abs(hookBottom - destTop) > 0.03f)
+            if (hook.Mat != "plate" || hook.Kind != "anchor" || Math.Abs(hookBottom - destTop) > 0.03f)
             {
                 fail.Append(hookName).Append(" is not a deck plate; ");
                 return false;
