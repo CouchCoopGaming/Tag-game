@@ -11,6 +11,9 @@ namespace Tag.Level
     {
         const string RootName = "MegaPark";
 
+        /// <summary>Assets/Prefabs/LaunchPad.prefab. Play.unity wires this.</summary>
+        public GameObject launchPadPrefab;
+
         Transform _p1;
         Material _mulch, _grass, _sand, _rubber, _blue, _yellow, _steel, _concrete, _cedar, _bark, _rim, _field;
         Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate;
@@ -31,6 +34,8 @@ namespace Tag.Level
             BuildPaint();
             BuildSpawns();
             BuildLoopMarkers();
+            BuildLaunchPads();
+            BuildZipSlots();
             BuildLabels();
 
             MegaParkP1Layout.Audit audit = MegaParkP1Layout.Run();
@@ -231,6 +236,53 @@ namespace Tag.Level
             Paint(g, "Spine_North", 14f, 130f, 83f, 89f, _concrete, 0.06f);
             Paint(g, "Spine_West", 10f, 14f, 2f, 98f, _concrete, 0.06f);
             Paint(g, "Spine_East", 130f, 138f, 10f, 90f, _concrete, 0.06f);
+            // Crossing mouths. Paint only, so the stripe is not a lip.
+            Paint(g, "CrossA_West", 42f, 50f, 48.4f, 51.6f, _sand, 0.03f);
+            Paint(g, "CrossA_East", 74f, 82f, 48.4f, 51.6f, _sand, 0.03f);
+            Paint(g, "CrossA_South", 60.2f, 63.8f, 30f, 38f, _sand, 0.03f);
+            Paint(g, "CrossA_North", 60.2f, 63.8f, 62f, 70f, _sand, 0.03f);
+            Paint(g, "CrossB_South", 24f, 44f, 42.2f, 43.6f, _concrete, 0.03f);
+            Paint(g, "CrossB_North", 24f, 44f, 52.4f, 53.8f, _concrete, 0.03f);
+        }
+
+        void BuildLaunchPads()
+        {
+            Transform g = Group("LaunchPads");
+            MegaParkP1Layout.PadSpot[] spots = MegaParkP1Layout.LaunchPads;
+            for (int i = 0; i < spots.Length; i++)
+            {
+                MegaParkP1Layout.PadSpot s = spots[i];
+                GameObject go;
+                if (launchPadPrefab != null)
+                    go = (GameObject)Instantiate(launchPadPrefab, g);
+                else
+                    go = new GameObject(s.Name);
+                go.name = s.Name;
+                go.transform.SetParent(g, false);
+                go.transform.localPosition = new Vector3(s.X, s.Y, s.Z);
+                go.transform.localRotation = Quaternion.identity;
+                go.transform.localScale = Vector3.one;
+                LaunchPad pad = go.GetComponent<LaunchPad>();
+                if (pad == null)
+                    pad = go.AddComponent<LaunchPad>();
+                pad.apexHeight = s.Apex;
+                pad.horizontalDir = new Vector3(s.DirX, 0f, s.DirZ);
+                pad.horizontalSpeed = s.Speed;
+            }
+        }
+
+        void BuildZipSlots()
+        {
+            Transform g = Group("ZipSlots");
+            MegaParkP1Layout.ZipMark[] marks = MegaParkP1Layout.ZipSlots;
+            for (int i = 0; i < marks.Length; i++)
+            {
+                MegaParkP1Layout.ZipMark z = marks[i];
+                var go = new GameObject(z.Name);
+                go.transform.SetParent(g, false);
+                go.transform.localPosition = new Vector3(z.X, z.Y, z.Z);
+                go.transform.localRotation = Quaternion.identity;
+            }
         }
 
         void Paint(Transform parent, string name, float x0, float x1, float z0, float z1, Material mat, float yTop)

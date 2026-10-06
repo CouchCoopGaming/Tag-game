@@ -1030,6 +1030,8 @@ namespace Tag.Art
         bool _exitLeadLeft;
         bool _wallDropSnap;
         float _wallDropIn;
+        float _slideOffIn;
+        bool _slideOffWant;
         Quaternion _exitUaL, _exitUaR, _exitLaL, _exitLaR;
         Quaternion _exitUlL, _exitUlR, _exitLlL, _exitLlR;
         Quaternion _exitSpine, _exitHips, _exitHead;
@@ -1340,6 +1342,8 @@ namespace Tag.Art
                 _wallFallHold = true;
             }
             _wasGracePose = _gracePose;
+            // A refused re-cling drops the hands. Grace on this face still holds the grab.
+            TickClingSlideOff(dt, air, climb, wallRun, mantle);
             if (!_gracePose && !onSurf)
                 _graceArmed = false;
             _wasSurf = onSurf;
@@ -3602,6 +3606,34 @@ namespace Tag.Art
                 _jumpPoseAge = 0f;
                 _jumpPoseCycle = _cycle;
                 _jumpDriveLeft = Mathf.Sin(_cycle) >= 0f;
+            }
+            bool launchBody = _motor != null && _motor.LaunchArc && _motor.State == MoveState.Air && !jet && !punching;
+            if (launchBody)
+            {
+                // The pad reuses the jump rise. Entry tells do not keep this arc.
+                _jumpFromStill = false;
+                _jumpFromCrouchWalk = false;
+                _jumpFromWalk = false;
+                _jumpFromSki = false;
+                _jumpFromSlide = false;
+                _jumpFromDash = false;
+                _jumpFromClimb = false;
+                _jumpFromWall = false;
+                _jumpFromAirCrouch = false;
+                _jumpFromSoftLand = false;
+                _jumpFromHardLand = false;
+                _jumpFromMiss = false;
+                _jumpFromTag = false;
+                _jumpFromClaim = false;
+                _jumpFromGrapple = false;
+                _jumpFromReady = false;
+                _jumpFromPunch = false;
+                if (_jumpPoseAge < 0f)
+                {
+                    _jumpPoseAge = 0f;
+                    _jumpPoseCycle = _cycle;
+                    _jumpDriveLeft = Mathf.Sin(_cycle) >= 0f;
+                }
             }
             if (_hopChainFrame && !JumpPoseBlocked() && !jet && !punching)
             {
@@ -5996,9 +6028,10 @@ namespace Tag.Art
                 && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint && runAmt <= 0.4f
                 && _diveVis > 0.02f
                 && _input != null && _input.CrouchHeld;
-            bool jumpPoseOn = PoseAllowed(DummyPosePaths.Jump) && JumpPose.PoseActive(air && !jet, _jumpFromWall, _jumpFromSlide,
+            bool launchRise = _motor != null && _motor.LaunchArc && air && !jet && !punching && _jumpPoseAge >= 0f;
+            bool jumpPoseOn = PoseAllowed(DummyPosePaths.Jump) && (launchRise || JumpPose.PoseActive(air && !jet, _jumpFromWall, _jumpFromSlide,
                 !air || jet || punching || JumpPoseBlocked() || airStillCrouch || airCrouchWalk || _diveVis >= 0.2f
-                || airDashing || _dashPoseHeld || _jumpPoseAge < 0f || _wallFallHold || _gracePose || _grappleFallHold);
+                || airDashing || _dashPoseHeld || _jumpPoseAge < 0f || _wallFallHold || _gracePose || _grappleFallHold));
             // Keep a soft air/vault cycle so limbs stay energetic off the ground.
             // Walk and sprint ease length and tempo. The cycle keeps advancing, so a plant does not freeze.
             if (!(air && !jet && !airDashing && _armRecover > 0f))
@@ -14970,6 +15003,14 @@ namespace Tag.Art
                 torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
                 slew = Mathf.Max(slew, WallPose.BlendSlew);
             }
+            if (_slideOffWant)
+            {
+                armSlewL = Mathf.Max(armSlewL, WallPose.BlendSlew);
+                armSlewR = Mathf.Max(armSlewR, WallPose.BlendSlew);
+                legSlew = Mathf.Max(legSlew, WallPose.BlendSlew);
+                torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
+                slew = Mathf.Max(slew, WallPose.BlendSlew);
+            }
             if (_wallJumpPoseAge >= 0f && !(WallJumpPose.Settled(_wallJumpPoseAge) && jumpPoseOn))
             {
                 armSlewL = Mathf.Max(armSlewL, WallJumpPose.Slew);
@@ -15090,7 +15131,7 @@ namespace Tag.Art
             // Wider than the mantle gate above. Cling grace, the fall hold, and the
             // wall-jump beat own the body for the air-strafe lean. Mantle already sampled
             // the narrow wallOwns, so this write does not reopen that exit.
-            wallOwns = wallRun || climb || _graceBody || _wallFallHold || _jumpFromWall || _jumpFromClimb || wallJumpBeat;
+            wallOwns = wallRun || climb || _graceBody || _wallFallHold || _jumpFromWall || _jumpFromClimb || wallJumpBeat || _slideOffWant;
             bool dashOwns = airDashing || _dashPoseHeld;
             bool punchOwns = punching || _punchTelegraph > 0.02f || _aimTorsoW > 0.02f || flinchAmt > 0.04f;
             ApplyAirStrafeLean(armZ, speed, jumpPoseOn, dashOwns, wallOwns, grappleOwns, punchOwns, dt);
@@ -15104,6 +15145,7 @@ namespace Tag.Art
                 else
                     ApplyWallSample(WallPose.Run(Mathf.Sin(_surfPhase), _motor != null && _motor.WallLeft), armZ);
             }
+            ApplyClingSlideOff(armZ);
             TickWallJumpPose(armZ, grounded, mantle, sliding, punching, climb, wallRun, airDashing, jet, jumpPoseOn);
             if (_airStrafeLean > 0.02f)
             {
@@ -15300,6 +15342,45 @@ namespace Tag.Art
             if (stay <= 0.0001f) return to;
             float midShare = midW / stay;
             return Quaternion.Slerp(Quaternion.Slerp(from, mid, midShare), to, toW);
+        }
+
+        /// <summary>
+        /// Hands slide off when the motor refuses the same face. Grace, a grab, and a wall jump stay.
+        /// </summary>
+        void TickClingSlideOff(float dt, bool air, bool climb, bool wallRun, bool mantle)
+        {
+            bool punching = _punch != null && _punch.IsPunching;
+            bool lunging = _motor != null && _motor.IsLunging;
+            bool dashing = _motor != null && _motor.IsAirDashing;
+            bool jet = _motor != null && (_motor.Jetting || _motor.State == MoveState.Jet);
+            bool sliding = _motor != null && _motor.State == MoveState.Slide;
+            _slideOffWant = _motor != null && _motor.ClingRefused
+                && PoseAllowed(DummyPosePaths.Wall)
+                && air && !climb && !wallRun && !mantle && !_gracePose
+                && _wallJumpPoseAge < 0f
+                && !punching && !lunging && !dashing && !jet && !sliding
+                && (_input == null || !_input.CrouchHeld);
+            float step = dt / WallPose.ReleaseBlendSeconds;
+            _slideOffIn = Mathf.MoveTowards(_slideOffIn, _slideOffWant ? 1f : 0f, step);
+        }
+
+        void ApplyClingSlideOff(float armZ)
+        {
+            if (!_slideOffWant || _slideOffIn <= 0.001f) return;
+            if (_graceBody || _wallJumpPoseAge >= 0f) return;
+            WallPose.Sample off = WallPose.SlideOff();
+            float w = WallPose.Ease(_slideOffIn);
+            _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(off.ArmPitchL, off.ArmYawL, armZ), w);
+            _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(off.ArmPitchR, off.ArmYawR, -armZ), w);
+            _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(off.ElbowL, 0f, 0f), w);
+            _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(off.ElbowR, 0f, 0f), w);
+            _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(off.ThighL, 0f, 0f), w);
+            _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(off.ThighR, 0f, 0f), w);
+            _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(off.KneeL, 0f, 0f), w);
+            _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(off.KneeR, 0f, 0f), w);
+            _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(off.Spine, 0f, off.LeanZ), w);
+            _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(off.Hip, 0f, 0f), w);
+            _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(off.Head, 0f, 0f), w);
         }
 
         void ApplyWallSample(WallPose.Sample pose, float armZ)

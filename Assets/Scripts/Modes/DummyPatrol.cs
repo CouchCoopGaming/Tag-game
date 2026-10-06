@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Tag.Art;
 using Tag.Gameplay;
+using Tag.Level;
 using Tag.Trail;
 using TagArena.Movement;
 using UnityEngine;
@@ -13,6 +14,7 @@ namespace Tag.Modes
     /// The lunge lead is OpponentLungeTell.LeadSeconds and does not scale.
     /// Chase steering is OpponentChaseSteer: sprint outside the lunge band, air-strafe a corner,
     /// jump a gap only when speed and jump reach clear it, cling a wall on the line,
+    /// step on a launch pad only when that landing is closer to the target,
     /// and lunge only after that lead when the landing stays under the pawn. No grapple, air dash, or couch tool.
     /// Feeds TagArena PlayerMotor via PlayerInputReader.ExternalControl (no RB velocity fight).
     /// Trail Tag: samples nearby TrailSegments and blends a lateral flee wish into steering.
@@ -573,7 +575,9 @@ namespace Tag.Modes
             float dist = toBody.magnitude;
             float reach = EffectivePunchRange();
             bool grounded = _selfMotor == null || _selfMotor.IsGrounded;
-            bool wall = ProbeWallBetween(_target.transform.position, out Vector3 wallNormal, out float wallDist);
+            int wallId = 0;
+            Vector3 wallPoint = Vector3.zero;
+            bool wall = ProbeWallBetween(_target.transform.position, out Vector3 wallNormal, out float wallDist, out wallId, out wallPoint);
             bool wallCommit = wall && wallDist <= OpponentChaseSteer.ClingCommitMeters;
             if (wallCommit)
                 CancelLungeTell();
@@ -610,12 +614,23 @@ namespace Tag.Modes
             bool holdLine = _lungeTellT > 0f;
             bool arming = _lungeArm > 0f && grounded && !wallCommit && !lungeBlocked;
             bool gap = grounded && !holdLine && !arming && !wallCommit && gapShape;
+            bool padAhead = false;
+            Vector3 padAim = Vector3.zero;
+            float padDist = 999f;
+            bool padHelps = false;
+            if (grounded && !holdLine && !wallCommit && _target != null)
+            {
+                padAhead = LaunchPad.QueryChase(transform.position, velocity, _target.transform.position, grav, fallG,
+                    out padAim, out padDist, out padHelps);
+            }
+            if (padAhead && !padHelps && Mathf.Abs(measured.PathStrafe) < 0.2f)
+                measured.PathStrafe = SideRoute(rawAim.sqrMagnitude > 0.01f ? rawAim.normalized : transform.forward);
             Vector3 aim = rawAim;
             if (!wallCommit && !holdLine)
                 aim = BlendTrailAvoid(aim);
             // Weave only outside the lunge band. Inside it the 0.45 s tell needs the line held.
             // A measured gap keeps the line so the jump, the brake, or the side route is not woven off the lip.
-            if (!wallCommit && !gap && grounded && !holdLine && !arming && dist > farMeters)
+            if (!wallCommit && !gap && !padAhead && grounded && !holdLine && !arming && dist > farMeters)
                 aim = ApplyWeave(aim, dt, dist > closeChaseRange);
 
             OpponentChaseInput chase;
@@ -624,6 +639,7 @@ namespace Tag.Modes
             chase.BodyForward = transform.forward;
             chase.WallNormal = wall ? wallNormal : Vector3.zero;
             chase.WallDistance = wall ? wallDist : 999f;
+            chase.SameWallClosed = wall && _selfMotor != null && _selfMotor.WouldRefuseCling(wallId, wallNormal, wallPoint);
             chase.Grounded = grounded;
             chase.GapAhead = gap;
             chase.LungeCommit = arming;
@@ -637,6 +653,10 @@ namespace Tag.Modes
             chase.PathStrafe = measured.PathStrafe;
             chase.GroundDecel = decel;
             chase.LungeBlocked = lungeBlocked;
+            chase.PadAhead = padAhead;
+            chase.PadDistance = padDist;
+            chase.PadHelps = padHelps;
+            chase.PadAim = padAim;
 
             OpponentChaseWish wish = OpponentChaseSteer.Decide(chase);
             Vector3 face = wish.Face.sqrMagnitude > 0.001f ? wish.Face : aim;
@@ -696,8 +716,9 @@ namespace Tag.Modes
             _lungeGate -= dt;
             // Punch windup runs first, so a cocked fist blocks a new tell. The press itself
             // stays inside ConsumeChaseLunge, which waits out OpponentLungeTell.LeadSeconds.
-            bool lungePress = ConsumeChaseLunge(dt, dist, chaseAng, reach, lungeBlocked || wish.Verb == OpponentChaseVerb.GapJump);
-            if (wallCommit || lungeBlocked || wish.Verb == OpponentChaseVerb.GapJump)
+            bool padEdge = chase.PadAhead || wish.Verb == OpponentChaseVerb.PadTake;
+            bool lungePress = ConsumeChaseLunge(dt, dist, chaseAng, reach, lungeBlocked || wish.Verb == OpponentChaseVerb.GapJump || padEdge);
+            if (wallCommit || lungeBlocked || wish.Verb == OpponentChaseVerb.GapJump || padEdge)
             {
                 CancelLungeTell();
                 lungePress = false;
@@ -707,9 +728,12 @@ namespace Tag.Modes
             // Lip hop still uses the motor jump. A gap, a wall, and the lunge line do not.
             float chaseLip = ProbeAheadDeckDy(toBody.sqrMagnitude > 0.001f ? toBody : transform.forward);
             bool lip = ConsumeHop(Mathf.Max(chaseDy, chaseLip), dist, grounded, 0.7f, 9f);
+            if (padEdge)
+                lip = false;
             bool jump = wish.Jump && !lungePress;
             // A measured gap uses the reach test. The deck hop must not jump it anyway.
-            if (!jump && !gapShape && wish.Verb != OpponentChaseVerb.WallCling && wish.Verb != OpponentChaseVerb.Lunge
+            // A launch pad is its own edge. The jump button is not how the dummy takes it.
+            if (!jump && !gapShape && !padEdge && wish.Verb != OpponentChaseVerb.WallCling && wish.Verb != OpponentChaseVerb.Lunge
                 && wish.Verb != OpponentChaseVerb.AirStrafe && _lungeTellT <= 0f && _lungeArm <= 0f && !lungePress)
                 jump = lip;
             // Chase does not take air dash, grapple, ski, jet, or crouch. The motor steps the capsule.
@@ -907,10 +931,12 @@ namespace Tag.Modes
         /// <summary>
         /// A wall on the line to the target. The pawn capsule and the target body are not walls.
         /// </summary>
-        bool ProbeWallBetween(Vector3 targetPos, out Vector3 normal, out float distance)
+        bool ProbeWallBetween(Vector3 targetPos, out Vector3 normal, out float distance, out int colliderId, out Vector3 point)
         {
             normal = Vector3.zero;
             distance = 999f;
+            colliderId = 0;
+            point = Vector3.zero;
             Vector3 to = targetPos - transform.position;
             to.y = 0f;
             float dist = to.magnitude;
@@ -939,6 +965,8 @@ namespace Tag.Modes
                 return false;
             normal = hit.normal;
             distance = hit.distance;
+            colliderId = hit.collider != null ? hit.collider.GetInstanceID() : 0;
+            point = hit.point;
             return true;
         }
 

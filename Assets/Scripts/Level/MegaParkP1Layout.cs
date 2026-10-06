@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Text;
 
 namespace Tag.Level
@@ -16,6 +17,8 @@ namespace Tag.Level
     /// Vertical pass: slide and fort decks each have two ways down (chute, drop,
     /// spiral, crawl). The +5 tower stays on the slide rim. Motor numbers are not
     /// stored here and are not retuned.
+    /// Pass 4: collider matches the mesh, props sit flush, grapple faces stay on
+    /// a local approach, crossings clear a capsule, and launch pads land on a floor.
     /// </summary>
     public static class MegaParkP1Layout
     {
@@ -29,6 +32,16 @@ namespace Tag.Level
         public const float MantleMax = 2.55f;
         public const float BarUnderClear = 1.05f;
         public const float SpawnY = 0.2f;
+
+        // Play.unity Player CharacterController. Crossings clear this capsule.
+        // Step is the prefab value. A lip under this can be walked; a snag cannot.
+        public const float PawnRadius = 0.4f;
+        public const float PawnStep = 0.3f;
+        public const float PawnHeight = 1.8f;
+        public const float MeshMatch = 0.05f;
+        public const float GrappleRange = 28f;
+        const float RiseGravity = 22f;
+        const float FallGravity = 1.5f;
 
         // Equal arc on the 472 m loop (118 m). Corner waypoints stay put; these pads
         // are the starts. Every It sees runners at 118 / 118 / 236, so no corner is
@@ -249,6 +262,19 @@ namespace Tag.Level
             if (routeWhy != null)
                 fail.Append(routeWhy);
 
+            int failBeforeMesh = fail.Length;
+            float meshGap = ColliderVisualGap(solids, ramps, fail);
+            float groundErr = GroundError(solids, fail);
+            int failBeforePads = fail.Length;
+            int pads = PadReport(solids, fail);
+            bool padsLanded = fail.Length == failBeforePads;
+            int zips = ZipReport(fail);
+            GrappleReport(solids, fail);
+            CrossingReport(solids, ramps, fail);
+            SameWallReport(solids, fail);
+            if (fail.Length == failBeforeMesh && meshGap > MeshMatch)
+                fail.Append("collider mismatch ").Append(meshGap.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
+
             var audit = new Audit
             {
                 Ok = fail.Length == 0,
@@ -264,9 +290,10 @@ namespace Tag.Level
             };
             audit.Line = string.Format(
                 CultureInfo.InvariantCulture,
-                "MegaPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns 4+2; solids {3} grounded; cling walls {4}; vaults {5}; bar under-clear {6:0.00} m; crossings A+B open; routes {7}; rim {8}, max gap {9:0.00} m; {10}; {11}",
+                "MegaPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns 4+2; solids {3} grounded; cling walls {4}; vaults {5}; bar under-clear {6:0.00} m; crossings A+B open; routes {7}; rim {8}, max gap {9:0.00} m; {10}; {11}; collider mismatch {12:0.000} m; ground error {13:0.000} m; pads {14} {15}; zip slots {16}",
                 audit.LoopM, SprintSpeed, audit.Seconds, audit.SolidCount, audit.WallCount, audit.VaultCount, audit.BarClear,
-                audit.RouteCount, audit.RimContinuous ? "continuous" : "broken", audit.RimGapMax, levelNote, pairNote);
+                audit.RouteCount, audit.RimContinuous ? "continuous" : "broken", audit.RimGapMax, levelNote, pairNote,
+                meshGap, groundErr, pads, padsLanded ? "landed" : "miss", zips);
             audit.Failure = fail.ToString();
             return audit;
         }
@@ -399,6 +426,7 @@ namespace Tag.Level
             AddSwingLine(list);
             AddSightCover(list);
             AddRimRoute(list);
+            AddRoutePlates(list);
             return list.ToArray();
         }
 
@@ -446,12 +474,13 @@ namespace Tag.Level
             // Rim segments take the zone tint so a callout can name where you are.
             // Grapple plates stay orange, added by AddHook, and are not this tint.
             Add(list, "Rim_SoftN", "Z1", "block", "soft", 14.3f, 1f, 33.2f, 8.6f, 2f, 5.6f, 0f);
-            Add(list, "Rim_W1", "Z2", "block", "pad", 20f, 1.25f, 40.4f, 4f, 2.5f, 8f, 0f);
-            Add(list, "Rim_W2", "Z2", "block", "pad", 20f, 1.5f, 48.8f, 4f, 3f, 8f, 0f);
-            Add(list, "Rim_W3", "Z2", "block", "pad", 20f, 1.75f, 57.2f, 4f, 3.5f, 8f, 0f);
-            Add(list, "Rim_W4", "Z4", "block", "amber", 20f, 1.75f, 65.6f, 4f, 3.5f, 8f, 0f);
-            Add(list, "Rim_W5", "Z4", "block", "amber", 20f, 1.75f, 74f, 4f, 3.5f, 8f, 0f);
-            Add(list, "Rim_W6", "Z4", "block", "amber", 20f, 1.75f, 80.3f, 4f, 3.5f, 3.8f, 0f);
+            // East face at x=21.5 so a 0.40 m capsule in crossing B (x>=22) clears the corner.
+            Add(list, "Rim_W1", "Z2", "block", "pad", 20f, 1.25f, 40.4f, 3f, 2.5f, 8f, 0f);
+            Add(list, "Rim_W2", "Z2", "block", "pad", 20f, 1.5f, 48.8f, 3f, 3f, 8f, 0f);
+            Add(list, "Rim_W3", "Z2", "block", "pad", 20f, 1.75f, 57.2f, 3f, 3.5f, 8f, 0f);
+            Add(list, "Rim_W4", "Z4", "block", "amber", 20f, 1.75f, 65.6f, 3f, 3.5f, 8f, 0f);
+            Add(list, "Rim_W5", "Z4", "block", "amber", 20f, 1.75f, 74f, 3f, 3.5f, 8f, 0f);
+            Add(list, "Rim_W6", "Z4", "block", "amber", 20f, 1.75f, 80.3f, 3f, 3.5f, 3.8f, 0f);
             Add(list, "Rim_SlideIn", "Z4", "block", "amber", 29f, 1.75f, 81.2f, 13.6f, 3.5f, 2f, 0f);
             Add(list, "Rim_Link", "Z4", "block", "amber", 42.10f, 1.75f, 77.125f, 4.04f, 3.5f, 1.25f, 0f);
 
@@ -489,24 +518,100 @@ namespace Tag.Level
 
         public static Ramp[] BuildRamps()
         {
-            return new[]
-            {
-                RampOf("SandBank_W", "Z8", "sand", 46f, 0f, 50f, 50f, BowlFloorY, 50f, 32f),
-                RampOf("SandBank_E", "Z8", "sand", 78f, 0f, 50f, 74f, BowlFloorY, 50f, 32f),
-                RampOf("SandBank_S", "Z8", "sand", 62f, 0f, 34f, 62f, BowlFloorY, 38f, 32f),
-                RampOf("SandBank_N", "Z8", "sand", 62f, 0f, 66f, 62f, BowlFloorY, 62f, 32f),
-                RampOf("Slide_Chute1", "Z4", "yellow", 28f, 2f, 76f, 28f, 0f, 68f, 1.6f),
-                RampOf("Slide_Chute2", "Z4", "yellow", 38f, 3.5f, 77f, 38f, 0f, 68f, 1.6f),
-                RampOf("Slide_Chute3", "Z4", "yellow", 48f, 5f, 76f, 48f, 0f, 66f, 1.6f),
-                // Second way off the west +2 landing. Lands on the north lawn, in view of the bowl.
-                RampOf("Slide_ChuteL2", "Z4", "yellow", 24f, 2f, 76.5f, 24f, 0f, 69f, 1.2f),
-                // Fort decks. East of the spine, short of the x=152 loop.
-                RampOf("Slide_ArmyLo", "Z6", "yellow", 146.2f, 2f, 26.3f, 146.2f, 0f, 21.2f, 1.3f),
-                RampOf("Slide_ArmyHi", "Z6", "yellow", 148.2f, 3.7f, 29.5f, 148.2f, 0f, 34.8f, 1.3f),
-                RampOf("Slide_KnightLo", "Z6", "yellow", 146.2f, 2f, 69.6f, 146.2f, 0f, 63.6f, 1.3f),
-                RampOf("Slide_KnightHi", "Z6", "yellow", 148.2f, 3.7f, 71.1f, 148.2f, 0f, 76.6f, 1.3f),
-            };
+            var list = new List<Ramp>(120);
+            // Straight banks stop at the corner squares. Strips fill those squares
+            // so two slopes do not cross and leave a vertical lip.
+            list.Add(RampOf("SandBank_W", "Z8", "sand", 46f, 0f, 50f, 50f, BowlFloorY, 50f, 24f));
+            list.Add(RampOf("SandBank_E", "Z8", "sand", 78f, 0f, 50f, 74f, BowlFloorY, 50f, 24f));
+            list.Add(RampOf("SandBank_S", "Z8", "sand", 62f, 0f, 34f, 62f, BowlFloorY, 38f, 24f));
+            list.Add(RampOf("SandBank_N", "Z8", "sand", 62f, 0f, 66f, 62f, BowlFloorY, 62f, 24f));
+            AddSandCorners(list);
+            list.Add(RampOf("Slide_Chute1", "Z4", "yellow", 28f, 2f, 76f, 28f, 0f, 68f, 1.6f));
+            list.Add(RampOf("Slide_Chute2", "Z4", "yellow", 38f, 3.5f, 77f, 38f, 0f, 68f, 1.6f));
+            list.Add(RampOf("Slide_Chute3", "Z4", "yellow", 48f, 5f, 76f, 48f, 0f, 66f, 1.6f));
+            list.Add(RampOf("Slide_ChuteL2", "Z4", "yellow", 24f, 2f, 76.5f, 24f, 0f, 69f, 1.2f));
+            list.Add(RampOf("Slide_ArmyLo", "Z6", "yellow", 146.2f, 2f, 26.3f, 146.2f, 0f, 21.2f, 1.3f));
+            list.Add(RampOf("Slide_ArmyHi", "Z6", "yellow", 148.2f, 3.7f, 29.5f, 148.2f, 0f, 34.8f, 1.3f));
+            list.Add(RampOf("Slide_KnightLo", "Z6", "yellow", 146.2f, 2f, 69.6f, 146.2f, 0f, 63.6f, 1.3f));
+            list.Add(RampOf("Slide_KnightHi", "Z6", "yellow", 148.2f, 3.7f, 71.1f, 148.2f, 0f, 76.6f, 1.3f));
+            return list.ToArray();
         }
+
+        static void AddSandCorners(List<Ramp> list)
+        {
+            AddCornerStrips(list, "SW", 46f, 50f, 34f, 38f);
+            AddCornerStrips(list, "SE", 78f, 74f, 34f, 38f);
+            AddCornerStrips(list, "NW", 46f, 50f, 66f, 62f);
+            AddCornerStrips(list, "NE", 78f, 74f, 66f, 62f);
+        }
+
+        // Bilinear bowl corner, sliced into strips. Neighboring strips differ by 1/25 m
+        // at the inner edge, under the 0.05 m mesh match.
+        static void AddCornerStrips(List<Ramp> list, string id, float outerX, float innerX, float outerZ, float innerZ)
+        {
+            const int n = 25;
+            float spanZ = innerZ - outerZ;
+            float w = Math.Abs(spanZ) / n;
+            for (int i = 0; i < n; i++)
+            {
+                float v = (i + 0.5f) / n;
+                float z = outerZ + spanZ * v;
+                string name = "SandCorner_" + id + "_" + i.ToString(CultureInfo.InvariantCulture);
+                list.Add(RampOf(name, "Z8", "sand", outerX, 0f, z, innerX, -v, z, w));
+            }
+        }
+
+        static void AddRoutePlates(List<Solid> list)
+        {
+            // Cling chain ends on the east lane. The deck is the grapple off that face
+            // so the pawn does not have to regrab the last wall.
+            Add(list, "Cling_ExitDeck", "Z2", "block", "pad", 28f, 1f, 34f, 3.2f, 2f, 3f, 0f);
+            Add(list, "Hook_Cling_Exit", "Z2", "anchor", "plate", 26.55f, 3f, 34f, 0.3f, 2f, 2.2f, 2f);
+
+            // Bar mantle line stops. Plate on the west lip of a deck past the last bay.
+            Add(list, "Bar_EndDeck", "Z9", "block", "concrete", 122f, 1f, 24f, 3.2f, 2f, 3.2f, 0f);
+            Add(list, "Hook_Bar_End", "Z9", "anchor", "plate", 120.55f, 3f, 24f, 0.3f, 2f, 2.4f, 2f);
+
+            // The elevated rim ends at the crawls, short of the fort decks.
+            Add(list, "Hook_Army_West", "Z6", "anchor", "plate", 145.75f, 3f, 28.8f, 0.3f, 2f, 1.6f, 2f);
+            Add(list, "Hook_Knight_West", "Z6", "anchor", "plate", 145.75f, 3f, 71.8f, 0.3f, 2f, 1.6f, 2f);
+        }
+
+        public struct PadSpot
+        {
+            public string Name;
+            public float X, Y, Z, Apex, DirX, DirZ, Speed;
+        }
+
+        public struct ZipMark
+        {
+            public string Name;
+            public float X, Y, Z;
+        }
+
+        // Each pad sets a horizontal. Landing is the continuous return to pad height.
+        public static readonly PadSpot[] LaunchPads =
+        {
+            new PadSpot { Name = "Launch_CrossB", X = 34f, Y = 0f, Z = 42.75f, Apex = 4f, DirX = 0f, DirZ = 1f, Speed = 10f },
+            new PadSpot { Name = "Launch_FortGap", X = 140f, Y = 0f, Z = 39.5f, Apex = 5f, DirX = 0f, DirZ = 1f, Speed = 13.5f },
+            new PadSpot { Name = "Launch_ClingEast", X = 14f, Y = 0f, Z = 38f, Apex = 3.5f, DirX = 1f, DirZ = 0f, Speed = 10f },
+            new PadSpot { Name = "Launch_HopArmy", X = 126f, Y = 0f, Z = 18f, Apex = 3f, DirX = 0f, DirZ = 1f, Speed = 7.5f },
+            new PadSpot { Name = "Launch_KickWest", X = 108f, Y = 0f, Z = 40f, Apex = 3.5f, DirX = -1f, DirZ = 0f, Speed = 12f },
+        };
+
+        public static readonly ZipMark[] ZipSlots =
+        {
+            new ZipMark { Name = "ZipLineSlot_WestRim_A", X = 20f, Y = 4.2f, Z = 48.8f },
+            new ZipMark { Name = "ZipLineSlot_WestRim_B", X = 20f, Y = 4.6f, Z = 74f },
+            new ZipMark { Name = "ZipLineSlot_Fort_A", X = 140f, Y = 4.4f, Z = 28f },
+            new ZipMark { Name = "ZipLineSlot_Fort_B", X = 140f, Y = 4.4f, Z = 71.2f },
+            new ZipMark { Name = "ZipLineSlot_Bars_A", X = 50f, Y = 3.2f, Z = 28f },
+            new ZipMark { Name = "ZipLineSlot_Bars_B", X = 104f, Y = 3.2f, Z = 28f },
+            new ZipMark { Name = "ZipLineSlot_Bowl_A", X = 44f, Y = 3.4f, Z = 50f },
+            new ZipMark { Name = "ZipLineSlot_Bowl_B", X = 80f, Y = 3.4f, Z = 50f },
+            new ZipMark { Name = "ZipLineSlot_NorthRim_A", X = 72f, Y = 4.6f, Z = 77f },
+            new ZipMark { Name = "ZipLineSlot_NorthRim_B", X = 112f, Y = 4.2f, Z = 72.7f },
+        };
 
         static void AddSwing(List<Solid> list, float x)
         {
@@ -778,11 +883,16 @@ namespace Tag.Level
                 why = "ramp is degenerate";
                 return false;
             }
-            if (r.Y0 > r.Y1)
+            bool corner = r.Name.StartsWith("SandCorner_", StringComparison.Ordinal);
+            if (corner)
             {
-                // Endpoints are unordered. Both ends must be a floor height or a tower top.
+                if (r.Y0 > 0.03f || r.Y1 < BowlFloorY - 0.03f || r.Y1 > 0.03f)
+                {
+                    why = "corner strip left the bowl";
+                    return false;
+                }
             }
-            if (!RampEndSupported(r.X0, r.Y0, r.Z0, solids) || !RampEndSupported(r.X1, r.Y1, r.Z1, solids))
+            else if (!RampEndSupported(r.X0, r.Y0, r.Z0, solids) || !RampEndSupported(r.X1, r.Y1, r.Z1, solids))
             {
                 why = "ramp end is floating";
                 return false;
@@ -1735,6 +1845,687 @@ namespace Tag.Level
             if (a1 < b0) return b0 - a1;
             if (b1 < a0) return a0 - b1;
             return 0f;
+        }
+
+        static string ReadText(string path)
+        {
+            if (!File.Exists(path)) return null;
+            return File.ReadAllText(path);
+        }
+
+        static float ColliderVisualGap(Solid[] solids, Ramp[] ramps, StringBuilder fail)
+        {
+            float max = 0f;
+            string boot = ReadText("Assets/Scripts/Level/MegaParkP1Bootstrap.cs");
+            if (boot == null
+                || boot.IndexOf("localScale = new Vector3(s.Sx, s.Sy, s.Sz)", StringComparison.Ordinal) < 0
+                || boot.IndexOf("CreatePrimitive(PrimitiveType.Cube)", StringComparison.Ordinal) < 0)
+            {
+                fail.Append("solid mesh is not the collider cube; ");
+                max = 1f;
+            }
+            if (boot == null || boot.IndexOf("DestroyImmediate(col)", StringComparison.Ordinal) < 0)
+            {
+                fail.Append("paint kept a collider; ");
+                max = 1f;
+            }
+
+            string padSrc = ReadText("Assets/Scripts/Level/LaunchPad.cs");
+            if (padSrc == null
+                || padSrc.IndexOf("localScale = new Vector3(1.6f, 0.12f, 1.6f)", StringComparison.Ordinal) < 0
+                || padSrc.IndexOf("box.size = new Vector3(1.6f, 0.12f, 1.6f)", StringComparison.Ordinal) < 0)
+            {
+                fail.Append("launch pad slab does not match its collider; ");
+                max = 1f;
+            }
+            else
+            {
+                // Glow is a decal on the slab. It may rise above the box, not past the match.
+                float glowOver = (0.13f + 0.02f) - (0.06f + 0.06f);
+                if (glowOver > max) max = glowOver;
+                if (glowOver > MeshMatch)
+                    fail.Append("launch pad glow overhang; ");
+            }
+
+            float seam = SandSeamLip(ramps);
+            if (seam > max) max = seam;
+            if (seam > MeshMatch)
+                fail.Append("sand seam lip ").Append(seam.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
+
+            for (int i = 0; i < ramps.Length; i++)
+            {
+                Ramp r = ramps[i];
+                if (r.Name.StartsWith("Sand", StringComparison.Ordinal)) continue;
+                float gap = Math.Max(RampEndGap(r.X0, r.Y0, r.Z0, solids), RampEndGap(r.X1, r.Y1, r.Z1, solids));
+                if (gap > max) max = gap;
+                if (gap > MeshMatch)
+                    fail.Append(r.Name).Append(" end gap ").Append(gap.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
+            }
+
+            float lip = NeighborLip(solids);
+            if (lip > max) max = lip;
+            if (lip > MeshMatch)
+                fail.Append("snag lip ").Append(lip.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
+            return max;
+        }
+
+        static float SandSeamLip(Ramp[] ramps)
+        {
+            float max = 0f;
+            for (int i = 0; i < ramps.Length; i++)
+            {
+                if (!ramps[i].Name.StartsWith("SandCorner_", StringComparison.Ordinal)) continue;
+                for (int j = i + 1; j < ramps.Length; j++)
+                {
+                    if (!ramps[j].Name.StartsWith("SandCorner_", StringComparison.Ordinal)) continue;
+                    if (!SameCorner(ramps[i].Name, ramps[j].Name)) continue;
+                    float dz = Math.Abs(ramps[i].Z0 - ramps[j].Z0);
+                    if (dz > ramps[i].Width + 0.001f) continue;
+                    float lip = Math.Abs(ramps[i].Y1 - ramps[j].Y1);
+                    if (lip > max) max = lip;
+                }
+            }
+            return max;
+        }
+
+        static bool SameCorner(string a, string b)
+        {
+            int ia = a.LastIndexOf('_');
+            int ib = b.LastIndexOf('_');
+            if (ia < 0 || ib < 0) return false;
+            return string.CompareOrdinal(a, 0, b, 0, ia) == 0 && ia == ib;
+        }
+
+        static float RampEndGap(float x, float y, float z, Solid[] solids)
+        {
+            float best = Math.Min(Math.Abs(y), Math.Abs(y - BowlFloorY));
+            for (int i = 0; i < solids.Length; i++)
+            {
+                if (DistXZ(x, z, solids[i]) > 0.5f) continue;
+                float top = solids[i].Y + solids[i].Sy * 0.5f;
+                float d = Math.Abs(top - y);
+                if (d < best) best = d;
+            }
+            return best;
+        }
+
+        // A short solid sitting on another, sticking out by less than the capsule radius,
+        // is a toe lip. A full ledge (overhang past the radius) is a step you can use.
+        static float NeighborLip(Solid[] solids)
+        {
+            float max = 0f;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid a = solids[i];
+                if (a.Kind == "ground" || a.Kind == "fence" || a.Kind == "wall" || a.Kind == "anchor") continue;
+                float aBottom = a.Y - a.Sy * 0.5f;
+                float h = a.Sy;
+                if (h <= MeshMatch || h > PawnStep) continue;
+                float a0 = a.X - a.Sx * 0.5f;
+                float a1 = a.X + a.Sx * 0.5f;
+                float az0 = a.Z - a.Sz * 0.5f;
+                float az1 = a.Z + a.Sz * 0.5f;
+                for (int j = 0; j < solids.Length; j++)
+                {
+                    if (i == j) continue;
+                    Solid b = solids[j];
+                    if (b.Kind == "ground" || b.Kind == "fence") continue;
+                    float bTop = b.Y + b.Sy * 0.5f;
+                    if (Math.Abs(aBottom - bTop) > 0.03f) continue;
+                    float b0 = b.X - b.Sx * 0.5f;
+                    float b1 = b.X + b.Sx * 0.5f;
+                    float bz0 = b.Z - b.Sz * 0.5f;
+                    float bz1 = b.Z + b.Sz * 0.5f;
+                    float ox = Overlap1D(a.X, a.Sx, b.X, b.Sx);
+                    float oz = Overlap1D(a.Z, a.Sz, b.Z, b.Sz);
+                    if (oz > 0.05f)
+                    {
+                        float over = Math.Max(b0 - a0, a1 - b1);
+                        if (over > MeshMatch && over < PawnRadius && h > max) max = h;
+                    }
+                    if (ox > 0.05f)
+                    {
+                        float over = Math.Max(bz0 - az0, az1 - bz1);
+                        if (over > MeshMatch && over < PawnRadius && h > max) max = h;
+                    }
+                }
+            }
+            return max;
+        }
+
+        static float GroundError(Solid[] solids, StringBuilder fail)
+        {
+            float max = 0f;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (s.Kind == "ground" || s.Kind == "fence") continue;
+                float bottom = s.Y - s.Sy * 0.5f;
+                float err = Math.Abs(bottom - s.SupportY);
+                if (err > max) max = err;
+                if (err > 0.02f)
+                    fail.Append(s.Name).Append(" base error ").Append(err.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
+            }
+            if (LaunchPads != null)
+            {
+                for (int i = 0; i < LaunchPads.Length; i++)
+                {
+                    PadSpot p = LaunchPads[i];
+                    float surf = FloorAt(solids, p.X, p.Z);
+                    float err = Math.Abs(p.Y - surf);
+                    if (err > max) max = err;
+                    if (err > 0.02f)
+                        fail.Append(p.Name).Append(" pad float ").Append(err.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
+                }
+            }
+            return max;
+        }
+
+        static float FloorAt(Solid[] solids, float x, float z)
+        {
+            float best = BowlCut(x, z) ? BowlFloorY : 0f;
+            float bestTop = -999f;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (s.Kind == "fence" || s.Kind == "wall" || s.Kind == "anchor" || s.Kind == "bar" || s.Kind == "post")
+                    continue;
+                if (DistXZ(x, z, s) > 0.01f) continue;
+                float top = s.Y + s.Sy * 0.5f;
+                if (s.Kind == "ground")
+                {
+                    if (top > bestTop) { bestTop = top; best = top; }
+                    continue;
+                }
+                if (s.Sx < 1f || s.Sz < 1f) continue;
+                if (top > bestTop) { bestTop = top; best = top; }
+            }
+            return best;
+        }
+
+        static bool BowlCut(float x, float z)
+        {
+            return x > 46.2f && x < 77.8f && z > 34.2f && z < 65.8f;
+        }
+
+        static int PadReport(Solid[] solids, StringBuilder fail)
+        {
+            if (LaunchPads == null || LaunchPads.Length < 4 || LaunchPads.Length > 6)
+            {
+                fail.Append("launch pads want 4-6; ");
+                return LaunchPads == null ? 0 : LaunchPads.Length;
+            }
+            string scene = ReadText("Assets/Scenes/Play.unity");
+            string boot = ReadText("Assets/Scripts/Level/MegaParkP1Bootstrap.cs");
+            if (scene == null || scene.IndexOf("d5b92f3c8a1e4f7b0c4d6e9f2a3b5c71", StringComparison.Ordinal) < 0
+                || boot == null || boot.IndexOf("Instantiate(launchPadPrefab", StringComparison.Ordinal) < 0)
+                fail.Append("launch pads are not Assets/Prefabs/LaunchPad.prefab instances; ");
+
+            var names = new HashSet<string>();
+            for (int i = 0; i < LaunchPads.Length; i++)
+            {
+                PadSpot p = LaunchPads[i];
+                if (!names.Add(p.Name))
+                    fail.Append(p.Name).Append(" duplicated; ");
+                float mag = (float)Math.Sqrt(p.DirX * p.DirX + p.DirZ * p.DirZ);
+                if (p.Apex < 2f || p.Speed < 4f || mag < 0.5f)
+                {
+                    fail.Append(p.Name).Append(" has no launch; ");
+                    continue;
+                }
+                if (PadBuried(solids, p.X, p.Z, p.Y))
+                    fail.Append(p.Name).Append(" starts inside a solid; ");
+                float hang = Hang(p.Apex);
+                float lx = p.X + p.DirX / mag * p.Speed * hang;
+                float lz = p.Z + p.DirZ / mag * p.Speed * hang;
+                float euclid = DistPoint(p.X, p.Z, lx, lz);
+                if (euclid < 6f || euclid > 22f)
+                    fail.Append(p.Name).Append(" hop ").Append(euclid.ToString("0.00", CultureInfo.InvariantCulture)).Append(" m; ");
+                if (!LandingOk(solids, lx, lz, p.Y))
+                    fail.Append(p.Name).Append(" landing misses a floor; ");
+                if (ArcHits(solids, p, mag, hang))
+                    fail.Append(p.Name).Append(" arc clips a solid; ");
+                if (LoopShortcut(p.X, p.Z, lx, lz))
+                    fail.Append(p.Name).Append(" shortcuts the loop; ");
+            }
+            return LaunchPads.Length;
+        }
+
+        static bool PadBuried(Solid[] solids, float x, float z, float y)
+        {
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (s.Kind == "ground" || s.Kind == "fence") continue;
+                if (DistXZ(x, z, s) > 0.5f) continue;
+                float bottom = s.Y - s.Sy * 0.5f;
+                float top = s.Y + s.Sy * 0.5f;
+                if (bottom < y + 0.2f && top > y + 0.08f)
+                    return true;
+            }
+            return false;
+        }
+
+        static bool LandingOk(Solid[] solids, float x, float z, float y)
+        {
+            if (!FloorMatches(solids, x, z, y)) return false;
+            float r = 0.45f;
+            if (!FloorMatches(solids, x + r, z, y)) return false;
+            if (!FloorMatches(solids, x - r, z, y)) return false;
+            if (!FloorMatches(solids, x, z + r, y)) return false;
+            if (!FloorMatches(solids, x, z - r, y)) return false;
+            return true;
+        }
+
+        static bool FloorMatches(Solid[] solids, float x, float z, float y)
+        {
+            if (x < 1f || z < 1f || x > MapW - 1f || z > MapD - 1f) return false;
+            if (Occupies(solids, x, z, y)) return false;
+            if (!BowlCut(x, z) && Math.Abs(y) <= 0.2f) return true;
+            if (BowlCut(x, z) && Math.Abs(y - BowlFloorY) <= 0.2f) return true;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (s.Sx < 1.2f || s.Sz < 1.2f) continue;
+                if (s.Kind == "ground" || s.Kind == "fence" || s.Kind == "wall" || s.Kind == "anchor") continue;
+                if (DistXZ(x, z, s) > 0.2f) continue;
+                float top = s.Y + s.Sy * 0.5f;
+                if (Math.Abs(top - y) <= 0.15f) return true;
+            }
+            return false;
+        }
+
+        static bool Occupies(Solid[] solids, float x, float z, float y)
+        {
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (s.Kind == "ground" || s.Kind == "fence") continue;
+                if (DistXZ(x, z, s) > 0.01f) continue;
+                float bottom = s.Y - s.Sy * 0.5f;
+                float top = s.Y + s.Sy * 0.5f;
+                if (bottom < y + 0.05f && top > y + 0.08f) return true;
+            }
+            return false;
+        }
+
+        static bool ArcHits(Solid[] solids, PadSpot p, float mag, float hang)
+        {
+            float ux = p.DirX / mag;
+            float uz = p.DirZ / mag;
+            for (int s = 1; s < 24; s++)
+            {
+                float t = hang * s / 24f;
+                if (t > hang - 0.05f) break;
+                float x = p.X + ux * p.Speed * t;
+                float z = p.Z + uz * p.Speed * t;
+                float y = ArcY(p.Y, p.Apex, t);
+                if (Occupies(solids, x, z, y - 0.2f)) return true;
+            }
+            return false;
+        }
+
+        static float Hang(float apex)
+        {
+            float vy = (float)Math.Sqrt(2f * RiseGravity * apex);
+            float tUp = vy / RiseGravity;
+            float tDown = (float)Math.Sqrt(2f * apex / (RiseGravity * FallGravity));
+            return tUp + tDown;
+        }
+
+        static float ArcY(float y0, float apex, float t)
+        {
+            float vy = (float)Math.Sqrt(2f * RiseGravity * apex);
+            float tUp = vy / RiseGravity;
+            if (t <= tUp)
+                return y0 + vy * t - 0.5f * RiseGravity * t * t;
+            float td = t - tUp;
+            return y0 + apex - 0.5f * RiseGravity * FallGravity * td * td;
+        }
+
+        static bool LoopShortcut(float x0, float z0, float x1, float z1)
+        {
+            float latA, latB;
+            float ta = ProjectLoop(x0, z0, out latA);
+            float tb = ProjectLoop(x1, z1, out latB);
+            float arc = Math.Abs(ta - tb);
+            if (arc > LoopLengthM * 0.5f) arc = LoopLengthM - arc;
+            return latA < 10f && latB < 10f && arc > 40f;
+        }
+
+        static int ZipReport(StringBuilder fail)
+        {
+            if (ZipSlots == null || ZipSlots.Length < 8 || ZipSlots.Length > 12 || (ZipSlots.Length % 2) != 0)
+            {
+                fail.Append("zip slots want 4-6 pairs; ");
+                return ZipSlots == null ? 0 : ZipSlots.Length / 2;
+            }
+            string boot = ReadText("Assets/Scripts/Level/MegaParkP1Bootstrap.cs");
+            if (boot == null || boot.IndexOf("new GameObject(z.Name)", StringComparison.Ordinal) < 0)
+                fail.Append("zip slots are not empty markers; ");
+            var seen = new HashSet<string>();
+            int pairs = 0;
+            for (int i = 0; i < ZipSlots.Length; i++)
+            {
+                ZipMark z = ZipSlots[i];
+                if (!seen.Add(z.Name))
+                    fail.Append(z.Name).Append(" duplicated; ");
+                bool a = z.Name.EndsWith("_A", StringComparison.Ordinal);
+                bool b = z.Name.EndsWith("_B", StringComparison.Ordinal);
+                if (!a && !b)
+                    fail.Append(z.Name).Append(" is not an A/B end; ");
+                if (!a) continue;
+                string other = z.Name.Substring(0, z.Name.Length - 2) + "_B";
+                bool found = false;
+                for (int j = 0; j < ZipSlots.Length; j++)
+                {
+                    if (ZipSlots[j].Name != other) continue;
+                    found = true;
+                    pairs++;
+                    float d = DistPoint(z.X, z.Z, ZipSlots[j].X, ZipSlots[j].Z);
+                    if (d < 8f || d > 55f)
+                        fail.Append(z.Name).Append(" span ").Append(d.ToString("0.0", CultureInfo.InvariantCulture)).Append("; ");
+                    if (LoopShortcut(z.X, z.Z, ZipSlots[j].X, ZipSlots[j].Z))
+                        fail.Append(z.Name).Append(" would skip the loop; ");
+                }
+                if (!found)
+                    fail.Append(other).Append(" missing; ");
+            }
+            if (pairs < 4 || pairs > 6)
+                fail.Append("zip pairs ").Append(pairs.ToString(CultureInfo.InvariantCulture)).Append("; ");
+            return pairs;
+        }
+
+        static void GrappleReport(Solid[] solids, StringBuilder fail)
+        {
+            int plates = 0;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (!s.Name.StartsWith("Hook_", StringComparison.Ordinal)) continue;
+                plates++;
+                if (s.Mat != "plate" || s.Kind != "anchor")
+                    fail.Append(s.Name).Append(" is not an orange plate; ");
+                float thin = Math.Min(s.Sx, s.Sz);
+                float wide = Math.Max(s.Sx, s.Sz);
+                if (thin > 0.45f || wide < 1.1f)
+                    fail.Append(s.Name).Append(" is not a planar face; ");
+                if (!PlateOnDeck(solids, s))
+                    fail.Append(s.Name).Append(" is off its deck; ");
+                if (!HasApproach(solids, s))
+                    fail.Append(s.Name).Append(" has no approach; ");
+                if (PlateSkipsLoop(solids, s))
+                    fail.Append(s.Name).Append(" shortcuts the loop; ");
+            }
+            if (plates < 10)
+                fail.Append("grapple plates are thin; ");
+        }
+
+        static bool PlateOnDeck(Solid[] solids, Solid plate)
+        {
+            float bottom = plate.Y - plate.Sy * 0.5f;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid d = solids[i];
+                if (d.Name == plate.Name) continue;
+                float top = d.Y + d.Sy * 0.5f;
+                if (Math.Abs(top - bottom) > 0.03f) continue;
+                if (OverlapXZ(plate, d, 0.02f)) return true;
+            }
+            return false;
+        }
+
+        static bool HasApproach(Solid[] solids, Solid plate)
+        {
+            for (float x = plate.X - 18f; x <= plate.X + 18f; x += 3f)
+            {
+                for (float z = plate.Z - 18f; z <= plate.Z + 18f; z += 3f)
+                {
+                    float dx = x - plate.X;
+                    float dz = z - plate.Z;
+                    float dist = (float)Math.Sqrt(dx * dx + dz * dz);
+                    if (dist < 4f || dist > 16f) continue;
+                    float stand;
+                    if (!TryStand(solids, x, z, out stand)) continue;
+                    if (SeesPlate(solids, plate, x, stand + 1.6f, z)) return true;
+                }
+            }
+            return false;
+        }
+
+        static bool TryStand(Solid[] solids, float x, float z, out float y)
+        {
+            y = 0f;
+            if (x < 1f || z < 1f || x > MapW - 1f || z > MapD - 1f) return false;
+            float deck = -999f;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (DistXZ(x, z, s) > 0.05f) continue;
+                float top = s.Y + s.Sy * 0.5f;
+                float bottom = s.Y - s.Sy * 0.5f;
+                if (s.Kind == "wall" || s.Kind == "fence" || s.Kind == "anchor" || s.Kind == "bar" || s.Kind == "post")
+                {
+                    if (top > 0.5f && bottom < 1.5f) return false;
+                    continue;
+                }
+                if (s.Kind == "ground" || s.Kind == "toy") continue;
+                if (s.Sx < 1.1f || s.Sz < 1.1f) continue;
+                float inset = EdgeInset(x, z, s);
+                if (inset < 0.3f) continue;
+                if (top > deck) deck = top;
+            }
+            if (deck > -100f)
+            {
+                y = deck;
+                return true;
+            }
+            if (BowlCut(x, z))
+            {
+                y = BowlFloorY;
+                return true;
+            }
+            y = 0f;
+            return true;
+        }
+
+        static float EdgeInset(float x, float z, Solid s)
+        {
+            float ix = s.Sx * 0.5f - Math.Abs(x - s.X);
+            float iz = s.Sz * 0.5f - Math.Abs(z - s.Z);
+            return Math.Min(ix, iz);
+        }
+
+        static bool SeesPlate(Solid[] solids, Solid plate, float x, float y, float z)
+        {
+            float best = 2f;
+            string who = null;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (s.Kind == "ground" || s.Kind == "fence") continue;
+                float t;
+                if (!SegmentHit(s, x, y, z, plate.X, plate.Y, plate.Z, out t)) continue;
+                if (t < 0.02f || t >= best) continue;
+                best = t;
+                who = s.Name;
+            }
+            if (who == null) return false;
+            if (who == plate.Name) return true;
+            return false;
+        }
+
+        static bool SegmentHit(Solid s, float x0, float y0, float z0, float x1, float y1, float z1, out float tEnter)
+        {
+            tEnter = 0f;
+            float tmin = 0f;
+            float tmax = 1f;
+            if (!Slab(x0, x1 - x0, s.X - s.Sx * 0.5f, s.X + s.Sx * 0.5f, ref tmin, ref tmax)) return false;
+            if (!Slab(y0, y1 - y0, s.Y - s.Sy * 0.5f, s.Y + s.Sy * 0.5f, ref tmin, ref tmax)) return false;
+            if (!Slab(z0, z1 - z0, s.Z - s.Sz * 0.5f, s.Z + s.Sz * 0.5f, ref tmin, ref tmax)) return false;
+            if (tmax < tmin || tmax < 0f || tmin > 1f) return false;
+            tEnter = tmin < 0f ? 0f : tmin;
+            return true;
+        }
+
+        static bool Slab(float origin, float dir, float min, float max, ref float tmin, ref float tmax)
+        {
+            if (Math.Abs(dir) < 1e-8f)
+                return origin >= min && origin <= max;
+            float inv = 1f / dir;
+            float t0 = (min - origin) * inv;
+            float t1 = (max - origin) * inv;
+            if (t0 > t1)
+            {
+                float swap = t0;
+                t0 = t1;
+                t1 = swap;
+            }
+            if (t0 > tmin) tmin = t0;
+            if (t1 < tmax) tmax = t1;
+            return tmin <= tmax;
+        }
+
+        static bool PlateSkipsLoop(Solid[] solids, Solid plate)
+        {
+            float t0 = 0f;
+            for (int i = 0; i < LoopCcw.Length; i++)
+            {
+                Pt a = LoopCcw[i];
+                Pt b = LoopCcw[(i + 1) % LoopCcw.Length];
+                float dx = b.X - a.X;
+                float dz = b.Z - a.Z;
+                float seg = (float)Math.Sqrt(dx * dx + dz * dz);
+                int steps = Math.Max(1, (int)Math.Round(seg / 8f));
+                for (int s = 0; s <= steps; s++)
+                {
+                    float u = s / (float)steps;
+                    float x = a.X + dx * u;
+                    float z = a.Z + dz * u;
+                    float dist = DistPoint(x, z, plate.X, plate.Z);
+                    if (dist > GrappleRange || dist < 18f) continue;
+                    float lat;
+                    float tp = ProjectLoop(plate.X, plate.Z, out lat);
+                    float arc = Math.Abs((t0 + seg * u) - tp);
+                    if (arc > LoopLengthM * 0.5f) arc = LoopLengthM - arc;
+                    if (arc < 80f) continue;
+                    if (SeesPlate(solids, plate, x, 1.6f, z)) return true;
+                }
+                t0 += seg;
+            }
+            return false;
+        }
+
+        static void CrossingReport(Solid[] solids, Ramp[] ramps, StringBuilder fail)
+        {
+            // Crossing A is the open bowl. Crossing B is the merry band.
+            // A capsule center inside either rect must clear every solid.
+            if (InflatedHits(solids, 52f, 72f, 40f, 58f))
+                fail.Append("crossing A snags the capsule; ");
+            if (InflatedHits(solids, 22f, 46f, 44f, 52f))
+                fail.Append("crossing B snags the capsule; ");
+            if (!MouthClear(solids, 34f, 42.2f, 34f, 55f))
+                fail.Append("crossing B mouth is blocked; ");
+            if (!MouthClear(solids, 42f, 50f, 62f, 50f))
+                fail.Append("crossing A west mouth is blocked; ");
+            if (!MouthClear(solids, 70f, 50f, 82f, 50f))
+                fail.Append("crossing A east mouth is blocked; ");
+            if (!MouthClear(solids, 62f, 30f, 62f, 44f))
+                fail.Append("crossing A south mouth is blocked; ");
+            if (!MouthClear(solids, 62f, 56f, 62f, 70f))
+                fail.Append("crossing A north mouth is blocked; ");
+            if (!BankContinuous(ramps))
+                fail.Append("bowl banks leave a corner lip; ");
+        }
+
+        static bool InflatedHits(Solid[] solids, float x0, float x1, float z0, float z1)
+        {
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (s.Kind == "ground" || s.Kind == "fence") continue;
+                float top = s.Y + s.Sy * 0.5f;
+                if (top < PawnStep) continue;
+                float minX = s.X - s.Sx * 0.5f - PawnRadius;
+                float maxX = s.X + s.Sx * 0.5f + PawnRadius;
+                float minZ = s.Z - s.Sz * 0.5f - PawnRadius;
+                float maxZ = s.Z + s.Sz * 0.5f + PawnRadius;
+                if (minX < x1 && maxX > x0 && minZ < z1 && maxZ > z0)
+                    return true;
+            }
+            return false;
+        }
+
+        static bool MouthClear(Solid[] solids, float x0, float z0, float x1, float z1)
+        {
+            for (int s = 0; s <= 8; s++)
+            {
+                float u = s / 8f;
+                float x = x0 + (x1 - x0) * u;
+                float z = z0 + (z1 - z0) * u;
+                for (int i = 0; i < solids.Length; i++)
+                {
+                    Solid b = solids[i];
+                    if (b.Kind == "ground" || b.Kind == "fence") continue;
+                    float top = b.Y + b.Sy * 0.5f;
+                    if (top < PawnStep) continue;
+                    if (DistXZ(x, z, b) < PawnRadius) return false;
+                }
+            }
+            return true;
+        }
+
+        static bool BankContinuous(Ramp[] ramps)
+        {
+            int corners = 0;
+            for (int i = 0; i < ramps.Length; i++)
+            {
+                if (ramps[i].Name.StartsWith("SandCorner_", StringComparison.Ordinal))
+                    corners++;
+            }
+            return corners >= 80 && SandSeamLip(ramps) <= MeshMatch;
+        }
+
+        static void SameWallReport(Solid[] solids, StringBuilder fail)
+        {
+            const float len = 6.4f;
+            const float overlap = 2.2f;
+            const float step = len - overlap;
+            const float run = 9.5f * 0.62f;
+            // One wall-run reaches the facing overlap and ends before the face does,
+            // so the hop does not depend on grabbing that face again.
+            if (!(step + 0.2f < run && run < len - 0.2f))
+            {
+                fail.Append("cling hop needs a same-face regrab; ");
+                return;
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                if (!TryFind(solids, "Cling_" + i.ToString(CultureInfo.InvariantCulture), out Solid w))
+                {
+                    fail.Append("cling chain missing for same-wall; ");
+                    return;
+                }
+                float wantX = (i % 2 == 0) ? 2.55f : 6.15f;
+                if (Math.Abs(w.X - wantX) > 0.02f)
+                    fail.Append(w.Name).Append(" left the facing pair; ");
+            }
+            for (int i = 0; i < 7; i++)
+            {
+                if (!TryFind(solids, "Cling_" + i.ToString(CultureInfo.InvariantCulture), out Solid a)) return;
+                if (!TryFind(solids, "Cling_" + (i + 1).ToString(CultureInfo.InvariantCulture), out Solid b)) return;
+                if (Math.Abs(a.X - b.X) < 1f)
+                    fail.Append("cling hop stays on one face; ");
+                float shared = Overlap1D(a.Z, a.Sz, b.Z, b.Sz);
+                if (shared < 1.5f)
+                    fail.Append("cling facing overlap is short; ");
+            }
+            // Flat seams: same-lane walls share a plane. The chain touches the other
+            // lane between them, which is a different face.
+            if (!TryFind(solids, "Cling_0", out Solid laneA) || !TryFind(solids, "Cling_2", out Solid laneB))
+                return;
+            if (Math.Abs(laneA.X - laneB.X) > 0.02f)
+                fail.Append("cling seam split a lane; ");
         }
     }
 }

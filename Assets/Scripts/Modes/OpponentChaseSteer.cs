@@ -9,7 +9,8 @@ namespace Tag.Modes
     /// write a velocity, or raise a feel number.
     /// A gap jump commits only when the measured span fits inside horizontal speed
     /// times the jump hang, plus a small margin. Otherwise the chase clings, brakes,
-    /// or turns onto a side route. Sprint, air strafe, and cling stay the default.
+    /// or turns onto a side route. A launch pad is a known edge: step on it only
+    /// when the predicted landing is closer to the target. Sprint, air strafe, and cling stay the default.
     /// </summary>
     public enum OpponentChaseVerb
     {
@@ -18,7 +19,8 @@ namespace Tag.Modes
         AirStrafe = 2,
         GapJump = 3,
         WallCling = 4,
-        Lunge = 5
+        Lunge = 5,
+        PadTake = 6
     }
 
     public struct OpponentChaseInput
@@ -48,6 +50,16 @@ namespace Tag.Modes
         public float GroundDecel;
         /// <summary>Target is over a void, the ledge will not clear, or the tell would leave the pawn in the air.</summary>
         public bool LungeBlocked;
+        /// <summary>The motor left this face. Do not steer a cling back onto it.</summary>
+        public bool SameWallClosed;
+        /// <summary>A launch pad lies on the chase line.</summary>
+        public bool PadAhead;
+        /// <summary>Meters from the pawn to that pad.</summary>
+        public float PadDistance;
+        /// <summary>The pad's landing is closer to the target than staying off it.</summary>
+        public bool PadHelps;
+        /// <summary>Flat direction from the pawn onto the pad.</summary>
+        public Vector3 PadAim;
     }
 
     public struct OpponentChaseWish
@@ -289,6 +301,16 @@ namespace Tag.Modes
             if (s.LungeCommit && s.Grounded && !wallClose && !s.LungeBlocked)
                 return Make(OpponentChaseVerb.Lunge, aim, SprintMoveY, 0f, false, false, true);
 
+            if (wallClose && s.SameWallClosed)
+            {
+                Vector3 along = AlongWall(s.WallNormal, aim);
+                // Stick is body space. Build it from the facing they have now, or the
+                // turn toward the tangent still pushes into the closed face.
+                BodyStick(s.BodyForward, along, out float alongY, out float alongX);
+                return Make(sprintRange ? OpponentChaseVerb.Sprint : OpponentChaseVerb.Close,
+                    along, alongY, alongX, sprintRange, false, false);
+            }
+
             if (wallClose)
             {
                 Vector3 clingFace = ClingDirection(s.WallNormal, aim);
@@ -298,6 +320,25 @@ namespace Tag.Modes
             if (s.HoldLine)
                 return Make(s.PlanarDistance > far ? OpponentChaseVerb.Sprint : OpponentChaseVerb.Close,
                     aim, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
+
+            if (s.Grounded && s.PadAhead)
+            {
+                if (s.PadHelps)
+                {
+                    Vector3 onto = Flat(s.PadAim);
+                    if (onto.sqrMagnitude < 1e-6f)
+                        onto = aim;
+                    else
+                        onto.Normalize();
+                    return Make(OpponentChaseVerb.PadTake, onto, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
+                }
+
+                float side = Mathf.Abs(s.PathStrafe) > 0.2f ? s.PathStrafe : 1f;
+                float yaw = side > 0f ? PathAroundDegrees : -PathAroundDegrees;
+                Vector3 peel = YawOffset(aim, yaw);
+                return Make(sprintRange ? OpponentChaseVerb.Sprint : OpponentChaseVerb.Close, peel,
+                    sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
+            }
 
             if (s.Grounded && s.GapAhead && s.GapSpan > GapMinSpan)
             {
@@ -332,6 +373,38 @@ namespace Tag.Modes
                 return Make(OpponentChaseVerb.Sprint, aim, SprintMoveY, 0f, true, false, false);
 
             return Make(OpponentChaseVerb.Close, aim, CloseMoveY, 0f, false, false, false);
+        }
+
+        /// <summary>Body-space stick that travels along <paramref name="worldDir"/>.</summary>
+        public static void BodyStick(Vector3 bodyForward, Vector3 worldDir, out float moveY, out float strafe)
+        {
+            Vector3 body = Flat(bodyForward);
+            Vector3 dir = Flat(worldDir);
+            if (body.sqrMagnitude < 1e-6f || dir.sqrMagnitude < 1e-6f)
+            {
+                moveY = 1f;
+                strafe = 0f;
+                return;
+            }
+            body.Normalize();
+            dir.Normalize();
+            Vector3 right = new Vector3(body.z, 0f, -body.x);
+            moveY = Vector3.Dot(body, dir);
+            strafe = Vector3.Dot(right, dir);
+        }
+
+        /// <summary>Along the face. The wish is not into the wall, so the motor will not cling.</summary>
+        public static Vector3 AlongWall(Vector3 wallNormal, Vector3 aim)
+        {
+            Vector3 n = Flat(wallNormal);
+            if (n.sqrMagnitude < 1e-6f)
+                n = new Vector3(0f, 0f, 1f);
+            n.Normalize();
+            Vector3 tangent = new Vector3(n.z, 0f, -n.x);
+            Vector3 aimFlat = Flat(aim);
+            if (aimFlat.sqrMagnitude > 1e-6f && Vector3.Dot(tangent, aimFlat) < 0f)
+                tangent = new Vector3(-tangent.x, -tangent.y, -tangent.z);
+            return tangent;
         }
 
         /// <summary>Into-wall wish. Face-on is climb. A glance keeps a tangent so a wall run has a direction.</summary>

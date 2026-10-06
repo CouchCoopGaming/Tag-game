@@ -862,6 +862,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4e8a1b27f0d4e6a9b3c5d7e1f2a4b60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Level.MegaParkP1Bootstrap
+  launchPadPrefab: {fileID: 810000100, guid: d5b92f3c8a1e4f7b0c4d6e9f2a3b5c71, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -730,6 +730,11 @@ public static class OpponentChaseSteerProof
         s.PathStrafe = 0f;
         s.GroundDecel = 0f;
         s.LungeBlocked = false;
+        s.SameWallClosed = false;
+        s.PadAhead = false;
+        s.PadDistance = 999f;
+        s.PadHelps = false;
+        s.PadAim = Vector3.zero;
         return s;
     }
 
