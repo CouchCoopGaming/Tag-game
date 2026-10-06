@@ -30,7 +30,14 @@ namespace Tag.Local
             new Vector3(MegaParkP1Layout.SpawnNwX, MegaParkP1Layout.SpawnY, MegaParkP1Layout.SpawnNwZ),
             new Vector3(MegaParkP1Layout.SpawnNeX, MegaParkP1Layout.SpawnY, MegaParkP1Layout.SpawnNeZ)
         };
-        static readonly float[] Yaws = { 90f, 0f, 180f, -90f };
+        // Pad facing is the layout's CCW yaw. Positions already come from the same pads.
+        static readonly float[] Yaws =
+        {
+            MegaParkP1Layout.Spawns[0].YawDeg,
+            MegaParkP1Layout.Spawns[1].YawDeg,
+            MegaParkP1Layout.Spawns[2].YawDeg,
+            MegaParkP1Layout.Spawns[3].YawDeg,
+        };
 
         static MovementConfig _sharedCfg;
 

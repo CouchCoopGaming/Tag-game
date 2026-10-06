@@ -13,6 +13,8 @@ namespace Tag.Level
 
         Transform _p1;
         Material _mulch, _grass, _sand, _rubber, _blue, _yellow, _steel, _concrete, _cedar, _bark, _rim, _field;
+        Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate;
+        Material _spawnSw, _spawnSe, _spawnNw, _spawnNe, _spawnRunS, _spawnRunN;
 
         void Awake()
         {
@@ -77,6 +79,28 @@ namespace Tag.Level
             _bark = Make(new Color(0x3E / 255f, 0x26 / 255f, 0x1C / 255f), "MEGA_Bark");
             _rim = Make(new Color(0x6B / 255f, 0x46 / 255f, 0x36 / 255f), "MEGA_Rim");
             _field = Make(new Color(0x3C / 255f, 0x9A / 255f, 0x58 / 255f), "MEGA_Field");
+            // Zone callouts. Blue stays cling-only. Yellow stays slide-only. Orange is a grapple plate.
+            _soft = Make(new Color(0xE0 / 255f, 0x7A / 255f, 0x3A / 255f), "MEGA_Soft");
+            _pad = Make(new Color(0x1F / 255f, 0x6F / 255f, 0x78 / 255f), "MEGA_ClingPad");
+            _merry = Make(new Color(0xD6 / 255f, 0x45 / 255f, 0x7A / 255f), "MEGA_Merry");
+            _amber = Make(new Color(0xE0 / 255f, 0xA0 / 255f, 0x45 / 255f), "MEGA_Amber");
+            _swing = Make(new Color(0x7D / 255f, 0xAB / 255f, 0x4A / 255f), "MEGA_Swing");
+            _army = Make(new Color(0x8A / 255f, 0x8F / 255f, 0x3A / 255f), "MEGA_Army");
+            _knight = Make(new Color(0x7A / 255f, 0x5B / 255f, 0x8A / 255f), "MEGA_Knight");
+            _kick = Make(new Color(0xC4 / 255f, 0x78 / 255f, 0x3A / 255f), "MEGA_Kick");
+            _hop = Make(new Color(0x6A / 255f, 0xA8 / 255f, 0xD6 / 255f), "MEGA_Hop");
+            _cover = Make(new Color(0xE6 / 255f, 0xD3 / 255f, 0xA1 / 255f), "MEGA_Cover");
+            _plate = Make(new Color(1f, 0.42f, 0.05f), "MEGA_Plate");
+            if (_plate.HasProperty("_Metallic"))
+                _plate.SetFloat("_Metallic", 0.45f);
+            if (_blue.HasProperty("_Smoothness"))
+                _blue.SetFloat("_Smoothness", 0.28f);
+            _spawnSw = Make(new Color(0x2E / 255f, 0xC4 / 255f, 0xB6 / 255f), "MEGA_SpawnSW");
+            _spawnSe = Make(new Color(0xFF / 255f, 0x6B / 255f, 0x6B / 255f), "MEGA_SpawnSE");
+            _spawnNw = Make(new Color(0x9B / 255f, 0x5D / 255f, 0xE5 / 255f), "MEGA_SpawnNW");
+            _spawnNe = Make(new Color(0xC6 / 255f, 0xF2 / 255f, 0x4A / 255f), "MEGA_SpawnNE");
+            _spawnRunS = Make(new Color(0xFF / 255f, 0xE0 / 255f, 0x8A / 255f), "MEGA_SpawnRunS");
+            _spawnRunN = Make(new Color(0x8A / 255f, 0xD7 / 255f, 0xFF / 255f), "MEGA_SpawnRunN");
         }
 
         static Material Make(Color c, string name)
@@ -111,6 +135,17 @@ namespace Tag.Level
                 case "bark": return _bark;
                 case "rim": return _rim;
                 case "field": return _field;
+                case "soft": return _soft;
+                case "pad": return _pad;
+                case "merry": return _merry;
+                case "amber": return _amber;
+                case "swing": return _swing;
+                case "army": return _army;
+                case "knight": return _knight;
+                case "kick": return _kick;
+                case "hop": return _hop;
+                case "cover": return _cover;
+                case "plate": return _plate;
                 default: return _mulch;
             }
         }
@@ -181,17 +216,17 @@ namespace Tag.Level
         void BuildPaint()
         {
             Transform g = Group("Paint");
-            Paint(g, "Z1_SoftPlay", 2f, 38f, 2f, 36f, _cedar, 0.025f);
-            Paint(g, "Z2_ClingFooting", 2f, 10f, 38f, 78f, _rubber, 0.025f);
-            Paint(g, "Z3_Merry", 22f, 46f, 34f, 60f, _cedar, 0.025f);
-            Paint(g, "Z4_SlideMountain", 22f, 56f, 72f, 98f, _rim, 0.025f);
-            Paint(g, "Z5_SwingGrove", 58f, 100f, 78f, 98f, _cedar, 0.025f);
-            Paint(g, "Z6_Army", 118f, 158f, 10f, 46f, _bark, 0.025f);
-            Paint(g, "Z6_Knight", 118f, 158f, 54f, 90f, _bark, 0.025f);
+            Paint(g, "Z1_SoftPlay", 2f, 38f, 2f, 36f, _soft, 0.025f);
+            Paint(g, "Z2_ClingFooting", 2f, 10f, 38f, 78f, _pad, 0.025f);
+            Paint(g, "Z3_Merry", 22f, 46f, 34f, 60f, _merry, 0.025f);
+            Paint(g, "Z4_SlideMountain", 22f, 56f, 72f, 98f, _amber, 0.025f);
+            Paint(g, "Z5_SwingGrove", 58f, 100f, 78f, 98f, _swing, 0.025f);
+            Paint(g, "Z6_Army", 118f, 158f, 10f, 46f, _army, 0.025f);
+            Paint(g, "Z6_Knight", 118f, 158f, 54f, 90f, _knight, 0.025f);
             Paint(g, "Z7_Field", 78f, 114f, 28f, 68f, _field, 0.04f);
             Paint(g, "Z7_MouthSouth", 64f, 78f, 28f, 34f, _field, 0.04f);
             Paint(g, "Z7_MouthNorth", 64f, 78f, 66f, 68f, _field, 0.04f);
-            Paint(g, "Z10_Hopscotch", 118f, 156f, 2f, 22f, _concrete, 0.025f);
+            Paint(g, "Z10_Hopscotch", 118f, 156f, 2f, 22f, _hop, 0.025f);
             Paint(g, "Spine_South", 38f, 118f, 12f, 20f, _concrete, 0.06f);
             Paint(g, "Spine_North", 14f, 130f, 83f, 89f, _concrete, 0.06f);
             Paint(g, "Spine_West", 10f, 14f, 2f, 98f, _concrete, 0.06f);
@@ -217,7 +252,12 @@ namespace Tag.Level
         void BuildSpawns()
         {
             Transform g = Group("Spawns");
-            MegaParkP1Layout.SpawnPad[] pads = MegaParkP1Layout.Spawns;
+            BuildSpawnList(g, MegaParkP1Layout.Spawns);
+            BuildSpawnList(g, MegaParkP1Layout.RunnerSpawns);
+        }
+
+        void BuildSpawnList(Transform g, MegaParkP1Layout.SpawnPad[] pads)
+        {
             for (int i = 0; i < pads.Length; i++)
             {
                 MegaParkP1Layout.SpawnPad pad = pads[i];
@@ -233,7 +273,7 @@ namespace Tag.Level
                 disc.transform.localScale = new Vector3(2f, 0.02f, 2f);
                 MeshRenderer r = disc.GetComponent<MeshRenderer>();
                 if (r != null)
-                    r.sharedMaterial = _rubber;
+                    r.sharedMaterial = PadMat(pad.Name);
                 Collider col = disc.GetComponent<Collider>();
                 if (col != null)
                     DestroyImmediate(col);
@@ -249,6 +289,20 @@ namespace Tag.Level
                 Collider wc = wedge.GetComponent<Collider>();
                 if (wc != null)
                     DestroyImmediate(wc);
+            }
+        }
+
+        Material PadMat(string name)
+        {
+            switch (name)
+            {
+                case "Spawn_SW": return _spawnSw;
+                case "Spawn_SE": return _spawnSe;
+                case "Spawn_NW": return _spawnNw;
+                case "Spawn_NE": return _spawnNe;
+                case "Spawn_RunS": return _spawnRunS;
+                case "Spawn_RunN": return _spawnRunN;
+                default: return _rubber;
             }
         }
 
