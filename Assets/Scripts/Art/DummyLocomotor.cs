@@ -1046,7 +1046,6 @@ namespace Tag.Art
         Renderer[] _flashRenderers;
         MaterialPropertyBlock _flashBlock;
         bool _flashBlockOn;
-        bool _dashCdSeen;
         float _dashReadyAge = -1f;
         Transform _dashCdRoot;
         LineRenderer _dashCdArc;
