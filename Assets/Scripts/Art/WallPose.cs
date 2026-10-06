@@ -267,6 +267,31 @@ namespace Tag.Art
             };
         }
 
+        /// <summary>
+        /// Both hands up on a cable. Reuses the cling reach. Legs hang.
+        /// Not a ledge grab and not a shimmy. Nothing here writes velocity or the root.
+        /// </summary>
+        public static Sample CableHang()
+        {
+            return new Sample
+            {
+                ThighL = 18f,
+                ThighR = 16f,
+                KneeL = -28f,
+                KneeR = -24f,
+                ArmPitchL = ReachPitch,
+                ArmPitchR = ReachPitch,
+                ArmYawL = ReachYaw * 0.35f,
+                ArmYawR = -ReachYaw * 0.35f,
+                ElbowL = ReachElbow,
+                ElbowR = ReachElbow,
+                Hip = 6f,
+                Spine = -8f,
+                Head = ClimbHead,
+                LeanZ = 0f,
+            };
+        }
+
         /// <summary>Hands down and open. A refused cling. Not a reach and not a pull.</summary>
         public const float SlideOffPitch = 36f;
         public const float SlideOffYaw = 42f;

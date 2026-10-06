@@ -10,6 +10,7 @@ namespace TagArena.Movement
     /// Kinematic motor. One CharacterController.Move per Update.
     /// Gravity, jump, slide friction, and cling live here. The rigidbody is the ragdoll window only.
     /// A launch pad queues a velocity set that this Update writes before that Move.
+    /// A zip line replaces that velocity with a fixed ride along the cable while cling is held.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(CapsuleCollider))]
@@ -41,6 +42,8 @@ namespace TagArena.Movement
         public bool ClingRefused => _clingRefused;
         /// <summary>True from a pad's velocity set until the next landing. The rise pose reads this.</summary>
         public bool LaunchArc => _launchArc;
+        /// <summary>True while cling is holding a zip cable. The hang pose reads this.</summary>
+        public bool ZipRiding => _zipRiding;
 
         /// <summary>Chase reads this so it does not steer a re-cling into the face just left.</summary>
         public bool WouldRefuseCling(int colliderId, Vector3 normal, Vector3 point)
@@ -144,6 +147,13 @@ namespace TagArena.Movement
         float _launchCooldown;
         float _launchReadyAt;
         Vector3 _launchHoriz;
+        bool _zipRiding;
+        bool _zipChaseTake;
+        int _zipLineId;
+        float _zipReadyAt;
+        float _zipCooldown;
+        Vector3 _zipVelocity;
+        ZipLine _zipLine;
 
         public event System.Action<MoveState, MoveState> OnStateChanged;
         public event System.Action OnJumped;
@@ -234,6 +244,7 @@ namespace TagArena.Movement
             if (rawFeet && _mode != Locomotion.Climb && _mode != Locomotion.WallRun && _mode != Locomotion.Vault)
                 _coyote = cfg.coyoteTime;
             LatchLandImpact();
+            TickZipAttach();
             TickWallContactGates();
             Vector3 wish = WishAccel.CameraWish(cam ? cam : transform, _in.Move);
             if (!_probe.Wall.hit)
@@ -254,7 +265,12 @@ namespace TagArena.Movement
             TickEnergy(dt);
             TickHeight(dt);
 
-            switch (_mode)
+            if (_zipRiding)
+            {
+                // The ride velocity is written once, in ApplyZipRide, before the single Move.
+                SetState(MoveState.Air);
+            }
+            else switch (_mode)
             {
                 case Locomotion.Vault:
                     v = TickMantle(dt, v);
@@ -302,6 +318,7 @@ namespace TagArena.Movement
             v = ApplyGrappleHorizontal(v);
             v = ApplyGroundRead(v, dt);
             v = ApplyQueuedLaunch(v);
+            v = ApplyZipRide(v, dt);
 
             _velocity = v;
             FitController(v.y, CeilingClose());
@@ -1242,7 +1259,10 @@ namespace TagArena.Movement
             bool rising = locked && !_motorLocked;
             _motorLocked = locked;
             if (rising)
+            {
+                ReleaseZip();
                 _velocity = Vector3.zero;
+            }
             if (!locked)
                 CloseRagdollBody();
         }
@@ -1250,6 +1270,7 @@ namespace TagArena.Movement
         /// <summary>Ragdoll window only. CharacterController is off until the stun ends.</summary>
         public void OpenRagdollBody()
         {
+            ReleaseZip();
             _mode = Locomotion.Ragdoll;
             _velocity = Vector3.zero;
             _clingGrace = 0f;
@@ -1286,6 +1307,7 @@ namespace TagArena.Movement
 
         public void Halt()
         {
+            ReleaseZip();
             _velocity = Vector3.zero;
             _jumpSlot = 0f;
             _wallJumpSlot = 0f;
@@ -1334,7 +1356,143 @@ namespace TagArena.Movement
             if (!PunchStagger.TryStart(ref _stagger)) return false;
             if (State == MoveState.Sprint)
                 SetState(MoveState.Walk);
+            if (_zipRiding)
+                ReleaseZip();
             return true;
+        }
+
+        /// <summary>Dummy chase sets this when the zip exit helps. A human grab ignores it.</summary>
+        public void SetZipChase(bool take)
+        {
+            _zipChaseTake = take;
+        }
+
+        /// <summary>
+        /// Cling is the move stick, the same hold as a wall. Jump is not cling.
+        /// An external pawn grabs only when the chase asked for this line.
+        /// </summary>
+        bool ZipClingHeld()
+        {
+            if (_in == null) return false;
+            return ZipLineRules.ClingHeld(_in.Move);
+        }
+
+        bool ZipGrabAllowed()
+        {
+            if (!ZipClingHeld()) return false;
+            if (_in.JumpPressed) return false;
+            if (_in.ExternalControl && !_zipChaseTake) return false;
+            return true;
+        }
+
+        void TickZipAttach()
+        {
+            if (_zipRiding || _in == null) return;
+            if (!ZipGrabAllowed()) return;
+            if (_stagger.Stagger > 0f || _motorLocked) return;
+            ZipLine.TryGrab(this);
+        }
+
+        /// <summary>
+        /// One line. Rejected while this pawn's regrab cooldown on this line is running,
+        /// and while a stagger, a vault, or a ragdoll owns the body.
+        /// </summary>
+        public bool TryBeginZip(ZipLine line)
+        {
+            if (line == null || _zipRiding) return false;
+            if (_stagger.Stagger > 0f || _motorLocked) return false;
+            if (_mode == Locomotion.Ragdoll || _mode == Locomotion.Vault || _mode == Locomotion.LandStun)
+                return false;
+            if (!ZipGrabAllowed()) return false;
+            int id = line.GetInstanceID();
+            if (ZipLineRules.RegrabBlocked(id, _zipLineId, Time.time, _zipReadyAt))
+                return false;
+            if (State == MoveState.WallClimb || State == MoveState.WallRun)
+                BanLeftWall();
+            _zipRiding = true;
+            _zipLine = line;
+            _zipLineId = id;
+            _zipCooldown = line.Cooldown;
+            _zipVelocity = line.CurrentRideVelocity();
+            _launchQueued = false;
+            _launchArc = false;
+            _jumpSlot = 0f;
+            _wallJumpSlot = 0f;
+            _airDashT = 0f;
+            _lungeT = 0f;
+            if (_mode == Locomotion.AirDash)
+                _mode = Locomotion.Air;
+            line.SetRider(GetInstanceID(), true);
+            return true;
+        }
+
+        void ReleaseZip()
+        {
+            bool was = _zipRiding;
+            if (_zipLine != null)
+                _zipLine.SetRider(GetInstanceID(), false);
+            _zipRiding = false;
+            _zipLine = null;
+            if (!was) return;
+            float cd = _zipCooldown > 0f ? _zipCooldown : ZipLineRules.DefaultRegrabCooldown;
+            _zipReadyAt = ZipLineRules.ArmCooldown(Time.time, cd);
+        }
+
+        /// <summary>
+        /// Fixed ride speed along the cable, plus a pull onto the hang.
+        /// Jump writes jumpSpeed and keeps horizontal. Release and the end keep the ride.
+        /// Does not clear the same-wall ban.
+        /// </summary>
+        Vector3 ApplyZipRide(Vector3 v, float dt)
+        {
+            if (!_zipRiding)
+                return v;
+            if (_zipLine == null || !_zipLine.isActiveAndEnabled)
+            {
+                v = _zipVelocity.sqrMagnitude > 1e-8f ? ZipLineRules.ReleaseDrop(_zipVelocity) : v;
+                ReleaseZip();
+                SetState(MoveState.Air);
+                return v;
+            }
+            if (_stagger.Stagger > 0f || _motorLocked)
+            {
+                v = ZipLineRules.ReleaseDrop(_zipLine.CurrentRideVelocity());
+                ReleaseZip();
+                SetState(MoveState.Air);
+                return v;
+            }
+
+            Vector3 ride = _zipLine.CurrentRideVelocity();
+            _zipVelocity = ride;
+            _launchArc = false;
+            bool end = _zipLine.AtExit(transform.position, dt);
+            bool release = !ZipClingHeld();
+            bool jump = _in != null && _in.JumpPressed;
+            if (end || release || jump)
+            {
+                float jumpSpeed = cfg != null ? cfg.jumpSpeed : 24.7f;
+                if (jump)
+                    v = ZipLineRules.JumpDrop(ride, jumpSpeed);
+                else if (end)
+                    v = ZipLineRules.EndDrop(ride);
+                else
+                    v = ZipLineRules.ReleaseDrop(ride);
+                ReleaseZip();
+                _jumpSlot = 0f;
+                _wallJumpSlot = 0f;
+                if (jump)
+                {
+                    _coyote = 0f;
+                    _jumpFatigued = true;
+                    _lastLanded = Time.time;
+                    OnJumped?.Invoke();
+                }
+                SetState(MoveState.Air);
+                return v;
+            }
+
+            SetState(MoveState.Air);
+            return _zipLine.RideVelocityWithHang(transform.position, dt);
         }
 
         /// <summary>
@@ -1425,7 +1583,8 @@ namespace TagArena.Movement
         void TickWallContactGates()
         {
             bool onWallState = State == MoveState.WallClimb || State == MoveState.WallRun;
-            if (_probe.Ground.grounded && !onWallState)
+            // A zip ride is not a wall and not a landing. The ban stays until the feet plant.
+            if (_probe.Ground.grounded && !onWallState && !_zipRiding)
             {
                 ClearWallBan();
                 ClimbHeightUsed = 0f;
@@ -1521,7 +1680,7 @@ namespace TagArena.Movement
 
                 // Landing shock (Apex) - only from true air/jet, not ski kisses.
                 // Harder impacts hold stun a touch longer (clamped).
-                if ((State == MoveState.Air || State == MoveState.Jet) && impact >= cfg.landStunSpeed)
+                if ((State == MoveState.Air || State == MoveState.Jet) && impact >= cfg.landStunSpeed && !_zipRiding)
                 {
                     float over = Mathf.InverseLerp(cfg.landStunSpeed, cfg.maxFallSpeed, impact);
                     _landStunT = cfg.landStunDuration * Mathf.Lerp(1f, 1.35f, over);
