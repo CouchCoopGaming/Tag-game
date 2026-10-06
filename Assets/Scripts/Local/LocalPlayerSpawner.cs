@@ -122,11 +122,12 @@ namespace Tag.Local
 
         public static void SpawnPose(int index, out Vector3 pos, out float yaw)
         {
-            if (ParkArena.IsPocket)
+            if (ParkArena.IsPocket || ParkArena.IsStack)
             {
-                MegaParkP1Layout.SpawnPad[] pads = PocketParkLayout.Spawns;
+                MegaParkP1Layout.SpawnPad[] pads = ParkArena.IsStack ? StackYardLayout.Spawns : PocketParkLayout.Spawns;
+                float y = ParkArena.IsStack ? StackYardLayout.SpawnY : PocketParkLayout.SpawnY;
                 int i = Mathf.Clamp(index, 0, pads.Length - 1);
-                pos = new Vector3(pads[i].X, PocketParkLayout.SpawnY, pads[i].Z);
+                pos = new Vector3(pads[i].X, y, pads[i].Z);
                 yaw = pads[i].YawDeg;
                 return;
             }

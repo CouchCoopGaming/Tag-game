@@ -20,7 +20,7 @@ namespace Tag.Level
         /// <summary>Assets/Prefabs/ZipLine.prefab. Play.unity wires this.</summary>
         public GameObject zipLinePrefab;
 
-        /// <summary>0 Mega Park, 1 Pocket Park. Ignored after a player picks an arena.</summary>
+        /// <summary>0 Mega Park, 1 Pocket Park, 2 Stack Yard. Ignored after a player picks an arena.</summary>
         public int arenaId;
 
         Transform _p1;
@@ -45,6 +45,8 @@ namespace Tag.Level
             {
                 if (ParkArena.IsPocket)
                     BuildPocket();
+                else if (ParkArena.IsStack)
+                    BuildStack();
                 else
                     Build();
             }
@@ -884,6 +886,62 @@ namespace Tag.Level
             Label(g, "DOME", 44f, 25f);
             Label(g, "LANE", 53f, 24f);
             Label(g, "YARD", 24f, 32f);
+        }
+
+        /// <summary>
+        /// Same cube kit, materials, pads, and zips as Mega Park, on the stack layout.
+        /// </summary>
+        public void BuildStack()
+        {
+            ApplyLook();
+            EnsureMaterials();
+            EnsureRoot();
+            Transform solids = BuildSolidList(StackYardLayout.BuildSolids());
+            Transform ramps = BuildRampList(StackYardLayout.BuildRamps());
+            Transform paint = BuildStackPaint();
+            Transform spawns = BuildSpawnPads(StackYardLayout.Spawns);
+            BuildLoop(StackYardLayout.LoopCcw);
+            BuildLaunchPadList(StackYardLayout.LaunchPads);
+            BuildZipLineList(StackYardLayout.ZipLines);
+            BuildStackLabels();
+            Transform dress = BuildDressList(StackYardLayout.BuildDressing());
+            BatchStatic(solids);
+            BatchStatic(ramps);
+            BatchStatic(paint);
+            BatchStatic(spawns);
+            BatchStatic(dress);
+
+            StackYardLayout.Audit audit = StackYardLayout.Run();
+            LayoutOk = audit.Ok;
+            Built = audit.Ok && _p1 != null;
+            if (audit.Ok)
+                Debug.Log(audit.Line);
+            else
+                Debug.LogError(audit.Line + " :: " + audit.Failure);
+            if (!Built)
+                ClearBuilt();
+            else
+                FinishArena();
+        }
+
+        Transform BuildStackPaint()
+        {
+            Transform g = Group("Paint");
+            var zones = new Dictionary<string, Transform>();
+            Paint(Occlusion(g, zones, "Yard"), "Yard_Carpet", 8f, 50f, 8f, 28f, _cover, 0.025f);
+            Paint(Occlusion(g, zones, "Lane"), "Lane_Carpet", 60f, 102f, 8f, 28f, _army, 0.025f);
+            Paint(Occlusion(g, zones, "Mid"), "Mid_Carpet", 8f, 50f, 40f, 62f, _soft, 0.025f);
+            Paint(Occlusion(g, zones, "Roof"), "Roof_Carpet", 60f, 102f, 40f, 62f, _amber, 0.025f);
+            return g;
+        }
+
+        void BuildStackLabels()
+        {
+            Transform g = Group("Labels");
+            Label(g, "YARD", 20f, 14f);
+            Label(g, "LANE", 90f, 14f);
+            Label(g, "MID", 20f, 60f);
+            Label(g, "ROOF", 90f, 60f);
         }
     }
 }

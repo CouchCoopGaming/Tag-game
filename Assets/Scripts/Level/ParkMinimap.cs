@@ -73,7 +73,7 @@ namespace Tag.Level
             StampActors();
             _tex.SetPixels32(_frame);
             _tex.Apply(false);
-            VerbHudLayout.Box box = VerbHudLayout.Minimap(Screen.width, Screen.height, ParkArena.IsPocket);
+            VerbHudLayout.Box box = VerbHudLayout.Minimap(Screen.width, Screen.height, ParkArena.IsPocket, ParkArena.IsStack);
             float ph = box.W * (_h / (float)_w);
             if (ph > box.H) ph = box.H;
             var rect = new Rect(box.X, box.Bottom - ph, box.W, ph);
@@ -96,7 +96,9 @@ namespace Tag.Level
                 _base[i] = mulch;
 
             var boxes = new System.Collections.Generic.Dictionary<string, Box>();
-            MegaParkP1Layout.Solid[] solids = ParkArena.IsPocket
+            MegaParkP1Layout.Solid[] solids = ParkArena.IsStack
+                ? StackYardLayout.BuildSolids()
+                : ParkArena.IsPocket
                 ? PocketParkLayout.BuildSolids()
                 : MegaParkP1Layout.BuildSolids();
             for (int i = 0; i < solids.Length; i++)
@@ -126,14 +128,18 @@ namespace Tag.Level
             Outline(0f, 0f, _mapW, _mapD, fence);
 
             Color32 pad = new Color32(255, 255, 255, 255);
-            MegaParkP1Layout.PadSpot[] pads = ParkArena.IsPocket
+            MegaParkP1Layout.PadSpot[] pads = ParkArena.IsStack
+                ? StackYardLayout.LaunchPads
+                : ParkArena.IsPocket
                 ? PocketParkLayout.LaunchPads
                 : MegaParkP1Layout.LaunchPads;
             for (int i = 0; i < pads.Length; i++)
                 Diamond(pads[i].X, pads[i].Z, 3, pad);
 
             Color32 zip = Swatch("zip");
-            MegaParkP1Layout.ZipLineSpot[] zips = ParkArena.IsPocket
+            MegaParkP1Layout.ZipLineSpot[] zips = ParkArena.IsStack
+                ? StackYardLayout.ZipLines
+                : ParkArena.IsPocket
                 ? PocketParkLayout.ZipLines
                 : MegaParkP1Layout.ZipLines;
             for (int i = 0; i < zips.Length; i++)

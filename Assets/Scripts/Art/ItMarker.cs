@@ -261,7 +261,7 @@ namespace Tag.Art
             gy = Mathf.Clamp(gy, m, Screen.height - m);
             float x = gx - mark * 0.5f;
             float y = gy - mark * 0.5f;
-            VerbHudLayout.PushMarker(Screen.width, Screen.height, ref x, ref y, mark, mark + 18f, ParkArena.IsPocket);
+            VerbHudLayout.PushMarker(Screen.width, Screen.height, ref x, ref y, mark, mark + 18f, ParkArena.IsPocket, ParkArena.IsStack);
 
             var prev = GUI.color;
             GUI.color = new Color(0.05f, 0.07f, 0.1f, 0.85f);

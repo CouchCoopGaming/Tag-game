@@ -234,7 +234,8 @@ public static partial class EnemyAiProof
 
     static float Duel(MovementConfig cfg, PunchTagTuning punch, float difficulty, int itSpawn, int runSpawn, int salt, bool dummyIsIt, EnemyAiReport report)
     {
-        MegaParkP1Layout.SpawnPad[] spawns = ParkArena.IsPocket ? PocketParkLayout.Spawns : MegaParkP1Layout.Spawns;
+        MegaParkP1Layout.SpawnPad[] spawns = ParkArena.IsStack ? StackYardLayout.Spawns
+            : ParkArena.IsPocket ? PocketParkLayout.Spawns : MegaParkP1Layout.Spawns;
         var it = MakePawn(spawns[itSpawn], true, dummyIsIt, (uint)(1000 + salt * 17 + itSpawn * 3));
         var run = MakePawn(spawns[runSpawn], false, !dummyIsIt, (uint)(4000 + salt * 13 + runSpawn * 5));
         run.Immune = TagBackImmunity.DefaultSeconds;
@@ -1135,5 +1136,130 @@ public static partial class EnemyAiProof
         RequireTarget(steer, report, "pocket loop steer");
         Vector3 chase = EnemyAi.LoopSteer(new Vector3(38f, 0.2f, 44f), new Vector3(8f, 0.2f, 6f), true, 16f);
         RequireTarget(chase, report, "pocket loop chase");
+    }
+
+    static string RunStackMatches(MovementConfig cfg, PunchTagTuning punch, EnemyAiReport mega)
+    {
+        int savedId = ParkArena.Id;
+        bool savedChoice = ParkArena.HasExplicitChoice;
+        var report = new EnemyAiReport();
+        string line = "stack-ai";
+        try
+        {
+            ParkArena.Select(ParkArena.Stack);
+            ParkArena.HasExplicitChoice = true;
+            MegaParkP1Layout.WarmParkRoutes();
+            CheckStackContained(report);
+
+            MegaParkP1Layout.SpawnPad[] spawns = StackYardLayout.Spawns;
+            var pairs = new ArcPair[spawns.Length * Math.Max(1, spawns.Length - 1)];
+            int pairCount = 0;
+            for (int i = 0; i < spawns.Length; i++)
+            {
+                for (int j = 0; j < spawns.Length; j++)
+                {
+                    if (i == j) continue;
+                    pairs[pairCount++] = new ArcPair { It = i, Run = j };
+                }
+            }
+            if (pairCount < 6)
+                report.Fail("stack spawn pairs " + pairCount.ToString(CultureInfo.InvariantCulture));
+
+            const int seeds = 24;
+            float[] diffs = { 0.2f, 0.5f, 0.9f };
+            var itMed = new float[3];
+            var itP10 = new float[3];
+            var itP90 = new float[3];
+            var runMed = new float[3];
+            var runP10 = new float[3];
+            var runP90 = new float[3];
+            if (pairCount > 0)
+            {
+                for (int d = 0; d < 3; d++)
+                {
+                    var itTimes = new float[seeds];
+                    var runTimes = new float[seeds];
+                    for (int s = 0; s < seeds; s++)
+                    {
+                        ArcPair pair = pairs[s % pairCount];
+                        int salt = s / pairCount;
+                        itTimes[s] = Duel(cfg, punch, diffs[d], pair.It, pair.Run, salt + 140, true, report);
+                        runTimes[s] = Duel(cfg, punch, diffs[d], pair.It, pair.Run, salt + 180, false, report);
+                    }
+                    Array.Sort(itTimes);
+                    Array.Sort(runTimes);
+                    itMed[d] = Percentile(itTimes, 0.50f);
+                    itP10[d] = Percentile(itTimes, 0.10f);
+                    itP90[d] = Percentile(itTimes, 0.90f);
+                    runMed[d] = Percentile(runTimes, 0.50f);
+                    runP10[d] = Percentile(runTimes, 0.10f);
+                    runP90[d] = Percentile(runTimes, 0.90f);
+                }
+            }
+            if (report.Stuck != 0)
+                report.Fail("stack stuck " + report.Stuck.ToString(CultureInfo.InvariantCulture));
+            if (report.Breaches != 0)
+                report.Fail("stack left the fence " + report.Breaches.ToString(CultureInfo.InvariantCulture));
+            if (report.Flips != 0)
+                report.Fail("stack flips " + report.Flips.ToString(CultureInfo.InvariantCulture));
+
+            line = "stack-ai"
+                + " seeds=" + seeds.ToString(CultureInfo.InvariantCulture)
+                + " itMed=" + Fmt3(itMed)
+                + " itP10=" + Fmt3(itP10)
+                + " itP90=" + Fmt3(itP90)
+                + " runMed=" + Fmt3(runMed)
+                + " runP10=" + Fmt3(runP10)
+                + " runP90=" + Fmt3(runP90)
+                + " stuck=" + report.Stuck.ToString(CultureInfo.InvariantCulture)
+                + " flips=" + report.Flips.ToString(CultureInfo.InvariantCulture);
+            if (!report.Ok)
+            {
+                mega.Fail(report.FailureText);
+                return "FAIL " + line + " :: " + report.FailureText.Replace('\n', ' ');
+            }
+            return "PASS " + line;
+        }
+        finally
+        {
+            ParkArena.Id = savedId;
+            ParkArena.HasExplicitChoice = savedChoice;
+            MegaParkP1Layout.WarmParkRoutes();
+        }
+    }
+
+    static void CheckStackContained(EnemyAiReport report)
+    {
+        MegaParkP1Layout.Pt[] loop = StackYardLayout.AiLoop;
+        if (loop == null || loop.Length < 4)
+        {
+            report.Fail("stack AI loop is missing");
+            return;
+        }
+        for (int i = -3; i < loop.Length * 3; i++)
+        {
+            Vector3 p = EnemyAi.LoopPoint(true, i);
+            RequireTarget(p, report, "stack LoopPoint");
+            int slot = i % loop.Length;
+            if (slot < 0) slot += loop.Length;
+            float dx = p.x - loop[slot].X;
+            float dz = p.z - loop[slot].Z;
+            if (dx * dx + dz * dz > 0.0001f)
+                report.Fail("stack LoopPoint left the stack loop");
+        }
+        for (int i = 0; i < StackYardLayout.CoverSamples.Length; i++)
+        {
+            var c = StackYardLayout.CoverSamples[i];
+            RequireTarget(new Vector3(c.X, 0.2f, c.Z), report, "stack cover");
+        }
+        for (int i = 0; i < StackYardLayout.CounterMarks.Length; i++)
+        {
+            var c = StackYardLayout.CounterMarks[i];
+            RequireTarget(new Vector3(c.X, c.Y, c.Z), report, "stack counter");
+        }
+        Vector3 steer = EnemyAi.LoopSteer(new Vector3(16f, 0.2f, 14f), new Vector3(94f, 0.2f, 14f), false, 18f);
+        RequireTarget(steer, report, "stack loop steer");
+        Vector3 chase = EnemyAi.LoopSteer(new Vector3(55f, 0.2f, 35f), new Vector3(16f, 0.2f, 14f), true, 16f);
+        RequireTarget(chase, report, "stack loop chase");
     }
 }

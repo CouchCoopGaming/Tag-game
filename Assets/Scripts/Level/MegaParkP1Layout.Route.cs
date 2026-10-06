@@ -81,7 +81,7 @@ namespace Tag.Level
 
         public static void WarmParkRoutes()
         {
-            int arena = ParkArena.IsPocket ? ParkArena.Pocket : ParkArena.Mega;
+            int arena = ParkArena.IsStack ? ParkArena.Stack : ParkArena.IsPocket ? ParkArena.Pocket : ParkArena.Mega;
             if (_warm && _routeArena == arena) return;
             if (_building) return;
             _building = true;
@@ -91,7 +91,8 @@ namespace Tag.Level
             // The route cache keeps the tuned solid set so the published medians hold.
             bool pass9 = IncludePass9;
             if (arena != ParkArena.Pocket) IncludePass9 = false;
-            _solids = arena == ParkArena.Pocket ? PocketParkLayout.BuildSolids() : BuildSolids();
+            _solids = arena == ParkArena.Stack ? StackYardLayout.BuildSolids()
+                : arena == ParkArena.Pocket ? PocketParkLayout.BuildSolids() : BuildSolids();
             if (arena != ParkArena.Pocket) IncludePass9 = pass9;
             _nav = BuildNav(_solids);
             int n = _nav.Floor.Length;
@@ -487,6 +488,8 @@ namespace Tag.Level
             WarmParkRoutes();
             if (ParkArena.IsPocket)
                 return PocketParkLayout.SampleCover(selfX, selfZ, threatX, threatZ, out x, out z);
+            if (ParkArena.IsStack)
+                return StackYardLayout.SampleCover(selfX, selfZ, threatX, threatZ, out x, out z);
             float best = -1f;
             bool found = false;
             for (int i = 0; i < 16; i++)
@@ -657,16 +660,19 @@ namespace Tag.Level
 
         static PadSpot[] RoutePads()
         {
+            if (ParkArena.IsStack) return StackYardLayout.LaunchPads;
             return ParkArena.IsPocket ? PocketParkLayout.LaunchPads : LaunchPads;
         }
 
         static ZipLineSpot[] RouteZips()
         {
+            if (ParkArena.IsStack) return StackYardLayout.ZipLines;
             return ParkArena.IsPocket ? PocketParkLayout.ZipLines : ZipLines;
         }
 
         static Ramp[] RouteRamps()
         {
+            if (ParkArena.IsStack) return StackYardLayout.BuildRamps();
             return ParkArena.IsPocket ? PocketParkLayout.BuildRamps() : BuildRamps();
         }
 

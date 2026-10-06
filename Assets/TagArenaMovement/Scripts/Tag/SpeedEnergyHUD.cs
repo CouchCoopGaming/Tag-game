@@ -76,7 +76,7 @@ namespace TagArena.Movement
             "F3 Trail Tag\n" +
             "F4 Free play\n" +
             "Esc pause\n" +
-            "M map   Comma mute   N music";
+            "Comma mute   M minimap   N music";
 
         // Flash full Least-It standings briefly every few seconds.
         const float AllStandingsShowSec = 4.4f; // slightly longer Least It board read

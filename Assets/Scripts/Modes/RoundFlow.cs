@@ -250,11 +250,11 @@ namespace Tag.Modes
             return true;
         }
 
-        /// <summary>Countdown keys 1/2. Restarts the countdown on that arena. Refused once play has started.</summary>
+        /// <summary>Countdown keys 1/2/3. Restarts the countdown on that arena. Refused once play has started.</summary>
         public static bool TryPickArena(State s, int arena)
         {
             if (s == null || s.Phase != Phase.Countdown) return false;
-            s.Arena = arena == 1 ? 1 : 0;
+            s.Arena = arena >= 0 && arena < Tag.Level.ParkArena.Count ? arena : 0;
             s.PendingArena = -1;
             s.PhaseTimer = CountdownSeconds;
             s.Beep = -1;
@@ -264,11 +264,11 @@ namespace Tag.Modes
             return true;
         }
 
-        /// <summary>Pause Map toggle during play. Queues the arena. The live round does not move.</summary>
+        /// <summary>Pause Arena menu during play. Queues the arena. The live round does not move.</summary>
         public static bool TryQueueArena(State s, int arena)
         {
             if (s == null || s.Phase != Phase.Playing) return false;
-            int next = arena == 1 ? 1 : 0;
+            int next = arena >= 0 && arena < Tag.Level.ParkArena.Count ? arena : 0;
             s.PendingArena = next == s.Arena ? -1 : next;
             return true;
         }
@@ -316,7 +316,7 @@ namespace Tag.Modes
                     report.Fail("round " + i + " did not start on countdown");
                     break;
                 }
-                if (s.Arena != (i % 2))
+                if (s.Arena != (i % Tag.Level.ParkArena.Count))
                 {
                     report.SpawnMiss++;
                     report.Fail("round " + i + " opened on the wrong arena");
@@ -371,7 +371,7 @@ namespace Tag.Modes
                         {
                             queued = true;
                             int playing = s.Arena;
-                            int other = playing == 0 ? 1 : 0;
+                            int other = (playing + 1) % Tag.Level.ParkArena.Count;
                             int pieces = world.Count;
                             if (TryPickArena(s, other) || s.Arena != playing)
                             {
