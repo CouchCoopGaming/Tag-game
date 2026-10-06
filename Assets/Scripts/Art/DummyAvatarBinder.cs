@@ -46,6 +46,8 @@ namespace Tag.Art
         bool _loggedHier;
         Coroutine _hitPulseCo;
         Vector3 _visualBaseScale = Vector3.one;
+        readonly System.Collections.Generic.List<Renderer> _keptOff = new System.Collections.Generic.List<Renderer>(4);
+        bool _keptOffReady;
 
         void Awake()
         {
@@ -175,6 +177,7 @@ namespace Tag.Art
                     if (n.Contains("Capsule") || n == "Mesh" || n == "Player" || n == "DummyRunner" || r.GetComponent<CharacterController>() != null)
                     {
                         r.enabled = false;
+                        if (!_keptOff.Contains(r)) _keptOff.Add(r);
                         var mf = r.GetComponent<MeshFilter>();
                         if (mf != null) mf.sharedMesh = null;
                     }
@@ -190,7 +193,7 @@ namespace Tag.Art
         void LateUpdate()
         {
             // Revive() re-enables the serialized capsule accent after Awake.
-            StripPlaceholderBody();
+            HidePlaceholder();
             if (_it == null) return;
             bool wantIt = _it.IsIt;
             if (wantIt != _showingIt)
@@ -230,12 +233,42 @@ namespace Tag.Art
 #endif
             if (_visualInstance == null)
             {
-                if (prefab != null && fallbackToPrimitiveIfUnbound)
-                    Debug.Log($"[DummyAvatarBinder] '{prefab.name}' has no hierarchical limb bones — using Navy Spade primitive.");
+                NotePrimitiveFallback(prefab);
                 _visualInstance = DummyPrimitiveFactory.Build(transform, asIt, PickColor());
                 usedPrimitive = true;
             }
 
+            BindSpawned(prefab, asIt, usedPrimitive, becameIt);
+        }
+
+        void HidePlaceholder()
+        {
+            if (!_keptOffReady)
+            {
+                StripPlaceholderBody();
+                _keptOffReady = true;
+                return;
+            }
+            KeepPlaceholdersOff();
+        }
+
+        void KeepPlaceholdersOff()
+        {
+            for (int i = 0; i < _keptOff.Count; i++)
+            {
+                Renderer r = _keptOff[i];
+                if (r != null && r.enabled) r.enabled = false;
+            }
+        }
+
+        void NotePrimitiveFallback(GameObject prefab)
+        {
+            if (prefab != null && fallbackToPrimitiveIfUnbound)
+                Debug.Log($"[DummyAvatarBinder] '{prefab.name}' has no hierarchical limb bones — using Navy Spade primitive.");
+        }
+
+        void BindSpawned(GameObject prefab, bool asIt, bool usedPrimitive, bool becameIt)
+        {
             var loco = _visualInstance.GetComponent<DummyLocomotor>();
             if (loco == null) loco = _visualInstance.AddComponent<DummyLocomotor>();
             var motor = GetComponent<PlayerMotor>();
@@ -246,7 +279,9 @@ namespace Tag.Art
             if (jetFx != null)
                 jetFx.Bind(motor, _visualInstance.transform);
 
+            _keptOffReady = false;
             StripPlaceholderBody();
+            _keptOffReady = true;
             if (_visualInstance != null)
                 _visualBaseScale = _visualInstance.transform.localScale;
             if (GetComponent<ItMarker>() == null)
@@ -257,10 +292,13 @@ namespace Tag.Art
 
             if (usedPrimitive)
                 Debug.Log($"[DummyAvatarBinder] Navy Spade primitive active on {gameObject.name} (asIt={asIt}).");
-            else if (!_loggedHier && prefab != null && prefab.name.IndexOf("Hier", System.StringComparison.Ordinal) >= 0)
+            else
             {
-                _loggedHier = true;
-                Debug.Log($"[DummyAvatarBinder] Hier mannequin '{prefab.name}' on {gameObject.name} (asIt={asIt}).");
+                if (!_loggedHier && prefab != null && prefab.name.IndexOf("Hier", System.StringComparison.Ordinal) >= 0)
+                {
+                    _loggedHier = true;
+                    Debug.Log($"[DummyAvatarBinder] Hier mannequin '{prefab.name}' on {gameObject.name} (asIt={asIt}).");
+                }
             }
         }
 

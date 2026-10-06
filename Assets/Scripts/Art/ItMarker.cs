@@ -45,6 +45,15 @@ namespace Tag.Art
             EnsureParts();
         }
 
+        void Start()
+        {
+            _itStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter
+            };
+        }
+
         void LateUpdate()
         {
             if (!_built) EnsureParts();
@@ -270,14 +279,7 @@ namespace Tag.Art
             float inset = 5f;
             GUI.DrawTexture(new Rect(x + inset, y + inset, mark - inset * 2f, mark - inset * 2f), Texture2D.whiteTexture);
             GUI.color = Color.white;
-            if (_itStyle == null)
-            {
-                _itStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontStyle = FontStyle.Bold,
-                    alignment = TextAnchor.MiddleCenter
-                };
-            }
+            if (_itStyle == null) return;
             _itStyle.fontSize = Screen.height >= 1000 ? 14 : 12;
             _itStyle.normal.textColor = new Color(0.08f, 0.08f, 0.1f, 1f);
             GUI.Label(new Rect(x, y, mark, mark), "IT", _itStyle);

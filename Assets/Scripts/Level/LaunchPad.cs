@@ -41,6 +41,11 @@ namespace Tag.Level
 
         static readonly List<LaunchPad> Active = new List<LaunchPad>();
 
+        public static void ResetStatics()
+        {
+            Active.Clear();
+        }
+
         readonly Dictionary<int, float> _readyAt = new Dictionary<int, float>();
         readonly HashSet<int> _touching = new HashSet<int>();
         readonly HashSet<int> _seen = new HashSet<int>();
@@ -183,7 +188,7 @@ namespace Tag.Level
             {
                 Collider hit = _hits[i];
                 if (hit == null) continue;
-                PlayerMotor motor = hit.GetComponentInParent<PlayerMotor>();
+                PlayerMotor motor = PlayerMotor.FromCollider(hit);
                 if (motor == null) continue;
                 _seen.Add(motor.GetInstanceID());
                 Consider(motor);

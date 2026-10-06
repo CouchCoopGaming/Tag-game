@@ -23,12 +23,12 @@ namespace TagArena.Movement
         public static KeyCode AirDash { get; private set; } = KeyCode.Q;
         public static KeyCode Punch { get; private set; } = KeyCode.Mouse0;
 
-        public static string DashName => AirDash == KeyCode.Mouse4 ? "Mouse4" : AirDash.ToString();
+        static string _dashName = "Q";
+        static string _punchName = "LMB";
 
-        public static string PunchName =>
-            Punch == KeyCode.Mouse0 ? "LMB" :
-            Punch == KeyCode.Mouse3 ? "Mouse3" :
-            Punch.ToString();
+        public static string DashName => _dashName;
+
+        public static string PunchName => _punchName;
 
         public static string Help =>
             "WASD move. In air, tap forward while strafing\n" +
@@ -73,6 +73,18 @@ namespace TagArena.Movement
                     break;
                 }
             }
+            RefreshNames();
+        }
+
+        static void RefreshNames()
+        {
+            if (AirDash == KeyCode.Mouse4) _dashName = "Mouse4";
+            else if (AirDash == KeyCode.V) _dashName = "V";
+            else _dashName = "Q";
+
+            if (Punch == KeyCode.Mouse0) _punchName = "LMB";
+            else if (Punch == KeyCode.Mouse3) _punchName = "Mouse3";
+            else _punchName = "F";
         }
 
         public static void CycleDash(int dir)

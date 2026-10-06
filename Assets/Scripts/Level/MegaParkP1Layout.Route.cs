@@ -310,7 +310,27 @@ namespace Tag.Level
                     });
                 }
             }
-            for (int i = 0; i < zips.Length && !ParkArena.IsPocket; i++)
+            if (ParkArena.IsStack)
+            {
+                StackYardLayout.CounterMark[] counters = StackYardLayout.CounterMarks;
+                for (int i = 0; i < counters.Length; i++)
+                {
+                    StackYardLayout.CounterMark c = counters[i];
+                    marks.Add(new ParkMark
+                    {
+                        Kind = HopCounter,
+                        Index = (short)i,
+                        X = c.X,
+                        Z = c.Z,
+                        Y = c.Y,
+                        ExitX = c.X,
+                        ExitZ = c.Z,
+                        ExitY = c.Y,
+                        Ride = 0f
+                    });
+                }
+            }
+            for (int i = 0; i < zips.Length && !ParkArena.IsPocket && !ParkArena.IsStack; i++)
             {
                 string counter = zips[i].Counter;
                 if (string.IsNullOrEmpty(counter)) continue;

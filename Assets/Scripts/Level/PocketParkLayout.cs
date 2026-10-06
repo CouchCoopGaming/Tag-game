@@ -323,6 +323,7 @@ namespace Tag.Level
             int draws = DrawReport(solids, ramps, fail);
             int stuck = DummyReport(out int padsTaken, out int zipsTaken, fail);
             string skills = SkillReport(fail);
+            ArenaStill.WritePair("PocketPark", solids, ramps, BuildDressing(), LaunchPads, ZipLines, Spawns[0], MapW, MapD, fail);
 
             var audit = new Audit();
             audit.Ok = fail.Length == 0;

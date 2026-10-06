@@ -57,6 +57,30 @@ namespace Tag.Level
         public static float MapW => IsStack ? StackYardLayout.MapW : IsPocket ? PocketParkLayout.MapW : MegaParkP1Layout.MapW;
         public static float MapD => IsStack ? StackYardLayout.MapD : IsPocket ? PocketParkLayout.MapD : MegaParkP1Layout.MapD;
 
+        /// <summary>
+        /// Fence footprint and kill height for an arena id. Unknown ids use Mega Park.
+        /// The kill height is the shared plane. Feel locks are not stored here.
+        /// </summary>
+        public static void Containment(int id, out float mapW, out float mapD, out float killY)
+        {
+            if (id == Pocket)
+            {
+                mapW = PocketParkLayout.MapW;
+                mapD = PocketParkLayout.MapD;
+            }
+            else if (id == Stack)
+            {
+                mapW = StackYardLayout.MapW;
+                mapD = StackYardLayout.MapD;
+            }
+            else
+            {
+                mapW = MegaParkP1Layout.MapW;
+                mapD = MegaParkP1Layout.MapD;
+            }
+            killY = MegaParkP1Layout.KillPlaneY;
+        }
+
         public static void PickRespawn(float fromX, float fromZ, float itX, float itZ, bool hasIt,
             out float x, out float y, out float z)
         {

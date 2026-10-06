@@ -1213,9 +1213,7 @@ namespace Tag.Art
             float dt = Time.deltaTime;
             _stanceSole = false;
             _punchTelegraph = Mathf.MoveTowards(_punchTelegraph, 0f, dt);
-            if (_motor == null) _motor = GetComponentInParent<PlayerMotor>();
-            if (_input == null) _input = GetComponentInParent<PlayerInputReader>();
-            if (_grapple == null) _grapple = GetComponentInParent<ExperimentalGrapple>();
+            if (_motor == null || _input == null || _grapple == null || _punch == null) BindActors();
             HookBounce();
             // Cyan dash tell must run even when the limb rig failed to bind.
             TickAirDashTell(dt);
@@ -1248,7 +1246,6 @@ namespace Tag.Art
             TickWallJumpPush(dt, landAirSnap);
             if (!_bound) Cache(transform);
             if (!_bound) return;
-            if (_punch == null) _punch = GetComponentInParent<PunchHitbox>();
 
             float speed = _motor != null ? _motor.HorizontalSpeed : 0f;
             bool grounded = _motor == null || _motor.IsGrounded;
@@ -16221,11 +16218,29 @@ namespace Tag.Art
         OpponentLungeTell LungeTellMark()
         {
             if (_lungeTell != null) return _lungeTell;
+            RememberLungeTell();
+            return _lungeTell;
+        }
+
+        void RememberLungeTell()
+        {
             Transform pawn = _motor != null ? _motor.transform : transform.root;
-            if (pawn == null) return null;
+            if (pawn == null) return;
             OpponentLungeTell mark = pawn.GetComponent<OpponentLungeTell>();
             if (mark != null) _lungeTell = mark;
-            return mark;
+        }
+
+        void BindActors()
+        {
+            ResolveActors();
+        }
+
+        void ResolveActors()
+        {
+            if (_motor == null) _motor = GetComponentInParent<PlayerMotor>();
+            if (_input == null) _input = GetComponentInParent<PlayerInputReader>();
+            if (_grapple == null) _grapple = GetComponentInParent<ExperimentalGrapple>();
+            if (_punch == null) _punch = GetComponentInParent<PunchHitbox>();
         }
 
         /// <summary>
@@ -17039,7 +17054,6 @@ namespace Tag.Art
         void TickHitConfirm(float dt)
         {
             bool solo = HitConfirmSolo();
-            if (_punch == null) _punch = GetComponentInParent<PunchHitbox>();
             PunchPhase phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
             bool punchHit = phase == PunchPhase.HitRecover;
             bool tag = HitConfirmTell.TagConnect(_tagFlinch, _itClaim);
