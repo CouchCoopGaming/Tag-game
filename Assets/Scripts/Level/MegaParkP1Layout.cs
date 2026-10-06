@@ -30,6 +30,9 @@ namespace Tag.Level
     /// non-colliding dressing. The footprint, loop, and feel locks stay put.
     /// Pass 8 does not move the park. It checks the Play slice and counts one
     /// minimap texture in the draw budget.
+    /// Pass 9 keeps the 472 m loop and the 118 m spawn arcs. It opens the one
+    /// dead-end deck, audits camp corners and stall loops, and paints skill
+    /// chevrons. Feel locks are not stored here and are not retuned.
     /// </summary>
     public static partial class MegaParkP1Layout
     {
@@ -197,7 +200,7 @@ namespace Tag.Level
                     if (s.Sy < 4.2f || thin > 0.6f || longs < 6f || s.Mat != "blue")
                         fail.Append(s.Name).Append(" is not a tall flat cling wall; ");
                 }
-                else if (s.Mat == "blue")
+                else if (s.Mat == "blue" && !ChevronMark(s))
                     fail.Append(s.Name).Append(" is blue but not a cling wall; ");
 
                 if (s.Kind == "vault")
@@ -302,6 +305,7 @@ namespace Tag.Level
             string pulseNote = PulseReport(fail);
             string lookNote = LookReport(solids, ramps, fail);
             PlaySliceReport(fail);
+            string flowNote = FlowReport(solids, ramps, fail);
             if (fail.Length == failBeforeMesh && meshGap > MeshMatch)
                 fail.Append("collider mismatch ").Append(meshGap.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
 
@@ -320,11 +324,11 @@ namespace Tag.Level
             };
             audit.Line = string.Format(
                 CultureInfo.InvariantCulture,
-                "MegaPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns 4+2; solids {3} grounded; cling walls {4}; vaults {5}; bar under-clear {6:0.00} m; crossings A+B open; routes {7}; rim {8}, max gap {9:0.00} m; {10}; {11}; collider mismatch {12:0.000} m; ground error {13:0.000} m; pads {14} {15}; zips {16} clearance {17:0.00} m; saved {18}; dummy 60s pads {19} zips {20}; containment fence {21:0.0} m kill {22:0.00} sweeps {23} {24}; {25}; {26}; {27}; {28}; {29}",
+                "MegaPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns 4+2; solids {3} grounded; cling walls {4}; vaults {5}; bar under-clear {6:0.00} m; crossings A+B open; routes {7}; rim {8}, max gap {9:0.00} m; {10}; {11}; collider mismatch {12:0.000} m; ground error {13:0.000} m; pads {14} {15}; zips {16} clearance {17:0.00} m; saved {18}; dummy 60s pads {19} zips {20}; containment fence {21:0.0} m kill {22:0.00} sweeps {23} {24}; {25}; {26}; {27}; {28}; {29}; {30}",
                 audit.LoopM, SprintSpeed, audit.Seconds, audit.SolidCount, audit.WallCount, audit.VaultCount, audit.BarClear,
                 audit.RouteCount, audit.RimContinuous ? "continuous" : "broken", audit.RimGapMax, levelNote, pairNote,
                 meshGap, groundErr, pads, padsLanded ? "landed" : "miss", zips, zipClear, zipSaved, dummyPads, dummyZips,
-                FenceTop, KillPlaneY, sweeps, contained ? "held" : "open", spawnNote, landmarkNote, perfNote, pulseNote, lookNote);
+                FenceTop, KillPlaneY, sweeps, contained ? "held" : "open", spawnNote, landmarkNote, perfNote, pulseNote, lookNote, flowNote);
             audit.Failure = fail.ToString();
             return audit;
         }
@@ -460,6 +464,8 @@ namespace Tag.Level
             AddRimRoute(list);
             AddRoutePlates(list);
             AddLandmarks(list);
+            if (IncludePass9)
+                AddPass9Solids(list);
             return list.ToArray();
         }
 
@@ -1063,7 +1069,7 @@ namespace Tag.Level
             for (int i = 0; i < solids.Length; i++)
             {
                 Solid s = solids[i];
-                if (s.Kind == "ground" || s.Kind == "fence" || s.Kind == "wall" || s.Kind == "anchor" || s.Kind == "landmark")
+                if (s.Kind == "ground" || s.Kind == "fence" || s.Kind == "wall" || s.Kind == "anchor" || s.Kind == "landmark" || s.Kind == "mark")
                     continue;
                 float top = s.Y + s.Sy * 0.5f;
                 if (top >= 4.5f && s.Zone != "Z4" && top > tallestOffRim)
@@ -1291,7 +1297,7 @@ namespace Tag.Level
                 if (s.Name.StartsWith("Hook_", StringComparison.Ordinal) && s.Mat != "plate")
                     fail.Append(s.Name).Append(" plate is not orange; ");
                 if (s.Kind == "wall" && s.Mat == "blue") blueWall = true;
-                if (s.Mat == "blue" && s.Kind != "wall")
+                if (s.Mat == "blue" && s.Kind != "wall" && !ChevronMark(s))
                     fail.Append(s.Name).Append(" cling blue is on a non-wall; ");
             }
             if (!soft || !pad || !merry || !amber || !swing || !army || !knight || !kick || !hop || !plate || !blueWall)
