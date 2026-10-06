@@ -31,7 +31,7 @@ namespace Tag.Audio
             _music = gameObject.AddComponent<AudioSource>();
             _music.playOnAwake = false;
             _music.loop = true;
-            _music.volume = AudioMaster.MusicMuted ? 0f : AudioMaster.MusicVolume;
+            _music.volume = AudioMix.MusicLevel(AudioMaster.MusicVolume, AudioMaster.MusicMuted);
         }
 
         void OnDestroy()
@@ -104,14 +104,15 @@ namespace Tag.Audio
             if (_music.clip == clip && _music.isPlaying) return;
             _music.clip = clip;
             _music.loop = true;
-            _music.volume = AudioMaster.MusicMuted ? 0f : AudioMaster.MusicVolume;
+            _music.volume = AudioMix.MusicLevel(AudioMaster.MusicVolume, AudioMaster.MusicMuted);
+            if (_music.volume <= 0.001f) return;
             _music.Play();
         }
 
         public void RefreshVolumes()
         {
             if (_music != null)
-                _music.volume = AudioMaster.MusicMuted ? 0f : AudioMaster.MusicVolume;
+                _music.volume = AudioMix.MusicLevel(AudioMaster.MusicVolume, AudioMaster.MusicMuted);
         }
 
         public void StopMusic()

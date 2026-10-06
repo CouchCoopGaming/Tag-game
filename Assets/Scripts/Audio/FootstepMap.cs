@@ -76,19 +76,25 @@ namespace Tag.Audio
         /// <summary>
         /// Material name picks the step. Shipping containers, catwalks, and the
         /// warehouse shell ring even when a story is painted concrete.
+        /// Grass and mulch share the soft clip. Sand shares the hard clip with concrete.
+        /// Wood is the knock. Steel is the ring. Soft play is grass. Rubber, pads, and rims are concrete.
         /// </summary>
         public static Surface Classify(string material, string objectName)
         {
             if (NamedMetal(objectName)) return Surface.Metal;
             if (string.IsNullOrEmpty(material)) return Surface.Concrete;
-            if (Has(material, "grass") || Has(material, "mulch") || Has(material, "field") || Has(material, "leaf"))
+            if (Has(material, "grass") || Has(material, "mulch") || Has(material, "field")
+                || Has(material, "leaf") || Has(material, "soft"))
                 return Surface.Grass;
-            if (Has(material, "steel") || Has(material, "metal") || Has(material, "fence")
-                || Has(material, "plate") || Has(material, "lamp")
-                || Has(material, "army") || Has(material, "knight") || Has(material, "amber") || Has(material, "pad"))
-                return Surface.Metal;
             if (Has(material, "wood") || Has(material, "cedar") || Has(material, "bark") || Has(material, "plank"))
                 return Surface.Wood;
+            if (Has(material, "steel") || Has(material, "metal") || Has(material, "fence")
+                || Has(material, "plate") || Has(material, "lamp")
+                || Has(material, "army") || Has(material, "knight") || Has(material, "amber"))
+                return Surface.Metal;
+            // Sand, rubber, launch pads, and rims are the hard step. Anything else is too.
+            if (Has(material, "sand") || Has(material, "rubber") || Has(material, "pad") || Has(material, "rim"))
+                return Surface.Concrete;
             return Surface.Concrete;
         }
 
@@ -99,6 +105,18 @@ namespace Tag.Audio
                 || objectName.StartsWith("Cat_", System.StringComparison.Ordinal)
                 || objectName.StartsWith("Wh_", System.StringComparison.Ordinal);
         }
+
+        /// <summary>
+        /// Walkable material tokens painted on Mega Park, Pocket Park, and Stack Yard,
+        /// plus the soft-play and hard-step names the sweep checks by hand.
+        /// </summary>
+        public static readonly string[] GroundNames =
+        {
+            "grass", "mulch", "concrete", "sand", "wood", "metal",
+            "rubber", "cedar", "bark", "field", "soft", "pad", "steel", "fence",
+            "leaf", "plate", "lamp", "rim", "plank", "cling", "slide", "zip",
+            "amber", "army", "knight", "merry", "swing", "kick", "hop", "cover"
+        };
 
         static int Index(Gait gait)
         {

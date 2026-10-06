@@ -188,8 +188,14 @@ namespace Tag.Local
             if (input != null)
             {
                 input.ExternalControl = ai;
-                if (!ai && CouchPlay.Humans >= 2)
-                    input.DriveDevice = CouchPlay.DeviceOf(index);
+                if (!ai)
+                {
+                    int device = CouchPlay.DeviceOf(index);
+                    // One pad alone used to stay on the solo reader, which also
+                    // samples the keyboard. A pad seat reads only that pad.
+                    if (CouchPlay.Humans >= 2 || device > 0)
+                        input.DriveDevice = device;
+                }
             }
 
             if (go.GetComponent<SurfaceProbe>() == null) go.AddComponent<SurfaceProbe>();
@@ -446,7 +452,9 @@ namespace Tag.Local
             if (existing != null)
             {
                 // Rebuild clean TP boom â€” destroy old eye rig
-                Destroy(existing.gameObject);
+                // End-of-frame Destroy left the old rig alive for a second
+                // ConfigurePawn in the same frame, so two listeners stacked.
+                DestroyImmediate(existing.gameObject);
                 existing = null;
             }
 

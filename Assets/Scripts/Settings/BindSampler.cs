@@ -356,55 +356,59 @@ namespace Tag.Settings
         {
 #if ENABLE_INPUT_SYSTEM
             Gamepad pad = PadAt(index);
-            if (pad != null)
+            // A missing slot is empty. Falling through to Gamepad.current let an
+            // unplugged seat steal whatever pad the runtime still called current.
+            if (pad == null)
+                return false;
+            switch (token)
             {
-                switch (token)
-                {
-                    case "buttonSouth": return pad.buttonSouth.isPressed;
-                    case "buttonEast": return pad.buttonEast.isPressed;
-                    case "buttonWest": return pad.buttonWest.isPressed;
-                    case "buttonNorth": return pad.buttonNorth.isPressed;
-                    case "leftShoulder": return pad.leftShoulder.isPressed;
-                    case "rightShoulder": return pad.rightShoulder.isPressed;
-                    case "start": return pad.startButton.isPressed;
-                    case "select": return pad.selectButton.isPressed;
-                    case "dpadLeft": return pad.dpad.left.isPressed;
-                    case "dpadRight": return pad.dpad.right.isPressed;
-                    case "dpadUp": return pad.dpad.up.isPressed;
-                    case "dpadDown": return pad.dpad.down.isPressed;
-                    case "leftStickHold": return pad.leftStick.ReadValue().sqrMagnitude > 0.04f;
-                }
+                case "buttonSouth": return pad.buttonSouth.isPressed;
+                case "buttonEast": return pad.buttonEast.isPressed;
+                case "buttonWest": return pad.buttonWest.isPressed;
+                case "buttonNorth": return pad.buttonNorth.isPressed;
+                case "leftShoulder": return pad.leftShoulder.isPressed;
+                case "rightShoulder": return pad.rightShoulder.isPressed;
+                case "start": return pad.startButton.isPressed;
+                case "select": return pad.selectButton.isPressed;
+                case "dpadLeft": return pad.dpad.left.isPressed;
+                case "dpadRight": return pad.dpad.right.isPressed;
+                case "dpadUp": return pad.dpad.up.isPressed;
+                case "dpadDown": return pad.dpad.down.isPressed;
+                case "leftStickHold": return pad.leftStick.ReadValue().sqrMagnitude > 0.04f;
             }
-#endif
+            return false;
+#else
             if (index != 0) return false;
             return PadHeld(token);
+#endif
         }
 
         static bool PadPressedAt(int index, string token)
         {
 #if ENABLE_INPUT_SYSTEM
             Gamepad pad = PadAt(index);
-            if (pad != null)
+            if (pad == null)
+                return false;
+            switch (token)
             {
-                switch (token)
-                {
-                    case "buttonSouth": return pad.buttonSouth.wasPressedThisFrame;
-                    case "buttonEast": return pad.buttonEast.wasPressedThisFrame;
-                    case "buttonWest": return pad.buttonWest.wasPressedThisFrame;
-                    case "buttonNorth": return pad.buttonNorth.wasPressedThisFrame;
-                    case "leftShoulder": return pad.leftShoulder.wasPressedThisFrame;
-                    case "rightShoulder": return pad.rightShoulder.wasPressedThisFrame;
-                    case "start": return pad.startButton.wasPressedThisFrame;
-                    case "select": return pad.selectButton.wasPressedThisFrame;
-                    case "dpadLeft": return pad.dpad.left.wasPressedThisFrame;
-                    case "dpadRight": return pad.dpad.right.wasPressedThisFrame;
-                    case "dpadUp": return pad.dpad.up.wasPressedThisFrame;
-                    case "dpadDown": return pad.dpad.down.wasPressedThisFrame;
-                }
+                case "buttonSouth": return pad.buttonSouth.wasPressedThisFrame;
+                case "buttonEast": return pad.buttonEast.wasPressedThisFrame;
+                case "buttonWest": return pad.buttonWest.wasPressedThisFrame;
+                case "buttonNorth": return pad.buttonNorth.wasPressedThisFrame;
+                case "leftShoulder": return pad.leftShoulder.wasPressedThisFrame;
+                case "rightShoulder": return pad.rightShoulder.wasPressedThisFrame;
+                case "start": return pad.startButton.wasPressedThisFrame;
+                case "select": return pad.selectButton.wasPressedThisFrame;
+                case "dpadLeft": return pad.dpad.left.wasPressedThisFrame;
+                case "dpadRight": return pad.dpad.right.wasPressedThisFrame;
+                case "dpadUp": return pad.dpad.up.wasPressedThisFrame;
+                case "dpadDown": return pad.dpad.down.wasPressedThisFrame;
             }
-#endif
+            return false;
+#else
             if (index != 0) return false;
             return PadPressed(token);
+#endif
         }
 
         static Vector2 PadMoveAt(int index, string token)

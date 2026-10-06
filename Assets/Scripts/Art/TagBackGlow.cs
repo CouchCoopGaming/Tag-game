@@ -77,13 +77,22 @@ namespace Tag.Art
                 Destroy(_shellMat);
         }
 
+        int SeatIndex()
+        {
+            string id = _it != null ? _it.PlayerId : null;
+            if (string.IsNullOrEmpty(id)) return 0;
+            char c = id[id.Length - 1];
+            if (c < '1' || c > '4') return 0;
+            return c - '1';
+        }
+
         void Apply(float glow)
         {
             ClearPulsed();
             Color ink = Safe;
             if (GameSettings.Current != null)
             {
-                int pal = GameSettings.Current.PaletteOf(0);
+                int pal = GameSettings.Current.PaletteOf(SeatIndex());
                 if (pal != 0)
                 {
                     AccessibilityPalette.Glow(pal, out float gr, out float gg, out float gb);
