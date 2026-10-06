@@ -2,12 +2,14 @@ using UnityEngine;
 using Tag.Audio;
 using Tag.Experimental;
 using Tag.Gameplay;
+using Tag.Level;
 
 namespace TagArena.Movement
 {
     /// <summary>
     /// Kinematic motor. One CharacterController.Move per Update.
     /// Gravity, jump, slide friction, and cling live here. The rigidbody is the ragdoll window only.
+    /// A launch pad queues a velocity set that this Update writes before that Move.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(CapsuleCollider))]
@@ -37,6 +39,8 @@ namespace TagArena.Movement
         public float ClingGraceRemaining => _clingGrace;
         /// <summary>True when a cling into the face just left is refused. The pose reads this.</summary>
         public bool ClingRefused => _clingRefused;
+        /// <summary>True from a pad's velocity set until the next landing. The rise pose reads this.</summary>
+        public bool LaunchArc => _launchArc;
 
         /// <summary>Chase reads this so it does not steer a re-cling into the face just left.</summary>
         public bool WouldRefuseCling(int colliderId, Vector3 normal, Vector3 point)
@@ -133,6 +137,13 @@ namespace TagArena.Movement
         bool _grappleSearched;
         ExperimentalGrapple _grapple;
         bool _grappleYieldDash;
+        bool _launchQueued;
+        bool _launchSetHoriz;
+        bool _launchArc;
+        float _launchApex;
+        float _launchCooldown;
+        float _launchReadyAt;
+        Vector3 _launchHoriz;
 
         public event System.Action<MoveState, MoveState> OnStateChanged;
         public event System.Action OnJumped;
@@ -290,6 +301,7 @@ namespace TagArena.Movement
             // The rope replaces horizontal only, then the one Move below consumes it.
             v = ApplyGrappleHorizontal(v);
             v = ApplyGroundRead(v, dt);
+            v = ApplyQueuedLaunch(v);
 
             _velocity = v;
             FitController(v.y, CeilingClose());
@@ -297,6 +309,8 @@ namespace TagArena.Movement
             if (_cc != null && _cc.enabled)
                 flags = _cc.Move(_velocity * dt);
             _velocity.y = KinematicStep.CeilingBlockedVy(_velocity.y, (flags & CollisionFlags.Above) != 0);
+            if (_launchArc && _stableFeet && _velocity.y < KinematicStep.LaunchVy)
+                _launchArc = false;
 
             if (tagRole != null && tagRole.IsIt)
                 TryTag();
@@ -387,6 +401,15 @@ namespace TagArena.Movement
                 return v;
             }
             if (TryLunge(ref v, wish, dt)) return v;
+
+            // Pad rise. Gravity is the rise curve. Crouch does not scale it.
+            // Strafe still adds horizontal through the same air steer.
+            if (_launchArc && v.y > 0f)
+            {
+                v = AirMoveLaunch(dt, v, wish);
+                UpdateLocomotionState(false, v);
+                return v;
+            }
 
             if (grounded && !Skiing)
                 v = GroundMove(dt, v, wish);
@@ -618,6 +641,43 @@ namespace TagArena.Movement
             return v;
         }
 
+        /// <summary>
+        /// Launch rise. Vertical is gravity only. Horizontal is the existing air steer,
+        /// so a strafe can add speed and a held key cannot change the apex.
+        /// </summary>
+        Vector3 AirMoveLaunch(float dt, Vector3 v, Vector3 wish)
+        {
+            float g = KinematicStep.AirGravity(v.y, cfg.gravity, cfg.fallGravityMult);
+            v.y = KinematicStep.IntegrateVertical(v.y, g, dt, cfg.maxFallSpeed);
+            v = WishAccel.SetHoriz(v, LaunchAirHorizontal(v, wish, dt));
+            return v;
+        }
+
+        Vector3 LaunchAirHorizontal(Vector3 v, Vector3 wish, float dt)
+        {
+            Vector3 hv = WishAccel.Horizontal(v);
+            if (wish.sqrMagnitude > 0.01f)
+            {
+                float wishSpeed = KinematicStep.GaitCap(_in.CrouchHeld, PunchStagger.SprintHeld(_in.SprintHeld, _stagger.Stagger), _in.Move.y, cfg.crouchSpeed, cfg.sprintSpeed, cfg.walkSpeed);
+                float accel = cfg.airAccel * (_in.Move.x != 0f && Mathf.Abs(_in.Move.y) < 0.2f ? cfg.airStrafeBonus : 1f);
+                hv = KinematicStep.AirSteer(hv, wish, wishSpeed, accel, dt);
+            }
+
+            if (cfg.enableTapStrafe && _in.TapForwardPulse && _tapCd <= 0f && Mathf.Abs(_in.Move.x) > 0.4f)
+            {
+                float kept = hv.magnitude;
+                Vector3 side = wish.sqrMagnitude > 0.01f ? wish.normalized : transform.right * Mathf.Sign(_in.Move.x);
+                float donate = Mathf.Min(cfg.tapStrafeImpulse, hv.magnitude);
+                hv += side * donate * 0.65f;
+                hv -= Vector3.Project(hv, transform.forward) * 0.25f;
+                hv = WishAccel.ClampPlanarSpeed(hv, kept);
+                _tapCd = cfg.tapStrafeCooldown;
+                _in.ConsumeTapPulse();
+            }
+
+            return hv;
+        }
+
         bool WantsJet()
         {
             if (cfg == null || !cfg.enableJet) return false;
@@ -664,6 +724,8 @@ namespace TagArena.Movement
 
         void TryJump(ref Vector3 v, bool grounded)
         {
+            // A pad arc is already the vertical. The jump button does not replace it.
+            if (_launchArc) return;
             if (_jumpSlot <= 0f) return;
 
             // Super-glide: jump at mantle peak (crouch optional; height follows CrouchHeld)
@@ -734,6 +796,7 @@ namespace TagArena.Movement
             launch += hv * 0.4f;
 
             v = launch;
+            _launchArc = false;
             _jumpSlot = 0f;
             _wallJumpSlot = 0f;
             _clingGrace = 0f;
@@ -763,6 +826,7 @@ namespace TagArena.Movement
             Vector3 away = _probe.Wall.hit ? _probe.Wall.normal : -transform.right;
             Vector3 look = cam ? Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized : transform.forward;
             v = away * cfg.wallRunJumpOut + Vector3.up * cfg.wallRunJumpUp + look * 3.5f;
+            _launchArc = false;
             _jumpSlot = 0f;
             _wallJumpSlot = 0f;
             _clingGrace = 0f;
@@ -890,6 +954,7 @@ namespace TagArena.Movement
             SuperGlideT = -1f;
             ClimbHeightUsed = 0f;
             _jumpFatigued = false;
+            _launchArc = false;
             SetState(MoveState.Mantle);
             OnMantle?.Invoke();
         }
@@ -1272,6 +1337,49 @@ namespace TagArena.Movement
             return true;
         }
 
+        /// <summary>
+        /// One pad step. Consumed as a velocity set before the single Move.
+        /// Rejected while this pawn's cooldown is still running.
+        /// </summary>
+        public bool QueueLaunch(float apexHeight, Vector3 horizontalVelocity, bool setHorizontal, float cooldownSeconds)
+        {
+            if (!LaunchPadRules.CooldownOpen(Time.time, _launchReadyAt))
+                return false;
+            if (apexHeight <= 0.001f) return false;
+            _launchQueued = true;
+            _launchApex = apexHeight;
+            _launchHoriz = horizontalVelocity;
+            _launchSetHoriz = setHorizontal;
+            _launchCooldown = cooldownSeconds > 0f ? cooldownSeconds : LaunchPadRules.DefaultCooldown;
+            return true;
+        }
+
+        /// <summary>
+        /// Replaces vertical with the pad apex. Horizontal is replaced only when the pad sets it.
+        /// Does not clear the same-wall ban. Landing still does that.
+        /// </summary>
+        Vector3 ApplyQueuedLaunch(Vector3 v)
+        {
+            if (!_launchQueued) return v;
+            _launchQueued = false;
+            if (cfg == null) return v;
+            if (_mode == Locomotion.Ragdoll || _mode == Locomotion.Vault || _mode == Locomotion.LandStun)
+                return v;
+            float vy = LaunchPadRules.VerticalSpeed(_launchApex, cfg.gravity);
+            if (vy <= 0.01f) return v;
+            v.y = vy;
+            if (_launchSetHoriz)
+                v = WishAccel.SetHoriz(v, _launchHoriz);
+            _jumpSlot = 0f;
+            _wallJumpSlot = 0f;
+            _coyote = 0f;
+            _launchArc = true;
+            _launchReadyAt = LaunchPadRules.ArmCooldown(Time.time, _launchCooldown);
+            SetHeight(cfg.standingHeight);
+            SetState(MoveState.Air);
+            return v;
+        }
+
         public void SetPunchMoveScale(float scale) => _punchMoveScale = Mathf.Clamp(scale, 0.05f, 1.5f);
         public void SetSlideBlocked(bool blocked) => _slideBlocked = blocked;
 
@@ -1405,6 +1513,7 @@ namespace TagArena.Movement
             bool g = _probe.Ground.grounded;
             if (g && !_wasProbeGrounded)
             {
+                _launchArc = false;
                 float impact = Mathf.Max(0f, -_velocity.y);
                 _lastLandImpactSpeed = impact;
                 _lastLanded = Time.time;
