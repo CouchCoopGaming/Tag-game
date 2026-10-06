@@ -10,7 +10,8 @@ namespace Tag.Modes
     /// A gap jump commits only when the measured span fits inside horizontal speed
     /// times the jump hang, plus a small margin. Otherwise the chase clings, brakes,
     /// or turns onto a side route. A launch pad is a known edge: step on it only
-    /// when the predicted landing is closer to the target. Sprint, air strafe, and cling stay the default.
+    /// when the predicted landing is closer to the target. A zip line is the same kind of edge:
+    /// take it only when the exit is closer to the target. Sprint, air strafe, and cling stay the default.
     /// </summary>
     public enum OpponentChaseVerb
     {
@@ -20,7 +21,8 @@ namespace Tag.Modes
         GapJump = 3,
         WallCling = 4,
         Lunge = 5,
-        PadTake = 6
+        PadTake = 6,
+        ZipTake = 7
     }
 
     public struct OpponentChaseInput
@@ -60,6 +62,14 @@ namespace Tag.Modes
         public bool PadHelps;
         /// <summary>Flat direction from the pawn onto the pad.</summary>
         public Vector3 PadAim;
+        /// <summary>A zip line lies on the chase line, or the pawn is already under one.</summary>
+        public bool ZipAhead;
+        /// <summary>Meters from the pawn to that line.</summary>
+        public float ZipDistance;
+        /// <summary>The exit is closer to the target than staying off the line.</summary>
+        public bool ZipHelps;
+        /// <summary>Flat direction onto the entry, or along the cable when already under it.</summary>
+        public Vector3 ZipAim;
     }
 
     public struct OpponentChaseWish
@@ -337,6 +347,25 @@ namespace Tag.Modes
                 float yaw = side > 0f ? PathAroundDegrees : -PathAroundDegrees;
                 Vector3 peel = YawOffset(aim, yaw);
                 return Make(sprintRange ? OpponentChaseVerb.Sprint : OpponentChaseVerb.Close, peel,
+                    sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
+            }
+
+            if (s.ZipAhead)
+            {
+                if (s.ZipHelps)
+                {
+                    Vector3 onto = Flat(s.ZipAim);
+                    if (onto.sqrMagnitude < 1e-6f)
+                        onto = aim;
+                    else
+                        onto.Normalize();
+                    return Make(OpponentChaseVerb.ZipTake, onto, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
+                }
+
+                float zipSide = Mathf.Abs(s.PathStrafe) > 0.2f ? s.PathStrafe : 1f;
+                float zipYaw = zipSide > 0f ? PathAroundDegrees : -PathAroundDegrees;
+                Vector3 zipPeel = YawOffset(aim, zipYaw);
+                return Make(sprintRange ? OpponentChaseVerb.Sprint : OpponentChaseVerb.Close, zipPeel,
                     sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
             }
 

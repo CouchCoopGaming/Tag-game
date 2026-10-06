@@ -19,6 +19,9 @@ namespace Tag.Level
     /// stored here and are not retuned.
     /// Pass 4: collider matches the mesh, props sit flush, grapple faces stay on
     /// a local approach, crossings clear a capsule, and launch pads land on a floor.
+    /// Pass 5: five downhill zip lines off the slide towers, the slide rim, and
+    /// both fort high decks. Each cable clears a hanging 0.4 m capsule. Feel locks
+    /// are not stored here and are not retuned.
     /// </summary>
     public static class MegaParkP1Layout
     {
@@ -268,7 +271,7 @@ namespace Tag.Level
             int failBeforePads = fail.Length;
             int pads = PadReport(solids, fail);
             bool padsLanded = fail.Length == failBeforePads;
-            int zips = ZipReport(fail);
+            int zips = ZipReport(solids, ramps, fail, out float zipClear, out string zipSaved, out int dummyPads, out int dummyZips);
             GrappleReport(solids, fail);
             CrossingReport(solids, ramps, fail);
             SameWallReport(solids, fail);
@@ -290,10 +293,10 @@ namespace Tag.Level
             };
             audit.Line = string.Format(
                 CultureInfo.InvariantCulture,
-                "MegaPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns 4+2; solids {3} grounded; cling walls {4}; vaults {5}; bar under-clear {6:0.00} m; crossings A+B open; routes {7}; rim {8}, max gap {9:0.00} m; {10}; {11}; collider mismatch {12:0.000} m; ground error {13:0.000} m; pads {14} {15}; zip slots {16}",
+                "MegaPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns 4+2; solids {3} grounded; cling walls {4}; vaults {5}; bar under-clear {6:0.00} m; crossings A+B open; routes {7}; rim {8}, max gap {9:0.00} m; {10}; {11}; collider mismatch {12:0.000} m; ground error {13:0.000} m; pads {14} {15}; zips {16} clearance {17:0.00} m; saved {18}; dummy 60s pads {19} zips {20}",
                 audit.LoopM, SprintSpeed, audit.Seconds, audit.SolidCount, audit.WallCount, audit.VaultCount, audit.BarClear,
                 audit.RouteCount, audit.RimContinuous ? "continuous" : "broken", audit.RimGapMax, levelNote, pairNote,
-                meshGap, groundErr, pads, padsLanded ? "landed" : "miss", zips);
+                meshGap, groundErr, pads, padsLanded ? "landed" : "miss", zips, zipClear, zipSaved, dummyPads, dummyZips);
             audit.Failure = fail.ToString();
             return audit;
         }
@@ -583,10 +586,11 @@ namespace Tag.Level
             public float X, Y, Z, Apex, DirX, DirZ, Speed;
         }
 
-        public struct ZipMark
+        public struct ZipLineSpot
         {
             public string Name;
-            public float X, Y, Z;
+            public float Ax, Ay, Az, Bx, By, Bz, Speed;
+            public string Counter;
         }
 
         // Each pad sets a horizontal. Landing is the continuous return to pad height.
@@ -599,18 +603,22 @@ namespace Tag.Level
             new PadSpot { Name = "Launch_KickWest", X = 108f, Y = 0f, Z = 40f, Apex = 3.5f, DirX = -1f, DirZ = 0f, Speed = 12f },
         };
 
-        public static readonly ZipMark[] ZipSlots =
+        // Downhill A (high) → B (low). Ride speed 14 unless a line needs otherwise.
+        // Hang center sits 1.15 m under the cable (ZipLineRules.HangDrop). The capsule
+        // is the 0.40 m player radius, 1.80 m tall. Counters are the ground toy beside
+        // each line so It is not stuck on the same cable.
+        public static readonly ZipLineSpot[] ZipLines =
         {
-            new ZipMark { Name = "ZipLineSlot_WestRim_A", X = 20f, Y = 4.2f, Z = 48.8f },
-            new ZipMark { Name = "ZipLineSlot_WestRim_B", X = 20f, Y = 4.6f, Z = 74f },
-            new ZipMark { Name = "ZipLineSlot_Fort_A", X = 140f, Y = 4.4f, Z = 28f },
-            new ZipMark { Name = "ZipLineSlot_Fort_B", X = 140f, Y = 4.4f, Z = 71.2f },
-            new ZipMark { Name = "ZipLineSlot_Bars_A", X = 50f, Y = 3.2f, Z = 28f },
-            new ZipMark { Name = "ZipLineSlot_Bars_B", X = 104f, Y = 3.2f, Z = 28f },
-            new ZipMark { Name = "ZipLineSlot_Bowl_A", X = 44f, Y = 3.4f, Z = 50f },
-            new ZipMark { Name = "ZipLineSlot_Bowl_B", X = 80f, Y = 3.4f, Z = 50f },
-            new ZipMark { Name = "ZipLineSlot_NorthRim_A", X = 72f, Y = 4.6f, Z = 77f },
-            new ZipMark { Name = "ZipLineSlot_NorthRim_B", X = 112f, Y = 4.2f, Z = 72.7f },
+            // Slide_T3 (+5) south lip, east of chute 3, down to the west mulch.
+            new ZipLineSpot { Name = "ZipLineSlot_WestRim", Ax = 50.35f, Ay = 6.70f, Az = 75.15f, Bx = 36.4f, By = 2.55f, Bz = 60.4f, Speed = 14f, Counter = "Slide_Chute3" },
+            // Slide_T2 west lip, clear of the spiral and chute 2, down to the west mulch.
+            new ZipLineSpot { Name = "ZipLineSlot_NorthRim", Ax = 35.15f, Ay = 5.20f, Az = 79.05f, Bx = 28.4f, By = 2.50f, Bz = 64.2f, Speed = 14f, Counter = "Slide_Chute2" },
+            // Army high deck, east of the high chute, down to open ground.
+            new ZipLineSpot { Name = "ZipLineSlot_Fort", Ax = 150.25f, Ay = 5.30f, Az = 28.85f, Bx = 150.25f, By = 2.45f, Bz = 42.2f, Speed = 14f, Counter = "Slide_ArmyHi" },
+            // Rim_N1 (slide north rim, top 4) east lip down into the sand.
+            new ZipLineSpot { Name = "ZipLineSlot_Bowl", Ax = 63.15f, Ay = 5.70f, Az = 77.35f, Bx = 66.4f, By = 1.60f, Bz = 50.2f, Speed = 14f, Counter = "SandBank_N" },
+            // Knight high deck south lip, clear of the spiral, down to open ground.
+            new ZipLineSpot { Name = "ZipLineSlot_Bars", Ax = 148.45f, Ay = 5.35f, Az = 68.70f, Bx = 148.45f, By = 2.45f, Bz = 57.6f, Speed = 14f, Counter = "Slide_KnightLo" },
         };
 
         static void AddSwing(List<Solid> list, float x)
@@ -2193,47 +2201,84 @@ namespace Tag.Level
             return latA < 10f && latB < 10f && arc > 40f;
         }
 
-        static int ZipReport(StringBuilder fail)
+        const float ZipHang = 1.15f;
+        const float ZipCapsuleR = 0.4f;
+        const float ZipCapsuleH = 1.8f;
+        const float ZipRide = 14f;
+
+        static int ZipReport(Solid[] solids, Ramp[] ramps, StringBuilder fail, out float clearance, out string saved, out int dummyPads, out int dummyZips)
         {
-            if (ZipSlots == null || ZipSlots.Length < 8 || ZipSlots.Length > 12 || (ZipSlots.Length % 2) != 0)
+            clearance = 0f;
+            saved = "none";
+            dummyPads = 0;
+            dummyZips = 0;
+            if (ZipLines == null || ZipLines.Length != 5)
             {
-                fail.Append("zip slots want 4-6 pairs; ");
-                return ZipSlots == null ? 0 : ZipSlots.Length / 2;
+                fail.Append("zip lines want 5; ");
+                return ZipLines == null ? 0 : ZipLines.Length;
             }
+            string scene = ReadText("Assets/Scenes/Play.unity");
             string boot = ReadText("Assets/Scripts/Level/MegaParkP1Bootstrap.cs");
-            if (boot == null || boot.IndexOf("new GameObject(z.Name)", StringComparison.Ordinal) < 0)
-                fail.Append("zip slots are not empty markers; ");
-            var seen = new HashSet<string>();
-            int pairs = 0;
-            for (int i = 0; i < ZipSlots.Length; i++)
+            string zipSrc = ReadText("Assets/Scripts/Level/ZipLine.cs");
+            if (scene == null || scene.IndexOf("b8d4fa2c5e3a49f1a7b26d9e0f1a4b83", StringComparison.Ordinal) < 0
+                || boot == null || boot.IndexOf("Instantiate(zipLinePrefab", StringComparison.Ordinal) < 0)
+                fail.Append("zip lines are not Assets/Prefabs/ZipLine.prefab instances; ");
+            if (zipSrc == null || zipSrc.IndexOf("D946EF", StringComparison.Ordinal) < 0
+                || zipSrc.IndexOf("ZipPostA", StringComparison.Ordinal) < 0
+                || zipSrc.IndexOf("ZipPostB", StringComparison.Ordinal) < 0
+                || zipSrc.IndexOf("CableTint", StringComparison.Ordinal) < 0)
+                fail.Append("zip fuchsia tint or anchor posts missing; ");
+
+            var names = new HashSet<string>();
+            float worst = 99f;
+            var savedBits = new StringBuilder();
+            Nav nav = BuildNav(solids);
+            for (int i = 0; i < ZipLines.Length; i++)
             {
-                ZipMark z = ZipSlots[i];
-                if (!seen.Add(z.Name))
+                ZipLineSpot z = ZipLines[i];
+                if (!names.Add(z.Name))
                     fail.Append(z.Name).Append(" duplicated; ");
-                bool a = z.Name.EndsWith("_A", StringComparison.Ordinal);
-                bool b = z.Name.EndsWith("_B", StringComparison.Ordinal);
-                if (!a && !b)
-                    fail.Append(z.Name).Append(" is not an A/B end; ");
-                if (!a) continue;
-                string other = z.Name.Substring(0, z.Name.Length - 2) + "_B";
-                bool found = false;
-                for (int j = 0; j < ZipSlots.Length; j++)
+                if (z.Ay < z.By + 0.35f)
+                    fail.Append(z.Name).Append(" is not downhill A to B; ");
+                if (Math.Abs(z.Speed - ZipRide) > 0.01f)
+                    fail.Append(z.Name).Append(" ride speed is not 14; ");
+                float span = DistPoint(z.Ax, z.Az, z.Bx, z.Bz);
+                if (span < 8f || span > 40f)
+                    fail.Append(z.Name).Append(" span ").Append(span.ToString("0.0", CultureInfo.InvariantCulture)).Append("; ");
+                if (LoopShortcut(z.Ax, z.Az, z.Bx, z.Bz))
+                    fail.Append(z.Name).Append(" shortcuts the loop; ");
+                float gap = ZipClearance(solids, ramps, z);
+                if (gap < worst) worst = gap;
+                if (gap < 0.05f)
+                    fail.Append(z.Name).Append(" clearance ").Append(gap.ToString("0.00", CultureInfo.InvariantCulture)).Append("; ");
+                if (!ZipGrabReachable(solids, z))
+                    fail.Append(z.Name).Append(" grab is out of a cling jump or deck edge; ");
+                if (!ZipLanding(solids, z))
+                    fail.Append(z.Name).Append(" landing is not walkable; ");
+                if (!CounterExists(solids, ramps, z.Counter))
+                    fail.Append(z.Name).Append(" counter missing; ");
+                float ground = GroundRouteSeconds(nav, z);
+                float cable = CableLen(z);
+                float zipT = cable / z.Speed;
+                float save = ground > 0.05f ? (ground - zipT) / ground : -1f;
+                if (savedBits.Length > 0) savedBits.Append(' ');
+                savedBits.Append(z.Name.Replace("ZipLineSlot_", ""));
+                savedBits.Append(' ');
+                savedBits.Append((save * 100f).ToString("0", CultureInfo.InvariantCulture));
+                savedBits.Append('%');
+                if (save < 0.02f || save > 0.40f)
+                    fail.Append(z.Name).Append(" saves ").Append((save * 100f).ToString("0", CultureInfo.InvariantCulture)).Append("%; ");
+                for (int j = i + 1; j < ZipLines.Length; j++)
                 {
-                    if (ZipSlots[j].Name != other) continue;
-                    found = true;
-                    pairs++;
-                    float d = DistPoint(z.X, z.Z, ZipSlots[j].X, ZipSlots[j].Z);
-                    if (d < 8f || d > 55f)
-                        fail.Append(z.Name).Append(" span ").Append(d.ToString("0.0", CultureInfo.InvariantCulture)).Append("; ");
-                    if (LoopShortcut(z.X, z.Z, ZipSlots[j].X, ZipSlots[j].Z))
-                        fail.Append(z.Name).Append(" would skip the loop; ");
+                    if (SegmentGap(z, ZipLines[j]) < 1.2f)
+                        fail.Append(z.Name).Append(" crosses ").Append(ZipLines[j].Name).Append("; ");
                 }
-                if (!found)
-                    fail.Append(other).Append(" missing; ");
             }
-            if (pairs < 4 || pairs > 6)
-                fail.Append("zip pairs ").Append(pairs.ToString(CultureInfo.InvariantCulture)).Append("; ");
-            return pairs;
+            clearance = worst > 90f ? 0f : worst;
+            saved = savedBits.Length == 0 ? "none" : savedBits.ToString();
+            ZipFlow(solids, fail);
+            DummyChase(solids, out dummyPads, out dummyZips);
+            return ZipLines.Length;
         }
 
         static void GrappleReport(Solid[] solids, StringBuilder fail)
@@ -2526,6 +2571,593 @@ namespace Tag.Level
                 return;
             if (Math.Abs(laneA.X - laneB.X) > 0.02f)
                 fail.Append("cling seam split a lane; ");
+        }
+
+        static float CableLen(ZipLineSpot z)
+        {
+            float dx = z.Ax - z.Bx;
+            float dy = z.Ay - z.By;
+            float dz = z.Az - z.Bz;
+            return (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
+        }
+
+        static float ZipClearance(Solid[] solids, Ramp[] ramps, ZipLineSpot z)
+        {
+            float len = CableLen(z);
+            int steps = Math.Max(8, (int)(len / 0.4f));
+            float best = 99f;
+            for (int i = 0; i <= steps; i++)
+            {
+                float t = i / (float)steps;
+                float x = z.Ax + (z.Bx - z.Ax) * t;
+                float y = z.Ay + (z.By - z.Ay) * t;
+                float zz = z.Az + (z.Bz - z.Az) * t;
+                float cy = y - ZipHang;
+                float gap = CapsuleGap(solids, ramps, x, cy, zz);
+                if (gap < best) best = gap;
+            }
+            return best;
+        }
+
+        static float CapsuleGap(Solid[] solids, Ramp[] ramps, float x, float y, float z)
+        {
+            float inner = ZipCapsuleH * 0.5f - ZipCapsuleR;
+            if (inner < 0f) inner = 0f;
+            float best = SphereGap(solids, ramps, x, y, z);
+            float up = SphereGap(solids, ramps, x, y + inner, z);
+            float dn = SphereGap(solids, ramps, x, y - inner, z);
+            if (up < best) best = up;
+            if (dn < best) best = dn;
+            return best - ZipCapsuleR;
+        }
+
+        static float SphereGap(Solid[] solids, Ramp[] ramps, float x, float y, float z)
+        {
+            float best = 99f;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (s.Kind == "fence") continue;
+                float gap = PointBoxGap(x, y, z, s.X, s.Y, s.Z, s.Sx, s.Sy, s.Sz);
+                if (gap < best) best = gap;
+            }
+            for (int i = 0; i < ramps.Length; i++)
+            {
+                float gap = PointRampGap(ramps[i], x, y, z);
+                if (gap < best) best = gap;
+            }
+            return best;
+        }
+
+        static float PointBoxGap(float px, float py, float pz, float cx, float cy, float cz, float sx, float sy, float sz)
+        {
+            float dx = Math.Abs(px - cx) - sx * 0.5f;
+            float dy = Math.Abs(py - cy) - sy * 0.5f;
+            float dz = Math.Abs(pz - cz) - sz * 0.5f;
+            if (dx <= 0f && dy <= 0f && dz <= 0f)
+                return Math.Max(dx, Math.Max(dy, dz));
+            float ox = dx > 0f ? dx : 0f;
+            float oy = dy > 0f ? dy : 0f;
+            float oz = dz > 0f ? dz : 0f;
+            return (float)Math.Sqrt(ox * ox + oy * oy + oz * oz);
+        }
+
+        static float PointRampGap(Ramp r, float px, float py, float pz)
+        {
+            float dx = r.X1 - r.X0;
+            float dy = r.Y1 - r.Y0;
+            float dz = r.Z1 - r.Z0;
+            float len = (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
+            if (len < 0.05f) return 99f;
+            float ax = dx / len;
+            float ay = dy / len;
+            float az = dz / len;
+            float sx = -az;
+            float sz = ax;
+            float sl = (float)Math.Sqrt(sx * sx + sz * sz);
+            if (sl < 1e-4f) return 99f;
+            sx /= sl;
+            sz /= sl;
+            float nx = -sz * ay;
+            float ny = sz * ax - sx * az;
+            float nz = sx * ay;
+            if (ny < 0f) { nx = -nx; ny = -ny; nz = -nz; }
+            float thick = r.Thickness > 0f ? r.Thickness : 0.22f;
+            float cx = (r.X0 + r.X1) * 0.5f - nx * thick * 0.5f;
+            float cy = (r.Y0 + r.Y1) * 0.5f - ny * thick * 0.5f;
+            float cz = (r.Z0 + r.Z1) * 0.5f - nz * thick * 0.5f;
+            float lx = (px - cx) * sx + (pz - cz) * sz;
+            float ly = (px - cx) * nx + (py - cy) * ny + (pz - cz) * nz;
+            float lz = (px - cx) * ax + (py - cy) * ay + (pz - cz) * az;
+            return PointBoxGap(lx, ly, lz, 0f, 0f, 0f, r.Width, thick, len);
+        }
+
+        static bool ZipGrabReachable(Solid[] solids, ZipLineSpot z)
+        {
+            for (float x = z.Ax - 2.2f; x <= z.Ax + 2.2f; x += 0.35f)
+            {
+                for (float zz = z.Az - 2.2f; zz <= z.Az + 2.2f; zz += 0.35f)
+                {
+                    float h = DistPoint(x, zz, z.Ax, z.Az);
+                    if (h > 2.15f || h < 0.05f) continue;
+                    if (!TryStand(solids, x, zz, out float y)) continue;
+                    if (y < z.Ay - 3.5f || y > z.Ay + 0.35f) continue;
+                    bool atEdge = h <= 0.95f && y >= z.Ay - 2.30f && y <= z.Ay + 0.45f;
+                    bool hopped = h <= 2.15f && y + 2.6f >= z.Ay - 2.30f && y <= z.Ay - 0.15f;
+                    if (atEdge || hopped) return true;
+                }
+            }
+            return false;
+        }
+
+        static bool ZipLanding(Solid[] solids, ZipLineSpot z)
+        {
+            float bottom = z.By - ZipHang - ZipCapsuleH * 0.5f;
+            if (!SameFloor(solids, z.Bx, z.Bz, out float floor)) return false;
+            float drop = bottom - floor;
+            if (drop < 0.08f || drop > 2.2f) return false;
+            float r = 0.45f;
+            if (!SameFloor(solids, z.Bx + r, z.Bz, out float a) || Math.Abs(a - floor) > 0.25f) return false;
+            if (!SameFloor(solids, z.Bx - r, z.Bz, out float b) || Math.Abs(b - floor) > 0.25f) return false;
+            if (!SameFloor(solids, z.Bx, z.Bz + r, out float c) || Math.Abs(c - floor) > 0.25f) return false;
+            if (!SameFloor(solids, z.Bx, z.Bz - r, out float d) || Math.Abs(d - floor) > 0.25f) return false;
+            if (LaunchPads != null)
+            {
+                for (int i = 0; i < LaunchPads.Length; i++)
+                {
+                    PadSpot p = LaunchPads[i];
+                    if (Math.Abs(z.Bx - p.X) < 1.2f && Math.Abs(z.Bz - p.Z) < 1.2f)
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        static bool SameFloor(Solid[] solids, float x, float z, out float y)
+        {
+            y = 0f;
+            if (x < 1f || z < 1f || x > MapW - 1f || z > MapD - 1f) return false;
+            if (!TryStand(solids, x, z, out y)) return false;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (s.Kind == "ground" || s.Kind == "fence") continue;
+                if (DistXZ(x, z, s) > 0.2f) continue;
+                float bottom = s.Y - s.Sy * 0.5f;
+                float top = s.Y + s.Sy * 0.5f;
+                if (bottom < y + 1.5f && top > y + 0.15f) return false;
+            }
+            return true;
+        }
+
+        static bool CounterExists(Solid[] solids, Ramp[] ramps, string name)
+        {
+            if (string.IsNullOrEmpty(name)) return false;
+            for (int i = 0; i < solids.Length; i++)
+                if (solids[i].Name == name) return true;
+            for (int i = 0; i < ramps.Length; i++)
+                if (ramps[i].Name == name) return true;
+            return false;
+        }
+
+        static float SegmentGap(ZipLineSpot a, ZipLineSpot b)
+        {
+            float best = 99f;
+            for (int i = 0; i <= 12; i++)
+            {
+                float t = i / 12f;
+                float x = a.Ax + (a.Bx - a.Ax) * t;
+                float y = a.Ay + (a.By - a.Ay) * t;
+                float z = a.Az + (a.Bz - a.Az) * t;
+                float gap = DistToSegment(x, y, z, b.Ax, b.Ay, b.Az, b.Bx, b.By, b.Bz);
+                if (gap < best) best = gap;
+            }
+            return best;
+        }
+
+        static float DistToSegment(float px, float py, float pz, float ax, float ay, float az, float bx, float by, float bz)
+        {
+            float abx = bx - ax;
+            float aby = by - ay;
+            float abz = bz - az;
+            float lenSq = abx * abx + aby * aby + abz * abz;
+            float t = 0f;
+            if (lenSq > 1e-6f)
+            {
+                t = ((px - ax) * abx + (py - ay) * aby + (pz - az) * abz) / lenSq;
+                if (t < 0f) t = 0f;
+                if (t > 1f) t = 1f;
+            }
+            float dx = px - (ax + abx * t);
+            float dy = py - (ay + aby * t);
+            float dz = pz - (az + abz * t);
+            return (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
+        }
+
+        static void ZipFlow(Solid[] solids, StringBuilder fail)
+        {
+            if (LaunchPads == null || ZipLines == null) return;
+            for (int i = 0; i < LaunchPads.Length; i++)
+            {
+                PadSpot p = LaunchPads[i];
+                float mag = (float)Math.Sqrt(p.DirX * p.DirX + p.DirZ * p.DirZ);
+                if (mag < 0.5f) continue;
+                float hang = Hang(p.Apex);
+                float ux = p.DirX / mag;
+                float uz = p.DirZ / mag;
+                for (int s = 0; s <= 20; s++)
+                {
+                    float t = hang * s / 20f;
+                    float x = p.X + ux * p.Speed * t;
+                    float z = p.Z + uz * p.Speed * t;
+                    float y = ArcY(p.Y, p.Apex, t);
+                    float head = y + 1.7f;
+                    if (HeadInSolid(solids, x, head, z))
+                        fail.Append(p.Name).Append(" launches under a solid; ");
+                    for (int k = 0; k < ZipLines.Length; k++)
+                    {
+                        ZipLineSpot line = ZipLines[k];
+                        float body = DistToSegment(x, y + 0.9f, z, line.Ax, line.Ay, line.Az, line.Bx, line.By, line.Bz);
+                        if (body < ZipCapsuleR + 0.15f)
+                            fail.Append(p.Name).Append(" launches into ").Append(line.Name).Append("; ");
+                    }
+                }
+                for (int k = 0; k < ZipLines.Length; k++)
+                {
+                    ZipLineSpot line = ZipLines[k];
+                    if (Math.Abs(line.Bx - p.X) < 1.2f && Math.Abs(line.Bz - p.Z) < 1.2f)
+                        fail.Append(line.Name).Append(" ends inside ").Append(p.Name).Append("; ");
+                }
+            }
+        }
+
+        static bool HeadInSolid(Solid[] solids, float x, float y, float z)
+        {
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (s.Kind == "ground" || s.Kind == "fence") continue;
+                if (DistXZ(x, z, s) > 0.05f) continue;
+                float bottom = s.Y - s.Sy * 0.5f;
+                float top = s.Y + s.Sy * 0.5f;
+                if (y > bottom + 0.02f && y < top - 0.02f) return true;
+            }
+            return false;
+        }
+
+        struct Nav
+        {
+            public float[] Floor;
+            public int Nx, Nz;
+            public float X0, Z0, Cell;
+        }
+
+        static Nav BuildNav(Solid[] solids)
+        {
+            const float cell = 1.5f;
+            float x0 = 2f;
+            float z0 = 2f;
+            int nx = (int)((MapW - 4f) / cell);
+            int nz = (int)((MapD - 4f) / cell);
+            var floor = new float[nx * nz];
+            for (int iz = 0; iz < nz; iz++)
+            {
+                for (int ix = 0; ix < nx; ix++)
+                {
+                    float x = x0 + (ix + 0.5f) * cell;
+                    float z = z0 + (iz + 0.5f) * cell;
+                    floor[iz * nx + ix] = CellFloor(solids, x, z);
+                }
+            }
+            return new Nav { Floor = floor, Nx = nx, Nz = nz, X0 = x0, Z0 = z0, Cell = cell };
+        }
+
+        static float CellFloor(Solid[] solids, float x, float z)
+        {
+            if (!TryStand(solids, x, z, out float y)) return float.NaN;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                Solid s = solids[i];
+                if (s.Kind == "ground" || s.Kind == "fence") continue;
+                if (DistXZ(x, z, s) > 0.35f) continue;
+                float bottom = s.Y - s.Sy * 0.5f;
+                float top = s.Y + s.Sy * 0.5f;
+                if (bottom < y + 1.55f && top > y + 0.2f) return float.NaN;
+            }
+            return y;
+        }
+
+        static int NavIndex(Nav nav, float x, float z, out int ix, out int iz)
+        {
+            ix = (int)((x - nav.X0) / nav.Cell);
+            iz = (int)((z - nav.Z0) / nav.Cell);
+            if (ix < 0 || iz < 0 || ix >= nav.Nx || iz >= nav.Nz) return -1;
+            return iz * nav.Nx + ix;
+        }
+
+        static void CellCenter(Nav nav, int index, out float x, out float z)
+        {
+            int ix = index % nav.Nx;
+            int iz = index / nav.Nx;
+            x = nav.X0 + (ix + 0.5f) * nav.Cell;
+            z = nav.Z0 + (iz + 0.5f) * nav.Cell;
+        }
+
+        static int HighestNear(Nav nav, float x, float z, float cableY)
+        {
+            int best = -1;
+            float bestY = -999f;
+            for (float dx = -4.5f; dx <= 4.5f; dx += nav.Cell)
+            {
+                for (float dz = -4.5f; dz <= 4.5f; dz += nav.Cell)
+                {
+                    int idx = NavIndex(nav, x + dx, z + dz, out int ix, out int iz);
+                    if (idx < 0) continue;
+                    float y = nav.Floor[idx];
+                    if (float.IsNaN(y)) continue;
+                    if (y > cableY + 0.4f || y < cableY - 3.6f) continue;
+                    if (y > bestY) { bestY = y; best = idx; }
+                }
+            }
+            return best;
+        }
+
+        static int NearestOpen(Nav nav, float x, float z)
+        {
+            int best = -1;
+            float bestD = 99f;
+            int ix0, iz0;
+            NavIndex(nav, x, z, out ix0, out iz0);
+            for (int dz = -2; dz <= 2; dz++)
+            {
+                for (int dx = -2; dx <= 2; dx++)
+                {
+                    int ix = ix0 + dx;
+                    int iz = iz0 + dz;
+                    if (ix < 0 || iz < 0 || ix >= nav.Nx || iz >= nav.Nz) continue;
+                    int idx = iz * nav.Nx + ix;
+                    if (float.IsNaN(nav.Floor[idx])) continue;
+                    float d = dx * dx + dz * dz;
+                    if (d < bestD) { bestD = d; best = idx; }
+                }
+            }
+            return best;
+        }
+
+        static float GroundRouteSeconds(Nav nav, ZipLineSpot z)
+        {
+            int start = HighestNear(nav, z.Ax, z.Az, z.Ay);
+            int goal = NearestOpen(nav, z.Bx, z.Bz);
+            if (start < 0 || goal < 0) return 999f;
+            float cost = RouteCost(nav, start, goal, false, null);
+            return cost;
+        }
+
+        static float RouteCost(Nav nav, int start, int goal, bool toys, int[] scratch)
+        {
+            int n = nav.Floor.Length;
+            var g = new float[n];
+            var parent = new int[n];
+            var kind = new byte[n];
+            var id = new int[n];
+            for (int i = 0; i < n; i++)
+            {
+                g[i] = 1e9f;
+                parent[i] = -1;
+            }
+            g[start] = 0f;
+            var heap = new List<int>(256);
+            var hc = new List<float>(256);
+            HeapPush(heap, hc, start, 0f);
+            int[] mounts = null;
+            int[] exits = null;
+            float[] zipCost = null;
+            int[] padFrom = null;
+            int[] padTo = null;
+            float[] padCost = null;
+            if (toys)
+                CacheToys(nav, out mounts, out exits, out zipCost, out padFrom, out padTo, out padCost);
+            int guard = 0;
+            while (heap.Count > 0 && guard++ < n * 8)
+            {
+                int cur = HeapPop(heap, hc, out float gc);
+                if (gc > g[cur] + 0.0001f) continue;
+                if (cur == goal) break;
+                RelaxGrid(nav, g, parent, kind, cur, heap, hc);
+                if (!toys) continue;
+                for (int i = 0; i < mounts.Length; i++)
+                {
+                    if (mounts[i] != cur || exits[i] < 0) continue;
+                    RelaxToy(g, parent, kind, id, exits[i], cur, zipCost[i], 1, i, heap, hc);
+                }
+                for (int i = 0; i < padFrom.Length; i++)
+                {
+                    if (padFrom[i] != cur || padTo[i] < 0) continue;
+                    RelaxToy(g, parent, kind, id, padTo[i], cur, padCost[i], 2, i, heap, hc);
+                }
+            }
+            if (scratch != null && g[goal] < 1e8f)
+            {
+                scratch[0] = CountKind(parent, kind, goal, 2);
+                scratch[1] = CountKind(parent, kind, goal, 1);
+            }
+            return g[goal];
+        }
+
+        static void CacheToys(Nav nav, out int[] mounts, out int[] exits, out float[] zipCost, out int[] padFrom, out int[] padTo, out float[] padCost)
+        {
+            mounts = new int[ZipLines.Length];
+            exits = new int[ZipLines.Length];
+            zipCost = new float[ZipLines.Length];
+            for (int i = 0; i < ZipLines.Length; i++)
+            {
+                mounts[i] = HighestNear(nav, ZipLines[i].Ax, ZipLines[i].Az, ZipLines[i].Ay);
+                exits[i] = NearestOpen(nav, ZipLines[i].Bx, ZipLines[i].Bz);
+                zipCost[i] = CableLen(ZipLines[i]) / ZipLines[i].Speed;
+            }
+            padFrom = new int[LaunchPads.Length];
+            padTo = new int[LaunchPads.Length];
+            padCost = new float[LaunchPads.Length];
+            for (int i = 0; i < LaunchPads.Length; i++)
+            {
+                PadSpot p = LaunchPads[i];
+                padFrom[i] = NearestOpen(nav, p.X, p.Z);
+                float mag = (float)Math.Sqrt(p.DirX * p.DirX + p.DirZ * p.DirZ);
+                float hang = Hang(p.Apex);
+                float lx = p.X + p.DirX / mag * p.Speed * hang;
+                float lz = p.Z + p.DirZ / mag * p.Speed * hang;
+                padTo[i] = NearestOpen(nav, lx, lz);
+                padCost[i] = hang;
+            }
+        }
+
+        static void RelaxGrid(Nav nav, float[] g, int[] parent, byte[] kind, int cur, List<int> heap, List<float> hc)
+        {
+            int ix = cur % nav.Nx;
+            int iz = cur / nav.Nx;
+            float y0 = nav.Floor[cur];
+            for (int dz = -1; dz <= 1; dz++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    if (dx == 0 && dz == 0) continue;
+                    int nx = ix + dx;
+                    int nz = iz + dz;
+                    if (nx < 0 || nz < 0 || nx >= nav.Nx || nz >= nav.Nz) continue;
+                    int nxt = nz * nav.Nx + nx;
+                    float y1 = nav.Floor[nxt];
+                    if (float.IsNaN(y1)) continue;
+                    if (y1 > y0 + 2.2f) continue;
+                    float step = (float)Math.Sqrt(dx * dx + dz * dz) * nav.Cell / SprintSpeed;
+                    float ng = g[cur] + step;
+                    if (ng >= g[nxt]) continue;
+                    g[nxt] = ng;
+                    parent[nxt] = cur;
+                    kind[nxt] = 0;
+                    HeapPush(heap, hc, nxt, ng);
+                }
+            }
+        }
+
+        static void RelaxToy(float[] g, int[] parent, byte[] kind, int[] id, int dest, int cur, float cost, byte k, int which, List<int> heap, List<float> hc)
+        {
+            float ng = g[cur] + cost;
+            if (ng >= g[dest]) return;
+            g[dest] = ng;
+            parent[dest] = cur;
+            kind[dest] = k;
+            id[dest] = which;
+            HeapPush(heap, hc, dest, ng);
+        }
+
+        static int CountKind(int[] parent, byte[] kind, int goal, byte want)
+        {
+            int n = 0;
+            int cur = goal;
+            int guard = 0;
+            while (cur >= 0 && parent[cur] >= 0 && guard++ < parent.Length)
+            {
+                if (kind[cur] == want) n++;
+                cur = parent[cur];
+            }
+            return n;
+        }
+
+        static void HeapPush(List<int> heap, List<float> cost, int item, float c)
+        {
+            heap.Add(item);
+            cost.Add(c);
+            int i = heap.Count - 1;
+            while (i > 0)
+            {
+                int p = (i - 1) >> 1;
+                if (cost[p] <= cost[i]) break;
+                int ti = heap[p]; heap[p] = heap[i]; heap[i] = ti;
+                float tc = cost[p]; cost[p] = cost[i]; cost[i] = tc;
+                i = p;
+            }
+        }
+
+        static int HeapPop(List<int> heap, List<float> cost, out float c)
+        {
+            int item = heap[0];
+            c = cost[0];
+            int last = heap.Count - 1;
+            heap[0] = heap[last];
+            cost[0] = cost[last];
+            heap.RemoveAt(last);
+            cost.RemoveAt(last);
+            int i = 0;
+            while (true)
+            {
+                int l = i * 2 + 1;
+                int r = l + 1;
+                if (l >= heap.Count) break;
+                int m = (r < heap.Count && cost[r] < cost[l]) ? r : l;
+                if (cost[i] <= cost[m]) break;
+                int ti = heap[m]; heap[m] = heap[i]; heap[i] = ti;
+                float tc = cost[m]; cost[m] = cost[i]; cost[i] = tc;
+                i = m;
+            }
+            return item;
+        }
+
+        static void DummyChase(Solid[] solids, out int pads, out int zips)
+        {
+            pads = 0;
+            zips = 0;
+            Nav nav = BuildNav(solids);
+            // Deck-to-landing legs, then the ground pads. This is the 60 s park path
+            // the headless sim can run: the dummy takes a toy when it is the faster route.
+            float[] tour = {
+                48.2f, 78f, 36.4f, 60.4f,
+                38f, 79f, 28.4f, 64.2f,
+                58f, 78f, 66.4f, 50.2f,
+                148.2f, 70.4f, 148.5f, 57.6f,
+                148.2f, 28.8f, 150.2f, 42.2f,
+                140f, 39.5f, 140f, 56f,
+                126f, 18f, 108f, 40f, 34f, 42.8f, 14f, 38f,
+            };
+            float time = 0f;
+            float x = tour[0];
+            float z = tour[1];
+            int points = tour.Length / 2;
+            int next = 1;
+            int guard = 0;
+            while (time < 60f && guard++ < 24)
+            {
+                int i = next % points;
+                float tx = tour[i * 2];
+                float tz = tour[i * 2 + 1];
+                int start = NearestOpen(nav, x, z);
+                int goal = NearestOpen(nav, tx, tz);
+                if (start < 0 || goal < 0)
+                {
+                    time += 3f;
+                    x = tx;
+                    z = tz;
+                    next++;
+                    continue;
+                }
+                var scratch = new int[2];
+                float cost = RouteCost(nav, start, goal, true, scratch);
+                if (cost > 100f)
+                {
+                    time += 3f;
+                    x = tx;
+                    z = tz;
+                    next++;
+                    continue;
+                }
+                if (time + cost > 60f)
+                    break;
+                pads += scratch[0];
+                zips += scratch[1];
+                time += cost;
+                x = tx;
+                z = tz;
+                next++;
+            }
         }
     }
 }
