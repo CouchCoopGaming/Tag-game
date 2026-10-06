@@ -135,5 +135,6 @@
     <Compile Include="../../Assets/Scripts/Match/MatchBook.cs" />
     <Compile Include="../../Assets/Scripts/Match/MatchHighlight.cs" />
     <Compile Include="../../Assets/Scripts/Match/MatchStatsProof.cs" />
+    <Compile Include="../../Assets/Scripts/Profiles/LocalProfiles.cs" />
   </ItemGroup>
 </Project>

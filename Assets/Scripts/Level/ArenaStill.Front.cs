@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Tag.Profiles;
 
 namespace Tag.Level
 {
@@ -34,12 +35,13 @@ namespace Tag.Level
             }, fail);
             Card(Path.Combine(folder, "Join.png"), "Join", new[]
             {
-                "P1  keyboard", "P2  open", "P3  open", "P4  open",
-                "Split  Vertical", "Listener  P1", "Start match", "Back"
+                "P1  keyboard   Sam", "P2  pad   Bea", "* P3  profile   Pat", "P4  Guest",
+                "A seat picks a profile or Guest", "Split  Vertical", "Start match", "Back"
             }, fail);
             Results(Path.Combine(folder, "Results.png"), fail);
             Split(Path.Combine(folder, "Split4_MegaPark.png"), ParkArena.Mega, 4, false, fail);
             Split(Path.Combine(folder, "Split2_StackYard.png"), ParkArena.Stack, 2, false, fail);
+            LocalProfiles.Clear();
             if (fail.Length > 0)
                 return "front-stills FAIL " + fail.ToString();
             return "front-stills 1280x720 title,setup,join,split4,split2,results ui=layout viewports=in-world";
@@ -104,6 +106,7 @@ namespace Tag.Level
             int gap = 8;
             int vw = (Width - gap * (cols + 1)) / cols;
             int vh = (Height - gap * (rows + 1) - 28) / rows;
+            SeatStills();
             for (int i = 0; i < humans; i++)
             {
                 int col = i % cols;
@@ -210,20 +213,33 @@ namespace Tag.Level
             return tris;
         }
 
+        static void SeatStills()
+        {
+            LocalProfiles.Clear();
+            int sam = LocalProfiles.Create("Sam");
+            int bea = LocalProfiles.Create("Bea");
+            int pat = LocalProfiles.Create("Pat");
+            int alex = LocalProfiles.Create("Alex");
+            LocalProfiles.TrySeat(0, sam);
+            LocalProfiles.TrySeat(1, bea);
+            LocalProfiles.TrySeat(2, pat);
+            LocalProfiles.TrySeat(3, alex);
+        }
+
         static void Results(string path, StringBuilder fail)
         {
             var rgb = new byte[Width * Height * 3];
             Fill(rgb, Width, Height, 0, 0, Width, Height, 16, 22, 32);
             Fill(rgb, Width, Height, 36, 24, Width - 72, Height - 48, 24, 32, 44);
             Text(rgb, Width, Height, 56, 40, "RESULTS", 236, 240, 244);
-            string[] awards = { "Hot Potato   P2", "Slipperiest   P1  P4", "Sky Walker   P3", "Wall Crawler   P1" };
+            string[] awards = { "Hot Potato   Bea", "Slipperiest   Sam  Alex", "Sky Walker   Pat", "Wall Crawler   Sam" };
             for (int i = 0; i < awards.Length; i++)
             {
                 int y = 68 + i * 16;
                 Fill(rgb, Width, Height, 56, y - 2, 280, 14, 46, 62, 84);
                 Text(rgb, Width, Height, 60, y, awards[i], 236, 232, 210);
             }
-            string[] seats = { "P1", "P2", "P3", "P4" };
+            string[] seats = { "Sam", "Bea", "Pat", "Alex" };
             byte[] cr = { 200, 90, 230, 40 };
             byte[] cg = { 170, 210, 210, 180 };
             byte[] cb = { 40, 80, 255, 160 };

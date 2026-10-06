@@ -77,12 +77,26 @@ namespace Tag.Level
             new Swatch { Name = "lamp", R = 0x46 / 255f, G = 0x3C / 255f, B = 0x34 / 255f, Smooth = 0.40f, Metal = 0.45f },
             new Swatch { Name = "trash", R = 0x36 / 255f, G = 0x3A / 255f, B = 0x36 / 255f, Smooth = 0.22f, Metal = 0.30f },
             new Swatch { Name = "skyline", R = 0x56 / 255f, G = 0x4C / 255f, B = 0x44 / 255f, Smooth = 0.05f, Metal = 0f },
-            // Readability families. Dark enough that cling still clears 3:1, and quiet next to décor.
-            new Swatch { Name = "zbrick", R = 67f / 255f, G = 12f / 255f, B = 11f / 255f, Smooth = 0.06f, Metal = 0f },
-            new Swatch { Name = "zwine", R = 91f / 255f, G = 23f / 255f, B = 64f / 255f, Smooth = 0.06f, Metal = 0f },
-            new Swatch { Name = "zindigo", R = 36f / 255f, G = 27f / 255f, B = 96f / 255f, Smooth = 0.06f, Metal = 0f },
-            new Swatch { Name = "zolive", R = 18f / 255f, G = 51f / 255f, B = 28f / 255f, Smooth = 0.06f, Metal = 0f },
-            new Swatch { Name = "zslate", R = 53f / 255f, G = 55f / 255f, B = 57f / 255f, Smooth = 0.08f, Metal = 0f },
+            // Zone grounds are dark earth families. Saturation stays low enough that they
+            // are not debug paint, and luminance stays under cling so 3:1 still holds.
+            // Rust brick, warm clay, sage, slate blue, dusk gray. Accents and decals
+            // are the same families a step lighter, kept dark enough that décor-to-décor
+            // stays quieter than the gameplay pairs.
+            new Swatch { Name = "zbrick", R = 40f / 255f, G = 22f / 255f, B = 22f / 255f, Smooth = 0.08f, Metal = 0f },
+            new Swatch { Name = "zwine", R = 74f / 255f, G = 52f / 255f, B = 58f / 255f, Smooth = 0.08f, Metal = 0f },
+            new Swatch { Name = "zindigo", R = 52f / 255f, G = 46f / 255f, B = 80f / 255f, Smooth = 0.08f, Metal = 0f },
+            new Swatch { Name = "zolive", R = 32f / 255f, G = 52f / 255f, B = 40f / 255f, Smooth = 0.08f, Metal = 0f },
+            new Swatch { Name = "zslate", R = 34f / 255f, G = 30f / 255f, B = 46f / 255f, Smooth = 0.08f, Metal = 0f },
+            new Swatch { Name = "abrick", R = 102f / 255f, G = 56f / 255f, B = 50f / 255f, Smooth = 0.12f, Metal = 0f },
+            new Swatch { Name = "aclay", R = 112f / 255f, G = 78f / 255f, B = 86f / 255f, Smooth = 0.12f, Metal = 0f },
+            new Swatch { Name = "aindigo", R = 78f / 255f, G = 68f / 255f, B = 116f / 255f, Smooth = 0.12f, Metal = 0f },
+            new Swatch { Name = "aolive", R = 50f / 255f, G = 84f / 255f, B = 62f / 255f, Smooth = 0.12f, Metal = 0f },
+            new Swatch { Name = "aslate", R = 72f / 255f, G = 66f / 255f, B = 86f / 255f, Smooth = 0.12f, Metal = 0f },
+            new Swatch { Name = "dbrick", R = 66f / 255f, G = 36f / 255f, B = 32f / 255f, Smooth = 0.06f, Metal = 0f },
+            new Swatch { Name = "dclay", R = 92f / 255f, G = 64f / 255f, B = 70f / 255f, Smooth = 0.06f, Metal = 0f },
+            new Swatch { Name = "dindigo", R = 64f / 255f, G = 56f / 255f, B = 96f / 255f, Smooth = 0.06f, Metal = 0f },
+            new Swatch { Name = "dolive", R = 40f / 255f, G = 66f / 255f, B = 50f / 255f, Smooth = 0.06f, Metal = 0f },
+            new Swatch { Name = "dslate", R = 50f / 255f, G = 44f / 255f, B = 62f / 255f, Smooth = 0.06f, Metal = 0f },
             new Swatch { Name = "ztrim", R = 60f / 255f, G = 58f / 255f, B = 54f / 255f, Smooth = 0.12f, Metal = 0f },
             new Swatch { Name = "sky", R = 0xFF / 255f, G = 0xF3 / 255f, B = 0xD6 / 255f, Smooth = 0f, Metal = 0f },
         };

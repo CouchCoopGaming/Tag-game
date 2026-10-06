@@ -28,6 +28,8 @@ namespace Tag.Level
         Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate;
         Material _fence, _rail, _horizon, _leaf, _wood, _lamp, _trash, _skyline;
         Material _zbrick, _zwine, _zindigo, _zolive, _zslate, _ztrim;
+        Material _abrick, _aclay, _aindigo, _aolive, _aslate;
+        Material _dbrick, _dclay, _dindigo, _dolive, _dslate;
         Material _spawnSw, _spawnSe, _spawnNw, _spawnNe, _spawnRunS, _spawnRunN;
 
         /// <summary>True after a build whose layout audit passed.</summary>
@@ -215,6 +217,16 @@ namespace Tag.Level
             _zolive = Face("zolive");
             _zslate = Face("zslate");
             _ztrim = Face("ztrim");
+            _abrick = Face("abrick");
+            _aclay = Face("aclay");
+            _aindigo = Face("aindigo");
+            _aolive = Face("aolive");
+            _aslate = Face("aslate");
+            _dbrick = Face("dbrick");
+            _dclay = Face("dclay");
+            _dindigo = Face("dindigo");
+            _dolive = Face("dolive");
+            _dslate = Face("dslate");
             _spawnSw = Make(new Color(0x2E / 255f, 0xC4 / 255f, 0xB6 / 255f), "MEGA_SpawnSW", 0.2f, 0f, "panel");
             _spawnSe = Make(new Color(0xFF / 255f, 0x6B / 255f, 0x6B / 255f), "MEGA_SpawnSE", 0.2f, 0f, "panel");
             _spawnNw = Make(new Color(0x9B / 255f, 0x5D / 255f, 0xE5 / 255f), "MEGA_SpawnNW", 0.2f, 0f, "panel");
@@ -369,6 +381,16 @@ namespace Tag.Level
                 case "zolive": return _zolive;
                 case "zslate": return _zslate;
                 case "ztrim": return _ztrim;
+                case "abrick": return _abrick;
+                case "aclay": return _aclay;
+                case "aindigo": return _aindigo;
+                case "aolive": return _aolive;
+                case "aslate": return _aslate;
+                case "dbrick": return _dbrick;
+                case "dclay": return _dclay;
+                case "dindigo": return _dindigo;
+                case "dolive": return _dolive;
+                case "dslate": return _dslate;
                 default: return _mulch;
             }
         }

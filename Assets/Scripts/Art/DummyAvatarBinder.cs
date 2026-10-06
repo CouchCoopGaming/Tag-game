@@ -44,6 +44,7 @@ namespace Tag.Art
         bool _showingIt;
         bool _resolved;
         bool _loggedHier;
+        string _appliedColor;
         Coroutine _hitPulseCo;
         Vector3 _visualBaseScale = Vector3.one;
         readonly System.Collections.Generic.List<Renderer> _keptOff = new System.Collections.Generic.List<Renderer>(4);
@@ -67,12 +68,13 @@ namespace Tag.Art
             _resolved = true;
 
             string color = PickColor();
+            _appliedColor = color;
             // Scene pawns serialize the flat Dummy_Runner / Dummy_It prefab. FirstRenderable
             // keeps that prefab when it has a mesh, so Hier never won. Approved meshes are
             // Tan runner and Orange It. The catalog covers player builds; the editor path
             // loads the same FBX when the catalog ref is empty. Player and bot share this path.
-            GameObject hierRunner = HierPrefab(false);
-            GameObject hierIt = HierPrefab(true);
+            GameObject hierRunner = HierPrefab(false, color);
+            GameObject hierIt = HierPrefab(true, color);
 #if UNITY_EDITOR
             var assignedRunner = runnerVisualPrefab;
             var assignedIt = itVisualPrefab;
@@ -123,11 +125,30 @@ namespace Tag.Art
             if (itOverrideMat == null) itOverrideMat = Resources.Load<Material>("Characters/Mat_It_ItOverride");
         }
 
-        static GameObject HierPrefab(bool asIt)
+        static GameObject HierPrefab(bool asIt, string color)
         {
             var catalog = Resources.Load<HierMannequinCatalog>("Characters/HierMannequinCatalog");
             if (catalog == null) return null;
-            return asIt ? catalog.It : catalog.Runner;
+            if (asIt) return catalog.It;
+            if (!string.IsNullOrEmpty(color))
+            {
+                GameObject picked = catalog.ForRunner(color);
+                if (picked != null) return picked;
+            }
+            return catalog.Runner;
+        }
+
+        /// <summary>Rebuild the Hier tint after the profile name is on the pawn.</summary>
+        public void ApplyProfileLook()
+        {
+            if (_it == null) _it = GetComponent<ItController>();
+            string want = PickColor();
+            if (want == _appliedColor && _visualInstance != null) return;
+            _appliedColor = want;
+            _resolved = false;
+            if (_visualInstance != null) Destroy(_visualInstance);
+            _visualInstance = null;
+            ApplyVisual(_it != null && _it.IsIt);
         }
 
 #if UNITY_EDITOR
@@ -141,10 +162,20 @@ namespace Tag.Art
         {
             string id = _it != null ? _it.PlayerId : gameObject.name;
             if (string.IsNullOrEmpty(id)) id = gameObject.name;
+            string look = Tag.Profiles.LocalProfiles.HierKeyFor(id);
+            if (!string.IsNullOrEmpty(look)) return look;
             int h = 0;
             for (int i = 0; i < id.Length; i++) h = h * 31 + id[i];
             if (h < 0) h = -h;
             return MannequinColors[h % MannequinColors.Length];
+        }
+
+        string PickAccent()
+        {
+            string id = _it != null ? _it.PlayerId : gameObject.name;
+            string accent = Tag.Profiles.LocalProfiles.AccentKeyFor(id);
+            if (!string.IsNullOrEmpty(accent)) return accent;
+            return PickColor();
         }
 
         static GameObject FirstRenderable(GameObject current, params object[] candidates)
@@ -234,7 +265,7 @@ namespace Tag.Art
             if (_visualInstance == null)
             {
                 NotePrimitiveFallback(prefab);
-                _visualInstance = DummyPrimitiveFactory.Build(transform, asIt, PickColor());
+                _visualInstance = DummyPrimitiveFactory.Build(transform, asIt, PickColor(), PickAccent());
                 usedPrimitive = true;
             }
 
