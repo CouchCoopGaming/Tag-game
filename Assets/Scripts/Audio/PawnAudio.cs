@@ -1,3 +1,4 @@
+using Tag.Settings;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -57,6 +58,7 @@ namespace Tag.Audio
             if (vol < 0.05f) vol = 0.05f;
             int pri = it ? VoiceBudget.PriItStep : VoiceBudget.PriStep;
             AudioMix.PlayWorld(clip, pos, vol, pri, it, FootstepMap.Pitch(gait));
+            if (it) CaptionFeed.Footstep(pos.x, pos.z, surface);
         }
 
         static void Scuff(int slot, float dt, Vector3 pos, bool it, bool climb)

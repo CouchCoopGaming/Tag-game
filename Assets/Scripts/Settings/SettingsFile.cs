@@ -28,7 +28,22 @@ namespace Tag.Settings
             Line(text, "hud", s.HudScale);
             Line(text, "colorblind", s.Colorblind ? 1f : 0f);
             Line(text, "minimap", s.Minimap ? 1f : 0f);
+            Line(text, "accessSeat", s.AccessSeat);
+            for (int i = 0; i < GameSettings.SeatCount; i++)
+            {
+                string n = i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture);
+                Line(text, "palette" + n, s.Palette[i]);
+                Line(text, "captions" + n, s.Captions[i] ? 1f : 0f);
+                Line(text, "rumble" + n, s.Rumble[i]);
+                Line(text, "flash" + n, s.ReduceFlash[i] ? 1f : 0f);
+            }
             Line(text, "arena", s.Arena);
+            Line(text, "ai", s.AiOpponents);
+            Line(text, "diff", s.DifficultyTier);
+            Line(text, "roundLen", s.RoundLengthIndex);
+            Line(text, "rounds", s.RoundsPerMatch);
+            Line(text, "split", s.SplitAxis);
+            Line(text, "listen", s.Listener);
             for (int i = 0; i < (int)PlayAction.Count; i++)
             {
                 var action = (PlayAction)i;
@@ -60,6 +75,8 @@ namespace Tag.Settings
                 string value = line.Substring(eq + 1).Trim();
                 Apply(settings, binds, key, value);
             }
+            if (settings.Colorblind && blob.IndexOf("palette=", StringComparison.Ordinal) < 0)
+                settings.Palette[0] = AccessibilityPalette.Deuteranopia;
             settings.Clamp();
         }
 
@@ -77,11 +94,33 @@ namespace Tag.Settings
             else if (key == "hud") settings.HudScale = Num(value, settings.HudScale);
             else if (key == "colorblind") settings.Colorblind = Flag(value);
             else if (key == "minimap") settings.Minimap = Flag(value);
+            else if (key == "accessSeat") settings.AccessSeat = (int)Num(value, settings.AccessSeat);
+            else if (SeatKey(key, "palette", out int paletteSeat)) settings.Palette[paletteSeat] = (int)Num(value, settings.Palette[paletteSeat]);
+            else if (SeatKey(key, "captions", out int captionSeat)) settings.Captions[captionSeat] = Flag(value);
+            else if (SeatKey(key, "rumble", out int rumbleSeat)) settings.Rumble[rumbleSeat] = (int)Num(value, settings.Rumble[rumbleSeat]);
+            else if (SeatKey(key, "flash", out int flashSeat)) settings.ReduceFlash[flashSeat] = Flag(value);
             else if (key == "arena") settings.Arena = (int)Num(value, settings.Arena);
+            else if (key == "ai") settings.AiOpponents = (int)Num(value, settings.AiOpponents);
+            else if (key == "diff") settings.DifficultyTier = (int)Num(value, settings.DifficultyTier);
+            else if (key == "roundLen") settings.RoundLengthIndex = (int)Num(value, settings.RoundLengthIndex);
+            else if (key == "rounds") settings.RoundsPerMatch = (int)Num(value, settings.RoundsPerMatch);
+            else if (key == "split") settings.SplitAxis = (int)Num(value, settings.SplitAxis);
+            else if (key == "listen") settings.Listener = (int)Num(value, settings.Listener);
             else if (key.StartsWith("kb.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(3), value, true);
             else if (key.StartsWith("pad.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(4), value, false);
+        }
+
+        static bool SeatKey(string key, string prefix, out int seat)
+        {
+            seat = 0;
+            if (key == prefix) return true;
+            if (!key.StartsWith(prefix, StringComparison.Ordinal)) return false;
+            string tail = key.Substring(prefix.Length);
+            if (tail.Length != 1 || tail[0] < '1' || tail[0] > '3') return false;
+            seat = tail[0] - '0';
+            return true;
         }
 
         static void Assign(ActionBinds binds, string name, string value, bool keyboard)

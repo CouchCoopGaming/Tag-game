@@ -10,7 +10,7 @@ namespace Tag.Level
     /// Headless lit stills. Boxes are rasterized with the afternoon sun (pitch 28),
     /// a shadow map, and hemisphere ambient. No Unity camera and no new move.
     /// </summary>
-    public static class ArenaStill
+    public static partial class ArenaStill
     {
         public const int Width = 1280;
         public const int Height = 720;

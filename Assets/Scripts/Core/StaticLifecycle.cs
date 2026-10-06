@@ -1,4 +1,6 @@
 using Tag.Audio;
+using Tag.Couch;
+using Tag.Front;
 using Tag.Gameplay;
 using Tag.Level;
 using Tag.Modes;
@@ -21,8 +23,20 @@ namespace Tag.Core
             ResetAll();
         }
 
+        /// <summary>
+        /// Drops the match roster and the front-end screen. Domain reload still
+        /// runs ResetAll, which calls this before the other statics.
+        /// </summary>
+        public static void ReleaseMatch()
+        {
+            FrontSession.ResetStatics();
+            CouchPlay.Release();
+            FrontLive.Reset();
+        }
+
         public static void ResetAll()
         {
+            ReleaseMatch();
             ResumeInputGate.Reset();
             GameFlow.ResetStatics();
             TagModeController.ResetStatics();

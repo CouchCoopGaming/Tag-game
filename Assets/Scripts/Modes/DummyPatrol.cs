@@ -77,6 +77,11 @@ namespace Tag.Modes
         [Tooltip("0 is slow and loose. 1 is quick and tidy. Default is the middle.")]
         [SerializeField] float difficulty = 0.5f;
 
+        public void ApplyDifficulty(float value)
+        {
+            difficulty = EnemyAi.ClampDifficulty(value);
+        }
+
         PlayerInputReader _input;
         PlayerRagdoll _ragdoll;
         PlayerMotor _selfMotor;

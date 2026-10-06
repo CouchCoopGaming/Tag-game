@@ -32,6 +32,14 @@ frame-budget seconds=120 hz=60 frames=7200 players=4 ai=3 map=stack-yard median=
 
 On Mega Park, 3079 decides across three AI is about 8.6 Hz each, not 60. Loop searches match decides on every arena: one projection per refresh. A second projection of the same point is a cache hit and returns the same point. The loop cache resets when the arena changes, so Pocket Park and Stack Yard do not reuse a Mega Park sample.
 
+A second line, `frame-budget-split`, is the same 120 seconds with four human pawns and four chase cameras and no AI. Each pawn still takes one move. The cameras keep fov pop, shake, and slow motion at 0. Mega Park, Pocket Park, and Stack Yard each stay flat under the same 240 cap, with headroom left.
+
+```
+frame-budget-split seconds=120 hz=60 frames=7200 players=4 humans=4 ai=0 cameras=4 map=mega-park median=97 worst=97 ratio=1.00 move=230400 ai=0 pose=172800 hud=144000 audio=14400 round=21600 cam=115200 budget=240 headroom=143 steady=ok
+frame-budget-split seconds=120 hz=60 frames=7200 players=4 humans=4 ai=0 cameras=4 map=pocket-park median=97 worst=97 ratio=1.00 move=230400 ai=0 pose=172800 hud=144000 audio=14400 round=21600 cam=115200 budget=240 headroom=143 steady=ok
+frame-budget-split seconds=120 hz=60 frames=7200 players=4 humans=4 ai=0 cameras=4 map=stack-yard median=97 worst=97 ratio=1.00 move=230400 ai=0 pose=172800 hud=144000 audio=14400 round=21600 cam=115200 budget=240 headroom=143 steady=ok
+```
+
 ## What the scan found
 
 The hot-path scan counts `.ToString(`, interpolated strings, `new List`, `new GUIStyle`, `GetComponent`, and LINQ inside `Update`, `FixedUpdate`, `LateUpdate`, `OnGUI`, and the methods those call directly. The historical baseline in that line is 101. At the start of this pass the count was 9, all of them in match start and match end: one list and one log on `BeginPlaying`, and a list, four logs, and two component lookups on `EndMatch`. After the cuts the count is 0.

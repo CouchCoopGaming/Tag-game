@@ -241,6 +241,30 @@ namespace Tag.Core
                 "repro: x=-8 inside the margin did not respawn");
             Pass(report, !SessionRules.RidingAfterRespawn(true),
                 "repro: respawn during a zip ride left the pawn on the cable");
+            Pass(report, SeatsUseBox(),
+                "repro: a human seat or the AI on arena 0, 1, or 2 was outside that park's kill box, or a step past the fence stayed in");
+        }
+
+        static bool SeatsUseBox()
+        {
+            for (int arena = 0; arena < ParkArena.Count; arena++)
+            {
+                SessionRules.ArenaBox box = SessionRules.Bounds(arena);
+                for (int seat = 0; seat < ParkArena.HumanSeats; seat++)
+                {
+                    ParkArena.HumanSeat(arena, seat, out float x, out float y, out float z, out _);
+                    if (SessionRules.Outside(box, x, y, z)) return false;
+                    if (!SessionRules.Outside(box, x, -3f, z)) return false;
+                    if (!SessionRules.Outside(box, box.MaxX + 1f, y, z)) return false;
+                }
+                MegaParkP1Layout.SpawnPad ai = arena == ParkArena.Pocket ? PocketParkLayout.Spawns[0]
+                    : arena == ParkArena.Stack ? StackYardLayout.Spawns[0]
+                    : MegaParkP1Layout.Spawns[0];
+                if (SessionRules.Outside(box, ai.X, MegaParkP1Layout.SpawnY, ai.Z)) return false;
+                if (!SessionRules.Outside(box, ai.X, -3f, ai.Z)) return false;
+                if (!SessionRules.Outside(box, box.MinX - 1f, MegaParkP1Layout.SpawnY, ai.Z)) return false;
+            }
+            return true;
         }
 
         static bool Fence(SessionRules.ArenaBox box, float mapW, float mapD)

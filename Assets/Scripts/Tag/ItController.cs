@@ -164,6 +164,7 @@ namespace Tag.Gameplay
             {
                 ClearTagBackImmunity();
                 AudioBus.Raise(AudioBus.Hook.Tag, transform.position);
+                Tag.Settings.PadRumble.PulseId(gameObject.GetInstanceID(), Tag.Settings.PadRumble.TagClaim);
                 // Drive MoveAnimDriver / HUD listeners (legacy TryTag path was the only NotifyBecameIt caller).
                 if (_motor != null)
                     _motor.NotifyBecameIt();

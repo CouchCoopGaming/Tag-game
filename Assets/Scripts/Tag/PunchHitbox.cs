@@ -348,6 +348,7 @@ namespace Tag.Gameplay
             {
                 float seconds = TagBackImmunitySeconds;
                 ItController oldIt = _it;
+                Tag.Settings.PadRumble.PulseId(oldIt.gameObject.GetInstanceID(), Tag.Settings.PadRumble.Tagged);
                 oldIt.SetIt(false);
                 victim.SetIt(true);
                 oldIt.BeginTagBackImmunity(victim, seconds);
@@ -357,11 +358,13 @@ namespace Tag.Gameplay
             bool runner = victim != null && !victim.IsIt && !victim.IsEliminated;
             // Punch impact and the become-It chirp go through AudioBus (TagSfx placeholders).
             AudioBus.Raise(AudioBus.Hook.PunchHit, transform.position);
+            Tag.Settings.PadRumble.PulseId(gameObject.GetInstanceID(), Tag.Settings.PadRumble.PunchHit);
 
             if (!tagged && PunchStagger.IsStaggerHit(runner, tagged))
             {
                 // No knockback. The stumble cancels sprint and plays the pose.
                 victim.ReceivePunchStagger();
+                Tag.Settings.PadRumble.PulseId(victim.gameObject.GetInstanceID(), Tag.Settings.PadRumble.Stagger);
                 Debug.Log($"[Punch] {name} staggered {victim.name}");
                 return;
             }

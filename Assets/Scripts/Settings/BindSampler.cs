@@ -291,5 +291,155 @@ namespace Tag.Settings
 #endif
             return Vector2.zero;
         }
+
+        /// <summary>Keyboard tokens only, or one pad. The other device is not sampled.</summary>
+        public static bool HeldDevice(ActionBinds binds, PlayAction action, int device)
+        {
+            if (binds == null) return false;
+            int i = (int)action;
+            if (i < 0 || i >= binds.Keyboard.Length) return false;
+            if (device <= 0) return HeldToken(binds.Keyboard[i], false);
+            return PadHeldAt(device - 1, binds.Gamepad[i]);
+        }
+
+        public static bool PressedDevice(ActionBinds binds, PlayAction action, int device)
+        {
+            if (binds == null) return false;
+            int i = (int)action;
+            if (i < 0 || i >= binds.Keyboard.Length) return false;
+            if (device <= 0) return PressedToken(binds.Keyboard[i], false);
+            return PadPressedAt(device - 1, binds.Gamepad[i]);
+        }
+
+        public static Vector2 MoveDevice(ActionBinds binds, int device)
+        {
+            if (binds == null) return Vector2.zero;
+            if (device <= 0) return KeyboardMove(binds.Keyboard[(int)PlayAction.Move]);
+            return PadMoveAt(device - 1, binds.Gamepad[(int)PlayAction.Move]);
+        }
+
+        public static Vector2 LookDevice(ActionBinds binds, int device)
+        {
+            if (binds == null) return Vector2.zero;
+            if (device <= 0)
+            {
+                if (binds.Keyboard[(int)PlayAction.Look] != "mouse") return Vector2.zero;
+                return new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
+            }
+            return PadLookAt(device - 1, binds.Gamepad[(int)PlayAction.Look]);
+        }
+
+        static Vector2 KeyboardMove(string token)
+        {
+            Vector2 v = Vector2.zero;
+            bool arrows = token == "arrows";
+            bool wasd = token == "wasd" || token == "holdIntoWall" || string.IsNullOrEmpty(token);
+            if (wasd)
+            {
+                if (Input.GetKey(KeyCode.D)) v.x += 1f;
+                if (Input.GetKey(KeyCode.A)) v.x -= 1f;
+                if (Input.GetKey(KeyCode.W)) v.y += 1f;
+                if (Input.GetKey(KeyCode.S)) v.y -= 1f;
+            }
+            if (arrows || token == "arrows")
+            {
+                if (Input.GetKey(KeyCode.RightArrow)) v.x += 1f;
+                if (Input.GetKey(KeyCode.LeftArrow)) v.x -= 1f;
+                if (Input.GetKey(KeyCode.UpArrow)) v.y += 1f;
+                if (Input.GetKey(KeyCode.DownArrow)) v.y -= 1f;
+            }
+            if (v.sqrMagnitude > 1f) v.Normalize();
+            return v;
+        }
+
+        static bool PadHeldAt(int index, string token)
+        {
+#if ENABLE_INPUT_SYSTEM
+            Gamepad pad = PadAt(index);
+            if (pad != null)
+            {
+                switch (token)
+                {
+                    case "buttonSouth": return pad.buttonSouth.isPressed;
+                    case "buttonEast": return pad.buttonEast.isPressed;
+                    case "buttonWest": return pad.buttonWest.isPressed;
+                    case "buttonNorth": return pad.buttonNorth.isPressed;
+                    case "leftShoulder": return pad.leftShoulder.isPressed;
+                    case "rightShoulder": return pad.rightShoulder.isPressed;
+                    case "start": return pad.startButton.isPressed;
+                    case "select": return pad.selectButton.isPressed;
+                    case "dpadLeft": return pad.dpad.left.isPressed;
+                    case "dpadRight": return pad.dpad.right.isPressed;
+                    case "dpadUp": return pad.dpad.up.isPressed;
+                    case "dpadDown": return pad.dpad.down.isPressed;
+                    case "leftStickHold": return pad.leftStick.ReadValue().sqrMagnitude > 0.04f;
+                }
+            }
+#endif
+            if (index != 0) return false;
+            return PadHeld(token);
+        }
+
+        static bool PadPressedAt(int index, string token)
+        {
+#if ENABLE_INPUT_SYSTEM
+            Gamepad pad = PadAt(index);
+            if (pad != null)
+            {
+                switch (token)
+                {
+                    case "buttonSouth": return pad.buttonSouth.wasPressedThisFrame;
+                    case "buttonEast": return pad.buttonEast.wasPressedThisFrame;
+                    case "buttonWest": return pad.buttonWest.wasPressedThisFrame;
+                    case "buttonNorth": return pad.buttonNorth.wasPressedThisFrame;
+                    case "leftShoulder": return pad.leftShoulder.wasPressedThisFrame;
+                    case "rightShoulder": return pad.rightShoulder.wasPressedThisFrame;
+                    case "start": return pad.startButton.wasPressedThisFrame;
+                    case "select": return pad.selectButton.wasPressedThisFrame;
+                    case "dpadLeft": return pad.dpad.left.wasPressedThisFrame;
+                    case "dpadRight": return pad.dpad.right.wasPressedThisFrame;
+                    case "dpadUp": return pad.dpad.up.wasPressedThisFrame;
+                    case "dpadDown": return pad.dpad.down.wasPressedThisFrame;
+                }
+            }
+#endif
+            if (index != 0) return false;
+            return PadPressed(token);
+        }
+
+        static Vector2 PadMoveAt(int index, string token)
+        {
+#if ENABLE_INPUT_SYSTEM
+            Gamepad pad = PadAt(index);
+            if (pad != null)
+            {
+                if (token == "leftStick" || token == "leftStickHold") return pad.leftStick.ReadValue();
+                if (token == "rightStick") return pad.rightStick.ReadValue();
+                if (token == "dpad") return pad.dpad.ReadValue();
+            }
+#endif
+            return Vector2.zero;
+        }
+
+        static Vector2 PadLookAt(int index, string token)
+        {
+#if ENABLE_INPUT_SYSTEM
+            Gamepad pad = PadAt(index);
+            if (pad == null) return Vector2.zero;
+            if (token == "rightStick") return pad.rightStick.ReadValue();
+            if (token == "leftStick") return pad.leftStick.ReadValue();
+#endif
+            return Vector2.zero;
+        }
+
+#if ENABLE_INPUT_SYSTEM
+        static Gamepad PadAt(int index)
+        {
+            if (index < 0) return null;
+            var all = Gamepad.all;
+            if (index >= all.Count) return null;
+            return all[index];
+        }
+#endif
     }
 }

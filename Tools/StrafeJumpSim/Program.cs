@@ -573,11 +573,54 @@ static class Program
             }
         }
 
+        Tag.Core.FrameBudget.Report[] splits = Tag.Core.FrameBudget.RunSplitAll();
+        for (int b = 0; b < splits.Length; b++)
+        {
+            Console.WriteLine(splits[b].Line);
+            if (!splits[b].Ok)
+            {
+                Console.Error.WriteLine(splits[b].Failure);
+                return 1;
+            }
+        }
+
         Tag.Audio.AudioReport audio = Tag.Audio.AudioProof.Run();
         Console.WriteLine(audio.Line);
         if (!audio.Ok)
         {
             Console.Error.WriteLine(audio.Failure);
+            return 1;
+        }
+
+        Tag.Front.FrontSession.Report front = Tag.Front.FrontSession.Run();
+        Console.WriteLine(front.Line);
+        if (!front.Ok)
+        {
+            Console.Error.WriteLine(front.Failure);
+            return 1;
+        }
+
+        Tag.Couch.CouchPlay.Report couch = Tag.Couch.CouchPlay.Run();
+        Console.WriteLine(couch.Line);
+        if (!couch.Ok)
+        {
+            Console.Error.WriteLine(couch.Failure);
+            return 1;
+        }
+
+        Tag.Settings.AccessibilityReport access = Tag.Settings.AccessibilityProof.Run();
+        Console.WriteLine(access.Line);
+        if (!access.Ok)
+        {
+            Console.Error.WriteLine(access.Failure);
+            return 1;
+        }
+
+        string stills = Tag.Level.ArenaStill.WriteFrontEnd();
+        Console.WriteLine(stills);
+        if (stills.IndexOf("FAIL", StringComparison.Ordinal) >= 0)
+        {
+            Console.Error.WriteLine(stills);
             return 1;
         }
 
