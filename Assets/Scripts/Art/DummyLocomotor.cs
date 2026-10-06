@@ -42,6 +42,8 @@ namespace Tag.Art
         float _landSquash;
         float _landHold;
         float _landHard;
+        bool _landPoseHard;
+        bool _landPoseSoft;
         float _secondsSinceLand = -1f;
         float _landSampleAge = -1f;
         float _landImpactPending = -1f;
@@ -7031,7 +7033,7 @@ namespace Tag.Art
                 // and the outer arm pumps with wall-run speed. No root motion.
                 CaptureWallAir();
                 bool left = _motor != null && _motor.WallLeft;
-                ApplyWallSample(WallPose.Run(Mathf.Sin(_surfPhase), left), armZ);
+                ApplyWallSample(WallPose.RunCycle(_surfPhase, left), armZ);
                 if (_strideSurfSnap && !_wallAirSnap && _strideSurfIn < 0.98f)
                 {
                     // A walk or a run eases onto the wall run, then the run holds.
@@ -7508,14 +7510,15 @@ namespace Tag.Art
             }
             else
             {
-                // Opposite the legs. sinC>0 puts the left thigh forward, so the right arm reaches
-                // and the left arm stays back. Same-side swing reads as a skate from the chase cam.
+                // Opposite the legs. Positive sine puts the left thigh forward, so the right arm
+                // reaches and the left arm stays back. The raw phase matches the stance.
                 // Rearward travel stays short so the hands do not fold into the pelvis. No extra roll.
                 // _stopGait holds the last stride while the feet close, so a brake does not pop the arms idle.
                 // A sprint into a walk eases on its own, then the walk holds. Other slows still close with the step.
                 float gait = Mathf.Max(gaitW, Mathf.Max(_stopGait, _runVis));
                 float idle = 1f - gait;
                 float amp = Mathf.Lerp(36f, 64f, gait);
+                float gaitSin = sinRaw;
                 // Idle hang sits slightly forward and out. The outward yaw stays on through the
                 // stride so the hands do not drop into the hips as the walk starts.
                 // Roll stays 0 at rest and only picks up the mild A once the stride is moving.
@@ -7524,8 +7527,8 @@ namespace Tag.Art
                 // The reach opposite the front knee opens a little wider. The back arm keeps the
                 // shorter yaw so the hand stays out of the hip. Rearward pitch stays short.
                 float reachY = Mathf.Lerp(outY, outY + 6f, _runVis);
-                float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-sinC) * gait);
-                float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(sinC) * gait);
+                float yL = Mathf.Lerp(outY, reachY, Mathf.Clamp01(-gaitSin) * gait);
+                float yR = Mathf.Lerp(outY, reachY, Mathf.Clamp01(gaitSin) * gait);
                 // A turn opens both hands a little more. No extra roll, so they stay off the hips.
                 float turnOut = Mathf.Abs(_turnVis) * 5f;
                 yL += turnOut;
@@ -7536,8 +7539,8 @@ namespace Tag.Art
                 float lookDown = Mathf.Clamp(_lookArmVis, 0f, 55f);
                 float lookAdd = lookDown * 0.1f - lookUp * 0.5f;
                 float lookOut = lookDown * 0.1f;
-                float reachL = Mathf.Clamp01(-sinC) * gait;
-                float reachR = Mathf.Clamp01(sinC) * gait;
+                float reachL = Mathf.Clamp01(-gaitSin) * gait;
+                float reachR = Mathf.Clamp01(gaitSin) * gait;
                 yL += lookOut * reachL;
                 yR += lookOut * reachR;
                 // Both hands rise a little with the breath. Yaw stays out, and roll stays 0 at rest,
@@ -7548,8 +7551,8 @@ namespace Tag.Art
                     armBreath = 0f;
                 else
                     armBreath *= 1f - _idlePoseW;
-                float pitchL = RunArmPitch(-sinC, amp) - 12f * idle + armBreath + lookAdd * reachL;
-                float pitchR = RunArmPitch(sinC, amp) - 12f * idle + armBreath + lookAdd * reachR;
+                float pitchL = RunArmPitch(-gaitSin, amp) - 12f * idle + armBreath + lookAdd * reachL;
+                float pitchR = RunArmPitch(gaitSin, amp) - 12f * idle + armBreath + lookAdd * reachR;
                 // Stop and the first step. Hands stay forward and out so they do not drift into the hips.
                 float stopBlendF = (!stepping && !air && !sliding && !crouch) ? _stopGait : 0f;
                 float startBlend = (stepping && !air && !_walkFromIdle)
@@ -7569,8 +7572,8 @@ namespace Tag.Art
                 // The trail knee is unchanged and stays straight.
                 float elbowReach = Mathf.Lerp(-10f, -6f, _runVis);
                 float elbowPull = Mathf.Lerp(-18f, -30f, _runVis);
-                float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(sinC) * gait);
-                float elbowR = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-sinC) * gait);
+                float elbowL = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(gaitSin) * gait);
+                float elbowR = Mathf.Lerp(elbowReach, elbowPull, Mathf.Clamp01(-gaitSin) * gait);
                 if (armHold > 0.02f)
                 {
                     elbowL = Mathf.Lerp(elbowL, Mathf.Max(elbowL, -12f), armHold);
@@ -7869,19 +7872,11 @@ namespace Tag.Art
                     }
                     else
                     {
-                    float openGait = Mathf.Max(gaitW, _runVis);
-                    float reachGait = dashSprint
-                        ? openGait
-                        : dashWalk
-                            ? gaitW
-                            : Mathf.Max(gaitW, _stopGait);
-                    float stride = Mathf.Lerp(0.96f, 1.16f, reachGait);
-                    float reach = Mathf.Lerp(34f, 58f, reachGait) * stride;
-                    float kneeAmt = Mathf.Lerp(48f, 90f, reachGait);
-                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(reach, 0f, 0f), w);
-                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(-reach * 0.58f, 0f, 0f), w);
-                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(2f + kneeAmt), 0f, 0f), w);
-                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-2f, 0f, 0f), w);
+                    GaitBlend.Legs dashLegs = GaitBlend.At(_cycle, speed);
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(dashLegs.ThighL, 0f, 0f), w);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(dashLegs.ThighR, 0f, 0f), w);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(dashLegs.KneeL, 0f, 0f), w);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(dashLegs.KneeR, 0f, 0f), w);
                     _hipsT = Quaternion.Slerp(_hipsT, _hips0, w);
                     }
                 }
@@ -7940,7 +7935,7 @@ namespace Tag.Art
             {
                 // Outer leg strides. Inner leg stays shorter against the wall. Same phase as the arms.
                 bool left = _motor != null && _motor.WallLeft;
-                ApplyWallLegs(WallPose.Run(Mathf.Sin(_surfPhase), left));
+                ApplyWallLegs(WallPose.RunCycle(_surfPhase, left));
                 if (_strideSurfSnap && !_wallAirSnap && _strideSurfIn < 0.98f)
                 {
                     float intoStrideSurfLegs = _strideSurfIn;
@@ -8177,45 +8172,19 @@ namespace Tag.Art
             }
             else
             {
-                // Recovery leg takes the knee. The back thigh stays shorter than the front reach
-                // so the pair does not meet straight under the hips. Stance knee stays nearly straight.
-                // Reach, knee, and stride scale with the same speed curve, so gaits do not pop.
-                float reachGait = Mathf.Max(gaitW, Mathf.Max(_stopGait, _runVis));
-                float stride = Mathf.Lerp(0.96f, 1.16f, reachGait);
-                float reach = Mathf.Lerp(34f, 58f, reachGait) * stride;
-                float frontL = Mathf.Max(0f, sinC);
-                float frontR = Mathf.Max(0f, -sinC);
-                float thighL = (frontL - frontR * GaitBlend.StrideTrail) * reach;
-                float thighR = (frontR - frontL * GaitBlend.StrideTrail) * reach;
-                float kneeAmt = Mathf.Lerp(48f, 90f, reachGait);
-                float kneeL = -(2f + frontL * kneeAmt);
-                float kneeR = -(2f + frontR * kneeAmt);
-                // The stride already trails the stance thigh. Adding the full plant on top
-                // digs the sole, and an extra knee bend lifts that foot off the gait.
-                // The residual is only the angle the stride does not already cover.
-                // The stance foot then levels. Swing phase is unchanged. No root motion.
-                if (stepping && footSki < 0.35f && _dropVis < 0.2f)
+                // Stance travels heel to toe without reversing. The swing knee carries
+                // the other foot. Cadence matches that step up to the sprint cap.
+                // No extra plant on top. No root motion.
+                GaitBlend.Legs strideLegs = GaitBlend.At(_cycle, speed);
+                float thighL = strideLegs.ThighL;
+                float thighR = strideLegs.ThighR;
+                float kneeL = strideLegs.KneeL;
+                float kneeR = strideLegs.KneeR;
+                if (stepping && footSki < 0.02f && _dropVis < 0.2f)
                 {
-                    float plantScale = _walkFromIdle ? Mathf.SmoothStep(0f, 1f, _walkFromIdleIn) : 1f;
-                    float tau = Mathf.PI * 2f;
-                    float cyclePhase = _cycle % tau;
-                    if (cyclePhase < 0f) cyclePhase += tau;
-                    float rear = GaitBlend.StrideRearDeg(reach, Mathf.Abs(sinC));
-                    float plantL = 0f;
-                    float plantR = 0f;
-                    bool leftStance = cyclePhase >= Mathf.PI;
-                    if (leftStance)
-                        plantL = GaitBlend.PlantResidualDeg(rear, GaitBlend.PlantCounterDeg(speed, posedCadence, (cyclePhase - Mathf.PI) / Mathf.PI));
-                    else
-                        plantR = GaitBlend.PlantResidualDeg(rear, GaitBlend.PlantCounterDeg(speed, posedCadence, cyclePhase / Mathf.PI));
-                    thighL -= plantL * plantScale;
-                    thighR -= plantR * plantScale;
-                    if (footSki < 0.02f)
-                    {
-                        _stanceSole = true;
-                        _solePitchL = leftStance ? GaitBlend.SoleLevelDeg(thighL, kneeL) : 0f;
-                        _solePitchR = leftStance ? 0f : GaitBlend.SoleLevelDeg(thighR, kneeR);
-                    }
+                    _stanceSole = true;
+                    _solePitchL = strideLegs.FootL;
+                    _solePitchR = strideLegs.FootR;
                 }
                 _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
@@ -8326,16 +8295,11 @@ namespace Tag.Art
                         {
                             // The wedge opens into the long stride. The feet do not stay split, then pop.
                             float up = slideLeave;
-                            float gait = Mathf.Max(gaitW, _runVis);
-                            float openStride = Mathf.Lerp(0.96f, 1.16f, gait);
-                            float openReach = Mathf.Lerp(34f, 58f, gait) * openStride;
-                            float openFrontL = Mathf.Max(0f, sinC);
-                            float openFrontR = Mathf.Max(0f, -sinC);
-                            float openKnee = Mathf.Lerp(48f, 90f, gait);
-                            wedgeL = Mathf.Lerp(wedgeL, (openFrontL - openFrontR * 0.58f) * openReach, up);
-                            wedgeR = Mathf.Lerp(wedgeR, (openFrontR - openFrontL * 0.58f) * openReach, up);
-                            bendL = Mathf.Lerp(bendL, -(2f + openFrontL * openKnee), up);
-                            bendR = Mathf.Lerp(bendR, -(2f + openFrontR * openKnee), up);
+                            GaitBlend.Legs openLegs = GaitBlend.At(_cycle, speed);
+                            wedgeL = Mathf.Lerp(wedgeL, openLegs.ThighL, up);
+                            wedgeR = Mathf.Lerp(wedgeR, openLegs.ThighR, up);
+                            bendL = Mathf.Lerp(bendL, openLegs.KneeL, up);
+                            bendR = Mathf.Lerp(bendR, openLegs.KneeR, up);
                             footYawL = Mathf.Lerp(footYawL, 0f, up);
                             footYawR = Mathf.Lerp(footYawR, 0f, up);
                         }
@@ -8352,16 +8316,11 @@ namespace Tag.Art
                         if (!_runFromStill)
                         {
                         float up = 1f - _dropVis;
-                        float openGait = Mathf.Max(gaitW, _runVis);
-                        float openStride = Mathf.Lerp(0.96f, 1.16f, openGait);
-                        float openReach = Mathf.Lerp(34f, 58f, openGait) * openStride;
-                        float openFrontL = Mathf.Max(0f, sinC);
-                        float openFrontR = Mathf.Max(0f, -sinC);
-                        float openKnee = Mathf.Lerp(48f, 90f, openGait);
-                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(Mathf.Lerp(CrouchPose.Thigh, (openFrontL - openFrontR * 0.58f) * openReach, up), 0f, 0f), d);
-                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(Mathf.Lerp(CrouchPose.Thigh, (openFrontR - openFrontL * 0.58f) * openReach, up), 0f, 0f), d);
-                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(Mathf.Lerp(CrouchPose.Knee, -(2f + openFrontL * openKnee), up), 0f, 0f), d);
-                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(Mathf.Lerp(CrouchPose.Knee, -(2f + openFrontR * openKnee), up), 0f, 0f), d);
+                        GaitBlend.Legs openLegs = GaitBlend.At(_cycle, speed);
+                        _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(Mathf.Lerp(CrouchPose.Thigh, openLegs.ThighL, up), 0f, 0f), d);
+                        _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(Mathf.Lerp(CrouchPose.Thigh, openLegs.ThighR, up), 0f, 0f), d);
+                        _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(Mathf.Lerp(CrouchPose.Knee, openLegs.KneeL, up), 0f, 0f), d);
+                        _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(Mathf.Lerp(CrouchPose.Knee, openLegs.KneeR, up), 0f, 0f), d);
                         }
                     }
                     else if ((crouch && speed > 0.35f) || crouchSprintExit)
@@ -9015,7 +8974,7 @@ namespace Tag.Art
                 if (_graceClimb)
                     ApplyWallSample(WallPose.Climb(Mathf.Sin(_surfPhase), vyGrace), armZ);
                 else
-                    ApplyWallSample(WallPose.Run(Mathf.Sin(_surfPhase), _motor != null && _motor.WallLeft), armZ);
+                    ApplyWallSample(WallPose.RunCycle(_surfPhase, _motor != null && _motor.WallLeft), armZ);
             }
             else if (_wallFallHold && air && !wallRun && !climb && !mantle && !punching && !jet && !sliding
                 && !dashing && !lunging
@@ -9226,45 +9185,32 @@ namespace Tag.Art
                 float t = 1f - Mathf.Clamp01(_pushOff);
                 float intoPush = Mathf.Clamp01(t * 2f);
                 float leave = Mathf.Clamp01(t * 2f - 1f);
-                Quaternion pushL = _uaL0 * Quaternion.Euler(-36f, 14f, armZ);
-                Quaternion pushR = _uaR0 * Quaternion.Euler(-36f, -14f, -armZ);
+                WallJumpPose.Sample kick = WallJumpPose.Push(_pushLeft);
+                Quaternion pushL = _uaL0 * Quaternion.Euler(kick.ArmPitchL, kick.ArmYawL, armZ);
+                Quaternion pushR = _uaR0 * Quaternion.Euler(kick.ArmPitchR, kick.ArmYawR, -armZ);
                 Quaternion airL = _uaL0 * Quaternion.Euler(-52f, 22f, armZ);
                 Quaternion airR = _uaR0 * Quaternion.Euler(-52f, -22f, -armZ);
-                Quaternion pushElL = _laL0 * Quaternion.Euler(-14f, 0f, 0f);
-                Quaternion pushElR = _laR0 * Quaternion.Euler(-14f, 0f, 0f);
+                Quaternion pushElL = _laL0 * Quaternion.Euler(kick.ElbowL, 0f, 0f);
+                Quaternion pushElR = _laR0 * Quaternion.Euler(kick.ElbowR, 0f, 0f);
                 Quaternion airElL = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
                 Quaternion airElR = _laR0 * Quaternion.Euler(-12f, 0f, 0f);
                 _uaLT = Quaternion.Slerp(Quaternion.Slerp(_exitUaL, pushL, intoPush), airL, leave);
                 _uaRT = Quaternion.Slerp(Quaternion.Slerp(_exitUaR, pushR, intoPush), airR, leave);
                 _laLT = Quaternion.Slerp(Quaternion.Slerp(_exitLaL, pushElL, intoPush), airElL, leave);
                 _laRT = Quaternion.Slerp(Quaternion.Slerp(_exitLaR, pushElR, intoPush), airElR, leave);
-                Quaternion pushSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion pushSp = _spine0 * Quaternion.Euler(kick.Spine, 0f, kick.LeanZ);
                 Quaternion airSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
-                Quaternion pushHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
+                Quaternion pushHp = _hips0 * Quaternion.Euler(kick.Hip, 0f, -kick.LeanZ * WallPose.HipRollShare);
                 Quaternion airHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
-                Quaternion pushHd = _head0 * Quaternion.Euler(0f, 0f, 0f);
+                Quaternion pushHd = _head0 * Quaternion.Euler(kick.Head, 0f, -kick.LeanZ * WallPose.HeadRollShare);
                 Quaternion airHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
                 _spineT = Quaternion.Slerp(Quaternion.Slerp(_exitSpine, pushSp, intoPush), airSp, leave);
                 _hipsT = Quaternion.Slerp(Quaternion.Slerp(_exitHips, pushHp, intoPush), airHp, leave);
                 _headT = Quaternion.Slerp(Quaternion.Slerp(_headT, pushHd, intoPush), airHd, leave);
-                Quaternion pushThighL;
-                Quaternion pushThighR;
-                Quaternion pushKneeL;
-                Quaternion pushKneeR;
-                if (_pushLeft)
-                {
-                    pushThighL = _ulL0 * Quaternion.Euler(-8f, 0f, 0f);
-                    pushKneeL = _llL0 * Quaternion.Euler(-6f, 0f, 0f);
-                    pushThighR = _ulR0 * Quaternion.Euler(48f, 0f, 0f);
-                    pushKneeR = _llR0 * Quaternion.Euler(-62f, 0f, 0f);
-                }
-                else
-                {
-                    pushThighR = _ulR0 * Quaternion.Euler(-8f, 0f, 0f);
-                    pushKneeR = _llR0 * Quaternion.Euler(-6f, 0f, 0f);
-                    pushThighL = _ulL0 * Quaternion.Euler(48f, 0f, 0f);
-                    pushKneeL = _llL0 * Quaternion.Euler(-62f, 0f, 0f);
-                }
+                Quaternion pushThighL = _ulL0 * Quaternion.Euler(kick.ThighL, 0f, 0f);
+                Quaternion pushThighR = _ulR0 * Quaternion.Euler(kick.ThighR, 0f, 0f);
+                Quaternion pushKneeL = _llL0 * Quaternion.Euler(kick.KneeL, 0f, 0f);
+                Quaternion pushKneeR = _llR0 * Quaternion.Euler(kick.KneeR, 0f, 0f);
                 Quaternion airThighL = _ulL0 * Quaternion.Euler(22f, 0f, 0f);
                 Quaternion airThighR = _ulR0 * Quaternion.Euler(20f, 0f, 0f);
                 Quaternion airKneeL = _llL0 * Quaternion.Euler(-28f, 0f, 0f);
@@ -9302,45 +9248,32 @@ namespace Tag.Art
                 float t = 1f - Mathf.Clamp01(_pushOff);
                 float intoPush = Mathf.Clamp01(t * 2f);
                 float leave = Mathf.Clamp01(t * 2f - 1f);
-                Quaternion pushL = _uaL0 * Quaternion.Euler(-36f, 14f, armZ);
-                Quaternion pushR = _uaR0 * Quaternion.Euler(-36f, -14f, -armZ);
+                WallJumpPose.Sample kick = WallJumpPose.Push(_pushLeft);
+                Quaternion pushL = _uaL0 * Quaternion.Euler(kick.ArmPitchL, kick.ArmYawL, armZ);
+                Quaternion pushR = _uaR0 * Quaternion.Euler(kick.ArmPitchR, kick.ArmYawR, -armZ);
                 Quaternion airL = _uaL0 * Quaternion.Euler(-52f, 22f, armZ);
                 Quaternion airR = _uaR0 * Quaternion.Euler(-52f, -22f, -armZ);
-                Quaternion pushElL = _laL0 * Quaternion.Euler(-14f, 0f, 0f);
-                Quaternion pushElR = _laR0 * Quaternion.Euler(-14f, 0f, 0f);
+                Quaternion pushElL = _laL0 * Quaternion.Euler(kick.ElbowL, 0f, 0f);
+                Quaternion pushElR = _laR0 * Quaternion.Euler(kick.ElbowR, 0f, 0f);
                 Quaternion airElL = _laL0 * Quaternion.Euler(-12f, 0f, 0f);
                 Quaternion airElR = _laR0 * Quaternion.Euler(-12f, 0f, 0f);
                 _uaLT = Quaternion.Slerp(Quaternion.Slerp(_exitUaL, pushL, intoPush), airL, leave);
                 _uaRT = Quaternion.Slerp(Quaternion.Slerp(_exitUaR, pushR, intoPush), airR, leave);
                 _laLT = Quaternion.Slerp(Quaternion.Slerp(_exitLaL, pushElL, intoPush), airElL, leave);
                 _laRT = Quaternion.Slerp(Quaternion.Slerp(_exitLaR, pushElR, intoPush), airElR, leave);
-                Quaternion pushSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
+                Quaternion pushSp = _spine0 * Quaternion.Euler(kick.Spine, 0f, kick.LeanZ);
                 Quaternion airSp = _spine0 * Quaternion.Euler(-6f, 0f, 0f);
-                Quaternion pushHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
+                Quaternion pushHp = _hips0 * Quaternion.Euler(kick.Hip, 0f, -kick.LeanZ * WallPose.HipRollShare);
                 Quaternion airHp = _hips0 * Quaternion.Euler(6f, 0f, 0f);
-                Quaternion pushHd = _head0 * Quaternion.Euler(0f, 0f, 0f);
+                Quaternion pushHd = _head0 * Quaternion.Euler(kick.Head, 0f, -kick.LeanZ * WallPose.HeadRollShare);
                 Quaternion airHd = _head0 * Quaternion.Euler(-6f, 0f, 0f);
                 _spineT = Quaternion.Slerp(Quaternion.Slerp(_exitSpine, pushSp, intoPush), airSp, leave);
                 _hipsT = Quaternion.Slerp(Quaternion.Slerp(_exitHips, pushHp, intoPush), airHp, leave);
                 _headT = Quaternion.Slerp(Quaternion.Slerp(_headT, pushHd, intoPush), airHd, leave);
-                Quaternion pushThighL;
-                Quaternion pushThighR;
-                Quaternion pushKneeL;
-                Quaternion pushKneeR;
-                if (_pushLeft)
-                {
-                    pushThighL = _ulL0 * Quaternion.Euler(-8f, 0f, 0f);
-                    pushKneeL = _llL0 * Quaternion.Euler(-6f, 0f, 0f);
-                    pushThighR = _ulR0 * Quaternion.Euler(48f, 0f, 0f);
-                    pushKneeR = _llR0 * Quaternion.Euler(-62f, 0f, 0f);
-                }
-                else
-                {
-                    pushThighR = _ulR0 * Quaternion.Euler(-8f, 0f, 0f);
-                    pushKneeR = _llR0 * Quaternion.Euler(-6f, 0f, 0f);
-                    pushThighL = _ulL0 * Quaternion.Euler(48f, 0f, 0f);
-                    pushKneeL = _llL0 * Quaternion.Euler(-62f, 0f, 0f);
-                }
+                Quaternion pushThighL = _ulL0 * Quaternion.Euler(kick.ThighL, 0f, 0f);
+                Quaternion pushThighR = _ulR0 * Quaternion.Euler(kick.ThighR, 0f, 0f);
+                Quaternion pushKneeL = _llL0 * Quaternion.Euler(kick.KneeL, 0f, 0f);
+                Quaternion pushKneeR = _llR0 * Quaternion.Euler(kick.KneeR, 0f, 0f);
                 Quaternion airThighL = _ulL0 * Quaternion.Euler(22f, 0f, 0f);
                 Quaternion airThighR = _ulR0 * Quaternion.Euler(20f, 0f, 0f);
                 Quaternion airKneeL = _llL0 * Quaternion.Euler(-28f, 0f, 0f);
@@ -10203,6 +10136,17 @@ namespace Tag.Art
                         _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-knee, 0f, 0f), w);
                     }
                 }
+                else if (_landPoseHard || _landPoseSoft)
+                {
+                    LandPose.Sample land = _landPoseHard ? LandPose.Hard(sinC >= 0f) : LandPose.Soft();
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(land.ThighL, 0f, 0f), kL);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(land.ThighR, 0f, 0f), kR);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(land.KneeL, 0f, 0f), kL);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(land.KneeR, 0f, 0f), kR);
+                    _stanceSole = true;
+                    _solePitchL = land.FootL;
+                    _solePitchR = land.FootR;
+                }
                 else
                 {
                     _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(48f, 0f, 0f), kL);
@@ -10358,6 +10302,17 @@ namespace Tag.Art
                         _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(18f, 0f, 0f), dip);
                         _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(-10f, 0f, 0f), dip);
                     }
+                }
+                else if (_landPoseHard || _landPoseSoft)
+                {
+                    LandPose.Sample land = _landPoseHard ? LandPose.Hard(sinC >= 0f) : LandPose.Soft();
+                    _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(land.ArmPitchL, land.ArmYawL, armZ), armK);
+                    _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(land.ArmPitchR, land.ArmYawR, -armZ), armK);
+                    _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(land.ElbowL, 0f, 0f), armK);
+                    _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(land.ElbowR, 0f, 0f), armK);
+                    _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(land.Hip, 0f, 0f), hipK);
+                    _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(land.Spine, 0f, 0f), hipK);
+                    _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(land.Head, 0f, 0f), hipK);
                 }
                 else
                 {
@@ -15149,7 +15104,7 @@ namespace Tag.Art
                 if (_graceClimb)
                     ApplyWallSample(WallPose.Climb(Mathf.Sin(_surfPhase), vyGrace), armZ);
                 else
-                    ApplyWallSample(WallPose.Run(Mathf.Sin(_surfPhase), _motor != null && _motor.WallLeft), armZ);
+                    ApplyWallSample(WallPose.RunCycle(_surfPhase, _motor != null && _motor.WallLeft), armZ);
             }
             ApplyClingSlideOff(armZ);
             TickWallJumpPose(armZ, grounded, mantle, sliding, punching, climb, wallRun, airDashing, jet, jumpPoseOn);
@@ -15242,7 +15197,12 @@ namespace Tag.Art
             }
             else if (jet) bob = 0.05f + Mathf.Sin(Time.time * 6.5f) * 0.02f;
             if (_landSquash > 0f && !JumpLandTell.Show(JumpLandSolo(), _jumpLandAge))
-                bob -= 0.14f * _landSquash;
+            {
+                float landDrop = _landPoseHard ? LandPose.HardDrop : _landPoseSoft ? LandPose.SoftDrop : 0.14f;
+                bob -= landDrop * _landSquash;
+            }
+            if (climb && _motor != null)
+                bob -= WallPose.SlipSag * WallPose.SlipWeight(_motor.Velocity.y);
             if (dashing) bob += 0.04f * dashAmt;
             if (flinchAmt > 0.04f) bob -= 0.1f * flinchAmt;
             if (_motor != null && _motor.ZipRiding)
@@ -15447,6 +15407,12 @@ namespace Tag.Art
             _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
+            if (pose.FootL != 0f || pose.FootR != 0f)
+            {
+                _stanceSole = true;
+                _solePitchL = pose.FootL;
+                _solePitchR = pose.FootR;
+            }
         }
 
         void CaptureWallAir()
@@ -17495,6 +17461,9 @@ namespace Tag.Art
             // Brief absorb, then the pose eases into the run instead of popping off.
             _landHold = Mathf.Lerp(0.05f, 0.11f, t);
             _landHard = t;
+            // Soft is impact >= 5. Hard is land-stun speed. The squash timer is unchanged.
+            _landPoseHard = impact >= hard;
+            _landPoseSoft = !_landPoseHard && impact >= soft;
         }
 
         void ClearHopLand()
@@ -17502,6 +17471,8 @@ namespace Tag.Art
             _landSquash = 0f;
             _landHold = 0f;
             _landHard = 0f;
+            _landPoseHard = false;
+            _landPoseSoft = false;
             _landImpactPending = -1f;
             _landAbsorbSnap = false;
         }

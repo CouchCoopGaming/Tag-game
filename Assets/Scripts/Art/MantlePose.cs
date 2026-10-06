@@ -219,7 +219,7 @@ namespace Tag.Art
             WallPose.Sample reach = WallPose.Climb(1f, WallPose.ClimbSpeedRef);
             float reachGap = reach.ArmPitchL - reach.ArmPitchR;
             if (reachGap < 0f) reachGap = -reachGap;
-            if (reachGap < 70f) return false;
+            if (reachGap < 48f) return false;
             if (plantGap > reachGap * 0.35f) return false;
             if (plant.ElbowL >= reach.ElbowL) return false;
             if (knee.ThighL <= WallPose.DriveThigh) return false;
@@ -227,7 +227,7 @@ namespace Tag.Art
             if (over.Head <= reach.Head) return false;
 
             WallPose.Sample push = WallPose.PushOff(true);
-            if (knee.ThighL < push.ThighR + 30f) return false;
+            if (knee.ThighL < push.ThighR + 16f) return false;
             if (plant.ElbowL >= push.ElbowL) return false;
             if (over.Spine <= push.Spine) return false;
             float pushGap = push.ThighR - push.ThighL;

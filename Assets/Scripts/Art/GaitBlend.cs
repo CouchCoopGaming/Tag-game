@@ -21,9 +21,16 @@ namespace Tag.Art
         public const float TurnLeanWalk = 4.5f;
         public const float TurnLeanSprint = 9f;
         public const float CadenceWalkMin = 5.2f;
-        public const float CadenceSprint = 11.2f;
+        /// <summary>Fast enough that a sprint sole keeps up with the body, short of a buzz.</summary>
+        public const float CadenceSprint = 26.5f;
         /// <summary>Meters above the idle gate before cadence is fully on. Keeps the first step from buzzing.</summary>
-        public const float CadenceGateSpan = 2.4f;
+        public const float CadenceGateSpan = 4.0f;
+        /// <summary>Heel-strike reach, degrees. Grows with the gait so the step matches speed.</summary>
+        public const float FrontReachMin = 26f;
+        public const float FrontReachMax = 48f;
+        /// <summary>Toe-off trail, degrees. Shorter than the reach so the silhouette still reads.</summary>
+        public const float BackReachMin = 14f;
+        public const float BackReachMax = 30f;
         public const float PlantCapDeg = 26f;
         public const float PlantDuty = 0.42f;
         /// <summary>Share of the reach already pitched back on the stance thigh.</summary>
@@ -39,14 +46,14 @@ namespace Tag.Art
             return 1f - (1f - t) * (1f - t);
         }
 
-        /// <summary>Radians per second. 0 at rest. Rises through walk, run, and sprint.</summary>
+        /// <summary>Radians per second. 0 at rest. Matches foot travel up to <see cref="CadenceSprint"/>.</summary>
         public static float CadenceAt(float planarSpeed)
         {
             float s = planarSpeed < 0f ? 0f : planarSpeed;
-            float t = Inv(IdleGate, SprintSpeed, s);
-            float smooth = t * t * (3f - 2f * t);
             float gate = Mathf.SmoothStep(0f, 1f, Inv(IdleGate, IdleGate + CadenceGateSpan, s));
-            return Mathf.Lerp(CadenceWalkMin, CadenceSprint, smooth) * gate;
+            float match = s * 3.14159265f / FootTravel(PoseWeight(s));
+            if (match > CadenceSprint) match = CadenceSprint;
+            return match * gate;
         }
 
         public static float ArmAmp(float poseWeight)
@@ -54,10 +61,117 @@ namespace Tag.Art
             return Mathf.Lerp(36f, 64f, Mathf.Clamp01(poseWeight));
         }
 
+        public static float FrontReach(float poseWeight)
+        {
+            return Mathf.Lerp(FrontReachMin, FrontReachMax, Mathf.Clamp01(poseWeight));
+        }
+
+        public static float BackReach(float poseWeight)
+        {
+            return Mathf.Lerp(BackReachMin, BackReachMax, Mathf.Clamp01(poseWeight));
+        }
+
+        /// <summary>Forward thigh at heel strike. The stride scale the run and the jump share.</summary>
         public static float ThighReach(float poseWeight)
         {
-            float w = Mathf.Clamp01(poseWeight);
-            return Mathf.Lerp(34f, 58f, w) * Mathf.Lerp(0.96f, 1.16f, w);
+            return FrontReach(poseWeight);
+        }
+
+        /// <summary>Meters the stance sole travels, hip to toe-off. Capped by the leg.</summary>
+        public static float FootTravel(float poseWeight)
+        {
+            float front = FrontReach(poseWeight) * Mathf.Deg2Rad;
+            float back = BackReach(poseWeight) * Mathf.Deg2Rad;
+            float meters = LegLength * (Mathf.Sin(front) + Mathf.Sin(back));
+            return meters < 0.08f ? 0.08f : meters;
+        }
+
+        /// <summary>
+        /// Share of the body's stance travel the sole does not cover.
+        /// 0 when cadence matches the step. The sprint cap is the readable ceiling.
+        /// </summary>
+        public static float FootSlip(float planarSpeed)
+        {
+            float s = planarSpeed < 0f ? 0f : planarSpeed;
+            float cadence = CadenceAt(s);
+            if (cadence < 0.05f || s <= IdleGate) return 0f;
+            float body = s * 3.14159265f / cadence;
+            if (body < 0.001f) return 0f;
+            float slip = (body - FootTravel(PoseWeight(s))) / body;
+            return slip < 0f ? 0f : slip;
+        }
+
+        public struct Legs
+        {
+            public float ThighL, ThighR, KneeL, KneeR, FootL, FootR;
+        }
+
+        /// <summary>
+        /// One cycle. Positive sine puts the left thigh forward, so the arms can
+        /// keep opposing that sign. Stance is the half where cosine is negative:
+        /// the sole travels from heel strike to toe-off without reversing.
+        /// The other half is the swing, knee up, foot in the air.
+        /// </summary>
+        public static Legs At(float phaseRadians, float planarSpeed)
+        {
+            float weight = PoseWeight(planarSpeed);
+            const float pi = 3.14159265f;
+            const float tau = pi * 2f;
+            float phase = phaseRadians % tau;
+            if (phase < 0f) phase += tau;
+            SampleLeg(phase, weight, out float thighL, out float kneeL, out float footL);
+            float phaseR = phase + pi;
+            if (phaseR >= tau) phaseR -= tau;
+            SampleLeg(phaseR, weight, out float thighR, out float kneeR, out float footR);
+            return new Legs
+            {
+                ThighL = thighL,
+                ThighR = thighR,
+                KneeL = kneeL,
+                KneeR = kneeR,
+                FootL = footL,
+                FootR = footR,
+            };
+        }
+
+        /// <summary>True when the stance foot moves backward across the whole contact.</summary>
+        public static bool StanceHolds(float planarSpeed)
+        {
+            const float pi = 3.14159265f;
+            float prev = 2f;
+            for (int i = 0; i <= 8; i++)
+            {
+                float phase = pi * 0.5f + pi * (i / 8f);
+                Legs legs = At(phase, planarSpeed);
+                float forward = FootForward(legs.ThighL);
+                if (forward > prev + 0.004f) return false;
+                prev = forward;
+            }
+            return true;
+        }
+
+        public static float FootForward(float thighDeg)
+        {
+            return LegLength * Mathf.Sin(thighDeg * Mathf.Deg2Rad);
+        }
+
+        static void SampleLeg(float phase, float poseWeight, out float thigh, out float knee, out float foot)
+        {
+            float s = Mathf.Sin(phase);
+            float c = Mathf.Cos(phase);
+            float front = FrontReach(poseWeight);
+            float back = BackReach(poseWeight);
+            thigh = s >= 0f ? s * front : s * back;
+            if (c <= 0f)
+            {
+                knee = -5f;
+                foot = SoleLevelDeg(thigh, knee);
+            }
+            else
+            {
+                knee = -(4f + c * KneeBend(poseWeight));
+                foot = 0f;
+            }
         }
 
         public static float KneeBend(float poseWeight)
@@ -184,6 +298,16 @@ namespace Tag.Art
             if (!(dug < -25f)) return false;
             if (Mathf.Abs(PlantResidualDeg(4f, 20f) - 16f) > 0.01f) return false;
             if (PlantResidualDeg(30f, 10f) > 0.01f) return false;
+
+            if (FootSlip(WalkSpeed) > 0.08f) return false;
+            if (FootSlip(RunSpeed) > 0.08f) return false;
+            if (FootSlip(SprintSpeed) > 0.24f) return false;
+            if (CadenceAt(IdleGate + CadenceGateSpan) + 0.01f < CadenceWalkMin) return false;
+            if (!StanceHolds(WalkSpeed) || !StanceHolds(RunSpeed) || !StanceHolds(SprintSpeed)) return false;
+            Legs walkLegs = At(0.9f, WalkSpeed);
+            if (walkLegs.ThighL <= walkLegs.ThighR) return false;
+            if (Mathf.Abs(StanceWorldPitch(walkLegs.ThighR, walkLegs.KneeR, walkLegs.FootR)) > 0.05f) return false;
+            if (walkLegs.KneeL >= walkLegs.KneeR) return false;
             return true;
         }
 
@@ -220,12 +344,17 @@ namespace Tag.Art
                 + " residual=" + residual.ToString("0.0")
                 + " sole=" + StanceWorldPitch(thigh, knee, sole).ToString("0.0")
                 + " dugWas=" + dug.ToString("0.0")
+                + " slipWalk=" + FootSlip(WalkSpeed).ToString("0.00")
+                + " slipRun=" + FootSlip(RunSpeed).ToString("0.00")
+                + " slipSprint=" + FootSlip(SprintSpeed).ToString("0.00")
+                + " stepWalk=" + FootTravel(poseWalk).ToString("0.00")
+                + " stepSprint=" + FootTravel(poseSprint).ToString("0.00")
                 + " accelLean=" + AccelLeanDeg.ToString("0.0")
                 + " turnLean=" + TurnLeanWalk.ToString("0.0") + "-" + TurnLeanSprint.ToString("0.0")
                 + " idleBlend=" + IdleBlendSeconds.ToString("0.00")
                 + " gate=pose:ease-out InverseLerp(" + IdleGate.ToString("0.00") + "," + SprintSpeed.ToString("0") + ")"
-                + "; cadence:SmoothStep*gate(" + IdleGate.ToString("0.00") + ".." + (IdleGate + CadenceGateSpan).ToString("0.00") + ") Lerp("
-                + CadenceWalkMin.ToString("0.0") + "," + CadenceSprint.ToString("0.0") + ")"
+                + "; cadence:gate(" + IdleGate.ToString("0.00") + ".." + (IdleGate + CadenceGateSpan).ToString("0.00") + ")*min("
+                + CadenceSprint.ToString("0.0") + ",speed*pi/footTravel) slip covered by the stance sole"
                 + "; plant:sin(phase)*Atan(speed*" + PlantDuty.ToString("0.00") + "*pi/cadence/" + LegLength.ToString("0.00") + ") cap " + PlantCapDeg.ToString("0")
                 + "; start/stop:dt/" + IdleBlendSeconds.ToString("0.00")
                 + "; lean:accel/48*" + AccelLeanDeg.ToString("0.0") + " spine+hips, turn Lerp("
