@@ -329,23 +329,6 @@ namespace Tag.Level
                         Ride = 0f
                     });
                 }
-                StackYardLayout.RoofMark[] roofs = StackYardLayout.RoofAccess;
-                for (int i = 0; i < roofs.Length; i++)
-                {
-                    StackYardLayout.RoofMark c = roofs[i];
-                    marks.Add(new ParkMark
-                    {
-                        Kind = HopCounter,
-                        Index = (short)(counters.Length + i),
-                        X = c.X,
-                        Z = c.Z,
-                        Y = c.Y,
-                        ExitX = c.X,
-                        ExitZ = c.Z,
-                        ExitY = c.Y,
-                        Ride = 0f
-                    });
-                }
             }
             for (int i = 0; i < zips.Length && !ParkArena.IsPocket && !ParkArena.IsStack; i++)
             {
