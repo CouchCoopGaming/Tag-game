@@ -1,4 +1,5 @@
 using Tag.Audio;
+using Tag.Couch;
 using Tag.Front;
 using Tag.Gameplay;
 using Tag.Level;
@@ -29,6 +30,7 @@ namespace Tag.Core
         public static void ReleaseMatch()
         {
             FrontSession.ResetStatics();
+            CouchPlay.Release();
             FrontLive.Reset();
         }
 

@@ -44,6 +44,14 @@ Pause → Settings. The same card is on the direct-play pause menu. Values save 
 | Reset to defaults | — | Restores this table |
 | Back | — | Returns to pause |
 
+## Couch
+
+Match setup’s Start match opens the join screen before the round. One keyboard and up to four pads can sit down. A letter, number, or Shift / Ctrl / Alt joins the keyboard player. Any button on a pad joins that pad. East or Esc on a seated device leaves it. Enter, Space, or South (once that device is seated) starts. Humans plus the AI count from setup never pass 4. AI fills only the seats that are left.
+
+Each device drives its own pawn. The keyboard player keeps the current keyboard binds. Each pad has its own copy of the pad binds, so rebinding one pad does not move another pad or the keyboard. Hints and glyphs on a viewport use that player’s device.
+
+Two humans split the screen vertically by default. The join screen’s Split row switches that to a horizontal split. Three or four humans use quadrants. With three, the last quadrant is the score list. Each human viewport has its own chase camera (no field-of-view pop, no shake, no slow motion) and its own verb HUD, It mark, and timer. The listener sits on P1, or on the average of the humans when the Listener row says Average. The mix still caps at 16 voices.
+
 ## Menus on a gamepad
 
 South confirms. East goes back. Start pauses. The left stick and the D-pad move the highlight. Every pause row, the settings card, rebind, the arena picker, controls, look, audio, and the results card can be opened and left without the mouse.
@@ -51,7 +59,8 @@ South confirms. East goes back. Start pauses. The left stick and the D-pad move 
 | Menu | Move | Confirm | Back |
 |---|---|---|---|
 | Title | Up / Down | Play, Settings, How to play, Quit | East or Esc does nothing on the title |
-| Match setup | Up / Down, Left / Right changes the row | Start match or Back | East or Esc returns to the title |
+| Match setup | Up / Down, Left / Right changes the row | Start match opens join, or Back | East or Esc returns to the title |
+| Join | Up / Down, Left / Right changes split or listener | Start match or Back | East or Esc leaves that device; Back on an empty keyboard returns to setup |
 | Pause | Left / Right | Resume, Controls, Look, Audio, Quit to title, Settings, Rebind, Arena | East or Esc resumes |
 | Settings | Up / Down | Reset, Back, or a toggle | East or Esc to pause, or to the title when opened from there |
 | Rebind | Up / Down | Listen for a key or button, Reset, Back | East or Esc to pause |

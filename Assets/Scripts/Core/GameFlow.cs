@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Tag.Couch;
 using Tag.Gameplay;
 using Tag.Modes;
 using Tag.Local;
@@ -95,7 +96,7 @@ namespace Tag.Core
             bool boot = scene == bootSceneName || scene == "Boot";
             if (boot || !FrontSession.Armed)
             {
-                if (FrontSession.Screen == FrontScreen.Setup)
+                if (FrontSession.Screen == FrontScreen.Setup || FrontSession.Screen == FrontScreen.Join)
                     State = GameFlowState.Setup;
                 else
                 {
@@ -156,6 +157,7 @@ namespace Tag.Core
         public void PlayLeastItSlice()
         {
             MarkBootSeen();
+            CouchPlay.Release();
             LocalPlayerRoster.SetCount(1);
             SelectedMode = TagModeId.LeastIt;
             _menuCursor = (int)TagModeId.LeastIt;
@@ -210,6 +212,10 @@ namespace Tag.Core
         public void GoToPlay()
         {
             MarkBootSeen();
+            int humans = CouchPlay.Humans;
+            if (humans < 1) humans = 1;
+            if (humans > 4) humans = 4;
+            LocalPlayerRoster.SetCount(humans);
             CloseMenuPanels();
             State = GameFlowState.Play;
             LookSensitivity.Load();
@@ -868,6 +874,8 @@ namespace Tag.Core
             if (FrontSession.Screen == FrontScreen.Settings || FrontSession.Screen == FrontScreen.HowTo)
                 return;
 
+            CouchDevices.Poll();
+
             bool up = UnityEngine.Input.GetKeyDown(KeyCode.UpArrow) || PadNav.Up;
             bool down = UnityEngine.Input.GetKeyDown(KeyCode.DownArrow) || PadNav.Down;
             bool left = UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left;
@@ -881,6 +889,8 @@ namespace Tag.Core
             if (right) FrontSession.Step(1);
 
             int act = FrontSession.ActNone;
+            if (CouchDevices.EatBack) back = false;
+            if (CouchDevices.EatConfirm) confirm = false;
             if (back) act = FrontSession.Back();
             else if (confirm) act = FrontSession.Confirm();
             else
@@ -907,6 +917,8 @@ namespace Tag.Core
                 SettingsMenuUi.Open(SettingsMenuUi.Panel.Settings);
             else if (act == FrontSession.ActHowTo)
                 SettingsMenuUi.Open(SettingsMenuUi.Panel.HowTo);
+            else if (act == FrontSession.ActJoin)
+                State = GameFlowState.Setup;
             else if (act == FrontSession.ActStart)
                 StartFromSetup();
             else if (act == FrontSession.ActQuit)

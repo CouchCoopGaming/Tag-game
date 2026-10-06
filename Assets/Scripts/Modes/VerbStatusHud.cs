@@ -1,4 +1,5 @@
 using Tag.Core;
+using Tag.Couch;
 using Tag.Gameplay;
 using Tag.Settings;
 using TagArena.Movement;
@@ -14,6 +15,9 @@ namespace Tag.Modes
     public class VerbStatusHud : MonoBehaviour
     {
         public PlayerMotor motor;
+        public Camera View;
+        public int Seat = -1;
+        public int DriveDevice = -1;
         ItController _self;
         GUIStyle _label;
         GUIStyle _caption;
@@ -46,6 +50,11 @@ namespace Tag.Modes
         void OnGUI()
         {
             if (motor == null || _label == null) return;
+            if (DriveDevice >= 0 && View != null)
+            {
+                DrawCouch();
+                return;
+            }
             var modes = TagModeController.Instance;
             if (modes != null && modes.Phase != MatchPhase.Playing && modes.Phase != MatchPhase.PostRound)
                 return;
@@ -82,6 +91,68 @@ namespace Tag.Modes
             bool cling = motor.ClingHeldActive;
             DrawRing(VerbHudLayout.Row(cluster, 3), cling ? 1f : 0f, VerbColor(colorblind, 3), "CLING", cling ? "HELD" : "—", false);
             if (scaled) GUI.matrix = prevMatrix;
+        }
+
+        void DrawCouch()
+        {
+            var modes = TagModeController.Instance;
+            if (modes != null && modes.Phase != MatchPhase.Playing && modes.Phase != MatchPhase.PostRound)
+                return;
+            Rect area = View.pixelRect;
+            if (area.width < 8f || area.height < 8f) return;
+            float gx = area.x;
+            float gy = Screen.height - (area.y + area.height);
+            float gw = area.width;
+            float gh = area.height;
+            _label.fontSize = gh >= 500f ? 16 : 13;
+            _caption.fontSize = _label.fontSize;
+            bool colorblind = GameSettings.Current != null && GameSettings.Current.Colorblind;
+            ItController self = _self;
+            CouchPlay.HudBox(gx, gy, gw, gh, 0, out float tx, out float ty, out float tw, out float th);
+            CouchPlay.HudBox(gx, gy, gw, gh, 1, out float nx, out float ny, out float nw, out float nh);
+            CouchPlay.HudBox(gx, gy, gw, gh, 2, out float ix, out float iy, out float iw, out float ih);
+            CouchPlay.HudBox(gx, gy, gw, gh, 3, out float cx, out float cy, out float cw, out float ch);
+
+            var prev = GUI.color;
+            GUI.color = new Color(0.08f, 0.1f, 0.14f, 0.9f);
+            GUI.DrawTexture(new Rect(tx, ty, tw, th), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+            float remain = modes != null ? modes.Remaining : 0f;
+            GUI.Label(new Rect(tx, ty, tw, th), HudDigits.Tenth0(remain), _label);
+
+            CouchPlay.Tint(Seat < 0 ? 0 : Seat, out float r, out float g, out float b);
+            _label.normal.textColor = new Color(r, g, b, 1f);
+            GUI.Label(new Rect(nx, ny, nw, nh), CouchPlay.Name(Seat < 0 ? 0 : Seat), _label);
+            _label.normal.textColor = Color.white;
+
+            if (self != null && self.IsIt)
+            {
+                GUI.color = new Color(1f, 0.55f, 0.12f, 1f);
+                GUI.DrawTexture(new Rect(ix, iy, iw, ih), Texture2D.whiteTexture);
+                GUI.color = Color.white;
+                GUI.Label(new Rect(ix, iy, iw, ih), "IT", _label);
+            }
+
+            float dashMax = motor.cfg != null ? Mathf.Max(0.01f, motor.cfg.airDashCooldown) : 30f;
+            float dashRem = motor.AirDashCooldownRemaining;
+            float dashFill = motor.IsAirDashing ? 1f : 1f - Mathf.Clamp01(dashRem / dashMax);
+            string dashText = motor.IsAirDashing ? "GO" : (dashRem <= 0.05f ? "READY" : HudDigits.Tenth0(dashRem));
+            float row = ch / 4f;
+            DrawRing(new VerbHudLayout.Box { X = cx, Y = cy, W = cw, H = row - 4f }, dashFill, VerbColor(colorblind, 0), "DASH", dashText, false);
+
+            float safe = self != null ? self.TagBackRemaining : 0f;
+            float safeFill = safe > 0.001f ? Mathf.Clamp01(safe / TagBackImmunity.DefaultSeconds) : 0f;
+            string safeText = safe > 0.001f ? HudDigits.Tenth0(safe) : "—";
+            DrawRing(new VerbHudLayout.Box { X = cx, Y = cy + row, W = cw, H = row - 4f }, safeFill, VerbColor(colorblind, 1), "SAFE", safeText, true);
+
+            float stag = motor.StaggerRemaining;
+            float stagFill = stag > 0.001f ? Mathf.Clamp01(stag / PunchStagger.Duration) : 0f;
+            string stagText = stag > 0.001f ? HudDigits.Hundredth0(stag) : "—";
+            DrawRing(new VerbHudLayout.Box { X = cx, Y = cy + row * 2f, W = cw, H = row - 4f }, stagFill, VerbColor(colorblind, 2), "STAGGER", stagText, false);
+
+            bool cling = motor.ClingHeldActive;
+            DrawRing(new VerbHudLayout.Box { X = cx, Y = cy + row * 3f, W = cw, H = row - 4f }, cling ? 1f : 0f, VerbColor(colorblind, 3), "CLING", cling ? "HELD" : "—", false);
+            GUI.color = prev;
         }
 
         static Color VerbColor(bool colorblind, int index)

@@ -37,11 +37,50 @@ namespace Tag.Art
         Transform _beacon;
         Renderer _beaconRend;
         GUIStyle _itStyle;
+        string _plateName = "";
+        Color _plateTint = Color.white;
+        bool _hasPlate;
+        Transform _plate;
+        bool _plateBuilt;
 
         void Awake()
         {
             _it = GetComponent<ItController>();
             EnsureParts();
+        }
+
+        /// <summary>One tinted name plate, built once. Same emissive path as the It hat.</summary>
+        public void SetIdentity(string plateName, Color tint)
+        {
+            _plateName = plateName ?? "";
+            _plateTint = tint;
+            _hasPlate = true;
+            EnsurePlate();
+        }
+
+        void EnsurePlate()
+        {
+            if (_plateBuilt || !_hasPlate) return;
+            _plateBuilt = true;
+            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            go.name = "NameTag";
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = new Vector3(0f, 2.45f, 0f);
+            go.transform.localScale = new Vector3(0.28f, 0.18f, 0.28f);
+            DestroyCollider(go);
+            ApplyMat(go, _plateTint, true, 2.4f);
+            _plate = go.transform;
+
+            var textGo = new GameObject("NameText");
+            textGo.transform.SetParent(go.transform, false);
+            textGo.transform.localPosition = new Vector3(0f, 1.4f, 0f);
+            var mesh = textGo.AddComponent<TextMesh>();
+            mesh.text = _plateName;
+            mesh.characterSize = 0.22f;
+            mesh.anchor = TextAnchor.MiddleCenter;
+            mesh.alignment = TextAlignment.Center;
+            mesh.color = _plateTint;
+            mesh.fontSize = 48;
         }
 
         void Start()

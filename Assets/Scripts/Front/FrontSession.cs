@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Tag.Couch;
 using Tag.Modes;
 using Tag.Onboard;
 using Tag.Settings;
@@ -14,7 +15,8 @@ namespace Tag.Front
         HowTo = 3,
         Playing = 4,
         Results = 5,
-        Quit = 6
+        Quit = 6,
+        Join = 7
     }
 
     /// <summary>
@@ -33,6 +35,7 @@ namespace Tag.Front
         public const int ActQuit = 5;
         public const int ActTitle = 6;
         public const int ActRematch = 7;
+        public const int ActJoin = 8;
         public const int SoundMove = 1;
         public const int SoundConfirm = 2;
         public const int SoundBack = 3;
@@ -67,6 +70,7 @@ namespace Tag.Front
             get
             {
                 if (Screen == FrontScreen.Setup) return 7;
+                if (Screen == FrontScreen.Join) return 4;
                 if (Screen == FrontScreen.Results) return 3;
                 if (Screen == FrontScreen.Title || Screen == FrontScreen.Quit) return 4;
                 return 1;
@@ -93,6 +97,7 @@ namespace Tag.Front
         public static void ShowTitle()
         {
             ReleaseObjects();
+            CouchPlay.Release();
             Armed = false;
             Screen = FrontScreen.Title;
             Row = 0;
@@ -103,6 +108,7 @@ namespace Tag.Front
         public static void ShowSetup()
         {
             ReleaseObjects();
+            CouchPlay.Release();
             Armed = false;
             Screen = FrontScreen.Setup;
             Row = 0;
@@ -142,7 +148,27 @@ namespace Tag.Front
 
         public static void Step(int dir)
         {
-            if (Screen != FrontScreen.Setup || dir == 0) return;
+            if (dir == 0) return;
+            if (Screen == FrontScreen.Join)
+            {
+                EnsureSettings();
+                GameSettings seat = GameSettings.Current;
+                if (Row == 0)
+                    seat.SplitAxis = seat.SplitAxis == GameSettings.SplitHorizontal
+                        ? GameSettings.SplitVertical
+                        : GameSettings.SplitHorizontal;
+                else if (Row == 1)
+                    seat.Listener = seat.Listener == GameSettings.ListenAverage
+                        ? GameSettings.ListenP1
+                        : GameSettings.ListenAverage;
+                else return;
+                seat.Clamp();
+                _dirty = true;
+                Note(SoundMove);
+                Rebuild();
+                return;
+            }
+            if (Screen != FrontScreen.Setup) return;
             EnsureSettings();
             GameSettings s = GameSettings.Current;
             if (Row == 0) s.Arena += dir > 0 ? 1 : -1;
@@ -195,6 +221,23 @@ namespace Tag.Front
                 {
                     EnsureSettings();
                     GameSettings.Current.Clamp();
+                    Screen = FrontScreen.Join;
+                    Row = 2;
+                    Armed = false;
+                    Rebuild();
+                    return ActJoin;
+                }
+                Step(1);
+                return ActNone;
+            }
+            if (Screen == FrontScreen.Join)
+            {
+                if (Row >= 3) return Back();
+                if (Row == 2)
+                {
+                    if (CouchPlay.Humans < 1) return ActNone;
+                    EnsureSettings();
+                    GameSettings.Current.Clamp();
                     _dirty = true;
                     Arm();
                     return ActStart;
@@ -231,6 +274,14 @@ namespace Tag.Front
             {
                 ShowTitle();
                 return ActTitle;
+            }
+            if (Screen == FrontScreen.Join)
+            {
+                Screen = FrontScreen.Setup;
+                Row = 0;
+                Armed = false;
+                Rebuild();
+                return ActSetup;
             }
             if (Screen == FrontScreen.Setup || Screen == FrontScreen.Settings
                 || Screen == FrontScreen.HowTo || Screen == FrontScreen.Quit)
@@ -471,6 +522,15 @@ namespace Tag.Front
                 report.Fail("settings json omitted the match rows");
 
             Highlight(5);
+            if (Confirm() != ActJoin || Screen != FrontScreen.Join || Armed)
+                report.Fail("start did not open the join screen");
+            if (!CouchPlay.Join(CouchPlay.DeviceKeyboard) || CouchPlay.Humans != 1)
+                report.Fail("keyboard did not join");
+            if (!CouchPlay.Leave(CouchPlay.DeviceKeyboard) || CouchPlay.Humans != 0)
+                report.Fail("keyboard did not leave");
+            if (!CouchPlay.Join(CouchPlay.DeviceKeyboard) || CouchPlay.Humans != 1)
+                report.Fail("keyboard did not rejoin");
+            Highlight(2);
             if (Confirm() != ActStart || !Armed || Live != 3)
                 report.Fail("start did not arm a roster of 1 plus the opponents");
             if (!PlayOut() || Screen != FrontScreen.Results || RoundsPlayed != 3)
@@ -573,7 +633,10 @@ namespace Tag.Front
         static void SpawnRoster()
         {
             EnsureSettings();
-            int n = 1 + GameSettings.Current.AiOpponents;
+            if (CouchPlay.Humans < 1)
+                CouchPlay.Join(CouchPlay.DeviceKeyboard);
+            int ai = CouchPlay.FillAi(GameSettings.Current.AiOpponents);
+            int n = CouchPlay.Humans + ai;
             if (n < 1) n = 1;
             Live = n;
         }
@@ -617,6 +680,16 @@ namespace Tag.Front
                 _rows[4] = "Rounds  " + Digit(s.RoundsPerMatch);
                 _rows[5] = "Start match";
                 _rows[6] = "Back";
+                return;
+            }
+            if (Screen == FrontScreen.Join)
+            {
+                EnsureSettings();
+                GameSettings s = GameSettings.Current;
+                _rows[0] = s.SplitAxis == GameSettings.SplitHorizontal ? "Split  Horizontal" : "Split  Vertical";
+                _rows[1] = s.Listener == GameSettings.ListenAverage ? "Listener  Average" : "Listener  P1";
+                _rows[2] = "Start match";
+                _rows[3] = "Back";
                 return;
             }
             if (Screen == FrontScreen.Results)
