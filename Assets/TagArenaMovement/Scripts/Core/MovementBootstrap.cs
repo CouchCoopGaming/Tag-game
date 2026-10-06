@@ -60,6 +60,7 @@ namespace TagArena.Movement
             motor.tagRole = tag;
             player.AddComponent<MoveAnimDriver>().motor = motor;
             player.AddComponent<SpeedEnergyHUD>().motor = motor;
+            player.AddComponent<Tag.Modes.VerbStatusHud>().motor = motor;
 
             var camRig = new GameObject("CamRig");
             camRig.transform.SetParent(player.transform);

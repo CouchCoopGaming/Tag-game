@@ -18,6 +18,7 @@
     <Compile Include="../../Assets/Scripts/Level/PocketParkLayout.Look.cs" />
     <Compile Include="../../Assets/Scripts/Level/ParkArena.cs" />
     <Compile Include="UnityStub/UnityEngine.cs" />
+    <Compile Include="UnityStub/AudioBus.cs" />
     <Compile Include="../../Assets/Editor/StrafeJumpProof.cs" />
     <Compile Include="../../Assets/Editor/DummyPosePathProof.cs" />
     <Compile Include="../../Assets/Editor/GrappleProof.cs" />
@@ -31,6 +32,9 @@
     <Compile Include="../../Assets/Scripts/Modes/OpponentChaseSteer.cs" />
     <Compile Include="../../Assets/Scripts/Modes/EnemyAi.cs" />
     <Compile Include="../../Assets/Editor/EnemyAiProof.cs" />
+    <Compile Include="../../Assets/Editor/RoundFlowProof.cs" />
+    <Compile Include="../../Assets/Scripts/Modes/RoundFlow.cs" />
+    <Compile Include="../../Assets/Scripts/Modes/VerbHudLayout.cs" />
     <Compile Include="../../Assets/Editor/EnemyAiParkProof.cs" />
     <Compile Include="../../Assets/Editor/GrappleLatchTellProof.cs" />
     <Compile Include="../../Assets/Editor/AirDashCooldownTellProof.cs" />
@@ -51,6 +55,9 @@
     <Compile Include="../../Assets/Scripts/Tag/PunchStagger.cs" />
     <Compile Include="../../Assets/Scripts/Tag/TagBackImmunity.cs" />
     <Compile Include="../../Assets/Scripts/Art/WallPose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/LaunchPose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/ZipPose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/TagBackRecoilPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/WallJumpPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/GrapplePose.cs" />
     <Compile Include="../../Assets/Scripts/Art/PoseHandoff.cs" />

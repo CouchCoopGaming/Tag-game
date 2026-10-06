@@ -1,5 +1,6 @@
 using UnityEngine;
 using Tag.Audio;
+using Tag.Modes;
 using TagArena.Movement;
 
 namespace Tag.Gameplay
@@ -14,6 +15,7 @@ namespace Tag.Gameplay
         [SerializeField] Color eliminatedColor = new Color(0.25f, 0.25f, 0.25f, 0.55f);
 
         float _timeAsIt;
+        int _tagsLanded;
         float _iFrameTimer;
         bool _eliminated;
         TagBackImmunity.Window _tagBack;
@@ -31,6 +33,7 @@ namespace Tag.Gameplay
         public bool IsIt => isIt;
         public bool HasIFrames => _iFrameTimer > 0f;
         public float TimeAsIt => _timeAsIt;
+        public int TagsLanded => _tagsLanded;
         public string PlayerId { get; set; }
         public bool IsEliminated => _eliminated;
         public bool IsAlive => !_eliminated;
@@ -96,7 +99,7 @@ namespace Tag.Gameplay
         void Update()
         {
             if (_eliminated) return;
-            if (isIt)
+            if (isIt && RoundClockOpen())
                 _timeAsIt += Time.deltaTime;
             if (_iFrameTimer > 0f)
                 _iFrameTimer -= Time.deltaTime;
@@ -115,7 +118,7 @@ namespace Tag.Gameplay
             if (!wasIt && value)
             {
                 ClearTagBackImmunity();
-                TagSfx.BecomeIt(transform.position);
+                AudioBus.Raise(AudioBus.Hook.Tag, transform.position);
                 // Drive MoveAnimDriver / HUD listeners (legacy TryTag path was the only NotifyBecameIt caller).
                 if (_motor != null)
                     _motor.NotifyBecameIt();
@@ -167,7 +170,21 @@ namespace Tag.Gameplay
         public void ResetScore()
         {
             _timeAsIt = 0f;
+            _tagsLanded = 0;
             _iFrameTimer = 0f;
+        }
+
+        public void NoteTagLanded()
+        {
+            _tagsLanded++;
+        }
+
+        /// <summary>Results and countdown keep the snapshot. A missing match still accrues.</summary>
+        static bool RoundClockOpen()
+        {
+            var modes = TagModeController.Instance;
+            if (modes == null) return true;
+            return modes.Phase == MatchPhase.Playing && modes.IsRunning;
         }
 
         public void ApplySpawnIFrames(float seconds)

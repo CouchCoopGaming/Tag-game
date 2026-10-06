@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using Tag.Audio;
 using Tag.Gameplay;
 using Tag.Level;
 using Tag.Modes;
@@ -26,8 +27,18 @@ public static partial class EnemyAiProof
         CheckRules(report, cfg, punch);
 
         CheckSources(report);
-        RunParkMatches(cfg, punch, report);
-        report.PocketLine = RunPocketMatches(cfg, punch, report);
+        AudioTally.Reset();
+        AudioBus.Raised += AudioTally.OnRaised;
+        try
+        {
+            RunParkMatches(cfg, punch, report);
+            report.PocketLine = RunPocketMatches(cfg, punch, report);
+        }
+        finally
+        {
+            AudioBus.Raised -= AudioTally.OnRaised;
+        }
+        AudioTally.Write(report);
         report.Line = "enemy-ai"
             + " diff=" + EnemyAi.DefaultDifficulty.ToString("0.00", CultureInfo.InvariantCulture)
             + " delay=" + EnemyAi.ReactionDelay(0.2f).ToString("0.000", CultureInfo.InvariantCulture)
@@ -757,6 +768,44 @@ public static partial class EnemyAiProof
         }
         return null;
     }
+
+    static class AudioTally
+    {
+        public static int MegaPad, MegaZip, PocketPad, PocketZip;
+
+        public static void Reset()
+        {
+            MegaPad = 0;
+            MegaZip = 0;
+            PocketPad = 0;
+            PocketZip = 0;
+        }
+
+        public static void OnRaised(AudioBus.Hook hook, Vector3 pos)
+        {
+            bool pocket = ParkArena.IsPocket;
+            if (hook == AudioBus.Hook.PadLaunch)
+            {
+                if (pocket) PocketPad++;
+                else MegaPad++;
+            }
+            else if (hook == AudioBus.Hook.ZipGrab || hook == AudioBus.Hook.ZipLoop || hook == AudioBus.Hook.ZipDrop)
+            {
+                if (pocket) PocketZip++;
+                else MegaZip++;
+            }
+        }
+
+        public static void Write(EnemyAiReport report)
+        {
+            report.AudioLine = "audio-sim pads mega=" + MegaPad.ToString(CultureInfo.InvariantCulture)
+                + " pocket=" + PocketPad.ToString(CultureInfo.InvariantCulture)
+                + " zips mega=" + MegaZip.ToString(CultureInfo.InvariantCulture)
+                + " pocket=" + PocketZip.ToString(CultureInfo.InvariantCulture);
+            if (MegaPad < 1 || PocketPad < 1 || MegaZip < 1 || PocketZip < 1)
+                report.Fail("pad or zip hook did not fire on both arenas");
+        }
+    }
 }
 
 public sealed class EnemyAiReport
@@ -785,6 +834,7 @@ public sealed class EnemyAiReport
     public int Jumps;
     public string Line = "";
     public string PocketLine = "";
+    public string AudioLine = "";
     public readonly int[] Counts = new int[17];
     public EnemyMemory GymMemory;
     public bool Ok => _failures.Length == 0;

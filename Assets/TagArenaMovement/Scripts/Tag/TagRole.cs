@@ -47,7 +47,7 @@ namespace TagArena.Movement
             if (victim.BlocksTagBackFrom(this))
             {
                 Tag.Art.TagBackBlockedTell.PlayAt(victim.transform.position + Vector3.up * 1.1f);
-                Tag.Audio.TagSfx.TagBackThunk(victim.transform.position);
+                Tag.Audio.AudioBus.Raise(Tag.Audio.AudioBus.Hook.TagBackBlocked, victim.transform.position);
                 return false;
             }
             IsIt = false;

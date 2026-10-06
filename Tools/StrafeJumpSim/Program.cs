@@ -112,10 +112,24 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.LaunchPose.ProofLine());
+        if (!Tag.Art.LaunchPose.Holds())
+        {
+            Console.Error.WriteLine("launch pose is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Level.ZipLineRules.ProofLine());
         if (!Tag.Level.ZipLineRules.Holds())
         {
             Console.Error.WriteLine("zip line is not held");
+            return 1;
+        }
+
+        Console.WriteLine(Tag.Art.ZipPose.ProofLine());
+        if (!Tag.Art.ZipPose.Holds())
+        {
+            Console.Error.WriteLine("zip pose is not held");
             return 1;
         }
 
@@ -147,6 +161,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.TagBackRecoilPose.ProofLine());
+        if (!Tag.Art.TagBackRecoilPose.Holds())
+        {
+            Console.Error.WriteLine("tag-back recoil is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Level.VerbIntegration.ProofLine());
         if (!Tag.Level.VerbIntegration.Holds())
         {
@@ -158,9 +179,19 @@ static class Program
         Console.WriteLine(enemy.ToString());
         if (!string.IsNullOrEmpty(enemy.PocketLine))
             Console.WriteLine(enemy.PocketLine);
+        if (!string.IsNullOrEmpty(enemy.AudioLine))
+            Console.WriteLine(enemy.AudioLine);
         if (!enemy.Ok)
         {
             Console.Error.WriteLine(enemy.FailureText);
+            return 1;
+        }
+
+        var rounds = RoundFlowProof.Run();
+        Console.WriteLine(rounds.Line);
+        if (!rounds.Ok)
+        {
+            Console.Error.WriteLine(rounds.Failure);
             return 1;
         }
 

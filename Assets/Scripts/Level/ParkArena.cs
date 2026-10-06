@@ -230,6 +230,47 @@ namespace Tag.Level
                     if (world[i].Kind == kind && world[i].Arena == arena) n++;
                 return n;
             }
+
+            /// <summary>Persistent pieces only. Round flow builds and tears an arena around this.</summary>
+            public static List<Piece> Open(out int baseline)
+            {
+                var world = new List<Piece>();
+                world.Add(new Piece { Kind = "persist", Owned = false, Name = "GameFlow", Arena = -1 });
+                baseline = world.Count;
+                return world;
+            }
+
+            public static void BuildArena(List<Piece> world, int arena)
+            {
+                Build(world, arena, 2);
+            }
+
+            public static void ClearOwned(List<Piece> world)
+            {
+                TearDown(world);
+            }
+
+            public static bool Clean(List<Piece> world, int baseline)
+            {
+                return world != null && world.Count == baseline && !OwnedLeft(world);
+            }
+
+            /// <summary>Pawn and dummy sit on this arena's pads. The other arena has nothing left.</summary>
+            public static bool SpawnedOn(List<Piece> world, int arena)
+            {
+                if (world == null) return false;
+                int other = arena == Pocket ? Mega : Pocket;
+                if (CountKind(world, "minimap", arena) != 1) return false;
+                if (CountKind(world, "minimap", other) != 0) return false;
+                if (CountKind(world, "collider", other) != 0 || CountKind(world, "pad", other) != 0
+                    || CountKind(world, "zip", other) != 0 || CountKind(world, "dummy", other) != 0
+                    || CountKind(world, "pawn", other) != 0)
+                    return false;
+                var fail = new StringBuilder();
+                ExpectKinds(world, arena, fail, "arena");
+                ExpectPawns(world, arena, fail);
+                return fail.Length == 0;
+            }
         }
     }
 }

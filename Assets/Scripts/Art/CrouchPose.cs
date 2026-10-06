@@ -97,11 +97,13 @@ namespace Tag.Art
             if (VerbPoseClips.SlideBodyDrop < Drop + 0.16f) return false;
 
             float slideChest = VerbPoseClips.SlideHip + VerbPoseClips.SlideSpine;
-            // Both lean forward. The slide is lower and split: one plant, one free trail.
-            if (slideChest < chest + 8f || chest < 40f) return false;
-            if (VerbPoseClips.SlideLeadThigh < 60f || VerbPoseClips.SlideTrailThigh > -30f) return false;
-            if (Mathf.Abs(VerbPoseClips.SlideLeadThigh - VerbPoseClips.SlideTrailThigh) < 100f) return false;
-            if (Mathf.Abs(VerbPoseClips.SlideTrailKnee - Knee) < 48f) return false;
+            // Crouch leans forward. The slide leans back: lead leg extended, trail knee tucked.
+            if (chest < 40f) return false;
+            if (slideChest > -30f || slideChest < -40f) return false;
+            if (VerbPoseClips.SlideLeadThigh < 60f || VerbPoseClips.SlideLeadKnee < -24f) return false;
+            if (VerbPoseClips.SlideTrailKnee > -110f) return false;
+            if (Mathf.Abs(VerbPoseClips.SlideLeadKnee - Knee) < 40f) return false;
+            if (Mathf.Abs(slideChest - chest) < 50f) return false;
             if (Mathf.Abs(Hip - VerbPoseClips.CrouchHip) > 0.01f) return false;
             if (Mathf.Abs(Spine - VerbPoseClips.CrouchSpine) > 0.01f) return false;
             if (Mathf.Abs(Thigh - VerbPoseClips.CrouchThigh) > 0.01f) return false;
@@ -146,6 +148,7 @@ namespace Tag.Art
                 + "; slide: captured crouch smoothstep " + SlideHandoffSeconds.ToString("0.00")
                 + "s into SlideBody, slide wins"
                 + "; knees bent torso forward"
+                + "; slide leans back"
                 + "; rootMotion=0";
         }
     }

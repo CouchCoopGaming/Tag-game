@@ -59,6 +59,19 @@ namespace Tag.Modes
         int _localAudioFocus;
         int _resultsFocus;
         GUIStyle _countStyle;
+        GUIStyle _bannerStyle;
+        int _transferFrame = -1;
+        int _beepSec = -1;
+        float _chase;
+        float _longestChase;
+        string _taggedId = "";
+        float _taggedUntil;
+        string[] _scoreIds = System.Array.Empty<string>();
+        float[] _scoreTimes = System.Array.Empty<float>();
+        int[] _scoreTags = System.Array.Empty<int>();
+        int _scoreCount;
+        int _scoreTagsTotal;
+        float _scoreLongest;
 
         public TagModeId SelectedMode { get => selectedMode; set => selectedMode = value; }
         public MatchTuning MatchTuningAsset => matchTuning;
@@ -169,12 +182,19 @@ namespace Tag.Modes
 
         public void StartRound() => StartRound(selectedMode);
 
+        public bool RoundLive =>
+            _phase == MatchPhase.Playing || _phase == MatchPhase.PostRound;
+
         public void StartRound(TagModeId id)
         {
             // Same-frame double R (this controller and GameFlow) must not restart twice.
             if (Time.unscaledTime < _roundStartGuard)
                 return;
             _roundStartGuard = Time.unscaledTime + 0.05f;
+            SetMode(id);
+            // Queued pause-map swap: results already showed, now teardown and countdown on the new arena.
+            if (Tag.Level.ParkArenaHost.ConsumePending())
+                return;
             if (_localPaused)
                 SetLocalPause(false);
             if (GameFlow.Instance != null)
@@ -185,7 +205,6 @@ namespace Tag.Modes
             // Same Update as rematch click / R: swallow look+punch (rising-edge gate also covers this).
             foreach (var reader in Object.FindObjectsByType<TagArena.Movement.PlayerInputReader>(FindObjectsSortMode.None))
                 reader?.ArmLookPunchGate(2);
-            SetMode(id);
             RefreshPlayers();
             _endedNotified = false;
             _resultMessage = "";
@@ -193,6 +212,15 @@ namespace Tag.Modes
             _resultsActionTaken = false;
             _resultsFocus = 0;
             _resultsInputReadyAt = 0f;
+            _transferFrame = -1;
+            _beepSec = -1;
+            _chase = 0f;
+            _longestChase = 0f;
+            _taggedId = "";
+            _taggedUntil = 0f;
+            _scoreCount = 0;
+            _scoreTagsTotal = 0;
+            _scoreLongest = 0f;
             _mode = CreateMode(selectedMode);
 
             _ctx.Players.Clear();
@@ -238,6 +266,7 @@ namespace Tag.Modes
 
         void BeginPlaying()
         {
+            if (_phase == MatchPhase.Playing && _ctx.RoundRunning) return;
             if (_firstCountdownHint)
             {
                 PlayerPrefs.SetInt(CountdownHintKey, 1);
@@ -306,11 +335,21 @@ namespace Tag.Modes
 
             if (_phase == MatchPhase.Countdown)
             {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1))
-                    Tag.Level.ParkArenaHost.Choose(Tag.Level.ParkArena.Mega);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2))
-                    Tag.Level.ParkArenaHost.Choose(Tag.Level.ParkArena.Pocket);
+                bool menuUp = GameFlow.Instance != null && GameFlow.Instance.State == GameFlowState.Paused;
+                if (!menuUp)
+                {
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1))
+                        Tag.Level.ParkArenaHost.Request(Tag.Level.ParkArena.Mega, false);
+                    if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2))
+                        Tag.Level.ParkArenaHost.Request(Tag.Level.ParkArena.Pocket, false);
+                }
                 _phaseTimer -= dt;
+                int sec = Mathf.CeilToInt(Mathf.Max(0f, _phaseTimer));
+                if (_phaseTimer > 0f && sec >= 1 && sec != _beepSec)
+                {
+                    _beepSec = sec;
+                    AudioBus.Raise(AudioBus.Hook.CountdownBeep, Vector3.zero);
+                }
                 if (_phaseTimer <= 0f) BeginPlaying();
                 return;
             }
@@ -322,6 +361,8 @@ namespace Tag.Modes
                 {
                     _phase = MatchPhase.Playing;
                     _ctx.RoundRunning = true;
+                    if (_mode != null && _mode.ShouldEndRound(_ctx))
+                        EndMatch();
                 }
                 return;
             }
@@ -330,6 +371,7 @@ namespace Tag.Modes
                 return;
 
             _ctx.Elapsed += dt;
+            if (_ctx.CurrentIt != null) _chase += dt;
             _mode.Tick(_ctx, dt);
             if (_mode.ShouldEndRound(_ctx))
                 EndMatch();
@@ -453,6 +495,8 @@ namespace Tag.Modes
             if (puncher == null || target == null) return;
             if (!puncher.IsIt || puncher.IsEliminated) return;
             if (!target.IsAlive || !target.CanBeTagged) return;
+            if (Time.frameCount == _transferFrame) return;
+            _transferFrame = Time.frameCount;
             TransferIt(puncher, target);
             _mode?.OnPunchTransfer(_ctx, puncher, target);
             if (_mode != null && _mode.ShouldEndRound(_ctx))
@@ -463,6 +507,19 @@ namespace Tag.Modes
         {
             LastFromId = from != null ? from.PlayerId : "";
             float tagBackSeconds = TagBackSeconds(from, to);
+            if (from != null)
+            {
+                from.NoteTagLanded();
+                if (_chase > _longestChase) _longestChase = _chase;
+                _chase = 0f;
+                if (IsLocalHuman(from) && to != null)
+                {
+                    _taggedId = string.IsNullOrEmpty(to.PlayerId) ? to.name : to.PlayerId;
+                    _taggedUntil = Time.time + RoundFlow.TaggedBannerSeconds;
+                }
+            }
+            if (to != null && IsLocalHuman(to))
+                _taggedUntil = 0f;
             if (from != null) from.SetIt(false);
             if (to != null && to.IsAlive)
             {
@@ -557,6 +614,8 @@ namespace Tag.Modes
         void EndMatch()
         {
             if (_phase == MatchPhase.Results) return;
+            if (_chase > _longestChase) _longestChase = _chase;
+            SnapshotScores();
             _ctx.RoundRunning = false;
             if (_ctx.RemainingTime < 0f) _ctx.RemainingTime = 0f;
             _phase = MatchPhase.Results;
@@ -605,6 +664,7 @@ namespace Tag.Modes
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
                 Time.timeScale = 1f;
+                AudioBus.RaiseRoundEnd(_resultMessage);
             }
         }
 
@@ -814,7 +874,7 @@ namespace Tag.Modes
                 case 2: _localLook = true; _localLookFocus = 0; TagSfx.UiClick(); break;
                 case 3: _localAudio = true; _localAudioFocus = 0; TagSfx.UiClick(); break;
                 case 4: LoadBootMenu(); break;
-                case 5: Tag.Level.ParkArenaHost.Toggle(); break;
+                case 5: Tag.Level.ParkArenaHost.Toggle(RoundLive); break;
                 default: SetLocalPause(false); break;
             }
         }
@@ -861,10 +921,10 @@ namespace Tag.Modes
                 TagSfx.UiClick();
             }
             if (LocalPauseButton(cx, cy + 26, 4, "Quit to Menu")) LoadBootMenu();
-            if (LocalPauseButton(cx, cy + 60, 5, "Map: " + Tag.Level.ParkArena.DisplayName))
-                Tag.Level.ParkArenaHost.Toggle();
+            if (LocalPauseButton(cx, cy + 60, 5, Tag.Level.ParkArenaHost.MapButtonLabel()))
+                Tag.Level.ParkArenaHost.Toggle(RoundLive);
             GUI.Label(new Rect(cx - 150, cy + 96, 300, 120),
-                "Left / Right picks    Enter / Space\nEsc resume    Q menu    H controls\n1-5 highlight\nMap swaps Mega Park and Pocket Park\nM map    Comma mute    N music    Up / Down bed" + extra);
+                "Left / Right picks    Enter / Space\nEsc resume    Q menu    H controls\n1-5 highlight\nMap waits for the next countdown\nM map    Comma mute    N music    Up / Down bed" + extra);
         }
 
         void DrawLocalControls(float cx, float cy)
@@ -1022,10 +1082,11 @@ namespace Tag.Modes
             }
             _countStyle.fontSize = 54;
             _countStyle.alignment = TextAnchor.MiddleCenter;
-            float w = 480f;
-            float h = 210f;
-            float x = (Screen.width - w) * 0.5f;
-            float y = Screen.height * 0.28f;
+            VerbHudLayout.Box card = VerbHudLayout.Picker(Screen.width, Screen.height);
+            float w = card.W;
+            float h = card.H;
+            float x = card.X;
+            float y = card.Y;
             int show = Mathf.Max(1, Mathf.CeilToInt(_phaseTimer));
             GUI.Box(new Rect(x, y, w, h), ModeTitle(selectedMode));
             _countStyle.normal.textColor = Color.white;
@@ -1065,9 +1126,9 @@ namespace Tag.Modes
         void DrawResultsCard()
         {
             float w = 520f;
-            float h = 248f;
+            float h = 268f + _scoreCount * 22f;
             float x = (Screen.width - w) * 0.5f;
-            float y = Screen.height * 0.26f;
+            float y = Mathf.Max(24f, Screen.height * 0.18f);
             if (_countStyle == null)
             {
                 _countStyle = new GUIStyle(GUI.skin.label)
@@ -1083,8 +1144,15 @@ namespace Tag.Modes
             _countStyle.normal.textColor = Color.white;
             GUI.Label(new Rect(x, y + 12, w, 56), title, _countStyle);
             _countStyle.fontSize = 54;
-            GUI.Label(new Rect(x + 16, y + 72, w - 32, 96),
-                (_resultDetail ?? "") + "\n\n1-2 or Left / Right picks. Enter / Space uses it.\nR rematch    Q / Esc menu");
+            var stat = new System.Text.StringBuilder();
+            stat.Append(_resultDetail ?? "");
+            stat.Append("\n\nTime as It");
+            for (int i = 0; i < _scoreCount; i++)
+                stat.Append("\n").Append(_scoreIds[i]).Append("  ").Append(_scoreTimes[i].ToString("0.0")).Append("s");
+            stat.Append("\nTags  ").Append(_scoreTagsTotal);
+            stat.Append("\nLongest chase  ").Append(_scoreLongest.ToString("0.0")).Append("s");
+            stat.Append("\n\n1-2 or Left / Right picks. Enter / Space uses it.\nR rematch    Q / Esc menu");
+            GUI.Label(new Rect(x + 16, y + 68, w - 32, h - 120f), stat.ToString());
             float bw = 140f;
             float by = y + h - 44f;
             bool canAct = !_resultsActionTaken && Time.unscaledTime >= _resultsInputReadyAt;
@@ -1127,24 +1195,69 @@ namespace Tag.Modes
             GUI.Label(new Rect(r.x + 12, r.y + 8, w - 24, 22), $"Next round  {_phaseTimer:0.0}s");
         }
 
+        static bool IsLocalHuman(ItController p)
+        {
+            if (p == null) return false;
+            if (p.GetComponent<DummyPatrol>() != null) return false;
+            return p.GetComponent<TagArena.Movement.PlayerInputReader>() != null;
+        }
+
+        void SnapshotScores()
+        {
+            int n = 0;
+            for (int i = 0; i < players.Count; i++)
+                if (players[i] != null) n++;
+            _scoreIds = new string[n];
+            _scoreTimes = new float[n];
+            _scoreTags = new int[n];
+            _scoreCount = 0;
+            _scoreTagsTotal = 0;
+            for (int i = 0; i < players.Count; i++)
+            {
+                var p = players[i];
+                if (p == null) continue;
+                _scoreIds[_scoreCount] = string.IsNullOrEmpty(p.PlayerId) ? p.name : p.PlayerId;
+                _scoreTimes[_scoreCount] = p.TimeAsIt;
+                _scoreTags[_scoreCount] = p.TagsLanded;
+                _scoreTagsTotal += p.TagsLanded;
+                _scoreCount++;
+            }
+            _scoreLongest = _longestChase;
+        }
+
         void DrawItBanner()
         {
             if (_phase != MatchPhase.Playing && _phase != MatchPhase.PostRound) return;
             var it = _ctx.CurrentIt;
-            float w = 420f;
-            float h = SuddenDeath ? 64f : 46f;
-            var r = new Rect((Screen.width - w) * 0.5f, 16f, w, h);
+            bool showClock = selectedMode != TagModeId.FreePlay;
+            VerbHudLayout.Box plate = VerbHudLayout.Banner(Screen.width);
+            float w = plate.W;
+            float h = plate.H;
+            var r = new Rect(plate.X, plate.Y, w, h);
             GUI.Box(r, "");
-            string text;
-            if (it == null)
-                text = "No one is It";
-            else if (it.GetComponent<TagArena.Movement.PlayerInputReader>() != null && it.GetComponent<DummyPatrol>() == null)
-                text = "YOU ARE IT    punch to dump it";
-            else
-                text = $"IT: {it.PlayerId}    orange hat    punch to tag";
+            if (_bannerStyle == null)
+            {
+                _bannerStyle = new GUIStyle(GUI.skin.label)
+                {
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+            _bannerStyle.fontSize = Screen.height >= 1000 ? 26 : 20;
+            _bannerStyle.normal.textColor = Color.white;
+            bool localIsIt = IsLocalHuman(it);
+            bool taggedFlash = Time.time < _taggedUntil && !string.IsNullOrEmpty(_taggedId);
+            string who = it != null ? it.PlayerId : "";
+            string text = RoundFlow.BannerLine(localIsIt, taggedFlash, _taggedId, who);
             if (SuddenDeath)
                 text += "\nSD - next trail hit eliminates";
-            GUI.Label(new Rect(r.x + 12, r.y + 10, w - 24, h - 16), text);
+            float labelH = showClock ? h - 30f : h - 8f;
+            GUI.Label(new Rect(r.x + 8, r.y + 4, w - 16, labelH), text, _bannerStyle);
+            if (!showClock) return;
+            _bannerStyle.fontSize = Screen.height >= 1000 ? 18 : 16;
+            _bannerStyle.normal.textColor = new Color(0.75f, 0.86f, 1f, 1f);
+            GUI.Label(new Rect(r.x + 8, r.y + h - 30f, w - 16, 26f), RoundFlow.Clock(_ctx.RemainingTime), _bannerStyle);
+            _bannerStyle.normal.textColor = Color.white;
         }
     }
 }

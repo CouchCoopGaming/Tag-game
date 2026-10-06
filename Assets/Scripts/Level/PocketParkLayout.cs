@@ -240,6 +240,9 @@ namespace Tag.Level
             AddMast(list, "Landmark_Lane", "Lane", "pad", 66f, 32f);
             AddMast(list, "Landmark_Yard", "Yard", "knight", 12f, 22f);
             AddMast(list, "Landmark_Bars", "Bars", "army", 14f, 40f);
+            AddChevron(list, "DomeClimb", "Cling_Dome");
+            AddChevron(list, "LaneRun", "Cling_Lane");
+            AddChevron(list, "YardHop", "Cover_A");
             return list.ToArray();
         }
 
@@ -725,12 +728,149 @@ namespace Tag.Level
                 LaunchPads[0].X, LaunchPads[0].Z, lx, lz, padT,
                 "pad (Launch_South) " + padT.ToString("0.00", CultureInfo.InvariantCulture) + " s");
 
+            float climb = 1.2f / 6.0f;
+            float run = 2.0f / 9.5f;
+            float hop = WallJumpSeconds();
+            float domeExpert = climb + run + hop;
+            NoteChain(solids, doc, notes, fail, "DomeClimb",
+                "Climb the dome cling face, wall-run it, then wall-jump off toward the south street.",
+                "Cling_Dome", 48.2f, 18.5f, 54.6f, 32.0f, domeExpert,
+                "climb 1.20 m (Cling_Dome) " + climb.ToString("0.00", CultureInfo.InvariantCulture)
+                + " s → wall-run 2.00 m (Cling_Dome) " + run.ToString("0.00", CultureInfo.InvariantCulture)
+                + " s → wall-jump 4.40 m (Cling_Dome) " + hop.ToString("0.00", CultureInfo.InvariantCulture) + " s");
+
+            float laneRun = 1.8f / 9.5f;
+            float laneExpert = laneRun + laneT;
+            NoteChain(solids, doc, notes, fail, "LaneRun",
+                "Wall-run the lane cling face, then ride Zip Lane. The jump off the face uses cling grace.",
+                "Cling_Lane", 52.4f, 22.0f, 64.0f, 38.0f, laneExpert,
+                "wall-run 1.80 m (Cling_Lane) " + laneRun.ToString("0.00", CultureInfo.InvariantCulture)
+                + " s → zip " + laneLen.ToString("0.00", CultureInfo.InvariantCulture)
+                + " m (ZipLineSlot_Lane) " + laneT.ToString("0.00", CultureInfo.InvariantCulture) + " s");
+
+            float mantle = 0.40f;
+            float yardExpert = mantle + padT;
+            NoteChain(solids, doc, notes, fail, "YardHop",
+                "Mantle the yard cover, then the south launch pad along the street.",
+                "Cover_A", 16.0f, 20.0f, lx, lz, yardExpert,
+                "mantle 0.95 m (Cover_A) " + mantle.ToString("0.00", CultureInfo.InvariantCulture)
+                + " s → pad (Launch_South) " + padT.ToString("0.00", CultureInfo.InvariantCulture) + " s");
+
             doc.Append("\n## Centerpiece\n\n");
             doc.Append("Dome_Hi sits on Dome_Lo. Cling_Dome is the east climb, Zip Dome leaves the crown for the south street, and Launch_South throws you back along that street. ");
-            doc.Append("Cling_Lane and Zip Lane are the second wall and the second cable. Every deck has two ways down. Pass 9 reports 0 chokes.\n\n");
+            doc.Append("Cling_Lane and Zip Lane are the second wall and the second cable. DomeClimb, LaneRun, and YardHop are the named chains. Every deck has two ways down. Pass 9 reports 0 chokes.\n\n");
             doc.Append("## Chokepoints\n\nAfter the pass 9 audit: 0 (dead 0, corner 0, loop 0).\n");
             WriteDoc(doc.ToString());
             return notes.Length == 0 ? "skills 0" : notes.ToString();
+        }
+
+        static void NoteChain(MegaParkP1Layout.Solid[] solids, StringBuilder doc, StringBuilder notes, StringBuilder fail,
+            string name, string summary, string host, float sx, float sz, float ex, float ez, float expert, string chain)
+        {
+            if (!PickEnds(solids, expert, sx, sz, ex, ez, out float x0, out float z0, out float x1, out float z1, out float beginner, out float save))
+            {
+                float g = MegaParkP1Layout.GroundSeconds(solids, sx, sz, ex, ez);
+                float missed = g > 0.05f && g < 100f ? (g - expert) / g : -1f;
+                fail.Append(name).Append(" save ")
+                    .Append((missed * 100f).ToString("0.0", CultureInfo.InvariantCulture))
+                    .Append("% expert ").Append(expert.ToString("0.00", CultureInfo.InvariantCulture))
+                    .Append(" beginner ").Append(g.ToString("0.00", CultureInfo.InvariantCulture)).Append("; ");
+                NoteSkill(solids, doc, notes, fail, name, summary, sx, sz, ex, ez, expert, chain + ". Chevrons sit on " + host);
+                return;
+            }
+            NoteSkill(solids, doc, notes, fail, name, summary, x0, z0, x1, z1, expert,
+                "Chevrons sit on " + host + " in that piece's tint. " + chain + ". " + ChainClose(chain));
+            if (save < 0.10f || save > 0.25f)
+                fail.Append(name).Append(" picked an out-of-band save; ");
+        }
+
+        static string ChainClose(string chain)
+        {
+            var sb = new StringBuilder();
+            if (chain.Contains("wall-run") || chain.Contains("wall-jump"))
+                sb.Append("Wall-run leaves on cling grace 0.08 s or jump buffer 0.16 s. ");
+            if (chain.Contains("pad"))
+                sb.Append("The pad uses its locked 0.30 s cooldown. ");
+            if (chain.Contains("zip"))
+                sb.Append("The zip rides at 14 m/s and regrabs on its locked 0.30 s cooldown. ");
+            sb.Append("Coyote 0.10 s covers the hop.");
+            return sb.ToString();
+        }
+
+        static bool PickEnds(MegaParkP1Layout.Solid[] solids, float expert,
+            float sx, float sz, float ex, float ez,
+            out float x0, out float z0, out float x1, out float z1, out float beginner, out float save)
+        {
+            float best = 99f;
+            bool found = false;
+            x0 = sx;
+            z0 = sz;
+            x1 = ex;
+            z1 = ez;
+            beginner = 0f;
+            save = -1f;
+            float[] nudge = { 0f, 2f, -2f, 4f, -4f, 6f, -6f };
+            for (int i = 0; i < nudge.Length; i++)
+            {
+                float a = sx + nudge[i];
+                float b = sz;
+                if (a < 2f || a > MapW - 2f || b < 2f || b > MapD - 2f) continue;
+                if (!MegaParkP1Layout.RouteOpen(solids, a, b)) continue;
+                for (int j = 0; j < nudge.Length; j++)
+                {
+                    float c = ex;
+                    float d = ez + nudge[j];
+                    if (c < 2f || c > MapW - 2f || d < 2f || d > MapD - 2f) continue;
+                    if (!MegaParkP1Layout.RouteOpen(solids, c, d)) continue;
+                    float g = MegaParkP1Layout.GroundSeconds(solids, a, b, c, d);
+                    if (g < 0.3f || g > 80f) continue;
+                    float s = (g - expert) / g;
+                    if (s < 0.10f || s > 0.25f) continue;
+                    float dist = Math.Abs(s - 0.15f);
+                    if (dist >= best) continue;
+                    best = dist;
+                    found = true;
+                    x0 = a;
+                    z0 = b;
+                    x1 = c;
+                    z1 = d;
+                    beginner = g;
+                    save = s;
+                }
+            }
+            return found;
+        }
+
+        static float WallJumpSeconds()
+        {
+            const float vy = 6.2f;
+            const float g = 22f;
+            float tUp = vy / g;
+            float h = vy * tUp * 0.5f;
+            float tDown = (float)Math.Sqrt(2f * h / (g * 1.5f));
+            return tUp + tDown;
+        }
+
+        static void AddChevron(List<MegaParkP1Layout.Solid> list, string route, string hostName)
+        {
+            MegaParkP1Layout.Solid host = default;
+            bool found = false;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].Name != hostName) continue;
+                host = list[i];
+                found = true;
+                break;
+            }
+            if (!found) return;
+            float top = host.Y + host.Sy * 0.5f;
+            float y = top + 0.015f;
+            float ax = Math.Max(0.08f, Math.Min(0.16f, host.Sx * 0.5f - 0.02f));
+            float az = Math.Max(0.08f, Math.Min(0.16f, host.Sz * 0.5f - 0.02f));
+            Add(list, "Chevron_" + route + "_L", host.Zone, "mark", host.Mat,
+                host.X, y, host.Z - az * 0.15f, ax, 0.03f, az, top);
+            Add(list, "Chevron_" + route + "_R", host.Zone, "mark", host.Mat,
+                host.X, y, host.Z + az * 0.4f, ax, 0.03f, az, top);
         }
 
         static void NoteSkill(MegaParkP1Layout.Solid[] solids, StringBuilder doc, StringBuilder notes, StringBuilder fail,
@@ -749,7 +889,10 @@ namespace Tag.Level
             doc.Append(", ").Append(z0.ToString("0.0", CultureInfo.InvariantCulture));
             doc.Append(") end (").Append(x1.ToString("0.0", CultureInfo.InvariantCulture));
             doc.Append(", ").Append(z1.ToString("0.0", CultureInfo.InvariantCulture)).Append("). ");
-            doc.Append(chain).Append(". Coyote 0.10 s covers the hop. The pad cooldown is 0.30 s and the zip rides at 14 m/s.\n\n");
+            doc.Append(chain);
+            if (!chain.Contains("Coyote"))
+                doc.Append(". Coyote 0.10 s covers the hop. The pad cooldown is 0.30 s and the zip rides at 14 m/s.");
+            doc.Append("\n\n");
             if (beginner > 100f)
                 fail.Append(name).Append(" beginner blocked; ");
             else if (save < 0.10f || save > 0.25f)

@@ -268,27 +268,29 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Both hands up on a cable. Reuses the cling reach. Legs hang.
+        /// Both hands up on a cable. The arms stay the cling reach so the grab
+        /// still reads. The legs and the chest are the zip hang, not a wall climb.
         /// Not a ledge grab and not a shimmy. Nothing here writes velocity or the root.
         /// </summary>
         public static Sample CableHang()
         {
+            ZipPose.Sample hang = ZipPose.Hang();
             return new Sample
             {
-                ThighL = 18f,
-                ThighR = 16f,
-                KneeL = -28f,
-                KneeR = -24f,
+                ThighL = hang.ThighL,
+                ThighR = hang.ThighR,
+                KneeL = hang.KneeL,
+                KneeR = hang.KneeR,
                 ArmPitchL = ReachPitch,
                 ArmPitchR = ReachPitch,
-                ArmYawL = ReachYaw * 0.35f,
-                ArmYawR = -ReachYaw * 0.35f,
-                ElbowL = ReachElbow,
-                ElbowR = ReachElbow,
-                Hip = 6f,
-                Spine = -8f,
-                Head = ClimbHead,
-                LeanZ = 0f,
+                ArmYawL = hang.ArmYawL,
+                ArmYawR = hang.ArmYawR,
+                ElbowL = hang.ElbowL,
+                ElbowR = hang.ElbowR,
+                Hip = hang.Hip,
+                Spine = hang.Spine,
+                Head = hang.Head,
+                LeanZ = hang.LeanZ,
             };
         }
 

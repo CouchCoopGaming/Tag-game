@@ -107,7 +107,8 @@ namespace Tag.Art
                 || BecomeItPose.RootMotion || PivotPose.RootMotion || IdlePose.RootMotion
                 || AimTorsoPose.RootMotion || StopPlantPose.RootMotion
                 || AirStrafeLeanPose.RootMotion || BunnyHopPose.RootMotion
-                || PunchStaggerPose.RootMotion)
+                || PunchStaggerPose.RootMotion || LaunchPose.RootMotion
+                || ZipPose.RootMotion || TagBackRecoilPose.RootMotion)
                 return false;
             if (!WallJumpPose.Holds()) return false;
             if (!AirStrafeLeanPose.Holds()) return false;

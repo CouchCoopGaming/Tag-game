@@ -682,6 +682,10 @@ namespace Tag.Art
         bool _dashCdSeen;
         float _tagFlinch;
         float _staggerAge = -1f;
+        float _zipAge;
+        bool _zipWas;
+        float _zipRelease = -1f;
+        float _recoilAge = -1f;
         float _itClaim;
         float _skiBlend;
         bool _skiFromWalk;
@@ -3610,7 +3614,7 @@ namespace Tag.Art
             bool launchBody = _motor != null && _motor.LaunchArc && _motor.State == MoveState.Air && !jet && !punching;
             if (launchBody)
             {
-                // The pad reuses the jump rise. Entry tells do not keep this arc.
+                // The pad plays LaunchPose. Entry tells do not keep this arc.
                 _jumpFromStill = false;
                 _jumpFromCrouchWalk = false;
                 _jumpFromWalk = false;
@@ -8167,7 +8171,12 @@ namespace Tag.Art
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(CrouchPose.WalkKnee(stepR), 0f, 0f), 1f);
                 }
                 if (jumpPoseOn)
-                    ApplyJumpPose(armZ, speed);
+                {
+                    if (_motor != null && _motor.LaunchArc)
+                        ApplyLaunchPose();
+                    else
+                        ApplyJumpPose(armZ, speed);
+                }
             }
             else
             {
@@ -15155,18 +15164,45 @@ namespace Tag.Art
                 slew = Mathf.Max(slew, AirStrafeLeanPose.Slew);
             }
             bool zipHang = _motor != null && _motor.ZipRiding && PoseAllowed(DummyPosePaths.Wall);
+            if (zipHang && !_zipWas)
+                _zipAge = 0f;
+            if (!zipHang && _zipWas)
+                _zipRelease = 0f;
             if (zipHang)
             {
-                // Hands up on the cable. Same cling reach as a wall grab. No root motion.
-                ApplyWallSample(WallPose.CableHang(), armZ);
+                // Two hands on the cable. The catch eases into the hang. Sway scales with the ride.
+                WallPose.Sample hang = WallPose.CableHang();
+                float caught = ZipPose.CatchWeight(_zipAge);
+                if (caught < 0.999f)
+                    hang = BlendZip(ZipPose.JumpDrop(), hang, caught);
+                float ride = _motor != null ? _motor.HorizontalSpeed : 0f;
+                hang.LeanZ = ZipPose.Sway(Time.time, ride);
+                ApplyWallSample(hang, armZ);
+                _zipAge += dt;
+                _zipRelease = -1f;
                 armSlewL = Mathf.Max(armSlewL, WallPose.BlendSlew);
                 armSlewR = Mathf.Max(armSlewR, WallPose.BlendSlew);
                 legSlew = Mathf.Max(legSlew, WallPose.BlendSlew);
                 torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
                 slew = Mathf.Max(slew, WallPose.BlendSlew);
             }
+            else if (_zipRelease >= 0f && PoseAllowed(DummyPosePaths.Wall))
+            {
+                float let = ZipPose.ReleaseWeight(_zipRelease);
+                if (let > 0.001f)
+                    ApplyZipRelease(let, armZ);
+                _zipRelease += dt;
+                if (_zipRelease >= ZipPose.ReleaseSeconds)
+                    _zipRelease = -1f;
+                armSlewL = Mathf.Max(armSlewL, WallPose.BlendSlew);
+                armSlewR = Mathf.Max(armSlewR, WallPose.BlendSlew);
+                legSlew = Mathf.Max(legSlew, WallPose.BlendSlew);
+                torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
+            }
+            _zipWas = zipHang;
             bool staggerPose = _staggerAge >= 0f;
             ApplyPunchStagger(dt);
+            ApplyTagBackRecoil(dt);
             if (staggerPose)
             {
                 armSlewL = Mathf.Max(armSlewL, PunchStaggerPose.Slew);
@@ -16283,6 +16319,65 @@ namespace Tag.Art
         }
 
         /// <summary>
+        /// Pad arc. Arms swing up, knees tuck at the apex, then the body opens.
+        /// Not the jump rise. Jump height and the pad arc are unchanged.
+        /// </summary>
+        void ApplyLaunchPose()
+        {
+            float vy = _motor != null ? _motor.Velocity.y : 0f;
+            LaunchPose.Sample pose = LaunchPose.At(vy);
+            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
+            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
+            _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
+            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, 0f);
+            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, -pose.ArmYawR, 0f);
+            _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
+            _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
+            _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, 0f);
+            _hipsT = _hips0 * Quaternion.Euler(pose.Hip, 0f, 0f);
+            _headT = _head0 * Quaternion.Euler(pose.Head, 0f, 0f);
+        }
+
+        static WallPose.Sample BlendZip(ZipPose.Sample from, WallPose.Sample to, float hangW)
+        {
+            float dropW = 1f - hangW;
+            return new WallPose.Sample
+            {
+                ThighL = from.ThighL * dropW + to.ThighL * hangW,
+                ThighR = from.ThighR * dropW + to.ThighR * hangW,
+                KneeL = from.KneeL * dropW + to.KneeL * hangW,
+                KneeR = from.KneeR * dropW + to.KneeR * hangW,
+                ArmPitchL = from.ArmPitchL * dropW + to.ArmPitchL * hangW,
+                ArmPitchR = from.ArmPitchR * dropW + to.ArmPitchR * hangW,
+                ArmYawL = from.ArmYawL * dropW + to.ArmYawL * hangW,
+                ArmYawR = from.ArmYawR * dropW + to.ArmYawR * hangW,
+                ElbowL = from.ElbowL * dropW + to.ElbowL * hangW,
+                ElbowR = from.ElbowR * dropW + to.ElbowR * hangW,
+                Hip = from.Hip * dropW + to.Hip * hangW,
+                Spine = from.Spine * dropW + to.Spine * hangW,
+                Head = from.Head * dropW + to.Head * hangW,
+                LeanZ = to.LeanZ,
+            };
+        }
+
+        void ApplyZipRelease(float weight, float armZ)
+        {
+            ZipPose.Sample pose = ZipPose.Release();
+            _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f), weight);
+            _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f), weight);
+            _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f), weight);
+            _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f), weight);
+            _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ), weight);
+            _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ), weight);
+            _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f), weight);
+            _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f), weight);
+            _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(pose.Spine, 0f, pose.LeanZ), weight);
+            _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(pose.Hip, 0f, 0f), weight);
+            _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(pose.Head, 0f, 0f), weight);
+        }
+
+        /// <summary>
         /// Takeoff, tuck, then the fall. Blended from the stride phase. No root motion.
         /// The landing thud picks up once the feet are down. A bunny-hop chain keeps
         /// the live phase instead. The air-strafe lean is a later overlay.
@@ -17108,6 +17203,38 @@ namespace Tag.Art
         public void CancelPunchTelegraph()
         {
             _punchTelegraph = 0f;
+        }
+
+        /// <summary>Tag-back thunk. The striking hand yanks back for the spark.</summary>
+        public void PlayTagBackRecoil()
+        {
+            if (!PoseAllowed(DummyPosePaths.Punch)) return;
+            _recoilAge = 0f;
+        }
+
+        void ApplyTagBackRecoil(float dt)
+        {
+            if (_recoilAge < 0f) return;
+            if (!PoseAllowed(DummyPosePaths.Punch))
+            {
+                _recoilAge = -1f;
+                return;
+            }
+            float weight = TagBackRecoilPose.Weight(_recoilAge);
+            if (weight > 0.001f)
+            {
+                Quaternion ua = _uaR0 * Quaternion.Euler(TagBackRecoilPose.Pitch, TagBackRecoilPose.Yaw, TagBackRecoilPose.Roll);
+                Quaternion la = _laR0 * Quaternion.Euler(TagBackRecoilPose.Elbow, 0f, 0f);
+                Quaternion spine = _spine0 * Quaternion.Euler(0f, TagBackRecoilPose.SpineYaw, 0f);
+                Quaternion head = _head0 * Quaternion.Euler(0f, TagBackRecoilPose.HeadYaw, 0f);
+                _uaRT = Quaternion.Slerp(_uaRT, ua, weight);
+                _laRT = Quaternion.Slerp(_laRT, la, weight);
+                _spineT = Quaternion.Slerp(_spineT, spine, weight);
+                _headT = Quaternion.Slerp(_headT, head, weight);
+            }
+            _recoilAge += dt;
+            if (_recoilAge >= TagBackRecoilPose.Seconds)
+                _recoilAge = -1f;
         }
 
         /// <summary>Non-tag punch. The stumble eases on, holds, then eases back onto the gait.</summary>

@@ -208,6 +208,7 @@ public static partial class EnemyAiProof
         public Vector3 ZipB;
         public float ZipSpeed;
         public float ZipU;
+        public float ZipLoopAt;
         public float PlanLeft;
         public EnemyVerb Verb;
         public readonly MegaParkP1Layout.ParkHop[] Hops = new MegaParkP1Layout.ParkHop[18];
@@ -437,12 +438,14 @@ public static partial class EnemyAiProof
             if (time < self.PadReady) return false;
             BeginPad(self, m, cfg, time);
             report.PadUses++;
+            Tag.Audio.AudioBus.Raise(Tag.Audio.AudioBus.Hook.PadLaunch, self.Pos);
         }
         else
         {
             if (time < self.ZipReady) return false;
             BeginZip(self, m, time);
             report.ZipUses++;
+            Tag.Audio.AudioBus.Raise(Tag.Audio.AudioBus.Hook.ZipGrab, self.Pos);
         }
         self.Mem.ParkMark = -1;
         return true;
@@ -798,17 +801,25 @@ public static partial class EnemyAiProof
         float len = delta.magnitude;
         if (len < 0.1f)
         {
+            Tag.Audio.AudioBus.Raise(Tag.Audio.AudioBus.Hook.ZipDrop, self.Pos);
             self.Zip = false;
             return;
         }
         float step = self.ZipSpeed * ParkDt / len;
         self.ZipU += step;
         if (self.ZipU > 1f) self.ZipU = 1f;
+        self.ZipLoopAt -= ParkDt;
+        if (self.ZipLoopAt <= 0f)
+        {
+            Tag.Audio.AudioBus.Raise(Tag.Audio.AudioBus.Hook.ZipLoop, self.Pos);
+            self.ZipLoopAt += 0.45f;
+        }
         Vector3 pos = self.ZipA + delta * self.ZipU;
         if (FlatMag(delta * (self.ZipSpeed / len)) > ZipLineRules.DefaultRideSpeed + 0.15f && self.ZipSpeed > ZipLineRules.DefaultRideSpeed + 0.15f)
             report.Fail("zip exceeded the ride speed");
         if (!MegaParkP1Layout.ParkInsideFence(pos.x, pos.y, pos.z))
         {
+            Tag.Audio.AudioBus.Raise(Tag.Audio.AudioBus.Hook.ZipDrop, self.Pos);
             self.Zip = false;
             self.Vel = Vector3.zero;
             return;
@@ -817,11 +828,13 @@ public static partial class EnemyAiProof
         self.Vel = delta * (self.ZipSpeed / len);
         if (self.Pos.y < MegaParkP1Layout.KillPlaneY)
         {
+            Tag.Audio.AudioBus.Raise(Tag.Audio.AudioBus.Hook.ZipDrop, self.Pos);
             Respawn(self, other, report);
             return;
         }
         if (self.ZipU >= 1f)
         {
+            Tag.Audio.AudioBus.Raise(Tag.Audio.AudioBus.Hook.ZipDrop, self.Pos);
             self.Zip = false;
             if (MegaParkP1Layout.ParkOpen(self.Pos.x, self.Pos.z, out float floor))
                 self.Pos.y = floor;
@@ -848,6 +861,7 @@ public static partial class EnemyAiProof
         self.ZipB = new Vector3(m.ExitX, m.ExitY - ZipLineRules.HangDrop, m.ExitZ);
         self.ZipSpeed = m.Speed > 0.1f ? m.Speed : ZipLineRules.DefaultRideSpeed;
         self.ZipU = 0f;
+        self.ZipLoopAt = 0.45f;
         self.ZipReady = time + ZipLineRules.DefaultRegrabCooldown;
         self.HopCount = 0;
     }

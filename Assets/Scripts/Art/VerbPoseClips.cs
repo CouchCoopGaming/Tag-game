@@ -5,7 +5,7 @@ namespace Tag.Art
 {
     /// <summary>
     /// Named body clips. DummyLocomotor plays them from verb states.
-    /// SlideBody is a low athletic crouch: torso forward, lead foot planted, free leg trailing.
+    /// SlideBody is a baseball slide: torso leaned back, lead leg extended, trail leg tucked, one hand on the ground.
     /// PunchStrike coils beside the head, reaches one arm on a chest-high line, then folds that fist back to the ribs.
     /// TagCatch gathers both hands at the chest, then both arms claim one contact in front. Feel numbers are not in here.
     /// </summary>
@@ -23,45 +23,46 @@ namespace Tag.Art
 
         // Hier Tan rest: hips +X pitches the chest toward +Z (the face).
         // Upper-leg rest is about 180° on X, so thigh pitch does NOT add to the hip.
-        // Positive hip/spine pitches the chest forward. Positive thigh is the
-        // forward plant, same sign as the run. Negative thigh trails behind.
-        // Negative knee bends. The arm on the lead-leg side stays back and low,
-        // matching the run's back arm, so the hands do not cross on the way in.
-        // Crouch stays a symmetric guard. slideBoost is not in here. No root motion.
-        public const float SlideHip = 36f;
-        public const float SlideSpine = 24f;
-        public const float SlideHead = -34f;
-        public const float SlideLeadThigh = 78f;
-        public const float SlideLeadYaw = 10f;
-        public const float SlideLeadKnee = -96f;
-        public const float SlideTrailThigh = -52f;
-        public const float SlideTrailYaw = 18f;
-        public const float SlideTrailKnee = -14f;
-        // Forward arm. Negative pitch reaches toward +Z. Kept as SlideArmPitch
+        // Positive hip/spine pitches the chest forward. A baseball slide uses the
+        // negative sign: chest leaned back about 36°. Positive thigh is the lead
+        // leg toward +Z. Negative knee bends. The trail knee folds under.
+        // The free arm stays forward. The other hand trails back near the ground.
+        // Crouch stays a symmetric forward guard. slideBoost is not in here. No root motion.
+        // The pose does not take speed, so the read holds at slide-entry and at the end of decay.
+        public const float SlideHip = -22f;
+        public const float SlideSpine = -14f;
+        public const float SlideHead = 50f;
+        public const float SlideLeadThigh = 68f;
+        public const float SlideLeadYaw = 8f;
+        public const float SlideLeadKnee = -10f;
+        public const float SlideTrailThigh = 40f;
+        public const float SlideTrailYaw = 24f;
+        public const float SlideTrailKnee = -130f;
+        // Free arm. Negative pitch reaches toward +Z. Kept as SlideArmPitch
         // so a site that has not split the arms still reaches forward.
-        // Soft elbow and a modest reach, so the hand does not spear the chest.
-        public const float SlideLeadArmPitch = -32f;
-        public const float SlideLeadArmYaw = 28f;
-        public const float SlideLeadElbow = -30f;
-        // Balance arm. Positive pitch is behind the shoulder, kept low so it
-        // does not float up past the head.
-        public const float SlideBalanceArmPitch = 28f;
-        public const float SlideBalanceArmYaw = 26f;
+        public const float SlideLeadArmPitch = -36f;
+        public const float SlideLeadArmYaw = 22f;
+        public const float SlideLeadElbow = -28f;
+        // Trail hand. Positive pitch is behind the shoulder and down, near the ground.
+        public const float SlideBalanceArmPitch = 48f;
+        public const float SlideBalanceArmYaw = 22f;
         public const float SlideBalanceElbow = -36f;
         public const float SlideArmPitch = SlideLeadArmPitch;
         public const float SlideArmYaw = SlideLeadArmYaw;
         public const float SlideArmRoll = 0f;
         public const float SlideElbow = SlideLeadElbow;
-        // Lead shoe levels on the plant: -(thigh + knee). Trail shoe points
-        // along the free shin instead of cranking flat.
-        public const float SlideLeadFoot = 18f;
-        public const float SlideLeadFootRoll = -8f;
-        public const float SlideTrailFoot = 40f;
-        public const float SlideTrailFootRoll = 6f;
-        // Visual mesh drop only. Seats the plant sole. The capsule and slideBoost stay put.
-        public const float SlideBodyDrop = 0.42f;
+        // Lead shoe stays along the extended shin: -(thigh + knee).
+        // The trail shoe follows the tuck. Feet are local. They move with the motor.
+        public const float SlideLeadFoot = -58f;
+        public const float SlideLeadFootRoll = -6f;
+        public const float SlideTrailFoot = 16f;
+        public const float SlideTrailFootRoll = 8f;
+        // Visual mesh drop only. PoseHipY 1.05 minus this is the crouch-capsule center
+        // (crouchHeight 1.05 * 0.5). The pelvis stays inside the crouched controller
+        // and off the ground. The capsule and slideBoost stay put.
+        public const float SlideBodyDrop = 0.525f;
         // Enter from run, leave to run or crouch, and a jump cancel.
-        // Crouch keeps its own tenth-second blend. See CrouchPose.
+        // Locked at a tenth by the pose handoff and the chase-cam catch. See CrouchPose.
         public const float SlideBlendSeconds = 0.10f;
         // The clip weight eases the run enter. The old wedge overlay is off
         // so it cannot snap underneath that weight.
@@ -267,7 +268,7 @@ namespace Tag.Art
                 + " balanceArm=" + SlideBalanceArmPitch.ToString("0.#")
                 + " drop=" + SlideBodyDrop.ToString("0.##")
                 + " blend=" + SlideBlendSeconds.ToString("0.##")
-                + " read=forward-plant+free-trail"
+                + " read=back-lean+lead-extended+trail-tuck"
                 + " gate=run-enter+hold:SmoothStep(_slidePose)/SlideBlendSeconds while sliding"
                 + "; run-exit:slideLeave=1-SmoothStep(_dropVis) full weight, clip off"
                 + "; crouch-exit:captured still/crouch-walk dt/SlideBlendSeconds, clip off"
@@ -403,46 +404,46 @@ namespace Tag.Art
             var fails = new List<string>();
             float chest = SlideHip + SlideSpine;
             float crouchChest = CrouchHip + CrouchSpine;
-            // Positive hip + spine pitches the chest toward the face. The head counters
-            // so the face stays along the slide instead of in the knees.
-            if (SlideHip < 28f || SlideHip > 44f || SlideSpine < 16f || SlideSpine > 32f || chest < 50f || chest > 70f)
-                fails.Add("SlideBody torso is not pitched forward");
-            if (chest < crouchChest + 8f)
+            // Negative hip + spine leans the chest back. The head pitches forward
+            // off that lean so the face looks along the slide.
+            if (SlideHip > -16f || SlideHip < -28f || SlideSpine > -10f || SlideSpine < -20f || chest > -30f || chest < -40f)
+                fails.Add("SlideBody torso is not leaned back");
+            if (chest > 0f || Mathf.Abs(chest - crouchChest) < 50f)
                 fails.Add("SlideBody chest matches the crouch");
-            if (SlideHead > -26f || SlideHead < -44f || chest + SlideHead < 14f || chest + SlideHead > 36f)
-                fails.Add("SlideBody head is not looking along the slide");
-            if (SlideLeadThigh < 68f || SlideLeadThigh > 90f)
-                fails.Add("SlideBody lead leg is not a plant");
-            if (SlideLeadKnee > -82f || SlideLeadKnee < -112f)
-                fails.Add("SlideBody lead knee is not planted");
-            if (Mathf.Abs(SlideLeadYaw) < 6f || Mathf.Abs(SlideLeadYaw) > 16f)
+            if (SlideHead < 44f || SlideHead > 58f || chest + SlideHead < 8f || chest + SlideHead > 22f)
+                fails.Add("SlideBody head is not looking forward");
+            if (SlideLeadThigh < 60f || SlideLeadThigh > 78f)
+                fails.Add("SlideBody lead leg is not extended");
+            if (SlideLeadKnee < -20f || SlideLeadKnee > -4f)
+                fails.Add("SlideBody lead knee is not extended");
+            if (Mathf.Abs(SlideLeadYaw) < 4f || Mathf.Abs(SlideLeadYaw) > 16f)
                 fails.Add("SlideBody lead knee crosses the other leg");
-            if (SlideTrailThigh > -40f || SlideTrailThigh < -68f)
-                fails.Add("SlideBody trail leg is not free behind");
-            if (SlideTrailKnee > -6f || SlideTrailKnee < -24f)
-                fails.Add("SlideBody trail knee is tucked");
-            if (Mathf.Abs(SlideTrailYaw) < 12f || Mathf.Abs(SlideTrailYaw) > 26f)
+            if (SlideTrailThigh < 28f || SlideTrailThigh > 52f)
+                fails.Add("SlideBody trail leg is not tucked under");
+            if (SlideTrailKnee > -115f || SlideTrailKnee < -142f)
+                fails.Add("SlideBody trail knee is not tucked");
+            if (Mathf.Abs(SlideTrailYaw) < 16f || Mathf.Abs(SlideTrailYaw) > 32f)
                 fails.Add("SlideBody trail leg clips the pelvis");
-            if (Mathf.Abs(SlideLeadThigh - SlideTrailThigh) < 110f)
+            if (Mathf.Abs(SlideLeadThigh - SlideTrailThigh) < 20f)
                 fails.Add("SlideBody legs match each other");
-            if (Mathf.Abs(SlideTrailThigh - CrouchThigh) < 90f || Mathf.Abs(SlideTrailKnee - CrouchKnee) < 48f)
+            if (Mathf.Abs(SlideTrailKnee - CrouchKnee) < 30f || Mathf.Abs(SlideLeadKnee - CrouchKnee) < 40f)
                 fails.Add("SlideBody legs match the crouch");
             if (Mathf.Abs(-(SlideLeadThigh + SlideLeadKnee) - SlideLeadFoot) > 8f)
-                fails.Add("SlideBody lead sole is not planted");
-            if (SlideLeadArmPitch > -20f || SlideLeadArmPitch < -48f)
-                fails.Add("SlideBody lead arm is not forward");
-            if (SlideBalanceArmPitch < 16f || SlideBalanceArmPitch > 42f)
-                fails.Add("SlideBody balance arm is floating");
-            if (SlideBalanceArmPitch - SlideLeadArmPitch < 48f)
+                fails.Add("SlideBody lead sole is not along the shin");
+            if (SlideLeadArmPitch > -24f || SlideLeadArmPitch < -48f)
+                fails.Add("SlideBody free arm is not forward");
+            if (SlideBalanceArmPitch < 36f || SlideBalanceArmPitch > 60f)
+                fails.Add("SlideBody trail hand is not back");
+            if (SlideBalanceArmPitch - SlideLeadArmPitch < 70f)
                 fails.Add("SlideBody arms match each other");
             if (Mathf.Abs(SlideLeadArmYaw) < 18f || Mathf.Abs(SlideBalanceArmYaw) < 18f)
                 fails.Add("SlideBody arms stack on the chest");
             if (Mathf.Abs(SlideLeadArmYaw) > 40f || Mathf.Abs(SlideBalanceArmYaw) > 40f)
                 fails.Add("SlideBody arms float wide");
             if (SlideLeadElbow > -18f || SlideLeadElbow < -44f)
-                fails.Add("SlideBody lead elbow is clipped");
+                fails.Add("SlideBody free elbow is clipped");
             if (SlideBalanceElbow > -22f || SlideBalanceElbow < -48f)
-                fails.Add("SlideBody balance elbow is clipped");
+                fails.Add("SlideBody trail elbow is clipped");
             if (Mathf.Abs(SlideLeadFoot - SlideTrailFoot) < 16f)
                 fails.Add("SlideBody feet share one angle");
             if (CrouchHip > 40f || Mathf.Abs(CrouchElbow) < 60f || Mathf.Abs(CrouchKnee) < 50f
@@ -451,8 +452,10 @@ namespace Tag.Art
             if (Mathf.Abs(IdleArmPitch) > 24f || Mathf.Abs(IdleElbow) > 20f || Mathf.Abs(IdleKnee) > 8f
                 || Mathf.Abs(IdleHip) > 8f || Mathf.Abs(IdleSpine) > 8f)
                 fails.Add("idle reference no longer reads as a stand");
-            if (SlideBodyDrop < 0.36f || SlideBodyDrop > 0.50f || SlideBodyDrop < CrouchDrop + 0.16f)
-                fails.Add("SlideBody is not a low crouch");
+            float pelvis = 1.05f - SlideBodyDrop;
+            if (SlideBodyDrop < 0.50f || SlideBodyDrop > 0.56f || SlideBodyDrop < CrouchDrop + 0.16f
+                || Mathf.Abs(pelvis - 0.525f) > 0.02f)
+                fails.Add("SlideBody pelvis does not match the crouch capsule");
             if (SlideBlendSeconds < 0.08f || SlideBlendSeconds > 0.12f)
                 fails.Add("SlideBody blend is not a clean tenth");
             foreach (string hit in ClearanceFailures())
@@ -559,31 +562,36 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Grounded slide read. Torso forward, lead sole planted, trail foot free
-        /// and low, limbs clear of each other and of the ground. DummyRunner plays
-        /// the same SlideBody. slideBoost and root motion stay out of this.
+        /// Grounded baseball slide. Torso back, lead leg extended, trail leg tucked,
+        /// one hand near the ground. The same shape at entry speed and at the end of
+        /// decay. Feet stay on the skeleton, so they only move with the motor.
+        /// DummyRunner plays the same SlideBody. slideBoost and root motion stay out.
         /// </summary>
         public static string PolishProofLine()
         {
             float sole = PlantSoleY();
             float lift = TrailSoleY() - sole;
+            float pelvis = 1.05f - SlideBodyDrop;
             return "slide-pose-polish"
-                + " torso=forward"
+                + " torso=back"
                 + " chest=" + (SlideHip + SlideSpine).ToString("0")
                 + " head=" + SlideHead.ToString("0")
-                + " lead=plant"
+                + " lead=extended"
                 + " thigh=" + SlideLeadThigh.ToString("0")
                 + " knee=" + SlideLeadKnee.ToString("0")
-                + " trail=free"
+                + " trail=tuck"
                 + " trailThigh=" + SlideTrailThigh.ToString("0")
                 + " trailKnee=" + SlideTrailKnee.ToString("0")
-                + " arms=low"
+                + " hand=trail"
                 + " drop=" + SlideBodyDrop.ToString("0.00")
+                + " pelvis=" + pelvis.ToString("0.00")
                 + " blend=" + SlideBlendSeconds.ToString("0.00")
                 + " sole=" + sole.ToString("0.00")
                 + " trailLift=" + lift.ToString("0.00")
                 + " intersect=" + ClearanceFailures().Count.ToString("0")
                 + " dummy=SlideBody"
+                + " speed=held"
+                + " feet=local"
                 + " slideBoost=0"
                 + " rootMotion=0";
         }
@@ -592,13 +600,17 @@ namespace Tag.Art
         {
             if (ClearanceFailures().Count != 0) return false;
             if (SlideBlendSeconds < 0.08f || SlideBlendSeconds > 0.12f) return false;
-            if (SlideHip + SlideSpine <= 0f) return false;
-            if (SlideLeadThigh <= 0f || SlideTrailThigh >= 0f) return false;
-            if (SlideLeadKnee >= -40f || SlideTrailKnee <= -40f) return false;
+            float chest = SlideHip + SlideSpine;
+            if (chest > -30f || chest < -40f) return false;
+            if (SlideLeadThigh <= 0f || SlideLeadKnee >= -2f || SlideLeadKnee < -24f) return false;
+            if (SlideTrailKnee > -100f) return false;
+            if (SlideBalanceArmPitch <= 0f || SlideLeadArmPitch >= 0f) return false;
             float sole = PlantSoleY();
             float trail = TrailSoleY();
             if (sole < -0.01f || sole > 0.05f) return false;
-            if (trail < sole + 0.02f || trail > 0.14f) return false;
+            if (trail < sole + 0.02f || trail > 0.16f) return false;
+            float pelvis = 1.05f - SlideBodyDrop;
+            if (Mathf.Abs(pelvis - 0.525f) > 0.02f || pelvis < 0.20f) return false;
             return true;
         }
 

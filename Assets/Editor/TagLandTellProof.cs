@@ -161,9 +161,14 @@ public static class TagLandTellProof
             report.Fail("tell is wired more than once");
         if (active.Contains("TagLand"))
             report.Fail("a miss plays the tag land tell");
-        if (!resolve.Contains("TagSfx.PunchConnect"))
+        string audioBus = ReadRepo("Assets/Scripts/Audio/AudioBus.cs");
+        bool punchSound = resolve.Contains("TagSfx.PunchConnect")
+            || (resolve.Contains("AudioBus.Hook.PunchHit") && audioBus != null && audioBus.Contains("TagSfx.PunchConnect"));
+        if (!punchSound)
             report.Fail("punch connect sound was removed");
-        if (!itSrc.Contains("TagSfx.BecomeIt"))
+        bool become = itSrc.Contains("TagSfx.BecomeIt")
+            || (itSrc.Contains("AudioBus.Hook.Tag") && audioBus != null && audioBus.Contains("TagSfx.BecomeIt"));
+        if (!become)
             report.Fail("SetIt no longer plays BecomeIt");
         if (!markerSrc.Contains("_pop = 1f"))
             report.Fail("ItMarker handoff pop is gone");

@@ -1,5 +1,6 @@
 using Tag.Gameplay;
 using Tag.Local;
+using Tag.Modes;
 using UnityEngine;
 
 namespace Tag.Level
@@ -11,7 +12,6 @@ namespace Tag.Level
     public class ParkMinimap : MonoBehaviour
     {
         public const int TexSize = 256;
-        const int Margin = 16;
 
         Texture2D _tex;
         Color32[] _base;
@@ -73,9 +73,10 @@ namespace Tag.Level
             StampActors();
             _tex.SetPixels32(_frame);
             _tex.Apply(false);
-            float pw = 200f;
-            float ph = pw * (_h / (float)_w);
-            var rect = new Rect(Screen.width - pw - Margin, Screen.height - ph - Margin, pw, ph);
+            VerbHudLayout.Box box = VerbHudLayout.Minimap(Screen.width, Screen.height, ParkArena.IsPocket);
+            float ph = box.W * (_h / (float)_w);
+            if (ph > box.H) ph = box.H;
+            var rect = new Rect(box.X, box.Bottom - ph, box.W, ph);
             GUI.DrawTexture(rect, _tex, ScaleMode.StretchToFill, false);
         }
 
