@@ -16,7 +16,9 @@ namespace Tag.Gameplay
     }
 
     /// <summary>
-    /// It-only dedicated melee. Active punch ONLY — NO passive overlap/aura tag.
+    /// Dedicated melee. Active punch ONLY — NO passive overlap/aura tag.
+    /// It still transfers on a legal hit. A connect that is not a tag staggers
+    /// the runner instead. Same button, same reach, same phase windows.
     /// Prefer continuous cast during Active. Closest runner with LoS wins.
     /// </summary>
     public class PunchHitbox : MonoBehaviour
@@ -101,7 +103,7 @@ namespace Tag.Gameplay
             bool canStart =
                 Phase == PunchPhase.Idle
                 && _bufferTimer > 0f
-                && _it != null && _it.IsIt && !_it.IsEliminated
+                && _it != null && !_it.IsEliminated
                 && (_motor == null || !_motor.IsMotorLocked)
                 && (_ragdoll == null || !_ragdoll.IsRagdolling)
                 && !_it.HasIFrames;
@@ -284,13 +286,7 @@ namespace Tag.Gameplay
 
         void ResolveHit(ItController victim, Vector3 hitPoint)
         {
-            Vector3 flat = hitPoint - aimOrigin.position;
-            flat.y = 0f;
-            if (flat.sqrMagnitude < 0.001f) flat = aimOrigin.forward;
-            flat.Normalize();
-            Vector3 knock = flat * tuning.knockbackHorizontal + Vector3.up * tuning.knockbackUp;
-
-            // Transfer-It
+            // Transfer-It. The existing gates decide whether this connect is a tag.
             bool puncherWasIt = _it != null && _it.IsIt;
             if (_mode != null)
                 _mode.OnSuccessfulPunch(_it, victim);
@@ -302,10 +298,29 @@ namespace Tag.Gameplay
                 victim.SetIt(true);
             }
 
+            bool tagged = TagLandTell.Transferred(puncherWasIt, victim != null && victim.IsIt, _it != null && _it.IsIt);
+            bool runner = victim != null && !victim.IsIt && !victim.IsEliminated;
+            // Punch impact (TagSfx has Resources clip + procedural fallback); become-It chirp from SetIt(true)
+            TagSfx.PunchConnect(transform.position);
+
+            if (!tagged && PunchStagger.IsStaggerHit(runner, tagged))
+            {
+                // No knockback. The stumble cancels sprint and plays the pose.
+                victim.ReceivePunchStagger();
+                Debug.Log($"[Punch] {name} staggered {victim.name}");
+                return;
+            }
+
+            Vector3 flat = hitPoint - aimOrigin.position;
+            flat.y = 0f;
+            if (flat.sqrMagnitude < 0.001f) flat = aimOrigin.forward;
+            flat.Normalize();
+            Vector3 knock = flat * tuning.knockbackHorizontal + Vector3.up * tuning.knockbackUp;
+
             // Handoff flash only when It actually moved. A miss never reaches here.
             // SetIt(true) already played BecomeIt and will pop ItMarker. This is the world read.
             // The old It's give-up is visual. The transfer above already decided the roles.
-            if (TagLandTell.Transferred(puncherWasIt, victim != null && victim.IsIt, _it != null && _it.IsIt))
+            if (tagged)
             {
                 TagLandFlash.PlayOn(victim);
                 if (_it != null)
@@ -314,9 +329,6 @@ namespace Tag.Gameplay
                     if (oldLoco != null) oldLoco.PlayItGiveUp();
                 }
             }
-
-            // Punch impact (TagSfx has Resources clip + procedural fallback); become-It chirp from SetIt(true)
-            TagSfx.PunchConnect(transform.position);
 
             // Readable TP punch connect: stronger camera kick + FOV punch on attacker
             var tps = GetComponentInChildren<TpsMoveCamera>(true);

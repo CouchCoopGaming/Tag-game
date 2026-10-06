@@ -1,6 +1,7 @@
 using UnityEngine;
 using Tag.Audio;
 using Tag.Experimental;
+using Tag.Gameplay;
 
 namespace TagArena.Movement
 {
@@ -117,6 +118,7 @@ namespace TagArena.Movement
         bool _motorLocked;
         bool _slideBlocked;
         float _punchMoveScale = 1f;
+        PunchStagger.Clock _stagger;
         float _speedBoostMul = 1f;
         float _speedBoostT;
         bool _grappleSearched;
@@ -408,9 +410,10 @@ namespace TagArena.Movement
                 return SlideMove(dt, v, wish);
 
             Vector3 hv = WishAccel.Horizontal(v);
-            float max = KinematicStep.GaitCap(wantCrouch, _in.SprintHeld, _in.Move.y, cfg.crouchSpeed, cfg.sprintSpeed, cfg.walkSpeed);
+            bool sprint = PunchStagger.SprintHeld(_in.SprintHeld, _stagger.Stagger);
+            float max = KinematicStep.GaitCap(wantCrouch, sprint, _in.Move.y, cfg.crouchSpeed, cfg.sprintSpeed, cfg.walkSpeed);
 
-            if (tagRole != null && tagRole.IsIt)
+            if (tagRole != null && tagRole.IsIt && sprint)
                 max += cfg.taggerSprintBonus;
 
             // A jump this frame leaves before friction, which is how a landing hop keeps air speed.
@@ -497,7 +500,8 @@ namespace TagArena.Movement
             if (!keepCrouch || !keepSpeed || !_probe.Ground.grounded)
             {
                 if (_in.CrouchHeld && _probe.Ground.grounded) SetState(MoveState.Crouch);
-                else if (_probe.Ground.grounded) SetState(hNow > cfg.walkSpeed + 0.4f ? MoveState.Sprint : MoveState.Walk);
+                else if (_probe.Ground.grounded)
+                    SetState(_stagger.Stagger <= 0f && hNow > cfg.walkSpeed + 0.4f ? MoveState.Sprint : MoveState.Walk);
                 else SetState(MoveState.Air);
             }
 
@@ -579,7 +583,7 @@ namespace TagArena.Movement
             // A straight run keeps its speed. A turned strafe can add speed past sprint.
             if (wish.sqrMagnitude > 0.01f)
             {
-                float wishSpeed = KinematicStep.GaitCap(_in.CrouchHeld, _in.SprintHeld, _in.Move.y, cfg.crouchSpeed, cfg.sprintSpeed, cfg.walkSpeed);
+                float wishSpeed = KinematicStep.GaitCap(_in.CrouchHeld, PunchStagger.SprintHeld(_in.SprintHeld, _stagger.Stagger), _in.Move.y, cfg.crouchSpeed, cfg.sprintSpeed, cfg.walkSpeed);
                 float accel = cfg.airAccel * (_in.Move.x != 0f && Mathf.Abs(_in.Move.y) < 0.2f ? cfg.airStrafeBonus : 1f);
                 hv = KinematicStep.AirSteer(hv, wish, wishSpeed, accel, dt);
             }
@@ -1239,6 +1243,21 @@ namespace TagArena.Movement
             rb.angularVelocity = Vector3.zero;
         }
 
+        public bool IsPunchStaggered => _stagger.Stagger > 0f;
+
+        /// <summary>
+        /// Non-tag punch connect. Sprint drops. Vertical velocity is not written.
+        /// A hit during the stumble or the immunity after it does not refresh.
+        /// </summary>
+        public bool BeginPunchStagger()
+        {
+            if (_motorLocked) return false;
+            if (!PunchStagger.TryStart(ref _stagger)) return false;
+            if (State == MoveState.Sprint)
+                SetState(MoveState.Walk);
+            return true;
+        }
+
         public void SetPunchMoveScale(float scale) => _punchMoveScale = Mathf.Clamp(scale, 0.05f, 1.5f);
         public void SetSlideBlocked(bool blocked) => _slideBlocked = blocked;
 
@@ -1346,7 +1365,7 @@ namespace TagArena.Movement
 
             float hs = WishAccel.HorizSpeed(v);
             if (hs < 0.4f) SetState(MoveState.Idle);
-            else if (_in.SprintHeld || hs > cfg.sprintSpeed * 0.82f) SetState(MoveState.Sprint);
+            else if (_stagger.Stagger <= 0f && (_in.SprintHeld || hs > cfg.sprintSpeed * 0.82f)) SetState(MoveState.Sprint);
             else SetState(MoveState.Walk);
         }
 
@@ -1396,6 +1415,7 @@ namespace TagArena.Movement
             if (_airDashCd > 0f) _airDashCd -= dt;
             if (_airDashIFramesT > 0f) _airDashIFramesT -= dt;
             if (_energyRegenDelay > 0f) _energyRegenDelay -= dt;
+            PunchStagger.Tick(ref _stagger, dt);
 
             if (_probe.Ground.grounded && State != MoveState.Air && State != MoveState.Jet && State != MoveState.WallClimb)
             {

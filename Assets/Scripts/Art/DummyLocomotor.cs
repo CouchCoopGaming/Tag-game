@@ -681,6 +681,7 @@ namespace Tag.Art
         float _dashCdWas;
         bool _dashCdSeen;
         float _tagFlinch;
+        float _staggerAge = -1f;
         float _itClaim;
         float _skiBlend;
         bool _skiFromWalk;
@@ -6501,7 +6502,7 @@ namespace Tag.Art
             // Pivot is a bone layer on this slew. The 280 scale and the 0.1s follow stay.
             bool sprintLean = PivotPose.KeepsSprintLean(speed);
             bool pivotGate = canTurn && !sprintLean && !lunging && !gliding && !bouncing && _skiBlend < 0.02f
-                && !punching && flinchAmt < 0.04f && _swapAge < 0f && PoseAllowed(DummyPosePaths.Pivot);
+                && !punching && flinchAmt < 0.04f && _staggerAge < 0f && _swapAge < 0f && PoseAllowed(DummyPosePaths.Pivot);
             // Leaving the gate used to zero the plant on one frame. The same smoothstep runs both ways.
             float pivotTarget = 0f;
             float leadTarget = 0f;
@@ -6524,7 +6525,7 @@ namespace Tag.Art
             bool hardStopGate = grounded && !air && !crouch && !sliding && !dashing && !jet
                 && !wallRun && !climb && !mantle && !lunging && !lungeBusy && !punching
                 && !bouncing && !gliding && _skiBlend < 0.02f && _slidePose <= 0.02f
-                && flinchAmt < 0.04f && claimAmt < 0.04f
+                && flinchAmt < 0.04f && claimAmt < 0.04f && _staggerAge < 0f
                 && becomeW <= 0.02f && _pivotW <= 0.02f
                 && speed <= StopPlantPose.ArriveSpeed + 1.5f
                 && PoseAllowed(DummyPosePaths.Stop);
@@ -6559,7 +6560,7 @@ namespace Tag.Art
             bool idleBody = grounded && !air && !crouch && !sliding && !dashing && !jet
                 && !wallRun && !climb && !mantle && !lunging && !punching
                 && !bouncing && !gliding && _skiBlend < 0.02f
-                && flinchAmt < 0.04f && claimAmt < 0.04f
+                && flinchAmt < 0.04f && claimAmt < 0.04f && _staggerAge < 0f
                 && !stopBlend
                 && PoseAllowed(DummyPosePaths.Idle);
             float idleTarget = idleBody ? IdlePose.Weight(speed, 0f, crouch ? 1f : 0f, becomeW) : 0f;
@@ -15111,6 +15112,16 @@ namespace Tag.Art
                 armSlewR = Mathf.Max(armSlewR, AirStrafeLeanPose.Slew);
                 slew = Mathf.Max(slew, AirStrafeLeanPose.Slew);
             }
+            bool staggerPose = _staggerAge >= 0f;
+            ApplyPunchStagger(dt);
+            if (staggerPose)
+            {
+                armSlewL = Mathf.Max(armSlewL, PunchStaggerPose.Slew);
+                armSlewR = Mathf.Max(armSlewR, PunchStaggerPose.Slew);
+                legSlew = Mathf.Max(legSlew, PunchStaggerPose.Slew);
+                torsoSlew = Mathf.Max(torsoSlew, PunchStaggerPose.Slew);
+                slew = Mathf.Max(slew, PunchStaggerPose.Slew);
+            }
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
             Slew(ref _head, _headT, slew, dt);
@@ -17003,6 +17014,65 @@ namespace Tag.Art
         public void CancelPunchTelegraph()
         {
             _punchTelegraph = 0f;
+        }
+
+        /// <summary>Non-tag punch. The stumble eases on, holds, then eases back onto the gait.</summary>
+        public void PlayPunchStagger()
+        {
+            if (!PoseAllowed(DummyPosePaths.Stagger)) return;
+            _staggerAge = 0f;
+        }
+
+        /// <summary>
+        /// Chest over a buckled knee, arms wide. Weight is 0 at the hit and at the
+        /// end of the quarter second, so the gait underneath is the blend home.
+        /// No root motion.
+        /// </summary>
+        void ApplyPunchStagger(float dt)
+        {
+            if (_staggerAge < 0f) return;
+            if (!PoseAllowed(DummyPosePaths.Stagger))
+            {
+                _staggerAge = -1f;
+                return;
+            }
+
+            float weight = PunchStaggerPose.Weight(_staggerAge);
+            if (weight > 0.001f)
+                BlendStaggerSample(PunchStaggerPose.Stumble(), weight);
+            _staggerAge += dt;
+            if (_staggerAge >= PunchStaggerPose.Duration || (_staggerAge > PunchStaggerPose.RiseSeconds && weight <= 0.001f))
+                _staggerAge = -1f;
+        }
+
+        void BlendStaggerSample(PunchStaggerPose.Sample pose, float weight)
+        {
+            if (weight <= 0.001f) return;
+            if (_upperArmL == null || _upperArmR == null || _lowerArmL == null || _lowerArmR == null) return;
+            if (_upperLegL == null || _upperLegR == null || _lowerLegL == null || _lowerLegR == null) return;
+            if (_spine == null || _hips == null || _head == null) return;
+            Quaternion uaL = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, pose.ArmRollL);
+            Quaternion uaR = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, pose.ArmRollR);
+            Quaternion laL = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
+            Quaternion laR = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
+            Quaternion ulL = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
+            Quaternion ulR = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            Quaternion llL = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
+            Quaternion llR = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
+            Quaternion spine = _spine0 * Quaternion.Euler(pose.Spine, pose.SpineYaw, 0f);
+            Quaternion hips = _hips0 * Quaternion.Euler(pose.Hip, pose.HipYaw, 0f);
+            Quaternion head = _head0 * Quaternion.Euler(pose.Head, pose.HeadYaw, 0f);
+            _uaLT = Quaternion.Slerp(_uaLT, uaL, weight);
+            _uaRT = Quaternion.Slerp(_uaRT, uaR, weight);
+            _laLT = Quaternion.Slerp(_laLT, laL, weight);
+            _laRT = Quaternion.Slerp(_laRT, laR, weight);
+            _ulLT = Quaternion.Slerp(_ulLT, ulL, weight);
+            _ulRT = Quaternion.Slerp(_ulRT, ulR, weight);
+            _llLT = Quaternion.Slerp(_llLT, llL, weight);
+            _llRT = Quaternion.Slerp(_llRT, llR, weight);
+            _spineT = Quaternion.Slerp(_spineT, spine, weight);
+            _hipsT = Quaternion.Slerp(_hipsT, hips, weight);
+            _headT = Quaternion.Slerp(_headT, head, weight);
         }
 
         /// <summary>Tagged runner guard. The new It uses <see cref="PlayItClaim"/>.</summary>
