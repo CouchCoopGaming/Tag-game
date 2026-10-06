@@ -74,6 +74,18 @@ namespace Tag.Profiles
         static readonly float[] GhYaw = new float[Max * PracticeGhost.Slots * PracticeGhost.Cap];
         static readonly byte[] GhPose = new byte[Max * PracticeGhost.Slots * PracticeGhost.Cap];
 
+        static readonly string[] HoldId = new string[PracticeBests.Slots];
+        static readonly float[] HoldTime = new float[PracticeBests.Slots];
+        static readonly int[] HoldN = new int[PracticeBests.Slots];
+        static readonly float[] HoldSp = new float[PracticeBests.Slots * PracticeBests.Splits];
+        static readonly string[] HoldGId = new string[PracticeGhost.Slots];
+        static readonly int[] HoldGN = new int[PracticeGhost.Slots];
+        static readonly float[] HoldGX = new float[PracticeGhost.Slots * PracticeGhost.Cap];
+        static readonly float[] HoldGY = new float[PracticeGhost.Slots * PracticeGhost.Cap];
+        static readonly float[] HoldGZ = new float[PracticeGhost.Slots * PracticeGhost.Cap];
+        static readonly float[] HoldGYaw = new float[PracticeGhost.Slots * PracticeGhost.Cap];
+        static readonly byte[] HoldGPose = new byte[PracticeGhost.Slots * PracticeGhost.Cap];
+
         static readonly string[] ExId = new string[PracticeBests.Slots];
         static readonly float[] ExTime = new float[PracticeBests.Slots];
         static readonly int[] ExN = new int[PracticeBests.Slots];
@@ -779,6 +791,8 @@ namespace Tag.Profiles
             GameSettings backup = GameSettings.Defaults();
             if (GameSettings.Current != null) backup.CopyFrom(GameSettings.Current);
             else GameSettings.Current = GameSettings.Defaults();
+            PracticeBests.Export(HoldId, HoldTime, HoldN, HoldSp);
+            PracticeGhost.ExportSaved(HoldGId, HoldGN, HoldGX, HoldGY, HoldGZ, HoldGYaw, HoldGPose);
             try
             {
                 Clear();
@@ -800,6 +814,8 @@ namespace Tag.Profiles
             }
             finally
             {
+                PracticeBests.Import(HoldId, HoldTime, HoldN, HoldSp);
+                PracticeGhost.ImportSaved(HoldGId, HoldGN, HoldGX, HoldGY, HoldGZ, HoldGYaw, HoldGPose);
                 if (GameSettings.Current == null) GameSettings.Current = GameSettings.Defaults();
                 GameSettings.Current.CopyFrom(backup);
             }
