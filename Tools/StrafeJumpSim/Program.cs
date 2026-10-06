@@ -98,6 +98,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(TagArena.Movement.SameWallLimit.ProofLine());
+        if (!TagArena.Movement.SameWallLimit.Holds())
+        {
+            Console.Error.WriteLine("same-wall limit is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.WallJumpPose.ProofLine());
         if (!Tag.Art.WallJumpPose.Holds())
         {

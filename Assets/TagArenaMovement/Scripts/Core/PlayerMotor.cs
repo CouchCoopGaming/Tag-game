@@ -35,6 +35,14 @@ namespace TagArena.Movement
         public bool WallLeft => _probe.Wall.left;
         /// <summary>Seconds of cling-release grace still running. The pose reads this. The timer is not written here.</summary>
         public float ClingGraceRemaining => _clingGrace;
+        /// <summary>True when a cling into the face just left is refused. The pose reads this.</summary>
+        public bool ClingRefused => _clingRefused;
+
+        /// <summary>Chase reads this so it does not steer a re-cling into the face just left.</summary>
+        public bool WouldRefuseCling(int colliderId, Vector3 normal, Vector3 point)
+        {
+            return SameWallLimit.Blocks(_wallBan, SameWallLimit.Make(colliderId, normal, point));
+        }
         /// <summary>True while the wall probe is in contact. The pose reads this.</summary>
         public bool WallContact => _probe != null && _probe.Wall.hit;
         public bool IsMotorLocked => _motorLocked;
@@ -90,10 +98,11 @@ namespace TagArena.Movement
         float _climbT;
         float _climbStartY;
         float _wallRunT;
-        float _wallContactLostT;
         bool _wallRunBlocked;
         bool _climbBlocked;
-        const float WallReattachDelay = 0.15f;
+        SameWallLimit.Ban _wallBan;
+        SameWallLimit.Face _attachedFace;
+        bool _clingRefused;
         float _mantleT;
         Vector3 _mantleFrom;
         Vector3 _mantleTo;
@@ -180,6 +189,7 @@ namespace TagArena.Movement
 
         void Update()
         {
+            _clingRefused = false;
             if (_in == null || cfg == null) return;
             _in.Read();
             // Edges are latched in this same Update, then the move consumes them.
@@ -213,7 +223,7 @@ namespace TagArena.Movement
             if (rawFeet && _mode != Locomotion.Climb && _mode != Locomotion.WallRun && _mode != Locomotion.Vault)
                 _coyote = cfg.coyoteTime;
             LatchLandImpact();
-            TickWallContactGates(dt);
+            TickWallContactGates();
             Vector3 wish = WishAccel.CameraWish(cam ? cam : transform, _in.Move);
             if (!_probe.Wall.hit)
             {
@@ -255,6 +265,7 @@ namespace TagArena.Movement
                     break;
             }
 
+            _clingRefused = EvaluateClingRefused(wish);
             v = ClampAndDrag(v, dt);
             if (_speedBoostMul > 1.001f && _mode != Locomotion.LandStun && _mode != Locomotion.Slide)
             {
@@ -712,7 +723,7 @@ namespace TagArena.Movement
             Vector3 away = _probe.Wall.hit ? _probe.Wall.normal : -transform.forward;
             Vector3 look = cam ? Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized : transform.forward;
 
-            _climbBlocked = true;
+            BanLeftWall();
             float up = green ? cfg.wallBounceUp : cfg.wallBounceUp * 0.55f;
             float outSpeed = green ? cfg.wallBounceSpeed : cfg.wallBounceSpeed * 0.65f;
 
@@ -748,7 +759,7 @@ namespace TagArena.Movement
 
         void DoWallRunJump(ref Vector3 v)
         {
-            _wallRunBlocked = true;
+            BanLeftWall();
             Vector3 away = _probe.Wall.hit ? _probe.Wall.normal : -transform.right;
             Vector3 look = cam ? Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized : transform.forward;
             v = away * cfg.wallRunJumpOut + Vector3.up * cfg.wallRunJumpUp + look * 3.5f;
@@ -782,13 +793,14 @@ namespace TagArena.Movement
             if (!ClingHeld(wish)) return false;
             if (face > cfg.climbAttachAngle) return false;
 
-            // Same-wall reattach is what made climb feel like a spider. Leave the surface first.
-            if (_climbBlocked) return false;
+            // The face just left stays closed. A different face, or the ground, opens it.
+            if (WallReentryBlocked()) return false;
             if (ClimbHeightUsed >= cfg.climbMaxHeight) return false;
 
             _climbT = 0f;
             _climbStartY = transform.position.y;
             _wallJumpFromClimb = true;
+            GrabWallFace();
             SetState(MoveState.WallClimb);
             return true;
         }
@@ -797,13 +809,14 @@ namespace TagArena.Movement
         {
             if (!_probe.Wall.hit)
             {
-                _climbBlocked = true;
+                BanLeftWall();
                 _clingGrace = 0f;
                 _wallJumpSlot = 0f;
                 SetState(MoveState.Air);
                 return v;
             }
 
+            TrackAttachedFace();
             _climbT += dt;
             ClimbHeightUsed = transform.position.y - _climbStartY;
 
@@ -825,7 +838,7 @@ namespace TagArena.Movement
             bool heightOut = ClimbHeightUsed >= cfg.climbMaxHeight;
             if (timeOut || heightOut || !ClingHeld(wish))
             {
-                _climbBlocked = true;
+                BanLeftWall();
                 _wallJumpFromClimb = true;
                 if (timeOut || heightOut || !_probe.Wall.hit)
                 {
@@ -926,7 +939,7 @@ namespace TagArena.Movement
         bool TryEnterWallRun(Vector3 v, bool grounded, Vector3 wish)
         {
             if (!cfg.enableWallRun) return false;
-            if (_wallRunBlocked) return false;
+            if (WallReentryBlocked()) return false;
             if (grounded) return false;
             if (!_probe.Wall.hit) return false;
             if (!ClingHeld(wish)) return false;
@@ -940,6 +953,7 @@ namespace TagArena.Movement
 
             _wallRunT = 0f;
             _wallJumpFromClimb = false;
+            GrabWallFace();
             SetState(MoveState.WallRun);
             return true;
         }
@@ -955,9 +969,8 @@ namespace TagArena.Movement
 
             if (!_probe.Wall.hit || _wallRunT > cfg.wallRunMaxTime)
             {
-                // Block re-entry until the wall is actually left. Air accel used to
-                // climb back over wallRunMinSpeed in ~2 frames and reset the timer.
-                _wallRunBlocked = true;
+                // The face stays closed after the run ends. Air accel must not restart it.
+                BanLeftWall();
                 _wallJumpFromClimb = false;
                 if (!_probe.Wall.hit)
                 {
@@ -973,11 +986,12 @@ namespace TagArena.Movement
             // Release drops the run the same tick. Grace does not keep the run alive.
             if (!ClingHeld(wish))
             {
-                _wallRunBlocked = true;
+                BanLeftWall();
                 _wallJumpFromClimb = false;
                 SetState(MoveState.Air);
                 return v;
             }
+            TrackAttachedFace();
             _wallRunT += dt;
 
             Vector3 along = WallTangent();
@@ -1296,32 +1310,94 @@ namespace TagArena.Movement
         #region State / capsule / helpers
 
         /// <summary>
-        /// One attach per contact. Grounded, or ~0.15s with no wall hit, clears the latch
-        /// so a new wall (or the same wall after you leave it) can be used again.
+        /// The face left by a wall jump, a release, a slip, or a spent grace stays closed.
+        /// Ground opens it. Touching a different face opens it. A timer does not.
+        /// Cling grace for the face you are still on is not written here.
         /// </summary>
-        void TickWallContactGates(float dt)
+        void TickWallContactGates()
         {
             bool onWallState = State == MoveState.WallClimb || State == MoveState.WallRun;
             if (_probe.Ground.grounded && !onWallState)
             {
-                _wallRunBlocked = false;
-                _climbBlocked = false;
+                ClearWallBan();
                 ClimbHeightUsed = 0f;
-                _wallContactLostT = 0f;
                 return;
             }
 
-            if (!_probe.Wall.hit)
+            if (onWallState || !_probe.Wall.hit || !_wallBan.Active)
+                return;
+
+            SameWallLimit.NoteTouch(ref _wallBan, ProbeFace());
+            if (!_wallBan.Active)
             {
-                _wallContactLostT += dt;
-                if (_wallContactLostT >= WallReattachDelay)
-                {
-                    _wallRunBlocked = false;
-                    _climbBlocked = false;
-                }
+                _wallRunBlocked = false;
+                _climbBlocked = false;
             }
-            else
-                _wallContactLostT = 0f;
+        }
+
+        bool WallReentryBlocked()
+        {
+            if (_probe != null && _probe.Wall.hit && SameWallLimit.Blocks(_wallBan, ProbeFace()))
+            {
+                _climbBlocked = true;
+                _wallRunBlocked = true;
+                return true;
+            }
+            return _climbBlocked || _wallRunBlocked;
+        }
+
+        bool EvaluateClingRefused(Vector3 wish)
+        {
+            if (_clingGrace > 0f) return false;
+            if (State == MoveState.WallClimb || State == MoveState.WallRun || State == MoveState.Mantle)
+                return false;
+            if (_probe == null || !_probe.Wall.hit) return false;
+            if (!SameWallLimit.Blocks(_wallBan, ProbeFace())) return false;
+            return ClingHeld(wish);
+        }
+
+        SameWallLimit.Face ProbeFace()
+        {
+            int id = _probe.Wall.collider != null ? _probe.Wall.collider.GetInstanceID() : 0;
+            return SameWallLimit.Make(id, _probe.Wall.normal, _probe.Wall.point);
+        }
+
+        void GrabWallFace()
+        {
+            _attachedFace = ProbeFace();
+            _wallBan = default;
+            _climbBlocked = false;
+            _wallRunBlocked = false;
+        }
+
+        void TrackAttachedFace()
+        {
+            if (_probe == null || !_probe.Wall.hit) return;
+            SameWallLimit.Face face = ProbeFace();
+            if (!_attachedFace.Valid || SameWallLimit.SameFace(_attachedFace, face))
+                _attachedFace = face;
+        }
+
+        void BanLeftWall()
+        {
+            SameWallLimit.Face face = _attachedFace;
+            if (_probe != null && _probe.Wall.hit)
+            {
+                SameWallLimit.Face now = ProbeFace();
+                if (!face.Valid || SameWallLimit.SameFace(face, now))
+                    face = now;
+            }
+            SameWallLimit.NoteLeave(ref _wallBan, face);
+            _climbBlocked = true;
+            _wallRunBlocked = true;
+        }
+
+        void ClearWallBan()
+        {
+            _wallBan = default;
+            _attachedFace = default;
+            _climbBlocked = false;
+            _wallRunBlocked = false;
         }
 
         void LatchLandImpact()

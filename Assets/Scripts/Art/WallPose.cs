@@ -267,6 +267,42 @@ namespace Tag.Art
             };
         }
 
+        /// <summary>Hands down and open. A refused cling. Not a reach and not a pull.</summary>
+        public const float SlideOffPitch = 36f;
+        public const float SlideOffYaw = 42f;
+        public const float SlideOffElbow = -20f;
+        public const float SlideOffThigh = 18f;
+        public const float SlideOffKnee = -24f;
+        /// <summary>Chest off the wall. A grab pitches the other way.</summary>
+        public const float SlideOffSpine = -10f;
+        public const float SlideOffHip = 4f;
+        public const float SlideOffHead = 8f;
+
+        /// <summary>
+        /// Both hands drop and open when the same wall will not take another grab.
+        /// No reach, no pull, no into-wall chest. Nothing here writes velocity or the root.
+        /// </summary>
+        public static Sample SlideOff()
+        {
+            return new Sample
+            {
+                ThighL = SlideOffThigh,
+                ThighR = SlideOffThigh,
+                KneeL = SlideOffKnee,
+                KneeR = SlideOffKnee,
+                ArmPitchL = SlideOffPitch,
+                ArmPitchR = SlideOffPitch,
+                ArmYawL = SlideOffYaw,
+                ArmYawR = -SlideOffYaw,
+                ElbowL = SlideOffElbow,
+                ElbowR = SlideOffElbow,
+                Hip = SlideOffHip,
+                Spine = SlideOffSpine,
+                Head = SlideOffHead,
+                LeanZ = 0f,
+            };
+        }
+
         /// <summary>JumpPose fall beat. Legs down, arms wide. Release blends here.</summary>
         public static Sample Fall()
         {
