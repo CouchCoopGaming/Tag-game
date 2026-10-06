@@ -28,8 +28,8 @@ namespace Tag.Art
         {
             _bits = new Transform[Sparks];
             _vel = new Vector3[Sparks];
-            _mat = DummyPrimitiveFactory.MakeMat(new Color(0.75f, 0.96f, 1f, 1f), 0.1f, 0f);
-            Paint(_mat, new Color(0.85f, 0.98f, 1f, 1f), 6.5f);
+            _mat = DummyPrimitiveFactory.MakeMat(new Color(0.62f, 1f, 0.94f, 1f), 0.1f, 0f);
+            Paint(_mat, new Color(0.78f, 1f, 0.96f, 1f), 6.5f);
             for (int i = 0; i < Sparks; i++)
             {
                 var bit = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -70,7 +70,7 @@ namespace Tag.Art
             }
             if (_mat != null)
             {
-                Color c = new Color(0.85f, 0.98f, 1f, fade);
+                Color c = new Color(0.78f, 1f, 0.96f, fade);
                 Paint(_mat, c, 6.5f * fade);
             }
             if (_age >= Life)
