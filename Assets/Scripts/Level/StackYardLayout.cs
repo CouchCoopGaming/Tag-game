@@ -938,7 +938,7 @@ namespace Tag.Level
                 + " s → wall-jump (Cling_Yard) " + hop.ToString("0.00", CultureInfo.InvariantCulture) + " s");
 
             doc.Append("\n## Tiers\n\n");
-            doc.Append("Ground, mid decks at 6 m, and roofs at 12 m. Concrete, olive, and teal piles mark those tiers. Catwalks leave each mid deck, warehouse roofs sit on the 12 m decks, and cranes mark the four corners. ");
+            doc.Append("Ground, mid decks at 6 m, and roofs at 12 m. Concrete steps, olive container stacks, amber rises, and teal warehouse roofs are solid piles on those footprints. Narrow catwalks link the towers, and cranes mark the four corners. ");
             doc.Append("Cling_Yard and Cling_East climb to the mid decks. ");
             doc.Append("Cling_Roof and Cling_Lane climb from the mid decks to the roofs. Launch_Mid and Launch_Roof throw onto those tiers. ");
             doc.Append("Zip_Cross leaves the west roof for the yard. Slides run back down both stairs. A fall off a roof lands inside the fence, above the kill plane.\n\n");
@@ -1121,21 +1121,20 @@ namespace Tag.Level
         /// </summary>
         static void AddYardMass(List<MegaParkP1Layout.Solid> list)
         {
-            // Solid teal warehouses share a top with the named roofs, so they join that group.
-            // z stays under 48.4 so the steer point at (70, 49) remains ground. Short of the zip at z=52.
-            Pile(list, "Wh_West", "Roof", "pad", 39f, 47.15f, 10f, 2.3f, 12f);
-            Pile(list, "Wh_East", "Roof", "pad", 70f, 47.15f, 8f, 2.3f, 12f);
-            Span(list, "Wh_Span", "Roof", "pad", 55f, 12.15f, 47.15f, 22f, 0.3f, 0.7f);
+            // Solid columns under the named decks, inset so the full-height skirt stays
+            // inside the deck and does not close a ground or stair cell.
+            InsetPile(list, "Crate_Mid_Fill", "Mid", "army", 30f, 34f, 10f, 8f, 6f);
+            InsetPile(list, "Crate_Rise_Fill", "Roof", "amber", 38f, 34f, 8f, 8f, 9f);
+            InsetPile(list, "Crate_Roof_Fill", "Roof", "pad", 38f, 42f, 8f, 8f, 12f);
+            InsetPile(list, "Stack_Mid_Fill", "Mid", "army", 78f, 34f, 10f, 8f, 6f);
+            InsetPile(list, "Stack_Rise_Fill", "Roof", "amber", 70f, 34f, 8f, 8f, 9f);
+            InsetPile(list, "Stack_Roof_Fill", "Roof", "pad", 70f, 42f, 8f, 8f, 12f);
 
-            // Olive catwalks leave the north lip of each mid deck and stop before the other tower.
-            Deck(list, "Cat_West", "Mid", "army", 29f, 44f, 8f, 12f, 6f);
-            Deck(list, "Cat_East", "Mid", "army", 78f, 44f, 8f, 12f, 6f);
-
-            // Gray containers at 3 m and an olive stack at 6 m. Clear of both ramps and Zip_Cross.
-            Pile(list, "Box_Yard", "Yard", "concrete", 46f, 26f, 8f, 4f, 3f);
-            Pile(list, "Box_Lane", "Lane", "concrete", 66f, 26f, 8f, 4f, 3f);
-            Pile(list, "Stack_Yard", "Mid", "army", 52f, 44f, 8f, 6f, 6f);
-            Pile(list, "Box_Mid", "Mid", "concrete", 62f, 36f, 6f, 4f, 3f);
+            // Catwalks and the roof bridge are too narrow to stand on.
+            Span(list, "Cat_West", "Mid", "army", 29f, 6.05f, 44f, 8f, 0.28f, 0.7f);
+            Span(list, "Cat_East", "Mid", "army", 78f, 6.05f, 44f, 8f, 0.28f, 0.7f);
+            Span(list, "Cat_Span", "Mid", "army", 54f, 6.05f, 36f, 28f, 0.22f, 0.7f);
+            Span(list, "Wh_Span", "Roof", "pad", 55f, 12.15f, 47f, 22f, 0.3f, 0.7f);
 
             Jib(list, "Landmark_Yard", "Yard", "knight", 14f, 18f, 1f, 0f);
             Jib(list, "Landmark_Lane", "Lane", "army", 96f, 18f, -1f, 0f);
@@ -1153,6 +1152,17 @@ namespace Tag.Level
             float x, float z, float sx, float sz, float top)
         {
             Add(list, name, zone, "block", mat, x, top * 0.5f, z, sx, top, sz, 0f);
+        }
+
+        /// <summary>
+        /// A full-height column 0.7 m inside the host deck. The 0.35 m head-check
+        /// around a ground-touching solid then stays on the deck, not on open ground.
+        /// </summary>
+        static void InsetPile(List<MegaParkP1Layout.Solid> list, string name, string zone, string mat,
+            float x, float z, float sx, float sz, float top)
+        {
+            const float inset = 0.7f;
+            Pile(list, name, zone, mat, x, z, sx - inset * 2f, sz - inset * 2f, top);
         }
 
         static void Jib(List<MegaParkP1Layout.Solid> list, string name, string zone, string mat,
