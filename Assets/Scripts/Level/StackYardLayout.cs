@@ -236,11 +236,17 @@ namespace Tag.Level
         {
             var list = new List<MegaParkP1Layout.Solid>(96);
             // Concrete aprons, west lawn, yard mulch, and an east sand bay.
-            Add(list, "Slab_South", "Ground", "ground", "concrete", 55f, -0.1f, 11f, 110f, 0.2f, 22f, 0f);
-            Add(list, "Lawn_West", "Ground", "ground", "grass", 18f, -0.1f, 46f, 36f, 0.2f, 48f, 0f);
-            Add(list, "Mulch_Yard", "Ground", "ground", "mulch", 55f, -0.1f, 35f, 38f, 0.2f, 26f, 0f);
-            Add(list, "Sand_East", "Ground", "ground", "sand", 92f, -0.1f, 35f, 36f, 0.2f, 26f, 0f);
-            Add(list, "Slab_North", "Ground", "ground", "concrete", 73f, -0.1f, 59f, 74f, 0.2f, 22f, 0f);
+            Add(list, "Mulch_Yard", "Ground", "ground", "mulch", 2f, -0.1f, 2f, 4f, 0.2f, 4f, 0f);
+            Add(list, "Zone_South_S", "Ground", "ground", "zbrick", 29.5f, -0.1f, 2f, 51f, 0.2f, 4f, 0f);
+            Add(list, "Zone_South", "Ground", "ground", "zbrick", 27.5f, -0.1f, 18f, 55f, 0.2f, 28f, 0f);
+            Add(list, "Slab_South", "Ground", "ground", "concrete", 57f, -0.1f, 2f, 4f, 0.2f, 4f, 0f);
+            Add(list, "Sand_East", "Ground", "ground", "sand", 108f, -0.1f, 2f, 4f, 0.2f, 4f, 0f);
+            Add(list, "Zone_Lane_S", "Ground", "ground", "zwine", 82.5f, -0.1f, 2f, 47f, 0.2f, 4f, 0f);
+            Add(list, "Zone_Lane", "Ground", "ground", "zwine", 82.5f, -0.1f, 18f, 55f, 0.2f, 28f, 0f);
+            Add(list, "Lawn_West", "Ground", "ground", "grass", 2f, -0.1f, 34f, 4f, 0.2f, 4f, 0f);
+            Add(list, "Zone_West_S", "Ground", "ground", "zindigo", 29.5f, -0.1f, 34f, 51f, 0.2f, 4f, 0f);
+            Add(list, "Zone_West", "Ground", "ground", "zindigo", 27.5f, -0.1f, 53f, 55f, 0.2f, 34f, 0f);
+            Add(list, "Slab_North", "Ground", "ground", "zolive", 82.5f, -0.1f, 51f, 55f, 0.2f, 38f, 0f);
             Add(list, "Collar_S", "Ground", "ground", "bark", 55f, -0.12f, -1.5f, 116f, 0.2f, 3f, 0f);
             Add(list, "Collar_N", "Ground", "ground", "bark", 55f, -0.12f, 71.5f, 116f, 0.2f, 3f, 0f);
             Add(list, "Collar_W", "Ground", "ground", "bark", -1.5f, -0.12f, 35f, 3f, 0.2f, 70f, 0f);
@@ -291,6 +297,7 @@ namespace Tag.Level
             AddChevron(list, "WestClimb", "Cling_Yard");
             AddYardMass(list);
             AddShippingYard(list);
+            ZoneReadability.AppendCrowns(list, ParkArena.Stack);
             return list.ToArray();
         }
 

@@ -19,6 +19,7 @@
     <Compile Include="../../Assets/Scripts/Level/StackYardLayout.cs" />
     <Compile Include="../../Assets/Scripts/Level/StackYardLayout.Look.cs" />
     <Compile Include="../../Assets/Scripts/Level/ParkArena.cs" />
+    <Compile Include="../../Assets/Scripts/Level/ZoneReadability.cs" />
     <Compile Include="../../Assets/Scripts/Level/ArenaStill.cs" />
     <Compile Include="../../Assets/Scripts/Level/ArenaStill.Front.cs" />
     <Compile Include="UnityStub/UnityEngine.cs" />

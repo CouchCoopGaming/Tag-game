@@ -105,8 +105,7 @@ namespace Tag.Level
             {
                 MegaParkP1Layout.Solid s = solids[i];
                 if (s.Kind == "fence") continue;
-                if (s.Kind == "ground" && s.Mat != "sand") continue;
-                if (!ZoneMat(s.Mat)) continue;
+                if (s.Kind != "ground" && !ZoneMat(s.Mat)) continue;
                 string key = s.Zone + "|" + s.Mat;
                 if (!boxes.TryGetValue(key, out Box box))
                     box = new Box { Mat = s.Mat };
@@ -119,6 +118,14 @@ namespace Tag.Level
                 float area = (box.X1 - box.X0) * (box.Z1 - box.Z0);
                 if (area < 8f) continue;
                 Fill(box.X0, box.Z0, box.X1, box.Z1, Swatch(box.Mat), 150);
+            }
+
+            var ink = new Color32(232, 226, 210, 255);
+            int labels = ZoneReadability.LabelCount(ParkArena.Id);
+            for (int i = 0; i < labels; i++)
+            {
+                ZoneReadability.LabelAt(ParkArena.Id, i, out string name, out float lx, out float lz);
+                StampWord(name, lx, lz, ink);
             }
 
             Color32 fence = Swatch("fence");
@@ -247,6 +254,26 @@ namespace Tag.Level
                 int e2 = err * 2;
                 if (e2 > -dy) { err -= dy; ax += sx; }
                 if (e2 < dx) { err += dx; ay += sy; }
+            }
+        }
+
+        void StampWord(string text, float x, float z, Color32 c)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            int pen = X(x) - text.Length * 3;
+            int py = Y(z) - 3;
+            for (int i = 0; i < text.Length; i++)
+            {
+                string rows = ZoneReadability.Glyph(text[i]);
+                for (int row = 0; row < 7; row++)
+                {
+                    for (int col = 0; col < 5; col++)
+                    {
+                        if (rows[row * 5 + col] != '1') continue;
+                        Plot(_base, pen + col, py + row, c);
+                    }
+                }
+                pen += 6;
             }
         }
 

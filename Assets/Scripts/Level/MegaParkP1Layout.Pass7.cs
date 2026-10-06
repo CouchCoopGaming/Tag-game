@@ -77,6 +77,13 @@ namespace Tag.Level
             new Swatch { Name = "lamp", R = 0x46 / 255f, G = 0x3C / 255f, B = 0x34 / 255f, Smooth = 0.40f, Metal = 0.45f },
             new Swatch { Name = "trash", R = 0x36 / 255f, G = 0x3A / 255f, B = 0x36 / 255f, Smooth = 0.22f, Metal = 0.30f },
             new Swatch { Name = "skyline", R = 0x56 / 255f, G = 0x4C / 255f, B = 0x44 / 255f, Smooth = 0.05f, Metal = 0f },
+            // Readability families. Dark enough that cling still clears 3:1, and quiet next to décor.
+            new Swatch { Name = "zbrick", R = 67f / 255f, G = 12f / 255f, B = 11f / 255f, Smooth = 0.06f, Metal = 0f },
+            new Swatch { Name = "zwine", R = 91f / 255f, G = 23f / 255f, B = 64f / 255f, Smooth = 0.06f, Metal = 0f },
+            new Swatch { Name = "zindigo", R = 36f / 255f, G = 27f / 255f, B = 96f / 255f, Smooth = 0.06f, Metal = 0f },
+            new Swatch { Name = "zolive", R = 18f / 255f, G = 51f / 255f, B = 28f / 255f, Smooth = 0.06f, Metal = 0f },
+            new Swatch { Name = "zslate", R = 53f / 255f, G = 55f / 255f, B = 57f / 255f, Smooth = 0.08f, Metal = 0f },
+            new Swatch { Name = "ztrim", R = 60f / 255f, G = 58f / 255f, B = 54f / 255f, Smooth = 0.12f, Metal = 0f },
             new Swatch { Name = "sky", R = 0xFF / 255f, G = 0xF3 / 255f, B = 0xD6 / 255f, Smooth = 0f, Metal = 0f },
         };
 

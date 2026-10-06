@@ -59,6 +59,7 @@ namespace Tag.MatchStats
             Ensure(slot);
             GameObject figure = Figures[slot];
             if (figure == null) return;
+            MatchHighlight.Clamp(ref x, ref y, ref z);
             figure.transform.position = new Vector3(x, y, z);
             figure.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             Renderer renderer = Renderers[slot];

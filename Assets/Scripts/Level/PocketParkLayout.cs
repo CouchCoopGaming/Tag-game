@@ -212,10 +212,18 @@ namespace Tag.Level
         {
             var list = new List<MegaParkP1Layout.Solid>(80);
             // West lawn, center mulch, concrete lane, east sand. Collars stay bark.
-            Add(list, "Lawn_West", "Ground", "ground", "grass", 13f, -0.1f, 25f, 26f, 0.2f, 50f, 0f);
-            Add(list, "Mulch", "Ground", "ground", "mulch", 37f, -0.1f, 25f, 22f, 0.2f, 50f, 0f);
-            Add(list, "Slab_Lane", "Ground", "ground", "concrete", 57f, -0.1f, 25f, 18f, 0.2f, 50f, 0f);
-            Add(list, "Sand_East", "Ground", "ground", "sand", 73f, -0.1f, 25f, 14f, 0.2f, 50f, 0f);
+            Add(list, "Lawn_West", "Ground", "ground", "grass", 2f, -0.1f, 2f, 4f, 0.2f, 4f, 0f);
+            Add(list, "Zone_West_S", "Ground", "ground", "zbrick", 15f, -0.1f, 2f, 22f, 0.2f, 4f, 0f);
+            Add(list, "Zone_West", "Ground", "ground", "zbrick", 13f, -0.1f, 27f, 26f, 0.2f, 46f, 0f);
+            Add(list, "Mulch", "Ground", "ground", "mulch", 28f, -0.1f, 2f, 4f, 0.2f, 4f, 0f);
+            Add(list, "Zone_Center_S", "Ground", "ground", "zwine", 41f, -0.1f, 2f, 22f, 0.2f, 4f, 0f);
+            Add(list, "Zone_Center", "Ground", "ground", "zwine", 39f, -0.1f, 27f, 26f, 0.2f, 46f, 0f);
+            Add(list, "Slab_Lane", "Ground", "ground", "concrete", 54f, -0.1f, 2f, 4f, 0.2f, 4f, 0f);
+            Add(list, "Zone_Lane_S", "Ground", "ground", "zindigo", 63f, -0.1f, 2f, 14f, 0.2f, 4f, 0f);
+            Add(list, "Zone_Lane", "Ground", "ground", "zindigo", 61f, -0.1f, 27f, 18f, 0.2f, 46f, 0f);
+            Add(list, "Sand_East", "Ground", "ground", "sand", 72f, -0.1f, 2f, 4f, 0.2f, 4f, 0f);
+            Add(list, "Zone_East_S", "Ground", "ground", "zolive", 77f, -0.1f, 2f, 6f, 0.2f, 4f, 0f);
+            Add(list, "Zone_East", "Ground", "ground", "zolive", 75f, -0.1f, 27f, 10f, 0.2f, 46f, 0f);
             Add(list, "Collar_S", "Ground", "ground", "bark", 40f, -0.12f, -1.5f, 86f, 0.2f, 3f, 0f);
             Add(list, "Collar_N", "Ground", "ground", "bark", 40f, -0.12f, 51.5f, 86f, 0.2f, 3f, 0f);
             Add(list, "Collar_W", "Ground", "ground", "bark", -1.5f, -0.12f, 25f, 3f, 0.2f, 50f, 0f);
@@ -247,6 +255,7 @@ namespace Tag.Level
             AddChevron(list, "DomeClimb", "Cling_Dome");
             AddChevron(list, "LaneRun", "Cling_Lane");
             AddChevron(list, "YardHop", "Cover_A");
+            ZoneReadability.AppendCrowns(list, ParkArena.Pocket);
             return list.ToArray();
         }
 

@@ -94,6 +94,7 @@ namespace Tag.Level
                 for (int i = 0; i < zips.Length; i++)
                     AddZip(tris, zips[i]);
             }
+            AddZoneMarks(tris, park, solids);
 
             float figX = mapW * 0.38f;
             float figZ = mapD * 0.28f;
@@ -222,6 +223,18 @@ namespace Tag.Level
                 fail.Append(label).Append(" still is too small; ");
             if (!PngSize(path, out int w, out int h) || w < Width || h < Height)
                 fail.Append(label).Append(" still is under 1280x720; ");
+        }
+
+        static void AddZoneMarks(List<Tri> tris, string park, MegaParkP1Layout.Solid[] solids)
+        {
+            int arena = park == "PocketPark" ? ParkArena.Pocket : park == "StackYard" ? ParkArena.Stack : ParkArena.Mega;
+            ZoneReadability.Mark[] marks = ZoneReadability.Fill(arena, solids);
+            for (int i = 0; i < marks.Length; i++)
+            {
+                ZoneReadability.Mark m = marks[i];
+                Albedo(m.Mat, out float r, out float g, out float b);
+                AddBox(tris, m.X, m.Y, m.Z, m.Sx, m.Sy, m.Sz, r, g, b);
+            }
         }
 
         static void Albedo(string mat, out float r, out float g, out float b)

@@ -42,8 +42,24 @@ namespace Tag.MatchStats
 
             MovementConfig cfg = ScriptableObject.CreateInstance<MovementConfig>();
             int allocBefore = MatchHighlight.RingAlloc;
-            Simulate(cfg);
+            int savedArena = ParkArena.Id;
+            bool savedChoice = ParkArena.HasExplicitChoice;
+            bool bounds = true;
+            for (int arena = 0; arena < ParkArena.Count; arena++)
+            {
+                ParkArena.Select(arena);
+                ParkArena.HasExplicitChoice = true;
+                Simulate(cfg, LoopOf(arena));
+                ParkArena.Containment(arena, out float mapW, out float mapD, out float killY);
+                if (!MatchHighlight.Inside(mapW, mapD, killY))
+                    bounds = false;
+                if (Sum(MatchBook.TagsMade) < 1 || Sum(MatchBook.WallRuns) < 1 || Sum(MatchBook.Pads) < 1
+                    || Sum(MatchBook.Zips) < 1 || Sum(MatchBook.AirDashes) < 1)
+                    bounds = false;
+            }
             int allocAfter = MatchHighlight.RingAlloc;
+            ParkArena.Select(savedArena);
+            ParkArena.HasExplicitChoice = savedChoice;
 
             if (MatchBook.Count != 4)
                 report.Fail("roster was not 4");
@@ -94,6 +110,8 @@ namespace Tag.MatchStats
                 report.Fail("a ghost figure was left up");
             if (MatchHighlight.HasCollider || MatchHighlight.HasCharacterController || MatchHighlight.HasRigidbody || MatchHighlight.RootMotion)
                 report.Fail("the highlight claims a body");
+            if (!bounds)
+                report.Fail("highlight left an arena");
 
             int col = MatchHighlight.HasCollider ? 1 : 0;
             report.Line = "match-stats"
@@ -104,14 +122,22 @@ namespace Tag.MatchStats
                 + " highlight=" + (highlight ? "ok" : "bad")
                 + " ringAlloc=" + allocAfter.ToString(CultureInfo.InvariantCulture)
                 + " leftovers=" + MatchHighlight.Leftovers.ToString(CultureInfo.InvariantCulture)
-                + " colliders=" + col.ToString(CultureInfo.InvariantCulture);
+                + " colliders=" + col.ToString(CultureInfo.InvariantCulture)
+                + " arenas=3 bounds=" + (bounds ? "ok" : "bad");
             if (!report.Ok)
                 report.Line = report.Line + " FAIL " + report.Failure;
             EnemyAi.ResetLoopSearch();
             return report;
         }
 
-        static void Simulate(MovementConfig cfg)
+        static MegaParkP1Layout.Pt[] LoopOf(int arena)
+        {
+            if (arena == ParkArena.Pocket) return PocketParkLayout.LoopCcw;
+            if (arena == ParkArena.Stack) return StackYardLayout.LoopCcw;
+            return MegaParkP1Layout.LoopCcw;
+        }
+
+        static void Simulate(MovementConfig cfg, MegaParkP1Layout.Pt[] loop)
         {
             const int n = 4;
             const float dt = 1f / 60f;
@@ -136,7 +162,7 @@ namespace Tag.MatchStats
             var zs = new float[n];
             var yaws = new float[n];
             var poses = new byte[n];
-            MegaParkP1Layout.Pt[] loop = MegaParkP1Layout.LoopCcw;
+            if (loop == null || loop.Length < 1) loop = MegaParkP1Layout.LoopCcw;
             for (int i = 0; i < n; i++)
             {
                 MegaParkP1Layout.Pt p = loop[i % loop.Length];
@@ -205,6 +231,10 @@ namespace Tag.MatchStats
                 if (f == 48 || f == 51)
                     MatchBook.NoteWhiff(1);
             }
+            xs[0] = -30f;
+            ys[0] = -8f;
+            zs[0] = 400f;
+            MatchHighlight.Offer(1f, n, xs, ys, zs, yaws, poses);
             MatchBook.Seal();
         }
 

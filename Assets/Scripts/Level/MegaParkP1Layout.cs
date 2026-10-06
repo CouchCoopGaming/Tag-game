@@ -369,13 +369,20 @@ namespace Tag.Level
             var list = new List<Solid>(160);
             // Footing. Tops at Y=0 except the bowl floor at Y=-1 and the collar a hair below.
             // West lawn, south concrete apron, north mulch, and an east split of sand / mulch / grass / concrete.
-            Add(list, "Lawn_West", "Ground", "ground", "grass", 23f, -0.1f, 50f, 46f, 0.2f, 100f, 0f);
-            Add(list, "Slab_South", "Ground", "ground", "concrete", 62f, -0.1f, 17f, 32f, 0.2f, 34f, 0f);
-            Add(list, "Mulch_North", "Ground", "ground", "mulch", 62f, -0.1f, 83f, 32f, 0.2f, 34f, 0f);
-            Add(list, "Sand_East", "Ground", "ground", "sand", 99f, -0.1f, 18f, 42f, 0.2f, 36f, 0f);
-            Add(list, "Mulch_East", "Ground", "ground", "mulch", 99f, -0.1f, 50f, 42f, 0.2f, 28f, 0f);
-            Add(list, "Lawn_East", "Ground", "ground", "grass", 99f, -0.1f, 82f, 42f, 0.2f, 36f, 0f);
-            Add(list, "Slab_East", "Ground", "ground", "concrete", 140f, -0.1f, 50f, 40f, 0.2f, 100f, 0f);
+            // Named zones. Same tops as the old slabs. A small keep of each footing stays.
+            Add(list, "Lawn_West", "Ground", "ground", "grass", 2f, -0.1f, 2f, 4f, 0.2f, 4f, 0f);
+            Add(list, "Zone_West_S", "Ground", "ground", "zbrick", 25f, -0.1f, 2f, 42f, 0.2f, 4f, 0f);
+            Add(list, "Zone_West", "Ground", "ground", "zbrick", 23f, -0.1f, 52f, 46f, 0.2f, 96f, 0f);
+            Add(list, "Slab_South", "Ground", "ground", "concrete", 48f, -0.1f, 2f, 4f, 0.2f, 4f, 0f);
+            Add(list, "Zone_South_W", "Ground", "ground", "zwine", 64f, -0.1f, 2f, 28f, 0.2f, 4f, 0f);
+            Add(list, "Zone_South", "Ground", "ground", "zwine", 62f, -0.1f, 19f, 32f, 0.2f, 30f, 0f);
+            Add(list, "Mulch_North", "Ground", "ground", "mulch", 48f, -0.1f, 68f, 4f, 0.2f, 4f, 0f);
+            Add(list, "Zone_North_W", "Ground", "ground", "zolive", 64f, -0.1f, 68f, 28f, 0.2f, 4f, 0f);
+            Add(list, "Zone_North", "Ground", "ground", "zolive", 62f, -0.1f, 85f, 32f, 0.2f, 30f, 0f);
+            Add(list, "Zone_South_E", "Ground", "ground", "zwine", 99f, -0.1f, 18f, 42f, 0.2f, 36f, 0f);
+            Add(list, "Zone_Mid", "Ground", "ground", "zindigo", 99f, -0.1f, 50f, 42f, 0.2f, 28f, 0f);
+            Add(list, "Zone_North_E", "Ground", "ground", "zolive", 99f, -0.1f, 82f, 42f, 0.2f, 36f, 0f);
+            Add(list, "Slab_East", "Ground", "ground", "zslate", 140f, -0.1f, 50f, 40f, 0.2f, 100f, 0f);
             Add(list, "Sandbox_Floor", "Z8", "ground", "sand", 62f, BowlFloorY - 0.1f, 50f, 32f, 0.2f, 32f, BowlFloorY);
             Add(list, "Collar_S", "Ground", "ground", "grass", 80f, -0.12f, -1.5f, 166f, 0.2f, 3f, 0f);
             Add(list, "Collar_N", "Ground", "ground", "grass", 80f, -0.12f, 101.5f, 166f, 0.2f, 3f, 0f);
@@ -476,6 +483,7 @@ namespace Tag.Level
             AddLandmarks(list);
             if (IncludePass9)
                 AddPass9Solids(list);
+            ZoneReadability.AppendCrowns(list, ParkArena.Mega);
             return list.ToArray();
         }
 

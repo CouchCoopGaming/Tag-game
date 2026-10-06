@@ -1,3 +1,4 @@
+using Tag.Level;
 using Tag.Practice;
 
 namespace Tag.MatchStats
@@ -42,6 +43,53 @@ namespace Tag.MatchStats
         static float _accum;
         static int _alloc;
         static bool _missHeld;
+        static float _boundW = 160f;
+        static float _boundD = 100f;
+        static float _killY = -2.5f;
+
+        public static void UseArena(int id)
+        {
+            ParkArena.Containment(id, out _boundW, out _boundD, out _killY);
+        }
+
+        public static void Clamp(ref float x, ref float y, ref float z)
+        {
+            if (x < 0f) x = 0f;
+            else if (_boundW > 1f && x > _boundW) x = _boundW;
+            if (z < 0f) z = 0f;
+            else if (_boundD > 1f && z > _boundD) z = _boundD;
+            if (y < _killY) y = 0f;
+        }
+
+        public static bool Inside(float mapW, float mapD, float killY)
+        {
+            if (_filled < 1 || SnapCount < 1) return false;
+            int pawns = MatchBook.Count;
+            if (pawns < 1) pawns = 1;
+            if (pawns > Pawns) pawns = Pawns;
+            for (int p = 0; p < pawns; p++)
+            {
+                for (int s = 0; s < _filled && s < Samples; s++)
+                {
+                    int o = p * Samples + s;
+                    if (!Held(X[o], Y[o], Z[o], mapW, mapD, killY)) return false;
+                }
+                for (int s = 0; s < SnapCount && s < Samples; s++)
+                {
+                    int o = p * Samples + s;
+                    if (!Held(SnapX[o], SnapY[o], SnapZ[o], mapW, mapD, killY)) return false;
+                }
+            }
+            return true;
+        }
+
+        static bool Held(float x, float y, float z, float mapW, float mapD, float killY)
+        {
+            if (x < -0.001f || z < -0.001f) return false;
+            if (x > mapW + 0.001f || z > mapD + 0.001f) return false;
+            if (y < killY - 0.001f) return false;
+            return true;
+        }
 
         public static void Reset()
         {
@@ -56,6 +104,7 @@ namespace Tag.MatchStats
             Clock = 0f;
             MissDistance = float.MaxValue;
             Leftovers = 0;
+            UseArena(ParkArena.Id);
         }
 
         public static int Filled => _filled;
@@ -173,9 +222,13 @@ namespace Tag.MatchStats
             for (int p = 0; p < n; p++)
             {
                 int o = p * Samples + slot;
-                X[o] = x != null && p < x.Length ? x[p] : 0f;
-                Y[o] = y != null && p < y.Length ? y[p] : 0f;
-                Z[o] = z != null && p < z.Length ? z[p] : 0f;
+                float px = x != null && p < x.Length ? x[p] : 0f;
+                float py = y != null && p < y.Length ? y[p] : 0f;
+                float pz = z != null && p < z.Length ? z[p] : 0f;
+                Clamp(ref px, ref py, ref pz);
+                X[o] = px;
+                Y[o] = py;
+                Z[o] = pz;
                 Yaw[o] = yaw != null && p < yaw.Length ? yaw[p] : 0f;
                 Pose[o] = pose != null && p < pose.Length ? pose[p] : PracticeVerb.None;
             }

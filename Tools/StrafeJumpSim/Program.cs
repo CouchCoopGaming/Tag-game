@@ -648,6 +648,14 @@ static class Program
             return 1;
         }
 
+        Tag.Level.ZoneReadability.Report zones = Tag.Level.ZoneReadability.Run();
+        Console.WriteLine(zones.Line);
+        if (!zones.Ok)
+        {
+            Console.Error.WriteLine(zones.Failure);
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }
