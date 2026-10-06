@@ -48,6 +48,8 @@ ExportedObj/
 Tools/StrafeJumpSim/bin/
 !Tools/ScriptCompileCheck/ScriptCompileCheck.csproj
 Tools/ScriptCompileCheck/bin/
+!Tools/UnityAssetAudit/UnityAssetAudit.csproj
+Tools/UnityAssetAudit/bin/
 .consulo/
 *.apk
 *.aab
