@@ -640,6 +640,14 @@ static class Program
             return 1;
         }
 
+        Tag.MatchStats.MatchStatsProof.Report matchStats = Tag.MatchStats.MatchStatsProof.Run();
+        Console.WriteLine(matchStats.Line);
+        if (!matchStats.Ok)
+        {
+            Console.Error.WriteLine(matchStats.Failure);
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }
