@@ -20,46 +20,67 @@ namespace Tag.Settings
         public static bool Start { get; private set; }
         public static bool Select { get; private set; }
 
+        /// <summary>1–4 when that pad pressed Start. 0 when the edge was the keyboard.</summary>
+        public static int StartDevice;
+
         static float _nextStick;
 
         public static void ResetStatics()
         {
             Up = Down = Left = Right = Confirm = Back = Start = Select = false;
+            StartDevice = 0;
             _nextStick = 0f;
         }
 
         public static void Poll()
         {
             Up = Down = Left = Right = Confirm = Back = Start = Select = false;
+            StartDevice = 0;
 #if ENABLE_INPUT_SYSTEM
-            var pad = Gamepad.current;
-            if (pad != null)
+            // current only sees whichever pad the runtime last touched, so P2–P4
+            // Start never paused the table or opened that seat's settings.
+            var pads = Gamepad.all;
+            if (pads != null)
             {
-                if (pad.dpad.up.wasPressedThisFrame) Up = true;
-                if (pad.dpad.down.wasPressedThisFrame) Down = true;
-                if (pad.dpad.left.wasPressedThisFrame) Left = true;
-                if (pad.dpad.right.wasPressedThisFrame) Right = true;
-                if (pad.buttonSouth.wasPressedThisFrame) Confirm = true;
-                if (pad.buttonEast.wasPressedThisFrame) Back = true;
-                if (pad.startButton.wasPressedThisFrame) Start = true;
-                if (pad.selectButton.wasPressedThisFrame) Select = true;
-                Vector2 stick = pad.leftStick.ReadValue();
-                if (stick.sqrMagnitude < 0.16f)
-                    _nextStick = 0f;
-                else if (Time.unscaledTime >= _nextStick)
+                int n = pads.Count;
+                for (int i = 0; i < n; i++)
                 {
-                    if (stick.y > 0.55f) Up = true;
-                    else if (stick.y < -0.55f) Down = true;
-                    else if (stick.x < -0.55f) Left = true;
-                    else if (stick.x > 0.55f) Right = true;
-                    if (Up || Down || Left || Right)
-                        _nextStick = Time.unscaledTime + 0.18f;
+                    Gamepad pad = pads[i];
+                    if (pad == null) continue;
+                    if (pad.dpad.up.wasPressedThisFrame) Up = true;
+                    if (pad.dpad.down.wasPressedThisFrame) Down = true;
+                    if (pad.dpad.left.wasPressedThisFrame) Left = true;
+                    if (pad.dpad.right.wasPressedThisFrame) Right = true;
+                    if (pad.buttonSouth.wasPressedThisFrame) Confirm = true;
+                    if (pad.buttonEast.wasPressedThisFrame) Back = true;
+                    if (pad.startButton.wasPressedThisFrame)
+                    {
+                        Start = true;
+                        if (StartDevice == 0) StartDevice = i + 1;
+                    }
+                    if (pad.selectButton.wasPressedThisFrame) Select = true;
+                    Vector2 stick = pad.leftStick.ReadValue();
+                    if (stick.sqrMagnitude < 0.16f)
+                        _nextStick = 0f;
+                    else if (Time.unscaledTime >= _nextStick)
+                    {
+                        if (stick.y > 0.55f) Up = true;
+                        else if (stick.y < -0.55f) Down = true;
+                        else if (stick.x < -0.55f) Left = true;
+                        else if (stick.x > 0.55f) Right = true;
+                        if (Up || Down || Left || Right)
+                            _nextStick = Time.unscaledTime + 0.18f;
+                    }
                 }
             }
 #endif
             if (Input.GetKeyDown(KeyCode.JoystickButton0)) Confirm = true;
             if (Input.GetKeyDown(KeyCode.JoystickButton1)) Back = true;
-            if (Input.GetKeyDown(KeyCode.JoystickButton7)) Start = true;
+            if (Input.GetKeyDown(KeyCode.JoystickButton7))
+            {
+                Start = true;
+                if (StartDevice == 0) StartDevice = 1;
+            }
             if (Input.GetKeyDown(KeyCode.JoystickButton6)) Select = true;
         }
     }

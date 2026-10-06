@@ -6,6 +6,7 @@ using UnityEngine;
 using TagArena.Movement;
 using UnityEngine.SceneManagement;
 using Tag.Audio;
+using Tag.Couch;
 using Tag.Onboard;
 using Tag.Settings;
 using Tag.Front;
@@ -374,6 +375,10 @@ namespace Tag.Modes
             PlacePlayersOnPads();
 
             _phase = MatchPhase.Countdown;
+            SessionRules.RoundPlay = false;
+            PadRumble.Silence();
+            AudioMix.SetWorldPaused(false);
+            CouchPlay.ClearResidue();
             _phaseTimer = Mathf.Max(0.01f, matchTuning.countdownSec);
             Debug.Log($"[TagMode] Countdown {_phaseTimer:0}s -> {selectedMode} ({_ctx.Players.Count}p)");
         }
@@ -446,6 +451,7 @@ namespace Tag.Modes
         {
             FrameMeter.AddRound(FrameMeter.RoundOps);
             FrameMeter.AddAudio(FrameMeter.AudioOps);
+            SessionRules.RoundPlay = _phase == MatchPhase.Playing;
             PadNav.Poll();
             SettingsRuntime.PollHotkeys();
             // GameFlow owns Comma/N when Boot is in the session. Direct Play has no flow.
@@ -778,6 +784,9 @@ namespace Tag.Modes
             _ctx.RoundRunning = false;
             if (_ctx.RemainingTime < 0f) _ctx.RemainingTime = 0f;
             _phase = MatchPhase.Results;
+            SessionRules.RoundPlay = false;
+            PadRumble.Silence();
+            AudioMix.SetWorldPaused(false);
             ClearRoleTagBack();
             _resultsActionTaken = false;
             _resultsFocus = 0;
@@ -857,6 +866,15 @@ namespace Tag.Modes
             SettingsMenuUi.Close();
             if (paused) _localPauseFocus = 0;
             Time.timeScale = paused ? 0f : 1f;
+            if (paused)
+            {
+                PadRumble.Silence();
+                AudioMix.SetWorldPaused(true);
+                if (PadNav.StartDevice > 0)
+                    CouchPlay.OpenPauseFrom(PadNav.StartDevice);
+            }
+            else
+                AudioMix.SetWorldPaused(false);
             if (paused) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; } else ResumeInputGate.LockPlayCursor();
             Cursor.visible = paused;
             if (paused)

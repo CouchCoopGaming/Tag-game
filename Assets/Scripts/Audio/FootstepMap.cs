@@ -77,8 +77,21 @@ namespace Tag.Audio
                 return Surface.Metal;
             if (Has(name, "wood") || Has(name, "cedar") || Has(name, "bark") || Has(name, "plank"))
                 return Surface.Wood;
+            // Soft play is the grass clip. Rubber, cling footing, and rims are the hard step.
+            // Sand already falls through to concrete; naming it keeps the map obvious.
+            if (Has(name, "soft"))
+                return Surface.Grass;
+            if (Has(name, "rubber") || Has(name, "pad") || Has(name, "rim") || Has(name, "sand"))
+                return Surface.Concrete;
             return Surface.Concrete;
         }
+
+        /// <summary>Walkable material tokens painted in this tree.</summary>
+        public static readonly string[] GroundNames =
+        {
+            "mulch", "grass", "sand", "rubber", "concrete", "cedar", "bark",
+            "field", "soft", "pad", "steel", "fence", "wood", "leaf", "plate", "lamp", "rim"
+        };
 
         static int Index(Gait gait)
         {

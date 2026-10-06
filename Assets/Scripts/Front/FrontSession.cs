@@ -51,6 +51,8 @@ namespace Tag.Front
         public static int Backs;
         public static int RoundsPlayed;
         public static int Winner = -1;
+        public const int WinnerTie = -2;
+        public static int Hosts { get; private set; }
         public static float Longest;
         public static string Failure = "";
 
@@ -325,11 +327,18 @@ namespace Tag.Front
         public static void NoteRematch()
         {
             ReleaseObjects();
+            CouchPlay.ClearResidue();
             EnsureSettings();
             Armed = true;
             Screen = FrontScreen.Playing;
             SpawnRoster();
             Rebuild();
+        }
+
+        public static int PickWinner(float a, float b)
+        {
+            if (a > b - 0.0001f && a < b + 0.0001f) return WinnerTie;
+            return a < b ? 0 : 1;
         }
 
         public static float TimeAsItOf(int index)
@@ -393,8 +402,7 @@ namespace Tag.Front
                 Fail("match did not rest on results");
                 return false;
             }
-            Winner = _time[0] <= _time[1] ? 0 : 1;
-            if (_time[0] == _time[1]) Winner = 0;
+            Winner = PickWinner(_time[0], _time[1]);
             Screen = FrontScreen.Results;
             Row = 0;
             Rebuild();
@@ -638,6 +646,8 @@ namespace Tag.Front
             int ai = CouchPlay.FillAi(GameSettings.Current.AiOpponents);
             int n = CouchPlay.Humans + ai;
             if (n < 1) n = 1;
+            if (Hosts > 0) Hosts++;
+            else Hosts = 1;
             Live = n;
         }
 
@@ -646,6 +656,7 @@ namespace Tag.Front
             BeforeRelease = Live;
             Live = 0;
             LastRelease = Live;
+            Hosts = 0;
         }
 
         static void EnsureSettings()

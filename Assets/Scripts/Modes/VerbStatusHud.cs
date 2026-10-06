@@ -90,7 +90,7 @@ namespace Tag.Modes
 
             bool cling = motor.ClingHeldActive;
             DrawRing(VerbHudLayout.Row(cluster, 3), cling ? 1f : 0f, VerbColor(palette, 3), "CLING", cling ? "HELD" : "—", false);
-            DrawCaptions(Seat < 0 ? 0 : Seat, cluster.X, cluster.Y);
+            DrawCaptions(Seat < 0 ? 0 : Seat, cluster.X, cluster.Y, sh);
             if (scaled) GUI.matrix = prevMatrix;
         }
 
@@ -160,7 +160,7 @@ namespace Tag.Modes
 
             bool cling = motor.ClingHeldActive;
             DrawRing(new VerbHudLayout.Box { X = cx, Y = cy + row * 3f, W = cw, H = row - 4f }, cling ? 1f : 0f, VerbColor(palette, 3), "CLING", cling ? "HELD" : "—", false);
-            DrawCaptions(seat, cx, cy + ch + 4f);
+            DrawCaptions(seat, cx, cy + ch + 4f, gy + gh);
             GUI.color = prev;
         }
 
@@ -176,7 +176,7 @@ namespace Tag.Modes
             return new Color(r, g, b, 1f);
         }
 
-        void DrawCaptions(int seat, float x, float y)
+        void DrawCaptions(int seat, float x, float y, float yMax)
         {
             GameSettings settings = GameSettings.Current;
             if (settings == null || !settings.CaptionsOf(seat)) return;
@@ -199,6 +199,7 @@ namespace Tag.Modes
             for (int k = 0; k < CaptionFeed.Count; k++)
             {
                 if (!CaptionFeed.Shows(settings, seat, k, camX, camZ)) continue;
+                if (yy + 18f > yMax) break;
                 GUI.Label(new Rect(x, yy, 18f, 18f), CaptionFeed.Icon(k), _label);
                 if (CaptionFeed.HasDirection(k))
                     GUI.Label(new Rect(x + 16f, yy, 18f, 18f), CaptionFeed.Arrow(CaptionFeed.Direction(k, camX, camZ)), _label);

@@ -17,6 +17,25 @@ namespace Tag.Couch
         public static bool EatBack;
         public static bool EatConfirm;
 
+        /// <summary>Play and pause only. A pad that disappears keeps its seat and asks to rejoin.</summary>
+        public static void PollHotplug()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (FrontSession.Screen == FrontScreen.Join) return;
+            var pads = Gamepad.all;
+            int n = pads == null ? 0 : pads.Count;
+            if (n > 4) n = 4;
+            for (int i = 0; i < 4; i++)
+            {
+                int device = CouchPlay.DevicePad0 + i;
+                if (!CouchPlay.Joined(device)) continue;
+                bool present = pads != null && i < n && pads[i] != null;
+                if (!present) CouchPlay.NoteLost(device);
+                else CouchPlay.NoteFound(device);
+            }
+#endif
+        }
+
         public static void Poll()
         {
             EatBack = false;

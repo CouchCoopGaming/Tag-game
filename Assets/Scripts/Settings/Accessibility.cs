@@ -496,6 +496,21 @@ namespace Tag.Settings
             }
         }
 
+        /// <summary>Motors go to rest immediately. Pause, round end, and a dropped pad use this.</summary>
+        public static void Silence()
+        {
+            for (int i = 0; i < Seats; i++)
+                SilenceSeat(i);
+        }
+
+        public static void SilenceSeat(int seat)
+        {
+            if (seat < 0 || seat >= Seats) return;
+            Low[seat] = 0f;
+            High[seat] = 0f;
+            Left[seat] = 0f;
+        }
+
         public static void Motor(int seat, out float low, out float high)
         {
             if (seat < 0 || seat >= Seats)

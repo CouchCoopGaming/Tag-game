@@ -35,6 +35,7 @@ namespace Tag.Audio
         struct Slot
         {
             public bool On;
+            public bool Ui;
             public int Priority;
             public float End;
         }
@@ -56,6 +57,11 @@ namespace Tag.Audio
 
         /// <summary>Returns the slot, or -1 when the bus is full of equal or louder voices.</summary>
         public static int Admit(int priority, float duration, float now)
+        {
+            return Admit(priority, duration, now, false);
+        }
+
+        public static int Admit(int priority, float duration, float now, bool ui)
         {
             if (duration < 0.02f) duration = 0.02f;
             int free = -1;
@@ -89,10 +95,22 @@ namespace Tag.Audio
             }
 
             Slots[slot].On = true;
+            Slots[slot].Ui = ui;
             Slots[slot].Priority = priority;
             Slots[slot].End = now + duration;
             Recount();
             return slot;
+        }
+
+        /// <summary>Drops world and round voices. UI slots stay so a pause click can still speak.</summary>
+        public static void SilenceWorld()
+        {
+            for (int i = 0; i < Cap; i++)
+            {
+                if (!Slots[i].On || Slots[i].Ui) continue;
+                Slots[i].On = false;
+            }
+            Recount();
         }
 
         public static void Advance(float now)

@@ -303,7 +303,7 @@ namespace Tag.Settings
                 case RowMusic: return "Music  " + Music.ToString("0.00", CultureInfo.InvariantCulture);
                 case RowMute: return Muted ? "Unmute  (Comma)" : "Mute  (Comma)";
                 case RowHud: return "HUD scale  " + HudScale.ToString("0.00", CultureInfo.InvariantCulture);
-                case RowColorblind: return "Colorblind palette  " + AccessibilityPalette.Name(Palette[AccessSeat]);
+                case RowColorblind: return "Colorblind palette  " + AccessibilityPalette.Name(PaletteOf(AccessSeat));
                 case RowMinimap: return "Minimap  " + (Minimap ? "On  (M)" : "Off  (M)");
                 case RowPlayer: return "Player  " + SeatNames[AccessSeat];
                 case RowCaptions: return "Captions  " + (Captions[AccessSeat] ? "On" : "Off");
@@ -370,7 +370,10 @@ namespace Tag.Settings
         {
             int seat = AccessSeat;
             if (seat < 0 || seat >= SeatCount) seat = 0;
-            int next = Palette[seat] + (dir < 0 ? -1 : 1);
+            // Step from the palette the pawn is actually drawing. A stale
+            // colorblind flag used to leave the row on Default while seat 0
+            // kept drawing deuteranopia, so the first nudge did nothing.
+            int next = PaletteOf(seat) + (dir < 0 ? -1 : 1);
             if (next < 0) next = 0;
             if (next >= AccessibilityPalette.Count) next = AccessibilityPalette.Count - 1;
             Palette[seat] = next;
@@ -415,6 +418,7 @@ namespace Tag.Settings
 
         static float ClampFloat(float v, float lo, float hi)
         {
+            if (float.IsNaN(v) || float.IsInfinity(v)) return lo;
             if (v < lo) return lo;
             if (v > hi) return hi;
             return v;

@@ -322,7 +322,7 @@ namespace TagArena.Movement
         void ReadDriven()
         {
             bool live = Time.timeScale > 0f && Cursor.lockState == CursorLockMode.Locked;
-            if (!live)
+            if (!live || CouchPlay.InputBlockedDevice(DriveDevice))
             {
                 Move = Vector2.zero;
                 Look = Vector2.zero;

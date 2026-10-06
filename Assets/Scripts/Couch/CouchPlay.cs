@@ -77,10 +77,18 @@ namespace Tag.Couch
         static readonly string[] DropLine = new string[5];
         static readonly StringBuilder Sb = new StringBuilder(256);
 
+        static readonly bool[] Gone = new bool[Max];
+        static readonly string[] ScoreLine = new string[Max];
+        static readonly string[] RejoinLine = { "P1 reconnect", "P2 reconnect", "P3 reconnect", "P4 reconnect" };
+        const string TieLine = "Tie";
+
         static int _humans;
         static int _ai;
         static int _it = -1;
         static int _hintRev = -1;
+        static int _rejoin = -1;
+        static int _least = -1;
+        static int _leastCount;
 
         public static int Humans => _humans;
         public static int AiCount => _ai;
@@ -117,11 +125,16 @@ namespace Tag.Couch
                 Stagger[i] = default;
                 Back[i] = default;
                 Pads[i] = null;
+                Gone[i] = false;
+                ScoreLine[i] = "";
             }
             _humans = 0;
             _ai = 0;
             _it = -1;
             _hintRev = -1;
+            _rejoin = -1;
+            _least = -1;
+            _leastCount = 0;
         }
 
         public static bool HumanAt(int slot)
@@ -166,7 +179,7 @@ namespace Tag.Couch
             if (i < 0) i = 0;
             if (i > 3) i = 3;
             int pal = 0;
-            if (GameSettings.Current != null) pal = GameSettings.Current.PaletteOf(0);
+            if (GameSettings.Current != null) pal = GameSettings.Current.PaletteOf(i);
             AccessibilityPalette.Player(pal, i, out r, out g, out b);
         }
 
@@ -181,6 +194,94 @@ namespace Tag.Couch
             Device[free] = device;
             _humans++;
             return true;
+        }
+
+        public static bool NeedsRejoin => _rejoin >= 0;
+        public static int RejoinSlot => _rejoin;
+        public static string RejoinPrompt => _rejoin >= 0 ? RejoinLine[_rejoin] : "";
+        public static string TieText => _leastCount > 1 ? TieLine : "";
+        public static int LeastSlot => _least;
+
+        public static bool InputBlocked(int slot)
+        {
+            return slot >= 0 && slot < Max && Gone[slot];
+        }
+
+        public static bool InputBlockedDevice(int device)
+        {
+            return InputBlocked(SlotOf(device));
+        }
+
+        /// <summary>
+        /// The pad left mid-round. The seat and its pawn stay. Play pauses and
+        /// asks that seat to reconnect. Motors on that seat go quiet.
+        /// </summary>
+        public static void NoteLost(int device)
+        {
+            int slot = SlotOf(device);
+            if (slot < 0 || Gone[slot]) return;
+            Gone[slot] = true;
+            if (_rejoin < 0) _rejoin = slot;
+            PadRumble.SilenceSeat(slot);
+        }
+
+        public static void NoteFound(int device)
+        {
+            int slot = SlotOf(device);
+            if (slot < 0 || !Gone[slot]) return;
+            Gone[slot] = false;
+            _rejoin = -1;
+            for (int i = 0; i < Max; i++)
+            {
+                if (!Gone[i]) continue;
+                _rejoin = i;
+                break;
+            }
+        }
+
+        /// <summary>Round restart drops stagger, tag-back, and the sim positions. The roster stays.</summary>
+        public static void ClearResidue()
+        {
+            for (int i = 0; i < Max; i++)
+            {
+                PosX[i] = 0f;
+                PosZ[i] = 0f;
+                TimeAsIt[i] = 0f;
+                Tags[i] = 0;
+                Stagger[i] = default;
+                Back[i] = default;
+                ScoreLine[i] = "";
+            }
+            _it = -1;
+            _least = -1;
+            _leastCount = 0;
+        }
+
+        public static void OpenPauseFrom(int device)
+        {
+            int slot = SlotOf(device);
+            if (slot < 0 || GameSettings.Current == null) return;
+            GameSettings.Current.AccessSeat = slot;
+        }
+
+        /// <summary>Keyboard shares the keyboard. Two different pads do not.</summary>
+        public static bool DrivesOverlap(int a, int b)
+        {
+            if (a <= 0 && b <= 0) return true;
+            return a > 0 && a == b;
+        }
+
+        public static bool SharedKey(int deviceA, int deviceB, string keyA, string keyB)
+        {
+            if (!DrivesOverlap(deviceA, deviceB)) return false;
+            if (string.IsNullOrEmpty(keyA) || string.IsNullOrEmpty(keyB)) return false;
+            return string.Equals(keyA, keyB, StringComparison.Ordinal);
+        }
+
+        public static string ScoreText(int slot)
+        {
+            if (slot < 0 || slot >= Max) return "";
+            return ScoreLine[slot] ?? "";
         }
 
         public static bool Leave(int device)
@@ -458,6 +559,17 @@ namespace Tag.Couch
                 Back[i] = TagBackImmunity.Tick(Back[i], dt);
                 if (Occupied(i) && _it == i) TimeAsIt[i] += dt < 0f ? 0f : dt;
             }
+            RebuildScores();
+        }
+
+        public static void NoteScores(int slot, float time, int tags)
+        {
+            if (slot < 0 || slot >= Max) return;
+            if (time < 0f) time = 0f;
+            if (tags < 0) tags = 0;
+            TimeAsIt[slot] = time;
+            Tags[slot] = tags;
+            RebuildScores();
         }
 
         public static bool TryStagger(int victim)
@@ -698,6 +810,34 @@ namespace Tag.Couch
         static bool Overlap(float ax, float ay, float aw, float ah, float bx, float by, float bw, float bh)
         {
             return ax < bx + bw && bx < ax + aw && ay < by + bh && by < ay + ah;
+        }
+
+        static void RebuildScores()
+        {
+            _least = -1;
+            _leastCount = 0;
+            float best = 0f;
+            for (int i = 0; i < Max; i++)
+            {
+                if (!Occupied(i))
+                {
+                    ScoreLine[i] = "";
+                    continue;
+                }
+                Sb.Clear();
+                Sb.Append(Names[i]);
+                Sb.Append(' ');
+                Sb.Append(HudDigits.Tenth0(TimeAsIt[i]));
+                ScoreLine[i] = Sb.ToString();
+                if (_least < 0 || TimeAsIt[i] < best)
+                {
+                    best = TimeAsIt[i];
+                    _least = i;
+                    _leastCount = 1;
+                }
+                else if (TimeAsIt[i] == best)
+                    _leastCount++;
+            }
         }
 
         static bool Occupied(int slot)

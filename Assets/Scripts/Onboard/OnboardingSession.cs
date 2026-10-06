@@ -23,6 +23,7 @@ namespace Tag.Onboard
         const int SkipBit = 1 << StepCount;
 
         public static OnboardingSession Live = new OnboardingSession();
+        public static readonly OnboardingSession[] Seats = new OnboardingSession[4];
 
         public readonly bool[] Seen = new bool[StepCount];
         public int Current;
@@ -35,9 +36,18 @@ namespace Tag.Onboard
         public bool Pauses => false;
         public bool EatsInput => false;
 
+        public static OnboardingSession ForSeat(int seat)
+        {
+            if (seat < 0 || seat >= Seats.Length) return Live;
+            if (Seats[seat] == null) Seats[seat] = new OnboardingSession();
+            return Seats[seat];
+        }
+
         public static void ResetStatics()
         {
             Live = new OnboardingSession();
+            for (int i = 0; i < Seats.Length; i++)
+                Seats[i] = new OnboardingSession();
         }
 
         /// <summary>Countdown and play, including free play. Results and pause are outside.</summary>
