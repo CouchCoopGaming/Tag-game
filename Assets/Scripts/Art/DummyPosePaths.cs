@@ -21,6 +21,7 @@ namespace Tag.Art
         public const string Wall = "wall";
         public const string Punch = "punch";
         public const string Tag = "tag";
+        public const string Stagger = "stagger";
         public const string Lunge = "lunge";
         public const string Slide = "slide";
         public const string Crouch = "crouch";
@@ -35,7 +36,7 @@ namespace Tag.Art
 
         public static readonly string[] Shared =
         {
-            Gait, Jump, Wall, Punch, Tag, Lunge, Slide, Crouch, Mantle, Land, Become, Pivot, Idle, Stop, AirStrafe
+            Gait, Jump, Wall, Punch, Tag, Stagger, Lunge, Slide, Crouch, Mantle, Land, Become, Pivot, Idle, Stop, AirStrafe
         };
 
         public static readonly string[] Denied = { Grapple, Dash };
@@ -62,11 +63,11 @@ namespace Tag.Art
 
         public static bool Holds()
         {
-            if (Shared.Length != 15 || Denied.Length != 2) return false;
+            if (Shared.Length != 16 || Denied.Length != 2) return false;
             if (Shared[0] != Gait || Shared[1] != Jump || Shared[2] != Wall || Shared[3] != Punch
-                || Shared[4] != Tag || Shared[5] != Lunge || Shared[6] != Slide || Shared[7] != Crouch
-                || Shared[8] != Mantle || Shared[9] != Land || Shared[10] != Become || Shared[11] != Pivot
-                || Shared[12] != Idle || Shared[13] != Stop || Shared[14] != AirStrafe)
+                || Shared[4] != Tag || Shared[5] != Stagger || Shared[6] != Lunge || Shared[7] != Slide
+                || Shared[8] != Crouch || Shared[9] != Mantle || Shared[10] != Land || Shared[11] != Become
+                || Shared[12] != Pivot || Shared[13] != Idle || Shared[14] != Stop || Shared[15] != AirStrafe)
                 return false;
             if (Denied[0] != Grapple || Denied[1] != Dash) return false;
             if (Mathf.Abs(LungeTellSeconds - 0.45f) > 0.001f) return false;
@@ -105,7 +106,8 @@ namespace Tag.Art
                 || GrapplePose.RootMotion || PoseHandoff.RootMotion || LungePose.RootMotion
                 || BecomeItPose.RootMotion || PivotPose.RootMotion || IdlePose.RootMotion
                 || AimTorsoPose.RootMotion || StopPlantPose.RootMotion
-                || AirStrafeLeanPose.RootMotion || BunnyHopPose.RootMotion)
+                || AirStrafeLeanPose.RootMotion || BunnyHopPose.RootMotion
+                || PunchStaggerPose.RootMotion)
                 return false;
             if (!WallJumpPose.Holds()) return false;
             if (!AirStrafeLeanPose.Holds()) return false;
@@ -168,6 +170,7 @@ namespace Tag.Art
                 + " punch=PunchTagPose windup + AimTorsoPose chest/head"
                 + " aim=punch shared, grapple solo"
                 + " tag=PunchTagPose catch"
+                + " stagger=PunchStaggerPose stumble"
                 + " lunge=LungePose telegraph/burst/recover + LungeTell " + LungeTellSeconds.ToString("0.00") + "s"
                 + " slide=SlideBody"
                 + " crouch=CrouchPose if used"

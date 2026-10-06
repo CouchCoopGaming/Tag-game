@@ -107,6 +107,20 @@ namespace Tag.Gameplay
             if (binder != null) binder.PlayTagHitFeedback();
         }
 
+        /// <summary>
+        /// Non-tag punch. Stumble and drop sprint. No ragdoll and no impulse.
+        /// Immunity after the stumble refuses a chain.
+        /// </summary>
+        public bool ReceivePunchStagger()
+        {
+            if (_eliminated) return false;
+            if (_motor != null && !_motor.BeginPunchStagger())
+                return false;
+            var loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
+            if (loco != null) loco.PlayPunchStagger();
+            return true;
+        }
+
         public void ResetScore()
         {
             _timeAsIt = 0f;

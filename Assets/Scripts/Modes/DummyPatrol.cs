@@ -479,6 +479,9 @@ namespace Tag.Modes
         void DriveWish(float moveY, bool sprint, float strafe = 0f, bool jump = false, bool lunge = false, bool airDash = false)
         {
             if (_input == null) return;
+            // A punch stagger already cancelled sprint. Do not ask the motor to take it back.
+            if (_selfMotor != null && _selfMotor.IsPunchStaggered)
+                sprint = false;
             // Cling is the wish into the wall, not a button. Drive the stick; the motor dots it.
             _input.SetExternalMove(new Vector2(strafe, Mathf.Clamp(moveY, -1f, 1f)), sprint, jump, lunge, airDash);
         }
