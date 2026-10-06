@@ -61,6 +61,8 @@ namespace Tag.Level
                     }
                     Albedo(s.Mat, out float r, out float g, out float b);
                     AddBox(tris, s.X, s.Y, s.Z, s.Sx, s.Sy, s.Sz, r, g, b);
+                    if (s.Name.StartsWith("Ship_", StringComparison.Ordinal))
+                        AddCorrugation(tris, s, r, g, b);
                 }
             }
             if (dress != null)
@@ -290,6 +292,31 @@ namespace Tag.Level
             {
                 AddTri(tris, ax, ay, az, bx, by, bz, cx, cy, cz, r, g, b);
                 AddTri(tris, ax, ay, az, cx, cy, cz, ex, ey, ez, r, g, b);
+            }
+        }
+
+        static void AddCorrugation(List<Tri> tris, MegaParkP1Layout.Solid s, float r, float g, float b)
+        {
+            float sr = r * 0.38f;
+            float sg = g * 0.38f;
+            float sb = b * 0.38f;
+            float span = s.Sy;
+            if (span < 0.4f) return;
+            int bands = (int)(span / 0.62f);
+            if (bands < 2) bands = 2;
+            if (bands > 6) bands = 6;
+            float band = span / (bands * 4.5f);
+            if (band < 0.06f) band = 0.06f;
+            if (band > 0.14f) band = 0.14f;
+            const float proud = 0.035f;
+            float bot = s.Y - s.Sy * 0.5f;
+            for (int i = 0; i < bands; i++)
+            {
+                float y = bot + span * ((i + 0.5f) / bands);
+                AddBox(tris, s.X, y, s.Z - s.Sz * 0.5f - proud * 0.5f, s.Sx * 0.9f, band, proud, sr, sg, sb);
+                AddBox(tris, s.X, y, s.Z + s.Sz * 0.5f + proud * 0.5f, s.Sx * 0.9f, band, proud, sr, sg, sb);
+                AddBox(tris, s.X - s.Sx * 0.5f - proud * 0.5f, y, s.Z, proud, band, s.Sz * 0.9f, sr, sg, sb);
+                AddBox(tris, s.X + s.Sx * 0.5f + proud * 0.5f, y, s.Z, proud, band, s.Sz * 0.9f, sr, sg, sb);
             }
         }
 

@@ -387,7 +387,10 @@ namespace TagArena.Movement
             FitController(v.y, CeilingClose());
             CollisionFlags flags = CollisionFlags.None;
             if (_cc != null && _cc.enabled)
+            {
                 flags = _cc.Move(_velocity * dt);
+                FrameMeter.AddMove(FrameMeter.MoveOps);
+            }
             _velocity.y = KinematicStep.CeilingBlockedVy(_velocity.y, (flags & CollisionFlags.Above) != 0);
             if (VerbIntegration.EndLaunchArc(_launchArc, _stableFeet, _velocity.y))
             {
@@ -874,6 +877,7 @@ namespace TagArena.Movement
 
         void DoWallBounce(ref Vector3 v)
         {
+            WallJumpCount++;
             float along = _climbT;
             bool green = along >= cfg.wallBounceGreenMin && along <= cfg.wallBounceGreenMax;
             Vector3 away = _probe.Wall.hit ? _probe.Wall.normal : -transform.forward;
@@ -916,6 +920,7 @@ namespace TagArena.Movement
 
         void DoWallRunJump(ref Vector3 v)
         {
+            WallJumpCount++;
             BanLeftWall();
             Vector3 away = _probe.Wall.hit ? _probe.Wall.normal : -transform.right;
             Vector3 look = cam ? Vector3.ProjectOnPlane(cam.forward, Vector3.up).normalized : transform.forward;
@@ -1473,6 +1478,25 @@ namespace TagArena.Movement
         /// <summary>Climb, wall-run, or a zip cling. The verb HUD reads this. It does not steer.</summary>
         public bool ClingHeldActive =>
             State == MoveState.WallClimb || State == MoveState.WallRun || _zipRiding;
+
+        /// <summary>Wall jumps already taken. Prompts read the edge. It does not change the bounce.</summary>
+        public int WallJumpCount { get; private set; }
+
+        /// <summary>
+        /// Airborne, facing a close wall, and not already climbing or riding.
+        /// Distance is the probe hit. The prompt decides how close is close.
+        /// </summary>
+        public bool AirborneClingFace(out float distance, out Vector3 point)
+        {
+            distance = 99f;
+            point = transform.position;
+            if (_probe == null || !_probe.Wall.hit) return false;
+            if (IsGrounded || ZipRiding || LaunchArc) return false;
+            if (State == MoveState.WallClimb || State == MoveState.WallRun) return false;
+            distance = _probe.Wall.distance;
+            point = _probe.Wall.point;
+            return Vector3.Dot(transform.forward, -_probe.Wall.normal) > 0.25f;
+        }
 
         /// <summary>
         /// Non-tag punch connect. Sprint drops. Vertical velocity is not written.

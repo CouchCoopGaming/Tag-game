@@ -22,6 +22,10 @@ Cling is not a separate button. Holding move into a wall is the cling. Rebinding
 | Mute | Comma | — |
 | Music mute | N | — |
 
+## Debug
+
+F6 toggles the frame budget overlay. It stays off until you press it. The card shows FPS, frame time in milliseconds, and the same cost buckets as the headless budget: movement, AI, pose, HUD, audio, and round flow. F3 is Trail Tag, so the overlay does not use it. F6 is not a gameplay action and is not in the rebind list.
+
 ## Settings
 
 Pause → Settings. The same card is on the direct-play pause menu. Values save to PlayerPrefs (`Tag.GameSettingsJson`) and to `tag-settings.json` under the persistent data path, and they load on boot.

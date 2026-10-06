@@ -37,6 +37,10 @@ namespace Tag.Core
             SettingsMenuUi.ResetStatics();
             PadNav.ResetStatics();
             MinimapHud.ResetStatics();
+            Tag.Onboard.PlayPromptHud.ResetStatics();
+            FrameMeter.ResetStatics();
+            Tag.Modes.EnemyAi.ResetLoopSearch();
+            Tag.Art.TagBackBlockedTell.ResetStatics();
         }
     }
 }

@@ -214,6 +214,8 @@ namespace Tag.Local
                 var verbs = go.GetComponent<Tag.Modes.VerbStatusHud>();
                 if (verbs == null) verbs = go.AddComponent<Tag.Modes.VerbStatusHud>();
                 verbs.motor = motor;
+                if (go.GetComponent<Tag.Onboard.PlayPromptHud>() == null)
+                    go.AddComponent<Tag.Onboard.PlayPromptHud>();
             }
 
             // Third-person camera for human pawns (AI keeps no MainCamera)

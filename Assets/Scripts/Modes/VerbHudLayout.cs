@@ -17,6 +17,8 @@ namespace Tag.Modes
         /// </summary>
         public const float StackMinimapScale = 0.84f;
 
+        static readonly Box[] _reserved = new Box[7];
+
         public struct Box
         {
             public float X, Y, W, H;
@@ -94,6 +96,29 @@ namespace Tag.Modes
             return new Box { X = cluster.X, Y = y, W = cluster.W, H = row - 6f };
         }
 
+        /// <summary>First-run hint. Sits right of the mode card and left of the minimap.</summary>
+        public static Box HintBar(float sw, float sh)
+        {
+            Box card = ModeCard(sh);
+            Box map = Minimap(sw, sh);
+            float h = sh >= 1000f ? 48f : 44f;
+            float x = card.Right + 12f;
+            float cap = sh >= 1000f ? 560f : 420f;
+            float room = map.X - 12f - x;
+            float w = room < cap ? room : cap;
+            if (w < 160f) w = 160f;
+            float y = sh - h - 16f;
+            return new Box { X = x, Y = y, W = w, H = h };
+        }
+
+        /// <summary>Fallback chip for a contextual prompt when it is not on a world point.</summary>
+        public static Box ContextChip(float sw, float sh)
+        {
+            float w = sh >= 1000f ? 280f : 240f;
+            float h = 36f;
+            return new Box { X = 16f, Y = sh * 0.38f, W = w, H = h };
+        }
+
         public static bool Overlap(Box a, Box b)
         {
             return a.X < b.Right && b.X < a.Right && a.Y < b.Bottom && b.Y < a.Bottom;
@@ -112,6 +137,8 @@ namespace Tag.Modes
             Box banner = Banner(sw);
             Box mode = ModeCard(sh);
             Box picker = Picker(sw, sh);
+            Box hint = HintBar(sw, sh);
+            Box chip = ContextChip(sw, sh);
             if (!Apart(cluster, mute) || !Apart(cluster, map) || !Apart(cluster, banner)
                 || !Apart(cluster, mode) || !Apart(cluster, picker))
                 return false;
@@ -122,6 +149,16 @@ namespace Tag.Modes
             if (!OnScreen(cluster, sw, sh) || !OnScreen(picker, sw, sh) || !OnScreen(map, sw, sh)
                 || !OnScreen(mute, sw, sh) || !OnScreen(banner, sw, sh))
                 return false;
+            if (Overlap(hint, mute) || Overlap(hint, map) || Overlap(hint, cluster)
+                || Overlap(hint, banner) || Overlap(hint, mode) || Overlap(hint, picker))
+                return false;
+            if (Overlap(chip, mute) || Overlap(chip, map) || Overlap(chip, cluster)
+                || Overlap(chip, banner) || Overlap(chip, mode) || Overlap(chip, picker))
+                return false;
+            if (Overlap(hint, chip)) return false;
+            if (hint.W < 160f || hint.H < 28f || chip.W < 80f || chip.H < 24f) return false;
+            if (hint.X < 8f || hint.Right > sw - 4f || hint.Bottom > sh - 4f) return false;
+            if (chip.X < 8f || chip.Right > sw - 4f || chip.Bottom > sh - 4f) return false;
             if (cluster.W < 80f || cluster.H < 160f) return false;
             for (int i = 0; i < 4; i++)
             {
@@ -157,21 +194,21 @@ namespace Tag.Modes
         public static void PushMarker(float sw, float sh, ref float x, ref float y, float w, float h, bool pocket, bool stack)
         {
             Box self = new Box { X = x, Y = y, W = w, H = h };
-            Box[] reserved =
+            _reserved[0] = Mute(sw, sh);
+            _reserved[1] = Minimap(sw, sh, pocket, stack);
+            _reserved[2] = Cluster(sw, sh);
+            _reserved[3] = Banner(sw);
+            _reserved[4] = ModeCard(sh);
+            _reserved[5] = HintBar(sw, sh);
+            _reserved[6] = ContextChip(sw, sh);
+            for (int i = 0; i < _reserved.Length; i++)
             {
-                Mute(sw, sh),
-                Minimap(sw, sh, pocket, stack),
-                Cluster(sw, sh),
-                Banner(sw)
-            };
-            for (int i = 0; i < reserved.Length; i++)
-            {
-                if (!Overlap(self, reserved[i])) continue;
-                float above = reserved[i].Y - h - 6f;
+                if (!Overlap(self, _reserved[i])) continue;
+                float above = _reserved[i].Y - h - 6f;
                 if (above >= 8f)
                     self.Y = above;
                 else
-                    self.Y = reserved[i].Bottom + 6f;
+                    self.Y = _reserved[i].Bottom + 6f;
                 if (self.X < 8f) self.X = 8f;
                 if (self.Right > sw - 8f) self.X = sw - 8f - w;
                 if (self.Bottom > sh - 8f) self.Y = sh - 8f - h;

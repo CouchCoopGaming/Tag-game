@@ -6,6 +6,7 @@ using UnityEngine;
 using TagArena.Movement;
 using UnityEngine.SceneManagement;
 using Tag.Audio;
+using Tag.Onboard;
 using Tag.Settings;
 
 namespace Tag.Modes
@@ -66,6 +67,16 @@ namespace Tag.Modes
         int _resultsFocus;
         GUIStyle _countStyle;
         GUIStyle _bannerStyle;
+        readonly List<ItController> _livingScratch = new List<ItController>(8);
+        static readonly List<string> NoWinners = new List<string>(0);
+        PlayerTrailEmitter[] _trailCache = System.Array.Empty<PlayerTrailEmitter>();
+        PunchHitbox[] _punchCache = System.Array.Empty<PunchHitbox>();
+        string _bannerLine = "";
+        string _bannerWho = "";
+        string _bannerTagged = "";
+        int _bannerKey = -1;
+        string _clockLine = "";
+        int _clockSec = int.MinValue;
         int _transferFrame = -1;
         int _beepSec = -1;
         float _chase;
@@ -112,6 +123,8 @@ namespace Tag.Modes
             Tag.Audio.AudioMaster.Load();
             SettingsRuntime.Load();
             Instance = this;
+            if (GetComponent<FrameBudgetOverlay>() == null)
+                gameObject.AddComponent<FrameBudgetOverlay>();
             ApplyPersistedMode();
             if (matchTuning == null) matchTuning = MatchTuning.CreateRuntimeDefaults();
             if (leastItTuning == null) leastItTuning = LeastItTuning.CreateRuntimeDefaults();
@@ -141,8 +154,24 @@ namespace Tag.Modes
         {
             BootHudStyles();
             if (autoFindPlayers) RefreshPlayers();
+            EnsurePromptHud();
             if (FindFirstObjectByType<GameFlow>() == null)
                 StartRound();
+        }
+
+        void EnsurePromptHud()
+        {
+            if (PlayPromptHud.Instance != null) return;
+            for (int i = 0; i < players.Count; i++)
+            {
+                ItController p = players[i];
+                if (p == null) continue;
+                if (p.GetComponent<DummyPatrol>() != null) continue;
+                if (p.GetComponent<PlayerInputReader>() == null) continue;
+                if (p.GetComponent<PlayPromptHud>() == null)
+                    p.gameObject.AddComponent<PlayPromptHud>();
+                return;
+            }
         }
 
         void BootHudStyles()
@@ -187,6 +216,7 @@ namespace Tag.Modes
             players.Clear();
             players.AddRange(FindObjectsByType<ItController>(FindObjectsSortMode.None));
             EnsureTrailEmitters();
+            RememberPawns();
         }
 
         public void RegisterPlayer(ItController p)
@@ -194,6 +224,40 @@ namespace Tag.Modes
             if (p != null && !players.Contains(p))
                 players.Add(p);
             EnsureTrailEmitters();
+            RememberPawns();
+        }
+
+        void RememberPawns()
+        {
+            int n = players.Count;
+            if (_trailCache.Length < n)
+            {
+                _trailCache = new PlayerTrailEmitter[n];
+                _punchCache = new PunchHitbox[n];
+            }
+            for (int i = 0; i < n; i++)
+            {
+                ItController p = players[i];
+                if (p == null)
+                {
+                    _trailCache[i] = null;
+                    _punchCache[i] = null;
+                    continue;
+                }
+                _trailCache[i] = p.GetComponent<PlayerTrailEmitter>();
+                _punchCache[i] = p.GetComponent<PunchHitbox>();
+            }
+        }
+
+        static string ModeIdName(TagModeId id)
+        {
+            switch (id)
+            {
+                case TagModeId.HotPotato: return "HotPotato";
+                case TagModeId.LeastIt: return "LeastIt";
+                case TagModeId.TrailTag: return "TrailTag";
+                default: return "FreePlay";
+            }
         }
 
         void EnsureTrailEmitters()
@@ -319,13 +383,18 @@ namespace Tag.Modes
 
             if (_ctx.CurrentIt == null)
             {
-                var living = new List<ItController>();
-                foreach (var p in _ctx.LivingPlayers()) living.Add(p);
-                if (living.Count > 0)
-                    TransferIt(null, living[Random.Range(0, living.Count)]);
+                _livingScratch.Clear();
+                var roster = _ctx.Players;
+                for (int i = 0; i < roster.Count; i++)
+                {
+                    ItController p = roster[i];
+                    if (p != null && p.IsAlive) _livingScratch.Add(p);
+                }
+                if (_livingScratch.Count > 0)
+                    TransferIt(null, _livingScratch[Random.Range(0, _livingScratch.Count)]);
             }
             EnforceSpawnSafety();
-            Debug.Log($"[TagMode] Playing {_mode.Id}");
+            Debug.Log("[TagMode] Playing " + ModeIdName(selectedMode));
         }
 
         /// <summary>
@@ -362,6 +431,8 @@ namespace Tag.Modes
 
         void Update()
         {
+            FrameMeter.AddRound(FrameMeter.RoundOps);
+            FrameMeter.AddAudio(FrameMeter.AudioOps);
             PadNav.Poll();
             SettingsRuntime.PollHotkeys();
             // GameFlow owns Comma/N when Boot is in the session. Direct Play has no flow.
@@ -693,27 +764,27 @@ namespace Tag.Modes
             // Ignore the same click/key that ended the round (unscaled: results keep timeScale 1).
             _resultsInputReadyAt = Time.unscaledTime + 0.25f;
 
-            var winners = _mode != null ? _mode.GetWinnerIds(_ctx) : new List<string>();
+            var winners = _mode != null ? _mode.GetWinnerIds(_ctx) : NoWinners;
             bool anyWinner = winners != null && winners.Count > 0;
             string names = anyWinner ? string.Join(", ", winners) : "nobody";
             _resultTitle = HeadlineFor(winners);
             _resultDetail = ModeTitle(selectedMode) + (anyWinner ? "\nWinners: " + names : "\nNo winner");
+            string idName = ModeIdName(selectedMode);
             if (_resultTitle == "YOU LOSE" || _resultTitle == "BOT WINS")
-                _resultMessage = $"[{_mode?.Id}] Lose";
+                _resultMessage = "[" + idName + "] Lose";
             else if (!anyWinner)
-                _resultMessage = $"[{_mode?.Id}] No winners";
+                _resultMessage = "[" + idName + "] No winners";
             else
-                _resultMessage = $"[{_mode?.Id}] Winner(s): " + names;
-            Debug.Log($"[TagMode] END -- {_resultTitle} {_resultMessage}");
+                _resultMessage = "[" + idName + "] Winner(s): " + names;
+            Debug.Log("[TagMode] END -- " + _resultTitle + " " + _resultMessage);
             RebuildScoreCard();
 
-            foreach (var p in players)
+            int n = players.Count;
+            for (int i = 0; i < n; i++)
             {
-                if (p == null) continue;
-                var e = p.GetComponent<PlayerTrailEmitter>();
-                if (e != null) e.SetEmitting(false);
-                var punch = p.GetComponent<PunchHitbox>();
-                if (punch != null) punch.ForceEnd();
+                if (players[i] == null) continue;
+                if (i < _trailCache.Length && _trailCache[i] != null) _trailCache[i].SetEmitting(false);
+                if (i < _punchCache.Length && _punchCache[i] != null) _punchCache[i].ForceEnd();
             }
 
             if (_endedNotified) return;
@@ -906,6 +977,7 @@ namespace Tag.Modes
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha6)) SetLocalPauseFocus(5);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha7)) SetLocalPauseFocus(6);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha8)) SetLocalPauseFocus(7);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha9)) SetLocalPauseFocus(8);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
                 UnityEngine.Input.GetKeyDown(KeyCode.Space) || PadNav.Confirm)
                 ActivateLocalPause();
@@ -919,7 +991,7 @@ namespace Tag.Modes
 
         void NudgeLocalPause(int dir)
         {
-            int next = Mathf.Clamp(_localPauseFocus + dir, 0, 7);
+            int next = Mathf.Clamp(_localPauseFocus + dir, 0, MenuGraph.PauseRows - 1);
             if (next == _localPauseFocus) return;
             _localPauseFocus = next;
             TagSfx.UiClick();
@@ -943,6 +1015,7 @@ namespace Tag.Modes
                 case 5: SettingsMenuUi.Open(SettingsMenuUi.Panel.Settings); TagSfx.UiClick(); break;
                 case 6: SettingsMenuUi.Open(SettingsMenuUi.Panel.Rebind); TagSfx.UiClick(); break;
                 case 7: SettingsMenuUi.Open(SettingsMenuUi.Panel.Arena); TagSfx.UiClick(); break;
+                case 8: SettingsMenuUi.Open(SettingsMenuUi.Panel.HowTo); TagSfx.UiClick(); break;
                 default: SetLocalPause(false); break;
             }
         }
@@ -973,35 +1046,37 @@ namespace Tag.Modes
                 return;
             }
             string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
-            GUI.Box(new Rect(cx - 160, cy - 188, 320, 430), "Paused");
-            if (LocalPauseButton(cx, cy - 156, 0, "Resume")) SetLocalPause(false);
-            if (LocalPauseButton(cx, cy - 124, 1, "Controls"))
+            GUI.Box(new Rect(cx - 170, cy - 204, 340, 500), "Paused");
+            if (LocalPauseButton(cx, cy - 176, 0, "Resume")) SetLocalPause(false);
+            if (LocalPauseButton(cx, cy - 146, 1, "Controls"))
             {
                 _localHelp = true;
                 _localControlsFocus = 0;
                 TagSfx.UiClick();
             }
-            if (LocalPauseButton(cx, cy - 92, 2, "Look sensitivity"))
+            if (LocalPauseButton(cx, cy - 116, 2, "Look sensitivity"))
             {
                 _localLook = true;
                 _localLookFocus = 0;
                 TagSfx.UiClick();
             }
-            if (LocalPauseButton(cx, cy - 60, 3, "Audio"))
+            if (LocalPauseButton(cx, cy - 86, 3, "Audio"))
             {
                 _localAudio = true;
                 _localAudioFocus = 0;
                 TagSfx.UiClick();
             }
-            if (LocalPauseButton(cx, cy - 28, 4, "Quit to Menu")) LoadBootMenu();
-            if (LocalPauseButton(cx, cy + 4, 5, "Settings"))
+            if (LocalPauseButton(cx, cy - 56, 4, "Quit to Menu")) LoadBootMenu();
+            if (LocalPauseButton(cx, cy - 26, 5, "Settings"))
                 SettingsMenuUi.Open(SettingsMenuUi.Panel.Settings);
-            if (LocalPauseButton(cx, cy + 36, 6, "Rebind"))
+            if (LocalPauseButton(cx, cy + 4, 6, "Rebind"))
                 SettingsMenuUi.Open(SettingsMenuUi.Panel.Rebind);
-            if (LocalPauseButton(cx, cy + 68, 7, "Arena"))
+            if (LocalPauseButton(cx, cy + 34, 7, "Arena"))
                 SettingsMenuUi.Open(SettingsMenuUi.Panel.Arena);
-            GUI.Label(new Rect(cx - 150, cy + 102, 300, 96),
-                "Left / Right or stick    1-8    Enter / South\nEsc or East resume    Start pauses\nComma mute    M minimap    N music" + extra);
+            if (LocalPauseButton(cx, cy + 64, 8, "How to play"))
+                SettingsMenuUi.Open(SettingsMenuUi.Panel.HowTo);
+            GUI.Label(new Rect(cx - 160, cy + 100, 320, 96),
+                "Left / Right or stick    1-9    Enter / South\nEsc or East resume    Start pauses\nComma mute    M minimap    N music" + extra);
         }
 
         void DrawLocalControls(float cx, float cy)
@@ -1311,15 +1386,30 @@ namespace Tag.Modes
             bool localIsIt = IsLocalHuman(it);
             bool taggedFlash = Time.time < _taggedUntil && !string.IsNullOrEmpty(_taggedId);
             string who = it != null ? it.PlayerId : "";
-            string text = RoundFlow.BannerLine(localIsIt, taggedFlash, _taggedId, who);
-            if (SuddenDeath)
-                text += "\nSD - next trail hit eliminates";
+            int key = (localIsIt ? 1 : 0) + (taggedFlash ? 2 : 0) + (SuddenDeath ? 4 : 0);
+            if (key != _bannerKey || who != _bannerWho || _taggedId != _bannerTagged)
+            {
+                _bannerKey = key;
+                _bannerWho = who;
+                _bannerTagged = _taggedId;
+                _bannerLine = RoundFlow.BannerLine(localIsIt, taggedFlash, _taggedId, who);
+                if (SuddenDeath)
+                    _bannerLine = _bannerLine + "\nSD - next trail hit eliminates";
+            }
             float labelH = showClock ? h - 30f : h - 8f;
-            GUI.Label(new Rect(r.x + 8, r.y + 4, w - 16, labelH), text, _bannerStyle);
+            GUI.Label(new Rect(r.x + 8, r.y + 4, w - 16, labelH), _bannerLine, _bannerStyle);
             if (!showClock) return;
+            float left = _ctx.RemainingTime;
+            int sec = left <= 0f ? 0 : (int)left;
+            if (left > sec) sec++;
+            if (sec != _clockSec)
+            {
+                _clockSec = sec;
+                _clockLine = RoundFlow.Clock(_ctx.RemainingTime);
+            }
             _bannerStyle.fontSize = Screen.height >= 1000 ? 18 : 16;
             _bannerStyle.normal.textColor = new Color(0.75f, 0.86f, 1f, 1f);
-            GUI.Label(new Rect(r.x + 8, r.y + h - 30f, w - 16, 26f), RoundFlow.Clock(_ctx.RemainingTime), _bannerStyle);
+            GUI.Label(new Rect(r.x + 8, r.y + h - 30f, w - 16, 26f), _clockLine, _bannerStyle);
             _bannerStyle.normal.textColor = Color.white;
         }
     }

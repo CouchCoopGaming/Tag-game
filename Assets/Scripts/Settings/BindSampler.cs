@@ -59,7 +59,10 @@ namespace Tag.Settings
             return v;
         }
 
-        /// <summary>Token of the control that went down this frame, or null.</summary>
+        /// <summary>
+        /// Token of the control that went down this frame, or null.
+        /// F3 stays Trail Tag and F6 stays the frame overlay, so neither is sampled here.
+        /// </summary>
         public static string AnyPressedToken()
         {
 #if ENABLE_INPUT_SYSTEM

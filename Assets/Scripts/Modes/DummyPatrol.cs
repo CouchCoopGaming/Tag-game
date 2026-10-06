@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Tag.Art;
+using Tag.Core;
 using Tag.Gameplay;
 using Tag.Level;
 using Tag.Trail;
@@ -109,6 +110,25 @@ namespace Tag.Modes
         Vector3 _parkAim;
         bool _parkAimOk;
         readonly List<TrailSegment> _trailActiveScratch = new List<TrailSegment>();
+        bool _pathValid;
+        float _pathLeft;
+        Vector3 _pathPawn;
+        Vector3 _pathTarget;
+        bool _pathPadAhead;
+        Vector3 _pathPadAim;
+        float _pathPadDist;
+        bool _pathPadHelps;
+        bool _pathZipAhead;
+        Vector3 _pathZipAim;
+        float _pathZipDist;
+        bool _pathZipHelps;
+        bool _aiHeavy;
+        bool _rosterDue;
+        float _megaLeft;
+        int _megaOn;
+        int _loopSlot = int.MinValue;
+        bool _loopMega;
+        Vector3 _loopPoint;
 
         void Awake()
         {
@@ -186,9 +206,12 @@ namespace Tag.Modes
             if (_dashWait > 0f) _dashWait -= dt;
             TrackWallTime(dt);
             _decisionTimer -= dt;
+            _pathLeft -= dt;
+            _aiHeavy = false;
             if (_decisionTimer <= 0f)
             {
                 _decisionTimer = 1f / Mathf.Max(1f, decisionHz);
+                _rosterDue = true;
                 Retarget();
                 RefreshTrailFleeWish();
             }
@@ -198,11 +221,13 @@ namespace Tag.Modes
             {
                 // Just became It: drop flee target and pick prey immediately (don't wait for decisionHz).
                 _itGraceTimer = Mathf.Max(0f, itGraceSec);
+                _rosterDue = true;
                 Retarget();
             }
             else if (!isIt && _wasIt)
             {
                 // Just lost It: retarget so flee locks onto the new It without waiting for decisionHz.
+                _rosterDue = true;
                 Retarget();
             }
             _wasIt = isIt;
@@ -216,6 +241,10 @@ namespace Tag.Modes
                 TickChase(dt);
             else
                 TickFleeOrWander(dt);
+            if (_aiHeavy)
+                FrameMeter.AddAi(FrameMeter.AiDecideOps + FrameMeter.AiPathOps + FrameMeter.AiLoopOps);
+            else
+                FrameMeter.AddAi(FrameMeter.AiTickOps);
         }
 
         void StopWish()
@@ -697,22 +726,42 @@ namespace Tag.Modes
             Vector3 padAim = Vector3.zero;
             float padDist = 999f;
             bool padHelps = false;
-            if (grounded && !holdLine && !wallCommit && _target != null)
-            {
-                padAhead = LaunchPad.QueryChase(transform.position, velocity, _target.transform.position, grav, fallG,
-                    out padAim, out padDist, out padHelps);
-            }
-            if (padAhead && !padHelps && Mathf.Abs(measured.PathStrafe) < 0.2f)
-                measured.PathStrafe = SideRoute(rawAim.sqrMagnitude > 0.01f ? rawAim.normalized : transform.forward);
             bool zipAhead = false;
             Vector3 zipAim = Vector3.zero;
             float zipDist = 999f;
             bool zipHelps = false;
-            if (!holdLine && !wallCommit && _target != null)
+            bool wantPad = grounded && !holdLine && !wallCommit && _target != null;
+            bool wantZip = !holdLine && !wallCommit && _target != null;
+            if (wantPad || wantZip)
             {
-                zipAhead = ZipLine.QueryChase(transform.position, _target.transform.position,
-                    out zipAim, out zipDist, out zipHelps);
+                if (NeedPathRefresh(transform.position, _target.transform.position))
+                {
+                    if (wantPad)
+                    {
+                        padAhead = LaunchPad.QueryChase(transform.position, velocity, _target.transform.position, grav, fallG,
+                            out padAim, out padDist, out padHelps);
+                    }
+                    if (wantZip)
+                    {
+                        zipAhead = ZipLine.QueryChase(transform.position, _target.transform.position,
+                            out zipAim, out zipDist, out zipHelps);
+                    }
+                    StorePath(transform.position, _target.transform.position, padAhead, padAim, padDist, padHelps, zipAhead, zipAim, zipDist, zipHelps);
+                }
+                else
+                {
+                    padAhead = wantPad && _pathPadAhead;
+                    padAim = _pathPadAim;
+                    padDist = _pathPadDist;
+                    padHelps = _pathPadHelps;
+                    zipAhead = wantZip && _pathZipAhead;
+                    zipAim = _pathZipAim;
+                    zipDist = _pathZipDist;
+                    zipHelps = _pathZipHelps;
+                }
             }
+            if (padAhead && !padHelps && Mathf.Abs(measured.PathStrafe) < 0.2f)
+                measured.PathStrafe = SideRoute(rawAim.sqrMagnitude > 0.01f ? rawAim.normalized : transform.forward);
             if (zipAhead && !zipHelps && Mathf.Abs(measured.PathStrafe) < 0.2f)
                 measured.PathStrafe = SideRoute(rawAim.sqrMagnitude > 0.01f ? rawAim.normalized : transform.forward);
             bool legalTarget = _target != null
@@ -729,7 +778,7 @@ namespace Tag.Modes
             Vector3 aim = rawAim;
             if (!wallCommit && !holdLine)
                 aim = BlendTrailAvoid(aim);
-            if (MegaParkPresent() && !holdLine && !arming && dist > farMeters)
+            if (MegaParkNow() && !holdLine && !arming && dist > farMeters)
                 aim = ParkRouteAim(true, predicted, TargetPlanarVelocity(), dist, dt, aim);
             // Weave only outside the lunge band. Inside it the 0.45 s tell needs the line held.
             // A measured gap keeps the line so the jump, the brake, or the side route is not woven off the lip.
@@ -1109,8 +1158,9 @@ namespace Tag.Modes
             if (_target != null && _target.IsIt && _target.IsAlive && !_target.IsEliminated)
                 threat = _target;
             float bestThreat = float.MaxValue;
-            if (threat == null)
+            if (threat == null && _rosterDue)
             {
+                _rosterDue = false;
                 foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
                 {
                     if (p == null || !p.IsIt || !p.IsAlive || p == _it) continue;
@@ -1152,7 +1202,7 @@ namespace Tag.Modes
                 Vector3 planar = selfVel;
                 planar.y = 0f;
                 bool closing = Vector3.Dot(threatVel, transform.position - threatPos) > 1f && threatDist < threatRange;
-                bool mega = MegaParkPresent();
+                bool mega = MegaParkNow();
                 Vector3 fleePoint = transform.position + away * 40f;
                 MovementConfig moveCfg = _selfMotor != null ? _selfMotor.cfg : null;
                 float grav = moveCfg != null ? moveCfg.gravity : 22f;
@@ -1160,11 +1210,29 @@ namespace Tag.Modes
                 Vector3 padAim = Vector3.zero;
                 float padDist = 999f;
                 bool padHelps = false;
-                bool padAhead = grounded && LaunchPad.QueryChase(transform.position, selfVel, fleePoint, grav, fallG, out padAim, out padDist, out padHelps);
                 Vector3 zipAim = Vector3.zero;
                 float zipDist = 999f;
                 bool zipHelps = false;
-                bool zipAhead = ZipLine.QueryChase(transform.position, fleePoint, out zipAim, out zipDist, out zipHelps);
+                bool padAhead = false;
+                bool zipAhead = false;
+                if (NeedPathRefresh(transform.position, fleePoint))
+                {
+                    if (grounded)
+                        padAhead = LaunchPad.QueryChase(transform.position, selfVel, fleePoint, grav, fallG, out padAim, out padDist, out padHelps);
+                    zipAhead = ZipLine.QueryChase(transform.position, fleePoint, out zipAim, out zipDist, out zipHelps);
+                    StorePath(transform.position, fleePoint, padAhead, padAim, padDist, padHelps, zipAhead, zipAim, zipDist, zipHelps);
+                }
+                else
+                {
+                    padAhead = grounded && _pathPadAhead;
+                    padAim = _pathPadAim;
+                    padDist = _pathPadDist;
+                    padHelps = _pathPadHelps;
+                    zipAhead = _pathZipAhead;
+                    zipAim = _pathZipAim;
+                    zipDist = _pathZipDist;
+                    zipHelps = _pathZipHelps;
+                }
                 bool cornered = threatDist < 3.2f && !padHelps && !zipHelps && SidesClosed(away);
                 ProbeGrapple(out bool latch, out bool outward);
 
@@ -1195,7 +1263,7 @@ namespace Tag.Modes
                 sense.GrappleOutward = outward;
                 sense.GrappleProbe = true;
                 sense.MegaPark = mega;
-                sense.LoopAim = EnemyAi.LoopPoint(mega, _enemyMem.Waypoint) - transform.position;
+                sense.LoopAim = CachedLoopPoint(mega, _enemyMem.Waypoint) - transform.position;
                 sense.CoverAim = CoverAim(away);
                 sense.HasTarget = true;
                 sense.TargetPos = threatPos;
@@ -1203,7 +1271,7 @@ namespace Tag.Modes
 
                 EnemyOverlay ev = EnemyAi.Evade(ref _enemyMem, sense);
                 Vector3 face = ev.Face.sqrMagnitude > 0.001f ? ev.Face : away;
-                if (MegaParkPresent())
+                if (MegaParkNow())
                 {
                     Vector3 perceivedThreat = EnemyAi.DelayedAim(
                         ref _enemyMem, diff, dt, transform.position, threatPos, threatVel, threat.TagPawnId, 0f);
@@ -1472,6 +1540,7 @@ namespace Tag.Modes
             _parkTimer -= dt;
             if (_parkTimer <= 0f)
             {
+                FrameMeter.AddAi(FrameMeter.AiPathOps);
                 float tagBack = 0f;
                 if (!isIt && _it != null) tagBack = _it.TagBackRemaining;
                 else if (isIt && _target != null) tagBack = _target.TagBackRemaining;
@@ -1497,6 +1566,56 @@ namespace Tag.Modes
                 }
             }
             return _parkAimOk ? _parkAim : fallback;
+        }
+
+        bool NeedPathRefresh(Vector3 pawn, Vector3 target)
+        {
+            if (!_pathValid || _pathLeft <= 0f) return true;
+            Vector3 dp = pawn - _pathPawn;
+            dp.y = 0f;
+            Vector3 dtv = target - _pathTarget;
+            dtv.y = 0f;
+            float lim = EnemyAi.PathMoveRefresh;
+            if (dp.sqrMagnitude > lim * lim || dtv.sqrMagnitude > lim * lim) return true;
+            return false;
+        }
+
+        void StorePath(Vector3 pawn, Vector3 target, bool padAhead, Vector3 padAim, float padDist, bool padHelps, bool zipAhead, Vector3 zipAim, float zipDist, bool zipHelps)
+        {
+            _pathValid = true;
+            _pathLeft = 1f / Mathf.Max(1f, decisionHz);
+            _pathPawn = pawn;
+            _pathTarget = target;
+            _pathPadAhead = padAhead;
+            _pathPadAim = padAim;
+            _pathPadDist = padDist;
+            _pathPadHelps = padHelps;
+            _pathZipAhead = zipAhead;
+            _pathZipAim = zipAim;
+            _pathZipDist = zipDist;
+            _pathZipHelps = zipHelps;
+            _aiHeavy = true;
+        }
+
+        Vector3 CachedLoopPoint(bool mega, int index)
+        {
+            if (index != _loopSlot || mega != _loopMega)
+            {
+                _loopSlot = index;
+                _loopMega = mega;
+                _loopPoint = EnemyAi.LoopPoint(mega, index);
+            }
+            return _loopPoint;
+        }
+
+        bool MegaParkNow()
+        {
+            _megaLeft -= _fixedDt;
+            if (_megaOn != 0 && _megaLeft > 0f) return _megaOn == 1;
+            bool on = MegaParkPresent();
+            _megaOn = on ? 1 : 2;
+            _megaLeft = 1f / Mathf.Max(1f, decisionHz);
+            return on;
         }
 
         static bool MegaParkPresent()

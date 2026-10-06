@@ -105,5 +105,14 @@
     <Compile Include="../../Assets/Scripts/Core/HudDigits.cs" />
     <Compile Include="../../Assets/Scripts/Core/QaSweep.cs" />
     <Compile Include="../../Assets/Scripts/Core/HotPathAlloc.cs" />
+    <Compile Include="../../Assets/Scripts/Core/FrameMeter.cs" />
+    <Compile Include="../../Assets/Scripts/Core/FrameBudget.cs" />
+    <Compile Include="../../Assets/Scripts/Onboard/ArenaRegistry.cs" />
+    <Compile Include="../../Assets/Scripts/Onboard/ControlGlyphs.cs" />
+    <Compile Include="../../Assets/Scripts/Onboard/OnboardingSession.cs" />
+    <Compile Include="../../Assets/Scripts/Onboard/ContextPrompts.cs" />
+    <Compile Include="../../Assets/Scripts/Onboard/PromptText.cs" />
+    <Compile Include="../../Assets/Scripts/Onboard/HowToPlay.cs" />
+    <Compile Include="../../Assets/Editor/OnboardingProof.cs" />
   </ItemGroup>
 </Project>

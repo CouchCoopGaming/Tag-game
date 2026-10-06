@@ -118,6 +118,7 @@ namespace Tag.Settings
                 case 8: return "Colorblind palette  " + (Colorblind ? "On" : "Off");
                 case 9: return "Minimap  " + (Minimap ? "On  (M)" : "Off  (M)");
                 case 10: return "Reset to defaults";
+                case 11: return "Replay tips";
                 default: return "Back";
             }
         }
