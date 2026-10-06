@@ -11,6 +11,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.cs" />
     <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.Pass6.cs" />
+    <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.Pass7.cs" />
     <Compile Include="UnityStub/UnityEngine.cs" />
     <Compile Include="../../Assets/Editor/StrafeJumpProof.cs" />
     <Compile Include="../../Assets/Editor/DummyPosePathProof.cs" />

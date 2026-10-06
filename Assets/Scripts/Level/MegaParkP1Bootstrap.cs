@@ -21,6 +21,7 @@ namespace Tag.Level
         Transform _p1;
         Material _mulch, _grass, _sand, _rubber, _blue, _yellow, _steel, _concrete, _cedar, _bark, _rim, _field;
         Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate;
+        Material _fence, _horizon, _leaf, _wood, _lamp, _trash, _skyline;
         Material _spawnSw, _spawnSe, _spawnNw, _spawnNe, _spawnRunS, _spawnRunN;
 
         void Awake()
@@ -31,6 +32,7 @@ namespace Tag.Level
         [ContextMenu("Rebuild Mega Park P1")]
         public void Build()
         {
+            ApplyLook();
             EnsureMaterials();
             EnsureRoot();
             Transform solids = BuildSolids();
@@ -41,10 +43,12 @@ namespace Tag.Level
             BuildLaunchPads();
             BuildZipLines();
             BuildLabels();
+            Transform dress = BuildDressing();
             BatchStatic(solids);
             BatchStatic(ramps);
             BatchStatic(paint);
             BatchStatic(spawns);
+            BatchStatic(dress);
 
             MegaParkP1Layout.Audit audit = MegaParkP1Layout.Run();
             if (audit.Ok)
@@ -80,43 +84,52 @@ namespace Tag.Level
         {
             if (_mulch != null)
                 return;
-            _mulch = Make(new Color(0x5C / 255f, 0x3A / 255f, 0x2E / 255f), "MEGA_Mulch");
-            _grass = Make(new Color(0x3F / 255f, 0x7A / 255f, 0x4A / 255f), "MEGA_Grass");
-            _sand = Make(new Color(0xE6 / 255f, 0xD2 / 255f, 0xA2 / 255f), "MEGA_Sand");
-            _rubber = Make(new Color(0x2A / 255f, 0x2A / 255f, 0x2E / 255f), "MEGA_Rubber");
-            _blue = Make(new Color(0x3D / 255f, 0x7E / 255f, 0xFF / 255f), "MEGA_Cling");
-            _yellow = Make(new Color(0xF5 / 255f, 0xD5 / 255f, 0x47 / 255f), "MEGA_Slide");
-            _steel = Make(new Color(0xB8 / 255f, 0xC0 / 255f, 0xC8 / 255f), "MEGA_Steel");
-            _concrete = Make(new Color(0xC5 / 255f, 0xCB / 255f, 0xD1 / 255f), "MEGA_Concrete");
-            _cedar = Make(new Color(0x8A / 255f, 0x5A / 255f, 0x3C / 255f), "MEGA_Cedar");
-            _bark = Make(new Color(0x3E / 255f, 0x26 / 255f, 0x1C / 255f), "MEGA_Bark");
-            _rim = Make(new Color(0x6B / 255f, 0x46 / 255f, 0x36 / 255f), "MEGA_Rim");
-            _field = Make(new Color(0x3C / 255f, 0x9A / 255f, 0x58 / 255f), "MEGA_Field");
+            _mulch = Face("mulch");
+            _grass = Face("grass");
+            _sand = Face("sand");
+            _rubber = Face("rubber");
+            _blue = Face("cling");
+            _yellow = Face("slide");
+            _steel = Face("steel");
+            _concrete = Face("concrete");
+            _cedar = Face("cedar");
+            _bark = Face("bark");
+            _rim = Face("rim");
+            _field = Face("field");
             // Zone callouts. Blue stays cling-only. Yellow stays slide-only. Orange is a grapple plate.
-            _soft = Make(new Color(0xE0 / 255f, 0x7A / 255f, 0x3A / 255f), "MEGA_Soft");
-            _pad = Make(new Color(0x1F / 255f, 0x6F / 255f, 0x78 / 255f), "MEGA_ClingPad");
-            _merry = Make(new Color(0xD6 / 255f, 0x45 / 255f, 0x7A / 255f), "MEGA_Merry");
-            _amber = Make(new Color(0xE0 / 255f, 0xA0 / 255f, 0x45 / 255f), "MEGA_Amber");
-            _swing = Make(new Color(0x7D / 255f, 0xAB / 255f, 0x4A / 255f), "MEGA_Swing");
-            _army = Make(new Color(0x8A / 255f, 0x8F / 255f, 0x3A / 255f), "MEGA_Army");
-            _knight = Make(new Color(0x7A / 255f, 0x5B / 255f, 0x8A / 255f), "MEGA_Knight");
-            _kick = Make(new Color(0xC4 / 255f, 0x78 / 255f, 0x3A / 255f), "MEGA_Kick");
-            _hop = Make(new Color(0x6A / 255f, 0xA8 / 255f, 0xD6 / 255f), "MEGA_Hop");
-            _cover = Make(new Color(0xE6 / 255f, 0xD3 / 255f, 0xA1 / 255f), "MEGA_Cover");
-            _plate = Make(new Color(1f, 0.42f, 0.05f), "MEGA_Plate");
-            if (_plate.HasProperty("_Metallic"))
-                _plate.SetFloat("_Metallic", 0.45f);
-            if (_blue.HasProperty("_Smoothness"))
-                _blue.SetFloat("_Smoothness", 0.28f);
-            _spawnSw = Make(new Color(0x2E / 255f, 0xC4 / 255f, 0xB6 / 255f), "MEGA_SpawnSW");
-            _spawnSe = Make(new Color(0xFF / 255f, 0x6B / 255f, 0x6B / 255f), "MEGA_SpawnSE");
-            _spawnNw = Make(new Color(0x9B / 255f, 0x5D / 255f, 0xE5 / 255f), "MEGA_SpawnNW");
-            _spawnNe = Make(new Color(0xC6 / 255f, 0xF2 / 255f, 0x4A / 255f), "MEGA_SpawnNE");
-            _spawnRunS = Make(new Color(0xFF / 255f, 0xE0 / 255f, 0x8A / 255f), "MEGA_SpawnRunS");
-            _spawnRunN = Make(new Color(0x8A / 255f, 0xD7 / 255f, 0xFF / 255f), "MEGA_SpawnRunN");
+            _soft = Face("soft");
+            _pad = Face("pad");
+            _merry = Face("merry");
+            _amber = Face("amber");
+            _swing = Face("swing");
+            _army = Face("army");
+            _knight = Face("knight");
+            _kick = Face("kick");
+            _hop = Face("hop");
+            _cover = Face("cover");
+            _plate = Face("plate");
+            _fence = Face("fence");
+            _horizon = Face("horizon");
+            _leaf = Face("leaf");
+            _wood = Face("wood");
+            _lamp = Face("lamp");
+            _trash = Face("trash");
+            _skyline = Face("skyline");
+            _spawnSw = Make(new Color(0x2E / 255f, 0xC4 / 255f, 0xB6 / 255f), "MEGA_SpawnSW", 0.2f, 0f, "panel");
+            _spawnSe = Make(new Color(0xFF / 255f, 0x6B / 255f, 0x6B / 255f), "MEGA_SpawnSE", 0.2f, 0f, "panel");
+            _spawnNw = Make(new Color(0x9B / 255f, 0x5D / 255f, 0xE5 / 255f), "MEGA_SpawnNW", 0.2f, 0f, "panel");
+            _spawnNe = Make(new Color(0xC6 / 255f, 0xF2 / 255f, 0x4A / 255f), "MEGA_SpawnNE", 0.2f, 0f, "panel");
+            _spawnRunS = Make(new Color(0xFF / 255f, 0xE0 / 255f, 0x8A / 255f), "MEGA_SpawnRunS", 0.2f, 0f, "panel");
+            _spawnRunN = Make(new Color(0x8A / 255f, 0xD7 / 255f, 0xFF / 255f), "MEGA_SpawnRunN", 0.2f, 0f, "panel");
         }
 
-        static Material Make(Color c, string name)
+        Material Face(string name)
+        {
+            MegaParkP1Layout.TryLook(name, out float r, out float g, out float b, out float smooth, out float metal);
+            return Make(new Color(r, g, b, 1f), "MEGA_" + name, smooth, metal, name);
+        }
+
+        static Material Make(Color c, string name, float smooth, float metal, string kind)
         {
             Shader shader = Shader.Find("Universal Render Pipeline/Lit")
                             ?? Shader.Find("Standard")
@@ -125,13 +138,103 @@ namespace Tag.Level
             if (m.HasProperty("_BaseColor"))
                 m.SetColor("_BaseColor", c);
             if (m.HasProperty("_Smoothness"))
-                m.SetFloat("_Smoothness", 0.06f);
+                m.SetFloat("_Smoothness", smooth);
             if (m.HasProperty("_Glossiness"))
-                m.SetFloat("_Glossiness", 0.06f);
+                m.SetFloat("_Glossiness", smooth);
             if (m.HasProperty("_Metallic"))
-                m.SetFloat("_Metallic", 0f);
+                m.SetFloat("_Metallic", metal);
+            Texture2D tex = MakeTex(kind, c);
+            if (tex != null)
+            {
+                if (m.HasProperty("_BaseMap"))
+                    m.SetTexture("_BaseMap", tex);
+                if (m.HasProperty("_MainTex"))
+                    m.SetTexture("_MainTex", tex);
+            }
+            if (kind == "fence")
+            {
+                m.SetFloat("_AlphaClip", 1f);
+                m.SetFloat("_Cutoff", 0.45f);
+                m.EnableKeyword("_ALPHATEST_ON");
+                m.SetOverrideTag("RenderType", "TransparentCutout");
+                m.renderQueue = 2450;
+                if (m.HasProperty("_Mode"))
+                    m.SetFloat("_Mode", 1f);
+                m.SetTextureScale("_BaseMap", new Vector2(36f, 14f));
+                m.SetTextureScale("_MainTex", new Vector2(36f, 14f));
+            }
             m.enableInstancing = true;
             return m;
+        }
+
+        static Texture2D MakeTex(string kind, Color c)
+        {
+            const int n = 64;
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Repeat;
+            tex.filterMode = FilterMode.Bilinear;
+            tex.name = "MEGA_Tex_" + kind;
+            var pix = new Color[n * n];
+            for (int y = 0; y < n; y++)
+            {
+                for (int x = 0; x < n; x++)
+                {
+                    float wobble = 0.96f + 0.08f * Hash(x, y);
+                    if (wobble > 1.04f) wobble = 1.04f;
+                    Color p = c * wobble;
+                    p.a = 1f;
+                    if (kind == "mulch" || kind == "rubber")
+                    {
+                        float crumb = Hash(x / 4, y / 4);
+                        p = Color.Lerp(c * 0.96f, c * 1.04f, crumb);
+                    }
+                    else if (kind == "sand")
+                    {
+                        p = Color.Lerp(c * 0.97f, c * 1.03f, Hash(x, y));
+                    }
+                    else if (kind == "steel" || kind == "lamp" || kind == "plate")
+                    {
+                        float streak = 0.97f + 0.06f * Hash(0, y / 2);
+                        p = c * Mathf.Min(1.04f, streak);
+                    }
+                    else if (kind == "wood" || kind == "cedar" || kind == "bark")
+                    {
+                        float grain = 0.96f + 0.08f * Mathf.Abs(Mathf.Sin(y * 0.55f + Hash(x / 8, 0) * 3f));
+                        p = c * Mathf.Min(1.04f, grain);
+                    }
+                    else if (kind == "concrete" || kind == "skyline")
+                    {
+                        float seam = (x % 16 == 0 || y % 16 == 0) ? 0.96f : 1.02f;
+                        p = c * seam;
+                    }
+                    else if (kind == "grass" || kind == "leaf" || kind == "field" || kind == "horizon")
+                    {
+                        float blade = ((x + y * 3) % 5 == 0) ? 1.04f : 0.97f;
+                        p = c * blade;
+                    }
+                    else if (kind == "fence")
+                    {
+                        bool wire = (x % 8) < 2 || (y % 8) < 2;
+                        p = c;
+                        p.a = wire ? 1f : 0f;
+                    }
+                    p.r = Mathf.Clamp01(p.r);
+                    p.g = Mathf.Clamp01(p.g);
+                    p.b = Mathf.Clamp01(p.b);
+                    pix[y * n + x] = p;
+                }
+            }
+            tex.SetPixels(pix);
+            tex.Apply(false, true);
+            return tex;
+        }
+
+        static float Hash(int x, int y)
+        {
+            uint h = (uint)(x * 374761393 + y * 668265263);
+            h = (h ^ (h >> 13)) * 1274126177u;
+            h ^= h >> 16;
+            return (h & 255) / 255f;
         }
 
         Material Pick(string mat)
@@ -188,7 +291,7 @@ namespace Tag.Level
                 go.isStatic = true;
                 MeshRenderer r = go.GetComponent<MeshRenderer>();
                 if (r != null)
-                    r.sharedMaterial = Pick(s.Mat);
+                    r.sharedMaterial = s.Name.StartsWith("Fence_") ? _fence : Pick(s.Mat);
             }
             return g;
         }
@@ -499,6 +602,111 @@ namespace Tag.Level
             tm.characterSize = 0.45f;
             tm.color = new Color(1f, 0.95f, 0.75f, 1f);
             tm.fontStyle = FontStyle.Bold;
+        }
+
+        void ApplyLook()
+        {
+            Light sun = null;
+            Light[] lights = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < lights.Length; i++)
+            {
+                Light l = lights[i];
+                if (l == null || l.type != LightType.Directional) continue;
+                if (sun == null)
+                    sun = l;
+                else
+                    l.enabled = false;
+            }
+            if (sun == null)
+            {
+                var go = new GameObject("Sun");
+                sun = go.AddComponent<Light>();
+                sun.type = LightType.Directional;
+            }
+            sun.color = new Color(MegaParkP1Layout.SunR, MegaParkP1Layout.SunG, MegaParkP1Layout.SunB, 1f);
+            sun.intensity = MegaParkP1Layout.SunIntensity;
+            sun.shadows = LightShadows.Soft;
+            sun.shadowStrength = MegaParkP1Layout.ShadowStrength;
+            sun.shadowBias = 0.08f;
+            sun.lightmapBakeType = LightmapBakeType.Mixed;
+            sun.transform.rotation = Quaternion.Euler(MegaParkP1Layout.SunPitch, MegaParkP1Layout.SunYaw, 0f);
+            RenderSettings.sun = sun;
+
+            RenderSettings.ambientMode = AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(MegaParkP1Layout.AmbSkyR, MegaParkP1Layout.AmbSkyG, MegaParkP1Layout.AmbSkyB, 1f);
+            RenderSettings.ambientEquatorColor = new Color(MegaParkP1Layout.AmbEqR, MegaParkP1Layout.AmbEqG, MegaParkP1Layout.AmbEqB, 1f);
+            RenderSettings.ambientGroundColor = new Color(MegaParkP1Layout.AmbGndR, MegaParkP1Layout.AmbGndG, MegaParkP1Layout.AmbGndB, 1f);
+            RenderSettings.ambientIntensity = MegaParkP1Layout.AmbIntensity;
+
+            Shader skyShader = Shader.Find("Skybox/Procedural");
+            if (skyShader == null)
+                skyShader = Shader.Find("Skybox/Panoramic");
+            if (skyShader != null)
+            {
+                MegaParkP1Layout.TryLook("sky", out float r, out float g, out float b, out _, out _);
+                var sky = new Material(skyShader) { name = "MEGA_Sky" };
+                var tint = new Color(r, g, b, 1f);
+                if (sky.HasProperty("_SkyTint"))
+                    sky.SetColor("_SkyTint", tint);
+                if (sky.HasProperty("_GroundColor"))
+                    sky.SetColor("_GroundColor", new Color(0.45f, 0.32f, 0.22f, 1f));
+                if (sky.HasProperty("_Exposure"))
+                    sky.SetFloat("_Exposure", 1.25f);
+                if (sky.HasProperty("_AtmosphereThickness"))
+                    sky.SetFloat("_AtmosphereThickness", 0.85f);
+                if (sky.HasProperty("_SunSize"))
+                    sky.SetFloat("_SunSize", 0.045f);
+                if (sky.HasProperty("_SunSizeConvergence"))
+                    sky.SetFloat("_SunSizeConvergence", 5f);
+                RenderSettings.skybox = sky;
+            }
+        }
+
+        Transform BuildDressing()
+        {
+            MegaParkP1Layout.Dress[] all = MegaParkP1Layout.BuildDressing();
+            Transform g = Group("Dressing");
+            var zones = new Dictionary<string, Transform>();
+            Transform bucket = Occlusion(g, zones, "Dress");
+            for (int i = 0; i < all.Length; i++)
+            {
+                MegaParkP1Layout.Dress d = all[i];
+                GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = d.Name;
+                go.transform.SetParent(bucket, false);
+                go.transform.localPosition = new Vector3(d.X, d.Y, d.Z);
+                go.transform.localRotation = Quaternion.identity;
+                go.transform.localScale = new Vector3(d.Sx, d.Sy, d.Sz);
+                go.isStatic = true;
+                StripCollider(go);
+                MeshRenderer rend = go.GetComponent<MeshRenderer>();
+                if (rend != null)
+                    rend.sharedMaterial = DressMat(d.Mat);
+            }
+            return g;
+        }
+
+        static void StripCollider(GameObject go)
+        {
+            Collider col = go.GetComponent<Collider>();
+            if (col != null)
+                DestroyImmediate(col);
+        }
+
+        Material DressMat(string mat)
+        {
+            switch (mat)
+            {
+                case "horizon": return _horizon;
+                case "bark": return _bark;
+                case "leaf": return _leaf;
+                case "wood": return _wood;
+                case "lamp": return _lamp;
+                case "trash": return _trash;
+                case "skyline": return _skyline;
+                case "grass": return _grass;
+                default: return _mulch;
+            }
         }
     }
 }

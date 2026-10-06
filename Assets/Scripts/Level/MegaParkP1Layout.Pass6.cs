@@ -859,8 +859,11 @@ namespace Tag.Level
             const int spawnBatches = 7;
             const int dynamicDraws = 35;
             const int dynamicColliders = 25;
-            int drawsBefore = solids.Length + ramps.Length + paint + spawnRenderers + dynamicDraws;
-            int drawsAfter = BatchCount(solids, true) + BatchCountRamps(ramps) + 12 + spawnBatches + dynamicDraws;
+            int dress = DressBatchCount();
+            int drawsBefore = solids.Length + ramps.Length + paint + spawnRenderers + dynamicDraws + DressPieceCount();
+            int drawsAfter = BatchCount(solids, true) + BatchCountRamps(ramps) + 12 + spawnBatches + dynamicDraws + dress;
+            if (drawsAfter > DrawCap)
+                fail.Append("draw calls ").Append(drawsAfter.ToString(CultureInfo.InvariantCulture)).Append(" over 120; ");
             int colsBefore = solids.Length + rampBefore + dynamicColliders;
             int colsAfter = solids.Length + rampAfter + dynamicColliders;
             return string.Format(
@@ -935,37 +938,6 @@ namespace Tag.Level
                 "Z8", "sand", a.X0, a.Y0, z, a.X1, y1, z, a.Width + b.Width);
         }
 
-        static readonly float[] TintRgb =
-        {
-            0x3D / 255f, 0x7E / 255f, 0xFF / 255f,
-            0xF5 / 255f, 0xD5 / 255f, 0x47 / 255f,
-            1f, 0.42f, 0.05f,
-            0xD9 / 255f, 0x46 / 255f, 0xEF / 255f,
-            0xE0 / 255f, 0x7A / 255f, 0x3A / 255f,
-            0x1F / 255f, 0x6F / 255f, 0x78 / 255f,
-            0xD6 / 255f, 0x45 / 255f, 0x7A / 255f,
-            0xE0 / 255f, 0xA0 / 255f, 0x45 / 255f,
-            0x7D / 255f, 0xAB / 255f, 0x4A / 255f,
-            0x8A / 255f, 0x8F / 255f, 0x3A / 255f,
-            0x7A / 255f, 0x5B / 255f, 0x8A / 255f,
-            0xC4 / 255f, 0x78 / 255f, 0x3A / 255f,
-            0x6A / 255f, 0xA8 / 255f, 0xD6 / 255f,
-            0xE6 / 255f, 0xD3 / 255f, 0xA1 / 255f,
-            0x3C / 255f, 0x9A / 255f, 0x58 / 255f,
-            0xE6 / 255f, 0xD2 / 255f, 0xA2 / 255f,
-            0x5C / 255f, 0x3A / 255f, 0x2E / 255f,
-            0xB8 / 255f, 0xC0 / 255f, 0xC8 / 255f,
-            0xC5 / 255f, 0xCB / 255f, 0xD1 / 255f,
-            0x3F / 255f, 0x7A / 255f, 0x4A / 255f,
-        };
-
-        static readonly string[] TintName =
-        {
-            "cling", "slide", "grapple", "zip", "soft", "pad", "merry", "amber", "swing",
-            "army", "knight", "kick", "hop", "cover", "field", "sand", "mulch", "steel",
-            "concrete", "grass",
-        };
-
         static string PulseReport(StringBuilder fail)
         {
             float r, g, b;
@@ -976,15 +948,14 @@ namespace Tag.Level
             }
             string clash = null;
             float worstHue = 999f;
-            for (int i = 0; i < TintName.Length; i++)
+            for (int i = 0; i < Swatches.Length; i++)
             {
-                float cr = TintRgb[i * 3];
-                float cg = TintRgb[i * 3 + 1];
-                float cb = TintRgb[i * 3 + 2];
-                float dh = HueDelta(r, g, b, cr, cg, cb);
+                Swatch tint = Swatches[i];
+                if (tint.Name == "tag" || tint.Name == "sky") continue;
+                float dh = HueDelta(r, g, b, tint.R, tint.G, tint.B);
                 if (dh < worstHue) worstHue = dh;
-                if (Satur(r, g, b) >= 0.35f && Satur(cr, cg, cb) >= 0.35f && dh < 28f && Contrast(r, g, b, cr, cg, cb) < 2.4f)
-                    clash = TintName[i];
+                if (Satur(r, g, b) >= 0.35f && Satur(tint.R, tint.G, tint.B) >= 0.35f && dh < 28f && Contrast(r, g, b, tint.R, tint.G, tint.B) < 2.4f)
+                    clash = tint.Name;
             }
             bool shifted = Math.Abs(r - 0.45f) > 0.02f || Math.Abs(g - 0.95f) > 0.02f || Math.Abs(b - 1f) > 0.02f;
             if (clash != null)
