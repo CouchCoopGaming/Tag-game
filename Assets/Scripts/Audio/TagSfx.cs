@@ -120,6 +120,10 @@ namespace Tag.Audio
         public static void RoundLose() => PlayFlat(RoundLoseClip, 0.48f);
         public static void UiClick() => PlayFlat(UiClickClip, 0.4f);
         public static void UiConfirm() => PlayFlat(UiConfirmClip, 0.42f);
+        public static void CountdownBeep() => PlayFlat(CountdownBeepClip, 0.42f);
+
+        static AudioClip _countBeep;
+        static AudioClip CountdownBeepClip => _countBeep ??= MakeBlip(880f, 0.05f, 0.3f);
 
         /// <summary>2D bed so round/UI tones are not played at world origin on a mega park.</summary>
         public static void PlayFlat(AudioClip clip, float vol = DefaultVol)

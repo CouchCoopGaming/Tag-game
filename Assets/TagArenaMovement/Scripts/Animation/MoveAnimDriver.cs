@@ -74,18 +74,20 @@ namespace TagArena.Movement
         void HandleJump()
         {
             if (animator) animator.SetTrigger(AnimIds.JumpTrig);
-            Play(jumpClip != null ? jumpClip : TagSfx.Jump, 0.55f);
+            if (jumpClip != null) Play(jumpClip, 0.55f);
+            else AudioBus.Raise(AudioBus.Hook.Jump, transform.position);
         }
 
         void HandleSlide()
         {
-            Play(slideClip != null ? slideClip : TagSfx.Slide, 0.5f);
+            // Slide start, loop, and end are raised on the motor so a pawn with no driver still cues.
         }
 
         void HandleBounce()
         {
             if (animator) animator.SetTrigger(AnimIds.BounceTrig);
-            Play(bounceClip != null ? bounceClip : TagSfx.Land, 0.55f);
+            if (bounceClip != null) Play(bounceClip, 0.55f);
+            else AudioBus.Raise(AudioBus.Hook.WallJump, transform.position);
         }
 
         void HandleGlide()
@@ -109,7 +111,8 @@ namespace TagArena.Movement
             if (next == MoveState.LandStun)
             {
                 if (animator) animator.SetTrigger(AnimIds.LandTrig);
-                Play(landClip != null ? landClip : TagSfx.Land, 0.48f);
+                if (landClip != null) Play(landClip, 0.48f);
+                else AudioBus.Raise(AudioBus.Hook.LandHard, transform.position);
             }
             else if (next == MoveState.Ski && prev != MoveState.Ski)
             {

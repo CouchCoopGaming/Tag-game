@@ -27,6 +27,9 @@
     <Compile Include="../../Assets/Scripts/Modes/OpponentChaseSteer.cs" />
     <Compile Include="../../Assets/Scripts/Modes/EnemyAi.cs" />
     <Compile Include="../../Assets/Editor/EnemyAiProof.cs" />
+    <Compile Include="../../Assets/Editor/RoundFlowProof.cs" />
+    <Compile Include="../../Assets/Scripts/Modes/RoundFlow.cs" />
+    <Compile Include="../../Assets/Scripts/Modes/VerbHudLayout.cs" />
     <Compile Include="../../Assets/Editor/EnemyAiParkProof.cs" />
     <Compile Include="../../Assets/Editor/GrappleLatchTellProof.cs" />
     <Compile Include="../../Assets/Editor/AirDashCooldownTellProof.cs" />

@@ -168,6 +168,9 @@ namespace Tag.Local
                 var hud = go.GetComponent<SpeedEnergyHUD>();
                 if (hud == null) hud = go.AddComponent<SpeedEnergyHUD>();
                 hud.motor = motor;
+                var verbs = go.GetComponent<Tag.Modes.VerbStatusHud>();
+                if (verbs == null) verbs = go.AddComponent<Tag.Modes.VerbStatusHud>();
+                verbs.motor = motor;
             }
 
             // Third-person camera for human pawns (AI keeps no MainCamera)

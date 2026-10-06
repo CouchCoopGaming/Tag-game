@@ -346,7 +346,7 @@ namespace TagArena.Movement
 
         /// <summary>
         /// Top-center fuse so a runner sees the potato even when they are not It.
-        /// Stays below the It banner (y=16, h=46). Hidden while Remaining is 0 (countdown).
+        /// Stays below the It banner (y=16, h=78). Hidden while Remaining is 0 (countdown).
         /// </summary>
         void DrawFuseBanner()
         {
@@ -358,7 +358,7 @@ namespace TagArena.Movement
             if (remain <= 0f || urgency <= 0.02f) return;
 
             float w = 280f;
-            var r = new Rect((Screen.width - w) * 0.5f, 68f, w, 36f);
+            var r = new Rect((Screen.width - w) * 0.5f, 102f, w, 36f);
             DrawFuseUrgencyLabel(r, "FUSE  " + remain.ToString("0.0"), urgency);
         }
 
