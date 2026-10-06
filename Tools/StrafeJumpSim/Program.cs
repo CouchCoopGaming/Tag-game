@@ -147,6 +147,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Level.VerbIntegration.ProofLine());
+        if (!Tag.Level.VerbIntegration.Holds())
+        {
+            Console.Error.WriteLine("verb integration is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.VerbPoseClips.PunchTagPolishProofLine());
         if (!Tag.Art.VerbPoseClips.PunchTagPolishHolds())
         {

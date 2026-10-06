@@ -37,10 +37,7 @@ namespace Tag.Gameplay
         public float knockbackUp = 2.0f;
 
         [Header("Tag-back")]
-        /// <summary>
-        /// After It moves from A to B, B cannot tag A for this many seconds.
-        /// Only that pair. Other runners stay open. 0 turns the window off.
-        /// </summary>
+        [Tooltip("Seconds the new It cannot tag this pawn back. Default 1. Only that pair is closed. Other runners stay open. 0 turns the window off.")]
         public float tagBackImmunity = 1.0f;
 
         [Header("Puncher Buff")]

@@ -1,3 +1,4 @@
+using Tag.Level;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -331,18 +332,31 @@ namespace Tag.Modes
                 return Make(s.PlanarDistance > far ? OpponentChaseVerb.Sprint : OpponentChaseVerb.Close,
                     aim, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
 
+            // A helping pad wins on the ground. A pad that does not help does not hide a zip that does.
+            VerbIntegration.ChaseEdge edge = VerbIntegration.Choose(
+                true, s.Grounded, s.PadAhead, s.PadHelps, s.ZipAhead, s.ZipHelps);
+            if (edge == VerbIntegration.ChaseEdge.Pad)
+            {
+                Vector3 onto = Flat(s.PadAim);
+                if (onto.sqrMagnitude < 1e-6f)
+                    onto = aim;
+                else
+                    onto.Normalize();
+                return Make(OpponentChaseVerb.PadTake, onto, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
+            }
+
+            if (edge == VerbIntegration.ChaseEdge.Zip)
+            {
+                Vector3 onto = Flat(s.ZipAim);
+                if (onto.sqrMagnitude < 1e-6f)
+                    onto = aim;
+                else
+                    onto.Normalize();
+                return Make(OpponentChaseVerb.ZipTake, onto, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
+            }
+
             if (s.Grounded && s.PadAhead)
             {
-                if (s.PadHelps)
-                {
-                    Vector3 onto = Flat(s.PadAim);
-                    if (onto.sqrMagnitude < 1e-6f)
-                        onto = aim;
-                    else
-                        onto.Normalize();
-                    return Make(OpponentChaseVerb.PadTake, onto, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
-                }
-
                 float side = Mathf.Abs(s.PathStrafe) > 0.2f ? s.PathStrafe : 1f;
                 float yaw = side > 0f ? PathAroundDegrees : -PathAroundDegrees;
                 Vector3 peel = YawOffset(aim, yaw);
@@ -352,16 +366,6 @@ namespace Tag.Modes
 
             if (s.ZipAhead)
             {
-                if (s.ZipHelps)
-                {
-                    Vector3 onto = Flat(s.ZipAim);
-                    if (onto.sqrMagnitude < 1e-6f)
-                        onto = aim;
-                    else
-                        onto.Normalize();
-                    return Make(OpponentChaseVerb.ZipTake, onto, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
-                }
-
                 float zipSide = Mathf.Abs(s.PathStrafe) > 0.2f ? s.PathStrafe : 1f;
                 float zipYaw = zipSide > 0f ? PathAroundDegrees : -PathAroundDegrees;
                 Vector3 zipPeel = YawOffset(aim, zipYaw);
