@@ -75,6 +75,28 @@ namespace Tag.Level
             return pad;
         }
 
+        /// <summary>Closest pad inside <paramref name="radius"/> meters on the ground plane.</summary>
+        public static bool PromptNear(Vector3 pawn, float radius, out Vector3 point)
+        {
+            point = pawn;
+            if (radius <= 0f) return false;
+            float best = radius * radius;
+            bool hit = false;
+            for (int i = 0; i < Active.Count; i++)
+            {
+                LaunchPad pad = Active[i];
+                if (pad == null || !pad.isActiveAndEnabled) continue;
+                Vector3 d = pad.transform.position - pawn;
+                d.y = 0f;
+                float sq = d.sqrMagnitude;
+                if (sq > best) continue;
+                best = sq;
+                point = pad.transform.position;
+                hit = true;
+            }
+            return hit;
+        }
+
         /// <summary>
         /// Nearest pad on the chase line, inside 16 m. The landing uses the pad's
         /// horizontal when it has one, otherwise the speed the pawn is carrying.

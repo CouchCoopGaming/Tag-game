@@ -524,6 +524,14 @@ static class Program
             return 1;
         }
 
+        OnboardingReport onboard = OnboardingProof.Run();
+        Console.WriteLine(onboard.Line);
+        if (!onboard.Ok)
+        {
+            Console.Error.WriteLine(onboard.Failure);
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }
