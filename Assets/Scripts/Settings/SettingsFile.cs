@@ -29,6 +29,10 @@ namespace Tag.Settings
             Line(text, "colorblind", s.Colorblind ? 1f : 0f);
             Line(text, "minimap", s.Minimap ? 1f : 0f);
             Line(text, "arena", s.Arena);
+            Line(text, "ai", s.AiOpponents);
+            Line(text, "diff", s.DifficultyTier);
+            Line(text, "roundLen", s.RoundLengthIndex);
+            Line(text, "rounds", s.RoundsPerMatch);
             for (int i = 0; i < (int)PlayAction.Count; i++)
             {
                 var action = (PlayAction)i;
@@ -78,6 +82,10 @@ namespace Tag.Settings
             else if (key == "colorblind") settings.Colorblind = Flag(value);
             else if (key == "minimap") settings.Minimap = Flag(value);
             else if (key == "arena") settings.Arena = (int)Num(value, settings.Arena);
+            else if (key == "ai") settings.AiOpponents = (int)Num(value, settings.AiOpponents);
+            else if (key == "diff") settings.DifficultyTier = (int)Num(value, settings.DifficultyTier);
+            else if (key == "roundLen") settings.RoundLengthIndex = (int)Num(value, settings.RoundLengthIndex);
+            else if (key == "rounds") settings.RoundsPerMatch = (int)Num(value, settings.RoundsPerMatch);
             else if (key.StartsWith("kb.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(3), value, true);
             else if (key.StartsWith("pad.", StringComparison.Ordinal))

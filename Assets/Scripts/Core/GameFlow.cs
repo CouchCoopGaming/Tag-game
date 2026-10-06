@@ -4,6 +4,7 @@ using Tag.Gameplay;
 using Tag.Modes;
 using Tag.Local;
 using Tag.Audio;
+using Tag.Front;
 using Tag.Settings;
 using TagArena.Movement;
 
@@ -17,7 +18,8 @@ namespace Tag.Core
         Play,
         Paused,
         RoundEnd,
-        Rematch
+        Rematch,
+        Setup
     }
 
     public class GameFlow : MonoBehaviour
@@ -69,6 +71,8 @@ namespace Tag.Core
             AudioMaster.Load();
             SettingsRuntime.Load();
             AudioCuePlayer.Ensure();
+            FrontHooks.Act = ApplyFront;
+            FrontHooks.Sound = PlayFrontSound;
             if (PlayerPrefs.HasKey(TagModeController.PrefsModeKey))
             {
                 SelectedMode = (TagModeId)PlayerPrefs.GetInt(TagModeController.PrefsModeKey, (int)TagModeId.LeastIt);
@@ -85,30 +89,56 @@ namespace Tag.Core
 
         void Start()
         {
+            FrontHooks.Act = ApplyFront;
+            FrontHooks.Sound = PlayFrontSound;
             var scene = SceneManager.GetActiveScene().name;
-            if (scene == bootSceneName || scene == "Boot")
-                State = GameFlowState.Boot;
-            else
+            bool boot = scene == bootSceneName || scene == "Boot";
+            if (boot || !FrontSession.Armed)
             {
-                State = GameFlowState.Play;
-                MarkBootSeen();
-                EnsurePlayHelpers();
-                LookSensitivity.Load();
-                LookSensitivity.Apply();
-                EnsureRoundStarted();
+                if (FrontSession.Screen == FrontScreen.Setup)
+                    State = GameFlowState.Setup;
+                else
+                {
+                    State = GameFlowState.Boot;
+                    if (!FrontSession.Armed)
+                        FrontSession.ShowTitle();
+                }
+                HoldMenuClock();
+                return;
             }
+            State = GameFlowState.Play;
+            MarkBootSeen();
+            EnsurePlayHelpers();
+            LookSensitivity.Load();
+            LookSensitivity.Apply();
+            EnsureRoundStarted();
         }
 
         void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            if (scene.name == playSceneName || scene.name == "Play")
+            if (scene.name != playSceneName && scene.name != "Play")
+                return;
+            if (!FrontSession.Armed)
             {
-                State = GameFlowState.Play;
-                EnsurePlayHelpers();
-                LookSensitivity.Load();
-                LookSensitivity.Apply();
-                EnsureRoundStarted();
+                State = GameFlowState.Boot;
+                FrontSession.ShowTitle();
+                HoldMenuClock();
+                return;
             }
+            State = GameFlowState.Play;
+            EnsurePlayHelpers();
+            LookSensitivity.Load();
+            LookSensitivity.Apply();
+            EnsureRoundStarted();
+        }
+
+        void HoldMenuClock()
+        {
+            var scene = SceneManager.GetActiveScene().name;
+            if (scene == playSceneName || scene == "Play")
+                Time.timeScale = 0f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
 
         void EnsurePlayHelpers()
@@ -132,6 +162,7 @@ namespace Tag.Core
             PlayerPrefs.SetInt(TagModeController.PrefsModeKey, (int)TagModeId.LeastIt);
             PlayerPrefs.Save();
             AudioCuePlayer.Ensure()?.UiConfirm();
+            FrontSession.Arm();
             GoToPlay();
         }
 
@@ -172,6 +203,7 @@ namespace Tag.Core
             PlayerPrefs.SetInt(TagModeController.PrefsModeKey, (int)SelectedMode);
             PlayerPrefs.Save();
             AudioCuePlayer.Ensure()?.UiConfirm();
+            FrontSession.Arm();
             GoToPlay();
         }
 
@@ -211,6 +243,7 @@ namespace Tag.Core
 
         public void Rematch()
         {
+            FrontSession.NoteRematch();
             AudioCuePlayer.Ensure()?.UiConfirm();
             ClearPauseEdges();
             ReturnToPlay();
@@ -241,12 +274,33 @@ namespace Tag.Core
             Time.timeScale = 1f;
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-            AudioCuePlayer.Ensure()?.UiClick();
+            TagSfx.UiBack();
             AudioCuePlayer.Ensure()?.StopMusic();
-            SceneManager.LoadScene(bootSceneName);
             CloseMenuPanels();
+            FrontLive.ReleaseScene();
+            StaticLifecycle.ReleaseMatch();
+            FrontHooks.Act = ApplyFront;
+            FrontHooks.Sound = PlayFrontSound;
             State = GameFlowState.Boot;
             _bootFocus = 0;
+            if (SceneManager.GetActiveScene().name != bootSceneName)
+                SceneManager.LoadScene(bootSceneName);
+        }
+
+        public void OpenSetup()
+        {
+            Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            TagSfx.UiConfirm();
+            AudioCuePlayer.Ensure()?.StopMusic();
+            CloseMenuPanels();
+            FrontLive.ReleaseScene();
+            FrontSession.ShowSetup();
+            FrontLive.Reset();
+            State = GameFlowState.Setup;
+            if (SceneManager.GetActiveScene().name != bootSceneName)
+                SceneManager.LoadScene(bootSceneName);
         }
 
         /// <summary>
@@ -343,6 +397,7 @@ namespace Tag.Core
                 }
             }
             if (modeController == null) return;
+            FrontLive.Apply();
             modeController.SelectedMode = SelectedMode;
             foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
                 modeController.RegisterPlayer(p);
@@ -396,20 +451,8 @@ namespace Tag.Core
             if (pauseEdge && (State == GameFlowState.Play || State == GameFlowState.Paused))
                 TogglePause();
 
-            if (State == GameFlowState.Boot)
-            {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) Nudge(ref _bootFocus, -1, 5);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) Nudge(ref _bootFocus, 1, 5);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _bootFocus, 0);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _bootFocus, 1);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _bootFocus, 2);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) SetFocus(ref _bootFocus, 3);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha5)) SetFocus(ref _bootFocus, 4);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha6)) SetFocus(ref _bootFocus, 5);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
-                    UnityEngine.Input.GetKeyDown(KeyCode.Space))
-                    ActivateBoot();
-            }
+            if (State == GameFlowState.Boot || State == GameFlowState.Setup)
+                PollFront();
             else if (State == GameFlowState.PlayerCount)
             {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
@@ -544,31 +587,8 @@ namespace Tag.Core
             }
 
             float cx = Screen.width * 0.5f, cy = Screen.height * 0.5f;
-            if (State == GameFlowState.Boot)
-            {
-                GUI.Box(new Rect(cx - 210, cy - 170, 420, 360), "TAG - party slice");
-                string hello = _firstBoot
-                    ? "First run: you + 1 bot, Least It. " + ControlBinds.PunchName + " or E tags.\nEsc pauses. Comma mute. M minimap. N music. R rematches."
-                    : "Play is you and one bot. Couch is local humans.";
-                GUI.Label(new Rect(cx - 190, cy - 128, 380, 44), hello);
-                if (FocusButton(new Rect(cx - 90, cy - 76, 180, 32), 0, ref _bootFocus, "Play Tag (Least It)"))
-                    PlayLeastItSlice();
-                if (FocusButton(new Rect(cx - 90, cy - 38, 180, 28), 1, ref _bootFocus, "Controls"))
-                    OpenControls();
-                if (FocusButton(new Rect(cx - 90, cy - 4, 180, 28), 2, ref _bootFocus, "Look sensitivity"))
-                    OpenLook();
-                if (FocusButton(new Rect(cx - 90, cy + 30, 180, 28), 3, ref _bootFocus, "Audio"))
-                    OpenAudio();
-                if (FocusButton(new Rect(cx - 90, cy + 64, 180, 28), 4, ref _bootFocus, "Mode select..."))
-                {
-                    _modeFromWhoPlays = false;
-                    GoToModeSelect();
-                }
-                if (FocusButton(new Rect(cx - 90, cy + 98, 180, 28), 5, ref _bootFocus, "Couch..."))
-                    GoToPlayerCount();
-                GUI.Label(new Rect(cx - 190, cy + 132, 380, 36),
-                    "Up / Down or 1-6 picks. Enter / Space uses it.");
-            }
+            if (State == GameFlowState.Boot || State == GameFlowState.Setup)
+                FrontEndView.Draw();
             else if (State == GameFlowState.PlayerCount)
             {
                 GUI.Box(new Rect(cx - 180, cy - 140, 360, 280), "Who plays");
@@ -602,7 +622,7 @@ namespace Tag.Core
                     OpenLook();
                 if (FocusButton(new Rect(cx - 100, cy - 86, 200, 26), 3, ref _pauseFocus, "Audio"))
                     OpenAudio();
-                if (FocusButton(new Rect(cx - 100, cy - 56, 200, 26), 4, ref _pauseFocus, "Quit to Menu"))
+                if (FocusButton(new Rect(cx - 100, cy - 56, 200, 26), 4, ref _pauseFocus, "Quit to title"))
                     QuitToMenu();
                 if (FocusButton(new Rect(cx - 100, cy - 26, 200, 26), 5, ref _pauseFocus, "Settings"))
                     SettingsMenuUi.Open(SettingsMenuUi.Panel.Settings);
@@ -613,7 +633,7 @@ namespace Tag.Core
                 if (FocusButton(new Rect(cx - 100, cy + 64, 200, 26), 8, ref _pauseFocus, "How to play"))
                     SettingsMenuUi.Open(SettingsMenuUi.Panel.HowTo);
                 GUI.Label(new Rect(cx - 160, cy + 100, 320, 80),
-                    "Left / Right or stick    1-9 picks    Enter / South\nEsc or East resume    Start pauses    Q menu\nComma mute    M minimap    N music    Up / Down bed");
+                    "Left / Right or stick    1-9 picks    Enter / South\nEsc or East resume    Start pauses    Q title\nComma mute    M minimap    N music    Up / Down bed");
             }
             else if (State == GameFlowState.RoundEnd)
             {
@@ -838,6 +858,84 @@ namespace Tag.Core
             if (cursor == index) return;
             cursor = index;
             AudioCuePlayer.Ensure()?.UiClick();
+        }
+
+        void PollFront()
+        {
+            if ((FrontSession.Screen == FrontScreen.Settings || FrontSession.Screen == FrontScreen.HowTo)
+                && !SettingsMenuUi.Blocks)
+                FrontSession.CloseOverlay();
+            if (FrontSession.Screen == FrontScreen.Settings || FrontSession.Screen == FrontScreen.HowTo)
+                return;
+
+            bool up = UnityEngine.Input.GetKeyDown(KeyCode.UpArrow) || PadNav.Up;
+            bool down = UnityEngine.Input.GetKeyDown(KeyCode.DownArrow) || PadNav.Down;
+            bool left = UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left;
+            bool right = UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) || PadNav.Right;
+            bool confirm = UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter)
+                || UnityEngine.Input.GetKeyDown(KeyCode.Space) || PadNav.Confirm;
+            bool back = UnityEngine.Input.GetKeyDown(KeyCode.Escape) || PadNav.Back;
+            if (up) FrontSession.Nudge(-1);
+            if (down) FrontSession.Nudge(1);
+            if (left) FrontSession.Step(-1);
+            if (right) FrontSession.Step(1);
+
+            int act = FrontSession.ActNone;
+            if (back) act = FrontSession.Back();
+            else if (confirm) act = FrontSession.Confirm();
+            else
+            {
+                int rows = FrontSession.RowCount;
+                for (int i = 0; i < rows && i < 9; i++)
+                {
+                    if (UnityEngine.Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + i)))
+                        FrontSession.Highlight(i);
+                }
+            }
+            if (act != FrontSession.ActNone)
+                ApplyFront(act);
+            PlayFrontSound();
+            if (FrontSession.ConsumeDirty())
+                SettingsRuntime.Save();
+        }
+
+        void ApplyFront(int act)
+        {
+            if (act == FrontSession.ActSetup)
+                State = GameFlowState.Setup;
+            else if (act == FrontSession.ActSettings)
+                SettingsMenuUi.Open(SettingsMenuUi.Panel.Settings);
+            else if (act == FrontSession.ActHowTo)
+                SettingsMenuUi.Open(SettingsMenuUi.Panel.HowTo);
+            else if (act == FrontSession.ActStart)
+                StartFromSetup();
+            else if (act == FrontSession.ActQuit)
+                Application.Quit();
+            else if (act == FrontSession.ActTitle)
+            {
+                State = GameFlowState.Boot;
+                HoldMenuClock();
+            }
+            else if (act == FrontSession.ActRematch)
+                Rematch();
+        }
+
+        void StartFromSetup()
+        {
+            if (GameSettings.Current != null)
+                GameSettings.Current.Clamp();
+            SettingsRuntime.Save();
+            State = GameFlowState.Play;
+            Time.timeScale = 1f;
+            GoToPlay();
+        }
+
+        void PlayFrontSound()
+        {
+            int sound = FrontSession.ConsumeSound();
+            if (sound == FrontSession.SoundMove) TagSfx.UiMove();
+            else if (sound == FrontSession.SoundConfirm) TagSfx.UiConfirm();
+            else if (sound == FrontSession.SoundBack) TagSfx.UiBack();
         }
 
         void ActivateBoot()

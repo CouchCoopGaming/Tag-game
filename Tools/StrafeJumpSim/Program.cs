@@ -549,6 +549,14 @@ static class Program
             return 1;
         }
 
+        Tag.Front.FrontSession.Report front = Tag.Front.FrontSession.Run();
+        Console.WriteLine(front.Line);
+        if (!front.Ok)
+        {
+            Console.Error.WriteLine(front.Failure);
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }

@@ -50,10 +50,12 @@ South confirms. East goes back. Start pauses. The left stick and the D-pad move 
 
 | Menu | Move | Confirm | Back |
 |---|---|---|---|
-| Pause | Left / Right | Resume, Controls, Look, Audio, Quit, Settings, Rebind, Arena | East or Esc resumes |
-| Settings | Up / Down | Reset, Back, or a toggle | East or Esc to pause |
+| Title | Up / Down | Play, Settings, How to play, Quit | East or Esc does nothing on the title |
+| Match setup | Up / Down, Left / Right changes the row | Start match or Back | East or Esc returns to the title |
+| Pause | Left / Right | Resume, Controls, Look, Audio, Quit to title, Settings, Rebind, Arena | East or Esc resumes |
+| Settings | Up / Down | Reset, Back, or a toggle | East or Esc to pause, or to the title when opened from there |
 | Rebind | Up / Down | Listen for a key or button, Reset, Back | East or Esc to pause |
 | Arena | Up / Down, or 1 / 2 | Picks PARK or Mega Park | East or Esc to pause |
-| Results | Left / Right | Rematch or Menu | East or Esc leaves the card |
+| Results | Left / Right | Rematch, Change setup, or Title | East or Esc returns to the title |
 
 A jump, cling, or sprint that is held while a menu is open does not stick after the menu closes. Closing a menu does not fire a jump. The jump buffer is 0.16 s and coyote time is 0.10 s for Space and for the gamepad South button.
