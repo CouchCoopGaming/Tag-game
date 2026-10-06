@@ -1245,7 +1245,7 @@ namespace TagArena.Movement
                 if (c.transform == transform) continue;
                 var other = c.GetComponentInParent<TagRole>();
                 if (other == null || other.IsIt) continue;
-                tagRole.Tag(other);
+                if (!tagRole.Tag(other)) continue;
                 OnTaggedSomeone?.Invoke();
                 other.GetComponent<PlayerMotor>()?.NotifyBecameIt();
                 break;

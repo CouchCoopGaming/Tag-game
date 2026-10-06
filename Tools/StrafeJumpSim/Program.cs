@@ -140,6 +140,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Gameplay.TagBackImmunity.ProofLine());
+        if (!Tag.Gameplay.TagBackImmunity.Holds())
+        {
+            Console.Error.WriteLine("no tag-back is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.VerbPoseClips.PunchTagPolishProofLine());
         if (!Tag.Art.VerbPoseClips.PunchTagPolishHolds())
         {
