@@ -130,7 +130,6 @@ namespace TagArena.Movement
         bool _rawFeetPrev;
         bool _stableFeet = true;
         bool _jumpFatigued;
-        int _airJumpsFromFatigue;
         bool _motorLocked;
         bool _slideBlocked;
         float _punchMoveScale = 1f;
@@ -241,7 +240,9 @@ namespace TagArena.Movement
             bool feet = KinematicStep.StableGround(rawFeet, _rawFeetPrev, _velocity.y);
             _rawFeetPrev = rawFeet;
             _stableFeet = feet;
-            if (rawFeet && _mode != Locomotion.Climb && _mode != Locomotion.WallRun && _mode != Locomotion.Vault)
+            // A zip ride and a pad arc are not ground. They must not refill coyote.
+            if (rawFeet && !_zipRiding && !_launchArc
+                && _mode != Locomotion.Climb && _mode != Locomotion.WallRun && _mode != Locomotion.Vault)
                 _coyote = cfg.coyoteTime;
             LatchLandImpact();
             TickZipAttach();
@@ -314,20 +315,26 @@ namespace TagArena.Movement
             if (_slideBlocked && _mode == Locomotion.Slide)
                 SetState(MoveState.Crouch);
             // After TryJump. That write is v.y = jumpSpeed (24.7 when not fatigued).
-            // The rope replaces horizontal only, then the one Move below consumes it.
+            // A zip or a queued pad owns the velocity, so the rope yields first.
+            // The one Move below consumes whatever is left.
+            if (VerbIntegration.GrappleYields(_zipRiding, _launchQueued, _launchArc))
+                ReleaseGrapple();
             v = ApplyGrappleHorizontal(v);
             v = ApplyGroundRead(v, dt);
             v = ApplyQueuedLaunch(v);
             v = ApplyZipRide(v, dt);
 
-            _velocity = v;
+            _velocity = VerbIntegration.FiniteOrZero(v);
             FitController(v.y, CeilingClose());
             CollisionFlags flags = CollisionFlags.None;
             if (_cc != null && _cc.enabled)
                 flags = _cc.Move(_velocity * dt);
             _velocity.y = KinematicStep.CeilingBlockedVy(_velocity.y, (flags & CollisionFlags.Above) != 0);
-            if (_launchArc && _stableFeet && _velocity.y < KinematicStep.LaunchVy)
+            if (VerbIntegration.EndLaunchArc(_launchArc, _stableFeet, _velocity.y))
+            {
                 _launchArc = false;
+                ClearWallBan();
+            }
 
             if (tagRole != null && tagRole.IsIt)
                 TryTag();
@@ -404,7 +411,7 @@ namespace TagArena.Movement
 
             if (TryEnterClimb(v, grounded, wish)) return _velocity;
             if (TryEnterWallRun(v, grounded, wish)) return _velocity;
-            if (_clingGrace > 0f && _probe.Wall.hit && _wallJumpSlot > 0f
+            if (!_launchQueued && _clingGrace > 0f && _probe.Wall.hit && _wallJumpSlot > 0f
                 && _mode != Locomotion.Climb && _mode != Locomotion.WallRun)
             {
                 if (_wallJumpFromClimb) DoWallBounce(ref v);
@@ -741,8 +748,9 @@ namespace TagArena.Movement
 
         void TryJump(ref Vector3 v, bool grounded)
         {
-            // A pad arc is already the vertical. The jump button does not replace it.
-            if (_launchArc) return;
+            // A pad arc, or a pad queued for this frame, is already the vertical.
+            // The buffered jump must not write jumpSpeed on top of it.
+            if (_launchArc || _launchQueued) return;
             if (_jumpSlot <= 0f) return;
 
             // Super-glide: jump at mantle peak (crouch optional; height follows CrouchHeld)
@@ -779,7 +787,6 @@ namespace TagArena.Movement
             _coyote = 0f;
             _jumpFatigued = true;
             _lastLanded = Time.time;
-            _airJumpsFromFatigue++;
             SetState(MoveState.Air);
             SetHeight(cfg.standingHeight);
             OnJumped?.Invoke();
@@ -857,6 +864,7 @@ namespace TagArena.Movement
 
         bool TryEnterClimb(Vector3 v, bool grounded, Vector3 wish)
         {
+            if (_launchQueued) return false;
             if (!_probe.Wall.hit) return false;
             if (State == MoveState.WallClimb || State == MoveState.Mantle) return false;
 
@@ -908,7 +916,7 @@ namespace TagArena.Movement
             }
 
             // Release does not keep the climb. Grace only covers the jump, and only while this probe is still true.
-            if (_wallJumpSlot > 0f && (ClingHeld(wish) || _clingGrace > 0f))
+            if (_wallJumpSlot > 0f && !_launchQueued && (ClingHeld(wish) || _clingGrace > 0f))
             {
                 _wallJumpFromClimb = true;
                 DoWallBounce(ref v);
@@ -1020,6 +1028,7 @@ namespace TagArena.Movement
 
         bool TryEnterWallRun(Vector3 v, bool grounded, Vector3 wish)
         {
+            if (_launchQueued) return false;
             if (!cfg.enableWallRun) return false;
             if (WallReentryBlocked()) return false;
             if (grounded) return false;
@@ -1042,7 +1051,7 @@ namespace TagArena.Movement
 
         Vector3 TickWallRun(float dt, Vector3 v, Vector3 wish)
         {
-            if (_probe.Wall.hit && _wallJumpSlot > 0f && (ClingHeld(wish) || _clingGrace > 0f))
+            if (_probe.Wall.hit && !_launchQueued && _wallJumpSlot > 0f && (ClingHeld(wish) || _clingGrace > 0f))
             {
                 _wallJumpFromClimb = false;
                 DoWallRunJump(ref v);
@@ -1100,7 +1109,7 @@ namespace TagArena.Movement
             v = hv + Vector3.up * y - _probe.Wall.normal * 2.8f;
 
             // Held cling plus the wall-jump slot. A release already returned above.
-            if (ClingHeld(wish) && _wallJumpSlot > 0f) DoWallRunJump(ref v);
+            if (ClingHeld(wish) && !_launchQueued && _wallJumpSlot > 0f) DoWallRunJump(ref v);
             return v;
         }
 
@@ -1134,6 +1143,14 @@ namespace TagArena.Movement
         {
             if (_airDashT > 0f)
             {
+                // A pad rise owns this frame. The dash must not skip its gravity.
+                if (_launchArc || _launchQueued)
+                {
+                    _airDashT = 0f;
+                    if (_mode == Locomotion.AirDash)
+                        _mode = Locomotion.Air;
+                    return false;
+                }
                 _airDashT -= dt;
                 v = WishAccel.SetHoriz(v, _airDashDir * cfg.airDashSpeed);
                 // Keep vertical - burst, not hover/jet.
@@ -1146,6 +1163,7 @@ namespace TagArena.Movement
             }
 
             if (cfg == null || !cfg.enableAirDash) return false;
+            if (_launchArc || _launchQueued) return false;
             if (grounded) return false;
             if (State == MoveState.Mantle || State == MoveState.WallClimb || State == MoveState.WallRun || State == MoveState.LandStun)
                 return false;
@@ -1186,6 +1204,12 @@ namespace TagArena.Movement
         {
             if (_lungeT > 0f)
             {
+                // Stagger cancels the burst. A pad rise is not a lunge.
+                if (_stagger.Stagger > 0f || _launchArc || _launchQueued)
+                {
+                    _lungeT = 0f;
+                    return false;
+                }
                 _lungeT -= dt;
                 Vector3 dir = wish.sqrMagnitude > 0.01f ? wish.normalized : transform.forward;
                 dir.y = 0f;
@@ -1198,6 +1222,7 @@ namespace TagArena.Movement
             }
 
             // Ground It burst only - airborne MMB is consumed by TryAirDash.
+            if (_stagger.Stagger > 0f || _launchArc || _launchQueued) return false;
             if (!_probe.Ground.grounded) return false;
             if (!CanTaggerLunge()) return false;
             if (!_in.LungePressed || _lungeCd > 0f) return false;
@@ -1260,7 +1285,7 @@ namespace TagArena.Movement
             _motorLocked = locked;
             if (rising)
             {
-                ReleaseZip();
+                DropCarrierVerbs();
                 _velocity = Vector3.zero;
             }
             if (!locked)
@@ -1270,7 +1295,7 @@ namespace TagArena.Movement
         /// <summary>Ragdoll window only. CharacterController is off until the stun ends.</summary>
         public void OpenRagdollBody()
         {
-            ReleaseZip();
+            DropCarrierVerbs();
             _mode = Locomotion.Ragdoll;
             _velocity = Vector3.zero;
             _clingGrace = 0f;
@@ -1307,11 +1332,27 @@ namespace TagArena.Movement
 
         public void Halt()
         {
-            ReleaseZip();
+            DropCarrierVerbs();
             _velocity = Vector3.zero;
             _jumpSlot = 0f;
             _wallJumpSlot = 0f;
             _clingGrace = 0f;
+        }
+
+        /// <summary>
+        /// Zip, pad, grapple, lunge, and air dash all drop. The caller sets the mode.
+        /// One velocity owner remains, and it is not a stuck carrier.
+        /// </summary>
+        void DropCarrierVerbs()
+        {
+            ReleaseZip();
+            ReleaseGrapple();
+            _launchArc = false;
+            _launchQueued = false;
+            _lungeT = 0f;
+            _airDashT = 0f;
+            if (_mode == Locomotion.AirDash)
+                _mode = Locomotion.Air;
         }
 
         /// <summary>
@@ -1356,6 +1397,7 @@ namespace TagArena.Movement
             if (!PunchStagger.TryStart(ref _stagger)) return false;
             if (State == MoveState.Sprint)
                 SetState(MoveState.Walk);
+            _lungeT = 0f;
             if (_zipRiding)
                 ReleaseZip();
             return true;
@@ -1389,19 +1431,24 @@ namespace TagArena.Movement
         {
             if (_zipRiding || _in == null) return;
             if (!ZipGrabAllowed()) return;
-            if (_stagger.Stagger > 0f || _motorLocked) return;
+            if (VerbIntegration.ZipGrabBlocked(
+                _stagger.Stagger > 0f, _launchArc, _launchQueued, _motorLocked,
+                _mode == Locomotion.Vault, _mode == Locomotion.Ragdoll, _mode == Locomotion.LandStun))
+                return;
             ZipLine.TryGrab(this);
         }
 
         /// <summary>
         /// One line. Rejected while this pawn's regrab cooldown on this line is running,
-        /// and while a stagger, a vault, or a ragdoll owns the body.
+        /// while a stagger, a pad arc, a vault, or a ragdoll owns the body.
+        /// An air dash is cancelled by the grab. The jump buffer is left for the drop.
         /// </summary>
         public bool TryBeginZip(ZipLine line)
         {
             if (line == null || _zipRiding) return false;
-            if (_stagger.Stagger > 0f || _motorLocked) return false;
-            if (_mode == Locomotion.Ragdoll || _mode == Locomotion.Vault || _mode == Locomotion.LandStun)
+            if (VerbIntegration.ZipGrabBlocked(
+                _stagger.Stagger > 0f, _launchArc, _launchQueued, _motorLocked,
+                _mode == Locomotion.Vault, _mode == Locomotion.Ragdoll, _mode == Locomotion.LandStun))
                 return false;
             if (!ZipGrabAllowed()) return false;
             int id = line.GetInstanceID();
@@ -1414,14 +1461,12 @@ namespace TagArena.Movement
             _zipLineId = id;
             _zipCooldown = line.Cooldown;
             _zipVelocity = line.CurrentRideVelocity();
-            _launchQueued = false;
-            _launchArc = false;
-            _jumpSlot = 0f;
             _wallJumpSlot = 0f;
             _airDashT = 0f;
             _lungeT = 0f;
             if (_mode == Locomotion.AirDash)
                 _mode = Locomotion.Air;
+            ReleaseGrapple();
             line.SetRider(GetInstanceID(), true);
             return true;
         }
@@ -1449,14 +1494,24 @@ namespace TagArena.Movement
                 return v;
             if (_zipLine == null || !_zipLine.isActiveAndEnabled)
             {
-                v = _zipVelocity.sqrMagnitude > 1e-8f ? ZipLineRules.ReleaseDrop(_zipVelocity) : v;
+                VerbIntegration.ZipLeave dropped = VerbIntegration.LeaveZip(
+                    _zipVelocity, 0f, false, false, _coyote, _jumpSlot, _wallJumpSlot);
+                v = _zipVelocity.sqrMagnitude > 1e-8f ? dropped.Velocity : v;
+                _coyote = dropped.Coyote;
+                _jumpSlot = dropped.JumpSlot;
+                _wallJumpSlot = dropped.WallJumpSlot;
                 ReleaseZip();
                 SetState(MoveState.Air);
                 return v;
             }
             if (_stagger.Stagger > 0f || _motorLocked)
             {
-                v = ZipLineRules.ReleaseDrop(_zipLine.CurrentRideVelocity());
+                VerbIntegration.ZipLeave dropped = VerbIntegration.LeaveZip(
+                    _zipLine.CurrentRideVelocity(), 0f, false, false, _coyote, _jumpSlot, _wallJumpSlot);
+                v = dropped.Velocity;
+                _coyote = dropped.Coyote;
+                _jumpSlot = dropped.JumpSlot;
+                _wallJumpSlot = dropped.WallJumpSlot;
                 ReleaseZip();
                 SetState(MoveState.Air);
                 return v;
@@ -1471,18 +1526,15 @@ namespace TagArena.Movement
             if (end || release || jump)
             {
                 float jumpSpeed = cfg != null ? cfg.jumpSpeed : 24.7f;
-                if (jump)
-                    v = ZipLineRules.JumpDrop(ride, jumpSpeed);
-                else if (end)
-                    v = ZipLineRules.EndDrop(ride);
-                else
-                    v = ZipLineRules.ReleaseDrop(ride);
+                VerbIntegration.ZipLeave leave = VerbIntegration.LeaveZip(
+                    ride, jumpSpeed, jump, end, _coyote, _jumpSlot, _wallJumpSlot);
+                v = leave.Velocity;
+                _coyote = leave.Coyote;
+                _jumpSlot = leave.JumpSlot;
+                _wallJumpSlot = leave.WallJumpSlot;
                 ReleaseZip();
-                _jumpSlot = 0f;
-                _wallJumpSlot = 0f;
-                if (jump)
+                if (leave.Jumped)
                 {
-                    _coyote = 0f;
                     _jumpFatigued = true;
                     _lastLanded = Time.time;
                     OnJumped?.Invoke();
@@ -1514,7 +1566,8 @@ namespace TagArena.Movement
 
         /// <summary>
         /// Replaces vertical with the pad apex. Horizontal is replaced only when the pad sets it.
-        /// Does not clear the same-wall ban. Landing still does that.
+        /// A cling leave is banned. The flight itself does not clear that ban. Landing still does.
+        /// A zip in progress is dropped so the pad is the only velocity.
         /// </summary>
         Vector3 ApplyQueuedLaunch(Vector3 v)
         {
@@ -1525,9 +1578,18 @@ namespace TagArena.Movement
                 return v;
             float vy = LaunchPadRules.VerticalSpeed(_launchApex, cfg.gravity);
             if (vy <= 0.01f) return v;
-            v.y = vy;
-            if (_launchSetHoriz)
-                v = WishAccel.SetHoriz(v, _launchHoriz);
+            if (_zipRiding)
+                ReleaseZip();
+            if (VerbIntegration.PadLeavesWall(
+                State == MoveState.WallClimb || _mode == Locomotion.Climb,
+                State == MoveState.WallRun || _mode == Locomotion.WallRun))
+                BanLeftWall();
+            _lungeT = 0f;
+            _airDashT = 0f;
+            if (_mode == Locomotion.AirDash)
+                _mode = Locomotion.Air;
+            ReleaseGrapple();
+            v = VerbIntegration.ApplyPadVelocity(v, _launchApex, cfg.gravity, _launchHoriz, _launchSetHoriz);
             _jumpSlot = 0f;
             _wallJumpSlot = 0f;
             _coyote = 0f;
@@ -1583,8 +1645,9 @@ namespace TagArena.Movement
         void TickWallContactGates()
         {
             bool onWallState = State == MoveState.WallClimb || State == MoveState.WallRun;
-            // A zip ride is not a wall and not a landing. The ban stays until the feet plant.
-            if (_probe.Ground.grounded && !onWallState && !_zipRiding)
+            // A zip ride is not a wall and not a landing. Pad flight is not a landing either.
+            // The ban stays until the feet plant and the arc is over.
+            if (VerbIntegration.ClearsWallBan(_probe.Ground.grounded, onWallState, _zipRiding, _launchArc))
             {
                 ClearWallBan();
                 ClimbHeightUsed = 0f;

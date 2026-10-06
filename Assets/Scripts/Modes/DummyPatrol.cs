@@ -654,6 +654,17 @@ namespace Tag.Modes
             }
             if (zipAhead && !zipHelps && Mathf.Abs(measured.PathStrafe) < 0.2f)
                 measured.PathStrafe = SideRoute(rawAim.sqrMagnitude > 0.01f ? rawAim.normalized : transform.forward);
+            bool legalTarget = _target != null
+                && !(_it != null && _it.IsIt && !TagBackImmunity.DummyKeepsTarget(_target.BlocksTagBackFrom(_it)));
+            // An immune old It is not a pad or a zip. Hold instead of flipping edges.
+            if (VerbIntegration.Choose(legalTarget, grounded, padAhead, padHelps, zipAhead, zipHelps)
+                == VerbIntegration.ChaseEdge.Hold)
+            {
+                padAhead = false;
+                padHelps = false;
+                zipAhead = false;
+                zipHelps = false;
+            }
             Vector3 aim = rawAim;
             if (!wallCommit && !holdLine)
                 aim = BlendTrailAvoid(aim);

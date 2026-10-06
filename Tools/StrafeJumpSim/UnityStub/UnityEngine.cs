@@ -180,4 +180,10 @@ namespace UnityEngine
     {
         public RangeAttribute(float min, float max) { }
     }
+
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
+    public sealed class TooltipAttribute : Attribute
+    {
+        public TooltipAttribute(string tooltip) { }
+    }
 }
