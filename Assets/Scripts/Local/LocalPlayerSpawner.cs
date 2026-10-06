@@ -35,6 +35,8 @@ namespace Tag.Local
 
         [SerializeField] GameObject playerTemplate;
         [SerializeField] MovementConfig configOverride = null;
+        [Tooltip("Solo dummies in the Play scene. 1 is the placed DummyRunner. 2 and 3 clone it.")]
+        [SerializeField] int dummyCount = 1;
 
         void Awake()
         {
@@ -53,7 +55,11 @@ namespace Tag.Local
                 if (dummy != null) dummy.SetActive(true);
                 var p0 = GameObject.Find(SoloPawnName);
                 if (p0 != null) ConfigurePawn(p0, 0);
-                if (dummy != null) ConfigurePawn(dummy, 1, ai: true);
+                if (dummy != null)
+                {
+                    ConfigurePawn(dummy, 1, ai: true);
+                    SpawnExtraDummies(dummy, dummyCount);
+                }
             }
         }
 
@@ -175,6 +181,9 @@ namespace Tag.Local
 
             // Rope is the solo human only. Jet stays off, so RMB hooks and does not jet.
             ApplySoloGrapple(go, index, ai);
+            // The opponent uses the same RMB rope. The solo gate stays closed.
+            if (ai && EnemyAi.AllowRope(true, go.name))
+                ApplyEnemyRope(go);
 
             // Hide capsule mesh if present
             var mr = go.GetComponent<MeshRenderer>();
@@ -200,6 +209,29 @@ namespace Tag.Local
             return _sharedCfg;
         }
 
+        void SpawnExtraDummies(GameObject template, int count)
+        {
+            int n = EnemyAi.ClampDummyCount(count);
+            for (int i = 2; i <= n; i++)
+            {
+                string name = OpponentPawnName + "_" + i.ToString();
+                if (GameObject.Find(name) != null) continue;
+                GameObject clone = Instantiate(template);
+                clone.name = name;
+                clone.SetActive(true);
+                ConfigurePawn(clone, i, ai: true);
+            }
+        }
+
+        static void ApplyEnemyRope(GameObject go)
+        {
+            ExperimentalGrapple rope = go.GetComponent<ExperimentalGrapple>();
+            if (rope == null)
+                rope = go.AddComponent<ExperimentalGrapple>();
+            rope.enableGrapple = true;
+            rope.useJetHeldAsFire = true;
+        }
+
         static void ApplySoloGrapple(GameObject go, int index, bool ai)
         {
             bool on = SoloGrappleGate.EnableFor(LocalPlayerRoster.IsCouch, ai, index, go.name);
@@ -212,6 +244,8 @@ namespace Tag.Local
                 return;
             }
 
+            if (ai && EnemyAi.AllowRope(true, go.name))
+                return;
             if (rope == null) return;
             rope.enableGrapple = false;
             Destroy(rope);

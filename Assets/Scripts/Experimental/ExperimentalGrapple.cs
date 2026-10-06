@@ -214,7 +214,18 @@ namespace Tag.Experimental
             Transform cam = AimCamera();
             if (cam == null) return;
 
-            int count = Physics.RaycastNonAlloc(cam.position, cam.forward, _hits, maxRange, hitMask, QueryTriggerInteraction.Ignore);
+            Vector3 origin = cam.position;
+            Vector3 dir = cam.forward;
+            // A dummy has no camera. The ray is its own flat facing, never the player's.
+            if (_input != null && _input.ExternalControl)
+            {
+                origin = transform.position + Vector3.up * 1.2f;
+                dir.y = 0f;
+                if (dir.sqrMagnitude < 1e-6f) dir = transform.forward;
+                dir.Normalize();
+            }
+
+            int count = Physics.RaycastNonAlloc(origin, dir, _hits, maxRange, hitMask, QueryTriggerInteraction.Ignore);
             int best = -1;
             float bestDist = float.MaxValue;
             for (int i = 0; i < count; i++)
@@ -242,6 +253,8 @@ namespace Tag.Experimental
         Transform AimCamera()
         {
             if (_motor != null && _motor.cam != null) return _motor.cam;
+            if (_input != null && _input.ExternalControl)
+                return transform;
             Camera main = Camera.main;
             return main != null ? main.transform : null;
         }
