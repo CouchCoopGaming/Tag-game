@@ -22,8 +22,12 @@ namespace Tag.Level
     /// Pass 5: five downhill zip lines off the slide towers, the slide rim, and
     /// both fort high decks. Each cable clears a hanging 0.4 m capsule. Feel locks
     /// are not stored here and are not retuned.
+    /// Pass 6: a tall perimeter fence keeps pads, zips, grapple, air dash, and
+    /// wall-runs inside 160×100. A kill plane under the bowl respawns on the
+    /// nearest safe 118 m arc. Each zone has a skyline landmark. Feel locks are
+    /// still not stored here and are not retuned.
     /// </summary>
-    public static class MegaParkP1Layout
+    public static partial class MegaParkP1Layout
     {
         public const float MapW = 160f;
         public const float MapD = 100f;
@@ -43,6 +47,18 @@ namespace Tag.Level
         public const float PawnHeight = 1.8f;
         public const float MeshMatch = 0.05f;
         public const float GrappleRange = 28f;
+
+        /// <summary>Inner faces on x=0, x=160, z=0, z=100. Taller than a jump off a landmark.</summary>
+        public const float FenceTop = 33f;
+        /// <summary>Under the bowl slab (bottom about −1.2). Feet in the sand stay at −1.</summary>
+        public const float KillPlaneY = -2.5f;
+        /// <summary>Fastest locked planar replace. Lunge 16; air dash 15 sits inside it.</summary>
+        public const float MaxAirSpeed = 16f;
+        public const float LockedJumpSpeed = 24.7f;
+        public const float SpawnClearMeters = 20f;
+        public const float SpawnSightSeconds = 2f;
+        /// <summary>Landmark crowns. Above the +5 decks so a zone reads from open ground.</summary>
+        public const float LandmarkCrown = 16f;
         const float RiseGravity = 22f;
         const float FallGravity = 1.5f;
 
@@ -253,7 +269,7 @@ namespace Tag.Level
             for (int i = 0; i < solids.Length; i++)
             {
                 float top = solids[i].Y + solids[i].Sy * 0.5f;
-                if (top >= 2.4f && solids[i].Kind != "ground")
+                if (top >= 2.4f && solids[i].Kind != "ground" && solids[i].Kind != "landmark")
                     anchors++;
             }
             if (anchors < 8)
@@ -275,6 +291,11 @@ namespace Tag.Level
             GrappleReport(solids, fail);
             CrossingReport(solids, ramps, fail);
             SameWallReport(solids, fail);
+            int sweeps = ContainmentReport(solids, fail, out bool contained);
+            string spawnNote = SpawnSafetyReport(solids, fail);
+            string landmarkNote = LandmarkReport(solids, fail);
+            string perfNote = PerfReport(solids, ramps, fail);
+            string pulseNote = PulseReport(fail);
             if (fail.Length == failBeforeMesh && meshGap > MeshMatch)
                 fail.Append("collider mismatch ").Append(meshGap.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
 
@@ -293,10 +314,11 @@ namespace Tag.Level
             };
             audit.Line = string.Format(
                 CultureInfo.InvariantCulture,
-                "MegaPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns 4+2; solids {3} grounded; cling walls {4}; vaults {5}; bar under-clear {6:0.00} m; crossings A+B open; routes {7}; rim {8}, max gap {9:0.00} m; {10}; {11}; collider mismatch {12:0.000} m; ground error {13:0.000} m; pads {14} {15}; zips {16} clearance {17:0.00} m; saved {18}; dummy 60s pads {19} zips {20}",
+                "MegaPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns 4+2; solids {3} grounded; cling walls {4}; vaults {5}; bar under-clear {6:0.00} m; crossings A+B open; routes {7}; rim {8}, max gap {9:0.00} m; {10}; {11}; collider mismatch {12:0.000} m; ground error {13:0.000} m; pads {14} {15}; zips {16} clearance {17:0.00} m; saved {18}; dummy 60s pads {19} zips {20}; containment fence {21:0.0} m kill {22:0.00} sweeps {23} {24}; {25}; {26}; {27}; {28}",
                 audit.LoopM, SprintSpeed, audit.Seconds, audit.SolidCount, audit.WallCount, audit.VaultCount, audit.BarClear,
                 audit.RouteCount, audit.RimContinuous ? "continuous" : "broken", audit.RimGapMax, levelNote, pairNote,
-                meshGap, groundErr, pads, padsLanded ? "landed" : "miss", zips, zipClear, zipSaved, dummyPads, dummyZips);
+                meshGap, groundErr, pads, padsLanded ? "landed" : "miss", zips, zipClear, zipSaved, dummyPads, dummyZips,
+                FenceTop, KillPlaneY, sweeps, contained ? "held" : "open", spawnNote, landmarkNote, perfNote, pulseNote);
             audit.Failure = fail.ToString();
             return audit;
         }
@@ -340,11 +362,12 @@ namespace Tag.Level
             Add(list, "Collar_W", "Ground", "ground", "grass", -1.5f, -0.12f, 50f, 3f, 0.2f, 100f, 0f);
             Add(list, "Collar_E", "Ground", "ground", "grass", 161.5f, -0.12f, 50f, 3f, 0.2f, 100f, 0f);
 
-            // Boundary only. Rubber, not blue. Not the cling arena.
-            Add(list, "Fence_S", "Fence", "fence", "rubber", 80f, 1.2f, -0.04f, 160.08f, 2.4f, 0.08f, 0f);
-            Add(list, "Fence_N", "Fence", "fence", "rubber", 80f, 1.2f, 100.04f, 160.08f, 2.4f, 0.08f, 0f);
-            Add(list, "Fence_W", "Fence", "fence", "rubber", -0.04f, 1.2f, 50f, 0.08f, 2.4f, 100f, 0f);
-            Add(list, "Fence_E", "Fence", "fence", "rubber", 160.04f, 1.2f, 50f, 0.08f, 2.4f, 100f, 0f);
+            // Boundary only. Rubber, not blue. Not a cling wall. Tall enough that a
+            // max-air jump off a landmark still meets the inner face.
+            Add(list, "Fence_S", "Fence", "fence", "rubber", 80f, FenceTop * 0.5f, -0.04f, 160.08f, FenceTop, 0.08f, 0f);
+            Add(list, "Fence_N", "Fence", "fence", "rubber", 80f, FenceTop * 0.5f, 100.04f, 160.08f, FenceTop, 0.08f, 0f);
+            Add(list, "Fence_W", "Fence", "fence", "rubber", -0.04f, FenceTop * 0.5f, 50f, 0.08f, FenceTop, 100f, 0f);
+            Add(list, "Fence_E", "Fence", "fence", "rubber", 160.04f, FenceTop * 0.5f, 50f, 0.08f, FenceTop, 100f, 0f);
 
             // Z1 Soft-Play. South fringe z=8 and the x=38 corner stay clear. Coral, not rim brown.
             Add(list, "SoftPlay_DeckLow", "Z1", "block", "soft", 14f, 1f, 26f, 10f, 2f, 8f, 0f);
@@ -430,7 +453,53 @@ namespace Tag.Level
             AddSightCover(list);
             AddRimRoute(list);
             AddRoutePlates(list);
+            AddLandmarks(list);
             return list.ToArray();
+        }
+
+        // One skyline read per zone. Poles are thin. Flags sit on the pole, face-flush.
+        // The +5 tower stays the tallest floor; these are silhouettes, not decks.
+        static void AddLandmarks(List<Solid> list)
+        {
+            const float flagH = 1.6f;
+            const float pole = 0.42f;
+            const float flagW = 2.2f;
+            const float flagD = 0.16f;
+            float poleTop = LandmarkCrown - flagH;
+
+            Mast(list, "Landmark_Z1", "Z1", "soft", 20f, 10f, 0f, poleTop, pole, flagW, flagH, flagD);
+            // North of the cling mulch (z 40–76) and west of Rim_W, off the x=8 loop.
+            Mast(list, "Landmark_Z2", "Z2", "pad", 15.2f, 77.4f, 0f, poleTop, pole, flagW, flagH, flagD);
+            Mast(list, "Landmark_Z3", "Z3", "merry", 40f, 36.6f, 0f, poleTop, pole, flagW, flagH, flagD);
+            Mast(list, "Landmark_Z4", "Z4", "amber", 48f, 78f, 5f, poleTop, pole, flagW, flagH, flagD);
+            Mast(list, "Landmark_Z5", "Z5", "swing", 84f, 95f, 0f, poleTop, pole, flagW, flagH, flagD);
+            Mast(list, "Landmark_Z6_Army", "Z6", "army", 148.2f, 28.8f, 3.7f, poleTop, pole, flagW, flagH, flagD);
+            Mast(list, "Landmark_Z6_Knight", "Z6", "knight", 148.2f, 70.4f, 3.7f, poleTop, pole, flagW, flagH, flagD);
+            Mast(list, "Landmark_Z7", "Z7", "kick", 109f, 58f, 0f, poleTop, pole, flagW, flagH, flagD);
+            // South lip of the sand, clear of crossing B, the west mouth, and the open rect.
+            Mast(list, "Landmark_Z8", "Z8", "sand", 54f, 34.35f, 0f, poleTop, pole, flagW, flagH, flagD);
+            Arch(list, "Landmark_Z9", "Z9", "steel", 66.8f, 14.25f, 17.75f);
+            Mast(list, "Landmark_Z10", "Z10", "hop", 150.4f, 5.2f, 0f, poleTop, pole, flagW, flagH, flagD);
+        }
+
+        static void Mast(List<Solid> list, string name, string zone, string mat,
+            float x, float z, float deck, float poleTop, float pole, float flagW, float flagH, float flagD)
+        {
+            float sy = poleTop - deck;
+            Add(list, name + "_Pole", zone, "landmark", mat, x, deck + sy * 0.5f, z, pole, sy, pole, deck);
+            Add(list, name + "_Flag", zone, "landmark", mat, x, poleTop + flagH * 0.5f, z, flagW, flagH, flagD, poleTop);
+        }
+
+        static void Arch(List<Solid> list, string name, string zone, string mat, float x, float z0, float z1)
+        {
+            const float post = 0.4f;
+            const float beamH = 0.7f;
+            float beamBottom = LandmarkCrown - beamH;
+            float z = (z0 + z1) * 0.5f;
+            Add(list, name + "_PostS", zone, "landmark", mat, x, beamBottom * 0.5f, z0, post, beamBottom, post, 0f);
+            Add(list, name + "_PostN", zone, "landmark", mat, x, beamBottom * 0.5f, z1, post, beamBottom, post, 0f);
+            float span = (z1 - z0) + post;
+            Add(list, name + "_Beam", zone, "landmark", mat, x, beamBottom + beamH * 0.5f, z, 0.5f, beamH, span, beamBottom);
         }
 
         // Southbound chain. Even indices on the west lane, odd on the east lane.
@@ -988,7 +1057,7 @@ namespace Tag.Level
             for (int i = 0; i < solids.Length; i++)
             {
                 Solid s = solids[i];
-                if (s.Kind == "ground" || s.Kind == "fence" || s.Kind == "wall" || s.Kind == "anchor")
+                if (s.Kind == "ground" || s.Kind == "fence" || s.Kind == "wall" || s.Kind == "anchor" || s.Kind == "landmark")
                     continue;
                 float top = s.Y + s.Sy * 0.5f;
                 if (top >= 4.5f && s.Zone != "Z4" && top > tallestOffRim)
@@ -1914,6 +1983,11 @@ namespace Tag.Level
             if (lip > max) max = lip;
             if (lip > MeshMatch)
                 fail.Append("snag lip ").Append(lip.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
+
+            float mergeGap = SandMergeGap(ramps);
+            if (mergeGap > max) max = mergeGap;
+            if (mergeGap > MeshMatch)
+                fail.Append("sand collider merge ").Append(mergeGap.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
             return max;
         }
 

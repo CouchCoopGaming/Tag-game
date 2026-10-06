@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Tag.Level
@@ -32,14 +33,18 @@ namespace Tag.Level
         {
             EnsureMaterials();
             EnsureRoot();
-            BuildSolids();
-            BuildRamps();
-            BuildPaint();
-            BuildSpawns();
+            Transform solids = BuildSolids();
+            Transform ramps = BuildRamps();
+            Transform paint = BuildPaint();
+            Transform spawns = BuildSpawns();
             BuildLoopMarkers();
             BuildLaunchPads();
             BuildZipLines();
             BuildLabels();
+            BatchStatic(solids);
+            BatchStatic(ramps);
+            BatchStatic(paint);
+            BatchStatic(spawns);
 
             MegaParkP1Layout.Audit audit = MegaParkP1Layout.Run();
             if (audit.Ok)
@@ -125,6 +130,7 @@ namespace Tag.Level
                 m.SetFloat("_Glossiness", 0.06f);
             if (m.HasProperty("_Metallic"))
                 m.SetFloat("_Metallic", 0f);
+            m.enableInstancing = true;
             return m;
         }
 
@@ -165,34 +171,44 @@ namespace Tag.Level
             return go.transform;
         }
 
-        void BuildSolids()
+        Transform BuildSolids()
         {
             MegaParkP1Layout.Solid[] solids = MegaParkP1Layout.BuildSolids();
             Transform g = Group("Solids");
+            var zones = new Dictionary<string, Transform>();
             for (int i = 0; i < solids.Length; i++)
             {
                 MegaParkP1Layout.Solid s = solids[i];
                 GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 go.name = s.Name;
-                go.transform.SetParent(g, false);
+                go.transform.SetParent(Occlusion(g, zones, s.Zone), false);
                 go.transform.localPosition = new Vector3(s.X, s.Y, s.Z);
                 go.transform.localRotation = Quaternion.identity;
                 go.transform.localScale = new Vector3(s.Sx, s.Sy, s.Sz);
+                go.isStatic = true;
                 MeshRenderer r = go.GetComponent<MeshRenderer>();
                 if (r != null)
                     r.sharedMaterial = Pick(s.Mat);
             }
+            return g;
         }
 
-        void BuildRamps()
+        Transform BuildRamps()
         {
             MegaParkP1Layout.Ramp[] ramps = MegaParkP1Layout.BuildRamps();
+            var drawn = new List<MegaParkP1Layout.RampDraw>();
+            var merged = new List<MegaParkP1Layout.Ramp>();
+            MegaParkP1Layout.PlanRampColliders(ramps, drawn, merged, out _);
             Transform g = Group("Ramps");
-            for (int i = 0; i < ramps.Length; i++)
-                BuildRamp(g, ramps[i]);
+            var zones = new Dictionary<string, Transform>();
+            for (int i = 0; i < drawn.Count; i++)
+                BuildRamp(Occlusion(g, zones, drawn[i].Ramp.Zone), drawn[i].Ramp, drawn[i].KeepCollider, true);
+            for (int i = 0; i < merged.Count; i++)
+                BuildRamp(Occlusion(g, zones, merged[i].Zone), merged[i], true, false);
+            return g;
         }
 
-        void BuildRamp(Transform parent, MegaParkP1Layout.Ramp r)
+        void BuildRamp(Transform parent, MegaParkP1Layout.Ramp r, bool keepCollider, bool visible)
         {
             Vector3 a = new Vector3(r.X0, r.Y0, r.Z0);
             Vector3 b = new Vector3(r.X1, r.Y1, r.Z1);
@@ -216,36 +232,77 @@ namespace Tag.Level
             go.transform.localPosition = topMid - normal * (r.Thickness * 0.5f);
             go.transform.localRotation = Quaternion.LookRotation(along, normal);
             go.transform.localScale = new Vector3(r.Width, r.Thickness, len);
+            go.isStatic = true;
             MeshRenderer rend = go.GetComponent<MeshRenderer>();
-            if (rend != null)
+            if (!visible)
+            {
+                if (rend != null)
+                    DestroyImmediate(rend);
+            }
+            else if (rend != null)
                 rend.sharedMaterial = Pick(r.Mat);
+            if (!keepCollider)
+            {
+                Collider col = go.GetComponent<Collider>();
+                if (col != null)
+                    DestroyImmediate(col);
+            }
         }
 
-        void BuildPaint()
+        Transform BuildPaint()
         {
             Transform g = Group("Paint");
-            Paint(g, "Z1_SoftPlay", 2f, 38f, 2f, 36f, _soft, 0.025f);
-            Paint(g, "Z2_ClingFooting", 2f, 10f, 38f, 78f, _pad, 0.025f);
-            Paint(g, "Z3_Merry", 22f, 46f, 34f, 60f, _merry, 0.025f);
-            Paint(g, "Z4_SlideMountain", 22f, 56f, 72f, 98f, _amber, 0.025f);
-            Paint(g, "Z5_SwingGrove", 58f, 100f, 78f, 98f, _swing, 0.025f);
-            Paint(g, "Z6_Army", 118f, 158f, 10f, 46f, _army, 0.025f);
-            Paint(g, "Z6_Knight", 118f, 158f, 54f, 90f, _knight, 0.025f);
-            Paint(g, "Z7_Field", 78f, 114f, 28f, 68f, _field, 0.04f);
-            Paint(g, "Z7_MouthSouth", 64f, 78f, 28f, 34f, _field, 0.04f);
-            Paint(g, "Z7_MouthNorth", 64f, 78f, 66f, 68f, _field, 0.04f);
-            Paint(g, "Z10_Hopscotch", 118f, 156f, 2f, 22f, _hop, 0.025f);
-            Paint(g, "Spine_South", 38f, 118f, 12f, 20f, _concrete, 0.06f);
-            Paint(g, "Spine_North", 14f, 130f, 83f, 89f, _concrete, 0.06f);
-            Paint(g, "Spine_West", 10f, 14f, 2f, 98f, _concrete, 0.06f);
-            Paint(g, "Spine_East", 130f, 138f, 10f, 90f, _concrete, 0.06f);
+            var zones = new Dictionary<string, Transform>();
+            Paint(Occlusion(g, zones, "Z1"), "Z1_SoftPlay", 2f, 38f, 2f, 36f, _soft, 0.025f);
+            Paint(Occlusion(g, zones, "Z2"), "Z2_ClingFooting", 2f, 10f, 38f, 78f, _pad, 0.025f);
+            Paint(Occlusion(g, zones, "Z3"), "Z3_Merry", 22f, 46f, 34f, 60f, _merry, 0.025f);
+            Paint(Occlusion(g, zones, "Z4"), "Z4_SlideMountain", 22f, 56f, 72f, 98f, _amber, 0.025f);
+            Paint(Occlusion(g, zones, "Z5"), "Z5_SwingGrove", 58f, 100f, 78f, 98f, _swing, 0.025f);
+            Paint(Occlusion(g, zones, "Z6"), "Z6_Army", 118f, 158f, 10f, 46f, _army, 0.025f);
+            Paint(Occlusion(g, zones, "Z6"), "Z6_Knight", 118f, 158f, 54f, 90f, _knight, 0.025f);
+            Paint(Occlusion(g, zones, "Z7"), "Z7_Field", 78f, 114f, 28f, 68f, _field, 0.04f);
+            Paint(Occlusion(g, zones, "Z7"), "Z7_MouthSouth", 64f, 78f, 28f, 34f, _field, 0.04f);
+            Paint(Occlusion(g, zones, "Z7"), "Z7_MouthNorth", 64f, 78f, 66f, 68f, _field, 0.04f);
+            Paint(Occlusion(g, zones, "Z10"), "Z10_Hopscotch", 118f, 156f, 2f, 22f, _hop, 0.025f);
+            Paint(Occlusion(g, zones, "Spine"), "Spine_South", 38f, 118f, 12f, 20f, _concrete, 0.06f);
+            Paint(Occlusion(g, zones, "Spine"), "Spine_North", 14f, 130f, 83f, 89f, _concrete, 0.06f);
+            Paint(Occlusion(g, zones, "Spine"), "Spine_West", 10f, 14f, 2f, 98f, _concrete, 0.06f);
+            Paint(Occlusion(g, zones, "Spine"), "Spine_East", 130f, 138f, 10f, 90f, _concrete, 0.06f);
             // Crossing mouths. Paint only, so the stripe is not a lip.
-            Paint(g, "CrossA_West", 42f, 50f, 48.4f, 51.6f, _sand, 0.03f);
-            Paint(g, "CrossA_East", 74f, 82f, 48.4f, 51.6f, _sand, 0.03f);
-            Paint(g, "CrossA_South", 60.2f, 63.8f, 30f, 38f, _sand, 0.03f);
-            Paint(g, "CrossA_North", 60.2f, 63.8f, 62f, 70f, _sand, 0.03f);
-            Paint(g, "CrossB_South", 24f, 44f, 42.2f, 43.6f, _concrete, 0.03f);
-            Paint(g, "CrossB_North", 24f, 44f, 52.4f, 53.8f, _concrete, 0.03f);
+            Paint(Occlusion(g, zones, "Cross"), "CrossA_West", 42f, 50f, 48.4f, 51.6f, _sand, 0.03f);
+            Paint(Occlusion(g, zones, "Cross"), "CrossA_East", 74f, 82f, 48.4f, 51.6f, _sand, 0.03f);
+            Paint(Occlusion(g, zones, "Cross"), "CrossA_South", 60.2f, 63.8f, 30f, 38f, _sand, 0.03f);
+            Paint(Occlusion(g, zones, "Cross"), "CrossA_North", 60.2f, 63.8f, 62f, 70f, _sand, 0.03f);
+            Paint(Occlusion(g, zones, "Cross"), "CrossB_South", 24f, 44f, 42.2f, 43.6f, _concrete, 0.03f);
+            Paint(Occlusion(g, zones, "Cross"), "CrossB_North", 24f, 44f, 52.4f, 53.8f, _concrete, 0.03f);
+            return g;
+        }
+
+        Transform Occlusion(Transform parent, Dictionary<string, Transform> cache, string zone)
+        {
+            string key = "Occlusion_" + zone;
+            Transform found;
+            if (cache.TryGetValue(key, out found))
+                return found;
+            var go = new GameObject(key);
+            go.transform.SetParent(parent, false);
+            go.isStatic = true;
+            cache[key] = go.transform;
+            return go.transform;
+        }
+
+        static void BatchStatic(Transform root)
+        {
+            if (root == null) return;
+            for (int i = 0; i < root.childCount; i++)
+            {
+                Transform child = root.GetChild(i);
+                if (!child.name.StartsWith("Occlusion_")) continue;
+                Transform[] all = child.GetComponentsInChildren<Transform>(true);
+                for (int t = 0; t < all.Length; t++)
+                    all[t].gameObject.isStatic = true;
+                StaticBatchingUtility.Combine(child.gameObject);
+            }
         }
 
         void BuildLaunchPads()
@@ -326,6 +383,7 @@ namespace Tag.Level
             go.transform.SetParent(parent, false);
             go.transform.localPosition = new Vector3((x0 + x1) * 0.5f, yTop - t * 0.5f, (z0 + z1) * 0.5f);
             go.transform.localScale = new Vector3(x1 - x0, t, z1 - z0);
+            go.isStatic = true;
             MeshRenderer r = go.GetComponent<MeshRenderer>();
             if (r != null)
                 r.sharedMaterial = mat;
@@ -334,11 +392,14 @@ namespace Tag.Level
                 DestroyImmediate(col);
         }
 
-        void BuildSpawns()
+        Transform BuildSpawns()
         {
             Transform g = Group("Spawns");
-            BuildSpawnList(g, MegaParkP1Layout.Spawns);
-            BuildSpawnList(g, MegaParkP1Layout.RunnerSpawns);
+            var zones = new Dictionary<string, Transform>();
+            Transform bucket = Occlusion(g, zones, "Spawns");
+            BuildSpawnList(bucket, MegaParkP1Layout.Spawns);
+            BuildSpawnList(bucket, MegaParkP1Layout.RunnerSpawns);
+            return g;
         }
 
         void BuildSpawnList(Transform g, MegaParkP1Layout.SpawnPad[] pads)
@@ -356,6 +417,7 @@ namespace Tag.Level
                 disc.transform.SetParent(go.transform, false);
                 disc.transform.localPosition = new Vector3(0f, 0.04f, 0f);
                 disc.transform.localScale = new Vector3(2f, 0.02f, 2f);
+                disc.isStatic = true;
                 MeshRenderer r = disc.GetComponent<MeshRenderer>();
                 if (r != null)
                     r.sharedMaterial = PadMat(pad.Name);
@@ -368,6 +430,7 @@ namespace Tag.Level
                 wedge.transform.SetParent(go.transform, false);
                 wedge.transform.localPosition = new Vector3(0f, 0.08f, 1.15f);
                 wedge.transform.localScale = new Vector3(0.4f, 0.05f, 0.7f);
+                wedge.isStatic = true;
                 MeshRenderer wr = wedge.GetComponent<MeshRenderer>();
                 if (wr != null)
                     wr.sharedMaterial = _concrete;

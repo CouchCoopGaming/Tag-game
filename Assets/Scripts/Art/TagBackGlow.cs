@@ -12,7 +12,8 @@ namespace Tag.Art
     [DisallowMultipleComponent]
     public class TagBackGlow : MonoBehaviour
     {
-        static readonly Color Safe = new Color(0.45f, 0.95f, 1f, 1f);
+        // Aqua-cyan. Sky cyan (0.45, 0.95, 1) sat 20° off hopscotch #6AA8D6 at contrast 1.94.
+        static readonly Color Safe = new Color(0.20f, 1.00f, 0.92f, 1f);
 
         ItController _it;
         TagRole _role;
