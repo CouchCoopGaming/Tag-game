@@ -70,6 +70,23 @@ namespace Tag.Settings
         public bool Minimap = true;
         public int Arena;
 
+        /// <summary>Opponents beside the local player. 0 is solo. 3 fills the pads.</summary>
+        public const int AiMin = 0;
+        public const int AiMax = 3;
+        public const int RoundsMin = 1;
+        public const int RoundsMax = 5;
+        public const int RoundLengthDefault = 1;
+
+        public static readonly float[] DifficultyTiers = { 0.2f, 0.5f, 0.9f };
+        public static readonly string[] DifficultyNames = { "Easy", "Normal", "Hard" };
+        /// <summary>Index 1 is the 120s Least It default. The others are presets.</summary>
+        public static readonly float[] RoundLengthPresets = { 60f, 120f, 180f, 300f };
+
+        public int AiOpponents = 1;
+        public int DifficultyTier = 1;
+        public int RoundLengthIndex = RoundLengthDefault;
+        public int RoundsPerMatch = 1;
+
         public static GameSettings Defaults()
         {
             return new GameSettings();
@@ -90,6 +107,10 @@ namespace Tag.Settings
             Colorblind = other.Colorblind;
             Minimap = other.Minimap;
             Arena = other.Arena;
+            AiOpponents = other.AiOpponents;
+            DifficultyTier = other.DifficultyTier;
+            RoundLengthIndex = other.RoundLengthIndex;
+            RoundsPerMatch = other.RoundsPerMatch;
         }
 
         public void ResetToDefaults()
@@ -107,8 +128,39 @@ namespace Tag.Settings
             Ui = ClampFloat(Ui, 0f, 1f);
             Music = ClampFloat(Music, 0f, 1f);
             HudScale = ClampFloat(HudScale, HudMin, HudMax);
+            int lastArena = Tag.Onboard.ArenaRegistry.Count - 1;
+            if (lastArena < 0) lastArena = 0;
             if (Arena < 0) Arena = 0;
-            if (Arena > 1) Arena = 1;
+            if (Arena > lastArena) Arena = lastArena;
+            if (AiOpponents < AiMin) AiOpponents = AiMin;
+            if (AiOpponents > AiMax) AiOpponents = AiMax;
+            if (DifficultyTier < 0) DifficultyTier = 0;
+            if (DifficultyTier >= DifficultyTiers.Length) DifficultyTier = DifficultyTiers.Length - 1;
+            if (RoundLengthIndex < 0) RoundLengthIndex = 0;
+            if (RoundLengthIndex >= RoundLengthPresets.Length) RoundLengthIndex = RoundLengthPresets.Length - 1;
+            if (RoundsPerMatch < RoundsMin) RoundsPerMatch = RoundsMin;
+            if (RoundsPerMatch > RoundsMax) RoundsPerMatch = RoundsMax;
+        }
+
+        public float DifficultyValue()
+        {
+            int i = DifficultyTier;
+            if (i < 0 || i >= DifficultyTiers.Length) i = 1;
+            return DifficultyTiers[i];
+        }
+
+        public string DifficultyLabel()
+        {
+            int i = DifficultyTier;
+            if (i < 0 || i >= DifficultyNames.Length) i = 1;
+            return DifficultyNames[i];
+        }
+
+        public float RoundSeconds()
+        {
+            int i = RoundLengthIndex;
+            if (i < 0 || i >= RoundLengthPresets.Length) i = RoundLengthDefault;
+            return RoundLengthPresets[i];
         }
 
         public void Nudge(int row, int dir)

@@ -222,6 +222,32 @@ namespace Tag.Local
             return _sharedCfg;
         }
 
+        public void ApplyOpponents(int count)
+        {
+            if (count < 0) count = 0;
+            if (count > 3) count = 3;
+            Retire(OpponentPawnName + "_2");
+            Retire(OpponentPawnName + "_3");
+            GameObject dummy = GameObject.Find(OpponentPawnName);
+            if (count <= 0)
+            {
+                if (dummy != null) dummy.SetActive(false);
+                return;
+            }
+            if (dummy == null) return;
+            dummy.SetActive(true);
+            if (count >= 2)
+                SpawnExtraDummies(dummy, count);
+        }
+
+        static void Retire(string name)
+        {
+            GameObject go = GameObject.Find(name);
+            if (go == null) return;
+            go.SetActive(false);
+            Destroy(go);
+        }
+
         void SpawnExtraDummies(GameObject template, int count)
         {
             int n = EnemyAi.ClampDummyCount(count);
