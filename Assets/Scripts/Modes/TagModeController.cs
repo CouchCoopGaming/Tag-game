@@ -11,6 +11,7 @@ using Tag.Onboard;
 using Tag.Settings;
 using Tag.Front;
 using Tag.Practice;
+using Tag.MatchStats;
 
 namespace Tag.Modes
 {
@@ -309,6 +310,7 @@ namespace Tag.Modes
             // Same-frame double R (this controller and GameFlow) must not restart twice.
             if (Time.unscaledTime < _roundStartGuard)
                 return;
+            MatchLive.OnRoundStarting();
             _roundStartGuard = Time.unscaledTime + 0.05f;
             FrontLive.OnRoundStarted();
             if (_localPaused)
@@ -413,7 +415,25 @@ namespace Tag.Modes
                     TransferIt(null, _livingScratch[Random.Range(0, _livingScratch.Count)]);
             }
             EnforceSpawnSafety();
+            if (!PracticeSession.Active)
+                MatchLive.Arm();
             Debug.Log("[TagMode] Playing " + ModeIdName(selectedMode));
+        }
+
+        public int ExportRoster(ItController[] into)
+        {
+            if (into == null) return 0;
+            int n = 0;
+            int c = players.Count;
+            for (int i = 0; i < c; i++)
+            {
+                ItController p = players[i];
+                if (p == null) continue;
+                if (n >= into.Length) break;
+                into[n] = p;
+                n++;
+            }
+            return n;
         }
 
         /// <summary>
@@ -464,6 +484,8 @@ namespace Tag.Modes
             if (!PracticeSession.Active)
                 PollPlaytestModeHotkeys();
             PollResultsKeys();
+            if (_phase == MatchPhase.Results)
+                MatchGhostView.Tick(Time.unscaledDeltaTime);
 
             float dt = Time.deltaTime;
 
@@ -498,10 +520,19 @@ namespace Tag.Modes
 
             _ctx.Elapsed += dt;
             if (_ctx.CurrentIt != null) _chase += dt;
+            if (!PracticeSession.Active)
+                MatchLive.Sample(dt);
             _mode.Tick(_ctx, dt);
             RoundChime.Tick(_ctx.RemainingTime);
             if (_mode.ShouldEndRound(_ctx))
                 EndMatch();
+        }
+
+        void LateUpdate()
+        {
+            if (PracticeSession.Active) return;
+            if (_phase != MatchPhase.Playing) return;
+            MatchLive.CloseFrame();
         }
 
         /// <summary>
@@ -555,6 +586,12 @@ namespace Tag.Modes
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetResultsFocus(1);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetResultsFocus(2);
             if (Time.unscaledTime < _resultsInputReadyAt) return;
+            if (MatchHighlight.Playing && (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) || UnityEngine.Input.GetKeyDown(KeyCode.Space) || PadNav.Confirm || UnityEngine.Input.GetKeyDown(KeyCode.Q) || UnityEngine.Input.GetKeyDown(KeyCode.Escape) || PadNav.Back))
+            {
+                MatchHighlight.Skip();
+                MatchGhostView.Release();
+                return;
+            }
             var flow = GameFlow.Instance;
             if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
                 UnityEngine.Input.GetKeyDown(KeyCode.Space) || PadNav.Confirm)
@@ -672,6 +709,8 @@ namespace Tag.Modes
             if (from != null)
             {
                 from.NoteTagLanded();
+                if (to != null)
+                    MatchLive.NoteTag(from, to);
                 if (_chase > _longestChase) _longestChase = _chase;
                 _chase = 0f;
                 if (IsLocalHuman(from) && to != null)
@@ -786,9 +825,11 @@ namespace Tag.Modes
             SnapshotScores();
             if (FrontLive.KeepGoing(_scoreIds, _scoreTimes, _scoreTags, _scoreCount, _scoreLongest))
             {
+                MatchLive.Hold();
                 StartRound(selectedMode);
                 return;
             }
+            MatchLive.Seal();
             _ctx.RoundRunning = false;
             if (_ctx.RemainingTime < 0f) _ctx.RemainingTime = 0f;
             _phase = MatchPhase.Results;
@@ -1326,18 +1367,50 @@ namespace Tag.Modes
 
         void DrawResultsCard()
         {
+            float hud = GameSettings.Current != null ? GameSettings.Current.HudScale : 1f;
+            bool story = MatchBook.Sealed && MatchBook.Count > 0;
+            int seats = story ? MatchBook.Count : 0;
+            int cols = seats < 1 ? 1 : (seats < 4 ? seats : 4);
             float w = 560f;
             float h = 300f + _scoreCount * 22f;
+            if (story)
+            {
+                w = cols * 260f * hud + 48f;
+                if (w < 640f) w = 640f;
+                if (w > Screen.width - 24f) w = Screen.width - 24f;
+                h = Screen.height - 32f;
+                if (h > 840f) h = 840f;
+                if (h < 420f) h = 420f;
+            }
             float x = (Screen.width - w) * 0.5f;
-            float y = Mathf.Max(24f, Screen.height * 0.18f);
+            float y = story ? Mathf.Max(12f, (Screen.height - h) * 0.5f) : Mathf.Max(24f, Screen.height * 0.18f);
             if (_countStyle == null) return;
             string title = string.IsNullOrEmpty(_resultTitle) ? "ROUND OVER" : _resultTitle;
             GUI.Box(new Rect(x, y, w, h), "");
-            _countStyle.fontSize = 46;
+            _countStyle.fontSize = story ? MatchBook.CouchFont(46, hud) : 46;
+            _countStyle.alignment = TextAnchor.MiddleCenter;
             _countStyle.normal.textColor = Color.white;
-            GUI.Label(new Rect(x, y + 12, w, 56), title, _countStyle);
-            _countStyle.fontSize = 54;
-            GUI.Label(new Rect(x + 16, y + 68, w - 32, h - 120f), _scoreCard);
+            if (story)
+                GUI.Label(new Rect(x, y + 8, w, MatchBook.CouchFont(52, hud)), title, _countStyle);
+            else
+                GUI.Label(new Rect(x, y + 12, w, 56), title, _countStyle);
+            if (story)
+            {
+                int scoreSize = MatchBook.CouchFont(20, hud);
+                _countStyle.fontSize = scoreSize;
+                _countStyle.alignment = TextAnchor.UpperLeft;
+                int lines = 8 + (seats < 4 ? seats : 4);
+                float scoreH = scoreSize * lines * 0.9f;
+                float top = y + MatchBook.CouchFont(52, hud) + 4f;
+                GUI.Label(new Rect(x + 16, top, w - 32, scoreH), _scoreCard, _countStyle);
+                _countStyle.alignment = TextAnchor.MiddleCenter;
+                MatchResults.Paint(x, top + scoreH, w, h - (top - y) - scoreH - 56f, hud);
+            }
+            else
+            {
+                _countStyle.fontSize = 54;
+                GUI.Label(new Rect(x + 16, y + 68, w - 32, h - 120f), _scoreCard);
+            }
             float bw = 128f;
             float gap = 8f;
             float by = y + h - 44f;
@@ -1354,6 +1427,12 @@ namespace Tag.Modes
             {
                 _resultsFocus = 0;
                 if (!canAct) return;
+                if (MatchHighlight.Playing)
+                {
+                    MatchHighlight.Skip();
+                    MatchGhostView.Release();
+                    return;
+                }
                 _resultsActionTaken = true;
                 var flow = GameFlow.Instance;
                 if (flow != null) flow.Rematch();
@@ -1367,6 +1446,12 @@ namespace Tag.Modes
             {
                 _resultsFocus = 1;
                 if (!canAct) return;
+                if (MatchHighlight.Playing)
+                {
+                    MatchHighlight.Skip();
+                    MatchGhostView.Release();
+                    return;
+                }
                 _resultsActionTaken = true;
                 TagSfx.UiConfirm();
                 if (GameFlow.Instance != null) GameFlow.Instance.OpenSetup();
@@ -1376,6 +1461,12 @@ namespace Tag.Modes
             {
                 _resultsFocus = 2;
                 if (!canAct) return;
+                if (MatchHighlight.Playing)
+                {
+                    MatchHighlight.Skip();
+                    MatchGhostView.Release();
+                    return;
+                }
                 _resultsActionTaken = true;
                 TagSfx.UiConfirm();
                 if (GameFlow.Instance != null) GameFlow.Instance.QuitToMenu();

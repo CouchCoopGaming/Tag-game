@@ -121,5 +121,8 @@
     <Compile Include="../../Assets/Scripts/Practice/PracticeSim.cs" />
     <Compile Include="../../Assets/Scripts/Practice/PracticeSession.cs" />
     <Compile Include="../../Assets/Scripts/Practice/PracticeProof.cs" />
+    <Compile Include="../../Assets/Scripts/Match/MatchBook.cs" />
+    <Compile Include="../../Assets/Scripts/Match/MatchHighlight.cs" />
+    <Compile Include="../../Assets/Scripts/Match/MatchStatsProof.cs" />
   </ItemGroup>
 </Project>
