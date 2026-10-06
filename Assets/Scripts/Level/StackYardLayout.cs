@@ -1225,9 +1225,9 @@ namespace Tag.Level
             ShipColumn(list, "Ship_E2", "Roof", 108.05f, 40f, 2.05f, 10f, 4.4f, 2);
             ShipColumn(list, "Ship_E3", "Roof", 108.05f, 56f, 2.05f, 8f, 6.3f, 3);
 
-            Add(list, "Wh_North", "Roof", "wall", "steel", 56f, 2.7f, 69.2f, 34f, 5.2f, 0.32f, 0f);
-            Add(list, "Wh_West", "Mid", "wall", "steel", 39.2f, 2.7f, 68.55f, 0.32f, 5.2f, 1.15f, 0f);
-            Add(list, "Wh_East", "Roof", "wall", "steel", 72.8f, 2.7f, 68.55f, 0.32f, 5.2f, 1.15f, 0f);
+            Add(list, "Wh_North", "Roof", "wall", "steel", 56f, 2.6f, 69.2f, 34f, 5.2f, 0.32f, 0f);
+            Add(list, "Wh_West", "Mid", "wall", "steel", 39.2f, 2.6f, 68.55f, 0.32f, 5.2f, 1.15f, 0f);
+            Add(list, "Wh_East", "Roof", "wall", "steel", 72.8f, 2.6f, 68.55f, 0.32f, 5.2f, 1.15f, 0f);
             Add(list, "Wh_Roof", "Roof", "wall", "steel", 56f, 5.22f, 68.55f, 33.4f, 0.2f, 1.05f, 5.12f);
 
             AddGapStairs(list, "Stair_WestMid", 30f, 34f, 6f, 30f, 18f, 0f, -5.6f, 0f);
