@@ -857,7 +857,7 @@ namespace Tag.Modes
             }
             if (LocalPauseButton(cx, cy + 46, 4, "Quit to Menu")) LoadBootMenu();
             GUI.Label(new Rect(cx - 140, cy + 78, 280, 96),
-                "Left / Right picks    Enter / Space\nEsc resume    Q menu    H controls\n1-5 highlight\nM mute    N music    Up / Down bed" + extra);
+                "Left / Right picks    Enter / Space\nEsc resume    Q menu    H controls\n1-5 highlight\nM map    Comma mute    N music    Up / Down bed" + extra);
         }
 
         void DrawLocalControls(float cx, float cy)
@@ -918,7 +918,7 @@ namespace Tag.Modes
                 _localAudioFocus = 1;
                 Tag.Audio.AudioMaster.CycleMusic(_localSideDir);
             }
-            string muteLabel = Tag.Audio.AudioMaster.Muted ? "Unmute (M)" : "Mute (M)";
+            string muteLabel = Tag.Audio.AudioMaster.Muted ? "Unmute (Comma)" : "Mute (Comma)";
             if (LocalSubRow(cx, cy + 12, 2, ref _localAudioFocus, muteLabel))
                 Tag.Audio.AudioMaster.ToggleMute();
             string musicLabel = Tag.Audio.AudioMaster.MusicMuted ? "Music on (N)" : "Music off (N)";
@@ -930,7 +930,7 @@ namespace Tag.Modes
                 TagSfx.UiClick();
             }
             GUI.Label(new Rect(cx - 190, cy + 116, 380, 48),
-                "Up / Down picks. Left / Right steps the row.\n1-5 highlight. M mute. N music. Enter uses it. Esc back.");
+                "Up / Down picks. Left / Right steps the row.\n1-5 highlight. M map. Comma mute. N music. Enter uses it. Esc back.");
         }
 
         int _localSideDir;

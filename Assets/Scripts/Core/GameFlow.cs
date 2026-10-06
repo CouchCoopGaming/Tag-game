@@ -499,7 +499,7 @@ namespace Tag.Core
             {
                 GUI.Box(new Rect(cx - 210, cy - 170, 420, 360), "TAG - party slice");
                 string hello = _firstBoot
-                    ? "First run: you + 1 bot, Least It. " + ControlBinds.PunchName + " or E tags.\nEsc pauses. M mute. N music. R rematches."
+                    ? "First run: you + 1 bot, Least It. " + ControlBinds.PunchName + " or E tags.\nEsc pauses. M map. Comma mute. N music. R rematches."
                     : "Play is you and one bot. Couch is local humans.";
                 GUI.Label(new Rect(cx - 190, cy - 128, 380, 44), hello);
                 if (FocusButton(new Rect(cx - 90, cy - 76, 180, 32), 0, ref _bootFocus, "Play Tag (Least It)"))
@@ -556,7 +556,7 @@ namespace Tag.Core
                 if (FocusButton(new Rect(cx - 70, cy + 46, 140, 28), 4, ref _pauseFocus, "Quit to Menu"))
                     QuitToMenu();
                 GUI.Label(new Rect(cx - 140, cy + 78, 280, 64),
-                    "Left / Right or 1-5 picks    Enter / Space\nEsc resume    Q menu    H controls\nM mute    N music    Up / Down bed");
+                    "Left / Right or 1-5 picks    Enter / Space\nEsc resume    Q menu    H controls\nM map    Comma mute    N music    Up / Down bed");
             }
             else if (State == GameFlowState.RoundEnd)
             {
@@ -731,7 +731,7 @@ namespace Tag.Core
                 _audioFocus = 1;
                 AudioMaster.CycleMusic(SideDir());
             }
-            string muteLabel = AudioMaster.Muted ? "Unmute (M)" : "Mute (M)";
+            string muteLabel = AudioMaster.Muted ? "Unmute (Comma)" : "Mute (Comma)";
             if (SubRow(cx, cy + 12, 2, ref _audioFocus, muteLabel))
                 AudioMaster.ToggleMute();
             string musicLabel = AudioMaster.MusicMuted ? "Music on (N)" : "Music off (N)";
@@ -743,7 +743,7 @@ namespace Tag.Core
                 AudioCuePlayer.Ensure()?.UiClick();
             }
             GUI.Label(new Rect(cx - 190, cy + 116, 380, 48),
-                "Up / Down picks. Left / Right steps the row.\n1-5 highlight. M mute. N music. Enter uses it. Esc back.");
+                "Up / Down picks. Left / Right steps the row.\n1-5 highlight. M map. Comma mute. N music. Enter uses it. Esc back.");
         }
 
         static int _sideDir;

@@ -45,6 +45,7 @@ namespace TagArena.Movement
             "RMB grapple is experimental and stays off\n" +
             "F1 Hot Potato   F2 Least It   F3 Trail Tag   F4 Free play\n" +
             "Esc pause\n" +
+            "M minimap\n" +
             "Air dash key: " + DashName + "    Punch key: " + PunchName + "\n" +
             "Volume: " + Tag.Audio.AudioMaster.Label;
 
