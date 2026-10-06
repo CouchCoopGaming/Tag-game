@@ -457,6 +457,14 @@ static class Program
             return 1;
         }
 
+        Tag.Level.PocketParkLayout.Audit pocket = Tag.Level.PocketParkLayout.Run();
+        Console.WriteLine(pocket.Line);
+        if (!pocket.Ok)
+        {
+            Console.Error.WriteLine(pocket.Failure);
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }

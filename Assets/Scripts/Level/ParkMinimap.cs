@@ -18,12 +18,16 @@ namespace Tag.Level
         Color32[] _frame;
         int _w;
         int _h;
+        float _mapW;
+        float _mapD;
         bool _show = true;
 
-        void Awake()
+        void Start()
         {
+            _mapW = ParkArena.MapW;
+            _mapD = ParkArena.MapD;
             _w = TexSize;
-            _h = Mathf.RoundToInt(TexSize * (MegaParkP1Layout.MapD / MegaParkP1Layout.MapW));
+            _h = Mathf.RoundToInt(TexSize * (_mapD / _mapW));
             if (_h < 1) _h = 1;
             if (_h > TexSize) _h = TexSize;
             _tex = new Texture2D(_w, _h, TextureFormat.RGBA32, false)
@@ -80,7 +84,9 @@ namespace Tag.Level
                 _base[i] = mulch;
 
             var boxes = new System.Collections.Generic.Dictionary<string, Box>();
-            MegaParkP1Layout.Solid[] solids = MegaParkP1Layout.BuildSolids();
+            MegaParkP1Layout.Solid[] solids = ParkArena.IsPocket
+                ? PocketParkLayout.BuildSolids()
+                : MegaParkP1Layout.BuildSolids();
             for (int i = 0; i < solids.Length; i++)
             {
                 MegaParkP1Layout.Solid s = solids[i];
@@ -105,15 +111,19 @@ namespace Tag.Level
             fence.r = (byte)Mathf.Min(255, fence.r + 80);
             fence.g = (byte)Mathf.Min(255, fence.g + 80);
             fence.b = (byte)Mathf.Min(255, fence.b + 80);
-            Outline(0f, 0f, MegaParkP1Layout.MapW, MegaParkP1Layout.MapD, fence);
+            Outline(0f, 0f, _mapW, _mapD, fence);
 
             Color32 pad = new Color32(255, 255, 255, 255);
-            MegaParkP1Layout.PadSpot[] pads = MegaParkP1Layout.LaunchPads;
+            MegaParkP1Layout.PadSpot[] pads = ParkArena.IsPocket
+                ? PocketParkLayout.LaunchPads
+                : MegaParkP1Layout.LaunchPads;
             for (int i = 0; i < pads.Length; i++)
                 Diamond(pads[i].X, pads[i].Z, 3, pad);
 
             Color32 zip = Swatch("zip");
-            MegaParkP1Layout.ZipLineSpot[] zips = MegaParkP1Layout.ZipLines;
+            MegaParkP1Layout.ZipLineSpot[] zips = ParkArena.IsPocket
+                ? PocketParkLayout.ZipLines
+                : MegaParkP1Layout.ZipLines;
             for (int i = 0; i < zips.Length; i++)
             {
                 MegaParkP1Layout.ZipLineSpot z = zips[i];
@@ -162,6 +172,10 @@ namespace Tag.Level
                 case "sand":
                 case "hop":
                 case "field":
+                case "cover":
+                case "plate":
+                case "concrete":
+                case "steel":
                     return true;
                 default:
                     return false;
@@ -266,7 +280,7 @@ namespace Tag.Level
 
         int X(float worldX)
         {
-            int x = Mathf.RoundToInt(worldX / MegaParkP1Layout.MapW * (_w - 1));
+            int x = Mathf.RoundToInt(worldX / _mapW * (_w - 1));
             if (x < 0) return 0;
             if (x >= _w) return _w - 1;
             return x;
@@ -274,7 +288,7 @@ namespace Tag.Level
 
         int Y(float worldZ)
         {
-            int y = Mathf.RoundToInt(worldZ / MegaParkP1Layout.MapD * (_h - 1));
+            int y = Mathf.RoundToInt(worldZ / _mapD * (_h - 1));
             if (y < 0) return 0;
             if (y >= _h) return _h - 1;
             return y;

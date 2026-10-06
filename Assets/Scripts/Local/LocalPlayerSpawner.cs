@@ -100,8 +100,22 @@ namespace Tag.Local
 
         void ConfigurePawn(GameObject go, int index, bool ai = false)
         {
-            go.transform.position = Spawns[Mathf.Clamp(index, 0, Spawns.Length - 1)];
-            go.transform.rotation = Quaternion.Euler(0f, Yaws[Mathf.Clamp(index, 0, Yaws.Length - 1)], 0f);
+            Vector3 pos;
+            float yaw;
+            if (ParkArena.IsPocket)
+            {
+                MegaParkP1Layout.SpawnPad[] pads = PocketParkLayout.Spawns;
+                int i = Mathf.Clamp(index, 0, pads.Length - 1);
+                pos = new Vector3(pads[i].X, PocketParkLayout.SpawnY, pads[i].Z);
+                yaw = pads[i].YawDeg;
+            }
+            else
+            {
+                pos = Spawns[Mathf.Clamp(index, 0, Spawns.Length - 1)];
+                yaw = Yaws[Mathf.Clamp(index, 0, Yaws.Length - 1)];
+            }
+            go.transform.position = pos;
+            go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
 
             // CharacterController is the motor. The rigidbody wakes only for the ragdoll window.
             var legacyCc = go.GetComponent<CharacterController>();

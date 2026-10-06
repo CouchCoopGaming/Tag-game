@@ -18,6 +18,9 @@ namespace Tag.Level
         /// <summary>Assets/Prefabs/ZipLine.prefab. Play.unity wires this.</summary>
         public GameObject zipLinePrefab;
 
+        /// <summary>0 Mega Park, 1 Pocket Park. Ignored after a player picks an arena.</summary>
+        public int arenaId;
+
         Transform _p1;
         Material _mulch, _grass, _sand, _rubber, _blue, _yellow, _steel, _concrete, _cedar, _bark, _rim, _field;
         Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate;
@@ -32,9 +35,14 @@ namespace Tag.Level
 
         void Awake()
         {
+            if (!ParkArena.HasExplicitChoice)
+                ParkArena.Select(arenaId);
             try
             {
-                Build();
+                if (ParkArena.IsPocket)
+                    BuildPocket();
+                else
+                    Build();
             }
             catch (System.Exception e)
             {
@@ -305,7 +313,11 @@ namespace Tag.Level
 
         Transform BuildSolids()
         {
-            MegaParkP1Layout.Solid[] solids = MegaParkP1Layout.BuildSolids();
+            return BuildSolidList(MegaParkP1Layout.BuildSolids());
+        }
+
+        Transform BuildSolidList(MegaParkP1Layout.Solid[] solids)
+        {
             Transform g = Group("Solids");
             var zones = new Dictionary<string, Transform>();
             for (int i = 0; i < solids.Length; i++)
@@ -327,7 +339,11 @@ namespace Tag.Level
 
         Transform BuildRamps()
         {
-            MegaParkP1Layout.Ramp[] ramps = MegaParkP1Layout.BuildRamps();
+            return BuildRampList(MegaParkP1Layout.BuildRamps());
+        }
+
+        Transform BuildRampList(MegaParkP1Layout.Ramp[] ramps)
+        {
             var drawn = new List<MegaParkP1Layout.RampDraw>();
             var merged = new List<MegaParkP1Layout.Ramp>();
             MegaParkP1Layout.PlanRampColliders(ramps, drawn, merged, out _);
@@ -439,8 +455,12 @@ namespace Tag.Level
 
         void BuildLaunchPads()
         {
+            BuildLaunchPadList(MegaParkP1Layout.LaunchPads);
+        }
+
+        void BuildLaunchPadList(MegaParkP1Layout.PadSpot[] spots)
+        {
             Transform g = Group("LaunchPads");
-            MegaParkP1Layout.PadSpot[] spots = MegaParkP1Layout.LaunchPads;
             for (int i = 0; i < spots.Length; i++)
             {
                 MegaParkP1Layout.PadSpot s = spots[i];
@@ -465,8 +485,12 @@ namespace Tag.Level
 
         void BuildZipLines()
         {
+            BuildZipLineList(MegaParkP1Layout.ZipLines);
+        }
+
+        void BuildZipLineList(MegaParkP1Layout.ZipLineSpot[] lines)
+        {
             Transform g = Group("ZipLines");
-            MegaParkP1Layout.ZipLineSpot[] lines = MegaParkP1Layout.ZipLines;
             for (int i = 0; i < lines.Length; i++)
             {
                 MegaParkP1Layout.ZipLineSpot s = lines[i];
@@ -534,6 +558,15 @@ namespace Tag.Level
             return g;
         }
 
+        Transform BuildSpawnPads(MegaParkP1Layout.SpawnPad[] pads)
+        {
+            Transform g = Group("Spawns");
+            var zones = new Dictionary<string, Transform>();
+            Transform bucket = Occlusion(g, zones, "Spawns");
+            BuildSpawnList(bucket, pads);
+            return g;
+        }
+
         void BuildSpawnList(Transform g, MegaParkP1Layout.SpawnPad[] pads)
         {
             for (int i = 0; i < pads.Length; i++)
@@ -588,8 +621,12 @@ namespace Tag.Level
 
         void BuildLoopMarkers()
         {
+            BuildLoop(MegaParkP1Layout.LoopCcw);
+        }
+
+        void BuildLoop(MegaParkP1Layout.Pt[] loop)
+        {
             Transform g = Group("TrailTag");
-            MegaParkP1Layout.Pt[] loop = MegaParkP1Layout.LoopCcw;
             for (int i = 0; i < loop.Length; i++)
             {
                 var go = new GameObject("WP_" + i.ToString("00"));
@@ -736,6 +773,59 @@ namespace Tag.Level
                 case "grass": return _grass;
                 default: return _mulch;
             }
+        }
+
+        /// <summary>
+        /// Same cube kit, materials, pads, and zips as Mega Park, on the pocket layout.
+        /// </summary>
+        public void BuildPocket()
+        {
+            ApplyLook();
+            EnsureMaterials();
+            EnsureRoot();
+            Transform solids = BuildSolidList(PocketParkLayout.BuildSolids());
+            Transform ramps = BuildRampList(PocketParkLayout.BuildRamps());
+            Transform paint = BuildPocketPaint();
+            Transform spawns = BuildSpawnPads(PocketParkLayout.Spawns);
+            BuildLoop(PocketParkLayout.LoopCcw);
+            BuildLaunchPadList(PocketParkLayout.LaunchPads);
+            BuildZipLineList(PocketParkLayout.ZipLines);
+            BuildPocketLabels();
+            BatchStatic(solids);
+            BatchStatic(ramps);
+            BatchStatic(paint);
+            BatchStatic(spawns);
+
+            PocketParkLayout.Audit audit = PocketParkLayout.Run();
+            LayoutOk = audit.Ok;
+            Built = audit.Ok && _p1 != null;
+            if (audit.Ok)
+                Debug.Log(audit.Line);
+            else
+                Debug.LogError(audit.Line + " :: " + audit.Failure);
+            if (!Built)
+                ClearBuilt();
+        }
+
+        Transform BuildPocketPaint()
+        {
+            Transform g = Group("Paint");
+            var zones = new Dictionary<string, Transform>();
+            Paint(Occlusion(g, zones, "Dome"), "Dome_Carpet", 36f, 52f, 18f, 32f, _amber, 0.025f);
+            Paint(Occlusion(g, zones, "Cling"), "Cling_Carpet", 49f, 58f, 20f, 30f, _pad, 0.025f);
+            Paint(Occlusion(g, zones, "Yard"), "Yard_Carpet", 16f, 28f, 16f, 36f, _cover, 0.025f);
+            Paint(Occlusion(g, zones, "Cut"), "Cut_South", 12f, 68f, 15.2f, 16.8f, _concrete, 0.02f);
+            Paint(Occlusion(g, zones, "Cut"), "Cut_North", 12f, 68f, 37.2f, 38.8f, _concrete, 0.02f);
+            Paint(Occlusion(g, zones, "Cut"), "Cut_West", 17.2f, 18.8f, 10f, 40f, _concrete, 0.02f);
+            return g;
+        }
+
+        void BuildPocketLabels()
+        {
+            Transform g = Group("Labels");
+            Label(g, "DOME", 44f, 25f);
+            Label(g, "LANE", 53f, 24f);
+            Label(g, "YARD", 24f, 32f);
         }
     }
 }

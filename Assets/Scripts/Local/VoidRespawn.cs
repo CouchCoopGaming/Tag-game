@@ -26,17 +26,21 @@ namespace Tag.Local
 
         void Awake()
         {
-            killY = MegaParkP1Layout.KillPlaneY;
             _rb = GetComponent<Rigidbody>();
             _motor = GetComponent<PlayerMotor>();
             _ragdoll = GetComponent<PlayerRagdoll>();
             _it = GetComponent<ItController>();
+        }
 
+        void Start()
+        {
+            // After MegaParkP1Bootstrap.Awake, so a scene arenaId is already selected.
+            killY = ParkArena.IsPocket ? PocketParkLayout.KillPlaneY : MegaParkP1Layout.KillPlaneY;
             float pad = xzMargin;
             _minX = -pad;
-            _maxX = MegaParkP1Layout.MapW + pad;
+            _maxX = ParkArena.MapW + pad;
             _minZ = -pad;
-            _maxZ = MegaParkP1Layout.MapD + pad;
+            _maxZ = ParkArena.MapD + pad;
         }
 
         void FixedUpdate()
@@ -52,7 +56,7 @@ namespace Tag.Local
         {
             Vector3 from = transform.position;
             bool hasIt = TryOtherIt(out Vector3 itPos);
-            MegaParkP1Layout.PickRespawn(
+            ParkArena.PickRespawn(
                 from.x, from.z,
                 hasIt ? itPos.x : from.x,
                 hasIt ? itPos.z : from.z,

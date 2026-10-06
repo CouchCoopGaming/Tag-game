@@ -368,6 +368,11 @@ namespace Tag.Level
             return name == "cling" || name == "slide" || name == "plate" || name == "zip" || name == "tag" || name == "sky";
         }
 
+        public static float SwatchContrast(string a, string b)
+        {
+            return PairContrast(a, b);
+        }
+
         static float PairContrast(string a, string b)
         {
             Swatch sa = default, sb = default;
