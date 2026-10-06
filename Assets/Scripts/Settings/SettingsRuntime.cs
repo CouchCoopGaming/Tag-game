@@ -35,6 +35,7 @@ namespace Tag.Settings
                 settings.MouseSensitivity = LookSensitivity.Current;
                 settings.Master = AudioMaster.Volume;
                 settings.Muted = AudioMaster.Muted;
+                settings.Music = AudioMaster.MusicVolume;
             }
             settings.Clamp();
             bool repaired = false;
@@ -77,6 +78,7 @@ namespace Tag.Settings
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             LookSensitivity.Assign(s.MouseSensitivity);
             AudioMaster.ApplyFromSettings(s.Master, s.Muted);
+            AudioMaster.ApplyMusicFromSettings(s.Music);
             _applying = false;
         }
 
@@ -86,6 +88,15 @@ namespace Tag.Settings
             if (GameSettings.Current == null) GameSettings.Current = GameSettings.Defaults();
             GameSettings.Current.Master = master;
             GameSettings.Current.Muted = muted;
+            GameSettings.Current.Clamp();
+            Save();
+        }
+
+        public static void NoteMusic(float music)
+        {
+            if (_applying) return;
+            if (GameSettings.Current == null) GameSettings.Current = GameSettings.Defaults();
+            GameSettings.Current.Music = music;
             GameSettings.Current.Clamp();
             Save();
         }

@@ -99,6 +99,10 @@
     <Compile Include="../../Assets/Scripts/Core/HotPathAlloc.cs" />
     <Compile Include="../../Assets/Scripts/Core/FrameMeter.cs" />
     <Compile Include="../../Assets/Scripts/Core/FrameBudget.cs" />
+    <Compile Include="../../Assets/Scripts/Audio/VoiceBudget.cs" />
+    <Compile Include="../../Assets/Scripts/Audio/ClipCatalog.cs" />
+    <Compile Include="../../Assets/Scripts/Audio/FootstepMap.cs" />
+    <Compile Include="../../Assets/Scripts/Audio/AudioProof.cs" />
     <Compile Include="../../Assets/Scripts/Onboard/ArenaRegistry.cs" />
     <Compile Include="../../Assets/Scripts/Onboard/ControlGlyphs.cs" />
     <Compile Include="../../Assets/Scripts/Onboard/OnboardingSession.cs" />

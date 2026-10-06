@@ -71,7 +71,7 @@ namespace Tag.Settings
             if (Input.GetKeyDown(KeyCode.Escape) || PadNav.Back)
             {
                 Close();
-                AudioCuePlayer.Ensure()?.UiClick();
+                TagSfx.UiBack();
                 return;
             }
             if (Input.GetKeyDown(KeyCode.UpArrow) || PadNav.Up)
@@ -212,19 +212,19 @@ namespace Tag.Settings
             if (next > max) next = max;
             if (next == _focus) return;
             _focus = next;
-            AudioCuePlayer.Ensure()?.UiClick();
+            TagSfx.UiMove();
         }
 
         static void SetFocus(int index)
         {
             if (_focus == index) return;
             _focus = index;
-            AudioCuePlayer.Ensure()?.UiClick();
+            TagSfx.UiMove();
         }
 
         static void Step(int dir)
         {
-            if (Which == Panel.Settings && _focus <= 9)
+            if (Which == Panel.Settings && _focus <= GameSettings.RowMinimap)
             {
                 var s = GameSettings.Current ?? GameSettings.Defaults();
                 GameSettings.Current = s;
@@ -258,28 +258,29 @@ namespace Tag.Settings
         {
             if (Which == Panel.Settings)
             {
-                if (_focus == 10)
+                if (_focus == GameSettings.RowReset)
                 {
                     GameSettings.Current.ResetToDefaults();
                     SettingsRuntime.Apply();
                     SettingsRuntime.Save();
-                    AudioCuePlayer.Ensure()?.UiClick();
+                    TagSfx.UiConfirm();
                     return;
                 }
-                if (_focus == 11)
+                if (_focus == GameSettings.RowReplay)
                 {
                     OnboardingSession.Live.Replay();
                     OnboardingStore.Save(OnboardingSession.Live);
-                    AudioCuePlayer.Ensure()?.UiClick();
+                    TagSfx.UiConfirm();
                     return;
                 }
-                if (_focus >= 12)
+                if (_focus >= GameSettings.RowBack)
                 {
                     Close();
-                    AudioCuePlayer.Ensure()?.UiClick();
+                    TagSfx.UiBack();
                     return;
                 }
-                if (_focus == 2 || _focus == 6 || _focus == 8 || _focus == 9)
+                if (_focus == GameSettings.RowInvert || _focus == GameSettings.RowMute
+                    || _focus == GameSettings.RowColorblind || _focus == GameSettings.RowMinimap)
                     Step(1);
                 return;
             }

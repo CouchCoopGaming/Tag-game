@@ -65,16 +65,10 @@ namespace Tag.Audio
 
         public void PlayUi(string resourcesPath)
         {
-            if (_ui == null) return;
-            AudioMaster.Apply();
-            var clip = Load(resourcesPath);
-            if (clip == null)
-            {
-                PlayProcedural(resourcesPath, null);
-                return;
-            }
-            _ui.pitch = 1f;
-            _ui.PlayOneShot(clip);
+            if (resourcesPath == "UI/ui_back") TagSfx.UiBack();
+            else if (resourcesPath == "UI/ui_confirm") TagSfx.UiConfirm();
+            else if (resourcesPath == "UI/ui_move" || resourcesPath == "UI/ui_hover") TagSfx.UiMove();
+            else TagSfx.UiClick();
         }
 
         /// <summary>

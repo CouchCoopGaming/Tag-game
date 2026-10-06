@@ -3,10 +3,9 @@ using UnityEngine;
 namespace Tag.Audio
 {
     /// <summary>
-    /// One named hook per gameplay sound. Placeholders are the procedural tones
-    /// and CC0 clips already resolved by TagSfx. Mute and master volume gate playback.
-    /// Subscribers hear the hook after the placeholder decision. They should not
-    /// start a second copy of the same clip.
+    /// One named hook per gameplay sound. Each hook plays its own baked clip.
+    /// World cues are spatial. Countdown and round end are flat.
+    /// Mute and master volume gate playback. Subscribers should not start a second copy.
     /// </summary>
     public static class AudioBus
     {
@@ -99,26 +98,14 @@ namespace Tag.Audio
         {
             switch (hook)
             {
-                case Hook.Jump: TagSfx.PlayFlat(TagSfx.Jump, 0.4f); break;
-                case Hook.LandSoft: TagSfx.LandAt(position, 0.28f); break;
-                case Hook.LandHard: TagSfx.LandAt(position, 0.48f); break;
-                case Hook.SlideStart: TagSfx.PlayAt(TagSfx.Slide, position, 0.4f); break;
-                case Hook.SlideLoop: TagSfx.PlayAt(TagSfx.Slide, position, 0.18f); break;
-                case Hook.SlideEnd: TagSfx.LandAt(position, 0.16f); break;
-                case Hook.ClingGrab: TagSfx.PlayAt(TagSfx.Thunk, position, 0.32f); break;
-                case Hook.WallJump: TagSfx.LungeWhoosh(position); break;
-                case Hook.AirDash: TagSfx.PlayAirDash(position); break;
-                case Hook.PunchWhiff: TagSfx.PunchMiss(position); break;
+                case Hook.SlideStart: TagSfx.PlayAt(TagSfx.Slide, position, 0.42f, VoiceBudget.PriSlide); break;
+                case Hook.SlideLoop: TagSfx.PlayAt(TagSfx.SlideLoop, position, 0.22f, VoiceBudget.PriSlide); break;
                 case Hook.PunchHit: TagSfx.PunchConnect(position); break;
                 case Hook.Tag: TagSfx.BecomeIt(position); break;
                 case Hook.TagBackBlocked: TagSfx.TagBackThunk(position); break;
-                case Hook.Stagger: TagSfx.PlayAt(TagSfx.Thunk, position, 0.3f); break;
-                case Hook.PadLaunch: TagSfx.PlayAt(TagSfx.Jump, position, 0.46f); break;
-                case Hook.ZipGrab: TagSfx.PlayAt(TagSfx.AirDash, position, 0.36f); break;
-                case Hook.ZipLoop: TagSfx.PlayAt(TagSfx.AirDash, position, 0.16f); break;
-                case Hook.ZipDrop: TagSfx.LandAt(position, 0.22f); break;
                 case Hook.CountdownBeep: TagSfx.CountdownBeep(); break;
                 case Hook.RoundEnd: TagSfx.RoundEnd(); break;
+                default: TagSfx.PlayHook(hook, position); break;
             }
         }
     }
