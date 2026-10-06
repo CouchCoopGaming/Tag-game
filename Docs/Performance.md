@@ -22,13 +22,15 @@ A quiet frame is 72. A frame where all three AI refresh together is 144. Worst o
 
 ## Proof
 
-`Tools/StrafeJumpSim` runs `FrameBudget.Run`. It is a 120 second round at 60 Hz (7200 frames) with one human stand-in and three AI on the Mega Park loop. The human and the It follow the loop. The two runners call `EnemyAi.Evade`. Path and loop searches refresh at 5.2 Hz, or sooner after 1.25 m of travel, which is the same rule the pawn uses.
+`Tools/StrafeJumpSim` runs `FrameBudget.RunAll`. Each arena is a 120 second round at 60 Hz (7200 frames) with one human stand-in and three AI. The human and the It follow that arena's loop. The two runners call `EnemyAi.Evade`. Path and loop searches refresh at 5.2 Hz, or sooner after 1.25 m of travel, which is the same rule the pawn uses. Mega Park, Pocket Park, and Stack Yard each stay under the spike cap.
 
 ```
 frame-budget seconds=120 hz=60 frames=7200 players=4 ai=3 map=mega-park median=72 worst=144 ratio=2.00 move=230400 ai=117096 pose=172800 hud=36000 audio=14400 round=21600 decides=3079 loopSearches=3079 budget=240 headroom=96 steady=ok
+frame-budget seconds=120 hz=60 frames=7200 players=4 ai=3 map=pocket-park median=72 worst=144 ratio=2.00 move=230400 ai=116256 pose=172800 hud=36000 audio=14400 round=21600 decides=3044 loopSearches=3044 budget=240 headroom=96 steady=ok
+frame-budget seconds=120 hz=60 frames=7200 players=4 ai=3 map=stack-yard median=72 worst=144 ratio=2.00 move=230400 ai=117096 pose=172800 hud=36000 audio=14400 round=21600 decides=3079 loopSearches=3079 budget=240 headroom=96 steady=ok
 ```
 
-3079 decides across three AI is about 8.6 Hz each, not 60. Loop searches match decides: one projection per refresh. A second projection of the same point is a cache hit and returns the same point.
+On Mega Park, 3079 decides across three AI is about 8.6 Hz each, not 60. Loop searches match decides on every arena: one projection per refresh. A second projection of the same point is a cache hit and returns the same point. The loop cache resets when the arena changes, so Pocket Park and Stack Yard do not reuse a Mega Park sample.
 
 ## What the scan found
 

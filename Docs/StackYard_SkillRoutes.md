@@ -19,7 +19,7 @@ Start (28.0, 16.0) end (16.0, 28.0). Chevrons sit on Cling_Yard. climb 2.40 m (C
 
 ## Tiers
 
-Ground, mid decks at 6 m, and roofs at 12 m. Concrete steps, olive container stacks, amber rises, and teal warehouse roofs are solid piles on those footprints. Narrow catwalks link the towers, and cranes mark the four corners. Cling_Yard and Cling_East climb to the mid decks. Cling_Roof and Cling_Lane climb from the mid decks to the roofs. Launch_Mid and Launch_Roof throw onto those tiers. Zip_Cross leaves the west roof for the yard. Slides run back down both stairs. A fall off a roof lands inside the fence, above the kill plane.
+Ground, mid decks at 6 m, and roofs at 12 m. Container rows line the fence, the towers read as stacked shells, and a warehouse shell closes the north edge. Stair treads sit on the slides and forklifts and pallets sit as low cover. The chase grid is the same set of open cells. Narrow catwalks link the towers, and cranes mark the four corners. Cling_Yard and Cling_East climb to the mid decks. Cling_Roof and Cling_Lane climb from the mid decks to the roofs. Launch_Mid and Launch_Roof throw onto those tiers. Zip_Cross leaves the west roof for the yard. Slides run back down both stairs. A fall off a roof lands inside the fence, above the kill plane.
 
 ## Chokepoints
 
