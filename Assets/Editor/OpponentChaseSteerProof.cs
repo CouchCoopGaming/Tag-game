@@ -735,6 +735,10 @@ public static class OpponentChaseSteerProof
         s.PadDistance = 999f;
         s.PadHelps = false;
         s.PadAim = Vector3.zero;
+        s.ZipAhead = false;
+        s.ZipDistance = 999f;
+        s.ZipHelps = false;
+        s.ZipAim = Vector3.zero;
         return s;
     }
 

@@ -112,6 +112,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Level.ZipLineRules.ProofLine());
+        if (!Tag.Level.ZipLineRules.Holds())
+        {
+            Console.Error.WriteLine("zip line is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.WallJumpPose.ProofLine());
         if (!Tag.Art.WallJumpPose.Holds())
         {
