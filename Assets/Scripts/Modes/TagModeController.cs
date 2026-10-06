@@ -392,7 +392,11 @@ namespace Tag.Modes
             Debug.Log($"[TagMode] Countdown {_phaseTimer:0}s -> {selectedMode} ({_ctx.Players.Count}p)");
         }
 
-        public void Rematch() => StartRound(selectedMode);
+        public void Rematch()
+        {
+            FrontLive.BeginMatch();
+            StartRound(selectedMode);
+        }
 
         void BeginPlaying()
         {

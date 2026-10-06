@@ -40,6 +40,13 @@ namespace Tag.Front
             Clear();
         }
 
+        /// <summary>A new match, including rematch. Round totals from the last match do not carry.</summary>
+        public static void BeginMatch()
+        {
+            _continue = false;
+            Clear();
+        }
+
         public static void SetMatch(int rounds)
         {
             if (rounds < GameSettings.RoundsMin) rounds = GameSettings.RoundsMin;

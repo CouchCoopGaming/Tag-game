@@ -142,7 +142,7 @@ namespace Tag.Modes
 
             if (self != null && self.IsIt)
             {
-                AccessibilityPalette.It(palette, out float ir, out float ig, out float ib);
+                AccessibilityPalette.ItAgainst(palette, swatch, out float ir, out float ig, out float ib);
                 GUI.color = new Color(ir, ig, ib, 1f);
                 GUI.DrawTexture(new Rect(ix, iy, iw, ih), Texture2D.whiteTexture);
                 GUI.color = Color.white;

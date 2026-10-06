@@ -30,7 +30,21 @@ namespace Tag.Practice
         public static int Leftovers;
         public static string RouteId = "";
 
+        static int _savedArena;
+        static int _savedAi;
+        static int _savedDiff;
+        static int _savedLen;
+        static int _savedRounds;
+        static bool _saved;
+
         public static int AiCount => Active && Dummy ? 1 : 0;
+
+        /// <summary>Practice never crowns It. A punch on the dummy stays a punch.</summary>
+        public static bool FilterIt(bool active, bool want)
+        {
+            if (active && want) return false;
+            return want;
+        }
 
         public static void ResetStatics()
         {
@@ -44,6 +58,7 @@ namespace Tag.Practice
             Live = 0;
             Leftovers = 0;
             RouteId = "";
+            _saved = false;
         }
 
         public static void Open()
@@ -118,6 +133,15 @@ namespace Tag.Practice
             RouteId = route == null ? "" : route.Id;
             if (GameSettings.Current != null)
             {
+                if (!_saved)
+                {
+                    _savedArena = GameSettings.Current.Arena;
+                    _savedAi = GameSettings.Current.AiOpponents;
+                    _savedDiff = GameSettings.Current.DifficultyTier;
+                    _savedLen = GameSettings.Current.RoundLengthIndex;
+                    _savedRounds = GameSettings.Current.RoundsPerMatch;
+                    _saved = true;
+                }
                 GameSettings.Current.Arena = Arena;
                 GameSettings.Current.Clamp();
             }
@@ -132,6 +156,16 @@ namespace Tag.Practice
             ItAssigned = false;
             ReleaseActors();
             RouteId = "";
+            if (_saved && GameSettings.Current != null)
+            {
+                GameSettings.Current.Arena = _savedArena;
+                GameSettings.Current.AiOpponents = _savedAi;
+                GameSettings.Current.DifficultyTier = _savedDiff;
+                GameSettings.Current.RoundLengthIndex = _savedLen;
+                GameSettings.Current.RoundsPerMatch = _savedRounds;
+                GameSettings.Current.Clamp();
+                _saved = false;
+            }
         }
 
         public static void ReleaseActors()
@@ -207,6 +241,21 @@ namespace Tag.Practice
         {
             int i = mask & 63;
             return Lines[i];
+        }
+
+        /// <summary>The practice line follows this seat's table, not the other seat's binds.</summary>
+        public static bool ActionDown(ActionBinds binds, int action, bool pad, string token)
+        {
+            if (binds == null || string.IsNullOrEmpty(token)) return false;
+            if (action < 0 || action >= (int)PlayAction.Count) return false;
+            string bound = pad ? binds.Gamepad[action] : binds.Keyboard[action];
+            return bound == token;
+        }
+
+        /// <summary>An unplugged pad, or a pad that must rejoin, does not drive practice shortcuts.</summary>
+        public static bool PadLive(bool plugged, bool rejoin)
+        {
+            return plugged && !rejoin;
         }
 
         static string[] Build()

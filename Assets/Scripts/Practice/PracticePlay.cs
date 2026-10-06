@@ -86,21 +86,29 @@ namespace Tag.Practice
                 PlaceNow();
             if (!_placed) return;
 
+            if (Time.timeScale <= 0f)
+            {
+                PracticeGhostView.Sync(PracticeSession.RouteId, _time);
+                return;
+            }
+
             if (_punchShow > 0f) _punchShow -= dt;
             if (BindSampler.Pressed(PlayAction.Punch)) _punchShow = 0.12f;
-            bool dash = BindSampler.Held(PlayAction.AirDash) || BindSampler.Pressed(PlayAction.AirDash);
-            bool cling = BindSampler.Held(PlayAction.Cling);
+            int device = Tag.Couch.CouchPlay.DeviceKeyboard;
+            ActionBinds shown = Tag.Couch.CouchPlay.BindsFor(device);
+            bool dash = BindSampler.HeldDevice(shown, PlayAction.AirDash, device) || BindSampler.PressedDevice(shown, PlayAction.AirDash, device);
+            bool cling = BindSampler.HeldDevice(shown, PlayAction.Cling, device);
             if (_motor != null)
             {
                 if (_motor.IsAirDashing) dash = true;
                 if (_motor.ClingHeldActive) cling = true;
             }
             _mask = PracticeInput.Mask(
-                BindSampler.Held(PlayAction.Jump) || BindSampler.Pressed(PlayAction.Jump),
-                BindSampler.Held(PlayAction.Slide),
+                BindSampler.HeldDevice(shown, PlayAction.Jump, device) || BindSampler.PressedDevice(shown, PlayAction.Jump, device),
+                BindSampler.HeldDevice(shown, PlayAction.Slide, device),
                 dash,
-                _punchShow > 0f || BindSampler.Held(PlayAction.Punch),
-                BindSampler.Held(PlayAction.Sprint),
+                _punchShow > 0f || BindSampler.HeldDevice(shown, PlayAction.Punch, device),
+                BindSampler.HeldDevice(shown, PlayAction.Sprint, device),
                 cling);
 
             if (_done || _route == null)
@@ -161,23 +169,22 @@ namespace Tag.Practice
         static void NoteGates(Vector3 body)
         {
             if (_route.Gates == null) return;
-            while (_next < _route.Gates.Length)
+            bool paused = Time.timeScale <= 0f;
+            int after = PracticeGates.Step(_route.Gates, _next, body.x, body.y, body.z, !paused);
+            if (after == _next) return;
+            if (_splitN < Splits.Length)
             {
-                PracticeGate gate = _route.Gates[_next];
-                if (!PracticeCatalog.Hit(gate, body.x, body.y, body.z)) return;
-                if (_splitN < Splits.Length)
-                {
-                    Splits[_splitN] = _time;
-                    float pb = _splitN < _pbN ? PbSplits[_splitN] : 0f;
-                    SplitHud[_splitN] = FormatSplit(_splitN + 1, _time, pb);
-                    _splitN++;
-                }
-                _next++;
+                Splits[_splitN] = _time;
+                float pb = _splitN < _pbN ? PbSplits[_splitN] : 0f;
+                SplitHud[_splitN] = FormatSplit(_splitN + 1, _time, pb);
+                _splitN++;
             }
+            _next = after;
+            if (_next < _route.Gates.Length) return;
             _done = true;
             if (_saved || _route.Id.Length == 0) return;
+            if (!PracticeScore.Commit(true, false, paused, _time, _pbTime)) return;
             _saved = true;
-            if (_pbTime > 0f && _time >= _pbTime) return;
             PracticeBests.Set(_route.Id, _time, Splits, _splitN);
             PracticeGhost.Keep(_route.Id);
             SettingsRuntime.Save();
@@ -264,7 +271,7 @@ namespace Tag.Practice
 
         public static void Sync(string id, float time)
         {
-            if (!PracticeSession.GhostOn || string.IsNullOrEmpty(id) || !PracticeGhost.HasReplay(id))
+            if (!PracticeSession.GhostOn || string.IsNullOrEmpty(id) || !PracticeCatalog.Playable(id, PracticeSession.ArenaName()))
             {
                 Hide();
                 return;

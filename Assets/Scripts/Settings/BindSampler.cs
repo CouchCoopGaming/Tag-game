@@ -1,4 +1,5 @@
 using Tag.Couch;
+using Tag.Practice;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -53,6 +54,8 @@ namespace Tag.Settings
         public static bool PracticeRestartDown()
         {
             if (Input.GetKeyDown(KeyCode.T)) return true;
+            if (!PracticeInput.PadLive(PracticePadPlugged(), CouchPlay.NeedsRejoin))
+                return false;
 #if ENABLE_INPUT_SYSTEM
             var pad = Gamepad.current;
             if (pad != null && pad.buttonNorth.wasPressedThisFrame) return true;
@@ -63,6 +66,8 @@ namespace Tag.Settings
         public static bool PracticeGhostDown()
         {
             if (Input.GetKeyDown(KeyCode.G)) return true;
+            if (!PracticeInput.PadLive(PracticePadPlugged(), CouchPlay.NeedsRejoin))
+                return false;
 #if ENABLE_INPUT_SYSTEM
             var pad = Gamepad.current;
             if (pad != null && pad.leftStickButton.wasPressedThisFrame) return true;
@@ -73,11 +78,22 @@ namespace Tag.Settings
         public static bool PracticeInputDown()
         {
             if (Input.GetKeyDown(KeyCode.I)) return true;
+            if (!PracticeInput.PadLive(PracticePadPlugged(), CouchPlay.NeedsRejoin))
+                return false;
 #if ENABLE_INPUT_SYSTEM
             var pad = Gamepad.current;
             if (pad != null && pad.rightStickButton.wasPressedThisFrame) return true;
 #endif
             return Input.GetKeyDown(KeyCode.JoystickButton9);
+        }
+
+        static bool PracticePadPlugged()
+        {
+#if ENABLE_INPUT_SYSTEM
+            return Gamepad.current != null;
+#else
+            return false;
+#endif
         }
 
         public static Vector2 LookVector()

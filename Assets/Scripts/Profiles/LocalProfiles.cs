@@ -113,6 +113,11 @@ namespace Tag.Profiles
         static readonly bool[] Taken = new bool[Seats];
         static readonly bool[] Done = new bool[Seats];
         static readonly int[] Opt = new int[2 + Max];
+        static readonly int[] Scroll = new int[Seats];
+        static readonly int[] SnapPal = new int[Seats];
+        static readonly bool[] SnapCap = new bool[Seats];
+        static readonly int[] SnapRum = new int[Seats];
+        static readonly bool[] SnapSet = new bool[Seats];
         static readonly char[] CleanBuf = new char[NameMax];
         static readonly char[] PadBuf = new char[NameMax];
         static readonly StringBuilder Sb = new StringBuilder(128);
@@ -130,6 +135,9 @@ namespace Tag.Profiles
         static int _row;
         static char _typed;
         static int _joinSerial;
+        static bool _snapBlind;
+        static bool _snapBlindSet;
+        public const int ListWindow = 5;
         const int KindRename = 1;
         const int KindDelete = 2;
 
@@ -226,6 +234,16 @@ namespace Tag.Profiles
             _row = 0;
             _typed = '\0';
             _joinSerial = 0;
+            _snapBlind = false;
+            _snapBlindSet = false;
+            for (int s = 0; s < Seats; s++)
+            {
+                Scroll[s] = 0;
+                SnapSet[s] = false;
+                SnapPal[s] = 0;
+                SnapCap[s] = false;
+                SnapRum[s] = 0;
+            }
         }
 
         public static void BeginRead()
@@ -316,7 +334,7 @@ namespace Tag.Profiles
                 RebuildLabels();
                 return;
             }
-            if (version < 0 || version >= SettingsFile.Version) return;
+            if (version >= SettingsFile.Version) return;
             int made = Create("Player");
             int slot = Find(made);
             if (slot < 0) return;
@@ -378,7 +396,8 @@ namespace Tag.Profiles
             _armKind = 0;
             _armId = -1;
             if (slot < 0) return false;
-            Name[slot] = Clean(name);
+            if (!AcceptName(name, out string next) || NameTaken(slot, next)) return false;
+            Name[slot] = next;
             RebuildLabels();
             RebuildCard(slot);
             CouchPlay.RefreshTags();
@@ -408,9 +427,21 @@ namespace Tag.Profiles
             if (slot < 0) return false;
             for (int s = 0; s < Seats; s++)
             {
-                if (Seat[s] == slot) Seat[s] = None;
+                if (Seat[s] != slot) continue;
+                RestoreSnap(s);
+                Seat[s] = None;
             }
-            if (_active == slot) _active = -1;
+            for (int i = 0; i < Roster.Length; i++)
+            {
+                if (Roster[i] == id) Roster[i] = 0;
+            }
+            if (_active == slot)
+            {
+                _active = -1;
+                PracticeBests.Clear();
+                PracticeGhost.Clear();
+                PracticeGhost.ClearSaved();
+            }
             Used[slot] = false;
             Id[slot] = 0;
             Name[slot] = null;
@@ -530,8 +561,10 @@ namespace Tag.Profiles
             {
                 if (s != seat && Seat[s] == slot) return false;
             }
+            Remember(seat);
             Seat[seat] = slot;
             ApplyAccess(seat);
+            if (seat == 0) Use(id);
             Resolve();
             return true;
         }
@@ -539,44 +572,62 @@ namespace Tag.Profiles
         public static void SeatGuest(int seat)
         {
             if (seat < 0 || seat >= Seats) return;
+            RestoreSnap(seat);
             Seat[seat] = Guest;
             GuestSerial[seat] = ++_joinSerial;
+            if (seat < Roster.Length) Roster[seat] = 0;
+            if (seat == 0) ParkBoard();
             Resolve();
         }
 
         public static void ClearSeat(int seat)
         {
             if (seat < 0 || seat >= Seats) return;
+            RestoreSnap(seat);
             Seat[seat] = None;
+            if (seat < Roster.Length) Roster[seat] = 0;
+            if (seat == 0) ParkBoard();
             Resolve();
         }
 
         public static void ClearSeats()
         {
             for (int s = 0; s < Seats; s++)
-                Seat[s] = None;
-            Resolve();
+                ClearSeat(s);
+        }
+
+        /// <summary>Menu rebind writes this seat's table only. The clone is not the other seat's object.</summary>
+        public static void StoreBinds(int seat, ActionBinds binds)
+        {
+            if (binds == null || seat < 0 || seat >= Seats) return;
+            int slot = Seat[seat];
+            if (slot < 0 || slot >= Max || !Used[slot]) return;
+            Binds[slot] = binds.Clone();
+        }
+
+        public static int ListScrollOf(int seat)
+        {
+            if (seat < 0 || seat >= Seats) return 0;
+            return Scroll[seat];
+        }
+
+        public static int ListIndex(int seat)
+        {
+            if (seat < 0 || seat >= Seats) return 0;
+            int n = FillOpt(seat);
+            int cur = CurrentOpt(seat);
+            for (int i = 0; i < n; i++)
+            {
+                if (Opt[i] == cur) return i;
+            }
+            return 0;
         }
 
         public static int Cycle(int seat, int dir)
         {
             if (seat < 0 || seat >= Seats) return None;
-            int n = 0;
-            Opt[n++] = None;
-            Opt[n++] = Guest;
-            for (int i = 0; i < Max; i++)
-            {
-                if (!Used[i]) continue;
-                bool held = false;
-                for (int s = 0; s < Seats; s++)
-                {
-                    if (s != seat && Seat[s] == i) held = true;
-                }
-                if (!held) Opt[n++] = Id[i];
-            }
-            int cur = None;
-            if (Seat[seat] == Guest) cur = Guest;
-            else if (Seat[seat] >= 0) cur = Id[Seat[seat]];
+            int n = FillOpt(seat);
+            int cur = CurrentOpt(seat);
             int idx = 0;
             for (int i = 0; i < n; i++)
             {
@@ -585,6 +636,7 @@ namespace Tag.Profiles
             idx += dir < 0 ? -1 : 1;
             if (idx < 0) idx = 0;
             if (idx >= n) idx = n - 1;
+            Focus(seat, idx, n);
             return Opt[idx];
         }
 
@@ -1141,9 +1193,22 @@ namespace Tag.Profiles
                 }
                 if (best >= 0)
                 {
-                    Resolved[best] = c;
-                    Taken[c] = true;
-                    Done[best] = true;
+                    int wanters = 0;
+                    for (int k = 0; k < n; k++)
+                    {
+                        int s = Order[k];
+                        int slot = Seat[s];
+                        if (slot < 0) continue;
+                        if (Color[slot] != c) continue;
+                        wanters++;
+                    }
+                    bool clash = !AccessibilityPalette.ClearsIt(PaletteFor(best), c);
+                    if (wanters >= 2 || !clash)
+                    {
+                        Resolved[best] = c;
+                        Taken[c] = true;
+                        Done[best] = true;
+                    }
                 }
             }
             for (int a = 0; a < n; a++)
@@ -1167,10 +1232,22 @@ namespace Tag.Profiles
                 for (int c = 0; c < Seats; c++)
                 {
                     if (Taken[c]) continue;
-                    if (Fits(s, pal, c))
+                    if (Fits(s, pal, c) && AccessibilityPalette.ClearsIt(pal, c))
                     {
                         pick = c;
                         break;
+                    }
+                }
+                if (pick < 0)
+                {
+                    for (int c = 0; c < Seats; c++)
+                    {
+                        if (Taken[c]) continue;
+                        if (Fits(s, pal, c))
+                        {
+                            pick = c;
+                            break;
+                        }
                     }
                 }
                 if (pick < 0)
@@ -1634,8 +1711,9 @@ namespace Tag.Profiles
 
         static void TakeGhost(int profile, string route, string value)
         {
-            PracticeGhost.Read(route, value);
+            if (!PracticeGhost.Read(route, value)) return;
             int n = PracticeGhost.CopyRoute(route, ScratchX, ScratchY, ScratchZ, ScratchYaw, ScratchPose);
+            if (n < 1) return;
             int at = GhostSlot(profile, route, true);
             if (at < 0) return;
             if (n > PracticeGhost.Cap) n = PracticeGhost.Cap;
@@ -1725,6 +1803,112 @@ namespace Tag.Profiles
                 }
                 text.Append('\n');
             }
+        }
+
+        static void ParkBoard()
+        {
+            if (_active < 0) return;
+            StoreLive(_active);
+            _active = -1;
+            PracticeBests.Clear();
+            PracticeGhost.Clear();
+            PracticeGhost.ClearSaved();
+        }
+
+        static void Remember(int seat)
+        {
+            if (seat < 0 || seat >= Seats || SnapSet[seat] || GameSettings.Current == null) return;
+            SnapPal[seat] = GameSettings.Current.Palette[seat];
+            SnapCap[seat] = GameSettings.Current.Captions[seat];
+            SnapRum[seat] = GameSettings.Current.Rumble[seat];
+            SnapSet[seat] = true;
+            if (seat == 0 && !_snapBlindSet)
+            {
+                _snapBlind = GameSettings.Current.Colorblind;
+                _snapBlindSet = true;
+            }
+        }
+
+        static void RestoreSnap(int seat)
+        {
+            if (seat < 0 || seat >= Seats || !SnapSet[seat] || GameSettings.Current == null) return;
+            GameSettings.Current.Palette[seat] = SnapPal[seat];
+            GameSettings.Current.Captions[seat] = SnapCap[seat];
+            GameSettings.Current.Rumble[seat] = SnapRum[seat];
+            SnapSet[seat] = false;
+            if (seat == 0 && _snapBlindSet)
+            {
+                GameSettings.Current.Colorblind = _snapBlind;
+                _snapBlindSet = false;
+            }
+        }
+
+        static int FillOpt(int seat)
+        {
+            int n = 0;
+            Opt[n++] = None;
+            Opt[n++] = Guest;
+            for (int i = 0; i < Max; i++)
+            {
+                if (!Used[i]) continue;
+                bool held = false;
+                for (int s = 0; s < Seats; s++)
+                {
+                    if (s != seat && Seat[s] == i) held = true;
+                }
+                if (!held) Opt[n++] = Id[i];
+            }
+            return n;
+        }
+
+        static int CurrentOpt(int seat)
+        {
+            if (Seat[seat] == Guest) return Guest;
+            if (Seat[seat] >= 0 && Seat[seat] < Max && Used[Seat[seat]]) return Id[Seat[seat]];
+            return None;
+        }
+
+        static void Focus(int seat, int idx, int n)
+        {
+            int win = ListWindow;
+            if (idx < Scroll[seat]) Scroll[seat] = idx;
+            if (idx >= Scroll[seat] + win) Scroll[seat] = idx - win + 1;
+            if (Scroll[seat] < 0) Scroll[seat] = 0;
+            int max = n - win;
+            if (max < 0) max = 0;
+            if (Scroll[seat] > max) Scroll[seat] = max;
+        }
+
+        static bool AcceptName(string raw, out string name)
+        {
+            name = "";
+            if (string.IsNullOrEmpty(raw)) return false;
+            int start = 0;
+            while (start < raw.Length && raw[start] == ' ') start++;
+            int end = raw.Length;
+            while (end > start && raw[end - 1] == ' ') end--;
+            int n = 0;
+            for (int i = start; i < end && n < NameMax; i++)
+            {
+                char c = raw[i];
+                bool ok = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == ' ';
+                if (!ok) continue;
+                CleanBuf[n++] = c;
+            }
+            while (n > 0 && CleanBuf[n - 1] == ' ') n--;
+            if (n == 0) return false;
+            name = new string(CleanBuf, 0, n);
+            return true;
+        }
+
+        static bool NameTaken(int slot, string name)
+        {
+            for (int i = 0; i < Max; i++)
+            {
+                if (i == slot || !Used[i] || string.IsNullOrEmpty(Name[i])) continue;
+                if (string.Equals(Name[i], name, StringComparison.OrdinalIgnoreCase)) return true;
+            }
+            return false;
         }
 
         static string Clean(string raw)

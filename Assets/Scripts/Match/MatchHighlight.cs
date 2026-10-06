@@ -46,6 +46,8 @@ namespace Tag.MatchStats
         static float _boundW = 160f;
         static float _boundD = 100f;
         static float _killY = -2.5f;
+        static int _offerN;
+        static int _snapPawns;
 
         public static void UseArena(int id)
         {
@@ -104,7 +106,17 @@ namespace Tag.MatchStats
             Clock = 0f;
             MissDistance = float.MaxValue;
             Leftovers = 0;
+            _offerN = 0;
+            _snapPawns = 0;
             UseArena(ParkArena.Id);
+        }
+
+        /// <summary>Next round keeps a sealed snap and drops the rolling window so a new tag does not stitch the previous round.</summary>
+        public static void NewRound()
+        {
+            _head = 0;
+            _filled = 0;
+            _accum = 0f;
         }
 
         public static int Filled => _filled;
@@ -114,6 +126,7 @@ namespace Tag.MatchStats
         {
             if (n < 1) return;
             if (n > Pawns) n = Pawns;
+            _offerN = n;
             if (dt < 0f) dt = 0f;
             float step = 1f / Hz;
             if (_filled == 0)
@@ -148,7 +161,7 @@ namespace Tag.MatchStats
         public static void BeginPlayback()
         {
             Clock = 0f;
-            Playing = SnapCount > 1;
+            Playing = SnapCount >= 1;
         }
 
         public static void Tick(float dt)
@@ -176,7 +189,8 @@ namespace Tag.MatchStats
 
         public static float Length()
         {
-            if (SnapCount < 2) return 0f;
+            if (SnapCount < 1) return 0f;
+            if (SnapCount == 1) return 1f / Hz;
             return (SnapCount - 1) / (float)Hz;
         }
 
@@ -187,7 +201,7 @@ namespace Tag.MatchStats
             z = 0f;
             yaw = 0f;
             pose = PracticeVerb.None;
-            if (pawn < 0 || pawn >= Pawns || SnapCount < 1) return false;
+            if (pawn < 0 || pawn >= _snapPawns || SnapCount < 1) return false;
             int o = pawn * Samples;
             if (SnapCount == 1 || time <= 0f)
             {
@@ -242,7 +256,7 @@ namespace Tag.MatchStats
             int n = _filled;
             if (n < 1) return;
             if (n > Samples) n = Samples;
-            int pawns = MatchBook.Count;
+            int pawns = _offerN;
             if (pawns < 1) pawns = 1;
             if (pawns > Pawns) pawns = Pawns;
             int start = _head - n;
@@ -262,7 +276,42 @@ namespace Tag.MatchStats
                     SnapPose[dst + s] = Pose[src];
                 }
             }
+            CutRespawn(pawns, ref n);
+            _snapPawns = pawns;
             SnapCount = n;
+        }
+
+        static void CutRespawn(int pawns, ref int n)
+        {
+            int cut = 0;
+            for (int s = 1; s < n; s++)
+            {
+                for (int p = 0; p < pawns; p++)
+                {
+                    int o = p * Samples;
+                    float dx = SnapX[o + s] - SnapX[o + s - 1];
+                    float dy = SnapY[o + s] - SnapY[o + s - 1];
+                    float dz = SnapZ[o + s] - SnapZ[o + s - 1];
+                    if (dx * dx + dy * dy + dz * dz > 625f)
+                        cut = s;
+                }
+            }
+            if (cut <= 0) return;
+            int keep = n - cut;
+            if (keep < 1) keep = 1;
+            for (int p = 0; p < pawns; p++)
+            {
+                int o = p * Samples;
+                for (int s = 0; s < keep; s++)
+                {
+                    SnapX[o + s] = SnapX[o + cut + s];
+                    SnapY[o + s] = SnapY[o + cut + s];
+                    SnapZ[o + s] = SnapZ[o + cut + s];
+                    SnapYaw[o + s] = SnapYaw[o + cut + s];
+                    SnapPose[o + s] = SnapPose[o + cut + s];
+                }
+            }
+            n = keep;
         }
     }
 }

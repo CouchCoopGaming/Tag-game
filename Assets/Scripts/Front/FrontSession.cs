@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Tag.Couch;
+using Tag.MatchStats;
 using Tag.Modes;
 using Tag.Onboard;
 using Tag.Practice;
@@ -379,6 +380,7 @@ namespace Tag.Front
         {
             ReleaseObjects();
             CouchPlay.ClearResidue();
+            MatchBook.BeginRematch();
             EnsureSettings();
             Armed = true;
             Screen = FrontScreen.Playing;
