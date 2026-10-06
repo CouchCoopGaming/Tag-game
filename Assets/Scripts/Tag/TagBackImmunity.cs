@@ -214,7 +214,12 @@ namespace Tag.Gameplay
             int tell = hit.IndexOf("TagLandFlash.PlayOn", StringComparison.Ordinal);
             if (block < 0 || stagger < 0 || tell < 0 || block > stagger || block > tell) return false;
             if (hit.IndexOf("TagBackBlockedTell.PlayAt", StringComparison.Ordinal) < 0) return false;
-            if (hit.IndexOf("TagSfx.TagBackThunk", StringComparison.Ordinal) < 0) return false;
+            string audioBus = Read("Assets/Scripts/Audio/AudioBus.cs");
+            bool thunk = hit.IndexOf("TagSfx.TagBackThunk", StringComparison.Ordinal) >= 0
+                || (hit.IndexOf("TagBackBlocked", StringComparison.Ordinal) >= 0
+                    && audioBus != null
+                    && audioBus.IndexOf("TagSfx.TagBackThunk", StringComparison.Ordinal) >= 0);
+            if (!thunk) return false;
             if (hit.IndexOf("BeginTagBackImmunity", StringComparison.Ordinal) < 0) return false;
             if (hit.IndexOf("victim.ReceiveTagHit", StringComparison.Ordinal) < 0) return false;
 

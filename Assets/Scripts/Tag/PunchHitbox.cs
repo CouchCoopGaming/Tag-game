@@ -92,6 +92,19 @@ namespace Tag.Gameplay
             }
             float dt = Time.deltaTime;
 
+            // Countdown and the between-round beat are not play. A press there stays
+            // in the buffer so the opening frame of play still swings. Results unlock
+            // above, which drops the rematch click before it can become a punch.
+            bool playLive = _mode == null || (_mode.Phase == MatchPhase.Playing && _mode.IsRunning);
+            if (!playLive)
+            {
+                if (_input != null && _input.PunchPressed)
+                    _bufferTimer = tuning.inputBuffer;
+                else
+                    _bufferTimer = Mathf.Max(0f, _bufferTimer - dt);
+                return;
+            }
+
             if (_input != null && _input.PunchPressed)
                 _bufferTimer = tuning.inputBuffer;
             else
@@ -167,7 +180,7 @@ namespace Tag.Gameplay
             {
                 Phase = PunchPhase.MissRecover;
                 // Soft fail: quieter/higher TagSfx + light cam nudge (connect keeps strong kick)
-                TagSfx.PunchMiss(transform.position);
+                AudioBus.Raise(AudioBus.Hook.PunchWhiff, transform.position);
                 var tpsMiss = GetComponentInChildren<TpsMoveCamera>(true);
                 if (tpsMiss != null)
                     tpsMiss.AddKick(new Vector3(0f, 0.04f, -0.09f)); // whiff recoil reads a hair clearer in TP
@@ -293,7 +306,7 @@ namespace Tag.Gameplay
                 && TagBackImmunity.IsBlockedTag(_it.IsIt, victim.BlocksTagBackFrom(_it)))
             {
                 TagBackBlockedTell.PlayAt(hitPoint);
-                TagSfx.TagBackThunk(hitPoint);
+                AudioBus.Raise(AudioBus.Hook.TagBackBlocked, hitPoint);
                 DummyLocomotor attacker = GetComponentInChildren<DummyLocomotor>();
                 if (attacker != null) attacker.PlayTagBackRecoil();
                 Debug.Log($"[Punch] {name} tag-back blocked on {victim.name}");
@@ -317,8 +330,8 @@ namespace Tag.Gameplay
 
             bool tagged = TagLandTell.Transferred(puncherWasIt, victim != null && victim.IsIt, _it != null && _it.IsIt);
             bool runner = victim != null && !victim.IsIt && !victim.IsEliminated;
-            // Punch impact (TagSfx has Resources clip + procedural fallback); become-It chirp from SetIt(true)
-            TagSfx.PunchConnect(transform.position);
+            // Punch impact and the become-It chirp go through AudioBus (TagSfx placeholders).
+            AudioBus.Raise(AudioBus.Hook.PunchHit, transform.position);
 
             if (!tagged && PunchStagger.IsStaggerHit(runner, tagged))
             {

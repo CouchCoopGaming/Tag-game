@@ -194,16 +194,7 @@ namespace Tag.Core
             // Unlock so Rematch/Menu clicks on the results card work (pause already unlocks).
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-            var msg = LastResultMessage.ToLowerInvariant();
-            // "No winners" contains "win"; check that before the win sting.
-            if (msg.Contains("no winner"))
-                AudioCuePlayer.Ensure()?.RoundEnd();
-            else if (msg.Contains("winner") || msg.Contains(" win"))
-                AudioCuePlayer.Ensure()?.RoundWin();
-            else if (msg.Contains("lose") || msg.Contains("loss"))
-                AudioCuePlayer.Ensure()?.RoundLose();
-            else
-                AudioCuePlayer.Ensure()?.RoundEnd();
+            AudioBus.RaiseRoundEnd(LastResultMessage);
         }
 
         // Compat for older callers

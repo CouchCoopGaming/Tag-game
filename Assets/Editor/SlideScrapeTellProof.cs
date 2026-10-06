@@ -224,7 +224,11 @@ public static class SlideScrapeTellProof
             report.Fail("both pawns are not given the locomotor that plays the scrape");
         if (animSrc.Contains("SlideScrape"))
             report.Fail("scrape tell was wired through the anim driver");
-        if (!animSrc.Contains("TagSfx.Slide"))
+        string audioBus = ReadRepo("Assets/Scripts/Audio/AudioBus.cs");
+        bool slideShot = animSrc.Contains("TagSfx.Slide")
+            || (motorSrc.Contains("AudioBus.Hook.SlideStart")
+                && audioBus != null && audioBus.Contains("TagSfx.Slide"));
+        if (!slideShot)
             report.Fail("existing slide one-shot was removed");
     }
 

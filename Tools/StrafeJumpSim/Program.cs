@@ -183,6 +183,14 @@ static class Program
             return 1;
         }
 
+        var rounds = RoundFlowProof.Run();
+        Console.WriteLine(rounds.Line);
+        if (!rounds.Ok)
+        {
+            Console.Error.WriteLine(rounds.Failure);
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.VerbPoseClips.PunchTagPolishProofLine());
         if (!Tag.Art.VerbPoseClips.PunchTagPolishHolds())
         {

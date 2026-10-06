@@ -36,6 +36,7 @@ namespace Tag.Art
         float _pop;
         Transform _beacon;
         Renderer _beaconRend;
+        GUIStyle _itStyle;
 
         void Awake()
         {
@@ -227,6 +228,70 @@ namespace Tag.Art
             }
             r.sharedMaterial = mat;
             return r;
+        }
+
+        void OnGUI()
+        {
+            if (_it == null || !_it.IsIt || !_it.IsAlive) return;
+            var modes = TagModeController.Instance;
+            if (modes != null && modes.Phase != MatchPhase.Playing && modes.Phase != MatchPhase.PostRound)
+                return;
+            var cam = Camera.main;
+            if (cam == null) return;
+            if (cam.transform.IsChildOf(transform)) return;
+
+            Vector3 world = transform.position + Vector3.up * 2.35f;
+            Vector3 sp = cam.WorldToScreenPoint(world);
+            bool behind = sp.z < 0.1f;
+            if (behind)
+            {
+                sp.x = Screen.width - sp.x;
+                sp.y = Screen.height - sp.y;
+            }
+            float gx = sp.x;
+            float gy = Screen.height - sp.y;
+            const float mark = 36f;
+            float m = 20f;
+            bool off = behind || gx < m || gy < m || gx > Screen.width - m || gy > Screen.height - m;
+            gx = Mathf.Clamp(gx, m, Screen.width - m);
+            gy = Mathf.Clamp(gy, m, Screen.height - m);
+            float x = gx - mark * 0.5f;
+            float y = gy - mark * 0.5f;
+            VerbHudLayout.PushMarker(Screen.width, Screen.height, ref x, ref y, mark, mark + 18f);
+
+            var prev = GUI.color;
+            GUI.color = new Color(0.05f, 0.07f, 0.1f, 0.85f);
+            GUI.DrawTexture(new Rect(x, y, mark, mark), Texture2D.whiteTexture);
+            GUI.color = new Color(1f, 0.55f, 0.12f, 1f);
+            float inset = 5f;
+            GUI.DrawTexture(new Rect(x + inset, y + inset, mark - inset * 2f, mark - inset * 2f), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+            if (_itStyle == null)
+            {
+                _itStyle = new GUIStyle(GUI.skin.label)
+                {
+                    fontStyle = FontStyle.Bold,
+                    alignment = TextAnchor.MiddleCenter
+                };
+            }
+            _itStyle.fontSize = Screen.height >= 1000 ? 14 : 12;
+            _itStyle.normal.textColor = new Color(0.08f, 0.08f, 0.1f, 1f);
+            GUI.Label(new Rect(x, y, mark, mark), "IT", _itStyle);
+            if (off)
+            {
+                float rawX = sp.x;
+                float rawY = Screen.height - sp.y;
+                float aimX = rawX - (x + mark * 0.5f);
+                float aimY = rawY - (y + mark * 0.5f);
+                float ang = Mathf.Atan2(aimX, -aimY) * Mathf.Rad2Deg;
+                var pivot = new Vector2(x + mark * 0.5f, y + mark + 8f);
+                Matrix4x4 matrix = GUI.matrix;
+                GUIUtility.RotateAroundPivot(ang, pivot);
+                _itStyle.normal.textColor = Color.white;
+                GUI.Label(new Rect(pivot.x - 12f, pivot.y - 10f, 24f, 20f), "▲", _itStyle);
+                GUI.matrix = matrix;
+            }
+            GUI.color = prev;
         }
 
         static void ApplyRuntimeColor(Renderer r, Color c, float emissionMul)

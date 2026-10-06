@@ -295,7 +295,11 @@ public static class WallClingTellProof
             report.Fail("both pawns are not given the locomotor that plays the cling");
         if (animSrc.Contains("WallCling"))
             report.Fail("cling tell was wired through the anim driver");
-        if (!animSrc.Contains("TagSfx.Slide"))
+        string audioBus = ReadRepo("Assets/Scripts/Audio/AudioBus.cs");
+        bool slideShot = animSrc.Contains("TagSfx.Slide")
+            || (motorSrc.Contains("AudioBus.Hook.SlideStart")
+                && audioBus != null && audioBus.Contains("TagSfx.Slide"));
+        if (!slideShot)
             report.Fail("existing slide one-shot was removed");
     }
 
