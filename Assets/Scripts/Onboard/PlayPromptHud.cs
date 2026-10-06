@@ -82,6 +82,7 @@ namespace Tag.Onboard
 
         void Update()
         {
+            Tag.Core.FrameMeter.AddHud(Tag.Core.FrameMeter.HudOps);
             if (_motor == null || _input == null) return;
             if (_cam == null) _cam = Camera.main;
             WatchDevice();

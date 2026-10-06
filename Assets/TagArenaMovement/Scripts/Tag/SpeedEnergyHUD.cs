@@ -36,7 +36,13 @@ namespace TagArena.Movement
         bool _skiSeen;
         string _jetLine;
         int _dashKey = int.MinValue;
+        string _dashToken;
+        bool _skiOn;
         string _dashLine;
+        string _zoneName;
+        string _zoneLine;
+        string _jetDashToken;
+        string _jetDashLine;
         int _nearKey = int.MinValue;
         string _nearLine;
         int _compassMeters = int.MinValue;
@@ -220,10 +226,16 @@ namespace TagArena.Movement
                 GUI.Box(new Rect(24, 56, 240 * ready, 20), GUIContent.none);
                 GUI.color = prev;
                 // Active burst wins the label; otherwise ready / CD (no second DASH line below).
-                string dash = motor.IsAirDashing
+                string dashTok = motor.IsAirDashing
                     ? "DASH!"
-                    : (rem <= 0.05f ? "DASH ready" : "DASH " + FormatDashCd(rem));
-                GUI.Label(new Rect(24, 80, 480, 26), dash + "   " + ski, _small);
+                    : (rem <= 0.05f ? "DASH ready" : FormatDashCd(rem));
+                if (dashTok != _dashToken || motor.Skiing != _skiOn || _dashLine == null)
+                {
+                    _dashToken = dashTok;
+                    _skiOn = motor.Skiing;
+                    _dashLine = (motor.IsAirDashing || rem <= 0.05f ? dashTok : "DASH " + dashTok) + "   " + ski;
+                }
+                GUI.Label(new Rect(24, 80, 480, 26), _dashLine, _small);
             }
 
             // When jet is on, the primary row is JET - keep a dedicated dash CD / active line.
@@ -232,14 +244,24 @@ namespace TagArena.Movement
             if (jetOn)
             {
                 float dashCd = motor.AirDashCooldownRemaining;
-                string dashLine = dashCd > 0.05f
-                    ? ("DASH CD " + FormatDashCd(dashCd))
+                string jetDashTok = dashCd > 0.05f
+                    ? FormatDashCd(dashCd)
                     : (motor.IsAirDashing ? "DASH!" : "DASH ready");
-                GUI.Label(new Rect(24, 102, 480, 22), dashLine, _small);
+                if (jetDashTok != _jetDashToken || _jetDashLine == null)
+                {
+                    _jetDashToken = jetDashTok;
+                    _jetDashLine = dashCd > 0.05f ? "DASH CD " + jetDashTok : jetDashTok;
+                }
+                GUI.Label(new Rect(24, 102, 480, 22), _jetDashLine, _small);
                 y = 124f;
             }
             string zone = ZoneNameMarkers.GetNearestZoneName(motor.transform.position);
-            GUI.Label(new Rect(24, y, 480, 22), "Zone: " + zone, _small);
+            if (zone != _zoneName || _zoneLine == null)
+            {
+                _zoneName = zone;
+                _zoneLine = "Zone: " + (zone ?? "");
+            }
+            GUI.Label(new Rect(24, y, 480, 22), _zoneLine, _small);
             y += 24f;
 
             if (motor.SuperGlideT >= 0f)

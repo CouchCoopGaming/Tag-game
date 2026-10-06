@@ -195,11 +195,18 @@ namespace Tag.Gameplay
         }
 
         DummyLocomotor _loco;
+        TpsMoveCamera _kickCam;
 
         DummyLocomotor Loco()
         {
             if (_loco == null) FindLoco();
             return _loco;
+        }
+
+        TpsMoveCamera KickCam()
+        {
+            if (_kickCam == null) _kickCam = GetComponentInChildren<TpsMoveCamera>(true);
+            return _kickCam;
         }
 
         void FindLoco()
@@ -209,7 +216,7 @@ namespace Tag.Gameplay
 
         void WhiffKick()
         {
-            var tpsMiss = GetComponentInChildren<TpsMoveCamera>(true);
+            var tpsMiss = KickCam();
             if (tpsMiss != null)
                 tpsMiss.AddKick(new Vector3(0f, 0.04f, -0.09f)); // whiff recoil reads a hair clearer in TP
         }
@@ -296,7 +303,7 @@ namespace Tag.Gameplay
             if (!other.CanBeTagged) return;
 
             // Systems Tag v1: air-dodge i-frames vs punch hurtbox only
-            var victimMotor = other.GetComponent<PlayerMotor>();
+            var victimMotor = other.Motor != null ? other.Motor : other.GetComponent<PlayerMotor>();
             if (victimMotor != null && victimMotor.HasAirDodgeIFrames) return;
 
             // LoS
@@ -325,7 +332,7 @@ namespace Tag.Gameplay
             {
                 TagBackBlockedTell.PlayAt(hitPoint);
                 AudioBus.Raise(AudioBus.Hook.TagBackBlocked, hitPoint);
-                DummyLocomotor attacker = GetComponentInChildren<DummyLocomotor>();
+                DummyLocomotor attacker = Loco();
                 if (attacker != null) attacker.PlayTagBackRecoil();
                 Debug.Log($"[Punch] {name} tag-back blocked on {victim.name}");
                 return;
@@ -373,13 +380,13 @@ namespace Tag.Gameplay
                 TagLandFlash.PlayOn(victim);
                 if (_it != null)
                 {
-                    DummyLocomotor oldLoco = _it.GetComponentInChildren<DummyLocomotor>();
+                    DummyLocomotor oldLoco = Loco();
                     if (oldLoco != null) oldLoco.PlayItGiveUp();
                 }
             }
 
             // Readable TP punch connect: stronger camera kick + FOV punch on attacker
-            var tps = GetComponentInChildren<TpsMoveCamera>(true);
+            var tps = KickCam();
             if (tps != null)
                 tps.AddKick(new Vector3(0f, 0.18f, -0.45f)); // connect kick reads a hair stronger in TP
             // Victim's chase cam, lighter than the attacker's. No hitstop — nothing else freezes time.

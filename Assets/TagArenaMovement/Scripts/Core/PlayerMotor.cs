@@ -387,7 +387,10 @@ namespace TagArena.Movement
             FitController(v.y, CeilingClose());
             CollisionFlags flags = CollisionFlags.None;
             if (_cc != null && _cc.enabled)
+            {
                 flags = _cc.Move(_velocity * dt);
+                FrameMeter.AddMove(FrameMeter.MoveOps);
+            }
             _velocity.y = KinematicStep.CeilingBlockedVy(_velocity.y, (flags & CollisionFlags.Above) != 0);
             if (VerbIntegration.EndLaunchArc(_launchArc, _stableFeet, _velocity.y))
             {
