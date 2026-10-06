@@ -573,7 +573,9 @@ namespace Tag.Modes
             float dist = toBody.magnitude;
             float reach = EffectivePunchRange();
             bool grounded = _selfMotor == null || _selfMotor.IsGrounded;
-            bool wall = ProbeWallBetween(_target.transform.position, out Vector3 wallNormal, out float wallDist);
+            int wallId = 0;
+            Vector3 wallPoint = Vector3.zero;
+            bool wall = ProbeWallBetween(_target.transform.position, out Vector3 wallNormal, out float wallDist, out wallId, out wallPoint);
             bool wallCommit = wall && wallDist <= OpponentChaseSteer.ClingCommitMeters;
             if (wallCommit)
                 CancelLungeTell();
@@ -624,6 +626,7 @@ namespace Tag.Modes
             chase.BodyForward = transform.forward;
             chase.WallNormal = wall ? wallNormal : Vector3.zero;
             chase.WallDistance = wall ? wallDist : 999f;
+            chase.SameWallClosed = wall && _selfMotor != null && _selfMotor.WouldRefuseCling(wallId, wallNormal, wallPoint);
             chase.Grounded = grounded;
             chase.GapAhead = gap;
             chase.LungeCommit = arming;
@@ -907,10 +910,12 @@ namespace Tag.Modes
         /// <summary>
         /// A wall on the line to the target. The pawn capsule and the target body are not walls.
         /// </summary>
-        bool ProbeWallBetween(Vector3 targetPos, out Vector3 normal, out float distance)
+        bool ProbeWallBetween(Vector3 targetPos, out Vector3 normal, out float distance, out int colliderId, out Vector3 point)
         {
             normal = Vector3.zero;
             distance = 999f;
+            colliderId = 0;
+            point = Vector3.zero;
             Vector3 to = targetPos - transform.position;
             to.y = 0f;
             float dist = to.magnitude;
@@ -939,6 +944,8 @@ namespace Tag.Modes
                 return false;
             normal = hit.normal;
             distance = hit.distance;
+            colliderId = hit.collider != null ? hit.collider.GetInstanceID() : 0;
+            point = hit.point;
             return true;
         }
 
