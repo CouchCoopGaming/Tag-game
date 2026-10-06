@@ -14,6 +14,9 @@ namespace Tag.Level
         /// <summary>Assets/Prefabs/LaunchPad.prefab. Play.unity wires this.</summary>
         public GameObject launchPadPrefab;
 
+        /// <summary>Assets/Prefabs/ZipLine.prefab. Play.unity wires this.</summary>
+        public GameObject zipLinePrefab;
+
         Transform _p1;
         Material _mulch, _grass, _sand, _rubber, _blue, _yellow, _steel, _concrete, _cedar, _bark, _rim, _field;
         Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate;
@@ -35,7 +38,7 @@ namespace Tag.Level
             BuildSpawns();
             BuildLoopMarkers();
             BuildLaunchPads();
-            BuildZipSlots();
+            BuildZipLines();
             BuildLabels();
 
             MegaParkP1Layout.Audit audit = MegaParkP1Layout.Run();
@@ -271,17 +274,47 @@ namespace Tag.Level
             }
         }
 
-        void BuildZipSlots()
+        void BuildZipLines()
         {
-            Transform g = Group("ZipSlots");
-            MegaParkP1Layout.ZipMark[] marks = MegaParkP1Layout.ZipSlots;
-            for (int i = 0; i < marks.Length; i++)
+            Transform g = Group("ZipLines");
+            MegaParkP1Layout.ZipLineSpot[] lines = MegaParkP1Layout.ZipLines;
+            for (int i = 0; i < lines.Length; i++)
             {
-                MegaParkP1Layout.ZipMark z = marks[i];
-                var go = new GameObject(z.Name);
+                MegaParkP1Layout.ZipLineSpot s = lines[i];
+                GameObject go;
+                if (zipLinePrefab != null)
+                    go = (GameObject)Instantiate(zipLinePrefab, g);
+                else
+                    go = new GameObject(s.Name);
+                go.name = s.Name;
                 go.transform.SetParent(g, false);
-                go.transform.localPosition = new Vector3(z.X, z.Y, z.Z);
+                go.transform.localPosition = Vector3.zero;
                 go.transform.localRotation = Quaternion.identity;
+                go.transform.localScale = Vector3.one;
+                ZipLine zip = go.GetComponent<ZipLine>();
+                if (zip == null)
+                    zip = go.AddComponent<ZipLine>();
+                Transform a = go.transform.Find("PointA");
+                if (a == null)
+                {
+                    var point = new GameObject("PointA");
+                    point.transform.SetParent(go.transform, false);
+                    a = point.transform;
+                }
+                Transform b = go.transform.Find("PointB");
+                if (b == null)
+                {
+                    var point = new GameObject("PointB");
+                    point.transform.SetParent(go.transform, false);
+                    b = point.transform;
+                }
+                a.name = s.Name + "_A";
+                b.name = s.Name + "_B";
+                a.position = new Vector3(s.Ax, s.Ay, s.Az);
+                b.position = new Vector3(s.Bx, s.By, s.Bz);
+                zip.pointA = a;
+                zip.pointB = b;
+                zip.rideSpeed = s.Speed;
             }
         }
 
