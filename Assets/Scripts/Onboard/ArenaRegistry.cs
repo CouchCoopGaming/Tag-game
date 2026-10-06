@@ -11,6 +11,7 @@ namespace Tag.Onboard
         public struct Entry
         {
             public string Name;
+            public string Root;
             public PlayAction Key;
             public bool HasBind;
         }
@@ -26,6 +27,21 @@ namespace Tag.Onboard
             PlayAction.Arena3
         };
 
+        /// <summary>
+        /// Match setup reads this list. Index 0 is Mega Park, the default.
+        /// Names come from <see cref="Tag.Level.ParkArena"/> so the card cannot drift.
+        /// </summary>
+        public static readonly Entry[] All = Make();
+
+        static Entry[] Make()
+        {
+            int n = Tag.Level.ParkArena.Count;
+            var all = new Entry[n];
+            for (int i = 0; i < n; i++)
+                all[i] = At(i);
+            return all;
+        }
+
         public static Entry At(int index)
         {
             var entry = new Entry();
@@ -36,6 +52,7 @@ namespace Tag.Onboard
                 return entry;
             }
             entry.Name = Tag.Level.ParkArena.NameOf(index);
+            entry.Root = "MegaPark";
             entry.Key = index < Keys.Length ? Keys[index] : PlayAction.Arena1;
             entry.HasBind = index < Keys.Length;
             return entry;

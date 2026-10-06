@@ -31,7 +31,7 @@ Round flow around these hooks: countdown beeps, a round-start arp (`sfx_round_st
 
 ## Footsteps
 
-Ground contact plays one of four baked steps. The collider material name picks the surface, and a shipping container, catwalk, or warehouse piece (`Ship_`, `Cat_`, `Wh_`) rings even when that story is painted concrete. Mulch, grass, field, and leaf use the soft step. Steel, metal, fence, plate, lamp, army, knight, amber, and pad use the ring. Wood, cedar, bark, and plank use the knock. Sand, concrete, and anything else use the hard step. Mega Park, Pocket Park, and Stack Yard all use those four grounds. Pocket and Stack collars are bark. Mega wood is the bench and sign dressing. Pad launch and zip grab, loop, and drop are raised by the shared motor, so they play on every arena that builds pads and zips.
+Ground contact plays one of four baked steps. The collider material name picks the surface, and a shipping container, catwalk, or warehouse piece (`Ship_`, `Cat_`, `Wh_`) rings even when that story is painted concrete. Mulch, grass, field, leaf, and soft play use the soft step. Steel, metal, fence, plate, lamp, army, knight, and amber use the ring. Wood, cedar, bark, and plank use the knock. Sand, concrete, rubber, launch pads, rims, and anything else use the hard step. Mega Park, Pocket Park, and Stack Yard all use those four grounds. Pocket and Stack collars are bark. Mega wood is the bench and sign dressing. Pad launch and zip grab, loop, and drop are raised by the shared motor, so they play on every arena that builds pads and zips.
 
 | Surface | Clip | Character |
 | --- | --- | --- |

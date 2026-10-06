@@ -83,7 +83,9 @@ namespace Tag.Local
 
             // Brief punch i-frames so spawn-camp / mid-void teleports aren't free tags.
             // PunchHitbox already gates via ItController.CanBeTagged → HasIFrames.
-            if (_it != null && punchInvulnAfterTeleport > 0f)
+            // A kill-box hop during countdown or results used to grant a fresh
+            // second of punch i-frames. The teleport still happens.
+            if (_it != null && punchInvulnAfterTeleport > 0f && SessionRules.RespawnGrantsIFrames())
                 _it.ApplySpawnIFrames(punchInvulnAfterTeleport);
         }
 

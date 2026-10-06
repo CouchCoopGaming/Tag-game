@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Tag.Core;
 
 namespace Tag.Level
 {
@@ -90,6 +91,204 @@ namespace Tag.Level
                 PocketParkLayout.PickRespawn(fromX, fromZ, itX, itZ, hasIt, out x, out y, out z);
             else
                 MegaParkP1Layout.PickRespawn(fromX, fromZ, itX, itZ, hasIt, out x, out y, out z);
+        }
+
+        public const int HumanSeats = 4;
+
+        /// <summary>
+        /// Four match-start seats, equally spaced on that arena's perimeter loop.
+        /// The authored respawn pads stay put so the AI duels keep their pairs.
+        /// </summary>
+        public static void HumanSeat(int arena, int index, out float x, out float y, out float z, out float yaw)
+        {
+            int id = arena == Pocket ? Pocket : arena == Stack ? Stack : Mega;
+            MegaParkP1Layout.Pt[] loop = id == Stack ? StackYardLayout.LoopCcw
+                : id == Pocket ? PocketParkLayout.LoopCcw
+                : MegaParkP1Layout.LoopCcw;
+            int n = HumanSeats;
+            if (index < 0) index = 0;
+            if (index >= n) index = n - 1;
+            float length = LoopLength(loop);
+            float arc = length * index / n;
+            PointOn(loop, arc, out x, out z);
+            PointOn(loop, arc + 2f, out float ax, out float az);
+            float dx = ax - x;
+            float dz = az - z;
+            yaw = (float)(Math.Atan2(dx, dz) * 180.0 / Math.PI);
+            y = MegaParkP1Layout.SpawnY;
+        }
+
+        public static bool HumanSeatsHold(out string why)
+        {
+            why = "";
+            for (int arena = 0; arena < Count; arena++)
+            {
+                MegaParkP1Layout.Pt[] loop = arena == Stack ? StackYardLayout.LoopCcw
+                    : arena == Pocket ? PocketParkLayout.LoopCcw
+                    : MegaParkP1Layout.LoopCcw;
+                float length = LoopLength(loop);
+                float want = length / HumanSeats;
+                MegaParkP1Layout.Solid[] solids = SolidsOf(arena);
+                var xs = new float[HumanSeats];
+                var zs = new float[HumanSeats];
+                for (int i = 0; i < HumanSeats; i++)
+                {
+                    HumanSeat(arena, i, out xs[i], out float y, out zs[i], out _);
+                    SessionRules.ArenaBox box = SessionRules.Bounds(arena);
+                    if (SessionRules.Outside(box, xs[i], y, zs[i]))
+                    {
+                        why = "human seat " + i + " on arena " + arena + " is outside the kill box";
+                        return false;
+                    }
+                    if (Blocked(solids, xs[i], zs[i]))
+                    {
+                        why = "human seat " + i + " on arena " + arena + " is inside a solid";
+                        return false;
+                    }
+                    int next = (i + 1) % HumanSeats;
+                    HumanSeat(arena, next, out float nx, out _, out float nz, out _);
+                    float arc = Arc(loop, xs[i], zs[i], nx, nz);
+                    if (Math.Abs(arc - want) > 0.05f)
+                    {
+                        why = "human seat arcs on arena " + arena + " are not equal";
+                        return false;
+                    }
+                }
+                for (int a = 0; a < HumanSeats; a++)
+                {
+                    for (int b = a + 1; b < HumanSeats; b++)
+                    {
+                        float dx = xs[a] - xs[b];
+                        float dz = zs[a] - zs[b];
+                        float d = (float)Math.Sqrt(dx * dx + dz * dz);
+                        if (d < MegaParkP1Layout.SpawnClearMeters
+                            || d / MegaParkP1Layout.SprintSpeed < MegaParkP1Layout.SpawnSightSeconds - 0.0001f)
+                        {
+                            why = "human seats " + a + " and " + b + " on arena " + arena + " are too close";
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        static MegaParkP1Layout.Solid[] SolidsOf(int arena)
+        {
+            if (arena == Pocket) return PocketParkLayout.BuildSolids();
+            if (arena == Stack) return StackYardLayout.BuildSolids();
+            return MegaParkP1Layout.BuildSolids();
+        }
+
+        static bool Blocked(MegaParkP1Layout.Solid[] solids, float x, float z)
+        {
+            if (solids == null) return false;
+            for (int i = 0; i < solids.Length; i++)
+            {
+                MegaParkP1Layout.Solid s = solids[i];
+                if (s.Kind == "ground" || s.Kind == "fence" || s.Kind == "mark") continue;
+                if (s.Sy < 1.2f) continue;
+                float top = s.Y + s.Sy * 0.5f;
+                float bot = s.Y - s.Sy * 0.5f;
+                if (top < 0.4f || bot > 1.8f) continue;
+                float hx = s.Sx * 0.5f + 0.35f;
+                float hz = s.Sz * 0.5f + 0.35f;
+                if (Math.Abs(x - s.X) < hx && Math.Abs(z - s.Z) < hz)
+                    return true;
+            }
+            return false;
+        }
+
+        static float LoopLength(MegaParkP1Layout.Pt[] loop)
+        {
+            float len = 0f;
+            for (int i = 0; i < loop.Length; i++)
+            {
+                MegaParkP1Layout.Pt a = loop[i];
+                MegaParkP1Layout.Pt b = loop[(i + 1) % loop.Length];
+                float dx = b.X - a.X;
+                float dz = b.Z - a.Z;
+                len += (float)Math.Sqrt(dx * dx + dz * dz);
+            }
+            return len;
+        }
+
+        static void PointOn(MegaParkP1Layout.Pt[] loop, float arc, out float x, out float z)
+        {
+            float length = LoopLength(loop);
+            if (length < 0.01f)
+            {
+                x = loop[0].X;
+                z = loop[0].Z;
+                return;
+            }
+            arc %= length;
+            if (arc < 0f) arc += length;
+            float walked = 0f;
+            for (int i = 0; i < loop.Length; i++)
+            {
+                MegaParkP1Layout.Pt a = loop[i];
+                MegaParkP1Layout.Pt b = loop[(i + 1) % loop.Length];
+                float dx = b.X - a.X;
+                float dz = b.Z - a.Z;
+                float seg = (float)Math.Sqrt(dx * dx + dz * dz);
+                if (walked + seg >= arc || i == loop.Length - 1)
+                {
+                    float u = seg > 0.01f ? (arc - walked) / seg : 0f;
+                    if (u < 0f) u = 0f;
+                    if (u > 1f) u = 1f;
+                    x = a.X + dx * u;
+                    z = a.Z + dz * u;
+                    return;
+                }
+                walked += seg;
+            }
+            x = loop[0].X;
+            z = loop[0].Z;
+        }
+
+        static float Arc(MegaParkP1Layout.Pt[] loop, float x0, float z0, float x1, float z1)
+        {
+            float t0 = Project(loop, x0, z0);
+            float t1 = Project(loop, x1, z1);
+            float length = LoopLength(loop);
+            float d = t1 - t0;
+            if (d < 0f) d += length;
+            return d;
+        }
+
+        static float Project(MegaParkP1Layout.Pt[] loop, float x, float z)
+        {
+            float best = 0f;
+            float bestD = 1e20f;
+            float walked = 0f;
+            for (int i = 0; i < loop.Length; i++)
+            {
+                MegaParkP1Layout.Pt a = loop[i];
+                MegaParkP1Layout.Pt b = loop[(i + 1) % loop.Length];
+                float dx = b.X - a.X;
+                float dz = b.Z - a.Z;
+                float seg = (float)Math.Sqrt(dx * dx + dz * dz);
+                float u = 0f;
+                if (seg > 0.01f)
+                {
+                    u = ((x - a.X) * dx + (z - a.Z) * dz) / (seg * seg);
+                    if (u < 0f) u = 0f;
+                    if (u > 1f) u = 1f;
+                }
+                float px = a.X + dx * u;
+                float pz = a.Z + dz * u;
+                float ex = x - px;
+                float ez = z - pz;
+                float d = ex * ex + ez * ez;
+                if (d < bestD)
+                {
+                    bestD = d;
+                    best = walked + seg * u;
+                }
+                walked += seg;
+            }
+            return best;
         }
 
         public static bool SpawnIsSafe(float x, float z, float itX, float itZ)

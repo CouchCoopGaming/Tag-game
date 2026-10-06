@@ -6,8 +6,11 @@ using UnityEngine;
 using TagArena.Movement;
 using UnityEngine.SceneManagement;
 using Tag.Audio;
+using Tag.Couch;
 using Tag.Onboard;
 using Tag.Settings;
+using Tag.Front;
+using Tag.Practice;
 
 namespace Tag.Modes
 {
@@ -156,7 +159,24 @@ namespace Tag.Modes
             if (autoFindPlayers) RefreshPlayers();
             EnsurePromptHud();
             if (FindFirstObjectByType<GameFlow>() == null)
-                StartRound();
+            {
+                if (!FrontSession.Armed)
+                {
+                    var go = new GameObject("GameFlow");
+                    go.AddComponent<GameFlow>();
+                }
+                else
+                    StartRound();
+            }
+        }
+
+        public void ApplyRound(float duration, int rounds)
+        {
+            if (leastItTuning == null) leastItTuning = LeastItTuning.CreateRuntimeDefaults();
+            if (duration < 1f) duration = 120f;
+            leastItTuning.roundDuration = duration;
+            if (rounds < 1) rounds = 1;
+            leastItTuning.roundCount = rounds;
         }
 
         void EnsurePromptHud()
@@ -297,6 +317,7 @@ namespace Tag.Modes
             // Queued pause-map swap: results already showed, now teardown and countdown on the new arena.
             if (Tag.Level.ParkArenaHost.ConsumePending())
                 return;
+            FrontLive.OnRoundStarted();
             if (_localPaused)
                 SetLocalPause(false);
             if (GameFlow.Instance != null)
@@ -361,6 +382,10 @@ namespace Tag.Modes
             PlacePlayersOnPads();
 
             _phase = MatchPhase.Countdown;
+            SessionRules.RoundPlay = false;
+            PadRumble.Silence();
+            AudioMix.SetWorldPaused(false);
+            CouchPlay.ClearResidue();
             _phaseTimer = Mathf.Max(0.01f, matchTuning.countdownSec);
             Debug.Log($"[TagMode] Countdown {_phaseTimer:0}s -> {selectedMode} ({_ctx.Players.Count}p)");
         }
@@ -381,7 +406,7 @@ namespace Tag.Modes
             AudioCuePlayer.Ensure()?.RoundStart();
             _mode.OnRoundStart(_ctx);
 
-            if (_ctx.CurrentIt == null)
+            if (!PracticeSession.Active && _ctx.CurrentIt == null)
             {
                 _livingScratch.Clear();
                 var roster = _ctx.Players;
@@ -433,14 +458,17 @@ namespace Tag.Modes
         {
             FrameMeter.AddRound(FrameMeter.RoundOps);
             FrameMeter.AddAudio(FrameMeter.AudioOps);
+            SessionRules.RoundPlay = _phase == MatchPhase.Playing;
             PadNav.Poll();
             SettingsRuntime.PollHotkeys();
             // GameFlow owns Comma/N when Boot is in the session. Direct Play has no flow.
             if (GameFlow.Instance == null)
                 Tag.Audio.AudioMaster.PollMuteHotkeys();
+            PracticeRuntime.Tick();
             PollLocalPause();
             if (_localPaused) return;
-            PollPlaytestModeHotkeys();
+            if (!PracticeSession.Active)
+                PollPlaytestModeHotkeys();
             PollResultsKeys();
 
             float dt = Time.deltaTime;
@@ -537,10 +565,11 @@ namespace Tag.Modes
             if (_resultsActionTaken) return;
             // Highlight can move during the arm. Activate still waits.
             // Ends stay put. Left on Rematch and Right on Menu do not wrap or leak.
-            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left) SetResultsFocus(0);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) || PadNav.Right) SetResultsFocus(1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left) NudgeResults(-1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) || PadNav.Right) NudgeResults(1);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetResultsFocus(0);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetResultsFocus(1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetResultsFocus(2);
             if (Time.unscaledTime < _resultsInputReadyAt) return;
             var flow = GameFlow.Instance;
             if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
@@ -567,11 +596,19 @@ namespace Tag.Modes
             }
         }
 
+        void NudgeResults(int dir)
+        {
+            int next = _resultsFocus + dir;
+            if (next < 0) next = 0;
+            if (next > 2) next = 2;
+            SetResultsFocus(next);
+        }
+
         void SetResultsFocus(int index)
         {
             if (_resultsFocus == index) return;
             _resultsFocus = index;
-            TagSfx.UiClick();
+            TagSfx.UiMove();
         }
 
         void ActivateResultsFocus()
@@ -588,6 +625,14 @@ namespace Tag.Modes
                 }
                 return;
             }
+            if (_resultsFocus == 1)
+            {
+                TagSfx.UiConfirm();
+                if (GameFlow.Instance != null) GameFlow.Instance.OpenSetup();
+                else LoadBootMenu();
+                return;
+            }
+            TagSfx.UiConfirm();
             if (GameFlow.Instance != null) GameFlow.Instance.QuitToMenu();
             else LoadBootMenu();
         }
@@ -633,6 +678,11 @@ namespace Tag.Modes
 
         public void TransferIt(ItController from, ItController to)
         {
+            if (PracticeSession.Active)
+            {
+                PracticeSession.ItAssigned = false;
+                return;
+            }
             LastFromId = from != null ? from.PlayerId : "";
             float tagBackSeconds = TagBackSeconds(from, to);
             if (from != null)
@@ -648,7 +698,11 @@ namespace Tag.Modes
             }
             if (to != null && IsLocalHuman(to))
                 _taggedUntil = 0f;
-            if (from != null) from.SetIt(false);
+            if (from != null)
+            {
+                Tag.Settings.PadRumble.PulseId(from.gameObject.GetInstanceID(), Tag.Settings.PadRumble.Tagged);
+                from.SetIt(false);
+            }
             if (to != null && to.IsAlive)
             {
                 PlayerMotor victimMotor = to.GetComponent<PlayerMotor>();
@@ -746,9 +800,17 @@ namespace Tag.Modes
             if (_phase == MatchPhase.Results) return;
             if (_chase > _longestChase) _longestChase = _chase;
             SnapshotScores();
+            if (FrontLive.KeepGoing(_scoreIds, _scoreTimes, _scoreTags, _scoreCount, _scoreLongest))
+            {
+                StartRound(selectedMode);
+                return;
+            }
             _ctx.RoundRunning = false;
             if (_ctx.RemainingTime < 0f) _ctx.RemainingTime = 0f;
             _phase = MatchPhase.Results;
+            SessionRules.RoundPlay = false;
+            PadRumble.Silence();
+            AudioMix.SetWorldPaused(false);
             ClearRoleTagBack();
             _resultsActionTaken = false;
             _resultsFocus = 0;
@@ -801,6 +863,20 @@ namespace Tag.Modes
             }
         }
 
+        static bool CouchPause()
+        {
+            if (CouchPlay.Humans < 2) return false;
+            for (int i = 0; i < CouchPlay.Max; i++)
+            {
+                if (!CouchPlay.HumanAt(i)) continue;
+                int device = CouchPlay.DeviceOf(i);
+                ActionBinds binds = CouchPlay.BindsFor(device);
+                if (binds != null && BindSampler.PressedDevice(binds, PlayAction.Pause, device))
+                    return true;
+            }
+            return false;
+        }
+
         void PollLocalPause()
         {
             // Boot's GameFlow already owns Esc. Direct Play has no menu object.
@@ -808,7 +884,7 @@ namespace Tag.Modes
             if (_phase == MatchPhase.Results || _phase == MatchPhase.Idle) return;
             if (!_localPaused)
             {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape) || PadNav.Start)
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Escape) || PadNav.Start || CouchPause())
                     SetLocalPause(true);
                 return;
             }
@@ -828,6 +904,15 @@ namespace Tag.Modes
             SettingsMenuUi.Close();
             if (paused) _localPauseFocus = 0;
             Time.timeScale = paused ? 0f : 1f;
+            if (paused)
+            {
+                PadRumble.Silence();
+                AudioMix.SetWorldPaused(true);
+                if (PadNav.StartDevice > 0)
+                    CouchPlay.OpenPauseFrom(PadNav.StartDevice);
+            }
+            else
+                AudioMix.SetWorldPaused(false);
             if (paused) { Cursor.lockState = CursorLockMode.None; Cursor.visible = true; } else ResumeInputGate.LockPlayCursor();
             Cursor.visible = paused;
             if (paused)
@@ -1067,7 +1152,7 @@ namespace Tag.Modes
                 _localAudioFocus = 0;
                 TagSfx.UiClick();
             }
-            if (LocalPauseButton(cx, cy - 56, 4, "Quit to Menu")) LoadBootMenu();
+            if (LocalPauseButton(cx, cy - 56, 4, "Quit to title")) LoadBootMenu();
             if (LocalPauseButton(cx, cy - 26, 5, "Settings"))
                 SettingsMenuUi.Open(SettingsMenuUi.Panel.Settings);
             if (LocalPauseButton(cx, cy + 4, 6, "Rebind"))
@@ -1203,6 +1288,7 @@ namespace Tag.Modes
                 return;
             }
 
+            PracticeHud.Draw();
             DrawItBanner();
 
             if (_phase == MatchPhase.Countdown)
@@ -1226,7 +1312,8 @@ namespace Tag.Modes
         void DrawCountdownCard()
         {
             if (_countStyle == null) return;
-            _countStyle.fontSize = 54;
+            float hud = GameSettings.Current != null ? GameSettings.Current.HudScale : 1f;
+            _countStyle.fontSize = (int)(54f * hud);
             _countStyle.alignment = TextAnchor.MiddleCenter;
             VerbHudLayout.Box card = VerbHudLayout.Picker(Screen.width, Screen.height);
             float w = card.W;
@@ -1235,7 +1322,8 @@ namespace Tag.Modes
             float y = card.Y;
             int show = Mathf.Max(1, Mathf.CeilToInt(_phaseTimer));
             GUI.Box(new Rect(x, y, w, h), ModeTitle(selectedMode));
-            _countStyle.normal.textColor = Color.white;
+            float flash = GameSettings.Current != null ? GameSettings.Current.CountdownFlash(_phaseTimer) : 1f;
+            _countStyle.normal.textColor = new Color(flash, flash, flash, 1f);
             GUI.Label(new Rect(x, y + 28, w, 70), HudDigits.Whole0(show), _countStyle);
             string hint = _firstCountdownHint
                 ? "WASD move   Shift sprint   Ctrl slide   " + TagArena.Movement.ControlBinds.DashName + " dash\n" +
@@ -1271,8 +1359,8 @@ namespace Tag.Modes
 
         void DrawResultsCard()
         {
-            float w = 520f;
-            float h = 268f + _scoreCount * 22f;
+            float w = 560f;
+            float h = 300f + _scoreCount * 22f;
             float x = (Screen.width - w) * 0.5f;
             float y = Mathf.Max(24f, Screen.height * 0.18f);
             if (_countStyle == null) return;
@@ -1283,15 +1371,16 @@ namespace Tag.Modes
             GUI.Label(new Rect(x, y + 12, w, 56), title, _countStyle);
             _countStyle.fontSize = 54;
             GUI.Label(new Rect(x + 16, y + 68, w - 32, h - 120f), _scoreCard);
-            float bw = 140f;
+            float bw = 128f;
+            float gap = 8f;
             float by = y + h - 44f;
+            float x0 = x + (w - (bw * 3f + gap * 2f)) * 0.5f;
             bool canAct = !_resultsActionTaken && Time.unscaledTime >= _resultsInputReadyAt;
-            var remRect = new Rect(x + w * 0.5f - bw - 8f, by, bw, 32f);
-            var menuRect = new Rect(x + w * 0.5f + 8f, by, bw, 32f);
-            if (_resultsFocus == 0)
-                GUI.Box(new Rect(remRect.x - 4f, remRect.y - 4f, remRect.width + 8f, remRect.height + 8f), "");
-            else
-                GUI.Box(new Rect(menuRect.x - 4f, menuRect.y - 4f, menuRect.width + 8f, menuRect.height + 8f), "");
+            var remRect = new Rect(x0, by, bw, 32f);
+            var setupRect = new Rect(x0 + bw + gap, by, bw, 32f);
+            var titleRect = new Rect(x0 + (bw + gap) * 2f, by, bw, 32f);
+            Rect focus = _resultsFocus == 1 ? setupRect : (_resultsFocus == 2 ? titleRect : remRect);
+            GUI.Box(new Rect(focus.x - 4f, focus.y - 4f, focus.width + 8f, focus.height + 8f), "");
             // Mouse only, so Enter does not also fire whichever IMGUI control is focused.
             // A click during the arm moves the highlight and does not activate.
             if (MenuClick.Button(remRect, _resultsFocus == 0 ? "> Rematch" : "Rematch"))
@@ -1307,11 +1396,21 @@ namespace Tag.Modes
                     Rematch();
                 }
             }
-            if (MenuClick.Button(menuRect, _resultsFocus == 1 ? "> Menu" : "Menu"))
+            if (MenuClick.Button(setupRect, _resultsFocus == 1 ? "> Change setup" : "Change setup"))
             {
                 _resultsFocus = 1;
                 if (!canAct) return;
                 _resultsActionTaken = true;
+                TagSfx.UiConfirm();
+                if (GameFlow.Instance != null) GameFlow.Instance.OpenSetup();
+                else LoadBootMenu();
+            }
+            if (MenuClick.Button(titleRect, _resultsFocus == 2 ? "> Title" : "Title"))
+            {
+                _resultsFocus = 2;
+                if (!canAct) return;
+                _resultsActionTaken = true;
+                TagSfx.UiConfirm();
                 if (GameFlow.Instance != null) GameFlow.Instance.QuitToMenu();
                 else LoadBootMenu();
             }
@@ -1357,6 +1456,12 @@ namespace Tag.Modes
 
         void RebuildScoreCard()
         {
+            string match = FrontLive.Card();
+            if (!string.IsNullOrEmpty(match))
+            {
+                _scoreCard = match;
+                return;
+            }
             _scoreSb.Clear();
             _scoreSb.Append(_resultDetail ?? "");
             _scoreSb.Append("\n\nTime as It");

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Tag.Gameplay;
+using Tag.Settings;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -40,6 +41,8 @@ namespace Tag.Art
             float time = Time.time;
             if (_it != null) glow = _it.TagBackGlow01(time);
             if (_role != null) glow = Mathf.Max(glow, _role.TagBackGlow01(time));
+            if (glow > 0.001f && GameSettings.Current != null && GameSettings.Current.AnyReduceFlash())
+                glow = GameSettings.Current.GlowVisual(glow);
             if (glow <= 0.001f)
             {
                 if (_on) End();
@@ -74,9 +77,28 @@ namespace Tag.Art
                 Destroy(_shellMat);
         }
 
+        int SeatIndex()
+        {
+            string id = _it != null ? _it.PlayerId : null;
+            if (string.IsNullOrEmpty(id)) return 0;
+            char c = id[id.Length - 1];
+            if (c < '1' || c > '4') return 0;
+            return c - '1';
+        }
+
         void Apply(float glow)
         {
             ClearPulsed();
+            Color ink = Safe;
+            if (GameSettings.Current != null)
+            {
+                int pal = GameSettings.Current.PaletteOf(SeatIndex());
+                if (pal != 0)
+                {
+                    AccessibilityPalette.Glow(pal, out float gr, out float gg, out float gb);
+                    ink = new Color(gr, gg, gb, 1f);
+                }
+            }
             float mix = Mathf.Clamp01(glow) * 0.72f;
             Renderer[] all = _bodies;
             for (int i = 0; i < all.Length; i++)
@@ -89,14 +111,14 @@ namespace Tag.Art
                 bool hasColor = mat.HasProperty("_Color");
                 if (!hasBase && !hasColor) continue;
                 Color baseC = hasBase ? mat.GetColor("_BaseColor") : mat.color;
-                Color c = Color.Lerp(baseC, Safe, mix);
+                Color c = Color.Lerp(baseC, ink, mix);
                 MaterialPropertyBlock block = _block;
                 if (block == null) continue;
                 r.GetPropertyBlock(block);
                 if (hasBase) block.SetColor("_BaseColor", c);
                 if (hasColor) block.SetColor("_Color", c);
                 if (mat.HasProperty("_EmissionColor"))
-                    block.SetColor("_EmissionColor", Safe * (0.35f + 2.4f * glow));
+                    block.SetColor("_EmissionColor", ink * (0.35f + 2.4f * glow));
                 r.SetPropertyBlock(block);
                 _pulsed.Add(r);
             }
@@ -106,14 +128,14 @@ namespace Tag.Art
                 float pulse = 1f + 0.08f * glow;
                 _shell.localScale = new Vector3(0.96f * pulse, 0.82f, 0.96f * pulse);
                 _shell.gameObject.SetActive(true);
-                Color shell = Safe;
+                Color shell = ink;
                 shell.a = 0.18f + 0.42f * glow;
                 Paint(_shellMat, shell, 1.2f + 4.5f * glow);
             }
             if (_light != null)
             {
                 _light.enabled = true;
-                _light.color = Safe;
+                _light.color = ink;
                 _light.intensity = 1.35f * glow;
                 _light.range = 3.2f;
             }

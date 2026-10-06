@@ -44,6 +44,25 @@ namespace Tag.Core
         /// <summary>timeScale 0 freezes the pawn. It does not clear a buffer or a verb.</summary>
         public static bool TimeFrozen(float timeScale) => timeScale <= 0f;
 
+        /// <summary>
+        /// True only in the playing phase. Countdown and results refuse a new zip,
+        /// pad, or stagger, and a kill-box teleport does not grant punch i-frames.
+        /// Pause leaves this set and freezes with timeScale instead, so a ride
+        /// stays attached until the round actually leaves play.
+        /// </summary>
+        public static bool RoundPlay = true;
+
+        public static bool NewCarrierAllowed() => RoundPlay;
+
+        public static bool StaggerStarts() => RoundPlay;
+
+        public static bool RespawnGrantsIFrames() => RoundPlay;
+
+        public static void ResetRound()
+        {
+            RoundPlay = true;
+        }
+
         public static Clocks Pause(Clocks clocks) => clocks;
 
         public static Clocks Tick(Clocks clocks, float dt, bool frozen)

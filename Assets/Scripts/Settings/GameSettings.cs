@@ -40,10 +40,14 @@ namespace Tag.Settings
         public const int RowHud = 9;
         public const int RowColorblind = 10;
         public const int RowMinimap = 11;
-        public const int RowReset = 12;
-        public const int RowReplay = 13;
-        public const int RowBack = 14;
-        public const int RowCount = 15;
+        public const int RowPlayer = 12;
+        public const int RowCaptions = 13;
+        public const int RowRumble = 14;
+        public const int RowReduceFlash = 15;
+        public const int RowReset = 16;
+        public const int RowReplay = 17;
+        public const int RowBack = 18;
+        public const int RowCount = 19;
 
         public static readonly float[] MouseSteps = { 1.0f, 1.4f, 1.8f, 2.4f, 3.2f };
         public static readonly float[] PadLookSteps = { 1.0f, 1.6f, 2.2f, 3.0f, 4.5f };
@@ -53,6 +57,8 @@ namespace Tag.Settings
         public static readonly float[] UiSteps = { 0f, 0.5f, 0.75f, 1f };
         public static readonly float[] MusicSteps = { 0f, 0.15f, 0.35f, 0.55f, 1f };
         public static readonly float[] HudSteps = { 0.75f, 1f, 1.25f, 1.5f };
+        public static readonly float[] RumbleSteps = { 0f, 25f, 50f, 75f, 100f };
+        static readonly string[] SeatNames = { "P1", "P2", "P3", "P4" };
 
         public static GameSettings Current = Defaults();
 
@@ -69,6 +75,40 @@ namespace Tag.Settings
         public bool Colorblind;
         public bool Minimap = true;
         public int Arena;
+
+        public const int SeatCount = 4;
+        /// <summary>Which seat the palette, captions, rumble, and flash rows edit.</summary>
+        public int AccessSeat;
+        public readonly int[] Palette = new int[SeatCount];
+        public readonly bool[] Captions = new bool[SeatCount];
+        public readonly int[] Rumble = new int[SeatCount];
+        public readonly bool[] ReduceFlash = new bool[SeatCount];
+
+        /// <summary>Opponents beside the local player. 0 is solo. 3 fills the pads.</summary>
+        public const int AiMin = 0;
+        public const int AiMax = 3;
+        public const int RoundsMin = 1;
+        public const int RoundsMax = 5;
+        public const int RoundLengthDefault = 1;
+
+        public static readonly float[] DifficultyTiers = { 0.2f, 0.5f, 0.9f };
+        public static readonly string[] DifficultyNames = { "Easy", "Normal", "Hard" };
+        /// <summary>Index 1 is the 120s Least It default. The others are presets.</summary>
+        public static readonly float[] RoundLengthPresets = { 60f, 120f, 180f, 300f };
+
+        public int AiOpponents = 1;
+        public int DifficultyTier = 1;
+        public int RoundLengthIndex = RoundLengthDefault;
+        public int RoundsPerMatch = 1;
+
+        /// <summary>Two humans. 0 is a vertical split, 1 is a horizontal split.</summary>
+        public const int SplitVertical = 0;
+        public const int SplitHorizontal = 1;
+        /// <summary>One listener on P1, or one listener at the average of the humans.</summary>
+        public const int ListenP1 = 0;
+        public const int ListenAverage = 1;
+        public int SplitAxis = SplitVertical;
+        public int Listener = ListenP1;
 
         public static GameSettings Defaults()
         {
@@ -90,6 +130,14 @@ namespace Tag.Settings
             Colorblind = other.Colorblind;
             Minimap = other.Minimap;
             Arena = other.Arena;
+            AccessSeat = other.AccessSeat;
+            CopySeats(other);
+            AiOpponents = other.AiOpponents;
+            DifficultyTier = other.DifficultyTier;
+            RoundLengthIndex = other.RoundLengthIndex;
+            RoundsPerMatch = other.RoundsPerMatch;
+            SplitAxis = other.SplitAxis;
+            Listener = other.Listener;
         }
 
         public void ResetToDefaults()
@@ -107,8 +155,113 @@ namespace Tag.Settings
             Ui = ClampFloat(Ui, 0f, 1f);
             Music = ClampFloat(Music, 0f, 1f);
             HudScale = ClampFloat(HudScale, HudMin, HudMax);
+            int lastArena = Tag.Onboard.ArenaRegistry.Count - 1;
+            if (lastArena < 0) lastArena = 0;
             if (Arena < 0) Arena = 0;
-            if (Arena > Tag.Level.ParkArena.Stack) Arena = Tag.Level.ParkArena.Stack;
+            if (Arena > lastArena) Arena = lastArena;
+            if (AiOpponents < AiMin) AiOpponents = AiMin;
+            if (AiOpponents > AiMax) AiOpponents = AiMax;
+            if (DifficultyTier < 0) DifficultyTier = 0;
+            if (DifficultyTier >= DifficultyTiers.Length) DifficultyTier = DifficultyTiers.Length - 1;
+            if (RoundLengthIndex < 0) RoundLengthIndex = 0;
+            if (RoundLengthIndex >= RoundLengthPresets.Length) RoundLengthIndex = RoundLengthPresets.Length - 1;
+            if (RoundsPerMatch < RoundsMin) RoundsPerMatch = RoundsMin;
+            if (RoundsPerMatch > RoundsMax) RoundsPerMatch = RoundsMax;
+            if (SplitAxis != SplitHorizontal) SplitAxis = SplitVertical;
+            if (Listener != ListenAverage) Listener = ListenP1;
+            if (AccessSeat < 0) AccessSeat = 0;
+            if (AccessSeat >= SeatCount) AccessSeat = SeatCount - 1;
+            for (int i = 0; i < SeatCount; i++)
+            {
+                if (Palette[i] < 0) Palette[i] = 0;
+                if (Palette[i] >= AccessibilityPalette.Count) Palette[i] = AccessibilityPalette.Count - 1;
+                if (Rumble[i] < 0) Rumble[i] = 0;
+                if (Rumble[i] > 100) Rumble[i] = 100;
+            }
+        }
+
+        public int PaletteOf(int seat)
+        {
+            int i = seat;
+            if (i < 0 || i >= SeatCount) i = 0;
+            int p = Palette[i];
+            if (p < 0 || p >= AccessibilityPalette.Count) p = 0;
+            if (i == 0 && p == 0 && Colorblind) return AccessibilityPalette.Deuteranopia;
+            return p;
+        }
+
+        public bool CaptionsOf(int seat)
+        {
+            if (seat < 0 || seat >= SeatCount) return Captions[0];
+            return Captions[seat];
+        }
+
+        public int RumbleOf(int seat)
+        {
+            if (seat < 0 || seat >= SeatCount) return 0;
+            int v = Rumble[seat];
+            if (v < 0) return 0;
+            if (v > 100) return 100;
+            return v;
+        }
+
+        public bool AnyReduceFlash()
+        {
+            for (int i = 0; i < SeatCount; i++)
+            {
+                if (ReduceFlash[i]) return true;
+            }
+            return false;
+        }
+
+        /// <summary>Flattens the tag-back strobe. The immunity window is not touched.</summary>
+        public float GlowVisual(float pulse)
+        {
+            if (!AnyReduceFlash()) return pulse;
+            return 0.58f + pulse * 0.05f;
+        }
+
+        /// <summary>Countdown digit brightness. The phase timer is not touched.</summary>
+        public float CountdownFlash(float phaseTimer)
+        {
+            if (AnyReduceFlash()) return 1f;
+            float frac = phaseTimer;
+            if (frac < 0f) frac = 0f;
+            frac -= (int)frac;
+            return 0.42f + 0.58f * frac;
+        }
+
+        void CopySeats(GameSettings other)
+        {
+            if (other == null) return;
+            for (int i = 0; i < SeatCount; i++)
+            {
+                Palette[i] = other.Palette[i];
+                Captions[i] = other.Captions[i];
+                Rumble[i] = other.Rumble[i];
+                ReduceFlash[i] = other.ReduceFlash[i];
+            }
+        }
+
+        public float DifficultyValue()
+        {
+            int i = DifficultyTier;
+            if (i < 0 || i >= DifficultyTiers.Length) i = 1;
+            return DifficultyTiers[i];
+        }
+
+        public string DifficultyLabel()
+        {
+            int i = DifficultyTier;
+            if (i < 0 || i >= DifficultyNames.Length) i = 1;
+            return DifficultyNames[i];
+        }
+
+        public float RoundSeconds()
+        {
+            int i = RoundLengthIndex;
+            if (i < 0 || i >= RoundLengthPresets.Length) i = RoundLengthDefault;
+            return RoundLengthPresets[i];
         }
 
         public void Nudge(int row, int dir)
@@ -126,8 +279,12 @@ namespace Tag.Settings
                 case RowMusic: Music = Step(Music, dir, MusicSteps); break;
                 case RowMute: Muted = !Muted; break;
                 case RowHud: HudScale = Step(HudScale, dir, HudSteps); break;
-                case RowColorblind: Colorblind = !Colorblind; break;
+                case RowColorblind: CyclePalette(dir); break;
                 case RowMinimap: Minimap = !Minimap; break;
+                case RowPlayer: CycleSeat(dir); break;
+                case RowCaptions: Captions[AccessSeat] = !Captions[AccessSeat]; break;
+                case RowRumble: Rumble[AccessSeat] = (int)Step(Rumble[AccessSeat], dir, RumbleSteps); break;
+                case RowReduceFlash: ReduceFlash[AccessSeat] = !ReduceFlash[AccessSeat]; break;
             }
             Clamp();
         }
@@ -146,8 +303,12 @@ namespace Tag.Settings
                 case RowMusic: return "Music  " + Music.ToString("0.00", CultureInfo.InvariantCulture);
                 case RowMute: return Muted ? "Unmute  (Comma)" : "Mute  (Comma)";
                 case RowHud: return "HUD scale  " + HudScale.ToString("0.00", CultureInfo.InvariantCulture);
-                case RowColorblind: return "Colorblind palette  " + (Colorblind ? "On" : "Off");
+                case RowColorblind: return "Colorblind palette  " + AccessibilityPalette.Name(PaletteOf(AccessSeat));
                 case RowMinimap: return "Minimap  " + (Minimap ? "On  (M)" : "Off  (M)");
+                case RowPlayer: return "Player  " + SeatNames[AccessSeat];
+                case RowCaptions: return "Captions  " + (Captions[AccessSeat] ? "On" : "Off");
+                case RowRumble: return "Rumble  " + RumbleText(Rumble[AccessSeat]);
+                case RowReduceFlash: return "Reduced flashing  " + (ReduceFlash[AccessSeat] ? "On" : "Off");
                 case RowReset: return "Reset to defaults";
                 case RowReplay: return "Replay tips";
                 default: return "Back";
@@ -156,7 +317,9 @@ namespace Tag.Settings
 
         public static string ArenaName(int arena)
         {
-            return Tag.Level.ParkArena.NameOf(arena);
+            if (arena >= 0 && arena < Tag.Onboard.ArenaRegistry.Count)
+                return Tag.Onboard.ArenaRegistry.All[arena].Name;
+            return Tag.Onboard.ArenaRegistry.All[0].Name;
         }
 
         /// <summary>
@@ -203,6 +366,37 @@ namespace Tag.Settings
             return true;
         }
 
+        void CyclePalette(int dir)
+        {
+            int seat = AccessSeat;
+            if (seat < 0 || seat >= SeatCount) seat = 0;
+            // Step from the palette the pawn is actually drawing. A stale
+            // colorblind flag used to leave the row on Default while seat 0
+            // kept drawing deuteranopia, so the first nudge did nothing.
+            int next = PaletteOf(seat) + (dir < 0 ? -1 : 1);
+            if (next < 0) next = 0;
+            if (next >= AccessibilityPalette.Count) next = AccessibilityPalette.Count - 1;
+            Palette[seat] = next;
+            if (seat == 0) Colorblind = next != 0;
+        }
+
+        void CycleSeat(int dir)
+        {
+            int next = AccessSeat + (dir < 0 ? -1 : 1);
+            if (next < 0) next = 0;
+            if (next >= SeatCount) next = SeatCount - 1;
+            AccessSeat = next;
+        }
+
+        static string RumbleText(int value)
+        {
+            if (value <= 0) return "Off";
+            if (value < 37) return "25%";
+            if (value < 62) return "50%";
+            if (value < 87) return "75%";
+            return "100%";
+        }
+
         static float Step(float value, int dir, float[] steps)
         {
             int i = 0;
@@ -224,6 +418,7 @@ namespace Tag.Settings
 
         static float ClampFloat(float v, float lo, float hi)
         {
+            if (float.IsNaN(v) || float.IsInfinity(v)) return lo;
             if (v < lo) return lo;
             if (v > hi) return hi;
             return v;

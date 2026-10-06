@@ -1,3 +1,4 @@
+using Tag.Couch;
 using Tag.Settings;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
@@ -32,6 +33,12 @@ namespace TagArena.Movement
         /// <summary>When true, Read() is a no-op - AI / tests own Move/Look/buttons.</summary>
         public bool ExternalControl;
 
+        /// <summary>
+        /// -1 keeps the solo read, where the keyboard and the current pad share one pawn.
+        /// 0 is the keyboard couch pawn. 1–4 are pads. A pad never samples the keyboard.
+        /// </summary>
+        public int DriveDevice = -1;
+
         [Header("Legacy key map")]
         public KeyCode skiKey = KeyCode.LeftShift;
         public KeyCode jetKey = KeyCode.Mouse1;
@@ -59,6 +66,7 @@ namespace TagArena.Movement
         bool _swallowResumeJump;
         bool _clearSprintOnResume;
         bool _clearClingOnResume;
+        bool _couchWasLive;
 
         void Awake()
         {
@@ -70,6 +78,11 @@ namespace TagArena.Movement
         public void Read()
         {
             if (ExternalControl) return;
+            if (DriveDevice >= 0)
+            {
+                ReadDriven();
+                return;
+            }
 
             airDashKey = ControlBinds.AirDash;
             punchKey = ControlBinds.Punch;
@@ -304,6 +317,70 @@ namespace TagArena.Movement
                 return true;
 #endif
             return false;
+        }
+
+        void ReadDriven()
+        {
+            bool live = Time.timeScale > 0f && Cursor.lockState == CursorLockMode.Locked;
+            if (!live || CouchPlay.InputBlockedDevice(DriveDevice))
+            {
+                Move = Vector2.zero;
+                Look = Vector2.zero;
+                LookFromGamepad = false;
+                SprintHeld = false;
+                CrouchHeld = false;
+                CrouchPressed = false;
+                JumpHeld = false;
+                JumpPressed = false;
+                SkiHeld = false;
+                JetHeld = false;
+                JetPressed = false;
+                LungePressed = false;
+                AirDashPressed = false;
+                PunchPressed = false;
+                TapForwardPulse = false;
+                _couchWasLive = false;
+                return;
+            }
+
+            bool swallow = !_couchWasLive;
+            _couchWasLive = true;
+            ActionBinds binds = CouchPlay.BindsFor(DriveDevice);
+            bool pad = DriveDevice > 0;
+            Move = BindSampler.MoveDevice(binds, DriveDevice);
+            Look = BindSampler.LookDevice(binds, DriveDevice);
+            LookFromGamepad = pad && Look.sqrMagnitude > 0.0004f;
+
+            bool crouch = BindSampler.HeldDevice(binds, PlayAction.Slide, DriveDevice);
+            CrouchPressed = crouch && _prevCrouch <= 0f;
+            CrouchHeld = crouch;
+            _prevCrouch = crouch ? 1f : 0f;
+
+            bool jump = BindSampler.HeldDevice(binds, PlayAction.Jump, DriveDevice);
+            JumpHeld = jump;
+            JumpPressed = jump && _prevJump <= 0f;
+            _prevJump = jump ? 1f : 0f;
+            _prevSpace = jump ? 1f : 0f;
+
+            SprintHeld = BindSampler.HeldDevice(binds, PlayAction.Sprint, DriveDevice);
+            AirDashPressed = BindSampler.PressedDevice(binds, PlayAction.AirDash, DriveDevice);
+            PunchPressed = BindSampler.PressedDevice(binds, PlayAction.Punch, DriveDevice);
+            if (BindSampler.HeldDevice(binds, PlayAction.Cling, DriveDevice) && Move.y < 0.85f)
+                Move.y = 1f;
+
+            bool forward = Move.y > 0.75f && _prevMoveY <= 0.45f;
+            TapForwardPulse = forward;
+            _prevMoveY = Move.y;
+
+            if (swallow)
+            {
+                Look = Vector2.zero;
+                JumpPressed = false;
+                CrouchPressed = false;
+                AirDashPressed = false;
+                PunchPressed = false;
+                TapForwardPulse = false;
+            }
         }
 
         public void ConsumeJumpPress() => JumpPressed = false;

@@ -29,6 +29,8 @@ namespace Tag.Modes
     /// </summary>
     public class DummyPatrol : MonoBehaviour
     {
+        public bool Passive;
+
         [SerializeField] float radius = 5.5f;
         [SerializeField] float turnSpeed = 220f;
         [Tooltip("Fallback when PunchHitbox/Tuning unavailable. Prefer syncing from PunchTagTuning.reach.")]
@@ -76,6 +78,11 @@ namespace Tag.Modes
         [Range(0f, 1f)]
         [Tooltip("0 is slow and loose. 1 is quick and tidy. Default is the middle.")]
         [SerializeField] float difficulty = 0.5f;
+
+        public void ApplyDifficulty(float value)
+        {
+            difficulty = EnemyAi.ClampDifficulty(value);
+        }
 
         PlayerInputReader _input;
         PlayerRagdoll _ragdoll;
@@ -199,6 +206,15 @@ namespace Tag.Modes
                     StopWish();
                     return;
                 }
+            }
+
+            if (Passive)
+            {
+                if (_it != null) _it.SetIt(false);
+                float passiveDt = Time.fixedDeltaTime;
+                Wander(passiveDt, out Vector3 passiveDir);
+                _ = passiveDir;
+                return;
             }
 
             float dt = Time.fixedDeltaTime;

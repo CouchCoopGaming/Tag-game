@@ -20,6 +20,7 @@
     <Compile Include="../../Assets/Scripts/Level/StackYardLayout.Look.cs" />
     <Compile Include="../../Assets/Scripts/Level/ParkArena.cs" />
     <Compile Include="../../Assets/Scripts/Level/ArenaStill.cs" />
+    <Compile Include="../../Assets/Scripts/Level/ArenaStill.Front.cs" />
     <Compile Include="UnityStub/UnityEngine.cs" />
     <Compile Include="UnityStub/AudioBus.cs" />
     <Compile Include="../../Assets/Editor/StrafeJumpProof.cs" />
@@ -37,7 +38,10 @@
     <Compile Include="../../Assets/Editor/EnemyAiProof.cs" />
     <Compile Include="../../Assets/Editor/RoundFlowProof.cs" />
     <Compile Include="../../Assets/Scripts/Modes/RoundFlow.cs" />
+    <Compile Include="../../Assets/Scripts/Front/FrontSession.cs" />
+    <Compile Include="../../Assets/Scripts/Couch/CouchPlay.cs" />
     <Compile Include="../../Assets/Scripts/Settings/GameSettings.cs" />
+    <Compile Include="../../Assets/Scripts/Settings/Accessibility.cs" />
     <Compile Include="../../Assets/Scripts/Settings/ActionBinds.cs" />
     <Compile Include="../../Assets/Scripts/Settings/SettingsFile.cs" />
     <Compile Include="../../Assets/Scripts/Settings/MenuGraph.cs" />
@@ -104,6 +108,7 @@
     <Compile Include="../../Assets/Scripts/Core/SessionRules.cs" />
     <Compile Include="../../Assets/Scripts/Core/HudDigits.cs" />
     <Compile Include="../../Assets/Scripts/Core/QaSweep.cs" />
+    <Compile Include="../../Assets/Scripts/Core/QaSweep2.cs" />
     <Compile Include="../../Assets/Scripts/Core/HotPathAlloc.cs" />
     <Compile Include="../../Assets/Scripts/Core/FrameMeter.cs" />
     <Compile Include="../../Assets/Scripts/Core/FrameBudget.cs" />
@@ -118,5 +123,13 @@
     <Compile Include="../../Assets/Scripts/Onboard/PromptText.cs" />
     <Compile Include="../../Assets/Scripts/Onboard/HowToPlay.cs" />
     <Compile Include="../../Assets/Editor/OnboardingProof.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeCatalog.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeRouteTable.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeBests.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeGhost.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticePose.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeSim.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeSession.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeProof.cs" />
   </ItemGroup>
 </Project>

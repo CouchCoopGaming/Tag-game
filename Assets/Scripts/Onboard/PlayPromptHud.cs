@@ -1,3 +1,4 @@
+using Tag.Couch;
 using Tag.Gameplay;
 using Tag.Level;
 using Tag.Modes;
@@ -16,6 +17,10 @@ namespace Tag.Onboard
     public class PlayPromptHud : MonoBehaviour
     {
         public static PlayPromptHud Instance { get; private set; }
+
+        public Camera View;
+        public int Seat = -1;
+        public int DriveDevice = -1;
 
         PlayerMotor _motor;
         PlayerInputReader _input;
@@ -42,12 +47,7 @@ namespace Tag.Onboard
 
         void Awake()
         {
-            if (Instance != null && Instance != this)
-            {
-                enabled = false;
-                return;
-            }
-            Instance = this;
+            if (Instance == null) Instance = this;
             _motor = GetComponent<PlayerMotor>();
             _input = GetComponent<PlayerInputReader>();
             _punch = GetComponent<PunchHitbox>();
@@ -82,14 +82,21 @@ namespace Tag.Onboard
 
         void Update()
         {
-            Tag.Core.FrameMeter.AddHud(Tag.Core.FrameMeter.HudOps);
+            if (Instance == this)
+                Tag.Core.FrameMeter.AddHud(Tag.Core.FrameMeter.HudOps);
             if (_motor == null || _input == null) return;
+            if (Instance != this)
+            {
+                if (Seat >= 0) TickLearn();
+                TickContext();
+                return;
+            }
             if (_cam == null) _cam = Camera.main;
-            WatchDevice();
+            if (DriveDevice < 0) WatchDevice();
             if (Input.GetKeyDown(KeyCode.F12))
             {
-                OnboardingSession.Live.Skip();
-                OnboardingStore.Save(OnboardingSession.Live);
+                Session().Skip();
+                OnboardingStore.Save(Session());
             }
             TickLearn();
             TickContext();
@@ -140,7 +147,7 @@ namespace Tag.Onboard
         void TickLearn()
         {
             bool window = LearnNow();
-            OnboardingSession session = OnboardingSession.Live;
+            OnboardingSession session = Session();
             session.BeginIfNeeded(window);
             if (!session.Active) return;
 
@@ -220,6 +227,12 @@ namespace Tag.Onboard
             _context.Tick(Time.deltaTime, _sample);
         }
 
+        OnboardingSession Session()
+        {
+            if (Seat >= 0) return OnboardingSession.ForSeat(Seat);
+            return OnboardingSession.Live;
+        }
+
         static bool LearnNow()
         {
             if (Time.timeScale <= 0f) return false;
@@ -236,13 +249,18 @@ namespace Tag.Onboard
             if (Time.timeScale <= 0f) return;
             PromptText.Ensure();
             _label.fontSize = Screen.height >= 1000 ? 16 : 14;
-            OnboardingSession session = OnboardingSession.Live;
+            OnboardingSession session = Session();
             if (session.Active) DrawHint(session);
             if (_context.Alpha > 0.02f && _context.Kind != ContextKind.None) DrawChip();
         }
 
         void DrawHint(OnboardingSession session)
         {
+            if (DriveDevice >= 0 && View != null)
+            {
+                DrawCouchHint(session);
+                return;
+            }
             float sw = Screen.width;
             float sh = Screen.height;
             VerbHudLayout.Box bar = VerbHudLayout.HintBar(sw, sh);
@@ -255,8 +273,26 @@ namespace Tag.Onboard
             }
         }
 
+        void DrawCouchHint(OnboardingSession session)
+        {
+            Rect area = View.pixelRect;
+            if (area.width < 8f) return;
+            float x = area.x + 8f;
+            float y = Screen.height - area.y - 44f;
+            float w = area.width - 16f;
+            if (w > 420f) w = 420f;
+            float h = 36f;
+            GUI.Box(new Rect(x, y, w, h), "");
+            GUI.Label(new Rect(x + 8f, y + 4f, w - 16f, h - 8f), CouchPlay.Hint(DriveDevice, session.Current), _label);
+        }
+
         void DrawChip()
         {
+            if (DriveDevice >= 0 && View != null)
+            {
+                DrawCouchChip();
+                return;
+            }
             float sw = Screen.width;
             float sh = Screen.height;
             VerbHudLayout.Box chip = VerbHudLayout.ContextChip(sw, sh);
@@ -281,6 +317,25 @@ namespace Tag.Onboard
                 DrawPadIcon(x, y);
             else
                 GUI.Label(new Rect(x + 8f, y, w - 16f, h), PromptText.ContextLine(_context.Kind), _label);
+            GUI.color = prev;
+        }
+
+        void DrawCouchChip()
+        {
+            Rect area = View.pixelRect;
+            float x = area.x + 12f;
+            float y = Screen.height - (area.y + area.height * 0.62f);
+            float w = 220f;
+            if (w > area.width - 24f) w = area.width - 24f;
+            float h = 32f;
+            string line = CouchPlay.ContextLine(DriveDevice, _context.Kind);
+            Color prev = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, _context.Alpha);
+            GUI.Box(new Rect(x, y, w, h), "");
+            if (line.Length > 0)
+                GUI.Label(new Rect(x + 8f, y, w - 16f, h), line, _label);
+            else
+                DrawPadIcon(x, y);
             GUI.color = prev;
         }
 

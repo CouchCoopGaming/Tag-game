@@ -1,55 +1,108 @@
-using System.Collections.Generic;
+using Tag.Couch;
 using Tag.Gameplay;
+using Tag.Settings;
 using UnityEngine;
 
 namespace Tag.Local
 {
-    /// <summary>Assigns camera rects for 2–4 local players.</summary>
+    /// <summary>
+    /// One chase camera per human. 1 is full screen, 2 is a vertical or horizontal
+    /// split, 3 and 4 are quadrants. Three humans leave the last quadrant for the score.
+    /// One listener, on P1 or at the average of the humans. The voice cap stays 16.
+    /// </summary>
     public class LocalSplitCamera : MonoBehaviour
     {
+        Camera[] _cams = new Camera[CouchPlay.Max];
+        Transform[] _bodies = new Transform[CouchPlay.Max];
+        AudioListener _average;
+        int _count;
+
         void Start() => Apply();
+
         void LateUpdate()
         {
-            // Re-apply if players spawn late
+            if (_average == null || _count <= 0) return;
+            if (GameSettings.Current == null || GameSettings.Current.Listener != GameSettings.ListenAverage) return;
+            float x = 0f;
+            float y = 0f;
+            float z = 0f;
+            int n = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                Transform body = _bodies[i];
+                if (body == null) continue;
+                Vector3 p = body.position;
+                x += p.x;
+                y += p.y;
+                z += p.z;
+                n++;
+            }
+            if (n <= 0) return;
+            _average.transform.position = new Vector3(x / n, y / n + 1.6f, z / n);
         }
 
         [ContextMenu("Apply Split")]
         public void Apply()
         {
-            var cams = new List<Camera>();
-            foreach (var it in FindObjectsByType<ItController>(FindObjectsSortMode.None))
+            _count = 0;
+            var its = FindObjectsByType<ItController>(FindObjectsSortMode.None);
+            int humans = CouchPlay.Humans;
+            if (humans < 1) humans = 1;
+            for (int s = 0; s < CouchPlay.Max && _count < humans; s++)
             {
-                if (!it.gameObject.activeInHierarchy) continue;
-                var cam = it.GetComponentInChildren<Camera>();
-                if (cam != null) cams.Add(cam);
-            }
-            int n = cams.Count;
-            if (n == 0) return;
-
-            // Disable extra audio listeners
-            bool listenerKept = false;
-            for (int i = 0; i < n; i++)
-            {
-                var al = cams[i].GetComponent<AudioListener>();
-                if (al != null)
+                if (CouchPlay.Humans >= 2 && !CouchPlay.HumanAt(s)) continue;
+                string name = CouchPlay.Name(s);
+                for (int i = 0; i < its.Length; i++)
                 {
-                    al.enabled = !listenerKept;
-                    listenerKept = true;
+                    ItController it = its[i];
+                    if (it == null || !it.gameObject.activeInHierarchy) continue;
+                    if (CouchPlay.Humans >= 2 && it.PlayerId != name) continue;
+                    Camera cam = it.GetComponentInChildren<Camera>();
+                    if (cam == null || !cam.enabled) continue;
+                    _cams[_count] = cam;
+                    _bodies[_count] = it.transform;
+                    _count++;
+                    break;
                 }
-                cams[i].rect = RectFor(i, n);
+                if (CouchPlay.Humans < 2 && _count > 0) break;
             }
-            Debug.Log($"[LocalSplitCamera] Split {n} cameras");
+
+            if (_count == 0) return;
+            int shown = CouchPlay.Humans >= 2 ? CouchPlay.Humans : 1;
+            if (shown > _count) shown = _count;
+            int split = GameSettings.Current != null ? GameSettings.Current.SplitAxis : GameSettings.SplitVertical;
+            bool average = GameSettings.Current != null && GameSettings.Current.Listener == GameSettings.ListenAverage && shown > 1;
+            EnsureAverage(average);
+
+            for (int i = 0; i < _count; i++)
+            {
+                Camera cam = _cams[i];
+                if (cam == null) continue;
+                if (i < shown)
+                {
+                    CouchPlay.Norm(i, shown, split, out float x, out float y, out float w, out float h);
+                    cam.rect = new Rect(x, y, w, h);
+                    cam.enabled = true;
+                }
+                else
+                    cam.enabled = false;
+                AudioListener listener = cam.GetComponent<AudioListener>();
+                if (listener != null) listener.enabled = !average && i == 0 && i < shown;
+            }
+            if (_average != null) _average.enabled = average;
         }
 
-        static Rect RectFor(int i, int n)
+        void EnsureAverage(bool on)
         {
-            if (n == 1) return new Rect(0, 0, 1, 1);
-            if (n == 2) return i == 0 ? new Rect(0, 0.5f, 1, 0.5f) : new Rect(0, 0, 1, 0.5f);
-            // 3 or 4: quad
-            float x = (i % 2) * 0.5f;
-            float y = (i < 2) ? 0.5f : 0f;
-            if (n == 3 && i == 2) return new Rect(0.25f, 0f, 0.5f, 0.5f);
-            return new Rect(x, y, 0.5f, 0.5f);
+            if (!on)
+            {
+                if (_average != null) _average.enabled = false;
+                return;
+            }
+            if (_average != null) return;
+            var go = new GameObject("CouchListener");
+            go.transform.SetParent(transform, false);
+            _average = go.AddComponent<AudioListener>();
         }
     }
 }

@@ -128,17 +128,17 @@ namespace Tag.Settings
 
         static void DrawSettings(float cx, float cy)
         {
-            GUI.Box(new Rect(cx - 250, cy - 280, 500, 600), "Settings");
+            GUI.Box(new Rect(cx - 270, cy - 360, 540, 700), "Settings");
             var s = GameSettings.Current ?? GameSettings.Defaults();
-            float y = cy - 248f;
+            float y = cy - 330f;
             for (int i = 0; i < MenuGraph.SettingsRows; i++)
             {
                 if (Row(cx, y, i, s.RowLabel(i)))
                     Activate();
-                y += 28f;
+                y += 26f;
             }
-            GUI.Label(new Rect(cx - 230, cy + 200, 460, 64),
-                "Up / Down or the stick picks. Left / Right steps.\nEnter or South uses the row. East or Esc back.\nReplay tips restarts the first-run hints.\nComma mutes. M or Select toggles the minimap.");
+            GUI.Label(new Rect(cx - 250, y + 8f, 500, 72),
+                "Up / Down or the stick picks. Left / Right steps.\nEnter or South uses the row. East or Esc back.\nPlayer picks whose palette, captions, rumble, and flash you edit.\nHUD scale also sizes the text. Comma mutes. M toggles the minimap.");
         }
 
         static void DrawHowTo(float cx, float cy)
@@ -234,7 +234,7 @@ namespace Tag.Settings
 
         static void Step(int dir)
         {
-            if (Which == Panel.Settings && _focus <= GameSettings.RowMinimap)
+            if (Which == Panel.Settings && _focus < GameSettings.RowReset)
             {
                 var s = GameSettings.Current ?? GameSettings.Defaults();
                 GameSettings.Current = s;
@@ -290,7 +290,9 @@ namespace Tag.Settings
                     return;
                 }
                 if (_focus == GameSettings.RowInvert || _focus == GameSettings.RowMute
-                    || _focus == GameSettings.RowColorblind || _focus == GameSettings.RowMinimap)
+                    || _focus == GameSettings.RowColorblind || _focus == GameSettings.RowMinimap
+                    || _focus == GameSettings.RowPlayer || _focus == GameSettings.RowCaptions
+                    || _focus == GameSettings.RowRumble || _focus == GameSettings.RowReduceFlash)
                     Step(1);
                 return;
             }

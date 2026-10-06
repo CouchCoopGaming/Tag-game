@@ -13,17 +13,48 @@ namespace Tag.Audio
         static GameObject _root;
         static uint _rng = 0xC0FFEEu;
 
+        public static bool WorldPaused { get; private set; }
+
+        public static void SetWorldPaused(bool paused)
+        {
+            WorldPaused = paused;
+            if (!paused) return;
+            VoiceBudget.SilenceWorld();
+            if (_voices == null) return;
+            for (int i = 0; i < _voices.Length; i++)
+            {
+                if (VoiceBudget.Occupied(i)) continue;
+                AudioSource src = _voices[i];
+                if (src != null && src.isPlaying) src.Stop();
+            }
+        }
+
+        /// <summary>Master, mute, the bus slider, and pause. UI is the only bus that plays while paused.</summary>
+        public static bool WouldPlay(float bus, bool ui)
+        {
+            if (AudioMaster.Muted || AudioMaster.Volume <= 0.001f) return false;
+            if (bus <= 0.001f) return false;
+            if (!ui && WorldPaused) return false;
+            return true;
+        }
+
+        public static float MusicLevel(float music, bool musicMuted)
+        {
+            if (!WouldPlay(musicMuted ? 0f : music, false)) return 0f;
+            return music < 0f ? 0f : music;
+        }
+
         public static void PlayWorld(AudioClip clip, Vector3 pos, float volume, int priority, bool itLouder, float pitchScale)
         {
             float vol = volume * SfxGain();
             if (itLouder) vol *= VoiceBudget.ItFootstepGain;
-            Play(clip, pos, vol, priority, pitchScale, true);
+            Play(clip, pos, vol, priority, pitchScale, true, false);
         }
 
         public static void PlayFlat(AudioClip clip, float volume, int priority, bool ui)
         {
             float vol = volume * (ui ? UiGain() : SfxGain());
-            Play(clip, Vector3.zero, vol, priority, 1f, false);
+            Play(clip, Vector3.zero, vol, priority, 1f, false, ui);
         }
 
         public static void Pump()
@@ -41,17 +72,17 @@ namespace Tag.Audio
             }
         }
 
-        static void Play(AudioClip clip, Vector3 pos, float volume, int priority, float pitchScale, bool spatial)
+        static void Play(AudioClip clip, Vector3 pos, float volume, int priority, float pitchScale, bool spatial, bool ui)
         {
             if (clip == null || volume <= 0.001f) return;
-            if (AudioMaster.Muted || AudioMaster.Volume <= 0.001f) return;
+            if (!WouldPlay(1f, ui)) return;
             Ensure();
             float pitch = pitchScale;
             if (spatial) pitch += Jitter(FootstepMap.PitchJitter);
             if (pitch < 0.5f) pitch = 0.5f;
             if (pitch > 1.6f) pitch = 1.6f;
             float dur = clip.length / pitch;
-            int slot = VoiceBudget.Admit(priority, dur, Time.time);
+            int slot = VoiceBudget.Admit(priority, dur, Time.time, ui);
             if (slot < 0) return;
             AudioSource src = _voices[slot];
             if (src == null)

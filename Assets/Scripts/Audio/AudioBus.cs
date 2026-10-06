@@ -1,3 +1,4 @@
+using Tag.Settings;
 using UnityEngine;
 
 namespace Tag.Audio
@@ -74,6 +75,7 @@ namespace Tag.Audio
         public static void Raise(Hook hook, Vector3 position)
         {
             if (Raised != null) Raised.Invoke(hook, position);
+            CaptionFeed.FromHook((int)hook, position.x, position.z);
             if (!Audible()) return;
             Play(hook, position);
         }

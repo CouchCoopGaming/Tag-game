@@ -265,6 +265,7 @@ namespace TagArena.Movement
 
         void Update()
         {
+            Tag.Settings.PadRumbleOutput.Tick(Time.unscaledDeltaTime);
             _clingRefused = false;
             if (_in == null || cfg == null) return;
             _in.Read();
@@ -273,6 +274,14 @@ namespace TagArena.Movement
             // An unlocked cursor (results, resume gate) still drops the slots so a card click cannot hop.
             if (SessionRules.TimeFrozen(Time.timeScale))
                 return;
+            // Countdown and results keep timeScale at 1. A ride, a pad, and a
+            // stumble do not start there. Pause returns above and keeps the ride.
+            if (!SessionRules.RoundPlay)
+            {
+                if (_zipRiding) ReleaseZip();
+                _launchQueued = false;
+                return;
+            }
             if (Cursor.lockState != CursorLockMode.Locked || ResumeInputGate.Blocking)
             {
                 _jumpSlot = 0f;
@@ -1505,6 +1514,7 @@ namespace TagArena.Movement
         /// </summary>
         public bool BeginPunchStagger()
         {
+            if (!SessionRules.StaggerStarts()) return false;
             if (_motorLocked) return false;
             if (!PunchStagger.TryStart(ref _stagger)) return false;
             AudioBus.Raise(AudioBus.Hook.Stagger, transform.position);
@@ -1561,6 +1571,7 @@ namespace TagArena.Movement
         /// </summary>
         public bool TryBeginZip(ZipLine line)
         {
+            if (!SessionRules.NewCarrierAllowed()) return false;
             if (line == null || _zipRiding) return false;
             if (VerbIntegration.ZipGrabBlocked(
                 _stagger.Stagger > 0f, _launchArc, _launchQueued, _motorLocked,
@@ -1678,6 +1689,7 @@ namespace TagArena.Movement
         /// </summary>
         public bool QueueLaunch(float apexHeight, Vector3 horizontalVelocity, bool setHorizontal, float cooldownSeconds)
         {
+            if (!SessionRules.NewCarrierAllowed()) return false;
             if (!LaunchPadRules.CooldownOpen(Time.time, _launchReadyAt))
                 return false;
             if (apexHeight <= 0.001f) return false;
@@ -1723,6 +1735,7 @@ namespace TagArena.Movement
             SetHeight(cfg.standingHeight);
             SetState(MoveState.Air);
             AudioBus.Raise(AudioBus.Hook.PadLaunch, transform.position);
+            Tag.Settings.PadRumble.PulseId(gameObject.GetInstanceID(), Tag.Settings.PadRumble.PadLaunch);
             return v;
         }
 

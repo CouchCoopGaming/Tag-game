@@ -1,4 +1,7 @@
 using Tag.Audio;
+using Tag.Couch;
+using Tag.Front;
+using Tag.Practice;
 using Tag.Gameplay;
 using Tag.Level;
 using Tag.Modes;
@@ -21,8 +24,21 @@ namespace Tag.Core
             ResetAll();
         }
 
+        /// <summary>
+        /// Drops the match roster and the front-end screen. Domain reload still
+        /// runs ResetAll, which calls this before the other statics.
+        /// </summary>
+        public static void ReleaseMatch()
+        {
+            FrontSession.ResetStatics();
+            PracticeSession.ResetStatics();
+            CouchPlay.Release();
+            FrontLive.Reset();
+        }
+
         public static void ResetAll()
         {
+            ReleaseMatch();
             ResumeInputGate.Reset();
             GameFlow.ResetStatics();
             TagModeController.ResetStatics();
@@ -41,6 +57,9 @@ namespace Tag.Core
             FrameMeter.ResetStatics();
             Tag.Modes.EnemyAi.ResetLoopSearch();
             Tag.Art.TagBackBlockedTell.ResetStatics();
+            SessionRules.ResetRound();
+            AudioMix.SetWorldPaused(false);
+            PadRumble.Silence();
         }
     }
 }

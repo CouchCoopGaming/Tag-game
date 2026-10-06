@@ -113,6 +113,7 @@ namespace TagArena.Movement
                 if (animator) animator.SetTrigger(AnimIds.LandTrig);
                 if (landClip != null) Play(landClip, 0.48f);
                 else AudioBus.Raise(AudioBus.Hook.LandHard, transform.position);
+                Tag.Settings.PadRumble.PulseId(gameObject.GetInstanceID(), Tag.Settings.PadRumble.HardLand);
             }
             else if (next == MoveState.Ski && prev != MoveState.Ski)
             {

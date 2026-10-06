@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Text;
+using Tag.Practice;
 
 namespace Tag.Settings
 {
@@ -28,7 +29,22 @@ namespace Tag.Settings
             Line(text, "hud", s.HudScale);
             Line(text, "colorblind", s.Colorblind ? 1f : 0f);
             Line(text, "minimap", s.Minimap ? 1f : 0f);
+            Line(text, "accessSeat", s.AccessSeat);
+            for (int i = 0; i < GameSettings.SeatCount; i++)
+            {
+                string n = i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture);
+                Line(text, "palette" + n, s.Palette[i]);
+                Line(text, "captions" + n, s.Captions[i] ? 1f : 0f);
+                Line(text, "rumble" + n, s.Rumble[i]);
+                Line(text, "flash" + n, s.ReduceFlash[i] ? 1f : 0f);
+            }
             Line(text, "arena", s.Arena);
+            Line(text, "ai", s.AiOpponents);
+            Line(text, "diff", s.DifficultyTier);
+            Line(text, "roundLen", s.RoundLengthIndex);
+            Line(text, "rounds", s.RoundsPerMatch);
+            Line(text, "split", s.SplitAxis);
+            Line(text, "listen", s.Listener);
             for (int i = 0; i < (int)PlayAction.Count; i++)
             {
                 var action = (PlayAction)i;
@@ -43,24 +59,84 @@ namespace Tag.Settings
                 text.Append(b.Gamepad[i] ?? "");
                 text.Append('\n');
             }
+            PracticeBests.Write(text);
+            PracticeGhost.Write(text);
             return text.ToString();
         }
+
+        public const int Version = 1;
 
         public static void Read(string blob, GameSettings settings, ActionBinds binds)
         {
             if (settings == null || binds == null || string.IsNullOrEmpty(blob)) return;
             string[] lines = blob.Split('\n');
+            int version = -1;
+            bool badVersion = false;
+            bool known = false;
             for (int i = 0; i < lines.Length; i++)
             {
-                string line = lines[i].Trim();
-                if (line.Length == 0 || line[0] == '#') continue;
-                int eq = line.IndexOf('=');
-                if (eq <= 0) continue;
-                string key = line.Substring(0, eq).Trim();
-                string value = line.Substring(eq + 1).Trim();
+                if (!Split(lines[i], out string key, out string value)) continue;
+                if (key == "v")
+                {
+                    if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out version))
+                        badVersion = true;
+                    continue;
+                }
+                if (Known(key)) known = true;
+            }
+            // A newer or unreadable version is not applied in part. Reset.
+            // No version and no known key is garbage. An older version migrates.
+            if (badVersion || version > Version || (version < 0 && !known))
+            {
+                settings.ResetToDefaults();
+                binds.ResetToDefaults();
+                return;
+            }
+            PracticeBests.Clear();
+            PracticeGhost.ClearSaved();
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (!Split(lines[i], out string key, out string value)) continue;
+                if (key == "v") continue;
                 Apply(settings, binds, key, value);
             }
+            if (settings.Colorblind && blob.IndexOf("palette=", StringComparison.Ordinal) < 0)
+                settings.Palette[0] = AccessibilityPalette.Deuteranopia;
             settings.Clamp();
+        }
+
+        static bool Split(string raw, out string key, out string value)
+        {
+            key = "";
+            value = "";
+            if (string.IsNullOrEmpty(raw)) return false;
+            string line = raw.Trim();
+            if (line.Length == 0 || line[0] == '#') return false;
+            int eq = line.IndexOf('=');
+            if (eq <= 0) return false;
+            key = line.Substring(0, eq).Trim();
+            value = line.Substring(eq + 1).Trim();
+            return key.Length > 0;
+        }
+
+        static bool Known(string key)
+        {
+            if (key == "mouse" || key == "padLook" || key == "invertY" || key == "fov") return true;
+            if (key == "master" || key == "sfx" || key == "ui" || key == "music" || key == "mute") return true;
+            if (key == "hud" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
+            if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
+            if (key == "split" || key == "listen") return true;
+            if (key.StartsWith("kb.", StringComparison.Ordinal) || key.StartsWith("pad.", StringComparison.Ordinal))
+                return true;
+            if (key.StartsWith("pb.", StringComparison.Ordinal) || key.StartsWith("sp.", StringComparison.Ordinal))
+                return true;
+            if (key.StartsWith("gh.", StringComparison.Ordinal))
+                return true;
+            if (SeatKey(key, "palette", out _)) return true;
+            if (SeatKey(key, "captions", out _)) return true;
+            if (SeatKey(key, "rumble", out _)) return true;
+            if (SeatKey(key, "flash", out _)) return true;
+            return false;
         }
 
         static void Apply(GameSettings settings, ActionBinds binds, string key, string value)
@@ -77,11 +153,39 @@ namespace Tag.Settings
             else if (key == "hud") settings.HudScale = Num(value, settings.HudScale);
             else if (key == "colorblind") settings.Colorblind = Flag(value);
             else if (key == "minimap") settings.Minimap = Flag(value);
+            else if (key == "accessSeat") settings.AccessSeat = (int)Num(value, settings.AccessSeat);
+            else if (SeatKey(key, "palette", out int paletteSeat)) settings.Palette[paletteSeat] = (int)Num(value, settings.Palette[paletteSeat]);
+            else if (SeatKey(key, "captions", out int captionSeat)) settings.Captions[captionSeat] = Flag(value);
+            else if (SeatKey(key, "rumble", out int rumbleSeat)) settings.Rumble[rumbleSeat] = (int)Num(value, settings.Rumble[rumbleSeat]);
+            else if (SeatKey(key, "flash", out int flashSeat)) settings.ReduceFlash[flashSeat] = Flag(value);
             else if (key == "arena") settings.Arena = (int)Num(value, settings.Arena);
+            else if (key == "ai") settings.AiOpponents = (int)Num(value, settings.AiOpponents);
+            else if (key == "diff") settings.DifficultyTier = (int)Num(value, settings.DifficultyTier);
+            else if (key == "roundLen") settings.RoundLengthIndex = (int)Num(value, settings.RoundLengthIndex);
+            else if (key == "rounds") settings.RoundsPerMatch = (int)Num(value, settings.RoundsPerMatch);
+            else if (key == "split") settings.SplitAxis = (int)Num(value, settings.SplitAxis);
+            else if (key == "listen") settings.Listener = (int)Num(value, settings.Listener);
             else if (key.StartsWith("kb.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(3), value, true);
             else if (key.StartsWith("pad.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(4), value, false);
+            else if (key.StartsWith("pb.", StringComparison.Ordinal))
+                PracticeBests.SetTime(key.Substring(3), Num(value, 0f));
+            else if (key.StartsWith("sp.", StringComparison.Ordinal))
+                PracticeBests.SetSplits(key.Substring(3), value);
+            else if (key.StartsWith("gh.", StringComparison.Ordinal))
+                PracticeGhost.Read(key.Substring(3), value);
+        }
+
+        static bool SeatKey(string key, string prefix, out int seat)
+        {
+            seat = 0;
+            if (key == prefix) return true;
+            if (!key.StartsWith(prefix, StringComparison.Ordinal)) return false;
+            string tail = key.Substring(prefix.Length);
+            if (tail.Length != 1 || tail[0] < '1' || tail[0] > '3') return false;
+            seat = tail[0] - '0';
+            return true;
         }
 
         static void Assign(ActionBinds binds, string name, string value, bool keyboard)
@@ -95,7 +199,8 @@ namespace Tag.Settings
 
         static float Num(string value, float fallback)
         {
-            if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float n))
+            if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float n)
+                && !float.IsNaN(n) && !float.IsInfinity(n))
                 return n;
             return fallback;
         }
