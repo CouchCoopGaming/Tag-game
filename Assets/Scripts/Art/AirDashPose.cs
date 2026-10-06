@@ -3,10 +3,10 @@ using UnityEngine;
 namespace Tag.Art
 {
     /// <summary>
-    /// Visual air dash only. For the motor's 0.10 s window the chest commits
-    /// into the dash direction and the arms stay tucked. After that window the
-    /// body hands off to the air stride, or to the fall pose once vertical
-    /// speed is down. Ribbons and the ready wink stay on their own tells.
+    /// Visual air dash only. For the motor's 0.10 s window the body goes
+    /// horizontal and the arms trail back. After that window the body hands
+    /// off to the air stride, or to the fall pose once vertical speed is down.
+    /// Ribbons and the ready wink stay on their own tells.
     /// Speed, duration, and cooldown are not written here. No root motion.
     /// </summary>
     public static class AirDashPose
@@ -23,20 +23,21 @@ namespace Tag.Art
         /// <summary>Falling at and below this vertical speed takes the fall beat. The apex stays a stride.</summary>
         public const float FallGate = -1f;
 
-        /// <summary>Chest toward the face when the dash is straight ahead. A back dash flips the sign.</summary>
-        public const float LeanHip = 46f;
-        public const float LeanSpine = 32f;
-        public const float LeanHead = 16f;
+        /// <summary>Chest toward the face when the dash is straight ahead. Hip plus spine is near horizontal. A back dash flips the sign.</summary>
+        public const float LeanHip = 58f;
+        public const float LeanSpine = 24f;
+        public const float LeanHead = 6f;
         /// <summary>Roll into a side dash. Positive is pawn-right.</summary>
-        public const float LeanRoll = 42f;
+        public const float LeanRoll = 34f;
         public const float HipRollShare = 0.55f;
 
-        /// <summary>Close to the ribs. Not the wide-back whip.</summary>
-        public const float TuckPitch = -28f;
-        public const float TuckYaw = 8f;
-        public const float TuckElbow = -108f;
-        public const float TuckThigh = 36f;
-        public const float TuckKnee = -76f;
+        /// <summary>Arms trail behind the shoulders. Positive pitch is back on this rig.</summary>
+        public const float BackPitch = 70f;
+        public const float BackYaw = 10f;
+        public const float BackElbow = -18f;
+        /// <summary>Legs trail. Negative thigh is behind the hip.</summary>
+        public const float TrailThigh = -16f;
+        public const float TrailKnee = -12f;
 
         public struct Sample
         {
@@ -56,16 +57,16 @@ namespace Tag.Art
             float side = ClampSigned(localRight);
             return new Sample
             {
-                ThighL = TuckThigh,
-                ThighR = TuckThigh,
-                KneeL = TuckKnee,
-                KneeR = TuckKnee,
-                ArmPitchL = TuckPitch,
-                ArmPitchR = TuckPitch,
-                ArmYawL = TuckYaw,
-                ArmYawR = TuckYaw,
-                ElbowL = TuckElbow,
-                ElbowR = TuckElbow,
+                ThighL = TrailThigh,
+                ThighR = TrailThigh,
+                KneeL = TrailKnee,
+                KneeR = TrailKnee,
+                ArmPitchL = BackPitch,
+                ArmPitchR = BackPitch,
+                ArmYawL = BackYaw,
+                ArmYawR = BackYaw,
+                ElbowL = BackElbow,
+                ElbowR = BackElbow,
                 Hip = LeanHip * fwd,
                 Spine = LeanSpine * fwd,
                 Head = LeanHead * fwd,
@@ -154,13 +155,14 @@ namespace Tag.Art
             Sample diag = At(0.6f, 0.8f);
             if (diag.Hip <= 0f || diag.LeanZ <= 0f) return false;
 
-            if (ahead.ElbowL > -100f || ahead.ElbowR > -100f) return false;
-            if (Mathf.Abs(ahead.ElbowL - TuckElbow) > 0.01f) return false;
-            if (Mathf.Abs(ahead.ElbowR - TuckElbow) > 0.01f) return false;
-            if (ahead.ArmYawL > 14f || ahead.ArmYawR > 14f) return false;
-            if (ahead.ArmPitchL > -8f || ahead.ArmPitchL < -70f) return false;
+            if (ahead.Hip + ahead.Spine < 75f || ahead.Hip + ahead.Spine > 95f) return false;
+            if (ahead.ElbowL < -40f || ahead.ElbowR < -40f) return false;
+            if (Mathf.Abs(ahead.ElbowL - BackElbow) > 0.01f) return false;
+            if (Mathf.Abs(ahead.ElbowR - BackElbow) > 0.01f) return false;
+            if (ahead.ArmYawL > 16f || ahead.ArmYawR > 16f) return false;
+            if (ahead.ArmPitchL < 40f || ahead.ArmPitchR < 40f) return false;
             if (Mathf.Abs(ahead.ArmPitchL - ahead.ArmPitchR) > 0.01f) return false;
-            if (ahead.ThighL < 24f || ahead.KneeL > -60f) return false;
+            if (ahead.ThighL > -8f || ahead.KneeL < -30f) return false;
 
             if (ToFall(8f) || ToFall(0f) || !ToFall(-4f) || !ToFall(-16f)) return false;
             if (FallBlend(8f) > 0.0001f || FallBlend(0f) > 0.0001f || FallBlend(FallGate) > 0.0001f) return false;
@@ -196,11 +198,12 @@ namespace Tag.Art
                 + " leanHip=" + LeanHip.ToString("0")
                 + " leanSpine=" + LeanSpine.ToString("0")
                 + " leanRoll=" + LeanRoll.ToString("0")
-                + " tuckPitch=" + TuckPitch.ToString("0")
-                + " tuckYaw=" + TuckYaw.ToString("0")
-                + " tuckElbow=" + TuckElbow.ToString("0")
-                + " tuckThigh=" + TuckThigh.ToString("0")
-                + " tuckKnee=" + TuckKnee.ToString("0")
+                + " backPitch=" + BackPitch.ToString("0")
+                + " backYaw=" + BackYaw.ToString("0")
+                + " backElbow=" + BackElbow.ToString("0")
+                + " trailThigh=" + TrailThigh.ToString("0")
+                + " trailKnee=" + TrailKnee.ToString("0")
+                + " flat=" + (LeanHip + LeanSpine).ToString("0")
                 + " aheadHip=" + ahead.Hip.ToString("0")
                 + " rightRoll=" + right.LeanZ.ToString("0")
                 + " handoff=" + HandoffSeconds.ToString("0.00")
@@ -209,7 +212,7 @@ namespace Tag.Art
                 + " slew=" + Slew.ToString("0")
                 + " gate=committed weight 1 for 0.." + WindowSeconds.ToString("0.00")
                 + "s lean sign follows pawn-local dash dir"
-                + "; arms tucked to the ribs"
+                + "; body horizontal-ish, arms back, legs trailing"
                 + "; handoff smoothstep " + HandoffSeconds.ToString("0.00")
                 + "s to air stride while vy>" + FallGate.ToString("0")
                 + " else ease into JumpPose fall by vy " + JumpPose.FallVy.ToString("0")

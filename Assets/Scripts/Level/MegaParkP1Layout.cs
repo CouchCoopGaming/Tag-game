@@ -57,6 +57,10 @@ namespace Tag.Level
 
         /// <summary>Inner faces on x=0, x=160, z=0, z=100. Taller than a jump off a landmark.</summary>
         public const float FenceTop = 33f;
+        /// <summary>Visible rail height. The collider stays at <see cref="FenceTop"/>.</summary>
+        public const float FenceRail = 2.75f;
+        /// <summary>Shimmer distance for the invisible part of the fence collider.</summary>
+        public const float FenceShimmer = 3f;
         /// <summary>Under the bowl slab (bottom about −1.2). Feet in the sand stay at −1.</summary>
         public const float KillPlaneY = -2.5f;
         /// <summary>Fastest locked planar replace. Lunge 16; air dash 15 sits inside it.</summary>
@@ -364,10 +368,14 @@ namespace Tag.Level
         {
             var list = new List<Solid>(160);
             // Footing. Tops at Y=0 except the bowl floor at Y=-1 and the collar a hair below.
-            Add(list, "Mulch_West", "Ground", "ground", "mulch", 23f, -0.1f, 50f, 46f, 0.2f, 100f, 0f);
-            Add(list, "Mulch_East", "Ground", "ground", "mulch", 119f, -0.1f, 50f, 82f, 0.2f, 100f, 0f);
-            Add(list, "Mulch_South", "Ground", "ground", "mulch", 62f, -0.1f, 17f, 32f, 0.2f, 34f, 0f);
+            // West lawn, south concrete apron, north mulch, and an east split of sand / mulch / grass / concrete.
+            Add(list, "Lawn_West", "Ground", "ground", "grass", 23f, -0.1f, 50f, 46f, 0.2f, 100f, 0f);
+            Add(list, "Slab_South", "Ground", "ground", "concrete", 62f, -0.1f, 17f, 32f, 0.2f, 34f, 0f);
             Add(list, "Mulch_North", "Ground", "ground", "mulch", 62f, -0.1f, 83f, 32f, 0.2f, 34f, 0f);
+            Add(list, "Sand_East", "Ground", "ground", "sand", 99f, -0.1f, 18f, 42f, 0.2f, 36f, 0f);
+            Add(list, "Mulch_East", "Ground", "ground", "mulch", 99f, -0.1f, 50f, 42f, 0.2f, 28f, 0f);
+            Add(list, "Lawn_East", "Ground", "ground", "grass", 99f, -0.1f, 82f, 42f, 0.2f, 36f, 0f);
+            Add(list, "Slab_East", "Ground", "ground", "concrete", 140f, -0.1f, 50f, 40f, 0.2f, 100f, 0f);
             Add(list, "Sandbox_Floor", "Z8", "ground", "sand", 62f, BowlFloorY - 0.1f, 50f, 32f, 0.2f, 32f, BowlFloorY);
             Add(list, "Collar_S", "Ground", "ground", "grass", 80f, -0.12f, -1.5f, 166f, 0.2f, 3f, 0f);
             Add(list, "Collar_N", "Ground", "ground", "grass", 80f, -0.12f, 101.5f, 166f, 0.2f, 3f, 0f);

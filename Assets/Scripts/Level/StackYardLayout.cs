@@ -235,7 +235,12 @@ namespace Tag.Level
         public static MegaParkP1Layout.Solid[] BuildSolids()
         {
             var list = new List<MegaParkP1Layout.Solid>(96);
-            Add(list, "Mulch", "Ground", "ground", "mulch", 55f, -0.1f, 35f, 110f, 0.2f, 70f, 0f);
+            // Concrete aprons, west lawn, yard mulch, and an east sand bay.
+            Add(list, "Slab_South", "Ground", "ground", "concrete", 55f, -0.1f, 11f, 110f, 0.2f, 22f, 0f);
+            Add(list, "Lawn_West", "Ground", "ground", "grass", 18f, -0.1f, 46f, 36f, 0.2f, 48f, 0f);
+            Add(list, "Mulch_Yard", "Ground", "ground", "mulch", 55f, -0.1f, 35f, 38f, 0.2f, 26f, 0f);
+            Add(list, "Sand_East", "Ground", "ground", "sand", 92f, -0.1f, 35f, 36f, 0.2f, 26f, 0f);
+            Add(list, "Slab_North", "Ground", "ground", "concrete", 73f, -0.1f, 59f, 74f, 0.2f, 22f, 0f);
             Add(list, "Collar_S", "Ground", "ground", "bark", 55f, -0.12f, -1.5f, 116f, 0.2f, 3f, 0f);
             Add(list, "Collar_N", "Ground", "ground", "bark", 55f, -0.12f, 71.5f, 116f, 0.2f, 3f, 0f);
             Add(list, "Collar_W", "Ground", "ground", "bark", -1.5f, -0.12f, 35f, 3f, 0.2f, 70f, 0f);
@@ -246,17 +251,17 @@ namespace Tag.Level
             Add(list, "Fence_W", "Fence", "fence", "rubber", -0.04f, FenceTop * 0.5f, 35f, 0.08f, FenceTop, 70f, 0f);
             Add(list, "Fence_E", "Fence", "fence", "rubber", 110.04f, FenceTop * 0.5f, 35f, 0.08f, FenceTop, 70f, 0f);
 
-            // West stair. Each tread is 3 m above the last, so a jump clears it.
-            Deck(list, "Crate_Step", "Mid", "knight", 30f, 26f, 10f, 8f, 3f);
-            Deck(list, "Crate_Mid", "Mid", "knight", 30f, 34f, 10f, 8f, 6f);
+            // West stair. Concrete at 3 m, olive containers at 6 m, amber at 9 m, teal roofs at 12 m.
+            Deck(list, "Crate_Step", "Mid", "concrete", 30f, 26f, 10f, 8f, 3f);
+            Deck(list, "Crate_Mid", "Mid", "army", 30f, 34f, 10f, 8f, 6f);
             Deck(list, "Crate_Rise", "Roof", "amber", 38f, 34f, 8f, 8f, 9f);
-            Deck(list, "Crate_Roof", "Roof", "amber", 38f, 42f, 8f, 8f, 12f);
+            Deck(list, "Crate_Roof", "Roof", "pad", 38f, 42f, 8f, 8f, 12f);
 
             // East stair, the second way up and down.
-            Deck(list, "Stack_Step", "Mid", "knight", 78f, 26f, 10f, 8f, 3f);
-            Deck(list, "Stack_Mid", "Mid", "knight", 78f, 34f, 10f, 8f, 6f);
+            Deck(list, "Stack_Step", "Mid", "concrete", 78f, 26f, 10f, 8f, 3f);
+            Deck(list, "Stack_Mid", "Mid", "army", 78f, 34f, 10f, 8f, 6f);
             Deck(list, "Stack_Rise", "Roof", "amber", 70f, 34f, 8f, 8f, 9f);
-            Deck(list, "Stack_Roof", "Roof", "amber", 70f, 42f, 8f, 8f, 12f);
+            Deck(list, "Stack_Roof", "Roof", "pad", 70f, 42f, 8f, 8f, 12f);
 
             Add(list, "Cling_Yard", "Cling", "wall", "blue", 22f, 3.3f, 26f, 0.4f, 6.6f, 6f, 0f);
             Add(list, "Cling_East", "Cling", "wall", "blue", 86f, 3.3f, 26f, 0.4f, 6.6f, 6f, 0f);
@@ -284,6 +289,7 @@ namespace Tag.Level
             AddChevron(list, "RoofZip", "Crate_Roof");
             AddChevron(list, "MidPad", "Stack_Mid");
             AddChevron(list, "WestClimb", "Cling_Yard");
+            AddYardMass(list);
             return list.ToArray();
         }
 
@@ -932,7 +938,8 @@ namespace Tag.Level
                 + " s → wall-jump (Cling_Yard) " + hop.ToString("0.00", CultureInfo.InvariantCulture) + " s");
 
             doc.Append("\n## Tiers\n\n");
-            doc.Append("Ground, mid decks at 6 m, and roofs at 12 m. Cling_Yard and Cling_East climb to the mid decks. ");
+            doc.Append("Ground, mid decks at 6 m, and roofs at 12 m. Concrete steps, olive container stacks, amber rises, and teal warehouse roofs are solid piles on those footprints. Narrow catwalks link the towers, and cranes mark the four corners. ");
+            doc.Append("Cling_Yard and Cling_East climb to the mid decks. ");
             doc.Append("Cling_Roof and Cling_Lane climb from the mid decks to the roofs. Launch_Mid and Launch_Roof throw onto those tiers. ");
             doc.Append("Zip_Cross leaves the west roof for the yard. Slides run back down both stairs. A fall off a roof lands inside the fence, above the kill plane.\n\n");
             doc.Append("## Chokepoints\n\nAfter the pass 9 audit: 0 (dead 0, corner 0, loop 0).\n");
@@ -1105,6 +1112,73 @@ namespace Tag.Level
             float bottom = top - sy;
             if (bottom < 0f) { bottom = 0f; sy = top; }
             Add(list, name, zone, "block", mat, x, bottom + sy * 0.5f, z, sx, sy, sz, bottom);
+        }
+
+        /// <summary>
+        /// Container stacks, catwalks, warehouse roofs, and crane jibs.
+        /// Nothing bridges the two towers at a walkable height, and nothing sits
+        /// on a ramp mouth, the street loop, or the zip diagonal.
+        /// </summary>
+        static void AddYardMass(List<MegaParkP1Layout.Solid> list)
+        {
+            // Solid columns under the named decks, inset so the full-height skirt stays
+            // inside the deck and does not close a ground or stair cell.
+            InsetPile(list, "Crate_Mid_Fill", "Mid", "army", 30f, 34f, 10f, 8f, 6f);
+            InsetPile(list, "Crate_Rise_Fill", "Roof", "amber", 38f, 34f, 8f, 8f, 9f);
+            InsetPile(list, "Crate_Roof_Fill", "Roof", "pad", 38f, 42f, 8f, 8f, 12f);
+            InsetPile(list, "Stack_Mid_Fill", "Mid", "army", 78f, 34f, 10f, 8f, 6f);
+            InsetPile(list, "Stack_Rise_Fill", "Roof", "amber", 70f, 34f, 8f, 8f, 9f);
+            InsetPile(list, "Stack_Roof_Fill", "Roof", "pad", 70f, 42f, 8f, 8f, 12f);
+
+            // Catwalks and the roof bridge are too narrow to stand on.
+            Span(list, "Cat_West", "Mid", "army", 29f, 6.05f, 44f, 8f, 0.28f, 0.7f);
+            Span(list, "Cat_East", "Mid", "army", 78f, 6.05f, 44f, 8f, 0.28f, 0.7f);
+            Span(list, "Cat_Span", "Mid", "army", 54f, 6.05f, 36f, 28f, 0.22f, 0.7f);
+            Span(list, "Wh_Span", "Roof", "pad", 55f, 12.15f, 47f, 22f, 0.3f, 0.7f);
+
+            Jib(list, "Landmark_Yard", "Yard", "knight", 14f, 18f, 1f, 0f);
+            Jib(list, "Landmark_Lane", "Lane", "army", 96f, 18f, -1f, 0f);
+            Jib(list, "Landmark_Mid", "Mid", "army", 14f, 56f, 1f, 0f);
+            Jib(list, "Landmark_Roof", "Roof", "pad", 96f, 56f, -1f, 0f);
+        }
+
+        static void Span(List<MegaParkP1Layout.Solid> list, string name, string zone, string mat,
+            float x, float y, float z, float sx, float sy, float sz)
+        {
+            Add(list, name, zone, "block", mat, x, y, z, sx, sy, sz, y - sy * 0.5f);
+        }
+
+        static void Pile(List<MegaParkP1Layout.Solid> list, string name, string zone, string mat,
+            float x, float z, float sx, float sz, float top)
+        {
+            Add(list, name, zone, "block", mat, x, top * 0.5f, z, sx, top, sz, 0f);
+        }
+
+        /// <summary>
+        /// A full-height column 0.7 m inside the host deck. The 0.35 m head-check
+        /// around a ground-touching solid then stays on the deck, not on open ground.
+        /// </summary>
+        static void InsetPile(List<MegaParkP1Layout.Solid> list, string name, string zone, string mat,
+            float x, float z, float sx, float sz, float top)
+        {
+            const float inset = 0.7f;
+            Pile(list, name, zone, mat, x, z, sx - inset * 2f, sz - inset * 2f, top);
+        }
+
+        static void Jib(List<MegaParkP1Layout.Solid> list, string name, string zone, string mat,
+            float x, float z, float dirX, float dirZ)
+        {
+            const float len = 7f;
+            const float y = 13.4f;
+            const float sy = 0.4f;
+            float cx = x + dirX * len * 0.5f;
+            float cz = z + dirZ * len * 0.5f;
+            float sx = Math.Abs(dirX) > 0.5f ? len : 0.4f;
+            float sz = Math.Abs(dirZ) > 0.5f ? len : 0.4f;
+            Add(list, name + "_Jib", zone, "landmark", mat, cx, y, cz, sx, sy, sz, y - sy * 0.5f);
+            float hx = x + dirX * len;
+            float hz = z + dirZ * len;
+            Add(list, name + "_Hook", zone, "landmark", mat, hx, 12.2f, hz, 0.45f, 2.6f, 0.45f, 10.9f);
         }
 
         static void AddBars(List<MegaParkP1Layout.Solid> list)

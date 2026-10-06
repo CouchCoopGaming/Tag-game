@@ -26,7 +26,7 @@ namespace Tag.Level
         Transform _p1;
         Material _mulch, _grass, _sand, _rubber, _blue, _yellow, _steel, _concrete, _cedar, _bark, _rim, _field;
         Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate;
-        Material _fence, _horizon, _leaf, _wood, _lamp, _trash, _skyline;
+        Material _fence, _rail, _horizon, _leaf, _wood, _lamp, _trash, _skyline;
         Material _spawnSw, _spawnSe, _spawnNw, _spawnNe, _spawnRunS, _spawnRunN;
 
         /// <summary>True after a build whose layout audit passed.</summary>
@@ -198,6 +198,8 @@ namespace Tag.Level
             _cover = Face("cover");
             _plate = Face("plate");
             _fence = Face("fence");
+            MegaParkP1Layout.TryLook("fence", out float fr, out float fg, out float fb, out float fsmooth, out float fmetal);
+            _rail = Make(new Color(fr, fg, fb, 1f), "MEGA_rail", fsmooth, fmetal, "steel");
             _horizon = Face("horizon");
             _leaf = Face("leaf");
             _wood = Face("wood");
@@ -383,10 +385,76 @@ namespace Tag.Level
                 go.transform.localScale = new Vector3(s.Sx, s.Sy, s.Sz);
                 go.isStatic = true;
                 MeshRenderer r = go.GetComponent<MeshRenderer>();
-                if (r != null)
-                    r.sharedMaterial = s.Name.StartsWith("Fence_") ? _fence : Pick(s.Mat);
+                if (s.Kind == "fence")
+                {
+                    if (r != null)
+                        r.enabled = false;
+                    BuildRailFence(go.transform.parent, s);
+                    BuildFenceShimmer(go.transform.parent, s);
+                }
+                else if (r != null)
+                    r.sharedMaterial = Pick(s.Mat);
             }
             return g;
+        }
+
+        void BuildRailFence(Transform parent, MegaParkP1Layout.Solid s)
+        {
+            float rail = MegaParkP1Layout.FenceRail;
+            bool alongX = s.Sx >= s.Sz;
+            float length = alongX ? s.Sx : s.Sz;
+            float origin = alongX ? s.X - s.Sx * 0.5f : s.Z - s.Sz * 0.5f;
+            float fixedC = alongX ? s.Z : s.X;
+            int posts = Mathf.Max(2, Mathf.RoundToInt(length / 4.6f));
+            for (int i = 0; i <= posts; i++)
+            {
+                float u = origin + length * (i / (float)posts);
+                float px = alongX ? u : fixedC;
+                float pz = alongX ? fixedC : u;
+                RailCube(parent, s.Name + "_Post" + i.ToString(), px, rail * 0.5f, pz, 0.16f, rail, 0.16f);
+            }
+            float[] rails = { 0.42f, 1.48f, rail - 0.1f };
+            for (int i = 0; i < rails.Length; i++)
+            {
+                if (alongX)
+                    RailCube(parent, s.Name + "_Rail" + i.ToString(), s.X, rails[i], fixedC, length, 0.08f, 0.08f);
+                else
+                    RailCube(parent, s.Name + "_Rail" + i.ToString(), fixedC, rails[i], s.Z, 0.08f, 0.08f, length);
+            }
+        }
+
+        void RailCube(Transform parent, string name, float x, float y, float z, float sx, float sy, float sz)
+        {
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.name = name;
+            cube.transform.SetParent(parent, false);
+            cube.transform.localPosition = new Vector3(x, y, z);
+            cube.transform.localRotation = Quaternion.identity;
+            cube.transform.localScale = new Vector3(sx, sy, sz);
+            cube.isStatic = true;
+            StripCollider(cube);
+            MeshRenderer rend = cube.GetComponent<MeshRenderer>();
+            if (rend != null)
+                rend.sharedMaterial = _rail;
+        }
+
+        void BuildFenceShimmer(Transform parent, MegaParkP1Layout.Solid s)
+        {
+            float rail = MegaParkP1Layout.FenceRail;
+            float sy = MegaParkP1Layout.FenceTop - rail;
+            GameObject shim = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            shim.name = s.Name + "_Shimmer";
+            shim.transform.SetParent(parent, false);
+            shim.transform.localPosition = new Vector3(s.X, rail + sy * 0.5f, s.Z);
+            shim.transform.localRotation = Quaternion.identity;
+            shim.transform.localScale = new Vector3(s.Sx, sy, s.Sz);
+            shim.isStatic = false;
+            StripCollider(shim);
+            MeshRenderer rend = shim.GetComponent<MeshRenderer>();
+            if (rend != null)
+                rend.enabled = false;
+            FenceShimmer glow = shim.AddComponent<FenceShimmer>();
+            glow.Bind(s.X, s.Z, s.Sx, s.Sz, rend);
         }
 
         Transform BuildRamps()

@@ -270,6 +270,20 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.LandPose.ProofLine());
+        if (!Tag.Art.LandPose.Holds())
+        {
+            Console.Error.WriteLine("land pose is not held");
+            return 1;
+        }
+
+        Console.WriteLine(Tag.Art.MechPoseProof.ProofLine());
+        if (!Tag.Art.MechPoseProof.Holds())
+        {
+            Console.Error.WriteLine("mech pose is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.CrouchPose.ProofLine());
         if (!Tag.Art.CrouchPose.Holds())
         {

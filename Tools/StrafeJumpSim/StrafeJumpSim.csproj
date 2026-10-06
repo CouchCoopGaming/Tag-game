@@ -72,6 +72,8 @@
     <Compile Include="../../Assets/Scripts/Art/GrapplePose.cs" />
     <Compile Include="../../Assets/Scripts/Art/PoseHandoff.cs" />
     <Compile Include="../../Assets/Scripts/Art/AirDashPose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/LandPose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/MechPoseProof.cs" />
     <Compile Include="../../Assets/Scripts/Art/CrouchPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/MantlePose.cs" />
     <Compile Include="../../Assets/Scripts/Art/LungePose.cs" />

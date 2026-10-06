@@ -154,34 +154,13 @@ namespace Tag.Art
         public static Sample Stride(float planarSpeed, float sinC, float cycleRadians)
         {
             float gait = GaitBlend.PoseWeight(planarSpeed);
-            float reach = GaitBlend.ThighReach(gait);
+            GaitBlend.Legs legs = GaitBlend.At(cycleRadians, planarSpeed);
+            float thighL = legs.ThighL;
+            float thighR = legs.ThighR;
+            float kneeL = legs.KneeL;
+            float kneeR = legs.KneeR;
             float frontL = sinC > 0f ? sinC : 0f;
             float frontR = sinC < 0f ? -sinC : 0f;
-            float thighL = (frontL - frontR * 0.58f) * reach;
-            float thighR = (frontR - frontL * 0.58f) * reach;
-            float kneeAmt = GaitBlend.KneeBend(gait);
-            float kneeL = -(2f + frontL * kneeAmt);
-            float kneeR = -(2f + frontR * kneeAmt);
-            float cadence = GaitBlend.CadenceAt(planarSpeed);
-            const float pi = 3.14159265f;
-            const float tau = pi * 2f;
-            float phase = cycleRadians % tau;
-            if (phase < 0f) phase += tau;
-            if (cadence >= 0.05f)
-            {
-                if (phase >= pi)
-                {
-                    float plant = GaitBlend.PlantCounterDeg(planarSpeed, cadence, (phase - pi) / pi);
-                    thighL -= plant;
-                    kneeL -= plant * 0.4f;
-                }
-                else
-                {
-                    float plant = GaitBlend.PlantCounterDeg(planarSpeed, cadence, phase / pi);
-                    thighR -= plant;
-                    kneeR -= plant * 0.4f;
-                }
-            }
 
             float amp = GaitBlend.ArmAmp(gait);
             float idle = 1f - gait;

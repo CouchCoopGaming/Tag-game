@@ -19,7 +19,7 @@ namespace Tag.Level
         {
             public float X0, Y0, Z0, X1, Y1, Z1, X2, Y2, Z2;
             public float Nx, Ny, Nz;
-            public float R, G, B;
+            public float R, G, B, A;
         }
 
         struct V
@@ -54,6 +54,11 @@ namespace Tag.Level
                 {
                     MegaParkP1Layout.Solid s = solids[i];
                     if (s.Kind == "mark") continue;
+                    if (s.Kind == "fence")
+                    {
+                        AddRailFence(tris, s);
+                        continue;
+                    }
                     Albedo(s.Mat, out float r, out float g, out float b);
                     AddBox(tris, s.X, s.Y, s.Z, s.Sx, s.Sy, s.Sz, r, g, b);
                 }
@@ -111,8 +116,91 @@ namespace Tag.Level
                 ex, 1.65f, ez,
                 tx, 3.2f, tz,
                 68f, true);
+            float edgeX = mapW * 0.62f;
+            float edgeZ = 2.35f;
+            AddFigure(tris, edgeX - 2.6f, 0f, 0.85f);
+            AddFenceShimmer(tris, mapW, mapD, edgeX, edgeZ);
+            string edge = Path.Combine(folder, park + "_Edge.png");
+            Render(tris, edge, mapW, mapD,
+                edgeX, 1.65f, edgeZ,
+                edgeX, 3.4f, -16f,
+                68f, true);
             Check(overview, park + " overview", fail);
             Check(eye, park + " eye", fail);
+            Check(edge, park + " edge", fail);
+        }
+
+        static void AddRailFence(List<Tri> tris, MegaParkP1Layout.Solid s)
+        {
+            MegaParkP1Layout.TryLook("fence", out float r, out float g, out float b, out _, out _);
+            float rail = MegaParkP1Layout.FenceRail;
+            bool alongX = s.Sx >= s.Sz;
+            float length = alongX ? s.Sx : s.Sz;
+            float origin = alongX ? (s.X - s.Sx * 0.5f) : (s.Z - s.Sz * 0.5f);
+            float fixedC = alongX ? s.Z : s.X;
+            float post = 4.6f;
+            int n = (int)(length / post);
+            if (n < 2) n = 2;
+            for (int i = 0; i <= n; i++)
+            {
+                float u = origin + length * (i / (float)n);
+                Place(alongX, u, fixedC, out float px, out float pz);
+                AddBox(tris, px, rail * 0.5f, pz, 0.16f, rail, 0.16f, r, g, b);
+            }
+            float[] rails = { 0.42f, 1.48f, rail - 0.1f };
+            for (int i = 0; i < rails.Length; i++)
+            {
+                float y = rails[i];
+                if (alongX)
+                    AddBox(tris, s.X, y, fixedC, length, 0.08f, 0.08f, r, g, b);
+                else
+                    AddBox(tris, fixedC, y, s.Z, 0.08f, 0.08f, length, r, g, b);
+            }
+            float picket = 1.55f;
+            int wires = (int)(length / picket);
+            if (wires < 2) wires = 2;
+            if (wires > 80) wires = 80;
+            for (int i = 0; i < wires; i++)
+            {
+                float u = origin + length * ((i + 0.5f) / wires);
+                Place(alongX, u, fixedC, out float px, out float pz);
+                AddBox(tris, px, rail * 0.48f, pz, 0.045f, rail * 0.86f, 0.045f, r * 0.85f, g * 0.85f, b * 0.85f);
+            }
+        }
+
+        static void Place(bool alongX, float u, float fixedC, out float x, out float z)
+        {
+            if (alongX)
+            {
+                x = u;
+                z = fixedC;
+            }
+            else
+            {
+                x = fixedC;
+                z = u;
+            }
+        }
+
+        static void AddFenceShimmer(List<Tri> tris, float mapW, float mapD, float eyeX, float eyeZ)
+        {
+            float reach = MegaParkP1Layout.FenceShimmer;
+            float rail = MegaParkP1Layout.FenceRail;
+            float top = rail + 12f;
+            float y = (rail + top) * 0.5f;
+            float sy = top - rail;
+            float sr = 0.45f;
+            float sg = 0.72f;
+            float sb = 0.68f;
+            const float a = 0.18f;
+            if (eyeZ <= reach)
+                AddBoxAlpha(tris, mapW * 0.5f, y, 0f, mapW, sy, 0.06f, sr, sg, sb, a);
+            if (mapD - eyeZ <= reach)
+                AddBoxAlpha(tris, mapW * 0.5f, y, mapD, mapW, sy, 0.06f, sr, sg, sb, a);
+            if (eyeX <= reach)
+                AddBoxAlpha(tris, 0f, y, mapD * 0.5f, 0.06f, sy, mapD, sr, sg, sb, a);
+            if (mapW - eyeX <= reach)
+                AddBoxAlpha(tris, mapW, y, mapD * 0.5f, 0.06f, sy, mapD, sr, sg, sb, a);
         }
 
         static void Check(string path, string label, StringBuilder fail)
@@ -281,8 +369,20 @@ namespace Tag.Level
             t.X1 = x1; t.Y1 = y1; t.Z1 = z1;
             t.X2 = x2; t.Y2 = y2; t.Z2 = z2;
             t.Nx = nx / m; t.Ny = ny / m; t.Nz = nz / m;
-            t.R = r; t.G = g; t.B = b;
+            t.R = r; t.G = g; t.B = b; t.A = 1f;
             tris.Add(t);
+        }
+
+        static void AddBoxAlpha(List<Tri> tris, float x, float y, float z, float sx, float sy, float sz, float r, float g, float b, float a)
+        {
+            int before = tris.Count;
+            AddBox(tris, x, y, z, sx, sy, sz, r, g, b);
+            for (int i = before; i < tris.Count; i++)
+            {
+                Tri t = tris[i];
+                t.A = a;
+                tris[i] = t;
+            }
         }
 
         static void Render(List<Tri> tris, string path, float mapW, float mapD,
@@ -297,7 +397,10 @@ namespace Tag.Level
             float cz = mapD * 0.5f;
             Basis(sx, sy, sz, out float rx, out float ry, out float rz, out float ux, out float uy, out float uz);
             for (int i = 0; i < tris.Count; i++)
+            {
+                if (tris[i].A < 0.99f) continue;
                 ShadowTri(tris[i], shadow, 768, cx, cy, cz, rx, ry, rz, ux, uy, uz, sx, sy, sz, half);
+            }
 
             var rgb = new byte[Width * Height * 3];
             var depth = new float[Width * Height];
@@ -466,7 +569,7 @@ namespace Tag.Level
             float tan = (float)Math.Tan(fov * 0.5f * Math.PI / 180.0);
             Shade(t, out float litR, out float litG, out float litB, out float shR, out float shG, out float shB);
             for (int i = 1; i < pn - 1; i++)
-                Raster(poly[0], poly[i], poly[i + 1], rgb, depth, w, h, aspect, tan, litR, litG, litB, shR, shG, shB,
+                Raster(poly[0], poly[i], poly[i + 1], rgb, depth, w, h, aspect, tan, litR, litG, litB, shR, shG, shB, t.A,
                     shadow, sn, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
         }
 
@@ -568,7 +671,7 @@ namespace Tag.Level
         }
 
         static void Raster(V a, V b, V c, byte[] rgb, float[] depth, int w, int h, float aspect, float tan,
-            float litR, float litG, float litB, float shR, float shG, float shB,
+            float litR, float litG, float litB, float shR, float shG, float shB, float alpha,
             float[] shadow, int sn, float sox, float soy, float soz, float srx, float sry, float srz, float sux, float suy, float suz,
             float lsx, float lsy, float lsz, float half)
         {
@@ -616,11 +719,24 @@ namespace Tag.Level
                     float wy = (w0 * a.Wy * iz0 + w1 * b.Wy * iz1 + w2 * c.Wy * iz2) / iz;
                     float wz = (w0 * a.Wz * iz0 + w1 * b.Wz * iz1 + w2 * c.Wz * iz2) / iz;
                     bool sh = Shadowed(wx, wy, wz, shadow, sn, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
-                    depth[di] = z;
                     int p = di * 3;
-                    rgb[p] = (byte)((sh ? shR : litR) * 255f);
-                    rgb[p + 1] = (byte)((sh ? shG : litG) * 255f);
-                    rgb[p + 2] = (byte)((sh ? shB : litB) * 255f);
+                    float cr = (sh ? shR : litR) * 255f;
+                    float cg = (sh ? shG : litG) * 255f;
+                    float cb = (sh ? shB : litB) * 255f;
+                    if (alpha >= 0.99f)
+                    {
+                        depth[di] = z;
+                        rgb[p] = (byte)cr;
+                        rgb[p + 1] = (byte)cg;
+                        rgb[p + 2] = (byte)cb;
+                    }
+                    else
+                    {
+                        float keep = 1f - alpha;
+                        rgb[p] = (byte)(cr * alpha + rgb[p] * keep);
+                        rgb[p + 1] = (byte)(cg * alpha + rgb[p + 1] * keep);
+                        rgb[p + 2] = (byte)(cb * alpha + rgb[p + 2] * keep);
+                    }
                 }
             }
         }

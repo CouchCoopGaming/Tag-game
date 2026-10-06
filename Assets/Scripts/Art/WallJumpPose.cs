@@ -19,27 +19,27 @@ namespace Tag.Art
         /// <summary>Degrees per second. The shove arrives on the fire frame.</summary>
         public const float Slew = 170f;
 
-        /// <summary>Foot that stayed on the wall. Nearly straight, trailing.</summary>
-        public const float PlantThigh = -28f;
-        public const float PlantKnee = -6f;
-        /// <summary>Free knee up. Higher than the jump tuck so the shove still reads.</summary>
-        public const float DriveThigh = 98f;
-        public const float DriveKnee = -108f;
-        /// <summary>Wall-side arm shoves back. Positive pitch is behind the chest.</summary>
+        /// <summary>Trail foot of the kick. Already off the wall. Not a plant.</summary>
+        public const float PlantThigh = 44f;
+        public const float PlantKnee = -64f;
+        /// <summary>Lead foot of the kick. Higher than the tuck, and off the wall with the trail.</summary>
+        public const float DriveThigh = 82f;
+        public const float DriveKnee = -110f;
+        /// <summary>Both arms swing away from the wall. Positive pitch is behind the chest.</summary>
         public const float PushPitch = 46f;
-        public const float PushYaw = 32f;
-        public const float PushElbow = -4f;
-        /// <summary>Free arm reaches up the arc. Not the climb reach and not the tuck.</summary>
-        public const float ReachPitch = -72f;
-        public const float ReachYaw = 16f;
+        public const float PushYaw = 20f;
+        public const float PushElbow = -16f;
+        /// <summary>Second arm, also away. Not the climb reach and not a tuck.</summary>
+        public const float ReachPitch = 30f;
+        public const float ReachYaw = 14f;
         public const float ReachElbow = -20f;
         /// <summary>Chest opens off the wall. Opposite the climb curl.</summary>
-        public const float Spine = -26f;
-        public const float Hip = -12f;
+        public const float Spine = -22f;
+        public const float Hip = -10f;
         /// <summary>Look up the launch.</summary>
-        public const float Head = -18f;
-        /// <summary>Roll off the wall. Wall-on-the-left is negative, same sign as the run.</summary>
-        public const float Lean = 28f;
+        public const float Head = -16f;
+        /// <summary>Roll off the wall, 15–20°. Wall-on-the-left is negative, same sign as the run.</summary>
+        public const float Lean = 18f;
 
         public struct Sample
         {
@@ -210,20 +210,19 @@ namespace Tag.Art
 
             Sample pushL = Push(true);
             Sample pushR = Push(false);
-            if (pushL.ThighR <= pushL.ThighL + 80f) return false;
-            if (pushL.KneeR >= pushL.KneeL - 70f) return false;
-            if (pushL.ArmPitchL <= pushL.ArmPitchR + 80f) return false;
-            if (pushL.ArmPitchL < 20f || pushL.ArmPitchR > -50f) return false;
+            if (pushL.ThighL < 40f || pushL.ThighR < 40f) return false;
+            if (pushL.ThighR <= pushL.ThighL + 12f) return false;
+            if (pushL.KneeL > -24f || pushL.KneeR > -24f) return false;
+            if (pushL.ArmPitchL < 20f || pushL.ArmPitchR < 20f) return false;
             if (pushL.Spine > -16f || pushL.Hip > -6f) return false;
             if (pushL.Head > -10f) return false;
-            if (pushL.LeanZ > -20f) return false;
-            if (pushR.ThighL <= pushR.ThighR + 80f) return false;
-            if (pushR.ArmPitchR <= pushR.ArmPitchL + 80f) return false;
-            if (pushR.LeanZ < 20f) return false;
-            if (Mathf.Abs(pushL.ArmPitchL - WallPose.PushArmPitch) < 40f) return false;
+            if (pushL.LeanZ > -15f || pushL.LeanZ < -21f) return false;
+            if (pushR.ThighL < 40f || pushR.ThighR < 40f) return false;
+            if (pushR.ThighL <= pushR.ThighR + 12f) return false;
+            if (pushR.ArmPitchL < 20f || pushR.ArmPitchR < 20f) return false;
+            if (pushR.LeanZ < 15f || pushR.LeanZ > 21f) return false;
             if (!(DriveThigh > JumpPose.TuckThigh && DriveThigh > JumpPose.FallThigh)) return false;
-            if (PushPitch <= 0f) return false;
-            if (ReachPitch <= JumpPose.TuckArmPitch) return false;
+            if (PushPitch <= 0f || ReachPitch <= 0f) return false;
 
             Sample held = At(0f, 24.7f, true, 12f);
             if (Mathf.Abs(held.ThighR - pushL.ThighR) > 0.05f) return false;
