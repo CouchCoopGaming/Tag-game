@@ -15,6 +15,7 @@ namespace Tag.Modes
     /// Chase steering is OpponentChaseSteer: sprint outside the lunge band, air-strafe a corner,
     /// jump a gap only when speed and jump reach clear it, cling a wall on the line,
     /// step on a launch pad only when that landing is closer to the target,
+    /// take a zip line only when its exit is closer to the target,
     /// and lunge only after that lead when the landing stays under the pawn. No grapple, air dash, or couch tool.
     /// Feeds TagArena PlayerMotor via PlayerInputReader.ExternalControl (no RB velocity fight).
     /// Trail Tag: samples nearby TrailSegments and blends a lateral flee wish into steering.
@@ -190,7 +191,10 @@ namespace Tag.Modes
             }
             _wasIt = isIt;
             if (_selfMotor != null)
+            {
                 _selfMotor.SetExternalTagger(isIt && !_it.IsEliminated);
+                _selfMotor.SetZipChase(false);
+            }
 
             if (isIt)
                 TickChase(dt);
@@ -625,12 +629,23 @@ namespace Tag.Modes
             }
             if (padAhead && !padHelps && Mathf.Abs(measured.PathStrafe) < 0.2f)
                 measured.PathStrafe = SideRoute(rawAim.sqrMagnitude > 0.01f ? rawAim.normalized : transform.forward);
+            bool zipAhead = false;
+            Vector3 zipAim = Vector3.zero;
+            float zipDist = 999f;
+            bool zipHelps = false;
+            if (!holdLine && !wallCommit && _target != null)
+            {
+                zipAhead = ZipLine.QueryChase(transform.position, _target.transform.position,
+                    out zipAim, out zipDist, out zipHelps);
+            }
+            if (zipAhead && !zipHelps && Mathf.Abs(measured.PathStrafe) < 0.2f)
+                measured.PathStrafe = SideRoute(rawAim.sqrMagnitude > 0.01f ? rawAim.normalized : transform.forward);
             Vector3 aim = rawAim;
             if (!wallCommit && !holdLine)
                 aim = BlendTrailAvoid(aim);
             // Weave only outside the lunge band. Inside it the 0.45 s tell needs the line held.
             // A measured gap keeps the line so the jump, the brake, or the side route is not woven off the lip.
-            if (!wallCommit && !gap && !padAhead && grounded && !holdLine && !arming && dist > farMeters)
+            if (!wallCommit && !gap && !padAhead && !zipAhead && grounded && !holdLine && !arming && dist > farMeters)
                 aim = ApplyWeave(aim, dt, dist > closeChaseRange);
 
             OpponentChaseInput chase;
@@ -657,6 +672,10 @@ namespace Tag.Modes
             chase.PadDistance = padDist;
             chase.PadHelps = padHelps;
             chase.PadAim = padAim;
+            chase.ZipAhead = zipAhead;
+            chase.ZipDistance = zipDist;
+            chase.ZipHelps = zipHelps;
+            chase.ZipAim = zipAim;
 
             OpponentChaseWish wish = OpponentChaseSteer.Decide(chase);
             Vector3 face = wish.Face.sqrMagnitude > 0.001f ? wish.Face : aim;
@@ -717,8 +736,9 @@ namespace Tag.Modes
             // Punch windup runs first, so a cocked fist blocks a new tell. The press itself
             // stays inside ConsumeChaseLunge, which waits out OpponentLungeTell.LeadSeconds.
             bool padEdge = chase.PadAhead || wish.Verb == OpponentChaseVerb.PadTake;
-            bool lungePress = ConsumeChaseLunge(dt, dist, chaseAng, reach, lungeBlocked || wish.Verb == OpponentChaseVerb.GapJump || padEdge);
-            if (wallCommit || lungeBlocked || wish.Verb == OpponentChaseVerb.GapJump || padEdge)
+            bool zipEdge = chase.ZipAhead || wish.Verb == OpponentChaseVerb.ZipTake;
+            bool lungePress = ConsumeChaseLunge(dt, dist, chaseAng, reach, lungeBlocked || wish.Verb == OpponentChaseVerb.GapJump || padEdge || zipEdge);
+            if (wallCommit || lungeBlocked || wish.Verb == OpponentChaseVerb.GapJump || padEdge || zipEdge)
             {
                 CancelLungeTell();
                 lungePress = false;
@@ -728,16 +748,23 @@ namespace Tag.Modes
             // Lip hop still uses the motor jump. A gap, a wall, and the lunge line do not.
             float chaseLip = ProbeAheadDeckDy(toBody.sqrMagnitude > 0.001f ? toBody : transform.forward);
             bool lip = ConsumeHop(Mathf.Max(chaseDy, chaseLip), dist, grounded, 0.7f, 9f);
-            if (padEdge)
+            if (padEdge || zipEdge)
                 lip = false;
             bool jump = wish.Jump && !lungePress;
             // A measured gap uses the reach test. The deck hop must not jump it anyway.
             // A launch pad is its own edge. The jump button is not how the dummy takes it.
-            if (!jump && !gapShape && !padEdge && wish.Verb != OpponentChaseVerb.WallCling && wish.Verb != OpponentChaseVerb.Lunge
+            // A zip line is the same kind of edge. Cling, not jump, is how the dummy takes it.
+            if (!jump && !gapShape && !padEdge && !zipEdge && wish.Verb != OpponentChaseVerb.WallCling && wish.Verb != OpponentChaseVerb.Lunge
                 && wish.Verb != OpponentChaseVerb.AirStrafe && _lungeTellT <= 0f && _lungeArm <= 0f && !lungePress)
                 jump = lip;
             // Chase does not take air dash, grapple, ski, jet, or crouch. The motor steps the capsule.
-            DriveWish(wish.MoveY, wish.Sprint, wish.Strafe, jump, lungePress, airDash: false);
+            float moveY = wish.MoveY;
+            bool ridingZip = _selfMotor != null && _selfMotor.ZipRiding;
+            if (ridingZip && moveY < OpponentChaseSteer.CloseMoveY)
+                moveY = OpponentChaseSteer.SprintMoveY;
+            if (_selfMotor != null)
+                _selfMotor.SetZipChase((zipAhead && zipHelps) || ridingZip);
+            DriveWish(moveY, wish.Sprint, wish.Strafe, jump, lungePress, airDash: false);
         }
 
         struct ChaseGap

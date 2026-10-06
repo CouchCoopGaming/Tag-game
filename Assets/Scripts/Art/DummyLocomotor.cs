@@ -15154,6 +15154,17 @@ namespace Tag.Art
                 armSlewR = Mathf.Max(armSlewR, AirStrafeLeanPose.Slew);
                 slew = Mathf.Max(slew, AirStrafeLeanPose.Slew);
             }
+            bool zipHang = _motor != null && _motor.ZipRiding && PoseAllowed(DummyPosePaths.Wall);
+            if (zipHang)
+            {
+                // Hands up on the cable. Same cling reach as a wall grab. No root motion.
+                ApplyWallSample(WallPose.CableHang(), armZ);
+                armSlewL = Mathf.Max(armSlewL, WallPose.BlendSlew);
+                armSlewR = Mathf.Max(armSlewR, WallPose.BlendSlew);
+                legSlew = Mathf.Max(legSlew, WallPose.BlendSlew);
+                torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
+                slew = Mathf.Max(slew, WallPose.BlendSlew);
+            }
             bool staggerPose = _staggerAge >= 0f;
             ApplyPunchStagger(dt);
             if (staggerPose)
@@ -15201,6 +15212,8 @@ namespace Tag.Art
                 bob -= 0.14f * _landSquash;
             if (dashing) bob += 0.04f * dashAmt;
             if (flinchAmt > 0.04f) bob -= 0.1f * flinchAmt;
+            if (_motor != null && _motor.ZipRiding)
+                bob = 0f;
             transform.localPosition = _root0 + new Vector3(0f, bob, 0f) + WallJumpNudge();
             float squash = 1f - 0.14f * _landSquash;
             // Air-dash: strong stretch then brief squash; tag flinch compresses

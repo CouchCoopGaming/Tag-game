@@ -65,6 +65,7 @@
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Core/MovementConfig.cs" />
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Core/SameWallLimit.cs" />
     <Compile Include="../../Assets/Scripts/Level/LaunchPadRules.cs" />
+    <Compile Include="../../Assets/Scripts/Level/ZipLineRules.cs" />
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Systems/KinematicStep.cs" />
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Camera/ChaseCam.cs" />
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Systems/WishAccel.cs" />
