@@ -19,6 +19,52 @@ namespace Tag.Level
     {
         static bool IncludePass9 = true;
 
+        struct FlowLens
+        {
+            public bool On;
+            public bool NoBowl;
+            public float MapW, MapD;
+            public ZipLineSpot[] Zips;
+            public PadSpot[] Pads;
+        }
+
+        static FlowLens _flowLens;
+
+        static float FlowMapW => _flowLens.On ? _flowLens.MapW : MapW;
+        static float FlowMapD => _flowLens.On ? _flowLens.MapD : MapD;
+
+        static ZipLineSpot[] FlowZips()
+        {
+            return _flowLens.On && _flowLens.Zips != null ? _flowLens.Zips : ZipLines;
+        }
+
+        static PadSpot[] FlowPads()
+        {
+            return _flowLens.On && _flowLens.Pads != null ? _flowLens.Pads : LaunchPads;
+        }
+
+        /// <summary>
+        /// Pass 9 choke rules on another park that shares this piece kit.
+        /// Mega Park leaves the lens off, so its own audit is unchanged.
+        /// </summary>
+        public static void UseFlow(float mapW, float mapD, ZipLineSpot[] zips, PadSpot[] pads, bool noBowl)
+        {
+            _flowLens = new FlowLens
+            {
+                On = true,
+                NoBowl = noBowl,
+                MapW = mapW,
+                MapD = mapD,
+                Zips = zips,
+                Pads = pads,
+            };
+        }
+
+        public static void ClearFlow()
+        {
+            _flowLens = default;
+        }
+
         const float ItSpeed = 12.55f;
         const float SightCampSeconds = 3f;
         const float LoopStallMin = 8f;
@@ -422,10 +468,11 @@ namespace Tag.Level
 
         static bool ZipPortal(List<DeckNode> nodes, int[] parent, int root)
         {
-            if (ZipLines == null) return false;
-            for (int i = 0; i < ZipLines.Length; i++)
+            ZipLineSpot[] lines = FlowZips();
+            if (lines == null) return false;
+            for (int i = 0; i < lines.Length; i++)
             {
-                ZipLineSpot z = ZipLines[i];
+                ZipLineSpot z = lines[i];
                 for (int j = 0; j < nodes.Count; j++)
                 {
                     if (Find(parent, j) != root) continue;
@@ -693,11 +740,12 @@ namespace Tag.Level
             float z0 = s.Z - s.Sz * 0.5f - 1.2f;
             float z1 = s.Z + s.Sz * 0.5f + 1.2f;
             float top = s.Y + s.Sy * 0.5f;
-            if (LaunchPads != null)
+            PadSpot[] flowPads = FlowPads();
+            if (flowPads != null)
             {
-                for (int i = 0; i < LaunchPads.Length; i++)
+                for (int i = 0; i < flowPads.Length; i++)
                 {
-                    PadSpot p = LaunchPads[i];
+                    PadSpot p = flowPads[i];
                     float mag = (float)Math.Sqrt(p.DirX * p.DirX + p.DirZ * p.DirZ);
                     if (mag < 0.1f) continue;
                     float hang = Hang(p.Apex);
@@ -706,11 +754,12 @@ namespace Tag.Level
                     if (SegmentCrosses(p.X, p.Z, lx, lz, x0, x1, z0, z1)) return true;
                 }
             }
-            if (ZipLines != null)
+            ZipLineSpot[] flowZips = FlowZips();
+            if (flowZips != null)
             {
-                for (int i = 0; i < ZipLines.Length; i++)
+                for (int i = 0; i < flowZips.Length; i++)
                 {
-                    ZipLineSpot z = ZipLines[i];
+                    ZipLineSpot z = flowZips[i];
                     if (Math.Abs(z.Ax - s.X) < s.Sx && Math.Abs(z.Az - s.Z) < s.Sz) return true;
                     if (SegmentCrosses(z.Ax, z.Az, z.Bx, z.Bz, x0, x1, z0, z1)) return true;
                 }
@@ -1004,11 +1053,12 @@ namespace Tag.Level
         {
             dest = -1;
             float here = DistPoint(x, z, tx, tz);
-            if (LaunchPads != null)
+            PadSpot[] flowPads = FlowPads();
+            if (flowPads != null)
             {
-                for (int i = 0; i < LaunchPads.Length; i++)
+                for (int i = 0; i < flowPads.Length; i++)
                 {
-                    PadSpot p = LaunchPads[i];
+                    PadSpot p = flowPads[i];
                     if (DistPoint(x, z, p.X, p.Z) > 3.2f) continue;
                     float mag = (float)Math.Sqrt(p.DirX * p.DirX + p.DirZ * p.DirZ);
                     if (mag < 0.1f) continue;
@@ -1022,11 +1072,12 @@ namespace Tag.Level
                     return dest >= 0;
                 }
             }
-            if (ZipLines != null)
+            ZipLineSpot[] flowZips = FlowZips();
+            if (flowZips != null)
             {
-                for (int i = 0; i < ZipLines.Length; i++)
+                for (int i = 0; i < flowZips.Length; i++)
                 {
-                    ZipLineSpot line = ZipLines[i];
+                    ZipLineSpot line = flowZips[i];
                     if (DistPoint(x, z, line.Ax, line.Az) > 4.5f) continue;
                     float there = DistPoint(line.Bx, line.Bz, tx, tz);
                     bool take = flee ? there > here + 4f : there + 4f < here;
@@ -1314,6 +1365,80 @@ namespace Tag.Level
                 crc = (crc >> 1) ^ mask;
             }
             return crc;
+        }
+
+        public static void CountFlowChokes(Solid[] solids, Ramp[] ramps, out int dead, out int corner, out int loops, out string detail)
+        {
+            var d = new List<string>();
+            var c = new List<string>();
+            var l = new List<string>();
+            CountChokes(solids, ramps, d, c, l);
+            dead = d.Count;
+            corner = c.Count;
+            loops = l.Count;
+            detail = "dead [" + string.Join(",", d.ToArray()) + "] corner [" + string.Join(",", c.ToArray()) + "] loop [" + string.Join(",", l.ToArray()) + "]";
+        }
+
+        public static float GroundSeconds(Solid[] solids, float x0, float z0, float x1, float z1)
+        {
+            Nav nav = BuildNav(solids);
+            int a = NearestOpen(nav, x0, z0);
+            int b = NearestOpen(nav, x1, z1);
+            if (a < 0 || b < 0) return 999f;
+            return RouteCost(nav, a, b, false, null);
+        }
+
+        public static bool RouteOpen(Solid[] solids, float x, float z)
+        {
+            return !float.IsNaN(CellFloor(solids, x, z));
+        }
+
+        public static float MeasureMeshGap(Solid[] solids, Ramp[] ramps)
+        {
+            return ColliderVisualGap(solids, ramps, new StringBuilder());
+        }
+
+        /// <summary>
+        /// Replay one toy-aware route. Stuck is 1 when the grid has no path.
+        /// Pads and zips count when that edge is the route the dummy takes.
+        /// </summary>
+        public static int WalkLeg(Solid[] solids, float x0, float z0, float x1, float z1, out int pads, out int zips)
+        {
+            pads = 0;
+            zips = 0;
+            Nav nav = BuildNav(solids);
+            int start = NearestOpen(nav, x0, z0);
+            int goal = NearestOpen(nav, x1, z1);
+            if (start < 0 || goal < 0) return 1;
+            if (start == goal) return 0;
+            int n = nav.Floor.Length;
+            var parent = new int[n];
+            var kind = new byte[n];
+            for (int i = 0; i < n; i++) parent[i] = -1;
+            float cost = RouteCost(nav, start, goal, true, null, parent, kind);
+            if (cost > 80f) return 1;
+            int cur = goal;
+            int guard = 0;
+            while (cur != start && guard++ < n)
+            {
+                int prev = parent[cur];
+                if (prev < 0 || prev == cur) return 1;
+                if (kind[cur] == 1) zips++;
+                if (kind[cur] == 2) pads++;
+                cur = prev;
+            }
+            return cur == start ? 0 : 1;
+        }
+
+        public static void ZipAnchors(Solid[] solids, ZipLineSpot z, out float x0, out float z0, out float x1, out float z1)
+        {
+            Nav nav = BuildNav(solids);
+            int mount = HighestNear(nav, z.Ax, z.Az, z.Ay);
+            int exit = NearestOpen(nav, z.Bx, z.Bz);
+            if (mount < 0) { x0 = z.Ax; z0 = z.Az; }
+            else CellCenter(nav, mount, out x0, out z0);
+            if (exit < 0) { x1 = z.Bx; z1 = z.Bz; }
+            else CellCenter(nav, exit, out x1, out z1);
         }
     }
 }

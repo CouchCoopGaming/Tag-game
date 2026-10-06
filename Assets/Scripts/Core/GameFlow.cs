@@ -4,6 +4,7 @@ using Tag.Gameplay;
 using Tag.Modes;
 using Tag.Local;
 using Tag.Audio;
+using Tag.Level;
 using TagArena.Movement;
 
 namespace Tag.Core
@@ -66,6 +67,11 @@ namespace Tag.Core
             {
                 SelectedMode = (TagModeId)PlayerPrefs.GetInt(TagModeController.PrefsModeKey, (int)TagModeId.LeastIt);
                 _menuCursor = (int)SelectedMode;
+            }
+            if (PlayerPrefs.HasKey(ParkArena.PrefsKey))
+            {
+                ParkArena.Select(PlayerPrefs.GetInt(ParkArena.PrefsKey, ParkArena.Mega));
+                ParkArena.HasExplicitChoice = true;
             }
         }
 
@@ -452,8 +458,8 @@ namespace Tag.Core
             }
             else if (State == GameFlowState.Paused)
             {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) Nudge(ref _pauseFocus, -1, 4);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) Nudge(ref _pauseFocus, 1, 4);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) Nudge(ref _pauseFocus, -1, 5);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) Nudge(ref _pauseFocus, 1, 5);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _pauseFocus, 0);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _pauseFocus, 1);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _pauseFocus, 2);
@@ -545,18 +551,20 @@ namespace Tag.Core
             }
             else if (State == GameFlowState.Paused)
             {
-                GUI.Box(new Rect(cx - 150, cy - 130, 300, 280), "Paused");
-                if (FocusButton(new Rect(cx - 70, cy - 90, 140, 28), 0, ref _pauseFocus, "Resume")) TogglePause();
-                if (FocusButton(new Rect(cx - 70, cy - 56, 140, 28), 1, ref _pauseFocus, "Controls"))
+                GUI.Box(new Rect(cx - 160, cy - 150, 320, 360), "Paused");
+                if (FocusButton(new Rect(cx - 70, cy - 110, 140, 28), 0, ref _pauseFocus, "Resume")) TogglePause();
+                if (FocusButton(new Rect(cx - 70, cy - 76, 140, 28), 1, ref _pauseFocus, "Controls"))
                     OpenControls();
-                if (FocusButton(new Rect(cx - 70, cy - 22, 140, 28), 2, ref _pauseFocus, "Look sensitivity"))
+                if (FocusButton(new Rect(cx - 70, cy - 42, 140, 28), 2, ref _pauseFocus, "Look sensitivity"))
                     OpenLook();
-                if (FocusButton(new Rect(cx - 70, cy + 12, 140, 28), 3, ref _pauseFocus, "Audio"))
+                if (FocusButton(new Rect(cx - 70, cy - 8, 140, 28), 3, ref _pauseFocus, "Audio"))
                     OpenAudio();
-                if (FocusButton(new Rect(cx - 70, cy + 46, 140, 28), 4, ref _pauseFocus, "Quit to Menu"))
+                if (FocusButton(new Rect(cx - 70, cy + 26, 140, 28), 4, ref _pauseFocus, "Quit to Menu"))
                     QuitToMenu();
-                GUI.Label(new Rect(cx - 140, cy + 78, 280, 64),
-                    "Left / Right or 1-5 picks    Enter / Space\nEsc resume    Q menu    H controls\nM map    Comma mute    N music    Up / Down bed");
+                if (FocusButton(new Rect(cx - 90, cy + 60, 180, 28), 5, ref _pauseFocus, "Map: " + ParkArena.DisplayName))
+                    ParkArenaHost.Toggle();
+                GUI.Label(new Rect(cx - 150, cy + 96, 300, 96),
+                    "Left / Right or 1-5 picks    Enter / Space\nEsc resume    Q menu    H controls\nMap swaps Mega Park and Pocket Park\nM map    Comma mute    N music    Up / Down bed");
             }
             else if (State == GameFlowState.RoundEnd)
             {
@@ -807,6 +815,7 @@ namespace Tag.Core
                 case 2: OpenLook(); break;
                 case 3: OpenAudio(); break;
                 case 4: QuitToMenu(); break;
+                case 5: ParkArenaHost.Toggle(); break;
                 default: TogglePause(); break;
             }
         }

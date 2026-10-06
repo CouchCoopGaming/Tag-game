@@ -273,9 +273,9 @@ namespace Tag.Modes
             {
                 if (p == null || p == it || !p.IsAlive) continue;
                 Vector3 pos = p.transform.position;
-                if (Tag.Level.MegaParkP1Layout.SpawnIsSafe(pos.x, pos.z, ip.x, ip.z))
+                if (Tag.Level.ParkArena.SpawnIsSafe(pos.x, pos.z, ip.x, ip.z))
                     continue;
-                Tag.Level.MegaParkP1Layout.PickRespawn(pos.x, pos.z, ip.x, ip.z, true, out float x, out float y, out float z);
+                Tag.Level.ParkArena.PickRespawn(pos.x, pos.z, ip.x, ip.z, true, out float x, out float y, out float z);
                 Vector3 pad = new Vector3(x, y, z);
                 var motor = p.GetComponent<PlayerMotor>();
                 if (motor != null)
@@ -306,6 +306,10 @@ namespace Tag.Modes
 
             if (_phase == MatchPhase.Countdown)
             {
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1))
+                    Tag.Level.ParkArenaHost.Choose(Tag.Level.ParkArena.Mega);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2))
+                    Tag.Level.ParkArenaHost.Choose(Tag.Level.ParkArena.Pocket);
                 _phaseTimer -= dt;
                 if (_phaseTimer <= 0f) BeginPlaying();
                 return;
@@ -789,7 +793,7 @@ namespace Tag.Modes
 
         void NudgeLocalPause(int dir)
         {
-            int next = Mathf.Clamp(_localPauseFocus + dir, 0, 4);
+            int next = Mathf.Clamp(_localPauseFocus + dir, 0, 5);
             if (next == _localPauseFocus) return;
             _localPauseFocus = next;
             TagSfx.UiClick();
@@ -810,6 +814,7 @@ namespace Tag.Modes
                 case 2: _localLook = true; _localLookFocus = 0; TagSfx.UiClick(); break;
                 case 3: _localAudio = true; _localAudioFocus = 0; TagSfx.UiClick(); break;
                 case 4: LoadBootMenu(); break;
+                case 5: Tag.Level.ParkArenaHost.Toggle(); break;
                 default: SetLocalPause(false); break;
             }
         }
@@ -835,29 +840,31 @@ namespace Tag.Modes
             }
 
             string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
-            GUI.Box(new Rect(cx - 150, cy - 130, 300, 320), "Paused");
-            if (LocalPauseButton(cx, cy - 90, 0, "Resume")) SetLocalPause(false);
-            if (LocalPauseButton(cx, cy - 56, 1, "Controls"))
+            GUI.Box(new Rect(cx - 160, cy - 150, 320, 400), "Paused");
+            if (LocalPauseButton(cx, cy - 110, 0, "Resume")) SetLocalPause(false);
+            if (LocalPauseButton(cx, cy - 76, 1, "Controls"))
             {
                 _localHelp = true;
                 _localControlsFocus = 0;
                 TagSfx.UiClick();
             }
-            if (LocalPauseButton(cx, cy - 22, 2, "Look sensitivity"))
+            if (LocalPauseButton(cx, cy - 42, 2, "Look sensitivity"))
             {
                 _localLook = true;
                 _localLookFocus = 0;
                 TagSfx.UiClick();
             }
-            if (LocalPauseButton(cx, cy + 12, 3, "Audio"))
+            if (LocalPauseButton(cx, cy - 8, 3, "Audio"))
             {
                 _localAudio = true;
                 _localAudioFocus = 0;
                 TagSfx.UiClick();
             }
-            if (LocalPauseButton(cx, cy + 46, 4, "Quit to Menu")) LoadBootMenu();
-            GUI.Label(new Rect(cx - 140, cy + 78, 280, 96),
-                "Left / Right picks    Enter / Space\nEsc resume    Q menu    H controls\n1-5 highlight\nM map    Comma mute    N music    Up / Down bed" + extra);
+            if (LocalPauseButton(cx, cy + 26, 4, "Quit to Menu")) LoadBootMenu();
+            if (LocalPauseButton(cx, cy + 60, 5, "Map: " + Tag.Level.ParkArena.DisplayName))
+                Tag.Level.ParkArenaHost.Toggle();
+            GUI.Label(new Rect(cx - 150, cy + 96, 300, 120),
+                "Left / Right picks    Enter / Space\nEsc resume    Q menu    H controls\n1-5 highlight\nMap swaps Mega Park and Pocket Park\nM map    Comma mute    N music    Up / Down bed" + extra);
         }
 
         void DrawLocalControls(float cx, float cy)
@@ -1015,8 +1022,8 @@ namespace Tag.Modes
             }
             _countStyle.fontSize = 54;
             _countStyle.alignment = TextAnchor.MiddleCenter;
-            float w = 440f;
-            float h = 168f;
+            float w = 480f;
+            float h = 210f;
             float x = (Screen.width - w) * 0.5f;
             float y = Screen.height * 0.28f;
             int show = Mathf.Max(1, Mathf.CeilToInt(_phaseTimer));
@@ -1028,6 +1035,8 @@ namespace Tag.Modes
                   TagArena.Movement.ControlBinds.PunchName + " or E tags"
                 : "Punch the dummy with the orange hat";
             GUI.Label(new Rect(x + 16, y + 104, w - 32, 48), hint);
+            GUI.Label(new Rect(x + 16, y + 156, w - 32, 44),
+                "1 Mega Park    2 Pocket Park\nnow " + Tag.Level.ParkArena.DisplayName);
         }
 
         string HeadlineFor(System.Collections.Generic.IReadOnlyList<string> winners)

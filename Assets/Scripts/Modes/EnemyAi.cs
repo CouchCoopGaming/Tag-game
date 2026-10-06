@@ -511,6 +511,14 @@ namespace Tag.Modes
 
         public static Vector3 LoopPoint(bool mega, int index)
         {
+            if (Tag.Level.ParkArena.IsPocket)
+            {
+                Tag.Level.MegaParkP1Layout.Pt[] loop = Tag.Level.PocketParkLayout.LoopCcw;
+                int pocket = index % loop.Length;
+                if (pocket < 0) pocket += loop.Length;
+                Tag.Level.MegaParkP1Layout.Pt p = loop[pocket];
+                return new Vector3(p.X, Tag.Level.PocketParkLayout.SpawnY, p.Z);
+            }
             float scale = mega ? 14f : 10f;
             int slot = index % 4;
             if (slot < 0) slot += 4;

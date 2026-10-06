@@ -2139,6 +2139,7 @@ namespace Tag.Level
 
         static bool BowlCut(float x, float z)
         {
+            if (_flowLens.On && _flowLens.NoBowl) return false;
             return x > 46.2f && x < 77.8f && z > 34.2f && z < 65.8f;
         }
 
@@ -2427,7 +2428,9 @@ namespace Tag.Level
         static bool TryStand(Solid[] solids, float x, float z, out float y)
         {
             y = 0f;
-            if (x < 1f || z < 1f || x > MapW - 1f || z > MapD - 1f) return false;
+            float mapW = FlowMapW;
+            float mapD = FlowMapD;
+            if (x < 1f || z < 1f || x > mapW - 1f || z > mapD - 1f) return false;
             float deck = -999f;
             for (int i = 0; i < solids.Length; i++)
             {
@@ -2923,8 +2926,10 @@ namespace Tag.Level
             const float cell = 1.5f;
             float x0 = 2f;
             float z0 = 2f;
-            int nx = (int)((MapW - 4f) / cell);
-            int nz = (int)((MapD - 4f) / cell);
+            float mapW = FlowMapW;
+            float mapD = FlowMapD;
+            int nx = (int)((mapW - 4f) / cell);
+            int nz = (int)((mapD - 4f) / cell);
             var floor = new float[nx * nz];
             for (int iz = 0; iz < nz; iz++)
             {
@@ -3019,7 +3024,7 @@ namespace Tag.Level
             return cost;
         }
 
-        static float RouteCost(Nav nav, int start, int goal, bool toys, int[] scratch)
+        static float RouteCost(Nav nav, int start, int goal, bool toys, int[] scratch, int[] parentOut = null, byte[] kindOut = null)
         {
             int n = nav.Floor.Length;
             var g = new float[n];
@@ -3067,26 +3072,38 @@ namespace Tag.Level
                 scratch[0] = CountKind(parent, kind, goal, 2);
                 scratch[1] = CountKind(parent, kind, goal, 1);
             }
+            if (parentOut != null)
+            {
+                int ncopy = parent.Length < parentOut.Length ? parent.Length : parentOut.Length;
+                for (int i = 0; i < ncopy; i++) parentOut[i] = parent[i];
+            }
+            if (kindOut != null)
+            {
+                int ncopy = kind.Length < kindOut.Length ? kind.Length : kindOut.Length;
+                for (int i = 0; i < ncopy; i++) kindOut[i] = kind[i];
+            }
             return g[goal];
         }
 
         static void CacheToys(Nav nav, out int[] mounts, out int[] exits, out float[] zipCost, out int[] padFrom, out int[] padTo, out float[] padCost)
         {
-            mounts = new int[ZipLines.Length];
-            exits = new int[ZipLines.Length];
-            zipCost = new float[ZipLines.Length];
-            for (int i = 0; i < ZipLines.Length; i++)
+            ZipLineSpot[] zips = FlowZips();
+            PadSpot[] pads = FlowPads();
+            mounts = new int[zips.Length];
+            exits = new int[zips.Length];
+            zipCost = new float[zips.Length];
+            for (int i = 0; i < zips.Length; i++)
             {
-                mounts[i] = HighestNear(nav, ZipLines[i].Ax, ZipLines[i].Az, ZipLines[i].Ay);
-                exits[i] = NearestOpen(nav, ZipLines[i].Bx, ZipLines[i].Bz);
-                zipCost[i] = CableLen(ZipLines[i]) / ZipLines[i].Speed;
+                mounts[i] = HighestNear(nav, zips[i].Ax, zips[i].Az, zips[i].Ay);
+                exits[i] = NearestOpen(nav, zips[i].Bx, zips[i].Bz);
+                zipCost[i] = CableLen(zips[i]) / zips[i].Speed;
             }
-            padFrom = new int[LaunchPads.Length];
-            padTo = new int[LaunchPads.Length];
-            padCost = new float[LaunchPads.Length];
-            for (int i = 0; i < LaunchPads.Length; i++)
+            padFrom = new int[pads.Length];
+            padTo = new int[pads.Length];
+            padCost = new float[pads.Length];
+            for (int i = 0; i < pads.Length; i++)
             {
-                PadSpot p = LaunchPads[i];
+                PadSpot p = pads[i];
                 padFrom[i] = NearestOpen(nav, p.X, p.Z);
                 float mag = (float)Math.Sqrt(p.DirX * p.DirX + p.DirZ * p.DirZ);
                 float hang = Hang(p.Apex);
