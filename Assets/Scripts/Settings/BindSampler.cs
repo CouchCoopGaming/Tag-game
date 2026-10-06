@@ -1,3 +1,4 @@
+using Tag.Couch;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -13,21 +14,21 @@ namespace Tag.Settings
     {
         public static bool Held(PlayAction action)
         {
-            var binds = ActionBinds.Current;
+            var binds = CouchPlay.BindsFor(CouchPlay.DeviceKeyboard);
             int i = (int)action;
             return HeldToken(binds.Keyboard[i], false) || HeldToken(binds.Gamepad[i], true);
         }
 
         public static bool Pressed(PlayAction action)
         {
-            var binds = ActionBinds.Current;
+            var binds = CouchPlay.BindsFor(CouchPlay.DeviceKeyboard);
             int i = (int)action;
             return PressedToken(binds.Keyboard[i], false) || PressedToken(binds.Gamepad[i], true);
         }
 
         public static Vector2 MoveVector()
         {
-            var binds = ActionBinds.Current;
+            var binds = CouchPlay.BindsFor(CouchPlay.DeviceKeyboard);
             Vector2 v = Vector2.zero;
             string kb = binds.Keyboard[(int)PlayAction.Move];
             if (kb == "wasd")
@@ -81,7 +82,7 @@ namespace Tag.Settings
 
         public static Vector2 LookVector()
         {
-            var binds = ActionBinds.Current;
+            var binds = CouchPlay.BindsFor(CouchPlay.DeviceKeyboard);
             Vector2 v = Vector2.zero;
             if (binds.Keyboard[(int)PlayAction.Look] == "mouse")
                 v = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));

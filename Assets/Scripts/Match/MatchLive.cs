@@ -98,8 +98,12 @@ namespace Tag.MatchStats
                 Its[i] = it;
                 PlayerMotor motor = it != null ? it.Motor : null;
                 Motors[i] = motor;
-                string id = it != null && !string.IsNullOrEmpty(it.PlayerId) ? it.PlayerId : HudName(i);
+                string named = Tag.Profiles.LocalProfiles.SeatName(i);
+                string id = !string.IsNullOrEmpty(named)
+                    ? named
+                    : (it != null && !string.IsNullOrEmpty(it.PlayerId) ? it.PlayerId : HudName(i));
                 MatchBook.SetName(i, id);
+                Tag.Profiles.LocalProfiles.NoteRoster(i, Tag.Profiles.LocalProfiles.ProfileAt(i));
                 WallJumps[i] = motor != null ? motor.WallJumpCount : 0;
                 PrevWall[i] = motor != null && motor.IsWallRunning;
                 PrevDash[i] = motor != null && motor.IsAirDashing;
@@ -231,6 +235,7 @@ namespace Tag.MatchStats
             if (!_open && MatchBook.Count < 1) return;
             _open = false;
             MatchBook.Seal();
+            Tag.Profiles.LocalProfiles.Absorb();
         }
 
         static int Index(ItController who)

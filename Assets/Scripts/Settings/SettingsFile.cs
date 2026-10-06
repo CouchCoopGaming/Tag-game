@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using Tag.Practice;
+using Tag.Profiles;
 
 namespace Tag.Settings
 {
@@ -16,7 +17,7 @@ namespace Tag.Settings
             var s = settings ?? GameSettings.Defaults();
             var b = binds ?? ActionBinds.Defaults();
             var text = new StringBuilder();
-            text.Append("v=1\n");
+            text.Append("v=2\n");
             Line(text, "mouse", s.MouseSensitivity);
             Line(text, "padLook", s.GamepadLook);
             Line(text, "invertY", s.InvertY ? 1f : 0f);
@@ -61,10 +62,11 @@ namespace Tag.Settings
             }
             PracticeBests.Write(text);
             PracticeGhost.Write(text);
+            LocalProfiles.Write(text);
             return text.ToString();
         }
 
-        public const int Version = 1;
+        public const int Version = 2;
 
         public static void Read(string blob, GameSettings settings, ActionBinds binds)
         {
@@ -90,10 +92,12 @@ namespace Tag.Settings
             {
                 settings.ResetToDefaults();
                 binds.ResetToDefaults();
+                LocalProfiles.Clear();
                 return;
             }
             PracticeBests.Clear();
             PracticeGhost.ClearSaved();
+            LocalProfiles.BeginRead();
             for (int i = 0; i < lines.Length; i++)
             {
                 if (!Split(lines[i], out string key, out string value)) continue;
@@ -103,6 +107,7 @@ namespace Tag.Settings
             if (settings.Colorblind && blob.IndexOf("palette=", StringComparison.Ordinal) < 0)
                 settings.Palette[0] = AccessibilityPalette.Deuteranopia;
             settings.Clamp();
+            LocalProfiles.EndRead(version, settings, binds);
         }
 
         static bool Split(string raw, out string key, out string value)
@@ -136,6 +141,7 @@ namespace Tag.Settings
             if (SeatKey(key, "captions", out _)) return true;
             if (SeatKey(key, "rumble", out _)) return true;
             if (SeatKey(key, "flash", out _)) return true;
+            if (LocalProfiles.IsKey(key)) return true;
             return false;
         }
 
@@ -175,6 +181,8 @@ namespace Tag.Settings
                 PracticeBests.SetSplits(key.Substring(3), value);
             else if (key.StartsWith("gh.", StringComparison.Ordinal))
                 PracticeGhost.Read(key.Substring(3), value);
+            else
+                LocalProfiles.ApplyKey(key, value);
         }
 
         static bool SeatKey(string key, string prefix, out int seat)

@@ -604,6 +604,14 @@ static class Program
             return 1;
         }
 
+        Tag.Profiles.LocalProfiles.Report profiles = Tag.Profiles.LocalProfiles.Run();
+        Console.WriteLine(profiles.Line);
+        if (!profiles.Ok)
+        {
+            Console.Error.WriteLine(profiles.Failure);
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }
