@@ -9,7 +9,8 @@ namespace Tag.Modes
     /// write a velocity, or raise a feel number.
     /// A gap jump commits only when the measured span fits inside horizontal speed
     /// times the jump hang, plus a small margin. Otherwise the chase clings, brakes,
-    /// or turns onto a side route. Sprint, air strafe, and cling stay the default.
+    /// or turns onto a side route. A launch pad is a known edge: step on it only
+    /// when the predicted landing is closer to the target. Sprint, air strafe, and cling stay the default.
     /// </summary>
     public enum OpponentChaseVerb
     {
@@ -18,7 +19,8 @@ namespace Tag.Modes
         AirStrafe = 2,
         GapJump = 3,
         WallCling = 4,
-        Lunge = 5
+        Lunge = 5,
+        PadTake = 6
     }
 
     public struct OpponentChaseInput
@@ -50,6 +52,14 @@ namespace Tag.Modes
         public bool LungeBlocked;
         /// <summary>The motor left this face. Do not steer a cling back onto it.</summary>
         public bool SameWallClosed;
+        /// <summary>A launch pad lies on the chase line.</summary>
+        public bool PadAhead;
+        /// <summary>Meters from the pawn to that pad.</summary>
+        public float PadDistance;
+        /// <summary>The pad's landing is closer to the target than staying off it.</summary>
+        public bool PadHelps;
+        /// <summary>Flat direction from the pawn onto the pad.</summary>
+        public Vector3 PadAim;
     }
 
     public struct OpponentChaseWish
@@ -310,6 +320,25 @@ namespace Tag.Modes
             if (s.HoldLine)
                 return Make(s.PlanarDistance > far ? OpponentChaseVerb.Sprint : OpponentChaseVerb.Close,
                     aim, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
+
+            if (s.Grounded && s.PadAhead)
+            {
+                if (s.PadHelps)
+                {
+                    Vector3 onto = Flat(s.PadAim);
+                    if (onto.sqrMagnitude < 1e-6f)
+                        onto = aim;
+                    else
+                        onto.Normalize();
+                    return Make(OpponentChaseVerb.PadTake, onto, sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
+                }
+
+                float side = Mathf.Abs(s.PathStrafe) > 0.2f ? s.PathStrafe : 1f;
+                float yaw = side > 0f ? PathAroundDegrees : -PathAroundDegrees;
+                Vector3 peel = YawOffset(aim, yaw);
+                return Make(sprintRange ? OpponentChaseVerb.Sprint : OpponentChaseVerb.Close, peel,
+                    sprintRange ? SprintMoveY : CloseMoveY, 0f, sprintRange, false, false);
+            }
 
             if (s.Grounded && s.GapAhead && s.GapSpan > GapMinSpan)
             {

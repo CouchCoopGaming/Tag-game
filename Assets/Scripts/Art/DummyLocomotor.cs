@@ -3607,6 +3607,34 @@ namespace Tag.Art
                 _jumpPoseCycle = _cycle;
                 _jumpDriveLeft = Mathf.Sin(_cycle) >= 0f;
             }
+            bool launchBody = _motor != null && _motor.LaunchArc && _motor.State == MoveState.Air && !jet && !punching;
+            if (launchBody)
+            {
+                // The pad reuses the jump rise. Entry tells do not keep this arc.
+                _jumpFromStill = false;
+                _jumpFromCrouchWalk = false;
+                _jumpFromWalk = false;
+                _jumpFromSki = false;
+                _jumpFromSlide = false;
+                _jumpFromDash = false;
+                _jumpFromClimb = false;
+                _jumpFromWall = false;
+                _jumpFromAirCrouch = false;
+                _jumpFromSoftLand = false;
+                _jumpFromHardLand = false;
+                _jumpFromMiss = false;
+                _jumpFromTag = false;
+                _jumpFromClaim = false;
+                _jumpFromGrapple = false;
+                _jumpFromReady = false;
+                _jumpFromPunch = false;
+                if (_jumpPoseAge < 0f)
+                {
+                    _jumpPoseAge = 0f;
+                    _jumpPoseCycle = _cycle;
+                    _jumpDriveLeft = Mathf.Sin(_cycle) >= 0f;
+                }
+            }
             if (_hopChainFrame && !JumpPoseBlocked() && !jet && !punching)
             {
                 // The hop's takeoff starts this frame. The stride phase is not replanted.
@@ -6000,9 +6028,10 @@ namespace Tag.Art
                 && speed > 0.35f && speed <= 5.5f && st != MoveState.Sprint && runAmt <= 0.4f
                 && _diveVis > 0.02f
                 && _input != null && _input.CrouchHeld;
-            bool jumpPoseOn = PoseAllowed(DummyPosePaths.Jump) && JumpPose.PoseActive(air && !jet, _jumpFromWall, _jumpFromSlide,
+            bool launchRise = _motor != null && _motor.LaunchArc && air && !jet && !punching && _jumpPoseAge >= 0f;
+            bool jumpPoseOn = PoseAllowed(DummyPosePaths.Jump) && (launchRise || JumpPose.PoseActive(air && !jet, _jumpFromWall, _jumpFromSlide,
                 !air || jet || punching || JumpPoseBlocked() || airStillCrouch || airCrouchWalk || _diveVis >= 0.2f
-                || airDashing || _dashPoseHeld || _jumpPoseAge < 0f || _wallFallHold || _gracePose || _grappleFallHold);
+                || airDashing || _dashPoseHeld || _jumpPoseAge < 0f || _wallFallHold || _gracePose || _grappleFallHold));
             // Keep a soft air/vault cycle so limbs stay energetic off the ground.
             // Walk and sprint ease length and tempo. The cycle keeps advancing, so a plant does not freeze.
             if (!(air && !jet && !airDashing && _armRecover > 0f))
