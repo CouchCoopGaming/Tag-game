@@ -1,6 +1,7 @@
 using Tag.Core;
 using Tag.Couch;
 using Tag.Practice;
+using Tag.Profiles;
 using UnityEngine;
 
 namespace Tag.Front
@@ -74,9 +75,13 @@ namespace Tag.Front
             float y = cy - 160f;
             for (int i = 0; i < 4; i++)
             {
-                GUI.Label(new Rect(cx - 200f, y, 400f, 22f), CouchPlay.SeatLine(i));
+                if (MenuClick.Button(new Rect(cx - 200f, y, 400f, 22f), CouchPlay.SeatLine(i)))
+                    CouchPlay.CycleProfile(i, 1);
                 y += 22f;
             }
+            string card = LocalProfiles.FirstCard();
+            if (!string.IsNullOrEmpty(card))
+                GUI.Label(new Rect(cx - 200f, y, 400f, 72f), card);
             y += 8f;
             for (int i = 0; i < 4; i++)
             {
@@ -85,7 +90,7 @@ namespace Tag.Front
                 y += 32f;
             }
             GUI.Label(new Rect(cx - 220f, cy + 150f, 440f, 48f),
-                "A key joins the keyboard. Any pad button joins that pad.\nBack leaves. Enter or South starts.");
+                "A key joins the keyboard. Any pad button joins that pad.\nBack leaves. Enter or South starts.\nA seat picks a profile or Guest. Names stay apart.");
         }
 
         static bool Button(float cx, float y, int index, string label)

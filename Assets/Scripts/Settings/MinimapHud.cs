@@ -47,7 +47,34 @@ namespace Tag.Settings
             GUI.DrawTexture(new Rect(box.X + box.W - m - 3f, box.Y + m, 3f, box.H - m * 2f), Texture2D.whiteTexture);
             GUI.color = new Color(0.95f, 0.85f, 0.35f, 1f);
             float dot = 8f;
-            GUI.DrawTexture(new Rect(box.X + box.W * 0.5f - dot * 0.5f, box.Y + box.H * 0.55f, dot, dot), Texture2D.whiteTexture);
+            int drawn = 0;
+            for (int s = 0; s < Tag.Couch.CouchPlay.Max; s++)
+            {
+                if (!Tag.Couch.CouchPlay.HumanAt(s) && !Tag.Couch.CouchPlay.AiAt(s)) continue;
+                Tag.Couch.CouchPlay.Tint(s, out float pr, out float pg, out float pb);
+                float u = Tag.Couch.CouchPlay.X(s) * 0.02f;
+                float v = Tag.Couch.CouchPlay.Z(s) * 0.02f;
+                if (u < -0.35f) u = -0.35f;
+                if (u > 0.35f) u = 0.35f;
+                if (v < -0.35f) v = -0.35f;
+                if (v > 0.35f) v = 0.35f;
+                if (u == 0f && v == 0f)
+                {
+                    u = (s - 1.5f) * 0.18f;
+                    v = 0.05f;
+                }
+                float dx = box.X + box.W * (0.5f + u) - dot * 0.5f;
+                float dy = box.Y + box.H * (0.55f + v);
+                GUI.color = new Color(pr, pg, pb, 1f);
+                GUI.DrawTexture(new Rect(dx, dy, dot, dot), Texture2D.whiteTexture);
+                GUI.Label(new Rect(dx + dot, dy - 2f, box.W * 0.4f, 16f), Tag.Couch.CouchPlay.Name(s));
+                drawn++;
+            }
+            if (drawn == 0)
+            {
+                GUI.color = new Color(0.95f, 0.85f, 0.35f, 1f);
+                GUI.DrawTexture(new Rect(box.X + box.W * 0.5f - dot * 0.5f, box.Y + box.H * 0.55f, dot, dot), Texture2D.whiteTexture);
+            }
             GUI.color = Color.white;
             string name = GameSettings.ArenaName(GameSettings.Current.Arena);
             GUI.Label(new Rect(box.X + 10f, box.Y + 8f, box.W - 20f, 22f), name);

@@ -4,6 +4,7 @@ using Tag.Audio;
 using Tag.Core;
 using Tag.Gameplay;
 using Tag.Onboard;
+using Tag.Profiles;
 using Tag.Settings;
 using TagArena.Movement;
 
@@ -80,6 +81,7 @@ namespace Tag.Couch
         static readonly bool[] Gone = new bool[Max];
         static readonly string[] ScoreLine = new string[Max];
         static readonly string[] RejoinLine = { "P1 reconnect", "P2 reconnect", "P3 reconnect", "P4 reconnect" };
+        static readonly string[] Tagged = new string[Max];
         const string TieLine = "Tie";
 
         static int _humans;
@@ -127,7 +129,9 @@ namespace Tag.Couch
                 Pads[i] = null;
                 Gone[i] = false;
                 ScoreLine[i] = "";
+                Tagged[i] = null;
             }
+            LocalProfiles.ClearSeats();
             _humans = 0;
             _ai = 0;
             _it = -1;
@@ -160,6 +164,8 @@ namespace Tag.Couch
 
         public static string Name(int slot)
         {
+            string named = LocalProfiles.SeatName(slot);
+            if (!string.IsNullOrEmpty(named)) return named;
             if (slot < 0 || slot >= Names.Length) return "";
             return Names[slot];
         }
@@ -167,10 +173,51 @@ namespace Tag.Couch
         public static string SeatLine(int slot)
         {
             if (slot < 0 || slot >= Max) return "";
+            if (Tagged[slot] != null) return Tagged[slot];
+            return Core(slot);
+        }
+
+        public static void RefreshTags()
+        {
+            for (int i = 0; i < Max; i++)
+                RefreshTag(i);
+        }
+
+        static string Core(int slot)
+        {
             if (Human[slot])
                 return Device[slot] == DeviceKeyboard ? KeyLine[slot] : PadLine[slot];
             if (Ai[slot]) return AiLine[slot];
             return OpenLine[slot];
+        }
+
+        static void RefreshTag(int slot)
+        {
+            if (slot < 0 || slot >= Max) return;
+            string named = LocalProfiles.SeatName(slot);
+            if (string.IsNullOrEmpty(named))
+            {
+                Tagged[slot] = null;
+                return;
+            }
+            Tagged[slot] = Core(slot) + "  " + named;
+        }
+
+        public static bool AssignProfile(int slot, int id)
+        {
+            if (!LocalProfiles.TrySeat(slot, id)) return false;
+            RefreshTag(slot);
+            return true;
+        }
+
+        public static void CycleProfile(int slot, int dir)
+        {
+            if (slot < 0 || slot >= Max) return;
+            int pick = LocalProfiles.Cycle(slot, dir);
+            if (pick == LocalProfiles.Guest) LocalProfiles.SeatGuest(slot);
+            else if (pick == LocalProfiles.None) LocalProfiles.ClearSeat(slot);
+            else if (!LocalProfiles.TrySeat(slot, pick)) return;
+            RefreshTag(slot);
         }
 
         public static void Tint(int slot, out float r, out float g, out float b)
@@ -180,7 +227,9 @@ namespace Tag.Couch
             if (i > 3) i = 3;
             int pal = 0;
             if (GameSettings.Current != null) pal = GameSettings.Current.PaletteOf(i);
-            AccessibilityPalette.Player(pal, i, out r, out g, out b);
+            int swatch = LocalProfiles.SeatColor(i);
+            if (swatch < 0) swatch = i;
+            AccessibilityPalette.Player(pal, swatch, out r, out g, out b);
         }
 
         public static bool Join(int device)
@@ -193,6 +242,7 @@ namespace Tag.Couch
             Ai[free] = false;
             Device[free] = device;
             _humans++;
+            RefreshTag(free);
             return true;
         }
 
@@ -292,6 +342,8 @@ namespace Tag.Couch
             Device[slot] = -1;
             PosX[slot] = 0f;
             PosZ[slot] = 0f;
+            LocalProfiles.ClearSeat(slot);
+            Tagged[slot] = null;
             _humans--;
             if (_humans < 0) _humans = 0;
             return true;
@@ -325,6 +377,12 @@ namespace Tag.Couch
 
         public static ActionBinds BindsFor(int device)
         {
+            int seated = SlotOf(device);
+            if (seated >= 0)
+            {
+                ActionBinds owned = LocalProfiles.BindsForSeat(seated);
+                if (owned != null) return owned;
+            }
             if (device == DeviceKeyboard)
             {
                 if (ActionBinds.Current == null)
@@ -825,7 +883,7 @@ namespace Tag.Couch
                     continue;
                 }
                 Sb.Clear();
-                Sb.Append(Names[i]);
+                Sb.Append(Name(i));
                 Sb.Append(' ');
                 Sb.Append(HudDigits.Tenth0(TimeAsIt[i]));
                 ScoreLine[i] = Sb.ToString();

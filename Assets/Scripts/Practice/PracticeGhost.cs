@@ -50,6 +50,59 @@ namespace Tag.Practice
             }
         }
 
+        public static bool HasAnySaved()
+        {
+            for (int i = 0; i < Slots; i++)
+            {
+                if (!string.IsNullOrEmpty(SavedId[i]) && SavedCount[i] > 0) return true;
+            }
+            return false;
+        }
+
+        public static void ExportSaved(string[] ids, int[] counts, float[] x, float[] y, float[] z, float[] yaw, byte[] pose)
+        {
+            for (int s = 0; s < Slots; s++)
+            {
+                ids[s] = SavedId[s];
+                int n = SavedCount[s];
+                if (n < 0) n = 0;
+                if (n > Cap) n = Cap;
+                counts[s] = string.IsNullOrEmpty(SavedId[s]) ? 0 : n;
+                int o = s * Cap;
+                for (int i = 0; i < n; i++)
+                {
+                    x[o + i] = SavedX[o + i];
+                    y[o + i] = SavedY[o + i];
+                    z[o + i] = SavedZ[o + i];
+                    yaw[o + i] = SavedYaw[o + i];
+                    pose[o + i] = SavedPose[o + i];
+                }
+            }
+        }
+
+        public static void ImportSaved(string[] ids, int[] counts, float[] x, float[] y, float[] z, float[] yaw, byte[] pose)
+        {
+            ClearSaved();
+            if (ids == null || counts == null) return;
+            for (int s = 0; s < Slots; s++)
+            {
+                if (string.IsNullOrEmpty(ids[s]) || counts[s] < 1) continue;
+                SavedId[s] = ids[s];
+                int n = counts[s];
+                if (n > Cap) n = Cap;
+                SavedCount[s] = n;
+                int o = s * Cap;
+                for (int i = 0; i < n; i++)
+                {
+                    SavedX[o + i] = x != null ? x[o + i] : 0f;
+                    SavedY[o + i] = y != null ? y[o + i] : 0f;
+                    SavedZ[o + i] = z != null ? z[o + i] : 0f;
+                    SavedYaw[o + i] = yaw != null ? yaw[o + i] : 0f;
+                    SavedPose[o + i] = pose != null ? pose[o + i] : (byte)0;
+                }
+            }
+        }
+
         public static void Offer(float dt, float x, float y, float z, float yaw, byte pose)
         {
             float step = 1f / Hz;
@@ -218,6 +271,25 @@ namespace Tag.Practice
             int slot = Slot(id, false);
             if (slot < 0) return 0;
             return SavedCount[slot];
+        }
+
+        public static int CopyRoute(string id, float[] x, float[] y, float[] z, float[] yaw, byte[] pose)
+        {
+            int slot = Slot(id, false);
+            if (slot < 0) return 0;
+            int n = SavedCount[slot];
+            if (n < 0) n = 0;
+            if (n > Cap) n = Cap;
+            int o = slot * Cap;
+            for (int i = 0; i < n; i++)
+            {
+                if (x != null) x[i] = SavedX[o + i];
+                if (y != null) y[i] = SavedY[o + i];
+                if (z != null) z[i] = SavedZ[o + i];
+                if (yaw != null) yaw[i] = SavedYaw[o + i];
+                if (pose != null) pose[i] = SavedPose[o + i];
+            }
+            return n;
         }
 
         public static void Write(StringBuilder text)

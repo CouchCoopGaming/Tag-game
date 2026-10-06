@@ -167,13 +167,15 @@ namespace Tag.Local
             if (go.GetComponent<PlayerRagdoll>() == null) go.AddComponent<PlayerRagdoll>();
             if (go.GetComponent<VoidRespawn>() == null) go.AddComponent<VoidRespawn>();
             if (go.GetComponent<PlayerTrailEmitter>() == null) go.AddComponent<PlayerTrailEmitter>();
+            if (go.GetComponent<ItController>() == null) go.AddComponent<ItController>();
+            var it = go.GetComponent<ItController>();
+            if (it != null) it.PlayerId = CouchPlay.Name(index);
             if (go.GetComponent<DummyAvatarBinder>() == null) go.AddComponent<DummyAvatarBinder>();
+            var binder = go.GetComponent<DummyAvatarBinder>();
+            if (binder != null) binder.ApplyProfileLook();
             if (go.GetComponent<ItMarker>() == null) go.AddComponent<ItMarker>();
             // Both pawns can show the handoff flash. It does not tag on touch.
             if (go.GetComponent<TagLandFlash>() == null) go.AddComponent<TagLandFlash>();
-            if (go.GetComponent<ItController>() == null) go.AddComponent<ItController>();
-            var it = go.GetComponent<ItController>();
-            if (it != null) it.PlayerId = $"P{index + 1}";
 
             // Speed HUD stays on the first human. Every human gets a viewport HUD.
             if (!ai && index == 0)
