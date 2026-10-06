@@ -114,5 +114,12 @@
     <Compile Include="../../Assets/Scripts/Onboard/PromptText.cs" />
     <Compile Include="../../Assets/Scripts/Onboard/HowToPlay.cs" />
     <Compile Include="../../Assets/Editor/OnboardingProof.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeCatalog.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeBests.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeGhost.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticePose.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeSim.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeSession.cs" />
+    <Compile Include="../../Assets/Scripts/Practice/PracticeProof.cs" />
   </ItemGroup>
 </Project>

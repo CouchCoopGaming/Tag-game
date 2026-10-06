@@ -413,13 +413,13 @@ namespace Tag.Core
         static bool Walk()
         {
             if (FrontSession.Screen != FrontScreen.Title) return false;
-            FrontSession.Highlight(1);
+            FrontSession.Highlight(2);
             if (FrontSession.Confirm() != FrontSession.ActSettings || FrontSession.Screen != FrontScreen.Settings) return false;
             if (FrontSession.Back() != FrontSession.ActTitle || FrontSession.Screen != FrontScreen.Title) return false;
-            FrontSession.Highlight(2);
+            FrontSession.Highlight(3);
             if (FrontSession.Confirm() != FrontSession.ActHowTo || FrontSession.Screen != FrontScreen.HowTo) return false;
             if (FrontSession.Back() != FrontSession.ActTitle) return false;
-            FrontSession.Highlight(3);
+            FrontSession.Highlight(4);
             if (FrontSession.Confirm() != FrontSession.ActQuit || FrontSession.Screen != FrontScreen.Quit) return false;
             if (FrontSession.Back() != FrontSession.ActTitle || FrontSession.Screen != FrontScreen.Title) return false;
             FrontSession.Highlight(0);
@@ -435,13 +435,13 @@ namespace Tag.Core
         {
             // Pointer both highlights and confirms, the same as a mouse click.
             if (FrontSession.Screen != FrontScreen.Title) return false;
-            FrontSession.Pointer(1);
+            FrontSession.Pointer(2);
             if (FrontSession.Screen != FrontScreen.Settings) return false;
             if (FrontSession.Back() != FrontSession.ActTitle || FrontSession.Screen != FrontScreen.Title) return false;
-            FrontSession.Pointer(2);
+            FrontSession.Pointer(3);
             if (FrontSession.Screen != FrontScreen.HowTo) return false;
             if (FrontSession.Back() != FrontSession.ActTitle) return false;
-            FrontSession.Pointer(3);
+            FrontSession.Pointer(4);
             if (FrontSession.Screen != FrontScreen.Quit) return false;
             if (FrontSession.Back() != FrontSession.ActTitle || FrontSession.Screen != FrontScreen.Title) return false;
             FrontSession.Pointer(0);

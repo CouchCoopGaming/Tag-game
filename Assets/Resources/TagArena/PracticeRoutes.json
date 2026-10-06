@@ -1,0 +1,44 @@
+{
+  "routes": [
+    {
+      "id": "mega-beginner",
+      "arena": "Mega Park",
+      "name": "South fringe",
+      "skill": "beginner",
+      "verbs": "sprint,jump",
+      "gates": [
+        {"k": "start", "x": 20, "y": 0.9, "z": 8, "r": 2.5, "verb": ""},
+        {"k": "check", "x": 52, "y": 0.9, "z": 8, "r": 4, "verb": "jump"},
+        {"k": "check", "x": 82, "y": 0.9, "z": 8, "r": 3, "verb": ""},
+        {"k": "finish", "x": 112, "y": 0.9, "z": 8, "r": 3, "verb": ""}
+      ]
+    },
+    {
+      "id": "mega-wall",
+      "arena": "Mega Park",
+      "name": "Cling lane",
+      "skill": "wall",
+      "verbs": "wallrun,walljump",
+      "gates": [
+        {"k": "start", "x": 10, "y": 0.9, "z": 86, "r": 3, "verb": ""},
+        {"k": "check", "x": 3.2, "y": 2.2, "z": 76, "r": 3, "verb": "wallrun"},
+        {"k": "check", "x": 8, "y": 2.2, "z": 79, "r": 5, "verb": "walljump"},
+        {"k": "finish", "x": 12, "y": 0.9, "z": 86, "r": 4, "verb": ""}
+      ]
+    },
+    {
+      "id": "mega-toy",
+      "arena": "Mega Park",
+      "name": "Pad zip",
+      "skill": "toy",
+      "verbs": "pad,zip,airdash",
+      "gates": [
+        {"k": "start", "x": 42, "y": 0.9, "z": 43, "r": 2.5, "verb": ""},
+        {"k": "check", "x": 34, "y": 0.9, "z": 42.75, "r": 2.2, "verb": "pad"},
+        {"k": "check", "x": 34, "y": 2, "z": 50, "r": 6, "verb": "airdash"},
+        {"k": "check", "x": 40.44, "y": 2.6, "z": 64.67, "r": 3, "verb": "zip"},
+        {"k": "finish", "x": 36.4, "y": 1.4, "z": 60.4, "r": 4.5, "verb": ""}
+      ]
+    }
+  ]
+}

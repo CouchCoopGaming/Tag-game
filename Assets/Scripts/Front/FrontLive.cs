@@ -1,6 +1,7 @@
 using Tag.Core;
 using Tag.Local;
 using Tag.Modes;
+using Tag.Practice;
 using Tag.Settings;
 using UnityEngine;
 
@@ -51,16 +52,25 @@ namespace Tag.Front
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             GameSettings.Current = s;
             s.Clamp();
+            int opponents = s.AiOpponents;
+            bool passive = false;
+            if (PracticeSession.Active)
+            {
+                opponents = PracticeSession.AiCount;
+                passive = PracticeSession.Dummy;
+            }
             if (!LocalPlayerRoster.IsCouch)
             {
                 LocalPlayerSpawner spawn = Object.FindFirstObjectByType<LocalPlayerSpawner>();
-                if (spawn != null) spawn.ApplyOpponents(s.AiOpponents);
+                if (spawn != null) spawn.ApplyOpponents(opponents);
             }
             float diff = s.DifficultyValue();
             DummyPatrol[] patrols = Object.FindObjectsByType<DummyPatrol>(FindObjectsSortMode.None);
             for (int i = 0; i < patrols.Length; i++)
             {
-                if (patrols[i] != null) patrols[i].ApplyDifficulty(diff);
+                if (patrols[i] == null) continue;
+                patrols[i].Passive = passive;
+                patrols[i].ApplyDifficulty(diff);
             }
             TagModeController mode = TagModeController.Instance;
             if (mode != null) mode.ApplyRound(s.RoundSeconds(), s.RoundsPerMatch);
