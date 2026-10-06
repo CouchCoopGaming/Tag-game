@@ -87,6 +87,15 @@ namespace Tag.Settings
         public int RoundLengthIndex = RoundLengthDefault;
         public int RoundsPerMatch = 1;
 
+        /// <summary>Two humans. 0 is a vertical split, 1 is a horizontal split.</summary>
+        public const int SplitVertical = 0;
+        public const int SplitHorizontal = 1;
+        /// <summary>One listener on P1, or one listener at the average of the humans.</summary>
+        public const int ListenP1 = 0;
+        public const int ListenAverage = 1;
+        public int SplitAxis = SplitVertical;
+        public int Listener = ListenP1;
+
         public static GameSettings Defaults()
         {
             return new GameSettings();
@@ -111,6 +120,8 @@ namespace Tag.Settings
             DifficultyTier = other.DifficultyTier;
             RoundLengthIndex = other.RoundLengthIndex;
             RoundsPerMatch = other.RoundsPerMatch;
+            SplitAxis = other.SplitAxis;
+            Listener = other.Listener;
         }
 
         public void ResetToDefaults()
@@ -140,6 +151,8 @@ namespace Tag.Settings
             if (RoundLengthIndex >= RoundLengthPresets.Length) RoundLengthIndex = RoundLengthPresets.Length - 1;
             if (RoundsPerMatch < RoundsMin) RoundsPerMatch = RoundsMin;
             if (RoundsPerMatch > RoundsMax) RoundsPerMatch = RoundsMax;
+            if (SplitAxis != SplitHorizontal) SplitAxis = SplitVertical;
+            if (Listener != ListenAverage) Listener = ListenP1;
         }
 
         public float DifficultyValue()

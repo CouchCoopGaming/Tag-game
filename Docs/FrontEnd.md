@@ -24,7 +24,7 @@ The arena list is `ArenaRegistry`, so a later map adds its arenas without a new 
 
 120s is the existing Least It length. The other three lengths are presets. Choices are written into the same settings blob as look and audio (`ai`, `diff`, `roundLen`, `rounds` in `tag-settings.json` and `Tag.GameSettingsJson`).
 
-Start match loads Play and runs Least It with that roster, difficulty, length, and round count. Round rules are unchanged. The match total is the sum of each round’s time as It and tags. Longest survival is the longest single chase.
+Start match opens the join screen. Humans sit down there, then the round loads Play and runs Least It with that roster, difficulty, length, and round count. See `Docs/CouchPlay.md`. Round rules are unchanged. The match total is the sum of each round’s time as It and tags. Longest survival is the longest single chase.
 
 ## Results
 

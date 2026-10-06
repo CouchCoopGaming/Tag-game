@@ -275,5 +275,141 @@ namespace Tag.Core
             EnemyAi.ResetLoopSearch();
             return held && a.x == b.x && a.y == b.y && a.z == b.z;
         }
+
+        /// <summary>
+        /// Four human pawns, four chase cameras, no AI. Same 120s at 60 Hz.
+        /// Each pawn still takes one kinematic step. Cameras keep fovPop, shake, and slowMo at 0.
+        /// </summary>
+        public static Report RunSplit()
+        {
+            var report = new Report { Ok = true };
+            if (ChaseCam.FovPop != 0f || ChaseCam.Shake != 0f || ChaseCam.SlowMo != 0f)
+                report.Fail("chase cam locks moved");
+
+            const int humans = 4;
+            const int cameras = 4;
+            const int camOps = 4;
+            int frames = (int)(Seconds * Hz);
+            report.Frames = frames;
+            if (frames != 7200)
+                report.Fail("frame count is not 120s at 60 Hz");
+
+            MovementConfig cfg = ScriptableObject.CreateInstance<MovementConfig>();
+            var pos = new Vector3[humans];
+            var vel = new Vector3[humans];
+            var wp = new int[humans];
+            MegaParkP1Layout.Pt[] loop = MegaParkP1Layout.LoopCcw;
+            for (int i = 0; i < humans; i++)
+            {
+                MegaParkP1Layout.Pt p = loop[i % loop.Length];
+                pos[i] = new Vector3(p.X, p.Y, p.Z + i * 1.5f);
+                wp[i] = i;
+            }
+
+            float dt = 1f / Hz;
+            var costs = new int[frames];
+            int moveSteps = 0;
+            int moveOps = 0;
+            int poseOps = 0;
+            int hudOps = 0;
+            int audioOps = 0;
+            int roundOps = 0;
+            int camTotal = 0;
+            float sink = 0f;
+            float remain = Seconds;
+
+            for (int f = 0; f < frames; f++)
+            {
+                int ops = 0;
+                for (int i = 0; i < humans; i++)
+                {
+                    Vector3 mark = EnemyAi.LoopPoint(true, wp[i]);
+                    Vector3 wish = mark - pos[i];
+                    wish.y = 0f;
+                    if (wish.sqrMagnitude < 4f) wp[i]++;
+                    if (wish.sqrMagnitude > 0.0001f) wish.Normalize();
+                    vel[i] = KinematicStep.GroundSteer(vel[i], wish, cfg.sprintSpeed, cfg.groundAccel, cfg.groundDecel, dt, false);
+                    pos[i] += new Vector3(vel[i].x, 0f, vel[i].z) * dt;
+                    moveSteps++;
+                    ops += FrameMeter.MoveOps;
+                    moveOps += FrameMeter.MoveOps;
+
+                    float speed = new Vector3(vel[i].x, 0f, vel[i].z).magnitude;
+                    sink += IdlePose.Weight(speed, 0f, 0f, 0f);
+                    sink += PunchStaggerPose.Weight(0f);
+                    ops += FrameMeter.PoseOps;
+                    poseOps += FrameMeter.PoseOps;
+
+                    ops += FrameMeter.HudOps;
+                    hudOps += FrameMeter.HudOps;
+                    ops += camOps;
+                    camTotal += camOps;
+
+                    if (float.IsNaN(pos[i].x) || float.IsNaN(pos[i].z))
+                        report.Fail("a pawn left the number line");
+                    sink += ChaseCam.AheadRateFor(0f) + ChaseCam.FovPop + ChaseCam.Shake + ChaseCam.SlowMo;
+                }
+
+                remain -= dt;
+                if (remain < 0f) remain = 0f;
+                ops += FrameMeter.AudioOps;
+                audioOps += FrameMeter.AudioOps;
+                ops += FrameMeter.RoundOps;
+                roundOps += FrameMeter.RoundOps;
+                costs[f] = ops;
+            }
+
+            if (float.IsNaN(sink))
+                report.Fail("pose solve was not a number");
+            if (moveSteps != frames * humans)
+                report.Fail("a pawn missed its one move");
+
+            int worst = 0;
+            for (int i = 0; i < costs.Length; i++)
+                if (costs[i] > worst) worst = costs[i];
+            int[] sorted = (int[])costs.Clone();
+            Array.Sort(sorted);
+            int median = sorted[frames / 2];
+            report.Median = median;
+            report.Worst = worst;
+            report.Move = moveOps;
+            report.Ai = 0;
+            report.Pose = poseOps;
+            report.Hud = hudOps;
+            report.Audio = audioOps;
+            report.Round = roundOps;
+            int headroom = FrameMeter.BudgetOps - worst;
+            if (median <= 0)
+                report.Fail("median frame was empty");
+            if (worst > FrameMeter.BudgetOps)
+                report.Fail("worst frame passed the budget");
+            if (headroom <= 0)
+                report.Fail("no headroom left for four cameras");
+            if (worst * 100 > median * 250)
+                report.Fail("worst frame spiked past 2.5x the median");
+
+            int hundredths = median > 0 ? worst * 100 / median : 0;
+            string ratio = (hundredths / 100).ToString()
+                + "."
+                + (hundredths % 100 < 10 ? "0" : "")
+                + (hundredths % 100).ToString();
+            report.Line = "frame-budget-split seconds=120 hz=60 frames=" + frames.ToString()
+                + " players=4 humans=4 ai=0 cameras=" + cameras.ToString()
+                + " map=mega-park"
+                + " median=" + median.ToString()
+                + " worst=" + worst.ToString()
+                + " ratio=" + ratio
+                + " move=" + moveOps.ToString()
+                + " ai=0"
+                + " pose=" + poseOps.ToString()
+                + " hud=" + hudOps.ToString()
+                + " audio=" + audioOps.ToString()
+                + " round=" + roundOps.ToString()
+                + " cam=" + camTotal.ToString()
+                + " budget=" + FrameMeter.BudgetOps.ToString()
+                + " headroom=" + headroom.ToString()
+                + (report.Ok ? " steady=ok" : " steady=FAIL");
+            return report;
+        }
     }
 }

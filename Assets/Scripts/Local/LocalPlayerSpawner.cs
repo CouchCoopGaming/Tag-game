@@ -1,8 +1,11 @@
 using Tag.Art;
+using Tag.Couch;
 using Tag.Experimental;
 using Tag.Gameplay;
 using Tag.Level;
 using Tag.Modes;
+using Tag.Onboard;
+using Tag.Settings;
 using Tag.Trail;
 using TagArena.Movement;
 using UnityEngine;
@@ -53,10 +56,10 @@ namespace Tag.Local
                 playerTemplate = GameObject.Find(SoloPawnName);
 
             var dummy = GameObject.Find(OpponentPawnName);
-            if (LocalPlayerRoster.IsCouch)
+            if (LocalPlayerRoster.IsCouch || CouchPlay.Humans >= 2)
             {
                 if (dummy != null) dummy.SetActive(false);
-                SpawnAll(LocalPlayerRoster.PlayerCount);
+                SpawnSeats(dummy);
             }
             else
             {
@@ -133,8 +136,12 @@ namespace Tag.Local
 
             if (go.GetComponent<PlayerInputReader>() == null) go.AddComponent<PlayerInputReader>();
             var input = go.GetComponent<PlayerInputReader>();
-            if (input != null) input.ExternalControl = ai;
-            // PlayerIndex lives on Tag.Input legacy â€” arena reader has no index; split-screen later
+            if (input != null)
+            {
+                input.ExternalControl = ai;
+                if (!ai && CouchPlay.Humans >= 2)
+                    input.DriveDevice = CouchPlay.DeviceOf(index);
+            }
 
             if (go.GetComponent<SurfaceProbe>() == null) go.AddComponent<SurfaceProbe>();
             var motor = go.GetComponent<PlayerMotor>();
@@ -162,17 +169,31 @@ namespace Tag.Local
             var it = go.GetComponent<ItController>();
             if (it != null) it.PlayerId = $"P{index + 1}";
 
-            // Speed/ski/jet HUD for primary local human only (not AI, not couch clones)
+            // Speed HUD stays on the first human. Every human gets a viewport HUD.
             if (!ai && index == 0)
             {
                 var hud = go.GetComponent<SpeedEnergyHUD>();
                 if (hud == null) hud = go.AddComponent<SpeedEnergyHUD>();
                 hud.motor = motor;
+            }
+            if (!ai)
+            {
                 var verbs = go.GetComponent<Tag.Modes.VerbStatusHud>();
                 if (verbs == null) verbs = go.AddComponent<Tag.Modes.VerbStatusHud>();
                 verbs.motor = motor;
-                if (go.GetComponent<Tag.Onboard.PlayPromptHud>() == null)
-                    go.AddComponent<Tag.Onboard.PlayPromptHud>();
+                if (CouchPlay.Humans >= 2)
+                {
+                    verbs.Seat = index;
+                    verbs.DriveDevice = CouchPlay.DeviceOf(index);
+                }
+                if (go.GetComponent<PlayPromptHud>() == null)
+                    go.AddComponent<PlayPromptHud>();
+                var prompts = go.GetComponent<PlayPromptHud>();
+                if (prompts != null && CouchPlay.Humans >= 2)
+                {
+                    prompts.Seat = index;
+                    prompts.DriveDevice = CouchPlay.DeviceOf(index);
+                }
             }
 
             // Third-person camera for human pawns (AI keeps no MainCamera)
@@ -220,6 +241,61 @@ namespace Tag.Local
             }
 
             return _sharedCfg;
+        }
+
+        void SpawnSeats(GameObject dummy)
+        {
+            GameObject template = GameObject.Find(SoloPawnName) ?? playerTemplate;
+            if (template == null)
+            {
+                Debug.LogError("[LocalPlayerSpawner] No Player template");
+                return;
+            }
+            bool used = false;
+            for (int i = 0; i < CouchPlay.Max; i++)
+            {
+                bool human = CouchPlay.HumanAt(i);
+                bool ai = CouchPlay.AiAt(i);
+                if (!human && !ai) continue;
+                GameObject go;
+                if (!used)
+                {
+                    go = template;
+                    used = true;
+                }
+                else
+                {
+                    GameObject src = ai && dummy != null ? dummy : template;
+                    go = Instantiate(src);
+                    go.SetActive(true);
+                }
+                if (i > 0) go.name = "Player_" + CouchPlay.Name(i);
+                ConfigurePawn(go, i, ai);
+                var marker = go.GetComponent<ItMarker>();
+                if (marker != null)
+                {
+                    CouchPlay.Tint(i, out float r, out float g, out float b);
+                    marker.SetIdentity(CouchPlay.Name(i), new Color(r, g, b, 1f));
+                }
+                if (!ai)
+                {
+                    Camera cam = go.GetComponentInChildren<Camera>();
+                    var verbs = go.GetComponent<VerbStatusHud>();
+                    if (verbs != null) verbs.View = cam;
+                    var prompts = go.GetComponent<PlayPromptHud>();
+                    if (prompts != null) prompts.View = cam;
+                }
+                else if (GameSettings.Current != null)
+                {
+                    var patrol = go.GetComponent<DummyPatrol>();
+                    if (patrol != null) patrol.ApplyDifficulty(GameSettings.Current.DifficultyValue());
+                }
+            }
+            if (CouchPlay.Humans == 3 && GetComponent<CouchScoreHud>() == null)
+                gameObject.AddComponent<CouchScoreHud>();
+            var split = GetComponent<LocalSplitCamera>();
+            if (split == null) split = gameObject.AddComponent<LocalSplitCamera>();
+            split.Apply();
         }
 
         public void ApplyOpponents(int count)

@@ -1,4 +1,5 @@
 using Tag.Core;
+using Tag.Couch;
 using UnityEngine;
 
 namespace Tag.Front
@@ -13,7 +14,9 @@ namespace Tag.Front
         {
             float cx = Screen.width * 0.5f;
             float cy = Screen.height * 0.5f;
-            if (FrontSession.Screen == FrontScreen.Setup)
+            if (FrontSession.Screen == FrontScreen.Join)
+                DrawJoin(cx, cy);
+            else if (FrontSession.Screen == FrontScreen.Setup)
                 DrawSetup(cx, cy);
             else
                 DrawTitle(cx, cy);
@@ -46,6 +49,26 @@ namespace Tag.Front
             }
             GUI.Label(new Rect(cx - 220f, cy + 120f, 440f, 48f),
                 "Up / Down picks. Left / Right changes the row.\nEnter or South starts. Esc or East returns to the title.");
+        }
+
+        static void DrawJoin(float cx, float cy)
+        {
+            GUI.Box(new Rect(cx - 240f, cy - 200f, 480f, 440f), "Join");
+            float y = cy - 160f;
+            for (int i = 0; i < 4; i++)
+            {
+                GUI.Label(new Rect(cx - 200f, y, 400f, 22f), CouchPlay.SeatLine(i));
+                y += 22f;
+            }
+            y += 8f;
+            for (int i = 0; i < 4; i++)
+            {
+                if (Button(cx, y, i, FrontSession.RowText(i)))
+                    FrontSession.Pointer(i);
+                y += 32f;
+            }
+            GUI.Label(new Rect(cx - 220f, cy + 150f, 440f, 48f),
+                "A key joins the keyboard. Any pad button joins that pad.\nBack leaves. Enter or South starts.");
         }
 
         static bool Button(float cx, float y, int index, string label)

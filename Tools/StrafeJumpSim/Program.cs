@@ -534,6 +534,8 @@ static class Program
 
         Tag.Core.FrameBudget.Report budget = Tag.Core.FrameBudget.Run();
         Console.WriteLine(budget.Line);
+        Tag.Core.FrameBudget.Report split = Tag.Core.FrameBudget.RunSplit();
+        Console.WriteLine(split.Line);
 
         Tag.Audio.AudioReport audio = Tag.Audio.AudioProof.Run();
         Console.WriteLine(audio.Line);
@@ -541,6 +543,11 @@ static class Program
         if (!budget.Ok)
         {
             Console.Error.WriteLine(budget.Failure);
+            return 1;
+        }
+        if (!split.Ok)
+        {
+            Console.Error.WriteLine(split.Failure);
             return 1;
         }
         if (!audio.Ok)
@@ -554,6 +561,14 @@ static class Program
         if (!front.Ok)
         {
             Console.Error.WriteLine(front.Failure);
+            return 1;
+        }
+
+        Tag.Couch.CouchPlay.Report couch = Tag.Couch.CouchPlay.Run();
+        Console.WriteLine(couch.Line);
+        if (!couch.Ok)
+        {
+            Console.Error.WriteLine(couch.Failure);
             return 1;
         }
 
