@@ -76,7 +76,12 @@ namespace Tag.Tools
             foreach (string line in hits)
                 Console.WriteLine(line);
 
-            if (parseErrors.Count > 0 || hits.Count > 0)
+            bool compileOk = parseErrors.Count == 0 && hits.Count == 0;
+            bool smokeOk = SmokeFiles.Run(root, out string smokeLine, out string smokeReport);
+            Console.WriteLine(smokeLine);
+            if (!smokeOk)
+                Console.Error.WriteLine(smokeReport);
+            if (!compileOk || !smokeOk)
                 return 1;
             Console.WriteLine("script-compile-check ok CS0102 CS0128 CS0136 CS0103 CS0246-in-our-code");
             return 0;
