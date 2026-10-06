@@ -4,6 +4,7 @@ using Tag.Gameplay;
 using Tag.Modes;
 using Tag.Local;
 using Tag.Audio;
+using Tag.Settings;
 using TagArena.Movement;
 
 namespace Tag.Core
@@ -61,6 +62,7 @@ namespace Tag.Core
             LookSensitivity.Load();
             ControlBinds.Load();
             AudioMaster.Load();
+            SettingsRuntime.Load();
             AudioCuePlayer.Ensure();
             if (PlayerPrefs.HasKey(TagModeController.PrefsModeKey))
             {
@@ -250,6 +252,7 @@ namespace Tag.Core
             _controlsOpen = false;
             _settingsOpen = false;
             _audioOpen = false;
+            SettingsMenuUi.Close();
         }
 
 
@@ -318,7 +321,9 @@ namespace Tag.Core
 
         void Update()
         {
-            // Before panel returns, so M/N still work on Controls, Look, Boot, and results.
+            PadNav.Poll();
+            SettingsRuntime.PollHotkeys();
+            // Before panel returns, so Comma / N still work on Controls, Look, Boot, and results.
             AudioMaster.PollMuteHotkeys();
 
             // Subpanels belong on Boot and the pause card. Any other state drops them
@@ -347,8 +352,16 @@ namespace Tag.Core
                 return;
             }
 
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape) &&
-                (State == GameFlowState.Play || State == GameFlowState.Paused))
+            if (SettingsMenuUi.Blocks)
+            {
+                SettingsMenuUi.Poll();
+                return;
+            }
+
+            bool pauseEdge = UnityEngine.Input.GetKeyDown(KeyCode.Escape) || PadNav.Start;
+            if (State == GameFlowState.Paused && PadNav.Back)
+                pauseEdge = true;
+            if (pauseEdge && (State == GameFlowState.Play || State == GameFlowState.Paused))
                 TogglePause();
 
             if (State == GameFlowState.Boot)
@@ -421,13 +434,13 @@ namespace Tag.Core
                     return;
                 // Fallback card when no mode controller is showing results.
                 // Same arm as the main card: highlight can move, activate waits.
-                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) Nudge(ref _looseResultsFocus, -1, 1);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) Nudge(ref _looseResultsFocus, 1, 1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left) Nudge(ref _looseResultsFocus, -1, 1);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) || PadNav.Right) Nudge(ref _looseResultsFocus, 1, 1);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _looseResultsFocus, 0);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _looseResultsFocus, 1);
                 if (Time.unscaledTime < _looseResultsReadyAt) return;
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
-                    UnityEngine.Input.GetKeyDown(KeyCode.Space))
+                    UnityEngine.Input.GetKeyDown(KeyCode.Space) || PadNav.Confirm)
                 {
                     if (_looseResultsFocus == 0) Rematch();
                     else QuitToMenu();
@@ -438,18 +451,23 @@ namespace Tag.Core
                     Rematch();
                     return;
                 }
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Q) || UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Q) || UnityEngine.Input.GetKeyDown(KeyCode.Escape) || PadNav.Back)
                     QuitToMenu();
             }
             else if (State == GameFlowState.Paused)
             {
-                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) Nudge(ref _pauseFocus, -1, 4);
-                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) Nudge(ref _pauseFocus, 1, 4);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left || PadNav.Up)
+                    Nudge(ref _pauseFocus, -1, 7);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) || PadNav.Right || PadNav.Down)
+                    Nudge(ref _pauseFocus, 1, 7);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _pauseFocus, 0);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _pauseFocus, 1);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _pauseFocus, 2);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) SetFocus(ref _pauseFocus, 3);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha5)) SetFocus(ref _pauseFocus, 4);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha6)) SetFocus(ref _pauseFocus, 5);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha7)) SetFocus(ref _pauseFocus, 6);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha8)) SetFocus(ref _pauseFocus, 7);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.H))
                 {
                     OpenControls();
@@ -457,7 +475,7 @@ namespace Tag.Core
                     return;
                 }
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
-                    UnityEngine.Input.GetKeyDown(KeyCode.Space))
+                    UnityEngine.Input.GetKeyDown(KeyCode.Space) || PadNav.Confirm)
                     ActivatePause();
                 else if (UnityEngine.Input.GetKeyDown(KeyCode.Q)) QuitToMenu();
                 if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) AudioMaster.CycleMusic(1);
@@ -467,6 +485,13 @@ namespace Tag.Core
 
         void OnGUI()
         {
+            MinimapHud.Draw();
+            if (SettingsMenuUi.Blocks)
+            {
+                SettingsMenuUi.Draw();
+                return;
+            }
+
             if (_audioOpen)
             {
                 DrawAudioSettings();
@@ -490,7 +515,7 @@ namespace Tag.Core
             {
                 GUI.Box(new Rect(cx - 210, cy - 170, 420, 360), "TAG - party slice");
                 string hello = _firstBoot
-                    ? "First run: you + 1 bot, Least It. " + ControlBinds.PunchName + " or E tags.\nEsc pauses. M mute. N music. R rematches."
+                    ? "First run: you + 1 bot, Least It. " + ControlBinds.PunchName + " or E tags.\nEsc pauses. Comma mute. M minimap. N music. R rematches."
                     : "Play is you and one bot. Couch is local humans.";
                 GUI.Label(new Rect(cx - 190, cy - 128, 380, 44), hello);
                 if (FocusButton(new Rect(cx - 90, cy - 76, 180, 32), 0, ref _bootFocus, "Play Tag (Least It)"))
@@ -536,18 +561,24 @@ namespace Tag.Core
             }
             else if (State == GameFlowState.Paused)
             {
-                GUI.Box(new Rect(cx - 150, cy - 130, 300, 280), "Paused");
-                if (FocusButton(new Rect(cx - 70, cy - 90, 140, 28), 0, ref _pauseFocus, "Resume")) TogglePause();
-                if (FocusButton(new Rect(cx - 70, cy - 56, 140, 28), 1, ref _pauseFocus, "Controls"))
+                GUI.Box(new Rect(cx - 160, cy - 188, 320, 430), "Paused");
+                if (FocusButton(new Rect(cx - 90, cy - 156, 180, 26), 0, ref _pauseFocus, "Resume")) TogglePause();
+                if (FocusButton(new Rect(cx - 90, cy - 124, 180, 26), 1, ref _pauseFocus, "Controls"))
                     OpenControls();
-                if (FocusButton(new Rect(cx - 70, cy - 22, 140, 28), 2, ref _pauseFocus, "Look sensitivity"))
+                if (FocusButton(new Rect(cx - 90, cy - 92, 180, 26), 2, ref _pauseFocus, "Look sensitivity"))
                     OpenLook();
-                if (FocusButton(new Rect(cx - 70, cy + 12, 140, 28), 3, ref _pauseFocus, "Audio"))
+                if (FocusButton(new Rect(cx - 90, cy - 60, 180, 26), 3, ref _pauseFocus, "Audio"))
                     OpenAudio();
-                if (FocusButton(new Rect(cx - 70, cy + 46, 140, 28), 4, ref _pauseFocus, "Quit to Menu"))
+                if (FocusButton(new Rect(cx - 90, cy - 28, 180, 26), 4, ref _pauseFocus, "Quit to Menu"))
                     QuitToMenu();
-                GUI.Label(new Rect(cx - 140, cy + 78, 280, 64),
-                    "Left / Right or 1-5 picks    Enter / Space\nEsc resume    Q menu    H controls\nM mute    N music    Up / Down bed");
+                if (FocusButton(new Rect(cx - 90, cy + 4, 180, 26), 5, ref _pauseFocus, "Settings"))
+                    SettingsMenuUi.Open(SettingsMenuUi.Panel.Settings);
+                if (FocusButton(new Rect(cx - 90, cy + 36, 180, 26), 6, ref _pauseFocus, "Rebind"))
+                    SettingsMenuUi.Open(SettingsMenuUi.Panel.Rebind);
+                if (FocusButton(new Rect(cx - 90, cy + 68, 180, 26), 7, ref _pauseFocus, "Arena"))
+                    SettingsMenuUi.Open(SettingsMenuUi.Panel.Arena);
+                GUI.Label(new Rect(cx - 150, cy + 102, 300, 80),
+                    "Left / Right or stick    1-8 picks    Enter / South\nEsc or East resume    Start pauses    Q menu\nComma mute    M minimap    N music    Up / Down bed");
             }
             else if (State == GameFlowState.RoundEnd)
             {
@@ -565,20 +596,20 @@ namespace Tag.Core
 
         void PollControlsKeys()
         {
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape) || PadNav.Back)
             {
                 _controlsOpen = false;
                 AudioCuePlayer.Ensure()?.UiClick();
             }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) Nudge(ref _controlsFocus, -1, 2);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) Nudge(ref _controlsFocus, 1, 2);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow) || PadNav.Up) Nudge(ref _controlsFocus, -1, 2);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow) || PadNav.Down) Nudge(ref _controlsFocus, 1, 2);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _controlsFocus, 0);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _controlsFocus, 1);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _controlsFocus, 2);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) StepControls(-1);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) StepControls(1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left) StepControls(-1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) || PadNav.Right) StepControls(1);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
-                UnityEngine.Input.GetKeyDown(KeyCode.Space))
+                UnityEngine.Input.GetKeyDown(KeyCode.Space) || PadNav.Confirm)
             {
                 if (_controlsFocus >= 2)
                 {
@@ -597,21 +628,21 @@ namespace Tag.Core
 
         void PollLookKeys()
         {
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape) || PadNav.Back)
             {
                 _settingsOpen = false;
                 AudioCuePlayer.Ensure()?.UiClick();
             }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) Nudge(ref _lookFocus, -1, 1);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) Nudge(ref _lookFocus, 1, 1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow) || PadNav.Up) Nudge(ref _lookFocus, -1, 1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow) || PadNav.Down) Nudge(ref _lookFocus, 1, 1);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _lookFocus, 0);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _lookFocus, 1);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) && _lookFocus == 0)
+            if ((UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left) && _lookFocus == 0)
                 LookSensitivity.Cycle(-1);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) && _lookFocus == 0)
+            if ((UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) || PadNav.Right) && _lookFocus == 0)
                 LookSensitivity.Cycle(1);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
-                UnityEngine.Input.GetKeyDown(KeyCode.Space))
+                UnityEngine.Input.GetKeyDown(KeyCode.Space) || PadNav.Confirm)
             {
                 if (_lookFocus >= 1)
                 {
@@ -624,22 +655,22 @@ namespace Tag.Core
 
         void PollAudioKeys()
         {
-            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape) || PadNav.Back)
             {
                 _audioOpen = false;
                 AudioCuePlayer.Ensure()?.UiClick();
             }
-            if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow)) Nudge(ref _audioFocus, -1, 4);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow)) Nudge(ref _audioFocus, 1, 4);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.UpArrow) || PadNav.Up) Nudge(ref _audioFocus, -1, 4);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.DownArrow) || PadNav.Down) Nudge(ref _audioFocus, 1, 4);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _audioFocus, 0);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _audioFocus, 1);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _audioFocus, 2);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha4)) SetFocus(ref _audioFocus, 3);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha5)) SetFocus(ref _audioFocus, 4);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow)) StepAudio(-1);
-            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow)) StepAudio(1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left) StepAudio(-1);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) || PadNav.Right) StepAudio(1);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
-                UnityEngine.Input.GetKeyDown(KeyCode.Space))
+                UnityEngine.Input.GetKeyDown(KeyCode.Space) || PadNav.Confirm)
             {
                 if (_audioFocus >= 4)
                 {
@@ -722,7 +753,7 @@ namespace Tag.Core
                 _audioFocus = 1;
                 AudioMaster.CycleMusic(SideDir());
             }
-            string muteLabel = AudioMaster.Muted ? "Unmute (M)" : "Mute (M)";
+            string muteLabel = AudioMaster.Muted ? "Unmute (Comma)" : "Mute (Comma)";
             if (SubRow(cx, cy + 12, 2, ref _audioFocus, muteLabel))
                 AudioMaster.ToggleMute();
             string musicLabel = AudioMaster.MusicMuted ? "Music on (N)" : "Music off (N)";
@@ -734,7 +765,7 @@ namespace Tag.Core
                 AudioCuePlayer.Ensure()?.UiClick();
             }
             GUI.Label(new Rect(cx - 190, cy + 116, 380, 48),
-                "Up / Down picks. Left / Right steps the row.\n1-5 highlight. M mute. N music. Enter uses it. Esc back.");
+                "Up / Down picks. Left / Right steps the row.\n1-5 highlight. Comma mute. N music. Enter uses it. Esc back.");
         }
 
         static int _sideDir;
@@ -798,6 +829,9 @@ namespace Tag.Core
                 case 2: OpenLook(); break;
                 case 3: OpenAudio(); break;
                 case 4: QuitToMenu(); break;
+                case 5: SettingsMenuUi.Open(SettingsMenuUi.Panel.Settings); break;
+                case 6: SettingsMenuUi.Open(SettingsMenuUi.Panel.Rebind); break;
+                case 7: SettingsMenuUi.Open(SettingsMenuUi.Panel.Arena); break;
                 default: TogglePause(); break;
             }
         }

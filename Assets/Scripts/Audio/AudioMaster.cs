@@ -75,6 +75,7 @@ namespace Tag.Audio
             PlayerPrefs.SetFloat(VolumePrefsKey, Volume);
             PlayerPrefs.Save();
             Apply();
+            Tag.Settings.SettingsRuntime.NoteAudio(Volume, Muted);
             TagSfx.UiClick();
         }
 
@@ -84,7 +85,9 @@ namespace Tag.Audio
         /// </summary>
         public static void PollMuteHotkeys()
         {
-            if (UnityEngine.Input.GetKeyDown(KeyCode.M)) ToggleMute();
+            // A rebind listen owns the next key. Comma stays mute. M is the minimap.
+            if (Tag.Settings.SettingsMenuUi.Capturing) return;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Comma)) ToggleMute();
             if (UnityEngine.Input.GetKeyDown(KeyCode.N)) ToggleMusicMute();
         }
 
@@ -95,7 +98,19 @@ namespace Tag.Audio
             PlayerPrefs.SetInt(MutePrefsKey, Muted ? 1 : 0);
             PlayerPrefs.Save();
             Apply();
+            Tag.Settings.SettingsRuntime.NoteAudio(Volume, Muted);
             TagSfx.UiClick();
+        }
+
+        /// <summary>Settings blob is the source of truth after boot. Steps are not re-snapped.</summary>
+        public static void ApplyFromSettings(float volume, bool muted)
+        {
+            Volume = Mathf.Clamp01(volume);
+            Muted = muted;
+            PlayerPrefs.SetFloat(VolumePrefsKey, Volume);
+            PlayerPrefs.SetInt(MutePrefsKey, Muted ? 1 : 0);
+            PlayerPrefs.Save();
+            Apply();
         }
 
         public static void ToggleMusicMute()
