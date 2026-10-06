@@ -20,11 +20,12 @@ namespace Tag.Input
         readonly InputAction _slide;
         readonly InputAction _punch;
         readonly InputAction _airDash;
+        readonly InputAction _minimap;
 
         public bool IsValid => _asset != null && _move != null;
 
         TagInputActions(InputActionAsset asset, InputAction move, InputAction look, InputAction jump,
-            InputAction sprint, InputAction slide, InputAction punch, InputAction airDash)
+            InputAction sprint, InputAction slide, InputAction punch, InputAction airDash, InputAction minimap)
         {
             _asset = asset;
             _move = move;
@@ -34,7 +35,10 @@ namespace Tag.Input
             _slide = slide;
             _punch = punch;
             _airDash = airDash;
+            _minimap = minimap;
         }
+
+        public bool MinimapPressed => _minimap != null && _minimap.WasPressedThisFrame();
 
         public static TagInputActions Bind(int playerIndex)
         {
@@ -50,6 +54,7 @@ namespace Tag.Input
             var slide = map.AddAction("Slide", InputActionType.Button);
             var punch = map.AddAction("Punch", InputActionType.Button);
             var airDash = map.AddAction("AirDash", InputActionType.Button);
+            var minimap = map.AddAction("Minimap", InputActionType.Button);
             move.expectedControlType = "Vector2";
             look.expectedControlType = "Vector2";
 
@@ -69,6 +74,7 @@ namespace Tag.Input
                 punch.AddBinding("<Mouse>/leftButton");
                 airDash.AddBinding("<Keyboard>/leftAlt");
                 airDash.AddBinding("<Keyboard>/q");
+                minimap.AddBinding("<Keyboard>/m");
             }
             else if (playerIndex == 1)
             {
@@ -100,13 +106,14 @@ namespace Tag.Input
             slide.AddBinding("<Gamepad>/buttonEast");
             punch.AddBinding("<Gamepad>/buttonWest");
             airDash.AddBinding("<Gamepad>/rightShoulder");
+            minimap.AddBinding("<Gamepad>/select");
 
             var devices = DevicesFor(playerIndex);
             if (devices != null && devices.Length > 0)
                 asset.devices = devices;
 
             map.Enable();
-            return new TagInputActions(asset, move, look, jump, sprint, slide, punch, airDash);
+            return new TagInputActions(asset, move, look, jump, sprint, slide, punch, airDash, minimap);
         }
 
         static InputDevice[] DevicesFor(int playerIndex)

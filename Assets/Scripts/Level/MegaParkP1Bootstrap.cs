@@ -24,9 +24,34 @@ namespace Tag.Level
         Material _fence, _horizon, _leaf, _wood, _lamp, _trash, _skyline;
         Material _spawnSw, _spawnSe, _spawnNw, _spawnNe, _spawnRunS, _spawnRunN;
 
+        /// <summary>True after a build whose layout audit passed.</summary>
+        public bool Built { get; private set; }
+
+        /// <summary>Last layout audit. False when the build threw or the audit failed.</summary>
+        public bool LayoutOk { get; private set; }
+
         void Awake()
         {
-            Build();
+            try
+            {
+                Build();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("[MegaPark] build failed: " + e.Message);
+                ClearBuilt();
+            }
+        }
+
+        /// <summary>Drops a partial park so the campus fallback can take the origin.</summary>
+        public void ClearBuilt()
+        {
+            Transform existing = transform.Find(RootName);
+            if (existing != null)
+                DestroyImmediate(existing.gameObject);
+            _p1 = null;
+            Built = false;
+            LayoutOk = false;
         }
 
         [ContextMenu("Rebuild Mega Park P1")]
@@ -51,10 +76,14 @@ namespace Tag.Level
             BatchStatic(dress);
 
             MegaParkP1Layout.Audit audit = MegaParkP1Layout.Run();
+            LayoutOk = audit.Ok;
+            Built = audit.Ok && _p1 != null;
             if (audit.Ok)
                 Debug.Log(audit.Line);
             else
                 Debug.LogError(audit.Line + " :: " + audit.Failure);
+            if (!Built)
+                ClearBuilt();
         }
 
         void EnsureRoot()

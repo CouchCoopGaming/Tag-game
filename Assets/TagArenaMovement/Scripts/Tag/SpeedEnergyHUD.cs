@@ -76,7 +76,7 @@ namespace TagArena.Movement
             "F3 Trail Tag\n" +
             "F4 Free play\n" +
             "Esc pause\n" +
-            "M mute   N music";
+            "M map   Comma mute   N music";
 
         // Flash full Least-It standings briefly every few seconds.
         const float AllStandingsShowSec = 4.4f; // slightly longer Least It board read
@@ -583,8 +583,8 @@ namespace TagArena.Movement
             bool musicOff = Tag.Audio.AudioMaster.MusicMuted;
             if (!muted && !musicOff) return;
             // Show both when M+N are on so the chips do not hide each other.
-            string chip = muted && musicOff ? "MUTED  (M)   MUSIC OFF  (N)"
-                : muted ? "MUTED  (M)"
+            string chip = muted && musicOff ? "MUTED  (,)   MUSIC OFF  (N)"
+                : muted ? "MUTED  (,)"
                 : "MUSIC OFF  (N)";
             var prev = GUI.color;
             GUI.color = muted ? new Color(1f, 0.45f, 0.4f) : new Color(1f, 0.82f, 0.45f);

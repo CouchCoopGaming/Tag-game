@@ -30,6 +30,8 @@ namespace Tag.Level
         public const float AmbGndB = 0.14f;
         public const float AmbIntensity = 1.15f;
         public const int DrawCap = 120;
+        /// <summary>One corner texture. Counted in the draw cap with the park.</summary>
+        public const int MinimapDraws = 1;
 
         struct Swatch
         {
@@ -354,7 +356,7 @@ namespace Tag.Level
                     .Append(decorMax.ToString("0.00", CultureInfo.InvariantCulture)).Append("; ");
 
             DressReport(solids, fail);
-            int draws = BatchCount(solids, true) + BatchCountRamps(ramps) + 12 + 7 + 35 + DressBatchCount();
+            int draws = BatchCount(solids, true) + BatchCountRamps(ramps) + 12 + 7 + 35 + DressBatchCount() + MinimapDraws;
             return string.Format(
                 CultureInfo.InvariantCulture,
                 "look sun {0:0}deg warm shadow {1:0.00} fill {2:0.00}; contrast {3}; decor max {4:0.00}; draws {5}",
@@ -473,6 +475,55 @@ namespace Tag.Level
                     return true;
             }
             return false;
+        }
+
+        static void PlaySliceReport(StringBuilder fail)
+        {
+            string scene = ReadText("Assets/Scenes/Play.unity");
+            if (scene == null
+                || scene.IndexOf("m_Name: Player", StringComparison.Ordinal) < 0
+                || scene.IndexOf("m_Name: DummyRunner", StringComparison.Ordinal) < 0
+                || scene.IndexOf("m_Name: MegaParkP1Host", StringComparison.Ordinal) < 0
+                || scene.IndexOf("5e3899b98cbe4c54796a0b45175db003", StringComparison.Ordinal) < 0
+                || scene.IndexOf("c8e4a1b27f0d4e6a9b3c5d7e1f2a4b71", StringComparison.Ordinal) < 0
+                || scene.IndexOf("c8e4a1b27f0d4e6a9b3c5d7e1f2a4b72", StringComparison.Ordinal) < 0
+                || scene.IndexOf("5d9a187f5dd14f79baa15fdefd908aba", StringComparison.Ordinal) >= 0)
+                fail.Append("play scene is not the solo mega park slice; ");
+
+            string entry = ReadText("Assets/Scripts/Level/PlayEntry.cs");
+            if (entry == null
+                || entry.IndexOf("CutArenaBootstrap", StringComparison.Ordinal) < 0
+                || entry.IndexOf("Built", StringComparison.Ordinal) < 0
+                || entry.IndexOf("SpeedEnergyHUD", StringComparison.Ordinal) < 0)
+                fail.Append("campus fallback or hud is not wired; ");
+
+            string mini = ReadText("Assets/Scripts/Level/ParkMinimap.cs");
+            if (mini == null
+                || mini.IndexOf("TexSize = 256", StringComparison.Ordinal) < 0
+                || mini.IndexOf("GUI.DrawTexture", StringComparison.Ordinal) < 0
+                || mini.IndexOf("KeyCode.M", StringComparison.Ordinal) < 0
+                || mini.IndexOf("JoystickButton6", StringComparison.Ordinal) < 0
+                || mini.IndexOf("new Camera", StringComparison.Ordinal) >= 0
+                || mini.IndexOf("AddComponent<Camera>", StringComparison.Ordinal) >= 0)
+                fail.Append("minimap is not one corner texture; ");
+
+            string map = ReadText("Assets/Scripts/Input/TagInputActions.cs");
+            if (map == null
+                || map.IndexOf("\"Minimap\"", StringComparison.Ordinal) < 0
+                || map.IndexOf("<Keyboard>/m", StringComparison.Ordinal) < 0
+                || map.IndexOf("<Gamepad>/select", StringComparison.Ordinal) < 0)
+                fail.Append("minimap input map missing; ");
+
+            string build = ReadText("ProjectSettings/EditorBuildSettings.asset");
+            if (build == null)
+            {
+                fail.Append("build settings missing; ");
+                return;
+            }
+            int play = build.IndexOf("Assets/Scenes/Play.unity", StringComparison.Ordinal);
+            int boot = build.IndexOf("Assets/Scenes/Boot.unity", StringComparison.Ordinal);
+            if (play < 0 || (boot >= 0 && boot < play))
+                fail.Append("Play is not the first build scene; ");
         }
     }
 }

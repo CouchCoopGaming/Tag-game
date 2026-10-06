@@ -860,8 +860,8 @@ namespace Tag.Level
             const int dynamicDraws = 35;
             const int dynamicColliders = 25;
             int dress = DressBatchCount();
-            int drawsBefore = solids.Length + ramps.Length + paint + spawnRenderers + dynamicDraws + DressPieceCount();
-            int drawsAfter = BatchCount(solids, true) + BatchCountRamps(ramps) + 12 + spawnBatches + dynamicDraws + dress;
+            int drawsBefore = solids.Length + ramps.Length + paint + spawnRenderers + dynamicDraws + DressPieceCount() + MinimapDraws;
+            int drawsAfter = BatchCount(solids, true) + BatchCountRamps(ramps) + 12 + spawnBatches + dynamicDraws + dress + MinimapDraws;
             if (drawsAfter > DrawCap)
                 fail.Append("draw calls ").Append(drawsAfter.ToString(CultureInfo.InvariantCulture)).Append(" over 120; ");
             int colsBefore = solids.Length + rampBefore + dynamicColliders;

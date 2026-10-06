@@ -28,6 +28,8 @@ namespace Tag.Level
     /// still not stored here and are not retuned.
     /// Pass 7 is a look pass only: afternoon light, playground materials, and
     /// non-colliding dressing. The footprint, loop, and feel locks stay put.
+    /// Pass 8 does not move the park. It checks the Play slice and counts one
+    /// minimap texture in the draw budget.
     /// </summary>
     public static partial class MegaParkP1Layout
     {
@@ -299,6 +301,7 @@ namespace Tag.Level
             string perfNote = PerfReport(solids, ramps, fail);
             string pulseNote = PulseReport(fail);
             string lookNote = LookReport(solids, ramps, fail);
+            PlaySliceReport(fail);
             if (fail.Length == failBeforeMesh && meshGap > MeshMatch)
                 fail.Append("collider mismatch ").Append(meshGap.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
 
