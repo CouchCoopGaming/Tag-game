@@ -24,7 +24,7 @@ namespace Tag.Level
             Directory.CreateDirectory(folder);
             Card(Path.Combine(folder, "Title.png"), "TAG", new[]
             {
-                "* Play", "Settings", "How to play", "Quit"
+                "* Play", "Practice", "Settings", "How to play", "Quit"
             }, fail);
             Card(Path.Combine(folder, "MatchSetup.png"), "Match setup", new[]
             {

@@ -10,6 +10,7 @@ using Tag.Couch;
 using Tag.Onboard;
 using Tag.Settings;
 using Tag.Front;
+using Tag.Practice;
 
 namespace Tag.Modes
 {
@@ -405,7 +406,7 @@ namespace Tag.Modes
             AudioCuePlayer.Ensure()?.RoundStart();
             _mode.OnRoundStart(_ctx);
 
-            if (_ctx.CurrentIt == null)
+            if (!PracticeSession.Active && _ctx.CurrentIt == null)
             {
                 _livingScratch.Clear();
                 var roster = _ctx.Players;
@@ -463,9 +464,11 @@ namespace Tag.Modes
             // GameFlow owns Comma/N when Boot is in the session. Direct Play has no flow.
             if (GameFlow.Instance == null)
                 Tag.Audio.AudioMaster.PollMuteHotkeys();
+            PracticeRuntime.Tick();
             PollLocalPause();
             if (_localPaused) return;
-            PollPlaytestModeHotkeys();
+            if (!PracticeSession.Active)
+                PollPlaytestModeHotkeys();
             PollResultsKeys();
 
             float dt = Time.deltaTime;
@@ -675,6 +678,11 @@ namespace Tag.Modes
 
         public void TransferIt(ItController from, ItController to)
         {
+            if (PracticeSession.Active)
+            {
+                PracticeSession.ItAssigned = false;
+                return;
+            }
             LastFromId = from != null ? from.PlayerId : "";
             float tagBackSeconds = TagBackSeconds(from, to);
             if (from != null)
@@ -1280,6 +1288,7 @@ namespace Tag.Modes
                 return;
             }
 
+            PracticeHud.Draw();
             DrawItBanner();
 
             if (_phase == MatchPhase.Countdown)

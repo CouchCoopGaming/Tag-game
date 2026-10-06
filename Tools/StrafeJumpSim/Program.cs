@@ -632,6 +632,14 @@ static class Program
             return 1;
         }
 
+        Tag.Practice.PracticeProof.Report practice = Tag.Practice.PracticeProof.Run();
+        Console.WriteLine(practice.Line);
+        if (!practice.Ok)
+        {
+            Console.Error.WriteLine(practice.Failure);
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }

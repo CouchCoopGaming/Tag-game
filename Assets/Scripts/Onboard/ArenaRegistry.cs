@@ -11,6 +11,7 @@ namespace Tag.Onboard
         public struct Entry
         {
             public string Name;
+            public string Root;
             public PlayAction Key;
             public bool HasBind;
         }
@@ -51,6 +52,7 @@ namespace Tag.Onboard
                 return entry;
             }
             entry.Name = Tag.Level.ParkArena.NameOf(index);
+            entry.Root = "MegaPark";
             entry.Key = index < Keys.Length ? Keys[index] : PlayAction.Arena1;
             entry.HasBind = index < Keys.Length;
             return entry;

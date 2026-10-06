@@ -49,6 +49,36 @@ namespace Tag.Settings
             return v;
         }
 
+        public static bool PracticeRestartDown()
+        {
+            if (Input.GetKeyDown(KeyCode.T)) return true;
+#if ENABLE_INPUT_SYSTEM
+            var pad = Gamepad.current;
+            if (pad != null && pad.buttonNorth.wasPressedThisFrame) return true;
+#endif
+            return Input.GetKeyDown(KeyCode.JoystickButton3);
+        }
+
+        public static bool PracticeGhostDown()
+        {
+            if (Input.GetKeyDown(KeyCode.G)) return true;
+#if ENABLE_INPUT_SYSTEM
+            var pad = Gamepad.current;
+            if (pad != null && pad.leftStickButton.wasPressedThisFrame) return true;
+#endif
+            return Input.GetKeyDown(KeyCode.JoystickButton8);
+        }
+
+        public static bool PracticeInputDown()
+        {
+            if (Input.GetKeyDown(KeyCode.I)) return true;
+#if ENABLE_INPUT_SYSTEM
+            var pad = Gamepad.current;
+            if (pad != null && pad.rightStickButton.wasPressedThisFrame) return true;
+#endif
+            return Input.GetKeyDown(KeyCode.JoystickButton9);
+        }
+
         public static Vector2 LookVector()
         {
             var binds = ActionBinds.Current;

@@ -4,7 +4,9 @@ Play opens on the title. A round does not start until match setup confirms.
 
 ## Title
 
-The card reads **TAG**. Rows are Play, Settings, How to play, and Quit.
+The card reads **TAG**. Rows are Play, Practice, Settings, How to play, and Quit.
+
+Practice opens a free arena. See `Docs/Practice.md`.
 
 Settings is the pause settings card (look, audio, HUD, reset). How to play is the same card as pause. Quit leaves the app. Highlight moves play `UiMove`, confirm plays `UiConfirm`, and back plays `UiBack`.
 

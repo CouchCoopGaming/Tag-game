@@ -7,6 +7,7 @@ using Tag.Local;
 using Tag.Audio;
 using Tag.Front;
 using Tag.Level;
+using Tag.Practice;
 using Tag.Settings;
 using TagArena.Movement;
 
@@ -106,7 +107,7 @@ namespace Tag.Core
                 else
                 {
                     State = GameFlowState.Boot;
-                    if (!FrontSession.Armed)
+                    if (!FrontSession.Armed && FrontSession.Screen != FrontScreen.Practice)
                         FrontSession.ShowTitle();
                 }
                 HoldMenuClock();
@@ -127,7 +128,8 @@ namespace Tag.Core
             if (!FrontSession.Armed)
             {
                 State = GameFlowState.Boot;
-                FrontSession.ShowTitle();
+                if (FrontSession.Screen != FrontScreen.Practice)
+                    FrontSession.ShowTitle();
                 HoldMenuClock();
                 return;
             }
@@ -956,6 +958,7 @@ namespace Tag.Core
             else if (act == FrontSession.ActTitle)
             {
                 State = GameFlowState.Boot;
+                PracticeArena.Restore();
                 HoldMenuClock();
             }
             else if (act == FrontSession.ActRematch)
@@ -966,6 +969,8 @@ namespace Tag.Core
         {
             if (GameSettings.Current != null)
                 GameSettings.Current.Clamp();
+            if (PracticeSession.Active)
+                SyncSelectedMode(TagModeId.FreePlay);
             SettingsRuntime.Save();
             State = GameFlowState.Play;
             Time.timeScale = 1f;
