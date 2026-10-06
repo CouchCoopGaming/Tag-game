@@ -275,10 +275,12 @@ namespace Tag.Local
                 if (marker != null)
                 {
                     CouchPlay.Tint(i, out float r, out float g, out float b);
-                    marker.SetIdentity(CouchPlay.Name(i), new Color(r, g, b, 1f));
+                    marker.SetIdentity(CouchPlay.Name(i), new Color(r, g, b, 1f), i);
                 }
                 if (!ai)
                 {
+                    int device = CouchPlay.DeviceOf(i);
+                    PadRumble.Bind(i, go.GetInstanceID(), device);
                     Camera cam = go.GetComponentInChildren<Camera>();
                     var verbs = go.GetComponent<VerbStatusHud>();
                     if (verbs != null) verbs.View = cam;

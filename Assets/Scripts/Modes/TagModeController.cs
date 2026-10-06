@@ -668,7 +668,11 @@ namespace Tag.Modes
             }
             if (to != null && IsLocalHuman(to))
                 _taggedUntil = 0f;
-            if (from != null) from.SetIt(false);
+            if (from != null)
+            {
+                Tag.Settings.PadRumble.PulseId(from.gameObject.GetInstanceID(), Tag.Settings.PadRumble.Tagged);
+                from.SetIt(false);
+            }
             if (to != null && to.IsAlive)
             {
                 PlayerMotor victimMotor = to.GetComponent<PlayerMotor>();
@@ -1251,7 +1255,8 @@ namespace Tag.Modes
         void DrawCountdownCard()
         {
             if (_countStyle == null) return;
-            _countStyle.fontSize = 54;
+            float hud = GameSettings.Current != null ? GameSettings.Current.HudScale : 1f;
+            _countStyle.fontSize = (int)(54f * hud);
             _countStyle.alignment = TextAnchor.MiddleCenter;
             float w = 440f;
             float h = 168f;
@@ -1259,7 +1264,8 @@ namespace Tag.Modes
             float y = Screen.height * 0.28f;
             int show = Mathf.Max(1, Mathf.CeilToInt(_phaseTimer));
             GUI.Box(new Rect(x, y, w, h), ModeTitle(selectedMode));
-            _countStyle.normal.textColor = Color.white;
+            float flash = GameSettings.Current != null ? GameSettings.Current.CountdownFlash(_phaseTimer) : 1f;
+            _countStyle.normal.textColor = new Color(flash, flash, flash, 1f);
             GUI.Label(new Rect(x, y + 28, w, 70), HudDigits.Whole0(show), _countStyle);
             string hint = _firstCountdownHint
                 ? "WASD move   Shift sprint   Ctrl slide   " + TagArena.Movement.ControlBinds.DashName + " dash\n" +

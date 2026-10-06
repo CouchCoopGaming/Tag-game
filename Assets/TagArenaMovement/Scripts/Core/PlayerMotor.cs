@@ -265,6 +265,7 @@ namespace TagArena.Movement
 
         void Update()
         {
+            Tag.Settings.PadRumbleOutput.Tick(Time.unscaledDeltaTime);
             _clingRefused = false;
             if (_in == null || cfg == null) return;
             _in.Read();
@@ -1723,6 +1724,7 @@ namespace TagArena.Movement
             SetHeight(cfg.standingHeight);
             SetState(MoveState.Air);
             AudioBus.Raise(AudioBus.Hook.PadLaunch, transform.position);
+            Tag.Settings.PadRumble.PulseId(gameObject.GetInstanceID(), Tag.Settings.PadRumble.PadLaunch);
             return v;
         }
 

@@ -1,5 +1,6 @@
 ﻿using Tag.Gameplay;
 using Tag.Modes;
+using Tag.Settings;
 using UnityEngine;
 
 namespace Tag.Art
@@ -39,8 +40,11 @@ namespace Tag.Art
         GUIStyle _itStyle;
         string _plateName = "";
         Color _plateTint = Color.white;
+        int _shape;
         bool _hasPlate;
         Transform _plate;
+        Renderer _plateRend;
+        TextMesh _plateText;
         bool _plateBuilt;
 
         void Awake()
@@ -52,8 +56,17 @@ namespace Tag.Art
         /// <summary>One tinted name plate, built once. Same emissive path as the It hat.</summary>
         public void SetIdentity(string plateName, Color tint)
         {
+            SetIdentity(plateName, tint, 0);
+        }
+
+        /// <summary>Shape 0 circle, 1 square, 2 capsule, 3 diamond. The glyph matches.</summary>
+        public void SetIdentity(string plateName, Color tint, int shape)
+        {
             _plateName = plateName ?? "";
             _plateTint = tint;
+            _shape = shape;
+            if (_shape < 0) _shape = 0;
+            if (_shape > 3) _shape = 3;
             _hasPlate = true;
             EnsurePlate();
         }
@@ -62,13 +75,17 @@ namespace Tag.Art
         {
             if (_plateBuilt || !_hasPlate) return;
             _plateBuilt = true;
-            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            PrimitiveType kind = PrimitiveType.Sphere;
+            if (_shape == 1) kind = PrimitiveType.Cube;
+            else if (_shape == 2) kind = PrimitiveType.Capsule;
+            else if (_shape == 3) kind = PrimitiveType.Cylinder;
+            var go = GameObject.CreatePrimitive(kind);
             go.name = "NameTag";
             go.transform.SetParent(transform, false);
             go.transform.localPosition = new Vector3(0f, 2.45f, 0f);
             go.transform.localScale = new Vector3(0.28f, 0.18f, 0.28f);
             DestroyCollider(go);
-            ApplyMat(go, _plateTint, true, 2.4f);
+            _plateRend = ApplyMat(go, _plateTint, true, 2.4f);
             _plate = go.transform;
 
             var textGo = new GameObject("NameText");
@@ -76,6 +93,18 @@ namespace Tag.Art
             textGo.transform.localPosition = new Vector3(0f, 1.4f, 0f);
             var mesh = textGo.AddComponent<TextMesh>();
             mesh.text = _plateName;
+            _plateText = mesh;
+
+            var markGo = new GameObject("NameShape");
+            markGo.transform.SetParent(go.transform, false);
+            markGo.transform.localPosition = new Vector3(0f, 2.2f, 0f);
+            var mark = markGo.AddComponent<TextMesh>();
+            mark.text = AccessibilityPalette.Glyph(_shape);
+            mark.characterSize = 0.28f;
+            mark.anchor = TextAnchor.MiddleCenter;
+            mark.alignment = TextAlignment.Center;
+            mark.color = Color.white;
+            mark.fontSize = 64;
             mesh.characterSize = 0.22f;
             mesh.anchor = TextAnchor.MiddleCenter;
             mesh.alignment = TextAlignment.Center;
@@ -146,18 +175,31 @@ namespace Tag.Art
             if (_halo != null)
                 _halo.localScale = _haloBaseScale * (pulse * (1f + 0.55f * urgency));
 
+            int pal = 0;
+            if (GameSettings.Current != null)
+                pal = GameSettings.Current.PaletteOf(0);
+            AccessibilityPalette.It(pal, out float ir, out float ig, out float ib);
+            Color itCol = new Color(ir, ig, ib, 1f);
             if (_light != null)
             {
                 _light.intensity = (2.8f + 5.5f * urgency) * pulse;
                 _light.range = ownView
                     ? 4.5f
                     : (14f + 1.2f * pulse + 6f * urgency) * Mathf.Lerp(1f, 1.6f, (distMul - 1f) / 3.5f);
-                _light.color = Color.Lerp(new Color(1f, 0.4f, 0.08f), new Color(1f, 0.95f, 0.55f), urgency);
+                _light.color = Color.Lerp(itCol, new Color(1f, 0.95f, 0.55f), urgency);
+            }
+            if (_plateRend != null)
+            {
+                AccessibilityPalette.Player(pal, _shape, out float pr, out float pg, out float pb);
+                Color plate = new Color(pr, pg, pb, 1f);
+                ApplyRuntimeColor(_plateRend, plate, 2.4f);
+                if (_plateText != null) _plateText.color = plate;
             }
 
             // Hotter / brighter materials as fuse drains
-            Color hatCol = Color.Lerp(itHat, new Color(1f, 0.92f, 0.35f, 1f), urgency);
-            Color glowCol = Color.Lerp(itGlow, new Color(1f, 0.75f, 0.15f, 0.9f), urgency);
+            Color hatCol = Color.Lerp(itCol, new Color(1f, 0.92f, 0.35f, 1f), urgency);
+            Color glowCol = Color.Lerp(itCol, new Color(1f, 0.75f, 0.15f, 0.9f), urgency);
+            glowCol.a = 0.72f;
             float emitMul = 2.6f + 3.4f * urgency * pulse;
             ApplyRuntimeColor(_hatRend, hatCol, emitMul);
             ApplyRuntimeColor(_brimRend, hatCol, emitMul * 0.92f);
@@ -310,14 +352,23 @@ namespace Tag.Art
             var prev = GUI.color;
             GUI.color = new Color(0.05f, 0.07f, 0.1f, 0.85f);
             GUI.DrawTexture(new Rect(x, y, mark, mark), Texture2D.whiteTexture);
-            GUI.color = new Color(1f, 0.55f, 0.12f, 1f);
+            int pal = 0;
+            float hud = 1f;
+            if (GameSettings.Current != null)
+            {
+                pal = GameSettings.Current.PaletteOf(0);
+                hud = GameSettings.Current.HudScale;
+            }
+            AccessibilityPalette.It(pal, out float ir, out float ig, out float ib);
+            GUI.color = new Color(ir, ig, ib, 1f);
             float inset = 5f;
             GUI.DrawTexture(new Rect(x + inset, y + inset, mark - inset * 2f, mark - inset * 2f), Texture2D.whiteTexture);
             GUI.color = Color.white;
             if (_itStyle == null) return;
-            _itStyle.fontSize = Screen.height >= 1000 ? 14 : 12;
+            _itStyle.fontSize = (int)((Screen.height >= 1000 ? 14 : 12) * hud);
             _itStyle.normal.textColor = new Color(0.08f, 0.08f, 0.1f, 1f);
-            GUI.Label(new Rect(x, y, mark, mark), "IT", _itStyle);
+            GUI.Label(new Rect(x, y, mark, mark * 0.46f), AccessibilityPalette.ItGlyph, _itStyle);
+            GUI.Label(new Rect(x, y + mark * 0.40f, mark, mark * 0.60f), "IT", _itStyle);
             if (off)
             {
                 float rawX = sp.x;
