@@ -45,8 +45,16 @@ namespace Tag.Couch
                 if (!CouchPlay.HumanAt(i) && !CouchPlay.AiAt(i)) continue;
                 CouchPlay.Tint(i, out float r, out float g, out float b);
                 _style.normal.textColor = new Color(r, g, b, 1f);
-                GUI.Label(new Rect(x + 24f, yy, w - 48f, 22f), CouchPlay.SeatLine(i), _style);
+                string line = CouchPlay.ScoreText(i);
+                if (line.Length == 0) line = CouchPlay.SeatLine(i);
+                GUI.Label(new Rect(x + 24f, yy, w - 48f, 22f), line, _style);
                 yy += 24f;
+            }
+            string tie = CouchPlay.TieText;
+            if (tie.Length > 0)
+            {
+                _style.normal.textColor = Color.white;
+                GUI.Label(new Rect(x + 24f, yy, w - 48f, 22f), tie, _style);
             }
             _style.normal.textColor = Color.white;
             GUI.color = prev;

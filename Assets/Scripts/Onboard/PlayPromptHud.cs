@@ -87,6 +87,7 @@ namespace Tag.Onboard
             if (_motor == null || _input == null) return;
             if (Instance != this)
             {
+                if (Seat >= 0) TickLearn();
                 TickContext();
                 return;
             }
@@ -94,8 +95,8 @@ namespace Tag.Onboard
             if (DriveDevice < 0) WatchDevice();
             if (Input.GetKeyDown(KeyCode.F12))
             {
-                OnboardingSession.Live.Skip();
-                OnboardingStore.Save(OnboardingSession.Live);
+                Session().Skip();
+                OnboardingStore.Save(Session());
             }
             TickLearn();
             TickContext();
@@ -146,7 +147,7 @@ namespace Tag.Onboard
         void TickLearn()
         {
             bool window = LearnNow();
-            OnboardingSession session = OnboardingSession.Live;
+            OnboardingSession session = Session();
             session.BeginIfNeeded(window);
             if (!session.Active) return;
 
@@ -226,6 +227,12 @@ namespace Tag.Onboard
             _context.Tick(Time.deltaTime, _sample);
         }
 
+        OnboardingSession Session()
+        {
+            if (Seat >= 0) return OnboardingSession.ForSeat(Seat);
+            return OnboardingSession.Live;
+        }
+
         static bool LearnNow()
         {
             if (Time.timeScale <= 0f) return false;
@@ -242,7 +249,7 @@ namespace Tag.Onboard
             if (Time.timeScale <= 0f) return;
             PromptText.Ensure();
             _label.fontSize = Screen.height >= 1000 ? 16 : 14;
-            OnboardingSession session = OnboardingSession.Live;
+            OnboardingSession session = Session();
             if (session.Active) DrawHint(session);
             if (_context.Alpha > 0.02f && _context.Kind != ContextKind.None) DrawChip();
         }

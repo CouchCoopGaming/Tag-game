@@ -34,3 +34,23 @@ A punch stagger cancels an air dash that is already running and refuses a new on
 
 - `StaticLifecycle` resets the statics it lists on `SubsystemRegistration` (domain reload off). Statics that are not in that list keep their values across a reload that does not reset the domain.
 - The speed HUD draws nothing until `Start` has built its styles. That is the first frame.
+
+## QA sweep 2
+
+Each line is a repro. All of these are fixed. Feel locks were not retuned.
+
+- Fixed. Set a slider to NaN or Infinity, or store `v=9` or a non-settings blob. Clamp used to keep NaN, and Read applied whatever keys it recognized. NaN and Infinity now fall back, a future or garbage version resets, `v=0` still migrates, and a missing file leaves the caller unchanged.
+- Fixed. Pause, round end, or pulling a pad left the rumble motors at their last speed because decay uses delta time and pause delta is 0. Those three paths now zero the motors.
+- Fixed. World one-shots and the music bed kept playing at timeScale 0, and a music volume of 0 still started the source. Pause silences world voices. UI still plays. A 0 slider does not.
+- Fixed. With the input system on, pad index 0 missing fell through to `Gamepad.current`, so an unplugged seat stole another pad. A missing slot now reads as empty.
+- Fixed. Unplugging a pad during play dropped the device with no pause. The seat and pawn stay, play pauses, and the card says that seat should reconnect. Plugging it back does not resume on its own.
+- Fixed. Menu Start read only `Gamepad.current`, so P2–P4 could not pause, and a pause they did open used P1's accessibility seat. Start scans every pad and the pause card uses that seat.
+- Fixed. One onboarding session covered every seat, and only the first prompt HUD ticked it. Each seat now has its own steps.
+- Fixed. The It hat, the tag-back glow, and the couch tint all read palette 0. They follow the pawn's seat, including a change made mid-round.
+- Fixed. Reduced flashing flattened the tag-back glow and still left the It hat pulsing. The hat pulse and bob use the same flatten.
+- Fixed. Captions in a split pane kept drawing past the bottom of that pane. They stop at the pane edge.
+- Fixed. Countdown and results leave timeScale at 1, so a zip, a launch pad, a punch stagger, and a kill-box teleport could start or grant i-frames after the round had left play. Those start only while the round is playing. Pause still keeps a zip you are already on.
+- Fixed. Rematch left couch stagger, tag-back, and positions behind. Equal It times crowned player 1. The fourth quadrant with three players listed seats and not times, and a tie was not marked. Rematch clears that residue, a tie is a tie, and the score pane shows the times.
+- Fixed. Twenty rematch, change-setup, and title passes left a second roster when spawn ran without a release, and two third-person rigs in one frame stacked AudioListeners because the old rig was destroyed at end of frame. The loop ends at 0 leftovers. The old rig is removed before the new one is built. A split camera past the shown count is disabled.
+- Fixed. Soft-play ground used the concrete footstep. It uses the grass clip. Every other ground material painted in this tree maps to a clip that is in the tree. Sand stays concrete.
+- Fixed. One human on a pad still used the solo reader, so the keyboard moved that pawn too. A pad seat reads only that pad. Two pads with the same button are not a stolen bind. The keyboard table still stores a clash so the rebind warning can show it.

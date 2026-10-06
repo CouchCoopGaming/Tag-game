@@ -363,6 +363,10 @@ namespace Tag.Core
                 Time.timeScale = 0f;
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
+                PadRumble.Silence();
+                AudioMix.SetWorldPaused(true);
+                if (PadNav.StartDevice > 0)
+                    CouchPlay.OpenPauseFrom(PadNav.StartDevice);
                 ClearPauseEdges();
                 AudioCuePlayer.Ensure()?.UiClick();
             }
@@ -370,6 +374,7 @@ namespace Tag.Core
             {
                 State = GameFlowState.Play;
                 Time.timeScale = 1f;
+                AudioMix.SetWorldPaused(false);
                 ResumeInputGate.LockPlayCursor();
                 Cursor.visible = false;
                 CloseMenuPanels();
@@ -451,10 +456,13 @@ namespace Tag.Core
                 return;
             }
 
+            CouchDevices.PollHotplug();
             bool pauseEdge = UnityEngine.Input.GetKeyDown(KeyCode.Escape) || PadNav.Start;
             if (State == GameFlowState.Paused && PadNav.Back)
                 pauseEdge = true;
-            if (pauseEdge && (State == GameFlowState.Play || State == GameFlowState.Paused))
+            if (CouchPlay.NeedsRejoin && State == GameFlowState.Play)
+                TogglePause();
+            else if (pauseEdge && (State == GameFlowState.Play || State == GameFlowState.Paused))
                 TogglePause();
 
             if (State == GameFlowState.Boot || State == GameFlowState.Setup)
@@ -621,6 +629,9 @@ namespace Tag.Core
             else if (State == GameFlowState.Paused)
             {
                 GUI.Box(new Rect(cx - 170, cy - 204, 340, 500), "Paused");
+                string rejoin = CouchPlay.RejoinPrompt;
+                if (rejoin.Length > 0)
+                    GUI.Label(new Rect(cx - 100, cy - 200, 220, 22), rejoin);
                 if (FocusButton(new Rect(cx - 100, cy - 176, 200, 26), 0, ref _pauseFocus, "Resume")) TogglePause();
                 if (FocusButton(new Rect(cx - 100, cy - 146, 200, 26), 1, ref _pauseFocus, "Controls"))
                     OpenControls();

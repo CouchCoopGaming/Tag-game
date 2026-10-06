@@ -61,23 +61,73 @@ namespace Tag.Settings
             return text.ToString();
         }
 
+        public const int Version = 1;
+
         public static void Read(string blob, GameSettings settings, ActionBinds binds)
         {
             if (settings == null || binds == null || string.IsNullOrEmpty(blob)) return;
             string[] lines = blob.Split('\n');
+            int version = -1;
+            bool badVersion = false;
+            bool known = false;
             for (int i = 0; i < lines.Length; i++)
             {
-                string line = lines[i].Trim();
-                if (line.Length == 0 || line[0] == '#') continue;
-                int eq = line.IndexOf('=');
-                if (eq <= 0) continue;
-                string key = line.Substring(0, eq).Trim();
-                string value = line.Substring(eq + 1).Trim();
+                if (!Split(lines[i], out string key, out string value)) continue;
+                if (key == "v")
+                {
+                    if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out version))
+                        badVersion = true;
+                    continue;
+                }
+                if (Known(key)) known = true;
+            }
+            // A newer or unreadable version is not applied in part. Reset.
+            // No version and no known key is garbage. An older version migrates.
+            if (badVersion || version > Version || (version < 0 && !known))
+            {
+                settings.ResetToDefaults();
+                binds.ResetToDefaults();
+                return;
+            }
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (!Split(lines[i], out string key, out string value)) continue;
+                if (key == "v") continue;
                 Apply(settings, binds, key, value);
             }
             if (settings.Colorblind && blob.IndexOf("palette=", StringComparison.Ordinal) < 0)
                 settings.Palette[0] = AccessibilityPalette.Deuteranopia;
             settings.Clamp();
+        }
+
+        static bool Split(string raw, out string key, out string value)
+        {
+            key = "";
+            value = "";
+            if (string.IsNullOrEmpty(raw)) return false;
+            string line = raw.Trim();
+            if (line.Length == 0 || line[0] == '#') return false;
+            int eq = line.IndexOf('=');
+            if (eq <= 0) return false;
+            key = line.Substring(0, eq).Trim();
+            value = line.Substring(eq + 1).Trim();
+            return key.Length > 0;
+        }
+
+        static bool Known(string key)
+        {
+            if (key == "mouse" || key == "padLook" || key == "invertY" || key == "fov") return true;
+            if (key == "master" || key == "sfx" || key == "ui" || key == "music" || key == "mute") return true;
+            if (key == "hud" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
+            if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
+            if (key == "split" || key == "listen") return true;
+            if (key.StartsWith("kb.", StringComparison.Ordinal) || key.StartsWith("pad.", StringComparison.Ordinal))
+                return true;
+            if (SeatKey(key, "palette", out _)) return true;
+            if (SeatKey(key, "captions", out _)) return true;
+            if (SeatKey(key, "rumble", out _)) return true;
+            if (SeatKey(key, "flash", out _)) return true;
+            return false;
         }
 
         static void Apply(GameSettings settings, ActionBinds binds, string key, string value)
@@ -134,7 +184,8 @@ namespace Tag.Settings
 
         static float Num(string value, float fallback)
         {
-            if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float n))
+            if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float n)
+                && !float.IsNaN(n) && !float.IsInfinity(n))
                 return n;
             return fallback;
         }

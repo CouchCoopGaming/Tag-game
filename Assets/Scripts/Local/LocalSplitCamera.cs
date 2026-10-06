@@ -84,8 +84,10 @@ namespace Tag.Local
                     cam.rect = new Rect(x, y, w, h);
                     cam.enabled = true;
                 }
+                else
+                    cam.enabled = false;
                 AudioListener listener = cam.GetComponent<AudioListener>();
-                if (listener != null) listener.enabled = !average && i == 0;
+                if (listener != null) listener.enabled = !average && i == 0 && i < shown;
             }
             if (_average != null) _average.enabled = average;
         }

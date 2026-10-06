@@ -145,6 +145,11 @@ namespace Tag.Art
             float pulseAmp = 0.24f + 0.48f * urgency; // hotter fuse pulse for Hot Potato read
             float pulse = (0.78f - 0.12f * urgency) + pulseAmp * Mathf.Sin(t * pulseHz);
             float bob = Mathf.Sin(t * (Mathf.PI * 2f * (bobHz + 3.5f * urgency))) * (bobAmp * (1f + 0.8f * urgency));
+            if (GameSettings.Current != null && GameSettings.Current.AnyReduceFlash())
+            {
+                pulse = GameSettings.Current.GlowVisual(pulse);
+                bob = 0f;
+            }
 
             float scaleMul = (0.96f + 0.08f * pulse + 0.22f * urgency * pulse) * (1f + 0.7f * _pop);
             // Mega park: a 0.5 m hat disappears past a fort. Grow with camera distance, clamp up close.
@@ -177,7 +182,7 @@ namespace Tag.Art
 
             int pal = 0;
             if (GameSettings.Current != null)
-                pal = GameSettings.Current.PaletteOf(0);
+                pal = GameSettings.Current.PaletteOf(_shape);
             AccessibilityPalette.It(pal, out float ir, out float ig, out float ib);
             Color itCol = new Color(ir, ig, ib, 1f);
             if (_light != null)
@@ -356,7 +361,7 @@ namespace Tag.Art
             float hud = 1f;
             if (GameSettings.Current != null)
             {
-                pal = GameSettings.Current.PaletteOf(0);
+                pal = GameSettings.Current.PaletteOf(_shape);
                 hud = GameSettings.Current.HudScale;
             }
             AccessibilityPalette.It(pal, out float ir, out float ig, out float ib);

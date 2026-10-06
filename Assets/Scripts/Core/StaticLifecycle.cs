@@ -55,6 +55,9 @@ namespace Tag.Core
             FrameMeter.ResetStatics();
             Tag.Modes.EnemyAi.ResetLoopSearch();
             Tag.Art.TagBackBlockedTell.ResetStatics();
+            SessionRules.ResetRound();
+            AudioMix.SetWorldPaused(false);
+            PadRumble.Silence();
         }
     }
 }
