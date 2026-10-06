@@ -74,6 +74,13 @@ public static class DummyPosePathProof
             report.Fail("punch windup is not on the dummy pose path");
         if (!loco.Contains("DummyPosePaths.Tag") || !loco.Contains("PunchTagPose.Tag"))
             report.Fail("tag catch is not on the dummy pose path");
+        if (!loco.Contains("DummyPosePaths.Stagger") || !loco.Contains("ApplyPunchStagger")
+            || !loco.Contains("PlayPunchStagger") || !loco.Contains("PunchStaggerPose.Stumble"))
+            report.Fail("punch stagger pose is not on the dummy pose path");
+        if (!patrol.Contains("IsPunchStaggered"))
+            report.Fail("DummyRunner does not respect punch stagger");
+        if (!motor.Contains("BeginPunchStagger") || !motor.Contains("IsPunchStaggered"))
+            report.Fail("motor does not receive punch stagger");
         if (!loco.Contains("DummyPosePaths.Lunge") || !loco.Contains("IsLunging")
             || !loco.Contains("ApplyLungePose") || !loco.Contains("LungePose.Burst")
             || !loco.Contains("LungePose.Telegraph"))
