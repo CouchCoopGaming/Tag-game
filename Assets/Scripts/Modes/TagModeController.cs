@@ -432,6 +432,7 @@ namespace Tag.Modes
         public void TransferIt(ItController from, ItController to)
         {
             LastFromId = from != null ? from.PlayerId : "";
+            float tagBackSeconds = TagBackSeconds(from, to);
             if (from != null) from.SetIt(false);
             if (to != null && to.IsAlive)
             {
@@ -439,12 +440,23 @@ namespace Tag.Modes
                 _ctx.CurrentIt = to;
                 LastToId = to.PlayerId;
                 Debug.Log($"[TagMode] It -> {to.PlayerId}");
+                // A is safe from B only. A fresh It (from == null) does not open a window.
+                if (from != null)
+                    from.BeginTagBackImmunity(to, tagBackSeconds);
             }
             else
             {
                 _ctx.CurrentIt = null;
                 LastToId = "";
             }
+        }
+
+        static float TagBackSeconds(ItController from, ItController to)
+        {
+            PunchHitbox box = null;
+            if (from != null) box = from.GetComponent<PunchHitbox>();
+            if (box == null && to != null) box = to.GetComponent<PunchHitbox>();
+            return box != null ? box.TagBackImmunitySeconds : TagBackImmunity.DefaultSeconds;
         }
 
         /// <summary>

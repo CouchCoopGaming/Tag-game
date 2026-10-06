@@ -28,6 +28,7 @@ namespace Tag.Audio
         static AudioClip _roundLose;
         static AudioClip _uiClick;
         static AudioClip _uiConfirm;
+        static AudioClip _thunk;
         static AudioSource _flat;
 
         public static AudioClip Punch => _punch ??= Resolve("SFX/sfx_punch_hit", () => MakeImpact(180f, 0.07f, 0.55f));
@@ -47,6 +48,7 @@ namespace Tag.Audio
         public static AudioClip RoundLoseClip => _roundLose ??= MakeThud(70f, 0.16f, 0.45f);
         public static AudioClip UiClickClip => _uiClick ??= MakeBlip(680f, 0.04f, 0.22f);
         public static AudioClip UiConfirmClip => _uiConfirm ??= MakeChirp(520f, 740f, 0.08f, 0.28f);
+        public static AudioClip Thunk => _thunk ??= MakeThud(110f, 0.055f, 0.42f);
 
         public static AudioSource EnsureSource(GameObject host)
         {
@@ -103,6 +105,8 @@ namespace Tag.Audio
             Object.Destroy(go, clip.length / Mathf.Max(0.5f, src.pitch) + 0.08f);
         }
         public static void BecomeIt(Vector3 pos) => PlayAt(Tag, pos, 0.48f);
+        /// <summary>Short dull hit when a tag-back is refused. Quieter than a real connect.</summary>
+        public static void TagBackThunk(Vector3 pos) => PlayAt(Thunk, pos, 0.34f);
         public static void SkiStart(AudioSource src) => Play(src, Ski, 0.4f);
         public static void JetStart(AudioSource src) => Play(src, Jet, 0.38f);
         public static void LandImpact(AudioSource src) => Play(src, Land, 0.42f);

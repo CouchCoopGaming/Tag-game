@@ -40,3 +40,4 @@ MonoBehaviour:
   speedBuffStacks: 0
   speedBuffRefreshOnHit: 1
   speedBuffClearsOnLosingIt: 1
+  tagBackImmunity: 1
