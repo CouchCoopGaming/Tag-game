@@ -46,6 +46,8 @@ ExportedObj/
 # The movement proof project is hand-written. Unity still regenerates the Assets projects.
 !Tools/StrafeJumpSim/StrafeJumpSim.csproj
 Tools/StrafeJumpSim/bin/
+!Tools/ScriptCompileCheck/ScriptCompileCheck.csproj
+Tools/ScriptCompileCheck/bin/
 .consulo/
 *.apk
 *.aab

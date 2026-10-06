@@ -112,6 +112,13 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Gameplay.PunchStagger.ProofLine());
+        if (!Tag.Gameplay.PunchStagger.Holds())
+        {
+            Console.Error.WriteLine("punch stagger is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.VerbPoseClips.PunchTagPolishProofLine());
         if (!Tag.Art.VerbPoseClips.PunchTagPolishHolds())
         {
