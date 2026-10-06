@@ -1,6 +1,7 @@
 using Tag.Art;
 using Tag.Experimental;
 using Tag.Gameplay;
+using Tag.Level;
 using Tag.Modes;
 using Tag.Trail;
 using TagArena.Movement;
@@ -17,19 +18,26 @@ namespace Tag.Local
         public const string SoloPawnName = SoloGrappleGate.SoloPawnName;
         /// <summary>Solo campus opponent. Couch play turns this pawn off.</summary>
         public const string OpponentPawnName = SoloGrappleGate.OpponentPawnName;
-        /// <summary>Coral corner pad. Graybox meters; world position is Spawns[1].</summary>
+        /// <summary>Mega Park SE pad. Real meters; world position is Spawns[1].</summary>
         public const string OpponentPadName = "Spawn_SE";
-        public const float OpponentPadGrayX = 66f;
-        public const float OpponentPadGrayZ = 5f;
+        public const float OpponentPadGrayX = MegaParkP1Layout.SpawnSeX;
+        public const float OpponentPadGrayZ = MegaParkP1Layout.SpawnSeZ;
 
         public static readonly Vector3[] Spawns =
         {
-            new Vector3(60f, 1.5f, 50f),
-            new Vector3(660f, 1.5f, 50f),
-            new Vector3(60f, 1.5f, 490f),
-            new Vector3(660f, 1.5f, 490f)
+            new Vector3(MegaParkP1Layout.SpawnSwX, MegaParkP1Layout.SpawnY, MegaParkP1Layout.SpawnSwZ),
+            new Vector3(MegaParkP1Layout.SpawnSeX, MegaParkP1Layout.SpawnY, MegaParkP1Layout.SpawnSeZ),
+            new Vector3(MegaParkP1Layout.SpawnNwX, MegaParkP1Layout.SpawnY, MegaParkP1Layout.SpawnNwZ),
+            new Vector3(MegaParkP1Layout.SpawnNeX, MegaParkP1Layout.SpawnY, MegaParkP1Layout.SpawnNeZ)
         };
-        static readonly float[] Yaws = { 90f, 0f, 180f, -90f };
+        // Pad facing is the layout's CCW yaw. Positions already come from the same pads.
+        static readonly float[] Yaws =
+        {
+            MegaParkP1Layout.Spawns[0].YawDeg,
+            MegaParkP1Layout.Spawns[1].YawDeg,
+            MegaParkP1Layout.Spawns[2].YawDeg,
+            MegaParkP1Layout.Spawns[3].YawDeg,
+        };
 
         static MovementConfig _sharedCfg;
 

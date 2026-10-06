@@ -13,30 +13,19 @@ namespace Tag.Level
         // Graybox Y; world = * WorldScale (~150). Clears towers (~5 graybox tops).
         const float LabelHeight = 15f;
 
-        /// <summary>Mega-park theme + named play-court labels + graybox XZ centers (shared with HUD / helpers).</summary>
+        /// <summary>Mega Park zone centers in real meters (160×100, origin SW). Shared with the HUD.</summary>
         public static readonly (string label, float cx, float cz)[] ZoneCenters =
         {
-            // Theme pads
-            ("CRASH",  36f, 27f),
-            ("PIRATE", 14f, 12f),
-            ("ARMY",   58f, 12f),
-            ("ASTRO",  14f, 42f),
-            ("KNIGHT", 58f, 42f),
-            ("TRON",   36f,  8f),
-            ("NINJA",  36f, 46f),
-            // Named play courts (pad centers from CutArenaBootstrap Pass4)
-            ("SOFT PLAY",     14f, 9.75f),
-            ("MERRY",          7f, 24f),
-            ("SWING",         67f, 31.2f),
-            ("KICKBALL",      67f, 24f),
-            ("HOPSCOTCH SW",  4.5f,  9f),
-            ("HOPSCOTCH SE",  70f, 12f),
-            ("HOPSCOTCH NE",  70f, 38f),
-            ("HOPSCOTCH NW",  3.2f, 42f),
-            ("BARS W",        11f, 26f),
-            ("BARS E",      62.5f, 26f),
-            ("BEAM W",      13.5f, 25.25f),
-            ("BEAM E",      60.5f, 28.75f),
+            ("SOFT-PLAY", 18f, 24f),
+            ("CLING", 8f, 58f),
+            ("MERRY", 34f, 47f),
+            ("SLIDE", 40f, 80f),
+            ("SWING", 78f, 81f),
+            ("FORTS", 140f, 48f),
+            ("KICKBALL", 96f, 48f),
+            ("CRASH", 62f, 50f),
+            ("BARS", 78f, 16f),
+            ("HOPSCOTCH", 136f, 15f),
         };
 
         static Transform _parkCached;
@@ -49,10 +38,12 @@ namespace Tag.Level
         [ContextMenu("Place Zone Name Markers")]
         public void Place()
         {
-            var park = transform.Find("PARK");
+            var park = transform.Find("MegaPark");
+            if (park == null)
+                park = transform.Find("PARK");
             if (park == null)
             {
-                Debug.LogWarning("[ZoneNameMarkers] No PARK root.");
+                Debug.LogWarning("[ZoneNameMarkers] No MegaPark root.");
                 return;
             }
 
@@ -131,17 +122,17 @@ namespace Tag.Level
                 return new Vector2(local.x, local.z);
             }
 
-            // Fallback matches VoidRespawn assumption: PARK at origin, uniform WorldScale.
-            float s = CutArenaBootstrap.WorldScale;
-            if (s < 0.0001f) s = 1f;
-            return new Vector2(worldPos.x / s, worldPos.z / s);
+            // Mega Park is scale 1. World XZ is the map XZ.
+            return new Vector2(worldPos.x, worldPos.z);
         }
 
         static Transform ResolvePark()
         {
             if (_parkCached != null)
                 return _parkCached;
-            var go = GameObject.Find("PARK");
+            var go = GameObject.Find("MegaPark");
+            if (go == null)
+                go = GameObject.Find("PARK");
             if (go != null)
                 _parkCached = go.transform;
             return _parkCached;

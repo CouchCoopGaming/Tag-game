@@ -443,6 +443,20 @@ static class Program
             return 1;
         }
 
+        Tag.Level.MegaParkP1Layout.Audit map = Tag.Level.MegaParkP1Layout.Run();
+        Console.WriteLine(map.Line);
+        if (!map.Ok)
+        {
+            Console.Error.WriteLine(map.Failure);
+            return 1;
+        }
+
+        if (!Locked(cfg.sprintSpeed, Tag.Level.MegaParkP1Layout.SprintSpeed))
+        {
+            Console.Error.WriteLine("sprint 12 is not the measured loop speed");
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }

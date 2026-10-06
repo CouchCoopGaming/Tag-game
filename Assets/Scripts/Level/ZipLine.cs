@@ -40,11 +40,19 @@ namespace Tag.Level
         [Tooltip("Seconds before this pawn can grab this same line again.")]
         public float regrabCooldown = ZipLineRules.DefaultRegrabCooldown;
 
+        /// <summary>Zip fuchsia #D946EF. Not cling blue, slide yellow, or grapple orange.</summary>
+        public static readonly Color CableTint = new Color(0xD9 / 255f, 0x46 / 255f, 0xEF / 255f, 1f);
+
+        /// <summary>Held pulse. Stays in the fuchsia family.</summary>
+        public static readonly Color CableHot = new Color(1f, 0.82f, 1f, 1f);
+
         static readonly List<ZipLine> Active = new List<ZipLine>();
 
         readonly HashSet<int> _riders = new HashSet<int>();
 
         Transform _cable;
+        Transform _postA;
+        Transform _postB;
         Transform _grab;
         BoxCollider _trigger;
         Material _cableMat;
@@ -234,15 +242,20 @@ namespace Tag.Level
                 Collider solid = cable.GetComponent<Collider>();
                 if (solid != null)
                     DestroyImmediate(solid);
-                _idle = new Color(0.12f, 0.38f, 0.46f);
-                _hot = new Color(0.55f, 0.95f, 1f);
+                _idle = CableTint;
+                _hot = CableHot;
                 _cableMat = Tint(cable, _idle, true);
                 _cable = cable.transform;
             }
             else
             {
                 _cable = transform.Find("ZipCable");
+                _idle = CableTint;
+                _hot = CableHot;
             }
+
+            _postA = EnsurePost("ZipPostA");
+            _postB = EnsurePost("ZipPostB");
 
             Transform grab = transform.Find("ZipGrab");
             if (grab == null)
@@ -271,6 +284,8 @@ namespace Tag.Level
             _cable.position = mid;
             _cable.rotation = Quaternion.FromToRotation(Vector3.up, dir);
             _cable.localScale = new Vector3(0.07f, Mathf.Max(0.05f, len * 0.5f), 0.07f);
+            PlacePost(_postA, a);
+            PlacePost(_postB, b);
 
             float down = ZipLineRules.HangDrop + ZipLineRules.GrabBelow;
             float up = ZipLineRules.GrabAbove;
@@ -300,10 +315,33 @@ namespace Tag.Level
         {
             Vector3 a = WorldA;
             Vector3 b = WorldB;
-            Gizmos.color = new Color(0.35f, 0.85f, 0.95f, 0.9f);
+            Gizmos.color = new Color(CableTint.r, CableTint.g, CableTint.b, 0.9f);
             Gizmos.DrawLine(a, b);
             Gizmos.DrawWireSphere(a, 0.12f);
             Gizmos.DrawWireSphere(b, 0.12f);
+        }
+
+        Transform EnsurePost(string name)
+        {
+            Transform post = transform.Find(name);
+            if (post != null) return post;
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            go.name = name;
+            go.transform.SetParent(transform, true);
+            Collider solid = go.GetComponent<Collider>();
+            if (solid != null)
+                DestroyImmediate(solid);
+            Tint(go, CableTint, false);
+            return go.transform;
+        }
+
+        static void PlacePost(Transform post, Vector3 anchor)
+        {
+            if (post == null) return;
+            // Thin anchor under the cable end. No collider, so the hang capsule is not a post.
+            post.position = anchor + new Vector3(0f, -0.8f, 0f);
+            post.rotation = Quaternion.identity;
+            post.localScale = new Vector3(0.16f, 0.8f, 0.16f);
         }
 
         static Material Tint(GameObject go, Color c, bool emissive)
