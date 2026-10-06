@@ -489,9 +489,9 @@ namespace Tag.Core
             else if (State == GameFlowState.Paused)
             {
                 if (UnityEngine.Input.GetKeyDown(KeyCode.LeftArrow) || PadNav.Left || PadNav.Up)
-                    Nudge(ref _pauseFocus, -1, 7);
+                    Nudge(ref _pauseFocus, -1, MenuGraph.PauseRows - 1);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.RightArrow) || PadNav.Right || PadNav.Down)
-                    Nudge(ref _pauseFocus, 1, 7);
+                    Nudge(ref _pauseFocus, 1, MenuGraph.PauseRows - 1);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) SetFocus(ref _pauseFocus, 0);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) SetFocus(ref _pauseFocus, 1);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) SetFocus(ref _pauseFocus, 2);
@@ -500,6 +500,7 @@ namespace Tag.Core
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha6)) SetFocus(ref _pauseFocus, 5);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha7)) SetFocus(ref _pauseFocus, 6);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha8)) SetFocus(ref _pauseFocus, 7);
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha9)) SetFocus(ref _pauseFocus, 8);
                 if (UnityEngine.Input.GetKeyDown(KeyCode.H))
                 {
                     OpenControls();
@@ -593,24 +594,26 @@ namespace Tag.Core
             }
             else if (State == GameFlowState.Paused)
             {
-                GUI.Box(new Rect(cx - 160, cy - 188, 320, 430), "Paused");
-                if (FocusButton(new Rect(cx - 90, cy - 156, 180, 26), 0, ref _pauseFocus, "Resume")) TogglePause();
-                if (FocusButton(new Rect(cx - 90, cy - 124, 180, 26), 1, ref _pauseFocus, "Controls"))
+                GUI.Box(new Rect(cx - 170, cy - 204, 340, 500), "Paused");
+                if (FocusButton(new Rect(cx - 100, cy - 176, 200, 26), 0, ref _pauseFocus, "Resume")) TogglePause();
+                if (FocusButton(new Rect(cx - 100, cy - 146, 200, 26), 1, ref _pauseFocus, "Controls"))
                     OpenControls();
-                if (FocusButton(new Rect(cx - 90, cy - 92, 180, 26), 2, ref _pauseFocus, "Look sensitivity"))
+                if (FocusButton(new Rect(cx - 100, cy - 116, 200, 26), 2, ref _pauseFocus, "Look sensitivity"))
                     OpenLook();
-                if (FocusButton(new Rect(cx - 90, cy - 60, 180, 26), 3, ref _pauseFocus, "Audio"))
+                if (FocusButton(new Rect(cx - 100, cy - 86, 200, 26), 3, ref _pauseFocus, "Audio"))
                     OpenAudio();
-                if (FocusButton(new Rect(cx - 90, cy - 28, 180, 26), 4, ref _pauseFocus, "Quit to Menu"))
+                if (FocusButton(new Rect(cx - 100, cy - 56, 200, 26), 4, ref _pauseFocus, "Quit to Menu"))
                     QuitToMenu();
-                if (FocusButton(new Rect(cx - 90, cy + 4, 180, 26), 5, ref _pauseFocus, "Settings"))
+                if (FocusButton(new Rect(cx - 100, cy - 26, 200, 26), 5, ref _pauseFocus, "Settings"))
                     SettingsMenuUi.Open(SettingsMenuUi.Panel.Settings);
-                if (FocusButton(new Rect(cx - 90, cy + 36, 180, 26), 6, ref _pauseFocus, "Rebind"))
+                if (FocusButton(new Rect(cx - 100, cy + 4, 200, 26), 6, ref _pauseFocus, "Rebind"))
                     SettingsMenuUi.Open(SettingsMenuUi.Panel.Rebind);
-                if (FocusButton(new Rect(cx - 90, cy + 68, 180, 26), 7, ref _pauseFocus, "Arena"))
+                if (FocusButton(new Rect(cx - 100, cy + 34, 200, 26), 7, ref _pauseFocus, "Arena"))
                     SettingsMenuUi.Open(SettingsMenuUi.Panel.Arena);
-                GUI.Label(new Rect(cx - 150, cy + 102, 300, 80),
-                    "Left / Right or stick    1-8 picks    Enter / South\nEsc or East resume    Start pauses    Q menu\nComma mute    M minimap    N music    Up / Down bed");
+                if (FocusButton(new Rect(cx - 100, cy + 64, 200, 26), 8, ref _pauseFocus, "How to play"))
+                    SettingsMenuUi.Open(SettingsMenuUi.Panel.HowTo);
+                GUI.Label(new Rect(cx - 160, cy + 100, 320, 80),
+                    "Left / Right or stick    1-9 picks    Enter / South\nEsc or East resume    Start pauses    Q menu\nComma mute    M minimap    N music    Up / Down bed");
             }
             else if (State == GameFlowState.RoundEnd)
             {
@@ -864,6 +867,7 @@ namespace Tag.Core
                 case 5: SettingsMenuUi.Open(SettingsMenuUi.Panel.Settings); break;
                 case 6: SettingsMenuUi.Open(SettingsMenuUi.Panel.Rebind); break;
                 case 7: SettingsMenuUi.Open(SettingsMenuUi.Panel.Arena); break;
+                case 8: SettingsMenuUi.Open(SettingsMenuUi.Panel.HowTo); break;
                 default: TogglePause(); break;
             }
         }

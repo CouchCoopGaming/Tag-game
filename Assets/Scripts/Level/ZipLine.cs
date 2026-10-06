@@ -90,6 +90,26 @@ namespace Tag.Level
             return line;
         }
 
+        /// <summary>Closest cable inside <paramref name="radius"/> meters. The point is the entry.</summary>
+        public static bool PromptNear(Vector3 pawn, float radius, out Vector3 point)
+        {
+            point = pawn;
+            if (radius <= 0f) return false;
+            float best = radius;
+            bool hit = false;
+            for (int i = 0; i < Active.Count; i++)
+            {
+                ZipLine line = Active[i];
+                if (line == null || !line.isActiveAndEnabled) continue;
+                float d = ZipLineRules.DistanceToSegment(pawn, line.WorldA, line.WorldB);
+                if (d > best) continue;
+                best = d;
+                point = line.EntryWorld;
+                hit = true;
+            }
+            return hit;
+        }
+
         /// <summary>
         /// Nearest line on the chase line, inside 16 m, or one the pawn is already under.
         /// The exit helps only when it is closer to the target than staying off the line.

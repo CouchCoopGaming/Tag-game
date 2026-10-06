@@ -6,6 +6,7 @@ using UnityEngine;
 using TagArena.Movement;
 using UnityEngine.SceneManagement;
 using Tag.Audio;
+using Tag.Onboard;
 using Tag.Settings;
 
 namespace Tag.Modes
@@ -141,8 +142,24 @@ namespace Tag.Modes
         {
             BootHudStyles();
             if (autoFindPlayers) RefreshPlayers();
+            EnsurePromptHud();
             if (FindFirstObjectByType<GameFlow>() == null)
                 StartRound();
+        }
+
+        void EnsurePromptHud()
+        {
+            if (PlayPromptHud.Instance != null) return;
+            for (int i = 0; i < players.Count; i++)
+            {
+                ItController p = players[i];
+                if (p == null) continue;
+                if (p.GetComponent<DummyPatrol>() != null) continue;
+                if (p.GetComponent<PlayerInputReader>() == null) continue;
+                if (p.GetComponent<PlayPromptHud>() == null)
+                    p.gameObject.AddComponent<PlayPromptHud>();
+                return;
+            }
         }
 
         void BootHudStyles()
@@ -890,6 +907,7 @@ namespace Tag.Modes
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha6)) SetLocalPauseFocus(5);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha7)) SetLocalPauseFocus(6);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha8)) SetLocalPauseFocus(7);
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha9)) SetLocalPauseFocus(8);
             if (UnityEngine.Input.GetKeyDown(KeyCode.Return) || UnityEngine.Input.GetKeyDown(KeyCode.KeypadEnter) ||
                 UnityEngine.Input.GetKeyDown(KeyCode.Space) || PadNav.Confirm)
                 ActivateLocalPause();
@@ -903,7 +921,7 @@ namespace Tag.Modes
 
         void NudgeLocalPause(int dir)
         {
-            int next = Mathf.Clamp(_localPauseFocus + dir, 0, 7);
+            int next = Mathf.Clamp(_localPauseFocus + dir, 0, MenuGraph.PauseRows - 1);
             if (next == _localPauseFocus) return;
             _localPauseFocus = next;
             TagSfx.UiClick();
@@ -927,6 +945,7 @@ namespace Tag.Modes
                 case 5: SettingsMenuUi.Open(SettingsMenuUi.Panel.Settings); TagSfx.UiClick(); break;
                 case 6: SettingsMenuUi.Open(SettingsMenuUi.Panel.Rebind); TagSfx.UiClick(); break;
                 case 7: SettingsMenuUi.Open(SettingsMenuUi.Panel.Arena); TagSfx.UiClick(); break;
+                case 8: SettingsMenuUi.Open(SettingsMenuUi.Panel.HowTo); TagSfx.UiClick(); break;
                 default: SetLocalPause(false); break;
             }
         }
@@ -957,35 +976,37 @@ namespace Tag.Modes
                 return;
             }
             string extra = _phase == MatchPhase.Countdown ? "\nCountdown frozen" : "";
-            GUI.Box(new Rect(cx - 160, cy - 188, 320, 430), "Paused");
-            if (LocalPauseButton(cx, cy - 156, 0, "Resume")) SetLocalPause(false);
-            if (LocalPauseButton(cx, cy - 124, 1, "Controls"))
+            GUI.Box(new Rect(cx - 170, cy - 204, 340, 500), "Paused");
+            if (LocalPauseButton(cx, cy - 176, 0, "Resume")) SetLocalPause(false);
+            if (LocalPauseButton(cx, cy - 146, 1, "Controls"))
             {
                 _localHelp = true;
                 _localControlsFocus = 0;
                 TagSfx.UiClick();
             }
-            if (LocalPauseButton(cx, cy - 92, 2, "Look sensitivity"))
+            if (LocalPauseButton(cx, cy - 116, 2, "Look sensitivity"))
             {
                 _localLook = true;
                 _localLookFocus = 0;
                 TagSfx.UiClick();
             }
-            if (LocalPauseButton(cx, cy - 60, 3, "Audio"))
+            if (LocalPauseButton(cx, cy - 86, 3, "Audio"))
             {
                 _localAudio = true;
                 _localAudioFocus = 0;
                 TagSfx.UiClick();
             }
-            if (LocalPauseButton(cx, cy - 28, 4, "Quit to Menu")) LoadBootMenu();
-            if (LocalPauseButton(cx, cy + 4, 5, "Settings"))
+            if (LocalPauseButton(cx, cy - 56, 4, "Quit to Menu")) LoadBootMenu();
+            if (LocalPauseButton(cx, cy - 26, 5, "Settings"))
                 SettingsMenuUi.Open(SettingsMenuUi.Panel.Settings);
-            if (LocalPauseButton(cx, cy + 36, 6, "Rebind"))
+            if (LocalPauseButton(cx, cy + 4, 6, "Rebind"))
                 SettingsMenuUi.Open(SettingsMenuUi.Panel.Rebind);
-            if (LocalPauseButton(cx, cy + 68, 7, "Arena"))
+            if (LocalPauseButton(cx, cy + 34, 7, "Arena"))
                 SettingsMenuUi.Open(SettingsMenuUi.Panel.Arena);
-            GUI.Label(new Rect(cx - 150, cy + 102, 300, 96),
-                "Left / Right or stick    1-8    Enter / South\nEsc or East resume    Start pauses\nComma mute    M minimap    N music" + extra);
+            if (LocalPauseButton(cx, cy + 64, 8, "How to play"))
+                SettingsMenuUi.Open(SettingsMenuUi.Panel.HowTo);
+            GUI.Label(new Rect(cx - 160, cy + 100, 320, 96),
+                "Left / Right or stick    1-9    Enter / South\nEsc or East resume    Start pauses\nComma mute    M minimap    N music" + extra);
         }
 
         void DrawLocalControls(float cx, float cy)
