@@ -532,6 +532,14 @@ static class Program
             return 1;
         }
 
+        Tag.Core.FrameBudget.Report budget = Tag.Core.FrameBudget.Run();
+        Console.WriteLine(budget.Line);
+        if (!budget.Ok)
+        {
+            Console.Error.WriteLine(budget.Failure);
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }
