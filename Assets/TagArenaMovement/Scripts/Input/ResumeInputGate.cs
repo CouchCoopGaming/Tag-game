@@ -14,6 +14,11 @@ namespace TagArena.Movement
 
         public static bool Blocking => Time.frameCount <= _blockThroughFrame;
 
+        public static void Reset()
+        {
+            _blockThroughFrame = -1;
+        }
+
         /// <summary>Block look and one-shots through the end of the next frame.</summary>
         public static void Arm()
         {

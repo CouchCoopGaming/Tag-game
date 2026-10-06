@@ -34,6 +34,7 @@ namespace Tag.Trail
         readonly List<SegmentRec> _segments = new List<SegmentRec>();
         readonly List<Vector3> _linePoints = new List<Vector3>();
         Color _color = new Color(0.15f, 1f, 1f, 1f);
+        MaterialPropertyBlock _block;
         float _itBrightness = 1f;
 
         struct SegmentRec
@@ -75,6 +76,7 @@ namespace Tag.Trail
 
         void Awake()
         {
+            _block = new MaterialPropertyBlock();
             _owner = GetComponent<ItController>();
             _motor = GetComponent<PlayerMotor>();
             _ragdoll = GetComponent<PlayerRagdoll>();
@@ -315,6 +317,11 @@ namespace Tag.Trail
             RefreshLine();
         }
 
+        string SegmentName()
+        {
+            return "TrailSeg_" + OwnerId;
+        }
+
         void SpawnSegment(Vector3 a, Vector3 b)
         {
             if (_tuning == null) _tuning = TrailTagTuning.CreateRuntimeDefaults();
@@ -324,7 +331,7 @@ namespace Tag.Trail
             float len = Mathf.Max(delta.magnitude, 0.05f);
             Vector3 dir = delta / len;
 
-            var go = new GameObject($"TrailSeg_{OwnerId}");
+            var go = new GameObject(SegmentName());
             // Default layer so player-layer matrix quirks cannot swallow trail triggers.
             go.layer = 0;
             float height = _tuning.trailHeight;
@@ -353,7 +360,7 @@ namespace Tag.Trail
             mr.sharedMaterial = GetTrailMeshMaterial();
             mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             mr.receiveShadows = false;
-            var mpb = new MaterialPropertyBlock();
+            var mpb = _block;
             var vis = _color;
             vis.r = Mathf.Clamp01(vis.r * _itBrightness);
             vis.g = Mathf.Clamp01(vis.g * _itBrightness);

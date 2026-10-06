@@ -47,24 +47,28 @@ namespace Tag.Level
             new MegaParkP1Layout.Pt(8f, 0f, 63f),
         };
 
-        /// <summary>Steer loop for Stack Yard only. The shared planner reads these points.</summary>
+        /// <summary>
+        /// Steer loop for Stack Yard only. The shared planner reads these points.
+        /// Ground streets plus both roofs, so a low-difficulty It that holds the
+        /// loop still visits the tiers a runner camps.
+        /// </summary>
         public static readonly MegaParkP1Layout.Pt[] AiLoop =
         {
             new MegaParkP1Layout.Pt(16f, 0f, 14f),
             new MegaParkP1Layout.Pt(55f, 0f, 14f),
-            new MegaParkP1Layout.Pt(94f, 0f, 14f),
-            new MegaParkP1Layout.Pt(94f, 0f, 35f),
-            new MegaParkP1Layout.Pt(94f, 0f, 56f),
+            new MegaParkP1Layout.Pt(38f, 12f, 42f),
             new MegaParkP1Layout.Pt(55f, 0f, 56f),
+            new MegaParkP1Layout.Pt(70f, 12f, 42f),
+            new MegaParkP1Layout.Pt(94f, 0f, 14f),
+            new MegaParkP1Layout.Pt(94f, 0f, 56f),
             new MegaParkP1Layout.Pt(16f, 0f, 56f),
-            new MegaParkP1Layout.Pt(16f, 0f, 35f),
         };
 
         /// <summary>
         /// How far a low-difficulty flee aim slides onto <see cref="AiLoop"/>.
         /// Shared scoring is unchanged. Mega Park and Pocket Park do not read this.
         /// </summary>
-        public const float EvadeLoopAtLow = 0.52f;
+        public const float EvadeLoopAtLow = 0.78f;
 
         public static float EvadeLoopBlend(float difficulty)
         {
@@ -103,8 +107,10 @@ namespace Tag.Level
             new CoverSample { X = 62f, Z = 18f },
             new CoverSample { X = 92f, Z = 22f },
             new CoverSample { X = 92f, Z = 50f },
-            new CoverSample { X = 46f, Z = 54f },
-            new CoverSample { X = 72f, Z = 54f },
+            new CoverSample { X = 30f, Z = 34f },
+            new CoverSample { X = 78f, Z = 34f },
+            new CoverSample { X = 38f, Z = 42f },
+            new CoverSample { X = 70f, Z = 42f },
         };
 
         public struct CounterMark
@@ -117,7 +123,29 @@ namespace Tag.Level
             new CounterMark { X = 36f, Z = 20f, Y = 0f },
             new CounterMark { X = 74f, Z = 20f, Y = 0f },
             new CounterMark { X = 55f, Z = 48f, Y = 0f },
-            new CounterMark { X = 44f, Z = 36f, Y = 6f },
+            new CounterMark { X = 30f, Z = 34f, Y = 6f },
+            new CounterMark { X = 78f, Z = 34f, Y = 6f },
+            new CounterMark { X = 38f, Z = 42f, Y = 12f },
+            new CounterMark { X = 70f, Z = 42f, Y = 12f },
+        };
+
+        public struct RoofMark
+        {
+            public float X, Y, Z;
+            public string Tier;
+        }
+
+        /// <summary>
+        /// Spots a chase must be able to stand on. Ground, both mids, both roofs.
+        /// The route cache reads these. Shared scoring does not.
+        /// </summary>
+        public static readonly RoofMark[] RoofAccess =
+        {
+            new RoofMark { X = 55f, Y = 0f, Z = 16f, Tier = "ground" },
+            new RoofMark { X = 30f, Y = 6f, Z = 34f, Tier = "mid" },
+            new RoofMark { X = 78f, Y = 6f, Z = 34f, Tier = "mid" },
+            new RoofMark { X = 38f, Y = 12f, Z = 42f, Tier = "roof" },
+            new RoofMark { X = 70f, Y = 12f, Z = 42f, Tier = "roof" },
         };
 
         public static bool SampleCover(float selfX, float selfZ, float threatX, float threatZ, out float x, out float z)

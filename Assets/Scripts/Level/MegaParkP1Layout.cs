@@ -309,6 +309,8 @@ namespace Tag.Level
             if (fail.Length == failBeforeMesh && meshGap > MeshMatch)
                 fail.Append("collider mismatch ").Append(meshGap.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
 
+            ArenaStill.WritePair("MegaPark", solids, ramps, BuildDressing(), LaunchPads, ZipLines, Spawns[0], MapW, MapD, fail);
+
             var audit = new Audit
             {
                 Ok = fail.Length == 0,

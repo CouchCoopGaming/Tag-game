@@ -23,9 +23,15 @@ namespace Tag.Art
             EnsureBuilt();
         }
 
-        void LateUpdate()
+        void Start()
         {
             if (_motor == null) _motor = GetComponentInParent<PlayerMotor>();
+            if (_anchor == null) _anchor = transform;
+        }
+
+        void LateUpdate()
+        {
+            if (_motor == null || _anchor == null) BindMotor();
             if (_anchor == null) _anchor = transform;
             EnsureBuilt();
             if (!_built) return;
@@ -75,12 +81,28 @@ namespace Tag.Art
 
             var nozzleGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             nozzleGo.name = "JetNozzleGlow";
-            Object.Destroy(nozzleGo.GetComponent<Collider>());
             nozzleGo.transform.SetParent(transform, false);
-            var mr = nozzleGo.GetComponent<MeshRenderer>();
-            if (mr != null) mr.sharedMaterial = _mat;
+            PaintNozzle(nozzleGo);
             nozzleGo.SetActive(false);
             _nozzle = nozzleGo.transform;
+        }
+
+        void BindMotor()
+        {
+            FindMotor();
+        }
+
+        void FindMotor()
+        {
+            if (_motor == null) _motor = GetComponentInParent<PlayerMotor>();
+            if (_anchor == null) _anchor = transform;
+        }
+
+        void PaintNozzle(GameObject nozzleGo)
+        {
+            Object.Destroy(nozzleGo.GetComponent<Collider>());
+            var mr = nozzleGo.GetComponent<MeshRenderer>();
+            if (mr != null) mr.sharedMaterial = _mat;
         }
 
         static Material CreateGlowMat(Color c)

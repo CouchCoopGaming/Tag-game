@@ -19,6 +19,7 @@
     <Compile Include="../../Assets/Scripts/Level/StackYardLayout.cs" />
     <Compile Include="../../Assets/Scripts/Level/StackYardLayout.Look.cs" />
     <Compile Include="../../Assets/Scripts/Level/ParkArena.cs" />
+    <Compile Include="../../Assets/Scripts/Level/ArenaStill.cs" />
     <Compile Include="UnityStub/UnityEngine.cs" />
     <Compile Include="UnityStub/AudioBus.cs" />
     <Compile Include="../../Assets/Editor/StrafeJumpProof.cs" />
@@ -98,5 +99,9 @@
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Systems/KinematicStep.cs" />
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Camera/ChaseCam.cs" />
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Systems/WishAccel.cs" />
+    <Compile Include="../../Assets/Scripts/Core/SessionRules.cs" />
+    <Compile Include="../../Assets/Scripts/Core/HudDigits.cs" />
+    <Compile Include="../../Assets/Scripts/Core/QaSweep.cs" />
+    <Compile Include="../../Assets/Scripts/Core/HotPathAlloc.cs" />
   </ItemGroup>
 </Project>

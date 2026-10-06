@@ -369,7 +369,7 @@ namespace Tag.Modes
                 _target = previous;
             else
                 _target = bestPawn;
-            _targetMotor = _target != null ? _target.GetComponent<PlayerMotor>() : null;
+            _targetMotor = _target != null ? _target.Motor : null;
         }
 
         bool TargetLegal(ItController pawn, bool selfIsIt)
@@ -552,14 +552,27 @@ namespace Tag.Modes
 
         void HoldPunchTelegraph()
         {
-            var loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
+            var loco = PatrolLoco();
             if (loco != null) loco.HoldPunchTelegraph();
         }
 
         void CancelPunchTelegraph()
         {
-            var loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
+            var loco = PatrolLoco();
             if (loco != null) loco.CancelPunchTelegraph();
+        }
+
+        Tag.Art.DummyLocomotor _patrolLoco;
+
+        Tag.Art.DummyLocomotor PatrolLoco()
+        {
+            if (_patrolLoco == null) FindPatrolLoco();
+            return _patrolLoco;
+        }
+
+        void FindPatrolLoco()
+        {
+            _patrolLoco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
         }
 
         /// <summary>
@@ -1109,7 +1122,7 @@ namespace Tag.Modes
             if (threat != null)
             {
                 Vector3 threatPos = threat.transform.position;
-                var threatMotor = threat.GetComponent<PlayerMotor>();
+                var threatMotor = threat.Motor;
                 Vector3 threatVel = Vector3.zero;
                 if (threatMotor != null)
                 {
@@ -1243,6 +1256,12 @@ namespace Tag.Modes
         }
 
         void EnsureOpponentRefs()
+        {
+            if (_selfMotor != null && _punch != null && _lungeMark != null) return;
+            FillOpponentRefs();
+        }
+
+        void FillOpponentRefs()
         {
             if (_selfMotor == null)
                 _selfMotor = GetComponent<PlayerMotor>();

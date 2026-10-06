@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using Tag.Core;
 using Tag.Gameplay;
 using Tag.Level;
 using Tag.Modes;
@@ -23,6 +24,32 @@ namespace TagArena.Movement
     public class SpeedEnergyHUD : MonoBehaviour
     {
         public PlayerMotor motor;
+        ItController _self;
+        string _controlLine;
+        string _punchSeen;
+        string _dashSeen;
+        int _kphKey = int.MinValue;
+        int _verbKey = int.MinValue;
+        string _kphLine;
+        int _jetKey = int.MinValue;
+        bool _jettingSeen;
+        bool _skiSeen;
+        string _jetLine;
+        int _dashKey = int.MinValue;
+        string _dashLine;
+        int _nearKey = int.MinValue;
+        string _nearLine;
+        int _compassMeters = int.MinValue;
+        int _compassDir = -1;
+        string _compassWho;
+        string _compassLine;
+        ItController _preyBest;
+        float _preyBestSq;
+        ItController _preyHunter;
+        Vector3 _preyFrom;
+        readonly List<ItController> _living = new List<ItController>(8);
+        readonly StringBuilder _standings = new StringBuilder(64);
+        static readonly Comparison<ItController> ByItTime = CompareItTime;
         GUIStyle _big;
         GUIStyle _small;
         GUIStyle _keys;
@@ -91,24 +118,69 @@ namespace TagArena.Movement
         // Relative to camera: forward = N, right = E (hunt direction, not world north).
         static readonly string[] Compass8 = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
 
+        void Start()
+        {
+            if (motor != null) _self = motor.GetComponent<ItController>();
+            if (_self == null) _self = GetComponent<ItController>();
+            BootStyles();
+        }
+
+        void BootStyles()
+        {
+            _big = new GUIStyle(GUI.skin.label) { fontSize = 28, fontStyle = FontStyle.Bold };
+            _small = new GUIStyle(GUI.skin.label) { fontSize = 18 };
+            _keys = new GUIStyle(GUI.skin.label) { fontSize = 15 };
+            _status = new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold };
+            _flash = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 64,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter
+            };
+            _big.normal.textColor = Color.white;
+            _small.normal.textColor = new Color(0.85f, 0.9f, 1f);
+            _keys.normal.textColor = new Color(0.75f, 0.82f, 0.95f);
+            _status.normal.textColor = new Color(1f, 0.92f, 0.55f);
+        }
+
+        static int CompareItTime(ItController a, ItController b)
+        {
+            if (a == null && b == null) return 0;
+            if (a == null) return 1;
+            if (b == null) return -1;
+            return a.TimeAsIt.CompareTo(b.TimeAsIt);
+        }
+
+        string ControlLine()
+        {
+            string punch = ControlBinds.PunchName;
+            string dash = ControlBinds.DashName;
+            if (_controlLine != null && punch == _punchSeen && dash == _dashSeen)
+                return _controlLine;
+            _punchSeen = punch;
+            _dashSeen = dash;
+            _controlLine = Controls
+                .Replace("LMB/E punch", punch + "/E punch")
+                .Replace("Q/Alt air dash", dash + "/Alt air dash");
+            return _controlLine;
+        }
+
         void OnGUI()
         {
             if (!motor) return;
-            if (_big == null)
-            {
-                _big = new GUIStyle(GUI.skin.label) { fontSize = 28, fontStyle = FontStyle.Bold };
-                _small = new GUIStyle(GUI.skin.label) { fontSize = 18 };
-                _keys = new GUIStyle(GUI.skin.label) { fontSize = 15 };
-                _status = new GUIStyle(GUI.skin.label) { fontSize = 16, fontStyle = FontStyle.Bold };
-                _big.normal.textColor = Color.white;
-                _small.normal.textColor = new Color(0.85f, 0.9f, 1f);
-                _keys.normal.textColor = new Color(0.75f, 0.82f, 0.95f);
-                _status.normal.textColor = new Color(1f, 0.92f, 0.55f);
-            }
+            if (_big == null) return;
 
             float hs = motor.HorizSpeed;
-            string kph = (hs * 3.6f).ToString("0");
-            GUI.Label(new Rect(24, 16, 560, 36), kph + " km/h   " + LocoVerb(motor), _big);
+            int verbKey = motor.IsAirDashing ? 64 : (int)motor.State;
+            int kphKey = (int)(hs * 3.6f + 0.5f);
+            if (kphKey < 0) kphKey = 0;
+            if (kphKey != _kphKey || verbKey != _verbKey || _kphLine == null)
+            {
+                _kphKey = kphKey;
+                _verbKey = verbKey;
+                _kphLine = HudDigits.Kph(hs) + " km/h   " + LocoVerb(motor);
+            }
+            GUI.Label(new Rect(24, 16, 560, 36), _kphLine, _big);
             DrawMuteChip();
 
             bool jetOn = motor.cfg != null && motor.cfg.enableJet;
@@ -121,11 +193,16 @@ namespace TagArena.Movement
                 float e = Mathf.Clamp01(motor.Energy / maxE);
                 GUI.Box(new Rect(24, 56, 240, 20), GUIContent.none);
                 GUI.Box(new Rect(24, 56, 240 * e, 20), GUIContent.none);
-                string jet = motor.Jetting ? "JETTING" : "jet";
-                GUI.Label(
-                    new Rect(24, 80, 480, 26),
-                    "JET " + motor.Energy.ToString("0") + "/" + maxE.ToString("0") + "  " + jet + "   " + ski,
-                    _small);
+                int jetKey = (int)(motor.Energy + 0.5f);
+                if (jetKey != _jetKey || _jetLine == null || motor.Jetting != _jettingSeen || motor.Skiing != _skiSeen)
+                {
+                    _jetKey = jetKey;
+                    _jettingSeen = motor.Jetting;
+                    _skiSeen = motor.Skiing;
+                    string jet = motor.Jetting ? "JETTING" : "jet";
+                    _jetLine = "JET " + HudDigits.Whole0(motor.Energy) + "/" + HudDigits.Whole0(maxE) + "  " + jet + "   " + ski;
+                }
+                GUI.Label(new Rect(24, 80, 480, 26), _jetLine, _small);
             }
             else
             {
@@ -171,10 +248,7 @@ namespace TagArena.Movement
                 y += 32f;
             }
 
-            string keys = Controls
-                .Replace("LMB/E punch", ControlBinds.PunchName + "/E punch")
-                .Replace("Q/Alt air dash", ControlBinds.DashName + "/Alt air dash");
-            GUI.Label(new Rect(24, y, 300, 300), keys, _keys);
+            GUI.Label(new Rect(24, y, 300, 300), ControlLine(), _keys);
             y += 292f;
 
             DrawMatchStatus(y);
@@ -226,11 +300,7 @@ namespace TagArena.Movement
 
         bool ResolveLocalIsIt()
         {
-            ItController self = null;
-            if (motor != null)
-                self = motor.GetComponent<ItController>();
-            if (self == null)
-                self = GetComponent<ItController>();
+            ItController self = _self;
             if (self != null)
                 return self.IsAlive && self.IsIt;
             return false;
@@ -244,15 +314,8 @@ namespace TagArena.Movement
             float rem = _itFlashUntil - Time.time;
             if (rem <= 0f) return;
 
-            if (_flash == null)
-            {
-                _flash = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 64,
-                    fontStyle = FontStyle.Bold,
-                    alignment = TextAnchor.MiddleCenter
-                };
-            }
+            if (_flash == null) return;
+            _flash.fontSize = 64;
 
             float elapsed = ItFlashSec - rem;
             float fadeIn = 0.08f;
@@ -302,9 +365,7 @@ namespace TagArena.Movement
         /// </summary>
         void DrawWaitingBanner()
         {
-            ItController self = null;
-            if (motor != null) self = motor.GetComponent<ItController>();
-            if (self == null) self = GetComponent<ItController>();
+            ItController self = _self;
             if (self == null || self.IsAlive) return;
             var modes = TagModeController.Instance;
             if (modes == null || modes.Phase != MatchPhase.Playing) return;
@@ -359,7 +420,7 @@ namespace TagArena.Movement
 
             float w = 280f;
             var r = new Rect((Screen.width - w) * 0.5f, 102f, w, 36f);
-            DrawFuseUrgencyLabel(r, "FUSE  " + remain.ToString("0.0"), urgency);
+            DrawFuseUrgencyLabel(r, "FUSE  " + HudDigits.Tenth0(remain), urgency);
         }
 
         /// <summary>
@@ -377,8 +438,7 @@ namespace TagArena.Movement
                 return;
             if (motor == null) return;
 
-            ItController self = motor.GetComponent<ItController>();
-            if (self == null) self = GetComponent<ItController>();
+            ItController self = _self;
             if (self == null || !self.IsAlive || self.IsEliminated)
                 return;
 
@@ -437,15 +497,8 @@ namespace TagArena.Movement
             GUI.DrawTexture(new Rect(0f, 0f, edge, h), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(w - edge, 0f, edge, h), Texture2D.whiteTexture);
 
-            if (_flash == null)
-            {
-                _flash = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 64,
-                    fontStyle = FontStyle.Bold,
-                    alignment = TextAnchor.MiddleCenter
-                };
-            }
+            if (_flash == null) return;
+            _flash.fontSize = 64;
             float textA = Mathf.Lerp(0.45f, 1f, urgency * pulse);
             _flash.normal.textColor = Color.Lerp(
                 new Color(0.45f, 0.95f, 1f, textA),
@@ -465,8 +518,13 @@ namespace TagArena.Movement
                 var prevAlign = _status.alignment;
                 _status.alignment = TextAnchor.MiddleCenter;
                 _status.normal.textColor = new Color(1f, 0.92f, 0.55f, textA * 0.85f);
-                GUI.Label(new Rect(r.x, r.yMax - 6f, r.width, 24f),
-                    _trailNearDist.ToString("0.0") + "m", _status);
+                int nearKey = (int)(_trailNearDist * 10f + 0.5f);
+                if (nearKey != _nearKey || _nearLine == null)
+                {
+                    _nearKey = nearKey;
+                    _nearLine = HudDigits.Tenth0(_trailNearDist) + "m";
+                }
+                GUI.Label(new Rect(r.x, r.yMax - 6f, r.width, 24f), _nearLine, _status);
                 _status.alignment = prevAlign;
                 _status.normal.textColor = prevStatus;
             }
@@ -502,11 +560,7 @@ namespace TagArena.Movement
 
         bool ResolveLocalAlive()
         {
-            ItController self = null;
-            if (motor != null)
-                self = motor.GetComponent<ItController>();
-            if (self == null)
-                self = GetComponent<ItController>();
+            ItController self = _self;
             if (self != null)
                 return self.IsAlive;
             return true;
@@ -522,15 +576,8 @@ namespace TagArena.Movement
             float rem = _trailOutFlashUntil - Time.time;
             if (rem <= 0f) return;
 
-            if (_flash == null)
-            {
-                _flash = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 64,
-                    fontStyle = FontStyle.Bold,
-                    alignment = TextAnchor.MiddleCenter
-                };
-            }
+            if (_flash == null) return;
+            _flash.fontSize = 64;
 
             float elapsed = TrailOutFlashSec - rem;
             float fadeIn = 0.06f;
@@ -608,7 +655,7 @@ namespace TagArena.Movement
             {
                 modeName = FriendlyModeName(modes.SelectedMode) + " | " + PhaseLabel(modes.Phase);
                 if (modes.SelectedMode == TagModeId.LeastIt && modes.Phase == MatchPhase.Playing && modes.Remaining > 0f)
-                    modeName += "  " + modes.Remaining.ToString("0") + "s  lowest wins";
+                    modeName += "  " + HudDigits.WholeSeconds(modes.Remaining) + "  lowest wins";
                 if (modes.SelectedMode == TagModeId.TrailTag && modes.Phase == MatchPhase.Playing && modes.SuddenDeath)
                     modeName += "  SUDDEN DEATH";
                 if (modes.SelectedMode == TagModeId.FreePlay && modes.Phase == MatchPhase.Playing)
@@ -622,7 +669,7 @@ namespace TagArena.Movement
                 {
                     float rem = modes.Remaining;
                     fuseLine = rem > 0f
-                        ? "Fuse " + rem.ToString("0.0") + "s"
+                        ? "Fuse " + HudDigits.TenthSeconds(rem)
                         : "Fuse ";
                 }
             }
@@ -683,8 +730,7 @@ namespace TagArena.Movement
         /// <summary>Whole seconds above 10s (30s air-dash CD); one decimal under that.</summary>
         static string FormatDashCd(float rem)
         {
-            if (rem >= 10f) return rem.ToString("0") + "s";
-            return rem.ToString("0.0") + "s";
+            return HudDigits.DashCd(rem);
         }
 
         static float HotPotatoFuseUrgency(TagModeController modes)
@@ -756,42 +802,40 @@ namespace TagArena.Movement
 
         ItController FindNearestPrey(TagModeController modes)
         {
-            Vector3 from = motor.transform.position;
-            ItController best = null;
-            float bestSq = float.MaxValue;
-
-            ItController hunter = motor != null ? motor.GetComponent<ItController>() : null;
-            void Consider(ItController p)
-            {
-                if (p == null || !p.IsAlive || p.IsIt) return;
-                if (IsLocalPlayer(p)) return;
-                if (hunter != null && p.BlocksTagBackFrom(hunter)) return;
-                Vector3 d = p.transform.position - from;
-                d.y = 0f;
-                float sq = d.sqrMagnitude;
-                if (sq < bestSq)
-                {
-                    bestSq = sq;
-                    best = p;
-                }
-            }
+            _preyFrom = motor.transform.position;
+            _preyBest = null;
+            _preyBestSq = float.MaxValue;
+            _preyHunter = _self;
 
             if (modes != null && modes.PlayersForHud != null)
             {
                 var list = modes.PlayersForHud;
                 for (int i = 0; i < list.Count; i++)
-                    Consider(list[i]);
+                    ConsiderPrey(list[i]);
             }
 
             // Empty / no-candidate PlayersForHud: same scan as when modes is null.
-            if (best == null)
+            if (_preyBest == null)
             {
                 var all = Object.FindObjectsByType<ItController>(FindObjectsSortMode.None);
                 for (int i = 0; i < all.Length; i++)
-                    Consider(all[i]);
+                    ConsiderPrey(all[i]);
             }
 
-            return best;
+            return _preyBest;
+        }
+
+        void ConsiderPrey(ItController p)
+        {
+            if (p == null || !p.IsAlive || p.IsIt) return;
+            if (IsLocalPlayer(p)) return;
+            if (_preyHunter != null && p.BlocksTagBackFrom(_preyHunter)) return;
+            Vector3 d = p.transform.position - _preyFrom;
+            d.y = 0f;
+            float sq = d.sqrMagnitude;
+            if (sq >= _preyBestSq) return;
+            _preyBestSq = sq;
+            _preyBest = p;
         }
 
         /// <summary>
@@ -829,7 +873,16 @@ namespace TagArena.Movement
             float rel360 = rel < 0f ? rel + 360f : rel;
             int relIdx = Mathf.RoundToInt(rel360 / 45f) & 7;
 
-            string line = label + " ->  " + Compass8[relIdx] + "  " + dist.ToString("0") + "m";
+            int meters = (int)(dist + 0.5f);
+            if (meters < 0) meters = 0;
+            if (_compassLine == null || meters != _compassMeters || relIdx != _compassDir || label != _compassWho)
+            {
+                _compassMeters = meters;
+                _compassDir = relIdx;
+                _compassWho = label;
+                _compassLine = label + " ->  " + Compass8[relIdx] + "  " + HudDigits.Meters0(dist);
+            }
+            string line = _compassLine;
 
             Color prevColor = GUI.color;
             Matrix4x4 prevMatrix = GUI.matrix;
@@ -876,7 +929,7 @@ namespace TagArena.Movement
             ItController leader = null;
             float best = float.MaxValue;
             float worst = float.MinValue;
-            var living = new List<ItController>(8);
+            _living.Clear();
 
             var list = modes.PlayersForHud;
             if (list != null)
@@ -885,7 +938,7 @@ namespace TagArena.Movement
                 {
                     var p = list[i];
                     if (p == null || !p.IsAlive) continue;
-                    living.Add(p);
+                    _living.Add(p);
                     if (IsLocalPlayer(p))
                         self = p;
                     if (p.TimeAsIt < best)
@@ -898,31 +951,27 @@ namespace TagArena.Movement
                 }
             }
 
-            if (self == null)
-            {
-                var onMotor = motor != null ? motor.GetComponent<ItController>() : null;
-                if (onMotor != null && onMotor.IsAlive)
-                    self = onMotor;
-            }
+            if (self == null && _self != null && _self.IsAlive)
+                self = _self;
 
             float youT = self != null ? self.TimeAsIt : 0f;
             // Soft standings cue: lowest It-time is winning (mint); more It-time is behind (coral).
             bool leading = false;
             bool lagging = false;
-            if (self != null && living.Count > 0)
+            if (self != null && _living.Count > 0)
             {
                 const float eps = 0.05f;
                 leading = youT <= best + eps;
-                if (!leading && living.Count >= 2)
+                if (!leading && _living.Count >= 2)
                 {
                     if (youT >= worst - eps)
                         lagging = true;
-                    else if (living.Count >= 3)
+                    else if (_living.Count >= 3)
                     {
                         // Near-highest: 2nd-from-bottom by TimeAsIt rank.
-                        living.Sort((a, b) => a.TimeAsIt.CompareTo(b.TimeAsIt));
-                        int idx = living.IndexOf(self);
-                        if (idx >= living.Count - 2)
+                        _living.Sort(ByItTime);
+                        int idx = _living.IndexOf(self);
+                        if (idx >= _living.Count - 2)
                             lagging = true;
                     }
                 }
@@ -941,7 +990,7 @@ namespace TagArena.Movement
                 youTag = "  BEHIND (more It)";
             }
             GUI.Label(new Rect(24, y, 640, 22),
-                "You " + youT.ToString("0.0") + "s" + youTag, _status);
+                "You " + HudDigits.TenthSeconds(youT) + youTag, _status);
             GUI.color = prev;
             y += 22f;
 
@@ -952,7 +1001,7 @@ namespace TagArena.Movement
                 if (leading)
                     GUI.color = new Color(0.45f, 1f, 0.7f, 1f);
                 GUI.Label(new Rect(24, y, 520, 22),
-                    "Least " + leadName + " " + leader.TimeAsIt.ToString("0.0") + "s" + leadMark,
+                    "Least " + leadName + " " + HudDigits.TenthSeconds(leader.TimeAsIt) + leadMark,
                     _status);
                 GUI.color = prev;
                 y += 22f;
@@ -960,21 +1009,21 @@ namespace TagArena.Movement
 
             // Briefly show all players' times on a compact line (cycle).
             float cycle = Mathf.Repeat(Time.time, AllStandingsCycleSec);
-            if (living.Count > 0 && cycle < AllStandingsShowSec)
+            if (_living.Count > 0 && cycle < AllStandingsShowSec)
             {
-                var sb = new StringBuilder(64);
-                sb.Append("All ");
-                living.Sort((a, b) => a.TimeAsIt.CompareTo(b.TimeAsIt));
-                for (int i = 0; i < living.Count; i++)
+                _standings.Clear();
+                _standings.Append("All ");
+                _living.Sort(ByItTime);
+                for (int i = 0; i < _living.Count; i++)
                 {
-                    if (i > 0) sb.Append(" | ");
-                    var p = living[i];
+                    if (i > 0) _standings.Append(" | ");
+                    var p = _living[i];
                     string n = IsLocalPlayer(p) ? "YOU" : (string.IsNullOrEmpty(p.PlayerId) ? p.name : p.PlayerId);
-                    sb.Append(n);
-                    sb.Append(' ');
-                    sb.Append(p.TimeAsIt.ToString("0.0"));
+                    _standings.Append(n);
+                    _standings.Append(' ');
+                    _standings.Append(HudDigits.Tenth0(p.TimeAsIt));
                 }
-                GUI.Label(new Rect(24, y, 640, 22), sb.ToString(), _status);
+                GUI.Label(new Rect(24, y, 640, 22), _standings.ToString(), _status);
                 y += 22f;
             }
 
@@ -984,11 +1033,10 @@ namespace TagArena.Movement
         bool IsLocalPlayer(ItController it)
         {
             if (it == null) return false;
+            if (_self != null) return it == _self;
             if (it.gameObject == gameObject) return true;
-            if (motor != null && it.GetComponent<PlayerMotor>() == motor) return true;
-            if (it.GetComponent<PlayerInputReader>() != null && it.GetComponent<DummyPatrol>() == null)
-                return true;
-            return false;
+            if (motor != null && it.Motor == motor) return true;
+            return it.LooksLocal();
         }
 
 
@@ -1021,15 +1069,8 @@ namespace TagArena.Movement
             float rem = _modeFlashUntil - Time.time;
             if (rem <= 0f || string.IsNullOrEmpty(_modeFlashLabel)) return;
 
-            if (_flash == null)
-            {
-                _flash = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 52,
-                    fontStyle = FontStyle.Bold,
-                    alignment = TextAnchor.MiddleCenter
-                };
-            }
+            if (_flash == null) return;
+            _flash.fontSize = 52;
 
             float elapsed = ModeFlashSec - rem;
             float fadeIn = 0.08f;
@@ -1111,23 +1152,25 @@ namespace TagArena.Movement
         /// <summary>It-line note while the tag-back window is open. Empty when it is shut.</summary>
         string TagBackHudSuffix()
         {
-            ItController self = null;
-            if (motor != null) self = motor.GetComponent<ItController>();
-            if (self == null) self = GetComponent<ItController>();
+            ItController self = _self;
             if (self == null) return "";
             if (!self.IsIt && self.TagBackRemaining > 0.001f)
-                return "  safe " + self.TagBackRemaining.ToString("0.0") + "s";
+                return "  safe " + HudDigits.TenthSeconds(self.TagBackRemaining);
             if (!self.IsIt) return "";
             float best = 0f;
-            var all = Object.FindObjectsByType<ItController>(FindObjectsSortMode.None);
-            for (int i = 0; i < all.Length; i++)
+            var modes = TagModeController.Instance;
+            var roster = modes != null ? modes.PlayersForHud : null;
+            if (roster != null)
             {
-                var p = all[i];
-                if (p == null || !p.BlocksTagBackFrom(self)) continue;
-                if (p.TagBackRemaining > best) best = p.TagBackRemaining;
+                for (int i = 0; i < roster.Count; i++)
+                {
+                    var p = roster[i];
+                    if (p == null || !p.BlocksTagBackFrom(self)) continue;
+                    if (p.TagBackRemaining > best) best = p.TagBackRemaining;
+                }
             }
             if (best <= 0.001f) return "";
-            return "  no tag-back " + best.ToString("0.0") + "s";
+            return "  no tag-back " + HudDigits.TenthSeconds(best);
         }
 
         static ItController ScanItControllers()
@@ -1167,15 +1210,8 @@ namespace TagArena.Movement
         {
             float rem = _sdFlashUntil - Time.time;
             if (rem <= 0f) return;
-            if (_flash == null)
-            {
-                _flash = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 48,
-                    fontStyle = FontStyle.Bold,
-                    alignment = TextAnchor.MiddleCenter
-                };
-            }
+            if (_flash == null) return;
+            _flash.fontSize = 48;
             float elapsed = SdFlashSec - rem;
             float a = 1f;
             if (elapsed < 0.08f) a = elapsed / 0.08f;

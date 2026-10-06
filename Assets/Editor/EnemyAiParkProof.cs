@@ -1194,8 +1194,13 @@ public static partial class EnemyAiProof
                     runMed[d] = Percentile(runTimes, 0.50f);
                     runP10[d] = Percentile(runTimes, 0.10f);
                     runP90[d] = Percentile(runTimes, 0.90f);
+                    ExpectBand(report, runMed[d], mega.RunMed[d] * 0.70f, mega.RunMed[d] * 1.10f,
+                        "stack runner median at " + diffs[d].ToString("0.0", CultureInfo.InvariantCulture));
                 }
             }
+            if (!(runMed[0] + 0.35f < runMed[1] && runMed[1] + 0.35f < runMed[2]))
+                report.Fail("stack runner medians did not rise with difficulty");
+            float camp = CheckStackCamps(cfg, punch, report);
             if (report.Stuck != 0)
                 report.Fail("stack stuck " + report.Stuck.ToString(CultureInfo.InvariantCulture));
             if (report.Breaches != 0)
@@ -1212,7 +1217,8 @@ public static partial class EnemyAiProof
                 + " runP10=" + Fmt3(runP10)
                 + " runP90=" + Fmt3(runP90)
                 + " stuck=" + report.Stuck.ToString(CultureInfo.InvariantCulture)
-                + " flips=" + report.Flips.ToString(CultureInfo.InvariantCulture);
+                + " flips=" + report.Flips.ToString(CultureInfo.InvariantCulture)
+                + " camp=" + camp.ToString("0.00", CultureInfo.InvariantCulture);
             if (!report.Ok)
             {
                 mega.Fail(report.FailureText);
@@ -1226,6 +1232,66 @@ public static partial class EnemyAiProof
             ParkArena.HasExplicitChoice = savedChoice;
             MegaParkP1Layout.WarmParkRoutes();
         }
+    }
+
+    /// <summary>
+    /// A runner who holds one tier spot against It at 0.9. Every ground, mid, and roof mark must fall inside 30 s.
+    /// </summary>
+    static float CheckStackCamps(MovementConfig cfg, PunchTagTuning punch, EnemyAiReport report)
+    {
+        StackYardLayout.RoofMark[] spots = StackYardLayout.RoofAccess;
+        float worst = 0f;
+        if (spots == null || spots.Length < 3)
+        {
+            report.Fail("stack roof access marks are missing");
+            return 99f;
+        }
+        bool ground = false, mid = false, roof = false;
+        for (int i = 0; i < spots.Length; i++)
+        {
+            StackYardLayout.RoofMark spot = spots[i];
+            if (spot.Tier == "ground") ground = true;
+            else if (spot.Tier == "mid") mid = true;
+            else if (spot.Tier == "roof") roof = true;
+            float t = CampDuel(cfg, punch, spot.X, spot.Y, spot.Z, report);
+            if (t > worst) worst = t;
+            if (t > 30f)
+                report.Fail("stack camp " + spot.Tier + " "
+                    + spot.X.ToString("0", CultureInfo.InvariantCulture) + ","
+                    + spot.Z.ToString("0", CultureInfo.InvariantCulture)
+                    + " survived " + t.ToString("0.00", CultureInfo.InvariantCulture) + "s");
+        }
+        if (!ground || !mid || !roof)
+            report.Fail("stack roof access is missing a tier");
+        return worst;
+    }
+
+    static float CampDuel(MovementConfig cfg, PunchTagTuning punch, float x, float y, float z, EnemyAiReport report)
+    {
+        var it = MakePawn(StackYardLayout.Spawns[0], true, true, 77u);
+        var run = MakePawn(StackYardLayout.Spawns[2], false, false, 99u);
+        float stand = y;
+        if (MegaParkP1Layout.ParkOpen(x, z, out float floor))
+            stand = floor;
+        run.Pos = new Vector3(x, stand, z);
+        run.Vel = Vector3.zero;
+        run.Immune = 0f;
+        run.Aim = run.Pos;
+        run.HumanGoal = run.Pos;
+        const float limit = 30f;
+        float t = 0f;
+        int guard = 0;
+        int steps = (int)(limit / ParkDt) + 2;
+        while (t < limit && guard++ < steps)
+        {
+            StepPawn(it, run, cfg, 0.9f, t, report);
+            run.Pos = new Vector3(x, stand, z);
+            run.Vel = Vector3.zero;
+            t += ParkDt;
+            if (Tagged(it, run, punch, report))
+                return t;
+        }
+        return t;
     }
 
     static void CheckStackContained(EnemyAiReport report)
@@ -1256,6 +1322,11 @@ public static partial class EnemyAiProof
         {
             var c = StackYardLayout.CounterMarks[i];
             RequireTarget(new Vector3(c.X, c.Y, c.Z), report, "stack counter");
+        }
+        for (int i = 0; i < StackYardLayout.RoofAccess.Length; i++)
+        {
+            var c = StackYardLayout.RoofAccess[i];
+            RequireTarget(new Vector3(c.X, c.Y, c.Z), report, "stack roof access");
         }
         Vector3 steer = EnemyAi.LoopSteer(new Vector3(16f, 0.2f, 14f), new Vector3(94f, 0.2f, 14f), false, 18f);
         RequireTarget(steer, report, "stack loop steer");

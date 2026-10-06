@@ -22,6 +22,12 @@ namespace Tag.Settings
 
         static float _nextStick;
 
+        public static void ResetStatics()
+        {
+            Up = Down = Left = Right = Confirm = Back = Start = Select = false;
+            _nextStick = 0f;
+        }
+
         public static void Poll()
         {
             Up = Down = Left = Right = Confirm = Back = Start = Select = false;
