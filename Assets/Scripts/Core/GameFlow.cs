@@ -252,6 +252,7 @@ namespace Tag.Core
         public void Rematch()
         {
             FrontSession.NoteRematch();
+            FrontLive.BeginMatch();
             AudioCuePlayer.Ensure()?.UiConfirm();
             ClearPauseEdges();
             ReturnToPlay();

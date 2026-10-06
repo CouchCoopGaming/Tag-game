@@ -351,6 +351,7 @@ namespace Tag.Settings
                 return;
             }
             ActionBinds.Current = binds;
+            Tag.Profiles.LocalProfiles.StoreBinds(0, binds);
             SettingsRuntime.Save();
             Capturing = false;
             _captureAction = -1;
@@ -377,6 +378,7 @@ namespace Tag.Settings
                 return;
             }
             ActionBinds.Current = trial;
+            Tag.Profiles.LocalProfiles.StoreBinds(0, trial);
             _conflict = "";
             SettingsRuntime.Save();
         }
@@ -391,6 +393,7 @@ namespace Tag.Settings
                 return;
             }
             ActionBinds.Current = trial;
+            Tag.Profiles.LocalProfiles.StoreBinds(0, trial);
             _conflict = "";
             SettingsRuntime.Save();
         }

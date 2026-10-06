@@ -183,7 +183,9 @@ namespace Tag.Art
             int pal = 0;
             if (GameSettings.Current != null)
                 pal = GameSettings.Current.PaletteOf(_shape);
-            AccessibilityPalette.It(pal, out float ir, out float ig, out float ib);
+            int crown = Tag.Profiles.LocalProfiles.SeatColor(_shape);
+            if (crown < 0) crown = _shape;
+            AccessibilityPalette.ItAgainst(pal, crown, out float ir, out float ig, out float ib);
             Color itCol = new Color(ir, ig, ib, 1f);
             if (_light != null)
             {
@@ -364,7 +366,9 @@ namespace Tag.Art
                 pal = GameSettings.Current.PaletteOf(_shape);
                 hud = Tag.Profiles.LocalProfiles.TextScale(_shape);
             }
-            AccessibilityPalette.It(pal, out float ir, out float ig, out float ib);
+            int crown = Tag.Profiles.LocalProfiles.SeatColor(_shape);
+            if (crown < 0) crown = _shape;
+            AccessibilityPalette.ItAgainst(pal, crown, out float ir, out float ig, out float ib);
             GUI.color = new Color(ir, ig, ib, 1f);
             float inset = 5f;
             GUI.DrawTexture(new Rect(x + inset, y + inset, mark - inset * 2f, mark - inset * 2f), Texture2D.whiteTexture);

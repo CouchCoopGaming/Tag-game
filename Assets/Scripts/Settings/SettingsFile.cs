@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using Tag.Practice;
 using Tag.Profiles;
@@ -67,6 +68,50 @@ namespace Tag.Settings
         }
 
         public const int Version = 2;
+
+        /// <summary>
+        /// Write a temp file, read it back, then replace the destination.
+        /// A crash after the temp write leaves the previous file intact.
+        /// </summary>
+        public static bool CommitText(string path, string text)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+            string tmp = path + ".tmp";
+            string body = text ?? "";
+            try
+            {
+                File.WriteAllText(tmp, body);
+                string back = File.ReadAllText(tmp);
+                if (back != body)
+                {
+                    if (File.Exists(tmp)) File.Delete(tmp);
+                    return false;
+                }
+                if (File.Exists(path))
+                    File.Replace(tmp, path, null);
+                else
+                    File.Move(tmp, path);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>The destination only. A half-written temp file is not the settings blob.</summary>
+        public static string ReadStable(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return "";
+            try
+            {
+                return File.ReadAllText(path);
+            }
+            catch (Exception)
+            {
+                return "";
+            }
+        }
 
         public static void Read(string blob, GameSettings settings, ActionBinds binds)
         {

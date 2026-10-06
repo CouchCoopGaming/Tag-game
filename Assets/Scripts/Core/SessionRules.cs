@@ -168,6 +168,26 @@ namespace Tag.Core
         /// <summary>A respawn is not still on the cable.</summary>
         public static bool RidingAfterRespawn(bool wasRiding) => false;
 
+        /// <summary>
+        /// Practice restart and a kill-box snap drop the ride. Feel clocks are
+        /// zeroed here. The durations in the tuning assets stay put.
+        /// </summary>
+        public static Clocks ClearCarriers(Clocks clocks)
+        {
+            clocks.ClingGrace = 0f;
+            clocks.JumpSlot = 0f;
+            clocks.WallJumpSlot = 0f;
+            clocks.AirDash = 0f;
+            clocks.Lunge = 0f;
+            clocks.Stagger = 0f;
+            clocks.StaggerImmune = 0f;
+            clocks.Zip = false;
+            clocks.Arc = false;
+            clocks.Slide = false;
+            clocks.Climb = false;
+            return clocks;
+        }
+
         static float Decay(float value, float dt)
         {
             if (value <= 0f) return 0f;

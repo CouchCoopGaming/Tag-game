@@ -110,6 +110,15 @@ namespace Tag.Practice
             return null;
         }
 
+        /// <summary>A saved ghost plays only on the arena that route was recorded in.</summary>
+        public static bool Playable(string id, string arena)
+        {
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(arena)) return false;
+            if (!PracticeGhost.HasReplay(id)) return false;
+            PracticeRoute route = ById(id);
+            return route != null && route.Arena == arena;
+        }
+
         public static bool Hit(PracticeGate gate, float x, float y, float z)
         {
             float dx = x - gate.X;
@@ -245,6 +254,18 @@ namespace Tag.Practice
             if (float.TryParse(obj.Substring(s, e - s), NumberStyles.Float, CultureInfo.InvariantCulture, out float v))
                 return v;
             return 0f;
+        }
+    }
+
+    /// <summary>One checkpoint per sample. Overlapping volumes do not chain in the same tick.</summary>
+    public static class PracticeGates
+    {
+        public static int Step(PracticeGate[] gates, int next, float x, float y, float z, bool verbReady)
+        {
+            if (gates == null || !verbReady) return next;
+            if (next < 0 || next >= gates.Length) return next;
+            if (!PracticeCatalog.Hit(gates[next], x, y, z)) return next;
+            return next + 1;
         }
     }
 

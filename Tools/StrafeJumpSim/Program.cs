@@ -612,6 +612,14 @@ static class Program
             return 1;
         }
 
+        Tag.Core.QaSweep3.Report sweep3 = Tag.Core.QaSweep3.Run();
+        Console.WriteLine(sweep3.Line);
+        if (!sweep3.Ok)
+        {
+            Console.Error.WriteLine(sweep3.Failure);
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }

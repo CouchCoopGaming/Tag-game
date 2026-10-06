@@ -1,6 +1,7 @@
 using UnityEngine;
 using Tag.Audio;
 using Tag.Modes;
+using Tag.Practice;
 using TagArena.Movement;
 
 namespace Tag.Gameplay
@@ -156,6 +157,7 @@ namespace Tag.Gameplay
 
         public void SetIt(bool value)
         {
+            value = PracticeSession.FilterIt(PracticeSession.Active, value);
             if (_eliminated && value) return;
             bool wasIt = isIt;
             isIt = value;

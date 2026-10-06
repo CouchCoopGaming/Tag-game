@@ -1429,6 +1429,13 @@ namespace TagArena.Movement
             _jumpSlot = 0f;
             _wallJumpSlot = 0f;
             _clingGrace = 0f;
+            _stagger = default;
+            _wallRunT = 0f;
+            _slideT = 0f;
+            _climbT = 0f;
+            if (State == MoveState.WallRun || State == MoveState.WallClimb || State == MoveState.Slide
+                || State == MoveState.Mantle || _mode == Locomotion.AirDash)
+                SetState(MoveState.Idle);
         }
 
         /// <summary>Zip, pad arc, lunge, and air dash drop. Ground velocity is left for the caller.</summary>
