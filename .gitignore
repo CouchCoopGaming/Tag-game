@@ -50,6 +50,8 @@ Tools/StrafeJumpSim/bin/
 Tools/ScriptCompileCheck/bin/
 !Tools/UnityAssetAudit/UnityAssetAudit.csproj
 Tools/UnityAssetAudit/bin/
+!Tools/AudioSynth/AudioSynth.csproj
+Tools/AudioSynth/bin/
 .consulo/
 *.apk
 *.aab

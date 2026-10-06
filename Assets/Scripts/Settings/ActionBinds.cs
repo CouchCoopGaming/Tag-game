@@ -31,6 +31,9 @@ namespace Tag.Settings
         public readonly string[] Keyboard = new string[(int)PlayAction.Count];
         public readonly string[] Gamepad = new string[(int)PlayAction.Count];
 
+        /// <summary>Bumps when a token changes so prompt glyphs can refresh without scanning.</summary>
+        public int Revision { get; private set; }
+
         public static ActionBinds Current = Defaults();
 
         static ActionBinds _template;
@@ -122,6 +125,14 @@ namespace Tag.Settings
                 case "comma": return "Comma";
                 case "q": return "Q";
                 case "e": return "E";
+                case "c": return "C";
+                case "v": return "V";
+                case "f": return "F";
+                case "r": return "R";
+                case "p": return "P";
+                case "n": return "N";
+                case "tab": return "Tab";
+                case "rightShift": return "RShift";
                 case "m": return "M";
                 case "leftStick": return "Left stick";
                 case "rightStick": return "Right stick";
@@ -160,11 +171,13 @@ namespace Tag.Settings
         public void SetKeyboard(PlayAction action, string token)
         {
             Keyboard[(int)action] = token ?? "";
+            Revision++;
         }
 
         public void SetGamepad(PlayAction action, string token)
         {
             Gamepad[(int)action] = token ?? "";
+            Revision++;
         }
 
         public void ResetToDefaults()
@@ -175,6 +188,7 @@ namespace Tag.Settings
                 Keyboard[i] = d.Keyboard[i];
                 Gamepad[i] = d.Gamepad[i];
             }
+            Revision++;
         }
 
         public ActionBinds Clone()

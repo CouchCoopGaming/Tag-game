@@ -1212,6 +1212,7 @@ namespace Tag.Art
 
         void LateUpdate()
         {
+            Tag.Core.FrameMeter.AddPose(Tag.Core.FrameMeter.PoseOps);
             float dt = Time.deltaTime;
             _stanceSole = false;
             _punchTelegraph = Mathf.MoveTowards(_punchTelegraph, 0f, dt);

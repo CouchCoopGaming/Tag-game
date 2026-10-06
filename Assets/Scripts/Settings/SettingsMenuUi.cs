@@ -1,5 +1,6 @@
 using Tag.Audio;
 using Tag.Core;
+using Tag.Onboard;
 using UnityEngine;
 
 namespace Tag.Settings
@@ -15,7 +16,8 @@ namespace Tag.Settings
             None,
             Settings,
             Rebind,
-            Arena
+            Arena,
+            HowTo
         }
 
         public static Panel Which { get; private set; }
@@ -34,6 +36,8 @@ namespace Tag.Settings
             Capturing = false;
             _captureAction = -1;
             _conflict = "";
+            if (panel == Panel.HowTo)
+                HowToPlay.Ensure(ControlGlyphs.Device, ArenaRegistry.Count);
         }
 
         public static void ResetStatics()
@@ -67,7 +71,7 @@ namespace Tag.Settings
             if (Input.GetKeyDown(KeyCode.Escape) || PadNav.Back)
             {
                 Close();
-                AudioCuePlayer.Ensure()?.UiClick();
+                TagSfx.UiBack();
                 return;
             }
             if (Input.GetKeyDown(KeyCode.UpArrow) || PadNav.Up)
@@ -119,21 +123,36 @@ namespace Tag.Settings
             if (Which == Panel.Settings) DrawSettings(cx, cy);
             else if (Which == Panel.Rebind) DrawRebind(cx, cy);
             else if (Which == Panel.Arena) DrawArena(cx, cy);
+            else if (Which == Panel.HowTo) DrawHowTo(cx, cy);
         }
 
         static void DrawSettings(float cx, float cy)
         {
-            GUI.Box(new Rect(cx - 250, cy - 250, 500, 520), "Settings");
+            GUI.Box(new Rect(cx - 250, cy - 280, 500, 600), "Settings");
             var s = GameSettings.Current ?? GameSettings.Defaults();
-            float y = cy - 220f;
+            float y = cy - 248f;
             for (int i = 0; i < MenuGraph.SettingsRows; i++)
             {
                 if (Row(cx, y, i, s.RowLabel(i)))
                     Activate();
-                y += 32f;
+                y += 28f;
             }
-            GUI.Label(new Rect(cx - 230, cy + 180, 460, 64),
-                "Up / Down or the stick picks. Left / Right steps.\nEnter or South uses the row. East or Esc back.\nComma mutes. M or Select toggles the minimap.");
+            GUI.Label(new Rect(cx - 230, cy + 200, 460, 64),
+                "Up / Down or the stick picks. Left / Right steps.\nEnter or South uses the row. East or Esc back.\nReplay tips restarts the first-run hints.\nComma mutes. M or Select toggles the minimap.");
+        }
+
+        static void DrawHowTo(float cx, float cy)
+        {
+            HowToPlay.Ensure(ControlGlyphs.Device, ArenaRegistry.Count);
+            GUI.Box(new Rect(cx - 280, cy - 260, 560, 540), "How to play");
+            float y = cy - 228f;
+            for (int i = 0; i < HowToPlay.Count; i++)
+            {
+                GUI.Label(new Rect(cx - 260, y, 520, 22), HowToPlay.Line(i));
+                y += 22f;
+            }
+            if (Row(cx, y + 6f, 0, "Back"))
+                Activate();
         }
 
         static void DrawRebind(float cx, float cy)
@@ -192,6 +211,7 @@ namespace Tag.Settings
             if (Which == Panel.Settings) return MenuGraph.SettingsRows;
             if (Which == Panel.Rebind) return MenuGraph.RebindRows;
             if (Which == Panel.Arena) return MenuGraph.ArenaRows;
+            if (Which == Panel.HowTo) return MenuGraph.HowToRows;
             return 1;
         }
 
@@ -202,19 +222,19 @@ namespace Tag.Settings
             if (next > max) next = max;
             if (next == _focus) return;
             _focus = next;
-            AudioCuePlayer.Ensure()?.UiClick();
+            TagSfx.UiMove();
         }
 
         static void SetFocus(int index)
         {
             if (_focus == index) return;
             _focus = index;
-            AudioCuePlayer.Ensure()?.UiClick();
+            TagSfx.UiMove();
         }
 
         static void Step(int dir)
         {
-            if (Which == Panel.Settings && _focus <= 9)
+            if (Which == Panel.Settings && _focus <= GameSettings.RowMinimap)
             {
                 var s = GameSettings.Current ?? GameSettings.Defaults();
                 GameSettings.Current = s;
@@ -248,21 +268,29 @@ namespace Tag.Settings
         {
             if (Which == Panel.Settings)
             {
-                if (_focus == 10)
+                if (_focus == GameSettings.RowReset)
                 {
                     GameSettings.Current.ResetToDefaults();
                     SettingsRuntime.Apply();
                     SettingsRuntime.Save();
-                    AudioCuePlayer.Ensure()?.UiClick();
+                    TagSfx.UiConfirm();
                     return;
                 }
-                if (_focus >= 11)
+                if (_focus == GameSettings.RowReplay)
+                {
+                    OnboardingSession.Live.Replay();
+                    OnboardingStore.Save(OnboardingSession.Live);
+                    TagSfx.UiConfirm();
+                    return;
+                }
+                if (_focus >= GameSettings.RowBack)
                 {
                     Close();
-                    AudioCuePlayer.Ensure()?.UiClick();
+                    TagSfx.UiBack();
                     return;
                 }
-                if (_focus == 2 || _focus == 6 || _focus == 8 || _focus == 9)
+                if (_focus == GameSettings.RowInvert || _focus == GameSettings.RowMute
+                    || _focus == GameSettings.RowColorblind || _focus == GameSettings.RowMinimap)
                     Step(1);
                 return;
             }
@@ -298,6 +326,12 @@ namespace Tag.Settings
                     Close();
                     AudioCuePlayer.Ensure()?.UiClick();
                 }
+                return;
+            }
+            if (Which == Panel.HowTo)
+            {
+                Close();
+                AudioCuePlayer.Ensure()?.UiClick();
             }
         }
 

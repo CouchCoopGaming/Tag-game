@@ -215,9 +215,9 @@ static class Program
 
         Tag.Core.HotPathAlloc.Report hot = Tag.Core.HotPathAlloc.Run();
         Console.WriteLine(hot.Line);
-        if (!hot.Ok)
+        if (!hot.Ok || hot.After != 0)
         {
-            Console.Error.WriteLine(hot.Failure);
+            Console.Error.WriteLine(hot.After != 0 ? "hot-path alloc flags are not zero" : hot.Failure);
             return 1;
         }
 
@@ -551,6 +551,33 @@ static class Program
         if (!teardownOk)
         {
             Console.Error.WriteLine("arena teardown did not return to baseline");
+            return 1;
+        }
+
+        OnboardingReport onboard = OnboardingProof.Run();
+        Console.WriteLine(onboard.Line);
+        if (!onboard.Ok)
+        {
+            Console.Error.WriteLine(onboard.Failure);
+            return 1;
+        }
+
+        Tag.Core.FrameBudget.Report[] budgets = Tag.Core.FrameBudget.RunAll();
+        for (int b = 0; b < budgets.Length; b++)
+        {
+            Console.WriteLine(budgets[b].Line);
+            if (!budgets[b].Ok)
+            {
+                Console.Error.WriteLine(budgets[b].Failure);
+                return 1;
+            }
+        }
+
+        Tag.Audio.AudioReport audio = Tag.Audio.AudioProof.Run();
+        Console.WriteLine(audio.Line);
+        if (!audio.Ok)
+        {
+            Console.Error.WriteLine(audio.Failure);
             return 1;
         }
 

@@ -154,6 +154,12 @@ namespace Tag.Modes
         public const float DefaultDifficulty = 0.5f;
         public const float ReactSlow = 0.35f;
         public const float ReactFast = 0.12f;
+        /// <summary>Retarget clock. Path searches do not run faster than this unless someone moves PathMoveRefresh.</summary>
+        public const float DecisionHz = 5.2f;
+        /// <summary>A pad, zip, or loop sample is stale after this much planar travel, so a chase still sees the toy.</summary>
+        public const float PathMoveRefresh = 1.25f;
+        public static int LoopProjectQueries;
+        public static int LoopProjectMisses;
         public const int MinDummies = 1;
         public const int MaxDummies = 3;
         public const float RouteHoldSeconds = 0.55f;
@@ -531,6 +537,16 @@ namespace Tag.Modes
             return current;
         }
 
+        static Vector3[] _megaLoopPts;
+
+        public static void ResetLoopSearch()
+        {
+            LoopProjectQueries = 0;
+            LoopProjectMisses = 0;
+            _lpN = 0;
+            _lpArena = -2;
+        }
+
         public static Vector3 LoopPoint(bool mega, int index)
         {
             if (ParkArena.IsStack)
@@ -556,10 +572,18 @@ namespace Tag.Modes
                 MegaParkP1Layout.Pt[] loop = MegaParkP1Layout.LoopCcw;
                 int n = loop.Length;
                 if (n <= 0) return new Vector3(8f, 0f, 8f);
+                if (_megaLoopPts == null || _megaLoopPts.Length != n)
+                {
+                    _megaLoopPts = new Vector3[n];
+                    for (int i = 0; i < n; i++)
+                    {
+                        MegaParkP1Layout.Pt src = loop[i];
+                        _megaLoopPts[i] = new Vector3(src.X, src.Y, src.Z);
+                    }
+                }
                 int slot = index % n;
                 if (slot < 0) slot += n;
-                MegaParkP1Layout.Pt p = loop[slot];
-                return new Vector3(p.X, p.Y, p.Z);
+                return _megaLoopPts[slot];
             }
 
             float scale = 10f;
@@ -1088,6 +1112,11 @@ namespace Tag.Modes
             return d;
         }
 
+        static int _lpN;
+        static int _lpArena = -2;
+        static float _lpX0, _lpZ0, _lpT0;
+        static float _lpX1, _lpZ1, _lpT1;
+
         static MegaParkP1Layout.Pt[] SteerLoop()
         {
             if (ParkArena.IsStack) return StackYardLayout.AiLoop;
@@ -1101,6 +1130,29 @@ namespace Tag.Modes
         }
 
         static float LoopProject(float x, float z)
+        {
+            int arena = ParkArena.Id;
+            if (arena != _lpArena)
+            {
+                _lpN = 0;
+                _lpArena = arena;
+            }
+            LoopProjectQueries++;
+            if (_lpN >= 1 && x == _lpX0 && z == _lpZ0) return _lpT0;
+            if (_lpN >= 2 && x == _lpX1 && z == _lpZ1) return _lpT1;
+            LoopProjectMisses++;
+            float t = ProjectLoop(x, z);
+            _lpX1 = _lpX0;
+            _lpZ1 = _lpZ0;
+            _lpT1 = _lpT0;
+            _lpX0 = x;
+            _lpZ0 = z;
+            _lpT0 = t;
+            if (_lpN < 2) _lpN++;
+            return t;
+        }
+
+        static float ProjectLoop(float x, float z)
         {
             MegaParkP1Layout.Pt[] loop = SteerLoop();
             float best = 1e9f;

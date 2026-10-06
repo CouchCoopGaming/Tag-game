@@ -24,6 +24,9 @@ namespace Tag.Gameplay
         static int _nextTagPawnId = 1;
         MaterialPropertyBlock _mpb;
         PlayerMotor _motor;
+        PlayerRagdoll _ragdollCached;
+        Tag.Art.DummyLocomotor _loco;
+        Tag.Art.DummyAvatarBinder _binder;
         PlayerInputReader _reader;
         Tag.Modes.DummyPatrol _patrol;
         bool _humanKnown;
@@ -128,6 +131,24 @@ namespace Tag.Gameplay
                 ClearTagBackImmunity();
         }
 
+        Tag.Art.DummyLocomotor BodyLoco()
+        {
+            if (_loco == null) _loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
+            return _loco;
+        }
+
+        Tag.Art.DummyAvatarBinder BodyBinder()
+        {
+            if (_binder == null) _binder = GetComponent<Tag.Art.DummyAvatarBinder>();
+            return _binder;
+        }
+
+        PlayerRagdoll BodyRagdoll()
+        {
+            if (_ragdollCached == null) _ragdollCached = GetComponent<PlayerRagdoll>();
+            return _ragdollCached;
+        }
+
         public static void ResetPawnIds()
         {
             _nextTagPawnId = 1;
@@ -147,7 +168,7 @@ namespace Tag.Gameplay
                 if (_motor != null)
                     _motor.NotifyBecameIt();
                 // New It plays the claim pose. The tagged runner still guards in ReceiveTagHit.
-                var loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
+                Tag.Art.DummyLocomotor loco = BodyLoco();
                 if (loco != null) loco.PlayItClaim();
             }
             if (wasIt && !value && _motor != null)
@@ -164,16 +185,16 @@ namespace Tag.Gameplay
             float dur = tuning != null ? tuning.ragdollDuration : 1.5f;
             if (tuning == null || tuning.ragdollHasIFrames)
                 _iFrameTimer = dur;
-            var ragdoll = GetComponent<PlayerRagdoll>();
+            PlayerRagdoll ragdoll = BodyRagdoll();
             if (ragdoll != null)
                 ragdoll.TriggerRagdoll(dur, knock);
             else if (_motor != null)
                 _motor.BeginStunProxy(dur, knock);
 
             // Readable tag flinch on victim dummy (code-only pose pulse)
-            var loco = GetComponentInChildren<Tag.Art.DummyLocomotor>();
+            Tag.Art.DummyLocomotor loco = BodyLoco();
             if (loco != null) loco.PlayTagFlinch();
-            var binder = GetComponent<Tag.Art.DummyAvatarBinder>();
+            Tag.Art.DummyAvatarBinder binder = BodyBinder();
             if (binder != null) binder.PlayTagHitFeedback();
         }
 

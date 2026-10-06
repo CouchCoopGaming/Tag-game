@@ -15,7 +15,8 @@ namespace Tag.Settings
         Settings = 5,
         Rebind = 6,
         Arena = 7,
-        Results = 8
+        Results = 8,
+        HowToPlay = 9
     }
 
     public enum PadEvent
@@ -39,10 +40,11 @@ namespace Tag.Settings
 
     public static class MenuGraph
     {
-        public const int PauseRows = 8;
-        public const int SettingsRows = 12;
+        public const int PauseRows = 9;
+        public const int SettingsRows = GameSettings.RowCount;
         public const int RebindRows = 15;
         public const int ArenaRows = 4;
+        public const int HowToRows = 1;
 
         public static int Rows(MenuId menu)
         {
@@ -56,6 +58,7 @@ namespace Tag.Settings
                 case MenuId.Rebind: return RebindRows;
                 case MenuId.Arena: return ArenaRows;
                 case MenuId.Results: return 2;
+                case MenuId.HowToPlay: return HowToRows;
                 default: return 1;
             }
         }
@@ -115,6 +118,7 @@ namespace Tag.Settings
             n += Rows(MenuId.Rebind);
             n += Rows(MenuId.Arena);
             n += Rows(MenuId.Results);
+            n += Rows(MenuId.HowToPlay);
             return n;
         }
 
@@ -136,6 +140,7 @@ namespace Tag.Settings
                 case MenuId.Settings: return 5;
                 case MenuId.Rebind: return 6;
                 case MenuId.Arena: return 7;
+                case MenuId.HowToPlay: return 8;
                 default: return 0;
             }
         }
@@ -154,6 +159,7 @@ namespace Tag.Settings
                     case 5: return Child(MenuId.Settings, cursor.Root);
                     case 6: return Child(MenuId.Rebind, cursor.Root);
                     case 7: return Child(MenuId.Arena, cursor.Root);
+                    case 8: return Child(MenuId.HowToPlay, cursor.Root);
                 }
             }
             if (cursor.Menu == MenuId.Results)

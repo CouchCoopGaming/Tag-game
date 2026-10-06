@@ -290,6 +290,7 @@ namespace Tag.Level
             AddChevron(list, "MidPad", "Stack_Mid");
             AddChevron(list, "WestClimb", "Cling_Yard");
             AddYardMass(list);
+            AddShippingYard(list);
             return list.ToArray();
         }
 
@@ -938,7 +939,7 @@ namespace Tag.Level
                 + " s → wall-jump (Cling_Yard) " + hop.ToString("0.00", CultureInfo.InvariantCulture) + " s");
 
             doc.Append("\n## Tiers\n\n");
-            doc.Append("Ground, mid decks at 6 m, and roofs at 12 m. Concrete steps, olive container stacks, amber rises, and teal warehouse roofs are solid piles on those footprints. Narrow catwalks link the towers, and cranes mark the four corners. ");
+            doc.Append("Ground, mid decks at 6 m, and roofs at 12 m. Container rows line the fence, the towers read as stacked shells, and a warehouse shell closes the north edge. Stair treads sit on the slides and forklifts and pallets sit as low cover. The chase grid is the same set of open cells. Narrow catwalks link the towers, and cranes mark the four corners. ");
             doc.Append("Cling_Yard and Cling_East climb to the mid decks. ");
             doc.Append("Cling_Roof and Cling_Lane climb from the mid decks to the roofs. Launch_Mid and Launch_Roof throw onto those tiers. ");
             doc.Append("Zip_Cross leaves the west roof for the yard. Slides run back down both stairs. A fall off a roof lands inside the fence, above the kill plane.\n\n");
@@ -1162,7 +1163,157 @@ namespace Tag.Level
             float x, float z, float sx, float sz, float top)
         {
             const float inset = 0.7f;
-            Pile(list, name, zone, mat, x, z, sx - inset * 2f, sz - inset * 2f, top);
+            int stories = top >= 8f ? 3 : 2;
+            ShipColumn(list, "Ship_" + name, zone, x, z, sx - inset * 2f, sz - inset * 2f, top, stories);
+        }
+
+        /// <summary>
+        /// Stacked container shells on the existing column footprint. Kind toy keeps them
+        /// out of the deck graph. The outer box matches the old pile, so the chase halo
+        /// stays on cells that column already blocked.
+        /// </summary>
+        static void ShipColumn(List<MegaParkP1Layout.Solid> list, string name, string zone,
+            float x, float z, float sx, float sz, float top, int stories)
+        {
+            if (stories < 2) stories = 2;
+            if (stories > 3) stories = 3;
+            string[] mats = zone == "Roof"
+                ? new[] { "amber", "pad", "amber" }
+                : new[] { "army", "knight", "concrete" };
+            float gap = 0.06f;
+            float h = (top - gap * (stories - 1)) / stories;
+            if (h < 0.9f)
+            {
+                gap = 0f;
+                h = top / stories;
+            }
+            float y = 0f;
+            for (int i = 0; i < stories; i++)
+            {
+                Add(list, name + "_" + i.ToString(CultureInfo.InvariantCulture), zone, "toy", mats[i],
+                    x, y + h * 0.5f, z, sx, h, sz, y);
+                y += h + gap;
+            }
+        }
+
+        /// <summary>
+        /// Yard identity that does not retouch a chase cell. Container rows and the
+        /// warehouse sit in the margin outside the 1.5 m nav grid. Stair treads sit
+        /// only in the vertical gaps between head bands, so an open cell stays open.
+        /// Pallets are shorter than the ground head check and stay outside the bowl.
+        /// </summary>
+        static void AddShippingYard(List<MegaParkP1Layout.Solid> list)
+        {
+            // South fence row. A gap around x=68 keeps the edge still on the low rail.
+            ShipColumn(list, "Ship_S1", "Yard", 16f, 1.12f, 10f, 1.85f, 6.3f, 3);
+            ShipColumn(list, "Ship_S2", "Yard", 34f, 1.12f, 8f, 1.85f, 4.4f, 2);
+            ShipColumn(list, "Ship_S3", "Lane", 48f, 1.12f, 6f, 1.85f, 6.3f, 3);
+            ShipColumn(list, "Ship_S4", "Lane", 90f, 1.12f, 10f, 1.85f, 4.4f, 2);
+            ShipColumn(list, "Ship_S5", "Lane", 102f, 1.12f, 6f, 1.85f, 6.3f, 3);
+
+            // North fence row, flanking the warehouse shell.
+            ShipColumn(list, "Ship_N1", "Mid", 14f, 68.72f, 8f, 1.85f, 6.3f, 3);
+            ShipColumn(list, "Ship_N2", "Mid", 28f, 68.72f, 8f, 1.85f, 4.4f, 2);
+            ShipColumn(list, "Ship_N3", "Roof", 86f, 68.72f, 8f, 1.85f, 6.3f, 3);
+            ShipColumn(list, "Ship_N4", "Roof", 100f, 68.72f, 7f, 1.85f, 4.4f, 2);
+
+            // West and east rows, clear of the corner containers.
+            ShipColumn(list, "Ship_W1", "Yard", 1.12f, 16f, 1.85f, 8f, 4.4f, 2);
+            ShipColumn(list, "Ship_W2", "Mid", 1.12f, 36f, 1.85f, 10f, 6.3f, 3);
+            ShipColumn(list, "Ship_W3", "Mid", 1.12f, 54f, 1.85f, 8f, 4.4f, 2);
+            ShipColumn(list, "Ship_E1", "Lane", 108.05f, 16f, 2.05f, 8f, 6.3f, 3);
+            ShipColumn(list, "Ship_E2", "Roof", 108.05f, 40f, 2.05f, 10f, 4.4f, 2);
+            ShipColumn(list, "Ship_E3", "Roof", 108.05f, 56f, 2.05f, 8f, 6.3f, 3);
+
+            Add(list, "Wh_North", "Roof", "wall", "steel", 56f, 2.6f, 69.2f, 34f, 5.2f, 0.32f, 0f);
+            Add(list, "Wh_West", "Mid", "wall", "steel", 39.2f, 2.6f, 68.55f, 0.32f, 5.2f, 1.15f, 0f);
+            Add(list, "Wh_East", "Roof", "wall", "steel", 72.8f, 2.6f, 68.55f, 0.32f, 5.2f, 1.15f, 0f);
+            Add(list, "Wh_Roof", "Roof", "wall", "steel", 56f, 5.22f, 68.55f, 33.4f, 0.2f, 1.05f, 5.12f);
+
+            AddGapStairs(list, "Stair_WestMid", 30f, 34f, 6f, 30f, 18f, 0f, -5.6f, 0f);
+            AddGapStairs(list, "Stair_EastMid", 78f, 34f, 6f, 78f, 18f, 0f, 5.6f, 0f);
+            AddGapStairs(list, "Stair_WestRoof", 38f, 42f, 12f, 30f, 34f, 6f, -4.6f, 4.6f);
+            AddGapStairs(list, "Stair_EastRoof", 70f, 42f, 12f, 78f, 34f, 6f, 5.2f, 5.2f);
+            AddGapStairs(list, "Stair_WestRise", 38f, 34f, 9f, 30f, 34f, 6f, 0f, 4.7f);
+            AddGapStairs(list, "Stair_EastRise", 70f, 34f, 9f, 78f, 34f, 6f, 0f, 4.7f);
+
+            Forklift(list, "Fork_A", 1.15f, 24f, 1f, 0f);
+            Forklift(list, "Fork_B", 108.1f, 26f, -1f, 0f);
+            Forklift(list, "Fork_C", 56f, 68.7f, 0f, -1f);
+            Pallet(list, "Pal_A", 22f, 12f);
+            Pallet(list, "Pal_B", 24.4f, 14.2f);
+            Pallet(list, "Pal_C", 40f, 11f);
+            Pallet(list, "Pal_D", 86f, 12f);
+            Pallet(list, "Pal_E", 88.4f, 14.2f);
+            Pallet(list, "Pal_F", 98f, 30f);
+        }
+
+        /// <summary>
+        /// Treads only where the box misses every stand head band (ground, bowl, and
+        /// the 3/6/9/12 m decks). Kind toy, thicker than a toe lip. The side offset
+        /// puts the flight on the face of the tower instead of inside the slab.
+        /// </summary>
+        static void AddGapStairs(List<MegaParkP1Layout.Solid> list, string name,
+            float x0, float z0, float y0, float x1, float z1, float y1, float sideX, float sideZ)
+        {
+            const int steps = 9;
+            const float sy = 0.32f;
+            int placed = 0;
+            for (int i = 0; i < steps; i++)
+            {
+                float t = (i + 0.5f) / steps;
+                float y = y0 + (y1 - y0) * t;
+                float bot = y - sy * 0.5f;
+                float top = y + sy * 0.5f;
+                if (!StairGap(bot, top)) continue;
+                float x = x0 + (x1 - x0) * t + sideX;
+                float z = z0 + (z1 - z0) * t + sideZ;
+                float dx = x1 - x0;
+                float dz = z1 - z0;
+                bool alongX = Math.Abs(dx) >= Math.Abs(dz);
+                float sx = alongX ? 0.72f : 1.25f;
+                float sz = alongX ? 1.25f : 0.72f;
+                Add(list, name + "_" + placed.ToString(CultureInfo.InvariantCulture), "Mid", "toy", "concrete",
+                    x, y, z, sx, sy, sz, bot);
+                placed++;
+            }
+        }
+
+        static bool StairGap(float bot, float top)
+        {
+            // Bands a pawn head occupies on stand -1, 0, 3, 6, 9, and 12.
+            // A tread fully inside a gap cannot close an open cell.
+            if (bot >= 1.56f && top <= 3.18f) return true;
+            if (bot >= 4.56f && top <= 6.18f) return true;
+            if (bot >= 7.56f && top <= 9.18f) return true;
+            if (bot >= 10.56f && top <= 12.18f) return true;
+            return false;
+        }
+
+        static void Forklift(List<MegaParkP1Layout.Solid> list, string name, float x, float z, float dirX, float dirZ)
+        {
+            bool east = Math.Abs(dirX) >= Math.Abs(dirZ);
+            float bodyX = east ? 1.7f : 0.9f;
+            float bodyZ = east ? 0.9f : 1.7f;
+            Add(list, name + "_Body", "Lane", "toy", "steel", x, 0.55f, z, bodyX, 0.7f, bodyZ, 0.2f);
+            float mx = x + dirX * 0.7f;
+            float mz = z + dirZ * 0.7f;
+            Add(list, name + "_Mast", "Lane", "toy", "steel", mx, 1.15f, mz, 0.28f, 1.5f, 0.28f, 0.4f);
+            float sideX = dirZ;
+            float sideZ = -dirX;
+            float forkX = east ? 0.9f : 0.12f;
+            float forkZ = east ? 0.12f : 0.9f;
+            Add(list, name + "_ForkL", "Lane", "toy", "steel",
+                mx + dirX * 0.45f + sideX * 0.22f, 0.12f, mz + dirZ * 0.45f + sideZ * 0.22f,
+                forkX, 0.06f, forkZ, 0.09f);
+            Add(list, name + "_ForkR", "Lane", "toy", "steel",
+                mx + dirX * 0.45f - sideX * 0.22f, 0.12f, mz + dirZ * 0.45f - sideZ * 0.22f,
+                forkX, 0.06f, forkZ, 0.09f);
+        }
+
+        static void Pallet(List<MegaParkP1Layout.Solid> list, string name, float x, float z)
+        {
+            Add(list, name, "Ground", "toy", "concrete", x, 0.08f, z, 1.15f, 0.14f, 0.9f, 0.01f);
         }
 
         static void Jib(List<MegaParkP1Layout.Solid> list, string name, string zone, string mat,

@@ -59,8 +59,15 @@ namespace Tag.Level
                         AddRailFence(tris, s);
                         continue;
                     }
+                    if (ContainerDeck(s))
+                    {
+                        AddContainerStack(tris, s);
+                        continue;
+                    }
                     Albedo(s.Mat, out float r, out float g, out float b);
                     AddBox(tris, s.X, s.Y, s.Z, s.Sx, s.Sy, s.Sz, r, g, b);
+                    if (s.Name.StartsWith("Ship_", StringComparison.Ordinal))
+                        AddCorrugation(tris, s, r, g, b);
                 }
             }
             if (dress != null)
@@ -290,6 +297,73 @@ namespace Tag.Level
             {
                 AddTri(tris, ax, ay, az, bx, by, bz, cx, cy, cz, r, g, b);
                 AddTri(tris, ax, ay, az, cx, cy, cz, ex, ey, ez, r, g, b);
+            }
+        }
+
+        static bool ContainerDeck(MegaParkP1Layout.Solid s)
+        {
+            if (s.Kind != "block" || s.Sy < 2.4f) return false;
+            return s.Name.StartsWith("Crate_", StringComparison.Ordinal)
+                || s.Name.StartsWith("Stack_", StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// The tower slab stays one collider. The still paints it as two or three
+        /// containers so the stack reads without a new chase cell.
+        /// </summary>
+        static void AddContainerStack(List<Tri> tris, MegaParkP1Layout.Solid s)
+        {
+            int stories = s.Sy >= 5f ? 3 : 2;
+            float bot = s.Y - s.Sy * 0.5f;
+            float h = s.Sy / stories;
+            for (int i = 0; i < stories; i++)
+            {
+                string mat = StackMat(s.Mat, i);
+                Albedo(mat, out float r, out float g, out float b);
+                float y = bot + h * (i + 0.5f);
+                AddBox(tris, s.X, y, s.Z, s.Sx, h, s.Sz, r, g, b);
+                var band = s;
+                band.Y = y;
+                band.Sy = h;
+                band.Mat = mat;
+                AddCorrugation(tris, band, r, g, b);
+            }
+        }
+
+        static string StackMat(string mat, int story)
+        {
+            if (mat == "amber" || mat == "pad")
+            {
+                if (story == 1) return "pad";
+                return "amber";
+            }
+            if (story == 0) return mat == "concrete" ? "concrete" : "army";
+            if (story == 1) return "knight";
+            return "concrete";
+        }
+
+        static void AddCorrugation(List<Tri> tris, MegaParkP1Layout.Solid s, float r, float g, float b)
+        {
+            float sr = r * 0.38f;
+            float sg = g * 0.38f;
+            float sb = b * 0.38f;
+            float span = s.Sy;
+            if (span < 0.4f) return;
+            int bands = (int)(span / 0.62f);
+            if (bands < 2) bands = 2;
+            if (bands > 6) bands = 6;
+            float band = span / (bands * 4.5f);
+            if (band < 0.06f) band = 0.06f;
+            if (band > 0.14f) band = 0.14f;
+            const float proud = 0.035f;
+            float bot = s.Y - s.Sy * 0.5f;
+            for (int i = 0; i < bands; i++)
+            {
+                float y = bot + span * ((i + 0.5f) / bands);
+                AddBox(tris, s.X, y, s.Z - s.Sz * 0.5f - proud * 0.5f, s.Sx * 0.9f, band, proud, sr, sg, sb);
+                AddBox(tris, s.X, y, s.Z + s.Sz * 0.5f + proud * 0.5f, s.Sx * 0.9f, band, proud, sr, sg, sb);
+                AddBox(tris, s.X - s.Sx * 0.5f - proud * 0.5f, y, s.Z, proud, band, s.Sz * 0.9f, sr, sg, sb);
+                AddBox(tris, s.X + s.Sx * 0.5f + proud * 0.5f, y, s.Z, proud, band, s.Sz * 0.9f, sr, sg, sb);
             }
         }
 
