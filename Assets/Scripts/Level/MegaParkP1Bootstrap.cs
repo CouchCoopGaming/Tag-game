@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Tag.Gameplay;
+using Tag.Local;
 using UnityEngine;
 
 namespace Tag.Level
@@ -35,6 +37,8 @@ namespace Tag.Level
 
         void Awake()
         {
+            if (!ParkArena.HasExplicitChoice && PlayerPrefs.HasKey(ParkArena.PrefsKey))
+                ParkArena.ApplySaved(true, PlayerPrefs.GetInt(ParkArena.PrefsKey, arenaId), arenaId);
             if (!ParkArena.HasExplicitChoice)
                 ParkArena.Select(arenaId);
             try
@@ -60,6 +64,50 @@ namespace Tag.Level
             _p1 = null;
             Built = false;
             LayoutOk = false;
+        }
+
+        /// <summary>
+        /// Drops the live park, its pads and zips, and any dummy left from the previous arena.
+        /// The next build (or the Play reload) respawns pawns on the new pads.
+        /// </summary>
+        public void TearDownArena()
+        {
+            ClearBuilt();
+            DestroyStrays();
+        }
+
+        void DestroyStrays()
+        {
+            LaunchPad[] pads = UnityEngine.Object.FindObjectsByType<LaunchPad>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < pads.Length; i++)
+            {
+                if (pads[i] != null)
+                    DestroyImmediate(pads[i].gameObject);
+            }
+            ZipLine[] zips = UnityEngine.Object.FindObjectsByType<ZipLine>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < zips.Length; i++)
+            {
+                if (zips[i] != null)
+                    DestroyImmediate(zips[i].gameObject);
+            }
+            ItController[] bodies = UnityEngine.Object.FindObjectsByType<ItController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < bodies.Length; i++)
+            {
+                if (bodies[i] == null) continue;
+                string name = bodies[i].gameObject.name;
+                if (name.StartsWith("Dummy"))
+                    DestroyImmediate(bodies[i].gameObject);
+            }
+        }
+
+        void FinishArena()
+        {
+            ParkMinimap map = UnityEngine.Object.FindAnyObjectByType<ParkMinimap>();
+            if (map != null)
+                map.Rebuild();
+            LocalPlayerSpawner spawner = UnityEngine.Object.FindAnyObjectByType<LocalPlayerSpawner>();
+            if (spawner != null)
+                spawner.Reseat();
         }
 
         [ContextMenu("Rebuild Mega Park P1")]
@@ -92,6 +140,8 @@ namespace Tag.Level
                 Debug.LogError(audit.Line + " :: " + audit.Failure);
             if (!Built)
                 ClearBuilt();
+            else
+                FinishArena();
         }
 
         void EnsureRoot()
@@ -730,7 +780,11 @@ namespace Tag.Level
 
         Transform BuildDressing()
         {
-            MegaParkP1Layout.Dress[] all = MegaParkP1Layout.BuildDressing();
+            return BuildDressList(MegaParkP1Layout.BuildDressing());
+        }
+
+        Transform BuildDressList(MegaParkP1Layout.Dress[] all)
+        {
             Transform g = Group("Dressing");
             var zones = new Dictionary<string, Transform>();
             Transform bucket = Occlusion(g, zones, "Dress");
@@ -791,10 +845,12 @@ namespace Tag.Level
             BuildLaunchPadList(PocketParkLayout.LaunchPads);
             BuildZipLineList(PocketParkLayout.ZipLines);
             BuildPocketLabels();
+            Transform dress = BuildDressList(PocketParkLayout.BuildDressing());
             BatchStatic(solids);
             BatchStatic(ramps);
             BatchStatic(paint);
             BatchStatic(spawns);
+            BatchStatic(dress);
 
             PocketParkLayout.Audit audit = PocketParkLayout.Run();
             LayoutOk = audit.Ok;
@@ -805,6 +861,8 @@ namespace Tag.Level
                 Debug.LogError(audit.Line + " :: " + audit.Failure);
             if (!Built)
                 ClearBuilt();
+            else
+                FinishArena();
         }
 
         Transform BuildPocketPaint()

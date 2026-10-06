@@ -98,24 +98,52 @@ namespace Tag.Local
             }
         }
 
-        void ConfigurePawn(GameObject go, int index, bool ai = false)
+        /// <summary>Move pawns that are already in the scene onto the active arena's pads.</summary>
+        public void Reseat()
         {
-            Vector3 pos;
-            float yaw;
+            ItController[] bodies = FindObjectsByType<ItController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            int index = 0;
+            for (int pass = 0; pass < 2; pass++)
+            {
+                for (int i = 0; i < bodies.Length; i++)
+                {
+                    if (bodies[i] == null) continue;
+                    string name = bodies[i].gameObject.name;
+                    bool dummy = name.StartsWith("Dummy");
+                    bool human = name == SoloPawnName || name.StartsWith("Player");
+                    if (pass == 0 && !human) continue;
+                    if (pass == 1 && !dummy) continue;
+                    if (!human && !dummy) continue;
+                    PlaceOnSpawn(bodies[i].gameObject, index);
+                    index++;
+                }
+            }
+        }
+
+        public static void SpawnPose(int index, out Vector3 pos, out float yaw)
+        {
             if (ParkArena.IsPocket)
             {
                 MegaParkP1Layout.SpawnPad[] pads = PocketParkLayout.Spawns;
                 int i = Mathf.Clamp(index, 0, pads.Length - 1);
                 pos = new Vector3(pads[i].X, PocketParkLayout.SpawnY, pads[i].Z);
                 yaw = pads[i].YawDeg;
+                return;
             }
-            else
-            {
-                pos = Spawns[Mathf.Clamp(index, 0, Spawns.Length - 1)];
-                yaw = Yaws[Mathf.Clamp(index, 0, Yaws.Length - 1)];
-            }
+            pos = Spawns[Mathf.Clamp(index, 0, Spawns.Length - 1)];
+            yaw = Yaws[Mathf.Clamp(index, 0, Yaws.Length - 1)];
+        }
+
+        static void PlaceOnSpawn(GameObject go, int index)
+        {
+            SpawnPose(index, out Vector3 pos, out float yaw);
             go.transform.position = pos;
             go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+        }
+
+        void ConfigurePawn(GameObject go, int index, bool ai = false)
+        {
+            PlaceOnSpawn(go, index);
 
             // CharacterController is the motor. The rigidbody wakes only for the ragdoll window.
             var legacyCc = go.GetComponent<CharacterController>();

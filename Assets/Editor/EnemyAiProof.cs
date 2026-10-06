@@ -13,7 +13,7 @@ using UnityEngine;
 /// difficulties. A runner dummy survives a scripted It. Verbs are counted.
 /// Route scores that swap by a hair must not flip.
 /// </summary>
-public static class EnemyAiProof
+public static partial class EnemyAiProof
 {
     public static EnemyAiReport Run()
     {
@@ -25,37 +25,30 @@ public static class EnemyAiProof
         CheckJitter(report);
         CheckRules(report, cfg, punch);
 
-        float t02 = AverageChase(cfg, punch, 0.2f, report);
-        float t05 = AverageChase(cfg, punch, 0.5f, report);
-        float t09 = AverageChase(cfg, punch, 0.9f, report);
-        report.It02 = t02;
-        report.It05 = t05;
-        report.It09 = t09;
-        if (!(t09 + 0.08f < t05 && t05 + 0.08f < t02))
-            report.Fail("difficulty did not shorten time-to-tag "
-                + t02.ToString("0.00", CultureInfo.InvariantCulture) + "/"
-                + t05.ToString("0.00", CultureInfo.InvariantCulture) + "/"
-                + t09.ToString("0.00", CultureInfo.InvariantCulture));
-
-        report.Survive = RunnerSurvival(cfg, punch, report);
-        if (report.Survive < 1.05f)
-            report.Fail("runner did not keep the tag-back window");
-        if (report.ImmuneMin < punch.reach)
-            report.Fail("runner was tagged inside tag-back immunity");
-
         CheckSources(report);
-
+        RunParkMatches(cfg, punch, report);
+        report.PocketLine = RunPocketMatches(cfg, punch, report);
         report.Line = "enemy-ai"
             + " diff=" + EnemyAi.DefaultDifficulty.ToString("0.00", CultureInfo.InvariantCulture)
             + " delay=" + EnemyAi.ReactionDelay(0.2f).ToString("0.000", CultureInfo.InvariantCulture)
             + "/" + EnemyAi.ReactionDelay(0.5f).ToString("0.000", CultureInfo.InvariantCulture)
             + "/" + EnemyAi.ReactionDelay(0.9f).ToString("0.000", CultureInfo.InvariantCulture)
-            + " it=" + t02.ToString("0.00", CultureInfo.InvariantCulture)
-            + "/" + t05.ToString("0.00", CultureInfo.InvariantCulture)
-            + "/" + t09.ToString("0.00", CultureInfo.InvariantCulture)
-            + "s run=" + report.Survive.ToString("0.00", CultureInfo.InvariantCulture)
-            + "s verbs " + report.VerbText()
-            + " flips=" + report.Flips.ToString(CultureInfo.InvariantCulture);
+            + " itMed=" + Fmt3(report.ItMed)
+            + " itP10=" + Fmt3(report.ItP10)
+            + " itP90=" + Fmt3(report.ItP90)
+            + " runMed=" + Fmt3(report.RunMed)
+            + " runP10=" + Fmt3(report.RunP10)
+            + " runP90=" + Fmt3(report.RunP90)
+            + " stuck=" + report.Stuck.ToString(CultureInfo.InvariantCulture)
+            + " flips=" + report.Flips.ToString(CultureInfo.InvariantCulture)
+            + " verbs " + report.VerbText()
+            + " use pad=" + report.PadUses.ToString(CultureInfo.InvariantCulture)
+            + " zip=" + report.ZipUses.ToString(CultureInfo.InvariantCulture)
+            + " grapple=" + report.GrappleUses.ToString(CultureInfo.InvariantCulture)
+            + " cling=" + report.ClingUses.ToString(CultureInfo.InvariantCulture)
+            + " bar=" + report.BarUses.ToString(CultureInfo.InvariantCulture)
+            + " counter=" + report.CounterUses.ToString(CultureInfo.InvariantCulture)
+            + " respawn=" + report.Respawns.ToString(CultureInfo.InvariantCulture);
         return report;
     }
 
@@ -616,6 +609,13 @@ public static class EnemyAiProof
         return t;
     }
 
+    static string Fmt3(float[] v)
+    {
+        return v[0].ToString("0.00", CultureInfo.InvariantCulture)
+            + "/" + v[1].ToString("0.00", CultureInfo.InvariantCulture)
+            + "/" + v[2].ToString("0.00", CultureInfo.InvariantCulture);
+    }
+
     static float EnemyAiSteerYaw()
     {
         return OpponentChaseSteer.MaxYawDegPerSec;
@@ -767,7 +767,24 @@ public sealed class EnemyAiReport
     public float Survive;
     public float ImmuneMin;
     public int Flips;
+    public readonly float[] ItMed = new float[3];
+    public readonly float[] ItP10 = new float[3];
+    public readonly float[] ItP90 = new float[3];
+    public readonly float[] RunMed = new float[3];
+    public readonly float[] RunP10 = new float[3];
+    public readonly float[] RunP90 = new float[3];
+    public int Stuck;
+    public int Breaches;
+    public int PadUses;
+    public int ZipUses;
+    public int GrappleUses;
+    public int ClingUses;
+    public int BarUses;
+    public int CounterUses;
+    public int Respawns;
+    public int Jumps;
     public string Line = "";
+    public string PocketLine = "";
     public readonly int[] Counts = new int[17];
     public EnemyMemory GymMemory;
     public bool Ok => _failures.Length == 0;

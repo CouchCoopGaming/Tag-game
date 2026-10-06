@@ -24,6 +24,17 @@ namespace Tag.Level
 
         void Start()
         {
+            Rebuild();
+        }
+
+        /// <summary>Repaint after an arena switch. The previous park's texture is dropped.</summary>
+        public void Rebuild()
+        {
+            if (_tex != null)
+            {
+                Destroy(_tex);
+                _tex = null;
+            }
             _mapW = ParkArena.MapW;
             _mapD = ParkArena.MapD;
             _w = TexSize;

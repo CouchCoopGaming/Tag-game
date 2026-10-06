@@ -13,7 +13,9 @@
     <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.Pass6.cs" />
     <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.Pass7.cs" />
     <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.Pass9.cs" />
+    <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.Route.cs" />
     <Compile Include="../../Assets/Scripts/Level/PocketParkLayout.cs" />
+    <Compile Include="../../Assets/Scripts/Level/PocketParkLayout.Look.cs" />
     <Compile Include="../../Assets/Scripts/Level/ParkArena.cs" />
     <Compile Include="UnityStub/UnityEngine.cs" />
     <Compile Include="../../Assets/Editor/StrafeJumpProof.cs" />
@@ -29,6 +31,7 @@
     <Compile Include="../../Assets/Scripts/Modes/OpponentChaseSteer.cs" />
     <Compile Include="../../Assets/Scripts/Modes/EnemyAi.cs" />
     <Compile Include="../../Assets/Editor/EnemyAiProof.cs" />
+    <Compile Include="../../Assets/Editor/EnemyAiParkProof.cs" />
     <Compile Include="../../Assets/Editor/GrappleLatchTellProof.cs" />
     <Compile Include="../../Assets/Editor/AirDashCooldownTellProof.cs" />
     <Compile Include="../../Assets/Editor/HitConfirmTellProof.cs" />
