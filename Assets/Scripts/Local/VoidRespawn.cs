@@ -26,6 +26,7 @@ namespace Tag.Local
 
         void Awake()
         {
+            killY = MegaParkP1Layout.KillPlaneY;
             _rb = GetComponent<Rigidbody>();
             _motor = GetComponent<PlayerMotor>();
             _ragdoll = GetComponent<PlayerRagdoll>();
@@ -49,7 +50,15 @@ namespace Tag.Local
 
         void RespawnToNearestPad()
         {
-            Vector3 pad = NearestPad(transform.position);
+            Vector3 from = transform.position;
+            bool hasIt = TryOtherIt(out Vector3 itPos);
+            MegaParkP1Layout.PickRespawn(
+                from.x, from.z,
+                hasIt ? itPos.x : from.x,
+                hasIt ? itPos.z : from.z,
+                hasIt,
+                out float x, out float y, out float z);
+            Vector3 pad = new Vector3(x, y, z);
 
             if (_ragdoll != null)
                 _ragdoll.ForceRecover();
@@ -77,23 +86,19 @@ namespace Tag.Local
                 _it.ApplySpawnIFrames(punchInvulnAfterTeleport);
         }
 
-        static Vector3 NearestPad(Vector3 from)
+        bool TryOtherIt(out Vector3 pos)
         {
-            var pads = LocalPlayerSpawner.Spawns;
-            Vector3 best = pads[0];
-            float bestSq = float.MaxValue;
-            for (int i = 0; i < pads.Length; i++)
+            pos = default;
+            ItController[] all = FindObjectsByType<ItController>(FindObjectsSortMode.None);
+            for (int i = 0; i < all.Length; i++)
             {
-                float dx = pads[i].x - from.x;
-                float dz = pads[i].z - from.z;
-                float sq = dx * dx + dz * dz;
-                if (sq < bestSq)
-                {
-                    bestSq = sq;
-                    best = pads[i];
-                }
+                ItController it = all[i];
+                if (it == null || it.gameObject == gameObject) continue;
+                if (!it.IsIt || !it.IsAlive) continue;
+                pos = it.transform.position;
+                return true;
             }
-            return best;
+            return false;
         }
     }
 }

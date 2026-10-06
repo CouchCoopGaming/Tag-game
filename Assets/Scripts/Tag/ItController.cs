@@ -16,6 +16,10 @@ namespace Tag.Gameplay
         float _timeAsIt;
         float _iFrameTimer;
         bool _eliminated;
+        TagBackImmunity.Window _tagBack;
+        ItController _tagBackFrom;
+        int _tagPawnId;
+        static int _nextTagPawnId = 1;
         MaterialPropertyBlock _mpb;
         PlayerMotor _motor;
         Rigidbody _rb;
@@ -31,6 +35,38 @@ namespace Tag.Gameplay
         public bool IsEliminated => _eliminated;
         public bool IsAlive => !_eliminated;
         public bool CanBeTagged => !_eliminated && !isIt && !HasIFrames;
+        public int TagPawnId
+        {
+            get
+            {
+                if (_tagPawnId == 0) _tagPawnId = _nextTagPawnId++;
+                return _tagPawnId;
+            }
+        }
+        public float TagBackRemaining => _tagBack.Remaining;
+        public float TagBackGlow01(float time) => TagBackImmunity.GlowPulse(_tagBack, time);
+
+        /// <summary>A (this pawn) just lost It to <paramref name="newIt"/>. B cannot tag A back.</summary>
+        public void BeginTagBackImmunity(ItController newIt, float seconds)
+        {
+            _tagBackFrom = newIt;
+            int id = newIt != null ? newIt.TagPawnId : 0;
+            _tagBack = TagBackImmunity.Open(id, seconds);
+            if (GetComponent<Tag.Art.TagBackGlow>() == null)
+                gameObject.AddComponent<Tag.Art.TagBackGlow>();
+        }
+
+        public bool BlocksTagBackFrom(ItController attacker)
+        {
+            if (attacker == null || _tagBackFrom == null || attacker != _tagBackFrom) return false;
+            return TagBackImmunity.Blocks(_tagBack, attacker.TagPawnId);
+        }
+
+        public void ClearTagBackImmunity()
+        {
+            _tagBack = default;
+            _tagBackFrom = null;
+        }
 
         void Awake()
         {
@@ -38,6 +74,8 @@ namespace Tag.Gameplay
                 PlayerId = gameObject.name;
             _mpb = new MaterialPropertyBlock();
             _motor = GetComponent<PlayerMotor>();
+            if (GetComponent<Tag.Art.TagBackGlow>() == null)
+                gameObject.AddComponent<Tag.Art.TagBackGlow>();
             _rb = GetComponent<Rigidbody>();
             _bodyCol = GetComponent<CapsuleCollider>();
             if (_bodyCol == null) _bodyCol = GetComponent<Collider>();
@@ -62,6 +100,10 @@ namespace Tag.Gameplay
                 _timeAsIt += Time.deltaTime;
             if (_iFrameTimer > 0f)
                 _iFrameTimer -= Time.deltaTime;
+            _tagBack = TagBackImmunity.Tick(_tagBack, Time.deltaTime);
+            // The window is only from the specific new It. Once they are not It, the glow ends.
+            if (_tagBack.Remaining <= 0f || _tagBackFrom == null || !_tagBackFrom.IsIt)
+                ClearTagBackImmunity();
         }
 
         public void SetIt(bool value)
@@ -72,6 +114,7 @@ namespace Tag.Gameplay
             ApplyVisual();
             if (!wasIt && value)
             {
+                ClearTagBackImmunity();
                 TagSfx.BecomeIt(transform.position);
                 // Drive MoveAnimDriver / HUD listeners (legacy TryTag path was the only NotifyBecameIt caller).
                 if (_motor != null)
@@ -141,6 +184,7 @@ namespace Tag.Gameplay
             _eliminated = true;
             isIt = false;
             _iFrameTimer = 0f;
+            ClearTagBackImmunity();
             if (_motor != null) _motor.SetMotorLocked(true);
             if (_rb == null) _rb = GetComponent<Rigidbody>();
             if (_rb != null)
@@ -160,6 +204,7 @@ namespace Tag.Gameplay
             _eliminated = false;
             _timeAsIt = 0f;
             _iFrameTimer = 0f;
+            ClearTagBackImmunity();
             isIt = false;
             if (_motor != null) _motor.SetMotorLocked(false);
             if (_rb == null) _rb = GetComponent<Rigidbody>();

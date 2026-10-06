@@ -321,6 +321,8 @@ namespace Tag.Modes
                 if (p == null || p == _it || !p.IsAlive || p.IsEliminated) continue;
                 // When chasing as It, dump onto nearest non-It (skip other Its if any).
                 if (selfIsIt && p.IsIt) continue;
+                // The runner who just lost It is closed. Pick the next runner, or hold.
+                if (selfIsIt && !TagBackImmunity.DummyKeepsTarget(p.BlocksTagBackFrom(_it))) continue;
                 // When fleeing, prefer locking onto the current It so lose-It Retarget is useful.
                 if (!selfIsIt && !p.IsIt) continue;
                 float dSq = (p.transform.position - transform.position).sqrMagnitude;
@@ -557,6 +559,18 @@ namespace Tag.Modes
         void TickChase(float dt)
         {
             if (_target == null || !_target.IsAlive) Retarget();
+            if (_it != null && _it.IsIt && _target != null
+                && !TagBackImmunity.DummyKeepsTarget(_target.BlocksTagBackFrom(_it)))
+            {
+                _punchTell = 0f;
+                CancelPunchTelegraph();
+                Retarget();
+                if (_target != null && !TagBackImmunity.DummyKeepsTarget(_target.BlocksTagBackFrom(_it)))
+                {
+                    _target = null;
+                    _targetMotor = null;
+                }
+            }
             Vector3 moveDir = transform.forward;
             float urgency = HotPotatoFuseUrgency();
 
@@ -1000,6 +1014,12 @@ namespace Tag.Modes
         void TickFleeOrWander(float dt)
         {
             CancelLungeTell();
+            // The tag-back window is the escape. Drop a cocked punch and keep running.
+            if (_it != null && _it.TagBackRemaining > 0f)
+            {
+                _punchTell = 0f;
+                CancelPunchTelegraph();
+            }
             Vector3 moveDir = transform.forward;
             ItController threat = null;
             // Prefer Retarget lock (updated on lose-It) when it still points at a living It.

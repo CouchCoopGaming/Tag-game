@@ -256,7 +256,33 @@ namespace Tag.Modes
                 if (living.Count > 0)
                     TransferIt(null, living[Random.Range(0, living.Count)]);
             }
+            EnforceSpawnSafety();
             Debug.Log($"[TagMode] Playing {_mode.Id}");
+        }
+
+        /// <summary>
+        /// Round start. Every living runner must be 20 m from It, and not in sight
+        /// inside a 2 s sprint. Pads already satisfy that; this moves anyone who does not.
+        /// </summary>
+        void EnforceSpawnSafety()
+        {
+            ItController it = _ctx.CurrentIt;
+            if (it == null) return;
+            Vector3 ip = it.transform.position;
+            foreach (var p in players)
+            {
+                if (p == null || p == it || !p.IsAlive) continue;
+                Vector3 pos = p.transform.position;
+                if (Tag.Level.MegaParkP1Layout.SpawnIsSafe(pos.x, pos.z, ip.x, ip.z))
+                    continue;
+                Tag.Level.MegaParkP1Layout.PickRespawn(pos.x, pos.z, ip.x, ip.z, true, out float x, out float y, out float z);
+                Vector3 pad = new Vector3(x, y, z);
+                var motor = p.GetComponent<PlayerMotor>();
+                if (motor != null)
+                    motor.Place(pad);
+                else
+                    p.transform.position = pad;
+            }
         }
 
         public void EnterPostRound(float seconds)
@@ -432,6 +458,7 @@ namespace Tag.Modes
         public void TransferIt(ItController from, ItController to)
         {
             LastFromId = from != null ? from.PlayerId : "";
+            float tagBackSeconds = TagBackSeconds(from, to);
             if (from != null) from.SetIt(false);
             if (to != null && to.IsAlive)
             {
@@ -439,12 +466,23 @@ namespace Tag.Modes
                 _ctx.CurrentIt = to;
                 LastToId = to.PlayerId;
                 Debug.Log($"[TagMode] It -> {to.PlayerId}");
+                // A is safe from B only. A fresh It (from == null) does not open a window.
+                if (from != null)
+                    from.BeginTagBackImmunity(to, tagBackSeconds);
             }
             else
             {
                 _ctx.CurrentIt = null;
                 LastToId = "";
             }
+        }
+
+        static float TagBackSeconds(ItController from, ItController to)
+        {
+            PunchHitbox box = null;
+            if (from != null) box = from.GetComponent<PunchHitbox>();
+            if (box == null && to != null) box = to.GetComponent<PunchHitbox>();
+            return box != null ? box.TagBackImmunitySeconds : TagBackImmunity.DefaultSeconds;
         }
 
         /// <summary>

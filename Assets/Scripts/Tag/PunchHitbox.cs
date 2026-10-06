@@ -48,6 +48,8 @@ namespace Tag.Gameplay
 
         /// <summary>Active hitbox reach (PunchTagTuning.reach). Used by DummyPatrol swing gating.</summary>
         public float Reach => tuning != null ? tuning.reach : 1.55f;
+        /// <summary>Seconds the old It is safe from this puncher after a transfer. Default 1.0.</summary>
+        public float TagBackImmunitySeconds => TagBackImmunity.Seconds(tuning);
         /// <summary>Active hitbox width (PunchTagTuning.width). Used with Reach for AI cone.</summary>
         public float Width => tuning != null ? tuning.width : 0.85f;
 
@@ -286,6 +288,16 @@ namespace Tag.Gameplay
 
         void ResolveHit(ItController victim, Vector3 hitPoint)
         {
+            // Tag-back: the new It swung at the specific old It. No transfer, no stagger.
+            if (victim != null && _it != null
+                && TagBackImmunity.IsBlockedTag(_it.IsIt, victim.BlocksTagBackFrom(_it)))
+            {
+                TagBackBlockedTell.PlayAt(hitPoint);
+                TagSfx.TagBackThunk(hitPoint);
+                Debug.Log($"[Punch] {name} tag-back blocked on {victim.name}");
+                return;
+            }
+
             // Transfer-It. The existing gates decide whether this connect is a tag.
             bool puncherWasIt = _it != null && _it.IsIt;
             if (_mode != null)
@@ -294,8 +306,11 @@ namespace Tag.Gameplay
                 _roundLegacy.OnSuccessfulPunch(_it, victim);
             else if (_it != null && _it.IsIt)
             {
-                _it.SetIt(false);
+                float seconds = TagBackImmunitySeconds;
+                ItController oldIt = _it;
+                oldIt.SetIt(false);
                 victim.SetIt(true);
+                oldIt.BeginTagBackImmunity(victim, seconds);
             }
 
             bool tagged = TagLandTell.Transferred(puncherWasIt, victim != null && victim.IsIt, _it != null && _it.IsIt);
