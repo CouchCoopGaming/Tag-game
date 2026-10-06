@@ -552,9 +552,12 @@ namespace Tag.Level
             if (apply.IndexOf("AddForce", StringComparison.Ordinal) >= 0) return false;
             if (apply.IndexOf("Rigidbody", StringComparison.Ordinal) >= 0) return false;
             if (apply.IndexOf("jumpSpeed", StringComparison.Ordinal) < 0) return false;
-            if (apply.IndexOf("JumpDrop", StringComparison.Ordinal) < 0) return false;
-            if (apply.IndexOf("ReleaseDrop", StringComparison.Ordinal) < 0) return false;
-            if (apply.IndexOf("EndDrop", StringComparison.Ordinal) < 0) return false;
+            if (apply.IndexOf("LeaveZip", StringComparison.Ordinal) < 0) return false;
+            string integration = Read("Assets/Scripts/Level/VerbIntegration.cs");
+            if (integration == null) return false;
+            if (integration.IndexOf("JumpDrop", StringComparison.Ordinal) < 0) return false;
+            if (integration.IndexOf("ReleaseDrop", StringComparison.Ordinal) < 0) return false;
+            if (integration.IndexOf("EndDrop", StringComparison.Ordinal) < 0) return false;
             string begin = Method(motor, "bool BeginPunchStagger");
             if (begin.IndexOf("ReleaseZip", StringComparison.Ordinal) < 0) return false;
             if (begin.IndexOf("_velocity", StringComparison.Ordinal) >= 0) return false;

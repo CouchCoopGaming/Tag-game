@@ -26,6 +26,8 @@ namespace Tag.Level
     /// wall-runs inside 160×100. A kill plane under the bowl respawns on the
     /// nearest safe 118 m arc. Each zone has a skyline landmark. Feel locks are
     /// still not stored here and are not retuned.
+    /// Pass 7 is a look pass only: afternoon light, playground materials, and
+    /// non-colliding dressing. The footprint, loop, and feel locks stay put.
     /// </summary>
     public static partial class MegaParkP1Layout
     {
@@ -296,6 +298,7 @@ namespace Tag.Level
             string landmarkNote = LandmarkReport(solids, fail);
             string perfNote = PerfReport(solids, ramps, fail);
             string pulseNote = PulseReport(fail);
+            string lookNote = LookReport(solids, ramps, fail);
             if (fail.Length == failBeforeMesh && meshGap > MeshMatch)
                 fail.Append("collider mismatch ").Append(meshGap.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
 
@@ -314,11 +317,11 @@ namespace Tag.Level
             };
             audit.Line = string.Format(
                 CultureInfo.InvariantCulture,
-                "MegaPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns 4+2; solids {3} grounded; cling walls {4}; vaults {5}; bar under-clear {6:0.00} m; crossings A+B open; routes {7}; rim {8}, max gap {9:0.00} m; {10}; {11}; collider mismatch {12:0.000} m; ground error {13:0.000} m; pads {14} {15}; zips {16} clearance {17:0.00} m; saved {18}; dummy 60s pads {19} zips {20}; containment fence {21:0.0} m kill {22:0.00} sweeps {23} {24}; {25}; {26}; {27}; {28}",
+                "MegaPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns 4+2; solids {3} grounded; cling walls {4}; vaults {5}; bar under-clear {6:0.00} m; crossings A+B open; routes {7}; rim {8}, max gap {9:0.00} m; {10}; {11}; collider mismatch {12:0.000} m; ground error {13:0.000} m; pads {14} {15}; zips {16} clearance {17:0.00} m; saved {18}; dummy 60s pads {19} zips {20}; containment fence {21:0.0} m kill {22:0.00} sweeps {23} {24}; {25}; {26}; {27}; {28}; {29}",
                 audit.LoopM, SprintSpeed, audit.Seconds, audit.SolidCount, audit.WallCount, audit.VaultCount, audit.BarClear,
                 audit.RouteCount, audit.RimContinuous ? "continuous" : "broken", audit.RimGapMax, levelNote, pairNote,
                 meshGap, groundErr, pads, padsLanded ? "landed" : "miss", zips, zipClear, zipSaved, dummyPads, dummyZips,
-                FenceTop, KillPlaneY, sweeps, contained ? "held" : "open", spawnNote, landmarkNote, perfNote, pulseNote);
+                FenceTop, KillPlaneY, sweeps, contained ? "held" : "open", spawnNote, landmarkNote, perfNote, pulseNote, lookNote);
             audit.Failure = fail.ToString();
             return audit;
         }
