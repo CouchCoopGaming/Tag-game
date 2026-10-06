@@ -37,11 +37,7 @@ namespace Tag.Level
                 "P1  keyboard", "P2  open", "P3  open", "P4  open",
                 "Split  Vertical", "Listener  P1", "Start match", "Back"
             }, fail);
-            Card(Path.Combine(folder, "Results.png"), "Results", new[]
-            {
-                "Least It", "You  4.0s", "Dummy  6.0s",
-                "* Rematch", "Change setup", "Title"
-            }, fail);
+            Results(Path.Combine(folder, "Results.png"), fail);
             Split(Path.Combine(folder, "Split4_MegaPark.png"), ParkArena.Mega, 4, false, fail);
             Split(Path.Combine(folder, "Split2_StackYard.png"), ParkArena.Stack, 2, false, fail);
             if (fail.Length > 0)
@@ -120,8 +116,10 @@ namespace Tag.Level
                 Paint(tris, view, depth, vw, vh, ex, 1.65f, ez, mapW * 0.5f, 3.2f, mapD * 0.5f, 68f, true,
                     shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
                 Blit(rgb, Width, view, vw, vh, ox, oy);
-                Fill(rgb, Width, Height, ox, oy, 72, 18, 12, 16, 22);
-                Text(rgb, Width, Height, ox + 6, oy + 4, "P" + (i + 1).ToString(), 240, 244, 248);
+                string chip = ZoneReadability.Chip(i, arena, ex, ez);
+                int chipW = 8 + chip.Length * 6;
+                Fill(rgb, Width, Height, ox, oy, chipW, 18, 12, 16, 22);
+                Text(rgb, Width, Height, ox + 4, oy + 4, chip, 240, 244, 248);
             }
             string map = arena == ParkArena.Stack ? "Stack Yard" : arena == ParkArena.Pocket ? "Pocket Park" : "Mega Park";
             Text(rgb, Width, Height, 12, 6, map + "  " + humans.ToString() + " humans", 230, 236, 242);
@@ -207,7 +205,50 @@ namespace Tag.Level
                 for (int i = 0; i < zips.Length; i++)
                     AddZip(tris, zips[i]);
             }
+            string park = arena == ParkArena.Stack ? "StackYard" : arena == ParkArena.Pocket ? "PocketPark" : "MegaPark";
+            AddZoneMarks(tris, park, solids);
             return tris;
+        }
+
+        static void Results(string path, StringBuilder fail)
+        {
+            var rgb = new byte[Width * Height * 3];
+            Fill(rgb, Width, Height, 0, 0, Width, Height, 16, 22, 32);
+            Fill(rgb, Width, Height, 36, 24, Width - 72, Height - 48, 24, 32, 44);
+            Text(rgb, Width, Height, 56, 40, "RESULTS", 236, 240, 244);
+            string[] awards = { "Hot Potato   P2", "Slipperiest   P1  P4", "Sky Walker   P3", "Wall Crawler   P1" };
+            for (int i = 0; i < awards.Length; i++)
+            {
+                int y = 68 + i * 16;
+                Fill(rgb, Width, Height, 56, y - 2, 280, 14, 46, 62, 84);
+                Text(rgb, Width, Height, 60, y, awards[i], 236, 232, 210);
+            }
+            string[] seats = { "P1", "P2", "P3", "P4" };
+            byte[] cr = { 200, 90, 230, 40 };
+            byte[] cg = { 170, 210, 210, 180 };
+            byte[] cb = { 40, 80, 255, 160 };
+            string[] lines =
+            {
+                "tags 2", "It 1.4s", "air 2.1", "walls 1", "pad 0", "zip 0", "dash 0", "hit 2", "slip 1",
+                "tags 3", "It 3.6s", "air 0.4", "walls 0", "pad 1", "zip 0", "dash 0", "hit 2", "slip 2",
+                "tags 1", "It 2.2s", "air 4.8", "walls 0", "pad 0", "zip 1", "dash 1", "hit 1", "slip 0",
+                "tags 1", "It 2.8s", "air 1.1", "walls 4", "pad 0", "zip 0", "dash 0", "hit 1", "slip 2",
+            };
+            int cardW = 250;
+            int cardH = 420;
+            for (int s = 0; s < 4; s++)
+            {
+                int x = 56 + s * (cardW + 16);
+                int y = 150;
+                Fill(rgb, Width, Height, x, y, cardW, cardH, 18, 24, 34);
+                Fill(rgb, Width, Height, x, y, cardW, 6, cr[s], cg[s], cb[s]);
+                Text(rgb, Width, Height, x + 12, y + 16, seats[s], cr[s], cg[s], cb[s]);
+                for (int row = 0; row < 9; row++)
+                    Text(rgb, Width, Height, x + 12, y + 40 + row * 18, lines[s * 9 + row], 220, 226, 232);
+            }
+            Text(rgb, Width, Height, 56, Height - 52, "Rematch    Change setup    Title", 180, 190, 200);
+            WritePng(path, rgb, Width, Height);
+            Check(path, "Results", fail);
         }
 
         static void Paint(List<Tri> tris, byte[] rgb, float[] depth, int w, int h,
@@ -349,6 +390,7 @@ namespace Tag.Level
                 case '.': return "00000000000000000000000000100000000";
                 case '-': return "00000000001111100000000000000000000";
                 case ' ': return "00000000000000000000000000000000000";
+                case '·': return "00000000000000000000001000000000000";
                 default: return "11111100011000110001100011111100000";
             }
         }

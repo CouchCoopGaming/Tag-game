@@ -19,6 +19,7 @@
     <Compile Include="../../Assets/Scripts/Level/StackYardLayout.cs" />
     <Compile Include="../../Assets/Scripts/Level/StackYardLayout.Look.cs" />
     <Compile Include="../../Assets/Scripts/Level/ParkArena.cs" />
+    <Compile Include="../../Assets/Scripts/Level/ZoneReadability.cs" />
     <Compile Include="../../Assets/Scripts/Level/ArenaStill.cs" />
     <Compile Include="../../Assets/Scripts/Level/ArenaStill.Front.cs" />
     <Compile Include="UnityStub/UnityEngine.cs" />
@@ -131,5 +132,8 @@
     <Compile Include="../../Assets/Scripts/Practice/PracticeSim.cs" />
     <Compile Include="../../Assets/Scripts/Practice/PracticeSession.cs" />
     <Compile Include="../../Assets/Scripts/Practice/PracticeProof.cs" />
+    <Compile Include="../../Assets/Scripts/Match/MatchBook.cs" />
+    <Compile Include="../../Assets/Scripts/Match/MatchHighlight.cs" />
+    <Compile Include="../../Assets/Scripts/Match/MatchStatsProof.cs" />
   </ItemGroup>
 </Project>

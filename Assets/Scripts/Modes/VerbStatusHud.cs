@@ -1,6 +1,7 @@
 using Tag.Core;
 using Tag.Couch;
 using Tag.Gameplay;
+using Tag.Level;
 using Tag.Settings;
 using TagArena.Movement;
 using UnityEngine;
@@ -126,7 +127,15 @@ namespace Tag.Modes
             AccessibilityPalette.Player(palette, seat, out float r, out float g, out float b);
             _label.normal.textColor = new Color(r, g, b, 1f);
             GUI.Label(new Rect(nx, ny, 18f, nh), AccessibilityPalette.Glyph(seat), _label);
-            GUI.Label(new Rect(nx + 18f, ny, nw - 18f, nh), CouchPlay.Name(seat), _label);
+            string chip = CouchPlay.Name(seat);
+            if (self != null)
+            {
+                Vector3 at = self.transform.position;
+                chip = ZoneReadability.Chip(seat, at.x, at.z);
+            }
+            float chipW = tx - (nx + 18f) - 6f;
+            if (chipW < nw - 18f) chipW = nw - 18f;
+            GUI.Label(new Rect(nx + 18f, ny, chipW, nh), chip, _label);
             _label.normal.textColor = Color.white;
 
             if (self != null && self.IsIt)

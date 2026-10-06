@@ -27,6 +27,7 @@ namespace Tag.Level
         Material _mulch, _grass, _sand, _rubber, _blue, _yellow, _steel, _concrete, _cedar, _bark, _rim, _field;
         Material _soft, _pad, _merry, _amber, _swing, _army, _knight, _kick, _hop, _cover, _plate;
         Material _fence, _rail, _horizon, _leaf, _wood, _lamp, _trash, _skyline;
+        Material _zbrick, _zwine, _zindigo, _zolive, _zslate, _ztrim;
         Material _spawnSw, _spawnSe, _spawnNw, _spawnNe, _spawnRunS, _spawnRunN;
 
         /// <summary>True after a build whose layout audit passed.</summary>
@@ -127,11 +128,13 @@ namespace Tag.Level
             BuildZipLines();
             BuildLabels();
             Transform dress = BuildDressing();
+            Transform zones = BuildZoneRead();
             BatchStatic(solids);
             BatchStatic(ramps);
             BatchStatic(paint);
             BatchStatic(spawns);
             BatchStatic(dress);
+            BatchStatic(zones);
 
             MegaParkP1Layout.Audit audit = MegaParkP1Layout.Run();
             LayoutOk = audit.Ok;
@@ -206,6 +209,12 @@ namespace Tag.Level
             _lamp = Face("lamp");
             _trash = Face("trash");
             _skyline = Face("skyline");
+            _zbrick = Face("zbrick");
+            _zwine = Face("zwine");
+            _zindigo = Face("zindigo");
+            _zolive = Face("zolive");
+            _zslate = Face("zslate");
+            _ztrim = Face("ztrim");
             _spawnSw = Make(new Color(0x2E / 255f, 0xC4 / 255f, 0xB6 / 255f), "MEGA_SpawnSW", 0.2f, 0f, "panel");
             _spawnSe = Make(new Color(0xFF / 255f, 0x6B / 255f, 0x6B / 255f), "MEGA_SpawnSE", 0.2f, 0f, "panel");
             _spawnNw = Make(new Color(0x9B / 255f, 0x5D / 255f, 0xE5 / 255f), "MEGA_SpawnNW", 0.2f, 0f, "panel");
@@ -354,6 +363,12 @@ namespace Tag.Level
                 case "hop": return _hop;
                 case "cover": return _cover;
                 case "plate": return _plate;
+                case "zbrick": return _zbrick;
+                case "zwine": return _zwine;
+                case "zindigo": return _zindigo;
+                case "zolive": return _zolive;
+                case "zslate": return _zslate;
+                case "ztrim": return _ztrim;
                 default: return _mulch;
             }
         }
@@ -876,6 +891,34 @@ namespace Tag.Level
             return g;
         }
 
+        Transform BuildZoneRead()
+        {
+            MegaParkP1Layout.Solid[] solids = ParkArena.IsStack
+                ? StackYardLayout.BuildSolids()
+                : ParkArena.IsPocket
+                ? PocketParkLayout.BuildSolids()
+                : MegaParkP1Layout.BuildSolids();
+            ZoneReadability.Mark[] marks = ZoneReadability.Fill(ParkArena.Id, solids);
+            Transform g = Group("ZoneRead");
+            if (marks == null) return g;
+            for (int i = 0; i < marks.Length; i++)
+            {
+                ZoneReadability.Mark m = marks[i];
+                GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                cube.name = m.Name;
+                cube.transform.SetParent(g, false);
+                cube.transform.localPosition = new Vector3(m.X, m.Y, m.Z);
+                cube.transform.localRotation = Quaternion.identity;
+                cube.transform.localScale = new Vector3(m.Sx, m.Sy, m.Sz);
+                cube.isStatic = true;
+                StripCollider(cube);
+                MeshRenderer rend = cube.GetComponent<MeshRenderer>();
+                if (rend != null)
+                    rend.sharedMaterial = Pick(m.Mat);
+            }
+            return g;
+        }
+
         static void StripCollider(GameObject go)
         {
             Collider col = go.GetComponent<Collider>();
@@ -916,11 +959,13 @@ namespace Tag.Level
             BuildZipLineList(PocketParkLayout.ZipLines);
             BuildPocketLabels();
             Transform dress = BuildDressList(PocketParkLayout.BuildDressing());
+            Transform zones = BuildZoneRead();
             BatchStatic(solids);
             BatchStatic(ramps);
             BatchStatic(paint);
             BatchStatic(spawns);
             BatchStatic(dress);
+            BatchStatic(zones);
 
             PocketParkLayout.Audit audit = PocketParkLayout.Run();
             LayoutOk = audit.Ok;
@@ -973,11 +1018,13 @@ namespace Tag.Level
             BuildZipLineList(StackYardLayout.ZipLines);
             BuildStackLabels();
             Transform dress = BuildDressList(StackYardLayout.BuildDressing());
+            Transform zones = BuildZoneRead();
             BatchStatic(solids);
             BatchStatic(ramps);
             BatchStatic(paint);
             BatchStatic(spawns);
             BatchStatic(dress);
+            BatchStatic(zones);
 
             StackYardLayout.Audit audit = StackYardLayout.Run();
             LayoutOk = audit.Ok;
