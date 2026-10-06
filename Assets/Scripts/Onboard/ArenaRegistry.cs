@@ -11,14 +11,15 @@ namespace Tag.Onboard
         public struct Entry
         {
             public string Name;
+            public string Root;
             public PlayAction Key;
             public bool HasBind;
         }
 
         public static readonly Entry[] All =
         {
-            new Entry { Name = "PARK", Key = PlayAction.Arena1, HasBind = true },
-            new Entry { Name = "Mega Park", Key = PlayAction.Arena2, HasBind = true }
+            new Entry { Name = "PARK", Root = "PARK", Key = PlayAction.Arena1, HasBind = true },
+            new Entry { Name = "Mega Park", Root = "MegaPark", Key = PlayAction.Arena2, HasBind = true }
         };
 
         public static int Count => All.Length;

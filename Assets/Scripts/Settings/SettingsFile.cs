@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Text;
+using Tag.Practice;
 
 namespace Tag.Settings
 {
@@ -58,6 +59,8 @@ namespace Tag.Settings
                 text.Append(b.Gamepad[i] ?? "");
                 text.Append('\n');
             }
+            PracticeBests.Write(text);
+            PracticeGhost.Write(text);
             return text.ToString();
         }
 
@@ -89,6 +92,8 @@ namespace Tag.Settings
                 binds.ResetToDefaults();
                 return;
             }
+            PracticeBests.Clear();
+            PracticeGhost.ClearSaved();
             for (int i = 0; i < lines.Length; i++)
             {
                 if (!Split(lines[i], out string key, out string value)) continue;
@@ -122,6 +127,10 @@ namespace Tag.Settings
             if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
             if (key == "split" || key == "listen") return true;
             if (key.StartsWith("kb.", StringComparison.Ordinal) || key.StartsWith("pad.", StringComparison.Ordinal))
+                return true;
+            if (key.StartsWith("pb.", StringComparison.Ordinal) || key.StartsWith("sp.", StringComparison.Ordinal))
+                return true;
+            if (key.StartsWith("gh.", StringComparison.Ordinal))
                 return true;
             if (SeatKey(key, "palette", out _)) return true;
             if (SeatKey(key, "captions", out _)) return true;
@@ -160,6 +169,12 @@ namespace Tag.Settings
                 Assign(binds, key.Substring(3), value, true);
             else if (key.StartsWith("pad.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(4), value, false);
+            else if (key.StartsWith("pb.", StringComparison.Ordinal))
+                PracticeBests.SetTime(key.Substring(3), Num(value, 0f));
+            else if (key.StartsWith("sp.", StringComparison.Ordinal))
+                PracticeBests.SetSplits(key.Substring(3), value);
+            else if (key.StartsWith("gh.", StringComparison.Ordinal))
+                PracticeGhost.Read(key.Substring(3), value);
         }
 
         static bool SeatKey(string key, string prefix, out int seat)

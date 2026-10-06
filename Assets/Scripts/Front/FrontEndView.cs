@@ -1,5 +1,6 @@
 using Tag.Core;
 using Tag.Couch;
+using Tag.Practice;
 using UnityEngine;
 
 namespace Tag.Front
@@ -18,23 +19,39 @@ namespace Tag.Front
                 DrawJoin(cx, cy);
             else if (FrontSession.Screen == FrontScreen.Setup)
                 DrawSetup(cx, cy);
+            else if (FrontSession.Screen == FrontScreen.Practice)
+                DrawPractice(cx, cy);
             else
                 DrawTitle(cx, cy);
         }
 
         static void DrawTitle(float cx, float cy)
         {
-            GUI.Box(new Rect(cx - 210f, cy - 160f, 420f, 340f), FrontSession.GameName);
-            GUI.Label(new Rect(cx - 190f, cy - 124f, 380f, 28f), "Least It");
-            float y = cy - 84f;
-            for (int i = 0; i < 4; i++)
+            GUI.Box(new Rect(cx - 210f, cy - 180f, 420f, 400f), FrontSession.GameName);
+            GUI.Label(new Rect(cx - 190f, cy - 144f, 380f, 28f), "Least It");
+            float y = cy - 108f;
+            for (int i = 0; i < 5; i++)
             {
                 if (Button(cx, y, i, FrontSession.RowText(i)))
                     FrontSession.Pointer(i);
                 y += 36f;
             }
-            GUI.Label(new Rect(cx - 190f, cy + 80f, 380f, 48f),
+            GUI.Label(new Rect(cx - 190f, cy + 100f, 380f, 48f),
                 "Up / Down or the stick picks. Enter or South uses it.\nEsc or East goes back.");
+        }
+
+        static void DrawPractice(float cx, float cy)
+        {
+            GUI.Box(new Rect(cx - 240f, cy - 180f, 480f, 400f), "Practice");
+            float y = cy - 140f;
+            for (int i = 0; i < PracticeSession.Rows; i++)
+            {
+                if (Button(cx, y, i, FrontSession.RowText(i)))
+                    FrontSession.Pointer(i);
+                y += 32f;
+            }
+            GUI.Label(new Rect(cx - 220f, cy + 120f, 440f, 48f),
+                "Left / Right changes the row. Enter or South starts.\nEsc or East returns to the title.");
         }
 
         static void DrawSetup(float cx, float cy)

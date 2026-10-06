@@ -20,10 +20,15 @@ Cling is not a separate button. Holding move into a wall is the cling. Rebinding
 | Arena 2 (Mega Park) | 2 | D-pad right |
 | Mute | Comma | — |
 | Music mute | N | — |
+| Practice restart | T | North (Y) |
+| Practice ghost | G | Left stick press |
+| Practice input display | I | Right stick press |
 
 ## Debug
 
 F6 toggles the frame budget overlay. It stays off until you press it. The card shows FPS, frame time in milliseconds, and the same cost buckets as the headless budget: movement, AI, pose, HUD, audio, and round flow. F3 is Trail Tag, so the overlay does not use it. F6 is not a gameplay action and is not in the rebind list.
+
+Practice restart, ghost, and the input display are sampled the same way. T and North (`buttonNorth`) restart a practice run. G and left stick press hide the ghost. I and right stick press show which verbs are held. They are not rebind rows. They do not use F3, F6, M, or Comma. See `Docs/Practice.md`.
 
 ## Settings
 
@@ -58,7 +63,7 @@ South confirms. East goes back. Start pauses. The left stick and the D-pad move 
 
 | Menu | Move | Confirm | Back |
 |---|---|---|---|
-| Title | Up / Down | Play, Settings, How to play, Quit | East or Esc does nothing on the title |
+| Title | Up / Down | Play, Practice, Settings, How to play, Quit | East or Esc does nothing on the title |
 | Match setup | Up / Down, Left / Right changes the row | Start match opens join, or Back | East or Esc returns to the title |
 | Join | Up / Down, Left / Right changes split or listener | Start match or Back | East or Esc leaves that device; Back on an empty keyboard returns to setup |
 | Pause | Left / Right | Resume, Controls, Look, Audio, Quit to title, Settings, Rebind, Arena | East or Esc resumes |

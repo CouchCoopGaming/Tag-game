@@ -3,6 +3,7 @@ using System.IO;
 using Tag.Couch;
 using Tag.Modes;
 using Tag.Onboard;
+using Tag.Practice;
 using Tag.Settings;
 
 namespace Tag.Front
@@ -16,7 +17,8 @@ namespace Tag.Front
         Playing = 4,
         Results = 5,
         Quit = 6,
-        Join = 7
+        Join = 7,
+        Practice = 8
     }
 
     /// <summary>
@@ -36,6 +38,7 @@ namespace Tag.Front
         public const int ActTitle = 6;
         public const int ActRematch = 7;
         public const int ActJoin = 8;
+        public const int ActPractice = 9;
         public const int SoundMove = 1;
         public const int SoundConfirm = 2;
         public const int SoundBack = 3;
@@ -74,7 +77,8 @@ namespace Tag.Front
                 if (Screen == FrontScreen.Setup) return 7;
                 if (Screen == FrontScreen.Join) return 4;
                 if (Screen == FrontScreen.Results) return 3;
-                if (Screen == FrontScreen.Title || Screen == FrontScreen.Quit) return 4;
+                if (Screen == FrontScreen.Practice) return PracticeSession.Rows;
+                if (Screen == FrontScreen.Title || Screen == FrontScreen.Quit) return 5;
                 return 1;
             }
         }
@@ -100,6 +104,7 @@ namespace Tag.Front
         {
             ReleaseObjects();
             CouchPlay.Release();
+            PracticeSession.Stop();
             Armed = false;
             Screen = FrontScreen.Title;
             Row = 0;
@@ -151,6 +156,13 @@ namespace Tag.Front
         public static void Step(int dir)
         {
             if (dir == 0) return;
+            if (Screen == FrontScreen.Practice)
+            {
+                PracticeSession.StepRow(Row, dir);
+                Note(SoundMove);
+                Rebuild();
+                return;
+            }
             if (Screen == FrontScreen.Join)
             {
                 EnsureSettings();
@@ -192,12 +204,20 @@ namespace Tag.Front
             {
                 if (Row == 1)
                 {
+                    PracticeSession.Open();
+                    Screen = FrontScreen.Practice;
+                    Row = 0;
+                    Rebuild();
+                    return ActPractice;
+                }
+                if (Row == 2)
+                {
                     Screen = FrontScreen.Settings;
                     Row = 0;
                     Rebuild();
                     return ActSettings;
                 }
-                if (Row == 2)
+                if (Row == 3)
                 {
                     Screen = FrontScreen.HowTo;
                     Row = 0;
@@ -205,7 +225,7 @@ namespace Tag.Front
                     Rebuild();
                     return ActHowTo;
                 }
-                if (Row == 3)
+                if (Row == 4)
                 {
                     Screen = FrontScreen.Quit;
                     Rebuild();
@@ -215,6 +235,28 @@ namespace Tag.Front
                 Row = 0;
                 Rebuild();
                 return ActSetup;
+            }
+            if (Screen == FrontScreen.Practice)
+            {
+                if (Row >= 6) return Back();
+                if (Row == 5)
+                {
+                    PracticeSession.Arm();
+                    EnsureSettings();
+                    if (CouchPlay.Humans < 1)
+                        CouchPlay.Join(CouchPlay.DeviceKeyboard);
+                    int n = CouchPlay.Humans + PracticeSession.AiCount;
+                    if (n < 1) n = 1;
+                    if (Hosts > 0) Hosts++;
+                    else Hosts = 1;
+                    Armed = true;
+                    Screen = FrontScreen.Playing;
+                    Live = n;
+                    Rebuild();
+                    return ActStart;
+                }
+                Step(1);
+                return ActNone;
             }
             if (Screen == FrontScreen.Setup)
             {
@@ -284,6 +326,15 @@ namespace Tag.Front
                 Armed = false;
                 Rebuild();
                 return ActSetup;
+            }
+            if (Screen == FrontScreen.Practice)
+            {
+                PracticeSession.Stop();
+                Screen = FrontScreen.Title;
+                Row = 0;
+                Armed = false;
+                Rebuild();
+                return ActTitle;
             }
             if (Screen == FrontScreen.Setup || Screen == FrontScreen.Settings
                 || Screen == FrontScreen.HowTo || Screen == FrontScreen.Quit)
@@ -431,14 +482,21 @@ namespace Tag.Front
             ControlGlyphs.Note(InputDeviceKind.Keyboard);
             HowToPlay.ResetStatics();
 
-            if (Screen != FrontScreen.Title || RowText(0) != "Play" || RowText(3) != "Quit")
+            if (Screen != FrontScreen.Title || RowText(0) != "Play" || RowText(1) != "Practice" || RowText(4) != "Quit")
                 report.Fail("title is missing Play or Quit");
-            Nudge(1);
+            Highlight(1);
+            if (Confirm() != ActPractice || Screen != FrontScreen.Practice)
+                report.Fail("practice was not reachable from the title");
+            if (RowText(0).IndexOf("Arena", StringComparison.Ordinal) < 0)
+                report.Fail("practice card did not list an arena");
+            if (Back() != ActTitle || Screen != FrontScreen.Title)
+                report.Fail("practice did not return to the title");
+            Highlight(2);
             if (Confirm() != ActSettings || Screen != FrontScreen.Settings)
                 report.Fail("settings was not reachable from the title");
             if (Back() != ActTitle || Screen != FrontScreen.Title)
                 report.Fail("settings did not return to the title");
-            Highlight(2);
+            Highlight(3);
             if (Confirm() != ActHowTo || Screen != FrontScreen.HowTo)
                 report.Fail("how to play was not reachable from the title");
             if (HowToPlay.Count < 1)
@@ -453,7 +511,7 @@ namespace Tag.Front
                 report.Fail("how to play did not reuse the pause card");
             if (Back() != ActTitle || Screen != FrontScreen.Title)
                 report.Fail("how to play did not return to the title");
-            Highlight(3);
+            Highlight(4);
             if (Confirm() != ActQuit || Screen != FrontScreen.Quit)
                 report.Fail("quit was not reachable");
             if (Back() != ActTitle || Screen != FrontScreen.Title)
@@ -710,10 +768,17 @@ namespace Tag.Front
                 _rows[2] = "Title";
                 return;
             }
+            if (Screen == FrontScreen.Practice)
+            {
+                for (int i = 0; i < PracticeSession.Rows && i < _rows.Length; i++)
+                    _rows[i] = PracticeSession.RowLabel(i);
+                return;
+            }
             _rows[0] = "Play";
-            _rows[1] = "Settings";
-            _rows[2] = "How to play";
-            _rows[3] = "Quit";
+            _rows[1] = "Practice";
+            _rows[2] = "Settings";
+            _rows[3] = "How to play";
+            _rows[4] = "Quit";
         }
 
         static string Digit(int value)
