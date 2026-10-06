@@ -154,6 +154,14 @@ static class Program
             return 1;
         }
 
+        EnemyAiReport enemy = EnemyAiProof.Run();
+        Console.WriteLine(enemy.ToString());
+        if (!enemy.Ok)
+        {
+            Console.Error.WriteLine(enemy.FailureText);
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.VerbPoseClips.PunchTagPolishProofLine());
         if (!Tag.Art.VerbPoseClips.PunchTagPolishHolds())
         {

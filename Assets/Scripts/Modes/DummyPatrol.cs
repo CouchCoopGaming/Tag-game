@@ -9,14 +9,16 @@ using UnityEngine;
 namespace Tag.Modes
 {
     /// <summary>
-    /// Dummy AI v1 (SP demo): chase+punch when It; flee when not.
+    /// Dummy AI (SP demo): chase+punch when It; evade when not.
     /// Solo campus play is this pawn (DummyRunner) on the coral Spawn_SE pad.
     /// The lunge lead is OpponentLungeTell.LeadSeconds and does not scale.
     /// Chase steering is OpponentChaseSteer: sprint outside the lunge band, air-strafe a corner,
     /// jump a gap only when speed and jump reach clear it, cling a wall on the line,
     /// step on a launch pad only when that landing is closer to the target,
     /// take a zip line only when its exit is closer to the target,
-    /// and lunge only after that lead when the landing stays under the pawn. No grapple, air dash, or couch tool.
+    /// and lunge only after that lead when the landing stays under the pawn.
+    /// EnemyAi adds the same buttons a player has: slide, air dash, grapple, wall-jump,
+    /// and a runner loop. It does not write a speed or teleport.
     /// Feeds TagArena PlayerMotor via PlayerInputReader.ExternalControl (no RB velocity fight).
     /// Trail Tag: samples nearby TrailSegments and blends a lateral flee wish into steering.
     /// Hot Potato: when fuse Remaining is low (warnSec ~10), It chases harder to dump the tag;
@@ -69,6 +71,10 @@ namespace Tag.Modes
         [SerializeField] float leastItChaseTimeWeight = 0.75f;
         [Tooltip("When not It in Least It: blend flee/wander toward nearest non-It ally (0=off).")]
         [SerializeField] float leastItAllySeekWeight = 0.48f; // slightly stronger buddy seek when Least It
+        [Header("Opponent")]
+        [Range(0f, 1f)]
+        [Tooltip("0 is slow and loose. 1 is quick and tidy. Default is the middle.")]
+        [SerializeField] float difficulty = 0.5f;
 
         PlayerInputReader _input;
         PlayerRagdoll _ragdoll;
@@ -95,6 +101,10 @@ namespace Tag.Modes
         float _weaveT;
         float _punchTell;
         float _gapSide;
+        float _fixedDt;
+        float _dashWait;
+        float _wallTime;
+        EnemyMemory _enemyMem;
         readonly List<TrailSegment> _trailActiveScratch = new List<TrailSegment>();
 
         void Awake()
@@ -169,6 +179,9 @@ namespace Tag.Modes
             }
 
             float dt = Time.fixedDeltaTime;
+            _fixedDt = dt;
+            if (_dashWait > 0f) _dashWait -= dt;
+            TrackWallTime(dt);
             _decisionTimer -= dt;
             if (_decisionTimer <= 0f)
             {
@@ -311,20 +324,16 @@ namespace Tag.Modes
 
         void Retarget()
         {
-            _target = null;
-            _targetMotor = null;
-            float best = float.MaxValue;
+            ItController previous = _target;
             bool selfIsIt = _it != null && _it.IsIt;
             bool leastIt = _modes != null && _modes.SelectedMode == TagModeId.LeastIt;
+            bool previousOk = TargetLegal(previous, selfIsIt);
+            ItController bestPawn = null;
+            float best = float.MaxValue;
+            float bestDist = float.MaxValue;
             foreach (var p in FindObjectsByType<ItController>(FindObjectsSortMode.None))
             {
-                if (p == null || p == _it || !p.IsAlive || p.IsEliminated) continue;
-                // When chasing as It, dump onto nearest non-It (skip other Its if any).
-                if (selfIsIt && p.IsIt) continue;
-                // The runner who just lost It is closed. Pick the next runner, or hold.
-                if (selfIsIt && !TagBackImmunity.DummyKeepsTarget(p.BlocksTagBackFrom(_it))) continue;
-                // When fleeing, prefer locking onto the current It so lose-It Retarget is useful.
-                if (!selfIsIt && !p.IsIt) continue;
+                if (!TargetLegal(p, selfIsIt)) continue;
                 float dSq = (p.transform.position - transform.position).sqrMagnitude;
                 float score = dSq;
                 // Least It + It: prefer tagging leaders (low TimeAsIt) so their clocks rise.
@@ -333,10 +342,41 @@ namespace Tag.Modes
                     float dist = Mathf.Sqrt(dSq);
                     score = dist + leastItChaseTimeWeight * Mathf.Max(0f, p.TimeAsIt);
                 }
-                if (score < best) { best = score; _target = p; }
+                if (score < best)
+                {
+                    best = score;
+                    bestDist = Mathf.Sqrt(dSq);
+                    bestPawn = p;
+                }
             }
-            if (_target == null) return;
-            _targetMotor = _target.GetComponent<PlayerMotor>();
+
+            float prevDist = float.MaxValue;
+            int prevId = 0;
+            if (previousOk)
+            {
+                Vector3 delta = previous.transform.position - transform.position;
+                delta.y = 0f;
+                prevDist = delta.magnitude;
+                prevId = previous.TagPawnId;
+            }
+
+            int bestId = bestPawn != null ? bestPawn.TagPawnId : 0;
+            int stick = EnemyAi.CommitTarget(ref _enemyMem, _fixedDt, prevId, prevDist, bestId, bestDist, previousOk);
+            if (previousOk && stick == prevId)
+                _target = previous;
+            else
+                _target = bestPawn;
+            _targetMotor = _target != null ? _target.GetComponent<PlayerMotor>() : null;
+        }
+
+        bool TargetLegal(ItController pawn, bool selfIsIt)
+        {
+            if (pawn == null || pawn == _it || !pawn.IsAlive || pawn.IsEliminated) return false;
+            if (selfIsIt && pawn.IsIt) return false;
+            // The runner who just lost It is closed. Pick the next runner, or hold.
+            if (selfIsIt && !TagBackImmunity.DummyKeepsTarget(pawn.BlocksTagBackFrom(_it))) return false;
+            if (!selfIsIt && !pawn.IsIt) return false;
+            return true;
         }
 
         /// <summary>
@@ -600,7 +640,12 @@ namespace Tag.Modes
             if (wallCommit)
                 CancelLungeTell();
 
-            Vector3 rawAim = AimPoint(_target) - transform.position;
+            float diff = EnemyAi.ClampDifficulty(difficulty);
+            float leadBonus = urgency > 0f ? 0.08f * urgency : 0f;
+            Vector3 predicted = EnemyAi.DelayedAim(
+                ref _enemyMem, diff, dt, transform.position, _target.transform.position,
+                TargetPlanarVelocity(), _target.TagPawnId, leadBonus);
+            Vector3 rawAim = predicted - transform.position;
             rawAim.y = 0f;
             float farMeters = reach + OpponentLungeTell.MaxGapBeyondReach;
             Vector3 velocity = _selfMotor != null ? _selfMotor.Velocity : Vector3.zero;
@@ -782,14 +827,23 @@ namespace Tag.Modes
             if (!jump && !gapShape && !padEdge && !zipEdge && wish.Verb != OpponentChaseVerb.WallCling && wish.Verb != OpponentChaseVerb.Lunge
                 && wish.Verb != OpponentChaseVerb.AirStrafe && _lungeTellT <= 0f && _lungeArm <= 0f && !lungePress)
                 jump = lip;
-            // Chase does not take air dash, grapple, ski, jet, or crouch. The motor steps the capsule.
+            // The steer stays on the motor. EnemyAi only adds buttons the player already has.
+            // airDash: false keeps the steer from turning a lunge press into a dash.
             float moveY = wish.MoveY;
             bool ridingZip = _selfMotor != null && _selfMotor.ZipRiding;
             if (ridingZip && moveY < OpponentChaseSteer.CloseMoveY)
                 moveY = OpponentChaseSteer.SprintMoveY;
+            EnemySense sense = BuildChaseSense(diff, dt, dist, reach, chaseAng, grounded, wall, wallNormal, chaseDy);
+            sense.SameWallClosed = chase.SameWallClosed;
+            sense.GapAhead = chase.GapAhead;
+            sense.GapClear = OpponentChaseSteer.ClearsGap(chase.JumpReachMeters, chase.GapSpan);
+            EnemyOverlay overlay = EnemyAi.Decorate(ref _enemyMem, sense, wish);
+            if (overlay.WallJump && !lungePress && !padEdge && !zipEdge)
+                jump = true;
             if (_selfMotor != null)
                 _selfMotor.SetZipChase((zipAhead && zipHelps) || ridingZip);
             DriveWish(moveY, wish.Sprint, wish.Strafe, jump, lungePress, airDash: false);
+            ApplyEnemyOverlay(overlay);
         }
 
         struct ChaseGap
@@ -1051,19 +1105,19 @@ namespace Tag.Modes
             {
                 Vector3 threatPos = threat.transform.position;
                 var threatMotor = threat.GetComponent<PlayerMotor>();
-                float fleeLead = EffectiveFleeLeadSeconds();
-                if (threatMotor != null && fleeLead > 0f)
+                Vector3 threatVel = Vector3.zero;
+                if (threatMotor != null)
                 {
-                    Vector3 tv = threatMotor.Velocity;
-                    tv.y = 0f;
-                    threatPos += tv * fleeLead;
+                    threatVel = threatMotor.Velocity;
+                    threatVel.y = 0f;
                 }
 
                 Vector3 away = transform.position - threatPos;
                 away.y = 0f;
                 float threatDist = away.magnitude;
                 float threatRange = EffectiveFleeThreatRange();
-                if (threatDist > threatRange)
+                bool escaping = _it != null && _it.TagBackRemaining > 0f;
+                if (threatDist > threatRange && !escaping)
                 {
                     // Far enough: resume patrol wander instead of endless radial flee.
                     Wander(dt, out moveDir);
@@ -1073,37 +1127,85 @@ namespace Tag.Modes
 
                 if (away.sqrMagnitude < 0.01f) away = -transform.forward;
                 else away.Normalize();
-                // Hold a flank so the human It can cut the corner instead of chasing a perfect radial.
-                away = ApplyWeave(away, dt, distHold: true);
 
-                // Strafe bias: prefer current facing side so flee isn't pure radial (easier to cut off).
-                // Under Hot Potato urgency, bias shrinks so flee commits away from It.
-                Vector3 lateral = Vector3.Cross(Vector3.up, away);
-                float strafe = EffectiveFleeStrafeBias();
-                if (lateral.sqrMagnitude > 0.001f && strafe > 0.01f)
-                {
-                    lateral.Normalize();
-                    if (Vector3.Dot(lateral, transform.right) < 0f) lateral = -lateral;
-                    away = (away + lateral * Mathf.Clamp01(strafe)).normalized;
-                }
+                float diff = EnemyAi.ClampDifficulty(difficulty);
+                bool grounded = _selfMotor == null || _selfMotor.IsGrounded;
+                Vector3 selfVel = _selfMotor != null ? _selfMotor.Velocity : Vector3.zero;
+                Vector3 planar = selfVel;
+                planar.y = 0f;
+                bool closing = Vector3.Dot(threatVel, transform.position - threatPos) > 1f && threatDist < threatRange;
+                bool mega = MegaParkPresent();
+                Vector3 fleePoint = transform.position + away * 40f;
+                MovementConfig moveCfg = _selfMotor != null ? _selfMotor.cfg : null;
+                float grav = moveCfg != null ? moveCfg.gravity : 22f;
+                float fallG = moveCfg != null ? moveCfg.fallGravityMult : 1.5f;
+                Vector3 padAim = Vector3.zero;
+                float padDist = 999f;
+                bool padHelps = false;
+                bool padAhead = grounded && LaunchPad.QueryChase(transform.position, selfVel, fleePoint, grav, fallG, out padAim, out padDist, out padHelps);
+                Vector3 zipAim = Vector3.zero;
+                float zipDist = 999f;
+                bool zipHelps = false;
+                bool zipAhead = ZipLine.QueryChase(transform.position, fleePoint, out zipAim, out zipDist, out zipHelps);
+                bool cornered = threatDist < 3.2f && !padHelps && !zipHelps && SidesClosed(away);
+                ProbeGrapple(out bool latch, out bool outward);
 
-                // Least It: peel toward a non-It ally so the pack clusters instead of solo runs.
+                EnemySense sense = default;
+                sense.Difficulty = diff;
+                sense.Dt = dt;
+                sense.IsIt = false;
+                sense.SelfPos = transform.position;
+                sense.SelfVel = selfVel;
+                sense.Forward = transform.forward;
+                sense.Grounded = grounded;
+                sense.Airborne = !grounded;
+                sense.PlanarSpeed = planar.magnitude;
+                sense.AirDashReady = _dashWait <= 0f && !grounded;
+                sense.SelfTagBackRemaining = _it != null ? _it.TagBackRemaining : 0f;
+                sense.LineOfSight = HasLineOfSight(threat.transform.position);
+                sense.ThreatClosing = closing || escaping;
+                sense.Cornered = cornered && !escaping;
+                sense.PlanarDistance = threatDist;
+                sense.PunchReach = EffectivePunchRange();
+                sense.PadAhead = padAhead;
+                sense.PadHelps = padHelps;
+                sense.PadAim = padAim;
+                sense.ZipAhead = zipAhead;
+                sense.ZipHelps = zipHelps;
+                sense.ZipAim = zipAim;
+                sense.GrappleLatch = latch;
+                sense.GrappleOutward = outward;
+                sense.GrappleProbe = true;
+                sense.MegaPark = mega;
+                sense.LoopAim = EnemyAi.LoopPoint(mega, _enemyMem.Waypoint) - transform.position;
+                sense.CoverAim = CoverAim(away);
+                sense.HasTarget = true;
+                sense.TargetPos = threatPos;
+                sense.TargetVel = threatVel;
+
+                EnemyOverlay ev = EnemyAi.Evade(ref _enemyMem, sense);
+                Vector3 face = ev.Face.sqrMagnitude > 0.001f ? ev.Face : away;
                 Vector3 allySeek = LeastItAllySeekDir();
                 if (allySeek.sqrMagnitude > 0.01f)
-                    away = (away + allySeek * Mathf.Clamp01(leastItAllySeekWeight)).normalized;
-
-                away = BlendTrailAvoid(away);
-                FaceAndSteer(away, dt, out moveDir);
-                bool urgent = HotPotatoUrgent() || threatDist <= closeChaseRange * 1.6f;
-                bool grounded = _selfMotor == null || _selfMotor.IsGrounded;
-                // Probe flee heading for a real deck lip; mild panic hop only when It is close.
-                float fleeLip = ProbeAheadDeckDy(away);
-                float panicDy = threatDist < 5.5f ? 0.9f : 0f; // must clear ConsumeHop minDy (0.85)
-                float hopDy = Mathf.Max(fleeLip, panicDy);
+                    face = (face.normalized + allySeek * Mathf.Clamp01(leastItAllySeekWeight) * 0.35f).normalized;
+                face = BlendTrailAvoid(face);
+                FaceAndSteer(face, dt, out moveDir);
+                float fleeLip = ProbeAheadDeckDy(face);
                 float hopDist = Mathf.Clamp(threatDist, 1.2f, 8f);
-                bool jump = ConsumeHop(hopDy, hopDist, grounded, 0.85f, 9f);
-                // Flee uses the same motor. It does not take air dash or grapple.
-                DriveWish(urgent ? fleeUrgencyMoveY : 1f, sprint: true, jump: jump, airDash: false);
+                bool jump = ConsumeHop(fleeLip, hopDist, grounded, 0.85f, 9f);
+                if (ev.Verb == EnemyVerb.Pad || ev.Verb == EnemyVerb.Zip || ev.Verb == EnemyVerb.AirDash)
+                    jump = false;
+                float moveY = ev.MoveY;
+                if (HotPotatoUrgent() || threatDist <= closeChaseRange * 1.6f || escaping)
+                    moveY = Mathf.Max(moveY, fleeUrgencyMoveY);
+                // airDash: false — the overlay presses the dash button only while airborne.
+                DriveWish(moveY, ev.Sprint || escaping, ev.MoveX, jump, false, airDash: false);
+                ApplyEnemyOverlay(ev);
+                if (ev.Punch && !escaping && _cooldown <= 0f)
+                {
+                    _punch?.QueuePunch();
+                    _cooldown = cooldownMin;
+                }
             }
             else
             {
@@ -1221,6 +1323,124 @@ namespace Tag.Modes
                 _lungeMark.Show(0f);
             }
             return false;
+        }
+
+        void TrackWallTime(float dt)
+        {
+            bool onWall = _selfMotor != null
+                && (_selfMotor.State == MoveState.WallClimb || _selfMotor.State == MoveState.WallRun);
+            if (onWall) _wallTime += dt;
+            else _wallTime = 0f;
+        }
+
+        EnemySense BuildChaseSense(float diff, float dt, float dist, float reach, float angle, bool grounded, bool wall, Vector3 wallNormal, float heightDelta)
+        {
+            EnemySense sense = default;
+            sense.Difficulty = diff;
+            sense.Dt = dt;
+            sense.IsIt = true;
+            sense.SelfPos = transform.position;
+            sense.Forward = transform.forward;
+            sense.Grounded = grounded;
+            sense.Airborne = !grounded;
+            Vector3 vel = _selfMotor != null ? _selfMotor.Velocity : Vector3.zero;
+            sense.SelfVel = vel;
+            vel.y = 0f;
+            sense.PlanarSpeed = vel.magnitude;
+            sense.AirDashReady = _dashWait <= 0f && !grounded;
+            sense.SameWallClosed = false;
+            sense.OnWall = _selfMotor != null
+                && (_selfMotor.State == MoveState.WallClimb || _selfMotor.State == MoveState.WallRun);
+            sense.WallTime = _wallTime;
+            sense.WallNormal = wall ? wallNormal : Vector3.zero;
+            sense.HasTarget = _target != null;
+            sense.PlanarDistance = dist;
+            sense.PunchReach = reach;
+            sense.AngleDeg = angle;
+            sense.TargetHeightDelta = heightDelta;
+            sense.GrappleProbe = true;
+            sense.SlideOpen = true;
+            ProbeGrapple(out sense.GrappleLatch, out sense.GrappleOutward);
+            return sense;
+        }
+
+        void ApplyEnemyOverlay(EnemyOverlay overlay)
+        {
+            if (_input == null) return;
+            _input.CrouchHeld = overlay.Crouch;
+            // RMB hold. Jet stays off, so this is the rope, and a miss latches nothing.
+            _input.JetHeld = overlay.Grapple;
+            if (!overlay.Dash || _dashWait > 0f) return;
+            if (_selfMotor == null || _selfMotor.cfg == null || _selfMotor.IsGrounded) return;
+            _input.AirDashPressed = true;
+            _dashWait = _selfMotor.cfg.airDashCooldown;
+        }
+
+        void ProbeGrapple(out bool latch, out bool outward)
+        {
+            latch = false;
+            outward = false;
+            Vector3 origin = transform.position + Vector3.up * 1.2f;
+            Vector3 dir = transform.forward;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.01f) return;
+            dir.Normalize();
+            if (!Physics.Raycast(origin, dir, out RaycastHit hit, 28f, ~0, QueryTriggerInteraction.Ignore))
+                return;
+            if (hit.collider is CharacterController) return;
+            if (IgnoreBody(hit.collider)) return;
+            latch = true;
+            Vector3 away = transform.position - hit.point;
+            away.y = 0f;
+            Vector3 vel = _selfMotor != null ? _selfMotor.Velocity : Vector3.zero;
+            vel.y = 0f;
+            outward = Vector3.Dot(vel, away) > 0.5f;
+        }
+
+        bool HasLineOfSight(Vector3 targetPos)
+        {
+            Vector3 origin = transform.position + Vector3.up * 1.1f;
+            Vector3 to = targetPos + Vector3.up * 1.1f - origin;
+            float dist = to.magnitude;
+            if (dist < 0.2f) return true;
+            if (!Physics.Raycast(origin, to / dist, out RaycastHit hit, dist, ~0, QueryTriggerInteraction.Ignore))
+                return true;
+            return IgnoreBody(hit.collider);
+        }
+
+        Vector3 CoverAim(Vector3 away)
+        {
+            Vector3 flat = away;
+            flat.y = 0f;
+            if (flat.sqrMagnitude < 0.01f) flat = -transform.forward;
+            else flat.Normalize();
+            if (_enemyMem.CoverSide == 0) _enemyMem.CoverSide = 1;
+            Vector3 side = new Vector3(-flat.z, 0f, flat.x) * _enemyMem.CoverSide;
+            bool sideOpen = RouteSolid(side);
+            bool otherOpen = RouteSolid(-side);
+            if (!sideOpen && otherOpen && _enemyMem.CoverHold <= 0f)
+            {
+                _enemyMem.CoverSide = -_enemyMem.CoverSide;
+                _enemyMem.CoverHold = 0.80f;
+                side = -side;
+            }
+            else if (_enemyMem.CoverHold <= 0f)
+                _enemyMem.CoverHold = 0.80f;
+            return (flat + side.normalized * 0.85f).normalized;
+        }
+
+        bool SidesClosed(Vector3 dir)
+        {
+            if (dir.sqrMagnitude < 0.01f) return false;
+            bool left = RouteSolid(OpponentChaseSteer.YawOffset(dir, -OpponentChaseSteer.PathAroundDegrees));
+            bool right = RouteSolid(OpponentChaseSteer.YawOffset(dir, OpponentChaseSteer.PathAroundDegrees));
+            return !left && !right;
+        }
+
+        static bool MegaParkPresent()
+        {
+            GameObject root = GameObject.Find(EnemyAi.MegaRootName);
+            return root != null && root.activeInHierarchy;
         }
     }
 }
