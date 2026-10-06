@@ -165,7 +165,9 @@ namespace Tag.Couch
             int i = slot;
             if (i < 0) i = 0;
             if (i > 3) i = 3;
-            GameSettings.VerbMark(false, i, out r, out g, out b);
+            int pal = 0;
+            if (GameSettings.Current != null) pal = GameSettings.Current.PaletteOf(0);
+            AccessibilityPalette.Player(pal, i, out r, out g, out b);
         }
 
         public static bool Join(int device)

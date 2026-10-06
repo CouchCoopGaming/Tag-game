@@ -572,6 +572,14 @@ static class Program
             return 1;
         }
 
+        Tag.Settings.AccessibilityReport access = Tag.Settings.AccessibilityProof.Run();
+        Console.WriteLine(access.Line);
+        if (!access.Ok)
+        {
+            Console.Error.WriteLine(access.Failure);
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }
