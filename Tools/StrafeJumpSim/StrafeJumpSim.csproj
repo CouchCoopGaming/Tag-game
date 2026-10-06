@@ -47,6 +47,9 @@
     <Compile Include="../../Assets/Scripts/Tag/PunchStagger.cs" />
     <Compile Include="../../Assets/Scripts/Tag/TagBackImmunity.cs" />
     <Compile Include="../../Assets/Scripts/Art/WallPose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/LaunchPose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/ZipPose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/TagBackRecoilPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/WallJumpPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/GrapplePose.cs" />
     <Compile Include="../../Assets/Scripts/Art/PoseHandoff.cs" />

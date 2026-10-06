@@ -112,10 +112,24 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.LaunchPose.ProofLine());
+        if (!Tag.Art.LaunchPose.Holds())
+        {
+            Console.Error.WriteLine("launch pose is not held");
+            return 1;
+        }
+
         Console.WriteLine(Tag.Level.ZipLineRules.ProofLine());
         if (!Tag.Level.ZipLineRules.Holds())
         {
             Console.Error.WriteLine("zip line is not held");
+            return 1;
+        }
+
+        Console.WriteLine(Tag.Art.ZipPose.ProofLine());
+        if (!Tag.Art.ZipPose.Holds())
+        {
+            Console.Error.WriteLine("zip pose is not held");
             return 1;
         }
 
@@ -144,6 +158,13 @@ static class Program
         if (!Tag.Gameplay.TagBackImmunity.Holds())
         {
             Console.Error.WriteLine("no tag-back is not held");
+            return 1;
+        }
+
+        Console.WriteLine(Tag.Art.TagBackRecoilPose.ProofLine());
+        if (!Tag.Art.TagBackRecoilPose.Holds())
+        {
+            Console.Error.WriteLine("tag-back recoil is not held");
             return 1;
         }
 

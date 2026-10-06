@@ -294,6 +294,8 @@ namespace Tag.Gameplay
             {
                 TagBackBlockedTell.PlayAt(hitPoint);
                 TagSfx.TagBackThunk(hitPoint);
+                DummyLocomotor attacker = GetComponentInChildren<DummyLocomotor>();
+                if (attacker != null) attacker.PlayTagBackRecoil();
                 Debug.Log($"[Punch] {name} tag-back blocked on {victim.name}");
                 return;
             }
