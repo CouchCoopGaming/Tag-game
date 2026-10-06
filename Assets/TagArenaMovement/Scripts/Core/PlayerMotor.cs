@@ -101,6 +101,8 @@ namespace TagArena.Movement
         bool _wallJumpFromClimb;
         float _lastLanded;
         float _slideT;
+        float _slideLoopT;
+        float _zipLoopT;
         float _slideStartSpeed;
         float _climbT;
         float _climbStartY;
@@ -510,6 +512,8 @@ namespace TagArena.Movement
             _slideStartSpeed = hv.magnitude;
             SetState(MoveState.Slide);
             SetHeight(cfg.crouchHeight);
+            _slideLoopT = 0.45f;
+            AudioBus.Raise(AudioBus.Hook.SlideStart, transform.position);
             OnSlid?.Invoke();
         }
 
@@ -561,6 +565,15 @@ namespace TagArena.Movement
                 else if (_probe.Ground.grounded)
                     SetState(_stagger.Stagger <= 0f && hNow > cfg.walkSpeed + 0.4f ? MoveState.Sprint : MoveState.Walk);
                 else SetState(MoveState.Air);
+            }
+            else
+            {
+                _slideLoopT -= dt;
+                if (_slideLoopT <= 0f)
+                {
+                    _slideLoopT = 0.45f;
+                    AudioBus.Raise(AudioBus.Hook.SlideLoop, transform.position);
+                }
             }
 
             SetHeight(cfg.crouchHeight);
@@ -891,6 +904,7 @@ namespace TagArena.Movement
             _wallJumpFromClimb = true;
             GrabWallFace();
             SetState(MoveState.WallClimb);
+            AudioBus.Raise(AudioBus.Hook.ClingGrab, transform.position);
             return true;
         }
 
@@ -1046,6 +1060,7 @@ namespace TagArena.Movement
             _wallJumpFromClimb = false;
             GrabWallFace();
             SetState(MoveState.WallRun);
+            AudioBus.Raise(AudioBus.Hook.ClingGrab, transform.position);
             return true;
         }
 
@@ -1181,7 +1196,7 @@ namespace TagArena.Movement
             v = WishAccel.SetHoriz(v, dir * cfg.airDashSpeed);
             _mode = Locomotion.AirDash;
             SetState(MoveState.Air);
-            TagSfx.PlayAirDash(transform.position);
+            AudioBus.Raise(AudioBus.Hook.AirDash, transform.position);
             OnAirDashed?.Invoke();
             return true;
         }
@@ -1386,6 +1401,10 @@ namespace TagArena.Movement
         }
 
         public bool IsPunchStaggered => _stagger.Stagger > 0f;
+        public float StaggerRemaining => _stagger.Stagger;
+        /// <summary>Climb, wall-run, or a zip cling. The verb HUD reads this. It does not steer.</summary>
+        public bool ClingHeldActive =>
+            State == MoveState.WallClimb || State == MoveState.WallRun || _zipRiding;
 
         /// <summary>
         /// Non-tag punch connect. Sprint drops. Vertical velocity is not written.
@@ -1395,6 +1414,7 @@ namespace TagArena.Movement
         {
             if (_motorLocked) return false;
             if (!PunchStagger.TryStart(ref _stagger)) return false;
+            AudioBus.Raise(AudioBus.Hook.Stagger, transform.position);
             if (State == MoveState.Sprint)
                 SetState(MoveState.Walk);
             _lungeT = 0f;
@@ -1468,6 +1488,8 @@ namespace TagArena.Movement
                 _mode = Locomotion.Air;
             ReleaseGrapple();
             line.SetRider(GetInstanceID(), true);
+            _zipLoopT = 0.45f;
+            AudioBus.Raise(AudioBus.Hook.ZipGrab, transform.position);
             return true;
         }
 
@@ -1479,6 +1501,7 @@ namespace TagArena.Movement
             _zipRiding = false;
             _zipLine = null;
             if (!was) return;
+            AudioBus.Raise(AudioBus.Hook.ZipDrop, transform.position);
             float cd = _zipCooldown > 0f ? _zipCooldown : ZipLineRules.DefaultRegrabCooldown;
             _zipReadyAt = ZipLineRules.ArmCooldown(Time.time, cd);
         }
@@ -1544,6 +1567,12 @@ namespace TagArena.Movement
             }
 
             SetState(MoveState.Air);
+            _zipLoopT -= dt;
+            if (_zipLoopT <= 0f)
+            {
+                _zipLoopT = 0.45f;
+                AudioBus.Raise(AudioBus.Hook.ZipLoop, transform.position);
+            }
             return _zipLine.RideVelocityWithHang(transform.position, dt);
         }
 
@@ -1597,6 +1626,7 @@ namespace TagArena.Movement
             _launchReadyAt = LaunchPadRules.ArmCooldown(Time.time, _launchCooldown);
             SetHeight(cfg.standingHeight);
             SetState(MoveState.Air);
+            AudioBus.Raise(AudioBus.Hook.PadLaunch, transform.position);
             return v;
         }
 
@@ -1752,7 +1782,7 @@ namespace TagArena.Movement
                 else if (impact >= 5f)
                 {
                     // Hard land already thuds via MoveAnimDriver on LandStun. This is the step-down.
-                    TagSfx.LandAt(transform.position, Mathf.Lerp(0.18f, 0.36f, Mathf.Clamp01(impact / 12f)));
+                    AudioBus.Raise(AudioBus.Hook.LandSoft, transform.position);
                 }
             }
             _wasProbeGrounded = g;
@@ -1783,6 +1813,8 @@ namespace TagArena.Movement
             if (State == next) return;
             var prev = State;
             State = next;
+            if (prev == MoveState.Slide && next != MoveState.Slide)
+                AudioBus.Raise(AudioBus.Hook.SlideEnd, transform.position);
             if (next == MoveState.Ski && prev != MoveState.Ski)
             {
                 var src = TagSfx.EnsureSource(gameObject);

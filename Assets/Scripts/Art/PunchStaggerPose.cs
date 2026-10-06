@@ -4,39 +4,40 @@ using UnityEngine;
 namespace Tag.Art
 {
     /// <summary>
-    /// Visual stumble for a punch that did not tag. The chest drops over a buckled
-    /// knee and the arms fly wide, then the weight eases back onto the gait.
-    /// Not the punch line and not the tag catch. No root motion, no impulse.
+    /// Visual stumble for a punch that did not tag. The head and the chest snap
+    /// back and one leg steps, then the weight eases onto the gait. The window
+    /// is the quarter second. Not the punch line and not the tag catch.
+    /// No root motion, no impulse.
     /// </summary>
     public static class PunchStaggerPose
     {
         public const bool RootMotion = false;
         public const float Duration = 0.25f;
-        /// <summary>Smoothstep onto the stumble. Short, so the hit reads.</summary>
-        public const float RiseSeconds = 0.06f;
+        /// <summary>Smoothstep onto the snap. Short, so the hit reads.</summary>
+        public const float RiseSeconds = 0.05f;
         /// <summary>Hold ends here. The rest eases off.</summary>
         public const float FallStart = 0.16f;
-        /// <summary>Fast enough that the buckle arrives inside the rise.</summary>
-        public const float Slew = 240f;
+        /// <summary>Fast enough that the snap arrives inside the rise.</summary>
+        public const float Slew = 280f;
 
-        public const float ArmPitchL = 52f;
-        public const float ArmYawL = 64f;
-        public const float ArmRollL = 18f;
-        public const float ElbowL = -42f;
-        public const float ArmPitchR = 38f;
-        public const float ArmYawR = -58f;
-        public const float ArmRollR = -14f;
-        public const float ElbowR = -36f;
-        public const float ThighL = 26f;
-        public const float ThighR = -18f;
-        public const float KneeL = -68f;
-        public const float KneeR = -10f;
-        public const float Hip = 24f;
-        public const float HipYaw = 10f;
-        public const float Spine = 36f;
-        public const float SpineYaw = -8f;
-        public const float Head = 28f;
-        public const float HeadYaw = 6f;
+        public const float ArmPitchL = 46f;
+        public const float ArmYawL = 28f;
+        public const float ArmRollL = 14f;
+        public const float ElbowL = -30f;
+        public const float ArmPitchR = 34f;
+        public const float ArmYawR = -26f;
+        public const float ArmRollR = -12f;
+        public const float ElbowR = -24f;
+        public const float ThighL = 38f;
+        public const float ThighR = -16f;
+        public const float KneeL = -34f;
+        public const float KneeR = -8f;
+        public const float Hip = -18f;
+        public const float HipYaw = 8f;
+        public const float Spine = -16f;
+        public const float SpineYaw = -6f;
+        public const float Head = -24f;
+        public const float HeadYaw = 4f;
 
         public struct Sample
         {
@@ -46,7 +47,7 @@ namespace Tag.Art
             public float Hip, HipYaw, Spine, SpineYaw, Head, HeadYaw;
         }
 
-        /// <summary>Chest over the front knee. Arms wide and back. The other leg catches.</summary>
+        /// <summary>Chest and head snap back. One leg steps. The other foot stays.</summary>
         public static Sample Stumble()
         {
             return new Sample
@@ -94,11 +95,12 @@ namespace Tag.Art
 
             Sample pose = Stumble();
             if (pose.ArmPitchL < 36f || pose.ArmPitchR < 24f) return false;
-            if (pose.ArmYawL < 40f || pose.ArmYawR > -40f) return false;
-            if (pose.KneeL > -55f || pose.KneeR < -24f) return false;
-            if (Mathf.Abs(pose.KneeL - pose.KneeR) < 40f) return false;
-            if (pose.Hip + pose.Spine < 48f) return false;
-            if (pose.Head < 16f) return false;
+            if (pose.ArmYawL < 18f || pose.ArmYawR > -18f) return false;
+            if (pose.ThighL < 28f || pose.ThighR > -8f) return false;
+            if (pose.KneeL > -24f || pose.KneeR < -20f) return false;
+            if (Mathf.Abs(pose.KneeL - pose.KneeR) < 16f) return false;
+            if (pose.Hip + pose.Spine > -28f) return false;
+            if (pose.Head > -16f) return false;
             if (Mathf.Abs(pose.ArmPitchL - VerbPoseClips.PunchStrikePitch) < 40f) return false;
             if (Mathf.Abs(pose.ArmPitchL - VerbPoseClips.TagArmPitch) < 40f) return false;
             if (pose.ArmPitchL < 0f || pose.ArmPitchR < 0f) return false;

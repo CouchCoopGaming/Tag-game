@@ -199,16 +199,7 @@ namespace Tag.Core
             // Unlock so Rematch/Menu clicks on the results card work (pause already unlocks).
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-            var msg = LastResultMessage.ToLowerInvariant();
-            // "No winners" contains "win"; check that before the win sting.
-            if (msg.Contains("no winner"))
-                AudioCuePlayer.Ensure()?.RoundEnd();
-            else if (msg.Contains("winner") || msg.Contains(" win"))
-                AudioCuePlayer.Ensure()?.RoundWin();
-            else if (msg.Contains("lose") || msg.Contains("loss"))
-                AudioCuePlayer.Ensure()?.RoundLose();
-            else
-                AudioCuePlayer.Ensure()?.RoundEnd();
+            AudioBus.RaiseRoundEnd(LastResultMessage);
         }
 
         // Compat for older callers
@@ -560,10 +551,10 @@ namespace Tag.Core
                     OpenAudio();
                 if (FocusButton(new Rect(cx - 70, cy + 26, 140, 28), 4, ref _pauseFocus, "Quit to Menu"))
                     QuitToMenu();
-                if (FocusButton(new Rect(cx - 90, cy + 60, 180, 28), 5, ref _pauseFocus, "Map: " + ParkArena.DisplayName))
-                    ParkArenaHost.Toggle();
+                if (FocusButton(new Rect(cx - 90, cy + 60, 180, 28), 5, ref _pauseFocus, ParkArenaHost.MapButtonLabel()))
+                    ParkArenaHost.Toggle(TagModeController.Instance != null && TagModeController.Instance.RoundLive);
                 GUI.Label(new Rect(cx - 150, cy + 96, 300, 96),
-                    "Left / Right or 1-5 picks    Enter / Space\nEsc resume    Q menu    H controls\nMap swaps Mega Park and Pocket Park\nM map    Comma mute    N music    Up / Down bed");
+                    "Left / Right or 1-5 picks    Enter / Space\nEsc resume    Q menu    H controls\nMap waits for the next countdown\nM map    Comma mute    N music    Up / Down bed");
             }
             else if (State == GameFlowState.RoundEnd)
             {
@@ -814,7 +805,7 @@ namespace Tag.Core
                 case 2: OpenLook(); break;
                 case 3: OpenAudio(); break;
                 case 4: QuitToMenu(); break;
-                case 5: ParkArenaHost.Toggle(); break;
+                case 5: ParkArenaHost.Toggle(TagModeController.Instance != null && TagModeController.Instance.RoundLive); break;
                 default: TogglePause(); break;
             }
         }
