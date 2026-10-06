@@ -199,6 +199,22 @@ static class Program
             return 1;
         }
 
+        Tag.Core.QaSweep.Report qa = Tag.Core.QaSweep.Run();
+        Console.WriteLine(qa.Line);
+        if (!qa.Ok)
+        {
+            Console.Error.WriteLine(qa.Failure);
+            return 1;
+        }
+
+        Tag.Core.HotPathAlloc.Report hot = Tag.Core.HotPathAlloc.Run();
+        Console.WriteLine(hot.Line);
+        if (!hot.Ok)
+        {
+            Console.Error.WriteLine(hot.Failure);
+            return 1;
+        }
+
         Console.WriteLine(Tag.Art.VerbPoseClips.PunchTagPolishProofLine());
         if (!Tag.Art.VerbPoseClips.PunchTagPolishHolds())
         {

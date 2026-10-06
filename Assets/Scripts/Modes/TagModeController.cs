@@ -27,6 +27,11 @@ namespace Tag.Modes
     public class TagModeController : MonoBehaviour
     {
         public static TagModeController Instance { get; private set; }
+
+        public static void ResetStatics()
+        {
+            Instance = null;
+        }
         public const string PrefsModeKey = "Tag.SelectedMode";
         const string CountdownHintKey = "Tag.CountdownHintSeen";
 
@@ -68,6 +73,8 @@ namespace Tag.Modes
         string _taggedId = "";
         float _taggedUntil;
         string[] _scoreIds = System.Array.Empty<string>();
+        string _scoreCard = "";
+        readonly System.Text.StringBuilder _scoreSb = new System.Text.StringBuilder(128);
         float[] _scoreTimes = System.Array.Empty<float>();
         int[] _scoreTags = System.Array.Empty<int>();
         int _scoreCount;
@@ -132,9 +139,37 @@ namespace Tag.Modes
 
         void Start()
         {
+            BootHudStyles();
             if (autoFindPlayers) RefreshPlayers();
             if (FindFirstObjectByType<GameFlow>() == null)
                 StartRound();
+        }
+
+        void BootHudStyles()
+        {
+            _countStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 54,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter
+            };
+            _bannerStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter
+            };
+        }
+
+        static string ModeBody(TagModeId id)
+        {
+            switch (id)
+            {
+                case TagModeId.HotPotato: return "Mode Hot Potato";
+                case TagModeId.TrailTag: return "Mode Trail Tag";
+                case TagModeId.FreePlay: return "Mode Free play";
+                case TagModeId.LeastIt: return "Mode Least It";
+                default: return "Mode";
+            }
         }
 
 
@@ -231,6 +266,7 @@ namespace Tag.Modes
             _ctx.EnterPostRound = EnterPostRound;
             _ctx.Eliminate = p => EliminatePlayer(p, "mode");
 
+            ClearRoleTagBack();
             foreach (var p in players)
             {
                 if (p == null) continue;
@@ -494,6 +530,19 @@ namespace Tag.Modes
                 EndMatch();
         }
 
+        void ClearRoleTagBack()
+        {
+            TagRole[] roles = Object.FindObjectsByType<TagRole>(FindObjectsSortMode.None);
+            for (int i = 0; i < roles.Length; i++)
+            {
+                if (roles[i] != null) roles[i].ClearTagBackImmunity();
+            }
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (players[i] != null) players[i].ClearTagBackImmunity();
+            }
+        }
+
         public void TransferIt(ItController from, ItController to)
         {
             LastFromId = from != null ? from.PlayerId : "";
@@ -514,6 +563,8 @@ namespace Tag.Modes
             if (from != null) from.SetIt(false);
             if (to != null && to.IsAlive)
             {
+                PlayerMotor victimMotor = to.GetComponent<PlayerMotor>();
+                if (victimMotor != null) victimMotor.ReleaseCarriers();
                 to.SetIt(true);
                 _ctx.CurrentIt = to;
                 LastToId = to.PlayerId;
@@ -610,6 +661,7 @@ namespace Tag.Modes
             _ctx.RoundRunning = false;
             if (_ctx.RemainingTime < 0f) _ctx.RemainingTime = 0f;
             _phase = MatchPhase.Results;
+            ClearRoleTagBack();
             _resultsActionTaken = false;
             _resultsFocus = 0;
             // A pause subpanel must not stay over the results card or eat Left/Right.
@@ -637,6 +689,7 @@ namespace Tag.Modes
             else
                 _resultMessage = $"[{_mode?.Id}] Winner(s): " + names;
             Debug.Log($"[TagMode] END -- {_resultTitle} {_resultMessage}");
+            RebuildScoreCard();
 
             foreach (var p in players)
             {
@@ -1066,12 +1119,12 @@ namespace Tag.Modes
                 return;
             }
 
-            string body = _mode != null ? _mode.GetHud(_ctx) : $"Mode {selectedMode}";
+            string body = _mode != null ? _mode.GetHud(_ctx) : ModeBody(selectedMode);
             if (_phase == MatchPhase.Results)
                 DrawResultsCard();
             else if (_phase == MatchPhase.PostRound)
             {
-                body += $"\nNext round {_phaseTimer:0.0}s";
+                body += "\nNext round " + HudDigits.TenthSeconds(_phaseTimer);
                 DrawPostRoundCard();
             }
             GUI.Box(new Rect(12, Screen.height - 168, 480, 156), "");
@@ -1080,15 +1133,7 @@ namespace Tag.Modes
 
         void DrawCountdownCard()
         {
-            if (_countStyle == null)
-            {
-                _countStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 54,
-                    fontStyle = FontStyle.Bold,
-                    alignment = TextAnchor.MiddleCenter
-                };
-            }
+            if (_countStyle == null) return;
             _countStyle.fontSize = 54;
             _countStyle.alignment = TextAnchor.MiddleCenter;
             float w = 440f;
@@ -1098,7 +1143,7 @@ namespace Tag.Modes
             int show = Mathf.Max(1, Mathf.CeilToInt(_phaseTimer));
             GUI.Box(new Rect(x, y, w, h), ModeTitle(selectedMode));
             _countStyle.normal.textColor = Color.white;
-            GUI.Label(new Rect(x, y + 28, w, 70), show.ToString(), _countStyle);
+            GUI.Label(new Rect(x, y + 28, w, 70), HudDigits.Whole0(show), _countStyle);
             string hint = _firstCountdownHint
                 ? "WASD move   Shift sprint   Ctrl slide   " + TagArena.Movement.ControlBinds.DashName + " dash\n" +
                   TagArena.Movement.ControlBinds.PunchName + " or E tags"
@@ -1135,30 +1180,14 @@ namespace Tag.Modes
             float h = 268f + _scoreCount * 22f;
             float x = (Screen.width - w) * 0.5f;
             float y = Mathf.Max(24f, Screen.height * 0.18f);
-            if (_countStyle == null)
-            {
-                _countStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 54,
-                    fontStyle = FontStyle.Bold,
-                    alignment = TextAnchor.MiddleCenter
-                };
-            }
+            if (_countStyle == null) return;
             string title = string.IsNullOrEmpty(_resultTitle) ? "ROUND OVER" : _resultTitle;
             GUI.Box(new Rect(x, y, w, h), "");
             _countStyle.fontSize = 46;
             _countStyle.normal.textColor = Color.white;
             GUI.Label(new Rect(x, y + 12, w, 56), title, _countStyle);
             _countStyle.fontSize = 54;
-            var stat = new System.Text.StringBuilder();
-            stat.Append(_resultDetail ?? "");
-            stat.Append("\n\nTime as It");
-            for (int i = 0; i < _scoreCount; i++)
-                stat.Append("\n").Append(_scoreIds[i]).Append("  ").Append(_scoreTimes[i].ToString("0.0")).Append("s");
-            stat.Append("\nTags  ").Append(_scoreTagsTotal);
-            stat.Append("\nLongest chase  ").Append(_scoreLongest.ToString("0.0")).Append("s");
-            stat.Append("\n\n1-2 or Left / Right picks. Enter / Space uses it.\nR rematch    Q / Esc menu");
-            GUI.Label(new Rect(x + 16, y + 68, w - 32, h - 120f), stat.ToString());
+            GUI.Label(new Rect(x + 16, y + 68, w - 32, h - 120f), _scoreCard);
             float bw = 140f;
             float by = y + h - 44f;
             bool canAct = !_resultsActionTaken && Time.unscaledTime >= _resultsInputReadyAt;
@@ -1198,7 +1227,7 @@ namespace Tag.Modes
             float w = 360f;
             var r = new Rect((Screen.width - w) * 0.5f, Screen.height * 0.22f, w, 36f);
             GUI.Box(r, "");
-            GUI.Label(new Rect(r.x + 12, r.y + 8, w - 24, 22), $"Next round  {_phaseTimer:0.0}s");
+            GUI.Label(new Rect(r.x + 12, r.y + 8, w - 24, 22), "Next round  " + HudDigits.TenthSeconds(_phaseTimer));
         }
 
         static bool IsLocalHuman(ItController p)
@@ -1231,6 +1260,22 @@ namespace Tag.Modes
             _scoreLongest = _longestChase;
         }
 
+        void RebuildScoreCard()
+        {
+            _scoreSb.Clear();
+            _scoreSb.Append(_resultDetail ?? "");
+            _scoreSb.Append("\n\nTime as It");
+            for (int i = 0; i < _scoreCount; i++)
+            {
+                _scoreSb.Append("\n").Append(_scoreIds[i]).Append("  ");
+                _scoreSb.Append(HudDigits.Tenth0(_scoreTimes[i])).Append("s");
+            }
+            _scoreSb.Append("\nTags  ").Append(_scoreTagsTotal);
+            _scoreSb.Append("\nLongest chase  ").Append(HudDigits.Tenth0(_scoreLongest)).Append("s");
+            _scoreSb.Append("\n\n1-2 or Left / Right picks. Enter / Space uses it.\nR rematch    Q / Esc menu");
+            _scoreCard = _scoreSb.ToString();
+        }
+
         void DrawItBanner()
         {
             if (_phase != MatchPhase.Playing && _phase != MatchPhase.PostRound) return;
@@ -1240,14 +1285,7 @@ namespace Tag.Modes
             float h = showClock ? 78f : (SuddenDeath ? 64f : 52f);
             var r = new Rect((Screen.width - w) * 0.5f, 16f, w, h);
             GUI.Box(r, "");
-            if (_bannerStyle == null)
-            {
-                _bannerStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontStyle = FontStyle.Bold,
-                    alignment = TextAnchor.MiddleCenter
-                };
-            }
+            if (_bannerStyle == null) return;
             _bannerStyle.fontSize = Screen.height >= 1000 ? 26 : 20;
             _bannerStyle.normal.textColor = Color.white;
             bool localIsIt = IsLocalHuman(it);

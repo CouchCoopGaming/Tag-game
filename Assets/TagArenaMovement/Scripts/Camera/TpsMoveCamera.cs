@@ -49,6 +49,7 @@ namespace TagArena.Movement
         float _fovKick;
 
         PlayerInputReader _in;
+        DummyLocomotor _loco;
 
         void Awake()
         {
@@ -65,10 +66,16 @@ namespace TagArena.Movement
             Cursor.visible = false;
         }
 
+        void Start()
+        {
+            if (motor != null && _in == null) _in = motor.GetComponent<PlayerInputReader>();
+            if (motor != null) _loco = motor.GetComponentInChildren<DummyLocomotor>(true);
+        }
+
         void LateUpdate()
         {
             if (motor == null) return;
-            if (_in == null) _in = motor.GetComponent<PlayerInputReader>();
+            if (_in == null || _loco == null) ResolveRig();
             float dt = Time.deltaTime;
 
             if (_in != null)
@@ -94,7 +101,7 @@ namespace TagArena.Movement
             bool becomeIt = false;
             bool aim = false;
             // This pawn's visual only. A scene search would let a couch or DummyRunner pose move the solo rig.
-            DummyLocomotor loco = motor.GetComponentInChildren<DummyLocomotor>(true);
+            DummyLocomotor loco = _loco;
             if (loco != null)
             {
                 becomeIt = loco.ConsumeBecomeCatch();
@@ -203,6 +210,18 @@ namespace TagArena.Movement
 
             if (motor.cam == null && cam != null)
                 motor.cam = cam.transform;
+        }
+
+        void ResolveRig()
+        {
+            BindRig();
+        }
+
+        void BindRig()
+        {
+            if (motor == null) return;
+            if (_in == null) _in = motor.GetComponent<PlayerInputReader>();
+            if (_loco == null) _loco = motor.GetComponentInChildren<DummyLocomotor>(true);
         }
 
         /// <summary>Brief punch/tag camera kick (local pivot offset + optional FOV punch).</summary>

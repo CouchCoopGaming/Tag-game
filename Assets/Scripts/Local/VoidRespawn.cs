@@ -1,5 +1,7 @@
+using Tag.Core;
 using Tag.Gameplay;
 using Tag.Level;
+using Tag.Settings;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -21,34 +23,29 @@ namespace Tag.Local
         PlayerRagdoll _ragdoll;
         ItController _it;
 
-        // Mega Park origin = SW corner, +X east, +Z north. Real meters, scale 1.
-        float _minX, _maxX, _minZ, _maxZ;
-
         void Awake()
         {
             killY = MegaParkP1Layout.KillPlaneY;
+            if (xzMargin < SessionRules.Margin) xzMargin = SessionRules.Margin;
             _rb = GetComponent<Rigidbody>();
             _motor = GetComponent<PlayerMotor>();
             _ragdoll = GetComponent<PlayerRagdoll>();
             _it = GetComponent<ItController>();
-
-            float pad = xzMargin;
-            _minX = -pad;
-            _maxX = MegaParkP1Layout.MapW + pad;
-            _minZ = -pad;
-            _maxZ = MegaParkP1Layout.MapD + pad;
         }
 
         void FixedUpdate()
         {
+            int arena = GameSettings.Current != null ? GameSettings.Current.Arena : 0;
+            SessionRules.ArenaBox box = SessionRules.Bounds(arena);
+            if (box.KillY != MegaParkP1Layout.KillPlaneY)
+                box.KillY = MegaParkP1Layout.KillPlaneY;
+            killY = box.KillY;
             Vector3 p = transform.position;
-            bool oobY = p.y < killY;
-            bool oobXZ = p.x < _minX || p.x > _maxX || p.z < _minZ || p.z > _maxZ;
-            if (!oobY && !oobXZ) return;
-            RespawnToNearestPad();
+            if (!SessionRules.Outside(box, p.x, p.y, p.z)) return;
+            RespawnToNearestPad(box);
         }
 
-        void RespawnToNearestPad()
+        void RespawnToNearestPad(SessionRules.ArenaBox box)
         {
             Vector3 from = transform.position;
             bool hasIt = TryOtherIt(out Vector3 itPos);
@@ -58,6 +55,12 @@ namespace Tag.Local
                 hasIt ? itPos.z : from.z,
                 hasIt,
                 out float x, out float y, out float z);
+            if (SessionRules.Outside(box, x, y, z))
+            {
+                x = (box.MinX + box.MaxX) * 0.5f;
+                z = (box.MinZ + box.MaxZ) * 0.5f;
+                y = MegaParkP1Layout.SpawnY;
+            }
             Vector3 pad = new Vector3(x, y, z);
 
             if (_ragdoll != null)

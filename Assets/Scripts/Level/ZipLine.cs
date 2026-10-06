@@ -48,6 +48,11 @@ namespace Tag.Level
 
         static readonly List<ZipLine> Active = new List<ZipLine>();
 
+        public static void ResetStatics()
+        {
+            Active.Clear();
+        }
+
         readonly HashSet<int> _riders = new HashSet<int>();
 
         Transform _cable;

@@ -22,18 +22,20 @@ namespace Tag.Art
         Material _shellMat;
         Light _light;
         readonly List<Renderer> _pulsed = new List<Renderer>();
+        MaterialPropertyBlock _block;
+        Renderer[] _bodies = System.Array.Empty<Renderer>();
+        int _bodyKids = -1;
         bool _on;
 
         void Awake()
         {
             _it = GetComponent<ItController>();
             _role = GetComponent<TagRole>();
+            _block = new MaterialPropertyBlock();
         }
 
         void LateUpdate()
         {
-            if (_it == null) _it = GetComponent<ItController>();
-            if (_role == null) _role = GetComponent<TagRole>();
             float glow = 0f;
             float time = Time.time;
             if (_it != null) glow = _it.TagBackGlow01(time);
@@ -43,9 +45,22 @@ namespace Tag.Art
                 if (_on) End();
                 return;
             }
+            int kids = transform.childCount;
+            if (kids != _bodyKids) RefreshBodies(kids);
             EnsureShell();
             Apply(glow);
             _on = true;
+        }
+
+        void RefreshBodies(int kids)
+        {
+            RememberBodies(kids);
+        }
+
+        void RememberBodies(int kids)
+        {
+            _bodyKids = kids;
+            _bodies = GetComponentsInChildren<Renderer>(true);
         }
 
         void OnDisable()
@@ -63,7 +78,7 @@ namespace Tag.Art
         {
             ClearPulsed();
             float mix = Mathf.Clamp01(glow) * 0.72f;
-            Renderer[] all = GetComponentsInChildren<Renderer>(true);
+            Renderer[] all = _bodies;
             for (int i = 0; i < all.Length; i++)
             {
                 Renderer r = all[i];
@@ -75,7 +90,8 @@ namespace Tag.Art
                 if (!hasBase && !hasColor) continue;
                 Color baseC = hasBase ? mat.GetColor("_BaseColor") : mat.color;
                 Color c = Color.Lerp(baseC, Safe, mix);
-                var block = new MaterialPropertyBlock();
+                MaterialPropertyBlock block = _block;
+                if (block == null) continue;
                 r.GetPropertyBlock(block);
                 if (hasBase) block.SetColor("_BaseColor", c);
                 if (hasColor) block.SetColor("_Color", c);
@@ -143,13 +159,8 @@ namespace Tag.Art
             go.transform.localRotation = Quaternion.identity;
             go.transform.localScale = new Vector3(0.96f, 0.82f, 0.96f);
             go.layer = 2;
-            var col = go.GetComponent<Collider>();
-            if (col != null)
-            {
-                col.enabled = false;
-                DestroyImmediate(col);
-            }
-            _shellRend = go.GetComponent<Renderer>();
+            StripShellCollider(go);
+            _shellRend = ShellRenderer(go);
             _shellMat = DummyPrimitiveFactory.MakeMat(Safe, 0.15f, 0f);
             Paint(_shellMat, Safe, 3.5f);
             if (_shellMat.HasProperty("_Surface")) _shellMat.SetFloat("_Surface", 1f);
@@ -171,6 +182,21 @@ namespace Tag.Art
             _light.range = 3.2f;
             _light.intensity = 0f;
             _light.enabled = false;
+        }
+
+        static void StripShellCollider(GameObject go)
+        {
+            var col = go.GetComponent<Collider>();
+            if (col != null)
+            {
+                col.enabled = false;
+                DestroyImmediate(col);
+            }
+        }
+
+        static Renderer ShellRenderer(GameObject go)
+        {
+            return go.GetComponent<Renderer>();
         }
 
         static void Paint(Material mat, Color c, float emission)

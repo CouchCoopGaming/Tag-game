@@ -7,6 +7,11 @@ namespace Tag.Audio
     {
         public static AudioCuePlayer Instance { get; private set; }
 
+        public static void ResetStatics()
+        {
+            Instance = null;
+        }
+
         [SerializeField] float pitchJitter = 0.05f;
         AudioSource _sfx;
         AudioSource _ui;
@@ -29,6 +34,11 @@ namespace Tag.Audio
             _music.volume = AudioMaster.MusicMuted ? 0f : AudioMaster.MusicVolume;
         }
 
+        void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
+
         public static AudioCuePlayer Ensure()
         {
             if (Instance != null) return Instance;
@@ -38,6 +48,7 @@ namespace Tag.Audio
 
         public void PlaySfx(string resourcesPath, Vector3? pos = null)
         {
+            if (_sfx == null) return;
             AudioMaster.Apply();
             var clip = Load(resourcesPath);
             if (clip == null)
@@ -54,6 +65,7 @@ namespace Tag.Audio
 
         public void PlayUi(string resourcesPath)
         {
+            if (_ui == null) return;
             AudioMaster.Apply();
             var clip = Load(resourcesPath);
             if (clip == null)
@@ -91,6 +103,7 @@ namespace Tag.Audio
 
         public void PlayMusic(string resourcesPath)
         {
+            if (_music == null) return;
             AudioMaster.Apply();
             var clip = Load(resourcesPath);
             if (clip == null) return;

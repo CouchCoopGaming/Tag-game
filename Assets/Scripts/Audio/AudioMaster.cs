@@ -146,6 +146,14 @@ namespace Tag.Audio
             TagSfx.UiClick();
         }
 
+        public static void ResetStatics()
+        {
+            Volume = DefaultVolume;
+            MusicVolume = DefaultMusicVolume;
+            Muted = false;
+            MusicMuted = false;
+        }
+
         public static void Apply()
         {
             AudioListener.volume = Muted ? 0f : Mathf.Clamp01(Volume);

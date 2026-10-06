@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Tag.Gameplay;
 using UnityEngine;
 
@@ -16,6 +17,10 @@ namespace TagArena.Movement
         TagRole _tagBackFrom;
         int _tagPawnId;
         static int _nextTagPawnId = 1;
+        PlayerMotor _motor;
+        static readonly Dictionary<int, TagRole> ColliderIndex = new Dictionary<int, TagRole>();
+
+        public PlayerMotor Motor => _motor;
 
         public int TagPawnId
         {
@@ -31,9 +36,62 @@ namespace TagArena.Movement
 
         void Update()
         {
+            var modes = Tag.Modes.TagModeController.Instance;
+            bool playing = modes == null || (modes.Phase == Tag.Modes.MatchPhase.Playing && modes.IsRunning);
+            if (!playing)
+            {
+                ClearTagBackImmunity();
+                return;
+            }
             _tagBack = TagBackImmunity.Tick(_tagBack, Time.deltaTime);
             if (_tagBack.Remaining <= 0f || _tagBackFrom == null || !_tagBackFrom.IsIt)
                 ClearTagBackImmunity();
+        }
+
+        public static void ResetPawnIds()
+        {
+            _nextTagPawnId = 1;
+            ColliderIndex.Clear();
+        }
+
+        public static TagRole FromCollider(Collider c)
+        {
+            if (c == null) return null;
+            TagRole role;
+            if (ColliderIndex.TryGetValue(c.GetInstanceID(), out role) && role != null)
+                return role;
+            role = c.GetComponentInParent<TagRole>();
+            if (role != null)
+                ColliderIndex[c.GetInstanceID()] = role;
+            return role;
+        }
+
+        void Awake()
+        {
+            _motor = GetComponent<PlayerMotor>();
+        }
+
+        void OnEnable()
+        {
+            Collider[] cols = GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < cols.Length; i++)
+            {
+                if (cols[i] == null) continue;
+                ColliderIndex[cols[i].GetInstanceID()] = this;
+            }
+        }
+
+        void OnDisable()
+        {
+            Collider[] cols = GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < cols.Length; i++)
+            {
+                if (cols[i] == null) continue;
+                int id = cols[i].GetInstanceID();
+                TagRole owner;
+                if (ColliderIndex.TryGetValue(id, out owner) && owner == this)
+                    ColliderIndex.Remove(id);
+            }
         }
 
         /// <summary>
@@ -50,6 +108,8 @@ namespace TagArena.Movement
                 Tag.Audio.AudioBus.Raise(Tag.Audio.AudioBus.Hook.TagBackBlocked, victim.transform.position);
                 return false;
             }
+            PlayerMotor victimMotor = victim.Motor;
+            if (victimMotor != null) victimMotor.ReleaseCarriers();
             IsIt = false;
             victim.IsIt = true;
             victim._safeUntil = Time.time + victim.iFrame;

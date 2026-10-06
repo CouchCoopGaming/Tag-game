@@ -91,5 +91,9 @@
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Systems/KinematicStep.cs" />
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Camera/ChaseCam.cs" />
     <Compile Include="../../Assets/TagArenaMovement/Scripts/Systems/WishAccel.cs" />
+    <Compile Include="../../Assets/Scripts/Core/SessionRules.cs" />
+    <Compile Include="../../Assets/Scripts/Core/HudDigits.cs" />
+    <Compile Include="../../Assets/Scripts/Core/QaSweep.cs" />
+    <Compile Include="../../Assets/Scripts/Core/HotPathAlloc.cs" />
   </ItemGroup>
 </Project>

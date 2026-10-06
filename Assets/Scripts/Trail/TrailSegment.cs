@@ -11,6 +11,11 @@ namespace Tag.Trail
     {
         static readonly List<TrailSegment> s_active = new List<TrailSegment>();
 
+        public static void ResetStatics()
+        {
+            s_active.Clear();
+        }
+
         /// <summary>Live enabled segments (OnEnable/OnDisable). Prefer over FindObjectsByType.</summary>
         public static IReadOnlyList<TrailSegment> Active => s_active;
 

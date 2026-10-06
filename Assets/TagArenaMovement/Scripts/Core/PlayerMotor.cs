@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Tag.Audio;
+using Tag.Core;
 using Tag.Experimental;
 using Tag.Gameplay;
 using Tag.Level;
@@ -166,6 +168,58 @@ namespace TagArena.Movement
         public event System.Action OnTaggedSomeone;
         public event System.Action OnBecameIt;
 
+        static readonly Dictionary<int, PlayerMotor> ColliderIndex = new Dictionary<int, PlayerMotor>();
+
+        public static void ResetColliderIndex()
+        {
+            ColliderIndex.Clear();
+        }
+
+        public static PlayerMotor FromCollider(Collider c)
+        {
+            if (c == null) return null;
+            PlayerMotor motor;
+            if (ColliderIndex.TryGetValue(c.GetInstanceID(), out motor) && motor != null)
+                return motor;
+            motor = c.GetComponentInParent<PlayerMotor>();
+            if (motor != null)
+                ColliderIndex[c.GetInstanceID()] = motor;
+            return motor;
+        }
+
+        void OnEnable()
+        {
+            IndexColliders();
+        }
+
+        void OnDisable()
+        {
+            DropColliders();
+        }
+
+        void IndexColliders()
+        {
+            Collider[] cols = GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < cols.Length; i++)
+            {
+                if (cols[i] == null) continue;
+                ColliderIndex[cols[i].GetInstanceID()] = this;
+            }
+        }
+
+        void DropColliders()
+        {
+            Collider[] cols = GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < cols.Length; i++)
+            {
+                if (cols[i] == null) continue;
+                int id = cols[i].GetInstanceID();
+                PlayerMotor owner;
+                if (ColliderIndex.TryGetValue(id, out owner) && owner == this)
+                    ColliderIndex.Remove(id);
+            }
+        }
+
         void Awake()
         {
             _rb = GetComponent<Rigidbody>();
@@ -215,8 +269,11 @@ namespace TagArena.Movement
             if (_in == null || cfg == null) return;
             _in.Read();
             // Edges are latched in this same Update, then the move consumes them.
-            // A paused or unlocked frame drops the slots so a menu click cannot hop.
-            if (Time.timeScale <= 0f || Cursor.lockState != CursorLockMode.Locked || ResumeInputGate.Blocking)
+            // A frozen pause keeps cling grace, the jump buffer, and every verb timer.
+            // An unlocked cursor (results, resume gate) still drops the slots so a card click cannot hop.
+            if (SessionRules.TimeFrozen(Time.timeScale))
+                return;
+            if (Cursor.lockState != CursorLockMode.Locked || ResumeInputGate.Blocking)
             {
                 _jumpSlot = 0f;
                 _wallJumpSlot = 0f;
@@ -1180,6 +1237,7 @@ namespace TagArena.Movement
             if (cfg == null || !cfg.enableAirDash) return false;
             if (_launchArc || _launchQueued) return false;
             if (grounded) return false;
+            if (!SessionRules.AirDashAllowed(_stagger.Stagger)) return false;
             if (State == MoveState.Mantle || State == MoveState.WallClimb || State == MoveState.WallRun || State == MoveState.LandStun)
                 return false;
             if (_airDashCd > 0f) return false;
@@ -1277,17 +1335,21 @@ namespace TagArena.Movement
             return v;
         }
 
+        readonly Collider[] _tagOverlap = new Collider[16];
+
         void TryTag()
         {
-            var cols = Physics.OverlapSphere(transform.position + Vector3.up * 0.9f, cfg.tagRadius);
-            foreach (var c in cols)
+            int count = Physics.OverlapSphereNonAlloc(transform.position + Vector3.up * 0.9f, cfg.tagRadius, _tagOverlap);
+            for (int i = 0; i < count; i++)
             {
-                if (c.transform == transform) continue;
-                var other = c.GetComponentInParent<TagRole>();
+                Collider c = _tagOverlap[i];
+                _tagOverlap[i] = null;
+                if (c == null || c.transform == transform) continue;
+                var other = TagRole.FromCollider(c);
                 if (other == null || other.IsIt) continue;
                 if (!tagRole.Tag(other)) continue;
                 OnTaggedSomeone?.Invoke();
-                other.GetComponent<PlayerMotor>()?.NotifyBecameIt();
+                if (other.Motor != null) other.Motor.NotifyBecameIt();
                 break;
             }
         }
@@ -1354,6 +1416,12 @@ namespace TagArena.Movement
             _clingGrace = 0f;
         }
 
+        /// <summary>Zip, pad arc, lunge, and air dash drop. Ground velocity is left for the caller.</summary>
+        public void ReleaseCarriers()
+        {
+            DropCarrierVerbs();
+        }
+
         /// <summary>
         /// Zip, pad, grapple, lunge, and air dash all drop. The caller sets the mode.
         /// One velocity owner remains, and it is not a stuck carrier.
@@ -1418,6 +1486,9 @@ namespace TagArena.Movement
             if (State == MoveState.Sprint)
                 SetState(MoveState.Walk);
             _lungeT = 0f;
+            _airDashT = 0f;
+            if (_mode == Locomotion.AirDash)
+                _mode = Locomotion.Air;
             if (_zipRiding)
                 ReleaseZip();
             return true;
