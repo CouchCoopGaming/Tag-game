@@ -26,6 +26,7 @@ namespace Tag.MatchStats
         static readonly bool[] PrevPad = new bool[MatchBook.Cap];
         static readonly bool[] Reach = new bool[MatchBook.Cap];
         static readonly int[] WallJumps = new int[MatchBook.Cap];
+        static readonly int[] Ids = new int[MatchBook.Cap];
 
         static int _bound;
         static bool _open;
@@ -69,6 +70,7 @@ namespace Tag.MatchStats
             if (_hold)
             {
                 _hold = false;
+                MatchHighlight.NewRound();
                 return;
             }
             _open = false;
@@ -84,13 +86,13 @@ namespace Tag.MatchStats
             if (mode == null) return;
             int n = mode.ExportRoster(Roster);
             if (n > MatchBook.Cap) n = MatchBook.Cap;
-            if (!_open)
+            for (int i = 0; i < n; i++)
             {
-                MatchBook.Open(n);
-                _open = true;
+                ItController it = Roster[i];
+                Ids[i] = it != null ? it.GetInstanceID() : 0;
             }
-            else
-                MatchBook.EnsureCount(n);
+            MatchBook.SyncRoster(n, Ids);
+            _open = true;
             _bound = n;
             for (int i = 0; i < n; i++)
             {

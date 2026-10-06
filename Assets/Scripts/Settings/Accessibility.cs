@@ -113,6 +113,46 @@ namespace Tag.Settings
             b = ItB[i];
         }
 
+        /// <summary>Player swatch versus the It marker, under every CVD simulation.</summary>
+        public static bool ClearsIt(int palette, int slot)
+        {
+            Player(palette, slot, out float pr, out float pg, out float pb);
+            It(palette, out float ir, out float ig, out float ib);
+            return Apart(pr, pg, pb, ir, ig, ib);
+        }
+
+        /// <summary>
+        /// The It marker. When the seated swatch sits on the default It color,
+        /// a cyan fallback is used so the crown stays readable.
+        /// </summary>
+        public static void ItAgainst(int palette, int slot, out float r, out float g, out float b)
+        {
+            if (ClearsIt(palette, slot))
+            {
+                It(palette, out r, out g, out b);
+                return;
+            }
+            Player(palette, slot, out float pr, out float pg, out float pb);
+            r = 0f;
+            g = 0.9f;
+            b = 1f;
+            if (Apart(pr, pg, pb, r, g, b)) return;
+            r = 0.15f;
+            g = 0.55f;
+            b = 1f;
+        }
+
+        static bool Apart(float ar, float ag, float ab, float br, float bg, float bb)
+        {
+            for (int cvd = 0; cvd < CvdCount; cvd++)
+            {
+                Simulate(cvd, ar, ag, ab, out float ar2, out float ag2, out float ab2);
+                Simulate(cvd, br, bg, bb, out float br2, out float bg2, out float bb2);
+                if (Distance(ar2, ag2, ab2, br2, bg2, bb2) < MinPairDistance) return false;
+            }
+            return true;
+        }
+
         public static void Glow(int palette, out float r, out float g, out float b)
         {
             int i = palette;

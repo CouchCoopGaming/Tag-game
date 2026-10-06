@@ -34,6 +34,11 @@ namespace Tag.Practice
         static readonly byte[] SavedPose = new byte[Slots * Cap];
         static readonly int[] SavedCount = new int[Slots];
         static readonly string[] SavedId = new string[Slots];
+        static readonly float[] LoadX = new float[Cap];
+        static readonly float[] LoadY = new float[Cap];
+        static readonly float[] LoadZ = new float[Cap];
+        static readonly float[] LoadYaw = new float[Cap];
+        static readonly byte[] LoadPose = new byte[Cap];
 
         public static void Clear()
         {
@@ -320,40 +325,66 @@ namespace Tag.Practice
             }
         }
 
-        public static void Read(string id, string value)
+        /// <summary>
+        /// Current samples are count;x,y,z,yaw,pose. v1 is the same. v0 is x,y,z,yaw
+        /// and pose 0. A bad count, a non-finite sample, or a newer prefix claims nothing.
+        /// </summary>
+        public static bool Read(string id, string value)
         {
-            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(value)) return;
-            int slot = Slot(id, true);
-            if (slot < 0) return;
-            SavedId[slot] = id;
-            int semi = value.IndexOf(';');
-            string head = semi < 0 ? value : value.Substring(0, semi);
-            if (!int.TryParse(head, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n))
-                n = 0;
-            if (n < 0) n = 0;
-            if (n > Cap) n = Cap;
-            int o = slot * Cap;
-            int written = 0;
-            int i = semi < 0 ? value.Length : semi + 1;
-            while (written < n && i < value.Length)
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(value)) return false;
+            if (value.Length > Cap * 128) return false;
+            int fields = 5;
+            string body = value;
+            if (value[0] == 'v')
             {
-                int next = value.IndexOf(';', i);
-                if (next < 0) next = value.Length;
-                if (ParseSample(value.Substring(i, next - i), out float x, out float y, out float z, out float yaw, out byte pose))
-                {
-                    SavedX[o + written] = x;
-                    SavedY[o + written] = y;
-                    SavedZ[o + written] = z;
-                    SavedYaw[o + written] = yaw;
-                    SavedPose[o + written] = pose;
-                    written++;
-                }
+                int mark = value.IndexOf(';');
+                if (mark < 2) return false;
+                string ver = value.Substring(1, mark - 1);
+                if (ver == "0") fields = 4;
+                else if (ver == "1") fields = 5;
+                else return false;
+                body = value.Substring(mark + 1);
+            }
+            int semi = body.IndexOf(';');
+            string head = semi < 0 ? body : body.Substring(0, semi);
+            if (!int.TryParse(head, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n))
+                return false;
+            if (n < 1 || n > Cap) return false;
+            int written = 0;
+            int i = semi < 0 ? body.Length : semi + 1;
+            while (written < n && i <= body.Length)
+            {
+                if (i >= body.Length) break;
+                int next = body.IndexOf(';', i);
+                if (next < 0) next = body.Length;
+                if (!ParseSample(body.Substring(i, next - i), fields, out float x, out float y, out float z, out float yaw, out byte pose))
+                    return false;
+                LoadX[written] = x;
+                LoadY[written] = y;
+                LoadZ[written] = z;
+                LoadYaw[written] = yaw;
+                LoadPose[written] = pose;
+                written++;
                 i = next + 1;
             }
-            SavedCount[slot] = written;
+            if (written != n) return false;
+            int slot = Slot(id, true);
+            if (slot < 0) return false;
+            SavedId[slot] = id;
+            SavedCount[slot] = n;
+            int o = slot * Cap;
+            for (int s = 0; s < n; s++)
+            {
+                SavedX[o + s] = LoadX[s];
+                SavedY[o + s] = LoadY[s];
+                SavedZ[o + s] = LoadZ[s];
+                SavedYaw[o + s] = LoadYaw[s];
+                SavedPose[o + s] = LoadPose[s];
+            }
+            return true;
         }
 
-        static bool ParseSample(string text, out float x, out float y, out float z, out float yaw, out byte pose)
+        static bool ParseSample(string text, int fields, out float x, out float y, out float z, out float yaw, out byte pose)
         {
             x = y = z = yaw = 0f;
             pose = 0;
@@ -363,13 +394,27 @@ namespace Tag.Practice
             if (c1 < 0) return false;
             int c2 = text.IndexOf(',', c1 + 1);
             if (c2 < 0) return false;
-            int c3 = text.IndexOf(',', c2 + 1);
-            if (c3 < 0) return false;
-            if (!float.TryParse(text.Substring(0, c0), NumberStyles.Float, CultureInfo.InvariantCulture, out x)) return false;
-            if (!float.TryParse(text.Substring(c0 + 1, c1 - c0 - 1), NumberStyles.Float, CultureInfo.InvariantCulture, out y)) return false;
-            if (!float.TryParse(text.Substring(c1 + 1, c2 - c1 - 1), NumberStyles.Float, CultureInfo.InvariantCulture, out z)) return false;
-            if (!float.TryParse(text.Substring(c2 + 1, c3 - c2 - 1), NumberStyles.Float, CultureInfo.InvariantCulture, out yaw)) return false;
-            if (!byte.TryParse(text.Substring(c3 + 1), NumberStyles.Integer, CultureInfo.InvariantCulture, out pose)) return false;
+            int yawEnd = text.Length;
+            if (fields >= 5)
+            {
+                int c3 = text.IndexOf(',', c2 + 1);
+                if (c3 < 0) return false;
+                yawEnd = c3;
+                if (!byte.TryParse(text.Substring(c3 + 1), NumberStyles.Integer, CultureInfo.InvariantCulture, out pose))
+                    return false;
+            }
+            if (!Finite(text.Substring(0, c0), out x)) return false;
+            if (!Finite(text.Substring(c0 + 1, c1 - c0 - 1), out y)) return false;
+            if (!Finite(text.Substring(c1 + 1, c2 - c1 - 1), out z)) return false;
+            if (!Finite(text.Substring(c2 + 1, yawEnd - c2 - 1), out yaw)) return false;
+            return true;
+        }
+
+        static bool Finite(string text, out float value)
+        {
+            value = 0f;
+            if (!float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value)) return false;
+            if (float.IsNaN(value) || float.IsInfinity(value)) return false;
             return true;
         }
 

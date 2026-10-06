@@ -181,4 +181,18 @@ namespace Tag.Practice
             return claim ? free : -1;
         }
     }
+
+    /// <summary>
+    /// A personal best is a finished run. Pause, abort, and a slower time do not write it.
+    /// </summary>
+    public static class PracticeScore
+    {
+        public static bool Commit(bool finished, bool aborted, bool paused, float time, float pb)
+        {
+            if (!finished || aborted || paused) return false;
+            if (time <= 0f) return false;
+            if (pb > 0f && time >= pb) return false;
+            return true;
+        }
+    }
 }

@@ -438,20 +438,18 @@ namespace Tag.Practice
 
             void NoteGates()
             {
-                while (Next < _route.Gates.Length)
-                {
-                    PracticeGate gate = _route.Gates[Next];
-                    if (gate.Verb != PracticeVerb.None && !_used[gate.Verb]) return;
-                    if (!PracticeCatalog.Hit(gate, Pos.x, Pos.y, Pos.z)) return;
-                    _splits[Next] = Time;
-                    Next++;
-                    if (Next >= _route.Gates.Length)
-                    {
-                        Done = true;
-                        PracticeBests.Set(_route.Id, Time, _splits, _route.Gates.Length);
-                        PracticeGhost.Keep(_route.Id);
-                    }
-                }
+                if (Next < 0 || Next >= _route.Gates.Length) return;
+                PracticeGate gate = _route.Gates[Next];
+                bool ready = gate.Verb == PracticeVerb.None || _used[gate.Verb];
+                int after = PracticeGates.Step(_route.Gates, Next, Pos.x, Pos.y, Pos.z, ready);
+                if (after == Next) return;
+                _splits[Next] = Time;
+                Next = after;
+                if (Next < _route.Gates.Length) return;
+                Done = true;
+                if (!PracticeScore.Commit(true, false, false, Time, PracticeBests.TimeOf(_route.Id))) return;
+                PracticeBests.Set(_route.Id, Time, _splits, _route.Gates.Length);
+                PracticeGhost.Keep(_route.Id);
             }
 
             void Offer()

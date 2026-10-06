@@ -100,6 +100,7 @@
     <Compile Include="../../Assets/Scripts/Core/HudDigits.cs" />
     <Compile Include="../../Assets/Scripts/Core/QaSweep.cs" />
     <Compile Include="../../Assets/Scripts/Core/QaSweep2.cs" />
+    <Compile Include="../../Assets/Scripts/Core/QaSweep3.cs" />
     <Compile Include="../../Assets/Scripts/Core/HotPathAlloc.cs" />
     <Compile Include="../../Assets/Scripts/Core/FrameMeter.cs" />
     <Compile Include="../../Assets/Scripts/Core/FrameBudget.cs" />

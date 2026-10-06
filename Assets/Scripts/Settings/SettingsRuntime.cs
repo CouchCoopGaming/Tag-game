@@ -63,7 +63,7 @@ namespace Tag.Settings
             {
                 string dir = Application.persistentDataPath;
                 if (!string.IsNullOrEmpty(dir))
-                    File.WriteAllText(Path.Combine(dir, FileName), json);
+                    SettingsFile.CommitText(Path.Combine(dir, FileName), json);
             }
             catch (Exception)
             {
@@ -157,8 +157,7 @@ namespace Tag.Settings
                 string dir = Application.persistentDataPath;
                 if (string.IsNullOrEmpty(dir)) return "";
                 string path = Path.Combine(dir, FileName);
-                if (!File.Exists(path)) return "";
-                return File.ReadAllText(path);
+                return SettingsFile.ReadStable(path);
             }
             catch (Exception)
             {

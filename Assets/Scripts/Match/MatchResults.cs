@@ -44,8 +44,11 @@ namespace Tag.MatchStats
                     awardPalette = GameSettings.Current.PaletteOf(leader < AccessibilityPalette.Players ? leader : 0);
                 AccessibilityPalette.Player(awardPalette, awardSwatch, out float ar, out float ag, out float ab);
                 _style.normal.textColor = new Color(ar, ag, ab, 1f);
-                GUI.Label(new Rect(x + 12f, ay, w - 24f, awardSize + 10f), MatchBook.AwardLine[a] ?? "", _style);
-                ay += awardSize + 8f;
+                string awardText = MatchBook.AwardLine[a] ?? "";
+                int awardRows = MatchBook.AwardRows(awardText, w - 24f, awardSize);
+                float awardH = awardRows * (awardSize + 4f);
+                GUI.Label(new Rect(x + 12f, ay, w - 24f, awardH), awardText, _style);
+                ay += awardH + 8f;
             }
             _style.normal.textColor = Color.white;
             int n = MatchBook.Count;
