@@ -533,6 +533,15 @@ namespace Tag.Modes
 
         public static Vector3 LoopPoint(bool mega, int index)
         {
+            if (ParkArena.IsStack)
+            {
+                MegaParkP1Layout.Pt[] stackLoop = StackYardLayout.AiLoop;
+                int stack = index % stackLoop.Length;
+                if (stack < 0) stack += stackLoop.Length;
+                MegaParkP1Layout.Pt stackPt = stackLoop[stack];
+                return new Vector3(stackPt.X, StackYardLayout.SpawnY, stackPt.Z);
+            }
+
             if (ParkArena.IsPocket)
             {
                 MegaParkP1Layout.Pt[] pocketLoop = PocketParkLayout.AiLoop;
@@ -761,6 +770,18 @@ namespace Tag.Modes
                 if (ParkArena.IsPocket)
                 {
                     float blend = PocketParkLayout.EvadeLoopBlend(d);
+                    if (blend > 0f)
+                    {
+                        float toward = LoopChaseSign(self.x, self.z, perceived.x, perceived.z);
+                        float meters = Mathf.Lerp(14f, 26f, d);
+                        LoopOffset(self.x, self.z, -toward * meters, out float fx, out float fz);
+                        evadeAim.x = away.x + (fx - away.x) * blend;
+                        evadeAim.z = away.z + (fz - away.z) * blend;
+                    }
+                }
+                else if (ParkArena.IsStack)
+                {
+                    float blend = StackYardLayout.EvadeLoopBlend(d);
                     if (blend > 0f)
                     {
                         float toward = LoopChaseSign(self.x, self.z, perceived.x, perceived.z);
@@ -1069,11 +1090,13 @@ namespace Tag.Modes
 
         static MegaParkP1Layout.Pt[] SteerLoop()
         {
+            if (ParkArena.IsStack) return StackYardLayout.AiLoop;
             return ParkArena.IsPocket ? PocketParkLayout.AiLoop : MegaParkP1Layout.LoopCcw;
         }
 
         static float SteerLoopLength()
         {
+            if (ParkArena.IsStack) return StackYardLayout.AiLoopLength;
             return ParkArena.IsPocket ? PocketParkLayout.AiLoopLength : MegaParkP1Layout.LoopLengthM;
         }
 

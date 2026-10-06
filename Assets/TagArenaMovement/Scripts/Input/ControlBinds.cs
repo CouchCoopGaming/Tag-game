@@ -47,7 +47,8 @@ namespace TagArena.Movement
             "Esc pause\n" +
             "M minimap\n" +
             "Air dash key: " + DashName + "    Punch key: " + PunchName + "\n" +
-            "Volume: " + Tag.Audio.AudioMaster.Label;
+            "Volume: " + Tag.Audio.AudioMaster.Label + "\n" +
+            "Comma mute. M minimap. N music.";
 
         public static void Load()
         {

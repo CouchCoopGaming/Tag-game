@@ -16,6 +16,8 @@
     <Compile Include="../../Assets/Scripts/Level/MegaParkP1Layout.Route.cs" />
     <Compile Include="../../Assets/Scripts/Level/PocketParkLayout.cs" />
     <Compile Include="../../Assets/Scripts/Level/PocketParkLayout.Look.cs" />
+    <Compile Include="../../Assets/Scripts/Level/StackYardLayout.cs" />
+    <Compile Include="../../Assets/Scripts/Level/StackYardLayout.Look.cs" />
     <Compile Include="../../Assets/Scripts/Level/ParkArena.cs" />
     <Compile Include="UnityStub/UnityEngine.cs" />
     <Compile Include="UnityStub/AudioBus.cs" />
@@ -34,6 +36,13 @@
     <Compile Include="../../Assets/Editor/EnemyAiProof.cs" />
     <Compile Include="../../Assets/Editor/RoundFlowProof.cs" />
     <Compile Include="../../Assets/Scripts/Modes/RoundFlow.cs" />
+    <Compile Include="../../Assets/Scripts/Settings/GameSettings.cs" />
+    <Compile Include="../../Assets/Scripts/Settings/ActionBinds.cs" />
+    <Compile Include="../../Assets/Scripts/Settings/SettingsFile.cs" />
+    <Compile Include="../../Assets/Scripts/Settings/MenuGraph.cs" />
+    <Compile Include="../../Assets/Scripts/Settings/MenuHoldGate.cs" />
+    <Compile Include="../../Assets/Scripts/Settings/InputBufferAudit.cs" />
+    <Compile Include="../../Assets/Editor/SettingsInputProof.cs" />
     <Compile Include="../../Assets/Scripts/Modes/VerbHudLayout.cs" />
     <Compile Include="../../Assets/Editor/EnemyAiParkProof.cs" />
     <Compile Include="../../Assets/Editor/GrappleLatchTellProof.cs" />

@@ -33,6 +33,7 @@ public static partial class EnemyAiProof
         {
             RunParkMatches(cfg, punch, report);
             report.PocketLine = RunPocketMatches(cfg, punch, report);
+            report.StackLine = RunStackMatches(cfg, punch, report);
         }
         finally
         {
@@ -783,6 +784,7 @@ public static partial class EnemyAiProof
 
         public static void OnRaised(AudioBus.Hook hook, Vector3 pos)
         {
+            if (ParkArena.IsStack) return;
             bool pocket = ParkArena.IsPocket;
             if (hook == AudioBus.Hook.PadLaunch)
             {
@@ -834,6 +836,7 @@ public sealed class EnemyAiReport
     public int Jumps;
     public string Line = "";
     public string PocketLine = "";
+    public string StackLine = "";
     public string AudioLine = "";
     public readonly int[] Counts = new int[17];
     public EnemyMemory GymMemory;

@@ -179,6 +179,8 @@ static class Program
         Console.WriteLine(enemy.ToString());
         if (!string.IsNullOrEmpty(enemy.PocketLine))
             Console.WriteLine(enemy.PocketLine);
+        if (!string.IsNullOrEmpty(enemy.StackLine))
+            Console.WriteLine(enemy.StackLine);
         if (!string.IsNullOrEmpty(enemy.AudioLine))
             Console.WriteLine(enemy.AudioLine);
         if (!enemy.Ok)
@@ -192,6 +194,14 @@ static class Program
         if (!rounds.Ok)
         {
             Console.Error.WriteLine(rounds.Failure);
+            return 1;
+        }
+
+        SettingsInputReport settings = SettingsInputProof.Run();
+        Console.WriteLine(settings.Line);
+        if (!settings.Ok)
+        {
+            Console.Error.WriteLine(settings.Failure);
             return 1;
         }
 
@@ -495,6 +505,14 @@ static class Program
         if (!pocket.Ok)
         {
             Console.Error.WriteLine(pocket.Failure);
+            return 1;
+        }
+
+        Tag.Level.StackYardLayout.Audit stack = Tag.Level.StackYardLayout.Run();
+        Console.WriteLine(stack.Line);
+        if (!stack.Ok)
+        {
+            Console.Error.WriteLine(stack.Failure);
             return 1;
         }
 

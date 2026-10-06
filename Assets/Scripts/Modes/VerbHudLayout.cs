@@ -10,6 +10,13 @@ namespace Tag.Modes
     {
         public const float PocketMinimapScale = 0.72f;
 
+        /// <summary>
+        /// Stack Yard is 110 m on the long side. Mega Park is 160 m and draws full size.
+        /// 110/160 is 0.69; the widget is lifted to 0.84 so the park still reads in the corner
+        /// and stays clear of the verb cluster at 1080p and 720p.
+        /// </summary>
+        public const float StackMinimapScale = 0.84f;
+
         public struct Box
         {
             public float X, Y, W, H;
@@ -32,7 +39,16 @@ namespace Tag.Modes
         /// <summary>Pocket Park uses a smaller corner scale. Mega Park stays full size.</summary>
         public static Box Minimap(float sw, float sh, bool pocket)
         {
-            float size = (sh >= 1000f ? 220f : 168f) * (pocket ? PocketMinimapScale : 1f);
+            return Minimap(sw, sh, pocket, false);
+        }
+
+        /// <summary>Stack Yard uses its own corner scale. Mega Park stays full size.</summary>
+        public static Box Minimap(float sw, float sh, bool pocket, bool stack)
+        {
+            float scale = 1f;
+            if (stack) scale = StackMinimapScale;
+            else if (pocket) scale = PocketMinimapScale;
+            float size = (sh >= 1000f ? 220f : 168f) * scale;
             const float m = 16f;
             return new Box { X = sw - size - m, Y = sh - size - m, W = size, H = size };
         }
@@ -85,14 +101,14 @@ namespace Tag.Modes
 
         public static bool Separated(float sw, float sh)
         {
-            return LayoutClear(sw, sh, false) && LayoutClear(sw, sh, true);
+            return LayoutClear(sw, sh, false, false) && LayoutClear(sw, sh, true, false) && LayoutClear(sw, sh, false, true);
         }
 
-        static bool LayoutClear(float sw, float sh, bool pocket)
+        static bool LayoutClear(float sw, float sh, bool pocket, bool stack)
         {
             Box cluster = Cluster(sw, sh);
             Box mute = Mute(sw, sh);
-            Box map = Minimap(sw, sh, pocket);
+            Box map = Minimap(sw, sh, pocket, stack);
             Box banner = Banner(sw);
             Box mode = ModeCard(sh);
             Box picker = Picker(sw, sh);
@@ -135,11 +151,16 @@ namespace Tag.Modes
 
         public static void PushMarker(float sw, float sh, ref float x, ref float y, float w, float h, bool pocket)
         {
+            PushMarker(sw, sh, ref x, ref y, w, h, pocket, false);
+        }
+
+        public static void PushMarker(float sw, float sh, ref float x, ref float y, float w, float h, bool pocket, bool stack)
+        {
             Box self = new Box { X = x, Y = y, W = w, H = h };
             Box[] reserved =
             {
                 Mute(sw, sh),
-                Minimap(sw, sh, pocket),
+                Minimap(sw, sh, pocket, stack),
                 Cluster(sw, sh),
                 Banner(sw)
             };
@@ -165,7 +186,8 @@ namespace Tag.Modes
             bool sd = Separated(1280f, 720f);
             return "verb-hud 1920x1080=" + (hd ? "clear" : "overlap")
                 + " 1280x720=" + (sd ? "clear" : "overlap")
-                + " picker=shown pocket-map=" + PocketMinimapScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+                + " picker=shown pocket-map=" + PocketMinimapScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
+                + " stack-map=" + StackMinimapScale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
         }
     }
 }
