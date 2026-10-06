@@ -69,7 +69,7 @@ namespace Tag.Art
         public const float SlipSag = 0.18f;
 
         /// <summary>Roll off the wall, 15–20°. Wall-on-the-left is negative.</summary>
-        public const float RunTilt = 18f;
+        public const float RunTilt = 20f;
         public const float InnerPitch = 4f;
         public const float InnerSway = 3f;
         public const float InnerYaw = 36f;

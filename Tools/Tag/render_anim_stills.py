@@ -504,8 +504,8 @@ def build_wallrun():
     add_leg(rig, 1.0, -10.0, 0.0, -5.0, "plant")
     add_arm(rig, -1.0, chest, 5.0, 36.0, -18.0)
     add_arm(rig, 1.0, chest, -61.0, 12.0, -16.0)
-    rig.roll(-18.0)
-    add_wall_x(rig, -0.61)
+    rig.roll(-20.0)
+    add_wall_x(rig, -0.59)
     return rig
 
 
@@ -589,8 +589,8 @@ def build_land_hard():
 
 
 def mech_checks():
-    hand = roll(arm(-1.0, 18.0, 5.0, 36.0, -18.0)[2], -18.0)
-    ankle = roll(limb(1.0, -10.0, 0.0, -5.0)[2], -18.0)
+    hand = roll(arm(-1.0, 18.0, 5.0, 36.0, -18.0)[2], -20.0)
+    ankle = roll(limb(1.0, -10.0, 0.0, -5.0)[2], -20.0)
     print(f"wallrun hand={hand[0]:.3f},{hand[1]:.3f} ankle={ankle[1]:.3f}")
     if hand[0] > -0.50 or ankle[1] > 0.12 or ankle[1] < -0.02:
         raise SystemExit("wall-run contact failed")
@@ -660,7 +660,7 @@ def main():
         (build_launch, "launch_apex", "Launch pad — apex tuck", "Arms up, knees tucked. Not the jump rise. Opens again on the way down."),
         (build_zip, "zip_hang", "Zip line — two-hand hang", "Hands under the cable, legs forward, sway at the 14 m/s ride."),
         (build_stagger, "stagger", "Punch stagger — 0.25 s", "Head and chest snap back. One leg steps. Window matches the motor."),
-        (build_wallrun, "wallrun", "Wall run — lean 18°", "Chest off the wall, inner hand brushing, outer foot planted. Cadence matches 9.5."),
+        (build_wallrun, "wallrun", "Wall run — lean 20°", "Chest off the wall, inner hand brushing, outer foot planted. Cadence matches 9.5."),
         (build_climb, "climb", "Cling climb — hand over hand", "High hand reaches, low hand pulls. Feet on the wall. Synced to climb 6.0."),
         (build_slip, "slip", "Cling slip — hands dragging", "Hands stay high and slide. Hips sag. Feet come off the floor. Slip speed 3.7."),
         (build_walljump, "walljump", "Wall jump — both feet off", "Kick leaves the wall. Arms swing away, then the jump pose takes over."),
