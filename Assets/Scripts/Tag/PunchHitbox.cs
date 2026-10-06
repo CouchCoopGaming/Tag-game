@@ -3,6 +3,7 @@ using Tag.Audio;
 using TagArena.Movement;
 using Tag.Modes;
 using Tag.Art;
+using Tag.MatchStats;
 
 namespace Tag.Gameplay
 {
@@ -178,6 +179,7 @@ namespace Tag.Gameplay
             _phaseTimer -= dt;
             if (_phaseTimer <= 0f)
             {
+                MatchLive.NoteWhiff(_it);
                 Phase = PunchPhase.MissRecover;
                 // Soft fail: quieter/higher TagSfx + light cam nudge (connect keeps strong kick)
                 AudioBus.Raise(AudioBus.Hook.PunchWhiff, transform.position);
@@ -330,6 +332,7 @@ namespace Tag.Gameplay
             if (victim != null && _it != null
                 && TagBackImmunity.IsBlockedTag(_it.IsIt, victim.BlocksTagBackFrom(_it)))
             {
+                MatchLive.NoteBlocked(_it);
                 TagBackBlockedTell.PlayAt(hitPoint);
                 AudioBus.Raise(AudioBus.Hook.TagBackBlocked, hitPoint);
                 DummyLocomotor attacker = Loco();
@@ -337,6 +340,8 @@ namespace Tag.Gameplay
                 Debug.Log($"[Punch] {name} tag-back blocked on {victim.name}");
                 return;
             }
+
+            MatchLive.NoteLanded(_it);
 
             // Transfer-It. The existing gates decide whether this connect is a tag.
             bool puncherWasIt = _it != null && _it.IsIt;
@@ -362,6 +367,7 @@ namespace Tag.Gameplay
 
             if (!tagged && PunchStagger.IsStaggerHit(runner, tagged))
             {
+                MatchLive.NoteStagger(_it);
                 // No knockback. The stumble cancels sprint and plays the pose.
                 victim.ReceivePunchStagger();
                 Tag.Settings.PadRumble.PulseId(victim.gameObject.GetInstanceID(), Tag.Settings.PadRumble.Stagger);
