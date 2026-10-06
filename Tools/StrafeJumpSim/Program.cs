@@ -156,6 +156,8 @@ static class Program
 
         EnemyAiReport enemy = EnemyAiProof.Run();
         Console.WriteLine(enemy.ToString());
+        if (!string.IsNullOrEmpty(enemy.PocketLine))
+            Console.WriteLine(enemy.PocketLine);
         if (!enemy.Ok)
         {
             Console.Error.WriteLine(enemy.FailureText);
@@ -462,6 +464,14 @@ static class Program
         if (!pocket.Ok)
         {
             Console.Error.WriteLine(pocket.Failure);
+            return 1;
+        }
+
+        string teardown = Tag.Level.ParkArena.Census.Prove(out bool teardownOk);
+        Console.WriteLine(teardown);
+        if (!teardownOk)
+        {
+            Console.Error.WriteLine("arena teardown did not return to baseline");
             return 1;
         }
 

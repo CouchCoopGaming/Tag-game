@@ -11,7 +11,7 @@ namespace Tag.Level
     /// Origin is the SW corner. Feel locks are not stored here and are not retuned.
     /// Chokes use <see cref="MegaParkP1Layout.CountFlowChokes"/> (pass 9).
     /// </summary>
-    public static class PocketParkLayout
+    public static partial class PocketParkLayout
     {
         public const float MapW = 80f;
         public const float MapD = 50f;
@@ -21,7 +21,7 @@ namespace Tag.Level
         public const float KillPlaneY = MegaParkP1Layout.KillPlaneY;
         public const float LoopMin = 200f;
         public const float LoopMax = 240f;
-        public const int DrawBudget = 100;
+        public const int DrawBudget = 60;
         public const float MeshBudget = 0.05f;
         public const int PaintDraws = 6;
         public const int LabelDraws = 3;
@@ -43,6 +43,117 @@ namespace Tag.Level
             new MegaParkP1Layout.Pt(72f, 0f, 44f),
             new MegaParkP1Layout.Pt(8f, 0f, 44f),
         };
+
+        /// <summary>
+        /// Steer loop for Pocket Park only. The shared planner reads these points
+        /// and does not retune. Keep every vertex inside the fence.
+        /// </summary>
+        public static readonly MegaParkP1Layout.Pt[] AiLoop =
+        {
+            new MegaParkP1Layout.Pt(12f, 0f, 10f),
+            new MegaParkP1Layout.Pt(40f, 0f, 10f),
+            new MegaParkP1Layout.Pt(68f, 0f, 25f),
+            new MegaParkP1Layout.Pt(40f, 0f, 40f),
+            new MegaParkP1Layout.Pt(12f, 0f, 40f),
+            new MegaParkP1Layout.Pt(34f, 0f, 25f),
+        };
+
+        /// <summary>
+        /// How far a low-difficulty flee aim slides onto <see cref="AiLoop"/>.
+        /// The shared scorer keeps evade cheapest below ~0.45, so the loop
+        /// would never be steered. Zero from 0.45 up, so mid and high
+        /// difficulty keep the shared choice. Mega Park does not read this.
+        /// </summary>
+        public const float EvadeLoopAtLow = 0.52f;
+
+        public static float EvadeLoopBlend(float difficulty)
+        {
+            const float hi = 0.45f;
+            if (difficulty >= hi) return 0f;
+            if (difficulty <= 0.2f) return EvadeLoopAtLow;
+            float t = (hi - difficulty) / (hi - 0.2f);
+            return EvadeLoopAtLow * t;
+        }
+
+        public static float AiLoopLength
+        {
+            get
+            {
+                float len = 0f;
+                for (int i = 0; i < AiLoop.Length; i++)
+                {
+                    MegaParkP1Layout.Pt a = AiLoop[i];
+                    MegaParkP1Layout.Pt b = AiLoop[(i + 1) % AiLoop.Length];
+                    float dx = b.X - a.X;
+                    float dz = b.Z - a.Z;
+                    len += (float)Math.Sqrt(dx * dx + dz * dz);
+                }
+                return len;
+            }
+        }
+
+        /// <summary>Open points the runner hides behind. The shared cover search is not used on this park.</summary>
+        public struct CoverSample
+        {
+            public float X, Z;
+        }
+
+        public static readonly CoverSample[] CoverSamples =
+        {
+            new CoverSample { X = 16f, Z = 14f },
+            new CoverSample { X = 16f, Z = 36f },
+            new CoverSample { X = 30f, Z = 12f },
+            new CoverSample { X = 58f, Z = 12f },
+            new CoverSample { X = 66f, Z = 16f },
+            new CoverSample { X = 66f, Z = 36f },
+            new CoverSample { X = 34f, Z = 40f },
+            new CoverSample { X = 48f, Z = 40f },
+        };
+
+        /// <summary>Counter-route aims. Positions are pocket data; the planner scores them as it does on Mega Park.</summary>
+        public struct CounterMark
+        {
+            public float X, Z, Y;
+        }
+
+        public static readonly CounterMark[] CounterMarks =
+        {
+            new CounterMark { X = 36f, Z = 16f, Y = 0f },
+            new CounterMark { X = 52f, Z = 36f, Y = 0f },
+            new CounterMark { X = 22f, Z = 28f, Y = 0f },
+            new CounterMark { X = 64f, Z = 28f, Y = 0f },
+        };
+
+        public static bool SampleCover(float selfX, float selfZ, float threatX, float threatZ, out float x, out float z)
+        {
+            x = selfX;
+            z = selfZ;
+            float best = -1f;
+            bool found = false;
+            for (int i = 0; i < CoverSamples.Length; i++)
+            {
+                float cx = CoverSamples[i].X;
+                float cz = CoverSamples[i].Z;
+                if (!MegaParkP1Layout.ParkInsideFence(cx, 0f, cz)) continue;
+                if (!MegaParkP1Layout.ParkOpen(cx, cz, out float stand)) continue;
+                if (stand < -0.5f) continue;
+                if (MegaParkP1Layout.ParkLos(cx, cz, threatX, threatZ)) continue;
+                float dsx = cx - selfX;
+                float dsz = cz - selfZ;
+                if (dsx * dsx + dsz * dsz < 9f) continue;
+                float dtx = cx - threatX;
+                float dtz = cz - threatZ;
+                float score = (float)Math.Sqrt(dtx * dtx + dtz * dtz);
+                if (score > best)
+                {
+                    best = score;
+                    x = cx;
+                    z = cz;
+                    found = true;
+                }
+            }
+            return found;
+        }
 
         public static readonly MegaParkP1Layout.SpawnPad[] Spawns =
         {
@@ -101,10 +212,10 @@ namespace Tag.Level
         {
             var list = new List<MegaParkP1Layout.Solid>(80);
             Add(list, "Mulch", "Ground", "ground", "mulch", 40f, -0.1f, 25f, 80f, 0.2f, 50f, 0f);
-            Add(list, "Collar_S", "Ground", "ground", "grass", 40f, -0.12f, -1.5f, 86f, 0.2f, 3f, 0f);
-            Add(list, "Collar_N", "Ground", "ground", "grass", 40f, -0.12f, 51.5f, 86f, 0.2f, 3f, 0f);
-            Add(list, "Collar_W", "Ground", "ground", "grass", -1.5f, -0.12f, 25f, 3f, 0.2f, 50f, 0f);
-            Add(list, "Collar_E", "Ground", "ground", "grass", 81.5f, -0.12f, 25f, 3f, 0.2f, 50f, 0f);
+            Add(list, "Collar_S", "Ground", "ground", "bark", 40f, -0.12f, -1.5f, 86f, 0.2f, 3f, 0f);
+            Add(list, "Collar_N", "Ground", "ground", "bark", 40f, -0.12f, 51.5f, 86f, 0.2f, 3f, 0f);
+            Add(list, "Collar_W", "Ground", "ground", "bark", -1.5f, -0.12f, 25f, 3f, 0.2f, 50f, 0f);
+            Add(list, "Collar_E", "Ground", "ground", "bark", 81.5f, -0.12f, 25f, 3f, 0.2f, 50f, 0f);
 
             Add(list, "Fence_S", "Fence", "fence", "rubber", 40f, FenceTop * 0.5f, -0.04f, 80.08f, FenceTop, 0.08f, 0f);
             Add(list, "Fence_N", "Fence", "fence", "rubber", 40f, FenceTop * 0.5f, 50.04f, 80.08f, FenceTop, 0.08f, 0f);
@@ -122,12 +233,13 @@ namespace Tag.Level
             Add(list, "Cling_Lane", "Cling", "wall", "blue", 56.2f, 3.2f, 24f, 0.4f, 6.4f, 7.2f, 0f);
 
             AddBars(list);
-            Add(list, "Cover_A", "Yard", "vault", "cover", 20f, 0.6f, 20f, 1.5f, 1.2f, 1.2f, 0f);
-            Add(list, "Cover_B", "Yard", "vault", "cover", 62f, 0.6f, 20f, 1.6f, 1.2f, 1.3f, 0f);
+            Add(list, "Cover_A", "Yard", "vault", "army", 20f, 0.6f, 20f, 1.5f, 1.2f, 1.2f, 0f);
+            Add(list, "Cover_B", "Yard", "vault", "army", 62f, 0.6f, 20f, 1.6f, 1.2f, 1.3f, 0f);
 
-            AddMast(list, "Landmark_Dome", "amber", 30f, 42f);
-            AddMast(list, "Landmark_Lane", "soft", 66f, 20f);
-            AddMast(list, "Landmark_Yard", "knight", 66f, 36f);
+            AddMast(list, "Landmark_Dome", "Dome", "amber", 46f, 42f);
+            AddMast(list, "Landmark_Lane", "Lane", "pad", 66f, 32f);
+            AddMast(list, "Landmark_Yard", "Yard", "knight", 12f, 22f);
+            AddMast(list, "Landmark_Bars", "Bars", "army", 14f, 40f);
             return list.ToArray();
         }
 
@@ -203,7 +315,8 @@ namespace Tag.Level
             if (ground > 0.0001f)
                 fail.Append("ground error ").Append(ground.ToString("0.000", CultureInfo.InvariantCulture)).Append("; ");
 
-            float contrast = ContrastReport(fail);
+            float contrast = ContrastReport(solids, ramps, fail);
+            string look = LookNote(solids, fail);
             int draws = DrawReport(solids, ramps, fail);
             int stuck = DummyReport(out int padsTaken, out int zipsTaken, fail);
             string skills = SkillReport(fail);
@@ -212,11 +325,11 @@ namespace Tag.Level
             audit.Ok = fail.Length == 0;
             audit.Line = string.Format(
                 CultureInfo.InvariantCulture,
-                "PocketPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns {3} arcs {4}; cuts {5}; chokes {6} dead {7} corner {8} loop {9}; containment fence {10:0.0} m kill {11:0.00} sweeps {12} {13}; collider mismatch {14:0.000} m; ground error {15:0.000} m; contrast {16:0.00}; draws {17}; dummy stuck {18} pads {19} zips {20}; {21}",
+                "PocketPark map: loop {0:0.00} m at sprint {1:0} = {2:0.000} s; spawns {3} arcs {4}; cuts {5}; chokes {6} dead {7} corner {8} loop {9}; containment fence {10:0.0} m kill {11:0.00} sweeps {12} {13}; collider mismatch {14:0.000} m; ground error {15:0.000} m; contrast {16:0.00}; {17}; draws {18}; dummy stuck {19} pads {20} zips {21}; {22}",
                 loop, SprintSpeed, seconds, Spawns.Length, arcs, cuts,
                 chokes, dead, corner, loops,
                 FenceTop, KillPlaneY, sweeps, held ? "held" : "open",
-                mesh, ground, contrast, draws, stuck, padsTaken, zipsTaken, skills);
+                mesh, ground, contrast, look, draws, stuck, padsTaken, zipsTaken, skills);
             audit.Failure = fail.ToString();
             return audit;
         }
@@ -244,7 +357,10 @@ namespace Tag.Level
             if (slides < 2) fail.Append("slides; ");
             if (covers < 2) fail.Append("vault covers; ");
             if (plates < 2) fail.Append("grapple plates; ");
-            if (landmarks < 3) fail.Append("landmarks; ");
+            if (landmarks < 4) fail.Append("landmarks; ");
+            if (!HasZoneLandmark(solids, "Dome") || !HasZoneLandmark(solids, "Lane")
+                || !HasZoneLandmark(solids, "Yard") || !HasZoneLandmark(solids, "Bars"))
+                fail.Append("landmark missing a zone; ");
             if (LaunchPads.Length != 2) fail.Append("pads; ");
             if (ZipLines.Length != 2) fail.Append("zips; ");
             for (int i = 0; i < ZipLines.Length; i++)
@@ -470,28 +586,67 @@ namespace Tag.Level
             return max;
         }
 
-        static float ContrastReport(StringBuilder fail)
+        static bool HasZoneLandmark(MegaParkP1Layout.Solid[] solids, string zone)
         {
-            string[] pairs =
+            for (int i = 0; i < solids.Length; i++)
             {
-                "cling", "mulch",
-                "slide", "amber",
-                "slide", "mulch",
-                "plate", "amber",
-                "zip", "mulch",
-                "zip", "amber",
-                "tag", "mulch",
-            };
+                MegaParkP1Layout.Solid s = solids[i];
+                if (s.Kind == "landmark" && s.Zone == zone && s.Name.StartsWith("Landmark_", StringComparison.Ordinal))
+                    return true;
+            }
+            return false;
+        }
+
+        static readonly string[] GameplayTints = { "cling", "slide", "plate", "zip", "tag" };
+
+        static bool GameplayTint(string name)
+        {
+            for (int i = 0; i < GameplayTints.Length; i++)
+                if (GameplayTints[i] == name) return true;
+            return false;
+        }
+
+        static string CanonMat(string mat)
+        {
+            if (mat == "blue") return "cling";
+            if (mat == "yellow") return "slide";
+            return mat;
+        }
+
+        static float ContrastReport(MegaParkP1Layout.Solid[] solids, MegaParkP1Layout.Ramp[] ramps, StringBuilder fail)
+        {
+            var mats = new List<string>();
+            CollectMat(mats, "mulch");
+            for (int i = 0; i < solids.Length; i++)
+                CollectMat(mats, CanonMat(solids[i].Mat));
+            for (int i = 0; i < ramps.Length; i++)
+                CollectMat(mats, CanonMat(ramps[i].Mat));
+            CollectMat(mats, "sky");
             float worst = 99f;
-            for (int i = 0; i < pairs.Length; i += 2)
+            for (int g = 0; g < GameplayTints.Length; g++)
             {
-                float cr = MegaParkP1Layout.SwatchContrast(pairs[i], pairs[i + 1]);
-                if (cr < worst) worst = cr;
-                if (cr < 3f)
-                    fail.Append(pairs[i]).Append('/').Append(pairs[i + 1]).Append(' ')
-                        .Append(cr.ToString("0.00", CultureInfo.InvariantCulture)).Append("; ");
+                for (int m = 0; m < mats.Count; m++)
+                {
+                    string surface = mats[m];
+                    if (surface == GameplayTints[g]) continue;
+                    if (GameplayTint(surface)) continue;
+                    if (surface == "sky" && GameplayTints[g] != "zip") continue;
+                    float cr = MegaParkP1Layout.SwatchContrast(GameplayTints[g], surface);
+                    if (cr < worst) worst = cr;
+                    if (cr < 3f)
+                        fail.Append(GameplayTints[g]).Append('/').Append(surface).Append(' ')
+                            .Append(cr.ToString("0.00", CultureInfo.InvariantCulture)).Append("; ");
+                }
             }
             return worst;
+        }
+
+        static void CollectMat(List<string> mats, string mat)
+        {
+            if (string.IsNullOrEmpty(mat)) return;
+            for (int i = 0; i < mats.Count; i++)
+                if (mats[i] == mat) return;
+            mats.Add(mat);
         }
 
         static int DrawReport(MegaParkP1Layout.Solid[] solids, MegaParkP1Layout.Ramp[] ramps, StringBuilder fail)
@@ -501,7 +656,7 @@ namespace Tag.Level
                 keys.Add("s|" + solids[i].Zone + "|" + solids[i].Mat);
             for (int i = 0; i < ramps.Length; i++)
                 keys.Add("r|" + ramps[i].Zone + "|" + ramps[i].Mat);
-            int draws = keys.Count + PaintDraws + LabelDraws + SpawnDraws + ToyDraws + MinimapDraws;
+            int draws = keys.Count + PaintDraws + LabelDraws + SpawnDraws + ToyDraws + MinimapDraws + DressBatches();
             if (draws > DrawBudget)
                 fail.Append("draws ").Append(draws.ToString(CultureInfo.InvariantCulture)).Append("; ");
             return draws;
@@ -629,16 +784,16 @@ namespace Tag.Level
                 Add(list, "BarPost_S" + id, "Bars", "post", "steel", x, 0.57f, 30.2f, 0.22f, 1.14f, 0.22f, 0f);
                 Add(list, "BarPost_N" + id, "Bars", "post", "steel", x, 0.57f, 33.8f, 0.22f, 1.14f, 0.22f, 0f);
                 Add(list, "Bar_" + id, "Bars", "bar", "steel", x, 1.2f, 32f, 0.14f, 0.12f, 4.2f, 1.14f);
-                Add(list, "BarVault_" + id, "Bars", "vault", "concrete", x + 1.5f, 0.48f, 33.4f, 1.2f, 0.96f, 0.9f, 0f);
+                Add(list, "BarVault_" + id, "Bars", "vault", "amber", x + 1.5f, 0.48f, 33.4f, 1.2f, 0.96f, 0.9f, 0f);
             }
         }
 
-        static void AddMast(List<MegaParkP1Layout.Solid> list, string name, string mat, float x, float z)
+        static void AddMast(List<MegaParkP1Layout.Solid> list, string name, string zone, string mat, float x, float z)
         {
-            const float poleTop = 10f;
-            const float flagH = 1.2f;
-            Add(list, name + "_Pole", "Mark", "landmark", mat, x, poleTop * 0.5f, z, 0.42f, poleTop, 0.42f, 0f);
-            Add(list, name + "_Flag", "Mark", "landmark", mat, x, poleTop + flagH * 0.5f, z, 1.4f, flagH, 0.12f, poleTop);
+            const float poleTop = 14.5f;
+            const float flagH = 32f;
+            Add(list, name + "_Pole", zone, "landmark", mat, x, poleTop * 0.5f, z, 0.42f, poleTop, 0.42f, 0f);
+            Add(list, name + "_Flag", zone, "landmark", mat, x, poleTop + flagH * 0.5f, z, 2.2f, flagH, 0.18f, poleTop);
         }
 
         static void Add(List<MegaParkP1Layout.Solid> list, string name, string zone, string kind, string mat,

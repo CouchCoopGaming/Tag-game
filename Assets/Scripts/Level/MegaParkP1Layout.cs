@@ -2926,8 +2926,8 @@ namespace Tag.Level
             const float cell = 1.5f;
             float x0 = 2f;
             float z0 = 2f;
-            float mapW = FlowMapW;
-            float mapD = FlowMapD;
+            float mapW = ParkArena.IsPocket ? PocketParkLayout.MapW : FlowMapW;
+            float mapD = ParkArena.IsPocket ? PocketParkLayout.MapD : FlowMapD;
             int nx = (int)((mapW - 4f) / cell);
             int nz = (int)((mapD - 4f) / cell);
             var floor = new float[nx * nz];
@@ -3087,8 +3087,8 @@ namespace Tag.Level
 
         static void CacheToys(Nav nav, out int[] mounts, out int[] exits, out float[] zipCost, out int[] padFrom, out int[] padTo, out float[] padCost)
         {
-            ZipLineSpot[] zips = FlowZips();
-            PadSpot[] pads = FlowPads();
+            ZipLineSpot[] zips = ParkArena.IsPocket ? PocketParkLayout.ZipLines : FlowZips();
+            PadSpot[] pads = ParkArena.IsPocket ? PocketParkLayout.LaunchPads : FlowPads();
             mounts = new int[zips.Length];
             exits = new int[zips.Length];
             zipCost = new float[zips.Length];

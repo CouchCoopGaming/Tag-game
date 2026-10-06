@@ -105,6 +105,9 @@ namespace Tag.Modes
         float _dashWait;
         float _wallTime;
         EnemyMemory _enemyMem;
+        float _parkTimer;
+        Vector3 _parkAim;
+        bool _parkAimOk;
         readonly List<TrailSegment> _trailActiveScratch = new List<TrailSegment>();
 
         void Awake()
@@ -713,6 +716,8 @@ namespace Tag.Modes
             Vector3 aim = rawAim;
             if (!wallCommit && !holdLine)
                 aim = BlendTrailAvoid(aim);
+            if (MegaParkPresent() && !holdLine && !arming && dist > farMeters)
+                aim = ParkRouteAim(true, predicted, TargetPlanarVelocity(), dist, dt, aim);
             // Weave only outside the lunge band. Inside it the 0.45 s tell needs the line held.
             // A measured gap keeps the line so the jump, the brake, or the side route is not woven off the lip.
             if (!wallCommit && !gap && !padAhead && !zipAhead && grounded && !holdLine && !arming && dist > farMeters)
@@ -1185,6 +1190,12 @@ namespace Tag.Modes
 
                 EnemyOverlay ev = EnemyAi.Evade(ref _enemyMem, sense);
                 Vector3 face = ev.Face.sqrMagnitude > 0.001f ? ev.Face : away;
+                if (MegaParkPresent())
+                {
+                    Vector3 perceivedThreat = EnemyAi.DelayedAim(
+                        ref _enemyMem, diff, dt, transform.position, threatPos, threatVel, threat.TagPawnId, 0f);
+                    face = ParkRouteAim(false, perceivedThreat, threatVel, threatDist, dt, face);
+                }
                 Vector3 allySeek = LeastItAllySeekDir();
                 if (allySeek.sqrMagnitude > 0.01f)
                     face = (face.normalized + allySeek * Mathf.Clamp01(leastItAllySeekWeight) * 0.35f).normalized;
@@ -1435,6 +1446,38 @@ namespace Tag.Modes
             bool left = RouteSolid(OpponentChaseSteer.YawOffset(dir, -OpponentChaseSteer.PathAroundDegrees));
             bool right = RouteSolid(OpponentChaseSteer.YawOffset(dir, OpponentChaseSteer.PathAroundDegrees));
             return !left && !right;
+        }
+
+        Vector3 ParkRouteAim(bool isIt, Vector3 perceived, Vector3 vel, float dist, float dt, Vector3 fallback)
+        {
+            _parkTimer -= dt;
+            if (_parkTimer <= 0f)
+            {
+                float tagBack = 0f;
+                if (!isIt && _it != null) tagBack = _it.TagBackRemaining;
+                else if (isIt && _target != null) tagBack = _target.TagBackRemaining;
+                _parkTimer = EnemyAi.PlanInterval(EnemyAi.ClampDifficulty(difficulty), isIt, dist, tagBack);
+                MovementConfig moveCfg = _selfMotor != null ? _selfMotor.cfg : null;
+                float sprint = moveCfg != null ? moveCfg.sprintSpeed : 12f;
+                float crouch = moveCfg != null ? moveCfg.crouchSpeed : 3.2f;
+                float wall = moveCfg != null ? moveCfg.wallRunSpeed : 9.5f;
+                Vector3 threat = isIt && _target != null ? _target.transform.position : perceived;
+                bool los = HasLineOfSight(threat);
+                if (EnemyAi.PlanPark(ref _enemyMem, dt, difficulty, isIt, transform.position, perceived, vel, dist, los, false, 0, tagBack,
+                    sprint, crouch, wall, out Vector3 aimPoint, out EnemyVerb verb, null, out int hops))
+                {
+                    if (hops < 0) hops = 0;
+                    if (verb == EnemyVerb.Hold) _parkAimOk = false;
+                    Vector3 to = aimPoint - transform.position;
+                    to.y = 0f;
+                    if (to.sqrMagnitude > 0.04f)
+                    {
+                        _parkAim = to;
+                        _parkAimOk = true;
+                    }
+                }
+            }
+            return _parkAimOk ? _parkAim : fallback;
         }
 
         static bool MegaParkPresent()

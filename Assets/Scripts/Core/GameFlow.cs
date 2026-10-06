@@ -68,11 +68,10 @@ namespace Tag.Core
                 SelectedMode = (TagModeId)PlayerPrefs.GetInt(TagModeController.PrefsModeKey, (int)TagModeId.LeastIt);
                 _menuCursor = (int)SelectedMode;
             }
-            if (PlayerPrefs.HasKey(ParkArena.PrefsKey))
-            {
-                ParkArena.Select(PlayerPrefs.GetInt(ParkArena.PrefsKey, ParkArena.Mega));
-                ParkArena.HasExplicitChoice = true;
-            }
+            ParkArena.ApplySaved(
+                PlayerPrefs.HasKey(ParkArena.PrefsKey),
+                PlayerPrefs.GetInt(ParkArena.PrefsKey, ParkArena.Mega),
+                ParkArena.Mega);
         }
 
         void OnDestroy()

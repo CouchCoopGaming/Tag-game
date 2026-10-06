@@ -19,6 +19,12 @@ namespace Tag.Level
             ParkArena.Select(next);
             Remember(next);
             Time.timeScale = 1f;
+            MegaParkP1Bootstrap[] live = UnityEngine.Object.FindObjectsByType<MegaParkP1Bootstrap>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < live.Length; i++)
+            {
+                if (live[i] != null)
+                    live[i].TearDownArena();
+            }
             SceneManager.LoadScene("Play");
         }
 
