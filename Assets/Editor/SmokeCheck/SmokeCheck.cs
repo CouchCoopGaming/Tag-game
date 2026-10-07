@@ -434,15 +434,16 @@ namespace Tag.EditorTools
                 return false;
             }
             if (boot.IndexOf("s.Kind == \"fence\"", StringComparison.Ordinal) < 0
-                || boot.IndexOf("r.enabled = false", StringComparison.Ordinal) < 0
+                || boot.IndexOf("Visible rail collider", StringComparison.Ordinal) < 0
+                || boot.IndexOf("r.enabled = false", StringComparison.Ordinal) >= 0
                 || boot.IndexOf("MegaParkP1Layout.FenceRail", StringComparison.Ordinal) < 0
-                || boot.IndexOf("MegaParkP1Layout.FenceTop - rail", StringComparison.Ordinal) < 0
-                || boot.IndexOf("StripCollider(cube)", StringComparison.Ordinal) < 0)
+                || boot.IndexOf("StripCollider(cube)", StringComparison.Ordinal) < 0
+                || mega.IndexOf("FenceRail, 0.08f", StringComparison.Ordinal) < 0)
             {
-                log.AppendLine("kill box rail is not the low visible rail over the invisible collider");
+                log.AppendLine("kill box collider is not the visible rail");
                 return false;
             }
-            log.AppendLine("kill fence=33 rail=2.75 plane=-2.5 arenas=3");
+            log.AppendLine("kill fence=2.75 rail=2.75 plane=-2.5 arenas=3");
             return true;
         }
 
@@ -471,7 +472,7 @@ namespace Tag.EditorTools
                 int at = text.IndexOf("\"" + sides[i] + "\"", StringComparison.Ordinal);
                 if (at < 0) return false;
                 int end = text.IndexOf(';', at);
-                if (end < 0 || text.IndexOf("FenceTop", at, end - at, StringComparison.Ordinal) < 0)
+                if (end < 0 || text.IndexOf("FenceRail", at, end - at, StringComparison.Ordinal) < 0)
                     return false;
             }
             return text.IndexOf("KillPlaneY", StringComparison.Ordinal) >= 0;

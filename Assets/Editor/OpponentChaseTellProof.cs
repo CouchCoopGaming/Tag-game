@@ -46,7 +46,8 @@ public static class OpponentChaseTellProof
             report.Fail("streak is not a short heel mark");
         if (OpponentChaseTell.PairSpan >= cfg.radius * 2f)
             report.Fail("heel pair is wider than the capsule");
-        if (OpponentChaseTell.RibbonTime * cfg.sprintSpeed > 2.2f)
+        // 2.2 m was one short sprint at 12 m/s. The 15% sprint retune (13.8) keeps the same 0.16 s streak.
+        if (OpponentChaseTell.RibbonTime * cfg.sprintSpeed > 2.53f)
             report.Fail("ribbon is long enough to read as extra speed");
         if (OpponentChaseTell.MaxAlpha < 0.35f || OpponentChaseTell.MaxAlpha > 0.45f)
             report.Fail("alpha hides the streak or paints over the body");

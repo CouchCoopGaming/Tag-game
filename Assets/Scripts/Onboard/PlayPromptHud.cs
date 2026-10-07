@@ -68,6 +68,11 @@ namespace Tag.Onboard
             OnboardingStore.Load(OnboardingSession.Live);
         }
 
+        void WarmStyle()
+        {
+            BootStyle();
+        }
+
         void BootStyle()
         {
             if (_label != null) return;
@@ -243,7 +248,7 @@ namespace Tag.Onboard
 
         void OnGUI()
         {
-            BootStyle();
+            WarmStyle();
             if (_motor == null) return;
             if (Time.timeScale <= 0f) return;
             PromptText.Ensure();

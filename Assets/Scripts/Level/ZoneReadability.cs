@@ -88,9 +88,9 @@ namespace Tag.Level
 
         static readonly float[] SkillBeginner =
         {
-            2.14f, 2.35f, 1.23f, 1.88f, 2.75f,
-            1.36f, 1.25f, 1.08f, 1.58f, 1.74f,
-            3.02f, 1.30f, 1.41f,
+            1.86f, 2.05f, 1.07f, 1.63f, 2.39f,
+            1.18f, 1.09f, 1.07f, 1.56f, 1.72f,
+            3.01f, 1.29f, 1.40f,
         };
 
         static readonly string[] PracticeIds =
@@ -102,7 +102,7 @@ namespace Tag.Level
 
         static readonly float[] PracticeBase =
         {
-            7.550f, 2.650f, 2.500f, 2.017f, 5.267f, 5.383f, 10.033f,
+            6.600f, 2.483f, 2.317f, 1.983f, 5.067f, 4.717f, 9.050f,
         };
 
         static readonly float[] HueLock = { 22f, 55f, 108f, 174f, 220f, 296f };

@@ -35,6 +35,11 @@ namespace Tag.Modes
             if (_self == null) _self = GetComponent<ItController>();
         }
 
+        void WarmStyles()
+        {
+            if (_label == null) BootStyles();
+        }
+
         void BootStyles()
         {
             _label = new GUIStyle(GUI.skin.label)
@@ -50,7 +55,7 @@ namespace Tag.Modes
         void OnGUI()
         {
             if (motor == null) return;
-            if (_label == null) BootStyles();
+            WarmStyles();
             if (DriveDevice >= 0 && View != null)
             {
                 DrawCouch();

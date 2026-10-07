@@ -11,6 +11,11 @@ namespace Tag.Couch
     {
         GUIStyle _style;
 
+        void WarmStyle()
+        {
+            if (_style == null) BootStyle();
+        }
+
         void BootStyle()
         {
             _style = new GUIStyle(GUI.skin.label)
@@ -24,7 +29,7 @@ namespace Tag.Couch
 
         void OnGUI()
         {
-            if (_style == null) BootStyle();
+            WarmStyle();
             if (CouchPlay.Humans != 3) return;
             int split = GameSettings.Current != null ? GameSettings.Current.SplitAxis : GameSettings.SplitVertical;
             CouchPlay.Norm(3, 3, split, out float nx, out float ny, out float nw, out float nh);

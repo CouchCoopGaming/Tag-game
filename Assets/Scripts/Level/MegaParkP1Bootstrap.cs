@@ -123,6 +123,8 @@ namespace Tag.Level
             EnsureRoot();
             Transform solids = BuildSolids();
             Transform ramps = BuildRamps();
+            NoteHiddenColliders(solids);
+            NoteHiddenColliders(ramps);
             Transform paint = BuildPaint();
             Transform spawns = BuildSpawns();
             BuildLoopMarkers();
@@ -424,10 +426,10 @@ namespace Tag.Level
                 MeshRenderer r = go.GetComponent<MeshRenderer>();
                 if (s.Kind == "fence")
                 {
+                    // Visible rail collider. The cube is FenceRail tall and stays drawn.
                     if (r != null)
-                        r.enabled = false;
+                        r.sharedMaterial = _rail;
                     BuildRailFence(go.transform.parent, s);
-                    BuildFenceShimmer(go.transform.parent, s);
                 }
                 else if (r != null)
                     r.sharedMaterial = Pick(s.Mat);
@@ -504,13 +506,28 @@ namespace Tag.Level
             var drawn = new List<MegaParkP1Layout.RampDraw>();
             var merged = new List<MegaParkP1Layout.Ramp>();
             MegaParkP1Layout.PlanRampColliders(ramps, drawn, merged, out _);
+            if (merged.Count < 0)
+                return null;
             Transform g = Group("Ramps");
             var zones = new Dictionary<string, Transform>();
             for (int i = 0; i < drawn.Count; i++)
-                BuildRamp(Occlusion(g, zones, drawn[i].Ramp.Zone), drawn[i].Ramp, drawn[i].KeepCollider, true);
-            for (int i = 0; i < merged.Count; i++)
-                BuildRamp(Occlusion(g, zones, merged[i].Zone), merged[i], true, false);
+                BuildRamp(Occlusion(g, zones, drawn[i].Ramp.Zone), drawn[i].Ramp, true, true);
+            // The merge plan stays for the audit. Do not spawn a collider that has no renderer.
             return g;
+        }
+
+        static void NoteHiddenColliders(Transform root)
+        {
+            if (root == null) return;
+            Collider[] cols = root.GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < cols.Length; i++)
+            {
+                Collider col = cols[i];
+                if (col == null || !col.enabled || col.isTrigger) continue;
+                Renderer rend = col.GetComponent<Renderer>();
+                if (rend != null && rend.enabled) continue;
+                Debug.Log("hidden-collider " + col.name);
+            }
         }
 
         void BuildRamp(Transform parent, MegaParkP1Layout.Ramp r, bool keepCollider, bool visible)
@@ -974,6 +991,8 @@ namespace Tag.Level
             EnsureRoot();
             Transform solids = BuildSolidList(PocketParkLayout.BuildSolids());
             Transform ramps = BuildRampList(PocketParkLayout.BuildRamps());
+            NoteHiddenColliders(solids);
+            NoteHiddenColliders(ramps);
             Transform paint = BuildPocketPaint();
             Transform spawns = BuildSpawnPads(PocketParkLayout.Spawns);
             BuildLoop(PocketParkLayout.LoopCcw);
@@ -1033,6 +1052,8 @@ namespace Tag.Level
             EnsureRoot();
             Transform solids = BuildSolidList(StackYardLayout.BuildSolids());
             Transform ramps = BuildRampList(StackYardLayout.BuildRamps());
+            NoteHiddenColliders(solids);
+            NoteHiddenColliders(ramps);
             Transform paint = BuildStackPaint();
             Transform spawns = BuildSpawnPads(StackYardLayout.Spawns);
             BuildLoop(StackYardLayout.LoopCcw);

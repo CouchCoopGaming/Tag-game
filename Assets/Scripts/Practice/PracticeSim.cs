@@ -105,6 +105,7 @@ namespace Tag.Practice
             float _dashT;
             bool _dashed;
             bool _padRise;
+            bool _padArc;
             int _zip = -1;
             float _stuck;
             Vector3 _stuckAt;
@@ -199,6 +200,7 @@ namespace Tag.Practice
 
             void TickGround(Vector3 wish, PracticeGate gate)
             {
+                EscapeOverlap();
                 bool jumpNow = false;
                 if (gate.Verb == PracticeVerb.WallRun && !_used[PracticeVerb.WallRun])
                     wish = ClingApproach(out jumpNow);
@@ -210,10 +212,15 @@ namespace Tag.Practice
                     Launch(pad);
                     return;
                 }
-                if (gate.Verb == PracticeVerb.Zip && !_used[PracticeVerb.Zip] && FlatDist(gate) < 1.15f)
+                if (gate.Verb == PracticeVerb.Zip && !_used[PracticeVerb.Zip])
                 {
-                    Jump();
-                    return;
+                    float dist = FlatDist(gate);
+                    float closing = wish.x * Vel.x + wish.z * Vel.z;
+                    if (dist < 1.15f || (dist < 2.4f && closing < 1f))
+                    {
+                        Jump();
+                        return;
+                    }
                 }
 
                 Vector3 hv = WishAccel.Horizontal(Vel);
@@ -251,7 +258,9 @@ namespace Tag.Practice
                 }
                 else if (wish.sqrMagnitude > 0.01f)
                 {
-                    float cap = _cfg.sprintSpeed;
+                    // Pad arcs were authored when air steer capped at sprint 12.
+                    // Ground sprint is 13.8. Holding the arc at 12 keeps the gate on the flight.
+                    float cap = _padArc ? 12f : _cfg.sprintSpeed;
                     hv = KinematicStep.AirSteer(hv, wish, cap, _cfg.airAccel, Dt);
                     Vel = WishAccel.SetHoriz(Vel, hv);
                 }
@@ -271,6 +280,7 @@ namespace Tag.Practice
                     Vel.y = 0f;
                     _mode = Mode.Ground;
                     _padRise = false;
+                    _padArc = false;
                 }
             }
 
@@ -362,6 +372,7 @@ namespace Tag.Practice
                 Vel = LaunchPadRules.VelocitySet(Vel, spot.Apex, _cfg.gravity, horiz, true);
                 _mode = Mode.Air;
                 _padRise = true;
+                _padArc = true;
                 _used[PracticeVerb.Pad] = true;
             }
 
@@ -432,6 +443,28 @@ namespace Tag.Practice
                 float m = (float)Math.Sqrt(dx * dx + dz * dz);
                 if (m < 0.08f) return new Vector3(0f, 0f, 1f);
                 return new Vector3(dx / m, 0f, dz / m);
+            }
+
+            void EscapeOverlap()
+            {
+                if (!Blocked(Pos.x, Pos.y, Pos.z, -1)) return;
+                float step = 0.08f;
+                for (int n = 1; n <= 20; n++)
+                {
+                    float d = step * n;
+                    if (TryFree(Pos.x + d, Pos.z)) return;
+                    if (TryFree(Pos.x - d, Pos.z)) return;
+                    if (TryFree(Pos.x, Pos.z + d)) return;
+                    if (TryFree(Pos.x, Pos.z - d)) return;
+                }
+            }
+
+            bool TryFree(float x, float z)
+            {
+                if (Blocked(x, Pos.y, z, -1)) return false;
+                Pos.x = x;
+                Pos.z = z;
+                return true;
             }
 
             void MoveHorizontal()

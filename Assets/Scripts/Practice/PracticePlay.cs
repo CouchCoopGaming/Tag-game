@@ -163,7 +163,7 @@ namespace Tag.Practice
             if (_motor == null || _route == null || _route.Gates == null || _route.Gates.Length < 1)
                 return;
             PracticeGate start = _route.Gates[0];
-            _motor.Place(new Vector3(start.X, 0.2f, start.Z));
+            _motor.Place(new Vector3(start.X, 0.2f, start.Z), "practice-restart");
         }
 
         static void NoteGates(Vector3 body)

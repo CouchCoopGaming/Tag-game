@@ -1435,6 +1435,8 @@ namespace Tag.Profiles
             if (string.IsNullOrEmpty(value)) return;
             if (!Enum.TryParse(name, false, out PlayAction action)) return;
             if (action < 0 || action >= PlayAction.Count) return;
+            if (keyboard && action == PlayAction.Jump && !ActionBinds.KnownKeyboard(value))
+                value = "space";
             if (keyboard) Binds[slot].SetKeyboard(action, value);
             else Binds[slot].SetGamepad(action, value);
         }

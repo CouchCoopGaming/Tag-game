@@ -499,7 +499,10 @@ static class Program
         if (!Locked(cfg.coyoteTime, 0.10f) || !Locked(cfg.jumpBuffer, 0.16f) || !Locked(cfg.clingReleaseGrace, 0.08f)
             || !Locked(cfg.jumpSpeed, 24.7f) || cfg.slideBoost != 0f
             || !Locked(cfg.airDashDuration, 0.10f) || !Locked(cfg.airDashSpeed, 15f) || !Locked(cfg.airDashCooldown, 30f)
-            || !Locked(cfg.airCrouchFallMult, 2f) || !Locked(cfg.maxFallSpeed, 52f))
+            || !Locked(cfg.airCrouchFallMult, 2f) || !Locked(cfg.maxFallSpeed, 56.16f)
+            || !Locked(cfg.walkSpeed, 6.9f) || !Locked(cfg.sprintSpeed, 13.8f)
+            || !Locked(cfg.crouchSpeed, 3.68f) || !Locked(cfg.airSpeedCap, 13.8f)
+            || !Locked(cfg.fallGravityMult, 1.62f) || !Locked(cfg.gravity, 22f))
         {
             Console.Error.WriteLine("locked feel numbers drifted");
             return 1;
@@ -509,7 +512,9 @@ static class Program
                 "coyoteTime: 0.1", "jumpBuffer: 0.16", "clingReleaseGrace: 0.08",
                 "jumpSpeed: 24.7", "slideBoost: 0", "enableJet: 0",
                 "airDashDuration: 0.1", "airDashSpeed: 15", "airDashCooldown: 30",
-                "airCrouchFallMult: 2", "maxFallSpeed: 52")
+                "airCrouchFallMult: 2", "maxFallSpeed: 56.16",
+                "walkSpeed: 6.9", "sprintSpeed: 13.8", "crouchSpeed: 3.68",
+                "airSpeedCap: 13.8", "fallGravityMult: 1.62", "gravity: 22")
             || !AssetHas("Assets/ScriptableObjects/PunchTagTuning.asset", "reach: 1.55"))
         {
             Console.Error.WriteLine("locked asset numbers drifted");

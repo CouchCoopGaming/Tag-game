@@ -130,6 +130,11 @@ namespace TagArena.Movement
             if (_self == null) _self = GetComponent<ItController>();
         }
 
+        void WarmStyles()
+        {
+            if (_big == null) BootStyles();
+        }
+
         void BootStyles()
         {
             _big = new GUIStyle(GUI.skin.label) { fontSize = 28, fontStyle = FontStyle.Bold };
@@ -173,7 +178,7 @@ namespace TagArena.Movement
         void OnGUI()
         {
             if (!motor) return;
-            if (_big == null) BootStyles();
+            WarmStyles();
             if (_big == null) return;
 
             float hs = motor.HorizSpeed;

@@ -135,7 +135,7 @@ public static class OpponentLungeTellProof
             report.Fail(label + " cling grace is not 0.08");
         if (Mathf.Abs(cfg.airCrouchFallMult - 2f) > 0.001f)
             report.Fail(label + " air crouch fall is not x2");
-        if (Mathf.Abs(cfg.maxFallSpeed - 52f) > 0.001f)
+        if (Mathf.Abs(cfg.maxFallSpeed - 56.16f) > 0.001f)
             report.Fail(label + " maxFall is not 52");
         if (cfg.enableJet)
             report.Fail(label + " jet is on");

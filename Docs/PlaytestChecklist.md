@@ -9,17 +9,17 @@ Unity **6000.0.23f1**, **6000.0.24f1**, or **6000.3.x**. Hub → Open this repo.
 ## 0:00 Open
 
 1. Open `Assets/Scenes/Boot.unity`. That is the scene to press Play in. The title is the front door. Start match loads `Assets/Scenes/Play.unity`, which builds the arena you picked. Mega Park is the default (pads, zips, and the AI loop). Pocket Park and Stack Yard are the other two picks, with their own zones and landmarks. Keys are **1** Mega Park, **2** Pocket Park, **3** Stack Yard.
-2. Menu **Tag → Smoke Check**. It opens Boot and Play, then writes `Logs/SmokeCheck.txt`. The first line should read `smoke scenes=2 missingScripts=0 resources=ok registry=ok json=ok`. `registry=ok` here means all three arenas (0 Mega, 1 Pocket, 2 Stack), the 13 zones, and the kill boxes. The log under that line should include `registry arenas=3`, `json routes=7`, `zones arenas=3 zones=13 landmarks=13`, and `kill fence=33 rail=2.75 plane=-2.5 arenas=3`. If `missingScripts` is not 0, or `registry` is not `ok`, stop and send that file before you play.
+2. Menu **Tag → Smoke Check**. It opens Boot and Play, then writes `Logs/SmokeCheck.txt`. The first line should read `smoke scenes=2 missingScripts=0 resources=ok registry=ok json=ok`. `registry=ok` here means all three arenas (0 Mega, 1 Pocket, 2 Stack), the 13 zones, and the kill boxes. The log under that line should include `registry arenas=3`, `json routes=7`, `zones arenas=3 zones=13 landmarks=13`, and `kill fence=2.75 rail=2.75 plane=-2.5 arenas=3`. If `missingScripts` is not 0, or `registry` is not `ok`, stop and send that file before you play.
 3. Press Play in Boot. You should get a **TAG** card: Play, Practice, Settings, How to play, Quit. Up / Down or the left stick moves. Enter, Space, or South uses the row. Esc or East goes back from a card. On the title, Esc does nothing.
 
 ## 0:04 Solo versus the AI
 
 1. Title → **Play**. Match setup: set **Arena** to **Mega Park** (Left / Right, or the **1** key). AI opponents **1**. Difficulty **Normal**. Round length **60s**. Rounds **1**.
 2. **Start match**. Press a letter to sit the keyboard. Enter or South starts. You and one dummy. Countdown 3-2-1, then someone is It (hat plus the letters IT). The split label reads `Name · Zone` (a seat with no profile still reads `P1 · West Yard` or whichever zone you spawned in).
-3. In the minute, hit each of these once: jump, slide, sprint, air dash, a punch that tags, a punch that does not tag (stagger), a wall cling and a jump off it, one launch pad, one zip. Hold into a wall or a cable to cling. There is no cling button until you rebind one. Walk until the zone name changes. On Mega Park the zones are West Yard, North Bowl, Mid Court, South Court, and East Forts. The rail you see is 2.75 m. The wall that stops you is invisible and taller.
+3. In the minute, hit each of these once: jump (Space, even if Jump was rebound), slide, sprint, air dash, a punch that tags, a punch that does not tag (stagger), a wall cling and a jump off it, one launch pad, one zip. Hold into a wall or a cable to cling. There is no cling button until you rebind one. Walk until the zone name changes. On Mega Park the zones are West Yard, North Bowl, Mid Court, South Court, and East Forts. The rail you see is 2.75 m, and that is the wall. A jump clears it. You should not hit an invisible wall in the open.
 4. After you tag the dummy, the glow is the 1.0 s tag-back window. They should not be able to tag you back inside it.
 5. Let the clock end. Read time as It, tags, longest survival, and the winner. If you got a tag, the highlight plays the last 8 seconds. Enter or South skips it, then picks Rematch, Change setup, or Title.
-6. Change setup, press **2** for **Pocket Park**, and start another short round. Read the zone label as you cross West Lawn, Center Court, Fast Lane, and East Sand. Then press **3** for **Stack Yard** and read South Yard, East Lane, West Stack, and North Roof. On both, run at the low rail and confirm you stop before you can see a tall fence. You do not need a full minute on these two if the label and the rail are right.
+6. Change setup, press **2** for **Pocket Park**, and start another short round. Read the zone label as you cross West Lawn, Center Court, Fast Lane, and East Sand. Then press **3** for **Stack Yard** and read South Yard, East Lane, West Stack, and North Roof. On both, run at the low rail and confirm you stop on the rail you can see. A jump goes over it. You do not need a full minute on these two if the label and the rail are right.
 
 ## 0:12 Practice route and ghost
 
@@ -63,11 +63,20 @@ Check: the winner is whoever had the least time as It. A tie says tie. Awards, i
 - Practice never puts the It crown on you or the dummy.
 - Pause on a zip you already grabbed keeps that ride. A new pad or zip should not start on the results card.
 - Captions and the verb HUD stay inside the pane at 1920×1080 and at 1280×720 if you resize.
-- Pink or magenta materials, a missing script in the Console, or a pawn that falls and never returns (kill height is -2.5 on every arena). The visible edge stays the 2.75 m rail. The 33 m collider stays invisible.
+- Pink or magenta materials, a missing script in the Console, or a pawn that falls and never returns (kill height is -2.5 on every arena). The visible edge is the 2.75 m rail, and the collider is that rail. A Console line `snap kill-plane` is the fall return. `snap round-start`, `snap spawn-safe`, and `snap practice-restart` are the intentional moves.
 - The zone chip keeps the form `Name · Zone` in a split and in solo, and it changes when you cross into the next named zone.
 - These are already known, so file them only if they got worse: ledge hang is not a move, jet is off, grapple is the solo pawn only, the ragdoll is a kinematic stand-in for the stun, and a HUD line rebuilds when its rounded number changes.
 
-Feel, if you want to compare: coyote 0.10, jump buffer 0.16, cling grace 0.08, jump speed 24.7, slide boost 0, air dash 0.10 s at 15 m/s with a 30 s cooldown, punch reach 1.55, lunge 16 / 0.20 / cooldown 1, lunge tell 0.45, climb 6.0, slip 3.7, wall-run 9.5, stagger 0.25 then 0.50 immunity, pad cooldown 0.3, zip 14 m/s and regrab 0.3, tag-back 1.0.
+Feel, if you want to compare: coyote 0.10, jump buffer 0.16, cling grace 0.08, jump speed 24.7, rising gravity 22, fall gravity 1.62, terminal fall 56.16, walk 6.9, sprint 13.8, crouch 3.68, air wish cap 13.8, slide boost 0, air dash 0.10 s at 15 m/s with a 30 s cooldown, punch reach 1.55, lunge 16 / 0.20 / cooldown 1, lunge tell 0.45, climb 6.0, slip 3.7, wall-run 9.5, stagger 0.25 then 0.50 immunity, pad cooldown 0.3, zip 14 m/s and regrab 0.3, tag-back 1.0. Slide speeds were not raised.
+
+## This pass
+
+1. **Space.** Rebind Jump to E, start on the keyboard, and press Space. You should still jump. A pad-only pawn should not jump when someone else presses Space.
+2. **Walls.** Run the open middle of each arena. You should not stop on nothing. At the edge, you stop on the rail you can see. Jump it, fall off, and come back only from below -2.5. The Console line starts with `snap`.
+3. **Grapple.** Solo pawn, grapple on. The rope leaves the left hand. One click sticks. One click on a wall pulls you in. Two quick clicks let go and do not pull.
+4. **Punch.** The right arm should swing on the mannequin. Reach is still a short hit, not a longer one.
+5. **Vault.** Sprint into a vault. You should keep about the speed you had. You should not be launched across the park. Slide should feel the same as before.
+6. **Speed.** Sprint should feel quicker than the last build. A jump should reach the same height, then fall a little faster. The AI should keep up.
 
 ## How to report
 

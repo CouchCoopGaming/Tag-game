@@ -65,7 +65,7 @@ public static class OpponentChaseSteerProof
         if (Mathf.Abs(cfg.climbSpeed - 6.0f) > 0.001f || Mathf.Abs(cfg.climbSlipSpeed - 3.7f) > 0.001f
             || Mathf.Abs(cfg.wallRunSpeed - 9.5f) > 0.001f)
             report.Fail("climb, slip, or wall-run speed changed");
-        if (Mathf.Abs(cfg.sprintSpeed - 12f) > 0.001f || Mathf.Abs(cfg.walkSpeed - 6f) > 0.001f)
+        if (Mathf.Abs(cfg.sprintSpeed - 13.8f) > 0.001f || Mathf.Abs(cfg.walkSpeed - 6.9f) > 0.001f)
             report.Fail("gait speeds changed");
         if (Mathf.Abs(OpponentChaseSteer.LungeLeadSeconds - 0.45f) > 0.001f)
             report.Fail("chase lead is not 0.45s");

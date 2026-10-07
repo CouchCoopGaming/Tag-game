@@ -113,6 +113,11 @@ namespace Tag.Art
             mesh.fontSize = 48;
         }
 
+        void WarmStyle()
+        {
+            if (_itStyle == null) BootStyle();
+        }
+
         void BootStyle()
         {
             _itStyle = new GUIStyle(GUI.skin.label)
@@ -333,7 +338,7 @@ namespace Tag.Art
 
         void OnGUI()
         {
-            if (_itStyle == null) BootStyle();
+            WarmStyle();
             if (_it == null || !_it.IsIt || !_it.IsAlive) return;
             var modes = TagModeController.Instance;
             if (modes != null && modes.Phase != MatchPhase.Playing && modes.Phase != MatchPhase.PostRound)

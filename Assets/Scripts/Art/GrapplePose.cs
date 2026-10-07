@@ -18,8 +18,24 @@ namespace Tag.Art
         public const bool RootMotion = false;
         public const float VerticalImpulse = 0f;
 
-        /// <summary>Right hand is the grappling hand. RMB, same side as the fire button.</summary>
-        public const bool LeadRight = true;
+        /// <summary>Left hand is the grappling hand. RMB still fires. The lead angles stay in the R sample fields.</summary>
+        public const bool LeadRight = false;
+
+        /// <summary>Move the lead sample onto the left arm when the left hand fires.</summary>
+        public static Sample ForBody(Sample s)
+        {
+            if (LeadRight) return s;
+            float pitch = s.ArmPitchL;
+            s.ArmPitchL = s.ArmPitchR;
+            s.ArmPitchR = pitch;
+            float yaw = s.ArmYawL;
+            s.ArmYawL = -s.ArmYawR;
+            s.ArmYawR = -yaw;
+            float elbow = s.ElbowL;
+            s.ElbowL = s.ElbowR;
+            s.ElbowR = elbow;
+            return s;
+        }
 
         /// <summary>Aim reach eases in. The aim preview stays on GrappleRopeTell.</summary>
         public const float AimBlendSeconds = 0.08f;
@@ -465,7 +481,7 @@ namespace Tag.Art
 
         public static bool Holds()
         {
-            if (RootMotion || VerticalImpulse != 0f || !LeadRight) return false;
+            if (RootMotion || VerticalImpulse != 0f || LeadRight) return false;
             if (VerticalImpulse != GrappleRopeTell.VerticalImpulse) return false;
             if (VerticalImpulse != GrappleLatchTell.VerticalImpulse) return false;
             if (VerticalImpulse != GrappleMissTell.VerticalImpulse) return false;
@@ -665,7 +681,7 @@ namespace Tag.Art
 
         public static bool PolishHolds()
         {
-            if (RootMotion || VerticalImpulse != 0f || FovPop != 0f || !LeadRight) return false;
+            if (RootMotion || VerticalImpulse != 0f || FovPop != 0f || LeadRight) return false;
             if (GrappleMissTell.VerticalImpulse != 0f || GrappleMissTell.Glow != 0f) return false;
             if (GrappleMissTell.Show(true, true, 0f)) return false;
             if (GrappleLatchTell.Show(false, 0f)) return false;

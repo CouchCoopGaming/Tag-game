@@ -58,16 +58,20 @@ public static class GrappleRopeTellProof
         if (GrappleRopeTell.HookMarkerSize <= GrappleRopeTell.RopeStartWidth)
             report.Fail("attach knot is smaller than the rope");
 
+        if (GrappleRopeTell.HandSide >= 0f)
+            report.Fail("rope is not on the left hand");
+
         Vector3 origin = new Vector3(2f, 1f, 4f);
         Vector3 hand = GrappleRopeTell.Hand(origin, Vector3.forward);
-        if (Mathf.Abs(hand.x - origin.x) > 0.001f
+        if (Mathf.Abs(hand.x - (origin.x + GrappleRopeTell.HandSide)) > 0.001f
             || Mathf.Abs(hand.y - (origin.y + GrappleRopeTell.HandHeight)) > 0.001f
             || Mathf.Abs(hand.z - (origin.z + GrappleRopeTell.HandForward)) > 0.001f)
-            report.Fail("forward hand is not in front of the pawn");
+            report.Fail("forward hand is not in front of the left hand");
 
         Vector3 side = GrappleRopeTell.Hand(origin, Vector3.right);
-        if (Mathf.Abs(side.x - (origin.x + GrappleRopeTell.HandForward)) > 0.001f || Mathf.Abs(side.z - origin.z) > 0.001f)
-            report.Fail("a right-facing pawn did not put the rope on the hands");
+        if (Mathf.Abs(side.x - (origin.x + GrappleRopeTell.HandForward)) > 0.001f
+            || Mathf.Abs(side.z - (origin.z - GrappleRopeTell.HandSide)) > 0.001f)
+            report.Fail("a right-facing pawn did not put the rope on the left hand");
 
         Vector3 fallback = GrappleRopeTell.Hand(origin, Vector3.zero);
         if (Mathf.Abs(fallback.z - (origin.z + GrappleRopeTell.HandForward)) > 0.001f)

@@ -194,6 +194,11 @@ namespace Tag.Modes
             }
         }
 
+        void WarmHudStyles()
+        {
+            if (_countStyle == null) BootHudStyles();
+        }
+
         void BootHudStyles()
         {
             _countStyle = new GUIStyle(GUI.skin.label)
@@ -464,7 +469,7 @@ namespace Tag.Modes
                 Vector3 pad = new Vector3(x, y, z);
                 var motor = p.GetComponent<PlayerMotor>();
                 if (motor != null)
-                    motor.Place(pad);
+                    motor.Place(pad, "spawn-safe");
                 else
                     p.transform.position = pad;
             }
@@ -804,7 +809,7 @@ namespace Tag.Modes
                 var motor = p.GetComponent<PlayerMotor>();
                 if (motor != null)
                 {
-                    motor.Place(pad);
+                    motor.Place(pad, "round-start");
                     continue;
                 }
                 var rb = p.GetComponent<Rigidbody>();
@@ -1325,7 +1330,7 @@ namespace Tag.Modes
 
         void OnGUI()
         {
-            if (_countStyle == null) BootHudStyles();
+            WarmHudStyles();
             MinimapHud.Draw();
             if (_localPaused)
             {

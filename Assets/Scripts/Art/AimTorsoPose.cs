@@ -133,7 +133,7 @@ namespace Tag.Art
             if (Mathf.Abs(left.ChestPitch + left.HeadPitch - PitchMax) > 0.05f) return false;
 
             if (Mathf.Abs(PunchTagPose.ReachMeters - 1.55f) > 0.001f) return false;
-            if (GrapplePose.VerticalImpulse != 0f || !GrapplePose.LeadRight) return false;
+            if (GrapplePose.VerticalImpulse != 0f || GrapplePose.LeadRight) return false;
             if (GrapplePose.RootMotion || PunchTagPose.RootMotion) return false;
             return true;
         }

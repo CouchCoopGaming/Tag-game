@@ -375,7 +375,7 @@ public static class WallJumpPushTellProof
         if (Mathf.Abs(cfg.airDashDuration - 0.10f) > 0.001f || Mathf.Abs(cfg.airDashSpeed - 15f) > 0.001f
             || Mathf.Abs(cfg.airDashCooldown - 30f) > 0.001f)
             report.Fail("air dash numbers changed");
-        if (Mathf.Abs(cfg.airCrouchFallMult - 2f) > 0.001f || Mathf.Abs(cfg.maxFallSpeed - 52f) > 0.001f)
+        if (Mathf.Abs(cfg.airCrouchFallMult - 2f) > 0.001f || Mathf.Abs(cfg.maxFallSpeed - 56.16f) > 0.001f)
             report.Fail("fall numbers changed");
         if (Mathf.Abs(punch.reach - 1.55f) > 0.001f)
             report.Fail("punch reach is not 1.55");

@@ -10412,7 +10412,7 @@ namespace Tag.Art
                 else
                     _grappleFallIn = Mathf.MoveTowards(_grappleFallIn, 1f, dt / GrapplePose.ReleaseBlendSeconds);
             }
-            GrapplePose.Sample linePose = GrapplePose.Pull(sinC, vyG, lean);
+            GrapplePose.Sample linePose = GrapplePose.ForBody(GrapplePose.Pull(sinC, vyG, lean));
             bool poseGate = !punching && !_skiFromGrapple && !_slideFromGrapple;
             bool latching = pulling && GrapplePose.LatchWeight(_grapple != null ? _grapple.LatchAge : -1f) > 0.02f;
             _grappleMissOwns = false;
@@ -15164,6 +15164,11 @@ namespace Tag.Art
                 torsoSlew = Mathf.Max(torsoSlew, PunchStaggerPose.Slew);
                 slew = Mathf.Max(slew, PunchStaggerPose.Slew);
             }
+            if (punching && phase != PunchPhase.Idle && !_dashFromPunch && !_jumpFromPunch && !_punchYield)
+            {
+                SealPunchRight(phase, punchProg);
+                armSlewR = 2400f;
+            }
             Slew(ref _spine, _spineT, torsoSlew, dt);
             Slew(ref _hips, _hipsT, torsoSlew, dt);
             Slew(ref _head, _headT, slew, dt);
@@ -15482,6 +15487,7 @@ namespace Tag.Art
         void BlendGrappleSample(GrapplePose.Sample pose, float armZ, float weight, bool legs, bool yieldYaw)
         {
             if (weight <= 0.001f) return;
+            pose = GrapplePose.ForBody(pose);
             Quaternion uaL = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ);
             Quaternion uaR = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ);
             Quaternion laL = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
@@ -16529,9 +16535,9 @@ namespace Tag.Art
             MovementConfig cfg = _motor.cfg;
             float airAccel = cfg != null ? cfg.airAccel : 30f;
             float bonus = cfg != null ? cfg.airStrafeBonus : 1.35f;
-            float crouchSpeed = cfg != null ? cfg.crouchSpeed : 3.2f;
-            float sprintSpeed = cfg != null ? cfg.sprintSpeed : 12f;
-            float walkSpeed = cfg != null ? cfg.walkSpeed : 6f;
+            float crouchSpeed = cfg != null ? cfg.crouchSpeed : 3.68f;
+            float sprintSpeed = cfg != null ? cfg.sprintSpeed : 13.8f;
+            float walkSpeed = cfg != null ? cfg.walkSpeed : 6.9f;
             bool crouchHeld = _input != null && _input.CrouchHeld;
             bool sprintHeld = _input != null && _input.SprintHeld;
             float wishSpeed = KinematicStep.GaitCap(crouchHeld, sprintHeld, move.y, crouchSpeed, sprintSpeed, walkSpeed);
@@ -16659,9 +16665,9 @@ namespace Tag.Art
             MovementConfig cfg = _motor.cfg;
             float airAccel = cfg != null ? cfg.airAccel : 30f;
             float bonus = cfg != null ? cfg.airStrafeBonus : 1.35f;
-            float crouchSpeed = cfg != null ? cfg.crouchSpeed : 3.2f;
-            float sprintSpeed = cfg != null ? cfg.sprintSpeed : 12f;
-            float walkSpeed = cfg != null ? cfg.walkSpeed : 6f;
+            float crouchSpeed = cfg != null ? cfg.crouchSpeed : 3.68f;
+            float sprintSpeed = cfg != null ? cfg.sprintSpeed : 13.8f;
+            float walkSpeed = cfg != null ? cfg.walkSpeed : 6.9f;
             bool crouchHeld = _input != null && _input.CrouchHeld;
             bool sprintHeld = _input != null && _input.SprintHeld;
             float wishSpeed = KinematicStep.GaitCap(crouchHeld, sprintHeld, move.y, crouchSpeed, sprintSpeed, walkSpeed);
@@ -18581,6 +18587,28 @@ namespace Tag.Art
         {
             if (t == null) return;
             t.localRotation = Quaternion.Slerp(t.localRotation, target, 1f - Mathf.Exp(-speed * dt));
+        }
+
+        void SealPunchRight(PunchPhase phase, float punchProg)
+        {
+            var bind = new VerbPoseClips.Bind
+            {
+                UaL = _uaL0, UaR = _uaR0, LaL = _laL0, LaR = _laR0,
+                UlL = _ulL0, UlR = _ulR0, LlL = _llL0, LlR = _llR0,
+                FtL = _ftL0, FtR = _ftR0,
+                Spine = _spine0, Hips = _hips0, Head = _head0,
+            };
+            PunchTagPose.Beat punch = phase == PunchPhase.Windup
+                ? PunchTagPose.PunchWindup(punchProg)
+                : phase == PunchPhase.Active
+                    ? PunchTagPose.PunchActive(punchProg)
+                    : PunchTagPose.PunchRecover(punchProg);
+            bool recover = phase != PunchPhase.Windup && phase != PunchPhase.Active;
+            VerbPoseClips.Pose pose = recover
+                ? VerbPoseClips.PunchRecoverPose(bind, punchProg)
+                : VerbPoseClips.PunchStrikePose(bind, punch.Sample);
+            _uaRT = pose.UaR;
+            _laRT = pose.LaR;
         }
 
         void ApplyVerbClips(bool sliding, bool punching, PunchPhase phase, float punchProg, float flinchAmt, float sinC)

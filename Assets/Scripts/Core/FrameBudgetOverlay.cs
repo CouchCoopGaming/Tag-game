@@ -11,6 +11,11 @@ namespace Tag.Core
         GUIStyle _label;
         int _seenFrame = -1;
 
+        void WarmStyle()
+        {
+            if (_label == null) BootStyle();
+        }
+
         void BootStyle()
         {
             _label = new GUIStyle(GUI.skin.label);
@@ -27,7 +32,7 @@ namespace Tag.Core
 
         void OnGUI()
         {
-            if (_label == null) BootStyle();
+            WarmStyle();
             if (Time.frameCount != _seenFrame)
             {
                 _seenFrame = Time.frameCount;
