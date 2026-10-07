@@ -34,17 +34,17 @@ namespace Tag.Settings
             string kb = binds.Keyboard[(int)PlayAction.Move];
             if (kb == "wasd")
             {
-                if (Input.GetKey(KeyCode.D)) v.x += 1f;
-                if (Input.GetKey(KeyCode.A)) v.x -= 1f;
-                if (Input.GetKey(KeyCode.W)) v.y += 1f;
-                if (Input.GetKey(KeyCode.S)) v.y -= 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.D)) v.x += 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.A)) v.x -= 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.W)) v.y += 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.S)) v.y -= 1f;
             }
             else if (kb == "arrows")
             {
-                if (Input.GetKey(KeyCode.RightArrow)) v.x += 1f;
-                if (Input.GetKey(KeyCode.LeftArrow)) v.x -= 1f;
-                if (Input.GetKey(KeyCode.UpArrow)) v.y += 1f;
-                if (Input.GetKey(KeyCode.DownArrow)) v.y -= 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.RightArrow)) v.x += 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.LeftArrow)) v.x -= 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.UpArrow)) v.y += 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.DownArrow)) v.y -= 1f;
             }
             v += PadMove(binds.Gamepad[(int)PlayAction.Move]);
             if (v.sqrMagnitude > 1f) v.Normalize();
@@ -53,38 +53,38 @@ namespace Tag.Settings
 
         public static bool PracticeRestartDown()
         {
-            if (Input.GetKeyDown(KeyCode.T)) return true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.T)) return true;
             if (!PracticeInput.PadLive(PracticePadPlugged(), CouchPlay.NeedsRejoin))
                 return false;
 #if ENABLE_INPUT_SYSTEM
             var pad = Gamepad.current;
             if (pad != null && pad.buttonNorth.wasPressedThisFrame) return true;
 #endif
-            return Input.GetKeyDown(KeyCode.JoystickButton3);
+            return UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton3);
         }
 
         public static bool PracticeGhostDown()
         {
-            if (Input.GetKeyDown(KeyCode.G)) return true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.G)) return true;
             if (!PracticeInput.PadLive(PracticePadPlugged(), CouchPlay.NeedsRejoin))
                 return false;
 #if ENABLE_INPUT_SYSTEM
             var pad = Gamepad.current;
             if (pad != null && pad.leftStickButton.wasPressedThisFrame) return true;
 #endif
-            return Input.GetKeyDown(KeyCode.JoystickButton8);
+            return UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton8);
         }
 
         public static bool PracticeInputDown()
         {
-            if (Input.GetKeyDown(KeyCode.I)) return true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.I)) return true;
             if (!PracticeInput.PadLive(PracticePadPlugged(), CouchPlay.NeedsRejoin))
                 return false;
 #if ENABLE_INPUT_SYSTEM
             var pad = Gamepad.current;
             if (pad != null && pad.rightStickButton.wasPressedThisFrame) return true;
 #endif
-            return Input.GetKeyDown(KeyCode.JoystickButton9);
+            return UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton9);
         }
 
         static bool PracticePadPlugged()
@@ -101,7 +101,7 @@ namespace Tag.Settings
             var binds = CouchPlay.BindsFor(CouchPlay.DeviceKeyboard);
             Vector2 v = Vector2.zero;
             if (binds.Keyboard[(int)PlayAction.Look] == "mouse")
-                v = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
+                v = new Vector2(UnityEngine.Input.GetAxisRaw("Mouse X"), UnityEngine.Input.GetAxisRaw("Mouse Y"));
             v += PadLook(binds.Gamepad[(int)PlayAction.Look]);
             return v;
         }
@@ -132,40 +132,40 @@ namespace Tag.Settings
                 if (pad.dpad.down.wasPressedThisFrame) return "dpadDown";
             }
 #endif
-            if (Input.GetKeyDown(KeyCode.JoystickButton0)) return "buttonSouth";
-            if (Input.GetKeyDown(KeyCode.JoystickButton1)) return "buttonEast";
-            if (Input.GetKeyDown(KeyCode.JoystickButton2)) return "buttonWest";
-            if (Input.GetKeyDown(KeyCode.JoystickButton3)) return "buttonNorth";
-            if (Input.GetKeyDown(KeyCode.JoystickButton4)) return "leftShoulder";
-            if (Input.GetKeyDown(KeyCode.JoystickButton5)) return "rightShoulder";
-            if (Input.GetKeyDown(KeyCode.JoystickButton6)) return "select";
-            if (Input.GetKeyDown(KeyCode.JoystickButton7)) return "start";
-            if (Input.GetKeyDown(KeyCode.JoystickButton8)) return "leftStickPress";
-            if (Input.GetKeyDown(KeyCode.JoystickButton9)) return "rightStickPress";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton0)) return "buttonSouth";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton1)) return "buttonEast";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton2)) return "buttonWest";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton3)) return "buttonNorth";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton4)) return "leftShoulder";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5)) return "rightShoulder";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton6)) return "select";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton7)) return "start";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton8)) return "leftStickPress";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton9)) return "rightStickPress";
 
-            if (Input.GetKeyDown(KeyCode.Space)) return "space";
-            if (Input.GetKeyDown(KeyCode.LeftShift)) return "leftShift";
-            if (Input.GetKeyDown(KeyCode.RightShift)) return "rightShift";
-            if (Input.GetKeyDown(KeyCode.LeftControl)) return "leftCtrl";
-            if (Input.GetKeyDown(KeyCode.LeftAlt)) return "leftAlt";
-            if (Input.GetKeyDown(KeyCode.Escape)) return "escape";
-            if (Input.GetKeyDown(KeyCode.Comma)) return "comma";
-            if (Input.GetKeyDown(KeyCode.Q)) return "q";
-            if (Input.GetKeyDown(KeyCode.E)) return "e";
-            if (Input.GetKeyDown(KeyCode.C)) return "c";
-            if (Input.GetKeyDown(KeyCode.V)) return "v";
-            if (Input.GetKeyDown(KeyCode.F)) return "f";
-            if (Input.GetKeyDown(KeyCode.R)) return "r";
-            if (Input.GetKeyDown(KeyCode.M)) return "m";
-            if (Input.GetKeyDown(KeyCode.N)) return "n";
-            if (Input.GetKeyDown(KeyCode.P)) return "p";
-            if (Input.GetKeyDown(KeyCode.Tab)) return "tab";
-            if (Input.GetKeyDown(KeyCode.Alpha1)) return "alpha1";
-            if (Input.GetKeyDown(KeyCode.Alpha2)) return "alpha2";
-            if (Input.GetKeyDown(KeyCode.Alpha3)) return "alpha3";
-            if (Input.GetMouseButtonDown(0)) return "mouseLeft";
-            if (Input.GetMouseButtonDown(1)) return "mouseRight";
-            if (Input.GetMouseButtonDown(2)) return "mouseMiddle";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Space)) return "space";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftShift)) return "leftShift";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.RightShift)) return "rightShift";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftControl)) return "leftCtrl";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftAlt)) return "leftAlt";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape)) return "escape";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Comma)) return "comma";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Q)) return "q";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.E)) return "e";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.C)) return "c";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.V)) return "v";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.F)) return "f";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.R)) return "r";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.M)) return "m";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.N)) return "n";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.P)) return "p";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Tab)) return "tab";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha1)) return "alpha1";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha2)) return "alpha2";
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Alpha3)) return "alpha3";
+            if (UnityEngine.Input.GetMouseButtonDown(0)) return "mouseLeft";
+            if (UnityEngine.Input.GetMouseButtonDown(1)) return "mouseRight";
+            if (UnityEngine.Input.GetMouseButtonDown(2)) return "mouseMiddle";
             return null;
         }
 
@@ -185,27 +185,27 @@ namespace Tag.Settings
             if (pad) return PadHeld(token);
             switch (token)
             {
-                case "space": return Input.GetKey(KeyCode.Space);
-                case "leftShift": return Input.GetKey(KeyCode.LeftShift);
-                case "rightShift": return Input.GetKey(KeyCode.RightShift);
-                case "leftCtrl": return Input.GetKey(KeyCode.LeftControl);
-                case "leftAlt": return Input.GetKey(KeyCode.LeftAlt);
-                case "escape": return Input.GetKey(KeyCode.Escape);
-                case "q": return Input.GetKey(KeyCode.Q);
-                case "e": return Input.GetKey(KeyCode.E);
-                case "c": return Input.GetKey(KeyCode.C);
-                case "v": return Input.GetKey(KeyCode.V);
-                case "f": return Input.GetKey(KeyCode.F);
-                case "m": return Input.GetKey(KeyCode.M);
-                case "r": return Input.GetKey(KeyCode.R);
-                case "p": return Input.GetKey(KeyCode.P);
-                case "tab": return Input.GetKey(KeyCode.Tab);
-                case "alpha1": return Input.GetKey(KeyCode.Alpha1);
-                case "alpha2": return Input.GetKey(KeyCode.Alpha2);
-                case "alpha3": return Input.GetKey(KeyCode.Alpha3);
-                case "mouseLeft": return Input.GetMouseButton(0);
-                case "mouseRight": return Input.GetMouseButton(1);
-                case "mouseMiddle": return Input.GetMouseButton(2);
+                case "space": return UnityEngine.Input.GetKey(KeyCode.Space);
+                case "leftShift": return UnityEngine.Input.GetKey(KeyCode.LeftShift);
+                case "rightShift": return UnityEngine.Input.GetKey(KeyCode.RightShift);
+                case "leftCtrl": return UnityEngine.Input.GetKey(KeyCode.LeftControl);
+                case "leftAlt": return UnityEngine.Input.GetKey(KeyCode.LeftAlt);
+                case "escape": return UnityEngine.Input.GetKey(KeyCode.Escape);
+                case "q": return UnityEngine.Input.GetKey(KeyCode.Q);
+                case "e": return UnityEngine.Input.GetKey(KeyCode.E);
+                case "c": return UnityEngine.Input.GetKey(KeyCode.C);
+                case "v": return UnityEngine.Input.GetKey(KeyCode.V);
+                case "f": return UnityEngine.Input.GetKey(KeyCode.F);
+                case "m": return UnityEngine.Input.GetKey(KeyCode.M);
+                case "r": return UnityEngine.Input.GetKey(KeyCode.R);
+                case "p": return UnityEngine.Input.GetKey(KeyCode.P);
+                case "tab": return UnityEngine.Input.GetKey(KeyCode.Tab);
+                case "alpha1": return UnityEngine.Input.GetKey(KeyCode.Alpha1);
+                case "alpha2": return UnityEngine.Input.GetKey(KeyCode.Alpha2);
+                case "alpha3": return UnityEngine.Input.GetKey(KeyCode.Alpha3);
+                case "mouseLeft": return UnityEngine.Input.GetMouseButton(0);
+                case "mouseRight": return UnityEngine.Input.GetMouseButton(1);
+                case "mouseMiddle": return UnityEngine.Input.GetMouseButton(2);
                 default: return false;
             }
         }
@@ -216,26 +216,26 @@ namespace Tag.Settings
             if (pad) return PadPressed(token);
             switch (token)
             {
-                case "space": return Input.GetKeyDown(KeyCode.Space);
-                case "leftShift": return Input.GetKeyDown(KeyCode.LeftShift);
-                case "leftCtrl": return Input.GetKeyDown(KeyCode.LeftControl);
-                case "leftAlt": return Input.GetKeyDown(KeyCode.LeftAlt);
-                case "escape": return Input.GetKeyDown(KeyCode.Escape);
-                case "q": return Input.GetKeyDown(KeyCode.Q);
-                case "e": return Input.GetKeyDown(KeyCode.E);
-                case "c": return Input.GetKeyDown(KeyCode.C);
-                case "v": return Input.GetKeyDown(KeyCode.V);
-                case "f": return Input.GetKeyDown(KeyCode.F);
-                case "m": return Input.GetKeyDown(KeyCode.M);
-                case "alpha1": return Input.GetKeyDown(KeyCode.Alpha1);
-                case "alpha2": return Input.GetKeyDown(KeyCode.Alpha2);
-                case "alpha3": return Input.GetKeyDown(KeyCode.Alpha3);
-                case "mouseLeft": return Input.GetMouseButtonDown(0);
-                case "mouseRight": return Input.GetMouseButtonDown(1);
-                case "mouseMiddle": return Input.GetMouseButtonDown(2);
-                case "p": return Input.GetKeyDown(KeyCode.P);
-                case "tab": return Input.GetKeyDown(KeyCode.Tab);
-                case "r": return Input.GetKeyDown(KeyCode.R);
+                case "space": return UnityEngine.Input.GetKeyDown(KeyCode.Space);
+                case "leftShift": return UnityEngine.Input.GetKeyDown(KeyCode.LeftShift);
+                case "leftCtrl": return UnityEngine.Input.GetKeyDown(KeyCode.LeftControl);
+                case "leftAlt": return UnityEngine.Input.GetKeyDown(KeyCode.LeftAlt);
+                case "escape": return UnityEngine.Input.GetKeyDown(KeyCode.Escape);
+                case "q": return UnityEngine.Input.GetKeyDown(KeyCode.Q);
+                case "e": return UnityEngine.Input.GetKeyDown(KeyCode.E);
+                case "c": return UnityEngine.Input.GetKeyDown(KeyCode.C);
+                case "v": return UnityEngine.Input.GetKeyDown(KeyCode.V);
+                case "f": return UnityEngine.Input.GetKeyDown(KeyCode.F);
+                case "m": return UnityEngine.Input.GetKeyDown(KeyCode.M);
+                case "alpha1": return UnityEngine.Input.GetKeyDown(KeyCode.Alpha1);
+                case "alpha2": return UnityEngine.Input.GetKeyDown(KeyCode.Alpha2);
+                case "alpha3": return UnityEngine.Input.GetKeyDown(KeyCode.Alpha3);
+                case "mouseLeft": return UnityEngine.Input.GetMouseButtonDown(0);
+                case "mouseRight": return UnityEngine.Input.GetMouseButtonDown(1);
+                case "mouseMiddle": return UnityEngine.Input.GetMouseButtonDown(2);
+                case "p": return UnityEngine.Input.GetKeyDown(KeyCode.P);
+                case "tab": return UnityEngine.Input.GetKeyDown(KeyCode.Tab);
+                case "r": return UnityEngine.Input.GetKeyDown(KeyCode.R);
                 default: return false;
             }
         }
@@ -265,14 +265,14 @@ namespace Tag.Settings
 #endif
             switch (token)
             {
-                case "buttonSouth": return Input.GetKey(KeyCode.JoystickButton0);
-                case "buttonEast": return Input.GetKey(KeyCode.JoystickButton1);
-                case "buttonWest": return Input.GetKey(KeyCode.JoystickButton2);
-                case "buttonNorth": return Input.GetKey(KeyCode.JoystickButton3);
-                case "leftShoulder": return Input.GetKey(KeyCode.JoystickButton4);
-                case "rightShoulder": return Input.GetKey(KeyCode.JoystickButton5);
-                case "select": return Input.GetKey(KeyCode.JoystickButton6);
-                case "start": return Input.GetKey(KeyCode.JoystickButton7);
+                case "buttonSouth": return UnityEngine.Input.GetKey(KeyCode.JoystickButton0);
+                case "buttonEast": return UnityEngine.Input.GetKey(KeyCode.JoystickButton1);
+                case "buttonWest": return UnityEngine.Input.GetKey(KeyCode.JoystickButton2);
+                case "buttonNorth": return UnityEngine.Input.GetKey(KeyCode.JoystickButton3);
+                case "leftShoulder": return UnityEngine.Input.GetKey(KeyCode.JoystickButton4);
+                case "rightShoulder": return UnityEngine.Input.GetKey(KeyCode.JoystickButton5);
+                case "select": return UnityEngine.Input.GetKey(KeyCode.JoystickButton6);
+                case "start": return UnityEngine.Input.GetKey(KeyCode.JoystickButton7);
                 default: return false;
             }
         }
@@ -302,14 +302,14 @@ namespace Tag.Settings
 #endif
             switch (token)
             {
-                case "buttonSouth": return Input.GetKeyDown(KeyCode.JoystickButton0);
-                case "buttonEast": return Input.GetKeyDown(KeyCode.JoystickButton1);
-                case "buttonWest": return Input.GetKeyDown(KeyCode.JoystickButton2);
-                case "buttonNorth": return Input.GetKeyDown(KeyCode.JoystickButton3);
-                case "leftShoulder": return Input.GetKeyDown(KeyCode.JoystickButton4);
-                case "rightShoulder": return Input.GetKeyDown(KeyCode.JoystickButton5);
-                case "select": return Input.GetKeyDown(KeyCode.JoystickButton6);
-                case "start": return Input.GetKeyDown(KeyCode.JoystickButton7);
+                case "buttonSouth": return UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton0);
+                case "buttonEast": return UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton1);
+                case "buttonWest": return UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton2);
+                case "buttonNorth": return UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton3);
+                case "leftShoulder": return UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton4);
+                case "rightShoulder": return UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5);
+                case "select": return UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton6);
+                case "start": return UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton7);
                 default: return false;
             }
         }
@@ -371,7 +371,7 @@ namespace Tag.Settings
             if (device <= 0)
             {
                 if (binds.Keyboard[(int)PlayAction.Look] != "mouse") return Vector2.zero;
-                return new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
+                return new Vector2(UnityEngine.Input.GetAxisRaw("Mouse X"), UnityEngine.Input.GetAxisRaw("Mouse Y"));
             }
             return PadLookAt(device - 1, binds.Gamepad[(int)PlayAction.Look]);
         }
@@ -383,17 +383,17 @@ namespace Tag.Settings
             bool wasd = token == "wasd" || token == "holdIntoWall" || string.IsNullOrEmpty(token);
             if (wasd)
             {
-                if (Input.GetKey(KeyCode.D)) v.x += 1f;
-                if (Input.GetKey(KeyCode.A)) v.x -= 1f;
-                if (Input.GetKey(KeyCode.W)) v.y += 1f;
-                if (Input.GetKey(KeyCode.S)) v.y -= 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.D)) v.x += 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.A)) v.x -= 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.W)) v.y += 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.S)) v.y -= 1f;
             }
             if (arrows || token == "arrows")
             {
-                if (Input.GetKey(KeyCode.RightArrow)) v.x += 1f;
-                if (Input.GetKey(KeyCode.LeftArrow)) v.x -= 1f;
-                if (Input.GetKey(KeyCode.UpArrow)) v.y += 1f;
-                if (Input.GetKey(KeyCode.DownArrow)) v.y -= 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.RightArrow)) v.x += 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.LeftArrow)) v.x -= 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.UpArrow)) v.y += 1f;
+                if (UnityEngine.Input.GetKey(KeyCode.DownArrow)) v.y -= 1f;
             }
             if (v.sqrMagnitude > 1f) v.Normalize();
             return v;

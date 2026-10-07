@@ -36,8 +36,8 @@ namespace TagArena.Movement
 
         void Update()
         {
-            var modes = Tag.Modes.TagModeController.Instance;
-            bool playing = modes == null || (modes.Phase == Tag.Modes.MatchPhase.Playing && modes.IsRunning);
+            var modes = global::Tag.Modes.TagModeController.Instance;
+            bool playing = modes == null || (modes.Phase == global::Tag.Modes.MatchPhase.Playing && modes.IsRunning);
             if (!playing)
             {
                 ClearTagBackImmunity();
@@ -104,8 +104,8 @@ namespace TagArena.Movement
             if (Time.time < victim._safeUntil) return false;
             if (victim.BlocksTagBackFrom(this))
             {
-                Tag.Art.TagBackBlockedTell.PlayAt(victim.transform.position + Vector3.up * 1.1f);
-                Tag.Audio.AudioBus.Raise(Tag.Audio.AudioBus.Hook.TagBackBlocked, victim.transform.position);
+                global::Tag.Art.TagBackBlockedTell.PlayAt(victim.transform.position + Vector3.up * 1.1f);
+                global::Tag.Audio.AudioBus.Raise(global::Tag.Audio.AudioBus.Hook.TagBackBlocked, victim.transform.position);
                 return false;
             }
             PlayerMotor victimMotor = victim.Motor;
@@ -131,8 +131,8 @@ namespace TagArena.Movement
             _tagBackFrom = newIt;
             int id = newIt != null ? newIt.TagPawnId : 0;
             _tagBack = TagBackImmunity.Open(id, seconds);
-            if (GetComponent<Tag.Art.TagBackGlow>() == null)
-                gameObject.AddComponent<Tag.Art.TagBackGlow>();
+            if (GetComponent<global::Tag.Art.TagBackGlow>() == null)
+                gameObject.AddComponent<global::Tag.Art.TagBackGlow>();
         }
 
         public bool BlocksTagBackFrom(TagRole attacker)

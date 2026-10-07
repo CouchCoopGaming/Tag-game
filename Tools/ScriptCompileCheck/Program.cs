@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -34,12 +35,13 @@ namespace Tag.Tools
             if (File.Exists(stub))
                 files.Add(stub);
 
+            var parse = new CSharpParseOptions(preprocessorSymbols: new[] { "ENABLE_INPUT_SYSTEM" });
             var trees = new List<SyntaxTree>();
             var parseErrors = new List<string>();
             foreach (string file in files)
             {
                 string text = File.ReadAllText(file);
-                SyntaxTree tree = CSharpSyntaxTree.ParseText(text, path: file);
+                SyntaxTree tree = CSharpSyntaxTree.ParseText(text, parse, path: file);
                 trees.Add(tree);
                 foreach (Diagnostic d in tree.GetDiagnostics())
                 {
@@ -52,11 +54,16 @@ namespace Tag.Tools
             foreach (string path in TrustedAssemblies())
                 refs.Add(MetadataReference.CreateFromFile(path));
 
+            // No implicit global usings. Real Unity/InputSystem assemblies are not on
+            // this machine (unity-refs=absent); the pattern scan below is the gate
+            // for the errors the stub compilation cannot see.
             CSharpCompilation compilation = CSharpCompilation.Create(
                 "TagScriptsCheck",
                 trees,
                 refs,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                new CSharpCompilationOptions(
+                    OutputKind.DynamicallyLinkedLibrary,
+                    usings: ImmutableArray<string>.Empty));
 
             HashSet<string> ours = DeclaredTypeNames(trees);
             var hits = new List<string>();
@@ -81,7 +88,11 @@ namespace Tag.Tools
             Console.WriteLine(smokeLine);
             if (!smokeOk)
                 Console.Error.WriteLine(smokeReport);
-            if (!compileOk || !smokeOk)
+            bool patternsOk = UnityCompilePatterns.Run(root, files, out string patternLine, out string patternReport);
+            Console.WriteLine(patternLine);
+            if (!patternsOk)
+                Console.Error.WriteLine(patternReport);
+            if (!compileOk || !smokeOk || !patternsOk)
                 return 1;
             Console.WriteLine("script-compile-check ok CS0102 CS0128 CS0136 CS0103 CS0246-in-our-code");
             return 0;

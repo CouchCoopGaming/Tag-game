@@ -11,7 +11,7 @@ namespace Tag.Core
         GUIStyle _label;
         int _seenFrame = -1;
 
-        void Awake()
+        void BootStyle()
         {
             _label = new GUIStyle(GUI.skin.label);
             _label.fontSize = 14;
@@ -21,12 +21,13 @@ namespace Tag.Core
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F6))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.F6))
                 FrameMeter.Overlay = !FrameMeter.Overlay;
         }
 
         void OnGUI()
         {
+            if (_label == null) BootStyle();
             if (Time.frameCount != _seenFrame)
             {
                 _seenFrame = Time.frameCount;

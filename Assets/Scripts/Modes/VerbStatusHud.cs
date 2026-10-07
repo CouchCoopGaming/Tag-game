@@ -33,7 +33,6 @@ namespace Tag.Modes
             if (motor == null) motor = GetComponent<PlayerMotor>();
             if (motor != null) _self = motor.GetComponent<ItController>();
             if (_self == null) _self = GetComponent<ItController>();
-            BootStyles();
         }
 
         void BootStyles()
@@ -50,7 +49,8 @@ namespace Tag.Modes
 
         void OnGUI()
         {
-            if (motor == null || _label == null) return;
+            if (motor == null) return;
+            if (_label == null) BootStyles();
             if (DriveDevice >= 0 && View != null)
             {
                 DrawCouch();

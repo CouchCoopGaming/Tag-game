@@ -156,7 +156,6 @@ namespace Tag.Modes
 
         void Start()
         {
-            BootHudStyles();
             if (autoFindPlayers) RefreshPlayers();
             EnsurePromptHud();
             if (FindFirstObjectByType<GameFlow>() == null)
@@ -1326,6 +1325,7 @@ namespace Tag.Modes
 
         void OnGUI()
         {
+            if (_countStyle == null) BootHudStyles();
             MinimapHud.Draw();
             if (_localPaused)
             {

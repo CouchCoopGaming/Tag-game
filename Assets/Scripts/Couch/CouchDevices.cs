@@ -23,13 +23,13 @@ namespace Tag.Couch
 #if ENABLE_INPUT_SYSTEM
             if (FrontSession.Screen == FrontScreen.Join) return;
             var pads = Gamepad.all;
-            int n = pads == null ? 0 : pads.Count;
+            int n = pads.Count;
             if (n > 4) n = 4;
             for (int i = 0; i < 4; i++)
             {
                 int device = CouchPlay.DevicePad0 + i;
                 if (!CouchPlay.Joined(device)) continue;
-                bool present = pads != null && i < n && pads[i] != null;
+                bool present = i < n && pads[i] != null;
                 if (!present) CouchPlay.NoteLost(device);
                 else CouchPlay.NoteFound(device);
             }
@@ -43,7 +43,7 @@ namespace Tag.Couch
             if (FrontSession.Screen != FrontScreen.Join) return;
             if (KeyboardJoinEdge())
                 CouchPlay.Join(CouchPlay.DeviceKeyboard);
-            if (Input.GetKeyDown(KeyCode.Escape) && CouchPlay.Joined(CouchPlay.DeviceKeyboard))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Escape) && CouchPlay.Joined(CouchPlay.DeviceKeyboard))
             {
                 CouchPlay.Leave(CouchPlay.DeviceKeyboard);
                 EatBack = true;
@@ -55,17 +55,17 @@ namespace Tag.Couch
         {
             for (int k = (int)KeyCode.A; k <= (int)KeyCode.Z; k++)
             {
-                if (Input.GetKeyDown((KeyCode)k)) return true;
+                if (UnityEngine.Input.GetKeyDown((KeyCode)k)) return true;
             }
             for (int k = (int)KeyCode.Alpha0; k <= (int)KeyCode.Alpha9; k++)
             {
-                if (Input.GetKeyDown((KeyCode)k)) return true;
+                if (UnityEngine.Input.GetKeyDown((KeyCode)k)) return true;
             }
-            if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) return true;
-            if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.LeftAlt)) return true;
-            if (Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.E)) return true;
-            if (Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.C)) return true;
-            if (Input.GetKeyDown(KeyCode.V) || Input.GetKeyDown(KeyCode.M) || Input.GetKeyDown(KeyCode.P)) return true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftShift) || UnityEngine.Input.GetKeyDown(KeyCode.RightShift)) return true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.LeftControl) || UnityEngine.Input.GetKeyDown(KeyCode.LeftAlt)) return true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.Tab) || UnityEngine.Input.GetKeyDown(KeyCode.Q) || UnityEngine.Input.GetKeyDown(KeyCode.E)) return true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.R) || UnityEngine.Input.GetKeyDown(KeyCode.F) || UnityEngine.Input.GetKeyDown(KeyCode.C)) return true;
+            if (UnityEngine.Input.GetKeyDown(KeyCode.V) || UnityEngine.Input.GetKeyDown(KeyCode.M) || UnityEngine.Input.GetKeyDown(KeyCode.P)) return true;
             return false;
         }
 
@@ -108,7 +108,7 @@ namespace Tag.Couch
                 }
             }
 #else
-            if (Input.GetKeyDown(KeyCode.JoystickButton1) && CouchPlay.Joined(CouchPlay.DevicePad0))
+            if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton1) && CouchPlay.Joined(CouchPlay.DevicePad0))
             {
                 CouchPlay.Leave(CouchPlay.DevicePad0);
                 EatBack = true;
@@ -116,20 +116,20 @@ namespace Tag.Couch
             else if (PadPressed() && !CouchPlay.Joined(CouchPlay.DevicePad0))
             {
                 CouchPlay.Join(CouchPlay.DevicePad0);
-                if (Input.GetKeyDown(KeyCode.JoystickButton0)) EatConfirm = true;
+                if (UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton0)) EatConfirm = true;
             }
 #endif
         }
 
         static bool PadPressed()
         {
-            return Input.GetKeyDown(KeyCode.JoystickButton0)
-                || Input.GetKeyDown(KeyCode.JoystickButton2)
-                || Input.GetKeyDown(KeyCode.JoystickButton3)
-                || Input.GetKeyDown(KeyCode.JoystickButton4)
-                || Input.GetKeyDown(KeyCode.JoystickButton5)
-                || Input.GetKeyDown(KeyCode.JoystickButton6)
-                || Input.GetKeyDown(KeyCode.JoystickButton7);
+            return UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton0)
+                || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton2)
+                || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton3)
+                || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton4)
+                || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5)
+                || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton6)
+                || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton7);
         }
     }
 }

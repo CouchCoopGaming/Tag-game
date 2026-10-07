@@ -55,7 +55,7 @@ namespace TagArena.Movement
         Vector3 _preyFrom;
         readonly List<ItController> _living = new List<ItController>(8);
         readonly StringBuilder _standings = new StringBuilder(64);
-        static readonly Comparison<ItController> ByItTime = CompareItTime;
+        static readonly System.Comparison<ItController> ByItTime = CompareItTime;
         GUIStyle _big;
         GUIStyle _small;
         GUIStyle _keys;
@@ -128,7 +128,6 @@ namespace TagArena.Movement
         {
             if (motor != null) _self = motor.GetComponent<ItController>();
             if (_self == null) _self = GetComponent<ItController>();
-            BootStyles();
         }
 
         void BootStyles()
@@ -174,6 +173,7 @@ namespace TagArena.Movement
         void OnGUI()
         {
             if (!motor) return;
+            if (_big == null) BootStyles();
             if (_big == null) return;
 
             float hs = motor.HorizSpeed;

@@ -855,7 +855,7 @@ namespace Tag.Level
             sun.transform.rotation = Quaternion.Euler(MegaParkP1Layout.SunPitch, MegaParkP1Layout.SunYaw, 0f);
             RenderSettings.sun = sun;
 
-            RenderSettings.ambientMode = AmbientMode.Trilight;
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = new Color(MegaParkP1Layout.AmbSkyR, MegaParkP1Layout.AmbSkyG, MegaParkP1Layout.AmbSkyB, 1f);
             RenderSettings.ambientEquatorColor = new Color(MegaParkP1Layout.AmbEqR, MegaParkP1Layout.AmbEqG, MegaParkP1Layout.AmbEqB, 1f);
             RenderSettings.ambientGroundColor = new Color(MegaParkP1Layout.AmbGndR, MegaParkP1Layout.AmbGndG, MegaParkP1Layout.AmbGndB, 1f);
