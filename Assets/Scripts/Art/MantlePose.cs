@@ -76,17 +76,19 @@ namespace Tag.Art
         public const float LandHead = -4f;
 
         /// <summary>
-        /// Played joint keys. The printed plant, knee, over, and land stay on
-        /// <see cref="At"/>, which is what the handoff proof measures. These
-        /// offsets sit on that curve: the arms yaw off the chest, the elbows
-        /// open off the head, the spine stays off the thighs, and each thigh
-        /// yaws out beside the torso. Not a root lift.
+        /// Played speed-vault keys. <see cref="At"/> stays the printed plant,
+        /// knee, over, and land, which is what the handoff proof measures.
+        /// The arms stay an uncrossed plant on the obstacle. Both legs swing
+        /// out to their own sides and stay there until the hips have passed,
+        /// then come home. The spine keeps its forward lean. Not a root lift.
         /// </summary>
-        public const float ClearArmYaw = -50f;
-        public const float ClearElbow = 12f;
-        public const float ClearSpine = -12f;
-        public const float ClearLeadYaw = -70f;
-        public const float ClearTrailYaw = 44f;
+        struct VaultKey
+        {
+            public float U;
+            public float ThL, ThR, KnL, KnR, YawL, YawR;
+            public float ArmL, ArmR, AyL, AyR, ElbL, ElbR;
+            public float Hip, Spine, Head;
+        }
 
         public struct Sample
         {
@@ -159,21 +161,67 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// The curve the vault plays. Same beats as <see cref="At"/>, with the
-        /// clearance offsets. Lead-left, then mirrored when the other knee leads.
+        /// The curve the vault plays, keyed on the motor fraction. Lead-left,
+        /// then mirrored when the other knee leads.
         /// </summary>
-        public static Sample Cleared(float progress, bool leadLeft)
+        public static Sample Cleared(float motorU, bool leadLeft)
         {
-            Sample s = At(progress, true);
-            s.ArmYawL += ClearArmYaw;
-            s.ArmYawR -= ClearArmYaw;
-            s.ElbowL += ClearElbow;
-            s.ElbowR += ClearElbow;
-            s.Spine += ClearSpine;
-            s.ThighYawL = ClearLeadYaw;
-            s.ThighYawR = ClearTrailYaw;
+            float u = motorU < 0f ? 0f : (motorU > 1f ? 1f : motorU);
+            VaultKey[] keys = VaultKeys();
+            int i = 0;
+            while (i < keys.Length - 2 && u > keys[i + 1].U)
+                i++;
+            VaultKey a = keys[i];
+            VaultKey b = keys[i + 1];
+            float span = b.U - a.U;
+            float t = span > 0.0001f ? (u - a.U) / span : 1f;
+            if (t < 0f) t = 0f;
+            if (t > 1f) t = 1f;
+            Sample s = new Sample
+            {
+                ThighL = Mathf.Lerp(a.ThL, b.ThL, t),
+                ThighR = Mathf.Lerp(a.ThR, b.ThR, t),
+                KneeL = Mathf.Lerp(a.KnL, b.KnL, t),
+                KneeR = Mathf.Lerp(a.KnR, b.KnR, t),
+                ThighYawL = Mathf.Lerp(a.YawL, b.YawL, t),
+                ThighYawR = Mathf.Lerp(a.YawR, b.YawR, t),
+                ArmPitchL = Mathf.Lerp(a.ArmL, b.ArmL, t),
+                ArmPitchR = Mathf.Lerp(a.ArmR, b.ArmR, t),
+                ArmYawL = Mathf.Lerp(a.AyL, b.AyL, t),
+                ArmYawR = Mathf.Lerp(a.AyR, b.AyR, t),
+                ElbowL = Mathf.Lerp(a.ElbL, b.ElbL, t),
+                ElbowR = Mathf.Lerp(a.ElbR, b.ElbR, t),
+                Hip = Mathf.Lerp(a.Hip, b.Hip, t),
+                Spine = Mathf.Lerp(a.Spine, b.Spine, t),
+                Head = Mathf.Lerp(a.Head, b.Head, t),
+            };
             if (!leadLeft) s = Mirror(s);
             return s;
+        }
+
+        static VaultKey[] VaultKeys()
+        {
+            return new VaultKey[]
+            {
+                Key(0.00f, 24f, 14f, -36f, -22f, -10f, 8f, -58f, -58f, -18f, 18f, -46f, -46f, 14f, 20f, -10f),
+                Key(0.16f, 68f, 52f, -42f, -38f, -58f, 48f, -58f, -58f, -18f, 18f, -46f, -46f, 16f, 20f, -8f),
+                Key(0.36f, 82f, 70f, -40f, -44f, -78f, 70f, -56f, -56f, -16f, 16f, -42f, -42f, 18f, 20f, -6f),
+                Key(0.64f, 74f, 64f, -40f, -44f, -72f, 66f, -54f, -54f, -16f, 16f, -40f, -40f, 16f, 18f, -4f),
+                Key(0.82f, 36f, 32f, -38f, -36f, -10f, 10f, -48f, -48f, -16f, 16f, -38f, -38f, 14f, 16f, -4f),
+                Key(1.00f, 24f, 22f, -40f, -36f, 0f, 4f, -46f, -46f, -16f, 16f, -36f, -36f, 12f, 16f, -4f),
+            };
+        }
+
+        static VaultKey Key(float u, float thL, float thR, float knL, float knR, float yawL, float yawR,
+            float armL, float armR, float ayL, float ayR, float elbL, float elbR, float hip, float spine, float head)
+        {
+            return new VaultKey
+            {
+                U = u,
+                ThL = thL, ThR = thR, KnL = knL, KnR = knR, YawL = yawL, YawR = yawR,
+                ArmL = armL, ArmR = armR, AyL = ayL, AyR = ayR, ElbL = elbL, ElbR = elbR,
+                Hip = hip, Spine = spine, Head = head,
+            };
         }
 
         public static bool Holds()

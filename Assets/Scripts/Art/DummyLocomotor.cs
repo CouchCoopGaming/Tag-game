@@ -6552,8 +6552,7 @@ namespace Tag.Art
 
             // Spine / hips lean by state - jet reads clearly in TP
             float mantleU = mantle && _motor != null ? _motor.MantleProgress : 0f;
-            float vaultU = Handoff2Feel.VaultShown(mantleU);
-            MantlePose.Sample vault = mantle ? MantlePose.Cleared(vaultU, _mantleLeadLeft) : default;
+            MantlePose.Sample vault = mantle ? MantlePose.Cleared(mantleU, _mantleLeadLeft) : default;
             float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? vault.Spine : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? -WallPose.RunTilt : WallPose.RunTilt) : 0f;
             float idleW = 0f;
