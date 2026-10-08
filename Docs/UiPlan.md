@@ -333,6 +333,10 @@ Controls lists every action in the input map. Move, Look, Jump, Cling hold, Slid
 
 Shipped defaults no longer give Alt to both Air dash and Sprint. Air dash is Q and RB. Sprint is Shift and LB. The headless walk appends `defaults-conflict=0` after it counts the keyboard table and all four pads. Grapple is a bind row: RMB on the keyboard, LT on the pad. A press pulls. A second press within 0.28 s releases. Cling hold draws WASD and Left stick, which is the move-into-wall hold the motor already samples. Look draws Mouse and Right stick. Both glyph columns sit inside the row, keyboard on the left and pad on the right, under those headers. Arena 1, Arena 2, and Arena 3 stay in the bind table and show only in a development build. Stills are composites in `Docs/UiStills/screens2/pass18/`.
 
+## Screens 2, pass 19
+
+Each split pane shows who is It: a large IT plate on that player, and a gold arrow with an upright IT chip for everyone else. The chip stays inside the pane. A round timer sits at the top of each pane when the pane is not the full-width top of the screen; that case keeps the shared clock. The name plate carries the mode line and the tag count. After a tag, the previous It keeps the existing one-second immunity: the pane glows and the safe row reads SAFE plus the tenths. Dash shows DASH when it is ready, the cooldown digits while it fills, and GO while it fires. Comic words swaps the display face on those words and on the tag feed. The feed sentence stays, on an ink plate, with the tagger's colour and, when color-blind seat colors are on, that seat's shape. The 3-up score list uses the same cream line, colour chip, and shape. Text size still scales the HUD. Stills are composites in `Docs/UiStills/screens2/pass19/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
