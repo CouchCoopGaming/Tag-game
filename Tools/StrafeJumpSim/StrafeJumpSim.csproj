@@ -145,5 +145,10 @@
     <Compile Include="../../Assets/Scripts/Match/MatchHighlight.cs" />
     <Compile Include="../../Assets/Scripts/Match/MatchStatsProof.cs" />
     <Compile Include="../../Assets/Scripts/Profiles/LocalProfiles.cs" />
+    <Compile Include="../../Assets/Scripts/Modes/TagModeId.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuSession.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuLobby.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/UiFlow.cs" />
+    <Compile Include="../../Assets/Scripts/Audio/MenuCue.cs" />
   </ItemGroup>
 </Project>

@@ -20,6 +20,7 @@ namespace Tag.Ui.Menu
         {
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             GameSettings.Current = s;
+            s.Arena = MenuSession.Arena;
             s.Clamp();
             SettingsRuntime.Apply();
             SettingsRuntime.Save();

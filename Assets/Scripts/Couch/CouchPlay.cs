@@ -301,10 +301,44 @@ namespace Tag.Couch
             int slot = SlotOf(device);
             if (slot < 0 || !Gone[slot]) return;
             Gone[slot] = false;
+            RecountRejoin();
+        }
+
+        /// <summary>
+        /// A free pad takes a seat whose device dropped. The same device just clears the flag.
+        /// The character on that seat stays.
+        /// </summary>
+        public static bool Reclaim(int device)
+        {
+            if (device < DeviceKeyboard || device > DevicePad3) return false;
+            int own = SlotOf(device);
+            if (own >= 0)
+            {
+                if (!Gone[own]) return false;
+                NoteFound(device);
+                return true;
+            }
+            int slot = -1;
+            for (int i = 0; i < Max; i++)
+            {
+                if (!Human[i] || !Gone[i]) continue;
+                slot = i;
+                break;
+            }
+            if (slot < 0) return false;
+            Device[slot] = device;
+            Gone[slot] = false;
+            RefreshTag(slot);
+            RecountRejoin();
+            return true;
+        }
+
+        static void RecountRejoin()
+        {
             _rejoin = -1;
             for (int i = 0; i < Max; i++)
             {
-                if (!Gone[i]) continue;
+                if (!Human[i] || !Gone[i]) continue;
                 _rejoin = i;
                 break;
             }
@@ -361,12 +395,14 @@ namespace Tag.Couch
             if (slot < 0) return false;
             Human[slot] = false;
             Device[slot] = -1;
+            Gone[slot] = false;
             PosX[slot] = 0f;
             PosZ[slot] = 0f;
             LocalProfiles.ClearSeat(slot);
             Tagged[slot] = null;
             _humans--;
             if (_humans < 0) _humans = 0;
+            RecountRejoin();
             return true;
         }
 

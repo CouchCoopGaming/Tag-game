@@ -4,20 +4,20 @@ using UnityEngine.UI;
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Title idle. The logo bobs and Press Start breathes.
+    /// Title idle. The logo bobs and the start glyph breathes.
     /// Reduce motion leaves both still. The arena photo drift stays on the host.
     /// </summary>
     public static class MenuAttract
     {
         static RectTransform _logo;
-        static Text _press;
+        static Image _glyph;
         static Vector2 _rest;
         static bool _have;
 
-        public static void Bind(RectTransform logo, Text press)
+        public static void Bind(RectTransform logo, Image glyph)
         {
             _logo = logo;
-            _press = press;
+            _glyph = glyph;
             _have = logo != null;
             if (_have) _rest = logo.anchoredPosition;
         }
@@ -25,7 +25,7 @@ namespace Tag.Ui.Menu
         public static void Clear()
         {
             _logo = null;
-            _press = null;
+            _glyph = null;
             _have = false;
         }
 
@@ -40,11 +40,11 @@ namespace Tag.Ui.Menu
                 _logo.anchoredPosition = p;
                 _logo.localRotation = Quaternion.Euler(0f, 0f, -8f + Mathf.Sin(t * 0.8f) * 2f);
             }
-            if (_press != null)
+            if (_glyph != null)
             {
-                Color c = _press.color;
-                c.a = 0.4f + 0.6f * Mathf.Abs(Mathf.Sin(t * 2.4f));
-                _press.color = c;
+                Color c = _glyph.color;
+                c.a = 0.45f + 0.55f * Mathf.Abs(Mathf.Sin(t * 2.4f));
+                _glyph.color = c;
             }
         }
     }

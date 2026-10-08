@@ -927,6 +927,14 @@ static class Program
             return 1;
         }
 
+        Tag.Ui.Menu.UiFlow.Report flow = Tag.Ui.Menu.UiFlow.Run();
+        Console.WriteLine(flow.Line);
+        if (!flow.Ok)
+        {
+            Console.Error.WriteLine(flow.Failure);
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }

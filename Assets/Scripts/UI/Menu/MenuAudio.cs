@@ -12,44 +12,49 @@ namespace Tag.Ui.Menu
     {
         public static void Move()
         {
-            TagSfx.UiMove();
+            AudioBus.RaiseMenu(AudioBus.MenuHook.Move);
         }
 
         public static void Confirm()
         {
-            TagSfx.UiConfirm();
+            AudioBus.RaiseMenu(AudioBus.MenuHook.Confirm);
             MenuJuice.Buzz(PadRumble.PunchHit);
         }
 
         public static void Back()
         {
-            TagSfx.UiBack();
+            AudioBus.RaiseMenu(AudioBus.MenuHook.Back);
         }
 
         public static void Join()
         {
-            TagSfx.UiClick();
+            AudioBus.RaiseMenu(AudioBus.MenuHook.Join);
             MenuJuice.Buzz(PadRumble.PadLaunch);
         }
 
         public static void Error()
         {
-            TagSfx.RoundLose();
+            AudioBus.RaiseMenu(AudioBus.MenuHook.Error);
         }
 
         public static void Ready()
         {
-            TagSfx.RoundWin();
+            AudioBus.RaiseMenu(AudioBus.MenuHook.Ready);
         }
 
         public static void StartMatch()
         {
-            TagSfx.RoundStart();
+            AudioBus.RaiseMenu(AudioBus.MenuHook.Start);
+        }
+
+        public static void Results()
+        {
+            AudioBus.RaiseMenu(AudioBus.MenuHook.Results);
         }
 
         public static void EnsureBed()
         {
-            AudioCuePlayer.Ensure()?.PlaygroundMusic();
+            AudioBus.RaiseMenu(AudioBus.MenuHook.Music);
         }
 
         public static void NoteDevice(InputDeviceKind kind)

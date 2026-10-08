@@ -249,3 +249,11 @@ The sixth pass is the juice. The title drifts across the arena photo, the TAG lo
 Everyone ready starts a three-second count, Starting in 3, then 2, then 1. If anyone unreadies or backs out, the count stops. Each mode shows a How to play card with one rule line and a small diagram. Arena cards add the size and a flavor line: Mega Park is 160 x 100 m, Pocket Park is 80 x 50 m, Stack Yard is 110 x 70 m. A little top-down map draws that park's spawns and pads. Player colors match on the join card, the character card, the results row, and the figure.
 
 The results panel is headed RESULTS. The figures stand on steps: first in the center, second on the left, third on the right, fourth on the floor beside them, in that player's color. The winner raises a fist and beats the chest. The others drop their shoulders or stumble. Confetti falls for the winner and stays off if reduce motion is on. The heading on that panel is RESULTS. Mockups are in `Docs/UiStills/pass6/`.
+
+The seventh pass opens on a scene. TAG is the same slanted logo, centered and large, with no panel behind it. Mega Park fills the background and drifts. Four figures in the player colors run and vault across it. The edges fall off in a vignette. Under the logo is one button picture for the last thing you used, a space bar or South. There is no list of button names.
+
+A headless walk, `ui-flow`, drives every screen with the keyboard and again with a pad: title, main, join for one through four seats, character, mode, arena, loading, the match, each pause choice, each results action, each options page, and back. It fails if a screen is a dead end, if Back goes nowhere, or if the highlight falls off the list.
+
+The last mode, arena, rules, and each seat's character and color stay in the settings file. Rematch keeps them. A pad can join while you are still in the lobby. If a pad drops, another pad can take that seat and keep the character. If you try to start with fewer people than the mode needs, the screen says so. Free play needs one player. The tag modes need two.
+
+The menu bed and the short stingers (move, confirm, back, join, error, ready, start, results) are hooks beside the match sounds. They use clips that were already in the game. Mockups are in `Docs/UiStills/pass7/`.

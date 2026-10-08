@@ -89,7 +89,9 @@ namespace Tag.Ui.Menu
         Text _header;
         Text _footer;
         Text _banner;
-        Text _press;
+        Image _startGlyph;
+        GameObject _vignette;
+        RawImage _parade;
         CanvasGroup _group;
         MenuPreview _preview;
         readonly List<MenuTile> _tiles = new List<MenuTile>(16);
@@ -297,12 +299,30 @@ namespace Tag.Ui.Menu
             }
             RefreshFocus();
             PaintFooter();
+            bool title = id == MenuScreenId.Title;
+            if (_vignette != null) _vignette.SetActive(title);
+            if (_pattern != null)
+            {
+                Color wash = _pattern.color;
+                wash.a = title ? 0f : 0.22f;
+                _pattern.color = wash;
+            }
+            for (int i = 0; i < _ribbons.Length; i++)
+            {
+                if (_ribbons[i] != null) _ribbons[i].gameObject.SetActive(!title);
+            }
             if (id == MenuScreenId.Cast)
             {
                 if (_preview != null) _preview.Show();
             }
+            else if (title)
+            {
+                if (_preview != null) _preview.ShowParade(_parade);
+            }
             else if (id != MenuScreenId.Results && _preview != null)
                 _preview.Hide();
+            if (id == MenuScreenId.Results)
+                MenuAudio.Results();
             if (id != MenuScreenId.Hidden)
                 MenuAudio.EnsureBed();
         }
@@ -379,6 +399,7 @@ namespace Tag.Ui.Menu
 
             _dim = MenuWidgets.Fill(root, MenuTheme.Veil);
             _dim.raycastTarget = true;
+            BuildVignette(root);
 
             var sweepRt = MenuWidgets.Place(root, "Sweep", -1920f, 120f, 420f, 18f);
             _sweep = sweepRt.gameObject.AddComponent<Image>();
@@ -466,7 +487,8 @@ namespace Tag.Ui.Menu
         void ClearBody()
         {
             _tiles.Clear();
-            _press = null;
+            _startGlyph = null;
+            _parade = null;
             for (int i = 0; i < _castMark.Length; i++) _castMark[i] = null;
             for (int i = 0; i < _castView.Length; i++)
             {
@@ -802,14 +824,29 @@ namespace Tag.Ui.Menu
             string confirm = pad ? "South" : "Space";
             string back = pad ? "East" : "Esc";
             _footer.text = "";
+            bool title = _screen == MenuScreenId.Title;
             string[] words = { move + "   move", confirm + "   confirm", back + "   back" };
             Color chip = pad ? new Color(0.10f, 0.22f, 0.55f, 1f) : new Color(0.08f, 0.18f, 0.36f, 1f);
             for (int i = 0; i < 3; i++)
             {
-                if (_glyphWord[i] != null) _glyphWord[i].text = words[i];
-                if (_glyphChip[i] != null) _glyphChip[i].color = chip;
-                if (_glyphIcon[i] != null) _glyphIcon[i].sprite = FooterIcon(pad, i);
+                if (_glyphWord[i] != null)
+                {
+                    _glyphWord[i].enabled = !title;
+                    if (!title) _glyphWord[i].text = words[i];
+                }
+                if (_glyphChip[i] != null)
+                {
+                    _glyphChip[i].enabled = !title;
+                    if (!title) _glyphChip[i].color = chip;
+                }
+                if (_glyphIcon[i] != null)
+                {
+                    _glyphIcon[i].enabled = !title;
+                    if (!title) _glyphIcon[i].sprite = FooterIcon(pad, i);
+                }
             }
+            if (_startGlyph != null)
+                _startGlyph.sprite = pad ? MenuIcons.South : MenuIcons.KeySpace;
         }
 
         void Animate()
@@ -940,15 +977,10 @@ namespace Tag.Ui.Menu
             {
                 MenuEdge edge = MenuInput.Edges[i];
                 bool seated = CouchPlay.Joined(edge.Device);
-                if (!seated && (edge.Join || edge.Confirm || edge.Start))
+                bool gone = seated && CouchPlay.InputBlockedDevice(edge.Device);
+                if ((!seated || gone) && (edge.Join || edge.Confirm || edge.Start))
                 {
-                    if (CouchPlay.Join(edge.Device))
-                    {
-                        int slot = SeatOf(edge.Device);
-                        if (slot >= 0 && LocalProfiles.SeatName(slot) == null)
-                            LocalProfiles.SeatGuest(slot);
-                        MenuAudio.Join();
-                    }
+                    OfferSeat(edge.Device, false);
                     continue;
                 }
                 if (edge.Back)
@@ -1003,15 +1035,8 @@ namespace Tag.Ui.Menu
                         }
                         if (edge.Join || edge.Confirm || edge.Start)
                         {
-                            if (CouchPlay.Join(edge.Device))
-                            {
-                                int slot = SeatOf(edge.Device);
-                                if (slot >= 0 && LocalProfiles.SeatName(slot) == null)
-                                    LocalProfiles.SeatGuest(slot);
-                                if (slot >= 0) MenuSession.PullLook(slot);
-                                MenuAudio.Join();
+                            if (OfferSeat(edge.Device, true))
                                 RefreshCast();
-                            }
                         }
                         continue;
                     }
@@ -1078,7 +1103,13 @@ namespace Tag.Ui.Menu
                     }
                 }
             }
-            if (MenuReady.Advance(MenuSession.AllReady(), _banner))
+            bool ready = MenuSession.AllReady();
+            if (ready && !MenuLobby.Enough(MenuSession.Mode, CouchPlay.Humans))
+            {
+                MenuReady.Stop();
+                if (_banner != null) _banner.text = MenuLobby.Short(MenuSession.Mode);
+            }
+            else if (MenuReady.Advance(ready, _banner))
             {
                 MenuAudio.Confirm();
                 MenuSession.CommitLooks();
@@ -1096,7 +1127,13 @@ namespace Tag.Ui.Menu
         void TickRules()
         {
             if (Gated()) return;
+            bool dropped = SoakSeats();
             ReadNav(out int dx, out int dy, out bool confirm, out bool back, out bool start);
+            if (dropped)
+            {
+                confirm = false;
+                start = false;
+            }
             if (back)
             {
                 MenuAudio.Back();
@@ -1111,7 +1148,13 @@ namespace Tag.Ui.Menu
         void TickArena()
         {
             if (Gated()) return;
+            bool dropped = SoakSeats();
             ReadNav(out int dx, out int dy, out bool confirm, out bool back, out bool start);
+            if (dropped)
+            {
+                confirm = false;
+                start = false;
+            }
             if (back)
             {
                 MenuAudio.Back();
@@ -1251,17 +1294,77 @@ namespace Tag.Ui.Menu
             _count = 0;
             if (_header != null) _header.text = "";
             if (_banner != null) _banner.text = "";
-            if (_dim != null) _dim.color = MenuTheme.Veil;
-            ShowFlyover(MenuSession.Arena, 0.9f);
-            var plate = MenuWidgets.Place(_body, "LogoPlate", 360f, 40f, 1100f, 280f);
-            var plateImage = plate.gameObject.AddComponent<Image>();
-            MenuArt.Plate(plateImage, new Color(0.05f, 0.12f, 0.32f, 0.55f), true);
-            plateImage.raycastTarget = false;
-            RectTransform logo = MenuWidgets.Logo(_body, 410f, 50f, 1000f, 240f, 150);
-            Text sub = MenuWidgets.Words(_body, "COUCH TAG", MenuTokens.Title, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.2f, 0.22f), new Vector2(0.8f, 0.36f));
-            sub.alignment = TextAnchor.MiddleCenter;
-            _press = MenuWidgets.Words(_body, "Press  Start   /   South   /   Space", MenuTokens.Section, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.1f, 0.08f), new Vector2(0.9f, 0.22f));
-            MenuAttract.Bind(logo, _press);
+            if (_dim != null) _dim.color = new Color(0.02f, 0.04f, 0.10f, 0.25f);
+            ShowFlyover(ParkArena.Mega, 1f);
+            var paradeRt = MenuWidgets.Box(_body, "Parade", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f));
+            _parade = paradeRt.gameObject.AddComponent<RawImage>();
+            _parade.raycastTarget = false;
+            _parade.color = Color.white;
+            RectTransform logo = MenuWidgets.Logo(_body, 0f, 0f, 1100f, 280f, 168);
+            logo.anchorMin = new Vector2(0.5f, 0.5f);
+            logo.anchorMax = new Vector2(0.5f, 0.5f);
+            logo.pivot = new Vector2(0.5f, 0.5f);
+            logo.sizeDelta = new Vector2(1100f, 280f);
+            logo.anchoredPosition = new Vector2(0f, 150f);
+            var glyphRt = MenuWidgets.Box(_body, "StartGlyph", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+            glyphRt.sizeDelta = new Vector2(240f, 96f);
+            glyphRt.anchoredPosition = new Vector2(0f, -210f);
+            _startGlyph = glyphRt.gameObject.AddComponent<Image>();
+            _startGlyph.preserveAspect = true;
+            _startGlyph.raycastTarget = false;
+            _startGlyph.sprite = MenuInput.LastKind == InputDeviceKind.Gamepad ? MenuIcons.South : MenuIcons.KeySpace;
+            MenuAttract.Bind(logo, _startGlyph);
+        }
+
+        void BuildVignette(RectTransform root)
+        {
+            var shell = MenuWidgets.Box(root, "Vignette", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f));
+            Edge(shell, "Top", new Vector2(0f, 0.86f), Vector2.one);
+            Edge(shell, "Bottom", Vector2.zero, new Vector2(1f, 0.16f));
+            Edge(shell, "Left", Vector2.zero, new Vector2(0.08f, 1f));
+            Edge(shell, "Right", new Vector2(0.92f, 0f), Vector2.one);
+            _vignette = shell.gameObject;
+            _vignette.SetActive(false);
+        }
+
+        static void Edge(RectTransform parent, string name, Vector2 min, Vector2 max)
+        {
+            var rt = MenuWidgets.Box(parent, name, min, max, new Vector2(0.5f, 0.5f));
+            var image = rt.gameObject.AddComponent<Image>();
+            image.color = new Color(0f, 0f, 0f, 0.55f);
+            image.raycastTarget = false;
+        }
+
+        bool OfferSeat(int device, bool pull)
+        {
+            if (CouchPlay.Joined(device) && !CouchPlay.InputBlockedDevice(device))
+                return false;
+            bool had = CouchPlay.Joined(device);
+            bool reclaimed = CouchPlay.Reclaim(device);
+            if (!reclaimed && !CouchPlay.Join(device))
+                return false;
+            if (!reclaimed && !had)
+            {
+                int slot = SeatOf(device);
+                if (slot >= 0 && LocalProfiles.SeatName(slot) == null)
+                    LocalProfiles.SeatGuest(slot);
+                if (pull && slot >= 0)
+                    MenuSession.PullLook(slot);
+            }
+            MenuAudio.Join();
+            return true;
+        }
+
+        bool SoakSeats()
+        {
+            bool any = false;
+            for (int i = 0; i < MenuInput.Count; i++)
+            {
+                MenuEdge edge = MenuInput.Edges[i];
+                if (!(edge.Join || edge.Confirm || edge.Start)) continue;
+                if (OfferSeat(edge.Device, true)) any = true;
+            }
+            return any;
         }
 
         void BuildMain()
@@ -1885,6 +1988,12 @@ namespace Tag.Ui.Menu
                 GoBack();
                 return;
             }
+            if (!MenuLobby.Enough(MenuSession.Mode, CouchPlay.Humans))
+            {
+                MenuAudio.Error();
+                if (_banner != null) _banner.text = MenuLobby.Short(MenuSession.Mode);
+                return;
+            }
             MenuAudio.Confirm();
             MenuSession.RandomArena = _focus == 3;
             if (!MenuSession.RandomArena) MenuSession.Arena = _focus;
@@ -1897,6 +2006,7 @@ namespace Tag.Ui.Menu
             {
                 case 1:
                     MenuAudio.Confirm();
+                    MenuMatch.RememberRules();
                     HideForMatch();
                     GameFlow flow = GameFlow.Instance;
                     if (flow != null) flow.Rematch();
@@ -1939,6 +2049,7 @@ namespace Tag.Ui.Menu
                     break;
                 default:
                     MenuAudio.Confirm();
+                    MenuMatch.RememberRules();
                     _holdResults = false;
                     HideForMatch();
                     GameFlow again = GameFlow.Instance;

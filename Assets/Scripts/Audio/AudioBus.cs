@@ -96,6 +96,39 @@ namespace Tag.Audio
                 TagSfx.RoundEnd();
         }
 
+        /// <summary>
+        /// Menu bed and stingers. Clip slots live on MenuCue and point at files
+        /// already in the project. These do not add gameplay hooks.
+        /// </summary>
+        public enum MenuHook
+        {
+            Music,
+            Move,
+            Confirm,
+            Back,
+            Join,
+            Error,
+            Ready,
+            Start,
+            Results
+        }
+
+        public static void RaiseMenu(MenuHook hook)
+        {
+            switch (hook)
+            {
+                case MenuHook.Music: AudioCuePlayer.Ensure()?.PlaygroundMusic(); break;
+                case MenuHook.Move: TagSfx.UiMove(); break;
+                case MenuHook.Confirm: TagSfx.UiConfirm(); break;
+                case MenuHook.Back: TagSfx.UiBack(); break;
+                case MenuHook.Join: TagSfx.UiClick(); break;
+                case MenuHook.Error: TagSfx.RoundLose(); break;
+                case MenuHook.Ready: TagSfx.RoundWin(); break;
+                case MenuHook.Start: TagSfx.RoundStart(); break;
+                case MenuHook.Results: TagSfx.RoundWin(); break;
+            }
+        }
+
         static void Play(Hook hook, Vector3 position)
         {
             switch (hook)

@@ -22,6 +22,9 @@ namespace Tag.Ui.Menu
         Transform _podiumRoot;
         Camera _podiumCam;
         RenderTexture _podiumRt;
+        Transform _paradeRoot;
+        Camera _paradeCam;
+        RenderTexture _paradeRt;
         readonly Transform[] _step = new Transform[Slots];
         readonly Transform[] _podiumAnchor = new Transform[Slots];
         readonly Transform[] _confetti = new Transform[18];
@@ -52,6 +55,7 @@ namespace Tag.Ui.Menu
                 Aim(i);
             }
             BuildPodium();
+            BuildParade();
             gameObject.SetActive(false);
         }
 
@@ -69,6 +73,7 @@ namespace Tag.Ui.Menu
                 if (_cam[i] != null) _cam[i].enabled = true;
             }
             if (_podiumCam != null) _podiumCam.enabled = false;
+            if (_paradeCam != null) _paradeCam.enabled = false;
         }
 
         public void Hide()
@@ -78,7 +83,25 @@ namespace Tag.Ui.Menu
                 if (_cam[i] != null) _cam[i].enabled = false;
             }
             if (_podiumCam != null) _podiumCam.enabled = false;
+            if (_paradeCam != null) _paradeCam.enabled = false;
             gameObject.SetActive(false);
+        }
+
+        public void ShowParade(RawImage view)
+        {
+            if (_paradeRoot == null) return;
+            gameObject.SetActive(true);
+            for (int i = 0; i < Slots; i++)
+            {
+                if (_cam[i] != null) _cam[i].enabled = false;
+            }
+            if (_podiumCam != null) _podiumCam.enabled = false;
+            if (_paradeCam != null) _paradeCam.enabled = true;
+            if (view != null)
+            {
+                view.texture = _paradeRt;
+                view.color = Color.white;
+            }
         }
 
         public void Apply(int seat, int hier, int accent, int hat, RawImage view)
@@ -109,6 +132,7 @@ namespace Tag.Ui.Menu
                 if (_cam[i] != null) _cam[i].enabled = false;
             }
             if (_podiumCam != null) _podiumCam.enabled = true;
+            if (_paradeCam != null) _paradeCam.enabled = false;
             if (view != null)
             {
                 view.texture = _podiumRt;
@@ -166,6 +190,12 @@ namespace Tag.Ui.Menu
                 p.y = 3.4f - y;
                 bit.localPosition = p;
                 bit.localRotation = Quaternion.Euler(0f, t * 80f + i * 20f, 0f);
+            }
+            if (_paradeRoot != null && _paradeCam != null && _paradeCam.enabled)
+            {
+                Vector3 p = _paradeRoot.localPosition;
+                p.x = Mathf.Sin(t * 0.15f) * 1.2f;
+                _paradeRoot.localPosition = p;
             }
         }
 
@@ -238,6 +268,43 @@ namespace Tag.Ui.Menu
             _podiumCam = cam;
         }
 
+        void BuildParade()
+        {
+            var root = new GameObject("Parade");
+            root.transform.SetParent(transform, false);
+            root.transform.position = new Vector3(0f, -120f, 80f);
+            _paradeRoot = root.transform;
+            float[] x = { -2.4f, -0.8f, 0.8f, 2.4f };
+            for (int i = 0; i < Slots; i++)
+            {
+                var stand = new GameObject("Runner" + i.ToString());
+                stand.transform.SetParent(_paradeRoot, false);
+                stand.transform.localPosition = new Vector3(x[i], 0f, 0f);
+                GameObject body = MenuMannequin.Spawn(stand.transform, MenuMannequin.NameOf(4), MenuMannequin.NameOf(i), false);
+                MenuCheer.Dress(body, MenuTheme.Seat(i));
+                MenuIdle idle = body.GetComponent<MenuIdle>();
+                if (idle != null) idle.enabled = false;
+                MenuStride stride = body.AddComponent<MenuStride>();
+                stride.Begin(i % 2 == 1, i * 0.37f);
+            }
+            var camGo = new GameObject("ParadeCam");
+            camGo.transform.SetParent(transform, false);
+            var cam = camGo.AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            cam.fieldOfView = 32f;
+            cam.nearClipPlane = 0.05f;
+            cam.farClipPlane = 40f;
+            cam.depth = -18;
+            cam.enabled = false;
+            _paradeRt = new RenderTexture(1280, 720, 16, RenderTextureFormat.ARGB32);
+            _paradeRt.Create();
+            cam.targetTexture = _paradeRt;
+            cam.transform.position = _paradeRoot.position + new Vector3(0f, 1.45f, 6.2f);
+            cam.transform.LookAt(_paradeRoot.position + new Vector3(0f, 1.05f, 0f));
+            _paradeCam = cam;
+        }
+
         void Aim(int i)
         {
             if (_cam[i] == null || _anchor[i] == null) return;
@@ -260,6 +327,12 @@ namespace Tag.Ui.Menu
                 _podiumRt.Release();
                 Destroy(_podiumRt);
                 _podiumRt = null;
+            }
+            if (_paradeRt != null)
+            {
+                _paradeRt.Release();
+                Destroy(_paradeRt);
+                _paradeRt = null;
             }
         }
     }

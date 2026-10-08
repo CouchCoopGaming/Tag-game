@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Tag.Practice;
 using Tag.Profiles;
+using Tag.Ui.Menu;
 
 namespace Tag.Settings
 {
@@ -68,6 +69,7 @@ namespace Tag.Settings
             PracticeBests.Write(text);
             PracticeGhost.Write(text);
             LocalProfiles.Write(text);
+            MenuSession.Write(text);
             return text.ToString();
         }
 
@@ -142,6 +144,7 @@ namespace Tag.Settings
                 settings.ResetToDefaults();
                 binds.ResetToDefaults();
                 LocalProfiles.Clear();
+                MenuSession.Reset();
                 return;
             }
             PracticeBests.Clear();
@@ -192,6 +195,7 @@ namespace Tag.Settings
             if (SeatKey(key, "rumble", out _)) return true;
             if (SeatKey(key, "flash", out _)) return true;
             if (LocalProfiles.IsKey(key)) return true;
+            if (MenuSession.IsKey(key)) return true;
             return false;
         }
 
@@ -218,7 +222,11 @@ namespace Tag.Settings
             else if (SeatKey(key, "captions", out int captionSeat)) settings.Captions[captionSeat] = Flag(value);
             else if (SeatKey(key, "rumble", out int rumbleSeat)) settings.Rumble[rumbleSeat] = (int)Num(value, settings.Rumble[rumbleSeat]);
             else if (SeatKey(key, "flash", out int flashSeat)) settings.ReduceFlash[flashSeat] = Flag(value);
-            else if (key == "arena") settings.Arena = (int)Num(value, settings.Arena);
+            else if (key == "arena")
+            {
+                settings.Arena = (int)Num(value, settings.Arena);
+                MenuSession.Arena = settings.Arena;
+            }
             else if (key == "ai") settings.AiOpponents = (int)Num(value, settings.AiOpponents);
             else if (key == "diff") settings.DifficultyTier = (int)Num(value, settings.DifficultyTier);
             else if (key == "roundLen") settings.RoundLengthIndex = (int)Num(value, settings.RoundLengthIndex);
@@ -235,7 +243,7 @@ namespace Tag.Settings
                 PracticeBests.SetSplits(key.Substring(3), value);
             else if (key.StartsWith("gh.", StringComparison.Ordinal))
                 PracticeGhost.Read(key.Substring(3), value);
-            else
+            else if (!MenuSession.ApplyKey(key, value))
                 LocalProfiles.ApplyKey(key, value);
         }
 
