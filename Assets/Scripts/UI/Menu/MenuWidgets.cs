@@ -108,6 +108,7 @@ namespace Tag.Ui.Menu
             bool two = !string.IsNullOrEmpty(detail);
             UiFit.TileText(h, two, out float titleFromTop, out float titleH, out float detailFromTop, out float detailH);
             var title = Words(rt, label, 40, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            title.font = MenuTheme.Display;
             var sub = Words(rt, detail, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Mute, Vector2.zero, Vector2.one);
             Band(title, h, titleFromTop, titleH);
             Band(sub, h, detailFromTop, detailH);

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Tag.Core;
 using Tag.Couch;
+using Tag.Experimental;
 using Tag.Front;
 using Tag.Gameplay;
 using Tag.Level;
@@ -929,7 +930,7 @@ namespace Tag.Ui.Menu
                 device = CouchPlay.DeviceKeyboard;
             int face = FaceFor(device, family);
             _footer.text = "";
-            bool title = _screen == MenuScreenId.Title;
+            bool hints = _screen != MenuScreenId.Title && _screen != MenuScreenId.Loading;
             Color chip = family == PadGlyph.Keyboard
                 ? new Color(0.08f, 0.18f, 0.36f, 1f)
                 : new Color(0.10f, 0.22f, 0.55f, 1f);
@@ -937,18 +938,18 @@ namespace Tag.Ui.Menu
             {
                 if (_glyphWord[i] != null)
                 {
-                    _glyphWord[i].enabled = !title;
-                    if (!title) _glyphWord[i].text = PadGlyph.Line(family, i, face);
+                    _glyphWord[i].enabled = hints;
+                    if (hints) _glyphWord[i].text = PadGlyph.Line(family, i, face);
                 }
                 if (_glyphChip[i] != null)
                 {
-                    _glyphChip[i].enabled = !title;
-                    if (!title) _glyphChip[i].color = chip;
+                    _glyphChip[i].enabled = hints;
+                    if (hints) _glyphChip[i].color = chip;
                 }
                 if (_glyphIcon[i] != null)
                 {
-                    _glyphIcon[i].enabled = !title;
-                    if (!title) _glyphIcon[i].sprite = MenuIcons.Slot(family, i, face);
+                    _glyphIcon[i].enabled = hints;
+                    if (hints) _glyphIcon[i].sprite = MenuIcons.Slot(family, i, face);
                 }
             }
             bool keyboard = family == PadGlyph.Keyboard;
@@ -1492,10 +1493,8 @@ namespace Tag.Ui.Menu
             if (confirm) ArmActivate();
             if (dx != 0)
             {
-                int actions = (int)PlayAction.Count;
-                int stick = _focus - actions;
-                int confirmAt = actions + MenuStick.Rows;
-                int resetAt = confirmAt + GameSettings.SeatCount;
+                ControlBands(out _, out _, out int stickAt, out int confirmAt, out int resetAt);
+                int stick = _focus - stickAt;
                 if (stick >= 0 && stick < MenuStick.Rows && MenuStick.Nudge(stick, dx))
                 {
                     MenuAudio.Move();
@@ -2099,13 +2098,17 @@ namespace Tag.Ui.Menu
             ShowFlyover(fly, 0.72f);
             MenuWidgets.Heading(_body, name, 64, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0.08f, 0.86f), new Vector2(0.92f, 0.98f));
             GameSettings rules = GameSettings.Current ?? GameSettings.Defaults();
-            string[] ruleLabel = { "Length", "Rounds", "Win target", "It", "Handicaps", "Pads", "Zips", "Tip" };
+            string[] ruleLabel = { "Length", "Rounds", "Win target", "Starting It", "Handicaps", "Pads", "Zips", "Tip" };
+            string it = RuleBook.LoadStart(rules);
+            const string itPrefix = "Starting It  ";
+            if (it != null && it.StartsWith(itPrefix))
+                it = it.Substring(itPrefix.Length);
             string[] ruleValue =
             {
                 RuleBook.LoadLength(rules),
                 RuleBook.LoadRounds(rules),
                 RuleBook.LoadWin(rules),
-                RuleBook.LoadStart(rules),
+                it,
                 RuleBook.LoadHand(rules, 0) + "  " + RuleBook.LoadHand(rules, 1) + "  " + RuleBook.LoadHand(rules, 2) + "  " + RuleBook.LoadHand(rules, 3),
                 RuleBook.LoadPads(rules),
                 RuleBook.LoadZips(rules),
@@ -2147,8 +2150,8 @@ namespace Tag.Ui.Menu
             if (GameSettings.Current != null) opener = GameSettings.Current.AccessSeat;
             bool preview = MenuSplitPause.Preview > 0;
             string who = MenuSplitPause.SeatLabel(opener, preview);
-            if (_header != null) _header.text = "  Paused";
-            if (_banner != null) _banner.text = "Paused by " + who;
+            if (_header != null) _header.text = "  Paused by " + who;
+            if (_banner != null) _banner.text = "";
             int n = MenuSplitPause.Fill(_cards);
             for (int c = 0; c < n; c++)
             {
@@ -2158,23 +2161,18 @@ namespace Tag.Ui.Menu
                 var plateImage = plate.gameObject.AddComponent<Image>();
                 MenuArt.Plate(plateImage, new Color(0.05f, 0.12f, 0.32f, 0.78f), true);
                 plateImage.raycastTarget = false;
-                string seatName = MenuSplitPause.SeatLabel(card.Seat, preview);
-                var nameRt = MenuWidgets.Place(_body, "PauseName", card.X + 28f, card.Y + 16f, card.W - 56f, 48f);
-                Text name = MenuWidgets.Words(nameRt, seatName, 32, TextAnchor.MiddleCenter, MenuTheme.Seat(card.Seat), Vector2.zero, Vector2.one);
-                name.alignment = TextAnchor.MiddleCenter;
-                float labelH = 56f;
-                float gap = 10f;
-                float avail = card.H - labelH - 36f;
-                float bh = (avail - gap * (MenuSplitPause.Items - 1)) / MenuSplitPause.Items;
-                if (bh > 100f) bh = 100f;
+                float edge = 36f;
+                float gap = 12f;
+                float bh = (card.H - edge * 2f - gap * (MenuSplitPause.Items - 1)) / MenuSplitPause.Items;
+                if (bh > 108f) bh = 108f;
                 if (bh < 58f) bh = 58f;
                 float stack = MenuSplitPause.Items * bh + (MenuSplitPause.Items - 1) * gap;
                 float bw = card.W - 72f;
                 if (bw > 760f) bw = 760f;
                 if (bw < 240f) bw = card.W - 36f;
                 float bx = card.X + (card.W - bw) * 0.5f;
-                float by = card.Y + labelH + (avail - stack) * 0.5f;
-                if (by < card.Y + labelH) by = card.Y + labelH;
+                float by = card.Y + (card.H - stack) * 0.5f;
+                if (by < card.Y + edge) by = card.Y + edge;
                 for (int i = 0; i < MenuSplitPause.Items; i++)
                     AddTile(bx, by + i * (bh + gap), bw, bh, i, MenuSplitPause.Item[i], MenuSplitPause.Blurb[i], true);
             }
@@ -2337,16 +2335,20 @@ namespace Tag.Ui.Menu
                 if (index >= _count) break;
                 string title;
                 string detail;
-                int actions = (int)PlayAction.Count;
-                int confirmAt = actions + MenuStick.Rows;
-                int resetAt = confirmAt + GameSettings.SeatCount;
-                int stick = index - actions;
+                ControlBands(out int actions, out int noteAt, out int stickAt, out int confirmAt, out int resetAt);
+                int stick = index - stickAt;
+                int note = index - noteAt;
                 if (index < actions)
                 {
                     var action = (PlayAction)index;
                     title = ActionBinds.Name(action);
-                    detail = ActionBinds.Show(binds.Keyboard[index]) + "    /    " + ActionBinds.Show(binds.Gamepad[index]);
+                    detail = ActionDetail(action, binds);
                     if (_capturing && index == _captureAction) detail = "Press a key or a button";
+                }
+                else if (note >= 0 && note < ContextNotes)
+                {
+                    title = NoteTitle(note);
+                    detail = NoteDetail(note);
                 }
                 else if (stick >= 0 && stick < MenuStick.Rows)
                 {
@@ -2370,7 +2372,7 @@ namespace Tag.Ui.Menu
                     title = "Back";
                     detail = _conflict ?? "";
                 }
-                UiFit.RowBox(UiFit.Current(), 1280f, out float rowX, out float rowW);
+                UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
                 MenuTile row = AddTile(rowX, 8f + v * 96f, rowW, 88f, index, title, detail, true);
                 if (index < actions && row != null)
                 {
@@ -2667,10 +2669,11 @@ namespace Tag.Ui.Menu
 
         void ActivateControls()
         {
-            int actions = (int)PlayAction.Count;
-            int confirmAt = actions + MenuStick.Rows;
-            int resetAt = confirmAt + GameSettings.SeatCount;
-            int stick = _focus - actions;
+            ControlBands(out _, out int noteAt, out int stickAt, out int confirmAt, out int resetAt);
+            int note = _focus - noteAt;
+            if (note >= 0 && note < ContextNotes)
+                return;
+            int stick = _focus - stickAt;
             if (stick >= 0 && stick < MenuStick.Rows)
             {
                 if (MenuStick.Nudge(stick, 1))
@@ -3182,9 +3185,66 @@ namespace Tag.Ui.Menu
             return "P1 confirm";
         }
 
+        const int ContextNotes = 3;
+
+        static void ControlBands(out int actions, out int noteAt, out int stickAt, out int confirmAt, out int resetAt)
+        {
+            actions = (int)PlayAction.Count;
+            noteAt = actions;
+            stickAt = actions + ContextNotes;
+            confirmAt = stickAt + MenuStick.Rows;
+            resetAt = confirmAt + GameSettings.SeatCount;
+        }
+
         static int ControlCount()
         {
-            return (int)PlayAction.Count + MenuStick.Rows + GameSettings.SeatCount + 2;
+            ControlBands(out _, out _, out _, out _, out int resetAt);
+            return resetAt + 2;
+        }
+
+        /// <summary>
+        /// Keyboard words are what PlayerInputReader samples on the solo pawn.
+        /// Pad words are the ActionBinds gamepad tokens. Cling stays the move hold.
+        /// </summary>
+        static string ActionDetail(PlayAction action, ActionBinds binds)
+        {
+            int i = (int)action;
+            string kb = binds.Keyboard[i];
+            string pad = ActionBinds.Show(binds.Gamepad[i]);
+            if (action == PlayAction.Cling)
+            {
+                return ActionBinds.Show(kb) + " / " + pad
+                    + ". Wall climb and wall run need this hold. Wall jump is this hold plus Jump.";
+            }
+            string key = ActionBinds.Show(kb);
+            if (action == PlayAction.Slide && kb == "leftCtrl")
+                key = "Ctrl or C";
+            else if (action == PlayAction.AirDash && kb != "leftAlt")
+                key = ActionBinds.Show(kb) + " or Alt";
+            else if (action == PlayAction.Punch && kb != "e")
+                key = ActionBinds.Show(kb) + " or E";
+            else if (action == PlayAction.Sprint && kb == "leftShift")
+                key = "Shift or Alt";
+            return key + "    /    " + pad;
+        }
+
+        static string NoteTitle(int note)
+        {
+            if (note == 0) return "Grapple";
+            if (note == 1) return "Zip";
+            return "Launch pad";
+        }
+
+        static string NoteDetail(int note)
+        {
+            if (note == 0)
+            {
+                return ExperimentalGrapple.FireButton
+                    + ". Click pulls. Second click within 0.28 s releases. Left hand. No pad bind.";
+            }
+            if (note == 1)
+                return "Hold cling to grab. Jump to drop.";
+            return "Walk on. No button.";
         }
 
         static int FaceFor(int device, int family)

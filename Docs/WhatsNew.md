@@ -296,6 +296,8 @@ The thirteenth pass centers each button label under the highlight stripe and put
 
 The fourteenth pass insets each arena photo inside the navy frame. Mega Park, Pocket Park, and Stack Yard each show a daylight view with the pads, a zip, and the loop. The two figures on the main menu stand on discs, and that screen's header reads Menu so the lockup is the only TAG. Play, Practice, Options, and Controls use the same gap under the stripe as the color swatches. The hat and ready line sits inside its box, and the 3 and 4 on results sit in front of the discs. Space still jumps. Mockups are in `Docs/UiStills/pass14/`.
 
+The fifteenth pass keeps every button title on the comic face and every sublabel on the body face, and the sublabel uses the width of the button. Controls lists grapple, the cling hold, zip, and the launch pad the way they are bound. The chase discs clear the edge and the tip. Loading says Starting It, then Random, with no confirm or back hint. Pause reads Paused by P1. Mega Park is framed lower, with a zip and a pad in front. Space still jumps. Mockups are in `Docs/UiStills/pass15/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
