@@ -81,6 +81,8 @@ PALETTE = {
     "Lib_Bark": ((0.34, 0.24, 0.14), 0.0, 0.22),
     "Lib_MetalWorn": ((0.42, 0.40, 0.38), 0.55, 0.28),
     "Lib_CraneYellow": ((0.78, 0.62, 0.16), 0.15, 0.32),
+    # Flat varnish. Not the baked wood tile, which reads blotchy on a curved hull.
+    "Lib_Varnish": ((0.52, 0.34, 0.16), 0.0, 0.38),
 }
 
 # Blender emission (color, strength). Unity gets the same color on _EmissionColor.
@@ -1273,7 +1275,7 @@ def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13",
         "write_unity", "_kit",
     }
     names = []

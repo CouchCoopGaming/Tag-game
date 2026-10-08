@@ -55,8 +55,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 1.2275, z: 0}
-  m_Size: 2.565
+  m_LocalReferencePoint: {x: 0, y: 1.2275, z: -0.169}
+  m_Size: 2.902
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -83,7 +83,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Harbor"
-  summary: "Gangway 2.6 x 1.05 m. Deck falls from 0.90 m at -Z (quay) to 0.62 m at +Z (floating dock). Handrails both sides."
+  summary: "Gangway 2.6 x 1.05 m. Deck falls from 0.90 m at -Z (quay) to 0.62 m at +Z (floating dock). Hinge leaf and pin at the high end, handrails both sides, anti-slip cleats on the deck."
   climbable: 0
   vaultable: 1
   vaultHeightMeters: 0.95

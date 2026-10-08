@@ -27,7 +27,7 @@ def create():
     a = Asset(
         "Gangway",
         "Harbor",
-        "Gangway 2.6 x 1.05 m. Deck falls from 0.90 m at -Z (quay) to 0.62 m at +Z (floating dock). Handrails both sides.",
+        "Gangway 2.6 x 1.05 m. Deck falls from 0.90 m at -Z (quay) to 0.62 m at +Z (floating dock). Hinge leaf and pin at the high end, handrails both sides, anti-slip cleats on the deck.",
     )
     a.allow_float = True
     a.loose_pivot = True
@@ -58,6 +58,19 @@ def create():
             g.pipe((x, _y_at(z0) + 0.95, z0), (x, _y_at(z1) + 0.95, z1), 0.016, "Lib_Steel", seg)
             inner = x * 0.92
             g.pipe((inner, _y_at(z0) + 0.52, z0), (inner, _y_at(z1) + 0.52, z1), 0.011, "Lib_SteelDark", seg)
+        # Quay leaf stops short of the first plank. The pin sits in that gap.
+        g.box((0, HIGH + 0.010, -LENGTH * 0.5 - 0.20), (0.66, 0.012, 0.24), "Lib_Steel", bevel=bev, segs=1 if lod == 0 else 0)
+        pin_z = -LENGTH * 0.5 - 0.02
+        g.cylinder((0, HIGH + 0.028, pin_z), 0.016, 0.58, "Lib_SteelDark", seg, axis="X")
+        if lod == 0:
+            for hx in (-0.24, 0.24):
+                g.cylinder((hx, HIGH + 0.028, pin_z), 0.022, 0.032, "Lib_Steel", max(6, seg - 2), axis="X")
+        cleats = lod_pick(lod, 8, 4)
+        span = LENGTH - 0.44
+        for i in range(cleats):
+            t = (i + 0.5) / cleats
+            z = -LENGTH * 0.5 + 0.22 + t * span
+            g.box((0, _y_at(z) + 0.024, z), (0.70, 0.008, 0.018), "Lib_SteelDark", euler=(PITCH, 0, 0))
         a.end()
     for i in range(count):
         t = (i + 0.5) / count
