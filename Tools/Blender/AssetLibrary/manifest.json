@@ -37504,5 +37504,226 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Compact.fbx"
+  },
+  {
+    "name": "Crossover_Compact",
+    "category": "Vehicles",
+    "blurb": "Compact crossover shell, 4.694 m long, 1.867 m wide, roof 1.681 m. High hatch, dark rocker cladding, flush glass.",
+    "size": [
+      2.065,
+      1.68,
+      4.78
+    ],
+    "min": [
+      -1.033,
+      0.0,
+      -2.39
+    ],
+    "max": [
+      1.033,
+      1.68,
+      2.39
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 11881,
+        "materials": [
+          "Lib_PaintCream",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3341,
+        "materials": [
+          "Lib_PaintCream",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8192799999999999,
+          0.36865,
+          -1.2420599999999997
+        ],
+        "size": [
+          0.016,
+          0.35390399999999994,
+          0.35390399999999994
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8192799999999999,
+          0.36865,
+          -1.2420599999999997
+        ],
+        "size": [
+          0.016,
+          0.35390399999999994,
+          0.35390399999999994
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8192799999999999,
+          0.36865,
+          1.4579600000000001
+        ],
+        "size": [
+          0.016,
+          0.35390399999999994,
+          0.35390399999999994
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8192799999999999,
+          0.36865,
+          1.4579600000000001
+        ],
+        "size": [
+          0.016,
+          0.35390399999999994,
+          0.35390399999999994
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.55,
+          0.11795000000000022
+        ],
+        "size": [
+          1.157478,
+          0.46,
+          1.1340084
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.59148,
+          -0.8087931182123067
+        ],
+        "size": [
+          0.672084,
+          0.036,
+          0.8261299200000003
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.8696662,
+          1.5924600000000002
+        ],
+        "size": [
+          1.0828019999999998,
+          0.1,
+          0.6036
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.56,
+          -2.043927484752122
+        ],
+        "size": [
+          0.896112,
+          0.14,
+          0.2181834109784723
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Sheet metal. Not a cling wall.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Crossover_Compact.fbx"
   }
 ]

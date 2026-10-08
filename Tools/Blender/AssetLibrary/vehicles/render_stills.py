@@ -25,6 +25,7 @@ LIMIT = 400 * 1024
 MODULES = (
     "sedan_midsize",
     "sedan_compact",
+    "crossover_compact",
     "mannequin",
 )
 
@@ -131,9 +132,12 @@ def main():
     if only is None or "midsize" in only or "sedan_midsize" in only:
         print("SHOT", "sedan_midsize")
         _sedan_set(found, "Sedan_Midsize", "sedan_midsize")
-    if only is None or "compact" in only or "sedan_compact" in only:
+    if only is None or "sedan_compact" in only or only == "compact":
         print("SHOT", "sedan_compact")
         _sedan_set(found, "Sedan_Compact", "sedan_compact")
+    if only is None or "crossover" in only:
+        print("SHOT", "crossover_compact")
+        _sedan_set(found, "Crossover_Compact", "crossover_compact")
     print("VEHICLE_STILLS", STILL_ROOT)
 
 

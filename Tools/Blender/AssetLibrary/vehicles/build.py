@@ -32,6 +32,7 @@ from _sk_build import _merge, _prefabs  # noqa: E402
 MODULES = (
     "sedan_midsize",
     "sedan_compact",
+    "crossover_compact",
 )
 
 

@@ -561,6 +561,13 @@ def build_sedan(g, spec, lod):
     _door_lines(g, spec)
     _mirrors(g, spec, lod)
     _fascia(g, spec, lod)
+    if spec.get("cladding"):
+        z_a = spec["axles"][0] + spec["arch_r"] + 0.08
+        z_b = spec["axles"][1] - spec["arch_r"] - 0.08
+        x = spec["width"] * 0.5 * 0.98
+        zmid = (z_a + z_b) * 0.5
+        for sign in (-1.0, 1.0):
+            g.box((sign * (x + 0.012), 0.40, zmid), (0.028, 0.20, z_b - z_a), "Lib_SteelDark")
     _wheels(g, spec, lod)
 
 
@@ -573,7 +580,7 @@ def add_sedan_colliders(asset, spec):
             asset.box("Col_Wheel_%d%d" % (i, j), (sign * x, spec["axle_y"], z), (0.016, r * 0.96, r * 0.96))
     cabin_z = (spec["doors"][0][1] + spec["doors"][1][0]) * 0.5
     asset.box("Col_Cabin", (0.0, 0.55, cabin_z), (spec["width"] * 0.62, 0.46, spec["wheelbase"] * 0.42))
-    asset.box("Col_Roof", (0.0, spec["height"] - 0.07, spec["roof_z"]), (spec["width"] * 0.40, 0.045, spec["roof_len"]))
+    asset.box("Col_Roof", (0.0, spec["height"] - 0.09, spec["roof_z"]), (spec["width"] * 0.36, 0.036, spec["roof_len"]))
     asset.box("Col_Hood", (0.0, spec["hood_col_y"], spec["hood_z"]), (spec["width"] * 0.58, spec["hood_col_h"], spec["hood_len"]))
     asset.box("Col_Deck", (0.0, spec["deck_col_y"], spec["deck_z"]), (spec["width"] * 0.48, spec["deck_col_h"], spec["deck_len"]))
 
@@ -599,6 +606,7 @@ def probe_sedan(asset, spec):
 def make_sedan(
     length, width, height, wheelbase, track, front_overhang,
     tire_radius, tire_width, nose_y, paint, name,
+    deck_ratio=0.745, roof_span=0.22, cowl_setback=0.38, belly=0.145,
 ):
     """Family-sedan silhouette. A-pillar is 60 degrees from vertical by construction."""
     z0 = -length * 0.5
@@ -607,7 +615,7 @@ def make_sedan(
     z_rear = z_front - wheelbase
     belt = height * 0.63
     roof = height
-    cowl_z = z_front - 0.38
+    cowl_z = z_front - cowl_setback
     cowl_y = nose_y + (roof * 0.66 - nose_y) * 0.55
     # Keep the cowl under the roof and above the belt.
     cowl_y = min(max(cowl_y, belt + 0.02), roof - 0.42)
@@ -616,10 +624,10 @@ def make_sedan(
     dz = dy * math.tan(math.radians(60.0))
     header_z = cowl_z - dz
     roof_rear_y = roof - 0.055
-    deck_y = roof * 0.745
+    deck_y = roof * deck_ratio
     c_dy = roof_rear_y - deck_y
     c_dz = c_dy * math.tan(math.radians(58.0))
-    roof_rear_z = header_z - (length * 0.22)
+    roof_rear_z = header_z - (length * roof_span)
     # Keep a real roof length, then drop the C-pillar to the deck.
     if roof_rear_z > header_z - 0.70:
         roof_rear_z = header_z - 0.70
@@ -700,7 +708,7 @@ def make_sedan(
         "arch_r": arch_r,
         "flare": 0.018,
         "belt": belt,
-        "belly": 0.145,
+        "belly": belly,
         "rocker_y": 0.30,
         "tumble": 0.042,
         "keys": keys,
