@@ -80,7 +80,7 @@ def _prop_many(found, specs, cam, aim, lens, path, ground):
 
 def _dock_water():
     p6._ground((0.16, 0.14, 0.10), y=-1.35, size=40.0)
-    p6._sheet(0.0, -0.02, 0.0, 40.0, 40.0, p6._mat("Pass22Water", (0.05, 0.10, 0.12), 0.18, transmission=0.35))
+    p6._sheet(0.0, -0.02, 0.0, 40.0, 40.0, p6._mat("Pass22Water", (0.07, 0.14, 0.16), 0.12, transmission=0.72))
 
 
 def _runner(found, specs, hier_pos, hier_yaw, cam, aim, lens, path, ground, water=False):

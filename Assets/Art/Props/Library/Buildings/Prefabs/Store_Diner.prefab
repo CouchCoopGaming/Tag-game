@@ -108,7 +108,7 @@ LODGroup:
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
   m_LocalReferencePoint: {x: 0, y: 2.9575, z: 0.305}
-  m_Size: 10.252
+  m_Size: 12.66
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -1891,7 +1891,7 @@ GameObject:
   - component: {fileID: 300271}
   - component: {fileID: 300272}
   m_Layer: 0
-  m_Name: Col_Kick
+  m_Name: Col_String
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1906,7 +1906,7 @@ Transform:
   m_GameObject: {fileID: 300270}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.78, y: 0.195, z: 3.43}
+  m_LocalPosition: {x: 0, y: 3.52, z: 3.56}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1931,7 +1931,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.228, y: 0.252, z: 0.1}
+  m_Size: {x: 9.616, y: 0.04, z: 0.03}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300280
 GameObject:
@@ -1944,7 +1944,7 @@ GameObject:
   - component: {fileID: 300281}
   - component: {fileID: 300282}
   m_Layer: 0
-  m_Name: Col_Kick_2
+  m_Name: Col_Cornice
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1959,7 +1959,7 @@ Transform:
   m_GameObject: {fileID: 300280}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.492, y: 0.195, z: 3.43}
+  m_LocalPosition: {x: 0, y: 3.68, z: 3.67}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1984,7 +1984,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.228, y: 0.252, z: 0.1}
+  m_Size: {x: 9.736, y: 0.08, z: 0.08}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300290
 GameObject:
@@ -1997,7 +1997,7 @@ GameObject:
   - component: {fileID: 300291}
   - component: {fileID: 300292}
   m_Layer: 0
-  m_Name: Col_Kick_3
+  m_Name: Col_Kick
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2012,7 +2012,7 @@ Transform:
   m_GameObject: {fileID: 300290}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.204, y: 0.195, z: 3.43}
+  m_LocalPosition: {x: -3.78, y: 0.195, z: 3.43}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2050,7 +2050,7 @@ GameObject:
   - component: {fileID: 300301}
   - component: {fileID: 300302}
   m_Layer: 0
-  m_Name: Col_Kick_4
+  m_Name: Col_Kick_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2065,7 +2065,7 @@ Transform:
   m_GameObject: {fileID: 300300}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.084, y: 0.195, z: 3.43}
+  m_LocalPosition: {x: -2.492, y: 0.195, z: 3.43}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2103,7 +2103,7 @@ GameObject:
   - component: {fileID: 300311}
   - component: {fileID: 300312}
   m_Layer: 0
-  m_Name: Col_Kick_5
+  m_Name: Col_Kick_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2118,7 +2118,7 @@ Transform:
   m_GameObject: {fileID: 300310}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.372, y: 0.195, z: 3.43}
+  m_LocalPosition: {x: -1.204, y: 0.195, z: 3.43}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2156,7 +2156,7 @@ GameObject:
   - component: {fileID: 300321}
   - component: {fileID: 300322}
   m_Layer: 0
-  m_Name: Col_Kick_6
+  m_Name: Col_Kick_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2171,7 +2171,7 @@ Transform:
   m_GameObject: {fileID: 300320}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.66, y: 0.195, z: 3.43}
+  m_LocalPosition: {x: 0.084, y: 0.195, z: 3.43}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2209,7 +2209,7 @@ GameObject:
   - component: {fileID: 300331}
   - component: {fileID: 300332}
   m_Layer: 0
-  m_Name: Col_Glass_5
+  m_Name: Col_Kick_5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2224,7 +2224,7 @@ Transform:
   m_GameObject: {fileID: 300330}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.78, y: 1.4575, z: 3.36}
+  m_LocalPosition: {x: 1.372, y: 0.195, z: 3.43}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2249,7 +2249,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.208, y: 2.025, z: 0.008}
+  m_Size: {x: 1.228, y: 0.252, z: 0.1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300340
 GameObject:
@@ -2262,7 +2262,7 @@ GameObject:
   - component: {fileID: 300341}
   - component: {fileID: 300342}
   m_Layer: 0
-  m_Name: Col_Glass_6
+  m_Name: Col_Kick_6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2277,7 +2277,7 @@ Transform:
   m_GameObject: {fileID: 300340}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.492, y: 1.4575, z: 3.36}
+  m_LocalPosition: {x: 2.66, y: 0.195, z: 3.43}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2302,7 +2302,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.208, y: 2.025, z: 0.008}
+  m_Size: {x: 1.228, y: 0.252, z: 0.1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300350
 GameObject:
@@ -2315,7 +2315,7 @@ GameObject:
   - component: {fileID: 300351}
   - component: {fileID: 300352}
   m_Layer: 0
-  m_Name: Col_Glass_7
+  m_Name: Col_Glass_5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2330,7 +2330,7 @@ Transform:
   m_GameObject: {fileID: 300350}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.204, y: 1.4575, z: 3.36}
+  m_LocalPosition: {x: -3.78, y: 1.4575, z: 3.36}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2368,7 +2368,7 @@ GameObject:
   - component: {fileID: 300361}
   - component: {fileID: 300362}
   m_Layer: 0
-  m_Name: Col_Glass_8
+  m_Name: Col_Glass_6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2383,7 +2383,7 @@ Transform:
   m_GameObject: {fileID: 300360}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.084, y: 1.4575, z: 3.36}
+  m_LocalPosition: {x: -2.492, y: 1.4575, z: 3.36}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2421,7 +2421,7 @@ GameObject:
   - component: {fileID: 300371}
   - component: {fileID: 300372}
   m_Layer: 0
-  m_Name: Col_Glass_9
+  m_Name: Col_Glass_7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2436,7 +2436,7 @@ Transform:
   m_GameObject: {fileID: 300370}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.372, y: 1.4575, z: 3.36}
+  m_LocalPosition: {x: -1.204, y: 1.4575, z: 3.36}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2474,7 +2474,7 @@ GameObject:
   - component: {fileID: 300381}
   - component: {fileID: 300382}
   m_Layer: 0
-  m_Name: Col_Glass_10
+  m_Name: Col_Glass_8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2489,7 +2489,7 @@ Transform:
   m_GameObject: {fileID: 300380}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.66, y: 1.4575, z: 3.36}
+  m_LocalPosition: {x: 0.084, y: 1.4575, z: 3.36}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2527,7 +2527,7 @@ GameObject:
   - component: {fileID: 300391}
   - component: {fileID: 300392}
   m_Layer: 0
-  m_Name: Col_Shelf
+  m_Name: Col_Glass_9
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2542,7 +2542,7 @@ Transform:
   m_GameObject: {fileID: 300390}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.78, y: 1.08, z: 2.89}
+  m_LocalPosition: {x: 1.372, y: 1.4575, z: 3.36}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2567,7 +2567,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.148, y: 0.016, z: 0.14}
+  m_Size: {x: 1.208, y: 2.025, z: 0.008}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300400
 GameObject:
@@ -2580,7 +2580,7 @@ GameObject:
   - component: {fileID: 300401}
   - component: {fileID: 300402}
   m_Layer: 0
-  m_Name: Col_Shelf_2
+  m_Name: Col_Glass_10
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2595,7 +2595,7 @@ Transform:
   m_GameObject: {fileID: 300400}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.78, y: 1.58, z: 2.89}
+  m_LocalPosition: {x: 2.66, y: 1.4575, z: 3.36}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2620,7 +2620,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.148, y: 0.016, z: 0.14}
+  m_Size: {x: 1.208, y: 2.025, z: 0.008}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300410
 GameObject:
@@ -2633,7 +2633,7 @@ GameObject:
   - component: {fileID: 300411}
   - component: {fileID: 300412}
   m_Layer: 0
-  m_Name: Col_Shelf_3
+  m_Name: Col_Shelf
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2648,7 +2648,7 @@ Transform:
   m_GameObject: {fileID: 300410}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.492, y: 1.08, z: 2.89}
+  m_LocalPosition: {x: -3.78, y: 1.08, z: 2.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2686,7 +2686,7 @@ GameObject:
   - component: {fileID: 300421}
   - component: {fileID: 300422}
   m_Layer: 0
-  m_Name: Col_Shelf_4
+  m_Name: Col_Shelf_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2701,7 +2701,7 @@ Transform:
   m_GameObject: {fileID: 300420}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.492, y: 1.58, z: 2.89}
+  m_LocalPosition: {x: -3.78, y: 1.58, z: 2.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2739,7 +2739,7 @@ GameObject:
   - component: {fileID: 300431}
   - component: {fileID: 300432}
   m_Layer: 0
-  m_Name: Col_Shelf_5
+  m_Name: Col_Shelf_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2754,7 +2754,7 @@ Transform:
   m_GameObject: {fileID: 300430}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.204, y: 1.08, z: 2.89}
+  m_LocalPosition: {x: -2.492, y: 1.08, z: 2.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2792,7 +2792,7 @@ GameObject:
   - component: {fileID: 300441}
   - component: {fileID: 300442}
   m_Layer: 0
-  m_Name: Col_Shelf_6
+  m_Name: Col_Shelf_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2807,7 +2807,7 @@ Transform:
   m_GameObject: {fileID: 300440}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.204, y: 1.58, z: 2.89}
+  m_LocalPosition: {x: -2.492, y: 1.58, z: 2.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2845,7 +2845,7 @@ GameObject:
   - component: {fileID: 300451}
   - component: {fileID: 300452}
   m_Layer: 0
-  m_Name: Col_Shelf_7
+  m_Name: Col_Shelf_5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2860,7 +2860,7 @@ Transform:
   m_GameObject: {fileID: 300450}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.084, y: 1.08, z: 2.89}
+  m_LocalPosition: {x: -1.204, y: 1.08, z: 2.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2898,7 +2898,7 @@ GameObject:
   - component: {fileID: 300461}
   - component: {fileID: 300462}
   m_Layer: 0
-  m_Name: Col_Shelf_8
+  m_Name: Col_Shelf_6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2913,7 +2913,7 @@ Transform:
   m_GameObject: {fileID: 300460}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.084, y: 1.58, z: 2.89}
+  m_LocalPosition: {x: -1.204, y: 1.58, z: 2.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2951,7 +2951,7 @@ GameObject:
   - component: {fileID: 300471}
   - component: {fileID: 300472}
   m_Layer: 0
-  m_Name: Col_Shelf_9
+  m_Name: Col_Shelf_7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2966,7 +2966,7 @@ Transform:
   m_GameObject: {fileID: 300470}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.372, y: 1.08, z: 2.89}
+  m_LocalPosition: {x: 0.084, y: 1.08, z: 2.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3004,7 +3004,7 @@ GameObject:
   - component: {fileID: 300481}
   - component: {fileID: 300482}
   m_Layer: 0
-  m_Name: Col_Shelf_10
+  m_Name: Col_Shelf_8
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3019,7 +3019,7 @@ Transform:
   m_GameObject: {fileID: 300480}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.372, y: 1.58, z: 2.89}
+  m_LocalPosition: {x: 0.084, y: 1.58, z: 2.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3057,7 +3057,7 @@ GameObject:
   - component: {fileID: 300491}
   - component: {fileID: 300492}
   m_Layer: 0
-  m_Name: Col_Shelf_11
+  m_Name: Col_Shelf_9
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3072,7 +3072,7 @@ Transform:
   m_GameObject: {fileID: 300490}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.66, y: 1.08, z: 2.89}
+  m_LocalPosition: {x: 1.372, y: 1.08, z: 2.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3110,7 +3110,7 @@ GameObject:
   - component: {fileID: 300501}
   - component: {fileID: 300502}
   m_Layer: 0
-  m_Name: Col_Shelf_12
+  m_Name: Col_Shelf_10
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3125,7 +3125,7 @@ Transform:
   m_GameObject: {fileID: 300500}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.66, y: 1.58, z: 2.89}
+  m_LocalPosition: {x: 1.372, y: 1.58, z: 2.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3163,7 +3163,7 @@ GameObject:
   - component: {fileID: 300511}
   - component: {fileID: 300512}
   m_Layer: 0
-  m_Name: Col_Interior
+  m_Name: Col_Shelf_11
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3178,7 +3178,7 @@ Transform:
   m_GameObject: {fileID: 300510}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.28, z: 2.57}
+  m_LocalPosition: {x: 2.66, y: 1.08, z: 2.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3203,7 +3203,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 6.4583, y: 1.4, z: 0.012}
+  m_Size: {x: 1.148, y: 0.016, z: 0.14}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300520
 GameObject:
@@ -3216,7 +3216,7 @@ GameObject:
   - component: {fileID: 300521}
   - component: {fileID: 300522}
   m_Layer: 0
-  m_Name: Col_Door
+  m_Name: Col_Shelf_12
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3231,7 +3231,7 @@ Transform:
   m_GameObject: {fileID: 300520}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.834, y: 1.05, z: 3.21}
+  m_LocalPosition: {x: 2.66, y: 1.58, z: 2.89}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3256,7 +3256,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.84, y: 1.92, z: 0.03}
+  m_Size: {x: 1.148, y: 0.016, z: 0.14}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300530
 GameObject:
@@ -3269,7 +3269,7 @@ GameObject:
   - component: {fileID: 300531}
   - component: {fileID: 300532}
   m_Layer: 0
-  m_Name: Col_Transom
+  m_Name: Col_Interior
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3284,7 +3284,7 @@ Transform:
   m_GameObject: {fileID: 300530}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.834, y: 2.355, z: 3.36}
+  m_LocalPosition: {x: 0, y: 1.28, z: 2.57}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3309,7 +3309,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.82, y: 0.25, z: 0.008}
+  m_Size: {x: 6.4583, y: 1.4, z: 0.012}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300540
 GameObject:
@@ -3322,7 +3322,7 @@ GameObject:
   - component: {fileID: 300541}
   - component: {fileID: 300542}
   m_Layer: 0
-  m_Name: Col_SignBack
+  m_Name: Col_Door
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3337,7 +3337,7 @@ Transform:
   m_GameObject: {fileID: 300540}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.98, z: 3.538}
+  m_LocalPosition: {x: 3.834, y: 1.05, z: 3.21}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3362,7 +3362,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5.4, y: 0.82, z: 0.018}
+  m_Size: {x: 0.84, y: 1.92, z: 0.03}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300550
 GameObject:
@@ -3375,7 +3375,7 @@ GameObject:
   - component: {fileID: 300551}
   - component: {fileID: 300552}
   m_Layer: 0
-  m_Name: Col_Sign
+  m_Name: Col_Transom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3390,7 +3390,7 @@ Transform:
   m_GameObject: {fileID: 300550}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.98, z: 3.588}
+  m_LocalPosition: {x: 3.834, y: 2.355, z: 3.36}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3415,7 +3415,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 5.12, y: 0.64, z: 0.03}
+  m_Size: {x: 0.82, y: 0.25, z: 0.008}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300560
 GameObject:
@@ -3428,7 +3428,7 @@ GameObject:
   - component: {fileID: 300561}
   - component: {fileID: 300562}
   m_Layer: 0
-  m_Name: Col_String
+  m_Name: Col_SignBack
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3443,7 +3443,7 @@ Transform:
   m_GameObject: {fileID: 300560}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.52, z: 3.56}
+  m_LocalPosition: {x: 0, y: 2.98, z: 3.538}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3468,7 +3468,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 9.248, y: 0.05, z: 0.04}
+  m_Size: {x: 5.4, y: 0.82, z: 0.018}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300570
 GameObject:
@@ -3481,7 +3481,7 @@ GameObject:
   - component: {fileID: 300571}
   - component: {fileID: 300572}
   m_Layer: 0
-  m_Name: Col_Cornice
+  m_Name: Col_Sign
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3496,7 +3496,7 @@ Transform:
   m_GameObject: {fileID: 300570}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.68, z: 3.67}
+  m_LocalPosition: {x: 0, y: 2.98, z: 3.588}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3521,7 +3521,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 9.248, y: 0.1, z: 0.12}
+  m_Size: {x: 5.12, y: 0.64, z: 0.03}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300580
 GameObject:

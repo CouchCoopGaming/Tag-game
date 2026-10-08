@@ -5833,15 +5833,15 @@
   {
     "name": "Dock_Straight",
     "category": "Harbor",
-    "blurb": "Dock module 6.0 m long and 3.0 m wide. Deck top is 0.62 m. The side is open: gapped deck planks, one 5 by 20 cm stringer, then cross-braces between the piles. Piles are 30 cm rounds with vertical grain, a wet band, and green at the waterline. A round ladder on -X curves over the deck as grab handles and runs into the water. Cleats, two bollards, and a rope that lies on the deck. Butt the next module on the Z ends (center to center 6.0 m).",
+    "blurb": "Dock module 6.0 m long and 3.0 m wide. Deck top is 0.62 m. The side is open: gapped deck planks, one 5 by 20 cm stringer, then cross-braces bolted pile to pile. Piles are 30 cm rounds from below the water (darker under the line) up to the stringer. A round ladder on -X curves over the deck as grab handles and runs into the water. Cleats, two bollards, and a rope that lies on the deck. Butt the next module on the Z ends (center to center 6.0 m).",
     "size": [
       2.86,
-      2.208,
+      2.228,
       5.95
     ],
     "min": [
       -1.54,
-      -1.2,
+      -1.22,
       -2.975
     ],
     "max": [
@@ -5852,12 +5852,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 3540,
+        "tris": 3908,
         "materials": [
           "Lib_PileWet",
           "Lib_PileAlgae",
           "Lib_Pile",
-          "Lib_PileTop",
           "Lib_WoodDark",
           "Lib_Wood",
           "Lib_WoodWeather",
@@ -5870,12 +5869,11 @@
       },
       {
         "lod": 1,
-        "tris": 732,
+        "tris": 672,
         "materials": [
           "Lib_PileWet",
           "Lib_PileAlgae",
           "Lib_Pile",
-          "Lib_PileTop",
           "Lib_WoodDark",
           "Lib_Wood",
           "Lib_WoodWeather"
@@ -5890,11 +5888,11 @@
         "type": "capsule",
         "center": [
           -1.08,
-          -0.46,
+          -0.425,
           -2.4
         ],
         "radius": 0.12,
-        "height": 1.36,
+        "height": 1.48,
         "direction": 1
       },
       {
@@ -5902,11 +5900,11 @@
         "type": "capsule",
         "center": [
           -1.08,
-          -0.46,
+          -0.425,
           0.0
         ],
         "radius": 0.12,
-        "height": 1.36,
+        "height": 1.48,
         "direction": 1
       },
       {
@@ -5914,11 +5912,11 @@
         "type": "capsule",
         "center": [
           -1.08,
-          -0.46,
+          -0.425,
           2.4
         ],
         "radius": 0.12,
-        "height": 1.36,
+        "height": 1.48,
         "direction": 1
       },
       {
@@ -5926,11 +5924,11 @@
         "type": "capsule",
         "center": [
           0.0,
-          -0.46,
+          -0.425,
           -2.4
         ],
         "radius": 0.12,
-        "height": 1.36,
+        "height": 1.48,
         "direction": 1
       },
       {
@@ -5938,11 +5936,11 @@
         "type": "capsule",
         "center": [
           0.0,
-          -0.46,
+          -0.425,
           0.0
         ],
         "radius": 0.12,
-        "height": 1.36,
+        "height": 1.48,
         "direction": 1
       },
       {
@@ -5950,11 +5948,11 @@
         "type": "capsule",
         "center": [
           0.0,
-          -0.46,
+          -0.425,
           2.4
         ],
         "radius": 0.12,
-        "height": 1.36,
+        "height": 1.48,
         "direction": 1
       },
       {
@@ -5962,11 +5960,11 @@
         "type": "capsule",
         "center": [
           1.08,
-          -0.46,
+          -0.425,
           -2.4
         ],
         "radius": 0.12,
-        "height": 1.36,
+        "height": 1.48,
         "direction": 1
       },
       {
@@ -5974,11 +5972,11 @@
         "type": "capsule",
         "center": [
           1.08,
-          -0.46,
+          -0.425,
           0.0
         ],
         "radius": 0.12,
-        "height": 1.36,
+        "height": 1.48,
         "direction": 1
       },
       {
@@ -5986,11 +5984,11 @@
         "type": "capsule",
         "center": [
           1.08,
-          -0.46,
+          -0.425,
           2.4
         ],
         "radius": 0.12,
-        "height": 1.36,
+        "height": 1.48,
         "direction": 1
       },
       {
@@ -5998,7 +5996,7 @@
         "type": "box",
         "center": [
           -1.16,
-          0.398,
+          0.476,
           0.0
         ],
         "size": [
@@ -6017,7 +6015,7 @@
         "type": "box",
         "center": [
           0.0,
-          0.398,
+          0.476,
           0.0
         ],
         "size": [
@@ -6036,7 +6034,7 @@
         "type": "box",
         "center": [
           1.16,
-          0.398,
+          0.476,
           0.0
         ],
         "size": [
@@ -17198,14 +17196,14 @@
     "category": "Buildings",
     "blurb": "Corner shop, 8.0 x 7.2 m, two stories to a 6.4 m parapet. Glazed MARKET shopfronts on +Z and +X: kickplate, mullions, a recessed door with a transom, sign band, brick string course, and a sloped awning. Alley face is -Z.",
     "size": [
-      9.456,
+      10.66,
       7.725,
-      9.25
+      9.86
     ],
     "min": [
-      -4.126,
+      -5.33,
       -0.005,
-      -4.32
+      -4.93
     ],
     "max": [
       5.33,
@@ -17215,7 +17213,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 4840,
+        "tris": 6480,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete",
@@ -17238,7 +17236,7 @@
       },
       {
         "lod": 1,
-        "tris": 3496,
+        "tris": 4592,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete",
@@ -17259,7 +17257,7 @@
       },
       {
         "lod": 2,
-        "tris": 2784,
+        "tris": 2976,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete",
@@ -18458,6 +18456,82 @@
         ]
       },
       {
+        "name": "Col_String",
+        "type": "box",
+        "center": [
+          0.0,
+          3.52,
+          3.66
+        ],
+        "size": [
+          7.616000000000001,
+          0.04,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_String_2",
+        "type": "box",
+        "center": [
+          4.0600000000000005,
+          3.52,
+          0.0
+        ],
+        "size": [
+          0.03,
+          0.04,
+          6.816
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cornice",
+        "type": "box",
+        "center": [
+          0.0,
+          3.68,
+          3.7700000000000005
+        ],
+        "size": [
+          7.736000000000001,
+          0.08,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cornice_2",
+        "type": "box",
+        "center": [
+          4.17,
+          3.68,
+          0.0
+        ],
+        "size": [
+          0.08,
+          0.08,
+          6.936000000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Kick",
         "type": "box",
         "center": [
@@ -19009,44 +19083,6 @@
         ]
       },
       {
-        "name": "Col_String",
-        "type": "box",
-        "center": [
-          0.0,
-          3.52,
-          3.66
-        ],
-        "size": [
-          7.248,
-          0.05,
-          0.04
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Cornice",
-        "type": "box",
-        "center": [
-          0.0,
-          3.68,
-          3.7700000000000005
-        ],
-        "size": [
-          7.248,
-          0.1,
-          0.12
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
         "name": "Col_Awning",
         "type": "box",
         "center": [
@@ -19541,44 +19577,6 @@
         ]
       },
       {
-        "name": "Col_String_2",
-        "type": "box",
-        "center": [
-          4.0600000000000005,
-          3.52,
-          0.0
-        ],
-        "size": [
-          0.04,
-          0.05,
-          6.448
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Cornice_2",
-        "type": "box",
-        "center": [
-          4.17,
-          3.68,
-          0.0
-        ],
-        "size": [
-          0.12,
-          0.1,
-          6.448
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
         "name": "Col_Awning_6",
         "type": "box",
         "center": [
@@ -19694,24 +19692,24 @@
     "category": "Buildings",
     "blurb": "Diner, 10.0 x 7.0 m, walls 4.6 m under a parapet. Cream body, a long mullioned DINER front with a red rail, recessed door, sign band, brick string course, and a sloped red awning. Alley face is -Z.",
     "size": [
-      10.252,
+      12.66,
       5.925,
       9.05
     ],
     "min": [
-      -5.126,
+      -6.33,
       -0.005,
       -4.22
     ],
     "max": [
-      5.126,
+      6.33,
       5.92,
       4.83
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2652,
+        "tris": 3740,
         "materials": [
           "Lib_PaintCream",
           "Lib_Brick",
@@ -19733,7 +19731,7 @@
       },
       {
         "lod": 1,
-        "tris": 1980,
+        "tris": 2764,
         "materials": [
           "Lib_PaintCream",
           "Lib_Brick",
@@ -19753,7 +19751,7 @@
       },
       {
         "lod": 2,
-        "tris": 1332,
+        "tris": 1492,
         "materials": [
           "Lib_PaintCream",
           "Lib_Brick",
@@ -20278,6 +20276,44 @@
           1.4,
           0.04,
           0.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_String",
+        "type": "box",
+        "center": [
+          0.0,
+          3.52,
+          3.56
+        ],
+        "size": [
+          9.616,
+          0.04,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cornice",
+        "type": "box",
+        "center": [
+          0.0,
+          3.68,
+          3.67
+        ],
+        "size": [
+          9.736,
+          0.08,
+          0.08
         ],
         "euler": [
           0,
@@ -20837,44 +20873,6 @@
         ]
       },
       {
-        "name": "Col_String",
-        "type": "box",
-        "center": [
-          0.0,
-          3.52,
-          3.56
-        ],
-        "size": [
-          9.248000000000001,
-          0.05,
-          0.04
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Cornice",
-        "type": "box",
-        "center": [
-          0.0,
-          3.68,
-          3.67
-        ],
-        "size": [
-          9.248000000000001,
-          0.1,
-          0.12
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
         "name": "Col_Awning",
         "type": "box",
         "center": [
@@ -20990,24 +20988,24 @@
     "category": "Buildings",
     "blurb": "Laundromat, 9.2 x 6.8 m, walls 4.8 m under a parapet. White body, narrow WASH bays, a high kickplate, recessed door, teal sign and sloped awning, brick string course. Alley face is -Z.",
     "size": [
-      10.656,
+      11.86,
       6.125,
-      8.85
+      9.46
     ],
     "min": [
       -5.93,
       -0.005,
-      -4.12
+      -4.73
     ],
     "max": [
-      4.726,
+      5.93,
       6.12,
       4.73
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 5336,
+        "tris": 6656,
         "materials": [
           "Lib_PaintWhite",
           "Lib_Concrete",
@@ -21029,7 +21027,7 @@
       },
       {
         "lod": 1,
-        "tris": 3976,
+        "tris": 4912,
         "materials": [
           "Lib_PaintWhite",
           "Lib_Concrete",
@@ -21049,7 +21047,7 @@
       },
       {
         "lod": 2,
-        "tris": 3168,
+        "tris": 3360,
         "materials": [
           "Lib_PaintWhite",
           "Lib_Concrete",
@@ -22246,6 +22244,82 @@
         ]
       },
       {
+        "name": "Col_String",
+        "type": "box",
+        "center": [
+          0.0,
+          3.52,
+          3.46
+        ],
+        "size": [
+          8.815999999999999,
+          0.04,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_String_2",
+        "type": "box",
+        "center": [
+          -4.659999999999999,
+          3.52,
+          0.0
+        ],
+        "size": [
+          0.03,
+          0.04,
+          6.4159999999999995
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cornice",
+        "type": "box",
+        "center": [
+          0.0,
+          3.68,
+          3.5700000000000003
+        ],
+        "size": [
+          8.936,
+          0.08,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cornice_2",
+        "type": "box",
+        "center": [
+          -4.77,
+          3.68,
+          0.0
+        ],
+        "size": [
+          0.08,
+          0.08,
+          6.5360000000000005
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Kick",
         "type": "box",
         "center": [
@@ -23177,44 +23251,6 @@
         ]
       },
       {
-        "name": "Col_String",
-        "type": "box",
-        "center": [
-          0.0,
-          3.52,
-          3.46
-        ],
-        "size": [
-          8.448,
-          0.05,
-          0.04
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Cornice",
-        "type": "box",
-        "center": [
-          0.0,
-          3.68,
-          3.5700000000000003
-        ],
-        "size": [
-          8.448,
-          0.1,
-          0.12
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
         "name": "Col_Awning",
         "type": "box",
         "center": [
@@ -23929,44 +23965,6 @@
           0.03,
           0.64,
           4.12
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_String_2",
-        "type": "box",
-        "center": [
-          -4.659999999999999,
-          3.52,
-          0.0
-        ],
-        "size": [
-          0.04,
-          0.05,
-          6.048
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Cornice_2",
-        "type": "box",
-        "center": [
-          -4.77,
-          3.68,
-          0.0
-        ],
-        "size": [
-          0.12,
-          0.1,
-          6.048
         ],
         "euler": [
           0,
@@ -25356,26 +25354,26 @@
   {
     "name": "WalkUp",
     "category": "Buildings",
-    "blurb": "Brick walk-up, 8.0 x 6.4 m, three stories, parapet at 9.5 m. Brick is 13 courses per metre. Windows are recessed 13 cm with brick returns, a stone sill, and a lintel. A concrete corona projects past each wall under the parapet cap. Stoop and canopy on +Z. Fire-escape landings at 3.95 m and 6.85 m, brackets back to the wall, rail 1.05 m above each deck.",
+    "blurb": "Brick walk-up, 8.0 x 6.4 m, three stories, parapet at 9.5 m. Brick is 13 courses per metre. Windows are recessed 13 cm with brick returns, a stone sill, and a lintel. A concrete corona projects past each wall under the parapet cap. Stoop and canopy on +Z. Fire-escape landings at 3.95 m and 6.85 m with a mid landing, switchback stairs, and a drop ladder. Rails are 1.02 m above each deck. Brackets tie the landings back to the brick.",
     "size": [
-      8.56,
+      8.64,
       10.08,
-      7.85
+      7.82
     ],
     "min": [
-      -4.28,
+      -4.32,
       0.0,
-      -3.53
+      -3.5
     ],
     "max": [
-      4.28,
+      4.32,
       10.08,
       4.32
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2456,
+        "tris": 3032,
         "materials": [
           "Lib_Brick",
           "Lib_ShopGlass",
@@ -25390,30 +25388,30 @@
       },
       {
         "lod": 1,
-        "tris": 1924,
+        "tris": 2516,
         "materials": [
           "Lib_Brick",
           "Lib_ShopGlass",
           "Lib_Concrete",
           "Lib_WoodDark",
           "Lib_PaintCream",
-          "Lib_Steel",
-          "Lib_SteelDark"
+          "Lib_SteelDark",
+          "Lib_Steel"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
       },
       {
         "lod": 2,
-        "tris": 824,
+        "tris": 964,
         "materials": [
           "Lib_Brick",
           "Lib_ShopGlass",
           "Lib_Concrete",
           "Lib_WoodDark",
           "Lib_PaintCream",
-          "Lib_Steel",
-          "Lib_SteelDark"
+          "Lib_SteelDark",
+          "Lib_Steel"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -25578,10 +25576,10 @@
         "center": [
           0,
           9.28,
-          3.38
+          3.39
         ],
         "size": [
-          7.5,
+          7.7,
           0.08,
           0.14
         ],
@@ -25597,10 +25595,10 @@
         "center": [
           0,
           9.28,
-          -3.42
+          -3.39
         ],
         "size": [
-          7.5,
+          7.7,
           0.08,
           0.14
         ],
@@ -25614,9 +25612,9 @@
         "name": "Col_CoronaR",
         "type": "box",
         "center": [
-          4.18,
+          4.21,
           9.28,
-          -0.02
+          0.0
         ],
         "size": [
           0.12,
@@ -25633,9 +25631,9 @@
         "name": "Col_CoronaL",
         "type": "box",
         "center": [
-          -4.18,
+          -4.21,
           9.28,
-          -0.02
+          0.0
         ],
         "size": [
           0.12,
@@ -25652,14 +25650,14 @@
         "name": "Col_Deck_0",
         "type": "box",
         "center": [
-          -2.35,
-          3.9,
-          3.7
+          -2.52,
+          3.9320000000000004,
+          3.84
         ],
         "size": [
-          1.05,
-          0.02,
-          0.08
+          1.22,
+          0.018,
+          0.68
         ],
         "euler": [
           0,
@@ -25671,26 +25669,45 @@
         "name": "Vault_Rail_0",
         "type": "capsule",
         "center": [
-          -2.35,
-          4.97,
-          4.06
+          -2.52,
+          4.955,
+          4.195
         ],
         "radius": 0.012,
-        "height": 0.95,
+        "height": 1.05,
         "direction": 0
+      },
+      {
+        "name": "Col_Deck_M",
+        "type": "box",
+        "center": [
+          0.5499999999999999,
+          5.382000000000001,
+          3.84
+        ],
+        "size": [
+          1.1,
+          0.018,
+          0.68
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
       },
       {
         "name": "Col_Deck_1",
         "type": "box",
         "center": [
-          -2.35,
-          6.8,
-          3.7
+          -2.52,
+          6.832,
+          3.84
         ],
         "size": [
-          1.05,
-          0.02,
-          0.08
+          1.22,
+          0.018,
+          0.68
         ],
         "euler": [
           0,
@@ -25702,39 +25719,20 @@
         "name": "Vault_Rail_1",
         "type": "capsule",
         "center": [
-          -2.35,
-          7.87,
-          4.06
+          -2.52,
+          7.8549999999999995,
+          4.195
         ],
         "radius": 0.012,
-        "height": 0.95,
+        "height": 1.05,
         "direction": 0
-      },
-      {
-        "name": "Col_Pier",
-        "type": "box",
-        "center": [
-          -2.35,
-          0.14,
-          4.16
-        ],
-        "size": [
-          0.38,
-          0.2,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
       }
     ],
     "climbable": true,
     "vaultable": true,
-    "vaultHeight": 1.05,
+    "vaultHeight": 1.02,
     "climbNote": "Brick walls are cling. Glass is solid. The escapes are the steel landings on +Z.",
-    "vaultNote": "Escape rail is 1.05 m above the lower landing (deck at 3.95 m, rail top at 5.00 m).",
+    "vaultNote": "Escape rail is 1.02 m above the lower landing (deck at 3.95 m, rail top at 4.97 m).",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",

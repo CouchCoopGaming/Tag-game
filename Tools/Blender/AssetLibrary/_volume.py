@@ -486,22 +486,13 @@ def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 
         text_n = _street(origin, inward, 0.255)
         loc = (0.0, 2.98, text_n) if axis == "z" else (text_n, 2.98, 0.0)
         g.text(profile["sign"], loc, 0.62, spec["text_mat"], extrude=0.006, yaw=yaw)
-    run0 = -span * 0.5 + 0.06 + stop_neg
-    run1 = span * 0.5 - 0.06 - stop_pos
-    if run1 - run0 > 0.8:
-        mid = (run0 + run1) * 0.5
-        rw = run1 - run0
-        # Bed, then a corona that projects past it, then a smaller cap. The soffit is the corona's underside.
-        _c, _s = _box_ax(g, axis, mid, 3.52, _street(origin, inward, 0.17), rw, 0.08, 0.08, "Lib_Brick")
-        _col_box(cols, "Col_String", _c, (rw - 0.10, 0.05, 0.04) if axis == "z" else (0.04, 0.05, rw - 0.10))
-        _c, _s = _box_ax(g, axis, mid, 3.68, _street(origin, inward, 0.28), rw, 0.16, 0.18, "Lib_Concrete")
-        _col_box(cols, "Col_Cornice", _c, (rw - 0.10, 0.10, 0.12) if axis == "z" else (0.12, 0.10, rw - 0.10))
-        if lod < 2:
-            _box_ax(g, axis, mid, 3.80, _street(origin, inward, 0.22), rw, 0.05, 0.10, profile["trim"])
-    _awning_fabric(g, cols, axis, origin, inward, -half + 0.02, half - 0.02, profile["awning"], lod)
+    _awning_fabric(
+        g, cols, axis, origin, inward, -half + 0.02, half - 0.02, profile["awning"], lod,
+        clip_pos=stop_pos > 0.0, clip_neg=stop_neg > 0.0,
+    )
 
 
-def _awning_fabric(g, cols, axis, origin, inward, along0, along1, mat, lod):
+def _awning_fabric(g, cols, axis, origin, inward, along0, along1, mat, lod, clip_pos=False, clip_neg=False):
     """Sloped cloth, a scalloped valance, and an angled steel frame. Not a flat slab."""
     depth = 1.26
     y_hi = 2.48
@@ -545,10 +536,14 @@ def _awning_fabric(g, cols, axis, origin, inward, along0, along1, mat, lod):
         drop = 0.15 if i % 2 == 0 else 0.24
         _box_ax(g, axis, (a0 + a1) * 0.5, y_lo - thick - drop * 0.5, n_lo, (a1 - a0) * 0.94, drop, 0.016, mat)
     if lod < 2:
-        g.pipe(p(along0 - 0.04, y_hi - thick - 0.02, n_hi), p(along0 - 0.04, y_lo - thick - 0.02, n_lo), 0.016, "Lib_SteelDark", 5)
-        g.pipe(p(along1 + 0.04, y_hi - thick - 0.02, n_hi), p(along1 + 0.04, y_lo - thick - 0.02, n_lo), 0.016, "Lib_SteelDark", 5)
+        if not clip_neg:
+            g.pipe(p(along0 - 0.04, y_hi - thick - 0.02, n_hi), p(along0 - 0.04, y_lo - thick - 0.02, n_lo), 0.016, "Lib_SteelDark", 5)
+        if not clip_pos:
+            g.pipe(p(along1 + 0.04, y_hi - thick - 0.02, n_hi), p(along1 + 0.04, y_lo - thick - 0.02, n_lo), 0.016, "Lib_SteelDark", 5)
         front_n = _street(origin, inward, 0.14 + depth + 0.025)
-        g.pipe(p(along0, y_lo - thick - 0.02, front_n), p(along1, y_lo - thick - 0.02, front_n), 0.016, "Lib_SteelDark", 5)
+        bar0 = along0 if clip_neg else along0
+        bar1 = along1 if clip_pos else along1
+        g.pipe(p(bar0, y_lo - thick - 0.02, front_n), p(bar1, y_lo - thick - 0.02, front_n), 0.016, "Lib_SteelDark", 5)
         mid = (along0 + along1) * 0.5
         g.pipe(p(mid, y_hi - thick - 0.03, n_hi), p(mid, y_lo - thick - 0.03, n_lo), 0.014, "Lib_SteelDark", 5)
 
@@ -596,6 +591,308 @@ def _hip(g, hx, hz, eave, rise, zshift=0.0):
         (0, 3, 4),
     ]
     g.mesh(verts, faces, "Lib_Roof", uv_scale=1.0)
+
+
+def _extrude(g, poly, y0, y1, mat):
+    """Closed extrusion of an XZ polygon. poly is (x, z) around the outline."""
+    n = len(poly)
+    if n < 3 or y1 - y0 < 0.02:
+        return
+    verts = [(x, y0, z) for x, z in poly] + [(x, y1, z) for x, z in poly]
+    faces = [tuple(range(n - 1, -1, -1)), tuple(range(n, n * 2))]
+    for i in range(n):
+        j = (i + 1) % n
+        faces.append((i, j, j + n, i + n))
+    g.mesh(verts, faces, mat, uv_scale=1.0)
+
+
+def _quoins(g, hx, hz, wall_h, body, lod):
+    """Alternating header and stretcher stones outside each corner, clear of the wall shells."""
+    corners = ((1.0, 1.0), (-1.0, 1.0), (1.0, -1.0), (-1.0, -1.0))
+    if lod >= 2:
+        for sx, sz in corners:
+            _notch(g, hx, hz, sx, sz, 0.04, wall_h - 0.04, body)
+        return
+    pitch = 0.40 if lod == 0 else 0.80
+    y = 0.03
+    course = 0
+    while y + 0.16 < wall_h - 0.02:
+        y1 = min(y + pitch - 0.024, wall_h - 0.03)
+        if y1 - y < 0.10:
+            break
+        # The sign band, awning frame, and cornice own the projecting corner through here.
+        exposed = y1 < 1.86 or y > 3.94
+        for sx, sz in corners:
+            if exposed:
+                _quoin_l(g, hx, hz, sx, sz, y, y1, course % 2 == 0, body)
+            else:
+                _notch(g, hx, hz, sx, sz, y, y1, body)
+        course += 1
+        y += pitch
+
+
+def _notch(g, hx, hz, sx, sz, y0, y1, mat):
+    ax, az = abs(hx), abs(hz)
+    g.box(
+        (sx * (ax - 0.112), (y0 + y1) * 0.5, sz * (az - 0.112)),
+        (0.188, y1 - y0, 0.188),
+        mat,
+    )
+
+
+def _quoin_l(g, hx, hz, sx, sz, y0, y1, long_front, mat):
+    ax, az = abs(hx), abs(hz)
+    if long_front:
+        local = (
+            (ax - 0.50, az + 0.008),
+            (ax - 0.50, az + 0.030),
+            (ax + 0.018, az + 0.030),
+            (ax + 0.018, az - 0.216),
+            (ax - 0.216, az - 0.216),
+            (ax - 0.216, az + 0.008),
+        )
+    else:
+        local = (
+            (ax + 0.008, az - 0.50),
+            (ax + 0.030, az - 0.50),
+            (ax + 0.030, az + 0.018),
+            (ax - 0.216, az + 0.018),
+            (ax - 0.216, az - 0.216),
+            (ax + 0.008, az - 0.216),
+        )
+    _extrude(g, [(sx * x, sz * z) for x, z in local], y0, y1, mat)
+
+
+def _outward_span(origin, inward, dist, depth):
+    """Inner and outer coordinates of a projecting band. Inner is closer to the wall."""
+    center = origin - inward * dist
+    half = depth * 0.5
+    return center + inward * half, center - inward * half
+
+
+def _shop_wrap(g, cols, profile, hx, hz, front_z, side_x, span_x, span_z, lod):
+    """Cornice, sign-band moulding, and awning frames meet at the corners on a mitre."""
+    shops = {
+        "front": _shop_style(profile["front"]),
+        "back": _shop_style(profile["back"]),
+        "right": _shop_style(profile["right"]),
+        "left": _shop_style(profile["left"]),
+    }
+    faces = {
+        "front": ("z", front_z, -1.0, span_x),
+        "back": ("z", -front_z, 1.0, span_x),
+        "right": ("x", side_x, -1.0, span_z),
+        "left": ("x", -side_x, 1.0, span_z),
+    }
+    # (y, height, street dist, depth, material)
+    layers = (
+        (3.52, 0.08, 0.17, 0.08, "Lib_Brick", "Col_String", (0.04, 0.03)),
+        (3.68, 0.16, 0.28, 0.18, "Lib_Concrete", "Col_Cornice", (0.08, 0.08)),
+        (3.80, 0.05, 0.22, 0.10, profile["trim"], None, None),
+        (3.40, 0.050, 0.245, 0.046, profile["trim"], None, None),
+        (2.58, 0.044, 0.245, 0.042, profile["trim"], None, None),
+    )
+    if lod >= 2:
+        layers = layers[:2]
+    for layer in layers:
+        _wrap_layer(g, cols, faces, shops, layer)
+    if lod < 2:
+        _wrap_awnings(g, faces, shops, profile["awning"])
+
+
+def _neighbor_end(face_name, end):
+    """The face and the corner signs at one end of a wall. end is +1 or -1 along the face."""
+    if face_name == "front":
+        return ("right" if end > 0 else "left", end, 1.0)
+    if face_name == "back":
+        return ("right" if end > 0 else "left", end, -1.0)
+    if face_name == "right":
+        return ("front" if end > 0 else "back", 1.0, end)
+    return ("front" if end > 0 else "back", -1.0, end)
+
+
+def _wrap_layer(g, cols, faces, shops, layer):
+    y, height, dist, depth, mat, col_name, col_inset = layer
+    y0, y1 = y - height * 0.5, y + height * 0.5
+    cuts = {}
+    for name, (axis, origin, inward, span) in faces.items():
+        inner, outer = _outward_span(origin, inward, dist, depth)
+        cuts[name] = (inner, outer, axis, origin, inward, span)
+    for name, (_axis, _origin, _inward, _span) in faces.items():
+        if not shops[name]:
+            continue
+        a0, a1 = _run_ends(name, cuts)
+        if a1 - a0 < 0.30:
+            continue
+        axis, origin, inward, _span = faces[name]
+        mid = (a0 + a1) * 0.5
+        rw = a1 - a0
+        center_n = _street(origin, inward, dist)
+        _c, _s = _box_ax(g, axis, mid, y, center_n, rw, height, depth, mat)
+        if col_name and col_inset is not None:
+            sy, sn = col_inset
+            if axis == "z":
+                _col_box(cols, col_name, _c, (max(0.20, rw - 0.40), sy, sn))
+            else:
+                _col_box(cols, col_name, _c, (sn, sy, max(0.20, rw - 0.40)))
+    seen = set()
+    for name in faces:
+        if not shops[name]:
+            continue
+        for end in (-1.0, 1.0):
+            other, sx, sz = _neighbor_end(name, end)
+            key = (round(sx, 0), round(sz, 0))
+            if key in seen:
+                continue
+            if not shops[name] and not shops[other]:
+                continue
+            seen.add(key)
+            _miter_corner(g, cuts, name, other, sx, sz, y0, y1, mat)
+            if not shops[other]:
+                _short_return(g, cuts, other, sx, sz, y, height, depth, mat)
+
+
+def _run_ends(name, cuts):
+    """Along-axis limits, stopped just short of each corner mitre."""
+    pos_inner = cuts[_neighbor_end(name, 1.0)[0]][0]
+    neg_inner = cuts[_neighbor_end(name, -1.0)[0]][0]
+    return neg_inner + 0.012, pos_inner - 0.012
+
+
+def _miter_corner(g, cuts, face_a, face_b, sx, sz, y0, y1, mat):
+    """Two triangular prisms split on the diagonal, with a gap along the mitre."""
+    # face_a is the Z wall when we came from front/back first, but either order can arrive.
+    z_face = face_a if face_a in ("front", "back") else face_b
+    x_face = face_b if face_b in ("right", "left") else face_a
+    z0, z1 = cuts[z_face][0], cuts[z_face][1]
+    x0, x1 = cuts[x_face][0], cuts[x_face][1]
+    # Flip into the positive corner, build, flip back.
+    def pos(x, z):
+        return (abs(x), abs(z))
+
+    def world(poly):
+        return [(sx * abs(x) if False else (x if sx > 0 else -x), z if sz > 0 else -z) for x, z in poly]
+
+    ax0, ax1 = sorted((abs(x0), abs(x1)))
+    az0, az1 = sorted((abs(z0), abs(z1)))
+    poly_f = (
+        (ax0 + 0.010, az1 - 0.004),
+        (ax1 - 0.014, az1 - 0.004),
+        (ax0 + 0.010, az0 + 0.014),
+    )
+    poly_s = (
+        (ax1 - 0.004, az0 + 0.010),
+        (ax1 - 0.004, az1 - 0.014),
+        (ax0 + 0.014, az0 + 0.010),
+    )
+    _extrude(g, world(poly_f), y0, y1, mat)
+    _extrude(g, world(poly_s), y0, y1, mat)
+
+
+def _short_return(g, cuts, plain, sx, sz, y, height, depth, mat):
+    """A short run of the same band turning onto a wall that has no shopfront."""
+    inner, outer, _axis, _origin, _inward, _span = cuts[plain]
+    center_n = (inner + outer) * 0.5
+    # Stop 12 mm before the mitre and run 0.62 m away from the corner.
+    if plain in ("right", "left"):
+        z_cut = cuts["front" if sz > 0 else "back"][0]
+        end = z_cut - sz * 0.012
+        far = end - sz * 0.62
+        a0, a1 = (far, end) if far < end else (end, far)
+        if a1 - a0 < 0.20:
+            return
+        _box_ax(g, "x", (a0 + a1) * 0.5, y, center_n, a1 - a0, height, depth, mat)
+    else:
+        x_cut = cuts["right" if sx > 0 else "left"][0]
+        end = x_cut - sx * 0.012
+        far = end - sx * 0.62
+        a0, a1 = (far, end) if far < end else (end, far)
+        if a1 - a0 < 0.20:
+            return
+        _box_ax(g, "z", (a0 + a1) * 0.5, y, center_n, a1 - a0, height, depth, mat)
+
+
+def _wrap_awnings(g, faces, shops, mat):
+    """Steel frames turn the corner. The cloth stays on the shop opening."""
+    depth = 1.26
+    y_hi = 2.48 - 0.028 - 0.02
+    y_lo = 2.06 - 0.028 - 0.02
+    seen = set()
+    for name in faces:
+        if not shops[name]:
+            continue
+        for end in (-1.0, 1.0):
+            other, sx, sz = _neighbor_end(name, end)
+            key = (sx, sz)
+            if key in seen:
+                continue
+            seen.add(key)
+            if name not in ("front", "back") and other not in ("front", "back"):
+                continue
+            _awning_miter(g, faces, shops, name, other, sx, sz, y_hi, y_lo, depth)
+
+
+def _awning_miter(g, faces, shops, face_a, face_b, sx, sz, y_hi, y_lo, depth):
+    z_face = face_a if face_a in ("front", "back") else face_b
+    x_face = face_b if face_b in ("right", "left") else face_a
+    _za, z_origin, z_in, _zs = faces[z_face]
+    _xa, x_origin, x_in, _xs = faces[x_face]
+    z_out = _street(z_origin, z_in, 0.14 + depth + 0.025)
+    x_out = _street(x_origin, x_in, 0.14 + depth + 0.025)
+    z_high = _street(z_origin, z_in, 0.16)
+    x_high = _street(x_origin, x_in, 0.16)
+    # One sloped rafter just proud of both wall faces, out to the valance corner.
+    high = (
+        (x_origin - x_in * _WALL_HALF) - x_in * 0.03,
+        y_hi,
+        (z_origin - z_in * _WALL_HALF) - z_in * 0.03,
+    )
+    low = (x_out - sx * 0.02, y_lo, z_out - sz * 0.02)
+    g.pipe(high, low, 0.016, "Lib_SteelDark", 5)
+    # Extend each shop's outer bar up to the mitre, and return onto a plain wall.
+    for face, along_out, bar_at in (
+        (z_face, x_out, z_out),
+        (x_face, z_out, x_out),
+    ):
+        if not shops[face]:
+            # Short return on the plain side, from the mitre back toward the wall run.
+            if face in ("front", "back"):
+                g.pipe(
+                    (x_out - sx * 0.08, y_lo, bar_at),
+                    (x_out - sx * 0.66, y_lo, bar_at),
+                    0.016, "Lib_SteelDark", 5,
+                )
+            else:
+                g.pipe(
+                    (bar_at, y_lo, z_out - sz * 0.08),
+                    (bar_at, y_lo, z_out - sz * 0.66),
+                    0.016, "Lib_SteelDark", 5,
+                )
+            continue
+        axis, origin, inward, span = faces[face]
+        half = (span - SHOP_PIER * 2) * 0.5
+        cloth_end = (end_sign(face, sx, sz)) * (half - 0.02)
+        if face in ("front", "back"):
+            start = cloth_end + sx * 0.05
+            stop = x_out - sx * 0.03
+            if (stop - start) * sx < 0.08:
+                continue
+            g.pipe((start, y_lo, bar_at), (stop, y_lo, bar_at), 0.016, "Lib_SteelDark", 5)
+            g.pipe((start, y_hi, z_high), (start, y_lo, bar_at), 0.016, "Lib_SteelDark", 5)
+        else:
+            start = cloth_end + sz * 0.05
+            stop = z_out - sz * 0.03
+            if (stop - start) * sz < 0.08:
+                continue
+            g.pipe((bar_at, y_lo, start), (bar_at, y_lo, stop), 0.016, "Lib_SteelDark", 5)
+            g.pipe((x_high, y_hi, start), (bar_at, y_lo, start), 0.016, "Lib_SteelDark", 5)
+
+
+def end_sign(face, sx, sz):
+    """Sign of the along-axis at this corner for that face."""
+    if face in ("front", "back"):
+        return sx
+    return sz
 
 
 def build_store(profile):
@@ -648,7 +945,9 @@ def build_store(profile):
                 _escape(g, cols, -hz, wall_h, lod)
                 _downspouts(g, hx, -hz, wall_h)
                 _interior(g, hx, hz, front_z)
-            # Each cornice stops at its own pier, short of the corner, so two faces never share a volume.
+            _quoins(g, hx, hz, wall_h, profile["body"], lod)
+            # Cornice, sign moulding, and awning frames mitre around the corners.
+            _shop_wrap(g, cols, profile, hx, hz, front_z, side_x, span_x, span_z, lod)
             for axis, origin, inward, span, face in (
                 ("z", front_z, -1.0, span_x, profile["front"]),
                 ("x", side_x, -1.0, span_z, profile["right"]),

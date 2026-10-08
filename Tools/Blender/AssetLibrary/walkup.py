@@ -9,6 +9,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
+from _volume import _extrude
 
 W = 8.0
 D = 6.4
@@ -84,15 +85,33 @@ def _facade(g, lod):
 
 
 def _cornice(g):
-    """Parapet cap, then a corona that projects past each wall so the soffit reads."""
+    """Parapet cap, and a corona that mitres around every corner."""
     g.box((0, 9.48, -0.06), (8.46, 0.18, 6.78), "Lib_PaintCream", uv_scale=0.6)
     g.box((0, 9.70, -0.06), (8.22, 0.12, 6.54), "Lib_Concrete", uv_scale=0.5)
-    # Front skin ends at z=3.20. Corona starts 5 cm past it and runs under the cap.
-    g.box((0, 9.28, 3.38), (7.90, 0.14, 0.22), "Lib_Concrete", uv_scale=0.5)
-    g.box((0, 9.28, -3.42), (7.90, 0.14, 0.22), "Lib_Concrete", uv_scale=0.5)
-    # Sides stop short of the front and back pieces.
-    g.box((4.18, 9.28, -0.02), (0.20, 0.14, 6.44), "Lib_Concrete", uv_scale=0.5)
-    g.box((-4.18, 9.28, -0.02), (0.20, 0.14, 6.44), "Lib_Concrete", uv_scale=0.5)
+    # Straight runs stop 2 cm short of the mitre so the corner prisms do not share a volume.
+    g.box((0, 9.28, 3.39), (8.16, 0.14, 0.22), "Lib_Concrete", uv_scale=0.5)
+    g.box((0, 9.28, -3.39), (8.16, 0.14, 0.22), "Lib_Concrete", uv_scale=0.5)
+    g.box((4.21, 9.28, 0.0), (0.22, 0.14, 6.52), "Lib_Concrete", uv_scale=0.5)
+    g.box((-4.21, 9.28, 0.0), (0.22, 0.14, 6.52), "Lib_Concrete", uv_scale=0.5)
+    for sx, sz in ((1.0, 1.0), (-1.0, 1.0), (1.0, -1.0), (-1.0, -1.0)):
+        _corona_miter(g, sx, sz)
+
+
+def _corona_miter(g, sx, sz):
+    ax0, ax1 = 4.10, 4.32
+    az0, az1 = 3.28, 3.50
+    poly_f = (
+        (ax0 + 0.010, az1 - 0.004),
+        (ax1 - 0.014, az1 - 0.004),
+        (ax0 + 0.010, az0 + 0.014),
+    )
+    poly_s = (
+        (ax1 - 0.004, az0 + 0.010),
+        (ax1 - 0.004, az1 - 0.014),
+        (ax0 + 0.014, az0 + 0.010),
+    )
+    _extrude(g, [(sx * x, sz * z) for x, z in poly_f], 9.21, 9.35, "Lib_Concrete")
+    _extrude(g, [(sx * x, sz * z) for x, z in poly_s], 9.21, 9.35, "Lib_Concrete")
 
 
 def _entry(g, lod):
@@ -104,31 +123,83 @@ def _entry(g, lod):
             g.pipe((x, 2.16, 3.28), (x, 2.42, 3.70), 0.016, "Lib_SteelDark", 6)
 
 
-def _escape(g, lod, deck_y):
-    """Landing, rail, ladder, and two brackets clear of the brick skin."""
-    z0 = 3.36
-    slats = lod_pick(lod, 6, 3)
-    for i in range(slats):
-        z = z0 + i * 0.13
-        g.box((X_ESC, deck_y, z), (1.20, 0.035, 0.07), "Lib_Steel")
-    g.box((X_ESC, deck_y - 0.05, z0 + 0.34), (1.28, 0.03, 0.08), "Lib_SteelDark")
-    for x in (X_ESC - 0.56, X_ESC + 0.56):
-        g.box((x, deck_y + 0.52, z0 + 0.70), (0.035, 0.90, 0.035), "Lib_SteelDark")
-        g.box((x, deck_y - 0.12, 3.25), (0.16, 0.05, 0.04), "Lib_SteelDark")
-        g.pipe((x, deck_y - 0.08, 3.30), (x, deck_y - 0.08, z0 + 0.62), 0.016, "Lib_Steel", 5)
-        g.pipe((x, deck_y - 0.48, 3.28), (x, deck_y - 0.10, z0 + 0.55), 0.016, "Lib_SteelDark", 5)
-    g.box((X_ESC, deck_y + 1.02, z0 + 0.70), (1.16, 0.028, 0.028), "Lib_Steel")
-    lz = z0 + 0.13 * (slats - 1) + 0.14
-    top = deck_y - 0.06
-    bot = 0.36 if deck_y < 5.0 else deck_y - 2.70
-    for x in (X_ESC - 0.18, X_ESC + 0.18):
-        g.pipe((x, bot, lz), (x, top, lz), 0.015, "Lib_SteelDark", 6)
-    rungs = lod_pick(lod, 5, 3)
+# Landings on the street face. Switchback stairs sit between them, clear of the brick.
+_LX0, _LX1 = -3.22, -1.82
+_MZ0, _MZ1 = 3.44, 4.24
+_LY, _MY, _UY = 3.95, 5.40, 6.85
+_MX0, _MX1 = -0.08, 1.18
+
+
+def _landing(g, x0, x1, y_top, z0, z1):
+    g.box(((x0 + x1) * 0.5, y_top - 0.018, (z0 + z1) * 0.5), (x1 - x0, 0.032, z1 - z0), "Lib_SteelDark")
+
+
+def _brackets(g, x0, x1, y_top):
+    """Arms and a diagonal, 1 cm clear of the brick skin at z=3.20."""
+    for x in (x0 + 0.14, x1 - 0.14):
+        g.box((x, y_top - 0.05, 3.312), (0.032, 0.032, 0.176), "Lib_SteelDark")
+        g.pipe((x, y_top - 0.58, 3.24), (x, y_top - 0.08, 3.50), 0.014, "Lib_SteelDark", 5)
+
+
+def _rails(g, x0, x1, z0, z1, y_top):
+    """Posts, a mid rail, and a top rail about 1 m above the deck."""
+    for x in (x0 + 0.045, x1 - 0.045):
+        for z in (z0 + 0.045, z1 - 0.045):
+            g.box((x, y_top + 0.50, z), (0.028, 0.96, 0.028), "Lib_SteelDark")
+    y_top_r = y_top + 1.005
+    y_mid = y_top + 0.50
+    for z in (z0 + 0.045, z1 - 0.045):
+        g.pipe((x0 + 0.09, y_top_r, z), (x1 - 0.09, y_top_r, z), 0.015, "Lib_Steel", 5)
+        g.pipe((x0 + 0.09, y_mid, z), (x1 - 0.09, y_mid, z), 0.013, "Lib_Steel", 5)
+    for x in (x0 + 0.045, x1 - 0.045):
+        g.pipe((x, y_top_r, z0 + 0.09), (x, y_top_r, z1 - 0.09), 0.015, "Lib_Steel", 5)
+        g.pipe((x, y_mid, z0 + 0.09), (x, y_mid, z1 - 0.09), 0.013, "Lib_Steel", 5)
+
+
+def _flight(g, lod, x0, x1, zc, y0, y1):
+    """Open-riser stair with a rail 1 m above the stringer."""
+    n = lod_pick(lod, 7, 4)
+    half = 0.15
+    for s in (-1.0, 1.0):
+        z = zc + s * (half + 0.04)
+        g.pipe((x0, y0 + 0.05, z), (x1, y1 + 0.05, z), 0.014, "Lib_SteelDark", 5)
+        g.pipe((x0, y0 + 1.00, z), (x1, y1 + 1.00, z), 0.013, "Lib_Steel", 5)
+    span = abs(x1 - x0)
+    for i in range(n):
+        t = (i + 0.5) / float(n)
+        x = x0 + (x1 - x0) * t
+        y = y0 + (y1 - y0) * t + 0.02
+        g.box((x, y, zc), (span / n * 0.62, 0.026, half * 1.7), "Lib_Steel")
+
+
+def _drop_ladder(g, lod):
+    """Hangs from the lower landing, short of the sidewalk."""
+    xs = (_LX0 - 0.18, _LX0 - 0.52)
+    zs = 3.86
+    for x in xs:
+        g.pipe((x, 0.42, zs), (x, _LY - 0.09, zs), 0.015, "Lib_SteelDark", 6)
+    g.pipe((_LX0 - 0.012, _LY - 0.05, zs), (xs[1] + 0.04, _LY - 0.05, zs), 0.014, "Lib_SteelDark", 5)
+    rungs = lod_pick(lod, 6, 3)
     for i in range(rungs):
-        y = bot + (i + 1) * ((top - bot) / (rungs + 1))
-        g.pipe((X_ESC - 0.18, y, lz), (X_ESC + 0.18, y, lz), 0.01, "Lib_Steel", 5)
-    if deck_y < 5.0:
-        g.box((X_ESC, 0.14, lz), (0.48, 0.26, 0.18), "Lib_Concrete")
+        y = 0.72 + i * (2.70 / rungs)
+        g.pipe((xs[0] - 0.04, y, zs), (xs[1] + 0.04, y, zs), 0.011, "Lib_Steel", 5)
+
+
+def _escape(g, lod):
+    """Landings, 1 m rails, a switchback, and a drop ladder, bracketed to the brick."""
+    _landing(g, _LX0, _LX1, _LY, _MZ0, _MZ1)
+    _brackets(g, _LX0, _LX1, _LY)
+    _rails(g, _LX0, _LX1, _MZ0, _MZ1, _LY)
+    _drop_ladder(g, lod)
+    if lod < 2:
+        _landing(g, _MX0, _MX1, _MY, _MZ0, _MZ1)
+        _brackets(g, _MX0, _MX1, _MY)
+        _rails(g, _MX0, _MX1, _MZ0, _MZ1, _MY)
+        _flight(g, lod, -1.72, -0.18, 4.02, _LY, _MY)
+        _flight(g, lod, -0.18, -1.72, 3.66, _MY, _UY)
+        _landing(g, _LX0, _LX1, _UY, _MZ0, _MZ1)
+        _brackets(g, _LX0, _LX1, _UY)
+        _rails(g, _LX0, _LX1, _MZ0, _MZ1, _UY)
 
 
 @register
@@ -139,14 +210,15 @@ def create():
         "Brick walk-up, 8.0 x 6.4 m, three stories, parapet at 9.5 m. Brick is 13 courses per metre. "
         "Windows are recessed 13 cm with brick returns, a stone sill, and a lintel. "
         "A concrete corona projects past each wall under the parapet cap. Stoop and canopy on +Z. "
-        "Fire-escape landings at 3.95 m and 6.85 m, brackets back to the wall, rail 1.05 m above each deck.",
+        "Fire-escape landings at 3.95 m and 6.85 m with a mid landing, switchback stairs, and a drop ladder. "
+        "Rails are 1.02 m above each deck. Brackets tie the landings back to the brick.",
     )
     a.loose_pivot = True
     a.climbable = True
     a.vaultable = True
-    a.vault_height = 1.05
+    a.vault_height = 1.02
     a.climb_note = "Brick walls are cling. Glass is solid. The escapes are the steel landings on +Z."
-    a.vault_note = "Escape rail is 1.05 m above the lower landing (deck at 3.95 m, rail top at 5.00 m)."
+    a.vault_note = "Escape rail is 1.02 m above the lower landing (deck at 3.95 m, rail top at 4.97 m)."
     for lod in (0, 1, 2):
         g = a.begin(lod)
         bev = 0.003 if lod == 0 else 0
@@ -154,9 +226,7 @@ def create():
         _facade(g, lod)
         _cornice(g)
         _entry(g, lod)
-        _escape(g, lod, 3.95)
-        if lod < 2:
-            _escape(g, lod, 6.85)
+        _escape(g, lod)
         if lod == 0:
             g.box((1.2, BODY_H + 0.55, -0.6), (0.80, 0.46, 0.60), "Lib_Steel")
         a.end()
@@ -168,13 +238,13 @@ def create():
     a.box("Col_Stoop", (0, 0.09, 3.62), (1.55, 0.12, 0.60))
     a.box("Col_Canopy", (0, 2.52, 3.66), (1.60, 0.05, 0.62))
     a.box("Col_Cornice", (0, 9.48, -0.06), (8.10, 0.12, 6.40))
-    a.box("Col_CoronaF", (0, 9.28, 3.38), (7.50, 0.08, 0.14))
-    a.box("Col_CoronaB", (0, 9.28, -3.42), (7.50, 0.08, 0.14))
-    a.box("Col_CoronaR", (4.18, 9.28, -0.02), (0.12, 0.08, 6.10))
-    a.box("Col_CoronaL", (-4.18, 9.28, -0.02), (0.12, 0.08, 6.10))
-    a.box("Col_Deck_0", (X_ESC, 3.90, 3.70), (1.05, 0.02, 0.08))
-    a.capsule("Vault_Rail_0", (X_ESC, 4.97, 4.06), 0.012, 0.95, 0)
-    a.box("Col_Deck_1", (X_ESC, 6.80, 3.70), (1.05, 0.02, 0.08))
-    a.capsule("Vault_Rail_1", (X_ESC, 7.87, 4.06), 0.012, 0.95, 0)
-    a.box("Col_Pier", (X_ESC, 0.14, 4.16), (0.38, 0.20, 0.14))
+    a.box("Col_CoronaF", (0, 9.28, 3.39), (7.70, 0.08, 0.14))
+    a.box("Col_CoronaB", (0, 9.28, -3.39), (7.70, 0.08, 0.14))
+    a.box("Col_CoronaR", (4.21, 9.28, 0.0), (0.12, 0.08, 6.10))
+    a.box("Col_CoronaL", (-4.21, 9.28, 0.0), (0.12, 0.08, 6.10))
+    a.box("Col_Deck_0", ((_LX0 + _LX1) * 0.5, _LY - 0.018, (_MZ0 + _MZ1) * 0.5), (1.22, 0.018, 0.68))
+    a.capsule("Vault_Rail_0", ((_LX0 + _LX1) * 0.5, _LY + 1.005, _MZ1 - 0.045), 0.012, 1.05, 0)
+    a.box("Col_Deck_M", ((_MX0 + _MX1) * 0.5, _MY - 0.018, (_MZ0 + _MZ1) * 0.5), (1.10, 0.018, 0.68))
+    a.box("Col_Deck_1", ((_LX0 + _LX1) * 0.5, _UY - 0.018, (_MZ0 + _MZ1) * 0.5), (1.22, 0.018, 0.68))
+    a.capsule("Vault_Rail_1", ((_LX0 + _LX1) * 0.5, _UY + 1.005, _MZ1 - 0.045), 0.012, 1.05, 0)
     return a
