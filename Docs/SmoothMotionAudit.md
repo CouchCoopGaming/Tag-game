@@ -441,3 +441,136 @@ The climb ease is 0.35 of the way from the raised curve toward linear. On the ra
 Stills: `Docs/SmoothStills/pass17/vault.png`, `climb.png`, `slide.png`, `pad.png`, `pad-air.png`, plus ortho `vault-ortho.png`, `climb-ortho.png`, `slide-ortho.png`, `pad-ortho.png`, `pad-air-ortho.png`, `wall-ortho.png`. Strips: `vault-strip-0.png` through `vault-strip-7.png`, and the same eight frames for `climb`, `slide`, `wall`, and `roll`.
 
 `loco-feel`, `body-line`, `climb-contact`, `response-latency`, and `stick-quality` are unchanged. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`.
+
+## Pass 18
+
+The pass 17 strips were eight frames at 30 fps, so each one covered 0.27 s and the camera sat far enough that a roll filled about a third of the frame. These stills sample eight frames evenly across the whole clip, from a closer 3/4 or side camera. The runner fills at least half the frame height on every still (shortest blue span is 364 px of 720, 50.6%). Each still is stamped with the frame index and the time. A 4x2 sheet sits beside the frames.
+
+The 30 fps check still walks every frame of the clip. No bone turns more than 25° between frames, and no planted contact slides more than 3 cm. Gameplay timers are unchanged. The roll gate stays 65% of terminal, and the land clock stays 0.52 s. The roll pose in the still is visual only: the spine pitches forward through 137.2° at 0.267 s, past horizontal and onto one shoulder. `HandoffFeel` angles and `RollWeight` are unchanged, so the printed roll step stays 8.5>2.1.
+
+Climb pelvis height on the eight stills, from the first hand contact to standing on the wall: 70.0, 95.8, 127.3, 158.8, 190.3, 221.7, 253.2, 284.7 cm. Frame 1 is the pass 17 lip plant: hands 0.0 cm on the lip, chest 0.0 cm on the face, lead foot 0.6 cm on the face. The camera stays on the runner's side of that face. The pad plant in pass 17 is unchanged.
+
+Vault is the 0.40 s mantle, from the reach to the plant to the landing. Slide is 0.26 s in, a short still plant, and 0.26 s out. Wall is a stride, the 0.12 s shove, then the jump off the wall into the air.
+
+**Vault 0.40 s**
+
+| Pair | Bone | Degrees | Contact | cm |
+|---|---|---|---|---|
+| 0–1 | UpperLeg_R | 20.0 | - | 0.0 |
+| 1–2 | UpperLeg_R | 20.0 | - | 0.0 |
+| 2–3 | UpperLeg_R | 20.0 | - | 0.0 |
+| 3–4 | UpperLeg_R | 20.0 | - | 0.0 |
+| 4–5 | UpperLeg_R | 20.0 | - | 0.0 |
+| 5–6 | UpperLeg_R | 0.8 | handL | 0.5 |
+| 6–7 | LowerLeg_L | 0.9 | handL | 0.7 |
+| 7–8 | Foot_L | 21.7 | - | 0.0 |
+| 8–9 | LowerLeg_L | 21.6 | - | 0.0 |
+| 9–10 | Foot_R | 21.4 | - | 0.0 |
+| 10–11 | LowerLeg_R | 21.3 | - | 0.0 |
+| 11–12 | LowerLeg_R | 21.2 | - | 0.0 |
+
+**Climb 0.47 s**
+
+| Pair | Bone | Degrees | Contact | cm |
+|---|---|---|---|---|
+| 0–1 | Hand_L | 19.1 | - | 0.0 |
+| 1–2 | Hand_L | 19.1 | - | 0.0 |
+| 2–3 | Hand_R | 4.2 | - | 0.0 |
+| 3–4 | Hand_R | 14.9 | - | 0.0 |
+| 4–5 | Hand_R | 14.9 | - | 0.0 |
+| 5–6 | Hand_R | 14.9 | - | 0.0 |
+| 6–7 | Hand_R | 14.9 | - | 0.0 |
+| 7–8 | Hand_R | 14.9 | - | 0.0 |
+| 8–9 | Hand_R | 14.9 | - | 0.0 |
+| 9–10 | Hand_R | 14.9 | - | 0.0 |
+| 10–11 | Hand_R | 14.9 | - | 0.0 |
+| 11–12 | Hand_R | 14.9 | - | 0.0 |
+| 12–13 | Hand_R | 14.9 | - | 0.0 |
+| 13–14 | Hand_R | 14.9 | - | 0.0 |
+
+**Slide 0.62 s**
+
+| Pair | Bone | Degrees | Contact | cm |
+|---|---|---|---|---|
+| 0–1 | Hand_L | 4.2 | - | 0.0 |
+| 1–2 | Hand_L | 12.0 | - | 0.0 |
+| 2–3 | Hand_L | 17.9 | - | 0.0 |
+| 3–4 | Hand_L | 21.0 | - | 0.0 |
+| 4–5 | Hand_L | 20.7 | - | 0.0 |
+| 5–6 | Hand_L | 17.1 | - | 0.0 |
+| 6–7 | Hand_L | 10.7 | - | 0.0 |
+| 7–8 | Hand_L | 2.8 | - | 0.0 |
+| 8–9 | - | 0.0 | - | 0.0 |
+| 9–10 | - | 0.0 | - | 0.0 |
+| 10–11 | Foot_R | 0.2 | - | 0.0 |
+| 11–12 | Hand_L | 5.9 | - | 0.0 |
+| 12–13 | Hand_L | 13.5 | - | 0.0 |
+| 13–14 | Hand_L | 18.9 | - | 0.0 |
+| 14–15 | Hand_L | 21.2 | - | 0.0 |
+| 15–16 | Hand_L | 20.1 | - | 0.0 |
+| 16–17 | Hand_L | 15.8 | - | 0.0 |
+| 17–18 | Hand_L | 9.0 | - | 0.0 |
+| 18–19 | Hand_L | 1.5 | - | 0.0 |
+
+**Wall 0.75 s**
+
+| Pair | Bone | Degrees | Contact | cm |
+|---|---|---|---|---|
+| 0–1 | Foot_R | 23.1 | - | 0.0 |
+| 1–2 | Foot_R | 15.5 | - | 0.0 |
+| 2–3 | Foot_R | 2.8 | - | 0.0 |
+| 3–4 | Foot_R | 10.8 | - | 0.0 |
+| 4–5 | Foot_R | 20.9 | - | 0.0 |
+| 5–6 | Foot_R | 10.4 | - | 0.0 |
+| 6–7 | LowerArm_R | 17.3 | - | 0.0 |
+| 7–8 | LowerArm_R | 20.4 | - | 0.0 |
+| 8–9 | LowerArm_R | 8.9 | - | 0.0 |
+| 9–10 | Hand_R | 3.9 | - | 0.0 |
+| 10–11 | LowerArm_R | 11.2 | - | 0.0 |
+| 11–12 | Hand_R | 16.8 | - | 0.0 |
+| 12–13 | LowerArm_R | 19.9 | - | 0.0 |
+| 13–14 | LowerArm_R | 19.9 | - | 0.0 |
+| 14–15 | LowerArm_R | 17.0 | - | 0.0 |
+| 15–16 | Hand_R | 11.7 | - | 0.0 |
+| 16–17 | LowerArm_R | 4.6 | - | 0.0 |
+| 17–18 | Hand_R | 0.0 | - | 0.0 |
+| 18–19 | - | 0.0 | - | 0.0 |
+| 19–20 | - | 0.0 | - | 0.0 |
+| 20–21 | - | 0.0 | - | 0.0 |
+| 21–22 | - | 0.0 | - | 0.0 |
+| 22–23 | - | 0.0 | - | 0.0 |
+
+**Roll 0.52 s**
+
+| Pair | Bone | Degrees | Contact | cm |
+|---|---|---|---|---|
+| 0–1 | Chest | 11.5 | - | 0.0 |
+| 1–2 | Chest | 11.5 | - | 0.0 |
+| 2–3 | Chest | 11.5 | - | 0.0 |
+| 3–4 | Chest | 11.4 | - | 0.0 |
+| 4–5 | Chest | 11.4 | - | 0.0 |
+| 5–6 | Chest | 11.4 | - | 0.0 |
+| 6–7 | Chest | 11.3 | - | 0.0 |
+| 7–8 | UpperArm_L | 6.5 | - | 0.0 |
+| 8–9 | UpperArm_R | 24.0 | - | 0.0 |
+| 9–10 | UpperArm_R | 23.9 | - | 0.0 |
+| 10–11 | UpperArm_R | 23.8 | - | 0.0 |
+| 11–12 | UpperArm_R | 23.7 | - | 0.0 |
+| 12–13 | UpperArm_R | 23.5 | - | 0.0 |
+| 13–14 | UpperArm_R | 23.4 | - | 0.0 |
+| 14–15 | UpperArm_R | 23.3 | - | 0.0 |
+| 15–16 | UpperArm_R | 13.9 | - | 0.0 |
+
+`air-feel takeoff=24.8>12.5 tuck=3.7>1.6 fall=58.0>20.0 hop=22.1>4.9 strafe=18.0>1.8 coyote=24.8>10.9 clear=10.3cm gameplayDelay=0 rootMotion=0`
+
+`handoff run=7.6>3.2 roll=8.5>2.1 wall=81.0>8.8 cling=42.0>15.4 rollAt=36.5 gameplayDelay=0 rootMotion=0`
+
+`handoff2 climb=21.9>12.5 vault=20.2>13.6 vaultOut=14.0>8.4 slideIn=30.3>12.6 slideOut=30.3>12.6 zipGrab=33.1>11.9 zipDrop=53.2>7.9 grappleIn=72.0>10.4 grappleOut=25.0>11.3 padUp=30.6>11.9 padAir=14.2>10.8 gameplayDelay=0 rootMotion=0`
+
+`body-line wall=35.6>16.6 rope=70.0>0.0 zip=58.0>0.0 drop=128.0>53.2 pad=155.0>30.6 land=104.0>0.0 tell=0.42>0.16 rev=82.6>15.3 reach=12.9>0.0 gameplayDelay=0 rootMotion=0`
+
+`loco-feel stride=52.0>28.9 foot=39.8>19.7 slideCm=51.7>0.0 lean=6.5>0.7 start=4.0>0.5 stop=32.0>5.9 turn=51.8>12.9 idle=14.0>2.4 crouch=7.8>6.4 drop=12.0>5.9 head=4.9>1.7 gameplayDelay=0 rootMotion=0`
+
+Stills: `Docs/SmoothStills/pass18/` `vault-0.png` through `vault-7.png`, and the same eight frames for `climb`, `slide`, `wall`, and `roll`. Sheets: `vault-sheet.png`, `climb-sheet.png`, `slide-sheet.png`, `wall-sheet.png`, `roll-sheet.png`.
+
+`script-compile-check files=217 parseErrors=0 duplicateOrMissing=0`. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay `before=101 after=0`. Frame budget and frame-budget-split stay `steady=ok`. `transition-matrix` stays `over=0`.
