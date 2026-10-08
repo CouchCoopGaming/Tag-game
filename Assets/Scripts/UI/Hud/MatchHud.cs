@@ -449,6 +449,11 @@ namespace Tag.Ui.Hud
             string name = CouchPlay.Name(seat);
             if (string.IsNullOrEmpty(name)) name = MatchHudText.Seat[seat];
             Set(pane.Name, name);
+            if (pane.Name != null)
+            {
+                string body = LocalProfiles.HierKeyFor(name);
+                if (!string.IsNullOrEmpty(body)) pane.Name.color = MenuMannequin.Swatch(body);
+            }
             string profile = LocalProfiles.SeatName(seat);
             if (string.IsNullOrEmpty(profile)) profile = CouchPlay.SeatLine(seat);
             Set(pane.Profile, profile);

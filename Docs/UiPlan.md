@@ -281,6 +281,12 @@ The handoff line, the results line, and the no-clip line are unchanged. Mockups 
 
 One item has the yellow border. On mode and rules the selected mode stays a filled tile with a check, and the focused row is the only yellow one. Arena select uses the same rule. Headers sit at least 5% down from the top of a 16:9 frame, and the same fraction down inside each pane of a 4-way split. The bottom bar reads Confirm, Back, and the extra action for that screen through ActionBinds.Show, the same tokens the Controls screen prints. Character select keeps four cards. Each card shows the seat, the player name, the look colour, and a READY banner when that player is ready. The pictures in `Docs/UiStills/pass30/` are composites. The proof lines are unchanged.
 
+## Pass 31
+
+The prompt bar is a thin strip on the bottom edge of the screen. In a split, each pane has its own strip on that pane's bottom edge. The chips are small glyphs plus a label. They are not buttons and they are not in the focus list. The glyph is the ActionBinds token for the device that last gave input on that seat. An Xbox pad draws A, B, X, and Y. A PlayStation pad draws cross, circle, square, and triangle. A keyboard draws key caps. Controls uses the same token for its icon.
+
+Character select keeps four cards. Each card shows the Hier mannequin in that player's look, in the idle or ready pose. The card frame and the name tag use the look colour. The in-game name plate uses that same look. The P chip stays the seat colour and is labelled Seat, the same seat colour as the match pane edge. Left and right arrows on the card change the look. A look another player already took is grey and shows a lock. The pictures in `Docs/UiStills/pass31/` are composites. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

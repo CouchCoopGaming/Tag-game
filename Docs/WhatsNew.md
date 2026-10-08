@@ -326,6 +326,8 @@ The twenty-ninth pass keeps those lines. Title, the main menu, character select,
 
 The thirtieth pass keeps those lines. One row is focused at a time. The selected mode keeps a filled tile and a check. Headers start at least 5% down on a 16:9 screen and inside each pane of a 4-way split. The prompt bar uses the same ActionBinds tokens as Controls, so Confirm, Back, and the extra action match the bindings. Character select shows four cards, each with the player name, the look colour, and a READY banner. The pictures in `Docs/UiStills/pass30/` are composites.
 
+The thirty-first pass docks that bar to the bottom edge, and to the bottom of each pane in a split. The chips are small glyphs and labels, not buttons. Xbox shows A, B, X, and Y. PlayStation shows cross, circle, square, and triangle. A keyboard shows key caps. The token is the same ActionBinds token Controls uses, for the device that last gave input. Character select shows the Hier mannequin in the selected look, idle or ready. The frame and the name tag use that look, and so does the in-game name plate. The P chip is the seat colour, labelled Seat. Arrows change the look, and a taken look shows a lock. The pictures in `Docs/UiStills/pass31/` are composites.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

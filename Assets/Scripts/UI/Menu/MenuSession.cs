@@ -170,8 +170,8 @@ namespace Tag.Ui.Menu
         }
 
         /// <summary>
-        /// Body name on the character card and in the match. The seat color
-        /// stays on the card frame and the P badge.
+        /// Body name on the character card and in the match. The card frame
+        /// and the name tag use this look. The P badge stays the seat colour.
         /// </summary>
         public static string CardBody(int seat)
         {

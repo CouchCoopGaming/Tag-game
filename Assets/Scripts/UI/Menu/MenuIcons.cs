@@ -32,6 +32,14 @@ namespace Tag.Ui.Menu
         static Sprite _circle;
         static Sprite _switchB;
         static Sprite _switchA;
+        static Sprite _west;
+        static Sprite _north;
+        static Sprite _square;
+        static Sprite _triangle;
+        static Sprite _switchWest;
+        static Sprite _switchNorth;
+        static Sprite _lock;
+        static readonly Sprite[] _caps = new Sprite[128];
 
         public static Sprite Play => _play ??= Runner();
         public static Sprite Cone => _cone ??= TrafficCone();
@@ -51,6 +59,13 @@ namespace Tag.Ui.Menu
         public static Sprite Circle => _circle ??= CircleMark();
         public static Sprite SwitchSouth => _switchB ??= FaceCap(new Color(0.95f, 0.78f, 0.16f, 1f), LetterB());
         public static Sprite SwitchEast => _switchA ??= FaceCap(new Color(0.90f, 0.22f, 0.28f, 1f), LetterA());
+        public static Sprite West => _west ??= FaceCap(new Color(0.20f, 0.45f, 0.95f, 1f), LetterX());
+        public static Sprite North => _north ??= FaceCap(new Color(0.95f, 0.78f, 0.16f, 1f), LetterY());
+        public static Sprite Square => _square ??= SquareMark();
+        public static Sprite Triangle => _triangle ??= TriangleMark();
+        public static Sprite SwitchWest => _switchWest ??= FaceCap(new Color(0.25f, 0.55f, 0.95f, 1f), LetterY());
+        public static Sprite SwitchNorth => _switchNorth ??= FaceCap(new Color(0.95f, 0.78f, 0.16f, 1f), LetterX());
+        public static Sprite Lock => _lock ??= LockMark();
 
         public static Sprite Slot(int family, int slot)
         {
@@ -96,6 +111,53 @@ namespace Tag.Ui.Menu
             if (family == PadGlyph.PlayStation) return east ? Cross : Circle;
             if (family == PadGlyph.Switch) return east ? SwitchSouth : SwitchEast;
             return east ? South : East;
+        }
+
+        /// <summary>
+        /// Glyph for one ActionBinds token on the device that last gave input.
+        /// Xbox draws A/B/X/Y. PlayStation draws cross, circle, square, and triangle.
+        /// A keyboard draws a key cap.
+        /// </summary>
+        public static Sprite ForToken(int family, string token)
+        {
+            if (string.IsNullOrEmpty(token)) return family == PadGlyph.Keyboard ? Keys : Pad;
+            if (token == "leftStick" || token == "leftStickHold" || token == "rightStick") return Stick;
+            if (token == "buttonSouth") return SouthOf(family);
+            if (token == "buttonEast") return EastFace(family);
+            if (token == "buttonWest") return WestFace(family);
+            if (token == "buttonNorth") return NorthFace(family);
+            if (family == PadGlyph.Keyboard)
+            {
+                if (token == "wasd" || token == "arrows") return KeyArrows;
+                if (token == "space") return KeySpace;
+                if (token == "escape") return KeyEsc;
+                return KeyCap(token);
+            }
+            return Pad;
+        }
+
+        static Sprite EastFace(int family)
+        {
+            if (family == PadGlyph.PlayStation) return Circle;
+            if (family == PadGlyph.Switch) return SwitchEast;
+            if (family == PadGlyph.Keyboard) return KeyEsc;
+            return East;
+        }
+
+        static Sprite WestFace(int family)
+        {
+            if (family == PadGlyph.PlayStation) return Square;
+            if (family == PadGlyph.Switch) return SwitchWest;
+            if (family == PadGlyph.Keyboard) return Keys;
+            return West;
+        }
+
+        static Sprite NorthFace(int family)
+        {
+            if (family == PadGlyph.PlayStation) return Triangle;
+            if (family == PadGlyph.Switch) return SwitchNorth;
+            if (family == PadGlyph.Keyboard) return Keys;
+            return North;
         }
 
         public static Sprite SouthOf(int family)
@@ -308,6 +370,90 @@ namespace Tag.Ui.Menu
         static int[] LetterB()
         {
             return new[] { 0x1E, 0x11, 0x1E, 0x11, 0x1E };
+        }
+
+        static int[] LetterX()
+        {
+            return new[] { 0x11, 0x0A, 0x04, 0x0A, 0x11 };
+        }
+
+        static int[] LetterY()
+        {
+            return new[] { 0x04, 0x04, 0x0A, 0x11, 0x11 };
+        }
+
+        static int[] LetterR()
+        {
+            return new[] { 0x11, 0x11, 0x1E, 0x11, 0x1E };
+        }
+
+        static int[] LetterQ()
+        {
+            return new[] { 0x01, 0x1F, 0x11, 0x11, 0x0E };
+        }
+
+        static Sprite KeyCap(string token)
+        {
+            char c = '\0';
+            if (!string.IsNullOrEmpty(token) && token.Length == 1)
+            {
+                c = token[0];
+                if (c >= 'a' && c <= 'z') c = (char)(c - 32);
+            }
+            int index = c;
+            if (index > 0 && index < _caps.Length && _caps[index] != null) return _caps[index];
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            KeyBody(px, n, 16, 24, 112, 104);
+            int[] rows = Rows(c);
+            if (rows != null)
+                Stamp(px, n, n, 46, 40, 7, rows, new Color(0.06f, 0.10f, 0.20f, 1f));
+            Sprite sprite = Bake(px, n, n);
+            if (index > 0 && index < _caps.Length) _caps[index] = sprite;
+            return sprite;
+        }
+
+        static int[] Rows(char c)
+        {
+            if (c == 'A') return LetterA();
+            if (c == 'B') return LetterB();
+            if (c == 'Q') return LetterQ();
+            if (c == 'R') return LetterR();
+            if (c == 'X') return LetterX();
+            if (c == 'Y') return LetterY();
+            if (c == 'C' || c == 'E' || c == 'S') return c == 'C' ? LetterC() : c == 'E' ? LetterE() : LetterS();
+            return null;
+        }
+
+        static Sprite SquareMark()
+        {
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            Disc(px, n, 64, 64, 52, new Color(0.06f, 0.08f, 0.12f, 1f));
+            RoundBox(px, n, 30, 30, 98, 98, 8, new Color(0.92f, 0.35f, 0.62f, 1f));
+            RoundBox(px, n, 42, 42, 86, 86, 4, new Color(0.10f, 0.12f, 0.16f, 1f));
+            return Bake(px, n, n);
+        }
+
+        static Sprite TriangleMark()
+        {
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            Disc(px, n, 64, 64, 52, new Color(0.06f, 0.08f, 0.12f, 1f));
+            Tri(px, n, 64, 30, 30, 96, 98, 96, new Color(0.20f, 0.75f, 0.35f, 1f));
+            return Bake(px, n, n);
+        }
+
+        static Sprite LockMark()
+        {
+            const int n = 64;
+            Color[] px = Clear(n, n);
+            Color ink = new Color(0.96f, 0.97f, 1f, 1f);
+            RoundBox(px, n, 12, 6, 52, 34, 6, ink);
+            Fill(px, n, 20, 28, 26, 50, ink);
+            Fill(px, n, 38, 28, 44, 50, ink);
+            Fill(px, n, 20, 44, 44, 52, ink);
+            return Bake(px, n, n);
         }
 
         static void Stamp(Color[] px, int w, int h, int ox, int oy, int scale, int[] rows, Color c)
