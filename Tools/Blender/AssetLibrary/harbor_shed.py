@@ -11,12 +11,55 @@ D = 2.8
 H = 2.35
 
 
+def _roof(g):
+    """Closed gable. Eaves sit above the wall tops so the two shells do not meet."""
+    ox = W * 0.5 + 0.18
+    ez = D * 0.5 + 0.22
+    ye = 2.48
+    yr = 3.20
+    ins = 0.06
+    verts = [
+        (-ox, yr, 0.0),
+        (ox, yr, 0.0),
+        (-ox, ye, ez),
+        (ox, ye, ez),
+        (-ox, ye, -ez),
+        (ox, ye, -ez),
+        (-ox + ins, yr - 0.10, 0.0),
+        (ox - ins, yr - 0.10, 0.0),
+        (-ox + ins, ye - 0.08, ez - ins),
+        (ox - ins, ye - 0.08, ez - ins),
+        (-ox + ins, ye - 0.08, -ez + ins),
+        (ox - ins, ye - 0.08, -ez + ins),
+    ]
+    faces = [
+        (0, 2, 3, 1),
+        (0, 1, 5, 4),
+        (0, 4, 2),
+        (1, 3, 5),
+        (6, 7, 9, 8),
+        (6, 10, 11, 7),
+        (6, 8, 10),
+        (7, 11, 9),
+        (0, 2, 8, 6),
+        (0, 6, 10, 4),
+        (1, 7, 9, 3),
+        (1, 5, 11, 7),
+        (2, 3, 9, 8),
+        (4, 10, 11, 5),
+    ]
+    g.mesh(verts, faces, "Lib_Roof", uv_scale=0.9)
+    # Fascia hangs just clear of the eave face.
+    g.box((0, ye - 0.07, ez + 0.03), (ox * 2, 0.12, 0.035), "Lib_WoodDark")
+    g.box((0, ye - 0.07, -ez - 0.03), (ox * 2, 0.12, 0.035), "Lib_WoodDark")
+
+
 @register
 def create():
     a = Asset(
         "HarborShed",
         "Harbor",
-        "Wood shed, 3.6 x 2.8 m, walls at 2.35 m, gable ridge at 3.15 m. Door and a small window face +Z.",
+        "Wood shed, 3.6 x 2.8 m, walls at 2.35 m. Closed gable roof, ridge at 3.20 m, with fascia. Door and a small window face +Z.",
     )
     a.climbable = True
     a.climb_note = "The board walls are cling. The door is closed."
@@ -34,10 +77,7 @@ def create():
         g.box((0.15, 1.05, D * 0.5 + 0.02), (0.92, 1.85, 0.04), "Lib_WoodDark")
         if lod == 0:
             g.box((1.15, 1.55, D * 0.5 + 0.01), (0.55, 0.45, 0.02), "Lib_ShopGlass")
-        g.box((0, 2.42, 0), (W + 0.40, 0.08, D + 0.36), "Lib_Roof", uv_scale=0.8)
-        g.box((0, 2.78, -0.42), (W + 0.16, 0.05, 1.15), "Lib_Roof", euler=(32, 0, 0), uv_scale=1.0)
-        g.box((0, 2.78, 0.42), (W + 0.16, 0.05, 1.15), "Lib_Roof", euler=(-32, 0, 0), uv_scale=1.0)
-        g.box((0, 3.08, 0), (W + 0.10, 0.06, 0.14), "Lib_Roof")
+        _roof(g)
         a.end()
     a.box("Col_Floor", (0, 0.04, 0), (W - 0.05, 0.05, D - 0.05))
     a.box("Climb_Back", (0, 1.22, -D * 0.5 + 0.04), (W - 0.40, 1.90, 0.04))

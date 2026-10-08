@@ -2943,45 +2943,44 @@
   {
     "name": "Buoy",
     "category": "Harbor",
-    "blurb": "Nun buoy, 1.35 m tall, 0.72 m across the float. Red over white. Pivot is the base so it can sit on a dock.",
+    "blurb": "Can buoy, 1.85 m tall. Ballast bulb, red cylindrical body with a white band, and a cage with a light. Pivot is the base.",
     "size": [
-      0.72,
-      1.375,
-      0.72
+      0.704,
+      1.88,
+      0.704
     ],
     "min": [
-      -0.36,
+      -0.352,
       0.0,
-      -0.36
+      -0.352
     ],
     "max": [
-      0.36,
-      1.375,
-      0.36
+      0.352,
+      1.88,
+      0.352
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 828,
+        "tris": 1028,
         "materials": [
-          "Lib_SteelDark",
           "Lib_PaintRed",
           "Lib_PaintWhite",
           "Lib_Steel",
-          "Lib_PaintYellow",
-          "Lib_Rust"
+          "Lib_SteelDark",
+          "Lib_PaintYellow"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 188,
+        "tris": 316,
         "materials": [
-          "Lib_SteelDark",
           "Lib_PaintRed",
           "Lib_PaintWhite",
-          "Lib_Steel"
+          "Lib_Steel",
+          "Lib_PaintYellow"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -2989,45 +2988,26 @@
     ],
     "colliders": [
       {
-        "name": "Col_Float",
-        "type": "sphere",
-        "center": [
-          0,
-          0.52,
-          0
-        ],
-        "radius": 0.34
-      },
-      {
-        "name": "Col_Base",
-        "type": "box",
-        "center": [
-          0,
-          0.1,
-          0
-        ],
-        "size": [
-          0.08,
-          0.14,
-          0.08
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Top",
+        "name": "Col_Body",
         "type": "capsule",
         "center": [
           0,
-          1.08,
+          0.74,
           0
         ],
-        "radius": 0.07,
-        "height": 0.48,
+        "radius": 0.24,
+        "height": 0.5,
         "direction": 1
+      },
+      {
+        "name": "Col_Ballast",
+        "type": "sphere",
+        "center": [
+          0,
+          0.16,
+          0
+        ],
+        "radius": 0.12
       }
     ],
     "climbable": false,
@@ -3041,7 +3021,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 2.74,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Harbor/Buoy.fbx"
   },
   {
@@ -25621,32 +25601,34 @@
   {
     "name": "FishingBoat",
     "category": "Harbor",
-    "blurb": "Open fishing skiff, 4.2 m long and 1.5 m across, gunwale at 0.72 m. Bow is -Z. Outboard on the stern.",
+    "blurb": "Fishing boat about 5.1 m, bow to -Z. Curved stem, sheer, keel and transom. Wheelhouse with windows, side rails, cleats, and an outboard. Waterline stripe at 0.34 m.",
     "size": [
-      1.58,
-      0.89,
-      3.915
+      1.591,
+      1.446,
+      5.398
     ],
     "min": [
-      -0.79,
-      0.03,
-      -2.04
+      -0.796,
+      0.0,
+      -2.86
     ],
     "max": [
-      0.79,
-      0.92,
-      1.875
+      0.796,
+      1.446,
+      2.538
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 204,
+        "tris": 1632,
         "materials": [
           "Lib_PaintWhite",
-          "Lib_Wood",
-          "Lib_WoodDark",
           "Lib_SteelDark",
+          "Lib_ShopGlass",
+          "Lib_WoodDark",
           "Lib_Steel",
+          "Lib_PaintRed",
+          "Lib_Wood",
           "Lib_Black"
         ],
         "mesh": "LOD0",
@@ -25654,11 +25636,13 @@
       },
       {
         "lod": 1,
-        "tris": 120,
+        "tris": 592,
         "materials": [
           "Lib_PaintWhite",
-          "Lib_Wood",
-          "Lib_WoodDark"
+          "Lib_SteelDark",
+          "Lib_ShopGlass",
+          "Lib_Steel",
+          "Lib_PaintRed"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -25666,74 +25650,17 @@
     ],
     "colliders": [
       {
-        "name": "Col_Keel",
+        "name": "Col_Bilge",
         "type": "box",
         "center": [
           0,
-          0.12,
-          0.05
+          0.16,
+          0.15
         ],
         "size": [
-          0.72,
-          0.12,
-          2.9
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_SideL",
-        "type": "box",
-        "center": [
-          -0.58,
-          0.42,
-          0.1
-        ],
-        "size": [
-          0.035,
-          0.38,
-          2.95
-        ],
-        "euler": [
-          0,
-          -4.0,
-          0
-        ]
-      },
-      {
-        "name": "Col_SideR",
-        "type": "box",
-        "center": [
-          0.58,
-          0.42,
-          0.1
-        ],
-        "size": [
-          0.035,
-          0.38,
-          2.95
-        ],
-        "euler": [
-          0,
-          4.0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Transom",
-        "type": "box",
-        "center": [
-          0,
-          0.4,
-          1.85
-        ],
-        "size": [
-          1.0,
-          0.42,
-          0.035
+          0.36,
+          0.08,
+          1.4
         ],
         "euler": [
           0,
@@ -25746,13 +25673,13 @@
         "type": "box",
         "center": [
           0,
-          0.36,
+          0.52,
           -1.85
         ],
         "size": [
-          0.32,
-          0.36,
-          0.28
+          0.14,
+          0.08,
+          0.22
         ],
         "euler": [
           0,
@@ -25761,17 +25688,55 @@
         ]
       },
       {
-        "name": "Col_Deck",
+        "name": "Col_Transom",
         "type": "box",
         "center": [
           0,
-          0.55,
-          0.15
+          0.46,
+          1.9
         ],
         "size": [
-          0.82,
-          0.025,
-          2.45
+          0.4,
+          0.14,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0,
+          1.08,
+          -0.55
+        ],
+        "size": [
+          0.64,
+          0.36,
+          0.48
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Motor",
+        "type": "box",
+        "center": [
+          0,
+          0.64,
+          2.4
+        ],
+        "size": [
+          0.14,
+          0.14,
+          0.1
         ],
         "euler": [
           0,
@@ -25784,7 +25749,7 @@
     "vaultable": false,
     "vaultHeight": 0.0,
     "climbNote": "The hull is a solid prop. Not a cling wall.",
-    "vaultNote": "Gunwale is 0.72 m. Under the vault band.",
+    "vaultNote": "Gunwale is about 0.70 m. Under the vault band.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
@@ -25797,21 +25762,21 @@
   {
     "name": "HarborShed",
     "category": "Harbor",
-    "blurb": "Wood shed, 3.6 x 2.8 m, walls at 2.35 m, gable ridge at 3.15 m. Door and a small window face +Z.",
+    "blurb": "Wood shed, 3.6 x 2.8 m, walls at 2.35 m. Closed gable roof, ridge at 3.20 m, with fascia. Door and a small window face +Z.",
     "size": [
-      4.0,
-      3.11,
-      3.16
+      3.96,
+      3.2,
+      3.335
     ],
     "min": [
-      -2.0,
+      -1.98,
       0.0,
-      -1.58
+      -1.668
     ],
     "max": [
-      2.0,
-      3.11,
-      1.58
+      1.98,
+      3.2,
+      1.668
     ],
     "lods": [
       {
@@ -26112,36 +26077,38 @@
   {
     "name": "Rowboat",
     "category": "Harbor",
-    "blurb": "Rowboat, 2.6 m long and 0.95 m across, gunwale at 0.42 m. Bow is -Z. Two seats. Oars rest across the gunwales.",
+    "blurb": "Rowboat about 2.9 m, bow to -Z. Curved stem, sheer, keel and transom. Two thwarts, oarlocks, and a pair of oars. Waterline is 0.26 m; place it so that meets the water.",
     "size": [
-      1.4,
-      0.49,
-      2.26
+      2.58,
+      0.66,
+      2.87
     ],
     "min": [
-      -0.675,
-      0.02,
-      -1.19
+      -1.29,
+      0.0,
+      -1.67
     ],
     "max": [
-      0.725,
-      0.51,
-      1.07
+      1.29,
+      0.66,
+      1.2
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 164,
+        "tris": 952,
         "materials": [
           "Lib_Wood",
-          "Lib_WoodDark"
+          "Lib_WoodDark",
+          "Lib_SteelDark",
+          "Lib_Steel"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 108,
+        "tris": 376,
         "materials": [
           "Lib_Wood",
           "Lib_WoodDark"
@@ -26152,17 +26119,17 @@
     ],
     "colliders": [
       {
-        "name": "Col_Keel",
+        "name": "Col_Bilge",
         "type": "box",
         "center": [
           0,
-          0.08,
-          0
+          0.1,
+          0.0
         ],
         "size": [
-          0.46,
-          0.08,
-          1.65
+          0.2,
+          0.05,
+          0.7
         ],
         "euler": [
           0,
@@ -26171,40 +26138,40 @@
         ]
       },
       {
-        "name": "Col_SideL",
+        "name": "Col_ThwartF",
         "type": "box",
         "center": [
-          -0.36,
-          0.24,
-          0.02
+          0,
+          0.285,
+          -0.53
         ],
         "size": [
-          0.025,
-          0.18,
-          1.75
+          0.22,
+          0.014,
+          0.05
         ],
         "euler": [
           0,
-          -6.0,
+          0,
           0
         ]
       },
       {
-        "name": "Col_SideR",
+        "name": "Col_ThwartA",
         "type": "box",
         "center": [
-          0.36,
-          0.24,
-          0.02
+          0,
+          0.285,
+          0.24
         ],
         "size": [
-          0.025,
-          0.18,
-          1.75
+          0.22,
+          0.014,
+          0.05
         ],
         "euler": [
           0,
-          6.0,
+          0,
           0
         ]
       },
@@ -26213,32 +26180,13 @@
         "type": "box",
         "center": [
           0,
-          0.22,
+          0.3,
           1.05
         ],
         "size": [
-          0.5,
-          0.2,
-          0.028
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Bow",
-        "type": "box",
-        "center": [
-          0,
-          0.2,
-          -1.05
-        ],
-        "size": [
-          0.2,
-          0.16,
-          0.2
+          0.28,
+          0.1,
+          0.06
         ],
         "euler": [
           0,
@@ -26251,7 +26199,294 @@
     "vaultable": false,
     "vaultHeight": 0.0,
     "climbNote": "Too small to cling.",
-    "vaultNote": "Gunwale is 0.42 m. Not a vault.",
+    "vaultNote": "Gunwale is about 0.50 m. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 1.97,
+    "fbx": "Assets/Art/Props/Library/Harbor/Rowboat.fbx"
+  },
+  {
+    "name": "Gangway",
+    "category": "Harbor",
+    "blurb": "Gangway 2.6 x 1.05 m. Deck falls from 0.90 m at -Z (quay) to 0.62 m at +Z (floating dock). Handrails both sides.",
+    "size": [
+      0.992,
+      1.238,
+      2.565
+    ],
+    "min": [
+      -0.496,
+      0.608,
+      -1.282
+    ],
+    "max": [
+      0.496,
+      1.847,
+      1.282
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 776,
+        "materials": [
+          "Lib_WoodWeather",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 232,
+        "materials": [
+          "Lib_WoodWeather",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Plank_0",
+        "type": "box",
+        "center": [
+          0,
+          0.886,
+          -1.17
+        ],
+        "size": [
+          0.78,
+          0.02,
+          0.182
+        ],
+        "euler": [
+          6.14662565964667,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_1",
+        "type": "box",
+        "center": [
+          0,
+          0.858,
+          -0.91
+        ],
+        "size": [
+          0.78,
+          0.02,
+          0.182
+        ],
+        "euler": [
+          6.14662565964667,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_2",
+        "type": "box",
+        "center": [
+          0,
+          0.8300000000000001,
+          -0.65
+        ],
+        "size": [
+          0.78,
+          0.02,
+          0.182
+        ],
+        "euler": [
+          6.14662565964667,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_3",
+        "type": "box",
+        "center": [
+          0,
+          0.802,
+          -0.3900000000000001
+        ],
+        "size": [
+          0.78,
+          0.02,
+          0.182
+        ],
+        "euler": [
+          6.14662565964667,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_4",
+        "type": "box",
+        "center": [
+          0,
+          0.774,
+          -0.1299999999999999
+        ],
+        "size": [
+          0.78,
+          0.02,
+          0.182
+        ],
+        "euler": [
+          6.14662565964667,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_5",
+        "type": "box",
+        "center": [
+          0,
+          0.746,
+          0.13000000000000012
+        ],
+        "size": [
+          0.78,
+          0.02,
+          0.182
+        ],
+        "euler": [
+          6.14662565964667,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_6",
+        "type": "box",
+        "center": [
+          0,
+          0.718,
+          0.3900000000000001
+        ],
+        "size": [
+          0.78,
+          0.02,
+          0.182
+        ],
+        "euler": [
+          6.14662565964667,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_7",
+        "type": "box",
+        "center": [
+          0,
+          0.69,
+          0.6500000000000001
+        ],
+        "size": [
+          0.78,
+          0.02,
+          0.182
+        ],
+        "euler": [
+          6.14662565964667,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_8",
+        "type": "box",
+        "center": [
+          0,
+          0.662,
+          0.9099999999999999
+        ],
+        "size": [
+          0.78,
+          0.02,
+          0.182
+        ],
+        "euler": [
+          6.14662565964667,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_9",
+        "type": "box",
+        "center": [
+          0,
+          0.634,
+          1.1699999999999997
+        ],
+        "size": [
+          0.78,
+          0.02,
+          0.182
+        ],
+        "euler": [
+          6.14662565964667,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Vault_Rail_0",
+        "type": "box",
+        "center": [
+          -0.48,
+          1.71,
+          0.0
+        ],
+        "size": [
+          0.02,
+          0.02,
+          2.05
+        ],
+        "euler": [
+          6.14662565964667,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Vault_Rail_1",
+        "type": "box",
+        "center": [
+          0.48,
+          1.71,
+          0.0
+        ],
+        "size": [
+          0.02,
+          0.02,
+          2.05
+        ],
+        "euler": [
+          6.14662565964667,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": true,
+    "vaultHeight": 0.95,
+    "climbNote": "Walk the planks. Not a cling wall.",
+    "vaultNote": "Vault_Rail is the handrail, 0.95 m above the deck.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
@@ -26259,7 +26494,447 @@
       "LOD1"
     ],
     "slackCm": 0.0,
-    "fbx": "Assets/Art/Props/Library/Harbor/Rowboat.fbx"
+    "fbx": "Assets/Art/Props/Library/Harbor/Gangway.fbx"
+  },
+  {
+    "name": "FuelDock",
+    "category": "Harbor",
+    "blurb": "Fuel dock pump, 0.48 m wide and 1.35 m tall. Hose and nozzle on +Z. Place the base on the dock deck.",
+    "size": [
+      0.52,
+      1.3,
+      0.604
+    ],
+    "min": [
+      -0.26,
+      0.0,
+      -0.2
+    ],
+    "max": [
+      0.26,
+      1.3,
+      0.404
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 444,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintWhite",
+          "Lib_PaintRed",
+          "Lib_Rubber",
+          "Lib_Black",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 48,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintWhite",
+          "Lib_PaintRed"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Cabinet",
+        "type": "box",
+        "center": [
+          0,
+          0.62,
+          0
+        ],
+        "size": [
+          0.36,
+          1.0,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.02,
+          0
+        ],
+        "size": [
+          0.46,
+          0.03,
+          0.34
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Cabinet. Not a cling wall.",
+    "vaultNote": "No rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Harbor/FuelDock.fbx"
+  },
+  {
+    "name": "LifeRing",
+    "category": "Harbor",
+    "blurb": "Life ring on a stand, 1.25 m tall. Orange ring with white bands faces +Z. Place the base on a deck.",
+    "size": [
+      0.819,
+      1.416,
+      0.25
+    ],
+    "min": [
+      -0.412,
+      0.0,
+      -0.11
+    ],
+    "max": [
+      0.407,
+      1.416,
+      0.14
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 388,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Orange",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 164,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Orange"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Post",
+        "type": "capsule",
+        "center": [
+          0,
+          0.62,
+          0
+        ],
+        "radius": 0.018,
+        "height": 1.1,
+        "direction": 1
+      },
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.015,
+          0
+        ],
+        "size": [
+          0.24,
+          0.024,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Post is 4 cm. Not a cling.",
+    "vaultNote": "No rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Harbor/LifeRing.fbx"
+  },
+  {
+    "name": "FishCrate",
+    "category": "Harbor",
+    "blurb": "Fish tote, 0.72 x 0.46 m, 0.32 m tall. White body, blue rim. Sits on a deck.",
+    "size": [
+      0.72,
+      0.295,
+      0.46
+    ],
+    "min": [
+      -0.36,
+      0.0,
+      -0.23
+    ],
+    "max": [
+      0.36,
+      0.295,
+      0.23
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 48,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_PaintBlue"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 24,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_PaintBlue"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          0.13,
+          0
+        ],
+        "size": [
+          0.58,
+          0.22,
+          0.34
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rim",
+        "type": "box",
+        "center": [
+          0,
+          0.275,
+          0
+        ],
+        "size": [
+          0.64,
+          0.03,
+          0.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Too small to cling.",
+    "vaultNote": "Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.72,
+    "fbx": "Assets/Art/Props/Library/Harbor/FishCrate.fbx"
+  },
+  {
+    "name": "LobsterTrap",
+    "category": "Harbor",
+    "blurb": "Lobster trap, 0.90 x 0.48 m, 0.38 m tall. Wood slats, a funnel at +Z, and a rope bridle.",
+    "size": [
+      0.916,
+      0.393,
+      0.496
+    ],
+    "min": [
+      -0.458,
+      0.005,
+      -0.248
+    ],
+    "max": [
+      0.458,
+      0.398,
+      0.248
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 444,
+        "materials": [
+          "Lib_WoodDark",
+          "Lib_Wood",
+          "Lib_SteelDark",
+          "Lib_Rust"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 216,
+        "materials": [
+          "Lib_WoodDark",
+          "Lib_Wood"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.025,
+          0
+        ],
+        "size": [
+          0.78,
+          0.03,
+          0.38
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_0",
+        "type": "box",
+        "center": [
+          -0.4,
+          0.19,
+          -0.2
+        ],
+        "size": [
+          0.025,
+          0.2,
+          0.025
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_1",
+        "type": "box",
+        "center": [
+          -0.4,
+          0.19,
+          0.2
+        ],
+        "size": [
+          0.025,
+          0.2,
+          0.025
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_2",
+        "type": "box",
+        "center": [
+          0.4,
+          0.19,
+          -0.2
+        ],
+        "size": [
+          0.025,
+          0.2,
+          0.025
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_3",
+        "type": "box",
+        "center": [
+          0.4,
+          0.19,
+          0.2
+        ],
+        "size": [
+          0.025,
+          0.2,
+          0.025
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Too small to cling.",
+    "vaultNote": "Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Harbor/LobsterTrap.fbx"
   },
   {
     "name": "LightPost_Globe",
