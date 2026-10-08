@@ -69,6 +69,7 @@
     <Compile Include="../../Assets/Scripts/Art/BodyLine.cs" />
     <Compile Include="../../Assets/Scripts/Art/StillFont.cs" />
     <Compile Include="../../Assets/Scripts/Art/LocoFeel.cs" />
+    <Compile Include="../../Assets/Scripts/Art/AirFeel.cs" />
     <Compile Include="../../Assets/Scripts/Art/BodyLife.cs" />
     <Compile Include="../../Assets/Scripts/Art/UpperBody.cs" />
     <Compile Include="../../Assets/Scripts/Art/HangMotion.cs" />
