@@ -274,3 +274,7 @@ The fall is the same. A vault now plants the hands on a waist-high box and cross
 ## Motion, sixteenth pass
 
 The vault hands sit on the box, the climb holds the lip with the chest and one foot on the wall, and the slide stays reclined under the bar with the lead leg straight. The fall is the same. Try it: vault a box, climb a wall, and slide under a bar.
+
+## Motion, seventeenth pass
+
+The vault and the slide are the same. The climb camera sits on your side of the wall, so you see the body on the face instead of a fist over the top. The launch pad shows the crouch with both feet on the plate. The jump after you leave the plate is a second still. Vault, climb, slide, wall jump, and roll each have an eight-frame strip. Try it: climb a wall and look at the face you are on, then hit a launch pad and watch the knees.

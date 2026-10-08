@@ -396,3 +396,48 @@ Same stage and the same fall camera for the 3/4 stills. The ortho copies are the
 Stills: `Docs/SmoothStills/pass16/stride.png`, `stop.png`, `turn.png`, `apex.png`, `fall.png`, `climb.png`, `vault.png`, `slide.png`, `zip.png`, `grapple.png`, `pad.png`, and the ortho copies `climb-ortho.png`, `vault-ortho.png`, `slide-ortho.png`, `zip-ortho.png`, `grapple-ortho.png`, `pad-ortho.png`.
 
 `loco-feel`, `body-line`, `climb-contact`, `response-latency`, and `stick-quality` are unchanged. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`.
+
+## Pass 17
+
+Vault and slide stay on the pass 16 poses. The climb 3/4 camera was on the back of the wall, so the wall hid the body. It now sits on the runner's side of the face (yaw 140, facing 0.36). The beauty frame holds 20725 blue body pixels, spanning y 176–627. The pad still is the launch plant: both soles on the plate, knees bent 49.9° and 43.9°. The old airborne frame is `pad-air.png`.
+
+Ortho side views stay upright. A 10 cm vertical pair measures 10.0 cm. Pixel gaps match the mesh.
+
+| Still | Contact | px | px cm | world cm |
+|---|---|---|---|---|
+| Vault | hand L / R on the box | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| Vault | hips above the box | 32.6 | 8.3 | 8.3 |
+| Climb | hand L / R on the lip | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| Climb | chest on the face | 0.0 | 0.0 | 0.0 |
+| Climb | lead foot on the face | 2.1 | 0.6 | 0.6 |
+| Slide | head under the bar | 34.7 | 7.0 | 7.0 |
+| Slide | lead / trail foot | 6.0 / 6.2 | 1.2 / 1.3 | 1.2 / 1.3 |
+| Pad | foot L / R on the plate | 3.7 / 1.9 | 1.2 / 0.6 | 1.2 / 0.6 |
+| Pad air | foot L / R above the plate | 101.2 / 95.8 | 38.3 / 36.2 | 38.3 / 36.2 |
+| Wall run | foot / hand on the face | 0.2 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+
+Strips are 8 frames at 30 fps from the same 3/4 camera, with the props in frame. The clocks are the in-game ones: vault `VaultShown` across the 0.40 s mantle (the strip covers the knee drive through 0.22 s), climb `ClimbOpen` over 0.18 s, slide `SlideOpen` over 0.26 s, wall run into the shove over 0.12 s then `WallArc` over 0.27 s, roll `RollWeight` over 1/3.1 s. Gameplay timers are unchanged. Where a planted contact still stepped more than 3 cm, the visual curve was eased toward linear. That ease is only in the still strip.
+
+| Strip | Worst pair | Bone | Degrees | Planted contact | cm |
+|---|---|---|---|---|---|
+| Vault | 0–1 | UpperLeg_R | 13.6 | hand L | 0.0 |
+| Climb | 2–3 | Hand_L | 18.6 | lead foot | 3.0 |
+| Slide | 3–4 | Hand_L | 21.0 | none | 0.0 |
+| Wall run to wall jump | 1–2 | LowerArm_R | 20.4 | hand L | 0.5 |
+| Roll | 2–3 | LowerArm_R | 13.8 | foot R | 1.7 |
+
+The climb ease is 0.35 of the way from the raised curve toward linear. On the raw raised curve the lead foot slid 3.3 cm on frames 3–4. The slide keeps the raised open; the shoes stay clear of the ground until the last frame, so no planted pair skates. The other three strips use the in-game curve as authored. No bone step is over 25°.
+
+`air-feel takeoff=24.8>12.5 tuck=3.7>1.6 fall=58.0>20.0 hop=22.1>4.9 strafe=18.0>1.8 coyote=24.8>10.9 clear=10.3cm gameplayDelay=0 rootMotion=0`
+
+`handoff run=7.6>3.2 roll=8.5>2.1 wall=81.0>8.8 cling=42.0>15.4 rollAt=36.5 gameplayDelay=0 rootMotion=0`
+
+`handoff2 climb=21.9>12.5 vault=20.2>13.6 vaultOut=14.0>8.4 slideIn=30.3>12.6 slideOut=30.3>12.6 zipGrab=33.1>11.9 zipDrop=53.2>7.9 grappleIn=72.0>10.4 grappleOut=25.0>11.3 padUp=30.6>11.9 padAir=14.2>10.8 gameplayDelay=0 rootMotion=0`
+
+`body-line wall=35.6>16.6 rope=70.0>0.0 zip=58.0>0.0 drop=128.0>53.2 pad=155.0>30.6 land=104.0>0.0 tell=0.42>0.16 rev=82.6>15.3 reach=12.9>0.0 gameplayDelay=0 rootMotion=0`
+
+`loco-feel stride=52.0>28.9 foot=39.8>19.7 slideCm=51.7>0.0 lean=6.5>0.7 start=4.0>0.5 stop=32.0>5.9 turn=51.8>12.9 idle=14.0>2.4 crouch=7.8>6.4 drop=12.0>5.9 head=4.9>1.7 gameplayDelay=0 rootMotion=0`
+
+Stills: `Docs/SmoothStills/pass17/vault.png`, `climb.png`, `slide.png`, `pad.png`, `pad-air.png`, plus ortho `vault-ortho.png`, `climb-ortho.png`, `slide-ortho.png`, `pad-ortho.png`, `pad-air-ortho.png`, `wall-ortho.png`. Strips: `vault-strip-0.png` through `vault-strip-7.png`, and the same eight frames for `climb`, `slide`, `wall`, and `roll`.
+
+`loco-feel`, `body-line`, `climb-contact`, `response-latency`, and `stick-quality` are unchanged. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`.
