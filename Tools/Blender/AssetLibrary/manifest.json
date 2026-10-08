@@ -6951,28 +6951,28 @@
     "category": "StreetFurniture",
     "blurb": "Dry-barrel hydrant, 0.78 m to the operating nut. 2.5 in hose nozzles, 4.5 in steamer, chained caps.",
     "size": [
-      0.554,
-      0.784,
-      0.465
+      0.524,
+      0.756,
+      0.45
     ],
     "min": [
-      -0.277,
+      -0.262,
       0.0,
-      -0.148
+      -0.15
     ],
     "max": [
-      0.277,
-      0.784,
-      0.317
+      0.262,
+      0.756,
+      0.3
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2032,
+        "tris": 3192,
         "materials": [
           "Lib_Hydrant",
-          "Lib_Steel",
           "Lib_PaintWhite",
+          "Lib_Steel",
           "Lib_Brass",
           "Lib_SteelDark",
           "Lib_Chain"
@@ -6982,7 +6982,7 @@
       },
       {
         "lod": 1,
-        "tris": 664,
+        "tris": 832,
         "materials": [
           "Lib_Hydrant",
           "Lib_PaintWhite",
@@ -7029,24 +7029,24 @@
         "name": "Col_Nozzle_L",
         "type": "capsule",
         "center": [
-          -0.226,
+          -0.21,
           0.446,
           0.0
         ],
-        "radius": 0.024,
-        "height": 0.049,
+        "radius": 0.02,
+        "height": 0.041,
         "direction": 0
       },
       {
         "name": "Col_Nozzle_R",
         "type": "capsule",
         "center": [
-          0.226,
+          0.21,
           0.446,
           0.0
         ],
-        "radius": 0.024,
-        "height": 0.049,
+        "radius": 0.02,
+        "height": 0.041,
         "direction": 0
       },
       {
@@ -7055,10 +7055,10 @@
         "center": [
           0.0,
           0.446,
-          0.248
+          0.236
         ],
-        "radius": 0.036,
-        "height": 0.073,
+        "radius": 0.028,
+        "height": 0.057,
         "direction": 2
       },
       {
@@ -7066,11 +7066,11 @@
         "type": "capsule",
         "center": [
           0.0,
-          0.612,
+          0.63,
           0.0
         ],
-        "radius": 0.028,
-        "height": 0.057,
+        "radius": 0.024,
+        "height": 0.05,
         "direction": 1
       },
       {
@@ -7078,11 +7078,11 @@
         "type": "capsule",
         "center": [
           0.0,
-          0.764,
+          0.748,
           0.0
         ],
-        "radius": 0.012,
-        "height": 0.03,
+        "radius": 0.008,
+        "height": 0.017,
         "direction": 1
       }
     ],
@@ -27758,28 +27758,28 @@
     "category": "StreetFurniture",
     "blurb": "Yellow dry-barrel hydrant, 0.78 m to the operating nut. Brass nozzles, chained caps, thin white collar.",
     "size": [
-      0.554,
-      0.784,
-      0.465
+      0.524,
+      0.756,
+      0.45
     ],
     "min": [
-      -0.277,
+      -0.262,
       0.0,
-      -0.148
+      -0.15
     ],
     "max": [
-      0.277,
-      0.784,
-      0.317
+      0.262,
+      0.756,
+      0.3
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2032,
+        "tris": 3192,
         "materials": [
           "Lib_PaintYellow",
-          "Lib_Steel",
           "Lib_PaintWhite",
+          "Lib_Steel",
           "Lib_Brass",
           "Lib_SteelDark",
           "Lib_Chain"
@@ -27789,7 +27789,7 @@
       },
       {
         "lod": 1,
-        "tris": 664,
+        "tris": 832,
         "materials": [
           "Lib_PaintYellow",
           "Lib_PaintWhite",
@@ -27836,24 +27836,24 @@
         "name": "Col_Nozzle_L",
         "type": "capsule",
         "center": [
-          -0.226,
+          -0.21,
           0.446,
           0.0
         ],
-        "radius": 0.024,
-        "height": 0.049,
+        "radius": 0.02,
+        "height": 0.041,
         "direction": 0
       },
       {
         "name": "Col_Nozzle_R",
         "type": "capsule",
         "center": [
-          0.226,
+          0.21,
           0.446,
           0.0
         ],
-        "radius": 0.024,
-        "height": 0.049,
+        "radius": 0.02,
+        "height": 0.041,
         "direction": 0
       },
       {
@@ -27862,10 +27862,10 @@
         "center": [
           0.0,
           0.446,
-          0.248
+          0.236
         ],
-        "radius": 0.036,
-        "height": 0.073,
+        "radius": 0.028,
+        "height": 0.057,
         "direction": 2
       },
       {
@@ -27873,11 +27873,11 @@
         "type": "capsule",
         "center": [
           0.0,
-          0.612,
+          0.63,
           0.0
         ],
-        "radius": 0.028,
-        "height": 0.057,
+        "radius": 0.024,
+        "height": 0.05,
         "direction": 1
       },
       {
@@ -27885,11 +27885,11 @@
         "type": "capsule",
         "center": [
           0.0,
-          0.764,
+          0.748,
           0.0
         ],
-        "radius": 0.012,
-        "height": 0.03,
+        "radius": 0.008,
+        "height": 0.017,
         "direction": 1
       }
     ],
@@ -27912,24 +27912,24 @@
     "category": "StreetFurniture",
     "blurb": "Yard hydrant, 0.81 m to the handwheel. Worn silver barrel, black caps, brass nozzles.",
     "size": [
-      0.554,
+      0.524,
       0.81,
-      0.465
+      0.45
     ],
     "min": [
-      -0.277,
+      -0.262,
       0.0,
-      -0.148
+      -0.15
     ],
     "max": [
-      0.277,
+      0.262,
       0.81,
-      0.317
+      0.3
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1808,
+        "tris": 2816,
         "materials": [
           "Lib_MetalWorn",
           "Lib_Steel",
@@ -27943,7 +27943,7 @@
       },
       {
         "lod": 1,
-        "tris": 612,
+        "tris": 740,
         "materials": [
           "Lib_MetalWorn",
           "Lib_Brass",
@@ -27990,24 +27990,24 @@
         "name": "Col_Nozzle_L",
         "type": "capsule",
         "center": [
-          -0.226,
+          -0.21,
           0.446,
           0.0
         ],
-        "radius": 0.024,
-        "height": 0.049,
+        "radius": 0.02,
+        "height": 0.041,
         "direction": 0
       },
       {
         "name": "Col_Nozzle_R",
         "type": "capsule",
         "center": [
-          0.226,
+          0.21,
           0.446,
           0.0
         ],
-        "radius": 0.024,
-        "height": 0.049,
+        "radius": 0.02,
+        "height": 0.041,
         "direction": 0
       },
       {
@@ -28016,10 +28016,10 @@
         "center": [
           0.0,
           0.446,
-          0.248
+          0.236
         ],
-        "radius": 0.036,
-        "height": 0.073,
+        "radius": 0.028,
+        "height": 0.057,
         "direction": 2
       },
       {
@@ -30516,45 +30516,45 @@
   {
     "name": "ParkingMeter_Twin",
     "category": "StreetFurniture",
-    "blurb": "Dual-head meter. Post to 1.12 m, heads 1.22\u20131.48 m, 0.36 m across the pair.",
+    "blurb": "Twin digital meter. Plate on the ground, two heads at 1.21 m, 0.36 m across. No brand.",
     "size": [
-      0.35,
-      1.57,
-      0.22
+      0.38,
+      1.381,
+      0.2
     ],
     "min": [
-      -0.175,
+      -0.19,
       0.0,
-      -0.11
+      -0.1
     ],
     "max": [
-      0.175,
-      1.57,
-      0.11
+      0.19,
+      1.381,
+      0.1
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 500,
+        "tris": 2952,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_Glass",
           "Lib_Black",
-          "Lib_Brass",
-          "Lib_PaintGreen"
+          "Lib_SignalGreen",
+          "Lib_PaintBlue",
+          "Lib_PaintWhite"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 180,
+        "tris": 728,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_Glass",
-          "Lib_Black"
+          "Lib_Black",
+          "Lib_SignalGreen"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -30565,14 +30565,14 @@
         "name": "Col_Base",
         "type": "box",
         "center": [
-          0,
-          0.015,
-          0
+          0.0,
+          0.014,
+          0.0
         ],
         "size": [
-          0.2,
-          0.024,
-          0.2
+          0.22,
+          0.018,
+          0.12
         ],
         "euler": [
           0,
@@ -30584,26 +30584,26 @@
         "name": "Col_Post",
         "type": "capsule",
         "center": [
-          0,
-          0.58,
-          0
+          0.0,
+          0.48,
+          0.0
         ],
-        "radius": 0.024,
-        "height": 1.02,
+        "radius": 0.022,
+        "height": 0.76,
         "direction": 1
       },
       {
         "name": "Col_Head_0",
         "type": "box",
         "center": [
-          -0.1,
-          1.34,
-          0
+          -0.11,
+          1.125,
+          0.0
         ],
         "size": [
-          0.13,
-          0.22,
-          0.09
+          0.06,
+          0.06,
+          0.04
         ],
         "euler": [
           0,
@@ -30615,14 +30615,14 @@
         "name": "Col_Head_1",
         "type": "box",
         "center": [
-          0.1,
-          1.34,
-          0
+          0.11,
+          1.125,
+          0.0
         ],
         "size": [
-          0.13,
-          0.22,
-          0.09
+          0.06,
+          0.06,
+          0.04
         ],
         "euler": [
           0,
@@ -33933,28 +33933,28 @@
     "category": "StreetFurniture",
     "blurb": "Red dry-barrel hydrant, 0.78 m to the operating nut. Brass nozzles, chained caps, thin white collar.",
     "size": [
-      0.554,
-      0.784,
-      0.465
+      0.524,
+      0.756,
+      0.45
     ],
     "min": [
-      -0.277,
+      -0.262,
       0.0,
-      -0.148
+      -0.15
     ],
     "max": [
-      0.277,
-      0.784,
-      0.317
+      0.262,
+      0.756,
+      0.3
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2032,
+        "tris": 3192,
         "materials": [
           "Lib_Hydrant",
-          "Lib_Steel",
           "Lib_PaintWhite",
+          "Lib_Steel",
           "Lib_Brass",
           "Lib_SteelDark",
           "Lib_Chain"
@@ -33964,7 +33964,7 @@
       },
       {
         "lod": 1,
-        "tris": 664,
+        "tris": 832,
         "materials": [
           "Lib_Hydrant",
           "Lib_PaintWhite",
@@ -34011,24 +34011,24 @@
         "name": "Col_Nozzle_L",
         "type": "capsule",
         "center": [
-          -0.226,
+          -0.21,
           0.446,
           0.0
         ],
-        "radius": 0.024,
-        "height": 0.049,
+        "radius": 0.02,
+        "height": 0.041,
         "direction": 0
       },
       {
         "name": "Col_Nozzle_R",
         "type": "capsule",
         "center": [
-          0.226,
+          0.21,
           0.446,
           0.0
         ],
-        "radius": 0.024,
-        "height": 0.049,
+        "radius": 0.02,
+        "height": 0.041,
         "direction": 0
       },
       {
@@ -34037,10 +34037,10 @@
         "center": [
           0.0,
           0.446,
-          0.248
+          0.236
         ],
-        "radius": 0.036,
-        "height": 0.073,
+        "radius": 0.028,
+        "height": 0.057,
         "direction": 2
       },
       {
@@ -34048,11 +34048,11 @@
         "type": "capsule",
         "center": [
           0.0,
-          0.612,
+          0.63,
           0.0
         ],
-        "radius": 0.028,
-        "height": 0.057,
+        "radius": 0.024,
+        "height": 0.05,
         "direction": 1
       },
       {
@@ -34060,11 +34060,11 @@
         "type": "capsule",
         "center": [
           0.0,
-          0.764,
+          0.748,
           0.0
         ],
-        "radius": 0.012,
-        "height": 0.03,
+        "radius": 0.008,
+        "height": 0.017,
         "direction": 1
       }
     ],
@@ -35203,44 +35203,44 @@
   {
     "name": "ParkingMeter_Single",
     "category": "StreetFurniture",
-    "blurb": "Digital single-space meter. Screen center 1.24 m, head 0.16 m wide. No brand.",
+    "blurb": "Digital single-space meter. Plate on the ground, screen center 1.21 m, head 0.15 m wide. No brand.",
     "size": [
-      0.18,
-      1.356,
+      0.2,
+      1.381,
       0.18
     ],
     "min": [
-      -0.09,
+      -0.1,
       0.0,
       -0.09
     ],
     "max": [
-      0.09,
-      1.356,
+      0.1,
+      1.381,
       0.09
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1020,
+        "tris": 1576,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
           "Lib_Black",
-          "Lib_ShopGlass",
-          "Lib_SignalGreen"
+          "Lib_SignalGreen",
+          "Lib_PaintBlue",
+          "Lib_PaintWhite"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 116,
+        "tris": 392,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
           "Lib_Black",
-          "Lib_ShopGlass",
           "Lib_SignalGreen"
         ],
         "mesh": "LOD1",
@@ -35253,12 +35253,12 @@
         "type": "box",
         "center": [
           0.0,
-          0.012,
+          0.014,
           0.0
         ],
         "size": [
-          0.1,
-          0.016,
+          0.12,
+          0.018,
           0.1
         ],
         "euler": [
@@ -35276,7 +35276,7 @@
           0.0
         ],
         "radius": 0.02,
-        "height": 0.84,
+        "height": 0.8,
         "direction": 1
       },
       {
@@ -35284,13 +35284,13 @@
         "type": "box",
         "center": [
           0.0,
-          1.18,
+          1.125,
           0.0
         ],
         "size": [
-          0.1,
-          0.2,
-          0.06
+          0.06,
+          0.06,
+          0.04
         ],
         "euler": [
           0,
@@ -35310,7 +35310,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.22,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/ParkingMeter_Single.fbx"
   },
   {

@@ -323,8 +323,7 @@ class Geo:
             self.mats.append(name)
         return self.mats.index(name)
 
-    def _ingest(self, src, mat, uv_scale):
-        mi = self.slot(mat)
+    def _ingest(self, src, mat, uv_scale, face_mats=None):
         vmap = {}
         for v in src.verts:
             vmap[v] = self.bm.verts.new(v.co)
@@ -332,12 +331,13 @@ class Geo:
         src_uv = None
         if uv_scale < 0 and src.loops.layers.uv:
             src_uv = src.loops.layers.uv.active
-        for f in src.faces:
+        for index, f in enumerate(src.faces):
             try:
                 nf = self.bm.faces.new([vmap[v] for v in f.verts])
             except ValueError:
                 continue
-            nf.material_index = mi
+            name = face_mats[index] if face_mats else mat
+            nf.material_index = self.slot(name)
             nf.smooth = True
             nf[self.scale_layer] = uv_scale
             if src_uv is not None:
@@ -609,7 +609,7 @@ class Geo:
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         self._ingest(bm, mat, -1.0)
 
-    def mesh(self, verts, faces, mat, uv_scale=1.0, bevel=0.0, segs=0):
+    def mesh(self, verts, faces, mat, uv_scale=1.0, bevel=0.0, segs=0, face_mats=None):
         """verts are Unity-space. faces are index tuples (quads preferred)."""
         bm = bmesh.new()
         bverts = [bm.verts.new(unity_to_blender(*v)) for v in verts]
@@ -619,7 +619,7 @@ class Geo:
             except ValueError:
                 continue
         self._finish_src(bm, bevel, segs)
-        self._ingest(bm, mat, uv_scale)
+        self._ingest(bm, mat, uv_scale, face_mats)
 
     def arc_pipe(self, center, radius, height0, height1, a0, a1, tube, mat, segments=8, steps=8):
         """Tube along a horizontal arc. Angles in degrees, 0 = +Z, 90 = +X."""
@@ -958,6 +958,17 @@ def _object_from_geo(geo, name):
     # when the mesh has custom split normals disabled. Mark them explicitly.
     obj = bpy.data.objects.new(name, me)
     bpy.context.scene.collection.objects.link(obj)
+    # Weighted normals keep the barrel round and the flange lip crisp.
+    try:
+        mod = obj.modifiers.new("WeightedNormal", "WEIGHTED_NORMAL")
+        mod.keep_sharp = True
+        mod.weight = 60
+        mod.mode = "FACE_AREA_WITH_ANGLE"
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+        bpy.ops.object.modifier_apply(modifier="WeightedNormal")
+    except (AttributeError, RuntimeError, TypeError):
+        pass
     return obj
 
 

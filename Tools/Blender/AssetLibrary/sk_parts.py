@@ -120,13 +120,20 @@ def span_collider(a, b, radius):
     return center, (side, side, max(0.02, length - 0.01)), look_euler(a, b)
 
 
-def _lathe(g, profile, segments, mat):
-    """Closed solid of revolution. profile is (radius, y) from the ground up."""
+def _lathe(g, profile, segments, mat, band=None):
+    """Closed solid of revolution. profile is (radius, y) from the ground up.
+
+    band is (y0, y1, material). Faces lying fully inside that span keep the
+    same surface and pick up the second material, so a painted stripe does
+    not become a second solid.
+    """
     verts = []
     rings = []
+    heights = []
     for radius, y in profile:
         if radius < 1e-5:
             rings.append([len(verts)])
+            heights.append(y)
             verts.append((0.0, y, 0.0))
             continue
         ring = []
@@ -135,24 +142,32 @@ def _lathe(g, profile, segments, mat):
             ring.append(len(verts))
             verts.append((radius * math.sin(ang), y, radius * math.cos(ang)))
         rings.append(ring)
+        heights.append(y)
     faces = []
-    for a, b in zip(rings, rings[1:]):
+    face_mats = []
+    for (a, ya), (b, yb) in zip(zip(rings, heights), zip(rings[1:], heights[1:])):
+        use = mat
+        if band and min(ya, yb) >= band[0] - 1e-5 and max(ya, yb) <= band[1] + 1e-5:
+            use = band[2]
         if len(a) == 1:
             c = a[0]
             n = len(b)
             for i in range(n):
                 faces.append((c, b[i], b[(i + 1) % n]))
+                face_mats.append(use)
         elif len(b) == 1:
             c = b[0]
             n = len(a)
             for i in range(n):
                 faces.append((c, a[(i + 1) % n], a[i]))
+                face_mats.append(use)
         else:
             n = len(a)
             for i in range(n):
                 j = (i + 1) % n
                 faces.append((a[i], b[i], b[j], a[j]))
-    g.mesh(verts, faces, mat)
+                face_mats.append(use)
+    g.mesh(verts, faces, mat, face_mats=face_mats)
 
 
 def _hydrant_profile(wheel):
@@ -163,10 +178,12 @@ def _hydrant_profile(wheel):
     """
     profile = [
         (0.0, 0.000),
-        (0.148, 0.000),
-        (0.148, 0.034),
-        (0.102, 0.048),
-        (0.090, 0.074),
+        (0.150, 0.000),
+        (0.150, 0.032),
+        (0.104, 0.046),
+        (0.090, 0.072),
+        (0.090, 0.168),
+        (0.090, 0.248),
         (0.090, 0.348),
         (0.114, 0.372),
         (0.114, 0.518),
@@ -179,26 +196,34 @@ def _hydrant_profile(wheel):
             (0.0, 0.630),
         ]
     else:
+        # Lip, then a dome: the wall stays nearly vertical off the lip and
+        # the radius falls faster toward the crown, so it is not a straight cone.
         profile += [
-            (0.090, 0.542),
-            (0.122, 0.558),
-            (0.122, 0.586),
-            (0.074, 0.628),
-            (0.044, 0.672),
-            (0.028, 0.700),
-            (0.016, 0.718),
-            (0.016, 0.748),
-            (0.0, 0.748),
+            (0.108, 0.530),
+            (0.128, 0.542),
+            (0.142, 0.554),
+            (0.144, 0.566),
+            (0.144, 0.578),
+            (0.140, 0.592),
+            (0.130, 0.610),
+            (0.112, 0.628),
+            (0.088, 0.646),
+            (0.060, 0.662),
+            (0.034, 0.676),
+            (0.016, 0.688),
+            (0.012, 0.700),
+            (0.012, 0.736),
+            (0.0, 0.736),
         ]
     return profile
 
 
-def _hose_nozzle(g, lod, sign, y, cap, nut):
+def _hose_nozzle(g, lod, sign, y, cap, nut, seg):
     """2.5 in hose nozzle. Cap and pentagon lug are one stack on a brass boss."""
     # Boss runs well inside the casting so its end cap is not on the barrel wall.
-    g.cylinder((sign * 0.130, y, 0.0), 0.034, 0.120, "Lib_Brass", 10, axis="X")
-    g.cylinder((sign * 0.214, y, 0.0), 0.050, 0.086, cap, 10, axis="X")
-    g.cylinder((sign * 0.266, y, 0.0), 0.018, 0.022, nut, 5, axis="X")
+    g.cylinder((sign * 0.130, y, 0.0), 0.034, 0.120, "Lib_Brass", seg, axis="X")
+    g.cylinder((sign * 0.214, y, 0.0), 0.050, 0.086, cap, seg, axis="X")
+    g.cylinder((sign * 0.250, y, 0.0), 0.016, 0.024, nut, 5, axis="X")
     if lod != 0:
         return
     g.box((sign * 0.214, y - 0.058, 0.0), (0.024, 0.026, 0.014), "Lib_SteelDark")
@@ -213,11 +238,11 @@ def _hose_nozzle(g, lod, sign, y, cap, nut):
     )
 
 
-def _pumper_nozzle(g, lod, y, cap, nut):
+def _pumper_nozzle(g, lod, y, cap, nut, seg):
     """4.5 in steamer toward +Z. Larger cap, same pentagon and chain."""
-    g.cylinder((0.0, y, 0.140), 0.052, 0.130, "Lib_Brass", 12, axis="Z")
-    g.cylinder((0.0, y, 0.245), 0.070, 0.100, cap, 12, axis="Z")
-    g.cylinder((0.0, y, 0.304), 0.022, 0.026, nut, 5, axis="Z")
+    g.cylinder((0.0, y, 0.140), 0.052, 0.130, "Lib_Brass", seg, axis="Z")
+    g.cylinder((0.0, y, 0.245), 0.070, 0.100, cap, seg, axis="Z")
+    g.cylinder((0.0, y, 0.288), 0.018, 0.024, nut, 5, axis="Z")
     if lod != 0:
         return
     g.box((0.0, y - 0.080, 0.245), (0.016, 0.030, 0.028), "Lib_SteelDark")
@@ -238,20 +263,18 @@ def add_hydrant(g, lod, body, cap, nut, band=None, wheel=False):
     Wheel variant is the industrial yard hydrant. Hose nozzles are 2.5 in,
     the steamer is 4.5 in, and the operating nut lands near 0.78 m.
     """
-    seg = 16 if lod == 0 else 8
-    _lathe(g, _hydrant_profile(wheel), seg, body)
+    seg = 28 if lod == 0 else 12
+    nose = 24 if lod == 0 else 10
+    painted = (0.168, 0.248, band) if band and not wheel else None
+    _lathe(g, _hydrant_profile(wheel), seg, body, band=painted)
     if lod == 0:
-        bolt_ring(g, (0.0, 0.038, 0.0), 0.112, 6, 0.009, 0.018)
-        g.torus((0.0, 0.150, 0.0), 0.098, 0.007, body, seg, 6)
-        g.torus((0.0, 0.300, 0.0), 0.098, 0.007, body, seg, 6)
-    if band and not wheel:
-        # Raised collar on the barrel. A torus stays out of the bore so the
-        # barrel collider is not inside a second solid.
-        g.torus((0.0, 0.220, 0.0), 0.104, 0.016, band, seg, 8)
+        bolt_ring(g, (0.0, 0.030, 0.0), 0.118, 6, 0.008, 0.014)
+        g.torus((0.0, 0.140, 0.0), 0.096, 0.005, body, seg, 6)
+        g.torus((0.0, 0.310, 0.0), 0.096, 0.005, body, seg, 6)
     y = 0.446
     for sign in (-1, 1):
-        _hose_nozzle(g, lod, sign, y, cap, nut)
-    _pumper_nozzle(g, lod, y, cap, nut)
+        _hose_nozzle(g, lod, sign, y, cap, nut, nose)
+    _pumper_nozzle(g, lod, y, cap, nut, nose)
     if wheel:
         g.cylinder((0.0, 0.70, 0.0), 0.020, 0.16, nut, 8)
         g.cylinder((0.0, 0.775, 0.0), 0.088, 0.028, cap, seg)
@@ -267,8 +290,9 @@ def add_hydrant(g, lod, body, cap, nut, band=None, wheel=False):
         return
     if lod == 0:
         bolt_ring(g, (0.0, 0.590, 0.0), 0.096, 4, 0.008, 0.016, phase=0.4)
-        g.cylinder((0.0, 0.726, 0.0), 0.034, 0.018, "Lib_SteelDark", seg)
-    g.cylinder((0.0, 0.758, 0.0), 0.024, 0.052, nut, 5)
+        g.cylinder((0.0, 0.724, 0.0), 0.020, 0.018, "Lib_SteelDark", 16)
+    # 1.5 in operating nut, about 28 mm tall. The old prism read oversized.
+    g.cylinder((0.0, 0.742, 0.0), 0.015, 0.028, nut, 5)
 
 
 def hydrant_colliders(a, wheel=False):
@@ -277,12 +301,12 @@ def hydrant_colliders(a, wheel=False):
     a.box("Col_Flange", (0.0, 0.014, 0.0), (0.16, 0.020, 0.16))
     a.capsule("Col_Barrel", (0.0, 0.200, 0.0), 0.062, 0.22, 1)
     # Sphere-like capsules in the middle of each cap, past the brass boss.
-    a.capsule("Col_Nozzle_L", (-0.226, 0.446, 0.0), 0.024, 0.048, 0)
-    a.capsule("Col_Nozzle_R", (0.226, 0.446, 0.0), 0.024, 0.048, 0)
-    a.capsule("Col_Pumper", (0.0, 0.446, 0.248), 0.036, 0.072, 2)
+    a.capsule("Col_Nozzle_L", (-0.210, 0.446, 0.0), 0.020, 0.040, 0)
+    a.capsule("Col_Nozzle_R", (0.210, 0.446, 0.0), 0.020, 0.040, 0)
+    a.capsule("Col_Pumper", (0.0, 0.446, 0.236), 0.028, 0.056, 2)
     if wheel:
         a.capsule("Col_Neck", (0.0, 0.700, 0.0), 0.014, 0.08, 1)
         a.box("Col_Wheel", (0.0, 0.775, 0.0), (0.10, 0.018, 0.10))
     else:
-        a.capsule("Col_Bonnet", (0.0, 0.612, 0.0), 0.028, 0.055, 1)
-        a.capsule("Col_Nut", (0.0, 0.764, 0.0), 0.012, 0.030, 1)
+        a.capsule("Col_Bonnet", (0.0, 0.630, 0.0), 0.024, 0.050, 1)
+        a.capsule("Col_Nut", (0.0, 0.748, 0.0), 0.008, 0.016, 1)

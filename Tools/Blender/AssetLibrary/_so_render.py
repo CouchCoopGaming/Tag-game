@@ -117,6 +117,22 @@ PASSES = {
     14: (
         ("meter_single", "ParkingMeter_Single", 24.0, (-0.85, 0.0, 0.45), 200.0),
     ),
+    15: (
+        ("hydrant_red", "FireHydrant_Red", 28.0, (-0.95, 0.0, 0.50), 200.0),
+        ("meter_single", "ParkingMeter_Single", 22.0, (-0.95, 0.0, 0.42), 200.0),
+        ("meter_twin", "ParkingMeter_Twin", 18.0, (-1.15, 0.0, 0.50), 200.0),
+    ),
+}
+
+# Pass 15 sits the prop on a sidewalk panel. Low camera, aim below center,
+# so the base and the contact shadow stay in the frame.
+# fill, elevation, azimuth, aim, scale_fill, scale_aim, slab span (m)
+_FRAME15 = {
+    # Meters are tall. A higher camera and a low aim keep the plate and its
+    # shadow inside the frame instead of stretching the base off the bottom.
+    "hydrant_red": (0.58, 9.0, 50.0, 0.34, 0.44, 0.18, 3.40),
+    "meter_single": (0.46, 14.0, 40.0, 0.36, 0.40, 0.22, 3.60),
+    "meter_twin": (0.44, 14.0, 38.0, 0.36, 0.38, 0.22, 3.80),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -183,6 +199,7 @@ def _load(names):
         "Sign_AFrame": "sk_sign_aframe",
         "FireHydrant_Red": "sk_hydrant_red",
         "ParkingMeter_Single": "sk_meter_single",
+        "ParkingMeter_Twin": "sk_meter_twin",
     }
     for name in names:
         module = importlib.import_module(stems[name])
@@ -198,7 +215,8 @@ def _fit(path):
             "import sys\nfrom PIL import Image\n"
             "p = sys.argv[1]\n"
             "im = Image.open(p).convert('RGB')\n"
-            "q = im.quantize(colors=128, method=Image.Quantize.MEDIANCUT)\n"
+            # Median cut folds a small green readout into the gray sidewalk.
+            "q = im.quantize(colors=256, method=Image.Quantize.FASTOCTREE)\n"
             "q.save(p, optimize=True)\n"
         )
     os.system("/usr/bin/python3 %s %s" % (helper, path))
@@ -210,16 +228,48 @@ def _fit(path):
         print("SIZE_OK", size, path)
 
 
-def _hero(fn, path, kind="concrete", yaw=18.0, fill=0.78, elevation=16.0, azimuth=38.0, aim_frac=0.42):
+def _sidewalk(span):
+    """Concrete panel on a darker yard. Top is Unity y = 0 so the prop sits on it.
+
+    The infinite floor is dropped so it does not z-fight the panel. Joints are
+    painted into the top face, not a second solid around the prop.
+    """
+    bpy.ops.mesh.primitive_plane_add(size=40.0, location=(0.0, 0.0, -0.12))
+    ground = bpy.context.active_object
+    ground.data.materials.append(r._principled("GroundYard", (0.048, 0.046, 0.043), 0.95))
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0.0, 0.0, -0.05))
+    slab = bpy.context.active_object
+    slab.scale = (span, span, 0.10)
+    slab.data.materials.append(r._principled("SidewalkSlab", (0.22, 0.214, 0.20), 0.86))
+    joint = r._principled("SidewalkJoint", (0.11, 0.108, 0.102), 0.93)
+    inset = span * 0.16
+    inner = span - inset * 2.0
+    half = span * 0.5 - inset
+    for sx, sy, px, py in (
+        (inner, 0.014, 0.0, half),
+        (inner, 0.014, 0.0, -half),
+        (0.014, inner, half, 0.0),
+        (0.014, inner, -half, 0.0),
+    ):
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(px, py, 0.0015))
+        line = bpy.context.active_object
+        line.scale = (sx, sy, 0.003)
+        line.data.materials.append(joint)
+
+
+def _hero(fn, path, kind="concrete", yaw=18.0, fill=0.78, elevation=16.0, azimuth=38.0, aim_frac=0.42, slab=None):
     r._reset_scene()
     scene = bpy.context.scene
     r._engine(scene, wide=True)
-    scene.cycles.samples = 20
+    scene.cycles.samples = 28 if PASS >= 15 else 20
     r._ensure_materials()
     r._world(scene, night=False)
     asset = fn()
     obj = r._spawn(asset, (0, 0, 0), yaw)
-    r._ground(kind, 80.0)
+    if slab:
+        _sidewalk(slab)
+    else:
+        r._ground(kind, 80.0)
     r._frame(scene, [obj], fill=fill, elevation=elevation, azimuth=azimuth, aim_frac=aim_frac)
     r._render(scene, path)
     _fit(path)
@@ -283,17 +333,20 @@ def _place_hier(pos, yaw):
     return meshes
 
 
-def _scale(fn, path, prop_yaw, hier_pos, hier_yaw, kind="concrete", fill=0.80, elevation=12.0, azimuth=32.0, aim_frac=0.42):
+def _scale(fn, path, prop_yaw, hier_pos, hier_yaw, kind="concrete", fill=0.80, elevation=12.0, azimuth=32.0, aim_frac=0.42, slab=None):
     r._reset_scene()
     scene = bpy.context.scene
     r._engine(scene, wide=True)
-    scene.cycles.samples = 16
+    scene.cycles.samples = 20 if PASS >= 15 else 16
     r._ensure_materials()
     r._world(scene, night=False)
     asset = fn()
     prop = r._spawn(asset, (0, 0, 0), prop_yaw)
     meshes = _place_hier(hier_pos, hier_yaw)
-    r._ground(kind, 40.0)
+    if slab:
+        _sidewalk(slab)
+    else:
+        r._ground(kind, 40.0)
     r._frame(scene, [prop] + meshes, fill=fill, elevation=elevation, azimuth=azimuth, aim_frac=aim_frac)
     r._render(scene, path)
     _fit(path)
@@ -310,13 +363,21 @@ def main():
         if ONLY and ONLY not in key:
             continue
         kind = "asphalt" if any(part in key for part in ("barrier", "road", "curb", "median")) else "concrete"
-        tuned = _FRAME11.get(key) if PASS >= 11 else None
-        fill, elevation, azimuth = tuned if tuned else (0.78, 16.0, 38.0)
-        aim = 0.50 if PASS >= 11 else 0.42
+        tuned15 = _FRAME15.get(key) if PASS >= 15 else None
+        if tuned15:
+            fill, elevation, azimuth, aim, scale_fill, scale_aim, slab = tuned15
+        else:
+            tuned = _FRAME11.get(key) if PASS >= 11 else None
+            fill, elevation, azimuth = tuned if tuned else (0.78, 16.0, 38.0)
+            aim = 0.50 if PASS >= 11 else 0.42
+            scale_fill = 0.62 if key == "hydrant_red" else (0.72 if PASS >= 11 else 0.80)
+            scale_aim = 0.62 if key == "hydrant_red" else aim
+            slab = None
         print("SHOT", key)
         _hero(
             found[name], os.path.join(STILL_DIR, key + ".png"),
-            kind=kind, yaw=yaw, fill=fill, elevation=elevation, azimuth=azimuth, aim_frac=aim,
+            kind=kind, yaw=yaw, fill=fill, elevation=elevation, azimuth=azimuth,
+            aim_frac=aim, slab=slab,
         )
         if PASS >= 11 and key == "sign_street":
             print("SHOT", key + "_blades")
@@ -329,10 +390,11 @@ def main():
             hier_pos,
             hier_yaw,
             kind=kind,
-            fill=0.62 if key == "hydrant_red" else (0.72 if PASS >= 11 else 0.80),
+            fill=scale_fill,
             elevation=elevation if PASS >= 11 else 12.0,
             azimuth=36.0 if PASS >= 11 else 32.0,
-            aim_frac=0.62 if key == "hydrant_red" else aim,
+            aim_frac=scale_aim,
+            slab=slab,
         )
     print("STREET_OBJECTS_STILLS", STILL_DIR)
 
