@@ -13,7 +13,7 @@ def create():
     a = Asset(
         "TrashCan_Lidded",
         "StreetFurniture",
-        "City trash can, about 0.92 m. Dark green slats and hoops, black liner, shallow lid, and a side flap.",
+        "City trash can, about 0.92 m. Dark green slats, hoops, and flap, black liner, shallow lid.",
     )
     a.climb_note = "Not a cling surface."
     a.vault_note = "Too narrow to vault."
@@ -44,9 +44,9 @@ def create():
         g.cone((0, 0.850, 0), 0.14, 0.022, 0.048, "Lib_Iron", seg)
         g.cylinder((0, 0.882, 0), 0.026, 0.020, "Lib_Black", 8)
         g.box((0, 0.50, 0.200), (0.16, 0.16, 0.120), "Lib_Iron")
-        g.box((0, 0.48, 0.268), (0.11, 0.09, 0.032), "Lib_Rubber", euler=(12, 0, 0))
-        if lod == 0:
-            g.cylinder((0, 0.575, 0.248), 0.008, 0.14, "Lib_Black", 8, axis="X")
+        # Flap is the same powder coat, with a dark hinge along its top edge.
+        g.box((0, 0.48, 0.268), (0.11, 0.09, 0.032), "Lib_Iron", euler=(12, 0, 0))
+        g.cylinder((0, 0.528, 0.252), 0.008, 0.13, "Lib_Black", 8, axis="X")
         a.end()
     a.capsule("Col_Body", (0, 0.42, 0), 0.10, 0.46, 1)
     a.box("Col_Door", (0, 0.50, 0.242), (0.06, 0.08, 0.020))

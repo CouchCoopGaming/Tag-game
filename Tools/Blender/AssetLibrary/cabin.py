@@ -13,7 +13,7 @@ def create():
     a = Asset(
         "Cabin",
         "Buildings",
-        "Log cabin 4.6 x 3.6 m, walls 2.15 m, ridge at 3.45 m, porch on +Z. Door is closed.",
+        "Log cabin 4.6 x 3.6 m, walls 2.15 m, ridge at 3.45 m, porch on +Z. The door is a closed frame-and-panel in the log opening.",
     )
     a.climbable = True
     a.climb_note = "Log walls are cling. Door is closed. Roof slopes are landings."
@@ -50,18 +50,24 @@ def create():
                 for z in (-depth * 0.5 - 0.02, depth * 0.5 + 0.02):
                     g.cylinder((-width * 0.5 - 0.08, y, z), log_r * 0.96, 0.06, "Lib_WoodDark", max(6, seg // 2), axis="Z")
                     g.cylinder((width * 0.5 + 0.08, y, z), log_r * 0.96, 0.06, "Lib_Wood", max(6, seg // 2), axis="Z")
-        g.box((0, 1.05, depth * 0.5 - 0.08), (0.90, 1.85, 0.06), "Lib_WoodDark", uv_scale=1.2)
+        # Frame in the log opening, door panels set inside it, glass in the upper panel.
+        z_door = depth * 0.5 - 0.05
+        g.box((-0.48, 1.05, z_door), (0.10, 1.95, 0.08), "Lib_WoodDark", uv_scale=1.2)
+        g.box((0.48, 1.05, z_door), (0.10, 1.95, 0.08), "Lib_WoodDark", uv_scale=1.2)
+        g.box((0, 1.98, z_door), (0.86, 0.10, 0.08), "Lib_WoodDark", uv_scale=1.2)
+        g.box((0, 0.16, z_door), (0.86, 0.08, 0.08), "Lib_WoodDark", uv_scale=1.2)
+        g.box((0, 1.10, z_door), (0.86, 0.08, 0.06), "Lib_WoodDark", uv_scale=1.2)
         if lod < 2:
-            g.box((0, 1.42, depth * 0.5 - 0.045), (0.58, 0.48, 0.02), "Lib_Wood")
-            g.box((0, 0.68, depth * 0.5 - 0.045), (0.58, 0.62, 0.02), "Lib_Wood")
-            g.box((0, 1.48, depth * 0.5 - 0.032), (0.32, 0.28, 0.012), "Lib_Window")
-            g.box((0, 1.48, depth * 0.5 - 0.024), (0.32, 0.012, 0.012), "Lib_Wood")
-            g.box((0, 1.48, depth * 0.5 - 0.024), (0.012, 0.28, 0.012), "Lib_Wood")
+            g.box((0, 1.54, z_door + 0.015), (0.72, 0.74, 0.035), "Lib_Wood", uv_scale=1.2)
+            g.box((0, 0.62, z_door + 0.015), (0.72, 0.80, 0.035), "Lib_Wood", uv_scale=1.2)
+            g.box((0, 1.54, z_door + 0.04), (0.34, 0.30, 0.016), "Lib_ShopGlass")
+            g.box((0, 1.54, z_door + 0.05), (0.34, 0.012, 0.012), "Lib_Wood")
+            g.box((0, 1.54, z_door + 0.05), (0.012, 0.30, 0.012), "Lib_Wood")
         if lod == 0:
             g.box((0.32, 1.00, depth * 0.5 - 0.02), (0.035, 0.07, 0.03), "Lib_Brass")
             for x, sign in ((-width * 0.5 - 0.01, -1), (width * 0.5 + 0.01, 1)):
                 g.box((x, 1.35, 0.15), (0.05, 0.72, 0.62), "Lib_Wood")
-                g.box((x + sign * 0.02, 1.35, 0.15), (0.015, 0.48, 0.40), "Lib_Window")
+                g.box((x + sign * 0.02, 1.35, 0.15), (0.015, 0.48, 0.40), "Lib_ShopGlass")
                 g.box((x + sign * 0.028, 1.35, 0.15), (0.01, 0.48, 0.016), "Lib_Wood")
                 g.box((x + sign * 0.028, 1.35, 0.15), (0.01, 0.016, 0.40), "Lib_Wood")
             g.box((1.15, 3.55, -0.35), (0.48, 1.15, 0.48), "Lib_Brick", uv_scale=1.0)
