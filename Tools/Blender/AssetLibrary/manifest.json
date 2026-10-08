@@ -36722,45 +36722,46 @@
   {
     "name": "MailDrop_Corner",
     "category": "StreetFurniture",
-    "blurb": "Collection box, 0.62 m wide and 1.20 m tall. Pedestal, chute, and MAIL in Liberation Sans.",
+    "blurb": "Collection box, 0.54 m wide, 0.46 m deep, hood at 1.18 m. Slot, carrier door, blank frame. No legend.",
     "size": [
-      0.64,
-      1.2,
-      0.52
+      0.62,
+      1.175,
+      0.607
     ],
     "min": [
-      -0.32,
+      -0.31,
       0.0,
-      -0.26
+      -0.297
     ],
     "max": [
-      0.32,
-      1.2,
-      0.26
+      0.31,
+      1.175,
+      0.31
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 440,
+        "tris": 740,
         "materials": [
           "Lib_SteelDark",
-          "Lib_PaintBlue",
-          "Lib_Black",
           "Lib_Steel",
+          "Lib_BoxBlue",
+          "Lib_Black",
           "Lib_Brass",
-          "Lib_PaintWhite"
+          "Lib_MetalWorn",
+          "Lib_Rust"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 100,
+        "tris": 320,
         "materials": [
           "Lib_SteelDark",
-          "Lib_PaintBlue",
-          "Lib_Black",
           "Lib_Steel",
+          "Lib_BoxBlue",
+          "Lib_Black",
           "Lib_Brass"
         ],
         "mesh": "LOD1",
@@ -36769,17 +36770,17 @@
     ],
     "colliders": [
       {
-        "name": "Col_Foot",
+        "name": "Col_Base",
         "type": "box",
         "center": [
           0,
-          0.022,
+          0.014,
           0
         ],
         "size": [
-          0.28,
-          0.028,
-          0.22
+          0.48,
+          0.02,
+          0.4
         ],
         "euler": [
           0,
@@ -36792,13 +36793,13 @@
         "type": "box",
         "center": [
           0,
-          0.62,
-          0
+          0.5,
+          -0.02
         ],
         "size": [
-          0.46,
-          0.82,
-          0.34
+          0.4,
+          0.76,
+          0.28
         ],
         "euler": [
           0,
@@ -36807,17 +36808,17 @@
         ]
       },
       {
-        "name": "Col_Cap",
+        "name": "Col_Hood",
         "type": "box",
         "center": [
           0,
-          1.178,
-          0
+          1.045,
+          -0.06
         ],
         "size": [
-          0.4,
-          0.028,
-          0.32
+          0.32,
+          0.03,
+          0.16
         ],
         "euler": [
           0,
@@ -36837,7 +36838,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.0,
+    "slackCm": 0.6,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/MailDrop_Corner.fbx"
   },
   {
