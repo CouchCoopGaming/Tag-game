@@ -23,6 +23,7 @@ namespace Tag.Ui.Menu
 
         bool _hot;
         bool _chosen;
+        RectTransform _chipRt;
         Text _check;
         float _punch;
         float _confirm;
@@ -72,9 +73,14 @@ namespace Tag.Ui.Menu
 
         public void SetChosen(bool chosen)
         {
+            SetChosen(chosen, false);
+        }
+
+        public void SetChosen(bool chosen, bool chip)
+        {
             _chosen = chosen;
-            EnsureCheck();
-            if (_check != null) _check.gameObject.SetActive(chosen);
+            EnsureCheck(chip);
+            if (_chipRt != null) _chipRt.gameObject.SetActive(chosen);
             if (!_hot) PaintRest();
         }
 
@@ -110,17 +116,28 @@ namespace Tag.Ui.Menu
             if (Bar != null) Bar.color = KeepBar ? BarColor : new Color(1f, 1f, 1f, 0.35f);
         }
 
-        void EnsureCheck()
+        void EnsureCheck(bool chip)
         {
-            if (_check != null) return;
-            RectTransform rt = MenuWidgets.Place(transform, "Check", 0f, 0f, 36f, 36f);
+            if (_chipRt != null) return;
+            float side = chip ? 44f : 36f;
+            RectTransform rt = MenuWidgets.Place(transform, "Check", 0f, 0f, side, side);
             rt.anchorMin = new Vector2(1f, 0.5f);
             rt.anchorMax = new Vector2(1f, 0.5f);
             rt.pivot = new Vector2(1f, 0.5f);
             rt.anchoredPosition = new Vector2(-14f, 0f);
-            rt.sizeDelta = new Vector2(36f, 36f);
-            _check = MenuWidgets.Words(rt, "\u2713", UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
-            _check.gameObject.SetActive(false);
+            rt.sizeDelta = new Vector2(side, side);
+            if (chip)
+            {
+                Image plate = rt.gameObject.AddComponent<Image>();
+                MenuArt.Plate(plate, MenuTheme.Gold, true);
+                plate.raycastTarget = false;
+            }
+            Color ink = chip ? MenuTheme.Ink : MenuTheme.Cream;
+            _check = MenuWidgets.Words(rt, "\u2713", UiFit.FloorFont, TextAnchor.MiddleCenter, ink, Vector2.zero, Vector2.one);
+            _check.rectTransform.offsetMin = new Vector2(2f, 2f);
+            _check.rectTransform.offsetMax = new Vector2(-2f, -2f);
+            _chipRt = rt;
+            _chipRt.gameObject.SetActive(false);
         }
 
         static readonly Color ChosenFill = new Color(0.12f, 0.40f, 0.78f, 1f);

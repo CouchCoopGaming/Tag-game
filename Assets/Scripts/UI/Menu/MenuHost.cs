@@ -670,6 +670,7 @@ namespace Tag.Ui.Menu
             }
             _keys = null;
             _nameWord = null;
+            ScreenDeck.ShowOnly((int)_screen);
             if (_body == null) return;
             for (int i = _body.childCount - 1; i >= 0; i--)
                 DestroyImmediate(_body.GetChild(i).gameObject);
@@ -734,7 +735,8 @@ namespace Tag.Ui.Menu
             {
                 MenuTile tile = _tiles[i];
                 if (tile == null) continue;
-                tile.SetChosen(tile.Index == chosen);
+                bool chip = _screen == MenuScreenId.Rules && tile.Index >= 0 && tile.Index <= 3;
+                tile.SetChosen(tile.Index == chosen, chip);
                 tile.SetHot(tile.Index == _focus);
             }
         }
@@ -2569,7 +2571,7 @@ namespace Tag.Ui.Menu
                 var id = (TagModeId)i;
                 int col = i % 2;
                 int row = i / 2;
-                AddTile(leftX + col * (colW + 12f), 12f + row * 168f, colW, 152f, i, MenuCatalog.ModeName(id), MenuCatalog.ModeBlurb(id), true);
+                AddTile(leftX + col * (colW + 12f), 12f + row * 168f, colW, 152f, i, MenuCatalog.ModeName(id), MenuCatalog.ModeBlurb(id, GameSettings.Current), true);
             }
             PaintRuleRows();
         }
@@ -2586,15 +2588,23 @@ namespace Tag.Ui.Menu
             }
             ClampRuleWindow();
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
+            for (int i = 0; i < _tiles.Count; i++)
+            {
+                MenuTile mode = _tiles[i];
+                if (mode == null || mode.Index < 0 || mode.Index > 3 || mode.Detail == null) continue;
+                mode.Detail.text = MenuCatalog.ModeBlurb((TagModeId)mode.Index, s);
+            }
             UiFit.Columns(UiFit.Current(), out _, out _, out float rightX, out float rightW);
             const float step = 72f;
             const float rowH = 68f;
+            PaintRuleHead(rightX, rightW);
             int win = RuleWindow(step);
             int shown = 0;
+            float listY = 12f + RuleHeadH + 6f;
             for (int index = 4; index < RuleBook.Count; index++)
             {
                 if (index < 4 + _window || index >= 4 + _window + win) continue;
-                MenuTile row = AddTile(rightX, 12f + shown * step, rightW, rowH, index, RuleBook.Title(index), RuleBook.Detail(s, index), true);
+                MenuTile row = AddTile(rightX, listY + shown * step, rightW, rowH, index, RuleBook.Title(index), RuleBook.Detail(s, index), true);
                 DressRule(row, index, rightW, rowH);
                 shown++;
             }
@@ -2603,11 +2613,31 @@ namespace Tag.Ui.Menu
             RefreshFocus();
         }
 
+        const float RuleHeadH = 52f;
+
+        void PaintRuleHead(float x, float w)
+        {
+            if (_body == null) return;
+            for (int i = _body.childCount - 1; i >= 0; i--)
+            {
+                Transform child = _body.GetChild(i);
+                if (child != null && child.name == "RuleHead")
+                    DestroyImmediate(child.gameObject);
+            }
+            RectTransform rt = MenuWidgets.Place(_body, "RuleHead", x, 12f, w, RuleHeadH);
+            string title = "Rules for " + MenuCatalog.ModeName(MenuSession.Mode);
+            Text label = MenuWidgets.Heading(rt, title, 36, TextAnchor.MiddleLeft, MenuTheme.Gold, Vector2.zero, Vector2.one);
+            if (label == null) return;
+            label.raycastTarget = false;
+            label.rectTransform.offsetMin = new Vector2(8f, 0f);
+            label.rectTransform.offsetMax = new Vector2(-8f, 0f);
+        }
+
         static int RuleWindow(float step)
         {
             if (step < 1f) step = 1f;
             float body = UiFit.BodyH(UiFit.Current());
-            int n = (int)((body - 12f) / step);
+            int n = (int)((body - 12f - RuleHeadH - 6f) / step);
             if (n < 4) n = 4;
             int rows = RuleBook.Count - 4;
             if (n > rows) n = rows;
@@ -4618,9 +4648,11 @@ namespace Tag.Ui.Menu
                 }
                 return;
             }
-            string pad = string.IsNullOrEmpty(token) ? "No pad" : ActionBinds.Show(token);
+            bool unbound = string.IsNullOrEmpty(token);
+            string pad = unbound ? "Not on pad yet" : ActionBinds.Show(token);
+            Color padInk = unbound ? MenuTheme.Mute : MenuTheme.Cream;
             var hold = MenuWidgets.Place(row.transform, "PadCol", colX, 18f, PadColW, 52f);
-            Text text = MenuWidgets.Words(hold, pad, UiFit.FloorFont, TextAnchor.MiddleRight, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            Text text = MenuWidgets.Words(hold, pad, UiFit.FloorFont, TextAnchor.MiddleRight, padInk, Vector2.zero, Vector2.one);
             if (text != null)
             {
                 text.raycastTarget = false;

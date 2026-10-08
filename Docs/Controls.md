@@ -25,6 +25,8 @@ Cling is not a separate button. Holding move into a wall is the cling. Rebinding
 | Practice ghost | G | Left stick press |
 | Practice input display | I | Right stick press |
 
+Grapple is the left-hand rope: one click pulls, and a second click within 0.28 s releases. A pad button for grapple is unbound. The controls row reads "Not on pad yet". That pad bind still needs a decision, and it should not take a button that is already used.
+
 ## Debug
 
 F6 toggles the frame budget overlay. It stays off until you press it. The card shows FPS, frame time in milliseconds, and the same cost buckets as the headless budget: movement, AI, pose, HUD, audio, and round flow. F3 is Trail Tag, so the overlay does not use it. F6 is not a gameplay action and is not in the rebind list.

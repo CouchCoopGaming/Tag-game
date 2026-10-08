@@ -151,6 +151,8 @@
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuSession.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuLobby.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/UiFlow.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/ScreenDeck.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuCatalog.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/UiFit.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/PadGlyph.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/FaceMap.cs" />

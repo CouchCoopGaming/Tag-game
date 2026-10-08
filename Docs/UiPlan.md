@@ -383,6 +383,12 @@ Left Alt is air dash only. Sprint is Left Shift on the keyboard and LB on the pa
 
 `Docs/UiStills/pass47/arena.png`, `options-controls.png`, and `rules.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The gameplay proof lines are unchanged.
 
+## Pass 48
+
+Opening a screen hides the one that was up. Mode and rules no longer draws the arena tiles underneath. The flow check fails when two screen roots stay visible, and the old stacked open fails that check. Hot Potato's line reads the live win target, so it says first to 2 wins while the win target is 2, and it does not call that the rounds row. Least It shows a gold check chip for the selected mode. The rules column starts with "Rules for Least It". Grapple's pad column reads "Not on pad yet" in the muted ink. No pad button was added. That bind is still open, and `Docs/Controls.md` says so.
+
+`Docs/UiStills/pass48/arena.png`, `options-controls.png`, and `rules.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The gameplay proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

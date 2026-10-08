@@ -75,7 +75,9 @@ namespace Tag.Ui.Menu
             bool load = LoadGate.Holds() && MenuTips.Holds();
             bool board = Tag.Ui.Hud.ScorePeek.Holds() && Tag.Ui.Hud.RoundCard.Holds();
             bool faces = FaceMap.Holds();
-            bool rules = RuleBook.Holds();
+            bool rules = RuleBook.Holds() && MenuCatalog.BlurbHolds();
+            if (!ScreenDeck.Holds(Root()))
+                Fail(ref report, "screen roots");
             bool records = RecordsHold();
             bool contrast = UiSweep.Holds();
             bool style = MenuPolish.Holds(Root());
