@@ -111,6 +111,9 @@ PASSES = {
         ("sign_street", "Sign_StreetName", 22.0, (-1.35, 0.0, 0.70), 200.0),
         ("sign_aframe", "Sign_AFrame", 28.0, (-1.15, 0.0, 0.55), 200.0),
     ),
+    13: (
+        ("hydrant_red", "FireHydrant_Red", 32.0, (-0.95, 0.0, 0.55), 200.0),
+    ),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -122,6 +125,7 @@ _FRAME11 = {
     "curb_return": (0.70, 22.0, 48.0),
     "ped_button": (0.70, 12.0, 36.0),
     "fence_chain": (0.70, 11.0, 40.0),
+    "hydrant_red": (0.82, 14.0, 40.0),
 }
 
 
@@ -173,6 +177,7 @@ def _load(names):
         "Sign_Parking_2H": "sk_sign_parking",
         "ValveBox_Walk": "sk_valve_box",
         "Sign_AFrame": "sk_sign_aframe",
+        "FireHydrant_Red": "sk_hydrant_red",
     }
     for name in names:
         module = importlib.import_module(stems[name])
@@ -319,10 +324,10 @@ def main():
             hier_pos,
             hier_yaw,
             kind=kind,
-            fill=0.72 if PASS >= 11 else 0.80,
+            fill=0.62 if key == "hydrant_red" else (0.72 if PASS >= 11 else 0.80),
             elevation=elevation if PASS >= 11 else 12.0,
             azimuth=36.0 if PASS >= 11 else 32.0,
-            aim_frac=aim,
+            aim_frac=0.62 if key == "hydrant_red" else aim,
         )
     print("STREET_OBJECTS_STILLS", STILL_DIR)
 

@@ -55,6 +55,7 @@ MODULES = (
     "sk_ladder_fixed",
     "sk_satellite",
     "sk_hydrant_red",
+    "fire_hydrant",
     "sk_ac_split",
     "sk_car_sedan",
     "sk_car_hatch",

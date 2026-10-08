@@ -13,7 +13,7 @@ def create():
     a = Asset(
         "FireHydrant_Red",
         "StreetFurniture",
-        "Red dry-barrel hydrant, 0.79 m to the operating nut. Brass nozzles and side chains.",
+        "Red dry-barrel hydrant, 0.78 m to the operating nut. Brass nozzles, chained caps, thin white collar.",
     )
     a.climb_note = "Round barrel under 0.8 m. Not a cling wall."
     a.vault_note = "Too short and too narrow to vault."

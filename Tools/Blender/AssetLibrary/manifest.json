@@ -6949,31 +6949,32 @@
   {
     "name": "FireHydrant",
     "category": "StreetFurniture",
-    "blurb": "Dry-barrel hydrant, 0.76 m to the operating nut. Hose nozzles, pumper cap, chains, and flange bolts.",
+    "blurb": "Dry-barrel hydrant, 0.78 m to the operating nut. 2.5 in hose nozzles, 4.5 in steamer, chained caps.",
     "size": [
-      0.4,
-      0.761,
-      0.395
+      0.554,
+      0.784,
+      0.465
     ],
     "min": [
-      -0.2,
+      -0.277,
       0.0,
-      -0.165
+      -0.148
     ],
     "max": [
-      0.2,
-      0.761,
-      0.23
+      0.277,
+      0.784,
+      0.317
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1104,
+        "tris": 2032,
         "materials": [
-          "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_Hydrant",
+          "Lib_Steel",
+          "Lib_PaintWhite",
           "Lib_Brass",
+          "Lib_SteelDark",
           "Lib_Chain"
         ],
         "mesh": "LOD0",
@@ -6981,11 +6982,12 @@
       },
       {
         "lod": 1,
-        "tris": 356,
+        "tris": 664,
         "materials": [
-          "Lib_SteelDark",
           "Lib_Hydrant",
-          "Lib_Brass"
+          "Lib_PaintWhite",
+          "Lib_Brass",
+          "Lib_SteelDark"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -6996,14 +6998,14 @@
         "name": "Col_Flange",
         "type": "box",
         "center": [
-          0,
-          0.028,
-          0
+          0.0,
+          0.014,
+          0.0
         ],
         "size": [
-          0.22,
-          0.05,
-          0.22
+          0.16,
+          0.02,
+          0.16
         ],
         "euler": [
           0,
@@ -7015,49 +7017,73 @@
         "name": "Col_Barrel",
         "type": "capsule",
         "center": [
-          0,
-          0.36,
-          0
+          0.0,
+          0.2,
+          0.0
         ],
-        "radius": 0.084,
-        "height": 0.5,
+        "radius": 0.062,
+        "height": 0.22,
         "direction": 1
       },
       {
         "name": "Col_Nozzle_L",
         "type": "capsule",
         "center": [
-          -0.13,
-          0.42,
-          0
+          -0.226,
+          0.446,
+          0.0
         ],
-        "radius": 0.032,
-        "height": 0.1,
+        "radius": 0.024,
+        "height": 0.049,
         "direction": 0
       },
       {
         "name": "Col_Nozzle_R",
         "type": "capsule",
         "center": [
-          0.13,
-          0.42,
-          0
+          0.226,
+          0.446,
+          0.0
         ],
-        "radius": 0.032,
-        "height": 0.1,
+        "radius": 0.024,
+        "height": 0.049,
         "direction": 0
       },
       {
-        "name": "Col_Nozzle_Pumper",
+        "name": "Col_Pumper",
         "type": "capsule",
         "center": [
-          0,
-          0.4,
-          0.15
+          0.0,
+          0.446,
+          0.248
         ],
-        "radius": 0.046,
-        "height": 0.12,
+        "radius": 0.036,
+        "height": 0.073,
         "direction": 2
+      },
+      {
+        "name": "Col_Bonnet",
+        "type": "capsule",
+        "center": [
+          0.0,
+          0.612,
+          0.0
+        ],
+        "radius": 0.028,
+        "height": 0.057,
+        "direction": 1
+      },
+      {
+        "name": "Col_Nut",
+        "type": "capsule",
+        "center": [
+          0.0,
+          0.764,
+          0.0
+        ],
+        "radius": 0.012,
+        "height": 0.03,
+        "direction": 1
       }
     ],
     "climbable": false,
@@ -7071,7 +7097,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.8,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/FireHydrant.fbx"
   },
   {
@@ -27730,32 +27756,32 @@
   {
     "name": "FireHydrant_Yellow",
     "category": "StreetFurniture",
-    "blurb": "Yellow dry-barrel hydrant, 0.79 m to the operating nut. Brass nozzles, white band, chains.",
+    "blurb": "Yellow dry-barrel hydrant, 0.78 m to the operating nut. Brass nozzles, chained caps, thin white collar.",
     "size": [
-      0.42,
-      0.794,
-      0.421
+      0.554,
+      0.784,
+      0.465
     ],
     "min": [
-      -0.21,
+      -0.277,
       0.0,
-      -0.17
+      -0.148
     ],
     "max": [
-      0.21,
-      0.794,
-      0.251
+      0.277,
+      0.784,
+      0.317
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2052,
+        "tris": 2032,
         "materials": [
-          "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_PaintYellow",
+          "Lib_Steel",
           "Lib_PaintWhite",
           "Lib_Brass",
+          "Lib_SteelDark",
           "Lib_Chain"
         ],
         "mesh": "LOD0",
@@ -27763,12 +27789,12 @@
       },
       {
         "lod": 1,
-        "tris": 624,
+        "tris": 664,
         "materials": [
-          "Lib_SteelDark",
           "Lib_PaintYellow",
           "Lib_PaintWhite",
-          "Lib_Brass"
+          "Lib_Brass",
+          "Lib_SteelDark"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -27779,14 +27805,14 @@
         "name": "Col_Flange",
         "type": "box",
         "center": [
-          0,
-          0.028,
-          0
+          0.0,
+          0.014,
+          0.0
         ],
         "size": [
-          0.22,
-          0.04,
-          0.22
+          0.16,
+          0.02,
+          0.16
         ],
         "euler": [
           0,
@@ -27798,72 +27824,72 @@
         "name": "Col_Barrel",
         "type": "capsule",
         "center": [
-          0,
-          0.36,
-          0
+          0.0,
+          0.2,
+          0.0
         ],
-        "radius": 0.078,
-        "height": 0.5,
+        "radius": 0.062,
+        "height": 0.22,
         "direction": 1
       },
       {
         "name": "Col_Nozzle_L",
         "type": "capsule",
         "center": [
-          -0.128,
-          0.4,
-          0
+          -0.226,
+          0.446,
+          0.0
         ],
-        "radius": 0.028,
-        "height": 0.09,
+        "radius": 0.024,
+        "height": 0.049,
         "direction": 0
       },
       {
         "name": "Col_Nozzle_R",
         "type": "capsule",
         "center": [
-          0.128,
-          0.4,
-          0
+          0.226,
+          0.446,
+          0.0
         ],
-        "radius": 0.028,
-        "height": 0.09,
+        "radius": 0.024,
+        "height": 0.049,
         "direction": 0
       },
       {
         "name": "Col_Pumper",
         "type": "capsule",
         "center": [
-          0,
-          0.38,
-          0.155
+          0.0,
+          0.446,
+          0.248
         ],
-        "radius": 0.042,
-        "height": 0.11,
+        "radius": 0.036,
+        "height": 0.073,
         "direction": 2
       },
       {
         "name": "Col_Bonnet",
         "type": "capsule",
         "center": [
-          0,
-          0.66,
-          0
+          0.0,
+          0.612,
+          0.0
         ],
-        "radius": 0.04,
-        "height": 0.12,
+        "radius": 0.028,
+        "height": 0.057,
         "direction": 1
       },
       {
         "name": "Col_Nut",
         "type": "capsule",
         "center": [
-          0,
-          0.762,
-          0
+          0.0,
+          0.764,
+          0.0
         ],
-        "radius": 0.024,
-        "height": 0.05,
+        "radius": 0.012,
+        "height": 0.03,
         "direction": 1
       }
     ],
@@ -27878,7 +27904,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.5,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/FireHydrant_Yellow.fbx"
   },
   {
@@ -27886,30 +27912,30 @@
     "category": "StreetFurniture",
     "blurb": "Yard hydrant, 0.81 m to the handwheel. Worn silver barrel, black caps, brass nozzles.",
     "size": [
-      0.42,
-      0.811,
-      0.421
+      0.554,
+      0.81,
+      0.465
     ],
     "min": [
-      -0.21,
+      -0.277,
       0.0,
-      -0.17
+      -0.148
     ],
     "max": [
-      0.21,
-      0.811,
-      0.251
+      0.277,
+      0.81,
+      0.317
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2232,
+        "tris": 1808,
         "materials": [
-          "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_MetalWorn",
+          "Lib_Steel",
           "Lib_Brass",
           "Lib_Black",
+          "Lib_SteelDark",
           "Lib_Chain"
         ],
         "mesh": "LOD0",
@@ -27917,9 +27943,8 @@
       },
       {
         "lod": 1,
-        "tris": 764,
+        "tris": 612,
         "materials": [
-          "Lib_SteelDark",
           "Lib_MetalWorn",
           "Lib_Brass",
           "Lib_Black",
@@ -27934,14 +27959,14 @@
         "name": "Col_Flange",
         "type": "box",
         "center": [
-          0,
-          0.028,
-          0
+          0.0,
+          0.014,
+          0.0
         ],
         "size": [
-          0.22,
-          0.04,
-          0.22
+          0.16,
+          0.02,
+          0.16
         ],
         "euler": [
           0,
@@ -27953,74 +27978,74 @@
         "name": "Col_Barrel",
         "type": "capsule",
         "center": [
-          0,
-          0.36,
-          0
+          0.0,
+          0.2,
+          0.0
         ],
-        "radius": 0.078,
-        "height": 0.5,
+        "radius": 0.062,
+        "height": 0.22,
         "direction": 1
       },
       {
         "name": "Col_Nozzle_L",
         "type": "capsule",
         "center": [
-          -0.128,
-          0.4,
-          0
+          -0.226,
+          0.446,
+          0.0
         ],
-        "radius": 0.028,
-        "height": 0.09,
+        "radius": 0.024,
+        "height": 0.049,
         "direction": 0
       },
       {
         "name": "Col_Nozzle_R",
         "type": "capsule",
         "center": [
-          0.128,
-          0.4,
-          0
+          0.226,
+          0.446,
+          0.0
         ],
-        "radius": 0.028,
-        "height": 0.09,
+        "radius": 0.024,
+        "height": 0.049,
         "direction": 0
       },
       {
         "name": "Col_Pumper",
         "type": "capsule",
         "center": [
-          0,
-          0.38,
-          0.155
+          0.0,
+          0.446,
+          0.248
         ],
-        "radius": 0.042,
-        "height": 0.11,
+        "radius": 0.036,
+        "height": 0.073,
         "direction": 2
       },
       {
         "name": "Col_Neck",
         "type": "capsule",
         "center": [
-          0,
-          0.66,
-          0
+          0.0,
+          0.7,
+          0.0
         ],
-        "radius": 0.04,
-        "height": 0.12,
+        "radius": 0.014,
+        "height": 0.08,
         "direction": 1
       },
       {
         "name": "Col_Wheel",
         "type": "box",
         "center": [
-          0,
-          0.8,
-          0
+          0.0,
+          0.775,
+          0.0
         ],
         "size": [
-          0.12,
-          0.012,
-          0.12
+          0.1,
+          0.018,
+          0.1
         ],
         "euler": [
           0,
@@ -28040,7 +28065,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.5,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/FireHydrant_Silver.fbx"
   },
   {
@@ -33906,32 +33931,32 @@
   {
     "name": "FireHydrant_Red",
     "category": "StreetFurniture",
-    "blurb": "Red dry-barrel hydrant, 0.79 m to the operating nut. Brass nozzles and side chains.",
+    "blurb": "Red dry-barrel hydrant, 0.78 m to the operating nut. Brass nozzles, chained caps, thin white collar.",
     "size": [
-      0.42,
-      0.794,
-      0.421
+      0.554,
+      0.784,
+      0.465
     ],
     "min": [
-      -0.21,
+      -0.277,
       0.0,
-      -0.17
+      -0.148
     ],
     "max": [
-      0.21,
-      0.794,
-      0.251
+      0.277,
+      0.784,
+      0.317
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2052,
+        "tris": 2032,
         "materials": [
-          "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_Hydrant",
+          "Lib_Steel",
           "Lib_PaintWhite",
           "Lib_Brass",
+          "Lib_SteelDark",
           "Lib_Chain"
         ],
         "mesh": "LOD0",
@@ -33939,12 +33964,12 @@
       },
       {
         "lod": 1,
-        "tris": 624,
+        "tris": 664,
         "materials": [
-          "Lib_SteelDark",
           "Lib_Hydrant",
           "Lib_PaintWhite",
-          "Lib_Brass"
+          "Lib_Brass",
+          "Lib_SteelDark"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -33955,14 +33980,14 @@
         "name": "Col_Flange",
         "type": "box",
         "center": [
-          0,
-          0.028,
-          0
+          0.0,
+          0.014,
+          0.0
         ],
         "size": [
-          0.22,
-          0.04,
-          0.22
+          0.16,
+          0.02,
+          0.16
         ],
         "euler": [
           0,
@@ -33974,72 +33999,72 @@
         "name": "Col_Barrel",
         "type": "capsule",
         "center": [
-          0,
-          0.36,
-          0
+          0.0,
+          0.2,
+          0.0
         ],
-        "radius": 0.078,
-        "height": 0.5,
+        "radius": 0.062,
+        "height": 0.22,
         "direction": 1
       },
       {
         "name": "Col_Nozzle_L",
         "type": "capsule",
         "center": [
-          -0.128,
-          0.4,
-          0
+          -0.226,
+          0.446,
+          0.0
         ],
-        "radius": 0.028,
-        "height": 0.09,
+        "radius": 0.024,
+        "height": 0.049,
         "direction": 0
       },
       {
         "name": "Col_Nozzle_R",
         "type": "capsule",
         "center": [
-          0.128,
-          0.4,
-          0
+          0.226,
+          0.446,
+          0.0
         ],
-        "radius": 0.028,
-        "height": 0.09,
+        "radius": 0.024,
+        "height": 0.049,
         "direction": 0
       },
       {
         "name": "Col_Pumper",
         "type": "capsule",
         "center": [
-          0,
-          0.38,
-          0.155
+          0.0,
+          0.446,
+          0.248
         ],
-        "radius": 0.042,
-        "height": 0.11,
+        "radius": 0.036,
+        "height": 0.073,
         "direction": 2
       },
       {
         "name": "Col_Bonnet",
         "type": "capsule",
         "center": [
-          0,
-          0.66,
-          0
+          0.0,
+          0.612,
+          0.0
         ],
-        "radius": 0.04,
-        "height": 0.12,
+        "radius": 0.028,
+        "height": 0.057,
         "direction": 1
       },
       {
         "name": "Col_Nut",
         "type": "capsule",
         "center": [
-          0,
-          0.762,
-          0
+          0.0,
+          0.764,
+          0.0
         ],
-        "radius": 0.024,
-        "height": 0.05,
+        "radius": 0.012,
+        "height": 0.03,
         "direction": 1
       }
     ],
@@ -34054,7 +34079,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.5,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/FireHydrant_Red.fbx"
   },
   {
