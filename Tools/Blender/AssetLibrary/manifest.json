@@ -35203,46 +35203,45 @@
   {
     "name": "ParkingMeter_Single",
     "category": "StreetFurniture",
-    "blurb": "Single meter. Post to 1.05 m, head 1.08\u20131.40 m, 0.18 m wide.",
+    "blurb": "Digital single-space meter. Screen center 1.24 m, head 0.16 m wide. No brand.",
     "size": [
-      0.2,
-      1.41,
-      0.2
+      0.18,
+      1.356,
+      0.18
     ],
     "min": [
-      -0.1,
+      -0.09,
       0.0,
-      -0.1
+      -0.09
     ],
     "max": [
-      0.1,
-      1.41,
-      0.1
+      0.09,
+      1.356,
+      0.09
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 252,
+        "tris": 1020,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_Glass",
-          "Lib_PaintCream",
-          "Lib_Brass",
-          "Lib_Black"
+          "Lib_Black",
+          "Lib_ShopGlass",
+          "Lib_SignalGreen"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 132,
+        "tris": 116,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_Glass",
-          "Lib_PaintCream",
-          "Lib_Brass"
+          "Lib_Black",
+          "Lib_ShopGlass",
+          "Lib_SignalGreen"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -35253,14 +35252,14 @@
         "name": "Col_Base",
         "type": "box",
         "center": [
-          0,
-          0.015,
-          0
+          0.0,
+          0.012,
+          0.0
         ],
         "size": [
-          0.14,
-          0.02,
-          0.14
+          0.1,
+          0.016,
+          0.1
         ],
         "euler": [
           0,
@@ -35272,26 +35271,26 @@
         "name": "Col_Post",
         "type": "capsule",
         "center": [
-          0,
-          0.55,
-          0
+          0.0,
+          0.5,
+          0.0
         ],
-        "radius": 0.024,
-        "height": 0.9,
+        "radius": 0.02,
+        "height": 0.84,
         "direction": 1
       },
       {
         "name": "Col_Head",
         "type": "box",
         "center": [
-          0,
-          1.26,
-          0
+          0.0,
+          1.18,
+          0.0
         ],
         "size": [
-          0.12,
-          0.22,
-          0.09
+          0.1,
+          0.2,
+          0.06
         ],
         "euler": [
           0,
@@ -35311,7 +35310,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.61,
+    "slackCm": 0.22,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/ParkingMeter_Single.fbx"
   },
   {

@@ -114,6 +114,9 @@ PASSES = {
     13: (
         ("hydrant_red", "FireHydrant_Red", 32.0, (-0.95, 0.0, 0.55), 200.0),
     ),
+    14: (
+        ("meter_single", "ParkingMeter_Single", 24.0, (-0.85, 0.0, 0.45), 200.0),
+    ),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -126,6 +129,7 @@ _FRAME11 = {
     "ped_button": (0.70, 12.0, 36.0),
     "fence_chain": (0.70, 11.0, 40.0),
     "hydrant_red": (0.82, 14.0, 40.0),
+    "meter_single": (0.74, 12.0, 38.0),
 }
 
 
@@ -178,6 +182,7 @@ def _load(names):
         "ValveBox_Walk": "sk_valve_box",
         "Sign_AFrame": "sk_sign_aframe",
         "FireHydrant_Red": "sk_hydrant_red",
+        "ParkingMeter_Single": "sk_meter_single",
     }
     for name in names:
         module = importlib.import_module(stems[name])
