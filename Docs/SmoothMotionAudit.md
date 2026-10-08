@@ -131,6 +131,31 @@ Stick figures from the joint angles are in `Docs/SmoothStills/pass5/layer-hang.p
 
 Items 2–9 below stay as they are. Exit poses, the landing roll, landing tiers, and particles stay with the anim-fx lane.
 
+## Pass 6
+
+Controls. The press still happens on the same frame. Coyote, jump, speeds, and the other locked numbers are unchanged.
+
+The reader runs at execution order −200, the cameras apply look at −100, and the motor moves at 0. Rendering is after LateUpdate. Keyboard and gamepad move were already sampled in that same Update as the capsule. Mouse look already reached the picture before the frame was drawn. The extra frame was the body heading: yaw was written in LateUpdate, so the first Move of a look still used the previous facing.
+
+| Path | Before | After |
+|---|---|---|
+| Keyboard to first capsule move | 0 frames | 0 frames |
+| Gamepad to first capsule move | 0 frames | 0 frames |
+| Mouse look to the picture | 0 frames | 0 frames |
+| Look to the move that uses the new heading | 1 frame | 0 frames |
+
+`beforeMouse=1` and `beforeLook=1` in the sim line are that heading frame. After the change both are 0. Gamepad events are processed in the dynamic update, so a stick is not held for the fixed step. Nothing reads move or look from FixedUpdate. The fixed timestep stays 0.02. The rigidbody interpolation stays None. Vsync default is now 1, and while vsync is on the frame cap stays with the display (`targetFrameRate` −1). If vsync is off, the fallback cap is 60.
+
+The joystick axes in the input manager used a per-axis deadzone of 0.19 and passed the rest of the stick through unchanged. A diagonal whose two components were both under 0.19 produced no move, and a stick at 0.20 came out as 0.20 (a step). Those axes are now deadzone 0. The reader applies a radial inner of 0.19, an outer of 1, and a linear curve. A full cardinal and a full diagonal both come out at magnitude 1.000. A stick at 0.20 comes out at 0.012. A stick at 0.50 comes out at about 0.383. Keyboard axes stay −1, 0, or 1, so a full key press stays magnitude 1. The motor still ignores a wish shorter than length 0.1, so the capsule starts once the raw stick magnitude is about 0.27, on a cardinal and on a diagonal alike. Forward on the stick counts as sprint once the shaped axis passes 0.40, which is a raw deflection of about 0.51. The sprint button and the W key are unchanged.
+
+Mouse look is still the delta times sensitivity. There is no look smoothing and no mouse acceleration. Gamepad look has an accel curve that stays off (`lookAccel=0`). Turning it up eases small deflections and keeps a full stick at full speed. Inner deadzone, outer deadzone, the stick curve, and look accel are stored on `GameSettings` and in the settings blob (`stickInner`, `stickOuter`, `stickCurve`, `lookAccel`). The blob version stays 2, so an older file keeps these defaults. The pause menu still has 19 rows. The options screen can grow those rows later.
+
+Items 2–9 still do not fit this pass. A short stride stays on the exponential slew. Kill-box snaps stay instant. Exit poses, the landing roll, landing tiers, and particles stay with the anim-fx lane. A capsule-mounted locomotor still skips mesh yaw. An unbound mannequin still skips the visual offset. The vault capsule still teleports on the last mantle frame. Air dash is still 0.10 s with the pose arriving over 0.06 s. Landing still waits one sample so a hop can cancel the thud.
+
+`response-latency kb=0 mouse=0 pad=0 look=0 beforeKb=0 beforeMouse=1 beforePad=0 beforeLook=1 read=-200 cam=-100 motor=0 vsync=1 rate=-1 fixed=0.02`
+
+`stick-quality diag=1.000 card=1.000 ramp=0.012 axialHole=0 inner=0.19 outer=1 curve=1 lookAccel=0`
+
 ## TODO still open
 
 1. Done this pass. Small `LookRotation` steps ease. Large steps still snap with the mouse.
