@@ -1,8 +1,9 @@
-"""Fixed steel bollard, embedded in a concrete collar.
+"""Fixed steel bollard. Flange, anchor bolts, domed pipe.
 
-Real size: 152 mm OD, 0.91 m above the collar (36 in). Dome cap, two bands.
+152 mm outside diameter. Dome crown at 0.98 m. No legend.
 """
 
+import math
 import os
 import sys
 
@@ -15,23 +16,27 @@ def create():
     a = Asset(
         "Bollard_Fixed",
         "StreetFurniture",
-        "Fixed bollard, 152 mm OD, 0.91 m above a concrete collar.",
+        "Fixed steel bollard, 152 mm pipe, dome at 0.98 m, bolted flange.",
     )
     a.climb_note = "152 mm round post. Not a cling."
-    a.vault_note = "Top is 0.96 m and domed. Not a vault rail."
+    a.vault_note = "Top is 0.98 m and domed. Not a vault rail."
     for lod in (0, 1):
         g = a.begin(lod)
-        seg = lod_pick(lod, 14, 8)
-        bev = lod_pick(lod, 0.003, 0.0)
-        g.cylinder((0, 0.03, 0), 0.16, 0.06, "Lib_Concrete", seg, bevel=bev, segs=1 if lod == 0 else 0)
-        g.cylinder((0, 0.48, 0), 0.076, 0.86, "Lib_Steel", seg, bevel=bev, segs=1 if lod == 0 else 0)
-        g.sphere((0, 0.91, 0), 0.076, "Lib_Steel", seg)
-        g.cylinder((0, 0.22, 0), 0.080, 0.045, "Lib_PaintYellow", seg)
-        g.cylinder((0, 0.62, 0), 0.080, 0.045, "Lib_PaintWhite", seg)
+        seg = lod_pick(lod, 16, 8)
+        g.box((0, 0.012, 0), (0.28, 0.024, 0.28), "Lib_SteelDark")
         if lod == 0:
-            g.torus((0, 0.08, 0), 0.084, 0.008, "Lib_Rust", 12, 5)
-            g.cylinder((0, 0.94, 0), 0.012, 0.02, "Lib_SteelDark", 6)
+            for i in range(4):
+                ang = math.pi * 0.25 + i * math.pi * 0.5
+                g.cylinder((math.sin(ang) * 0.10, 0.030, math.cos(ang) * 0.10), 0.008, 0.010, "Lib_Steel", 6)
+        # Pipe is split so the band, the dark ring, and the dome do not intersect it.
+        g.cylinder((0, 0.155, 0), 0.076, 0.230, "Lib_Steel", seg)
+        if lod == 0:
+            g.cylinder((0, 0.280, 0), 0.082, 0.016, "Lib_SteelDark", seg)
+        g.cylinder((0, 0.444, 0), 0.076, 0.308, "Lib_Steel", seg)
+        g.cylinder((0, 0.620, 0), 0.082, 0.040, "Lib_PaintYellow", seg)
+        g.cylinder((0, 0.734, 0), 0.076, 0.184, "Lib_Steel", seg)
+        g.sphere((0, 0.904, 0), 0.076, "Lib_Steel", seg)
         a.end()
-    a.box("Col_Collar", (0, 0.03, 0), (0.24, 0.04, 0.24))
-    a.capsule("Col_Post", (0, 0.44, 0), 0.055, 0.70, 1)
+    a.box("Col_Flange", (0, 0.010, 0), (0.20, 0.016, 0.20))
+    a.capsule("Col_Post", (0, 0.45, 0), 0.068, 0.74, 1)
     return a
