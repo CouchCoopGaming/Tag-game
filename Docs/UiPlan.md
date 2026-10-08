@@ -289,6 +289,10 @@ Options buttons and the RESULTS rematch row are tall enough for a full-size titl
 
 Runtime and the composites use the same numbers. Options and Accessibility rows are 108 px tall on a 116 px step. The stripe stays in the top 16 px, the title is 40 px and starts 24 px down, and the sub-line starts at 70 px in FloorFont 30. RESULTS action buttons, including Rematch, are 128 px. RESULTS bodies are tinted with MenuTheme.Seat (fallback red, blue, yellow, green) after the costume spawn. Accent stays the costume swatch (sample Tan, Mint, Tan, Mint). The loading still is the Waiting gate: caption `Waiting  0%` and a gold dash 28% of the track, which is the frame the screen opens on. Stills are composites in `Docs/UiStills/screens2/pass7/`.
 
+## Screens 2, pass 8
+
+The Default accessibility palette is the seat slot colors: red, blue, yellow, green. Colorblind palettes stay on their own rows, and the swatch row names the palette that is showing. Reduce motion and Comic words draw a 96 by 40 pill; on is gold with the knob on the right. Loading uses `SceneManager.LoadSceneAsync`. The bar follows `AsyncOperation.progress`, and `allowSceneActivation` stays off until progress reaches 0.9 so the load can finish at 100. The loading still is that mid-load, `Loading  60%`, filled from the left. Control rows use the same 108 px height and 116 px step, so the title stays 40 px. At 100% the window shows 7 rows. Stills are composites in `Docs/UiStills/screens2/pass8/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

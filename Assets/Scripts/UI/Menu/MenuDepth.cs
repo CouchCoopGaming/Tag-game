@@ -243,9 +243,19 @@ namespace Tag.Ui.Menu
             if (shown > win) shown = win;
             float y = 8f + (shown - 1) * UiFit.OptStep + UiFit.OptRow + 8f;
             float room = UiFit.BodyH(UiFit.Current()) - 8f - y;
+            float nameH = UiFit.FloorFont;
             float swH = 78f;
-            if (room < 48f) return;
-            if (swH > room) swH = room;
+            if (room < 48f + nameH) return;
+            if (swH + 4f + nameH > room) swH = room - 4f - nameH;
+            if (swH < 48f) return;
+            string palette = AccessibilityPalette.Name(pal);
+            Text label = MenuWidgets.Words(body, palette, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            RectTransform labelRt = label.rectTransform;
+            labelRt.anchorMin = new Vector2(0f, 1f);
+            labelRt.anchorMax = new Vector2(0f, 1f);
+            labelRt.pivot = new Vector2(0f, 1f);
+            labelRt.anchoredPosition = new Vector2(40f, -y);
+            labelRt.sizeDelta = new Vector2(280f, swH);
             for (int i = 0; i < 4; i++)
             {
                 AccessibilityPalette.Player(pal, i, out float r, out float g, out float b);
@@ -254,7 +264,13 @@ namespace Tag.Ui.Menu
                 MenuArt.Plate(image, new Color(r, g, b, 1f), true);
                 image.raycastTarget = false;
                 string name = i == 0 ? "P1" : i == 1 ? "P2" : i == 2 ? "P3" : "P4";
-                MenuWidgets.Words(rt, name, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
+                Text pname = MenuWidgets.Words(body, name, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+                RectTransform prt = pname.rectTransform;
+                prt.anchorMin = new Vector2(0f, 1f);
+                prt.anchorMax = new Vector2(0f, 1f);
+                prt.pivot = new Vector2(0f, 1f);
+                prt.anchoredPosition = new Vector2(360f + i * 150f, -(y + swH + 4f));
+                prt.sizeDelta = new Vector2(120f, nameH);
             }
         }
     }

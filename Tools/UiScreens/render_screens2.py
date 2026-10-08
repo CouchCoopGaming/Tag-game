@@ -12,7 +12,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass7")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass8")
 FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
@@ -233,6 +233,14 @@ def draw_glyph(d, kind, x, y):
         d.text((x + 12, y + 6), "B", font=font(FONT_D, 28), fill=CREAM)
 
 
+def draw_switch(d, x, y, on):
+    # MenuWidgets.Toggle: 96x40 pill. On is gold with the knob on the right.
+    track = GOLD if on else (13, 20, 41)
+    rounded(d, (x, y, x + 96, y + 40), 20, track, STROKE, 2)
+    kx = x + (60 if on else 4)
+    rounded(d, (kx, y + 4, kx + 32, y + 36), 16, CREAM)
+
+
 def footer_both(img):
     footer(img, ["Move", "Space  confirm", "Esc  back"])
 
@@ -244,14 +252,33 @@ def save(img, name, notes):
     rgb.save(path, "PNG", optimize=True, compress_level=9)
     size = os.path.getsize(path)
     if size > 390000:
+        # Seat yellow sits next to the gold accent. A plain palette merge
+        # turns that swatch gold, so those colors are painted back on.
+        protect = list(SEAT) + [GOLD, CREAM, INK, HOT, PANEL, NAVY, MUTE, STROKE, (13, 20, 41)]
+        pinned = None
         for colors in (256, 224, 192, 160):
-            q = rgb.quantize(colors=colors, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
-            q.save(path, "PNG", optimize=True)
+            pinned = pin_colors(rgb, protect, colors)
+            pinned.save(path, "PNG", optimize=True, compress_level=9)
             size = os.path.getsize(path)
             if size <= 390000:
                 break
     notes.append((name, size, rgb.size))
     print(f"{name} {size} {rgb.size}")
+
+
+def pin_colors(rgb, protect, colors):
+    import numpy as np
+    budget = colors - len(protect)
+    if budget < 32:
+        budget = 32
+    q = rgb.quantize(colors=budget, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
+    src = np.asarray(rgb)
+    out = np.array(q.convert("RGB"))
+    for color in protect:
+        want = np.array(color, dtype=np.uint8)
+        mask = np.all(src == want, axis=-1)
+        out[mask] = want
+    return Image.fromarray(out, "RGB")
 
 
 def screen(alpha=0.5):
@@ -510,10 +537,11 @@ def loading():
     track_y = y + 124
     track = (400, track_y, 1520, track_y + 36)
     rounded(d, track, 10, (5, 13, 31), STROKE, 2)
+    # AsyncOperation.progress of 0.6, left-aligned. Activation is still off until 0.9.
     span = 1520 - 400 - 12
-    dash = int(span * 0.28)
-    rounded(d, (406, track_y + 6, 406 + dash, track_y + 30), 6, GOLD)
-    d.text((760, track_y + 48), "Waiting  0%", font=font(FONT_B, 28), fill=CREAM)
+    fill = int(span * 0.60)
+    rounded(d, (406, track_y + 6, 406 + fill, track_y + 30), 6, GOLD)
+    d.text((760, track_y + 48), "Loading  60%", font=font(FONT_B, 28), fill=CREAM)
     return img, min(contrast(CREAM, (8, 22, 58)), contrast(INK, GOLD), contrast(GOLD, (5, 13, 31)))
 
 
@@ -584,15 +612,19 @@ def options(page):
             d = ImageDraw.Draw(img)
             d.rounded_rectangle((1080, y + 74, 1500, y + 90), 4, fill=(0, 0, 0, 90))
             d.rounded_rectangle((1080, y + 74, 1080 + int(420 * meters[i]), y + 90), 4, fill=GOLD)
+        if page == "access" and i in (0, 4):
+            d = ImageDraw.Draw(img)
+            draw_switch(d, 1640 - 96 - 28, y + 34, i == 4)
         y += step
     if page == "access":
         d = ImageDraw.Draw(img)
-        sw = [(199, 199, 0), (145, 252, 115), (255, 255, 255), (0, 214, 191)]
-        for i, c in enumerate(sw):
+        d.text((300, y + 24), "Default", font=font(FONT_B, 30), fill=CREAM)
+        ratios.append(contrast(CREAM, (8, 22, 58)))
+        for i, c in enumerate(SEAT):
             x = 560 + i * 180
-            rounded(d, (x, y + 8, x + 140, y + 86), 12, c)
-            d.text((x + 48, y + 28), "P" + str(i + 1), font=font(FONT_B, 28), fill=INK)
-            ratios.append(contrast(INK, c))
+            rounded(d, (x, y + 8, x + 140, y + 78), 12, c)
+            d.text((x + 46, y + 84), "P" + str(i + 1), font=font(FONT_B, 28), fill=CREAM)
+            ratios.append(contrast(CREAM, (8, 22, 58)))
     footer_both(img)
     return img, min(ratios)
 
@@ -600,6 +632,7 @@ def options(page):
 def controls(bottom=False):
     img = screen(0.5)
     header(img, "Controls", "Keyboard and pad glyphs. Confirm changes one. Space still jumps.")
+    # Same 108 px rows as options. At 100% the window is 7, so the rest scroll.
     if not bottom:
         rows = [
             ("Move", "WASD    /    Left stick"),
@@ -609,13 +642,9 @@ def controls(bottom=False):
             ("Slide", "Ctrl or C    /    East"),
             ("Air dash", "Q or Alt    /    RB"),
             ("Punch / tag", "LMB or E    /    West"),
-            ("Sprint", "Shift or Alt    /    LB"),
-            ("Pause", "Esc    /    Start"),
         ]
     else:
         rows = [
-            ("Stick outer deadzone  1.00", "Left / Right"),
-            ("Stick response curve  1.00", "Left / Right"),
             ("Gamepad look accel  0.00", "Left / Right"),
             ("P1 confirm", "Auto"),
             ("P2 confirm", "Auto"),
@@ -625,22 +654,29 @@ def controls(bottom=False):
             ("Back", ""),
         ]
     ratios = []
-    y = 128
+    y = 156
+    row_h = 108
+    step = 116
     d = ImageDraw.Draw(img)
     for i, (title, sub) in enumerate(rows):
         hot = i == (2 if not bottom else 0)
-        ratios.append(button(img, (120, y, 1780, y + 88), title, sub, hot, right=300))
+        ratios.append(button(img, (120, y, 1760, y + row_h), title, sub, hot, right=300))
         if not bottom:
-            kb = "space" if i == 2 else "esc" if i == 8 else "arrows"
+            kb = "space" if i == 2 else "arrows"
             pad = "a" if i == 2 else "b" if i == 4 else "stick"
-            draw_glyph(d, kb, 1648, y + 18)
-            draw_glyph(d, pad, 1720, y + 16)
-        y += 96
-    d.rounded_rectangle((1740, 184, 1756, 960), 4, fill=(0, 0, 0, 140))
+            draw_glyph(d, kb, 1588, y + 30)
+            draw_glyph(d, pad, 1668, y + 28)
+        y += step
+    track_top = 168
+    track_bot = 156 + 6 * step + row_h
+    d.rounded_rectangle((1784, track_top, 1798, track_bot), 4, fill=(0, 0, 0, 140))
+    thumb = int((track_bot - track_top) * 7 / 26)
+    if thumb < 56:
+        thumb = 56
     if bottom:
-        d.rounded_rectangle((1742, 700, 1754, 948), 3, fill=GOLD)
+        d.rounded_rectangle((1786, track_bot - thumb, 1796, track_bot - 2), 3, fill=GOLD)
     else:
-        d.rounded_rectangle((1742, 184, 1754, 460), 3, fill=GOLD)
+        d.rounded_rectangle((1786, track_top + 2, 1796, track_top + thumb), 3, fill=GOLD)
     footer_both(img)
     return img, min(ratios)
 

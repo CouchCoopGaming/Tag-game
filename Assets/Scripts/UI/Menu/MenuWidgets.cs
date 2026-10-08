@@ -283,6 +283,43 @@ namespace Tag.Ui.Menu
             return root;
         }
 
+        /// <summary>
+        /// On/off pill. Gold track and the knob on the right means on.
+        /// </summary>
+        public static void Toggle(MenuTile tile, bool on)
+        {
+            if (tile == null) return;
+            RectTransform root = tile.transform as RectTransform;
+            float w = root != null ? root.sizeDelta.x : 900f;
+            float h = root != null ? root.sizeDelta.y : UiFit.OptRow;
+            float pw = 96f;
+            float ph = 40f;
+            float x = w - pw - 28f;
+            float y = 24f;
+            if (h > ph + 48f) y = (h - ph) * 0.5f;
+            var track = Place(tile.transform, "Switch", x, y, pw, ph);
+            var trackImage = track.gameObject.AddComponent<Image>();
+            MenuArt.Plate(trackImage, on ? MenuTheme.Gold : new Color(0.05f, 0.08f, 0.16f, 1f), true);
+            trackImage.raycastTarget = false;
+            float knob = 32f;
+            float kx = on ? pw - knob - 4f : 4f;
+            var knobRt = Place(track, "Knob", kx, 4f, knob, ph - 8f);
+            var knobImage = knobRt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(knobImage, MenuTheme.Cream, true);
+            knobImage.raycastTarget = false;
+            ClearRight(tile.Label, pw + 40f);
+            ClearRight(tile.Detail, pw + 40f);
+        }
+
+        static void ClearRight(Text label, float right)
+        {
+            if (label == null) return;
+            RectTransform rt = label.rectTransform;
+            Vector2 max = rt.offsetMax;
+            if (max.x > -right) max.x = -right;
+            rt.offsetMax = max;
+        }
+
         public static void Reflow(MenuTile tile)
         {
             if (tile == null || tile.Label == null) return;

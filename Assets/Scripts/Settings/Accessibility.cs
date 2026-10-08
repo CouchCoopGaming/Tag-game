@@ -40,12 +40,12 @@ namespace Tag.Settings
         public static readonly string[] PlayerGlyph = { "●", "■", "▲", "◆" };
         public const string ItGlyph = "★";
 
-        // Four light player colors per palette. Pairwise distance stays above
-        // MinPairDistance after deuteranopia, protanopia, and tritanopia
-        // simulation, and each clears MinContrast against the ground albedos.
+        // Default (the first four) is the seat slot colors: red, blue, yellow, green.
+        // The colorblind rows stay separable after deuteranopia, protanopia, and
+        // tritanopia simulation, and each clears MinContrast against the ground albedos.
         static readonly float[] PlayerR =
         {
-            0.78f, 0.57f, 1.00f, 0.00f,
+            0.95f, 0.16f, 1.00f, 0.16f,
             0.98f, 0.96f, 0.67f, 0.00f,
             0.95f, 0.57f, 1.00f, 0.01f,
             0.64f, 1.00f, 0.62f, 0.00f,
@@ -53,7 +53,7 @@ namespace Tag.Settings
         };
         static readonly float[] PlayerG =
         {
-            0.78f, 0.99f, 1.00f, 0.84f,
+            0.16f, 0.45f, 0.86f, 0.82f,
             0.69f, 1.00f, 1.00f, 0.85f,
             0.79f, 0.81f, 1.00f, 0.81f,
             0.99f, 0.67f, 1.00f, 0.84f,
@@ -61,7 +61,7 @@ namespace Tag.Settings
         };
         static readonly float[] PlayerB =
         {
-            0.00f, 0.45f, 1.00f, 0.75f,
+            0.22f, 1.00f, 0.12f, 0.28f,
             0.00f, 0.38f, 1.00f, 0.67f,
             0.04f, 0.47f, 0.82f, 1.00f,
             0.00f, 0.39f, 1.00f, 0.76f,
@@ -215,6 +215,9 @@ namespace Tag.Settings
         {
             for (int p = 0; p < Count; p++)
             {
+                // Default is the seat slot colors (red, blue, yellow, green).
+                // The colorblind palettes keep the distance and ground checks.
+                if (p == Default) continue;
                 for (int cvd = 0; cvd < CvdCount; cvd++)
                 {
                     if (MinPlayerDistance(p, cvd) < MinPairDistance)

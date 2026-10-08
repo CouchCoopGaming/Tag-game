@@ -36,6 +36,7 @@ namespace Tag.Core
 
         [SerializeField] string bootSceneName = "Boot";
         [SerializeField] string playSceneName = "Play";
+        AsyncOperation _bootLoad;
 
         public TagModeController modeController;
         public TagRoundController round;
@@ -257,7 +258,39 @@ namespace Tag.Core
             LookSensitivity.Load();
             LookSensitivity.Apply();
             Time.timeScale = 1f;
-            SceneManager.LoadScene(playSceneName);
+            _bootLoad = SceneManager.LoadSceneAsync(playSceneName);
+            if (_bootLoad == null)
+            {
+                SceneManager.LoadScene(playSceneName);
+                return;
+            }
+            _bootLoad.allowSceneActivation = false;
+        }
+
+        /// <summary>
+        /// Scene load progress while the menu is still up. -1 before the load
+        /// starts. AsyncOperation stalls at 0.9 until activation, then reaches 1.
+        /// </summary>
+        public float BootLoad
+        {
+            get
+            {
+                if (_bootLoad == null) return -1f;
+                if (_bootLoad.isDone) return 1f;
+                return _bootLoad.progress;
+            }
+        }
+
+        public void ClearBootLoad()
+        {
+            _bootLoad = null;
+        }
+
+        public void AdvanceBootLoad()
+        {
+            if (_bootLoad == null || _bootLoad.allowSceneActivation) return;
+            if (_bootLoad.progress >= 0.9f)
+                _bootLoad.allowSceneActivation = true;
         }
 
         public void OnRoundEnded(string result = "")
@@ -464,6 +497,7 @@ namespace Tag.Core
 
         void Update()
         {
+            AdvanceBootLoad();
             PadNav.Poll();
             SettingsRuntime.PollHotkeys();
             // Before panel returns, so Comma / N still work on Controls, Look, Boot, and results.

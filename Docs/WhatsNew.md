@@ -330,6 +330,8 @@ The sixth pass gives the options buttons and the rematch row room for a full tit
 
 The seventh pass makes the runtime match those pictures. Options and Accessibility rows are 108 px on a 116 px step, title 40 px under the stripe, sub-line at 70 px in the 30 px floor font. Rematch is 128 px. RESULTS tints the body with the seat color after the costume spawn, so the badge and the body match. The loading picture is the Waiting gate, `Waiting  0%`, with the gold dash. Composites are in `Docs/UiStills/screens2/pass7/`. Space still jumps.
 
+The eighth pass makes the Default color swatches the same red, blue, yellow, and green as the seats, and names the palette on the row. Reduce motion and Comic words are pills, gold when on. Loading fills from the scene load, and the picture is `Loading  60%`. Control rows are 108 px, so the titles stay full size. Composites are in `Docs/UiStills/screens2/pass8/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

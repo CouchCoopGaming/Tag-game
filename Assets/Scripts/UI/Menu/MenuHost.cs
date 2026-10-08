@@ -888,6 +888,8 @@ namespace Tag.Ui.Menu
             _loadPractice = practice;
             _loadFired = false;
             _loadAt = Time.unscaledTime + 0.9f;
+            Tag.Core.GameFlow flow = Tag.Core.GameFlow.Instance;
+            if (flow != null) flow.ClearBootLoad();
             MenuAudio.StartMatch();
             Open(MenuScreenId.Loading);
         }
@@ -2490,6 +2492,11 @@ namespace Tag.Ui.Menu
                 MenuTile tile = AddTile(rowX, 8f + v * UiFit.OptStep, rowW, UiFit.OptRow, index, MenuDepth.Title(index), MenuDepth.Detail(index), true);
                 if (MenuDepth.Page == MenuDepth.Hub)
                     MarkOption(tile, index);
+                if (tile != null && MenuDepth.Page == MenuDepth.Access)
+                {
+                    if (index == 0) MenuWidgets.Toggle(tile, MenuVideo.ReduceMotion);
+                    else if (index == 4) MenuWidgets.Toggle(tile, Tag.Ui.Hud.MatchHudText.ComicWords);
+                }
                 float meter = MenuDepth.Meter(index);
                 if (tile != null && meter >= 0f)
                     PaintMeter(tile.transform, meter);
@@ -2591,7 +2598,7 @@ namespace Tag.Ui.Menu
                     detail = _conflict ?? "";
                 }
                 UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
-                MenuTile row = AddTile(rowX, 8f + v * 96f, rowW, 88f, index, title, detail, true);
+                MenuTile row = AddTile(rowX, 8f + v * UiFit.OptStep, rowW, UiFit.OptRow, index, title, detail, true);
                 if (index < actions && row != null)
                     MenuBindRow.Stamp(row, index);
             }
@@ -2603,7 +2610,7 @@ namespace Tag.Ui.Menu
         {
             if (win < 1) win = 1;
             UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
-            float trackH = win * 96f - 16f;
+            float trackH = win * UiFit.OptStep - 16f;
             if (trackH < 120f) trackH = 120f;
             float trackX = rowX + rowW + 8f;
             var track = MenuWidgets.Place(_body, "ScrollTrack", trackX, 12f, 14f, trackH);
@@ -2633,13 +2640,29 @@ namespace Tag.Ui.Menu
 
         int ControlWindow()
         {
-            if (8f + (OptWindow + 1) * 96f <= UiFit.BodyH(UiFit.Current()))
-                return OptWindow + 1;
-            return OptWindow;
+            int n = UiFit.Window(UiFit.Current(), UiFit.OptStep, 8f);
+            if (n > OptWindow) n = OptWindow;
+            return n;
         }
 
         void PaintLoad()
         {
+            Tag.Core.GameFlow flow = Tag.Core.GameFlow.Instance;
+            float scene = flow != null ? flow.BootLoad : -1f;
+            if (scene >= 0f)
+            {
+                if (scene > 1f) scene = 1f;
+                ApplyLoadFill(scene, true);
+                if (_loadWord != null)
+                {
+                    int pct = Mathf.RoundToInt(scene * 100f);
+                    if (pct > 100) pct = 100;
+                    string word = scene >= 1f ? LoadGate.Ready : "Loading";
+                    _loadWord.text = word + "  " + pct.ToString() + "%";
+                }
+                _loadStep = 1;
+                return;
+            }
             bool live = false;
             TagModeController modes = TagModeController.Instance;
             if (modes != null) live = modes.RoundActive;
@@ -2647,16 +2670,21 @@ namespace Tag.Ui.Menu
             if (step == _loadStep) return;
             _loadStep = step;
             float fill = LoadGate.Fill(_loadFired, live);
-            if (_loadFill != null && fill > 0f)
-            {
-                RectTransform trackRt = _loadFill.rectTransform.parent as RectTransform;
-                float span = trackRt != null ? trackRt.sizeDelta.x - 12f : 1100f;
-                if (span < 40f) span = 40f;
-                _loadFill.rectTransform.anchoredPosition = new Vector2(6f, -6f);
-                _loadFill.rectTransform.sizeDelta = new Vector2(span * fill, 24f);
-                _loadFill.enabled = true;
-            }
+            if (fill > 0f) ApplyLoadFill(fill, true);
             if (_loadWord != null) _loadWord.text = LoadCaption(_loadFired, live);
+        }
+
+        void ApplyLoadFill(float fill, bool fromLeft)
+        {
+            if (_loadFill == null) return;
+            if (fill < 0f) fill = 0f;
+            if (fill > 1f) fill = 1f;
+            RectTransform trackRt = _loadFill.rectTransform.parent as RectTransform;
+            float span = trackRt != null ? trackRt.sizeDelta.x - 12f : 1100f;
+            if (span < 40f) span = 40f;
+            _loadFill.rectTransform.anchoredPosition = new Vector2(6f, -6f);
+            _loadFill.rectTransform.sizeDelta = new Vector2(span * fill, 24f);
+            _loadFill.enabled = fromLeft && fill > 0f;
         }
 
         static string LoadCaption(bool fired, bool roundActive)
