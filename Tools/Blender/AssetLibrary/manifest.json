@@ -170,26 +170,26 @@
   {
     "name": "Bench_Wood",
     "category": "StreetFurniture",
-    "blurb": "1.80 m park bench. Each end is one dark-green cast profile: feet, legs, seat rail, back post, and arm. Seat at 0.45 m.",
+    "blurb": "1.80 m park bench. Each end is one dark-green cast profile with a wood arm seated on it. Seat and back slats overhang the iron by about 6 cm. Seat at 0.45 m.",
     "size": [
-      1.8,
+      1.662,
       0.88,
       1.0
     ],
     "min": [
-      -0.9,
+      -0.831,
       -0.0,
       -0.5
     ],
     "max": [
-      0.9,
+      0.831,
       0.88,
       0.5
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 876,
+        "tris": 948,
         "materials": [
           "Lib_Iron",
           "Lib_Board"
@@ -199,7 +199,7 @@
       },
       {
         "lod": 1,
-        "tris": 552,
+        "tris": 624,
         "materials": [
           "Lib_Iron",
           "Lib_Board"
@@ -218,7 +218,7 @@
           -0.01
         ],
         "size": [
-          1.7,
+          1.6,
           0.026,
           0.4
         ],
@@ -237,7 +237,7 @@
           -0.3
         ],
         "size": [
-          1.6,
+          1.58,
           0.22,
           0.02
         ],
@@ -373,7 +373,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 1.01,
+    "slackCm": 1.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Bench_Wood.fbx"
   },
   {
@@ -763,7 +763,7 @@
   {
     "name": "Cabin",
     "category": "Buildings",
-    "blurb": "Log cabin 4.6 x 3.6 m, walls 2.15 m, ridge at 3.45 m, porch on +Z. Door is closed.",
+    "blurb": "Log cabin 4.6 x 3.6 m, walls 2.15 m, ridge at 3.45 m, porch on +Z. The door is a closed frame-and-panel in the log opening.",
     "size": [
       5.0,
       4.2,
@@ -782,11 +782,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 2900,
+        "tris": 2948,
         "materials": [
           "Lib_WoodDark",
           "Lib_Wood",
-          "Lib_Window",
+          "Lib_ShopGlass",
           "Lib_Brass",
           "Lib_Brick",
           "Lib_Concrete",
@@ -797,11 +797,11 @@
       },
       {
         "lod": 1,
-        "tris": 876,
+        "tris": 924,
         "materials": [
           "Lib_WoodDark",
           "Lib_Wood",
-          "Lib_Window",
+          "Lib_ShopGlass",
           "Lib_Roof"
         ],
         "mesh": "LOD1",
@@ -809,7 +809,7 @@
       },
       {
         "lod": 2,
-        "tris": 324,
+        "tris": 372,
         "materials": [
           "Lib_WoodDark",
           "Lib_Wood",
@@ -1814,7 +1814,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 0.8,
+    "slackCm": 1.98,
     "fbx": "Assets/Art/Props/Library/Buildings/Cabin.fbx"
   },
   {
@@ -2593,11 +2593,11 @@
   {
     "name": "Brick_Wall",
     "category": "Buildings",
-    "blurb": "4.00 x 3.20 x 0.30 m brick bay. Exterior is +Z, with a closed door and a window. Butt the ends to Brick_Corner.",
+    "blurb": "4.00 x 3.20 x 0.30 m brick bay. Exterior is +Z. A door and a window sit in 10 cm brick reveals, with one stone lintel and a stone sill. Butt the ends to Brick_Corner.",
     "size": [
       4.1,
       3.2,
-      0.38
+      0.39
     ],
     "min": [
       -2.05,
@@ -2607,45 +2607,45 @@
     "max": [
       2.05,
       3.2,
-      0.19
+      0.2
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 576,
+        "tris": 684,
         "materials": [
           "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Wood",
           "Lib_WoodDark",
-          "Lib_PaintCream",
           "Lib_Brass",
-          "Lib_ShopGlass",
-          "Lib_Concrete"
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 284,
+        "tris": 368,
         "materials": [
           "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Wood",
           "Lib_WoodDark",
-          "Lib_ShopGlass",
-          "Lib_PaintCream",
-          "Lib_Concrete"
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
       },
       {
         "lod": 2,
-        "tris": 156,
+        "tris": 240,
         "materials": [
           "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Wood",
           "Lib_WoodDark",
-          "Lib_ShopGlass",
-          "Lib_PaintCream",
-          "Lib_Concrete"
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -2713,7 +2713,7 @@
     "climbable": true,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Both broad faces are cling panels. Exterior is +Z. Collider is Climb_Wall.",
+    "climbNote": "Both broad faces are cling panels. Exterior is +Z. Climb_Wall is still the solid 0.30 m wall, so the 10 cm door recess does not change the cling surface.",
     "vaultNote": "No rail. The cornice is at 3.2 m.",
     "warnings": [],
     "fbxNames": [
@@ -24121,7 +24121,7 @@
   {
     "name": "TrashCan_Lidded",
     "category": "StreetFurniture",
-    "blurb": "City trash can, about 0.92 m. Dark green slats and hoops, black liner, shallow lid, and a side flap.",
+    "blurb": "City trash can, about 0.92 m. Dark green slats, hoops, and flap, black liner, shallow lid.",
     "size": [
       0.532,
       0.892,
@@ -24143,19 +24143,17 @@
         "tris": 1284,
         "materials": [
           "Lib_Iron",
-          "Lib_Black",
-          "Lib_Rubber"
+          "Lib_Black"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 664,
+        "tris": 692,
         "materials": [
           "Lib_Iron",
-          "Lib_Black",
-          "Lib_Rubber"
+          "Lib_Black"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -24205,7 +24203,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.17,
+    "slackCm": 0.27,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/TrashCan_Lidded.fbx"
   },
   {
@@ -27414,5 +27412,159 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Harbor/Container_20_Green.fbx"
+  },
+  {
+    "name": "Road_Junction",
+    "category": "Roads",
+    "blurb": "10 x 10 m intersection. Inner asphalt is 6 x 6 m at 0.12 m, so Road_Straight butts each edge. Four concrete corner returns carry a 15 cm curb, and each arm has a zebra crosswalk.",
+    "size": [
+      9.98,
+      0.27,
+      9.98
+    ],
+    "min": [
+      -4.99,
+      0.0,
+      -4.99
+    ],
+    "max": [
+      4.99,
+      0.27,
+      4.99
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 396,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_Concrete",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 396,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_Concrete",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Asphalt",
+        "type": "box",
+        "center": [
+          0,
+          0.06,
+          0
+        ],
+        "size": [
+          5.88,
+          0.12,
+          5.88
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Walk_0",
+        "type": "box",
+        "center": [
+          -3.99,
+          0.135,
+          -3.99
+        ],
+        "size": [
+          1.96,
+          0.25,
+          1.96
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Walk_1",
+        "type": "box",
+        "center": [
+          -3.99,
+          0.135,
+          3.99
+        ],
+        "size": [
+          1.96,
+          0.25,
+          1.96
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Walk_2",
+        "type": "box",
+        "center": [
+          3.99,
+          0.135,
+          -3.99
+        ],
+        "size": [
+          1.96,
+          0.25,
+          1.96
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Walk_3",
+        "type": "box",
+        "center": [
+          3.99,
+          0.135,
+          3.99
+        ],
+        "size": [
+          1.96,
+          0.25,
+          1.96
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Flat asphalt and sidewalk. The curb face is 0.27 m from the pivot.",
+    "vaultNote": "Curb is 0.15 m above the road. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Roads/Road_Junction.fbx"
   }
 ]

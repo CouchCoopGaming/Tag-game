@@ -119,8 +119,8 @@ def _cast_end(x, segs):
 def _end_frame(g, x, segs, mat):
     verts, faces = _cast_end(x, segs)
     g.mesh(verts, faces, mat, bevel=0.004 if segs > 2 else 0.0, segs=1 if segs > 2 else 0)
-    # Wood cap sits on the arm (arm top is 0.688).
-    g.box((x, 0.697, -0.04), (0.070, 0.018, 0.40), "Lib_Board")
+    # Same wood cap on both ends, biting the iron arm (top is 0.688) from the post to the front leg.
+    g.box((x, 0.694, -0.02), (0.046, 0.020, 0.50), "Lib_Board")
 
 
 @register
@@ -128,7 +128,7 @@ def create():
     a = Asset(
         "Bench_Wood",
         "StreetFurniture",
-        "1.80 m park bench. Each end is one dark-green cast profile: feet, legs, seat rail, back post, and arm. Seat at 0.45 m.",
+        "1.80 m park bench. Each end is one dark-green cast profile with a wood arm seated on it. Seat and back slats overhang the iron by about 6 cm. Seat at 0.45 m.",
     )
     a.climb_note = "Back slats are too broken up to cling. Not a wall-run panel."
     a.vault_note = "Seat is 0.45 m. Below the 0.90–1.05 m vault band."
@@ -141,20 +141,27 @@ def create():
         segs = lod_pick(lod, 4, 2)
         for x in (-0.74, 0.74):
             _end_frame(g, x, segs, iron)
-        g.box((0, 0.42, 0.24), (1.52, 0.036, 0.036), iron)
-        g.box((0, 0.42, -0.28), (1.52, 0.036, 0.036), iron)
-        g.box((0, 0.78, -0.28), (1.48, 0.032, 0.032), iron)
+        # Rails stop inside the casting. A boss at each end is the cast joint.
+        g.box((0, 0.42, 0.24), (1.44, 0.036, 0.036), iron)
+        g.box((0, 0.42, -0.28), (1.44, 0.036, 0.036), iron)
+        g.box((0, 0.78, -0.28), (1.40, 0.032, 0.032), iron)
+        for x in (-0.72, 0.72):
+            g.box((x, 0.42, 0.24), (0.06, 0.052, 0.052), iron)
+            g.box((x, 0.42, -0.28), (0.06, 0.052, 0.052), iron)
+            g.box((x, 0.78, -0.28), (0.055, 0.048, 0.048), iron)
         span0, span1 = -0.26, 0.24
         pitch = (span1 - span0) / slats
+        # Iron outer face is at x = ±0.766. 6.5 cm of wood past that.
+        slat_len = 1.662
         for i in range(slats):
             z = span0 + (i + 0.5) * pitch
-            g.box((0, 0.455, z), (length, 0.032, pitch * 0.86), "Lib_Board")
+            g.box((0, 0.455, z), (slat_len, 0.032, pitch * 0.86), "Lib_Board")
         for i in range(backs):
             y = 0.56 + i * (0.24 / max(1, backs - 1))
-            g.box((0, y, -0.30), (length * 0.92, 0.050, 0.028), "Lib_Board")
+            g.box((0, y, -0.30), (slat_len, 0.050, 0.028), "Lib_Board")
         a.end()
-    a.box("Col_Seat", (0, 0.455, -0.01), (1.70, 0.026, 0.40))
-    a.box("Col_Back", (0, 0.68, -0.30), (1.60, 0.22, 0.020))
+    a.box("Col_Seat", (0, 0.455, -0.01), (1.60, 0.026, 0.40))
+    a.box("Col_Back", (0, 0.68, -0.30), (1.58, 0.22, 0.020))
     for i, x in enumerate((-0.74, 0.74)):
         a.box("Col_LegF_%d" % i, (x, 0.28, 0.24), (0.036, 0.28, 0.032))
         a.box("Col_LegR_%d" % i, (x, 0.46, -0.28), (0.036, 0.56, 0.032))
