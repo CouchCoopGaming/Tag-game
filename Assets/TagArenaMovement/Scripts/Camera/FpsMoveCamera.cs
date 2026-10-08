@@ -8,6 +8,7 @@ namespace TagArena.Movement
     /// it only reads the motor and adds tilt / fov / landing kick.
     /// Parent this under the player, camera as child of this transform.
     /// </summary>
+    [DefaultExecutionOrder(-100)]
     public class FpsMoveCamera : MonoBehaviour
     {
         public PlayerMotor motor;
@@ -28,6 +29,7 @@ namespace TagArena.Movement
         float _tilt;
         float _eye;
         Vector3 _kick;
+        int _lookFrame = -1;
 
         PlayerInputReader _in;
 
@@ -44,18 +46,41 @@ namespace TagArena.Movement
             Cursor.lockState = CursorLockMode.Locked;
         }
 
-        void LateUpdate()
+        void Update()
         {
-            float dt = Time.deltaTime;
+            ApplyLook();
+        }
+
+        /// <summary>
+        /// This frame's look, after the reader and before the motor.
+        /// LateUpdate keeps the eye, the tilt, and the field of view.
+        /// </summary>
+        void ApplyLook()
+        {
+            if (motor == null) return;
+            if (_lookFrame == Time.frameCount) return;
+            _lookFrame = Time.frameCount;
+            if (_in == null) ResolveInput();
             if (!ResumeInputGate.Blocking && _in != null)
             {
                 bool padLook = _in.LookFromGamepad;
-                _yaw += LookFeel.YawDelta(_in.Look.x, padLook);
-                _pitch -= LookFeel.PitchDelta(_in.Look.y, padLook);
+                LookFeel.Deltas(_in.Look.x, _in.Look.y, padLook, out float yaw, out float pitch);
+                _yaw += yaw;
+                _pitch -= pitch;
             }
             _pitch = Mathf.Clamp(_pitch, minPitch, maxPitch);
-
             motor.transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
+        }
+
+        void ResolveInput()
+        {
+            if (motor == null) return;
+            _in = motor.GetComponent<PlayerInputReader>();
+        }
+
+        void LateUpdate()
+        {
+            float dt = Time.deltaTime;
             if (pitchPivot) pitchPivot.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
 
             bool low = motor.State == MoveState.Crouch || motor.State == MoveState.Slide;

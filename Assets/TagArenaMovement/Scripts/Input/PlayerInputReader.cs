@@ -76,6 +76,7 @@ namespace TagArena.Movement
             ControlBinds.Load();
             airDashKey = ControlBinds.AirDash;
             punchKey = ControlBinds.Punch;
+            SettingsRuntime.ArmInput();
         }
 
         void Update()
@@ -222,6 +223,8 @@ namespace TagArena.Movement
                 if (!clingPhys && Move.y > 0f) Move.y = 0f;
                 _clearClingOnResume = false;
             }
+
+            ShapeHumanMove();
 
             if (_lookPunchGateFrames > 0 || ResumeInputGate.Blocking)
             {
@@ -388,6 +391,7 @@ namespace TagArena.Movement
             bool forward = Move.y > 0.75f && _prevMoveY <= 0.45f;
             TapForwardPulse = forward;
             _prevMoveY = Move.y;
+            ShapeHumanMove();
 
             if (swallow)
             {
@@ -412,6 +416,12 @@ namespace TagArena.Movement
             _kbSpacePrev = space ? 1f : 0f;
             if (space) JumpHeld = true;
             if (edge) JumpPressed = true;
+        }
+
+        void ShapeHumanMove()
+        {
+            if (ExternalControl) return;
+            Move = StickQuality.Shape(Move);
         }
 
         public void ConsumeJumpPress() => JumpPressed = false;

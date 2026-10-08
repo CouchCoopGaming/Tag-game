@@ -708,6 +708,8 @@ static class Program
         }
         Console.WriteLine(Tag.Art.UpperBody.ProofLine());
         Console.WriteLine(Tag.Art.HangMotion.ProofLine());
+        Console.WriteLine(Tag.Settings.ResponseLatency.ProofLine());
+        Console.WriteLine(Tag.Settings.StickQuality.ProofLine());
         if (!Tag.Art.UpperBody.Holds())
         {
             Console.Error.WriteLine("upper body is not held");
@@ -716,6 +718,16 @@ static class Program
         if (!Tag.Art.HangMotion.Holds())
         {
             Console.Error.WriteLine("hang motion is not held");
+            return 1;
+        }
+        if (!Tag.Settings.ResponseLatency.Holds())
+        {
+            Console.Error.WriteLine("response latency is not held");
+            return 1;
+        }
+        if (!Tag.Settings.StickQuality.Holds())
+        {
+            Console.Error.WriteLine("stick quality is not held");
             return 1;
         }
         if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
@@ -772,6 +784,62 @@ static class Program
                 "BoomRate = 6f"))
         {
             Console.Error.WriteLine("boom pull-in is not instant");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs",
+                "DefaultExecutionOrder(-100)",
+                "void ApplyLook()"))
+        {
+            Console.Error.WriteLine("third-person look is not before the motor");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/FpsMoveCamera.cs",
+                "DefaultExecutionOrder(-100)",
+                "void ApplyLook()"))
+        {
+            Console.Error.WriteLine("first-person look is not before the motor");
+            return 1;
+        }
+        if (LateHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs", "LookFeel.Deltas")
+            || LateHas("Assets/TagArenaMovement/Scripts/Camera/FpsMoveCamera.cs", "LookFeel.Deltas"))
+        {
+            Console.Error.WriteLine("look is still applied in LateUpdate");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Input/PlayerInputReader.cs",
+                "StickQuality.Shape"))
+        {
+            Console.Error.WriteLine("stick shape is not on the reader");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Settings/LookFeel.cs", "lookX * Sens"))
+        {
+            Console.Error.WriteLine("mouse look is not a straight multiply");
+            return 1;
+        }
+        if (File.ReadAllText("Assets/Scripts/Settings/LookFeel.cs").IndexOf("SmoothDamp", StringComparison.Ordinal) >= 0)
+        {
+            Console.Error.WriteLine("look smoothing was added");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Settings/SettingsRuntime.cs", "ProcessEventsInDynamicUpdate"))
+        {
+            Console.Error.WriteLine("input events are not on the dynamic update");
+            return 1;
+        }
+        if (!AssetHas("ProjectSettings/QualitySettings.asset", "vSyncCount: 1"))
+        {
+            Console.Error.WriteLine("vsync is not on");
+            return 1;
+        }
+        if (!AssetHas("ProjectSettings/TimeManager.asset", "Fixed Timestep: 0.02"))
+        {
+            Console.Error.WriteLine("fixed timestep moved");
+            return 1;
+        }
+        if (File.ReadAllText("ProjectSettings/InputManager.asset").IndexOf("dead: 0.19", StringComparison.Ordinal) >= 0)
+        {
+            Console.Error.WriteLine("joystick axial deadzone remains");
             return 1;
         }
         if (!AssetHas("Assets/Scripts/Art/WallPose.cs",
@@ -868,6 +936,15 @@ static class Program
     }
 
     static bool Locked(float value, float expect) => Math.Abs(value - expect) <= 0.001f;
+
+    static bool LateHas(string path, string needle)
+    {
+        if (!File.Exists(path)) return false;
+        string text = File.ReadAllText(path);
+        int late = text.IndexOf("void LateUpdate", StringComparison.Ordinal);
+        if (late < 0) return false;
+        return text.IndexOf(needle, late, StringComparison.Ordinal) >= 0;
+    }
 
     static bool AssetHas(string path, params string[] needles)
     {

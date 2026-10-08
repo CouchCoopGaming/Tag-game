@@ -10,6 +10,7 @@ namespace TagArena.Movement
     /// Soft sphere-cast keeps the boom from clipping through world geometry.
     /// FOV + slight look-ahead track HorizSpeed / MoveState for readable speed feel.
     /// </summary>
+    [DefaultExecutionOrder(-100)]
     public class TpsMoveCamera : MonoBehaviour
     {
         public PlayerMotor motor;
@@ -53,6 +54,7 @@ namespace TagArena.Movement
         Vector3 _kickFrom;
         Vector3 _kickTo;
         float _kickIn = 1f;
+        int _lookFrame = -1;
 
         PlayerInputReader _in;
         DummyLocomotor _loco;
@@ -78,25 +80,37 @@ namespace TagArena.Movement
             if (motor != null) _loco = motor.GetComponentInChildren<DummyLocomotor>(true);
         }
 
+        void Update()
+        {
+            ApplyLook();
+        }
+
+        /// <summary>
+        /// This frame's look, after the reader and before the motor.
+        /// LateUpdate keeps the boom and does not add look again.
+        /// </summary>
+        void ApplyLook()
+        {
+            if (motor == null) return;
+            if (_lookFrame == Time.frameCount) return;
+            _lookFrame = Time.frameCount;
+            if (_in == null) BindRig();
+            if (_in != null && !ResumeInputGate.Blocking)
+            {
+                bool padLook = _in.LookFromGamepad;
+                LookFeel.Deltas(_in.Look.x, _in.Look.y, padLook, out float yaw, out float pitch);
+                _yaw += yaw;
+                _pitch -= pitch;
+            }
+            _pitch = Mathf.Clamp(_pitch, minPitch, maxPitch);
+            motor.transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
+        }
+
         void LateUpdate()
         {
             if (motor == null) return;
             if (_in == null || _loco == null) ResolveRig();
             float dt = Time.deltaTime;
-
-            if (_in != null)
-            {
-                if (!ResumeInputGate.Blocking)
-                {
-                    bool padLook = _in.LookFromGamepad;
-                    _yaw += LookFeel.YawDelta(_in.Look.x, padLook);
-                    _pitch -= LookFeel.PitchDelta(_in.Look.y, padLook);
-                }
-            }
-            _pitch = Mathf.Clamp(_pitch, minPitch, maxPitch);
-
-            // Body yaw only — camera boom owns pitch
-            motor.transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
 
             MoveState state = motor.State;
             bool enteredSlide = state == MoveState.Slide && _prevState != MoveState.Slide;
