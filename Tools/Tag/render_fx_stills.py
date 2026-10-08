@@ -5321,6 +5321,11 @@ def render_pass25_lines(arm, cam, out_dir, tmp):
     from PIL import Image, ImageDraw
 
     scene = bpy.context.scene
+    for obj in bpy.data.objects:
+        if obj.type == "LIGHT" and obj.data.type == "SUN":
+            obj.data.energy = 1.4
+        elif obj.type == "LIGHT" and obj.data.type == "AREA":
+            obj.data.energy = 28
     scene.render.resolution_x = 640
     scene.render.resolution_y = 360
     seats = (
@@ -5329,12 +5334,13 @@ def render_pass25_lines(arm, cam, out_dir, tmp):
         (1.00, 0.82, 0.15),
         (0.25, 0.90, 0.45),
     )
-    # Forward dash, side dash, rope ahead, rope up and to the side.
+    # Forward dash is the horizontal pose. The diagonal dash keeps that lean
+    # and sends the streaks across the chase frame so the length can be judged.
     shots = (
         ("dash-fwd", "air dash  forward  red", 0, "dash", 0.0, 1.0),
-        ("dash-side", "air dash  right  blue", 1, "dash", 1.0, 0.0),
-        ("pull-fwd", "grapple pull  ahead  yellow", 2, "pull", 0.0, 1.0),
-        ("pull-side", "grapple pull  aside  green", 3, "pull", 0.65, 0.76),
+        ("dash-diag", "air dash  diagonal  blue", 1, "dash", 0.70, 0.70),
+        ("pull-fwd", "grapple pull  along rope  yellow", 2, "pull", 0.0, 1.0),
+        ("pull-side", "grapple pull  aside  green", 3, "pull", 0.85, 0.45),
     )
     panes = []
     yaw = 24.0
@@ -5390,28 +5396,41 @@ def pass25_anchor(hand, fwd, left, side, fwd_w):
 
 
 def pass25_streaks(arm, travel, tint):
-    """6–10 tapered streaks from the torso and the limbs, opposite velocity."""
+    """8 tapered ribbons from the torso and the limbs, opposite velocity.
+
+    The ribbon faces the chase camera so the length stays readable, and it
+    stays aligned with the travel instead of standing up like a cone.
+    """
     trail = -travel
+    if trail.length < 0.001:
+        return
+    trail = trail.normalized()
+    cam_loc = bpy.context.scene.camera.location
     names = ("Spine", "Hips", "Hand_L", "Hand_R", "Foot_L", "Foot_R", "Head", "UpperArm_L")
     for i, name in enumerate(names):
-        start = bone_pos(arm, name)
         h = (i * 3 % 10) / 9.0
         length = 0.60 + h * 0.60
+        origin = bone_pos(arm, name)
+        # Begin just outside the mesh so the ribbon is not buried in the body.
+        start = origin + trail * 0.22
         end = start + trail * length
-        mid = (start + end) * 0.5
-        direction = end - start
-        if direction.length < 0.001:
-            continue
-        bpy.ops.mesh.primitive_cone_add(
-            vertices=6,
-            radius1=0.045,
-            radius2=0.008,
-            depth=length,
-            location=mid,
-        )
-        obj = bpy.context.active_object
-        obj.name = p11_name("Fx")
-        obj.rotation_euler = direction.to_track_quat("Z", "Y").to_euler()
+        side = trail.cross(cam_loc - (start + end) * 0.5)
+        if side.length < 0.001:
+            side = trail.cross(Vector((0.0, 0.0, 1.0)))
+        side.normalize()
+        w0 = 0.05
+        w1 = 0.008
+        verts = [
+            start + side * w0,
+            start - side * w0,
+            end - side * w1,
+            end + side * w1,
+        ]
+        mesh = bpy.data.meshes.new(p11_name("Fx"))
+        mesh.from_pydata([tuple(v) for v in verts], [], [(0, 1, 2, 3)])
+        mesh.update()
+        obj = bpy.data.objects.new(p11_name("Fx"), mesh)
+        bpy.context.collection.objects.link(obj)
         obj.data.materials.append(pass25_line_mat(p11_name("Mat"), tint, 0.35))
         print("STREAK", name, "len", round(length, 2))
 
@@ -5466,6 +5485,13 @@ def main():
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
+    if os.environ.get("FX_PASS25_LINES") == "1":
+        out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass25")
+        os.makedirs(out_dir, exist_ok=True)
+        tmp = "/tmp/pass25-lines"
+        os.makedirs(tmp, exist_ok=True)
+        render_pass25_lines(arm, cam, out_dir, tmp)
+        return
     if os.environ.get("FX_PASS25") == "1" or os.environ.get("FX_PASS24") == "1":
         render_pass22_impact(arm, cam)
         return
