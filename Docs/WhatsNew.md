@@ -154,3 +154,17 @@ The body, the camera, and the mesh ease through the moves that used to pop. Noth
 - Landing compresses the mesh and comes back, instead of squashing on one frame. A quick hop still skips the thud. Try it: jump off something about head height, then chain two jumps.
 - The camera ducks for a slide and rises for a climb, and it slides sideways on a wall run, instead of jumping there. No zoom punch, no shake, no slow motion. Try it: slide, then wall-run the cling lane.
 - The full list and the before/after numbers are in `Docs/SmoothMotionAudit.md`. A frame strip is in `Docs/SmoothStills/pass1/`.
+
+## Front-end menu
+
+There is a real couch menu now, in the Mario Kart shape without a kart step. Press Play on Boot, or on Play before a match is armed. The title asks for Start, the south button, or Space. Any connected pad or the keyboard can press it.
+
+The main tiles are Play, Practice, Options, Controls, Credits, and Quit. Online is on the screen and does nothing (coming soon). Play joins up to four people, each person picks a color on the Hier grid and presses ready, then the group picks the mode, the round rules, and the park. A short loading card names the arena and shows one control tip, then the match starts the same way it always has.
+
+During a match, Start opens pause for whoever pressed it: Resume, Restart, Options, Controls, or Quit to menu. The split stays visible behind a dim. When the round ends, a podium lists who spent the least time as It, with the mode's own result line on top. From there you can play the next round, change the park, change characters, or quit to the menu.
+
+Options covers the volumes, the shared look (sensitivity and invert are still one setting for the couch, not per player), the video mode, and reduce motion for the menu slides. Controls rebinds the actions that already exist. Space still jumps. An unknown saved Jump key is put back to Space. A real rebind such as E stays, and Space still jumps beside it.
+
+The pictures in `Docs/UiStills/pass1/` are mockups, drawn to show the layout. They are not captures from the Unity editor. The screen order and the leftover list are in `Docs/UiPlan.md`.
+
+The old title cards are still in the game. Set the PlayerPrefs key `Tag.Ui.Legacy` to 1 if you want those instead. Nothing about how the pawn moves was changed for this menu.

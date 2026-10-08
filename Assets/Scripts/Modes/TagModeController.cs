@@ -601,6 +601,7 @@ namespace Tag.Modes
         void PollResultsKeys()
         {
             if (_phase != MatchPhase.Results) return;
+            if (Tag.Ui.Menu.MenuHost.CoversResults) return;
             if (_resultsActionTaken) return;
             // Highlight can move during the arm. Activate still waits.
             // Ends stay put. Left on Rematch and Right on Menu do not wrap or leak.
@@ -1330,6 +1331,8 @@ namespace Tag.Modes
 
         void OnGUI()
         {
+            if (_phase == MatchPhase.Results && Tag.Ui.Menu.MenuHost.CoversResults)
+                return;
             WarmHudStyles();
             MinimapHud.Draw();
             if (_localPaused)
