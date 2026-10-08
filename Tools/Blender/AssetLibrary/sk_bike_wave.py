@@ -1,7 +1,8 @@
-"""Three inverted-U bike hoops. Each tube is bent, with a flange under each leg.
+"""Three inverted-U bike hoops. Each hoop is one smooth tube.
 
 BikeRack_Wave was renamed to BikeRack_Hoop3. The old prefab is a copy of this
-mesh so the previous guid still resolves.
+mesh so the previous guid still resolves. The crown is a 40-step semicircle
+with shared rings, so it shades smooth at a 1 m look.
 """
 
 import math
@@ -10,7 +11,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
-from sk_parts import polyline
+from sk_parts import sweep_tube
 
 HOOPS = (-0.90, 0.0, 0.90)
 # 0.60 m between leg centres. The bend is a semicircle of that half-width.
@@ -21,20 +22,19 @@ CROWN = 0.86 - TUBE
 YB = CROWN - RADIUS
 
 
-def _arc_points(x, steps):
-    pts = []
+def _hoop_pts(x, steps):
+    pts = [(x, 0.020, -RADIUS)]
     for i in range(steps + 1):
         ang = math.pi * (1.0 - i / float(steps))
         pts.append((x, YB + RADIUS * math.sin(ang), RADIUS * math.cos(ang)))
+    pts.append((x, 0.020, RADIUS))
     return pts
 
 
 def _hoop(g, x, lod):
-    seg = lod_pick(lod, 12, 8)
-    steps = lod_pick(lod, 24, 10)
-    for z in (-RADIUS, RADIUS):
-        g.pipe((x, 0.016, z), (x, YB + 0.02, z), TUBE, "Lib_Steel", seg)
-    polyline(g, _arc_points(x, steps), TUBE, "Lib_Steel", seg)
+    seg = lod_pick(lod, 16, 8)
+    steps = lod_pick(lod, 40, 14)
+    sweep_tube(g, _hoop_pts(x, steps), TUBE, "Lib_Steel", seg)
     bev = lod_pick(lod, 0.0015, 0.0)
     for z in (-RADIUS, RADIUS):
         g.box((x, 0.012, z), (0.11, 0.024, 0.11), "Lib_SteelDark", bevel=bev, segs=1 if lod == 0 else 0)
@@ -49,7 +49,7 @@ def create():
     a = Asset(
         "BikeRack_Hoop3",
         "StreetFurniture",
-        "Three inverted-U hoops. 0.60 m between leg centres, 0.86 m to the top of the tube, 24-step crown. Flange feet, no shared rail.",
+        "Three inverted-U hoops. 0.60 m between leg centres, tube top 0.86 m. The crown is one smooth 40-step bend.",
     )
     a.climb_note = "Tube is too thin to cling."
     a.vault_note = "Crown is 0.86 m and round. Under the vault band."
@@ -58,14 +58,16 @@ def create():
         for x in HOOPS:
             _hoop(g, x, lod)
         a.end()
-    steps = 24
+    steps = 40
     for i, x in enumerate(HOOPS):
         for j, z in enumerate((-RADIUS, RADIUS)):
-            a.capsule("Col_Leg_%d_%d" % (i, j), (x, 0.28, z), 0.016, 0.50, direction=1)
+            a.capsule("Col_Leg_%d_%d" % (i, j), (x, 0.26, z), 0.016, 0.46, direction=1)
             a.box("Col_Foot_%d_%d" % (i, j), (x, 0.010, z), (0.07, 0.016, 0.07))
-        for k, pt in enumerate(_arc_points(x, steps)):
-            # Endpoints sit inside the leg tubes. The next step still overlaps them.
-            if k < 2 or k > steps - 2:
+        for k, pt in enumerate(_hoop_pts(x, steps)):
+            # Straight leg ends and the first bend step sit in the leg capsules.
+            if k < 3 or k > steps - 1:
                 continue
-            a.box("Col_Arc_%d_%d" % (i, k), pt, (0.016, 0.016, 0.016))
+            if k % 2:
+                continue
+            a.box("Col_Arc_%d_%d" % (i, k), pt, (0.018, 0.018, 0.018))
     return a
