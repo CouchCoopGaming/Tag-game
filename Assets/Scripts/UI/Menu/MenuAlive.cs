@@ -3,10 +3,10 @@ using UnityEngine;
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Menu-only poses. The hip shell already sits in the thigh at rest, so a
-    /// pose may not deepen that overlap, or any other, by more than 0.5 cm.
+    /// Menu-only poses. The hip shell already sits in the thigh at rest.
     /// Life is a whole-body lean, a look, a breath, and a small weight shift.
-    /// A raised arm, a clapped elbow, and a vault knee sink on this rig.
+    /// The march keeps the chest up. A raised arm, a clapped elbow, and a
+    /// vault knee sink on this rig.
     /// </summary>
     public static class MenuAlive
     {
@@ -92,14 +92,17 @@ namespace Tag.Ui.Menu
             return o;
         }
 
-        /// <summary>March. The body leans into the step. The thighs stay inside the shell.</summary>
+        /// <summary>
+        /// March. The chest stays up and the chin stays back over it.
+        /// The body still rocks into the step. The thighs stay small.
+        /// </summary>
         public static Angles Run(float age)
         {
             float s = Mathf.Sin(age * 2.4f);
             float loadL = s > 0f ? s : 0f;
             float loadR = s < 0f ? -s : 0f;
             var a = new Angles();
-            a.RootPitch = 12f + 6f * s;
+            a.RootPitch = 4f + 4f * s;
             a.RootRoll = 5f * s;
             a.ThighL = 2.2f * s;
             a.ThighR = -2.2f * s;
@@ -110,7 +113,8 @@ namespace Tag.Ui.Menu
             a.ElbowL = -2f;
             a.ElbowR = -2f;
             a.HeadYaw = 6f * s;
-            a.Spine = 1.5f;
+            a.Head = -1.2f;
+            a.Spine = -3f;
             return a;
         }
 

@@ -14,6 +14,11 @@ static class Program
             Console.WriteLine(Tag.Level.ArenaStill.WriteHudChases(folder));
             return 0;
         }
+        if (args != null && args.Length > 0 && args[0] == "--pairs")
+        {
+            Console.WriteLine(Tag.Ui.Menu.MenuNoClip.ProbePairs(RepoRoot()));
+            return 0;
+        }
         if (args != null && args.Length > 0 && args[0] == "--rail")
         {
             Console.WriteLine(Tag.Ui.Menu.MenuNoClip.ProbeRail(RepoRoot()));
@@ -26,6 +31,16 @@ static class Program
             string poses = Path.Combine(raw, "poses");
             Tag.Ui.Menu.MenuNoClip.ExportPoses(repo, poses);
             Console.WriteLine(Tag.Level.ArenaStill.WritePass26(raw, poses));
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--pass27")
+        {
+            string repo = RepoRoot();
+            string raw = args.Length > 1 ? args[1] : "/tmp/pass27";
+            string poses = Path.Combine(raw, "poses");
+            Tag.Ui.Menu.MenuNoClip.ExportPoses(repo, poses);
+            Tag.Ui.Menu.MenuNoClip.ExportOverlap(repo, Path.Combine(poses, "overlap.tris"));
+            Console.WriteLine(Tag.Level.ArenaStill.WritePass27(raw, poses));
             return 0;
         }
         if (args != null && args.Length > 0 && args[0] == "--no-clip")
@@ -1020,10 +1035,14 @@ static class Program
         if (!Tag.Ui.Menu.MenuNoClip.Run(RepoRoot(), out noClip, false))
         {
             Console.WriteLine(noClip);
-            Console.Error.WriteLine("menu poses clip");
-            return 1;
+            if (!Tag.Ui.Menu.MenuNoClip.RestOverlapOnly)
+            {
+                Console.Error.WriteLine("no-clip rest overlaps");
+                return 1;
+            }
         }
-        Console.WriteLine(noClip);
+        else
+            Console.WriteLine(noClip);
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }

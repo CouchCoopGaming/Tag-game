@@ -2982,8 +2982,7 @@ namespace Tag.Ui.Menu
                     _preview.SetReady(s, MenuSession.Ready[s]);
                 }
                 if (_castReady[s] == null) continue;
-                string skin = MenuSession.Hier[s] >= 0 && MenuSession.Hier[s] < LocalProfiles.HierNames.Length
-                    ? LocalProfiles.HierNames[MenuSession.Hier[s]] : "Tan";
+                string skin = MenuSession.CardBody(s);
                 string trim = MenuSession.Accent[s] >= 0 && MenuSession.Accent[s] < LocalProfiles.HierNames.Length
                     ? LocalProfiles.HierNames[MenuSession.Accent[s]] : skin;
                 string ready = MenuSession.Ready[s] ? "READY" : "Not ready";

@@ -169,6 +169,20 @@ namespace Tag.Ui.Menu
             }
         }
 
+        /// <summary>
+        /// Body name on the character card and in the match. The seat color
+        /// stays on the card frame and the P badge.
+        /// </summary>
+        public static string CardBody(int seat)
+        {
+            if (seat < 0) seat = 0;
+            if (seat > 3) seat = 3;
+            int h = Hier[seat];
+            int n = LocalProfiles.HierNames.Length;
+            if (h < 0 || h >= n) return "Tan";
+            return LocalProfiles.HierNames[h];
+        }
+
         public static bool AllReady()
         {
             int n = 0;

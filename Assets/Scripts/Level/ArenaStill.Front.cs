@@ -701,6 +701,11 @@ namespace Tag.Level
         static void HierTint(byte mat, float r, float g, float b, float pr, float pg, float pb, bool softJoints,
             out float cr, out float cg, out float cb)
         {
+            if (mat == 4)
+            {
+                cr = 0.95f; cg = 0.06f; cb = 0.08f;
+                return;
+            }
             if (mat == 2)
             {
                 if (softJoints)
@@ -827,7 +832,21 @@ namespace Tag.Level
         /// </summary>
         public static string WritePass26(string folder, string poses)
         {
-            if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(poses)) return "pass26 missing folder";
+            return WriteMenuPass(folder, poses, true, false);
+        }
+
+        /// <summary>
+        /// Pass 27 captures. Title keeps the seat colors. Character cards wear
+        /// the selected look. The overlap still marks the hip/thigh rest sink in red.
+        /// </summary>
+        public static string WritePass27(string folder, string poses)
+        {
+            return WriteMenuPass(folder, poses, false, true);
+        }
+
+        static string WriteMenuPass(string folder, string poses, bool slotCards, bool overlap)
+        {
+            if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(poses)) return "pass missing folder";
             Directory.CreateDirectory(folder);
             List<Tri> park = Gather(ParkArena.Mega);
             LiftChaseGround(park);
@@ -855,10 +874,11 @@ namespace Tag.Level
                 new[] { "step_b.tris", "run_neg.tris", "step.tris", "run_pos.tris" },
                 park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half,
                 86f, 7f, 4f, 78.4f, 2f, 16f, 36f, false);
-            WritePass26Portraits(folder, poses);
+            WritePass26Portraits(folder, poses, slotCards);
             WritePass26Results(folder, poses, park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             WritePass26Pause(folder, poses, park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
-            return "pass26 " + folder;
+            if (overlap) WriteOverlap(folder, poses);
+            return (overlap ? "pass27 " : "pass26 ") + folder;
         }
 
         static void WritePass26Line(string folder, string name, string poses, string[] files,
@@ -879,7 +899,7 @@ namespace Tag.Level
                 ex, ey, ez, tx, ty, tz, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, fov);
         }
 
-        static void WritePass26Portraits(string folder, string poses)
+        static void WritePass26Portraits(string folder, string poses, bool slot)
         {
             string[] files = { "idle_a.tris", "ready.tris", "idle_b.tris", "ready.tris" };
             float[] yaw = { 22f, 14f, -22f, 10f };
@@ -888,7 +908,7 @@ namespace Tag.Level
                 var tris = new List<Tri>(8);
                 AddBox(tris, 0f, 1.3f, -2.4f, 28f, 18f, 0.3f, 8f / 255f, 16f / 255f, 36f / 255f);
                 AddBox(tris, 0f, -0.02f, 0.15f, 2.4f, 0.06f, 2.2f, 183f / 255f, 164f / 255f, 114f / 255f);
-                AddPosed(tris, Path.Combine(poses, files[i]), 0f, 0.02f, 0f, yaw[i], i, true);
+                AddPosed(tris, Path.Combine(poses, files[i]), 0f, 0.02f, 0f, yaw[i], i, slot);
                 var shadow = new float[16 * 16];
                 for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
                 PortraitPng(tris, Path.Combine(folder, "idle_" + i.ToString() + ".png"), 720, 900,
@@ -1008,6 +1028,23 @@ namespace Tag.Level
             AddPosed(tris, Path.Combine(poses, "step_b.tris"), 80.55f, 0.2f, 16f, 90f, 3, true);
             OrthoPng(tris, Path.Combine(folder, "rail_top.png"), 960, 720, 0, 78.4f, 82.6f, 11.6f, 17.4f);
             OrthoPng(tris, Path.Combine(folder, "rail_side.png"), 960, 720, 1, 11.6f, 17.4f, -0.1f, 2.3f);
+        }
+
+        /// <summary>
+        /// Close view of the rest hip shell where it sits inside the upper leg.
+        /// Those triangles are mat 4, drawn red.
+        /// </summary>
+        static void WriteOverlap(string folder, string poses)
+        {
+            var tris = new List<Tri>(8);
+            AddBox(tris, 0f, 1.1f, -1.2f, 8f, 6f, 0.2f, 18f / 255f, 20f / 255f, 24f / 255f);
+            AddBox(tris, 0f, -0.02f, 0.1f, 3f, 0.04f, 3f, 90f / 255f, 92f / 255f, 96f / 255f);
+            if (!LoadHierFile(Path.Combine(poses, "overlap.tris"))) return;
+            AddHier(tris, 0f, 0f, 0f, 55f, 0.78f, 0.74f, 0.68f, 0.55f, 0.52f, 0.48f, false);
+            var shadow = new float[16 * 16];
+            for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
+            PortraitPng(tris, Path.Combine(folder, "overlap.png"), 960, 720,
+                1.35f, 0.72f, 1.15f, 0.0f, 0.82f, 0.02f, shadow, 26f);
         }
 
         static void OrthoPng(List<Tri> tris, string path, int w, int h, int axis, float u0, float u1, float v0, float v1)

@@ -9,8 +9,8 @@ namespace Tag.Ui.Menu
 {
     /// <summary>
     /// Menu poses at 30 fps. A rigid piece may sink 0.5 cm into a scene solid
-    /// or into a piece it is not joined to. Joined neighbours may overlap
-    /// within 3 cm of the joint. Loading shows no runner.
+    /// or into another piece. Joined neighbours may overlap within 3 cm of
+    /// the joint. The rest-pose depth is not subtracted. Loading shows no runner.
     /// </summary>
     public static class MenuNoClip
     {
@@ -21,10 +21,17 @@ namespace Tag.Ui.Menu
         static bool Verbose;
         static bool Trace;
         static int RayTests;
-        static float[][][] BindDepth;
         static float[] PoseMax;
+        static string[] PoseWhere;
+        static int ForeignSamples;
         static bool RailKnown;
         static float RailClear;
+
+        /// <summary>
+        /// True when every self fail is the hip shell inside an upper leg.
+        /// The trimmed rig owns that rest overlap.
+        /// </summary>
+        public static bool RestOverlapOnly;
 
         public static bool Run(string repo, out string line, bool verbose)
         {
@@ -37,6 +44,9 @@ namespace Tag.Ui.Menu
             Trace = probe;
             RayTests = 0;
             PoseMax = new float[6];
+            PoseWhere = new string[6];
+            ForeignSamples = 0;
+            RestOverlapOnly = false;
             RailKnown = false;
             RailClear = 0f;
             var sw = System.Diagnostics.Stopwatch.StartNew();
@@ -70,7 +80,6 @@ namespace Tag.Ui.Menu
                 return false;
             }
 
-            CaptureBind(rig);
             if (!EulerHolds() || !RestFootHolds(rig))
             {
                 fails = 1;
@@ -91,11 +100,17 @@ namespace Tag.Ui.Menu
             screens++;
             screens++;
             TitleRail(rig, ref fails, ref worldMax, ref worstWorld);
+            RestOverlapOnly = fails > 0 && ForeignSamples == 0 && worldMax <= Limit;
             Finish(screens, frames, selfMax, worldMax, fails, out line);
             if (verbose || fails != 0)
             {
                 Console.Error.WriteLine("no-clip worst-self " + worstSelf);
                 Console.Error.WriteLine("no-clip worst-world " + worstWorld);
+                string[] poseName = { "idle", "ready", "run", "step", "cheer", "slump" };
+                for (int i = 0; i < poseName.Length; i++)
+                    Console.Error.WriteLine("no-clip pose " + poseName[i] + " " + Cm(PoseAt(i)) + " " + (PoseWhere[i] ?? ""));
+                Console.Error.WriteLine("no-clip foreign=" + ForeignSamples.ToString(CultureInfo.InvariantCulture)
+                    + " rest-overlap-only=" + (RestOverlapOnly ? "yes" : "no"));
                 Console.Error.WriteLine("no-clip rays=" + RayTests.ToString(CultureInfo.InvariantCulture)
                     + " ms=" + sw.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture));
             }
@@ -142,6 +157,83 @@ namespace Tag.Ui.Menu
             }
             if (Verbose)
                 Console.Error.WriteLine("no-clip " + note);
+        }
+
+        public static string ProbePairs(string repo)
+        {
+            Rig rig = Rig.Load(Path.Combine(repo, "Docs", "UiStills", "hier-rigid.bin"));
+            var posed = new Posed(rig);
+            var sb = new System.Text.StringBuilder();
+            ProbeOne(posed, new Pose(), "rest", sb);
+            ProbeOne(posed, From(MenuAlive.Idle(1.2f, 0.4f)), "idle", sb);
+            ProbeOne(posed, From(MenuAlive.Ready()), "ready", sb);
+            ProbeOne(posed, From(MenuAlive.Run(1.5707963f / 2.4f)), "run", sb);
+            ProbeOne(posed, From(MenuAlive.Step(0.5f / 0.28f)), "step", sb);
+            ProbeOne(posed, From(MenuAlive.Cheer(0.4f, 1f)), "cheer", sb);
+            ProbeOne(posed, From(MenuAlive.Slump(0.2f)), "slump", sb);
+            return sb.ToString();
+        }
+
+        static void ProbeOne(Posed posed, Pose pose, string name, System.Text.StringBuilder sb)
+        {
+            posed.Place(pose, 0f, 0f, 0f);
+            Rig rig = posed.Rig;
+            sb.Append(name);
+            for (int a = 0; a < rig.Pieces; a++)
+            {
+                for (int b = 0; b < rig.Pieces; b++)
+                {
+                    if (a == b) continue;
+                    float deep = 0f;
+                    int n = 0;
+                    string from = "";
+                    string into = "";
+                    Piece pa = rig.Piece[a];
+                    Piece pb = rig.Piece[b];
+                    bool joined = rig.Join[a] == b || rig.Join[b] == a;
+                    float jx = 0f, jy = 0f, jz = 0f;
+                    if (joined)
+                    {
+                        int child = rig.Join[a] == b ? a : b;
+                        jx = posed.Ox[child];
+                        jy = posed.Oy[child];
+                        jz = posed.Oz[child];
+                    }
+                    int samples = pa.Samples;
+                    for (int i = 0; i < samples; i++)
+                    {
+                        if (posed.Wx[a][i] < posed.MinX[b] - 0.01f || posed.Wx[a][i] > posed.MaxX[b] + 0.01f) continue;
+                        if (posed.Wy[a][i] < posed.MinY[b] - 0.01f || posed.Wy[a][i] > posed.MaxY[b] + 0.01f) continue;
+                        if (posed.Wz[a][i] < posed.MinZ[b] - 0.01f || posed.Wz[a][i] > posed.MaxZ[b] + 0.01f) continue;
+                        string shell;
+                        float depth = InsidePiece(posed, b, posed.Wx[a][i], posed.Wy[a][i], posed.Wz[a][i], joined, jx, jy, jz, out shell);
+                        if (depth <= Limit) continue;
+                        n++;
+                        if (depth > deep)
+                        {
+                            deep = depth;
+                            from = SampleShell(posed, a, i);
+                            into = shell;
+                        }
+                    }
+                    if (n == 0) continue;
+                    sb.Append('\n');
+                    sb.Append("  ");
+                    sb.Append(pa.Name);
+                    sb.Append('/');
+                    sb.Append(from);
+                    sb.Append(" in ");
+                    sb.Append(pb.Name);
+                    sb.Append('/');
+                    sb.Append(into);
+                    sb.Append(' ');
+                    sb.Append((deep * 100f).ToString("0.00", CultureInfo.InvariantCulture));
+                    sb.Append(" n=");
+                    sb.Append(n.ToString(CultureInfo.InvariantCulture));
+                    sb.Append(RestPair(pa.Name, from, pb.Name, into) ? " hip" : " OTHER");
+                }
+            }
+            sb.Append('\n');
         }
 
         public static string ProbeRail(string repo)
@@ -248,13 +340,17 @@ namespace Tag.Ui.Menu
             return (meters * 100f).ToString("0.00", CultureInfo.InvariantCulture);
         }
 
-        static void Note(int pose, float local)
+        static void Note(int pose, float local, int frame, string where)
         {
             if (PoseMax == null || pose < 0 || pose >= PoseMax.Length) return;
-            if (local > PoseMax[pose]) PoseMax[pose] = local;
+            if (local > PoseMax[pose])
+            {
+                PoseMax[pose] = local;
+                if (PoseWhere != null) PoseWhere[pose] = "f=" + frame.ToString(CultureInfo.InvariantCulture) + " " + where;
+            }
         }
 
-        static bool Judge(Posed posed, Posed[] group, int index, Solid[] solids, string screen, int pose, ref int fails, ref float selfMax, ref float worldMax, ref string worstSelf, ref string worstWorld, Hit hit)
+        static bool Judge(Posed posed, Posed[] group, int index, Solid[] solids, string screen, int pose, int frame, ref int fails, ref float selfMax, ref float worldMax, ref string worstSelf, ref string worstWorld, Hit hit)
         {
             float localSelf = 0f;
             float localWorld = 0f;
@@ -271,7 +367,7 @@ namespace Tag.Ui.Menu
                 worldMax = localWorld;
                 worstWorld = lw;
             }
-            Note(pose, localSelf);
+            Note(pose, localSelf, frame, ls);
             if (bad) fails++;
             return bad;
         }
@@ -292,6 +388,94 @@ namespace Tag.Ui.Menu
             WritePose(rig, Path.Combine(folder, "cheer_b.tris"), From(MenuAlive.Cheer(halfPi / 2.1f, 0.55f)));
             WritePose(rig, Path.Combine(folder, "cheer_c.tris"), From(MenuAlive.Cheer(halfPi / 2.1f, 0.3f)));
             WritePose(rig, Path.Combine(folder, "slump.tris"), From(MenuAlive.Slump(0f)));
+        }
+
+        /// <summary>
+        /// Rest pose with the penetrating hip/thigh triangles marked red (mat 4).
+        /// </summary>
+        public static void ExportOverlap(string repo, string path)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            Rig rig = Rig.Load(Path.Combine(repo, "Docs", "UiStills", "hier-rigid.bin"));
+            var posed = new Posed(rig);
+            posed.Place(new Pose(), 0f, 0f, 0f);
+            int n = 0;
+            for (int p = 0; p < rig.Pieces; p++)
+                for (int s = 0; s < rig.Piece[p].Subs; s++)
+                    if (HipLegShell(rig.Piece[p].Name, rig.Piece[p].Sub[s].Name))
+                        n += rig.Piece[p].Sub[s].Tris;
+            using (var fs = File.Create(path))
+            using (var bw = new BinaryWriter(fs))
+            {
+                bw.Write(0x52454948);
+                bw.Write(n);
+                for (int p = 0; p < rig.Pieces; p++)
+                {
+                    Piece piece = rig.Piece[p];
+                    var q = new Rot { X = posed.Qx[p], Y = posed.Qy[p], Z = posed.Qz[p], W = posed.Qw[p] };
+                    float ox = posed.Ox[p], oy = posed.Oy[p], oz = posed.Oz[p];
+                    for (int s = 0; s < piece.Subs; s++)
+                    {
+                        Shell shell = piece.Sub[s];
+                        if (!HipLegShell(piece.Name, shell.Name)) continue;
+                        for (int t = 0; t < shell.Tris; t++)
+                        {
+                            byte mat = OverlapTri(posed, p, shell, t) ? (byte)4 : MatOf(piece.Name, shell.Name);
+                            bw.Write(mat);
+                            WriteVert(bw, q, ox, oy, oz, shell, shell.I0[t]);
+                            WriteVert(bw, q, ox, oy, oz, shell, shell.I1[t]);
+                            WriteVert(bw, q, ox, oy, oz, shell, shell.I2[t]);
+                        }
+                    }
+                }
+            }
+        }
+
+        static bool HipLegShell(string piece, string shell)
+        {
+            return HipWord(piece) || HipWord(shell) || LegWord(piece) || LegWord(shell);
+        }
+
+        static bool OverlapTri(Posed posed, int piece, Shell shell, int t)
+        {
+            float ax, ay, az, bx, by, bz, cx, cy, cz;
+            WorldVert(posed, piece, shell, shell.I0[t], out ax, out ay, out az);
+            WorldVert(posed, piece, shell, shell.I1[t], out bx, out by, out bz);
+            WorldVert(posed, piece, shell, shell.I2[t], out cx, out cy, out cz);
+            float mx = (ax + bx + cx) / 3f;
+            float my = (ay + by + cy) / 3f;
+            float mz = (az + bz + cz) / 3f;
+            Rig rig = posed.Rig;
+            for (int b = 0; b < rig.Pieces; b++)
+            {
+                if (b == piece) continue;
+                if (mx < posed.MinX[b] - 0.01f || mx > posed.MaxX[b] + 0.01f) continue;
+                if (my < posed.MinY[b] - 0.01f || my > posed.MaxY[b] + 0.01f) continue;
+                if (mz < posed.MinZ[b] - 0.01f || mz > posed.MaxZ[b] + 0.01f) continue;
+                bool joined = rig.Join[piece] == b || rig.Join[b] == piece;
+                float jx = 0f, jy = 0f, jz = 0f;
+                if (joined)
+                {
+                    int child = rig.Join[piece] == b ? piece : b;
+                    jx = posed.Ox[child];
+                    jy = posed.Oy[child];
+                    jz = posed.Oz[child];
+                }
+                string shellName;
+                float depth = InsidePiece(posed, b, mx, my, mz, joined, jx, jy, jz, out shellName);
+                if (depth > Limit && RestPair(rig.Piece[piece].Name, shell.Name, rig.Piece[b].Name, shellName))
+                    return true;
+            }
+            return false;
+        }
+
+        static void WorldVert(Posed posed, int piece, Shell shell, int i, out float x, out float y, out float z)
+        {
+            var q = new Rot { X = posed.Qx[piece], Y = posed.Qy[piece], Z = posed.Qz[piece], W = posed.Qw[piece] };
+            Rotate(q, shell.Vx[i], shell.Vy[i], shell.Vz[i], out x, out y, out z);
+            x += posed.Ox[piece];
+            y += posed.Oy[piece];
+            z += posed.Oz[piece];
         }
 
         static void WritePose(Rig rig, string path, Pose pose)
@@ -357,36 +541,6 @@ namespace Tag.Ui.Menu
             return n < 1 ? 1 : n;
         }
 
-        static void CaptureBind(Rig rig)
-        {
-            var posed = new Posed(rig);
-            posed.Place(new Pose(), 0f, 0f, 0f);
-            int n = rig.Pieces;
-            BindDepth = new float[n][][];
-            for (int a = 0; a < n; a++)
-            {
-                int samples = rig.Piece[a].Samples;
-                BindDepth[a] = new float[samples][];
-                for (int i = 0; i < samples; i++)
-                    BindDepth[a][i] = new float[n];
-            }
-            for (int a = 0; a < n; a++)
-            {
-                for (int b = 0; b < n; b++)
-                {
-                    if (a == b) continue;
-                    int samples = rig.Piece[a].Samples;
-                    for (int i = 0; i < samples; i++)
-                    {
-                        if (posed.Wx[a][i] < posed.MinX[b] - 0.01f || posed.Wx[a][i] > posed.MaxX[b] + 0.01f) continue;
-                        if (posed.Wy[a][i] < posed.MinY[b] - 0.01f || posed.Wy[a][i] > posed.MaxY[b] + 0.01f) continue;
-                        if (posed.Wz[a][i] < posed.MinZ[b] - 0.01f || posed.Wz[a][i] > posed.MaxZ[b] + 0.01f) continue;
-                        BindDepth[a][i][b] = InsidePiece(posed, b, posed.Wx[a][i], posed.Wy[a][i], posed.Wz[a][i], false, 0f, 0f, 0f);
-                    }
-                }
-            }
-        }
-
         static void Title(Rig rig, ref int frames, ref int fails, ref float selfMax, ref float worldMax, ref string worstSelf, ref string worstWorld, Hit hit)
         {
             int n = Frames(1f / 0.28f);
@@ -408,7 +562,7 @@ namespace Tag.Ui.Menu
                     solids[0] = Solid.Cyl("pedestal", x[i], 0.05f, 0f, 0.575f, 0.04f, 0.575f);
                     solids[1] = Solid.Cyl("contact", x[i], 0.012f, 0f, 0.775f, 0.012f, 0.775f);
                     frames++;
-                    Judge(posed[i], posed, i, solids, "title", (i % 2 == 1) ? 3 : 2, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
+                    Judge(posed[i], posed, i, solids, "title", (i % 2 == 1) ? 3 : 2, frames, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
                 }
             }
         }
@@ -427,7 +581,7 @@ namespace Tag.Ui.Menu
                     float age = k * Dt + phase[i];
                     posed.Place(Run(age), 0f, 0.2f, 0f);
                     frames++;
-                    Judge(posed, null, 0, solids, "main", 2, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
+                    Judge(posed, null, 0, solids, "main", 2, frames, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
                 }
             }
             BakeFloor(Path.Combine(repo, "Docs", "UiStills", "hier-run.tris"), 0.2f, 0f, ref worldMax, ref fails, ref worstWorld);
@@ -448,7 +602,7 @@ namespace Tag.Ui.Menu
                     float breath = k * Dt * IdlePose.BreathRate;
                     posed.Place(Idle(shift, breath, 0f), 0f, 0.12f, 0f);
                     frames++;
-                    Judge(posed, null, 0, solids, "characters", 0, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
+                    Judge(posed, null, 0, solids, "characters", 0, frames, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
                 }
             }
             for (int seat = 0; seat < 2; seat++)
@@ -462,7 +616,7 @@ namespace Tag.Ui.Menu
                     float y = 0.12f + MenuPolish.Hop(hop);
                     posed.Place(Idle(shift, breath, blend), 0f, y, 0f);
                     frames++;
-                    Judge(posed, null, 0, solids, "characters", blend < 0.5f ? 0 : 1, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
+                    Judge(posed, null, 0, solids, "characters", blend < 0.5f ? 0 : 1, frames, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
                     shift += IdlePose.ShiftRate * Dt;
                     breath += IdlePose.BreathRate * Dt;
                     blend += Dt / 0.18f;
@@ -472,7 +626,7 @@ namespace Tag.Ui.Menu
                 }
                 posed.Place(Idle(0f, 0f, 1f), 0f, 0.12f, 0f);
                 frames++;
-                Judge(posed, null, 0, solids, "characters", 1, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
+                Judge(posed, null, 0, solids, "characters", 1, frames, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
             }
             for (int i = 0; i < 4; i++)
                 BakeFloor(Path.Combine(repo, "Docs", "UiStills", "hier-idle-" + i.ToString(CultureInfo.InvariantCulture) + ".tris"), 0f, 0f, ref worldMax, ref fails, ref worstWorld);
@@ -510,7 +664,7 @@ namespace Tag.Ui.Menu
                         solids[4 + c] = Solid.YawBox("confetti", (float)Math.Sin(ang) * 1.35f, 3.4f - fall, 0.92f + (float)Math.Cos(ang) * 0.18f, 0.08f, 0.13f, 0.025f, yaw);
                     }
                     frames++;
-                    Judge(posed[rank], posed, rank, solids, "results", poseId, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
+                    Judge(posed[rank], posed, rank, solids, "results", poseId, frames, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
                 }
             }
         }
@@ -576,22 +730,23 @@ namespace Tag.Ui.Menu
             {
                 if (sx[i] < minX || sx[i] > maxX || sy[i] < minY || sy[i] > maxY || sz[i] < minZ || sz[i] > maxZ)
                     continue;
-                float depth = InsidePiece(dst, b, sx[i], sy[i], sz[i], joined, jx, jy, jz);
+                string shell;
+                float depth = InsidePiece(dst, b, sx[i], sy[i], sz[i], joined, jx, jy, jz, out shell);
                 if (depth <= 0f) continue;
                 if (sameBody)
                 {
-                    float basis = BindDepth[a][i][b];
-                    depth -= basis;
-                    if (depth <= 0f) continue;
                     if (depth > selfMax)
                     {
                         selfMax = depth;
                         float jdx = sx[i] - jx, jdy = sy[i] - jy, jdz = sz[i] - jz;
                         float jd = (float)Math.Sqrt(jdx * jdx + jdy * jdy + jdz * jdz);
-                        worstSelf = screen + " " + pa.Name + " in " + pb.Name + " " + (depth * 100f).ToString("0.00", CultureInfo.InvariantCulture)
+                        string from = SampleShell(src, a, i);
+                        worstSelf = screen + " " + pa.Name + "/" + from + " in " + pb.Name + "/" + shell + " " + (depth * 100f).ToString("0.00", CultureInfo.InvariantCulture)
                             + " joint=" + (joined ? (jd * 100f).ToString("0.00", CultureInfo.InvariantCulture) : "-")
                             + " p=" + sx[i].ToString("0.00", CultureInfo.InvariantCulture) + "," + sy[i].ToString("0.00", CultureInfo.InvariantCulture) + "," + sz[i].ToString("0.00", CultureInfo.InvariantCulture);
                     }
+                    if (depth > Limit && !RestPair(pa.Name, SampleShell(src, a, i), pb.Name, shell))
+                        ForeignSamples++;
                 }
                 else if (depth > worldMax)
                 {
@@ -632,6 +787,13 @@ namespace Tag.Ui.Menu
 
         static float InsidePiece(Posed dst, int b, float wx, float wy, float wz, bool joined, float jx, float jy, float jz)
         {
+            string ignored;
+            return InsidePiece(dst, b, wx, wy, wz, joined, jx, jy, jz, out ignored);
+        }
+
+        static float InsidePiece(Posed dst, int b, float wx, float wy, float wz, bool joined, float jx, float jy, float jz, out string shell)
+        {
+            shell = "";
             if (joined)
             {
                 float dx = wx - jx;
@@ -646,9 +808,44 @@ namespace Tag.Ui.Menu
             for (int s = 0; s < piece.Subs; s++)
             {
                 float d = piece.Sub[s].Depth(lx, ly, lz);
-                if (d > best) best = d;
+                if (d > best)
+                {
+                    best = d;
+                    shell = piece.Sub[s].Name;
+                }
             }
             return best;
+        }
+
+        static string SampleShell(Posed src, int piece, int sample)
+        {
+            Piece p = src.Rig.Piece[piece];
+            if (p.ShellOf == null || sample < 0 || sample >= p.ShellOf.Length) return p.Name;
+            int s = p.ShellOf[sample];
+            if (s < 0 || s >= p.Subs || p.Sub[s] == null) return p.Name;
+            return p.Sub[s].Name;
+        }
+
+        static bool RestPair(string pieceA, string shellA, string pieceB, string shellB)
+        {
+            bool hipA = HipWord(pieceA) || HipWord(shellA);
+            bool hipB = HipWord(pieceB) || HipWord(shellB);
+            bool legA = LegWord(pieceA) || LegWord(shellA);
+            bool legB = LegWord(pieceB) || LegWord(shellB);
+            return (hipA && legB) || (hipB && legA);
+        }
+
+        static bool HipWord(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return false;
+            return s.IndexOf("Hip", StringComparison.OrdinalIgnoreCase) >= 0
+                || s.IndexOf("Pelvis", StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        static bool LegWord(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return false;
+            return s.IndexOf("UpperLeg", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         static void BakeFloor(string path, float lift, float floorY, ref float worldMax, ref int fails, ref string worst)
@@ -786,6 +983,13 @@ namespace Tag.Ui.Menu
             int next = load < 0 ? -1 : host.IndexOf("void ", load + 20, StringComparison.Ordinal);
             if (load < 0 || next < 0) return false;
             if (host.Substring(load, next - load).IndexOf("MenuMannequin", StringComparison.Ordinal) >= 0) return false;
+            if (host.IndexOf("MenuSession.CardBody(s)", StringComparison.Ordinal) < 0) return false;
+            int apply = preview.IndexOf("public void Apply(", StringComparison.Ordinal);
+            int podium = preview.IndexOf("public void ShowPodium(", StringComparison.Ordinal);
+            if (apply < 0 || podium < apply) return false;
+            string cast = preview.Substring(apply, podium - apply);
+            if (cast.IndexOf("MenuMannequin.NameOf(hier)", StringComparison.Ordinal) < 0) return false;
+            if (cast.IndexOf("MenuCheer.Dress", StringComparison.Ordinal) >= 0) return false;
             return true;
         }
 
@@ -1586,6 +1790,7 @@ namespace Tag.Ui.Menu
             public int Samples;
             public int Subs;
             public float[] Sx, Sy, Sz;
+            public int[] ShellOf;
             public Shell[] Sub;
         }
 
@@ -1697,6 +1902,7 @@ namespace Tag.Ui.Menu
                             piece.Sz[v] = br.ReadSingle();
                         }
                         Downsample(piece, 0.006f);
+                        TagSamples(piece);
                         rig.Piece[p] = piece;
                     }
                     rig.Join = new int[pieces];
@@ -1721,6 +1927,39 @@ namespace Tag.Ui.Menu
                     }
                 }
                 return rig;
+            }
+
+            static void TagSamples(Piece piece)
+            {
+                int n = piece.Samples;
+                piece.ShellOf = new int[n];
+                for (int i = 0; i < n; i++)
+                {
+                    float best = 1e12f;
+                    int shell = 0;
+                    float x = piece.Sx[i];
+                    float y = piece.Sy[i];
+                    float z = piece.Sz[i];
+                    for (int s = 0; s < piece.Subs; s++)
+                    {
+                        Shell sub = piece.Sub[s];
+                        int verts = sub.Vx.Length;
+                        int step = verts > 800 ? 4 : 1;
+                        for (int v = 0; v < verts; v += step)
+                        {
+                            float dx = sub.Vx[v] - x;
+                            float dy = sub.Vy[v] - y;
+                            float dz = sub.Vz[v] - z;
+                            float d = dx * dx + dy * dy + dz * dz;
+                            if (d < best)
+                            {
+                                best = d;
+                                shell = s;
+                            }
+                        }
+                    }
+                    piece.ShellOf[i] = shell;
+                }
             }
 
             static void Downsample(Piece piece, float cell)
