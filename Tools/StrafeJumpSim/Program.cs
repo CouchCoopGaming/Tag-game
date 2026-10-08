@@ -14,6 +14,14 @@ static class Program
             Console.WriteLine(Tag.Level.ArenaStill.WriteHudChases(folder));
             return 0;
         }
+        if (args != null && args.Length > 0 && args[0] == "--no-clip")
+        {
+            string clipLine;
+            bool probe = args.Length > 1 && args[1] == "probe";
+            bool clipOk = Tag.Ui.Menu.MenuNoClip.Run(RepoRoot(), out clipLine, true, probe);
+            Console.WriteLine(clipLine);
+            return clipOk ? 0 : 1;
+        }
         StrafeJumpReport report = StrafeJumpProof.Run60();
         Console.WriteLine(report.ToString());
         if (!report.Ok)
@@ -994,6 +1002,14 @@ static class Program
             return 1;
         }
 
+        string noClip;
+        if (!Tag.Ui.Menu.MenuNoClip.Run(RepoRoot(), out noClip, false))
+        {
+            Console.WriteLine(noClip);
+            Console.Error.WriteLine("menu poses clip");
+            return 1;
+        }
+        Console.WriteLine(noClip);
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }

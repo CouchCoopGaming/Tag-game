@@ -359,7 +359,7 @@ namespace Tag.Ui.Menu
                 bit.transform.SetParent(_podiumRoot, false);
                 bit.transform.localScale = new Vector3(0.16f, 0.26f, 0.05f);
                 float ang = i * 0.55f;
-                bit.transform.localPosition = new Vector3(Mathf.Sin(ang) * 1.6f, 2.4f + (i % 4) * 0.15f, Mathf.Cos(ang) * 0.35f);
+                bit.transform.localPosition = new Vector3(Mathf.Sin(ang) * 1.35f, 2.4f + (i % 4) * 0.15f, 0.92f + Mathf.Cos(ang) * 0.18f);
                 var col = bit.GetComponent<Collider>();
                 if (col != null) Destroy(col);
                 Color paint = i % 3 == 0 ? MenuTheme.Gold : (i % 3 == 1 ? MenuTheme.Seat(0) : MenuTheme.Seat(2));

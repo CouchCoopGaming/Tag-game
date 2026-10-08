@@ -94,6 +94,11 @@ namespace Tag.Ui.Menu
 
         void Pose(float thighL, float thighR, float kneeL, float kneeR, float armPitchL, float armPitchR, float armYawL, float armYawR, float armRollL, float armRollR, float elbowL, float elbowR, float hip, float hipYaw, float spine, float spineYaw, float head, float headYaw)
         {
+            float show = 0.012f;
+            thighL *= show; thighR *= show; kneeL *= show; kneeR *= show;
+            armPitchL *= show; armPitchR *= show; armYawL *= show; armYawR *= show;
+            armRollL *= show; armRollR *= show; elbowL *= show; elbowR *= show;
+            hip *= show; hipYaw *= show; spine *= show; spineYaw *= show; head *= show; headYaw *= show;
             Set(_hips, _hips0, hip, hipYaw, 0f);
             Set(_spine, _spine0, spine, spineYaw, 0f);
             Set(_head, _head0, head, headYaw, 0f);
