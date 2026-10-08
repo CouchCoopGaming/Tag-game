@@ -359,6 +359,12 @@ Seat shapes come from MenuMannequin.Shape. P1 is a circle, P2 a triangle, P3 a s
 
 `Docs/UiStills/pass43/arena.png`, `arena-2seats-one-row.png`, and `results.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The proof lines are unchanged.
 
+## Pass 44
+
+Mega Park uses the same overhead plate as Pocket Park and Stack Yard. The camera sits above the yard, anything within 15 m is left out, and the rim of the yard stays in frame. The row cards are a brighter centre of that plate. Mega reads brick, Pocket reads clay, and Stack reads olive, so the three rows separate at card size. Random is a three-way split of those plates with a question mark. The results title is the comic face, about one and a half times the previous size, on the same dark band, and the subtitle stays.
+
+`Docs/UiStills/pass44/arena-mega.png`, `arena-random.png`, and `results.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

@@ -354,6 +354,8 @@ Arena select is a cup list. Each park shows a golden-hour picture, with a small 
 
 The forty-third pass uses one seat shape. P1 is a circle, P2 a triangle, P3 a square, and P4 a diamond, from MenuMannequin.Shape. The arena picture is taken from above the yard, so a pole or a tree no longer draws a bar across Pocket Park. The greens and the greys stay readable. Two players on the same park stack their shapes, and the count reads 2. Results uses the same comic title on the dark band, and the line under it stays. The pictures are `Docs/UiStills/pass43/arena.png`, `arena-2seats-one-row.png`, and `results.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
 
+The forty-fourth pass gives Mega Park that same overhead picture, with the edge of the yard in frame. The row cards are brighter, and each park keeps its own ground: Mega brick, Pocket clay, Stack olive. Random shows all three plates side by side and a question mark. The results title is larger, and the line under it stays. The pictures are `Docs/UiStills/pass44/arena-mega.png`, `arena-random.png`, and `results.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

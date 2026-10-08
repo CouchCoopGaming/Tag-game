@@ -105,10 +105,15 @@ namespace Tag.Level
             float span = Math.Max(mapW, mapD);
             // Above the yard, a little south of centre. The old corner camera
             // sat in the treeline, so poles and trees drew a dark bar across the plate.
+            // Mega is wide enough that the same framing clipped the rim, so it sits higher.
+            bool wide = span > 140f;
+            float camY = span * (wide ? 1.82f : 1.48f);
+            float camZ = mapD * 0.50f - span * (wide ? 0.26f : 0.16f);
+            float fov = wide ? 50f : 40f;
             Render(tris, overview, mapW, mapD,
-                mapW * 0.50f, span * 1.48f, mapD * 0.50f - span * 0.16f,
+                mapW * 0.50f, camY, camZ,
                 mapW * 0.50f, 1.2f, mapD * 0.50f,
-                40f, false);
+                fov, false);
             float ex = eyeSpawn.X;
             float ez = eyeSpawn.Z;
             float tx = mapW * 0.55f;

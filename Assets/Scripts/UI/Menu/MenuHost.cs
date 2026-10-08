@@ -2726,10 +2726,22 @@ namespace Tag.Ui.Menu
         {
             if (tile == null) return;
             if (tile.Plate != null) tile.Plate.color = new Color(0.05f, 0.08f, 0.16f, 1f);
-            Texture tex = MenuArenaArt.Thumb(arena);
-            RawImage photo = MenuWidgets.Thumb(tile, tex, 8f, 8f, listW - 16f, row - 16f);
-            if (photo != null) photo.rectTransform.SetSiblingIndex(3);
-            if (random) _arenaRandom = photo;
+            float photoW = listW - 16f;
+            float photoH = row - 16f;
+            if (random)
+            {
+                float slice = photoW / 3f;
+                for (int p = 0; p < ParkArena.Count; p++)
+                {
+                    RawImage part = MenuWidgets.Thumb(tile, MenuArenaArt.Card(p), 8f + p * slice, 8f, slice, photoH);
+                    if (part != null) part.rectTransform.SetSiblingIndex(3);
+                }
+            }
+            else
+            {
+                RawImage photo = MenuWidgets.Thumb(tile, MenuArenaArt.Card(arena), 8f, 8f, photoW, photoH);
+                if (photo != null) photo.rectTransform.SetSiblingIndex(3);
+            }
             var scrim = MenuWidgets.Place(tile.transform, "Scrim", 8f, row - 62f, listW - 16f, 54f);
             var scrimImage = scrim.gameObject.AddComponent<Image>();
             scrimImage.color = new Color(0.04f, 0.07f, 0.14f, 0.78f);
