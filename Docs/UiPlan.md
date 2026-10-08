@@ -305,6 +305,10 @@ The drop-in banner reads `Everyone Ready? Press Start`. A keyboard seat's card s
 
 A joined card labels the device with a keyboard icon and the word Keyboard, or a pad icon and the word Gamepad. The ready banner keeps `Everyone Ready? Press Start` and draws the Space key beside a Start button. The footer shows the keyboard glyph and the pad glyph on each hint: Arrows / Stick move, Space / A confirm, Esc / B back. The bust is the front idle outline of the Hier bake: a round head, a neck gap, a tapered chest, arms off the torso, and two legs, tinted with the seat color. Pause opens on Resume. Options from pause labels Back as Pause. Picture quality reads Medium. The text-size and UI-scale rows draw a meter. Controls opens on Move, and the cling line includes the wall jump. Credits includes the one-shot synthesis line. Stills are composites in `Docs/UiStills/screens2/pass11/`.
 
+## Screens 2, pass 12
+
+Each controls glyph is the sprite for that row's ActionBinds token. Punch's pad mark is the blue X, not the green A. Slide shows the Ctrl and C keycaps with B. Air dash shows Q and Alt with RB. Punch shows LMB and E with X. Cling shows the hold-into-wall mark and the stick. The line uses Xbox names: A, B, X, Y, RB, and LT. There is no footnote row. Xbox, PlayStation, and Switch share one gamepad token per action, and gameplay jump stays the south button. The pause banner is the arena and the mode. Comic words stays on Accessibility. Stills are composites in `Docs/UiStills/screens2/pass12/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

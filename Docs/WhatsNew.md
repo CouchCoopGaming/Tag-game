@@ -338,6 +338,8 @@ The tenth pass on these screens asks `Everyone Ready? Press Start`. A keyboard s
 
 The eleventh pass labels a joined seat Keyboard or Gamepad, and the ready line shows the Space key and a Start button. The footer shows both devices. The bust follows the front outline of the runner. Pause, options, controls, and credits use the same words as the menu. Composites are in `Docs/UiStills/screens2/pass11/`. Space still jumps.
 
+The twelfth pass reads each controls glyph from the binding token. Punch shows a blue X. Slide shows Ctrl and C with B. Air dash shows Q and Alt with RB. Cling shows the wall hold and the stick. The pad names are A, B, X, Y, RB, and LT. Pause names the arena and the mode. Comic words stays on Accessibility. Composites are in `Docs/UiStills/screens2/pass12/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

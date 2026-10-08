@@ -2403,7 +2403,7 @@ namespace Tag.Ui.Menu
             bool preview = MenuSplitPause.Preview > 0;
             string who = MenuSplitPause.SeatLabel(opener, preview);
             if (_header != null) _header.text = "  Paused by " + who;
-            if (_banner != null) _banner.text = Tag.Ui.Hud.MatchHudText.ComicLine();
+            if (_banner != null) _banner.text = PausePlace();
             int n = MenuSplitPause.Fill(_cards);
             for (int c = 0; c < n; c++)
             {
@@ -2591,6 +2591,7 @@ namespace Tag.Ui.Menu
             _cols = 1;
             _window = 0;
             if (_header != null) _header.text = "  Controls";
+            // One gamepad token per action. Families share it, so there is no footnote row.
             if (_banner != null) _banner.text = "Keyboard and pad glyphs. Confirm changes one. Space still jumps.";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             PaintControls();
@@ -3628,28 +3629,30 @@ namespace Tag.Ui.Menu
 
         /// <summary>
         /// Keyboard words are what PlayerInputReader samples on the solo pawn.
-        /// Pad words are the ActionBinds gamepad tokens. Cling stays the move hold.
+        /// Pad words are Xbox names for the same gamepad token. Cling stays the move hold.
         /// </summary>
         static string ActionDetail(PlayAction action, ActionBinds binds)
         {
-            int i = (int)action;
-            string kb = binds.Keyboard[i];
-            string pad = ActionBinds.Show(binds.Gamepad[i]);
+            MenuBindRow.Marks(action, binds, out string key, out string extra, out string pad);
+            string padWord = ActionBinds.PadWord(pad);
             if (action == PlayAction.Cling)
             {
-                return ActionBinds.Show(kb) + " / " + pad
+                return ActionBinds.Show(key) + " / " + padWord
                     + ". Wall climb and wall run need this hold. Wall jump is this hold plus Jump.";
             }
-            string key = ActionBinds.Show(kb);
-            if (action == PlayAction.Slide && kb == "leftCtrl")
-                key = "Ctrl or C";
-            else if (action == PlayAction.AirDash && kb != "leftAlt")
-                key = ActionBinds.Show(kb) + " or Alt";
-            else if (action == PlayAction.Punch && kb != "e")
-                key = ActionBinds.Show(kb) + " or E";
-            else if (action == PlayAction.Sprint && kb == "leftShift")
-                key = "Shift or Alt";
-            return key + "    /    " + pad;
+            string keys = ActionBinds.Show(key);
+            if (!string.IsNullOrEmpty(extra))
+                keys = keys + " or " + ActionBinds.Show(extra);
+            return keys + "    /    " + padWord;
+        }
+
+        static string PausePlace()
+        {
+            TagModeController mode = TagModeController.Instance;
+            TagModeId id = mode != null ? mode.SelectedMode : MenuSession.Mode;
+            int arena = ParkArena.Id;
+            if (arena < 0 || arena >= ParkArena.Count) arena = MenuSession.Arena;
+            return ParkArena.NameOf(arena) + "  ·  " + MenuCatalog.ModeName(id);
         }
 
         static string NoteTitle(int note)

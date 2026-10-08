@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Tag.Ui.Menu
@@ -28,6 +29,8 @@ namespace Tag.Ui.Menu
         static Sprite _stick;
         static Sprite _south;
         static Sprite _east;
+        static Sprite _west;
+        static Sprite _north;
         static Sprite _cross;
         static Sprite _circle;
         static Sprite _switchB;
@@ -49,6 +52,8 @@ namespace Tag.Ui.Menu
         public static Sprite Stick => _stick ??= StickCap();
         public static Sprite South => _south ??= FaceCap(new Color(0.15f, 0.72f, 0.32f, 1f), LetterA());
         public static Sprite East => _east ??= FaceCap(new Color(0.90f, 0.22f, 0.28f, 1f), LetterB());
+        public static Sprite West => _west ??= FaceCap(new Color(0.10f, 0.38f, 0.92f, 1f), LetterX());
+        public static Sprite North => _north ??= FaceCap(new Color(0.95f, 0.78f, 0.16f, 1f), LetterY(), new Color(0.08f, 0.08f, 0.10f, 1f));
         public static Sprite Cross => _cross ??= CrossMark();
         public static Sprite Circle => _circle ??= CircleMark();
         public static Sprite SwitchSouth => _switchB ??= FaceCap(new Color(0.95f, 0.78f, 0.16f, 1f), LetterB());
@@ -123,6 +128,66 @@ namespace Tag.Ui.Menu
             if (action == 2 || action == 6) return SouthOf(family);
             if (action == 8) return family == PadGlyph.PlayStation ? Circle : family == PadGlyph.Switch ? SwitchEast : East;
             return Pad;
+        }
+
+        static readonly Dictionary<string, Sprite> Glyphs = new Dictionary<string, Sprite>();
+
+        /// <summary>
+        /// Sprite for one ActionBinds token. West is the blue X. East is the red B.
+        /// </summary>
+        public static Sprite Glyph(string token)
+        {
+            if (string.IsNullOrEmpty(token)) return Keys;
+            if (Glyphs.TryGetValue(token, out Sprite have)) return have;
+            Sprite made = MakeGlyph(token);
+            if (made == null) made = Keys;
+            Glyphs[token] = made;
+            return made;
+        }
+
+        static Sprite MakeGlyph(string token)
+        {
+            switch (token)
+            {
+                case "wasd":
+                case "arrows": return KeyArrows;
+                case "space": return KeySpace;
+                case "escape": return KeyEsc;
+                case "leftStick":
+                case "rightStick":
+                case "leftStickHold":
+                case "leftStickPress":
+                case "rightStickPress": return Stick;
+                case "buttonSouth": return South;
+                case "buttonEast": return East;
+                case "buttonWest": return West;
+                case "buttonNorth": return North;
+                case "start": return StartButton;
+                case "mouse": return MouseBody(false);
+                case "mouseLeft": return MouseBody(true);
+                case "mouseRight": return WordKey("RMB");
+                case "mouseMiddle": return WordKey("MMB");
+                case "holdIntoWall": return WallHold();
+                case "leftCtrl": return WordKey("CTRL");
+                case "leftShift":
+                case "rightShift": return WordKey("SHIFT");
+                case "leftAlt": return WordKey("ALT");
+                case "rightShoulder": return Bumper("RB");
+                case "leftShoulder": return Bumper("LB");
+                case "leftTrigger": return Bumper("LT");
+                case "rightTrigger": return Bumper("RT");
+                case "select": return WordKey("SEL");
+                case "alpha1": return WordKey("1");
+                case "alpha2": return WordKey("2");
+                case "alpha3": return WordKey("3");
+                case "dpadLeft": return Dpad(0);
+                case "dpadRight": return Dpad(1);
+                case "dpadUp": return Dpad(2);
+                case "dpadDown": return Dpad(3);
+                default:
+                    if (token.Length == 1) return WordKey(token.ToUpperInvariant());
+                    return Keys;
+            }
         }
 
         static Sprite Runner()
@@ -274,12 +339,17 @@ namespace Tag.Ui.Menu
 
         static Sprite FaceCap(Color face, int[] letter)
         {
+            return FaceCap(face, letter, Color.white);
+        }
+
+        static Sprite FaceCap(Color face, int[] letter, Color ink)
+        {
             const int n = 128;
             Color[] px = Clear(n, n);
             Disc(px, n, 64, 64, 52, new Color(0.06f, 0.08f, 0.12f, 1f));
             Disc(px, n, 64, 64, 44, face);
             Disc(px, n, 64, 78, 10, new Color(1f, 1f, 1f, 0.28f));
-            Stamp(px, n, 46, 42, 7, letter, Color.white);
+            Stamp(px, n, 46, 42, 7, letter, ink);
             return Bake(px, n, n);
         }
 
@@ -312,6 +382,21 @@ namespace Tag.Ui.Menu
         static int[] LetterB()
         {
             return new[] { 0x1E, 0x11, 0x1E, 0x11, 0x1E };
+        }
+
+        static int[] LetterX()
+        {
+            return new[] { 0x11, 0x0A, 0x04, 0x0A, 0x11 };
+        }
+
+        static int[] LetterY()
+        {
+            return new[] { 0x11, 0x0A, 0x04, 0x04, 0x04 };
+        }
+
+        static void Stamp(Color[] px, int n, int ox, int oy, int scale, int[] rows, Color c)
+        {
+            Stamp(px, n, n, ox, oy, scale, rows, c);
         }
 
         static void Stamp(Color[] px, int w, int h, int ox, int oy, int scale, int[] rows, Color c)
@@ -403,6 +488,136 @@ namespace Tag.Ui.Menu
             0x00007C7C0000, 0x00007C7C0000, 0x00007C7C0000, 0x00007C7C0000,
             0x00007C7C0000, 0x00007C7C0000, 0x00007C7C0000, 0x000010100000
         };
+
+        static Sprite MouseBody(bool leftDown)
+        {
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            Color body = new Color(0.96f, 0.97f, 1f, 1f);
+            Color ink = new Color(0.06f, 0.10f, 0.20f, 1f);
+            RoundBox(px, n, 34, 16, 94, 114, 28, ink);
+            RoundBox(px, n, 40, 22, 88, 108, 24, body);
+            Color left = leftDown ? new Color(0.16f, 0.42f, 0.95f, 1f) : body;
+            Fill(px, n, 42, 72, 62, 104, left);
+            Fill(px, n, 66, 72, 86, 104, leftDown ? body : new Color(0.82f, 0.86f, 0.94f, 1f));
+            Fill(px, n, 62, 30, 66, 104, ink);
+            Disc(px, n, 64, 56, 6, ink);
+            return Bake(px, n, n);
+        }
+
+        static Sprite WallHold()
+        {
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            Color ink = new Color(0.96f, 0.97f, 1f, 1f);
+            Fill(px, n, 96, 14, 118, 114, new Color(0.62f, 0.70f, 0.84f, 1f));
+            Fill(px, n, 90, 14, 96, 114, ink);
+            Fill(px, n, 14, 54, 42, 74, ink);
+            Tri(px, n, 86, 64, 40, 36, 40, 92, ink);
+            return Bake(px, n, n);
+        }
+
+        static Sprite WordKey(string word)
+        {
+            int scale = word.Length >= 5 ? 6 : word.Length >= 4 ? 7 : 8;
+            int gap = 3;
+            int lw = 5 * scale;
+            int lh = 5 * scale;
+            int textW = word.Length * lw + (word.Length - 1) * gap;
+            int pad = 12;
+            int w = textW + pad * 2;
+            int h = lh + pad * 2;
+            if (w < h) w = h;
+            Color[] px = Clear(w, h);
+            int radius = h / 5;
+            if (radius < 6) radius = 6;
+            if (radius > 16) radius = 16;
+            RoundBox(px, w, h, 0, 0, w - 1, h - 1, radius, new Color(0.06f, 0.10f, 0.18f, 1f));
+            RoundBox(px, w, h, 5, 5, w - 6, h - 6, radius - 2, new Color(0.96f, 0.97f, 1f, 1f));
+            Color ink = new Color(0.06f, 0.10f, 0.20f, 1f);
+            int ox = (w - textW) / 2;
+            int oy = (h - lh) / 2;
+            for (int i = 0; i < word.Length; i++)
+            {
+                int[] rows = Bits(word[i]);
+                Stamp(px, w, h, ox, oy, scale, rows, ink);
+                ox += lw + gap;
+            }
+            return Bake(px, w, h);
+        }
+
+        static Sprite Bumper(string word)
+        {
+            int scale = 8;
+            int gap = 3;
+            int lw = 5 * scale;
+            int lh = 5 * scale;
+            int textW = word.Length * lw + (word.Length - 1) * gap;
+            int w = textW + 36;
+            int h = lh + 28;
+            Color[] px = Clear(w, h);
+            RoundBox(px, w, h, 0, 0, w - 1, h - 1, h / 2, new Color(0.08f, 0.11f, 0.18f, 1f));
+            RoundBox(px, w, h, 6, 6, w - 7, h - 7, h / 2 - 4, new Color(0.96f, 0.97f, 1f, 1f));
+            Color ink = new Color(0.06f, 0.10f, 0.20f, 1f);
+            int ox = (w - textW) / 2;
+            int oy = (h - lh) / 2;
+            for (int i = 0; i < word.Length; i++)
+            {
+                Stamp(px, w, h, ox, oy, scale, Bits(word[i]), ink);
+                ox += lw + gap;
+            }
+            return Bake(px, w, h);
+        }
+
+        static Sprite Dpad(int dir)
+        {
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            Color ink = new Color(0.90f, 0.93f, 0.98f, 1f);
+            Color hot = new Color(0.95f, 0.78f, 0.16f, 1f);
+            Fill(px, n, 52, 16, 76, 112, ink);
+            Fill(px, n, 16, 52, 112, 76, ink);
+            if (dir == 0) Fill(px, n, 16, 52, 52, 76, hot);
+            else if (dir == 1) Fill(px, n, 76, 52, 112, 76, hot);
+            else if (dir == 2) Fill(px, n, 52, 76, 76, 112, hot);
+            else Fill(px, n, 52, 16, 76, 52, hot);
+            return Bake(px, n, n);
+        }
+
+        static int[] Bits(char c)
+        {
+            switch (c)
+            {
+                case 'A': return LetterA();
+                case 'B': return LetterB();
+                case 'C': return LetterC();
+                case 'D': return new[] { 0x1E, 0x11, 0x11, 0x11, 0x1E };
+                case 'E': return LetterE();
+                case 'F': return new[] { 0x1F, 0x10, 0x1E, 0x10, 0x10 };
+                case 'G': return new[] { 0x0E, 0x10, 0x17, 0x11, 0x0E };
+                case 'H': return new[] { 0x11, 0x11, 0x1F, 0x11, 0x11 };
+                case 'I': return new[] { 0x1F, 0x04, 0x04, 0x04, 0x1F };
+                case 'K': return new[] { 0x11, 0x12, 0x1C, 0x12, 0x11 };
+                case 'L': return new[] { 0x10, 0x10, 0x10, 0x10, 0x1F };
+                case 'M': return new[] { 0x11, 0x1B, 0x15, 0x11, 0x11 };
+                case 'N': return new[] { 0x11, 0x19, 0x15, 0x13, 0x11 };
+                case 'O': return new[] { 0x0E, 0x11, 0x11, 0x11, 0x0E };
+                case 'P': return new[] { 0x1E, 0x11, 0x1E, 0x10, 0x10 };
+                case 'Q': return new[] { 0x0E, 0x11, 0x15, 0x12, 0x0D };
+                case 'R': return new[] { 0x1E, 0x11, 0x1E, 0x12, 0x11 };
+                case 'S': return LetterS();
+                case 'T': return new[] { 0x1F, 0x04, 0x04, 0x04, 0x04 };
+                case 'U': return new[] { 0x11, 0x11, 0x11, 0x11, 0x0E };
+                case 'V': return new[] { 0x11, 0x11, 0x11, 0x0A, 0x04 };
+                case 'W': return new[] { 0x11, 0x11, 0x15, 0x1B, 0x11 };
+                case 'X': return LetterX();
+                case 'Y': return LetterY();
+                case '1': return new[] { 0x04, 0x0C, 0x04, 0x04, 0x0E };
+                case '2': return new[] { 0x0E, 0x11, 0x02, 0x04, 0x1F };
+                case '3': return new[] { 0x1E, 0x01, 0x06, 0x01, 0x1E };
+                default: return new[] { 0x1F, 0x11, 0x11, 0x11, 0x1F };
+            }
+        }
 
         static Sprite Keyboard()
         {

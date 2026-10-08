@@ -153,6 +153,23 @@ namespace Tag.Settings
             }
         }
 
+        /// <summary>
+        /// Xbox face names for the controls list. The token itself does not change.
+        /// </summary>
+        public static string PadWord(string token)
+        {
+            switch (token)
+            {
+                case "buttonSouth": return "A";
+                case "buttonEast": return "B";
+                case "buttonWest": return "X";
+                case "buttonNorth": return "Y";
+                case "leftTrigger": return "LT";
+                case "rightTrigger": return "RT";
+                default: return Show(token);
+            }
+        }
+
         public bool KeyboardIsDefault(PlayAction action)
         {
             return Keyboard[(int)action] == Template().Keyboard[(int)action];

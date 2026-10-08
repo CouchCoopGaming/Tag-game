@@ -12,7 +12,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass11")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass12")
 FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
@@ -576,7 +576,7 @@ def loading():
 
 def pause():
     img = screen(0.28)
-    header(img, "Paused by P1", "COMIC WORDS ON")
+    header(img, "Paused by P1", "Mega Park  ·  Least It")
     items = [("Resume", "", True), ("Restart round", "Same arena, same rules", False), ("Options", "", False), ("Quit to menu", "", False)]
     ratios = []
     x = 520
@@ -661,42 +661,188 @@ def options(page):
     return img, min(ratios)
 
 
+# ActionBinds.Show, plus Xbox face names from ActionBinds.PadWord.
+SHOW = {
+    "wasd": "WASD",
+    "mouse": "Mouse",
+    "mouseLeft": "LMB",
+    "space": "Space",
+    "holdIntoWall": "Hold into wall",
+    "leftCtrl": "Ctrl",
+    "leftShift": "Shift",
+    "leftAlt": "Alt",
+    "q": "Q",
+    "e": "E",
+    "c": "C",
+    "leftStick": "Left stick",
+    "rightStick": "Right stick",
+    "leftStickHold": "Left stick hold",
+    "buttonSouth": "A",
+    "buttonEast": "B",
+    "buttonWest": "X",
+    "buttonNorth": "Y",
+    "leftShoulder": "LB",
+    "rightShoulder": "RB",
+    "leftTrigger": "LT",
+    "rightTrigger": "RT",
+}
+
+
+def bind_line(keys, pads, cling=False):
+    word = SHOW[keys[0]]
+    if len(keys) > 1:
+        word = word + " or " + SHOW[keys[1]]
+    pad = SHOW[pads[0]]
+    if cling:
+        return word + " / " + pad + ". Wall climb and wall run need this hold. Wall jump is this hold plus Jump."
+    return word + "    /    " + pad
+
+
+def mark_width(token):
+    if token in ("leftCtrl", "leftShift", "rightShift"):
+        return 96
+    if token in ("leftAlt", "mouseLeft", "mouseRight"):
+        return 84
+    if token in ("rightShoulder", "leftShoulder", "leftTrigger", "rightTrigger"):
+        return 70
+    if token in ("wasd", "arrows", "space", "leftStick", "rightStick", "leftStickHold"):
+        return 72
+    return 52
+
+
+X_BLUE = (26, 97, 235)
+Y_GOLD = (242, 199, 41)
+KEY_INK = (15, 26, 51)
+KEY_CAP = (245, 247, 255)
+B_RED = (210, 48, 52)
+A_GREEN = (30, 170, 70)
+
+
+def draw_token(d, token, x, y):
+    w = mark_width(token)
+    h = 48
+    rounded(d, (x, y, x + w, y + h), 8, NAVY)
+    inset = 4
+    ix, iy = x + inset, y + inset
+    iw, ih = w - inset * 2, h - inset * 2
+    if token in ("wasd", "arrows"):
+        draw_glyph(d, "arrows", ix, iy - 2)
+    elif token == "space":
+        draw_glyph(d, "space", ix, iy)
+    elif token == "escape":
+        draw_glyph(d, "esc", ix, iy)
+    elif token in ("leftStick", "rightStick", "leftStickHold"):
+        draw_glyph(d, "stick", ix, iy - 4)
+    elif token == "buttonSouth":
+        draw_face(d, ix, iy, "A", A_GREEN, CREAM)
+    elif token == "buttonEast":
+        draw_face(d, ix, iy, "B", B_RED, CREAM)
+    elif token == "buttonWest":
+        draw_face(d, ix, iy, "X", X_BLUE, CREAM)
+    elif token == "buttonNorth":
+        draw_face(d, ix, iy, "Y", Y_GOLD, (20, 20, 26))
+    elif token == "mouse":
+        draw_mouse(d, ix, iy, False)
+    elif token == "mouseLeft":
+        draw_keycap(d, ix, iy, "LMB", iw, ih)
+    elif token == "holdIntoWall":
+        draw_wall(d, ix, iy)
+    elif token in ("rightShoulder", "leftShoulder", "leftTrigger", "rightTrigger"):
+        draw_bumper(d, ix, iy, SHOW[token], iw, ih)
+    else:
+        draw_keycap(d, ix, iy, SHOW.get(token, token), iw, ih)
+
+
+def draw_keycap(d, x, y, label, w, h):
+    rounded(d, (x, y, x + w, y + h), 6, KEY_CAP, KEY_INK, 2)
+    size = 16 if len(label) >= 4 else 20
+    face = font(FONT_B, size)
+    tw = d.textlength(label, font=face)
+    d.text((x + (w - tw) / 2, y + (h - size) / 2 - 2), label, font=face, fill=KEY_INK)
+
+
+def draw_bumper(d, x, y, label, w, h):
+    rounded(d, (x, y + 4, x + w, y + h - 2), 12, KEY_CAP, KEY_INK, 2)
+    face = font(FONT_B, 18)
+    tw = d.textlength(label, font=face)
+    d.text((x + (w - tw) / 2, y + 8), label, font=face, fill=KEY_INK)
+
+
+def draw_face(d, x, y, letter, fill, ink):
+    d.ellipse((x + 2, y + 2, x + 42, y + 42), fill=fill)
+    face = font(FONT_D, 26)
+    tw = d.textlength(letter, font=face)
+    d.text((x + 2 + (40 - tw) / 2, y + 4), letter, font=face, fill=ink)
+
+
+def draw_mouse(d, x, y, left):
+    rounded(d, (x + 6, y + 2, x + 40, y + 42), 12, KEY_CAP, KEY_INK, 2)
+    d.line((x + 23, y + 8, x + 23, y + 36), fill=KEY_INK, width=2)
+    if left:
+        d.rectangle((x + 10, y + 8, x + 21, y + 22), fill=X_BLUE)
+    d.ellipse((x + 20, y + 18, x + 26, y + 24), fill=KEY_INK)
+
+
+def draw_wall(d, x, y):
+    d.rectangle((x + 30, y + 4, x + 42, y + 42), fill=(158, 178, 214))
+    d.rectangle((x + 26, y + 4, x + 30, y + 42), fill=CREAM)
+    d.rectangle((x + 2, y + 18, x + 14, y + 28), fill=CREAM)
+    d.polygon([(x + 26, y + 23), (x + 12, y + 10), (x + 12, y + 36)], fill=CREAM)
+
+
 def controls(bottom=False):
     img = screen(0.5)
     header(img, "Controls", "Keyboard and pad glyphs. Confirm changes one. Space still jumps.")
     # Same 108 px rows as options. At 100% the window is 7, so the rest scroll.
+    # Tokens are ActionBinds.Fill. The second key is the one PlayerInputReader ORs in.
     if not bottom:
         rows = [
-            ("Move", "WASD    /    Left stick", "arrows", "stick"),
-            ("Look", "Mouse    /    Right stick", "arrows", "stick"),
-            ("Jump", "Space    /    South", "space", "a"),
-            ("Cling hold", "Hold into wall / Left stick hold. Wall climb and wall run need this hold. Wall jump is this hold plus Jump.", "keys", "pad"),
-            ("Slide", "Ctrl or C    /    East", "keys", "pad"),
-            ("Air dash", "Q or Alt    /    RB", "keys", "pad"),
-            ("Punch / tag", "LMB or E    /    West", "keys", "a"),
+            ("Move", ["wasd"], ["leftStick"], False),
+            ("Look", ["mouse"], ["rightStick"], False),
+            ("Jump", ["space"], ["buttonSouth"], False),
+            ("Cling hold", ["holdIntoWall"], ["leftStickHold"], True),
+            ("Slide", ["leftCtrl", "c"], ["buttonEast"], False),
+            ("Air dash", ["q", "leftAlt"], ["rightShoulder"], False),
+            ("Punch / tag", ["mouseLeft", "e"], ["buttonWest"], False),
         ]
     else:
-        rows = [
-            ("Gamepad look accel  0.00", "Left / Right", "", ""),
-            ("P1 confirm", "Auto", "", ""),
-            ("P2 confirm", "Auto", "", ""),
-            ("P3 confirm", "Auto", "", ""),
-            ("P4 confirm", "Auto", "", ""),
-            ("Reset bindings", "Back to the defaults. Jump is Space.", "", ""),
-            ("Back", "", "", ""),
-        ]
+        rows = []
     ratios = []
     y = 156
     row_h = 108
     step = 116
     d = ImageDraw.Draw(img)
-    for i, (title, sub, kb, pad) in enumerate(rows):
-        hot = i == 0
-        ratios.append(button(img, (120, y, 1760, y + row_h), title, sub, hot, right=220))
-        if kb:
-            draw_glyph(d, kb, 1560, y + 30)
-            draw_glyph(d, pad, 1630, y + 28)
+    if bottom:
+        plain = [
+            ("Gamepad look accel  0.00", "Left / Right"),
+            ("P1 confirm", "Auto"),
+            ("P2 confirm", "Auto"),
+            ("P3 confirm", "Auto"),
+            ("P4 confirm", "Auto"),
+            ("Reset bindings", "Back to the defaults. Jump is Space."),
+            ("Back", ""),
+        ]
+        for i, (title, sub) in enumerate(plain):
+            ratios.append(button(img, (120, y, 1760, y + row_h), title, sub, i == 0, right=24))
+            y += step
+    for i, (title, keys, pads, cling) in enumerate(rows):
+        tokens = list(keys) + list(pads)
+        reserve = 20
+        for token in tokens:
+            reserve += mark_width(token) + 8
+        sub = bind_line(keys, pads, cling)
+        ratios.append(button(img, (120, y, 1760, y + row_h), title, sub, i == 0, right=reserve))
+        gx = 1740
+        for token in reversed(tokens):
+            w = mark_width(token)
+            gx -= w
+            draw_token(d, token, gx, y + 30)
+            gx -= 8
         y += step
+    ratios.append(contrast(CREAM, X_BLUE))
+    ratios.append(contrast((20, 20, 26), Y_GOLD))
+    ratios.append(contrast(KEY_INK, KEY_CAP))
+    ratios.append(contrast(CREAM, B_RED))
     track_top = 168
     track_bot = 156 + 6 * step + row_h
     d.rounded_rectangle((1784, track_top, 1798, track_bot), 4, fill=(0, 0, 0, 140))

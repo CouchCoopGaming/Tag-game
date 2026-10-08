@@ -1,11 +1,12 @@
+using Tag.Settings;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Each bind row shows the keyboard glyph and the pad glyph together.
-    /// Jump's keyboard glyph is the space bar. The pad glyph is South.
+    /// Each bind row shows the keys and the pad button the pawn actually samples.
+    /// The pad mark is the Xbox face for that token. West is the blue X.
     /// </summary>
     public static class MenuBindRow
     {
@@ -19,10 +20,56 @@ namespace Tag.Ui.Menu
             if (h < 72f) s = 44f;
             float y = (h - s) * 0.5f;
             if (y < 8f) y = 8f;
-            Well(row.transform, w - s * 2f - 36f, y, s, MenuIcons.BindOf(PadGlyph.Keyboard, action), MenuTheme.Navy);
-            Well(row.transform, w - s - 16f, y, s, MenuIcons.BindOf(PadGlyph.Xbox, action), MenuTheme.Navy);
-            Pull(row.Label, 18f, s * 2f + 48f);
-            Pull(row.Detail, 18f, s * 2f + 48f);
+            ActionBinds binds = ActionBinds.Current ?? ActionBinds.Defaults();
+            Marks((PlayAction)action, binds, out string key, out string extra, out string pad);
+            float edge = w - 16f;
+            edge = Place(row.transform, edge, y, s, pad);
+            if (!string.IsNullOrEmpty(extra)) edge = Place(row.transform, edge, y, s, extra);
+            edge = Place(row.transform, edge, y, s, key);
+            float reserve = w - edge;
+            Pull(row.Label, 18f, reserve);
+            Pull(row.Detail, 18f, reserve);
+        }
+
+        /// <summary>
+        /// Stored token, then the extra key PlayerInputReader always ORs in.
+        /// Slide's C, air dash's Alt, punch's E, and sprint's Alt are those extras.
+        /// </summary>
+        public static void Marks(PlayAction action, ActionBinds binds, out string key, out string extra, out string pad)
+        {
+            if (binds == null) binds = ActionBinds.Defaults();
+            int i = (int)action;
+            if (i < 0 || i >= binds.Keyboard.Length)
+            {
+                key = "";
+                extra = "";
+                pad = "";
+                return;
+            }
+            key = binds.Keyboard[i] ?? "";
+            pad = binds.Gamepad[i] ?? "";
+            extra = "";
+            if (action == PlayAction.Slide && key == "leftCtrl") extra = "c";
+            else if (action == PlayAction.AirDash && key != "leftAlt") extra = "leftAlt";
+            else if (action == PlayAction.Punch && key != "e") extra = "e";
+            else if (action == PlayAction.Sprint && key == "leftShift") extra = "leftAlt";
+        }
+
+        static float MarkWidth(string token, float s)
+        {
+            if (token == "leftCtrl" || token == "leftShift" || token == "rightShift") return s * 1.7f;
+            if (token == "leftAlt" || token == "mouseLeft" || token == "mouseRight" || token == "mouseMiddle") return s * 1.45f;
+            if (token == "rightShoulder" || token == "leftShoulder" || token == "leftTrigger" || token == "rightTrigger")
+                return s * 1.25f;
+            return s;
+        }
+
+        static float Place(Transform parent, float right, float y, float s, string token)
+        {
+            float mw = MarkWidth(token, s);
+            float x = right - mw;
+            Well(parent, x, y, mw, s, MenuIcons.Glyph(token), MenuTheme.Navy);
+            return x - 8f;
         }
 
         public static void JoinPair(MenuTile tile)
@@ -56,15 +103,15 @@ namespace Tag.Ui.Menu
             image.raycastTarget = false;
         }
 
-        static void Well(Transform parent, float x, float y, float s, Sprite icon, Color plate)
+        static void Well(Transform parent, float x, float y, float w, float h, Sprite icon, Color plate)
         {
             if (icon == null) return;
-            RectTransform well = MenuWidgets.Place(parent, "BindWell", x, y, s, s);
+            RectTransform well = MenuWidgets.Place(parent, "BindWell", x, y, w, h);
             Image back = well.gameObject.AddComponent<Image>();
             MenuArt.Plate(back, plate, true);
             back.raycastTarget = false;
-            float pad = s * 0.16f;
-            RectTransform mark = MenuWidgets.Place(well, "BindGlyph", pad, pad, s - pad * 2f, s - pad * 2f);
+            float pad = h * 0.12f;
+            RectTransform mark = MenuWidgets.Place(well, "BindGlyph", pad, pad, w - pad * 2f, h - pad * 2f);
             Image image = mark.gameObject.AddComponent<Image>();
             image.sprite = icon;
             image.preserveAspect = true;
