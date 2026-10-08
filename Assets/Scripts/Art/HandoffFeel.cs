@@ -53,6 +53,90 @@ namespace Tag.Art
             return Raised((1f - u) / 0.5f);
         }
 
+        /// <summary>
+        /// Degrees added on the played roll. <see cref="RollShot"/> does not read this.
+        /// The knees open so the chest sits between the thighs. The arms tuck in
+        /// with the chin. The spine stays rounded.
+        /// </summary>
+        public struct RollAdd
+        {
+            public float YawL, YawR;
+            public float ArmL, ArmR, ArmYawL, ArmYawR;
+            public float ElbL, ElbR;
+            public float Hip, Spine, Head;
+        }
+
+        struct RollKey
+        {
+            public float U;
+            public float YawL, YawR, ArmL, ArmR, AyL, AyR, ElbL, ElbR, Hip, Spine, Head;
+        }
+
+        static readonly RollKey[] ClearKeys =
+        {
+            // u is the squash fraction. Same samples the pose dump writes.
+            RollKeyAt(0.000000f, -40f, 40f, -28f, -4f, 0f, 0f, -8f, 0f, 0f, 0f, 10f),
+            RollKeyAt(0.103333f, -39f, 39f, -23f, -2f, 0f, 0f, -4f, 0f, 0f, 0f, 9f),
+            RollKeyAt(0.206667f, -38f, 38f, -18f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 8f),
+            RollKeyAt(0.310000f, -36f, 34f, -28f, -18f, 0f, 0f, 0f, 0f, 0f, 2f, 6f),
+            RollKeyAt(0.413333f, -36f, 38f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 2f, 4f),
+            RollKeyAt(0.516667f, -36f, 40f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 4f),
+            RollKeyAt(0.620000f, -36f, 18f, 0f, 0f, 0f, 14f, 0f, -24f, 0f, 3f, 2f),
+            RollKeyAt(0.723333f, -38f, 28f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 2f, 0f),
+            RollKeyAt(0.826667f, -26f, 30f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 4f, 0f),
+            RollKeyAt(0.930000f, -24f, 26f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 2f, 0f),
+            RollKeyAt(1.000000f, -14f, 16f, 0f, 0f, 0f, 0f, 0f, 0f, 0f, 2f, 0f),
+        };
+
+        static RollKey RollKeyAt(float u, float yawL, float yawR, float armL, float armR, float ayL, float ayR, float elbL, float elbR, float hip, float spine, float head)
+        {
+            return new RollKey
+            {
+                U = u,
+                YawL = yawL,
+                YawR = yawR,
+                ArmL = armL,
+                ArmR = armR,
+                AyL = ayL,
+                AyR = ayR,
+                ElbL = elbL,
+                ElbR = elbR,
+                Hip = hip,
+                Spine = spine,
+                Head = head,
+            };
+        }
+
+        /// <summary>Played joint add for this roll fraction. Not the printed shot.</summary>
+        public static RollAdd RollClear(float u)
+        {
+            if (u < 0f) u = 0f;
+            if (u > 1f) u = 1f;
+            int i = 0;
+            while (i < ClearKeys.Length - 2 && u > ClearKeys[i + 1].U)
+                i++;
+            RollKey a = ClearKeys[i];
+            RollKey b = ClearKeys[i + 1];
+            float span = b.U - a.U;
+            float t = span > 0.0001f ? (u - a.U) / span : 1f;
+            if (t < 0f) t = 0f;
+            if (t > 1f) t = 1f;
+            return new RollAdd
+            {
+                YawL = Lerp(a.YawL, b.YawL, t),
+                YawR = Lerp(a.YawR, b.YawR, t),
+                ArmL = Lerp(a.ArmL, b.ArmL, t),
+                ArmR = Lerp(a.ArmR, b.ArmR, t),
+                ArmYawL = Lerp(a.AyL, b.AyL, t),
+                ArmYawR = Lerp(a.AyR, b.AyR, t),
+                ElbL = Lerp(a.ElbL, b.ElbL, t),
+                ElbR = Lerp(a.ElbR, b.ElbR, t),
+                Hip = Lerp(a.Hip, b.Hip, t),
+                Spine = Lerp(a.Spine, b.Spine, t),
+                Head = Lerp(a.Head, b.Head, t),
+            };
+        }
+
         /// <summary>Single arc across the push-off. 0 is the wall run. 1 is the balance tuck.</summary>
         public static float WallOpen(float age)
         {
