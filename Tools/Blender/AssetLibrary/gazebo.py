@@ -88,7 +88,7 @@ def create():
     a = Asset(
         "Gazebo",
         "Park",
-        "Hexagonal gazebo, about 4.4 m across the posts. Deck is 0.32 m with a skirt. Six posts on the deck corners, roof corners on the same rays with a 0.32 m overhang, rails and balusters on five sides, one open side with a step. Rail is 0.95 m above the deck. The square shelter is Pavilion.",
+        "Hexagonal gazebo, about 4.4 m across the posts. Deck is 0.32 m with vertical skirt boards. Six posts on the deck corners, roof corners on the same rays with a 0.32 m overhang. Every side except the entry has a top rail, a bottom rail, and even balusters. One open side with a step. Top rail is 0.95 m above the deck. The square shelter is Pavilion.",
     )
     a.climbable = False
     a.vaultable = True
@@ -145,33 +145,47 @@ def create():
 
 
 def _skirt(g, lod):
+    # Separate vertical boards. A single slab stretches the wood wave into a wavy sheet.
+    boards = lod_pick(lod, 8, 5, 3)
+    thick = 0.030
     for i in range(6):
-        _p0, _p1, mid, normal, length, yaw = _edge(i, POST_R)
-        cx = mid[0] + normal[0] * 0.055
-        cz = mid[1] + normal[1] * 0.055
-        g.box((cx, DECK_TOP * 0.5, cz), (0.07, DECK_TOP, length - 0.18), "Lib_WoodDark", euler=(0.0, yaw, 0.0), uv_scale=1.0)
+        p0, p1, _mid, normal, length, yaw = _edge(i, POST_R)
+        inset = 0.09
+        span = length - inset * 2.0
+        pitch = span / boards
+        width = pitch - 0.016
+        for k in range(boards):
+            t = (inset + pitch * (k + 0.5)) / length
+            x = p0[0] + (p1[0] - p0[0]) * t + normal[0] * (0.008 + thick * 0.5)
+            z = p0[2] + (p1[2] - p0[2]) * t + normal[1] * (0.008 + thick * 0.5)
+            height = DECK_TOP - 0.012
+            g.box((x, height * 0.5, z), (thick, height, width), "Lib_WoodDark", euler=(0.0, yaw, 0.0), uv_scale=0.45)
 
 
 def _rails(g, lod, posts):
+    # Top and bottom box rails on every side but the entry. Balusters fill the gap.
+    count = 4 if lod == 0 else 3
+    top_h = 0.050
+    bot_y = DECK_TOP + 0.20
+    bot_h = 0.042
     for i in range(6):
         if i == OPEN_SIDE:
             continue
-        p0, p1 = posts[i], posts[(i + 1) % 6]
-        dx, dz = p1[0] - p0[0], p1[2] - p0[2]
-        length = math.hypot(dx, dz) or 1.0
-        inset = 0.10
-        ax = p0[0] + dx / length * inset
-        az = p0[2] + dz / length * inset
-        bx = p1[0] - dx / length * inset
-        bz = p1[2] - dz / length * inset
-        g.pipe((ax, RAIL_Y, az), (bx, RAIL_Y, bz), 0.028, "Lib_Wood", 6)
-        if lod == 0:
-            for k in range(1, 4):
-                t = k / 4.0
-                x = ax + (bx - ax) * t
-                z = az + (bz - az) * t
-                # Tops stop 3 cm under the rail so the picket and the pipe do not share a volume.
-                g.box((x, DECK_TOP + 0.44, z), (0.028, 0.78, 0.028), "Lib_Wood")
+        _p0, _p1, mid, _normal, length, yaw = _edge(i, POST_R - 0.02)
+        span = max(0.4, length - 0.32)
+        g.box((mid[0], RAIL_Y, mid[1]), (0.058, top_h, span), "Lib_Wood", euler=(0.0, yaw, 0.0), uv_scale=1.0)
+        g.box((mid[0], bot_y, mid[1]), (0.046, bot_h, span), "Lib_Wood", euler=(0.0, yaw, 0.0), uv_scale=1.0)
+        bot = bot_y + bot_h * 0.5 + 0.006
+        top = RAIL_Y - top_h * 0.5 - 0.006
+        by = (bot + top) * 0.5
+        bh = top - bot
+        dx, dz = _p1[0] - _p0[0], _p1[2] - _p0[2]
+        edge = math.hypot(dx, dz) or 1.0
+        for k in range(1, count + 1):
+            t = k / (count + 1.0)
+            x = mid[0] + (dx / edge) * (t - 0.5) * span
+            z = mid[1] + (dz / edge) * (t - 0.5) * span
+            g.box((x, by, z), (0.032, bh, 0.032), "Lib_Wood")
 
 
 def _step(g):

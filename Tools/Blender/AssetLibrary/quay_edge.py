@@ -1,7 +1,7 @@
 """Concrete quay. 18 m along X, an 8.2 m apron inland of the water face.
 
-Bullnose, edge stone, bollards, a ladder, and five fenders are on -Z.
-The face runs below the pivot. Deck top is 0.90 m.
+A vertical wall drops from the deck into the water. Edge stone, bollards,
+a ladder, and five fenders are on -Z. Deck top is 0.90 m.
 """
 
 import os
@@ -21,7 +21,7 @@ def create():
     a = Asset(
         "Quay_Edge",
         "Harbor",
-        "Concrete quay, 18 m long, apron 8.2 m deep, deck at 0.90 m. Bullnose, edge stone, four bollards, a ladder, and five fenders on -Z. The face runs into the water.",
+        "Concrete quay, 18 m long, apron 8.2 m deep, deck at 0.90 m. The water face is a vertical wall from about 1.2 m below the pivot up to the deck, with edge stone, four bollards, a ladder, and five fenders on -Z.",
     )
     a.climb_note = "The face is a wall. Too low and too thick to treat as a cling panel from the water."
     a.vault_note = "Deck is 0.90 m. The bullnose is rounded, not a rail."
@@ -34,8 +34,13 @@ def create():
         seg = lod_pick(lod, 12, 8)
         bev = 0.01 if lod == 0 else 0
         g.box((0, 0.72, cz), (18.0, 0.36, apron), "Lib_Concrete", bevel=bev, segs=1, uv_scale=0.4)
-        g.box((0, 0.16, -1.22), (18.0, 0.72, 0.28), "Lib_Concrete", uv_scale=0.4)
-        g.cylinder((0, 0.84, -1.02), 0.10, 17.6, "Lib_Concrete", seg, axis="X")
+        # Wall: y -1.20 to 0.88, outer face z -1.42. Stops short of the deck skin.
+        g.box((0, -0.16, -1.25), (18.0, 2.08, 0.34), "Lib_Concrete", uv_scale=0.35)
+        # Foundation beds the apron on land so the deck is not a floating slab.
+        g.box((0, 0.23, 3.03), (17.7, 0.58, 8.02), "Lib_Concrete", uv_scale=0.35)
+        if lod == 0:
+            for y in (-0.20, 0.22, 0.58):
+                g.box((0, y, -1.430), (17.2, 0.018, 0.012), "Lib_Concrete")
         # Coping sits a centimetre above the deck so the two skins do not share a face.
         g.box((0, 0.965, -0.86), (17.4, 0.09, 0.26), "Lib_Concrete", uv_scale=0.5)
         if lod == 0:
@@ -59,7 +64,8 @@ def create():
             g.box((0, 0.915, 1.4), (16.8, 0.012, 0.08), "Lib_Lane")
         a.end()
     a.box("Col_Deck", (0, 0.72, cz), (17.5, 0.30, apron - 0.24))
-    a.box("Col_Face", (0, 0.18, -1.22), (17.6, 0.64, 0.22))
+    a.box("Col_Face", (0, -0.16, -1.25), (17.6, 1.96, 0.26))
+    a.box("Col_Foundation", (0, 0.23, 3.03), (17.3, 0.50, 7.86))
     a.box("Col_Coping", (0, 0.965, -0.86), (17.0, 0.06, 0.18))
     for i, x in enumerate((-7.0, -3.5, 0.0, 3.5, 7.0)):
         a.capsule("Col_Fender_%d" % i, (x, 0.32, -1.58), 0.11, 0.48, 1)

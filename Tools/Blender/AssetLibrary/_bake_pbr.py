@@ -142,23 +142,20 @@ def _bark_color(nt):
 
 
 def _asphalt_color(nt):
-    # Fine aggregate. High-frequency speckle, low contrast. No brick blotches.
-    speckle = _noise(nt, 110.0, 4.0, 0.35, 0.0)
-    grain = _noise(nt, 36.0, 2.0, 0.25, 0.0)
-    cracks = _noise(nt, 16.0, 10.0, 0.18, 0.4)
+    # Near-uniform dark gray. Very fine grain and a few hairline seals. No blotches.
+    speckle = _noise(nt, 210.0, 2.0, 0.12, 0.0)
+    cracks = _noise(nt, 48.0, 14.0, 0.04, 0.65)
     ramp = nt.nodes.new("ShaderNodeValToRGB")
-    ramp.color_ramp.elements[0].position = 0.36
+    ramp.color_ramp.elements[0].position = 0.482
     ramp.color_ramp.elements[0].color = (0.0, 0.0, 0.0, 1.0)
-    ramp.color_ramp.elements[1].position = 0.44
+    ramp.color_ramp.elements[1].position = 0.505
     ramp.color_ramp.elements[1].color = (1.0, 1.0, 1.0, 1.0)
     nt.links.new(cracks.outputs["Fac"], ramp.inputs["Fac"])
-    base = (0.150, 0.150, 0.155)
-    color = _mix(nt, 0.09, base, speckle.outputs["Color"], "MULTIPLY")
-    color = _mix(nt, 0.05, color, grain.outputs["Color"], "MULTIPLY")
-    # Hairline cracks only. A heavy multiply was reading as camouflage.
-    color = _mix(nt, 0.18, color, ramp.outputs["Color"], "MULTIPLY")
-    height = _mix(nt, 0.82, (0.62, 0.62, 0.62), ramp.outputs["Color"])
-    rough = _mix(nt, speckle.outputs["Fac"], (0.90, 0.90, 0.90), (0.97, 0.97, 0.97))
+    base = (0.145, 0.145, 0.148)
+    color = _mix(nt, 0.035, base, speckle.outputs["Color"], "MULTIPLY")
+    color = _mix(nt, 0.045, color, ramp.outputs["Color"], "MULTIPLY")
+    height = _gray(nt, 0.58)
+    rough = _gray(nt, 0.94)
     return color, height, rough
 
 

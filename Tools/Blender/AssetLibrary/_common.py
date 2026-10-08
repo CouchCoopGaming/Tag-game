@@ -38,9 +38,9 @@ PALETTE = {
     "Lib_Rubber": ((0.165, 0.165, 0.18), 0.0, 0.22),
     "Lib_Concrete": ((0.78, 0.78, 0.76), 0.0, 0.22),
     "Lib_Asphalt": ((0.16, 0.16, 0.17), 0.0, 0.16),
-    # Flat wear and patch tones. Wheel paths are geometry, not a repeating tile.
-    "Lib_AsphaltWear": ((0.105, 0.105, 0.110), 0.0, 0.12),
-    "Lib_AsphaltPatch": ((0.195, 0.193, 0.188), 0.0, 0.18),
+    # Wheel paths are only a shade darker than the tile. Crack-seal is a thin dark line.
+    "Lib_AsphaltWear": ((0.128, 0.128, 0.132), 0.0, 0.14),
+    "Lib_AsphaltPatch": ((0.07, 0.07, 0.072), 0.0, 0.18),
     "Lib_Brick": ((0.64, 0.32, 0.24), 0.0, 0.28),
     "Lib_Mortar": ((0.72, 0.70, 0.66), 0.0, 0.20),
     "Lib_Wood": ((0.62, 0.42, 0.24), 0.0, 0.32),
@@ -1273,7 +1273,7 @@ def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8",
         "write_unity", "_kit",
     }
     names = []
