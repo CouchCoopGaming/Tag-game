@@ -16,6 +16,11 @@ namespace Tag.FX
         const int Slots = 8;
         const float RestSize = 1.65f;
         const float WordPeak = 1.15f;
+        const float BodyHeight = 1.8f;
+        // One body up and one body toward the open side, clear of both heads.
+        const float UpBodies = 1.0f;
+        const float SideBodies = 1.0f;
+        const float TailWidth = 0.045f;
 
         static ComicBurst _host;
         static uint _rng = 0xC0F1u;
@@ -24,8 +29,10 @@ namespace Tag.FX
         GameObject[] _root;
         Transform[] _burst;
         Transform[] _word;
+        Transform[] _tail;
         Material[] _burstMat;
         Material[] _wordMat;
+        Material[] _tailMat;
         float[] _age;
         float[] _tilt;
         float[] _skew;
@@ -81,11 +88,15 @@ namespace Tag.FX
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
             if (shader == null) shader = Shader.Find("Sprites/Default");
             Mesh quad = FullCell();
+            Mesh tail = TailRibbon();
+            Texture2D white = WhiteTex();
             _root = new GameObject[Slots];
             _burst = new Transform[Slots];
             _word = new Transform[Slots];
+            _tail = new Transform[Slots];
             _burstMat = new Material[Slots];
             _wordMat = new Material[Slots];
+            _tailMat = new Material[Slots];
             _age = new float[Slots];
             _tilt = new float[Slots];
             _skew = new float[Slots];
@@ -103,10 +114,18 @@ namespace Tag.FX
                 _root[i] = root;
                 _burstMat[i] = MakeMat(shader, _bursts, 0f);
                 _wordMat[i] = MakeMat(shader, _words, 0.0015f);
+                _tailMat[i] = MakeMat(shader, white, -0.002f);
                 _burstMat[i].SetFloat("_ClampExtent", clamp);
                 _wordMat[i].SetFloat("_ClampExtent", clamp);
+                _tailMat[i].SetFloat("_Tail", 1f);
+                _tailMat[i].SetFloat("_TailWidth", TailWidth);
+                _tailMat[i].color = new Color(0.06f, 0.05f, 0.04f, 1f);
+                Place(_burstMat[i]);
+                Place(_wordMat[i]);
+                Place(_tailMat[i]);
                 _burst[i] = Child(root.transform, "Burst", quad, _burstMat[i]);
                 _word[i] = Child(root.transform, "Word", quad, _wordMat[i]);
+                _tail[i] = Child(root.transform, "Tail", tail, _tailMat[i]);
             }
         }
 
@@ -134,6 +153,7 @@ namespace Tag.FX
                 float a = ComicWords.Alpha(_age[i]);
                 Paint(_burstMat[i], a);
                 Paint(_wordMat[i], a);
+                Paint(_tailMat[i], a);
                 float tilt = _tilt[i] + ComicWords.Wobble(_age[i]);
                 _burstMat[i].SetFloat("_Tilt", tilt);
                 _wordMat[i].SetFloat("_Tilt", tilt);
@@ -164,8 +184,12 @@ namespace Tag.FX
             _word[slot].localScale = Vector3.zero;
             _word[slot].gameObject.SetActive(false);
             _root[slot].SetActive(true);
+            float restHalf = RestSize * size * tall;
+            _burstMat[slot].SetFloat("_RestHalf", restHalf);
+            _wordMat[slot].SetFloat("_RestHalf", restHalf);
             Paint(_burstMat[slot], 1f);
             Paint(_wordMat[slot], 1f);
+            Paint(_tailMat[slot], 1f);
             _burstMat[slot].SetFloat("_Tilt", _tilt[slot]);
             _wordMat[slot].SetFloat("_Tilt", _tilt[slot]);
             _burstMat[slot].SetFloat("_Skew", _skew[slot]);
@@ -213,10 +237,19 @@ namespace Tag.FX
             return best;
         }
 
+        static void Place(Material mat)
+        {
+            if (mat == null) return;
+            mat.SetFloat("_UpDist", BodyHeight * UpBodies);
+            mat.SetFloat("_SideDist", BodyHeight * SideBodies);
+        }
+
         static void Paint(Material mat, float a)
         {
             if (mat == null) return;
-            mat.color = new Color(1f, 1f, 1f, a);
+            Color c = mat.color;
+            c.a = a;
+            mat.color = c;
         }
 
         static Material MakeMat(Shader shader, Texture2D tex, float front)
@@ -242,6 +275,47 @@ namespace Tag.FX
             rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             rend.receiveShadows = false;
             return go.transform;
+        }
+
+        static Mesh TailRibbon()
+        {
+            // along is y (0 at the hit, 1 toward the burst). x is the ribbon side. z is the jag.
+            float[] along = { 0f, 0.16f, 0.34f, 0.52f, 0.70f, 0.86f };
+            float[] jag = { 0f, 0.07f, -0.065f, 0.055f, -0.04f, 0.01f };
+            var verts = new Vector3[along.Length * 2];
+            var uv = new Vector2[verts.Length];
+            var tris = new int[(along.Length - 1) * 6];
+            for (int i = 0; i < along.Length; i++)
+            {
+                verts[i * 2] = new Vector3(-1f, along[i], jag[i]);
+                verts[i * 2 + 1] = new Vector3(1f, along[i], jag[i]);
+                uv[i * 2] = new Vector2(0f, along[i]);
+                uv[i * 2 + 1] = new Vector2(1f, along[i]);
+            }
+            int t = 0;
+            for (int i = 0; i < along.Length - 1; i++)
+            {
+                int a = i * 2;
+                tris[t++] = a;
+                tris[t++] = a + 2;
+                tris[t++] = a + 1;
+                tris[t++] = a + 1;
+                tris[t++] = a + 2;
+                tris[t++] = a + 3;
+            }
+            var mesh = new Mesh();
+            mesh.vertices = verts;
+            mesh.uv = uv;
+            mesh.triangles = tris;
+            return mesh;
+        }
+
+        static Texture2D WhiteTex()
+        {
+            var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            tex.SetPixels(new[] { Color.white, Color.white, Color.white, Color.white });
+            tex.Apply(false, true);
+            return tex;
         }
 
         static Mesh FullCell()

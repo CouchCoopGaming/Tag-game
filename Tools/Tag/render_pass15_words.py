@@ -13,7 +13,7 @@ import bake_comic_layers as bake
 import render_comic_sheet as comic_sheet
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "FxStills", "pass19")
+OUT = os.path.join(ROOT, "Docs", "FxStills", "pass20")
 FONT = comic_sheet.FONT_PATH
 
 
@@ -380,50 +380,127 @@ def live_pair(index, age, width):
     return canvas
 
 
+def read_runners():
+    path = os.path.join(ROOT, "Docs", "FxStills", "pass20", "runners", "layout.txt")
+    found = {}
+    with open(path) as handle:
+        for line in handle:
+            parts = line.split()
+            if not parts or parts[0] != "RUNNER":
+                continue
+            found[parts[1]] = {
+                "foot": (float(parts[3]), float(parts[4])),
+                "chest": (float(parts[6]), float(parts[7])),
+                "head": (float(parts[9]), float(parts[10])),
+                "body": float(parts[12]),
+            }
+    return found
+
+
+def jagged_tail(draw, hit, burst_edge, color=(12, 10, 8)):
+    """Short speed tail from the hit up toward the burst."""
+    x0, y0 = hit
+    x1, y1 = burst_edge
+    stations = 6
+    pts = []
+    for i in range(stations):
+        t = i / float(stations - 1)
+        jag = (0.0, 7.0, -6.0, 5.0, -4.0, 0.0)[i]
+        # Jag across the tail, in screen pixels.
+        dx = x1 - x0
+        dy = y1 - y0
+        length = max((dx * dx + dy * dy) ** 0.5, 1.0)
+        nx, ny = -dy / length, dx / length
+        pts.append((x0 + dx * t + nx * jag, y0 + dy * t + ny * jag))
+    draw.line(pts, fill=(255, 246, 220), width=9)
+    draw.line(pts, fill=color, width=4)
+
+
 def couch_four():
-    """1280x720. Chase-cam plates, words at the measured quad size in front of the runner."""
+    """1280x720. Arena plates, two runners, burst at the pane minimum mid-overshoot."""
     names = ("SPROING!", "WHIZZ!", "POW!", "SMACK!")
-    plates = ("sproing", "whizz", "pow", "smack")
-    # 1.65 m quad at the contact, from the pass 19 chase render.
-    base_px = 55.9
-    anchor = (323.7, 165.6)
+    plates = (
+        os.path.join(ROOT, "Docs", "ArenaStills", "MegaPark_Eye.png"),
+        os.path.join(ROOT, "Docs", "ArenaStills", "MegaPark_Edge.png"),
+        os.path.join(ROOT, "Docs", "ArenaStills", "PocketPark_Eye.png"),
+        os.path.join(ROOT, "Docs", "ArenaStills", "PocketPark_Edge.png"),
+    )
+    # Two runners in the first two panes and the Pocket eye pane. The edge pane keeps both too.
+    pair_panes = (True, True, True, True)
+    runners = read_runners()
+    attacker = Image.open(os.path.join(ROOT, "Docs", "FxStills", "pass20", "runners", "attacker.png")).convert("RGBA")
+    victim = Image.open(os.path.join(ROOT, "Docs", "FxStills", "pass20", "runners", "victim.png")).convert("RGBA")
     board = Image.new("RGB", (1280, 720), (12, 12, 12))
     draw = ImageDraw.Draw(board)
     font = ImageFont.truetype(FONT, 22)
     pw, ph = 640, 360
-    age = 0.12
+    # Peak of the overshoot. Scale is 1.25, the word a little larger.
+    age = 0.029
     life = life_scale(age)
-    plate_dir = os.path.join(ROOT, "Docs", "FxStills", "pass19", "plates")
+    punch = word_punch(age)
+    body = runners["attacker"]["body"]
+    # Same offsets as ComicBurst: one body up, one body toward the open side.
+    up_px = body * 1.0
+    side_px = body * 1.0
     for n, text in enumerate(names):
         index = index_of(text)
-        scene = Image.open(os.path.join(plate_dir, plates[n] + ".png")).convert("RGB").resize((pw, ph), Image.Resampling.LANCZOS)
+        scene = Image.open(plates[n]).convert("RGBA").resize((pw, ph), Image.Resampling.LANCZOS)
+        # Pair sits low in the pane. Even panes leave the open space on the right.
+        pair_x = 230 if n % 2 == 0 else 400
+        foot_y = 292
+        gap = 52
+        ax = int(round(pair_x - gap * 0.5 - runners["attacker"]["foot"][0]))
+        ay = int(round(foot_y - runners["attacker"]["foot"][1]))
+        vx = int(round(pair_x + gap * 0.5 - runners["victim"]["foot"][0]))
+        vy = int(round(foot_y - runners["victim"]["foot"][1]))
+        if pair_panes[n]:
+            scene.alpha_composite(attacker, (ax, ay))
+            scene.alpha_composite(victim, (vx, vy))
+        hit_x = pair_x + (
+            runners["attacker"]["chest"][0] - runners["attacker"]["foot"][0]
+            + runners["victim"]["chest"][0] - runners["victim"]["foot"][0]
+        ) * 0.5
+        hit_y = foot_y + (
+            runners["attacker"]["chest"][1] - runners["attacker"]["foot"][1]
+            + runners["victim"]["chest"][1] - runners["victim"]["foot"][1]
+        ) * 0.5
+        # Open side is the half of the pane away from the pair.
+        side = 1.0 if pair_x < pw * 0.5 else -1.0
+        burst_cx = hit_x + side * side_px
+        burst_cy = hit_y - up_px
         _text, burst, word = posed_layers(index)
+        # 22% of the pane at rest, times the overshoot. The world quad is smaller, so the minimum wins.
+        burst_px = 0.22 * ph * life
+        word_px = burst_px * punch
         _tilt, _skew, size, _arc, _wide, tall = style_of(index)
-        px = base_px * life * size * tall
-        meters = 1.65 * life * size * tall
         pre_h = (bake.CELL + 48) * size * tall
-        scale = px / float(pre_h)
 
-        def layer(glyph):
+        def fit(glyph, height):
+            scale = height / float(pre_h)
             nw = max(1, int(round(glyph.width * scale)))
             nh = max(1, int(round(glyph.height * scale)))
             return glyph.resize((nw, nh), Image.Resampling.LANCZOS)
 
-        back = layer(burst)
-        front = layer(word)
-        w = max(back.width, front.width)
-        h = max(back.height, front.height)
-        pair = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-        pair.alpha_composite(back, ((w - back.width) // 2, (h - back.height) // 2))
-        pair.alpha_composite(front, ((w - front.width) // 2, (h - front.height) // 2))
-        x = int(round(anchor[0] - pair.width / 2.0))
-        y = int(round(anchor[1] - pair.height / 2.0))
-        scene.paste(pair, (x, y), pair)
+        back = fit(burst, burst_px)
+        front = fit(word, word_px)
+        # Tail stops at the near edge of the burst so it points at the hit.
+        edge_y = burst_cy + back.height * 0.28
+        jagged_tail(ImageDraw.Draw(scene), (hit_x, hit_y), (burst_cx, edge_y))
+        scene.alpha_composite(back, (int(burst_cx - back.width / 2), int(burst_cy - back.height / 2)))
+        scene.alpha_composite(front, (int(burst_cx - front.width / 2), int(burst_cy - front.height / 2)))
         ox = (n % 2) * pw
         oy = (n // 2) * ph
-        board.paste(scene, (ox, oy))
+        board.paste(scene.convert("RGB"), (ox, oy))
         draw.text((ox + 16, oy + ph - 32), text, font=font, fill=(255, 244, 220))
-        print("COUCH", text, "quad_m", round(meters, 3), "px", round(px, 1), "paste", pair.size)
+        print(
+            "COUCH", text,
+            "life", round(life, 3),
+            "punch", round(punch, 3),
+            "burst_px", round(burst_px, 1),
+            "body_px", round(body, 1),
+            "up", round(up_px, 1),
+            "side", round(side_px, 1),
+        )
     draw.line((640, 0, 640, 720), fill=(8, 8, 8), width=4)
     draw.line((0, 360, 1280, 360), fill=(8, 8, 8), width=4)
     return board

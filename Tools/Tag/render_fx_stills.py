@@ -4483,6 +4483,53 @@ def render_pass15(arm, cam):
     print("PASS15 stills", OUT)
 
 
+def render_pass20_runners(arm, cam):
+    """Attacker and victim, chase camera, transparent, for the arena couch composite."""
+    for obj in bpy.data.objects:
+        if obj.type == "MESH" and obj.name.startswith(("Prop", "Park")):
+            obj.hide_render = True
+    scene = bpy.context.scene
+    scene.render.film_transparent = True
+    scene.render.resolution_x = 640
+    scene.render.resolution_y = 360
+    out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass20", "runners")
+    os.makedirs(out_dir, exist_ok=True)
+    layout_path = os.path.join(out_dir, "layout.txt")
+    if os.path.exists(layout_path):
+        os.remove(layout_path)
+    from bpy_extras.object_utils import world_to_camera_view
+
+    def project(world):
+        p = world_to_camera_view(scene, cam, world)
+        return p.x * 640.0, (1.0 - p.y) * 360.0
+
+    shots = (
+        ("attacker", pose_punch, 24.0),
+        ("victim", pose_stagger, -150.0),
+    )
+    for name, pose, yaw in shots:
+        apply_pose(arm, pose, yaw=yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        bpy.context.view_layer.update()
+        foot = p11_foot(arm)
+        chest = bone_pos(arm, "Spine")
+        head = bone_pos(arm, "Head", tail=True)
+        fx, fy = project(foot)
+        cx, cy = project(chest)
+        hx, hy = project(head)
+        path = os.path.join(out_dir, name + ".png")
+        scene.render.filepath = path
+        bpy.ops.render.render(write_still=True)
+        print("SIZE", name, os.path.getsize(path))
+        line = "RUNNER %s foot %.1f %.1f chest %.1f %.1f head %.1f %.1f body %.1f" % (
+            name, fx, fy, cx, cy, hx, hy, fy - hy,
+        )
+        print(line)
+        with open(os.path.join(out_dir, "layout.txt"), "a") as handle:
+            handle.write(line + "\n")
+
+
 def render_pass19_park(arm, cam):
     """Chase views of the runner on a Mega Park graybox. Prints the comic quad in pixels."""
     for obj in list(bpy.data.objects):
@@ -4552,6 +4599,9 @@ def main():
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
+    if os.environ.get("FX_PASS20") == "1":
+        render_pass20_runners(arm, cam)
+        return
     if os.environ.get("FX_PASS19") == "1":
         render_pass19_park(arm, cam)
         return
