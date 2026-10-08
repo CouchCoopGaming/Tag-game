@@ -18,7 +18,7 @@ namespace Tag.Ui.Menu
             "Air dash in the air.",
             "Punch to tag. It changes hands.",
             "Tag-back is 1 second.",
-            "Double-click RMB to let go of the grapple.",
+            "Double-click the grapple button to let go.",
             "Least It: least time as It. Next punch breaks a tie.",
             "Hot Potato: first to 2.",
             "Trail Tag: last one standing.",
@@ -27,6 +27,15 @@ namespace Tag.Ui.Menu
         };
 
         public static int Count => Lines.Length;
+
+        /// <summary>
+        /// Main-menu grapple tip. The glyph is the bound key, not a baked word.
+        /// </summary>
+        public static string GrappleLine(ActionBinds binds)
+        {
+            if (binds == null) binds = ActionBinds.Current ?? ActionBinds.Defaults();
+            return "Double-click [" + ActionBinds.Show(binds.GrappleKey) + "] to let go of the grapple.";
+        }
 
         public static string At(int index)
         {
@@ -73,7 +82,7 @@ namespace Tag.Ui.Menu
             if (i == 7)
             {
                 string token = pad ? binds.GrapplePad : binds.GrappleKey;
-                return "Grapple [" + ActionBinds.Chip(token) + "], double-click to let go.";
+                return "Grapple [" + ActionBinds.Show(token) + "], double-click to let go.";
             }
             return Lines[i];
         }
@@ -150,6 +159,13 @@ namespace Tag.Ui.Menu
             ActionBinds kb = ActionBinds.Defaults();
             if (!MarkIsOwn(kb, false)) return false;
             if (!MarkIsOwn(kb, true)) return false;
+            string glyph = ActionBinds.Show(kb.GrappleKey);
+            if (GrappleLine(kb).IndexOf("[" + glyph + "]", System.StringComparison.Ordinal) < 0) return false;
+            ActionBinds moved = ActionBinds.Defaults();
+            moved.GrappleKey = "q";
+            string shifted = GrappleLine(moved);
+            if (shifted.IndexOf("[Q]", System.StringComparison.Ordinal) < 0) return false;
+            if (shifted.IndexOf("RMB", System.StringComparison.Ordinal) >= 0) return false;
             return true;
         }
 

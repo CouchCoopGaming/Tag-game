@@ -122,7 +122,7 @@ namespace Tag.Ui.Menu
             float h = root != null ? root.sizeDelta.y : 420f;
             float glyph = 64f;
             if (glyph > h * 0.34f) glyph = h * 0.34f;
-            float y = h * 0.46f;
+            float y = h * 0.78f;
             if (y + glyph > h - 20f) y = h - 20f - glyph;
             float gap = 28f;
             float x = (w - glyph * 2f - gap) * 0.5f;

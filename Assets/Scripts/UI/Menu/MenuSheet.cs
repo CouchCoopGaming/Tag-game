@@ -30,6 +30,35 @@ namespace Tag.Ui.Menu
         public const string ResultsWord = "RESULTS";
         public const string JoinPrompt = "Press Space or A to join";
 
+        /// <summary>Main-menu row indexes. Each value is unique, so one focus lights one row.</summary>
+        public static readonly int[] MainIndex = { 0, 1, 2, 3, 4, 6, 5 };
+
+        /// <summary>True when this focus index is on exactly one main-menu row.</summary>
+        public static bool OneHot(int focus)
+        {
+            if (MainIndex == null || MainIndex.Length < 1) return false;
+            var seen = new bool[8];
+            int hot = 0;
+            for (int i = 0; i < MainIndex.Length; i++)
+            {
+                int id = MainIndex[i];
+                if (id < 0 || id >= seen.Length) return false;
+                if (seen[id]) return false;
+                seen[id] = true;
+                if (id == focus) hot++;
+            }
+            return hot == 1;
+        }
+
+        public static bool OneFocus()
+        {
+            for (int i = 0; i < MainIndex.Length; i++)
+            {
+                if (!OneHot(MainIndex[i])) return false;
+            }
+            return true;
+        }
+
         public static bool WantsPark(int screen)
         {
             return screen == Join

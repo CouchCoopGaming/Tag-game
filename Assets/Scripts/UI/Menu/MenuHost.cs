@@ -360,7 +360,7 @@ namespace Tag.Ui.Menu
             bool photo = title || id == MenuScreenId.Main;
             bool loading = id == MenuScreenId.Loading;
             bool plate = photo || id == MenuScreenId.Pause;
-            if (_vignette != null) _vignette.SetActive(photo);
+            if (_vignette != null) _vignette.SetActive(false);
             if (_pattern != null)
             {
                 Color wash = _pattern.color;
@@ -711,11 +711,15 @@ namespace Tag.Ui.Menu
         void RefreshFocus()
         {
             bool couch = _screen == MenuScreenId.Main || _screen == MenuScreenId.Join;
+            int shown = 0;
             for (int i = 0; i < _tiles.Count; i++)
             {
                 MenuTile tile = _tiles[i];
                 if (tile == null) continue;
-                tile.SetHot(tile.Index == _focus);
+                bool on = tile.Index == _focus;
+                if (on && shown > 0) on = false;
+                if (on) shown++;
+                tile.SetHot(on);
                 if (couch) tile.CouchEdge();
             }
         }
@@ -1243,15 +1247,21 @@ namespace Tag.Ui.Menu
                 uv.y = Time.unscaledTime * 0.03f;
                 _pattern.uvRect = uv;
             }
-            if (_flyover != null && _flyover.color.a > 0.01f && !MenuVideo.ReduceMotion && _screen != MenuScreenId.Loading)
+            if (_flyover != null && _flyover.color.a > 0.01f && _screen != MenuScreenId.Loading)
             {
-                float amp = _screen == MenuScreenId.Title ? 0.07f : 0.04f;
-                Rect uv = _flyover.uvRect;
-                uv.x = 0.04f + Mathf.Sin(Time.unscaledTime * 0.12f) * amp;
-                uv.y = 0.02f + Mathf.Cos(Time.unscaledTime * 0.09f) * (amp * 0.7f);
-                uv.width = 0.92f;
-                uv.height = 0.92f;
-                _flyover.uvRect = uv;
+                bool cover = _screen == MenuScreenId.Title || _screen == MenuScreenId.Main || _screen == MenuScreenId.Join;
+                if (cover)
+                    CoverFlyover();
+                else if (!MenuVideo.ReduceMotion)
+                {
+                    float amp = 0.04f;
+                    Rect uv = _flyover.uvRect;
+                    uv.x = 0.04f + Mathf.Sin(Time.unscaledTime * 0.12f) * amp;
+                    uv.y = 0.02f + Mathf.Cos(Time.unscaledTime * 0.09f) * (amp * 0.7f);
+                    uv.width = 0.92f;
+                    uv.height = 0.92f;
+                    _flyover.uvRect = uv;
+                }
             }
             if (_banner != null)
             {
@@ -1820,8 +1830,9 @@ namespace Tag.Ui.Menu
             _count = 0;
             if (_header != null) _header.text = "";
             if (_banner != null) _banner.text = "";
-            if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0.18f);
+            if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0.35f);
             ShowPark(ParkArena.Mega, 1f);
+            CoverFlyover();
             var paradeRt = MenuWidgets.Box(_body, "Parade", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f));
             _parade = paradeRt.gameObject.AddComponent<RawImage>();
             _parade.raycastTarget = false;
@@ -1914,8 +1925,9 @@ namespace Tag.Ui.Menu
             _cols = 1;
             if (_header != null) _header.text = "  Menu";
             if (_banner != null) _banner.text = "";
-            if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0.25f);
+            if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0.30f);
             ShowPark(ParkArena.Mega, 1f);
+            CoverFlyover();
             float scale = UiFit.Current();
             UiFit.MainSplit(scale, out float logoW, out float tileX, out float tileW);
             float bodyH = UiFit.BodyH(scale);
@@ -1949,19 +1961,20 @@ namespace Tag.Ui.Menu
             MenuWidgets.Words(tipRt, "Tip of the day", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Mute, new Vector2(0.04f, 0.76f), new Vector2(0.96f, 0.98f));
             MenuWidgets.Words(tipRt, MenuTips.At(0), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.04f, 0.52f), new Vector2(0.96f, 0.74f));
             MenuWidgets.Words(tipRt, MenuTips.At(2), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.04f, 0.28f), new Vector2(0.96f, 0.50f));
-            MenuWidgets.Words(tipRt, MenuTips.At(7), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.04f, 0.02f), new Vector2(0.96f, 0.26f));
+            MenuWidgets.Words(tipRt, MenuTips.GrappleLine(null), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.04f, 0.02f), new Vector2(0.96f, 0.26f));
             float rowH = UiFit.RowH(96f);
             float step = UiFit.RowStep(108f, 96f);
             float y = 8f;
-            AddTile(tileX, y, tileW, rowH, 0, "Play", "Local couch", true); y += step;
-            AddTile(tileX, y, tileW, rowH, 1, "Practice", "Free run any arena, no tagger", true); y += step;
-            AddTile(tileX, y, tileW, rowH, 2, "Options", "Sound, picture, access", true); y += step;
-            AddTile(tileX, y, tileW, rowH, 3, "Controls", "Binds. Space still jumps.", true); y += step;
+            int[] row = MenuSheet.MainIndex;
+            AddTile(tileX, y, tileW, rowH, row[0], "Play", "Local couch", true); y += step;
+            AddTile(tileX, y, tileW, rowH, row[1], "Practice", "Free run any arena, no tagger", true); y += step;
+            AddTile(tileX, y, tileW, rowH, row[2], "Options", "Sound, picture, access", true); y += step;
+            AddTile(tileX, y, tileW, rowH, row[3], "Controls", "Binds. Space still jumps.", true); y += step;
             float gap = 12f;
             float btn = (tileW - gap * 2f) / 3f;
-            AddTile(tileX, y, btn, rowH, 4, "Credits", "", true);
-            AddTile(tileX + btn + gap, y, btn, rowH, 6, "Records", "Profiles", true);
-            AddTile(tileX + (btn + gap) * 2f, y, btn, rowH, 5, "Quit", "", true);
+            AddTile(tileX, y, btn, rowH, row[4], "Credits", "", true);
+            AddTile(tileX + btn + gap, y, btn, rowH, row[5], "Records", "Profiles", true);
+            AddTile(tileX + (btn + gap) * 2f, y, btn, rowH, row[6], "Quit", "", true);
             MenuWidgets.Mark(TileAt(0), MenuIcons.Play, MenuIcons.PlayTint, 72f);
             MenuWidgets.Mark(TileAt(1), MenuIcons.Cone, MenuIcons.PracticeTint, 72f);
             MenuWidgets.Mark(TileAt(2), MenuIcons.Gear, MenuIcons.OptionsTint, 72f);
@@ -1979,6 +1992,7 @@ namespace Tag.Ui.Menu
             if (_header != null) _header.text = "  Who's playing";
             if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0.28f);
             ShowPark(ParkArena.Mega, 1f);
+            CoverFlyover();
             _joinSig = JoinSig();
             float span = UiFit.BodyW(UiFit.Current());
             float bodyH = UiFit.BodyH(UiFit.Current());
@@ -2458,6 +2472,35 @@ namespace Tag.Ui.Menu
             if (_flyover == null) return;
             Texture bright = MenuBackdrop.Bright(arena);
             if (bright != null) _flyover.texture = bright;
+        }
+
+        /// <summary>
+        /// Scale the plate until it covers the frame, then crop the overflow.
+        /// A wider screen loses sky. A taller screen loses the sides. No bars.
+        /// </summary>
+        void CoverFlyover()
+        {
+            if (_flyover == null || _flyover.texture == null) return;
+            float tw = _flyover.texture.width;
+            float th = _flyover.texture.height;
+            if (tw < 1f || th < 1f)
+            {
+                _flyover.uvRect = new Rect(0f, 0f, 1f, 1f);
+                return;
+            }
+            float tex = tw / th;
+            float view = Screen.width / (float)Mathf.Max(1, Screen.height);
+            if (view < 0.2f) view = 16f / 9f;
+            if (view > tex)
+            {
+                float h = tex / view;
+                _flyover.uvRect = new Rect(0f, (1f - h) * 0.5f, 1f, h);
+            }
+            else
+            {
+                float w = view / tex;
+                _flyover.uvRect = new Rect((1f - w) * 0.5f, 0f, w, 1f);
+            }
         }
 
         void ShowFlyover(int arena, float alpha)

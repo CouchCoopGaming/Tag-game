@@ -252,7 +252,26 @@ namespace Tag.Ui.Menu
             if (tile.Label != null) Band(tile.Label, h, 22f, 36f);
             if (!joined)
             {
-                if (tile.Detail != null) Band(tile.Detail, h, 64f, 72f);
+                float bustH = h * 0.42f;
+                if (bustH > 210f) bustH = 210f;
+                if (bustH < 120f) bustH = 120f;
+                float bustW = bustH * 0.72f;
+                if (bustW > w * 0.72f) bustW = w * 0.72f;
+                float bustY = 86f;
+                Ghost(tile.transform, (w - bustW) * 0.5f, bustY, bustW, bustH, seat);
+                float mark = 76f;
+                float mx = (w - mark) * 0.5f;
+                float my = bustY + bustH * 0.38f;
+                var well = Place(tile.transform, "GhostWell", mx, my, mark, mark);
+                var wellImage = well.gameObject.AddComponent<Image>();
+                wellImage.color = new Color(0.02f, 0.02f, 0.04f, 0.85f);
+                wellImage.raycastTarget = false;
+                SeatShape.StampKind(well, MenuMannequin.Shape(seat), 10f, 10f, mark - 20f, MenuTheme.SeatFill(seat));
+                if (tile.Detail != null)
+                {
+                    Band(tile.Detail, h, bustY + bustH + 10f, 44f);
+                    tile.Detail.alignment = TextAnchor.MiddleCenter;
+                }
                 return;
             }
             if (tile.Detail != null) tile.Detail.text = "";
@@ -302,6 +321,22 @@ namespace Tag.Ui.Menu
         /// Head, chest, and legs in the seat color. A joined drop-in card uses this
         /// instead of a tiny device mark.
         /// </summary>
+        /// <summary>Empty drop-in seat. A faint body with a light outline, not a blank slab.</summary>
+        public static void Ghost(Transform parent, float x, float y, float w, float h, Color seat)
+        {
+            if (parent == null) return;
+            Color line = Color.Lerp(seat, Color.white, 0.45f);
+            line.a = 0.72f;
+            const float o = 4f;
+            Bust(parent, x - o, y, w, h, line);
+            Bust(parent, x + o, y, w, h, line);
+            Bust(parent, x, y - o, w, h, line);
+            Bust(parent, x, y + o, w, h, line);
+            Color fill = seat;
+            fill.a = 0.18f;
+            Bust(parent, x, y, w, h, fill);
+        }
+
         public static void Bust(Transform parent, float x, float y, float w, float h, Color body)
         {
             if (parent == null || w < 8f || h < 8f) return;

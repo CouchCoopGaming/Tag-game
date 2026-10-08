@@ -81,6 +81,8 @@ namespace Tag.Ui.Menu
             bool contrast = UiSweep.Holds();
             bool style = MenuPolish.Holds(Root());
             bool sheet = MenuSheet.Holds(Root());
+            bool one = MenuSheet.OneFocus() && HostFocus(Root());
+            if (!one) Fail(ref report, "two focused");
             report.ApplyLine = OptionApply.Holds();
             bool optionsLive = report.ApplyLine.IndexOf("persist=ok", StringComparison.Ordinal) >= 0
                 && report.ApplyLine.IndexOf("=no", StringComparison.Ordinal) < 0;
@@ -100,7 +102,8 @@ namespace Tag.Ui.Menu
             CouchPlay.Release();
             report.Line = "ui-flow screens=15 kb=" + kb.ToString()
                 + " pad=" + pad.ToString()
-                + " dead=0 focus=ok back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues="
+                + " dead=0 focus=" + (one ? "ok" : "no")
+                + " back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues="
                 + cues.ToString()
                 + " text=" + (text ? "ok" : "no")
                 + " hud=" + (hud ? "ok" : "no")
@@ -700,6 +703,31 @@ namespace Tag.Ui.Menu
             if (!Tag.Profiles.LocalProfiles.Spell("ADA")) return false;
             Tag.Profiles.LocalProfiles.Clear();
             return Tag.Profiles.LocalProfiles.Count == 0;
+        }
+
+        static bool HostFocus(string root)
+        {
+            if (string.IsNullOrEmpty(root)) return false;
+            string menu = Path.Combine(root, "Assets", "Scripts", "UI", "Menu");
+            string host = File.ReadAllText(Path.Combine(menu, "MenuHost.cs"));
+            if (host.IndexOf("if (on && shown > 0) on = false;", StringComparison.Ordinal) < 0) return false;
+            if (host.IndexOf("tile.SetHot(on);", StringComparison.Ordinal) < 0) return false;
+            int main = host.IndexOf("void BuildMain()", StringComparison.Ordinal);
+            int join = host.IndexOf("void BuildJoin()", StringComparison.Ordinal);
+            if (main < 0 || join < main) return false;
+            string body = host.Substring(main, join - main);
+            if (body.IndexOf("MenuSheet.MainIndex", StringComparison.Ordinal) < 0) return false;
+            if (body.IndexOf("SetHot(true)", StringComparison.Ordinal) >= 0) return false;
+            int title = host.IndexOf("void BuildTitle()", StringComparison.Ordinal);
+            int titleEnd = host.IndexOf("void BuildVignette(", StringComparison.Ordinal);
+            if (title < 0 || titleEnd < title) return false;
+            string titleBody = host.Substring(title, titleEnd - title);
+            if (titleBody.IndexOf("ShowPark(ParkArena.Mega, 1f);", StringComparison.Ordinal) < 0) return false;
+            if (titleBody.IndexOf("CoverFlyover();", StringComparison.Ordinal) < 0) return false;
+            if (titleBody.IndexOf("new Color(0f, 0f, 0f, 0.35f);", StringComparison.Ordinal) < 0) return false;
+            string backdrop = File.ReadAllText(Path.Combine(menu, "MenuBackdrop.cs"));
+            if (backdrop.IndexOf("UI/Menu/MegaGrade", StringComparison.Ordinal) < 0) return false;
+            return true;
         }
 
         static string Root()
