@@ -107,6 +107,10 @@ namespace Tag.Art
         float _jumpPoseAge = -1f;
         bool _jumpDriveLeft;
         float _wallJumpPoseAge = -1f;
+        int _storrorPreview = -1;
+        float _storrorPreviewU;
+        float _storrorWallU;
+        float _storrorClingU;
         bool _wallJumpPosePlant;
         bool _wallJumpHandoff;
         float _airStrafeLean;
@@ -1273,10 +1277,27 @@ namespace Tag.Art
             return child != null && parent != null && child != parent && child.IsChildOf(parent);
         }
 
+        /// <summary>
+        /// Gallery playback of one clean Storror clip. Weight is full.
+        /// The motor, the capsule, and the gameplay clocks are not touched.
+        /// </summary>
+        public void SetStorrorPreview(int clip, float u)
+        {
+            _storrorPreview = clip;
+            _storrorPreviewU = u;
+        }
+
         void LateUpdate()
         {
             Tag.Core.FrameMeter.AddPose(Tag.Core.FrameMeter.PoseOps);
             float dt = Time.deltaTime;
+            if (_storrorPreview >= 0)
+            {
+                if (!_bound) Cache(transform);
+                if (_bound)
+                    PoseStorror(StorrorClips.At(_storrorPreview, _storrorPreviewU), StorrorClips.GalleryWeight, false);
+                return;
+            }
             _stanceSole = false;
             _armSwingSet = false;
             _hipYawVis = 0f;
@@ -15386,7 +15407,11 @@ namespace Tag.Art
             bool secondaryYield = climb || wallRun || mantle || punching || lunging || dashing
                 || _aimTorsoW > 0.35f || _grappleFallHold || _grapplePose > 0.02f;
             ApplySecondaryMotion(dt, secondaryYield, secondaryYield || sliding);
+            bool storrorUpper = punching || _aimTorsoW > 0.2f || _grapplePose > 0.02f;
+            bool storrorLegs = storrorUpper && UpperBody.KeepLegs(sliding, air, wallRun, speed);
+            ApplyStorrorReference(dt, _landPoseSoft || _landPoseHard, wallRun, wallJumpBeat, climb, storrorLegs);
             ApplyContactIk(grounded && !air && !sliding, wallRun || climb);
+            // MoveState.Mantle is the vault and the mantle. The lip path is the hand target.
             ApplyParkourContact(climb, wallRun, mantle);
             float squash = 1f - 0.14f * _landSquash;
             // Air-dash: strong stretch then brief squash; tag flinch compresses
@@ -19553,7 +19578,7 @@ namespace Tag.Art
             }
             Vector3 delta = target - posed;
             float mag = delta.magnitude;
-            float cap = ClimbContact.Palm(mag);
+            float cap = VisualPalm(mag);
             if (mag > 0.0001f) delta *= cap / mag;
             bone.position = posed + delta * weight;
         }
@@ -19587,7 +19612,7 @@ namespace Tag.Art
             if (!TryLip(posed, normal, out lip)) return;
             Vector3 delta = lip - posed;
             float mag = delta.magnitude;
-            float cap = ClimbContact.Palm(mag);
+            float cap = VisualPalm(mag);
             if (mag > 0.0001f) delta *= cap / mag;
             hand.position = posed + delta * weight;
         }
@@ -19609,6 +19634,105 @@ namespace Tag.Art
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Palm correction plus the shorter v0.8.0 arm. ClimbContact.Palm is unchanged.
+        /// </summary>
+        static float VisualPalm(float mag)
+        {
+            float cap = ClimbContact.Palm(mag);
+            if (mag > cap)
+            {
+                float extra = mag - cap;
+                if (extra > HierBody.ArmReachShort) extra = HierBody.ArmReachShort;
+                cap += extra;
+            }
+            return cap;
+        }
+
+        /// <summary>
+        /// Blend a clean Storror clip onto the pose that already slewed.
+        /// Land uses clips 03 and 04. Wall run uses 10. Tic-tac uses 12.
+        /// Cling and the cat leap use 15. Weight stays under the procedural pose
+        /// except in the gallery. Nothing here writes the capsule or a clock the motor reads.
+        /// </summary>
+        void ApplyStorrorReference(float dt, bool land, bool wallRun, bool wallJump, bool climb, bool legsOnly)
+        {
+            int clip = -1;
+            float u = 0f;
+            if (wallJump)
+            {
+                clip = StorrorClips.WallJump;
+                float span = WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds;
+                u = span > 0.0001f ? _wallJumpPoseAge / span : 1f;
+                if (u < 0f) u = 0f;
+                if (u > 1f) u = 1f;
+                u *= StorrorClips.WallJumpWindow;
+                _storrorWallU = 0f;
+                _storrorClingU = 0f;
+                PoseStorror(StorrorClips.At(clip, u), StorrorClips.Blend, legsOnly);
+                return;
+            }
+            if (wallRun)
+            {
+                float dur = StorrorClips.Seconds[StorrorClips.WallRun];
+                if (dur < 0.05f) dur = 0.05f;
+                _storrorWallU += dt / dur;
+                if (_storrorWallU >= 1f) _storrorWallU -= 1f;
+                _storrorClingU = 0f;
+                PoseStorror(StorrorClips.At(StorrorClips.WallRun, _storrorWallU), StorrorClips.Blend, legsOnly);
+                return;
+            }
+            if (climb)
+            {
+                float dur = StorrorClips.Seconds[StorrorClips.Cling];
+                if (dur < 0.05f) dur = 0.05f;
+                _storrorClingU += dt / dur;
+                if (_storrorClingU >= 1f) _storrorClingU -= 1f;
+                _storrorWallU = 0f;
+                PoseStorror(StorrorClips.At(StorrorClips.Cling, _storrorClingU), StorrorClips.Blend, legsOnly);
+                return;
+            }
+            _storrorWallU = 0f;
+            _storrorClingU = 0f;
+            if (!land || _landSquash <= 0.02f) return;
+            u = 1f - _landSquash;
+            if (u < 0f) u = 0f;
+            if (u > 1f) u = 1f;
+            StorrorClips.Pose drop = StorrorClips.At(StorrorClips.SoftLandA, u);
+            StorrorClips.Pose window = StorrorClips.At(StorrorClips.SoftLandB, u);
+            PoseStorror(StorrorClips.Lerp(drop, window, 0.5f), StorrorClips.Blend * _landSquash, legsOnly);
+        }
+
+        void PoseStorror(StorrorClips.Pose p, float w, bool legsOnly)
+        {
+            if (w < 0.001f) return;
+            if (_upperLegL != null)
+                _upperLegL.localRotation = Quaternion.Slerp(_upperLegL.localRotation, _ulL0 * Quaternion.Euler(p.ThighL, p.ThighYawL, 0f), w);
+            if (_upperLegR != null)
+                _upperLegR.localRotation = Quaternion.Slerp(_upperLegR.localRotation, _ulR0 * Quaternion.Euler(p.ThighR, p.ThighYawR, 0f), w);
+            if (_lowerLegL != null)
+                _lowerLegL.localRotation = Quaternion.Slerp(_lowerLegL.localRotation, _llL0 * Quaternion.Euler(p.KneeL, 0f, 0f), w);
+            if (_lowerLegR != null)
+                _lowerLegR.localRotation = Quaternion.Slerp(_lowerLegR.localRotation, _llR0 * Quaternion.Euler(p.KneeR, 0f, 0f), w);
+            if (_footL != null)
+                _footL.localRotation = Quaternion.Slerp(_footL.localRotation, _ftL0 * Quaternion.Euler(p.FootL, 0f, 0f), w);
+            if (_footR != null)
+                _footR.localRotation = Quaternion.Slerp(_footR.localRotation, _ftR0 * Quaternion.Euler(p.FootR, 0f, 0f), w);
+            if (legsOnly) return;
+            if (_upperArmL != null)
+                _upperArmL.localRotation = Quaternion.Slerp(_upperArmL.localRotation, _uaL0 * Quaternion.Euler(p.ArmPitchL, p.ArmYawL, 0f), w);
+            if (_upperArmR != null)
+                _upperArmR.localRotation = Quaternion.Slerp(_upperArmR.localRotation, _uaR0 * Quaternion.Euler(p.ArmPitchR, p.ArmYawR, 0f), w);
+            if (_lowerArmL != null)
+                _lowerArmL.localRotation = Quaternion.Slerp(_lowerArmL.localRotation, _laL0 * Quaternion.Euler(p.ElbowL, 0f, 0f), w);
+            if (_lowerArmR != null)
+                _lowerArmR.localRotation = Quaternion.Slerp(_lowerArmR.localRotation, _laR0 * Quaternion.Euler(p.ElbowR, 0f, 0f), w);
+            if (_spine != null)
+                _spine.localRotation = Quaternion.Slerp(_spine.localRotation, _spine0 * Quaternion.Euler(0f, p.SpineYaw, p.SpineRoll), w);
+            if (_head != null)
+                _head.localRotation = Quaternion.Slerp(_head.localRotation, _head0 * Quaternion.Euler(p.Head, 0f, 0f), w);
         }
 
         /// <summary>
@@ -19664,7 +19788,7 @@ namespace Tag.Art
             }
             float along = face != null ? Vector3.Dot(hit.normal, face.forward) : 0f;
             float pitch = LocomotionPolish.FootPitch(hit.normal.y, along);
-            float lift = LocomotionPolish.FootLift(0.28f - hit.distance);
+            float lift = LocomotionPolish.FootLift(0.28f - hit.distance + HierBody.SoleBelowAnkle);
             foot.localPosition = bind + new Vector3(0f, lift, 0f);
             foot.localRotation = foot.localRotation * Quaternion.Euler(pitch, 0f, 0f);
         }

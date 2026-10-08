@@ -237,8 +237,25 @@ def hero_u(clip_id, smooth):
                 best = score
                 best_i = i
     elif clip_id.startswith("12"):
+        # The opening frames are a bilateral tuck. Planted on the ground that
+        # reads as sitting. The kick is the asymmetric hip drive before the
+        # body goes horizontal and the root drops into the landing.
+        raw = load_clip(clip_id)
+        angles = raw["joint_angles_deg"]
+        heights = raw["root_height_above_feet_m"]
         for i in range(n):
-            score = smooth["hip_elev_L"][i] + smooth["hip_elev_R"][i]
+            ang = angles[i] or {}
+            trunk = ang.get("trunk_lean_from_cam_vertical")
+            rh = heights[i] if i < len(heights) else None
+            if trunk is None or rh is None:
+                continue
+            if trunk < 18.0 or trunk > 55.0 or rh < 0.55:
+                continue
+            hip_l = ang.get("hip_flex_L") or 0.0
+            hip_r = ang.get("hip_flex_R") or 0.0
+            knee_l = ang.get("knee_flex_L") or 0.0
+            knee_r = ang.get("knee_flex_R") or 0.0
+            score = abs(hip_l - hip_r) + 0.35 * abs(knee_l - knee_r)
             if score > best:
                 best = score
                 best_i = i

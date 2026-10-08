@@ -553,6 +553,37 @@ def chevron_v(tag, cx, cy, cz, half_w, bar_len, thick=0.012, depth=0.014, ang_de
     return [left, right]
 
 
+def abdomen_plates(groups, base_mat, bellows_mat, joint_mat):
+    """Body-colored abdominal plates from the chest underside to the pelvis rim.
+
+    Bands overlap a few millimetres so the front is solid at rest. Upper bands
+    stay on the chest, lower bands on the hips, and one bridge stays on the
+    spine. A small dark core sits inside that bridge and only shows when the
+    waist bends open.
+    """
+    # Chest bot edge underside is z=1.108, front face y≈-0.092, half-width 0.110.
+    # Pelvis front top is ~0.932, front face y≈-0.090, half-width 0.138.
+    # (z, half_x, half_y, half_z, y, bone)
+    bands = (
+        (1.090, 0.112, 0.088, 0.020, -0.004, "Chest"),
+        (1.054, 0.116, 0.086, 0.020, -0.006, "Chest"),
+        (1.018, 0.120, 0.086, 0.020, -0.006, "Chest"),
+        (0.984, 0.124, 0.088, 0.018, -0.006, "Spine"),
+        (0.954, 0.130, 0.090, 0.018, -0.004, "Hips"),
+        (0.926, 0.136, 0.090, 0.018, -0.002, "Hips"),
+    )
+    for i, (z, hx, hy, hz, y, bone) in enumerate(bands):
+        band = cube(f"Abd{i}", (0.0, y, z), (hx, hy, hz), bevel=0.004)
+        set_mat(band, base_mat)
+        groups[bone].append(band)
+
+    # Recessed bend core. Radius stays inside the bridge (half-width 0.124).
+    bellows = waist_bellows(
+        "WaistBellows", z_top=1.000, z_bot=0.968, radius=0.046, n_ribs=5)
+    set_mat(bellows, bellows_mat)
+    groups["Spine"].append(bellows)
+
+
 def waist_bellows(name, z_top, z_bot, radius=0.118, n_ribs=8):
     """Dark inset waist bellows ~6–8 fine ribs between chest plate and pelvis shell."""
     parts = []
@@ -595,16 +626,21 @@ def neck_ring_stack(name, z_base, n=4, major=0.082, minor=0.016, spacing=0.028):
 
 
 def u_knee_fork(name, kn, sx):
-    """UpperLeg distal U-nest — LowerLeg pivots inside."""
+    """UpperLeg distal U-nest — LowerLeg pivots inside.
+
+    v0.8.0: the old pads (±4 cm, 5 cm thick) stuck out past the shorter
+    thigh and shin and read as a cog. Keep the nest inside the distal
+    thigh radius (~4.8 cm) and the proximal shin (~5.4 cm).
+    """
     left = sph(f"{name}_padL",
-               kn + Vector((-0.040, 0.0, 0.012)),
-               (0.034, 0.050, 0.050), seg=14, ring=7)
+               kn + Vector((-0.020, 0.0, 0.008)),
+               (0.016, 0.026, 0.024), seg=14, ring=7)
     right = sph(f"{name}_padR",
-                kn + Vector((0.040, 0.0, 0.012)),
-                (0.034, 0.050, 0.050), seg=14, ring=7)
+                kn + Vector((0.020, 0.0, 0.008)),
+                (0.016, 0.026, 0.024), seg=14, ring=7)
     bridge = sph(f"{name}_bridge",
-                 kn + Vector((0, 0.0, 0.050)),
-                 (0.062, 0.054, 0.032), seg=14, ring=7)
+                 kn + Vector((0, 0.0, 0.026)),
+                 (0.034, 0.030, 0.016), seg=14, ring=7)
     return join(name, [left, right, bridge])
 
 
@@ -626,15 +662,17 @@ def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
     parts.append(wr_cover)
 
     # Molded hard-shell palm — Hybrid III flatter plate (not blob)
+    # Palm and dorsum thickened so the fist reads as a fist on the shorter arm.
+    # Curl offsets below are unchanged.
     palm = sph(f"{name}_Palm",
                hand + Vector((0, -0.006, 0.006)),
-               (0.040, 0.026, 0.046), seg=18, ring=10)
+               (0.052, 0.034, 0.058), seg=18, ring=10)
     set_mat(palm, base_mat)
     parts.append(palm)
     dorsum = cube(
         f"{name}_Dorsum",
         hand + Vector((0, -0.012, 0.020)),
-        (0.036, 0.014, 0.024), bevel=0.004)
+        (0.046, 0.018, 0.032), bevel=0.004)
     set_mat(dorsum, base_mat)
     parts.append(dorsum)
 
@@ -671,9 +709,9 @@ def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
         dirc = dir_prox.normalized() if len_prox > 1e-6 else Vector((0, -1, 0))
         dir_dist = (end - mid)
         dird = dir_dist.normalized() if dir_dist.length > 1e-6 else dirc
-        r0 = 0.0110 if i in (1, 2) else 0.0100
-        r_mid = 0.0080 if i in (1, 2) else 0.0075
-        r1 = 0.0055
+        r0 = 0.0155 if i in (1, 2) else 0.0140
+        r_mid = 0.0120 if i in (1, 2) else 0.0110
+        r1 = 0.0080
         fing0 = tapered_limb(f"{name}_F{i}a", start, mid, r0, r_mid, v=12, caps=False)
         set_mat(fing0, base_mat)
         parts.append(fing0)
@@ -717,14 +755,14 @@ def hybrid_hand(name, wr, hand, sx, base_mat, joint_mat):
     thumb_end = hand + Vector((sx * 0.048, -0.022, -0.032))
     thenar = sph(f"{name}_Thenar",
                  hand + Vector((sx * 0.026, 0.004, 0.010)),
-                 (0.018, 0.014, 0.020), seg=10, ring=5)
+                 (0.024, 0.018, 0.026), seg=10, ring=5)
     set_mat(thenar, base_mat)
     parts.append(thenar)
     thumb = tapered_limb(
         f"{name}_Thumb",
         thumb_start,
         thumb_end,
-        0.014, 0.007, v=12, caps=False)
+        0.018, 0.010, v=12, caps=False)
     set_mat(thumb, base_mat)
     parts.append(thumb)
     tdir = (thumb_end - thumb_start)
@@ -1145,21 +1183,18 @@ def build_mesh_parts(is_it, mats):
                          thick=0.012, flare=1.08)
     add("Chest", chest_lip, joint)
 
-    # --- WAIST BELLOWS — same fine rib pitch, longer because the hip dropped ---
-    # Chest bottom stays. The pelvis top dropped with HIP_Z, so the accordion
-    # spans the new gap. 8 ribs over 5 cm was ~6.25 mm; keep that pitch.
-    bellows_top = 1.115
-    bellows_bot = 1.065 - HIP_DROP
-    bellows_ribs = max(8, int(round((bellows_top - bellows_bot) / 0.00625)))
-    bellows = waist_bellows("WaistBellows", z_top=bellows_top, z_bot=bellows_bot,
-                            radius=0.092, n_ribs=bellows_ribs)
-    add("Spine", bellows, bellows_mat)
+    # --- ABDOMEN — body-colored plates flush with the chest and the pelvis ---
+    # The hip drop opened ~17 cm. A dark coil across that whole span read as a gap.
+    # Plates on the chest and the hips meet at a short spine seam, so the waist
+    # still bends and the shell stays one color.
+    abdomen_plates(groups, base, bellows_mat, joint)
 
     # --- DISTINCT PELVIS SHELL ---
     pelvis = hard_pelvis_shell("PelvisShell")
     add("Hips", pelvis, base)
-    pelvis_lip = bead_lip("PelvisTopLip", (0, 0.01, 1.068 - HIP_DROP), radius=0.135, axis="Z",
-                          thick=0.012, flare=1.08)
+    # Sit the lip inside the abdominal plates so it does not ring the waist.
+    pelvis_lip = bead_lip("PelvisTopLip", (0, 0.01, 1.068 - HIP_DROP), radius=0.112, axis="Z",
+                          thick=0.010, flare=1.04)
     add("Hips", pelvis_lip, joint)
 
     # It nested black Vs on flat chest plate + outer thighs — ZERO on Tan/Runner
@@ -1181,10 +1216,12 @@ def build_mesh_parts(is_it, mats):
         sh_cover = joint_skin_cover(f"ShoulderCover_{side}", sh, axis="X", size=0.022)
         add(f"Shoulder_{side}", sh_cover, base)
 
-        # Upper arm LONG hard shell — athletic taper (deltoid mass → elbow), not equal tube
+        # Upper arm LONG hard shell — athletic taper (deltoid mass → elbow), not equal tube.
+        # Girth stays near the v0.7.8 fraction of stature. The shorter bone was
+        # reading as a stick, so the distal radius comes up with the forearm.
         ua_end = el + (sh - el).normalized() * 0.038
         ua = limb_shell_with_lips(f"UA_{side}", sh + (el - sh).normalized() * 0.048,
-                                  ua_end, 0.072, 0.038)
+                                  ua_end, 0.078, 0.046)
         add(f"UpperArm_{side}", ua, base)
 
         # v0.7.6b: elbow 0.017 + FULL vinyl envelope cover
@@ -1195,8 +1232,9 @@ def build_mesh_parts(is_it, mats):
 
         la_start = el + (wr - el).normalized() * 0.038
         la_end = wr + (el - wr).normalized() * 0.028
-        # Forearm taper: thicker near elbow → slim wrist
-        la = limb_shell_with_lips(f"LA_{side}", la_start, la_end, 0.044, 0.026)
+        # Forearm taper: thicker near elbow → wrist. Same fraction-of-H mass as v0.7.8,
+        # lifted slightly so the shorter forearm does not read as a rod.
+        la = limb_shell_with_lips(f"LA_{side}", la_start, la_end, 0.052, 0.034)
         add(f"LowerArm_{side}", la, base)
 
         h = hybrid_hand(f"Hand_{side}", wr, hand, sx, base, joint)
@@ -1238,13 +1276,13 @@ def build_mesh_parts(is_it, mats):
                 for b in bars:
                     add(f"UpperLeg_{side}", b, accent)
 
-        # v0.7.6b: knee 0.019 + FULL vinyl envelope cover
-        knj = bionicle_joint(f"KneeJ_{side}", kn, axis="X", size=0.019)
+        # Knee hinge scaled under the shorter thigh/shin so the disc stays inside the shells.
+        knj = bionicle_joint(f"KneeJ_{side}", kn, axis="X", size=0.014)
         add(f"LowerLeg_{side}", knj, joint)
-        kn_cover = joint_skin_cover(f"KneeCover_{side}", kn, axis="X", size=0.019)
+        kn_cover = joint_skin_cover(f"KneeCover_{side}", kn, axis="X", size=0.014)
         add(f"LowerLeg_{side}", kn_cover, base)
 
-        nest = sph(f"KneeNest_{side}", kn + Vector((0, 0, 0.008)), 0.028, seg=14, ring=7)
+        nest = sph(f"KneeNest_{side}", kn + Vector((0, 0, 0.006)), 0.020, seg=14, ring=7)
         add(f"LowerLeg_{side}", nest, joint)
 
         # LONG hard shin — mild calf mass then taper to ankle (hard shell, not soft pillow)
@@ -1957,7 +1995,7 @@ Bone names and the hierarchy match v0.7.8.
 ## Bind pose
 - Mild A-pose ~20–35°; hands clear pelvis.
 - Human head scale + molded face; flat dark eye insets — zero orbs / tip stacks.
-- Flat chest plate (narrower); dense accordion bellows; hard pelvis w/ mild hip curve.
+- Flat chest plate (narrower); body-colored abdominal plates flush to the pelvis, short recessed waist bend; hard pelvis w/ mild hip curve.
 - Hybrid III limb shell mass; tiny dark Bionicle joints under SOLID vinyl capsule; hard-shell hands w/ soft resting-fist curl + knuckles/mid joints (no Finger_ bones).
 - Materials: satin vinyl Base / Accent / ItOverride + Joint metal + Rubber + Bellows.
 

@@ -18,7 +18,7 @@ Bone names and the hierarchy match v0.7.8.
 ## Bind pose
 - Mild A-pose ~20–35°; hands clear pelvis.
 - Human head scale + molded face; flat dark eye insets — zero orbs / tip stacks.
-- Flat chest plate (narrower); dense accordion bellows; hard pelvis w/ mild hip curve.
+- Flat chest plate (narrower); body-colored abdominal plates flush to the pelvis, short recessed waist bend; hard pelvis w/ mild hip curve.
 - Hybrid III limb shell mass; tiny dark Bionicle joints under SOLID vinyl capsule; hard-shell hands w/ soft resting-fist curl + knuckles/mid joints (no Finger_ bones).
 - Materials: satin vinyl Base / Accent / ItOverride + Joint metal + Rubber + Bellows.
 

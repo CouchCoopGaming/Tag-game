@@ -27,7 +27,12 @@ namespace Tag.Art
         const int Stagger = 11;
         const int IdleIt = 12;
         const int IdleRun = 13;
-        const int Count = 14;
+        const int SoftA = 14;
+        const int SoftB = 15;
+        const int WallRef = 16;
+        const int TicTac = 17;
+        const int CatLeap = 18;
+        const int Count = 19;
         const float Gap = 8f;
 
         sealed class Slot
@@ -94,6 +99,11 @@ namespace Tag.Art
             BuildSlot(11, Stagger, "GalleryStagger", "STAGGER", "Blue", false, cfg, 2.6f);
             BuildSlot(12, IdleIt, "GalleryIt", "IDLE IT", "Orange", true, cfg, 8f);
             BuildSlot(13, IdleRun, "GalleryRunner", "IDLE RUN", "Mint", false, cfg, 8f);
+            BuildPreview(SoftA, "GallerySoft03", "SOFT 03", "Tan", StorrorClips.Seconds[StorrorClips.SoftLandA]);
+            BuildPreview(SoftB, "GallerySoft04", "SOFT 04", "Blue", StorrorClips.Seconds[StorrorClips.SoftLandB]);
+            BuildPreview(WallRef, "GalleryWallRef", "WALL RUN", "Lavender", StorrorClips.Seconds[StorrorClips.WallRun]);
+            BuildPreview(TicTac, "GalleryTicTac", "TIC TAC", "Mint", StorrorClips.Seconds[StorrorClips.WallJump]);
+            BuildPreview(CatLeap, "GalleryCatLeap", "CAT LEAP", "Red", StorrorClips.Seconds[StorrorClips.Cling]);
             DressStages();
             _slowMark = MakeLabel(_focus + new Vector3(0f, 6f, 0f), "SLOW");
             _slowMark.SetActive(false);
@@ -186,7 +196,20 @@ namespace Tag.Art
         void Drive(int i)
         {
             Slot s = _slots[i];
-            if (s == null || s.Motor == null || s.Input == null) return;
+            if (s == null) return;
+            if (s.Kind >= SoftA)
+            {
+                _clock[i] += Time.deltaTime;
+                if (_clock[i] >= _period[i])
+                    _clock[i] = 0f;
+                if (s.Loco != null)
+                {
+                    float u = _period[i] > 0.001f ? _clock[i] / _period[i] : 0f;
+                    s.Loco.SetStorrorPreview(s.Kind - SoftA, u);
+                }
+                return;
+            }
+            if (s.Motor == null || s.Input == null) return;
             _clock[i] += Time.deltaTime;
             if (_clock[i] >= _period[i] || s.Motor.transform.position.y < -3f)
             {
@@ -292,6 +315,25 @@ namespace Tag.Art
                 return;
             }
             s.Input.SetExternalMove(Vector2.zero, false, false, false, false);
+        }
+
+        void BuildPreview(int index, int kind, string pawnName, string label, string color, float period)
+        {
+            float x = index * Gap;
+            var home = new Vector3(x, 0f, 0f);
+            var go = new GameObject(pawnName);
+            var loco = go.AddComponent<DummyLocomotor>();
+            DummyPrimitiveFactory.Build(go.transform, false, color);
+            go.transform.position = home;
+            go.transform.rotation = Quaternion.identity;
+            var slot = new Slot();
+            slot.Kind = kind;
+            slot.Loco = loco;
+            slot.Home = home;
+            slot.Beat = -1;
+            _slots[index] = slot;
+            _period[index] = period;
+            _labels[index] = MakeLabel(home + new Vector3(0f, 2.55f, 0f), label).transform;
         }
 
         void BuildSlot(int index, int kind, string pawnName, string label, string color, bool asIt, MovementConfig cfg, float period)
