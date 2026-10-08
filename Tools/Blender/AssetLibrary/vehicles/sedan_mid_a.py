@@ -1,18 +1,14 @@
-"""Midsize sedan line A. Two fascias on one body, factory colors.
+"""Midsize sedan line A, model years 2021 through 2025.
 
-Sheet inches, later fascia (2025 family-sedan e-brochure exterior page):
-height 56.9, width 72.4, length 193.5, wheelbase 111.2,
-ground clearance 5.4, track front/rear 63.0/63.7.
-LE tire P205/65R16, 10-spoke.
-The sheet does not print overhang. Front overhang is 39.0 in so the
-rear overhang is the 43.3 in remainder of length minus wheelbase.
+One body shell. 2025 is the new fascia (full-width lamp, wide mesh grille).
+2021-2024 keep that shell and change the grille, lamp signature, wheel, and
+mirror color. Every year is the crimson base. Extra colors are clones of 2025.
 
-Earlier fascia (2021 LE column on that year's e-brochure):
-length 192.1, width 72.4, height 56.9, wheelbase 111.2,
-clearance 5.7, track 62.6/62.8, tire P215/55R17.
-The 1.4 in length change is overhang: 0.9 in off the nose, 0.5 in off the tail.
-
-No badges. Asset blurbs do not use the sheet's brand.
+Sheet inches, 2025 family-sedan exterior page: height 56.9, width 72.4,
+length 193.5, wheelbase 111.2, ground clearance 5.4, track 63.0.
+The sheet does not print overhang. Front overhang is 39.0 in.
+2021-2024 were 1.4 in shorter in the earlier brochure; this line shares the
+2025 shell so the fascia is what changes. No badges.
 """
 
 import os
@@ -21,126 +17,54 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from _common import PALETTE, Asset, register
-import shell
+from _common import Asset, register
+import body_a
 import variant_picker
 
-INCH = 0.0254
-
-PALETTE.setdefault("Lib_PaintBlack", ((0.015, 0.015, 0.016), 0.55, 0.62))
-PALETTE.setdefault("Lib_PaintGrey", ((0.27, 0.28, 0.29), 0.45, 0.50))
-PALETTE.setdefault("Lib_PaintSilver", ((0.68, 0.70, 0.72), 0.72, 0.58))
-PALETTE.setdefault("Lib_PaintNavy", ((0.07, 0.14, 0.30), 0.42, 0.52))
-PALETTE.setdefault("Lib_PaintOcean", ((0.04, 0.40, 0.44), 0.28, 0.50))
-
 PAINT = {
-    "navy": "Lib_PaintNavy",
+    "crimson": "Lib_PaintCrimson",
     "white": "Lib_PaintWhite",
     "black": "Lib_PaintBlack",
     "grey": "Lib_PaintGrey",
     "silver": "Lib_PaintSilver",
-    "red": "Lib_PaintRed",
+    "navy": "Lib_PaintNavy",
     "ocean": "Lib_PaintOcean",
 }
 
-# Built once per fascia, then recolored. Blender booleans are the slow part.
 _BUILT = {}
 
 
-def _year_spec(year, paint):
-    if year == 2021:
-        return shell.make_sedan(
-            length=192.1 * INCH,
-            width=72.4 * INCH,
-            height=56.9 * INCH,
-            wheelbase=111.2 * INCH,
-            track=62.6 * INCH,
-            front_overhang=38.1 * INCH,
-            tire_radius=(17.0 * INCH + 2.0 * 0.215 * 0.55) * 0.5,
-            tire_width=0.215,
-            nose_y=0.76,
-            paint=paint,
-            name="Sedan_Mid_A_21",
-            deck_ratio=0.72,
-            roof_span=0.24,
-            cowl_setback=0.40,
-            belly=5.7 * INCH,
-            cap_inset=0.058,
-            tumble=0.07,
-            fascia="split",
-            spokes=5,
-            tread=True,
-            panel_gaps=True,
-            cabin=True,
-            wipers=True,
-            rim_ratio=0.66,
-        )
-    return shell.make_sedan(
-        length=193.5 * INCH,
-        width=72.4 * INCH,
-        height=56.9 * INCH,
-        wheelbase=111.2 * INCH,
-        track=63.0 * INCH,
-        front_overhang=39.0 * INCH,
-        tire_radius=(16.0 * INCH + 2.0 * 0.205 * 0.65) * 0.5,
-        tire_width=0.205,
-        nose_y=0.78,
-        paint=paint,
-        name="Sedan_Mid_A",
-        deck_ratio=0.72,
-        roof_span=0.24,
-        cowl_setback=0.40,
-        belly=5.4 * INCH,
-        cap_inset=0.058,
-        tumble=0.07,
-        fascia="bar",
-        spokes=10,
-        tread=True,
-        panel_gaps=True,
-        cabin=True,
-        wipers=True,
-        rim_ratio=0.60,
-    )
-
-
 def _blurb(year, color):
-    if year == 2021:
-        return (
-            "Midsize sedan, earlier fascia, 4.879 m long, 1.839 m wide, roof 1.445 m. "
-            "Flush glass, panel gaps, five-spoke alloys. Color %s." % color
-        )
     return (
-        "Midsize sedan, later fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. "
-        "Flush glass, panel gaps, ten-spoke alloys. Color %s." % color
+        "Midsize sedan, %d fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. "
+        "Raked windshield, fastback pillar, 18 inch alloys. Color %s."
+        % (year, color)
     )
 
 
-def _build(year, color):
+def _finish(src_shell, year, color, name):
     paint = PAINT[color]
-    spec = _year_spec(year, paint)
-    asset = Asset("pending", "Vehicles", _blurb(year, color))
+    asset = Asset(name, "Vehicles", _blurb(year, color))
     asset.climbable = True
     asset.climb_note = "Roof and hood are climbable sheet metal."
     asset.vault_note = "Hood and roof are landings, not vault rails."
     for lod in (0, 1, 2):
-        geo = asset.begin(lod)
-        shell.build_sedan(geo, spec, lod)
+        geo = body_a._copy_open(src_shell.lods[lod], asset, lod)
+        body_a.dress(geo, year, lod, paint)
         asset.end()
-    shell.add_sedan_colliders(asset, spec)
-    asset._sedan_spec = spec
+    body_a.add_colliders(asset)
+    asset._sedan_spec = body_a.probe_spec(name)
     return asset
 
 
 def _clone(src, name, blurb, new_paint):
-    old_paint = src._sedan_spec["paint"]
+    old_paint = "Lib_PaintCrimson"
     dst = Asset(name, "Vehicles", blurb)
     dst.climbable = True
     dst.climb_note = src.climb_note
     dst.vault_note = src.vault_note
     dst.colliders = [dict(col) for col in src.colliders]
-    dst._sedan_spec = dict(src._sedan_spec)
-    dst._sedan_spec["paint"] = new_paint
-    dst._sedan_spec["name"] = name
+    dst._sedan_spec = body_a.probe_spec(name)
     for lod, geo in src.lods.items():
         g = dst.begin(lod)
         index = []
@@ -165,19 +89,21 @@ def _clone(src, name, blurb, new_paint):
 def create_variants():
     if _BUILT:
         return list(_BUILT.values())
+    shell_asset = body_a.template(Asset)
     masters = {}
     for row in variant_picker.VARIANTS:
         year = row["year"]
         if year not in masters:
-            # First row of that year is the boolean master.
-            masters[year] = (row["color"], _build(year, row["color"]))
-        color, master = masters[year]
-        if row["color"] == color:
-            asset = master
+            masters[year] = _finish(shell_asset, year, "crimson", "Sedan_Mid_A_%02d" % (year % 100))
+            if year in (2021, 2025):
+                body_a.measure(masters[year])
+        if row["color"] == "crimson":
+            asset = masters[year]
             asset.name = row["name"]
             asset.blurb = _blurb(year, row["color"])
+            asset._sedan_spec = body_a.probe_spec(row["name"])
         else:
-            asset = _clone(master, row["name"], _blurb(year, row["color"]), PAINT[row["color"]])
+            asset = _clone(masters[year], row["name"], _blurb(year, row["color"]), PAINT[row["color"]])
         _BUILT[row["name"]] = asset
     return list(_BUILT.values())
 

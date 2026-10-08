@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 100002}
   - component: {fileID: 100004}
   m_Layer: 0
-  m_Name: Sedan_Mid_A_21
+  m_Name: Sedan_Mid_A_23
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -84,7 +84,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Vehicles"
-  summary: "Midsize sedan, 2021 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color crimson."
+  summary: "Midsize sedan, 2023 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color crimson."
   climbable: 1
   vaultable: 0
   vaultHeightMeters: 0
@@ -130,7 +130,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 200000}
-  m_Mesh: {fileID: -1633821710574564935, guid: 1380a80cd956da66b8123985f68246dd, type: 3}
+  m_Mesh: {fileID: -1633821710574564935, guid: da4bcc832fbea1b4e70c68794bf59158, type: 3}
 --- !u!23 &200003
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -229,7 +229,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 200010}
-  m_Mesh: {fileID: -179393741545503174, guid: 1380a80cd956da66b8123985f68246dd, type: 3}
+  m_Mesh: {fileID: -179393741545503174, guid: da4bcc832fbea1b4e70c68794bf59158, type: 3}
 --- !u!23 &200013
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -328,7 +328,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 200020}
-  m_Mesh: {fileID: 736115405485880582, guid: 1380a80cd956da66b8123985f68246dd, type: 3}
+  m_Mesh: {fileID: 736115405485880582, guid: da4bcc832fbea1b4e70c68794bf59158, type: 3}
 --- !u!23 &200023
 MeshRenderer:
   m_ObjectHideFlags: 0

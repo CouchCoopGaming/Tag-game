@@ -70,6 +70,39 @@ def _poly_cutter(verts, faces):
     return obj
 
 
+def _union_cut(obj, wells, pockets, prisms):
+    """One difference against the union of every cutter.
+
+    Sequential exact booleans on overlapping lamp and glass cuts delete the
+    shell. Union first, then cut once.
+    """
+    cutters = []
+    for center, radius, length in wells:
+        cutters.append(_well_cutter(center, radius, length))
+    for center, size in pockets:
+        cutters.append(_box_cutter(center, size))
+    for cverts, cfaces in prisms:
+        cutters.append(_poly_cutter(cverts, cfaces))
+    if not cutters:
+        return
+    acc = cutters[0]
+    for i, other in enumerate(cutters[1:], 1):
+        mod = acc.modifiers.new("U%d" % i, "BOOLEAN")
+        mod.operation = "UNION"
+        mod.solver = "EXACT"
+        mod.object = other
+        other_mesh = other.data
+        try:
+            _apply_mod(acc, "U%d" % i)
+        except RuntimeError as exc:
+            print("CUT_UNION_FAILED", i, exc)
+            if acc.modifiers.get("U%d" % i) is not None:
+                acc.modifiers.remove(mod)
+        bpy.data.objects.remove(other, do_unlink=True)
+        bpy.data.meshes.remove(other_mesh)
+    _difference(obj, acc, "Cuts")
+
+
 def _difference(obj, cut, name):
     boolean = obj.modifiers.new(name, "BOOLEAN")
     boolean.operation = "DIFFERENCE"
@@ -86,7 +119,7 @@ def _difference(obj, cut, name):
     bpy.data.meshes.remove(cut_mesh)
 
 
-def _emit(g, verts, faces, mat, level, wells, pockets, prisms, crease_deg):
+def _emit(g, verts, faces, mat, level, wells, pockets, prisms, crease_deg, hard=(), joined=False):
     bm = bmesh.new()
     bverts = [bm.verts.new(unity_to_blender(*v)) for v in verts]
     for face in faces:
@@ -96,11 +129,17 @@ def _emit(g, verts, faces, mat, level, wells, pockets, prisms, crease_deg):
             continue
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     if level:
+        bm.verts.index_update()
         layer = bm.edges.layers.float.new("crease_edge")
         limit = math.radians(crease_deg)
+        hard_set = {(min(a, b), max(a, b)) for a, b in hard}
         for edge in bm.edges:
             ang = edge.calc_face_angle(0.0) if len(edge.link_faces) == 2 else math.pi
             edge[layer] = 0.85 if ang > limit else 0.0
+            i0 = edge.verts[0].index
+            i1 = edge.verts[1].index
+            if (min(i0, i1), max(i0, i1)) in hard_set:
+                edge[layer] = 0.95
     me = bpy.data.meshes.new("shell")
     bm.to_mesh(me)
     bm.free()
@@ -112,12 +151,15 @@ def _emit(g, verts, faces, mat, level, wells, pockets, prisms, crease_deg):
         mod.render_levels = int(level)
         mod.use_creases = True
         _apply_mod(obj, "Sub")
-    for i, (center, radius, length) in enumerate(wells):
-        _difference(obj, _well_cutter(center, radius, length), "Well%d" % i)
-    for i, (center, size) in enumerate(pockets):
-        _difference(obj, _box_cutter(center, size), "Pocket%d" % i)
-    for i, (cverts, cfaces) in enumerate(prisms):
-        _difference(obj, _poly_cutter(cverts, cfaces), "Prism%d" % i)
+    if joined:
+        _union_cut(obj, wells, pockets, prisms)
+    else:
+        for i, (center, radius, length) in enumerate(wells):
+            _difference(obj, _well_cutter(center, radius, length), "Well%d" % i)
+        for i, (center, size) in enumerate(pockets):
+            _difference(obj, _box_cutter(center, size), "Pocket%d" % i)
+        for i, (cverts, cfaces) in enumerate(prisms):
+            _difference(obj, _poly_cutter(cverts, cfaces), "Prism%d" % i)
     out = bmesh.new()
     out.from_mesh(obj.data)
     bpy.data.objects.remove(obj, do_unlink=True)
@@ -126,7 +168,7 @@ def _emit(g, verts, faces, mat, level, wells, pockets, prisms, crease_deg):
     g._ingest(out, mat, 1.0)
 
 
-def _loft(g, rings, mat, level, wells, pockets, prisms, crease_deg):
+def _loft(g, rings, mat, level, wells, pockets, prisms, crease_deg, hard=(), joined=False):
     count = len(rings[0])
     verts = [p for ring in rings for p in ring]
     faces = []
@@ -150,7 +192,7 @@ def _loft(g, rings, mat, level, wells, pockets, prisms, crease_deg):
             a = vid(ring_i, i)
             b = vid(ring_i, i + 1)
             faces.append((center_i, b, a) if flip else (center_i, a, b))
-    _emit(g, verts, faces, mat, level, wells, pockets, prisms, crease_deg)
+    _emit(g, verts, faces, mat, level, wells, pockets, prisms, crease_deg, hard, joined)
 
 
 def _stations(z0, z1, step, extra):

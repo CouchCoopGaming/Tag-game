@@ -4,6 +4,7 @@
 """
 
 import importlib
+import json
 import os
 import sys
 import traceback
@@ -36,7 +37,7 @@ def _point_inside_long(bvh, blender_point):
     origin = Vector(blender_point)
     direction = Vector((1.0, 0.17, 0.09)).normalized()
     hits = 0
-    for _ in range(160):
+    for _ in range(480):
         loc, _normal, _idx, _dist = bvh.ray_cast(origin, direction)
         if loc is None:
             break
@@ -64,6 +65,33 @@ MODULES = (
     "bus_city40_red",
     "bus_city60",
 )
+
+
+# Replaced by the year line. _merge keeps names the fresh export did not touch.
+OBSOLETE = {
+    "Sedan_Mid_A",
+    "Sedan_Mid_A_White",
+    "Sedan_Mid_A_Black",
+    "Sedan_Mid_A_Grey",
+    "Sedan_Mid_A_Silver",
+    "Sedan_Mid_A_Red",
+    "Sedan_Mid_A_Ocean",
+    "Sedan_Mid_A_21_White",
+    "Sedan_Mid_A_21_Black",
+}
+
+
+def _drop_obsolete():
+    path = os.path.join(ROOT, "manifest.json")
+    with open(path, encoding="utf-8") as handle:
+        data = json.load(handle)
+    kept = [entry for entry in data if entry.get("name") not in OBSOLETE]
+    if len(kept) == len(data):
+        return
+    with open(path, "w", encoding="utf-8") as handle:
+        json.dump(kept, handle, indent=2)
+        handle.write("\n")
+    print("DROPPED_OBSOLETE", len(data) - len(kept))
 
 
 def main():
@@ -118,9 +146,11 @@ def main():
             print("FAIL", line)
         sys.exit(1)
     _merge(entries)
+    _drop_obsolete()
     palette, textured, normals, ao_names, emissive = write_unity.load_palette()
     extra = {
         "Lib_PaintBlack", "Lib_PaintGrey", "Lib_PaintSilver", "Lib_PaintNavy", "Lib_PaintOcean",
+        "Lib_PaintCrimson", "Lib_AutoGlass",
     }
     write_unity.write_materials(palette, textured, normals, ao_names, emissive, only=extra)
     _prefabs(entries)

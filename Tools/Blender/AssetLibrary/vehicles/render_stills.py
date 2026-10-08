@@ -114,7 +114,7 @@ def _close(fn, path, eye, aim, lens):
     _fit(path)
 
 
-def _with_figure(found, prop, path, prop_pos, prop_yaw, fig_pos):
+def _with_figure(found, prop, path, prop_pos, prop_yaw, fig_pos, fill=0.78):
     r._reset_scene()
     scene = bpy.context.scene
     r._engine(scene, wide=False)
@@ -126,7 +126,7 @@ def _with_figure(found, prop, path, prop_pos, prop_yaw, fig_pos):
         r._spawn(found[prop](), prop_pos, prop_yaw),
     ]
     r._ground("asphalt", 30.0)
-    r._frame(scene, objs, fill=0.78, elevation=12.0, azimuth=28.0)
+    r._frame(scene, objs, fill=fill, elevation=12.0, azimuth=28.0)
     r._render(scene, path)
     _fit(path)
 
@@ -220,7 +220,7 @@ def _side_dims(fn, dims, path, eye, aim, lens):
     _fit(path)
 
 
-def _lineup(found, names, path):
+def _lineup(found, names, path, azimuth=36.0, elevation=12.0, fill=0.90):
     r._reset_scene()
     scene = bpy.context.scene
     r._engine(scene, wide=False)
@@ -233,7 +233,7 @@ def _lineup(found, names, path):
     for i, name in enumerate(names):
         objs.append(r._spawn(found[name](), (i * span - origin, 0.0, 0.0), 28.0))
     r._ground("asphalt", 80.0)
-    r._frame(scene, objs, fill=0.90, elevation=12.0, azimuth=36.0)
+    r._frame(scene, objs, fill=fill, elevation=elevation, azimuth=azimuth)
     r._render(scene, path)
     _fit(path)
 
@@ -266,7 +266,7 @@ def main():
         out = os.path.join(STILL_ROOT, "sedan_mid_a")
         os.makedirs(out, exist_ok=True)
         if shot in (None, "hero"):
-            _shot_az(found["Sedan_Mid_A"], os.path.join(out, "hero.png"), 38.0)
+            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "hero.png"), 50.0, elevation=9.0, fill=0.92)
         # 2025 sheet: 193.5 x 56.9 in, wheelbase 111.2. Axles from the 39.0 in front overhang.
         length = 193.5 * 0.0254
         height = 56.9 * 0.0254
@@ -275,31 +275,31 @@ def main():
         z_rear = z_front - wheelbase
         if shot in (None, "side"):
             _side_dims(
-                found["Sedan_Mid_A"],
+                found["Sedan_Mid_A_25"],
                 _dimensions(length, height, wheelbase, z_front, z_rear),
                 os.path.join(out, "side.png"),
-                (14.0, 1.35, 0.0), (0.0, 0.95, 0.0), 58.0,
+                (11.5, 1.20, 0.0), (0.0, 0.82, 0.0), 78.0,
             )
         if shot in (None, "rear"):
-            _shot_az(found["Sedan_Mid_A"], os.path.join(out, "rear.png"), 218.0)
+            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "rear.png"), 230.0, elevation=10.0, fill=0.90)
         if shot in (None, "scale"):
             _with_figure(
-                found, "Sedan_Mid_A", os.path.join(out, "scale.png"),
-                (0.4, 0.0, 0.0), 18, (-1.7, 0.0, 1.55),
+                found, "Sedan_Mid_A_25", os.path.join(out, "scale.png"),
+                (0.4, 0.0, 0.0), 18, (-1.7, 0.0, 1.55), fill=0.88,
             )
         if shot in (None, "lineup"):
             _lineup(
-            found,
-            (
-                "Sedan_Mid_A_21",
-                "Sedan_Mid_A",
-                "Sedan_Mid_A_White",
-                "Sedan_Mid_A_Black",
-                "Sedan_Mid_A_Red",
-                "Sedan_Mid_A_Ocean",
-            ),
-            os.path.join(out, "lineup.png"),
-        )
+                found,
+                (
+                    "Sedan_Mid_A_21",
+                    "Sedan_Mid_A_22",
+                    "Sedan_Mid_A_23",
+                    "Sedan_Mid_A_24",
+                    "Sedan_Mid_A_25",
+                ),
+                os.path.join(out, "lineup.png"),
+                azimuth=48.0, elevation=8.0, fill=0.92,
+            )
         return
     if only is None or "midsize" in only or "sedan_midsize" in only:
         print("SHOT", "sedan_midsize")
