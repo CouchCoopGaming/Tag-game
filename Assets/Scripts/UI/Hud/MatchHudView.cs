@@ -58,6 +58,8 @@ namespace Tag.Ui.Hud
             RectTransform rt = MenuWidgets.Box(root, "Pane" + index.ToString(), Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f));
             pane.Root = rt;
             pane.Glow = Stretch(rt, "Glow", new Color(1f, 0.84f, 0.12f, 0f));
+            pane.SafeGlow = Stretch(rt, "SafeGlow", new Color(1f, 0.92f, 0.55f, 0f));
+            pane.SafeGlow.enabled = false;
             pane.EdgeT = Bar(rt, "Top", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 10f));
             pane.EdgeB = Bar(rt, "Bottom", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 10f));
             pane.EdgeL = Bar(rt, "Left", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(10f, 0f));
@@ -72,11 +74,43 @@ namespace Tag.Ui.Hud
             pane.BadgeWord = Label(badge, "It", UiFit.FloorFont, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, true);
             pane.BadgeWord.color = MenuTheme.Ink;
             pane.BadgeWord.text = MatchHudText.It;
+            RectTransform itPlate = MenuWidgets.Place(rt, "ItMark", 0f, 0f, 240f, 108f);
+            itPlate.anchorMin = new Vector2(0.5f, 0.62f);
+            itPlate.anchorMax = new Vector2(0.5f, 0.62f);
+            itPlate.pivot = new Vector2(0.5f, 0.5f);
+            pane.ItPlate = itPlate.gameObject.AddComponent<Image>();
+            pane.ItPlate.sprite = MenuArt.Round;
+            pane.ItPlate.type = Image.Type.Sliced;
+            pane.ItPlate.color = MenuTheme.Gold;
+            pane.ItPlate.raycastTarget = false;
+            pane.ItPlate.enabled = false;
+            pane.ItBig = Label(itPlate, "ItBig", 72, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, true);
+            pane.ItBig.color = MenuTheme.Ink;
+            pane.ItBig.text = MatchHudText.It;
+            pane.ItBig.enabled = false;
+            RectTransform clockRt = MenuWidgets.Place(rt, "PaneClock", 0f, 0f, 220f, 64f);
+            clockRt.anchorMin = new Vector2(0.5f, 1f);
+            clockRt.anchorMax = new Vector2(0.5f, 1f);
+            clockRt.pivot = new Vector2(0.5f, 1f);
+            Image clockPlate = clockRt.gameObject.AddComponent<Image>();
+            clockPlate.sprite = MenuArt.Round;
+            clockPlate.type = Image.Type.Sliced;
+            clockPlate.color = new Color(0.04f, 0.07f, 0.16f, 0.90f);
+            clockPlate.raycastTarget = false;
+            pane.Timer = Label(clockRt, "Time", 36, TextAnchor.MiddleCenter, new Vector2(0.02f, 0.08f), new Vector2(0.62f, 0.92f), true);
+            pane.TimerRound = Label(clockRt, "Round", UiFit.FloorFont, TextAnchor.MiddleCenter, new Vector2(0.58f, 0.12f), new Vector2(0.98f, 0.88f));
+            pane.TimerRound.color = MenuTheme.Gold;
             Outline badgeEdge = pane.BadgeWord.GetComponent<Outline>();
             if (badgeEdge != null) badgeEdge.effectColor = new Color(1f, 0.98f, 0.9f, 0.9f);
 
             pane.Identity = MenuWidgets.Place(rt, "Identity", 136f, 12f, 480f, 128f);
-            pane.Name = Label(pane.Identity, "Name", 34, TextAnchor.MiddleLeft, new Vector2(0f, 0.66f), new Vector2(1f, 1f));
+            RectTransform mark = MenuWidgets.Place(pane.Identity, "SeatMark", 8f, 86f, 36f, 36f);
+            pane.SeatMark = mark.gameObject.AddComponent<Image>();
+            pane.SeatMark.color = MenuTheme.Ink;
+            pane.SeatMark.preserveAspect = true;
+            pane.SeatMark.raycastTarget = false;
+            pane.SeatMark.enabled = false;
+            pane.Name = Label(pane.Identity, "Name", 34, TextAnchor.MiddleLeft, new Vector2(0.10f, 0.66f), new Vector2(1f, 1f));
             pane.Profile = Label(pane.Identity, "Profile", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0f, 0.36f), new Vector2(0.58f, 0.68f));
             pane.Profile.color = MenuTheme.Mute;
             pane.Tags = Label(pane.Identity, "Tags", UiFit.FloorFont, TextAnchor.MiddleRight, new Vector2(0.56f, 0.36f), new Vector2(0.78f, 0.68f));
@@ -110,6 +144,18 @@ namespace Tag.Ui.Hud
             pane.Arrow.color = MenuTheme.Gold;
             pane.Arrow.raycastTarget = false;
             pane.Arrow.enabled = false;
+            RectTransform compassRt = MenuWidgets.Place(root, "Compass" + index.ToString(), 0f, 0f, 72f, 40f);
+            Image compassPlate = compassRt.gameObject.AddComponent<Image>();
+            compassPlate.sprite = MenuArt.Round;
+            compassPlate.type = Image.Type.Sliced;
+            compassPlate.color = MenuTheme.Ink;
+            compassPlate.raycastTarget = false;
+            pane.CompassPlate = compassPlate;
+            pane.Compass = Label(compassRt, "It", UiFit.FloorFont, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, true);
+            pane.Compass.color = MenuTheme.Gold;
+            pane.Compass.text = MatchHudText.It;
+            pane.Compass.enabled = false;
+            compassPlate.enabled = false;
             BuildBoard(rt, pane);
             BuildFeed(rt, pane);
             return pane;
@@ -149,7 +195,27 @@ namespace Tag.Ui.Hud
             {
                 float y = i * 42f;
                 RectTransform line = MenuWidgets.Place(rt, "Line", 0f, y, 460f, 40f);
-                Text text = line.gameObject.AddComponent<Text>();
+                Image plate = line.gameObject.AddComponent<Image>();
+                plate.sprite = MenuArt.Round;
+                plate.type = Image.Type.Sliced;
+                plate.color = new Color(0.04f, 0.07f, 0.16f, 0.92f);
+                plate.raycastTarget = false;
+                plate.enabled = false;
+                pane.FeedPlate[i] = plate;
+                RectTransform chip = MenuWidgets.Place(line, "Chip", 6f, 6f, 28f, 28f);
+                Image chipImage = chip.gameObject.AddComponent<Image>();
+                chipImage.raycastTarget = false;
+                chipImage.enabled = false;
+                pane.FeedChip[i] = chipImage;
+                RectTransform shape = MenuWidgets.Place(line, "Mark", 40f, 6f, 28f, 28f);
+                Image shapeImage = shape.gameObject.AddComponent<Image>();
+                shapeImage.color = MenuTheme.Cream;
+                shapeImage.preserveAspect = true;
+                shapeImage.raycastTarget = false;
+                shapeImage.enabled = false;
+                pane.FeedMark[i] = shapeImage;
+                RectTransform word = MenuWidgets.Place(line, "Word", 74f, 0f, 378f, 40f);
+                Text text = word.gameObject.AddComponent<Text>();
                 text.font = MenuTheme.Font;
                 text.fontSize = UiFit.FloorFont;
                 text.fontStyle = FontStyle.Bold;
@@ -181,7 +247,7 @@ namespace Tag.Ui.Hud
             fill.fillClockwise = true;
             fill.fillAmount = 0f;
             fill.raycastTarget = false;
-            word = Label(rt, "Word", UiFit.FloorFont, TextAnchor.MiddleCenter, new Vector2(0f, 0f), new Vector2(1f, 0.42f), true);
+            word = Label(rt, "Word", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0.28f, 0f), new Vector2(1f, 1f));
         }
 
         static RectTransform BuildScore(Transform root, MatchHud hud)
@@ -197,7 +263,20 @@ namespace Tag.Ui.Hud
             for (int i = 0; i < 4; i++)
             {
                 float top = 0.80f - i * 0.18f;
-                hud.ScoreLine[i] = Label(rt, "Line" + i.ToString(), UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0f, top - 0.16f), new Vector2(1f, top));
+                float mid = top - 0.08f;
+                RectTransform chip = MenuWidgets.Box(rt, "Chip" + i.ToString(), new Vector2(0.06f, mid - 0.045f), new Vector2(0.11f, mid + 0.045f), new Vector2(0.5f, 0.5f));
+                Image chipImage = chip.gameObject.AddComponent<Image>();
+                chipImage.raycastTarget = false;
+                chipImage.enabled = false;
+                hud.ScoreChip[i] = chipImage;
+                RectTransform mark = MenuWidgets.Box(rt, "Mark" + i.ToString(), new Vector2(0.13f, mid - 0.04f), new Vector2(0.18f, mid + 0.04f), new Vector2(0.5f, 0.5f));
+                Image markImage = mark.gameObject.AddComponent<Image>();
+                markImage.color = MenuTheme.Cream;
+                markImage.preserveAspect = true;
+                markImage.raycastTarget = false;
+                markImage.enabled = false;
+                hud.ScoreMark[i] = markImage;
+                hud.ScoreLine[i] = Label(rt, "Line" + i.ToString(), UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0.20f, top - 0.16f), new Vector2(0.96f, top));
             }
             rt.gameObject.SetActive(false);
             return rt;

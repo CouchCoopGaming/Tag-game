@@ -1,3 +1,4 @@
+using Tag.Core;
 using Tag.Modes;
 
 namespace Tag.Ui.Hud
@@ -16,6 +17,10 @@ namespace Tag.Ui.Hud
         public static readonly string YoureIt = "YOU'RE IT!";
         public static readonly string Tagged = "TAGGED!";
         public static readonly string It = "IT";
+        public static readonly string DashLabel = "DASH";
+        public static readonly string SafeLabel = "SAFE";
+        public static readonly string[] SafeLine = BuildSafe();
+        public static readonly string[] PreviewScore = { "P1   12.4", "P2   8.1", "P3   4.0", "P4   1.2" };
         public static readonly string Ready = "READY";
         public static readonly string DashGo = "GO";
         public static readonly string Off = "—";
@@ -71,6 +76,22 @@ namespace Tag.Ui.Hud
             if (id == TagModeId.TrailTag) return "TRAIL";
             if (id == TagModeId.FreePlay) return "TAGS";
             return "TIME";
+        }
+
+        static string[] BuildSafe()
+        {
+            var table = new string[11];
+            for (int i = 0; i <= 10; i++)
+                table[i] = SafeLabel + "  " + HudDigits.Tenth0(i * 0.1f);
+            return table;
+        }
+
+        public static string SafeAt(float seconds)
+        {
+            if (seconds < 0f) seconds = 0f;
+            int i = (int)(seconds * 10f + 0.5f);
+            if (i > 10) i = 10;
+            return SafeLine[i];
         }
 
         static string[] BuildClock()

@@ -41,6 +41,14 @@ namespace Tag.Ui.Hud
         public Image SafeFill;
         public Text SafeWord;
         public Image Arrow;
+        public Image CompassPlate;
+        public Text Compass;
+        public Text Timer;
+        public Text TimerRound;
+        public Image ItPlate;
+        public Text ItBig;
+        public Image SeatMark;
+        public Image SafeGlow;
         public RectTransform Board;
         public Text BoardTitle;
         public Text BoardRound;
@@ -48,6 +56,9 @@ namespace Tag.Ui.Hud
         public readonly Text[] BoardName = new Text[4];
         public readonly Text[] BoardValue = new Text[4];
         public readonly Text[] Feed = new Text[3];
+        public readonly Image[] FeedPlate = new Image[3];
+        public readonly Image[] FeedChip = new Image[3];
+        public readonly Image[] FeedMark = new Image[3];
     }
 
     /// <summary>
@@ -71,6 +82,8 @@ namespace Tag.Ui.Hud
         public RectTransform ScoreRoot;
         public Text ScoreTitle;
         public readonly Text[] ScoreLine = new Text[4];
+        public readonly Image[] ScoreChip = new Image[4];
+        public readonly Image[] ScoreMark = new Image[4];
         public readonly HudPane[] Panes = new HudPane[4];
         public readonly ItController[] Pawns = new ItController[4];
         public readonly Camera[] Cams = new Camera[4];
@@ -251,11 +264,44 @@ namespace Tag.Ui.Hud
                 if (line == null) continue;
                 bool on = TagFeed.On(row, now);
                 line.enabled = on;
-                if (!on) continue;
+                if (!on)
+                {
+                    if (pane.FeedPlate[row] != null) pane.FeedPlate[row].enabled = false;
+                    if (pane.FeedChip[row] != null) pane.FeedChip[row].enabled = false;
+                    if (pane.FeedMark[row] != null) pane.FeedMark[row].enabled = false;
+                    continue;
+                }
                 Set(line, TagFeed.Text(row));
-                Color tint = MenuTheme.Seat(TagFeed.From(row));
+                Font face = MatchHudText.ComicWords ? MenuTheme.Display : MenuTheme.Font;
+                if (line.font != face) line.font = face;
                 float a = TagFeed.Alpha(row, now, hold);
-                line.color = new Color(tint.r, tint.g, tint.b, a);
+                line.color = new Color(MenuTheme.Cream.r, MenuTheme.Cream.g, MenuTheme.Cream.b, a);
+                int from = TagFeed.From(row);
+                Color seat = MenuTheme.Seat(from);
+                Image plate = pane.FeedPlate[row];
+                if (plate != null)
+                {
+                    plate.enabled = true;
+                    plate.color = new Color(MenuTheme.Ink.r, MenuTheme.Ink.g, MenuTheme.Ink.b, a);
+                }
+                Image chip = pane.FeedChip[row];
+                if (chip != null)
+                {
+                    chip.enabled = true;
+                    chip.color = new Color(seat.r, seat.g, seat.b, a);
+                }
+                Image mark = pane.FeedMark[row];
+                if (mark != null)
+                {
+                    bool shapes = SeatMarks();
+                    mark.enabled = shapes;
+                    if (shapes)
+                    {
+                        Sprite sprite = SeatShape.For(from);
+                        if (mark.sprite != sprite) mark.sprite = sprite;
+                        mark.color = new Color(MenuTheme.Cream.r, MenuTheme.Cream.g, MenuTheme.Cream.b, a);
+                    }
+                }
             }
         }
 
@@ -361,7 +407,9 @@ namespace Tag.Ui.Hud
                 if (!on) continue;
                 PaintPreviewPane(i, i == itPane, humans);
                 PreviewArrow(i, itPane, humans, split);
+                PlaceCompass(Panes[i], i != itPane);
             }
+            PaintPreviewScore(humans);
             bool center = humans <= 1;
             if (CenterPlate != null) CenterPlate.enabled = center;
             if (CenterCall != null)
@@ -415,6 +463,16 @@ namespace Tag.Ui.Hud
             else Set(pane.Value, HudDigits.Tenth0(12.4f));
             Set(pane.Tags, MatchHudText.Tags);
             Set(pane.TagsValue, HudDigits.Whole0(index));
+            if (pane.Timer != null && pane.Timer.transform.parent.gameObject.activeSelf)
+            {
+                Set(pane.Timer, MatchHudText.Clock(84f));
+                Set(pane.TimerRound, MatchHudText.Round(humans >= 4 ? 2 : 1, humans >= 4 ? 3 : 1));
+            }
+            ShowItMark(pane, it);
+            ShowSeatMark(pane, index);
+            ShowSafeGlow(pane, index == 2);
+            int tagger = index == 0 ? 1 : 0;
+            ShowFeedLine(pane, 0, tagger, TagFeed.Line[tagger, index]);
             Color tint = MenuTheme.Seat(index);
             TintEdges(pane, it ? Color.Lerp(tint, MenuTheme.Gold, 0.7f) : tint);
             if (pane.Glow != null)
@@ -425,11 +483,11 @@ namespace Tag.Ui.Hud
             if (pane.Badge != null) pane.Badge.enabled = it;
             if (pane.BadgeWord != null) pane.BadgeWord.enabled = it;
             if (pane.DashFill != null) pane.DashFill.fillAmount = it ? 1f : 0.4f;
-            Set(pane.DashWord, it ? MatchHudText.Blank : HudDigits.DashCd(18f));
+            Set(pane.DashWord, it ? MatchHudText.DashLabel : HudDigits.DashCd(18f));
             Set(pane.RopeWord, MatchHudText.Blank);
             if (pane.RopeMark != null) pane.RopeMark.color = index == 0 ? MenuTheme.Ready : MenuTheme.Gold;
             if (pane.SafeFill != null) pane.SafeFill.fillAmount = index == 2 ? 0.6f : 0f;
-            Set(pane.SafeWord, index == 2 ? HudDigits.Tenth0(0.6f) : MatchHudText.Blank);
+            Set(pane.SafeWord, index == 2 ? MatchHudText.SafeAt(0.6f) : MatchHudText.Blank);
             bool call = it || (index == 0 && humans > 1);
             if (pane.Call != null)
             {
@@ -457,8 +515,16 @@ namespace Tag.Ui.Hud
             Set(pane.Value, ValueOf(modes, pawn));
             Set(pane.Tags, MatchHudText.Tags);
             Set(pane.TagsValue, pawn != null ? HudDigits.Whole0(pawn.TagsLanded) : MatchHudText.Off);
+            if (pane.Timer != null && pane.Timer.transform.parent.gameObject.activeSelf)
+            {
+                if (mode == TagModeId.FreePlay) Set(pane.Timer, MatchHudText.Free);
+                else Set(pane.Timer, MatchHudText.Clock(modes.Remaining));
+                Set(pane.TimerRound, MatchHudText.Round(modes.RoundShown, modes.RoundCap));
+            }
+            ShowSeatMark(pane, seat);
 
             bool isIt = pawn != null && pawn.IsIt;
+            ShowItMark(pane, isIt);
             Color tint = SeatTint(seat);
             TintEdges(pane, isIt ? Color.Lerp(tint, MenuTheme.Gold, 0.72f) : tint);
             float glowA = 0f;
@@ -504,10 +570,17 @@ namespace Tag.Ui.Hud
             string dashWord = MatchHudText.Blank;
             if (motor != null)
             {
-                if (dashing) dashWord = MatchHudText.Comic(MatchHudText.DashGo);
+                if (dashing) dashWord = MatchHudText.ComicWords ? MatchHudText.DashGo : MatchHudText.DashLabel;
                 else if (dashRem > 0.05f) dashWord = HudDigits.DashCd(dashRem);
+                else dashWord = MatchHudText.DashLabel;
             }
             Set(pane.DashWord, dashWord);
+            if (pane.DashWord != null)
+            {
+                bool word = dashing || (motor != null && dashRem <= 0.05f);
+                Font face = word && MatchHudText.ComicWords ? MenuTheme.Display : MenuTheme.Font;
+                if (pane.DashWord.font != face) pane.DashWord.font = face;
+            }
 
             ExperimentalGrapple rope = Ropes[index];
             string ropeWord = MatchHudText.Blank;
@@ -541,7 +614,8 @@ namespace Tag.Ui.Hud
             if (safeFill < 0f) safeFill = 0f;
             if (safeFill > 1f) safeFill = 1f;
             if (pane.SafeFill != null) pane.SafeFill.fillAmount = safeFill;
-            Set(pane.SafeWord, safe > 0.001f ? HudDigits.Tenth0(safe) : MatchHudText.Blank);
+            Set(pane.SafeWord, safe > 0.001f ? MatchHudText.SafeAt(safe) : MatchHudText.Blank);
+            ShowSafeGlow(pane, safe > 0.001f);
         }
 
         void PaintPawnCall(HudPane pane, int index, bool isIt)
@@ -661,7 +735,17 @@ namespace Tag.Ui.Hud
                 pane.Arrow.enabled = false;
                 return;
             }
+            bool hunt = me != null && me.IsIt;
             PlaceArrow(pane.Arrow, Cams[index], target.transform.position);
+            PlaceCompass(pane, !hunt);
+        }
+
+        void PaintPreviewScore(int humans)
+        {
+            if (ScoreRoot == null || humans != 3) return;
+            if (ScoreTitle != null) Set(ScoreTitle, MatchHudText.Score);
+            for (int i = 0; i < 4; i++)
+                PaintScoreRow(i, MatchHudText.PreviewScore[i], true);
         }
 
         void PaintScore(int humans)
@@ -670,19 +754,43 @@ namespace Tag.Ui.Hud
             if (ScoreTitle != null) Set(ScoreTitle, MatchHudText.Score);
             for (int i = 0; i < 4; i++)
             {
-                Text line = ScoreLine[i];
-                if (line == null) continue;
                 if (!CouchPlay.HumanAt(i) && !CouchPlay.AiAt(i))
                 {
-                    Set(line, MatchHudText.Blank);
+                    PaintScoreRow(i, MatchHudText.Blank, false);
                     continue;
                 }
                 string text = CouchPlay.ScoreText(i);
                 if (text.Length == 0) text = CouchPlay.SeatLine(i);
-                Set(line, text);
-                CouchPlay.Tint(i, out float r, out float g, out float b);
-                line.color = new Color(r, g, b, 1f);
+                PaintScoreRow(i, text, true);
             }
+        }
+
+        void PaintScoreRow(int seat, string text, bool on)
+        {
+            Text line = ScoreLine[seat];
+            if (line != null)
+            {
+                line.enabled = on;
+                if (on)
+                {
+                    Set(line, text);
+                    line.color = MenuTheme.Cream;
+                }
+            }
+            Image chip = ScoreChip[seat];
+            if (chip != null)
+            {
+                chip.enabled = on;
+                if (on) chip.color = MenuTheme.Seat(seat);
+            }
+            Image mark = ScoreMark[seat];
+            if (mark == null) return;
+            bool shapes = on && SeatMarks();
+            mark.enabled = shapes;
+            if (!shapes) return;
+            Sprite sprite = SeatShape.For(seat);
+            if (mark.sprite != sprite) mark.sprite = sprite;
+            mark.color = MenuTheme.Cream;
         }
 
         void ApplyLayout(int humans, int split, bool preview)
@@ -707,6 +815,7 @@ namespace Tag.Ui.Hud
             if (sig == _layout) return;
             _layout = sig;
             int panes = CouchPlay.Panes(humans);
+            bool topCenter = humans <= 1;
             int nameSize = UiFit.TextPx(humans >= 3 ? UiFit.FloorFont : 36);
             int callSize = UiFit.TextPx(humans >= 3 ? 40 : 68);
             FitText(Clock, 46);
@@ -753,11 +862,17 @@ namespace Tag.Ui.Hud
                     h = rect.height;
                 }
                 else CouchPlay.Norm(i, humans, split, out x, out y, out w, out h);
+                if (x < 0.45f && x + w > 0.55f && y + h > 0.92f) topCenter = true;
                 pane.Root.anchorMin = new Vector2(x, y);
                 pane.Root.anchorMax = new Vector2(x + w, y + h);
                 pane.Root.offsetMin = Vector2.zero;
                 pane.Root.offsetMax = Vector2.zero;
                 PlaceIdentity(pane, humans, split, i, UiFit.Current(), nameSize, callSize);
+            }
+            if (Clock != null)
+            {
+                GameObject shared = Clock.transform.parent.gameObject;
+                if (shared.activeSelf != topCenter) shared.SetActive(topCenter);
             }
             if (ScoreRoot != null)
             {
@@ -821,19 +936,47 @@ namespace Tag.Ui.Hud
                 rt.anchoredPosition = new Vector2(lay.NameX, lay.NameY);
                 rt.sizeDelta = new Vector2(lay.NameW, nameH);
             }
-            if (floor > UiFit.FloorFont && pane.Verbs != null)
+            float rowW = 188f;
+            float rowH = 48f;
+            if (pane.Verbs != null)
             {
-                float chipH = (floor + 8f) / 0.42f;
-                float chipW = floor * 3.0f;
-                if (chipW < 52f) chipW = 52f;
-                float gap = 4f;
-                pane.Verbs.sizeDelta = new Vector2(chipW * 3f + gap * 2f, chipH);
-                for (int c = 0; c < pane.Verbs.childCount; c++)
+                float disc = floor + 8f;
+                if (disc < 36f) disc = 36f;
+                float wordW = floor * 5.6f;
+                if (wordW < 168f) wordW = 168f;
+                rowW = disc + 12f + wordW;
+                rowH = disc + 10f;
+                float gap = 6f;
+                pane.Verbs.sizeDelta = new Vector2(rowW, rowH * 3f + gap * 2f);
+                int rows = pane.Verbs.childCount;
+                for (int c = 0; c < rows; c++)
                 {
                     RectTransform child = pane.Verbs.GetChild(c) as RectTransform;
                     if (child == null) continue;
-                    child.anchoredPosition = new Vector2(c * (chipW + gap), 0f);
-                    child.sizeDelta = new Vector2(chipW, chipH);
+                    int fromTop = rows - 1 - c;
+                    child.anchoredPosition = new Vector2(0f, -fromTop * (rowH + gap));
+                    child.sizeDelta = new Vector2(rowW, rowH);
+                    if (child.childCount > 0)
+                    {
+                        RectTransform discRt = child.GetChild(0) as RectTransform;
+                        if (discRt != null)
+                        {
+                            discRt.anchoredPosition = new Vector2(2f, -((rowH - disc) * 0.5f));
+                            discRt.sizeDelta = new Vector2(disc, disc);
+                        }
+                    }
+                    if (child.childCount > 1)
+                    {
+                        RectTransform wordRt = child.GetChild(1) as RectTransform;
+                        if (wordRt != null)
+                        {
+                            wordRt.anchorMin = Vector2.zero;
+                            wordRt.anchorMax = Vector2.one;
+                            wordRt.pivot = new Vector2(0f, 0.5f);
+                            wordRt.offsetMin = new Vector2(disc + 12f, 0f);
+                            wordRt.offsetMax = new Vector2(-4f, 0f);
+                        }
+                    }
                 }
             }
             TextAnchor align = right ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
@@ -868,6 +1011,51 @@ namespace Tag.Ui.Hud
             FitText(pane.Tags, UiFit.FloorFont);
             FitText(pane.TagsValue, UiFit.FloorFont);
             FitText(pane.BadgeWord, UiFit.FloorFont);
+            FitText(pane.Timer, humans > 1 ? (humans >= 4 ? 32 : 36) : 36);
+            FitText(pane.TimerRound, UiFit.FloorFont);
+            int itPx = humans >= 4 ? 48 : humans == 3 ? 56 : humans == 2 ? 72 : 96;
+            FitText(pane.ItBig, itPx);
+            if (pane.Timer != null)
+            {
+                GameObject clock = pane.Timer.transform.parent.gameObject;
+                bool coversTop = pane.Root != null
+                    && pane.Root.anchorMin.x < 0.45f
+                    && pane.Root.anchorMax.x > 0.55f
+                    && pane.Root.anchorMax.y > 0.92f;
+                bool splitClock = humans > 1 && !coversTop;
+                if (clock.activeSelf != splitClock) clock.SetActive(splitClock);
+                if (splitClock)
+                {
+                    RectTransform plate = clock.transform as RectTransform;
+                    float drop = -lay.BadgeY;
+                    if (drop < 14f) drop = 14f;
+                    plate.anchorMin = new Vector2(0.5f, 1f);
+                    plate.anchorMax = new Vector2(0.5f, 1f);
+                    plate.pivot = new Vector2(0.5f, 1f);
+                    plate.anchoredPosition = new Vector2(0f, -drop);
+                    int clockPx = UiFit.TextPx(humans >= 4 ? 32 : 36);
+                    float cw = clockPx * 6.2f;
+                    if (cw < 200f) cw = 200f;
+                    if (cw > lay.NameW && lay.NameW > 160f) cw = lay.NameW;
+                    float ch = clockPx + 28f;
+                    if (ch < 56f) ch = 56f;
+                    plate.sizeDelta = new Vector2(cw, ch);
+                }
+            }
+            if (pane.ItPlate != null)
+            {
+                RectTransform plate = pane.ItPlate.rectTransform;
+                float itW = humans >= 4 ? 168f : humans == 3 ? 196f : humans == 2 ? 240f : 300f;
+                float itH = humans >= 4 ? 76f : humans == 3 ? 88f : 112f;
+                plate.sizeDelta = new Vector2(itW, itH);
+                plate.anchorMin = new Vector2(0.5f, humans >= 4 ? 0.58f : 0.62f);
+                plate.anchorMax = plate.anchorMin;
+            }
+            if (pane.Arrow != null)
+            {
+                float arrow = humans >= 4 ? 64f : 84f;
+                pane.Arrow.rectTransform.sizeDelta = new Vector2(arrow, arrow);
+            }
             FitText(pane.DashWord, UiFit.FloorFont);
             FitText(pane.RopeWord, UiFit.FloorFont);
             FitText(pane.SafeWord, UiFit.FloorFont);
@@ -903,10 +1091,35 @@ namespace Tag.Ui.Hud
                 RectTransform feed = pane.Feed[0].rectTransform.parent as RectTransform;
                 if (feed != null)
                 {
+                    UiFit.Ref(scale, out float sw, out _);
+                    float panePx = (pane.Root.anchorMax.x - pane.Root.anchorMin.x) * sw;
+                    bool touchR = pane.Root.anchorMax.x > 0.98f;
+                    float rightInset = touchR ? UiFit.SafeX : 18f;
+                    float room = panePx - lay.VerbX - rightInset - rowW - 16f;
+                    float feedW = 420f;
+                    if (feedW > room) feedW = room;
+                    if (feedW < 220f) feedW = 220f;
                     feed.anchorMin = new Vector2(1f, 0f);
                     feed.anchorMax = new Vector2(1f, 0f);
                     feed.pivot = new Vector2(1f, 0f);
-                    feed.anchoredPosition = new Vector2(-lay.VerbX, lay.VerbY);
+                    feed.anchoredPosition = new Vector2(-rightInset, lay.VerbY);
+                    feed.sizeDelta = new Vector2(feedW, feed.sizeDelta.y);
+                    for (int f = 0; f < feed.childCount; f++)
+                    {
+                        RectTransform line = feed.GetChild(f) as RectTransform;
+                        if (line == null) continue;
+                        line.sizeDelta = new Vector2(feedW, line.sizeDelta.y);
+                        if (line.childCount > 2)
+                        {
+                            RectTransform word = line.GetChild(2) as RectTransform;
+                            if (word != null)
+                            {
+                                float textW = feedW - 82f;
+                                if (textW < 120f) textW = 120f;
+                                word.sizeDelta = new Vector2(textW, word.sizeDelta.y);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -937,6 +1150,137 @@ namespace Tag.Ui.Hud
             rt.anchoredPosition = Vector2.zero;
             rt.localEulerAngles = new Vector3(0f, 0f, Mathf.Atan2(dy, dx) * 57.29578f);
             pane.Arrow.enabled = true;
+        }
+
+        static void PlaceCompass(HudPane pane, bool show)
+        {
+            if (pane == null || pane.Compass == null) return;
+            bool on = show && pane.Arrow != null && pane.Arrow.enabled;
+            if (pane.CompassPlate != null) pane.CompassPlate.enabled = on;
+            pane.Compass.enabled = on;
+            GameObject plate = pane.Compass.transform.parent.gameObject;
+            if (plate.activeSelf != on) plate.SetActive(on);
+            if (!on) return;
+            RectTransform rt = plate.transform as RectTransform;
+            RectTransform arrow = pane.Arrow.rectTransform;
+            float chipW = 72f;
+            float chipH = 40f;
+            float gap = arrow.sizeDelta.x * 0.55f;
+            if (gap < 28f) gap = 28f;
+            RectTransform canvas = rt.parent as RectTransform;
+            float canvasW = 1920f;
+            float canvasH = 1080f;
+            if (canvas != null)
+            {
+                if (canvas.rect.width > 1f) canvasW = canvas.rect.width;
+                if (canvas.rect.height > 1f) canvasH = canvas.rect.height;
+            }
+            float ax = arrow.anchorMin.x;
+            float ay = arrow.anchorMin.y;
+            float leftN = 0f;
+            float rightN = 1f;
+            float bottomN = 0f;
+            float topN = 1f;
+            if (pane.Root != null)
+            {
+                leftN = pane.Root.anchorMin.x;
+                rightN = pane.Root.anchorMax.x;
+                bottomN = pane.Root.anchorMin.y;
+                topN = pane.Root.anchorMax.y;
+            }
+            float margin = 28f;
+            float roomRight = (rightN - ax) * canvasW - margin;
+            float roomLeft = (ax - leftN) * canvasW - margin;
+            bool placeLeft = roomRight < gap + chipW && roomLeft >= roomRight;
+            float ox = placeLeft ? -gap : gap;
+            float edge = placeLeft ? roomLeft - chipW : roomRight - chipW;
+            if (placeLeft && ox < -edge) ox = -edge;
+            if (!placeLeft && ox > edge) ox = edge;
+            float oy = 16f;
+            float topRoom = (topN - ay) * canvasH - margin;
+            float botRoom = (ay - bottomN) * canvasH - margin;
+            if (oy + chipH * 0.5f > topRoom) oy = topRoom - chipH * 0.5f;
+            if (-oy + chipH * 0.5f > botRoom) oy = -(botRoom - chipH * 0.5f);
+            rt.anchorMin = arrow.anchorMin;
+            rt.anchorMax = arrow.anchorMax;
+            rt.pivot = new Vector2(placeLeft ? 1f : 0f, 0.5f);
+            rt.anchoredPosition = new Vector2(ox, oy);
+            rt.localEulerAngles = Vector3.zero;
+            rt.sizeDelta = new Vector2(chipW, chipH);
+        }
+
+        static void ShowItMark(HudPane pane, bool it)
+        {
+            if (pane.ItPlate != null) pane.ItPlate.enabled = it;
+            if (pane.ItBig != null)
+            {
+                pane.ItBig.enabled = it;
+                if (it) Set(pane.ItBig, MatchHudText.It);
+            }
+        }
+
+        static void ShowSeatMark(HudPane pane, int seat)
+        {
+            if (pane.SeatMark == null) return;
+            bool on = SeatMarks();
+            pane.SeatMark.enabled = on;
+            if (!on) return;
+            Sprite sprite = SeatShape.For(seat);
+            if (pane.SeatMark.sprite != sprite) pane.SeatMark.sprite = sprite;
+            pane.SeatMark.color = MenuTheme.Cream;
+        }
+
+        static void ShowSafeGlow(HudPane pane, bool on)
+        {
+            if (pane.SafeGlow == null) return;
+            pane.SafeGlow.enabled = on;
+            if (!on) return;
+            float a = 0.22f;
+            if (!MenuVideo.ReduceMotion)
+            {
+                float s = Mathf.Sin(Time.unscaledTime * 8f);
+                if (s < 0f) s = -s;
+                a = 0.14f + 0.24f * s;
+            }
+            pane.SafeGlow.color = new Color(1f, 0.93f, 0.62f, a);
+        }
+
+        static void ShowFeedLine(HudPane pane, int row, int from, string text)
+        {
+            if (pane.Feed == null || row < 0 || row >= pane.Feed.Length) return;
+            Text line = pane.Feed[row];
+            if (line == null) return;
+            line.enabled = true;
+            Set(line, text);
+            Font face = MatchHudText.ComicWords ? MenuTheme.Display : MenuTheme.Font;
+            if (line.font != face) line.font = face;
+            line.color = MenuTheme.Cream;
+            if (pane.FeedPlate[row] != null)
+            {
+                pane.FeedPlate[row].enabled = true;
+                pane.FeedPlate[row].color = new Color(MenuTheme.Ink.r, MenuTheme.Ink.g, MenuTheme.Ink.b, 0.92f);
+            }
+            if (pane.FeedChip[row] != null)
+            {
+                pane.FeedChip[row].enabled = true;
+                pane.FeedChip[row].color = MenuTheme.Seat(from);
+            }
+            if (pane.FeedMark[row] != null)
+            {
+                bool shapes = SeatMarks();
+                pane.FeedMark[row].enabled = shapes;
+                if (shapes)
+                {
+                    Sprite sprite = SeatShape.For(from);
+                    if (pane.FeedMark[row].sprite != sprite) pane.FeedMark[row].sprite = sprite;
+                }
+            }
+        }
+
+        static bool SeatMarks()
+        {
+            GameSettings settings = GameSettings.Current;
+            return settings != null && settings.CvdSeats != SeatCvd.Off;
         }
 
         static void PlaceArrow(Image arrow, Camera cam, Vector3 world)

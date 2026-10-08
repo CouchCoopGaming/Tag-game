@@ -12,6 +12,11 @@ namespace Tag.Ui.Menu
     {
         static Sprite[] _sprites;
 
+        public static Sprite For(int seat)
+        {
+            return SpriteOf(seat);
+        }
+
         public static void Stamp(Transform parent, int seat, float x, float y, float size, Color ink)
         {
             if (parent == null || GameSettings.Current == null || GameSettings.Current.CvdSeats == SeatCvd.Off)
