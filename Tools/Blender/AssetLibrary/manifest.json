@@ -34772,5 +34772,159 @@
     ],
     "slackCm": 0.45,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Pickup.fbx"
+  },
+  {
+    "name": "TrafficSignal_Mast",
+    "category": "StreetFurniture",
+    "blurb": "Corner signal. Pole 4.70 m, mast arm 4.6 m, three-lens head and a WALK ped head.",
+    "size": [
+      4.86,
+      4.71,
+      0.424
+    ],
+    "min": [
+      -0.18,
+      0.0,
+      -0.18
+    ],
+    "max": [
+      4.68,
+      4.71,
+      0.244
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 976,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black",
+          "Lib_Taillamp",
+          "Lib_SignalAmber",
+          "Lib_SignalGreen",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 316,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Black",
+          "Lib_Taillamp",
+          "Lib_SignalAmber",
+          "Lib_SignalGreen"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.026,
+          0
+        ],
+        "size": [
+          0.16,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pole",
+        "type": "capsule",
+        "center": [
+          0,
+          2.05,
+          0
+        ],
+        "radius": 0.05,
+        "height": 3.7,
+        "direction": 1
+      },
+      {
+        "name": "Col_Arm",
+        "type": "box",
+        "center": [
+          2.2,
+          4.22,
+          0
+        ],
+        "size": [
+          3.8,
+          0.07,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Head",
+        "type": "box",
+        "center": [
+          4.5,
+          3.42,
+          0.08
+        ],
+        "size": [
+          0.18,
+          0.7,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Ped",
+        "type": "box",
+        "center": [
+          0.125,
+          2.28,
+          0.0
+        ],
+        "size": [
+          0.04,
+          0.36,
+          0.2
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "14 cm pole. Not a cling.",
+    "vaultNote": "Mast arm is 4.2 m up.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/TrafficSignal_Mast.fbx"
   }
 ]

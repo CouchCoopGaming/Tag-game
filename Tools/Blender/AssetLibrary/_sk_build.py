@@ -59,6 +59,7 @@ MODULES = (
     "sk_car_sedan",
     "sk_car_hatch",
     "sk_car_pickup",
+    "sk_traffic_signal",
 )
 
 

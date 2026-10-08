@@ -59,6 +59,7 @@ MODULES = (
     "sk_car_sedan",
     "sk_car_hatch",
     "sk_car_pickup",
+    "sk_traffic_signal",
     "mannequin",
 )
 
@@ -330,10 +331,43 @@ def _pass9_lineup(found, path):
     _fit(path)
 
 
+def _pass12_lineup(found, path):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.render.resolution_x = 1280
+    scene.render.resolution_y = 720
+    scene.cycles.samples = 24
+    r._ensure_materials()
+    r._world(scene, night=False)
+    specs = [
+        ("Mannequin", (-1.3, 0.0, 1.4), 160),
+        ("TrafficSignal_Mast", (0.0, 0.0, 0.0), 18),
+    ]
+    objs = [r._spawn(found[name](), pos, yaw) for name, pos, yaw in specs]
+    r._ground("asphalt", 40.0)
+    r._frame(scene, objs, fill=0.82, elevation=12.0, azimuth=32.0)
+    r._render(scene, path)
+    _fit(path)
+
+
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
     found = _load()
-    if PASS >= 11:
+    if PASS >= 12:
+        shots = [
+            ("traffic_signal", lambda: _shot(
+                found["TrafficSignal_Mast"], os.path.join(STILL_DIR, "traffic_signal.png"),
+                kind="asphalt", fill=0.86)),
+            ("traffic_head", lambda: _close(
+                found["TrafficSignal_Mast"], os.path.join(STILL_DIR, "traffic_head.png"),
+                (5.6, 3.5, 2.4), (4.5, 3.42, 0.1), 42)),
+            ("traffic_ped", lambda: _close(
+                found["TrafficSignal_Mast"], os.path.join(STILL_DIR, "traffic_ped.png"),
+                (1.05, 2.20, 0.7), (0.14, 2.22, 0.0), 48)),
+            ("kit_lineup", lambda: _pass12_lineup(found, os.path.join(STILL_DIR, "kit_lineup.png"))),
+        ]
+    elif PASS >= 11:
         shots = [
             ("car_sedan", lambda: _shot(found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan.png"), kind="asphalt", fill=0.84)),
             ("car_sedan_door", lambda: _close(
