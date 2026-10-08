@@ -248,3 +248,23 @@ A moving punch or tag leans the chest 22° at the locked sprint. The fist used t
 Stick figures are in `Docs/SmoothStills/pass9/body-line.png`. Twelve rows, eight frames: wall jump, rope, zip, pad, reversal, and the moving punch. Before, then after.
 
 `loco-polish`, `body-life`, `foot-slide`, `respawn-blink`, `climb-contact`, `response-latency`, and `stick-quality` are unchanged. `climbRate` stays 16.50 and `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. Mouse flicks still snap. Landing still waits one sample.
+
+## Pass 10
+
+Core locomotion. Visual only. Walk stays 6.9, sprint stays 13.8, crouch stays 3.68. Slide decay and `slideBoost` stay 0. Coyote, buffer, cling, jump, dash, punch, climb, slip, wall-run, pad, zip, and the grapple are unchanged. One `CharacterController.Move` per Update. No root motion. No new verbs. No ledge hang and no shimmy. Chase-cam `fovPop`, shake, and `slowMo` stay 0.
+
+The sprint arm used a rectified swing, so the shoulder stepped 52.0° in one frame. It is now a continuous swing, about 46° at a sprint, opposite the same-side thigh. The peak step is 28.9°. A sprint also leans the chest 6.5° once it is up to speed. That lean eases in, so the first step is 0.7° instead of the whole 6.5°. The head keeps 65% of the hip bob out of the skull. The bounce steps 4.9 cm, then 1.7 cm. Foot travel is unchanged, so the sole still slides 0.0 cm. The stance sole used to snap 39.8° at contact. It now eases across 0.05 s, and the peak step is 19.7°.
+
+A run start used to put the full 4.0° anticipation on the first frame. It now rises over one step (0.16 s) and settles as the stride opens. The peak step is 0.5°. A stop still plants the lead foot and then hands the bones to idle. The plant used to replace a sprint thigh in one frame, a 32.0° gap. It now opens over 0.14 s, peak step 5.9°.
+
+Turn lean follows the turn rate. A sharp turn while walking eases the outside foot onto the plant instead of cutting it there. The old gap was 51.8°. The peak step is 12.9°. Idle already breathes and shifts weight. The look-around used to be a 14.0° snap. The sine peaks at 2.4° per frame. A crouch walk at 3.68 keeps the low stride. The contact kink stepped 7.8°. Blending that kink steps 6.4°. Foot slide on the crouch stays 0.0 cm.
+
+A slide still decays on the old ground decel. The drop and the rise are a raised cosine over 0.22 s, so the head steps 5.9° instead of 12.0°. `SlideBlendSeconds` stays 0.10. The capsule is not delayed.
+
+`loco-feel stride=52.0>28.9 foot=39.8>19.7 slideCm=51.7>0.0 lean=6.5>0.7 start=4.0>0.5 stop=32.0>5.9 turn=51.8>12.9 idle=14.0>2.4 crouch=7.8>6.4 drop=12.0>5.9 head=4.9>1.7 gameplayDelay=0 rootMotion=0`
+
+Stick figures are in `Docs/SmoothStills/pass10/locomotion.png`. Fourteen rows, eight frames: stride, start, stop, turn, idle, crouch, and slide. Before, then after.
+
+The pass 9 row labels were a 5-by-7 bitmap that had no J, P, Z, D, or V, so WALL JUMP, ROPE, ZIP, PAD, and REVERSAL drew as fragments. Stills now rasterize Liberation Sans from `Tools/StrafeJumpSim/Fonts`. `Docs/SmoothStills/pass9/body-line.png` was rendered again with those words.
+
+`loco-polish`, `body-life`, `foot-slide`, `respawn-blink`, `climb-contact`, `body-line`, `response-latency`, and `stick-quality` are unchanged. `climbRate` stays 16.50 and `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`. Mouse flicks still snap. Landing still waits one sample.
