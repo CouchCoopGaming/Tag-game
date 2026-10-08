@@ -43702,11 +43702,11 @@
   {
     "name": "PedSignal_Crosswalk",
     "category": "StreetFurniture",
-    "blurb": "Crosswalk signal. Hand and walking figure, head bottom 2.36 m, push button at 1.07 m. No words.",
+    "blurb": "Crosswalk signal. Open-palm hand and a walking figure, pole ends just above the head, push button at 1.07 m.",
     "size": [
       0.42,
-      3.335,
-      0.42
+      3.224,
+      0.389
     ],
     "min": [
       -0.21,
@@ -43715,13 +43715,13 @@
     ],
     "max": [
       0.21,
-      3.335,
-      0.28
+      3.224,
+      0.249
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 668,
+        "tris": 600,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -43735,7 +43735,7 @@
       },
       {
         "lod": 1,
-        "tris": 404,
+        "tris": 388,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -43773,11 +43773,11 @@
         "type": "capsule",
         "center": [
           0,
-          1.15,
+          1.1,
           0
         ],
         "radius": 0.034,
-        "height": 2.1,
+        "height": 2.0,
         "direction": 1
       },
       {
