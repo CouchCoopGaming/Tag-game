@@ -322,6 +322,8 @@ The twenty-seventh pass stops subtracting that rest depth. The 0.5 cm limit appl
 
 The twenty-eighth pass keeps that raw overlap rule and splits the count. rigJoint is 26, the pairs that already fail at rest. pose is a pair the live poses add, and it stays 0. Mode, every rule, and the arena are driven with the keyboard and again with a pad, and the values that land are the ones TagModeController and the loaded park read. Rematch keeps the seats, the looks, and the arena. Main Menu returns to the title and clears the seats. The mint chest on Blue and on Lavender is the accent panel of that look, the same pair the match body uses. Space still jumps. Mockups are in `Docs/UiStills/pass28/`.
 
+The twenty-ninth pass keeps those lines. Title, the main menu, character select, mode and rules, arena, and results ease through a short slide and scale. Back runs that move in reverse. Input skips it, and the timer is unscaled so a pause does not stop it. The focused tile bumps to 1.08 and settles. Arena tiles show the real loop, pads, zips, and spawns, with the measured size and one line from that map. Ready leans into the ready pose and hops once, and pose stays 0. Move, confirm, back, ready, and start already play UiMove, UiConfirm, UiBack, RoundWin, and RoundStart. The extra line is `transitions=ok skip=ok`. Mockups are in `Docs/UiStills/pass29/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

@@ -5,7 +5,8 @@ namespace Tag.Ui.Menu
 {
     /// <summary>
     /// Menu-only idle. Uses IdlePose for the breath and the weight shift,
-    /// and the idle arm hang on the primitive body. No root motion.
+    /// and the idle arm hang on the primitive body. Ready leans into the
+    /// existing ready pose and hops once with MenuPolish.Hop.
     /// </summary>
     public sealed class MenuIdle : MonoBehaviour
     {
@@ -20,9 +21,14 @@ namespace Tag.Ui.Menu
         float _blend;
         float _shift;
         float _breath;
+        float _hop;
+        float _restY;
+        bool _restYSet;
 
         public void SetReady(bool ready)
         {
+            if (ready && !_ready) _hop = 1f;
+            if (!ready) _hop = 0f;
             _ready = ready;
         }
 
@@ -51,6 +57,8 @@ namespace Tag.Ui.Menu
             _thighR0 = Rest(_thighR);
             _kneeL0 = Rest(_kneeL);
             _kneeR0 = Rest(_kneeR);
+            _restY = transform.localPosition.y;
+            _restYSet = true;
         }
 
         void Update()
@@ -60,14 +68,30 @@ namespace Tag.Ui.Menu
             if (MenuVideo.ReduceMotion)
             {
                 _blend = goal;
+                _hop = 0f;
                 Pose(MenuAlive.Lerp(MenuAlive.Idle(0f, 0f), MenuAlive.Ready(), _blend));
+                Lift(0f);
                 return;
             }
             if (dt > 0.05f) dt = 0.05f;
             _blend = Mathf.MoveTowards(_blend, goal, dt / 0.18f);
+            if (_hop > 0f)
+            {
+                _hop -= dt / 0.36f;
+                if (_hop < 0f) _hop = 0f;
+            }
             _shift += IdlePose.ShiftRate * dt;
             _breath += IdlePose.BreathRate * dt;
             Pose(MenuAlive.Lerp(MenuAlive.Idle(_shift, _breath), MenuAlive.Ready(), _blend));
+            Lift(MenuPolish.Hop(_hop));
+        }
+
+        void Lift(float hop)
+        {
+            if (!_restYSet) return;
+            Vector3 p = transform.localPosition;
+            p.y = _restY + hop;
+            transform.localPosition = p;
         }
 
         void Pose(MenuAlive.Angles a)

@@ -160,6 +160,7 @@
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuAlive.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuNoClip.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuHandoff.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuTravel.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/LoadGate.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuTips.cs" />
     <Compile Include="../../Assets/Scripts/UI/Hud/HudCorner.cs" />

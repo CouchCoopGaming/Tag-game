@@ -57,6 +57,7 @@ static class Program
             string repo = RepoRoot();
             Console.WriteLine(Tag.Ui.Menu.MenuHandoff.HandoffLine(repo));
             Console.WriteLine(Tag.Ui.Menu.MenuHandoff.ResultsLine(repo));
+            Console.WriteLine(Tag.Ui.Menu.MenuTravel.Line(repo));
             return 0;
         }
         if (args != null && args.Length > 0 && args[0] == "--no-clip")
@@ -1050,10 +1051,17 @@ static class Program
         Console.WriteLine(handoff);
         string resultsHandoff = Tag.Ui.Menu.MenuHandoff.ResultsLine(RepoRoot());
         Console.WriteLine(resultsHandoff);
+        string travel = Tag.Ui.Menu.MenuTravel.Line(RepoRoot());
+        Console.WriteLine(travel);
         if (handoff != "handoff mode=ok rules=ok arena=ok"
             || resultsHandoff != "results rematch=ok title=ok")
         {
             Console.Error.WriteLine("menu handoff missed");
+            return 1;
+        }
+        if (travel != "transitions=ok skip=ok")
+        {
+            Console.Error.WriteLine("menu transitions missed");
             return 1;
         }
 

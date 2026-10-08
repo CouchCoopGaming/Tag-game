@@ -13,6 +13,40 @@ namespace Tag.Ui.Menu
     {
         public const float SlideSeconds = 0.2f;
 
+        /// <summary>
+        /// Title, main, character select, rules, arena, and results.
+        /// Pause, options, controls, credits, records, and the lobby keep the plain slide.
+        /// </summary>
+        public static bool Feel(MenuScreenId id)
+        {
+            return id == MenuScreenId.Title
+                || id == MenuScreenId.Main
+                || id == MenuScreenId.Cast
+                || id == MenuScreenId.Rules
+                || id == MenuScreenId.Arena
+                || id == MenuScreenId.Results;
+        }
+
+        public static float Ease(float u)
+        {
+            if (u < 0f) u = 0f;
+            if (u > 1f) u = 1f;
+            return u * u * (3f - 2f * u);
+        }
+
+        /// <summary>
+        /// slide is 1 at the open and 0 at rest. sign -1 plays the same move backward.
+        /// </summary>
+        public static void Travel(float slide, float sign, out float offset, out float scale)
+        {
+            if (slide < 0f) slide = 0f;
+            if (slide > 1f) slide = 1f;
+            float e = Ease(1f - slide);
+            float from = sign < 0f ? -160f : 160f;
+            offset = from * (1f - e);
+            scale = 0.92f + 0.08f * e;
+        }
+
         const int Cap = 10;
 
         static readonly MenuScreenId[] _from = new MenuScreenId[Cap];

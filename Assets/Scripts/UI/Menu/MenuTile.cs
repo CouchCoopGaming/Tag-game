@@ -24,6 +24,7 @@ namespace Tag.Ui.Menu
         bool _hot;
         float _punch;
         float _confirm;
+        float _select;
         float _vel;
         Color _base;
         Color _hotColor;
@@ -59,6 +60,12 @@ namespace Tag.Ui.Menu
         {
             if (!Allow || MenuVideo.ReduceMotion) return;
             _confirm = 1f;
+        }
+
+        public void PopSelect()
+        {
+            if (!Allow || MenuVideo.ReduceMotion) return;
+            _select = 1f;
         }
 
         public void SetHot(bool hot)
@@ -112,6 +119,19 @@ namespace Tag.Ui.Menu
                 float kick = t < 0.35f
                     ? Mathf.Lerp(1f, 0.88f, t / 0.35f)
                     : Mathf.Lerp(1.1f, 1f, (t - 0.35f) / 0.65f);
+                target *= kick;
+            }
+            if (_select > 0f)
+            {
+                _select -= Time.unscaledDeltaTime / 0.2f;
+                if (_select < 0f) _select = 0f;
+                float u = 1f - _select;
+                float e = u * u * (3f - 2f * u);
+                float rest = _hot ? MenuPolish.HotScale : 1f;
+                float peak = 1.08f / rest;
+                float kick = e < 0.35f
+                    ? 1f + (peak - 1f) * (e / 0.35f)
+                    : peak + (1f - peak) * ((e - 0.35f) / 0.65f);
                 target *= kick;
             }
             float next = transform.localScale.x;

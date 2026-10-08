@@ -265,6 +265,18 @@ The contrasting chest on Blue and on Lavender is the costume accent, not a swapp
 
 Mockups are in `Docs/UiStills/pass28/`.
 
+## Pass 29
+
+Title, main menu, character select, mode and rules, arena, and results slide and scale over 0.2 s. The move is eased. Back plays it from the other side. A press during the move skips it and still counts. The clock is unscaled time, so a pause does not freeze it. The focused tile bumps to 1.08 and settles. Pause, options, controls, credits, and records keep the slide they already had. The line is `transitions=ok skip=ok`.
+
+Each arena tile draws that park from its layout. The loop, the pads, the zips, and the spawns are the arrays on the map. Stack Yard marks the deck heights already in the yard: decks at 6 m and roofs at 12 m. Mega Park's line is 5 pads and 5 zips. Pocket Park's line is 2 pads and 2 zips. The size line is still the fence, in metres.
+
+Character select, on ready, leans into the ready pose and hops once. The hop is the menu hop already used on that screen. It adds no pose pair. pose stays 0. rigJoint stays 26.
+
+Menu move, confirm, back, ready, and start already call the bus. Move is TagSfx.UiMove, confirm is TagSfx.UiConfirm, back is TagSfx.UiBack, ready is TagSfx.RoundWin, and start is TagSfx.RoundStart. No new bus name.
+
+The handoff line, the results line, and the no-clip line are unchanged. Mockups are in `Docs/UiStills/pass29/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

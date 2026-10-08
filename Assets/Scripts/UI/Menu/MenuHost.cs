@@ -136,6 +136,8 @@ namespace Tag.Ui.Menu
         RawImage _pattern;
         Image _sweep;
         float _slide = 1f;
+        float _travel = 1f;
+        bool _enterBack;
         RawImage _arenaShot;
         Text _arenaShotName;
         Text _arenaShotBlurb;
@@ -304,6 +306,8 @@ namespace Tag.Ui.Menu
             _gate = Time.unscaledTime + (MenuVideo.ReduceMotion ? 0.05f : MenuFlow.SlideSeconds);
             _fade = MenuVideo.ReduceMotion ? 1f : 0f;
             _slide = MenuVideo.ReduceMotion ? 0f : 1f;
+            _travel = _enterBack ? -1f : 1f;
+            _enterBack = false;
             HideFlyover();
             if (_group != null) _group.alpha = _fade;
             Cursor.lockState = CursorLockMode.None;
@@ -603,7 +607,11 @@ namespace Tag.Ui.Menu
         void ArmActivate()
         {
             MenuTile tile = TileAt(_focus);
-            if (tile != null) tile.PunchIn();
+            if (tile != null)
+            {
+                if (MenuFlow.Feel(_screen)) tile.PopSelect();
+                else tile.PunchIn();
+            }
             if (MenuVideo.ReduceMotion || MenuCapture.Running)
             {
                 Activate();
@@ -667,6 +675,31 @@ namespace Tag.Ui.Menu
             return MenuFlow.Locked(_slide, _gate);
         }
 
+        bool HasTravelInput()
+        {
+            if (MenuInput.AnyAdvance()) return true;
+            for (int i = 0; i < MenuInput.Count; i++)
+            {
+                MenuEdge edge = MenuInput.Edges[i];
+                if (edge.X != 0 || edge.Y != 0 || edge.Confirm || edge.Back || edge.Start || edge.Join)
+                    return true;
+            }
+            return false;
+        }
+
+        bool SkipTravel()
+        {
+            if (!MenuFlow.Feel(_screen)) return false;
+            if (MenuCapture.Running) return false;
+            if (!Gated()) return false;
+            if (!HasTravelInput()) return false;
+            _slide = 0f;
+            _fade = 1f;
+            _gate = Time.unscaledTime;
+            if (_group != null) _group.alpha = 1f;
+            return true;
+        }
+
         void ReadNav(out int dx, out int dy, out bool confirm, out bool back, out bool start)
         {
             dx = 0;
@@ -687,7 +720,7 @@ namespace Tag.Ui.Menu
 
         void TickShared()
         {
-            if (Gated()) return;
+            if (Gated() && !SkipTravel()) return;
             ReadNav(out int dx, out int dy, out bool confirm, out bool back, out bool start);
             if (_pauseChild && (start || back))
             {
@@ -782,6 +815,7 @@ namespace Tag.Ui.Menu
 
         void Retreat(MenuScreenId id)
         {
+            _enterBack = true;
             if (id == MenuScreenId.Hidden || id == MenuScreenId.Loading)
                 id = _pauseChild ? MenuScreenId.Pause : MenuScreenId.Main;
             MenuFlow.TrimTo(id);
@@ -1039,9 +1073,21 @@ namespace Tag.Ui.Menu
             _slide = Mathf.MoveTowards(_slide, 0f, Time.unscaledDeltaTime / MenuFlow.SlideSeconds);
             if (_body != null)
             {
-                float slide = MenuVideo.ReduceMotion ? 0f : 160f * _slide;
-                _body.offsetMin = new Vector2(UiFit.SafeX + slide, 78f);
-                _body.offsetMax = new Vector2(-UiFit.SafeX + slide, -108f);
+                bool feel = MenuFlow.Feel(_screen) && !MenuVideo.ReduceMotion && !MenuCapture.Running;
+                if (feel)
+                {
+                    MenuFlow.Travel(_slide, _travel, out float off, out float scale);
+                    _body.offsetMin = new Vector2(UiFit.SafeX + off, 78f);
+                    _body.offsetMax = new Vector2(-UiFit.SafeX + off, -108f);
+                    _body.localScale = new Vector3(scale, scale, 1f);
+                }
+                else
+                {
+                    float slide = MenuVideo.ReduceMotion ? 0f : 160f * _slide;
+                    _body.offsetMin = new Vector2(UiFit.SafeX + slide, 78f);
+                    _body.offsetMax = new Vector2(-UiFit.SafeX + slide, -108f);
+                    _body.localScale = Vector3.one;
+                }
             }
             if (_sweep != null)
             {
@@ -1177,7 +1223,7 @@ namespace Tag.Ui.Menu
 
         void TickTitle()
         {
-            if (Gated()) return;
+            if (Gated() && !SkipTravel()) return;
             if (!MenuInput.AnyAdvance()) return;
             MenuAudio.Confirm();
             ShowMain();
@@ -1232,7 +1278,7 @@ namespace Tag.Ui.Menu
 
         void TickCast()
         {
-            if (!Gated())
+            if (!Gated() || SkipTravel())
             {
                 for (int i = 0; i < MenuInput.Count; i++)
                 {
@@ -1307,7 +1353,11 @@ namespace Tag.Ui.Menu
                     {
                         MenuSession.Ready[seat] = !MenuSession.Ready[seat];
                         MenuTile picked = TileAt(MenuSession.Cursor[seat]);
-                        if (picked != null) picked.PunchIn();
+                        if (picked != null)
+                        {
+                            if (MenuSession.Ready[seat]) picked.PopSelect();
+                            else picked.PunchIn();
+                        }
                         if (MenuSession.Ready[seat])
                         {
                             MenuAudio.Ready(seat);
@@ -1357,7 +1407,7 @@ namespace Tag.Ui.Menu
 
         void TickRules()
         {
-            if (Gated()) return;
+            if (Gated() && !SkipTravel()) return;
             bool dropped = SoakSeats();
             ReadNav(out int dx, out int dy, out bool confirm, out bool back, out bool start);
             if (dropped)
@@ -1378,7 +1428,7 @@ namespace Tag.Ui.Menu
 
         void TickArena()
         {
-            if (Gated()) return;
+            if (Gated() && !SkipTravel()) return;
             bool dropped = SoakSeats();
             ReadNav(out int dx, out int dy, out bool confirm, out bool back, out bool start);
             if (dropped)
@@ -2032,7 +2082,9 @@ namespace Tag.Ui.Menu
             for (int i = 0; i < ParkArena.Count; i++)
             {
                 AddTile(16f, 12f + i * step, listW, row, i, ParkArena.NameOf(i), MenuArenaCard.Blurb(i), true);
-                MenuWidgets.Thumb(TileAt(i), MenuArenaArt.Thumb(i), 12f, 12f, thumbW, row - 24f);
+                MenuTile park = TileAt(i);
+                if (park != null)
+                    MenuArenaCard.PaintAt(park.transform, i, 12f, 12f, thumbW, row - 24f);
             }
             AddTile(16f, 12f + 3 * step, listW, row, 3, "Random", "One of Mega Park, Pocket Park, or Stack Yard.", true);
             float backW = listW * 0.5f;
@@ -3013,7 +3065,11 @@ namespace Tag.Ui.Menu
             HideForMatch();
             GameFlow flow = GameFlow.Instance;
             if (flow != null) flow.QuitToMenu();
-            else ShowTitle();
+            else
+            {
+                _enterBack = true;
+                ShowTitle();
+            }
         }
 
         void QuitApp()
