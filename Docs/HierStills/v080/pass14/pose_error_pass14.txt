@@ -107,3 +107,179 @@ f=152 L sole=-0.2cm low=-1.0cm
 f=154 L sole=9.0cm low=6.4cm
 The clear thigh leaves the kick sole 8.4 cm short of the wall. The planted kick below is the one that sits on the face. The plate depth is the residual.
 WALL2 f=34 soleLead=-0.20cm plate=1.22cm kickZ=29.4cm supportSole=0.5cm shoulderBehindHip=4.6cm
+REPAIR
+Hands come off the wall through the arm. Buried soles come up through the knee, the hip and the ankle.
+Thigh twist clears the abdomen. Spine flex stays within 10° of the bridged reference curl.
+The preview capsule is not moved. Frame 15 is left as the deep crouch.
+REPAIR copied the landing crouch from f=110 through f=152.
+REPAIR residuals over 0.5 cm (plate, chest-hips, thighs crossing, ground, head in the wall):
+f=9 plate=0.80 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=10 plate=0.97 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=11 plate=0.88 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=14 plate=0.54 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=27 plate=0.59 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=30 plate=1.13 chest=0.00 cross=0.00 ground=0.10 wall=0.00
+f=31 plate=1.74 chest=1.56 cross=0.00 ground=0.00 wall=0.00
+f=32 plate=1.75 chest=1.46 cross=0.00 ground=0.00 wall=0.00
+f=33 plate=1.06 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=34 plate=0.92 chest=0.00 cross=0.00 ground=0.00 wall=0.10
+f=45 plate=1.02 chest=0.11 cross=0.00 ground=0.30 wall=0.00
+f=46 plate=0.55 chest=0.00 cross=0.00 ground=0.07 wall=0.00
+f=47 plate=0.89 chest=0.00 cross=0.38 ground=0.00 wall=0.00
+f=48 plate=1.71 chest=0.00 cross=0.00 ground=0.27 wall=0.00
+f=49 plate=0.90 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=50 plate=1.48 chest=0.21 cross=0.00 ground=0.00 wall=0.00
+f=51 plate=1.74 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=52 plate=1.76 chest=0.00 cross=0.00 ground=0.26 wall=0.00
+f=53 plate=1.08 chest=0.00 cross=0.00 ground=0.30 wall=0.00
+f=54 plate=0.75 chest=0.00 cross=0.00 ground=0.30 wall=0.00
+f=55 plate=0.98 chest=0.25 cross=0.00 ground=0.07 wall=0.00
+f=56 plate=0.51 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=63 plate=0.96 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=65 plate=0.78 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=68 plate=0.55 chest=0.00 cross=0.00 ground=0.00 wall=0.40
+f=70 plate=0.86 chest=0.00 cross=0.35 ground=0.00 wall=0.00
+f=71 plate=0.85 chest=0.00 cross=1.35 ground=0.12 wall=0.00
+f=75 plate=0.56 chest=0.00 cross=0.00 ground=0.02 wall=0.00
+f=76 plate=0.79 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=77 plate=1.33 chest=0.21 cross=0.00 ground=0.00 wall=0.00
+f=78 plate=0.93 chest=0.29 cross=0.00 ground=0.05 wall=0.00
+f=79 plate=0.85 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=80 plate=0.61 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=81 plate=0.77 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=82 plate=1.00 chest=0.33 cross=0.00 ground=0.09 wall=0.00
+f=86 plate=0.86 chest=0.00 cross=0.00 ground=0.00 wall=0.40
+f=89 plate=1.35 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=90 plate=1.41 chest=0.00 cross=0.00 ground=0.21 wall=0.00
+f=96 plate=0.50 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=97 plate=0.60 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=98 plate=0.82 chest=0.00 cross=0.00 ground=0.02 wall=0.00
+f=99 plate=0.93 chest=0.00 cross=0.00 ground=0.23 wall=0.00
+f=100 plate=0.94 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=101 plate=1.35 chest=0.00 cross=0.00 ground=0.22 wall=0.00
+f=102 plate=1.19 chest=0.00 cross=0.00 ground=0.02 wall=0.00
+f=103 plate=1.29 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=104 plate=0.97 chest=0.00 cross=0.00 ground=0.30 wall=0.00
+f=105 plate=0.53 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=106 plate=1.14 chest=0.00 cross=0.00 ground=0.10 wall=0.00
+f=107 plate=1.21 chest=0.08 cross=0.00 ground=0.00 wall=0.27
+f=108 plate=0.11 chest=0.00 cross=0.00 ground=0.60 wall=0.00
+f=114 plate=0.43 chest=0.00 cross=0.00 ground=2.82 wall=0.00
+f=115 plate=0.39 chest=0.00 cross=0.00 ground=3.17 wall=0.00
+f=116 plate=0.72 chest=0.00 cross=1.27 ground=0.00 wall=0.00
+f=117 plate=0.44 chest=0.00 cross=1.64 ground=0.00 wall=0.00
+f=154 plate=1.02 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+f=155 plate=0.78 chest=0.00 cross=0.00 ground=0.00 wall=0.00
+WALL3 f=34 soleLead=-0.20cm kickZ=29.4cm supportSole=1.5cm shoulderBehindHip=4.6cm plate=0.92cm
+REPAIR spine flex versus the bridged reference. World pitch is neck-hip from vertical.
+f=0 t=0.00s spine=10.0,3.0,-1.4 ref=20.0,3.0,8.6 dLocal=10.0° world=2.6° stick=49.1° dWorld=-46.5°
+f=15 t=0.50s spine=0.0,-0.2,-3.2 ref=0.0,-0.2,6.8 dLocal=10.0° world=16.8° stick=18.1° dWorld=-1.3°
+f=34 t=1.13s spine=-10.0,17.9,1.9 ref=0.0,17.9,11.8 dLocal=10.0° world=5.4° stick=6.6° dWorld=-1.1°
+f=76 t=2.54s spine=-10.0,-6.5,6.5 ref=0.0,-6.5,6.5 dLocal=10.0° world=51.9° stick=57.4° dWorld=-5.4°
+f=106 t=3.54s spine=-10.0,3.3,3.0 ref=-10.0,3.3,13.0 dLocal=10.0° world=32.1° stick=31.6° dWorld=+0.4°
+f=110 t=3.67s spine=-10.0,1.4,0.5 ref=0.0,1.4,10.5 dLocal=10.0° world=38.5° stick=41.7° dWorld=-3.2°
+f=145 t=4.84s spine=-10.0,1.4,0.5 ref=0.0,1.4,10.5 dLocal=10.0° world=38.5° stick=128.1° dWorld=-89.6°
+f=152 t=5.07s spine=-10.0,1.4,0.5 ref=0.0,1.4,10.5 dLocal=10.0° world=38.5° stick=91.2° dWorld=-52.7°
+HIP SIT
+The pelvis sits behind the support foot along the facing. The torso hinges at the hip.
+Plants and landings want 8 cm. A crouch wants 12 cm, or the tracked offset when that is larger and the frame was not bridged.
+The capsule is not moved. The spine is not reset to rest.
+HIP SIT copied the landing crouch from f=110 through f=152.
+f=0 t=0.00s pelvisBack=14.5cm target=8.0cm hinge=2.41 hip=13 lumbar=5 chest=0
+f=15 t=0.50s pelvisBack=27.0cm target=47.5cm hinge=5.84 hip=19 lumbar=3 chest=0
+f=34 t=1.13s pelvisBack=-4.7cm target=8.0cm hinge=-1.25 hip=-2 lumbar=1 chest=0
+f=76 t=2.54s pelvisBack=-12.0cm target=8.0cm hinge=99.00 hip=29 lumbar=1 chest=0
+f=106 t=3.54s pelvisBack=12.3cm target=25.6cm hinge=23.95 hip=33 lumbar=1 chest=0
+f=110 t=3.67s pelvisBack=4.2cm target=29.9cm hinge=21.71 hip=30 lumbar=1 chest=0
+f=145 t=4.84s pelvisBack=4.2cm target=12.0cm hinge=21.71 hip=30 lumbar=1 chest=0
+f=152 t=5.07s pelvisBack=4.2cm target=12.0cm hinge=21.71 hip=30 lumbar=1 chest=0
+HIP SIT frames that miss the sit or the hinge:
+f=110 back=4.2cm target=29.9cm the thigh meets the spine before the pelvis is far enough back
+f=7 back=-2.9cm target=8.0cm leg cannot put the sole far enough forward without leaving the floor
+f=8 back=3.9cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=12 back=-5.0cm target=42.1cm leg cannot put the sole far enough forward without leaving the floor
+f=13 back=-12.9cm target=44.6cm leg cannot put the sole far enough forward without leaving the floor
+f=14 back=15.5cm target=47.2cm leg cannot put the sole far enough forward without leaving the floor
+f=15 back=27.0cm target=47.5cm leg cannot put the sole far enough forward without leaving the floor
+f=17 back=36.1cm target=41.8cm leg cannot put the sole far enough forward without leaving the floor
+f=18 back=7.0cm target=34.2cm leg cannot put the sole far enough forward without leaving the floor
+f=19 back=18.5cm target=35.3cm leg cannot put the sole far enough forward without leaving the floor
+f=20 back=13.3cm target=40.2cm leg cannot put the sole far enough forward without leaving the floor
+f=21 back=12.9cm target=38.0cm leg cannot put the sole far enough forward without leaving the floor
+f=22 back=18.3cm target=26.8cm leg cannot put the sole far enough forward without leaving the floor
+f=23 back=19.3cm target=27.1cm leg cannot put the sole far enough forward without leaving the floor
+f=27 back=-3.2cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=28 back=12.0cm target=14.4cm leg cannot put the sole far enough forward without leaving the floor
+f=30 back=-13.9cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=32 back=3.5cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=33 back=-13.7cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=34 back=-4.7cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=38 back=4.9cm target=8.0cm leg cannot put the sole far enough forward without leaving the floor
+f=39 back=-4.5cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=42 back=31.1cm target=34.9cm leg cannot put the sole far enough forward without leaving the floor
+f=43 back=4.9cm target=32.2cm leg cannot put the sole far enough forward without leaving the floor
+f=44 back=3.3cm target=26.4cm leg cannot put the sole far enough forward without leaving the floor
+f=45 back=5.7cm target=21.0cm the thigh meets the spine before the pelvis is far enough back
+f=46 back=3.3cm target=16.0cm the thigh meets the spine before the pelvis is far enough back
+f=47 back=4.7cm target=8.0cm leg cannot put the sole far enough forward without leaving the floor
+f=57 back=-2.1cm target=12.1cm leg cannot put the sole far enough forward without leaving the floor
+f=59 back=9.7cm target=11.0cm leg cannot put the sole far enough forward without leaving the floor
+f=60 back=5.7cm target=8.0cm leg cannot put the sole far enough forward without leaving the floor
+f=63 back=-4.8cm target=8.0cm leg cannot put the sole far enough forward without leaving the floor
+f=66 back=-0.9cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=67 back=-9.9cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=68 back=5.3cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=69 back=-18.2cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=70 back=-15.6cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=71 back=-12.8cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=72 back=-26.6cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=73 back=-34.5cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=74 back=-29.1cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=75 back=-22.1cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=76 back=-12.0cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=78 back=5.7cm target=8.0cm leg cannot put the sole far enough forward without leaving the floor
+f=79 back=-2.2cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=80 back=-8.1cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=81 back=-2.1cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=82 back=2.9cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=83 back=3.2cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=84 back=4.7cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=85 back=3.6cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=88 back=-4.8cm target=21.3cm leg cannot put the sole far enough forward without leaving the floor
+f=89 back=20.5cm target=34.5cm leg cannot put the sole far enough forward without leaving the floor
+f=90 back=-7.6cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=91 back=0.7cm target=8.0cm leg cannot put the sole far enough forward without leaving the floor
+f=92 back=7.8cm target=20.4cm the thigh meets the spine before the pelvis is far enough back
+f=93 back=11.8cm target=22.0cm the thigh meets the spine before the pelvis is far enough back
+f=94 back=-1.7cm target=24.5cm the thigh meets the spine before the pelvis is far enough back
+f=95 back=3.0cm target=27.3cm the thigh meets the spine before the pelvis is far enough back
+f=96 back=24.4cm target=28.7cm leg cannot put the sole far enough forward without leaving the floor
+f=97 back=-16.1cm target=27.9cm the thigh meets the spine before the pelvis is far enough back
+f=98 back=15.4cm target=28.9cm leg cannot put the sole far enough forward without leaving the floor
+f=100 back=-16.7cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=101 back=21.7cm target=23.8cm leg cannot put the sole far enough forward without leaving the floor
+f=102 back=-12.6cm target=21.9cm the thigh meets the spine before the pelvis is far enough back
+f=103 back=-14.1cm target=23.3cm leg cannot put the sole far enough forward without leaving the floor
+f=104 back=-4.4cm target=23.3cm the thigh meets the spine before the pelvis is far enough back
+f=105 back=11.8cm target=25.1cm the thigh meets the spine before the pelvis is far enough back
+f=106 back=12.3cm target=25.6cm leg cannot put the sole far enough forward without leaving the floor
+f=108 back=18.0cm target=27.7cm the thigh meets the spine before the pelvis is far enough back
+f=109 back=6.5cm target=29.1cm the thigh meets the spine before the pelvis is far enough back
+f=111 back=22.6cm target=36.0cm leg cannot put the sole far enough forward without leaving the floor
+f=112 back=4.0cm target=38.8cm leg cannot put the sole far enough forward without leaving the floor
+f=113 back=-10.0cm target=39.7cm leg cannot put the sole far enough forward without leaving the floor
+f=115 back=-8.1cm target=8.0cm leg cannot put the sole far enough forward without leaving the floor
+f=116 back=3.6cm target=8.0cm leg cannot put the sole far enough forward without leaving the floor
+f=153 back=-6.6cm target=8.0cm leg cannot put the sole far enough forward without leaving the floor
+f=154 back=-1.0cm target=8.0cm the thigh meets the spine before the pelvis is far enough back
+f=160 back=15.1cm target=24.1cm leg cannot put the sole far enough forward without leaving the floor
+f=161 back=14.8cm target=31.9cm leg cannot put the sole far enough forward without leaving the floor
+f=164 back=10.5cm target=35.5cm leg cannot put the sole far enough forward without leaving the floor
+f=165 back=21.1cm target=26.3cm leg cannot put the sole far enough forward without leaving the floor
+f=167 back=-10.2cm target=8.0cm leg cannot put the sole far enough forward without leaving the floor
+hip-sit clips=1 loadedFrames=169 pelvisBackMin=-34.5 cm hingeMin=-18.01 fails=119
+fail frames 7,8,12,13,14,15,17,18,19,20,21,22,23,27,28,30,32,33,34,38,39,42,43,44,45,46,47,57,59,60,63,66,67,68,69,70,71,72,73,74,75,76,78,79,80,81,82,83,84,85,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,115,116,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,160,161,164,165,167
+
+NOCLIP after hip sit, tic-tac only: frames=169 absMax=7.24 worldMax=3.17 rigJoint=2141 poseFails=129 pose=129
+The repair alone was pose=88. Sitting the foot forward adds pose intersections on some frames.
+Where the thigh would enter the spine or the shins would cross, the sit stops and the frame is listed above.
