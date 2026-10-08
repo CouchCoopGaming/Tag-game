@@ -75,6 +75,8 @@ PALETTE = {
     "Lib_Soil": ((0.28, 0.18, 0.10), 0.0, 0.12),
     "Lib_Siding": ((0.78, 0.80, 0.78), 0.0, 0.30),
     "Lib_Roof": ((0.28, 0.30, 0.32), 0.05, 0.25),
+    # Ranch and boathouse courses. Several short staggered rows per metre.
+    "Lib_RanchRoof": ((0.34, 0.26, 0.18), 0.04, 0.28),
     # Truncated-dome panel. Yellow field, the domes are the normal.
     "Lib_Warn": ((0.76, 0.52, 0.10), 0.0, 0.12),
     "Lib_Awning": ((0.55, 0.12, 0.16), 0.0, 0.28),
@@ -120,7 +122,7 @@ EMISSIVE = {
 # Grayscale-or-color albedo multiplied is baked as full color. UV is meters.
 TEXTURED = (
     "Lib_Brick", "Lib_Asphalt", "Lib_Wood", "Lib_WoodDark", "Lib_Concrete",
-    "Lib_Siding", "Lib_Roof", "Lib_Warn", "Lib_Soil", "Lib_Hydrant", "Lib_WoodWeather",
+    "Lib_Siding", "Lib_Roof", "Lib_RanchRoof", "Lib_Warn", "Lib_Soil", "Lib_Hydrant", "Lib_WoodWeather",
     "Lib_CourtDecal", "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue",
     "Lib_CraneYellow", "Lib_LogEnd", "Lib_Pile",
 )
@@ -1338,6 +1340,49 @@ def _roof_normal_pixel(x, y, w, h):
     return (nx / length * 0.5 + 0.5, ny / length * 0.5 + 0.5, nz / length * 0.5 + 0.5)
 
 
+def _ranch_roof_pixel(x, y, w, h):
+    """Several short courses per metre, each shifted so the joints do not stack.
+
+    v is metres up the slope. One tile is one metre, so a course is about 12–17 cm,
+    not the single wide band of Lib_Roof.
+    """
+    u = x / float(w)
+    v = y / float(h)
+    exposures = (0.13, 0.16, 0.12, 0.15, 0.14, 0.17, 0.13)
+    fv = v % 1.0
+    acc = 0.0
+    ci = 0
+    fy = 0.0
+    for i, exp in enumerate(exposures):
+        if fv < acc + exp or i == len(exposures) - 1:
+            ci = i
+            fy = (fv - acc) / max(exp, 1e-4)
+            break
+        acc += exp
+    offset = _hash01(ci, 3, 21) * 0.55
+    _c, _f, si, fx, wobble = _shake_at((u + offset) % 1.0, fy)
+    n = _hash01(si + ci * 3, 2, 14)
+    weather = _hash01(ci, 5, 15)
+    grain = 0.78 + _value_noise(fx * 1.6 + si * 0.13, fy * 40.0, 18) * 0.22
+    tone = 0.92 + _hash01(ci, 6, 4) * 0.16
+    brown = (0.42 + n * 0.10, 0.25 + n * 0.05, 0.13 + n * 0.03)
+    grey = (0.48 + n * 0.08, 0.44 + n * 0.06, 0.38 + n * 0.04)
+    t = 0.18 + weather * 0.55
+    r = (brown[0] * (1.0 - t) + grey[0] * t) * grain * tone
+    g = (brown[1] * (1.0 - t) + grey[1] * t) * grain * tone
+    b = (brown[2] * (1.0 - t) + grey[2] * t) * grain * tone
+    butt = 0.14 + wobble * 0.25
+    if fy < butt * 0.45:
+        shade = 0.22
+    elif fy < butt:
+        shade = 0.46
+    else:
+        shade = 1.0
+    if fx < 0.04 or fx > 0.96:
+        shade *= 0.42
+    return (r * shade, g * shade, b * shade)
+
+
 def _roof_pixel(x, y, w, h):
     """One cedar course: long vertical grain, random narrow widths, a thick dark butt."""
     u = x / float(w)
@@ -1534,6 +1579,7 @@ def generate_textures():
     _save_image("Lib_Siding", w, h, _siding_pixel)
     _save_image("Lib_Roof", 512, 256, _roof_pixel)
     _save_image("Lib_Roof_N", 512, 256, _roof_normal_pixel)
+    _save_image("Lib_RanchRoof", 512, 512, _ranch_roof_pixel)
     _save_image("Lib_Pile", w, h, _pile_pixel)
     _save_image("Lib_Warn", w, h, _warn_pixel)
     _save_image("Lib_Warn_N", w, h, _warn_normal_pixel)
@@ -1551,7 +1597,7 @@ def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19", "render_pass20", "render_pass21", "render_pass22", "render_pass23", "render_pass24", "render_pass25", "render_pass26", "render_pass27", "render_pass28",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19", "render_pass20", "render_pass21", "render_pass22", "render_pass23", "render_pass24", "render_pass25", "render_pass26", "render_pass27", "render_pass28", "render_pass29",
         "write_unity", "_kit",
     }
     names = []
