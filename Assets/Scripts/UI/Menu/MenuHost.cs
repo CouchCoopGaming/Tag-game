@@ -327,6 +327,8 @@ namespace Tag.Ui.Menu
                 case MenuScreenId.Practice: BuildPractice(); break;
                 case MenuScreenId.Records: BuildRecords(); break;
             }
+            if (_bannerPlate != null)
+                _bannerPlate.enabled = MenuSheet.WantsPark((int)id) && _banner != null && _banner.text.Length > 0;
             RefreshFocus();
             PaintFooter();
             bool title = id == MenuScreenId.Title;
@@ -2324,7 +2326,6 @@ namespace Tag.Ui.Menu
             }
             if (_header != null) _header.text = "  " + headline;
             if (_banner != null) _banner.text = resultLine;
-            if (_bannerPlate != null) _bannerPlate.enabled = resultLine.Length > 0;
             float span = UiFit.BodyW(UiFit.Current());
             UiFit.Bands(UiFit.Current(), out float viewH, out float rankY, out float rankH, out float btnY, out float btnH);
             float stageW = span - 32f;

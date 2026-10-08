@@ -320,6 +320,8 @@ Secondary screens, first pass on this branch: arena select is a grid of Mega Par
 
 The second pass names the winner's colors on the RESULTS banner, body then accent, so the sample reads Red / Tan. That line sits on a navy plate. The loading tip leaves the rule list and sits on a gold plate above the bar. Layout drawings are in `Docs/UiStills/screens2/pass2/`. Space still jumps.
 
+The third pass puts that navy plate behind the banner on every secondary screen that has a line. Records scrolls to Back. Layout drawings are in `Docs/UiStills/screens2/pass3/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

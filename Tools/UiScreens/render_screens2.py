@@ -9,7 +9,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass2")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass3")
 W, H = 1920, 1080
 
 INK = (10, 18, 41)
@@ -654,12 +654,15 @@ def credits():
     return img, contrast(CREAM, (8, 22, 58))
 
 
-def records(filled=False):
+def records(filled=False, end=False):
     img = screen(0.5)
     header(img, "Records", "Matches, wins, tags, and longest time not It")
     ratios = []
     rows = []
-    if filled:
+    if end:
+        rows = [("Empty", "", False) for _ in range(5)]
+        rows.append(("Back", "", True))
+    elif filled:
         rows = [
             ("Red", "matches 4   wins 1   tags 6   live 6.2", True),
             ("Blue", "matches 2   wins 0   tags 1   live 3.0", False),
@@ -723,6 +726,7 @@ def main():
         ("12-credits.png", credits()),
         ("14-records.png", records(False)),
         ("14-records-card.png", records(True)),
+        ("14-records-end.png", records(end=True)),
         ("16-trans-rules.png", wipe()),
         ("16-trans-load.png", wipe_load()),
         ("16-trans-results.png", wipe_results()),

@@ -263,6 +263,10 @@ Loading lifts the tip off the rule list. It sits on a gold plate above the bar, 
 
 The layout drawings for this pass are in `Docs/UiStills/screens2/pass2/`. The chest panel on each figure is the accent color. Hands and feet in those drawings stay the body tint, because the bake does not split those meshes. The comic wipe is also shown over loading and over RESULTS. Unity is not running here.
 
+## Screens 2, pass 3
+
+The navy plate behind the banner turns on for every secondary screen that has a banner line, not only RESULTS. Title, the main menu, and character select do not use it. Records can scroll to Back. That last window is in `Docs/UiStills/screens2/pass3/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
