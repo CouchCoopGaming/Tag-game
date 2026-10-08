@@ -138,8 +138,8 @@ def pose_wall(arm):
     arm_pose(arm, "L", 6.0, -18.0, -8.0, 0.0)
     arm_pose(arm, "R", -6.0, -12.0, -8.0, 0.0)
     torso(arm, 4.0, 2.0, -2.0)
-    set_euler(arm, "Chest", 0.0, 0.0, 0.0)
-    set_euler(arm, "Hips", 4.0, 0.0, 0.0)
+    set_euler(arm, "Chest", 8.0, 0.0, 6.0)
+    set_euler(arm, "Hips", 8.0, 0.0, 4.0)
     set_euler(arm, "Foot_L", 0.0, 0.0, 0.0)
 
 
