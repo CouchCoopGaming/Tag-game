@@ -55,9 +55,10 @@ namespace Tag.Ui.Menu
 
         static bool SeatText()
         {
-            float[] r = { 0.95f, 0.16f, 0.94f, 0.62f };
-            float[] g = { 0.16f, 0.45f, 0.42f, 0.32f };
-            float[] b = { 0.22f, 1f, 0.14f, 0.86f };
+            // MenuMannequin.Swatch: Red, Blue, Orange, Lavender.
+            float[] r = { 0.88f, 0.42f, 0.94f, 0.70f };
+            float[] g = { 0.22f, 0.68f, 0.42f, 0.58f };
+            float[] b = { 0.24f, 0.92f, 0.14f, 0.88f };
             for (int i = 0; i < 4; i++)
             {
                 float pr = Mix(0.04f, r[i]);

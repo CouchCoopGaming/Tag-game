@@ -13,6 +13,8 @@ namespace Tag.Ui.Menu
     public sealed class MenuPreview : MonoBehaviour
     {
         const int Slots = 4;
+        const float BandH = 0.15f;
+        const float NumSize = 0.10f;
 
         readonly Transform[] _anchor = new Transform[Slots];
         readonly Transform[] _figure = new Transform[Slots];
@@ -304,23 +306,24 @@ namespace Tag.Ui.Menu
                     stand.localPosition = sp;
                 }
                 Transform band = _band[i];
+                float bandH = BandH;
+                if (bandH > h * 0.82f) bandH = h * 0.82f;
                 if (band != null)
                 {
                     Vector3 bp = band.localPosition;
-                    bp.y = h * 0.48f;
+                    bp.y = h * 0.5f;
                     band.localPosition = bp;
                     Vector3 bs = band.localScale;
-                    bs.y = h * 0.55f;
-                    if (bs.y < 0.08f) bs.y = 0.08f;
+                    bs.y = bandH;
                     band.localScale = bs;
                 }
                 TextMesh num = _rankNum[i];
                 if (num != null)
                 {
                     Vector3 np = num.transform.localPosition;
-                    np.y = h * 0.48f;
+                    np.y = h * 0.5f;
                     num.transform.localPosition = np;
-                    num.characterSize = h * 0.22f;
+                    num.characterSize = NumSize * (bandH / BandH);
                 }
                 MenuCheer planter = _planter[i];
                 if (planter != null)
@@ -434,8 +437,8 @@ namespace Tag.Ui.Menu
             var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
             floor.name = "Floor";
             floor.transform.SetParent(_podiumRoot, false);
-            floor.transform.localPosition = new Vector3(0.80f, -0.04f, 0.15f);
-            floor.transform.localScale = new Vector3(8.4f, 0.08f, 6.2f);
+            floor.transform.localPosition = new Vector3(0.80f, -0.04f, 0.4f);
+            floor.transform.localScale = new Vector3(36f, 0.08f, 36f);
             var floorCol = floor.GetComponent<Collider>();
             if (floorCol != null) Destroy(floorCol);
             var floorRend = floor.GetComponent<Renderer>();
@@ -467,12 +470,12 @@ namespace Tag.Ui.Menu
                 var trimRend = trim.GetComponent<Renderer>();
                 if (trimRend != null)
                     trimRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(cap, 0.2f, 0.04f);
-                float plateY = heights[i] * 0.48f;
+                float plateY = heights[i] * 0.5f;
                 var face = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 face.name = "Face" + i.ToString();
                 face.transform.SetParent(_podiumRoot, false);
                 face.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.02f);
-                face.transform.localScale = new Vector3(wide * 0.92f, heights[i] * 0.55f, 0.035f);
+                face.transform.localScale = new Vector3(wide * 0.92f, BandH, 0.035f);
                 var faceCol = face.GetComponent<Collider>();
                 if (faceCol != null) Destroy(faceCol);
                 var faceRend = face.GetComponent<Renderer>();
@@ -485,12 +488,12 @@ namespace Tag.Ui.Menu
                 numGo.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.05f);
                 var num = numGo.AddComponent<TextMesh>();
                 num.text = (i + 1).ToString();
-                num.fontSize = 90;
-                num.characterSize = heights[i] * 0.22f;
+                num.font = MenuTheme.Font;
+                num.fontSize = 128;
+                num.characterSize = NumSize;
                 num.anchor = TextAnchor.MiddleCenter;
                 num.alignment = TextAlignment.Center;
                 num.color = new Color(0.98f, 0.97f, 0.94f, 1f);
-                num.fontStyle = FontStyle.Bold;
                 _rankNum[i] = num;
                 var blot = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 blot.name = "BlockShade" + i.ToString();
@@ -541,7 +544,7 @@ namespace Tag.Ui.Menu
             cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
             cam.fieldOfView = 26f;
             cam.nearClipPlane = 0.05f;
-            cam.farClipPlane = 40f;
+            cam.farClipPlane = 80f;
             cam.depth = -19;
             cam.enabled = false;
             _podiumRt = new RenderTexture(1920, 1080, 16, RenderTextureFormat.ARGB32);

@@ -339,6 +339,12 @@ Every results block is the same stone. A band on the front uses the seat palette
 
 In `Docs/UiStills/pass40/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards, the summary, and the labels are composite. The BEFORE picture is the pass 39 results still. Each still is under 400 KB. The proof lines are unchanged.
 
+## Pass 41
+
+The seat band reads MenuMannequin.Swatch. P1 is red, P2 blue, P3 orange, P4 lavender, the same swatch as the figure. Every block wears one band height, and one bold numeral at that size. The stat card keeps the place, the seat, the name, and the two stat lines. The floor fades into the sky, so the ground has no slab edge. pose stays 0 and rigJoint stays 26.
+
+In `Docs/UiStills/pass41/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards, the summary, and the labels are composite. The BEFORE picture is the pass 40 results still. Each still is under 400 KB. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

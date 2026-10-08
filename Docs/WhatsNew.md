@@ -346,6 +346,8 @@ The thirty-ninth pass gives the blocks one footprint, a gap, and a shared front 
 
 The fortieth pass makes every results block the same stone. The front band is that seat's colour, P1 red, P2 blue, P3 orange, P4 purple, and the rank numeral is on the band. Those four colours are MenuTheme.SeatBand. A floor sits under the blocks, each block has a soft contact shadow, and the figure shadows the top of the block. Second place pumps a fist, upper arm about 45° up, elbow about 90°, fist above the shoulder. The stat line is the same on every card: tags, time as It, and round wins. The check is `Docs/UiStills/pass40/results-reveal.gif`. pose stays 0 and rigJoint stays 26. Space still jumps.
 
+The forty-first pass reads the band from MenuMannequin.Swatch, so P4 is lavender with the figure. Every band is the same height, and the rank numeral is one bold size on each block. The results card drops the costume line and keeps the place, the seat, the name, and the two stat lines. The floor fades into the sky. The check is `Docs/UiStills/pass41/results-reveal.gif`. pose stays 0 and rigJoint stays 26. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

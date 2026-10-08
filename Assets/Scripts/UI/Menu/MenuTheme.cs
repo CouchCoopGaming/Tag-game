@@ -26,15 +26,8 @@ namespace Tag.Ui.Menu
         public static readonly Color Stroke = new Color(0.02f, 0.04f, 0.10f, 1f);
         public static readonly Color Shadow = new Color(0f, 0f, 0f, 0.48f);
 
-        // One seat palette. P1 red, P2 blue, P3 orange, P4 purple.
-        // Results bands and the other screens read these. Do not keep a second copy.
-        static readonly Color[] Fallback =
-        {
-            new Color(0.95f, 0.16f, 0.22f, 1f),
-            new Color(0.16f, 0.45f, 1f, 1f),
-            new Color(0.94f, 0.42f, 0.14f, 1f),
-            new Color(0.62f, 0.32f, 0.86f, 1f)
-        };
+        // Seat order into MenuMannequin.Swatch. The swatch method owns the RGB.
+        static readonly string[] BandKey = { "Red", "Blue", "Orange", "Lavender" };
 
         static Font _font;
         static Font _display;
@@ -78,7 +71,7 @@ namespace Tag.Ui.Menu
         }
 
         /// <summary>
-        /// The seat palette itself. P1 red, P2 blue, P3 orange, P4 purple.
+        /// P1 red, P2 blue, P3 orange, P4 lavender, from MenuMannequin.Swatch.
         /// A joined player may tint Seat. The band on a results block stays this color.
         /// </summary>
         public static Color SeatBand(int seat)
@@ -86,7 +79,7 @@ namespace Tag.Ui.Menu
             int i = seat;
             if (i < 0) i = 0;
             if (i > 3) i = 3;
-            return Fallback[i];
+            return MenuMannequin.Swatch(BandKey[i]);
         }
 
         public static string Place(int rank)
