@@ -376,6 +376,8 @@ The twenty-ninth pass fills the title and the main menu with the graded Mega Par
 
 The thirtieth pass holds the start line until every joined seat is ready and at least two are in. P2 only joined now says Waiting for 1 player to ready up. The main menu label is a short chip, and the two seat figures stand idle on their discs with the seat shape on the chest. The title plate is a soft blur of the graded yard with a vignette, and the corners stay the plate. The lavender fill is lighter, and every colour-blind pair of the fills is at least 0.35: protan 0.43, deutan 0.53, tritan 0.42. Unity is not installed here, so the frames are that live plate with the menu drawn on it, in `Docs/UiStills/screens2/pass30/`. Space still jumps.
 
+The thirty-first pass rebuilds that title blur in float, with a wide Gaussian and a little blue noise, so the sky no longer steps in rings. The biggest step between adjacent sky rows is 0.155. The main menu stands the real red and blue mannequins on their discs, idle, three-quarter, with the seat shape on the chest. Loading and pause use the same short header chip, and the load pane shows that blue mannequin instead of the chase plate. Unity is not installed here, so the frames are that live plate with the menu drawn on it, in `Docs/UiStills/screens2/pass31/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

@@ -417,6 +417,16 @@ The lavender fill is lighter, `(0.80, 0.72, 0.92)`, bytes `(204, 184, 235)`. Blu
 
 `ui-cvd protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `ui-seat off=0.41/0.52/0.41`. `hot-path allocs before=101 after=0`. `no-clip pose=0`. Arena select, RESULTS, options, controls, and mode/rules are untouched. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass30/` are the live plate with the menu drawn on it.
 
+## Screens 2, pass 31
+
+The title plate is a wide Gaussian of `MegaGrade.png`, blurred in float, then a smoothstep vignette, then a little blue noise before the 8-bit round. The sky's largest step between adjacent rows is 0.155. The corners stay the plate, about 71, 78, 86 on the sky side. Loading and pause stay on the sharp grade.
+
+The main menu figures are the Hier meshes, Red and Blue, in the relaxed idle. Pose sample 0 bends the knees 4° and levels the soles. The feet sit on the discs at an absolute 0.5 cm. Each one is turned three-quarter toward the menu, tinted with the seat color, with the seat shape on the chest and a contact shadow on the disc. P1 is the red circle. P2 is the blue triangle. No new pose was animated.
+
+Loading and pause use the same short header chip as the menu. Loading says Loading. Pause says Paused by P1, and the place line is its own chip, so the bar is not full width. Resume is the only hot row. The load pane that used to show the chase plate shows the blue Hier idle instead. The card stays on the bottom third, and the park stays visible above it.
+
+`ui-fill protan=0.43 blue/lavender deutan=0.53 red/orange tritan=0.42 orange/lavender floor=0.35`. `ui-cvd protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `hot-path allocs before=101 after=0`. `no-clip pose=0`. Arena select, RESULTS, options, controls, and mode/rules are untouched. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass31/` are the live plate with the menu drawn on it. The figures are a Blender render of the repo FBX.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
