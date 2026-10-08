@@ -77,7 +77,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Harbor"
-  summary: "Wood shed, 3.6 x 2.8 m. Board-and-batten siding, corner trim on the boards, a frame-and-panel door and a trimmed window on +Z, and a window on +X."
+  summary: "Wood shed, 3.6 x 2.8 m. Board-and-batten siding, corner trim on the boards, a butt-jointed frame-and-panel door with a beveled recess, and trimmed windows."
   climbable: 1
   vaultable: 0
   vaultHeightMeters: 0

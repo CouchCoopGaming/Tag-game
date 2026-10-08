@@ -205,24 +205,95 @@ def _corners(g):
             g.box((x_c, cy, (z_a + z_b) * 0.5), (trim_t, h, abs(z_b - z_a)), "Lib_Varnish")
 
 
+def _extrude_x(g, x0, x1, profile):
+    """Closed chamfer. profile is four (y, z) corners, extruded along X."""
+    verts = []
+    for x in (x0, x1):
+        for y, z in profile:
+            verts.append((x, y, z))
+    faces = [
+        (0, 1, 2, 3),
+        (4, 7, 6, 5),
+        (0, 4, 5, 1),
+        (1, 5, 6, 2),
+        (2, 6, 7, 3),
+        (3, 7, 4, 0),
+    ]
+    g.mesh(verts, faces, "Lib_Varnish")
+
+
+def _extrude_y(g, y0, y1, profile):
+    """Closed chamfer. profile is four (x, z) corners, extruded along Y."""
+    verts = []
+    for y in (y0, y1):
+        for x, z in profile:
+            verts.append((x, y, z))
+    faces = [
+        (0, 1, 2, 3),
+        (4, 7, 6, 5),
+        (0, 4, 5, 1),
+        (1, 5, 6, 2),
+        (2, 6, 7, 3),
+        (3, 7, 4, 0),
+    ]
+    g.mesh(verts, faces, "Lib_Varnish")
+
+
+def _panel_bevel(g, x0, x1, y0, y1, z_front, z_panel):
+    """Butt-joined chamfer around a recess. Rails run full width; stiles stop at them."""
+    inset = 0.014
+    t = 0.005
+    _extrude_x(g, x0, x1, (
+        (y0, z_front),
+        (y0 + t, z_front),
+        (y0 + inset, z_panel),
+        (y0 + inset - t, z_panel),
+    ))
+    _extrude_x(g, x0, x1, (
+        (y1, z_front),
+        (y1 - t, z_front),
+        (y1 - inset, z_panel),
+        (y1 - inset + t, z_panel),
+    ))
+    _extrude_y(g, y0 + inset, y1 - inset, (
+        (x0, z_front),
+        (x0 + t, z_front),
+        (x0 + inset, z_panel),
+        (x0 + inset - t, z_panel),
+    ))
+    _extrude_y(g, y0 + inset, y1 - inset, (
+        (x1, z_front),
+        (x1 - t, z_front),
+        (x1 - inset, z_panel),
+        (x1 - inset + t, z_panel),
+    ))
+
+
 def _door(g, lod):
-    """Stiles and rails in front of the boards. Panels sit behind the frame."""
+    """Butt-jointed stiles and rails, one wood color, beveled panel recess."""
     z0 = BOARD_OUTER_Z - 0.006
     thick = 0.038
     zc = z0 + thick * 0.5
+    z_front = z0 + thick
+    # Stiles, full height. Inner faces are x = -0.32 and x = 0.78.
     g.box((-0.40, 1.10, zc), (0.16, 2.06, thick), "Lib_Varnish")
     g.box((0.86, 1.10, zc), (0.16, 2.06, thick), "Lib_Varnish")
-    g.box((0.23, 0.20, zc), (1.42, 0.28, thick), "Lib_Varnish")
-    g.box((0.23, 1.08, zc), (1.10, 0.16, thick), "Lib_Varnish")
-    g.box((0.23, 1.98, zc), (1.42, 0.28, thick), "Lib_Varnish")
-    # Recessed panels, tucked behind the frame so the border is hidden.
-    panel_front = z0 + thick - 0.026
-    panel_z = panel_front - 0.008
-    g.box((0.23, 0.66, panel_z), (1.16, 0.70, 0.016), "Lib_Board")
-    g.box((0.23, 1.52, panel_z), (1.16, 0.70, 0.016), "Lib_Board")
+    # Rails butt into the stiles, 3 mm of bury, not a block through the corner.
+    rail_w = 1.106
+    g.box((0.23, 0.20, zc), (rail_w, 0.28, thick), "Lib_Varnish")
+    g.box((0.23, 1.08, zc), (rail_w, 0.16, thick), "Lib_Varnish")
+    g.box((0.23, 1.98, zc), (rail_w, 0.28, thick), "Lib_Varnish")
+    # Same varnish, set back about 2 cm. Thick enough to hold Col_Door.
+    panel_zc = 1.404
+    panel_t = 0.022
+    g.box((0.23, 0.67, panel_zc), (1.12, 0.70, panel_t), "Lib_Varnish")
+    g.box((0.23, 1.50, panel_zc), (1.12, 0.72, panel_t), "Lib_Varnish")
     if lod == 0:
-        g.box((0.86, 1.05, z0 + thick + 0.004), (0.045, 0.07, 0.012), "Lib_Brass")
-        g.sphere((0.86, 1.05, z0 + thick + 0.022), 0.022, "Lib_Brass", 10)
+        z_panel = panel_zc + panel_t * 0.5
+        _panel_bevel(g, -0.32, 0.78, 0.34, 1.00, z_front, z_panel)
+        _panel_bevel(g, -0.32, 0.78, 1.16, 1.84, z_front, z_panel)
+        g.box((0.86, 1.05, z_front + 0.004), (0.045, 0.07, 0.012), "Lib_Brass")
+        g.sphere((0.86, 1.05, z_front + 0.022), 0.022, "Lib_Brass", 10)
 
 
 def _window_z(g, cx, cy, lod):
@@ -254,7 +325,7 @@ def create():
         "HarborShed",
         "Harbor",
         "Wood shed, 3.6 x 2.8 m. Board-and-batten siding, corner trim on the boards, "
-        "a frame-and-panel door and a trimmed window on +Z, and a window on +X.",
+        "a butt-jointed frame-and-panel door with a beveled recess, and trimmed windows.",
     )
     a.climbable = True
     a.climb_note = "The board walls are cling. The door is closed."
