@@ -4,7 +4,8 @@ namespace Tag.FX
 {
     /// <summary>
     /// Marks the dust a collider kicks up. Put this on the ground or the prop.
-    /// Kind 0 grass, 1 dirt/sand, 2 concrete/asphalt, 3 wood, 4 metal, 5 wet.
+        /// Kind 0 grass, 1 dirt/sand, 2 concrete/asphalt, 3 wood, 4 metal, 5 wet, 6 brick.
+        /// Brick keeps the concrete physics material. Only the dust tint changes.
     /// If the tag is missing, the physics material name is used, then the
     /// renderer material name, then the object name. Grass, mulch, sand,
     /// concrete, wood, and metal on the parks are stamped when the arena builds.

@@ -68,12 +68,12 @@ namespace Tag.FX
         {
             float k = Strength(speed);
             var spec = new Spec();
-            spec.Radius = 1.45f + k * 1.85f;
-            // Chips stay grit-sized. Speed changes how many fly and how high, not how big.
+            // Pass 27. The old 3.3 m hard-land ring drew an arc across the pane.
+            // Sprint stays a small circle. A hard land stays under a metre.
+            spec.Radius = 0.38f + k * 0.42f;
             spec.Chunk = 0.08f;
-            int bits = BitsMin + (int)(k * 14f);
-            if (bits < BitsMin) bits = BitsMin;
-            if (bits > BitsMax) bits = BitsMax;
+            // Fewer pieces. A sprint slam is three chips. A hard land is five chunks.
+            int bits = k < 0.25f ? 3 : 5;
             spec.Bits = bits;
             spec.Life = LifeSeconds;
             // Quiet enough that the dust, not the ring, is the read.
@@ -102,6 +102,16 @@ namespace Tag.FX
                 spec.DustR = 0.72f;
                 spec.DustG = 0.50f;
                 spec.DustB = 0.26f;
+                spec.Plumes = PlumeCount(k);
+            }
+            else if (surface == (int)DustLook.Surface.Brick)
+            {
+                spec.R = 0.55f;
+                spec.G = 0.22f;
+                spec.B = 0.14f;
+                spec.DustR = 0.78f;
+                spec.DustG = 0.42f;
+                spec.DustB = 0.30f;
                 spec.Plumes = PlumeCount(k);
             }
             else if (surface == (int)DustLook.Surface.Wood)
@@ -281,6 +291,47 @@ namespace Tag.FX
             else normal.Normalize();
             Raise(origin, normal, speed, surface, FxKitOptions.Wall);
             Scuff(origin, normal, speed, surface, material);
+        }
+
+        /// <summary>
+        /// Wall-run start. A small ring and a short puff, plus the scuff.
+        /// This is not the wall-bounce shockwave, and it does not wait for sprint speed.
+        /// Below 13.8 m/s the ring stays under 0.26 m.
+        /// </summary>
+        public static void WallRunStart(Vector3 origin, Vector3 normal, float speed, int surface, string material)
+        {
+            if (!FxKitLook.Bursts(GameSettings.Current, FxKitOptions.Wall)) return;
+            if (normal.sqrMagnitude < 0.0001f) normal = Vector3.forward;
+            else normal.Normalize();
+            Scuff(origin, normal, speed, surface, material);
+            Ensure();
+            if (_host == null || _host._age == null) return;
+            _host.Spawn(origin, normal, SmallWall(surface, speed), FxKitOptions.Wall);
+        }
+
+        /// <summary>Ring and puff for a wall-run start. Kept small when speed is under a sprint slam.</summary>
+        public static Spec SmallWall(int surface, float speed)
+        {
+            bool slow = speed < SlamSpeed;
+            float u = SlamSpeed > 0.01f ? speed / SlamSpeed : 0f;
+            if (u < 0f) u = 0f;
+            if (u > 1f) u = 1f;
+            float k = Strength(speed);
+            var spec = Measure(surface, slow ? SlamSpeed : speed);
+            spec.Radius = slow ? 0.14f + u * 0.12f : 0.28f + k * 0.18f;
+            spec.Bits = 0;
+            spec.Plumes = slow ? 2 : 3;
+            if (!slow)
+            {
+                spec.Plumes = 3 + (int)(k * 2f);
+                if (spec.Plumes > 5) spec.Plumes = 5;
+            }
+            spec.Opacity = slow ? 0.08f + u * 0.06f : 0.14f + k * 0.06f;
+            spec.HopLo = 0.02f;
+            spec.HopHi = slow ? 0.06f : 0.12f;
+            spec.Chunk = 0.06f;
+            spec.Life = LifeSeconds;
+            return spec;
         }
 
         /// <summary>
@@ -515,9 +566,9 @@ namespace Tag.FX
                     float h2 = Hash(b + 40 + slot * 3);
                     float ang = (b + h * 0.35f) * 6.2831855f / n;
                     float pace = StrengthFromRadius(spec.Radius);
-                    bool accent = pace >= 0.85f && b < 4;
-                    float hop = accent
-                        ? Mathf.Lerp(spec.HopHi * 0.72f, spec.HopHi, h2)
+                    bool chunky = pace >= 0.75f;
+                    float hop = chunky
+                        ? Mathf.Lerp(spec.HopHi * 0.55f, spec.HopHi * 0.85f, h2)
                         : Mathf.Lerp(spec.HopLo, spec.HopHi, h2);
                     float vy = Mathf.Sqrt(2f * Gravity * hop);
                     float spread = (0.8f + pace * 2.2f) * (0.4f + h);
@@ -536,27 +587,31 @@ namespace Tag.FX
                         start = 0.35f;
                     }
                     piece.Vel = vel;
-                    // Most chips 2–4 cm, rare 8 cm. A hard land adds four 10–12 cm accents.
-                    if (accent)
-                        piece.Size = 0.10f + h2 * 0.02f;
+                    // Hard land: five chunks, 28–42 cm, dark against a pale one.
+                    // Sprint stays grit. The hop tops out under the 1 m plume.
+                    if (chunky)
+                        piece.Size = 0.28f + h2 * 0.14f;
                     else
                     {
                         float span = h2 * h2;
                         piece.Size = 0.02f + span * 0.06f;
                         if (piece.Size > 0.08f) piece.Size = 0.08f;
                     }
-                    float shade = 0.82f + h * 0.28f;
+                    float shade = chunky ? ((b & 1) == 0 ? 0.28f : 1.55f) : (0.82f + h * 0.28f);
                     piece.R = spec.R * shade;
                     piece.G = spec.G * shade;
                     piece.B = spec.B * shade;
+                    if (piece.R > 1f) piece.R = 1f;
+                    if (piece.G > 1f) piece.G = 1f;
+                    if (piece.B > 1f) piece.B = 1f;
                     piece.Settle = -1f;
                     bool grass = spec.Splinter > 1.5f;
                     bool dirtClod = grass && (b % 4) == 0;
                     bool splinter = !grass && spec.Splinter > 0.5f;
-                    if (accent)
+                    if (chunky)
                     {
                         piece.Shape = ShapeChunk;
-                        piece.Aspect = 0.72f + h * 0.28f;
+                        piece.Aspect = 0.62f + h * 0.35f;
                     }
                     else if (dirtClod)
                     {
@@ -645,7 +700,7 @@ namespace Tag.FX
 
         static float StrengthFromRadius(float radius)
         {
-            float k = (radius - 1.45f) / 1.85f;
+            float k = (radius - 0.38f) / 0.42f;
             if (k < 0f) k = 0f;
             if (k > 1.15f) k = 1.15f;
             return k;
@@ -811,7 +866,9 @@ namespace Tag.FX
         static void ScuffTint(int surface, string material, out float r, out float g, out float b, out float dr, out float dg, out float db)
         {
             string n = string.IsNullOrEmpty(material) ? "" : material.ToLowerInvariant();
-            bool brick = n.IndexOf("brick", System.StringComparison.Ordinal) >= 0;
+            bool brick = surface == (int)DustLook.Surface.Brick
+                || n.IndexOf("brick", System.StringComparison.Ordinal) >= 0
+                || n.IndexOf("masonry", System.StringComparison.Ordinal) >= 0;
             bool wood = surface == (int)DustLook.Surface.Wood
                 || n.IndexOf("wood", System.StringComparison.Ordinal) >= 0
                 || n.IndexOf("plank", System.StringComparison.Ordinal) >= 0

@@ -28,7 +28,10 @@ namespace Tag.FX
             Concrete = 2,
             Wood = 3,
             Metal = 4,
-            Wet = 5
+            Wet = 5,
+            // Extra tint. SurfaceCount stays 6 so the running-dust proof line does not change.
+            // Kind 6 is brick. Physics friction stays on the concrete material.
+            Brick = 6
         }
 
         public enum Kick
@@ -94,6 +97,7 @@ namespace Tag.FX
 
         public static Surface FromTag(int kind)
         {
+            if (kind == (int)Surface.Brick) return Surface.Brick;
             if (kind < 0 || kind >= SurfaceCount) return Surface.Concrete;
             return (Surface)kind;
         }
@@ -114,10 +118,16 @@ namespace Tag.FX
         /// <summary>
         /// Tag wins. Otherwise the name is scanned for a surface word.
         /// Grass stays a light fleck. Mulch and sand are dirt. Asphalt stays with concrete.
+        /// Brick is the material name, the object name, or kind 6. It is not concrete.
         /// </summary>
         public static Surface Classify(string material, string objectName, int tag)
         {
+            if (tag == (int)Surface.Brick) return Surface.Brick;
             if (tag >= 0 && tag < SurfaceCount) return (Surface)tag;
+            if (Has(material, "brick") || Has(objectName, "brick")
+                || Has(material, "masonry") || Has(objectName, "masonry")
+                || Has(material, "mortar") || Has(objectName, "mortar"))
+                return Surface.Brick;
             if (NamedMetal(objectName)) return Surface.Metal;
             string name = material;
             if (string.IsNullOrEmpty(name)) name = objectName;
@@ -147,6 +157,8 @@ namespace Tag.FX
 
         public static Puff At(int surface, float speed, int kick)
         {
+            if (surface == (int)Surface.Brick)
+                return At(Surface.Brick, speed, (Kick)kick);
             return At(FromTag(surface), speed, (Kick)kick);
         }
 
@@ -228,6 +240,13 @@ namespace Tag.FX
                     size0 = 0.04f; size1 = 0.10f; op0 = 0.45f; op1 = 0.78f; count0 = 3f; count1 = 8f;
                     life0 = 0.14f; life1 = 0.40f; span0 = 0.06f; span1 = 0.38f; lift1 = 0.08f;
                     puff.R = 0.90f; puff.G = 0.76f; puff.B = 0.56f;
+                }
+                else if (surface == Surface.Brick)
+                {
+                    // Same body as concrete. The tint is the brick, not the grey dust.
+                    size0 = 0.05f; size1 = 0.20f; op0 = 0.28f; op1 = 0.82f; count0 = 2f; count1 = 9f;
+                    life0 = 0.16f; life1 = 0.50f; span0 = 0.10f; span1 = 0.72f; lift1 = 0.16f;
+                    puff.R = 0.62f; puff.G = 0.28f; puff.B = 0.16f;
                 }
                 else
                 {
@@ -391,6 +410,12 @@ namespace Tag.FX
             if (Classify("wet", null, TagNone) != Surface.Wet) return false;
             if (Classify("concrete", "Slab", (int)Surface.Wet) != Surface.Wet) return false;
             if (Classify(null, null, TagNone) != Surface.Concrete) return false;
+            if (Classify("Brick_Red", "Wall", TagNone) != Surface.Brick) return false;
+            if (Classify(null, "masonry_01", TagNone) != Surface.Brick) return false;
+            if (Classify("asphalt", "Road", (int)Surface.Brick) != Surface.Brick) return false;
+            Puff brick = At(Surface.Brick, Sprint, Kick.None);
+            if (brick.R <= brick.G + 0.2f || brick.B >= brick.R) return false;
+            if (Mathf.Abs(brick.R - concrete.R) < 0.12f) return false;
             if (Tag.Audio.FootstepMap.Classify("sand") != Tag.Audio.FootstepMap.Surface.Concrete) return false;
             if (TagArena.Movement.ChaseCam.FovPop != 0f || TagArena.Movement.ChaseCam.Shake != 0f
                 || TagArena.Movement.ChaseCam.SlowMo != 0f)
@@ -441,6 +466,7 @@ namespace Tag.FX
 
         static bool Has(string name, string part)
         {
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(part)) return false;
             return name.IndexOf(part, System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }

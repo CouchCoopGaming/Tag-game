@@ -20,6 +20,8 @@ namespace Tag.FX
         {
             if (col == null) return DustLook.Surface.Concrete;
             SurfaceTag tag = col.GetComponent<SurfaceTag>();
+            if (tag != null && tag.Kind == (int)DustLook.Surface.Brick)
+                return DustLook.Surface.Brick;
             if (tag != null && tag.Kind >= 0 && tag.Kind < DustLook.SurfaceCount)
                 return DustLook.FromTag(tag.Kind);
             PhysicsMaterial phys = col.sharedMaterial;

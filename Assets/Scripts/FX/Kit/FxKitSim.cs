@@ -75,6 +75,7 @@ namespace Tag.FX
         const int AirLines = 14;
         const int AirLong = 8;
         const float AirLife = 0.15f;
+        readonly byte[] _airWide = new byte[AirLines];
         readonly float[] _airAge = new float[AirLines];
         readonly Vector3[] _airA = new Vector3[AirLines];
         readonly Vector3[] _airB = new Vector3[AirLines];
@@ -476,7 +477,7 @@ namespace Tag.FX
                 Vector3 p0 = Motor.WallPoint;
                 if (p0.sqrMagnitude < 0.0001f)
                     p0 = _root.position + Vector3.up * 0.9f + n0 * 0.35f;
-                ImpactFx.Scuff(p0, n0, Motor.HorizSpeed, _wallSurf, WallMaterialName());
+                ImpactFx.WallRunStart(p0, n0, Motor.HorizSpeed, _wallSurf, WallMaterialName());
                 return;
             }
             _wallSurf = DustContact.Read(Motor.WallCollider, ref _wallId, ref _wallSurf);
@@ -833,9 +834,9 @@ namespace Tag.FX
                 _air[i].enabled = true;
                 _air[i].SetPosition(0, _airA[i]);
                 _air[i].SetPosition(1, _airB[i]);
-                bool edge = i >= AirLong;
-                _air[i].startWidth = (edge ? 0.07f : 0.045f) * u;
-                _air[i].endWidth = (edge ? 0.016f : 0.008f) * u;
+                bool edge = i >= AirLong || _airWide[i] != 0;
+                _air[i].startWidth = (edge ? 0.11f : 0.045f) * u;
+                _air[i].endWidth = (edge ? 0.02f : 0.008f) * u;
                 float a = 0.35f * u;
                 var c = new Color(_cr, _cg, _cb, a);
                 _air[i].startColor = c;
@@ -872,9 +873,28 @@ namespace Tag.FX
             Vector3 side = Vector3.Cross(Vector3.up, travel);
             if (side.sqrMagnitude < 0.0001f) side = Vector3.right;
             else side.Normalize();
+            Vector3 camRight = side;
+            Vector3 camUp = Vector3.up;
+            bool headOn = false;
+            if (_cam != null)
+            {
+                camRight = _cam.transform.right;
+                if (camRight.sqrMagnitude < 0.0001f) camRight = side;
+                else camRight.Normalize();
+                camUp = _cam.transform.up;
+                if (camUp.sqrMagnitude < 0.0001f) camUp = Vector3.up;
+                else camUp.Normalize();
+                Vector3 toCam = _cam.transform.position - origin;
+                if (toCam.sqrMagnitude > 0.0001f)
+                {
+                    toCam.Normalize();
+                    headOn = Mathf.Abs(Vector3.Dot(trail, toCam)) > 0.82f;
+                }
+            }
             int count = dash ? _air.Length : AirLong;
             for (int i = 0; i < _air.Length; i++)
             {
+                _airWide[i] = 0;
                 if (i >= count)
                 {
                     _airAge[i] = -1f;
@@ -885,20 +905,35 @@ namespace Tag.FX
                     float h = (i * 3 % 10) / 9f;
                     float len = 0.60f + h * 0.60f;
                     Vector3 start = LimbPoint(i, origin);
-                    _airA[i] = start;
-                    _airB[i] = start + trail * len;
+                    if (dash && headOn)
+                    {
+                        // A ribbon aimed at the camera collapses. Flare it across the frame.
+                        float sign = (i & 1) == 0 ? 1f : -1f;
+                        float flare = 0.95f + h * 0.45f;
+                        float lift = (i & 1) == 0 ? 0.16f : -0.10f;
+                        _airA[i] = start + camRight * sign * 0.22f;
+                        _airB[i] = _airA[i] + camRight * sign * flare + camUp * lift;
+                        _airWide[i] = 1;
+                    }
+                    else
+                    {
+                        _airA[i] = start;
+                        _airB[i] = start + trail * len;
+                    }
                 }
                 else
                 {
-                    // Short marks just outside the silhouette so a chase camera behind the dash still sees them.
+                    // Camera-facing burst just outside the silhouette. Long enough for a quarter pane.
                     int e = i - AirLong;
                     float sign = (e & 1) == 0 ? 1f : -1f;
-                    float outward = e < 2 ? 0.38f : e < 4 ? 0.30f : 0.18f;
-                    float len = 0.28f + (e % 3) * 0.08f;
-                    Vector3 start = EdgePoint(e, origin) + side * sign * outward + trail * 0.04f;
+                    float outward = e < 2 ? 0.34f : e < 4 ? 0.26f : 0.16f;
+                    float flare = 1.05f + (e % 3) * 0.18f;
+                    float lift = e < 2 ? 0.22f : e < 4 ? -0.06f : 0.10f;
+                    if ((e & 1) != 0) lift = -lift;
+                    Vector3 start = EdgePoint(e, origin) + camRight * sign * outward;
                     _airA[i] = start;
-                    // The sideways run is what a chase camera behind the dash can see.
-                    _airB[i] = start + trail * len + side * sign * 0.48f;
+                    _airB[i] = start + camRight * sign * flare + camUp * lift;
+                    _airWide[i] = 1;
                 }
                 _airAge[i] = 0.0001f;
             }
