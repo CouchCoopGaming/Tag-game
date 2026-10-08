@@ -10,8 +10,8 @@ namespace Tag.Ui.Menu
     /// </summary>
     public static class MenuBindRow
     {
-        public const float PadCol = 188f;
-        public const float KeyCol = 268f;
+        public const float PadCol = 220f;
+        public const float KeyCol = 340f;
 
         public static void Columns(float rowW, out float keyRight, out float padRight)
         {
@@ -73,8 +73,8 @@ namespace Tag.Ui.Menu
         }
 
         /// <summary>
-        /// Stored token, then the extra key PlayerInputReader always ORs in.
-        /// Slide's C, air dash's Alt, punch's E, and sprint's Alt are those extras.
+        /// Stored token, then the extra key PlayerInputReader still ORs in.
+        /// Slide's C and punch's E are those extras. Air dash is Q. Sprint is Shift.
         /// </summary>
         public static void Marks(PlayAction action, ActionBinds binds, out string key, out string extra, out string pad)
         {
@@ -91,13 +91,14 @@ namespace Tag.Ui.Menu
             pad = binds.Gamepad[i] ?? "";
             extra = "";
             if (action == PlayAction.Slide && key == "leftCtrl") extra = "c";
-            else if (action == PlayAction.AirDash && key != "leftAlt") extra = "leftAlt";
             else if (action == PlayAction.Punch && key != "e") extra = "e";
-            else if (action == PlayAction.Sprint && key == "leftShift") extra = "leftAlt";
         }
 
         static float MarkWidth(string token, float s)
         {
+            if (token == "mouse") return s * 2.6f;
+            if (token == "holdIntoWall") return s * 2.4f;
+            if (token == "rightStick" || token == "leftStickHold") return s * 3.5f;
             if (token == "leftCtrl" || token == "leftShift" || token == "rightShift") return s * 1.7f;
             if (token == "leftAlt" || token == "mouseLeft" || token == "mouseRight" || token == "mouseMiddle") return s * 1.45f;
             if (token == "rightShoulder" || token == "leftShoulder" || token == "leftTrigger" || token == "rightTrigger")

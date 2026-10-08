@@ -93,6 +93,18 @@ namespace Tag.Settings
                 text.Append(b.JumpAlt);
                 text.Append('\n');
             }
+            if (!string.IsNullOrEmpty(b.GrappleKey) && b.GrappleKey != ActionBinds.GrappleKeyDefault)
+            {
+                text.Append("grappleKey=");
+                text.Append(b.GrappleKey);
+                text.Append('\n');
+            }
+            if (!string.IsNullOrEmpty(b.GrapplePad) && b.GrapplePad != ActionBinds.GrapplePadDefault)
+            {
+                text.Append("grapplePad=");
+                text.Append(b.GrapplePad);
+                text.Append('\n');
+            }
             PracticeBests.Write(text);
             PracticeGhost.Write(text);
             LocalProfiles.Write(text);
@@ -241,7 +253,7 @@ namespace Tag.Settings
             if (key == "master" || key == "sfx" || key == "ui" || key == "music" || key == "mute") return true;
             if (key == "hud" || key == "uiScale" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
             if (key == "comic" || key == "motion" || key == "quality" || key == "qv" || key == "res" || key == "full" || key == "vsync") return true;
-            if (key == "cvdSeats" || key == "jumpAlt") return true;
+            if (key == "cvdSeats" || key == "jumpAlt" || key == "grappleKey" || key == "grapplePad") return true;
             if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
             if (key == "split" || key == "listen") return true;
             if (key == "startIt" || key == "startSeat" || key == "winTarget" || key == "pads" || key == "zips") return true;
@@ -315,6 +327,16 @@ namespace Tag.Settings
             {
                 if (ActionBinds.KnownKeyboard(value))
                     binds.SetJumpAlt(value);
+            }
+            else if (key == "grappleKey")
+            {
+                if (ActionBinds.KnownKeyboard(value))
+                    binds.SetGrappleKey(value);
+            }
+            else if (key == "grapplePad")
+            {
+                if (!string.IsNullOrEmpty(value))
+                    binds.SetGrapplePad(value);
             }
             else if (key.StartsWith("kb.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(3), value, true);

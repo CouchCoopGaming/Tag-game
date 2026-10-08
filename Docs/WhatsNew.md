@@ -350,6 +350,8 @@ The sixteenth pass puts Color-blind seat colors second on Accessibility, above t
 
 The seventeenth pass fills the controls list. Every action in the input map has a row: Move, Look, Jump, Cling hold, Slide, Air dash, Punch / tag, Sprint, Pause, Minimap, and Arena 1, 2, and 3. Grapple stays the left-hand note. A click pulls. A second click within 0.28 s releases. There is no pad bind for it. Keyboard and mouse glyphs sit in one column, and the pad glyphs sit in the other. P1 through P4 pick the pad, since each seat keeps its own. Confirm on a row waits 5 seconds for a button. Esc or B cancels. Space always jumps. A second key is added next to it, and the line says which key. If Slide and Punch / tag want the same button, both rows light up, and the choice is Swap or Cancel. Reset sits on the bottom row, outside the scroll, and asks before it puts the defaults back. Composites are in `Docs/UiStills/screens2/pass17/`. Space still jumps.
 
+The eighteenth pass takes Alt off the default Air dash and Sprint binds. Air dash is Q and RB. Sprint is Shift and LB. The headless line ends with `defaults-conflict=0`. Grapple can be bound like the other actions. The pad default is LT: a press pulls, and a second press within 0.28 s releases. Cling hold shows WASD and Left stick. Look shows Mouse and Right stick. The keyboard column sits left of the pad column, and both stay inside the row. Arena 1, 2, and 3 stay out of the player list. Composites are in `Docs/UiStills/screens2/pass18/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

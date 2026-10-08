@@ -126,6 +126,7 @@ namespace Tag.Ui.Menu
         Text _loadWord;
         int _loadStep = -1;
         bool _capturing;
+        bool _captureGrapple;
         int _captureAction = -1;
         int _captureFrame = -1;
         float _captureUntil;
@@ -135,6 +136,7 @@ namespace Tag.Ui.Menu
         bool _resetArmed;
         int _swapAction = -1;
         int _swapOther = -1;
+        int _swapGrapple;
         bool _swapPad;
         string _swapToken = "";
         int _swapPick;
@@ -1744,6 +1746,7 @@ namespace Tag.Ui.Menu
         {
             _capturing = false;
             _captureAction = -1;
+            _captureGrapple = false;
             MenuAudio.Back();
             PaintControls();
         }
@@ -2768,8 +2771,8 @@ namespace Tag.Ui.Menu
             ControlBands(out int action0, out int noteAt, out int stickAt, out int confirmAt, out int barAt);
             if (_banner != null)
             {
-                if (_swapOther >= 0)
-                    _banner.text = ActionBinds.Name((PlayAction)_swapAction) + " and " + ActionBinds.Name((PlayAction)_swapOther) + " use that button.";
+                if (_swapOther >= 0 || _swapGrapple != 0)
+                    _banner.text = SwapNames() + " use that button.";
                 else if (!string.IsNullOrEmpty(_notice))
                     _banner.text = _notice;
                 else if (_capturing)
@@ -2786,10 +2789,10 @@ namespace Tag.Ui.Menu
                 if (_focus < _window) _window = _focus;
                 if (_focus >= _window + win) _window = _focus - (win - 1);
             }
-            if (_swapOther >= 0)
+            if (_swapOther >= 0 || _swapGrapple != 0)
             {
-                int lo = action0 + (_swapAction < _swapOther ? _swapAction : _swapOther);
-                int hi = action0 + (_swapAction > _swapOther ? _swapAction : _swapOther);
+                int lo = SwapIndex(action0, noteAt, true);
+                int hi = SwapIndex(action0, noteAt, false);
                 if (hi - lo < win)
                 {
                     if (lo < _window) _window = lo;
@@ -2820,17 +2823,18 @@ namespace Tag.Ui.Menu
                 int stick = index - stickAt;
                 int note = index - noteAt;
                 int action = index - action0;
-                if (action >= 0 && action < (int)PlayAction.Count)
+                if (action >= 0 && action < ShownActions())
                 {
                     var act = (PlayAction)action;
                     title = ActionBinds.Name(act);
                     detail = ActionDetail(act, keys);
-                    if (_capturing && action == _captureAction) detail = "Press any button to bind";
+                    if (_capturing && !_captureGrapple && action == _captureAction) detail = "Press any button to bind";
                 }
                 else if (note >= 0 && note < ContextNotes)
                 {
                     title = NoteTitle(note);
                     detail = NoteDetail(note);
+                    if (note == 0 && _capturing && _captureGrapple) detail = "Press any button to bind";
                 }
                 else if (stick >= 0 && stick < MenuStick.Rows)
                 {
@@ -2856,19 +2860,19 @@ namespace Tag.Ui.Menu
                     row.Detail.resizeTextMinSize = 18;
                     row.Detail.resizeTextMaxSize = UiFit.FloorFont;
                 }
-                if (action >= 0 && action < (int)PlayAction.Count && row != null)
+                if (action >= 0 && action < ShownActions() && row != null)
                     MenuBindRow.Stamp(row, action, keys, pad.Gamepad[action]);
                 else if (note == 0 && row != null)
-                    MenuBindRow.StampToken(row, "mouseRight", "");
+                    MenuBindRow.StampToken(row, keys.GrappleKey, pad.GrapplePad);
             }
             float barY = UiFit.BodyH(UiFit.Current()) - MenuDepth.BarBlock;
             PaintControlBar(rowX, barY, rowW, barAt);
             PaintControlScroll(win, listTop);
             RefreshFocus();
-            if (_swapOther >= 0)
+            if (_swapOther >= 0 || _swapGrapple != 0)
             {
-                MenuTile a = TileAt(action0 + _swapAction);
-                MenuTile b = TileAt(action0 + _swapOther);
+                MenuTile a = TileAt(SwapIndex(action0, noteAt, true));
+                MenuTile b = TileAt(SwapIndex(action0, noteAt, false));
                 if (a != null) a.SetHot(true);
                 if (b != null) b.SetHot(true);
             }
@@ -2950,7 +2954,7 @@ namespace Tag.Ui.Menu
                 });
             }
             MenuBindRow.Columns(w, out float keyRight, out float padRight);
-            float keyHeadW = 360f;
+            float keyHeadW = MenuBindRow.KeyCol;
             RectTransform keyHead = MenuWidgets.Place(_body, "KeyHead", x + keyRight - keyHeadW, y, keyHeadW, 68f);
             Image keyPlate = keyHead.gameObject.AddComponent<Image>();
             MenuArt.Plate(keyPlate, MenuTheme.Navy, true);
@@ -3464,7 +3468,19 @@ namespace Tag.Ui.Menu
             if (_focus == 0)
                 return;
             int note = _focus - noteAt;
-            if (note >= 0 && note < ContextNotes)
+            if (note == 0)
+            {
+                _capturing = true;
+                _captureGrapple = true;
+                _captureAction = -1;
+                _captureFrame = Time.frameCount;
+                _captureUntil = Time.unscaledTime + 5f;
+                _notice = "";
+                MenuAudio.Confirm();
+                PaintControls();
+                return;
+            }
+            if (note > 0 && note < ContextNotes)
                 return;
             int stick = _focus - stickAt;
             if (stick >= 0 && stick < MenuStick.Rows)
@@ -3512,7 +3528,7 @@ namespace Tag.Ui.Menu
                 return;
             }
             int action = _focus - action0;
-            if (action < 0 || action >= (int)PlayAction.Count)
+            if (action < 0 || action >= ShownActions())
                 return;
             _capturing = true;
             _captureAction = action;
@@ -3654,8 +3670,16 @@ namespace Tag.Ui.Menu
 
         void TakeBind(string token)
         {
-            var action = (PlayAction)_captureAction;
             bool pad = IsPad(token);
+            if (_captureGrapple)
+            {
+                _capturing = false;
+                _captureGrapple = false;
+                _captureAction = -1;
+                TakeGrapple(token, pad);
+                return;
+            }
+            var action = (PlayAction)_captureAction;
             _capturing = false;
             _captureAction = -1;
             if (!pad && action == PlayAction.Jump)
@@ -3694,6 +3718,12 @@ namespace Tag.Ui.Menu
                 ActionBinds table = PadBinds();
                 string previous = table.Gamepad[(int)action] ?? "";
                 table.SetGamepad(action, token);
+                if ((table.GrapplePad ?? "") == token)
+                {
+                    table.SetGamepad(action, previous);
+                    BeginGrappleSwap(action, true, token, false);
+                    return;
+                }
                 if (table.Conflict(action, out PlayAction other))
                 {
                     table.SetGamepad(action, previous);
@@ -3710,6 +3740,11 @@ namespace Tag.Ui.Menu
             if (!string.IsNullOrEmpty(keys.JumpAlt) && token == keys.JumpAlt)
             {
                 BeginSwap(action, PlayAction.Jump, false, token);
+                return;
+            }
+            if ((keys.GrappleKey ?? "") == token)
+            {
+                BeginGrappleSwap(action, false, token, false);
                 return;
             }
             string old = keys.Keyboard[(int)action] ?? "";
@@ -3750,6 +3785,7 @@ namespace Tag.Ui.Menu
         {
             _swapAction = -1;
             _swapOther = -1;
+            _swapGrapple = 0;
             _swapPad = false;
             _swapToken = "";
             _swapPick = 0;
@@ -3757,6 +3793,11 @@ namespace Tag.Ui.Menu
 
         void CommitSwap()
         {
+            if (_swapGrapple != 0)
+            {
+                CommitGrappleSwap();
+                return;
+            }
             var action = (PlayAction)_swapAction;
             var other = (PlayAction)_swapOther;
             string token = _swapToken ?? "";
@@ -3824,6 +3865,153 @@ namespace Tag.Ui.Menu
             return false;
         }
 
+        void TakeGrapple(string token, bool pad)
+        {
+            if (!pad && token == "space")
+            {
+                _notice = "Space always jumps.";
+                MenuAudio.Back();
+                PaintControls();
+                return;
+            }
+            ActionBinds keys = KeyboardBinds();
+            ActionBinds table = PadBinds();
+            if (pad)
+            {
+                for (int j = 0; j < (int)PlayAction.Count; j++)
+                {
+                    string have = table.Gamepad[j] ?? "";
+                    if (have.Length == 0 || have != token || ActionBinds.SharesMove(have)) continue;
+                    BeginGrappleSwap((PlayAction)j, true, token, true);
+                    return;
+                }
+                table.SetGrapplePad(token);
+                RememberPad(table);
+            }
+            else
+            {
+                if (ActionBinds.Reserved(token))
+                {
+                    MenuAudio.Back();
+                    PaintControls();
+                    return;
+                }
+                if (!string.IsNullOrEmpty(keys.JumpAlt) && token == keys.JumpAlt)
+                {
+                    BeginGrappleSwap(PlayAction.Jump, false, token, true);
+                    return;
+                }
+                for (int j = 0; j < (int)PlayAction.Count; j++)
+                {
+                    string have = keys.Keyboard[j] ?? "";
+                    if (have.Length == 0 || have != token || ActionBinds.SharesMove(have)) continue;
+                    BeginGrappleSwap((PlayAction)j, false, token, true);
+                    return;
+                }
+                keys.SetGrappleKey(token);
+                SettingsRuntime.Save();
+            }
+            _notice = "";
+            MenuAudio.Confirm();
+            PaintControls();
+        }
+
+        /// <summary>
+        /// grappleReceives: the new token lands on Grapple and the other row keeps Grapple's old token.
+        /// Otherwise the other row takes the token and Grapple keeps that row's old token.
+        /// </summary>
+        void BeginGrappleSwap(PlayAction other, bool pad, string token, bool grappleReceives)
+        {
+            _swapAction = (int)other;
+            _swapOther = (int)other;
+            _swapGrapple = grappleReceives ? 1 : 2;
+            _swapPad = pad;
+            _swapToken = token ?? "";
+            _swapPick = 0;
+            _notice = "";
+            MenuAudio.Back();
+            PaintControls();
+        }
+
+        void CommitGrappleSwap()
+        {
+            var other = (PlayAction)_swapAction;
+            string token = _swapToken ?? "";
+            bool pad = _swapPad;
+            bool grappleReceives = _swapGrapple == 1;
+            ClearSwap();
+            if (pad)
+            {
+                ActionBinds table = PadBinds();
+                string previous = table.GrapplePad ?? ActionBinds.GrapplePadDefault;
+                string theirs = table.Gamepad[(int)other] ?? "";
+                if (grappleReceives)
+                {
+                    table.SetGrapplePad(token);
+                    table.SetGamepad(other, previous);
+                }
+                else
+                {
+                    table.SetGamepad(other, token);
+                    table.SetGrapplePad(theirs.Length > 0 ? theirs : ActionBinds.GrapplePadDefault);
+                }
+                RememberPad(table);
+            }
+            else
+            {
+                ActionBinds kb = KeyboardBinds();
+                string previous = kb.GrappleKey ?? ActionBinds.GrappleKeyDefault;
+                if (grappleReceives)
+                {
+                    kb.SetGrappleKey(token);
+                    if (other == PlayAction.Jump)
+                    {
+                        if ((kb.JumpAlt ?? "") == token) kb.SetJumpAlt(previous == "space" ? "" : previous);
+                    }
+                    else
+                        kb.SetKeyboard(other, previous);
+                }
+                else if (other == PlayAction.Jump)
+                {
+                    if ((kb.Keyboard[(int)PlayAction.Jump] ?? "") != "space")
+                        kb.SetKeyboard(PlayAction.Jump, "space");
+                    kb.SetJumpAlt(token);
+                    kb.SetGrappleKey(ActionBinds.GrappleKeyDefault);
+                }
+                else
+                {
+                    string theirs = kb.Keyboard[(int)other] ?? "";
+                    kb.SetKeyboard(other, token);
+                    kb.SetGrappleKey(theirs.Length > 0 ? theirs : ActionBinds.GrappleKeyDefault);
+                }
+                SettingsRuntime.Save();
+            }
+            _notice = "";
+            MenuAudio.Confirm();
+            PaintControls();
+        }
+
+        string SwapNames()
+        {
+            if (_swapGrapple != 0)
+                return "Grapple and " + ActionBinds.Name((PlayAction)_swapAction);
+            return ActionBinds.Name((PlayAction)_swapAction) + " and " + ActionBinds.Name((PlayAction)_swapOther);
+        }
+
+        int SwapIndex(int action0, int noteAt, bool low)
+        {
+            int grapple = noteAt;
+            int other = _swapGrapple != 0 ? action0 + _swapAction : action0 + (_swapAction < _swapOther ? _swapAction : _swapOther);
+            int hiAction = _swapGrapple != 0 ? other : action0 + (_swapAction > _swapOther ? _swapAction : _swapOther);
+            if (_swapGrapple != 0)
+            {
+                int a = grapple < other ? grapple : other;
+                int b = grapple > other ? grapple : other;
+                return low ? a : b;
+            }
+            return low ? other : hiAction;
+        }
+
         ActionBinds KeyboardBinds()
         {
             if (ActionBinds.Current == null)
@@ -3847,6 +4035,7 @@ namespace Tag.Ui.Menu
             {
                 for (int i = 0; i < (int)PlayAction.Count; i++)
                     owned.SetGamepad((PlayAction)i, pad.Gamepad[i]);
+                owned.SetGrapplePad(pad.GrapplePad);
             }
             SettingsRuntime.Save();
         }
@@ -3858,9 +4047,11 @@ namespace Tag.Ui.Menu
             for (int i = 0; i < (int)PlayAction.Count; i++)
                 kb.SetKeyboard((PlayAction)i, fresh.Keyboard[i]);
             kb.SetJumpAlt("");
+            kb.SetGrappleKey(fresh.GrappleKey);
             ActionBinds pad = PadBinds();
             for (int i = 0; i < (int)PlayAction.Count; i++)
                 pad.SetGamepad((PlayAction)i, fresh.Gamepad[i]);
+            pad.SetGrapplePad(fresh.GrapplePad);
             RememberPad(pad);
             ClearSwap();
         }
@@ -3870,6 +4061,7 @@ namespace Tag.Ui.Menu
             return token == "buttonSouth" || token == "buttonEast" || token == "buttonWest"
                 || token == "buttonNorth" || token == "leftShoulder" || token == "rightShoulder"
                 || token == "leftStickPress" || token == "rightStickPress"
+                || token == "leftTrigger" || token == "rightTrigger"
                 || token == "start" || token == "select"
                 || token == "dpadLeft" || token == "dpadRight" || token == "dpadUp" || token == "dpadDown";
         }
@@ -4237,10 +4429,20 @@ namespace Tag.Ui.Menu
         static void ControlBands(out int action0, out int noteAt, out int stickAt, out int confirmAt, out int barAt)
         {
             action0 = 1;
-            noteAt = action0 + (int)PlayAction.Count;
+            noteAt = action0 + ShownActions();
             stickAt = noteAt + ContextNotes;
             confirmAt = stickAt + MenuStick.Rows;
             barAt = confirmAt + GameSettings.SeatCount;
+        }
+
+        /// <summary>Arena 1/2/3 stay in the bind table. The player list hides them outside a dev build.</summary>
+        static int ShownActions()
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            return (int)PlayAction.Count;
+#else
+            return (int)PlayAction.Arena1;
+#endif
         }
 
         static int ControlCount()
@@ -4283,7 +4485,7 @@ namespace Tag.Ui.Menu
             if (note == 0)
             {
                 return ExperimentalGrapple.FireButton
-                    + ". Click pulls. Second click within 0.28 s releases. Left hand. No pad bind.";
+                    + ". Press pulls. Second press within 0.28 s releases. Left hand.";
             }
             if (note == 1)
                 return "Hold cling to grab. Jump to drop.";

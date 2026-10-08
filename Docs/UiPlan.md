@@ -329,6 +329,10 @@ Color-blind seat colors is the second Accessibility row, so it sits in the first
 
 Controls lists every action in the input map. Move, Look, Jump, Cling hold, Slide, Air dash, Punch / tag, Sprint, Pause, Minimap, Arena 1, Arena 2, and Arena 3 each have a row. Grapple stays a note: RMB, a click pulls, a second click within 0.28 s releases, left hand, no pad bind. Keyboard and mouse glyphs are one column. Pad glyphs are the other. P1 through P4 choose which pad that column edits. Confirm waits 5 seconds for a button. Esc or B cancels. Space stays Jump, and a second key can sit beside it. The line says Space always jumps, then names the key that was added. When two rows want the same button, both light up, and the choice is Swap or Cancel. Reset and Back stay on the bottom row, outside the scroll. Reset asks once, then clears that pad and the shared keyboard. Stills are composites in `Docs/UiStills/screens2/pass17/`.
 
+## Screens 2, pass 18
+
+Shipped defaults no longer give Alt to both Air dash and Sprint. Air dash is Q and RB. Sprint is Shift and LB. The headless walk appends `defaults-conflict=0` after it counts the keyboard table and all four pads. Grapple is a bind row: RMB on the keyboard, LT on the pad. A press pulls. A second press within 0.28 s releases. Cling hold draws WASD and Left stick, which is the move-into-wall hold the motor already samples. Look draws Mouse and Right stick. Both glyph columns sit inside the row, keyboard on the left and pad on the right, under those headers. Arena 1, Arena 2, and Arena 3 stay in the bind table and show only in a development build. Stills are composites in `Docs/UiStills/screens2/pass18/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

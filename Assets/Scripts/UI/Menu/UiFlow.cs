@@ -113,7 +113,8 @@ namespace Tag.Ui.Menu
                 + " records=" + (records ? "ok" : "no")
                 + " contrast=" + (contrast ? "ok" : "no")
                 + " style=" + (style ? "ok" : "no")
-                + " sheet=" + (sheet ? "ok" : "no");
+                + " sheet=" + (sheet ? "ok" : "no")
+                + " defaults-conflict=" + ActionBinds.DefaultConflicts().ToString();
             if (!report.Ok)
                 report.Line += " FAIL " + report.Failure;
             return report;

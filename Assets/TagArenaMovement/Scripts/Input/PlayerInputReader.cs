@@ -106,7 +106,7 @@ namespace TagArena.Movement
             bool cursorLocked = Cursor.lockState == CursorLockMode.Locked;
             bool playLive = Time.timeScale > 0f && cursorLocked;
             bool clingPhys = Input.GetKey(KeyCode.W) || Input.GetAxisRaw("Vertical") > 0.25f;
-            bool sprintPhys = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftAlt);
+            bool sprintPhys = Input.GetKey(KeyCode.LeftShift);
             bool jumpPhys = JumpHeldNow();
             if (!playLive)
             {
@@ -190,8 +190,10 @@ namespace TagArena.Movement
             SkiHeld = Input.GetKey(skiKey);
             // Shift may also mean ski; PlayerMotor.WantsSki decides if ski engages.
             // When ski does not engage (flat jog), Shift still counts as sprint so run reads correctly.
+            // Default sprint is Shift. Alt is not also air dash.
+            // The ski switch still uses Alt, because Shift is the ski key on that path.
             SprintHeld = useShiftAsSprintWhenNotSkiing
-                ? Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftAlt)
+                ? Input.GetKey(KeyCode.LeftShift)
                 : Input.GetKey(KeyCode.LeftAlt);
 
             // Default: hold RMB / Left Shift+Space feel. Jet is dedicated.
@@ -200,8 +202,8 @@ namespace TagArena.Movement
             _prevJet = JetHeld ? 1f : 0f;
 
             LungePressed = Input.GetKeyDown(lungeKey) || Input.GetMouseButtonDown(2);
-            // Q / Left Alt (docs); MMB also counts via LungePressed when airborne in motor.
-            AirDashPressed = Input.GetKeyDown(airDashKey) || Input.GetKeyDown(KeyCode.LeftAlt);
+            // Q. MMB also counts via LungePressed when airborne in the motor.
+            AirDashPressed = Input.GetKeyDown(airDashKey);
             PunchPressed = Input.GetKeyDown(punchKey) || Input.GetKeyDown(KeyCode.E);
             LookFromGamepad = StickLookActive();
             ApplyReboundOverrides();
@@ -316,7 +318,7 @@ namespace TagArena.Movement
                 _prevCrouch = held ? 1f : 0f;
             }
             if (!binds.UsesLegacy(PlayAction.AirDash))
-                AirDashPressed = BindSampler.Pressed(PlayAction.AirDash) || Input.GetKeyDown(KeyCode.LeftAlt);
+                AirDashPressed = BindSampler.Pressed(PlayAction.AirDash);
             if (!binds.UsesLegacy(PlayAction.Punch))
                 PunchPressed = BindSampler.Pressed(PlayAction.Punch) || Input.GetKeyDown(KeyCode.E);
             if (!binds.UsesLegacy(PlayAction.Sprint))

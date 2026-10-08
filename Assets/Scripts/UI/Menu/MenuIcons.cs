@@ -154,20 +154,20 @@ namespace Tag.Ui.Menu
                 case "space": return KeySpace;
                 case "escape": return KeyEsc;
                 case "leftStick":
-                case "rightStick":
-                case "leftStickHold":
                 case "leftStickPress":
                 case "rightStickPress": return Stick;
+                case "rightStick": return FitLabel("RIGHT STICK");
+                case "leftStickHold": return FitLabel("LEFT STICK");
                 case "buttonSouth": return South;
                 case "buttonEast": return East;
                 case "buttonWest": return West;
                 case "buttonNorth": return North;
                 case "start": return StartButton;
-                case "mouse": return MouseBody(false);
+                case "mouse": return FitLabel("MOUSE");
                 case "mouseLeft": return MouseBody(true);
                 case "mouseRight": return WordKey("RMB");
                 case "mouseMiddle": return WordKey("MMB");
-                case "holdIntoWall": return WallHold();
+                case "holdIntoWall": return FitLabel("WASD");
                 case "leftCtrl": return WordKey("CTRL");
                 case "leftShift":
                 case "rightShift": return WordKey("SHIFT");
@@ -515,6 +515,44 @@ namespace Tag.Ui.Menu
             Fill(px, n, 14, 54, 42, 74, ink);
             Tri(px, n, 86, 64, 40, 36, 40, 92, ink);
             return Bake(px, n, n);
+        }
+
+        static Sprite FitLabel(string word)
+        {
+            int letters = 0;
+            for (int i = 0; i < word.Length; i++)
+            {
+                if (word[i] != ' ') letters++;
+            }
+            int scale = letters >= 8 ? 4 : letters >= 5 ? 5 : 7;
+            int gap = 2;
+            int lw = 5 * scale;
+            int lh = 5 * scale;
+            int spaces = word.Length - letters;
+            int textW = letters * lw + (letters > 1 ? (letters - 1) * gap : 0) + spaces * scale * 3;
+            int pad = 10;
+            int w = textW + pad * 2;
+            int h = lh + pad * 2;
+            Color[] px = Clear(w, h);
+            int radius = h / 5;
+            if (radius < 4) radius = 4;
+            if (radius > 12) radius = 12;
+            RoundBox(px, w, h, 0, 0, w - 1, h - 1, radius, new Color(0.06f, 0.10f, 0.18f, 1f));
+            RoundBox(px, w, h, 4, 4, w - 5, h - 5, radius - 2, new Color(0.96f, 0.97f, 1f, 1f));
+            Color ink = new Color(0.06f, 0.10f, 0.20f, 1f);
+            int ox = (w - textW) / 2;
+            int oy = (h - lh) / 2;
+            for (int i = 0; i < word.Length; i++)
+            {
+                if (word[i] == ' ')
+                {
+                    ox += scale * 3;
+                    continue;
+                }
+                Stamp(px, w, h, ox, oy, scale, Bits(word[i]), ink);
+                ox += lw + gap;
+            }
+            return Bake(px, w, h);
         }
 
         static Sprite WordKey(string word)
