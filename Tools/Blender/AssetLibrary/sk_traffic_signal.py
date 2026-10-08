@@ -1,4 +1,8 @@
-"""Corner traffic signal. Pole, mast arm, and a three-lens head."""
+"""Corner mast arm with one three-lamp vehicle head. No legend and no ped head.
+
+The arm is 5.5 m. The bottom of the head is 4.60 m, about 15 ft over the road.
+Lenses are 12 inch. Visors are plates.
+"""
 
 import os
 import sys
@@ -6,10 +10,27 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
 
-_FONT = os.path.normpath(os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    "..", "..", "StrafeJumpSim", "Fonts", "LiberationSans-Regular.ttf",
-))
+HEAD_X = 5.35
+HEAD_Y = 5.17
+
+
+def _head(g, lod):
+    seg = lod_pick(lod, 16, 10)
+    bev = lod_pick(lod, 0.003, 0.0)
+    bs = 1 if lod == 0 else 0
+    # Backplate, then the housing, then the three 12 inch lamps with visors.
+    g.box((HEAD_X, HEAD_Y, -0.04), (0.50, 1.28, 0.025), "Lib_Black")
+    g.box((HEAD_X, HEAD_Y, 0.08), (0.38, 1.14, 0.20), "Lib_Black", bevel=bev, segs=bs)
+    lamps = (
+        (HEAD_Y + 0.36, "Lib_Taillamp"),
+        (HEAD_Y, "Lib_SignalAmber"),
+        (HEAD_Y - 0.36, "Lib_SignalGreen"),
+    )
+    for y, mat in lamps:
+        g.cylinder((HEAD_X, y, 0.195), 0.150, 0.030, mat, seg, axis="Z")
+        g.box((HEAD_X, y + 0.11, 0.24), (0.32, 0.03, 0.16), "Lib_Black", euler=(28, 0, 0))
+        if lod == 0:
+            g.cylinder((HEAD_X, y, 0.212), 0.118, 0.012, mat, seg, axis="Z")
 
 
 @register
@@ -17,46 +38,33 @@ def create():
     a = Asset(
         "TrafficSignal_Mast",
         "StreetFurniture",
-        "Corner signal. Pole 4.70 m, mast arm 4.6 m, three-lens head and a WALK ped head.",
+        "Mast arm. Pole to 6.30 m, arm 5.5 m, three 12 inch lamps. Head bottom at 4.60 m. No legend.",
     )
-    a.climb_note = "14 cm pole. Not a cling."
-    a.vault_note = "Mast arm is 4.2 m up."
+    a.climb_note = "200 mm pole. Not a cling."
+    a.vault_note = "The arm is 5.85 m up."
     for lod in (0, 1):
         g = a.begin(lod)
         seg = lod_pick(lod, 12, 8)
-        bev = lod_pick(lod, 0.004, 0.0)
-        segs = 1 if lod == 0 else 0
-        g.cylinder((0, 0.025, 0), 0.18, 0.05, "Lib_SteelDark", seg, bevel=bev, segs=segs)
-        g.cylinder((0, 2.35, 0), 0.070, 4.60, "Lib_Steel", seg)
-        g.cylinder((0, 4.68, 0), 0.085, 0.06, "Lib_SteelDark", seg)
-        # Arm starts inside the pole and runs out to the hanger.
-        g.cylinder((2.30, 4.22, 0), 0.055, 4.50, "Lib_Steel", seg, axis="X")
-        g.cylinder((0, 4.22, 0), 0.095, 0.16, "Lib_SteelDark", seg)
-        g.cylinder((4.50, 4.02, 0), 0.028, 0.36, "Lib_Steel", 8)
-        # Vehicle head faces +Z.
-        g.box((4.50, 3.42, -0.02), (0.36, 1.02, 0.018), "Lib_Black")
-        g.box((4.50, 3.42, 0.08), (0.26, 0.86, 0.16), "Lib_Black", bevel=bev, segs=segs)
-        lenses = (
-            (3.66, "Lib_Taillamp"),
-            (3.42, "Lib_SignalAmber"),
-            (3.18, "Lib_SignalGreen"),
-        )
-        for y, mat in lenses:
-            g.cylinder((4.50, y, 0.175), 0.078, 0.028, mat, seg, axis="Z")
-            if lod == 0:
-                g.box((4.50, y + 0.09, 0.20), (0.20, 0.016, 0.10), "Lib_Black", euler=(38, 0, 0))
-        # Pedestrian head on the pole, with OFL WALK.
-        g.box((0.11, 2.28, 0.0), (0.08, 0.50, 0.30), "Lib_Black", bevel=bev, segs=segs)
-        g.cylinder((0.155, 2.40, 0.0), 0.07, 0.02, "Lib_SignalGreen", seg, axis="X")
+        bev = lod_pick(lod, 0.003, 0.0)
+        bs = 1 if lod == 0 else 0
+        g.box((0, 0.02, 0), (0.46, 0.04, 0.46), "Lib_SteelDark", bevel=bev, segs=bs)
         if lod == 0:
-            g.text("WALK", (0.162, 2.14, 0.0), 0.11, "Lib_PaintWhite", extrude=0.004, yaw=90.0, font=_FONT)
-            for ang_x, ang_z in ((0.12, 0.12), (0.12, -0.12), (-0.12, 0.12), (-0.12, -0.12)):
-                g.cylinder((ang_x, 0.028, ang_z), 0.012, 0.012, "Lib_Steel", 6)
-            g.box((0.0, 1.15, 0.078), (0.10, 0.16, 0.012), "Lib_SteelDark", bevel=0.002, segs=1)
+            for x in (-0.16, 0.16):
+                for z in (-0.16, 0.16):
+                    g.cylinder((x, 0.045, z), 0.016, 0.016, "Lib_Steel", 6)
+        g.cylinder((0, 3.16, 0), 0.10, 6.20, "Lib_Steel", seg)
+        g.cylinder((0, 6.28, 0), 0.11, 0.06, "Lib_SteelDark", seg)
+        g.box((0.12, 1.15, 0), (0.02, 0.22, 0.12), "Lib_SteelDark", bevel=bev, segs=bs)
+        # Arm starts inside the pole. A gusset sits under the root.
+        g.cylinder((2.70, 5.85, 0), 0.055, 5.30, "Lib_Steel", seg, axis="X")
+        g.box((0.28, 5.55, 0), (0.36, 0.50, 0.08), "Lib_SteelDark")
+        g.cylinder((0, 5.85, 0), 0.13, 0.18, "Lib_SteelDark", seg)
+        g.cylinder((HEAD_X - 0.05, 5.45, 0), 0.028, 0.70, "Lib_Steel", 8)
+        _head(g, lod)
         a.end()
-    a.box("Col_Base", (0, 0.026, 0), (0.16, 0.020, 0.16))
-    a.capsule("Col_Pole", (0, 2.05, 0), 0.050, 3.70, 1)
-    a.box("Col_Arm", (2.20, 4.22, 0), (3.80, 0.07, 0.07))
-    a.box("Col_Head", (4.50, 3.42, 0.08), (0.18, 0.70, 0.10))
-    a.box("Col_Ped", (0.125, 2.28, 0.0), (0.04, 0.36, 0.20))
+    a.box("Col_Base", (0, 0.016, 0), (0.32, 0.024, 0.32))
+    # Stops below the arm gusset so the sample stays in the pole alone.
+    a.capsule("Col_Pole", (0, 2.60, 0), 0.07, 5.00, direction=1)
+    a.box("Col_Arm", (2.70, 5.85, 0), (4.80, 0.07, 0.07))
+    a.box("Col_Head", (HEAD_X, HEAD_Y, 0.06), (0.28, 0.90, 0.12))
     return a
