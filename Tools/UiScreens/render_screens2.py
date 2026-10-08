@@ -1691,6 +1691,10 @@ def board_rules(scale, grown):
         ratio, tp, sp = paint_lines(img, (950, y, 1840, y + rule_h), title, lines, scale, False, grown)
         ratios.append(ratio)
         locked.append((tp, sp))
+    how_y = 360 if not grown else 168 + mode_step + mode_h + 12
+    plate(img, (40, how_y, 900, min(980, how_y + 180)), (8, 28, 70, 235))
+    d = ImageDraw.Draw(img)
+    d.text((64, how_y + 16), "How to play", font=font(FONT_D, 36 if not grown else type_px(36, scale)), fill=GOLD)
     return img, min(ratios), locked
 
 
