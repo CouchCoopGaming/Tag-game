@@ -1050,6 +1050,57 @@ namespace Tag.Art
             return shot;
         }
 
+        public static void WritePass11Stills(string path)
+        {
+            const int frames = 8;
+            const int cellW = 120;
+            const int cellH = 156;
+            const int labelW = 168;
+            const int rows = 12;
+            int w = labelW + frames * cellW;
+            int h = rows * cellH;
+            var pix = new byte[w * h * 3];
+            Fill(pix, w, h, 16, 18, 22);
+            string[] titles = { "TAKEOFF", "APEX", "FALL", "HOP", "STRAFE", "COYOTE" };
+            byte[] cr = { 120, 186, 230, 150, 210, 186 };
+            byte[] cg = { 196, 168, 176, 210, 170, 140 };
+            byte[] cb = { 150, 230, 120, 140, 110, 210 };
+            for (int k = 0; k < titles.Length; k++)
+            {
+                PaintLoco(pix, w, h, rows, k * 2, titles[k], "BEFORE", TrackAir(k, false), 196, 122, 96, false, 0f);
+                PaintLoco(pix, w, h, rows, k * 2 + 1, titles[k], "AFTER", TrackAir(k, true), cr[k], cg[k], cb[k], false, 0f);
+            }
+            string dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            WritePng(path, pix, w, h);
+        }
+
+        static Fig[] TrackAir(int kind, bool after)
+        {
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                AirFeel.Shot s = AirFeel.ShotAt(kind, i, after);
+                shot[i] = new Fig
+                {
+                    ArmL = s.ArmL,
+                    ArmR = s.ArmR,
+                    ElbL = s.ElbL,
+                    ElbR = s.ElbR,
+                    ThL = s.ThL,
+                    ThR = s.ThR,
+                    KnL = s.KnL,
+                    KnR = s.KnR,
+                    Spine = s.Spine,
+                    Hip = s.Hip,
+                    Head = s.Head,
+                    Lean = s.Lean,
+                };
+            }
+            return shot;
+        }
+
         static Fig[] TrackWallArc(bool arced)
         {
             var shot = new Fig[8];

@@ -107,6 +107,10 @@ namespace Tag.Art
         bool _pushLeft;
         float _jumpPoseAge = -1f;
         bool _jumpDriveLeft;
+        bool _coyoteJump;
+        float _airOff;
+        float _strafeVis;
+        float _strafeVel;
         float _wallJumpPoseAge = -1f;
         bool _wallJumpPosePlant;
         bool _wallJumpHandoff;
@@ -3714,6 +3718,10 @@ namespace Tag.Art
                 _glideJumpHd = _head.localRotation;
                 _airArmIn = 1f;
             }
+            if (grounded)
+                _airOff = 0f;
+            else if (_airOff < 1f)
+                _airOff += dt;
             bool jumpEdge = !grounded && _motor != null && _motor.Velocity.y > 1.5f && (_wasGrounded || _prevVy <= 1.5f);
             _prevVy = _motor != null ? _motor.Velocity.y : 0f;
             if (grounded || _pushOff <= 0.02f)
@@ -3744,7 +3752,11 @@ namespace Tag.Art
                 _jumpPoseAge = 0f;
                 _jumpPoseCycle = _cycle;
                 _jumpDriveLeft = Mathf.Sin(_cycle) >= 0f;
+                // A ledge leave inside coyote starts on the run. A ground jump does not.
+                _coyoteJump = !_wasGrounded && _airOff > 0.0001f && _airOff <= AirFeel.CoyoteSeconds + 0.001f;
             }
+            else if (grounded)
+                _coyoteJump = false;
             bool launchBody = _motor != null && _motor.LaunchArc && _motor.State == MoveState.Air && !jet && !punching;
             if (launchBody)
             {
@@ -3779,6 +3791,7 @@ namespace Tag.Art
                 _jumpPoseAge = 0f;
                 _jumpPoseCycle = _cycle;
                 _jumpDriveLeft = Mathf.Sin(_cycle) >= 0f;
+                _coyoteJump = false;
             }
             if (_jumpDashSnap && _jumpFromDash && !punching)
             {
@@ -16821,13 +16834,28 @@ namespace Tag.Art
             float cycle = _hopChain ? _cycle : (_jumpPoseAge <= JumpPose.StrideBlendSeconds ? _jumpPoseCycle : _cycle);
             float sinC = Mathf.Sin(cycle);
             float vy = _motor != null ? _motor.Velocity.y : 0f;
-            // A captured walk, sprint, or idle eases in from that pose. Mixed would open at the 0.62 stride lead.
-            // A hop keeps its own takeoff. Jump height is unchanged.
-            bool gaitJump = !_hopChain && HasGaitJumpCapture();
-            JumpPose.Sample pose = gaitJump
-                ? JumpPose.At(vy, _jumpPoseAge, _jumpDriveLeft)
-                : JumpPose.Mixed(vy, _jumpPoseAge, _jumpDriveLeft, speed, sinC, cycle);
-            LocomotionPolish.AirPhase(ref pose.ThighL, ref pose.ThighR, ref pose.KneeL, ref pose.KneeR, ref pose.ArmPitchL, ref pose.ArmPitchR, ref pose.Spine, vy, _hopChain);
+            // The press frame already shows the push. A coyote jump leaves the run.
+            // A hop keeps the fall it came from. Jump height is unchanged.
+            bool gaitJump = !_hopChain && !_coyoteJump && HasGaitJumpCapture();
+            JumpPose.Sample beat = JumpPose.At(vy, _jumpPoseAge, _jumpDriveLeft);
+            AirFeel.BalanceArms(ref beat, speed, vy);
+            LocomotionPolish.AirPhase(ref beat.ThighL, ref beat.ThighR, ref beat.KneeL, ref beat.KneeR, ref beat.ArmPitchL, ref beat.ArmPitchR, ref beat.Spine, vy, _hopChain);
+            AirFeel.ScaleTuck(ref beat, speed, vy, _jumpPoseAge);
+            if (_hopChain)
+                AirFeel.HopCycle(ref beat, cycle, 1f);
+            else
+                AirFeel.Brace(ref beat, vy);
+            JumpPose.Sample pose = beat;
+            if (_coyoteJump)
+            {
+                JumpPose.Sample stride = JumpPose.Stride(speed, sinC, cycle);
+                pose = AirFeel.Blend(stride, beat, AirFeel.CoyoteOpen(_jumpPoseAge));
+            }
+            else if (!_hopChain && !gaitJump)
+            {
+                JumpPose.Sample stride = JumpPose.Stride(speed, sinC, cycle);
+                pose = AirFeel.Blend(stride, beat, AirFeel.PushOpen(_jumpPoseAge));
+            }
             _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
             _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
@@ -16840,7 +16868,7 @@ namespace Tag.Art
             _hipsT = _hips0 * Quaternion.Euler(pose.Hip, 0f, 0f);
             if (gaitJump)
                 BlendGaitJumpCapture();
-            else if (_hopChain && _hopTakeoffFrom && _jumpPoseAge >= 0f && _jumpPoseAge <= PoseHandoff.HopTakeoffSeconds)
+            else if (_hopChain && _hopTakeoffFrom && _jumpPoseAge >= 0f && _jumpPoseAge <= AirFeel.HopSeconds)
                 BlendHopTakeoff(_jumpPoseAge);
             else if (!_hopChain)
                 _hopTakeoffFrom = false;
@@ -16848,7 +16876,7 @@ namespace Tag.Art
 
         bool HasGaitJumpCapture()
         {
-            if (_jumpPoseAge < 0f || _jumpPoseAge > PoseHandoff.GaitJumpSeconds) return false;
+            if (_jumpPoseAge < 0f || _jumpPoseAge > JumpPose.TakeoffSeconds) return false;
             if (_jumpFromWalk && _walkJumpFull) return true;
             if (_airFromStride && _strideAirFull && !_jumpFromWalk) return true;
             if (_airFromIdle && _idleAirFull && !_jumpFromWalk && !_airFromStride) return true;
@@ -16856,12 +16884,13 @@ namespace Tag.Art
         }
 
         /// <summary>
-        /// Age 0 keeps the captured gait or idle. The jump beat wins.
-        /// The 0.62 stride lead stays off this edge. Jump height is unchanged.
+        /// The press frame is already part of the push. The captured gait eases out.
+        /// Jump height is unchanged.
         /// </summary>
         void BlendGaitJumpCapture()
         {
-            PoseHandoff.GaitJump(_jumpPoseAge, out _, out float jumpW);
+            PoseHandoff.GaitJump(_jumpPoseAge, out _, out _);
+            float jumpW = AirFeel.PushOpen(_jumpPoseAge);
             Quaternion uaL, uaR, laL, laR, ulL, ulR, llL, llR, sp, hp, hd;
             if (_jumpFromWalk && _walkJumpFull)
             {
@@ -16920,7 +16949,8 @@ namespace Tag.Art
         /// </summary>
         void BlendHopTakeoff(float age)
         {
-            PoseHandoff.HopTakeoff(age, out _, out float takeW);
+            PoseHandoff.HopTakeoff(age, out _, out _);
+            float takeW = AirFeel.HopOpen(age);
             _uaLT = Quaternion.Slerp(_hopUaL, _uaLT, takeW);
             _uaRT = Quaternion.Slerp(_hopUaR, _uaRT, takeW);
             _laLT = Quaternion.Slerp(_hopLaL, _laLT, takeW);
@@ -16971,67 +17001,69 @@ namespace Tag.Art
                 BlendLeanVerb(armZ, speed);
                 return;
             }
-            if (!jumpBase || _motor == null) return;
-            Vector2 move = _input != null ? _input.Move : Vector2.zero;
-            float side = AirStrafeLeanPose.Side(move.x);
-            if (side == 0f) return;
-
-            Transform basis = _motor.cam != null ? _motor.cam : _motor.transform;
-            Vector3 wish = WishAccel.CameraWish(basis, move);
-            Vector3 hv = WishAccel.Horizontal(_motor.Velocity);
-            MovementConfig cfg = _motor.cfg;
-            float airAccel = cfg != null ? cfg.airAccel : 30f;
-            float bonus = cfg != null ? cfg.airStrafeBonus : 1.35f;
-            float crouchSpeed = cfg != null ? cfg.crouchSpeed : 3.68f;
-            float sprintSpeed = cfg != null ? cfg.sprintSpeed : 13.8f;
-            float walkSpeed = cfg != null ? cfg.walkSpeed : 6.9f;
-            bool crouchHeld = _input != null && _input.CrouchHeld;
-            bool sprintHeld = _input != null && _input.SprintHeld;
-            float wishSpeed = KinematicStep.GaitCap(crouchHeld, sprintHeld, move.y, crouchSpeed, sprintSpeed, walkSpeed);
-            float accel = airAccel;
-            if (move.x != 0f && Mathf.Abs(move.y) < AirStrafeLeanPose.SideGate)
-                accel *= bonus;
-            const float step = 1f / 60f;
-            bool adds = AirStrafeLeanPose.AddsSpeed(hv, wish, wishSpeed, accel, step);
-            float vy = _motor.Velocity.y;
-            float fall = AirStrafeLeanPose.FallBlend(vy, _jumpPoseAge);
-            float w = BunnyHopPose.LeanHand(_leanCarry, fall, _hopChain);
-            if (w <= 0.001f) return;
-            if (!adds && !_hopChain) return;
-            _airStrafeLean = w;
-            _leanCarry = w;
-            _leanSide = side;
-
-            bool hopTakeoff = _hopChain && _hopTakeoffFrom && _jumpPoseAge >= 0f && _jumpPoseAge <= PoseHandoff.HopTakeoffSeconds;
-            if (hopTakeoff)
+            if (!jumpBase || _motor == null)
             {
-                // BlendHopTakeoff already owns the bones. The capture has the bank.
-                // Add it back only as the takeoff wins, so the two curves do not stack.
-                PoseHandoff.HopTakeoff(_jumpPoseAge, out _, out float takeW);
-                AirStrafeLeanPose.Sample held = AirStrafeLeanPose.At(side);
-                float back = w * takeW;
-                _spineT = _spineT * Quaternion.Euler(0f, 0f, held.Roll * back);
-                _hipsT = _hipsT * Quaternion.Euler(0f, 0f, held.HipRoll * back);
-                _headT = _headT * Quaternion.Euler(0f, 0f, held.HeadRoll * back);
-                _uaLT = _uaLT * Quaternion.Euler(held.ArmPitchL * back, held.ArmYawL * back, 0f);
-                _uaRT = _uaRT * Quaternion.Euler(held.ArmPitchR * back, -held.ArmYawR * back, 0f);
-                _laLT = _laLT * Quaternion.Euler(held.ElbowL * back, 0f, 0f);
-                _laRT = _laRT * Quaternion.Euler(held.ElbowR * back, 0f, 0f);
+                _strafeVis = 0f;
+                _strafeVel = 0f;
                 return;
             }
+            Vector2 move = _input != null ? _input.Move : Vector2.zero;
+            float side = AirStrafeLeanPose.Side(move.x);
+            bool adds = false;
+            if (side != 0f)
+            {
+                Transform basis = _motor.cam != null ? _motor.cam : _motor.transform;
+                Vector3 wish = WishAccel.CameraWish(basis, move);
+                Vector3 hv = WishAccel.Horizontal(_motor.Velocity);
+                MovementConfig cfg = _motor.cfg;
+                float airAccel = cfg != null ? cfg.airAccel : 30f;
+                float bonus = cfg != null ? cfg.airStrafeBonus : 1.35f;
+                float crouchSpeed = cfg != null ? cfg.crouchSpeed : 3.68f;
+                float sprintSpeed = cfg != null ? cfg.sprintSpeed : 13.8f;
+                float walkSpeed = cfg != null ? cfg.walkSpeed : 6.9f;
+                bool crouchHeld = _input != null && _input.CrouchHeld;
+                bool sprintHeld = _input != null && _input.SprintHeld;
+                float wishSpeed = KinematicStep.GaitCap(crouchHeld, sprintHeld, move.y, crouchSpeed, sprintSpeed, walkSpeed);
+                float accel = airAccel;
+                if (move.x != 0f && Mathf.Abs(move.y) < AirStrafeLeanPose.SideGate)
+                    accel *= bonus;
+                const float step = 1f / 60f;
+                adds = AirStrafeLeanPose.AddsSpeed(hv, wish, wishSpeed, accel, step);
+            }
+            float vy = _motor.Velocity.y;
+            float fall = AirStrafeLeanPose.FallBlend(vy, _jumpPoseAge);
+            float rise = AirFeel.StrafeOpen(vy, _jumpPoseAge, fall);
+            float hand = BunnyHopPose.LeanHand(_leanCarry, rise, _hopChain);
+            float target = side != 0f && (adds || _hopChain) ? hand : 0f;
+            _strafeVis = SmoothMotion.Smooth(_strafeVis, target, ref _strafeVel, AirFeel.StrafeSeconds, dt);
+            if (_strafeVis <= 0.001f)
+            {
+                _leanCarry = 0f;
+                return;
+            }
+            if (side == 0f)
+                side = _leanSide;
+            _airStrafeLean = _strafeVis;
+            _leanCarry = target > 0.001f ? hand : _strafeVis;
+            _leanSide = side;
 
-            float cycle = _hopChain ? _cycle : (_jumpPoseAge <= JumpPose.StrideBlendSeconds ? _jumpPoseCycle : _cycle);
-            float sinC = Mathf.Sin(cycle);
-            JumpPose.Sample beat = JumpPose.Mixed(vy, _jumpPoseAge, _jumpDriveLeft, speed, sinC, cycle);
-            LocomotionPolish.AirPhase(ref beat.ThighL, ref beat.ThighR, ref beat.KneeL, ref beat.KneeR, ref beat.ArmPitchL, ref beat.ArmPitchR, ref beat.Spine, vy, _hopChain);
+            // The jump pose already owns the bones. The bank multiplies on.
+            // A hop's capture still has the old bank, so that share waits on HopOpen.
+            bool hopTakeoff = _hopChain && _hopTakeoffFrom && _jumpPoseAge >= 0f && _jumpPoseAge <= AirFeel.HopSeconds;
+            float back = _strafeVis;
+            if (hopTakeoff)
+            {
+                PoseHandoff.HopTakeoff(_jumpPoseAge, out _, out _);
+                back = _strafeVis * AirFeel.HopOpen(_jumpPoseAge);
+            }
             AirStrafeLeanPose.Sample lean = AirStrafeLeanPose.At(side);
-            _spineT = _spine0 * Quaternion.Euler(beat.Spine, 0f, lean.Roll * w);
-            _hipsT = _hips0 * Quaternion.Euler(beat.Hip, 0f, lean.HipRoll * w);
-            _headT = _headT * Quaternion.Euler(0f, 0f, lean.HeadRoll * w);
-            _uaLT = _uaL0 * Quaternion.Euler(beat.ArmPitchL + lean.ArmPitchL * w, beat.ArmYawL + lean.ArmYawL * w, armZ);
-            _uaRT = _uaR0 * Quaternion.Euler(beat.ArmPitchR + lean.ArmPitchR * w, -(beat.ArmYawR + lean.ArmYawR * w), -armZ);
-            _laLT = _laL0 * Quaternion.Euler(beat.ElbowL + lean.ElbowL * w, 0f, 0f);
-            _laRT = _laR0 * Quaternion.Euler(beat.ElbowR + lean.ElbowR * w, 0f, 0f);
+            _spineT = _spineT * Quaternion.Euler(0f, 0f, lean.Roll * back);
+            _hipsT = _hipsT * Quaternion.Euler(0f, 0f, lean.HipRoll * back);
+            _headT = _headT * Quaternion.Euler(0f, 0f, lean.HeadRoll * back);
+            _uaLT = _uaLT * Quaternion.Euler(lean.ArmPitchL * back, lean.ArmYawL * back, 0f);
+            _uaRT = _uaRT * Quaternion.Euler(lean.ArmPitchR * back, -lean.ArmYawR * back, 0f);
+            _laLT = _laLT * Quaternion.Euler(lean.ElbowL * back, 0f, 0f);
+            _laRT = _laRT * Quaternion.Euler(lean.ElbowR * back, 0f, 0f);
         }
 
         /// <summary>
