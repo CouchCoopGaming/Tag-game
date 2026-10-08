@@ -111,6 +111,7 @@ namespace Tag.FX
             {
                 _main.gravityModifier = 0.55f;
             }
+            AimPlume(puff);
             _ps.transform.position = worldPos;
             int n = puff.Count;
             float dens = FxAmount.Density(GameSettings.Current);
@@ -119,8 +120,40 @@ namespace Tag.FX
                 n = (int)(n * dens + 0.001f);
                 if (n < 1) n = 1;
             }
-            if (n > 12) n = 12;
+            if (n > 16) n = 16;
             _ps.Emit(n);
+            if (puff.Core > 0.15f && n > 1)
+            {
+                _main.startSize = puff.Size * 0.55f;
+                float grit = 0.62f;
+                _main.startColor = new Color(puff.R * grit, puff.G * grit, puff.B * grit, a);
+                int core = n / 3;
+                if (core < 1) core = 1;
+                _ps.Emit(core);
+            }
+        }
+
+        void AimPlume(DustLook.Puff puff)
+        {
+            if (puff.Back > 0.04f && transform.parent != null)
+            {
+                Vector3 fwd = transform.parent.forward;
+                fwd.y = 0f;
+                if (fwd.sqrMagnitude < 0.0001f)
+                    fwd = Vector3.forward;
+                else
+                    fwd.Normalize();
+                float rise = puff.Lift > 0.01f ? puff.Lift : 0.04f;
+                Vector3 aim = -fwd * puff.Back + Vector3.up * rise;
+                transform.rotation = Quaternion.LookRotation(aim.normalized, Vector3.up);
+                float life = puff.Life > 0.05f ? puff.Life : 0.05f;
+                _main.startSpeed = puff.Back / life;
+                _main.gravityModifier = 0.25f;
+                var shape = _ps.shape;
+                shape.radius = puff.Span > 0.05f ? puff.Span * 0.16f : 0.05f;
+            }
+            else if (transform.parent != null)
+                transform.rotation = transform.parent.rotation;
         }
 
         void Apply(FxBurstKind kind)

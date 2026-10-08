@@ -5,6 +5,8 @@ Shader "Tag/ComicBillboard"
         _MainTex ("Tex", 2D) = "white" {}
         _Color ("Color", Color) = (1, 1, 1, 1)
         _Tilt ("Tilt", Float) = 0
+        _ClampExtent ("Clamp", Float) = 0
+        _Front ("Front", Float) = 0
     }
     SubShader
     {
@@ -35,6 +37,8 @@ Shader "Tag/ComicBillboard"
                 float4 _MainTex_ST;
                 float4 _Color;
                 float _Tilt;
+                float _ClampExtent;
+                float _Front;
             CBUFFER_END
 
             struct Attributes
@@ -63,7 +67,24 @@ Shader "Tag/ComicBillboard"
                 float2 p = input.positionOS.xy;
                 float2 spun = float2(c * p.x - s * p.y, s * p.x + c * p.y);
                 float3 world = center + right * spun.x * sx + up * spun.y * sy;
-                output.positionCS = TransformWorldToHClip(world);
+                float4 clip = TransformWorldToHClip(world);
+                // Shift the whole quad in this camera so the word stays inside the pane.
+                float4 centerClip = TransformWorldToHClip(center);
+                if (_ClampExtent > 0.001 && clip.w > 0.0001 && centerClip.w > 0.0001)
+                {
+                    float3 corner = center + right * _ClampExtent + up * _ClampExtent;
+                    float4 cornerClip = TransformWorldToHClip(corner);
+                    float2 cNdc = centerClip.xy / centerClip.w;
+                    float2 eNdc = cornerClip.xy / max(cornerClip.w, 0.0001);
+                    float2 pad = abs(eNdc - cNdc);
+                    // 0.03 keeps a sliver of the pane around the quad.
+                    float2 limit = max(float2(1, 1) - pad - 0.03, float2(0, 0));
+                    float2 shifted = clamp(cNdc, -limit, limit);
+                    float2 ndc = clip.xy / clip.w + (shifted - cNdc);
+                    clip.xy = ndc * clip.w;
+                }
+                clip.z -= _Front * clip.w;
+                output.positionCS = clip;
                 output.uv = TRANSFORM_TEX(input.uv, _MainTex);
                 return output;
             }

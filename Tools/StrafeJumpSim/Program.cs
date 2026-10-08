@@ -1098,6 +1098,13 @@ static class Program
         }
         Tag.FX.Pass5Stills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass5"));
 
+        Console.WriteLine(Tag.FX.FxKitLook.ProofLine());
+        if (!Tag.FX.FxKitLook.Holds())
+        {
+            Console.Error.WriteLine("fx kit is not held");
+            return 1;
+        }
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }
