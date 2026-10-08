@@ -115,6 +115,15 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - The grapple rope starts on the left hand bone, sags, and ends at the hook. The camera is a side view with no tree in front of the body.
 - Stills are in `Docs/AnimStills/pass13/`. The live dust numbers, the 0.52 s roll, and the 65% gate stay.
 
+## Pass 14 (this branch)
+
+- The zip puts both hands on the trolley handle. Each hand is within 2 cm of the grip. The knees tuck, and both feet trail behind the hips. The eight sparks are warm orange-white, the same family as the other metal sparks, and they sit on the trolley.
+- The slide sits on the ground. The hip bone is 0.23 m up because the pelvis mesh is on the floor, the trail foot folds under at 0.10 m, and the lead foot is 0.99 m ahead. Dirt kicks a tan dust spray off the lead heel. Concrete kicks warm orange sparks. Sparks stay off dirt.
+- The grapple is a swing. The left arm stays extended along the rope (elbow 15°), the torso leans 55° off vertical, and both feet trail. The rope still starts on the left hand bone.
+- The punch still meets the back. The target takes a short hit-stop: the chest gives and the head snaps forward, and the head stays 0.30 m above the hips. Three short speed lines trail the fist. POW stays 13.2% of the frame height.
+- A wall run draws four faint streaks on the wall at the contact foot, about the sprint line length. A wall jump puts a pale puff on the wall at the kicking foot. A vault puts a puff on the box top at the hands.
+- Stills are in `Docs/AnimStills/pass14/`. The live dust numbers, the 0.52 s roll, and the 65% gate stay.
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue

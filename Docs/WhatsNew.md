@@ -392,6 +392,16 @@ The effect pictures were taken again. Speed, the roll timer, and the camera in p
 - A slide stays feet-first: chest tipped back, one leg tucked, a hand trailing, sparks at the heel. Try it: slide on the grass.
 - A zip is a side view of the whole body hanging from the handle, with the sparks on the trolley. A grapple rope comes out of the left hand. Try it: take a zip, then fire the rope.
 
+## Both hands on the line, and a slide on the ground
+
+The effect pictures were taken again. Speed, the roll timer, and the camera in play stay as they were.
+
+- A zip puts both hands on the trolley. The knees tuck, the legs trail, and the sparks are the same warm orange as the other metal hits. Try it: grab a zip line.
+- A slide sits on the ground. The trail leg folds under. Dirt kicks up a dust spray, and concrete kicks up sparks. Try it: slide on grass, then on concrete.
+- A grapple swings. The arm stays out along the rope, the body leans with the arc, and the knees stay bent. Try it: fire the rope and swing.
+- A punch still lands on the back. The target leans, the head snaps, and the fist leaves a short trail. Try it: punch the dummy.
+- A wall run leaves faint streaks at the foot. A wall jump kicks up a puff. A vault plants the hands in a puff on the box. Try it: run a wall, jump off it, then vault a box.
+
 ## Motion, thirteenth pass
 
 A long fall now bends the knees, sets the feet a little ahead, and opens the arms. Climbing onto a ledge, vaulting, sliding, grabbing and leaving a zip, arriving and letting go of a grapple, and leaving a launch pad no longer pop a bone in one frame. Speeds and the timers you feel are the same. Try it: fall from high up and watch the knees, then climb, vault, slide, zip, grapple, and hit a launch pad.
