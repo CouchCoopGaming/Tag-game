@@ -17711,7 +17711,8 @@ namespace Tag.Art
         void RaiseComicWord(Vector3 origin, Vector3 forward, bool tag)
         {
             float reach = _punch != null ? _punch.Reach : PunchTagPose.ReachMeters;
-            ComicBurst.Raise(origin, forward, reach, tag);
+            float speed = _motor != null ? _motor.HorizontalSpeed : 0f;
+            ComicBurst.Raise(origin, forward, reach, tag, speed);
             if (tag)
                 Pass5Burst.Raise(origin, forward, reach);
         }

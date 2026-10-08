@@ -5,7 +5,8 @@ namespace Tag.FX
     /// <summary>
     /// Foot dust numbers. Size, opacity, life, and count follow planar speed.
     /// The surface changes the color and how thick the puff is.
-    /// A walk at 6.9 is a faint puff. A sprint at 13.8 is a clear cloud.
+    /// A walk at 6.9 is a small puff. A sprint at 13.8 is about three times the volume.
+    /// These sizes are visual FX, not a feel lock.
     /// Run start, a hard pivot, and the first slide frame kick harder.
     /// Metal stays quiet except a few sparks on a hard pivot.
     /// Wet throws dark droplets. Nothing here changes speed or slide.
@@ -164,10 +165,65 @@ namespace Tag.FX
                 t = (speed - Walk) / (Sprint - Walk);
             if (t < 0f) t = 0f;
             if (t > 1.35f) t = 1.35f;
-            float size = 0.07f + t * 0.20f;
-            float opacity = 0.18f + t * 0.54f;
+            // Life stays on the previous curve so dirt still outlasts concrete.
             float life = 0.18f + t * 0.20f;
-            float count = 2f + t * 6f;
+            float size;
+            float opacity;
+            float count;
+            if (surface == Surface.Wet)
+            {
+                // Wet was not in the adopted table. It keeps the previous curve.
+                size = (0.07f + t * 0.20f) * 0.90f;
+                opacity = (0.18f + t * 0.54f) * 0.85f;
+                count = (2f + t * 6f) * 1.10f;
+                life *= 0.55f;
+                puff.R = 0.12f;
+                puff.G = 0.22f;
+                puff.B = 0.40f;
+                puff.Splash = 1;
+            }
+            else
+            {
+                // Adopted visual defaults (pass 12). Walk is t = 0, sprint is t = 1.
+                // Wide, squash, lift, and spread stay in the still. They are not fields here.
+                // Previous curve, too faint to read at a walk:
+                //   size = 0.07+t*0.20, opacity = 0.18+t*0.54, count = 2+t*6
+                //   grass    size 0.75  opacity 0.40  life 0.85  count 0.55  colour (0.40, 0.48, 0.18)
+                //   dirt     size 1.45  opacity 1.15  life 1.70  count 1.35  colour (0.76, 0.55, 0.30)
+                //   wood     size 0.38  opacity 0.32  life 0.60  count 0.40  colour (0.55, 0.42, 0.28)
+                //   concrete size 0.55  opacity 0.50  life 0.42  count 0.50  colour (0.82, 0.82, 0.80)
+                float size0;
+                float size1;
+                float op0;
+                float op1;
+                float count0;
+                float count1;
+                float lifeMul;
+                if (surface == Surface.Grass)
+                {
+                    size0 = 0.08f; size1 = 0.11f; op0 = 0.24f; op1 = 0.31f; count0 = 4f; count1 = 5f; lifeMul = 0.85f;
+                    puff.R = 0.80f; puff.G = 0.76f; puff.B = 0.62f;
+                }
+                else if (surface == Surface.Dirt)
+                {
+                    size0 = 0.24f; size1 = 0.335f; op0 = 0.62f; op1 = 0.68f; count0 = 7f; count1 = 10f; lifeMul = 1.70f;
+                    puff.R = 0.84f; puff.G = 0.58f; puff.B = 0.30f;
+                }
+                else if (surface == Surface.Wood)
+                {
+                    size0 = 0.055f; size1 = 0.078f; op0 = 0.70f; op1 = 0.80f; count0 = 6f; count1 = 8f; lifeMul = 0.60f;
+                    puff.R = 1.00f; puff.G = 0.97f; puff.B = 0.88f;
+                }
+                else
+                {
+                    size0 = 0.18f; size1 = 0.24f; op0 = 0.32f; op1 = 0.44f; count0 = 4f; count1 = 5f; lifeMul = 0.42f;
+                    puff.R = 0.96f; puff.G = 0.96f; puff.B = 0.94f;
+                }
+                size = size0 + (size1 - size0) * t;
+                opacity = op0 + (op1 - op0) * t;
+                count = count0 + (count1 - count0) * t;
+                life *= lifeMul;
+            }
             if (speed < Walk)
             {
                 float u = Walk > 0.01f ? speed / Walk : 0f;
@@ -187,42 +243,9 @@ namespace Tag.FX
             opacity *= mul;
             if (opacity > 0.95f) opacity = 0.95f;
 
-            float sizeMul = 1f;
-            float opMul = 1f;
-            float lifeMul = 1f;
-            float countMul = 1f;
-            if (surface == Surface.Grass)
-            {
-                sizeMul = 0.75f; opMul = 0.40f; lifeMul = 0.85f; countMul = 0.55f;
-                puff.R = 0.40f; puff.G = 0.48f; puff.B = 0.18f;
-            }
-            else if (surface == Surface.Dirt)
-            {
-                sizeMul = 1.45f; opMul = 1.15f; lifeMul = 1.70f; countMul = 1.35f;
-                puff.R = 0.76f; puff.G = 0.55f; puff.B = 0.30f;
-            }
-            else if (surface == Surface.Wood)
-            {
-                sizeMul = 0.38f; opMul = 0.32f; lifeMul = 0.60f; countMul = 0.40f;
-                puff.R = 0.55f; puff.G = 0.42f; puff.B = 0.28f;
-            }
-            else if (surface == Surface.Wet)
-            {
-                sizeMul = 0.90f; opMul = 0.85f; lifeMul = 0.55f; countMul = 1.10f;
-                puff.R = 0.12f; puff.G = 0.22f; puff.B = 0.40f;
-                puff.Splash = 1;
-            }
-            else
-            {
-                sizeMul = 0.55f; opMul = 0.50f; lifeMul = 0.42f; countMul = 0.50f;
-                puff.R = 0.82f; puff.G = 0.82f; puff.B = 0.80f;
-            }
-
-            puff.Size = size * sizeMul;
-            puff.Opacity = opacity * opMul;
-            if (puff.Opacity > 0.95f) puff.Opacity = 0.95f;
-            puff.Life = life * lifeMul;
-            count *= countMul;
+            puff.Size = size;
+            puff.Opacity = opacity;
+            puff.Life = life;
             int n = (int)(count + 0.5f);
             if (n > 12) n = 12;
             if (n < 0) n = 0;
@@ -241,10 +264,17 @@ namespace Tag.FX
 
             Puff walk = At(Surface.Grass, Walk, Kick.None);
             Puff sprint = At(Surface.Grass, Sprint, Kick.None);
-            if (walk.Opacity > 0.12f || sprint.Opacity < 0.22f) return false;
-            if (sprint.Opacity < walk.Opacity * 2f) return false;
-            if (sprint.Size <= walk.Size) return false;
-            if (sprint.Count <= walk.Count) return false;
+            // Adopted grass: walk 0.08 / 0.24 / 4, sprint 0.11 / 0.31 / 5. Pale dust, not a green cloud.
+            if (Mathf.Abs(walk.Size - 0.08f) > 0.004f || Mathf.Abs(walk.Opacity - 0.24f) > 0.015f || walk.Count != 4)
+                return false;
+            if (Mathf.Abs(sprint.Size - 0.11f) > 0.004f || Mathf.Abs(sprint.Opacity - 0.31f) > 0.015f || sprint.Count != 5)
+                return false;
+            if (sprint.Size <= walk.Size || sprint.Count <= walk.Count) return false;
+            float walkVol = walk.Size * walk.Size * walk.Count * walk.Opacity;
+            float sprintVol = sprint.Size * sprint.Size * sprint.Count * sprint.Opacity;
+            if (sprintVol < walkVol * 2.8f || sprintVol > walkVol * 3.3f) return false;
+            if (sprint.R < 0.75f || sprint.G < 0.70f || sprint.B < 0.55f) return false;
+            if (sprint.G > sprint.R + 0.02f) return false;
 
             Puff dirt = At(Surface.Dirt, Sprint, Kick.None);
             Puff concrete = At(Surface.Concrete, Sprint, Kick.None);
@@ -252,15 +282,19 @@ namespace Tag.FX
             Puff metal = At(Surface.Metal, Sprint, Kick.None);
             Puff sparks = At(Surface.Metal, Sprint, Kick.Pivot);
             Puff wet = At(Surface.Wet, Sprint, Kick.None);
+            if (Mathf.Abs(dirt.Size - 0.335f) > 0.008f || Mathf.Abs(dirt.Opacity - 0.68f) > 0.02f || dirt.Count != 10)
+                return false;
+            if (Mathf.Abs(concrete.Size - 0.24f) > 0.008f || Mathf.Abs(concrete.Opacity - 0.44f) > 0.02f || concrete.Count != 5)
+                return false;
+            if (Mathf.Abs(wood.Size - 0.078f) > 0.006f || Mathf.Abs(wood.Opacity - 0.80f) > 0.02f || wood.Count != 8)
+                return false;
             if (dirt.Opacity <= sprint.Opacity) return false;
             if (dirt.Life <= concrete.Life * 2f) return false;
             if (concrete.R < 0.75f || Mathf.Abs(concrete.R - concrete.G) > 0.05f) return false;
             if (wood.Size >= dirt.Size * 0.5f) return false;
-            if (wood.Opacity > 0.35f) return false;
             if (metal.Count != 0 || metal.Spark != 1) return false;
             if (sparks.Count < 2 || sparks.Spark != 1 || sparks.Size > 0.08f) return false;
             if (wet.Splash != 1 || wet.B <= wet.R) return false;
-            if (sprint.G <= sprint.R) return false;
             if (dirt.R <= dirt.G) return false;
 
             Puff kicked = At(Surface.Grass, Sprint, Kick.RunStart);

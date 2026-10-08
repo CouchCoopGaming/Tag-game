@@ -34,10 +34,15 @@ namespace Tag.FX
 
         public static void Raise(Vector3 origin, Vector3 forward, float reach, bool tag)
         {
+            Raise(origin, forward, reach, tag, 0f);
+        }
+
+        public static void Raise(Vector3 origin, Vector3 forward, float reach, bool tag, float speed)
+        {
             if (!ComicWords.Visible(GameSettings.Current)) return;
             Ensure();
             if (_host == null || _host._age == null) return;
-            _host.Spawn(origin, forward, reach, tag);
+            _host.Spawn(origin, forward, reach, tag, speed);
         }
 
         void Awake()
@@ -94,11 +99,11 @@ namespace Tag.FX
             }
         }
 
-        void Spawn(Vector3 origin, Vector3 forward, float reach, bool tag)
+        void Spawn(Vector3 origin, Vector3 forward, float reach, bool tag, float speed)
         {
             int slot = Free();
             if (slot < 0) slot = Oldest();
-            int word = ComicWords.Pick(ref _rng, _last, tag);
+            int word = ComicWords.Pick(ComicWords.Strength(tag, speed));
             _last = word;
             _rng = _rng * 1664525u + 1013904223u;
             _tilt[slot] = ComicWords.TiltRadians(_rng >> 8);

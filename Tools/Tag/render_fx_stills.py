@@ -183,10 +183,14 @@ def roll_sample():
     u = 0.15 / 0.52
     span = _ease((u - 0.18) / (0.36 - 0.18))
     # Sweep() at 0.18, HandDown() at 0.36.
-    sweep = dict(hip=22, spine=26, head=-36, thigh_l=72, thigh_r=66, knee_l=-108, knee_r=-102,
-                 pitch_l=-30, pitch_r=-78, yaw_l=12, yaw_r=-48, roll_r=36, elbow_l=-96, elbow_r=-112, spine_roll=14)
-    down = dict(hip=14, spine=18, head=-32, thigh_l=90, thigh_r=82, knee_l=-118, knee_r=-110,
-                pitch_l=-18, pitch_r=-64, yaw_l=0, yaw_r=-30, roll_r=24, elbow_l=-80, elbow_r=-104, spine_roll=20)
+    # cursor/tag-anim-fx Sweep() and HandDown() after the #120 tuck change.
+    # ThighRoll is the Unity Euler Z. Arm roll is 0 on both keys.
+    sweep = dict(hip=22, spine=26, head=-36, thigh_l=42, thigh_r=36, knee_l=-74, knee_r=-68,
+                 pitch_l=-28, pitch_r=-36, yaw_l=-24, yaw_r=28, roll_r=0, elbow_l=-36, elbow_r=-32,
+                 thigh_roll_l=-36, thigh_roll_r=36, spine_roll=14)
+    down = dict(hip=14, spine=18, head=-32, thigh_l=44, thigh_r=38, knee_l=-76, knee_r=-70,
+                pitch_l=-18, pitch_r=-32, yaw_l=-20, yaw_r=24, roll_r=0, elbow_l=-32, elbow_r=-28,
+                thigh_roll_l=-36, thigh_roll_r=36, spine_roll=20)
     s = {k: _lerp(sweep[k], down[k], span) for k in sweep}
     spin = 360.0 * u
     s["bank"] = math.sin(math.radians(spin * 0.5)) * 62.0
@@ -203,9 +207,9 @@ def pose_roll(arm):
     """
     global POSE_BANK
     s = roll_sample()
-    set_zxy(arm, "UpperLeg_L", -s["thigh_l"], 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_L", -s["thigh_l"], 0.0, s["thigh_roll_l"])
     set_zxy(arm, "LowerLeg_L", -s["knee_l"], 0.0, 0.0)
-    set_zxy(arm, "UpperLeg_R", -s["thigh_r"], 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_R", -s["thigh_r"], 0.0, s["thigh_roll_r"])
     set_zxy(arm, "LowerLeg_R", -s["knee_r"], 0.0, 0.0)
     set_zxy(arm, "UpperArm_L", s["pitch_l"], s["yaw_l"], 0.0)
     set_zxy(arm, "LowerArm_L", s["elbow_l"], 0.0, 0.0)
@@ -227,6 +231,7 @@ def pose_roll(arm):
         "thigh", round(s["thigh_l"], 1), round(s["thigh_r"], 1),
         "knee", round(s["knee_l"], 1), round(s["knee_r"], 1),
         "elbow", round(s["elbow_l"], 1), round(s["elbow_r"], 1),
+        "thighRoll", round(s["thigh_roll_l"], 1), round(s["thigh_roll_r"], 1),
     )
 
 
@@ -341,6 +346,62 @@ def pose_run(arm):
     )
 
 
+def pose_gait(arm, speed, phase):
+    """Grounded gait at one speed and cycle phase. Same keys as pose_run.
+
+    Breath, turn, and look stay off. A footfall is phase π/2: the left thigh
+    is forward and both cosines are 0, so both legs take the stance branch.
+    """
+    gait_sin = math.sin(phase)
+    weight = _pose_weight(speed)
+    run_amt = _inv(5.5, 11.5, speed)
+    gait = max(weight, run_amt)
+    idle = 1.0 - gait
+    arm_z = _lerp(4.0, 8.0, max(weight, run_amt))
+    amp = _lerp(32.0, 46.0, _inv(6.9, 13.8, speed))
+    pitch_l = -(-gait_sin) * amp - 12.0 * idle
+    pitch_r = -(gait_sin) * amp - 12.0 * idle
+    out_y = _lerp(12.0, 8.0, gait)
+    reach_y = _lerp(out_y, out_y + 6.0, run_amt)
+    y_l = _lerp(out_y, reach_y, max(0.0, -gait_sin) * gait)
+    y_r = _lerp(out_y, reach_y, max(0.0, gait_sin) * gait)
+    roll = _lerp(0.0, arm_z, gait)
+    elbow_reach = _lerp(-10.0, -6.0, run_amt)
+    elbow_pull = _lerp(-18.0, -30.0, run_amt)
+    elbow_l = _lerp(elbow_reach, elbow_pull, max(0.0, gait_sin) * gait)
+    elbow_r = _lerp(elbow_reach, elbow_pull, max(0.0, -gait_sin) * gait)
+    tau = math.tau
+    phase_r = phase + math.pi
+    if phase_r >= tau:
+        phase_r -= tau
+    th_l, kn_l, ft_l = _gait_leg(phase, weight)
+    th_r, kn_r, ft_r = _gait_leg(phase_r, weight)
+    cruise = _inv(6.9, 13.8, speed) * 6.5
+    set_zxy(arm, "UpperLeg_L", -th_l, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_L", -kn_l, 0.0, 0.0)
+    set_zxy(arm, "Foot_L", -ft_l, 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_R", -th_r, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_R", -kn_r, 0.0, 0.0)
+    set_zxy(arm, "Foot_R", -ft_r, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_L", pitch_l, y_l, roll)
+    set_zxy(arm, "LowerArm_L", elbow_l, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_R", pitch_r, -y_r, -roll)
+    set_zxy(arm, "LowerArm_R", elbow_r, 0.0, 0.0)
+    set_zxy(arm, "Hips", 0.0, 0.0, 0.0)
+    set_zxy(arm, "Spine", cruise, 0.0, 0.0)
+    set_zxy(arm, "Head", 0.0, 0.0, 0.0)
+    print(
+        "RUNTIME gait", round(speed, 2), "phase", round(phase, 3),
+        "weight", round(weight, 4),
+        "thigh", round(th_l, 2), round(th_r, 2),
+        "knee", round(kn_l, 2), round(kn_r, 2),
+        "pitch", round(pitch_l, 2), round(pitch_r, 2),
+        "yaw", round(y_l, 2), round(-y_r, 2),
+        "elbow", round(elbow_l, 2), round(elbow_r, 2),
+        "cruise", round(cruise, 2), "armZ", round(arm_z, 2),
+    )
+
+
 def pose_stagger(arm):
     """PunchStaggerPose.Stumble at Weight 1 (age 0.10, inside the hold)."""
     set_zxy(arm, "UpperLeg_L", -38.0, 0.0, 0.0)
@@ -381,7 +442,8 @@ def wall_run_angles():
     """WallPose.Run(+1, wallLeft: true) at the locked 9.5 m/s gait.
 
     The lane branch has no wall-run animation clip. The pose the game plays
-    is WallPose.RunCycle, phase 3π/2. LeanZ is the 20° roll toward the wall.
+    is WallPose.RunCycle, phase 3π/2. #120 sets LeanZ to the 15° roll,
+    the inner arm at pitch −32 / yaw −14 / elbow −48, and PlantRoll −36.
     """
     idle, sprint = 0.35, 12.0
     t = (9.5 - idle) / (sprint - idle)
@@ -400,16 +462,18 @@ def wall_run_angles():
         "thigh_r": thigh_r,
         "knee_r": -5.0,
         "foot_r": -(thigh_r + (-5.0)),
-        "pitch_l": 4.0 + (-1.0) * 3.0,
-        "yaw_l": 36.0,
-        "elbow_l": -18.0,
+        "thigh_roll_l": -36.0,
+        "thigh_roll_r": 0.0,
+        "pitch_l": -32.0 + (-1.0) * 3.0,
+        "yaw_l": -14.0,
+        "elbow_l": -48.0,
         "pitch_r": -78.0 + (24.0 - (-78.0)) * along,
-        "yaw_r": -12.0,
+        "yaw_r": 16.0,
         "elbow_r": -12.0 + (-36.0 - (-12.0)) * along,
         "hip": 6.0,
         "spine": 12.0,
         "head": -4.0,
-        "lean": -20.0,
+        "lean": -15.0,
         # ApplyWallSample writes this on top of the sample. gaitW at 9.5
         # dominates runVis, so the A-pose roll is Lerp(4, 8, PoseWeight).
         "arm_z": 4.0 + 4.0 * weight,
@@ -425,10 +489,10 @@ def pose_wall(arm):
     """
     a = wall_run_angles()
     z = a["arm_z"]
-    set_zxy(arm, "UpperLeg_L", -a["thigh_l"], 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_L", -a["thigh_l"], 0.0, a["thigh_roll_l"])
     set_zxy(arm, "LowerLeg_L", -a["knee_l"], 0.0, 0.0)
     set_zxy(arm, "Foot_L", -a["foot_l"], 0.0, 0.0)
-    set_zxy(arm, "UpperLeg_R", -a["thigh_r"], 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_R", -a["thigh_r"], 0.0, a["thigh_roll_r"])
     set_zxy(arm, "LowerLeg_R", -a["knee_r"], 0.0, 0.0)
     set_zxy(arm, "Foot_R", -a["foot_r"], 0.0, 0.0)
     set_zxy(arm, "UpperArm_L", a["pitch_l"], a["yaw_l"], z)
@@ -448,8 +512,9 @@ def pose_wall(arm):
         "pitch", round(a["pitch_l"], 1), round(a["pitch_r"], 1),
         "yaw", round(a["yaw_l"], 1), round(a["yaw_r"], 1),
         "elbow", round(a["elbow_l"], 1), round(a["elbow_r"], 1),
-        "hip", a["hip"], "spine", a["spine"], "lean", a["lean"],
+        "hip", a["hip"], "spine", a["spine"],         "lean", a["lean"],
         "armZ", round(z, 2),
+        "thighRoll", a["thigh_roll_l"], a["thigh_roll_r"],
     )
 
 
@@ -1897,33 +1962,19 @@ def ghost_body():
 
 
 def dust_puff_spec(surface, speed):
-    """DustLook.At size, opacity, and count. Kick is none. Colours are the still read."""
-    t = 0.0
-    if 13.8 > 6.9:
-        t = (speed - 6.9) / (13.8 - 6.9)
-    t = _clamp(t, 0.0, 1.35)
-    size = 0.07 + t * 0.20
-    opacity = 0.18 + t * 0.54
-    count = 2.0 + t * 6.0
-    if surface == "grass":
-        size *= 0.75
-        opacity *= 0.40
-        count *= 0.55
-    elif surface == "dirt":
-        size *= 1.45
-        opacity *= 1.15
-        count *= 1.35
-    elif surface == "wood":
-        size *= 0.38
-        opacity *= 0.32
-        count *= 0.40
-    else:
-        size *= 0.55
-        opacity *= 0.50
-        count *= 0.50
-    if opacity > 0.95:
-        opacity = 0.95
-    n = int(count + 0.5)
+    """DustLook.At size, opacity, and count. Kick is none. Adopted pass-12 defaults."""
+    t = _clamp((speed - 6.9) / (13.8 - 6.9), 0.0, 1.35)
+    table = {
+        "grass": (0.08, 0.11, 0.24, 0.31, 4.0, 5.0),
+        "dirt": (0.24, 0.335, 0.62, 0.68, 7.0, 10.0),
+        "wood": (0.055, 0.078, 0.70, 0.80, 6.0, 8.0),
+        "concrete": (0.18, 0.24, 0.32, 0.44, 4.0, 5.0),
+    }
+    size0, size1, op0, op1, count0, count1 = table.get(surface, table["concrete"])
+    size = size0 + (size1 - size0) * t
+    opacity = min(0.95, op0 + (op1 - op0) * t)
+    count = count0 + (count1 - count0) * t
+    n = int(math.floor(count + 0.5))
     if n > 12:
         n = 12
     if n < 0:
@@ -3108,12 +3159,432 @@ def render_pass11(arm, cam):
     print("PASS11 stills", OUT)
 
 
+# Pass 12 dust. Adopted DustLook defaults, one runtime footfall per speed.
+# The comic review sheet is Tools/Tag/render_comic_sheet.py. This blender
+# comic path is not that sheet, and it does not draw the expanded word set.
+P12_RADIUS = 0.30
+P12_OUTERS = (1.00, 0.88, 1.08, 0.92, 1.04, 0.86, 1.12, 0.90, 0.98, 1.06, 0.87, 1.02, 0.94, 1.09)
+P12_INNERS = (0.72, 0.64, 0.76, 0.66, 0.74, 0.68, 0.62, 0.78, 0.65, 0.73, 0.70, 0.63, 0.75, 0.67)
+P12_OUTLINE = 1.10
+P12_WORD = 0.50
+P12_DOTS = 20.0
+
+
+def p12_burst_width():
+    return 2.0 * P12_RADIUS * max(P12_OUTERS) * P12_OUTLINE
+
+
+def p12_footfall(speed):
+    phase = math.pi / 2.0
+
+    def fn(arm):
+        pose_gait(arm, speed, phase)
+
+    return fn
+
+
+def p12_flecks(origin, speed, across, along):
+    """Clippings above the lawn. Three darker greens plus brown. Thinner than the old sticks."""
+    t = p11_speed_t(speed)
+    n = 8 + int(round(4 * t))
+    greens = (
+        (0.15, 0.24, 0.09, 1.0),
+        (0.11, 0.18, 0.07, 1.0),
+        (0.22, 0.28, 0.12, 1.0),
+    )
+    browns = (
+        (0.32, 0.20, 0.09, 1.0),
+        (0.26, 0.16, 0.07, 1.0),
+    )
+    for i in range(n):
+        ox = (p11_rand(i, 11) - 0.30) * 0.46
+        oy = (p11_rand(i, 12) - 0.35) * 0.38
+        # Kicked clear of the lawn blades, which stand about 9 cm.
+        pos = origin + across * ox + along * oy + Vector((0.0, 0.0, 0.10 + 0.14 * p11_rand(i, 13)))
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=pos)
+        chip = bpy.context.active_object
+        chip.name = p11_name("Fx")
+        length = 0.07 + 0.05 * p11_rand(i, 14)
+        chip.scale = (0.012, 0.0045, length)
+        chip.rotation_euler = Euler((
+            p11_rand(i, 15) * math.tau,
+            p11_rand(i, 16) * math.tau,
+            p11_rand(i, 17) * math.tau,
+        ), "XYZ")
+        color = browns[i % 2] if p11_rand(i, 18) > 0.58 else greens[i % 3]
+        mat = make_mat(p11_name("Mat"), color, 1.0)
+        mat.use_backface_culling = False
+        chip.data.materials.append(mat)
+
+
+def p12_emit_dust(arm, cam, spec, speed, yaw_deg):
+    p11_clear("P11Fx")
+    fwd, left = p11_heading(yaw_deg)
+    foot = p11_foot(arm)
+    step = 0.46 + 0.22 * p11_speed_t(speed)
+    side = (0.16, 0.36, 0.52)
+    ahead = (0.20, 0.04, -0.02)
+    puffs = 0
+    for age_i, (step_mul, size_mul, op_mul) in enumerate(P11_AGES):
+        aged = dict(spec)
+        aged["size"] = spec["size"] * size_mul
+        aged["opacity"] = spec["opacity"] * op_mul
+        origin = foot - fwd * step * step_mul + left * side[age_i] + fwd * ahead[age_i]
+        origin.z = 0.07 if spec.get("blades") else 0.03
+        puffs += p11_cluster(origin, aged, left, -fwd, cam.location, 30 + age_i * 17)
+        if spec["blades"] and age_i == 0:
+            p12_flecks(origin, speed, left, -fwd)
+    return foot, puffs
+
+
+def p12_dust(arm, cam, yaw_deg, tmp):
+    surfaces = ("concrete", "dirt", "grass", "wood")
+    speeds = (("walk", 6.9), ("run", 9.0), ("sprint", 13.8))
+    only = os.environ.get("FX_PASS12_SURFACE", "")
+    if only:
+        surfaces = tuple(s for s in surfaces if s == only)
+    for surface in surfaces:
+        p11_ground(surface)
+        cells = []
+        titles = []
+        for label, speed in speeds:
+            apply_pose(arm, p12_footfall(speed), 0.0, yaw_deg)
+            spec = p11_proposal_spec(surface, speed)
+            foot = p11_foot(arm)
+            dist = p12_aim_dust(cam, foot, yaw_deg)
+            vol = p11_volume(spec)
+            print(
+                "ADOPTED", surface, label,
+                "size", round(spec["size"], 3),
+                "opacity", round(spec["opacity"], 3),
+                "count", spec["count"],
+                "volume", round(vol, 4),
+                "cam", round(dist, 2),
+            )
+            _foot, puffs = p12_emit_dust(arm, cam, spec, speed, yaw_deg)
+            print("PUFFS", surface, label, puffs)
+            cell_path = os.path.join(tmp, "%s-%s.png" % (surface, label))
+            cells.append(p11_grab(cell_path, P11_CELL[0], P11_CELL[1]))
+            titles.append("%s  %.3fm  op %.2f  x%d" % (label, spec["size"], spec["opacity"], spec["count"]))
+        headline = "%s   DustLook defaults   footfall walk / run / sprint" % surface.upper()
+        p11_sheet(cells, titles, headline, os.path.join(OUT, "dust-%s.png" % surface))
+        walk = p11_proposal_spec(surface, 6.9)
+        sprint = p11_proposal_spec(surface, 13.8)
+        print(
+            "ADOPTED-LOCK", surface,
+            "ratio", round(p11_volume(sprint) / max(p11_volume(walk), 1e-8), 3),
+        )
+
+
+def p12_aim_dust(cam, foot, yaw_deg):
+    """One distance for walk, run, and sprint so the dust scale stays comparable."""
+    fwd, left = p11_heading(yaw_deg)
+    look = foot + Vector((0.0, 0.0, 0.42)) - fwd * 0.08
+    cam.data.type = "PERSP"
+    cam.data.lens = 30
+    cam.data.clip_start = 0.05
+    cam.data.clip_end = 40.0
+    dist = 2.60
+    side = 1.48
+    cam.location = foot + fwd * dist + left * side + Vector((0.0, 0.0, 0.36))
+    look_at(cam, look)
+    bpy.context.view_layer.update()
+    return dist
+
+
+def p12_star_mesh(name, radius, outline):
+    scale = P12_OUTLINE if outline else 1.0
+    verts = [(0.0, 0.0, 0.0)]
+    for i in range(14):
+        ang = i * math.tau / 14.0 - math.pi / 2.0 + (0.04 if i % 2 == 0 else -0.03)
+        outer = radius * P12_OUTERS[i] * scale
+        inner = radius * P12_INNERS[i] * scale
+        mid = ang + math.tau / 28.0
+        verts.append((math.cos(ang) * outer, math.sin(ang) * outer, 0.0))
+        verts.append((math.cos(mid) * inner, math.sin(mid) * inner, 0.0))
+    n = 28
+    faces = [(0, 1 + i, 1 + (i + 1) % n) for i in range(n)]
+    mesh = bpy.data.meshes.new(name)
+    mesh.from_pydata(verts, [], faces)
+    mesh.update()
+    xs = [v.co.x for v in mesh.vertices]
+    ys = [v.co.y for v in mesh.vertices]
+    minx, maxx = min(xs), max(xs)
+    miny, maxy = min(ys), max(ys)
+    spanx = max(maxx - minx, 1e-4)
+    spany = max(maxy - miny, 1e-4)
+    uv = mesh.uv_layers.new(name="Halftone")
+    for poly in mesh.polygons:
+        for li in poly.loop_indices:
+            co = mesh.vertices[mesh.loops[li].vertex_index].co
+            uv.data[li].uv = ((co.x - minx) / spanx, (co.y - miny) / spany)
+    return mesh
+
+
+def p12_dot_image():
+    """Fine regular screen. Dense at the left, sparse at the right. Small dots."""
+    img = bpy.data.images.get("P12Halftone")
+    if img is not None:
+        return img
+    n = 256
+    cells = P12_DOTS
+    img = bpy.data.images.new("P12Halftone", n, n, alpha=True, float_buffer=True)
+    pix = [0.0] * (n * n * 4)
+    for y in range(n):
+        for x in range(n):
+            u = x / float(n - 1)
+            radius = 0.32 * (1.0 - u) + 0.10 * u
+            cx = (x + 0.5) / n * cells
+            cy = (y + 0.5) / n * cells
+            fx = cx - math.floor(cx) - 0.5
+            fy = cy - math.floor(cy) - 0.5
+            ink = 1.0 if fx * fx + fy * fy <= radius * radius else 0.0
+            i = (y * n + x) * 4
+            pix[i] = pix[i + 1] = pix[i + 2] = ink
+            pix[i + 3] = 1.0
+    img.pixels.foreach_set(pix)
+    img.pack()
+    try:
+        img.colorspace_settings.name = "Non-Color"
+    except (TypeError, AttributeError):
+        pass
+    return img
+
+
+def _p12_math(nt, op, a=None, b=None, aval=None, bval=None):
+    node = nt.nodes.new("ShaderNodeMath")
+    node.operation = op
+    if a is not None:
+        nt.links.new(a, node.inputs[0])
+    elif aval is not None:
+        node.inputs[0].default_value = aval
+    if b is not None:
+        nt.links.new(b, node.inputs[1])
+    elif bval is not None:
+        node.inputs[1].default_value = bval
+    return node.outputs[0]
+
+
+def p12_ink_mat(name, color, fade, dots):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    emit = nt.nodes.new("ShaderNodeEmission")
+    trans = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    mix.inputs["Fac"].default_value = fade
+    if dots:
+        coord = nt.nodes.new("ShaderNodeTexCoord")
+        tex = nt.nodes.new("ShaderNodeTexImage")
+        tex.image = p12_dot_image()
+        tex.interpolation = "Closest"
+        tex.extension = "EXTEND"
+        mix_rgb = nt.nodes.new("ShaderNodeMixRGB")
+        dark = (color[0] * 0.40, color[1] * 0.40, color[2] * 0.40, 1.0)
+        mix_rgb.inputs["Color1"].default_value = (color[0], color[1], color[2], 1.0)
+        mix_rgb.inputs["Color2"].default_value = dark
+        nt.links.new(coord.outputs["UV"], tex.inputs["Vector"])
+        nt.links.new(tex.outputs["Color"], mix_rgb.inputs["Fac"])
+        nt.links.new(mix_rgb.outputs["Color"], emit.inputs["Color"])
+    else:
+        emit.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    emit.inputs["Strength"].default_value = 1.0
+    nt.links.new(trans.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(emit.outputs["Emission"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
+
+
+def p12_text_image(word, fill, plane_w):
+    from PIL import Image, ImageDraw
+
+    size = 340
+    stroke = max(10, int(round(size * 0.20)))
+    font = p11_font(size)
+    dummy = Image.new("RGBA", (8, 8))
+    bb = ImageDraw.Draw(dummy).textbbox((0, 0), word, font=font, stroke_width=stroke)
+    tw, th = bb[2] - bb[0], bb[3] - bb[1]
+    pad = 6
+    im = Image.new("RGBA", (tw + pad * 2, th + pad * 2), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(im)
+    draw.text(
+        (pad - bb[0], pad - bb[1]),
+        word,
+        font=font,
+        fill=fill + (255,),
+        stroke_width=stroke,
+        stroke_fill=(0, 0, 0, 255),
+    )
+    crop = im.split()[-1].getbbox()
+    if crop:
+        im = im.crop(crop)
+    aspect = im.height / float(max(im.width, 1))
+    print("COMIC-FONT", word, "stroke", stroke, "px", im.size[0], im.size[1], "plane", round(plane_w, 3))
+    return im, plane_w, plane_w * aspect
+
+
+def p12_burst(cam, center, word, color, text_fill, scale, fade, shear, spin):
+    p11_clear("P11Fx")
+    empty = bpy.data.objects.new(p11_name("Fx"), None)
+    bpy.context.collection.objects.link(empty)
+    empty.location = center
+    empty.rotation_euler = (cam.location - center).to_track_quat("Z", "Y").to_euler()
+    empty.scale = (scale, scale, scale)
+    width = p12_burst_width()
+    outline = p11_link(
+        p12_star_mesh(p11_name("Star"), P12_RADIUS, True),
+        p11_name("Fx"),
+        p12_ink_mat(p11_name("Mat"), (0.0, 0.0, 0.0, 1.0), fade, False),
+    )
+    outline.parent = empty
+    outline.location = (0.0, 0.0, -0.012)
+    outline.rotation_euler = Euler((0.0, 0.0, math.radians(spin)), "XYZ")
+    fill = p11_link(
+        p12_star_mesh(p11_name("Star"), P12_RADIUS, False),
+        p11_name("Fx"),
+        p12_ink_mat(p11_name("Mat"), color, fade, True),
+    )
+    fill.parent = empty
+    fill.location = (0.0, 0.0, 0.0)
+    fill.rotation_euler = Euler((0.0, 0.0, math.radians(spin)), "XYZ")
+    p11_speed_lines(empty, P12_RADIUS)
+    for child in empty.children:
+        if child == fill or child == outline or child.data is None or not child.material_slots:
+            continue
+        child.material_slots[0].material = p12_ink_mat(p11_name("Mat"), (0.02, 0.02, 0.02, 1.0), fade, False)
+    im, box_w, box_h = p12_text_image(word, text_fill, P12_WORD * width)
+    tmp = os.path.join("/tmp", "p12-%s.png" % word.replace("!", ""))
+    im.save(tmp)
+    image = bpy.data.images.load(tmp)
+    try:
+        image.colorspace_settings.name = "sRGB"
+    except (TypeError, AttributeError):
+        pass
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=(0.0, 0.0, 0.0))
+    text = bpy.context.active_object
+    text.name = p11_name("Fx")
+    for vert in text.data.vertices:
+        vert.co.x += vert.co.y * shear
+    text.scale = (box_w, box_h, 1.0)
+    text.location = (0.0, 0.0, 0.02)
+    text.rotation_euler = Euler((0.0, 0.0, math.radians(spin * 0.35)), "XYZ")
+    text.data.materials.append(p11_image_mat(p11_name("Mat"), image, fade))
+    text.parent = empty
+    bpy.context.view_layer.update()
+    print("COMIC-FIT", word, "burst", round(width, 3), "word", round(box_w, 3), "ratio", round(box_w / width, 3))
+
+
+def p12_comic(arm, cam, yaw_deg, tmp):
+    from PIL import Image, ImageDraw
+
+    p11_clear("P11")
+    for obj in bpy.data.objects:
+        if obj.name == "PropGround":
+            obj.hide_render = False
+    apply_pose(arm, pose_punch, 0.0, yaw_deg)
+    hand = bone_pos(arm, "Hand_R", tail=True)
+    p11_aim_punch(cam, arm, hand, yaw_deg)
+    to_cam = (cam.location - hand).normalized()
+    center = hand + to_cam * 0.08
+    panels = (
+        ("POP!", (1.0, 0.86, 0.12, 1.0), (255, 230, 40), 0.60, 0.72, 0.10, -6.0, "tap   POP!   0.6"),
+        ("POW!", (1.0, 0.46, 0.08, 1.0), (255, 236, 60), 1.15, 1.00, -0.08, 7.0, "punch   POW!   1.15"),
+        ("BAM!", (0.95, 0.12, 0.18, 1.0), (255, 255, 255), 1.00, 1.00, 0.08, -4.0, "sprint punch   BAM!"),
+        ("WHAM!", (0.62, 0.18, 0.95, 1.0), (255, 255, 255), 1.00, 0.50, -0.06, 5.0, "tag   WHAM!   fade"),
+    )
+    cells = []
+    titles = []
+    for word, color, fill, scale, fade, shear, spin, title in panels:
+        p12_burst(cam, center, word, color, fill, scale, fade, shear, spin)
+        print("COMIC", word, "scale", scale, "fade", fade, "spin", spin)
+        cells.append(p11_grab(os.path.join(tmp, "comic-%s.png" % word.replace("!", "")), P11_COMIC_CELL[0], P11_COMIC_CELL[1]))
+        titles.append(title)
+    p11_clear("P11Fx")
+    off = p11_grab(os.path.join(tmp, "comic-off.png"), P11_COMIC_CELL[0], P11_COMIC_CELL[1])
+    key = Image.new("RGB", P11_COMIC_CELL, (32, 28, 26))
+    draw = ImageDraw.Draw(key)
+    font = p11_font(28)
+    body = p11_font(22)
+    draw.text((24, 24), "HIT STRENGTH", font=font, fill=(255, 220, 80))
+    lines = (
+        (78, "tap            POP!"),
+        (116, "punch          POW!"),
+        (154, "sprint punch   BAM!"),
+        (192, "tag            WHAM!"),
+        (258, "Comic words  On"),
+        (300, "Comic words  Off"),
+    )
+    for y, line in lines:
+        draw.text((24, y), line, font=body, fill=(255, 246, 230))
+    cells.extend((off, key))
+    titles.extend(("Comic words  Off", "toggle"))
+    row_h = P11_COMIC_CELL[1]
+    row_w = P11_COMIC_CELL[0]
+    gap = 6
+    head = 44
+    foot = 32
+    sheet_w = row_w * 3 + gap * 2
+    sheet_h = head + (row_h + foot) * 2 + gap
+    sheet = Image.new("RGB", (sheet_w, sheet_h), (24, 22, 20))
+    draw = ImageDraw.Draw(sheet)
+    draw.text((12, 8), "Comic words  On     punch contact     hit strength", font=p11_font(26), fill=(255, 228, 140))
+    label_font = p11_font(18)
+    for i, (cell, title) in enumerate(zip(cells, titles)):
+        col = i % 3
+        row = i // 3
+        x = col * (row_w + gap)
+        y = head + row * (row_h + foot + gap)
+        sheet.paste(cell, (x, y))
+        draw.text((x + 8, y + row_h + 4), title, font=label_font, fill=(255, 246, 226))
+    path = os.path.join(OUT, "comic-bursts.png")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    sheet.save(path, optimize=True)
+    p11_finish(path)
+
+
+def render_pass12(arm, cam):
+    """Adopted dust on walk, run, and sprint footfalls, plus strength-picked bursts."""
+    for obj in bpy.data.objects:
+        if obj.type == "LIGHT" and obj.data.type == "SUN":
+            obj.data.energy = 2.6
+        elif obj.type == "LIGHT" and obj.data.type == "AREA":
+            obj.data.energy = 48
+        if obj.name in ("PropGround", "PropSlab") or "Seam" in obj.name:
+            obj.hide_render = True
+    bg = bpy.context.scene.world.node_tree.nodes["Background"]
+    bg.inputs["Strength"].default_value = 0.62
+    bpy.context.scene.eevee.taa_render_samples = 8
+    tmp = "/tmp/pass12-cells"
+    os.makedirs(tmp, exist_ok=True)
+    os.makedirs(OUT, exist_ok=True)
+    print(
+        "P12-STAR",
+        "width", round(p12_burst_width(), 3),
+        "word", round(P12_WORD * p12_burst_width(), 3),
+        "dots", P12_DOTS,
+    )
+    part = os.environ.get("FX_PASS12_PART", "all")
+    if part in ("all", "dust"):
+        p12_dust(arm, cam, 32.0, tmp)
+    if part in ("all", "comic"):
+        p12_comic(arm, cam, 18.0, tmp)
+    print("PASS12 stills", OUT)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
+    if os.environ.get("FX_PASS12") == "1":
+        render_pass12(arm, cam)
+        return
     if os.environ.get("FX_PASS11") == "1":
         render_pass11(arm, cam)
         return

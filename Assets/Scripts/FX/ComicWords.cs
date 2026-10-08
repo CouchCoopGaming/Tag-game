@@ -3,8 +3,10 @@ using Tag.Settings;
 namespace Tag.FX
 {
     /// <summary>
-    /// POP, POW, BAM, WHAM. A punch leans small. A tag leans big.
-    /// The same word never plays twice in a row. Visual only.
+    /// POP, POW, BAM, WHAM. Visual only.
+    /// Pick(strength) follows the hit: a light tap is POP, a punch is POW,
+    /// a punch at sprint speed is BAM, and a tag is WHAM.
+    /// Pick(ref state, previous, tag) is the older biased roll. It does not repeat a word.
     /// </summary>
     public static class ComicWords
     {
@@ -155,6 +157,37 @@ namespace Tag.FX
             return word;
         }
 
+        public const int Tap = 0;
+        public const int Punch = 1;
+        public const int SprintPunch = 2;
+        public const int TagHit = 3;
+        public const float PunchSpeed = 6.9f;
+        public const float SprintPunchSpeed = 13.8f;
+
+        /// <summary>
+        /// A tag is WHAM. A punch at sprint speed is BAM. A punch at walk speed
+        /// or faster is POW. Slower than a walk, including a light tap, is POP.
+        /// </summary>
+        public static int Strength(bool tag, float speed)
+        {
+            if (tag) return TagHit;
+            if (speed >= SprintPunchSpeed) return SprintPunch;
+            if (speed >= PunchSpeed) return Punch;
+            return Tap;
+        }
+
+        /// <summary>
+        /// Light tap POP, punch POW, sprint punch BAM, tag WHAM.
+        /// The biased roll is unchanged.
+        /// </summary>
+        public static int Pick(int strength)
+        {
+            if (strength <= Tap) return Pop;
+            if (strength == Punch) return Pow;
+            if (strength == SprintPunch) return Bam;
+            return Wham;
+        }
+
         public static bool Holds()
         {
             if (Count != 4) return false;
@@ -218,7 +251,162 @@ namespace Tag.FX
             float lo = TiltRadians(0u);
             float lim = TiltDegrees * 0.017453292f + 0.0001f;
             if (hi > lim || lo < -lim || hi <= 0f || lo >= 0f) return false;
+            if (Pick(Strength(false, 0f)) != Pop) return false;
+            if (Pick(Strength(false, 6.8f)) != Pop) return false;
+            if (Pick(Strength(false, PunchSpeed)) != Pow) return false;
+            if (Pick(Strength(false, 9f)) != Pow) return false;
+            if (Pick(Strength(false, SprintPunchSpeed)) != Bam) return false;
+            if (Pick(Strength(false, 20f)) != Bam) return false;
+            if (Pick(Strength(true, 0f)) != Wham) return false;
+            if (Pick(Strength(true, SprintPunchSpeed)) != Wham) return false;
+            if (WordScale(0f) != 0f || WordScale(PopSeconds) != 0f) return false;
+            if (WordScale(PopSeconds + 0.044f) < 1.10f) return false;
+            if (WordScale(0.20f) < 0.98f || WordScale(LifeSeconds) < 0.98f) return false;
+            if (!PoolsHold()) return false;
             return true;
+        }
+
+        public const int EvPunch = 0;
+        public const int EvTag = 1;
+        public const int EvTransfer = 2;
+        public const int EvWhiff = 3;
+        public const int EvLand = 4;
+        public const int EvLaunch = 5;
+        public const int EvZip = 6;
+        public const int EvGrapple = 7;
+        public const int EvWall = 8;
+        public const int EvStagger = 9;
+        public const int EvCount = 10;
+
+        /// <summary>
+        /// The baked atlas stays the original four. These pools are the wider set.
+        /// Each event has 3–6 words. A roll never repeats the previous word.
+        /// </summary>
+        public static int PoolCount(int ev)
+        {
+            return Pool(ev).Length;
+        }
+
+        public static string PoolWord(int ev, int index)
+        {
+            string[] pool = Pool(ev);
+            if (index < 0 || index >= pool.Length) return pool[0];
+            return pool[index];
+        }
+
+        public static void Accent(int ev, out float r, out float g, out float b)
+        {
+            if (ev == EvTag) { r = 0.62f; g = 0.18f; b = 0.95f; return; }
+            if (ev == EvTransfer) { r = 0.95f; g = 0.22f; b = 0.45f; return; }
+            if (ev == EvWhiff) { r = 0.45f; g = 0.72f; b = 0.95f; return; }
+            if (ev == EvLand) { r = 0.62f; g = 0.42f; b = 0.22f; return; }
+            if (ev == EvLaunch) { r = 0.95f; g = 0.78f; b = 0.12f; return; }
+            if (ev == EvZip) { r = 0.20f; g = 0.82f; b = 0.85f; return; }
+            if (ev == EvGrapple) { r = 0.15f; g = 0.55f; b = 0.48f; return; }
+            if (ev == EvWall) { r = 0.90f; g = 0.28f; b = 0.16f; return; }
+            if (ev == EvStagger) { r = 0.55f; g = 0.62f; b = 0.28f; return; }
+            r = 1f; g = 0.46f; b = 0.08f;
+        }
+
+        /// <summary>
+        /// Word pop, after the burst has already scaled in. Peaks at 1.15, settles at 1.
+        /// The burst curve and the 0.45 s life are unchanged.
+        /// </summary>
+        public static float WordScale(float age)
+        {
+            float start = PopSeconds;
+            const float span = 0.08f;
+            if (age <= start) return 0f;
+            float u = (age - start) / span;
+            if (u >= 1f) return 1f;
+            const float peakAt = 0.55f;
+            const float peak = 1.15f;
+            if (u < peakAt)
+            {
+                float t = u / peakAt;
+                float e = t * t * (3f - 2f * t);
+                return peak * e;
+            }
+            float settle = (u - peakAt) / (1f - peakAt);
+            float down = settle * settle * (3f - 2f * settle);
+            return peak + (1f - peak) * down;
+        }
+
+        /// <summary>
+        /// Punch strength narrows the punch pool. Other events use the whole pool.
+        /// The biased four-word roll is unchanged.
+        /// </summary>
+        public static int PickEvent(ref uint state, int ev, int strength, string previous)
+        {
+            string[] pool = Pool(ev);
+            int start = 0;
+            int span = pool.Length;
+            if (ev == EvPunch)
+            {
+                if (strength <= Tap) { start = 0; span = 3; }
+                else if (strength == Punch) { start = 1; span = 4; }
+                else { start = 3; span = 3; }
+            }
+            state = state * 1664525u + 1013904223u;
+            int pick = start + (int)((state >> 16) % (uint)span);
+            if (!string.IsNullOrEmpty(previous) && pool[pick] == previous)
+                pick = start + ((pick - start + 1) % span);
+            return pick;
+        }
+
+        static bool PoolsHold()
+        {
+            string previous = null;
+            uint state = 5u;
+            for (int ev = 0; ev < EvCount; ev++)
+            {
+                int n = PoolCount(ev);
+                if (n < 3 || n > 6) return false;
+                for (int i = 0; i < n; i++)
+                {
+                    string word = PoolWord(ev, i);
+                    if (string.IsNullOrEmpty(word) || word[word.Length - 1] != '!') return false;
+                }
+                for (int k = 0; k < 24; k++)
+                {
+                    int strength = k % 3;
+                    int pick = PickEvent(ref state, ev, strength, previous);
+                    string word = PoolWord(ev, pick);
+                    if (word == previous) return false;
+                    previous = word;
+                }
+            }
+            if (PickEvent(ref state, EvPunch, Tap, null) < 0) return false;
+            if (PoolWord(EvPunch, 0) != "POP!") return false;
+            if (PoolWord(EvTag, 0) != "WHAM!") return false;
+            if (PoolWord(EvGrapple, 0) != "THWIP!") return false;
+            if (PoolWord(EvStagger, 0) != "OOF!") return false;
+            return true;
+        }
+
+        static readonly string[] PunchWords = { "POP!", "POW!", "SMACK!", "WHACK!", "THWACK!", "BAM!" };
+        static readonly string[] TagWords = { "WHAM!", "BONK!", "KAPOW!" };
+        static readonly string[] TransferWords = { "TAG!", "GOTCHA!", "MINE!" };
+        static readonly string[] WhiffWords = { "WHIFF!", "SWISH!", "WHOOSH!" };
+        static readonly string[] LandWords = { "THUD!", "WHUMP!", "THUMP!" };
+        static readonly string[] LaunchWords = { "BOING!", "SPROING!", "POING!" };
+        static readonly string[] ZipWords = { "ZING!", "ZIP!", "WHIZZ!" };
+        static readonly string[] GrappleWords = { "THWIP!", "FWIP!", "ZWIP!" };
+        static readonly string[] WallWords = { "KRAK!", "FWOOSH!", "THOK!" };
+        static readonly string[] StaggerWords = { "OOF!", "UGH!", "OUCH!" };
+
+        static string[] Pool(int ev)
+        {
+            if (ev == EvTag) return TagWords;
+            if (ev == EvTransfer) return TransferWords;
+            if (ev == EvWhiff) return WhiffWords;
+            if (ev == EvLand) return LandWords;
+            if (ev == EvLaunch) return LaunchWords;
+            if (ev == EvZip) return ZipWords;
+            if (ev == EvGrapple) return GrappleWords;
+            if (ev == EvWall) return WallWords;
+            if (ev == EvStagger) return StaggerWords;
+            return PunchWords;
         }
 
         public static string ProofLine()
