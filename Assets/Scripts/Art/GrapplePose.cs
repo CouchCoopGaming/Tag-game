@@ -21,6 +21,13 @@ namespace Tag.Art
         /// <summary>Left hand is the grappling hand. RMB still fires. The lead angles stay in the R sample fields.</summary>
         public const bool LeadRight = false;
 
+        /// <summary>
+        /// Extra outward yaw on both shoulders. The printed aim, latch, and pull
+        /// yaws stay the sample. This is applied when the body is posed so the
+        /// upper arm misses the chest. It is not a lift and it does not change a timer.
+        /// </summary>
+        public const float ShoulderFlare = 24f;
+
         /// <summary>Move the lead sample onto the left arm when the left hand fires.</summary>
         public static Sample ForBody(Sample s)
         {
@@ -34,6 +41,8 @@ namespace Tag.Art
             float elbow = s.ElbowL;
             s.ElbowL = s.ElbowR;
             s.ElbowR = elbow;
+            s.ArmYawL += ShoulderFlare;
+            s.ArmYawR -= ShoulderFlare;
             return s;
         }
 

@@ -1,8 +1,8 @@
 namespace Tag.Local
 {
     /// <summary>
-    /// Who gets the experimental rope. The solo human only.
-    /// Couch pawns and the campus opponent do not.
+    /// Solo tell. EnableFor is the solo human only.
+    /// Couch humans take the same rope through CouchRope. The opponent does not.
     /// A miss is not decided here: the hook still latches nothing when the ray hits nothing.
     /// </summary>
     public static class SoloGrappleGate

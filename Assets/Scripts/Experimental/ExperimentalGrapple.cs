@@ -10,8 +10,9 @@ namespace Tag.Experimental
     /// <summary>
     /// EXPERIMENTAL — optional rope. Core tag loop works without this.
     /// The field starts off (enableGrapple=false). LocalPlayerSpawner turns it on
-    /// for the solo Player pawn only. Couch pawns and DummyRunner do not get one.
-    /// Button: RMB (Mouse1), the same hold as JetHeld. Jet stays off, so RMB does not jet.
+    /// for the solo Player pawn and for every human couch seat. DummyRunner does not
+    /// get one from this gate. Keyboard fire is RMB (Mouse1). A pad seat fires with
+    /// LT. Both are JetHeld. Jet stays off, so the button hooks and does not jet.
     /// The hook attaches to the nearest collider along the camera forward ray that is not
     /// this pawn. A miss attaches to nothing: there is no stand-in swing.
     /// PlayerMotor strips outward horizontal speed against that hit. This component does
@@ -25,9 +26,9 @@ namespace Tag.Experimental
     {
         public const string FireButton = "RMB";
         /// <summary>Second click inside this window releases. A lone click then pulls.</summary>
-        public const float ClickWindow = 0.28f;
+        public const float ClickWindow = GrappleClick.Window;
         /// <summary>Planar pull toward a static anchor. Not a zip and not a dash.</summary>
-        public const float PullSpeed = 12f;
+        public const float PullSpeed = GrappleClick.Pull;
 
         [Header("EXPERIMENTAL — off by default")]
         public bool enableGrapple = false;
@@ -132,12 +133,7 @@ namespace Tag.Experimental
             if (!ReadFire())
             {
                 _rayMiss = false;
-                if (_pendingPull && _attached && Time.time - _pendingSince >= ClickWindow)
-                {
-                    _pendingPull = false;
-                    if (_anchorStatic)
-                        _pulling = true;
-                }
+                ResolvePendingNow();
                 _casting = false;
                 GrappleMissTell.Note(ref _missAge, MissAvailable(), false, false, false);
                 return;
@@ -153,12 +149,7 @@ namespace Tag.Experimental
             else if (fired)
                 OnClick();
 
-            if (_pendingPull && _attached && Time.time - _pendingSince >= ClickWindow)
-            {
-                _pendingPull = false;
-                if (_anchorStatic)
-                    _pulling = true;
-            }
+            ResolvePendingNow();
 
             _casting = !_attached && held;
             GrappleMissTell.Note(ref _missAge, MissAvailable(), fired, _rayMiss && !_attached, _attached);
@@ -178,21 +169,42 @@ namespace Tag.Experimental
 
         void OnClick()
         {
-            if (_clickTime >= 0f && Time.time - _clickTime <= ClickWindow)
+            GrappleClick click = ClickState();
+            bool drop = click.OnAttachedPress(Time.time, ClickWindow);
+            _rayMiss = false;
+            if (drop)
             {
-                _pendingPull = false;
-                _pulling = false;
-                _rayMiss = false;
                 Release();
                 _clickTime = Time.time;
                 return;
             }
 
-            _clickTime = Time.time;
-            _pendingPull = true;
-            _pendingSince = Time.time;
-            _pulling = false;
-            _rayMiss = false;
+            _clickTime = click.ClickTime;
+            _pendingPull = click.Pending;
+            _pendingSince = click.PendingSince;
+            _pulling = click.Pulling;
+            _attached = click.Attached;
+            _anchorStatic = click.AnchorStatic;
+        }
+
+        GrappleClick ClickState()
+        {
+            GrappleClick click;
+            click.Attached = _attached;
+            click.Pulling = _pulling;
+            click.Pending = _pendingPull;
+            click.AnchorStatic = _anchorStatic;
+            click.ClickTime = _clickTime;
+            click.PendingSince = _pendingSince;
+            return click;
+        }
+
+        void ResolvePendingNow()
+        {
+            GrappleClick click = ClickState();
+            click.ResolvePending(Time.time, ClickWindow);
+            _pendingPull = click.Pending;
+            _pulling = click.Pulling;
         }
 
         public bool TryGetRope(out Vector3 anchor, out float length, out float slack)

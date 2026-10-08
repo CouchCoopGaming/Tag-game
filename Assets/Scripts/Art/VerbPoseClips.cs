@@ -100,6 +100,8 @@ namespace Tag.Art
         public const float PunchCockYaw = -24f;
         public const float PunchCockRoll = -14f;
         public const float PunchCockElbow = -78f;
+        /// <summary>Yaw on the cocked forearm so the fist misses the head. Not in the hand-position proof.</summary>
+        public const float PunchFistYaw = 40f;
         public const float PunchStrikePitch = -72f;
         public const float PunchStrikeYaw = 6f;
         public const float PunchStrikeRoll = -10f;

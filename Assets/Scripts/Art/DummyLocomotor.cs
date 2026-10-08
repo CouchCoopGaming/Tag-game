@@ -7294,7 +7294,7 @@ namespace Tag.Art
                     // The coil is the target the frame the strike arms. The slew is the pull-back.
                     // Timing stays the authored 0.12s windup.
                     _uaRT = _uaR0 * Quaternion.Euler(VerbPoseClips.PunchCockPitch, VerbPoseClips.PunchCockYaw, VerbPoseClips.PunchCockRoll);
-                    _laRT = _laR0 * Quaternion.Euler(VerbPoseClips.PunchCockElbow, 0f, 0f);
+                    _laRT = _laR0 * Quaternion.Euler(VerbPoseClips.PunchCockElbow, VerbPoseClips.PunchFistYaw, 0f);
                     _uaLT = _uaL0 * Quaternion.Euler(VerbPoseClips.PunchGuardPitchCock, VerbPoseClips.PunchGuardYawCock, VerbPoseClips.PunchGuardRoll);
                     _laLT = _laL0 * Quaternion.Euler(VerbPoseClips.PunchGuardElbowCock, 0f, 0f);
                     _hipsT = _hips0 * Quaternion.Euler(VerbPoseClips.PunchHipPitch, VerbPoseClips.PunchCockHipYaw, 0f);

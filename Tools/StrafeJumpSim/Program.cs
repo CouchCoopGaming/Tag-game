@@ -6,8 +6,36 @@ using UnityEngine;
 
 static class Program
 {
-    static int Main()
+    static int Main(string[] args)
     {
+        if (args != null && args.Length > 0 && args[0] == "--pose-keys")
+        {
+            PoseKeyDump.Write(Console.Out);
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--proofs")
+        {
+            Console.WriteLine(Tag.Art.AirFeel.ProofLine());
+            Console.WriteLine(Tag.Art.HandoffFeel.ProofLine());
+            Console.WriteLine(Tag.Art.Handoff2Feel.ProofLine());
+            Console.WriteLine(Tag.Art.BodyLine.ProofLine());
+            Console.WriteLine(Tag.Art.LocoFeel.ProofLine());
+            Console.WriteLine(Tag.Art.VerbPoseClips.SlideProofLine());
+            Console.WriteLine(Tag.Art.VerbPoseClips.PolishProofLine());
+            Console.WriteLine(Tag.Art.VerbPoseClips.PunchTagPolishProofLine());
+            Console.WriteLine(Tag.Art.LaunchPose.ProofLine());
+            Console.WriteLine(Tag.Art.WallPose.ProofLine());
+            Console.WriteLine(Tag.Art.ZipPose.ProofLine());
+            Console.WriteLine(Tag.Art.GrapplePose.ProofLine());
+            Console.WriteLine(Tag.Art.GrapplePose.PolishProofLine());
+            Console.WriteLine(CouchRope.ProofLine());
+            if (!Tag.Art.VerbPoseClips.PolishHolds()) Console.Error.WriteLine("slide pose polish is not held");
+            if (!Tag.Art.VerbPoseClips.PunchTagPolishHolds()) Console.Error.WriteLine("punch tag polish is not held");
+            if (!Tag.Art.Handoff2Feel.Holds()) Console.Error.WriteLine("handoff2 is not held");
+            if (!Tag.Art.LaunchPose.Holds()) Console.Error.WriteLine("launch pose is not held");
+            return 0;
+        }
+
         StrafeJumpReport report = StrafeJumpProof.Run60();
         Console.WriteLine(report.ToString());
         if (!report.Ok)
@@ -613,6 +641,37 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(CouchRope.ProofLine());
+        if (!CouchRope.Holds())
+        {
+            Console.Error.WriteLine("couch grapple is not on every human seat");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Local/LocalPlayerSpawner.cs",
+                "SoloGrappleGate.EnableFor",
+                "CouchRope.ForCouchHuman",
+                "enableGrapple = false")
+            || !AssetHas("Assets/Scripts/Experimental/ExperimentalGrapple.cs",
+                "FireButton = \"RMB\"",
+                "enableGrapple = false",
+                "GrappleClick.Window",
+                "GrappleClick.Pull",
+                "OnAttachedPress")
+            || !AssetHas("Assets/TagArenaMovement/Scripts/Input/PlayerInputReader.cs",
+                "BindSampler.LeftTriggerHeld",
+                "BindSampler.MouseRightHeld")
+            || !AssetHas("Assets/Scripts/Settings/BindSampler.cs",
+                "pad.leftTrigger.isPressed"))
+        {
+            Console.Error.WriteLine("couch grapple is not wired to RMB and LT");
+            return 1;
+        }
+        if (!File.Exists(Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass19", "couch-grapple.png")))
+        {
+            Console.Error.WriteLine("couch grapple still is missing");
+            return 1;
+        }
+
         Tag.Settings.AccessibilityReport access = Tag.Settings.AccessibilityProof.Run();
         Console.WriteLine(access.Line);
         if (!access.Ok)
@@ -1098,7 +1157,7 @@ static class Program
         }
         Tag.FX.Pass5Stills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass5"));
 
-        Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
+        Console.WriteLine("solo grapple on; couch rope on; opponent gate off; jet off; clips and locks held");
         return 0;
     }
 
