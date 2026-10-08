@@ -232,6 +232,129 @@ def _pin_limb(arm, kind, side, lock, normal, pole):
     bpy.context.view_layer.update()
 
 
+def _foot_on_lock(arm, side, lock, normal, normal_slop=0.004, tangent_slop=0.008):
+    """True when the sole is on the lock and not inside the solid."""
+    from mathutils import Vector
+    vert = _deepest(f"Foot_{side}", normal)
+    if vert is None:
+        return False
+    err = Vector(vert) - Vector(lock)
+    n = Vector(normal).normalized()
+    along = err.dot(n)
+    if along < -normal_slop:
+        return False
+    return (err - n * along).length <= tangent_slop
+
+
+def _clear_thigh(arm, side, lock, normal, pole):
+    """Yaw the thigh off the hip shell when the pose is still in the rest-pose corner.
+
+    The v0.8.0 hip and thigh shells already cross by 0.59 cm at bind, and that
+    crossing sits 3.2 cm from the joint, outside the exemption. A thigh yaw of
+    about 12° swings the shell off that corner. The search keeps a candidate
+    only when the sole is still on the same lock, so the plant does not skate.
+    """
+    pb = arm.pose.bones.get(f"UpperLeg_{side}")
+    if pb is None or lock is None:
+        return
+    pb.rotation_mode = "XYZ"
+    e = pb.rotation_euler
+    if abs(e.z) >= math.radians(12.0) or abs(e.x) >= math.radians(18.0):
+        return
+    depth0, pair0 = _self_worst(arm)
+    if depth0 <= DEPTH_LIMIT_M or f"UpperLeg_{side}" not in pair0:
+        return
+    from mathutils import Vector
+    snap = _snap_rots(arm)
+    loc = arm.location.copy()
+    rot = arm.rotation_euler.copy()
+    best = None
+    best_depth = depth0
+    for mag in (0.22, 0.38):
+        for extra in (
+            Vector((0.0, mag, 0.0)),
+            Vector((0.0, -mag, 0.0)),
+            Vector((mag, 0.0, 0.0)),
+            Vector((-mag, 0.0, 0.0)),
+        ):
+            _restore_rots(arm, snap)
+            arm.location = loc
+            arm.rotation_euler = rot
+            bpy_update()
+            _pin_limb(arm, "foot", side, lock, normal, Vector(pole) + extra)
+            if not _foot_on_lock(arm, side, lock, normal):
+                continue
+            depth, pair = _self_worst(arm)
+            if f"UpperLeg_{side}" in pair and depth < best_depth - 0.0004:
+                best_depth = depth
+                best = _snap_rots(arm)
+            elif depth <= DEPTH_LIMIT_M and depth < best_depth - 0.0004:
+                best_depth = depth
+                best = _snap_rots(arm)
+                _restore_rots(arm, best)
+                arm.location = loc
+                arm.rotation_euler = rot
+                bpy_update()
+                return
+    if best is None:
+        _restore_rots(arm, snap)
+    else:
+        _restore_rots(arm, best)
+    arm.location = loc
+    arm.rotation_euler = rot
+    bpy_update()
+
+
+def _yaw_loose_thighs(arm, planes):
+    """Yaw a thigh that is still in the bind-pose corner and is not holding a contact.
+
+    The hip shell crosses the thigh by 0.59 cm at rest. About 12° of yaw swings
+    that corner clear. A sole already on a plane is a plant, and it is put back
+    if the yaw moves it.
+    """
+    from mathutils import Vector
+    for side in ("L", "R"):
+        pb = arm.pose.bones.get(f"UpperLeg_{side}")
+        if pb is None:
+            continue
+        pb.rotation_mode = "XYZ"
+        e = pb.rotation_euler.copy()
+        if abs(e.z) >= math.radians(12.0) or abs(e.x) >= math.radians(18.0):
+            continue
+        planted = False
+        for origin, normal in planes:
+            n = Vector(normal).normalized()
+            vert = _deepest(f"Foot_{side}", n)
+            if vert is None:
+                continue
+            gap = n.dot(Vector(vert) - Vector(origin))
+            if -0.008 <= gap <= 0.03:
+                planted = True
+                break
+        if planted:
+            continue
+        depth0, pair0 = _self_worst(arm)
+        if depth0 <= DEPTH_LIMIT_M or f"UpperLeg_{side}" not in pair0:
+            continue
+        snap = _snap_rots(arm)
+        loc = arm.location.copy()
+        target = math.copysign(math.radians(12.0), e.z if abs(e.z) > math.radians(1.0) else (1.0 if side == "L" else -1.0))
+        pb.rotation_euler = (e.x, e.y, target)
+        pb.location = (0.0, 0.0, 0.0)
+        pb.scale = (1.0, 1.0, 1.0)
+        bpy_update()
+        depth1, _pair1 = _self_worst(arm)
+        keep = depth1 < depth0 - 0.0004
+        for origin, normal in planes:
+            if _min_plane(origin, normal) < -0.004:
+                keep = False
+                break
+        if not keep:
+            _restore_rots(arm, snap)
+            arm.location = loc
+            bpy_update()
+
+
 def _pole_knee(side, normal, out_axis):
     from mathutils import Vector
     n = Vector(normal).normalized()
@@ -500,13 +623,16 @@ def solve_slide(arm, samples, times):
                     hand_off.x = 0.34 if hand_side == "L" else -0.34
         base = _project_plane(arm.location, plane_o, nrm)
 
-        def plant(base_now):
+        def plant(base_now, clear=False):
             for side, off in foot_off.items():
                 # No sideways pole. A lateral knee swing yawed the thigh through the pelvis.
                 pole = nrm * 1.0 + Vector((0.0, 0.05 if side == "L" else -0.05, 0.55))
-                _pin_on_plane(arm, "foot", side, base_now + off, nrm, pole)
-            # The trail hand is the reference pose, not an IK plant. Pulling the
-            # palm onto the ramp folded the upper arm through the chest.
+                lock = base_now + off
+                _pin_on_plane(arm, "foot", side, lock, nrm, pole)
+                if clear:
+                    _clear_thigh(arm, side, lock, nrm, pole)
+            # The trail hand stays on the reference pose. Pulling the palm onto
+            # the ramp folded the upper arm through the chest.
 
         for _cycle in range(3):
             plant(base)
@@ -516,7 +642,9 @@ def solve_slide(arm, samples, times):
                 break
         plant(base)
         _uncross(arm, guard=lambda: _min_plane(plane_o, nrm))
-        plant(base)
+        plant(base, clear=True)
+        _yaw_loose_thighs(arm, [(plane_o, nrm)])
+        _uncross(arm, guard=lambda: _min_plane(plane_o, nrm))
         body_pen = max(0.0, -_min_plane(plane_o, nrm))
         pen = max(pen, body_pen)
         for side, off in foot_off.items():
@@ -547,7 +675,7 @@ def solve_slide(arm, samples, times):
         "world": {"kind": "slide"},
         "note": (
             "Both soles stay on the 36° ramp and move with the capsule. "
-            "Skate is extra foot travel along the ramp. The trail hand brushes the ramp beside the hip."
+            "Skate is extra foot travel along the ramp. The trail hand follows the reference pose."
         ),
     }
 
@@ -675,12 +803,17 @@ def solve_wallrun(arm, samples, times):
         pole = nrm_out_pole(side, normal)
         other = "R" if side == "L" else "L"
 
-        def place_contacts():
+        def place_contacts(clear=False):
             _pin_limb(arm, "foot", side, lock, normal, pole)
+            if clear:
+                _clear_thigh(arm, side, lock, normal, pole)
             swing = _deepest(f"Foot_{other}", normal)
             if swing is not None and swing.x < face + 0.03:
                 park = Vector((face + 0.08, 0.0, max(0.20, lock_z + 0.18)))
-                _pin_limb(arm, "foot", other, park, normal, nrm_out_pole(other, normal))
+                swing_pole = nrm_out_pole(other, normal)
+                _pin_limb(arm, "foot", other, park, normal, swing_pole)
+                if clear:
+                    _clear_thigh(arm, other, park, normal, swing_pole)
             _brush_hands(arm, face, normal)
 
         place_contacts()
@@ -702,17 +835,22 @@ def solve_wallrun(arm, samples, times):
             if into_wall < 1.0e-4 and into_floor < 1.0e-4:
                 break
         place_contacts()
+        _uncross(
+            arm,
+            guard=lambda: min(_min_plane(wall_o, normal), _min_plane(floor_o, floor_n)),
+        )
+        place_contacts(clear=True)
+        _yaw_loose_thighs(arm, [(wall_o, normal), (floor_o, floor_n)])
+        _uncross(
+            arm,
+            guard=lambda: min(_min_plane(wall_o, normal), _min_plane(floor_o, floor_n)),
+        )
         if step not in held:
             held[step] = None
         vert = _deepest(f"Foot_{side}", normal)
         got, gap, held[step] = _note_plant(vert, lock, normal, held[step])
         skate = max(skate, got)
         pen = max(pen, gap)
-        _uncross(
-            arm,
-            guard=lambda: min(_min_plane(wall_o, normal), _min_plane(floor_o, floor_n)),
-        )
-        place_contacts()
         pen = max(pen, max(0.0, -_min_plane(wall_o, normal)))
         pen = max(pen, max(0.0, -_min_plane(floor_o, floor_n)))
         keys.append(_save_pose(arm))
@@ -853,6 +991,7 @@ def solve_turn(arm, samples, times):
                 _brush_hands(arm, face, wall_n)
                 push_clear()
             _pin_limb(arm, "foot", side, lock, floor_n, pole)
+            _clear_thigh(arm, side, lock, floor_n, pole)
             key = ("run", step_of[i], side)
             vert = _deepest(f"Foot_{side}", floor_n)
             got, gap, held[key] = _note_plant(vert, lock, floor_n, held.get(key))
@@ -874,6 +1013,11 @@ def solve_turn(arm, samples, times):
                 _brush_hands(arm, face, wall_n)
                 push_clear()
             _pin_limb(arm, "foot", "R", wall_lock, wall_n, pole)
+            _clear_thigh(arm, "R", wall_lock, wall_n, pole)
+            if left_lock is not None:
+                left_pole = _pole_knee("L", floor_n, Vector((1.0, 0.0, 0.0)))
+                _pin_limb(arm, "foot", "L", left_lock, floor_n, left_pole)
+                _clear_thigh(arm, "L", left_lock, floor_n, left_pole)
             vert = _deepest("Foot_R", wall_n)
             got, gap, held["wall"] = _note_plant(vert, wall_lock, wall_n, held.get("wall"))
             skate = max(skate, got)
@@ -893,12 +1037,10 @@ def solve_turn(arm, samples, times):
             over = _over_landing_xy(arm.location.x, arm.location.y, landing_y)
             foot_z = landing_top if over else max(0.02, arm.location.z)
             for s, dx in (("L", 0.16), ("R", -0.16)):
-                _pin_limb(
-                    arm, "foot", s,
-                    Vector((arm.location.x + dx, arm.location.y, foot_z)),
-                    floor_n,
-                    _pole_knee(s, floor_n, Vector((1.0, 0.0, 0.0))),
-                )
+                air_lock = Vector((arm.location.x + dx, arm.location.y, foot_z))
+                air_pole = _pole_knee(s, floor_n, Vector((1.0, 0.0, 0.0)))
+                _pin_limb(arm, "foot", s, air_lock, floor_n, air_pole)
+                _clear_thigh(arm, s, air_lock, floor_n, air_pole)
         else:
             if not land_lock:
                 for s, dx, dy in (("L", 0.18, 0.10), ("R", -0.18, -0.10)):
@@ -911,14 +1053,21 @@ def solve_turn(arm, samples, times):
                     )
                 push_clear()
             for s in ("L", "R"):
-                _pin_limb(
-                    arm, "foot", s, land_lock[s], floor_n,
-                    _pole_knee(s, floor_n, Vector((1.0, 0.0, 0.0))),
-                )
+                land_pole = _pole_knee(s, floor_n, Vector((1.0, 0.0, 0.0)))
+                _pin_limb(arm, "foot", s, land_lock[s], floor_n, land_pole)
+                _clear_thigh(arm, s, land_lock[s], floor_n, land_pole)
                 vert = _deepest(f"Foot_{s}", floor_n)
                 got, gap, held[("land", s)] = _note_plant(vert, land_lock[s], floor_n, held.get(("land", s)))
                 skate = max(skate, got)
                 pen = max(pen, gap)
+        _yaw_loose_thighs(
+            arm,
+            [
+                (wall_o, wall_n),
+                (floor_o, floor_n),
+                (Vector((0.0, landing_y, landing_top)), floor_n),
+            ],
+        )
         _uncross(
             arm,
             guard=lambda: min(_min_plane(wall_o, wall_n), _min_plane(floor_o, floor_n)),
@@ -1124,7 +1273,7 @@ def _joint_world(arm, child_name):
     return p5._head_w(arm, child_name)
 
 
-def _self_worst(arm):
+def _self_worst(arm, skip_prefixes=()):
     """Deepest shell crossing outside the 3 cm joint exemption. Metres, and the pair."""
     import bpy
     rh._ensure_object()
@@ -1138,6 +1287,10 @@ def _self_worst(arm):
     worst_pair = ""
     for i, (bone_a, tree_a, tris_a) in enumerate(bodies):
         for bone_b, tree_b, tris_b in bodies[i + 1:]:
+            if skip_prefixes and (
+                bone_a.startswith(skip_prefixes) or bone_b.startswith(skip_prefixes)
+            ):
+                continue
             joint = None
             if child_of.get(bone_b) == bone_a:
                 joint = _joint_world(arm, bone_b)
@@ -1233,6 +1386,20 @@ def _uncross(arm, repin=None, guard=None, rounds=5, allow_legs=False):
         if not allow_legs:
             names = [n for n in names if not n.startswith(("UpperLeg", "LowerLeg", "Foot"))]
         name = next((n for n in names if n not in tried), None)
+        if name is None and not allow_legs:
+            # The deepest pair is a planted thigh. An arm can still be in the chest.
+            depth, pair = _self_worst(arm, skip_prefixes=("UpperLeg", "LowerLeg", "Foot"))
+            if depth <= 0.004 or not pair or "/" not in pair:
+                return
+            names = []
+            primary = _bone_to_ease(pair)
+            if primary and not primary.startswith(("UpperLeg", "LowerLeg", "Foot")):
+                names.append(primary)
+            a, b = pair.split("/", 1)
+            for extra in (a, b):
+                if extra not in names and not extra.startswith(("UpperLeg", "LowerLeg", "Foot")):
+                    names.append(extra)
+            name = next((n for n in names if n not in tried), None)
         if name is None:
             return
         tried.add(name)
@@ -1424,6 +1591,8 @@ def _fit_under(path, limit=400_000):
 
 
 def composite(solved_all, noclip_line):
+    import site
+    site.addsitedir(site.getusersitepackages())
     from PIL import Image, ImageDraw, ImageFont
     os.makedirs(OUT, exist_ok=True)
     font = ImageFont.load_default()
