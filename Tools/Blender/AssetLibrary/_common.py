@@ -1,0 +1,1056 @@
+"""Shared builder for the tag asset library.
+
+Coordinates in asset scripts are Unity meters: +X right, +Y up, +Z forward.
+Blender stays Z-up internally. Export bakes the Unity axis (X, Z, -Y) and the
+FBX centimeter scale. Unity's importer (useFileScale) brings that back to meters.
+
+Mesh fileIDs match this project's imported FBX assets:
+    xxHash64("Type:Mesh->{name}0") as a signed int64.
+A mesh named LOD0 therefore hashes the string "Type:Mesh->LOD00".
+"""
+
+from __future__ import annotations
+
+import math
+import os
+import sys
+
+import bmesh
+import bpy
+from mathutils import Matrix, Vector
+from mathutils.bvhtree import BVHTree
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.abspath(os.path.join(ROOT, "..", "..", ".."))
+LIB_ROOT = os.path.join(REPO, "Assets", "Art", "Props", "Library")
+TEX_DIR = os.path.join(LIB_ROOT, "Textures")
+STILL_DIR = os.path.join(REPO, "Docs", "AssetStills", "pass1")
+
+# color, metallic, smoothness. Matches the park kit, extended for city/harbor.
+PALETTE = {
+    "Lib_Steel": ((0.722, 0.753, 0.784), 0.55, 0.40),
+    "Lib_SteelDark": ((0.28, 0.30, 0.33), 0.72, 0.34),
+    "Lib_PaintYellow": ((0.961, 0.835, 0.278), 0.0, 0.45),
+    "Lib_PaintRed": ((0.886, 0.231, 0.184), 0.0, 0.40),
+    "Lib_PaintBlue": ((0.239, 0.494, 1.0), 0.0, 0.40),
+    "Lib_PaintWhite": ((0.93, 0.93, 0.90), 0.0, 0.35),
+    "Lib_PaintGreen": ((0.20, 0.46, 0.28), 0.0, 0.35),
+    "Lib_Rubber": ((0.165, 0.165, 0.18), 0.0, 0.22),
+    "Lib_Concrete": ((0.78, 0.78, 0.76), 0.0, 0.22),
+    "Lib_Asphalt": ((0.16, 0.16, 0.17), 0.0, 0.16),
+    "Lib_Brick": ((0.64, 0.32, 0.24), 0.0, 0.28),
+    "Lib_Mortar": ((0.72, 0.70, 0.66), 0.0, 0.20),
+    "Lib_Wood": ((0.62, 0.42, 0.24), 0.0, 0.32),
+    "Lib_WoodDark": ((0.36, 0.22, 0.13), 0.0, 0.28),
+    "Lib_Mulch": ((0.361, 0.227, 0.18), 0.0, 0.15),
+    "Lib_Foliage": ((0.24, 0.48, 0.20), 0.0, 0.18),
+    "Lib_FoliageDark": ((0.13, 0.32, 0.15), 0.0, 0.16),
+    "Lib_Glass": ((0.62, 0.78, 0.82), 0.04, 0.88),
+    "Lib_Orange": ((0.93, 0.40, 0.08), 0.0, 0.42),
+    "Lib_ContainerRed": ((0.58, 0.16, 0.13), 0.18, 0.30),
+    "Lib_ContainerBlue": ((0.12, 0.28, 0.48), 0.18, 0.30),
+    "Lib_Black": ((0.07, 0.07, 0.08), 0.15, 0.40),
+    "Lib_Rust": ((0.45, 0.24, 0.14), 0.28, 0.24),
+    "Lib_Water": ((0.22, 0.48, 0.55), 0.0, 0.72),
+    "Lib_Brass": ((0.74, 0.58, 0.28), 0.85, 0.55),
+    "Lib_Chain": ((0.68, 0.70, 0.72), 0.62, 0.38),
+    "Lib_Soil": ((0.28, 0.18, 0.10), 0.0, 0.12),
+    "Lib_Siding": ((0.78, 0.80, 0.78), 0.0, 0.30),
+    "Lib_Roof": ((0.28, 0.30, 0.32), 0.05, 0.25),
+    "Lib_Awning": ((0.55, 0.12, 0.16), 0.0, 0.28),
+    "Lib_Court": ((0.16, 0.38, 0.62), 0.0, 0.30),
+    "Lib_Lane": ((0.90, 0.82, 0.28), 0.0, 0.35),
+}
+
+# Grayscale-or-color albedo multiplied is baked as full color. UV is meters.
+TEXTURED = ("Lib_Brick", "Lib_Asphalt", "Lib_Wood", "Lib_WoodDark", "Lib_Concrete", "Lib_Siding", "Lib_Roof", "Lib_Soil")
+
+# Modular street kit. Straight tiles are ROAD_W wide and TILE_L long.
+# Tops: road 0.12 m, sidewalk 0.27 m (15 cm curb). Pivot is ground center.
+ROAD_W = 6.0
+TILE_L = 4.0
+ROAD_TOP = 0.12
+WALK_TOP = 0.27
+SIDE_W = 2.0
+
+REGISTRY = []
+
+
+def register(fn):
+    REGISTRY.append(fn)
+    return fn
+
+
+def lod_pick(lod, hi, mid, low=None):
+    if lod <= 0:
+        return hi
+    if lod == 1:
+        return mid
+    return low if low is not None else mid
+
+
+def unity_to_blender(x, y, z):
+    return (x, -z, y)
+
+
+def blender_to_unity(x, y, z):
+    return (x, z, -y)
+
+
+def _rotl64(x, r):
+    x &= 0xFFFFFFFFFFFFFFFF
+    return ((x << r) | (x >> (64 - r))) & 0xFFFFFFFFFFFFFFFF
+
+
+def xxh64(data, seed=0):
+    """XXH64, seed 0. Same digest Unity uses for imported mesh fileIDs."""
+    mask = 0xFFFFFFFFFFFFFFFF
+    p1 = 0x9E3779B185EBCA87
+    p2 = 0xC2B2AE3D27D4EB4F
+    p3 = 0x165667B19E3779F9
+    p4 = 0x85EBCA77C2B2AE63
+    p5 = 0x27D4EB2F165667C5
+
+    def u64(b):
+        return int.from_bytes(b, "little")
+
+    def round64(acc, inp):
+        acc = (acc + (inp * p2)) & mask
+        acc = _rotl64(acc, 31)
+        return (acc * p1) & mask
+
+    def merge(h, acc):
+        h ^= round64(0, acc)
+        return (h * p1 + p4) & mask
+
+    length = len(data)
+    if length >= 32:
+        acc1 = (seed + p1 + p2) & mask
+        acc2 = (seed + p2) & mask
+        acc3 = seed & mask
+        acc4 = (seed - p1) & mask
+        i = 0
+        while i + 32 <= length:
+            acc1 = round64(acc1, u64(data[i:i + 8]))
+            acc2 = round64(acc2, u64(data[i + 8:i + 16]))
+            acc3 = round64(acc3, u64(data[i + 16:i + 24]))
+            acc4 = round64(acc4, u64(data[i + 24:i + 32]))
+            i += 32
+        h = (_rotl64(acc1, 1) + _rotl64(acc2, 7) + _rotl64(acc3, 12) + _rotl64(acc4, 18)) & mask
+        h = merge(merge(merge(merge(h, acc1), acc2), acc3), acc4)
+    else:
+        h = (seed + p5) & mask
+        i = 0
+    h = (h + length) & mask
+    while i + 8 <= length:
+        h ^= round64(0, u64(data[i:i + 8]))
+        h = (_rotl64(h, 27) * p1 + p4) & mask
+        i += 8
+    if i + 4 <= length:
+        h = (h ^ ((u64(data[i:i + 4]) * p1) & mask)) & mask
+        h = (_rotl64(h, 23) * p2 + p3) & mask
+        i += 4
+    while i < length:
+        h ^= (data[i] * p5) & mask
+        h = (_rotl64(h, 11) * p1) & mask
+        i += 1
+    h ^= h >> 33
+    h = (h * p2) & mask
+    h ^= h >> 29
+    h = (h * p3) & mask
+    h ^= h >> 32
+    return h
+
+
+def _signed64(u):
+    u &= (1 << 64) - 1
+    return u - (1 << 64) if u >= (1 << 63) else u
+
+
+def mesh_file_id(name):
+    return _signed64(xxh64(("Type:Mesh->%s0" % name).encode("utf-8")))
+
+
+def _quat_from_matrix(m):
+    """Shepperd quaternion (x, y, z, w) from a 3x3 rotation."""
+    t = m[0][0] + m[1][1] + m[2][2]
+    if t > 0:
+        s = math.sqrt(t + 1.0) * 2.0
+        w = 0.25 * s
+        x = (m[2][1] - m[1][2]) / s
+        y = (m[0][2] - m[2][0]) / s
+        z = (m[1][0] - m[0][1]) / s
+    elif m[0][0] > m[1][1] and m[0][0] > m[2][2]:
+        s = math.sqrt(1.0 + m[0][0] - m[1][1] - m[2][2]) * 2.0
+        w = (m[2][1] - m[1][2]) / s
+        x = 0.25 * s
+        y = (m[0][1] + m[1][0]) / s
+        z = (m[0][2] + m[2][0]) / s
+    elif m[1][1] > m[2][2]:
+        s = math.sqrt(1.0 + m[1][1] - m[0][0] - m[2][2]) * 2.0
+        w = (m[0][2] - m[2][0]) / s
+        x = (m[0][1] + m[1][0]) / s
+        y = 0.25 * s
+        z = (m[1][2] + m[2][1]) / s
+    else:
+        s = math.sqrt(1.0 + m[2][2] - m[0][0] - m[1][1]) * 2.0
+        w = (m[1][0] - m[0][1]) / s
+        x = (m[0][2] + m[2][0]) / s
+        y = (m[1][2] + m[2][1]) / s
+        z = 0.25 * s
+    n = math.sqrt(x * x + y * y + z * z + w * w) or 1.0
+    return (x / n, y / n, z / n, w / n)
+
+
+def unity_euler_quat(euler_deg):
+    """Unity Quaternion.Euler: Z then X then Y, left-handed axes."""
+    x, y, z = [math.radians(v) * 0.5 for v in euler_deg]
+    cx, sx = math.cos(x), math.sin(x)
+    cy, sy = math.cos(y), math.sin(y)
+    cz, sz = math.cos(z), math.sin(z)
+    # q = qY * qX * qZ
+    # qZ = (0, 0, sz, cz), qX = (sx, 0, 0, cx), qY = (0, sy, 0, cy)
+    # First qX * qZ
+    ax, ay, az, aw = sx * cz, sx * sz, cx * sz, cx * cz
+    # Then qY * that
+    qx = cy * ax + sy * az
+    qy = sy * aw + cy * ay
+    qz = cy * az - sy * ax
+    qw = cy * aw - sy * ay
+    return (qx, qy, qz, qw)
+
+
+def _apply_unity_quat(q, p):
+    x, y, z, w = q
+    vx, vy, vz = p
+    tx = 2.0 * (y * vz - z * vy)
+    ty = 2.0 * (z * vx - x * vz)
+    tz = 2.0 * (x * vy - y * vx)
+    return (
+        vx + w * tx + (y * tz - z * ty),
+        vy + w * ty + (z * tx - x * tz),
+        vz + w * tz + (x * ty - y * tx),
+    )
+
+
+class Geo:
+    def __init__(self, lod):
+        self.lod = lod
+        self.bm = bmesh.new()
+        self.uv = self.bm.loops.layers.uv.new("UVMap")
+        self.scale_layer = self.bm.faces.layers.float.new("uvscale")
+        self.mats = []
+
+    def slot(self, name):
+        if name not in PALETTE:
+            raise KeyError("unknown material " + name)
+        if name not in self.mats:
+            self.mats.append(name)
+        return self.mats.index(name)
+
+    def _ingest(self, src, mat, uv_scale):
+        mi = self.slot(mat)
+        vmap = {}
+        for v in src.verts:
+            vmap[v] = self.bm.verts.new(v.co)
+        self.bm.verts.index_update()
+        for f in src.faces:
+            try:
+                nf = self.bm.faces.new([vmap[v] for v in f.verts])
+            except ValueError:
+                continue
+            nf.material_index = mi
+            nf.smooth = True
+            nf[self.scale_layer] = uv_scale
+        src.free()
+
+    def _finish_src(self, bm, bevel, segs):
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        if bevel and segs and bevel > 0 and segs > 0:
+            edges = [e for e in bm.edges if len(e.link_faces) == 2 and e.calc_face_angle(0.0) > math.radians(35)]
+            if edges:
+                # Keep the chamfer inside the smallest edge so parts do not balloon.
+                limit = bevel
+                for e in edges:
+                    limit = min(limit, e.calc_length() * 0.35)
+                if limit > 1e-5:
+                    try:
+                        bmesh.ops.bevel(
+                            bm,
+                            geom=edges,
+                            offset=limit,
+                            offset_type="OFFSET",
+                            segments=int(segs),
+                            profile=0.5,
+                            affect="EDGES",
+                            clamp_overlap=True,
+                        )
+                    except (TypeError, ValueError, RuntimeError):
+                        pass
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        return bm
+
+    def box(self, center, size, mat, bevel=0.0, segs=1, euler=(0, 0, 0), uv_scale=1.0):
+        sx, sy, sz = size
+        if sx <= 0 or sy <= 0 or sz <= 0:
+            return
+        bm = bmesh.new()
+        q = unity_euler_quat(euler)
+        hx, hy, hz = sx * 0.5, sy * 0.5, sz * 0.5
+        local = [
+            (-hx, -hy, -hz), (hx, -hy, -hz), (hx, hy, -hz), (-hx, hy, -hz),
+            (-hx, -hy, hz), (hx, -hy, hz), (hx, hy, hz), (-hx, hy, hz),
+        ]
+        verts = []
+        for p in local:
+            r = _apply_unity_quat(q, p)
+            u = (r[0] + center[0], r[1] + center[1], r[2] + center[2])
+            verts.append(bm.verts.new(unity_to_blender(*u)))
+        # Outward winding in Unity (left-handed) becomes outward in Blender
+        # because the axis change is a proper rotation. These faces were
+        # authored CCW in Blender after the axis map of an axis-aligned cube.
+        faces_idx = [
+            (0, 1, 2, 3),  # checked below by recalc
+            (4, 7, 6, 5),
+            (0, 4, 5, 1),
+            (1, 5, 6, 2),
+            (2, 6, 7, 3),
+            (3, 7, 4, 0),
+        ]
+        for idxs in faces_idx:
+            bm.faces.new([verts[i] for i in idxs])
+        self._finish_src(bm, bevel, segs)
+        self._ingest(bm, mat, uv_scale)
+
+    def cylinder(self, center, radius, height, mat, segments=12, axis="Y", bevel=0.0, segs=1, uv_scale=1.0, cap_ends=True):
+        if radius <= 0 or height <= 0:
+            return
+        bm = bmesh.new()
+        bmesh.ops.create_cone(
+            bm,
+            cap_ends=cap_ends,
+            cap_tris=False,
+            segments=max(3, int(segments)),
+            radius1=radius,
+            radius2=radius,
+            depth=height,
+        )
+        if axis == "X":
+            bmesh.ops.rotate(bm, verts=bm.verts, cent=Vector((0, 0, 0)), matrix=Matrix.Rotation(math.pi * 0.5, 4, "Y"))
+        elif axis == "Z":
+            bmesh.ops.rotate(bm, verts=bm.verts, cent=Vector((0, 0, 0)), matrix=Matrix.Rotation(math.pi * 0.5, 4, "X"))
+        elif axis != "Y":
+            raise ValueError(axis)
+        # create_cone is Z-up in Blender, which is already Unity-Y after export
+        # when axis == 'Y'. Rotations above are in Blender space and match
+        # Unity X / Unity Z because of the axis map (see file header).
+        bmesh.ops.translate(bm, verts=bm.verts, vec=Vector(unity_to_blender(*center)))
+        self._finish_src(bm, bevel, segs)
+        self._ingest(bm, mat, uv_scale)
+
+    def cone(self, center, radius1, radius2, height, mat, segments=12, axis="Y", uv_scale=1.0):
+        bm = bmesh.new()
+        bmesh.ops.create_cone(
+            bm,
+            cap_ends=True,
+            cap_tris=False,
+            segments=max(3, int(segments)),
+            radius1=radius1,
+            radius2=radius2,
+            depth=height,
+        )
+        if axis == "X":
+            bmesh.ops.rotate(bm, verts=bm.verts, cent=Vector((0, 0, 0)), matrix=Matrix.Rotation(math.pi * 0.5, 4, "Y"))
+        elif axis == "Z":
+            bmesh.ops.rotate(bm, verts=bm.verts, cent=Vector((0, 0, 0)), matrix=Matrix.Rotation(math.pi * 0.5, 4, "X"))
+        bmesh.ops.translate(bm, verts=bm.verts, vec=Vector(unity_to_blender(*center)))
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        self._ingest(bm, mat, uv_scale)
+
+    def sphere(self, center, radius, mat, segments=12, uv_scale=1.0):
+        bm = bmesh.new()
+        seg = max(4, int(segments))
+        bmesh.ops.create_uvsphere(bm, u_segments=seg, v_segments=max(4, seg // 2), radius=radius)
+        bmesh.ops.translate(bm, verts=bm.verts, vec=Vector(unity_to_blender(*center)))
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        self._ingest(bm, mat, uv_scale)
+
+    def torus(self, center, major, minor, mat, major_seg=16, minor_seg=8, uv_scale=1.0):
+        """Horizontal ring (rim) in the Unity XZ plane."""
+        bm = bmesh.new()
+        rings = []
+        for i in range(major_seg):
+            a = 2.0 * math.pi * i / major_seg
+            ca, sa = math.cos(a), math.sin(a)
+            ring = []
+            for j in range(minor_seg):
+                b = 2.0 * math.pi * j / minor_seg
+                rad = major + minor * math.cos(b)
+                ux = center[0] + rad * ca
+                uy = center[1] + minor * math.sin(b)
+                uz = center[2] + rad * sa
+                ring.append(bm.verts.new(unity_to_blender(ux, uy, uz)))
+            rings.append(ring)
+        for i in range(major_seg):
+            ni = (i + 1) % major_seg
+            for j in range(minor_seg):
+                nj = (j + 1) % minor_seg
+                bm.faces.new((rings[i][j], rings[ni][j], rings[ni][nj], rings[i][nj]))
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        self._ingest(bm, mat, uv_scale)
+
+    def pipe(self, a, b, radius, mat, segments=8, bevel=0.0, segs=0, uv_scale=1.0):
+        a = Vector(a)
+        b = Vector(b)
+        delta = b - a
+        length = delta.length
+        if length < 1e-5 or radius <= 0:
+            return
+        direction = delta / length
+        tmp = Vector((0.0, 0.0, 1.0)) if abs(direction.z) < 0.85 else Vector((1.0, 0.0, 0.0))
+        x_axis = direction.cross(tmp).normalized()
+        z_axis = x_axis.cross(direction).normalized()
+        bm = bmesh.new()
+        rings = []
+        steps = 2
+        for s in range(steps):
+            t = -0.5 + s
+            origin = (a + b) * 0.5 + direction * (length * t)
+            ring = []
+            for i in range(segments):
+                ang = 2.0 * math.pi * i / segments
+                radial = x_axis * (math.cos(ang) * radius) + z_axis * (math.sin(ang) * radius)
+                p = origin + radial
+                ring.append(bm.verts.new(unity_to_blender(p.x, p.y, p.z)))
+            rings.append(ring)
+        for i in range(segments):
+            ni = (i + 1) % segments
+            bm.faces.new((rings[0][i], rings[0][ni], rings[1][ni], rings[1][i]))
+        # caps
+        bm.faces.new(list(reversed(rings[0])))
+        bm.faces.new(rings[1])
+        self._finish_src(bm, bevel, segs)
+        self._ingest(bm, mat, uv_scale)
+
+    def blob(self, spheres, mat, voxel=0.12):
+        """Union of (center, radius) spheres via a voxel remesh. One clean canopy."""
+        src = bmesh.new()
+        for center, radius in spheres:
+            tmp = bmesh.new()
+            seg = 10 if voxel < 0.15 else 6
+            bmesh.ops.create_uvsphere(tmp, u_segments=seg, v_segments=max(4, seg // 2), radius=radius)
+            bmesh.ops.translate(tmp, verts=tmp.verts, vec=Vector(unity_to_blender(*center)))
+            vmap = {v: src.verts.new(v.co) for v in tmp.verts}
+            src.verts.index_update()
+            for f in tmp.faces:
+                try:
+                    src.faces.new([vmap[v] for v in f.verts])
+                except ValueError:
+                    pass
+            tmp.free()
+        me = bpy.data.meshes.new("blob")
+        src.to_mesh(me)
+        src.free()
+        obj = bpy.data.objects.new("blob", me)
+        bpy.context.scene.collection.objects.link(obj)
+        mod = obj.modifiers.new("Remesh", "REMESH")
+        mod.mode = "VOXEL"
+        mod.voxel_size = voxel
+        mod.use_smooth_shade = True
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+        bpy.ops.object.modifier_apply(modifier="Remesh")
+        smooth = obj.modifiers.new("Smooth", "SMOOTH")
+        smooth.iterations = 4
+        bpy.ops.object.modifier_apply(modifier="Smooth")
+        out = bmesh.new()
+        out.from_mesh(obj.data)
+        bpy.data.objects.remove(obj, do_unlink=True)
+        bpy.data.meshes.remove(me)
+        bmesh.ops.recalc_face_normals(out, faces=out.faces)
+        self._ingest(out, mat, 1.0)
+
+    def text(self, body, location, size, mat, extrude=0.008, yaw=0.0):
+        """Centered text standing in the Unity XY plane, extruded toward +Z, then yawed."""
+        curve = bpy.data.curves.new("LibText", "FONT")
+        curve.body = body
+        curve.align_x = "CENTER"
+        curve.align_y = "CENTER"
+        curve.size = size
+        curve.extrude = extrude
+        curve.resolution_u = 2
+        obj = bpy.data.objects.new("LibText", curve)
+        bpy.context.scene.collection.objects.link(obj)
+        bpy.context.view_layer.objects.active = obj
+        obj.select_set(True)
+        bpy.ops.object.convert(target="MESH")
+        me = obj.data
+        a = math.radians(yaw)
+        ca, sa = math.cos(a), math.sin(a)
+        bm = bmesh.new()
+        vmap = []
+        for v in me.vertices:
+            x, y, z = v.co.x, v.co.y, v.co.z
+            xr = x * ca + z * sa
+            zr = -x * sa + z * ca
+            u = (xr + location[0], y + location[1], zr + location[2])
+            vmap.append(bm.verts.new(unity_to_blender(*u)))
+        for poly in me.polygons:
+            try:
+                bm.faces.new([vmap[i] for i in poly.vertices])
+            except ValueError:
+                continue
+        bpy.data.objects.remove(obj, do_unlink=True)
+        bpy.data.meshes.remove(me)
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        self._ingest(bm, mat, 1.0)
+
+    def mesh(self, verts, faces, mat, uv_scale=1.0, bevel=0.0, segs=0):
+        """verts are Unity-space. faces are index tuples (quads preferred)."""
+        bm = bmesh.new()
+        bverts = [bm.verts.new(unity_to_blender(*v)) for v in verts]
+        for f in faces:
+            try:
+                bm.faces.new([bverts[i] for i in f])
+            except ValueError:
+                continue
+        self._finish_src(bm, bevel, segs)
+        self._ingest(bm, mat, uv_scale)
+
+    def arc_pipe(self, center, radius, height0, height1, a0, a1, tube, mat, segments=8, steps=8):
+        """Tube along a horizontal arc. Angles in degrees, 0 = +Z, 90 = +X."""
+        pts = []
+        for i in range(steps + 1):
+            t = i / steps
+            ang = math.radians(a0 + (a1 - a0) * t)
+            y = height0 + (height1 - height0) * t
+            # 0 deg faces +Z, 90 deg faces +X (Unity yaw).
+            x = center[0] + radius * math.sin(ang)
+            z = center[2] + radius * math.cos(ang)
+            pts.append((x, y, z))
+        for i in range(steps):
+            self.pipe(pts[i], pts[i + 1], tube, mat, segments=segments)
+
+    def prepare(self):
+        bmesh.ops.remove_doubles(self.bm, verts=self.bm.verts, dist=0.0004)
+        bmesh.ops.recalc_face_normals(self.bm, faces=self.bm.faces)
+        for e in self.bm.edges:
+            if len(e.link_faces) == 2:
+                e.smooth = e.calc_face_angle(0.0) < math.radians(48)
+            else:
+                e.smooth = False
+        for f in self.bm.faces:
+            f.smooth = True
+        self._assign_uvs()
+
+    def _assign_uvs(self):
+        for f in self.bm.faces:
+            scale = f[self.scale_layer] or 1.0
+            n = f.normal
+            nu = Vector(blender_to_unity(n.x, n.y, n.z))
+            if nu.length:
+                nu.normalize()
+            for loop in f.loops:
+                c = loop.vert.co
+                u = blender_to_unity(c.x, c.y, c.z)
+                if abs(nu.y) >= abs(nu.x) and abs(nu.y) >= abs(nu.z):
+                    loop[self.uv].uv = (u[0] * scale, u[2] * scale)
+                elif abs(nu.x) >= abs(nu.z):
+                    loop[self.uv].uv = (u[2] * scale, u[1] * scale)
+                else:
+                    loop[self.uv].uv = (u[0] * scale, u[1] * scale)
+
+    def tri_count(self):
+        n = 0
+        for f in self.bm.faces:
+            n += max(0, len(f.verts) - 2)
+        return n
+
+    def unity_bounds(self):
+        if not self.bm.verts:
+            return (0, 0, 0), (0, 0, 0)
+        xs, ys, zs = [], [], []
+        for v in self.bm.verts:
+            u = blender_to_unity(v.co.x, v.co.y, v.co.z)
+            xs.append(u[0])
+            ys.append(u[1])
+            zs.append(u[2])
+        return (min(xs), min(ys), min(zs)), (max(xs), max(ys), max(zs))
+
+
+class Asset(object):
+    def __init__(self, name, category, blurb):
+        self.name = name
+        self.category = category
+        self.blurb = blurb
+        self.lods = {}
+        self._geo = None
+        self.colliders = []
+        self.climbable = False
+        self.vaultable = False
+        self.vault_height = 0.0
+        self.climb_note = ""
+        self.vault_note = ""
+        self.allow_below = False
+        self.warnings = []
+
+    def begin(self, lod):
+        self._geo = Geo(lod)
+        return self._geo
+
+    def end(self):
+        g = self._geo
+        g.prepare()
+        self.lods[g.lod] = g
+        self._geo = None
+
+    def box(self, name, center, size, euler=(0, 0, 0), approx=False):
+        col = {
+            "name": name, "type": "box", "center": list(center), "size": list(size), "euler": list(euler),
+        }
+        if approx:
+            # A thin slab across a grille or chain-link sheet. Holes are not a passage.
+            col["approx"] = True
+        self.colliders.append(col)
+
+    def capsule(self, name, center, radius, height, direction=1):
+        # Unity capsule height includes both hemispheres and must be >= 2r.
+        height = max(height, radius * 2.0 + 0.001)
+        self.colliders.append({
+            "name": name, "type": "capsule", "center": list(center),
+            "radius": float(radius), "height": float(height), "direction": int(direction),
+        })
+
+    def sphere(self, name, center, radius):
+        self.colliders.append({
+            "name": name, "type": "sphere", "center": list(center), "radius": float(radius),
+        })
+
+
+def _collider_samples(col, n_ring=8):
+    """Surface samples only. Interior points false-trigger on nearby parts."""
+    c = Vector(col["center"])
+    if col["type"] == "box":
+        sx, sy, sz = [v * 0.5 for v in col["size"]]
+        q = unity_euler_quat(col.get("euler") or (0, 0, 0))
+        pts = []
+        for x in (-sx, sx):
+            for y in (-sy, 0.0, sy):
+                for z in (-sz, 0.0, sz):
+                    r = _apply_unity_quat(q, (x, y, z))
+                    pts.append((c.x + r[0], c.y + r[1], c.z + r[2]))
+        for y in (-sy, sy):
+            for z in (-sz, sz):
+                r = _apply_unity_quat(q, (0.0, y, z))
+                pts.append((c.x + r[0], c.y + r[1], c.z + r[2]))
+        return pts
+    if col["type"] == "sphere":
+        r = col["radius"]
+        return [
+            (c.x + r, c.y, c.z), (c.x - r, c.y, c.z),
+            (c.x, c.y + r, c.z), (c.x, c.y - r, c.z),
+            (c.x, c.y, c.z + r), (c.x, c.y, c.z - r),
+        ]
+    r = col["radius"]
+    h = col["height"]
+    d = col["direction"]
+    axis = [(1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)][d]
+    half = max(0.0, h * 0.5 - r)
+    pts = []
+    for sign in (-1.0, 1.0):
+        origin = (
+            c.x + axis[0] * (half + r) * sign,
+            c.y + axis[1] * (half + r) * sign,
+            c.z + axis[2] * (half + r) * sign,
+        )
+        pts.append(origin)
+        ring_o = (
+            c.x + axis[0] * half * sign,
+            c.y + axis[1] * half * sign,
+            c.z + axis[2] * half * sign,
+        )
+        for i in range(n_ring):
+            ang = 2.0 * math.pi * i / n_ring
+            if d == 1:
+                ox, oy, oz = math.cos(ang) * r, 0.0, math.sin(ang) * r
+            elif d == 0:
+                ox, oy, oz = 0.0, math.cos(ang) * r, math.sin(ang) * r
+            else:
+                ox, oy, oz = math.cos(ang) * r, math.sin(ang) * r, 0.0
+            pts.append((ring_o[0] + ox, ring_o[1] + oy, ring_o[2] + oz))
+    return pts
+
+
+def _point_inside(bvh, blender_point):
+    origin = Vector(blender_point)
+    direction = Vector((1.0, 0.17, 0.09)).normalized()
+    hits = 0
+    for _ in range(12):
+        loc, _normal, _idx, _dist = bvh.ray_cast(origin, direction)
+        if loc is None:
+            break
+        hits += 1
+        origin = loc + direction * 0.0008
+    return hits % 2 == 1
+
+
+def validate_colliders(asset, tolerance=0.03):
+    geo = asset.lods.get(0)
+    if geo is None or not geo.bm.verts:
+        return
+    bvh = BVHTree.FromBMesh(geo.bm)
+    worst = 0.0
+    worst_name = ""
+    for col in asset.colliders:
+        if col.get("approx"):
+            continue
+        center = Vector(col["center"])
+        for p in _collider_samples(col):
+            # Step inward so a collider that kisses the surface still counts as inside.
+            inward = Vector(p) + (center - Vector(p)).normalized() * min(0.008, tolerance)
+            bp = Vector(unity_to_blender(inward.x, inward.y, inward.z))
+            if _point_inside(bvh, bp):
+                continue
+            loc, _normal, _idx, dist = bvh.find_nearest(bp, 4.0)
+            outside = dist if loc is not None else 1.0
+            if outside > worst:
+                worst = outside
+                worst_name = col["name"]
+            if outside > tolerance:
+                asset.warnings.append(
+                    "%s sticks out %.1f cm (limit %.1f cm)" % (col["name"], outside * 100.0, tolerance * 100.0)
+                )
+                break
+    asset.collider_slack_cm = round(worst * 100.0, 2)
+    asset.collider_slack_name = worst_name
+
+
+def _reset_scene():
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+
+
+def _ensure_materials():
+    for name, (color, metal, rough) in PALETTE.items():
+        mat = bpy.data.materials.get(name)
+        if mat is None:
+            mat = bpy.data.materials.new(name)
+        mat.use_nodes = True
+        mat.diffuse_color = (color[0], color[1], color[2], 1.0)
+        nt = mat.node_tree
+        bsdf = nt.nodes.get("Principled BSDF")
+        if bsdf is None:
+            continue
+        bsdf.inputs["Base Color"].default_value = (color[0], color[1], color[2], 1.0)
+        bsdf.inputs["Metallic"].default_value = metal
+        bsdf.inputs["Roughness"].default_value = 1.0 - rough
+        img_path = os.path.join(TEX_DIR, name + ".png")
+        if name in TEXTURED and os.path.isfile(img_path):
+            tex = nt.nodes.new("ShaderNodeTexImage")
+            tex.image = bpy.data.images.load(img_path)
+            tex.interpolation = "Smart"
+            nt.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+
+
+def _object_from_geo(geo, name):
+    me = bpy.data.meshes.new(name)
+    geo.bm.to_mesh(me)
+    for slot in geo.mats:
+        m = bpy.data.materials.get(slot)
+        me.materials.append(m if m else bpy.data.materials.new(slot))
+    # Sharp edges from the bmesh smooth flags survive to_mesh as use_edge_sharp
+    # when the mesh has custom split normals disabled. Mark them explicitly.
+    obj = bpy.data.objects.new(name, me)
+    bpy.context.scene.collection.objects.link(obj)
+    return obj
+
+
+def export_fbx(asset):
+    _reset_scene()
+    _ensure_materials()
+    folder = os.path.join(LIB_ROOT, asset.category)
+    os.makedirs(folder, exist_ok=True)
+    objects = []
+    for lod in sorted(asset.lods):
+        obj = _object_from_geo(asset.lods[lod], "LOD%d" % lod)
+        objects.append(obj)
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in objects:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = objects[0]
+    path = os.path.join(folder, asset.name + ".fbx")
+    bpy.ops.export_scene.fbx(
+        filepath=path,
+        use_selection=True,
+        apply_unit_scale=True,
+        apply_scale_options="FBX_SCALE_NONE",
+        bake_space_transform=True,
+        axis_forward="-Z",
+        axis_up="Y",
+        mesh_smooth_type="EDGE",
+        use_mesh_modifiers=True,
+        add_leaf_bones=False,
+        object_types={"MESH"},
+        use_triangles=False,
+        path_mode="AUTO",
+    )
+    return path
+
+
+def bounds_of(asset):
+    geo = asset.lods[0]
+    return geo.unity_bounds()
+
+
+def size_of(mn, mx):
+    return (mx[0] - mn[0], mx[1] - mn[1], mx[2] - mn[2])
+
+
+def manifest_entry(asset, fbx_names):
+    mn, mx = bounds_of(asset)
+    size = size_of(mn, mx)
+    lods = []
+    for lod in sorted(asset.lods):
+        g = asset.lods[lod]
+        lods.append({
+            "lod": lod,
+            "tris": g.tri_count(),
+            "materials": list(g.mats),
+            "mesh": "LOD%d" % lod,
+            "fileID": mesh_file_id("LOD%d" % lod),
+        })
+    return {
+        "name": asset.name,
+        "category": asset.category,
+        "blurb": asset.blurb,
+        "size": [round(size[0], 3), round(size[1], 3), round(size[2], 3)],
+        "min": [round(mn[0], 3), round(mn[1], 3), round(mn[2], 3)],
+        "max": [round(mx[0], 3), round(mx[1], 3), round(mx[2], 3)],
+        "lods": lods,
+        "colliders": asset.colliders,
+        "climbable": asset.climbable,
+        "vaultable": asset.vaultable,
+        "vaultHeight": asset.vault_height,
+        "climbNote": asset.climb_note,
+        "vaultNote": asset.vault_note,
+        "warnings": asset.warnings,
+        "fbxNames": fbx_names,
+        "slackCm": getattr(asset, "collider_slack_cm", 0),
+    }
+
+
+def fbx_model_names(path):
+    data = open(path, "rb").read()
+    names = []
+    # Model display names show up as printable tokens. Keep LOD* hits.
+    token = b""
+    found = []
+    for byte in data:
+        if 32 <= byte < 127:
+            token += bytes((byte,))
+        else:
+            if token.startswith(b"LOD") and len(token) <= 8:
+                found.append(token.decode())
+            token = b""
+    # unique preserve order
+    for n in found:
+        if n not in names:
+            names.append(n)
+    return names
+
+
+def check_pivot(asset):
+    geo = asset.lods[0]
+    xs, zs = [], []
+    ys = []
+    for v in geo.bm.verts:
+        u = blender_to_unity(v.co.x, v.co.y, v.co.z)
+        ys.append(u[1])
+        if u[1] < 0.25:
+            xs.append(u[0])
+            zs.append(u[2])
+    if xs and not getattr(asset, "loose_pivot", False):
+        cx = (min(xs) + max(xs)) * 0.5
+        cz = (min(zs) + max(zs)) * 0.5
+        if abs(cx) > 0.05 or abs(cz) > 0.05:
+            asset.warnings.append("ground footprint off center by (%.3f, %.3f)" % (cx, cz))
+    if ys:
+        if not asset.allow_below and min(ys) < -0.02:
+            asset.warnings.append("mesh extends %.3f m below the ground pivot" % (-min(ys)))
+        if not asset.allow_below and not getattr(asset, "allow_float", False) and min(ys) > 0.03:
+            asset.warnings.append("mesh floats %.3f m above the ground pivot" % min(ys))
+
+
+# --- textures --------------------------------------------------------------
+
+def _hash01(ix, iy, salt):
+    n = (ix * 374761393 + iy * 668265263 + salt * 1442695041) & 0xFFFFFFFF
+    n = (n ^ (n >> 13)) * 1274126177 & 0xFFFFFFFF
+    n = n ^ (n >> 16)
+    return (n & 0xFFFF) / 65535.0
+
+
+def _value_noise(x, y, salt=0):
+    x0, y0 = math.floor(x), math.floor(y)
+    fx, fy = x - x0, y - y0
+    fx = fx * fx * (3 - 2 * fx)
+    fy = fy * fy * (3 - 2 * fy)
+    v00 = _hash01(x0, y0, salt)
+    v10 = _hash01(x0 + 1, y0, salt)
+    v01 = _hash01(x0, y0 + 1, salt)
+    v11 = _hash01(x0 + 1, y0 + 1, salt)
+    return (v00 * (1 - fx) + v10 * fx) * (1 - fy) + (v01 * (1 - fx) + v11 * fx) * fy
+
+
+def _save_image(name, w, h, fn):
+    os.makedirs(TEX_DIR, exist_ok=True)
+    path = os.path.join(TEX_DIR, name + ".png")
+    img = bpy.data.images.new(name, w, h, alpha=False, float_buffer=False)
+    buf = [0.0] * (w * h * 4)
+    for y in range(h):
+        for x in range(w):
+            r, g, b = fn(x, y, w, h)
+            i = ((y * w) + x) * 4
+            buf[i] = r
+            buf[i + 1] = g
+            buf[i + 2] = b
+            buf[i + 3] = 1.0
+    img.pixels.foreach_set(buf)
+    img.filepath_raw = path
+    img.file_format = "PNG"
+    img.save()
+    bpy.data.images.remove(img)
+    return path
+
+
+def _brick_pixel(x, y, w, h):
+    # 1m tile, 4 bricks across, 8 courses. Running bond.
+    u = x / w
+    v = y / h
+    course = v * 8.0
+    ci = math.floor(course)
+    fy = course - ci
+    row_off = 0.5 if (ci % 2) else 0.0
+    u2 = (u + row_off) % 1.0
+    fx = (u2 * 4.0) % 1.0
+    mortar = fy < 0.12 or fy > 0.96 or fx < 0.06 or fx > 0.97
+    n = _value_noise(u * 6.0, v * 10.0, 3)
+    if mortar:
+        base = 0.62 + n * 0.06
+        return (base, base * 0.98, base * 0.94)
+    tint = 0.78 + n * 0.28
+    # warm brick, slight per-brick shift
+    brick_n = _hash01(math.floor(u2 * 4.0), ci, 9)
+    r = (0.55 + brick_n * 0.18) * tint
+    g = (0.24 + brick_n * 0.06) * tint
+    b = (0.16 + brick_n * 0.03) * tint
+    return (r, g, b)
+
+
+def _asphalt_pixel(x, y, w, h):
+    u = x / w
+    v = y / h
+    n = _value_noise(u * 18.0, v * 18.0, 1)
+    n2 = _value_noise(u * 60.0, v * 60.0, 2)
+    speckle = 1.0 if _hash01(x, y, 5) > 0.92 else 0.0
+    vcol = 0.18 + n * 0.08 + n2 * 0.05 + speckle * 0.25
+    return (vcol, vcol, vcol * 1.02)
+
+
+def _wood_pixel(x, y, w, h, dark=False):
+    u = x / w
+    v = y / h
+    board = v * 6.0
+    bi = math.floor(board)
+    fy = board - bi
+    gap = fy < 0.06 or fy > 0.97
+    grain = _value_noise(u * 2.0 + bi * 0.17, v * 28.0, 4)
+    knot = _value_noise(u * 8.0, v * 8.0, 8 + bi)
+    if dark:
+        r, g, b = 0.32, 0.20, 0.11
+    else:
+        r, g, b = 0.55, 0.36, 0.20
+    if gap:
+        return (r * 0.45, g * 0.45, b * 0.45)
+    m = 0.82 + grain * 0.28
+    if knot > 0.82:
+        m *= 0.75
+    return (r * m, g * m, b * m)
+
+
+def _concrete_pixel(x, y, w, h):
+    u = x / w
+    v = y / h
+    n = _value_noise(u * 10.0, v * 10.0, 6)
+    n2 = _value_noise(u * 40.0, v * 40.0, 7)
+    pit = 0.85 if _hash01(x // 2, y // 2, 11) > 0.985 else 1.0
+    vcol = (0.72 + n * 0.08 + n2 * 0.04) * pit
+    return (vcol, vcol * 0.995, vcol * 0.97)
+
+
+def _siding_pixel(x, y, w, h):
+    u = x / w
+    v = y / h
+    course = v * 7.0
+    fy = course - math.floor(course)
+    shadow = 0.55 if fy < 0.08 else 1.0
+    n = _value_noise(u * 4.0, v * 3.0, 12)
+    base = 0.82 + n * 0.06
+    return (base * shadow, base * shadow, base * 0.98 * shadow)
+
+
+def _roof_pixel(x, y, w, h):
+    u = x / w
+    v = y / h
+    course = v * 5.0
+    ci = math.floor(course)
+    fy = course - ci
+    off = 0.5 if ci % 2 else 0.0
+    fx = ((u + off) * 6.0) % 1.0
+    edge = fy < 0.16 or fx < 0.04 or fx > 0.96
+    n = _value_noise(u * 8.0, v * 8.0, 14)
+    if edge:
+        vcol = 0.22 + n * 0.04
+    else:
+        vcol = 0.30 + n * 0.06
+    return (vcol, vcol * 1.01, vcol * 1.03)
+
+
+def _soil_pixel(x, y, w, h):
+    u = x / w
+    v = y / h
+    n = _value_noise(u * 12.0, v * 12.0, 15)
+    r = 0.26 + n * 0.08
+    g = 0.16 + n * 0.04
+    b = 0.08 + n * 0.02
+    return (r, g, b)
+
+
+def generate_textures():
+    _reset_scene()
+    w = h = 256
+    _save_image("Lib_Brick", w, h, _brick_pixel)
+    _save_image("Lib_Asphalt", w, h, _asphalt_pixel)
+    _save_image("Lib_Wood", w, h, lambda x, y, W, H: _wood_pixel(x, y, W, H, False))
+    _save_image("Lib_WoodDark", w, h, lambda x, y, W, H: _wood_pixel(x, y, W, H, True))
+    _save_image("Lib_Concrete", w, h, _concrete_pixel)
+    _save_image("Lib_Siding", w, h, _siding_pixel)
+    _save_image("Lib_Roof", w, h, _roof_pixel)
+    _save_image("Lib_Soil", w, h, _soil_pixel)
+
+
+def load_asset_modules():
+    if ROOT not in sys.path:
+        sys.path.insert(0, ROOT)
+    skip = {"_common", "build_all", "render_pass1", "write_unity", "_kit"}
+    names = []
+    for fn in sorted(os.listdir(ROOT)):
+        if not fn.endswith(".py"):
+            continue
+        stem = fn[:-3]
+        if stem in skip or stem.startswith("_"):
+            continue
+        names.append(stem)
+    import importlib
+    for stem in names:
+        importlib.import_module(stem)
+    return names
