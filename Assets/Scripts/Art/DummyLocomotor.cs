@@ -15183,7 +15183,8 @@ namespace Tag.Art
             if (_mantleExitSnap && _mantleExitIn < 0.98f)
             {
                 // The vault eases into the gait, a crouch, or the land absorb.
-                // One smoothstep. A wall climb and a wall-jump push-off keep their poses.
+                // MantleLand stays on this path. The bones use the longer visual window.
+                PoseHandoff.MantleLand(_mantleExitIn, out _, out _);
                 float intoMantleGround = Handoff2Feel.VaultOutOpen(_mantleExitIn);
                 _uaLT = Quaternion.Slerp(_mantleExitUaL, _uaLT, intoMantleGround);
                 _uaRT = Quaternion.Slerp(_mantleExitUaR, _uaRT, intoMantleGround);
