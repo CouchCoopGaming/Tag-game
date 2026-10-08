@@ -237,6 +237,15 @@ The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a h
 - A hard stick reversal used to flip the stride in one frame, about 83° at a sprint. The legs now cross over about a seventh of a second. You still turn with the camera immediately. Try it: sprint, then snap the stick backward.
 - A punch or a tag while you run leans the chest so the fist comes forward about 13 cm. Standing still keeps the old strike. Reach and the lunge are unchanged. Try it: sprint and punch, then punch while you stand.
 
+## Motion, tenth pass
+
+Running, starting, stopping, turning, idling, crouch-walking, and sliding ease instead of snapping. Speeds and the slide decay are the same.
+
+- A sprint swing used to kink the shoulder about 52° in one frame. The arms now swing opposite the legs, about 46° at a sprint, and the biggest step is about 29°. The chest leans forward once you are up to speed, and the head stays steadier than the hips. The feet still plant. Try it: sprint a straight line and watch the arms and the head.
+- Starting used to throw the chest forward on the first frame. It now leans in over one step, then settles. Stopping plants the lead foot and eases into idle instead of cutting the stride off. Try it: stand, sprint, then let go of the stick.
+- A turn leans with how fast you turn. A sharp turn while walking eases the outside foot around. Idle still breathes, shifts weight, and looks around. Crouch-walk stays a low stride at the same 3.68. Try it: walk a tight circle, stand still for a few seconds, then crouch-walk.
+- Sliding in and out used to drop the body in one hard step. It now eases down and back up. How fast the slide slows down is unchanged. Try it: sprint, slide, then come back up to a run.
+
 ## Animation exits and the landing roll
 
 Each move now has a short recovery you can see as it ends. The body eases back into the run, the idle, or the air pose. Jump, slide, punch, dash, or lunge peels that recovery off in about six hundredths of a second, and the new move shows the same frame. Nothing here changes speed, coyote, cling, or the slide.
