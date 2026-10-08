@@ -844,6 +844,54 @@ namespace Tag.Level
             return WriteMenuPass(folder, poses, false, true);
         }
 
+        /// <summary>
+        /// Pass 28 captures. The title has no seated runners. RESULTS keeps the
+        /// same four looks. Chest close-ups use the match accent on Panel_Chest.
+        /// </summary>
+        public static string WritePass28(string folder, string poses)
+        {
+            if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(poses)) return "pass28 missing folder";
+            Directory.CreateDirectory(folder);
+            List<Tri> park = Gather(ParkArena.Mega);
+            LiftChaseGround(park);
+            float mapW = MegaParkP1Layout.MapW;
+            float mapD = MegaParkP1Layout.MapD;
+            Sun(out float lsx, out float lsy, out float lsz);
+            float half = Math.Max(mapW, mapD) * 0.70f + 28f;
+            var shadow = new float[768 * 768];
+            for (int i = 0; i < shadow.Length; i++) shadow[i] = -1e20f;
+            float sox = mapW * 0.5f;
+            float soy = 6f;
+            float soz = mapD * 0.5f;
+            Basis(lsx, lsy, lsz, out float srx, out float sry, out float srz, out float sux, out float suy, out float suz);
+            for (int i = 0; i < park.Count; i++)
+            {
+                if (park[i].A < 0.99f) continue;
+                ShadowTri(park[i], shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            }
+            var clear = new List<Tri>(park.Count);
+            clear.AddRange(park);
+            ChasePng(clear, Path.Combine(folder, "title_clear.png"), 1920, 1080,
+                78f, 7f, 4f, 78f, 1.4f, 16f,
+                shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half, 30f);
+            WritePass26Results(folder, poses, park, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            WriteChest(folder, poses, 1, "chest_blue.png");
+            WriteChest(folder, poses, 3, "chest_lavender.png");
+            return "pass28 " + folder;
+        }
+
+        static void WriteChest(string folder, string poses, int seat, string name)
+        {
+            var tris = new List<Tri>(8);
+            AddBox(tris, 0f, 1.3f, -2.4f, 28f, 18f, 0.3f, 8f / 255f, 16f / 255f, 36f / 255f);
+            AddBox(tris, 0f, -0.02f, 0.15f, 2.4f, 0.06f, 2.2f, 183f / 255f, 164f / 255f, 114f / 255f);
+            AddPosed(tris, Path.Combine(poses, "ready.tris"), 0f, 0.02f, 0f, 12f, seat, false);
+            var shade = new float[16 * 16];
+            for (int s = 0; s < shade.Length; s++) shade[s] = -1e20f;
+            PortraitPng(tris, Path.Combine(folder, name), 720, 900,
+                0.35f, 1.42f, 2.15f, 0f, 1.22f, 0.08f, shade, 26f);
+        }
+
         static string WriteMenuPass(string folder, string poses, bool slotCards, bool overlap)
         {
             if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(poses)) return "pass missing folder";

@@ -267,6 +267,7 @@ namespace Tag.Ui.Menu
             _holdResults = false;
             _fromResults = false;
             _pauseChild = false;
+            CouchPlay.Release();
             if (FrontSession.Armed || FrontSession.Screen != FrontScreen.Title)
                 FrontSession.ShowTitle();
             MenuFlow.Clear();
@@ -2592,7 +2593,7 @@ namespace Tag.Ui.Menu
                 PaintRuleRows();
                 return;
             }
-            if (_focus == 10)
+            if (_focus == RuleBook.Arena)
             {
                 MenuAudio.Confirm();
                 MenuMatch.RememberRules();
@@ -2600,7 +2601,7 @@ namespace Tag.Ui.Menu
                 ShowArena();
                 return;
             }
-            if (_focus >= 11)
+            if (_focus >= RuleBook.Back)
             {
                 MenuAudio.Back();
                 GoBack();

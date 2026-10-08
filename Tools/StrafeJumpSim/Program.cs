@@ -43,6 +43,22 @@ static class Program
             Console.WriteLine(Tag.Level.ArenaStill.WritePass27(raw, poses));
             return 0;
         }
+        if (args != null && args.Length > 0 && args[0] == "--pass28")
+        {
+            string repo = RepoRoot();
+            string raw = args.Length > 1 ? args[1] : "/tmp/pass28";
+            string poses = Path.Combine(raw, "poses");
+            Tag.Ui.Menu.MenuNoClip.ExportPoses(repo, poses);
+            Console.WriteLine(Tag.Level.ArenaStill.WritePass28(raw, poses));
+            return 0;
+        }
+        if (args != null && args.Length > 0 && args[0] == "--handoff")
+        {
+            string repo = RepoRoot();
+            Console.WriteLine(Tag.Ui.Menu.MenuHandoff.HandoffLine(repo));
+            Console.WriteLine(Tag.Ui.Menu.MenuHandoff.ResultsLine(repo));
+            return 0;
+        }
         if (args != null && args.Length > 0 && args[0] == "--no-clip")
         {
             string clipLine;
@@ -1028,6 +1044,16 @@ static class Program
         if (!flow.Ok)
         {
             Console.Error.WriteLine(flow.Failure);
+            return 1;
+        }
+        string handoff = Tag.Ui.Menu.MenuHandoff.HandoffLine(RepoRoot());
+        Console.WriteLine(handoff);
+        string resultsHandoff = Tag.Ui.Menu.MenuHandoff.ResultsLine(RepoRoot());
+        Console.WriteLine(resultsHandoff);
+        if (handoff != "handoff mode=ok rules=ok arena=ok"
+            || resultsHandoff != "results rematch=ok title=ok")
+        {
+            Console.Error.WriteLine("menu handoff missed");
             return 1;
         }
 

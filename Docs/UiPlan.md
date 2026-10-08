@@ -253,6 +253,18 @@ The 1.2% scale on the menu poses is gone. It cleared the overlap check by freezi
 
 The no-clip check no longer subtracts the rest-pose depth before the 0.5 cm limit. Every frame at 30 fps, a sink deeper than 0.5 cm fails, and joined neighbours are exempt only within 3 cm of the joint. That rule fails on all 1778 frames. The deepest sample on idle, ready, run, step, cheer, and slump is the same rest sink: UpperLegMesh_R inside PelvisMesh, 9.50 cm, 7.06 cm from the joint. PelvisMesh sits on DummyRoot. There is no separate Mesh_Hips. It is not the only rest overlap. The rest pose also sinks at the neck, the knee, the elbow, the wrist, the ankle, and the side panel into the upper arm, each farther than 3 cm from its joint and deeper than 0.5 cm. The live poses do not add a pair the rest pose does not already have. The trimmed-rig candidate owns that fix. The poses stay alive. The march opens the chest and sets the head back over it, and the stride still rocks. The title parade still wears the seat colors. A character card paints the selected look on the mannequin and names that look. The seat color stays on the card frame and the P badge. P3's card is Orange, and P4's card is Lavender, which is the body those seats wear in a match. The rail gap is still 56.93 cm. Mockups are in `Docs/UiStills/pass27/`.
 
+## Pass 28
+
+The no-clip rule is the same one as pass 27. Every frame at 30 fps, a sink deeper than 0.5 cm fails. Joined neighbours are exempt only within 3 cm of the joint. The rest-pose depth is not subtracted. The line adds `rigJoint` and `pose`. rigJoint is 26, the directed piece pairs that already fail at rest. pose counts a pair that fails on a live pose and did not fail at rest. A different shell of the same piece is not a new pair. pose is 0, so the live poses add no pairs. The rest overlaps stay, including the 9.50 cm hip sink, and the trimmed rig still owns that fix. The rail gap is still 56.93 cm.
+
+Mode and rules, and arena select, are played with the keyboard and again with a pad. Up and down walk every row. Left and right change every rule, both directions, and move across the four modes. Confirm and Start both commit. Confirm on Arena select opens the arena list. Back leaves. A short lobby cannot start a tag mode. Each park and Random are confirmed. The mode written is the value TagModeController reads from `Tag.SelectedMode`. The round length and round count are what ApplyRound receives, and the other rule fields survive the settings blob the scene loads. The arena is the id ParkArena.ApplySaved reads. The line is `handoff mode=ok rules=ok arena=ok`.
+
+Rematch keeps the four seats, their looks, and the arena. Main Menu opens the title and clears the seats. The line is `results rematch=ok title=ok`.
+
+The contrasting chest on Blue and on Lavender is the costume accent, not a swapped body slot. Panel_Chest, the hands, and the feet take the second color of the pair. Blue is Blue / Mint. Lavender is Lavender / Mint. The torso foam under that panel stays the body color. The match body uses that same pair.
+
+Mockups are in `Docs/UiStills/pass28/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

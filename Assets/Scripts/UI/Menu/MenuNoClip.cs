@@ -26,6 +26,12 @@ namespace Tag.Ui.Menu
         static int ForeignSamples;
         static bool RailKnown;
         static float RailClear;
+        static bool[] RestFail;
+        static bool[] PoseNew;
+        static int PairN;
+        static int RigJoint;
+        static int PosePairs;
+        static string PoseNote;
 
         /// <summary>
         /// True when every self fail is the hip shell inside an upper leg.
@@ -49,6 +55,12 @@ namespace Tag.Ui.Menu
             RestOverlapOnly = false;
             RailKnown = false;
             RailClear = 0f;
+            RestFail = null;
+            PoseNew = null;
+            PairN = 0;
+            RigJoint = 0;
+            PosePairs = 0;
+            PoseNote = "";
             var sw = System.Diagnostics.Stopwatch.StartNew();
             int screens = 0;
             int frames = 0;
@@ -89,6 +101,7 @@ namespace Tag.Ui.Menu
                 return false;
             }
 
+            CaptureRest(rig);
             var hit = new Hit();
             Title(rig, ref frames, ref fails, ref selfMax, ref worldMax, ref worstSelf, ref worstWorld, hit);
             screens++;
@@ -100,7 +113,7 @@ namespace Tag.Ui.Menu
             screens++;
             screens++;
             TitleRail(rig, ref fails, ref worldMax, ref worstWorld);
-            RestOverlapOnly = fails > 0 && ForeignSamples == 0 && worldMax <= Limit;
+            RestOverlapOnly = fails > 0 && ForeignSamples == 0 && worldMax <= Limit && PosePairs == 0;
             Finish(screens, frames, selfMax, worldMax, fails, out line);
             if (verbose || fails != 0)
             {
@@ -110,11 +123,14 @@ namespace Tag.Ui.Menu
                 for (int i = 0; i < poseName.Length; i++)
                     Console.Error.WriteLine("no-clip pose " + poseName[i] + " " + Cm(PoseAt(i)) + " " + (PoseWhere[i] ?? ""));
                 Console.Error.WriteLine("no-clip foreign=" + ForeignSamples.ToString(CultureInfo.InvariantCulture)
-                    + " rest-overlap-only=" + (RestOverlapOnly ? "yes" : "no"));
+                    + " rest-overlap-only=" + (RestOverlapOnly ? "yes" : "no")
+                    + " rigJoint=" + RigJoint.ToString(CultureInfo.InvariantCulture)
+                    + " pose=" + PosePairs.ToString(CultureInfo.InvariantCulture)
+                    + (PoseNote.Length == 0 ? "" : " " + PoseNote));
                 Console.Error.WriteLine("no-clip rays=" + RayTests.ToString(CultureInfo.InvariantCulture)
                     + " ms=" + sw.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture));
             }
-            return fails == 0;
+            return fails == 0 && PosePairs == 0;
         }
 
         static void Finish(int screens, int frames, float selfMax, float worldMax, int fails, out string line)
@@ -132,6 +148,81 @@ namespace Tag.Ui.Menu
                 + " slump=" + Cm(PoseAt(5));
             if (RailKnown)
                 line += " rail=" + Cm(RailClear);
+            line += " rigJoint=" + RigJoint.ToString(CultureInfo.InvariantCulture)
+                + " pose=" + PosePairs.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Directed piece pairs that already fail at the rest pose. rigJoint is
+        /// that count. pose is a pair that fails on a live frame and did not
+        /// fail at rest. A different shell of the same piece is not a new pair.
+        /// </summary>
+        static void CaptureRest(Rig rig)
+        {
+            PairN = rig.Pieces;
+            int n = PairN * PairN;
+            if (n < 1) n = 1;
+            RestFail = new bool[n];
+            PoseNew = new bool[n];
+            RigJoint = 0;
+            PosePairs = 0;
+            PoseNote = "";
+            var posed = new Posed(rig);
+            posed.Place(new Pose(), 0f, 0f, 0f);
+            for (int a = 0; a < PairN; a++)
+            {
+                for (int b = 0; b < PairN; b++)
+                {
+                    if (a == b) continue;
+                    if (!DirectedFails(posed, a, posed, b)) continue;
+                    RestFail[a * PairN + b] = true;
+                    RigJoint++;
+                }
+            }
+        }
+
+        static void NotePosePair(Posed src, int a, int b)
+        {
+            if (RestFail == null || PoseNew == null || PairN <= 0) return;
+            if (a < 0 || b < 0 || a >= PairN || b >= PairN) return;
+            int i = a * PairN + b;
+            if (RestFail[i] || PoseNew[i]) return;
+            PoseNew[i] = true;
+            PosePairs++;
+            if (PoseNote.Length > 180) return;
+            if (PoseNote.Length > 0) PoseNote += "; ";
+            PoseNote += src.Rig.Piece[a].Name + " in " + src.Rig.Piece[b].Name;
+        }
+
+        static bool DirectedFails(Posed src, int a, Posed dst, int b)
+        {
+            if (!Aabb(src.MinX[a], src.MinY[a], src.MinZ[a], src.MaxX[a], src.MaxY[a], src.MaxZ[a], dst.MinX[b], dst.MinY[b], dst.MinZ[b], dst.MaxX[b], dst.MaxY[b], dst.MaxZ[b], 0.01f))
+                return false;
+            bool joined = src.Rig.Join[a] == b || src.Rig.Join[b] == a;
+            float jx = 0f, jy = 0f, jz = 0f;
+            if (joined)
+            {
+                int child = src.Rig.Join[a] == b ? a : b;
+                jx = src.Ox[child];
+                jy = src.Oy[child];
+                jz = src.Oz[child];
+            }
+            int n = src.Rig.Piece[a].Samples;
+            float[] sx = src.Wx[a];
+            float[] sy = src.Wy[a];
+            float[] sz = src.Wz[a];
+            float minX = dst.MinX[b] - 0.01f, maxX = dst.MaxX[b] + 0.01f;
+            float minY = dst.MinY[b] - 0.01f, maxY = dst.MaxY[b] + 0.01f;
+            float minZ = dst.MinZ[b] - 0.01f, maxZ = dst.MaxZ[b] + 0.01f;
+            for (int i = 0; i < n; i++)
+            {
+                if (sx[i] < minX || sx[i] > maxX || sy[i] < minY || sy[i] > maxY || sz[i] < minZ || sz[i] > maxZ)
+                    continue;
+                string shell;
+                float depth = InsidePiece(dst, b, sx[i], sy[i], sz[i], joined, jx, jy, jz, out shell);
+                if (depth > Limit) return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -747,6 +838,7 @@ namespace Tag.Ui.Menu
                     }
                     if (depth > Limit && !RestPair(pa.Name, SampleShell(src, a, i), pb.Name, shell))
                         ForeignSamples++;
+                    if (depth > Limit) NotePosePair(src, a, b);
                 }
                 else if (depth > worldMax)
                 {

@@ -320,6 +320,8 @@ The twenty-sixth pass takes that scale off. Idle breathes and shifts its weight,
 
 The twenty-seventh pass stops subtracting that rest depth. The 0.5 cm limit applies to the raw sink, and joined neighbours are still exempt only within 3 cm of the joint. Every menu frame fails. The deepest sink on each pose is the right upper leg inside the pelvis shell, 9.50 cm. The neck, knee, elbow, wrist, ankle, and side panel do the same kind of rest sink. The poses were not frozen to hide it. The march lifts the chest so the head sits back over the body, and the stride still rocks. A character card shows the look that seat wears in the match: P3 is Orange and P4 is Lavender, and the yellow and green stay on the frame and the P badge. The title parade keeps the seat colors. The rail gap is unchanged. Space still jumps. Mockups are in `Docs/UiStills/pass27/`.
 
+The twenty-eighth pass keeps that raw overlap rule and splits the count. rigJoint is 26, the pairs that already fail at rest. pose is a pair the live poses add, and it stays 0. Mode, every rule, and the arena are driven with the keyboard and again with a pad, and the values that land are the ones TagModeController and the loaded park read. Rematch keeps the seats, the looks, and the arena. Main Menu returns to the title and clears the seats. The mint chest on Blue and on Lavender is the accent panel of that look, the same pair the match body uses. Space still jumps. Mockups are in `Docs/UiStills/pass28/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
