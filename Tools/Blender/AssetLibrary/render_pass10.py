@@ -31,7 +31,7 @@ def _court(found):
         if obj.type == "LIGHT" and obj.data.type == "AREA":
             obj.data.energy = 90.0
     # Raised three-quarter from inside the sideline, so both backboard faces read over the keys.
-    p6._look(scene, (16.0, 9.0, 2.0), (0.0, 1.3, 0.0), lens=16.0)
+    p6._look(scene, (14.0, 8.0, 0.0), (0.0, 1.5, 0.0), lens=16.0)
     r._render(scene, os.path.join(STILL_DIR, "court.png"))
 
 

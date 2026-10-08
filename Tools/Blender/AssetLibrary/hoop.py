@@ -30,6 +30,9 @@ ARM_ZS = ARM_Z1 - ARM_Z0
 def _net(g, lod):
     spokes = lod_pick(lod, 10, 6)
     drops = lod_pick(lod, 4, 2)
+    # First ring sits under the tube (minor radius 0.028) with air around the shell.
+    y0 = 3.05 - 0.040
+    r0 = 0.195
     rings = []
     for i in range(spokes):
         ang = 2.0 * math.pi * i / spokes
@@ -37,9 +40,9 @@ def _net(g, lod):
         for k in range(drops + 1):
             t = k / float(drops)
             scale = 1.0 - t * 0.42
-            x = math.sin(ang) * 0.225 * scale
-            z = RIM_Z + math.cos(ang) * 0.225 * scale
-            y = 3.04 - t * 0.42
+            x = math.sin(ang) * r0 * scale
+            z = RIM_Z + math.cos(ang) * r0 * scale
+            y = y0 - t * 0.42
             col.append((x, y, z))
         rings.append(col)
         for k in range(drops):
@@ -74,7 +77,7 @@ def create():
         g.box((0, 3.48, BOARD_Z), (1.80, 1.05, 0.035), "Lib_PaintWhite", bevel=bev, segs=1)
         g.box((0, 3.48, BOARD_Z + 0.022), (1.68, 0.92, 0.012), "Lib_PaintWhite")
         g.box((0, 3.48, BOARD_Z - 0.022), (1.70, 0.98, 0.008), "Lib_SteelDark")
-        g.box((0, 3.00, BOARD_Z + 0.030), (1.84, 0.06, 0.05), "Lib_Black")
+        g.box((0, 2.94, BOARD_Z + 0.018), (1.84, 0.05, 0.036), "Lib_Black")
         g.box((0, 3.22, BOARD_Z + 0.028), (0.46, 0.35, 0.01), "Lib_PaintRed")
         g.box((0, 3.22, BOARD_Z + 0.035), (0.30, 0.02, 0.008), "Lib_PaintWhite")
         g.box((0, 3.22, BOARD_Z + 0.035), (0.02, 0.22, 0.008), "Lib_PaintWhite")
@@ -82,13 +85,13 @@ def create():
         # Diagonal stays clear of the pole and stops under the arm.
         if lod == 0:
             g.pipe((0, 2.55, 0.10), (0, 3.24, ARM_ZC + 0.35), 0.028, "Lib_Steel", 6)
-        g.torus((0, 3.05, RIM_Z), 0.225, 0.012, "Lib_Orange", 20 if lod == 0 else 12, 6)
+        g.torus((0, 3.05, RIM_Z), 0.225, 0.028, "Lib_Orange", 20 if lod == 0 else 12, 6)
         if lod == 0:
             for i in range(4):
                 ang = math.radians(i * 90 + 45)
                 g.cylinder(
-                    (math.sin(ang) * 0.20, 3.05, RIM_Z + math.cos(ang) * 0.20),
-                    0.008, 0.01, "Lib_Steel", 5,
+                    (math.sin(ang) * 0.225, 3.05 + 0.040, RIM_Z + math.cos(ang) * 0.225),
+                    0.008, 0.012, "Lib_Steel", 5,
                 )
         _net(g, lod)
         a.end()

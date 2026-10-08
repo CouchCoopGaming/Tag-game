@@ -77,7 +77,7 @@ MonoBehaviour:
   vaultable: 0
   vaultHeightMeters: 0
   climbNote: "Flat slab, 0.12 m thick."
-  vaultNote: "No rail. Place each Hoop at the baseline with the rim facing center court."
+  vaultNote: "No rail. Place each Hoop pole 1.2 m behind the end line, rim toward center court."
 --- !u!1 &200000
 GameObject:
   m_ObjectHideFlags: 0

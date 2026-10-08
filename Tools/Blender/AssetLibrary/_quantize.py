@@ -19,6 +19,9 @@ def _snap_court(im):
                 px[x, y] = (242, 242, 236)
             elif r < 100 and g < 140 and b > r + 15 and 70 < b < 190 and g > 40:
                 px[x, y] = (40, 78, 122)
+            elif r > 100 and g < 170 and b < 160 and r > g + 12 and r > b + 12:
+                # Washed rim pixels are a few hundred strong. A solid orange holds the palette.
+                px[x, y] = (220, 72, 18)
 
 
 def pack(folder):
