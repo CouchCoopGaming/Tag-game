@@ -321,6 +321,12 @@ The bar across a results card, the P tag, and the swatch are the look that figur
 
 In `Docs/UiStills/pass37/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards and the labels are composite. The BEFORE picture is the pass 36 results still. Each still is under 400 KB. The proof lines are unchanged.
 
+## Pass 38
+
+The results cards are one width. Each card is centred on its block in the results picture, with a gap between neighbours, and the winner card sits higher with the gold stroke. Third place keeps the elbows down, about 30° off the body, both fists in front of the chest, a small knee bend, and a nod. Fourth still slumps, with the head turned a little aside. The shared key light comes from the front three-quarter, with a soft fill and a rim, so the face plate and the eye sockets read. Look-sheet chips use each figure's projected foot, so the name sits under the feet. The reveal raises the blocks, eases the poses in, then slides the cards up. Reduce motion and capture still snap to the finished board. `Docs/UiStills/pass38/results-reveal.gif` is that motion, about two seconds, and `results-reveal.png` is the six frames. pose stays 0 and rigJoint stays 26. The rig fix is still a separate change and does not bind here.
+
+In `Docs/UiStills/pass38/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards, the chips, and the labels are composite. The BEFORE picture is the pass 37 results still. Each still is under 400 KB. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

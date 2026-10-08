@@ -31,8 +31,13 @@ namespace Tag.Ui.Menu
         Camera _paradeCam;
         RenderTexture _paradeRt;
         readonly Transform[] _step = new Transform[Slots];
+        readonly Transform[] _trim = new Transform[Slots];
         readonly Transform[] _podiumAnchor = new Transform[Slots];
+        readonly MenuCheer[] _planter = new MenuCheer[Slots];
+        readonly float[] _stepH = new float[Slots];
         readonly Transform[] _confetti = new Transform[18];
+        float _rise0;
+        bool _rising;
         static Sprite _wellSprite;
         static Texture2D _wellTex;
         static Texture2D _shadowTex;
@@ -67,9 +72,11 @@ namespace Tag.Ui.Menu
             // Shared rig. Rays point at the figure. The key comes from the
             // camera's front-left, the fill from the other front side, and
             // the rim from behind so the silhouette leaves the well.
-            AddSun("PreviewKey", new Vector3(-0.65f, -0.50f, -0.70f), new Color(1f, 0.97f, 0.92f, 1f), 1.40f);
-            AddSun("PreviewFill", new Vector3(0.45f, -0.22f, -0.85f), new Color(0.78f, 0.84f, 1f, 1f), 0.42f);
-            AddSun("PreviewRim", new Vector3(0.15f, -0.35f, 0.90f), new Color(0.90f, 0.94f, 1f, 1f), 0.62f);
+            // Key from the front three-quarter, fill kept soft, rim from behind
+            // so the face plate and the eye sockets are not a flat ball.
+            AddSun("PreviewKey", new Vector3(0.39f, -0.48f, -0.79f), new Color(1f, 0.96f, 0.90f, 1f), 1.55f);
+            AddSun("PreviewFill", new Vector3(-0.42f, -0.18f, -0.55f), new Color(0.75f, 0.82f, 1f, 1f), 0.28f);
+            AddSun("PreviewRim", new Vector3(-0.55f, -0.25f, 0.80f), new Color(0.82f, 0.90f, 1f, 1f), 0.70f);
             for (int i = 0; i < Slots; i++)
             {
                 BuildWell(i);
@@ -185,6 +192,9 @@ namespace Tag.Ui.Menu
             {
                 view.texture = _podiumRt;
                 view.color = Color.white;
+                // The results camera's look-at faces the other way from the still.
+                // Flip the picture so 2nd stays on the left, under the same cards.
+                view.uvRect = new Rect(1f, 0f, -1f, 1f);
             }
             if (count < 0) count = 0;
             if (count > Slots) count = Slots;
@@ -208,7 +218,11 @@ namespace Tag.Ui.Menu
                 }
                 bool on = i < count && rows != null;
                 _step[i].gameObject.SetActive(on);
-                if (!on) continue;
+                if (!on)
+                {
+                    _planter[i] = null;
+                    continue;
+                }
                 MenuPodium.Row row = rows[i];
                 GameObject body = MenuMannequin.Spawn(_podiumAnchor[i], MenuMannequin.NameOf(row.Hier), MenuMannequin.NameOf(row.Accent), row.Hat != 0);
                 bool win = row.Winner;
@@ -216,6 +230,7 @@ namespace Tag.Ui.Menu
                 MenuCheer.Play(body, win, clap, i == 2);
                 if (body != null) body.transform.localPosition = new Vector3(0f, 0.04f, 0f);
                 MenuCheer planted = body != null ? body.GetComponent<MenuCheer>() : null;
+                _planter[i] = planted;
                 if (planted != null && _step[i] != null)
                 {
                     // Cube top, plus the 5 cm cap that sits on it.
@@ -223,10 +238,66 @@ namespace Tag.Ui.Menu
                     planted.Floor(top);
                 }
             }
+            _rise0 = Time.unscaledTime;
+            _rising = !MenuVideo.ReduceMotion && !MenuCapture.Running;
+            SetRise(_rising ? 0f : 1f);
             bool party = crowned && !MenuVideo.ReduceMotion;
             for (int i = 0; i < _confetti.Length; i++)
             {
                 if (_confetti[i] != null) _confetti[i].gameObject.SetActive(party);
+            }
+        }
+
+        /// <summary>
+        /// Horizontal place of a block in the results picture, 0 at the left.
+        /// Matches the still: 2nd, 1st, 3rd, 4th.
+        /// </summary>
+        public static float BlockFraction(int rank)
+        {
+            // Picture x of each block through the results camera.
+            // Left to right the stage is 2nd, 1st, 3rd, 4th.
+            if (rank <= 0) return 0.406f;
+            if (rank == 1) return 0.209f;
+            if (rank == 2) return 0.596f;
+            return 0.767f;
+        }
+
+        void SetRise(float e)
+        {
+            if (e < 0f) e = 0f;
+            if (e > 1f) e = 1f;
+            for (int i = 0; i < Slots; i++)
+            {
+                Transform step = _step[i];
+                if (step == null || !step.gameObject.activeSelf) continue;
+                float full = _stepH[i];
+                float h = full * (0.15f + 0.85f * e);
+                Vector3 sc = step.localScale;
+                sc.y = h;
+                step.localScale = sc;
+                Vector3 p = step.localPosition;
+                p.y = h * 0.5f;
+                step.localPosition = p;
+                Transform trim = _trim[i];
+                if (trim != null)
+                {
+                    Vector3 tp = trim.localPosition;
+                    tp.y = h + 0.025f;
+                    trim.localPosition = tp;
+                }
+                Transform stand = _podiumAnchor[i];
+                if (stand != null)
+                {
+                    Vector3 sp = stand.localPosition;
+                    sp.y = h + 0.05f;
+                    stand.localPosition = sp;
+                }
+                MenuCheer planter = _planter[i];
+                if (planter != null)
+                {
+                    float top = step.position.y + step.lossyScale.y * 0.5f + 0.05f;
+                    planter.Floor(top);
+                }
             }
         }
 
@@ -279,6 +350,26 @@ namespace Tag.Ui.Menu
                 p.y = 0.12f + (still ? 0f : MenuPolish.Hop(_hop[i]));
                 _figure[i].localPosition = p;
             }
+            if (_rising)
+            {
+                if (still)
+                {
+                    SetRise(1f);
+                    _rising = false;
+                }
+                else
+                {
+                    float u = (t - _rise0) / 0.72f;
+                    if (u < 0f) u = 0f;
+                    if (u > 1f)
+                    {
+                        u = 1f;
+                        _rising = false;
+                    }
+                    float e = u * u * (3f - 2f * u);
+                    SetRise(e);
+                }
+            }
             if (still) return;
             for (int i = 0; i < _confetti.Length; i++)
             {
@@ -324,6 +415,7 @@ namespace Tag.Ui.Menu
                 float deep = 1.02f;
                 step.transform.localPosition = new Vector3(xs[i], heights[i] * 0.5f, 0f);
                 step.transform.localScale = new Vector3(wide, heights[i], deep);
+                _stepH[i] = heights[i];
                 var col = step.GetComponent<Collider>();
                 if (col != null) Destroy(col);
                 var rend = step.GetComponent<Renderer>();
@@ -336,6 +428,7 @@ namespace Tag.Ui.Menu
                 trim.transform.localScale = new Vector3(wide + 0.10f, 0.05f, deep + 0.08f);
                 var trimCol = trim.GetComponent<Collider>();
                 if (trimCol != null) Destroy(trimCol);
+                _trim[i] = trim.transform;
                 var trimRend = trim.GetComponent<Renderer>();
                 if (trimRend != null)
                     trimRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.98f, 0.94f, 0.82f, 1f), 0.28f, 0.12f);

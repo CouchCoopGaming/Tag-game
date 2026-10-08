@@ -340,6 +340,8 @@ The thirty-sixth pass uses one player mesh for every look. The menu loads the sa
 
 The thirty-seventh pass lifts that V overhead, about 30° off vertical, with the chin tipped up. Second place swings one fist out beside the head so the face stays visible. Third place holds both fists at the chest. Fourth still slumps. The results camera is a slight front three-quarter so each face reads. The card bar, the tag, and the swatch use the look on that figure, and the tag keeps a circle, square, triangle, or diamond. Look-sheet names sit in chips wide enough for Orange and Lavender. pose stays 0 and rigJoint stays 26. The pictures in `Docs/UiStills/pass37/` label the mesh pixels. Space still jumps.
 
+The thirty-eighth pass puts each results card under its block, at one width, with a gap, and lifts the winner card. Third place drops the elbows and holds both fists in front of the chest, with a nod and a small knee bend. Fourth turns the head a little while the slump stays. A front three-quarter key and a soft rim light the face plate and the eye sockets. Look-sheet chips sit on the projected feet. The board reveal raises the blocks, settles the poses, then slides the cards in. The two-second check is `Docs/UiStills/pass38/results-reveal.gif`, with the six frames beside it. pose stays 0 and rigJoint stays 26. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

@@ -2865,15 +2865,52 @@ namespace Tag.Ui.Menu
             var view = viewRt.gameObject.AddComponent<RawImage>();
             view.raycastTarget = false;
             if (_preview != null) _preview.ShowPodium(n, _rows, view);
+            float cardGutter = 28f;
+            float leftPx = fitW;
+            float rightPx = 0f;
+            var blockPx = new float[n > 0 ? n : 1];
+            for (int rank = 0; rank < n; rank++)
+            {
+                float px = MenuPreview.BlockFraction(rank) * fitW;
+                blockPx[rank] = px;
+                if (px < leftPx) leftPx = px;
+                if (px > rightPx) rightPx = px;
+            }
+            for (int a = 0; a < n; a++)
+            {
+                for (int b = a + 1; b < n; b++)
+                {
+                    if (blockPx[b] < blockPx[a])
+                    {
+                        float swap = blockPx[a];
+                        blockPx[a] = blockPx[b];
+                        blockPx[b] = swap;
+                    }
+                }
+            }
+            float minGap = fitW;
+            for (int a = 1; a < n; a++)
+            {
+                float step = blockPx[a] - blockPx[a - 1];
+                if (step < minGap) minGap = step;
+            }
+            float rankW = minGap - cardGutter;
+            float edge = 8f;
+            float roomL = leftPx - edge;
+            float roomR = fitW - edge - rightPx;
+            if (rankW > roomL * 2f) rankW = roomL * 2f;
+            if (rankW > roomR * 2f) rankW = roomR * 2f;
+            if (rankW > minGap - 8f) rankW = minGap - 8f;
+            if (rankW < 120f && minGap - 8f >= 120f) rankW = 120f;
             for (int rank = 0; rank < n; rank++)
             {
                 string detail = MenuPodium.Stats(_rows[rank]);
                 int seat = _rows[rank].Seat;
                 if (seat < 0) seat = rank;
-                float rankW = (fitW - 24f) / 4f;
-                int col = rank == 0 ? 1 : rank == 1 ? 0 : rank;
-                float cardX = stageX + col * (rankW + 8f);
-                MenuTile tile = AddTile(cardX, rankY, rankW, rankH, 20 + rank, MenuTheme.Place(rank) + "  " + _rows[rank].Name, detail, false);
+                float cardX = stageX + MenuPreview.BlockFraction(rank) * fitW - rankW * 0.5f;
+                float cardY = rankY;
+                if (_rows[rank].Winner) cardY -= 18f;
+                MenuTile tile = AddTile(cardX, cardY, rankW, rankH, 20 + rank, MenuTheme.Place(rank) + "  " + _rows[rank].Name, detail, false);
                 if (tile != null)
                 {
                     tile.KeepBar = true;
@@ -2889,8 +2926,10 @@ namespace Tag.Ui.Menu
                     tile.Tint(Color.Lerp(MenuTheme.Ink, look, UiSweep.SeatMix));
                     if (tile.Stroke != null && _rows[rank].Winner)
                         tile.Stroke.color = MenuTheme.Gold;
-                    SeatChip(tile.transform, rankW - 168f, UiFit.StripeClear() + 6f, seat, look, true);
-                    RectTransform swatch = MenuWidgets.Place(tile.transform, "LookSwatch", rankW - 42f, UiFit.StripeClear() + 12f, 22f, 22f);
+                    float chipX = rankW - 154f;
+                    if (chipX < 8f) chipX = 8f;
+                    SeatChip(tile.transform, chipX, UiFit.StripeClear() + 6f, seat, look, true);
+                    RectTransform swatch = MenuWidgets.Place(tile.transform, "LookSwatch", rankW - 34f, UiFit.StripeClear() + 12f, 22f, 22f);
                     var swatchImage = swatch.gameObject.AddComponent<Image>();
                     swatchImage.color = look;
                     swatchImage.raycastTarget = false;

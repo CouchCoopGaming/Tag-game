@@ -180,20 +180,24 @@ namespace Tag.Ui.Menu
             return a;
         }
 
-        /// <summary>Third place. Both fists curled at the chest, elbows out.</summary>
+        /// <summary>Third place. Elbows down, both fists in front of the chest, a nod.</summary>
         public static Angles Chest(float t)
         {
             float s = Mathf.Sin(t * 3.1f);
             var a = new Angles();
             a.Spine = 4f;
-            a.Head = -8f;
-            a.HeadYaw = 4f * s;
-            a.ArmPitchL = 20f;
-            a.ArmPitchR = 20f;
-            a.ArmYawL = -30f;
-            a.ArmYawR = 30f;
-            a.ElbowL = 80f;
-            a.ElbowR = 80f;
+            a.Head = 14f + 4f * s;
+            a.HeadYaw = 3f * s;
+            a.ArmPitchL = 24f;
+            a.ArmPitchR = 24f;
+            a.ArmYawL = 16f;
+            a.ArmYawR = -16f;
+            a.ArmRollL = 20f;
+            a.ArmRollR = -20f;
+            a.ElbowL = -120f;
+            a.ElbowR = -120f;
+            a.KneeL = -12f;
+            a.KneeR = -12f;
             return a;
         }
 
@@ -214,7 +218,7 @@ namespace Tag.Ui.Menu
             a.RootRoll = 3f * s;
             a.Spine = 22f;
             a.Head = 28f;
-            a.HeadYaw = -8f;
+            a.HeadYaw = -16f;
             a.KneeL = -3f;
             a.KneeR = -3f;
             a.ArmPitchL = 20f;

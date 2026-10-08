@@ -5,7 +5,7 @@ namespace Tag.Ui.Menu
 {
     /// <summary>
     /// Results poses. The winner raises both arms and hops.
-    /// Second pumps one fist. Third holds both fists at the chest. Last place slumps.
+        /// Second pumps one fist. Third holds both fists in front of the chest. Last place slumps.
     /// These are menu clips. Reduce motion holds one frame.
     /// </summary>
     public sealed class MenuCheer : MonoBehaviour
@@ -26,6 +26,7 @@ namespace Tag.Ui.Menu
         float _floor;
         bool _hasFloor;
         float _hop;
+        float _born;
 
         public static void Slot(int rank, out float x, out float height)
         {
@@ -67,7 +68,8 @@ namespace Tag.Ui.Menu
             _win = win;
             _clap = clap && !win;
             _small = small && _clap;
-            _still = MenuVideo.ReduceMotion;
+            _still = MenuVideo.ReduceMotion || MenuCapture.Running;
+            _born = Time.unscaledTime;
             Cache();
             Apply(0f);
         }
@@ -90,14 +92,51 @@ namespace Tag.Ui.Menu
         void Apply(float t)
         {
             float time = _still ? 1.2f : t;
+            float poseU = 1f;
+            if (!_still)
+            {
+                float u = (time - _born - 0.28f) / 0.55f;
+                if (u < 0f) u = 0f;
+                if (u > 1f) u = 1f;
+                poseU = u * u * (3f - 2f * u);
+            }
             MenuAlive.Angles a;
-            if (_win) a = MenuAlive.Cheer(time, 1f);
+            if (_win) a = MenuAlive.Cheer(time, poseU);
             else if (_clap && _small) a = MenuAlive.Chest(time);
             else if (_clap) a = MenuAlive.Pump(time);
             else a = MenuAlive.Slump(time);
-            _hop = _win ? MenuAlive.Hop(time) : 0f;
+            if (!_win && poseU < 1f) a = Blend(a, poseU);
+            _hop = _win && poseU > 0.99f ? MenuAlive.Hop(time) : 0f;
             Pose(a);
             Ground();
+        }
+
+        static MenuAlive.Angles Blend(MenuAlive.Angles a, float u)
+        {
+            a.RootPitch *= u;
+            a.RootYaw *= u;
+            a.RootRoll *= u;
+            a.Hip *= u;
+            a.HipYaw *= u;
+            a.HipRoll *= u;
+            a.Spine *= u;
+            a.SpineYaw *= u;
+            a.SpineRoll *= u;
+            a.Head *= u;
+            a.HeadYaw *= u;
+            a.ArmPitchL *= u;
+            a.ArmPitchR *= u;
+            a.ArmYawL *= u;
+            a.ArmYawR *= u;
+            a.ArmRollL *= u;
+            a.ArmRollR *= u;
+            a.ElbowL *= u;
+            a.ElbowR *= u;
+            a.ThighL *= u;
+            a.ThighR *= u;
+            a.KneeL *= u;
+            a.KneeR *= u;
+            return a;
         }
 
         void EnsureShadow()

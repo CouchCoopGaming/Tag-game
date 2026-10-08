@@ -10,11 +10,15 @@ namespace Tag.Ui.Menu
     public static class MenuReveal
     {
         const int Cap = 4;
-        const float Stagger = 0.14f;
-        const float Fade = 0.16f;
+        const float Stagger = 0.12f;
+        const float Fade = 0.28f;
+        const float CardDelay = 0.85f;
+        const float Slide = 72f;
 
         static readonly CanvasGroup[] _rows = new CanvasGroup[Cap];
         static readonly CanvasGroup[] _actions = new CanvasGroup[Cap];
+        static readonly RectTransform[] _rowRt = new RectTransform[Cap];
+        static readonly float[] _rowRest = new float[Cap];
         static int _rowCount;
         static int _actionCount;
         static float _t0;
@@ -29,6 +33,7 @@ namespace Tag.Ui.Menu
             {
                 _rows[i] = null;
                 _actions[i] = null;
+                _rowRt[i] = null;
             }
         }
 
@@ -36,6 +41,8 @@ namespace Tag.Ui.Menu
         {
             if (rt == null || _rowCount >= Cap) return;
             _rows[_rowCount] = Group(rt);
+            _rowRt[_rowCount] = rt;
+            _rowRest[_rowCount] = rt.anchoredPosition.y;
             _rowCount++;
         }
 
@@ -54,7 +61,11 @@ namespace Tag.Ui.Menu
                 Snap();
             else
             {
-                for (int i = 0; i < _rowCount; i++) Set(_rows[i], 0f);
+                for (int i = 0; i < _rowCount; i++)
+                {
+                    Set(_rows[i], 0f);
+                    SlideRow(i, 0f);
+                }
                 for (int i = 0; i < _actionCount; i++) Set(_actions[i], 0f);
             }
         }
@@ -71,10 +82,11 @@ namespace Tag.Ui.Menu
             bool done = true;
             for (int i = 0; i < _rowCount; i++)
             {
-                float u = (elapsed - i * Stagger) / Fade;
+                float u = (elapsed - CardDelay - i * Stagger) / Fade;
+                SlideRow(i, u);
                 if (!Apply(_rows[i], u)) done = false;
             }
-            float buttonAt = _rowCount * Stagger;
+            float buttonAt = CardDelay + _rowCount * Stagger;
             for (int i = 0; i < _actionCount; i++)
             {
                 float u = (elapsed - buttonAt) / Fade;
@@ -92,9 +104,25 @@ namespace Tag.Ui.Menu
 
         static void Snap()
         {
-            for (int i = 0; i < _rowCount; i++) Set(_rows[i], 1f);
+            for (int i = 0; i < _rowCount; i++)
+            {
+                Set(_rows[i], 1f);
+                SlideRow(i, 1f);
+            }
             for (int i = 0; i < _actionCount; i++) Set(_actions[i], 1f);
             _live = false;
+        }
+
+        static void SlideRow(int i, float u)
+        {
+            RectTransform rt = _rowRt[i];
+            if (rt == null) return;
+            if (u < 0f) u = 0f;
+            if (u > 1f) u = 1f;
+            float e = u * u * (3f - 2f * u);
+            Vector2 p = rt.anchoredPosition;
+            p.y = _rowRest[i] - Slide * (1f - e);
+            rt.anchoredPosition = p;
         }
 
         static bool Apply(CanvasGroup group, float u)
