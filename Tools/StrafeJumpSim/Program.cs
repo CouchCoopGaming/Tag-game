@@ -681,9 +681,16 @@ static class Program
         Console.WriteLine(Tag.Art.SmoothMotion.DetailLine());
         Console.WriteLine(Tag.Art.SmoothMotion.ParkourLine());
         Console.WriteLine(Tag.Art.SmoothMotion.ResponseLine());
+        Console.WriteLine(Tag.Art.LocomotionPolish.ProofLine());
+        Console.WriteLine(Tag.Art.LocomotionPolish.StepLine());
         if (!Tag.Art.SmoothMotion.Holds())
         {
             Console.Error.WriteLine("smooth motion is not held");
+            return 1;
+        }
+        if (!Tag.Art.LocomotionPolish.Holds())
+        {
+            Console.Error.WriteLine("locomotion polish is not held");
             return 1;
         }
         if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
@@ -693,7 +700,14 @@ static class Program
                 "ClimbPresented",
                 "RepeatingPush",
                 "AbsorbPop",
-                "EaseFacing"))
+                "EaseFacing",
+                "LocomotionPolish.PlayCadence",
+                "LocomotionPolish.FacingStride",
+                "LocomotionPolish.NoteTurn",
+                "LocomotionPolish.AirPhase",
+                "LocomotionPolish.FootPitch",
+                "LocomotionPolish.HandPitch",
+                "LocomotionPolish.HeadYaw"))
         {
             Console.Error.WriteLine("smooth motion is not on the locomotor");
             return 1;
@@ -708,7 +722,8 @@ static class Program
         if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs",
                 "SmoothMotion.Smooth",
                 "SmoothMotion.YawSeconds",
-                "fovKick=0"))
+                "fovKick=0",
+                "Quaternion.Slerp"))
         {
             Console.Error.WriteLine("camera follow is not smoothed");
             return 1;
@@ -733,6 +748,8 @@ static class Program
         Tag.Art.SmoothMotion.WriteStrip(Path.Combine(stillDir, "transitions.ppm"));
         string still2 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass2");
         Tag.Art.SmoothMotion.WriteParkourStills(Path.Combine(still2, "climb-wall-mantle.png"));
+        string still3 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass3");
+        Tag.Art.SmoothMotion.WriteLocomotionStills(Path.Combine(still3, "loco-air-ik.png"));
 
         Console.WriteLine(Tag.Art.VerbExitProof.ProofLine());
         if (!Tag.Art.VerbExitProof.Holds())

@@ -62,6 +62,7 @@
     <Compile Include="../../Assets/Scripts/Art/OpponentChaseTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/VerbPoseClips.cs" />
     <Compile Include="../../Assets/Scripts/Art/GaitBlend.cs" />
+    <Compile Include="../../Assets/Scripts/Art/LocomotionPolish.cs" />
     <Compile Include="../../Assets/Scripts/Art/JumpPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/AirStrafeLeanPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/BunnyHopPose.cs" />

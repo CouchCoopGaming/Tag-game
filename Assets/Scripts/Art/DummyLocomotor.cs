@@ -743,6 +743,30 @@ namespace Tag.Art
         Vector3 _prevPlanarVel;
         bool _hasPlanarVel;
         float _accelLean;
+        float _hardTurnAccum;
+        float _hardTurnAge;
+        float _hardTurnPlant;
+        float _hardTurnSign = 1f;
+        float _hardTurnVis;
+        float _hardTurnVisVel;
+        float _travelFwd;
+        float _travelFwdVel;
+        float _travelSide;
+        float _travelSideVel;
+        float _hipYawVis;
+        float _startBlendVis;
+        float _headLook;
+        float _headLookVel;
+        float _armCoastL;
+        float _armCoastR;
+        float _armCoastVelL;
+        float _armCoastVelR;
+        float _armSwingL;
+        float _armSwingR;
+        bool _armSwingSet;
+        Vector3 _footLPos0;
+        Vector3 _footRPos0;
+        bool _footPosBound;
         float _swayVis;
         float _idlePhase;
         bool _swayIdle;
@@ -1232,6 +1256,9 @@ namespace Tag.Art
             Tag.Core.FrameMeter.AddPose(Tag.Core.FrameMeter.PoseOps);
             float dt = Time.deltaTime;
             _stanceSole = false;
+            _armSwingSet = false;
+            _hipYawVis = 0f;
+            _startBlendVis = 0f;
             _punchTelegraph = Mathf.MoveTowards(_punchTelegraph, 0f, dt);
             if (_motor == null || _input == null || _grapple == null || _punch == null) BindActors();
             HookBounce();
@@ -6116,7 +6143,9 @@ namespace Tag.Art
                     _runVis = Mathf.MoveTowards(runBefore, runAmt, runStep);
                 // Cadence follows planar speed. The idle start eases the rate in
                 // so the first step does not buzz under the blend.
-                float cadence = gaitCadence;
+                // GaitBlend.CadenceAt stays the proof curve. The mesh uses PlayCadence
+                // so a 6.9 walk and a 13.8 sprint cover the stance. Speed is unchanged.
+                float cadence = gaitPose ? LocomotionPolish.PlayCadence(speed) : gaitCadence;
                 if (_walkFromIdle)
                     cadence *= Mathf.Lerp(0.35f, 1f, Mathf.SmoothStep(0f, 1f, _walkFromIdleIn));
                 // A ski into a walk keeps the walk step. A ski into a run keeps the run step.
@@ -6549,10 +6578,26 @@ namespace Tag.Art
             }
             float yawRate = dt > 0.0001f ? Mathf.DeltaAngle(_prevYaw, yawNow) / dt : 0f;
             _prevYaw = yawNow;
+            float faceFwd = 0f;
+            float faceSide = 0f;
+            Vector3 faceF = leanSrc.forward;
+            faceF.y = 0f;
+            Vector3 faceR = leanSrc.right;
+            faceR.y = 0f;
+            if (faceF.sqrMagnitude > 0.0001f)
+                faceFwd = Vector3.Dot(planarVel, faceF.normalized);
+            if (faceR.sqrMagnitude > 0.0001f)
+                faceSide = Vector3.Dot(planarVel, faceR.normalized);
+            _travelFwd = SmoothMotion.Smooth(_travelFwd, faceFwd, ref _travelFwdVel, LocomotionPolish.SecondarySeconds, dt);
+            _travelSide = SmoothMotion.Smooth(_travelSide, faceSide, ref _travelSideVel, LocomotionPolish.SecondarySeconds, dt);
             // Positive yaw is a right turn. Visual only. Look speed is unchanged.
             bool canTurn = grounded && !air && !sliding && !crouch && !dashing && !jet && !wallRun && !climb && !mantle;
             float turnTarget = canTurn ? Mathf.Clamp(yawRate / 280f, -1f, 1f) : 0f;
             _turnVis = Mathf.MoveTowards(_turnVis, turnTarget, dt / 0.1f);
+            bool hardBlocked = !canTurn || punching || lunging || _skiBlend > 0.02f || _pivotW > 0.05f
+                || speed <= PivotPose.SpeedOff || mantle || climb || wallRun;
+            LocomotionPolish.NoteTurn(ref _hardTurnAccum, ref _hardTurnAge, ref _hardTurnPlant, ref _hardTurnSign, yawRate * dt, dt, canTurn, hardBlocked);
+            _hardTurnVis = SmoothMotion.Smooth(_hardTurnVis, _hardTurnPlant, ref _hardTurnVisVel, SmoothMotion.ResponsiveSeconds, dt);
             // The roll eases in with the turn. A hard gate popped the chest at chase distance.
             float turnAbs = Mathf.Abs(_turnVis);
             float turnIn = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(turnAbs / 0.55f));
@@ -7600,6 +7645,13 @@ namespace Tag.Art
                     elbowL = Mathf.Lerp(elbowL, Mathf.Max(elbowL, -12f), armHold);
                     elbowR = Mathf.Lerp(elbowR, Mathf.Max(elbowR, -12f), armHold);
                 }
+                _startBlendVis = startBlend;
+                if (stepping && !air)
+                {
+                    _armSwingL = pitchL + 12f;
+                    _armSwingR = pitchR + 12f;
+                    _armSwingSet = true;
+                }
                 _laLT = _laL0 * Quaternion.Euler(elbowL, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(elbowR, 0f, 0f);
                 if (footSki > 0.001f)
@@ -8197,10 +8249,13 @@ namespace Tag.Art
                 // the other foot. Cadence matches that step up to the sprint cap.
                 // No extra plant on top. No root motion.
                 GaitBlend.Legs strideLegs = GaitBlend.At(_cycle, speed);
-                float thighL = strideLegs.ThighL;
-                float thighR = strideLegs.ThighR;
-                float kneeL = strideLegs.KneeL;
-                float kneeR = strideLegs.KneeR;
+                LocomotionPolish.Legs facingLegs = LocomotionPolish.FacingStride(
+                    strideLegs.ThighL, strideLegs.ThighR, strideLegs.KneeL, strideLegs.KneeR, _travelFwd, _travelSide);
+                float thighL = facingLegs.ThighL;
+                float thighR = facingLegs.ThighR;
+                float kneeL = facingLegs.KneeL;
+                float kneeR = facingLegs.KneeR;
+                _hipYawVis = facingLegs.HipYaw;
                 if (stepping && footSki < 0.02f && _dropVis < 0.2f)
                 {
                     _stanceSole = true;
@@ -15202,6 +15257,9 @@ namespace Tag.Art
                 SealPunchRight(phase, punchProg);
                 armSlewR = 2400f;
             }
+            bool pass3Yield = air || sliding || crouch || punching || mantle || climb || wallRun || lunging || dashing
+                || _dropVis > 0.2f || _aimTorsoW > 0.35f;
+            ApplyPass3Targets(pass3Yield);
             Slew(ref _spine, _spineT, ref _slewSp, torsoSlew, dt);
             Slew(ref _hips, _hipsT, ref _slewHp, torsoSlew, dt);
             Slew(ref _head, _headT, ref _slewHd, slew, dt);
@@ -15250,6 +15308,10 @@ namespace Tag.Art
             EaseFacing(dt, yawWall, climb, sliding);
             AbsorbPop(dt);
             transform.localPosition = _root0 + new Vector3(0f, bob, 0f) + WallJumpNudge() + _visualLag;
+            bool secondaryYield = climb || wallRun || mantle || punching || lunging || dashing
+                || _aimTorsoW > 0.35f || _grappleFallHold || _grapplePose > 0.02f;
+            ApplySecondaryMotion(dt, secondaryYield, secondaryYield || sliding);
+            ApplyContactIk(grounded && !air && !sliding, wallRun || climb);
             float squash = 1f - 0.14f * _landSquash;
             // Air-dash: strong stretch then brief squash; tag flinch compresses
             float dashStretch = airDashing ? 0.32f : 0.18f;
@@ -16430,6 +16492,7 @@ namespace Tag.Art
             JumpPose.Sample pose = gaitJump
                 ? JumpPose.At(vy, _jumpPoseAge, _jumpDriveLeft)
                 : JumpPose.Mixed(vy, _jumpPoseAge, _jumpDriveLeft, speed, sinC, cycle);
+            LocomotionPolish.AirPhase(ref pose.ThighL, ref pose.ThighR, ref pose.KneeL, ref pose.KneeR, ref pose.ArmPitchL, ref pose.ArmPitchR, ref pose.Spine, vy, _hopChain);
             _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
             _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
@@ -16625,6 +16688,7 @@ namespace Tag.Art
             float cycle = _hopChain ? _cycle : (_jumpPoseAge <= JumpPose.StrideBlendSeconds ? _jumpPoseCycle : _cycle);
             float sinC = Mathf.Sin(cycle);
             JumpPose.Sample beat = JumpPose.Mixed(vy, _jumpPoseAge, _jumpDriveLeft, speed, sinC, cycle);
+            LocomotionPolish.AirPhase(ref beat.ThighL, ref beat.ThighR, ref beat.KneeL, ref beat.KneeR, ref beat.ArmPitchL, ref beat.ArmPitchR, ref beat.Spine, vy, _hopChain);
             AirStrafeLeanPose.Sample lean = AirStrafeLeanPose.At(side);
             _spineT = _spine0 * Quaternion.Euler(beat.Spine, 0f, lean.Roll * w);
             _hipsT = _hips0 * Quaternion.Euler(beat.Hip, 0f, lean.HipRoll * w);
@@ -18975,6 +19039,134 @@ namespace Tag.Art
             head = _head0 * Quaternion.Euler(-12f, 0f, 0f);
         }
 
+        /// <summary>
+        /// Fast 180 plant and the run-start lean. Visual only. Slide, climb, and the other verbs keep their poses.
+        /// </summary>
+        void ApplyPass3Targets(bool yieldLegs)
+        {
+            if (!yieldLegs && _hardTurnVis > 0.04f)
+            {
+                float hw = _hardTurnVis;
+                if (_hardTurnSign > 0f)
+                {
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(LocomotionPolish.HardPlantThigh, 0f, 0f), hw);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(LocomotionPolish.HardPlantKnee, 0f, 0f), hw);
+                }
+                else
+                {
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(LocomotionPolish.HardPlantThigh, 0f, 0f), hw);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(LocomotionPolish.HardPlantKnee, 0f, 0f), hw);
+                }
+            }
+            if (!yieldLegs && Mathf.Abs(_hipYawVis) > 0.4f)
+                _hipsT = _hipsT * Quaternion.Euler(0f, _hipYawVis, 0f);
+            if (!yieldLegs && _startBlendVis > 0.04f)
+            {
+                float into = LocomotionPolish.StartLean(_startBlendVis, _accelLean);
+                _spineT = _spineT * Quaternion.Euler(into, 0f, 0f);
+            }
+        }
+
+        /// <summary>
+        /// Head looks along travel, the spine counters, and the arms coast after the swing.
+        /// Springs only. Punch, aim, mantle, and the wall own those bones.
+        /// </summary>
+        void ApplySecondaryMotion(float dt, bool yieldHead, bool yieldArms)
+        {
+            Transform face = _motor != null ? _motor.transform : transform;
+            Vector3 vel = _motor != null ? _motor.Velocity : Vector3.zero;
+            vel.y = 0f;
+            float speed = vel.magnitude;
+            float yawTarget = 0f;
+            if (!yieldHead)
+                yawTarget = LocomotionPolish.HeadYaw(LocomotionPolish.TravelYaw(_travelFwd, _travelSide, speed));
+            _headLook = SmoothMotion.Smooth(_headLook, yawTarget, ref _headLookVel, LocomotionPolish.SecondarySeconds, dt);
+            if (Mathf.Abs(_headLook) > 0.05f)
+            {
+                float spineC = LocomotionPolish.SpineYaw(_headLook);
+                if (_spine != null)
+                    _spine.localRotation = _spine.localRotation * Quaternion.Euler(0f, spineC, 0f);
+                if (_head != null)
+                    _head.localRotation = _head.localRotation * Quaternion.Euler(0f, _headLook, 0f);
+            }
+            float rawL = (!yieldArms && _armSwingSet) ? _armSwingL : 0f;
+            float rawR = (!yieldArms && _armSwingSet) ? _armSwingR : 0f;
+            float wantL = LocomotionPolish.ArmFollowTarget(rawL);
+            float wantR = LocomotionPolish.ArmFollowTarget(rawR);
+            _armCoastL = SmoothMotion.Smooth(_armCoastL, wantL, ref _armCoastVelL, LocomotionPolish.SecondarySeconds, dt);
+            _armCoastR = SmoothMotion.Smooth(_armCoastR, wantR, ref _armCoastVelR, LocomotionPolish.SecondarySeconds, dt);
+            if (_upperArmL != null && Mathf.Abs(_armCoastL) > 0.05f)
+                _upperArmL.localRotation = _upperArmL.localRotation * Quaternion.Euler(_armCoastL, 0f, 0f);
+            if (_upperArmR != null && Mathf.Abs(_armCoastR) > 0.05f)
+                _upperArmR.localRotation = _upperArmR.localRotation * Quaternion.Euler(_armCoastR, 0f, 0f);
+        }
+
+        /// <summary>
+        /// Stance feet sit on stairs and slopes. Hands meet the wall on a climb or a wall run.
+        /// Raycasts pose the bones. The capsule is not moved.
+        /// </summary>
+        void ApplyContactIk(bool feet, bool hands)
+        {
+            if (!_footPosBound)
+            {
+                if (_footL != null && _footR != null)
+                {
+                    _footLPos0 = _footL.localPosition;
+                    _footRPos0 = _footR.localPosition;
+                    _footPosBound = true;
+                }
+            }
+            Transform face = _motor != null ? _motor.transform : transform;
+            bool leftStance = Mathf.Cos(_cycle) <= 0f;
+            PlantFoot(_footL, _footLPos0, feet && leftStance, face);
+            PlantFoot(_footR, _footRPos0, feet && !leftStance, face);
+            if (!hands || _motor == null) return;
+            Vector3 n = _motor.WallNormal;
+            if (n.sqrMagnitude < 0.0001f) return;
+            n.Normalize();
+            Vector3 chest = _spine != null ? _spine.position : transform.position + Vector3.up * 1.15f;
+            RaycastHit hit;
+            if (!Physics.Raycast(chest, -n, out hit, 1.15f) || OwnBody(hit.transform))
+                return;
+            float pitch = LocomotionPolish.HandPitch(0.78f - hit.distance);
+            if (pitch > -0.5f && pitch < 0.5f) return;
+            if (_upperArmL != null)
+                _upperArmL.localRotation = _upperArmL.localRotation * Quaternion.Euler(pitch, 0f, 0f);
+            if (_upperArmR != null)
+                _upperArmR.localRotation = _upperArmR.localRotation * Quaternion.Euler(pitch, 0f, 0f);
+        }
+
+        void PlantFoot(Transform foot, Vector3 bind, bool stance, Transform face)
+        {
+            if (foot == null) return;
+            if (!stance || !_footPosBound)
+            {
+                if (_footPosBound)
+                    foot.localPosition = bind;
+                return;
+            }
+            Vector3 origin = foot.position + Vector3.up * 0.28f;
+            RaycastHit hit;
+            if (!Physics.Raycast(origin, Vector3.down, out hit, 0.62f) || OwnBody(hit.transform))
+            {
+                foot.localPosition = bind;
+                return;
+            }
+            float along = face != null ? Vector3.Dot(hit.normal, face.forward) : 0f;
+            float pitch = LocomotionPolish.FootPitch(hit.normal.y, along);
+            float lift = LocomotionPolish.FootLift(0.28f - hit.distance);
+            foot.localPosition = bind + new Vector3(0f, lift, 0f);
+            foot.localRotation = foot.localRotation * Quaternion.Euler(pitch, 0f, 0f);
+        }
+
+        bool OwnBody(Transform hit)
+        {
+            if (hit == null) return true;
+            if (hit == transform || hit.IsChildOf(transform)) return true;
+            if (_motor != null && (hit == _motor.transform || hit.IsChildOf(_motor.transform))) return true;
+            return false;
+        }
+
         void Cache(Transform root)
         {
             if (root == null) return;
@@ -19006,6 +19198,12 @@ namespace Tag.Art
             if (_lowerLegR) _llR0 = _lowerLegR.localRotation;
             if (_footL) _ftL0 = _footL.localRotation;
             if (_footR) _ftR0 = _footR.localRotation;
+            if (_footL != null && _footR != null)
+            {
+                _footLPos0 = _footL.localPosition;
+                _footRPos0 = _footR.localPosition;
+                _footPosBound = true;
+            }
             _spineT = _spine0; _hipsT = _hips0; _headT = _head0;
             _uaLT = _uaL0; _uaRT = _uaR0; _laLT = _laL0; _laRT = _laR0;
             _ulLT = _ulL0; _ulRT = _ulR0; _llLT = _llL0; _llRT = _llR0;
