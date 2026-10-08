@@ -1,0 +1,15 @@
+no-clip clips=12 frames=198 worldMax=0.88 selfMax=4.00 fails=183
+bind-self=3.99 addedMax=3.97 fail=ground>0.5cm or pair depth more than 0.5cm past rest
+clip frames boneDeg bone slideCm driftCm worldCm selfCm fails
+idle 48 3.03 Foot_L 0.65 1.29 0.17 4.00 48
+walk 10 24.50 Foot_L 1.65 1.65 0.00 4.00 10
+run 8 23.25 Foot_R 0.00 0.00 0.00 4.00 8
+sprint 8 16.61 Foot_L 0.00 0.00 0.46 4.00 8
+start 16 18.52 Foot_R 1.28 1.33 0.00 4.00 16
+stop 16 15.86 Foot_L 0.70 1.10 0.55 4.00 16
+skid 16 15.41 Foot_R 0.79 0.79 0.55 4.00 16
+turn 22 19.00 Foot_R 1.87 1.87 0.88 4.00 22
+lean 8 23.25 Foot_R 0.00 0.00 0.00 4.00 8
+crouch 12 14.25 Foot_R 1.08 1.48 0.00 4.00 12
+land 18 16.12 Foot_L 0.45 0.37 0.00 4.00 3
+blend 16 14.59 Foot_L 0.00 0.00 0.00 4.00 16
