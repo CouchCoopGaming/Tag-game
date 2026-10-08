@@ -356,6 +356,8 @@ The nineteenth pass is the in-match HUD on each split. The It player gets a larg
 
 The twentieth pass gives every split the same match. P1 tags P2, then P2 tags P3, so P3 is It and P2 is safe for the rest of that one second. Each pane shows those two tag lines in that order. The border stays the seat colour. It is a yellow inner frame on P3 only. Safe is a warm wash and the SAFE countdown on P2 only. If a runner can see It, an IT chip sits over that head. If not, an arrow sits on the rim of the pane, pointing that way. The headless line is `hud-state feed=same safe=prev it=1`. Unity is not installed here, so the stills are composites in `Docs/UiStills/screens2/pass20/`. Space still jumps.
 
+The twenty-first pass adds the moments around that same match. Each pane counts 3, 2, 1, GO, and LOCKED stays up until GO. The opening It flashes on that pane. In the last ten seconds the clock turns gold and pulses. The tick is the round chime that already plays. ROUND OVER leads into standings ordered by least It time, then NEXT ROUND. The last round goes to RESULTS. A tag flashes the new It's pane and, when comic words are on, says YOU'RE IT. If P4 leaves, that pane closes and the feed says P4 left. Solo is one player against the AI. Unity is not installed here, so the stills are composites in `Docs/UiStills/screens2/pass21/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

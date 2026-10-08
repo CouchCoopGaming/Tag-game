@@ -341,6 +341,10 @@ Each split pane shows who is It: a large IT plate on that player, and a gold arr
 
 One match state is shared by every pane. The script is P1 tags P2, then P2 tags P3. P3 is It. P2, the previous It, holds the 1.0 s tag-back window and the safe row reads the time left. The feed on every pane is the same two lines, newest first: `P2 tagged P3`, then `P1 tagged P2`. The pane border is that seat's colour. It adds a pulsing yellow inner frame, and only on the It pane. Safe adds a warm wash and the SAFE countdown, and only on the previous It. A runner who can see It gets an IT chip over that head. A runner who cannot gets an arrow on the pane rim, in that direction. The headless line is `hud-state`. Stills are composites in `Docs/UiStills/screens2/pass20/`.
 
+## Screens 2, pass 21
+
+The same scripted match now carries the beats around the chase. Each pane counts 3, 2, 1, GO. Until GO the center card says LOCKED, and the opening It flashes on that player's pane. The last ten seconds turn the clock gold and pulse it. The tick is the existing round chime. ROUND OVER comes first. Standings then list the least It time first, with NEXT ROUND under them. The final round says RESULTS. A new It gets a short gold edge on that pane, and YOU'RE IT when comic words are on. A seat that leaves drops out of the split, and every remaining pane notes `P4 left`. Solo is one human pane against the AI. The headless line is `hud-state`. Stills are composites in `Docs/UiStills/screens2/pass21/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.
