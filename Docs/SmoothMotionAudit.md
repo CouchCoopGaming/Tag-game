@@ -200,3 +200,25 @@ Stick figures are in `Docs/SmoothStills/pass7/plant-blink-yaw.png`. Twelve rows,
 7. Done this pass. The vault arc ends on the stand point. Duration and exit speed are unchanged.
 8. Air dash is 0.10 s long and the pose arrives over 0.06 s. The first visible pose is still the press frame. Do not put the slew back to 2800.
 9. Landing still waits one sample. `Absorb(false, 0)` stays 0 so a hop inside 1/60 s skips the thud. Same-frame land is not safe.
+
+## Pass 8
+
+Climbing and parkour contact. The capsule still climbs at 6.0, slips at 3.7, and wall-runs at 9.5. One `CharacterController.Move` per Update. No root motion. Exit poses and particles stay with the anim-fx lane.
+
+A climb plants one hand and the opposite foot on the wall, then swaps them with the reach. The old arm sweep covered less of the step than the body rose, so a hand slipped 60.1 cm and a foot slipped 82.8 cm. The plant now stays on the raycast point, so both are 0.0 cm. The other hand stays on the surface and keeps moving. A grab eases that contact in over the existing 0.10 s air blend, so the hands meet the wall instead of appearing on it.
+
+The chest ray keeps a 0.42 m gap. On an uneven wall the old gap wandered by 4.2 cm. The offset cancels the dents, so the variance is 0.0 cm. The capsule is not moved.
+
+A mantle and a vault keep `mantleDuration`. During the plant and the knee, each hand eases onto a downward ray on the lip, or onto the probe's stand point when the ray misses. The hands let go across the existing roll, so the chest comes over without a pop at the edge. A vault uses that same ray, so the palms sit on the rail's real top instead of a fixed 1.05 m. A lip at 1.40 m used to miss by 35.0 cm. It now misses by 0.0 cm.
+
+A wall run rolls toward the wall by speed: 0 at rest, 10° at half of 9.5, 20° at 9.5. The entry uses the 0.10 s air blend. The exit uses the 0.10 s release blend. The inner foot and the inner hand pin to the wall. The outer leg keeps the stride.
+
+A slip at 3.7 drags both hands down 11° and adds a 7° friction wobble. The scrabble on top of that is unchanged.
+
+The gallery climb holds forward, then pulls back for the slip. The climb wall, the lip, the wall-run face, the vault rail, and the mantle ledge are the surfaces those rays hit.
+
+`climb-contact hand=60.1>0.0 foot=82.8>0.0 chest=4.2>0.0 tilt=20.0 grab=1.00 lip=35.0>0.0 wobble=7.0 gameplayDelay=0 rootMotion=0`
+
+Stick figures are in `Docs/SmoothStills/pass8/climb-contact.png`. Twelve rows, eight frames: climb, lip, vault, wall run, grab, and slip.
+
+`loco-polish`, `body-life`, `foot-slide`, `respawn-blink`, `response-latency`, and `stick-quality` are unchanged. `climbRate` stays 16.50 and `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok.

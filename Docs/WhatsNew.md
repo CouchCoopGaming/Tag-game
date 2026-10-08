@@ -213,3 +213,13 @@ The feet stay with the ground, a fall off the map blinks instead of popping, and
 - Falling out of the map, or restarting practice, still puts you on the pad immediately. The body hides and the camera pulls in for about a tenth of a second, then both come back. Starting a round does not do this. Try it: drop off the park.
 - A vault finishes on the spot you stand, instead of reaching past it and snapping back. How long the vault takes, and how fast you leave it, are unchanged. Try it: vault a rail and watch the last moment.
 - A very fast turn no longer spins the whole body with the capsule. The capsule still faces the camera at once, so the move goes where you look. The mesh catches up. Try it: flick the mouse through a half turn while you run.
+
+## Climbing, eighth pass
+
+Hands and feet meet the wall, the lip, and the rail. Climb speed, slip speed, and wall-run speed are the same.
+
+- A climb plants one hand and the opposite foot, then swaps them. Those contacts used to slide about 60 cm (hand) and 83 cm (foot) each step. They now stay on the wall. The chest stays about 42 cm off the surface, including on a bumpy wall. Try it: climb the gallery wall, or any wall in the park.
+- Grabbing the wall eases the hands onto it over the same tenth of a second as before. They used to appear on the surface. Try it: jump at a wall and hold forward.
+- At the top, the hands settle on the actual lip and the body rolls over them. A vault does the same on the rail you actually hit, at that rail's height. How long the move takes is unchanged. Try it: vault a low rail, then mantle a taller ledge.
+- A wall run leans into the wall more as you go faster, up to the same 20° at full speed. The lean eases in and out. The inner foot stays on the wall. Try it: join a wall run slowly, then at speed, then jump off.
+- Sliding down a wall drags the hands and adds a small wobble, like friction. The slip is still 3.7. Try it: climb, then pull back.

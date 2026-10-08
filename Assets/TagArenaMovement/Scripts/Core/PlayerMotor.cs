@@ -38,6 +38,9 @@ namespace TagArena.Movement
         public float SuperGlideT { get; private set; } = -1f;
         public Vector3 WallNormal => _probe.Wall.normal;
         public bool WallLeft => _probe.Wall.left;
+        /// <summary>Visual lip only. The mantle timer and the stand point write are unchanged.</summary>
+        public bool LedgeHit => _probe != null && _probe.Ledge.hit;
+        public Vector3 LedgeStand => _probe != null ? _probe.Ledge.standPoint : Vector3.zero;
         /// <summary>Seconds of cling-release grace still running. The pose reads this. The timer is not written here.</summary>
         public float ClingGraceRemaining => _clingGrace;
         /// <summary>True when a cling into the face just left is refused. The pose reads this.</summary>
