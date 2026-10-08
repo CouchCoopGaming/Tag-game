@@ -677,6 +677,40 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.SmoothMotion.ProofLine());
+        Console.WriteLine(Tag.Art.SmoothMotion.DetailLine());
+        if (!Tag.Art.SmoothMotion.Holds())
+        {
+            Console.Error.WriteLine("smooth motion is not held");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
+                "SmoothMotion.Smooth",
+                "SmoothMotion.SecondsForSlew",
+                "AbsorbPop",
+                "EaseFacing"))
+        {
+            Console.Error.WriteLine("smooth motion is not on the locomotor");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Input/PlayerInputReader.cs",
+                "DefaultExecutionOrder(-200)",
+                "_readSerial == serial"))
+        {
+            Console.Error.WriteLine("input read is not same-frame");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs",
+                "SmoothMotion.Smooth",
+                "SmoothMotion.YawSeconds"))
+        {
+            Console.Error.WriteLine("camera follow is not smoothed");
+            return 1;
+        }
+
+        string stillDir = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass1");
+        Tag.Art.SmoothMotion.WriteStrip(Path.Combine(stillDir, "transitions.ppm"));
+
         Console.WriteLine(Tag.Art.VerbExitProof.ProofLine());
         if (!Tag.Art.VerbExitProof.Holds())
         {
@@ -693,6 +727,20 @@ static class Program
 
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
+    }
+
+    static string RepoRoot()
+    {
+        string dir = Directory.GetCurrentDirectory();
+        for (int i = 0; i < 6; i++)
+        {
+            if (File.Exists(Path.Combine(dir, "Docs", "WhatsNew.md")))
+                return dir;
+            DirectoryInfo parent = Directory.GetParent(dir);
+            if (parent == null) break;
+            dir = parent.FullName;
+        }
+        return Directory.GetCurrentDirectory();
     }
 
     static bool Locked(float value, float expect) => Math.Abs(value - expect) <= 0.001f;

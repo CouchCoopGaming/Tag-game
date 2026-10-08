@@ -12,6 +12,7 @@ namespace TagArena.Movement
     /// Keep raw + consumed flags separate so buffering (jump) is deterministic.
     /// When ExternalControl is true (AI), Read() leaves fields alone so DummyPatrol can drive them.
     /// </summary>
+    [DefaultExecutionOrder(-200)]
     public class PlayerInputReader : MonoBehaviour
     {
         public Vector2 Move;
@@ -68,6 +69,7 @@ namespace TagArena.Movement
         bool _clearClingOnResume;
         bool _couchWasLive;
         float _kbSpacePrev;
+        int _readSerial = -1;
 
         void Awake()
         {
@@ -76,9 +78,18 @@ namespace TagArena.Movement
             punchKey = ControlBinds.Punch;
         }
 
+        void Update()
+        {
+            // Before PunchHitbox and the motor. The motor calls Read again; that call is a no-op.
+            Read();
+        }
+
         public void Read()
         {
             if (ExternalControl) return;
+            int serial = Time.frameCount;
+            if (_readSerial == serial) return;
+            _readSerial = serial;
             if (DriveDevice >= 0)
             {
                 ReadDriven();
