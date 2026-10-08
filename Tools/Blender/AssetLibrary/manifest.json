@@ -43876,56 +43876,64 @@
   {
     "name": "Newsstand_Corner",
     "category": "StreetFurniture",
-    "blurb": "Newsstand, 1.80 m wide, roof 2.17 m. Service hatch, counter, blank side racks. No masthead.",
+    "blurb": "Newsstand, 1.80 m wide, counter 1.12 m, open hatch and wire racks. No masthead.",
     "size": [
-      1.98,
-      2.172,
-      1.63
+      2.14,
+      2.298,
+      1.67
     ],
     "min": [
-      -0.99,
+      -1.07,
       0.0,
-      -0.7
+      -0.73
     ],
     "max": [
-      0.99,
-      2.172,
-      0.93
+      1.07,
+      2.298,
+      0.94
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 848,
+        "tris": 2152,
         "materials": [
           "Lib_PaintGreen",
+          "Lib_Interior",
           "Lib_BoxGreen",
-          "Lib_Black",
           "Lib_Steel",
           "Lib_SteelDark",
+          "Lib_WoodDark",
+          "Lib_Wood",
           "Lib_PaintCream",
           "Lib_PaintWhite",
+          "Lib_Orange",
           "Lib_PaintRed",
           "Lib_BoxBlue",
+          "Lib_BoxRed",
+          "Lib_WindowLit",
+          "Lib_Brass",
           "Lib_PaintTeal",
-          "Lib_Brass"
+          "Lib_Concrete"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 252,
+        "tris": 512,
         "materials": [
           "Lib_PaintGreen",
+          "Lib_Interior",
           "Lib_BoxGreen",
-          "Lib_Black",
           "Lib_Steel",
-          "Lib_PaintRed",
-          "Lib_BoxBlue",
+          "Lib_WoodDark",
+          "Lib_Wood",
           "Lib_PaintCream",
-          "Lib_PaintTeal",
+          "Lib_WindowLit",
+          "Lib_SteelDark",
+          "Lib_BoxBlue",
           "Lib_PaintWhite",
-          "Lib_SteelDark"
+          "Lib_Concrete"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -43933,17 +43941,112 @@
     ],
     "colliders": [
       {
-        "name": "Col_Body",
+        "name": "Col_WallL",
         "type": "box",
         "center": [
-          0,
-          1.05,
+          -0.87,
+          1.0,
           0
         ],
         "size": [
-          1.72,
-          2.02,
-          1.12
+          0.028,
+          1.84,
+          0.96
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_WallR",
+        "type": "box",
+        "center": [
+          0.87,
+          1.0,
+          0
+        ],
+        "size": [
+          0.028,
+          1.84,
+          0.96
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_WallB",
+        "type": "box",
+        "center": [
+          0,
+          1.0,
+          -0.57
+        ],
+        "size": [
+          1.5,
+          1.84,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Breast",
+        "type": "box",
+        "center": [
+          0,
+          0.5,
+          0.575
+        ],
+        "size": [
+          0.64,
+          0.72,
+          0.022
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_PierL",
+        "type": "box",
+        "center": [
+          -0.68,
+          1.05,
+          0.57
+        ],
+        "size": [
+          0.22,
+          1.9,
+          0.028
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_PierR",
+        "type": "box",
+        "center": [
+          0.68,
+          1.05,
+          0.57
+        ],
+        "size": [
+          0.22,
+          1.9,
+          0.028
         ],
         "euler": [
           0,
@@ -43956,13 +44059,51 @@
         "type": "box",
         "center": [
           0,
-          2.14,
-          0
+          2.279,
+          0.775
         ],
         "size": [
-          1.84,
-          0.048,
-          1.24
+          1.6,
+          0.022,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RoofMid",
+        "type": "box",
+        "center": [
+          0,
+          2.208,
+          0.15
+        ],
+        "size": [
+          1.5,
+          0.016,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RoofBack",
+        "type": "box",
+        "center": [
+          0,
+          2.146,
+          -0.45
+        ],
+        "size": [
+          1.5,
+          0.012,
+          0.16
         ],
         "euler": [
           0,
@@ -43975,13 +44116,13 @@
         "type": "box",
         "center": [
           0,
-          1.1,
-          0.77
+          1.104,
+          0.78
         ],
         "size": [
-          1.16,
-          0.024,
-          0.2
+          1.1,
+          0.016,
+          0.22
         ],
         "euler": [
           0,

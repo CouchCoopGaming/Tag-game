@@ -15,7 +15,7 @@ from mathutils import Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import render_pass2 as r  # noqa: E402
-from _common import unity_to_blender  # noqa: E402
+from _common import blender_to_unity, unity_to_blender  # noqa: E402
 
 PASS = 1
 if "--pass" in sys.argv:
@@ -146,6 +146,10 @@ PASSES = {
         ("pay_station", "PayStation_Street", 180.0, (0.85, 0.0, 0.08), 18.0),
         ("newsstand", "Newsstand_Corner", 180.0, (1.55, 0.0, 0.15), 18.0),
     ),
+    20: (
+        # Figure stands on the street side of the counter, clear of the booth.
+        ("newsstand", "Newsstand_Corner", 180.0, (-1.28, 0.0, -1.22), 0.0),
+    ),
 }
 
 # Pass 15 sits the prop on a sidewalk panel. Low camera, aim below center,
@@ -172,6 +176,11 @@ _FRAME15 = {
     "fire_alarm": (0.62, 12.0, 158.0, 0.40, 0.50, 0.32, 3.60),
     "pay_station": (0.66, 12.0, 156.0, 0.42, 0.52, 0.34, 3.80),
     "newsstand": (0.78, 11.0, 214.0, 0.42, 0.58, 0.36, 5.60),
+}
+
+# Pass 20 frames the rebuilt kiosk. The 3/4 sees the lit front and the lit side rack.
+_FRAME20 = {
+    "newsstand": (0.72, 12.0, 208.0, 0.44, 0.54, 0.36, 6.60),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -347,6 +356,32 @@ def _blades(fn, path, yaw=24.0):
     _fit(path)
 
 
+def _window(fn, path, yaw=180.0):
+    """Close view into the open service hatch."""
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.cycles.samples = 28
+    r._ensure_materials()
+    r._world(scene, night=False)
+    asset = fn()
+    obj = r._spawn(asset, (0, 0, 0), yaw)
+    _sidewalk(4.4)
+    bpy.context.view_layer.update()
+    pts = []
+    for vert in obj.data.vertices:
+        world = obj.matrix_world @ vert.co
+        ux, uy, uz = blender_to_unity(world.x, world.y, world.z)
+        if 1.00 <= uy <= 2.22 and -0.85 <= uz <= 0.15 and abs(ux) <= 0.72:
+            pts.append(world)
+    if len(pts) < 8:
+        print("WINDOW_PTS", len(pts))
+        pts = None
+    r._frame(scene, [obj], fill=0.84, elevation=4.0, azimuth=180.0, points=pts, aim_frac=0.48)
+    r._render(scene, path)
+    _fit(path)
+
+
 def _place_hier(pos, yaw):
     if not os.path.isfile(HIER_FBX):
         print("HIER_MISSING", HIER_FBX)
@@ -413,6 +448,8 @@ def main():
             continue
         kind = "asphalt" if any(part in key for part in ("barrier", "road", "curb", "median")) else "concrete"
         tuned15 = _FRAME15.get(key) if PASS >= 15 else None
+        if PASS >= 20 and key in _FRAME20:
+            tuned15 = _FRAME20[key]
         if tuned15:
             fill, elevation, azimuth, aim, scale_fill, scale_aim, slab = tuned15
         else:
@@ -431,6 +468,21 @@ def main():
         if PASS >= 11 and key == "sign_street":
             print("SHOT", key + "_blades")
             _blades(found[name], os.path.join(STILL_DIR, key + "_blades.png"), yaw=28.0)
+        if PASS == 20 and key == "newsstand":
+            print("SHOT", key + "_front")
+            _hero(
+                found[name],
+                os.path.join(STILL_DIR, key + "_front.png"),
+                kind=kind,
+                yaw=yaw,
+                fill=0.76,
+                elevation=9.0,
+                azimuth=180.0,
+                aim_frac=0.46,
+                slab=slab,
+            )
+            print("SHOT", key + "_window")
+            _window(found[name], os.path.join(STILL_DIR, key + "_window.png"), yaw=yaw)
         if PASS == 19 and key == "mail_drop":
             print("SHOT", key + "_side")
             _scale(
