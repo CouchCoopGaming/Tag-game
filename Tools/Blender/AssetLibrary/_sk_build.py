@@ -115,6 +115,9 @@ MODULES = (
     "sk_sidewalk_gap",
     "sk_road_bike",
     "sk_ped_button",
+    "sk_sign_parking",
+    "sk_valve_box",
+    "sk_sign_aframe",
 )
 
 

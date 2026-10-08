@@ -92,6 +92,11 @@ PASSES = {
         ("road_bike", "StreetRoad_Bike", 18.0, (-2.2, 0.0, 1.4), 200.0),
         ("ped_button", "PedButton_Post", 16.0, (-0.9, 0.0, 0.45), 200.0),
     ),
+    10: (
+        ("sign_parking", "Sign_Parking_2H", 14.0, (-1.05, 0.0, 0.55), 200.0),
+        ("valve_box", "ValveBox_Walk", 20.0, (-0.85, 0.0, 0.4), 200.0),
+        ("sign_aframe", "Sign_AFrame", 22.0, (-1.15, 0.0, 0.45), 200.0),
+    ),
 }
 
 
@@ -140,6 +145,9 @@ def _load(names):
         "Sidewalk_Gap": "sk_sidewalk_gap",
         "StreetRoad_Bike": "sk_road_bike",
         "PedButton_Post": "sk_ped_button",
+        "Sign_Parking_2H": "sk_sign_parking",
+        "ValveBox_Walk": "sk_valve_box",
+        "Sign_AFrame": "sk_sign_aframe",
     }
     for name in names:
         module = importlib.import_module(stems[name])

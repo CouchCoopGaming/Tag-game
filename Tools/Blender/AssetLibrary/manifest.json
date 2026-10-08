@@ -41641,5 +41641,311 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/PedButton_Post.fbx"
+  },
+  {
+    "name": "Sign_Parking_2H",
+    "category": "StreetFurniture",
+    "blurb": "Parking sign 0.30 x 0.46 m, bottom at 2.13 m. Pole 60 mm. 2 HR PARKING in Liberation Sans.",
+    "size": [
+      0.32,
+      2.6,
+      0.2
+    ],
+    "min": [
+      -0.16,
+      0.0,
+      -0.1
+    ],
+    "max": [
+      0.16,
+      2.6,
+      0.1
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1056,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintWhite",
+          "Lib_PaintRed",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 88,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintWhite",
+          "Lib_PaintRed"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.012,
+          0
+        ],
+        "size": [
+          0.14,
+          0.014,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pole",
+        "type": "capsule",
+        "center": [
+          0,
+          1.05,
+          0
+        ],
+        "radius": 0.018,
+        "height": 1.8,
+        "direction": 1
+      },
+      {
+        "name": "Col_Sign",
+        "type": "box",
+        "center": [
+          0,
+          2.36,
+          0.052
+        ],
+        "size": [
+          0.22,
+          0.36,
+          0.006
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "60 mm pole. Not a cling.",
+    "vaultNote": "Sign bottom is 2.13 m. No vault rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_Parking_2H.fbx"
+  },
+  {
+    "name": "ValveBox_Walk",
+    "category": "StreetFurniture",
+    "blurb": "Valve box. Pad 0.46 m square, cover 0.28 m, crown at 0.05 m.",
+    "size": [
+      0.46,
+      0.055,
+      0.46
+    ],
+    "min": [
+      -0.23,
+      0.0,
+      -0.23
+    ],
+    "max": [
+      0.23,
+      0.055,
+      0.23
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 84,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 32,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Pad",
+        "type": "box",
+        "center": [
+          0,
+          0.012,
+          0
+        ],
+        "size": [
+          0.34,
+          0.016,
+          0.34
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cover",
+        "type": "box",
+        "center": [
+          0,
+          0.042,
+          0
+        ],
+        "size": [
+          0.14,
+          0.012,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Cover is 5 cm. Not a climb.",
+    "vaultNote": "Too low to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/ValveBox_Walk.fbx"
+  },
+  {
+    "name": "Sign_AFrame",
+    "category": "StreetFurniture",
+    "blurb": "A-frame 0.56 m wide and 0.86 m tall. OPEN in Liberation Sans on the street face.",
+    "size": [
+      0.58,
+      0.818,
+      0.64
+    ],
+    "min": [
+      -0.29,
+      0.0,
+      -0.32
+    ],
+    "max": [
+      0.29,
+      0.818,
+      0.32
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 492,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 100,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Front",
+        "type": "box",
+        "center": [
+          0,
+          0.42,
+          0.16
+        ],
+        "size": [
+          0.4,
+          0.56,
+          0.01
+        ],
+        "euler": [
+          14,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Back",
+        "type": "box",
+        "center": [
+          0,
+          0.42,
+          -0.16
+        ],
+        "size": [
+          0.4,
+          0.56,
+          0.01
+        ],
+        "euler": [
+          -14,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Smooth board. Not a cling.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_AFrame.fbx"
   }
 ]
