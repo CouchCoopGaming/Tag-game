@@ -402,6 +402,16 @@ The effect pictures were taken again. Speed, the roll timer, and the camera in p
 - A punch still lands on the back. The target leans, the head snaps, and the fist leaves a short trail. Try it: punch the dummy.
 - A wall run leaves faint streaks at the foot. A wall jump kicks up a puff. A vault plants the hands in a puff on the box. Try it: run a wall, jump off it, then vault a box.
 
+## Hips on the dirt, and a foot on the wall
+
+The effect pictures were taken again. Speed, the roll timer, and the camera in play stay as they were.
+
+- A slide sets the hips on dirt. The trail leg folds under, and dust leaves the lead heel. Try it: slide on the dirt path, then on concrete.
+- A wall run is a long wall. The near foot is on the face, the body leans in, and the streaks start at that foot. Try it: run the wall.
+- A wall jump plants the kick on the face and leaves a puff there. Try it: jump off the wall.
+- A vault puts both hands on the box. The hips stay above it and the legs swing over. Try it: vault a box.
+- The zip, the grapple swing, and the punch stay as they were.
+
 ## Motion, thirteenth pass
 
 A long fall now bends the knees, sets the feet a little ahead, and opens the arms. Climbing onto a ledge, vaulting, sliding, grabbing and leaving a zip, arriving and letting go of a grapple, and leaving a launch pad no longer pop a bone in one frame. Speeds and the timers you feel are the same. Try it: fall from high up and watch the knees, then climb, vault, slide, zip, grapple, and hit a launch pad.

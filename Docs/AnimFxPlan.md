@@ -124,6 +124,17 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - A wall run draws four faint streaks on the wall at the contact foot, about the sprint line length. A wall jump puts a pale puff on the wall at the kicking foot. A vault puts a puff on the box top at the hands.
 - Stills are in `Docs/AnimStills/pass14/`. The live dust numbers, the 0.52 s roll, and the 65% gate stay.
 
+## Pass 15 (this branch)
+
+- Contacts are read from the evaluated mesh. The mannequin is rigid pieces parented to bones, so a bone head is not the surface.
+- The slide puts the pelvis mesh on a dirt path, 1.7 cm off the surface. The lead heel is 2.7 cm up, and the head sits behind the hips. Dirt kicks a tan spray. Concrete kicks warm sparks. The ground under the body is brown dirt or gray concrete.
+- The wall run is a 6.2 m by 3.2 m wall. The near foot mesh is 1.2 cm off the face, and the hip mesh is 49.6 cm clear of that face. Four streaks start at the foot.
+- The wall jump is a 6.0 m by 3.2 m wall. The kicking foot is 1.2 cm off the face, and the hip is 37.0 cm clear. The puff sits on that foot.
+- The vault plants both hands on the box top, 1.2 cm and 1.8 cm off it. The hips are 14.5 cm above the top. The feet are 23.9 cm and 7.4 cm above it. The puff is at the hands.
+- Each contact has an orthographic debug still with red dots on the measured vertices. A 10 cm vertical pair reads back as 10.0 cm, and the pixel gap matches the centimetre gap.
+- Zip, grapple, and punch keep the pass 14 poses and are rendered again into this folder.
+- Stills are in `Docs/AnimStills/pass15/`. The live dust numbers, the 0.52 s roll, and the 65% gate stay.
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue
