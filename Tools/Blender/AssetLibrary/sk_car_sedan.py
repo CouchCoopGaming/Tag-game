@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
-from sk_parts import look_euler
+from sk_parts import fender_arch, look_euler
 
 
 def _span_box(g, a, b, width, thick, mat, bevel, segs):
@@ -31,7 +31,7 @@ def create():
     a = Asset(
         "Car_Sedan",
         "StreetFurniture",
-        "Sedan shell, 4.59 m long, 2.07 m wide over the tires, roof at 1.43 m. Wheelbase 2.70 m. Empty body.",
+        "Sedan shell, 4.64 m long, 2.14 m wide over the fender brows, roof at 1.43 m. Wheelbase 2.70 m. Fender lips, beltline, and a slat grille. Empty body.",
     )
     a.climb_note = "Sheet metal. Not a cling wall."
     a.vault_note = "Hood and roof are landings, not vault rails."
@@ -51,10 +51,36 @@ def create():
         g.box((0, 0.78, -1.55), (1.50, 0.08, 0.70), "Lib_PaintBlue", bevel=bev, segs=bs)
         g.box((0, 0.55, 2.08), (1.20, 0.10, 0.06), "Lib_PaintCream")
         g.box((0, 0.58, -2.12), (1.15, 0.08, 0.05), "Lib_PaintRed")
+        # Fender brows sit over the tire and outside the body collider.
+        for z in (-1.35, 1.35):
+            g.box((0.99, 0.66, z), (0.16, 0.07, 0.62), "Lib_PaintBlue", bevel=bev, segs=1)
+            g.box((-0.99, 0.66, z), (0.16, 0.07, 0.62), "Lib_PaintBlue", bevel=bev, segs=1)
+        for sign, outward in ((1.0, 1.0), (-1.0, -1.0)):
+            face = sign * 0.988
+            for z in (-1.35, 1.35):
+                fender_arch(g, face, 0.32, z, 0.42, 0.055, 0.022, "Lib_SteelDark", outward=outward, steps=8)
+            g.box((sign * 1.002, 0.80, 0.05), (0.016, 0.028, 3.15), "Lib_Steel")
+            g.box((sign * 1.000, 0.40, 0.05), (0.018, 0.045, 2.40), "Lib_Black")
+            for z in (0.45, -0.15, -0.75):
+                g.box((sign * 1.000, 0.60, z), (0.014, 0.36, 0.012), "Lib_Black")
+            g.box((sign * 1.004, 0.68, 0.22), (0.016, 0.035, 0.10), "Lib_SteelDark")
+            g.box((sign * 1.004, 0.68, -0.55), (0.016, 0.035, 0.10), "Lib_SteelDark")
+            g.box((sign * 0.755, 1.08, 0.02), (0.030, 0.38, 0.62), "Lib_ShopGlass")
+            g.box((sign * 0.745, 1.10, -0.62), (0.028, 0.34, 0.48), "Lib_ShopGlass")
+            g.box((sign * 0.770, 1.08, -0.32), (0.040, 0.40, 0.055), "Lib_PaintBlue")
+        g.box((0, 0.50, 2.318), (0.78, 0.14, 0.028), "Lib_Black")
+        for i, y in enumerate((0.46, 0.50, 0.54)):
+            g.box((0, y, 2.336), (0.70, 0.012, 0.012), "Lib_SteelDark")
+        g.box((0.62, 0.52, 2.322), (0.28, 0.11, 0.030), "Lib_PaintCream")
+        g.box((-0.62, 0.52, 2.322), (0.28, 0.11, 0.030), "Lib_PaintCream")
+        g.box((0.62, 0.52, 2.342), (0.16, 0.06, 0.012), "Lib_ShopGlass")
+        g.box((-0.62, 0.52, 2.342), (0.16, 0.06, 0.012), "Lib_ShopGlass")
         if lod == 0:
             g.box((0.78, 0.95, 0.15), (0.08, 0.08, 0.16), "Lib_PaintBlue", bevel=0.004, segs=1)
             g.box((-0.78, 0.95, 0.15), (0.08, 0.08, 0.16), "Lib_PaintBlue", bevel=0.004, segs=1)
             g.box((0, 0.34, 1.55), (1.40, 0.04, 0.08), "Lib_Black")
+            for xoff in (-0.22, 0.22):
+                _span_box(g, (xoff, 0.84, 1.05), (xoff, 0.70, 1.85), 0.012, 0.012, "Lib_SteelDark", 0, 0)
         _wheels(g, lod, (-1.35, 1.35))
         a.end()
     a.box("Col_Body", (0, 0.64, 0.05), (1.55, 0.20, 3.00))

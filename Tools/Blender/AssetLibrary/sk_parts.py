@@ -66,6 +66,37 @@ def chain(g, a, b, n=5, sag=0.05, radius=0.0045):
     polyline(g, pts, radius, "Lib_Chain", 4)
 
 
+def fender_arch(g, x_face, y, z, radius, band, stand, mat, outward=1.0, steps=10):
+    """Half-ring lip in the YZ plane, proud of a side panel. Ends sit above the axle."""
+    a0 = math.radians(16.0)
+    a1 = math.pi - a0
+    x0 = x_face
+    x1 = x_face + outward * stand
+    r_in = radius - band * 0.5
+    r_out = radius + band * 0.5
+    verts = []
+    rings = []
+    for i in range(steps + 1):
+        ang = a0 + (a1 - a0) * (i / float(steps))
+        sy = math.sin(ang)
+        cz = math.cos(ang)
+        base = len(verts)
+        for rad, x in ((r_in, x0), (r_out, x0), (r_out, x1), (r_in, x1)):
+            verts.append((x, y + rad * sy, z + rad * cz))
+        rings.append(base)
+    faces = []
+    for i in range(steps):
+        a = rings[i]
+        b = rings[i + 1]
+        for k in range(4):
+            k2 = (k + 1) % 4
+            faces.append((a + k, a + k2, b + k2, b + k))
+    faces.append((rings[0], rings[0] + 1, rings[0] + 2, rings[0] + 3))
+    last = rings[-1]
+    faces.append((last + 3, last + 2, last + 1, last))
+    g.mesh(verts, faces, mat)
+
+
 def look_euler(a, b):
     """Unity euler that aims a box's local +Z from a to b."""
     dx = b[0] - a[0]

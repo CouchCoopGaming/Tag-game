@@ -50,8 +50,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.715, z: 0.005}
-  m_Size: 4.59
+  m_LocalReferencePoint: {x: 0, y: 0.715, z: 0.029}
+  m_Size: 4.638
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -78,7 +78,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "StreetFurniture"
-  summary: "Sedan shell, 4.59 m long, 2.07 m wide over the tires, roof at 1.43 m. Wheelbase 2.70 m. Empty body."
+  summary: "Sedan shell, 4.64 m long, 2.14 m wide over the fender brows, roof at 1.43 m. Wheelbase 2.70 m. Fender lips, beltline, and a slat grille. Empty body."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
@@ -155,8 +155,9 @@ MeshRenderer:
   - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
   - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
   - {fileID: 2100000, guid: 38838e5bb0bb608f1038bb4926803471, type: 2}
-  - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
+  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
+  - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -251,8 +252,9 @@ MeshRenderer:
   - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
   - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
   - {fileID: 2100000, guid: 38838e5bb0bb608f1038bb4926803471, type: 2}
-  - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
+  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
+  - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

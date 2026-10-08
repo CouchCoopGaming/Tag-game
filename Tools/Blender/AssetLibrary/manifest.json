@@ -33427,49 +33427,51 @@
   {
     "name": "Car_Sedan",
     "category": "StreetFurniture",
-    "blurb": "Sedan shell, 4.59 m long, 2.07 m wide over the tires, roof at 1.43 m. Wheelbase 2.70 m. Empty body.",
+    "blurb": "Sedan shell, 4.64 m long, 2.14 m wide over the fender brows, roof at 1.43 m. Wheelbase 2.70 m. Fender lips, beltline, and a slat grille. Empty body.",
     "size": [
-      2.072,
+      2.14,
       1.43,
-      4.59
+      4.638
     ],
     "min": [
-      -1.036,
+      -1.07,
       0.0,
       -2.29
     ],
     "max": [
-      1.036,
+      1.07,
       1.43,
-      2.3
+      2.348
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 852,
+        "tris": 1660,
         "materials": [
           "Lib_PaintBlue",
           "Lib_Black",
           "Lib_ShopGlass",
           "Lib_PaintCream",
           "Lib_PaintRed",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Rubber"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 368,
+        "tris": 1024,
         "materials": [
           "Lib_PaintBlue",
           "Lib_Black",
           "Lib_ShopGlass",
           "Lib_PaintCream",
           "Lib_PaintRed",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Rubber"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -33627,47 +33629,49 @@
   {
     "name": "Car_Hatch",
     "category": "StreetFurniture",
-    "blurb": "Hatchback shell, 3.98 m long, 2.00 m wide over the tires, roof at 1.49 m. Wheelbase 2.50 m.",
+    "blurb": "Hatchback shell, 4.02 m long, 2.00 m wide over the fender brows, roof at 1.49 m. Wheelbase 2.50 m. Fender lips, beltline, and a slat grille. Empty body.",
     "size": [
-      1.995,
+      2.0,
       1.49,
-      3.98
+      4.019
     ],
     "min": [
-      -0.998,
+      -1.0,
       0.0,
       -1.99
     ],
     "max": [
-      0.998,
+      1.0,
       1.49,
-      1.99
+      2.029
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 636,
+        "tris": 1396,
         "materials": [
           "Lib_PaintRed",
           "Lib_Black",
           "Lib_ShopGlass",
           "Lib_PaintCream",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Rubber"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 356,
+        "tris": 988,
         "materials": [
           "Lib_PaintRed",
           "Lib_Black",
           "Lib_ShopGlass",
           "Lib_PaintCream",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Rubber"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -33844,26 +33848,26 @@
   {
     "name": "Car_Pickup",
     "category": "StreetFurniture",
-    "blurb": "Pickup shell, 4.93 m long, 2.24 m wide over the tires. Cab roof 1.77 m, bed sides about 1.12 m. Wheelbase 3.20 m.",
+    "blurb": "Pickup shell, 4.98 m long, 2.28 m wide over the fender brows. Cab roof 1.77 m, bed sides about 1.12 m. Wheelbase 3.20 m. Fender lips, cab beltline, and a slat grille. Empty cab and bed.",
     "size": [
-      2.24,
+      2.28,
       1.77,
-      4.93
+      4.976
     ],
     "min": [
-      -1.12,
+      -1.14,
       0.0,
       -2.61
     ],
     "max": [
-      1.12,
+      1.14,
       1.77,
-      2.32
+      2.366
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 784,
+        "tris": 1448,
         "materials": [
           "Lib_PaintWhite",
           "Lib_ShopGlass",
@@ -33871,15 +33875,15 @@
           "Lib_Black",
           "Lib_PaintCream",
           "Lib_PaintRed",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Steel",
+          "Lib_Rubber"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 440,
+        "tris": 976,
         "materials": [
           "Lib_PaintWhite",
           "Lib_ShopGlass",
@@ -33887,8 +33891,8 @@
           "Lib_Black",
           "Lib_PaintCream",
           "Lib_PaintRed",
-          "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Steel",
+          "Lib_Rubber"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
