@@ -374,3 +374,7 @@ The effect pictures were taken again in the park, in warm daylight. Speed, the r
 - A hard landing that is not fast enough to roll drops into a deep knee bend, chest forward, head up, one hand near a foot, with the ring and the debris. Try it: hop off something about head height while moving.
 - A launch pad kicks up a short cyan burst around your knees and you leave it in a tuck, with a few speed lines behind you. Try it: run over a pad.
 - A zip leans you along the cable and sparks trail off the hand. A punch throws a small POW!. A tag is still the bigger burst with no letters. Try it: take a zip, then punch the dummy.
+
+## Motion, thirteenth pass
+
+A long fall now bends the knees, sets the feet a little ahead, and opens the arms. Climbing onto a ledge, vaulting, sliding, grabbing and leaving a zip, arriving and letting go of a grapple, and leaving a launch pad no longer pop a bone in one frame. Speeds and the timers you feel are the same. Try it: fall from high up and watch the knees, then climb, vault, slide, zip, grapple, and hit a launch pad.

@@ -72,6 +72,7 @@
     <Compile Include="../../Assets/Scripts/Art/AirFeel.cs" />
     <Compile Include="../../Assets/Scripts/Art/AirClear.cs" />
     <Compile Include="../../Assets/Scripts/Art/HandoffFeel.cs" />
+    <Compile Include="../../Assets/Scripts/Art/Handoff2Feel.cs" />
     <Compile Include="../../Assets/Scripts/Art/BodyLife.cs" />
     <Compile Include="../../Assets/Scripts/Art/UpperBody.cs" />
     <Compile Include="../../Assets/Scripts/Art/HangMotion.cs" />
