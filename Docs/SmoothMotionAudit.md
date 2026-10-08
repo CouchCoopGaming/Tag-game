@@ -354,3 +354,21 @@ The action stills have their props. Climb has a wall and a lip. Vault has a wais
 Stills: `Docs/SmoothStills/pass14/stride.png`, `stop.png`, `turn.png`, `apex.png`, `fall.png`, `climb.png`, `vault.png`, `slide.png`, `zip.png`, `grapple.png`, `pad.png`.
 
 `loco-feel`, `body-line`, `climb-contact`, `response-latency`, and `stick-quality` are unchanged. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`.
+
+## Pass 15
+
+The fall still and its camera stay. Each action prop is built from the posed bones, and the contact points sit on the prop surface.
+
+Distances from the rendered bones: climb hands 0.0 cm and feet 0.1 cm on the wall, hips 29.2 cm off the face. Vault hands 0.4 cm on the box top, hips over the box and 18.0 cm above it, chest 14.1 cm above it. Slide lead foot 1.2 cm, trail foot 0.8 cm, and trailing hand 1.4 cm off the ground, hips 30.9 cm up, bar 7.0 cm above the head. Zip hands 0.0 cm on the cable. Grapple palm and hand 0.0 cm on the rope. Pad covers the hips and the feet; the feet are 29.4 cm above the plate.
+
+`air-feel takeoff=24.8>12.5 tuck=3.7>1.6 fall=58.0>20.0 hop=22.1>4.9 strafe=18.0>1.8 coyote=24.8>10.9 clear=10.3cm gameplayDelay=0 rootMotion=0`
+
+`handoff run=7.6>3.2 roll=8.5>2.1 wall=81.0>8.8 cling=42.0>15.4 rollAt=36.5 gameplayDelay=0 rootMotion=0`
+
+`handoff2 climb=21.9>12.5 vault=20.2>13.6 vaultOut=14.0>8.4 slideIn=30.3>12.6 slideOut=30.3>12.6 zipGrab=33.1>11.9 zipDrop=53.2>7.9 grappleIn=72.0>10.4 grappleOut=25.0>11.3 padUp=30.6>11.9 padAir=14.2>10.8 gameplayDelay=0 rootMotion=0`
+
+Same stage and the same fall camera. Climb, vault, and slide are turned so that camera sees the wall face, the body crossing the box, and the body under the bar. Fall fill stays 63.7%. Nothing touches the frame edge.
+
+Stills: `Docs/SmoothStills/pass15/stride.png`, `stop.png`, `turn.png`, `apex.png`, `fall.png`, `climb.png`, `vault.png`, `slide.png`, `zip.png`, `grapple.png`, `pad.png`.
+
+`loco-feel`, `body-line`, `climb-contact`, `response-latency`, and `stick-quality` are unchanged. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`.
