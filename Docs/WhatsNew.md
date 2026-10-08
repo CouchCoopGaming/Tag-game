@@ -324,6 +324,8 @@ The twenty-eighth pass keeps that raw overlap rule and splits the count. rigJoin
 
 The twenty-ninth pass keeps those lines. Title, the main menu, character select, mode and rules, arena, and results ease through a short slide and scale. Back runs that move in reverse. Input skips it, and the timer is unscaled so a pause does not stop it. The focused tile bumps to 1.08 and settles. Arena tiles show the real loop, pads, zips, and spawns, with the measured size and one line from that map. Ready leans into the ready pose and hops once, and pose stays 0. Move, confirm, back, ready, and start already play UiMove, UiConfirm, UiBack, RoundWin, and RoundStart. The extra line is `transitions=ok skip=ok`. Mockups are in `Docs/UiStills/pass29/`.
 
+The thirtieth pass keeps those lines. One row is focused at a time. The selected mode keeps a filled tile and a check. Headers start at least 5% down on a 16:9 screen and inside each pane of a 4-way split. The prompt bar uses the same ActionBinds tokens as Controls, so Confirm, Back, and the extra action match the bindings. Character select shows four cards, each with the player name, the look colour, and a READY banner. The pictures in `Docs/UiStills/pass30/` are composites.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

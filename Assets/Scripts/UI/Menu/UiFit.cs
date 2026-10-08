@@ -15,6 +15,19 @@ namespace Tag.Ui.Menu
         public const float RefH = 1080f;
         public const float SafeX = 96f;
         public const float SafeY = 54f;
+
+        /// <summary>
+        /// Top of a header, at least 5% of that view. A full 16:9 frame also
+        /// keeps the TV safe band. A split pane uses 5% of the pane.
+        /// </summary>
+        public static float HeaderTop(float viewH)
+        {
+            if (viewH < 1f) viewH = 1f;
+            float five = viewH * 0.05f;
+            if (viewH >= RefH * 0.75f && five < SafeY) five = SafeY;
+            if (five < 8f) five = 8f;
+            return five;
+        }
         public const int MinPx = 24;
         public const int FloorFont = 30;
         public const float SpaceStep = 16f;

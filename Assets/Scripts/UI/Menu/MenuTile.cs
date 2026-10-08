@@ -22,6 +22,8 @@ namespace Tag.Ui.Menu
         public Action<int> Pressed;
 
         bool _hot;
+        bool _chosen;
+        Text _check;
         float _punch;
         float _confirm;
         float _select;
@@ -68,17 +70,60 @@ namespace Tag.Ui.Menu
             _select = 1f;
         }
 
+        public void SetChosen(bool chosen)
+        {
+            _chosen = chosen;
+            EnsureCheck();
+            if (_check != null) _check.gameObject.SetActive(chosen);
+            if (!_hot) PaintRest();
+        }
+
         public void SetHot(bool hot)
         {
-            if (hot == _hot) return;
+            if (hot == _hot)
+            {
+                if (hot) PaintHot();
+                else PaintRest();
+                return;
+            }
             _hot = hot;
             if (hot && !MenuVideo.ReduceMotion) _punch = 1f;
-            if (Plate != null) Plate.color = hot ? _hotColor : _base;
-            if (Stroke != null) Stroke.color = hot ? MenuTheme.Gold : MenuTheme.Stroke;
-            if (Label != null) Label.color = hot ? MenuTheme.Ink : MenuTheme.Cream;
-            if (Detail != null) Detail.color = hot ? MenuTheme.Ink : MenuTheme.Mute;
-            if (Bar != null) Bar.color = hot ? MenuTheme.Ink : (KeepBar ? BarColor : new Color(1f, 1f, 1f, 0.35f));
+            if (hot) PaintHot();
+            else PaintRest();
         }
+
+        void PaintHot()
+        {
+            if (Plate != null) Plate.color = _hotColor;
+            if (Stroke != null) Stroke.color = MenuTheme.Gold;
+            if (Label != null) Label.color = MenuTheme.Ink;
+            if (Detail != null) Detail.color = MenuTheme.Ink;
+            if (Bar != null) Bar.color = MenuTheme.Ink;
+        }
+
+        void PaintRest()
+        {
+            if (Plate != null) Plate.color = _chosen ? ChosenFill : _base;
+            if (Stroke != null) Stroke.color = MenuTheme.Stroke;
+            if (Label != null) Label.color = MenuTheme.Cream;
+            if (Detail != null) Detail.color = MenuTheme.Mute;
+            if (Bar != null) Bar.color = KeepBar ? BarColor : new Color(1f, 1f, 1f, 0.35f);
+        }
+
+        void EnsureCheck()
+        {
+            if (_check != null) return;
+            RectTransform rt = MenuWidgets.Place(transform, "Check", 0f, 0f, 36f, 36f);
+            rt.anchorMin = new Vector2(1f, 0.5f);
+            rt.anchorMax = new Vector2(1f, 0.5f);
+            rt.pivot = new Vector2(1f, 0.5f);
+            rt.anchoredPosition = new Vector2(-14f, 0f);
+            rt.sizeDelta = new Vector2(36f, 36f);
+            _check = MenuWidgets.Words(rt, "\u2713", UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            _check.gameObject.SetActive(false);
+        }
+
+        static readonly Color ChosenFill = new Color(0.12f, 0.40f, 0.78f, 1f);
 
         public void OnPointerEnter(PointerEventData eventData)
         {

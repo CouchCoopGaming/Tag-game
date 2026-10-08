@@ -277,6 +277,10 @@ Menu move, confirm, back, ready, and start already call the bus. Move is TagSfx.
 
 The handoff line, the results line, and the no-clip line are unchanged. Mockups are in `Docs/UiStills/pass29/`.
 
+## Pass 30
+
+One item has the yellow border. On mode and rules the selected mode stays a filled tile with a check, and the focused row is the only yellow one. Arena select uses the same rule. Headers sit at least 5% down from the top of a 16:9 frame, and the same fraction down inside each pane of a 4-way split. The bottom bar reads Confirm, Back, and the extra action for that screen through ActionBinds.Show, the same tokens the Controls screen prints. Character select keeps four cards. Each card shows the seat, the player name, the look colour, and a READY banner when that player is ready. The pictures in `Docs/UiStills/pass30/` are composites. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.
