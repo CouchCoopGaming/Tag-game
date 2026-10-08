@@ -743,6 +743,9 @@ namespace Tag.Art
         float _tellShown = 1f;
         float _padIn = 1f;
         bool _padWas;
+        float _padVyVis;
+        float _latchVis;
+        bool _latchVisOn;
         float _ropeElev;
         bool _ropeHave;
         float _recoilAge = -1f;
@@ -1970,7 +1973,7 @@ namespace Tag.Art
                 }
                 _dropSlide = false;
             }
-            else if (_dropVis <= 0.001f && _slideVisAge >= LocoFeel.SlideSeconds)
+            else if (_dropVis <= 0.001f && _slideVisAge >= Handoff2Feel.SlideSeconds)
                 _dropSlide = false;
             if (sliding || !crouch || speed > 0.35f)
                 _slideToCrouch = 0f;
@@ -2704,7 +2707,7 @@ namespace Tag.Art
             if (slideExit)
             {
                 PoseHandoff.SlideEdge(_dropVis, out slideLeave, out _);
-                slideLeave = 1f - LocoFeel.SlideWeight(_slideVisAge, false);
+                slideLeave = 1f - Handoff2Feel.SlideOpen(_slideVisAge, false);
             }
             _skiBlend = Mathf.MoveTowards(_skiBlend, skiing ? 1f : 0f, dt / 0.22f);
             if (_skiFromWalk && skiing)
@@ -6056,7 +6059,7 @@ namespace Tag.Art
             if (_mantleSnap && mantle)
             {
                 if (_mantleSnapIn < 0.98f)
-                    _mantleSnapIn = Mathf.MoveTowards(_mantleSnapIn, 1f, dt / MantlePose.EnterBlendSeconds);
+                    _mantleSnapIn = Mathf.MoveTowards(_mantleSnapIn, 1f, dt / Handoff2Feel.ClimbSeconds);
             }
             else
                 _mantleSnap = false;
@@ -6144,7 +6147,7 @@ namespace Tag.Art
             if (_mantleExitSnap && (mantleGround || mantleLandHold))
             {
                 if (_mantleExitIn < 0.98f)
-                    _mantleExitIn = Mathf.MoveTowards(_mantleExitIn, 1f, dt / MantlePose.ExitBlendSeconds);
+                    _mantleExitIn = Mathf.MoveTowards(_mantleExitIn, 1f, dt / Handoff2Feel.VaultOutSeconds);
             }
             else
             {
@@ -6545,7 +6548,8 @@ namespace Tag.Art
 
             // Spine / hips lean by state - jet reads clearly in TP
             float mantleU = mantle && _motor != null ? _motor.MantleProgress : 0f;
-            MantlePose.Sample vault = mantle ? MantlePose.At(mantleU, _mantleLeadLeft) : default;
+            float vaultU = Handoff2Feel.VaultShown(mantleU);
+            MantlePose.Sample vault = mantle ? MantlePose.At(vaultU, _mantleLeadLeft) : default;
             float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? vault.Spine : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? -WallPose.RunTilt : WallPose.RunTilt) : 0f;
             float idleW = 0f;
@@ -7189,7 +7193,7 @@ namespace Tag.Art
                 _laRT = _laR0 * Quaternion.Euler(vault.ElbowR, 0f, 0f);
                 if (_mantleSnap && _mantleSnapIn < 0.98f)
                 {
-                    float intoMantle = PoseHandoff.Ease(_mantleSnapIn);
+                    float intoMantle = Handoff2Feel.ClimbOpen(_mantleSnapIn);
                     _uaLT = Quaternion.Slerp(_mantleUaL, _uaLT, intoMantle);
                     _uaRT = Quaternion.Slerp(_mantleUaR, _uaRT, intoMantle);
                     _laLT = Quaternion.Slerp(_mantleLaL, _laLT, intoMantle);
@@ -7771,14 +7775,14 @@ namespace Tag.Art
                     _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(-12f, 0f, 0f), skateW);
                     _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(-12f, 0f, 0f), skateW);
                 }
-                if (_dropVis > 0.02f || (slideExit && _slideVisAge < LocoFeel.SlideSeconds))
+                if (_dropVis > 0.02f || (slideExit && _slideVisAge < Handoff2Feel.SlideSeconds))
                 {
                     // The stride drops into the wedge or the guard. A slide stand-up
                     // brings the arms back with the feet, under the hips.
                     float d = footDrop;
                     // The clip eases the enter. This pull would arrive early and then pop.
                     if (sliding)
-                        d = LocoFeel.SlideWeight(_slideVisAge, true);
+                        d = Handoff2Feel.SlideOpen(_slideVisAge, true);
                     if (_dropSlide)
                     {
                         bool leadLeftArms = sinC >= 0f;
@@ -8088,7 +8092,7 @@ namespace Tag.Art
                 _llRT = _llR0 * Quaternion.Euler(vault.KneeR, 0f, 0f);
                 if (_mantleSnap && _mantleSnapIn < 0.98f)
                 {
-                    float intoMantleLegs = PoseHandoff.Ease(_mantleSnapIn);
+                    float intoMantleLegs = Handoff2Feel.ClimbOpen(_mantleSnapIn);
                     _ulLT = Quaternion.Slerp(_mantleUlL, _ulLT, intoMantleLegs);
                     _ulRT = Quaternion.Slerp(_mantleUlR, _ulRT, intoMantleLegs);
                     _llLT = Quaternion.Slerp(_mantleLlL, _llLT, intoMantleLegs);
@@ -8451,14 +8455,14 @@ namespace Tag.Art
                     _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(-(6f + sFrontL * 32f), 0f, 0f), glideW);
                     _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(-(6f + sFrontR * 32f), 0f, 0f), glideW);
                 }
-                if (_dropVis > 0.02f || (slideExit && _slideVisAge < LocoFeel.SlideSeconds))
+                if (_dropVis > 0.02f || (slideExit && _slideVisAge < Handoff2Feel.SlideSeconds))
                 {
                     // The stride drops into the pose. On a stand-up the feet come back
                     // under the hips while the chest is still low. The lead foot stays forward.
                     float d = footDrop;
                     // The clip eases the enter. This pull would arrive early and then pop.
                     if (sliding)
-                        d = LocoFeel.SlideWeight(_slideVisAge, true);
+                        d = Handoff2Feel.SlideOpen(_slideVisAge, true);
                     if (_dropSlide)
                     {
                         bool leadLeft = sinC >= 0f;
@@ -8502,7 +8506,7 @@ namespace Tag.Art
                             footYawL = Mathf.Lerp(footYawL, 0f, up);
                             footYawR = Mathf.Lerp(footYawR, 0f, up);
                         }
-                        float legW = slideExit ? 1f : LocoFeel.SlideWeight(_slideVisAge, sliding);
+                        float legW = slideExit ? 1f : Handoff2Feel.SlideOpen(_slideVisAge, sliding);
                         _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(wedgeL, footYawL, 0f), legW);
                         _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(wedgeR, footYawR, 0f), legW);
                         _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(bendL, 0f, 0f), legW);
@@ -8801,7 +8805,7 @@ namespace Tag.Art
                 _llRT = Quaternion.Slerp(fromKr, _llRT, intoAttach);
             }
 
-            if ((_dropVis > 0.02f || (slideExit && _slideVisAge < LocoFeel.SlideSeconds)) && !air && !dashing && !lunging && !jet && !wallRun && !climb && !mantle && !punching)
+            if ((_dropVis > 0.02f || (slideExit && _slideVisAge < Handoff2Feel.SlideSeconds)) && !air && !dashing && !lunging && !jet && !wallRun && !climb && !mantle && !punching)
             {
                 // Chest and hips follow the drop, then rise back into the stride.
                 // A slide stand-up eases the hips so they do not pop flat.
@@ -8809,7 +8813,7 @@ namespace Tag.Art
                 float d = (_dropSlide || crouchIdleExit || crouchWalkExit || crouchStandSprint) ? hipDrop : _dropVis;
                 // The same open as the clip. A one-frame pull at the end of the old timer popped the chest.
                 if (sliding)
-                    d = LocoFeel.SlideWeight(_slideVisAge, true);
+                    d = Handoff2Feel.SlideOpen(_slideVisAge, true);
                 // A walk, a run, or a still crouch into a crouch walk writes the guard pitch now. The drop timer stays dt/0.16.
                 if (_crouchWalkFromWalk || _crouchWalkFromSprint || _crouchWalkFromStill)
                     d = 1f;
@@ -10648,18 +10652,35 @@ namespace Tag.Art
                 if (!fallRoom)
                     _grappleFallHold = false;
                 else
-                    _grappleFallIn = Mathf.MoveTowards(_grappleFallIn, 1f, dt / GrapplePose.ReleaseBlendSeconds);
+                    _grappleFallIn = Mathf.MoveTowards(_grappleFallIn, 1f, dt / Handoff2Feel.ReleaseSeconds);
             }
             GrapplePose.Sample linePose = GrapplePose.ForBody(GrapplePose.Pull(sinC, vyG, lean));
             bool poseGate = !punching && !_skiFromGrapple && !_slideFromGrapple;
-            bool latching = pulling && GrapplePose.LatchWeight(_grapple != null ? _grapple.LatchAge : -1f) > 0.02f;
+            float latchAge = _grapple != null ? _grapple.LatchAge : -1f;
+            bool latchFlash = pulling && latchAge >= 0f && latchAge < GrapplePose.LatchSnapSeconds;
+            if (latchFlash && !_latchVisOn)
+            {
+                _latchVisOn = true;
+                _latchVis = 0f;
+            }
+            if (pulling && _latchVisOn)
+                _latchVis = Mathf.MoveTowards(_latchVis, 1f, dt / Handoff2Feel.LatchSeconds);
+            else if (!pulling)
+            {
+                _latchVisOn = false;
+                _latchVis = 0f;
+            }
+            bool latching = pulling && GrapplePose.LatchWeight(latchAge) > 0.02f;
             _grappleMissOwns = false;
             if (pulling && poseGate)
             {
                 // Hands on the line, chest toward the latch. ReadWeight keeps a taut
                 // rope on that line. PullBlend stays the speed response. No impulse.
+                // The arrive eases in. Latch time on the motor stays 0.07s.
                 float latchW = GrapplePose.LatchWeight(_grapple.LatchAge);
                 float w = GrapplePose.ReadWeight(outward, taut, latchW);
+                if (_latchVisOn)
+                    w *= Handoff2Feel.LatchOpen(_latchVis);
                 _grapplePullW = w;
                 GrapplePose.Sample hung = GrapplePose.Latched(sinC, vyG, lean, _grapple.LatchAge);
                 BlendGrappleSample(hung, armZ, w, true, true);
@@ -10676,10 +10697,10 @@ namespace Tag.Art
                 if (fallRoom)
                 {
                     // The line eases onto the fall beat. The air pose underneath does not share the bones.
-                    GrapplePose.Sample drop = GrapplePose.Release(sinC, vyG, lean, _grappleFallIn);
+                    GrapplePose.Sample drop = GrapplePose.Release(sinC, vyG, lean, Handoff2Feel.ReleaseShown(_grappleFallIn));
                     BlendGrappleSample(drop, armZ, 1f, true, true);
                     if (_ropeHave)
-                        ApplyBodyLine(_ropeElev, 1f - GrapplePose.ReleaseWeight(_grappleFallIn));
+                        ApplyBodyLine(_ropeElev, 1f - Handoff2Feel.ReleaseOpen(_grappleFallIn));
                     _grappleSlew = GrapplePose.ActiveSlew(false, false, false, true);
                 }
                 else
@@ -10815,10 +10836,10 @@ namespace Tag.Art
             else if (_grappleFallHold && poseGate)
             {
                 // The same release curve, after the pull weight has gone. No snap onto the fall.
-                float intoFall = GrapplePose.ReleaseWeight(_grappleFallIn);
+                float intoFall = Handoff2Feel.ReleaseOpen(_grappleFallIn);
                 GrapplePose.Sample drop = intoFall >= 0.999f
                     ? GrapplePose.Fall()
-                    : GrapplePose.Release(sinC, vyG, lean, _grappleFallIn);
+                    : GrapplePose.Release(sinC, vyG, lean, Handoff2Feel.ReleaseShown(_grappleFallIn));
                 BlendGrappleSample(drop, armZ, 1f, true, true);
                 _grappleSlew = GrapplePose.ActiveSlew(false, false, false, true);
             }
@@ -15163,7 +15184,7 @@ namespace Tag.Art
             {
                 // The vault eases into the gait, a crouch, or the land absorb.
                 // One smoothstep. A wall climb and a wall-jump push-off keep their poses.
-                PoseHandoff.MantleLand(_mantleExitIn, out _, out float intoMantleGround);
+                float intoMantleGround = Handoff2Feel.VaultOutOpen(_mantleExitIn);
                 _uaLT = Quaternion.Slerp(_mantleExitUaL, _uaLT, intoMantleGround);
                 _uaRT = Quaternion.Slerp(_mantleExitUaR, _uaRT, intoMantleGround);
                 _laLT = Quaternion.Slerp(_mantleExitLaL, _laLT, intoMantleGround);
@@ -15376,7 +15397,7 @@ namespace Tag.Art
                 float caught = ZipPose.CatchWeight(_zipAge);
                 if (caught < 0.999f)
                     hang = BlendZip(ZipPose.JumpDrop(), hang, caught);
-                float grab = BodyLine.ZipGrab(_zipAge);
+                float grab = Handoff2Feel.ZipGrab(_zipAge);
                 float cable = Mathf.Lerp(JumpPose.FallArmPitch, BodyLine.CablePitch, grab);
                 hang.ArmPitchL = cable;
                 hang.ArmPitchR = cable;
@@ -15404,7 +15425,7 @@ namespace Tag.Art
             {
                 ApplyZipRelease(armZ);
                 _zipRelease += dt;
-                if (_zipRelease >= ZipPose.ReleaseSeconds)
+                if (_zipRelease >= Handoff2Feel.ZipDropSeconds)
                     _zipRelease = -1f;
                 armSlewL = Mathf.Max(armSlewL, SmoothMotion.CycleSlew);
                 armSlewR = Mathf.Max(armSlewR, SmoothMotion.CycleSlew);
@@ -15458,7 +15479,7 @@ namespace Tag.Art
             float landBob = 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_landSquash));
             if (grounded && _landSquash > 0.02f)
                 bob *= landBob;
-            if ((_dropVis > 0.02f || (_dropSlide && !sliding && _slideVisAge < LocoFeel.SlideSeconds)) && !air && !jet)
+            if ((_dropVis > 0.02f || (_dropSlide && !sliding && _slideVisAge < Handoff2Feel.SlideSeconds)) && !air && !jet)
             {
                 float dropTarget = _dropSlide ? -VerbPoseClips.SlideBodyDrop : -CrouchPose.Drop;
                 if (!_dropSlide && _slidePose > 0.02f)
@@ -15617,8 +15638,9 @@ namespace Tag.Art
             _uaRT = Quaternion.Slerp(_exitUaR, _uaR0 * Quaternion.Euler(air.ArmPitchR, -air.ArmYawR, -armZ), toW);
             _laLT = Quaternion.Slerp(_exitLaL, _laL0 * Quaternion.Euler(air.ElbowL, 0f, 0f), toW);
             _laRT = Quaternion.Slerp(_exitLaR, _laR0 * Quaternion.Euler(air.ElbowR, 0f, 0f), toW);
-            _ulLT = Quaternion.Slerp(_exitUlL, _ulL0 * Quaternion.Euler(air.ThighL, 0f, 0f), toW);
-            _ulRT = Quaternion.Slerp(_exitUlR, _ulR0 * Quaternion.Euler(air.ThighR, 0f, 0f), toW);
+            float legOut = AirFeel.BraceLegYaw * AirFeel.Brace01(vy);
+            _ulLT = Quaternion.Slerp(_exitUlL, _ulL0 * Quaternion.Euler(air.ThighL, -legOut, 0f), toW);
+            _ulRT = Quaternion.Slerp(_exitUlR, _ulR0 * Quaternion.Euler(air.ThighR, legOut, 0f), toW);
             _llLT = Quaternion.Slerp(_exitLlL, _llL0 * Quaternion.Euler(air.KneeL, 0f, 0f), toW);
             _llRT = Quaternion.Slerp(_exitLlR, _llR0 * Quaternion.Euler(air.KneeR, 0f, 0f), toW);
             _spineT = Quaternion.Slerp(_exitSpine, _spine0 * Quaternion.Euler(air.Spine, 0f, 0f), toW);
@@ -16757,12 +16779,20 @@ namespace Tag.Art
         {
             float vy = _motor != null ? _motor.Velocity.y : 0f;
             bool arc = _motor != null && _motor.LaunchArc;
-            if (arc && !_padWas) _padIn = 0f;
+            if (arc && !_padWas)
+            {
+                _padIn = 0f;
+                _padVyVis = vy;
+            }
+            else if (arc)
+                _padVyVis = Mathf.MoveTowards(_padVyVis, vy, Handoff2Feel.PadVyStep);
+            else
+                _padVyVis = vy;
             _padWas = arc;
-            float open = BodyLine.PadOpen(_padIn);
+            float open = Handoff2Feel.PadOpen(_padIn);
             if (arc && Time.deltaTime > 0f) _padIn += Time.deltaTime;
-            LaunchPose.Sample pose = LaunchPose.At(vy);
-            float fallOpen = LaunchPose.OpenAmount(vy);
+            LaunchPose.Sample pose = LaunchPose.At(_padVyVis);
+            float fallOpen = LaunchPose.OpenAmount(_padVyVis);
             pose.ArmPitchL = Mathf.Lerp(0f, pose.ArmPitchL, open);
             pose.ArmPitchR = Mathf.Lerp(0f, pose.ArmPitchR, open);
             pose.ArmYawL = Mathf.Lerp(8f, pose.ArmYawL, open);
@@ -16811,11 +16841,11 @@ namespace Tag.Art
 
         void ApplyZipRelease(float armZ)
         {
-            BodyLine.ZipWeights(_zipRelease, out float hangW, out float releaseW, out float airW);
+            // Linear from the cable onto the air pose already written. The accent let-go is the pop.
+            float drop = Handoff2Feel.ZipDrop(_zipRelease);
             ZipPose.Sample hang = ZipPose.Hang();
             hang.ArmPitchL = BodyLine.CablePitch;
             hang.ArmPitchR = BodyLine.CablePitch;
-            ZipPose.Sample let = ZipPose.Release();
             Quaternion hangUaL = _uaL0 * Quaternion.Euler(hang.ArmPitchL, hang.ArmYawL, armZ);
             Quaternion hangUaR = _uaR0 * Quaternion.Euler(hang.ArmPitchR, hang.ArmYawR, -armZ);
             Quaternion hangLaL = _laL0 * Quaternion.Euler(hang.ElbowL, 0f, 0f);
@@ -16827,28 +16857,17 @@ namespace Tag.Art
             Quaternion hangSp = _spine0 * Quaternion.Euler(hang.Spine, 0f, hang.LeanZ);
             Quaternion hangHp = _hips0 * Quaternion.Euler(hang.Hip, 0f, 0f);
             Quaternion hangHd = _head0 * Quaternion.Euler(hang.Head, 0f, 0f);
-            Quaternion letUaL = _uaL0 * Quaternion.Euler(let.ArmPitchL, let.ArmYawL, armZ);
-            Quaternion letUaR = _uaR0 * Quaternion.Euler(let.ArmPitchR, let.ArmYawR, -armZ);
-            Quaternion letLaL = _laL0 * Quaternion.Euler(let.ElbowL, 0f, 0f);
-            Quaternion letLaR = _laR0 * Quaternion.Euler(let.ElbowR, 0f, 0f);
-            Quaternion letUlL = _ulL0 * Quaternion.Euler(let.ThighL, 0f, 0f);
-            Quaternion letUlR = _ulR0 * Quaternion.Euler(let.ThighR, 0f, 0f);
-            Quaternion letLlL = _llL0 * Quaternion.Euler(let.KneeL, 0f, 0f);
-            Quaternion letLlR = _llR0 * Quaternion.Euler(let.KneeR, 0f, 0f);
-            Quaternion letSp = _spine0 * Quaternion.Euler(let.Spine, 0f, let.LeanZ);
-            Quaternion letHp = _hips0 * Quaternion.Euler(let.Hip, 0f, 0f);
-            Quaternion letHd = _head0 * Quaternion.Euler(let.Head, 0f, 0f);
-            _uaLT = Blend3(hangUaL, letUaL, _uaLT, hangW, releaseW, airW);
-            _uaRT = Blend3(hangUaR, letUaR, _uaRT, hangW, releaseW, airW);
-            _laLT = Blend3(hangLaL, letLaL, _laLT, hangW, releaseW, airW);
-            _laRT = Blend3(hangLaR, letLaR, _laRT, hangW, releaseW, airW);
-            _ulLT = Blend3(hangUlL, letUlL, _ulLT, hangW, releaseW, airW);
-            _ulRT = Blend3(hangUlR, letUlR, _ulRT, hangW, releaseW, airW);
-            _llLT = Blend3(hangLlL, letLlL, _llLT, hangW, releaseW, airW);
-            _llRT = Blend3(hangLlR, letLlR, _llRT, hangW, releaseW, airW);
-            _spineT = Blend3(hangSp, letSp, _spineT, hangW, releaseW, airW);
-            _hipsT = Blend3(hangHp, letHp, _hipsT, hangW, releaseW, airW);
-            _headT = Blend3(hangHd, letHd, _headT, hangW, releaseW, airW);
+            _uaLT = Quaternion.Slerp(hangUaL, _uaLT, drop);
+            _uaRT = Quaternion.Slerp(hangUaR, _uaRT, drop);
+            _laLT = Quaternion.Slerp(hangLaL, _laLT, drop);
+            _laRT = Quaternion.Slerp(hangLaR, _laRT, drop);
+            _ulLT = Quaternion.Slerp(hangUlL, _ulLT, drop);
+            _ulRT = Quaternion.Slerp(hangUlR, _ulRT, drop);
+            _llLT = Quaternion.Slerp(hangLlL, _llLT, drop);
+            _llRT = Quaternion.Slerp(hangLlR, _llRT, drop);
+            _spineT = Quaternion.Slerp(hangSp, _spineT, drop);
+            _hipsT = Quaternion.Slerp(hangHp, _hipsT, drop);
+            _headT = Quaternion.Slerp(hangHd, _headT, drop);
         }
 
         /// <summary>
@@ -16913,8 +16932,9 @@ namespace Tag.Art
                 JumpPose.Sample stride = JumpPose.Stride(speed, sinC, cycle);
                 pose = AirFeel.Blend(stride, beat, AirFeel.PushOpen(_jumpPoseAge));
             }
-            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
-            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
+            float legOut = AirFeel.BraceLegYaw * AirFeel.Brace01(vy);
+            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, -legOut, 0f);
+            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, legOut, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
             _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ);
@@ -19559,7 +19579,7 @@ namespace Tag.Art
                 {
                 // Ease in from the run, then hold the clip. A jump cancel stays out of this branch.
                 PoseHandoff.SlideEdge(_slidePose, out _, out float w);
-                w = LocoFeel.SlideWeight(_slideVisAge, true);
+                w = Handoff2Feel.SlideOpen(_slideVisAge, true);
                 var pose = VerbPoseClips.SlideBodyPose(bind, sinC >= 0f);
                 BlendVerb(pose, w);
                 if (_footL != null && _footR != null)
@@ -19575,7 +19595,7 @@ namespace Tag.Art
             {
                 // Run or stand leave. The body blend is the complement. Shoes keep the same curve.
                 PoseHandoff.SlideEdge(_dropVis, out _, out float stay);
-                stay = LocoFeel.SlideWeight(_slideVisAge, false);
+                stay = Handoff2Feel.SlideOpen(_slideVisAge, false);
                 var pose = VerbPoseClips.SlideBodyPose(bind, sinC >= 0f);
                 if (_footL != null && _footR != null)
                 {

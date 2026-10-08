@@ -258,3 +258,7 @@ Jumps, hops, and air strafes read on the body. The jump still leaves the ground 
 ## Motion, twelfth pass
 
 The jump still leaves on the press frame. The tuck at the top holds the arms out for balance, clear of the head. A long fall keeps the chest up, looks at the landing, and spreads the arms with the palms down. A landing at about 36.5 m/s rolls into the run. A slower sprint landing eases out of the absorb. Wall-run jumps and cling drops no longer pop the arms. Try it: jump, watch the hands at the top, drop from high enough to roll, then wall-run off and drop a cling.
+
+## Motion, thirteenth pass
+
+A long fall now bends the knees, sets the feet a little ahead, and opens the arms. Climbing onto a ledge, vaulting, sliding, grabbing and leaving a zip, arriving and letting go of a grapple, and leaving a launch pad no longer pop a bone in one frame. Speeds and the timers you feel are the same. Try it: fall from high up and watch the knees, then climb, vault, slide, zip, grapple, and hit a launch pad.
