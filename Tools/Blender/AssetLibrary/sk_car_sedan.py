@@ -22,29 +22,29 @@ SPEC = {
     "arch_r": 0.37,
     "body_x": 0.86,
     "flare": 0.07,
-    "belt_y": 0.86,
+    "belt_y": 0.88,
     "belly_y": 0.18,
     "rocker_y": 0.28,
-    "roof_y": 1.45,
-    "roof_x": 0.66,
-    "roof_z": (-1.18, 0.38),
-    "roof_crown": 0.02,
+    "roof_y": 1.56,
+    "roof_x": 0.70,
+    "roof_z": (-1.55, 0.62),
+    "roof_crown": 0.012,
     "inset": 0.15,
-    "a_pillar_z": 0.34,
-    "c_pillar_z": -1.08,
-    "pillars": ((-0.32, 0.055),),
-    "windows": ((-0.26, 0.30), (-1.02, -0.40)),
-    "windshield": (0.36, 1.43, 0.74, 0.98),
-    "rear_glass": (-1.16, 1.42, -1.68, 0.92),
+    "a_pillar_z": 0.52,
+    "c_pillar_z": -1.52,
+    "pillars": ((-0.32, 0.045), (-1.16, 0.04)),
+    "windows": ((-0.22, 0.44), (-1.06, -0.42), (-1.46, -1.24)),
+    "windshield": (0.58, 1.56, 0.98, 1.04),
+    "rear_glass": (-1.30, 1.54, -1.70, 1.04),
     "crown": (
-        (-2.28, 0.46, 0.78),
-        (-2.02, 0.74, 0.76),
-        (-1.68, 0.92, 0.74),
-        (-1.18, 1.45, 0.66),
-        (0.38, 1.45, 0.66),
-        (0.74, 0.98, 0.74),
-        (1.92, 0.70, 0.76),
-        (2.28, 0.48, 0.78),
+        (-2.28, 0.50, 0.78),
+        (-2.00, 0.78, 0.76),
+        (-1.70, 1.04, 0.74),
+        (-1.30, 1.56, 0.70),
+        (0.58, 1.56, 0.70),
+        (0.98, 1.04, 0.74),
+        (1.62, 0.74, 0.76),
+        (2.28, 0.50, 0.78),
     ),
     "lamp_x": 0.58,
     "lamp_y": 0.58,
@@ -67,7 +67,7 @@ def create():
     a = Asset(
         "Car_Sedan",
         "StreetFurniture",
-        "Sedan shell, about 4.56 m long, roof 1.47 m. Closed body, pillars, glass, and fenders over the tires.",
+        "Sedan shell, about 4.56 m long, roof 1.56 m. Taller greenhouse, shorter hood, quarter glass in the C-pillar.",
     )
     a.climb_note = "Sheet metal. Not a cling wall."
     a.vault_note = "Hood and roof are landings, not vault rails."
@@ -76,8 +76,8 @@ def create():
         body.build(g, SPEC, lod)
         a.end()
     a.box("Col_Body", (0, 0.50, -0.20), (1.05, 0.40, 1.70))
-    a.box("Col_Roof", (0, 1.385, -0.40), (0.70, 0.05, 1.00))
-    a.box("Col_Nose", (0, 0.46, 1.95), (1.15, 0.18, 0.40))
+    a.box("Col_Roof", (0, 1.52, -0.36), (0.52, 0.035, 1.05))
+    a.box("Col_Nose", (0, 0.46, 1.90), (1.05, 0.16, 0.32))
     a.box("Col_Tail", (0, 0.48, -1.95), (1.15, 0.18, 0.40))
     _wheel_cols(a)
     return a

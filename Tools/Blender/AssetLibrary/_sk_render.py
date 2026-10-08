@@ -60,6 +60,9 @@ MODULES = (
     "sk_car_hatch",
     "sk_car_pickup",
     "sk_traffic_signal",
+    "sk_bus_curbside",
+    "sk_meter_single",
+    "sk_mail_drop",
     "mannequin",
 )
 
@@ -331,6 +334,24 @@ def _pass9_lineup(found, path):
     _fit(path)
 
 
+def _with_figure(found, prop, path, prop_pos, prop_yaw, fig_pos):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=False)
+    scene.cycles.samples = 28
+    r._ensure_materials()
+    r._world(scene, night=False)
+    specs = [
+        ("Mannequin", fig_pos, 200),
+        (prop, prop_pos, prop_yaw),
+    ]
+    objs = [r._spawn(found[name](), pos, yaw) for name, pos, yaw in specs]
+    r._ground("asphalt", 30.0)
+    r._frame(scene, objs, fill=0.78, elevation=12.0, azimuth=28.0)
+    r._render(scene, path)
+    _fit(path)
+
+
 def _pass12_lineup(found, path):
     r._reset_scene()
     scene = bpy.context.scene
@@ -354,7 +375,29 @@ def _pass12_lineup(found, path):
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
     found = _load()
-    if PASS >= 12:
+    if PASS >= 13:
+        shots = [
+            ("car_sedan", lambda: _shot(found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan.png"), kind="asphalt", fill=0.84)),
+            ("car_sedan_nose", lambda: _close(
+                found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan_nose.png"),
+                (1.35, 1.15, 2.55), (0.15, 1.15, 0.75), 42)),
+            ("car_sedan_door", lambda: _close(
+                found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan_door.png"),
+                (2.05, 1.22, 0.70), (0.40, 1.02, -0.35), 38)),
+            ("bus_stop", lambda: _shot(found["BusStop_Curbside"], os.path.join(STILL_DIR, "bus_stop.png"), fill=0.86)),
+            ("bus_stop_scale", lambda: _with_figure(
+                found, "BusStop_Curbside", os.path.join(STILL_DIR, "bus_stop_scale.png"),
+                (0.0, 0.0, 0.0), 24, (-1.7, 0.0, 1.15))),
+            ("parking_meter", lambda: _shot(found["ParkingMeter_Single"], os.path.join(STILL_DIR, "parking_meter.png"), fill=0.82)),
+            ("parking_meter_scale", lambda: _with_figure(
+                found, "ParkingMeter_Single", os.path.join(STILL_DIR, "parking_meter_scale.png"),
+                (0.55, 0.0, 0.0), 20, (-0.7, 0.0, 0.15))),
+            ("mail_drop", lambda: _shot(found["MailDrop_Corner"], os.path.join(STILL_DIR, "mail_drop.png"), fill=0.84)),
+            ("mail_drop_scale", lambda: _with_figure(
+                found, "MailDrop_Corner", os.path.join(STILL_DIR, "mail_drop_scale.png"),
+                (0.7, 0.0, 0.0), 18, (-0.75, 0.0, 0.2))),
+        ]
+    elif PASS >= 12:
         shots = [
             ("traffic_signal", lambda: _shot(
                 found["TrafficSignal_Mast"], os.path.join(STILL_DIR, "traffic_signal.png"),

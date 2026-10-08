@@ -60,6 +60,9 @@ MODULES = (
     "sk_car_hatch",
     "sk_car_pickup",
     "sk_traffic_signal",
+    "sk_bus_curbside",
+    "sk_meter_single",
+    "sk_mail_drop",
 )
 
 

@@ -18,6 +18,21 @@ def _apply_mod(obj, name):
     bpy.ops.object.modifier_apply(modifier=name)
 
 
+def _box_cutter(center, size):
+    """Closed box in Unity meters, used to open a shallow door-handle pocket."""
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    sx, sy, sz = size
+    bmesh.ops.scale(bm, verts=bm.verts, vec=Vector((sx, sz, sy)))
+    bmesh.ops.translate(bm, verts=bm.verts, vec=Vector(unity_to_blender(*center)))
+    me = bpy.data.meshes.new("pocket")
+    bm.to_mesh(me)
+    bm.free()
+    obj = bpy.data.objects.new("pocket", me)
+    bpy.context.scene.collection.objects.link(obj)
+    return obj
+
+
 def _well_cutter(center, radius, length):
     """Closed cylinder along Unity X, used to open a wheel well."""
     bm = bmesh.new()
@@ -35,7 +50,7 @@ def _well_cutter(center, radius, length):
     return obj
 
 
-def _emit_smooth(g, verts, faces, mat, level, wells):
+def _emit_smooth(g, verts, faces, mat, level, wells, pockets=()):
     """Subdivide the shell, crease panel edges, then cut the wheel openings."""
     bm = bmesh.new()
     bverts = [bm.verts.new(unity_to_blender(*v)) for v in verts]
@@ -76,6 +91,21 @@ def _emit_smooth(g, verts, faces, mat, level, wells):
                 obj.modifiers.remove(boolean)
         bpy.data.objects.remove(cut, do_unlink=True)
         bpy.data.meshes.remove(cut_mesh)
+    for center, size in pockets:
+        cut = _box_cutter(center, size)
+        boolean = obj.modifiers.new("Pocket", "BOOLEAN")
+        boolean.operation = "DIFFERENCE"
+        boolean.solver = "EXACT"
+        boolean.object = cut
+        cut_mesh = cut.data
+        try:
+            _apply_mod(obj, "Pocket")
+        except RuntimeError as exc:
+            print("POCKET_BOOLEAN_FAILED", exc)
+            if obj.modifiers.get("Pocket") is not None:
+                obj.modifiers.remove(boolean)
+        bpy.data.objects.remove(cut, do_unlink=True)
+        bpy.data.meshes.remove(cut_mesh)
     out = bmesh.new()
     out.from_mesh(obj.data)
     bpy.data.objects.remove(obj, do_unlink=True)
@@ -90,7 +120,7 @@ def _wells(spec, axles):
     return [((sign * spec["tire_x"], spec["axle_y"], z), radius, length) for z in axles for sign in (-1.0, 1.0)]
 
 
-def _loft(g, rings, mat, smooth=0, wells=()):
+def _loft(g, rings, mat, smooth=0, wells=(), pockets=()):
     """Solid loft through closed rings of equal length. Ends are capped."""
     count = len(rings[0])
     verts = [p for ring in rings for p in ring]
@@ -116,7 +146,7 @@ def _loft(g, rings, mat, smooth=0, wells=()):
             b = vid(ring_i, i + 1)
             faces.append((center_i, b, a) if flip else (center_i, a, b))
     if smooth or wells:
-        _emit_smooth(g, verts, faces, mat, smooth, wells)
+        _emit_smooth(g, verts, faces, mat, smooth, wells, pockets)
     else:
         g.mesh(verts, faces, mat)
 
@@ -169,23 +199,25 @@ def _flare(z, spec, axles):
     return x
 
 
-def _pillar(z, spec):
-    if z >= spec["a_pillar_z"] or z <= spec["c_pillar_z"]:
-        return True
+def _smooth01(t):
+    t = max(0.0, min(1.0, t))
+    return t * t * (3.0 - 2.0 * t)
+
+
+def _pillar_weight(z, spec):
+    """1 on a pillar, 0 in open glass, blended over 10 cm so the roof rail stays smooth."""
+    fade = 0.10
+
+    def edge(dist_inside):
+        if dist_inside >= 0.0:
+            return 1.0
+        return _smooth01(1.0 + dist_inside / fade)
+
+    weight = edge(z - spec["a_pillar_z"])
+    weight = max(weight, edge(spec["c_pillar_z"] - z))
     for pz, half in spec["pillars"]:
-        if abs(z - pz) <= half:
-            return True
-    return False
-
-
-def _glass_dip(z, spec, key):
-    """How far the shell drops behind a raked pane, so the glass is a chord over a pocket."""
-    z0, _y0, z1, _y1 = spec[key]
-    lo, hi = (z0, z1) if z0 <= z1 else (z1, z0)
-    if z <= lo or z >= hi:
-        return 0.0
-    t = (z - lo) / (hi - lo)
-    return math.sin(math.pi * t) * 0.055
+        weight = max(weight, edge(half - abs(z - pz)))
+    return weight
 
 
 def _half(z, spec, axles):
@@ -196,17 +228,15 @@ def _half(z, spec, axles):
     greenhouse = crown_y > spec["belt_y"] + 0.18 and spec["roof_z"][0] - 0.08 <= z <= spec["roof_z"][1] + 0.15
     rail_x = min(max(crown_x, 0.10), x_out - 0.035)
     y_rail = max(belt + 0.035, crown_y - 0.012)
-    dip = _glass_dip(z, spec, "windshield") + _glass_dip(z, spec, "rear_glass")
-    top = crown_y - dip
-    if greenhouse and dip < 0.001:
-        top += spec["roof_crown"]
-    if dip < 0.001 and top < y_rail + 0.01:
+    # The roof is the crown itself. A cut valley here pinched after subdivision.
+    top = crown_y + (spec["roof_crown"] if greenhouse else 0.0)
+    if top < y_rail + 0.01:
         top = y_rail + 0.01
     y_mid = (belt + y_rail) * 0.5
-    if greenhouse and not _pillar(z, spec):
-        x_win = x_out - spec["inset"]
-    else:
-        x_win = x_out - 0.008
+    # Full inset in the glass, nearly none on a pillar, with a long blend between.
+    weight = _pillar_weight(z, spec) if greenhouse else 1.0
+    inset = spec["inset"] * (1.0 - weight) + 0.012 * weight
+    x_win = x_out - inset
     x_win = min(x_win, x_out - 0.004)
     x_win = max(x_win, rail_x + 0.02)
     return [
@@ -234,12 +264,13 @@ def _shell(g, spec, step, mat, axles, level):
     extra.extend((spec["windshield"][0], spec["windshield"][2], spec["rear_glass"][0], spec["rear_glass"][2]))
     extra.append((spec["windshield"][0] + spec["windshield"][2]) * 0.5)
     for pz, half in spec["pillars"]:
-        extra.extend((pz - half, pz, pz + half))
+        extra.extend((pz - half - 0.10, pz - half, pz, pz + half, pz + half + 0.10))
+    extra.extend((spec["a_pillar_z"] - 0.10, spec["c_pillar_z"] + 0.10))
     for axle in axles:
         extra.extend((axle - spec["arch_r"], axle, axle + spec["arch_r"]))
     zs = _stations(spec["z0"], spec["z1"], step, extra)
     rings = [_ring(_half(z, spec, axles), z) for z in zs]
-    _loft(g, rings, mat, smooth=level, wells=_wells(spec, axles))
+    _loft(g, rings, mat, smooth=level, wells=_wells(spec, axles), pockets=_pockets(spec))
 
 
 def _slab(g, y0, z0, y1, z1, half_x0, half_x1, thick, mat):
@@ -265,8 +296,9 @@ def _slab(g, y0, z0, y1, z1, half_x0, half_x1, thick, mat):
 def _side_glass(g, spec, z0, z1, sign, mat):
     """One pane in the recess. The top stays under the drip rail so it cannot cut the roof."""
     y0 = spec["belt_y"] + 0.05
-    y1 = spec["roof_y"] - 0.16
     zmid = (z0 + z1) * 0.5
+    crown_y, _crown_x = _lerp(spec["crown"], zmid)
+    y1 = min(spec["roof_y"] - 0.14, crown_y - 0.06)
     x_out = _flare(zmid, spec, spec["axles"])
     x_bot = x_out - spec["inset"] + 0.03
     x_top = min(spec["roof_x"] - 0.02, x_bot - 0.04)
@@ -298,21 +330,75 @@ def _side_glass(g, spec, z0, z1, sign, mat):
         g.box((sign * x_pillar, (y0 + y1) * 0.5, z_edge), (0.014, (y1 - y0) + 0.012, 0.014), "Lib_Black")
 
 
-def _raked(g, spec, z0, z1):
-    """Pane inside the dipped pocket, short of the undipped skin at either end."""
-    span = abs(z1 - z0)
-    inset = min(0.10, span * 0.24)
-    if z0 <= z1:
-        za, zb = z0 + inset, z1 - inset
-    else:
-        za, zb = z0 - inset, z1 + inset
-    ya, xa = _lerp(spec["crown"], za)
-    yb, xb = _lerp(spec["crown"], zb)
-    _slab(
-        g, ya - 0.032, za, yb - 0.032, zb,
-        max(0.16, xa - 0.08), max(0.16, xb - 0.08),
-        0.008, "Lib_TintGlass",
+def _rake_inset(y0, z0, y1, z1, hx0, hx1, margin):
+    dy, dz = y1 - y0, z1 - z0
+    norm = math.hypot(dy, dz) or 1.0
+    uy, uz = dy / norm, dz / norm
+    return (
+        y0 + uy * margin, z0 + uz * margin,
+        y1 - uy * margin, z1 - uz * margin,
+        max(0.08, hx0 - margin), max(0.08, hx1 - margin),
+        (-dy / norm, dz / norm),
     )
+
+
+def _beveled_pane(g, y0, z0, y1, z1, hx0, hx1, thick, mat, bevel):
+    """Front face smaller than the back face, so the edge reads as a bevel."""
+    y0f, z0f, y1f, z1f, hx0f, hx1f, (ny, nz) = _rake_inset(y0, z0, y1, z1, hx0, hx1, bevel)
+    verts = [
+        (-hx0, y0, z0), (hx0, y0, z0), (hx1, y1, z1), (-hx1, y1, z1),
+        (-hx0f, y0f + ny * thick, z0f + nz * thick),
+        (hx0f, y0f + ny * thick, z0f + nz * thick),
+        (hx1f, y1f + ny * thick, z1f + nz * thick),
+        (-hx1f, y1f + ny * thick, z1f + nz * thick),
+    ]
+    g.mesh(verts, [
+        (0, 1, 2, 3),
+        (4, 7, 6, 5),
+        (0, 4, 5, 1),
+        (1, 5, 6, 2),
+        (2, 6, 7, 3),
+        (3, 7, 4, 0),
+    ], mat)
+
+
+def _rubber_frame(g, y0, z0, y1, z1, hx0, hx1, margin):
+    """Even black surround. One width on every edge, proud of the skin."""
+    y0i, z0i, y1i, z1i, hx0i, hx1i, (ny, nz) = _rake_inset(y0, z0, y1, z1, hx0, hx1, margin)
+    thick = 0.014
+    outer = [(-hx0, y0, z0), (hx0, y0, z0), (hx1, y1, z1), (-hx1, y1, z1)]
+    inner = [(-hx0i, y0i, z0i), (hx0i, y0i, z0i), (hx1i, y1i, z1i), (-hx1i, y1i, z1i)]
+    verts = []
+    for ring in (outer, inner):
+        for x, y, z in ring:
+            verts.append((x, y, z))
+        for x, y, z in ring:
+            verts.append((x, y + ny * thick, z + nz * thick))
+    # 0-3 outer back, 4-7 outer front, 8-11 inner back, 12-15 inner front.
+    g.mesh(verts, [
+        (0, 4, 5, 1), (1, 5, 6, 2), (2, 6, 7, 3), (3, 7, 4, 0),
+        (8, 9, 13, 12), (9, 10, 14, 13), (10, 11, 15, 14), (11, 8, 12, 15),
+        (4, 12, 13, 5), (5, 13, 14, 6), (6, 14, 15, 7), (7, 15, 12, 4),
+        (0, 1, 9, 8), (1, 2, 10, 9), (2, 3, 11, 10), (3, 0, 8, 11),
+    ], "Lib_Black")
+
+
+def _raked(g, spec, z0, z1):
+    """Pane proud of a smooth roof, with the same rubber margin on every edge."""
+    span = abs(z1 - z0)
+    if span < 0.12:
+        return
+    ya, xa = _lerp(spec["crown"], z0)
+    yb, xb = _lerp(spec["crown"], z1)
+    # Sit just off the sheet so the pane does not share a face with the roof.
+    ya += 0.010
+    yb += 0.010
+    hx0 = max(0.22, xa - 0.05)
+    hx1 = max(0.22, xb - 0.05)
+    margin = 0.022
+    _rubber_frame(g, ya, z0, yb, z1, hx0, hx1, margin)
+    y0, z0i, y1, z1i, hx0i, hx1i, _ = _rake_inset(ya, z0, yb, z1, hx0, hx1, margin)
+    _beveled_pane(g, y0, z0i, y1, z1i, hx0i, hx1i, 0.008, "Lib_TintGlass", 0.006)
 
 
 def _cabin(g, spec):
@@ -359,7 +445,7 @@ def _seams(g, spec):
             continue
         x = _flare(z, spec, spec["axles"])
         y0 = spec["rocker_y"] + 0.04
-        y1 = spec["belt_y"] + 0.012
+        y1 = spec["belt_y"] - 0.012
         for sign in (1.0, -1.0):
             g.box((sign * (x - 0.001), (y0 + y1) * 0.5, z), (0.018, y1 - y0, 0.016), "Lib_Black")
     for z0, z1 in spec["windows"]:
@@ -374,12 +460,34 @@ def _seams(g, spec):
             g.box((sign * (x - 0.001), spec["rocker_y"] + 0.07, zmid), (0.016, 0.012, span), "Lib_Black")
 
 
-def _handles(g, spec):
+def _handle_sites(spec):
+    """Door windows only. Quarter lights are too narrow for a handle."""
+    sites = []
     for z0, z1 in spec["windows"]:
-        z = (z0 + z1) * 0.5
+        lo, hi = (z0, z1) if z0 <= z1 else (z1, z0)
+        if hi - lo < 0.30:
+            continue
+        z = (lo + hi) * 0.5 + 0.05
         x = _flare(z, spec, spec["axles"])
+        y = spec["belt_y"] + 0.02
         for sign in (1.0, -1.0):
-            g.box((sign * (x - 0.002), spec["belt_y"] + 0.045, z + 0.06), (0.016, 0.022, 0.09), "Lib_Black")
+            sites.append((sign, x, y, z))
+    return sites
+
+
+def _pockets(spec):
+    """Cutters that bite about 16 mm into the skin and leave the rest outside."""
+    return [
+        ((sign * (x + 0.014), y, z), (0.060, 0.034, 0.096))
+        for sign, x, y, z in _handle_sites(spec)
+    ]
+
+
+def _handles(g, spec):
+    for sign, x, y, z in _handle_sites(spec):
+        # Black cup on the pocket floor, handle bar a few millimeters inside the skin.
+        g.box((sign * (x - 0.013), y, z), (0.004, 0.028, 0.086), "Lib_Black")
+        g.box((sign * (x - 0.010), y, z), (0.008, 0.012, 0.056), "Lib_SteelDark")
 
 
 def _lamps(g, spec, lod):
