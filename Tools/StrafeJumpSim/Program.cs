@@ -8,6 +8,12 @@ static class Program
 {
     static int Main(string[] args)
     {
+        if (args != null && args.Length > 0 && args[0] == "--ui-flow")
+        {
+            Tag.Ui.Menu.UiFlow.Report only = Tag.Ui.Menu.UiFlow.Run();
+            Console.WriteLine(only.Line);
+            return only.Ok ? 0 : 1;
+        }
         if (args != null && args.Length > 0 && args[0] == "--hud-chase")
         {
             string folder = args.Length > 1 ? args[1] : Path.Combine("Docs", "UiStills", "pass17", "figures");

@@ -51,8 +51,8 @@ namespace Tag.Ui.Menu
 
         public static string Header()
         {
-            if (Page == Audio) return "Audio";
-            if (Page == Display) return "Display";
+            if (Page == Audio) return "Sound";
+            if (Page == Display) return "Picture";
             if (Page == Access) return "Accessibility";
             if (Page == Look) return "Look";
             return "Options";
@@ -61,10 +61,10 @@ namespace Tag.Ui.Menu
         public static string Banner()
         {
             if (Page == Audio) return "Sliders step the volumes you already have.";
-            if (Page == Display) return "Resolution, fullscreen, vsync, and UI scale.";
+            if (Page == Display) return "Resolution, fullscreen, vsync, and the couch UI scale.";
             if (Page == Access) return "Reduce motion, text size, and colorblind-safe player colors.";
             if (Page == Look) return "Look is shared by the couch.";
-            return "Audio, display, accessibility, controls, look, and credits.  " + Tag.Ui.Hud.MatchHudText.ComicHint;
+            return "Sound, picture, accessibility, controls, look, and credits.  " + Tag.Ui.Hud.MatchHudText.ComicHint;
         }
 
         public static string Title(int index)
@@ -72,8 +72,8 @@ namespace Tag.Ui.Menu
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             if (Page == Hub)
             {
-                if (index == 0) return "Audio";
-                if (index == 1) return "Display";
+                if (index == 0) return "Sound";
+                if (index == 1) return "Picture";
                 if (index == 2) return "Accessibility";
                 if (index == 3) return "Controls";
                 if (index == 4) return "Look";

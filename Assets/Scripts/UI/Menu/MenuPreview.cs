@@ -194,8 +194,6 @@ namespace Tag.Ui.Menu
                 if (!on) continue;
                 MenuPodium.Row row = rows[i];
                 GameObject body = MenuMannequin.Spawn(_podiumAnchor[i], MenuMannequin.NameOf(row.Hier), MenuMannequin.NameOf(row.Accent), row.Hat != 0);
-                int seat = row.Seat >= 0 ? row.Seat : i;
-                MenuCheer.Dress(body, MenuTheme.Seat(seat));
                 bool win = row.Winner;
                 bool clap = !win && i < 3;
                 MenuCheer.Play(body, win, clap, i == 2);

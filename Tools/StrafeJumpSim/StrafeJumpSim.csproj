@@ -157,6 +157,8 @@
     <Compile Include="../../Assets/Scripts/UI/Menu/RuleBook.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/UiSweep.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuPolish.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuSheet.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuRuleNav.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/LoadGate.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuTips.cs" />
     <Compile Include="../../Assets/Scripts/UI/Hud/HudCorner.cs" />

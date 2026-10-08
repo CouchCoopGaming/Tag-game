@@ -241,6 +241,16 @@ The match runner, the RESULTS figures, and the stat-card accent use the same col
 
 The first color is the body: limbs, torso, and head. The second color is the accent on the chest panel, the hands, and the feet. P1 reads red, P2 blue, P3 orange, and P4 lavender, so the four chase runners stay apart. A chip is gray when that first color is already taken. The title and the main menu are two frames of a pass along the south straight, with those four runners on the path. The lockup sits on that frame, and the main buttons keep an even gap. Mockups are in `Docs/UiStills/pass23/`.
 
+## Screens 2, pass 1
+
+Secondary screens pick up the park wash and a comic wipe under 0.4 s. Arena select is a three-card grid: Mega Park, Pocket Park, and Stack Yard, then Random and Back. Mode tiles are a 2 by 2. Right from the right-hand mode enters the rules. Left on a rule that cannot go lower returns to the modes. Up and down stay in a column. The rules list has a gold scrollbar.
+
+RESULTS stays the heading. The runners keep the body and accent pair from the color choice. The sample set is Red, Blue, Orange, and Lavender, with Tan or Mint on the accent. Stat cards sit in the same left-to-right order as the figures: 2nd, 1st, 3rd, 4th.
+
+Options says Sound, Picture, and Accessibility. Controls shows a keyboard glyph and a pad glyph on each bind. Jump's keyboard glyph is the space bar. An empty join seat says Press Space or A to join and draws both marks. Loading and credits sit on a navy card. Records drops the repeated name from the card line.
+
+Stills for this pass are layout drawings in `Docs/UiStills/screens2/pass1/`. Unity is not running here, so they are not editor captures. `ui-flow` still passes, with `sheet=ok`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.
