@@ -4782,7 +4782,7 @@ def impact22_strength(speed):
     return k
 
 
-def impact22_state(surface, speed, age_u=0.56):
+def impact22_state(surface, speed, age_u=0.56, legacy=False):
     """Same curve as ImpactFx.Measure. age_u 0.56 is the peak-expansion frame.
 
     The ring is a donut: texture inner 0.78 over outer 0.96, so the hole is
@@ -4826,6 +4826,8 @@ def impact22_state(surface, speed, age_u=0.56):
     thin = 1.0 - 0.55 * grow
     if thin < 0.2:
         thin = 0.2
+    base_op = (0.42 + k * 0.48) if legacy else (0.12 + k * 0.10)
+    ring_inner = 0.78 if legacy else 0.90
     return {
         "radius": radius,
         "shown": radius * grow,
@@ -4834,7 +4836,9 @@ def impact22_state(surface, speed, age_u=0.56):
         "plumes": plumes,
         "life": life,
         "age": age_u * life,
-        "opacity": (0.42 + k * 0.48) * fade * thin,
+        "opacity": base_op * fade * thin,
+        "legacy": legacy,
+        "ring_inner": ring_inner,
         "plume": min(0.72, fade * 0.72),
         "bit": bit,
         "dust": dust,
@@ -4885,17 +4889,18 @@ def impact22_unlit(name, color, alpha, strength):
     return mat
 
 
-def impact23_ring_image():
-    """Donut mask. Inner 0.78, outer 0.96, soft edges, hole fully clear."""
-    cached = getattr(impact23_ring_image, "image", None)
+def impact23_ring_image(inner=0.90):
+    """Donut mask. Outer 0.96. Pass 26 uses a narrower band than 0.78."""
+    name = "ImpactRing%.2f" % inner
+    cached = bpy.data.images.get(name)
     if cached is not None:
         return cached
     n = 128
-    image = bpy.data.images.new("ImpactRing", width=n, height=n, alpha=True, float_buffer=False)
+    image = bpy.data.images.new(name, width=n, height=n, alpha=True, float_buffer=False)
     image.colorspace_settings.name = "Non-Color"
     mid = (n - 1) * 0.5
-    inner = 0.78
     outer = 0.96
+    edge = 0.035 if inner < 0.85 else 0.012
     pixels = [0.0] * (n * n * 4)
     for y in range(n):
         for x in range(n):
@@ -4904,8 +4909,8 @@ def impact23_ring_image():
             r = math.sqrt(dx * dx + dy * dy)
             a = 0.0
             if inner <= r <= outer:
-                rise = (r - inner) / 0.035
-                fall = (outer - r) / 0.035
+                rise = (r - inner) / edge
+                fall = (outer - r) / edge
                 if rise > 1.0:
                     rise = 1.0
                 if fall > 1.0:
@@ -4918,11 +4923,10 @@ def impact23_ring_image():
             pixels[i + 3] = a
     image.pixels.foreach_set(pixels)
     image.pack()
-    impact23_ring_image.image = image
     return image
 
 
-def impact23_ring_mat(name, color, alpha):
+def impact23_ring_mat(name, color, alpha, inner=0.90):
     """Flat decal. The hole and the ground under the band stay visible."""
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
@@ -4936,7 +4940,7 @@ def impact23_ring_mat(name, color, alpha):
     nt.nodes.clear()
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     tex = nt.nodes.new("ShaderNodeTexImage")
-    tex.image = impact23_ring_image()
+    tex.image = impact23_ring_image(inner)
     mul = nt.nodes.new("ShaderNodeMath")
     mul.operation = "MULTIPLY"
     mul.inputs[1].default_value = alpha
@@ -5116,7 +5120,7 @@ def impact22_draw(origin, normal, state, cam_loc):
     ring.name = p11_name("Fx")
     ring.scale = (diameter, diameter, 1.0)
     ring.data.materials.append(impact23_ring_mat(
-        p11_name("Mat"), dust, state["opacity"],
+        p11_name("Mat"), dust, state["opacity"], state.get("ring_inner", 0.90),
     ))
     kind = state["kind"]
     pace = state["k"]
@@ -5139,6 +5143,8 @@ def impact22_draw(origin, normal, state, cam_loc):
             pos.z = z
         accent = pace >= 0.85 and i < 4
         size = (0.10 + h2 * 0.02) if accent else impact24_size(h2)
+        if accent:
+            print("ACCENT", "age", round(state["age"], 3), "i", i, "z", round(z, 2), "cm", round(size * 100.0, 1))
         dirt_clod = (not accent) and kind == "grass" and (i % 4) == 0
         if accent:
             col = impact24_shade(bit_col, h)
@@ -5156,24 +5162,48 @@ def impact22_draw(origin, normal, state, cam_loc):
             col = impact24_shade(bit_col, h)
             impact24_chip(pos, size, col, "chip", i + 1)
     hard = pace >= 0.75
+    legacy = bool(state.get("legacy"))
     tops = []
     for i in range(state["plumes"]):
         h = p11_rand(i, 11)
         h2 = p11_rand(i, 15)
         age = state["age"]
-        peak = (0.42 + h2 * 0.24) if hard else (0.08 + h2 * 0.06)
+        if legacy:
+            peak = (0.42 + h2 * 0.24) if hard else (0.08 + h2 * 0.06)
+            spread = (0.10 if hard else 0.04) + h * (0.22 if hard else 0.06)
+            spread += age * (0.45 if hard else 0.12)
+            puff0 = (0.50 + h * 0.22) if hard else (0.16 + h * 0.06)
+        else:
+            peak = (0.56 + h2 * 0.08) if hard else (0.08 + h2 * 0.06)
+            spread = (0.22 if hard else 0.04) + h * (0.48 if hard else 0.06)
+            spread += age * (0.85 if hard else 0.12)
+            puff0 = (0.66 + h * 0.04) if hard else (0.16 + h * 0.06)
         center = impact25_center(age, peak)
         ang = h * math.tau
-        spread = (0.10 if hard else 0.04) + h * (0.22 if hard else 0.06)
-        spread += age * (0.45 if hard else 0.12)
         grow = age / 0.12
         if grow < 0.0:
             grow = 0.0
         if grow > 1.0:
             grow = 1.0
         grow = 0.72 + 0.28 * grow
-        puff = ((0.50 + h * 0.22) if hard else (0.16 + h * 0.06)) * grow
-        alpha = impact25_alpha(age, hard)
+        puff = puff0 * grow
+        cap = 1.0 - center
+        if cap < 0.05:
+            cap = 0.05
+        if (not legacy) and puff > cap * 2.0:
+            puff = cap * 2.0
+        if legacy:
+            alpha = impact25_alpha(age, hard)
+        else:
+            body = 0.94 if hard else 0.28
+            if age <= 0.04:
+                alpha = body * (age / 0.04)
+            elif age >= 0.50:
+                alpha = 0.0
+            elif age <= 0.16:
+                alpha = body
+            else:
+                alpha = body * (1.0 - (age - 0.16) / (0.50 - 0.16))
         tops.append(center + puff * 0.5)
         radial = Vector((math.cos(ang), math.sin(ang), 0.0))
         if abs(n.z) < 0.75:
@@ -5474,6 +5504,323 @@ def pass25_line_mat(name, color, alpha):
     return mat
 
 
+def p26_aim(cam, foot, yaw_deg):
+    """Closer and lower than the chase boom. The figure is about a third of the frame."""
+    fwd, left = p11_heading(yaw_deg)
+    cam.data.type = "PERSP"
+    cam.data.sensor_fit = "VERTICAL"
+    cam.data.sensor_height = 24.0
+    cam.data.lens = 14.8
+    cam.data.clip_start = 0.05
+    cam.data.clip_end = 80.0
+    cam.location = foot - left * 0.22 + Vector((0.0, 0.0, 0.95)) - fwd * 3.55
+    look_at(cam, foot + Vector((0.0, 0.0, 0.72)))
+    bpy.context.view_layer.update()
+    return cam.location
+
+
+def p26_figure_fraction(arm, cam):
+    from bpy_extras.object_utils import world_to_camera_view
+
+    scene = bpy.context.scene
+    head = bone_pos(arm, "Head", tail=True)
+    foot = bone_pos(arm, "Foot_L", tail=True)
+    a = world_to_camera_view(scene, cam, head)
+    b = world_to_camera_view(scene, cam, foot)
+    frac = abs(a.y - b.y)
+    print("FIGURE", "frac", round(frac, 3), "head", round(a.x, 3), round(a.y, 3), "foot", round(b.x, 3), round(b.y, 3))
+    return frac
+
+
+def render_pass26(arm, cam):
+    """Close hard-land compare, forward-dash edge streaks, and wall scuffs."""
+    from PIL import Image, ImageDraw
+
+    scene = bpy.context.scene
+    for obj in bpy.data.objects:
+        if obj.type == "LIGHT" and obj.data.type == "SUN":
+            obj.data.energy = 1.4
+        elif obj.type == "LIGHT" and obj.data.type == "AREA":
+            obj.data.energy = 28
+    scene.render.resolution_x = 640
+    scene.render.resolution_y = 360
+    scene.eevee.taa_render_samples = 8
+    scene.view_settings.view_transform = "Standard"
+    scene.view_settings.look = "None"
+    scene.view_settings.exposure = 0.0
+    scene.view_settings.gamma = 1.0
+    out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass26")
+    os.makedirs(out_dir, exist_ok=True)
+    tmp = "/tmp/pass26"
+    os.makedirs(tmp, exist_ok=True)
+    yaw = 24.0
+    cells = []
+    titles = []
+    for legacy, label in ((True, "before"), (False, "after")):
+        for age in (0.04, 0.10, 0.16, 0.22):
+            p11_clear("P11Fx")
+            p11_ground("concrete", asphalt=True)
+            apply_pose(arm, pose_land, 0.0, yaw)
+            foot = p11_foot(arm)
+            p26_aim(cam, foot, yaw)
+            if legacy and age == 0.04:
+                p26_figure_fraction(arm, cam)
+            state = impact22_state("concrete", 36.5, age_u=age / 0.25, legacy=legacy)
+            impact22_draw(Vector((foot.x, foot.y, 0.02)), (0.0, 0.0, 1.0), state, cam.location)
+            png = os.path.join(tmp, "%s-%.2f.png" % (label, age))
+            scene.render.filepath = png
+            bpy.ops.render.render(write_still=True)
+            image = Image.open(png).convert("RGB")
+            p14_jpeg(os.path.join(out_dir, "land-%s-%.2f.jpg" % (label, age)), image)
+            cells.append(image.resize((480, 270), Image.Resampling.LANCZOS))
+            titles.append("%s  %.2f s" % (label, age))
+            print("LAND", label, age, "top check", "plumes", state["plumes"], "alpha", round(state["opacity"], 3))
+    p14_grid(
+        cells, titles,
+        "Hard land  before / after   same close camera   concrete",
+        os.path.join(out_dir, "impact-compare.jpg"),
+        4,
+    )
+    dirt_cells = []
+    dirt_titles = []
+    for age in (0.04, 0.10, 0.16, 0.22):
+        p11_clear("P11Fx")
+        p11_ground("dirt", asphalt=False)
+        apply_pose(arm, pose_land, 0.0, yaw)
+        foot = p11_foot(arm)
+        p26_aim(cam, foot, yaw)
+        state = impact22_state("dirt", 36.5, age_u=age / 0.25, legacy=False)
+        impact22_draw(Vector((foot.x, foot.y, 0.02)), (0.0, 0.0, 1.0), state, cam.location)
+        png = os.path.join(tmp, "dirt-%.2f.png" % age)
+        scene.render.filepath = png
+        bpy.ops.render.render(write_still=True)
+        image = Image.open(png).convert("RGB")
+        dirt_cells.append(image.resize((480, 270), Image.Resampling.LANCZOS))
+        dirt_titles.append("dirt after  %.2f s" % age)
+    p14_grid(
+        dirt_cells, dirt_titles,
+        "Hard land after   dirt   same close camera",
+        os.path.join(out_dir, "impact-strip.jpg"),
+        4,
+    )
+    render_pass26_dash(arm, cam, out_dir, tmp)
+    render_pass26_scuff(arm, cam, out_dir, tmp)
+
+
+def render_pass26_dash(arm, cam, out_dir, tmp):
+    """Forward air dash from the real chase camera, with short edge streaks."""
+    from PIL import Image
+
+    scene = bpy.context.scene
+    scene.render.resolution_x = 1280
+    scene.render.resolution_y = 720
+    yaw = 24.0
+    p11_clear("P11Fx")
+    p11_ground("concrete", asphalt=True)
+    apply_pose(arm, lambda a: pose_airdash(a, 0.0, 1.0), 0.85, yaw)
+    foot = p11_foot(arm)
+    p14_aim(cam, foot, yaw)
+    fwd, left = p11_heading(yaw)
+    travel = fwd.normalized()
+    tint = (0.95, 0.28, 0.32)
+    pass25_streaks(arm, travel, tint)
+    pass26_edge_streaks(arm, travel, tint)
+    png = os.path.join(tmp, "dash-fwd.png")
+    scene.render.filepath = png
+    bpy.ops.render.render(write_still=True)
+    image = Image.open(png).convert("RGB")
+    p14_jpeg(os.path.join(out_dir, "dash-forward.jpg"), image)
+
+
+def pass26_edge_streaks(arm, travel, tint):
+    """Short ribbons just outside shoulders, hips, and hands, trailing backward."""
+    from bpy_extras.object_utils import world_to_camera_view
+
+    trail = -travel
+    if trail.length < 0.001:
+        return
+    trail = trail.normalized()
+    side = Vector((-trail.y, trail.x, 0.0))
+    if side.length < 0.001:
+        side = Vector((1.0, 0.0, 0.0))
+    side.normalize()
+    cam_loc = bpy.context.scene.camera.location
+    specs = (
+        ("UpperArm_L", 1.0, 0.30, 0.22),
+        ("UpperArm_R", -1.0, 0.30, 0.30),
+        ("Hips", 1.0, 0.22, 0.26),
+        ("Hips", -1.0, 0.22, 0.34),
+        ("Hand_L", 1.0, 0.10, 0.38),
+        ("Hand_R", -1.0, 0.10, 0.42),
+    )
+    scene = bpy.context.scene
+    cam = scene.camera
+    for name, sign, outward, length in specs:
+        origin = bone_pos(arm, name)
+        start = origin + side * sign * outward + trail * 0.05
+        end = start + trail * length + side * sign * 0.16
+        view = cam_loc - (start + end) * 0.5
+        width_axis = trail.cross(view)
+        if width_axis.length < 0.001:
+            width_axis = Vector((0.0, 0.0, 1.0))
+        width_axis.normalize()
+        w0, w1 = 0.045, 0.010
+        verts = [
+            start + width_axis * w0,
+            start - width_axis * w0,
+            end - width_axis * w1,
+            end + width_axis * w1,
+        ]
+        mesh = bpy.data.meshes.new(p11_name("Fx"))
+        mesh.from_pydata([tuple(v) for v in verts], [], [(0, 1, 2, 3)])
+        mesh.update()
+        obj = bpy.data.objects.new(p11_name("Fx"), mesh)
+        bpy.context.collection.objects.link(obj)
+        obj.data.materials.append(pass25_line_mat(p11_name("Mat"), tint, 0.35))
+        a = world_to_camera_view(scene, cam, start)
+        b = world_to_camera_view(scene, cam, end)
+        ax = a.x * scene.render.resolution_x
+        ay = (1.0 - a.y) * scene.render.resolution_y
+        bx = b.x * scene.render.resolution_x
+        by = (1.0 - b.y) * scene.render.resolution_y
+        print(
+            "EDGE", name, "len", length,
+            "span", round(abs(ax - bx), 1), round(abs(ay - by), 1),
+        )
+
+
+def render_pass26_scuff(arm, cam, out_dir, tmp):
+    """Wall-run contact. Brick, concrete, and wood, sprint and hard slam."""
+    from PIL import Image
+
+    scene = bpy.context.scene
+    scene.render.resolution_x = 640
+    scene.render.resolution_y = 360
+    cells = []
+    titles = []
+    shots = (
+        ("brick", 13.8, (0.55, 0.28, 0.22), (0.42, 0.20, 0.14), (0.70, 0.42, 0.32)),
+        ("concrete", 13.8, (0.62, 0.62, 0.60), (0.46, 0.45, 0.43), (0.78, 0.77, 0.74)),
+        ("wood", 13.8, (0.48, 0.34, 0.20), (0.40, 0.26, 0.12), (0.78, 0.62, 0.40)),
+        ("brick", 36.5, (0.55, 0.28, 0.22), (0.42, 0.20, 0.14), (0.70, 0.42, 0.32)),
+        ("concrete", 36.5, (0.62, 0.62, 0.60), (0.46, 0.45, 0.43), (0.78, 0.77, 0.74)),
+        ("wood", 36.5, (0.48, 0.34, 0.20), (0.40, 0.26, 0.12), (0.78, 0.62, 0.40)),
+    )
+    for surface, speed, wall_col, ink, dust in shots:
+        p11_clear("P11Fx")
+        p11_clear("P11Geo")
+        p11_ground("concrete", asphalt=True)
+        apply_pose(arm, pose_wall, 0.0, 0.0)
+        foot = p11_foot(arm)
+        fwd, _left = p11_heading(0.0)
+        # Wall in front of the chest. Normal points back toward the camera side.
+        normal = -fwd
+        center = foot + fwd * 0.42
+        center.z = 1.15
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(center.x + fwd.x * 0.06, center.y + fwd.y * 0.06, 1.6))
+        wall = bpy.context.active_object
+        wall.name = p11_name("Geo")
+        wall.scale = (2.4, 0.12, 3.2)
+        wall.data.materials.append(make_mat(p11_name("Mat"), wall_col + (1.0,), 0.9))
+        hit = center
+        pass26_scuff(hit, normal, speed, ink, dust, cam.location)
+        # 3/4 view so the smear on the wall is visible.
+        cam.data.lens = 14.8
+        cam.data.sensor_fit = "VERTICAL"
+        cam.data.sensor_height = 24.0
+        cam.location = hit - fwd * 2.4 + Vector((-fwd.y, fwd.x, 0.0)) * 1.6 + Vector((0.0, 0.0, 0.35))
+        look_at(cam, hit + Vector((0.0, 0.0, 0.15)))
+        bpy.context.view_layer.update()
+        png = os.path.join(tmp, "scuff-%s-%.0f.png" % (surface, speed))
+        scene.render.filepath = png
+        bpy.ops.render.render(write_still=True)
+        image = Image.open(png).convert("RGB")
+        label = "sprint" if speed < 20.0 else "hard"
+        p14_jpeg(os.path.join(out_dir, "scuff-%s-%s.jpg" % (surface, label)), image)
+        cells.append(image.resize((400, 225), Image.Resampling.LANCZOS))
+        k = 0.0 if speed <= 13.8 else 1.0
+        width = 0.26 + k * 0.52
+        titles.append("%s %s  %.0f cm" % (surface, label, width * 100.0))
+        print("SCUFF", surface, label, "width", round(width, 2))
+    p14_grid(
+        cells, titles,
+        "Wall scuff   brick, concrete, wood   sprint then hard slam",
+        os.path.join(out_dir, "scuff-sheet.jpg"),
+        3,
+    )
+
+
+def pass26_scuff(hit, normal, speed, ink, dust, cam_loc):
+    """Decal on the wall plus a short puff. Age 0.08 s, puff still up."""
+    k = 0.0 if speed <= 13.8 else min(1.15, (speed - 13.8) / (36.5 - 13.8))
+    width = 0.26 + k * 0.52
+    height = 0.08 + k * 0.14
+    n = Vector(normal).normalized()
+    along = Vector((-n.y, n.x, 0.0))
+    if along.length < 0.001:
+        along = Vector((1.0, 0.0, 0.0))
+    along.normalize()
+    up = along.cross(n)
+    up.normalize()
+    loc = Vector(hit) + n * 0.03
+    quat = n.to_track_quat("Z", "Y")
+    # Align the plane's X with `along` after the normal lock.
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=loc)
+    mark = bpy.context.active_object
+    mark.name = p11_name("Fx")
+    mark.rotation_euler = quat.to_euler()
+    # Retarget so local X follows the smear.
+    mark.rotation_mode = "QUATERNION"
+    mark.rotation_quaternion = quat
+    bpy.context.view_layer.update()
+    local_x = mark.matrix_world.to_3x3() @ Vector((1.0, 0.0, 0.0))
+    twist = local_x.angle(along)
+    sign = 1.0 if local_x.cross(along).dot(n) >= 0.0 else -1.0
+    mark.rotation_quaternion = Quaternion(n, twist * sign) @ mark.rotation_quaternion
+    mark.scale = (width, height, 1.0)
+    mark.data.materials.append(pass26_scuff_mat(p11_name("Mat"), ink, 0.55))
+    puffs = 3 if k < 0.25 else 6
+    age = 0.08
+    for i in range(puffs):
+        h = p11_rand(i, 4)
+        puff_u = age / 0.22
+        out_d = 0.04 + (0.12 + h * 0.22) * puff_u
+        slide = (h - 0.5) * width * 0.65
+        rise = (p11_rand(i, 8) - 0.35) * height
+        pos = Vector(hit) + n * out_d + along * slide + Vector((0.0, 0.0, rise))
+        size = (0.16 + h * 0.14) * (0.75 + 0.35 * puff_u)
+        fade = 1.0 - puff_u
+        impact24_puff(pos, size, dust, 0.72 * fade, cam_loc)
+
+
+def pass26_scuff_mat(name, color, alpha):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    mat.use_backface_culling = False
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = p11_soft_image()
+    mul = nt.nodes.new("ShaderNodeMath")
+    mul.operation = "MULTIPLY"
+    mul.inputs[1].default_value = alpha
+    emit = nt.nodes.new("ShaderNodeEmission")
+    emit.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    emit.inputs["Strength"].default_value = 1.0
+    trans = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(tex.outputs["Alpha"], mul.inputs[0])
+    nt.links.new(mul.outputs["Value"], mix.inputs["Fac"])
+    nt.links.new(trans.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(emit.outputs["Emission"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
+
+
 def main():
     global OUT
     if os.environ.get("FX_PASS17") == "1":
@@ -5485,6 +5832,9 @@ def main():
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
+    if os.environ.get("FX_PASS26") == "1":
+        render_pass26(arm, cam)
+        return
     if os.environ.get("FX_PASS25_LINES") == "1":
         out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass25")
         os.makedirs(out_dir, exist_ok=True)

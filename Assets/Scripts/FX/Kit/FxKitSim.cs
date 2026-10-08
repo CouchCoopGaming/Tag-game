@@ -29,7 +29,7 @@ namespace Tag.FX
         public TagRole Role;
 
         Transform _root;
-        Transform _footL, _footR, _handL, _handR, _head, _spine, _hips;
+        Transform _footL, _footR, _handL, _handR, _head, _spine, _hips, _armL, _armR;
         MaterialPropertyBlock _block;
         int _seat;
         float _cr = 0.95f, _cg = 0.28f, _cb = 0.32f;
@@ -72,7 +72,8 @@ namespace Tag.FX
         readonly float[] _streakAge = new float[FxKitLook.Streaks];
         readonly Vector3[] _streakA = new Vector3[FxKitLook.Streaks];
         readonly Vector3[] _streakB = new Vector3[FxKitLook.Streaks];
-        const int AirLines = 8;
+        const int AirLines = 14;
+        const int AirLong = 8;
         const float AirLife = 0.15f;
         readonly float[] _airAge = new float[AirLines];
         readonly Vector3[] _airA = new Vector3[AirLines];
@@ -119,6 +120,8 @@ namespace Tag.FX
             _head = Find(root, "Head");
             _spine = Find(root, "Spine");
             _hips = Find(root, "Hips");
+            _armL = Find(root, "UpperArm_L");
+            _armR = Find(root, "UpperArm_R");
             EnsureShared();
             _dust = MakeMotes(FxKitLook.DustRoll, "FxDust");
             _spark = MakeMotes(FxKitLook.SparkFull, "FxSpark");
@@ -467,6 +470,13 @@ namespace Tag.FX
             {
                 _onWall = true;
                 _prevSurf = surf;
+                _wallSurf = DustContact.Read(Motor.WallCollider, ref _wallId, ref _wallSurf);
+                Vector3 n0 = Motor.WallNormal;
+                if (n0.sqrMagnitude < 0.0001f) n0 = -_root.forward;
+                Vector3 p0 = Motor.WallPoint;
+                if (p0.sqrMagnitude < 0.0001f)
+                    p0 = _root.position + Vector3.up * 0.9f + n0 * 0.35f;
+                ImpactFx.Scuff(p0, n0, Motor.HorizSpeed, _wallSurf, WallMaterialName());
                 return;
             }
             _wallSurf = DustContact.Read(Motor.WallCollider, ref _wallId, ref _wallSurf);
@@ -858,15 +868,64 @@ namespace Tag.FX
             travel.Normalize();
             // Streaks trail opposite the velocity, back along the dash or the rope.
             Vector3 trail = -travel;
+            Vector3 side = Vector3.Cross(Vector3.up, travel);
+            if (side.sqrMagnitude < 0.0001f) side = Vector3.right;
+            else side.Normalize();
+            int count = dash ? _air.Length : AirLong;
             for (int i = 0; i < _air.Length; i++)
             {
-                float h = (i * 3 % 10) / 9f;
-                float len = 0.60f + h * 0.60f;
-                Vector3 start = LimbPoint(i, origin);
-                _airA[i] = start;
-                _airB[i] = start + trail * len;
+                if (i >= count)
+                {
+                    _airAge[i] = -1f;
+                    continue;
+                }
+                if (i < AirLong)
+                {
+                    float h = (i * 3 % 10) / 9f;
+                    float len = 0.60f + h * 0.60f;
+                    Vector3 start = LimbPoint(i, origin);
+                    _airA[i] = start;
+                    _airB[i] = start + trail * len;
+                }
+                else
+                {
+                    // Short marks just outside the silhouette so a chase camera behind the dash still sees them.
+                    int e = i - AirLong;
+                    float sign = (e & 1) == 0 ? 1f : -1f;
+                    float outward = e < 2 ? 0.30f : e < 4 ? 0.22f : 0.10f;
+                    float len = 0.22f + (e % 3) * 0.08f;
+                    Vector3 start = EdgePoint(e, origin) + side * sign * outward + trail * 0.05f;
+                    _airA[i] = start;
+                    _airB[i] = start + trail * len + side * sign * 0.16f;
+                }
                 _airAge[i] = 0.0001f;
             }
+        }
+
+        Vector3 EdgePoint(int e, Vector3 origin)
+        {
+            Transform bone = null;
+            float y = 1.1f;
+            switch (e)
+            {
+                case 0: bone = _armL; y = 1.35f; break;
+                case 1: bone = _armR; y = 1.35f; break;
+                case 2: bone = _hips; y = 0.95f; break;
+                case 3: bone = _hips; y = 0.95f; break;
+                case 4: bone = _handL; y = 1.05f; break;
+                default: bone = _handR; y = 1.05f; break;
+            }
+            if (bone != null) return bone.position;
+            return origin + Vector3.up * y;
+        }
+
+        string WallMaterialName()
+        {
+            if (Motor == null || Motor.WallCollider == null) return null;
+            Collider col = Motor.WallCollider;
+            MeshRenderer rend = col.GetComponent<MeshRenderer>();
+            if (rend != null && rend.sharedMaterial != null) return rend.sharedMaterial.name;
+            return col.name;
         }
 
         Vector3 LimbPoint(int i, Vector3 origin)

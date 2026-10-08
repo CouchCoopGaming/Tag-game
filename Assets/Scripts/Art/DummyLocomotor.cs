@@ -18103,6 +18103,16 @@ namespace Tag.Art
             BeginAirDashTell();
         }
 
+        string WallMaterialName()
+        {
+            // Name only. DustLook's surface list is unchanged, so a brick wall can still tint the scuff.
+            if (_motor == null || _motor.WallCollider == null) return null;
+            Collider col = _motor.WallCollider;
+            MeshRenderer rend = col.GetComponent<MeshRenderer>();
+            if (rend != null && rend.sharedMaterial != null) return rend.sharedMaterial.name;
+            return col.name;
+        }
+
         void HandleWallBounced()
         {
             _wallJumpEdge = true;
@@ -18123,7 +18133,7 @@ namespace Tag.Art
                 if (hit.sqrMagnitude < 0.0001f)
                     hit = _motor.transform.position + Vector3.up * 0.9f;
                 int surf = DustContact.Read(_motor.WallCollider, ref _impactWallId, ref _impactWallSurf);
-                ImpactFx.Wall(hit, _motor.WallNormal, _comicPlanar, surf);
+                ImpactFx.Wall(hit, _motor.WallNormal, _comicPlanar, surf, WallMaterialName());
             }
             _wallJumpPosePlant = _wallExit > 0.5f ? !_exitLeadLeft : (_motor != null && _motor.WallLeft);
             _wallJumpHandoff = false;

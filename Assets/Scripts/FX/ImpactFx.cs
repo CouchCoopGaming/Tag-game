@@ -25,7 +25,8 @@ namespace Tag.FX
         const int PieceMax = BitsMax + PlumeMax;
         const int Slots = 4;
         const float RingOuter = 0.96f;
-        const float RingInner = 0.78f;
+        // Narrower band than the 0.78 hole. Timing of the expand and fade is unchanged.
+        const float RingInner = 0.90f;
         const float ShapeSoft = 0f;
         const float ShapeChunk = 3f;
         const float ShapeSplinter = 4f;
@@ -75,7 +76,8 @@ namespace Tag.FX
             if (bits > BitsMax) bits = BitsMax;
             spec.Bits = bits;
             spec.Life = LifeSeconds;
-            spec.Opacity = 0.42f + k * 0.48f;
+            // Quiet enough that the dust, not the ring, is the read.
+            spec.Opacity = 0.12f + k * 0.10f;
             // A sprint slam stays near the ground. A hard land kicks 0.3–0.8 m.
             spec.HopLo = 0.04f + k * 0.26f;
             spec.HopHi = 0.10f + k * 0.70f;
@@ -174,8 +176,8 @@ namespace Tag.FX
 
         public static float PlumeAlpha(float age, bool hard)
         {
-            float body = hard ? 0.72f : 0.28f;
-            if (age <= 0.03f) return body * (age / 0.03f);
+            float body = hard ? 0.94f : 0.28f;
+            if (age <= 0.04f) return body * (age / 0.04f);
             if (age >= PlumeLife) return 0f;
             if (age <= 0.16f) return body;
             float u = (age - 0.16f) / (PlumeLife - 0.16f);
@@ -240,6 +242,24 @@ namespace Tag.FX
         Vector3[] _normal;
         Color[] _color;
         float[] _opacity;
+        const int ScuffSlots = 4;
+        const int ScuffPuffs = 6;
+        const float ScuffSeconds = 0.42f;
+        Transform[] _scuffRoot;
+        Transform[] _scuffMark;
+        Renderer[] _scuffMarkRend;
+        Material[] _scuffMarkMat;
+        Transform[] _scuffPuff;
+        Renderer[] _scuffPuffRend;
+        Material[] _scuffPuffMat;
+        float[] _scuffAge;
+        float[] _scuffWidth;
+        float[] _scuffHeight;
+        int[] _scuffCount;
+        Vector3[] _scuffNormal;
+        Vector3[] _scuffAlong;
+        Color[] _scuffInk;
+        Color[] _scuffDust;
         Texture2D _ringTex;
         Mesh _quad;
 
@@ -251,10 +271,32 @@ namespace Tag.FX
 
         public static void Wall(Vector3 origin, Vector3 normal, float speed, int surface)
         {
+            Wall(origin, normal, speed, surface, null);
+        }
+
+        public static void Wall(Vector3 origin, Vector3 normal, float speed, int surface, string material)
+        {
             if (!FxKitLook.Bursts(GameSettings.Current, FxKitOptions.Wall)) return;
             if (normal.sqrMagnitude < 0.0001f) normal = Vector3.up;
             else normal.Normalize();
             Raise(origin, normal, speed, surface, FxKitOptions.Wall);
+            Scuff(origin, normal, speed, surface, material);
+        }
+
+        /// <summary>
+        /// Fading smear and a short dust puff on a hard wall contact.
+        /// Wall-run start, wall-jump kick, and a high-speed slam all use it.
+        /// Sized by speed. Brick, wood, and concrete keep their own tint.
+        /// The wall FX toggle hides it. No motor change.
+        /// </summary>
+        public static void Scuff(Vector3 origin, Vector3 normal, float speed, int surface, string material)
+        {
+            if (!FxKitLook.Bursts(GameSettings.Current, FxKitOptions.Wall)) return;
+            if (normal.sqrMagnitude < 0.0001f) normal = Vector3.forward;
+            else normal.Normalize();
+            Ensure();
+            if (_host == null || _host._scuffAge == null) return;
+            _host.BeginScuff(origin, normal, speed, surface, material);
         }
 
         static void Raise(Vector3 origin, Vector3 normal, float speed, int surface, int kind)
@@ -322,10 +364,12 @@ namespace Tag.FX
                     _bitRend[k].enabled = false;
                 }
             }
+            BuildScuffs(bits);
         }
 
         void LateUpdate()
         {
+            TickScuffs();
             if (_age == null) return;
             bool show = FxKitLook.Master(GameSettings.Current);
             float dt = Time.deltaTime;
@@ -548,7 +592,7 @@ namespace Tag.FX
                     float h = Hash(100 + p + slot * 9);
                     float pace = StrengthFromRadius(spec.Radius);
                     bool hard = pace >= 0.75f;
-                    piece.Size = hard ? 0.50f + h * 0.22f : 0.16f + h * 0.06f;
+                    piece.Size = hard ? 0.66f + h * 0.04f : 0.16f + h * 0.06f;
                     piece.Aspect = 1.15f;
                     piece.R = spec.DustR;
                     piece.G = spec.DustG;
@@ -568,11 +612,12 @@ namespace Tag.FX
             float h2 = Hash(130 + p);
             float pace = StrengthFromRadius(_radius[slot]);
             bool hard = pace >= 0.75f;
-            float peak = hard ? 0.42f + h2 * 0.24f : 0.08f + h2 * 0.06f;
+            float peak = hard ? 0.56f + h2 * 0.08f : 0.08f + h2 * 0.06f;
             float y = PlumeCenter(age, peak);
             float ang = h * 6.2831855f;
-            float spread = (hard ? 0.10f : 0.04f) + h * (hard ? 0.22f : 0.06f);
-            spread += age * (hard ? 0.45f : 0.12f);
+            // Hard-land cloud reaches past the feet, then keeps drifting.
+            float spread = (hard ? 0.22f : 0.04f) + h * (hard ? 0.48f : 0.06f);
+            spread += age * (hard ? 0.85f : 0.12f);
             Vector3 n = _normal[slot];
             Vector3 tangent = Vector3.Cross(n, Vector3.up);
             if (tangent.sqrMagnitude < 0.0001f) tangent = Vector3.Cross(n, Vector3.right);
@@ -588,6 +633,10 @@ namespace Tag.FX
             if (grow > 1f) grow = 1f;
             grow = 0.72f + 0.28f * grow;
             float size = _piece[k].Size * grow;
+            // Cloud top stays at or under 1 m. The life is still 0.50 s.
+            float cap = 1.0f - y;
+            if (cap < 0.05f) cap = 0.05f;
+            if (size > cap * 2f) size = cap * 2f;
             _bit[k].localScale = new Vector3(size * 1.15f, size, 1f);
             float a = PlumeAlpha(age, hard);
             _bitMat[k].color = new Color(_piece[k].R, _piece[k].G, _piece[k].B, a);
@@ -607,6 +656,176 @@ namespace Tag.FX
             uint x = (uint)(i * 374761393 + 668265263);
             x = (x ^ (x >> 13)) * 1274126177u;
             return (x & 65535) / 65535f;
+        }
+
+        void BuildScuffs(Shader bits)
+        {
+            _scuffRoot = new Transform[ScuffSlots];
+            _scuffMark = new Transform[ScuffSlots];
+            _scuffMarkRend = new Renderer[ScuffSlots];
+            _scuffMarkMat = new Material[ScuffSlots];
+            _scuffPuff = new Transform[ScuffSlots * ScuffPuffs];
+            _scuffPuffRend = new Renderer[ScuffSlots * ScuffPuffs];
+            _scuffPuffMat = new Material[ScuffSlots * ScuffPuffs];
+            _scuffAge = new float[ScuffSlots];
+            _scuffWidth = new float[ScuffSlots];
+            _scuffHeight = new float[ScuffSlots];
+            _scuffCount = new int[ScuffSlots];
+            _scuffNormal = new Vector3[ScuffSlots];
+            _scuffAlong = new Vector3[ScuffSlots];
+            _scuffInk = new Color[ScuffSlots];
+            _scuffDust = new Color[ScuffSlots];
+            Mesh quad = QuadXY();
+            for (int i = 0; i < ScuffSlots; i++)
+            {
+                _scuffAge[i] = -1f;
+                var root = new GameObject("WallScuff");
+                root.transform.SetParent(transform, false);
+                root.SetActive(false);
+                _scuffRoot[i] = root.transform;
+                _scuffMarkMat[i] = new Material(bits);
+                _scuffMarkMat[i].SetFloat("_Shape", ShapeSoft);
+                _scuffMarkMat[i].SetFloat("_Billboard", 0f);
+                _scuffMarkMat[i].SetFloat("_Guard", 0f);
+                _scuffMarkMat[i].SetFloat("_Edge", -1f);
+                _scuffMark[i] = Child(root.transform, "Mark", quad, _scuffMarkMat[i], out _scuffMarkRend[i]);
+                _scuffMarkRend[i].enabled = false;
+                for (int p = 0; p < ScuffPuffs; p++)
+                {
+                    int k = i * ScuffPuffs + p;
+                    _scuffPuffMat[k] = new Material(bits);
+                    _scuffPuffMat[k].SetFloat("_Shape", ShapeSoft);
+                    _scuffPuffMat[k].SetFloat("_Billboard", 1f);
+                    _scuffPuffMat[k].SetFloat("_Guard", 0f);
+                    _scuffPuffMat[k].SetFloat("_Edge", -1f);
+                    _scuffPuff[k] = Child(root.transform, "Puff", quad, _scuffPuffMat[k], out _scuffPuffRend[k]);
+                    _scuffPuffRend[k].enabled = false;
+                }
+            }
+        }
+
+        void BeginScuff(Vector3 origin, Vector3 normal, float speed, int surface, string material)
+        {
+            int slot = 0;
+            for (int i = 0; i < ScuffSlots; i++)
+            {
+                if (_scuffAge[i] < 0f)
+                {
+                    slot = i;
+                    break;
+                }
+            }
+            float k = Strength(speed);
+            float width = 0.26f + k * 0.52f;
+            float height = 0.08f + k * 0.14f;
+            int puffs = k < 0.25f ? 3 : 5 + (int)(k * 2f);
+            if (puffs > ScuffPuffs) puffs = ScuffPuffs;
+            ScuffTint(surface, material, out float r, out float g, out float b, out float dr, out float dg, out float db);
+            Vector3 along = Vector3.Cross(normal, Vector3.up);
+            if (along.sqrMagnitude < 0.0001f) along = Vector3.Cross(normal, Vector3.right);
+            along.Normalize();
+            Vector3 up = Vector3.Cross(along, normal).normalized;
+            _scuffAge[slot] = 0.0001f;
+            _scuffWidth[slot] = width;
+            _scuffHeight[slot] = height;
+            _scuffCount[slot] = puffs;
+            _scuffNormal[slot] = normal;
+            _scuffAlong[slot] = along;
+            _scuffInk[slot] = new Color(r, g, b, 1f);
+            _scuffDust[slot] = new Color(dr, dg, db, 1f);
+            _scuffRoot[slot].position = origin + normal * 0.02f;
+            _scuffRoot[slot].rotation = Quaternion.LookRotation(normal, up);
+            _scuffRoot[slot].gameObject.SetActive(true);
+        }
+
+        void TickScuffs()
+        {
+            if (_scuffAge == null) return;
+            bool show = FxKitLook.Master(GameSettings.Current) && FxKitLook.Bursts(GameSettings.Current, FxKitOptions.Wall);
+            float dt = Time.deltaTime;
+            if (dt < 0f) dt = 0f;
+            if (dt > 0.05f) dt = 0.05f;
+            for (int i = 0; i < ScuffSlots; i++)
+            {
+                if (_scuffAge[i] < 0f) continue;
+                if (!show)
+                {
+                    HideScuff(i);
+                    continue;
+                }
+                _scuffAge[i] += dt;
+                if (_scuffAge[i] >= ScuffSeconds)
+                {
+                    HideScuff(i);
+                    continue;
+                }
+                float u = _scuffAge[i] / ScuffSeconds;
+                float markA = 0.62f * (1f - u);
+                _scuffMark[i].localPosition = Vector3.zero;
+                _scuffMark[i].localRotation = Quaternion.identity;
+                _scuffMark[i].localScale = new Vector3(_scuffWidth[i], _scuffHeight[i], 1f);
+                Color ink = _scuffInk[i];
+                ink.a = markA;
+                _scuffMarkMat[i].color = ink;
+                _scuffMarkRend[i].enabled = markA > 0.03f;
+                Vector3 n = _scuffNormal[i];
+                Vector3 along = _scuffAlong[i];
+                for (int p = 0; p < ScuffPuffs; p++)
+                {
+                    int k = i * ScuffPuffs + p;
+                    if (p >= _scuffCount[i] || _scuffAge[i] > 0.24f)
+                    {
+                        _scuffPuffRend[k].enabled = false;
+                        continue;
+                    }
+                    float h = Hash(200 + p + i * 5);
+                    float life = 0.22f;
+                    float puffU = _scuffAge[i] / life;
+                    if (puffU > 1f) puffU = 1f;
+                    float fade = 1f - puffU;
+                    float outD = 0.04f + (0.12f + h * 0.22f) * puffU;
+                    float slide = (h - 0.5f) * _scuffWidth[i] * 0.65f;
+                    float rise = (Hash(240 + p) - 0.35f) * _scuffHeight[i];
+                    _scuffPuff[k].position = _scuffRoot[i].position + n * outD + along * slide + Vector3.up * rise;
+                    float size = (0.16f + h * 0.14f) * (0.75f + 0.35f * puffU);
+                    _scuffPuff[k].localScale = new Vector3(size, size * 0.85f, 1f);
+                    Color dust = _scuffDust[i];
+                    dust.a = 0.72f * fade;
+                    _scuffPuffMat[k].color = dust;
+                    _scuffPuffRend[k].enabled = dust.a > 0.03f;
+                }
+            }
+        }
+
+        void HideScuff(int slot)
+        {
+            _scuffAge[slot] = -1f;
+            if (_scuffRoot[slot] != null) _scuffRoot[slot].gameObject.SetActive(false);
+        }
+
+        static void ScuffTint(int surface, string material, out float r, out float g, out float b, out float dr, out float dg, out float db)
+        {
+            string n = string.IsNullOrEmpty(material) ? "" : material.ToLowerInvariant();
+            bool brick = n.IndexOf("brick", System.StringComparison.Ordinal) >= 0;
+            bool wood = surface == (int)DustLook.Surface.Wood
+                || n.IndexOf("wood", System.StringComparison.Ordinal) >= 0
+                || n.IndexOf("plank", System.StringComparison.Ordinal) >= 0
+                || n.IndexOf("cedar", System.StringComparison.Ordinal) >= 0;
+            if (brick)
+            {
+                r = 0.42f; g = 0.20f; b = 0.14f;
+                dr = 0.70f; dg = 0.42f; db = 0.32f;
+            }
+            else if (wood)
+            {
+                r = 0.40f; g = 0.26f; b = 0.12f;
+                dr = 0.78f; dg = 0.62f; db = 0.40f;
+            }
+            else
+            {
+                r = 0.46f; g = 0.45f; b = 0.43f;
+                dr = 0.78f; dg = 0.77f; db = 0.74f;
+            }
         }
 
         void Hide(int slot)
@@ -696,9 +915,9 @@ namespace Tag.FX
                     // Donut. Inner radius stays at least 70% of the outer edge.
                     if (r <= RingOuter && r >= RingInner)
                     {
-                        float rise = (r - RingInner) / 0.035f;
-                        if (rise > 1f) rise = 1f;
-                        float fall = (RingOuter - r) / 0.035f;
+                    float rise = (r - RingInner) / 0.012f;
+                    if (rise > 1f) rise = 1f;
+                    float fall = (RingOuter - r) / 0.012f;
                         if (fall > 1f) fall = 1f;
                         a = rise < fall ? rise : fall;
                     }
