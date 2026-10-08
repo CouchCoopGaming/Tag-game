@@ -49,6 +49,7 @@ namespace Tag.Ui.Hud
         public Text ItBig;
         public Image SeatMark;
         public Image SafeGlow;
+        public CanvasGroup ItFrame;
         public RectTransform Board;
         public Text BoardTitle;
         public Text BoardRound;
@@ -399,15 +400,14 @@ namespace Tag.Ui.Hud
             Set(Clock, MatchHudText.Clock(84f));
             if (Clock != null) Clock.color = MenuTheme.Cream;
             Set(RoundLabel, MatchHudText.Round(humans >= 4 ? 2 : 1, humans >= 4 ? 3 : 1));
-            int itPane = humans <= 1 ? 0 : (humans == 2 ? 1 : 2);
+            HudState.Snap snap = HudState.Script();
             int panes = CouchPlay.Panes(humans);
             for (int i = 0; i < 4; i++)
             {
                 bool on = i < panes && !(humans == 3 && i == 3);
                 if (!on) continue;
-                PaintPreviewPane(i, i == itPane, humans);
-                PreviewArrow(i, itPane, humans, split);
-                PlaceCompass(Panes[i], i != itPane);
+                PaintPreviewPane(i, snap, humans);
+                PreviewAim(i, snap);
             }
             PaintPreviewScore(humans);
             bool center = humans <= 1;
@@ -447,22 +447,22 @@ namespace Tag.Ui.Hud
             PaintScore(humans);
         }
 
-        void PaintPreviewPane(int index, bool it, int humans)
+        void PaintPreviewPane(int index, HudState.Snap snap, int humans)
         {
             HudPane pane = Panes[index];
             if (pane == null) return;
+            bool it = index == snap.It;
+            bool safe = index == snap.Safe;
             Set(pane.Name, MatchHudText.Seat[index]);
             Set(pane.Profile, MatchHudText.PreviewProfile[index]);
-            if (index == 1) Set(pane.Metric, MatchHudText.Metric(TagModeId.HotPotato));
-            else if (index == 2) Set(pane.Metric, MatchHudText.Metric(TagModeId.TrailTag));
-            else if (index == 3) Set(pane.Metric, MatchHudText.Metric(TagModeId.FreePlay));
-            else Set(pane.Metric, MatchHudText.Metric(TagModeId.LeastIt));
-            if (index == 1) Set(pane.Value, HudDigits.Whole0(1f));
-            else if (index == 2) Set(pane.Value, it ? MatchHudText.In : MatchHudText.Out);
-            else if (index == 3) Set(pane.Value, HudDigits.Whole0(3f));
-            else Set(pane.Value, HudDigits.Tenth0(12.4f));
+            Set(pane.Metric, MatchHudText.Metric(TagModeId.LeastIt));
+            if (it) Set(pane.Value, HudDigits.Tenth0(0.2f));
+            else if (safe) Set(pane.Value, HudDigits.Tenth0(12.4f));
+            else if (index == 3) Set(pane.Value, HudDigits.Tenth0(4.0f));
+            else Set(pane.Value, HudDigits.Tenth0(8.1f));
             Set(pane.Tags, MatchHudText.Tags);
-            Set(pane.TagsValue, HudDigits.Whole0(index));
+            int tags = index == 0 || safe ? 1 : 0;
+            Set(pane.TagsValue, HudDigits.Whole0(tags));
             if (pane.Timer != null && pane.Timer.transform.parent.gameObject.activeSelf)
             {
                 Set(pane.Timer, MatchHudText.Clock(84f));
@@ -470,30 +470,40 @@ namespace Tag.Ui.Hud
             }
             ShowItMark(pane, it);
             ShowSeatMark(pane, index);
-            ShowSafeGlow(pane, index == 2);
-            int tagger = index == 0 ? 1 : 0;
-            ShowFeedLine(pane, 0, tagger, TagFeed.Line[tagger, index]);
-            Color tint = MenuTheme.Seat(index);
-            TintEdges(pane, it ? Color.Lerp(tint, MenuTheme.Gold, 0.7f) : tint);
-            if (pane.Glow != null)
-            {
-                pane.Glow.enabled = it;
-                pane.Glow.color = new Color(MenuTheme.Gold.r, MenuTheme.Gold.g, MenuTheme.Gold.b, it ? 0.42f : 0f);
-            }
+            ShowItFrame(pane, it);
+            ShowSafeGlow(pane, safe);
+            PaintPreviewFeed(pane, snap);
+            TintEdges(pane, MenuTheme.Seat(index));
+            if (pane.Glow != null) pane.Glow.enabled = false;
             if (pane.Badge != null) pane.Badge.enabled = it;
             if (pane.BadgeWord != null) pane.BadgeWord.enabled = it;
-            if (pane.DashFill != null) pane.DashFill.fillAmount = it ? 1f : 0.4f;
-            Set(pane.DashWord, it ? MatchHudText.DashLabel : HudDigits.DashCd(18f));
+            if (pane.DashFill != null) pane.DashFill.fillAmount = safe ? 0.4f : 1f;
+            Set(pane.DashWord, safe ? HudDigits.DashCd(18f) : MatchHudText.DashLabel);
             Set(pane.RopeWord, MatchHudText.Blank);
-            if (pane.RopeMark != null) pane.RopeMark.color = index == 0 ? MenuTheme.Ready : MenuTheme.Gold;
-            if (pane.SafeFill != null) pane.SafeFill.fillAmount = index == 2 ? 0.6f : 0f;
-            Set(pane.SafeWord, index == 2 ? MatchHudText.SafeAt(0.6f) : MatchHudText.Blank);
-            bool call = it || (index == 0 && humans > 1);
+            if (pane.RopeMark != null) pane.RopeMark.color = MenuTheme.Gold;
+            float safeMax = TagBackImmunity.DefaultSeconds;
+            if (safeMax < 0.01f) safeMax = 1f;
+            if (pane.SafeFill != null) pane.SafeFill.fillAmount = safe ? snap.SafeLeft / safeMax : 0f;
+            Set(pane.SafeWord, safe ? MatchHudText.SafeAt(snap.SafeLeft) : MatchHudText.Blank);
             if (pane.Call != null)
             {
-                pane.Call.enabled = call;
-                Set(pane.Call, MatchHudText.Comic(it ? MatchHudText.YoureIt : MatchHudText.Tagged));
+                pane.Call.enabled = it;
+                Set(pane.Call, it ? MatchHudText.Comic(MatchHudText.YoureIt) : MatchHudText.Blank);
                 pane.Call.rectTransform.localScale = Vector3.one;
+            }
+        }
+
+        void PaintPreviewFeed(HudPane pane, HudState.Snap snap)
+        {
+            for (int row = 0; row < 3; row++)
+            {
+                if (row >= snap.Count)
+                {
+                    HideFeedRow(pane, row);
+                    continue;
+                }
+                int from = snap.From(row);
+                ShowFeedLine(pane, row, from, TagFeed.Line[from, snap.To(row)]);
             }
         }
 
@@ -525,24 +535,9 @@ namespace Tag.Ui.Hud
 
             bool isIt = pawn != null && pawn.IsIt;
             ShowItMark(pane, isIt);
-            Color tint = SeatTint(seat);
-            TintEdges(pane, isIt ? Color.Lerp(tint, MenuTheme.Gold, 0.72f) : tint);
-            float glowA = 0f;
-            if (isIt)
-            {
-                glowA = 0.85f;
-                if (!MenuVideo.ReduceMotion)
-                {
-                    float s = Mathf.Sin(Time.unscaledTime * 5.5f);
-                    if (s < 0f) s = -s;
-                    glowA = 0.28f + 0.62f * s;
-                }
-            }
-            if (pane.Glow != null)
-            {
-                pane.Glow.enabled = isIt;
-                pane.Glow.color = new Color(MenuTheme.Gold.r, MenuTheme.Gold.g, MenuTheme.Gold.b, glowA);
-            }
+            TintEdges(pane, SeatTint(seat));
+            if (pane.Glow != null) pane.Glow.enabled = false;
+            ShowItFrame(pane, isIt);
             if (pane.Badge != null) pane.Badge.enabled = isIt;
             if (pane.BadgeWord != null) pane.BadgeWord.enabled = isIt;
             PaintVerbs(pane, index, pawn);
@@ -725,19 +720,80 @@ namespace Tag.Ui.Hud
             if (modes.Phase != MatchPhase.Playing && modes.Phase != MatchPhase.PostRound)
             {
                 pane.Arrow.enabled = false;
+                PlaceHeadChip(pane, false, new Rect(0f, 0f, 1f, 1f), 0f, 0f);
                 return;
             }
             ItController me = Pawns[index];
             ItController target = modes.CurrentIt;
             if (me != null && me.IsIt) target = NearestRunner(modes, me);
-            if (target == null || target == me)
+            if (target == null || target == me || Cams[index] == null)
             {
                 pane.Arrow.enabled = false;
+                PlaceHeadChip(pane, false, new Rect(0f, 0f, 1f, 1f), 0f, 0f);
                 return;
             }
             bool hunt = me != null && me.IsIt;
-            PlaceArrow(pane.Arrow, Cams[index], target.transform.position);
-            PlaceCompass(pane, !hunt);
+            Vector3 vp = Cams[index].WorldToViewportPoint(target.transform.position);
+            AimAt(pane, Cams[index].rect, vp.x, vp.y, vp.z, !hunt);
+        }
+
+        void PreviewAim(int index, HudState.Snap snap)
+        {
+            HudPane pane = Panes[index];
+            if (pane == null || pane.Arrow == null || pane.Root == null) return;
+            if (index == snap.It)
+            {
+                pane.Arrow.enabled = false;
+                PlaceHeadChip(pane, false, new Rect(0f, 0f, 1f, 1f), 0f, 0f);
+                return;
+            }
+            HudState.ViewOf(index, out float vx, out float vy, out float vz);
+            Rect paneNorm = new Rect(
+                pane.Root.anchorMin.x,
+                pane.Root.anchorMin.y,
+                pane.Root.anchorMax.x - pane.Root.anchorMin.x,
+                pane.Root.anchorMax.y - pane.Root.anchorMin.y);
+            AimAt(pane, paneNorm, vx, vy, vz, true);
+        }
+
+        static void AimAt(HudPane pane, Rect paneNorm, float vx, float vy, float vz, bool chip)
+        {
+            if (pane == null || pane.Arrow == null) return;
+            HudState.Aim aim = HudState.Project(vx, vy, vz);
+            if (aim.OnScreen)
+            {
+                pane.Arrow.enabled = false;
+                PlaceHeadChip(pane, chip, paneNorm, aim.X, aim.Y);
+                return;
+            }
+            PlaceHeadChip(pane, false, paneNorm, 0f, 0f);
+            float px = paneNorm.x + aim.X * paneNorm.width;
+            float py = paneNorm.y + aim.Y * paneNorm.height;
+            RectTransform rt = pane.Arrow.rectTransform;
+            rt.anchorMin = new Vector2(px, py);
+            rt.anchorMax = new Vector2(px, py);
+            rt.anchoredPosition = Vector2.zero;
+            rt.localEulerAngles = new Vector3(0f, 0f, Mathf.Atan2(aim.DirY, aim.DirX) * 57.29578f);
+            pane.Arrow.enabled = true;
+        }
+
+        static void PlaceHeadChip(HudPane pane, bool on, Rect paneNorm, float nx, float ny)
+        {
+            if (pane == null || pane.Compass == null) return;
+            if (pane.CompassPlate != null) pane.CompassPlate.enabled = on;
+            pane.Compass.enabled = on;
+            GameObject plate = pane.Compass.transform.parent.gameObject;
+            if (plate.activeSelf != on) plate.SetActive(on);
+            if (!on) return;
+            RectTransform rt = plate.transform as RectTransform;
+            float px = paneNorm.x + nx * paneNorm.width;
+            float py = paneNorm.y + ny * paneNorm.height;
+            rt.anchorMin = new Vector2(px, py);
+            rt.anchorMax = new Vector2(px, py);
+            rt.pivot = new Vector2(0.5f, 0f);
+            rt.anchoredPosition = new Vector2(0f, 8f);
+            rt.localEulerAngles = Vector3.zero;
+            rt.sizeDelta = new Vector2(84f, 44f);
         }
 
         void PaintPreviewScore(int humans)
@@ -1207,6 +1263,30 @@ namespace Tag.Ui.Hud
             rt.anchoredPosition = new Vector2(ox, oy);
             rt.localEulerAngles = Vector3.zero;
             rt.sizeDelta = new Vector2(chipW, chipH);
+        }
+
+        static void HideFeedRow(HudPane pane, int row)
+        {
+            if (pane.Feed == null || row < 0 || row >= pane.Feed.Length) return;
+            if (pane.Feed[row] != null) pane.Feed[row].enabled = false;
+            if (pane.FeedPlate[row] != null) pane.FeedPlate[row].enabled = false;
+            if (pane.FeedChip[row] != null) pane.FeedChip[row].enabled = false;
+            if (pane.FeedMark[row] != null) pane.FeedMark[row].enabled = false;
+        }
+
+        static void ShowItFrame(HudPane pane, bool on)
+        {
+            if (pane.ItFrame == null) return;
+            if (pane.ItFrame.gameObject.activeSelf != on) pane.ItFrame.gameObject.SetActive(on);
+            if (!on) return;
+            float a = 0.9f;
+            if (!MenuVideo.ReduceMotion)
+            {
+                float s = Mathf.Sin(Time.unscaledTime * 5.5f);
+                if (s < 0f) s = -s;
+                a = 0.35f + 0.65f * s;
+            }
+            pane.ItFrame.alpha = a;
         }
 
         static void ShowItMark(HudPane pane, bool it)

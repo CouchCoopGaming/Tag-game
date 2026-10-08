@@ -64,6 +64,17 @@ namespace Tag.Ui.Hud
             pane.EdgeB = Bar(rt, "Bottom", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 10f));
             pane.EdgeL = Bar(rt, "Left", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(10f, 0f));
             pane.EdgeR = Bar(rt, "Right", new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(1f, 0.5f), new Vector2(10f, 0f));
+            RectTransform itFrame = MenuWidgets.Box(rt, "ItFrame", new Vector2(0.018f, 0.025f), new Vector2(0.982f, 0.975f), new Vector2(0.5f, 0.5f));
+            Color itCue = new Color(1f, 0.86f, 0.2f, 1f);
+            Bar(itFrame, "T", new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, 8f)).color = itCue;
+            Bar(itFrame, "B", new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 8f)).color = itCue;
+            Bar(itFrame, "L", new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(0f, 0.5f), new Vector2(8f, 0f)).color = itCue;
+            Bar(itFrame, "R", new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(1f, 0.5f), new Vector2(8f, 0f)).color = itCue;
+            pane.ItFrame = itFrame.gameObject.AddComponent<CanvasGroup>();
+            pane.ItFrame.alpha = 0f;
+            pane.ItFrame.blocksRaycasts = false;
+            pane.ItFrame.interactable = false;
+            itFrame.gameObject.SetActive(false);
 
             RectTransform badge = MenuWidgets.Place(rt, "Badge", 16f, 12f, 108f, 52f);
             pane.Badge = badge.gameObject.AddComponent<Image>();

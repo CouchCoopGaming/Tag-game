@@ -22,7 +22,9 @@ static class Program
                 Console.WriteLine(Tag.Ui.Menu.OptionApply.QualityLine);
             if (!string.IsNullOrEmpty(Tag.Ui.Menu.OptionApply.SeatLine))
                 Console.WriteLine(Tag.Ui.Menu.OptionApply.SeatLine);
-            return only.Ok ? 0 : 1;
+            Console.WriteLine(Tag.Ui.Hud.HudState.Line());
+            if (!only.Ok || !Tag.Ui.Hud.HudState.Holds()) return 1;
+            return 0;
         }
 
         if (args != null && args.Length > 0 && args[0] == "--alloc")

@@ -166,6 +166,7 @@
     <Compile Include="../../Assets/Scripts/UI/Hud/MatchHudText.cs" />
     <Compile Include="../../Assets/Scripts/UI/Hud/HudCorner.cs" />
     <Compile Include="../../Assets/Scripts/UI/Hud/TagFeed.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Hud/HudState.cs" />
     <Compile Include="../../Assets/Scripts/UI/Hud/RoundCard.cs" />
     <Compile Include="../../Assets/Scripts/UI/Hud/ScorePeek.cs" />
     <Compile Include="../../Assets/Scripts/Audio/MenuCue.cs" />
