@@ -275,6 +275,8 @@ namespace TagArena.Movement
             _clingRefused = false;
             if (_in == null || cfg == null) return;
             _in.Read();
+            // Next frame's stick gesture reads this. A return before the write below leaves it clear.
+            _in.EvasionGrounded = false;
             // Edges are latched in this same Update, then the move consumes them.
             // A frozen pause keeps cling grace, the jump buffer, and every verb timer.
             // An unlocked cursor (results, resume gate) still drops the slots so a card click cannot hop.
@@ -402,6 +404,12 @@ namespace TagArena.Movement
             v = ApplyZipRide(v, dt);
 
             _velocity = VerbIntegration.FiniteOrZero(v);
+            // The reader already sampled the stick this frame, using last frame's grounded flag.
+            _in.EvasionGrounded = grounded;
+            _in.EvasionId = GetInstanceID();
+            float evasionX = _velocity.x;
+            float evasionZ = _velocity.z;
+            _in.EvasionPlanarSpeed = Mathf.Sqrt(evasionX * evasionX + evasionZ * evasionZ);
             // Evasion is off unless the flag is set. Vertical stays the jump the button wrote.
             if (Tag.Gameplay.EvasionMoves.Enabled)
                 _velocity = Tag.Gameplay.EvasionMoves.Gate(

@@ -26,6 +26,12 @@ static class Program
                 Console.Error.WriteLine("evasion moves are not held");
                 return 1;
             }
+            Console.WriteLine(Tag.Gameplay.EvasionGestures.ProofLine());
+            if (!Tag.Gameplay.EvasionGestures.Holds())
+            {
+                Console.Error.WriteLine("evasion gestures are not held");
+                return 1;
+            }
             return 0;
         }
         if (args != null && args.Length > 0 && args[0] == "--proofs")
@@ -1124,6 +1130,12 @@ static class Program
         if (!Tag.Gameplay.EvasionMoves.Holds())
         {
             Console.Error.WriteLine("evasion moves are not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.Gameplay.EvasionGestures.ProofLine());
+        if (!Tag.Gameplay.EvasionGestures.Holds())
+        {
+            Console.Error.WriteLine("evasion gestures are not held");
             return 1;
         }
 

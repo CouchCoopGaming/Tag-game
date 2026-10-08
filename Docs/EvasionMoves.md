@@ -34,20 +34,28 @@ Joined parent/child overlap is `rigJoint`, at any depth, and it belongs to the r
 | `jukeL`, `jukeR` | The outside foot plants about 70–75 cm from the inside foot, shoulder width plus about 25 cm. The head and spine reach 15–18° into the cut while the hips are still square, then the hips yaw. The hips sit about 18 cm down. The outside sole is within 0.47 cm on every move frame. A foot-box corner is 0.11 cm through the floor. |
 | `dive` | Bone rotations only. There is no visual-root bank. At 0.33 s the hands are on the floor (0.3 cm), the chin is tucked, and the hips are still 0.58 m up, so it is a reach and not a belly flop. The right upper arm is the low point by 0.57 s (0.8 cm). The left thigh is the low point at 0.70 s (0.1 cm). At 0.87 s the body is a crouch, knees bent, feet down, and the hands are 36 cm off the floor. Flight is still 3.00 m and the recovery is still 0.60 s. The resting fist is what meets the floor. An open palm still pulls the upper arm through the chest. |
 
-## Proposed bindings
+## Bindings
 
-Not wired. Every mouse button is already a verb, and the pad face, shoulders, stick clicks, Start, Select, and left trigger are already verbs. Right stick is Look.
+Landon picked the pad gestures. Juke and spin are wired. They call `TryRaise` only while `EvasionMoves.Enabled` is true, so with the flag off a stick does nothing new. Keyboard keys are proposals only. Nothing on the keyboard was bound.
 
-| Move | Pad proposal | Keyboard proposal | Conflict |
+| Move | Pad | Keyboard proposal | Status |
 |---|---|---|---|
-| Stutter | Right-stick flick down, past a flick gate. The camera keeps slow look and drops that one flick. | `Z` | Right stick is Look. Swallowing the flick is the only way the camera does not kick. `Z` is free on this branch. |
-| Juke | Right-stick flick left or right. The sign is the flick. | `X`, sign from A or D on that press | Same look conflict. A and D stay Move. `X` is free. |
-| Spin | Right-stick flick left or right while Sprint (LB) is held. | `B`, sign from A or D | LB is already Sprint, and a sprint is the normal way to run, so a look flick during a sprint would spin. Same camera conflict. `B` is free. |
-| Dive | Right trigger. This branch never reads it. Left trigger is the couch rope. | `R` | Landon said every pad button is already used, so RT stays a proposal even though no script samples it. Do not take East (slide), South (jump), or a mouse button. `R` is free on this branch. LMB is punch, RMB is jet and the couch rope, MMB is lunge, Mouse3 is a punch alt, Mouse4 is a dash alt. |
+| Juke | Right-stick flick left or right. The sign is the flick. | `X` | Wired for the pad. `X` is not bound. |
+| Spin | Right-stick half circle. Clockwise on the stick is the clockwise spin (`spinR`). The other way is `spinL`. | `B` | Wired for the pad. `B` is not bound. |
+| Stutter | Not bound. | `Z` | Stopped. See below. |
+| Dive | Not bound. | `R` | Not recognized. See below. `R` is free and not bound. |
 
-Other keys that are already taken, so they are not in the proposal: Space, Ctrl, C, Q, V, Left Alt, E, F, Shift, Esc, M, N, Comma, T, G, I, H, 1, 2, 3, F3, F6, WASD.
+A flick is a sideways deflection past 0.85 that is back near the center, and stopped, within 0.15 s. A half circle sweeps at least 150° while the stick is past 0.70 deflection, inside 0.35 s. Looking up or down does not count as sideways, and a stick that stays out past 0.15 s is a look, including the release after that hold.
 
-A modifier that is not a new button is the other pad option if the right-stick flick is rejected: double-tap East. East is Slide, so a double-tap would fight the slide. That one is listed only as a rejected alternative.
+The camera keeps ordinary look. On the frame a juke or spin actually starts, that sample of stick look is replaced by the reverse of the stick samples from the gesture, so the move does not also yaw. A pan is not reversed. Scripted traces, each at 30 Hz, 60 Hz, and 120 Hz:
+
+`evasion-gestures cameraFP=0/60 moveFN=0/24 swallow=commit dive=unbound stutter=unbound`
+
+The 60 camera traces are slow pans, fast pans that hold, pans that cross the stick, snaps that look behind, a snap that holds and then releases, looking up and down held and as a flick, tracking a runner, a short rim slide, a slow out-and-back, and a wobbly pan. None of them raised a move. The 24 move traces are left and right flicks and both half circles. All of them raised the matching move. Zero false positives on that camera set did not require a modifier, so none is bound.
+
+Stutter stays off the triggers. LT is already the couch rope: `JetHeld` on a pad seat is `BindSampler.LeftTriggerHeld`. The Input System map does not bind either trigger. RT is unused, and it was not taken either, but Landon said to stop if either trigger was taken rather than move the pair. LB stays sprint. RB stays air dash.
+
+Dive stays off the stick. The shape he named, stick forward past 0.8 for 0.12 s while airborne, is looking up in the air. That trace is in the camera set above and it raises nothing. Recognizing it would make the false-positive rate on ordinary look nonzero. A modifier would be the way to add it without that. Not bound, waiting on his OK: hold RT, and only then let the stick start a dive. RT is free in the map and in `PlayerInputReader`. Conflicts if he says yes: RB is air dash, so the modifier is not RB; LB is sprint; LT is the couch rope; right-stick click is the practice input display; left-stick click is the ghost. RT was also the old dive proposal and the stutter-right tap, so those two cannot share it. Holding RT would telegraph the dive to the other players. That is the fallback he called okay but not ideal, and it is only needed for the dive.
 
 ## Proof
 

@@ -9,7 +9,8 @@ namespace Tag.Gameplay
     /// Ball-carrier evasion. Off unless <see cref="Enabled"/> is set.
     /// Stutter, spin, juke, and dive brake or steer inside the sprint cap.
     /// They do not add jump speed, root motion, or a tag i-frame.
-    /// Nothing in the input readers calls <see cref="TryRaise"/>. Bindings stay a proposal.
+    /// Juke and spin call <see cref="TryRaise"/> from the pad reader only while
+    /// <see cref="Enabled"/> is true. Stutter and dive stay unbound.
     /// </summary>
     public static class EvasionMoves
     {

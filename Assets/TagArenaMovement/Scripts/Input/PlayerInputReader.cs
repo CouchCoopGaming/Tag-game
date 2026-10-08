@@ -1,4 +1,5 @@
 using Tag.Couch;
+using Tag.Gameplay;
 using Tag.Settings;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
@@ -30,6 +31,11 @@ namespace TagArena.Movement
         public bool PunchPressed;
         public bool TapForwardPulse;
         public bool LookFromGamepad;
+        public bool LookIsStick;
+        public Vector2 PadLookStick;
+        public bool EvasionGrounded;
+        public int EvasionId;
+        public float EvasionPlanarSpeed;
 
         /// <summary>When true, Read() is a no-op - AI / tests own Move/Look/buttons.</summary>
         public bool ExternalControl;
@@ -70,6 +76,7 @@ namespace TagArena.Movement
         bool _couchWasLive;
         float _kbSpacePrev;
         int _readSerial = -1;
+        EvasionGestures.State _gesture;
 
         void Awake()
         {
@@ -87,7 +94,11 @@ namespace TagArena.Movement
 
         public void Read()
         {
-            if (ExternalControl) return;
+            if (ExternalControl)
+            {
+                EvasionGestures.Reset(ref _gesture);
+                return;
+            }
             int serial = Time.frameCount;
             if (_readSerial == serial) return;
             _readSerial = serial;
@@ -138,6 +149,9 @@ namespace TagArena.Movement
                 _prevW = Input.GetKey(tapStrafePulseKey);
                 _prevMoveY = Input.GetAxisRaw("Vertical");
                 _wasCursorLocked = false;
+                PadLookStick = Vector2.zero;
+                LookIsStick = false;
+                EvasionGestures.Reset(ref _gesture);
                 return;
             }
 
@@ -225,13 +239,17 @@ namespace TagArena.Movement
             }
 
             ShapeHumanMove();
+            SampleSoloStick();
 
             if (_lookPunchGateFrames > 0 || ResumeInputGate.Blocking)
             {
                 if (_lookPunchGateFrames > 0)
                     _lookPunchGateFrames--;
                 SuppressResumeOneShots();
+                EvasionGestures.Reset(ref _gesture);
             }
+            else
+                ApplyEvasionStick();
         }
 
         /// <summary>
@@ -359,6 +377,9 @@ namespace TagArena.Movement
                 TapForwardPulse = false;
                 _couchWasLive = false;
                 _kbSpacePrev = SpaceHeld() ? 1f : 0f;
+                PadLookStick = Vector2.zero;
+                LookIsStick = false;
+                EvasionGestures.Reset(ref _gesture);
                 return;
             }
 
@@ -369,6 +390,8 @@ namespace TagArena.Movement
             Move = BindSampler.MoveDevice(binds, DriveDevice);
             Look = BindSampler.LookDevice(binds, DriveDevice);
             LookFromGamepad = pad && Look.sqrMagnitude > 0.0004f;
+            PadLookStick = pad ? Look : Vector2.zero;
+            LookIsStick = pad;
 
             bool crouch = BindSampler.HeldDevice(binds, PlayAction.Slide, DriveDevice);
             CrouchPressed = crouch && _prevCrouch <= 0f;
@@ -405,7 +428,10 @@ namespace TagArena.Movement
                 AirDashPressed = false;
                 PunchPressed = false;
                 TapForwardPulse = false;
+                EvasionGestures.Reset(ref _gesture);
             }
+            else
+                ApplyEvasionStick();
         }
 
         /// <summary>
@@ -420,6 +446,40 @@ namespace TagArena.Movement
             _kbSpacePrev = space ? 1f : 0f;
             if (space) JumpHeld = true;
             if (edge) JumpPressed = true;
+        }
+
+        void SampleSoloStick()
+        {
+            PadLookStick = Vector2.zero;
+            LookIsStick = false;
+#if ENABLE_INPUT_SYSTEM
+            var pad = Gamepad.current;
+            if (pad != null)
+                PadLookStick = pad.rightStick.ReadValue();
+#endif
+        }
+
+        /// <summary>
+        /// Juke and spin, and only while the evasion flag is on. The commit sample
+        /// of a raised move replaces stick look so that gesture does not also yaw.
+        /// A pan is not replaced. Stutter and dive are not read.
+        /// </summary>
+        void ApplyEvasionStick()
+        {
+            if (!EvasionMoves.Enabled)
+            {
+                EvasionGestures.Reset(ref _gesture);
+                return;
+            }
+            float dt = Time.deltaTime;
+            if (dt <= 0f) return;
+            EvasionGestures.Result step = EvasionGestures.Step(ref _gesture, PadLookStick.x, PadLookStick.y, dt);
+            if (!step.Commit || !EvasionGrounded) return;
+            if (!EvasionMoves.TryRaise(EvasionId, step.Kind, step.Sign, EvasionPlanarSpeed, true))
+                return;
+            if (!LookIsStick) return;
+            Look = new Vector2(-step.UndoX, -step.UndoY);
+            LookFromGamepad = true;
         }
 
         void ShapeHumanMove()
