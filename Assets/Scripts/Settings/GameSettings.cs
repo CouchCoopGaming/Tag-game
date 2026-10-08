@@ -17,6 +17,9 @@ namespace Tag.Settings
         public const float HudDefault = 1f;
         public const float HudMin = 0.75f;
         public const float HudMax = 1.5f;
+        public const float UiScaleDefault = 1f;
+        public const float UiScaleMin = 0.80f;
+        public const float UiScaleMax = 1.30f;
         public const float MouseDefault = 1.8f;
         public const float MouseMin = 0.5f;
         public const float MouseMax = 5f;
@@ -80,6 +83,7 @@ namespace Tag.Settings
         public float Music = MusicDefault;
         public bool Muted;
         public float HudScale = HudDefault;
+        public float UiScale = UiScaleDefault;
         public bool Colorblind;
         public bool Minimap = true;
         public int Arena;
@@ -139,6 +143,7 @@ namespace Tag.Settings
             Music = other.Music;
             Muted = other.Muted;
             HudScale = other.HudScale;
+            UiScale = other.UiScale;
             Colorblind = other.Colorblind;
             Minimap = other.Minimap;
             Arena = other.Arena;
@@ -173,6 +178,7 @@ namespace Tag.Settings
             Ui = ClampFloat(Ui, 0f, 1f);
             Music = ClampFloat(Music, 0f, 1f);
             HudScale = ClampFloat(HudScale, HudMin, HudMax);
+            UiScale = ClampFloat(UiScale, UiScaleMin, UiScaleMax);
             int lastArena = Tag.Onboard.ArenaRegistry.Count - 1;
             if (lastArena < 0) lastArena = 0;
             if (Arena < 0) Arena = 0;

@@ -28,6 +28,10 @@ namespace Tag.Ui.Menu
         static Sprite _stick;
         static Sprite _south;
         static Sprite _east;
+        static Sprite _cross;
+        static Sprite _circle;
+        static Sprite _switchB;
+        static Sprite _switchA;
 
         public static Sprite Play => _play ??= Runner();
         public static Sprite Cone => _cone ??= TrafficCone();
@@ -43,6 +47,55 @@ namespace Tag.Ui.Menu
         public static Sprite Stick => _stick ??= StickCap();
         public static Sprite South => _south ??= FaceCap(new Color(0.15f, 0.72f, 0.32f, 1f), LetterA());
         public static Sprite East => _east ??= FaceCap(new Color(0.90f, 0.22f, 0.28f, 1f), LetterB());
+        public static Sprite Cross => _cross ??= CrossMark();
+        public static Sprite Circle => _circle ??= CircleMark();
+        public static Sprite SwitchSouth => _switchB ??= FaceCap(new Color(0.95f, 0.78f, 0.16f, 1f), LetterB());
+        public static Sprite SwitchEast => _switchA ??= FaceCap(new Color(0.90f, 0.22f, 0.28f, 1f), LetterA());
+
+        public static Sprite Slot(int family, int slot)
+        {
+            if (slot <= 0) return MoveOf(family);
+            if (slot == 1) return ConfirmOf(family);
+            return BackOf(family);
+        }
+
+        public static Sprite MoveOf(int family)
+        {
+            if (family == PadGlyph.Keyboard) return KeyArrows;
+            return Stick;
+        }
+
+        public static Sprite ConfirmOf(int family)
+        {
+            if (family == PadGlyph.Keyboard) return KeySpace;
+            if (family == PadGlyph.PlayStation) return Cross;
+            if (family == PadGlyph.Switch) return SwitchSouth;
+            if (family == PadGlyph.Generic) return South;
+            return South;
+        }
+
+        public static Sprite BackOf(int family)
+        {
+            if (family == PadGlyph.Keyboard) return KeyEsc;
+            if (family == PadGlyph.PlayStation) return Circle;
+            if (family == PadGlyph.Switch) return SwitchEast;
+            return East;
+        }
+
+        public static Sprite BindOf(int family, int action)
+        {
+            if (family == PadGlyph.Keyboard)
+            {
+                if (action <= 1) return KeyArrows;
+                if (action == 2) return KeySpace;
+                if (action == 8) return KeyEsc;
+                return Keys;
+            }
+            if (action <= 1) return Stick;
+            if (action == 2 || action == 6) return ConfirmOf(family);
+            if (action == 8) return BackOf(family);
+            return Pad;
+        }
 
         static Sprite Runner()
         {
@@ -168,6 +221,26 @@ namespace Tag.Ui.Menu
             Disc(px, n, 64, 58, 8, new Color(0.10f, 0.14f, 0.22f, 1f));
             Disc(px, n, 86, 80, 16, new Color(0.06f, 0.10f, 0.20f, 1f));
             Disc(px, n, 86, 80, 11, Color.white);
+            return Bake(px, n, n);
+        }
+
+        static Sprite CrossMark()
+        {
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            Disc(px, n, 64, 64, 52, new Color(0.12f, 0.45f, 0.95f, 1f));
+            Disc(px, n, 64, 64, 40, new Color(0.20f, 0.62f, 1f, 1f));
+            Limb(px, n, 40, 40, 88, 88, 8, Color.white);
+            Limb(px, n, 88, 40, 40, 88, 8, Color.white);
+            return Bake(px, n, n);
+        }
+
+        static Sprite CircleMark()
+        {
+            const int n = 128;
+            Color[] px = Clear(n, n);
+            Disc(px, n, 64, 64, 52, new Color(0.90f, 0.18f, 0.22f, 1f));
+            Disc(px, n, 64, 64, 34, new Color(0.10f, 0.12f, 0.16f, 1f));
             return Bake(px, n, n);
         }
 

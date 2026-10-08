@@ -42,6 +42,7 @@ namespace Tag.Ui.Menu
             rt.offsetMin = new Vector2(18f, 8f);
             rt.offsetMax = new Vector2(-18f, -8f);
             var label = rt.gameObject.AddComponent<Text>();
+            if (size < UiFit.FloorFont) size = UiFit.FloorFont;
             label.font = MenuTheme.Font;
             label.text = text ?? "";
             label.fontSize = size;
@@ -51,7 +52,7 @@ namespace Tag.Ui.Menu
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
             label.verticalOverflow = VerticalWrapMode.Truncate;
             label.resizeTextForBestFit = true;
-            label.resizeTextMinSize = 14;
+            label.resizeTextMinSize = UiFit.FloorFont;
             label.resizeTextMaxSize = size;
             label.raycastTarget = false;
             var outline = rt.gameObject.AddComponent<Outline>();
@@ -91,7 +92,7 @@ namespace Tag.Ui.Menu
             barImage.raycastTarget = false;
 
             var title = Words(rt, label, 40, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0f, 0.42f), new Vector2(1f, 1f));
-            var sub = Words(rt, detail, 22, TextAnchor.UpperLeft, MenuTheme.Mute, new Vector2(0f, 0f), new Vector2(1f, 0.48f));
+            var sub = Words(rt, detail, UiFit.FloorFont, TextAnchor.UpperLeft, MenuTheme.Mute, new Vector2(0f, 0f), new Vector2(1f, 0.48f));
             var tile = rt.gameObject.AddComponent<MenuTile>();
             tile.Plate = plate;
             tile.Stroke = stroke;
@@ -166,7 +167,7 @@ namespace Tag.Ui.Menu
                 tile.Label.alignment = TextAnchor.MiddleLeft;
                 tile.Label.fontSize = 46;
                 tile.Label.resizeTextMaxSize = 46;
-                tile.Label.resizeTextMinSize = 16;
+                tile.Label.resizeTextMinSize = UiFit.FloorFont;
             }
             if (tile.Detail != null)
             {

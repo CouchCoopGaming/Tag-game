@@ -1,7 +1,5 @@
 using Tag.Level;
 using Tag.Modes;
-using Tag.Onboard;
-using Tag.Settings;
 
 namespace Tag.Ui.Menu
 {
@@ -44,16 +42,7 @@ namespace Tag.Ui.Menu
 
         public static string Tip(int index)
         {
-            HowToPlay.Ensure(MenuInput.LastKind, ArenaRegistry.Count);
-            int n = HowToPlay.Count;
-            if (n < 1) return "Space jumps.";
-            int i = index;
-            if (i < 0) i = 0;
-            int verb = 3 + (i % 8);
-            if (verb >= n) verb = verb % n;
-            string line = HowToPlay.Line(verb);
-            if (string.IsNullOrEmpty(line)) return "Space jumps.";
-            return line;
+            return MenuTips.At(index);
         }
 
         public static string Credits()

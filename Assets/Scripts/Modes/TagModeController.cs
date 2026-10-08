@@ -162,6 +162,8 @@ namespace Tag.Modes
         /// <summary>Last punch/round handoff, for the local TAG flash.</summary>
         public string LastFromId { get; private set; }
         public string LastToId { get; private set; }
+        /// <summary>Bumps on every handoff so a repeated pair still reaches the feed.</summary>
+        public int TagSerial { get; private set; }
 
         /// <summary>Living players' TimeAsIt (already on ItController); empty if no context players.</summary>
         public IReadOnlyList<ItController> PlayersForHud => _ctx.Players;
@@ -775,6 +777,7 @@ namespace Tag.Modes
                 return;
             }
             LastFromId = from != null ? from.PlayerId : "";
+            TagSerial++;
             float tagBackSeconds = TagBackSeconds(from, to);
             if (from != null)
             {

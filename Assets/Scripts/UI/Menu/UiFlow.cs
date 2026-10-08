@@ -67,11 +67,29 @@ namespace Tag.Ui.Menu
             int cues = MenuCue.Present(Root());
             if (cues != MenuCue.Count)
                 Fail(ref report, "menu cue slot missing");
+            bool text = UiFit.FontsHold() && UiFit.Remembers();
+            bool hud = Tag.Ui.Hud.HudCorner.ClearAll();
+            bool glyphs = PadGlyph.Samples();
+            bool feed = Tag.Ui.Hud.TagFeed.Holds();
+            bool load = LoadGate.Holds() && MenuTips.Holds();
+            bool board = Tag.Ui.Hud.ScorePeek.Holds() && Tag.Ui.Hud.RoundCard.Holds();
+            if (!text) Fail(ref report, "text floor");
+            if (!hud) Fail(ref report, "hud corner");
+            if (!glyphs) Fail(ref report, "glyphs");
+            if (!feed) Fail(ref report, "tag feed");
+            if (!load) Fail(ref report, "loading bar");
+            if (!board) Fail(ref report, "scoreboard");
             CouchPlay.Release();
             report.Line = "ui-flow screens=14 kb=" + kb.ToString()
                 + " pad=" + pad.ToString()
                 + " dead=0 focus=ok back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues="
-                + cues.ToString();
+                + cues.ToString()
+                + " text=" + (text ? "ok" : "no")
+                + " hud=" + (hud ? "ok" : "no")
+                + " glyphs=" + (glyphs ? "ok" : "no")
+                + " feed=" + (feed ? "ok" : "no")
+                + " load=" + (load ? "ok" : "no")
+                + " board=" + (board ? "ok" : "no");
             if (!report.Ok)
                 report.Line += " FAIL " + report.Failure;
             return report;
@@ -522,7 +540,7 @@ namespace Tag.Ui.Menu
                 case Practice: return 6;
                 case Controls: return 2;
                 case Options:
-                    if (s.Page == 2 || s.Page == 3) return 5;
+                    if (s.Page == 3) return 5;
                     return 6;
                 default: return 0;
             }

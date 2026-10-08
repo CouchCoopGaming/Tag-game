@@ -38,6 +38,13 @@ namespace Tag.Ui.Hud
         public Image SafeFill;
         public Text SafeWord;
         public Image Arrow;
+        public RectTransform Board;
+        public Text BoardTitle;
+        public Text BoardRound;
+        public Text BoardClock;
+        public readonly Text[] BoardName = new Text[4];
+        public readonly Text[] BoardValue = new Text[4];
+        public readonly Text[] Feed = new Text[3];
     }
 
     /// <summary>
@@ -52,6 +59,7 @@ namespace Tag.Ui.Hud
         public static bool Active => Instance != null && !MenuHost.Legacy;
 
         public Canvas Root;
+        public CanvasScaler Scaler;
         public Text Clock;
         public Text RoundLabel;
         public Text CenterCall;
@@ -78,6 +86,8 @@ namespace Tag.Ui.Hud
         int _layout = -1;
         int _preview;
         bool _live;
+        float _uiScale = -1f;
+        int _tagSerial = -1;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Auto()
@@ -138,6 +148,7 @@ namespace Tag.Ui.Hud
 
         void Update()
         {
+            ApplyScale();
             if (MenuHost.Legacy)
             {
                 Hide();
@@ -163,8 +174,161 @@ namespace Tag.Ui.Hud
         {
             if (!_live && (Root == null || !Root.enabled)) return;
             _live = false;
+            _tagSerial = -1;
+            TagFeed.Reset();
             if (Root != null) Root.enabled = false;
-            for (int i = 0; i < 4; i++) _wasIt[i] = -1;
+            for (int i = 0; i < 4; i++)
+            {
+                _wasIt[i] = -1;
+                HudPane pane = Panes[i];
+                if (pane != null && pane.Board != null && pane.Board.gameObject.activeSelf)
+                    pane.Board.gameObject.SetActive(false);
+            }
+        }
+
+        void ApplyScale()
+        {
+            float s = UiFit.Current();
+            if (Scaler == null || s == _uiScale) return;
+            _uiScale = s;
+            UiFit.Ref(s, out float w, out float h);
+            Scaler.referenceResolution = new Vector2(w, h);
+            _layout = -1;
+        }
+
+        void NoteTag(TagModeController modes)
+        {
+            int serial = modes.TagSerial;
+            if (serial == _tagSerial) return;
+            _tagSerial = serial;
+            int from = SeatOf(modes, modes.LastFromId);
+            int to = SeatOf(modes, modes.LastToId);
+            if (from < 0 || to < 0) return;
+            TagFeed.Push(from, to, Time.unscaledTime);
+        }
+
+        int SeatOf(TagModeController modes, string id)
+        {
+            if (string.IsNullOrEmpty(id)) return -1;
+            for (int i = 0; i < 4; i++)
+            {
+                ItController pawn = Pawns[i];
+                if (pawn == null || pawn.PlayerId != id) continue;
+                int seat = Seat[i];
+                if (seat < 0 || seat > 3) seat = i;
+                return seat;
+            }
+            IReadOnlyList<ItController> list = modes.PlayersForHud;
+            if (list != null)
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    ItController pawn = list[i];
+                    if (pawn == null || pawn.PlayerId != id) continue;
+                    if (i < 4) return i;
+                }
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if (id == MatchHudText.Seat[i]) return i;
+            }
+            return -1;
+        }
+
+        void PaintFeed(int index)
+        {
+            HudPane pane = Panes[index];
+            if (pane == null) return;
+            float now = Time.unscaledTime;
+            bool hold = MenuVideo.ReduceMotion;
+            for (int row = 0; row < 3; row++)
+            {
+                Text line = pane.Feed[row];
+                if (line == null) continue;
+                bool on = TagFeed.On(row, now);
+                line.enabled = on;
+                if (!on) continue;
+                Set(line, TagFeed.Text(row));
+                Color tint = MenuTheme.Seat(TagFeed.From(row));
+                float a = TagFeed.Alpha(row, now, hold);
+                line.color = new Color(tint.r, tint.g, tint.b, a);
+            }
+        }
+
+        void PaintBoard(TagModeController modes, int index)
+        {
+            HudPane pane = Panes[index];
+            if (pane == null || pane.Board == null) return;
+            int seat = Seat[index];
+            if (seat < 0 || seat > 3) seat = index;
+            int device = CouchPlay.DeviceOf(seat);
+            bool show = device >= 0 && ScoreHold.Down(device);
+            if (pane.Board.gameObject.activeSelf != show)
+                pane.Board.gameObject.SetActive(show);
+            if (!show) return;
+            Set(pane.BoardTitle, ScorePeek.Title);
+            Set(pane.BoardRound, MatchHudText.Round(modes.RoundShown, modes.RoundCap));
+            if (modes.SelectedMode == TagModeId.FreePlay) Set(pane.BoardClock, MatchHudText.Free);
+            else Set(pane.BoardClock, MatchHudText.Clock(modes.Remaining));
+            for (int i = 0; i < 4; i++)
+            {
+                bool occupied = CouchPlay.HumanAt(i) || CouchPlay.AiAt(i);
+                Text name = pane.BoardName[i];
+                Text value = pane.BoardValue[i];
+                if (name != null) name.enabled = occupied;
+                if (value != null) value.enabled = occupied;
+                if (!occupied) continue;
+                string who = CouchPlay.Name(i);
+                if (string.IsNullOrEmpty(who)) who = MatchHudText.Seat[i];
+                Set(name, who);
+                Set(value, ValueOf(modes, PawnForSeat(i)));
+                CouchPlay.Tint(i, out float r, out float g, out float b);
+                Color tint = new Color(r, g, b, 1f);
+                if (name != null) name.color = tint;
+                if (value != null) value.color = tint;
+            }
+        }
+
+        ItController PawnForSeat(int seat)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (Pawns[i] == null) continue;
+                int at = Seat[i];
+                if (at < 0) at = i;
+                if (at == seat) return Pawns[i];
+            }
+            return null;
+        }
+
+        static string ValueOf(TagModeController modes, ItController pawn)
+        {
+            if (modes == null || pawn == null) return MatchHudText.Off;
+            TagModeId mode = modes.SelectedMode;
+            if (mode == TagModeId.HotPotato) return HudDigits.Whole0(modes.RoundWinsOf(pawn.PlayerId));
+            if (mode == TagModeId.TrailTag) return pawn.IsAlive ? MatchHudText.In : MatchHudText.Out;
+            if (mode == TagModeId.FreePlay) return HudDigits.Whole0(pawn.TagsLanded);
+            if (pawn.TimeAsIt >= 120f) return HudDigits.Whole0(pawn.TimeAsIt);
+            return HudDigits.Tenth0(pawn.TimeAsIt);
+        }
+
+        static bool MatchPoint(TagModeController modes)
+        {
+            if (modes == null || modes.SelectedMode != TagModeId.HotPotato) return false;
+            int need = 2;
+            HotPotatoTuning tune = modes.HotPotatoTuningAsset;
+            if (tune != null && tune.winsToTakeMatch > 1) need = tune.winsToTakeMatch;
+            int bar = need - 1;
+            if (bar < 1) return false;
+            IReadOnlyList<ItController> list = modes.PlayersForHud;
+            if (list == null) return false;
+            for (int i = 0; i < list.Count; i++)
+            {
+                ItController pawn = list[i];
+                if (pawn == null) continue;
+                if (modes.RoundWinsOf(pawn.PlayerId) == bar) return true;
+            }
+            return false;
         }
 
         void Show()
@@ -214,6 +378,7 @@ namespace Tag.Ui.Hud
             }
             Set(RoundLabel, MatchHudText.Round(modes.RoundShown, modes.RoundCap));
             PaintCenter(modes);
+            NoteTag(modes);
             int panes = CouchPlay.Panes(humans);
             for (int i = 0; i < 4; i++)
             {
@@ -221,6 +386,8 @@ namespace Tag.Ui.Hud
                 if (!on) continue;
                 PaintPawn(modes, i);
                 PaintArrow(modes, i);
+                PaintFeed(i);
+                PaintBoard(modes, i);
             }
             PaintScore(humans);
         }
@@ -278,15 +445,7 @@ namespace Tag.Ui.Hud
             Set(pane.Profile, profile);
             TagModeId mode = modes.SelectedMode;
             Set(pane.Metric, MatchHudText.Metric(mode));
-            string value = MatchHudText.Off;
-            if (pawn != null)
-            {
-                if (mode == TagModeId.HotPotato) value = HudDigits.Whole0(modes.RoundWinsOf(pawn.PlayerId));
-                else if (mode == TagModeId.TrailTag) value = pawn.IsAlive ? MatchHudText.In : MatchHudText.Out;
-                else if (mode == TagModeId.FreePlay) value = HudDigits.Whole0(pawn.TagsLanded);
-                else value = pawn.TimeAsIt >= 120f ? HudDigits.Whole0(pawn.TimeAsIt) : HudDigits.Tenth0(pawn.TimeAsIt);
-            }
-            Set(pane.Value, value);
+            Set(pane.Value, ValueOf(modes, pawn));
 
             bool isIt = pawn != null && pawn.IsIt;
             Color tint = SeatTint(seat);
@@ -422,8 +581,16 @@ namespace Tag.Ui.Hud
                     _endUntil = now + (MenuVideo.ReduceMotion ? 0.7f : 1.4f);
                 _phase = phase;
             }
+            bool countdown = phase == MatchPhase.Countdown || now < _goUntil;
+            bool point = MatchPoint(modes);
+            bool sudden = modes.SuddenDeath || CouchPlay.TieText.Length > 0;
+            int kind = RoundCard.Pick(sudden, countdown, modes.RoundShown, modes.RoundCap, point);
             string word = MatchHudText.Blank;
-            if (phase == MatchPhase.Countdown)
+            if (kind == RoundCard.Sudden) word = RoundCard.SuddenText;
+            else if (kind == RoundCard.Final) word = RoundCard.FinalText;
+            else if (kind == RoundCard.Round2) word = RoundCard.Round2Text;
+            else if (kind == RoundCard.Point) word = RoundCard.PointText;
+            else if (phase == MatchPhase.Countdown)
             {
                 float sec = modes.PhaseSeconds;
                 int show = (int)sec;
@@ -500,15 +667,18 @@ namespace Tag.Ui.Hud
                 for (int i = 0; i < 4; i++)
                     if (Cams[i] != null) camBits |= 1 << i;
             }
-            int sig = humans * 64 + split * 8 + camBits + (preview ? 32 : 0);
+            int scaleBits = (int)(UiFit.Current() * 100f);
+            int sig = humans * 64 + split * 8 + camBits + (preview ? 32 : 0) + scaleBits * 1024;
             if (sig == _layout) return;
             _layout = sig;
             int panes = CouchPlay.Panes(humans);
-            float verbScale = 1f;
-            if (humans >= 3) verbScale = 0.70f;
-            else if (humans == 2) verbScale = 0.86f;
-            int nameSize = humans >= 3 ? 24 : 36;
+            int nameSize = humans >= 3 ? UiFit.FloorFont : 36;
             int callSize = humans >= 3 ? 40 : 68;
+            if (Clock != null)
+            {
+                RectTransform plate = Clock.transform.parent as RectTransform;
+                if (plate != null) plate.anchoredPosition = new Vector2(0f, -UiFit.SafeY);
+            }
             for (int i = 0; i < 4; i++)
             {
                 HudPane pane = Panes[i];
@@ -535,8 +705,7 @@ namespace Tag.Ui.Hud
                 pane.Root.anchorMax = new Vector2(x + w, y + h);
                 pane.Root.offsetMin = Vector2.zero;
                 pane.Root.offsetMax = Vector2.zero;
-                bool right = x >= 0.49f;
-                PlaceIdentity(pane, right, nameSize, callSize, verbScale);
+                PlaceIdentity(pane, humans, split, i, UiFit.Current(), nameSize, callSize);
             }
             if (ScoreRoot != null)
             {
@@ -553,17 +722,19 @@ namespace Tag.Ui.Hud
             }
         }
 
-        static void PlaceIdentity(HudPane pane, bool right, int nameSize, int callSize, float verbScale)
+        static void PlaceIdentity(HudPane pane, int humans, int split, int index, float scale, int nameSize, int callSize)
         {
-            float badgeW = nameSize >= 30 ? 112f : 88f;
+            HudCorner.Lay lay = HudCorner.Measure(humans, split, index, scale);
+            bool right = lay.Right;
+            if (nameSize < UiFit.FloorFont) nameSize = UiFit.FloorFont;
             if (pane.Badge != null)
             {
                 RectTransform rt = pane.Badge.rectTransform;
                 rt.anchorMin = new Vector2(right ? 1f : 0f, 1f);
                 rt.anchorMax = rt.anchorMin;
                 rt.pivot = new Vector2(right ? 1f : 0f, 1f);
-                rt.sizeDelta = new Vector2(badgeW, nameSize >= 30 ? 52f : 42f);
-                rt.anchoredPosition = new Vector2(right ? -18f : 18f, -14f);
+                rt.sizeDelta = new Vector2(HudCorner.BadgeW, HudCorner.BadgeH);
+                rt.anchoredPosition = new Vector2(lay.BadgeX, lay.BadgeY);
             }
             if (pane.Identity != null)
             {
@@ -571,26 +742,38 @@ namespace Tag.Ui.Hud
                 rt.anchorMin = new Vector2(right ? 1f : 0f, 1f);
                 rt.anchorMax = rt.anchorMin;
                 rt.pivot = new Vector2(right ? 1f : 0f, 1f);
-                float inset = 18f + badgeW + 10f;
-                rt.anchoredPosition = new Vector2(right ? -inset : inset, -12f);
-                rt.sizeDelta = new Vector2(nameSize >= 30 ? 520f : 340f, nameSize >= 30 ? 132f : 112f);
+                rt.anchoredPosition = new Vector2(lay.NameX, lay.NameY);
+                rt.sizeDelta = new Vector2(lay.NameW, HudCorner.NameH);
             }
             TextAnchor align = right ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
             if (pane.Name != null)
             {
                 pane.Name.fontSize = nameSize;
                 pane.Name.resizeTextMaxSize = nameSize;
+                pane.Name.resizeTextMinSize = UiFit.FloorFont;
                 pane.Name.alignment = align;
             }
             if (pane.Profile != null)
             {
-                int profileSize = nameSize >= 30 ? 22 : 16;
-                pane.Profile.fontSize = profileSize;
-                pane.Profile.resizeTextMaxSize = profileSize;
+                pane.Profile.fontSize = UiFit.FloorFont;
+                pane.Profile.resizeTextMaxSize = UiFit.FloorFont;
+                pane.Profile.resizeTextMinSize = UiFit.FloorFont;
                 pane.Profile.alignment = align;
             }
-            if (pane.Metric != null) pane.Metric.alignment = align;
-            if (pane.Value != null) pane.Value.alignment = align;
+            if (pane.Metric != null)
+            {
+                pane.Metric.fontSize = UiFit.FloorFont;
+                pane.Metric.resizeTextMaxSize = UiFit.FloorFont;
+                pane.Metric.resizeTextMinSize = UiFit.FloorFont;
+                pane.Metric.alignment = align;
+            }
+            if (pane.Value != null)
+            {
+                pane.Value.fontSize = UiFit.FloorFont;
+                pane.Value.resizeTextMaxSize = UiFit.FloorFont;
+                pane.Value.resizeTextMinSize = UiFit.FloorFont;
+                pane.Value.alignment = align;
+            }
             if (pane.Call != null)
             {
                 pane.Call.fontSize = callSize;
@@ -601,8 +784,26 @@ namespace Tag.Ui.Hud
                 pane.Verbs.anchorMin = new Vector2(0f, 0f);
                 pane.Verbs.anchorMax = new Vector2(0f, 0f);
                 pane.Verbs.pivot = new Vector2(0f, 0f);
-                pane.Verbs.anchoredPosition = new Vector2(18f, 18f);
-                pane.Verbs.localScale = new Vector3(verbScale, verbScale, 1f);
+                pane.Verbs.anchoredPosition = new Vector2(lay.VerbX, lay.VerbY);
+                pane.Verbs.localScale = Vector3.one;
+            }
+            if (pane.Board != null)
+            {
+                pane.Board.anchorMin = new Vector2(0.5f, 0.5f);
+                pane.Board.anchorMax = new Vector2(0.5f, 0.5f);
+                pane.Board.pivot = new Vector2(0.5f, 0.5f);
+                pane.Board.anchoredPosition = Vector2.zero;
+            }
+            if (pane.Feed != null && pane.Feed.Length > 0 && pane.Feed[0] != null)
+            {
+                RectTransform feed = pane.Feed[0].rectTransform.parent as RectTransform;
+                if (feed != null)
+                {
+                    feed.anchorMin = new Vector2(1f, 0f);
+                    feed.anchorMax = new Vector2(1f, 0f);
+                    feed.pivot = new Vector2(1f, 0f);
+                    feed.anchoredPosition = new Vector2(-lay.VerbX, lay.VerbY);
+                }
             }
         }
 

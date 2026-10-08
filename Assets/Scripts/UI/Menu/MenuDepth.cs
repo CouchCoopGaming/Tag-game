@@ -41,7 +41,7 @@ namespace Tag.Ui.Menu
             get
             {
                 if (Page == Audio) return 6;
-                if (Page == Display) return 5;
+                if (Page == Display) return 6;
                 if (Page == Access) return 5;
                 if (Page == Look) return 6;
                 return 6;
@@ -60,7 +60,7 @@ namespace Tag.Ui.Menu
         public static string Banner()
         {
             if (Page == Audio) return "Sliders step the volumes you already have.";
-            if (Page == Display) return "Resolution, fullscreen, and vsync.";
+            if (Page == Display) return "Resolution, fullscreen, vsync, and UI scale.";
             if (Page == Access) return "Reduce motion, text size, and colorblind-safe player colors.";
             if (Page == Look) return "Look is shared by the couch.";
             return "Audio, display, accessibility, controls, and look.";
@@ -92,7 +92,8 @@ namespace Tag.Ui.Menu
                 if (index == 0) return "Resolution  " + MenuVideo.ResLabel();
                 if (index == 1) return "Fullscreen  " + (MenuVideo.Full ? "On" : "Window");
                 if (index == 2) return "VSync  " + (MenuVideo.VSync ? "On" : "Off");
-                return "Quality  " + MenuVideo.QualityLabel();
+                if (index == 3) return "Quality  " + MenuVideo.QualityLabel();
+                return UiFit.Line(s.UiScale);
             }
             if (Page == Access)
             {
@@ -113,7 +114,7 @@ namespace Tag.Ui.Menu
             if (Page == Hub)
             {
                 if (index == 0) return "Master, effects, UI, music";
-                if (index == 1) return "Resolution, fullscreen, vsync";
+                if (index == 1) return "Resolution, fullscreen, vsync, scale";
                 if (index == 2) return "Motion, text, player colors";
                 if (index == 3) return "The bind list. Space still jumps.";
                 if (index == 4) return "Shared sensitivity";
@@ -123,6 +124,7 @@ namespace Tag.Ui.Menu
             if (Page == Look && index == 4) return "Does not change the park or the binds";
             if (Page == Access && index == 0) return "Menu slides and the title pulse only";
             if (Page == Access && index == 1) return "Menu and HUD text";
+            if (Page == Display && index == 4) return "80% to 130%, for a couch TV";
             if (Page == Audio && index < 4) return "Left / Right";
             return "Left / Right";
         }
@@ -142,6 +144,13 @@ namespace Tag.Ui.Menu
             if (Page == Access && index == 1)
             {
                 float u = (s.HudScale - GameSettings.HudMin) / (GameSettings.HudMax - GameSettings.HudMin);
+                if (u < 0f) u = 0f;
+                if (u > 1f) u = 1f;
+                return u;
+            }
+            if (Page == Display && index == 4)
+            {
+                float u = (s.UiScale - GameSettings.UiScaleMin) / (GameSettings.UiScaleMax - GameSettings.UiScaleMin);
                 if (u < 0f) u = 0f;
                 if (u > 1f) u = 1f;
                 return u;
@@ -194,7 +203,8 @@ namespace Tag.Ui.Menu
                 if (index == 0) MenuVideo.CycleRes(dir);
                 else if (index == 1) MenuVideo.ToggleFull();
                 else if (index == 2) MenuVideo.ToggleVSync();
-                else MenuVideo.CycleQuality(dir);
+                else if (index == 3) MenuVideo.CycleQuality(dir);
+                else s.UiScale = UiFit.Nudge(s.UiScale, dir);
             }
             else if (Page == Access)
             {
@@ -230,7 +240,7 @@ namespace Tag.Ui.Menu
                 MenuArt.Plate(image, new Color(r, g, b, 1f), true);
                 image.raycastTarget = false;
                 string name = i == 0 ? "P1" : i == 1 ? "P2" : i == 2 ? "P3" : "P4";
-                MenuWidgets.Words(rt, name, 28, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
+                MenuWidgets.Words(rt, name, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
             }
         }
     }

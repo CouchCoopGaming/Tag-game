@@ -267,3 +267,11 @@ A headless walk, `ui-flow`, drives every screen with the keyboard and again with
 The last mode, arena, rules, and each seat's character and color stay in the settings file. Rematch keeps them. A pad can join while you are still in the lobby. If a pad drops, another pad can take that seat and keep the character. If you try to start with fewer people than the mode needs, the screen says so. Free play needs one player. The tag modes need two.
 
 The menu bed and the short stingers (move, confirm, back, join, error, ready, start, results) are hooks beside the match sounds. They use clips that were already in the game. Mockups are in `Docs/UiStills/pass7/`.
+
+The eighth pass is for the couch TV. Display has a UI scale from 80% to 130%, and the menu and the HUD both use it. The edges keep a margin. The small type stays big enough to read from the couch on a 1080p set. The headless check measures that.
+
+The footer, the title prompt, the join cards, and the binds list use the pictures for the pad in your hands. An Xbox pad shows A and B. A PlayStation pad shows Cross and Circle. A Switch Pro pad shows B to confirm and A to go back. Anything else stays South and East. The keyboard stays arrows, Space, and Esc.
+
+During a match, hold Select (or Tab) and only your split shows the standings, the round, and the time. A short feed in the corner says who tagged whom, in that player's color, three lines at most, then it fades. Round 2 and the last round get their own card. A tie shows SUDDEN DEATH. One win away from ending Hot Potato shows MATCH POINT.
+
+The loading screen names the park, gives one real tip, and the bar moves only when the match has actually been started and then when the round is going. It does not fake a fill. The IT badge and the player name no longer sit on top of each other in the top-right, including a two-way and a four-way split. Mockups are in `Docs/UiStills/pass8/`.

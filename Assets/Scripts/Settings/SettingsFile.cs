@@ -34,6 +34,7 @@ namespace Tag.Settings
             Line(text, "music", s.Music);
             Line(text, "mute", s.Muted ? 1f : 0f);
             Line(text, "hud", s.HudScale);
+            Line(text, "uiScale", s.UiScale);
             Line(text, "colorblind", s.Colorblind ? 1f : 0f);
             Line(text, "minimap", s.Minimap ? 1f : 0f);
             Line(text, "accessSeat", s.AccessSeat);
@@ -181,7 +182,7 @@ namespace Tag.Settings
             if (key == "mouse" || key == "padLook" || key == "invertY" || key == "fov") return true;
             if (key == "stickInner" || key == "stickOuter" || key == "stickCurve" || key == "lookAccel") return true;
             if (key == "master" || key == "sfx" || key == "ui" || key == "music" || key == "mute") return true;
-            if (key == "hud" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
+            if (key == "hud" || key == "uiScale" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
             if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
             if (key == "split" || key == "listen") return true;
             if (key.StartsWith("kb.", StringComparison.Ordinal) || key.StartsWith("pad.", StringComparison.Ordinal))
@@ -215,6 +216,7 @@ namespace Tag.Settings
             else if (key == "music") settings.Music = Num(value, settings.Music);
             else if (key == "mute") settings.Muted = Flag(value);
             else if (key == "hud") settings.HudScale = Num(value, settings.HudScale);
+            else if (key == "uiScale") settings.UiScale = Num(value, settings.UiScale);
             else if (key == "colorblind") settings.Colorblind = Flag(value);
             else if (key == "minimap") settings.Minimap = Flag(value);
             else if (key == "accessSeat") settings.AccessSeat = (int)Num(value, settings.AccessSeat);

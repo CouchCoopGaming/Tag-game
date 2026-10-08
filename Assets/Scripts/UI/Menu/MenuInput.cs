@@ -95,6 +95,7 @@ namespace Tag.Ui.Menu
             Push(CouchPlay.DeviceKeyboard, x, y, confirm, back, false, join, sl, sr, north);
             LastKind = InputDeviceKind.Keyboard;
             LastDevice = CouchPlay.DeviceKeyboard;
+            PadGlyph.Note(CouchPlay.DeviceKeyboard, "");
             MenuAudio.NoteDevice(LastKind);
         }
 
@@ -158,6 +159,7 @@ namespace Tag.Ui.Menu
                 Push(CouchPlay.DevicePad0 + i, x, y, south, east, start, join, sl, sr, north);
                 LastKind = InputDeviceKind.Gamepad;
                 LastDevice = CouchPlay.DevicePad0 + i;
+                PadGlyph.Note(LastDevice, pad.name);
                 MenuAudio.NoteDevice(LastKind);
             }
 #else
@@ -175,6 +177,7 @@ namespace Tag.Ui.Menu
                 Push(CouchPlay.DevicePad0, x, y, south, east, start, join, sl, sr, north);
                 LastKind = InputDeviceKind.Gamepad;
                 LastDevice = CouchPlay.DevicePad0;
+                PadGlyph.Note(LastDevice, "");
                 MenuAudio.NoteDevice(LastKind);
             }
 #endif

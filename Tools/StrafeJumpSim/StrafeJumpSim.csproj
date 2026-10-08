@@ -150,6 +150,14 @@
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuSession.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuLobby.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/UiFlow.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/UiFit.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/PadGlyph.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/LoadGate.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuTips.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Hud/HudCorner.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Hud/TagFeed.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Hud/RoundCard.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Hud/ScorePeek.cs" />
     <Compile Include="../../Assets/Scripts/Audio/MenuCue.cs" />
   </ItemGroup>
 </Project>
