@@ -40,8 +40,8 @@ static class PoseKeyDump
             float t = i * Dt;
             float u = Handoff2Feel.MantleWindow > 0f ? t / Handoff2Feel.MantleWindow : 1f;
             if (u > 1f) u = 1f;
-            MantlePose.Sample s = MantlePose.At(Handoff2Feel.VaultShown(u), true);
-            Emit(w, c, "vault", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, 0f, 0f,
+            MantlePose.Sample s = MantlePose.Cleared(Handoff2Feel.VaultShown(u), true);
+            Emit(w, c, "vault", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
                 s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
                 s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, 0f, 0f, 0f, 0f, 0f, 0f);
             if (u >= 1f) break;

@@ -6553,7 +6553,7 @@ namespace Tag.Art
             // Spine / hips lean by state - jet reads clearly in TP
             float mantleU = mantle && _motor != null ? _motor.MantleProgress : 0f;
             float vaultU = Handoff2Feel.VaultShown(mantleU);
-            MantlePose.Sample vault = mantle ? MantlePose.At(vaultU, _mantleLeadLeft) : default;
+            MantlePose.Sample vault = mantle ? MantlePose.Cleared(vaultU, _mantleLeadLeft) : default;
             float leanX = lunging || dashing ? Mathf.Lerp(28f, 48f, dashAmt) : jet ? -22f : wallRun ? 22f : climb ? -16f : mantle ? vault.Spine : air ? 18f : breath;
             float leanZ = wallRun ? (_motor != null && _motor.WallLeft ? -WallPose.RunTilt : WallPose.RunTilt) : 0f;
             float idleW = 0f;
@@ -7191,8 +7191,9 @@ namespace Tag.Art
             {
                 // Hands on the lip, then the chest comes over. Synced to mantle progress.
                 // Climb, wall run, or air eases in. Mantle time is unchanged.
-                _uaLT = _uaL0 * Quaternion.Euler(vault.ArmPitchL, vault.ArmYawL, armZ);
-                _uaRT = _uaR0 * Quaternion.Euler(vault.ArmPitchR, vault.ArmYawR, -armZ);
+                // The cleared sample is the scanned curve, so the gait roll stays off this pose.
+                _uaLT = _uaL0 * Quaternion.Euler(vault.ArmPitchL, vault.ArmYawL, 0f);
+                _uaRT = _uaR0 * Quaternion.Euler(vault.ArmPitchR, vault.ArmYawR, 0f);
                 _laLT = _laL0 * Quaternion.Euler(vault.ElbowL, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(vault.ElbowR, 0f, 0f);
                 if (_mantleSnap && _mantleSnapIn < 0.98f)
@@ -8095,9 +8096,9 @@ namespace Tag.Art
             }
             else if (mantle)
             {
-                // Lead knee drives up, then both feet settle for the land.
-                _ulLT = _ulL0 * Quaternion.Euler(vault.ThighL, 0f, 0f);
-                _ulRT = _ulR0 * Quaternion.Euler(vault.ThighR, 0f, 0f);
+                // Lead knee drives up beside the chest, then both feet settle for the land.
+                _ulLT = _ulL0 * Quaternion.Euler(vault.ThighL, vault.ThighYawL, 0f);
+                _ulRT = _ulR0 * Quaternion.Euler(vault.ThighR, vault.ThighYawR, 0f);
                 _llLT = _llL0 * Quaternion.Euler(vault.KneeL, 0f, 0f);
                 _llRT = _llR0 * Quaternion.Euler(vault.KneeR, 0f, 0f);
                 if (_mantleSnap && _mantleSnapIn < 0.98f)

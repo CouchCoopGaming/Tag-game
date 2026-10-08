@@ -75,9 +75,23 @@ namespace Tag.Art
         public const float LandHip = 8f;
         public const float LandHead = -4f;
 
+        /// <summary>
+        /// Played joint keys. The printed plant, knee, over, and land stay on
+        /// <see cref="At"/>, which is what the handoff proof measures. These
+        /// offsets sit on that curve: the arms yaw off the chest, the elbows
+        /// open off the head, the spine stays off the thighs, and each thigh
+        /// yaws out beside the torso. Not a root lift.
+        /// </summary>
+        public const float ClearArmYaw = -50f;
+        public const float ClearElbow = 12f;
+        public const float ClearSpine = -12f;
+        public const float ClearLeadYaw = -70f;
+        public const float ClearTrailYaw = 44f;
+
         public struct Sample
         {
             public float ThighL, ThighR, KneeL, KneeR;
+            public float ThighYawL, ThighYawR;
             public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
             public float ElbowL, ElbowR;
             public float Hip, Spine, Head;
@@ -140,6 +154,24 @@ namespace Tag.Art
             }
 
             Sample s = Lerp(a, b, t);
+            if (!leadLeft) s = Mirror(s);
+            return s;
+        }
+
+        /// <summary>
+        /// The curve the vault plays. Same beats as <see cref="At"/>, with the
+        /// clearance offsets. Lead-left, then mirrored when the other knee leads.
+        /// </summary>
+        public static Sample Cleared(float progress, bool leadLeft)
+        {
+            Sample s = At(progress, true);
+            s.ArmYawL += ClearArmYaw;
+            s.ArmYawR -= ClearArmYaw;
+            s.ElbowL += ClearElbow;
+            s.ElbowR += ClearElbow;
+            s.Spine += ClearSpine;
+            s.ThighYawL = ClearLeadYaw;
+            s.ThighYawR = ClearTrailYaw;
             if (!leadLeft) s = Mirror(s);
             return s;
         }
@@ -355,6 +387,8 @@ namespace Tag.Art
                 ThighR = s.ThighL,
                 KneeL = s.KneeR,
                 KneeR = s.KneeL,
+                ThighYawL = -s.ThighYawR,
+                ThighYawR = -s.ThighYawL,
                 ArmPitchL = s.ArmPitchR,
                 ArmPitchR = s.ArmPitchL,
                 ArmYawL = -s.ArmYawR,
