@@ -53,8 +53,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.7195, z: 0.0025}
-  m_Size: 4.911
+  m_LocalReferencePoint: {x: 0, y: 0.717, z: -0.001}
+  m_Size: 4.894
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -729,7 +729,7 @@ Transform:
   m_GameObject: {fileID: 300060}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.74, z: 1.7}
+  m_LocalPosition: {x: 0, y: 0.52, z: 1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -754,7 +754,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.4, y: 0.06, z: 0.4}
+  m_Size: {x: 0.34, y: 0.14, z: 0.36}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300070
 GameObject:
@@ -782,7 +782,7 @@ Transform:
   m_GameObject: {fileID: 300070}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.96, z: -1.85}
+  m_LocalPosition: {x: 0, y: 0.86, z: -1.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -807,7 +807,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.4, y: 0.05, z: 0.36}
+  m_Size: {x: 0.34, y: 0.08, z: 0.28}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300080
 GameObject:
@@ -835,7 +835,7 @@ Transform:
   m_GameObject: {fileID: 300080}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.46, z: 2.05}
+  m_LocalPosition: {x: 0, y: 0.36, z: 1.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -860,5 +860,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.36, y: 0.16, z: 0.22}
+  m_Size: {x: 0.22, y: 0.12, z: 0.36}
   m_Center: {x: 0, y: 0, z: 0}

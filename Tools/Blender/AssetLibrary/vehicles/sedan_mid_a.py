@@ -6,7 +6,7 @@ are clones of 2025. No badges.
 
 Published 2025 Camry-class inches (exterior page): height 56.9, width 72.4,
 length 193.5, wheelbase 111.2, ground clearance 5.4, track 63.0.
-This shell uses the pass 13 metre table: 4.90 x 1.84 x 1.44, wheelbase
+This shell uses the pass 14 metre table: 4.90 x 1.84 x 1.44, wheelbase
 2.82, track 1.60, clearance 0.14. Front overhang is 0.96 m.
 """
 

@@ -329,7 +329,7 @@ def main():
     found = _load(only)
     if only is not None and "sedan_mid_a" in only:
         print("SHOT", "sedan_mid_a", shot or "all")
-        out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass13")
+        out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass14")
         os.makedirs(out, exist_ok=True)
         if shot in (None, "hero"):
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "hero.png"), 48.0, elevation=11.0, fill=0.90, wide=True, shade=True)
@@ -346,6 +346,8 @@ def main():
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "front.png"), 0.0, elevation=2.0, fill=0.86, wide=True, shade=True)
         if shot in (None, "rear"):
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "rear.png"), 180.0, elevation=4.0, fill=0.86, wide=True, shade=True)
+        if shot in (None, "top"):
+            _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "top.png"), 0.0, elevation=86.0, fill=0.90, wide=True, shade=True)
         if shot in (None, "beside"):
             _beside(found["Sedan_Mid_A_25"], os.path.join(out, "beside.png"))
         if shot in (None, "scale"):
@@ -354,7 +356,7 @@ def main():
                 (0.4, 0.0, 0.0), 18, (-1.7, 0.0, 1.55), fill=0.88,
                 wide=True, shade=True,
             )
-        if shot in (None, "lineup"):
+        if shot == "lineup":
             _lineup_side(
                 found,
                 (

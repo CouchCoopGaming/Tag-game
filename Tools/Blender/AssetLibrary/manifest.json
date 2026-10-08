@@ -42441,24 +42441,24 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2021 fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. Lofted shell, 1.25 m roof, 18 inch alloys. Color crimson.",
     "size": [
-      1.987,
-      1.439,
-      4.911
+      1.975,
+      1.434,
+      4.894
     ],
     "min": [
-      -0.993,
+      -0.988,
       0.0,
-      -2.453
+      -2.448
     ],
     "max": [
-      0.993,
-      1.439,
-      2.458
+      0.988,
+      1.434,
+      2.446
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 31944,
+        "tris": 14056,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -42475,7 +42475,7 @@
       },
       {
         "lod": 1,
-        "tris": 10280,
+        "tris": 5336,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -42492,7 +42492,7 @@
       },
       {
         "lod": 2,
-        "tris": 4756,
+        "tris": 2116,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -42628,13 +42628,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.74,
-          1.7
+          0.52,
+          1.5
         ],
         "size": [
-          0.4,
-          0.06,
-          0.4
+          0.34,
+          0.14,
+          0.36
         ],
         "euler": [
           0,
@@ -42647,13 +42647,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.96,
-          -1.85
+          0.86,
+          -1.6
         ],
         "size": [
-          0.4,
-          0.05,
-          0.36
+          0.34,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -42666,13 +42666,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          2.05
+          0.36,
+          1.55
         ],
         "size": [
-          0.36,
-          0.16,
-          0.22
+          0.22,
+          0.12,
+          0.36
         ],
         "euler": [
           0,
@@ -42701,24 +42701,24 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2022 fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. Lofted shell, 1.25 m roof, 18 inch alloys. Color crimson.",
     "size": [
-      1.987,
-      1.439,
-      4.911
+      1.975,
+      1.434,
+      4.894
     ],
     "min": [
-      -0.993,
+      -0.988,
       0.0,
-      -2.453
+      -2.448
     ],
     "max": [
-      0.993,
-      1.439,
-      2.458
+      0.988,
+      1.434,
+      2.446
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 32004,
+        "tris": 14124,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -42735,7 +42735,7 @@
       },
       {
         "lod": 1,
-        "tris": 10292,
+        "tris": 5356,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -42752,7 +42752,7 @@
       },
       {
         "lod": 2,
-        "tris": 4768,
+        "tris": 2116,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -42888,13 +42888,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.74,
-          1.7
+          0.52,
+          1.5
         ],
         "size": [
-          0.4,
-          0.06,
-          0.4
+          0.34,
+          0.14,
+          0.36
         ],
         "euler": [
           0,
@@ -42907,13 +42907,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.96,
-          -1.85
+          0.86,
+          -1.6
         ],
         "size": [
-          0.4,
-          0.05,
-          0.36
+          0.34,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -42926,13 +42926,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          2.05
+          0.36,
+          1.55
         ],
         "size": [
-          0.36,
-          0.16,
-          0.22
+          0.22,
+          0.12,
+          0.36
         ],
         "euler": [
           0,
@@ -42961,24 +42961,24 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2023 fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. Lofted shell, 1.25 m roof, 18 inch alloys. Color crimson.",
     "size": [
-      1.987,
-      1.439,
-      4.911
+      1.975,
+      1.434,
+      4.894
     ],
     "min": [
-      -0.993,
+      -0.988,
       0.0,
-      -2.453
+      -2.448
     ],
     "max": [
-      0.993,
-      1.439,
-      2.458
+      0.988,
+      1.434,
+      2.446
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 32004,
+        "tris": 14284,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -42995,7 +42995,7 @@
       },
       {
         "lod": 1,
-        "tris": 10340,
+        "tris": 5500,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -43012,7 +43012,7 @@
       },
       {
         "lod": 2,
-        "tris": 4816,
+        "tris": 2196,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -43148,13 +43148,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.74,
-          1.7
+          0.52,
+          1.5
         ],
         "size": [
-          0.4,
-          0.06,
-          0.4
+          0.34,
+          0.14,
+          0.36
         ],
         "euler": [
           0,
@@ -43167,13 +43167,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.96,
-          -1.85
+          0.86,
+          -1.6
         ],
         "size": [
-          0.4,
-          0.05,
-          0.36
+          0.34,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -43186,13 +43186,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          2.05
+          0.36,
+          1.55
         ],
         "size": [
-          0.36,
-          0.16,
-          0.22
+          0.22,
+          0.12,
+          0.36
         ],
         "euler": [
           0,
@@ -43221,24 +43221,24 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2024 fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. Lofted shell, 1.25 m roof, 18 inch alloys. Color crimson.",
     "size": [
-      1.987,
-      1.439,
-      4.911
+      1.975,
+      1.434,
+      4.894
     ],
     "min": [
-      -0.993,
+      -0.988,
       0.0,
-      -2.453
+      -2.448
     ],
     "max": [
-      0.993,
-      1.439,
-      2.458
+      0.988,
+      1.434,
+      2.446
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 32016,
+        "tris": 14144,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -43255,7 +43255,7 @@
       },
       {
         "lod": 1,
-        "tris": 10304,
+        "tris": 5376,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -43272,7 +43272,7 @@
       },
       {
         "lod": 2,
-        "tris": 4780,
+        "tris": 2116,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -43408,13 +43408,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.74,
-          1.7
+          0.52,
+          1.5
         ],
         "size": [
-          0.4,
-          0.06,
-          0.4
+          0.34,
+          0.14,
+          0.36
         ],
         "euler": [
           0,
@@ -43427,13 +43427,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.96,
-          -1.85
+          0.86,
+          -1.6
         ],
         "size": [
-          0.4,
-          0.05,
-          0.36
+          0.34,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -43446,13 +43446,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          2.05
+          0.36,
+          1.55
         ],
         "size": [
-          0.36,
-          0.16,
-          0.22
+          0.22,
+          0.12,
+          0.36
         ],
         "euler": [
           0,
@@ -43481,24 +43481,24 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. Lofted shell, 1.25 m roof, 18 inch alloys. Color crimson.",
     "size": [
-      1.987,
-      1.439,
-      4.912
+      1.975,
+      1.434,
+      4.894
     ],
     "min": [
-      -0.993,
+      -0.988,
       0.0,
-      -2.454
+      -2.448
     ],
     "max": [
-      0.993,
-      1.439,
-      2.458
+      0.988,
+      1.434,
+      2.446
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 31896,
+        "tris": 14016,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -43515,7 +43515,7 @@
       },
       {
         "lod": 1,
-        "tris": 10232,
+        "tris": 5296,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -43532,7 +43532,7 @@
       },
       {
         "lod": 2,
-        "tris": 4708,
+        "tris": 2116,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
@@ -43668,13 +43668,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.74,
-          1.7
+          0.52,
+          1.5
         ],
         "size": [
-          0.4,
-          0.06,
-          0.4
+          0.34,
+          0.14,
+          0.36
         ],
         "euler": [
           0,
@@ -43687,13 +43687,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.96,
-          -1.85
+          0.86,
+          -1.6
         ],
         "size": [
-          0.4,
-          0.05,
-          0.36
+          0.34,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -43706,13 +43706,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          2.05
+          0.36,
+          1.55
         ],
         "size": [
-          0.36,
-          0.16,
-          0.22
+          0.22,
+          0.12,
+          0.36
         ],
         "euler": [
           0,
@@ -43741,24 +43741,24 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. Lofted shell, 1.25 m roof, 18 inch alloys. Color white.",
     "size": [
-      1.987,
-      1.439,
-      4.912
+      1.975,
+      1.434,
+      4.894
     ],
     "min": [
-      -0.993,
+      -0.988,
       0.0,
-      -2.454
+      -2.448
     ],
     "max": [
-      0.993,
-      1.439,
-      2.458
+      0.988,
+      1.434,
+      2.446
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 31896,
+        "tris": 14016,
         "materials": [
           "Lib_PaintWhite",
           "Lib_AutoGlass",
@@ -43775,7 +43775,7 @@
       },
       {
         "lod": 1,
-        "tris": 10232,
+        "tris": 5296,
         "materials": [
           "Lib_PaintWhite",
           "Lib_AutoGlass",
@@ -43792,7 +43792,7 @@
       },
       {
         "lod": 2,
-        "tris": 4708,
+        "tris": 2116,
         "materials": [
           "Lib_PaintWhite",
           "Lib_AutoGlass",
@@ -43928,13 +43928,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.74,
-          1.7
+          0.52,
+          1.5
         ],
         "size": [
-          0.4,
-          0.06,
-          0.4
+          0.34,
+          0.14,
+          0.36
         ],
         "euler": [
           0,
@@ -43947,13 +43947,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.96,
-          -1.85
+          0.86,
+          -1.6
         ],
         "size": [
-          0.4,
-          0.05,
-          0.36
+          0.34,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -43966,13 +43966,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          2.05
+          0.36,
+          1.55
         ],
         "size": [
-          0.36,
-          0.16,
-          0.22
+          0.22,
+          0.12,
+          0.36
         ],
         "euler": [
           0,
@@ -44001,24 +44001,24 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. Lofted shell, 1.25 m roof, 18 inch alloys. Color black.",
     "size": [
-      1.987,
-      1.439,
-      4.912
+      1.975,
+      1.434,
+      4.894
     ],
     "min": [
-      -0.993,
+      -0.988,
       0.0,
-      -2.454
+      -2.448
     ],
     "max": [
-      0.993,
-      1.439,
-      2.458
+      0.988,
+      1.434,
+      2.446
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 31896,
+        "tris": 14016,
         "materials": [
           "Lib_PaintBlack",
           "Lib_AutoGlass",
@@ -44035,7 +44035,7 @@
       },
       {
         "lod": 1,
-        "tris": 10232,
+        "tris": 5296,
         "materials": [
           "Lib_PaintBlack",
           "Lib_AutoGlass",
@@ -44052,7 +44052,7 @@
       },
       {
         "lod": 2,
-        "tris": 4708,
+        "tris": 2116,
         "materials": [
           "Lib_PaintBlack",
           "Lib_AutoGlass",
@@ -44188,13 +44188,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.74,
-          1.7
+          0.52,
+          1.5
         ],
         "size": [
-          0.4,
-          0.06,
-          0.4
+          0.34,
+          0.14,
+          0.36
         ],
         "euler": [
           0,
@@ -44207,13 +44207,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.96,
-          -1.85
+          0.86,
+          -1.6
         ],
         "size": [
-          0.4,
-          0.05,
-          0.36
+          0.34,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -44226,13 +44226,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          2.05
+          0.36,
+          1.55
         ],
         "size": [
-          0.36,
-          0.16,
-          0.22
+          0.22,
+          0.12,
+          0.36
         ],
         "euler": [
           0,
@@ -44261,24 +44261,24 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. Lofted shell, 1.25 m roof, 18 inch alloys. Color grey.",
     "size": [
-      1.987,
-      1.439,
-      4.912
+      1.975,
+      1.434,
+      4.894
     ],
     "min": [
-      -0.993,
+      -0.988,
       0.0,
-      -2.454
+      -2.448
     ],
     "max": [
-      0.993,
-      1.439,
-      2.458
+      0.988,
+      1.434,
+      2.446
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 31896,
+        "tris": 14016,
         "materials": [
           "Lib_PaintGrey",
           "Lib_AutoGlass",
@@ -44295,7 +44295,7 @@
       },
       {
         "lod": 1,
-        "tris": 10232,
+        "tris": 5296,
         "materials": [
           "Lib_PaintGrey",
           "Lib_AutoGlass",
@@ -44312,7 +44312,7 @@
       },
       {
         "lod": 2,
-        "tris": 4708,
+        "tris": 2116,
         "materials": [
           "Lib_PaintGrey",
           "Lib_AutoGlass",
@@ -44448,13 +44448,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.74,
-          1.7
+          0.52,
+          1.5
         ],
         "size": [
-          0.4,
-          0.06,
-          0.4
+          0.34,
+          0.14,
+          0.36
         ],
         "euler": [
           0,
@@ -44467,13 +44467,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.96,
-          -1.85
+          0.86,
+          -1.6
         ],
         "size": [
-          0.4,
-          0.05,
-          0.36
+          0.34,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -44486,13 +44486,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          2.05
+          0.36,
+          1.55
         ],
         "size": [
-          0.36,
-          0.16,
-          0.22
+          0.22,
+          0.12,
+          0.36
         ],
         "euler": [
           0,
@@ -44521,24 +44521,24 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. Lofted shell, 1.25 m roof, 18 inch alloys. Color silver.",
     "size": [
-      1.987,
-      1.439,
-      4.912
+      1.975,
+      1.434,
+      4.894
     ],
     "min": [
-      -0.993,
+      -0.988,
       0.0,
-      -2.454
+      -2.448
     ],
     "max": [
-      0.993,
-      1.439,
-      2.458
+      0.988,
+      1.434,
+      2.446
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 31896,
+        "tris": 14016,
         "materials": [
           "Lib_PaintSilver",
           "Lib_AutoGlass",
@@ -44554,7 +44554,7 @@
       },
       {
         "lod": 1,
-        "tris": 10232,
+        "tris": 5296,
         "materials": [
           "Lib_PaintSilver",
           "Lib_AutoGlass",
@@ -44570,7 +44570,7 @@
       },
       {
         "lod": 2,
-        "tris": 4708,
+        "tris": 2116,
         "materials": [
           "Lib_PaintSilver",
           "Lib_AutoGlass",
@@ -44705,13 +44705,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.74,
-          1.7
+          0.52,
+          1.5
         ],
         "size": [
-          0.4,
-          0.06,
-          0.4
+          0.34,
+          0.14,
+          0.36
         ],
         "euler": [
           0,
@@ -44724,13 +44724,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.96,
-          -1.85
+          0.86,
+          -1.6
         ],
         "size": [
-          0.4,
-          0.05,
-          0.36
+          0.34,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -44743,13 +44743,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          2.05
+          0.36,
+          1.55
         ],
         "size": [
-          0.36,
-          0.16,
-          0.22
+          0.22,
+          0.12,
+          0.36
         ],
         "euler": [
           0,
@@ -44778,24 +44778,24 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. Lofted shell, 1.25 m roof, 18 inch alloys. Color navy.",
     "size": [
-      1.987,
-      1.439,
-      4.912
+      1.975,
+      1.434,
+      4.894
     ],
     "min": [
-      -0.993,
+      -0.988,
       0.0,
-      -2.454
+      -2.448
     ],
     "max": [
-      0.993,
-      1.439,
-      2.458
+      0.988,
+      1.434,
+      2.446
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 31896,
+        "tris": 14016,
         "materials": [
           "Lib_PaintNavy",
           "Lib_AutoGlass",
@@ -44812,7 +44812,7 @@
       },
       {
         "lod": 1,
-        "tris": 10232,
+        "tris": 5296,
         "materials": [
           "Lib_PaintNavy",
           "Lib_AutoGlass",
@@ -44829,7 +44829,7 @@
       },
       {
         "lod": 2,
-        "tris": 4708,
+        "tris": 2116,
         "materials": [
           "Lib_PaintNavy",
           "Lib_AutoGlass",
@@ -44965,13 +44965,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.74,
-          1.7
+          0.52,
+          1.5
         ],
         "size": [
-          0.4,
-          0.06,
-          0.4
+          0.34,
+          0.14,
+          0.36
         ],
         "euler": [
           0,
@@ -44984,13 +44984,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.96,
-          -1.85
+          0.86,
+          -1.6
         ],
         "size": [
-          0.4,
-          0.05,
-          0.36
+          0.34,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -45003,13 +45003,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          2.05
+          0.36,
+          1.55
         ],
         "size": [
-          0.36,
-          0.16,
-          0.22
+          0.22,
+          0.12,
+          0.36
         ],
         "euler": [
           0,
@@ -45038,24 +45038,24 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.44 m. Lofted shell, 1.25 m roof, 18 inch alloys. Color ocean.",
     "size": [
-      1.987,
-      1.439,
-      4.912
+      1.975,
+      1.434,
+      4.894
     ],
     "min": [
-      -0.993,
+      -0.988,
       0.0,
-      -2.454
+      -2.448
     ],
     "max": [
-      0.993,
-      1.439,
-      2.458
+      0.988,
+      1.434,
+      2.446
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 31896,
+        "tris": 14016,
         "materials": [
           "Lib_PaintOcean",
           "Lib_AutoGlass",
@@ -45072,7 +45072,7 @@
       },
       {
         "lod": 1,
-        "tris": 10232,
+        "tris": 5296,
         "materials": [
           "Lib_PaintOcean",
           "Lib_AutoGlass",
@@ -45089,7 +45089,7 @@
       },
       {
         "lod": 2,
-        "tris": 4708,
+        "tris": 2116,
         "materials": [
           "Lib_PaintOcean",
           "Lib_AutoGlass",
@@ -45225,13 +45225,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.74,
-          1.7
+          0.52,
+          1.5
         ],
         "size": [
-          0.4,
-          0.06,
-          0.4
+          0.34,
+          0.14,
+          0.36
         ],
         "euler": [
           0,
@@ -45244,13 +45244,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.96,
-          -1.85
+          0.86,
+          -1.6
         ],
         "size": [
-          0.4,
-          0.05,
-          0.36
+          0.34,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -45263,13 +45263,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          2.05
+          0.36,
+          1.55
         ],
         "size": [
-          0.36,
-          0.16,
-          0.22
+          0.22,
+          0.12,
+          0.36
         ],
         "euler": [
           0,
