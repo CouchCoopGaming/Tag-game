@@ -24,6 +24,14 @@ namespace Tag.Ui.Menu
             return MenuArenaArt.Thumb(arena);
         }
 
+        /// <summary>The bright Mega Park shot. Loading uses this so the yard is not the dusk plate.</summary>
+        public static Texture Bright(int arena)
+        {
+            Load();
+            if (arena == ParkArena.Mega && _gold != null) return _gold;
+            return Fly(arena);
+        }
+
         public static Texture Shot(int arena)
         {
             Load();

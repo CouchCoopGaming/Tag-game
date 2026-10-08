@@ -1,5 +1,6 @@
 using System;
 using Tag.Level;
+using UnityEngine;
 
 namespace Tag.Settings
 {
@@ -149,6 +150,27 @@ namespace Tag.Settings
         {
             Player(palette, slot, out float pr, out float pg, out float pb);
             It(palette, out float ir, out float ig, out float ib);
+            if (Apart(pr, pg, pb, ir, ig, ib) && ClearsSurfaces(ir, ig, ib))
+            {
+                r = ir;
+                g = ig;
+                b = ib;
+                return;
+            }
+            if (TryCrown(pr, pg, pb, 0f, 0.9f, 1f, out r, out g, out b)) return;
+            if (TryCrown(pr, pg, pb, 0.15f, 0.55f, 1f, out r, out g, out b)) return;
+            if (TryCrown(pr, pg, pb, 1f, 1f, 1f, out r, out g, out b)) return;
+            r = 0.15f;
+            g = 0.55f;
+            b = 1f;
+        }
+
+        /// <summary>
+        /// A crown that stays apart from this seat color. The seat itself is the costume swatch.
+        /// </summary>
+        public static void Crown(float pr, float pg, float pb, out float r, out float g, out float b)
+        {
+            It(Default, out float ir, out float ig, out float ib);
             if (Apart(pr, pg, pb, ir, ig, ib) && ClearsSurfaces(ir, ig, ib))
             {
                 r = ir;
@@ -345,8 +367,10 @@ namespace Tag.Settings
     }
 
     /// <summary>
-    /// Optional seat colors. Off keeps the default four. The other two sets
-    /// clear the 0.35 pair floor under protan, deutan, and tritan.
+    /// Optional seat colors. Off is the costume four from MenuMannequin.Swatch,
+    /// the set that ships. Those four can miss the 0.35 pair floor.
+    /// ProtanDeutan and Tritan replace every seat tint when that option is on,
+    /// and those two sets clear the floor.
     /// </summary>
     public static class SeatCvd
     {
@@ -383,7 +407,10 @@ namespace Tag.Settings
                 b = TrB[i];
                 return;
             }
-            AccessibilityPalette.Player(AccessibilityPalette.Default, i, out r, out g, out b);
+            Color body = Tag.Ui.Menu.MenuMannequin.SeatColor(i);
+            r = body.r;
+            g = body.g;
+            b = body.b;
         }
 
         public static float Min(int mode, int cvd)

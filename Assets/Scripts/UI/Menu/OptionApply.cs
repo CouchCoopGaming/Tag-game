@@ -132,9 +132,9 @@ namespace Tag.Ui.Menu
             {
                 QualityLine = ProveQuality();
                 SeatLine = SeatCvd.Line();
-                float protan = AccessibilityPalette.MinPlayerDistance(AccessibilityPalette.Default, AccessibilityPalette.CvdProtanopia);
-                float deutan = AccessibilityPalette.MinPlayerDistance(AccessibilityPalette.Default, AccessibilityPalette.CvdDeuteranopia);
-                float tritan = AccessibilityPalette.MinPlayerDistance(AccessibilityPalette.Default, AccessibilityPalette.CvdTritanopia);
+                float protan = SeatCvd.Min(SeatCvd.Off, AccessibilityPalette.CvdProtanopia);
+                float deutan = SeatCvd.Min(SeatCvd.Off, AccessibilityPalette.CvdDeuteranopia);
+                float tritan = SeatCvd.Min(SeatCvd.Off, AccessibilityPalette.CvdTritanopia);
                 CvdLine = "ui-cvd protan=" + protan.ToString("0.00", CultureInfo.InvariantCulture)
                     + " deutan=" + deutan.ToString("0.00", CultureInfo.InvariantCulture)
                     + " tritan=" + tritan.ToString("0.00", CultureInfo.InvariantCulture)

@@ -246,16 +246,9 @@ namespace Tag.Couch
             int i = slot;
             if (i < 0) i = 0;
             if (i > 3) i = 3;
-            if (GameSettings.Current != null && GameSettings.Current.CvdSeats != SeatCvd.Off)
-            {
-                SeatCvd.Color(GameSettings.Current.CvdSeats, i, out r, out g, out b);
-                return;
-            }
-            int pal = 0;
-            if (GameSettings.Current != null) pal = GameSettings.Current.PaletteOf(i);
-            int swatch = LocalProfiles.SeatColor(i);
-            if (swatch < 0) swatch = i;
-            AccessibilityPalette.Player(pal, swatch, out r, out g, out b);
+            int mode = SeatCvd.Off;
+            if (GameSettings.Current != null) mode = GameSettings.Current.CvdSeats;
+            SeatCvd.Color(mode, i, out r, out g, out b);
         }
 
         public static bool Join(int device)

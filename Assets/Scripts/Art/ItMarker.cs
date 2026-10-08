@@ -189,12 +189,10 @@ namespace Tag.Art
             if (_halo != null)
                 _halo.localScale = _haloBaseScale * (pulse * (1f + 0.55f * urgency));
 
-            int pal = 0;
-            if (GameSettings.Current != null)
-                pal = GameSettings.Current.PaletteOf(_shape);
-            int crown = Tag.Profiles.LocalProfiles.SeatColor(_shape);
-            if (crown < 0) crown = _shape;
-            AccessibilityPalette.ItAgainst(pal, crown, out float ir, out float ig, out float ib);
+            // PaletteOf(_shape) is the player-color-set row, not this plate.
+            // The plate is CouchPlay.Tint: MenuMannequin.Swatch, or the CVD set when that option is on.
+            Tag.Couch.CouchPlay.Tint(_shape, out float sr, out float sg, out float sb);
+            AccessibilityPalette.Crown(sr, sg, sb, out float ir, out float ig, out float ib);
             Color itCol = new Color(ir, ig, ib, 1f);
             if (_light != null)
             {
@@ -206,8 +204,7 @@ namespace Tag.Art
             }
             if (_plateRend != null)
             {
-                AccessibilityPalette.Player(pal, _shape, out float pr, out float pg, out float pb);
-                Color plate = new Color(pr, pg, pb, 1f);
+                Color plate = new Color(sr, sg, sb, 1f);
                 ApplyRuntimeColor(_plateRend, plate, 2.4f);
                 if (_plateText != null) _plateText.color = plate;
             }
@@ -370,16 +367,12 @@ namespace Tag.Art
             var prev = GUI.color;
             GUI.color = new Color(0.05f, 0.07f, 0.1f, 0.85f);
             GUI.DrawTexture(new Rect(x, y, mark, mark), Texture2D.whiteTexture);
-            int pal = 0;
+            // PaletteOf(_shape) is the player-color-set row, not this mark.
             float hud = 1f;
             if (GameSettings.Current != null)
-            {
-                pal = GameSettings.Current.PaletteOf(_shape);
                 hud = Tag.Profiles.LocalProfiles.TextScale(_shape);
-            }
-            int crown = Tag.Profiles.LocalProfiles.SeatColor(_shape);
-            if (crown < 0) crown = _shape;
-            AccessibilityPalette.ItAgainst(pal, crown, out float ir, out float ig, out float ib);
+            Tag.Couch.CouchPlay.Tint(_shape, out float sr, out float sg, out float sb);
+            AccessibilityPalette.Crown(sr, sg, sb, out float ir, out float ig, out float ib);
             GUI.color = new Color(ir, ig, ib, 1f);
             float inset = 5f;
             GUI.DrawTexture(new Rect(x + inset, y + inset, mark - inset * 2f, mark - inset * 2f), Texture2D.whiteTexture);
@@ -389,12 +382,9 @@ namespace Tag.Art
             _itStyle.normal.textColor = new Color(0.08f, 0.08f, 0.1f, 1f);
             GUI.Label(new Rect(x, y, mark, mark * 0.46f), AccessibilityPalette.ItGlyph, _itStyle);
             GUI.Label(new Rect(x, y + mark * 0.40f, mark, mark * 0.60f), Tag.Profiles.LocalProfiles.ItLabel(_shape), _itStyle);
-            int swatch = Tag.Profiles.LocalProfiles.SeatColor(_shape);
-            if (swatch < 0) swatch = _shape;
-            AccessibilityPalette.Player(pal, swatch, out float pr, out float pg, out float pb);
             if (_plateName != null && _plateName.Length > 0)
             {
-                _itStyle.normal.textColor = new Color(pr, pg, pb, 1f);
+                _itStyle.normal.textColor = new Color(sr, sg, sb, 1f);
                 GUI.Label(new Rect(x - 20f, y + mark, mark + 40f, 16f), _plateName, _itStyle);
             }
             if (off)
@@ -407,7 +397,7 @@ namespace Tag.Art
                 var pivot = new Vector2(x + mark * 0.5f, y + mark + 8f);
                 Matrix4x4 matrix = GUI.matrix;
                 GUIUtility.RotateAroundPivot(ang, pivot);
-                _itStyle.normal.textColor = new Color(pr, pg, pb, 1f);
+                _itStyle.normal.textColor = new Color(sr, sg, sb, 1f);
                 GUI.Label(new Rect(pivot.x - 12f, pivot.y - 10f, 24f, 20f), "▲", _itStyle);
                 GUI.matrix = matrix;
             }

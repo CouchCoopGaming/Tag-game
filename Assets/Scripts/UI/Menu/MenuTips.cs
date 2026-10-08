@@ -64,17 +64,31 @@ namespace Tag.Ui.Menu
             ActionBinds binds = CouchPlay.BindsFor(device);
             if (binds == null) binds = ActionBinds.Defaults();
             bool pad = device != CouchPlay.DeviceKeyboard;
-            if (i == 0) return "[" + Mark(binds, PlayAction.Jump, pad) + "] jumps.";
-            if (i == 1) return "[" + Mark(binds, PlayAction.Sprint, pad) + "], then [" + Mark(binds, PlayAction.Slide, pad) + "].";
-            if (i == 2) return "Hold [" + Mark(binds, PlayAction.Cling, pad) + "] against a wall to climb.";
-            if (i == 3) return "Hold [" + Mark(binds, PlayAction.Cling, pad) + "] + [" + Mark(binds, PlayAction.Jump, pad) + "] to wall jump.";
-            if (i == 4) return "[" + Mark(binds, PlayAction.AirDash, pad) + "] in the air.";
+            if (i == 0) return Verb(PlayAction.Jump) + " [" + Mark(binds, PlayAction.Jump, pad) + "].";
+            if (i == 1) return Verb(PlayAction.Sprint) + " [" + Mark(binds, PlayAction.Sprint, pad) + "], then " + Later(PlayAction.Slide) + " [" + Mark(binds, PlayAction.Slide, pad) + "].";
+            if (i == 2) return Verb(PlayAction.Cling) + " [" + Mark(binds, PlayAction.Cling, pad) + "] against a wall to climb.";
+            if (i == 3) return Verb(PlayAction.Cling) + " [" + Mark(binds, PlayAction.Cling, pad) + "] + " + Later(PlayAction.Jump) + " [" + Mark(binds, PlayAction.Jump, pad) + "] to wall jump.";
+            if (i == 4) return Verb(PlayAction.AirDash) + " [" + Mark(binds, PlayAction.AirDash, pad) + "] in the air.";
+            if (i == 5) return Verb(PlayAction.Punch) + " [" + Mark(binds, PlayAction.Punch, pad) + "]. It changes hands.";
             if (i == 7)
             {
                 string token = pad ? binds.GrapplePad : binds.GrappleKey;
-                return "Double-click [" + ActionBinds.Chip(token) + "] to let go of the grapple.";
+                return "Grapple [" + ActionBinds.Chip(token) + "], double-click to let go.";
             }
             return Lines[i];
+        }
+
+        static string Verb(PlayAction action)
+        {
+            return ActionBinds.Name(action);
+        }
+
+        static string Later(PlayAction action)
+        {
+            string name = ActionBinds.Name(action);
+            if (string.IsNullOrEmpty(name)) return "";
+            if (name.Length == 1) return name.ToLowerInvariant();
+            return char.ToLowerInvariant(name[0]) + name.Substring(1);
         }
 
         static string Mark(ActionBinds binds, PlayAction action, bool pad)
@@ -97,6 +111,11 @@ namespace Tag.Ui.Menu
             if (At(2).IndexOf("into a wall", System.StringComparison.Ordinal) >= 0) return false;
             if (Shown(2, 0).IndexOf("against a wall") < 0) return false;
             if (Shown(3, 0).IndexOf("wall jump") < 0) return false;
+            string sprint = ActionBinds.Name(PlayAction.Sprint);
+            if (Shown(1, 0).IndexOf(sprint + " [", System.StringComparison.Ordinal) != 0) return false;
+            string slide = Later(PlayAction.Slide);
+            if (slide.Length < 1 || Shown(1, 0).IndexOf(slide + " [", System.StringComparison.Ordinal) < 0) return false;
+            if (Shown(0, 0).IndexOf(ActionBinds.Name(PlayAction.Jump) + " [", System.StringComparison.Ordinal) != 0) return false;
             return true;
         }
     }

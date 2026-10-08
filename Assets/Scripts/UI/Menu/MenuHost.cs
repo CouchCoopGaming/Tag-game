@@ -126,6 +126,11 @@ namespace Tag.Ui.Menu
         Text _loadWord;
         readonly Text[] _loadTip = new Text[4];
         readonly Image[] _loadBar = new Image[4];
+        // Unity uv origin is the bottom left. Left yard, chase yard, right yard, close path.
+        static readonly float[] LoadCamX = { 0.00f, 0.22f, 0.75f, 0.42f };
+        static readonly float[] LoadCamY = { 0.19f, 0.12f, 0.26f, 0.04f };
+        static readonly float[] LoadCamW = { 0.33f, 0.56f, 0.25f, 0.33f };
+        static readonly float[] LoadCamH = { 0.44f, 0.70f, 0.59f, 0.44f };
         int _loadStep = -1;
         int _tipBase;
         int _tipSpin = int.MinValue;
@@ -353,16 +358,21 @@ namespace Tag.Ui.Menu
             SyncStartMarks();
             bool title = id == MenuScreenId.Title;
             bool photo = title || id == MenuScreenId.Main;
+            bool loading = id == MenuScreenId.Loading;
             if (_vignette != null) _vignette.SetActive(photo);
             if (_pattern != null)
             {
                 Color wash = _pattern.color;
-                wash.a = photo ? 0f : 0.22f;
+                wash.a = photo || loading ? 0f : 0.22f;
                 _pattern.color = wash;
             }
             for (int i = 0; i < _ribbons.Length; i++)
             {
-                if (_ribbons[i] != null) _ribbons[i].gameObject.SetActive(!title);
+                if (_ribbons[i] != null) _ribbons[i].gameObject.SetActive(!title && !loading);
+            }
+            for (int i = 0; i < _orbs.Length; i++)
+            {
+                if (_orbs[i] != null) _orbs[i].gameObject.SetActive(!loading);
             }
             if (id == MenuScreenId.Cast)
             {
@@ -1240,7 +1250,7 @@ namespace Tag.Ui.Menu
                 uv.y = Time.unscaledTime * 0.03f;
                 _pattern.uvRect = uv;
             }
-            if (_flyover != null && _flyover.color.a > 0.01f && !MenuVideo.ReduceMotion)
+            if (_flyover != null && _flyover.color.a > 0.01f && !MenuVideo.ReduceMotion && _screen != MenuScreenId.Loading)
             {
                 float amp = _screen == MenuScreenId.Title ? 0.07f : 0.04f;
                 Rect uv = _flyover.uvRect;
@@ -2450,35 +2460,62 @@ namespace Tag.Ui.Menu
         void BuildLoading()
         {
             _count = 0;
-            if (_dim != null) _dim.color = MenuTheme.Veil;
+            if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0f);
             string name = MenuSession.RandomArena ? "Random" : ParkArena.NameOf(MenuSession.Arena);
             if (_loadPractice) name = PracticeSession.ArenaName();
             if (_header != null) _header.text = "  Loading";
             int fly = MenuSession.Arena;
             if (fly < 0 || fly >= ParkArena.Count) fly = 0;
-            ShowFlyover(fly, 0.72f);
-            MenuWidgets.Heading(_body, name, 64, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0.08f, 0.86f), new Vector2(0.92f, 0.98f));
+            ShowFlyover(fly, 1f);
+            if (_flyover != null)
+            {
+                Texture bright = MenuBackdrop.Bright(fly);
+                if (bright != null) _flyover.texture = bright;
+            }
             _tipBase = _tip;
             _tipSpin = int.MinValue;
-            BuildLoadSeats(name);
+            BuildLoadSeats(name, fly);
             _tip++;
             _loadStep = -1;
             if (_banner != null) _banner.text = "";
         }
 
-        void BuildLoadSeats(string arena)
+        void BuildLoadSeats(string arena, int fly)
         {
             int humans = CouchPlay.Humans;
             if (humans < 1) humans = 1;
             if (humans > 4) humans = 4;
             int split = GameSettings.Current != null ? GameSettings.Current.SplitAxis : GameSettings.SplitVertical;
             int panes = CouchPlay.Panes(humans);
+            Texture look = MenuBackdrop.Bright(fly);
             _loadFill = null;
             _loadWord = null;
             for (int i = 0; i < panes; i++)
             {
                 if (humans == 3 && i == 3) continue;
                 CouchPlay.Norm(i, humans, split, out float x, out float y, out float w, out float h);
+                if (look != null)
+                {
+                    var camRt = MenuWidgets.Box(_body, "LoadCam", new Vector2(x, y), new Vector2(x + w, y + h), new Vector2(0.5f, 0.5f));
+                    RawImage cam = camRt.gameObject.AddComponent<RawImage>();
+                    cam.texture = look;
+                    cam.color = Color.white;
+                    cam.raycastTarget = false;
+                    cam.uvRect = new Rect(LoadCamX[i], LoadCamY[i], LoadCamW[i], LoadCamH[i]);
+                    if (i == 1)
+                    {
+                        Texture runners = MenuBackdrop.Chase;
+                        if (runners != null)
+                        {
+                            var runRt = MenuWidgets.Box(camRt, "LoadChase", new Vector2(0.11f, 0.16f), new Vector2(0.89f, 0.84f), new Vector2(0.5f, 0.5f));
+                            RawImage run = runRt.gameObject.AddComponent<RawImage>();
+                            run.texture = runners;
+                            run.color = Color.white;
+                            run.raycastTarget = false;
+                            run.uvRect = new Rect(0.19f, 0.22f, 0.60f, 0.66f);
+                        }
+                    }
+                }
                 float pad = 0.02f;
                 float y0 = y + 0.02f;
                 float y1 = y + h * 0.34f;

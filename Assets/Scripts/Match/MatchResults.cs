@@ -1,3 +1,4 @@
+using Tag.Couch;
 using Tag.Settings;
 using UnityEngine;
 
@@ -37,12 +38,8 @@ namespace Tag.MatchStats
                         break;
                     }
                 }
-                int awardSwatch = Tag.Profiles.LocalProfiles.SeatColor(leader);
-                if (awardSwatch < 0) awardSwatch = leader & 3;
-                int awardPalette = 0;
-                if (GameSettings.Current != null)
-                    awardPalette = GameSettings.Current.PaletteOf(leader < AccessibilityPalette.Players ? leader : 0);
-                AccessibilityPalette.Player(awardPalette, awardSwatch, out float ar, out float ag, out float ab);
+                int awardSeat = leader < AccessibilityPalette.Players ? leader : 0;
+                CouchPlay.Tint(awardSeat, out float ar, out float ag, out float ab);
                 _style.normal.textColor = new Color(ar, ag, ab, 1f);
                 string awardText = MatchBook.AwardLine[a] ?? "";
                 int awardRows = MatchBook.AwardRows(awardText, w - 24f, awardSize);
@@ -68,12 +65,7 @@ namespace Tag.MatchStats
                 float cx = x + 12f + col * (cw + gap);
                 float cy = ay + row * (ch + gap);
                 int seat = i < AccessibilityPalette.Players ? i : 0;
-                int palette = 0;
-                if (GameSettings.Current != null)
-                    palette = GameSettings.Current.PaletteOf(seat);
-                int swatch = Tag.Profiles.LocalProfiles.SeatColor(i);
-                if (swatch < 0) swatch = i & 3;
-                AccessibilityPalette.Player(palette, swatch, out float r, out float g, out float b);
+                CouchPlay.Tint(seat, out float r, out float g, out float b);
                 _style.normal.textColor = new Color(r, g, b, 1f);
                 GUI.Box(new Rect(cx, cy, cw, ch), "");
                 GUI.Label(new Rect(cx + 8f, cy + 6f, cw - 16f, ch - 10f), MatchBook.Card[i] ?? "", _style);
