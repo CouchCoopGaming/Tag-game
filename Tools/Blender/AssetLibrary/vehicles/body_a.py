@@ -1108,10 +1108,10 @@ def _silhouette(bm):
     return worst
 
 
-def _stroke(g, a, b, radius=0.008):
+def _stroke(g, a, b, radius=0.010):
     if (Vector(a) - Vector(b)).length < 1.0e-4:
         return
-    g.pipe(a, b, radius, "Lib_Lane", segments=4)
+    g.pipe(a, b, radius, "Lib_Orange", segments=4)
 
 
 def _poly_yz(x, samples):
@@ -1178,12 +1178,12 @@ def add_reference(g, views=("side", "front", "rear", "top")):
         _stroke(g, left[-1], right[-1], 0.006)
 
 
-def reference_asset():
+def reference_asset(views=("side", "front", "rear", "top")):
     from _common import Asset
 
     asset = Asset("SedanGuides", "Vehicles", "Orthographic sedan outlines.")
     g = asset.begin(0)
-    add_reference(g)
+    add_reference(g, views=views)
     asset.end()
     return asset
 
@@ -1212,7 +1212,6 @@ def _check_render(asset):
     stills._engine(scene, wide=True)
     scene.cycles.samples = 8
     stills._ensure_materials()
-    guides = reference_asset()
     views = (
         ("front", (0.0, 0.72, 8.0), (0.0, 0.72, 0.0), 3.4),
         ("side", (8.0, 0.72, 0.0), (0.0, 0.72, 0.0), 6.2),
@@ -1223,9 +1222,9 @@ def _check_render(asset):
         for obj in list(bpy.data.objects):
             bpy.data.objects.remove(obj, do_unlink=True)
         stills._world(scene, night=False)
-        body = stills._spawn(asset, (0.0, 0.0, 0.0))
+        body =         stills._spawn(asset, (0.0, 0.0, 0.0))
         shade_object(body)
-        stills._spawn(guides, (0.0, 0.0, 0.0))
+        stills._spawn(reference_asset(views=(label,)), (0.0, 0.0, 0.0))
         stills._ground("asphalt", 40.0)
         cam_data = bpy.data.cameras.new("Cam")
         cam_data.type = "ORTHO"

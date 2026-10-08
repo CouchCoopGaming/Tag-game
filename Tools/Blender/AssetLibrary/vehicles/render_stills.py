@@ -302,7 +302,7 @@ def main():
         out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass11")
         os.makedirs(out, exist_ok=True)
         import body_a
-        guides = body_a.reference_asset()
+        guides = body_a.reference_asset(views=("side",))
         if shot in (None, "hero"):
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "hero.png"), 48.0, elevation=11.0, fill=0.90, wide=True, shade=True)
         # Hard-surface shell: 4.90 m, roof 1.45 m, wheelbase 2.82 m.
