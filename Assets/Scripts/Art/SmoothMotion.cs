@@ -1076,6 +1076,57 @@ namespace Tag.Art
             WritePng(path, pix, w, h);
         }
 
+        public static void WritePass12Stills(string path)
+        {
+            const int frames = 8;
+            const int cellW = 120;
+            const int cellH = 156;
+            const int labelW = 168;
+            const int rows = 8;
+            int w = labelW + frames * cellW;
+            int h = rows * cellH;
+            var pix = new byte[w * h * 3];
+            Fill(pix, w, h, 16, 18, 22);
+            string[] titles = { "LAND RUN", "LAND ROLL", "WALL JUMP", "CLING DROP" };
+            byte[] cr = { 120, 186, 230, 210 };
+            byte[] cg = { 196, 168, 176, 170 };
+            byte[] cb = { 150, 120, 140, 110 };
+            for (int k = 0; k < titles.Length; k++)
+            {
+                PaintLoco(pix, w, h, rows, k * 2, titles[k], "BEFORE", TrackHandoff(k, false), 196, 122, 96, false, 0f);
+                PaintLoco(pix, w, h, rows, k * 2 + 1, titles[k], "AFTER", TrackHandoff(k, true), cr[k], cg[k], cb[k], false, 0f);
+            }
+            string dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            WritePng(path, pix, w, h);
+        }
+
+        static Fig[] TrackHandoff(int kind, bool after)
+        {
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                HandoffFeel.Shot s = HandoffFeel.ShotAt(kind, i, after);
+                shot[i] = new Fig
+                {
+                    ArmL = s.ArmL,
+                    ArmR = s.ArmR,
+                    ElbL = s.ElbL,
+                    ElbR = s.ElbR,
+                    ThL = s.ThL,
+                    ThR = s.ThR,
+                    KnL = s.KnL,
+                    KnR = s.KnR,
+                    Spine = s.Spine,
+                    Hip = s.Hip,
+                    Head = s.Head,
+                    Lean = s.Lean,
+                };
+            }
+            return shot;
+        }
+
         static Fig[] TrackAir(int kind, bool after)
         {
             var shot = new Fig[8];

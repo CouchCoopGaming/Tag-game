@@ -290,3 +290,25 @@ Stick figures are in `Docs/SmoothStills/pass11/air.png`. Twelve rows, eight fram
 The same poses are on the Hier mannequin, tinted a player blue, on a clean ground under a sky: `Docs/SmoothStills/pass11/stride.png`, `stop.png`, `turn.png`, `apex.png`, and `fall.png`.
 
 `loco-feel`, `loco-polish`, `body-life`, `foot-slide`, `respawn-blink`, `climb-contact`, `body-line`, `response-latency`, and `stick-quality` are unchanged. `climbRate` stays 16.50 and `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`. Mouse flicks still snap. Landing still waits one sample.
+
+## Pass 12
+
+The mannequin stills. Visual only. Feel locks stay: jump 24.7, rising gravity 22, fall multiplier 1.62, terminal 56.16, coyote 0.10, buffer 0.16, cling 0.08, walk 6.9, sprint 13.8, climb 6.0, slip 3.7, wall-run 9.5. One `CharacterController.Move` per Update. No root motion. No new verbs. Hier v0.8.0 stays unbound. `Docs/Storror` is not on this branch, so the apex uses the written fallback: elbows about 43° out, hands at chin height.
+
+The apex tuck used to pitch the arms to -126°. The wrists crossed above the skull. The tuck now holds the arms out and forward. The nearest an arm comes to the head or the torso is 10.3 cm.
+
+The terminal brace used to fold the chest and hang the arms. The chest stays up, the head looks toward the landing, the arms sit down and out with the palms down, and the knees stay soft. The thigh blend into the existing hard land is unchanged: 58.0° down to 20.0°.
+
+`air-feel takeoff=24.8>12.5 tuck=3.7>1.6 fall=58.0>20.0 hop=22.1>4.9 strafe=18.0>1.8 coyote=24.8>10.9 clear=10.3cm gameplayDelay=0 rootMotion=0`
+
+A sprint landing used to dump the hips as the squash squared away, a 7.6° step. The release is a raised cosine, and the peak step is 3.2°. An impact at or above 65% of terminal (36.5 m/s) rolls, then the run returns. The old cut into that roll was 8.5°. The roll eases, and the peak step is 2.1°. The motor stun is not written.
+
+A wall-run jump still arcs off the shove. The arc used to finish on the overhead tuck, then the balance pose cut the arms 81.0° in one frame. The arc now finishes on that balance pose, and the peak step is 8.8°. A cling drop used to ease into the old fall beat and then snap 42.0° into the brace. It now eases straight into the brace, and the peak step is 15.4°. Cling time stays 0.08. The release blend stays 0.10.
+
+`handoff run=7.6>3.2 roll=8.5>2.1 wall=81.0>8.8 cling=42.0>15.4 rollAt=36.5 gameplayDelay=0 rootMotion=0`
+
+Stick figures are in `Docs/SmoothStills/pass12/handoff.png`. Eight rows, eight frames: land to run, land to roll, wall jump, and cling drop. Before, then after.
+
+The five mannequin stills share one camera. The body stays in frame, with about a tenth of the frame clear of it. Airborne poses sit over a contact shadow: `Docs/SmoothStills/pass12/stride.png`, `stop.png`, `turn.png`, `apex.png`, and `fall.png`.
+
+`loco-feel`, `loco-polish`, `body-life`, `foot-slide`, `respawn-blink`, `climb-contact`, `body-line`, `response-latency`, and `stick-quality` are unchanged. `climbRate` stays 16.50 and `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`. Mouse flicks still snap. Landing still waits one sample.

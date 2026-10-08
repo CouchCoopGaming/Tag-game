@@ -255,6 +255,10 @@ Jumps, hops, and air strafes read on the body. The jump still leaves the ground 
 - A bunny hop keeps a light step in the legs, and the next hop does not pop off the one before it. Air strafe leans into the stick, including on the way up, and the lean eases off when you let go. Try it: chain a few hops, then hold A or D in the air.
 - A coyote jump off a ledge starts from the run you were already in. Try it: sprint off a ledge and jump within a tenth of a second.
 
+## Motion, twelfth pass
+
+The jump still leaves on the press frame. The tuck at the top holds the arms out for balance, clear of the head. A long fall keeps the chest up, looks at the landing, and spreads the arms with the palms down. A landing at about 36.5 m/s rolls into the run. A slower sprint landing eases out of the absorb. Wall-run jumps and cling drops no longer pop the arms. Try it: jump, watch the hands at the top, drop from high enough to roll, then wall-run off and drop a cling.
+
 ## Animation exits and the landing roll
 
 Each move now has a short recovery you can see as it ends. The body eases back into the run, the idle, or the air pose. Jump, slide, punch, dash, or lunge peels that recovery off in about six hundredths of a second, and the new move shows the same frame. Nothing here changes speed, coyote, cling, or the slide.

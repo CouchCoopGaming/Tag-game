@@ -77,6 +77,10 @@ namespace Tag.Art
         float _secondsSinceLand = -1f;
         float _landSampleAge = -1f;
         float _landImpactPending = -1f;
+        bool _landRoll;
+        Quaternion _handL0, _handR0;
+        bool _handBound;
+        float _airPalm;
         bool _hopChain;
         bool _hopChainFrame;
         float _leanCarry;
@@ -3151,6 +3155,7 @@ namespace Tag.Art
             else if (grounded && _landImpactPending >= 0f && BunnyHopPose.Absorb(false, _landSampleAge) > 0.5f)
             {
                 ArmLandSquash(_landImpactPending);
+                _landRoll = HandoffFeel.Rolls(_landImpactPending);
                 _landImpactPending = -1f;
             }
             if (!grounded && _motor != null && _motor.Velocity.y > 1.5f && (_wasGrounded || _prevVy <= 1.5f))
@@ -9363,7 +9368,7 @@ namespace Tag.Art
                         {
                             // Grace keeps the wall. After it, one ease into the fall. Cling time is unchanged.
                             PoseHandoff.WallGrace(graceLeft, wallContact, _wallDropIn * WallPose.ReleaseBlendSeconds, out _, out intoWallDrop);
-                            ApplyWallFallBlend(intoWallDrop, armZ);
+                            ApplyWallFallBlend(_wallDropIn, armZ);
                         }
                         else
                         {
@@ -10565,12 +10570,15 @@ namespace Tag.Art
                     _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(stride.ThighL, 0f, 0f), keep);
                     _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(stride.ThighR, 0f, 0f), keep);
                 }
+                if (plainAbsorb && (_landRoll || speed > 5.5f))
+                    ApplyLandHandoff(armZ, speed);
                 _hardLandWas = crouchHardLand;
                 _softLandWas = crouchSoftLand;
             }
             else
             {
                 _landAbsorbSnap = false;
+                _landRoll = false;
                 _hardLandWas = false;
                 _softLandWas = false;
             }
@@ -10580,6 +10588,19 @@ namespace Tag.Art
             _dartStillWas = air && !jet && !airDashing && !(_airDashArms || _armRecover > 0f)
                 && _diveVis > 0.02f
                 && _input != null && _input.CrouchHeld;
+
+            // Palms follow the brace in the air. A landing keeps that angle, then eases it off with the absorb.
+            if (_handBound && !jumpPoseOn)
+            {
+                bool holding = _landSquash > 0.02f || _landImpactPending >= 0f;
+                float keep = 0f;
+                if (holding)
+                    keep = _landSquash > 0.02f ? HandoffFeel.Release(_landSquash) : 1f;
+                float palm = _airPalm * keep;
+                Quaternion down = Quaternion.Euler(AirFeel.BraceHand, 0f, 0f);
+                _handL.localRotation = Quaternion.Slerp(_handL0, _handL0 * down, palm);
+                _handR.localRotation = Quaternion.Slerp(_handR0, _handR0 * down, palm);
+            }
 
             TrackAimTorso(dt, phase);
             bool grapplePose = GrappleVisual();
@@ -15570,6 +15591,13 @@ namespace Tag.Art
             float end = WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds;
             WallJumpPose.Sample air = WallJumpPose.At(end, vy, _wallJumpPosePlant, speed);
             WallJumpPose.Sample pose = LerpWall(push, air, BodyLine.WallArc(_wallJumpPoseAge));
+            float arc = BodyLine.WallArc(_wallJumpPoseAge);
+            pose.ArmPitchL = Mathf.Lerp(push.ArmPitchL, AirFeel.ApexPitch, arc);
+            pose.ArmPitchR = Mathf.Lerp(push.ArmPitchR, AirFeel.ApexPitch, arc);
+            pose.ArmYawL = Mathf.Lerp(push.ArmYawL, AirFeel.ApexYaw, arc);
+            pose.ArmYawR = Mathf.Lerp(push.ArmYawR, -AirFeel.ApexYaw, arc);
+            pose.ElbowL = Mathf.Lerp(push.ElbowL, AirFeel.ApexElbow, arc);
+            pose.ElbowR = Mathf.Lerp(push.ElbowR, AirFeel.ApexElbow, arc);
             _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
             _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
@@ -15585,18 +15613,24 @@ namespace Tag.Art
 
         void ApplyWallFallBlend(float toW, float armZ)
         {
-            WallPose.Sample fall = WallPose.Fall();
-            _uaLT = Quaternion.Slerp(_exitUaL, _uaL0 * Quaternion.Euler(fall.ArmPitchL, fall.ArmYawL, armZ), toW);
-            _uaRT = Quaternion.Slerp(_exitUaR, _uaR0 * Quaternion.Euler(fall.ArmPitchR, fall.ArmYawR, -armZ), toW);
-            _laLT = Quaternion.Slerp(_exitLaL, _laL0 * Quaternion.Euler(fall.ElbowL, 0f, 0f), toW);
-            _laRT = Quaternion.Slerp(_exitLaR, _laR0 * Quaternion.Euler(fall.ElbowR, 0f, 0f), toW);
-            _ulLT = Quaternion.Slerp(_exitUlL, _ulL0 * Quaternion.Euler(fall.ThighL, 0f, 0f), toW);
-            _ulRT = Quaternion.Slerp(_exitUlR, _ulR0 * Quaternion.Euler(fall.ThighR, 0f, 0f), toW);
-            _llLT = Quaternion.Slerp(_exitLlL, _llL0 * Quaternion.Euler(fall.KneeL, 0f, 0f), toW);
-            _llRT = Quaternion.Slerp(_exitLlR, _llR0 * Quaternion.Euler(fall.KneeR, 0f, 0f), toW);
-            _spineT = Quaternion.Slerp(_exitSpine, _spine0 * Quaternion.Euler(fall.Spine, 0f, fall.LeanZ), toW);
-            _hipsT = Quaternion.Slerp(_exitHips, _hips0 * Quaternion.Euler(fall.Hip, 0f, -fall.LeanZ * WallPose.HipRollShare), toW);
-            _headT = Quaternion.Slerp(_exitHead, _head0 * Quaternion.Euler(fall.Head, 0f, -fall.LeanZ * WallPose.HeadRollShare), toW);
+            float vy = _motor != null ? _motor.Velocity.y : 0f;
+            float speed = _motor != null ? _motor.HorizontalSpeed : 0f;
+            JumpPose.Sample air = JumpPose.At(vy, 0.4f, true);
+            LocomotionPolish.AirPhase(ref air.ThighL, ref air.ThighR, ref air.KneeL, ref air.KneeR, ref air.ArmPitchL, ref air.ArmPitchR, ref air.Spine, vy, false);
+            AirFeel.BalanceArms(ref air, speed, vy, 0.4f);
+            AirFeel.Brace(ref air, vy);
+            float head = AirFeel.HeadPitch(vy);
+            _uaLT = Quaternion.Slerp(_exitUaL, _uaL0 * Quaternion.Euler(air.ArmPitchL, air.ArmYawL, armZ), toW);
+            _uaRT = Quaternion.Slerp(_exitUaR, _uaR0 * Quaternion.Euler(air.ArmPitchR, -air.ArmYawR, -armZ), toW);
+            _laLT = Quaternion.Slerp(_exitLaL, _laL0 * Quaternion.Euler(air.ElbowL, 0f, 0f), toW);
+            _laRT = Quaternion.Slerp(_exitLaR, _laR0 * Quaternion.Euler(air.ElbowR, 0f, 0f), toW);
+            _ulLT = Quaternion.Slerp(_exitUlL, _ulL0 * Quaternion.Euler(air.ThighL, 0f, 0f), toW);
+            _ulRT = Quaternion.Slerp(_exitUlR, _ulR0 * Quaternion.Euler(air.ThighR, 0f, 0f), toW);
+            _llLT = Quaternion.Slerp(_exitLlL, _llL0 * Quaternion.Euler(air.KneeL, 0f, 0f), toW);
+            _llRT = Quaternion.Slerp(_exitLlR, _llR0 * Quaternion.Euler(air.KneeR, 0f, 0f), toW);
+            _spineT = Quaternion.Slerp(_exitSpine, _spine0 * Quaternion.Euler(air.Spine, 0f, 0f), toW);
+            _hipsT = Quaternion.Slerp(_exitHips, _hips0 * Quaternion.Euler(air.Hip, 0f, 0f), toW);
+            _headT = Quaternion.Slerp(_exitHead, _head0 * Quaternion.Euler(head, 0f, 0f), toW);
         }
 
         void BlendWallJumpStride(float armZ)
@@ -16825,6 +16859,36 @@ namespace Tag.Art
         }
 
         /// <summary>
+        /// A sprint landing eases the hips out of the absorb. A fast impact rolls, then the run returns.
+        /// Squash time is unchanged. The roll gate is 65% of terminal.
+        /// </summary>
+        void ApplyLandHandoff(float armZ, float speed)
+        {
+            float u = 1f - Mathf.Clamp01(_landSquash);
+            if (_landRoll)
+            {
+                float w = HandoffFeel.RollWeight(u);
+                _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(HandoffFeel.RollThigh, 0f, 0f), w);
+                _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(HandoffFeel.RollThigh - 18f, 0f, 0f), w);
+                _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(HandoffFeel.RollKnee, 0f, 0f), w);
+                _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(HandoffFeel.RollKnee + 20f, 0f, 0f), w);
+                _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(HandoffFeel.RollHip, 0f, 0f), w);
+                _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(HandoffFeel.RollSpine, 0f, 22f * w), w);
+                _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(HandoffFeel.RollHead, 0f, 0f), w);
+                _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(HandoffFeel.RollArm, 18f, armZ), w);
+                _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(HandoffFeel.RollArm, -18f, -armZ), w);
+                _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(HandoffFeel.RollElbow, 0f, 0f), w);
+                _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(HandoffFeel.RollElbow + 16f, 0f, 0f), w);
+                if (_landSquash <= 0.02f) _landRoll = false;
+                return;
+            }
+            if (speed <= 5.5f) return;
+            float rel = HandoffFeel.Release(_landSquash);
+            _hipsT = Quaternion.Slerp(_hips0 * Quaternion.Euler(HandoffFeel.RunHip, 0f, 0f), _hipsT, rel);
+            _spineT = Quaternion.Slerp(_spine0 * Quaternion.Euler(HandoffFeel.RunSpine, 0f, 0f), _spineT, rel);
+        }
+
+        /// <summary>
         /// Takeoff, tuck, then the fall. Blended from the stride phase. No root motion.
         /// The landing thud picks up once the feet are down. A bunny-hop chain keeps
         /// the live phase instead. The air-strafe lean is a later overlay.
@@ -16838,8 +16902,8 @@ namespace Tag.Art
             // A hop keeps the fall it came from. Jump height is unchanged.
             bool gaitJump = !_hopChain && !_coyoteJump && HasGaitJumpCapture();
             JumpPose.Sample beat = JumpPose.At(vy, _jumpPoseAge, _jumpDriveLeft);
-            AirFeel.BalanceArms(ref beat, speed, vy);
             LocomotionPolish.AirPhase(ref beat.ThighL, ref beat.ThighR, ref beat.KneeL, ref beat.KneeR, ref beat.ArmPitchL, ref beat.ArmPitchR, ref beat.Spine, vy, _hopChain);
+            AirFeel.BalanceArms(ref beat, speed, vy, _jumpPoseAge);
             AirFeel.ScaleTuck(ref beat, speed, vy, _jumpPoseAge);
             if (_hopChain)
                 AirFeel.HopCycle(ref beat, cycle, 1f);
@@ -16866,6 +16930,15 @@ namespace Tag.Art
             _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
             _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, 0f);
             _hipsT = _hips0 * Quaternion.Euler(pose.Hip, 0f, 0f);
+            float head = AirFeel.HeadPitch(vy);
+            _headT = Quaternion.Slerp(_head0, _head0 * Quaternion.Euler(head, 0f, 0f), AirFeel.Brace01(vy));
+            if (_handBound)
+            {
+                float palm = AirFeel.Brace01(vy);
+                _airPalm = palm;
+                _handL.localRotation = Quaternion.Slerp(_handL0, _handL0 * Quaternion.Euler(AirFeel.BraceHand, 0f, 0f), palm);
+                _handR.localRotation = Quaternion.Slerp(_handR0, _handR0 * Quaternion.Euler(AirFeel.BraceHand, 0f, 0f), palm);
+            }
             if (gaitJump)
                 BlendGaitJumpCapture();
             else if (_hopChain && _hopTakeoffFrom && _jumpPoseAge >= 0f && _jumpPoseAge <= AirFeel.HopSeconds)
@@ -20003,6 +20076,12 @@ namespace Tag.Art
             if (_head) _headPos0 = _head.localPosition;
             if (_upperArmL) _uaL0 = _upperArmL.localRotation;
             if (_upperArmR) _uaR0 = _upperArmR.localRotation;
+            if (_handL != null && _handR != null)
+            {
+                _handL0 = _handL.localRotation;
+                _handR0 = _handR.localRotation;
+                _handBound = true;
+            }
             if (_lowerArmL) _laL0 = _lowerArmL.localRotation;
             if (_lowerArmR) _laR0 = _lowerArmR.localRotation;
             if (_upperLegL) _ulL0 = _upperLegL.localRotation;
