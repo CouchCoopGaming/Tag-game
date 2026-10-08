@@ -51,8 +51,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.735, z: 0}
-  m_Size: 4.59
+  m_LocalReferencePoint: {x: 0, y: 0.7295, z: -0.0005}
+  m_Size: 4.595
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -152,11 +152,11 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 09bfd371e8f0f16e6b78127684637c79, type: 2}
+  - {fileID: 2100000, guid: b3b631afc4486454bb9ffc0fca5fac39, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
-  - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
-  - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
+  - {fileID: 2100000, guid: 758dd8b834f41e35f975f297e4a11c7d, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
-  - {fileID: 2100000, guid: 38838e5bb0bb608f1038bb4926803471, type: 2}
+  - {fileID: 2100000, guid: 92b590158a957c29b6c0c3df0ad97d91, type: 2}
   - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
@@ -249,12 +249,13 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 09bfd371e8f0f16e6b78127684637c79, type: 2}
+  - {fileID: 2100000, guid: b3b631afc4486454bb9ffc0fca5fac39, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
-  - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
-  - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
-  - {fileID: 2100000, guid: 38838e5bb0bb608f1038bb4926803471, type: 2}
+  - {fileID: 2100000, guid: 758dd8b834f41e35f975f297e4a11c7d, type: 2}
+  - {fileID: 2100000, guid: 92b590158a957c29b6c0c3df0ad97d91, type: 2}
   - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
+  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -516,7 +517,7 @@ Transform:
   m_GameObject: {fileID: 300040}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.835, y: 0.31, z: -1.35}
+  m_LocalPosition: {x: -0.795, y: 0.31, z: -1.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -541,7 +542,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.016, y: 0.3565, z: 0.3565}
+  m_Size: {x: 0.016, y: 0.3162, z: 0.3162}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300050
 GameObject:
@@ -569,7 +570,7 @@ Transform:
   m_GameObject: {fileID: 300050}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.835, y: 0.31, z: -1.35}
+  m_LocalPosition: {x: 0.795, y: 0.31, z: -1.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -594,7 +595,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.016, y: 0.3565, z: 0.3565}
+  m_Size: {x: 0.016, y: 0.3162, z: 0.3162}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300060
 GameObject:
@@ -622,7 +623,7 @@ Transform:
   m_GameObject: {fileID: 300060}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.835, y: 0.31, z: 1.35}
+  m_LocalPosition: {x: -0.795, y: 0.31, z: 1.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -647,7 +648,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.016, y: 0.3565, z: 0.3565}
+  m_Size: {x: 0.016, y: 0.3162, z: 0.3162}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300070
 GameObject:
@@ -675,7 +676,7 @@ Transform:
   m_GameObject: {fileID: 300070}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.835, y: 0.31, z: 1.35}
+  m_LocalPosition: {x: 0.795, y: 0.31, z: 1.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -700,5 +701,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.016, y: 0.3565, z: 0.3565}
+  m_Size: {x: 0.016, y: 0.3162, z: 0.3162}
   m_Center: {x: 0, y: 0, z: 0}

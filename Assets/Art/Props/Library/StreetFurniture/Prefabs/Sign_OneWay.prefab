@@ -46,7 +46,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0.1, y: 1.3375, z: 0}
+  m_LocalReferencePoint: {x: 0.1, y: 1.3375, z: 0.005}
   m_Size: 2.675
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -74,7 +74,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "StreetFurniture"
-  summary: "One-way blade 0.91 x 0.30 m at 2.45 m. Black arrow on white, 6 cm pole."
+  summary: "One-way blade 0.91 x 0.30 m at 2.45 m. ONE WAY and a black-field arrow, 6 cm pole."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0

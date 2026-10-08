@@ -32074,7 +32074,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 216,
+        "tris": 428,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -32185,11 +32185,11 @@
   {
     "name": "Sign_OneWay",
     "category": "StreetFurniture",
-    "blurb": "One-way blade 0.91 x 0.30 m at 2.45 m. Black arrow on white, 6 cm pole.",
+    "blurb": "One-way blade 0.91 x 0.30 m at 2.45 m. ONE WAY and a black-field arrow, 6 cm pole.",
     "size": [
       0.91,
       2.675,
-      0.16
+      0.17
     ],
     "min": [
       -0.355,
@@ -32199,12 +32199,12 @@
     "max": [
       0.555,
       2.675,
-      0.08
+      0.09
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 252,
+        "tris": 712,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -32467,7 +32467,7 @@
     "blurb": "Street planter 1.80 x 0.48 m, 0.46 m tall. Steel frame, wood slats, soil and one shrub mass.",
     "size": [
       1.86,
-      0.8,
+      0.769,
       0.528
     ],
     "min": [
@@ -32477,13 +32477,13 @@
     ],
     "max": [
       0.93,
-      0.8,
+      0.769,
       0.264
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1476,
+        "tris": 1356,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -32501,7 +32501,7 @@
       },
       {
         "lod": 1,
-        "tris": 432,
+        "tris": 356,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -32635,20 +32635,20 @@
         "type": "sphere",
         "center": [
           -0.42,
-          0.64,
+          0.54,
           0.0
         ],
-        "radius": 0.1
+        "radius": 0.05
       },
       {
         "name": "Col_ShrubR",
         "type": "sphere",
         "center": [
-          0.36,
-          0.62,
+          0.28,
+          0.52,
           -0.02
         ],
-        "radius": 0.08
+        "radius": 0.04
       }
     ],
     "climbable": false,
@@ -32662,7 +32662,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.61,
+    "slackCm": 1.6,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Planter_Street.fbx"
   },
   {
@@ -32942,7 +32942,7 @@
   {
     "name": "RoofVent_Turbine",
     "category": "StreetFurniture",
-    "blurb": "Turbine vent, 0.46 m curb, throat 0.32 m across, cap at 0.70 m. Helical vane cage, visual only.",
+    "blurb": "Turbine vent, 0.46 m curb, throat 0.32 m across, cap at 0.70 m. Hollow drum with radial slats.",
     "size": [
       0.46,
       0.725,
@@ -32961,7 +32961,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 1380,
+        "tris": 1480,
         "materials": [
           "Lib_Steel",
           "Lib_SteelDark"
@@ -32971,7 +32971,7 @@
       },
       {
         "lod": 1,
-        "tris": 512,
+        "tris": 620,
         "materials": [
           "Lib_Steel",
           "Lib_SteelDark"
@@ -33077,28 +33077,99 @@
         ]
       },
       {
-        "name": "Col_Head",
-        "type": "capsule",
+        "name": "Col_HeadE",
+        "type": "box",
         "center": [
-          0,
+          0.14,
           0.52,
-          0
+          0.0
         ],
-        "radius": 0.12,
-        "height": 0.241,
-        "direction": 1
+        "size": [
+          0.016,
+          0.1,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_HeadW",
+        "type": "box",
+        "center": [
+          -0.14,
+          0.52,
+          0.0
+        ],
+        "size": [
+          0.016,
+          0.1,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_HeadN",
+        "type": "box",
+        "center": [
+          0.0,
+          0.52,
+          0.14
+        ],
+        "size": [
+          0.03,
+          0.1,
+          0.016
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_HeadS",
+        "type": "box",
+        "center": [
+          0.0,
+          0.52,
+          -0.14
+        ],
+        "size": [
+          0.03,
+          0.1,
+          0.016
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
       },
       {
         "name": "Col_Cap",
-        "type": "capsule",
+        "type": "box",
         "center": [
           0,
-          0.66,
+          0.64,
           0
         ],
-        "radius": 0.06,
-        "height": 0.121,
-        "direction": 1
+        "size": [
+          0.08,
+          0.03,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
       }
     ],
     "climbable": false,
@@ -33112,7 +33183,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.25,
+    "slackCm": 1.39,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/RoofVent_Turbine.fbx"
   },
   {
@@ -33633,6 +33704,101 @@
           0.0,
           0.0
         ]
+      },
+      {
+        "name": "Col_BowlA",
+        "type": "box",
+        "center": [
+          0.0,
+          0.5105954359633205,
+          0.02705572809000084
+        ],
+        "size": [
+          0.05,
+          0.05,
+          0.012
+        ],
+        "euler": [
+          -36.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Bowl0",
+        "type": "box",
+        "center": [
+          0.1105273192803462,
+          0.5568650704182143,
+          0.011238249779255267
+        ],
+        "size": [
+          0.032,
+          0.032,
+          0.012
+        ],
+        "euler": [
+          -36.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Bowl1",
+        "type": "box",
+        "center": [
+          -0.04673020107703804,
+          0.608478023236838,
+          -0.02626075543940893
+        ],
+        "size": [
+          0.032,
+          0.032,
+          0.012
+        ],
+        "euler": [
+          -36.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Bowl2",
+        "type": "box",
+        "center": [
+          -0.11052731928034622,
+          0.4812540167744498,
+          0.06617289583874489
+        ],
+        "size": [
+          0.032,
+          0.032,
+          0.012
+        ],
+        "euler": [
+          -36.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Bowl3",
+        "type": "box",
+        "center": [
+          0.046730201077038076,
+          0.42964106395582624,
+          0.10367190105740912
+        ],
+        "size": [
+          0.032,
+          0.032,
+          0.012
+        ],
+        "euler": [
+          -36.0,
+          0.0,
+          0.0
+        ]
       }
     ],
     "climbable": false,
@@ -33646,7 +33812,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.0,
+    "slackCm": 0.57,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/SatelliteDish.fbx"
   },
   {
@@ -33909,30 +34075,30 @@
     "blurb": "Sedan shell, about 4.56 m long, roof 1.47 m. Closed body, pillars, glass, and fenders over the tires.",
     "size": [
       1.86,
-      1.47,
-      4.59
+      1.459,
+      4.595
     ],
     "min": [
       -0.93,
       0.0,
-      -2.295
+      -2.298
     ],
     "max": [
       0.93,
-      1.47,
-      2.295
+      1.459,
+      2.297
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 3712,
+        "tris": 13284,
         "materials": [
           "Lib_PaintBlue",
+          "Lib_TintGlass",
           "Lib_Black",
-          "Lib_ShopGlass",
-          "Lib_PaintCream",
+          "Lib_Headlamp",
           "Lib_SteelDark",
-          "Lib_PaintRed",
+          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_Steel"
         ],
@@ -33941,15 +34107,16 @@
       },
       {
         "lod": 1,
-        "tris": 2460,
+        "tris": 2956,
         "materials": [
           "Lib_PaintBlue",
+          "Lib_TintGlass",
           "Lib_Black",
-          "Lib_ShopGlass",
-          "Lib_PaintCream",
-          "Lib_PaintRed",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Steel",
+          "Lib_SteelDark"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -34036,14 +34203,14 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.8350000000000001,
+          -0.795,
           0.31,
           -1.35
         ],
         "size": [
           0.016,
-          0.3565,
-          0.3565
+          0.3162,
+          0.3162
         ],
         "euler": [
           0,
@@ -34055,14 +34222,14 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.8350000000000001,
+          0.795,
           0.31,
           -1.35
         ],
         "size": [
           0.016,
-          0.3565,
-          0.3565
+          0.3162,
+          0.3162
         ],
         "euler": [
           0,
@@ -34074,14 +34241,14 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.8350000000000001,
+          -0.795,
           0.31,
           1.35
         ],
         "size": [
           0.016,
-          0.3565,
-          0.3565
+          0.3162,
+          0.3162
         ],
         "euler": [
           0,
@@ -34093,14 +34260,14 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.8350000000000001,
+          0.795,
           0.31,
           1.35
         ],
         "size": [
           0.016,
-          0.3565,
-          0.3565
+          0.3162,
+          0.3162
         ],
         "euler": [
           0,
@@ -34120,7 +34287,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.24,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Sedan.fbx"
   },
   {
@@ -34129,29 +34296,30 @@
     "blurb": "Hatchback shell, about 4.00 m long, roof 1.52 m. Closed body, pillars, glass, and fenders over the tires.",
     "size": [
       1.78,
-      1.52,
-      4.03
+      1.509,
+      4.035
     ],
     "min": [
       -0.89,
       0.0,
-      -1.995
+      -1.998
     ],
     "max": [
       0.89,
-      1.52,
-      2.035
+      1.509,
+      2.037
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 3460,
+        "tris": 12190,
         "materials": [
           "Lib_PaintRed",
+          "Lib_TintGlass",
           "Lib_Black",
-          "Lib_ShopGlass",
-          "Lib_PaintCream",
+          "Lib_Headlamp",
           "Lib_SteelDark",
+          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_Steel"
         ],
@@ -34160,14 +34328,16 @@
       },
       {
         "lod": 1,
-        "tris": 2320,
+        "tris": 2778,
         "materials": [
           "Lib_PaintRed",
+          "Lib_TintGlass",
           "Lib_Black",
-          "Lib_ShopGlass",
-          "Lib_PaintCream",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Steel",
+          "Lib_SteelDark"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -34198,13 +34368,13 @@
         "type": "box",
         "center": [
           0,
-          1.4,
-          -0.28
+          1.455,
+          -0.3
         ],
         "size": [
-          0.86,
-          0.1,
-          0.85
+          0.48,
+          0.04,
+          0.7
         ],
         "euler": [
           0,
@@ -34254,14 +34424,14 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.79225,
+          -0.75425,
           0.3,
           -1.25
         ],
         "size": [
           0.016,
-          0.345,
-          0.345
+          0.306,
+          0.306
         ],
         "euler": [
           0,
@@ -34273,14 +34443,14 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.79225,
+          0.75425,
           0.3,
           -1.25
         ],
         "size": [
           0.016,
-          0.345,
-          0.345
+          0.306,
+          0.306
         ],
         "euler": [
           0,
@@ -34292,14 +34462,14 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.79225,
+          -0.75425,
           0.3,
           1.25
         ],
         "size": [
           0.016,
-          0.345,
-          0.345
+          0.306,
+          0.306
         ],
         "euler": [
           0,
@@ -34311,14 +34481,14 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.79225,
+          0.75425,
           0.3,
           1.25
         ],
         "size": [
           0.016,
-          0.345,
-          0.345
+          0.306,
+          0.306
         ],
         "euler": [
           0,
@@ -34338,7 +34508,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.29,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Hatch.fbx"
   },
   {
@@ -34346,31 +34516,31 @@
     "category": "StreetFurniture",
     "blurb": "Pickup shell, about 5.06 m long. Cab roof 1.76 m, bed rails 1.12 m. Closed cab and wrapped fenders.",
     "size": [
-      2.0,
-      1.76,
-      5.095
+      1.998,
+      1.749,
+      5.105
     ],
     "min": [
-      -1.0,
+      -0.999,
       0.0,
-      -2.6
+      -2.608
     ],
     "max": [
-      1.0,
-      1.76,
-      2.495
+      0.999,
+      1.749,
+      2.497
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 3088,
+        "tris": 10900,
         "materials": [
           "Lib_PaintWhite",
+          "Lib_TintGlass",
           "Lib_Black",
-          "Lib_ShopGlass",
-          "Lib_PaintCream",
+          "Lib_Headlamp",
           "Lib_SteelDark",
-          "Lib_PaintRed",
+          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_Steel"
         ],
@@ -34379,15 +34549,16 @@
       },
       {
         "lod": 1,
-        "tris": 2056,
+        "tris": 2372,
         "materials": [
           "Lib_PaintWhite",
+          "Lib_TintGlass",
           "Lib_Black",
-          "Lib_ShopGlass",
-          "Lib_PaintCream",
-          "Lib_PaintRed",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Rubber",
-          "Lib_Steel"
+          "Lib_Steel",
+          "Lib_SteelDark"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -34399,13 +34570,13 @@
         "type": "box",
         "center": [
           0,
-          0.78,
-          0.85
+          0.82,
+          0.78
         ],
         "size": [
-          1.2,
-          0.55,
-          1.15
+          0.9,
+          0.48,
+          1.0
         ],
         "euler": [
           0,
@@ -34418,13 +34589,13 @@
         "type": "box",
         "center": [
           0,
-          1.66,
+          1.7,
           0.4
         ],
         "size": [
-          0.55,
-          0.06,
-          0.4
+          0.36,
+          0.04,
+          0.32
         ],
         "euler": [
           0,
@@ -34495,12 +34666,12 @@
         "center": [
           0,
           0.86,
-          -2.56
+          -2.568
         ],
         "size": [
-          1.2,
-          0.32,
-          0.02
+          0.9,
+          0.26,
+          0.014
         ],
         "euler": [
           0,
@@ -34512,14 +34683,14 @@
         "name": "Col_Fr_00",
         "type": "box",
         "center": [
-          -0.9005,
+          -0.8532,
           0.36,
           1.58
         ],
         "size": [
-          0.018,
-          0.378,
-          0.378
+          0.016,
+          0.3528,
+          0.3528
         ],
         "euler": [
           0,
@@ -34531,14 +34702,14 @@
         "name": "Col_Fr_01",
         "type": "box",
         "center": [
-          0.9005,
+          0.8532,
           0.36,
           1.58
         ],
         "size": [
-          0.018,
-          0.378,
-          0.378
+          0.016,
+          0.3528,
+          0.3528
         ],
         "euler": [
           0,
@@ -34550,14 +34721,14 @@
         "name": "Col_Rr_00",
         "type": "box",
         "center": [
-          -0.9005,
+          -0.8532,
           0.36,
           -1.62
         ],
         "size": [
-          0.018,
-          0.378,
-          0.378
+          0.016,
+          0.3528,
+          0.3528
         ],
         "euler": [
           0,
@@ -34569,14 +34740,14 @@
         "name": "Col_Rr_01",
         "type": "box",
         "center": [
-          0.9005,
+          0.8532,
           0.36,
           -1.62
         ],
         "size": [
-          0.018,
-          0.378,
-          0.378
+          0.016,
+          0.3528,
+          0.3528
         ],
         "euler": [
           0,
@@ -34596,7 +34767,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.0,
+    "slackCm": 0.45,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Pickup.fbx"
   }
 ]
