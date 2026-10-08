@@ -658,6 +658,232 @@ namespace Tag.Art
             WritePng(path, pix, w, h);
         }
 
+        /// <summary>
+        /// Stick figures from the gait, the jump, and the contact pitches.
+        /// Before is the capped stride or the plain jump. After is this pass.
+        /// </summary>
+        public static void WriteLocomotionStills(string path)
+        {
+            const int frames = 8;
+            const int cellW = 120;
+            const int cellH = 156;
+            const int labelW = 168;
+            const int rows = 12;
+            int w = labelW + frames * cellW;
+            int h = rows * cellH;
+            var pix = new byte[w * h * 3];
+            Fill(pix, w, h, 16, 18, 22);
+            Fig[] sprintB = TrackStride(false, false, false);
+            Fig[] sprintA = TrackStride(true, false, false);
+            Fig[] strafeB = TrackStride(true, false, false);
+            Fig[] strafeA = TrackStrafe();
+            Fig[] airB = TrackAir(false);
+            Fig[] airA = TrackAir(true);
+            Fig[] turnB = TrackStride(true, false, false);
+            Fig[] turnA = TrackTurn();
+            Fig[] slopeB = TrackStride(true, false, false);
+            Fig[] slopeA = TrackSlope();
+            Fig[] handB = TrackHand(false);
+            Fig[] handA = TrackHand(true);
+            PaintLoco(pix, w, h, rows, 0, "SPRINT", "BEFORE", sprintB, 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 1, "SPRINT", "AFTER", sprintA, 120, 196, 150, false, 0f);
+            PaintLoco(pix, w, h, rows, 2, "STRAFE", "BEFORE", strafeB, 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 3, "STRAFE", "AFTER", strafeA, 120, 186, 210, false, 0f);
+            PaintLoco(pix, w, h, rows, 4, "AIR", "BEFORE", airB, 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 5, "AIR", "AFTER", airA, 186, 168, 230, false, 0f);
+            PaintLoco(pix, w, h, rows, 6, "TURN", "BEFORE", turnB, 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 7, "TURN", "AFTER", turnA, 230, 176, 120, false, 0f);
+            PaintLoco(pix, w, h, rows, 8, "SLOPE", "BEFORE", slopeB, 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 9, "SLOPE", "AFTER", slopeA, 150, 210, 140, false, 18f);
+            PaintLoco(pix, w, h, rows, 10, "HAND", "BEFORE", handB, 196, 122, 96, true, 0f);
+            PaintLoco(pix, w, h, rows, 11, "HAND", "AFTER", handA, 230, 200, 120, true, 0f);
+            string dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            WritePng(path, pix, w, h);
+        }
+
+        static Fig[] TrackStride(bool play, bool strafe, bool back)
+        {
+            var shot = new Fig[8];
+            float phase = 0.4f;
+            float speed = LocomotionPolish.SprintSpeed;
+            float rate = play ? LocomotionPolish.PlayCadence(speed) : GaitBlend.CadenceAt(speed);
+            for (int i = 0; i < 8; i++)
+            {
+                shot[i] = FigFromGait(phase, speed, strafe, back, false, false);
+                phase += rate * Dt;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackStrafe()
+        {
+            var shot = new Fig[8];
+            float phase = 0.4f;
+            float speed = LocomotionPolish.SprintSpeed;
+            float rate = LocomotionPolish.PlayCadence(speed);
+            float head = LocomotionPolish.HeadYaw(LocomotionPolish.TravelYaw(0f, speed, speed));
+            for (int i = 0; i < 8; i++)
+            {
+                Fig fig = FigFromGait(phase, speed, true, false, false, false);
+                fig.Head = head;
+                fig.Spine = LocomotionPolish.SpineYaw(head);
+                float follow = LocomotionPolish.ArmFollowTarget(fig.ArmL);
+                fig.ArmL += follow;
+                fig.ArmR += LocomotionPolish.ArmFollowTarget(fig.ArmR);
+                shot[i] = fig;
+                phase += rate * Dt;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackAir(bool apex)
+        {
+            float[] vys = { 22f, 14f, 8f, 3f, 0f, -6f, -14f, -22f };
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                JumpPose.Sample s = JumpPose.At(vys[i], i == 0 ? 0.02f : 0.2f, true);
+                if (apex)
+                {
+                    bool chain = i >= 4;
+                    LocomotionPolish.AirPhase(ref s.ThighL, ref s.ThighR, ref s.KneeL, ref s.KneeR, ref s.ArmPitchL, ref s.ArmPitchR, ref s.Spine, vys[i], chain);
+                }
+                shot[i] = new Fig
+                {
+                    ArmL = s.ArmPitchL, ArmR = s.ArmPitchR, ElbL = s.ElbowL, ElbR = s.ElbowR,
+                    ThL = s.ThighL, ThR = s.ThighR, KnL = s.KneeL, KnR = s.KneeR,
+                    Spine = s.Spine, Hip = s.Hip, Head = -6f, Lean = 0f,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackTurn()
+        {
+            Fig[] shot = TrackStride(true, false, false);
+            for (int i = 0; i < shot.Length; i++)
+            {
+                Fig fig = shot[i];
+                float w = i < 2 ? 0.35f : (i < 6 ? 1f : 0.4f);
+                fig.ThL = fig.ThL + (LocomotionPolish.HardPlantThigh - fig.ThL) * w;
+                fig.KnL = fig.KnL + (LocomotionPolish.HardPlantKnee - fig.KnL) * w;
+                fig.Lean = 8f * w;
+                shot[i] = fig;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackSlope()
+        {
+            Fig[] shot = TrackStride(true, false, false);
+            float pitch = LocomotionPolish.FootPitch(0.82f, 0.48f);
+            for (int i = 0; i < shot.Length; i++)
+            {
+                Fig fig = shot[i];
+                fig.KnL += pitch;
+                fig.KnR += pitch;
+                fig.Hip = pitch * 0.35f;
+                shot[i] = fig;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackHand(bool contact)
+        {
+            var shot = new Fig[8];
+            float phase = 0f;
+            float rate = WallPose.ClimbCadenceFull;
+            float reach = contact ? LocomotionPolish.HandPitch(0.42f) : 0f;
+            for (int i = 0; i < 8; i++)
+            {
+                float s = (float)Math.Sin(phase);
+                WallPose.Sample sample = WallPose.Climb(s, WallPose.ClimbSpeedRef);
+                Fig fig = Fig.From(sample);
+                fig.ArmL += reach;
+                fig.ArmR += reach;
+                shot[i] = fig;
+                phase += rate * Dt;
+            }
+            return shot;
+        }
+
+        static Fig FigFromGait(float phase, float speed, bool strafe, bool back, bool plant, bool slope)
+        {
+            GaitBlend.Legs legs = GaitBlend.At(phase, speed);
+            float tl = legs.ThighL;
+            float tr = legs.ThighR;
+            float kl = legs.KneeL;
+            float kr = legs.KneeR;
+            if (strafe || back)
+            {
+                float fwd = back ? -speed : (strafe ? 0f : speed);
+                float side = strafe ? speed : 0f;
+                LocomotionPolish.Legs mixed = LocomotionPolish.FacingStride(tl, tr, kl, kr, fwd, side);
+                tl = mixed.ThighL;
+                tr = mixed.ThighR;
+                kl = mixed.KneeL;
+                kr = mixed.KneeR;
+            }
+            if (plant)
+            {
+                tl = LocomotionPolish.HardPlantThigh;
+                kl = LocomotionPolish.HardPlantKnee;
+            }
+            if (slope)
+            {
+                float pitch = LocomotionPolish.FootPitch(0.82f, 0.48f);
+                kl += pitch;
+                kr += pitch;
+            }
+            float s = Mathf.Sin(phase);
+            float amp = GaitBlend.ArmAmp(GaitBlend.PoseWeight(speed));
+            return new Fig
+            {
+                ArmL = -s * amp * 0.55f,
+                ArmR = s * amp * 0.55f,
+                ElbL = -14f,
+                ElbR = -14f,
+                ThL = tl,
+                ThR = tr,
+                KnL = kl,
+                KnR = kr,
+                Spine = LocomotionPolish.StartLean(0.35f, 4f) * 0.25f,
+                Hip = 0f,
+                Head = 0f,
+                Lean = 0f,
+            };
+        }
+
+        static void PaintLoco(byte[] pix, int w, int h, int rows, int row, string title, string which, Fig[] figs, byte r, byte g, byte b, bool wall, float slope)
+        {
+            int cellH = h / rows;
+            int cellW = (w - 168) / 8;
+            int y0 = row * cellH;
+            Text(pix, w, h, 8, y0 + 8, title, 230, 226, 214, 2);
+            Text(pix, w, h, 8, y0 + 28, which, 230, 226, 214, 2);
+            for (int i = 0; i < figs.Length && i < 8; i++)
+            {
+                int ox = 168 + i * cellW;
+                if (wall)
+                    VLine(pix, w, h, ox + cellW - 14, y0 + 28, y0 + cellH - 18, 64, 72, 82);
+                if (slope > 0.5f || slope < -0.5f)
+                {
+                    float rad = slope * 0.0174533f;
+                    float x0 = ox + 10;
+                    float x1 = ox + cellW - 18;
+                    float yb = y0 + cellH - 22;
+                    float rise = (float)Math.Sin(rad) * (x1 - x0) * 0.35f;
+                    Bone(pix, w, h, x0, yb, x1, yb - rise, 90, 84, 70);
+                }
+                else
+                    HLine(pix, w, h, ox + 8, ox + cellW - 16, y0 + cellH - 16, 48, 52, 58);
+                DrawFig(pix, w, h, ox + cellW / 2 - 6, y0 + 104, figs[i], r, g, b);
+                Text(pix, w, h, ox + 6, y0 + cellH - 14, (i + 1).ToString(CultureInfo.InvariantCulture), 180, 176, 160, 1);
+            }
+        }
+
         static Fig[] TrackClimb(bool shaped, bool spring, float slew)
         {
             var vel = new float[12];

@@ -77,9 +77,24 @@ Climbing and the parkour poses now play as cycles, and the mesh follows those cu
 
 Stick figures drawn from the joint angles are in `Docs/SmoothStills/pass2/climb-wall-mantle.png`. Six rows, eight frames. Climb before and after, wall run before and after, mantle before and after. Before is the pass-1 filter. After is the cycle track. The wall is the line on the right of the climb and wall-run frames.
 
+## Pass 3
+
+The run, the jump, and the contact poses fill in. Gameplay is still the same frame as the press. Feel locks are unchanged. Exit animations, the landing roll, and particles stay on the anim-fx lane.
+
+- The mesh cycle follows walk 6.9 and sprint 13.8, so the sole covers the stance. The proof cadence in `GaitBlend.CadenceAt` is unchanged and still caps at 26.5. Measured slip at those two speeds is 0.000. The old proof slip at 13.8 stays about 0.316.
+- A run start leans the chest into the first step. A stop still plants and settles on the curve that was already there. A heading change of about 180° inside 0.28 s plants the outside foot for a short beat, then eases. A slow turn stays on the existing pivot. Strafe shortens the fore-aft step and yaws the hips toward travel. Backpedal flips the stride and shortens it. Straight ahead is the same stride as before.
+- Air poses still come from vertical speed: takeoff, rise, then fall. The apex adds a float tuck that `JumpPose.Extend` does not have. A bunny-hop chain keeps the arms near a balance pose instead of replaying the full takeoff. Air-strafe banks stay as they were, on that same chain.
+- On the ground, the stance foot pitches to the slope and lifts a few centimeters on a step. On a climb or a wall run, a ray from the chest adds arm pitch so the hands meet the wall. The capsule and `CharacterController.Move` are unchanged.
+- The head looks along travel, up to 35°. The spine counters at about −0.4 of that. The arms coast up to 12° after the swing drops. All three use the 0.10 s spring. Punch, aim, mantle, climb, and wall run keep the bones they already own.
+- A small chase look-point step eases. A mouse flick, and the boom pulling in, still snap. Gait slews of 18–64 stay exponential.
+
+One frame of the hard-turn plant moves the thigh 2.7° where the unsmoothed gap is 38°. One frame of the apex tuck moves 1.1° of a 10° add. Both show on the press frame. The press-to-first-visible-pose table is unchanged: every verb is 0/0. `gameplayDelay=0`.
+
+Stick figures from the joint angles are in `Docs/SmoothStills/pass3/loco-air-ik.png`. Twelve rows, eight frames. Sprint, strafe, air, hard turn, slope, and wall hand. Before, then after.
+
 ## TODO still open
 
-1. The lens `LookRotation` is still written every frame. The look point is smooth. The rotation step is whatever the point did. Worth a pass if the horizon still ticks.
+1. Done this pass. Small `LookRotation` steps ease. Large steps still snap with the mouse.
 2. Gait slews of 18–64 are a couple of frames, on purpose. Do not spring them or the feet lag the stride.
 3. Kill-box and other `Place` calls still snap the mesh. They should. Do not ease a respawn across the park.
 4. Wall-cling marks, slide scrape, dash ribbons, dust, and any new particle are the anim-fx lane (`cursor/tag-anim-fx`). That lane also owns the exit animation of each verb and the landing roll.
