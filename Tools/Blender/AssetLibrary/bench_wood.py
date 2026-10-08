@@ -120,7 +120,7 @@ def _end_frame(g, x, segs, mat):
     verts, faces = _cast_end(x, segs)
     g.mesh(verts, faces, mat, bevel=0.004 if segs > 2 else 0.0, segs=1 if segs > 2 else 0)
     # Same wood cap on both ends, biting the iron arm (top is 0.688) from the post to the front leg.
-    g.box((x, 0.694, -0.02), (0.046, 0.020, 0.50), "Lib_Board")
+    g.box((x, 0.694, -0.01), (0.046, 0.020, 0.52), "Lib_Board")
 
 
 @register

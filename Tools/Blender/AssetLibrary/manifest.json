@@ -24125,7 +24125,7 @@
     "size": [
       0.532,
       0.892,
-      0.563
+      0.565
     ],
     "min": [
       -0.266,
@@ -24135,7 +24135,7 @@
     "max": [
       0.266,
       0.892,
-      0.293
+      0.295
     ],
     "lods": [
       {
@@ -24203,7 +24203,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.27,
+    "slackCm": 0.17,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/TrashCan_Lidded.fbx"
   },
   {

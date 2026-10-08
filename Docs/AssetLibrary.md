@@ -110,7 +110,7 @@ Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase 
 | Storefront_Glass | Buildings | 4 × 3.2 × 0.38 | 300 (300/144/144) | Climb_PierL, Climb_PierR, Climb_Header, Col_Glass, Col_Door, Col_Cornice | climb Piers are cling. Glass and the door are solid. Exterior is +Z. No rail. The head is at 3.2 m. | shipped |
 | StormDrain | StreetFurniture | 0.7 × 0.04 × 0.4 | 528 (528/96) | Col_Grate | Flat grate. Flush. Not a vault. | shipped |
 | TrafficLight | StreetFurniture | 0.4 × 5.025 × 1.81 | 440 (440/212) | Col_Base, Col_Pole, Col_Arm, Col_Head | Pole is round and 14 cm. Not a cling wall. No rail at vault height. | shipped |
-| TrashCan_Lidded | StreetFurniture | 0.532 × 0.892 × 0.563 | 1284 (1284/692) | Col_Body, Col_Door | Not a cling surface. Too narrow to vault. | shipped |
+| TrashCan_Lidded | StreetFurniture | 0.532 × 0.892 × 0.565 | 1284 (1284/692) | Col_Body, Col_Door | Not a cling surface. Too narrow to vault. | shipped |
 | TrashCan_Slat | StreetFurniture | 0.47 × 0.877 × 0.47 | 1128 (1128/260) | Col_Liner, Col_Rim | Not a cling surface. 0.92 m rim is narrow and round. Not a vault rail. | shipped |
 | Tree | Park | 3.482 × 3.539 × 3.066 | 1584 (1584/732/336) | Col_Flare, Col_Trunk | Trunk is round, about 0.28 m at the flare. Not a flat cling wall. No rail. The canopy is visual; the trunk is the blocker. | shipped |
 | Tree_Grate | Park | 2.752 × 3.111 × 2.321 | 1176 (1176/600/360) | Col_GrateN, Col_GrateS, Col_GrateE, Col_GrateW, Col_Flare, Col_Trunk | Trunk is round, about 0.22 m at the flare. Not a flat cling wall. No rail. The grate is a sidewalk skin. The trunk is the blocker. | shipped |
