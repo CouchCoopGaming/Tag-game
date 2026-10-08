@@ -271,3 +271,16 @@ The contact words now read as a comic burst, and the big moves leave a trail you
 - POP!, POW!, BAM!, and WHAM! each have their own explosion shape and colors. A thick black outline, a second burst the letters overlap, and print dots you can see. The letters are big, tight, and arched, with a black stroke, a thin white inner line, and a block shadow. A tag adds speed lines behind BAM! and WHAM!. They punch in a little too big, wobble, and fade on the same short beat as before. Try it: punch the dummy, then tag.
 - Pause → Settings → Effects is Off, Low, or Full. Full is the default. Off hides the dust, the words, and these trails. Low draws fewer of them. Reduced flashing hides them too.
 - A hard landing stamps a ring and flicks debris. The shoulder roll swirls dust along the path. A dash leaves a few ghosts in your color. The rope sags, wobbles, chips the hook point, and snaps when you let go. A pad throws an up ring and a wind streak. A zip sparks along the ride. A stagger puts dizzy stars over the head for the same quarter second. Tag-back keeps its one second and pulses a colored rim so you can see who is safe in every split pane. A wall run scuffs, and a wet wall drips. Sprinting leaves wisps. Try it: fall, dash, rope, pad, zip, then take a hit.
+
+## Landing ring, dizzy stars, and a wet wall
+
+BAM! and WHAM! sit a little larger in their bursts, and the big moves you own in this pass read more clearly. Speed, slide, and the camera stay as they were.
+
+- BAM! and WHAM! are about a tenth bigger inside the explosion, so they match POP and POW. Try it: tag the dummy and look at the letters against the burst.
+- A small hop stamps a small ring. A medium fall stamps a wider one and throws more debris. A heavy fall, and the shoulder roll, stamp the full ring. The roll also swirls dust along the path. Try it: step off a curb, then a roof, then fall about 19 meters while running.
+- A dash leaves a short trail of ghosts in your color. Low effects draws one fewer. Try it: dash, then set Effects to Low and dash again.
+- The rope still sags and wobbles. The hook chips the surface, and letting go snaps. Try it: click to pull, then double-click to release.
+- A stagger puts three comic stars over the head for the same quarter second. They use the same burst, outline, and print dots as the words. Try it: let the dummy punch you.
+- Tag-back still lasts one second. A colored rim pulses on the safe body in every split pane. Try it: get tagged, then look at the body before you can be tagged again.
+- A wet wall drips when a foot plants. Try it: wall-run a surface named wet.
+- Pause → Settings → Effects is still Off, Low, or Full. Off and Reduced flashing hide these trails.

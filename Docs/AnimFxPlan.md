@@ -23,6 +23,18 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - Comic words, redrawn before the other effects: each word has its own jagged burst, a thick black outline, a second burst in a contrasting color, and a clear Ben-Day screen on both colors. Letters are the OFL font Bangers (`Assets/Art/FX/Fonts/Bangers-Regular.ttf`, license in `OFL.txt`): chunky, slanted, tight on one arch, a thick black stroke with a thin white inner stroke, an extruded shadow, and a highlight. The word fills most of the burst and crosses the inner edge. Each letter turns at most 6°. BAM and WHAM also throw speed lines behind the burst. The pop goes 0 to 1.25 to 1.0 inside 0.05 s, wobbles a little, then fades by 0.45 s. Cells are 1024 and sampled bilinear. Whole-word tilt stays within ±12°. Same toggle, pool, and Reduced flashing switch.
 - Camera fov pop, shake, and slow motion stay 0. No hitstop. Stills are in `Docs/AnimStills/pass4/` (`comic-before.png`, `comic-after.png`, `comic-park.png`, `verb-fx.png`).
 
+## Pass 5 (this branch)
+
+- BAM! and WHAM! are about 10% larger inside their bursts so they match POP and POW. The four-cell atlas is unchanged.
+- A hard landing grows a ring and a debris flick with the light, medium, and heavy fall tiers. The shoulder roll swirls dust along the travel. Both live in `VerbOwnedFx`.
+- A dash leaves 4 ghosts at Full and 3 at Low, in the player color, for the 0.10 s dash.
+- The rope still sags and wobbles. The hook chips the surface, and letting go snaps.
+- A stagger shows three comic dizzy stars, the same burst, outline, and print dots as the words, for the existing 0.25 s.
+- Tag-back keeps its 1.0 s. A soft rim in the player color pulses in every split pane. It is not a light.
+- A wet wall drips on the foot plant. The scuff streaks stay with the other trails.
+- Pause → Settings → Effects is still Off, Low, or Full. Off and Reduced flashing hide this layer. Low draws fewer ghosts and particles.
+- Stills are in `Docs/AnimStills/pass5/` (`owned-fx.png`, `dizzy-star.png`, `bam-wham.png`).
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue

@@ -33,6 +33,7 @@ namespace Tag.FX
                 host.AddComponent<DustEmitter>();
             ComicBurst.Ensure();
             VerbFxHost.Ensure(host);
+            VerbOwnedFx.Ensure(host);
         }
 
         void Awake()
