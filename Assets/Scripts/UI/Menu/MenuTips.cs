@@ -34,12 +34,21 @@ namespace Tag.Ui.Menu
             return Lines[i];
         }
 
+        /// <summary>One tip per seat. The next turn rotates every seat together.</summary>
+        public static string For(int seat, int turn)
+        {
+            if (seat < 0) seat = 0;
+            return At(seat + turn);
+        }
+
         public static bool Holds()
         {
             if (Count < 8) return false;
             if (At(0) != "Space jumps.") return false;
             if (At(Count) != At(0)) return false;
             if (At(9).IndexOf("first to 2", System.StringComparison.Ordinal) < 0) return false;
+            if (For(0, 0) != At(0) || For(0, 1) != At(1)) return false;
+            if (For(1, 0) == For(0, 0)) return false;
             return true;
         }
     }

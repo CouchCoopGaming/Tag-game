@@ -124,7 +124,11 @@ namespace Tag.Ui.Menu
         float _loadAt;
         Image _loadFill;
         Text _loadWord;
+        readonly Text[] _loadTip = new Text[4];
+        readonly Image[] _loadBar = new Image[4];
         int _loadStep = -1;
+        int _tipBase;
+        int _tipSpin = int.MinValue;
         bool _capturing;
         bool _captureGrapple;
         int _captureAction = -1;
@@ -628,6 +632,11 @@ namespace Tag.Ui.Menu
             }
             for (int i = 0; i < _swatch.Length; i++) _swatch[i] = null;
             for (int i = 0; i < _loadRule.Length; i++) _loadRule[i] = null;
+            for (int i = 0; i < _loadTip.Length; i++)
+            {
+                _loadTip[i] = null;
+                _loadBar[i] = null;
+            }
             for (int i = 0; i < _keyWord.Length; i++)
             {
                 _keyWord[i] = null;
@@ -1586,6 +1595,7 @@ namespace Tag.Ui.Menu
 
         void TickLoading()
         {
+            SpinTips();
             PaintLoad();
             if (!_loadFired && Time.unscaledTime >= _loadAt)
             {
@@ -2446,94 +2456,81 @@ namespace Tag.Ui.Menu
             if (_header != null) _header.text = "  Loading";
             var loadCard = MenuWidgets.Box(_body, "LoadCard", new Vector2(0.08f, 0.12f), new Vector2(0.92f, 0.86f), new Vector2(0.5f, 0.5f));
             Image loadPlate = loadCard.gameObject.AddComponent<Image>();
-            MenuArt.Plate(loadPlate, new Color(0.04f, 0.10f, 0.24f, 0.88f), true);
+            MenuArt.Plate(loadPlate, new Color(0.04f, 0.10f, 0.24f, 0.28f), true);
             loadPlate.raycastTarget = false;
             int fly = MenuSession.Arena;
             if (fly < 0 || fly >= ParkArena.Count) fly = 0;
             ShowFlyover(fly, 0.72f);
             MenuWidgets.Heading(_body, name, 64, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0.08f, 0.86f), new Vector2(0.92f, 0.98f));
-            GameSettings rules = GameSettings.Current ?? GameSettings.Defaults();
-            string it = RuleBook.LoadStart(rules);
-            const string itPrefix = "Starting It  ";
-            if (it != null && it.StartsWith(itPrefix))
-                it = it.Substring(itPrefix.Length);
-            string rounds = RuleBook.LoadRounds(rules);
-            bool hot = MenuSession.Mode == TagModeId.HotPotato;
-            string[] ruleLabel = new string[8];
-            string[] ruleValue = new string[8];
-            int rows = 0;
-            ruleLabel[rows] = "Length";
-            ruleValue[rows] = RuleBook.LoadLength(rules);
-            rows++;
-            ruleLabel[rows] = "Rounds";
-            ruleValue[rows] = rounds;
-            rows++;
-            if (hot || rounds != "1")
-            {
-                ruleLabel[rows] = "Win target";
-                ruleValue[rows] = hot ? "First to " + RuleBook.LoadWin(rules) + " round wins" : RuleBook.LoadWin(rules);
-                rows++;
-            }
-            ruleLabel[rows] = "Starting It";
-            ruleValue[rows] = it;
-            rows++;
-            ruleLabel[rows] = "Handicaps";
-            ruleValue[rows] = HandLine(rules);
-            rows++;
-            ruleLabel[rows] = "Pads";
-            ruleValue[rows] = RuleBook.LoadPads(rules);
-            rows++;
-            ruleLabel[rows] = "Zips";
-            ruleValue[rows] = RuleBook.LoadZips(rules);
-            rows++;
-            for (int i = 0; i < rows; i++)
-            {
-                float top = 0.78f - i * 0.07f;
-                float bot = top - 0.065f;
-                MenuWidgets.Words(_body, ruleLabel[i], UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Mute, new Vector2(0.12f, bot), new Vector2(0.36f, top));
-                _loadRule[i] = MenuWidgets.Words(_body, ruleValue[i], UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.38f, bot), new Vector2(0.9f, top));
-            }
-            float bodyH = UiFit.BodyH(UiFit.Current());
-            UiFit.RowBox(UiFit.Current(), 1120f, out float barX, out float barW);
-            float lastTop = 0.78f - (rows - 1) * 0.07f;
-            float lastBot = lastTop - 0.065f;
-            float lastBottom = (1f - lastBot) * bodyH;
-            float barH = 36f;
-            float tipH = 72f;
-            float tipY = lastBottom + 28f;
-            float barY = tipY + tipH + 18f;
-            float capY = barY + barH + 12f;
-            float limit = bodyH - 8f;
-            if (capY + 40f > limit)
-            {
-                float over = capY + 40f - limit;
-                tipY -= over;
-                barY -= over;
-                capY -= over;
-            }
-            if (tipY < lastBottom + 12f) tipY = lastBottom + 12f;
-            if (barY < tipY + tipH + 12f) barY = tipY + tipH + 12f;
-            if (capY < barY + barH + 8f) capY = barY + barH + 8f;
-            var tipRt = MenuWidgets.Place(_body, "TipPlate", barX, tipY, barW, tipH);
-            Image tipPlate = tipRt.gameObject.AddComponent<Image>();
-            MenuArt.Plate(tipPlate, MenuTheme.Gold, true);
-            tipPlate.raycastTarget = false;
-            MenuWidgets.Words(tipRt, "TIP", 28, TextAnchor.MiddleLeft, MenuTheme.Ink, new Vector2(0.02f, 0.08f), new Vector2(0.16f, 0.92f));
-            MenuWidgets.Words(tipRt, MenuTips.At(_tip), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Ink, new Vector2(0.18f, 0.08f), new Vector2(0.98f, 0.92f));
+            _tipBase = _tip;
+            _tipSpin = int.MinValue;
+            BuildLoadSeats(name);
             _tip++;
-            var track = MenuWidgets.Place(_body, "LoadTrack", barX, barY, barW, barH);
-            var trackImage = track.gameObject.AddComponent<Image>();
-            MenuArt.Plate(trackImage, new Color(0.02f, 0.05f, 0.12f, 1f), true);
-            trackImage.raycastTarget = false;
-            var fill = MenuWidgets.Place(track, "LoadFill", 6f, 6f, barW * 0.28f, barH - 12f);
-            _loadFill = fill.gameObject.AddComponent<Image>();
-            MenuArt.Plate(_loadFill, MenuTheme.Gold, true);
-            _loadFill.raycastTarget = false;
-            _loadFill.enabled = true;
-            var capRt = MenuWidgets.Place(_body, "LoadCaption", barX, capY, barW, 40f);
-            _loadWord = MenuWidgets.Words(capRt, LoadCaption(false, false), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
             _loadStep = -1;
             if (_banner != null) _banner.text = "";
+        }
+
+        void BuildLoadSeats(string arena)
+        {
+            int humans = CouchPlay.Humans;
+            if (humans < 1) humans = 1;
+            if (humans > 4) humans = 4;
+            int split = GameSettings.Current != null ? GameSettings.Current.SplitAxis : GameSettings.SplitVertical;
+            int panes = CouchPlay.Panes(humans);
+            _loadFill = null;
+            _loadWord = null;
+            for (int i = 0; i < panes; i++)
+            {
+                if (humans == 3 && i == 3) continue;
+                CouchPlay.Norm(i, humans, split, out float x, out float y, out float w, out float h);
+                float pad = 0.02f;
+                var card = MenuWidgets.Box(_body, "LoadSeat", new Vector2(x + pad, y + 0.06f), new Vector2(x + w - pad, y + h - 0.08f), new Vector2(0.5f, 0.5f));
+                Image plate = card.gameObject.AddComponent<Image>();
+                MenuArt.Plate(plate, new Color(0.04f, 0.07f, 0.16f, 0.82f), true);
+                plate.raycastTarget = false;
+                var edge = MenuWidgets.Box(card, "Seat", new Vector2(0f, 0.86f), new Vector2(0.018f, 1f), new Vector2(0f, 0.5f));
+                Image chip = edge.gameObject.AddComponent<Image>();
+                chip.color = MenuTheme.Seat(i);
+                chip.raycastTarget = false;
+                MenuWidgets.Words(card, arena, 36, TextAnchor.MiddleLeft, MenuTheme.Gold, new Vector2(0.06f, 0.78f), new Vector2(0.94f, 0.96f));
+                string who = i == 0 ? "P1" : i == 1 ? "P2" : i == 2 ? "P3" : "P4";
+                MenuWidgets.Words(card, who, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.06f, 0.64f), new Vector2(0.40f, 0.78f));
+                var tipRt = MenuWidgets.Box(card, "TipPlate", new Vector2(0.05f, 0.34f), new Vector2(0.95f, 0.62f), new Vector2(0.5f, 0.5f));
+                Image tipPlate = tipRt.gameObject.AddComponent<Image>();
+                MenuArt.Plate(tipPlate, MenuTheme.Gold, true);
+                tipPlate.raycastTarget = false;
+                Text tip = MenuWidgets.Words(tipRt, MenuTips.For(i, _tipBase), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Ink, new Vector2(0.04f, 0.08f), new Vector2(0.96f, 0.92f));
+                if (tip != null) tip.horizontalOverflow = HorizontalWrapMode.Wrap;
+                _loadTip[i] = tip;
+                var track = MenuWidgets.Box(card, "Track", new Vector2(0.06f, 0.16f), new Vector2(0.94f, 0.28f), new Vector2(0.5f, 0.5f));
+                Image trackImage = track.gameObject.AddComponent<Image>();
+                MenuArt.Plate(trackImage, new Color(0.02f, 0.05f, 0.12f, 1f), true);
+                trackImage.raycastTarget = false;
+                var fill = MenuWidgets.Box(track, "Fill", new Vector2(0.01f, 0.18f), new Vector2(0.28f, 0.82f), new Vector2(0f, 0.5f));
+                Image fillImage = fill.gameObject.AddComponent<Image>();
+                MenuArt.Plate(fillImage, MenuTheme.Gold, true);
+                fillImage.raycastTarget = false;
+                _loadBar[i] = fillImage;
+                Text word = MenuWidgets.Words(card, LoadCaption(false, false), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.06f, 0.02f), new Vector2(0.94f, 0.15f));
+                if (i == 0)
+                {
+                    _loadFill = fillImage;
+                    _loadWord = word;
+                }
+            }
+        }
+
+        void SpinTips()
+        {
+            if (MenuVideo.ReduceMotion) return;
+            int step = (int)(Time.unscaledTime * 0.35f);
+            if (step == _tipSpin) return;
+            _tipSpin = step;
+            for (int i = 0; i < 4; i++)
+            {
+                if (_loadTip[i] == null) continue;
+                _loadTip[i].text = MenuTips.For(i, _tipBase + step);
+            }
         }
 
         void BuildPause()
@@ -3157,12 +3154,7 @@ namespace Tag.Ui.Menu
             if (_loadFill == null) return;
             if (fill < 0f) fill = 0f;
             if (fill > 1f) fill = 1f;
-            RectTransform trackRt = _loadFill.rectTransform.parent as RectTransform;
-            float span = trackRt != null ? trackRt.sizeDelta.x - 12f : 1100f;
-            if (span < 40f) span = 40f;
-            _loadFill.rectTransform.anchoredPosition = new Vector2(6f, -6f);
-            _loadFill.rectTransform.sizeDelta = new Vector2(span * fill, 24f);
-            _loadFill.enabled = fromLeft && fill > 0f;
+            DriveLoadBars(0.02f, 0.02f + 0.96f * fill, fromLeft && fill > 0f);
         }
 
         static string LoadCaption(bool fired, bool roundActive)
@@ -3174,15 +3166,28 @@ namespace Tag.Ui.Menu
         void TickLoadDash()
         {
             if (_screen != MenuScreenId.Loading || _loadFill == null || _loadStep > 0) return;
-            RectTransform trackRt = _loadFill.rectTransform.parent as RectTransform;
-            float span = trackRt != null ? trackRt.sizeDelta.x - 12f : 1100f;
-            if (span < 40f) span = 40f;
-            float dash = span * 0.28f;
+            float dash = 0.28f;
             float u = MenuVideo.ReduceMotion ? 0.36f : Mathf.Repeat(Time.unscaledTime * 0.35f, 1f);
-            float x = 6f + (span - dash) * u;
-            _loadFill.rectTransform.anchoredPosition = new Vector2(x, -6f);
-            _loadFill.rectTransform.sizeDelta = new Vector2(dash, 24f);
-            _loadFill.enabled = true;
+            float x = u * (1f - dash);
+            DriveLoadBars(x, x + dash, true);
+        }
+
+        void DriveLoadBars(float x0, float x1, bool on)
+        {
+            if (x0 < 0f) x0 = 0f;
+            if (x1 > 1f) x1 = 1f;
+            if (x1 < x0) x1 = x0;
+            for (int i = 0; i < _loadBar.Length; i++)
+            {
+                Image bar = _loadBar[i];
+                if (bar == null) continue;
+                RectTransform rt = bar.rectTransform;
+                rt.anchorMin = new Vector2(x0, 0.15f);
+                rt.anchorMax = new Vector2(x1, 0.85f);
+                rt.offsetMin = Vector2.zero;
+                rt.offsetMax = Vector2.zero;
+                bar.enabled = on;
+            }
         }
 
         void BuildCredits()

@@ -134,6 +134,23 @@ namespace Tag.Ui.Hud
 
             pane.Call = Label(rt, "Call", 64, TextAnchor.MiddleCenter, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.68f), true);
             pane.Call.enabled = false;
+            RectTransform lockRt = MenuWidgets.Box(rt, "Lock", new Vector2(0.28f, 0.20f), new Vector2(0.72f, 0.32f), new Vector2(0.5f, 0.5f));
+            pane.LockPlate = lockRt.gameObject.AddComponent<Image>();
+            pane.LockPlate.sprite = MenuArt.Round;
+            pane.LockPlate.type = Image.Type.Sliced;
+            pane.LockPlate.color = MenuTheme.Ink;
+            pane.LockPlate.raycastTarget = false;
+            pane.LockPlate.enabled = false;
+            pane.Lock = Label(lockRt, "Word", UiFit.FloorFont, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one);
+            pane.Lock.text = MatchHudText.Locked;
+            pane.Lock.enabled = false;
+            RectTransform slot = MenuWidgets.Box(rt, "WordSlot", new Vector2(0.56f, 0.30f), new Vector2(0.90f, 0.48f), new Vector2(0.5f, 0.5f));
+            pane.WordSlot = slot.gameObject.AddComponent<Image>();
+            pane.WordSlot.sprite = MenuArt.Round;
+            pane.WordSlot.type = Image.Type.Sliced;
+            pane.WordSlot.color = new Color(0.04f, 0.07f, 0.16f, 0.55f);
+            pane.WordSlot.raycastTarget = false;
+            pane.WordSlot.enabled = false;
 
             pane.Verbs = MenuWidgets.Place(rt, "Verbs", 16f, 0f, 168f, 72f);
             pane.Verbs.anchorMin = new Vector2(0f, 0f);
@@ -269,25 +286,53 @@ namespace Tag.Ui.Hud
             plate.type = Image.Type.Sliced;
             plate.color = new Color(0.05f, 0.10f, 0.20f, 0.92f);
             plate.raycastTarget = false;
-            hud.ScoreTitle = Label(rt, "Title", 32, TextAnchor.MiddleLeft, new Vector2(0f, 0.82f), new Vector2(1f, 1f), true);
+            hud.ScoreTitle = Label(rt, "Title", 32, TextAnchor.MiddleLeft, new Vector2(0.04f, 0.86f), new Vector2(0.96f, 0.98f), true);
             hud.ScoreTitle.text = MatchHudText.Score;
+            hud.ScoreFoot = Label(rt, "Foot", 28, TextAnchor.MiddleLeft, new Vector2(0.04f, 0.01f), new Vector2(0.96f, 0.12f), true);
+            hud.ScoreFoot.color = MenuTheme.Gold;
+            hud.ScoreFoot.text = MatchHudText.NextRound;
+            hud.ScoreFoot.enabled = false;
+            string[] head = { "#", "TIME", "TAGS", "TAGGED", "WINS" };
+            float[] hx0 = { 0.02f, 0.42f, 0.56f, 0.68f, 0.82f };
+            float[] hx1 = { 0.10f, 0.56f, 0.68f, 0.82f, 0.98f };
+            for (int h = 0; h < 5; h++)
+            {
+                Text word = Label(rt, "H" + h.ToString(), UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(hx0[h], 0.76f), new Vector2(hx1[h], 0.86f));
+                word.text = head[h];
+                word.enabled = false;
+                hud.ScoreHead[h] = word;
+            }
             for (int i = 0; i < 4; i++)
             {
-                float top = 0.80f - i * 0.18f;
-                float mid = top - 0.08f;
-                RectTransform chip = MenuWidgets.Box(rt, "Chip" + i.ToString(), new Vector2(0.06f, mid - 0.045f), new Vector2(0.11f, mid + 0.045f), new Vector2(0.5f, 0.5f));
+                float top = 0.74f - i * 0.15f;
+                float bot = top - 0.14f;
+                RectTransform slide = MenuWidgets.Box(rt, "Row" + i.ToString(), new Vector2(0.03f, bot), new Vector2(0.97f, top), new Vector2(0f, 0.5f));
+                hud.ScoreSlide[i] = slide;
+                Image hi = slide.gameObject.AddComponent<Image>();
+                hi.sprite = MenuArt.Round;
+                hi.type = Image.Type.Sliced;
+                hi.color = new Color(1f, 0.84f, 0.12f, 0f);
+                hi.raycastTarget = false;
+                hi.enabled = false;
+                hud.ScoreHi[i] = hi;
+                hud.ScoreRank[i] = Label(slide, "Rank", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0f, 0f), new Vector2(0.08f, 1f));
+                RectTransform chip = MenuWidgets.Box(slide, "Chip", new Vector2(0.14f, 0.22f), new Vector2(0.18f, 0.78f), new Vector2(0.5f, 0.5f));
                 Image chipImage = chip.gameObject.AddComponent<Image>();
                 chipImage.raycastTarget = false;
                 chipImage.enabled = false;
                 hud.ScoreChip[i] = chipImage;
-                RectTransform mark = MenuWidgets.Box(rt, "Mark" + i.ToString(), new Vector2(0.13f, mid - 0.04f), new Vector2(0.18f, mid + 0.04f), new Vector2(0.5f, 0.5f));
+                RectTransform mark = MenuWidgets.Box(slide, "Mark", new Vector2(0.20f, 0.18f), new Vector2(0.26f, 0.82f), new Vector2(0.5f, 0.5f));
                 Image markImage = mark.gameObject.AddComponent<Image>();
                 markImage.color = MenuTheme.Cream;
                 markImage.preserveAspect = true;
                 markImage.raycastTarget = false;
                 markImage.enabled = false;
                 hud.ScoreMark[i] = markImage;
-                hud.ScoreLine[i] = Label(rt, "Line" + i.ToString(), UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0.20f, top - 0.16f), new Vector2(0.96f, top));
+                hud.ScoreLine[i] = Label(slide, "Line", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0.28f, 0f), new Vector2(0.42f, 1f));
+                hud.ScoreTime[i] = Label(slide, "Time", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0.42f, 0f), new Vector2(0.56f, 1f));
+                hud.ScoreTagsN[i] = Label(slide, "Tags", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0.56f, 0f), new Vector2(0.68f, 1f));
+                hud.ScoreGot[i] = Label(slide, "Got", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0.68f, 0f), new Vector2(0.82f, 1f));
+                hud.ScoreWins[i] = Label(slide, "Wins", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0.82f, 0f), new Vector2(1f, 1f));
             }
             rt.gameObject.SetActive(false);
             return rt;

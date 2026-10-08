@@ -216,6 +216,15 @@ namespace Tag.Ui.Hud
 
         public static readonly float[] ItTime = { 8.1f, 12.4f, 0.2f, 4.0f };
 
+        /// <summary>Tags landed in the script. P1 tags P2, then P2 tags P3.</summary>
+        public static readonly int[] TagsMade = { 1, 1, 0, 0 };
+
+        /// <summary>Times each seat was tagged in that same script.</summary>
+        public static readonly int[] TimesTagged = { 0, 1, 1, 0 };
+
+        /// <summary>Round win follows least It time. P3 takes this round.</summary>
+        public static readonly int[] RoundWins = { 0, 0, 1, 0 };
+
         public static string Digit(int step)
         {
             if (step <= 0) return "3";
@@ -281,6 +290,8 @@ namespace Tag.Ui.Hud
             if (AfterRound(false) != "NEXT ROUND") return false;
             if (HasPodium(MatchHudText.RoundOver) || HasPodium(AfterRound(true)) || HasPodium(AfterRound(false))) return false;
             if (HasPodium(MatchHudText.LeastWins) || HasPodium(MatchHudText.Locked)) return false;
+            if (!ColumnsHold()) return false;
+            if (Slide(3, 0) != 0f || Slide(0, 3) < 1f || Slide(1, 1) <= 0f) return false;
             float prev = -1f;
             for (int i = 0; i < 4; i++)
             {
@@ -300,7 +311,60 @@ namespace Tag.Ui.Hud
             MatchHudText.ComicWords = false;
             bool hidden = MatchHudText.Comic(MatchHudText.YoureIt).Length == 0;
             MatchHudText.ComicWords = was;
-            return shown && hidden;
+            if (!shown || !hidden) return false;
+            ItPlate(out float ix, out float iy, out float iw, out float ih);
+            WordBox(out float wx, out float wy, out float ww, out float wh);
+            if (iw < 0.2f || wh < 0.08f) return false;
+            return ix + iw <= wx || wx + ww <= ix || iy + ih <= wy || wy + wh <= iy;
+        }
+
+        /// <summary>YOU'RE IT sits above the tagged player.</summary>
+        public static void ItPlate(out float x, out float y, out float w, out float h)
+        {
+            x = 0.18f;
+            y = 0.62f;
+            w = 0.64f;
+            h = 0.16f;
+        }
+
+        /// <summary>Empty slot near the tagged player. Comic words from the FX kit land here.</summary>
+        public static void WordBox(out float x, out float y, out float w, out float h)
+        {
+            x = 0.56f;
+            y = 0.30f;
+            w = 0.34f;
+            h = 0.18f;
+        }
+
+        /// <summary>
+        /// 0 is home, 1 is still off the card. Frame 0 shows rank 1 mid-slide.
+        /// Later frames have the earlier rows home.
+        /// </summary>
+        public static float Slide(int frame, int row)
+        {
+            if (frame < 0) frame = 0;
+            if (frame > 3) frame = 3;
+            if (row < 0) row = 0;
+            if (row > 3) row = 3;
+            if (frame > row) return 0f;
+            if (frame < row) return 1f;
+            return 0.42f;
+        }
+
+        public static bool ColumnsHold()
+        {
+            Snap snap = Script();
+            if (TagsMade[snap.From(0)] < 1 || TagsMade[snap.From(1)] < 1) return false;
+            if (TimesTagged[snap.To(0)] < 1 || TimesTagged[snap.To(1)] < 1) return false;
+            int winner = Place(0);
+            if (RoundWins[winner] < 1) return false;
+            int wins = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                if (RoundWins[i] > 0) wins++;
+                if (TagsMade[i] < 0 || TimesTagged[i] < 0) return false;
+            }
+            return wins == 1 && winner == snap.It;
         }
 
         public static bool DropHolds()
