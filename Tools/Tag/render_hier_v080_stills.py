@@ -186,8 +186,6 @@ def render_solve():
     if arm is None:
         raise SystemExit("Tan blend has no DummyArmature")
     for spec in sp.CLIPS:
-        if spec["verb"] == "softland":
-            continue
         curves = sp.clip_curves(spec["id"], keys=24)
         u, idx = sp.hero_u(spec["id"], curves["raw_smooth"])
         ch = sp.sample_raw(curves["raw_smooth"], u)
@@ -236,7 +234,8 @@ def render_motion():
                 idx = 0
             if idx >= n:
                 idx = n - 1
-            _present(arm, spec, idx, pose, stage=False)
+            # Only the hero frame gets the cat-leap arm and knee correction.
+            _present(arm, spec, idx, pose, stage=abs(u - round(hero, 3)) < 1e-4)
             path = os.path.join(dest, f"{SLUGS[spec['id']]}_{i}.png")
             _shot(path, *POSE_CAM)
             print(f"motion {SLUGS[spec['id']]} {i} u={u:.2f} frame={idx}")
@@ -341,7 +340,7 @@ def _prepare_scene():
         fill.data.size = 4.0
 
 
-def _shot(path, loc, look):
+def _shot(path, loc, look, ortho=None):
     import bpy
     from mathutils import Vector
     if "ShotCam" in bpy.data.objects:
@@ -350,7 +349,13 @@ def _shot(path, loc, look):
         bpy.ops.object.camera_add()
         cam = bpy.context.active_object
         cam.name = "ShotCam"
-        cam.data.lens = 48
+    cam.data.lens = 48
+    if ortho is None:
+        cam.data.type = "PERSP"
+    else:
+        # Elevation: every ray is parallel to the wall, so the lip stays a level line.
+        cam.data.type = "ORTHO"
+        cam.data.ortho_scale = ortho
     cam.location = loc
     direction = Vector(look) - Vector(loc)
     cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
@@ -382,15 +387,18 @@ def _pose_still(arm, spec, u, idx):
     pose = sp.unity_pose(ch)
     _apply_eulers(arm, sp.blender_euler(pose))
     _present(arm, spec, idx, pose)
-    _shot(os.path.join(PREV, SLUGS[spec["id"]] + ".png"), *POSE_CAM)
-    print(f"{SLUGS[spec['id']]} hero_u={u:.3f} frame={idx} verb={spec['verb']}")
+    slug = SLUGS[spec["id"]]
+    _shot(os.path.join(PREV, slug + ".png"), *POSE_CAM)
+    _side_contact_line(spec)
+    loc, look, scale = _side_cam(arm, spec)
+    _shot(os.path.join(PREV, slug + "_side.png"), loc, look, ortho=scale)
+    print(f"{slug} hero_u={u:.3f} frame={idx} verb={spec['verb']}")
     _reset(arm)
 
 
-# Near face of the action wall. The mannequin stays on the +X side of this plane.
-# The wall normal points toward +X. Contact limbs may touch x = WALL_FACE.
-# Every other vertex stays at x >= WALL_FACE.
-WALL_FACE = -0.58
+# Wall normal points toward +X. The face is built on the contact mesh.
+# The armature is not slid along that normal by more than this.
+ROOT_SLIDE_MAX = 0.10
 
 
 def _present(arm, spec, frame_idx, pose, stage=True):
@@ -417,29 +425,31 @@ def _present(arm, spec, frame_idx, pose, stage=True):
         arm.rotation_euler = Euler((math.radians(pitch), 0.0, 0.0), "XYZ")
         bpy.context.view_layer.update()
         _plant(arm)
+        _hide_marks()
+        _report(arm, spec, None, None, "ground", None)
         return
     if verb == "wallrun":
-        # Straighter leg is the plant. Roll tips that side toward the wall.
+        # Straighter leg is the plant. Roll stays 0: a +40° roll pushed the
+        # chest about 80 cm off the wall. The wall is built on the foot.
         side = "L" if abs(pose["knee_l"]) <= abs(pose["knee_r"]) else "R"
         pitch = min(max(trunk, 6.0), 16.0)
-        arm.rotation_euler = Euler((math.radians(pitch), math.radians(40.0), math.radians(-15.0)), "XYZ")
+        arm.rotation_euler = Euler((math.radians(pitch), 0.0, math.radians(-15.0)), "XYZ")
         bpy.context.view_layer.update()
         cz = 0.78 if stage else _posed_contact_z(arm, "Foot_" + side, 0.35)
-        _solve_wall(arm, "Foot_" + side, contact_z=cz, kind="foot", top=None)
+        _seat_foot(arm, spec, "Foot_" + side, cz)
     elif verb == "walljump":
         # Forward kick (the larger thigh pitch) meets the wall at hip height.
-        # Yaw turns that kick onto -X. The solve then leans the torso off the plane.
+        # Yaw turns that kick onto -X. The wall is built on the kicking foot.
         side = "L" if pose["thigh_l"] >= pose["thigh_r"] else "R"
         arm.rotation_euler = Euler((math.radians(6.0), math.radians(10.0), math.radians(-76.0)), "XYZ")
         bpy.context.view_layer.update()
         cz = 0.95 if stage else _posed_contact_z(arm, "Foot_" + side, 0.35)
-        _solve_wall(arm, "Foot_" + side, contact_z=cz, kind="foot", top=None)
+        _seat_foot(arm, spec, "Foot_" + side, cz)
     else:
-        # Cat leap: both feet on the face, hands on the top edge, chest just clear.
-        arm.rotation_euler = Euler((math.radians(16.0), 0.0, math.radians(-78.0)), "XYZ")
+        # Cat leap: both feet on the face, both palms on the lip.
+        arm.rotation_euler = Euler((math.radians(12.0), 0.0, math.radians(-74.0)), "XYZ")
         bpy.context.view_layer.update()
-        cz = 0.52 if stage else _posed_contact_z(arm, "Foot_L", 0.28)
-        _solve_wall(arm, "Foot_L", contact_z=cz, kind="cling", top="hands")
+        _seat_cling(arm, spec, stage)
 
 
 def _posed_contact_z(arm, bone, floor):
@@ -459,16 +469,24 @@ def _bone_world(arm, name):
     return arm.matrix_world @ pb.head
 
 
+def _body_mesh(obj):
+    if obj.type != "MESH":
+        return False
+    name = obj.name
+    if name in ("Ground", "ActionWall") or name.startswith("ContactMark"):
+        return False
+    return True
+
+
 def _mesh_min_x(allow):
     """Minimum world x of meshes that allow(name) accepts. None if none match."""
     import bpy
+    _ensure_object()
     deps = bpy.context.evaluated_depsgraph_get()
     best = None
     best_name = None
     for obj in bpy.data.objects:
-        if obj.type != "MESH" or obj.name in ("Ground", "ActionWall"):
-            continue
-        if not allow(obj.name):
+        if not _body_mesh(obj) or not allow(obj.name):
             continue
         ev = obj.evaluated_get(deps)
         mw = ev.matrix_world
@@ -483,12 +501,11 @@ def _mesh_min_x(allow):
 def _mesh_min_z(allow):
     """Minimum world z of meshes that allow(name) accepts."""
     import bpy
+    _ensure_object()
     deps = bpy.context.evaluated_depsgraph_get()
     best = None
     for obj in bpy.data.objects:
-        if obj.type != "MESH" or obj.name in ("Ground", "ActionWall"):
-            continue
-        if not allow(obj.name):
+        if not _body_mesh(obj) or not allow(obj.name):
             continue
         ev = obj.evaluated_get(deps)
         mw = ev.matrix_world
@@ -499,253 +516,1020 @@ def _mesh_min_z(allow):
     return best
 
 
-def _rotate_about(arm, pivot, axis, deg):
+def _object_mode(arm):
     import bpy
-    from mathutils import Matrix, Vector
-    delta = Matrix.Rotation(math.radians(deg), 4, axis)
-    t = Matrix.Translation(Vector(pivot))
-    arm.matrix_world = t @ delta @ t.inverted() @ arm.matrix_world
+    if arm is not None and bpy.context.view_layer.objects.active is not arm:
+        bpy.context.view_layer.objects.active = arm
+    if bpy.context.mode != "OBJECT":
+        bpy.ops.object.mode_set(mode="OBJECT")
     bpy.context.view_layer.update()
 
 
-def _solve_wall(arm, contact_bone, contact_z, kind, top):
-    """Plant the contact on the plane and push the visual root off the wall.
-
-    kind 'foot' lets that kicking foot touch. kind 'cling' lets both feet touch
-    the face and both hands meet the lip. Head, chest and forearms stay on the
-    near side. A lean about the contact foot (world Y) is the first correction.
-    If something is still through, the root slides along +X and the foot is
-    stuck back on the plane. The capsule is not involved.
-    """
+def _ensure_object():
+    """Mesh eval lags in pose mode, so measurements switch back first."""
     import bpy
-    bpy.context.view_layer.update()
-
-    def foot_touch(name):
-        if kind == "foot":
-            return name == "Mesh_" + contact_bone or name.endswith(contact_bone)
-        return "Foot" in name
-
-    def blocks(name):
-        # Hands are a contact on the cat-leap lip. Everywhere else they count
-        # as body and have to stay out of the wall.
-        if foot_touch(name):
-            return False
-        if kind == "cling" and "Hand" in name:
-            return False
-        return True
-
-    def stick_feet():
-        cx, _ = _mesh_min_x(foot_touch)
-        if cx is not None:
-            arm.location.x += WALL_FACE - cx
-            bpy.context.view_layer.update()
-
-    pivot = _bone_world(arm, contact_bone)
-    if pivot is None:
-        _show_wall(WALL_FACE, None)
+    if bpy.context.mode == "OBJECT":
         return
-    # Drop or lift the contact to the requested height, then stick its mesh to the face.
-    arm.location.z += contact_z - pivot.z
+    if bpy.context.view_layer.objects.active is None:
+        arm = bpy.data.objects.get("DummyArmature")
+        if arm is not None:
+            bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode="OBJECT")
     bpy.context.view_layer.update()
-    stick_feet()
-
-    # Feet stay above the ground. A kick is not a sit.
-    feet = [p for p in (_bone_world(arm, "Foot_L"), _bone_world(arm, "Foot_R")) if p is not None]
-    if feet:
-        lower = min(feet, key=lambda p: p.z)
-        if lower.z < 0.12:
-            arm.location.z += 0.12 - lower.z
-            bpy.context.view_layer.update()
-            stick_feet()
-
-    sign = 1.0
-    leaned = 0.0
-    for _ in range(14):
-        ox, oname = _mesh_min_x(blocks)
-        if ox is None or ox >= WALL_FACE - 0.006:
-            break
-        pivot = _bone_world(arm, contact_bone)
-        if pivot is None:
-            break
-        _rotate_about(arm, pivot, "Y", 3.0 * sign)
-        leaned += 3.0 * sign
-        stick_feet()
-        ox2, _ = _mesh_min_x(blocks)
-        if ox2 is not None and ox2 < ox - 0.002:
-            # This step dug the body in. Undo it. The first time, try the other way.
-            pivot = _bone_world(arm, contact_bone)
-            _rotate_about(arm, pivot, "Y", -3.0 * sign)
-            leaned -= 3.0 * sign
-            stick_feet()
-            if abs(leaned) <= 0.1:
-                sign *= -1.0
-                continue
-            break
-
-    # Root push: if a non-contact part is still through, slide along the normal
-    # and lean back so the contact foot returns to the plane.
-    ox, oname = _mesh_min_x(blocks)
-    if ox is not None and ox < WALL_FACE - 0.006:
-        arm.location.x += (WALL_FACE + 0.01) - ox
-        bpy.context.view_layer.update()
-        pivot = _bone_world(arm, contact_bone)
-        for _ in range(10):
-            cx, _ = _mesh_min_x(foot_touch)
-            if cx is None or cx <= WALL_FACE + 0.012:
-                break
-            if pivot is None:
-                break
-            _rotate_about(arm, pivot, "Y", 3.0 * sign)
-            leaned += 3.0 * sign
-            pivot = _bone_world(arm, contact_bone)
-            ox, oname = _mesh_min_x(blocks)
-            if ox is not None and ox < WALL_FACE - 0.004:
-                _rotate_about(arm, pivot, "Y", -3.0 * sign)
-                leaned -= 3.0 * sign
-                break
-        stick_feet()
-
-    # Cat leap: yaw about the feet until both shoes meet the face, then lean
-    # the torso off the wall if a shin crossed. Hands come back to the lip
-    # only while the chest, head and forearms stay clear.
-    hand_z = None
-    if kind == "cling":
-        saved = arm.matrix_world.copy()
-        fl0 = _bone_world(arm, "Foot_L")
-        fr0 = _bone_world(arm, "Foot_R")
-        best_yaw = 0.0
-        best_gap = 1.0e9
-        mid = None
-        if fl0 is not None and fr0 is not None:
-            mid = (fl0 + fr0) * 0.5
-            for deg in range(-48, 12, 4):
-                arm.matrix_world = saved.copy()
-                bpy.context.view_layer.update()
-                if deg:
-                    _rotate_about(arm, mid, "Z", float(deg))
-                stick_feet()
-                flx, _ = _mesh_min_x(lambda n: "Foot_L" in n)
-                frx, _ = _mesh_min_x(lambda n: "Foot_R" in n)
-                if flx is None or frx is None:
-                    continue
-                gap = abs(flx - frx)
-                if gap < best_gap:
-                    best_gap = gap
-                    best_yaw = float(deg)
-            arm.matrix_world = saved.copy()
-            bpy.context.view_layer.update()
-            if best_yaw:
-                _rotate_about(arm, mid, "Z", best_yaw)
-            stick_feet()
-            for _ in range(8):
-                blocked, _ = _mesh_min_x(blocks)
-                if blocked is None or blocked >= WALL_FACE - 0.006:
-                    break
-                _rotate_about(arm, mid, "Y", 3.0)
-                leaned += 3.0
-                stick_feet()
-                flx, _ = _mesh_min_x(lambda n: "Foot_L" in n)
-                frx, _ = _mesh_min_x(lambda n: "Foot_R" in n)
-                if flx is None or frx is None or abs(flx - frx) > 0.045 or max(flx, frx) > WALL_FACE + 0.04:
-                    _rotate_about(arm, mid, "Y", -3.0)
-                    leaned -= 3.0
-                    stick_feet()
-                    break
-        for _ in range(14):
-            hx, _ = _mesh_min_x(lambda n: "Hand" in n)
-            if hx is None or hx <= WALL_FACE + 0.012:
-                break
-            pivot = mid if mid is not None else _bone_world(arm, contact_bone)
-            if pivot is None:
-                break
-            _rotate_about(arm, pivot, "Y", -1.0)
-            leaned -= 1.0
-            stick_feet()
-            blocked, _ = _mesh_min_x(blocks)
-            flx, _ = _mesh_min_x(lambda n: "Foot_L" in n)
-            frx, _ = _mesh_min_x(lambda n: "Foot_R" in n)
-            feet_left = flx is None or frx is None or abs(flx - frx) > 0.045 or max(flx, frx) > WALL_FACE + 0.04
-            if (blocked is not None and blocked < WALL_FACE - 0.004) or feet_left:
-                _rotate_about(arm, pivot, "Y", 1.0)
-                leaned += 1.0
-                stick_feet()
-                break
-        hand_z = _mesh_min_z(lambda n: "Hand" in n)
-
-    # Last resort: slide along the normal until every non-contact mesh is on
-    # the near side, then walk back toward the wall so the contact foot meets
-    # the face again if it still can.
-    ox, _ = _mesh_min_x(blocks)
-    if ox is not None and ox < WALL_FACE - 0.005:
-        arm.location.x += (WALL_FACE + 0.004) - ox
-        bpy.context.view_layer.update()
-    for _ in range(16):
-        cx_back, _ = _mesh_min_x(foot_touch)
-        if cx_back is None or cx_back <= WALL_FACE + 0.012:
-            break
-        arm.location.x -= 0.015
-        bpy.context.view_layer.update()
-        ox, _ = _mesh_min_x(blocks)
-        if ox is not None and ox < WALL_FACE - 0.004:
-            arm.location.x += 0.015
-            bpy.context.view_layer.update()
-            break
-
-    ox, oname = _mesh_min_x(blocks)
-    cx, _ = _mesh_min_x(foot_touch)
-    hx, _ = _mesh_min_x(lambda n: "Hand" in n)
-    flx, _ = _mesh_min_x(lambda n: "Foot_L" in n)
-    frx, _ = _mesh_min_x(lambda n: "Foot_R" in n)
-    chest = _bone_world(arm, "Chest")
-    hips = _bone_world(arm, "Hips")
-    foot_l = _bone_world(arm, "Foot_L")
-    foot_r = _bone_world(arm, "Foot_R")
-    hand_l = _bone_world(arm, "Hand_L")
-    hand_r = _bone_world(arm, "Hand_R")
-    print(
-        f"  solve {contact_bone} lean={leaned:.0f} foot_x={cx} hand_x={hx} other={oname}:{ox} "
-        f"footmesh=({flx},{frx}) chest=({chest.x:+.2f},{chest.z:.2f}) "
-        f"hips=({hips.x:+.2f},{hips.z:.2f}) "
-        f"feet=({foot_l.x:+.2f},{foot_l.z:.2f}) ({foot_r.x:+.2f},{foot_r.z:.2f}) "
-        f"hands=({hand_l.x:+.2f},{hand_l.z:.2f}) ({hand_r.x:+.2f},{hand_r.z:.2f})"
-    )
-    _show_wall(WALL_FACE, hand_z if top == "hands" else None)
 
 
-def _show_wall(face_x, hand_z):
+def _iter_world_verts(allow):
     import bpy
-    # Default cube is 2 m. scale 0.045 → 9 cm thick. The +X face is the contact face.
-    half = 0.045
-    if hand_z is None:
-        center_z = 1.35
-        scale_z = 1.35
+    _ensure_object()
+    deps = bpy.context.evaluated_depsgraph_get()
+    for obj in bpy.data.objects:
+        if not _body_mesh(obj) or not allow(obj.name):
+            continue
+        ev = obj.evaluated_get(deps)
+        mw = ev.matrix_world
+        for v in ev.data.vertices:
+            yield mw @ v.co
+
+
+def _mesh_max_z(allow):
+    best = None
+    for w in _iter_world_verts(allow):
+        if best is None or w.z > best:
+            best = w.z
+    return best
+
+
+def _head_crown():
+    return _mesh_max_z(lambda n: "Head" in n)
+
+
+def _hand_verts(side):
+    return list(_iter_world_verts(lambda n, side=side: f"Hand_{side}" in n))
+
+
+def _palm_cluster(arm, side):
+    """Palm and knuckle verts. Fingertips sit farther than 5 cm from the wrist."""
+    wrist = _bone_world(arm, f"Hand_{side}")
+    verts = _hand_verts(side)
+    if wrist is None or not verts:
+        return verts
+    near = [v for v in verts if (v - wrist).length <= 0.050]
+    return near or verts
+
+
+def _palm_top_z(arm, side):
+    cluster = _palm_cluster(arm, side)
+    if not cluster:
+        return None
+    return max(v.z for v in cluster)
+
+
+def _palm_gap(arm, side, face, top):
+    """Closest palm-cluster vertex to the lip corner, in the XZ plane."""
+    cluster = _palm_cluster(arm, side)
+    if not cluster:
+        return None, None
+    best = min(cluster, key=lambda v: (v.x - face) ** 2 + (v.z - top) ** 2)
+    return best, math.hypot(best.x - face, best.z - top)
+
+
+def _nudge_bone(arm, name, dx=0.0, dy=0.0, dz=0.0):
+    import bpy
+    from mathutils import Euler
+    if bpy.context.view_layer.objects.active is not arm:
+        bpy.context.view_layer.objects.active = arm
+    if bpy.context.mode != "POSE":
+        bpy.ops.object.mode_set(mode="POSE")
+    pb = arm.pose.bones.get(name)
+    if pb is None:
+        return
+    pb.rotation_mode = "XYZ"
+    e = pb.rotation_euler
+    pb.rotation_euler = Euler((
+        e.x + math.radians(dx),
+        e.y + math.radians(dy),
+        e.z + math.radians(dz),
+    ), "XYZ")
+    bpy.context.view_layer.update()
+
+
+def _bone_euler(arm, name):
+    pb = arm.pose.bones.get(name)
+    if pb is None:
+        return (0.0, 0.0, 0.0)
+    e = pb.rotation_euler
+    return (e.x, e.y, e.z)
+
+
+def _set_bone_euler(arm, name, eul):
+    import bpy
+    from mathutils import Euler
+    if bpy.context.view_layer.objects.active is not arm:
+        bpy.context.view_layer.objects.active = arm
+    if bpy.context.mode != "POSE":
+        bpy.ops.object.mode_set(mode="POSE")
+    pb = arm.pose.bones.get(name)
+    if pb is None:
+        return
+    pb.rotation_mode = "XYZ"
+    pb.rotation_euler = Euler(eul, "XYZ")
+    bpy.context.view_layer.update()
+
+
+def _add_world_rot(arm, axis, deg):
+    """World-axis rotation about the armature origin. Location is unchanged."""
+    import bpy
+    from mathutils import Matrix
+    _object_mode(arm)
+    loc = arm.location.copy()
+    delta = Matrix.Rotation(math.radians(deg), 4, axis)
+    arm.matrix_world = delta @ arm.matrix_world
+    arm.location = loc
+    bpy.context.view_layer.update()
+
+
+def _search_world(arm, axis, degrees, score_fn):
+    """Pick the world rotation, added to the current pose, with the lowest score."""
+    import bpy
+    _object_mode(arm)
+    saved_r = arm.rotation_euler.copy()
+    saved_l = arm.location.copy()
+    best_deg = 0.0
+    best = score_fn()
+    for deg in degrees:
+        arm.rotation_euler = saved_r.copy()
+        arm.location = saved_l.copy()
+        bpy.context.view_layer.update()
+        if deg:
+            _add_world_rot(arm, axis, deg)
+        sc = score_fn()
+        if sc < best - 1.0e-6:
+            best = sc
+            best_deg = deg
+    arm.rotation_euler = saved_r.copy()
+    arm.location = saved_l.copy()
+    bpy.context.view_layer.update()
+    if best_deg:
+        _add_world_rot(arm, axis, best_deg)
+    return best_deg, best
+
+
+def _foot_xs():
+    fl, _ = _mesh_min_x(lambda n: "Foot_L" in n)
+    fr, _ = _mesh_min_x(lambda n: "Foot_R" in n)
+    return fl, fr
+
+
+def _feet_spread():
+    fl, fr = _foot_xs()
+    if fl is None or fr is None:
+        return 1.0e6
+    return abs(fl - fr)
+
+
+def _square_feet(arm):
+    _search_world(arm, "Z", list(range(-36, 37, 3)), _feet_spread)
+    if _feet_spread() > 0.03:
+        _search_world(arm, "Z", list(range(-8, 9, 1)), _feet_spread)
+
+
+def _lift_feet(arm, floor):
+    import bpy
+    z = _mesh_min_z(lambda n: "Foot" in n)
+    if z is not None and z < floor:
+        arm.location.z += floor - z
+        bpy.context.view_layer.update()
+
+
+def _clearance_past(foot_x, ignore_foot):
+    """How far a non-foot vertex crosses a plane at foot_x, toward -X."""
+    if foot_x is None:
+        return 1.0e6
+    past = 0.0
+    for w in _iter_world_verts(lambda n, ignore_foot=ignore_foot: ignore_foot not in n):
+        d = foot_x - w.x
+        if d > past:
+            past = d
+    return past
+
+
+def _clearance_past_foot(contact_bone):
+    foot_x, _ = _mesh_min_x(lambda n, contact_bone=contact_bone: contact_bone in n)
+    return _clearance_past(foot_x, contact_bone)
+
+
+def _raise_knees(arm):
+    """Bend each leg until the knee sits between the hip and the chest.
+
+    Which local axis lifts the knee depends on the wall yaw, so each step
+    keeps the candidate that moves the knee toward the middle of that band
+    and leaves the foot below the knee.
+    """
+    cands = (
+        (-8, 0, 0, 12), (8, 0, 0, 12), (0, 8, 0, 12), (0, -8, 0, 12),
+        (0, 0, 8, 12), (0, 0, -8, 12), (-8, 0, 0, 20), (8, 0, 0, 20),
+        (-8, 8, 0, 16), (8, -8, 0, 16), (0, 0, 0, 12),
+    )
+    for side in ("L", "R"):
+        name_u = f"UpperLeg_{side}"
+        name_l = f"LowerLeg_{side}"
+        for _ in range(16):
+            hip = _bone_world(arm, "Hips")
+            chest = _bone_world(arm, "Chest")
+            knee = _bone_world(arm, f"LowerLeg_{side}")
+            foot = _bone_world(arm, f"Foot_{side}")
+            if hip is None or chest is None or knee is None:
+                break
+            lo = hip.z + 0.045
+            hi = chest.z - 0.025
+            foot_ok = foot is None or foot.z < knee.z - 0.08
+            if lo < knee.z < hi and foot_ok:
+                break
+            saved_u = _bone_euler(arm, name_u)
+            saved_l = _bone_euler(arm, name_l)
+            # Climb into the band. A knee already above the chest has to come down.
+            too_high = knee.z >= hi
+            best = None
+            for ux, uy, uz, lx in cands:
+                _set_bone_euler(arm, name_u, saved_u)
+                _set_bone_euler(arm, name_l, saved_l)
+                if ux or uy or uz:
+                    _nudge_bone(arm, name_u, dx=ux, dy=uy, dz=uz)
+                if lx:
+                    _nudge_bone(arm, name_l, dx=lx)
+                knee2 = _bone_world(arm, f"LowerLeg_{side}")
+                foot2 = _bone_world(arm, f"Foot_{side}")
+                if knee2 is None:
+                    continue
+                foot_gap = 0.04 if too_high else 0.07
+                if foot2 is not None and foot2.z > knee2.z - foot_gap:
+                    continue
+                if too_high:
+                    if knee2.z >= knee.z - 0.003:
+                        continue
+                    # Closest to the band from above, then inside it.
+                    rank = abs(knee2.z - (lo + hi) * 0.5)
+                    if best is None or rank < best[0]:
+                        best = (rank, ux, uy, uz, lx, knee2.z)
+                else:
+                    if knee2.z >= hi:
+                        continue
+                    if best is None or knee2.z > best[0]:
+                        best = (knee2.z, ux, uy, uz, lx, knee2.z)
+            _set_bone_euler(arm, name_u, saved_u)
+            _set_bone_euler(arm, name_l, saved_l)
+            if best is None:
+                break
+            if not too_high and best[5] < knee.z + 0.004:
+                break
+            _, ux, uy, uz, lx, _kz = best
+            if ux or uy or uz:
+                _nudge_bone(arm, name_u, dx=ux, dy=uy, dz=uz)
+            if lx:
+                _nudge_bone(arm, name_l, dx=lx)
+    _object_mode(arm)
+
+
+
+def _penetration_depth(face, z_top):
+    """How far the chest, head or a forearm crosses the face below the lip."""
+    if face is None:
+        return 0.0
+    limit = z_top if z_top is not None else 99.0
+    depth = 0.0
+    for w in _iter_world_verts(lambda n: "Foot" not in n and "Hand" not in n):
+        if w.z < limit - 0.012 and w.x < face - 0.004:
+            depth = max(depth, face - w.x)
+    return depth
+
+
+
+def _finger_overs(arm, side, face, top):
+    if face is None or top is None:
+        return 0
+    wrist = _bone_world(arm, f"Hand_{side}")
+    if wrist is None:
+        return 0
+    n = 0
+    for v in _hand_verts(side):
+        if (v - wrist).length < 0.055:
+            continue
+        # Over the lip, but only a short hook — not the whole arm past the wall.
+        if face - 0.075 < v.x < face - 0.006 and v.z >= top - 0.006:
+            n += 1
+    return n
+
+
+def _hook_score(arm, side, face, top):
+    overs = _finger_overs(arm, side, face, top)
+    _, dist = _palm_gap(arm, side, face, top)
+    wrist = _bone_world(arm, f"Hand_{side}")
+    score = float(overs)
+    if dist is not None:
+        score -= max(0.0, dist - 0.020) * 40.0
+    if wrist is not None and top is not None and wrist.z > top - 0.008:
+        score -= 8.0
+    return score
+
+
+def _hook_fingers(arm, face, top):
+    """Tip each resting fist over the lip without pulling the palm off it."""
+    axes = (("dx", 0), ("dy", 1), ("dz", 2))
+    for side in ("L", "R"):
+        name = f"Hand_{side}"
+        for _cycle in range(2):
+            for key, _index in axes:
+                saved = _bone_euler(arm, name)
+                best_step = 0.0
+                best_score = _hook_score(arm, side, face, top)
+                for step in (-36, -18, -9, 9, 18, 36):
+                    _set_bone_euler(arm, name, saved)
+                    _nudge_bone(arm, name, **{key: step})
+                    sc = _hook_score(arm, side, face, top)
+                    if sc > best_score + 0.05:
+                        best_score = sc
+                        best_step = step
+                _set_bone_euler(arm, name, saved)
+                if best_step:
+                    _nudge_bone(arm, name, **{key: best_step})
+    _object_mode(arm)
+
+
+def _cap_root(arm):
+    import bpy
+    if abs(arm.location.x) > ROOT_SLIDE_MAX:
+        arm.location.x = max(-ROOT_SLIDE_MAX, min(ROOT_SLIDE_MAX, arm.location.x))
+        bpy.context.view_layer.update()
+
+
+def _lean_until_clear(arm, contact_bone):
+    """Smallest world-Y lean that keeps the head and chest off the foot plane."""
+    import bpy
+    if _clearance_past_foot(contact_bone) <= 0.010:
+        return
+    saved_r = arm.rotation_euler.copy()
+    saved_l = arm.location.copy()
+    order = list(range(3, 34, 3)) + list(range(-3, -34, -3))
+    for deg in order:
+        arm.rotation_euler = saved_r.copy()
+        arm.location = saved_l.copy()
+        bpy.context.view_layer.update()
+        _add_world_rot(arm, "Y", deg)
+        if _clearance_past_foot(contact_bone) <= 0.010:
+            return
+    arm.rotation_euler = saved_r.copy()
+    arm.location = saved_l.copy()
+    bpy.context.view_layer.update()
+    _search_world(arm, "Y", order, lambda: _clearance_past_foot(contact_bone))
+
+
+def _seat_foot(arm, spec, contact_bone, contact_z):
+    """Put the wall on the plant foot. Lean only if the head would cross that plane."""
+    import bpy
+    _object_mode(arm)
+    pivot = _bone_world(arm, contact_bone)
+    if pivot is not None:
+        arm.location.z += contact_z - pivot.z
+        bpy.context.view_layer.update()
+    _lift_feet(arm, 0.10)
+    _lean_until_clear(arm, contact_bone)
+    pivot = _bone_world(arm, contact_bone)
+    if pivot is not None:
+        arm.location.z += contact_z - pivot.z
+        bpy.context.view_layer.update()
+    _cap_root(arm)
+    foot_x, _ = _mesh_min_x(lambda n, contact_bone=contact_bone: contact_bone in n)
+    face = foot_x if foot_x is not None else -0.40
+    foot_p = _bone_world(arm, contact_bone)
+    cy = foot_p.y if foot_p is not None else 0.0
+    _show_wall(face, None, cy, 1.30)
+    _hide_marks()
+    z_mesh = _mesh_min_z(lambda n, contact_bone=contact_bone: contact_bone in n)
+    _show_foot_mark(face, cy, (z_mesh if z_mesh is not None else contact_z), contact_bone[-1])
+    _report(arm, spec, face, None, "foot", contact_bone)
+
+
+
+def _shoulder_reach(arm=None):
+    """Lower is better. Both shoulders have to sit inside an arm's length of the lip."""
+    fl, fr = _foot_xs()
+    if fl is None or fr is None:
+        return 1.0e6
+    face = 0.5 * (fl + fr)
+    crown = _head_crown() or 1.6
+    lip = crown + 0.012
+    depth = _penetration_depth(face, lip)
+    if depth > 0.012:
+        return 3.0 + depth
+    dists = []
+    for side in ("L", "R"):
+        ua = _bone_world(arm, f"UpperArm_{side}") if arm is not None else None
+        if ua is None:
+            return 1.0e6
+        dists.append(math.hypot(ua.x - face, ua.z - lip))
+    chest_x, _ = _mesh_min_x(lambda n: "Chest" in n)
+    pen = 0.0
+    if chest_x is not None and chest_x - face < 0.06:
+        pen += 0.20
+    return max(dists) + 0.25 * abs(dists[0] - dists[1]) + pen
+
+
+def _square_shoulders(arm):
+    """Twist the spine so the farther shoulder can still reach the lip."""
+    saved = _bone_euler(arm, "Spine")
+    best = (1.0e6, 0, 0)
+    for dy in range(-40, 41, 8):
+        for dz in range(-32, 33, 8):
+            _set_bone_euler(arm, "Spine", saved)
+            if dy or dz:
+                _nudge_bone(arm, "Spine", dy=dy, dz=dz)
+            sc = _shoulder_reach(arm)
+            chest = _bone_world(arm, "Chest")
+            kl = _bone_world(arm, "LowerLeg_L")
+            kr = _bone_world(arm, "LowerLeg_R")
+            if chest is not None and kl is not None and kr is not None:
+                knee_top = kl.z if kl.z > kr.z else kr.z
+                if chest.z < knee_top + 0.05:
+                    sc += 0.12 + (knee_top + 0.05 - chest.z)
+            if sc < best[0] - 0.004:
+                best = (sc, dy, dz)
+    _set_bone_euler(arm, "Spine", saved)
+    if best[1] or best[2]:
+        _nudge_bone(arm, "Spine", dy=best[1], dz=best[2])
+    _object_mode(arm)
+    print(f"  spine dy={best[1]} dz={best[2]} reach_score={best[0]:.3f}")
+
+
+def _reach_xz(arm):
+    """Greedy arm steps that cut palm-to-lip distance without entering the wall."""
+    steps = (
+        (-8, 0, 0, 0), (8, 0, 0, 0), (0, -8, 0, 0), (0, 8, 0, 0),
+        (0, 0, -8, 0), (0, 0, 8, 0), (-8, -8, 0, 0), (-8, 8, 0, 0),
+        (-8, 0, 0, 10), (-8, 0, 0, -10), (0, -8, 0, 10), (0, 8, 0, 10),
+    )
+    for _ in range(16):
+        fl, fr = _foot_xs()
+        if fl is None or fr is None:
+            break
+        face = 0.5 * (fl + fr)
+        crown = _head_crown()
+        if crown is None:
+            break
+        lip = crown + 0.012
+        moved = False
+        for side in ("L", "R"):
+            _pt, dist = _palm_gap(arm, side, face, lip)
+            if dist is not None and dist <= 0.018:
+                continue
+            name = f"UpperArm_{side}"
+            elbow = f"LowerArm_{side}"
+            saved = _bone_euler(arm, name)
+            saved_e = _bone_euler(arm, elbow)
+            base = 1.0e6 if dist is None else dist
+            best = None
+            for dx, dy, dz, ex in steps:
+                _set_bone_euler(arm, name, saved)
+                _set_bone_euler(arm, elbow, saved_e)
+                if dx or dy or dz:
+                    _nudge_bone(arm, name, dx=dx, dy=dy, dz=dz)
+                if ex:
+                    _nudge_bone(arm, elbow, dx=ex)
+                _pt2, dist2 = _palm_gap(arm, side, face, lip)
+                if dist2 is None:
+                    continue
+                depth = _penetration_depth(face, lip)
+                score = dist2 + (4.0 + depth if depth > 0.012 else 0.0)
+                if best is None or score < best[0]:
+                    best = (score, dx, dy, dz, ex)
+            _set_bone_euler(arm, name, saved)
+            _set_bone_euler(arm, elbow, saved_e)
+            if best is not None and best[0] < base - 0.003:
+                _dx, _dy, _dz, _ex = best[1:]
+                if _dx or _dy or _dz:
+                    _nudge_bone(arm, name, dx=_dx, dy=_dy, dz=_dz)
+                if _ex:
+                    _nudge_bone(arm, elbow, dx=_ex)
+                moved = True
+        if not moved:
+            break
+    _object_mode(arm)
+
+
+def _grid_reach(arm, side):
+    """Coarse arm search for a hand the greedy steps left short of the lip."""
+    fl, fr = _foot_xs()
+    if fl is None or fr is None:
+        return
+    face = 0.5 * (fl + fr)
+    crown = _head_crown()
+    if crown is None:
+        return
+    lip = crown + 0.012
+    _pt, dist = _palm_gap(arm, side, face, lip)
+    ua = _bone_world(arm, f"UpperArm_{side}")
+    if ua is not None:
+        reach = math.hypot(ua.x - face, ua.z - lip)
+        print(f"  grid {side} shoulder_to_lip_cm={reach * 100.0:.1f} palm_cm={-1 if dist is None else dist * 100.0:.1f}")
+    if dist is not None and dist <= 0.020:
+        return
+    name = f"UpperArm_{side}"
+    elbow = f"LowerArm_{side}"
+    saved = _bone_euler(arm, name)
+    saved_e = _bone_euler(arm, elbow)
+    best = None
+    for ex in (0, -30, -55):
+        for ux in range(-80, 81, 20):
+            for uz in (-40, 0, 40):
+                _set_bone_euler(arm, name, saved)
+                _set_bone_euler(arm, elbow, saved_e)
+                if ux or uz:
+                    _nudge_bone(arm, name, dx=ux, dz=uz)
+                if ex:
+                    _nudge_bone(arm, elbow, dx=ex)
+                pt, dist2 = _palm_gap(arm, side, face, lip)
+                if dist2 is None:
+                    continue
+                depth = 0.0
+                if dist2 < 0.06:
+                    depth = _penetration_depth(face, lip)
+                    if depth > 0.015:
+                        continue
+                if best is None or dist2 < best[0]:
+                    best = (dist2, ux, uz, ex, depth)
+    _set_bone_euler(arm, name, saved)
+    _set_bone_euler(arm, elbow, saved_e)
+    if best is None:
+        return
+    _ux, _uz, _ex, _depth = best[1:]
+    if _ux or _uz:
+        _nudge_bone(arm, name, dx=_ux, dz=_uz)
+    if _ex:
+        _nudge_bone(arm, elbow, dx=_ex)
+    if _penetration_depth(face, lip) > 0.015:
+        _set_bone_euler(arm, name, saved)
+        _set_bone_euler(arm, elbow, saved_e)
+    _object_mode(arm)
+    print(f"  grid {side} palm_cm={best[0] * 100.0:.1f}")
+
+
+def _finish_cling(arm):
+    """Last centimetre: the short palm, then a knee that sits above the chest."""
+    saved_spine = _bone_euler(arm, "Spine")
+    best_spine = None
+    for dy in range(-16, 17, 4):
+        for dz in range(-16, 17, 4):
+            _set_bone_euler(arm, "Spine", saved_spine)
+            if dy or dz:
+                _nudge_bone(arm, "Spine", dy=dy, dz=dz)
+            fl, fr = _foot_xs()
+            if fl is None or fr is None:
+                continue
+            face = 0.5 * (fl + fr)
+            crown = _head_crown()
+            if crown is None:
+                continue
+            lip = crown + 0.012
+            _pl, dl = _palm_gap(arm, "L", face, lip)
+            _pr, dr = _palm_gap(arm, "R", face, lip)
+            if dl is None or dr is None:
+                continue
+            chest = _bone_world(arm, "Chest")
+            kl = _bone_world(arm, "LowerLeg_L")
+            kr = _bone_world(arm, "LowerLeg_R")
+            if chest is None or kl is None or kr is None:
+                continue
+            if chest.z < max(kl.z, kr.z) + 0.035:
+                continue
+            if _penetration_depth(face, lip) > 0.006 or abs(fl - fr) > 0.04:
+                continue
+            score = max(dl, dr)
+            if best_spine is None or score < best_spine[0]:
+                best_spine = (score, dy, dz)
+    _set_bone_euler(arm, "Spine", saved_spine)
+    if best_spine is not None and (best_spine[1] or best_spine[2]):
+        _nudge_bone(arm, "Spine", dy=best_spine[1], dz=best_spine[2])
+        saved_spine = _bone_euler(arm, "Spine")
+        fine = (best_spine[0], 0, 0)
+        for dy in range(-6, 7, 2):
+            for dz in range(-6, 7, 2):
+                _set_bone_euler(arm, "Spine", saved_spine)
+                if dy or dz:
+                    _nudge_bone(arm, "Spine", dy=dy, dz=dz)
+                fl, fr = _foot_xs()
+                if fl is None or fr is None:
+                    continue
+                face = 0.5 * (fl + fr)
+                crown = _head_crown()
+                if crown is None:
+                    continue
+                lip = crown + 0.012
+                _pl, dl = _palm_gap(arm, "L", face, lip)
+                _pr, dr = _palm_gap(arm, "R", face, lip)
+                if dl is None or dr is None:
+                    continue
+                chest = _bone_world(arm, "Chest")
+                kl = _bone_world(arm, "LowerLeg_L")
+                kr = _bone_world(arm, "LowerLeg_R")
+                if chest is None or kl is None or kr is None:
+                    continue
+                if chest.z < max(kl.z, kr.z) + 0.035:
+                    continue
+                if _penetration_depth(face, lip) > 0.006 or abs(fl - fr) > 0.04:
+                    continue
+                score = max(dl, dr)
+                if score < fine[0]:
+                    fine = (score, dy, dz)
+        _set_bone_euler(arm, "Spine", saved_spine)
+        if fine[1] or fine[2]:
+            _nudge_bone(arm, "Spine", dy=fine[1], dz=fine[2])
+    fl, fr = _foot_xs()
+    if fl is None or fr is None:
+        return
+    face = 0.5 * (fl + fr)
+    crown = _head_crown()
+    if crown is None:
+        return
+    lip = crown + 0.012
+    for _ in range(8):
+        _pt, dist = _palm_gap(arm, "R", face, lip)
+        if dist is None or dist <= 0.019:
+            break
+        bones = ("Shoulder_R", "UpperArm_R", "LowerArm_R")
+        saved = [_bone_euler(arm, n) for n in bones]
+        best = None
+        trials = []
+        for bi, bone in enumerate(bones):
+            for key in ("dx", "dy", "dz"):
+                for deg in (-8.0, -4.0, 4.0, 8.0):
+                    trials.append((bi, key, deg))
+        for bi, key, deg in trials:
+            for n, eul in zip(bones, saved):
+                _set_bone_euler(arm, n, eul)
+            _nudge_bone(arm, bones[bi], **{key: deg})
+            _p2, dist2 = _palm_gap(arm, "R", face, lip)
+            _pl, dist_l = _palm_gap(arm, "L", face, lip)
+            depth = _penetration_depth(face, lip)
+            if dist2 is None or depth > 0.012 or (dist_l is not None and dist_l > 0.025):
+                continue
+            if best is None or dist2 < best[0]:
+                best = (dist2, bi, key, deg)
+        for n, eul in zip(bones, saved):
+            _set_bone_euler(arm, n, eul)
+        if best is None or best[0] > dist - 0.001:
+            break
+        _nudge_bone(arm, bones[best[1]], **{best[2]: best[3]})
+    for side in ("L", "R"):
+        for _ in range(6):
+            fl, fr = _foot_xs()
+            if fl is None or fr is None:
+                break
+            face = 0.5 * (fl + fr)
+            crown = _head_crown()
+            if crown is None:
+                break
+            lip = crown + 0.012
+            _pt, dist = _palm_gap(arm, side, face, lip)
+            if dist is None or dist <= 0.018:
+                continue
+            name = f"Hand_{side}"
+            saved_h = _bone_euler(arm, name)
+            best_h = None
+            for key in ("dx", "dy", "dz"):
+                for deg in (-18.0, -9.0, 9.0, 18.0):
+                    _set_bone_euler(arm, name, saved_h)
+                    _nudge_bone(arm, name, **{key: deg})
+                    _p2, dist2 = _palm_gap(arm, side, face, lip)
+                    wrist = _bone_world(arm, f"Hand_{side}")
+                    if dist2 is None or wrist is None or wrist.z > lip - 0.008:
+                        continue
+                    if _penetration_depth(face, lip) > 0.006:
+                        continue
+                    if best_h is None or dist2 < best_h[0]:
+                        best_h = (dist2, key, deg)
+            _set_bone_euler(arm, name, saved_h)
+            if best_h is None or best_h[0] > dist - 0.001:
+                break
+            _nudge_bone(arm, name, **{best_h[1]: best_h[2]})
+    # Drop the crown onto the palms so the lip and the hands share a height.
+    saved_head = _bone_euler(arm, "Head")
+    best_head = None
+    for dx in (-14.0, -8.0, -4.0, 4.0, 8.0, 14.0):
+        _set_bone_euler(arm, "Head", saved_head)
+        if dx:
+            _nudge_bone(arm, "Head", dx=dx)
+        fl, fr = _foot_xs()
+        if fl is None or fr is None:
+            continue
+        face = 0.5 * (fl + fr)
+        crown = _head_crown()
+        if crown is None:
+            continue
+        _pl, dl = _palm_gap(arm, "L", face, crown)
+        _pr, dr = _palm_gap(arm, "R", face, crown)
+        if dl is None or dr is None or _penetration_depth(face, crown) > 0.006:
+            continue
+        score = max(dl, dr)
+        if best_head is None or score < best_head[0]:
+            best_head = (score, dx)
+    _set_bone_euler(arm, "Head", saved_head)
+    if best_head is not None and best_head[1]:
+        _nudge_bone(arm, "Head", dx=best_head[1])
+    # Drop a knee that ended above the chest, and only keep the step if the
+    # feet and palms stay on the wall.
+    for side in ("L", "R"):
+        for _ in range(6):
+            hip = _bone_world(arm, "Hips")
+            chest = _bone_world(arm, "Chest")
+            knee = _bone_world(arm, f"LowerLeg_{side}")
+            if hip is None or chest is None or knee is None:
+                break
+            if hip.z + 0.03 < knee.z < chest.z - 0.015:
+                break
+            if knee.z <= hip.z + 0.03:
+                break
+            name_u = f"UpperLeg_{side}"
+            name_l = f"LowerLeg_{side}"
+            saved_u = _bone_euler(arm, name_u)
+            saved_l = _bone_euler(arm, name_l)
+            best = None
+            for ux, lx in ((6, 10), (-6, 10), (0, 8), (8, 14), (-8, 14), (0, 0)):
+                _set_bone_euler(arm, name_u, saved_u)
+                _set_bone_euler(arm, name_l, saved_l)
+                if ux:
+                    _nudge_bone(arm, name_u, dx=ux)
+                if lx:
+                    _nudge_bone(arm, name_l, dx=lx)
+                knee2 = _bone_world(arm, f"LowerLeg_{side}")
+                foot2 = _bone_world(arm, f"Foot_{side}")
+                if knee2 is None or knee2.z >= knee.z - 0.004:
+                    continue
+                if foot2 is not None and foot2.z > knee2.z - 0.05:
+                    continue
+                fl2, fr2 = _foot_xs()
+                if fl2 is None or fr2 is None or abs(fl2 - fr2) > 0.035:
+                    continue
+                depth = _penetration_depth(face, lip)
+                if depth > 0.012:
+                    continue
+                if best is None or knee2.z < best[0]:
+                    best = (knee2.z, ux, lx)
+            _set_bone_euler(arm, name_u, saved_u)
+            _set_bone_euler(arm, name_l, saved_l)
+            if best is None:
+                break
+            if best[1]:
+                _nudge_bone(arm, name_u, dx=best[1])
+            if best[2]:
+                _nudge_bone(arm, name_l, dx=best[2])
+    _object_mode(arm)
+
+
+def _seat_cling(arm, spec, stage):
+    """Both feet on the face. On the hero frame, both palms on a lip at the crown."""
+    import bpy
+    _object_mode(arm)
+    _lift_feet(arm, 0.16)
+    _square_feet(arm)
+    if stage:
+        # Square the chest to the wall so both shoulders can reach the lip.
+        _raise_knees(arm)
+        _search_world(arm, "Y", list(range(-15, 75, 3)), lambda: _shoulder_reach(arm))
+        _square_shoulders(arm)
+        _square_feet(arm)
+        _reach_xz(arm)
+        _grid_reach(arm, "L")
+        _grid_reach(arm, "R")
+        _finish_cling(arm)
     else:
-        # hand_z is the underside of the lower hand, so the palm sits on the lip.
-        top = hand_z
-        height = max(1.15, top - 0.02)
-        center_z = top - height * 0.5
-        scale_z = height * 0.5
+        def _near_clear():
+            fl, fr = _foot_xs()
+            xs = [x for x in (fl, fr) if x is not None]
+            if not xs:
+                return 1.0e6
+            return _clearance_past(min(xs), "Foot")
+        _search_world(arm, "Y", list(range(-18, 19, 3)), _near_clear)
+    _cap_root(arm)
+    fl, fr = _foot_xs()
+    if fl is not None and fr is not None:
+        face = 0.5 * (fl + fr)
+    else:
+        face = fl if fl is not None else (fr if fr is not None else -0.40)
+    crown = _head_crown()
+    top = None
+    if stage and crown is not None:
+        zs = [z for z in (_palm_top_z(arm, "L"), _palm_top_z(arm, "R")) if z is not None]
+        if zs and min(zs) >= crown - 0.005:
+            top = max(crown, min(zs))
+        else:
+            top = crown
+        _hook_fingers(arm, face, top)
+        zs = [z for z in (_palm_top_z(arm, "L"), _palm_top_z(arm, "R")) if z is not None]
+        crown = _head_crown()
+        if crown is not None and zs and min(zs) >= crown - 0.005:
+            top = max(crown, min(zs))
+        elif crown is not None:
+            top = crown
+    flb = _bone_world(arm, "Foot_L")
+    frb = _bone_world(arm, "Foot_R")
+    ys = [p.y for p in (flb, frb) if p is not None]
+    cy = sum(ys) / len(ys) if ys else 0.0
+    span = (max(ys) - min(ys)) if len(ys) == 2 else 0.40
+    length = max(1.20, min(1.60, span + 0.45))
+    _show_wall(face, top, cy, length)
+    _hide_marks()
+    for side, bone in (("L", flb), ("R", frb)):
+        z_mesh = _mesh_min_z(lambda n, side=side: f"Foot_{side}" in n)
+        y = bone.y if bone is not None else cy
+        z = z_mesh if z_mesh is not None else 0.40
+        _show_foot_mark(face, y, z, side)
+    if top is not None:
+        _show_lip_mark(face, top, cy, max(0.34, span + 0.12))
+    _report(arm, spec, face, top, "cling", "Foot_L")
+
+
+def _show_wall(face_x, top_z, center_y, length):
+    import bpy
+    # Default cube is 2 m. scale 0.045 on X is a 9 cm wall. The +X face is the contact.
+    half = 0.045
+    if top_z is None:
+        height = 2.55
+        center_z = 0.04 + height * 0.5
+    else:
+        height = max(1.10, top_z - 0.02)
+        center_z = top_z - height * 0.5
+    scale_y = max(0.55, length * 0.5)
     if "ActionWall" in bpy.data.objects:
         wall = bpy.data.objects["ActionWall"]
     else:
-        bpy.ops.mesh.primitive_cube_add(location=(face_x - half, 0.0, center_z))
+        bpy.ops.mesh.primitive_cube_add(location=(face_x - half, center_y, center_z))
         wall = bpy.context.active_object
         wall.name = "ActionWall"
         mat = bpy.data.materials.new("WallMat")
         mat.use_nodes = True
         mat.blend_method = "OPAQUE"
-        mat.diffuse_color = (0.55, 0.53, 0.50, 1)
+        mat.diffuse_color = (0.42, 0.40, 0.38, 1)
         bsdf = mat.node_tree.nodes.get("Principled BSDF")
         if bsdf:
-            bsdf.inputs["Base Color"].default_value = (0.55, 0.53, 0.50, 1)
+            bsdf.inputs["Base Color"].default_value = (0.42, 0.40, 0.38, 1)
             bsdf.inputs["Roughness"].default_value = 0.9
             if "Alpha" in bsdf.inputs:
                 bsdf.inputs["Alpha"].default_value = 1.0
         wall.data.materials.append(mat)
-    wall.location = (face_x - half, 0.05, center_z)
-    wall.scale = (half, 1.7, scale_z)
+    wall.location = (face_x - half, center_y, center_z)
+    wall.scale = (half, scale_y, height * 0.5)
     wall.hide_render = False
     wall.hide_set(False)
+
+
+def _mark_mat():
+    import bpy
+    mat = bpy.data.materials.get("ContactMarkMat")
+    if mat is not None:
+        return mat
+    mat = bpy.data.materials.new("ContactMarkMat")
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    nodes.clear()
+    out = nodes.new("ShaderNodeOutputMaterial")
+    emit = nodes.new("ShaderNodeEmission")
+    emit.inputs["Color"].default_value = (0.15, 1.0, 1.0, 1.0)
+    emit.inputs["Strength"].default_value = 12.0
+    links.new(emit.outputs["Emission"], out.inputs["Surface"])
+    mat.diffuse_color = (0.15, 1.0, 1.0, 1)
+    return mat
+
+
+def _ensure_mark(name):
+    import bpy
+    ob = bpy.data.objects.get(name)
+    if ob is not None:
+        return ob
+    bpy.ops.mesh.primitive_cube_add()
+    ob = bpy.context.active_object
+    ob.name = name
+    ob.data.materials.append(_mark_mat())
+    return ob
+
+
+def _show_foot_mark(face, y, z, side):
+    ob = _ensure_mark(f"ContactMark_foot_{side}")
+    # Beside the shoe, not inside it: a thin bar on the face at the contact.
+    ob.scale = (0.012, 0.012, 0.13)
+    ob.location = (face + 0.016, y + 0.07, z + 0.12)
+    ob.hide_render = False
+    ob.hide_set(False)
+
+
+def _show_lip_mark(face, top, center_y, span):
+    ob = _ensure_mark("ContactMark_lip")
+    # A thin bar along the top edge, long enough to read in both cameras.
+    ob.scale = (0.008, max(0.16, span * 0.5), 0.010)
+    ob.location = (face + 0.006, center_y, top + 0.004)
+    ob.hide_render = False
+    ob.hide_set(False)
+
+
+def _hide_marks():
+    import bpy
+    for ob in bpy.data.objects:
+        if ob.name.startswith("ContactMark"):
+            ob.hide_render = True
+            ob.hide_set(True)
+
+
+def _fmt(v):
+    if v is None:
+        return "nan"
+    return f"{v:.2f}"
+
+
+def _report(arm, spec, face, top, kind, contact_bone):
+    root_cm = arm.location.x * 100.0
+    chest_x, _ = _mesh_min_x(lambda n: "Chest" in n)
+    gap = (chest_x - face) * 100.0 if chest_x is not None and face is not None else None
+    fl, fr = _foot_xs()
+
+    def rel(x):
+        if x is None or face is None:
+            return None
+        return (x - face) * 100.0
+
+    palm_l = palm_r = None
+    if face is not None and top is not None:
+        _, dl = _palm_gap(arm, "L", face, top)
+        _, dr = _palm_gap(arm, "R", face, top)
+        palm_l = None if dl is None else dl * 100.0
+        palm_r = None if dr is None else dr * 100.0
+    crown = _head_crown()
+    crown_cm = (crown - top) * 100.0 if crown is not None and top is not None else None
+
+    def wrist_below(side):
+        w = _bone_world(arm, f"Hand_{side}")
+        if w is None or top is None:
+            return None
+        return (top - w.z) * 100.0
+
+    hip = _bone_world(arm, "Hips")
+    chest = _bone_world(arm, "Chest")
+    kl = _bone_world(arm, "LowerLeg_L")
+    kr = _bone_world(arm, "LowerLeg_R")
+    overs_l = _finger_overs(arm, "L", face, top)
+    overs_r = _finger_overs(arm, "R", face, top)
+    fore_x, _ = _mesh_min_x(lambda n: "LowerArm" in n)
+    fore_cm = (fore_x - face) * 100.0 if fore_x is not None and face is not None else None
+    line = (
+        f"METRIC id={spec['id']} kind={kind} root_cm={root_cm:.2f} "
+        f"chest_gap_cm={_fmt(gap)} footL_cm={_fmt(rel(fl))} footR_cm={_fmt(rel(fr))} "
+        f"palmL_cm={_fmt(palm_l)} palmR_cm={_fmt(palm_r)} "
+        f"crown_minus_top_cm={_fmt(crown_cm)} "
+        f"wrist_below_L_cm={_fmt(wrist_below('L'))} wrist_below_R_cm={_fmt(wrist_below('R'))} "
+        f"forearm_cm={_fmt(fore_cm)} "
+        f"kneeL_z={kl.z if kl else float('nan'):.3f} kneeR_z={kr.z if kr else float('nan'):.3f} "
+        f"hip_z={hip.z if hip else float('nan'):.3f} chest_z={chest.z if chest else float('nan'):.3f} "
+        f"finger_over_L={overs_l} finger_over_R={overs_r} "
+        f"face={face} top={top}"
+    )
+    print(line)
+
+
+def _side_cam(arm, spec):
+    """Side elevation. Camera and target share x and z, so the axis is +Y."""
+    if spec["verb"] == "softland":
+        return ((4.40, 0.15, 0.95), (0.0, 0.0, 0.95), 2.35)
+    hips = _bone_world(arm, "Hips")
+    hx = hips.x if hips is not None else 0.0
+    if spec["verb"] == "cling":
+        hz, scale = 0.82, 2.05
+    elif spec["verb"] == "wallrun":
+        hz, scale = 1.20, 2.55
+    else:
+        hz, scale = 1.05, 2.45
+    return ((hx, -4.20, hz), (hx, 0.05, hz), scale)
+
+
+def _side_contact_line(spec):
+    """A bar along the wall normal so the lip reads as a level line in elevation.
+
+    The lip mark itself runs along the wall, which is the camera axis, so it
+    collapses to a speck. This tick crosses that axis.
+    """
+    import bpy
+    if spec["verb"] == "softland":
+        return
+    wall = bpy.data.objects.get("ActionWall")
+    if wall is not None and not wall.hide_render:
+        # Long enough that the top edge is the lip across the whole figure.
+        wall.scale.y = max(wall.scale.y, 1.35)
+    lip = bpy.data.objects.get("ContactMark_lip")
+    if lip is None or lip.hide_render:
+        return
+    tick = _ensure_mark("ContactMark_lip_side")
+    tick.scale = (0.09, 0.008, 0.007)
+    tick.location = (lip.location.x - 0.04, lip.location.y, lip.location.z)
+    tick.hide_render = False
+    tick.hide_set(False)
+
 
 
 def _hide_wall():
@@ -754,6 +1538,7 @@ def _hide_wall():
     if wall is not None:
         wall.hide_render = True
         wall.hide_set(True)
+    _hide_marks()
 
 
 def _reset(arm):
