@@ -323,8 +323,15 @@ namespace Tag.Art
             if (along > 1f) along = 1f;
             float outerPitch = Mathf.Lerp(OuterFwdPitch, OuterBackPitch, along);
             float outerElbow = Mathf.Lerp(OuterFwdElbow, OuterBackElbow, along);
-            float thighL = wallLeft ? legs.ThighL * 0.72f : legs.ThighL;
-            float thighR = wallLeft ? legs.ThighR : legs.ThighR * 0.72f;
+            // The inner swing stays tucked. The planted foot keeps the full step,
+            // plus a short toe-off, so a 9.5 wall run does not skate.
+            const float pi = 3.14159265f;
+            float cL = Mathf.Cos(phase);
+            float cR = Mathf.Cos(phase + pi);
+            float tuckL = wallLeft && cL > 0f ? 0.72f : 1f;
+            float tuckR = !wallLeft && cR > 0f ? 0.72f : 1f;
+            float thighL = legs.ThighL * tuckL - FootSlide.WallTrail(legs.ThighL * tuckL);
+            float thighR = legs.ThighR * tuckR - FootSlide.WallTrail(legs.ThighR * tuckR);
             float kneeL = legs.KneeL;
             float kneeR = legs.KneeR;
             float footL = wallLeft ? 6f : GaitBlend.SoleLevelDeg(thighL, kneeL);

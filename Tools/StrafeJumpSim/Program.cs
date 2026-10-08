@@ -730,6 +730,24 @@ static class Program
             Console.Error.WriteLine("stick quality is not held");
             return 1;
         }
+        Console.WriteLine(Tag.Art.FootSlide.ProofLine());
+        Console.WriteLine(Tag.Art.RespawnBlink.ProofLine());
+        if (!Tag.Art.FootSlide.Holds())
+        {
+            Console.Error.WriteLine("foot slide is not held");
+            return 1;
+        }
+        if (!Tag.Art.RespawnBlink.Holds())
+        {
+            Console.Error.WriteLine("respawn blink is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.Art.ClimbContact.ProofLine());
+        if (!Tag.Art.ClimbContact.Holds())
+        {
+            Console.Error.WriteLine("climb contact is not held");
+            return 1;
+        }
         if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
                 "SmoothMotion.Smooth",
                 "SmoothMotion.SecondsForSlew",
@@ -845,9 +863,57 @@ static class Program
         if (!AssetHas("Assets/Scripts/Art/WallPose.cs",
                 "PlantShape",
                 "HoldWeight",
-                "Sample Entry"))
+                "Sample Entry",
+                "FootSlide.WallTrail"))
         {
             Console.Error.WriteLine("climb cycle is not on the wall pose");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Core/PlayerMotor.cs",
+                "VisualBlinkAge",
+                "RespawnBlink.Seconds",
+                "reason == \"kill-plane\"",
+                "reason == \"practice-restart\"",
+                "Vector3 settleTarget = stand"))
+        {
+            Console.Error.WriteLine("respawn blink or vault stand is not on the motor");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
+                "YawPivot",
+                "DummyVisual",
+                "Mathf.DeltaAngle",
+                "RespawnBlink.Hidden"))
+        {
+            Console.Error.WriteLine("visual yaw is not on the mannequin");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs",
+                "RespawnBlink.Open"))
+        {
+            Console.Error.WriteLine("respawn blink is not on the camera");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
+                "ClimbContact.Drag",
+                "ClimbContact.Tilt",
+                "ClimbContact.Grab",
+                "ApplyChestGap",
+                "TryLip"))
+        {
+            Console.Error.WriteLine("parkour contact is not on the mannequin");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Core/PlayerMotor.cs",
+                "LedgeStand"))
+        {
+            Console.Error.WriteLine("the lip point is not on the motor");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/MotionGallery.cs",
+                "slip ? -1f"))
+        {
+            Console.Error.WriteLine("the gallery climb does not play the slip");
             return 1;
         }
 
@@ -861,6 +927,10 @@ static class Program
         Tag.Art.SmoothMotion.WritePass4Stills(Path.Combine(still4, "idle-wall-flinch.png"));
         string still5 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass5");
         Tag.Art.SmoothMotion.WritePass5Stills(Path.Combine(still5, "layer-hang.png"));
+        string still7 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass7");
+        Tag.Art.SmoothMotion.WritePass7Stills(Path.Combine(still7, "plant-blink-yaw.png"));
+        string still8 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass8");
+        Tag.Art.SmoothMotion.WritePass8Stills(Path.Combine(still8, "climb-contact.png"));
         if (!File.Exists(Path.Combine(RepoRoot(), "Assets", "Scenes", "MotionGallery.unity")))
         {
             Console.Error.WriteLine("motion gallery scene is missing");
