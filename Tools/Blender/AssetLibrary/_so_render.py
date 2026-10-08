@@ -148,7 +148,7 @@ PASSES = {
     ),
     20: (
         # Figure stands on the street side of the counter, clear of the booth.
-        ("newsstand", "Newsstand_Corner", 180.0, (-1.28, 0.0, -1.22), 0.0),
+        ("newsstand", "Newsstand_Corner", 180.0, (-1.62, 0.0, -1.22), 0.0),
     ),
 }
 
@@ -180,7 +180,7 @@ _FRAME15 = {
 
 # Pass 20 frames the rebuilt kiosk. The 3/4 sees the lit front and the lit side rack.
 _FRAME20 = {
-    "newsstand": (0.72, 12.0, 208.0, 0.44, 0.54, 0.36, 6.60),
+    "newsstand": (0.70, 13.0, 232.0, 0.42, 0.50, 0.34, 7.20),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -498,6 +498,10 @@ def main():
                 slab=4.2,
             )
         print("SHOT", key + "_scale")
+        scale_az = azimuth if tuned15 else (36.0 if PASS >= 11 else 32.0)
+        # Pass 20: a near-front camera so the figure stands beside the hatch, not across the side.
+        if PASS == 20 and key == "newsstand":
+            scale_az = 188.0
         _scale(
             found[name],
             os.path.join(STILL_DIR, key + "_scale.png"),
@@ -507,7 +511,7 @@ def main():
             kind=kind,
             fill=scale_fill,
             elevation=elevation if PASS >= 11 else 12.0,
-            azimuth=azimuth if tuned15 else (36.0 if PASS >= 11 else 32.0),
+            azimuth=scale_az,
             aim_frac=scale_aim,
             slab=slab,
         )
