@@ -224,6 +224,19 @@ Hands and feet meet the wall, the lip, and the rail. Climb speed, slip speed, an
 - A wall run leans into the wall more as you go faster, up to the same 20° at full speed. The lean eases in and out. The inner foot stays on the wall. Try it: join a wall run slowly, then at speed, then jump off.
 - Sliding down a wall drags the hands and adds a small wobble, like friction. The slip is still 3.7. Try it: climb, then pull back.
 
+## Motion, ninth pass
+
+The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
+
+- A wall jump used to hold the shove, then throw the arms into the tuck in one step of about 36°. The arms now arc across the same shove and the same ease, and the biggest step is about 17°. Try it: wall-run, then jump off, and watch the arms through the push.
+- On a rope the chest used to kink about 70° off the line. It now lies along the rope, and letting go eases that line off. The pull is still one click, and the drop is still a double-click. Try it: latch a grapple, hang, then double-click to drop.
+- Grabbing a zip brings the hands up to the cable. They used to stop short by about 58°. Dropping off used to snap the arms in one frame (about 128°). The drop now eases, and the biggest step is about 53°. Ride speed is still 14. Try it: catch a zip, ride it, then let go.
+- A launch pad used to throw the arms into the full swing on the first frame (about 155°). They now open over a sixth of a second, and the knees soften on the way up. The pad wait is still 0.3 s. Try it: run over a launch pad and watch the takeoff.
+- Landing while you sprint used to fold the thighs about 104° off the stride. The legs now keep the stride, and the give stays in the knees. A hop that is faster than one frame still skips the thud. Try it: sprint off a ledge and land still running.
+- The air-dash flash used to pop on at full strength. It now opens over a short beat, and the ribbons follow it. The dash is still a tenth of a second. Try it: air dash and watch the flash on the first frames.
+- A hard stick reversal used to flip the stride in one frame, about 83° at a sprint. The legs now cross over about a seventh of a second. You still turn with the camera immediately. Try it: sprint, then snap the stick backward.
+- A punch or a tag while you run leans the chest so the fist comes forward about 13 cm. Standing still keeps the old strike. Reach and the lunge are unchanged. Try it: sprint and punch, then punch while you stand.
+
 ## Animation exits and the landing roll
 
 Each move now has a short recovery you can see as it ends. The body eases back into the run, the idle, or the air pose. Jump, slide, punch, dash, or lunge peels that recovery off in about six hundredths of a second, and the new move shows the same frame. Nothing here changes speed, coyote, cling, or the slide.

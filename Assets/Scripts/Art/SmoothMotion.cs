@@ -962,6 +962,228 @@ namespace Tag.Art
             WritePng(path, pix, w, h);
         }
 
+        /// <summary>
+        /// Pass 9. Wall-jump arc, the rope line, zip grab and drop, the pad swing,
+        /// a reversal, and a moving punch.
+        /// </summary>
+        public static void WritePass9Stills(string path)
+        {
+            const int frames = 8;
+            const int cellW = 120;
+            const int cellH = 156;
+            const int labelW = 168;
+            const int rows = 12;
+            int w = labelW + frames * cellW;
+            int h = rows * cellH;
+            var pix = new byte[w * h * 3];
+            Fill(pix, w, h, 16, 18, 22);
+            PaintLoco(pix, w, h, rows, 0, "JUMP", "BEFORE", TrackWallArc(false), 196, 122, 96, true, 0f);
+            PaintLoco(pix, w, h, rows, 1, "JUMP", "AFTER", TrackWallArc(true), 120, 196, 150, true, 0f);
+            PaintLoco(pix, w, h, rows, 2, "ROPE", "BEFORE", TrackRope(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 3, "ROPE", "AFTER", TrackRope(true), 150, 210, 140, false, 0f);
+            PaintLoco(pix, w, h, rows, 4, "ZIP", "BEFORE", TrackZip(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 5, "ZIP", "AFTER", TrackZip(true), 120, 186, 210, false, 0f);
+            PaintLoco(pix, w, h, rows, 6, "PAD", "BEFORE", TrackPad(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 7, "PAD", "AFTER", TrackPad(true), 210, 170, 110, false, 0f);
+            PaintLoco(pix, w, h, rows, 8, "REV", "BEFORE", TrackReverse(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 9, "REV", "AFTER", TrackReverse(true), 230, 210, 140, false, 0f);
+            PaintLoco(pix, w, h, rows, 10, "REACH", "BEFORE", TrackReach(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 11, "REACH", "AFTER", TrackReach(true), 186, 140, 120, false, 0f);
+            string dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            WritePng(path, pix, w, h);
+        }
+
+        static Fig[] TrackWallArc(bool arced)
+        {
+            var shot = new Fig[8];
+            float from = WallJumpPose.PushPitch;
+            float to = JumpPose.TuckArmPitch;
+            float total = WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds;
+            WallJumpPose.Sample push = WallJumpPose.Push(true);
+            for (int i = 0; i < 8; i++)
+            {
+                float age = total * (i / 7f);
+                float w = arced ? BodyLine.WallArc(age) : WallJumpPose.JumpWeight(age);
+                float end = WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds;
+                WallJumpPose.Sample air = WallJumpPose.At(end, 24.7f, true, 0f);
+                shot[i] = new Fig
+                {
+                    ArmL = Mathf.Lerp(push.ArmPitchL, air.ArmPitchL, w),
+                    ArmR = Mathf.Lerp(push.ArmPitchR, air.ArmPitchR, w),
+                    ElbL = Mathf.Lerp(push.ElbowL, air.ElbowL, w),
+                    ElbR = Mathf.Lerp(push.ElbowR, air.ElbowR, w),
+                    ThL = Mathf.Lerp(push.ThighL, air.ThighL, w),
+                    ThR = Mathf.Lerp(push.ThighR, air.ThighR, w),
+                    KnL = Mathf.Lerp(push.KneeL, air.KneeL, w),
+                    KnR = Mathf.Lerp(push.KneeR, air.KneeR, w),
+                    Spine = Mathf.Lerp(push.Spine, air.Spine, w),
+                    Hip = Mathf.Lerp(push.Hip, air.Hip, w),
+                    Head = Mathf.Lerp(push.Head, air.Head, w),
+                    Lean = Mathf.Lerp(push.LeanZ, air.LeanZ, w),
+                };
+                if (!arced && i == 0)
+                    shot[i].ArmL = from;
+                if (!arced && i == 7)
+                    shot[i].ArmL = to;
+            }
+            return shot;
+        }
+
+        static Fig[] TrackRope(bool lined)
+        {
+            var shot = new Fig[8];
+            GrapplePose.Sample pull = GrapplePose.Pull(0f, 0f, 0f);
+            float elev = 40f;
+            float body = pull.Hip + pull.Spine + HangMotion.RopeSpine(elev);
+            float fix = lined ? BodyLine.LineFix(body, elev) : HangMotion.RopeSpine(elev);
+            for (int i = 0; i < 8; i++)
+            {
+                float w = i / 7f;
+                float add = fix * (lined ? w : (i < 2 ? 0f : 1f));
+                shot[i] = new Fig
+                {
+                    ArmL = pull.ArmPitchL,
+                    ArmR = pull.ArmPitchR,
+                    ElbL = pull.ElbowL,
+                    ElbR = pull.ElbowR,
+                    ThL = pull.ThighL,
+                    ThR = pull.ThighR,
+                    KnL = pull.KneeL,
+                    KnR = pull.KneeR,
+                    Spine = pull.Spine + add * 0.55f + (lined ? 0f : HangMotion.RopeSpine(elev) * (i < 2 ? 0f : 1f)),
+                    Hip = pull.Hip + (lined ? add * 0.45f : 0f),
+                    Head = pull.Head,
+                    Lean = elev * 0.15f,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackZip(bool eased)
+        {
+            var shot = new Fig[8];
+            ZipPose.Sample hang = ZipPose.Hang();
+            ZipPose.Sample let = ZipPose.Release();
+            for (int i = 0; i < 8; i++)
+            {
+                float age = ZipPose.ReleaseSeconds * (i / 7f);
+                float pitch;
+                float thigh;
+                if (!eased)
+                {
+                    pitch = i < 4 ? WallPose.ReachPitch : ZipPose.ReleasePitch;
+                    thigh = i < 4 ? hang.ThighL : let.ThighL;
+                }
+                else
+                {
+                    pitch = i < 4
+                        ? Mathf.Lerp(JumpPose.FallArmPitch, BodyLine.CablePitch, BodyLine.ZipGrab(age))
+                        : BodyLine.ZipArm(age, true, JumpPose.FallArmPitch);
+                    thigh = hang.ThighL;
+                }
+                shot[i] = new Fig
+                {
+                    ArmL = pitch,
+                    ArmR = pitch,
+                    ElbL = eased && i >= 4 ? let.ElbowL : hang.ElbowL,
+                    ElbR = eased && i >= 4 ? let.ElbowR : hang.ElbowR,
+                    ThL = thigh,
+                    ThR = thigh - 4f,
+                    KnL = hang.KneeL,
+                    KnR = hang.KneeR,
+                    Spine = hang.Spine,
+                    Hip = hang.Hip,
+                    Head = hang.Head,
+                    Lean = 0f,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackPad(bool eased)
+        {
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                float age = BodyLine.PadSeconds * (i / 7f);
+                float open = eased ? BodyLine.PadOpen(age) : (i < 1 ? 0f : 1f);
+                LaunchPose.Sample pose = LaunchPose.At(i < 5 ? 24.7f : -12f);
+                shot[i] = new Fig
+                {
+                    ArmL = Mathf.Lerp(0f, pose.ArmPitchL, open),
+                    ArmR = Mathf.Lerp(0f, pose.ArmPitchR, open),
+                    ElbL = pose.ElbowL,
+                    ElbR = pose.ElbowR,
+                    ThL = Mathf.Lerp(12f, pose.ThighL, open),
+                    ThR = Mathf.Lerp(8f, pose.ThighR, open),
+                    KnL = Mathf.Lerp(-8f, pose.KneeL, open),
+                    KnR = Mathf.Lerp(-6f, pose.KneeR, open),
+                    Spine = pose.Spine,
+                    Hip = pose.Hip,
+                    Head = pose.Head,
+                    Lean = 0f,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackReverse(bool eased)
+        {
+            var shot = new Fig[8];
+            GaitBlend.Legs legs = GaitBlend.At(1.2f, 13.8f);
+            LocomotionPolish.Legs fwd = LocomotionPolish.FacingStride(legs.ThighL, legs.ThighR, legs.KneeL, legs.KneeR, 13.8f, 0f);
+            LocomotionPolish.Legs back = LocomotionPolish.FacingStride(legs.ThighL, legs.ThighR, legs.KneeL, legs.KneeR, -13.8f, 0f);
+            for (int i = 0; i < 8; i++)
+            {
+                float w = eased ? BodyLine.ReverseBlend(i / 7f) : (i < 3 ? 0f : 1f);
+                shot[i] = new Fig
+                {
+                    ArmL = -24f,
+                    ArmR = 18f,
+                    ElbL = -12f,
+                    ElbR = -10f,
+                    ThL = Mathf.Lerp(fwd.ThighL, back.ThighL, w),
+                    ThR = Mathf.Lerp(fwd.ThighR, back.ThighR, w),
+                    KnL = Mathf.Lerp(fwd.KneeL, back.KneeL, w),
+                    KnR = Mathf.Lerp(fwd.KneeR, back.KneeR, w),
+                    Spine = 4f,
+                    Hip = 0f,
+                    Head = -4f,
+                    Lean = 0f,
+                };
+            }
+            return shot;
+        }
+
+        static Fig[] TrackReach(bool led)
+        {
+            var shot = new Fig[8];
+            float lead = led ? BodyLine.ReachLead(13.8f) : 0f;
+            for (int i = 0; i < 8; i++)
+            {
+                float stride = (float)Math.Sin(i * 0.8f) * 34f;
+                float punch = i < 3 ? VerbPoseClips.PunchCockPitch : VerbPoseClips.PunchStrikePitch;
+                shot[i] = new Fig
+                {
+                    ArmL = -18f,
+                    ArmR = punch,
+                    ElbL = -14f,
+                    ElbR = i < 3 ? VerbPoseClips.PunchCockElbow : VerbPoseClips.PunchStrikeElbow,
+                    ThL = stride,
+                    ThR = -stride,
+                    KnL = -16f,
+                    KnR = -12f,
+                    Spine = 6f + lead,
+                    Hip = 4f + lead * 0.35f,
+                    Head = -2f,
+                    Lean = 0f,
+                };
+            }
+            return shot;
+        }
+
         static Fig[] TrackClimbContact(bool planted)
         {
             var shot = new Fig[8];

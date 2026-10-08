@@ -222,3 +222,29 @@ The gallery climb holds forward, then pulls back for the slip. The climb wall, t
 Stick figures are in `Docs/SmoothStills/pass8/climb-contact.png`. Twelve rows, eight frames: climb, lip, vault, wall run, grab, and slip.
 
 `loco-polish`, `body-life`, `foot-slide`, `respawn-blink`, `response-latency`, and `stick-quality` are unchanged. `climbRate` stays 16.50 and `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok.
+
+## Pass 9
+
+The body line through a wall jump, a rope, a zip, a pad, a landing, a dash tell, a sharp reversal, and a punch while moving. Speeds, jump, coyote, cling, dash 0.10/15/30, punch reach 1.55, climb 6.0, slip 3.7, wall-run 9.5, pad cooldown 0.3, zip 14/0.3, and the grapple (left hand, click-pull, double-click release 0.28 s) are unchanged. One `CharacterController.Move` per Update. No root motion. No new verbs. No ledge hang and no shimmy. Slide is untouched. Chase-cam `fovPop`, shake, and `slowMo` stay 0. Exit poses and particles stay with the anim-fx lane.
+
+A wall jump still shoves for 0.15 s and still eases for 0.12 s. The old curve held the shove, then dumped the arm onto the tuck in one step of 35.6°. The arms now follow a raised cosine across the whole 0.27 s, so the peak step is 16.6°. Age 0 is still the shove, on the press frame.
+
+On a rope at 40° the old hang bent the chest 70.0° off the line (hip 36 + spine 56 + the rope add). Hip and spine now share a correction that puts the chest on the rope, so the kink is 0.0°. Letting go fades that correction with the existing release, and the capsule still drops on the double-click.
+
+A zip hang used to stop the arms at the cling reach, 58.0° short of the cable. They now rise onto the cable across the existing catch. Letting go used to snap the arms from that hang to the release in one frame, 128.0°. The drop now passes through a short release accent and into the air pose. The peak step is 53.2°. Ride speed stays 14.
+
+A launch pad used to throw the arms from the walk rest to the full swing in one frame, 155.0°. The swing now opens over 0.16 s, so the first step is 30.6°. The knees ease toward the soft land as the arc rises, and the windmill uses the same open so it does not pop on frame 1. Pad cooldown stays 0.3.
+
+A hard land still waits one sample. `Absorb(false, 0)` stays 0 so a hop inside 1/60 s skips the thud. Once the absorb plays, a sprint used to fold the thighs 104.0° off the stride. At the locked sprint those thighs now stay on the stride, and the absorb stays in the knees. A stand still takes the full absorb.
+
+The dash tell used to put the full 0.42 sheen on in one frame. It now opens over 0.08 s, so the first mix is 0.16, and the wing and ankle ribbons use that same open. The dash is still 0.10 s. The first pose is still the press frame.
+
+A sharp stick reversal used to sign-flip the thighs, an 82.6° gap at a sprint. The stride eases across 0.14 s, peak step 15.3°. The capsule heading stays instant. Turn-in-place was already on the pivot blend and is left alone.
+
+A moving punch or tag leans the chest 22° at the locked sprint. The fist used to sit 12.9 cm behind that lead. It now sits on it. The arm stays on the authored strike. A stand does not lean. Reach stays 1.55, and the lunge stays 16/0.20/1.
+
+`body-line wall=35.6>16.6 rope=70.0>0.0 zip=58.0>0.0 drop=128.0>53.2 pad=155.0>30.6 land=104.0>0.0 tell=0.42>0.16 rev=82.6>15.3 reach=12.9>0.0 gameplayDelay=0 rootMotion=0`
+
+Stick figures are in `Docs/SmoothStills/pass9/body-line.png`. Twelve rows, eight frames: wall jump, rope, zip, pad, reversal, and the moving punch. Before, then after.
+
+`loco-polish`, `body-life`, `foot-slide`, `respawn-blink`, `climb-contact`, `response-latency`, and `stick-quality` are unchanged. `climbRate` stays 16.50 and `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. Mouse flicks still snap. Landing still waits one sample.
