@@ -726,6 +726,17 @@ namespace Tag.Art
         float _zipAge;
         bool _zipWas;
         float _zipRelease = -1f;
+        float _revIn = 1f;
+        float _revFlip = 1f;
+        bool _revFlipSet;
+        float _revFromL;
+        float _revFromR;
+        float _tellIn;
+        float _tellShown = 1f;
+        float _padIn = 1f;
+        bool _padWas;
+        float _ropeElev;
+        bool _ropeHave;
         float _recoilAge = -1f;
         float _itClaim;
         float _skiBlend;
@@ -8331,6 +8342,7 @@ namespace Tag.Art
                     thighR = strideLegs.ThighR * flip;
                     kneeR = strideLegs.KneeR;
                 }
+                EaseReverse(ref thighL, ref thighR, flip, dt);
                 _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
                 _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);
@@ -10485,6 +10497,13 @@ namespace Tag.Art
                     _llLT = Quaternion.Slerp(_landAbsorbLlL, _llLT, intoAbsorb);
                     _llRT = Quaternion.Slerp(_landAbsorbLlR, _llRT, intoAbsorb);
                 }
+                if (!crouch && BodyLine.KeepStride(speed) > 0.02f)
+                {
+                    GaitBlend.Legs stride = GaitBlend.At(_cycle, speed);
+                    float keep = BodyLine.KeepStride(speed);
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(stride.ThighL, 0f, 0f), keep);
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(stride.ThighR, 0f, 0f), keep);
+                }
                 _hardLandWas = crouchHardLand;
                 _softLandWas = crouchSoftLand;
             }
@@ -10584,6 +10603,8 @@ namespace Tag.Art
                     // The line eases onto the fall beat. The air pose underneath does not share the bones.
                     GrapplePose.Sample drop = GrapplePose.Release(sinC, vyG, lean, _grappleFallIn);
                     BlendGrappleSample(drop, armZ, 1f, true, true);
+                    if (_ropeHave)
+                        ApplyBodyLine(_ropeElev, 1f - GrapplePose.ReleaseWeight(_grappleFallIn));
                     _grappleSlew = GrapplePose.ActiveSlew(false, false, false, true);
                 }
                 else
@@ -15280,6 +15301,10 @@ namespace Tag.Art
                 float caught = ZipPose.CatchWeight(_zipAge);
                 if (caught < 0.999f)
                     hang = BlendZip(ZipPose.JumpDrop(), hang, caught);
+                float grab = BodyLine.ZipGrab(_zipAge);
+                float cable = Mathf.Lerp(JumpPose.FallArmPitch, BodyLine.CablePitch, grab);
+                hang.ArmPitchL = cable;
+                hang.ArmPitchR = cable;
                 float ride = _motor != null ? _motor.HorizontalSpeed : 0f;
                 hang.LeanZ = ZipPose.Sway(Time.time, ride) + HangMotion.SwayExtra(Time.time, ride);
                 float trail = HangMotion.LegTrail(ride);
@@ -15302,9 +15327,7 @@ namespace Tag.Art
             }
             else if (_zipRelease >= 0f && PoseAllowed(DummyPosePaths.Wall))
             {
-                float let = ZipPose.ReleaseWeight(_zipRelease);
-                if (let > 0.001f)
-                    ApplyZipRelease(let, armZ);
+                ApplyZipRelease(armZ);
                 _zipRelease += dt;
                 if (_zipRelease >= ZipPose.ReleaseSeconds)
                     _zipRelease = -1f;
@@ -15334,6 +15357,7 @@ namespace Tag.Art
                 || _dropVis > 0.2f || _aimTorsoW > 0.35f;
             ApplyPass3Targets(pass3Yield);
             ApplyPass4Life(dt, sliding, sinC);
+            ApplyReachLead(speed, punching && phase != PunchPhase.Idle, flinchAmt > 0.04f);
             Slew(ref _spine, _spineT, ref _slewSp, torsoSlew, dt);
             Slew(ref _hips, _hipsT, ref _slewHp, torsoSlew, dt);
             Slew(ref _head, _headT, ref _slewHd, slew, dt);
@@ -15478,7 +15502,12 @@ namespace Tag.Art
         {
             float vy = _motor != null ? _motor.Velocity.y : 0f;
             float speed = _motor != null ? _motor.HorizontalSpeed : 0f;
-            WallJumpPose.Sample pose = WallJumpPose.At(_wallJumpPoseAge, vy, _wallJumpPosePlant, speed);
+            // The shove still owns the press frame. The chest then arcs into the rise
+            // across the whole beat, instead of holding still and dumping the arm.
+            WallJumpPose.Sample push = WallJumpPose.Push(_wallJumpPosePlant);
+            float end = WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds;
+            WallJumpPose.Sample air = WallJumpPose.At(end, vy, _wallJumpPosePlant, speed);
+            WallJumpPose.Sample pose = LerpWall(push, air, BodyLine.WallArc(_wallJumpPoseAge));
             _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
             _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
@@ -15534,6 +15563,27 @@ namespace Tag.Art
             _spineT = Blend3(_wallJumpSp, _spine0 * Quaternion.Euler(push.Spine, 0f, push.LeanZ), strideSp, wallW, pushW, strideW);
             _hipsT = Blend3(_wallJumpHp, _hips0 * Quaternion.Euler(push.Hip, 0f, -push.LeanZ * WallPose.HipRollShare), strideHp, wallW, pushW, strideW);
             _headT = Blend3(_wallJumpHd, _head0 * Quaternion.Euler(push.Head, 0f, -push.LeanZ * WallPose.HeadRollShare), strideHd, wallW, pushW, strideW);
+        }
+
+        static WallJumpPose.Sample LerpWall(WallJumpPose.Sample a, WallJumpPose.Sample b, float t)
+        {
+            return new WallJumpPose.Sample
+            {
+                ThighL = Mathf.Lerp(a.ThighL, b.ThighL, t),
+                ThighR = Mathf.Lerp(a.ThighR, b.ThighR, t),
+                KneeL = Mathf.Lerp(a.KneeL, b.KneeL, t),
+                KneeR = Mathf.Lerp(a.KneeR, b.KneeR, t),
+                ArmPitchL = Mathf.Lerp(a.ArmPitchL, b.ArmPitchL, t),
+                ArmPitchR = Mathf.Lerp(a.ArmPitchR, b.ArmPitchR, t),
+                ArmYawL = Mathf.Lerp(a.ArmYawL, b.ArmYawL, t),
+                ArmYawR = Mathf.Lerp(a.ArmYawR, b.ArmYawR, t),
+                ElbowL = Mathf.Lerp(a.ElbowL, b.ElbowL, t),
+                ElbowR = Mathf.Lerp(a.ElbowR, b.ElbowR, t),
+                Hip = Mathf.Lerp(a.Hip, b.Hip, t),
+                Spine = Mathf.Lerp(a.Spine, b.Spine, t),
+                Head = Mathf.Lerp(a.Head, b.Head, t),
+                LeanZ = Mathf.Lerp(a.LeanZ, b.LeanZ, t),
+            };
         }
 
         static Quaternion Blend3(Quaternion from, Quaternion mid, Quaternion to, float fromW, float midW, float toW)
@@ -15743,11 +15793,26 @@ namespace Tag.Art
             Transform basis = _motor != null ? _motor.transform : transform;
             Vector3 local = basis.InverseTransformDirection(anchor - basis.position);
             float elev = GrapplePose.ElevDegrees(local.y, local.x, local.z);
-            float pitch = HangMotion.RopeSpine(elev);
+            _ropeElev = elev;
+            _ropeHave = true;
             float trail = HangMotion.RopeLeg(_motor != null ? _motor.HorizontalSpeed : 0f);
-            _spineT = Quaternion.Slerp(_spineT, _spineT * Quaternion.Euler(pitch, 0f, 0f), weight);
+            ApplyBodyLine(elev, weight);
             _ulLT = Quaternion.Slerp(_ulLT, _ulLT * Quaternion.Euler(trail, 0f, 0f), weight);
             _ulRT = Quaternion.Slerp(_ulRT, _ulRT * Quaternion.Euler(trail, 0f, 0f), weight);
+        }
+
+        /// <summary>
+        /// Hip plus spine meet the rope. The old extra pitch is cancelled inside the fix.
+        /// Weight 0 leaves the pose that was already written. No root motion.
+        /// </summary>
+        void ApplyBodyLine(float elev, float weight)
+        {
+            if (weight <= 0.001f) return;
+            float shared = HangMotion.RopeSpine(elev);
+            float pose = GrapplePose.PullHip + GrapplePose.PullSpine + shared;
+            float fix = BodyLine.LineFix(pose, elev) * weight;
+            _spineT = _spineT * Quaternion.Euler(shared * weight + fix * 0.55f, 0f, 0f);
+            _hipsT = _hipsT * Quaternion.Euler(fix * 0.45f, 0f, 0f);
         }
 
         /// <summary>
@@ -16590,12 +16655,28 @@ namespace Tag.Art
         void ApplyLaunchPose()
         {
             float vy = _motor != null ? _motor.Velocity.y : 0f;
+            bool arc = _motor != null && _motor.LaunchArc;
+            if (arc && !_padWas) _padIn = 0f;
+            _padWas = arc;
+            float open = BodyLine.PadOpen(_padIn);
+            if (arc && Time.deltaTime > 0f) _padIn += Time.deltaTime;
             LaunchPose.Sample pose = LaunchPose.At(vy);
+            float fallOpen = LaunchPose.OpenAmount(vy);
+            pose.ArmPitchL = Mathf.Lerp(0f, pose.ArmPitchL, open);
+            pose.ArmPitchR = Mathf.Lerp(0f, pose.ArmPitchR, open);
+            pose.ArmYawL = Mathf.Lerp(8f, pose.ArmYawL, open);
+            pose.ArmYawR = Mathf.Lerp(8f, pose.ArmYawR, open);
+            pose.ThighL = Mathf.Lerp(12f, pose.ThighL, open);
+            pose.ThighR = Mathf.Lerp(8f, pose.ThighR, open);
+            pose.KneeL = Mathf.Lerp(-8f, pose.KneeL, open);
+            pose.KneeR = Mathf.Lerp(-6f, pose.KneeR, open);
+            pose.KneeL = Mathf.Lerp(pose.KneeL, LandPose.SoftKnee, fallOpen);
+            pose.KneeR = Mathf.Lerp(pose.KneeR, LandPose.SoftKnee, fallOpen);
             _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
             _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
-            float mill = HangMotion.Windmill(Time.time, vy);
+            float mill = HangMotion.Windmill(Time.time, vy) * open;
             _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL + mill, pose.ArmYawL, 0f);
             _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR - mill, -pose.ArmYawR, 0f);
             _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
@@ -16627,20 +16708,46 @@ namespace Tag.Art
             };
         }
 
-        void ApplyZipRelease(float weight, float armZ)
+        void ApplyZipRelease(float armZ)
         {
-            ZipPose.Sample pose = ZipPose.Release();
-            _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f), weight);
-            _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f), weight);
-            _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f), weight);
-            _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f), weight);
-            _uaLT = Quaternion.Slerp(_uaLT, _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ), weight);
-            _uaRT = Quaternion.Slerp(_uaRT, _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ), weight);
-            _laLT = Quaternion.Slerp(_laLT, _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f), weight);
-            _laRT = Quaternion.Slerp(_laRT, _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f), weight);
-            _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(pose.Spine, 0f, pose.LeanZ), weight);
-            _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(pose.Hip, 0f, 0f), weight);
-            _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(pose.Head, 0f, 0f), weight);
+            BodyLine.ZipWeights(_zipRelease, out float hangW, out float releaseW, out float airW);
+            ZipPose.Sample hang = ZipPose.Hang();
+            hang.ArmPitchL = BodyLine.CablePitch;
+            hang.ArmPitchR = BodyLine.CablePitch;
+            ZipPose.Sample let = ZipPose.Release();
+            Quaternion hangUaL = _uaL0 * Quaternion.Euler(hang.ArmPitchL, hang.ArmYawL, armZ);
+            Quaternion hangUaR = _uaR0 * Quaternion.Euler(hang.ArmPitchR, hang.ArmYawR, -armZ);
+            Quaternion hangLaL = _laL0 * Quaternion.Euler(hang.ElbowL, 0f, 0f);
+            Quaternion hangLaR = _laR0 * Quaternion.Euler(hang.ElbowR, 0f, 0f);
+            Quaternion hangUlL = _ulL0 * Quaternion.Euler(hang.ThighL, 0f, 0f);
+            Quaternion hangUlR = _ulR0 * Quaternion.Euler(hang.ThighR, 0f, 0f);
+            Quaternion hangLlL = _llL0 * Quaternion.Euler(hang.KneeL, 0f, 0f);
+            Quaternion hangLlR = _llR0 * Quaternion.Euler(hang.KneeR, 0f, 0f);
+            Quaternion hangSp = _spine0 * Quaternion.Euler(hang.Spine, 0f, hang.LeanZ);
+            Quaternion hangHp = _hips0 * Quaternion.Euler(hang.Hip, 0f, 0f);
+            Quaternion hangHd = _head0 * Quaternion.Euler(hang.Head, 0f, 0f);
+            Quaternion letUaL = _uaL0 * Quaternion.Euler(let.ArmPitchL, let.ArmYawL, armZ);
+            Quaternion letUaR = _uaR0 * Quaternion.Euler(let.ArmPitchR, let.ArmYawR, -armZ);
+            Quaternion letLaL = _laL0 * Quaternion.Euler(let.ElbowL, 0f, 0f);
+            Quaternion letLaR = _laR0 * Quaternion.Euler(let.ElbowR, 0f, 0f);
+            Quaternion letUlL = _ulL0 * Quaternion.Euler(let.ThighL, 0f, 0f);
+            Quaternion letUlR = _ulR0 * Quaternion.Euler(let.ThighR, 0f, 0f);
+            Quaternion letLlL = _llL0 * Quaternion.Euler(let.KneeL, 0f, 0f);
+            Quaternion letLlR = _llR0 * Quaternion.Euler(let.KneeR, 0f, 0f);
+            Quaternion letSp = _spine0 * Quaternion.Euler(let.Spine, 0f, let.LeanZ);
+            Quaternion letHp = _hips0 * Quaternion.Euler(let.Hip, 0f, 0f);
+            Quaternion letHd = _head0 * Quaternion.Euler(let.Head, 0f, 0f);
+            _uaLT = Blend3(hangUaL, letUaL, _uaLT, hangW, releaseW, airW);
+            _uaRT = Blend3(hangUaR, letUaR, _uaRT, hangW, releaseW, airW);
+            _laLT = Blend3(hangLaL, letLaL, _laLT, hangW, releaseW, airW);
+            _laRT = Blend3(hangLaR, letLaR, _laRT, hangW, releaseW, airW);
+            _ulLT = Blend3(hangUlL, letUlL, _ulLT, hangW, releaseW, airW);
+            _ulRT = Blend3(hangUlR, letUlR, _ulRT, hangW, releaseW, airW);
+            _llLT = Blend3(hangLlL, letLlL, _llLT, hangW, releaseW, airW);
+            _llRT = Blend3(hangLlR, letLlR, _llRT, hangW, releaseW, airW);
+            _spineT = Blend3(hangSp, letSp, _spineT, hangW, releaseW, airW);
+            _hipsT = Blend3(hangHp, letHp, _hipsT, hangW, releaseW, airW);
+            _headT = Blend3(hangHd, letHd, _headT, hangW, releaseW, airW);
         }
 
         /// <summary>
@@ -16968,12 +17075,77 @@ namespace Tag.Art
             return -(fwd - back);
         }
 
+        /// <summary>
+        /// A stick reversal eases the stride across. The capsule already faces the new wish.
+        /// The planted sole is not a one-frame sign flip.
+        /// </summary>
+        void EaseReverse(ref float thighL, ref float thighR, float flip, float dt)
+        {
+            float rawL = thighL;
+            float rawR = thighR;
+            bool changed = _revFlipSet && flip * _revFlip < 0f;
+            if (!_revFlipSet)
+            {
+                _revFlipSet = true;
+                _revIn = 1f;
+            }
+            else if (changed)
+                _revIn = 0f;
+            _revFlip = flip;
+            if (_revIn < 1f)
+            {
+                if (dt > 0f)
+                    _revIn = Mathf.MoveTowards(_revIn, 1f, dt / BodyLine.ReverseSeconds);
+                float w = BodyLine.ReverseBlend(_revIn);
+                thighL = Mathf.Lerp(_revFromL, rawL, w);
+                thighR = Mathf.Lerp(_revFromR, rawR, w);
+            }
+            if (_revIn >= 1f)
+            {
+                _revFromL = rawL;
+                _revFromR = rawR;
+            }
+        }
+
+        /// <summary>
+        /// A moving punch or tag leans the chest so the shoulder carries the fist.
+        /// The arm stays on the authored strike. A stand does not lean.
+        /// Reach, lunge, and the hit window are unchanged.
+        /// </summary>
+        void ApplyReachLead(float speed, bool punch, bool tag)
+        {
+            if (!punch && !tag) return;
+            float lead = BodyLine.ReachLead(speed);
+            if (lead > -0.01f && lead < 0.01f) return;
+            bool moving = UpperBody.KeepLegs(
+                false,
+                _motor != null && !_motor.IsGrounded,
+                _motor != null && _motor.IsWallRunning,
+                speed);
+            if (!moving) return;
+            _spineT = _spineT * Quaternion.Euler(lead * 0.65f, 0f, 0f);
+            _hipsT = _hipsT * Quaternion.Euler(lead * 0.35f, 0f, 0f);
+        }
+
         void TickAirDashTell(float dt)
         {
             bool airDashing = _motor != null && _motor.IsAirDashing && PoseAllowed(DummyPosePaths.Dash);
             bool jet = _motor != null && (_motor.State == MoveState.Jet || _motor.Jetting);
             if (airDashing && !_wasAirDashing)
+            {
                 BeginAirDashTell();
+                _tellIn = 0f;
+            }
+            if (airDashing)
+            {
+                _tellShown = BodyLine.TellOpen(_tellIn);
+                _tellIn += dt;
+            }
+            else if (_dashFlash <= 0f)
+            {
+                _tellIn = 0f;
+                _tellShown = 0f;
+            }
             if (!airDashing)
                 _dashTellArmed = false;
             if (jet && !_wasJetting) _dashPulse = Mathf.Max(_dashPulse, 0.85f);
@@ -17040,6 +17212,10 @@ namespace Tag.Art
             _wingL.transform.position = left;
             if (_wingR != null) _wingR.transform.position = right;
             if (_ankleTrail != null) _ankleTrail.transform.position = ankle;
+            float tellW = _tellShown < 0f ? 0f : (_tellShown > 1f ? 1f : _tellShown);
+            _wingL.widthMultiplier = AirDashTell.WingWidth * tellW;
+            if (_wingR != null) _wingR.widthMultiplier = AirDashTell.WingWidth * tellW;
+            if (_ankleTrail != null) _ankleTrail.widthMultiplier = AirDashTell.AnkleWidth * tellW;
         }
 
         void EnsureDashTell()
@@ -17124,7 +17300,7 @@ namespace Tag.Art
                 _flashRenderers = GetComponentsInChildren<Renderer>(true);
             if (_flashBlock == null)
                 _flashBlock = new MaterialPropertyBlock();
-            float mix = AirDashTell.FlashMix * Mathf.Clamp01(amt);
+            float mix = AirDashTell.FlashMix * Mathf.Clamp01(amt) * Mathf.Clamp01(_tellShown);
             var tint = new Color(0.62f, 0.96f, 1f, 1f);
             for (int i = 0; i < _flashRenderers.Length; i++)
             {
