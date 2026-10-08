@@ -43,8 +43,8 @@ PALETTE = {
     "Lib_AsphaltPatch": ((0.07, 0.07, 0.072), 0.0, 0.18),
     "Lib_Brick": ((0.64, 0.32, 0.24), 0.0, 0.28),
     "Lib_Mortar": ((0.72, 0.70, 0.66), 0.0, 0.20),
-    # Grey-tan chinking. Darker than the log face so the groove reads as mortar.
-    "Lib_Chink": ((0.40, 0.36, 0.30), 0.0, 0.14),
+    # Grey-tan chinking. Dark and matte so the groove does not catch the sky.
+    "Lib_Chink": ((0.26, 0.22, 0.17), 0.0, 0.08),
     # Flat fallback under the growth-ring texture on a log end.
     "Lib_LogEnd": ((0.55, 0.38, 0.22), 0.0, 0.22),
     "Lib_Wood": ((0.62, 0.42, 0.24), 0.0, 0.32),
