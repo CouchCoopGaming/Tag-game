@@ -53,8 +53,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.885, z: -0.122}
-  m_Size: 4.976
+  m_LocalReferencePoint: {x: 0, y: 0.88, z: -0.0525}
+  m_Size: 5.095
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -81,12 +81,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "StreetFurniture"
-  summary: "Pickup shell, 4.98 m long, 2.28 m wide over the fender brows. Cab roof 1.77 m, bed sides about 1.12 m. Wheelbase 3.20 m. Fender lips, cab beltline, and a slat grille. Empty cab and bed."
+  summary: "Pickup shell, about 5.06 m long. Cab roof 1.76 m, bed rails 1.12 m. Closed cab and wrapped fenders."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
   climbNote: "Sheet metal. Not a cling wall."
-  vaultNote: "Bed sides are about 1.15 m. Not a vault rail."
+  vaultNote: "Bed sides are about 1.12 m. Not a vault rail."
 --- !u!1 &200000
 GameObject:
   m_ObjectHideFlags: 0
@@ -155,12 +155,12 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
   - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
-  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
+  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 38838e5bb0bb608f1038bb4926803471, type: 2}
-  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
+  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -252,12 +252,11 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
   - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
-  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
   - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
   - {fileID: 2100000, guid: 38838e5bb0bb608f1038bb4926803471, type: 2}
-  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 9d48e58f7d43c8e7e8e4e7f59e31f57a, type: 2}
+  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -332,7 +331,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.5, y: 0.4, z: 1.7}
+  m_Size: {x: 1.2, y: 0.55, z: 1.15}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300010
 GameObject:
@@ -345,7 +344,7 @@ GameObject:
   - component: {fileID: 300011}
   - component: {fileID: 300012}
   m_Layer: 0
-  m_Name: Col_Upper
+  m_Name: Col_Roof
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -360,7 +359,7 @@ Transform:
   m_GameObject: {fileID: 300010}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.45, z: 0.55}
+  m_LocalPosition: {x: 0, y: 1.66, z: 0.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -385,7 +384,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.4, y: 0.4, z: 1}
+  m_Size: {x: 0.55, y: 0.06, z: 0.4}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300020
 GameObject:
@@ -413,7 +412,7 @@ Transform:
   m_GameObject: {fileID: 300020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.55, z: -1.55}
+  m_LocalPosition: {x: 0, y: 0.55, z: -1.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -438,7 +437,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.2, y: 0.12, z: 1.4}
+  m_Size: {x: 1.2, y: 0.02, z: 1.6}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300030
 GameObject:
@@ -466,7 +465,7 @@ Transform:
   m_GameObject: {fileID: 300030}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.8, y: 0.9, z: -1.55}
+  m_LocalPosition: {x: -0.845, y: 0.98, z: -1.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -491,7 +490,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.05, y: 0.36, z: 1.5}
+  m_Size: {x: 0.02, y: 0.12, z: 1.7}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300040
 GameObject:
@@ -519,7 +518,7 @@ Transform:
   m_GameObject: {fileID: 300040}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.8, y: 0.9, z: -1.55}
+  m_LocalPosition: {x: 0.845, y: 0.98, z: -1.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -544,7 +543,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.05, y: 0.36, z: 1.5}
+  m_Size: {x: 0.02, y: 0.12, z: 1.7}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300050
 GameObject:
@@ -572,7 +571,7 @@ Transform:
   m_GameObject: {fileID: 300050}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.9, z: -2.45}
+  m_LocalPosition: {x: 0, y: 0.86, z: -2.56}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -597,7 +596,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.4, y: 0.32, z: 0.04}
+  m_Size: {x: 1.2, y: 0.32, z: 0.02}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300060
 GameObject:
@@ -610,7 +609,7 @@ GameObject:
   - component: {fileID: 300061}
   - component: {fileID: 300062}
   m_Layer: 0
-  m_Name: Col_Wheel_00
+  m_Name: Col_Fr_00
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -625,7 +624,7 @@ Transform:
   m_GameObject: {fileID: 300060}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1, y: 0.36, z: -1.6}
+  m_LocalPosition: {x: -0.9005, y: 0.36, z: 1.58}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -650,7 +649,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.12, y: 0.42, z: 0.42}
+  m_Size: {x: 0.018, y: 0.378, z: 0.378}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300070
 GameObject:
@@ -663,7 +662,7 @@ GameObject:
   - component: {fileID: 300071}
   - component: {fileID: 300072}
   m_Layer: 0
-  m_Name: Col_Wheel_01
+  m_Name: Col_Fr_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -678,7 +677,7 @@ Transform:
   m_GameObject: {fileID: 300070}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 0.36, z: -1.6}
+  m_LocalPosition: {x: 0.9005, y: 0.36, z: 1.58}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -703,7 +702,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.12, y: 0.42, z: 0.42}
+  m_Size: {x: 0.018, y: 0.378, z: 0.378}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300080
 GameObject:
@@ -716,7 +715,7 @@ GameObject:
   - component: {fileID: 300081}
   - component: {fileID: 300082}
   m_Layer: 0
-  m_Name: Col_Wheel_10
+  m_Name: Col_Rr_00
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -731,7 +730,7 @@ Transform:
   m_GameObject: {fileID: 300080}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1, y: 0.36, z: 1.6}
+  m_LocalPosition: {x: -0.9005, y: 0.36, z: -1.62}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -756,7 +755,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.12, y: 0.42, z: 0.42}
+  m_Size: {x: 0.018, y: 0.378, z: 0.378}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300090
 GameObject:
@@ -769,7 +768,7 @@ GameObject:
   - component: {fileID: 300091}
   - component: {fileID: 300092}
   m_Layer: 0
-  m_Name: Col_Wheel_11
+  m_Name: Col_Rr_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -784,7 +783,7 @@ Transform:
   m_GameObject: {fileID: 300090}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 0.36, z: 1.6}
+  m_LocalPosition: {x: 0.9005, y: 0.36, z: -1.62}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -809,5 +808,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.12, y: 0.42, z: 0.42}
+  m_Size: {x: 0.018, y: 0.378, z: 0.378}
   m_Center: {x: 0, y: 0, z: 0}

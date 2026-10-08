@@ -1,4 +1,4 @@
-"""90 cm offset dish on a 1.20 m mast."""
+"""0.80 m offset dish on a roof shoe. Bowl, feed, and bracket are one assembly."""
 
 import math
 import os
@@ -6,15 +6,15 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
-from sk_parts import polyline
+from sk_parts import look_euler
 
 
-# Apex sits on the mast cap. The bowl opens along a 22 deg up-tilt toward +Z.
-_APEX = (0.0, 1.36, 0.08)
-_TILT = 22.0
-_RADIUS = 0.45
-_DEPTH = 0.12
-_THICK = 0.028
+# Apex on the knuckle. The bowl opens 36 deg up toward +Z.
+_APEX = (0.0, 0.52, 0.04)
+_TILT = 36.0
+_RADIUS = 0.40
+_DEPTH = 0.16
+_THICK = 0.016
 
 
 def _axis(dist):
@@ -26,30 +26,29 @@ def _axis(dist):
     )
 
 
-def _dish(g, seg, rings, mat):
-    """Closed paraboloid shell. Local +Z is the dish axis before the up-tilt."""
+def _place(x, y, z):
+    """Local +Z is the dish axis, tilted up toward world +Z."""
     tilt = math.radians(_TILT)
     ct, st = math.cos(tilt), math.sin(tilt)
-    ox, oy, oz = _APEX
+    y2 = y * ct + z * st
+    z2 = -y * st + z * ct
+    return (_APEX[0] + x, _APEX[1] + y2, _APEX[2] + z2)
 
-    def place(x, y, z):
-        y2 = y * ct - z * st
-        z2 = y * st + z * ct
-        return (ox + x, oy + y2, oz + z2)
 
-    verts = [place(0.0, 0.0, 0.0), place(0.0, 0.0, -_THICK)]
+def _dish(g, seg, rings, mat):
+    """Closed paraboloid. Positive local Z is the concave face."""
+    verts = [_place(0.0, 0.0, 0.0), _place(0.0, 0.0, -_THICK)]
     for i in range(1, rings + 1):
         r = _RADIUS * i / float(rings)
         z = _DEPTH * (r / _RADIUS) ** 2
         for j in range(seg):
             ang = 2.0 * math.pi * j / seg
-            verts.append(place(r * math.cos(ang), r * math.sin(ang), z))
+            verts.append(_place(r * math.cos(ang), r * math.sin(ang), z))
         for j in range(seg):
             ang = 2.0 * math.pi * j / seg
-            verts.append(place(r * math.cos(ang), r * math.sin(ang), z - _THICK))
+            verts.append(_place(r * math.cos(ang), r * math.sin(ang), z - _THICK))
 
     def vid(layer, i, j):
-        # layer 0 outer, 1 inner. Ring i starts at 1.
         return 2 + (i - 1) * seg * 2 + layer * seg + (j % seg)
 
     faces = []
@@ -65,36 +64,61 @@ def _dish(g, seg, rings, mat):
     g.mesh(verts, faces, mat)
 
 
+def _past(a, b, before, after):
+    dx, dy, dz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
+    length = math.sqrt(dx * dx + dy * dy + dz * dz) or 1.0
+    ux, uy, uz = dx / length, dy / length, dz / length
+    return (
+        (a[0] - ux * before, a[1] - uy * before, a[2] - uz * before),
+        (b[0] + ux * after, b[1] + uy * after, b[2] + uz * after),
+    )
+
+
+def _strut(g, a, b, bevel):
+    dx, dy, dz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
+    length = math.sqrt(dx * dx + dy * dy + dz * dz)
+    mid = ((a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5, (a[2] + b[2]) * 0.5)
+    g.box(mid, (0.028, 0.016, length), "Lib_Steel", euler=look_euler(a, b), bevel=bevel, segs=1)
+
+
 @register
 def create():
     a = Asset(
         "SatelliteDish",
         "StreetFurniture",
-        "Offset paraboloid, 0.90 m across and 0.12 m deep, mast 1.20 m. The dish tilts 22 deg up toward +Z.",
+        "Offset dish, 0.80 m across and 0.16 m deep, on a roof shoe. Feed arm and LNB sit at the focus. The bowl tilts 36 deg up toward +Z.",
     )
-    a.climb_note = "3 cm mast. Not a cling."
-    a.vault_note = "Dish is a thin shell."
-    focus = _axis(_RADIUS * _RADIUS / (4.0 * _DEPTH))
+    a.climb_note = "Roof bracket. Not a cling."
+    a.vault_note = "The bowl is a thin shell."
+    focus_d = _RADIUS * _RADIUS / (4.0 * _DEPTH)
+    focus = _axis(focus_d)
+    knuckle = _axis(-0.055)
+    euler = look_euler(_axis(0.0), _axis(1.0))
+    rim = _place(0.0, -_RADIUS, _DEPTH)
     for lod in (0, 1):
         g = a.begin(lod)
-        seg = lod_pick(lod, 18, 10)
+        seg = lod_pick(lod, 20, 12)
         rings = lod_pick(lod, 8, 4)
-        bev = lod_pick(lod, 0.003, 0.0)
-        g.box((0, 0.02, 0), (0.28, 0.04, 0.28), "Lib_SteelDark", bevel=bev, segs=1)
-        g.cylinder((0, 0.62, 0), 0.028, 1.16, "Lib_Steel", seg)
-        g.cylinder((0, 1.18, 0), 0.05, 0.06, "Lib_SteelDark", seg)
-        _dish(g, seg, rings, "Lib_PaintWhite")
-        bracket = _axis(0.04)
-        g.cylinder(bracket, 0.035, 0.08, "Lib_SteelDark", seg)
+        bev = lod_pick(lod, 0.002, 0.0)
+        g.box((0, 0.014, 0), (0.36, 0.028, 0.26), "Lib_SteelDark", bevel=bev, segs=1)
+        g.box((0, 0.055, -0.02), (0.16, 0.06, 0.08), "Lib_Steel", bevel=bev, segs=1)
         if lod == 0:
-            feed = _axis(0.22)
-            polyline(g, [bracket, (0.0, focus[1] - 0.04, focus[2] - 0.06), focus], 0.008, "Lib_Steel", 5)
-            g.box(focus, (0.07, 0.045, 0.09), "Lib_Black", bevel=bev, segs=1)
-            g.cylinder(feed, 0.012, 0.08, "Lib_Steel", 6)
+            for sx in (-0.14, 0.14):
+                for sz in (-0.09, 0.09):
+                    g.cylinder((sx, 0.032, sz), 0.008, 0.012, "Lib_Steel", 6)
+        _strut(g, (-0.07, 0.07, -0.02), (knuckle[0] - 0.04, knuckle[1] - 0.02, knuckle[2]), bev)
+        _strut(g, (0.07, 0.07, -0.02), (knuckle[0] + 0.04, knuckle[1] - 0.02, knuckle[2]), bev)
+        g.box(knuckle, (0.11, 0.09, 0.08), "Lib_SteelDark", euler=euler, bevel=bev, segs=1)
+        _dish(g, seg, rings, "Lib_PaintWhite")
+        if lod == 0:
+            arm_a, arm_b = _past(rim, focus, 0.02, 0.03)
+            _strut(g, arm_a, arm_b, bev)
+            g.box(focus, (0.055, 0.04, 0.07), "Lib_Black", euler=euler, bevel=bev, segs=1)
+            horn = _axis(focus_d - 0.04)
+            g.cylinder(horn, 0.016, 0.035, "Lib_SteelDark", 8)
         a.end()
-    a.box("Col_Base", (0, 0.02, 0), (0.24, 0.03, 0.24))
-    a.capsule("Col_Mast", (0, 0.62, 0), 0.022, 1.08, 1)
-    # Inside the thick apex, clear of the tilted skins.
-    hub = _axis(0.012)
-    a.box("Col_Dish", (hub[0], hub[1], hub[2]), (0.04, 0.028, 0.008))
+    a.box("Col_Shoe", (0, 0.014, 0), (0.30, 0.02, 0.20))
+    a.box("Col_Riser", (0, 0.05, -0.02), (0.12, 0.04, 0.05))
+    # Rear of the knuckle, clear of the dish skin.
+    a.box("Col_Knuckle", _axis(-0.078), (0.055, 0.04, 0.028), euler=euler)
     return a

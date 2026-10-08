@@ -46,8 +46,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.868, z: 0.188}
-  m_Size: 1.736
+  m_LocalReferencePoint: {x: 0, y: 0.469, z: 0.1445}
+  m_Size: 0.938
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -74,12 +74,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "StreetFurniture"
-  summary: "Offset paraboloid, 0.90 m across and 0.12 m deep, mast 1.20 m. The dish tilts 22 deg up toward +Z."
+  summary: "Offset dish, 0.80 m across and 0.16 m deep, on a roof shoe. Feed arm and LNB sit at the focus. The bowl tilts 36 deg up toward +Z."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
-  climbNote: "3 cm mast. Not a cling."
-  vaultNote: "Dish is a thin shell."
+  climbNote: "Roof bracket. Not a cling."
+  vaultNote: "The bowl is a thin shell."
 --- !u!1 &200000
 GameObject:
   m_ObjectHideFlags: 0
@@ -276,7 +276,7 @@ GameObject:
   - component: {fileID: 300001}
   - component: {fileID: 300002}
   m_Layer: 0
-  m_Name: Col_Base
+  m_Name: Col_Shoe
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -291,7 +291,7 @@ Transform:
   m_GameObject: {fileID: 300000}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.02, z: 0}
+  m_LocalPosition: {x: 0, y: 0.014, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -316,7 +316,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.24, y: 0.03, z: 0.24}
+  m_Size: {x: 0.3, y: 0.02, z: 0.2}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300010
 GameObject:
@@ -329,7 +329,7 @@ GameObject:
   - component: {fileID: 300011}
   - component: {fileID: 300012}
   m_Layer: 0
-  m_Name: Col_Mast
+  m_Name: Col_Riser
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -344,14 +344,14 @@ Transform:
   m_GameObject: {fileID: 300010}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.62, z: 0}
+  m_LocalPosition: {x: 0, y: 0.05, z: -0.02}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   m_Father: {fileID: 100001}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!136 &300012
-CapsuleCollider:
+--- !u!65 &300012
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -368,9 +368,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.022
-  m_Height: 1.08
-  m_Direction: 1
+  serializedVersion: 3
+  m_Size: {x: 0.12, y: 0.04, z: 0.05}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300020
 GameObject:
@@ -383,7 +382,7 @@ GameObject:
   - component: {fileID: 300021}
   - component: {fileID: 300022}
   m_Layer: 0
-  m_Name: Col_Dish
+  m_Name: Col_Knuckle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -397,8 +396,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 300020}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.3645, z: 0.09113}
+  m_LocalRotation: {x: -0.30902, y: 0, z: 0, w: 0.95106}
+  m_LocalPosition: {x: 0, y: 0.47415, z: -0.0231}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -423,5 +422,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.04, y: 0.028, z: 0.008}
+  m_Size: {x: 0.055, y: 0.04, z: 0.028}
   m_Center: {x: 0, y: 0, z: 0}

@@ -1,18 +1,65 @@
-"""Parked hatchback shell. 4.05 m long, 1.70 m wide, 1.50 m tall."""
+"""Parked hatchback shell. Closed body, pillars, glass, and wrapped arches."""
 
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _common import Asset, register, lod_pick
-from sk_parts import fender_arch, look_euler
+from _common import Asset, register
+import sk_car_body as body
 
 
-def _span_box(g, a, b, width, thick, mat):
-    dx, dy, dz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
-    length = (dx * dx + dy * dy + dz * dz) ** 0.5
-    mid = ((a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5, (a[2] + b[2]) * 0.5)
-    g.box(mid, (width, thick, length), mat, euler=look_euler(a, b))
+SPEC = {
+    "paint": "Lib_PaintRed",
+    "z0": -1.98,
+    "z1": 2.02,
+    "step": 0.10,
+    "axles": (-1.25, 1.25),
+    "wheel_axles": (-1.25, 1.25),
+    "axle_y": 0.30,
+    "tire_r": 0.30,
+    "tire_x": 0.74,
+    "tire_half_w": 0.095,
+    "arch_r": 0.36,
+    "body_x": 0.82,
+    "flare": 0.07,
+    "belt_y": 0.88,
+    "belly_y": 0.17,
+    "rocker_y": 0.27,
+    "roof_y": 1.50,
+    "roof_x": 0.64,
+    "roof_z": (-0.85, 0.28),
+    "roof_crown": 0.02,
+    "inset": 0.15,
+    "a_pillar_z": 0.24,
+    "c_pillar_z": -0.78,
+    "pillars": ((-0.22, 0.05),),
+    "windows": ((-0.16, 0.20), (-0.72, -0.30)),
+    "windshield": (0.26, 1.48, 0.58, 1.00),
+    "rear_glass": (-0.82, 1.48, -1.48, 0.92),
+    "crown": (
+        (-1.98, 0.44, 0.74),
+        (-1.72, 0.78, 0.72),
+        (-1.48, 0.92, 0.70),
+        (-0.85, 1.50, 0.64),
+        (0.28, 1.50, 0.64),
+        (0.58, 1.00, 0.72),
+        (1.68, 0.66, 0.74),
+        (2.02, 0.46, 0.74),
+    ),
+    "lamp_x": 0.52,
+    "lamp_y": 0.56,
+    "tail_y": 0.70,
+    "bumper_y": 0.32,
+    "bed_z0": None,
+}
+
+
+def _wheel_cols(a):
+    r = SPEC["tire_r"]
+    x = SPEC["tire_x"] + SPEC["tire_half_w"] * 0.55
+    for i, z in enumerate(SPEC["wheel_axles"]):
+        for j, sign in enumerate((-1.0, 1.0)):
+            a.box("Col_Wheel_%d%d" % (i, j), (sign * x, SPEC["axle_y"], z), (0.016, r * 1.15, r * 1.15))
 
 
 @register
@@ -20,60 +67,17 @@ def create():
     a = Asset(
         "Car_Hatch",
         "StreetFurniture",
-        "Hatchback shell, 4.02 m long, 2.00 m wide over the fender brows, roof at 1.49 m. Wheelbase 2.50 m. Fender lips, beltline, and a slat grille. Empty body.",
+        "Hatchback shell, about 4.00 m long, roof 1.52 m. Closed body, pillars, glass, and fenders over the tires.",
     )
     a.climb_note = "Sheet metal. Not a cling wall."
     a.vault_note = "Roof is a landing, not a vault rail."
     for lod in (0, 1):
         g = a.begin(lod)
-        bev = lod_pick(lod, 0.008, 0.0)
-        bs = 1 if lod == 0 else 0
-        seg = lod_pick(lod, 12, 8)
-        g.box((0, 0.58, 0.05), (1.66, 0.48, 3.15), "Lib_PaintRed", bevel=bev, segs=bs)
-        g.box((0, 0.40, 1.78), (1.68, 0.26, 0.42), "Lib_PaintRed", bevel=bev, segs=bs)
-        g.box((0, 0.42, -1.78), (1.68, 0.30, 0.40), "Lib_PaintRed", bevel=bev, segs=bs)
-        g.box((0, 0.34, 1.94), (1.60, 0.14, 0.10), "Lib_Black", bevel=bev, segs=1)
-        g.box((0, 0.36, -1.94), (1.62, 0.16, 0.10), "Lib_Black", bevel=bev, segs=1)
-        _span_box(g, (0, 0.88, 0.70), (0, 0.62, 1.75), 1.48, 0.05, "Lib_PaintRed")
-        _span_box(g, (0, 0.95, 0.35), (0, 1.38, -0.25), 1.36, 0.04, "Lib_ShopGlass")
-        g.box((0, 1.46, -0.55), (1.38, 0.06, 1.05), "Lib_PaintRed", bevel=bev, segs=bs)
-        _span_box(g, (0, 1.40, -1.10), (0, 0.85, -1.75), 1.36, 0.04, "Lib_ShopGlass")
-        g.box((0, 0.55, 1.82), (1.10, 0.10, 0.05), "Lib_PaintCream")
-        g.box((0, 0.70, -1.88), (1.20, 0.16, 0.04), "Lib_PaintRed")
-        for z in (-1.25, 1.25):
-            g.box((0.90, 0.62, z), (0.20, 0.07, 0.56), "Lib_PaintRed", bevel=bev, segs=1)
-            g.box((-0.90, 0.62, z), (0.20, 0.07, 0.56), "Lib_PaintRed", bevel=bev, segs=1)
-        for sign, outward in ((1.0, 1.0), (-1.0, -1.0)):
-            face = sign * 0.842
-            for z in (-1.25, 1.25):
-                fender_arch(g, face, 0.30, z, 0.40, 0.050, 0.020, "Lib_SteelDark", outward=outward, steps=8)
-            g.box((sign * 0.858, 0.80, 0.05), (0.016, 0.026, 2.70), "Lib_Steel")
-            g.box((sign * 0.856, 0.38, 0.05), (0.016, 0.040, 2.05), "Lib_Black")
-            for z in (0.35, -0.20, -0.70):
-                g.box((sign * 0.856, 0.58, z), (0.014, 0.34, 0.012), "Lib_Black")
-            g.box((sign * 0.862, 0.66, 0.10), (0.014, 0.032, 0.09), "Lib_SteelDark")
-            g.box((sign * 0.862, 0.66, -0.48), (0.014, 0.032, 0.09), "Lib_SteelDark")
-            g.box((sign * 0.710, 1.12, -0.05), (0.028, 0.40, 0.55), "Lib_ShopGlass")
-            g.box((sign * 0.700, 1.14, -0.62), (0.026, 0.36, 0.42), "Lib_ShopGlass")
-            g.box((sign * 0.725, 1.12, -0.36), (0.036, 0.42, 0.050), "Lib_PaintRed")
-        g.box((0, 0.48, 2.008), (0.70, 0.12, 0.024), "Lib_Black")
-        for y in (0.44, 0.48, 0.52):
-            g.box((0, y, 2.024), (0.62, 0.012, 0.010), "Lib_SteelDark")
-        g.box((0.52, 0.50, 2.010), (0.24, 0.10, 0.026), "Lib_PaintCream")
-        g.box((-0.52, 0.50, 2.010), (0.24, 0.10, 0.026), "Lib_PaintCream")
-        if lod == 0:
-            g.box((0.74, 1.00, 0.05), (0.07, 0.07, 0.14), "Lib_PaintRed")
-            g.box((-0.74, 1.00, 0.05), (0.07, 0.07, 0.14), "Lib_PaintRed")
-        for z in (-1.25, 1.25):
-            for x in (-0.90, 0.90):
-                g.cylinder((x, 0.30, z), 0.30, 0.18, "Lib_Rubber", seg, axis="X")
-                g.cylinder((x + (0.08 if x > 0 else -0.08), 0.30, z), 0.16, 0.035, "Lib_Steel", 8, axis="X")
+        body.build(g, SPEC, lod)
         a.end()
-    a.box("Col_Body", (0, 0.62, 0.05), (1.36, 0.22, 2.60))
-    a.box("Col_Nose", (0, 0.42, 1.78), (1.36, 0.14, 0.26))
-    a.box("Col_Tail", (0, 0.46, -1.78), (1.36, 0.14, 0.24))
-    a.box("Col_Roof", (0, 1.46, -0.55), (1.12, 0.04, 0.80))
-    for i, z in enumerate((-1.25, 1.25)):
-        for j, x in enumerate((-0.90, 0.90)):
-            a.box("Col_Wheel_%d%d" % (i, j), (x, 0.30, z), (0.10, 0.34, 0.34))
+    a.box("Col_Body", (0, 0.52, -0.15), (1.00, 0.40, 1.40))
+    a.box("Col_Roof", (0, 1.40, -0.28), (0.86, 0.10, 0.85))
+    a.box("Col_Nose", (0, 0.42, 1.74), (0.90, 0.12, 0.28))
+    a.box("Col_Tail", (0, 0.46, -1.74), (0.95, 0.12, 0.22))
+    _wheel_cols(a)
     return a

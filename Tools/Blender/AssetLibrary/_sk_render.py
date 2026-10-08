@@ -308,10 +308,75 @@ def _pass8_lineup(found, path):
     _fit(path)
 
 
+def _pass9_lineup(found, path):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.render.resolution_x = 1280
+    scene.render.resolution_y = 720
+    scene.cycles.samples = 24
+    r._ensure_materials()
+    r._world(scene, night=False)
+    specs = [
+        ("Mannequin", (0.0, 0.0, 1.15), 200),
+        ("Car_Hatch", (3.3, 0.0, 0.2), 26),
+        ("Car_Sedan", (8.4, 0.0, 0.15), 20),
+        ("Car_Pickup", (14.2, 0.0, 0.05), 16),
+    ]
+    objs = [r._spawn(found[name](), pos, yaw) for name, pos, yaw in specs]
+    r._ground("asphalt", 80.0)
+    r._frame(scene, objs, fill=0.76, elevation=11.0, azimuth=30.0)
+    r._render(scene, path)
+    _fit(path)
+
+
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
     found = _load()
-    if PASS >= 8:
+    if PASS >= 9:
+        close = 0.86
+        shots = [
+            ("car_sedan", lambda: _shot(found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan.png"), kind="asphalt", fill=0.82)),
+            ("car_sedan_side", lambda: _close(
+                found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan_side.png"),
+                (3.2, 1.2, 0.35), (0.55, 0.8, -0.05), 46)),
+            ("car_sedan_nose", lambda: _close(
+                found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan_nose.png"),
+                (1.5, 0.95, 4.1), (0.0, 0.6, 1.9), 48)),
+            ("car_hatch", lambda: _shot(found["Car_Hatch"], os.path.join(STILL_DIR, "car_hatch.png"), kind="asphalt", fill=0.82)),
+            ("car_hatch_side", lambda: _close(
+                found["Car_Hatch"], os.path.join(STILL_DIR, "car_hatch_side.png"),
+                (2.9, 1.15, 0.2), (0.4, 0.8, -0.1), 46)),
+            ("car_pickup", lambda: _shot(found["Car_Pickup"], os.path.join(STILL_DIR, "car_pickup.png"), kind="asphalt", fill=0.84)),
+            ("car_pickup_side", lambda: _close(
+                found["Car_Pickup"], os.path.join(STILL_DIR, "car_pickup_side.png"),
+                (3.4, 1.4, 0.1), (0.4, 0.95, -0.4), 42)),
+            ("satellite", lambda: _shot(found["SatelliteDish"], os.path.join(STILL_DIR, "satellite.png"), fill=0.82)),
+            ("satellite_bowl", lambda: _close(
+                found["SatelliteDish"], os.path.join(STILL_DIR, "satellite_bowl.png"),
+                (0.95, 0.85, 1.15), (0.0, 0.5, 0.15), 50)),
+            ("cone_tall", lambda: _shot(found["TrafficCone_Tall"], os.path.join(STILL_DIR, "cone_tall.png"), fill=close)),
+            ("bollard_lit", lambda: _shot(found["Bollard_Lit"], os.path.join(STILL_DIR, "bollard_lit.png"), fill=close)),
+            ("bollard_chain", lambda: _shot(found["Bollard_Chain"], os.path.join(STILL_DIR, "bollard_chain.png"), fill=close)),
+            ("meter_twin", lambda: _shot(found["ParkingMeter_Twin"], os.path.join(STILL_DIR, "meter_twin.png"), fill=close)),
+            ("bike_wave", lambda: _shot(found["BikeRack_Wave"], os.path.join(STILL_DIR, "bike_wave.png"), fill=close)),
+            ("newspaper_rack", lambda: _shot(found["NewspaperRack"], os.path.join(STILL_DIR, "newspaper_rack.png"), fill=close)),
+            ("barrier_sawhorse", lambda: _shot(found["Barrier_Sawhorse"], os.path.join(STILL_DIR, "barrier_sawhorse.png"), fill=close)),
+            ("barrier_water", lambda: _shot(found["Barrier_Water"], os.path.join(STILL_DIR, "barrier_water.png"), fill=close)),
+            ("bus_shelter", lambda: _shot(found["BusShelter_City"], os.path.join(STILL_DIR, "bus_shelter.png"), fill=0.82)),
+            ("sign_oneway", lambda: _shot(found["Sign_OneWay"], os.path.join(STILL_DIR, "sign_oneway.png"), fill=close)),
+            ("sign_yield", lambda: _shot(found["Sign_Yield"], os.path.join(STILL_DIR, "sign_yield.png"), fill=close)),
+            ("sign_blades", lambda: _shot(found["Sign_Blades"], os.path.join(STILL_DIR, "sign_blades.png"), fill=0.84)),
+            ("planter_street", lambda: _shot(found["Planter_Street"], os.path.join(STILL_DIR, "planter_street.png"), fill=close)),
+            ("manhole_ring", lambda: _shot(found["Manhole_Ring"], os.path.join(STILL_DIR, "manhole_ring.png"), fill=close)),
+            ("storm_curb", lambda: _shot(found["StormDrain_Curb"], os.path.join(STILL_DIR, "storm_curb.png"), fill=close)),
+            ("power_pole", lambda: _shot(found["PowerPole_Span"], os.path.join(STILL_DIR, "power_pole.png"), fill=0.84)),
+            ("power_crossarm", lambda: _close(
+                found["PowerPole_Span"], os.path.join(STILL_DIR, "power_crossarm.png"),
+                (1.4, 9.55, 2.5), (-4.0, 8.95, 0.1), 42)),
+            ("kit_lineup", lambda: _pass9_lineup(found, os.path.join(STILL_DIR, "kit_lineup.png"))),
+        ]
+    elif PASS >= 8:
         shots = [
             ("roof_vent", lambda: _shot(found["RoofVent_Turbine"], os.path.join(STILL_DIR, "roof_vent.png"), fill=0.72)),
             ("roof_vent_head", lambda: _close(
