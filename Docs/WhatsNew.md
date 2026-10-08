@@ -254,3 +254,7 @@ Jumps, hops, and air strafes read on the body. The jump still leaves the ground 
 - Falling used to freeze, then the land folded the legs in one step. The body now braces as the drop speeds up, and the existing land takes it from there. Try it: jump off something tall and watch the arms open on the way down.
 - A bunny hop keeps a light step in the legs, and the next hop does not pop off the one before it. Air strafe leans into the stick, including on the way up, and the lean eases off when you let go. Try it: chain a few hops, then hold A or D in the air.
 - A coyote jump off a ledge starts from the run you were already in. Try it: sprint off a ledge and jump within a tenth of a second.
+
+## Motion, twelfth pass
+
+The jump still leaves on the press frame. The tuck at the top holds the arms out for balance, clear of the head. A long fall keeps the chest up, looks at the landing, and spreads the arms with the palms down. A landing at about 36.5 m/s rolls into the run. A slower sprint landing eases out of the absorb. Wall-run jumps and cling drops no longer pop the arms. Try it: jump, watch the hands at the top, drop from high enough to roll, then wall-run off and drop a cling.

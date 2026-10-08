@@ -33,10 +33,26 @@ namespace Tag.Art
         public const float TuckKeep = 0.42f;
 
         public const float BraceThigh = 54f;
-        public const float BraceKnee = -78f;
-        public const float BraceArmYaw = 74f;
-        public const float BraceSpine = 12f;
-        public const float BraceHip = 18f;
+        /// <summary>Soft knee, ready to take the landing. Not the deep buckle.</summary>
+        public const float BraceKnee = -36f;
+        /// <summary>Down and out. Negative yaw stays on the hand's own side of this rig.</summary>
+        public const float BraceArmPitch = 12f;
+        public const float BraceArmYaw = -48f;
+        public const float BraceElbow = -10f;
+        /// <summary>Chest up. Positive spine folds forward.</summary>
+        public const float BraceSpine = -6f;
+        public const float BraceHip = 2f;
+        /// <summary>Eyes toward the landing. Positive pitches the head down.</summary>
+        public const float BraceHead = 16f;
+        /// <summary>Palm toward the ground on the hand bone.</summary>
+        public const float BraceHand = -50f;
+
+        /// <summary>Elbows out, hands at the chin. Docs/Storror is not on this branch.</summary>
+        public const float ApexPitch = -45f;
+        public const float ApexYaw = -35f;
+        public const float ApexElbow = -34f;
+        public const float ApexHip = 8f;
+        public const float ApexSpine = -4f;
 
         public const float HopThigh = 24f;
         public const float HopAmp = 14f;
@@ -89,17 +105,24 @@ namespace Tag.Art
             s.KneeR = Lerp(JumpPose.FallKnee, s.KneeR, scale);
         }
 
-        /// <summary>Wider arms on a hop, quieter on a long jump. The fall pose still opens on its own.</summary>
-        public static void BalanceArms(ref JumpPose.Sample s, float planar, float vy)
+        /// <summary>
+        /// Tuck arms stay out and forward. A hop opens them a little more.
+        /// The authored overhead tuck is replaced, not stacked.
+        /// </summary>
+        public static void BalanceArms(ref JumpPose.Sample s, float planar, float vy, float age)
         {
-            float tuck = 1f - JumpPose.Extend(vy);
+            float tuck = (1f - JumpPose.Extend(vy)) * (1f - JumpPose.TakeoffWeight(age));
             float hop = 1f - Inv(0f, Sprint, planar);
-            float yaw = (8f + 16f * hop) * tuck;
-            float pitch = (-8f - 14f * hop) * tuck;
-            s.ArmYawL += yaw;
-            s.ArmYawR += yaw;
-            s.ArmPitchL += pitch;
-            s.ArmPitchR += pitch;
+            float yaw = ApexYaw - 6f * hop;
+            float elbow = ApexElbow - 4f * hop;
+            s.ArmYawL = Lerp(s.ArmYawL, yaw, tuck);
+            s.ArmYawR = Lerp(s.ArmYawR, yaw, tuck);
+            s.ArmPitchL = Lerp(s.ArmPitchL, ApexPitch, tuck);
+            s.ArmPitchR = Lerp(s.ArmPitchR, ApexPitch, tuck);
+            s.ElbowL = Lerp(s.ElbowL, elbow, tuck);
+            s.ElbowR = Lerp(s.ElbowR, elbow, tuck);
+            s.Hip = Lerp(s.Hip, ApexHip, tuck);
+            s.Spine = Lerp(s.Spine, ApexSpine, tuck);
         }
 
         /// <summary>0 through the authored fall. 1 at terminal, part way to the hard land.</summary>
@@ -119,10 +142,20 @@ namespace Tag.Art
             s.ThighR = Lerp(s.ThighR, BraceThigh, b);
             s.KneeL = Lerp(s.KneeL, BraceKnee, b);
             s.KneeR = Lerp(s.KneeR, BraceKnee, b);
+            s.ArmPitchL = Lerp(s.ArmPitchL, BraceArmPitch, b);
+            s.ArmPitchR = Lerp(s.ArmPitchR, BraceArmPitch, b);
             s.ArmYawL = Lerp(s.ArmYawL, BraceArmYaw, b);
             s.ArmYawR = Lerp(s.ArmYawR, BraceArmYaw, b);
+            s.ElbowL = Lerp(s.ElbowL, BraceElbow, b);
+            s.ElbowR = Lerp(s.ElbowR, BraceElbow, b);
             s.Spine = Lerp(s.Spine, BraceSpine, b);
             s.Hip = Lerp(s.Hip, BraceHip, b);
+        }
+
+        /// <summary>0 through the tuck. The brace looks down as it opens.</summary>
+        public static float HeadPitch(float vy)
+        {
+            return Lerp(0f, BraceHead, Brace01(vy));
         }
 
         /// <summary>Light opposing steps. open 0 leaves the sample. open 1 is the cycle.</summary>
@@ -197,7 +230,9 @@ namespace Tag.Art
                     s.KneeL = Lerp(BraceKnee, LandPose.HardKnee, 0.35f);
                     s.KneeR = s.KneeL;
                 }
-                return FromSample(s, 0f);
+                Shot fallShot = FromSample(s, 0f);
+                fallShot.Head = after ? HeadPitch(vy) : 12f;
+                return fallShot;
             }
             if (kind == 3)
             {
@@ -237,6 +272,7 @@ namespace Tag.Art
                 + " hop=" + Pair(HopStep(false), HopStep(true), c)
                 + " strafe=" + Pair(StrafeStep(false), StrafeStep(true), c)
                 + " coyote=" + Pair(CoyoteStep(false), CoyoteStep(true), c)
+                + " clear=" + ClearanceCm().ToString("0.0", c) + "cm"
                 + " gameplayDelay=0 rootMotion=0";
         }
 
@@ -279,14 +315,21 @@ namespace Tag.Art
             if (TakeoffStep(true) <= 0.05f || TuckStep(true) <= 0.05f) return false;
             if (FallStep(true) <= 0.05f || HopStep(true) <= 0.05f) return false;
             if (StrafeStep(true) <= 0.05f || CoyoteStep(true) <= 0.05f) return false;
+            if (ClearanceCm() < 2f) return false;
+            if (ApexFlex() < 30f || ApexFlex() > 45f) return false;
+            if (!ApexHandsOut()) return false;
+            if (BraceKnee > -18f || BraceKnee < -48f) return false;
+            if (BraceSpine > 0f) return false;
+            if (BraceHead < 8f) return false;
+            if (BraceArmPitch < 0f || BraceArmPitch > 35f) return false;
             return true;
         }
 
         static JumpPose.Sample AirSample(float vy, float age, float planar, float phase, bool hop, bool scale, bool brace)
         {
             JumpPose.Sample s = JumpPose.At(vy, age, true);
-            BalanceArms(ref s, planar, vy);
             LocomotionPolish.AirPhase(ref s.ThighL, ref s.ThighR, ref s.KneeL, ref s.KneeR, ref s.ArmPitchL, ref s.ArmPitchR, ref s.Spine, vy, hop);
+            BalanceArms(ref s, planar, vy, age);
             if (scale)
                 ScaleTuck(ref s, planar, vy, age);
             if (hop)
@@ -473,6 +516,31 @@ namespace Tag.Art
         static string Pair(float before, float after, CultureInfo c)
         {
             return before.ToString("0.0", c) + ">" + after.ToString("0.0", c);
+        }
+
+        /// <summary>Minimum arm clearance to the head and the torso, in centimetres, on the tuck.</summary>
+        public static float ClearanceCm()
+        {
+            JumpPose.Sample s = AirSample(JumpSpeed, 0.2f, Sprint, 0f, false, true, false);
+            return AirClear.Centimetres(s.Hip, s.Spine, s.ArmPitchL, s.ArmYawL, -s.ArmYawR, s.ElbowL, out _, out _);
+        }
+
+        static float ApexFlex()
+        {
+            JumpPose.Sample s = AirSample(JumpSpeed, 0.2f, Sprint, 0f, false, true, false);
+            AirClear.Centimetres(s.Hip, s.Spine, s.ArmPitchL, s.ArmYawL, -s.ArmYawR, s.ElbowL, out AirClear.Hand left, out _);
+            return left.Flex;
+        }
+
+        static bool ApexHandsOut()
+        {
+            JumpPose.Sample s = AirSample(JumpSpeed, 0.2f, Sprint, 0f, false, true, false);
+            AirClear.Centimetres(s.Hip, s.Spine, s.ArmPitchL, s.ArmYawL, -s.ArmYawR, s.ElbowL, out AirClear.Hand left, out AirClear.Hand right);
+            if (left.X < 0.15f || right.X > -0.15f) return false;
+            if (left.Y > -0.25f || right.Y > -0.25f) return false;
+            if (left.Z < 1.25f || left.Z > 1.56f) return false;
+            if (right.Z < 1.25f || right.Z > 1.56f) return false;
+            return true;
         }
 
         static float Raised(float u)
