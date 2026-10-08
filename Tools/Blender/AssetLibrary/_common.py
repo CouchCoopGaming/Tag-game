@@ -84,6 +84,12 @@ PALETTE = {
     "Lib_WindowLit": ((0.55, 0.36, 0.16), 0.0, 0.40),
     "Lib_PaintCream": ((0.86, 0.78, 0.66), 0.0, 0.32),
     "Lib_PaintTeal": ((0.10, 0.36, 0.40), 0.0, 0.30),
+    # Factory paint for the midsize sedan line. Flat color, not a logo.
+    "Lib_PaintBlack": ((0.015, 0.015, 0.016), 0.55, 0.62),
+    "Lib_PaintGrey": ((0.27, 0.28, 0.29), 0.45, 0.50),
+    "Lib_PaintSilver": ((0.68, 0.70, 0.72), 0.72, 0.58),
+    "Lib_PaintNavy": ((0.07, 0.14, 0.30), 0.42, 0.52),
+    "Lib_PaintOcean": ((0.04, 0.40, 0.44), 0.28, 0.50),
     "Lib_Interior": ((0.18, 0.13, 0.10), 0.0, 0.45),
     "Lib_CourtDecal": ((0.16, 0.16, 0.17), 0.0, 0.18),
     "Lib_Bark": ((0.34, 0.24, 0.14), 0.0, 0.22),

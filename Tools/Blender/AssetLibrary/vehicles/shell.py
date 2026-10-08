@@ -390,6 +390,8 @@ def _cutters(spec):
     # 4 mm door-gap grooves, 8 mm deep, so the black line sits in a slot.
     for center, size in _door_slots(spec):
         pockets.append((center, size))
+    if spec.get("panel_gaps") and spec.get("_lod", 0) < 2:
+        pockets.extend(_panel_slots(spec))
     return pockets, prisms
 
 
@@ -430,6 +432,8 @@ def _door_lines(g, spec):
             g.box((sign * (x1 - 0.006), ymid, z1), (0.008, height, 0.004), "Lib_Black")
             g.box((sign * (xmid - 0.006), belt, zmid), (0.008, 0.004, span), "Lib_Black")
             g.box((sign * (xmid - 0.006), rocker, zmid), (0.008, 0.004, span), "Lib_Black")
+    if spec.get("panel_gaps") and spec.get("_lod", 0) < 2:
+        _panel_lines(g, spec)
 
 
 def _glass(g, spec):
@@ -490,6 +494,13 @@ def _mirrors(g, spec, lod):
 
 
 def _fascia(g, spec, lod):
+    kind = spec.get("fascia", "classic")
+    if kind == "bar":
+        _fascia_bar(g, spec, lod)
+        return
+    if kind == "split":
+        _fascia_split(g, spec, lod)
+        return
     z1 = spec["z1"]
     z0 = spec["z0"]
     bev = 0.004 if lod == 0 else 0.0
@@ -512,6 +523,9 @@ def _fascia(g, spec, lod):
 
 
 def _wheels(g, spec, lod):
+    if spec.get("tread"):
+        _wheels_tread(g, spec, lod)
+        return
     seg = 16 if lod == 0 else 10
     r = spec["tire_r"]
     half_w = spec["tire_half_w"]
@@ -540,6 +554,273 @@ def _wheels(g, spec, lod):
                     )
 
 
+
+def _panel_slots(spec):
+    """6 mm grooves for the hood and the trunk lid. The 4 mm line sits in them."""
+    slots = []
+    z_cowl = spec["cowl"][0]
+    z_nose = spec["z1"] - 0.04
+    if z_nose > z_cowl + 0.25:
+        _edge_grooves(slots, spec, z_cowl, z_nose, 0.62, 4)
+        _shut(slots, spec, z_cowl + 0.012, 0.30)
+        _shut(slots, spec, z_nose, 0.26)
+    z_tail = spec["z0"] + 0.07
+    z_lid = spec["deck_front"][0] - 0.03
+    if z_lid > z_tail + 0.18:
+        _edge_grooves(slots, spec, z_tail, z_lid, 0.56, 3)
+        _shut(slots, spec, z_tail, 0.26)
+        _shut(slots, spec, z_lid, 0.30)
+    return slots
+
+
+def _edge_grooves(slots, spec, z_a, z_b, x_rel, cuts):
+    if z_b < z_a:
+        z_a, z_b = z_b, z_a
+    for i in range(cuts):
+        za = z_a + (z_b - z_a) * (i / float(cuts))
+        zb = z_a + (z_b - z_a) * ((i + 1) / float(cuts))
+        zm = (za + zb) * 0.5
+        y, _x = _lerp(spec["keys"], zm)
+        x = _x_out(zm, spec) * x_rel
+        span = (zb - za) + 0.012
+        for sign in (1.0, -1.0):
+            slots.append(((sign * x, y - 0.004, zm), (0.006, 0.018, span)))
+
+
+def _shut(slots, spec, z, half_rel):
+    y, _x = _lerp(spec["keys"], z)
+    half = spec["width"] * half_rel
+    slots.append(((0.0, y - 0.002, z), (half * 2.0, 0.016, 0.006)))
+
+
+def _panel_lines(g, spec):
+    for center, size in _panel_slots(spec):
+        x, y, z = center
+        sx, sy, sz = size
+        # 4 mm bar, 1 mm under the skin, in the 6 mm groove.
+        if sx <= 0.008:
+            g.box((x, y - 0.004, z), (0.004, 0.004, max(0.004, sz - 0.008)), "Lib_Black")
+        else:
+            g.box((x, y - 0.004, z), (max(0.004, sx - 0.02), 0.004, 0.004), "Lib_Black")
+
+
+def _published_face(spec, end):
+    if end == "front":
+        return spec.get("pub_z1", spec["z1"])
+    return spec.get("pub_z0", spec["z0"])
+
+
+def _bumper_shell(g, spec, end, y, height, plate_w, lod):
+    """Bumper out to the published face, with the plate sitting back in a gap."""
+    face = _published_face(spec, end)
+    depth = max(spec.get("cap_inset", 0.0), 0.05)
+    half = spec["width"] * 0.5
+    bumper_w = half * 1.72
+    side_w = max(0.12, (bumper_w - plate_w) * 0.5)
+    size_z = depth + 0.004
+    if end == "front":
+        center_z = face - size_z * 0.5
+        plate_z = face - depth + 0.010
+    else:
+        center_z = face + size_z * 0.5
+        plate_z = face + depth - 0.010
+    bev = 0.003 if lod == 0 else 0.0
+    segs = 1 if lod == 0 else 0
+    for sign in (1.0, -1.0):
+        x = sign * (plate_w * 0.5 + side_w * 0.5)
+        g.box((x, y, center_z), (side_w, height, size_z), "Lib_Black", bevel=bev, segs=segs)
+    g.box((0.0, y, plate_z), (plate_w - 0.016, height * 0.58, 0.010), "Lib_SteelDark")
+
+
+def _fascia_bar(g, spec, lod):
+    """Later fascia: a thin full-width lamp, a recessed lower grille, separate tails joined by a bar."""
+    zf = _published_face(spec, "front")
+    zt = _published_face(spec, "tail")
+    half = spec["width"] * 0.5
+    depth = max(spec.get("cap_inset", 0.0), 0.05)
+    _bumper_shell(g, spec, "front", 0.19, 0.15, 0.36, lod)
+    _bumper_shell(g, spec, "tail", 0.20, 0.16, 0.36, lod)
+    gy, gh, gw = 0.45, 0.18, half * 1.28
+    g.box((0.0, gy, zf - 0.032), (gw, gh, 0.040), "Lib_Black")
+    slats = 4 if lod == 0 else (2 if lod == 1 else 0)
+    for i in range(slats):
+        g.box((0.0, gy - gh * 0.32 + i * (gh * 0.20), zf - 0.020), (gw - 0.10, 0.007, 0.006), "Lib_SteelDark")
+    ly = spec["lamp_y"] + 0.08
+    g.box((0.0, ly, zf - 0.009), (half * 1.52, 0.038, 0.016), "Lib_Black")
+    g.box((0.0, ly, zf - 0.004), (half * 1.38, 0.018, 0.006), "Lib_Headlamp")
+    if lod < 2:
+        for sign in (1.0, -1.0):
+            g.box((sign * half * 0.70, ly - 0.055, zf - 0.008), (0.20, 0.032, 0.012), "Lib_Headlamp")
+            g.box((sign * half * 0.62, 0.33, zf - 0.008), (0.14, 0.040, 0.010), "Lib_SignalAmber")
+    ty = spec["tail_y"]
+    g.box((0.0, ty, zt + 0.009), (half * 1.58, 0.048, 0.016), "Lib_Black")
+    g.box((0.0, ty, zt + 0.004), (half * 1.44, 0.022, 0.006), "Lib_Taillamp")
+
+
+def _swept_lamp(g, sign, z_face, z_back, reach_in, reach_out, y, h_in, h_out, mat):
+    xi = sign * reach_in
+    xo = sign * reach_out
+    hi = h_in * 0.5
+    ho = h_out * 0.5
+    lift = 0.010
+    verts = [
+        (xi, y - hi, z_face),
+        (xi, y + hi, z_face),
+        (xo, y + ho + lift, z_face),
+        (xo, y - ho + lift * 0.3, z_face),
+        (xi, y - hi, z_back),
+        (xi, y + hi, z_back),
+        (xo, y + ho + lift, z_back),
+        (xo, y - ho + lift * 0.3, z_back),
+    ]
+    g.mesh(verts, [
+        (0, 1, 2, 3),
+        (4, 7, 6, 5),
+        (0, 4, 5, 1),
+        (1, 5, 6, 2),
+        (2, 6, 7, 3),
+        (3, 7, 4, 0),
+    ], mat)
+
+
+def _fascia_split(g, spec, lod):
+    """Earlier fascia: separate swept lamps, a taller grille, separate tail lamps."""
+    zf = _published_face(spec, "front")
+    zt = _published_face(spec, "tail")
+    half = spec["width"] * 0.5
+    _bumper_shell(g, spec, "front", 0.175, 0.13, 0.34, lod)
+    _bumper_shell(g, spec, "tail", 0.19, 0.15, 0.34, lod)
+    # Horizontal lower intake, recessed between the bumper and the grille.
+    g.box((0.0, 0.30, zf - 0.018), (half * 1.20, 0.045, 0.016), "Lib_Black")
+    gy, gh, gw = 0.50, 0.24, half * 1.05
+    g.box((0.0, gy, zf - 0.030), (gw, gh, 0.036), "Lib_Black")
+    slats = 5 if lod == 0 else (3 if lod == 1 else 1)
+    for i in range(slats):
+        g.box((0.0, gy - gh * 0.36 + i * (gh * 0.16), zf - 0.018), (gw - 0.08, 0.007, 0.006), "Lib_SteelDark")
+    y = spec["lamp_y"] + 0.02
+    if lod < 2:
+        for sign in (1.0, -1.0):
+            _swept_lamp(g, sign, zf - 0.002, zf - 0.020, half * 0.28, half * 0.86, y, 0.050, 0.090, "Lib_Black")
+            _swept_lamp(g, sign, zf - 0.001, zf - 0.012, half * 0.32, half * 0.80, y, 0.030, 0.058, "Lib_Headlamp")
+            _swept_lamp(g, sign, zt + 0.002, zt + 0.018, half * 0.32, half * 0.88, spec["tail_y"], 0.055, 0.100, "Lib_Black")
+            _swept_lamp(g, sign, zt + 0.001, zt + 0.010, half * 0.36, half * 0.82, spec["tail_y"], 0.032, 0.064, "Lib_Taillamp")
+    else:
+        for sign in (1.0, -1.0):
+            g.box((sign * half * 0.62, y, zf - 0.008), (0.34, 0.08, 0.014), "Lib_Headlamp")
+            g.box((sign * half * 0.62, spec["tail_y"], zt + 0.008), (0.36, 0.09, 0.014), "Lib_Taillamp")
+
+
+def _torus_x(g, center, major, minor, mat, major_seg, minor_seg):
+    """Ring around the Unity X axis. Used for a sidewall beside the tread."""
+    cx, cy, cz = center
+    rings = []
+    verts = []
+    for i in range(major_seg):
+        a = 2.0 * math.pi * i / major_seg
+        ca, sa = math.cos(a), math.sin(a)
+        ring = []
+        for j in range(minor_seg):
+            b = 2.0 * math.pi * j / minor_seg
+            cb, sb = math.cos(b), math.sin(b)
+            ring.append(len(verts))
+            verts.append((
+                cx + minor * cb,
+                cy + (major + minor * sb) * ca,
+                cz + (major + minor * sb) * sa,
+            ))
+        rings.append(ring)
+    faces = []
+    for i in range(major_seg):
+        ni = (i + 1) % major_seg
+        for j in range(minor_seg):
+            nj = (j + 1) % minor_seg
+            faces.append((rings[i][j], rings[ni][j], rings[ni][nj], rings[i][nj]))
+    g.mesh(verts, faces, mat)
+
+
+def _wheels_tread(g, spec, lod):
+    """One rubber carcass, sidewall rings outside it, tread blocks outside the carcass."""
+    seg = 18 if lod == 0 else (12 if lod == 1 else 8)
+    r = spec["tire_r"]
+    half_w = spec["tire_half_w"]
+    carcass_w = half_w * 2.0 * 0.78
+    spokes = int(spec.get("spokes", 5))
+    rim_r = r * spec.get("rim_ratio", 0.62)
+    blocks = 12 if lod == 0 else 0
+    for z in spec["axles"]:
+        for x in (-spec["tire_x"], spec["tire_x"]):
+            # Carcass sits just inside the contact radius so tread blocks land on y=0.
+            g.cylinder(
+                (x, spec["axle_y"], z), r * 0.955, carcass_w, "Lib_Rubber", seg, axis="X",
+            )
+            sign = 1.0 if x > 0.0 else -1.0
+            if lod == 0:
+                wall_x = half_w * 0.78 + 0.018
+                _torus_x(
+                    g, (x + sign * wall_x, spec["axle_y"], z),
+                    r * 0.90, 0.014, "Lib_Rubber", 12, 6,
+                )
+                _torus_x(
+                    g, (x - sign * wall_x, spec["axle_y"], z),
+                    r * 0.90, 0.014, "Lib_Rubber", 12, 6,
+                )
+            face = x + sign * (half_w + 0.010)
+            g.cylinder((face, spec["axle_y"], z), rim_r, 0.012, "Lib_Steel", seg, axis="X")
+            g.cylinder((face + sign * 0.006, spec["axle_y"], z), rim_r * 0.28, 0.010, "Lib_SteelDark", max(8, seg // 2), axis="X")
+            if lod < 2:
+                count = spokes if lod == 0 else max(5, spokes // 2)
+                for k in range(count):
+                    theta = math.radians(k * (360.0 / count) + 6.0)
+                    g.box(
+                        (
+                            face,
+                            spec["axle_y"] + math.cos(theta) * rim_r * 0.55,
+                            z + math.sin(theta) * rim_r * 0.55,
+                        ),
+                        (0.008, rim_r * 0.62, 0.014 if count >= 8 else 0.022),
+                        "Lib_Steel",
+                        euler=(math.degrees(theta), 0, 0),
+                    )
+            if blocks:
+                for i in range(blocks):
+                    theta = math.radians(i * (360.0 / blocks) + 4.0)
+                    for rib in (-0.45, 0.45):
+                        rad = r - 0.006
+                        g.box(
+                            (
+                                x + rib * carcass_w * 0.55,
+                                spec["axle_y"] + math.cos(theta) * rad,
+                                z + math.sin(theta) * rad,
+                            ),
+                            (0.016, 0.010, 0.036),
+                            "Lib_Rubber",
+                            euler=(math.degrees(theta), 0, 0),
+                        )
+
+
+def _wipers(g, spec):
+    y0, z0 = spec["cowl"][1], spec["cowl"][0]
+    dy = 0.34
+    dz = -dy * math.tan(math.radians(60.0))
+    # Parked at the cowl, lying on the 60-degree glass.
+    g.pipe((-0.02, y0 + 0.015, z0 - 0.02), (-0.36, y0 + 0.015 + dy, z0 - 0.02 + dz), 0.005, "Lib_Black", segments=5)
+    g.pipe((0.10, y0 + 0.012, z0 - 0.015), (0.42, y0 + 0.012 + dy * 0.92, z0 - 0.015 + dz * 0.92), 0.005, "Lib_Black", segments=5)
+
+
+def _cabin_block(g, spec):
+    """Seat backs and a dash in the greenhouse, above the cabin collider."""
+    cowl_z, cowl_y = spec["cowl"]
+    width = spec["width"]
+    g.box((0.0, max(0.96, cowl_y - 0.02), cowl_z - 0.22), (width * 0.58, 0.14, 0.22), "Lib_Interior")
+    g.box((0.0, max(1.02, cowl_y + 0.04), cowl_z - 0.16), (width * 0.42, 0.035, 0.10), "Lib_Black")
+    front_z = spec["doors"][0][0] - 0.20
+    for x in (-0.34, 0.34):
+        g.box((x, 0.96, front_z), (0.30, 0.22, 0.07), "Lib_Interior")
+        g.box((x, 1.10, front_z + 0.02), (0.16, 0.08, 0.06), "Lib_Black")
+    rear_z = spec["doors"][1][0] + 0.18
+    g.box((0.0, 0.94, rear_z), (width * 0.52, 0.18, 0.08), "Lib_Interior")
+
+
 def _wells(spec):
     radius = spec["tire_r"] + 0.028
     length = spec["tire_half_w"] * 2.0 + 0.28
@@ -547,8 +828,9 @@ def _wells(spec):
 
 
 def build_sedan(g, spec, lod):
+    spec["_lod"] = lod
     level = 1 if lod == 0 else 0
-    step = 0.08 if lod == 0 else 0.16
+    step = 0.08 if lod == 0 else (0.32 if lod >= 2 else 0.16)
     extra = [k[0] for k in spec["keys"]]
     extra.extend(spec["axles"])
     for axle in spec["axles"]:
@@ -569,6 +851,10 @@ def build_sedan(g, spec, lod):
         for sign in (-1.0, 1.0):
             g.box((sign * (x + 0.012), 0.40, zmid), (0.028, 0.20, z_b - z_a), "Lib_SteelDark")
     _wheels(g, spec, lod)
+    if spec.get("wipers") and lod == 0:
+        _wipers(g, spec)
+    if spec.get("cabin") and lod < 2:
+        _cabin_block(g, spec)
 
 
 def add_sedan_colliders(asset, spec):
@@ -577,7 +863,10 @@ def add_sedan_colliders(asset, spec):
     x = spec["tire_x"] + spec["tire_half_w"] * 0.12
     for i, z in enumerate(spec["axles"]):
         for j, sign in enumerate((-1.0, 1.0)):
-            asset.box("Col_Wheel_%d%d" % (i, j), (sign * x, spec["axle_y"], z), (0.016, r * 0.96, r * 0.96))
+            # Tread cars keep the slab deeper inside the carcass. The corner of a
+            # 0.96 box still fits, but a smaller one survives a ray that grazes the bead.
+            yz = r * (0.80 if spec.get("tread") else 0.96)
+            asset.box("Col_Wheel_%d%d" % (i, j), (sign * x, spec["axle_y"], z), (0.016, yz, yz))
     cabin_z = (spec["doors"][0][1] + spec["doors"][1][0]) * 0.5
     asset.box("Col_Cabin", (0.0, 0.55, cabin_z), (spec["width"] * 0.62, 0.46, spec["wheelbase"] * 0.42))
     asset.box("Col_Roof", (0.0, spec["height"] - 0.09, spec["roof_z"]), (spec["width"] * 0.36, 0.036, spec["roof_len"]))
@@ -607,12 +896,17 @@ def make_sedan(
     length, width, height, wheelbase, track, front_overhang,
     tire_radius, tire_width, nose_y, paint, name,
     deck_ratio=0.745, roof_span=0.22, cowl_setback=0.38, belly=0.145,
-    c_pillar_deg=58.0,
+    c_pillar_deg=58.0, cap_inset=0.0, tumble=0.042,
+    fascia="classic", spokes=5, tread=False, panel_gaps=False,
+    cabin=False, wipers=False, rim_ratio=0.62,
 ):
     """Family-sedan silhouette. A-pillar is 60 degrees from vertical by construction."""
-    z0 = -length * 0.5
-    z1 = length * 0.5
-    z_front = z1 - front_overhang
+    pub_z0 = -length * 0.5
+    pub_z1 = length * 0.5
+    # The bumper face is the published end. The loft stops one bumper-depth short.
+    z0 = pub_z0 + cap_inset
+    z1 = pub_z1 - cap_inset
+    z_front = pub_z1 - front_overhang
     z_rear = z_front - wheelbase
     belt = height * 0.63
     roof = height
@@ -711,7 +1005,17 @@ def make_sedan(
         "belt": belt,
         "belly": belly,
         "rocker_y": 0.30,
-        "tumble": 0.042,
+        "tumble": tumble,
+        "pub_z0": pub_z0,
+        "pub_z1": pub_z1,
+        "cap_inset": cap_inset,
+        "fascia": fascia,
+        "spokes": spokes,
+        "tread": tread,
+        "panel_gaps": panel_gaps,
+        "cabin": cabin,
+        "wipers": wipers,
+        "rim_ratio": rim_ratio,
         "keys": keys,
         "header": (header_z, header_y),
         "cowl": (cowl_z, cowl_y),

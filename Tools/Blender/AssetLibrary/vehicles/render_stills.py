@@ -23,6 +23,7 @@ STILL_ROOT = os.path.join(r._common.REPO, "Docs", "AssetStills", "vehicles")
 LIMIT = 400 * 1024
 
 MODULES = (
+    "sedan_mid_a",
     "sedan_midsize",
     "sedan_compact",
     "crossover_compact",
@@ -34,15 +35,31 @@ MODULES = (
     "mannequin",
 )
 
+FONT = os.path.join(r._common.REPO, "Tools", "StrafeJumpSim", "Fonts", "LiberationSans-Regular.ttf")
 
-def _load():
+
+def _wanted(stem, only):
+    if not only:
+        return True
+    if stem == "mannequin":
+        return True
+    return only in stem or stem in only
+
+
+def _load(only=None):
     sys.path.insert(0, HERE)
     sys.path.insert(0, ROOT)
     found = {}
     for stem in MODULES:
+        if not _wanted(stem, only):
+            continue
         module = importlib.import_module(stem)
-        asset = module.create()
-        found[asset.name] = module.create
+        if hasattr(module, "create_variants"):
+            for asset in module.create_variants():
+                found[asset.name] = (lambda a=asset: a)
+        else:
+            asset = module.create()
+            found[asset.name] = module.create
     return found
 
 
@@ -147,6 +164,80 @@ def _close_pair(found, prop, path, prop_pos, prop_yaw, fig_pos, fig_yaw, eye, ai
     _fit(path)
 
 
+def _shot_az(fn, path, azimuth, elevation=14.0, fill=0.84):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=False)
+    scene.cycles.samples = 28
+    r._ensure_materials()
+    r._world(scene, night=False)
+    obj = r._spawn(fn(), (0, 0, 0))
+    r._ground("asphalt", 80.0)
+    r._frame(scene, [obj], fill=fill, elevation=elevation, azimuth=azimuth)
+    r._render(scene, path)
+    _fit(path)
+
+
+def _dimensions(length, height, wheelbase, z_front, z_rear):
+    """Side-view ticks in the sky and beside the body. Numbers only, no names."""
+    from _common import Asset
+
+    asset = Asset("Dims", "Vehicles", "Dimension overlay.")
+    g = asset.begin(0)
+    # Camera sits on +X. Bars are thick enough to read at a full-car frame.
+    x = 1.45
+    y_len = height + 0.22
+    g.box((x, y_len, 0.0), (0.04, 0.028, length), "Lib_Lane")
+    g.box((x, y_len - 0.10, length * 0.5), (0.04, 0.20, 0.028), "Lib_Lane")
+    g.box((x, y_len - 0.10, -length * 0.5), (0.04, 0.20, 0.028), "Lib_Lane")
+    g.text("%d mm" % int(round(length * 1000)), (x, y_len + 0.14, 0.0), 0.16, "Lib_Lane", extrude=0.012, yaw=-90.0, font=FONT)
+    z = -length * 0.5 - 0.28
+    g.box((x, height * 0.5, z), (0.04, height, 0.028), "Lib_Lane")
+    g.box((x, 0.02, z), (0.04, 0.02, 0.22), "Lib_Lane")
+    g.box((x, height, z), (0.04, 0.02, 0.22), "Lib_Lane")
+    g.text("%d mm" % int(round(height * 1000)), (x, height * 0.45, z - 0.28), 0.12, "Lib_Lane", extrude=0.012, yaw=-90.0, font=FONT)
+    mid = (z_front + z_rear) * 0.5
+    g.box((x, 0.42, mid), (0.03, 0.022, wheelbase), "Lib_Lane")
+    g.box((x, 0.42, z_front), (0.03, 0.16, 0.022), "Lib_Lane")
+    g.box((x, 0.42, z_rear), (0.03, 0.16, 0.022), "Lib_Lane")
+    g.text("%d mm" % int(round(wheelbase * 1000)), (x, 0.62, mid), 0.12, "Lib_Lane", extrude=0.012, yaw=-90.0, font=FONT)
+    asset.end()
+    return asset
+
+
+def _side_dims(fn, dims, path, eye, aim, lens):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=False)
+    scene.cycles.samples = 28
+    r._ensure_materials()
+    r._world(scene, night=False)
+    r._spawn(fn(), (0, 0, 0))
+    r._spawn(dims, (0, 0, 0))
+    r._ground("asphalt", 40.0)
+    _look(scene, eye, aim, lens)
+    r._render(scene, path)
+    _fit(path)
+
+
+def _lineup(found, names, path):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=False)
+    scene.cycles.samples = 16
+    r._ensure_materials()
+    r._world(scene, night=False)
+    objs = []
+    span = 3.55
+    origin = (len(names) - 1) * span * 0.5
+    for i, name in enumerate(names):
+        objs.append(r._spawn(found[name](), (i * span - origin, 0.0, 0.0), 28.0))
+    r._ground("asphalt", 80.0)
+    r._frame(scene, objs, fill=0.90, elevation=12.0, azimuth=36.0)
+    r._render(scene, path)
+    _fit(path)
+
+
 def _sedan_set(found, name, folder):
     out = os.path.join(STILL_ROOT, folder)
     os.makedirs(out, exist_ok=True)
@@ -166,7 +257,50 @@ def main():
     only = None
     if "--only" in sys.argv:
         only = sys.argv[sys.argv.index("--only") + 1]
-    found = _load()
+    shot = None
+    if "--shot" in sys.argv:
+        shot = sys.argv[sys.argv.index("--shot") + 1]
+    found = _load(only)
+    if only is not None and "sedan_mid_a" in only:
+        print("SHOT", "sedan_mid_a", shot or "all")
+        out = os.path.join(STILL_ROOT, "sedan_mid_a")
+        os.makedirs(out, exist_ok=True)
+        if shot in (None, "hero"):
+            _shot_az(found["Sedan_Mid_A"], os.path.join(out, "hero.png"), 38.0)
+        # 2025 sheet: 193.5 x 56.9 in, wheelbase 111.2. Axles from the 39.0 in front overhang.
+        length = 193.5 * 0.0254
+        height = 56.9 * 0.0254
+        wheelbase = 111.2 * 0.0254
+        z_front = length * 0.5 - 39.0 * 0.0254
+        z_rear = z_front - wheelbase
+        if shot in (None, "side"):
+            _side_dims(
+                found["Sedan_Mid_A"],
+                _dimensions(length, height, wheelbase, z_front, z_rear),
+                os.path.join(out, "side.png"),
+                (14.0, 1.35, 0.0), (0.0, 0.95, 0.0), 58.0,
+            )
+        if shot in (None, "rear"):
+            _shot_az(found["Sedan_Mid_A"], os.path.join(out, "rear.png"), 218.0)
+        if shot in (None, "scale"):
+            _with_figure(
+                found, "Sedan_Mid_A", os.path.join(out, "scale.png"),
+                (0.4, 0.0, 0.0), 18, (-1.7, 0.0, 1.55),
+            )
+        if shot in (None, "lineup"):
+            _lineup(
+            found,
+            (
+                "Sedan_Mid_A_21",
+                "Sedan_Mid_A",
+                "Sedan_Mid_A_White",
+                "Sedan_Mid_A_Black",
+                "Sedan_Mid_A_Red",
+                "Sedan_Mid_A_Ocean",
+            ),
+            os.path.join(out, "lineup.png"),
+        )
+        return
     if only is None or "midsize" in only or "sedan_midsize" in only:
         print("SHOT", "sedan_midsize")
         _sedan_set(found, "Sedan_Midsize", "sedan_midsize")

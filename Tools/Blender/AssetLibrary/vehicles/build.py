@@ -36,7 +36,7 @@ def _point_inside_long(bvh, blender_point):
     origin = Vector(blender_point)
     direction = Vector((1.0, 0.17, 0.09)).normalized()
     hits = 0
-    for _ in range(48):
+    for _ in range(160):
         loc, _normal, _idx, _dist = bvh.ray_cast(origin, direction)
         if loc is None:
             break
@@ -54,6 +54,7 @@ sys.path.insert(0, ROOT)
 from _sk_build import _merge, _prefabs  # noqa: E402
 
 MODULES = (
+    "sedan_mid_a",
     "sedan_midsize",
     "sedan_compact",
     "crossover_compact",
@@ -85,26 +86,30 @@ def main():
             continue
         try:
             module = importlib.import_module(stem)
-            asset = module.create()
-            if hasattr(asset, "_sedan_spec"):
-                shell.probe_sedan(asset, asset._sedan_spec)
-            check_pivot(asset)
-            validate_colliders(asset)
-            path = export_fbx(asset)
-            names = fbx_model_names(path)
-            entry = manifest_entry(asset, names)
-            entry["fbx"] = os.path.relpath(path, os.path.join(ROOT, "..", "..", "..")).replace("\\", "/")
-            entries.append(entry)
-            slack = entry["slackCm"]
-            if slack > worst[0]:
-                worst = (slack, asset.name)
-            tris = ",".join(str(item["tris"]) for item in entry["lods"])
-            flag = "WARN" if asset.warnings else "OK"
-            print("%s %s size=%s tris=%s slack=%s(%s) %s" % (
-                flag, asset.name, entry["size"], tris, slack,
-                getattr(asset, "collider_slack_name", ""),
-                "; ".join(asset.warnings),
-            ))
+            if hasattr(module, "create_variants"):
+                assets = module.create_variants()
+            else:
+                assets = [module.create()]
+            for asset in assets:
+                if hasattr(asset, "_sedan_spec"):
+                    shell.probe_sedan(asset, asset._sedan_spec)
+                check_pivot(asset)
+                validate_colliders(asset)
+                path = export_fbx(asset)
+                names = fbx_model_names(path)
+                entry = manifest_entry(asset, names)
+                entry["fbx"] = os.path.relpath(path, os.path.join(ROOT, "..", "..", "..")).replace("\\", "/")
+                entries.append(entry)
+                slack = entry["slackCm"]
+                if slack > worst[0]:
+                    worst = (slack, asset.name)
+                tris = ",".join(str(item["tris"]) for item in entry["lods"])
+                flag = "WARN" if asset.warnings else "OK"
+                print("%s %s size=%s tris=%s slack=%s(%s) %s" % (
+                    flag, asset.name, entry["size"], tris, slack,
+                    getattr(asset, "collider_slack_name", ""),
+                    "; ".join(asset.warnings),
+                ))
         except Exception as exc:
             traceback.print_exc()
             failures.append("%s: %s" % (stem, exc))
@@ -113,6 +118,11 @@ def main():
             print("FAIL", line)
         sys.exit(1)
     _merge(entries)
+    palette, textured, normals, ao_names, emissive = write_unity.load_palette()
+    extra = {
+        "Lib_PaintBlack", "Lib_PaintGrey", "Lib_PaintSilver", "Lib_PaintNavy", "Lib_PaintOcean",
+    }
+    write_unity.write_materials(palette, textured, normals, ao_names, emissive, only=extra)
     _prefabs(entries)
     print("VEHICLE_WORST_SLACK_CM", worst[0], worst[1])
     print("VEHICLE_COUNT", len(entries))
