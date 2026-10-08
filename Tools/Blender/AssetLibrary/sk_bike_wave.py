@@ -1,5 +1,6 @@
-"""Serpentine bike rack. One square-wave tube, 2.10 m long, 0.84 m tall."""
+"""Three inverted-U bike hoops. Each tube is bent, with a flange under each leg."""
 
+import math
 import os
 import sys
 
@@ -7,45 +8,57 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
 from sk_parts import polyline
 
+HOOPS = (-0.90, 0.0, 0.90)
+# Semicircle of this radius. Legs sit at z = ±radius so the bend is a true U.
+RADIUS = 0.36
+TUBE = 0.024
+YB = 0.48
+
+
+def _arc_points(x, steps):
+    pts = []
+    for i in range(steps + 1):
+        ang = math.pi * (1.0 - i / float(steps))
+        pts.append((x, YB + RADIUS * math.sin(ang), RADIUS * math.cos(ang)))
+    return pts
+
+
+def _hoop(g, x, lod):
+    seg = lod_pick(lod, 10, 6)
+    steps = lod_pick(lod, 12, 6)
+    for z in (-RADIUS, RADIUS):
+        g.pipe((x, 0.016, z), (x, YB + 0.02, z), TUBE, "Lib_Steel", seg)
+    polyline(g, _arc_points(x, steps), TUBE, "Lib_Steel", seg)
+    bev = lod_pick(lod, 0.0015, 0.0)
+    for z in (-RADIUS, RADIUS):
+        g.box((x, 0.012, z), (0.11, 0.024, 0.11), "Lib_SteelDark", bevel=bev, segs=1 if lod == 0 else 0)
+        if lod == 0:
+            for sx in (-0.032, 0.032):
+                for sz in (-0.032, 0.032):
+                    g.cylinder((x + sx, 0.026, z + sz), 0.006, 0.008, "Lib_Steel", 6)
+
 
 @register
 def create():
     a = Asset(
         "BikeRack_Wave",
         "StreetFurniture",
-        "Serpentine rack, 2.10 m long, 0.84 m to the top tube, 4.2 cm pipe.",
+        "Three inverted-U hoops, 0.84 m to the crown, 48 mm tube, flange feet. No shared rail.",
     )
     a.climb_note = "Tube is too thin to cling."
-    a.vault_note = "Top is 0.84 m and round. Under the vault band."
-    xs = [-0.90, -0.30, 0.30, 0.90]
-    r = 0.021
+    a.vault_note = "Crown is 0.84 m and round. Under the vault band."
     for lod in (0, 1):
         g = a.begin(lod)
-        seg = lod_pick(lod, 8, 6)
-        z0, z1 = -0.26, 0.26
-        pts = [(xs[0], 0.02, z0)]
-        z = z0
-        for i, x in enumerate(xs):
-            other = z1 if z < 0 else z0
-            pts.append((x, 0.82, z))
-            pts.append((x, 0.82, other))
-            pts.append((x, 0.02, other))
-            z = other
-            if i + 1 < len(xs):
-                pts.append((xs[i + 1], 0.02, z))
-        polyline(g, pts, r, "Lib_Steel", seg)
-        for x in xs:
-            g.box((x, 0.012, -0.26), (0.08, 0.024, 0.08), "Lib_SteelDark", bevel=0.002 if lod == 0 else 0, segs=1)
-            g.box((x, 0.012, 0.26), (0.08, 0.024, 0.08), "Lib_SteelDark", bevel=0.002 if lod == 0 else 0, segs=1)
+        for x in HOOPS:
+            _hoop(g, x, lod)
         a.end()
-    for i, x in enumerate(xs):
-        a.capsule("Col_Up_%d" % i, (x, 0.42, -0.26 if i % 2 == 0 else 0.26), 0.016, 0.76, 1)
-        a.capsule("Col_Down_%d" % i, (x, 0.42, 0.26 if i % 2 == 0 else -0.26), 0.016, 0.76, 1)
-        a.capsule("Col_Top_%d" % i, (x, 0.82, 0.0), 0.016, 0.48, 2)
-        a.box("Col_FootA_%d" % i, (x, 0.012, -0.26), (0.06, 0.02, 0.06))
-        a.box("Col_FootB_%d" % i, (x, 0.012, 0.26), (0.06, 0.02, 0.06))
-    for i in range(3):
-        x = (xs[i] + xs[i + 1]) * 0.5
-        z = 0.26 if i % 2 == 0 else -0.26
-        a.capsule("Col_Run_%d" % i, (x, 0.02, z), 0.016, 0.52, 0)
+    steps = 12
+    for i, x in enumerate(HOOPS):
+        for j, z in enumerate((-RADIUS, RADIUS)):
+            a.capsule("Col_Leg_%d_%d" % (i, j), (x, 0.26, z), 0.016, 0.42, direction=1)
+            a.box("Col_Foot_%d_%d" % (i, j), (x, 0.010, z), (0.07, 0.016, 0.07))
+        for k, pt in enumerate(_arc_points(x, steps)):
+            if k == 0 or k == steps:
+                continue
+            a.box("Col_Arc_%d_%d" % (i, k), pt, (0.018, 0.018, 0.018))
     return a
