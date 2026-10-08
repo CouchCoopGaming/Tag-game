@@ -1,4 +1,4 @@
-"""Pack pass-6 stills under 400 KB. Court paint is snapped before the palette cut."""
+"""Pack stills under 400 KB. Court paint is snapped before the palette cut."""
 
 import os
 import sys
@@ -31,10 +31,14 @@ def pack(folder):
         im = Image.open(path).convert("RGB")
         if name.startswith("court"):
             _snap_court(im)
-        q = im.quantize(colors=256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
-        q.save(path, optimize=True)
-        size = os.path.getsize(path)
-        print("PACK", name, size)
+        size = LIMIT
+        for colors in (256, 192, 128):
+            q = im.quantize(colors=colors, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+            q.save(path, optimize=True)
+            size = os.path.getsize(path)
+            print("PACK", name, colors, size)
+            if size < LIMIT:
+                break
         if size >= LIMIT:
             failed = True
     return 1 if failed else 0

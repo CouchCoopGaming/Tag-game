@@ -4,7 +4,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _common import TILE_L, Asset, register, lod_pick
+from _common import TILE_L, Asset, register
 
 
 @register
@@ -25,9 +25,16 @@ def create():
         g.box((-0.44, 0.20, 0), (0.16, 0.40, TILE_L - 0.32), "Lib_Concrete", bevel=bev, segs=1, uv_scale=0.8)
         g.box((0.44, 0.20, 0), (0.16, 0.40, TILE_L - 0.32), "Lib_Concrete", bevel=bev, segs=1, uv_scale=0.8)
         g.box((0, 0.08, 0), (0.72, 0.16, 3.2), "Lib_Soil", uv_scale=1.0)
-        g.sphere((0, 0.46, 0), lod_pick(lod, 0.22, 0.20), "Lib_FoliageDark", lod_pick(lod, 8, 6))
-        g.sphere((0.12, 0.55, 0.1), 0.16, "Lib_Foliage", lod_pick(lod, 7, 5))
-        g.sphere((-0.14, 0.50, -0.12), 0.15, "Lib_FoliageLite", lod_pick(lod, 7, 5))
+        g.blob(
+            (
+                ((0.0, 0.50, 0.0), 0.26),
+                ((0.14, 0.60, 0.10), 0.16),
+                ((-0.15, 0.56, -0.08), 0.15),
+                ((0.04, 0.66, -0.06), 0.12),
+            ),
+            "Lib_FoliageDark",
+            voxel=0.06 if lod == 0 else 0.11,
+        )
         if lod == 0:
             g.box((0, 0.40, -0.42), (1.08, 0.04, 0.20), "Lib_Concrete")
             g.box((0, 0.40, 0.42), (1.08, 0.04, 0.20), "Lib_Concrete")
@@ -37,5 +44,5 @@ def create():
     a.box("Col_SideL", (-0.44, 0.20, 0), (0.16, 0.40, 3.68))
     a.box("Col_SideR", (0.44, 0.20, 0), (0.16, 0.40, 3.68))
     a.box("Col_Soil", (0, 0.08, 0), (0.72, 0.16, 3.2))
-    a.sphere("Col_Shrub", (0, 0.48, 0), 0.20)
+    a.sphere("Col_Shrub", (0, 0.52, 0), 0.16)
     return a

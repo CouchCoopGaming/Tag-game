@@ -142,29 +142,23 @@ def _bark_color(nt):
 
 
 def _asphalt_color(nt):
-    grain = _noise(nt, 28.0, 8.0, 0.8)
-    cracks = _noise(nt, 4.5, 12.0, 0.35, 1.2)
-    # A color ramp keeps only the deepest noise as a crack.
+    # Fine aggregate. High-frequency speckle, low contrast. No brick blotches.
+    speckle = _noise(nt, 110.0, 4.0, 0.35, 0.0)
+    grain = _noise(nt, 36.0, 2.0, 0.25, 0.0)
+    cracks = _noise(nt, 16.0, 10.0, 0.18, 0.4)
     ramp = nt.nodes.new("ShaderNodeValToRGB")
-    ramp.color_ramp.elements[0].position = 0.42
+    ramp.color_ramp.elements[0].position = 0.36
     ramp.color_ramp.elements[0].color = (0.0, 0.0, 0.0, 1.0)
-    ramp.color_ramp.elements[1].position = 0.52
+    ramp.color_ramp.elements[1].position = 0.44
     ramp.color_ramp.elements[1].color = (1.0, 1.0, 1.0, 1.0)
     nt.links.new(cracks.outputs["Fac"], ramp.inputs["Fac"])
-    patch = nt.nodes.new("ShaderNodeTexBrick")
-    patch.inputs["Scale"].default_value = 0.55
-    patch.inputs["Brick Width"].default_value = 0.9
-    patch.inputs["Row Height"].default_value = 0.7
-    patch.inputs["Mortar Size"].default_value = 0.02
-    patch.inputs["Color1"].default_value = (0.22, 0.22, 0.22, 1.0)
-    patch.inputs["Color2"].default_value = (0.16, 0.16, 0.17, 1.0)
-    patch.inputs["Mortar"].default_value = (0.10, 0.10, 0.10, 1.0)
-    base = _mix(nt, 0.45, (0.16, 0.16, 0.17), grain.outputs["Color"], "MULTIPLY")
-    patched = _mix(nt, 0.55, base, patch.outputs["Color"])
-    # Cracks darken the albedo. The ramp is black in the crack.
-    color = _mix(nt, 0.85, patched, ramp.outputs["Color"], "MULTIPLY")
-    height = ramp.outputs["Color"]
-    rough = _mix(nt, ramp.outputs["Color"], (0.95, 0.95, 0.95), (0.72, 0.72, 0.72))
+    base = (0.150, 0.150, 0.155)
+    color = _mix(nt, 0.09, base, speckle.outputs["Color"], "MULTIPLY")
+    color = _mix(nt, 0.05, color, grain.outputs["Color"], "MULTIPLY")
+    # Hairline cracks only. A heavy multiply was reading as camouflage.
+    color = _mix(nt, 0.18, color, ramp.outputs["Color"], "MULTIPLY")
+    height = _mix(nt, 0.82, (0.62, 0.62, 0.62), ramp.outputs["Color"])
+    rough = _mix(nt, speckle.outputs["Fac"], (0.90, 0.90, 0.90), (0.97, 0.97, 0.97))
     return color, height, rough
 
 

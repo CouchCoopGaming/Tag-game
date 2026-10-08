@@ -75,6 +75,8 @@ def create():
         g.box((0, 2.25, depth * 0.5 + 0.7), (3.4, 0.08, 1.5), "Lib_Roof", uv_scale=1.0)
         if lod < 2:
             g.pipe((-1.3, 0.95, depth * 0.5 + 1.25), (1.3, 0.95, depth * 0.5 + 1.25), 0.03, "Lib_WoodDark", 6)
+            for x in (-0.86, -0.43, 0.0, 0.43, 0.86):
+                g.box((x, 0.58, depth * 0.5 + 1.25), (0.035, 0.66, 0.028), "Lib_Wood")
         # Gable roof slabs.
         _roof(g, width + 0.4, lod)
         a.end()
