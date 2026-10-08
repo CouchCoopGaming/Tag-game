@@ -6,6 +6,7 @@ import subprocess
 
 import render_pass27 as p27
 import render_pass28 as p28
+import render_pass31 as p31
 import render_screens2 as ui
 from PIL import Image, ImageDraw, ImageStat
 
@@ -29,9 +30,11 @@ RAW = "/tmp/seatload"
 TIPS = (
     "Jump [Space] to leave the ground.",
     "Sprint [LB], then slide [B].",
-    "Hold [Left stick] into a wall to climb.",
-    "[Left stick] into a wall + [A] to wall jump.",
+    "Push the left stick into a wall to climb.",
+    "Press [A] while pushing the left stick into a wall to wall jump.",
 )
+MAIN_CLIMB = "Push [WASD] or the left stick into a wall to climb."
+MAIN_GRAPPLE = "Double-click [RMB] to let go of the grapple."
 
 
 def crop_park(seat, size):
@@ -311,6 +314,72 @@ def probe(path, plates, shapes, tracks, rects):
     print("probe=ok")
 
 
+def scene_main():
+    """Accepted main menu. Only the climb sentence changes."""
+    p27.reset_layout()
+    img = p28.darken(0.30)
+    d = ImageDraw.Draw(img)
+    checks, ratios = [], []
+    face = ui.font(ui.FONT_D, 48)
+    label = "Menu"
+    tw = d.textlength(label, font=face)
+    header = (96, 16, int(96 + tw + 72), 100)
+    ui.rounded(d, header, 12, NAVY)
+    p27.ROWS.append(header)
+    p27.text(d, (96 + 36, 28), label, face, GOLD, NAVY, header, checks, ratios, home=header)
+    p28.lockup(img, (140, 112, 520, 360))
+    d = ImageDraw.Draw(img)
+    blurb = (110, 368, 860, 416)
+    ui.rounded(d, blurb, 10, NAVY)
+    p27.ROWS.append(blurb)
+    p27.text(d, (128, 376), "Local couch. One keyboard, four pads.", ui.font(ui.FONT_B, 22), CREAM, NAVY, blurb, checks, ratios, home=blurb)
+    placed = p31.paste_pair(img, (140, 428, 840, 868))
+    if placed[1] < blurb[3]:
+        raise SystemExit("figures cover the blurb")
+    d = ImageDraw.Draw(img)
+    tip = (110, 888, 860, 1048)
+    if placed[3] > tip[1]:
+        raise SystemExit("figures cover the tips")
+    ui.rounded(d, tip, 16, NAVY)
+    p27.ROWS.append(tip)
+    lines = (
+        (896, "Tip of the day", p28.MUTE),
+        (932, "Space jumps.", CREAM),
+        (968, MAIN_CLIMB, CREAM),
+        (1004, MAIN_GRAPPLE, CREAM),
+    )
+    tip_face = ui.font(ui.FONT_B, 22)
+    if d.textlength(MAIN_CLIMB, font=tip_face) > 700:
+        tip_face = ui.font(ui.FONT_B, 18)
+    for y, word, fill in lines:
+        home = (128, y - 4, 844, y + 34)
+        p27.text(d, (136, y), word, tip_face, fill, NAVY, home, checks, ratios, home=home)
+    rows = (
+        ("Play", "Local couch", True),
+        ("Practice", "Free run any arena, no tagger", False),
+        ("Options", "Sound, picture, access", False),
+        ("Controls", "Binds. Space still jumps.", False),
+    )
+    y = 120
+    play = None
+    for title, sub, hot in rows:
+        box = (920, y, 1760, y + 108)
+        if hot:
+            play = box
+        p28.paint_row(d, box, title, sub, hot, checks, ratios)
+        y += 144
+    records = None
+    for title, x in (("Credits", 920), ("Records", 1200), ("Quit", 1480)):
+        box = (x, y, x + 260, y + 96)
+        if title == "Records":
+            records = box
+        p28.paint_row(d, box, title, "", False, checks, ratios)
+    p31.one_focus(img, play, records)
+    if MAIN_CLIMB.find("against a wall") >= 0 or MAIN_CLIMB.find("Hold [WASD]") >= 0:
+        raise SystemExit("old climb tip")
+    return img, checks, ratios
+
+
 def finish(img, name, ratios):
     if min(ratios) < 4.5:
         raise SystemExit("contrast %.2f" % min(ratios))
@@ -341,6 +410,80 @@ def finish(img, name, ratios):
     return path
 
 
+def scene_join(cells):
+    """Drop-in cards. Same Hier idle on every seat, waiting banner unchanged."""
+    p27.reset_layout()
+    img = p28.darken(0.28)
+    d = ImageDraw.Draw(img)
+    checks, ratios = [], []
+    header = (80, 24, 900, 100)
+    ui.rounded(d, header, 12, NAVY)
+    p27.ROWS.append(header)
+    p27.text(d, (100, 36), "Who's playing", ui.font(ui.FONT_D, 44), GOLD, NAVY, header, checks, ratios, home=header)
+    banner_line = "Waiting for 1 player to ready up"
+    banner = (940, 28, 1840, 96)
+    ui.rounded(d, banner, 12, NAVY)
+    p27.ROWS.append(banner)
+    p27.text(d, (banner[0] + 24, 44), banner_line, ui.font(ui.FONT_B, 26), GOLD, NAVY, banner, checks, ratios, home=banner)
+    cards = (
+        (True, "Red", True, "Keyboard"),
+        (True, "Blue", False, "Gamepad"),
+        (False, "", False, ""),
+        (False, "", False, ""),
+    )
+    card_w, card_h, gap, top = 420, 760, 24, 140
+    left = (W - (card_w * 4 + gap * 3)) // 2
+    rects = []
+    for i, (human, profile, ready, device) in enumerate(cards):
+        x = left + i * (card_w + gap)
+        box = (x, top, x + card_w, top + card_h)
+        fill = ui.mix(INK, BAND[i], 0.40)
+        pad = 16 if i == 0 else 5
+        frame = (x - pad, top - pad, x + card_w + pad, top + card_h + pad)
+        ui.rounded(d, frame, 22, GOLD if i == 0 else p28.STROKE)
+        ui.rounded(d, box, 18, fill)
+        p27.ROWS.append(box)
+        d.rectangle((x + 16, top + 18, x + 28, top + card_h - 18), fill=BAND[i])
+        name_home = (x + 44, top + 16, x + 250, top + 78)
+        p27.text(d, (x + 48, top + 22), "P%d" % (i + 1), ui.font(ui.FONT_D, 40), CREAM, fill, name_home, checks, ratios, home=name_home)
+        well = (x + card_w - 104, top + 18, x + card_w - 16, top + 106)
+        ui.rounded(d, well, 10, WELL)
+        p27.stamp(d, (well[0] + 12, well[1] + 12, well[2] - 12, well[3] - 12), i)
+        ratios.append(ui.contrast(FILL[i], WELL))
+        side = 250
+        fig = (x + (card_w - side) // 2, top + 130, x + (card_w - side) // 2 + side, top + 130 + side)
+        pasted = cells[i].resize((side, side), Image.Resampling.LANCZOS)
+        img.alpha_composite(pasted, (fig[0], fig[1]))
+        rects.append(fig)
+        d = ImageDraw.Draw(img)
+        if human:
+            who = "<  %s  >" % profile
+            who_home = (x + 40, top + 400, x + card_w - 40, top + 450)
+            p27.text(d, (x + 70, top + 408), who, ui.font(ui.FONT_B, 28), CREAM, fill, who_home, checks, ratios, home=who_home)
+            dev_home = (x + 80, top + 470, x + card_w - 40, top + 516)
+            p27.text(d, (x + 120, top + 476), device, ui.font(ui.FONT_B, 26), CREAM, fill, dev_home, checks, ratios, home=dev_home)
+            chip = (x + 120, top + 640, x + 300, top + 700)
+            chip_fill = GOLD if ready else NAVY
+            ink = INK if ready else CREAM
+            ui.rounded(d, chip, 12, chip_fill)
+            word = "Ready" if ready else "Joined"
+            p27.text(d, (x + 150, top + 652), word, ui.font(ui.FONT_D, 32), ink, chip_fill, chip, checks, ratios, home=chip)
+        else:
+            prompt = "Press Space or A to join"
+            face = ui.font(ui.FONT_B, 22)
+            tw = d.textlength(prompt, font=face)
+            home = (x + 16, top + 420, x + card_w - 16, top + 470)
+            p27.text(d, (x + (card_w - tw) / 2, top + 430), prompt, face, p28.MUTE, fill, home, checks, ratios, home=home)
+        if fig[3] > (top + 400 if human else top + 410):
+            raise SystemExit("figure covers the label")
+    if len(rects) != 4:
+        raise SystemExit("join seats")
+    heights = [r[3] - r[1] for r in rects]
+    if max(heights) - min(heights) > 1:
+        raise SystemExit("join scale")
+    return img, checks, ratios
+
+
 def main():
     cells = pack_atlas()
     img, checks, ratios, plates, shapes, tracks, rects, _header = scene_load(cells)
@@ -349,6 +492,14 @@ def main():
     print("text", round(worst, 2), "contrast", round(min(ratios), 2))
     path = finish(img, "32-load.png", ratios)
     probe(path, plates, shapes, tracks, rects)
+    img, checks, ratios = scene_main()
+    worst = p27.verify(img, checks, "32-main")
+    print("main text", round(worst, 2), "contrast", round(min(ratios), 2))
+    finish(img, "32-main.png", ratios)
+    img, checks, ratios = scene_join(cells)
+    worst = p27.verify(img, checks, "32-join")
+    print("join text", round(worst, 2), "contrast", round(min(ratios), 2))
+    finish(img, "32-join.png", ratios)
 
 
 if __name__ == "__main__":

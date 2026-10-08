@@ -13,8 +13,8 @@ namespace Tag.Ui.Menu
         {
             "Space jumps.",
             "Sprint, then slide.",
-            "Hold [WASD] against a wall to climb.",
-            "Hold [WASD] + [Space] to wall jump.",
+            "Push [WASD] or the left stick into a wall to climb.",
+            "Press [Space] while pushing into a wall to wall jump.",
             "Air dash in the air.",
             "Punch to tag. It changes hands.",
             "Tag-back is 1 second.",
@@ -75,32 +75,48 @@ namespace Tag.Ui.Menu
             bool pad = device != CouchPlay.DeviceKeyboard;
             if (i == 0) return Verb(PlayAction.Jump) + " [" + Mark(binds, PlayAction.Jump, pad) + "] to leave the ground.";
             if (i == 1) return Verb(PlayAction.Sprint) + " [" + Mark(binds, PlayAction.Sprint, pad) + "], then " + Later(PlayAction.Slide) + " [" + Mark(binds, PlayAction.Slide, pad) + "].";
-            if (i == 2) return "Hold [" + ClingWord(binds, pad) + "] into a wall to climb.";
-            if (i == 3) return "[" + ClingWord(binds, pad) + "] into a wall + [" + Mark(binds, PlayAction.Jump, pad) + "] to wall jump.";
+            if (i == 2) return ClimbLine(binds, pad);
+            if (i == 3) return WallJumpLine(binds, pad);
             if (i == 4) return Verb(PlayAction.AirDash) + " [" + Mark(binds, PlayAction.AirDash, pad) + "] in the air.";
             if (i == 5) return Verb(PlayAction.Punch) + " [" + Mark(binds, PlayAction.Punch, pad) + "]. It changes hands.";
-            if (i == 7)
-            {
-                string token = pad ? binds.GrapplePad : binds.GrappleKey;
-                return "Grapple [" + ActionBinds.Show(token) + "], double-click to let go.";
-            }
+            if (i == 7) return LetGoLine(binds, pad);
             return Lines[i];
         }
 
         /// <summary>
-        /// The cling display name, once. "Left stick hold" would repeat the verb Hold.
+        /// Climb is the move wish into the wall. Cling is not its own button.
         /// </summary>
-        static string ClingWord(ActionBinds binds, bool pad)
+        static string ClimbLine(ActionBinds binds, bool pad)
+        {
+            if (pad) return "Push the left stick into a wall to climb.";
+            return "Push [" + MoveWord(binds, false) + "] into a wall to climb.";
+        }
+
+        /// <summary>
+        /// Wall jump is Jump pressed while that wish still holds, or inside cling grace.
+        /// </summary>
+        static string WallJumpLine(ActionBinds binds, bool pad)
+        {
+            string jump = Mark(binds, PlayAction.Jump, pad);
+            if (pad) return "Press [" + jump + "] while pushing the left stick into a wall to wall jump.";
+            return "Press [" + jump + "] while pushing [" + MoveWord(binds, false) + "] into a wall to wall jump.";
+        }
+
+        /// <summary>
+        /// Second press inside the grapple window lets go. Pads have no glyph here.
+        /// </summary>
+        static string LetGoLine(ActionBinds binds, bool pad)
+        {
+            if (pad) return "Double-click to let go of the grapple.";
+            if (binds == null) binds = ActionBinds.Defaults();
+            return "Double-click [" + ActionBinds.Show(binds.GrappleKey) + "] to let go of the grapple.";
+        }
+
+        static string MoveWord(ActionBinds binds, bool pad)
         {
             if (binds == null) binds = ActionBinds.Defaults();
-            string token = pad ? binds.Gamepad[(int)PlayAction.Cling] : binds.Keyboard[(int)PlayAction.Cling];
-            if (token == "leftStickHold") return "Left stick";
-            if (token == "holdIntoWall") return "WASD";
-            string show = ActionBinds.Show(token);
-            const string tail = " hold";
-            if (show.Length > tail.Length && show.EndsWith(tail))
-                return show.Substring(0, show.Length - tail.Length);
-            return show;
+            string token = pad ? binds.Gamepad[(int)PlayAction.Move] : binds.Keyboard[(int)PlayAction.Move];
+            return ActionBinds.Show(token);
         }
 
         static string Verb(PlayAction action)
@@ -146,8 +162,15 @@ namespace Tag.Ui.Menu
             if (At(9).IndexOf("first to 2", System.StringComparison.Ordinal) < 0) return false;
             if (For(0, 0) != At(0) || For(0, 1) != At(1)) return false;
             if (For(1, 0) == For(0, 0)) return false;
-            if (At(2).IndexOf("into a wall", System.StringComparison.Ordinal) >= 0) return false;
+            if (At(2) != "Push [WASD] or the left stick into a wall to climb.") return false;
+            if (Shown(0, 2).IndexOf("Push [WASD] into a wall", System.StringComparison.Ordinal) != 0) return false;
             if (Shown(2, 0).IndexOf("into a wall") < 0) return false;
+            if (Shown(2, 0).IndexOf("[", System.StringComparison.Ordinal) >= 0) return false;
+            string padLetGo = Shown(1, 6);
+            if (padLetGo.IndexOf("[", System.StringComparison.Ordinal) >= 0) return false;
+            if (padLetGo.IndexOf("leftTrigger", System.StringComparison.Ordinal) >= 0) return false;
+            if (padLetGo.IndexOf("LT", System.StringComparison.Ordinal) >= 0) return false;
+            if (Shown(0, 7).IndexOf("[RMB]", System.StringComparison.Ordinal) < 0) return false;
             if (Shown(2, 0).IndexOf("Cling hold", System.StringComparison.Ordinal) >= 0) return false;
             if (Shown(3, 0).IndexOf("Cling hold", System.StringComparison.Ordinal) >= 0) return false;
             if (Shown(3, 0).IndexOf("wall jump") < 0) return false;
