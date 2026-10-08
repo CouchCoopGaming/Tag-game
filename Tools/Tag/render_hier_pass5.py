@@ -890,7 +890,9 @@ def solve_clip(arm, spec, smooth, facing, path):
         # Standing rule: a keyed pose may not leave a shell inside the body
         # or a solid. Edit the pose here so a later solve cannot skip it.
         import noclip_clear
+        import contact_pin
         noclip_clear.clear_solved_frame(arm, face, lip_z)
+        contact_pin.seat_solved_frame(arm, pins, face, lip_z)
         cap = arm.location.copy()
         capsule[i] = cap
         floor_pen, wall_pen, torso, head, _limb, _hand, _foot = _scan(lip_z, face)

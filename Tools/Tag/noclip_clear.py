@@ -972,8 +972,10 @@ def render_keyed_strips():
     bpy.context.scene.render.resolution_y = 1200
     os.makedirs(p5.PREV, exist_ok=True)
     os.makedirs(p6.PREV, exist_ok=True)
+    only = os.environ.get("STRIPS_ONLY", "")
     doc5 = json.load(open(nc.PASS5_JSON))
-    for spec in sp.CLIPS:
+    specs5 = sp.CLIPS if only in ("", "pass5") else []
+    for spec in specs5:
         entry = doc5["clips"][spec["id"]]
         facing = nc._pass5_facing(spec["id"])
         has_wall, wall_top = nc._wall_plan(arm, "pass5", spec["id"], entry, facing)
@@ -992,9 +994,11 @@ def render_keyed_strips():
             rh._shot(os.path.join(p5.PREV, f"{slug}_{s}_side.png"), loc, look, ortho=ortho)
             nc._flush(f"strip pass5 {slug} {s} frame={i}")
         rh._reset(arm)
-    p5.composite_pass5()
+    if specs5:
+        p5.composite_pass5()
     doc6 = json.load(open(nc.PASS6_JSON))
-    for spec in p6.build_specs():
+    specs6 = p6.build_specs() if only in ("", "pass6") else []
+    for spec in specs6:
         entry = doc6["clips"][spec["id"]]
         facing = nc._pass6_facing(spec["id"])
         has_wall, wall_top = nc._wall_plan(arm, "pass6", spec["id"], entry, facing)
@@ -1013,7 +1017,8 @@ def render_keyed_strips():
             rh._shot(os.path.join(p6.PREV, f"{slug}_{s}_side.png"), loc, look, ortho=ortho)
             nc._flush(f"strip pass6 {slug} {s} frame={i}")
         rh._reset(arm)
-    p6.composite_pass6()
+    if specs6:
+        p6.composite_pass6()
     rh._hide_wall()
 
 
