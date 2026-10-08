@@ -97,6 +97,7 @@ namespace Tag.Ui.Menu
             Set(_hips, _hips0, 0f, 0f, s.HipRoll * idle);
             Set(_spine, _spine0, s.ChestPitch * idle + (-8f * ready), 0f, s.ChestRoll * idle);
             Set(_head, _head0, s.HeadPitch * idle + (-4f * ready), 0f, 0f);
+            // No idle clip lowers the Hier arms. The hang constants are the primitive body only.
             float hang = _primitive ? VerbPoseClips.IdleArmPitch : 0f;
             float yaw = _primitive ? VerbPoseClips.IdleArmYaw : 0f;
             float elbow = _primitive ? VerbPoseClips.IdleElbow : 0f;
