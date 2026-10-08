@@ -355,6 +355,77 @@ def _yaw_loose_thighs(arm, planes):
             bpy_update()
 
 
+def _untwist_planted(arm, side, normal, lock_vert):
+    """Take twist out of a planted thigh and put the sole back on the same point.
+
+    Euler Y on the thigh is the twist that nests the hip shell. Aiming the shin
+    at the captured ankle reaches the old contact without that twist, when the
+    chain can still get there.
+    """
+    from mathutils import Vector
+    if lock_vert is None:
+        return
+    n = Vector(normal).normalized()
+    pb = arm.pose.bones.get(f"UpperLeg_{side}")
+    if pb is None:
+        return
+    pb.rotation_mode = "XYZ"
+    e0 = pb.rotation_euler.copy()
+    if abs(e0.y) < math.radians(4.0):
+        return
+    ankle = p5._tail_w(arm, f"LowerLeg_{side}").copy()
+    snap = _snap_rots(arm)
+    loc = arm.location.copy()
+    best = None
+    best_depth, _pair0 = _self_worst(arm)
+    for scale in (0.0, 0.35, 0.65):
+        _restore_rots(arm, snap)
+        arm.location = loc
+        bpy_update()
+        pb = arm.pose.bones[f"UpperLeg_{side}"]
+        pb.rotation_mode = "XYZ"
+        e = pb.rotation_euler.copy()
+        pb.rotation_euler = (e.x, e0.y * scale, e.z)
+        pb.location = (0.0, 0.0, 0.0)
+        pb.scale = (1.0, 1.0, 1.0)
+        bpy_update()
+        p5._point_bone(arm, f"LowerLeg_{side}", ankle)
+        lower = arm.pose.bones[f"LowerLeg_{side}"]
+        lower.location = (0.0, 0.0, 0.0)
+        lower.scale = (1.0, 1.0, 1.0)
+        bpy_update()
+
+        def point(side=side):
+            return _deepest(f"Foot_{side}", n)
+
+        for _ in range(4):
+            p5._seat_end(arm, f"Foot_{side}", point, lock_vert)
+            foot_b = arm.pose.bones[f"Foot_{side}"]
+            foot_b.location = (0.0, 0.0, 0.0)
+            foot_b.scale = (1.0, 1.0, 1.0)
+            bpy_update()
+        foot = point()
+        if foot is None:
+            continue
+        err = Vector(foot) - Vector(lock_vert)
+        along = err.dot(n)
+        tangent = (err - n * along).length
+        if along < -0.0015 or along > 0.0035 or tangent > 0.006:
+            continue
+        depth, _pair = _self_worst(arm)
+        if depth < best_depth - 0.0004:
+            best_depth = depth
+            best = _snap_rots(arm)
+            if depth <= DEPTH_LIMIT_M:
+                break
+    if best is None:
+        _restore_rots(arm, snap)
+    else:
+        _restore_rots(arm, best)
+    arm.location = loc
+    bpy_update()
+
+
 def _pole_knee(side, normal, out_axis):
     from mathutils import Vector
     n = Vector(normal).normalized()
@@ -645,6 +716,8 @@ def solve_slide(arm, samples, times):
         plant(base, clear=True)
         _yaw_loose_thighs(arm, [(plane_o, nrm)])
         _uncross(arm, guard=lambda: _min_plane(plane_o, nrm))
+        for side in ("L", "R"):
+            _untwist_planted(arm, side, nrm, _deepest(f"Foot_{side}", nrm))
         body_pen = max(0.0, -_min_plane(plane_o, nrm))
         pen = max(pen, body_pen)
         for side, off in foot_off.items():
