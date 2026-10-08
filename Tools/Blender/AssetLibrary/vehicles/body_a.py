@@ -5,7 +5,8 @@ arc-length even inside each feature span, starting at the belly and winding
 toward +X, so the fascia cannot scallop. The nose corners sweep back about
 0.28 m and the tail corners about 0.15 m. The hood leading edge sits near
 0.75 m and rises to about 1.00 m at the cowl, with the fascia raked about
-17 degrees. The deck is a short fastback above the hood. Subdivision is
+17 degrees. The deck is a short fastback above the hood, and the sail
+behind the rear door is dark glass. Subdivision is
 level 2 / 1 / 0, on a cage coarse enough that the dressed 2025 LOD0 lands
 near 12–15k triangles.
 
@@ -155,11 +156,12 @@ def _shoulder_y(z):
 
 
 def _belt_y(z):
-    """Rises a little toward the rear. Merges into the hood and the deck."""
+    """Drops through the quarter so the sail behind the rear door is a window."""
     return _lerp((
-        (-2.20, 1.00),
-        (-1.15, 1.04),
-        (-0.40, 1.02),
+        (-2.20, 0.98),
+        (-1.45, 0.90),
+        (-0.90, 0.94),
+        (-0.40, 1.00),
         (0.30, 0.98),
         (0.90, 0.97),
         (1.40, 0.92),
@@ -169,9 +171,10 @@ def _belt_y(z):
 
 def _rail_y(z):
     return _lerp((
-        (-2.00, 1.04),
-        (-1.20, 1.14),
-        (-0.70, 1.28),
+        (-2.00, 1.02),
+        (-1.40, 1.10),
+        (-0.90, 1.20),
+        (-0.55, 1.30),
         (0.00, 1.36),
         (0.55, 1.26),
         (1.05, 1.02),
@@ -232,8 +235,8 @@ def _blend_out(z, z_body, z_end):
 
 
 def _hood_blend(z):
-    """0 on the greenhouse, 1 on the hood and the deck."""
-    return max(_blend_out(z, 1.00, 1.55), _blend_out(z, -1.20, -1.70))
+    """0 on the greenhouse, including the quarter, 1 on the hood and the deck."""
+    return max(_blend_out(z, 1.00, 1.55), _blend_out(z, -1.48, -1.92))
 
 
 def _sagitta(x, pull, at_x=0.90):
@@ -412,12 +415,19 @@ def _shut_station(z):
 
 
 def _paint_at(x, y, z):
-    """Glass by where the face sits, including the quarter window behind the rear door."""
+    """Glass by where the face sits. The sail behind the rear door is dark glass."""
     ax = abs(x)
     hood = _hood_blend(z)
     _plan, top, _sy, belt, rail, _rx, _arch, _hood_b = _features(z)
-    if hood < 0.35 and ax > 0.40 and -1.32 <= z <= 1.02 and (rail - belt) > 0.05:
-        if belt + 0.01 <= y <= rail - 0.006:
+    # Quarter: C-pillar back to where the fastback meets the deck.
+    if -1.58 <= z <= -0.78 and 0.22 < ax and hood < 0.50 and top > belt + 0.06:
+        hi = min(rail + 0.02, top - 0.01)
+        if belt - 0.02 <= y <= hi:
+            if -0.810 <= z <= -0.748:
+                return MAT_BLACK
+            return MAT_GLASS
+    if hood < 0.35 and ax > 0.36 and -1.50 <= z <= 1.02 and (rail - belt) > 0.045:
+        if belt + 0.008 <= y <= rail - 0.004:
             if 0.020 <= z <= 0.100:
                 return MAT_BLACK
             if -0.810 <= z <= -0.730:
@@ -425,11 +435,11 @@ def _paint_at(x, y, z):
             if 0.990 <= z <= 1.080:
                 return MAT_BLACK
             return MAT_GLASS
-        if abs(y - belt) <= 0.016 and -1.20 <= z <= 1.05:
+        if abs(y - belt) <= 0.012 and -1.15 <= z <= 1.05:
             return MAT_BLACK
     if hood < 0.25 and ax < 0.55 and 0.35 < z < 1.12 and y >= rail - 0.04 and y <= top - 0.008 and top > 1.02:
         return MAT_GLASS
-    if hood < 0.30 and ax < 0.52 and -1.30 < z < -0.55 and y >= belt + 0.03 and y <= top - 0.008 and top > 1.08:
+    if hood < 0.40 and ax < 0.62 and -1.55 < z < -0.50 and y >= belt - 0.01 and y <= top - 0.004 and top > 1.02:
         return MAT_GLASS
     return MAT_PAINT
 

@@ -348,7 +348,7 @@ def main():
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "rear.png"), 180.0, elevation=4.0, fill=0.86, wide=True, shade=True)
         if shot in (None, "top"):
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "top.png"), 0.0, elevation=86.0, fill=0.90, wide=True, shade=True)
-        if shot in (None, "beside"):
+        if shot == "beside":
             _beside(found["Sedan_Mid_A_25"], os.path.join(out, "beside.png"))
         if shot in (None, "scale"):
             _with_figure(
