@@ -748,6 +748,12 @@ static class Program
             Console.Error.WriteLine("climb contact is not held");
             return 1;
         }
+        Console.WriteLine(Tag.Art.BodyLine.ProofLine());
+        if (!Tag.Art.BodyLine.Holds())
+        {
+            Console.Error.WriteLine("body line is not held");
+            return 1;
+        }
         if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
                 "SmoothMotion.Smooth",
                 "SmoothMotion.SecondsForSlew",
@@ -904,6 +910,21 @@ static class Program
             Console.Error.WriteLine("parkour contact is not on the mannequin");
             return 1;
         }
+        if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
+                "BodyLine.WallArc",
+                "BodyLine.LineFix",
+                "HangMotion.RopeSpine",
+                "BodyLine.ZipGrab",
+                "BodyLine.ZipWeights",
+                "BodyLine.PadOpen",
+                "BodyLine.KeepStride",
+                "BodyLine.TellOpen",
+                "BodyLine.ReverseBlend",
+                "BodyLine.ReachLead"))
+        {
+            Console.Error.WriteLine("body line is not on the mannequin");
+            return 1;
+        }
         if (!AssetHas("Assets/TagArenaMovement/Scripts/Core/PlayerMotor.cs",
                 "LedgeStand"))
         {
@@ -931,6 +952,8 @@ static class Program
         Tag.Art.SmoothMotion.WritePass7Stills(Path.Combine(still7, "plant-blink-yaw.png"));
         string still8 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass8");
         Tag.Art.SmoothMotion.WritePass8Stills(Path.Combine(still8, "climb-contact.png"));
+        string still9 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass9");
+        Tag.Art.SmoothMotion.WritePass9Stills(Path.Combine(still9, "body-line.png"));
         if (!File.Exists(Path.Combine(RepoRoot(), "Assets", "Scenes", "MotionGallery.unity")))
         {
             Console.Error.WriteLine("motion gallery scene is missing");

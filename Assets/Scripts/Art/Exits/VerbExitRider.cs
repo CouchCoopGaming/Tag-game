@@ -52,6 +52,11 @@ namespace Tag.Art
         bool _onLeftWall;
         bool _trailLeft;
         bool _fromMantle;
+        bool _wallHold;
+        float _wallHoldAge;
+        float _exitVy;
+        float _ropeElev;
+        bool _ropeHave;
         DummyLocomotor _loco;
         Transform _handL, _handR;
         bool _pinHandL, _pinHandR, _pinFootL, _pinFootR;
@@ -111,6 +116,24 @@ namespace Tag.Art
 
             VerbExitId before = _id;
             VerbExitId next = Detect();
+            if (next == VerbExitId.WallJump)
+            {
+                _wallHold = true;
+                _wallHoldAge = 0f;
+                next = VerbExitId.None;
+            }
+            if (_wallHold)
+            {
+                _wallHoldAge += dt;
+                float span = WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds;
+                if (next != VerbExitId.None)
+                    _wallHold = false;
+                else if (_wallHoldAge >= span)
+                {
+                    _wallHold = false;
+                    next = VerbExitId.WallJump;
+                }
+            }
             if (next != VerbExitId.None)
                 Begin(next);
 
@@ -311,6 +334,7 @@ namespace Tag.Art
                 _shoulderLeft = false;
             if (id != VerbExitId.Roll)
                 _travelYaw = 0f;
+            if (_motor != null) _exitVy = _motor.Velocity.y;
         }
 
         void ArmCancel()
@@ -352,8 +376,11 @@ namespace Tag.Art
             float unit = Unit(_age);
             VerbExitSample target = VerbExitClips.At(_id, unit, _fallScale, _stepDown, _shoulderLeft);
             float phase = _loco != null ? _loco.SurfPhase : 0f;
+            float gait = _loco != null ? _loco.GaitCycle : 0f;
             Facing(out float fwd, out float side);
-            target = VerbExitFit.Apply(target, _id, unit, _shoulderLeft, _fromMantle, phase, fwd, side);
+            target = VerbExitFit.Apply(
+                target, _id, unit, _shoulderLeft, _fromMantle, phase, fwd, side,
+                _exitVy, gait, _ropeElev, _ropeHave);
             VerbExitSample s = target;
             if (_chain)
             {
@@ -438,6 +465,18 @@ namespace Tag.Art
             bone.localRotation = Quaternion.Slerp(bone.localRotation, goal, w);
         }
 
+        void NoteRope()
+        {
+            if (_grapple == null || _motor == null || !_grapple.IsPulling) return;
+            Vector3 anchor;
+            float length;
+            float slack;
+            if (!_grapple.TryGetRope(out anchor, out length, out slack)) return;
+            Vector3 local = _motor.transform.InverseTransformDirection(anchor - _motor.transform.position);
+            _ropeElev = GrapplePose.ElevDegrees(local.y, local.x, local.z);
+            _ropeHave = true;
+        }
+
         void Remember()
         {
             if (_motor == null) return;
@@ -447,6 +486,7 @@ namespace Tag.Art
             _prevLunge = _motor.IsLunging;
             _prevZip = _motor.ZipRiding;
             _prevLaunch = _motor.LaunchArc;
+            NoteRope();
             _prevStagger = _motor.IsPunchStaggered;
             _prevPull = _grapple != null && _grapple.IsPulling;
             _prevPunch = Punching();

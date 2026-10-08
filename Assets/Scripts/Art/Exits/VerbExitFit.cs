@@ -23,7 +23,11 @@ namespace Tag.Art
             bool fromMantle,
             float wallPhase,
             float fwd,
-            float side)
+            float side,
+            float vertical = 0f,
+            float gait = 0f,
+            float ropeElev = 0f,
+            bool rope = false)
         {
             if (u < 0f) u = 0f;
             if (u > 1f) u = 1f;
@@ -33,7 +37,7 @@ namespace Tag.Art
                 float t = Join > 0.0001f ? u / Join : 1f;
                 if (t < 1f)
                 {
-                    VerbExitSample src = Source(id, shoulderLeft, fromMantle, wallPhase);
+                    VerbExitSample src = Source(id, shoulderLeft, fromMantle, wallPhase, fwd, side, vertical, gait, ropeElev, rope);
                     float spin = authored.RootSpin;
                     float pitch = authored.RootPitch;
                     float roll = authored.RootRoll;
@@ -56,12 +60,31 @@ namespace Tag.Art
                 s.KneeR = Mathf.Lerp(s.KneeR, legs.KneeR, rev);
                 s.HipYaw = Mathf.Lerp(s.HipYaw, legs.HipYaw, rev);
             }
+            KeepRun(ref s, id, fwd, side, gait);
             if (FootWeight(id, u) > 0.35f)
             {
                 s.FootL = GaitBlend.SoleLevelDeg(s.ThighL, s.KneeL);
                 s.FootR = GaitBlend.SoleLevelDeg(s.ThighR, s.KneeR);
             }
             return s;
+        }
+
+        /// <summary>A sprint landing keeps the stride. The give stays in the knees.</summary>
+        static void KeepRun(ref VerbExitSample s, VerbExitId id, float fwd, float side, float gait)
+        {
+            if (id != VerbExitId.SoftLand && id != VerbExitId.LaunchLand
+                && id != VerbExitId.Roll && id != VerbExitId.RollAbsorb)
+                return;
+            float speed = fwd * fwd + side * side;
+            if (speed > 0f) speed = Mathf.Sqrt(speed);
+            if (speed < 13.8f * 0.85f) return;
+            float keep = BodyLine.KeepStride(speed);
+            if (keep < 0.02f) return;
+            GaitBlend.Legs step = GaitBlend.At(gait, speed);
+            LocomotionPolish.Legs legs = LocomotionPolish.FacingStride(
+                step.ThighL, step.ThighR, step.KneeL, step.KneeR, fwd, side);
+            s.ThighL = Mathf.Lerp(s.ThighL, legs.ThighL, keep);
+            s.ThighR = Mathf.Lerp(s.ThighR, legs.ThighR, keep);
         }
 
         public static bool Joins(VerbExitId id)
@@ -218,7 +241,18 @@ namespace Tag.Art
         static VerbExitSample Frame(VerbExitId id, float u, float fwd, float side, bool fromMantle)
         {
             VerbExitSample authored = VerbExitClips.At(id, u, 1f, false, false);
-            return Apply(authored, id, u, false, fromMantle, 0.4f, fwd, side);
+            float vy = 0f;
+            if (id == VerbExitId.WallJump) vy = RiseVy(WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds);
+            else if (id == VerbExitId.LaunchLand) vy = LaunchPose.OpenVy;
+            return Apply(authored, id, u, false, fromMantle, 0.4f, fwd, side, vy, 1.2f, 0f, false);
+        }
+
+        /// <summary>Rise left after the locked jump speed has been in the air for the wall-jump arc.</summary>
+        public static float RiseVy(float age)
+        {
+            float vy = 24.7f - 22f * age;
+            if (vy < -56.16f) vy = -56.16f;
+            return vy;
         }
 
         public static bool Holds()
@@ -231,9 +265,11 @@ namespace Tag.Art
             if (Mathf.Abs(ZipPose.RideSpeed - 14f) > 0.001f) return false;
 
             VerbExitSample jump = Frame(VerbExitId.WallJump, 0f, 1f, 0f);
-            if (jump.ArmPitchL < 20f) return false;
+            float arcEnd = WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds;
+            WallJumpPose.Sample risen = WallJumpPose.At(arcEnd, RiseVy(arcEnd), false, 1f);
+            if (Mathf.Abs(jump.ArmPitchL - risen.ArmPitchL) > 8f) return false;
             VerbExitSample zip = Frame(VerbExitId.ZipDrop, 0f, 1f, 0f);
-            if (Mathf.Abs(zip.ArmPitchL - WallPose.ReachPitch) > 8f) return false;
+            if (Mathf.Abs(zip.ArmPitchL - BodyLine.CablePitch) > 8f) return false;
             VerbExitSample release = Frame(VerbExitId.GrappleRelease, 0f, 1f, 0f);
             GrapplePose.Sample pull = GrapplePose.ForBody(GrapplePose.Pull(0f, 0f, 0f));
             if (Mathf.Abs(release.ArmPitchL - pull.ArmPitchL) > 8f) return false;
@@ -318,14 +354,16 @@ namespace Tag.Art
                 + " budget=" + VerbExitChain.StepBudget.ToString("0");
         }
 
-        static VerbExitSample Source(VerbExitId id, bool shoulderLeft, bool fromMantle, float wallPhase)
+        static VerbExitSample Source(
+            VerbExitId id, bool shoulderLeft, bool fromMantle, float wallPhase,
+            float fwd, float side, float vertical, float gait, float ropeElev, bool rope)
         {
             switch (id)
             {
                 case VerbExitId.WallRun:
                     return FromWall(WallPose.RunCycle(wallPhase, shoulderLeft));
                 case VerbExitId.WallJump:
-                    return FromPush(WallJumpPose.Push(shoulderLeft));
+                    return WallRise(shoulderLeft, vertical, fwd, side);
                 case VerbExitId.ClimbTopOut:
                     if (fromMantle) return FromMantle(MantlePose.At(1f, shoulderLeft));
                     return FromWall(WallPose.Climb(shoulderLeft ? -1f : 1f, ClimbContact.ClimbSpeed));
@@ -339,16 +377,16 @@ namespace Tag.Art
                 case VerbExitId.AirDash:
                     return FromDash(AirDashPose.At(0f, 1f));
                 case VerbExitId.Punch:
-                    return FromPunch();
+                    return FromPunch(fwd, side);
                 case VerbExitId.Lunge:
                     return FromLunge(LungePose.Burst());
                 case VerbExitId.ZipDrop:
-                    return FromZip(ZipPose.Hang());
+                    return ZipHang();
                 case VerbExitId.LaunchLand:
-                    return FromLaunch(LaunchPose.At(LaunchPose.OpenVy));
+                    return PadLand(vertical);
                 case VerbExitId.GrappleArrive:
                 case VerbExitId.GrappleRelease:
-                    return FromGrapple(GrapplePose.ForBody(GrapplePose.Pull(0f, 0f, 0f)));
+                    return GrappleLine(ropeElev, rope);
                 case VerbExitId.Roll:
                 case VerbExitId.RollAbsorb:
                 case VerbExitId.SoftLand:
@@ -543,7 +581,44 @@ namespace Tag.Art
             return o;
         }
 
-        static VerbExitSample FromPunch()
+        static VerbExitSample WallRise(bool shoulderLeft, float vertical, float fwd, float side)
+        {
+            float end = WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds;
+            float speed = fwd * fwd + side * side;
+            if (speed > 0f) speed = Mathf.Sqrt(speed);
+            return FromPush(WallJumpPose.At(end, vertical, shoulderLeft, speed));
+        }
+
+        static VerbExitSample ZipHang()
+        {
+            ZipPose.Sample hang = ZipPose.Hang();
+            hang.ArmPitchL = BodyLine.CablePitch;
+            hang.ArmPitchR = BodyLine.CablePitch;
+            return FromZip(hang);
+        }
+
+        static VerbExitSample PadLand(float vertical)
+        {
+            LaunchPose.Sample pose = LaunchPose.At(vertical);
+            float fall = LaunchPose.OpenAmount(vertical);
+            pose.KneeL = Mathf.Lerp(pose.KneeL, LandPose.SoftKnee, fall);
+            pose.KneeR = Mathf.Lerp(pose.KneeR, LandPose.SoftKnee, fall);
+            return FromLaunch(pose);
+        }
+
+        static VerbExitSample GrappleLine(float elev, bool rope)
+        {
+            VerbExitSample o = FromGrapple(GrapplePose.ForBody(GrapplePose.Pull(0f, 0f, 0f)));
+            if (!rope) return o;
+            float shared = HangMotion.RopeSpine(elev);
+            float body = GrapplePose.PullHip + GrapplePose.PullSpine + shared;
+            float fix = BodyLine.LineFix(body, elev);
+            o.Spine += shared + fix * 0.55f;
+            o.Hip += fix * 0.45f;
+            return o;
+        }
+
+        static VerbExitSample FromPunch(float fwd, float side)
         {
             VerbExitSample o = default;
             o.ArmPitchR = VerbPoseClips.PunchStrikePitch;
@@ -561,6 +636,13 @@ namespace Tag.Art
             o.ThighR = VerbPoseClips.PunchStrikeTrailThigh;
             o.KneeL = VerbPoseClips.PunchStrikeLeadKnee;
             o.KneeR = VerbPoseClips.PunchStrikeTrailKnee;
+            o.Hip = VerbPoseClips.PunchHipPitch;
+            o.Spine = VerbPoseClips.PunchSpinePitch;
+            float speed = fwd * fwd + side * side;
+            if (speed > 0f) speed = Mathf.Sqrt(speed);
+            float lead = BodyLine.ReachLead(speed);
+            o.Hip += lead * 0.35f;
+            o.Spine += lead * 0.65f;
             return o;
         }
 
