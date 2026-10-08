@@ -170,39 +170,39 @@
   {
     "name": "Bench_Wood",
     "category": "StreetFurniture",
-    "blurb": "1.80 m park bench. Five seat slats and three back slats on a steel frame. Seat height 0.45 m.",
+    "blurb": "1.80 m park bench. Five board seat slats and three back slats on a connected steel frame. Seat height 0.45 m.",
     "size": [
       1.8,
-      0.85,
-      0.591
+      0.93,
+      0.604
     ],
     "min": [
       -0.9,
       0.0,
-      -0.311
+      -0.314
     ],
     "max": [
       0.9,
-      0.85,
-      0.28
+      0.93,
+      0.29
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2200,
+        "tris": 348,
         "materials": [
           "Lib_SteelDark",
-          "Lib_Wood"
+          "Lib_Board"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 1044,
+        "tris": 312,
         "materials": [
           "Lib_SteelDark",
-          "Lib_Wood"
+          "Lib_Board"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -252,12 +252,12 @@
         "type": "box",
         "center": [
           -0.72,
-          0.22,
+          0.21,
           -0.22
         ],
         "size": [
           0.05,
-          0.44,
+          0.4,
           0.05
         ],
         "euler": [
@@ -271,12 +271,12 @@
         "type": "box",
         "center": [
           -0.72,
-          0.22,
+          0.21,
           0.22
         ],
         "size": [
           0.05,
-          0.44,
+          0.4,
           0.05
         ],
         "euler": [
@@ -309,12 +309,12 @@
         "type": "box",
         "center": [
           0.72,
-          0.22,
+          0.21,
           -0.22
         ],
         "size": [
           0.05,
-          0.44,
+          0.4,
           0.05
         ],
         "euler": [
@@ -328,12 +328,12 @@
         "type": "box",
         "center": [
           0.72,
-          0.22,
+          0.21,
           0.22
         ],
         "size": [
           0.05,
-          0.44,
+          0.4,
           0.05
         ],
         "euler": [
@@ -373,7 +373,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.74,
+    "slackCm": 0.36,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Bench_Wood.fbx"
   },
   {
@@ -3725,16 +3725,16 @@
   {
     "name": "Container_20",
     "category": "Harbor",
-    "blurb": "20-foot container, rust-red enamel. 6.06 x 2.44 x 2.59 m. Vertical corrugation, corner castings, four locking bars on the +Z doors.",
+    "blurb": "20-foot container, rust-red enamel. 6.06 x 2.44 x 2.59 m. Trapezoid corrugation, corner castings with oval holes, four locking bars on the +Z doors.",
     "size": [
-      2.455,
+      2.452,
       2.59,
-      6.102
+      6.099
     ],
     "min": [
-      -1.223,
+      -1.22,
       0.0,
-      -3.033
+      -3.03
     ],
     "max": [
       1.232,
@@ -3744,11 +3744,10 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 2468,
+        "tris": 5812,
         "materials": [
           "Lib_BoxRed",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Steel",
           "Lib_Brass",
           "Lib_PaintWhite",
@@ -3759,7 +3758,7 @@
       },
       {
         "lod": 1,
-        "tris": 1128,
+        "tris": 2088,
         "materials": [
           "Lib_BoxRed",
           "Lib_SteelDark",
@@ -3819,16 +3818,16 @@
   {
     "name": "Container_40",
     "category": "Harbor",
-    "blurb": "40-foot container, blue enamel. 12.19 x 2.44 x 2.59 m. Same corrugation, castings, and door bars as the 20-foot box.",
+    "blurb": "40-foot container, blue enamel. 12.19 x 2.44 x 2.59 m. Same trapezoid corrugation, oval-hole castings, and door bars as the 20-foot box.",
     "size": [
-      2.455,
+      2.452,
       2.59,
-      12.232
+      12.229
     ],
     "min": [
-      -1.223,
+      -1.22,
       0.0,
-      -6.098
+      -6.095
     ],
     "max": [
       1.232,
@@ -3838,11 +3837,10 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 3716,
+        "tris": 9076,
         "materials": [
           "Lib_BoxBlue",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Steel",
           "Lib_Brass",
           "Lib_PaintWhite"
@@ -3852,7 +3850,7 @@
       },
       {
         "lod": 1,
-        "tris": 1692,
+        "tris": 3720,
         "materials": [
           "Lib_BoxBlue",
           "Lib_SteelDark",
@@ -11869,41 +11867,44 @@
   {
     "name": "Median_Planter",
     "category": "Roads",
-    "blurb": "4.0 x 1.05 m median, 0.40 m concrete, planter recess with soil and a shrub.",
+    "blurb": "4.0 x 1.05 m median, 0.40 m concrete coping closed on all four sides, soil and a clipped shrub.",
     "size": [
-      1.08,
-      0.753,
-      3.68
+      1.12,
+      0.77,
+      4.06
     ],
     "min": [
-      -0.54,
+      -0.56,
       0.0,
-      -1.84
+      -2.03
     ],
     "max": [
-      0.54,
-      0.753,
-      1.84
+      0.56,
+      0.77,
+      2.03
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 932,
+        "tris": 484,
         "materials": [
           "Lib_Concrete",
           "Lib_Soil",
-          "Lib_FoliageDark"
+          "Lib_FoliageDark",
+          "Lib_Foliage",
+          "Lib_FoliageLite"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 264,
+        "tris": 228,
         "materials": [
           "Lib_Concrete",
           "Lib_Soil",
-          "Lib_FoliageDark"
+          "Lib_FoliageDark",
+          "Lib_Foliage"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -11916,12 +11917,12 @@
         "center": [
           0,
           0.2,
-          0.42
+          1.92
         ],
         "size": [
-          1.05,
-          0.4,
-          0.16
+          1.0,
+          0.36,
+          0.12
         ],
         "euler": [
           0,
@@ -11935,12 +11936,12 @@
         "center": [
           0,
           0.2,
-          -0.42
+          -1.92
         ],
         "size": [
-          1.05,
-          0.4,
-          0.16
+          1.0,
+          0.36,
+          0.12
         ],
         "euler": [
           0,
@@ -11957,9 +11958,9 @@
           0
         ],
         "size": [
-          0.16,
-          0.4,
-          3.68
+          0.14,
+          0.36,
+          3.6
         ],
         "euler": [
           0,
@@ -11976,9 +11977,9 @@
           0
         ],
         "size": [
-          0.16,
-          0.4,
-          3.68
+          0.14,
+          0.36,
+          3.6
         ],
         "euler": [
           0,
@@ -11995,8 +11996,8 @@
           0
         ],
         "size": [
-          0.72,
-          0.16,
+          0.68,
+          0.14,
           3.2
         ],
         "euler": [
@@ -12010,7 +12011,7 @@
         "type": "sphere",
         "center": [
           0,
-          0.52,
+          0.55,
           0
         ],
         "radius": 0.16
@@ -12027,7 +12028,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.8,
+    "slackCm": 2.8,
     "fbx": "Assets/Art/Props/Library/Roads/Median_Planter.fbx"
   },
   {
@@ -12561,44 +12562,42 @@
   {
     "name": "ParkLamp",
     "category": "Park",
-    "blurb": "Path lamp, 3.20 m to the lantern cap. Square glass lantern.",
+    "blurb": "Path lamp, 3.20 m to the lantern cap. Four-post glass lantern with a bulb inside.",
     "size": [
-      0.418,
-      3.4,
-      0.44
+      0.38,
+      3.38,
+      0.4
     ],
     "min": [
-      -0.209,
+      -0.19,
       0.0,
-      -0.22
+      -0.2
     ],
     "max": [
-      0.209,
-      3.4,
-      0.22
+      0.19,
+      3.38,
+      0.2
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 220,
+        "tris": 320,
         "materials": [
           "Lib_SteelDark",
           "Lib_Black",
-          "Lib_Lamp",
-          "Lib_Window",
-          "Lib_Steel"
+          "Lib_Steel",
+          "Lib_ShopGlass",
+          "Lib_Lamp"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 100,
+        "tris": 144,
         "materials": [
           "Lib_SteelDark",
           "Lib_Black",
-          "Lib_Lamp",
-          "Lib_Window",
           "Lib_Steel"
         ],
         "mesh": "LOD1",
@@ -12615,9 +12614,9 @@
           0
         ],
         "size": [
-          0.32,
-          0.04,
-          0.32
+          0.3,
+          0.03,
+          0.3
         ],
         "euler": [
           0,
@@ -12630,11 +12629,11 @@
         "type": "capsule",
         "center": [
           0,
-          1.55,
+          1.52,
           0
         ],
-        "radius": 0.045,
-        "height": 3.0,
+        "radius": 0.04,
+        "height": 2.9,
         "direction": 1
       },
       {
@@ -12642,13 +12641,13 @@
         "type": "box",
         "center": [
           0,
-          3.05,
+          3.22,
           0
         ],
         "size": [
-          0.18,
-          0.22,
-          0.18
+          0.3,
+          0.04,
+          0.3
         ],
         "euler": [
           0,
@@ -12661,13 +12660,13 @@
         "type": "box",
         "center": [
           0,
-          3.24,
+          3.32,
           0
         ],
         "size": [
-          0.36,
-          0.05,
-          0.36
+          0.08,
+          0.06,
+          0.08
         ],
         "euler": [
           0,
@@ -12687,7 +12686,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 1.0,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Park/ParkLamp.fbx"
   },
   {
@@ -13496,40 +13495,40 @@
   {
     "name": "PicnicTable",
     "category": "Park",
-    "blurb": "Picnic table 1.80 m long. Top at 0.76 m, benches at 0.45 m. Distinct from the toy picnic prop.",
+    "blurb": "Picnic table 1.80 m long. Board top on two A-frame trestles, benches tied into the legs. Top at 0.76 m.",
     "size": [
       1.8,
-      0.781,
-      1.32
+      0.773,
+      1.38
     ],
     "min": [
       -0.9,
-      0.009,
-      -0.66
+      0.015,
+      -0.69
     ],
     "max": [
       0.9,
-      0.79,
-      0.66
+      0.788,
+      0.69
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 424,
+        "tris": 292,
         "materials": [
-          "Lib_Wood",
-          "Lib_SteelDark",
-          "Lib_Steel"
+          "Lib_Board",
+          "Lib_Batten",
+          "Lib_SteelDark"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 156,
+        "tris": 240,
         "materials": [
-          "Lib_Wood",
-          "Lib_SteelDark"
+          "Lib_Board",
+          "Lib_Batten"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -13545,9 +13544,9 @@
           0
         ],
         "size": [
-          1.8,
-          0.04,
-          0.7
+          1.7,
+          0.03,
+          0.64
         ],
         "euler": [
           0,
@@ -13564,9 +13563,9 @@
           0.55
         ],
         "size": [
-          1.4,
-          0.04,
-          0.24
+          1.46,
+          0.028,
+          0.18
         ],
         "euler": [
           0,
@@ -13583,9 +13582,9 @@
           -0.55
         ],
         "size": [
-          1.4,
-          0.04,
-          0.24
+          1.46,
+          0.028,
+          0.18
         ],
         "euler": [
           0,
@@ -13594,36 +13593,55 @@
         ]
       },
       {
-        "name": "Col_Leg_0",
+        "name": "Col_LegN_0",
         "type": "box",
         "center": [
-          -0.7,
+          -0.62,
           0.38,
-          0
+          -0.18
         ],
         "size": [
-          0.05,
-          0.7,
-          0.07
+          0.03,
+          0.08,
+          0.03
         ],
         "euler": [
           0,
           0,
-          18
+          0
+        ]
+      },
+      {
+        "name": "Col_LegS_0",
+        "type": "box",
+        "center": [
+          -0.62,
+          0.38,
+          0.18
+        ],
+        "size": [
+          0.03,
+          0.08,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
         ]
       },
       {
         "name": "Col_BenchLegN_0",
         "type": "box",
         "center": [
-          -0.7,
-          0.38,
-          0.55
+          -0.62,
+          0.4,
+          0.48
         ],
         "size": [
           0.04,
-          0.4,
-          0.04
+          0.04,
+          0.28
         ],
         "euler": [
           0,
@@ -13635,14 +13653,14 @@
         "name": "Col_BenchLegS_0",
         "type": "box",
         "center": [
-          -0.7,
-          0.38,
-          -0.55
+          -0.62,
+          0.4,
+          -0.48
         ],
         "size": [
           0.04,
-          0.4,
-          0.04
+          0.04,
+          0.28
         ],
         "euler": [
           0,
@@ -13651,36 +13669,55 @@
         ]
       },
       {
-        "name": "Col_Leg_1",
+        "name": "Col_LegN_1",
         "type": "box",
         "center": [
-          0.7,
+          0.62,
           0.38,
-          0
+          -0.18
         ],
         "size": [
-          0.05,
-          0.7,
-          0.07
+          0.03,
+          0.08,
+          0.03
         ],
         "euler": [
           0,
           0,
-          -18
+          0
+        ]
+      },
+      {
+        "name": "Col_LegS_1",
+        "type": "box",
+        "center": [
+          0.62,
+          0.38,
+          0.18
+        ],
+        "size": [
+          0.03,
+          0.08,
+          0.03
+        ],
+        "euler": [
+          0,
+          0,
+          0
         ]
       },
       {
         "name": "Col_BenchLegN_1",
         "type": "box",
         "center": [
-          0.7,
-          0.38,
-          0.55
+          0.62,
+          0.4,
+          0.48
         ],
         "size": [
           0.04,
-          0.4,
-          0.04
+          0.04,
+          0.28
         ],
         "euler": [
           0,
@@ -13692,14 +13729,14 @@
         "name": "Col_BenchLegS_1",
         "type": "box",
         "center": [
-          0.7,
-          0.38,
-          -0.55
+          0.62,
+          0.4,
+          -0.48
         ],
         "size": [
           0.04,
-          0.4,
-          0.04
+          0.04,
+          0.28
         ],
         "euler": [
           0,
@@ -13719,7 +13756,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 1.01,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Park/PicnicTable.fbx"
   },
   {
@@ -24077,26 +24114,26 @@
   {
     "name": "TrashCan_Lidded",
     "category": "StreetFurniture",
-    "blurb": "Lidded park can, 1.05 m to the crown, domed lid and a side deposit door.",
+    "blurb": "Lidded park can, about 1.02 m to the crown. Hemispherical steel lid and a hinged deposit flap.",
     "size": [
-      0.48,
-      1.09,
-      0.519
+      0.5,
+      1.028,
+      0.5
     ],
     "min": [
-      -0.24,
+      -0.25,
       0.01,
-      -0.24
+      -0.25
     ],
     "max": [
-      0.24,
-      1.1,
-      0.279
+      0.25,
+      1.038,
+      0.25
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 948,
+        "tris": 548,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -24107,7 +24144,7 @@
       },
       {
         "lod": 1,
-        "tris": 276,
+        "tris": 230,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -24123,11 +24160,11 @@
         "type": "capsule",
         "center": [
           0,
-          0.5,
+          0.48,
           0
         ],
-        "radius": 0.21,
-        "height": 0.96,
+        "radius": 0.2,
+        "height": 0.92,
         "direction": 1
       },
       {
@@ -24136,12 +24173,12 @@
         "center": [
           0,
           0.48,
-          0.21
+          0.205
         ],
         "size": [
-          0.28,
-          0.18,
-          0.03
+          0.22,
+          0.16,
+          0.02
         ],
         "euler": [
           0,
@@ -24161,7 +24198,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.8,
+    "slackCm": 2.46,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/TrashCan_Lidded.fbx"
   },
   {
@@ -25760,7 +25797,7 @@
   {
     "name": "HarborShed",
     "category": "Harbor",
-    "blurb": "Wood shed, 3.6 x 2.8 m. Board-and-batten siding, corner trim on the boards, a frame-and-panel door and a trimmed window on +Z, and a window on +X.",
+    "blurb": "Wood shed, 3.6 x 2.8 m. Board-and-batten siding, corner trim on the boards, a butt-jointed frame-and-panel door with a beveled recess, and trimmed windows.",
     "size": [
       3.96,
       3.118,
@@ -25779,7 +25816,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 3200,
+        "tris": 3296,
         "materials": [
           "Lib_Concrete",
           "Lib_Board",
@@ -26097,7 +26134,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 3396,
+        "tris": 4796,
         "materials": [
           "Lib_Varnish",
           "Lib_PaintCream",
@@ -26109,7 +26146,7 @@
       },
       {
         "lod": 1,
-        "tris": 1772,
+        "tris": 2724,
         "materials": [
           "Lib_Varnish",
           "Lib_PaintCream"
@@ -27191,14 +27228,14 @@
     "category": "Harbor",
     "blurb": "20-foot container, blue enamel. Same shell as Container_20.",
     "size": [
-      2.455,
+      2.452,
       2.59,
-      6.102
+      6.099
     ],
     "min": [
-      -1.223,
+      -1.22,
       0.0,
-      -3.033
+      -3.03
     ],
     "max": [
       1.232,
@@ -27208,11 +27245,10 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 2468,
+        "tris": 5812,
         "materials": [
           "Lib_BoxBlue",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Steel",
           "Lib_Brass",
           "Lib_PaintWhite"
@@ -27222,7 +27258,7 @@
       },
       {
         "lod": 1,
-        "tris": 1128,
+        "tris": 2088,
         "materials": [
           "Lib_BoxBlue",
           "Lib_SteelDark",
@@ -27284,14 +27320,14 @@
     "category": "Harbor",
     "blurb": "20-foot container, green enamel. Same shell as Container_20.",
     "size": [
-      2.455,
+      2.452,
       2.59,
-      6.102
+      6.099
     ],
     "min": [
-      -1.223,
+      -1.22,
       0.0,
-      -3.033
+      -3.03
     ],
     "max": [
       1.232,
@@ -27301,11 +27337,10 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 2468,
+        "tris": 5812,
         "materials": [
           "Lib_BoxGreen",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Steel",
           "Lib_Brass",
           "Lib_PaintWhite",
@@ -27316,7 +27351,7 @@
       },
       {
         "lod": 1,
-        "tris": 1128,
+        "tris": 2088,
         "materials": [
           "Lib_BoxGreen",
           "Lib_SteelDark",

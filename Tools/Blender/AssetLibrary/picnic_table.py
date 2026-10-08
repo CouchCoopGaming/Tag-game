@@ -1,4 +1,4 @@
-"""Park picnic table. 1.80 m, attached benches, top at 0.76 m."""
+"""Park picnic table. 1.80 m, attached benches, A-frame trestles. Top at 0.76 m."""
 
 import os
 import sys
@@ -9,36 +9,45 @@ from _common import Asset, register, lod_pick
 
 @register
 def create():
-    a = Asset("PicnicTable", "Park", "Picnic table 1.80 m long. Top at 0.76 m, benches at 0.45 m. Distinct from the toy picnic prop.")
+    a = Asset(
+        "PicnicTable",
+        "Park",
+        "Picnic table 1.80 m long. Board top on two A-frame trestles, benches tied into the legs. Top at 0.76 m.",
+    )
     a.climb_note = "Not a wall."
     a.vault_note = "Top is 0.76 m, under the vault band. Benches are 0.45 m."
     for lod in (0, 1):
         g = a.begin(lod)
-        bev = 0.004 if lod == 0 else 0
         planks = lod_pick(lod, 5, 3)
+        span = 0.64
         for i in range(planks):
-            z = -0.32 + i * (0.64 / max(1, planks - 1))
-            g.box((0, 0.76, z), (1.80, 0.035, 0.12), "Lib_Wood", bevel=bev, segs=1, uv_scale=1.2)
+            z = -0.32 + i * (span / max(1, planks - 1))
+            g.box((0, 0.76, z), (1.80, 0.038, 0.13), "Lib_Board")
+        # Stringers under the top, so the planks are one top.
+        for z in (-0.20, 0.20):
+            g.box((0, 0.724, z), (1.64, 0.028, 0.06), "Lib_Batten")
+        for x in (-0.62, 0.62):
+            # Splayed legs meet under the stringers and land on feet.
+            g.box((x, 0.38, -0.18), (0.07, 0.76, 0.07), "Lib_Batten", euler=(22, 0, 0))
+            g.box((x, 0.38, 0.18), (0.07, 0.76, 0.07), "Lib_Batten", euler=(-22, 0, 0))
+            g.box((x, 0.04, -0.46), (0.12, 0.04, 0.16), "Lib_Batten")
+            g.box((x, 0.04, 0.46), (0.12, 0.04, 0.16), "Lib_Batten")
+            # Seat rails from the trestle out to each bench.
+            g.box((x, 0.40, -0.48), (0.06, 0.05, 0.42), "Lib_Batten")
+            g.box((x, 0.40, 0.48), (0.06, 0.05, 0.42), "Lib_Batten")
+        # Lower stretcher tying the two trestles.
+        g.box((0, 0.16, 0), (1.10, 0.05, 0.06), "Lib_Batten")
         for z in (-0.55, 0.55):
-            n = lod_pick(lod, 3, 2)
-            for i in range(n):
-                x = -0.55 + i * (1.1 / max(1, n - 1))
-                g.box((x, 0.45, z), (0.28, 0.03, 0.22), "Lib_Wood", uv_scale=1.2)
+            g.box((0, 0.45, z), (1.56, 0.036, 0.22), "Lib_Board")
         if lod == 0:
-            g.cylinder((0, 0.78, 0), 0.025, 0.02, "Lib_SteelDark", 8)
-            for x in (-0.7, 0.7):
-                g.cylinder((x, 0.78, 0), 0.012, 0.01, "Lib_Steel", 5)
-        for x in (-0.7, 0.7):
-            g.box((x, 0.38, 0), (0.06, 0.76, 0.08), "Lib_SteelDark", euler=(0, 0, 18 if x < 0 else -18))
-            g.box((x, 0.38, -0.55), (0.05, 0.45, 0.05), "Lib_SteelDark")
-            g.box((x, 0.38, 0.55), (0.05, 0.45, 0.05), "Lib_SteelDark")
+            g.cylinder((0, 0.782, 0), 0.018, 0.012, "Lib_SteelDark", 8)
         a.end()
-    a.box("Col_Top", (0, 0.76, 0), (1.80, 0.04, 0.70))
-    a.box("Col_BenchN", (0, 0.45, 0.55), (1.40, 0.04, 0.24))
-    a.box("Col_BenchS", (0, 0.45, -0.55), (1.40, 0.04, 0.24))
-    for i, x in enumerate((-0.7, 0.7)):
-        roll = 18 if x < 0 else -18
-        a.box("Col_Leg_%d" % i, (x, 0.38, 0), (0.05, 0.70, 0.07), euler=(0, 0, roll))
-        a.box("Col_BenchLegN_%d" % i, (x, 0.38, 0.55), (0.04, 0.40, 0.04))
-        a.box("Col_BenchLegS_%d" % i, (x, 0.38, -0.55), (0.04, 0.40, 0.04))
+    a.box("Col_Top", (0, 0.76, 0), (1.70, 0.030, 0.64))
+    a.box("Col_BenchN", (0, 0.45, 0.55), (1.46, 0.028, 0.18))
+    a.box("Col_BenchS", (0, 0.45, -0.55), (1.46, 0.028, 0.18))
+    for i, x in enumerate((-0.62, 0.62)):
+        a.box("Col_LegN_%d" % i, (x, 0.38, -0.18), (0.03, 0.08, 0.03))
+        a.box("Col_LegS_%d" % i, (x, 0.38, 0.18), (0.03, 0.08, 0.03))
+        a.box("Col_BenchLegN_%d" % i, (x, 0.40, 0.48), (0.04, 0.04, 0.28))
+        a.box("Col_BenchLegS_%d" % i, (x, 0.40, -0.48), (0.04, 0.04, 0.28))
     return a

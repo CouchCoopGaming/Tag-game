@@ -21,20 +21,38 @@ def profile(t):
     return half, keel, sheer
 
 
+# Beam and height fractions. The last knot tucks in for a little tumblehome.
+_SECTION_KNOTS = (
+    (0.00, 0.00),
+    (0.10, 0.08),
+    (0.28, 0.18),
+    (0.52, 0.32),
+    (0.78, 0.48),
+    (0.96, 0.66),
+    (1.02, 0.84),
+    (0.98, 1.00),
+)
+
+
 def section_smooth(half, keel, sheer, t=0.5):
-    """Round bilge. Eight stations, monotonic in height."""
+    """Round bilge. Twenty-one segments around, cosine-smoothed, monotonic in height."""
+    import math
     del t
     rise = max(0.05, sheer - keel)
-    return [
-        (0.0, keel),
-        (half * 0.10, keel + rise * 0.08),
-        (half * 0.28, keel + rise * 0.18),
-        (half * 0.52, keel + rise * 0.32),
-        (half * 0.78, keel + rise * 0.48),
-        (half * 0.96, keel + rise * 0.66),
-        (half * 1.02, keel + rise * 0.84),
-        (half * 0.98, sheer),
-    ]
+    parts = 3
+    pts = []
+    last = len(_SECTION_KNOTS) - 1
+    for i in range(last):
+        x0, y0 = _SECTION_KNOTS[i]
+        x1, y1 = _SECTION_KNOTS[i + 1]
+        steps = parts + 1 if i == last - 1 else parts
+        for s in range(steps):
+            u = s / float(parts)
+            w = 0.5 - 0.5 * math.cos(u * math.pi)
+            pts.append((half * (x0 + (x1 - x0) * w), keel + rise * (y0 + (y1 - y0) * w)))
+    pts[0] = (0.0, keel)
+    pts[-1] = (half * 0.98, sheer)
+    return pts
 
 
 def _top(t, half, sheer):

@@ -14,5 +14,5 @@ def create():
         "Container_40",
         12.19,
         "Lib_BoxBlue",
-        "40-foot container, blue enamel. 12.19 x 2.44 x 2.59 m. Same corrugation, castings, and door bars as the 20-foot box.",
+        "40-foot container, blue enamel. 12.19 x 2.44 x 2.59 m. Same trapezoid corrugation, oval-hole castings, and door bars as the 20-foot box.",
     )
