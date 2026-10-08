@@ -405,6 +405,18 @@ An empty drop-in seat draws a faint outlined silhouette, the seat shape on its c
 
 `ui-cvd` floor 0.35 still holds on the band. `hot-path allocs before=101 after=0`. No new pose was animated: `no-clip pose=0`. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass29/` are the live plate with the menu drawn on it.
 
+## Screens 2, pass 30
+
+The drop-in header says `Everyone Ready? Press Start` only when every joined seat is ready and at least two seats are in. P1 ready and P2 only joined now reads `Waiting for 1 player to ready up`. The count is the joined seats that are not ready. One ready seat, with nobody else in, stays on that waiting line, because two seats are required. The old rule (`Humans > 0` prints the start line) still returns `Everyone Ready? Press Start` for the P2 case, and `MenuSheet.JoinBannerHolds` fails when the new line matches that old line. `ui-flow` fails the walk with `ready banner` if the check does. The success line is unchanged.
+
+The main menu label is a short chip. It is not a full-width strip. The chase plate is off that screen. Two seat mannequins stand in the relaxed idle, pose sample 0, with the seat shape on the chest. P1 is the red circle. P2 is the blue triangle. Their feet plant on the discs at an absolute 0.5 cm (`PlantY = 0.005f`). No new pose was animated.
+
+Title keeps the cover-crop and the 35% darken. The plate is `MegaBlur.png`, a slight blur of `MegaGrade.png`, plus a soft vignette. The corners stay the plate (about 69, 76, 84 on the sky side). They are not black. Loading and pause stay on the sharp grade.
+
+The lavender fill is lighter, `(0.80, 0.72, 0.92)`, bytes `(204, 184, 235)`. Blue stays above red, and red stays above green, so P4 is still a lavender diamond. The band that `ui-cvd` measures is unchanged. The fill pairs are `ui-fill protan=0.43 blue/lavender deutan=0.53 red/orange tritan=0.42 orange/lavender floor=0.35`. Every pair is at least 0.35.
+
+`ui-cvd protan=0.41 blue/lavender deutan=0.52 blue/lavender tritan=0.41 orange/lavender floor=0.35`. `ui-seat off=0.41/0.52/0.41`. `hot-path allocs before=101 after=0`. `no-clip pose=0`. Arena select, RESULTS, options, controls, and mode/rules are untouched. Unity is not installed, so the frames in `Docs/UiStills/screens2/pass30/` are the live plate with the menu drawn on it.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

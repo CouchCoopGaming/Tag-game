@@ -374,6 +374,8 @@ The twenty-eighth pass puts that graded Mega Park on the plate the game loads, s
 
 The twenty-ninth pass fills the title and the main menu with the graded Mega Park, cropped to the frame instead of letterboxed, and darkens the title by about 35% so the logo sits on a blue sky. The main menu keeps a single gold focus. The grapple tip reads the bound key through the action map. An empty join seat shows a faint outlined figure, the seat shape, and the join prompt under it. Unity is not installed here, so the frames are that live plate with the menu drawn on it, in `Docs/UiStills/screens2/pass29/`. Space still jumps.
 
+The thirtieth pass holds the start line until every joined seat is ready and at least two are in. P2 only joined now says Waiting for 1 player to ready up. The main menu label is a short chip, and the two seat figures stand idle on their discs with the seat shape on the chest. The title plate is a soft blur of the graded yard with a vignette, and the corners stay the plate. The lavender fill is lighter, and every colour-blind pair of the fills is at least 0.35: protan 0.43, deutan 0.53, tritan 0.42. Unity is not installed here, so the frames are that live plate with the menu drawn on it, in `Docs/UiStills/screens2/pass30/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
