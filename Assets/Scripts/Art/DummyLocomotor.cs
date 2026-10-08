@@ -15191,7 +15191,8 @@ namespace Tag.Art
             {
                 // The vault eases into the gait, a crouch, or the land absorb.
                 // One smoothstep. A wall climb and a wall-jump push-off keep their poses.
-                float intoMantleGround = Handoff2Feel.VaultOutOpen(_mantleExitIn);
+                PoseHandoff.MantleLand(_mantleExitIn, out _, out float intoMantleGround);
+                intoMantleGround = Handoff2Feel.VaultOutOpen(_mantleExitIn);
                 _uaLT = Quaternion.Slerp(_mantleExitUaL, _uaLT, intoMantleGround);
                 _uaRT = Quaternion.Slerp(_mantleExitUaR, _uaRT, intoMantleGround);
                 _laLT = Quaternion.Slerp(_mantleExitLaL, _laLT, intoMantleGround);
