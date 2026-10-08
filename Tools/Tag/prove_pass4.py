@@ -216,7 +216,26 @@ EXITS = {
 }
 
 
-def clip_row(arm, name, samples, rest, pose_seen, buckets):
+def pair_joined(key):
+    parts = key.split(">")
+    if len(parts) != 2:
+        return False
+    return loco.bones_joined(parts[0], parts[1])
+
+
+def note_pair(stats, clip, key, depth):
+    """Count a live pair. Joined hinges stay out of the non-adjacent table."""
+    row = stats.get(key)
+    if row is None:
+        row = {"frames": 0, "depth": 0.0, "clips": {}, "joined": pair_joined(key)}
+        stats[key] = row
+    row["frames"] += 1
+    if depth > row["depth"]:
+        row["depth"] = depth
+    row["clips"][clip] = max(row["clips"].get(clip, 0.0), depth)
+
+
+def clip_row(arm, name, samples, rest, pose_seen, buckets, stats):
     frames = 0
     world_max = 0.0
     self_max = 0.0
@@ -231,6 +250,7 @@ def clip_row(arm, name, samples, rest, pose_seen, buckets):
             if key in rest:
                 continue
             fresh.add(key)
+            note_pair(stats, name, key, depth)
             if key not in pose_seen and joint_bucket(key) in ("knee", "hip", "neck"):
                 print(
                     "PAIR", name, key, round(depth, 2),
@@ -336,6 +356,7 @@ def main():
         print(" ", key, round(depth, 2), flush=True)
     pose_seen = set()
     buckets = {}
+    stats = {}
     rows = []
     for name, log in loco_samples(arm):
         frames = 0
@@ -351,6 +372,7 @@ def main():
                 if key in rest:
                     continue
                 fresh.add(key)
+                note_pair(stats, name, key, depth)
                 if key not in pose_seen and joint_bucket(key) in ("knee", "hip", "neck"):
                     print("PAIR", name, key, round(depth, 2), flush=True)
                 pose_seen.add(key)
@@ -358,9 +380,9 @@ def main():
         print("CLIP", name, frames, round(world_max, 2), round(self_max, 2), len(fresh), flush=True)
         rows.append({"name": name, "frames": frames, "world": world_max, "self": self_max, "pose": len(fresh)})
     for name, samples in EXITS.items():
-        rows.append(clip_row(arm, "exit-" + name, samples, rest, pose_seen, buckets))
+        rows.append(clip_row(arm, "exit-" + name, samples, rest, pose_seen, buckets, stats))
     for name, samples in menu_samples():
-        rows.append(clip_row(arm, name, samples, rest, pose_seen, buckets))
+        rows.append(clip_row(arm, name, samples, rest, pose_seen, buckets, stats))
     if os.path.isdir(STORROR):
         for lane in sorted(os.listdir(STORROR)):
             lane_dir = os.path.join(STORROR, lane)
@@ -372,7 +394,7 @@ def main():
                 samples = storror_clip(os.path.join(lane_dir, filename))
                 clip = lane + "-" + filename[:-5]
                 # Long clips: every frame is the request. Measure them.
-                rows.append(clip_row(arm, clip, samples, rest, pose_seen, buckets))
+                rows.append(clip_row(arm, clip, samples, rest, pose_seen, buckets, stats))
     frames = sum(row["frames"] for row in rows)
     world_max = max((row["world"] for row in rows), default=0.0)
     self_max = max((row["self"] for row in rows), default=0.0)
@@ -383,6 +405,13 @@ def main():
     joint_line = "joints " + " ".join("{0}={1}".format(name, len(buckets.get(name, ()))) for name in order)
     print(joint_line, flush=True)
     print(line, flush=True)
+    apart = [(row["frames"], row["depth"], key, row) for key, row in stats.items() if not row["joined"]]
+    apart.sort(reverse=True)
+    print("TOP15 non-adjacent", flush=True)
+    for frames, depth, key, row in apart[:15]:
+        clips = sorted(row["clips"].items(), key=lambda item: (-item[1], item[0]))[:5]
+        clip_s = " ".join("{0}@{1:.2f}".format(clip, dep) for clip, dep in clips)
+        print("TOP", frames, "{0:.2f}".format(depth), key, clip_s, flush=True)
     path = os.path.join(OUT, "proof.txt")
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(line + "\n")
@@ -391,6 +420,11 @@ def main():
         fh.write("clip frames worldCm selfCm poseNew\n")
         for row in rows:
             fh.write("{name} {frames} {world:.2f} {self:.2f} {pose}\n".format(**row))
+        fh.write("top non-adjacent pairs by frame count\n")
+        for frames, depth, key, row in apart[:15]:
+            clips = sorted(row["clips"].items(), key=lambda item: (-item[1], item[0]))
+            clip_s = " ".join("{0}@{1:.2f}".format(clip, dep) for clip, dep in clips[:8])
+            fh.write("{0} {1:.2f} {2} {3}\n".format(frames, depth, key, clip_s))
         fh.write("pose pairs\n")
         for name in order:
             for key in sorted(buckets.get(name, ())):
