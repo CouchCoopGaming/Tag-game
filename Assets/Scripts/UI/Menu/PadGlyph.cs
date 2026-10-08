@@ -17,22 +17,46 @@ namespace Tag.Ui.Menu
 
         static readonly int[] FamilyOf = { Keyboard, Generic, Generic, Generic, Generic };
 
-        static readonly string[,] Lines =
+        static readonly string[,,] Faced =
         {
-            { "Arrows   move", "Space   confirm", "Esc   back" },
-            { "Stick   move", "A   confirm", "B   back" },
-            { "Stick   move", "Cross   confirm", "Circle   back" },
-            { "Stick   move", "B   confirm", "A   back" },
-            { "Stick   move", "South   confirm", "East   back" }
+            {
+                { "Arrows   move", "Space   confirm", "Esc   back" },
+                { "Arrows   move", "Space   confirm", "Esc   back" }
+            },
+            {
+                { "Stick   move", "A   confirm", "B   back" },
+                { "Stick   move", "B   confirm", "A   back" }
+            },
+            {
+                { "Stick   move", "Cross   confirm", "Circle   back" },
+                { "Stick   move", "Circle   confirm", "Cross   back" }
+            },
+            {
+                { "Stick   move", "B   confirm", "A   back" },
+                { "Stick   move", "A   confirm", "B   back" }
+            },
+            {
+                { "Stick   move", "South   confirm", "East   back" },
+                { "Stick   move", "East   confirm", "South   back" }
+            }
         };
 
-        static readonly string[] JoinLine =
+        static readonly string[,] JoinLine =
         {
-            "Press Space to join",
-            "Press A to join",
-            "Press Cross to join",
-            "Press B to join",
-            "Press a button to join"
+            { "Press Space to join", "Press Space to join" },
+            { "Press A to join", "Press B to join" },
+            { "Press Cross to join", "Press Circle to join" },
+            { "Press B to join", "Press A to join" },
+            { "Press a button to join", "Press a button to join" }
+        };
+
+        static readonly string[,] ContinueLine =
+        {
+            { "Seated players press Space to continue", "Seated players press Space to continue" },
+            { "Seated players press A to continue", "Seated players press B to continue" },
+            { "Seated players press Cross to continue", "Seated players press Circle to continue" },
+            { "Seated players press B to continue", "Seated players press A to continue" },
+            { "Seated players press South to continue", "Seated players press East to continue" }
         };
 
         public static int FromProduct(string name)
@@ -63,19 +87,39 @@ namespace Tag.Ui.Menu
 
         public static string Line(int family, int slot)
         {
+            return Line(family, slot, FaceMap.DefaultOf(family));
+        }
+
+        public static string Line(int family, int slot, int face)
+        {
             int f = family;
             if (f < 0 || f >= Families) f = Generic;
             int s = slot;
             if (s < 0) s = 0;
             if (s > 2) s = 2;
-            return Lines[f, s];
+            int row = face == FaceMap.East ? 1 : 0;
+            return Faced[f, row, s];
         }
 
         public static string Join(int family)
         {
+            return Join(family, FaceMap.DefaultOf(family));
+        }
+
+        public static string Join(int family, int face)
+        {
             int f = family;
             if (f < 0 || f >= Families) f = Generic;
-            return JoinLine[f];
+            int row = face == FaceMap.East ? 1 : 0;
+            return JoinLine[f, row];
+        }
+
+        public static string Continue(int family, int face)
+        {
+            int f = family;
+            if (f < 0 || f >= Families) f = Generic;
+            int row = face == FaceMap.East ? 1 : 0;
+            return ContinueLine[f, row];
         }
 
         public static bool Samples()
@@ -99,11 +143,17 @@ namespace Tag.Ui.Menu
             if (Line(Keyboard, 0) != "Arrows   move") return false;
             if (Line(Xbox, 1) != "A   confirm") return false;
             if (Line(PlayStation, 2) != "Circle   back") return false;
-            if (Line(Switch, 1) != "B   confirm") return false;
-            if (Line(Switch, 2) != "A   back") return false;
+            if (Line(Switch, 1) != "A   confirm") return false;
+            if (Line(Switch, 2) != "B   back") return false;
+            if (Line(Switch, 1, FaceMap.South) != "B   confirm") return false;
+            if (Line(Switch, 2, FaceMap.South) != "A   back") return false;
+            if (Line(Xbox, 1, FaceMap.East) != "B   confirm") return false;
+            if (Line(PlayStation, 1, FaceMap.East) != "Circle   confirm") return false;
             if (Line(Generic, 1) != "South   confirm") return false;
             if (Join(Keyboard) != "Press Space to join") return false;
+            if (Join(Switch) != "Press A to join") return false;
             if (Join(Generic) != "Press a button to join") return false;
+            if (Continue(Switch, FaceMap.East) != "Seated players press A to continue") return false;
             return true;
         }
 

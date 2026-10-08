@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Tag.Practice;
+using Tag.Settings;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -154,6 +156,8 @@ namespace Tag.Level
 
         void Update()
         {
+            GameSettings settings = GameSettings.Current;
+            if (!PracticeSession.Active && settings != null && !settings.HazardPads) return;
             Pulse();
             PollSteps();
         }

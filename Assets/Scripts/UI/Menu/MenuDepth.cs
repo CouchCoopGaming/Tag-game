@@ -21,6 +21,7 @@ namespace Tag.Ui.Menu
         public const int Rebuild = 1;
         public const int OpenControls = 2;
         public const int Leave = 3;
+        public const int OpenCredits = 4;
 
         public static int Page;
 
@@ -44,7 +45,7 @@ namespace Tag.Ui.Menu
                 if (Page == Display) return 6;
                 if (Page == Access) return 5;
                 if (Page == Look) return 6;
-                return 6;
+                return 7;
             }
         }
 
@@ -63,7 +64,7 @@ namespace Tag.Ui.Menu
             if (Page == Display) return "Resolution, fullscreen, vsync, and UI scale.";
             if (Page == Access) return "Reduce motion, text size, and colorblind-safe player colors.";
             if (Page == Look) return "Look is shared by the couch.";
-            return "Audio, display, accessibility, controls, and look.";
+            return "Audio, display, accessibility, controls, look, and credits.";
         }
 
         public static string Title(int index)
@@ -76,6 +77,7 @@ namespace Tag.Ui.Menu
                 if (index == 2) return "Accessibility";
                 if (index == 3) return "Controls";
                 if (index == 4) return "Look";
+                if (index == 5) return "Credits";
                 return "Back";
             }
             if (index == Count - 1) return "Back";
@@ -118,6 +120,7 @@ namespace Tag.Ui.Menu
                 if (index == 2) return "Motion, text, player colors";
                 if (index == 3) return "The bind list. Space still jumps.";
                 if (index == 4) return "Shared sensitivity";
+                if (index == 5) return "Team, font, and tools";
                 return "";
             }
             if (index == Count - 1) return "";
@@ -167,6 +170,7 @@ namespace Tag.Ui.Menu
                 if (index == 2) { Page = Access; return Rebuild; }
                 if (index == 3) return OpenControls;
                 if (index == 4) { Page = Look; return Rebuild; }
+                if (index == 5) return OpenCredits;
                 return Leave;
             }
             if (index == Count - 1)

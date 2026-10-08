@@ -151,7 +151,7 @@ namespace Tag.Ui.Menu
             raw.color = Color.white;
             raw.raycastTarget = false;
             NamePlate(tile, s + 20f);
-            tile.Tint(Color.Lerp(MenuTheme.Panel, tint, 0.28f));
+            tile.Tint(Color.Lerp(MenuTheme.Panel, tint, UiSweep.PortraitMix));
         }
 
         public static void NamePlate(MenuTile tile, float inset)

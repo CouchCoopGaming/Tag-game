@@ -473,7 +473,33 @@ namespace Tag.Modes
                     if (p != null && p.IsAlive) _livingScratch.Add(p);
                 }
                 if (_livingScratch.Count > 0)
-                    TransferIt(null, _livingScratch[Random.Range(0, _livingScratch.Count)]);
+                {
+                    int pick = -1;
+                    GameSettings rules = GameSettings.Current;
+                    int start = rules != null ? rules.StartIt : GameSettings.StartRandom;
+                    if (start == GameSettings.StartLast)
+                    {
+                        float worst = 0f;
+                        for (int n = 0; n < _livingScratch.Count; n++)
+                        {
+                            float held = _livingScratch[n].TimeAsIt;
+                            if (held > worst)
+                            {
+                                worst = held;
+                                pick = n;
+                            }
+                        }
+                    }
+                    else if (start == GameSettings.StartChosen && rules != null)
+                    {
+                        pick = rules.StartSeat;
+                        if (pick < 0) pick = 0;
+                        if (pick >= _livingScratch.Count) pick = _livingScratch.Count - 1;
+                    }
+                    if (pick < 0)
+                        pick = Random.Range(0, _livingScratch.Count);
+                    TransferIt(null, _livingScratch[pick]);
+                }
             }
             EnforceSpawnSafety();
             if (!PracticeSession.Active)

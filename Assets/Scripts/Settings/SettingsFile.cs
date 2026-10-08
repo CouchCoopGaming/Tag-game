@@ -53,6 +53,17 @@ namespace Tag.Settings
             Line(text, "rounds", s.RoundsPerMatch);
             Line(text, "split", s.SplitAxis);
             Line(text, "listen", s.Listener);
+            Line(text, "startIt", s.StartIt);
+            Line(text, "startSeat", s.StartSeat);
+            Line(text, "winTarget", s.WinTarget);
+            Line(text, "pads", s.HazardPads ? 1f : 0f);
+            Line(text, "zips", s.HazardZips ? 1f : 0f);
+            for (int i = 0; i < GameSettings.SeatCount; i++)
+            {
+                string n = i == 0 ? "" : i.ToString(CultureInfo.InvariantCulture);
+                Line(text, "confirm" + n, s.ConfirmFace[i]);
+                Line(text, "hand" + n, s.Handicap[i]);
+            }
             for (int i = 0; i < (int)PlayAction.Count; i++)
             {
                 var action = (PlayAction)i;
@@ -185,6 +196,9 @@ namespace Tag.Settings
             if (key == "hud" || key == "uiScale" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
             if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
             if (key == "split" || key == "listen") return true;
+            if (key == "startIt" || key == "startSeat" || key == "winTarget" || key == "pads" || key == "zips") return true;
+            if (SeatKey(key, "confirm", out _)) return true;
+            if (SeatKey(key, "hand", out _)) return true;
             if (key.StartsWith("kb.", StringComparison.Ordinal) || key.StartsWith("pad.", StringComparison.Ordinal))
                 return true;
             if (key.StartsWith("pb.", StringComparison.Ordinal) || key.StartsWith("sp.", StringComparison.Ordinal))
@@ -235,6 +249,13 @@ namespace Tag.Settings
             else if (key == "rounds") settings.RoundsPerMatch = (int)Num(value, settings.RoundsPerMatch);
             else if (key == "split") settings.SplitAxis = (int)Num(value, settings.SplitAxis);
             else if (key == "listen") settings.Listener = (int)Num(value, settings.Listener);
+            else if (key == "startIt") settings.StartIt = (int)Num(value, settings.StartIt);
+            else if (key == "startSeat") settings.StartSeat = (int)Num(value, settings.StartSeat);
+            else if (key == "winTarget") settings.WinTarget = (int)Num(value, settings.WinTarget);
+            else if (key == "pads") settings.HazardPads = Flag(value);
+            else if (key == "zips") settings.HazardZips = Flag(value);
+            else if (SeatKey(key, "confirm", out int confirmSeat)) settings.ConfirmFace[confirmSeat] = (int)Num(value, settings.ConfirmFace[confirmSeat]);
+            else if (SeatKey(key, "hand", out int handSeat)) settings.Handicap[handSeat] = (int)Num(value, settings.Handicap[handSeat]);
             else if (key.StartsWith("kb.", StringComparison.Ordinal))
                 Assign(binds, key.Substring(3), value, true);
             else if (key.StartsWith("pad.", StringComparison.Ordinal))

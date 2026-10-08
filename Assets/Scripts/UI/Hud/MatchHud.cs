@@ -5,6 +5,7 @@ using Tag.Experimental;
 using Tag.Gameplay;
 using Tag.Modes;
 using Tag.Profiles;
+using Tag.Settings;
 using Tag.Ui.Menu;
 using TagArena.Movement;
 using UnityEngine;
@@ -318,6 +319,9 @@ namespace Tag.Ui.Hud
             int need = 2;
             HotPotatoTuning tune = modes.HotPotatoTuningAsset;
             if (tune != null && tune.winsToTakeMatch > 1) need = tune.winsToTakeMatch;
+            GameSettings menu = GameSettings.Current;
+            if (menu != null && menu.WinTarget != GameSettings.WinTargetDefault)
+                need = menu.WinTarget;
             int bar = need - 1;
             if (bar < 1) return false;
             IReadOnlyList<ItController> list = modes.PlayersForHud;

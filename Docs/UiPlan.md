@@ -14,12 +14,12 @@ Boot.unity  (MenuDoor + GameFlow)
 Title  "Press Start / South / Space"  (any connected device)
         |
         v
-Main   Play | Practice | Options | Controls | Credits | Quit
-       Online is shown and skipped (coming soon)
+Main   Play | Practice | Options | Controls | Credits | Records | Quit
         |
-        +-- Options ---- audio, look, video, reduce motion, accessibility
-        +-- Controls --- existing binds. Space stays jump.
+        +-- Options ---- audio, display, accessibility, controls, look, credits
+        +-- Controls --- existing binds, plus Confirm: South or East per seat. Space stays jump.
         +-- Credits
+        +-- Records --- local profile matches, wins, and tags
         +-- Practice --- existing practice rows, then the loading screen
         |
         v
@@ -29,17 +29,19 @@ Join   1-4 slots. A button joins. Back on that device leaves.
         v
 Cast   3x2 Hier colors. Each human has a colored cursor.
        LB/RB accent, North hat, confirm ready.
+       Down on the bottom color row opens the name keyboard.
        Idle preview cameras. All ready, then rules.
         |
         v
 Rules  Least It | Hot Potato | Trail Tag | Free play
-       length, rounds, AI count, difficulty, split, listener
+       length, rounds, win target, starting It, handicap,
+       launch pads, zip lines, AI, difficulty, split, listener
         |
         v
 Arena  Mega Park | Pocket Park | Stack Yard | Random
         |
         v
-Loading  arena name + a How to play line
+Loading  arena name, the saved rules, one tip, honest bar
         |
         v
 GameFlow.BeginFromMenu
@@ -59,17 +61,17 @@ MainMenu.unity is the same door without the park. It is third in the build list,
 | Screen | State |
 |---|---|
 | Title | Wordmark with a slow idle, arena photo drift, press-start pulse. Any keyboard or pad advance. |
-| Main | Chunky tiles. Online is disabled. Practice is the existing practice mode. |
+| Main | Chunky tiles. Records sits with Credits and Quit. Practice is the existing practice mode. |
 | Join | Four seats, device line, profile name, back leaves that device. |
-| Characters | Grid, per-seat cursor, ready, all-ready banner, render-texture idle mannequin. |
-| Mode and rules | The four modes that ship, plus the settings rows that already exist. |
+| Characters | Grid, per-seat cursor, ready, all-ready banner, render-texture idle mannequin. Down opens a pad keyboard for that seat's name. |
+| Mode and rules | The four modes that ship, plus length, rounds, win target, starting It, a handicap label, and pad and zip hazards. |
 | Arena | Three parks and Random. Each card has a thumbnail, the name, the size, and a flavor line. |
-| Loading | Arena name and one control tip, then the existing match start. |
+| Loading | Arena name, the saved rules, one control tip, and a bar that moves only when the match actually starts. |
 | Pause | Opened by whoever pressed Start. Dim so the split stays visible. |
 | Results | Ranked figures on steps under a RESULTS heading. Headline is the mode's result line. |
 | Options | Existing look, audio, HUD, accessibility, plus video and reduce-motion for the menu. |
-| Controls | Rebind through ActionBinds. Unknown Jump keys are rejected. Space still jumps. |
-| Credits | Short original note. Built-in font. Existing UI sounds. |
+| Controls | Rebind through ActionBinds. Unknown Jump keys are rejected. Space still jumps. Each seat can set Confirm to South or East. |
+| Credits | Team, the SIL OFL font credit, and the tools already in the project. Open it from Main or from Options. |
 
 ## Pass 2
 
@@ -149,11 +151,23 @@ The loading card names the arena, shows one real tip (a verb or a rule), and fil
 
 The IT badge stays in the top-right corner of a right-hand split. The name sits beside it and does not cross the clock, at two players and four, and at 80%, 100%, and 130%. Mockups are in `Docs/UiStills/pass8/`.
 
+## Pass 9
+
+A Switch Pro pad confirms with A, the east button, and goes back with B, the south button. The glyphs match. Xbox and PlayStation still confirm on the south face and go back on the east face. Controls has a row per seat, Confirm: South or East, and Auto keeps the pad's own rule. The keyboard ignores that row. Jump and punch stay on the physical south button, so Space still jumps.
+
+Rules adds round length, round count, a win target, who starts as It (random, last place, or a chosen seat), a handicap word per seat, and launch pads and zip lines on or off. Those values are saved and listed on the loading screen. The handicap is a label. It does not change speed, punch, or any other feel number. Pads and zips stay on in practice. Turning them off only skips the lobby copies.
+
+Character select opens an on-screen keyboard when you press Down on the bottom color row. The stick moves, confirm types, and OK stores the name on that seat's local profile. Records, on the main menu, lists each profile's matches, wins, and tags from the match stats that were already saved.
+
+Credits names the team, Liberation Sans Bold and the SIL Open Font License, and the tools already in the project. Main and Options both open it.
+
+Text that sits on a highlighted tile is ink, so it stays readable. Seat colors are mixed down before they sit behind words. Every control keeps a gold ring. At 130% the lists reflow inside the safe area, including the rules window, the name keys, and the records card. Mockups are in `Docs/UiStills/pass9/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.
 - Per-player look, only if the settings blob grows a seat field. Do not invent it in the menu.
 - Replace `Docs/UiStills/pass3/` with the captures from a real Unity play session.
-- Online tile, when online exists. Leave it disabled until then.
-- Profile rename and delete on the join screen (the profile API already has them).
+- Online, when it exists. The main menu uses that row for Records until then.
+- Profile delete on the join screen. Rename is the character-select keyboard.
 - A live camera flyover of the park, once a menu scene can spin a hidden arena without loading Play.

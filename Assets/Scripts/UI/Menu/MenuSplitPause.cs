@@ -40,13 +40,6 @@ namespace Tag.Ui.Menu
 
         public static int Preview;
 
-        const float CanvasW = 1920f;
-        const float CanvasH = 1080f;
-        const float BodyL = 48f;
-        const float BodyB = 78f;
-        const float BodyR = 48f;
-        const float BodyT = 108f;
-
         public static int Fill(Card[] cards)
         {
             if (cards == null || cards.Length < 1) return 0;
@@ -56,13 +49,18 @@ namespace Tag.Ui.Menu
             if (humans > 4) humans = 4;
             int split = GameSettings.SplitVertical;
             if (GameSettings.Current != null) split = GameSettings.Current.SplitAxis;
+            UiFit.Ref(UiFit.Current(), out float cw, out float ch);
+            float bodyW = cw - UiFit.SafeX * 2f;
+            float bodyH = ch - UiFit.ChromeTop - UiFit.ChromeBot;
             if (humans < 2)
             {
                 cards[0].Seat = 0;
-                cards[0].X = 502f;
-                cards[0].Y = 36f;
-                cards[0].W = 820f;
-                cards[0].H = 620f;
+                cards[0].W = bodyW * 0.48f;
+                if (cards[0].W > 820f) cards[0].W = 820f;
+                cards[0].H = bodyH * 0.78f;
+                if (cards[0].H > 620f) cards[0].H = 620f;
+                cards[0].X = (bodyW - cards[0].W) * 0.5f;
+                cards[0].Y = (bodyH - cards[0].H) * 0.35f;
                 cards[0].Show = true;
                 return 1;
             }
@@ -99,14 +97,15 @@ namespace Tag.Ui.Menu
 
         static Card Overlap(float nx, float ny, float nw, float nh)
         {
-            float sx0 = nx * CanvasW;
-            float sy0 = ny * CanvasH;
-            float sx1 = sx0 + nw * CanvasW;
-            float sy1 = sy0 + nh * CanvasH;
-            float bx0 = BodyL;
-            float by0 = BodyB;
-            float bx1 = CanvasW - BodyR;
-            float by1 = CanvasH - BodyT;
+            UiFit.Ref(UiFit.Current(), out float canvasW, out float canvasH);
+            float sx0 = nx * canvasW;
+            float sy0 = ny * canvasH;
+            float sx1 = sx0 + nw * canvasW;
+            float sy1 = sy0 + nh * canvasH;
+            float bx0 = UiFit.SafeX;
+            float by0 = UiFit.ChromeBot;
+            float bx1 = canvasW - UiFit.SafeX;
+            float by1 = canvasH - UiFit.ChromeTop;
             float ix0 = sx0 > bx0 ? sx0 : bx0;
             float iy0 = sy0 > by0 ? sy0 : by0;
             float ix1 = sx1 < bx1 ? sx1 : bx1;

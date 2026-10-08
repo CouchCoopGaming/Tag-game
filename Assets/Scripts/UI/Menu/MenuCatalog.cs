@@ -49,14 +49,18 @@ namespace Tag.Ui.Menu
         {
             return "TAG\n"
                 + "A couch tag game for one keyboard and up to four pads.\n\n"
-                + "Arenas on this build: Mega Park, Pocket Park, Stack Yard.\n"
-                + "Modes: Least It, Hot Potato, Trail Tag, Free play.\n\n"
-                + "Menu type is the Unity built-in font. No paid typefaces.\n"
-                + "Menu sounds are the existing UI bus (move, confirm, back, join, error).\n"
-                + "One-shot audio under Assets/Audio is original synthesis, CC0.\n"
-                + "The playground music bed was already in the project.\n\n"
-                + "Space still jumps, even when Jump is rebound.\n"
-                + "Online play is not in this build.";
+                + "Team\n"
+                + "Couch Co-op. This build is local tag.\n\n"
+                + "Type\n"
+                + "Menu letters are Liberation Sans Bold.\n"
+                + "Copyright 2010-2012 Red Hat, Inc.\n"
+                + "SIL Open Font License, Version 1.1.\n"
+                + "The license file sits next to the font. Nothing paid.\n\n"
+                + "Tools\n"
+                + "Unity, the input system already in the project, and the audio bus.\n"
+                + "Menu sounds are clips that were already here.\n"
+                + "One-shots under Assets/Audio are original synthesis.\n\n"
+                + "Space still jumps. Online play is not in this build.";
         }
     }
 }

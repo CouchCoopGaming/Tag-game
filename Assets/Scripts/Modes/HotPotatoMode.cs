@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Tag.Gameplay;
+using Tag.Settings;
 using UnityEngine;
 
 namespace Tag.Modes
@@ -92,8 +93,12 @@ namespace Tag.Modes
             }
 
             _matchWinners.Clear();
+            int need = _tuning.winsToTakeMatch;
+            GameSettings menu = GameSettings.Current;
+            if (menu != null && menu.WinTarget != GameSettings.WinTargetDefault)
+                need = menu.WinTarget;
             foreach (var kv in _roundWins)
-                if (kv.Value >= _tuning.winsToTakeMatch)
+                if (kv.Value >= need)
                     _matchWinners.Add(kv.Key);
 
             bool hitMax = _roundIndex >= _tuning.maxRounds;

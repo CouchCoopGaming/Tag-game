@@ -122,6 +122,29 @@ namespace Tag.Settings
         public int SplitAxis = SplitVertical;
         public int Listener = ListenP1;
 
+        public const int FaceAuto = -1;
+        public const int FaceSouth = 0;
+        public const int FaceEast = 1;
+        public const int StartRandom = 0;
+        public const int StartLast = 1;
+        public const int StartChosen = 2;
+        public const int WinTargetDefault = 2;
+        public const int WinTargetMin = 1;
+        public const int WinTargetMax = 5;
+        public const int HandicapOff = 0;
+        public const int HandicapLight = 1;
+        public const int HandicapHeavy = 2;
+
+        /// <summary>Menu confirm face. -1 follows the pad. 0 is south, 1 is east. Jump stays south.</summary>
+        public readonly int[] ConfirmFace = { FaceAuto, FaceAuto, FaceAuto, FaceAuto };
+        public int StartIt = StartRandom;
+        public int StartSeat;
+        public int WinTarget = WinTargetDefault;
+        /// <summary>Shown on the rules and loading screens. Movement does not read it.</summary>
+        public readonly int[] Handicap = new int[SeatCount];
+        public bool HazardPads = true;
+        public bool HazardZips = true;
+
         public static GameSettings Defaults()
         {
             return new GameSettings();
@@ -155,6 +178,11 @@ namespace Tag.Settings
             RoundsPerMatch = other.RoundsPerMatch;
             SplitAxis = other.SplitAxis;
             Listener = other.Listener;
+            StartIt = other.StartIt;
+            StartSeat = other.StartSeat;
+            WinTarget = other.WinTarget;
+            HazardPads = other.HazardPads;
+            HazardZips = other.HazardZips;
         }
 
         public void ResetToDefaults()
@@ -193,6 +221,12 @@ namespace Tag.Settings
             if (RoundsPerMatch > RoundsMax) RoundsPerMatch = RoundsMax;
             if (SplitAxis != SplitHorizontal) SplitAxis = SplitVertical;
             if (Listener != ListenAverage) Listener = ListenP1;
+            if (StartIt < StartRandom) StartIt = StartRandom;
+            if (StartIt > StartChosen) StartIt = StartChosen;
+            if (StartSeat < 0) StartSeat = 0;
+            if (StartSeat >= SeatCount) StartSeat = SeatCount - 1;
+            if (WinTarget < WinTargetMin) WinTarget = WinTargetMin;
+            if (WinTarget > WinTargetMax) WinTarget = WinTargetMax;
             if (AccessSeat < 0) AccessSeat = 0;
             if (AccessSeat >= SeatCount) AccessSeat = SeatCount - 1;
             for (int i = 0; i < SeatCount; i++)
@@ -201,6 +235,9 @@ namespace Tag.Settings
                 if (Palette[i] >= AccessibilityPalette.Count) Palette[i] = AccessibilityPalette.Count - 1;
                 if (Rumble[i] < 0) Rumble[i] = 0;
                 if (Rumble[i] > 100) Rumble[i] = 100;
+                if (ConfirmFace[i] != FaceSouth && ConfirmFace[i] != FaceEast) ConfirmFace[i] = FaceAuto;
+                if (Handicap[i] < HandicapOff) Handicap[i] = HandicapOff;
+                if (Handicap[i] > HandicapHeavy) Handicap[i] = HandicapHeavy;
             }
         }
 
@@ -264,7 +301,28 @@ namespace Tag.Settings
                 Captions[i] = other.Captions[i];
                 Rumble[i] = other.Rumble[i];
                 ReduceFlash[i] = other.ReduceFlash[i];
+                ConfirmFace[i] = other.ConfirmFace[i];
+                Handicap[i] = other.Handicap[i];
             }
+        }
+
+        public void StepConfirm(int seat, int dir)
+        {
+            if (seat < 0 || seat >= SeatCount || dir == 0) return;
+            int v = ConfirmFace[seat];
+            if (dir > 0)
+            {
+                if (v < 0) v = FaceSouth;
+                else if (v == FaceSouth) v = FaceEast;
+                else v = FaceAuto;
+            }
+            else
+            {
+                if (v < 0) v = FaceEast;
+                else if (v == FaceEast) v = FaceSouth;
+                else v = FaceAuto;
+            }
+            ConfirmFace[seat] = v;
         }
 
         public float DifficultyValue()

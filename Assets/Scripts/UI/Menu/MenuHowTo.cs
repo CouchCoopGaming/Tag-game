@@ -18,7 +18,14 @@ namespace Tag.Ui.Menu
                 Transform child = body.GetChild(i);
                 if (child.name == "HowTo") Object.DestroyImmediate(child.gameObject);
             }
-            RectTransform card = MenuWidgets.Place(body, "HowTo", 16f, 352f, 900f, 250f);
+            UiFit.Columns(UiFit.Current(), out float leftX, out float leftW, out _, out _);
+            float y = 360f;
+            float h = 220f;
+            float bodyH = UiFit.BodyH(UiFit.Current());
+            if (y + h > bodyH - 8f) h = bodyH - y - 8f;
+            if (h < 120f) h = 120f;
+            if (leftW > 900f) leftW = 900f;
+            RectTransform card = MenuWidgets.Place(body, "HowTo", leftX, y, leftW, h);
             Image plate = card.gameObject.AddComponent<Image>();
             MenuArt.Plate(plate, MenuTheme.Navy, true);
             plate.raycastTarget = false;

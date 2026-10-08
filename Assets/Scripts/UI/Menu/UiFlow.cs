@@ -28,6 +28,7 @@ namespace Tag.Ui.Menu
         public const int Credits = 12;
         public const int Practice = 13;
         public const int Match = 14;
+        public const int Records = 15;
 
         public struct Spot
         {
@@ -58,7 +59,7 @@ namespace Tag.Ui.Menu
             var report = new Report { Ok = true };
             int kb = Walk(0, report);
             int pad = Walk(1, report);
-            if (kb < 14 || pad < 14 || kb != pad)
+            if (kb < 15 || pad < 15 || kb != pad)
                 Fail(ref report, "a device missed a screen");
             if (!Keep(report))
                 Fail(ref report, "lobby did not round-trip");
@@ -73,14 +74,22 @@ namespace Tag.Ui.Menu
             bool feed = Tag.Ui.Hud.TagFeed.Holds();
             bool load = LoadGate.Holds() && MenuTips.Holds();
             bool board = Tag.Ui.Hud.ScorePeek.Holds() && Tag.Ui.Hud.RoundCard.Holds();
+            bool faces = FaceMap.Holds();
+            bool rules = RuleBook.Holds();
+            bool records = RecordsHold();
+            bool contrast = UiSweep.Holds();
             if (!text) Fail(ref report, "text floor");
             if (!hud) Fail(ref report, "hud corner");
             if (!glyphs) Fail(ref report, "glyphs");
             if (!feed) Fail(ref report, "tag feed");
             if (!load) Fail(ref report, "loading bar");
             if (!board) Fail(ref report, "scoreboard");
+            if (!faces) Fail(ref report, "confirm face");
+            if (!rules) Fail(ref report, "rules");
+            if (!records) Fail(ref report, "records");
+            if (!contrast) Fail(ref report, "contrast");
             CouchPlay.Release();
-            report.Line = "ui-flow screens=14 kb=" + kb.ToString()
+            report.Line = "ui-flow screens=15 kb=" + kb.ToString()
                 + " pad=" + pad.ToString()
                 + " dead=0 focus=ok back=ok seats=4 drop=ok reclaim=ok min=ok keep=ok cues="
                 + cues.ToString()
@@ -89,7 +98,11 @@ namespace Tag.Ui.Menu
                 + " glyphs=" + (glyphs ? "ok" : "no")
                 + " feed=" + (feed ? "ok" : "no")
                 + " load=" + (load ? "ok" : "no")
-                + " board=" + (board ? "ok" : "no");
+                + " board=" + (board ? "ok" : "no")
+                + " faces=" + (faces ? "ok" : "no")
+                + " rules=" + (rules ? "ok" : "no")
+                + " records=" + (records ? "ok" : "no")
+                + " contrast=" + (contrast ? "ok" : "no");
             if (!report.Ok)
                 report.Line += " FAIL " + report.Failure;
             return report;
@@ -106,6 +119,14 @@ namespace Tag.Ui.Menu
             if (!BackTo(ref s, Main, report)) return 0;
             s.Focus = 4;
             if (!Step(ref seen, ref s, Confirm(s), report)) return 0;
+            if (!BackTo(ref s, Main, report)) return 0;
+            s.Focus = 6;
+            if (!Step(ref seen, ref s, Confirm(s), report)) return 0;
+            if (s.Screen != Records)
+            {
+                Fail(ref report, "records missed");
+                return 0;
+            }
             if (!BackTo(ref s, Main, report)) return 0;
             s.Focus = 0;
             if (!Step(ref seen, ref s, Confirm(s), report)) return 0;
@@ -136,7 +157,7 @@ namespace Tag.Ui.Menu
                 return 0;
             }
             if (!Step(ref seen, ref s, Confirm(s), report)) return 0;
-            s.Focus = 10;
+            s.Focus = RuleBook.Arena;
             if (!Step(ref seen, ref s, Confirm(s), report)) return 0;
             s.Focus = 0;
             if (!Step(ref seen, ref s, Confirm(s), report)) return 0;
@@ -257,8 +278,17 @@ namespace Tag.Ui.Menu
             }
             Mark(seen, Controls);
             if (!BackTo(ref controls, Options, report)) return 0;
+            Spot cred = menu;
+            cred.Focus = 5;
+            cred = Confirm(cred);
+            if (cred.Screen != Credits || !Fit(cred, report))
+            {
+                Fail(ref report, "options credits missed");
+                return 0;
+            }
+            if (!BackTo(ref cred, Options, report)) return 0;
             Spot leave = menu;
-            leave.Focus = 5;
+            leave.Focus = 6;
             leave = Confirm(leave);
             if (leave.Screen != Main || !Fit(leave, report))
             {
@@ -364,6 +394,7 @@ namespace Tag.Ui.Menu
                     if (s.Focus == 2) return OptionsAt(s, 0, false, Main);
                     if (s.Focus == 3) return ControlsAt(s, Main);
                     if (s.Focus == 4) return Land(s, Credits, 0, Main);
+                    if (s.Focus == 6) return Land(s, Records, 0, Main);
                     return s;
                 case Join:
                     if (s.Humans < 1)
@@ -382,8 +413,8 @@ namespace Tag.Ui.Menu
                     rules.FromResults = false;
                     return rules;
                 case Rules:
-                    if (s.Focus == 10) return Land(s, Arena, 0, Rules);
-                    if (s.Focus >= 11) return Back(s);
+                    if (s.Focus == RuleBook.Arena) return Land(s, Arena, 0, Rules);
+                    if (s.Focus >= RuleBook.Back) return Back(s);
                     if (s.Focus <= 3) s.Mode = s.Focus;
                     return s;
                 case Arena:
@@ -426,6 +457,7 @@ namespace Tag.Ui.Menu
                         if (s.Focus == 2) return OptionsAt(s, 3, s.PauseChild, s.BackTo);
                         if (s.Focus == 3) return ControlsAt(s, Options);
                         if (s.Focus == 4) return OptionsAt(s, 4, s.PauseChild, s.BackTo);
+                        if (s.Focus == 5) return Land(s, Credits, 0, Options);
                         return Back(s);
                     }
                     if (s.Focus == s.Count - 1) return OptionsAt(s, 0, s.PauseChild, s.BackTo);
@@ -455,7 +487,7 @@ namespace Tag.Ui.Menu
                 case Rules:
                     return Land(s, s.FromResults ? Results : Cast, 0, s.FromResults ? Results : Join);
                 case Arena:
-                    return Land(s, Rules, 10, Cast);
+                    return Land(s, Rules, RuleBook.Arena, Cast);
                 case Loading:
                     return Land(s, Arena, 0, Rules);
                 case Pause:
@@ -472,6 +504,8 @@ namespace Tag.Ui.Menu
                 case Practice:
                     if (s.BackTo == Options) return OptionsAt(s, 0, s.PauseChild, s.PauseChild ? Pause : Main);
                     return Land(s, s.BackTo == 0 ? Main : s.BackTo, 0, Title);
+                case Records:
+                    return Land(s, Main, 6, Title);
                 case Match:
                     return Land(s, Pause, 0, Match);
                 default:
@@ -532,14 +566,16 @@ namespace Tag.Ui.Menu
                 case Main: return 7;
                 case Join: return 4;
                 case Cast: return 6;
-                case Rules: return 12;
+                case Rules: return RuleBook.Count;
                 case Arena: return 5;
                 case Pause: return 4;
                 case Results: return 4;
                 case Credits: return 1;
                 case Practice: return 6;
                 case Controls: return 2;
+                case Records: return 9;
                 case Options:
+                    if (s.Page == 0) return 7;
                     if (s.Page == 3) return 5;
                     return 6;
                 default: return 0;
@@ -590,7 +626,7 @@ namespace Tag.Ui.Menu
         {
             int[] screens =
             {
-                Title, Main, Join, Cast, Rules, Arena, Loading, Match, Pause, Results, Options, Controls, Credits, Practice
+                Title, Main, Join, Cast, Rules, Arena, Loading, Match, Pause, Results, Options, Controls, Credits, Practice, Records
             };
             for (int i = 0; i < screens.Length; i++)
             {
@@ -612,6 +648,23 @@ namespace Tag.Ui.Menu
         {
             report.Ok = false;
             if (string.IsNullOrEmpty(report.Failure)) report.Failure = why;
+        }
+
+        static bool RecordsHold()
+        {
+            int id = Tag.Profiles.LocalProfiles.Create("Sam");
+            if (id <= 0) return false;
+            if (Tag.Profiles.LocalProfiles.MatchesOf(id) != 0) return false;
+            if (Tag.Profiles.LocalProfiles.WinsOf(id) != 0) return false;
+            if (Tag.Profiles.LocalProfiles.TagsOf(id) != 0) return false;
+            string card = Tag.Profiles.LocalProfiles.CardOf(id);
+            if (string.IsNullOrEmpty(card)) return false;
+            if (card.IndexOf("matches", System.StringComparison.Ordinal) < 0) return false;
+            if (card.IndexOf("wins", System.StringComparison.Ordinal) < 0) return false;
+            if (card.IndexOf("tags", System.StringComparison.Ordinal) < 0) return false;
+            if (!Tag.Profiles.LocalProfiles.Spell("ADA")) return false;
+            Tag.Profiles.LocalProfiles.Clear();
+            return Tag.Profiles.LocalProfiles.Count == 0;
         }
 
         static string Root()

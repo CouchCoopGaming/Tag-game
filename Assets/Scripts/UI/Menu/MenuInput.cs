@@ -1,5 +1,6 @@
 using Tag.Couch;
 using Tag.Onboard;
+using Tag.Settings;
 using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -156,7 +157,9 @@ namespace Tag.Ui.Menu
                     || pad.dpad.left.wasPressedThisFrame
                     || pad.dpad.right.wasPressedThisFrame;
                 if (x == 0 && y == 0 && !south && !east && !start && !north && !sl && !sr && !join) continue;
-                Push(CouchPlay.DevicePad0 + i, x, y, south, east, start, join, sl, sr, north);
+                int device = CouchPlay.DevicePad0 + i;
+                FaceOf(device, out bool confirm, out bool back, south, east);
+                Push(device, x, y, confirm, back, start, join, sl, sr, north);
                 LastKind = InputDeviceKind.Gamepad;
                 LastDevice = CouchPlay.DevicePad0 + i;
                 PadGlyph.Note(LastDevice, pad.name);
@@ -174,13 +177,32 @@ namespace Tag.Ui.Menu
             bool join = south || north || start || sl || sr || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton2);
             if (x != 0 || y != 0 || south || east || start || north || sl || sr || join)
             {
-                Push(CouchPlay.DevicePad0, x, y, south, east, start, join, sl, sr, north);
+                FaceOf(CouchPlay.DevicePad0, out bool confirm, out bool back, south, east);
+                Push(CouchPlay.DevicePad0, x, y, confirm, back, start, join, sl, sr, north);
                 LastKind = InputDeviceKind.Gamepad;
                 LastDevice = CouchPlay.DevicePad0;
                 PadGlyph.Note(LastDevice, "");
                 MenuAudio.NoteDevice(LastKind);
             }
 #endif
+        }
+
+        static void FaceOf(int device, out bool confirm, out bool back, bool south, bool east)
+        {
+            int family = PadGlyph.Family(device);
+            int over = GameSettings.FaceAuto;
+            GameSettings settings = GameSettings.Current;
+            if (settings != null)
+            {
+                for (int seat = 0; seat < GameSettings.SeatCount; seat++)
+                {
+                    if (!CouchPlay.HumanAt(seat)) continue;
+                    if (CouchPlay.DeviceOf(seat) != device) continue;
+                    over = settings.ConfirmFace[seat];
+                    break;
+                }
+            }
+            FaceMap.Map(FaceMap.Resolve(family, over), south, east, out confirm, out back);
         }
 
         static void Push(int device, int x, int y, bool confirm, bool back, bool start, bool join, bool sl, bool sr, bool north)

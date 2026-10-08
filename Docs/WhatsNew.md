@@ -275,3 +275,11 @@ The footer, the title prompt, the join cards, and the binds list use the picture
 During a match, hold Select (or Tab) and only your split shows the standings, the round, and the time. A short feed in the corner says who tagged whom, in that player's color, three lines at most, then it fades. Round 2 and the last round get their own card. A tie shows SUDDEN DEATH. One win away from ending Hot Potato shows MATCH POINT.
 
 The loading screen names the park, gives one real tip, and the bar moves only when the match has actually been started and then when the round is going. It does not fake a fill. The IT badge and the player name no longer sit on top of each other in the top-right, including a two-way and a four-way split. Mockups are in `Docs/UiStills/pass8/`.
+
+The ninth pass follows the pad in your hands. A Switch Pro pad confirms with A and goes back with B, the same way Nintendo and Mario Kart do. Xbox and PlayStation still confirm on the south button and go back on the east button. Controls lets each seat pick Confirm: South or East. Jump stays on the south button, and Space still jumps.
+
+Rules can set the round length, how many rounds or wins end the match, who starts as It, a handicap word on each seat, and whether launch pads and zip lines are on. Those lines are saved and shown while the match loads. The handicap is only a label. Practice keeps the pads and the zips on.
+
+On character select, Down on the bottom color opens a keyboard you can drive with the pad. OK writes that name onto the local profile. Records, next to Credits on the main menu, shows that profile's matches, wins, and tags. Credits names the team, the font license, and the tools, and Options opens it too.
+
+Highlighted text is dark on the bright tile. A gold ring marks the control you are on. At 130% the words stay inside the panels. Mockups are in `Docs/UiStills/pass9/`.

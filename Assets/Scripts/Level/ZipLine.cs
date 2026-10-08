@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Tag.Practice;
+using Tag.Settings;
 using TagArena.Movement;
 using UnityEngine;
 
@@ -175,6 +177,8 @@ namespace Tag.Level
         public static bool TryGrab(PlayerMotor motor)
         {
             if (motor == null) return false;
+            GameSettings settings = GameSettings.Current;
+            if (!PracticeSession.Active && settings != null && !settings.HazardZips) return false;
             Vector3 pawn = motor.transform.position;
             for (int i = 0; i < Active.Count; i++)
             {

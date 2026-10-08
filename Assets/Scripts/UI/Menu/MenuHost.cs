@@ -32,7 +32,8 @@ namespace Tag.Ui.Menu
         Options = 10,
         Controls = 11,
         Credits = 12,
-        Practice = 13
+        Practice = 13,
+        Records = 14
     }
 
     /// <summary>
@@ -147,6 +148,12 @@ namespace Tag.Ui.Menu
         readonly Text[] _castMark = new Text[6];
         readonly RawImage[] _castView = new RawImage[4];
         readonly Text[] _castReady = new Text[4];
+        readonly Text[] _loadRule = new Text[8];
+        readonly Text[] _keyWord = new Text[40];
+        readonly Image[] _keyPlate = new Image[40];
+        RectTransform _keys;
+        Text _nameWord;
+        int _naming = -1;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Auto()
@@ -223,6 +230,7 @@ namespace Tag.Ui.Menu
                 case MenuScreenId.Controls: TickControls(); break;
                 case MenuScreenId.Credits: TickShared(); break;
                 case MenuScreenId.Practice: TickPractice(); break;
+                case MenuScreenId.Records: TickRecords(); break;
             }
             if (_footerKind != MenuInput.LastKind)
                 PaintFooter();
@@ -279,6 +287,7 @@ namespace Tag.Ui.Menu
             _focus = 0;
             _cols = 1;
             _window = 0;
+            _naming = -1;
             _gate = Time.unscaledTime + (MenuVideo.ReduceMotion ? 0.05f : MenuFlow.SlideSeconds);
             _fade = MenuVideo.ReduceMotion ? 1f : 0f;
             _slide = MenuVideo.ReduceMotion ? 0f : 1f;
@@ -302,6 +311,7 @@ namespace Tag.Ui.Menu
                 case MenuScreenId.Controls: BuildControls(); break;
                 case MenuScreenId.Credits: BuildCredits(); break;
                 case MenuScreenId.Practice: BuildPractice(); break;
+                case MenuScreenId.Records: BuildRecords(); break;
             }
             RefreshFocus();
             PaintFooter();
@@ -505,6 +515,14 @@ namespace Tag.Ui.Menu
                 _castPlate[i] = null;
                 _readyStamp[i] = null;
             }
+            for (int i = 0; i < _loadRule.Length; i++) _loadRule[i] = null;
+            for (int i = 0; i < _keyWord.Length; i++)
+            {
+                _keyWord[i] = null;
+                _keyPlate[i] = null;
+            }
+            _keys = null;
+            _nameWord = null;
             if (_body == null) return;
             for (int i = _body.childCount - 1; i >= 0; i--)
                 DestroyImmediate(_body.GetChild(i).gameObject);
@@ -659,6 +677,7 @@ namespace Tag.Ui.Menu
                     MenuAudio.Back();
                     GoBack();
                     break;
+                case MenuScreenId.Records: ActivateRecords(); break;
                 case MenuScreenId.Practice: ActivatePractice(); break;
             }
         }
@@ -806,7 +825,7 @@ namespace Tag.Ui.Menu
             string[] words = { "Move", "Confirm", "Back" };
             for (int i = 0; i < 3; i++)
             {
-                var chip = MenuWidgets.Place(root, "Glyph" + i.ToString(), 280f + i * 460f, 996f, 420f, 64f);
+                var chip = MenuWidgets.Place(root, "Glyph" + i.ToString(), 0f, 0f, 420f, 64f);
                 var image = chip.gameObject.AddComponent<Image>();
                 MenuArt.Plate(image, MenuTheme.Navy, true);
                 image.raycastTarget = false;
@@ -820,6 +839,28 @@ namespace Tag.Ui.Menu
                 _glyphWord[i] = MenuWidgets.Words(chip, words[i], UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
                 _glyphWord[i].rectTransform.offsetMin = new Vector2(86f, 4f);
             }
+            PlaceGlyphs();
+        }
+
+        void PlaceGlyphs()
+        {
+            UiFit.Ref(UiFit.Current(), out float rw, out float rh);
+            float gap = 16f;
+            float h = 64f;
+            float y = rh - UiFit.SafeY - h;
+            float inner = rw - UiFit.SafeX * 2f;
+            float w = (inner - gap * 2f) / 3f;
+            if (w > 420f) w = 420f;
+            if (w < 180f) w = 180f;
+            float total = w * 3f + gap * 2f;
+            float x0 = (rw - total) * 0.5f;
+            for (int i = 0; i < 3; i++)
+            {
+                if (_glyphChip[i] == null) continue;
+                RectTransform rt = _glyphChip[i].rectTransform;
+                rt.anchoredPosition = new Vector2(x0 + i * (w + gap), -y);
+                rt.sizeDelta = new Vector2(w, h);
+            }
         }
 
         void ApplyScale()
@@ -829,6 +870,7 @@ namespace Tag.Ui.Menu
             _uiScale = s;
             UiFit.Ref(s, out float w, out float h);
             _scaler.referenceResolution = new Vector2(w, h);
+            PlaceGlyphs();
         }
 
         void PaintFooter()
@@ -836,8 +878,12 @@ namespace Tag.Ui.Menu
             _footerKind = MenuInput.LastKind;
             if (_footer == null) return;
             int family = PadGlyph.Keyboard;
+            int device = MenuInput.LastDevice;
             if (_footerKind == Tag.Onboard.InputDeviceKind.Gamepad)
-                family = PadGlyph.Family(MenuInput.LastDevice);
+                family = PadGlyph.Family(device);
+            else
+                device = CouchPlay.DeviceKeyboard;
+            int face = FaceFor(device, family);
             _footer.text = "";
             bool title = _screen == MenuScreenId.Title;
             Color chip = family == PadGlyph.Keyboard
@@ -848,7 +894,7 @@ namespace Tag.Ui.Menu
                 if (_glyphWord[i] != null)
                 {
                     _glyphWord[i].enabled = !title;
-                    if (!title) _glyphWord[i].text = PadGlyph.Line(family, i);
+                    if (!title) _glyphWord[i].text = PadGlyph.Line(family, i, face);
                 }
                 if (_glyphChip[i] != null)
                 {
@@ -858,11 +904,11 @@ namespace Tag.Ui.Menu
                 if (_glyphIcon[i] != null)
                 {
                     _glyphIcon[i].enabled = !title;
-                    if (!title) _glyphIcon[i].sprite = MenuIcons.Slot(family, i);
+                    if (!title) _glyphIcon[i].sprite = MenuIcons.Slot(family, i, face);
                 }
             }
             if (_startGlyph != null)
-                _startGlyph.sprite = MenuIcons.Slot(family, 1);
+                _startGlyph.sprite = MenuIcons.Slot(family, 1, face);
         }
 
         void Animate()
@@ -1056,6 +1102,12 @@ namespace Tag.Ui.Menu
                         }
                         continue;
                     }
+                    if (_naming == seat)
+                    {
+                        TickName(seat, edge);
+                        continue;
+                    }
+                    if (_naming >= 0) continue;
                     bool moved = false;
                     int cursor = MenuSession.Cursor[seat];
                     int x = cursor % 3;
@@ -1064,6 +1116,11 @@ namespace Tag.Ui.Menu
                     {
                         x = (x + edge.X + 3) % 3;
                         moved = true;
+                    }
+                    if (edge.Y < 0 && y == 1)
+                    {
+                        OpenName(seat);
+                        continue;
                     }
                     if (edge.Y != 0)
                     {
@@ -1119,7 +1176,8 @@ namespace Tag.Ui.Menu
                     }
                 }
             }
-            bool ready = MenuSession.AllReady();
+            bool ready = _naming < 0 && MenuSession.AllReady();
+            if (_naming >= 0) MenuReady.Stop();
             if (ready && !MenuLobby.Enough(MenuSession.Mode, CouchPlay.Humans))
             {
                 MenuReady.Stop();
@@ -1277,12 +1335,58 @@ namespace Tag.Ui.Menu
             }
             if (dy != 0) MoveOptions(dy);
             if (confirm) ArmActivate();
-            if (dx != 0 && MenuStick.Nudge(_focus - (int)PlayAction.Count, dx))
+            if (dx != 0)
             {
-                MenuAudio.Move();
-                UnlockLooks();
-                PaintControls();
+                int actions = (int)PlayAction.Count;
+                int stick = _focus - actions;
+                int confirmAt = actions + MenuStick.Rows;
+                int resetAt = confirmAt + GameSettings.SeatCount;
+                if (stick >= 0 && stick < MenuStick.Rows && MenuStick.Nudge(stick, dx))
+                {
+                    MenuAudio.Move();
+                    UnlockLooks();
+                    PaintControls();
+                }
+                else if (_focus >= confirmAt && _focus < resetAt)
+                {
+                    GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
+                    GameSettings.Current = s;
+                    s.StepConfirm(_focus - confirmAt, dx);
+                    UnlockLooks();
+                    MenuAudio.Move();
+                    PaintControls();
+                }
             }
+        }
+
+        void TickRecords()
+        {
+            if (Gated()) return;
+            ReadNav(out int dx, out int dy, out bool confirm, out bool back, out bool start);
+            if (back)
+            {
+                MenuAudio.Back();
+                GoBack();
+                return;
+            }
+            if (dy != 0 || dx != 0)
+            {
+                int next = _focus + (dy > 0 || dx < 0 ? -1 : 1);
+                if (dy == 0 && dx == 0) next = _focus;
+                if (next < 0) next = 0;
+                if (next >= _count) next = _count - 1;
+                if (next != _focus)
+                {
+                    _focus = next;
+                    MenuAudio.Move();
+                    int span = UiFit.Window(UiFit.Current(), 128f, 8f);
+                    if (_focus < _window || _focus >= _window + span)
+                        PaintRecords();
+                    else
+                        RefreshFocus();
+                }
+            }
+            if (confirm || start) ArmActivate();
         }
 
         void TickPractice()
@@ -1332,7 +1436,8 @@ namespace Tag.Ui.Menu
             int startFamily = MenuInput.LastKind == InputDeviceKind.Gamepad
                 ? PadGlyph.Family(MenuInput.LastDevice)
                 : PadGlyph.Keyboard;
-            _startGlyph.sprite = MenuIcons.Slot(startFamily, 1);
+            int startDevice = MenuInput.LastKind == InputDeviceKind.Gamepad ? MenuInput.LastDevice : CouchPlay.DeviceKeyboard;
+            _startGlyph.sprite = MenuIcons.Slot(startFamily, 1, FaceFor(startDevice, startFamily));
             MenuAttract.Bind(logo, _startGlyph);
         }
 
@@ -1394,22 +1499,26 @@ namespace Tag.Ui.Menu
             if (_header != null) _header.text = "  TAG";
             if (_banner != null) _banner.text = "";
             if (_dim != null) _dim.color = MenuTheme.Veil;
-            MenuWidgets.Logo(_body, 24f, 24f, 860f, 220f, 120);
-            MenuWidgets.Words(_body, "Local couch. One keyboard, four pads.", UiFit.FloorFont, TextAnchor.UpperLeft, MenuTheme.Cream, new Vector2(0f, 0.22f), new Vector2(0.46f, 0.42f));
+            UiFit.MainSplit(UiFit.Current(), out float logoW, out float tileX, out float tileW);
+            MenuWidgets.Logo(_body, 16f, 24f, logoW - 16f, 200f, 96);
+            MenuWidgets.Words(_body, "Local couch. One keyboard, four pads.", UiFit.FloorFont, TextAnchor.UpperLeft, MenuTheme.Cream, new Vector2(0f, 0.22f), new Vector2(0.44f, 0.42f));
             float y = 8f;
-            AddTile(980f, y, 760f, 96f, 0, "Play", "Local couch", true); y += 108f;
-            AddTile(980f, y, 760f, 96f, 1, "Practice", "Free arena, routes you already have", true); y += 108f;
-            AddTile(980f, y, 760f, 96f, 2, "Options", "Sound, picture, access", true); y += 108f;
-            AddTile(980f, y, 760f, 96f, 3, "Controls", "Binds. Space still jumps.", true); y += 108f;
-            AddTile(980f, y, 360f, 96f, 4, "Credits", "", true);
-            AddTile(1380f, y, 360f, 96f, 5, "Quit", "", true); y += 108f;
-            AddTile(980f, y, 760f, 80f, 6, "Online", "Coming soon", false);
+            AddTile(tileX, y, tileW, 96f, 0, "Play", "Local couch", true); y += 108f;
+            AddTile(tileX, y, tileW, 96f, 1, "Practice", "Free arena, routes you already have", true); y += 108f;
+            AddTile(tileX, y, tileW, 96f, 2, "Options", "Sound, picture, access", true); y += 108f;
+            AddTile(tileX, y, tileW, 96f, 3, "Controls", "Binds. Space still jumps.", true); y += 108f;
+            float gap = 12f;
+            float btn = (tileW - gap * 2f) / 3f;
+            AddTile(tileX, y, btn, 96f, 4, "Credits", "", true);
+            AddTile(tileX + btn + gap, y, btn, 96f, 6, "Records", "Profiles", true);
+            AddTile(tileX + (btn + gap) * 2f, y, btn, 96f, 5, "Quit", "", true);
             MenuWidgets.Mark(TileAt(0), MenuIcons.Play, MenuIcons.PlayTint, 72f);
             MenuWidgets.Mark(TileAt(1), MenuIcons.Cone, MenuIcons.PracticeTint, 72f);
             MenuWidgets.Mark(TileAt(2), MenuIcons.Gear, MenuIcons.OptionsTint, 72f);
             MenuWidgets.Mark(TileAt(3), MenuIcons.Pad, MenuIcons.ControlsTint, 72f);
-            MenuWidgets.Mark(TileAt(4), MenuIcons.Star, MenuIcons.CreditsTint, 64f);
-            MenuWidgets.Mark(TileAt(5), MenuIcons.Door, MenuIcons.QuitTint, 64f);
+            MenuWidgets.Mark(TileAt(4), MenuIcons.Star, MenuIcons.CreditsTint, 48f);
+            MenuWidgets.Mark(TileAt(6), MenuIcons.Star, MenuIcons.CreditsTint, 48f);
+            MenuWidgets.Mark(TileAt(5), MenuIcons.Door, MenuIcons.QuitTint, 48f);
             _count = 7;
         }
 
@@ -1431,8 +1540,15 @@ namespace Tag.Ui.Menu
                     if (!string.IsNullOrEmpty(profile)) detail = detail + "\n" + profile;
                     detail = detail + "\nLeft / Right picks a profile";
                 }
-                float x = 16f + s * 448f;
-                AddTile(x, 36f, 428f, 520f, s, title, detail, true);
+                float span = UiFit.BodyW(UiFit.Current());
+                float cardW = (span - 16f * 5f) / 4f;
+                if (cardW > 428f) cardW = 428f;
+                if (cardW < 180f) cardW = 180f;
+                float x = 16f + s * (cardW + 16f);
+                float cardH = 420f;
+                float bodyH = UiFit.BodyH(UiFit.Current());
+                if (36f + cardH > bodyH) cardH = bodyH - 48f;
+                AddTile(x, 24f, cardW, cardH, s, title, detail, true);
                 MenuTile tile = TileAt(s);
                 int family = PadGlyph.Generic;
                 if (human)
@@ -1441,7 +1557,7 @@ namespace Tag.Ui.Menu
                     family = dev <= 0 ? PadGlyph.Keyboard : PadGlyph.Family(dev);
                 }
                 Sprite mark = MenuIcons.Either;
-                if (human) mark = family == PadGlyph.Keyboard ? MenuIcons.Keys : MenuIcons.ConfirmOf(family);
+                if (human) mark = family == PadGlyph.Keyboard ? MenuIcons.Keys : MenuIcons.ConfirmOf(family, FaceFor(CouchPlay.DeviceOf(s), family));
                 MenuWidgets.Glyph(tile, mark, MenuTheme.Seat(s));
                 if (!human && tile != null && tile.Detail != null)
                     tile.Detail.text = PadGlyph.Join(PadGlyph.Generic);
@@ -1450,47 +1566,73 @@ namespace Tag.Ui.Menu
                     tile.KeepBar = true;
                     tile.BarColor = MenuTheme.Seat(s);
                     if (tile.Bar != null) tile.Bar.color = tile.BarColor;
-                    tile.Tint(Color.Lerp(MenuTheme.Ink, MenuTheme.Seat(s), human ? 0.72f : 0.55f));
+                    tile.Tint(Color.Lerp(MenuTheme.Ink, MenuTheme.Seat(s), UiSweep.SeatMix));
                 }
             }
             _count = 4;
             if (_banner != null)
-                _banner.text = CouchPlay.Humans > 0 ? "Seated players press South to continue" : "Anyone can join";
+            {
+                int bannerFamily = MenuInput.LastKind == InputDeviceKind.Gamepad
+                    ? PadGlyph.Family(MenuInput.LastDevice)
+                    : PadGlyph.Keyboard;
+                int bannerDevice = MenuInput.LastKind == InputDeviceKind.Gamepad ? MenuInput.LastDevice : CouchPlay.DeviceKeyboard;
+                _banner.text = CouchPlay.Humans > 0
+                    ? PadGlyph.Continue(bannerFamily, FaceFor(bannerDevice, bannerFamily))
+                    : "Anyone can join";
+            }
         }
 
         void BuildCast()
         {
             _count = 0;
+            _naming = -1;
             if (_header != null) _header.text = "  Characters";
+            if (_banner != null) _banner.text = "Down from a color opens the name keys";
             if (_dim != null) _dim.color = MenuTheme.Veil;
+            float span = UiFit.BodyW(UiFit.Current());
+            UiFit.CastBands(UiFit.Current(), out float cardH, out float gridTop, out float gridH, out float gridStep);
+            float cardW = (span - 16f * 5f) / 4f;
+            if (cardW > 428f) cardW = 428f;
             for (int s = 0; s < 4; s++)
             {
-                float x = 16f + s * 448f;
-                var card = MenuWidgets.Place(_body, "Cast" + s.ToString(), x, 8f, 428f, 420f);
+                float x = 16f + s * (cardW + 16f);
+                var card = MenuWidgets.Place(_body, "Cast" + s.ToString(), x, 8f, cardW, cardH);
                 var plate = card.gameObject.AddComponent<Image>();
                 MenuArt.Plate(plate, MenuTheme.Seat(s), true);
                 plate.raycastTarget = false;
                 _castPlate[s] = plate;
-                var viewRt = MenuWidgets.Place(card, "View", 16f, 16f, 396f, 280f);
+                float viewH = cardH * 0.62f;
+                if (viewH > 280f) viewH = 280f;
+                var viewRt = MenuWidgets.Place(card, "View", 12f, 12f, cardW - 24f, viewH);
                 var raw = viewRt.gameObject.AddComponent<RawImage>();
                 raw.raycastTarget = false;
                 _castView[s] = raw;
-                _castJoin[s] = MenuWidgets.Words(card, PadGlyph.Join(PadGlyph.Generic), 32, TextAnchor.MiddleCenter, MenuTheme.Ink, new Vector2(0.06f, 0.22f), new Vector2(0.94f, 0.78f));
-                Outline joinEdge = _castJoin[s].GetComponent<Outline>();
-                if (joinEdge != null) joinEdge.effectColor = new Color(1f, 0.98f, 0.92f, 0.95f);
-                _castReady[s] = MenuWidgets.Words(card, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0f, 0f), new Vector2(1f, 0.28f));
+                var well = MenuWidgets.Box(card, "JoinWell", new Vector2(0.08f, 0.30f), new Vector2(0.92f, 0.72f), new Vector2(0.5f, 0.5f));
+                var wellImage = well.gameObject.AddComponent<Image>();
+                MenuArt.Plate(wellImage, MenuTheme.Navy, true);
+                wellImage.raycastTarget = false;
+                var band = MenuWidgets.Box(card, "NameBand", new Vector2(0.04f, 0.02f), new Vector2(0.96f, 0.28f), new Vector2(0.5f, 0.5f));
+                var bandImage = band.gameObject.AddComponent<Image>();
+                MenuArt.Plate(bandImage, MenuTheme.Navy, true);
+                bandImage.raycastTarget = false;
+                _castJoin[s] = MenuWidgets.Words(card, PadGlyph.Join(PadGlyph.Generic), 32, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.1f, 0.32f), new Vector2(0.9f, 0.70f));
+                _castReady[s] = MenuWidgets.Words(card, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.06f, 0.02f), new Vector2(0.94f, 0.28f));
                 _readyStamp[s] = MenuWidgets.Words(card, "READY!", 48, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0.12f, 0.30f), new Vector2(0.88f, 0.62f));
                 _readyStamp[s].rectTransform.localRotation = Quaternion.Euler(0f, 0f, -14f);
                 _readyStamp[s].gameObject.SetActive(false);
             }
+            float colW = (span - 32f) / 3f;
+            if (colW > 500f) colW = 500f;
+            float gridX = (span - (colW * 3f + 16f)) * 0.5f;
+            if (gridX < 8f) gridX = 8f;
             for (int c = 0; c < 6; c++)
             {
                 int col = c % 3;
                 int row = c / 3;
-                float x = 140f + col * 540f;
-                float y = 446f + row * 172f;
+                float x = gridX + col * (colW + 8f);
+                float y = gridTop + row * gridStep;
                 string name = c < LocalProfiles.HierNames.Length ? LocalProfiles.HierNames[c] : "Color";
-                AddTile(x, y, 500f, 160f, c, name.ToUpperInvariant(), "", true);
+                AddTile(x, y, colW, gridH, c, name.ToUpperInvariant(), "", true);
                 MenuTile tile = TileAt(c);
                 if (tile != null)
                 {
@@ -1498,27 +1640,61 @@ namespace Tag.Ui.Menu
                     _castMark[c] = tile.Detail;
                 }
             }
+            BuildKeys(gridTop, gridH + gridStep);
             _count = 6;
             _castSig = int.MinValue;
             RefreshCast();
         }
 
+        void BuildKeys(float top, float height)
+        {
+            float span = UiFit.BodyW(UiFit.Current());
+            _keys = MenuWidgets.Place(_body, "Keys", 8f, top, span - 16f, height);
+            var back = _keys.gameObject.AddComponent<Image>();
+            MenuArt.Plate(back, MenuTheme.Navy, true);
+            back.raycastTarget = false;
+            _nameWord = MenuWidgets.Words(_keys, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Gold, new Vector2(0f, 0.86f), new Vector2(1f, 1f));
+            float cellW = (span - 48f) / LocalProfiles.Cols;
+            if (cellW > 150f) cellW = 150f;
+            float cellH = (height - 56f) / LocalProfiles.Rows;
+            if (cellH > 72f) cellH = 72f;
+            if (cellH < 36f) cellH = 36f;
+            for (int i = 0; i < LocalProfiles.Cols * LocalProfiles.Rows; i++)
+            {
+                int col = i % LocalProfiles.Cols;
+                int row = i / LocalProfiles.Cols;
+                char cell = LocalProfiles.KeyAt(col, row);
+                string word = KeyWord(cell);
+                var rt = MenuWidgets.Place(_keys, "Key", 12f + col * (cellW + 4f), 48f + row * (cellH + 4f), cellW, cellH);
+                var plate = rt.gameObject.AddComponent<Image>();
+                MenuArt.Plate(plate, MenuTheme.Panel, true);
+                plate.raycastTarget = false;
+                _keyPlate[i] = plate;
+                _keyWord[i] = MenuWidgets.Words(rt, word, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            }
+            _keys.gameObject.SetActive(false);
+        }
+
         void BuildRules()
         {
-            _count = 12;
+            _count = RuleBook.Count;
             _cols = 2;
+            _window = 0;
             _focus = (int)MenuSession.Mode;
             if (_focus < 0 || _focus > 3) _focus = 1;
             if (_header != null) _header.text = "  Mode and rules";
-            if (_banner != null) _banner.text = "";
+            if (_banner != null) _banner.text = "Left and right change a rule";
             if (_dim != null) _dim.color = MenuTheme.Veil;
+            UiFit.Columns(UiFit.Current(), out float leftX, out float leftW, out _, out _);
+            float colW = (leftW - 16f) * 0.5f;
+            if (colW > 440f) colW = 440f;
             for (int i = 0; i < 4; i++)
             {
                 var id = (TagModeId)i;
                 int col = i % 2;
                 int row = i / 2;
                 string mark = MenuSession.Mode == id ? "Selected" : " ";
-                AddTile(16f + col * 460f, 12f + row * 168f, 440f, 152f, i, MenuCatalog.ModeName(id), MenuCatalog.ModeBlurb(id) + "\n" + mark, true);
+                AddTile(leftX + col * (colW + 12f), 12f + row * 168f, colW, 152f, i, MenuCatalog.ModeName(id), MenuCatalog.ModeBlurb(id) + "\n" + mark, true);
             }
             PaintRuleRows();
         }
@@ -1533,34 +1709,34 @@ namespace Tag.Ui.Menu
                     _tiles.RemoveAt(i);
                 }
             }
+            ClampRuleWindow();
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
-            string[] labels =
+            UiFit.Columns(UiFit.Current(), out _, out _, out float rightX, out float rightW);
+            int win = UiFit.Window(UiFit.Current(), 84f, 12f);
+            int shown = 0;
+            for (int index = 4; index < RuleBook.Count; index++)
             {
-                "Round length",
-                "Rounds",
-                "AI opponents",
-                "Difficulty",
-                "Split",
-                "Listener",
-                "Arena select",
-                "Back"
-            };
-            string[] details =
-            {
-                s.RoundSeconds().ToString("0") + " s",
-                s.RoundsPerMatch.ToString(),
-                s.AiOpponents.ToString() + "   (0-3, seats left over)",
-                s.DifficultyLabel(),
-                s.SplitAxis == GameSettings.SplitHorizontal ? "Horizontal" : "Vertical",
-                s.Listener == GameSettings.ListenAverage ? "Average" : "P1",
-                "Next",
-                "Characters"
-            };
-            for (int i = 0; i < labels.Length; i++)
-                AddTile(980f, 12f + i * 92f, 760f, 84f, 4 + i, labels[i], details[i], true);
-            _count = 12;
+                if (index < 4 + _window || index >= 4 + _window + win) continue;
+                AddTile(rightX, 12f + shown * 84f, rightW, 80f, index, RuleBook.Title(index), RuleBook.Detail(s, index), true);
+                shown++;
+            }
+            _count = RuleBook.Count;
             ShowHow();
             RefreshFocus();
+        }
+
+        void ClampRuleWindow()
+        {
+            if (_focus < 4) return;
+            int win = UiFit.Window(UiFit.Current(), 84f, 12f);
+            int right = _focus - 4;
+            int rows = RuleBook.Count - 4;
+            if (right < _window) _window = right;
+            if (right >= _window + win) _window = right - (win - 1);
+            int max = rows - win;
+            if (max < 0) max = 0;
+            if (_window > max) _window = max;
+            if (_window < 0) _window = 0;
         }
 
         void ShowHow()
@@ -1580,18 +1756,28 @@ namespace Tag.Ui.Menu
             if (_banner != null) _banner.text = "Random picks one of the three parks";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             HideFlyover();
+            UiFit.ArenaSplit(UiFit.Current(), out float listW, out float shotX, out float shotW, out float row, out float step);
+            float thumbW = listW * 0.28f;
+            if (thumbW > 200f) thumbW = 200f;
+            if (thumbW < 72f) thumbW = 72f;
             for (int i = 0; i < ParkArena.Count; i++)
             {
-                AddTile(24f, 12f + i * 156f, 760f, 144f, i, ParkArena.NameOf(i), MenuArenaCard.Blurb(i), true);
-                MenuWidgets.Thumb(TileAt(i), MenuArenaArt.Thumb(i), 18f, 18f, 200f, 108f);
+                AddTile(16f, 12f + i * step, listW, row, i, ParkArena.NameOf(i), MenuArenaCard.Blurb(i), true);
+                MenuWidgets.Thumb(TileAt(i), MenuArenaArt.Thumb(i), 12f, 12f, thumbW, row - 24f);
             }
-            AddTile(24f, 12f + 3 * 156f, 760f, 144f, 3, "Random", "One of Mega Park, Pocket Park, or Stack Yard.", true);
-            AddTile(24f, 12f + 4 * 156f, 360f, 100f, 4, "Back", "", true);
-            var shot = MenuWidgets.Place(_body, "ArenaShot", 820f, 12f, 980f, 620f);
+            AddTile(16f, 12f + 3 * step, listW, row, 3, "Random", "One of Mega Park, Pocket Park, or Stack Yard.", true);
+            float backW = listW * 0.5f;
+            if (backW > 360f) backW = 360f;
+            AddTile(16f, 12f + 4 * step, backW, row > 100f ? 100f : row, 4, "Back", "", true);
+            float shotH = 12f + 4f * step + row;
+            if (shotH > UiFit.BodyH(UiFit.Current()) - 16f) shotH = UiFit.BodyH(UiFit.Current()) - 16f;
+            var shot = MenuWidgets.Place(_body, "ArenaShot", shotX, 12f, shotW, shotH);
             var frame = shot.gameObject.AddComponent<Image>();
             MenuArt.Plate(frame, MenuTheme.Navy, true);
             frame.raycastTarget = false;
-            var view = MenuWidgets.Place(shot, "Shot", 18f, 18f, 944f, 460f);
+            float viewH = shotH * 0.68f;
+            if (viewH < 120f) viewH = 120f;
+            var view = MenuWidgets.Place(shot, "Shot", 16f, 16f, shotW - 32f, viewH);
             _arenaShot = view.gameObject.AddComponent<RawImage>();
             _arenaShot.raycastTarget = false;
             _arenaShotName = MenuWidgets.Words(shot, "", MenuTokens.Display, TextAnchor.MiddleLeft, MenuTheme.Gold, new Vector2(0f, 0.08f), new Vector2(1f, 0.28f));
@@ -1643,11 +1829,33 @@ namespace Tag.Ui.Menu
             int fly = MenuSession.Arena;
             if (fly < 0 || fly >= ParkArena.Count) fly = 0;
             ShowFlyover(fly, 0.55f);
-            MenuWidgets.Words(_body, name, 84, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0.08f, 0.48f), new Vector2(0.92f, 0.78f));
-            string tip = MenuTips.At(_tip);
+            MenuWidgets.Words(_body, name, 64, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0.08f, 0.86f), new Vector2(0.92f, 0.98f));
+            GameSettings rules = GameSettings.Current ?? GameSettings.Defaults();
+            string[] ruleLabel = { "Length", "Rounds", "Win target", "It", "Handicaps", "Pads", "Zips", "Tip" };
+            string[] ruleValue =
+            {
+                RuleBook.LoadLength(rules),
+                RuleBook.LoadRounds(rules),
+                RuleBook.LoadWin(rules),
+                RuleBook.LoadStart(rules),
+                RuleBook.LoadHand(rules, 0) + "  " + RuleBook.LoadHand(rules, 1) + "  " + RuleBook.LoadHand(rules, 2) + "  " + RuleBook.LoadHand(rules, 3),
+                RuleBook.LoadPads(rules),
+                RuleBook.LoadZips(rules),
+                MenuTips.At(_tip)
+            };
             _tip++;
-            MenuWidgets.Words(_body, tip, 32, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.1f, 0.28f), new Vector2(0.9f, 0.46f));
-            var track = MenuWidgets.Place(_body, "LoadTrack", 360f, 620f, 1120f, 36f);
+            for (int i = 0; i < ruleLabel.Length; i++)
+            {
+                float top = 0.78f - i * 0.07f;
+                float bot = top - 0.065f;
+                MenuWidgets.Words(_body, ruleLabel[i], UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Mute, new Vector2(0.12f, bot), new Vector2(0.36f, top));
+                _loadRule[i] = MenuWidgets.Words(_body, ruleValue[i], UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.38f, bot), new Vector2(0.9f, top));
+            }
+            float bodyH = UiFit.BodyH(UiFit.Current());
+            UiFit.RowBox(UiFit.Current(), 1120f, out float barX, out float barW);
+            float barY = bodyH - 92f;
+            if (barY < 24f) barY = 24f;
+            var track = MenuWidgets.Place(_body, "LoadTrack", barX, barY, barW, 28f);
             var trackImage = track.gameObject.AddComponent<Image>();
             MenuArt.Plate(trackImage, new Color(0f, 0f, 0f, 0.45f), true);
             trackImage.raycastTarget = false;
@@ -1656,7 +1864,7 @@ namespace Tag.Ui.Menu
             MenuArt.Plate(_loadFill, MenuTheme.Gold, true);
             _loadFill.raycastTarget = false;
             _loadFill.enabled = false;
-            _loadWord = MenuWidgets.Words(_body, LoadGate.Waiting, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.2f, 0.08f), new Vector2(0.8f, 0.22f));
+            _loadWord = MenuWidgets.Words(_body, LoadGate.Waiting, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.2f, 0.01f), new Vector2(0.8f, 0.08f));
             _loadStep = -1;
             if (_banner != null) _banner.text = "";
         }
@@ -1722,11 +1930,16 @@ namespace Tag.Ui.Menu
             if (_header != null) _header.text = "  " + headline;
             if (_banner != null) _banner.text = MenuCatalog.ModeName(modeId);
             int n = FillRanks();
-            var stage = MenuWidgets.Place(_body, "ResultsView", 80f, 8f, 1680f, 460f);
+            float span = UiFit.BodyW(UiFit.Current());
+            UiFit.Bands(UiFit.Current(), out float viewH, out float rankY, out float rankH, out float btnY, out float btnH);
+            float stageW = span - 32f;
+            if (stageW > 1680f) stageW = 1680f;
+            float stageX = (span - stageW) * 0.5f;
+            var stage = MenuWidgets.Place(_body, "ResultsView", stageX, 8f, stageW, viewH);
             var frame = stage.gameObject.AddComponent<Image>();
             MenuArt.Plate(frame, MenuTheme.Navy, true);
             frame.raycastTarget = false;
-            var viewRt = MenuWidgets.Place(stage, "View", 16f, 16f, 1648f, 428f);
+            var viewRt = MenuWidgets.Place(stage, "View", 12f, 12f, stageW - 24f, viewH - 24f);
             var view = viewRt.gameObject.AddComponent<RawImage>();
             view.raycastTarget = false;
             if (_preview != null) _preview.ShowPodium(n, _rows, view);
@@ -1737,22 +1950,26 @@ namespace Tag.Ui.Menu
                 string detail = MenuPodium.Stats(_rows[rank]);
                 int seat = _rows[rank].Seat;
                 if (seat < 0) seat = rank;
-                MenuTile tile = AddTile(16f + rank * 452f, 470f, 436f, 136f, 20 + rank, MenuTheme.Place(rank) + "  " + _rows[rank].Name, detail, false);
+                float rankW = (span - 32f) / 4f;
+                if (rankW > 436f) rankW = 436f;
+                MenuTile tile = AddTile(8f + rank * (rankW + 8f), rankY, rankW, rankH, 20 + rank, MenuTheme.Place(rank) + "  " + _rows[rank].Name, detail, false);
                 if (tile != null)
                 {
                     tile.KeepBar = true;
                     tile.BarColor = MenuTheme.Seat(seat);
                     if (tile.Bar != null) tile.Bar.color = tile.BarColor;
-                    tile.Tint(Color.Lerp(MenuTheme.Ink, MenuTheme.Seat(seat), 0.62f));
+                    tile.Tint(Color.Lerp(MenuTheme.Ink, MenuTheme.Seat(seat), UiSweep.SeatMix));
                     if (tile.Stroke != null && _rows[rank].Winner)
                         tile.Stroke.color = MenuTheme.Gold;
                     MenuReveal.Row(tile.transform as RectTransform);
                 }
             }
-            MenuTile rematch = AddTile(16f, 628f, 436f, 96f, 0, "Rematch", "Same setup", true);
-            MenuTile modeBtn = AddTile(468f, 628f, 436f, 96f, 1, "Change mode", "", true);
-            MenuTile castBtn = AddTile(920f, 628f, 436f, 96f, 2, "Character select", "", true);
-            MenuTile menuBtn = AddTile(1372f, 628f, 436f, 96f, 3, "Main menu", "", true);
+            float btnW = (span - 40f) / 4f;
+            if (btnW > 436f) btnW = 436f;
+            MenuTile rematch = AddTile(8f, btnY, btnW, btnH, 0, "Rematch", "Same setup", true);
+            MenuTile modeBtn = AddTile(8f + (btnW + 8f), btnY, btnW, btnH, 1, "Change mode", "", true);
+            MenuTile castBtn = AddTile(8f + (btnW + 8f) * 2f, btnY, btnW, btnH, 2, "Character select", "", true);
+            MenuTile menuBtn = AddTile(8f + (btnW + 8f) * 3f, btnY, btnW, btnH, 3, "Main menu", "", true);
             if (rematch != null) MenuReveal.Action(rematch.transform as RectTransform);
             if (modeBtn != null) MenuReveal.Action(modeBtn.transform as RectTransform);
             if (castBtn != null) MenuReveal.Action(castBtn.transform as RectTransform);
@@ -1796,7 +2013,8 @@ namespace Tag.Ui.Menu
             {
                 int index = _window + v;
                 if (index >= _count) break;
-                MenuTile tile = AddTile(360f, 8f + v * 96f, 1120f, 88f, index, MenuDepth.Title(index), MenuDepth.Detail(index), true);
+                UiFit.RowBox(UiFit.Current(), 1120f, out float rowX, out float rowW);
+                MenuTile tile = AddTile(rowX, 8f + v * 96f, rowW, 88f, index, MenuDepth.Title(index), MenuDepth.Detail(index), true);
                 float meter = MenuDepth.Meter(index);
                 if (tile != null && meter >= 0f)
                     PaintMeter(tile.transform, meter);
@@ -1824,7 +2042,7 @@ namespace Tag.Ui.Menu
 
         void BuildControls()
         {
-            _count = (int)PlayAction.Count + MenuStick.Rows + 2;
+            _count = ControlCount();
             _cols = 1;
             _window = 0;
             if (_header != null) _header.text = "  Controls";
@@ -1851,6 +2069,8 @@ namespace Tag.Ui.Menu
                 string title;
                 string detail;
                 int actions = (int)PlayAction.Count;
+                int confirmAt = actions + MenuStick.Rows;
+                int resetAt = confirmAt + GameSettings.SeatCount;
                 int stick = index - actions;
                 if (index < actions)
                 {
@@ -1864,7 +2084,14 @@ namespace Tag.Ui.Menu
                     title = MenuStick.Label(stick);
                     detail = MenuStick.Detail(stick);
                 }
-                else if (index == actions + MenuStick.Rows)
+                else if (index >= confirmAt && index < resetAt)
+                {
+                    int seat = index - confirmAt;
+                    title = ConfirmTitle(seat);
+                    GameSettings settings = GameSettings.Current ?? GameSettings.Defaults();
+                    detail = FaceMap.Word(settings.ConfirmFace[seat]);
+                }
+                else if (index == resetAt)
                 {
                     title = "Reset bindings";
                     detail = "Back to the defaults. Jump is Space.";
@@ -1874,7 +2101,8 @@ namespace Tag.Ui.Menu
                     title = "Back";
                     detail = _conflict ?? "";
                 }
-                MenuTile row = AddTile(280f, 8f + v * 96f, 1280f, 88f, index, title, detail, true);
+                UiFit.RowBox(UiFit.Current(), 1280f, out float rowX, out float rowW);
+                MenuTile row = AddTile(rowX, 8f + v * 96f, rowW, 88f, index, title, detail, true);
                 if (index < actions && row != null)
                 {
                     int family = MenuInput.LastKind == InputDeviceKind.Gamepad
@@ -1911,8 +2139,13 @@ namespace Tag.Ui.Menu
             if (_header != null) _header.text = "  Credits";
             if (_banner != null) _banner.text = "";
             if (_dim != null) _dim.color = MenuTheme.Veil;
-            MenuWidgets.Words(_body, MenuCatalog.Credits(), UiFit.FloorFont, TextAnchor.UpperLeft, MenuTheme.Cream, new Vector2(0.06f, 0.18f), new Vector2(0.94f, 0.96f));
-            AddTile(680f, 700f, 480f, 88f, 0, "Back", "", true);
+            Text credits = MenuWidgets.Words(_body, MenuCatalog.Credits(), UiFit.FloorFont, TextAnchor.UpperLeft, MenuTheme.Cream, new Vector2(0.06f, 0.22f), new Vector2(0.94f, 0.98f));
+            credits.verticalOverflow = VerticalWrapMode.Overflow;
+            float body = UiFit.BodyH(UiFit.Current());
+            UiFit.RowBox(UiFit.Current(), 480f, out float backX, out float backW);
+            float backY = body - 100f;
+            if (backY < 120f) backY = 120f;
+            AddTile(backX, backY, backW, 80f, 0, "Back", "", true);
         }
 
         void BuildPractice()
@@ -1928,8 +2161,12 @@ namespace Tag.Ui.Menu
         void PaintPractice()
         {
             ClearKeepHeader();
+            UiFit.RowBox(UiFit.Current(), 1000f, out float rowX, out float rowW);
+            float rowH = 90f;
+            float body = UiFit.BodyH(UiFit.Current());
+            if (12f + PracticeSession.Rows * 100f > body) rowH = 72f;
             for (int i = 0; i < PracticeSession.Rows; i++)
-                AddTile(420f, 12f + i * 100f, 1000f, 90f, i, PracticeSession.RowLabel(i), "", true);
+                AddTile(rowX, 12f + i * (rowH + 8f), rowW, rowH, i, PracticeSession.RowLabel(i), "", true);
             _count = PracticeSession.Rows;
             RefreshFocus();
         }
@@ -1969,6 +2206,7 @@ namespace Tag.Ui.Menu
                     QuitApp();
                     break;
                 case 6:
+                    Open(MenuScreenId.Records);
                     break;
                 default:
                     ShowJoin();
@@ -2132,6 +2370,12 @@ namespace Tag.Ui.Menu
                 ShowControls(_pauseChild);
                 return;
             }
+            if (act == MenuDepth.OpenCredits)
+            {
+                MenuAudio.Confirm();
+                Open(MenuScreenId.Credits);
+                return;
+            }
             if (act == MenuDepth.Leave)
             {
                 MenuAudio.Back();
@@ -2155,6 +2399,8 @@ namespace Tag.Ui.Menu
         void ActivateControls()
         {
             int actions = (int)PlayAction.Count;
+            int confirmAt = actions + MenuStick.Rows;
+            int resetAt = confirmAt + GameSettings.SeatCount;
             int stick = _focus - actions;
             if (stick >= 0 && stick < MenuStick.Rows)
             {
@@ -2168,7 +2414,17 @@ namespace Tag.Ui.Menu
                 PaintControls();
                 return;
             }
-            if (_focus == actions + MenuStick.Rows)
+            if (_focus >= confirmAt && _focus < resetAt)
+            {
+                GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
+                GameSettings.Current = s;
+                s.StepConfirm(_focus - confirmAt, 1);
+                UnlockLooks();
+                MenuAudio.Move();
+                PaintControls();
+                return;
+            }
+            if (_focus == resetAt)
             {
                 ActionBinds binds = ActionBinds.Current ?? ActionBinds.Defaults();
                 binds.ResetToDefaults();
@@ -2180,7 +2436,7 @@ namespace Tag.Ui.Menu
                 PaintControls();
                 return;
             }
-            if (_focus > actions + MenuStick.Rows)
+            if (_focus > resetAt)
             {
                 MenuAudio.Back();
                 GoBack();
@@ -2220,10 +2476,26 @@ namespace Tag.Ui.Menu
             if (next < 0) next = 0;
             if (next >= _count) next = _count - 1;
             if (next == _focus) return;
+            int before = _window;
             _focus = next;
             MenuAudio.Move();
-            RefreshFocus();
-            ShowHow();
+            if (_focus >= 4)
+            {
+                int prior = _window;
+                ClampRuleWindow();
+                if (_window != prior || before != _window)
+                    PaintRuleRows();
+                else
+                {
+                    RefreshFocus();
+                    ShowHow();
+                }
+            }
+            else
+            {
+                RefreshFocus();
+                ShowHow();
+            }
         }
 
         void StepRules(int dir)
@@ -2242,17 +2514,7 @@ namespace Tag.Ui.Menu
             }
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             GameSettings.Current = s;
-            int step = dir > 0 ? 1 : -1;
-            if (_focus == 4) s.RoundLengthIndex += step;
-            else if (_focus == 5) s.RoundsPerMatch += step;
-            else if (_focus == 6) s.AiOpponents += step;
-            else if (_focus == 7) s.DifficultyTier += step;
-            else if (_focus == 8)
-                s.SplitAxis = s.SplitAxis == GameSettings.SplitHorizontal ? GameSettings.SplitVertical : GameSettings.SplitHorizontal;
-            else if (_focus == 9)
-                s.Listener = s.Listener == GameSettings.ListenAverage ? GameSettings.ListenP1 : GameSettings.ListenAverage;
-            else return;
-            s.Clamp();
+            if (!RuleBook.Edit(s, _focus, dir)) return;
             MenuMatch.RememberRules();
             MenuAudio.Move();
             PaintRuleRows();
@@ -2442,6 +2704,223 @@ namespace Tag.Ui.Menu
                 if (MenuSession.Ready[s]) n += 1;
             }
             return n;
+        }
+
+        void BuildRecords()
+        {
+            _count = LocalProfiles.Max + 1;
+            _cols = 1;
+            _window = 0;
+            if (_header != null) _header.text = "  Records";
+            if (_banner != null) _banner.text = "Matches, wins, tags, and longest time not It";
+            if (_dim != null) _dim.color = MenuTheme.Veil;
+            PaintRecords();
+        }
+
+        void PaintRecords()
+        {
+            ClearKeepHeader();
+            int win = UiFit.Window(UiFit.Current(), 128f, 8f);
+            if (_focus < _window) _window = _focus;
+            if (_focus >= _window + win) _window = _focus - (win - 1);
+            int max = _count - win;
+            if (max < 0) max = 0;
+            if (_window > max) _window = max;
+            if (_window < 0) _window = 0;
+            UiFit.RowBox(UiFit.Current(), 1100f, out float x, out float w);
+            for (int v = 0; v < win; v++)
+            {
+                int index = _window + v;
+                if (index >= _count) break;
+                string title;
+                string detail;
+                if (index >= LocalProfiles.Max)
+                {
+                    title = "Back";
+                    detail = "";
+                }
+                else
+                {
+                    int id = LocalProfiles.SlotId(index);
+                    if (id <= 0)
+                    {
+                        title = "Empty";
+                        detail = "";
+                    }
+                    else
+                    {
+                        title = LocalProfiles.NameOf(id);
+                        detail = LocalProfiles.CardOf(id);
+                    }
+                }
+                MenuTile row = AddTile(x, 8f + v * 128f, w, 120f, index, title, detail, true);
+                if (row != null && row.Detail != null)
+                {
+                    row.Detail.rectTransform.anchorMin = new Vector2(0.02f, 0.02f);
+                    row.Detail.rectTransform.anchorMax = new Vector2(0.98f, 0.62f);
+                }
+                if (row != null && row.Label != null)
+                {
+                    row.Label.rectTransform.anchorMin = new Vector2(0.02f, 0.62f);
+                    row.Label.rectTransform.anchorMax = new Vector2(0.98f, 0.98f);
+                }
+            }
+            RefreshFocus();
+        }
+
+        void ActivateRecords()
+        {
+            if (_focus >= LocalProfiles.Max)
+            {
+                MenuAudio.Back();
+                GoBack();
+                return;
+            }
+            MenuAudio.Move();
+            PaintRecords();
+        }
+
+        void OpenName(int seat)
+        {
+            _naming = seat;
+            LocalProfiles.PadClear();
+            int id = LocalProfiles.ProfileAt(seat);
+            if (id > 0)
+            {
+                string current = LocalProfiles.NameOf(id);
+                if (!string.IsNullOrEmpty(current)) LocalProfiles.Spell(current);
+            }
+            for (int c = 0; c < 6; c++)
+            {
+                MenuTile tile = TileAt(c);
+                if (tile != null) tile.gameObject.SetActive(false);
+            }
+            if (_keys != null) _keys.gameObject.SetActive(true);
+            PaintKeys();
+            if (_banner != null) _banner.text = "Name keys. OK saves. Back leaves the keys.";
+            MenuAudio.Move();
+        }
+
+        void CloseName()
+        {
+            _naming = -1;
+            if (_keys != null) _keys.gameObject.SetActive(false);
+            for (int c = 0; c < 6; c++)
+            {
+                MenuTile tile = TileAt(c);
+                if (tile != null) tile.gameObject.SetActive(true);
+            }
+            if (_banner != null) _banner.text = "Down from a color opens the name keys";
+            RefreshCast();
+        }
+
+        void TickName(int seat, MenuEdge edge)
+        {
+            if (edge.Back)
+            {
+                MenuAudio.Back();
+                CloseName();
+                return;
+            }
+            if (edge.Y > 0 && LocalProfiles.NameRow == 0 && edge.X == 0)
+            {
+                MenuAudio.Back();
+                CloseName();
+                return;
+            }
+            if (edge.X != 0 || edge.Y != 0)
+            {
+                int dy = 0;
+                if (edge.Y < 0) dy = 1;
+                else if (edge.Y > 0) dy = -1;
+                LocalProfiles.PadMove(edge.X, dy);
+                MenuAudio.Move();
+                PaintKeys();
+            }
+            if (!(edge.Confirm || edge.Start)) return;
+            char cell = LocalProfiles.KeyAt(LocalProfiles.NameCol, LocalProfiles.NameRow);
+            LocalProfiles.PadType();
+            if (cell == '\n')
+            {
+                CommitName(seat);
+                return;
+            }
+            MenuAudio.Move();
+            PaintKeys();
+        }
+
+        void CommitName(int seat)
+        {
+            int id = LocalProfiles.ProfileAt(seat);
+            bool saved = false;
+            if (id > 0 && LocalProfiles.ArmRename(id))
+                saved = LocalProfiles.RenameFromPad();
+            else
+            {
+                int created = LocalProfiles.CreateFromPad();
+                if (created > 0) saved = LocalProfiles.TrySeat(seat, created);
+            }
+            if (!saved)
+            {
+                if (_banner != null) _banner.text = "Type a name, then OK";
+                MenuAudio.Error();
+                PaintKeys();
+                return;
+            }
+            MenuAudio.Confirm();
+            CloseName();
+        }
+
+        void PaintKeys()
+        {
+            int hot = LocalProfiles.NameRow * LocalProfiles.Cols + LocalProfiles.NameCol;
+            for (int i = 0; i < _keyPlate.Length; i++)
+            {
+                if (_keyPlate[i] == null) continue;
+                bool on = i == hot;
+                _keyPlate[i].color = on ? MenuTheme.Gold : MenuTheme.Panel;
+                if (_keyWord[i] != null) _keyWord[i].color = on ? MenuTheme.Ink : MenuTheme.Cream;
+            }
+            if (_nameWord != null) _nameWord.text = LocalProfiles.PadText();
+        }
+
+        static string KeyWord(char cell)
+        {
+            if (cell == '\b') return "Del";
+            if (cell == '\n') return "OK";
+            if (cell == ' ') return "Space";
+            if (cell == '\0') return "";
+            return cell.ToString();
+        }
+
+        static string ConfirmTitle(int seat)
+        {
+            if (seat == 1) return "P2 confirm";
+            if (seat == 2) return "P3 confirm";
+            if (seat == 3) return "P4 confirm";
+            return "P1 confirm";
+        }
+
+        static int ControlCount()
+        {
+            return (int)PlayAction.Count + MenuStick.Rows + GameSettings.SeatCount + 2;
+        }
+
+        static int FaceFor(int device, int family)
+        {
+            int over = GameSettings.FaceAuto;
+            GameSettings settings = GameSettings.Current;
+            if (settings != null)
+            {
+                for (int seat = 0; seat < GameSettings.SeatCount; seat++)
+                {
+                    if (!CouchPlay.HumanAt(seat)) continue;
+                    if (CouchPlay.DeviceOf(seat) != device) continue;
+                    over = settings.ConfirmFace[seat];
+                    break;
+                }
+            }
+            return FaceMap.Resolve(family, over);
         }
     }
 }

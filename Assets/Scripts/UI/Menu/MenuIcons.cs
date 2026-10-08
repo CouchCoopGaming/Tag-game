@@ -54,9 +54,14 @@ namespace Tag.Ui.Menu
 
         public static Sprite Slot(int family, int slot)
         {
+            return Slot(family, slot, FaceMap.DefaultOf(family));
+        }
+
+        public static Sprite Slot(int family, int slot, int face)
+        {
             if (slot <= 0) return MoveOf(family);
-            if (slot == 1) return ConfirmOf(family);
-            return BackOf(family);
+            if (slot == 1) return ConfirmOf(family, face);
+            return BackOf(family, face);
         }
 
         public static Sprite MoveOf(int family)
@@ -67,19 +72,38 @@ namespace Tag.Ui.Menu
 
         public static Sprite ConfirmOf(int family)
         {
+            return ConfirmOf(family, FaceMap.DefaultOf(family));
+        }
+
+        public static Sprite ConfirmOf(int family, int face)
+        {
             if (family == PadGlyph.Keyboard) return KeySpace;
-            if (family == PadGlyph.PlayStation) return Cross;
-            if (family == PadGlyph.Switch) return SwitchSouth;
-            if (family == PadGlyph.Generic) return South;
-            return South;
+            bool east = face == FaceMap.East;
+            if (family == PadGlyph.PlayStation) return east ? Circle : Cross;
+            if (family == PadGlyph.Switch) return east ? SwitchEast : SwitchSouth;
+            return east ? East : South;
         }
 
         public static Sprite BackOf(int family)
         {
+            return BackOf(family, FaceMap.DefaultOf(family));
+        }
+
+        public static Sprite BackOf(int family, int face)
+        {
             if (family == PadGlyph.Keyboard) return KeyEsc;
-            if (family == PadGlyph.PlayStation) return Circle;
-            if (family == PadGlyph.Switch) return SwitchEast;
-            return East;
+            bool east = face == FaceMap.East;
+            if (family == PadGlyph.PlayStation) return east ? Cross : Circle;
+            if (family == PadGlyph.Switch) return east ? SwitchSouth : SwitchEast;
+            return east ? South : East;
+        }
+
+        public static Sprite SouthOf(int family)
+        {
+            if (family == PadGlyph.PlayStation) return Cross;
+            if (family == PadGlyph.Switch) return SwitchSouth;
+            if (family == PadGlyph.Keyboard) return KeySpace;
+            return South;
         }
 
         public static Sprite BindOf(int family, int action)
@@ -92,8 +116,8 @@ namespace Tag.Ui.Menu
                 return Keys;
             }
             if (action <= 1) return Stick;
-            if (action == 2 || action == 6) return ConfirmOf(family);
-            if (action == 8) return BackOf(family);
+            if (action == 2 || action == 6) return SouthOf(family);
+            if (action == 8) return family == PadGlyph.PlayStation ? Circle : family == PadGlyph.Switch ? SwitchEast : East;
             return Pad;
         }
 

@@ -67,7 +67,9 @@ namespace Tag.Ui.Menu
             if (hot && !MenuVideo.ReduceMotion) _punch = 1f;
             if (Plate != null) Plate.color = hot ? _hotColor : _base;
             if (Stroke != null) Stroke.color = hot ? MenuTheme.Gold : MenuTheme.Stroke;
-            if (Bar != null) Bar.color = hot ? MenuTheme.Gold : (KeepBar ? BarColor : new Color(1f, 1f, 1f, 0.35f));
+            if (Label != null) Label.color = hot ? MenuTheme.Ink : MenuTheme.Cream;
+            if (Detail != null) Detail.color = hot ? MenuTheme.Ink : MenuTheme.Mute;
+            if (Bar != null) Bar.color = hot ? MenuTheme.Ink : (KeepBar ? BarColor : new Color(1f, 1f, 1f, 0.35f));
         }
 
         public void OnPointerEnter(PointerEventData eventData)
