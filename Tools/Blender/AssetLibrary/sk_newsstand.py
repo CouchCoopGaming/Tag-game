@@ -149,23 +149,117 @@ def _shutter(g, lod):
             sweep_tube(g, [(x, 1.58, 0.66), (x, 2.02, 0.72)], 0.006, "Lib_SteelDark", segments=8)
 
 
+def _lathe_at(g, profile, segments, mat, origin):
+    ox, oy, oz = origin
+    n = len(profile)
+    verts = []
+    for i in range(segments):
+        ang = 2.0 * math.pi * i / segments
+        s, c = math.sin(ang), math.cos(ang)
+        for radius, y in profile:
+            verts.append((ox + radius * s, oy + y, oz + radius * c))
+    faces = []
+    for i in range(segments):
+        i2 = (i + 1) % segments
+        for k in range(n):
+            k2 = (k + 1) % n
+            faces.append((i * n + k, i * n + k2, i2 * n + k2, i2 * n + k))
+    g.mesh(verts, faces, mat)
+
+
+def _bottle(g, origin, mat, scale=1.0, segments=10):
+    """Closed bottle. Neck and cap are part of the same solid."""
+    s = scale
+    _lathe_at(g, (
+        (0.008 * s, 0.000),
+        (0.026 * s, 0.000),
+        (0.030 * s, 0.010 * s),
+        (0.030 * s, 0.086 * s),
+        (0.016 * s, 0.104 * s),
+        (0.011 * s, 0.114 * s),
+        (0.011 * s, 0.142 * s),
+        (0.015 * s, 0.148 * s),
+        (0.015 * s, 0.162 * s),
+        (0.008 * s, 0.162 * s),
+    ), segments, mat, origin)
+
+
+def _bag(g, origin, mat):
+    """Chip bag. The belly is puffed and the top fin is the crimp."""
+    ox, oy, oz = origin
+    rings = (
+        (0.000, 0.034, 0.004),
+        (0.014, 0.040, 0.014),
+        (0.055, 0.046, 0.022),
+        (0.100, 0.042, 0.016),
+        (0.118, 0.036, 0.005),
+        (0.132, 0.046, 0.004),
+    )
+    verts = []
+    for y, hw, hd in rings:
+        verts.append((ox - hw, oy + y, oz - hd))
+        verts.append((ox + hw, oy + y, oz - hd))
+        verts.append((ox + hw, oy + y, oz + hd))
+        verts.append((ox - hw, oy + y, oz + hd))
+    faces = [(0, 3, 2, 1)]
+    n = len(rings)
+    for i in range(n - 1):
+        a = i * 4
+        b = a + 4
+        for k in range(4):
+            k2 = (k + 1) % 4
+            faces.append((a + k, a + k2, b + k2, b + k))
+    last = (n - 1) * 4
+    faces.append((last, last + 1, last + 2, last + 3))
+    g.mesh(verts, faces, mat)
+
+
+def _folded(g, center, size, mat, ridge=0.006):
+    """Paper stack. The top crease is a ridge, so the fold reads."""
+    cx, cy, cz = center
+    w, h, d = size
+    hx, hy, hz = w * 0.5, h * 0.5, d * 0.5
+    verts = [
+        (cx - hx, cy - hy, cz - hz),
+        (cx + hx, cy - hy, cz - hz),
+        (cx + hx, cy - hy, cz + hz),
+        (cx - hx, cy - hy, cz + hz),
+        (cx - hx, cy + hy, cz - hz),
+        (cx + hx, cy + hy, cz - hz),
+        (cx + hx, cy + hy + ridge, cz),
+        (cx - hx, cy + hy + ridge, cz),
+        (cx + hx, cy + hy, cz + hz),
+        (cx - hx, cy + hy, cz + hz),
+    ]
+    g.mesh(verts, [
+        (0, 1, 2, 3),
+        (0, 4, 5, 1),
+        (3, 2, 8, 9),
+        (0, 3, 9, 7, 4),
+        (1, 5, 6, 8, 2),
+        (4, 7, 6, 5),
+        (9, 8, 6, 7),
+    ], mat)
+
+
 def _interior(g, lod):
     """Back wall, a paper shelf, a sill, and a ceiling light."""
     g.box((0, 1.46, -0.512), (1.36, 0.70, 0.010), "Lib_WoodDark")
     g.box((0, 1.380, -0.22), (1.16, 0.016, 0.26), "Lib_Wood")
+    # Shelf top is 1.388. Goods start at 1.394 so they clear the board.
     if lod == 0:
-        g.box((-0.38, 1.478, -0.20), (0.16, 0.16, 0.10), "Lib_PaintCream")
-        g.box((-0.16, 1.456, -0.24), (0.14, 0.12, 0.08), "Lib_PaintWhite")
-        g.box((0.02, 1.446, -0.18), (0.08, 0.10, 0.06), "Lib_Orange")
-        g.box((0.16, 1.438, -0.22), (0.07, 0.08, 0.05), "Lib_PaintRed")
-        g.box((0.34, 1.488, -0.16), (0.12, 0.18, 0.08), "Lib_BoxBlue")
+        _folded(g, (-0.34, 1.418, -0.24), (0.16, 0.048, 0.11), "Lib_PaintCream")
+        _bottle(g, (-0.12, 1.394, -0.18), "Lib_PaintBlue", 1.0, 10)
+        _bottle(g, (0.02, 1.394, -0.28), "Lib_Glass", 0.82, 8)
+        _bag(g, (0.20, 1.394, -0.16), "Lib_Orange")
+        _bag(g, (0.38, 1.394, -0.28), "Lib_PaintYellow")
         g.box((0, 1.148, 0.28), (0.88, 0.014, 0.16), "Lib_Wood")
-        g.box((-0.26, 1.286, 0.30), (0.14, 0.24, 0.008), "Lib_PaintCream")
-        g.box((-0.06, 1.256, 0.30), (0.12, 0.18, 0.008), "Lib_PaintWhite")
-        g.box((0.14, 1.226, 0.28), (0.08, 0.12, 0.05), "Lib_Orange")
-        g.box((0.30, 1.246, 0.29), (0.10, 0.16, 0.045), "Lib_BoxRed")
+        # On the sill, close to the opening so the shapes catch the light.
+        _folded(g, (-0.26, 1.186, 0.30), (0.18, 0.050, 0.12), "Lib_PaintCream")
+        _bottle(g, (0.02, 1.162, 0.32), "Lib_PaintBlue", 1.15, 10)
+        _bag(g, (0.24, 1.162, 0.30), "Lib_Orange")
     else:
-        g.box((0, 1.470, -0.20), (0.36, 0.14, 0.10), "Lib_PaintCream")
+        _folded(g, (0.0, 1.422, -0.22), (0.20, 0.056, 0.12), "Lib_PaintCream")
         g.box((0, 1.148, 0.28), (0.70, 0.014, 0.14), "Lib_Wood")
     g.box((0, 1.955, 0.02), (0.62, 0.012, 0.05), "Lib_WindowLit")
 
@@ -176,8 +270,8 @@ def _counter(g, lod):
     for x in (-0.46, 0.46):
         g.box((x, 0.986, 0.76), (0.012, 0.172, 0.14), "Lib_SteelDark")
     if lod == 0:
-        g.box((-0.28, 1.146, 0.84), (0.16, 0.036, 0.09), "Lib_PaintCream")
-        g.box((0.22, 1.140, 0.80), (0.14, 0.026, 0.08), "Lib_PaintWhite")
+        _folded(g, (-0.28, 1.150, 0.82), (0.16, 0.040, 0.10), "Lib_PaintCream")
+        _folded(g, (0.24, 1.142, 0.78), (0.12, 0.028, 0.08), "Lib_PaintWhite", ridge=0.004)
 
 
 def _door(g, lod):
@@ -188,6 +282,34 @@ def _door(g, lod):
         g.cylinder((-0.10, 0.86, z - 0.018), 0.010, 0.008, "Lib_Brass", 8, axis="Z")
         for y in (0.42, 1.58):
             g.cylinder((0.40, y, z - 0.018), 0.008, 0.04, "Lib_SteelDark", 8, axis="Y")
+
+
+def _wire_grid(g, sign, seg):
+    """Verticals and cross rods meet in a weld bead. No open gap at the crossing."""
+    zs = (-0.42, 0.0, 0.40)
+    ys = (0.40, 0.86, 1.28, 1.68)
+    bead = 0.008
+    clear = bead + 0.0015
+    x = sign * WIRE_X
+    y_bot, y_top = 0.36, 1.72
+    for z in zs:
+        g.cylinder((sign * 0.924, 0.50, z), 0.006, 0.032, "Lib_Steel", seg, axis="X")
+        g.cylinder((sign * 0.924, 1.60, z), 0.006, 0.032, "Lib_Steel", seg, axis="X")
+        cuts = [y_bot]
+        for y in ys:
+            cuts.append(y - clear)
+            cuts.append(y + clear)
+        cuts.append(y_top)
+        for i in range(0, len(cuts), 2):
+            y0, y1 = cuts[i], cuts[i + 1]
+            g.cylinder((x, (y0 + y1) * 0.5, z), WIRE_R, y1 - y0, "Lib_SteelDark", seg, axis="Y")
+        for y in ys:
+            g.sphere((x, y, z), bead, "Lib_SteelDark", 8)
+    for i in range(len(zs) - 1):
+        z0 = zs[i] + clear
+        z1 = zs[i + 1] - clear
+        for y in ys:
+            g.cylinder((x, y, (z0 + z1) * 0.5), 0.0045, z1 - z0, "Lib_SteelDark", seg, axis="Z")
 
 
 def _mag_center(h, thick, tilt):
@@ -212,16 +334,7 @@ def _racks(g, lod):
                 euler=(0.0, 0.0, sign * tilt),
             )
         if lod == 0:
-            for z in (-0.42, 0.0, 0.40):
-                g.cylinder((sign * WIRE_X, 1.04, z), WIRE_R, 1.36, "Lib_SteelDark", seg, axis="Y")
-                # Standoff from the wall to the wire. It stops short of both.
-                g.cylinder((sign * 0.924, 0.50, z), 0.006, 0.032, "Lib_Steel", seg, axis="X")
-                g.cylinder((sign * 0.924, 1.60, z), 0.006, 0.032, "Lib_Steel", seg, axis="X")
-            for z0, z1 in ((-0.40, -0.02), (0.02, 0.38)):
-                cz = (z0 + z1) * 0.5
-                length = z1 - z0
-                for hy in (0.40, 0.86, 1.28, 1.68):
-                    g.cylinder((sign * WIRE_X, hy, cz), 0.0045, length, "Lib_SteelDark", seg, axis="Z")
+            _wire_grid(g, sign, seg)
             for row in (0, 1, 2):
                 pair = MAGS[row * 2:row * 2 + 2]
                 lip_y = 9.0
@@ -240,8 +353,11 @@ def _racks(g, lod):
                     0.0045, 0.70, "Lib_SteelDark", seg, axis="Z",
                 )
         else:
-            g.cylinder((sign * WIRE_X, 1.10, -0.16), 0.006, 0.70, "Lib_SteelDark", seg, axis="Y")
-            g.cylinder((sign * WIRE_X, 1.10, 0.18), 0.006, 0.70, "Lib_SteelDark", seg, axis="Y")
+            for z in (-0.16, 0.18):
+                g.cylinder((sign * WIRE_X, 0.934, z), 0.006, 0.308, "Lib_SteelDark", seg, axis="Y")
+                g.cylinder((sign * WIRE_X, 1.266, z), 0.006, 0.308, "Lib_SteelDark", seg, axis="Y")
+                g.sphere((sign * WIRE_X, 1.10, z), 0.009, "Lib_SteelDark", 6)
+            g.cylinder((sign * WIRE_X, 1.10, 0.01), 0.005, 0.318, "Lib_SteelDark", seg, axis="Z")
             g.cylinder((sign * 1.04, 0.90, 0.0), 0.005, 0.50, "Lib_SteelDark", seg, axis="Z")
 
 
