@@ -32,6 +32,7 @@ namespace Tag.NoClipDump
 
             float runPeriod = (float)(2.0 * Math.PI / WallPose.RunCadenceFull);
             Emit("wall-run", runPeriod, "wall", t => FromWall(WallPose.RunCycle(WallPose.RunCadenceFull * t, true)));
+            Emit("wall-run-right", runPeriod, "wall-right", t => FromWall(WallPose.RunCycle(WallPose.RunCadenceFull * t, false)));
 
             float jumpDur = WallJumpPose.BeatSeconds + WallJumpPose.EaseSeconds;
             Emit("wall-jump", jumpDur, "wall", t => FromWall(WallJumpPose.At(t, 8f, true, 6f)));
@@ -163,7 +164,8 @@ namespace Tag.NoClipDump
                 HeadRoll = -s.LeanZ * WallPose.HeadRollShare,
                 ThighL = s.ThighL, ThighR = s.ThighR, KneeL = s.KneeL, KneeR = s.KneeR,
                 ThighRollL = s.ThighRollL, ThighRollR = s.ThighRollR,
-                ArmPitchL = s.ArmPitchL, ArmYawL = s.ArmYawL, ArmPitchR = s.ArmPitchR, ArmYawR = s.ArmYawR,
+                ArmPitchL = s.ArmPitchL, ArmYawL = s.ArmYawL, ArmRollL = s.ArmRollL + 6f,
+                ArmPitchR = s.ArmPitchR, ArmYawR = s.ArmYawR, ArmRollR = s.ArmRollR - 6f,
                 ElbowL = s.ElbowL, ElbowR = s.ElbowR, FootL = s.FootL, FootR = s.FootR,
             };
         }

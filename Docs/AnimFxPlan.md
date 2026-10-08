@@ -145,6 +145,13 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - Before/after stills for vault, punch, wall-run, and exit-ZipDrop are in `Docs/AnimStills/pass16/noclip/`. The scene is the normal grey, the prop stays visible, the mannequin stays grey, and only the overlapping volume is red. The after frames have no red volume.
 - Gameplay locks stayed byte-identical: coyote 0.10, jump buffer 0.16, cling 0.08, jumpSpeed 24.7, terminal 56.16, roll at 65% of terminal for 0.52 s (threshold 36.50), gameplayDelay=0, root motion off, plus the enemy-ai, pocket-ai, and stack-ai lines and `hot-path allocs before=101 after=0`. Animation-key printouts moved with the new poses. The proof diffs are in the PR body.
 
+## Pass 16 add-on (roll and wall run)
+
+- The landing-roll root now orbits the lead shoulder (pivot about 1.15 m up) instead of the hip. The bank peaks at 122° near t=0.17 of 0.52 s and is back to 0° at t=0.52, so the rise pose is on its feet. Root motion stays off. The 0.52 s duration and the 65% trigger are unchanged.
+- Measured on the banked mesh, seated so the lowest vertex is on the floor: at t=0.167 the lead shoulder is 13.2 cm up, the head is 10.0 cm up, and the foot is the contact at 2.1 cm. That is down from about 1.2 m, and it is not a shoulder plant. A bank past about 130° puts the head on the floor before the back does, on every head tuck and spine arch tried, so the curve stops short of a headstand. Elbows in the tuck are opened to -20°/-18°. Thighs are abducted (roll ±50). The leftover forearm/upper-arm and hip/thigh overlaps are rigJoint.
+- Wall run uses a shorter plant-leg roll (-20°, run only; exits keep -36°) and swings the inner arm on bone Z (InnerRoll -12° plus the 4–8° gait roll). Yaw still only twists along the arm. Sampled hip clearance off the foot's wall face is 29.4–41.0 cm on the left and 33.0–42.1 cm on the right. The tightest left frame is 29.4 cm at t=0.2. No piece penetrates either wall.
+- Checker, both wall sides included: `no-clip clips=36 frames=329 worldMax=0.00 poseMax=0.49 rigMax=3.40 poseFails=0 rigJoint=322`. Grey-scene strips with the prop are in `Docs/AnimStills/pass16/addon/`. Gameplay proof lines stayed byte-identical with the pass 16 sim.
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue

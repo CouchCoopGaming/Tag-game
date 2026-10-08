@@ -89,14 +89,26 @@ namespace Tag.Art
 
         public static Vector3 Pivot(bool shoulderLeft)
         {
-            float x = shoulderLeft ? -0.16f : 0.16f;
-            return new Vector3(x, 0.36f, 0.06f);
+            // Lead-shoulder height. The orbit stays on the shoulder instead of the hip.
+            float x = shoulderLeft ? -0.30f : 0.30f;
+            return new Vector3(x, 1.15f, 0.12f);
         }
 
-        /// <summary>Visual bank. Peaks on the shoulder and stands back up. It does not pass through a headstand.</summary>
+        /// <summary>
+        /// Visual bank, degrees. The lead shoulder is down by the contact beat
+        /// (spin ~104°, t=0.15 of 0.52 s), the turn continues across the back,
+        /// and 360° stands the rise pose on its feet. It does not hold a headstand.
+        /// </summary>
         public static float BankDegrees(float spin)
         {
-            return Mathf.Sin(spin * 0.5f * Mathf.Deg2Rad) * 62f;
+            if (spin < 0f) spin = 0f;
+            if (spin > 360f) spin = 360f;
+            // Peak on the lead shoulder. Past this the head, not the back, becomes
+            // the contact on this rig, so the turn comes back up onto the feet.
+            const float halfPi = 1.5707963f;
+            if (spin <= 110f)
+                return 122f * Mathf.Sin(spin / 110f * halfPi);
+            return 122f * Mathf.Sin((360f - spin) / 250f * halfPi);
         }
 
         public static float SpinAt(float u)
@@ -303,7 +315,24 @@ namespace Tag.Art
 
         public static float FloorShift(VerbExitSample s, float spin, bool shoulderLeft)
         {
-            return PoseFigure(s, spin, shoulderLeft).Shift;
+            // Stick-figure settle, plus the drop that seats the shoulder orbit on the floor.
+            return PoseFigure(s, spin, shoulderLeft).Shift + MeshSeat(spin);
+        }
+
+        /// <summary>Extra root drop, metres. Seats the shoulder-orbit mesh on the floor.</summary>
+        public static float MeshSeat(float spin)
+        {
+            if (spin < 0f) spin = 0f;
+            if (spin > 360f) spin = 360f;
+            // Measured at 30 fps on the banked mesh: the drop that puts the lowest vertex on the floor.
+            float[] at = { 0f, 23f, 46f, 69f, 92f, 116f, 139f, 161f, 185f, 208f, 231f, 254f, 277f, 300f, 323f, 346f, 360f };
+            float[] drop = { -0.56f, -0.43f, -0.42f, -0.59f, -0.78f, -0.85f, -0.84f, -0.82f, -0.76f, -0.67f, -0.58f, -0.43f, -0.29f, -0.20f, -0.06f, 0.03f, 0.04f };
+            int i = 1;
+            while (i < at.Length && at[i] < spin) i++;
+            if (i >= at.Length) return drop[drop.Length - 1];
+            float span = at[i] - at[i - 1];
+            float t = span > 0.001f ? (spin - at[i - 1]) / span : 0f;
+            return drop[i - 1] + (drop[i] - drop[i - 1]) * t;
         }
 
         public static Vector3 OrbitDelta(Vector3 pivot, Vector3 axis, float degrees)
@@ -374,18 +403,18 @@ namespace Tag.Art
             s.Hip = 28f;
             s.Spine = 22f;
             s.Head = -40f;
-            s.ThighL = 40f;
-            s.ThighR = 34f;
-            s.KneeL = -72f;
-            s.KneeR = -66f;
+            s.ThighL = 70f;
+            s.ThighR = 64f;
+            s.KneeL = -100f;
+            s.KneeR = -94f;
             s.ArmPitchL = -42f;
             s.ArmPitchR = -40f;
             s.ArmYawL = -28f;
             s.ArmYawR = 32f;
-            s.ElbowL = -40f;
-            s.ElbowR = -36f;
-            s.ThighRollL = -36f;
-            s.ThighRollR = 36f;
+            s.ElbowL = -20f;
+            s.ElbowR = -18f;
+            s.ThighRollL = -50f;
+            s.ThighRollR = 50f;
             s.SpineRoll = 8f;
             return s;
         }
@@ -396,18 +425,18 @@ namespace Tag.Art
             s.Hip = 22f;
             s.Spine = 26f;
             s.Head = -36f;
-            s.ThighL = 42f;
-            s.ThighR = 36f;
-            s.KneeL = -74f;
-            s.KneeR = -68f;
+            s.ThighL = 70f;
+            s.ThighR = 64f;
+            s.KneeL = -100f;
+            s.KneeR = -94f;
             s.ArmPitchL = -28f;
             s.ArmPitchR = -36f;
             s.ArmYawL = -24f;
             s.ArmYawR = 28f;
-            s.ElbowL = -36f;
-            s.ElbowR = -32f;
-            s.ThighRollL = -36f;
-            s.ThighRollR = 36f;
+            s.ElbowL = -20f;
+            s.ElbowR = -18f;
+            s.ThighRollL = -50f;
+            s.ThighRollR = 50f;
             s.SpineRoll = 14f;
             return s;
         }
@@ -418,18 +447,18 @@ namespace Tag.Art
             s.Hip = 14f;
             s.Spine = 18f;
             s.Head = -32f;
-            s.ThighL = 44f;
-            s.ThighR = 38f;
-            s.KneeL = -76f;
-            s.KneeR = -70f;
+            s.ThighL = 66f;
+            s.ThighR = 58f;
+            s.KneeL = -96f;
+            s.KneeR = -88f;
             s.ArmPitchL = -18f;
             s.ArmPitchR = -32f;
             s.ArmYawL = -20f;
             s.ArmYawR = 24f;
-            s.ElbowL = -32f;
-            s.ElbowR = -28f;
-            s.ThighRollL = -36f;
-            s.ThighRollR = 36f;
+            s.ElbowL = -20f;
+            s.ElbowR = -18f;
+            s.ThighRollL = -48f;
+            s.ThighRollR = 48f;
             s.SpineRoll = 20f;
             return s;
         }

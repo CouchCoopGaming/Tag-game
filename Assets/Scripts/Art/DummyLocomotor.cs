@@ -15828,8 +15828,8 @@ namespace Tag.Art
                 pose.LeanZ = sign * ClimbContact.Tilt(along) * blend;
             }
             ApplyWallLegs(pose);
-            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ);
-            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ);
+            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ + pose.ArmRollL);
+            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, pose.ArmYawR, -armZ + pose.ArmRollR);
             _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
             _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, pose.LeanZ);

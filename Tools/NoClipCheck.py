@@ -21,7 +21,7 @@ import time
 
 import bpy
 import numpy as np
-from mathutils import Vector
+from mathutils import Quaternion, Vector
 from mathutils.bvhtree import BVHTree
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -357,6 +357,12 @@ def place_solid(kind, pieces):
         # Face meets the near foot. The wall occupies everything past that face.
         face = float(foot[:, 0].min())
         made.append(add_cube("SolidWall", (face - 0.2, 0.0, 1.6), (0.4, 8.0, 3.2)))
+    elif kind == "wall-right":
+        foot = piece_cloud(pieces, ("Mesh_Foot_R",))
+        if len(foot) == 0:
+            return made
+        face = float(foot[:, 0].max())
+        made.append(add_cube("SolidWallR", (face + 0.2, 0.0, 1.6), (0.4, 8.0, 3.2)))
     elif kind == "box":
         hands = piece_cloud(pieces, ("Mesh_Hand_L", "Mesh_Hand_R"))
         if len(hands) == 0:
@@ -411,6 +417,8 @@ def exempt_names(kind):
         return {"Mesh_Hand_L", "Mesh_LowerArm_L"}
     if kind == "wall":
         return {"Mesh_Foot_L"}
+    if kind == "wall-right":
+        return {"Mesh_Foot_R"}
     if kind == "box":
         return {"Mesh_Hand_L", "Mesh_Hand_R"}
     return set()
@@ -904,6 +912,7 @@ def ensure_grey_scene():
 def style_solid(ob, kind):
     colors = {
         "wall": (0.50, 0.50, 0.48, 1),
+        "wall-right": (0.50, 0.50, 0.48, 1),
         "box": (0.58, 0.44, 0.30, 1),
         "zip": (0.18, 0.18, 0.20, 1),
         "rope": (0.32, 0.26, 0.18, 1),
@@ -1394,6 +1403,95 @@ def scale_probe(arm, base, parent, clips):
             print("WALL_YAW", name, yaw, "gap_cm", cm(outward_gap(pieces)), "self", cm(sdepth), "world", cm(wdepth), wpair)
 
 
+def cloud_minmax(pieces, names):
+    cloud = piece_cloud(pieces, names)
+    if len(cloud) == 0:
+        return None
+    return cloud.min(axis=0), cloud.max(axis=0), cloud.mean(axis=0)
+
+
+def apply_bank(arm, degrees, pivot, axis):
+    """World-space orbit. The pivot point stays put."""
+    q = Quaternion(axis, math.radians(degrees))
+    rot = arm.rotation_quaternion.copy()
+    origin = arm.location.copy()
+    local = rot.inverted() @ (pivot - origin)
+    new_rot = q @ rot
+    arm.rotation_mode = "QUATERNION"
+    arm.rotation_quaternion = new_rot
+    arm.location = pivot - new_rot @ local
+
+
+def addon_strip(arm, base, parent, clips):
+    """Grey-scene strips of the shoulder dip and the wall run, with the prop."""
+    by_name = {clip["name"]: clip for clip in clips}
+    axis = Vector((0.62, 0.78, -0.10)).normalized()
+    pivot = Vector((0.30, 0.12, 1.15))
+    out = os.path.join(ROOT, "Docs", "AnimStills", "pass16", "addon")
+    os.makedirs(out, exist_ok=True)
+    shots = (
+        ("roll", "exit-Roll", "ground", (0.0, 0.133, 0.167, 0.267, 0.4, 0.52)),
+        ("wall", "wall-run", "wall", (0.0, 0.1, 0.2)),
+        ("wall-right", "wall-run-right", "wall-right", (0.0, 0.1, 0.2)),
+    )
+    for label, clip_name, kind, times in shots:
+        clip = by_name.get(clip_name)
+        if clip is None:
+            print("STRIP missing", clip_name)
+            continue
+        for t, nums in clip["frames"]:
+            if not any(abs(t - want) < 0.02 for want in times):
+                continue
+            pose_frame(arm, base, nums)
+            if clip_name == "exit-Roll":
+                u = t / 0.52
+                if u > 1:
+                    u = 1
+                apply_bank(arm, bank_degrees(360.0 * u), pivot, axis)
+                pieces, _deps = gather(arm)
+                low = min(float(p["world"][:, 2].min()) for p in pieces if len(p["world"]))
+                arm.location.z += 0.02 - low
+            ensure_grey_scene()
+            grey_mannequin(arm)
+            clear_solids()
+            pieces, _deps = gather(arm)
+            if kind == "ground":
+                # Already seated on the shoulder orbit. Do not stand the feet back up.
+                pass
+            solids = place_solid(kind, pieces)
+            for solid in solids:
+                style_solid(solid, kind)
+            p9.frame_yaw([arm], (), yaw=0.9, lens=48, fill=0.60, lift=0.05)
+            path = os.path.join(out, "%s-t%0.3f.png" % (label, t))
+            scene = bpy.context.scene
+            scene.render.filepath = path
+            scene.render.film_transparent = False
+            scene.eevee.taa_render_samples = 8
+            bpy.ops.render.render(write_still=True)
+            fill = body_fill(arm)
+            hip_cm = ""
+            if kind in ("wall", "wall-right"):
+                foot_name = "Mesh_Foot_L" if kind == "wall" else "Mesh_Foot_R"
+                foot = cloud_minmax(pieces, (foot_name,))
+                hip = cloud_minmax(pieces, ("Mesh_Hips",))
+                if foot is not None and hip is not None:
+                    face = float(foot[0][0] if kind == "wall" else foot[1][0])
+                    near = float(hip[0][0] if kind == "wall" else hip[1][0])
+                    hip_cm = " hip_cm " + str(round((near - face) * (1 if kind == "wall" else -1) * 100, 1))
+            print("STRIP", path, "fill", round(fill, 3), hip_cm)
+            clear_solids()
+
+
+def bank_degrees(spin):
+    if spin < 0:
+        spin = 0
+    if spin > 360:
+        spin = 360
+    if spin <= 110.0:
+        return 122.0 * math.sin(spin / 110.0 * math.pi * 0.5)
+    return 122.0 * math.sin((360.0 - spin) / 250.0 * math.pi * 0.5)
+
+
 def main():
     clips = load_clips(FRAMES)
     p7.clear()
@@ -1401,6 +1499,9 @@ def main():
     base = arm.rotation_quaternion.copy()
     parent = build_joints(arm)
     bind_report(arm, base, parent)
+    if os.environ.get("NOCLIP_STRIP") == "1":
+        addon_strip(arm, base, parent, clips)
+        return
     if os.environ.get("NOCLIP_ANGLES") == "1":
         angle_probe(arm, base, parent)
         return

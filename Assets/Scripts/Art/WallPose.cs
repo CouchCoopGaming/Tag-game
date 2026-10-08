@@ -74,8 +74,15 @@ namespace Tag.Art
         public const float InnerSway = 3f;
         /// <summary>Near arm stays up off the plant thigh and on the body side of the wall.</summary>
         public const float InnerYaw = -14f;
-        /// <summary>Abduct the plant leg so the shoe, not the shoulder, meets the wall.</summary>
+        /// <summary>Exit and wall-jump abduction. The run uses a shorter reach so the hips stay near the wall.</summary>
         public const float PlantRoll = -36f;
+        /// <summary>Run only. Hips land about 30 cm off the foot's wall face.</summary>
+        public const float RunPlantRoll = -20f;
+        /// <summary>
+        /// Inner-arm swing on bone Z. Yaw only twists along the arm.
+        /// Negative moves the left arm toward the left wall and off the hips.
+        /// </summary>
+        public const float InnerRoll = -12f;
         public const float InnerElbow = -48f;
         public const float OuterFwdPitch = -78f;
         public const float OuterBackPitch = 24f;
@@ -113,7 +120,7 @@ namespace Tag.Art
         {
             public float ThighL, ThighR, KneeL, KneeR;
             public float ThighRollL, ThighRollR;
-            public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
+            public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR, ArmRollL, ArmRollR;
             public float ElbowL, ElbowR;
             public float Hip, Spine, Head, LeanZ;
             public float FootL, FootR;
@@ -344,8 +351,8 @@ namespace Tag.Art
             // test then reads the upper arm as inside the surface.
             if (wallLeft && kneeL < -40f) kneeL = -40f;
             if (!wallLeft && kneeR < -40f) kneeR = -40f;
-            float rollL = wallLeft ? PlantRoll : 0f;
-            float rollR = wallLeft ? 0f : -PlantRoll;
+            float rollL = wallLeft ? RunPlantRoll : 0f;
+            float rollR = wallLeft ? 0f : -RunPlantRoll;
             float footL = wallLeft ? 6f : GaitBlend.SoleLevelDeg(thighL, kneeL);
             float footR = wallLeft ? GaitBlend.SoleLevelDeg(thighR, kneeR) : 6f;
             if (wallLeft)
@@ -362,6 +369,8 @@ namespace Tag.Art
                     ArmPitchR = outerPitch,
                     ArmYawL = InnerYaw,
                     ArmYawR = -OuterYaw,
+                    ArmRollL = InnerRoll,
+                    ArmRollR = 0f,
                     ElbowL = InnerElbow,
                     ElbowR = outerElbow,
                     Hip = RunHip,
@@ -385,6 +394,8 @@ namespace Tag.Art
                 ArmPitchR = innerPitch,
                 ArmYawL = OuterYaw,
                 ArmYawR = -InnerYaw,
+                ArmRollL = 0f,
+                ArmRollR = -InnerRoll,
                 ElbowL = outerElbow,
                 ElbowR = InnerElbow,
                 Hip = RunHip,
