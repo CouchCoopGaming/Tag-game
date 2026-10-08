@@ -42,6 +42,11 @@ namespace Tag.Art
         float _lagVx, _lagVy, _lagVz;
         float _visualYaw;
         float _visualYawVel;
+        float _prevCapsuleYaw;
+        bool _hasCapsuleYaw;
+        Transform _yawPivot;
+        bool _yawPivotSet;
+        Vector3 _pivot0;
         Quaternion _yawBasis;
         bool _yawBasisSet;
         float _slewSp, _slewHp, _slewHd;
@@ -8302,6 +8307,22 @@ namespace Tag.Art
                     _solePitchL = strideLegs.FootL;
                     _solePitchR = strideLegs.FootR;
                 }
+                // A strafe or a backpedal shortens the swing. The planted foot keeps
+                // the full step so the sole stays with the ground. The slew is unchanged.
+                bool leftStance = Mathf.Cos(_cycle) <= 0f;
+                float flip = 1f;
+                if (strideLegs.ThighL * facingLegs.ThighL < 0f || strideLegs.ThighR * facingLegs.ThighR < 0f)
+                    flip = -1f;
+                if (leftStance)
+                {
+                    thighL = strideLegs.ThighL * flip;
+                    kneeL = strideLegs.KneeL;
+                }
+                if (!leftStance)
+                {
+                    thighR = strideLegs.ThighR * flip;
+                    kneeR = strideLegs.KneeR;
+                }
                 _ulLT = _ulL0 * Quaternion.Euler(thighL, 0f, 0f);
                 _ulRT = _ulR0 * Quaternion.Euler(thighR, 0f, 0f);
                 _llLT = _llL0 * Quaternion.Euler(kneeL, 0f, 0f);
@@ -15352,7 +15373,7 @@ namespace Tag.Art
             bool yawWall = wallRun || climb;
             EaseFacing(dt, yawWall, climb, sliding);
             AbsorbPop(dt);
-            transform.localPosition = _root0 + new Vector3(0f, bob, 0f) + WallJumpNudge() + _visualLag;
+            ApplyVisualRoot(bob, WallJumpNudge());
             bool secondaryYield = climb || wallRun || mantle || punching || lunging || dashing
                 || _aimTorsoW > 0.35f || _grappleFallHold || _grapplePose > 0.02f;
             ApplySecondaryMotion(dt, secondaryYield, secondaryYield || sliding);
@@ -15363,7 +15384,21 @@ namespace Tag.Art
             float dashSquash = airDashing ? 0.16f : 0.1f;
             float stretchY = 1f + dashStretch * dashAmt - 0.16f * flinchAmt + 0.06f * claimAmt;
             float stretchXZ = 1f - dashSquash * dashAmt + 0.12f * flinchAmt;
-            transform.localScale = WallJumpPushScale(JumpLandScale(new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash)));
+            Vector3 bodyScale = WallJumpPushScale(JumpLandScale(new Vector3(stretchXZ / squash, squash * stretchY, stretchXZ / squash)));
+            float hide = _motor != null ? RespawnBlink.Hidden(_motor.VisualBlinkAge) : 0f;
+            float shown = 1f - hide;
+            if (shown < 0.02f) shown = 0.02f;
+            Vector3 blinkScale = new Vector3(bodyScale.x * shown, bodyScale.y * shown, bodyScale.z * shown);
+            Transform spun = YawPivot();
+            bool onCapsule = _motor != null && transform == _motor.transform;
+            if (spun != null && spun != transform)
+            {
+                if (onCapsule)
+                    transform.localScale = Vector3.one;
+                spun.localScale = blinkScale;
+            }
+            else if (!onCapsule)
+                transform.localScale = blinkScale;
             bool wallJumpSeed = false;
             if (_wallJumpHandoff)
             {
@@ -18868,7 +18903,25 @@ namespace Tag.Art
         /// </summary>
         void EaseFacing(float dt, bool wallRun, bool climb, bool sliding)
         {
-            if (_motor == null || transform == _motor.transform) return;
+            if (_motor == null) return;
+            Transform pivot = YawPivot();
+            // The capsule heading stays the camera yaw. A child visual eases a fast turn.
+            if (pivot == null || pivot == _motor.transform) return;
+            // The visual is parented to the capsule. A snapped heading would spin the
+            // mesh with it. Counter-rotate on that frame, then ease back to the facing.
+            float capsuleYaw = _motor.transform.eulerAngles.y;
+            if (!_hasCapsuleYaw)
+            {
+                _prevCapsuleYaw = capsuleYaw;
+                _hasCapsuleYaw = true;
+            }
+            else
+            {
+                _visualYaw -= Mathf.DeltaAngle(_prevCapsuleYaw, capsuleYaw);
+                _prevCapsuleYaw = capsuleYaw;
+                if (_visualYaw > 180f || _visualYaw < -180f)
+                    _visualYaw = Mathf.DeltaAngle(0f, _visualYaw);
+            }
             Vector3 fwd = _motor.transform.forward;
             Vector3 desired = fwd;
             Vector3 n = _motor.WallNormal;
@@ -18897,10 +18950,53 @@ namespace Tag.Art
             _visualYaw = SmoothMotion.Smooth(_visualYaw, target, ref _visualYawVel, SmoothMotion.YawSeconds, dt);
             if (!_yawBasisSet)
             {
-                _yawBasis = transform.localRotation;
+                _yawBasis = pivot.localRotation;
                 _yawBasisSet = true;
             }
-            transform.localRotation = _yawBasis * Quaternion.Euler(0f, _visualYaw, 0f);
+            pivot.localRotation = _yawBasis * Quaternion.Euler(0f, _visualYaw, 0f);
+        }
+
+        /// <summary>
+        /// Bob, lag, and the kill-box blink sit on the visual. A locomotor on the
+        /// capsule does not write the capsule position.
+        /// </summary>
+        void ApplyVisualRoot(float bob, Vector3 nudge)
+        {
+            Transform pivot = YawPivot();
+            Vector3 offset = new Vector3(0f, bob, 0f) + nudge + _visualLag;
+            if (pivot != null && pivot != transform)
+            {
+                pivot.localPosition = _pivot0 + offset;
+                return;
+            }
+            if (_motor != null && transform == _motor.transform) return;
+            transform.localPosition = _root0 + offset;
+        }
+
+        Transform YawPivot()
+        {
+            if (_yawPivotSet) return _yawPivot;
+            _yawPivotSet = true;
+            _yawPivot = transform;
+            _pivot0 = _root0;
+            if (_motor == null || transform != _motor.transform) return _yawPivot;
+            int n = transform.childCount;
+            for (int i = 0; i < n; i++)
+            {
+                Transform c = transform.GetChild(i);
+                if (c != null && c.name.StartsWith("DummyVisual"))
+                {
+                    _yawPivot = c;
+                    _pivot0 = c.localPosition;
+                    return _yawPivot;
+                }
+            }
+            if (_hips != null && _hips.parent != null && _hips.parent != transform && _hips.parent != _motor.transform)
+            {
+                _yawPivot = _hips.parent;
+                _pivot0 = _yawPivot.localPosition;
+            }
+            return _yawPivot;
         }
 
         /// <summary>

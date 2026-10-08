@@ -205,6 +205,15 @@ The stick and the look respond on the frame you move them. Speeds, jump, and sli
 - Mouse look has no smoothing and no acceleration. Gamepad look can use an acceleration curve, and that curve is off until you turn it up. The inner deadzone, the outer edge, the stick curve, and that look curve are saved with the other settings. The pause list does not have new rows yet.
 - The game waits for the display (vsync on). The physics step is unchanged, and the body still moves once per frame. Try it: sprint a straight line and watch the stride stay even.
 
+## Motion, seventh pass
+
+The feet stay with the ground, a fall off the map blinks instead of popping, and a vault no longer jerks backward at the end. Speeds and the jump are the same.
+
+- Walk, sprint, crouch, and wall-run plant the sole. The old step was short for the current speeds, so a foot slid: about 11 cm on a walk, 52 cm on a sprint, 62 cm in a crouch, and 30 cm on a wall run. Those are now 0. A side step still shortens the leg that is in the air. The foot on the ground takes a full step. Try it: sprint, then crouch-walk, then run a wall.
+- Falling out of the map, or restarting practice, still puts you on the pad immediately. The body hides and the camera pulls in for about a tenth of a second, then both come back. Starting a round does not do this. Try it: drop off the park.
+- A vault finishes on the spot you stand, instead of reaching past it and snapping back. How long the vault takes, and how fast you leave it, are unchanged. Try it: vault a rail and watch the last moment.
+- A very fast turn no longer spins the whole body with the capsule. The capsule still faces the camera at once, so the move goes where you look. The mesh catches up. Try it: flick the mouse through a half turn while you run.
+
 ## Front-end menu
 
 There is a real couch menu now, in the Mario Kart shape without a kart step. Press Play on Boot, or on Play before a match is armed. The title asks for Start, the south button, or Space. Any connected pad or the keyboard can press it.

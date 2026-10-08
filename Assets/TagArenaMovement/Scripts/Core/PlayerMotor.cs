@@ -166,6 +166,8 @@ namespace TagArena.Movement
         public event System.Action OnWallBounced;
         public event System.Action OnSuperGlide;
         public event System.Action OnMantle;
+        /// <summary>Kill-box and practice restart. 0 hides the mesh. The pad position is already final.</summary>
+        public float VisualBlinkAge = 10f;
         public event System.Action OnTaggedSomeone;
         public event System.Action OnBecameIt;
 
@@ -299,6 +301,8 @@ namespace TagArena.Movement
 
             float dt = Time.deltaTime;
             if (dt <= 0f) return;
+            if (VisualBlinkAge < Tag.Art.RespawnBlink.Seconds)
+                VisualBlinkAge += dt;
             _grappleYieldDash = false;
             ResolveGrapple();
             TickTimers(dt);
@@ -1091,7 +1095,11 @@ namespace TagArena.Movement
             float rise = Mathf.Max(0.15f, _mantleTo.y - _mantleFrom.y);
             Vector3 mid = _mantleFrom + Vector3.up * (rise * 0.55f);
             Vector3 pullTarget = mid + (_mantleTo - _mantleFrom) * 0.4f;
-            Vector3 settleTarget = _mantleTo + fwd * cfg.mantleForward;
+            // The arc ends on the stand point. The old settle overshot, then the
+            // last frame wrote 0.25 of that push and the mesh popped backward.
+            // Duration and the exit speed are unchanged.
+            Vector3 stand = _mantleTo + fwd * cfg.mantleForward * 0.25f;
+            Vector3 settleTarget = stand;
             Vector3 pos = u < 0.55f
                 ? Vector3.Lerp(_mantleFrom, pullTarget, s)
                 : Vector3.Lerp(pullTarget, settleTarget, (u - 0.55f) / 0.45f);
@@ -1115,7 +1123,7 @@ namespace TagArena.Movement
 
             if (u >= 1f)
             {
-                transform.position = _mantleTo + fwd * cfg.mantleForward * 0.25f;
+                transform.position = stand;
                 // Keep the speed you had when the vault started. The chase
                 // velocity along the way is the animation, not a launch.
                 v = fwd * Mathf.Max(cfg.walkSpeed, _mantleEntryPlanar);
@@ -1485,6 +1493,8 @@ namespace TagArena.Movement
         public void Place(Vector3 worldPos, string reason)
         {
             Halt();
+            if (reason == "kill-plane" || reason == "practice-restart")
+                VisualBlinkAge = 0f;
             if (_cc != null) _cc.enabled = false;
             transform.position = worldPos;
             Debug.Log("snap " + (string.IsNullOrEmpty(reason) ? "snap" : reason) + " " + worldPos.ToString("F1"));

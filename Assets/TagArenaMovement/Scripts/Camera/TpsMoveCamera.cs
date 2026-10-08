@@ -291,6 +291,8 @@ namespace TagArena.Movement
 
             // Slight boom stretch at speed so look-ahead has room without clipping feel
             float wantDist = Mathf.Abs(boomOffset.z) + _lookAhead * 0.35f;
+            if (motor != null)
+                wantDist *= RespawnBlink.Open(motor.VisualBlinkAge);
             Vector3 localDir = new Vector3(boomOffset.x, boomOffset.y, -wantDist);
             Vector3 worldDesired = pitchPivot.TransformPoint(localDir);
             Vector3 origin = pitchPivot.position;
