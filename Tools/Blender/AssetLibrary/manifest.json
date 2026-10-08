@@ -37023,5 +37023,816 @@
     ],
     "slackCm": 0.3,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/BusFlag_Stop.fbx"
+  },
+  {
+    "name": "TrashCart_96",
+    "category": "StreetFurniture",
+    "blurb": "96-gallon cart, 0.74 x 0.86 x 1.16 m. Two 10 in wheels on a shared axle.",
+    "size": [
+      0.78,
+      1.274,
+      0.875
+    ],
+    "min": [
+      -0.39,
+      0.0,
+      -0.465
+    ],
+    "max": [
+      0.39,
+      1.274,
+      0.41
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 460,
+        "materials": [
+          "Lib_BoxGreen",
+          "Lib_PaintGreen",
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Rubber",
+          "Lib_Black",
+          "Lib_Rust",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 268,
+        "materials": [
+          "Lib_BoxGreen",
+          "Lib_PaintGreen",
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Rubber",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          0.54,
+          0.02
+        ],
+        "size": [
+          0.5,
+          0.8,
+          0.52
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Lid",
+        "type": "box",
+        "center": [
+          0,
+          1.045,
+          0.02
+        ],
+        "size": [
+          0.6,
+          0.04,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0",
+        "type": "box",
+        "center": [
+          -0.34,
+          0.125,
+          -0.34
+        ],
+        "size": [
+          0.03,
+          0.16,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_1",
+        "type": "box",
+        "center": [
+          0.34,
+          0.125,
+          -0.34
+        ],
+        "size": [
+          0.03,
+          0.16,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Lid is rounded and loose. Not a cling.",
+    "vaultNote": "Lid is 1.12 m and small. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/TrashCart_96.fbx"
+  },
+  {
+    "name": "RecyclingCart_96",
+    "category": "StreetFurniture",
+    "blurb": "96-gallon recycling cart, 0.74 x 0.86 x 1.16 m. Lid slot. RECYCLE in Liberation Sans.",
+    "size": [
+      0.78,
+      1.274,
+      0.875
+    ],
+    "min": [
+      -0.39,
+      0.0,
+      -0.465
+    ],
+    "max": [
+      0.39,
+      1.274,
+      0.41
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 984,
+        "materials": [
+          "Lib_BoxBlue",
+          "Lib_PaintBlue",
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Rubber",
+          "Lib_Black",
+          "Lib_Rust",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 280,
+        "materials": [
+          "Lib_BoxBlue",
+          "Lib_PaintBlue",
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Rubber",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          0.54,
+          0.02
+        ],
+        "size": [
+          0.5,
+          0.8,
+          0.52
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Lid",
+        "type": "box",
+        "center": [
+          0,
+          1.045,
+          0.02
+        ],
+        "size": [
+          0.6,
+          0.04,
+          0.62
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_0",
+        "type": "box",
+        "center": [
+          -0.34,
+          0.125,
+          -0.34
+        ],
+        "size": [
+          0.03,
+          0.16,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_1",
+        "type": "box",
+        "center": [
+          0.34,
+          0.125,
+          -0.34
+        ],
+        "size": [
+          0.03,
+          0.16,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Lid is not a cling.",
+    "vaultNote": "Lid is 1.12 m and small. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/RecyclingCart_96.fbx"
+  },
+  {
+    "name": "Cabinet_Electrical",
+    "category": "StreetFurniture",
+    "blurb": "Electrical cabinet 0.76 x 0.42 x 1.32 m on a 0.06 m pad. Door faces +Z.",
+    "size": [
+      0.98,
+      1.4,
+      0.64
+    ],
+    "min": [
+      -0.49,
+      0.0,
+      -0.32
+    ],
+    "max": [
+      0.49,
+      1.4,
+      0.32
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 416,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_PaintGreen",
+          "Lib_BoxGreen",
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Rust",
+          "Lib_PaintYellow",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 68,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_PaintGreen",
+          "Lib_BoxGreen",
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Pad",
+        "type": "box",
+        "center": [
+          0,
+          0.03,
+          0
+        ],
+        "size": [
+          0.86,
+          0.04,
+          0.52
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Box",
+        "type": "box",
+        "center": [
+          0,
+          0.72,
+          0
+        ],
+        "size": [
+          0.6,
+          1.12,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Top",
+        "type": "box",
+        "center": [
+          0,
+          1.372,
+          0
+        ],
+        "size": [
+          0.64,
+          0.028,
+          0.3
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Smooth painted steel. Not a cling wall.",
+    "vaultNote": "Top is 1.38 m. Above the vault band, and the top is small.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.17,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Cabinet_Electrical.fbx"
+  },
+  {
+    "name": "Barrier_Jersey",
+    "category": "StreetFurniture",
+    "blurb": "Jersey barrier, 3.05 m long, 0.61 m at the base, 0.81 m tall. Concrete.",
+    "size": [
+      3.13,
+      0.813,
+      0.61
+    ],
+    "min": [
+      -1.6,
+      0.0,
+      -0.305
+    ],
+    "max": [
+      1.53,
+      0.813,
+      0.305
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 208,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Asphalt",
+          "Lib_SteelDark",
+          "Lib_PaintYellow",
+          "Lib_Rust",
+          "Lib_AsphaltWear"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 100,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Asphalt",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Top",
+        "type": "box",
+        "center": [
+          0,
+          0.778,
+          0
+        ],
+        "size": [
+          2.8,
+          0.056,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Mid",
+        "type": "box",
+        "center": [
+          0,
+          0.4,
+          0
+        ],
+        "size": [
+          2.8,
+          0.28,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foot",
+        "type": "box",
+        "center": [
+          0,
+          0.1,
+          0
+        ],
+        "size": [
+          2.8,
+          0.14,
+          0.48
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Sloped face. Not a cling wall.",
+    "vaultNote": "Top is 0.81 m, under the vault band.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Barrier_Jersey.fbx"
+  },
+  {
+    "name": "Barrel_Traffic",
+    "category": "StreetFurniture",
+    "blurb": "Traffic drum, 0.58 m across, 1.02 m tall. Four white bands, rubber foot.",
+    "size": [
+      0.62,
+      1.072,
+      0.62
+    ],
+    "min": [
+      -0.31,
+      0.0,
+      -0.31
+    ],
+    "max": [
+      0.31,
+      1.072,
+      0.31
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 584,
+        "materials": [
+          "Lib_Rubber",
+          "Lib_Orange",
+          "Lib_PaintWhite",
+          "Lib_Black",
+          "Lib_Steel",
+          "Lib_Rust"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 224,
+        "materials": [
+          "Lib_Rubber",
+          "Lib_Orange",
+          "Lib_PaintWhite",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Foot",
+        "type": "box",
+        "center": [
+          0,
+          0.035,
+          0
+        ],
+        "size": [
+          0.36,
+          0.04,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Drum",
+        "type": "capsule",
+        "center": [
+          0,
+          0.52,
+          0
+        ],
+        "radius": 0.22,
+        "height": 0.78,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Round plastic. Not a cling.",
+    "vaultNote": "Top is 1.02 m and round. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Barrel_Traffic.fbx"
+  },
+  {
+    "name": "Bollard_Fixed",
+    "category": "StreetFurniture",
+    "blurb": "Fixed bollard, 152 mm OD, 0.91 m above a concrete collar.",
+    "size": [
+      0.312,
+      0.986,
+      0.32
+    ],
+    "min": [
+      -0.156,
+      0.0,
+      -0.16
+    ],
+    "max": [
+      0.156,
+      0.986,
+      0.16
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 628,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Steel",
+          "Lib_PaintYellow",
+          "Lib_PaintWhite",
+          "Lib_Rust",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 160,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Steel",
+          "Lib_PaintYellow",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Collar",
+        "type": "box",
+        "center": [
+          0,
+          0.03,
+          0
+        ],
+        "size": [
+          0.24,
+          0.04,
+          0.24
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post",
+        "type": "capsule",
+        "center": [
+          0,
+          0.44,
+          0
+        ],
+        "radius": 0.055,
+        "height": 0.7,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "152 mm round post. Not a cling.",
+    "vaultNote": "Top is 0.96 m and domed. Not a vault rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.48,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Bollard_Fixed.fbx"
+  },
+  {
+    "name": "Bollard_Removable",
+    "category": "StreetFurniture",
+    "blurb": "Removable bollard, 114 mm post, 0.90 m tall, in a flush steel socket.",
+    "size": [
+      0.253,
+      0.937,
+      0.26
+    ],
+    "min": [
+      -0.127,
+      0.0,
+      -0.13
+    ],
+    "max": [
+      0.127,
+      0.937,
+      0.13
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 532,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintYellow",
+          "Lib_PaintWhite",
+          "Lib_Black",
+          "Lib_Rust"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 172,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintYellow",
+          "Lib_PaintWhite",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Socket",
+        "type": "box",
+        "center": [
+          0,
+          0.02,
+          0
+        ],
+        "size": [
+          0.14,
+          0.024,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post",
+        "type": "capsule",
+        "center": [
+          0,
+          0.46,
+          0
+        ],
+        "radius": 0.044,
+        "height": 0.76,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "114 mm post. Not a cling.",
+    "vaultNote": "Top is 0.90 m and round. Not a vault rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.88,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Bollard_Removable.fbx"
   }
 ]

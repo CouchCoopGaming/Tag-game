@@ -78,6 +78,13 @@ MODULES = (
     "sk_tree_guard",
     "sk_dog_bag",
     "sk_bus_flag",
+    "sk_trash_cart",
+    "sk_recycling_cart",
+    "sk_cabinet_electrical",
+    "sk_barrier_jersey",
+    "sk_barrel_traffic",
+    "sk_bollard_fixed",
+    "sk_bollard_removable",
 )
 
 

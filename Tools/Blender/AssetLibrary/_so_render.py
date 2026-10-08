@@ -39,6 +39,15 @@ PASSES = {
         ("bus_flag", "BusFlag_Stop", 12.0, (-1.05, 0.0, 0.55), 195.0),
         ("barrier_water", "Barrier_Water", 16.0, (-1.55, 0.0, 0.95), 200.0),
     ),
+    2: (
+        ("trash_cart", "TrashCart_96", 200.0, (-1.15, 0.0, 0.75), 160.0),
+        ("recycling_cart", "RecyclingCart_96", 200.0, (-1.15, 0.0, 0.75), 160.0),
+        ("cabinet_electrical", "Cabinet_Electrical", 18.0, (-1.15, 0.0, 0.55), 200.0),
+        ("barrier_jersey", "Barrier_Jersey", 14.0, (-2.2, 0.0, 1.15), 200.0),
+        ("barrel_traffic", "Barrel_Traffic", 16.0, (-0.95, 0.0, 0.45), 200.0),
+        ("bollard_fixed", "Bollard_Fixed", 12.0, (-0.85, 0.0, 0.35), 200.0),
+        ("bollard_removable", "Bollard_Removable", 12.0, (-0.85, 0.0, 0.35), 200.0),
+    ),
 }
 
 
@@ -50,6 +59,13 @@ def _load(names):
         "DogBag_Post": "sk_dog_bag",
         "BusFlag_Stop": "sk_bus_flag",
         "Barrier_Water": "sk_barrier_water",
+        "TrashCart_96": "sk_trash_cart",
+        "RecyclingCart_96": "sk_recycling_cart",
+        "Cabinet_Electrical": "sk_cabinet_electrical",
+        "Barrier_Jersey": "sk_barrier_jersey",
+        "Barrel_Traffic": "sk_barrel_traffic",
+        "Bollard_Fixed": "sk_bollard_fixed",
+        "Bollard_Removable": "sk_bollard_removable",
     }
     for name in names:
         module = importlib.import_module(stems[name])
@@ -59,13 +75,17 @@ def _load(names):
 
 def _fit(path):
     """Quantize with system Pillow. Blender's Python does not ship PIL."""
-    script = (
-        "import sys; from PIL import Image; p=sys.argv[1]; "
-        "im=Image.open(p).convert('RGB'); "
-        "q=im.quantize(colors=96, method=Image.Quantize.MEDIANCUT); "
-        "q.save(p, optimize=True)"
-    )
-    os.system("/usr/bin/python3 -c '%s' '%s'" % (script, path))
+    helper = "/tmp/so_fit.py"
+    if not os.path.isfile(helper):
+        with open(helper, "w", encoding="utf-8") as handle:
+            handle.write(
+                "import sys\nfrom PIL import Image\n"
+                "p = sys.argv[1]\n"
+                "im = Image.open(p).convert('RGB')\n"
+                "q = im.quantize(colors=96, method=Image.Quantize.MEDIANCUT)\n"
+                "q.save(p, optimize=True)\n"
+            )
+    os.system("/usr/bin/python3 %s %s" % (helper, path))
     size = os.path.getsize(path)
     print("SIZE", size, path)
     if size > LIMIT:
@@ -74,7 +94,7 @@ def _fit(path):
         print("SIZE_OK", size, path)
 
 
-def _hero(fn, path, kind="concrete"):
+def _hero(fn, path, kind="concrete", yaw=18.0):
     r._reset_scene()
     scene = bpy.context.scene
     r._engine(scene, wide=True)
@@ -82,7 +102,7 @@ def _hero(fn, path, kind="concrete"):
     r._ensure_materials()
     r._world(scene, night=False)
     asset = fn()
-    obj = r._spawn(asset, (0, 0, 0))
+    obj = r._spawn(asset, (0, 0, 0), yaw)
     r._ground(kind, 80.0)
     r._frame(scene, [obj], fill=0.78, elevation=16.0, azimuth=38.0)
     r._render(scene, path)
@@ -152,7 +172,7 @@ def main():
             continue
         kind = "asphalt" if "barrier" in key else "concrete"
         print("SHOT", key)
-        _hero(found[name], os.path.join(STILL_DIR, key + ".png"), kind=kind)
+        _hero(found[name], os.path.join(STILL_DIR, key + ".png"), kind=kind, yaw=yaw)
         print("SHOT", key + "_scale")
         _scale(
             found[name],
