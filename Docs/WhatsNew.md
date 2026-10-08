@@ -196,6 +196,15 @@ You can watch every move in one scene, and a punch no longer freezes the legs.
 - Hanging on a zip sways and trails the legs harder as the ride hits 14. A grapple pull leans the chest along the rope and lets the legs trail. A launch pad windmills the arms on the way up and settles them on the way down. Try it: take a zip, pull the rope, then hit a pad.
 - The hard cuts between moves are the same as the fourth pass. A press is still the same frame. Stick figures are in `Docs/SmoothStills/pass5/layer-hang.png`.
 
+## Controls, sixth pass
+
+The stick and the look respond on the frame you move them. Speeds, jump, and slide are the same.
+
+- Turning the camera now turns the body before the capsule steps, so the first move of a look goes the way you are facing. Keyboard and gamepad movement were already the same frame. Mouse look was already on the picture the same frame. Try it: flick the mouse and push forward together.
+- A gamepad stick uses a round deadzone. A light diagonal used to disappear, and a small push used to jump from nothing to a big step. Full tilt is still full speed, on a diagonal too. A half push is a little softer than before (about 0.38 of full, where it used to pass through as 0.50). Keyboard movement is unchanged. Try it: walk the stick in a slow circle, then hold it in the corner.
+- Mouse look has no smoothing and no acceleration. Gamepad look can use an acceleration curve, and that curve is off until you turn it up. The inner deadzone, the outer edge, the stick curve, and that look curve are saved with the other settings. The pause list does not have new rows yet.
+- The game waits for the display (vsync on). The physics step is unchanged, and the body still moves once per frame. Try it: sprint a straight line and watch the stride stay even.
+
 ## Front-end menu
 
 There is a real couch menu now, in the Mario Kart shape without a kart step. Press Play on Boot, or on Play before a match is armed. The title asks for Start, the south button, or Space. Any connected pad or the keyboard can press it.
@@ -224,4 +233,4 @@ During a match each split has a colored frame, the player's name, and a gold IT 
 
 The fifth pass closes the couch loop. Pause is a card on every split, with Resume, Restart round, Options, and Quit to menu. Whoever pressed Start is named on the banner, and any pad or the keyboard can move the highlight. Results list tags, time as It, and round wins on each standing, in the order that mode already uses. The rows fade in unless reduce motion is on. From there you can rematch, change the mode, go back to character select, or return to the main menu.
 
-Options is a short set of pages: audio sliders, display (resolution, fullscreen, vsync), and accessibility (reduce motion, text size, colorblind-safe player colors). Controls shows the bind list and can still change one bind. Space still jumps. The stick deadzones, the response curve, and gamepad look accel appear on that page and stay on Coming soon until the settings object grows those fields. Screens take a fifth of a second to slide, and buttons do nothing during that slide. Back always has somewhere to go. If a pad drops out, a card asks that player to plug it back in and Resume waits. Mockups are in `Docs/UiStills/pass5/`.
+Options is a short set of pages: audio sliders, display (resolution, fullscreen, vsync), and accessibility (reduce motion, text size, colorblind-safe player colors). Controls shows the bind list and can still change one bind. Space still jumps. The stick rows read StickInner, StickOuter, StickCurve, and LookAccel. Screens take a fifth of a second to slide, and buttons do nothing during that slide. Back always has somewhere to go. If a pad drops out, a card asks that player to plug it back in and Resume waits. Mockups are in `Docs/UiStills/pass5/`.

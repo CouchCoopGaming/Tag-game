@@ -45,6 +45,7 @@
     <Compile Include="../../Assets/Scripts/Settings/Accessibility.cs" />
     <Compile Include="../../Assets/Scripts/Settings/ActionBinds.cs" />
     <Compile Include="../../Assets/Scripts/Settings/SettingsFile.cs" />
+    <Compile Include="../../Assets/Scripts/Settings/StickQuality.cs" />
     <Compile Include="../../Assets/Scripts/Settings/MenuGraph.cs" />
     <Compile Include="../../Assets/Scripts/Settings/MenuHoldGate.cs" />
     <Compile Include="../../Assets/Scripts/Settings/InputBufferAudit.cs" />

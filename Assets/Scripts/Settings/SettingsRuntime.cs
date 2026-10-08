@@ -82,7 +82,28 @@ namespace Tag.Settings
             LookSensitivity.Assign(s.MouseSensitivity);
             AudioMaster.ApplyFromSettings(s.Master, s.Muted);
             AudioMaster.ApplyMusicFromSettings(s.Music);
+            ArmInput();
             _applying = false;
+        }
+
+        /// <summary>
+        /// One place for the display cap and the input event clock.
+        /// Vsync on (the default) ignores targetFrameRate. A pad event is read
+        /// in Update, with the keyboard, not on the fixed step.
+        /// </summary>
+        public static void ArmInput()
+        {
+            int vsync = QualitySettings.vSyncCount;
+            if (vsync < FramePace.VsyncDefault)
+            {
+                QualitySettings.vSyncCount = FramePace.VsyncDefault;
+                vsync = FramePace.VsyncDefault;
+            }
+#if ENABLE_INPUT_SYSTEM
+            UnityEngine.InputSystem.InputSystem.settings.updateMode =
+                UnityEngine.InputSystem.InputSettings.UpdateMode.ProcessEventsInDynamicUpdate;
+#endif
+            Application.targetFrameRate = FramePace.TargetFor(vsync);
         }
 
         public static void NoteAudio(float master, bool muted)
