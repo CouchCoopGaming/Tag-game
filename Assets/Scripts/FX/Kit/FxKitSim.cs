@@ -833,8 +833,9 @@ namespace Tag.FX
                 _air[i].enabled = true;
                 _air[i].SetPosition(0, _airA[i]);
                 _air[i].SetPosition(1, _airB[i]);
-                _air[i].startWidth = 0.045f * u;
-                _air[i].endWidth = 0.008f * u;
+                bool edge = i >= AirLong;
+                _air[i].startWidth = (edge ? 0.07f : 0.045f) * u;
+                _air[i].endWidth = (edge ? 0.016f : 0.008f) * u;
                 float a = 0.35f * u;
                 var c = new Color(_cr, _cg, _cb, a);
                 _air[i].startColor = c;
@@ -892,11 +893,12 @@ namespace Tag.FX
                     // Short marks just outside the silhouette so a chase camera behind the dash still sees them.
                     int e = i - AirLong;
                     float sign = (e & 1) == 0 ? 1f : -1f;
-                    float outward = e < 2 ? 0.30f : e < 4 ? 0.22f : 0.10f;
-                    float len = 0.22f + (e % 3) * 0.08f;
-                    Vector3 start = EdgePoint(e, origin) + side * sign * outward + trail * 0.05f;
+                    float outward = e < 2 ? 0.38f : e < 4 ? 0.30f : 0.18f;
+                    float len = 0.28f + (e % 3) * 0.08f;
+                    Vector3 start = EdgePoint(e, origin) + side * sign * outward + trail * 0.04f;
                     _airA[i] = start;
-                    _airB[i] = start + trail * len + side * sign * 0.16f;
+                    // The sideways run is what a chase camera behind the dash can see.
+                    _airB[i] = start + trail * len + side * sign * 0.48f;
                 }
                 _airAge[i] = 0.0001f;
             }

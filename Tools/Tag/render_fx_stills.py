@@ -5504,17 +5504,17 @@ def pass25_line_mat(name, color, alpha):
     return mat
 
 
-def p26_aim(cam, foot, yaw_deg):
+def p26_aim(cam, foot, yaw_deg, back=1.70, height=0.55, look_z=0.70):
     """Closer and lower than the chase boom. The figure is about a third of the frame."""
     fwd, left = p11_heading(yaw_deg)
     cam.data.type = "PERSP"
     cam.data.sensor_fit = "VERTICAL"
     cam.data.sensor_height = 24.0
     cam.data.lens = 14.8
-    cam.data.clip_start = 0.05
+    cam.data.clip_start = 0.02
     cam.data.clip_end = 80.0
-    cam.location = foot - left * 0.22 + Vector((0.0, 0.0, 0.95)) - fwd * 3.55
-    look_at(cam, foot + Vector((0.0, 0.0, 0.72)))
+    cam.location = foot - left * 0.12 + Vector((0.0, 0.0, height)) - fwd * back
+    look_at(cam, foot + Vector((0.0, 0.0, look_z)))
     bpy.context.view_layer.update()
     return cam.location
 
@@ -5553,6 +5553,9 @@ def render_pass26(arm, cam):
     os.makedirs(out_dir, exist_ok=True)
     tmp = "/tmp/pass26"
     os.makedirs(tmp, exist_ok=True)
+    if os.environ.get("FX_PASS26_SCUFF") == "1":
+        render_pass26_scuff(arm, cam, out_dir, tmp)
+        return
     yaw = 24.0
     cells = []
     titles = []
@@ -5646,25 +5649,25 @@ def pass26_edge_streaks(arm, travel, tint):
     side.normalize()
     cam_loc = bpy.context.scene.camera.location
     specs = (
-        ("UpperArm_L", 1.0, 0.30, 0.22),
-        ("UpperArm_R", -1.0, 0.30, 0.30),
-        ("Hips", 1.0, 0.22, 0.26),
-        ("Hips", -1.0, 0.22, 0.34),
-        ("Hand_L", 1.0, 0.10, 0.38),
-        ("Hand_R", -1.0, 0.10, 0.42),
+        ("UpperArm_L", 1.0, 0.38, 0.28),
+        ("UpperArm_R", -1.0, 0.38, 0.36),
+        ("Hips", 1.0, 0.30, 0.32),
+        ("Hips", -1.0, 0.30, 0.40),
+        ("Hand_L", 1.0, 0.18, 0.36),
+        ("Hand_R", -1.0, 0.18, 0.44),
     )
     scene = bpy.context.scene
     cam = scene.camera
     for name, sign, outward, length in specs:
         origin = bone_pos(arm, name)
-        start = origin + side * sign * outward + trail * 0.05
-        end = start + trail * length + side * sign * 0.16
+        start = origin + side * sign * outward + trail * 0.04
+        end = start + trail * length + side * sign * 0.48
         view = cam_loc - (start + end) * 0.5
         width_axis = trail.cross(view)
         if width_axis.length < 0.001:
             width_axis = Vector((0.0, 0.0, 1.0))
         width_axis.normalize()
-        w0, w1 = 0.045, 0.010
+        w0, w1 = 0.07, 0.016
         verts = [
             start + width_axis * w0,
             start - width_axis * w0,
@@ -5699,12 +5702,12 @@ def render_pass26_scuff(arm, cam, out_dir, tmp):
     cells = []
     titles = []
     shots = (
-        ("brick", 13.8, (0.55, 0.28, 0.22), (0.42, 0.20, 0.14), (0.70, 0.42, 0.32)),
-        ("concrete", 13.8, (0.62, 0.62, 0.60), (0.46, 0.45, 0.43), (0.78, 0.77, 0.74)),
-        ("wood", 13.8, (0.48, 0.34, 0.20), (0.40, 0.26, 0.12), (0.78, 0.62, 0.40)),
-        ("brick", 36.5, (0.55, 0.28, 0.22), (0.42, 0.20, 0.14), (0.70, 0.42, 0.32)),
-        ("concrete", 36.5, (0.62, 0.62, 0.60), (0.46, 0.45, 0.43), (0.78, 0.77, 0.74)),
-        ("wood", 36.5, (0.48, 0.34, 0.20), (0.40, 0.26, 0.12), (0.78, 0.62, 0.40)),
+        ("brick", 13.8, (0.55, 0.28, 0.22), (0.26, 0.10, 0.07), (0.72, 0.40, 0.30)),
+        ("concrete", 13.8, (0.62, 0.62, 0.60), (0.20, 0.20, 0.19), (0.84, 0.83, 0.80)),
+        ("wood", 13.8, (0.48, 0.34, 0.20), (0.22, 0.12, 0.05), (0.78, 0.60, 0.36)),
+        ("brick", 36.5, (0.55, 0.28, 0.22), (0.26, 0.10, 0.07), (0.72, 0.40, 0.30)),
+        ("concrete", 36.5, (0.62, 0.62, 0.60), (0.20, 0.20, 0.19), (0.84, 0.83, 0.80)),
+        ("wood", 36.5, (0.48, 0.34, 0.20), (0.22, 0.12, 0.05), (0.78, 0.60, 0.36)),
     )
     for surface, speed, wall_col, ink, dust in shots:
         p11_clear("P11Fx")
@@ -5722,15 +5725,17 @@ def render_pass26_scuff(arm, cam, out_dir, tmp):
         wall.name = p11_name("Geo")
         wall.scale = (2.4, 0.12, 3.2)
         wall.data.materials.append(make_mat(p11_name("Mat"), wall_col + (1.0,), 0.9))
-        hit = center
-        pass26_scuff(hit, normal, speed, ink, dust, cam.location)
-        # 3/4 view so the smear on the wall is visible.
+        # Beside the chest, on open wall, so the body does not hide the smear.
+        along_wall = Vector((-normal.y, normal.x, 0.0))
+        hit = center + along_wall * 0.55
+        hit.z = 1.05
         cam.data.lens = 14.8
         cam.data.sensor_fit = "VERTICAL"
         cam.data.sensor_height = 24.0
-        cam.location = hit - fwd * 2.4 + Vector((-fwd.y, fwd.x, 0.0)) * 1.6 + Vector((0.0, 0.0, 0.35))
-        look_at(cam, hit + Vector((0.0, 0.0, 0.15)))
+        cam.location = hit - fwd * 1.55 + Vector((-fwd.y, fwd.x, 0.0)) * 1.85 + Vector((0.0, 0.0, 0.12))
+        look_at(cam, hit + Vector((0.0, 0.0, -0.05)))
         bpy.context.view_layer.update()
+        pass26_scuff(hit, normal, speed, ink, dust, cam.location)
         png = os.path.join(tmp, "scuff-%s-%.0f.png" % (surface, speed))
         scene.render.filepath = png
         bpy.ops.render.render(write_still=True)
@@ -5754,39 +5759,48 @@ def pass26_scuff(hit, normal, speed, ink, dust, cam_loc):
     """Decal on the wall plus a short puff. Age 0.08 s, puff still up."""
     k = 0.0 if speed <= 13.8 else min(1.15, (speed - 13.8) / (36.5 - 13.8))
     width = 0.26 + k * 0.52
-    height = 0.08 + k * 0.14
+    height = 0.16 + k * 0.26
     n = Vector(normal).normalized()
     along = Vector((-n.y, n.x, 0.0))
     if along.length < 0.001:
         along = Vector((1.0, 0.0, 0.0))
     along.normalize()
     up = along.cross(n)
+    if up.length < 0.001:
+        up = Vector((0.0, 0.0, 1.0))
     up.normalize()
-    loc = Vector(hit) + n * 0.03
-    quat = n.to_track_quat("Z", "Y")
-    # Align the plane's X with `along` after the normal lock.
+    loc = Vector(hit) + n * 0.05
+    # Plane sits in local XY. Local X is the smear, local Y is its height, local Z is the wall normal.
+    rot = Matrix((
+        (along.x, up.x, n.x),
+        (along.y, up.y, n.y),
+        (along.z, up.z, n.z),
+    ))
     bpy.ops.mesh.primitive_plane_add(size=1.0, location=loc)
     mark = bpy.context.active_object
     mark.name = p11_name("Fx")
-    mark.rotation_euler = quat.to_euler()
-    # Retarget so local X follows the smear.
     mark.rotation_mode = "QUATERNION"
-    mark.rotation_quaternion = quat
-    bpy.context.view_layer.update()
-    local_x = mark.matrix_world.to_3x3() @ Vector((1.0, 0.0, 0.0))
-    twist = local_x.angle(along)
-    sign = 1.0 if local_x.cross(along).dot(n) >= 0.0 else -1.0
-    mark.rotation_quaternion = Quaternion(n, twist * sign) @ mark.rotation_quaternion
+    mark.rotation_quaternion = rot.to_quaternion()
     mark.scale = (width, height, 1.0)
-    mark.data.materials.append(pass26_scuff_mat(p11_name("Mat"), ink, 0.55))
-    puffs = 3 if k < 0.25 else 6
     age = 0.08
+    # Holds 0.72 through 0.12 s, then fades. The still is at 0.08 s.
+    mark_a = 0.72
+    mark.data.materials.append(pass26_scuff_mat(p11_name("Mat"), ink, mark_a))
+    bpy.context.view_layer.update()
+    corners = [mark.matrix_world @ Vector(c) for c in mark.bound_box]
+    span = Vector((
+        max(c.x for c in corners) - min(c.x for c in corners),
+        max(c.y for c in corners) - min(c.y for c in corners),
+        max(c.z for c in corners) - min(c.z for c in corners),
+    ))
+    print("MARK", "span", round(span.x, 2), round(span.y, 2), round(span.z, 2), "alpha", round(mark_a, 2))
+    puffs = 3 if k < 0.25 else 6
     for i in range(puffs):
         h = p11_rand(i, 4)
         puff_u = age / 0.22
-        out_d = 0.04 + (0.12 + h * 0.22) * puff_u
-        slide = (h - 0.5) * width * 0.65
-        rise = (p11_rand(i, 8) - 0.35) * height
+        out_d = 0.08 + (0.14 + h * 0.18) * puff_u
+        slide = (h - 0.5) * width * 0.85
+        rise = height * 0.45 + (p11_rand(i, 8) - 0.2) * height * 0.35
         pos = Vector(hit) + n * out_d + along * slide + Vector((0.0, 0.0, rise))
         size = (0.16 + h * 0.14) * (0.75 + 0.35 * puff_u)
         fade = 1.0 - puff_u

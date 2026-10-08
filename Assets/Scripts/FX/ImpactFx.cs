@@ -717,7 +717,7 @@ namespace Tag.FX
             }
             float k = Strength(speed);
             float width = 0.26f + k * 0.52f;
-            float height = 0.08f + k * 0.14f;
+            float height = 0.16f + k * 0.26f;
             int puffs = k < 0.25f ? 3 : 5 + (int)(k * 2f);
             if (puffs > ScuffPuffs) puffs = ScuffPuffs;
             ScuffTint(surface, material, out float r, out float g, out float b, out float dr, out float dg, out float db);
@@ -759,8 +759,13 @@ namespace Tag.FX
                     HideScuff(i);
                     continue;
                 }
-                float u = _scuffAge[i] / ScuffSeconds;
-                float markA = 0.62f * (1f - u);
+                float markA = 0.72f;
+                if (_scuffAge[i] > 0.12f)
+                {
+                    float fadeU = (_scuffAge[i] - 0.12f) / (ScuffSeconds - 0.12f);
+                    if (fadeU > 1f) fadeU = 1f;
+                    markA = 0.72f * (1f - fadeU);
+                }
                 _scuffMark[i].localPosition = Vector3.zero;
                 _scuffMark[i].localRotation = Quaternion.identity;
                 _scuffMark[i].localScale = new Vector3(_scuffWidth[i], _scuffHeight[i], 1f);
@@ -783,9 +788,9 @@ namespace Tag.FX
                     float puffU = _scuffAge[i] / life;
                     if (puffU > 1f) puffU = 1f;
                     float fade = 1f - puffU;
-                    float outD = 0.04f + (0.12f + h * 0.22f) * puffU;
-                    float slide = (h - 0.5f) * _scuffWidth[i] * 0.65f;
-                    float rise = (Hash(240 + p) - 0.35f) * _scuffHeight[i];
+                    float outD = 0.08f + (0.14f + h * 0.18f) * puffU;
+                    float slide = (h - 0.5f) * _scuffWidth[i] * 0.85f;
+                    float rise = _scuffHeight[i] * 0.45f + (Hash(240 + p) - 0.2f) * _scuffHeight[i] * 0.35f;
                     _scuffPuff[k].position = _scuffRoot[i].position + n * outD + along * slide + Vector3.up * rise;
                     float size = (0.16f + h * 0.14f) * (0.75f + 0.35f * puffU);
                     _scuffPuff[k].localScale = new Vector3(size, size * 0.85f, 1f);
@@ -813,18 +818,18 @@ namespace Tag.FX
                 || n.IndexOf("cedar", System.StringComparison.Ordinal) >= 0;
             if (brick)
             {
-                r = 0.42f; g = 0.20f; b = 0.14f;
-                dr = 0.70f; dg = 0.42f; db = 0.32f;
+                r = 0.26f; g = 0.10f; b = 0.07f;
+                dr = 0.72f; dg = 0.40f; db = 0.30f;
             }
             else if (wood)
             {
-                r = 0.40f; g = 0.26f; b = 0.12f;
-                dr = 0.78f; dg = 0.62f; db = 0.40f;
+                r = 0.22f; g = 0.12f; b = 0.05f;
+                dr = 0.78f; dg = 0.60f; db = 0.36f;
             }
             else
             {
-                r = 0.46f; g = 0.45f; b = 0.43f;
-                dr = 0.78f; dg = 0.77f; db = 0.74f;
+                r = 0.20f; g = 0.20f; b = 0.19f;
+                dr = 0.84f; dg = 0.83f; db = 0.80f;
             }
         }
 
