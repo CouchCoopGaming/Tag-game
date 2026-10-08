@@ -96,7 +96,14 @@ namespace Tag.Ui.Menu
 
         public static string Stats(Row row)
         {
-            return UiFit.FormatStats(row.Winner, row.Tags, row.Time, row.Wins, row.Chase);
+            return UiFit.FormatStats(row.Winner, row.Tags, row.Time, row.Wins);
+        }
+
+        public static string ChaseLine(float seconds, string who)
+        {
+            string line = "Longest chase  " + seconds.ToString("0.0") + "s";
+            if (string.IsNullOrEmpty(who)) return line;
+            return line + "  " + who;
         }
 
         public static int Sample(Row[] rows)

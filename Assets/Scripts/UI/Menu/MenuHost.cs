@@ -173,6 +173,7 @@ namespace Tag.Ui.Menu
         readonly MenuSplitPause.Card[] _cards = new MenuSplitPause.Card[4];
         Image _lostPlate;
         Text _lostWho;
+        bool _quitAsk;
 
         readonly Text[] _castMark = new Text[6];
         readonly RawImage[] _castView = new RawImage[4];
@@ -1783,8 +1784,25 @@ namespace Tag.Ui.Menu
                 ResumeMatch();
                 return;
             }
-            if (dx != 0 || dy != 0) Move(dx, dy);
+            if (dx != 0 || dy != 0)
+            {
+                if (_quitAsk) ClearQuitAsk();
+                Move(dx, dy);
+            }
             if (confirm) ArmActivate();
+        }
+
+        void ClearQuitAsk()
+        {
+            _quitAsk = false;
+            for (int i = 0; i < _tiles.Count; i++)
+            {
+                MenuTile tile = _tiles[i];
+                if (tile == null || tile.Index != 3 || tile.Detail == null) continue;
+                tile.Detail.text = "";
+            }
+            if (_banner != null && _screen == MenuScreenId.Pause)
+                _banner.text = Tag.Ui.Hud.MatchHudText.ComicHint;
         }
 
         void TickOptions()
@@ -2541,6 +2559,7 @@ namespace Tag.Ui.Menu
 
         void BuildPause()
         {
+            _quitAsk = false;
             _count = MenuSplitPause.Items;
             _cols = 1;
             _focus = 0;
@@ -2556,10 +2575,18 @@ namespace Tag.Ui.Menu
             {
                 MenuSplitPause.Card card = _cards[c];
                 if (!card.Show) continue;
+                bool owner = card.Seat == opener;
+                Color seat = MenuTheme.Seat(card.Seat);
                 var plate = MenuWidgets.Place(_body, "PauseCard", card.X + 12f, card.Y + 8f, card.W - 24f, card.H - 16f);
                 var plateImage = plate.gameObject.AddComponent<Image>();
-                MenuArt.Plate(plateImage, new Color(0.05f, 0.12f, 0.32f, 0.78f), true);
+                Color plateColor = new Color(0.05f, 0.12f, 0.32f, 0.88f);
+                if (owner) plateColor = Color.Lerp(plateColor, seat, 0.42f);
+                MenuArt.Plate(plateImage, plateColor, true);
                 plateImage.raycastTarget = false;
+                var ownerBar = MenuWidgets.Place(plate, "OwnerBar", 0f, 0f, card.W - 24f, owner ? 10f : 6f);
+                var ownerImage = ownerBar.gameObject.AddComponent<Image>();
+                ownerImage.color = seat;
+                ownerImage.raycastTarget = false;
                 float head = UiFit.HeaderTop(card.H);
                 float headBand = 40f;
                 RectTransform paneHead = MenuWidgets.Place(plate, "PaneHead", 20f, head, card.W - 64f, headBand);
@@ -2598,18 +2625,50 @@ namespace Tag.Ui.Menu
             if (mode != null && !string.IsNullOrEmpty(mode.ResultMessage))
                 headline = mode.ResultMessage;
             if (_header != null) _header.text = "  " + headline;
-            if (_banner != null) _banner.text = MenuCatalog.ModeName(modeId);
             int n = FillRanks();
+            float chase = n > 0 ? _rows[0].Chase : 0f;
+            string chaseWho = "";
+            if (mode != null)
+            {
+                chase = mode.LongestChase;
+                chaseWho = mode.LongestChaseName;
+            }
+            if (_banner != null)
+                _banner.text = MenuCatalog.ModeName(modeId) + "    " + MenuPodium.ChaseLine(chase, chaseWho);
             float span = UiFit.BodyW(UiFit.Current());
-            UiFit.Bands(UiFit.Current(), out float viewH, out float rankY, out float rankH, out float btnY, out float btnH);
+            float bodyH = UiFit.BodyH(UiFit.Current());
+            float rankH = 168f;
+            float btnH = 80f;
+            float gap = 8f;
+            float top = 8f;
+            float maxStageH = bodyH - rankH - btnH - gap * 2f - top;
+            if (maxStageH < 180f) maxStageH = 180f;
             float stageW = span - 32f;
             if (stageW > 1680f) stageW = 1680f;
-            float stageX = (span - stageW) * 0.5f;
-            var stage = MenuWidgets.Place(_body, "ResultsView", stageX, 8f, stageW, viewH);
+            float fitH = stageW * (9f / 16f);
+            float fitW = stageW;
+            if (fitH > maxStageH)
+            {
+                fitH = maxStageH;
+                fitW = fitH * (16f / 9f);
+            }
+            float stageX = (span - fitW) * 0.5f;
+            float rankY = top + fitH + gap;
+            float btnY = rankY + rankH + gap;
+            if (btnY + btnH > bodyH)
+            {
+                fitH -= btnY + btnH - bodyH;
+                if (fitH < 160f) fitH = 160f;
+                fitW = fitH * (16f / 9f);
+                stageX = (span - fitW) * 0.5f;
+                rankY = top + fitH + gap;
+                btnY = rankY + rankH + gap;
+            }
+            var stage = MenuWidgets.Place(_body, "ResultsView", stageX, top, fitW, fitH);
             var frame = stage.gameObject.AddComponent<Image>();
             frame.color = new Color(0f, 0f, 0f, 0f);
             frame.raycastTarget = false;
-            var viewRt = MenuWidgets.Place(stage, "View", 0f, 0f, stageW, viewH);
+            var viewRt = MenuWidgets.Place(stage, "View", 0f, 0f, fitW, fitH);
             var view = viewRt.gameObject.AddComponent<RawImage>();
             view.raycastTarget = false;
             if (_preview != null) _preview.ShowPodium(n, _rows, view);
@@ -2618,20 +2677,32 @@ namespace Tag.Ui.Menu
                 string detail = MenuPodium.Stats(_rows[rank]);
                 int seat = _rows[rank].Seat;
                 if (seat < 0) seat = rank;
-                float rankW = (span - 32f) / 4f;
-                if (rankW > 436f) rankW = 436f;
-                MenuTile tile = AddTile(8f + rank * (rankW + 8f), rankY, rankW, rankH, 20 + rank, MenuTheme.Place(rank) + "  " + _rows[rank].Name, detail, false);
+                float rankW = (fitW - 24f) / 4f;
+                int col = rank == 0 ? 1 : rank == 1 ? 0 : rank;
+                float cardX = stageX + col * (rankW + 8f);
+                MenuTile tile = AddTile(cardX, rankY, rankW, rankH, 20 + rank, MenuTheme.Place(rank) + "  " + _rows[rank].Name, detail, false);
                 if (tile != null)
                 {
                     tile.KeepBar = true;
                     tile.BarColor = MenuTheme.Seat(seat);
-                    if (tile.Bar != null) tile.Bar.color = tile.BarColor;
+                    if (tile.Bar != null)
+                    {
+                        tile.Bar.color = tile.BarColor;
+                        RectTransform barRt = tile.Bar.rectTransform;
+                        barRt.anchoredPosition = new Vector2(0f, 0f);
+                        barRt.sizeDelta = new Vector2(rankW, 10f);
+                    }
                     tile.Tint(Color.Lerp(MenuTheme.Ink, MenuTheme.Seat(seat), UiSweep.SeatMix));
                     if (tile.Stroke != null && _rows[rank].Winner)
                         tile.Stroke.color = MenuTheme.Gold;
-                    SeatChip(tile.transform, 28f, UiFit.StripeClear(), seat);
-                    Pull(tile.Label, 100f);
-                    Pull(tile.Detail, 100f);
+                    SeatChip(tile.transform, rankW - 118f, UiFit.StripeClear() + 6f, seat);
+                    Color look = MenuMannequin.Swatch(MenuMannequin.NameOf(_rows[rank].Hier));
+                    RectTransform swatch = MenuWidgets.Place(tile.transform, "LookSwatch", rankW - 42f, UiFit.StripeClear() + 12f, 22f, 22f);
+                    var swatchImage = swatch.gameObject.AddComponent<Image>();
+                    swatchImage.color = look;
+                    swatchImage.raycastTarget = false;
+                    Pull(tile.Label, 18f);
+                    Pull(tile.Detail, 18f);
                     MenuReveal.Row(tile.transform as RectTransform);
                 }
             }
@@ -3028,6 +3099,20 @@ namespace Tag.Ui.Menu
                     ShowOptions(true);
                     break;
                 case 3:
+                    if (!_quitAsk)
+                    {
+                        _quitAsk = true;
+                        MenuAudio.Confirm();
+                        if (_banner != null) _banner.text = "Leave the match?";
+                        for (int i = 0; i < _tiles.Count; i++)
+                        {
+                            MenuTile tile = _tiles[i];
+                            if (tile == null || tile.Index != 3 || tile.Detail == null) continue;
+                            tile.Detail.text = "Leave the match?";
+                        }
+                        break;
+                    }
+                    _quitAsk = false;
                     EatPause = true;
                     MenuAudio.Back();
                     QuitMatch();

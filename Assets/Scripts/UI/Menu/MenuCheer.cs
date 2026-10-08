@@ -20,6 +20,11 @@ namespace Tag.Ui.Menu
         bool _clap;
         bool _small;
         bool _still;
+        Renderer[] _rend;
+        int _rendCount;
+        Transform _shadow;
+        float _floor;
+        bool _hasFloor;
 
         public static void Slot(int rank, out float x, out float height)
         {
@@ -66,6 +71,15 @@ namespace Tag.Ui.Menu
             Apply(0f);
         }
 
+        /// <summary>World Y of the block top. Soles stay within 1 cm of it.</summary>
+        public void Floor(float worldY)
+        {
+            _floor = worldY;
+            _hasFloor = true;
+            EnsureShadow();
+            Ground();
+        }
+
         void Update()
         {
             if (_still) return;
@@ -80,6 +94,69 @@ namespace Tag.Ui.Menu
             else if (_clap) a = MenuAlive.Cheer(time, _small ? 0.3f : 0.55f);
             else a = MenuAlive.Slump(time);
             Pose(a);
+            Ground();
+        }
+
+        void EnsureShadow()
+        {
+            if (_shadow != null) return;
+            var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.name = "ContactShadow";
+            Transform stand = transform.parent;
+            if (stand != null && stand.name == "FacePivot") stand = stand.parent;
+            if (stand == null) stand = transform;
+            quad.transform.SetParent(stand, true);
+            quad.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            quad.transform.localScale = new Vector3(0.72f, 0.42f, 1f);
+            Collider col = quad.GetComponent<Collider>();
+            if (col != null) DestroyImmediate(col);
+            Renderer rend = quad.GetComponent<Renderer>();
+            if (rend != null)
+                rend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.02f, 0.03f, 0.05f, 0.55f), 0.4f, 0f);
+            _shadow = quad.transform;
+        }
+
+        void Ground()
+        {
+            if (!_hasFloor || _rend == null) return;
+            float lowest = 1000f;
+            float footLow = 1000f;
+            bool any = false;
+            bool foot = false;
+            float midX = transform.position.x;
+            float midZ = transform.position.z;
+            for (int i = 0; i < _rendCount; i++)
+            {
+                Renderer rend = _rend[i];
+                if (rend == null) continue;
+                string n = rend.gameObject.name;
+                if (n == "ContactShadow" || n == "MenuHat") continue;
+                float y = rend.bounds.min.y;
+                if (y < lowest) lowest = y;
+                any = true;
+                if (n.IndexOf("Foot") < 0) continue;
+                if (y < footLow) footLow = y;
+                foot = true;
+            }
+            if (!any) return;
+            if (foot) lowest = footLow;
+            float target = _floor + 0.005f;
+            float dy = target - lowest;
+            float scale = 1f;
+            if (transform.parent != null)
+            {
+                float sy = transform.parent.lossyScale.y;
+                if (sy > 0.001f) scale = sy;
+            }
+            Vector3 p = transform.localPosition;
+            p.y += dy / scale;
+            transform.localPosition = p;
+            if (_shadow == null) return;
+            Vector3 s = _shadow.position;
+            s.x = midX;
+            s.y = _floor + 0.008f;
+            s.z = midZ;
+            _shadow.position = s;
         }
 
         void Pose(MenuAlive.Angles a)
@@ -122,6 +199,8 @@ namespace Tag.Ui.Menu
             _thighR0 = Rest(_thighR);
             _kneeL0 = Rest(_kneeL);
             _kneeR0 = Rest(_kneeR);
+            _rend = GetComponentsInChildren<Renderer>(true);
+            _rendCount = _rend != null ? _rend.Length : 0;
         }
 
         static Quaternion Rest(Transform t)

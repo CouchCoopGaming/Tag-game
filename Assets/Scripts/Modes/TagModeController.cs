@@ -85,6 +85,7 @@ namespace Tag.Modes
         int _beepSec = -1;
         float _chase;
         float _longestChase;
+        string _longestName = "";
         string _taggedId = "";
         float _taggedUntil;
         string[] _scoreIds = System.Array.Empty<string>();
@@ -111,6 +112,8 @@ namespace Tag.Modes
         public float PhaseSeconds => _phaseTimer;
         /// <summary>Longest single time someone stayed It. One number for the match.</summary>
         public float LongestChase => _longestChase;
+        /// <summary>Who held It for that chase, when the match recorded it.</summary>
+        public string LongestChaseName => _longestName != null ? _longestName : "";
         /// <summary>1-based round for the top counter. Hot Potato uses its fuse index.</summary>
         public int RoundShown
         {
@@ -394,6 +397,7 @@ namespace Tag.Modes
             _beepSec = -1;
             _chase = 0f;
             _longestChase = 0f;
+            _longestName = "";
             _taggedId = "";
             _taggedUntil = 0f;
             _scoreCount = 0;
@@ -812,7 +816,7 @@ namespace Tag.Modes
                 from.NoteTagLanded();
                 if (to != null)
                     MatchLive.NoteTag(from, to);
-                if (_chase > _longestChase) _longestChase = _chase;
+                RememberChase(string.IsNullOrEmpty(from.PlayerId) ? from.name : from.PlayerId);
                 _chase = 0f;
                 if (IsLocalHuman(from) && to != null)
                 {
@@ -919,10 +923,20 @@ namespace Tag.Modes
                 EndMatch();
         }
 
+        void RememberChase(string who)
+        {
+            if (_chase <= _longestChase) return;
+            _longestChase = _chase;
+            if (!string.IsNullOrEmpty(who)) _longestName = who;
+        }
+
         void EndMatch()
         {
             if (_phase == MatchPhase.Results) return;
-            if (_chase > _longestChase) _longestChase = _chase;
+            string holder = "";
+            if (_ctx.CurrentIt != null)
+                holder = string.IsNullOrEmpty(_ctx.CurrentIt.PlayerId) ? _ctx.CurrentIt.name : _ctx.CurrentIt.PlayerId;
+            RememberChase(holder);
             SnapshotScores();
             if (FrontLive.KeepGoing(_scoreIds, _scoreTimes, _scoreTags, _scoreCount, _scoreLongest))
             {

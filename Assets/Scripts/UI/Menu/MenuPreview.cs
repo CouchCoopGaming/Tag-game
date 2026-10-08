@@ -215,6 +215,13 @@ namespace Tag.Ui.Menu
                 bool clap = !win && i < 3;
                 MenuCheer.Play(body, win, clap, i == 2);
                 if (body != null) body.transform.localPosition = new Vector3(0f, 0.04f, 0f);
+                MenuCheer planted = body != null ? body.GetComponent<MenuCheer>() : null;
+                if (planted != null && _step[i] != null)
+                {
+                    // Cube top, plus the 5 cm cap that sits on it.
+                    float top = _step[i].position.y + _step[i].lossyScale.y * 0.5f + 0.05f;
+                    planted.Floor(top);
+                }
             }
             bool party = crowned && !MenuVideo.ReduceMotion;
             for (int i = 0; i < _confetti.Length; i++)
@@ -395,11 +402,11 @@ namespace Tag.Ui.Menu
             cam.farClipPlane = 40f;
             cam.depth = -19;
             cam.enabled = false;
-            _podiumRt = new RenderTexture(1280, 720, 16, RenderTextureFormat.ARGB32);
+            _podiumRt = new RenderTexture(1920, 1080, 16, RenderTextureFormat.ARGB32);
             _podiumRt.Create();
             cam.targetTexture = _podiumRt;
-            cam.transform.position = _podiumRoot.position + new Vector3(0.78f, 1.55f, 6.2f);
-            cam.transform.LookAt(_podiumRoot.position + new Vector3(0.78f, 1.05f, 0f));
+            cam.transform.position = _podiumRoot.position + new Vector3(0.73f, 1.72f, 8.60f);
+            cam.transform.LookAt(_podiumRoot.position + new Vector3(0.73f, 1.60f, 0f));
             _podiumCam = cam;
         }
 

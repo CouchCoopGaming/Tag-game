@@ -334,6 +334,8 @@ The thirty-third pass paints that mesh in the look. The body is the primary swat
 
 The thirty-fourth pass keeps the Orange and Tan chest on the primary colour. Those meshes share the shell with a joint slot, and the joint no longer paints the torso. The accent stays the second colour. Every card uses the same three-quarter front, with the face toward the camera when the sway is centred. The ready hop still has about 5% of the well above the head. RESULTS uses the cheer and the slump already on that screen, places 1st through 4th, and each line shows tags, time as It, and the match's longest chase. That chase is one number for the whole match. The pictures in `Docs/UiStills/pass34/` label the mesh pixels. Space still jumps.
 
+The thirty-fifth pass plants the RESULTS figures on their blocks. Each sole sits about half a centimetre above the cap, with a contact shadow, on the cheer and on the slump. The winner fills about 45% of a 1920x1080 stage. The stat cards follow the stage, 2nd then 1st then 3rd then 4th, so each card sits under its figure. The bar is the seat colour and a small swatch is the look. The longest chase is one header line. The still holds the existing cheer where the head yaw peaks, and the arms stay the small open already in that pose. Pause lists Resume, Restart round, Options, and Quit to menu, asks before leaving, and colours the panel for the player who paused. The pictures in `Docs/UiStills/pass35/` label the mesh pixels. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
