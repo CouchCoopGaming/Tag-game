@@ -1,6 +1,6 @@
-"""Removable bollard in a ground socket.
+"""Removable bollard. Ground socket and a locking collar.
 
-Real size: 114 mm post, 0.90 m tall, sitting in a 180 mm socket flush with the pavement.
+114 mm post, dome at 0.90 m. The collar carries a hasp. No legend.
 """
 
 import os
@@ -8,6 +8,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
+from sk_parts import sweep_tube
 
 
 @register
@@ -15,26 +16,37 @@ def create():
     a = Asset(
         "Bollard_Removable",
         "StreetFurniture",
-        "Removable bollard, 114 mm post, 0.90 m tall, in a flush steel socket.",
+        "Removable bollard, 114 mm post, dome at 0.90 m, socket and lock collar.",
     )
     a.climb_note = "114 mm post. Not a cling."
     a.vault_note = "Top is 0.90 m and round. Not a vault rail."
     for lod in (0, 1):
         g = a.begin(lod)
-        seg = lod_pick(lod, 14, 8)
-        bev = lod_pick(lod, 0.003, 0.0)
-        # Socket ring overlaps the post so the post is seated, not floating.
-        g.cylinder((0, 0.02, 0), 0.11, 0.04, "Lib_SteelDark", seg, bevel=bev, segs=1 if lod == 0 else 0)
-        g.cylinder((0, 0.045, 0), 0.13, 0.012, "Lib_Steel", seg)
-        g.cylinder((0, 0.46, 0), 0.057, 0.84, "Lib_PaintYellow", seg, bevel=bev, segs=1 if lod == 0 else 0)
-        g.sphere((0, 0.88, 0), 0.057, "Lib_PaintYellow", seg)
-        g.cylinder((0, 0.70, 0), 0.062, 0.04, "Lib_PaintWhite", seg)
-        # Lift slot, cut into the upper post as a dark bar that overlaps it.
-        g.box((0, 0.78, 0), (0.09, 0.018, 0.07), "Lib_Black")
+        seg = lod_pick(lod, 16, 8)
+        g.cylinder((0, 0.010, 0), 0.11, 0.020, "Lib_SteelDark", seg)
+        # Post is split around the white band. Dome sits 2 mm above the cut.
+        g.cylinder((0, 0.310, 0), 0.057, 0.576, "Lib_PaintYellow", seg)
+        g.cylinder((0, 0.618, 0), 0.062, 0.036, "Lib_PaintWhite", seg)
+        g.cylinder((0, 0.710, 0), 0.057, 0.144, "Lib_PaintYellow", seg)
+        g.sphere((0, 0.843, 0), 0.057, "Lib_PaintYellow", seg)
+        # Collar clears the post. The hasp and shackle sit outside it.
+        g.torus((0, 0.09, 0), 0.066, 0.007, "Lib_Steel", lod_pick(lod, 14, 8), 5)
+        g.box((0, 0.09, 0.086), (0.022, 0.032, 0.016), "Lib_SteelDark")
         if lod == 0:
-            g.cylinder((0, 0.055, 0.10), 0.008, 0.02, "Lib_Steel", 6, axis="Z")
-            g.box((0.04, 0.10, 0), (0.04, 0.03, 0.02), "Lib_Rust")
+            sweep_tube(
+                g,
+                (
+                    (0.012, 0.108, 0.086),
+                    (0.012, 0.122, 0.086),
+                    (0.0, 0.132, 0.086),
+                    (-0.012, 0.122, 0.086),
+                    (-0.012, 0.108, 0.086),
+                ),
+                0.0035,
+                "Lib_Steel",
+                segments=8,
+            )
         a.end()
-    a.box("Col_Socket", (0, 0.02, 0), (0.14, 0.024, 0.14))
-    a.capsule("Col_Post", (0, 0.46, 0), 0.044, 0.76, 1)
+    a.box("Col_Socket", (0, 0.010, 0), (0.16, 0.014, 0.16))
+    a.capsule("Col_Post", (0, 0.42, 0), 0.050, 0.70, 1)
     return a
