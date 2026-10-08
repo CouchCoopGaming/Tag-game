@@ -3182,13 +3182,15 @@ namespace Tag.Ui.Menu
             if (next < 0) next = 0;
             if (next >= _count) next = _count - 1;
             if (next == _focus) return;
+            bool armed = OptionApply.Armed >= 0;
+            OptionApply.Disarm();
             int before = _window;
             _focus = next;
             MenuAudio.Move();
             if (_screen == MenuScreenId.Options)
             {
                 int span = OptionWindow();
-                if (_focus < _window || _focus >= _window + span || before != _window)
+                if (armed || _focus < _window || _focus >= _window + span || before != _window)
                     PaintOptions();
                 else
                     RefreshFocus();

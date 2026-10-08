@@ -12,7 +12,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass12")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass13")
 FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
@@ -562,7 +562,9 @@ def loading():
     tip = (400, y + 28, 1520, y + 100)
     rounded(d, tip, 16, GOLD, INK, 3)
     d.text((428, y + 46), "TIP", font=font(FONT_D, 32), fill=INK)
-    d.text((540, y + 50), "Jump again to leave the wall.", font=font(FONT_B, 28), fill=INK)
+    tip_line = "Hold into a wall to cling. Jump while clinging to wall jump."
+    tip_font = font(FONT_B, 26)
+    d.text((540, y + 50), tip_line, font=tip_font, fill=INK)
     track_y = y + 124
     track = (400, track_y, 1520, track_y + 36)
     rounded(d, track, 10, (5, 13, 31), STROKE, 2)
@@ -599,7 +601,7 @@ def options(page):
             ("Controls", "Keyboard and pad. Space jumps.", False),
             ("Look", "One sensitivity for the couch.", False),
             ("Credits", "Team, the font, and the tools.", False),
-            ("Back", "Main menu", False),
+            ("Reset to defaults", "Sound, picture, and accessibility", False),
         ], {}),
         "sound": ("Sound", "Sliders step the volumes you already have.", [
             ("Master  0.80", "Left / Right", True),
@@ -607,6 +609,7 @@ def options(page):
             ("UI  1.00", "Left / Right", False),
             ("Music  0.35", "Left / Right", False),
             ("Mute  (Comma)", "Left / Right", False),
+            ("Reset to defaults?", "Confirm to reset", False),
             ("Back", "", False),
         ], {0: 0.80, 1: 1.0, 2: 1.0, 3: 0.35}),
         "picture": ("Picture", "Resolution, fullscreen, vsync, and the couch UI scale.", [
@@ -615,6 +618,7 @@ def options(page):
             ("VSync  On", "Left / Right", False),
             ("Quality  Medium", "Left / Right", False),
             ("UI scale  100%", "80% to 130%, for a couch TV", False),
+            ("Reset to defaults", "This page only", False),
             ("Back", "", False),
         ], {4: 0.40}),
         "access": ("Accessibility", "Reduce motion, text size, player colors, and comic words.", [
@@ -623,13 +627,14 @@ def options(page):
             ("Player  P1", "Left / Right", False),
             ("Colorblind palette  Default", "Left / Right", False),
             ("Comic words  On", "Verb words during a match.", False),
+            ("Reset to defaults", "This page only", False),
             ("Back", "", False),
         ], {1: 0.333}),
     }
     title, banner, rows, meters = pages[page]
     header(img, title, banner)
     ratios = []
-    y = 156
+    y = 140 if page == "access" else 148
     row_h = 108
     step = 116
     for i, (name, sub, hot) in enumerate(rows):
@@ -648,13 +653,15 @@ def options(page):
             draw_switch(d, 1640 - 96 - 28, y + 34, i == 4)
         y += step
     if page == "access":
+        # Seven rows fill the window, so the swatches are the short strip under Back.
         d = ImageDraw.Draw(img)
-        d.text((300, y + 24), "Default", font=font(FONT_B, 30), fill=CREAM)
+        sy = y - step + row_h + 6
+        sh = 32
+        d.text((300, sy + 2), "Default", font=font(FONT_B, 22), fill=CREAM)
         ratios.append(contrast(CREAM, (8, 22, 58)))
         for i, c in enumerate(SEAT):
-            x = 560 + i * 180
-            rounded(d, (x, y + 8, x + 140, y + 78), 12, c)
-            d.text((x + 46, y + 84), "P" + str(i + 1), font=font(FONT_B, 28), fill=CREAM)
+            x = 520 + i * 160
+            rounded(d, (x, sy, x + 140, sy + sh), 10, c)
             ratios.append(contrast(CREAM, (8, 22, 58)))
     ratios.append(contrast(GOLD, NAVY))
     footer_both(img)

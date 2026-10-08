@@ -10,7 +10,7 @@ namespace Tag.Ui.Menu
             "Space jumps.",
             "Sprint, then slide.",
             "Hold into a wall to climb.",
-            "Jump again to leave the wall.",
+            "Hold into a wall to cling. Jump while clinging to wall jump.",
             "Air dash in the air.",
             "Punch to tag. It changes hands.",
             "Tag-back is 1 second.",

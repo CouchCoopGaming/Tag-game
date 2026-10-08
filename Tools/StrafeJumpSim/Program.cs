@@ -12,6 +12,8 @@ static class Program
         {
             Tag.Ui.Menu.UiFlow.Report only = Tag.Ui.Menu.UiFlow.Run();
             Console.WriteLine(only.Line);
+            if (!string.IsNullOrEmpty(only.ApplyLine))
+                Console.WriteLine(only.ApplyLine);
             return only.Ok ? 0 : 1;
         }
         if (args != null && args.Length > 0 && args[0] == "--place-figures")
@@ -1000,6 +1002,8 @@ static class Program
 
         Tag.Ui.Menu.UiFlow.Report flow = Tag.Ui.Menu.UiFlow.Run();
         Console.WriteLine(flow.Line);
+        if (!string.IsNullOrEmpty(flow.ApplyLine))
+            Console.WriteLine(flow.ApplyLine);
         if (!flow.Ok)
         {
             Console.Error.WriteLine(flow.Failure);

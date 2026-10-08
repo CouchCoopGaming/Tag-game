@@ -33,6 +33,13 @@ namespace Tag.Ui.Hud
         {
             return ComicWords ? ComicHint : "COMIC WORDS OFF";
         }
+
+        /// <summary>Onomatopoeia. Cooldown digits are not words, so they stay.</summary>
+        public static string Comic(string word)
+        {
+            if (!ComicWords || string.IsNullOrEmpty(word)) return Blank;
+            return word;
+        }
         public static readonly string[] Seat = { "P1", "P2", "P3", "P4" };
         public static readonly string[] PreviewProfile = { "Keyboard", "Pad", "Pad", "Pad" };
 

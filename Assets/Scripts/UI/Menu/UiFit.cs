@@ -92,6 +92,22 @@ namespace Tag.Ui.Menu
             return whole;
         }
 
+        /// <summary>Menu and HUD text. At 1.00 the pixel count is the size passed in.</summary>
+        public static int TextPx(int font)
+        {
+            if (font < 1) font = 1;
+            float hud = GameSettings.HudDefault;
+            GameSettings s = GameSettings.Current;
+            if (s != null) hud = s.HudScale;
+            if (hud < GameSettings.HudMin) hud = GameSettings.HudMin;
+            if (hud > GameSettings.HudMax) hud = GameSettings.HudMax;
+            if (hud > 0.999f && hud < 1.001f) return font;
+            float px = font * hud;
+            int whole = (int)(px + 0.5f);
+            if (whole < 1) whole = 1;
+            return whole;
+        }
+
         public static bool FontsHold()
         {
             if (FloorFont < 1) return false;

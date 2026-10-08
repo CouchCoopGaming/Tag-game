@@ -367,7 +367,7 @@ namespace Tag.Ui.Hud
             if (CenterCall != null)
             {
                 CenterCall.enabled = center;
-                Set(CenterCall, center ? MatchHudText.Go : MatchHudText.Blank);
+                Set(CenterCall, center ? MatchHudText.Comic(MatchHudText.Go) : MatchHudText.Blank);
                 CenterCall.rectTransform.localScale = Vector3.one;
             }
         }
@@ -434,7 +434,7 @@ namespace Tag.Ui.Hud
             if (pane.Call != null)
             {
                 pane.Call.enabled = call;
-                Set(pane.Call, it ? MatchHudText.YoureIt : MatchHudText.Tagged);
+                Set(pane.Call, MatchHudText.Comic(it ? MatchHudText.YoureIt : MatchHudText.Tagged));
                 pane.Call.rectTransform.localScale = Vector3.one;
             }
         }
@@ -504,7 +504,7 @@ namespace Tag.Ui.Hud
             string dashWord = MatchHudText.Blank;
             if (motor != null)
             {
-                if (dashing) dashWord = MatchHudText.DashGo;
+                if (dashing) dashWord = MatchHudText.Comic(MatchHudText.DashGo);
                 else if (dashRem > 0.05f) dashWord = HudDigits.DashCd(dashRem);
             }
             Set(pane.DashWord, dashWord);
@@ -516,17 +516,17 @@ namespace Tag.Ui.Hud
             {
                 if (rope.Pulling)
                 {
-                    ropeWord = MatchHudText.Pull;
+                    ropeWord = MatchHudText.Comic(MatchHudText.Pull);
                     ropeColor = MenuTheme.Ready;
                 }
                 else if (rope.IsPulling)
                 {
-                    ropeWord = MatchHudText.Hook;
+                    ropeWord = MatchHudText.Comic(MatchHudText.Hook);
                     ropeColor = MenuTheme.Gold;
                 }
                 else if (rope.IsAiming)
                 {
-                    ropeWord = MatchHudText.Aim;
+                    ropeWord = MatchHudText.Comic(MatchHudText.Aim);
                     ropeColor = MenuTheme.Cream;
                 }
                 else ropeColor = new Color(0.82f, 0.88f, 0.96f, 1f);
@@ -565,7 +565,7 @@ namespace Tag.Ui.Hud
             if (pane.Call == null) return;
             pane.Call.enabled = show;
             if (!show) return;
-            Set(pane.Call, _callKind[index] == 1 ? MatchHudText.YoureIt : MatchHudText.Tagged);
+            Set(pane.Call, MatchHudText.Comic(_callKind[index] == 1 ? MatchHudText.YoureIt : MatchHudText.Tagged));
             if (MenuVideo.ReduceMotion)
             {
                 pane.Call.rectTransform.localScale = Vector3.one;
@@ -609,7 +609,7 @@ namespace Tag.Ui.Hud
                 if (show > 9) show = 9;
                 word = HudDigits.Whole0(show);
             }
-            else if (now < _goUntil) word = MatchHudText.Go;
+            else if (now < _goUntil) word = MatchHudText.Comic(MatchHudText.Go);
             else if (now < _endUntil) word = MatchHudText.RoundEnd;
             bool on = word.Length != 0;
             if (CenterPlate != null) CenterPlate.enabled = on;
@@ -694,12 +694,24 @@ namespace Tag.Ui.Hud
                     if (Cams[i] != null) camBits |= 1 << i;
             }
             int scaleBits = (int)(UiFit.Current() * 100f);
-            int sig = humans * 64 + split * 8 + camBits + (preview ? 32 : 0) + scaleBits * 1024;
+            int hudBits = 100;
+            GameSettings hudSettings = GameSettings.Current;
+            if (hudSettings != null)
+            {
+                float hud = hudSettings.HudScale;
+                if (hud < GameSettings.HudMin) hud = GameSettings.HudMin;
+                if (hud > GameSettings.HudMax) hud = GameSettings.HudMax;
+                hudBits = (int)(hud * 100f + 0.5f);
+            }
+            int sig = humans * 64 + split * 8 + camBits + (preview ? 32 : 0) + scaleBits * 1024 + hudBits * 65536;
             if (sig == _layout) return;
             _layout = sig;
             int panes = CouchPlay.Panes(humans);
-            int nameSize = humans >= 3 ? UiFit.FloorFont : 36;
-            int callSize = humans >= 3 ? 40 : 68;
+            int nameSize = UiFit.TextPx(humans >= 3 ? UiFit.FloorFont : 36);
+            int callSize = UiFit.TextPx(humans >= 3 ? 40 : 68);
+            FitText(Clock, 46);
+            FitText(RoundLabel, UiFit.FloorFont);
+            FitText(CenterCall, 96);
             if (Clock != null)
             {
                 RectTransform plate = Clock.transform.parent as RectTransform;
@@ -748,11 +760,23 @@ namespace Tag.Ui.Hud
             }
         }
 
+        static void FitText(Text text, int px)
+        {
+            if (text == null) return;
+            int n = UiFit.TextPx(px);
+            text.fontSize = n;
+            text.resizeTextMaxSize = n;
+            int min = UiFit.TextPx(UiFit.FloorFont);
+            if (min > n) min = n;
+            text.resizeTextMinSize = min;
+        }
+
         static void PlaceIdentity(HudPane pane, int humans, int split, int index, float scale, int nameSize, int callSize)
         {
             HudCorner.Lay lay = HudCorner.Measure(humans, split, index, scale);
             bool right = lay.Right;
-            if (nameSize < UiFit.FloorFont) nameSize = UiFit.FloorFont;
+            int floor = UiFit.TextPx(UiFit.FloorFont);
+            if (nameSize < floor) nameSize = floor;
             if (pane.Badge != null)
             {
                 RectTransform rt = pane.Badge.rectTransform;
@@ -776,29 +800,40 @@ namespace Tag.Ui.Hud
             {
                 pane.Name.fontSize = nameSize;
                 pane.Name.resizeTextMaxSize = nameSize;
-                pane.Name.resizeTextMinSize = UiFit.FloorFont;
+                pane.Name.resizeTextMinSize = floor;
                 pane.Name.alignment = align;
             }
             if (pane.Profile != null)
             {
-                pane.Profile.fontSize = UiFit.FloorFont;
-                pane.Profile.resizeTextMaxSize = UiFit.FloorFont;
-                pane.Profile.resizeTextMinSize = UiFit.FloorFont;
+                pane.Profile.fontSize = floor;
+                pane.Profile.resizeTextMaxSize = floor;
+                pane.Profile.resizeTextMinSize = floor;
                 pane.Profile.alignment = align;
             }
             if (pane.Metric != null)
             {
-                pane.Metric.fontSize = UiFit.FloorFont;
-                pane.Metric.resizeTextMaxSize = UiFit.FloorFont;
-                pane.Metric.resizeTextMinSize = UiFit.FloorFont;
+                pane.Metric.fontSize = floor;
+                pane.Metric.resizeTextMaxSize = floor;
+                pane.Metric.resizeTextMinSize = floor;
                 pane.Metric.alignment = align;
             }
             if (pane.Value != null)
             {
-                pane.Value.fontSize = UiFit.FloorFont;
-                pane.Value.resizeTextMaxSize = UiFit.FloorFont;
-                pane.Value.resizeTextMinSize = UiFit.FloorFont;
+                pane.Value.fontSize = floor;
+                pane.Value.resizeTextMaxSize = floor;
+                pane.Value.resizeTextMinSize = floor;
                 pane.Value.alignment = align;
+            }
+            FitText(pane.Tags, UiFit.FloorFont);
+            FitText(pane.TagsValue, UiFit.FloorFont);
+            FitText(pane.BadgeWord, UiFit.FloorFont);
+            FitText(pane.DashWord, UiFit.FloorFont);
+            FitText(pane.RopeWord, UiFit.FloorFont);
+            FitText(pane.SafeWord, UiFit.FloorFont);
+            if (pane.Feed != null)
+            {
+                for (int f = 0; f < pane.Feed.Length; f++)
+                    FitText(pane.Feed[f], UiFit.FloorFont);
             }
             if (pane.Tags != null) pane.Tags.alignment = align;
             if (pane.TagsValue != null) pane.TagsValue.alignment = align;

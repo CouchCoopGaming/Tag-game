@@ -84,6 +84,13 @@ namespace Tag.Settings
         public bool Muted;
         public float HudScale = HudDefault;
         public float UiScale = UiScaleDefault;
+        /// <summary>Verb words on the match HUD. Missing from an old blob stays on.</summary>
+        public bool ComicWords = true;
+        public bool ReduceMotion;
+        public int PictureQuality;
+        public int ResIndex = 2;
+        public bool Fullscreen = true;
+        public bool VSync = true;
         public bool Colorblind;
         public bool Minimap = true;
         public int Arena;
@@ -167,6 +174,12 @@ namespace Tag.Settings
             Muted = other.Muted;
             HudScale = other.HudScale;
             UiScale = other.UiScale;
+            ComicWords = other.ComicWords;
+            ReduceMotion = other.ReduceMotion;
+            PictureQuality = other.PictureQuality;
+            ResIndex = other.ResIndex;
+            Fullscreen = other.Fullscreen;
+            VSync = other.VSync;
             Colorblind = other.Colorblind;
             Minimap = other.Minimap;
             Arena = other.Arena;
@@ -190,6 +203,47 @@ namespace Tag.Settings
             CopyFrom(Defaults());
         }
 
+        public void ResetSound()
+        {
+            GameSettings d = Defaults();
+            Master = d.Master;
+            Sfx = d.Sfx;
+            Ui = d.Ui;
+            Music = d.Music;
+            Muted = d.Muted;
+        }
+
+        public void ResetPicture()
+        {
+            GameSettings d = Defaults();
+            ResIndex = d.ResIndex;
+            Fullscreen = d.Fullscreen;
+            VSync = d.VSync;
+            PictureQuality = d.PictureQuality;
+            UiScale = d.UiScale;
+        }
+
+        public void ResetAccess()
+        {
+            GameSettings d = Defaults();
+            ReduceMotion = d.ReduceMotion;
+            HudScale = d.HudScale;
+            AccessSeat = d.AccessSeat;
+            Colorblind = d.Colorblind;
+            ComicWords = d.ComicWords;
+            for (int i = 0; i < SeatCount; i++)
+                Palette[i] = 0;
+        }
+
+        public void ResetLook()
+        {
+            GameSettings d = Defaults();
+            MouseSensitivity = d.MouseSensitivity;
+            GamepadLook = d.GamepadLook;
+            InvertY = d.InvertY;
+            Fov = d.Fov;
+        }
+
         public void Clamp()
         {
             MouseSensitivity = ClampFloat(MouseSensitivity, MouseMin, MouseMax);
@@ -207,6 +261,10 @@ namespace Tag.Settings
             Music = ClampFloat(Music, 0f, 1f);
             HudScale = ClampFloat(HudScale, HudMin, HudMax);
             UiScale = ClampFloat(UiScale, UiScaleMin, UiScaleMax);
+            if (ResIndex < 0) ResIndex = 0;
+            if (ResIndex > 3) ResIndex = 3;
+            if (PictureQuality < 0) PictureQuality = 0;
+            if (PictureQuality > 8) PictureQuality = 8;
             int lastArena = Tag.Onboard.ArenaRegistry.Count - 1;
             if (lastArena < 0) lastArena = 0;
             if (Arena < 0) Arena = 0;

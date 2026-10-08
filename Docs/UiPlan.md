@@ -309,6 +309,10 @@ A joined card labels the device with a keyboard icon and the word Keyboard, or a
 
 Each controls glyph is the sprite for that row's ActionBinds token. Punch's pad mark is the blue X, not the green A. Slide shows the Ctrl and C keycaps with B. Air dash shows Q and Alt with RB. Punch shows LMB and E with X. Cling shows the hold-into-wall mark and the stick. The line uses Xbox names: A, B, X, Y, RB, and LT. There is no footnote row. Xbox, PlayStation, and Switch share one gamepad token per action, and gameplay jump stays the south button. The pause banner is the arena and the mode. Comic words stays on Accessibility. Stills are composites in `Docs/UiStills/screens2/pass12/`.
 
+## Screens 2, pass 13
+
+Sound, Picture, Accessibility, and Look apply when you step a row, and the settings blob keeps the value. Master, mute, and the listener are one group. Sfx, UI, and music are the bus gains. Picture quality calls QualitySettings. Text size scales menu type and the match HUD. UI scale still scales the canvas. Comic words turns the verb words on and off. A second headless line, `ui-apply`, sets each value, reloads, and reads it back. Each options page has Reset to defaults. The first confirm asks, the second resets that page. Loading still names the arena and fills the bar from the scene load. The tip it opens on is the cling and wall-jump line. Stills are composites in `Docs/UiStills/screens2/pass13/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

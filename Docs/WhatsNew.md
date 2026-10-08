@@ -340,6 +340,8 @@ The eleventh pass labels a joined seat Keyboard or Gamepad, and the ready line s
 
 The twelfth pass reads each controls glyph from the binding token. Punch shows a blue X. Slide shows Ctrl and C with B. Air dash shows Q and Alt with RB. Cling shows the wall hold and the stick. The pad names are A, B, X, Y, RB, and LT. Pause names the arena and the mode. Comic words stays on Accessibility. Composites are in `Docs/UiStills/screens2/pass12/`. Space still jumps.
 
+The thirteenth pass makes the options rows do what they say. Volumes reach the listener and the effect, UI, and music gains. Picture quality sets the quality level. Text size changes the menu and the match HUD, and UI scale still changes the couch canvas. Comic words turns the verb words on and off. The values stay in the settings file. Each options page can reset that page after a confirm. Loading names the arena, fills the bar from the scene load, and the tip it opens on is hold into a wall to cling, then jump to wall jump. Composites are in `Docs/UiStills/screens2/pass13/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

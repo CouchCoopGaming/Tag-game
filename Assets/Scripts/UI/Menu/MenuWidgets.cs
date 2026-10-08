@@ -42,18 +42,20 @@ namespace Tag.Ui.Menu
             rt.offsetMin = new Vector2(18f, 8f);
             rt.offsetMax = new Vector2(-18f, -8f);
             var label = rt.gameObject.AddComponent<Text>();
-            if (size < UiFit.FloorFont) size = UiFit.FloorFont;
+            int drawn = UiFit.TextPx(size < UiFit.FloorFont ? UiFit.FloorFont : size);
+            int minPx = UiFit.TextPx(UiFit.FloorFont);
+            if (minPx > drawn) minPx = drawn;
             label.font = MenuTheme.Font;
             label.text = text ?? "";
-            label.fontSize = size;
+            label.fontSize = drawn;
             label.fontStyle = FontStyle.Bold;
             label.alignment = align;
             label.color = color;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
             label.verticalOverflow = VerticalWrapMode.Truncate;
             label.resizeTextForBestFit = true;
-            label.resizeTextMinSize = UiFit.FloorFont;
-            label.resizeTextMaxSize = size;
+            label.resizeTextMinSize = minPx;
+            label.resizeTextMaxSize = drawn;
             label.raycastTarget = false;
             var outline = rt.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(0f, 0f, 0f, 0.85f);
@@ -112,10 +114,15 @@ namespace Tag.Ui.Menu
             var sub = Words(rt, detail, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Mute, Vector2.zero, Vector2.one);
             if (h >= UiFit.OptRow && h <= UiFit.RematchH)
             {
+                int titlePx = UiFit.TextPx(40);
+                int detailPx = UiFit.TextPx(UiFit.FloorFont);
                 title.resizeTextForBestFit = false;
-                title.fontSize = 40;
+                title.fontSize = titlePx;
+                title.resizeTextMaxSize = titlePx;
                 sub.resizeTextForBestFit = false;
-                sub.fontSize = UiFit.FloorFont;
+                sub.fontSize = detailPx;
+                sub.resizeTextMaxSize = detailPx;
+                sub.resizeTextMinSize = detailPx;
             }
             Band(title, h, titleFromTop, titleH);
             Band(sub, h, detailFromTop, detailH);
@@ -197,9 +204,10 @@ namespace Tag.Ui.Menu
                 rt.offsetMin = new Vector2(inset, 2f);
                 rt.offsetMax = new Vector2(-16f, -2f);
                 tile.Label.alignment = TextAnchor.MiddleLeft;
-                tile.Label.fontSize = 46;
-                tile.Label.resizeTextMaxSize = 46;
-                tile.Label.resizeTextMinSize = UiFit.FloorFont;
+                int namePx = UiFit.TextPx(46);
+                tile.Label.fontSize = namePx;
+                tile.Label.resizeTextMaxSize = namePx;
+                tile.Label.resizeTextMinSize = UiFit.TextPx(UiFit.FloorFont);
             }
             if (tile.Detail != null)
             {

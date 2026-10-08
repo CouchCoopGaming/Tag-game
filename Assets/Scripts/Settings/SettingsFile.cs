@@ -35,6 +35,12 @@ namespace Tag.Settings
             Line(text, "mute", s.Muted ? 1f : 0f);
             Line(text, "hud", s.HudScale);
             Line(text, "uiScale", s.UiScale);
+            Line(text, "comic", s.ComicWords ? 1f : 0f);
+            Line(text, "motion", s.ReduceMotion ? 1f : 0f);
+            Line(text, "quality", s.PictureQuality);
+            Line(text, "res", s.ResIndex);
+            Line(text, "full", s.Fullscreen ? 1f : 0f);
+            Line(text, "vsync", s.VSync ? 1f : 0f);
             Line(text, "colorblind", s.Colorblind ? 1f : 0f);
             Line(text, "minimap", s.Minimap ? 1f : 0f);
             Line(text, "accessSeat", s.AccessSeat);
@@ -194,6 +200,7 @@ namespace Tag.Settings
             if (key == "stickInner" || key == "stickOuter" || key == "stickCurve" || key == "lookAccel") return true;
             if (key == "master" || key == "sfx" || key == "ui" || key == "music" || key == "mute") return true;
             if (key == "hud" || key == "uiScale" || key == "colorblind" || key == "minimap" || key == "accessSeat") return true;
+            if (key == "comic" || key == "motion" || key == "quality" || key == "res" || key == "full" || key == "vsync") return true;
             if (key == "arena" || key == "ai" || key == "diff" || key == "roundLen" || key == "rounds") return true;
             if (key == "split" || key == "listen") return true;
             if (key == "startIt" || key == "startSeat" || key == "winTarget" || key == "pads" || key == "zips") return true;
@@ -231,6 +238,12 @@ namespace Tag.Settings
             else if (key == "mute") settings.Muted = Flag(value);
             else if (key == "hud") settings.HudScale = Num(value, settings.HudScale);
             else if (key == "uiScale") settings.UiScale = Num(value, settings.UiScale);
+            else if (key == "comic") settings.ComicWords = Flag(value);
+            else if (key == "motion") settings.ReduceMotion = Flag(value);
+            else if (key == "quality") settings.PictureQuality = (int)Num(value, settings.PictureQuality);
+            else if (key == "res") settings.ResIndex = (int)Num(value, settings.ResIndex);
+            else if (key == "full") settings.Fullscreen = Flag(value);
+            else if (key == "vsync") settings.VSync = Flag(value);
             else if (key == "colorblind") settings.Colorblind = Flag(value);
             else if (key == "minimap") settings.Minimap = Flag(value);
             else if (key == "accessSeat") settings.AccessSeat = (int)Num(value, settings.AccessSeat);

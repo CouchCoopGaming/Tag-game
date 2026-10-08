@@ -51,6 +51,7 @@ namespace Tag.Ui.Menu
         {
             public bool Ok;
             public string Line;
+            public string ApplyLine;
             public string Failure;
         }
 
@@ -80,6 +81,10 @@ namespace Tag.Ui.Menu
             bool contrast = UiSweep.Holds();
             bool style = MenuPolish.Holds(Root());
             bool sheet = MenuSheet.Holds(Root());
+            report.ApplyLine = OptionApply.Holds();
+            bool optionsLive = report.ApplyLine.IndexOf("persist=ok", StringComparison.Ordinal) >= 0
+                && report.ApplyLine.IndexOf("=no", StringComparison.Ordinal) < 0;
+            if (!optionsLive) Fail(ref report, "options apply");
             if (!text) Fail(ref report, "text floor");
             if (!hud) Fail(ref report, "hud corner");
             if (!glyphs) Fail(ref report, "glyphs");
@@ -306,7 +311,7 @@ namespace Tag.Ui.Menu
             }
             if (!BackTo(ref cred, Options, report)) return 0;
             Spot leave = menu;
-            leave.Focus = 6;
+            leave.Focus = 7;
             leave = Confirm(leave);
             if (leave.Screen != Main || !Fit(leave, report))
             {
@@ -476,7 +481,8 @@ namespace Tag.Ui.Menu
                         if (s.Focus == 3) return ControlsAt(s, Options);
                         if (s.Focus == 4) return OptionsAt(s, 4, s.PauseChild, s.BackTo);
                         if (s.Focus == 5) return Land(s, Credits, 0, Options);
-                        return Back(s);
+                        if (s.Focus == s.Count - 1) return Back(s);
+                        return s;
                     }
                     if (s.Focus == s.Count - 1) return OptionsAt(s, 0, s.PauseChild, s.BackTo);
                     return s;
@@ -603,9 +609,9 @@ namespace Tag.Ui.Menu
                 case Controls: return 2;
                 case Records: return RecordRows();
                 case Options:
-                    if (s.Page == 0) return 7;
-                    if (s.Page == 3) return 6;
-                    return 6;
+                    if (s.Page == 0) return 8;
+                    if (s.Page == 4) return 6;
+                    return 7;
                 default: return 0;
             }
         }
