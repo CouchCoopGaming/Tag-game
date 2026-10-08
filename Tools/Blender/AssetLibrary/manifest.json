@@ -42441,32 +42441,32 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2021 fascia, 4.90 m long, 1.84 m wide, roof 1.45 m. Raked windshield, fastback pillar, 18 inch alloys. Color crimson.",
     "size": [
-      1.869,
+      2.028,
       1.45,
       4.9
     ],
     "min": [
-      -0.935,
+      -1.014,
       0.0,
       -2.45
     ],
     "max": [
-      0.935,
+      1.015,
       1.45,
       2.45
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 4794,
+        "tris": 4790,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SignalAmber",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver",
           "Lib_SteelDark"
@@ -42476,15 +42476,15 @@
       },
       {
         "lod": 1,
-        "tris": 3490,
+        "tris": 3698,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SignalAmber",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver",
           "Lib_SteelDark"
@@ -42494,15 +42494,15 @@
       },
       {
         "lod": 2,
-        "tris": 2646,
+        "tris": 3174,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SignalAmber",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver",
           "Lib_SteelDark"
@@ -42516,7 +42516,7 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -42535,7 +42535,7 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -42554,7 +42554,7 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -42573,7 +42573,7 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -42631,13 +42631,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.68,
-          1.9
+          0.78,
+          1.85
         ],
         "size": [
           0.36,
           0.08,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -42650,13 +42650,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.88,
-          -1.85
+          0.98,
+          -1.9
         ],
         "size": [
           0.36,
           0.06,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -42669,13 +42669,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.42,
-          2.15
+          0.48,
+          2.02
         ],
         "size": [
-          0.32,
-          0.16,
-          0.28
+          0.28,
+          0.14,
+          0.18
         ],
         "euler": [
           0,
@@ -42704,31 +42704,31 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2022 fascia, 4.90 m long, 1.84 m wide, roof 1.45 m. Raked windshield, fastback pillar, 18 inch alloys. Color crimson.",
     "size": [
-      1.869,
+      2.028,
       1.45,
       4.9
     ],
     "min": [
-      -0.935,
+      -1.014,
       0.0,
       -2.45
     ],
     "max": [
-      0.935,
+      1.015,
       1.45,
       2.45
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 4866,
+        "tris": 4862,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
-          "Lib_Steel",
           "Lib_Taillamp",
+          "Lib_Steel",
           "Lib_Rubber",
           "Lib_PaintSilver",
           "Lib_SteelDark"
@@ -42738,14 +42738,14 @@
       },
       {
         "lod": 1,
-        "tris": 3514,
+        "tris": 3722,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
-          "Lib_Steel",
           "Lib_Taillamp",
+          "Lib_Steel",
           "Lib_Rubber",
           "Lib_PaintSilver",
           "Lib_SteelDark"
@@ -42755,14 +42755,14 @@
       },
       {
         "lod": 2,
-        "tris": 2670,
+        "tris": 3198,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
-          "Lib_Steel",
           "Lib_Taillamp",
+          "Lib_Steel",
           "Lib_Rubber",
           "Lib_PaintSilver",
           "Lib_SteelDark"
@@ -42776,7 +42776,7 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -42795,7 +42795,7 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -42814,7 +42814,7 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -42833,7 +42833,7 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -42891,13 +42891,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.68,
-          1.9
+          0.78,
+          1.85
         ],
         "size": [
           0.36,
           0.08,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -42910,13 +42910,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.88,
-          -1.85
+          0.98,
+          -1.9
         ],
         "size": [
           0.36,
           0.06,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -42929,13 +42929,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.42,
-          2.15
+          0.48,
+          2.02
         ],
         "size": [
-          0.32,
-          0.16,
-          0.28
+          0.28,
+          0.14,
+          0.18
         ],
         "euler": [
           0,
@@ -42964,32 +42964,32 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2023 fascia, 4.90 m long, 1.84 m wide, roof 1.45 m. Raked windshield, fastback pillar, 18 inch alloys. Color crimson.",
     "size": [
-      1.869,
+      2.028,
       1.45,
       4.9
     ],
     "min": [
-      -0.935,
+      -1.014,
       0.0,
       -2.45
     ],
     "max": [
-      0.935,
+      1.015,
       1.45,
       2.45
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 4830,
+        "tris": 4826,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SignalAmber",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver",
           "Lib_SteelDark"
@@ -42999,15 +42999,15 @@
       },
       {
         "lod": 1,
-        "tris": 3526,
+        "tris": 3734,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SignalAmber",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver",
           "Lib_SteelDark"
@@ -43017,15 +43017,15 @@
       },
       {
         "lod": 2,
-        "tris": 2682,
+        "tris": 3210,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SignalAmber",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver",
           "Lib_SteelDark"
@@ -43039,7 +43039,7 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -43058,7 +43058,7 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -43077,7 +43077,7 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -43096,7 +43096,7 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -43154,13 +43154,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.68,
-          1.9
+          0.78,
+          1.85
         ],
         "size": [
           0.36,
           0.08,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -43173,13 +43173,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.88,
-          -1.85
+          0.98,
+          -1.9
         ],
         "size": [
           0.36,
           0.06,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -43192,13 +43192,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.42,
-          2.15
+          0.48,
+          2.02
         ],
         "size": [
-          0.32,
-          0.16,
-          0.28
+          0.28,
+          0.14,
+          0.18
         ],
         "euler": [
           0,
@@ -43227,31 +43227,31 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2024 fascia, 4.90 m long, 1.84 m wide, roof 1.45 m. Raked windshield, fastback pillar, 18 inch alloys. Color crimson.",
     "size": [
-      1.869,
+      2.028,
       1.45,
       4.9
     ],
     "min": [
-      -0.935,
+      -1.014,
       0.0,
       -2.45
     ],
     "max": [
-      0.935,
+      1.015,
       1.45,
       2.45
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 4866,
+        "tris": 4862,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
-          "Lib_Steel",
           "Lib_Taillamp",
+          "Lib_Steel",
           "Lib_Rubber",
           "Lib_PaintSilver",
           "Lib_SteelDark"
@@ -43261,14 +43261,14 @@
       },
       {
         "lod": 1,
-        "tris": 3514,
+        "tris": 3722,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
-          "Lib_Steel",
           "Lib_Taillamp",
+          "Lib_Steel",
           "Lib_Rubber",
           "Lib_PaintSilver",
           "Lib_SteelDark"
@@ -43278,14 +43278,14 @@
       },
       {
         "lod": 2,
-        "tris": 2670,
+        "tris": 3198,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
-          "Lib_Steel",
           "Lib_Taillamp",
+          "Lib_Steel",
           "Lib_Rubber",
           "Lib_PaintSilver",
           "Lib_SteelDark"
@@ -43299,7 +43299,7 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -43318,7 +43318,7 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -43337,7 +43337,7 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -43356,7 +43356,7 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -43414,13 +43414,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.68,
-          1.9
+          0.78,
+          1.85
         ],
         "size": [
           0.36,
           0.08,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -43433,13 +43433,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.88,
-          -1.85
+          0.98,
+          -1.9
         ],
         "size": [
           0.36,
           0.06,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -43452,13 +43452,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.42,
-          2.15
+          0.48,
+          2.02
         ],
         "size": [
-          0.32,
-          0.16,
-          0.28
+          0.28,
+          0.14,
+          0.18
         ],
         "euler": [
           0,
@@ -43487,32 +43487,32 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.45 m. Raked windshield, fastback pillar, 18 inch alloys. Color crimson.",
     "size": [
-      1.869,
+      2.028,
       1.45,
       4.9
     ],
     "min": [
-      -0.935,
+      -1.014,
       0.0,
       -2.45
     ],
     "max": [
-      0.935,
+      1.015,
       1.45,
       2.45
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 4734,
+        "tris": 4778,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -43521,15 +43521,15 @@
       },
       {
         "lod": 1,
-        "tris": 3430,
+        "tris": 3686,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -43538,15 +43538,15 @@
       },
       {
         "lod": 2,
-        "tris": 2586,
+        "tris": 3162,
         "materials": [
           "Lib_PaintCrimson",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -43559,7 +43559,7 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -43578,7 +43578,7 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -43597,7 +43597,7 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -43616,7 +43616,7 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -43674,13 +43674,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.68,
-          1.9
+          0.78,
+          1.85
         ],
         "size": [
           0.36,
           0.08,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -43693,13 +43693,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.88,
-          -1.85
+          0.98,
+          -1.9
         ],
         "size": [
           0.36,
           0.06,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -43712,13 +43712,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.42,
-          2.15
+          0.48,
+          2.02
         ],
         "size": [
-          0.32,
-          0.16,
-          0.28
+          0.28,
+          0.14,
+          0.18
         ],
         "euler": [
           0,
@@ -43747,32 +43747,32 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.45 m. Raked windshield, fastback pillar, 18 inch alloys. Color white.",
     "size": [
-      1.869,
+      2.028,
       1.45,
       4.9
     ],
     "min": [
-      -0.935,
+      -1.014,
       0.0,
       -2.45
     ],
     "max": [
-      0.935,
+      1.015,
       1.45,
       2.45
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 4734,
+        "tris": 4778,
         "materials": [
           "Lib_PaintWhite",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -43781,15 +43781,15 @@
       },
       {
         "lod": 1,
-        "tris": 3430,
+        "tris": 3686,
         "materials": [
           "Lib_PaintWhite",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -43798,15 +43798,15 @@
       },
       {
         "lod": 2,
-        "tris": 2586,
+        "tris": 3162,
         "materials": [
           "Lib_PaintWhite",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -43819,7 +43819,7 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -43838,7 +43838,7 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -43857,7 +43857,7 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -43876,7 +43876,7 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -43934,13 +43934,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.68,
-          1.9
+          0.78,
+          1.85
         ],
         "size": [
           0.36,
           0.08,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -43953,13 +43953,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.88,
-          -1.85
+          0.98,
+          -1.9
         ],
         "size": [
           0.36,
           0.06,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -43972,13 +43972,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.42,
-          2.15
+          0.48,
+          2.02
         ],
         "size": [
-          0.32,
-          0.16,
-          0.28
+          0.28,
+          0.14,
+          0.18
         ],
         "euler": [
           0,
@@ -44007,32 +44007,32 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.45 m. Raked windshield, fastback pillar, 18 inch alloys. Color black.",
     "size": [
-      1.869,
+      2.028,
       1.45,
       4.9
     ],
     "min": [
-      -0.935,
+      -1.014,
       0.0,
       -2.45
     ],
     "max": [
-      0.935,
+      1.015,
       1.45,
       2.45
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 4734,
+        "tris": 4778,
         "materials": [
           "Lib_PaintBlack",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -44041,15 +44041,15 @@
       },
       {
         "lod": 1,
-        "tris": 3430,
+        "tris": 3686,
         "materials": [
           "Lib_PaintBlack",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -44058,15 +44058,15 @@
       },
       {
         "lod": 2,
-        "tris": 2586,
+        "tris": 3162,
         "materials": [
           "Lib_PaintBlack",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -44079,7 +44079,7 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -44098,7 +44098,7 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -44117,7 +44117,7 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -44136,7 +44136,7 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -44194,13 +44194,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.68,
-          1.9
+          0.78,
+          1.85
         ],
         "size": [
           0.36,
           0.08,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -44213,13 +44213,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.88,
-          -1.85
+          0.98,
+          -1.9
         ],
         "size": [
           0.36,
           0.06,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -44232,13 +44232,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.42,
-          2.15
+          0.48,
+          2.02
         ],
         "size": [
-          0.32,
-          0.16,
-          0.28
+          0.28,
+          0.14,
+          0.18
         ],
         "euler": [
           0,
@@ -44267,32 +44267,32 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.45 m. Raked windshield, fastback pillar, 18 inch alloys. Color grey.",
     "size": [
-      1.869,
+      2.028,
       1.45,
       4.9
     ],
     "min": [
-      -0.935,
+      -1.014,
       0.0,
       -2.45
     ],
     "max": [
-      0.935,
+      1.015,
       1.45,
       2.45
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 4734,
+        "tris": 4778,
         "materials": [
           "Lib_PaintGrey",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -44301,15 +44301,15 @@
       },
       {
         "lod": 1,
-        "tris": 3430,
+        "tris": 3686,
         "materials": [
           "Lib_PaintGrey",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -44318,15 +44318,15 @@
       },
       {
         "lod": 2,
-        "tris": 2586,
+        "tris": 3162,
         "materials": [
           "Lib_PaintGrey",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -44339,7 +44339,7 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -44358,7 +44358,7 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -44377,7 +44377,7 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -44396,7 +44396,7 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -44454,13 +44454,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.68,
-          1.9
+          0.78,
+          1.85
         ],
         "size": [
           0.36,
           0.08,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -44473,13 +44473,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.88,
-          -1.85
+          0.98,
+          -1.9
         ],
         "size": [
           0.36,
           0.06,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -44492,13 +44492,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.42,
-          2.15
+          0.48,
+          2.02
         ],
         "size": [
-          0.32,
-          0.16,
-          0.28
+          0.28,
+          0.14,
+          0.18
         ],
         "euler": [
           0,
@@ -44527,32 +44527,32 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.45 m. Raked windshield, fastback pillar, 18 inch alloys. Color silver.",
     "size": [
-      1.869,
+      2.028,
       1.45,
       4.9
     ],
     "min": [
-      -0.935,
+      -1.014,
       0.0,
       -2.45
     ],
     "max": [
-      0.935,
+      1.015,
       1.45,
       2.45
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 4734,
+        "tris": 4778,
         "materials": [
           "Lib_PaintSilver",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber"
         ],
         "mesh": "LOD0",
@@ -44560,15 +44560,15 @@
       },
       {
         "lod": 1,
-        "tris": 3430,
+        "tris": 3686,
         "materials": [
           "Lib_PaintSilver",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber"
         ],
         "mesh": "LOD1",
@@ -44576,15 +44576,15 @@
       },
       {
         "lod": 2,
-        "tris": 2586,
+        "tris": 3162,
         "materials": [
           "Lib_PaintSilver",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber"
         ],
         "mesh": "LOD2",
@@ -44596,7 +44596,7 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -44615,7 +44615,7 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -44634,7 +44634,7 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -44653,7 +44653,7 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -44711,13 +44711,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.68,
-          1.9
+          0.78,
+          1.85
         ],
         "size": [
           0.36,
           0.08,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -44730,13 +44730,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.88,
-          -1.85
+          0.98,
+          -1.9
         ],
         "size": [
           0.36,
           0.06,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -44749,13 +44749,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.42,
-          2.15
+          0.48,
+          2.02
         ],
         "size": [
-          0.32,
-          0.16,
-          0.28
+          0.28,
+          0.14,
+          0.18
         ],
         "euler": [
           0,
@@ -44784,32 +44784,32 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.45 m. Raked windshield, fastback pillar, 18 inch alloys. Color navy.",
     "size": [
-      1.869,
+      2.028,
       1.45,
       4.9
     ],
     "min": [
-      -0.935,
+      -1.014,
       0.0,
       -2.45
     ],
     "max": [
-      0.935,
+      1.015,
       1.45,
       2.45
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 4734,
+        "tris": 4778,
         "materials": [
           "Lib_PaintNavy",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -44818,15 +44818,15 @@
       },
       {
         "lod": 1,
-        "tris": 3430,
+        "tris": 3686,
         "materials": [
           "Lib_PaintNavy",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -44835,15 +44835,15 @@
       },
       {
         "lod": 2,
-        "tris": 2586,
+        "tris": 3162,
         "materials": [
           "Lib_PaintNavy",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -44856,7 +44856,7 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -44875,7 +44875,7 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -44894,7 +44894,7 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -44913,7 +44913,7 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -44971,13 +44971,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.68,
-          1.9
+          0.78,
+          1.85
         ],
         "size": [
           0.36,
           0.08,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -44990,13 +44990,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.88,
-          -1.85
+          0.98,
+          -1.9
         ],
         "size": [
           0.36,
           0.06,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -45009,13 +45009,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.42,
-          2.15
+          0.48,
+          2.02
         ],
         "size": [
-          0.32,
-          0.16,
-          0.28
+          0.28,
+          0.14,
+          0.18
         ],
         "euler": [
           0,
@@ -45044,32 +45044,32 @@
     "category": "Vehicles",
     "blurb": "Midsize sedan, 2025 fascia, 4.90 m long, 1.84 m wide, roof 1.45 m. Raked windshield, fastback pillar, 18 inch alloys. Color ocean.",
     "size": [
-      1.869,
+      2.028,
       1.45,
       4.9
     ],
     "min": [
-      -0.935,
+      -1.014,
       0.0,
       -2.45
     ],
     "max": [
-      0.935,
+      1.015,
       1.45,
       2.45
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 4734,
+        "tris": 4778,
         "materials": [
           "Lib_PaintOcean",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -45078,15 +45078,15 @@
       },
       {
         "lod": 1,
-        "tris": 3430,
+        "tris": 3686,
         "materials": [
           "Lib_PaintOcean",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -45095,15 +45095,15 @@
       },
       {
         "lod": 2,
-        "tris": 2586,
+        "tris": 3162,
         "materials": [
           "Lib_PaintOcean",
           "Lib_AutoGlass",
           "Lib_Black",
           "Lib_Headlamp",
+          "Lib_Taillamp",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Taillamp",
           "Lib_Rubber",
           "Lib_PaintSilver"
         ],
@@ -45116,7 +45116,7 @@
         "name": "Col_Wheel_00",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -45135,7 +45135,7 @@
         "name": "Col_Wheel_01",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           -1.3299999999999996
         ],
@@ -45154,7 +45154,7 @@
         "name": "Col_Wheel_10",
         "type": "box",
         "center": [
-          -0.7905,
+          -0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -45173,7 +45173,7 @@
         "name": "Col_Wheel_11",
         "type": "box",
         "center": [
-          0.7905,
+          0.77455,
           0.08,
           1.4900000000000002
         ],
@@ -45231,13 +45231,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.68,
-          1.9
+          0.78,
+          1.85
         ],
         "size": [
           0.36,
           0.08,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -45250,13 +45250,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.88,
-          -1.85
+          0.98,
+          -1.9
         ],
         "size": [
           0.36,
           0.06,
-          0.4
+          0.36
         ],
         "euler": [
           0,
@@ -45269,13 +45269,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.42,
-          2.15
+          0.48,
+          2.02
         ],
         "size": [
-          0.32,
-          0.16,
-          0.28
+          0.28,
+          0.14,
+          0.18
         ],
         "euler": [
           0,

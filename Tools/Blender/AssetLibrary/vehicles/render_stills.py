@@ -231,6 +231,35 @@ def _side_dims(fn, dims, path, eye, aim, lens, wide=False, shade=False, guides=N
     _fit(path)
 
 
+def _beside(fn, path):
+    """Side ortho of the car with the reference profile beside it, not on it."""
+    import body_a
+
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.cycles.samples = 20
+    r._ensure_materials()
+    r._world(scene, night=False)
+    body = r._spawn(fn(), (0.0, 0.0, 0.0))
+    body_a.shade_object(body)
+    guides = body_a.reference_asset(views=("side",))
+    r._spawn(guides, (0.0, 0.0, 6.4))
+    r._ground("asphalt", 40.0)
+    cam_data = bpy.data.cameras.new("Cam")
+    cam_data.type = "ORTHO"
+    cam_data.ortho_scale = 14.6
+    cam = bpy.data.objects.new("Cam", cam_data)
+    scene.collection.objects.link(cam)
+    scene.camera = cam
+    cam.location = Vector(unity_to_blender(16.0, 0.72, 3.15))
+    direction = Vector(unity_to_blender(0.0, 0.72, 3.15)) - cam.location
+    cam.rotation_mode = "QUATERNION"
+    cam.rotation_quaternion = direction.to_track_quat("-Z", "Y")
+    r._render(scene, path)
+    _fit(path)
+
+
 def _lineup(found, names, path, azimuth=36.0, elevation=12.0, fill=0.90):
     r._reset_scene()
     scene = bpy.context.scene
@@ -299,7 +328,7 @@ def main():
     found = _load(only)
     if only is not None and "sedan_mid_a" in only:
         print("SHOT", "sedan_mid_a", shot or "all")
-        out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass11")
+        out = os.path.join(STILL_ROOT, "sedan_mid_a", "pass12")
         os.makedirs(out, exist_ok=True)
         import body_a
         guides = body_a.reference_asset(views=("side",))
@@ -323,6 +352,8 @@ def main():
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "front.png"), 4.0, elevation=3.0, fill=0.90, wide=True, shade=True)
         if shot in (None, "rear"):
             _shot_az(found["Sedan_Mid_A_25"], os.path.join(out, "rear.png"), 184.0, elevation=6.0, fill=0.90, wide=True, shade=True)
+        if shot in (None, "beside"):
+            _beside(found["Sedan_Mid_A_25"], os.path.join(out, "beside.png"))
         if shot in (None, "scale"):
             _with_figure(
                 found, "Sedan_Mid_A_25", os.path.join(out, "scale.png"),

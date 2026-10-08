@@ -1,6 +1,6 @@
 """Midsize sedan line A, model years 2021 through 2025.
 
-One body shell. 2025 is the new fascia (full-width lamp, wide mesh grille).
+One body shell. 2025 is the new fascia (separate swept lamps, wide grille).
 2021-2024 keep that shell and change the grille, lamp signature, wheel, and
 mirror color. Every year is the crimson base. Extra colors are clones of 2025.
 
