@@ -26,12 +26,15 @@ PREV = "/tmp/hier_v080_clips_pass1"
 FPS = 30.0
 JOINT_EXEMPT_M = 0.03
 DEPTH_LIMIT_M = 0.005
-# The vertical wall is a 4 m slab (8 cm thick), not an infinite half-space.
-# A palm on the top may sit at a small negative x. Below the top, x < 0 is inside.
+# The vertical wall is a 4 m slab, 24 cm thick, not an infinite half-space.
+# Thick enough that a foot can stand on the top. A palm on the top may sit at a
+# small negative x. Below the top, x inside the slab is inside the brick.
 WALL_TOP_Z = 4.0
 WALL_FACE_X = 0.0
-WALL_BACK_X = -0.08
+WALL_BACK_X = -0.24
 WALL_Y_HALF = 2.6
+# Climb hip stays on this line. The mantle then carries it onto the slab.
+HIP_RAIL_X = 0.72
 
 # Parent, child. The shared joint is the child bone's head.
 NEIGHBORS = (
@@ -741,7 +744,8 @@ def _set_wall_labels(enabled):
             ob.data.materials.append(mat)
         # Text lies on XY facing +Z. +90° X turns that face toward -Y (the camera)
         # and turns text-up to world +Z.
-        ob.location = (-0.18, -0.06, float(metre))
+        # Just off the back face so a thicker slab does not swallow the glyph.
+        ob.location = (WALL_BACK_X - 0.12, -0.06, float(metre))
         ob.rotation_euler = (math.radians(90.0), 0.0, 0.0)
         ob.hide_render = False
         ob.hide_set(False)
@@ -1712,11 +1716,10 @@ def _wall_cycle(i, n, n_steps=3):
 
 
 def _arms_counter(arm, lead, local, both_up, brush=False):
-    """Sprint arms: opposite the lead leg, elbows near 90°, hands in the sagittal plane.
+    """Sprint arms: the arm opposite the plant leg swings forward.
 
-    The forward hand rises from the hip to face height. On a plant it reaches
-    toward the brick. The back hand stays by the hip. Lateral aim stays small
-    so the arms do not flare into a starfish.
+    The free arm swings back and out, clear of the ribs. A hand left on the
+    centre line sits inside the torso in the side view.
     """
     from mathutils import Vector
     if both_up:
@@ -1725,18 +1728,21 @@ def _arms_counter(arm, lead, local, both_up, brush=False):
     t = _clamp(local, 0.0, 1.0)
     opp = "R" if lead == "L" else "L"
     for side, forward in ((opp, True), (lead, False)):
-        lat = 0.06 if side == "L" else -0.06
         if forward:
-            # Upper arm toward the wall, about level. Forearm straight up.
-            # Those two aims are perpendicular, so the elbow sits near 90°.
-            # On a plant the forearm tips in and the hand brushes the face.
-            upper = Vector((-0.97, lat, 0.02 + 0.10 * t))
-            # A small tip toward the brick. More than this straightens the elbow.
-            fore_x = -0.12 if brush else 0.04
-            forearm = Vector((fore_x, lat * 0.25, 0.96))
+            # Toward the wall and a little wide, so the side view shows the
+            # reach and the upper arm is not inside the leaned chest.
+            # Upper and forearm stay near perpendicular: elbow about 90°.
+            lat = 0.32 if side == "L" else -0.32
+            upper = Vector((-0.92, lat, 0.10 + 0.06 * t))
+            fore_x = -0.10 if brush else 0.02
+            forearm = Vector((fore_x, lat * 0.20, 0.96))
         else:
-            upper = Vector((0.96, lat, -0.10))
-            forearm = Vector((0.08, lat * 0.25, -0.97))
+            # Back, past the ribs, opposite the plant leg. The side camera
+            # only sees the +X reach; a purely lateral swing stays hidden
+            # inside the torso.
+            lat = 0.28 if side == "L" else -0.28
+            upper = Vector((0.94, lat, -0.06))
+            forearm = Vector((0.18, lat * 0.25, -0.94))
         _aim_bone_axis(arm, f"UpperArm_{side}", (0.0, 1.0, 0.0), upper)
         _aim_bone_axis(arm, f"LowerArm_{side}", (0.0, 1.0, 0.0), forearm)
 
@@ -1772,6 +1778,156 @@ def _wall_hip_z(i, n):
     return climb
 
 
+def _signed_trunk_deg(arm):
+    """Degrees the chest leans toward the wall. Positive is into the face.
+
+    This is the angle the side picture shows. The armature euler is not that
+    angle: the spine bones can bend the chest the other way.
+    """
+    from mathutils import Vector
+    hips = Vector(p5._head_w(arm, "Hips"))
+    chest = Vector(p5._head_w(arm, "Chest"))
+    dz = chest.z - hips.z
+    dx = hips.x - chest.x
+    return math.degrees(math.atan2(dx, max(dz, 1.0e-4)))
+
+
+def _zero_trunk(arm):
+    """Drop the mocap spine bend so the chest follows the body pitch."""
+    for name in ("Spine", "Chest", "Neck", "Head"):
+        pb = arm.pose.bones.get(name)
+        if pb is None:
+            continue
+        pb.rotation_mode = "XYZ"
+        pb.rotation_euler = (0.0, 0.0, 0.0)
+        pb.location = (0.0, 0.0, 0.0)
+        pb.scale = (1.0, 1.0, 1.0)
+    bpy_update()
+
+
+def _facing_for_lean(arm, target_deg):
+    """Armature pitch whose measured chest angle is target_deg, into the wall."""
+    from mathutils import Euler
+    yaw = math.radians(-90.0)
+
+    def apply(deg):
+        arm.rotation_euler = Euler((math.radians(deg), 0.0, yaw), "XYZ")
+        bpy_update()
+        return _signed_trunk_deg(arm)
+
+    sign = 1.0 if apply(12.0) >= apply(-12.0) else -1.0
+    lo, hi = -35.0, 35.0
+    best = 0.0
+    for _step in range(16):
+        mid = 0.5 * (lo + hi)
+        got = apply(mid)
+        best = mid
+        if (got < target_deg) == (sign > 0.0):
+            lo = mid
+        else:
+            hi = mid
+    apply(best)
+    facing = Euler((math.radians(best), 0.0, yaw), "XYZ")
+    return facing, _signed_trunk_deg(arm)
+
+
+def _place_hip_at(arm, x, y, z):
+    """Translate so the hip bone sits on this point. The pose is unchanged."""
+    from mathutils import Vector
+    hip = Vector(p5._head_w(arm, "Hips"))
+    arm.location = arm.location + (Vector((x, y, z)) - hip)
+    bpy_update()
+
+
+def _ik_ankle_to(arm, side, tx, ty, tz):
+    """Two-bone leg reach. The hip stays. The knee prefers to stay out of the brick."""
+    from mathutils import Vector
+    hip = Vector(p5._head_w(arm, f"UpperLeg_{side}"))
+    L1 = arm.pose.bones[f"UpperLeg_{side}"].length
+    L2 = arm.pose.bones[f"LowerLeg_{side}"].length
+    target = Vector((tx, ty, tz))
+    delta = target - hip
+    d = delta.length
+    if d < 1.0e-5:
+        return
+    reach = max(abs(L1 - L2) + 0.02, min(d, L1 + L2 - 0.02))
+    toward = delta.normalized()
+    if d > reach + 1.0e-4:
+        target = hip + toward * reach
+        delta = target - hip
+        d = max(delta.length, 1.0e-6)
+        toward = delta.normalized()
+    # Bend the knee out of the wall (+X) and a little to the side.
+    sign = 1.0 if side == "L" else -1.0
+    pole = Vector((0.45, 0.35 * sign, 0.25))
+    perp = toward.cross(pole)
+    if perp.length < 1.0e-5:
+        perp = Vector((0.0, sign, 0.0))
+    perp.normalize()
+    if perp.x < 0.0:
+        perp = -perp
+    cos_a = (L1 * L1 + d * d - L2 * L2) / max(1.0e-6, 2.0 * L1 * d)
+    cos_a = max(-1.0, min(1.0, cos_a))
+    sin_a = math.sqrt(max(0.0, 1.0 - cos_a * cos_a))
+    knee_dir = toward * cos_a + perp * sin_a
+    _aim_bone_axis(arm, f"UpperLeg_{side}", (0.0, 1.0, 0.0), knee_dir)
+    knee = Vector(p5._head_w(arm, f"LowerLeg_{side}"))
+    _aim_bone_axis(arm, f"LowerLeg_{side}", (0.0, 1.0, 0.0), target - knee)
+
+
+def _seat_wall_foot(arm, side, sole_x=0.008, sole_z=1.0):
+    """Put this sole on the face by rotating the leg. The hip is not moved."""
+    from mathutils import Vector
+    hip = Vector(p5._head_w(arm, "Hips"))
+    sign = 1.0 if side == "L" else -1.0
+    tx, ty, tz = sole_x + 0.05, hip.y + 0.05 * sign, sole_z + 0.04
+    for _step in range(8):
+        _ik_ankle_to(arm, side, tx, ty, tz)
+        _orient_sole_on_wall(arm, side)
+        _n, patch = _sole_patch(arm, side)
+        if not patch:
+            return
+        cx = min(v.x for v in patch)
+        cz = sum(v.z for v in patch) / len(patch)
+        if abs(cx - sole_x) < 0.008 and abs(cz - sole_z) < 0.025:
+            return
+        tx += sole_x - cx
+        tz += sole_z - cz
+        tx = _clamp(tx, -0.02, 0.55)
+        tz = _clamp(tz, 0.05, WALL_TOP_Z - 0.05)
+
+
+def _seat_ground_foot(arm, side, sole_x=0.78):
+    """Drive sole on the ground, clear of the wall. The hip is not moved."""
+    from mathutils import Vector
+    hip = Vector(p5._head_w(arm, "Hips"))
+    tx, ty, tz = sole_x, hip.y, 0.06
+    for _step in range(8):
+        _ik_ankle_to(arm, side, tx, ty, tz)
+        _orient_sole(arm, side, (-1.0, 0.0, 0.15), (0.0, 0.0, -1.0))
+        _n, patch = _sole_patch(arm, side)
+        if not patch:
+            return
+        cx = sum(v.x for v in patch) / len(patch)
+        cz = min(v.z for v in patch)
+        if abs(cx - sole_x) < 0.02 and abs(cz - 0.006) < 0.008:
+            return
+        tx += sole_x - cx
+        tz += 0.006 - cz
+        tx = _clamp(tx, 0.20, 1.15)
+        tz = _clamp(tz, -0.02, 0.35)
+
+
+def _chest_over_edge(arm):
+    """True once the chest centre has cleared the lip: past the face and above it."""
+    vs = list(p5._verts("Chest"))
+    if not vs:
+        return False, 0.0, 0.0
+    cx = sum(v.x for v in vs) / len(vs)
+    cz = sum(v.z for v in vs) / len(vs)
+    return cx < 0.0 and cz > WALL_TOP_Z + 0.02, cx, cz
+
+
 def _pose_wall_step(arm, ch, side, phase, local, lean_deg=-14.0, reach_top=False):
     """One step: drive the knee up, plant near 90°, then extend and push.
 
@@ -1785,8 +1941,14 @@ def _pose_wall_step(arm, ch, side, phase, local, lean_deg=-14.0, reach_top=False
     other = "R" if side == "L" else "L"
     plat = 0.07 if side == "L" else -0.07
     olat = -plat
-    facing = Euler((math.radians(lean_deg), 0.0, math.radians(-90.0)), "XYZ")
-    _apply_faithful(arm, ch, Vector((0.58, 0.0, 1.8)), facing)
+    _apply_faithful(
+        arm, ch, Vector((0.58, 0.0, 1.8)),
+        Euler((0.0, 0.0, math.radians(-90.0)), "XYZ"),
+    )
+    # The source spine bends the chest away from the wall. Zero it, then pitch
+    # until the measured chest angle matches the picture we want.
+    _zero_trunk(arm)
+    facing, _measured = _facing_for_lean(arm, lean_deg)
     # High knee. The trail leg finishes the step in this shape, so the next
     # lead starts here and the legs do not pop when they swap.
     sw_th = Vector((-0.45, plat, 0.82))
@@ -1838,7 +2000,9 @@ def _pose_wall_step(arm, ch, side, phase, local, lean_deg=-14.0, reach_top=False
         trail_th = Vector((0.25, olat, 0.92))
         trail_sh = Vector((0.10, olat * 0.4, -0.92))
     else:
-        t = _clamp((local - 0.72) / 0.28, 0.0, 1.0)
+        # A full extension shoves the hip about 22 cm off the plant. Keep
+        # most of the plant's reach so the trail stays nearly straight.
+        t = _clamp((local - 0.72) / 0.28, 0.0, 1.0) * 0.40
         thigh = pl_th.lerp(pu_th, t)
         shin = pl_sh.lerp(pu_sh, t)
         trail_th = hang_th.lerp(next_th, t)
@@ -1851,7 +2015,6 @@ def _pose_wall_step(arm, ch, side, phase, local, lean_deg=-14.0, reach_top=False
             shin = shin.lerp(Vector((-0.42, 0.0, -0.82)), t)
             trail_th = trail_th.lerp(Vector((0.50, olat, 0.78)), t)
             trail_sh = trail_sh.lerp(Vector((0.28, olat * 0.3, -0.90)), t)
-            facing = Euler((math.radians(lean_deg), 0.0, math.radians(-90.0)), "XYZ")
     _aim_bone_axis(arm, f"UpperLeg_{side}", (0.0, 1.0, 0.0), thigh)
     _aim_bone_axis(arm, f"LowerLeg_{side}", (0.0, 1.0, 0.0), shin)
     _aim_bone_axis(arm, f"UpperLeg_{other}", (0.0, 1.0, 0.0), trail_th)
@@ -2038,24 +2201,23 @@ def _palm_band(side):
     return z, x, min(v.z for v in vs)
 
 
-def _ik_hand_to(arm, side, tx, tz, elbow_up=1.0):
-    """Two-bone reach. The elbow stays above the line to the wrist so it clears the lip."""
+def _ik_hand_to(arm, side, tx, tz, elbow_up=1.0, lat=0.36):
+    """Two-bone reach. The elbow stays wide of the chest and above the lip."""
     from mathutils import Vector
     shoulder = Vector(p5._head_w(arm, f"UpperArm_{side}"))
     L1 = arm.pose.bones[f"UpperArm_{side}"].length
     L2 = arm.pose.bones[f"LowerArm_{side}"].length
     sign = 1.0 if side == "L" else -1.0
-    target = Vector((tx, shoulder.y + 0.04 * sign, tz))
+    # Hands plant out at shoulder width. A palm on the centre line folds the
+    # upper arm through the chest once the trunk leans into the brick.
+    target = Vector((tx, shoulder.y + lat * sign, tz))
     delta = Vector((target.x - shoulder.x, 0.0, target.z - shoulder.z))
     d = delta.length
     reach = max(abs(L1 - L2) + 0.02, min(d, L1 + L2 - 0.02))
     toward = delta.normalized() if delta.length > 1.0e-6 else Vector((-1.0, 0.0, 0.2))
-    # Scale the aim so the wrist lands on the reachable point along this line,
-    # then lift the elbow off that line.
-    toward = delta.normalized()
     if d > 1.0e-6 and abs(d - reach) > 1.0e-4:
         target = shoulder + toward * reach
-        target.y = shoulder.y + 0.04 * sign
+        target.y = shoulder.y + lat * sign
         delta = Vector((target.x - shoulder.x, 0.0, target.z - shoulder.z))
         d = max(delta.length, 1.0e-6)
         toward = delta.normalized()
@@ -2070,48 +2232,77 @@ def _ik_hand_to(arm, side, tx, tz, elbow_up=1.0):
         elbow_dir = toward
     elbow = shoulder + elbow_dir.normalized() * L1
     fore = target - elbow
-    lat = 0.08 * sign
-    _aim_bone_axis(arm, f"UpperArm_{side}", (0.0, 1.0, 0.0), elbow_dir + Vector((0.0, lat, 0.0)))
-    _aim_bone_axis(arm, f"LowerArm_{side}", (0.0, 1.0, 0.0), fore + Vector((0.0, lat * 0.25, 0.0)))
+    side_off = Vector((0.0, lat * sign, 0.0))
+    _aim_bone_axis(arm, f"UpperArm_{side}", (0.0, 1.0, 0.0), elbow_dir + side_off)
+    _aim_bone_axis(arm, f"LowerArm_{side}", (0.0, 1.0, 0.0), fore + side_off * 0.35)
     _orient_palm_down(arm, side)
 
 
+def _arm_chest_depth(arm):
+    """How far an arm sits inside the chest. Rig-joint nests are ignored."""
+    worst = 0.0
+    for depth, pair in _pair_depths(arm):
+        if depth <= DEPTH_LIMIT_M or _is_rig_pair(pair):
+            continue
+        if "Chest" in pair and ("Arm" in pair or "Hand" in pair):
+            worst = max(worst, depth)
+    return worst
+
+
 def _seat_one_palm(arm, side):
-    """Put this palm on the wall top. The other arm stays as it is."""
+    """Put this palm on the wall top. The other arm stays as it is.
+
+    Wider plants are preferred when a narrow one drives the upper arm
+    through the chest. The hip is not moved.
+    """
     base = _snap_rots(arm)
     loc0 = arm.location.copy()
     rot0 = arm.rotation_euler.copy()
     best = None
-    tx, tz = -0.02, 4.04
-    for _step in range(10):
-        _restore_rots(arm, base)
-        arm.location = loc0
-        arm.rotation_euler = rot0
-        _ik_hand_to(arm, side, tx, tz, elbow_up=1.15)
-        z, x, zmin = _palm_band(side)
-        pen = _body_world_pen()
-        # Contact is the lowest hand vertex once the palm faces down.
-        # x near -1 cm puts the palm on the slab, not in the air in front of it.
-        gap = zmin - WALL_TOP_Z
-        on = (
-            0.002 <= gap <= 0.010
-            and -0.055 <= x <= 0.015
-            and pen <= 0.004
-        )
-        err = abs(gap - 0.006) + abs(x + 0.015)
-        score = (0 if on else 1, round(pen, 4), err)
-        if best is None or score < best[0]:
-            best = (score, _snap_rots(arm), arm.location.copy(), arm.rotation_euler.copy(), gap, x, pen)
-        if on:
+    for lat in (0.10, 0.26, 0.42):
+        tx, tz = -0.02, 4.04
+        for _step in range(8):
+            _restore_rots(arm, base)
+            arm.location = loc0
+            arm.rotation_euler = rot0
+            bpy_update()
+            _ik_hand_to(arm, side, tx, tz, elbow_up=1.15, lat=lat)
+            z, x, zmin = _palm_band(side)
+            pen = _body_world_pen()
+            gap = zmin - WALL_TOP_Z
+            on = (
+                0.002 <= gap <= 0.010
+                and -0.055 <= x <= 0.015
+                and pen <= 0.004
+            )
+            err = abs(gap - 0.006) + abs(x + 0.015)
+            # Chest depth is measured only on a candidate worth keeping.
+            # A miss does not need the mesh test.
+            if on or best is None:
+                chest = _arm_chest_depth(arm) if on else 1.0
+                score = (0 if on else 1, 0 if chest <= 0.005 else 1, round(chest, 4), round(pen, 4), err)
+                if best is None or score < best[0]:
+                    best = (
+                        score, _snap_rots(arm), arm.location.copy(),
+                        arm.rotation_euler.copy(), gap, x, pen,
+                    )
+            if on and _arm_chest_depth(arm) <= 0.005:
+                best = (
+                    (0, 0, 0.0, round(pen, 4), err),
+                    _snap_rots(arm), arm.location.copy(), arm.rotation_euler.copy(),
+                    gap, x, pen,
+                )
+                break
+            if pen > 0.004 or gap < 0.0:
+                tz += 0.012
+                tx += 0.01
+            else:
+                tz += (WALL_TOP_Z + 0.006) - zmin
+                tx += -0.015 - x
+            tz = _clamp(tz, 3.92, 4.25)
+            tx = _clamp(tx, -0.07, 0.05)
+        if best is not None and best[0][0] == 0 and best[0][1] == 0:
             break
-        if pen > 0.004 or gap < 0.0:
-            tz += 0.012
-            tx += 0.01
-        else:
-            tz += (WALL_TOP_Z + 0.006) - zmin
-            tx += -0.015 - x
-        tz = _clamp(tz, 3.92, 4.25)
-        tx = _clamp(tx, -0.07, 0.05)
     _score, snap, loc, rot, gap, x, pen = best
     _restore_rots(arm, snap)
     arm.location = loc
@@ -2143,6 +2334,148 @@ def _place_palms_on_top(arm):
     return gap_l, gap_r, xl, xr
 
 
+def _stand_legs(arm):
+    """Both legs straight, soles aimed down onto the wall top."""
+    for side, lat in (("L", 0.10), ("R", -0.10)):
+        _aim_bone_axis(arm, f"UpperLeg_{side}", (0.0, 1.0, 0.0), (0.02, lat, -1.0))
+        _aim_bone_axis(arm, f"LowerLeg_{side}", (0.0, 1.0, 0.0), (0.0, lat * 0.25, -1.0))
+        _orient_sole(arm, side, (-1.0, 0.0, 0.0), (0.0, 0.0, -1.0))
+
+
+def _hip_above_soles(arm):
+    """How far the hip sits above the lower sole. Translation does not change it."""
+    from mathutils import Vector
+    hip = Vector(p5._head_w(arm, "Hips"))
+    low = None
+    for side in ("L", "R"):
+        _n, patch = _sole_patch(arm, side)
+        if not patch:
+            continue
+        z = min(v.z for v in patch)
+        if low is None or z < low:
+            low = z
+    if low is None:
+        return 0.95
+    return hip.z - low
+
+
+def _hook_knee(arm, side, knee_z=None):
+    """Lay one knee on the wall top. The foot stays above the slab."""
+    from mathutils import Vector
+    sign = 1.0 if side == "L" else -1.0
+    hip = Vector(p5._head_w(arm, f"UpperLeg_{side}"))
+    if knee_z is None:
+        knee_z = WALL_TOP_Z + 0.012
+    knee_at = Vector((
+        (WALL_FACE_X + WALL_BACK_X) * 0.5,
+        0.14 * sign,
+        knee_z,
+    ))
+    aim = knee_at - hip
+    if aim.length < 1.0e-4:
+        aim = Vector((-0.2, sign, -0.3))
+    _aim_bone_axis(arm, f"UpperLeg_{side}", (0.0, 1.0, 0.0), aim)
+    # Shin up and out so the foot does not drop through the face.
+    # Foot above the slab, on the near side. A shin that hangs down
+    # puts the shoe through the top corner.
+    _aim_bone_axis(
+        arm, f"LowerLeg_{side}", (0.0, 1.0, 0.0),
+        Vector((0.70, 0.30 * sign, 0.55)),
+    )
+    _orient_sole(arm, side, (0.2, 0.0, 0.9), (0.55, 0.0, -0.15))
+
+
+def _arms_wide_of_chest(arm):
+    """Both arms out and back of the ribs. Used once the palms can no longer reach."""
+    from mathutils import Vector
+    for side, lat in (("L", 0.70), ("R", -0.70)):
+        _aim_bone_axis(arm, f"UpperArm_{side}", (0.0, 1.0, 0.0), Vector((0.55, lat, 0.05)))
+        _aim_bone_axis(arm, f"LowerArm_{side}", (0.0, 1.0, 0.0), Vector((0.35, lat * 0.55, -0.70)))
+    for _step in range(3):
+        if _arm_chest_depth(arm) <= 0.004 and _body_world_pen() <= 0.004:
+            return
+        for side, lat in (("L", 0.90 + 0.15 * _step), ("R", -(0.90 + 0.15 * _step))):
+            _aim_bone_axis(arm, f"UpperArm_{side}", (0.0, 1.0, 0.0), Vector((0.40, lat, 0.20)))
+            _aim_bone_axis(arm, f"LowerArm_{side}", (0.0, 1.0, 0.0), Vector((0.20, lat * 0.50, -0.55)))
+
+
+def _reel_hip_toward_rail(arm, side, other, hip_z):
+    """Bring a push hip back to the rail without lifting the sole off the face.
+
+    The push used to shove the pelvis about 11 cm out past the rail, which
+    is the lateral squiggle. Plants stay where the 90° knee puts them.
+    Each step is kept only when the sole is still on the face and the body
+    is clear, so a failed step does not throw away the ones that worked.
+    """
+    from mathutils import Vector
+    origin = float(p5._head_w(arm, "Hips").x)
+    limit = HIP_RAIL_X + 0.03
+    if origin <= limit + 0.005:
+        return
+    wall_o = Vector((0.0, 0.0, 0.0))
+    normal = Vector((1.0, 0.0, 0.0))
+    x = origin
+    snap = _snap_rots(arm)
+    loc = arm.location.copy()
+    rot = arm.rotation_euler.copy()
+    while x > limit + 0.005:
+        trial = max(limit, x - 0.02)
+        held_snap = _snap_rots(arm)
+        held_loc = arm.location.copy()
+        held_rot = arm.rotation_euler.copy()
+        _place_hip_at(arm, trial, 0.0, hip_z)
+        for _step in range(6):
+            gap = _sole_gap(arm, side, wall_o, normal)
+            if 0.003 <= gap <= 0.011:
+                break
+            th = Vector(_bone_world_axis(arm, f"UpperLeg_{side}", (0.0, 1.0, 0.0)))
+            sh = Vector(_bone_world_axis(arm, f"LowerLeg_{side}", (0.0, 1.0, 0.0)))
+            if gap > 0.011:
+                th = Vector((th.x - 0.12, th.y, th.z))
+                sh = Vector((sh.x - 0.16, sh.y, sh.z))
+            else:
+                th = Vector((th.x + 0.14, th.y, th.z))
+                sh = Vector((sh.x + 0.18, sh.y, sh.z))
+            _aim_bone_axis(arm, f"UpperLeg_{side}", (0.0, 1.0, 0.0), th)
+            _aim_bone_axis(arm, f"LowerLeg_{side}", (0.0, 1.0, 0.0), sh)
+            _orient_sole_on_wall(arm, side)
+            _place_hip_at(arm, trial, 0.0, hip_z)
+        _push_trail_off_wall(arm, side, other)
+        _keep_foot_off_wall(arm, other, margin=0.06)
+        _place_hip_at(arm, trial, 0.0, hip_z)
+        gap = _sole_gap(arm, side, wall_o, normal)
+        if 0.003 <= gap <= 0.012 and _body_world_pen() <= 0.004:
+            x = trial
+            snap = _snap_rots(arm)
+            loc = arm.location.copy()
+            rot = arm.rotation_euler.copy()
+            continue
+        _restore_rots(arm, held_snap)
+        arm.location = held_loc
+        arm.rotation_euler = held_rot
+        bpy_update()
+        break
+    _restore_rots(arm, snap)
+    arm.location = loc
+    arm.rotation_euler = rot
+    bpy_update()
+
+
+def _knee_on_slab(arm, side):
+    """Lowest vertex near the knee, and its x. None if the leg is missing."""
+    from mathutils import Vector
+    knee = Vector(p5._head_w(arm, f"LowerLeg_{side}"))
+    near = []
+    for token in (f"UpperLeg_{side}", f"LowerLeg_{side}"):
+        for v in p5._verts(token):
+            if (Vector(v) - knee).length <= 0.09:
+                near.append(v)
+    if not near:
+        return None, None
+    lowest = min(near, key=lambda v: v.z)
+    return lowest.z, lowest.x
+
+
 def solve_wallrun(arm, samples, times):
     """Face the brick and take three alternating steps up it."""
     from mathutils import Vector
@@ -2158,7 +2491,7 @@ def solve_wallrun(arm, samples, times):
     pen = 0.0
     prev_hip = None
     for i, ch in enumerate(samples):
-        show_wall_world(face, WALL_TOP_Z * 0.5, WALL_TOP_Z, hide_ground=False, ticks=True, half_thick=0.04)
+        show_wall_world(face, WALL_TOP_Z * 0.5, WALL_TOP_Z, hide_ground=False, ticks=True, half_thick=0.12)
         step, local, side, phase = _wall_cycle(i, n, 3)
         if step == 0 and local < 0.34:
             phase = "takeoff"
@@ -2167,108 +2500,83 @@ def solve_wallrun(arm, samples, times):
         both_up = step == 2 and phase == "push"
         on_ground = phase == "takeoff" and local < 0.16
         hip_target = _wall_hip_z(i, n)
-        # Positive pitch leans the chest into the face. Plants sit at about
-        # 8°. The last push is 10°, chest toward the brick. The take-off
-        # arrives at that lean instead of tipping away from the wall.
+        if both_up:
+            hip_target += 0.32 * _clamp((local - 0.72) / 0.28, 0.0, 1.0)
+        # One line for the whole climb. Swing used to walk the body out and
+        # back; that was the squiggle. The mantle, after this loop, is the
+        # one move onto the slab.
+        rail_x = HIP_RAIL_X
         if both_up:
             lean = 10.0
-        elif phase == "plant":
-            lean = 8.0
         elif phase == "takeoff":
-            lean = 2.0 + 6.0 * _clamp(local / 0.34, 0.0, 1.0)
+            lean = 6.0 + 2.0 * _clamp(local / 0.34, 0.0, 1.0)
         else:
-            lean = 6.0
-        facing = None
-        used = _wall_clearance(phase, local)
-        fore_x = -0.20
-        fore_r = -0.20
-        upper_x = -0.62
-        upper_r = -0.62
-        up_z = 0.18
-        for _try in range(5):
-            facing = _pose_wall_step(
-                arm, ch, side, phase, local, lean, reach_top=both_up,
-            )
-            _arms_counter(arm, side, local, both_up, brush=(phase == "plant"))
-            if both_up:
+            lean = 8.0
+        facing = _pose_wall_step(
+            arm, ch, side, phase, local, lean, reach_top=False,
+        )
+        _place_hip_at(arm, rail_x, 0.0, hip_target)
+        fore_x = fore_r = -0.15
+        upper_x = upper_r = -0.40
+        up_z = 0.30
+        if both_up:
+            for _try in range(12):
                 _arms_reach_up(arm, fore_x, fore_r, upper_x, upper_r, up_z)
-            if on_ground:
-                _place_drive_on_ground(arm, other, sole_x=0.78)
-            else:
-                if both_up:
-                    _push_trail_off_wall(arm, side, other)
-                used = _place_wall_hip(
-                    arm, side, other, hip_target, _wall_clearance(phase, local),
-                    hold_plant=both_up or phase == "plant",
-                )
-            chest_x = min((v.x for v in p5._verts("Chest")), default=1.0)
-            spine_x = min((v.x for v in p5._verts("Spine")), default=1.0)
-            if phase == "takeoff":
-                # A chest leaned into the wall meets the rising lead knee.
-                # Plants keep the into-wall pitch. The run-in may sit upright.
-                leg_hit = False
-                for depth, pair in _pair_depths(arm):
-                    if (
-                        depth > DEPTH_LIMIT_M
-                        and not _is_rig_pair(pair)
-                        and "Chest" in pair
-                        and "Leg" in pair
-                    ):
-                        leg_hit = True
-                        break
-                if leg_hit and lean > -6.0:
-                    lean -= 3.0
-                    continue
-            if min(chest_x, spine_x) >= 0.004:
-                break
-            # Stay inside the 5–10° into-wall band on the climb. More negative
-            # pitch is the old lean-back and undoes a plant. The take-off may
-            # sit upright when the lead knee is in the chest.
-            if phase != "takeoff" and lean > 5.0:
-                lean = max(5.0, lean - 2.0)
-            elif phase == "takeoff" and lean > -6.0:
-                lean -= 2.0
-            else:
-                break
-        _retract_hands(arm, wall_o, normal)
-        _tilt_head_off_wall(arm)
-        # Hands in the chest are a pose hit. Yaw the shoulder only if the
-        # separation search cannot clear it. Do not yaw after the last search,
-        # and do not yaw the last reach — that flare is the starfish.
-        _separate_hand_from_chest(arm)
-        # A yaw here flares the sprint arm and the last reach. Plants and
-        # the top reach keep the counter-swing.
-        if phase != "plant" and not both_up:
-            pose_left = [
-                d for d, p in _pair_depths(arm)
-                if d > DEPTH_LIMIT_M and not _is_rig_pair(p)
-            ]
-            if pose_left:
-                _clear_pose_arms(arm)
-                _separate_hand_from_chest(arm)
-        if on_ground:
+                _orient_sole_on_wall(arm, side)
+                _push_trail_off_wall(arm, side, other)
+                _place_wall_hip(arm, side, other, hip_target, 0.005, hold_plant=True)
+                gap_l, zl = _hand_face_gap(arm, "L")
+                gap_r, zr = _hand_face_gap(arm, "R")
+                hand_z = max(zl, zr)
+                if (
+                    0.045 <= gap_l <= 0.12 and 0.045 <= gap_r <= 0.12
+                    and 4.05 <= hand_z <= 4.40
+                ):
+                    break
+                if gap_l > 0.12:
+                    fore_x = max(-0.70, fore_x - 0.08)
+                    upper_x = max(-0.80, upper_x - 0.06)
+                elif gap_l < 0.045:
+                    fore_x = min(0.25, fore_x + 0.10)
+                    upper_x = min(-0.12, upper_x + 0.10)
+                if gap_r > 0.12:
+                    fore_r = max(-0.70, fore_r - 0.08)
+                    upper_r = max(-0.80, upper_r - 0.06)
+                elif gap_r < 0.045:
+                    fore_r = min(0.25, fore_r + 0.10)
+                    upper_r = min(-0.12, upper_r + 0.10)
+                if hand_z > 4.40:
+                    up_z = max(0.05, up_z - 0.05)
+                elif hand_z < 4.05:
+                    up_z = min(0.70, up_z + 0.05)
+            _orient_sole_on_wall(arm, side)
+            _push_trail_off_wall(arm, side, other)
+            _place_wall_hip(arm, side, other, hip_target, 0.005, hold_plant=True)
+            hip = p5._head_w(arm, "Hips")
+            arm.location.y -= hip.y
+            bpy_update()
+            _reel_hip_toward_rail(arm, side, other, p5._head_w(arm, "Hips").z)
+        elif phase in ("plant", "push"):
+            # Keep the 90° plant. Seating the sole sets the hip x; the swing
+            # frames are the ones locked to the rail so the path does not zigzag.
+            _arms_counter(arm, side, local, False, brush=(phase == "plant"))
+            _orient_sole_on_wall(arm, side)
+            _push_trail_off_wall(arm, side, other)
+            _place_wall_hip(arm, side, other, hip_target, 0.005, hold_plant=True)
+            _arms_counter(arm, side, local, False, brush=(phase == "plant"))
+            hip = p5._head_w(arm, "Hips")
+            arm.location.y -= hip.y
+            bpy_update()
+            if phase == "push":
+                _reel_hip_toward_rail(arm, side, other, p5._head_w(arm, "Hips").z)
+        elif on_ground:
+            _arms_counter(arm, side, local, False, brush=False)
             _orient_sole(arm, other, (-1.0, 0.0, 0.12), (0.0, 0.0, -1.0))
-            ground_gap = _place_drive_on_ground(arm, other, sole_x=0.78)
-            # The seated sole ignores hip_target. Open the knee until the
-            # hip is above the previous frame, then put the sole back down.
+            _place_drive_on_ground(arm, other, sole_x=0.78)
             _rise_drive_hip(arm, other, None if prev_hip is None else prev_hip + 0.010)
             _keep_foot_off_wall(arm, side, margin=0.08)
             _orient_sole(arm, other, (-1.0, 0.0, 0.12), (0.0, 0.0, -1.0))
-            ground_gap = _place_drive_on_ground(arm, other, sole_x=0.78)
-            # The heel can sit clear while the elbow is on the brick. Step
-            # the body out along X and put the sole back on the ground.
-            for _step in range(4):
-                gap = _min_plane((0.0, 0.0, 0.0), (1.0, 0.0, 0.0))
-                if gap >= 0.06:
-                    break
-                arm.location.x += 0.06 - gap
-                bpy_update()
-                _orient_sole(arm, other, (-1.0, 0.0, 0.12), (0.0, 0.0, -1.0))
-                _seat_sole(arm, other, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), clearance=0.006)
-            ground_gap = _sole_gap(arm, other, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0))
-            # A toe can sit under the floor while the sole patch reads clear.
-            # Tip the drive foot up and seat it again. Do not lift the body:
-            # that would put the sole past 1 cm.
+            _place_drive_on_ground(arm, other, sole_x=0.78)
             for kick in range(6):
                 foot_vs = p5._verts(f"Foot_{other}")
                 low = min((v.z for v in foot_vs), default=1.0)
@@ -2280,80 +2588,25 @@ def solve_wallrun(arm, samples, times):
                     (0.10, 0.0, -0.99),
                 )
                 _seat_sole(arm, other, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), clearance=0.006)
-            ground_gap = _sole_gap(arm, other, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0))
-            used = ground_gap
+            hip = p5._head_w(arm, "Hips")
+            arm.location.x += HIP_RAIL_X - hip.x
+            arm.location.y -= hip.y
+            bpy_update()
+            _seat_sole(arm, other, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0), clearance=0.006)
         else:
-            if phase != "takeoff":
-                _orient_sole_on_wall(arm, side)
-            if both_up:
-                _push_trail_off_wall(arm, side, other)
-            hold = both_up or phase == "plant"
-            used = _place_wall_hip(arm, side, other, hip_target, used, hold_plant=hold)
-            if both_up:
-                # Each hand is nudged on its own. The forearm stays mostly
-                # up, so the search cannot lock the elbow straight.
-                for _try in range(12):
-                    _arms_reach_up(arm, fore_x, fore_r, upper_x, upper_r, up_z)
-                    _orient_sole_on_wall(arm, side)
-                    _push_trail_off_wall(arm, side, other)
-                    used = _place_wall_hip(
-                        arm, side, other, hip_target, 0.005, hold_plant=True,
-                    )
-                    gap_l, zl = _hand_face_gap(arm, "L")
-                    gap_r, zr = _hand_face_gap(arm, "R")
-                    hand_z = max(zl, zr)
-                    if (
-                        0.045 <= gap_l <= 0.10 and 0.045 <= gap_r <= 0.10
-                        and 4.15 <= hand_z <= 4.34
-                    ):
-                        break
-                    # The into-wall lean puts the shoulder closer, so the
-                    # upper arm has to come back out with the forearm.
-                    if gap_l > 0.10:
-                        fore_x = max(-0.70, fore_x - 0.08)
-                        upper_x = max(-0.80, upper_x - 0.06)
-                    elif gap_l < 0.045:
-                        fore_x = min(0.25, fore_x + 0.10)
-                        upper_x = min(-0.12, upper_x + 0.10)
-                    if gap_r > 0.10:
-                        fore_r = max(-0.70, fore_r - 0.08)
-                        upper_r = max(-0.80, upper_r - 0.06)
-                    elif gap_r < 0.045:
-                        fore_r = min(0.25, fore_r + 0.10)
-                        upper_r = min(-0.12, upper_r + 0.10)
-                    if hand_z > 4.34:
-                        up_z = max(0.05, up_z - 0.05)
-                    elif hand_z < 4.15:
-                        up_z = min(0.55, up_z + 0.05)
-            elif phase == "plant":
-                # A chest search can yaw the shoulders out. Put the sprint
-                # arms back. The forward hand only tips in a little, so the
-                # elbow stays near 90°.
-                _arms_counter(arm, side, local, False, brush=True)
-                _orient_sole_on_wall(arm, side)
-                used = _place_wall_hip(
-                    arm, side, other, hip_target, 0.005, hold_plant=True,
-                )
-        gap = _min_plane(wall_o, normal)
-        if gap < -0.004 and (both_up or phase in ("plant", "push")):
+            _place_hip_at(arm, rail_x, 0.0, hip_target)
+            _arms_counter(arm, side, local, False, brush=False)
+            _keep_foot_off_wall(arm, side, margin=0.10)
+            _keep_foot_off_wall(arm, other, margin=0.06)
+        for _fix in range(4):
+            if _body_world_pen() <= 0.004:
+                break
             _push_trail_off_wall(arm, side, other)
-            gap = _min_plane(wall_o, normal)
-        if gap < -0.004 and on_ground:
-            _keep_foot_off_wall(arm, side, margin=0.05)
-            gap = _min_plane(wall_o, normal)
-        if gap < -0.004:
-            _shift_plane(arm, wall_o, normal, clearance=0.004)
-            if on_ground:
-                _orient_sole(arm, other, (-1.0, 0.0, 0.12), (0.0, 0.0, -1.0))
-                used = _place_drive_on_ground(arm, other, sole_x=0.78)
-            elif phase in ("plant", "push"):
-                _orient_sole_on_wall(arm, side)
-                _push_trail_off_wall(arm, side, other)
-                used = _place_wall_hip(
-                    arm, side, other, hip_target, 0.005, hold_plant=True,
-                )
-            gap = _min_plane(wall_o, normal)
-        pen = max(pen, max(0.0, -gap))
+            _keep_foot_off_wall(arm, side, margin=0.06)
+            _keep_foot_off_wall(arm, other, margin=0.06)
+        used = _body_world_pen()
+        pen = max(pen, used)
+        lean = _signed_trunk_deg(arm)
         body = _measure_body(arm)
         _n, patch = _sole_patch(arm, side)
         if patch:
@@ -2365,6 +2618,9 @@ def solve_wallrun(arm, samples, times):
         row["step"] = step
         shin, sole_c = _shin_world(arm, side)
         row["hip_z"] = body["hip_z"]
+        hip_now_early = p5._head_w(arm, "Hips")
+        row["hip_x"] = float(hip_now_early.x)
+        row["hip_y"] = float(hip_now_early.y)
         row["shin_deg"] = math.degrees(math.asin(max(-1.0, min(1.0, abs(shin.z)))))
         row["foot_below_hip"] = body["hip_z"] - sole_c.z
         row["sole_L_cm"] = _sole_gap(arm, "L", wall_o, normal) * 100.0
@@ -2419,152 +2675,294 @@ def solve_wallrun(arm, samples, times):
             print(
                 f"  wall f={i} step={step} {phase} plant={side} "
                 f"soleL={row['sole_L_cm']:.2f} soleR={row['sole_R_cm']:.2f} "
-                f"hipZ={body['hip_z']:.3f} footZ={sole_c.z:.3f} "
+                f"hipX={row['hip_x']:.3f} hipY={row['hip_y']:.3f} hipZ={body['hip_z']:.3f} "
+                f"footZ={sole_c.z:.3f} "
                 f"chestX={chest_x:.3f} shin={row['shin_deg']:.0f} "
                 f"below={row['foot_below_hip']:.2f} faceX={face_z.x:.2f} "
                 f"knee={body['knee_L']:.0f}/{body['knee_R']:.0f} "
                 f"elb={row['elbow_L']:.0f}/{row['elbow_R']:.0f} "
                 f"gnd={row['ground_L_cm']:.1f}/{row['ground_R_cm']:.1f} "
                 f"hand={row['handL_cm']:.1f}/{row['handR_cm']:.1f} z={row['hand_z']:.2f} "
-                f"lean={lean:.0f} clear={used*100:.1f} "
+                f"lean={lean:+.1f} clear={used*100:.1f} "
                 f"spine={body['spine']:.0f} deep={deep_name}:{deep_x*100:.1f}cm"
                 f"{' DIP' if dipped else ''}",
                 flush=True,
             )
-    # Top-out after the 4.24 m reach. The reach stays a sheet cell. These
-    # frames set the palms on the wall-top edge so the existing climb can
-    # take the hands. No new verb, and the mocap window is not extended.
+    # Mantle after the reach. Same wall-run verb: palms plant, the chest
+    # comes over the lip, one knee lands on the slab, then stand. The hip
+    # moves one way, onto the top, and keeps rising.
     from mathutils import Vector
-    catch_n = 3
     n_climb = len(keys)
     t_climb_end = times[-1]
     last_ch = samples[-1]
     last_hip = rows[-1]["hip_z"]
+    last_x = rows[-1].get("hip_x", HIP_RAIL_X)
     side = plants[-1] if plants else "L"
     other = "R" if side == "L" else "L"
-    for k in range(1, catch_n + 1):
-        show_wall_world(face, WALL_TOP_Z * 0.5, WALL_TOP_Z, hide_ground=False, ticks=True, half_thick=0.04)
-        blend = k / float(catch_n)
-        lean = 10.0
-        hip_target = last_hip + 0.045 * blend
-        facing = _pose_wall_step(arm, last_ch, side, "push", 1.0, lean, reach_top=True)
-        _push_trail_off_wall(arm, side, other)
-        used = _place_wall_hip(arm, side, other, hip_target, 0.005, hold_plant=True)
-        _tilt_head_off_wall(arm)
-        if k < catch_n:
-            # Stay on the overhead reach while the hip finishes the rise.
-            # Only the last frame puts the palms on the lip.
-            _arms_reach_up(arm)
-            _separate_hand_from_chest(arm)
-            _retract_hands(arm, wall_o, normal)
-            _orient_sole_on_wall(arm, side)
-            _push_trail_off_wall(arm, side, other)
-            used = _place_wall_hip(arm, side, other, hip_target, 0.005, hold_plant=True)
-            _arms_reach_up(arm)
-            gap_l = _palm_band("L")[0] - WALL_TOP_Z
-            gap_r = _palm_band("R")[0] - WALL_TOP_Z
-            xl = _palm_band("L")[1]
-            xr = _palm_band("R")[1]
-        else:
-            _place_palms_on_top(arm)
-            # The search can leave a trail toe in the slab. Push it out
-            # without lifting the plant, then put the palms back.
-            _orient_sole_on_wall(arm, side)
-            _push_trail_off_wall(arm, side, other)
-            used = _place_wall_hip(arm, side, other, hip_target, 0.005, hold_plant=True)
-            gap_l, gap_r, xl, xr = _place_palms_on_top(arm)
-        pen = max(pen, _body_world_pen())
-        body = _measure_body(arm)
-        _n, patch = _sole_patch(arm, side)
-        if patch:
-            body["pelvis"] = body["hip_z"] - min(v.z for v in patch)
-        row = _angle_row(last_ch, body)
-        row["t"] = t_climb_end + k / FPS
-        row["plant"] = side
-        row["phase"] = "catch"
-        row["step"] = 2
-        shin, sole_c = _shin_world(arm, side)
-        row["hip_z"] = body["hip_z"]
-        row["shin_deg"] = math.degrees(math.asin(max(-1.0, min(1.0, abs(shin.z)))))
-        row["foot_below_hip"] = body["hip_z"] - sole_c.z
-        row["sole_L_cm"] = _sole_gap(arm, "L", wall_o, normal) * 100.0
-        row["sole_R_cm"] = _sole_gap(arm, "R", wall_o, normal) * 100.0
-        ground_n = Vector((0.0, 0.0, 1.0))
-        ground_o = Vector((0.0, 0.0, 0.0))
-        row["ground_L_cm"] = _sole_gap(arm, "L", ground_o, ground_n) * 100.0
-        row["ground_R_cm"] = _sole_gap(arm, "R", ground_o, ground_n) * 100.0
-        hl, zl = _hand_face_gap(arm, "L")
-        hr, zr = _hand_face_gap(arm, "R")
-        row["handL_cm"] = hl * 100.0
-        row["handR_cm"] = hr * 100.0
-        row["hand_z"] = max(zl, zr)
-        row["palmL_cm"] = gap_l * 100.0
-        row["palmR_cm"] = gap_r * 100.0
-        row["palm_x"] = (xl + xr) * 0.5
-        row["foot_z"] = sole_c.z
-        row["clear_cm"] = used * 100.0
-        row["lean"] = lean
-        face_z = _bone_world_axis(arm, "Head", (0.0, 0.0, 1.0))
-        row["face_x"] = face_z.x
+    _stand_legs(arm)
+    stand_z = WALL_TOP_Z + 0.010 + _hip_above_soles(arm)
+    z_palms = max(last_hip + 0.06, 3.55)
+    # Rise above the lip before the hips cross the face, so the pelvis does
+    # not bury itself in the top corner.
+    z_press = min(3.84, max(z_palms + 0.08, 3.72))
+    z_knee = max(z_press + 0.36, 4.28)
+    z_stand = max(z_knee + 0.20, stand_z)
+    # Press stays in the band where the arms can still plant. The knee
+    # phase is what carries the chest past the lip.
+    segments = (
+        ("palms", 4, last_x, 0.55, last_hip, z_palms, 10.0),
+        ("press", 4, 0.55, 0.36, z_palms, z_press, 10.0),
+        ("knee", 4, 0.36, -0.06, z_press, z_knee, 8.0),
+        ("stand", 4, -0.06, (WALL_FACE_X + WALL_BACK_X) * 0.5, z_knee, z_stand, 6.0),
+    )
+    mantle_i = 0
+    for phase, count, x0, x1, z0, z1, lean_tgt in segments:
+        for j in range(1, count + 1):
+            mantle_i += 1
+            t = j / float(count)
+            hx = x0 + (x1 - x0) * t
+            hz = z0 + (z1 - z0) * t
+            if prev_hip is not None:
+                hz = max(hz, prev_hip + 0.012)
+            if phase == "stand":
+                hz = max(hz, z_stand)
+            show_wall_world(
+                face, WALL_TOP_Z * 0.5, WALL_TOP_Z,
+                hide_ground=False, ticks=True, half_thick=0.12,
+            )
+            facing = _pose_wall_step(
+                arm, last_ch, side, "push", 1.0, lean_tgt, reach_top=False,
+            )
+            _place_hip_at(arm, hx, 0.0, hz)
+            gap_l = gap_r = xl = xr = 0.0
+            if phase in ("palms", "press"):
+                # Feet stay on the near side of the face so the shins do not
+                # enter the slab while the hands take the top.
+                for s, lat in ((side, 0.14), (other, -0.18)):
+                    _aim_bone_axis(arm, f"UpperLeg_{s}", (0.0, 1.0, 0.0), (0.62, lat, 0.45))
+                    _aim_bone_axis(arm, f"LowerLeg_{s}", (0.0, 1.0, 0.0), (0.72, lat * 0.3, 0.05))
+                _place_hip_at(arm, hx, 0.0, hz)
+                _keep_foot_off_wall(arm, side, margin=0.05)
+                _keep_foot_off_wall(arm, other, margin=0.05)
+                _place_hip_at(arm, hx, 0.0, hz)
+                gap_l, gap_r, xl, xr = _place_palms_on_top(arm)
+                _place_hip_at(arm, hx, 0.0, hz)
+            elif phase == "knee":
+                # One knee on the slab, chest past the lip. The shoulders are
+                # too high to keep the palms down, so the arms stay wide
+                # instead of folding back through the chest. Hooking while the
+                # hips are still in front of the lip drives the thigh through
+                # the top corner, so those frames only rise.
+                knee_z = WALL_TOP_Z + 0.012
+                ready = hz >= 4.24 and hx <= 0.08
+                if not ready:
+                    hz = max(hz, (prev_hip or hz) + 0.14)
+                    hx = max(hx, 0.16)
+                    for s, lat in ((side, 0.16), (other, -0.16)):
+                        _aim_bone_axis(arm, f"UpperLeg_{s}", (0.0, 1.0, 0.0), (0.70, lat, 0.42))
+                        _aim_bone_axis(arm, f"LowerLeg_{s}", (0.0, 1.0, 0.0), (0.76, lat * 0.3, 0.08))
+                    _place_hip_at(arm, hx, 0.0, hz)
+                    _keep_foot_off_wall(arm, side, margin=0.06)
+                    _keep_foot_off_wall(arm, other, margin=0.06)
+                    _place_hip_at(arm, hx, 0.0, hz)
+                    _arms_wide_of_chest(arm)
+                    _place_hip_at(arm, hx, 0.0, hz)
+                else:
+                    _hook_knee(arm, side, knee_z=knee_z)
+                    _aim_bone_axis(arm, f"UpperLeg_{other}", (0.0, 1.0, 0.0), (0.72, -0.18, 0.40))
+                    _aim_bone_axis(arm, f"LowerLeg_{other}", (0.0, 1.0, 0.0), (0.78, -0.08, 0.15))
+                    _place_hip_at(arm, hx, 0.0, hz)
+                    for _nudge in range(6):
+                        kz, kx = _knee_on_slab(arm, side)
+                        if kz is None:
+                            break
+                        on_knee = (
+                            4.002 <= kz <= 4.020
+                            and WALL_BACK_X + 0.02 <= kx <= -0.004
+                        )
+                        if on_knee:
+                            break
+                        if kz < 4.002:
+                            hz += min(0.03, 4.012 - kz)
+                        elif kz > 4.020:
+                            knee_z = max(WALL_TOP_Z + 0.004, knee_z - 0.008)
+                        if kx is not None and kx > -0.004:
+                            hx -= 0.015
+                        elif kx is not None and kx < WALL_BACK_X + 0.02:
+                            hx += 0.015
+                        hx = _clamp(hx, -0.10, 0.22)
+                        hz = max(hz, (prev_hip or hz) + 0.012)
+                        _place_hip_at(arm, hx, 0.0, hz)
+                        _hook_knee(arm, side, knee_z=knee_z)
+                        _aim_bone_axis(arm, f"UpperLeg_{other}", (0.0, 1.0, 0.0), (0.72, -0.18, 0.40))
+                        _aim_bone_axis(arm, f"LowerLeg_{other}", (0.0, 1.0, 0.0), (0.78, -0.08, 0.15))
+                    for _over in range(12):
+                        over_now, _cx, _cz = _chest_over_edge(arm)
+                        if over_now and _body_world_pen() <= 0.004:
+                            break
+                        hx = max(-0.10, hx - 0.025)
+                        hz = max(hz + 0.018, (prev_hip or hz) + 0.012)
+                        _place_hip_at(arm, hx, 0.0, hz)
+                        _hook_knee(arm, side, knee_z=knee_z)
+                        _aim_bone_axis(arm, f"UpperLeg_{other}", (0.0, 1.0, 0.0), (0.72, -0.18, 0.40))
+                        _aim_bone_axis(arm, f"LowerLeg_{other}", (0.0, 1.0, 0.0), (0.78, -0.08, 0.15))
+                        _keep_foot_off_wall(arm, other, margin=0.08)
+                        if _body_world_pen() > 0.004:
+                            hz += 0.03
+                            _place_hip_at(arm, hx, 0.0, hz)
+                            _hook_knee(arm, side, knee_z=knee_z)
+                            if _body_world_pen() > 0.004:
+                                hx = min(0.16, hx + 0.025)
+                                _place_hip_at(arm, hx, 0.0, hz)
+                                _hook_knee(arm, side, knee_z=knee_z)
+                                break
+                    _arms_wide_of_chest(arm)
+                    _place_hip_at(arm, hx, 0.0, hz)
+            else:
+                _stand_legs(arm)
+                hz = WALL_TOP_Z + 0.010 + _hip_above_soles(arm)
+                hz = max(hz, prev_hip + 0.01)
+                _place_hip_at(arm, hx, 0.0, hz)
+                for s, lat in (("L", 0.62), ("R", -0.62)):
+                    _aim_bone_axis(arm, f"UpperArm_{s}", (0.0, 1.0, 0.0), (0.10, lat, -0.45))
+                    _aim_bone_axis(arm, f"LowerArm_{s}", (0.0, 1.0, 0.0), (0.05, lat * 0.45, -0.85))
+            lean = _signed_trunk_deg(arm)
+            over, chest_cx, chest_cz = _chest_over_edge(arm)
+            pen = max(pen, _body_world_pen())
+            body = _measure_body(arm)
+            _n, patch = _sole_patch(arm, side)
+            if patch:
+                body["pelvis"] = body["hip_z"] - min(v.z for v in patch)
+            row = _angle_row(last_ch, body)
+            row["t"] = t_climb_end + mantle_i / FPS
+            row["plant"] = side
+            row["phase"] = phase
+            row["step"] = 2
+            shin, sole_c = _shin_world(arm, side)
+            hip_now = p5._head_w(arm, "Hips")
+            row["hip_z"] = body["hip_z"]
+            row["hip_x"] = float(hip_now.x)
+            row["hip_y"] = float(hip_now.y)
+            row["shin_deg"] = math.degrees(math.asin(max(-1.0, min(1.0, abs(shin.z)))))
+            row["foot_below_hip"] = body["hip_z"] - sole_c.z
+            row["sole_L_cm"] = _sole_gap(arm, "L", wall_o, normal) * 100.0
+            row["sole_R_cm"] = _sole_gap(arm, "R", wall_o, normal) * 100.0
+            ground_n = Vector((0.0, 0.0, 1.0))
+            ground_o = Vector((0.0, 0.0, 0.0))
+            row["ground_L_cm"] = _sole_gap(arm, "L", ground_o, ground_n) * 100.0
+            row["ground_R_cm"] = _sole_gap(arm, "R", ground_o, ground_n) * 100.0
+            hl, zl = _hand_face_gap(arm, "L")
+            hr, zr = _hand_face_gap(arm, "R")
+            row["handL_cm"] = hl * 100.0
+            row["handR_cm"] = hr * 100.0
+            row["hand_z"] = max(zl, zr)
+            row["palmL_cm"] = gap_l * 100.0
+            row["palmR_cm"] = gap_r * 100.0
+            row["palm_x"] = (xl + xr) * 0.5
+            row["chest_over"] = over
+            row["chest_cx"] = chest_cx
+            row["chest_cz"] = chest_cz
+            kz, kx = _knee_on_slab(arm, side)
+            if kz is not None:
+                row["knee_z"] = kz
+                row["knee_x"] = kx
+            row["foot_z"] = sole_c.z
+            row["clear_cm"] = _body_world_pen() * 100.0
+            row["lean"] = lean
+            face_z = _bone_world_axis(arm, "Head", (0.0, 0.0, 1.0))
+            row["face_x"] = face_z.x
 
-        def _elbow_deg(side_name):
-            upper_a = _bone_world_axis(arm, f"UpperArm_{side_name}", (0.0, 1.0, 0.0))
-            fore_a = _bone_world_axis(arm, f"LowerArm_{side_name}", (0.0, 1.0, 0.0))
-            dot = max(-1.0, min(1.0, upper_a.dot(fore_a)))
-            return math.degrees(math.acos(dot))
+            def _elbow_deg(side_name):
+                upper_a = _bone_world_axis(arm, f"UpperArm_{side_name}", (0.0, 1.0, 0.0))
+                fore_a = _bone_world_axis(arm, f"LowerArm_{side_name}", (0.0, 1.0, 0.0))
+                dot = max(-1.0, min(1.0, upper_a.dot(fore_a)))
+                return math.degrees(math.acos(dot))
 
-        row["elbow_L"] = _elbow_deg("L")
-        row["elbow_R"] = _elbow_deg("R")
-        dipped = body["hip_z"] < prev_hip - 1.0e-4
-        prev_hip = body["hip_z"]
-        hip_now = p5._head_w(arm, "Hips")
-        hip_path.append((float(hip_now.x), float(hip_now.y), float(hip_now.z)))
-        rows.append(row)
-        keys.append(_save_pose(arm))
-        caps.append((arm.location.x, arm.location.y, arm.location.z))
-        facings.append((facing.x, facing.y, facing.z))
-        times.append(row["t"])
-        chest_x = min((v.x for v in p5._verts("Chest")), default=0.0)
-        print(
-            f"  wall f={n_climb + k - 1} step=2 catch plant={side} "
-            f"soleL={row['sole_L_cm']:.2f} soleR={row['sole_R_cm']:.2f} "
-            f"hipZ={body['hip_z']:.3f} chestX={chest_x:.3f} "
-            f"knee={body['knee_L']:.0f}/{body['knee_R']:.0f} "
-            f"elb={row['elbow_L']:.0f}/{row['elbow_R']:.0f} "
-            f"hand={row['handL_cm']:.1f}/{row['handR_cm']:.1f} z={row['hand_z']:.2f} "
-            f"palm={row['palmL_cm']:.2f}/{row['palmR_cm']:.2f}cm x={row['palm_x']:.3f} "
-            f"lean={lean:.0f} faceX={face_z.x:.2f} pen={_body_world_pen()*100:.2f}"
-            f"{' DIP' if dipped else ''}",
-            flush=True,
-        )
+            row["elbow_L"] = _elbow_deg("L")
+            row["elbow_R"] = _elbow_deg("R")
+            dipped = body["hip_z"] < prev_hip - 1.0e-4
+            prev_hip = body["hip_z"]
+            hip_path.append((float(hip_now.x), float(hip_now.y), float(hip_now.z)))
+            rows.append(row)
+            keys.append(_save_pose(arm))
+            caps.append((arm.location.x, arm.location.y, arm.location.z))
+            facings.append((facing.x, facing.y, facing.z))
+            times.append(row["t"])
+            print(
+                f"  wall f={n_climb + mantle_i - 1} {phase} "
+                f"hip=({row['hip_x']:.3f},{row['hip_y']:.3f},{body['hip_z']:.3f}) "
+                f"lean={lean:+.1f} chest=({chest_cx:.3f},{chest_cz:.3f}) over={over} "
+                f"kneeZ={kz if kz is not None else -1:.3f} "
+                f"palm={gap_l*100:.2f}/{gap_r*100:.2f}cm "
+                f"pen={_body_world_pen()*100:.2f}"
+                f"{' DIP' if dipped else ''}",
+                flush=True,
+            )
     hips = [r["hip_z"] for r in rows]
     dips = [k for k in range(1, len(hips)) if hips[k] < hips[k - 1] - 1.0e-4]
-    print(f"  wall hip {hips[0]:.3f}->{hips[-1]:.3f} dips={dips}", flush=True)
-    climb_last = n_climb - 1
-    sheet = [int(round(s * climb_last / 6.0)) for s in range(7)]
-    sheet.append(len(keys) - 1)
+    climb_x = [p[0] for p in hip_path[:n_climb]]
+    climb_y = [p[1] for p in hip_path[:n_climb]]
+    dev = 0.0
+    if climb_x:
+        dev = max(
+            max(abs(x - HIP_RAIL_X) for x in climb_x),
+            max(abs(y) for y in climb_y),
+        )
+    print(
+        f"  wall hip {hips[0]:.3f}->{hips[-1]:.3f} dips={dips} "
+        f"climbWobble={dev*100:.1f}cm",
+        flush=True,
+    )
+
+    def _first(pred):
+        for idx, r in enumerate(rows):
+            if pred(r):
+                return idx
+        return 0
+
+    def _last(pred):
+        found = 0
+        for idx, r in enumerate(rows):
+            if pred(r):
+                found = idx
+        return found
+
+    sheet = [
+        0,
+        _first(lambda r: r["phase"] == "plant" and r.get("step") == 1),
+        _first(lambda r: r["phase"] == "plant" and r.get("step") == 2),
+        n_climb - 1,
+        _last(lambda r: r["phase"] == "palms"),
+        _last(lambda r: r["phase"] == "press"),
+        _last(lambda r: r["phase"] == "knee"),
+        len(rows) - 1,
+    ]
+    sheet_lines = []
+    for s, idx in enumerate(sheet):
+        r = rows[idx]
+        sheet_lines.append(
+            f"  cell {s + 1} f={idx} t={r['t']:.2f}s phase={r['phase']} "
+            f"lean={r['lean']:+.1f} hip=({r.get('hip_x', 0):.2f},"
+            f"{r.get('hip_y', 0):.2f},{r['hip_z']:.2f})"
+        )
+        print("SHEET" + sheet_lines[-1], flush=True)
     return {
         "keys": keys, "capsule": caps, "facing": facings, "times": times,
         "skate": 0.0, "pen": pen, "errors": rows, "plants": plants,
         "hip_path": hip_path, "sheet_frames": sheet,
+        "sheet_note": "\n".join(sheet_lines),
         "world": {"kind": "wall", "top_z": WALL_TOP_Z},
         "note": (
-            "The source window is the climb, 0.60–2.00 s, filmed from behind, so "
-            "the stick stays upright. The clip opens on the last run-in stride: "
-            "the drive sole is on the ground and the lead knee lifts into the first "
-            "plant. Three alternating plants follow. On each plant the trunk leans "
-            "about 8° into the wall and the free knee drives up; the free arm "
-            "swings opposite the plant leg. The last push leans about 10°, chest "
-            "toward the face, and both hands reach the top. After that reach the "
-            "palms catch the wall-top edge, within 1 cm, as the hand-off into the "
-            "existing climb. No new verb. The stills use one locked camera on the "
-            "ground line, the 4 m wall and its top. Hip height rises every frame. "
+            "The source window is the climb, 0.60–2.00 s, filmed from behind. "
+            "The clip opens on the last run-in stride. The hip stays on a straight "
+            "rail through the climb (no swing wobble) and then moves one way onto "
+            "the slab. Trunk lean is the measured chest angle toward the wall, "
+            "positive into the face, including the last push and the mantle. The "
+            "free arm swings out, opposite the plant leg. After the reach the "
+            "palms plant, the chest comes over the edge, one knee lands on the "
+            "slab, and the clip ends standing. No new verb. "
             "No side-on view of this vertical plant is in the downloaded set. "
-            "Clip 19 is side-on only for the run-in (about 0.6 s) before the "
-            "camera swings behind, and clips 10–12 are slanted walls. Clip 10's "
-            "high step is about a 90–115° knee and a 13–14° trunk. It does not "
-            "measure a vertical-face plant height. Angle excess is logged and the "
-            "motion is not flattened. Clip 19 is not posed."
+            "Clip 19 is not posed. The slide was not re-posed."
         ),
     }
 
@@ -3444,8 +3842,13 @@ def pose_from_key(arm, solved, i, spec):
 
 
 def _set_hip_ghost(path, show):
-    """A thin trail of the hip path. Hidden for the slide and the 180."""
+    """A ribbon of the hip path, in front of the body. Hidden for the slide and the 180.
+
+    A beveled curve disappeared into the brick in the upper cells. A camera-facing
+    mesh with a flat emission shader stays visible on the wall.
+    """
     import bpy
+    import bmesh
     name = "HipGhost"
     ob = bpy.data.objects.get(name)
     if not show or not path or len(path) < 2:
@@ -3453,31 +3856,42 @@ def _set_hip_ghost(path, show):
             ob.hide_render = True
             ob.hide_set(True)
         return
-    curve = bpy.data.curves.get(name + "Curve")
-    if curve is None:
-        curve = bpy.data.curves.new(name + "Curve", type="CURVE")
-        curve.dimensions = "3D"
-        curve.bevel_depth = 0.007
-        curve.bevel_resolution = 1
-        ob = bpy.data.objects.new(name, curve)
+    mesh = bpy.data.meshes.get(name + "Mesh")
+    if ob is None or ob.type != "MESH" or mesh is None:
+        if ob is not None:
+            bpy.data.objects.remove(ob, do_unlink=True)
+        mesh = bpy.data.meshes.new(name + "Mesh")
+        ob = bpy.data.objects.new(name, mesh)
         bpy.context.scene.collection.objects.link(ob)
         mat = bpy.data.materials.new(name + "Mat")
         mat.use_nodes = True
-        bsdf = mat.node_tree.nodes.get("Principled BSDF")
-        if bsdf:
-            bsdf.inputs["Base Color"].default_value = (0.93, 0.84, 0.62, 1)
-            bsdf.inputs["Roughness"].default_value = 1.0
+        # Workbench (this build has no classic EEVEE) draws the viewport
+        # colour, not the emission shader. Both have to be the same cyan.
+        mat.diffuse_color = (0.05, 0.85, 1.0, 1.0)
+        nodes = mat.node_tree.nodes
+        links = mat.node_tree.links
+        bsdf = nodes.get("Principled BSDF")
+        if bsdf is not None and "Base Color" in bsdf.inputs:
+            bsdf.inputs["Base Color"].default_value = (0.05, 0.85, 1.0, 1.0)
             if "Emission Color" in bsdf.inputs:
-                bsdf.inputs["Emission Color"].default_value = (0.93, 0.84, 0.62, 1)
+                bsdf.inputs["Emission Color"].default_value = (0.15, 0.95, 1.0, 1.0)
             if "Emission Strength" in bsdf.inputs:
-                bsdf.inputs["Emission Strength"].default_value = 0.35
+                bsdf.inputs["Emission Strength"].default_value = 4.0
         ob.data.materials.append(mat)
-    curve = ob.data
-    curve.splines.clear()
-    spline = curve.splines.new("POLY")
-    spline.points.add(len(path) - 1)
-    for i, p in enumerate(path):
-        spline.points[i].co = (p[0], p[1], p[2], 1.0)
+    # 7 cm wide, on the camera side of the body, so the brick cannot hide it.
+    half = 0.035
+    y = -1.20
+    bm = bmesh.new()
+    verts = []
+    for p in path:
+        verts.append(bm.verts.new((p[0] - half, y, p[2])))
+        verts.append(bm.verts.new((p[0] + half, y, p[2])))
+    bm.verts.ensure_lookup_table()
+    for i in range(len(path) - 1):
+        bm.faces.new((verts[2 * i], verts[2 * i + 1], verts[2 * i + 3], verts[2 * i + 2]))
+    bm.to_mesh(ob.data)
+    bm.free()
+    ob.data.update()
     ob.hide_render = False
     ob.hide_set(False)
 
@@ -3490,7 +3904,7 @@ def _show_for(spec, arm, solved=None):
     elif spec["verb"] == "wallrun_vertical":
         show_wall_world(
             0.0, WALL_TOP_Z * 0.5, WALL_TOP_Z,
-            hide_ground=False, ticks=True, half_thick=0.04,
+            hide_ground=False, ticks=True, half_thick=0.12,
         )
         _set_hip_ghost((solved or {}).get("hip_path"), True)
     else:
@@ -3605,9 +4019,10 @@ def _shot_for(spec, arm):
         # lower in the cell and the climb looked like a dip.
         # Far enough that the near top corner of the 4 m wall, and the
         # catch hands, stay inside the portrait frame with ground below.
-        focus = Vector((0.25, 0.0, 2.20))
+        # High enough that a figure standing on the 4 m wall stays in frame.
+        focus = Vector((0.05, 0.0, 3.15))
         direction = Vector((0.85, 0.55, 0.0)).normalized()
-        loc = focus + direction * 16.0
+        loc = focus + direction * 19.5
         return (loc.x, loc.y, loc.z), (focus.x, focus.y, focus.z)
     else:
         direction = Vector((0.7, -0.65, 0.25)).normalized()
@@ -3635,9 +4050,10 @@ def _side_shot(spec, arm):
         # One world frame for every cell. Look exactly along +Y so the brick
         # is a vertical edge. 5.2 m centred at 2.05 m shows the ground, the
         # full 4 m wall, the labelled ticks and the top.
-        scale = 5.2
-        focus = (0.35, 0.0, 2.05)
-        loc = (0.35, -8.0, 2.05)
+        # Ground, the full wall, the top, and a standing figure on the slab.
+        scale = 7.1
+        focus = (0.10, 0.0, 3.15)
+        loc = (0.10, -8.0, 3.15)
         return loc, focus, scale, "Z"
     span_y = (mx.y - mn.y) + 1.4
     span_z = (mx.z - mn.z) + 0.8
@@ -3746,6 +4162,8 @@ def render_beats(arm, solved_all):
     bpy.context.scene.render.resolution_x = 394
     bpy.context.scene.render.resolution_y = 500
     for spec in SPECS:
+        if spec["id"] not in solved_all:
+            continue
         solved = solved_all[spec["id"]]
         n = len(solved["keys"])
         fit = "VERTICAL" if spec["verb"] == "wallrun_vertical" else None
@@ -3800,6 +4218,9 @@ def _grid(frames, solved, spec, title):
         grid.paste(fr, (x, y))
         i = _beat_index(solved, s)
         tag = f"{s + 1}  {solved['times'][i]:.2f}s"
+        errs = solved.get("errors") or []
+        if spec["verb"] == "wallrun_vertical" and 0 <= i < len(errs) and "lean" in errs[i]:
+            tag += f"  {errs[i]['lean']:+.0f}deg"
         draw.rectangle((x + 6, y + 6, x + 8 + 7 * len(tag), y + 22), fill=(20, 18, 16))
         draw.text((x + 10, y + 8), tag, fill=(245, 236, 220), font=font)
     strip = Image.open(os.path.join("/workspace/Docs/Storror/out/strips", spec["strip"])).convert("RGB")
@@ -3845,6 +4266,8 @@ def composite(solved_all, noclip_line):
     from PIL import Image
     os.makedirs(OUT, exist_ok=True)
     for spec in SPECS:
+        if spec["id"] not in solved_all:
+            continue
         solved = solved_all[spec["id"]]
         brief = _angle_brief(solved)
         rig_n = len(solved.get("rig_frames") or [])
@@ -4004,6 +4427,10 @@ def _write_reports(solved_all, noclip_line):
                     )
                 if "hip_z" in r:
                     sole += f" hipZ={r['hip_z']:.2f} step={r.get('step', 0)}"
+                if "hip_x" in r:
+                    sole += f" hipX={r['hip_x']:.3f} hipY={r['hip_y']:.3f}"
+                if "lean" in r:
+                    sole += f" lean={r['lean']:+.1f}"
                 if "shin_deg" in r:
                     sole += f" shin={r['shin_deg']:.0f} below={r['foot_below_hip']:.2f}"
                 if "land_hip_deg" in r:
@@ -4078,6 +4505,12 @@ def _write_reports(solved_all, noclip_line):
                 "ground). No clean side or 3/4 view of a feet-first or thigh-down "
                 "ground slide under a bar, so the slide pose is unchanged."
             )
+            note = solved_all[spec["id"]].get("sheet_note")
+            if note:
+                lines.append(
+                    "Sheet cells, measured trunk lean (positive = chest toward the wall):"
+                )
+                lines.append(note)
         lines.extend(over)
         collapsed = [
             f"f={i} t={r['t']:.3f} cam={r['pelvis_cam_cm']:.1f} side={r['pelvis_side_cm']:.1f}"
@@ -4122,6 +4555,9 @@ def main():
         rh._reset(arm)
     if len(solved_all) != len(SPECS):
         print("partial solve, skipping the combined no-clip line", flush=True)
+        if "--metrics" not in args:
+            render_beats(arm, solved_all)
+            composite(solved_all, "partial")
         return
     line, _fails, _w, _s = measure_noclip(arm, solved_all)
     write_keys(solved_all, line)
