@@ -31,6 +31,9 @@ def create():
         g.cone((0, 2.72, 0), 0.085, 0.048, 5.05, "Lib_Steel", seg)
         g.cylinder((0, 4.55, 0), 0.058, 0.04, "Lib_SteelDark", seg)
         g.cylinder((0, 5.20, 0), 0.055, 0.08, "Lib_SteelDark", seg)
+        if lod == 0:
+            g.box((0.07, 1.4, 0), (0.01, 0.28, 0.12), "Lib_SteelDark")
+            g.cylinder((0.08, 1.4, 0), 0.012, 0.01, "Lib_Steel", 5, axis="X")
         _head(g, lod, 1, bev, bs, seg)
         _head(g, lod, -1, bev, bs, seg)
         a.end()

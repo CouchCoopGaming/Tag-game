@@ -31,15 +31,22 @@ def create():
         g.box((0, 0.56, 0), (1.16, 0.76, T), "Lib_Brick", bevel=bev, segs=bs)
         g.box((0, 2.78, 0), (1.16, 0.68, T), "Lib_Brick", bevel=bev, segs=bs)
         if lod < 2:
-            g.box((0, 1.68, 0), (1.08, 1.36, 0.012), "Lib_Window")
-            proud = T * 0.5 + 0.02
-            g.box((0, 0.94, proud), (1.36, 0.08, 0.08), "Lib_Concrete", bevel=bev, segs=bs)
-            g.box((0, 2.46, proud), (1.40, 0.12, 0.08), "Lib_Concrete", bevel=bev, segs=bs)
+            proud = T * 0.5 - 0.04
+            # Inset glass, behind a frame. Not a slab proud of the brick.
+            g.box((0, 1.68, proud), (1.02, 1.28, 0.012), "Lib_Window")
+            face = T * 0.5 + 0.015
+            g.box((0, 0.98, face), (1.28, 0.10, 0.10), "Lib_Concrete", bevel=bev, segs=bs)
+            g.box((0, 2.40, face), (1.32, 0.14, 0.12), "Lib_Concrete", bevel=bev, segs=bs)
+            g.box((-0.56, 1.68, face), (0.06, 1.32, 0.06), "Lib_SteelDark")
+            g.box((0.56, 1.68, face), (0.06, 1.32, 0.06), "Lib_SteelDark")
+            g.box((0, 2.32, face), (1.18, 0.06, 0.05), "Lib_SteelDark")
+            g.box((0, 1.04, face), (1.18, 0.05, 0.05), "Lib_SteelDark")
             if lod == 0:
-                g.box((0, 1.68, proud + 0.02), (0.02, 1.28, 0.015), "Lib_PaintWhite")
-                g.box((0, 1.68, proud + 0.02), (1.00, 0.02, 0.015), "Lib_PaintWhite")
-            g.box((-0.60, 1.68, proud), (0.05, 1.40, 0.05), "Lib_SteelDark")
-            g.box((0.60, 1.68, proud), (0.05, 1.40, 0.05), "Lib_SteelDark")
+                g.box((0, 1.68, face + 0.02), (0.025, 1.22, 0.02), "Lib_Steel")
+                g.box((-0.28, 1.68, face + 0.02), (0.02, 1.22, 0.015), "Lib_Steel")
+                g.box((0.28, 1.68, face + 0.02), (0.02, 1.22, 0.015), "Lib_Steel")
+                g.box((0, 2.05, face + 0.02), (1.10, 0.02, 0.015), "Lib_Steel")
+                g.box((0, 1.32, face + 0.02), (1.10, 0.02, 0.015), "Lib_Steel")
         a.end()
     a.box("Climb_PierL", (-1.29, 1.65, 0), (1.42, 2.94, T))
     a.box("Climb_PierR", (1.29, 1.65, 0), (1.42, 2.94, T))
@@ -47,6 +54,6 @@ def create():
     a.box("Climb_Header", (0, 2.78, 0), (1.16, 0.68, T))
     a.box("Col_Plinth", (0, 0.09, 0), (W, 0.18, T + 0.06))
     a.box("Col_Cornice", (0, 3.16, 0), (W, 0.08, T + 0.08))
-    a.box("Col_Glass", (0, 1.68, 0), (1.08, 1.36, 0.012))
+    a.box("Col_Glass", (0, 1.68, 0.11), (0.98, 1.22, 0.012))
     a.box("Col_FrameSill", (0, 0.96, T * 0.5 + 0.02), (1.28, 0.06, 0.06))
     return a

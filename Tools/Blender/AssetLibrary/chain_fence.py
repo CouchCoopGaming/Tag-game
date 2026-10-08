@@ -21,7 +21,10 @@ def create():
             g.cylinder((x, 0.92, 0), 0.03, 1.84, "Lib_SteelDark", seg)
             g.sphere((x, 1.84, 0), 0.035, "Lib_Steel", 6)
         g.pipe((-0.97, 1.72, 0), (0.97, 1.72, 0), 0.018, "Lib_Steel", seg)
+        g.pipe((-0.97, 0.92, 0), (0.97, 0.92, 0), 0.012, "Lib_Steel", seg)
         g.pipe((-0.97, 0.12, 0), (0.97, 0.12, 0), 0.015, "Lib_SteelDark", seg)
+        if lod == 0:
+            g.box((-0.9, 0.95, 0.02), (0.02, 1.5, 0.012), "Lib_Steel")
         step = lod_pick(lod, 0.22, 0.40)
         _diamonds(g, step, lod)
         a.end()

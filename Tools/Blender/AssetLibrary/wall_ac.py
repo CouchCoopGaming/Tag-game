@@ -21,6 +21,9 @@ def create():
         g.box((0, 0.16, 0.43), (0.55, 0.18, 0.02), "Lib_Black")
         if lod == 0:
             g.cylinder((0.22, 0.34, 0.43), 0.04, 0.02, "Lib_Steel", seg, axis="Z")
+            for i in range(4):
+                g.box((-0.18 + i * 0.1, 0.16, 0.45), (0.03, 0.12, 0.012), "Lib_SteelDark")
+            g.box((0, 0.02, 0.36), (0.5, 0.02, 0.12), "Lib_SteelDark")
         a.end()
     a.loose_pivot = True
     a.box("Col_Sleeve", (0, 0.22, 0.0), (0.60, 0.38, 0.30))

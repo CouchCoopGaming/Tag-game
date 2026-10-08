@@ -50,7 +50,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 1.6, z: 0.4915}
+  m_LocalReferencePoint: {x: 0, y: 1.6, z: 0.491}
   m_Size: 4
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -82,7 +82,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Buildings"
-  summary: "4.0 x 3.2 m shop bay. Display glass, closed door, awning projects 1.1 m on +Z."
+  summary: "4.0 x 3.2 m shop bay. Framed glass, a door with a handle, and an awning that projects 1.1 m on +Z."
   climbable: 1
   vaultable: 0
   vaultHeightMeters: 0
@@ -156,10 +156,11 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: cf85b31d4de195caa04850eebe9f8ab2, type: 2}
   - {fileID: 2100000, guid: 3c701fb43fbe96f25d527f6e3fb06a33, type: 2}
+  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
   - {fileID: 2100000, guid: 44927adad78b10af56b52282d8bbdf34, type: 2}
-  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
-  - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
+  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
+  - {fileID: 2100000, guid: 3515f7b9728b10281c73c55a077c3fea, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -251,9 +252,9 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: cf85b31d4de195caa04850eebe9f8ab2, type: 2}
   - {fileID: 2100000, guid: 3c701fb43fbe96f25d527f6e3fb06a33, type: 2}
+  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
   - {fileID: 2100000, guid: 44927adad78b10af56b52282d8bbdf34, type: 2}
-  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -345,6 +346,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: cf85b31d4de195caa04850eebe9f8ab2, type: 2}
   - {fileID: 2100000, guid: 3c701fb43fbe96f25d527f6e3fb06a33, type: 2}
+  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -554,7 +556,7 @@ Transform:
   m_GameObject: {fileID: 300030}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.55, y: 1.35, z: 0.02}
+  m_LocalPosition: {x: -0.45, y: 1.35, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -579,7 +581,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.15, y: 2.15, z: 0.02}
+  m_Size: {x: 1.3, y: 2.1, z: 0.02}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300040
 GameObject:
@@ -607,7 +609,7 @@ Transform:
   m_GameObject: {fileID: 300040}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.85, y: 1.15, z: 0.04}
+  m_LocalPosition: {x: 0.95, y: 1.1, z: 0.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -632,7 +634,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.85, y: 2.1, z: 0.05}
+  m_Size: {x: 0.78, y: 2.05, z: 0.05}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300050
 GameObject:

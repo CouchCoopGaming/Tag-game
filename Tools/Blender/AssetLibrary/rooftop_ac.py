@@ -24,6 +24,11 @@ def create():
             g.cylinder((x, 0.88, 0), 0.08, 0.03, "Lib_Black", 8)
             if lod == 0:
                 g.torus((x, 0.87, 0), 0.14, 0.008, "Lib_Steel", 12, 4)
+        if lod == 0:
+            for i in range(6):
+                z = -0.32 + i * 0.12
+                g.box((0, 0.48, z), (1.32, 0.04, 0.02), "Lib_SteelDark")
+            g.box((0.66, 0.48, 0), (0.02, 0.50, 0.7), "Lib_Black")
         a.end()
     a.box("Col_Unit", (0, 0.48, 0), (1.26, 0.68, 0.86))
     a.box("Col_RailL", (-0.45, 0.04, 0), (0.08, 0.08, 0.90))

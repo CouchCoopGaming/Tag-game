@@ -47,7 +47,7 @@ LODGroup:
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
   m_LocalReferencePoint: {x: 0, y: 0.95, z: 0}
-  m_Size: 2.02
+  m_Size: 2.04
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -148,6 +148,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
   - {fileID: 2100000, guid: 039f45c8ec256a2c59edb56941405e17, type: 2}
+  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

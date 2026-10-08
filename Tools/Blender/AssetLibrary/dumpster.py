@@ -21,6 +21,9 @@ def create():
         for x in (-1.05, 1.05):
             g.box((x, 0.35, 0), (0.08, 0.22, 1.05), "Lib_Steel")
         if lod == 0:
+            for i in range(5):
+                g.box((-0.8 + i * 0.4, 0.7, 0.61), (0.04, 0.7, 0.015), "Lib_SteelDark")
+            g.box((0, 1.32, 0.4), (0.2, 0.04, 0.08), "Lib_Steel")
             for z in (-0.35, 0.35):
                 g.cylinder((-1.15, 0.18, z), 0.08, 0.06, "Lib_Rubber", 10, axis="X")
                 g.cylinder((1.15, 0.18, z), 0.08, 0.06, "Lib_Rubber", 10, axis="X")

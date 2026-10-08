@@ -18,6 +18,7 @@ def create():
         g.box((0, 0.015, 0), (0.36, 0.03, 0.36), "Lib_Black", bevel=0.004 if lod == 0 else 0, segs=1)
         g.cone((0, 0.38, 0), 0.14, 0.025, 0.66, "Lib_Orange", seg)
         g.cylinder((0, 0.42, 0), 0.09, 0.06, "Lib_PaintWhite", seg)
+        g.cylinder((0, 0.28, 0), 0.115, 0.045, "Lib_PaintWhite", seg)
         a.end()
     a.box("Col_Base", (0, 0.015, 0), (0.36, 0.03, 0.36))
     a.capsule("Col_Cone", (0, 0.38, 0), 0.03, 0.62, 1)

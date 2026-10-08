@@ -24,6 +24,10 @@ def create():
             for i in range(n):
                 x = -0.55 + i * (1.1 / max(1, n - 1))
                 g.box((x, 0.45, z), (0.28, 0.03, 0.22), "Lib_Wood", uv_scale=1.2)
+        if lod == 0:
+            g.cylinder((0, 0.78, 0), 0.025, 0.02, "Lib_SteelDark", 8)
+            for x in (-0.7, 0.7):
+                g.cylinder((x, 0.78, 0), 0.012, 0.01, "Lib_Steel", 5)
         for x in (-0.7, 0.7):
             g.box((x, 0.38, 0), (0.06, 0.76, 0.08), "Lib_SteelDark", euler=(0, 0, 18 if x < 0 else -18))
             g.box((x, 0.38, -0.55), (0.05, 0.45, 0.05), "Lib_SteelDark")

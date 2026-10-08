@@ -52,7 +52,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 1.6, z: 0.01}
+  m_LocalReferencePoint: {x: 0, y: 1.6, z: 0.0175}
   m_Size: 4
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -159,8 +159,8 @@ MeshRenderer:
   - {fileID: 2100000, guid: cf85b31d4de195caa04850eebe9f8ab2, type: 2}
   - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   - {fileID: 2100000, guid: 3c701fb43fbe96f25d527f6e3fb06a33, type: 2}
-  - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
+  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -712,7 +712,7 @@ Transform:
   m_GameObject: {fileID: 300060}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.68, z: 0}
+  m_LocalPosition: {x: 0, y: 1.68, z: 0.11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -737,7 +737,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.08, y: 1.36, z: 0.012}
+  m_Size: {x: 0.98, y: 1.22, z: 0.012}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300070
 GameObject:

@@ -1,66 +1,35 @@
-"""Shade tree. Flared trunk, a solid canopy core, and crossed leaf cards."""
+"""Oak. Tapered trunk, forked limbs, overlapping leaf clusters. No white cap."""
 
-import math
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _common import Asset, register, lod_pick
+from _common import Asset, register
+from _trees import broadleaf
 
 
-def _card(g, center, w, h, yaw, tilt, mat):
-    hw, hh = w * 0.5, h * 0.5
-    cy, sy = math.cos(yaw), math.sin(yaw)
-    ct, st = math.cos(tilt), math.sin(tilt)
-    local = [(-hw, -hh), (hw, -hh), (hw, hh), (-hw, hh)]
-    verts = []
-    for lx, ly in local:
-        x = lx * cy + ly * st * sy
-        y = ly * ct
-        z = -lx * sy + ly * st * cy
-        verts.append((center[0] + x, center[1] + y, center[2] + z))
-    g.mesh(verts, [(0, 1, 2, 3), (3, 2, 1, 0)], mat)
-
-
-def _cards(g, lod):
-    clusters = lod_pick(lod, 16, 8)
-    for i in range(clusters):
-        ang = (i * 2.399) % 6.28318
-        rad = 0.85 + (i % 5) * 0.18
-        y = 2.7 + (i % 4) * 0.42
-        center = (math.sin(ang) * rad, y, math.cos(ang) * rad * 0.85)
-        mat = "Lib_FoliageDark" if i % 3 == 0 else "Lib_Foliage"
-        yaw = ang
-        tilt = 0.35 + (i % 3) * 0.25
-        _card(g, center, 0.95, 0.72, yaw, tilt, mat)
-        _card(g, center, 0.85, 0.66, yaw + 1.2, tilt * 0.6, mat)
+OAK = {
+    "trunk": (2.15, 0.20, 0.08),
+    "limbs": [
+        ((0.05, 1.55, 0.0), (1.15, 2.55, 0.55), 0.045, 0.62, "Lib_Foliage"),
+        ((-0.04, 1.70, 0.05), (-1.05, 2.45, -0.35), 0.04, 0.58, "Lib_FoliageDark"),
+        ((0.0, 1.85, -0.04), (0.35, 2.85, -1.05), 0.038, 0.55, "Lib_Foliage"),
+        ((0.02, 2.05, 0.0), (0.15, 3.35, 0.25), 0.032, 0.48, "Lib_FoliageDark"),
+        ((-0.02, 1.95, 0.02), (-0.45, 3.15, 0.85), 0.03, 0.42, "Lib_FoliageLite"),
+        ((0.08, 1.65, -0.02), (0.95, 2.15, -0.15), 0.028, 0.36, "Lib_Foliage"),
+    ],
+}
 
 
 @register
 def create():
-    a = Asset("Tree", "Park", "Shade tree, trunk to 1.8 m, canopy about 5.2 m tall and 3.4 m across.")
-    a.climb_note = "Trunk is round, 0.28 m at the flare. Not a flat cling wall."
-    a.vault_note = "No rail. Canopy is visual."
+    a = Asset("Tree", "Park", "Oak. Tapered trunk to about 2.2 m, forked limbs, and overlapping green clusters. Canopy about 4.0 m tall.")
+    a.climb_note = "Trunk is round, about 0.28 m at the flare. Not a flat cling wall."
+    a.vault_note = "No rail. The canopy is visual; the trunk is the blocker."
     for lod in (0, 1):
         g = a.begin(lod)
-        seg = lod_pick(lod, 12, 8)
-        g.cylinder((0, 0.07, 0), 0.22, 0.14, "Lib_WoodDark", seg)
-        g.cone((0, 0.98, 0), 0.14, 0.08, 1.68, "Lib_WoodDark", seg)
-        voxel = 0.16 if lod == 0 else 0.28
-        g.blob(
-            [
-                ((0.0, 3.3, 0.0), 1.15),
-                ((0.55, 3.45, 0.25), 0.78),
-                ((-0.5, 3.35, -0.15), 0.74),
-                ((0.05, 4.0, -0.25), 0.62),
-            ],
-            "Lib_Foliage",
-            voxel=voxel,
-        )
-        _cards(g, lod)
+        broadleaf(g, lod, OAK)
         a.end()
-    a.box("Col_Flare", (0, 0.07, 0), (0.28, 0.12, 0.28))
-    a.capsule("Col_Trunk", (0, 1.05, 0), 0.07, 1.20, 1)
-    # Leaf cards are not a closed volume, so the crown stays visual.
-    a.vault_note = "No rail. The canopy is visual; the trunk is the blocker."
+    a.box("Col_Flare", (0, 0.06, 0), (0.36, 0.12, 0.36))
+    a.capsule("Col_Trunk", (0, 1.1, 0), 0.09, 1.9, 1)
     return a

@@ -45,8 +45,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 1.6, z: 0}
-  m_Size: 3.2
+  m_LocalReferencePoint: {x: 0, y: 0.875, z: 0}
+  m_Size: 4.65
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -77,7 +77,7 @@ MonoBehaviour:
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
-  climbNote: "Round timber. Not a cling wall."
+  climbNote: "Round timber. Not a cling wall. About 1.4 m of the shaft is below the pivot, in the water."
   vaultNote: "No rail. The head is 3.2 m, too high to vault from the dock."
 --- !u!1 &200000
 GameObject:
@@ -145,8 +145,8 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
+  - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: e98dae535b65b6212e7de4fed88f27b6, type: 2}
@@ -239,8 +239,8 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
+  - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:

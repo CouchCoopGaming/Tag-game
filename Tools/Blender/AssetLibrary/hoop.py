@@ -53,6 +53,8 @@ def create():
         # Board center sits so the rim (3.05) is just above the lower padding.
         g.box((0, 3.48, 0.52), (1.80, 1.05, 0.035), "Lib_PaintWhite", bevel=bev, segs=1)
         g.box((0, 3.48, 0.542), (1.68, 0.92, 0.012), "Lib_PaintWhite")
+        # Dark back so the board's face (toward +Z, the rim) is obvious.
+        g.box((0, 3.48, 0.498), (1.70, 0.98, 0.008), "Lib_SteelDark")
         g.box((0, 3.00, 0.55), (1.84, 0.06, 0.05), "Lib_Black")
         g.box((0, 3.22, 0.548), (0.46, 0.35, 0.01), "Lib_PaintRed")
         g.box((0, 3.22, 0.555), (0.30, 0.02, 0.008), "Lib_PaintWhite")

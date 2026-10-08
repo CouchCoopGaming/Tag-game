@@ -1,5 +1,6 @@
 """Steel bollard, 0.95 m, rounded cap. Not a vault."""
 
+import math
 import os
 import sys
 
@@ -22,6 +23,10 @@ def create():
         g.cylinder((0, 0.62, 0), 0.082, 0.025, "Lib_PaintYellow", seg)
         if lod == 0:
             g.cylinder((0, 0.78, 0), 0.078, 0.012, "Lib_SteelDark", seg)
+            for i in range(4):
+                ang = math.radians(45 + i * 90)
+                g.cylinder((math.sin(ang) * 0.08, 0.045, math.cos(ang) * 0.08), 0.01, 0.012, "Lib_Steel", 5)
+            g.torus((0, 0.55, 0), 0.078, 0.006, "Lib_SteelDark", 10, 4)
         a.end()
     a.capsule("Col_Bollard", (0, 0.48, 0), 0.075, 0.96, 1)
     a.box("Col_Base", (0, 0.02, 0), (0.16, 0.04, 0.16))

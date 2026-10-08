@@ -43,15 +43,19 @@ PALETTE = {
     "Lib_Wood": ((0.62, 0.42, 0.24), 0.0, 0.32),
     "Lib_WoodDark": ((0.36, 0.22, 0.13), 0.0, 0.28),
     "Lib_Mulch": ((0.361, 0.227, 0.18), 0.0, 0.15),
-    "Lib_Foliage": ((0.24, 0.48, 0.20), 0.0, 0.18),
-    "Lib_FoliageDark": ((0.13, 0.32, 0.15), 0.0, 0.16),
+    "Lib_Foliage": ((0.15, 0.32, 0.11), 0.0, 0.08),
+    "Lib_FoliageDark": ((0.08, 0.20, 0.08), 0.0, 0.08),
+    "Lib_FoliageLite": ((0.26, 0.36, 0.09), 0.0, 0.08),
+    "Lib_Needle": ((0.10, 0.24, 0.11), 0.0, 0.08),
+    "Lib_Palm": ((0.13, 0.34, 0.11), 0.0, 0.10),
+    "Lib_PalmDry": ((0.30, 0.32, 0.10), 0.0, 0.10),
     "Lib_Glass": ((0.62, 0.78, 0.82), 0.04, 0.88),
     "Lib_Orange": ((0.93, 0.40, 0.08), 0.0, 0.42),
     "Lib_ContainerRed": ((0.58, 0.16, 0.13), 0.18, 0.30),
     "Lib_ContainerBlue": ((0.12, 0.28, 0.48), 0.18, 0.30),
     "Lib_Black": ((0.07, 0.07, 0.08), 0.15, 0.40),
     "Lib_Rust": ((0.45, 0.24, 0.14), 0.28, 0.24),
-    "Lib_Water": ((0.22, 0.48, 0.55), 0.0, 0.72),
+    "Lib_Water": ((0.025, 0.07, 0.09), 0.02, 0.55),
     "Lib_Brass": ((0.74, 0.58, 0.28), 0.85, 0.55),
     "Lib_Chain": ((0.68, 0.70, 0.72), 0.62, 0.38),
     "Lib_Soil": ((0.28, 0.18, 0.10), 0.0, 0.12),
@@ -63,13 +67,13 @@ PALETTE = {
     "Lib_Hydrant": ((0.62, 0.10, 0.07), 0.0, 0.28),
     "Lib_WoodWeather": ((0.45, 0.38, 0.28), 0.0, 0.18),
     "Lib_Lamp": ((1.0, 0.86, 0.55), 0.0, 0.90),
-    "Lib_Window": ((0.55, 0.74, 0.82), 0.02, 0.90),
+    "Lib_Window": ((0.14, 0.20, 0.26), 0.04, 0.82),
 }
 
 # Blender emission (color, strength). Unity gets the same color on _EmissionColor.
 EMISSIVE = {
     "Lib_Lamp": ((1.0, 0.75, 0.38), 8.0),
-    "Lib_Window": ((0.62, 0.82, 0.95), 0.55),
+    "Lib_Window": ((0.55, 0.75, 0.90), 0.22),
 }
 
 # Grayscale-or-color albedo multiplied is baked as full color. UV is meters.
@@ -77,7 +81,7 @@ TEXTURED = (
     "Lib_Brick", "Lib_Asphalt", "Lib_Wood", "Lib_WoodDark", "Lib_Concrete",
     "Lib_Siding", "Lib_Roof", "Lib_Soil", "Lib_Hydrant", "Lib_WoodWeather",
 )
-NORMALS = ("Lib_Brick",)
+NORMALS = ("Lib_Brick", "Lib_Water")
 ROUGHNESS = ("Lib_Brick", "Lib_Hydrant", "Lib_WoodWeather", "Lib_Asphalt", "Lib_Wood")
 
 # Modular street kit. Straight tiles are ROAD_W wide and TILE_L long.
@@ -794,6 +798,9 @@ def _ensure_materials():
             bsdf.inputs[color_socket].default_value = (emit[0], emit[1], emit[2], 1.0)
             if "Emission Strength" in bsdf.inputs:
                 bsdf.inputs["Emission Strength"].default_value = strength
+        if name == "Lib_Water" and "Transmission Weight" in bsdf.inputs:
+            bsdf.inputs["Transmission Weight"].default_value = 0.22
+            bsdf.inputs["Roughness"].default_value = 0.18
         if name == "Lib_Window" and "Transmission Weight" in bsdf.inputs:
             bsdf.inputs["Transmission Weight"].default_value = 0.55
             bsdf.inputs["Roughness"].default_value = 0.06
@@ -1138,6 +1145,24 @@ def _generic_rough_pixel(x, y, w, h, salt, base):
     return (rough, rough, rough)
 
 
+def _water_height(x, y, w, h):
+    u = x / float(w) * 9.0
+    v = y / float(h) * 9.0
+    return (
+        math.sin(u * 6.2 + v * 1.4) * 0.45
+        + math.sin(v * 5.1 + u * 0.6) * 0.35
+        + math.sin((u + v) * 11.0) * 0.12
+    )
+
+
+def _water_normal_pixel(x, y, w, h):
+    hx = _water_height(x + 1, y, w, h) - _water_height(x - 1, y, w, h)
+    hy = _water_height(x, y + 1, w, h) - _water_height(x, y - 1, w, h)
+    nx, ny, nz = -hx * 1.4, -hy * 1.4, 1.0
+    length = math.sqrt(nx * nx + ny * ny + nz * nz) or 1.0
+    return (nx / length * 0.5 + 0.5, ny / length * 0.5 + 0.5, nz / length * 0.5 + 0.5)
+
+
 def generate_textures():
     _reset_scene()
     w = h = 256
@@ -1157,12 +1182,13 @@ def generate_textures():
     _save_image("Lib_Hydrant_R", w, h, _hydrant_rough_pixel)
     _save_image("Lib_WoodWeather", w, h, _wood_weather_pixel)
     _save_image("Lib_WoodWeather_R", w, h, lambda x, y, W, H: _generic_rough_pixel(x, y, W, H, 44, 0.78))
+    _save_image("Lib_Water_N", w, h, _water_normal_pixel)
 
 
 def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
-    skip = {"_common", "build_all", "render_pass1", "render_pass2", "write_unity", "_kit"}
+    skip = {"_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "write_unity", "_kit"}
     names = []
     for fn in sorted(os.listdir(ROOT)):
         if not fn.endswith(".py"):

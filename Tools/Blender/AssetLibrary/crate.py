@@ -26,6 +26,11 @@ def create():
         _face_slats(g, slats, "Y", 0.37, bev, lod)
         g.box((0, 0.03, 0), (0.68, 0.04, 0.68), "Lib_Wood", uv_scale=1.0)
         g.box((0, 0.785, 0), (0.66, 0.03, 0.66), "Lib_Wood", uv_scale=1.0)
+        if lod == 0:
+            for x in (-0.36, 0.36):
+                for z in (-0.36, 0.36):
+                    g.box((x, 0.02, z), (0.08, 0.04, 0.08), "Lib_SteelDark")
+            g.box((0, 0.45, 0.40), (0.28, 0.10, 0.008), "Lib_Black")
         a.end()
     # Inside the posts and the lid. Slat gaps are ~2 cm and are not a passage.
     a.box("Col_Crate", (0, 0.40, 0), (0.70, 0.74, 0.70))

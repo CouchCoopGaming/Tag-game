@@ -1391,7 +1391,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 592,
+        "tris": 736,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -1587,35 +1587,38 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 344,
+        "tris": 488,
         "materials": [
           "Lib_Concrete",
           "Lib_Brick",
           "Lib_WoodDark",
+          "Lib_Wood",
           "Lib_Brass",
-          "Lib_Wood"
+          "Lib_SteelDark"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 264,
+        "tris": 388,
         "materials": [
           "Lib_Concrete",
           "Lib_Brick",
-          "Lib_WoodDark"
+          "Lib_WoodDark",
+          "Lib_Wood"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
       },
       {
         "lod": 2,
-        "tris": 72,
+        "tris": 108,
         "materials": [
           "Lib_Concrete",
           "Lib_Brick",
-          "Lib_WoodDark"
+          "Lib_WoodDark",
+          "Lib_Wood"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -1685,12 +1688,50 @@
         "center": [
           0,
           1.12,
-          0.02
+          -0.02
         ],
         "size": [
-          0.92,
-          2.08,
-          0.05
+          0.86,
+          2.0,
+          0.036
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FrameL",
+        "type": "box",
+        "center": [
+          -0.5,
+          1.12,
+          0.17
+        ],
+        "size": [
+          0.05,
+          2.1,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FrameR",
+        "type": "box",
+        "center": [
+          0.5,
+          1.12,
+          0.17
+        ],
+        "size": [
+          0.05,
+          2.1,
+          0.06
         ],
         "euler": [
           0,
@@ -1749,7 +1790,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 0.8,
+    "slackCm": 1.02,
     "fbx": "Assets/Art/Props/Library/Buildings/Brick_Door.fbx"
   },
   {
@@ -1990,7 +2031,7 @@
     "size": [
       4.0,
       3.2,
-      0.4
+      0.415
     ],
     "min": [
       -2.0,
@@ -2000,25 +2041,25 @@
     "max": [
       2.0,
       3.2,
-      0.21
+      0.225
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 412,
+        "tris": 472,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete",
           "Lib_Window",
-          "Lib_PaintWhite",
-          "Lib_SteelDark"
+          "Lib_SteelDark",
+          "Lib_Steel"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 388,
+        "tris": 412,
         "materials": [
           "Lib_Brick",
           "Lib_Concrete",
@@ -2160,11 +2201,11 @@
         "center": [
           0,
           1.68,
-          0
+          0.11
         ],
         "size": [
-          1.08,
-          1.36,
+          0.98,
+          1.22,
           0.012
         ],
         "euler": [
@@ -2205,7 +2246,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 0.96,
+    "slackCm": 0.8,
     "fbx": "Assets/Art/Props/Library/Buildings/Brick_Window.fbx"
   },
   {
@@ -2230,13 +2271,14 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 764,
+        "tris": 828,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintRed",
           "Lib_PaintWhite",
           "Lib_Steel",
-          "Lib_PaintYellow"
+          "Lib_PaintYellow",
+          "Lib_Rust"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
@@ -2585,7 +2627,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 1388,
+        "tris": 1428,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -2596,7 +2638,7 @@
       },
       {
         "lod": 1,
-        "tris": 608,
+        "tris": 628,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -2941,7 +2983,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 132,
+        "tris": 176,
         "materials": [
           "Lib_Black",
           "Lib_Orange",
@@ -2952,7 +2994,7 @@
       },
       {
         "lod": 1,
-        "tris": 68,
+        "tris": 96,
         "materials": [
           "Lib_Black",
           "Lib_Orange",
@@ -3199,41 +3241,41 @@
   {
     "name": "Court",
     "category": "Park",
-    "blurb": "Street half-court, 14 m long by 10 m wide. Asphalt with a 3.66 m lane, 5.79 m free-throw, and a 6.25 m arc. Paint has no collider.",
+    "blurb": "Street full court, 22 m by 12 m. Both ends have a 3.66 m lane, a 5.79 m free-throw, and a 6.75 m arc. Paint has no collider.",
     "size": [
-      10.0,
+      12.0,
       0.129,
-      14.0
+      22.0
     ],
     "min": [
-      -5.0,
+      -6.0,
       0.0,
-      -7.0
+      -11.0
     ],
     "max": [
-      5.0,
+      6.0,
       0.129,
-      7.0
+      11.0
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 404,
+        "tris": 1064,
         "materials": [
           "Lib_Asphalt",
-          "Lib_Court",
-          "Lib_PaintWhite"
+          "Lib_PaintWhite",
+          "Lib_Court"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 252,
+        "tris": 648,
         "materials": [
           "Lib_Asphalt",
-          "Lib_Court",
-          "Lib_PaintWhite"
+          "Lib_PaintWhite",
+          "Lib_Court"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -3249,9 +3291,9 @@
           0
         ],
         "size": [
-          10.0,
+          12.0,
           0.12,
-          14.0
+          22.0
         ],
         "euler": [
           0,
@@ -3264,39 +3306,39 @@
     "vaultable": false,
     "vaultHeight": 0.0,
     "climbNote": "Flat slab, 0.12 m thick.",
-    "vaultNote": "No rail. Place Hoop just outside the -Z baseline so the 3.05 m rim hangs inside the end line.",
+    "vaultNote": "No rail. Place each Hoop at the baseline with the rim facing center court.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.28,
+    "slackCm": 0.31,
     "fbx": "Assets/Art/Props/Library/Park/Court.fbx"
   },
   {
     "name": "CourtFence",
     "category": "Park",
-    "blurb": "Perimeter for the 14 x 10 m court. Same pivot as Court. Baselines 3.05 m, sidelines 1.80 m, closed gate on +X.",
+    "blurb": "Perimeter for the 22 x 12 m court. Same pivot as Court. Baselines 3.05 m, sidelines 1.80 m, closed gate on +X.",
     "size": [
-      10.98,
+      12.98,
       3.095,
-      14.99
+      22.99
     ],
     "min": [
-      -5.49,
+      -6.49,
       0.0,
-      -7.495
+      -11.495
     ],
     "max": [
-      5.49,
+      6.49,
       3.095,
-      7.495
+      11.495
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2440,
+        "tris": 3304,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -3307,7 +3349,7 @@
       },
       {
         "lod": 1,
-        "tris": 1756,
+        "tris": 2400,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -3318,7 +3360,7 @@
       },
       {
         "lod": 2,
-        "tris": 1568,
+        "tris": 2148,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -3333,9 +3375,9 @@
         "name": "Col_Post_SW",
         "type": "capsule",
         "center": [
-          -5.45,
+          -6.45,
           1.52,
-          -7.45
+          -11.45
         ],
         "radius": 0.035,
         "height": 3.05,
@@ -3345,9 +3387,9 @@
         "name": "Col_Post_SE",
         "type": "capsule",
         "center": [
-          5.45,
+          6.45,
           1.52,
-          -7.45
+          -11.45
         ],
         "radius": 0.035,
         "height": 3.05,
@@ -3357,9 +3399,9 @@
         "name": "Col_Post_NW",
         "type": "capsule",
         "center": [
-          -5.45,
+          -6.45,
           1.52,
-          7.45
+          11.45
         ],
         "radius": 0.035,
         "height": 3.05,
@@ -3369,9 +3411,9 @@
         "name": "Col_Post_NE",
         "type": "capsule",
         "center": [
-          5.45,
+          6.45,
           1.52,
-          7.45
+          11.45
         ],
         "radius": 0.035,
         "height": 3.05,
@@ -3383,10 +3425,10 @@
         "center": [
           0,
           1.5,
-          -7.45
+          -11.45
         ],
         "size": [
-          10.9,
+          12.9,
           2.9,
           0.02
         ],
@@ -3403,10 +3445,10 @@
         "center": [
           0,
           1.5,
-          7.45
+          11.45
         ],
         "size": [
-          10.9,
+          12.9,
           2.9,
           0.02
         ],
@@ -3421,14 +3463,14 @@
         "name": "Col_Fabric_W",
         "type": "box",
         "center": [
-          -5.45,
+          -6.45,
           0.9,
           0
         ],
         "size": [
           0.02,
           1.6,
-          14.9
+          22.9
         ],
         "euler": [
           0,
@@ -3441,7 +3483,7 @@
         "name": "Col_Fabric_E1",
         "type": "box",
         "center": [
-          5.45,
+          6.45,
           0.9,
           -4.1
         ],
@@ -3461,7 +3503,7 @@
         "name": "Col_Fabric_E2",
         "type": "box",
         "center": [
-          5.45,
+          6.45,
           0.9,
           4.1
         ],
@@ -3481,7 +3523,7 @@
         "name": "Col_Gate",
         "type": "box",
         "center": [
-          5.45,
+          6.45,
           0.9,
           0
         ],
@@ -3736,27 +3778,29 @@
     "category": "Harbor",
     "blurb": "Wood crate, 0.80 m cube. Slats sit on corner posts. Gaps are about 2 cm and are not a way through.",
     "size": [
-      0.78,
       0.8,
-      0.78
+      0.8,
+      0.804
     ],
     "min": [
-      -0.39,
+      -0.4,
       0.0,
-      -0.39
+      -0.4
     ],
     "max": [
-      0.39,
+      0.4,
       0.8,
-      0.39
+      0.404
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1300,
+        "tris": 1360,
         "materials": [
           "Lib_WoodDark",
-          "Lib_Wood"
+          "Lib_Wood",
+          "Lib_SteelDark",
+          "Lib_Black"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
@@ -5449,8 +5493,8 @@
     "blurb": "Front-load dumpster 2.20 x 1.20 m, 1.35 m tall. Lids closed. Fork pockets on the sides.",
     "size": [
       2.36,
-      1.28,
-      1.2
+      1.31,
+      1.218
     ],
     "min": [
       -1.18,
@@ -5459,13 +5503,13 @@
     ],
     "max": [
       1.18,
-      1.31,
-      0.6
+      1.34,
+      0.618
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 300,
+        "tris": 372,
         "materials": [
           "Lib_PaintGreen",
           "Lib_SteelDark",
@@ -6630,7 +6674,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 1524,
+        "tris": 1536,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -6645,7 +6689,7 @@
       },
       {
         "lod": 1,
-        "tris": 572,
+        "tris": 584,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -7292,7 +7336,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 988,
+        "tris": 1016,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -7776,7 +7820,7 @@
     "size": [
       0.265,
       1.239,
-      0.476
+      0.49
     ],
     "min": [
       -0.11,
@@ -7786,16 +7830,18 @@
     "max": [
       0.155,
       1.239,
-      0.266
+      0.28
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 240,
+        "tris": 284,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_PaintRed"
+          "Lib_PaintRed",
+          "Lib_Black",
+          "Lib_Brass"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
@@ -8071,41 +8117,43 @@
     "category": "Roads",
     "blurb": "4.0 x 1.05 m median, 0.40 m concrete, planter recess with soil and a shrub.",
     "size": [
-      1.05,
-      0.76,
+      1.08,
+      0.71,
       3.68
     ],
     "min": [
-      -0.525,
+      -0.54,
       0.0,
       -1.84
     ],
     "max": [
-      0.525,
-      0.76,
+      0.54,
+      0.71,
       1.84
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 388,
+        "tris": 344,
         "materials": [
           "Lib_Concrete",
           "Lib_Soil",
+          "Lib_FoliageDark",
           "Lib_Foliage",
-          "Lib_FoliageDark"
+          "Lib_FoliageLite"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 144,
+        "tris": 156,
         "materials": [
           "Lib_Concrete",
           "Lib_Soil",
+          "Lib_FoliageDark",
           "Lib_Foliage",
-          "Lib_FoliageDark"
+          "Lib_FoliageLite"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -8212,10 +8260,10 @@
         "type": "sphere",
         "center": [
           0,
-          0.52,
+          0.48,
           0
         ],
-        "radius": 0.26
+        "radius": 0.2
       }
     ],
     "climbable": false,
@@ -8229,7 +8277,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 1.2,
+    "slackCm": 0.8,
     "fbx": "Assets/Art/Props/Library/Roads/Median_Planter.fbx"
   },
   {
@@ -8782,11 +8830,12 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 172,
+        "tris": 220,
         "materials": [
           "Lib_SteelDark",
           "Lib_Black",
-          "Lib_Glass",
+          "Lib_Lamp",
+          "Lib_Window",
           "Lib_Steel"
         ],
         "mesh": "LOD0",
@@ -8794,11 +8843,12 @@
       },
       {
         "lod": 1,
-        "tris": 76,
+        "tris": 100,
         "materials": [
           "Lib_SteelDark",
           "Lib_Black",
-          "Lib_Glass",
+          "Lib_Lamp",
+          "Lib_Window",
           "Lib_Steel"
         ],
         "mesh": "LOD1",
@@ -8846,9 +8896,9 @@
           0
         ],
         "size": [
-          0.28,
-          0.32,
-          0.28
+          0.18,
+          0.22,
+          0.18
         ],
         "euler": [
           0,
@@ -8887,7 +8937,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.8,
+    "slackCm": 1.0,
     "fbx": "Assets/Art/Props/Library/Park/ParkLamp.fbx"
   },
   {
@@ -9414,7 +9464,7 @@
     "blurb": "Picnic table 1.80 m long. Top at 0.76 m, benches at 0.45 m. Distinct from the toy picnic prop.",
     "size": [
       1.8,
-      0.768,
+      0.781,
       1.32
     ],
     "min": [
@@ -9424,16 +9474,17 @@
     ],
     "max": [
       0.9,
-      0.777,
+      0.79,
       0.66
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 364,
+        "tris": 424,
         "materials": [
           "Lib_Wood",
-          "Lib_SteelDark"
+          "Lib_SteelDark",
+          "Lib_Steel"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
@@ -9642,12 +9693,12 @@
     "blurb": "Fender pile, 3.20 m tall, 32 cm at the base tapering to 24 cm. Steel band and a rope wrap.",
     "size": [
       0.4,
-      3.2,
+      4.65,
       0.4
     ],
     "min": [
       -0.2,
-      0.0,
+      -1.45,
       -0.2
     ],
     "max": [
@@ -9658,10 +9709,10 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 464,
+        "tris": 508,
         "materials": [
-          "Lib_Concrete",
           "Lib_WoodDark",
+          "Lib_Concrete",
           "Lib_SteelDark",
           "Lib_Steel",
           "Lib_Rust"
@@ -9671,10 +9722,10 @@
       },
       {
         "lod": 1,
-        "tris": 112,
+        "tris": 140,
         "materials": [
-          "Lib_Concrete",
           "Lib_WoodDark",
+          "Lib_Concrete",
           "Lib_SteelDark",
           "Lib_Steel"
         ],
@@ -9718,7 +9769,7 @@
     "climbable": false,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Round timber. Not a cling wall.",
+    "climbNote": "Round timber. Not a cling wall. About 1.4 m of the shaft is below the pivot, in the water.",
     "vaultNote": "No rail. The head is 3.2 m, too high to vault from the dock.",
     "warnings": [],
     "fbxNames": [
@@ -9893,6 +9944,140 @@
     ],
     "slackCm": 0.8,
     "fbx": "Assets/Art/Props/Library/Park/Planter.fbx"
+  },
+  {
+    "name": "Quay_Edge",
+    "category": "Harbor",
+    "blurb": "Concrete quay module, 8 x 3.6 m, deck at 0.90 m. Bullnose and three fenders on -Z. The face runs into the water.",
+    "size": [
+      8.0,
+      1.165,
+      3.67
+    ],
+    "min": [
+      -4.0,
+      -0.2,
+      -1.72
+    ],
+    "max": [
+      4.0,
+      0.965,
+      1.95
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 316,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Rubber",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Lane"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 136,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0,
+          0.72,
+          0.55
+        ],
+        "size": [
+          7.8,
+          0.3,
+          2.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Face",
+        "type": "box",
+        "center": [
+          0,
+          0.18,
+          -1.22
+        ],
+        "size": [
+          7.8,
+          0.64,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Fender_0",
+        "type": "capsule",
+        "center": [
+          -2.6,
+          0.32,
+          -1.58
+        ],
+        "radius": 0.11,
+        "height": 0.48,
+        "direction": 1
+      },
+      {
+        "name": "Col_Fender_1",
+        "type": "capsule",
+        "center": [
+          0.0,
+          0.32,
+          -1.58
+        ],
+        "radius": 0.11,
+        "height": 0.48,
+        "direction": 1
+      },
+      {
+        "name": "Col_Fender_2",
+        "type": "capsule",
+        "center": [
+          2.6,
+          0.32,
+          -1.58
+        ],
+        "radius": 0.11,
+        "height": 0.48,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The face is a wall. Too low and too thick to treat as a cling panel from the water.",
+    "vaultNote": "Deck is 0.90 m. The bullnose is rounded, not a rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Harbor/Quay_Edge.fbx"
   },
   {
     "name": "RaisedCrosswalk",
@@ -10471,28 +10656,153 @@
     "fbx": "Assets/Art/Props/Library/Roads/Road_T.fbx"
   },
   {
+    "name": "Roof_Parapet",
+    "category": "Buildings",
+    "blurb": "4.00 m parapet with a corbelled cornice and a concrete coping. 0.72 m tall. Stack on a wall.",
+    "size": [
+      4.14,
+      0.68,
+      0.48
+    ],
+    "min": [
+      -2.07,
+      0.02,
+      -0.18
+    ],
+    "max": [
+      2.07,
+      0.7,
+      0.3
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 112,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 36,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 36,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Climb_Parapet",
+        "type": "box",
+        "center": [
+          0,
+          0.28,
+          0
+        ],
+        "size": [
+          4.0,
+          0.52,
+          0.3
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cornice",
+        "type": "box",
+        "center": [
+          0,
+          0.58,
+          0.04
+        ],
+        "size": [
+          4.08,
+          0.16,
+          0.42
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Coping",
+        "type": "box",
+        "center": [
+          0,
+          0.66,
+          0.06
+        ],
+        "size": [
+          4.14,
+          0.08,
+          0.46
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Short cling face. A roof edge, not a full wall.",
+    "vaultNote": "Coping is 0.72 m above its own base.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 2.2,
+    "fbx": "Assets/Art/Props/Library/Buildings/Roof_Parapet.fbx"
+  },
+  {
     "name": "RooftopAC",
     "category": "Buildings",
     "blurb": "Rooftop condenser 1.30 x 0.90 m, 0.85 m tall, two fan grilles, sits on 8 cm rails.",
     "size": [
-      1.3,
+      1.33,
       0.895,
       0.9
     ],
     "min": [
-      -0.65,
+      -0.66,
       0.0,
       -0.45
     ],
     "max": [
-      0.65,
+      0.67,
       0.895,
       0.45
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 404,
+        "tris": 488,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -10595,7 +10905,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 2.38,
+    "slackCm": 2.8,
     "fbx": "Assets/Art/Props/Library/Buildings/RooftopAC.fbx"
   },
   {
@@ -10752,11 +11062,11 @@
   {
     "name": "ShopFront",
     "category": "Buildings",
-    "blurb": "4.0 x 3.2 m shop bay. Display glass, closed door, awning projects 1.1 m on +Z.",
+    "blurb": "4.0 x 3.2 m shop bay. Framed glass, a door with a handle, and an awning that projects 1.1 m on +Z.",
     "size": [
       4.0,
       3.2,
-      1.263
+      1.262
     ],
     "min": [
       -2.0,
@@ -10766,42 +11076,44 @@
     "max": [
       2.0,
       3.2,
-      1.123
+      1.122
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 388,
+        "tris": 292,
         "materials": [
           "Lib_Brick",
           "Lib_Window",
+          "Lib_SteelDark",
           "Lib_WoodDark",
           "Lib_Awning",
-          "Lib_SteelDark",
-          "Lib_PaintWhite"
+          "Lib_Steel",
+          "Lib_Brass"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 84,
+        "tris": 152,
         "materials": [
           "Lib_Brick",
           "Lib_Window",
+          "Lib_SteelDark",
           "Lib_WoodDark",
-          "Lib_Awning",
-          "Lib_SteelDark"
+          "Lib_Awning"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
       },
       {
         "lod": 2,
-        "tris": 60,
+        "tris": 96,
         "materials": [
           "Lib_Brick",
           "Lib_Window",
+          "Lib_SteelDark",
           "Lib_WoodDark"
         ],
         "mesh": "LOD2",
@@ -10870,13 +11182,13 @@
         "name": "Col_Glass",
         "type": "box",
         "center": [
-          -0.55,
+          -0.45,
           1.35,
-          0.02
+          0.0
         ],
         "size": [
-          1.15,
-          2.15,
+          1.3,
+          2.1,
           0.02
         ],
         "euler": [
@@ -10889,13 +11201,13 @@
         "name": "Col_Door",
         "type": "box",
         "center": [
-          0.85,
-          1.15,
-          0.04
+          0.95,
+          1.1,
+          0.03
         ],
         "size": [
-          0.85,
-          2.1,
+          0.78,
+          2.05,
           0.05
         ],
         "euler": [
@@ -10936,7 +11248,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 1.01,
+    "slackCm": 1.5,
     "fbx": "Assets/Art/Props/Library/Buildings/ShopFront.fbx"
   },
   {
@@ -11314,6 +11626,202 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Roads/StopBar.fbx"
+  },
+  {
+    "name": "Storefront_Glass",
+    "category": "Buildings",
+    "blurb": "4.00 x 3.20 m ground-floor bay. Inset glass, mullions, and a framed door with a handle. Exterior is +Z. No awning.",
+    "size": [
+      4.0,
+      3.2,
+      0.38
+    ],
+    "min": [
+      -2.0,
+      0.0,
+      -0.19
+    ],
+    "max": [
+      2.0,
+      3.2,
+      0.19
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 300,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_SteelDark",
+          "Lib_WoodDark",
+          "Lib_Wood",
+          "Lib_Steel",
+          "Lib_Brass"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 144,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_SteelDark",
+          "Lib_WoodDark",
+          "Lib_Wood"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 144,
+        "materials": [
+          "Lib_Brick",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_SteelDark",
+          "Lib_WoodDark",
+          "Lib_Wood"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Climb_PierL",
+        "type": "box",
+        "center": [
+          -1.55,
+          1.6,
+          0
+        ],
+        "size": [
+          0.9,
+          3.2,
+          0.3
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_PierR",
+        "type": "box",
+        "center": [
+          1.55,
+          1.6,
+          0
+        ],
+        "size": [
+          0.9,
+          3.2,
+          0.3
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Header",
+        "type": "box",
+        "center": [
+          0,
+          2.95,
+          0
+        ],
+        "size": [
+          2.2,
+          0.5,
+          0.3
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass",
+        "type": "box",
+        "center": [
+          -0.35,
+          1.45,
+          0.0
+        ],
+        "size": [
+          1.5,
+          2.3,
+          0.02
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Door",
+        "type": "box",
+        "center": [
+          1.05,
+          1.1,
+          0.02
+        ],
+        "size": [
+          0.78,
+          2.05,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cornice",
+        "type": "box",
+        "center": [
+          0,
+          3.16,
+          0
+        ],
+        "size": [
+          4.0,
+          0.08,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Piers are cling. Glass and the door are solid. Exterior is +Z.",
+    "vaultNote": "No rail. The head is at 3.2 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.8,
+    "fbx": "Assets/Art/Props/Library/Buildings/Storefront_Glass.fbx"
   },
   {
     "name": "StormDrain",
@@ -11708,28 +12216,121 @@
   {
     "name": "Tree",
     "category": "Park",
-    "blurb": "Shade tree, trunk to 1.8 m, canopy about 5.2 m tall and 3.4 m across.",
+    "blurb": "Oak. Tapered trunk to about 2.2 m, forked limbs, and overlapping green clusters. Canopy about 4.0 m tall.",
     "size": [
-      3.446,
-      4.541,
-      3.322
+      3.417,
+      3.792,
+      2.801
     ],
     "min": [
-      -1.659,
+      -1.62,
       0.0,
-      -1.755
+      -1.556
     ],
     "max": [
-      1.788,
-      4.541,
-      1.567
+      1.797,
+      3.792,
+      1.245
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1996,
+        "tris": 936,
         "materials": [
           "Lib_WoodDark",
+          "Lib_Foliage",
+          "Lib_FoliageDark",
+          "Lib_FoliageLite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 552,
+        "materials": [
+          "Lib_WoodDark",
+          "Lib_Foliage",
+          "Lib_FoliageDark",
+          "Lib_FoliageLite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Flare",
+        "type": "box",
+        "center": [
+          0,
+          0.06,
+          0
+        ],
+        "size": [
+          0.36,
+          0.12,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Trunk",
+        "type": "capsule",
+        "center": [
+          0,
+          1.1,
+          0
+        ],
+        "radius": 0.09,
+        "height": 1.9,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Trunk is round, about 0.28 m at the flare. Not a flat cling wall.",
+    "vaultNote": "No rail. The canopy is visual; the trunk is the blocker.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 1.5,
+    "fbx": "Assets/Art/Props/Library/Park/Tree.fbx"
+  },
+  {
+    "name": "Tree_Maple",
+    "category": "Park",
+    "blurb": "Maple. Slimmer trunk than the oak, upright forks, olive and deep-green clusters.",
+    "size": [
+      2.684,
+      3.918,
+      2.162
+    ],
+    "min": [
+      -1.292,
+      0.0,
+      -1.123
+    ],
+    "max": [
+      1.393,
+      3.918,
+      1.038
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 936,
+        "materials": [
+          "Lib_WoodDark",
+          "Lib_FoliageLite",
           "Lib_Foliage",
           "Lib_FoliageDark"
         ],
@@ -11738,9 +12339,10 @@
       },
       {
         "lod": 1,
-        "tris": 688,
+        "tris": 552,
         "materials": [
           "Lib_WoodDark",
+          "Lib_FoliageLite",
           "Lib_Foliage",
           "Lib_FoliageDark"
         ],
@@ -11754,12 +12356,12 @@
         "type": "box",
         "center": [
           0,
-          0.07,
+          0.05,
           0
         ],
         "size": [
           0.28,
-          0.12,
+          0.1,
           0.28
         ],
         "euler": [
@@ -11773,18 +12375,18 @@
         "type": "capsule",
         "center": [
           0,
-          1.05,
+          1.2,
           0
         ],
         "radius": 0.07,
-        "height": 1.2,
+        "height": 2.1,
         "direction": 1
       }
     ],
     "climbable": false,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Trunk is round, 0.28 m at the flare. Not a flat cling wall.",
+    "climbNote": "Trunk is round. Not a flat cling wall.",
     "vaultNote": "No rail. The canopy is visual; the trunk is the blocker.",
     "warnings": [],
     "fbxNames": [
@@ -11792,8 +12394,169 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 1.32,
-    "fbx": "Assets/Art/Props/Library/Park/Tree.fbx"
+    "slackCm": 2.23,
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Maple.fbx"
+  },
+  {
+    "name": "Tree_Palm",
+    "category": "Park",
+    "blurb": "Street palm. Ringed trunk with a slight lean, about 4.2 m to the crown, arching fronds.",
+    "size": [
+      3.1,
+      4.345,
+      3.1
+    ],
+    "min": [
+      -1.07,
+      0.0,
+      -1.45
+    ],
+    "max": [
+      2.03,
+      4.345,
+      1.65
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 120,
+        "materials": [
+          "Lib_WoodDark",
+          "Lib_PalmDry",
+          "Lib_Palm"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 60,
+        "materials": [
+          "Lib_WoodDark",
+          "Lib_PalmDry",
+          "Lib_Palm"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Trunk",
+        "type": "capsule",
+        "center": [
+          0.04,
+          1.15,
+          0.02
+        ],
+        "radius": 0.055,
+        "height": 1.5,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Trunk is round. Not a flat cling wall.",
+    "vaultNote": "No rail. Fronds are visual; the trunk is the blocker.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Palm.fbx"
+  },
+  {
+    "name": "Tree_Pine",
+    "category": "Park",
+    "blurb": "Pine. Trunk to about 3.4 m, branch whorls, and a narrow crown of needle clusters.",
+    "size": [
+      3.018,
+      4.352,
+      2.801
+    ],
+    "min": [
+      -1.454,
+      0.0,
+      -1.331
+    ],
+    "max": [
+      1.565,
+      4.352,
+      1.47
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1732,
+        "materials": [
+          "Lib_WoodDark",
+          "Lib_Needle",
+          "Lib_FoliageDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 528,
+        "materials": [
+          "Lib_WoodDark",
+          "Lib_Needle",
+          "Lib_FoliageDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Flare",
+        "type": "box",
+        "center": [
+          0,
+          0.05,
+          0
+        ],
+        "size": [
+          0.28,
+          0.1,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Trunk",
+        "type": "capsule",
+        "center": [
+          0,
+          1.7,
+          0
+        ],
+        "radius": 0.07,
+        "height": 3.2,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Trunk is round. Not a flat cling wall.",
+    "vaultNote": "No rail. The crown is visual; the trunk is the blocker.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 2.27,
+    "fbx": "Assets/Art/Props/Library/Park/Tree_Pine.fbx"
   },
   {
     "name": "UtilityPole",
@@ -11906,7 +12669,7 @@
     "size": [
       0.7,
       0.48,
-      0.6
+      0.616
     ],
     "min": [
       -0.35,
@@ -11916,12 +12679,12 @@
     "max": [
       0.35,
       0.48,
-      0.44
+      0.456
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 144,
+        "tris": 204,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintWhite",
@@ -11994,7 +12757,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.69,
+    "slackCm": 0.7,
     "fbx": "Assets/Art/Props/Library/Utility/WallAC.fbx"
   },
   {
@@ -12131,34 +12894,35 @@
     "category": "Buildings",
     "blurb": "Privacy fence bay, 2.0 m wide, 1.8 m tall. Vertical boards, 6 mm gaps, posts at the ends.",
     "size": [
-      2.02,
+      2.04,
       1.9,
-      0.1
+      0.12
     ],
     "min": [
-      -1.01,
+      -1.02,
       0.0,
-      -0.05
+      -0.06
     ],
     "max": [
-      1.01,
+      1.02,
       1.9,
-      0.05
+      0.06
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 640,
+        "tris": 676,
         "materials": [
           "Lib_WoodDark",
-          "Lib_Wood"
+          "Lib_Wood",
+          "Lib_SteelDark"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 120,
+        "tris": 132,
         "materials": [
           "Lib_WoodDark",
           "Lib_Wood"

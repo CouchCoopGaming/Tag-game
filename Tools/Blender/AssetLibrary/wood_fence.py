@@ -25,6 +25,10 @@ def create():
             g.box((x, 0.88, 0), (w, 1.68, 0.018), "Lib_Wood", bevel=bev, segs=1, uv_scale=1.2)
         g.box((0, 0.40, -0.02), (1.7, 0.08, 0.04), "Lib_WoodDark")
         g.box((0, 1.35, -0.02), (1.7, 0.08, 0.04), "Lib_WoodDark")
+        g.box((0, 0.08, 0), (1.72, 0.10, 0.03), "Lib_WoodDark")
+        if lod == 0:
+            for x in (-0.96, 0.96):
+                g.box((x, 1.88, 0), (0.12, 0.04, 0.12), "Lib_SteelDark")
         a.end()
     a.box("Climb_Boards", (0, 0.88, 0), (1.72, 1.68, 0.018))
     a.box("Col_PostL", (-0.96, 0.95, 0), (0.10, 1.90, 0.10))

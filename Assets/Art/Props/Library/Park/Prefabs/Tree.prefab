@@ -45,8 +45,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0.0645, y: 2.2705, z: -0.094}
-  m_Size: 4.541
+  m_LocalReferencePoint: {x: 0.0885, y: 1.896, z: -0.1555}
+  m_Size: 3.792
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -73,11 +73,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Park"
-  summary: "Shade tree, trunk to 1.8 m, canopy about 5.2 m tall and 3.4 m across."
+  summary: "Oak. Tapered trunk to about 2.2 m, forked limbs, and overlapping green clusters. Canopy about 4.0 m tall."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
-  climbNote: "Trunk is round, 0.28 m at the flare. Not a flat cling wall."
+  climbNote: "Trunk is round, about 0.28 m at the flare. Not a flat cling wall."
   vaultNote: "No rail. The canopy is visual; the trunk is the blocker."
 --- !u!1 &200000
 GameObject:
@@ -148,6 +148,7 @@ MeshRenderer:
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
   - {fileID: 2100000, guid: 554928ac8205abf94b8cb69c3279f2b0, type: 2}
   - {fileID: 2100000, guid: de7167446ef05ac0976c9c0c1db0ddf3, type: 2}
+  - {fileID: 2100000, guid: d701dfb2aa2c6528ef392f63aadf8bb1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -240,6 +241,7 @@ MeshRenderer:
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
   - {fileID: 2100000, guid: 554928ac8205abf94b8cb69c3279f2b0, type: 2}
   - {fileID: 2100000, guid: de7167446ef05ac0976c9c0c1db0ddf3, type: 2}
+  - {fileID: 2100000, guid: d701dfb2aa2c6528ef392f63aadf8bb1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -289,7 +291,7 @@ Transform:
   m_GameObject: {fileID: 300000}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.07, z: 0}
+  m_LocalPosition: {x: 0, y: 0.06, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -314,7 +316,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.28, y: 0.12, z: 0.28}
+  m_Size: {x: 0.36, y: 0.12, z: 0.36}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300010
 GameObject:
@@ -342,7 +344,7 @@ Transform:
   m_GameObject: {fileID: 300010}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.05, z: 0}
+  m_LocalPosition: {x: 0, y: 1.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -366,7 +368,7 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.07
-  m_Height: 1.2
+  m_Radius: 0.09
+  m_Height: 1.9
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}

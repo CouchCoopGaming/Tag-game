@@ -149,7 +149,8 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
-  - {fileID: 2100000, guid: e8ad6044e0954e24f3975bbb91d62e0d, type: 2}
+  - {fileID: 2100000, guid: d678aa8c0505d5fac6704a95b0cdb5c7, type: 2}
+  - {fileID: 2100000, guid: 3c701fb43fbe96f25d527f6e3fb06a33, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -242,7 +243,8 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
   - {fileID: 2100000, guid: b0ae13624c44bb51920d1571b19a6d8d, type: 2}
-  - {fileID: 2100000, guid: e8ad6044e0954e24f3975bbb91d62e0d, type: 2}
+  - {fileID: 2100000, guid: d678aa8c0505d5fac6704a95b0cdb5c7, type: 2}
+  - {fileID: 2100000, guid: 3c701fb43fbe96f25d527f6e3fb06a33, type: 2}
   - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -425,7 +427,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.28, y: 0.32, z: 0.28}
+  m_Size: {x: 0.18, y: 0.22, z: 0.18}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300030
 GameObject:

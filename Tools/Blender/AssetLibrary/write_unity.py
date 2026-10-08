@@ -32,7 +32,9 @@ def load_palette():
     text = open(COMMON, encoding="utf-8").read()
     block = re.search(r"PALETTE = (\{.*?\n\})", text, re.S).group(1)
     textured = re.search(r"TEXTURED = (\([^)]*\))", text, re.S).group(1)
-    return ast.literal_eval(block), set(ast.literal_eval(textured))
+    normals = re.search(r"NORMALS = (\([^)]*\))", text, re.S)
+    normal_names = set(ast.literal_eval(normals.group(1))) if normals else set()
+    return ast.literal_eval(block), set(ast.literal_eval(textured)), normal_names
 
 
 def q_from_matrix(m):
@@ -256,7 +258,7 @@ TextureImporter:
     return guid("tex", key)
 
 
-def write_materials(palette, textured):
+def write_materials(palette, textured, normals):
     src = open(RUNNER_MAT, encoding="utf-8").read()
     # Drop the editor version sidecar; the material itself ends at the first document.
     src = src.split("--- !u!114")[0].rstrip() + "\n"
@@ -273,11 +275,12 @@ def write_materials(palette, textured):
             tex = "{fileID: 2800000, guid: %s, type: 3}" % guid("tex", name)
             body = body.replace("_BaseMap:\n        m_Texture: {fileID: 0}", "_BaseMap:\n        m_Texture: " + tex)
             body = body.replace("_MainTex:\n        m_Texture: {fileID: 0}", "_MainTex:\n        m_Texture: " + tex)
-        if name == "Lib_Brick":
-            bump = "{fileID: 2800000, guid: %s, type: 3}" % guid("tex", "Lib_Brick_N")
+        if name in normals:
+            bump = "{fileID: 2800000, guid: %s, type: 3}" % guid("tex", name + "_N")
             body = body.replace("_BumpMap:\n        m_Texture: {fileID: 0}", "_BumpMap:\n        m_Texture: " + bump)
             body = body.replace("m_ValidKeywords: []", "m_ValidKeywords:\n  - _NORMALMAP")
-            body = body.replace("- _BumpScale: 1", "- _BumpScale: 0.6")
+            scale = "0.35" if name == "Lib_Water" else "0.6"
+            body = body.replace("- _BumpScale: 1", "- _BumpScale: %s" % scale)
         if name == "Lib_Lamp":
             body = body.replace(
                 "- _EmissionColor: {r: 0, g: 0, b: 0, a: 1}",
@@ -542,7 +545,7 @@ def collider_summary(cols):
 
 def write_doc(entries):
     lines = []
-    lines.append("# Asset library, pass 2")
+    lines.append("# Asset library, pass 3")
     lines.append("")
     lines.append("Procedural props for the couch tag arenas. Real meters, +Y up, pivot at the ground contact (or the module origin called out in the notes). Players are about 1.8 m. Vault rails in the park kit sit at 0.90–1.05 m. Every mesh is rebuilt from `Tools/Blender/AssetLibrary/<asset>.py`.")
     lines.append("")
@@ -553,7 +556,7 @@ def write_doc(entries):
     lines.append("```")
     lines.append("blender --background --python Tools/Blender/AssetLibrary/build_all.py")
     lines.append("python3 Tools/Blender/AssetLibrary/write_unity.py")
-    lines.append("blender --background --python Tools/Blender/AssetLibrary/render_pass2.py -- --phase all")
+    lines.append("blender --background --python Tools/Blender/AssetLibrary/render_pass3.py")
     lines.append("```")
     lines.append("")
     lines.append("Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase scene is `Assets/Scenes/AssetShowcase.unity`. It is not in the build settings and it does not touch the three arenas. `Tag/Asset Showcase` rebuilds that scene from the prefabs.")
@@ -591,22 +594,21 @@ def write_doc(entries):
     lines.append("## Modules")
     lines.append("")
     lines.append("- Roads are 6 m wide and 4 m long. Top of asphalt is 0.12 m. Sidewalk top is 0.27 m (15 cm curb) and the curb faces -X, so it butts the road edge at x = ±3. Straight tiles step 4 m along Z.")
-    lines.append("- Brick bays are 4.0 m wide, 3.2 m tall, 0.30 m thick, exterior +Z. Corners turn the exterior onto -X and -Z. The parapet stacks on a wall at y = 3.2.")
+    lines.append("- Brick bays are 4.0 m wide, 3.2 m tall, 0.30 m thick, exterior +Z. Stack a second row at y = 3.2 for two stories. `Storefront_Glass` and `ShopFront` (the awning option) replace a ground-floor bay. `Roof_Parapet` stacks on the top course.")
     lines.append("- Dock modules share a deck at 0.62 m. `Dock_Straight` is 4 × 2 m. `Dock_Corner` is an L inside a 4 m square; its pivot is the center of that square.")
     lines.append("- Containers are external ISO sizes: 20 ft is 6.06 × 2.44 × 2.59 m, 40 ft is 12.19 × 2.44 × 2.59 m. Doors face +Z. Ribs stand about 2 cm proud of the collider.")
-    lines.append("- The court is 14 × 10 m of asphalt. Lane is 3.66 m wide, free-throw is 5.79 m from the baseline, arc radius is 6.25 m. `CourtFence` shares the court pivot: baselines 3.05 m, sidelines 1.80 m, closed gate on +X. `Hoop` rim is 3.05 m and faces +Z.")
+    lines.append("- The court is a 22 × 12 m street full court. Each end has a 3.66 m lane and a free-throw 5.79 m from the baseline. The arc is 6.75 m and the center circle is 1.80 m. `CourtFence` shares that pivot. `Hoop` faces +Z; place one at each baseline, yaw 180 on the far end, so both rims face center court.")
     lines.append("- `DockRamp` is 4 × 2 m and falls from 0.62 m at -Z to 0.05 m at +Z. A dock centered at the origin meets a ramp centered at z = 4.")
     lines.append("- `LaneArrow` and `StopBar` are paint. Place them on a road top (y = 0.12). They have no collider. `RaisedCrosswalk` replaces a 6 × 4 m road tile; the crown is 8 cm above the road and the collider follows that hump.")
-    lines.append("- `HarborWater` is a 16 × 12 m sheet with no collider. `Mooring` is a 3.2 m finger at 0.55 m with a cleat and rope. `Lib_Lamp` is the street-light lens. `Lib_Window` is the emissive glass on the house, garage, shop, cabin, and brick window.")
+    lines.append("- `HarborWater` is a dark rippled sheet with no collider. `Quay_Edge` is an 8 m concrete quay, deck at 0.90 m, bullnose and fenders on -Z, face running below the pivot into the water. `Piling` continues about 1.4 m below its pivot. `Mooring` is a 3.2 m finger at 0.55 m.")
     lines.append("- No gazebo existed in the repo. `Pavilion` is the park shelter: 4.6 m square, rail 0.95 m above the deck, pyramid roof.")
     lines.append("- `Mannequin` is a 1.80 m scale figure for the showcase. It is not a gameplay character.")
     lines.append("")
     lines.append("## TODO")
     lines.append("")
-    lines.append("- Interior dressing (shelves, bollard line, cafe tables) once the shell kit is in an arena.")
-    lines.append("- A second dock length is not a separate mesh; butt two `Dock_Straight` modules. The ramp is the height change.")
-    lines.append("- Lighthouse lantern: glass rooms and a fresnel, if it becomes a landmark.")
-    lines.append("- Animated water, night-only light cookies, and a second hoop pad color if a full court is dressed in an arena.")
+    lines.append("- Interior dressing once a shell is placed in an arena.")
+    lines.append("- Lighthouse fresnel, animated water, and night light cookies if a harbor becomes a landmark.")
+    lines.append("- A second dock length is two `Dock_Straight` modules. The quay is the working edge; the dock sits in the water in front of it.")
     lines.append("")
     write(os.path.join(REPO, "Docs", "AssetLibrary.md"), "\n".join(lines) + "\n")
 
@@ -1053,7 +1055,7 @@ def ensure_folders():
 
 
 def main():
-    palette, textured = load_palette()
+    palette, textured, normals = load_palette()
     entries = json.load(open(MANIFEST, encoding="utf-8"))
     ensure_folders()
     for name in textured:
@@ -1072,7 +1074,7 @@ def main():
             if os.path.isfile(png + ".meta"):
                 continue
             texture_meta(png, fn[:-4], normal=fn.endswith("_N.png"))
-    mat_guids = write_materials(palette, textured)
+    mat_guids = write_materials(palette, textured, normals)
     script_guid = guid("script", "LibraryPropMeta")
     script_meta(os.path.join(LIB, "Scripts", "LibraryPropMeta.cs"), "LibraryPropMeta")
     script_meta(os.path.join(REPO, "Assets", "Editor", "AssetLibraryShowcase.cs"), "AssetLibraryShowcase")

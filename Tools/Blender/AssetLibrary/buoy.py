@@ -28,6 +28,7 @@ def create():
         if lod == 0:
             g.sphere((0, 1.34, 0), 0.035, "Lib_PaintYellow", 8)
             g.torus((0, 0.52, 0), 0.34, 0.012, "Lib_SteelDark", 16, 6)
+            g.torus((0, 0.06, 0), 0.06, 0.008, "Lib_Rust", 8, 4)
         a.end()
     a.sphere("Col_Float", (0, 0.52, 0), 0.34)
     a.box("Col_Base", (0, 0.10, 0), (0.08, 0.14, 0.08))
