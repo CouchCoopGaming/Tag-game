@@ -42442,13 +42442,13 @@
     "blurb": "Midsize sedan, 2021 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color crimson.",
     "size": [
       1.947,
-      1.438,
-      4.915
+      1.443,
+      4.919
     ],
     "min": [
       -0.973,
-      0.005,
-      -2.457
+      0.0,
+      -2.461
     ],
     "max": [
       0.973,
@@ -42458,11 +42458,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 19606,
+        "tris": 27052,
         "materials": [
           "Lib_PaintCrimson",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -42475,11 +42475,11 @@
       },
       {
         "lod": 1,
-        "tris": 4612,
+        "tris": 8162,
         "materials": [
           "Lib_PaintCrimson",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -42492,13 +42492,14 @@
       },
       {
         "lod": 2,
-        "tris": 1516,
+        "tris": 3018,
         "materials": [
+          "Lib_Black",
           "Lib_PaintCrimson",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Headlamp",
           "Lib_Taillamp",
           "Lib_SignalAmber"
@@ -42517,9 +42518,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -42536,9 +42537,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -42555,9 +42556,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -42574,9 +42575,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -42589,13 +42590,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          -0.05
+          0.4,
+          -0.08
         ],
         "size": [
-          0.62,
-          0.32,
-          0.9
+          0.44,
+          0.18,
+          0.64
         ],
         "euler": [
           0,
@@ -42608,13 +42609,13 @@
         "type": "box",
         "center": [
           0.0,
-          1.28,
+          1.3,
           -0.05
         ],
         "size": [
-          0.36,
-          0.06,
-          0.48
+          0.28,
+          0.05,
+          0.4
         ],
         "euler": [
           0,
@@ -42627,13 +42628,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.7,
-          1.62
+          0.72,
+          1.45
         ],
         "size": [
-          0.55,
-          0.16,
-          0.48
+          0.4,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -42646,13 +42647,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.76,
-          -1.62
+          0.78,
+          -1.55
         ],
         "size": [
-          0.55,
-          0.14,
-          0.36
+          0.46,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -42682,13 +42683,13 @@
     "blurb": "Midsize sedan, 2022 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color crimson.",
     "size": [
       1.947,
-      1.438,
-      4.915
+      1.443,
+      4.919
     ],
     "min": [
       -0.973,
-      0.005,
-      -2.457
+      0.0,
+      -2.461
     ],
     "max": [
       0.973,
@@ -42698,11 +42699,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 19870,
+        "tris": 27324,
         "materials": [
           "Lib_PaintCrimson",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -42714,11 +42715,11 @@
       },
       {
         "lod": 1,
-        "tris": 4600,
+        "tris": 8146,
         "materials": [
           "Lib_PaintCrimson",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -42730,13 +42731,14 @@
       },
       {
         "lod": 2,
-        "tris": 1504,
+        "tris": 3002,
         "materials": [
+          "Lib_Black",
           "Lib_PaintCrimson",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Headlamp",
           "Lib_Taillamp"
         ],
@@ -42754,9 +42756,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -42773,9 +42775,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -42792,9 +42794,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -42811,9 +42813,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -42826,13 +42828,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          -0.05
+          0.4,
+          -0.08
         ],
         "size": [
-          0.62,
-          0.32,
-          0.9
+          0.44,
+          0.18,
+          0.64
         ],
         "euler": [
           0,
@@ -42845,13 +42847,13 @@
         "type": "box",
         "center": [
           0.0,
-          1.28,
+          1.3,
           -0.05
         ],
         "size": [
-          0.36,
-          0.06,
-          0.48
+          0.28,
+          0.05,
+          0.4
         ],
         "euler": [
           0,
@@ -42864,13 +42866,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.7,
-          1.62
+          0.72,
+          1.45
         ],
         "size": [
-          0.55,
-          0.16,
-          0.48
+          0.4,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -42883,13 +42885,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.76,
-          -1.62
+          0.78,
+          -1.55
         ],
         "size": [
-          0.55,
-          0.14,
-          0.36
+          0.46,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -42919,13 +42921,13 @@
     "blurb": "Midsize sedan, 2023 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color crimson.",
     "size": [
       1.947,
-      1.438,
-      4.915
+      1.443,
+      4.919
     ],
     "min": [
       -0.973,
-      0.005,
-      -2.457
+      0.0,
+      -2.461
     ],
     "max": [
       0.973,
@@ -42935,11 +42937,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 19762,
+        "tris": 27304,
         "materials": [
           "Lib_PaintCrimson",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -42952,11 +42954,11 @@
       },
       {
         "lod": 1,
-        "tris": 4624,
+        "tris": 8226,
         "materials": [
           "Lib_PaintCrimson",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -42969,13 +42971,14 @@
       },
       {
         "lod": 2,
-        "tris": 1528,
+        "tris": 3082,
         "materials": [
+          "Lib_Black",
           "Lib_PaintCrimson",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Headlamp",
           "Lib_Taillamp",
           "Lib_SignalAmber"
@@ -42994,9 +42997,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43013,9 +43016,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43032,9 +43035,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43051,9 +43054,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43066,13 +43069,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          -0.05
+          0.4,
+          -0.08
         ],
         "size": [
-          0.62,
-          0.32,
-          0.9
+          0.44,
+          0.18,
+          0.64
         ],
         "euler": [
           0,
@@ -43085,13 +43088,13 @@
         "type": "box",
         "center": [
           0.0,
-          1.28,
+          1.3,
           -0.05
         ],
         "size": [
-          0.36,
-          0.06,
-          0.48
+          0.28,
+          0.05,
+          0.4
         ],
         "euler": [
           0,
@@ -43104,13 +43107,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.7,
-          1.62
+          0.72,
+          1.45
         ],
         "size": [
-          0.55,
-          0.16,
-          0.48
+          0.4,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -43123,13 +43126,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.76,
-          -1.62
+          0.78,
+          -1.55
         ],
         "size": [
-          0.55,
-          0.14,
-          0.36
+          0.46,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -43159,13 +43162,13 @@
     "blurb": "Midsize sedan, 2024 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color crimson.",
     "size": [
       1.947,
-      1.438,
-      4.915
+      1.443,
+      4.919
     ],
     "min": [
       -0.973,
-      0.005,
-      -2.457
+      0.0,
+      -2.461
     ],
     "max": [
       0.973,
@@ -43175,11 +43178,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 20002,
+        "tris": 27504,
         "materials": [
           "Lib_PaintCrimson",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -43191,11 +43194,11 @@
       },
       {
         "lod": 1,
-        "tris": 4672,
+        "tris": 8254,
         "materials": [
           "Lib_PaintCrimson",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -43207,13 +43210,14 @@
       },
       {
         "lod": 2,
-        "tris": 1528,
+        "tris": 3062,
         "materials": [
+          "Lib_Black",
           "Lib_PaintCrimson",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Headlamp",
           "Lib_Taillamp"
         ],
@@ -43231,9 +43235,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43250,9 +43254,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43269,9 +43273,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43288,9 +43292,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43303,13 +43307,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          -0.05
+          0.4,
+          -0.08
         ],
         "size": [
-          0.62,
-          0.32,
-          0.9
+          0.44,
+          0.18,
+          0.64
         ],
         "euler": [
           0,
@@ -43322,13 +43326,13 @@
         "type": "box",
         "center": [
           0.0,
-          1.28,
+          1.3,
           -0.05
         ],
         "size": [
-          0.36,
-          0.06,
-          0.48
+          0.28,
+          0.05,
+          0.4
         ],
         "euler": [
           0,
@@ -43341,13 +43345,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.7,
-          1.62
+          0.72,
+          1.45
         ],
         "size": [
-          0.55,
-          0.16,
-          0.48
+          0.4,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -43360,13 +43364,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.76,
-          -1.62
+          0.78,
+          -1.55
         ],
         "size": [
-          0.55,
-          0.14,
-          0.36
+          0.46,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -43396,13 +43400,13 @@
     "blurb": "Midsize sedan, 2025 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color crimson.",
     "size": [
       1.947,
-      1.438,
-      4.915
+      1.443,
+      4.919
     ],
     "min": [
       -0.973,
-      0.005,
-      -2.457
+      0.0,
+      -2.461
     ],
     "max": [
       0.973,
@@ -43412,11 +43416,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 20098,
+        "tris": 27648,
         "materials": [
           "Lib_PaintCrimson",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -43428,11 +43432,11 @@
       },
       {
         "lod": 1,
-        "tris": 4672,
+        "tris": 8322,
         "materials": [
           "Lib_PaintCrimson",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -43444,13 +43448,14 @@
       },
       {
         "lod": 2,
-        "tris": 1480,
+        "tris": 3082,
         "materials": [
+          "Lib_Black",
           "Lib_PaintCrimson",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Headlamp",
           "Lib_Taillamp"
         ],
@@ -43468,9 +43473,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43487,9 +43492,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43506,9 +43511,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43525,9 +43530,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43540,13 +43545,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          -0.05
+          0.4,
+          -0.08
         ],
         "size": [
-          0.62,
-          0.32,
-          0.9
+          0.44,
+          0.18,
+          0.64
         ],
         "euler": [
           0,
@@ -43559,13 +43564,13 @@
         "type": "box",
         "center": [
           0.0,
-          1.28,
+          1.3,
           -0.05
         ],
         "size": [
-          0.36,
-          0.06,
-          0.48
+          0.28,
+          0.05,
+          0.4
         ],
         "euler": [
           0,
@@ -43578,13 +43583,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.7,
-          1.62
+          0.72,
+          1.45
         ],
         "size": [
-          0.55,
-          0.16,
-          0.48
+          0.4,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -43597,13 +43602,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.76,
-          -1.62
+          0.78,
+          -1.55
         ],
         "size": [
-          0.55,
-          0.14,
-          0.36
+          0.46,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -43633,13 +43638,13 @@
     "blurb": "Midsize sedan, 2025 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color white.",
     "size": [
       1.947,
-      1.438,
-      4.915
+      1.443,
+      4.919
     ],
     "min": [
       -0.973,
-      0.005,
-      -2.457
+      0.0,
+      -2.461
     ],
     "max": [
       0.973,
@@ -43649,11 +43654,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 20098,
+        "tris": 27648,
         "materials": [
           "Lib_PaintWhite",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -43665,11 +43670,11 @@
       },
       {
         "lod": 1,
-        "tris": 4672,
+        "tris": 8322,
         "materials": [
           "Lib_PaintWhite",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -43681,13 +43686,14 @@
       },
       {
         "lod": 2,
-        "tris": 1480,
+        "tris": 3082,
         "materials": [
+          "Lib_Black",
           "Lib_PaintWhite",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Headlamp",
           "Lib_Taillamp"
         ],
@@ -43705,9 +43711,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43724,9 +43730,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43743,9 +43749,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43762,9 +43768,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43777,13 +43783,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          -0.05
+          0.4,
+          -0.08
         ],
         "size": [
-          0.62,
-          0.32,
-          0.9
+          0.44,
+          0.18,
+          0.64
         ],
         "euler": [
           0,
@@ -43796,13 +43802,13 @@
         "type": "box",
         "center": [
           0.0,
-          1.28,
+          1.3,
           -0.05
         ],
         "size": [
-          0.36,
-          0.06,
-          0.48
+          0.28,
+          0.05,
+          0.4
         ],
         "euler": [
           0,
@@ -43815,13 +43821,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.7,
-          1.62
+          0.72,
+          1.45
         ],
         "size": [
-          0.55,
-          0.16,
-          0.48
+          0.4,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -43834,13 +43840,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.76,
-          -1.62
+          0.78,
+          -1.55
         ],
         "size": [
-          0.55,
-          0.14,
-          0.36
+          0.46,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -43870,13 +43876,13 @@
     "blurb": "Midsize sedan, 2025 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color black.",
     "size": [
       1.947,
-      1.438,
-      4.915
+      1.443,
+      4.919
     ],
     "min": [
       -0.973,
-      0.005,
-      -2.457
+      0.0,
+      -2.461
     ],
     "max": [
       0.973,
@@ -43886,11 +43892,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 20098,
+        "tris": 27648,
         "materials": [
           "Lib_PaintBlack",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -43902,11 +43908,11 @@
       },
       {
         "lod": 1,
-        "tris": 4672,
+        "tris": 8322,
         "materials": [
           "Lib_PaintBlack",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -43918,13 +43924,14 @@
       },
       {
         "lod": 2,
-        "tris": 1480,
+        "tris": 3082,
         "materials": [
+          "Lib_Black",
           "Lib_PaintBlack",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Headlamp",
           "Lib_Taillamp"
         ],
@@ -43942,9 +43949,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43961,9 +43968,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43980,9 +43987,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -43999,9 +44006,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44014,13 +44021,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          -0.05
+          0.4,
+          -0.08
         ],
         "size": [
-          0.62,
-          0.32,
-          0.9
+          0.44,
+          0.18,
+          0.64
         ],
         "euler": [
           0,
@@ -44033,13 +44040,13 @@
         "type": "box",
         "center": [
           0.0,
-          1.28,
+          1.3,
           -0.05
         ],
         "size": [
-          0.36,
-          0.06,
-          0.48
+          0.28,
+          0.05,
+          0.4
         ],
         "euler": [
           0,
@@ -44052,13 +44059,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.7,
-          1.62
+          0.72,
+          1.45
         ],
         "size": [
-          0.55,
-          0.16,
-          0.48
+          0.4,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -44071,13 +44078,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.76,
-          -1.62
+          0.78,
+          -1.55
         ],
         "size": [
-          0.55,
-          0.14,
-          0.36
+          0.46,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -44107,13 +44114,13 @@
     "blurb": "Midsize sedan, 2025 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color grey.",
     "size": [
       1.947,
-      1.438,
-      4.915
+      1.443,
+      4.919
     ],
     "min": [
       -0.973,
-      0.005,
-      -2.457
+      0.0,
+      -2.461
     ],
     "max": [
       0.973,
@@ -44123,11 +44130,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 20098,
+        "tris": 27648,
         "materials": [
           "Lib_PaintGrey",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -44139,11 +44146,11 @@
       },
       {
         "lod": 1,
-        "tris": 4672,
+        "tris": 8322,
         "materials": [
           "Lib_PaintGrey",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -44155,13 +44162,14 @@
       },
       {
         "lod": 2,
-        "tris": 1480,
+        "tris": 3082,
         "materials": [
+          "Lib_Black",
           "Lib_PaintGrey",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Headlamp",
           "Lib_Taillamp"
         ],
@@ -44179,9 +44187,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44198,9 +44206,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44217,9 +44225,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44236,9 +44244,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44251,13 +44259,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          -0.05
+          0.4,
+          -0.08
         ],
         "size": [
-          0.62,
-          0.32,
-          0.9
+          0.44,
+          0.18,
+          0.64
         ],
         "euler": [
           0,
@@ -44270,13 +44278,13 @@
         "type": "box",
         "center": [
           0.0,
-          1.28,
+          1.3,
           -0.05
         ],
         "size": [
-          0.36,
-          0.06,
-          0.48
+          0.28,
+          0.05,
+          0.4
         ],
         "euler": [
           0,
@@ -44289,13 +44297,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.7,
-          1.62
+          0.72,
+          1.45
         ],
         "size": [
-          0.55,
-          0.16,
-          0.48
+          0.4,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -44308,13 +44316,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.76,
-          -1.62
+          0.78,
+          -1.55
         ],
         "size": [
-          0.55,
-          0.14,
-          0.36
+          0.46,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -44344,13 +44352,13 @@
     "blurb": "Midsize sedan, 2025 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color silver.",
     "size": [
       1.947,
-      1.438,
-      4.915
+      1.443,
+      4.919
     ],
     "min": [
       -0.973,
-      0.005,
-      -2.457
+      0.0,
+      -2.461
     ],
     "max": [
       0.973,
@@ -44360,11 +44368,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 20098,
+        "tris": 27648,
         "materials": [
           "Lib_PaintSilver",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -44376,11 +44384,11 @@
       },
       {
         "lod": 1,
-        "tris": 4672,
+        "tris": 8322,
         "materials": [
           "Lib_PaintSilver",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -44392,13 +44400,14 @@
       },
       {
         "lod": 2,
-        "tris": 1480,
+        "tris": 3082,
         "materials": [
+          "Lib_Black",
           "Lib_PaintSilver",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Headlamp",
           "Lib_Taillamp"
         ],
@@ -44416,9 +44425,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44435,9 +44444,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44454,9 +44463,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44473,9 +44482,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44488,13 +44497,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          -0.05
+          0.4,
+          -0.08
         ],
         "size": [
-          0.62,
-          0.32,
-          0.9
+          0.44,
+          0.18,
+          0.64
         ],
         "euler": [
           0,
@@ -44507,13 +44516,13 @@
         "type": "box",
         "center": [
           0.0,
-          1.28,
+          1.3,
           -0.05
         ],
         "size": [
-          0.36,
-          0.06,
-          0.48
+          0.28,
+          0.05,
+          0.4
         ],
         "euler": [
           0,
@@ -44526,13 +44535,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.7,
-          1.62
+          0.72,
+          1.45
         ],
         "size": [
-          0.55,
-          0.16,
-          0.48
+          0.4,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -44545,13 +44554,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.76,
-          -1.62
+          0.78,
+          -1.55
         ],
         "size": [
-          0.55,
-          0.14,
-          0.36
+          0.46,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -44581,13 +44590,13 @@
     "blurb": "Midsize sedan, 2025 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color navy.",
     "size": [
       1.947,
-      1.438,
-      4.915
+      1.443,
+      4.919
     ],
     "min": [
       -0.973,
-      0.005,
-      -2.457
+      0.0,
+      -2.461
     ],
     "max": [
       0.973,
@@ -44597,11 +44606,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 20098,
+        "tris": 27648,
         "materials": [
           "Lib_PaintNavy",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -44613,11 +44622,11 @@
       },
       {
         "lod": 1,
-        "tris": 4672,
+        "tris": 8322,
         "materials": [
           "Lib_PaintNavy",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -44629,13 +44638,14 @@
       },
       {
         "lod": 2,
-        "tris": 1480,
+        "tris": 3082,
         "materials": [
+          "Lib_Black",
           "Lib_PaintNavy",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Headlamp",
           "Lib_Taillamp"
         ],
@@ -44653,9 +44663,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44672,9 +44682,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44691,9 +44701,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44710,9 +44720,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44725,13 +44735,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          -0.05
+          0.4,
+          -0.08
         ],
         "size": [
-          0.62,
-          0.32,
-          0.9
+          0.44,
+          0.18,
+          0.64
         ],
         "euler": [
           0,
@@ -44744,13 +44754,13 @@
         "type": "box",
         "center": [
           0.0,
-          1.28,
+          1.3,
           -0.05
         ],
         "size": [
-          0.36,
-          0.06,
-          0.48
+          0.28,
+          0.05,
+          0.4
         ],
         "euler": [
           0,
@@ -44763,13 +44773,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.7,
-          1.62
+          0.72,
+          1.45
         ],
         "size": [
-          0.55,
-          0.16,
-          0.48
+          0.4,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -44782,13 +44792,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.76,
-          -1.62
+          0.78,
+          -1.55
         ],
         "size": [
-          0.55,
-          0.14,
-          0.36
+          0.46,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -44818,13 +44828,13 @@
     "blurb": "Midsize sedan, 2025 fascia, 4.915 m long, 1.839 m wide, roof 1.445 m. Raked windshield, fastback pillar, 18 inch alloys. Color ocean.",
     "size": [
       1.947,
-      1.438,
-      4.915
+      1.443,
+      4.919
     ],
     "min": [
       -0.973,
-      0.005,
-      -2.457
+      0.0,
+      -2.461
     ],
     "max": [
       0.973,
@@ -44834,11 +44844,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 20098,
+        "tris": 27648,
         "materials": [
           "Lib_PaintOcean",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -44850,11 +44860,11 @@
       },
       {
         "lod": 1,
-        "tris": 4672,
+        "tris": 8322,
         "materials": [
           "Lib_PaintOcean",
-          "Lib_AutoGlass",
           "Lib_Black",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
@@ -44866,13 +44876,14 @@
       },
       {
         "lod": 2,
-        "tris": 1480,
+        "tris": 3082,
         "materials": [
+          "Lib_Black",
           "Lib_PaintOcean",
+          "Lib_AutoGlass",
           "Lib_Rubber",
           "Lib_Steel",
           "Lib_SteelDark",
-          "Lib_Black",
           "Lib_Headlamp",
           "Lib_Taillamp"
         ],
@@ -44890,9 +44901,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44909,9 +44920,9 @@
           -1.3576300000000001
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44928,9 +44939,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44947,9 +44958,9 @@
           1.4668499999999998
         ],
         "size": [
-          0.008,
-          0.073557,
-          0.073557
+          0.006,
+          0.028,
+          0.028
         ],
         "euler": [
           0,
@@ -44962,13 +44973,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.46,
-          -0.05
+          0.4,
+          -0.08
         ],
         "size": [
-          0.62,
-          0.32,
-          0.9
+          0.44,
+          0.18,
+          0.64
         ],
         "euler": [
           0,
@@ -44981,13 +44992,13 @@
         "type": "box",
         "center": [
           0.0,
-          1.28,
+          1.3,
           -0.05
         ],
         "size": [
-          0.36,
-          0.06,
-          0.48
+          0.28,
+          0.05,
+          0.4
         ],
         "euler": [
           0,
@@ -45000,13 +45011,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.7,
-          1.62
+          0.72,
+          1.45
         ],
         "size": [
-          0.55,
-          0.16,
-          0.48
+          0.4,
+          0.08,
+          0.28
         ],
         "euler": [
           0,
@@ -45019,13 +45030,13 @@
         "type": "box",
         "center": [
           0.0,
-          0.76,
-          -1.62
+          0.78,
+          -1.55
         ],
         "size": [
-          0.55,
-          0.14,
-          0.36
+          0.46,
+          0.08,
+          0.28
         ],
         "euler": [
           0,

@@ -52,6 +52,8 @@ def _finish(src_shell, year, color, name):
         geo = body_a._copy_open(src_shell.lods[lod], asset, lod)
         body_a.dress(geo, year, lod, paint)
         asset.end()
+        if lod == 0:
+            body_a._separate_coplanar(asset.lods[0].bm)
     body_a.add_colliders(asset)
     asset._sedan_spec = body_a.probe_spec(name)
     return asset
