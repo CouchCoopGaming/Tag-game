@@ -285,19 +285,6 @@ The contact words now read as a comic burst, and the big moves leave a trail you
 - Pause → Settings → Effects is Off, Low, or Full. Full is the default. Off hides the dust, the words, and these trails. Low draws fewer of them. Reduced flashing hides them too.
 - A hard landing stamps a ring and flicks debris. The shoulder roll swirls dust along the path. A dash leaves a few ghosts in your color. The rope sags, wobbles, chips the hook point, and snaps when you let go. A pad throws an up ring and a wind streak. A zip sparks along the ride. A stagger puts dizzy stars over the head for the same quarter second. Tag-back keeps its one second and pulses a colored rim so you can see who is safe in every split pane. A wall run scuffs, and a wet wall drips. Sprinting leaves wisps. Try it: fall, dash, rope, pad, zip, then take a hit.
 
-## Motion, ninth pass
-
-The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
-
-- A wall jump used to hold the shove, then throw the arms into the tuck in one step of about 36°. The arms now arc across the same shove and the same ease, and the biggest step is about 17°. Try it: wall-run, then jump off, and watch the arms through the push.
-- On a rope the chest used to kink about 70° off the line. It now lies along the rope, and letting go eases that line off. The pull is still one click, and the drop is still a double-click. Try it: latch a grapple, hang, then double-click to drop.
-- Grabbing a zip brings the hands up to the cable. They used to stop short by about 58°. Dropping off used to snap the arms in one frame (about 128°). The drop now eases, and the biggest step is about 53°. Ride speed is still 14. Try it: catch a zip, ride it, then let go.
-- A launch pad used to throw the arms into the full swing on the first frame (about 155°). They now open over a sixth of a second, and the knees soften on the way up. The pad wait is still 0.3 s. Try it: run over a launch pad and watch the takeoff.
-- Landing while you sprint used to fold the thighs about 104° off the stride. The legs now keep the stride, and the give stays in the knees. A hop that is faster than one frame still skips the thud. Try it: sprint off a ledge and land still running.
-- The air-dash flash used to pop on at full strength. It now opens over a short beat, and the ribbons follow it. The dash is still a tenth of a second. Try it: air dash and watch the flash on the first frames.
-- A hard stick reversal used to flip the stride in one frame, about 83° at a sprint. The legs now cross over about a seventh of a second. You still turn with the camera immediately. Try it: sprint, then snap the stick backward.
-- A punch or a tag while you run leans the chest so the fist comes forward about 13 cm. Standing still keeps the old strike. Reach and the lunge are unchanged. Try it: sprint and punch, then punch while you stand.
-
 ## Landing ring, dizzy stars, and a wet wall
 
 BAM! and WHAM! sit a little larger in their bursts, and the big moves you own in this pass read more clearly. Speed, slide, and the camera stay as they were.
