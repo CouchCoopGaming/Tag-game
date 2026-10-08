@@ -30,6 +30,7 @@ MODULES = (
     "bus_city40",
     "bus_city40_blue",
     "bus_city40_red",
+    "bus_city60",
     "mannequin",
 )
 
@@ -117,7 +118,7 @@ def _transit_set(found, name, folder, length, height, door_z):
     out = os.path.join(STILL_ROOT, folder)
     os.makedirs(out, exist_ok=True)
     _shot(found[name], os.path.join(out, "hero.png"), fill=0.86)
-    dist = max(18.0, length * 0.92)
+    dist = max(18.0, length * 1.55)
     _close(
         found[name], os.path.join(out, "side.png"),
         (dist, height * 0.46, length * 0.04), (0.0, height * 0.40, 0.0), 46.0,
@@ -190,6 +191,9 @@ def main():
                 continue
             print("SHOT", folder)
             _transit_set(found, name, folder, 12.50, 3.20, door_z)
+    if only is None or "city60" in only or only == "bus60":
+        print("SHOT", "bus_city60")
+        _transit_set(found, "Bus_City60", "bus_city60", 18.54, 3.20, 8.0)
     print("VEHICLE_STILLS", STILL_ROOT)
 
 

@@ -123,14 +123,15 @@ def _side(g, asset, spec, sign, lod, bev, segs):
     thick = 0.050
     z0 = spec["z_tail"] + 0.08
     z1 = spec["half_b"] - 0.08
-    arches = (
-        (spec["z_rear"] - spec["arch"], spec["z_rear"] + spec["arch"]),
-        (spec["z_front"] - spec["arch"], spec["z_front"] + spec["arch"]),
-    )
+    axle_zs = [spec["z_rear"], spec["z_front"]]
+    if spec.get("z_mid") is not None:
+        axle_zs.append(spec["z_mid"])
+    arches = [(z - spec["arch"], z + spec["arch"]) for z in axle_zs]
+    bellows = [spec["bellows"]] if spec.get("bellows") else []
     doors = spec["doors"] if sign > 0 else ()
     skirt_y = 0.64
     skirt_h = 0.84
-    for i, (a, b) in enumerate(_pieces(z0, z1, list(arches) + list(doors))):
+    for i, (a, b) in enumerate(_pieces(z0, z1, list(arches) + list(doors) + bellows)):
         c = (x, skirt_y, (a + b) * 0.5)
         sz = (thick, skirt_h, b - a)
         _panel(g, c, sz, spec["skirt"], bev, segs)
@@ -138,17 +139,16 @@ def _side(g, asset, spec, sign, lod, bev, segs):
     for a, b in arches:
         # Inboard of the inner tire so the liner does not share volume with the rubber.
         g.box((sign * 0.48, 1.02, (a + b) * 0.5), (0.04, 0.36, (b - a) * 0.80), "Lib_Black")
-    rail_z0, rail_z1 = z0, z1
-    c = (sign * (half + 0.008), 1.10, (rail_z0 + rail_z1) * 0.5)
-    g.box(c, (0.012, 0.036, rail_z1 - rail_z0), "Lib_SteelDark")
-    # Waist band closes the gap between the skirt and the glass.
-    belt = (x, 1.16, (z0 + z1) * 0.5)
-    belt_sz = (thick, 0.20, z1 - z0)
-    _panel(g, belt, belt_sz, spec["body"], 0.0, 0)
-    _solid(asset, "Col_Belt_%d" % (0 if sign < 0 else 1), belt, belt_sz)
+    for i, (a, b) in enumerate(_pieces(z0, z1, bellows)):
+        c = (sign * (half + 0.008), 1.10, (a + b) * 0.5)
+        g.box(c, (0.012, 0.036, b - a), "Lib_SteelDark")
+        belt = (x, 1.16, (a + b) * 0.5)
+        belt_sz = (thick, 0.20, b - a)
+        _panel(g, belt, belt_sz, spec["body"], 0.0, 0)
+        _solid(asset, "Col_Belt_%d_%d" % (0 if sign < 0 else 1, i), belt, belt_sz)
     # Glass ends under the header so the pane is not buried in the rail.
     win_y, win_h = 1.82, 1.00
-    holes = list(doors)
+    holes = list(doors) + bellows
     panes = _pieces(z0 + 0.06, z1 - 0.06, holes)
     step = 1.28 if lod == 0 else 2.40
     pillar = 0.090
@@ -191,10 +191,11 @@ def _side(g, asset, spec, sign, lod, bev, segs):
             g.box((gx, 1.80, cz), (0.008, 1.00, leaf - 0.02), "Lib_TintGlass")
             g.box((gx - sign * 0.026, 1.80, cz), (0.012, 0.90, leaf - 0.04), "Lib_Interior")
             g.box((sign * (half + 0.004), 1.15, cz), (0.008, 0.012, leaf * 0.55), "Lib_SteelDark")
-    header = (x, 2.70, (z0 + z1) * 0.5)
-    hsz = (thick, 0.68, z1 - z0)
-    _panel(g, header, hsz, spec["body"], bev, segs)
-    _solid(asset, "Col_Header_%d" % (0 if sign < 0 else 1), header, hsz)
+    for i, (a, b) in enumerate(_pieces(z0, z1, bellows)):
+        header = (x, 2.70, (a + b) * 0.5)
+        hsz = (thick, 0.68, b - a)
+        _panel(g, header, hsz, spec["body"], bev, segs)
+        _solid(asset, "Col_Header_%d_%d" % (0 if sign < 0 else 1, i), header, hsz)
 
 
 def _caps(g, asset, spec, lod, bev, segs):
@@ -253,10 +254,12 @@ def _roof(g, asset, spec, bev, segs):
     z0 = spec["z_tail"] + 0.12
     z1 = spec["half_b"] - 0.12
     top = spec["roof"]
-    c = (0.0, top - 0.045, (z0 + z1) * 0.5)
-    sz = (spec["width"] - 0.14, 0.090, z1 - z0)
-    _panel(g, c, sz, spec["body"], bev, segs)
-    _solid(asset, "Col_Roof", c, sz)
+    gaps = [spec["bellows"]] if spec.get("bellows") else []
+    for i, (a, b) in enumerate(_pieces(z0, z1, gaps)):
+        c = (0.0, top - 0.045, (a + b) * 0.5)
+        sz = (spec["width"] - 0.14, 0.090, b - a)
+        _panel(g, c, sz, spec["body"], bev, segs)
+        _solid(asset, "Col_Roof_%d" % i, c, sz)
     # Roof unit. Its top is the published overall height. Climbers land here too.
     hz = spec["z_rear"] + 0.40
     hs = (1.55, spec["height"] - top + 0.012, 3.05)
@@ -271,11 +274,13 @@ def _roof(g, asset, spec, bev, segs):
 def _floor(g, asset, spec, bev, segs):
     z0 = spec["z_tail"] + 0.10
     z1 = spec["half_b"] - 0.10
-    c = (0.0, spec["step"] - 0.04, (z0 + z1) * 0.5)
-    # Inboard of the inner dual so the deck does not cut the tires.
-    sz = (0.90, 0.080, z1 - z0)
-    _panel(g, c, sz, "Lib_SteelDark", bev, segs)
-    asset.box("Col_Floor", c, (0.70, 0.028, sz[2] - 0.24))
+    gaps = [spec["bellows"]] if spec.get("bellows") else []
+    for i, (a, b) in enumerate(_pieces(z0, z1, gaps)):
+        c = (0.0, spec["step"] - 0.04, (a + b) * 0.5)
+        # Inboard of the inner dual so the deck does not cut the tires.
+        sz = (0.90, 0.080, b - a)
+        _panel(g, c, sz, "Lib_SteelDark", bev, segs)
+        asset.box("Col_Floor_%d" % i, c, (0.70, 0.028, max(0.20, sz[2] - 0.24)))
 
 
 def build_city_bus(g, asset, spec, lod):
@@ -297,23 +302,95 @@ def _build_city_bus(g, asset, spec, lod, bev, segs):
     _side(g, asset, spec, -1.0, lod, bev, segs)
     _side(g, asset, spec, 1.0, lod, bev, segs)
     _caps(g, asset, spec, lod, bev, segs)
-    for z in (spec["z_front"], spec["z_rear"]):
-        xs = (spec["tire_x"],) if z == spec["z_front"] else (spec["tire_x"], spec["dual_x"])
+    if spec.get("bellows"):
+        _bellows(g, asset, spec, lod)
+    plan = [(spec["z_rear"], True), (spec["z_front"], False)]
+    if spec.get("z_mid") is not None:
+        plan = [(spec["z_rear"], True), (spec["z_mid"], False), (spec["z_front"], False)]
+    for i, (z, dual) in enumerate(plan):
+        xs = (spec["tire_x"], spec["dual_x"]) if dual else (spec["tire_x"],)
         for x in xs:
             for sign in (-1.0, 1.0):
                 _wheel(g, sign * x, z, spec, lod, detailed=(x == spec["tire_x"]))
                 # Slab in the middle of the tread. Corners stay inside the cylinder.
                 asset.box(
-                    "Col_Wheel_%d_%d" % (int(z > 0), int(sign > 0) + (0 if x == spec["tire_x"] else 2)),
+                    "Col_Wheel_%d_%d" % (i, int(sign > 0) + (0 if x == spec["tire_x"] else 2)),
                     (sign * x, spec["axle_y"], z),
                     (0.016, spec["tire_r"] * 0.86, spec["tire_r"] * 0.86),
                 )
     if lod == 0:
         z = spec["z_tail"] + 1.4
         while z < spec["half_b"] - 1.6:
+            gap = spec.get("bellows")
+            if gap and gap[0] - 0.4 < z < gap[1] + 0.4:
+                z += 0.85
+                continue
             for sign in (-1.0, 1.0):
                 g.box((sign * 0.36, 0.95, z), (0.32, 0.52, 0.08), "Lib_PaintBlue")
             z += 0.85
+
+
+def _bellows(g, asset, spec, lod):
+    """Ribbed turntable cover between the two sections. Narrower than the body."""
+    a, b = spec["bellows"]
+    z = (a + b) * 0.5
+    length = b - a
+    g.box((0.0, 1.55, z), (spec["width"] - 0.28, 2.35, length * 0.72), "Lib_Black")
+    ribs = 4 if lod == 0 else 2
+    for i in range(ribs):
+        # Keep the middle open so the collider sits in the core only.
+        rz = a + (0.16 + 0.68 * i / max(1, ribs - 1)) * length
+        g.box((0.0, 1.55, rz), (spec["width"] - 0.18, 2.55, 0.06), "Lib_SteelDark")
+    asset.box("Col_Bellows", (0.0, 1.55, z), (spec["width"] - 0.55, 1.50, 0.16))
+
+
+def make_city60(name, body, skirt):
+    """60 ft articulated shell. Same sheet family as the 40 ft bus.
+
+    730 in over bumpers, 720 in over the body, width 102, height 126,
+    front wheelbase 229 in, rear wheelbase 293 in, tire 305/70R22.5.
+    Front overhang 87.75 in; the rear overhang is the 120.25 in remainder.
+    """
+    spec = make_city40(name, body, skirt)
+    length = 730.0 * INCH
+    body_len = 720.0 * INCH
+    front_overhang = 87.75 * INCH
+    wb_front = 229.0 * INCH
+    wb_rear = 293.0 * INCH
+    half = length * 0.5
+    z_nose = half - (length - body_len) * 0.5
+    z_front = half - front_overhang
+    z_mid = z_front - wb_front
+    z_rear = z_mid - wb_rear
+    spec.update({
+        "length": length,
+        "half_b": z_nose,
+        "z_tail": -z_nose,
+        "z_front": z_front,
+        "z_mid": z_mid,
+        "z_rear": z_rear,
+        "bellows": (z_mid - spec["arch"] - 1.35, z_mid - spec["arch"] - 0.15),
+        "doors": (
+            (z_front + spec["arch"] + 0.08, z_front + spec["arch"] + 0.08 + 0.813),
+            (z_mid + spec["arch"] + 0.40, z_mid + spec["arch"] + 0.40 + 0.813),
+            (z_rear + spec["arch"] + 1.6, z_rear + spec["arch"] + 1.6 + 0.813),
+        ),
+    })
+    return spec
+
+
+def create_city60(name, body, skirt, blurb):
+    spec = make_city60(name, body, skirt)
+    asset = Asset(name, "Vehicles", blurb)
+    asset.climbable = True
+    asset.climb_note = "Roof, roof unit, and the turntable cover. Not a cling wall."
+    asset.vault_note = "The skirt is a step. The roof is the landing."
+    for lod in (0, 1):
+        geo = asset.begin(lod)
+        build_city_bus(geo, asset, spec, lod)
+        asset.end()
+    asset._bus_spec = spec
+    return asset
 
 
 def create_city40(name, body, skirt, blurb):
