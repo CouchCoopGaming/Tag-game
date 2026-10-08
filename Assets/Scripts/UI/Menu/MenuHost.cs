@@ -2454,10 +2454,6 @@ namespace Tag.Ui.Menu
             string name = MenuSession.RandomArena ? "Random" : ParkArena.NameOf(MenuSession.Arena);
             if (_loadPractice) name = PracticeSession.ArenaName();
             if (_header != null) _header.text = "  Loading";
-            var loadCard = MenuWidgets.Box(_body, "LoadCard", new Vector2(0.08f, 0.12f), new Vector2(0.92f, 0.86f), new Vector2(0.5f, 0.5f));
-            Image loadPlate = loadCard.gameObject.AddComponent<Image>();
-            MenuArt.Plate(loadPlate, new Color(0.04f, 0.10f, 0.24f, 0.28f), true);
-            loadPlate.raycastTarget = false;
             int fly = MenuSession.Arena;
             if (fly < 0 || fly >= ParkArena.Count) fly = 0;
             ShowFlyover(fly, 0.72f);
@@ -2484,7 +2480,9 @@ namespace Tag.Ui.Menu
                 if (humans == 3 && i == 3) continue;
                 CouchPlay.Norm(i, humans, split, out float x, out float y, out float w, out float h);
                 float pad = 0.02f;
-                var card = MenuWidgets.Box(_body, "LoadSeat", new Vector2(x + pad, y + 0.06f), new Vector2(x + w - pad, y + h - 0.08f), new Vector2(0.5f, 0.5f));
+                float y0 = y + 0.02f;
+                float y1 = y + h * 0.34f;
+                var card = MenuWidgets.Box(_body, "LoadSeat", new Vector2(x + pad, y0), new Vector2(x + w - pad, y1), new Vector2(0.5f, 0.5f));
                 Image plate = card.gameObject.AddComponent<Image>();
                 MenuArt.Plate(plate, new Color(0.04f, 0.07f, 0.16f, 0.82f), true);
                 plate.raycastTarget = false;
@@ -2499,7 +2497,7 @@ namespace Tag.Ui.Menu
                 Image tipPlate = tipRt.gameObject.AddComponent<Image>();
                 MenuArt.Plate(tipPlate, MenuTheme.Gold, true);
                 tipPlate.raycastTarget = false;
-                Text tip = MenuWidgets.Words(tipRt, MenuTips.For(i, _tipBase), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Ink, new Vector2(0.04f, 0.08f), new Vector2(0.96f, 0.92f));
+                Text tip = MenuWidgets.Words(tipRt, MenuTips.Shown(i, _tipBase), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Ink, new Vector2(0.04f, 0.08f), new Vector2(0.96f, 0.92f));
                 if (tip != null) tip.horizontalOverflow = HorizontalWrapMode.Wrap;
                 _loadTip[i] = tip;
                 var track = MenuWidgets.Box(card, "Track", new Vector2(0.06f, 0.16f), new Vector2(0.94f, 0.28f), new Vector2(0.5f, 0.5f));
@@ -2529,7 +2527,7 @@ namespace Tag.Ui.Menu
             for (int i = 0; i < 4; i++)
             {
                 if (_loadTip[i] == null) continue;
-                _loadTip[i].text = MenuTips.For(i, _tipBase + step);
+                _loadTip[i].text = MenuTips.Shown(i, _tipBase + step);
             }
         }
 

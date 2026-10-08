@@ -1,5 +1,4 @@
 using Tag.Art;
-using Tag.Profiles;
 using UnityEngine;
 
 namespace Tag.Ui.Menu
@@ -9,7 +8,7 @@ namespace Tag.Ui.Menu
     /// The editor loads the FBX by path. A player build uses the catalog
     /// once the editor bake has filled it, then the primitive mannequin.
     /// </summary>
-    public static class MenuMannequin
+    public static partial class MenuMannequin
     {
         public static GameObject Spawn(Transform parent, string bodyKey, string accentKey, bool hat)
         {
@@ -40,25 +39,6 @@ namespace Tag.Ui.Menu
             if (idle == null) idle = inst.AddComponent<MenuIdle>();
             idle.Capture(inst.name.StartsWith("DummyVisual"));
             return inst;
-        }
-
-        public static string Normalize(string key)
-        {
-            if (string.IsNullOrEmpty(key)) return "Tan";
-            for (int i = 0; i < LocalProfiles.HierNames.Length; i++)
-            {
-                if (LocalProfiles.HierNames[i] == key) return key;
-            }
-            return "Tan";
-        }
-
-        public static string NameOf(int index)
-        {
-            int n = LocalProfiles.HierNames.Length;
-            if (n < 1) return "Tan";
-            if (index < 0) index = 0;
-            if (index >= n) index = n - 1;
-            return LocalProfiles.HierNames[index];
         }
 
         static GameObject FindPrefab(string key)
@@ -215,19 +195,6 @@ namespace Tag.Ui.Menu
                 return new Color(0.04f, 0.04f, 0.05f, 1f);
             if (IsAccent(name)) return Swatch(accent);
             return Swatch(body);
-        }
-
-        public static Color Swatch(string key)
-        {
-            switch (Normalize(key))
-            {
-                case "Blue": return new Color(0.42f, 0.68f, 0.92f, 1f);
-                case "Mint": return new Color(0.42f, 0.82f, 0.70f, 1f);
-                case "Orange": return new Color(0.94f, 0.42f, 0.14f, 1f);
-                case "Lavender": return new Color(0.70f, 0.58f, 0.88f, 1f);
-                case "Red": return new Color(0.88f, 0.22f, 0.24f, 1f);
-                default: return new Color(0.90f, 0.76f, 0.52f, 1f);
-            }
         }
 
         static void AddHat(Transform root)

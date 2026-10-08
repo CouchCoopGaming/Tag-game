@@ -88,6 +88,7 @@ namespace Tag.Ui.Hud
         public Text ScoreTitle;
         public readonly Text[] ScoreLine = new Text[4];
         public readonly Image[] ScoreChip = new Image[4];
+        public readonly Image[] ScoreWell = new Image[4];
         public readonly Image[] ScoreMark = new Image[4];
         public readonly Text[] ScoreRank = new Text[4];
         public readonly Text[] ScoreTime = new Text[4];
@@ -360,8 +361,7 @@ namespace Tag.Ui.Hud
                 if (string.IsNullOrEmpty(who)) who = MatchHudText.Seat[i];
                 Set(name, who);
                 Set(value, ValueOf(modes, PawnForSeat(i)));
-                CouchPlay.Tint(i, out float r, out float g, out float b);
-                Color tint = new Color(r, g, b, 1f);
+                Color tint = MenuTheme.Seat(i);
                 if (name != null) name.color = tint;
                 if (value != null) value.color = tint;
             }
@@ -1049,6 +1049,8 @@ namespace Tag.Ui.Hud
                 chip.enabled = on;
                 if (on) chip.color = MenuTheme.Seat(seat);
             }
+            Image well = ScoreWell[row];
+            if (well != null) well.enabled = on;
             Image hi = ScoreHi[row];
             if (hi != null)
             {
@@ -1105,8 +1107,8 @@ namespace Tag.Ui.Hud
         {
             if (line == null) return;
             RectTransform rt = line.rectTransform;
-            rt.anchorMin = new Vector2(0.28f, 0f);
-            rt.anchorMax = new Vector2(wide ? 0.96f : 0.42f, 1f);
+            rt.anchorMin = new Vector2(0.185f, 0f);
+            rt.anchorMax = new Vector2(wide ? 0.96f : 0.32f, 1f);
         }
 
         void HideRankExtras(int row)
@@ -1253,6 +1255,8 @@ namespace Tag.Ui.Hud
                 chip.enabled = on;
                 if (on) chip.color = MenuTheme.Seat(seat);
             }
+            Image well = ScoreWell[seat];
+            if (well != null) well.enabled = on;
             Image mark = ScoreMark[seat];
             if (mark == null) return;
             bool shapes = on && SeatMarks();
@@ -1848,11 +1852,6 @@ namespace Tag.Ui.Hud
 
         static Color SeatTint(int seat)
         {
-            if (CouchPlay.HumanAt(seat) || CouchPlay.AiAt(seat))
-            {
-                CouchPlay.Tint(seat, out float r, out float g, out float b);
-                return new Color(r, g, b, 1f);
-            }
             return MenuTheme.Seat(seat);
         }
 

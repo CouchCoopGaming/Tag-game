@@ -40,7 +40,8 @@ namespace Tag.Settings
         public static readonly string[] PlayerGlyph = { "●", "■", "▲", "◆" };
         public const string ItGlyph = "★";
 
-        // Default (the first four) is the seat slot colors: red, blue, yellow, green.
+        // Default (the first four) stays the measured mark palette: red, blue, yellow, green.
+        // Seat chrome uses the costume bodies (red, blue, orange, lavender) instead.
         // The colorblind rows stay separable after deuteranopia, protanopia, and
         // tritanopia simulation, and each clears MinContrast against the ground albedos.
         static readonly float[] PlayerR =
@@ -215,7 +216,7 @@ namespace Tag.Settings
         {
             for (int p = 0; p < Count; p++)
             {
-                // Default is the seat slot colors (red, blue, yellow, green).
+                // Default is the measured mark palette (red, blue, yellow, green).
                 // The colorblind palettes keep the distance and ground checks.
                 if (p == Default) continue;
                 for (int cvd = 0; cvd < CvdCount; cvd++)

@@ -161,6 +161,7 @@
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuRuleNav.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/LoadGate.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuTips.cs" />
+    <Compile Include="../../Assets/Scripts/UI/Menu/MenuMannequin.Colors.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/MenuVideo.cs" />
     <Compile Include="../../Assets/Scripts/UI/Menu/OptionApply.cs" />
     <Compile Include="../../Assets/Scripts/UI/Hud/MatchHudText.cs" />

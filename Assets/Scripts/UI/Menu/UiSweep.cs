@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Tag.Ui.Menu
 {
     /// <summary>
@@ -55,14 +57,12 @@ namespace Tag.Ui.Menu
 
         static bool SeatText()
         {
-            float[] r = { 0.95f, 0.16f, 1f, 0.16f };
-            float[] g = { 0.16f, 0.45f, 0.86f, 0.82f };
-            float[] b = { 0.22f, 1f, 0.12f, 0.28f };
             for (int i = 0; i < 4; i++)
             {
-                float pr = Mix(0.04f, r[i]);
-                float pg = Mix(0.07f, g[i]);
-                float pb = Mix(0.16f, b[i]);
+                Color seat = MenuMannequin.SeatColor(i);
+                float pr = Mix(0.04f, seat.r);
+                float pg = Mix(0.07f, seat.g);
+                float pb = Mix(0.16f, seat.b);
                 if (Ratio(1f, 0.98f, 0.92f, pr, pg, pb) < 4.5f) return false;
                 if (Ratio(0.78f, 0.88f, 1f, pr, pg, pb) < 4.5f) return false;
             }

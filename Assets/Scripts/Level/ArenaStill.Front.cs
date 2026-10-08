@@ -622,19 +622,19 @@ namespace Tag.Level
         }
 
         /// <summary>
-        /// RESULTS bodies use MenuTheme.Seat fallback: red, blue, yellow, green.
-        /// Accent is MenuMannequin.Swatch of the locked sample pairs: Tan, Mint, Tan, Mint.
+        /// RESULTS bodies use the seat palette: red, blue, orange, lavender.
+        /// Accent is the locked sample pairs: Tan, Mint, Tan, Mint.
         /// </summary>
         static void PlacePair(int seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB)
         {
-            float[] br = { 0.95f, 0.16f, 1f, 0.16f };
-            float[] bg = { 0.16f, 0.45f, 0.86f, 0.82f };
-            float[] bb = { 0.22f, 1f, 0.12f, 0.28f };
+            int i = seat < 0 ? 0 : (seat > 3 ? 3 : seat);
+            UnityEngine.Color body = Tag.Ui.Menu.MenuMannequin.SeatColor(i);
+            bodyR = body.r;
+            bodyG = body.g;
+            bodyB = body.b;
             float[] ar = { 0.90f, 0.42f, 0.90f, 0.42f };
             float[] ag = { 0.76f, 0.82f, 0.76f, 0.82f };
             float[] ab = { 0.52f, 0.70f, 0.52f, 0.70f };
-            int i = seat < 0 ? 0 : (seat > 3 ? 3 : seat);
-            bodyR = br[i]; bodyG = bg[i]; bodyB = bb[i];
             accentR = ar[i]; accentG = ag[i]; accentB = ab[i];
         }
 

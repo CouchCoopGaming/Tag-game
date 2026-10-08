@@ -1,12 +1,10 @@
-using Tag.Couch;
-using Tag.Profiles;
 using UnityEngine;
 
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Couch-readable colors. Seat tints come from the live accessibility palette
-    /// once a player has joined. Feel numbers are not stored here.
+    /// Couch-readable colors. Seat tints are the costume bodies: red, blue, orange, lavender.
+    /// Color-blind seat colors still replace them. Feel numbers are not stored here.
     /// </summary>
     public static class MenuTheme
     {
@@ -25,14 +23,6 @@ namespace Tag.Ui.Menu
         public static readonly Color Off = new Color(0.22f, 0.26f, 0.34f, 1f);
         public static readonly Color Stroke = new Color(0.02f, 0.04f, 0.10f, 1f);
         public static readonly Color Shadow = new Color(0f, 0f, 0f, 0.48f);
-
-        static readonly Color[] Fallback =
-        {
-            new Color(0.95f, 0.16f, 0.22f, 1f),
-            new Color(0.16f, 0.45f, 1f, 1f),
-            new Color(1f, 0.86f, 0.12f, 1f),
-            new Color(0.16f, 0.82f, 0.28f, 1f)
-        };
 
         static Font _font;
         static Font _display;
@@ -72,12 +62,7 @@ namespace Tag.Ui.Menu
                 Tag.Settings.SeatCvd.Color(Tag.Settings.GameSettings.Current.CvdSeats, i, out float r, out float g, out float b);
                 return new Color(r, g, b, 1f);
             }
-            if (CouchPlay.HumanAt(i) || LocalProfiles.SeatColor(i) >= 0)
-            {
-                CouchPlay.Tint(i, out float r, out float g, out float b);
-                return new Color(r, g, b, 1f);
-            }
-            return Fallback[i];
+            return MenuMannequin.SeatColor(i);
         }
 
         public static string Place(int rank)

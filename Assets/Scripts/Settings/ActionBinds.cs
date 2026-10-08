@@ -176,6 +176,17 @@ namespace Tag.Settings
         /// <summary>
         /// Xbox face names for the controls list. The token itself does not change.
         /// </summary>
+        /// <summary>
+        /// Short mark for a loading tip. Cling's keyboard token is the move hold,
+        /// drawn as WASD. The pad hold is the left stick. Face buttons use A B X Y.
+        /// </summary>
+        public static string Chip(string token)
+        {
+            if (token == "holdIntoWall") return "WASD";
+            if (token == "leftStickHold") return "Left stick";
+            return PadWord(token);
+        }
+
         public static string PadWord(string token)
         {
             switch (token)
