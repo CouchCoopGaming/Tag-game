@@ -47,6 +47,8 @@ def load_keys(path):
                 "elbYawL": nums[24] if len(nums) > 24 else 0.0,
                 "elbYawR": nums[25] if len(nums) > 25 else 0.0,
                 "shoulderL": nums[26] if len(nums) > 26 else 0.0,
+                "thRollL": nums[27] if len(nums) > 27 else 0.0,
+                "thRollR": nums[28] if len(nums) > 28 else 0.0,
             })
     return frames
 

@@ -68,6 +68,20 @@ namespace Tag.Art
         // so it cannot snap underneath that weight.
         public const bool RunSlideOverlay = false;
 
+        // Played joint keys. The printed slide constants stay on the proof lines.
+        // The lead thigh comes down onto the floor and rolls off the tucked trail
+        // thigh. The trail foot pitches up so the sole meets the floor. The lead
+        // arm yaws off the chest. The trail knee folds faster than the thigh so
+        // the foot is up before the hips finish the printed drop. Not a root lift.
+        public const float SlideClearLeadIn = -6f;
+        public const float SlideClearLeadThigh = -33f;
+        public const float SlideClearLeadFoot = 8f;
+        public const float SlideClearLeadRoll = 32f;
+        public const float SlideClearTrailFoot = 28f;
+        public const float SlideClearArmYaw = 12f;
+        public const float SlideClearLeadSpan = 0.50f;
+        public const float SlideClearKneeSpan = 0.40f;
+
         // The crouch this slide must not match: both knees bent, elbows folded, chest forward.
         // Same numbers as CrouchPose. The slide is the same direction of lean, lower,
         // with one planted shin and one free trail leg.
@@ -235,35 +249,121 @@ namespace Tag.Art
             }
         }
 
-        public static Pose SlideBodyPose(Bind bind, bool leadLeft)
+        public struct SlideSample
         {
-            float thighL = leadLeft ? SlideLeadThigh : SlideTrailThigh;
-            float thighR = leadLeft ? SlideTrailThigh : SlideLeadThigh;
-            float kneeL = leadLeft ? SlideLeadKnee : SlideTrailKnee;
-            float kneeR = leadLeft ? SlideTrailKnee : SlideLeadKnee;
-            float yawL = leadLeft ? SlideLeadYaw : SlideTrailYaw;
-            float yawR = leadLeft ? -SlideTrailYaw : -SlideLeadYaw;
-            float footL = leadLeft ? SlideLeadFoot : SlideTrailFoot;
-            float footR = leadLeft ? SlideTrailFoot : SlideLeadFoot;
+            public float ThL, ThR, KnL, KnR, YawL, YawR, ThRollL, ThRollR;
+            public float ArmL, ArmR, ArmYawL, ArmYawR, RollL, RollR;
+            public float ElbL, ElbR;
+            public float Hip, Spine, Head;
+            public float FootL, FootR, Drop;
+        }
+
+        static float SlideSmooth(float u)
+        {
+            if (u < 0f) u = 0f;
+            if (u > 1f) u = 1f;
+            return u * u * (3f - 2f * u);
+        }
+
+        static float SlideEarly(float w, float span)
+        {
+            return SlideSmooth(span > 0.0001f ? w / span : 1f);
+        }
+
+        /// <summary>
+        /// Lead-left slide at blend weight. 0 is the sprint pose the clip leaves,
+        /// with the lead thigh already off the spine. 1 is the held slide: lead
+        /// leg along the floor, trail leg tucked, torso at the printed lean.
+        /// The drop stays SlideBodyDrop times the weight. Yaw is the bone value.
+        /// </summary>
+        public static SlideSample SlideAt(float weight, bool leadLeft)
+        {
+            float w = weight < 0f ? 0f : (weight > 1f ? 1f : weight);
+            float eLead = SlideEarly(w, SlideClearLeadSpan);
+            float eThigh = SlideSmooth(w);
+            float eKnee = SlideEarly(w, SlideClearKneeSpan);
+            GaitBlend.Legs legs = GaitBlend.At(1.5707963f, LocoFeel.Sprint);
+            SlideArmOffsets(true, out float pL, out float yL, out float eL, out float pR, out float yR, out float eR);
+            var s = new SlideSample
+            {
+                ThL = Mathf.Lerp(legs.ThighL + SlideClearLeadIn, SlideLeadThigh + SlideClearLeadThigh, eLead),
+                ThR = Mathf.Lerp(legs.ThighR, SlideTrailThigh, eThigh),
+                KnL = Mathf.Lerp(legs.KneeL, SlideLeadKnee, eLead),
+                KnR = Mathf.Lerp(legs.KneeR, SlideTrailKnee, eKnee),
+                YawL = Mathf.Lerp(0f, SlideLeadYaw, eLead),
+                YawR = Mathf.Lerp(0f, -SlideTrailYaw, eThigh),
+                ThRollL = Mathf.Lerp(0f, SlideClearLeadRoll, eLead),
+                ThRollR = 0f,
+                ArmL = Mathf.Lerp(LocoFeel.ArmPitch(-1f, LocoFeel.Sprint), pL, w),
+                ArmR = Mathf.Lerp(LocoFeel.ArmPitch(1f, LocoFeel.Sprint), pR, w),
+                ArmYawL = Mathf.Lerp(0f, yL, w),
+                ArmYawR = Mathf.Lerp(0f, -yR + SlideClearArmYaw, w),
+                RollL = 0f,
+                RollR = 0f,
+                ElbL = Mathf.Lerp(-18f, eL, w),
+                ElbR = Mathf.Lerp(-24f, eR, w),
+                Hip = Mathf.Lerp(HandoffFeel.RunHip, SlideHip, w),
+                Spine = Mathf.Lerp(HandoffFeel.RunSpine, SlideSpine, w),
+                Head = Mathf.Lerp(0f, SlideHead, w),
+                FootL = Mathf.Lerp(legs.FootL, SlideLeadFoot + SlideClearLeadFoot, eLead),
+                FootR = Mathf.Lerp(legs.FootR, SlideTrailFoot + SlideClearTrailFoot, eKnee),
+                Drop = -SlideBodyDrop * w,
+            };
+            if (leadLeft)
+                return s;
+            return new SlideSample
+            {
+                ThL = s.ThR,
+                ThR = s.ThL,
+                KnL = s.KnR,
+                KnR = s.KnL,
+                YawL = -s.YawR,
+                YawR = -s.YawL,
+                ThRollL = -s.ThRollR,
+                ThRollR = -s.ThRollL,
+                ArmL = s.ArmR,
+                ArmR = s.ArmL,
+                ArmYawL = -s.ArmYawR,
+                ArmYawR = -s.ArmYawL,
+                RollL = -s.RollR,
+                RollR = -s.RollL,
+                ElbL = s.ElbR,
+                ElbR = s.ElbL,
+                Hip = s.Hip,
+                Spine = s.Spine,
+                Head = s.Head,
+                FootL = s.FootR,
+                FootR = s.FootL,
+                Drop = s.Drop,
+            };
+        }
+
+        public static Pose SlidePlayed(Bind bind, bool leadLeft, float weight)
+        {
+            SlideSample s = SlideAt(weight, leadLeft);
             float footRollL = leadLeft ? SlideLeadFootRoll : SlideTrailFootRoll;
             float footRollR = leadLeft ? -SlideTrailFootRoll : -SlideLeadFootRoll;
-            SlideArmOffsets(leadLeft, out float pitchArmL, out float yawArmL, out float elbowArmL, out float pitchArmR, out float yawArmR, out float elbowArmR);
             return new Pose
             {
-                UaL = bind.UaL * Quaternion.Euler(pitchArmL, yawArmL, SlideArmRoll),
-                UaR = bind.UaR * Quaternion.Euler(pitchArmR, -yawArmR, -SlideArmRoll),
-                LaL = bind.LaL * Quaternion.Euler(elbowArmL, 0f, 0f),
-                LaR = bind.LaR * Quaternion.Euler(elbowArmR, 0f, 0f),
-                UlL = bind.UlL * Quaternion.Euler(thighL, yawL, 0f),
-                UlR = bind.UlR * Quaternion.Euler(thighR, yawR, 0f),
-                LlL = bind.LlL * Quaternion.Euler(kneeL, 0f, 0f),
-                LlR = bind.LlR * Quaternion.Euler(kneeR, 0f, 0f),
-                FtL = bind.FtL * Quaternion.Euler(footL, 0f, footRollL),
-                FtR = bind.FtR * Quaternion.Euler(footR, 0f, footRollR),
-                Spine = bind.Spine * Quaternion.Euler(SlideSpine, 0f, 0f),
-                Hips = bind.Hips * Quaternion.Euler(SlideHip, 0f, 0f),
-                Head = bind.Head * Quaternion.Euler(SlideHead, 0f, 0f),
+                UaL = bind.UaL * Quaternion.Euler(s.ArmL, s.ArmYawL, s.RollL),
+                UaR = bind.UaR * Quaternion.Euler(s.ArmR, s.ArmYawR, s.RollR),
+                LaL = bind.LaL * Quaternion.Euler(s.ElbL, 0f, 0f),
+                LaR = bind.LaR * Quaternion.Euler(s.ElbR, 0f, 0f),
+                UlL = bind.UlL * Quaternion.Euler(s.ThL, s.YawL, s.ThRollL),
+                UlR = bind.UlR * Quaternion.Euler(s.ThR, s.YawR, s.ThRollR),
+                LlL = bind.LlL * Quaternion.Euler(s.KnL, 0f, 0f),
+                LlR = bind.LlR * Quaternion.Euler(s.KnR, 0f, 0f),
+                FtL = bind.FtL * Quaternion.Euler(s.FootL, 0f, footRollL),
+                FtR = bind.FtR * Quaternion.Euler(s.FootR, 0f, footRollR),
+                Spine = bind.Spine * Quaternion.Euler(s.Spine, 0f, 0f),
+                Hips = bind.Hips * Quaternion.Euler(s.Hip, 0f, 0f),
+                Head = bind.Head * Quaternion.Euler(s.Head, 0f, 0f),
             };
+        }
+
+        public static Pose SlideBodyPose(Bind bind, bool leadLeft)
+        {
+            return SlidePlayed(bind, leadLeft, 1f);
         }
 
         public static string SlideProofLine()

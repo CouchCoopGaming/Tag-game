@@ -12,6 +12,7 @@ This map-lane branch is the converged test tip. Pressing Play in `Assets/Scenes/
 - Couch seats get that same rope. The keyboard seat uses right mouse. Each pad seat uses the left trigger. Click once to attach. On a static surface, one more click pulls after the same 0.28 s wait, at speed 12. Two clicks inside 0.28 s let go and do not pull. The rope leaves the left hand, misses the body, and meets a tree. The four seat cameras are `Docs/SmoothStills/pass19/couch-grapple.png`. Try it: start a 4-player couch match and hook a wall from two seats.
 - A punch moves the right arm on the mannequin. Reach stays 1.55. Try it: Practice, dummy on, and punch.
 - A vault keeps the horizontal speed you had when you left the ground. It does not add a long launch. Slide is unchanged. Try it: sprint at a rail you can vault and see that you are not thrown across the park.
+- A slide uses the same drop and the same speed. The lead leg reaches along the floor with the sole on it, and the trail leg folds under instead of through the floor. Try it: sprint, then slide, and watch both feet stay on the ground.
 
 ## Speed retune
 

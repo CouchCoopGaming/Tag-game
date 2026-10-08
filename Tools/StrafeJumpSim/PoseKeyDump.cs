@@ -71,7 +71,6 @@ static class PoseKeyDump
         float inn = VerbPoseClips.SlideBlendSeconds;
         float hold = 0.20f;
         float dur = inn + hold + inn;
-        GaitBlend.Legs legs = GaitBlend.At(1.5707963f, LocoFeel.Sprint);
         int n = Frames(dur);
         for (int i = 0; i <= n; i++)
         {
@@ -84,25 +83,13 @@ static class PoseKeyDump
                 wgt = 1f;
             else
                 wgt = 1f - Mathf.SmoothStep(0f, 1f, (t - inn - hold) / inn);
-            float thL = Mathf.Lerp(legs.ThighL, VerbPoseClips.SlideLeadThigh, wgt);
-            float thR = Mathf.Lerp(legs.ThighR, VerbPoseClips.SlideTrailThigh, wgt);
-            float knL = Mathf.Lerp(legs.KneeL, VerbPoseClips.SlideLeadKnee, wgt);
-            float knR = Mathf.Lerp(legs.KneeR, VerbPoseClips.SlideTrailKnee, wgt);
-            float yawL = Mathf.Lerp(0f, VerbPoseClips.SlideLeadYaw, wgt);
-            float yawR = Mathf.Lerp(0f, -VerbPoseClips.SlideTrailYaw, wgt);
-            VerbPoseClips.SlideArmOffsets(true, out float pL, out float yL, out float eL, out float pR, out float yR, out float eR);
-            Emit(w, c, "slide", t, thL, thR, knL, knR, yawL, yawR,
-                Mathf.Lerp(LocoFeel.ArmPitch(-1f, LocoFeel.Sprint), pL, wgt),
-                Mathf.Lerp(LocoFeel.ArmPitch(1f, LocoFeel.Sprint), pR, wgt),
-                Mathf.Lerp(0f, yL, wgt), Mathf.Lerp(0f, -yR, wgt), 0f, 0f,
-                Mathf.Lerp(-18f, eL, wgt), Mathf.Lerp(-24f, eR, wgt),
-                Mathf.Lerp(HandoffFeel.RunHip, VerbPoseClips.SlideHip, wgt),
-                Mathf.Lerp(HandoffFeel.RunSpine, VerbPoseClips.SlideSpine, wgt),
-                Mathf.Lerp(0f, VerbPoseClips.SlideHead, wgt),
+            VerbPoseClips.SlideSample s = VerbPoseClips.SlideAt(wgt, true);
+            Emit(w, c, "slide", t, s.ThL, s.ThR, s.KnL, s.KnR, s.YawL, s.YawR,
+                s.ArmL, s.ArmR, s.ArmYawL, s.ArmYawR, s.RollL, s.RollR,
+                s.ElbL, s.ElbR, s.Hip, s.Spine, s.Head,
                 0f, 0f, 0f,
-                Mathf.Lerp(legs.FootL, VerbPoseClips.SlideLeadFoot, wgt),
-                Mathf.Lerp(legs.FootR, VerbPoseClips.SlideTrailFoot, wgt),
-                -VerbPoseClips.SlideBodyDrop * wgt);
+                s.FootL, s.FootR, s.Drop,
+                0f, 0f, 0f, s.ThRollL, s.ThRollR);
             if (t >= dur) break;
         }
     }
@@ -412,8 +399,9 @@ static class PoseKeyDump
         float thL, float thR, float knL, float knR, float yawL, float yawR,
         float armL, float armR, float armYawL, float armYawR, float rollL, float rollR,
         float elbL, float elbR, float hip, float spine, float head, float lean,
-        float hipYaw, float spineYaw, float footL, float footR, float drop,
-        float elbYawL = 0f, float elbYawR = 0f, float shoulderL = 0f)
+        float hipYaw, float spineYaw,         float footL, float footR, float drop,
+        float elbYawL = 0f, float elbYawR = 0f, float shoulderL = 0f,
+        float thRollL = 0f, float thRollR = 0f)
     {
         w.Write(clip);
         w.Write('\t');
@@ -427,6 +415,7 @@ static class PoseKeyDump
         Write(w, c, hipYaw); Write(w, c, spineYaw);
         Write(w, c, footL); Write(w, c, footR); Write(w, c, drop);
         Write(w, c, elbYawL); Write(w, c, elbYawR); Write(w, c, shoulderL);
+        Write(w, c, thRollL); Write(w, c, thRollR);
         w.WriteLine();
     }
 
