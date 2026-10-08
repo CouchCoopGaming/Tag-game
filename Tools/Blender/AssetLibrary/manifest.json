@@ -36286,5 +36286,274 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/MenuBoard_Aframe.fbx"
+  },
+  {
+    "name": "CurbRamp_Detectable",
+    "category": "StreetFurniture",
+    "blurb": "Curb ramp, 1.20 m wide, rise 0.08 m. Truncated domes on the slope.",
+    "size": [
+      1.2,
+      0.078,
+      1.0
+    ],
+    "min": [
+      -0.6,
+      0.0,
+      -0.5
+    ],
+    "max": [
+      0.6,
+      0.078,
+      0.5
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 364,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 28,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Ramp",
+        "type": "box",
+        "center": [
+          0,
+          0.024,
+          -0.22
+        ],
+        "size": [
+          0.9,
+          0.032,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "8 cm rise. Not a wall.",
+    "vaultNote": "Too low to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/CurbRamp_Detectable.fbx"
+  },
+  {
+    "name": "FireSiamese_Post",
+    "category": "StreetFurniture",
+    "blurb": "Siamese connection, 0.46 m tall. Two brass outlets face +Z.",
+    "size": [
+      0.32,
+      0.49,
+      0.258
+    ],
+    "min": [
+      -0.16,
+      0.0,
+      -0.12
+    ],
+    "max": [
+      0.16,
+      0.49,
+      0.138
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 276,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Hydrant",
+          "Lib_Brass"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 148,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Hydrant",
+          "Lib_Brass"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Foot",
+        "type": "box",
+        "center": [
+          0,
+          0.012,
+          0
+        ],
+        "size": [
+          0.2,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          0.24,
+          0
+        ],
+        "size": [
+          0.14,
+          0.28,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/FireSiamese_Post.fbx"
+  },
+  {
+    "name": "Wayfinding_Pylon",
+    "category": "StreetFurniture",
+    "blurb": "Map pylon, 0.42 m wide and 2.15 m tall. MAP in Liberation Sans.",
+    "size": [
+      0.5,
+      2.16,
+      0.28
+    ],
+    "min": [
+      -0.25,
+      0.0,
+      -0.14
+    ],
+    "max": [
+      0.25,
+      2.16,
+      0.14
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 372,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintCream",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 48,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintCream"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Foot",
+        "type": "box",
+        "center": [
+          0,
+          0.014,
+          0
+        ],
+        "size": [
+          0.32,
+          0.018,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post",
+        "type": "box",
+        "center": [
+          0,
+          1.05,
+          0
+        ],
+        "size": [
+          0.2,
+          1.7,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling.",
+    "vaultNote": "Too smooth to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Wayfinding_Pylon.fbx"
   }
 ]

@@ -72,6 +72,9 @@ MODULES = (
     "sk_street_clock",
     "sk_bike_pump",
     "sk_menu_board",
+    "sk_curb_ramp",
+    "sk_fire_siamese",
+    "sk_wayfinding",
     "mannequin",
 )
 
@@ -384,7 +387,22 @@ def _pass12_lineup(found, path):
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
     found = _load()
-    if PASS >= 16:
+    if PASS >= 17:
+        shots = [
+            ("curb_ramp", lambda: _shot(found["CurbRamp_Detectable"], os.path.join(STILL_DIR, "curb_ramp.png"), fill=0.84)),
+            ("curb_ramp_scale", lambda: _with_figure(
+                found, "CurbRamp_Detectable", os.path.join(STILL_DIR, "curb_ramp_scale.png"),
+                (0.0, 0.0, 0.0), 16, (-1.15, 0.0, 0.7))),
+            ("fire_siamese", lambda: _shot(found["FireSiamese_Post"], os.path.join(STILL_DIR, "fire_siamese.png"), fill=0.84)),
+            ("fire_siamese_scale", lambda: _with_figure(
+                found, "FireSiamese_Post", os.path.join(STILL_DIR, "fire_siamese_scale.png"),
+                (0.45, 0.0, 0.0), 18, (-0.9, 0.0, 0.35))),
+            ("wayfinding", lambda: _shot(found["Wayfinding_Pylon"], os.path.join(STILL_DIR, "wayfinding.png"), fill=0.86)),
+            ("wayfinding_scale", lambda: _with_figure(
+                found, "Wayfinding_Pylon", os.path.join(STILL_DIR, "wayfinding_scale.png"),
+                (0.0, 0.0, 0.0), 10, (-1.15, 0.0, 0.65))),
+        ]
+    elif PASS >= 16:
         shots = [
             ("street_clock", lambda: _shot(found["StreetClock_Post"], os.path.join(STILL_DIR, "street_clock.png"), fill=0.86)),
             ("street_clock_scale", lambda: _with_figure(

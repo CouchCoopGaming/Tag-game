@@ -72,6 +72,9 @@ MODULES = (
     "sk_street_clock",
     "sk_bike_pump",
     "sk_menu_board",
+    "sk_curb_ramp",
+    "sk_fire_siamese",
+    "sk_wayfinding",
 )
 
 
