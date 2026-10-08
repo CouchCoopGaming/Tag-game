@@ -45,7 +45,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.446, z: 0.0185}
+  m_LocalReferencePoint: {x: 0, y: 0.446, z: 0.0065}
   m_Size: 0.892
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -289,7 +289,7 @@ Transform:
   m_GameObject: {fileID: 300000}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.427, z: 0}
+  m_LocalPosition: {x: 0, y: 0.42, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -313,8 +313,8 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  m_Radius: 0.17
-  m_Height: 0.774
+  m_Radius: 0.1
+  m_Height: 0.46
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300010
@@ -343,7 +343,7 @@ Transform:
   m_GameObject: {fileID: 300010}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0.24}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0.23}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -368,5 +368,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.16, y: 0.1, z: 0.024}
+  m_Size: {x: 0.1, y: 0.08, z: 0.024}
   m_Center: {x: 0, y: 0, z: 0}

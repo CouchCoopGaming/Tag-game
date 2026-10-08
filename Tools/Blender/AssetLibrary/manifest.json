@@ -24113,24 +24113,24 @@
     "category": "StreetFurniture",
     "blurb": "City trash can, about 0.92 m. Slatted steel body, liner ring, shallow lid, and a side flap.",
     "size": [
-      0.512,
+      0.551,
       0.892,
-      0.557
+      0.573
     ],
     "min": [
-      -0.256,
+      -0.276,
       0.0,
-      -0.26
+      -0.28
     ],
     "max": [
-      0.256,
+      0.276,
       0.892,
-      0.297
+      0.293
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 732,
+        "tris": 708,
         "materials": [
           "Lib_Steel",
           "Lib_SteelDark",
@@ -24141,7 +24141,7 @@
       },
       {
         "lod": 1,
-        "tris": 424,
+        "tris": 400,
         "materials": [
           "Lib_Steel",
           "Lib_SteelDark",
@@ -24157,11 +24157,11 @@
         "type": "capsule",
         "center": [
           0,
-          0.427,
+          0.42,
           0
         ],
-        "radius": 0.17,
-        "height": 0.774,
+        "radius": 0.1,
+        "height": 0.46,
         "direction": 1
       },
       {
@@ -24170,11 +24170,11 @@
         "center": [
           0,
           0.5,
-          0.24
+          0.23
         ],
         "size": [
-          0.16,
           0.1,
+          0.08,
           0.024
         ],
         "euler": [
