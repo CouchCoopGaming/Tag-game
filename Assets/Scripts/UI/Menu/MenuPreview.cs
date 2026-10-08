@@ -5,9 +5,10 @@ using UnityEngine.UI;
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// One camera and render texture per seat. The body is the existing
-    /// primitive Hier mannequin (same color keys as the match pawn).
-    /// Idle motion is visual only and uses unscaled time.
+    /// One camera and render texture per seat. One shared light rig
+    /// (key, fill, rim) lights every seat. The body uses the look's
+    /// matte primary and secondary colours. Idle motion is visual only
+    /// and uses unscaled time.
     /// </summary>
     public sealed class MenuPreview : MonoBehaviour
     {
@@ -32,6 +33,11 @@ namespace Tag.Ui.Menu
         readonly Transform[] _step = new Transform[Slots];
         readonly Transform[] _podiumAnchor = new Transform[Slots];
         readonly Transform[] _confetti = new Transform[18];
+        static Sprite _wellSprite;
+        static Texture2D _wellTex;
+        static Texture2D _shadowTex;
+        Material _wellMat;
+        Material _shadowMat;
 
         public void Build()
         {
@@ -46,7 +52,7 @@ namespace Tag.Ui.Menu
                 camGo.transform.SetParent(transform, false);
                 var cam = camGo.AddComponent<Camera>();
                 cam.clearFlags = CameraClearFlags.SolidColor;
-                cam.backgroundColor = new Color(0.12f, 0.36f, 0.74f, 1f);
+                cam.backgroundColor = new Color(0.58f, 0.66f, 0.74f, 1f);
                 cam.fieldOfView = 26f;
                 cam.nearClipPlane = 0.05f;
                 cam.farClipPlane = 20f;
@@ -58,20 +64,17 @@ namespace Tag.Ui.Menu
                 _cam[i] = cam;
                 Aim(i);
             }
-            var keyGo = new GameObject("PreviewKey");
-            keyGo.transform.SetParent(transform, false);
-            keyGo.transform.rotation = Quaternion.Euler(42f, -38f, 0f);
-            var key = keyGo.AddComponent<Light>();
-            key.type = LightType.Directional;
-            key.color = new Color(1f, 0.96f, 0.88f, 1f);
-            key.intensity = 1.15f;
-            var fillGo = new GameObject("PreviewFill");
-            fillGo.transform.SetParent(transform, false);
-            fillGo.transform.rotation = Quaternion.Euler(12f, 140f, 0f);
-            var fill = fillGo.AddComponent<Light>();
-            fill.type = LightType.Directional;
-            fill.color = new Color(0.62f, 0.74f, 1f, 1f);
-            fill.intensity = 0.35f;
+            // Shared rig. Rays point at the figure. The key comes from the
+            // camera's front-left, the fill from the other front side, and
+            // the rim from behind so the silhouette leaves the well.
+            AddSun("PreviewKey", new Vector3(-0.65f, -0.50f, -0.70f), new Color(1f, 0.97f, 0.92f, 1f), 1.40f);
+            AddSun("PreviewFill", new Vector3(0.45f, -0.22f, -0.85f), new Color(0.78f, 0.84f, 1f, 1f), 0.42f);
+            AddSun("PreviewRim", new Vector3(0.15f, -0.35f, 0.90f), new Color(0.90f, 0.94f, 1f, 1f), 0.62f);
+            for (int i = 0; i < Slots; i++)
+            {
+                BuildWell(i);
+                BuildShadow(i);
+            }
             BuildPodium();
             BuildParade();
             gameObject.SetActive(false);
@@ -139,7 +142,7 @@ namespace Tag.Ui.Menu
                 for (int c = _anchor[seat].childCount - 1; c >= 0; c--)
                 {
                     Transform child = _anchor[seat].GetChild(c);
-                    if (child != null && (child.name == "Pedestal" || child.name == "Contact")) continue;
+                    if (child != null && (child.name == "Pedestal" || child.name == "Contact" || child.name == "SoftShadow")) continue;
                     DestroyImmediate(child.gameObject);
                 }
                 GameObject body = MenuMannequin.Spawn(_anchor[seat], MenuMannequin.NameOf(hier), MenuMannequin.NameOf(accent), hat != 0);
@@ -234,7 +237,7 @@ namespace Tag.Ui.Menu
             go.transform.localPosition = new Vector3(0f, 0.055f, 0f);
             Renderer rend = go.GetComponent<Renderer>();
             if (rend != null)
-                rend.sharedMaterial = DummyPrimitiveFactory.MakeMat(MenuTheme.Seat(seat), 0.22f, 0.18f);
+                rend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.08f, 0.10f, 0.14f, 1f), 0.40f, 0f);
             var shade = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             shade.name = "Contact";
             shade.transform.SetParent(_anchor[seat], false);
@@ -244,7 +247,7 @@ namespace Tag.Ui.Menu
             shade.transform.localPosition = new Vector3(0f, 0.012f, 0f);
             Renderer shadeRend = shade.GetComponent<Renderer>();
             if (shadeRend != null)
-                shadeRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.04f, 0.06f, 0.10f, 1f), 0.9f, 0f);
+                shadeRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.05f, 0.07f, 0.10f, 1f), 0.40f, 0f);
             _disc[seat] = go.transform;
         }
 
@@ -463,11 +466,129 @@ namespace Tag.Ui.Menu
             _paradeCam = cam;
         }
 
+        public static Sprite WellSprite()
+        {
+            if (_wellSprite != null) return _wellSprite;
+            Texture2D tex = WellTex();
+            _wellSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+            return _wellSprite;
+        }
+
+        static Texture2D WellTex()
+        {
+            if (_wellTex != null) return _wellTex;
+            const int w = 8;
+            const int h = 128;
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            Color bot = new Color(0.10f, 0.20f, 0.40f, 1f);
+            Color top = new Color(0.58f, 0.66f, 0.74f, 1f);
+            for (int y = 0; y < h; y++)
+            {
+                float u = y / (h - 1f);
+                Color c = Color.Lerp(bot, top, u);
+                for (int x = 0; x < w; x++) tex.SetPixel(x, y, c);
+            }
+            tex.Apply();
+            _wellTex = tex;
+            return tex;
+        }
+
+        static Texture2D ShadowTex()
+        {
+            if (_shadowTex != null) return _shadowTex;
+            const int n = 64;
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            float c = (n - 1) * 0.5f;
+            for (int y = 0; y < n; y++)
+            {
+                for (int x = 0; x < n; x++)
+                {
+                    float dx = (x - c) / c;
+                    float dy = (y - c) / c;
+                    float d = Mathf.Sqrt(dx * dx + dy * dy);
+                    float a = 1f - d;
+                    if (a < 0f) a = 0f;
+                    a = a * a * 0.55f;
+                    tex.SetPixel(x, y, new Color(0.02f, 0.04f, 0.07f, a));
+                }
+            }
+            tex.Apply();
+            _shadowTex = tex;
+            return tex;
+        }
+
+        void AddSun(string name, Vector3 rayDir, Color color, float intensity)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            go.transform.rotation = Quaternion.LookRotation(rayDir);
+            var light = go.AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.color = color;
+            light.intensity = intensity;
+            light.shadows = LightShadows.None;
+        }
+
+        void BuildWell(int i)
+        {
+            if (_cam[i] == null) return;
+            if (_wellMat == null)
+            {
+                var shader = Shader.Find("Unlit/Texture") ?? Shader.Find("Sprites/Default");
+                _wellMat = new Material(shader);
+                _wellMat.mainTexture = WellTex();
+            }
+            var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.name = "PreviewWell";
+            quad.transform.SetParent(_cam[i].transform, false);
+            quad.transform.localPosition = new Vector3(0f, 0f, 8f);
+            quad.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            quad.transform.localScale = new Vector3(4.4f, 4.4f, 1f);
+            Collider col = quad.GetComponent<Collider>();
+            if (col != null) DestroyImmediate(col);
+            Renderer rend = quad.GetComponent<Renderer>();
+            if (rend != null)
+            {
+                rend.sharedMaterial = _wellMat;
+                rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                rend.receiveShadows = false;
+            }
+        }
+
+        void BuildShadow(int i)
+        {
+            if (_anchor[i] == null) return;
+            if (_shadowMat == null)
+            {
+                var shader = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Transparent");
+                _shadowMat = new Material(shader);
+                _shadowMat.mainTexture = ShadowTex();
+            }
+            var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.name = "SoftShadow";
+            quad.transform.SetParent(_anchor[i], false);
+            quad.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            quad.transform.localPosition = new Vector3(0f, 0.02f, 0.05f);
+            quad.transform.localScale = new Vector3(1.45f, 0.72f, 1f);
+            Collider col = quad.GetComponent<Collider>();
+            if (col != null) DestroyImmediate(col);
+            Renderer rend = quad.GetComponent<Renderer>();
+            if (rend != null)
+            {
+                rend.sharedMaterial = _shadowMat;
+                rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                rend.receiveShadows = false;
+            }
+        }
+
         void Aim(int i)
         {
             if (_cam[i] == null || _anchor[i] == null) return;
             Vector3 focus = _anchor[i].position + new Vector3(0f, 0.98f, 0f);
-            _cam[i].transform.position = focus + new Vector3(1.45f, 0.38f, 4.15f);
+            // About 4.9 m out. At 26° the 1.8 m figure fills about 80% of the well.
+            _cam[i].transform.position = focus + new Vector3(1.60f, 0.42f, 4.58f);
             _cam[i].transform.LookAt(focus);
         }
 

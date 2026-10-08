@@ -2161,7 +2161,9 @@ namespace Tag.Ui.Menu
                 _castView[s] = raw;
                 var well = MenuWidgets.Place(card, "JoinWell", viewX, 10f, viewSide, viewH);
                 var wellImage = well.gameObject.AddComponent<Image>();
-                MenuArt.Plate(wellImage, MenuTheme.Navy, true);
+                wellImage.sprite = MenuPreview.WellSprite();
+                wellImage.type = Image.Type.Simple;
+                wellImage.color = Color.white;
                 wellImage.raycastTarget = false;
                 _castWell[s] = wellImage;
                 well.SetSiblingIndex(viewRt.GetSiblingIndex());

@@ -89,6 +89,14 @@ namespace Tag.Ui.Menu
 
         static void Dress(GameObject inst, string body, string accent)
         {
+            // The FBX albedo imports dark and metallic, so the look disappears.
+            // Primary is the body swatch, secondary is the accent swatch. Those
+            // are the same keys the runner foam uses. Matte: metallic 0,
+            // smoothness 0.40 (roughness about 0.6).
+            Color primary = Swatch(body);
+            Color secondary = Swatch(accent);
+            const float smooth = 0.40f;
+            const float metal = 0f;
             Renderer[] rends = inst.GetComponentsInChildren<Renderer>(true);
             for (int r = 0; r < rends.Length; r++)
             {
@@ -100,48 +108,28 @@ namespace Tag.Ui.Menu
                 for (int i = 0; i < n; i++)
                 {
                     Material src = shared != null && i < shared.Length ? shared[i] : null;
-                    string matName = src != null ? src.name : rend.gameObject.name;
-                    Color color = Authored(src);
-                    if (!Usable(color)) color = RoleColor(matName, body, accent);
-                    else if (IsAccent(matName)) color = Swatch(accent);
-                    next[i] = DummyPrimitiveFactory.MakeMat(color, 0.45f, 0f);
+                    string matName = src != null ? src.name : "";
+                    Color color = Shell(matName + " " + rend.gameObject.name, primary, secondary);
+                    next[i] = DummyPrimitiveFactory.MakeMat(color, smooth, metal);
                 }
                 rend.sharedMaterials = next;
             }
         }
 
-        static bool IsAccent(string name)
+        static bool Has(string name, string token)
         {
-            return name.IndexOf("Accent", System.StringComparison.OrdinalIgnoreCase) >= 0
-                || name.IndexOf("Panel", System.StringComparison.OrdinalIgnoreCase) >= 0;
+            return name.IndexOf(token, System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        static Color Authored(Material src)
+        static Color Shell(string name, Color primary, Color secondary)
         {
-            if (src == null) return new Color(1f, 0f, 1f, 1f);
-            if (src.HasProperty("_BaseColor")) return src.GetColor("_BaseColor");
-            if (src.HasProperty("_Color")) return src.color;
-            return new Color(1f, 0f, 1f, 1f);
-        }
-
-        static bool Usable(Color c)
-        {
-            if (c.a < 0.2f) return false;
-            bool magenta = c.r > 0.8f && c.b > 0.8f && c.g < 0.35f;
-            return !magenta;
-        }
-
-        static Color RoleColor(string name, string body, string accent)
-        {
-            if (name.IndexOf("Joint", System.StringComparison.OrdinalIgnoreCase) >= 0
-                || name.IndexOf("Rubber", System.StringComparison.OrdinalIgnoreCase) >= 0
-                || name.IndexOf("Bellow", System.StringComparison.OrdinalIgnoreCase) >= 0)
-                return new Color(0.08f, 0.08f, 0.09f, 1f);
-            if (name.IndexOf("Eye", System.StringComparison.OrdinalIgnoreCase) >= 0
-                || name.IndexOf("Sensor", System.StringComparison.OrdinalIgnoreCase) >= 0)
-                return new Color(0.04f, 0.04f, 0.05f, 1f);
-            if (IsAccent(name)) return Swatch(accent);
-            return Swatch(body);
+            if (Has(name, "Joint") || Has(name, "Rubber") || Has(name, "Bellow")
+                || Has(name, "Wear") || Has(name, "Sensor") || Has(name, "Eye")
+                || Has(name, "Lip") || Has(name, "Metal"))
+                return new Color(0.10f, 0.10f, 0.12f, 1f);
+            if (Has(name, "Accent") || Has(name, "Panel") || Has(name, "Cal"))
+                return secondary;
+            return primary;
         }
 
         public static Color Swatch(string key)

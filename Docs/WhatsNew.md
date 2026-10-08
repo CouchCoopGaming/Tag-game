@@ -330,6 +330,8 @@ The thirty-first pass docks that bar to the bottom edge, and to the bottom of ea
 
 The thirty-second pass puts the Hier mesh on the card. The preview is lit, at a three-quarter angle, idle or ready. Idle sways by 10 degrees. Ready hops with the hop already on that screen, and pose stays 0. The P chip stays the seat colour. The header says "P colour = controller seat" once. A taken look is grey, with a padlock. In `Docs/UiStills/pass32/cast-mesh.png` the figures are a render of the FBX. The rest of that picture, and `cast-legend.png` and `cast-lock.png`, are composites.
 
+The thirty-third pass paints that mesh in the look. The body is the primary swatch and the panels are the accent, matte, with metallic at 0 and roughness about 0.6. One rig lights every card: key from the front-left, fill, and a rim. The well fades from navy to a lighter blue-grey. The figure fills about 80% of the well and stands on a soft shadow. A Red torso pixel in the still is `#C83E46`, against primary `#E0383D`. The bright cards in the previous still were the picture, not the menu. `Docs/UiStills/pass33/cast-looks.png` keeps the pass 31 card chrome. The figures in the AFTER wells are the FBX render.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

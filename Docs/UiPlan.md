@@ -291,6 +291,10 @@ Character select keeps four cards. Each card shows the Hier mannequin in that pl
 
 The card figure is the Hier mesh. Each seat has a lit preview, three-quarter view, idle or ready. Idle yaws back and forth by 10 degrees. Ready uses the ready pose and the hop already on that screen. pose stays 0. The P chip stays the seat colour. The words "P colour = controller seat" sit once in the header. A taken look is grey and carries a padlock. In `Docs/UiStills/pass32/cast-mesh.png` the figure pixels are a render of `Dummy_Mannequin_*_Hier_Hi.fbx`. The frames, type, swatches, and prompt bar in that picture are composite, and so are `cast-legend.png` and `cast-lock.png`. The proof lines are unchanged.
 
+## Pass 33
+
+The preview paints the look. Primary is the body swatch and secondary is the accent swatch, the same keys as the runner foam. Both are matte: metallic 0, roughness about 0.6. One light rig serves every seat: a soft key from the front-left, a fill, and a rim. The well is a gradient from navy to a lighter blue-grey, and the figure fills about 80% of that well, with a soft shadow under the feet. A Red torso shell pixel in the still reads `#C83E46` against primary `#E0383D`. The pass 32 card picture used a bright backdrop and colour-filled cards. That was the still, not a menu change. `Docs/UiStills/pass33/cast-looks.png` puts the mesh back on the pass 31 card chrome. The figure, the well gradient, and the contact shadow in the AFTER wells are the mesh render. The frames, type, and swatches are composite. The BEFORE panel is the pass 31 composite. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.
