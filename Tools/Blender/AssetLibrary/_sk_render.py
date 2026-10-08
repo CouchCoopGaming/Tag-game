@@ -75,6 +75,9 @@ MODULES = (
     "sk_curb_ramp",
     "sk_fire_siamese",
     "sk_wayfinding",
+    "sk_tree_guard",
+    "sk_dog_bag",
+    "sk_bus_flag",
     "mannequin",
 )
 
@@ -387,7 +390,22 @@ def _pass12_lineup(found, path):
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
     found = _load()
-    if PASS >= 17:
+    if PASS >= 18:
+        shots = [
+            ("tree_guard", lambda: _shot(found["TreeGuard_Square"], os.path.join(STILL_DIR, "tree_guard.png"), fill=0.84)),
+            ("tree_guard_scale", lambda: _with_figure(
+                found, "TreeGuard_Square", os.path.join(STILL_DIR, "tree_guard_scale.png"),
+                (0.0, 0.0, 0.0), 20, (-1.2, 0.0, 0.7))),
+            ("dog_bag", lambda: _shot(found["DogBag_Post"], os.path.join(STILL_DIR, "dog_bag.png"), fill=0.84)),
+            ("dog_bag_scale", lambda: _with_figure(
+                found, "DogBag_Post", os.path.join(STILL_DIR, "dog_bag_scale.png"),
+                (0.4, 0.0, 0.0), 16, (-0.9, 0.0, 0.25))),
+            ("bus_flag", lambda: _shot(found["BusFlag_Stop"], os.path.join(STILL_DIR, "bus_flag.png"), fill=0.86)),
+            ("bus_flag_scale", lambda: _with_figure(
+                found, "BusFlag_Stop", os.path.join(STILL_DIR, "bus_flag_scale.png"),
+                (0.2, 0.0, 0.0), 8, (-1.1, 0.0, 0.7))),
+        ]
+    elif PASS >= 17:
         shots = [
             ("curb_ramp", lambda: _shot(found["CurbRamp_Detectable"], os.path.join(STILL_DIR, "curb_ramp.png"), fill=0.84)),
             ("curb_ramp_scale", lambda: _with_figure(

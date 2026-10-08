@@ -36555,5 +36555,360 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Wayfinding_Pylon.fbx"
+  },
+  {
+    "name": "TreeGuard_Square",
+    "category": "StreetFurniture",
+    "blurb": "Tree-pit guard, 0.90 m square, rails at 0.18 m and 0.42 m.",
+    "size": [
+      0.94,
+      0.46,
+      0.94
+    ],
+    "min": [
+      -0.47,
+      0.0,
+      -0.47
+    ],
+    "max": [
+      0.47,
+      0.46,
+      0.47
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 448,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 192,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Post00",
+        "type": "box",
+        "center": [
+          -0.42,
+          0.29,
+          -0.42
+        ],
+        "size": [
+          0.024,
+          0.12,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post01",
+        "type": "box",
+        "center": [
+          0.42,
+          0.29,
+          -0.42
+        ],
+        "size": [
+          0.024,
+          0.12,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post10",
+        "type": "box",
+        "center": [
+          -0.42,
+          0.29,
+          0.42
+        ],
+        "size": [
+          0.024,
+          0.12,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post11",
+        "type": "box",
+        "center": [
+          0.42,
+          0.29,
+          0.42
+        ],
+        "size": [
+          0.024,
+          0.12,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Posts are 4 cm. Not a cling.",
+    "vaultNote": "Top rail is 0.42 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/TreeGuard_Square.fbx"
+  },
+  {
+    "name": "DogBag_Post",
+    "category": "StreetFurniture",
+    "blurb": "Bag dispenser. Post to 1.05 m, box at 0.95 m. BAGS in Liberation Sans.",
+    "size": [
+      0.18,
+      1.09,
+      0.192
+    ],
+    "min": [
+      -0.09,
+      0.0,
+      -0.09
+    ],
+    "max": [
+      0.09,
+      1.09,
+      0.102
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 780,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintBlue",
+          "Lib_Black",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 64,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintBlue",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.015,
+          0
+        ],
+        "size": [
+          0.12,
+          0.02,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post",
+        "type": "capsule",
+        "center": [
+          0,
+          0.46,
+          0
+        ],
+        "radius": 0.02,
+        "height": 0.76,
+        "direction": 1
+      },
+      {
+        "name": "Col_Box",
+        "type": "box",
+        "center": [
+          0,
+          0.98,
+          0.055
+        ],
+        "size": [
+          0.1,
+          0.12,
+          0.04
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.63,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/DogBag_Post.fbx"
+  },
+  {
+    "name": "BusFlag_Stop",
+    "category": "StreetFurniture",
+    "blurb": "Bus flag. Pole to 2.40 m, blade 0.46 m wide. BUS in Liberation Sans.",
+    "size": [
+      0.61,
+      2.43,
+      0.2
+    ],
+    "min": [
+      -0.1,
+      0.0,
+      -0.1
+    ],
+    "max": [
+      0.51,
+      2.43,
+      0.1
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 656,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintYellow",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 64,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintYellow"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.015,
+          0
+        ],
+        "size": [
+          0.12,
+          0.02,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Pole",
+        "type": "capsule",
+        "center": [
+          0,
+          1.1,
+          0
+        ],
+        "radius": 0.022,
+        "height": 2.0,
+        "direction": 1
+      },
+      {
+        "name": "Col_Blade",
+        "type": "box",
+        "center": [
+          0.3,
+          2.32,
+          0
+        ],
+        "size": [
+          0.32,
+          0.14,
+          0.016
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Pole is 6 cm. Not a cling.",
+    "vaultNote": "Blade is 2.35 m. Too high to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.63,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/BusFlag_Stop.fbx"
   }
 ]

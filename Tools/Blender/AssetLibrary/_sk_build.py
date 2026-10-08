@@ -75,6 +75,9 @@ MODULES = (
     "sk_curb_ramp",
     "sk_fire_siamese",
     "sk_wayfinding",
+    "sk_tree_guard",
+    "sk_dog_bag",
+    "sk_bus_flag",
 )
 
 
