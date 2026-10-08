@@ -38632,5 +38632,895 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/PicnicTable_Wood.fbx"
+  },
+  {
+    "name": "StreetRoad_TwoLane",
+    "category": "StreetFurniture",
+    "blurb": "Two 3 m lanes, 6 x 4 m, surface at 0.12 m. White edges, dashed yellow center. Next tile is 4 m along Z.",
+    "size": [
+      6.0,
+      0.126,
+      4.0
+    ],
+    "min": [
+      -3.0,
+      0.0,
+      -2.0
+    ],
+    "max": [
+      3.0,
+      0.126,
+      2.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 84,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_AsphaltWear",
+          "Lib_AsphaltPatch",
+          "Lib_PaintWhite",
+          "Lib_Lane"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 60,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_PaintWhite",
+          "Lib_Lane"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Slab",
+        "type": "box",
+        "center": [
+          0,
+          0.056,
+          0
+        ],
+        "size": [
+          5.94,
+          0.112,
+          3.94
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Flat asphalt.",
+    "vaultNote": "No curb on this tile.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StreetRoad_TwoLane.fbx"
+  },
+  {
+    "name": "StreetRoad_FourLane",
+    "category": "StreetFurniture",
+    "blurb": "Four 3 m lanes, 12 x 4 m, surface at 0.12 m. Double yellow center, white dashes between same-direction lanes.",
+    "size": [
+      12.0,
+      0.126,
+      4.0
+    ],
+    "min": [
+      -6.0,
+      0.0,
+      -2.0
+    ],
+    "max": [
+      6.0,
+      0.126,
+      2.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 132,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_AsphaltWear",
+          "Lib_AsphaltPatch",
+          "Lib_PaintWhite",
+          "Lib_Lane"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 108,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_PaintWhite",
+          "Lib_Lane"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Slab",
+        "type": "box",
+        "center": [
+          0,
+          0.056,
+          0
+        ],
+        "size": [
+          11.94,
+          0.112,
+          3.94
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Flat asphalt.",
+    "vaultNote": "No curb on this tile.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StreetRoad_FourLane.fbx"
+  },
+  {
+    "name": "StreetRoad_Intersection",
+    "category": "StreetFurniture",
+    "blurb": "6 m square crossing. Surface at 0.12 m. Continental bars and a 0.40 m stop bar on each approach.",
+    "size": [
+      6.0,
+      0.126,
+      6.0
+    ],
+    "min": [
+      -3.0,
+      0.0,
+      -3.0
+    ],
+    "max": [
+      3.0,
+      0.126,
+      3.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 372,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_AsphaltWear",
+          "Lib_AsphaltPatch",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 252,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Slab",
+        "type": "box",
+        "center": [
+          0,
+          0.056,
+          0
+        ],
+        "size": [
+          5.94,
+          0.112,
+          5.94
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Flat asphalt.",
+    "vaultNote": "No curb on this tile.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StreetRoad_Intersection.fbx"
+  },
+  {
+    "name": "StreetRoad_Crosswalk",
+    "category": "StreetFurniture",
+    "blurb": "6 x 4 m two-lane tile. Continental bars 0.45 m wide across both lanes. Same socket as StreetRoad_TwoLane.",
+    "size": [
+      6.0,
+      0.126,
+      4.0
+    ],
+    "min": [
+      -3.0,
+      0.0,
+      -2.0
+    ],
+    "max": [
+      3.0,
+      0.126,
+      2.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 180,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_AsphaltWear",
+          "Lib_AsphaltPatch",
+          "Lib_PaintWhite",
+          "Lib_Lane"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 120,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_PaintWhite",
+          "Lib_Lane"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Slab",
+        "type": "box",
+        "center": [
+          0,
+          0.056,
+          0
+        ],
+        "size": [
+          5.94,
+          0.112,
+          3.94
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Flat asphalt. Paint is not a step.",
+    "vaultNote": "No curb on this tile.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StreetRoad_Crosswalk.fbx"
+  },
+  {
+    "name": "StreetRoad_StopBar",
+    "category": "StreetFurniture",
+    "blurb": "6 x 4 m two-lane tile. Stop bar is 0.40 m wide, 0.35 m in from the +Z end.",
+    "size": [
+      6.0,
+      0.126,
+      4.0
+    ],
+    "min": [
+      -3.0,
+      0.0,
+      -2.0
+    ],
+    "max": [
+      3.0,
+      0.126,
+      2.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 84,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_AsphaltWear",
+          "Lib_AsphaltPatch",
+          "Lib_PaintWhite",
+          "Lib_Lane"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 60,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_PaintWhite",
+          "Lib_Lane"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Slab",
+        "type": "box",
+        "center": [
+          0,
+          0.056,
+          0
+        ],
+        "size": [
+          5.94,
+          0.112,
+          3.94
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Flat asphalt.",
+    "vaultNote": "No curb on this tile.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StreetRoad_StopBar.fbx"
+  },
+  {
+    "name": "StreetRoad_Arrows",
+    "category": "StreetFurniture",
+    "blurb": "6 x 4 m two-lane tile. Through arrow in the left lane, right-turn arrow in the right lane. Arrows are block paint, not a tapered stencil.",
+    "size": [
+      6.0,
+      0.126,
+      4.0
+    ],
+    "min": [
+      -3.0,
+      0.0,
+      -2.0
+    ],
+    "max": [
+      3.0,
+      0.126,
+      2.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 156,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_AsphaltWear",
+          "Lib_AsphaltPatch",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 84,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Slab",
+        "type": "box",
+        "center": [
+          0,
+          0.056,
+          0
+        ],
+        "size": [
+          5.94,
+          0.112,
+          3.94
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Flat asphalt.",
+    "vaultNote": "No curb on this tile.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StreetRoad_Arrows.fbx"
+  },
+  {
+    "name": "StreetCurb_Straight",
+    "category": "StreetFurniture",
+    "blurb": "Curb and gutter, 4.00 m long. Gutter 0.30 m at 0.12 m. Curb face 0.15 m up to 0.27 m. Place the gutter against the road edge.",
+    "size": [
+      0.536,
+      0.279,
+      4.0
+    ],
+    "min": [
+      -0.28,
+      0.0,
+      -2.0
+    ],
+    "max": [
+      0.256,
+      0.279,
+      2.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 104,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_AsphaltWear",
+          "Lib_Mortar"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 20,
+        "materials": [
+          "Lib_Concrete"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Gutter",
+        "type": "box",
+        "center": [
+          -0.12,
+          0.058,
+          0
+        ],
+        "size": [
+          0.22,
+          0.108,
+          3.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Head",
+        "type": "box",
+        "center": [
+          0.15,
+          0.201,
+          0
+        ],
+        "size": [
+          0.1,
+          0.122,
+          3.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Curb face is 0.15 m. Not a cling wall.",
+    "vaultNote": "Curb is 0.15 m above the gutter. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StreetCurb_Straight.fbx"
+  },
+  {
+    "name": "StreetMedian_Planted",
+    "category": "StreetFurniture",
+    "blurb": "6 x 4 m module with a 1.50 m planted median. Asphalt at 0.12 m, curb top at 0.28 m. Lanes are about 2.25 m.",
+    "size": [
+      6.0,
+      0.782,
+      4.0
+    ],
+    "min": [
+      -3.0,
+      0.0,
+      -2.0
+    ],
+    "max": [
+      3.0,
+      0.782,
+      2.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 3324,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_AsphaltPatch",
+          "Lib_AsphaltWear",
+          "Lib_PaintWhite",
+          "Lib_Lane",
+          "Lib_Concrete",
+          "Lib_Soil",
+          "Lib_Mulch",
+          "Lib_Foliage"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 1084,
+        "materials": [
+          "Lib_Asphalt",
+          "Lib_PaintWhite",
+          "Lib_Lane",
+          "Lib_Concrete",
+          "Lib_Soil",
+          "Lib_Mulch",
+          "Lib_Foliage"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_LaneL",
+        "type": "box",
+        "center": [
+          -1.88,
+          0.056,
+          0
+        ],
+        "size": [
+          2.1,
+          0.112,
+          3.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LaneR",
+        "type": "box",
+        "center": [
+          1.88,
+          0.056,
+          0
+        ],
+        "size": [
+          2.1,
+          0.112,
+          3.7
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CurbL",
+        "type": "box",
+        "center": [
+          -0.64,
+          0.206,
+          0
+        ],
+        "size": [
+          0.1,
+          0.132,
+          3.0
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CurbR",
+        "type": "box",
+        "center": [
+          0.64,
+          0.206,
+          0
+        ],
+        "size": [
+          0.1,
+          0.132,
+          3.0
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CurbN",
+        "type": "box",
+        "center": [
+          0,
+          0.246,
+          1.78
+        ],
+        "size": [
+          0.7,
+          0.052,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CurbS",
+        "type": "box",
+        "center": [
+          0,
+          0.246,
+          -1.78
+        ],
+        "size": [
+          0.7,
+          0.052,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Mulch",
+        "type": "box",
+        "center": [
+          0,
+          0.208,
+          0
+        ],
+        "size": [
+          0.5,
+          0.016,
+          0.46
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_ShrubS",
+        "type": "sphere",
+        "center": [
+          0,
+          0.52,
+          -0.85
+        ],
+        "radius": 0.14
+      },
+      {
+        "name": "Col_ShrubN",
+        "type": "sphere",
+        "center": [
+          0,
+          0.52,
+          0.85
+        ],
+        "radius": 0.14
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Median curb is 0.16 m above the asphalt.",
+    "vaultNote": "Low curb. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/StreetMedian_Planted.fbx"
+  },
+  {
+    "name": "Sidewalk_Joint",
+    "category": "StreetFurniture",
+    "blurb": "Sidewalk 2.00 x 4.00 m, top at 0.27 m. One 24 mm filled expansion joint and control joints. Curb face is -X.",
+    "size": [
+      2.011,
+      0.28,
+      4.0
+    ],
+    "min": [
+      -1.011,
+      0.0,
+      -2.0
+    ],
+    "max": [
+      1.0,
+      0.28,
+      2.0
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 172,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_AsphaltPatch",
+          "Lib_Mortar",
+          "Lib_AsphaltWear"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 36,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_AsphaltPatch"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_SlabS",
+        "type": "box",
+        "center": [
+          0,
+          0.133,
+          -1.02
+        ],
+        "size": [
+          1.88,
+          0.258,
+          1.84
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SlabN",
+        "type": "box",
+        "center": [
+          0,
+          0.133,
+          1.02
+        ],
+        "size": [
+          1.88,
+          0.258,
+          1.84
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Curb face is 0.27 m from the pivot. Not a cling wall.",
+    "vaultNote": "Top is 0.15 m above the road. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Sidewalk_Joint.fbx"
   }
 ]

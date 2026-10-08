@@ -57,6 +57,17 @@ PASSES = {
         ("ac_roof_large", "AC_Roof_Large", 18.0, (-1.55, 0.0, 0.95), 200.0),
         ("picnic_table", "PicnicTable_Wood", 16.0, (-1.7, 0.0, 1.05), 200.0),
     ),
+    4: (
+        ("road_two", "StreetRoad_TwoLane", 18.0, (-4.2, 0.0, 1.4), 200.0),
+        ("road_four", "StreetRoad_FourLane", 16.0, (-7.6, 0.0, 1.6), 200.0),
+        ("road_intersection", "StreetRoad_Intersection", 22.0, (-4.6, 0.0, 2.4), 200.0),
+        ("road_crosswalk", "StreetRoad_Crosswalk", 18.0, (-4.2, 0.0, 1.4), 200.0),
+        ("road_stop", "StreetRoad_StopBar", 18.0, (-4.2, 0.0, 1.8), 200.0),
+        ("road_arrows", "StreetRoad_Arrows", 18.0, (-4.2, 0.0, 1.4), 200.0),
+        ("curb_straight", "StreetCurb_Straight", 200.0, (-1.4, 0.0, 1.5), 160.0),
+        ("median_planted", "StreetMedian_Planted", 20.0, (-4.4, 0.0, 1.6), 200.0),
+        ("sidewalk_joint", "Sidewalk_Joint", 200.0, (-2.3, 0.0, 1.4), 160.0),
+    ),
 }
 
 
@@ -82,6 +93,15 @@ def _load(names):
         "AC_Roof_Small": "sk_ac_roof",
         "AC_Roof_Large": "sk_ac_roof_large",
         "PicnicTable_Wood": "sk_picnic_table",
+        "StreetRoad_TwoLane": "sk_road_two",
+        "StreetRoad_FourLane": "sk_road_four",
+        "StreetRoad_Intersection": "sk_road_intersection",
+        "StreetRoad_Crosswalk": "sk_road_crosswalk",
+        "StreetRoad_StopBar": "sk_road_stop",
+        "StreetRoad_Arrows": "sk_road_arrows",
+        "StreetCurb_Straight": "sk_curb_straight",
+        "StreetMedian_Planted": "sk_median_planted",
+        "Sidewalk_Joint": "sk_sidewalk_joint",
     }
     for name in names:
         module = importlib.import_module(stems[name])
@@ -186,7 +206,7 @@ def main():
     for key, name, yaw, hier_pos, hier_yaw in shots:
         if ONLY and ONLY not in key:
             continue
-        kind = "asphalt" if "barrier" in key else "concrete"
+        kind = "asphalt" if any(part in key for part in ("barrier", "road", "curb", "median")) else "concrete"
         print("SHOT", key)
         _hero(found[name], os.path.join(STILL_DIR, key + ".png"), kind=kind, yaw=yaw)
         print("SHOT", key + "_scale")

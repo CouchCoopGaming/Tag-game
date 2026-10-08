@@ -92,6 +92,15 @@ MODULES = (
     "sk_ac_roof",
     "sk_ac_roof_large",
     "sk_picnic_table",
+    "sk_road_two",
+    "sk_road_four",
+    "sk_road_intersection",
+    "sk_road_crosswalk",
+    "sk_road_stop",
+    "sk_road_arrows",
+    "sk_curb_straight",
+    "sk_median_planted",
+    "sk_sidewalk_joint",
 )
 
 
