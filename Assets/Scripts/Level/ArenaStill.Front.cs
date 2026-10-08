@@ -415,6 +415,9 @@ namespace Tag.Level
         /// Third-person chase frames for the couch HUD stills. Each seat stands
         /// on its own loop point and looks along that seat's yaw. Not part of
         /// the front-end proof stills.
+        /// The headless rasterizer cannot instance the Unity Hier prefab (no
+        /// AssetDatabase, and the FBX is binary). It reads the posed triangle
+        /// bake of that mesh instead.
         /// </summary>
         public static string WriteHudChases(string folder)
         {
@@ -436,23 +439,116 @@ namespace Tag.Level
                 if (park[i].A < 0.99f) continue;
                 ShadowTri(park[i], shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             }
+            bool hier = LoadHier();
             float[] sr = { 0.95f, 0.16f, 1f, 0.16f };
             float[] sg = { 0.16f, 0.45f, 0.86f, 0.82f };
             float[] sb = { 0.22f, 1f, 0.12f, 0.28f };
             for (int i = 0; i < 4; i++)
             {
                 ParkArena.HumanSeat(ParkArena.Mega, i, out float px, out float py, out float pz, out float yaw);
-                var tris = new List<Tri>(park.Count + 16);
+                var tris = new List<Tri>(park.Count + 64);
                 tris.AddRange(park);
-                AddRunner(tris, px, py, pz, sr[i], sg[i], sb[i]);
+                if (hier) AddHier(tris, px, py, pz, yaw, sr[i], sg[i], sb[i]);
+                else AddRunner(tris, px, py, pz, sr[i], sg[i], sb[i]);
+                var seatShadow = (float[])shadow.Clone();
+                for (int t = park.Count; t < tris.Count; t++)
+                {
+                    if (tris[t].A < 0.99f) continue;
+                    ShadowTri(tris[t], seatShadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+                }
                 ChaseEye(px, py, pz, yaw, out float ex, out float ey, out float ez, out float tx, out float ty, out float tz);
                 if (i < 2)
                     ChasePng(tris, Path.Combine(folder, "chase2_" + i.ToString() + ".png"), 960, 1080,
-                        ex, ey, ez, tx, ty, tz, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+                        ex, ey, ez, tx, ty, tz, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
                 ChasePng(tris, Path.Combine(folder, "chase4_" + i.ToString() + ".png"), 960, 540,
-                    ex, ey, ez, tx, ty, tz, shadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+                    ex, ey, ez, tx, ty, tz, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             }
-            return "hud-chases " + folder;
+            return hier ? "hud-chases " + folder + " hier=posed" : "hud-chases " + folder + " hier=missing";
+        }
+
+        struct HierTri
+        {
+            public float X0, Y0, Z0, X1, Y1, Z1, X2, Y2, Z2;
+            public byte Mat;
+        }
+
+        static HierTri[] _hier;
+        static bool _hierTried;
+
+        static bool LoadHier()
+        {
+            if (_hierTried) return _hier != null;
+            _hierTried = true;
+            string docs = RepoDocs();
+            if (docs == null) return false;
+            string path = Path.Combine(docs, "UiStills", "hier-run.tris");
+            if (!File.Exists(path)) return false;
+            using (var fs = File.OpenRead(path))
+            using (var br = new BinaryReader(fs))
+            {
+                int magic = br.ReadInt32();
+                if (magic != 0x52454948) return false;
+                int n = br.ReadInt32();
+                if (n < 100 || n > 400000) return false;
+                var mesh = new HierTri[n];
+                for (int i = 0; i < n; i++)
+                {
+                    var t = new HierTri();
+                    t.Mat = br.ReadByte();
+                    t.X0 = br.ReadSingle();
+                    t.Y0 = br.ReadSingle();
+                    t.Z0 = br.ReadSingle();
+                    t.X1 = br.ReadSingle();
+                    t.Y1 = br.ReadSingle();
+                    t.Z1 = br.ReadSingle();
+                    t.X2 = br.ReadSingle();
+                    t.Y2 = br.ReadSingle();
+                    t.Z2 = br.ReadSingle();
+                    mesh[i] = t;
+                }
+                _hier = mesh;
+            }
+            return true;
+        }
+
+        static void AddHier(List<Tri> tris, float x, float y, float z, float yawDeg, float r, float g, float b)
+        {
+            if (_hier == null) return;
+            float yaw = yawDeg * (float)(Math.PI / 180.0);
+            float fx = (float)Math.Sin(yaw);
+            float fz = (float)Math.Cos(yaw);
+            float rx = (float)Math.Cos(yaw);
+            float rz = -(float)Math.Sin(yaw);
+            for (int i = 0; i < _hier.Length; i++)
+            {
+                HierTri h = _hier[i];
+                HierTint(h.Mat, r, g, b, out float cr, out float cg, out float cb);
+                AddTri(tris,
+                    x + rx * h.X0 + fx * h.Z0, y + h.Y0, z + rz * h.X0 + fz * h.Z0,
+                    x + rx * h.X1 + fx * h.Z1, y + h.Y1, z + rz * h.X1 + fz * h.Z1,
+                    x + rx * h.X2 + fx * h.Z2, y + h.Y2, z + rz * h.X2 + fz * h.Z2,
+                    cr, cg, cb);
+            }
+        }
+
+        static void HierTint(byte mat, float r, float g, float b, out float cr, out float cg, out float cb)
+        {
+            if (mat == 2)
+            {
+                cr = 0.10f; cg = 0.10f; cb = 0.12f;
+                return;
+            }
+            if (mat == 3)
+            {
+                cr = 0.02f; cg = 0.02f; cb = 0.02f;
+                return;
+            }
+            if (mat == 1)
+            {
+                cr = r * 0.55f; cg = g * 0.55f; cb = b * 0.55f;
+                return;
+            }
+            cr = r; cg = g; cb = b;
         }
 
         static void AddRunner(List<Tri> tris, float x, float y, float z, float r, float g, float b)
@@ -494,7 +590,56 @@ namespace Tag.Level
             var depth = new float[w * h];
             Paint(tris, rgb, depth, w, h, ex, ey, ez, tx, ty, tz, 70f, true,
                 shadow, 768, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
+            Daylook(rgb);
             WritePng(path, rgb, w, h);
+        }
+
+        /// <summary>
+        /// Chase-only grade. The swatches stay dark enough for the contrast
+        /// pairs. From the shoulder the ground fills the frame, so this lifts
+        /// that same afternoon sun into the read the overview already has.
+        /// </summary>
+        static void Daylook(byte[] rgb)
+        {
+            int n = rgb.Length / 3;
+            for (int i = 0; i < n; i++)
+            {
+                int p = i * 3;
+                int r = rgb[p];
+                int g = rgb[p + 1];
+                int b = rgb[p + 2];
+                if (b > r + 18 && b > g && b > 150) continue;
+                int mx = r > g ? r : g;
+                if (b > mx) mx = b;
+                int mn = r < g ? r : g;
+                if (b < mn) mn = b;
+                // Rubber joints stay dark. The ground is the warm chromatic plane.
+                bool rubber = mx - mn < 18 && mx < 96;
+                int sr = 255 - r;
+                int sg = 255 - g;
+                int sb = 255 - b;
+                int nr;
+                int ng;
+                int nb;
+                if (rubber)
+                {
+                    nr = r + sr / 8;
+                    ng = g + sg / 8;
+                    nb = b + sb / 8;
+                }
+                else
+                {
+                    nr = r + (sr * sr) / 620 + sr / 5;
+                    ng = g + (sg * sg) / 780 + sg / 7;
+                    nb = b + (sb * sb) / 1400 + sb / 16;
+                }
+                if (nr > 255) nr = 255;
+                if (ng > 255) ng = 255;
+                if (nb > 255) nb = 255;
+                rgb[p] = (byte)nr;
+                rgb[p + 1] = (byte)ng;
+                rgb[p + 2] = (byte)nb;
+            }
         }
     }
 }

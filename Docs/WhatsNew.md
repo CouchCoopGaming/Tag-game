@@ -302,6 +302,8 @@ The sixteenth pass fills the tip of the day with three lines that match the bind
 
 The seventeenth pass puts the match HUD on a chase view for each seat, in the two-player split and the four-player split. The rings sit in the bottom-left corner and stay small, and a short label shows only while that ability is not ready. The clock is a slim plate on the seam. The options screen and pause read COMIC WORDS ON. A tag moves the IT badge, flashes the tagger's color on the screen edge, and ticks that seat's tag count. Space still jumps. Mockups are in `Docs/UiStills/pass17/`.
 
+The eighteenth pass puts the Hier mannequin on each chase, in that seat's color, in the middle of a run. The ground keeps the Mega Park materials and reads in the warm afternoon sun. When someone is tagged, that view says YOU'RE IT in the comic face, and the edge flash is the tagger's color. Menu to characters, loading to the match, and the match to RESULTS each play as a short comic wipe. Space still jumps. Mockups are in `Docs/UiStills/pass18/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
