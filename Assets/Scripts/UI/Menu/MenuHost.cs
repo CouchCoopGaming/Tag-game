@@ -1042,13 +1042,31 @@ namespace Tag.Ui.Menu
             if (seat < 0) seat = 0;
             if (seat > 3) seat = 3;
             Color seatColor = MenuTheme.Seat(seat);
+            BadgePaint(seatColor, out Color plateColor, out Color ink);
             var rt = MenuWidgets.Place(parent, "SeatTag", x, y, 68f, 36f);
             var plate = rt.gameObject.AddComponent<Image>();
-            MenuArt.Plate(plate, seatColor, true);
+            MenuArt.Plate(plate, plateColor, true);
             plate.raycastTarget = false;
-            Color ink = BadgeInk(seatColor);
             Text word = MenuWidgets.Words(rt, "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, ink, Vector2.zero, Vector2.one);
             Snug(word);
+        }
+
+        static void BadgePaint(Color seat, out Color plate, out Color ink)
+        {
+            plate = seat;
+            ink = BadgeInk(plate);
+            if (BadgeContrast(ink, plate) >= 5f) return;
+            for (int i = 0; i < 8; i++)
+            {
+                plate = Color.Lerp(plate, Color.black, 0.12f);
+                plate.a = 1f;
+                if (BadgeContrast(MenuTheme.Cream, plate) >= 5f)
+                {
+                    ink = MenuTheme.Cream;
+                    return;
+                }
+            }
+            ink = MenuTheme.Cream;
         }
 
         static Color BadgeInk(Color seat)
@@ -2280,12 +2298,25 @@ namespace Tag.Ui.Menu
             }
             float bodyH = UiFit.BodyH(UiFit.Current());
             UiFit.RowBox(UiFit.Current(), 1120f, out float barX, out float barW);
+            float lastTop = 0.78f - (rows - 1) * 0.07f;
+            float lastBot = lastTop - 0.065f;
+            float lastBottom = (1f - lastBot) * bodyH;
             float barH = 36f;
-            float barY = bodyH - 168f;
-            if (barY < 220f) barY = 220f;
             float tipH = 72f;
-            float tipY = barY - tipH - 24f;
-            if (tipY < 24f) tipY = 24f;
+            float tipY = lastBottom + 28f;
+            float barY = tipY + tipH + 18f;
+            float capY = barY + barH + 12f;
+            float limit = bodyH - 8f;
+            if (capY + 40f > limit)
+            {
+                float over = capY + 40f - limit;
+                tipY -= over;
+                barY -= over;
+                capY -= over;
+            }
+            if (tipY < lastBottom + 12f) tipY = lastBottom + 12f;
+            if (barY < tipY + tipH + 12f) barY = tipY + tipH + 12f;
+            if (capY < barY + barH + 8f) capY = barY + barH + 8f;
             var tipRt = MenuWidgets.Place(_body, "TipPlate", barX, tipY, barW, tipH);
             Image tipPlate = tipRt.gameObject.AddComponent<Image>();
             MenuArt.Plate(tipPlate, MenuTheme.Gold, true);
@@ -2302,7 +2333,6 @@ namespace Tag.Ui.Menu
             MenuArt.Plate(_loadFill, MenuTheme.Gold, true);
             _loadFill.raycastTarget = false;
             _loadFill.enabled = true;
-            float capY = barY + barH + 12f;
             var capRt = MenuWidgets.Place(_body, "LoadCaption", barX, capY, barW, 40f);
             _loadWord = MenuWidgets.Words(capRt, LoadCaption(false, false), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
             _loadStep = -1;

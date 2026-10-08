@@ -197,7 +197,11 @@ namespace Tag.Ui.Menu
                 bool win = row.Winner;
                 bool clap = !win && i < 3;
                 MenuCheer.Play(body, win, clap, i == 2);
-                if (body != null) body.transform.localPosition = new Vector3(0f, 0.04f, 0f);
+                if (body != null)
+                {
+                    body.transform.localPosition = new Vector3(0f, 0.04f, 0f);
+                    if (win) body.transform.localScale = new Vector3(1.16f, 1.16f, 1.16f);
+                }
             }
             bool party = crowned && !MenuVideo.ReduceMotion;
             for (int i = 0; i < _confetti.Length; i++)

@@ -324,6 +324,8 @@ The third pass puts that navy plate behind the banner on every secondary screen 
 
 The fourth pass renders the RESULTS runners from the posed Hier bake, body on the limbs and the head, accent on the chest, the hands, and the feet. The stat cards keep a quiet stroke, and the slot color stays on the P badge. Loading shows a gold dash and `Waiting  0%`, with the tip and the bar padded off the card edge, and the tip changes each time loading opens. Options gives each button its own line, and comic words moves onto the Accessibility page as a switch. Move uses the arrow keys and the stick. The stills are in `Docs/UiStills/screens2/pass4/`. Unity is not installed here, so they are the Hier raster plus the menu layout, not an editor capture. Space still jumps.
 
+The fifth pass turns those runners to face the camera and stands the winner on a higher step, larger than the others. The loading card shows every rule, then the tip, then a bar filled from the left. Each options button has a grey sub-line. The red and blue P badges clear 4.5:1. The pictures are composites in `Docs/UiStills/screens2/pass5/`, and each filename ends in `-composite`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

@@ -116,12 +116,12 @@ namespace Tag.Ui.Menu
         {
             if (Page == Hub)
             {
-                if (index == 0) return "Master, effects, UI, and music.";
-                if (index == 1) return "Resolution, fullscreen, vsync, and scale.";
-                if (index == 2) return "Motion, text size, colors, and comic words.";
-                if (index == 3) return "Keyboard and pad binds. Space still jumps.";
-                if (index == 4) return "One sensitivity for the whole couch.";
-                if (index == 5) return "Team, the font license, and the tools.";
+                if (index == 0) return "Music, effects, and UI.";
+                if (index == 1) return "Resolution, fullscreen, and scale.";
+                if (index == 2) return "Motion, text size, and colors.";
+                if (index == 3) return "Keyboard and pad. Space jumps.";
+                if (index == 4) return "One sensitivity for the couch.";
+                if (index == 5) return "Team, the font, and the tools.";
                 return "Main menu";
             }
             if (index == Count - 1) return "";

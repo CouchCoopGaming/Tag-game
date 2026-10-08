@@ -12,7 +12,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass4")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass5")
 FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
@@ -120,17 +120,21 @@ def button(base, box, title, sub, hot, bar=None, right=24):
     tw = x1 - x0 - left - right
     if tw < 80:
         tw = 80
-    tf = fit_text(d, title, FONT_D, tw, 40, 26, title_c)
-    d.text((x0 + left, y0 + 22), title, font=tf, fill=title_c)
+    box_h = y1 - y0
+    sub_size = 22 if box_h < 108 else 24
+    title_top = 12 if box_h < 108 else 18
+    title_max = 32 if sub and box_h < 112 else 40
+    tf = fit_text(d, title, FONT_D, tw, title_max, 22, title_c)
+    d.text((x0 + left, y0 + title_top), title, font=tf, fill=title_c)
     if sub:
-        sf = font(FONT_B, 24)
+        sf = font(FONT_B, sub_size)
+        yy = y0 + title_top + int(tf.size * 0.78) + 4
         lines = wrap(d, sub, sf, tw)
-        yy = y0 + 68
         for line in lines[:2]:
-            if yy + 24 > y1 - 8:
+            if yy + sub_size > y1 - 6:
                 break
             d.text((x0 + left, yy), line, font=sf, fill=sub_c)
-            yy += 28
+            yy += sub_size + 2
     return contrast(title_c, fill)
 
 
@@ -364,7 +368,7 @@ def unsky(path):
 
 
 def figure(seat):
-    path = os.path.join(FIG, "place_%d.png" % seat)
+    path = os.path.join(FIG, "place_%d-composite.png" % seat)
     im = unsky(path)
     px = im.load()
     w, h = im.size
@@ -390,6 +394,17 @@ def figure(seat):
     return im.crop((max(0, minx - pad), max(0, miny - pad), min(w, maxx + pad), min(h, maxy + pad)))
 
 
+def badge_paint(seat_color):
+    if contrast(INK, seat_color) >= 5.0:
+        return seat_color, INK
+    plate = seat_color
+    for _ in range(8):
+        plate = tuple(int(c * 0.88) for c in plate)
+        if contrast(CREAM, plate) >= 5.0:
+            return plate, CREAM
+    return plate, CREAM
+
+
 def results():
     img = screen(0.85)
     header(img, "RESULTS", "Least It  ·  Red / Tan")
@@ -405,25 +420,34 @@ def results():
     card = (15, 31, 71)
     rank_w = 420
     x0 = 96
+    floor = 528
+    # Winner stands higher and larger. The block is a step, not a label.
+    step_h = [36, 72, 22, 12]
+    fig_box = [(200, 260), (250, 320), (180, 230), (160, 210)]
+    step_fill = [(190, 198, 214), (232, 196, 92), (176, 112, 64), (28, 58, 110)]
     ratios = []
     for col, seat in enumerate(seats):
-        crop = figure(seat)
-        crop.thumbnail((240, 340), Image.Resampling.LANCZOS)
-        fx = x0 + col * (rank_w + 20) + (rank_w - crop.size[0]) // 2
-        img.alpha_composite(crop, (fx, 168))
         winner = col == 1
+        sx = x0 + col * (rank_w + 20)
+        step_top = floor - step_h[col]
+        d = ImageDraw.Draw(img)
+        rounded(d, (sx + 70, step_top, sx + rank_w - 70, floor + 8), 8, step_fill[col], GOLD if winner else STROKE, 4 if winner else 2)
+        crop = figure(seat)
+        crop.thumbnail(fig_box[col], Image.Resampling.LANCZOS)
+        fx = sx + (rank_w - crop.size[0]) // 2
+        fy = step_top - crop.size[1] + 8
+        img.alpha_composite(crop, (fx, fy))
         if winner:
             d = ImageDraw.Draw(img)
-            for k in range(10):
-                cx = x0 + col * (rank_w + 20) + 30 + (k * 41) % 340
-                cy = 176 + (k * 29) % 70
+            for k in range(8):
+                cx = sx + 36 + (k * 47) % 340
+                cy = fy + 8 + (k * 23) % 48
                 d.rectangle((cx, cy, cx + 7, cy + 12), fill=GOLD if k % 2 == 0 else CREAM)
-        box = (x0 + col * (rank_w + 20), 520, x0 + col * (rank_w + 20) + rank_w, 760)
+        box = (sx, 548, sx + rank_w, 760)
         shadow(img, box)
         d = ImageDraw.Draw(img)
         rounded(d, box, 18, card, GOLD if winner else STROKE, 5 if winner else 3)
-        badge = SEAT[seat]
-        ink = INK if contrast(INK, badge) >= contrast(CREAM, badge) else CREAM
+        badge, ink = badge_paint(SEAT[seat])
         d.rounded_rectangle((box[0] + 28, box[1] + 16, box[0] + 96, box[1] + 52), 8, fill=badge)
         d.text((box[0] + 44, box[1] + 18), "P" + str(seat + 1), font=font(FONT_B, 24), fill=ink)
         d.text((box[0] + 112, box[1] + 16), places[col], font=font(FONT_D, 32), fill=CREAM)
@@ -444,9 +468,9 @@ def results():
 def loading():
     img = screen(0.62)
     header(img, "Loading", "")
-    plate(img, (180, 200, 1740, 900))
+    plate(img, (180, 168, 1740, 980))
     d = ImageDraw.Draw(img)
-    d.text((220, 230), "Mega Park", font=font(FONT_D, 72), fill=GOLD)
+    d.text((220, 188), "Mega Park", font=font(FONT_D, 64), fill=GOLD)
     rows = [
         ("Length", "120 s"),
         ("Rounds", "1"),
@@ -455,24 +479,23 @@ def loading():
         ("Pads", "On"),
         ("Zips", "On"),
     ]
-    y = 340
+    y = 280
     for label, value in rows:
         d.text((260, y), label, font=font(FONT_B, 30), fill=MUTE)
         d.text((620, y), value, font=font(FONT_B, 30), fill=CREAM)
-        y += 62
-    tip = (400, 620, 1520, 692)
+        y += 52
+    # Last rule ends near y. Tip and the bar sit below that row.
+    tip = (400, y + 28, 1520, y + 100)
     rounded(d, tip, 16, GOLD, INK, 3)
-    d.text((428, 638), "TIP", font=font(FONT_D, 32), fill=INK)
-    d.text((540, 642), "Jump again to leave the wall.", font=font(FONT_B, 28), fill=INK)
-    track = (400, 724, 1520, 760)
+    d.text((428, y + 46), "TIP", font=font(FONT_D, 32), fill=INK)
+    d.text((540, y + 50), "Jump again to leave the wall.", font=font(FONT_B, 28), fill=INK)
+    track_y = y + 124
+    track = (400, track_y, 1520, track_y + 36)
     rounded(d, track, 10, (5, 13, 31), STROKE, 2)
-    # Waiting is fill 0. The gold dash is the same 28% chip TickLoadDash slides.
     span = 1520 - 400 - 12
-    dash = int(span * 0.28)
-    u = 0.36
-    dx = 400 + 6 + int((span - dash) * u)
-    rounded(d, (dx, 730, dx + dash, 754), 6, GOLD)
-    d.text((760, 776), "Waiting  0%", font=font(FONT_B, 28), fill=CREAM)
+    fill_w = int(span * 0.60)
+    rounded(d, (406, track_y + 6, 406 + fill_w, track_y + 30), 6, GOLD)
+    d.text((760, track_y + 48), "Loading  60%", font=font(FONT_B, 28), fill=CREAM)
     return img, min(contrast(CREAM, (8, 22, 58)), contrast(INK, GOLD), contrast(GOLD, (5, 13, 31)))
 
 
@@ -494,12 +517,12 @@ def options(page):
     img = screen(0.5)
     pages = {
         "hub": ("Options", "Sound, picture, accessibility, controls, look, and credits.", [
-            ("Sound", "Master, effects, UI, and music.", True),
-            ("Picture", "Resolution, fullscreen, vsync, and scale.", False),
-            ("Accessibility", "Motion, text size, colors, and comic words.", False),
-            ("Controls", "Keyboard and pad binds. Space still jumps.", False),
-            ("Look", "One sensitivity for the whole couch.", False),
-            ("Credits", "Team, the font license, and the tools.", False),
+            ("Sound", "Music, effects, and UI.", True),
+            ("Picture", "Resolution, fullscreen, and scale.", False),
+            ("Accessibility", "Motion, text size, and colors.", False),
+            ("Controls", "Keyboard and pad. Space jumps.", False),
+            ("Look", "One sensitivity for the couch.", False),
+            ("Credits", "Team, the font, and the tools.", False),
             ("Back", "Main menu", False),
         ], []),
         "sound": ("Sound", "Sliders step the volumes you already have.", [
@@ -721,28 +744,28 @@ def wipe_results():
 def main():
     notes = []
     jobs = [
-        ("05-mode-rules.png", mode_rules(False)),
-        ("05-rules-end.png", mode_rules(True)),
-        ("04-arena-mega.png", arena("Mega Park")),
-        ("04-arena-pocket.png", arena("Pocket Park")),
-        ("04-arena-stack.png", arena("Stack Yard")),
-        ("06-results.png", results()),
-        ("07-loading.png", loading()),
-        ("08-pause.png", pause()),
-        ("09-options.png", options("hub")),
-        ("09-sound.png", options("sound")),
-        ("09-picture.png", options("picture")),
-        ("09-access.png", options("access")),
-        ("10-controls.png", controls(False)),
-        ("10-controls-bottom.png", controls(True)),
-        ("11-drop-in.png", drop_in()),
-        ("12-credits.png", credits()),
-        ("14-records.png", records(False)),
-        ("14-records-card.png", records(True)),
-        ("14-records-end.png", records(end=True)),
-        ("16-trans-rules.png", wipe()),
-        ("16-trans-load.png", wipe_load()),
-        ("16-trans-results.png", wipe_results()),
+        ("05-mode-rules-composite.png", mode_rules(False)),
+        ("05-rules-end-composite.png", mode_rules(True)),
+        ("04-arena-mega-composite.png", arena("Mega Park")),
+        ("04-arena-pocket-composite.png", arena("Pocket Park")),
+        ("04-arena-stack-composite.png", arena("Stack Yard")),
+        ("06-results-composite.png", results()),
+        ("07-loading-composite.png", loading()),
+        ("08-pause-composite.png", pause()),
+        ("09-options-composite.png", options("hub")),
+        ("09-sound-composite.png", options("sound")),
+        ("09-picture-composite.png", options("picture")),
+        ("09-access-composite.png", options("access")),
+        ("10-controls-composite.png", controls(False)),
+        ("10-controls-bottom-composite.png", controls(True)),
+        ("11-drop-in-composite.png", drop_in()),
+        ("12-credits-composite.png", credits()),
+        ("14-records-composite.png", records(False)),
+        ("14-records-card-composite.png", records(True)),
+        ("14-records-end-composite.png", records(end=True)),
+        ("16-trans-rules-composite.png", wipe()),
+        ("16-trans-load-composite.png", wipe_load()),
+        ("16-trans-results-composite.png", wipe_results()),
     ]
     worst = 99
     for name, (img, ratio) in jobs:

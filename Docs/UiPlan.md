@@ -277,6 +277,10 @@ Options hub buttons each have a one-line description. The hub banner no longer e
 
 The Move marks are the keyboard arrows and the pad stick, the same caps the HUD draws. Stills are in `Docs/UiStills/screens2/pass4/`. Unity Editor 6000.3.24f1 is not installed here, so `MenuScreenCapture` cannot enter play mode. The runners are `ArenaStill.WritePlaceFigures`. The chrome is composited from the menu's colors, copy, and placement.
 
+## Screens 2, pass 5
+
+The stills in `Docs/UiStills/screens2/pass5/` are software-raster composites. Every filename ends in `-composite`. Unity Editor is still not installed, so these are not play-mode captures. The runners are a front view of the Hier bake, facing the camera. The winner is larger and stands on a higher step. The gold frame stays on that card. The loading card keeps every rule row clear, then the tip, then a bar filled from the left. The options buttons show a grey sub-line. The red and blue P badges clear 4.5:1.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

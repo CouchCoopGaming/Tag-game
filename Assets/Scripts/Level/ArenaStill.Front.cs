@@ -610,12 +610,12 @@ namespace Tag.Level
                 var tris = new List<Tri>(8);
                 AddBox(tris, 0f, -0.04f, 0f, 1.4f, 0.06f, 1.1f, 0.07f, 0.08f, 0.10f);
                 PlacePair(seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB);
-                AddHier(tris, 0f, 0f, 0f, 16f, bodyR, bodyG, bodyB, accentR, accentG, accentB, true);
+                AddHier(tris, 0f, 0f, 0f, 0f, bodyR, bodyG, bodyB, accentR, accentG, accentB, true);
                 AddContact(tris, 0f, 0f, 0f);
                 var shadow = new float[16 * 16];
                 for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
-                PortraitPng(tris, Path.Combine(folder, "place_" + seat.ToString() + ".png"), 480, 720,
-                    0.55f, 1.05f, 3.35f, 0f, 0.92f, 0.02f, shadow);
+                PortraitPng(tris, Path.Combine(folder, "place_" + seat.ToString() + "-composite.png"), 480, 720,
+                    0f, 1.22f, 3.55f, 0f, 1.08f, 0f, shadow);
                 n++;
             }
             return "place-figures " + folder + " n=" + n.ToString();
