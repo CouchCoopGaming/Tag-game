@@ -92,10 +92,36 @@ One frame of the hard-turn plant moves the thigh 2.7° where the unsmoothed gap 
 
 Stick figures from the joint angles are in `Docs/SmoothStills/pass3/loco-air-ik.png`. Twelve rows, eight frames. Sprint, strafe, air, hard turn, slope, and wall hand. Before, then after.
 
+## Pass 4
+
+Fifty-seven presentation pairs the motor can actually enter are measured in `TransitionMatrix`. Each pair reports the worst one-frame bone gap and the visual-root jump. A stride step at or under 33° stays on the exponential gait slew, so the feet do not lag. A larger gap uses a wider spring: 0.12 s up to 180°, 0.16 s past that. The 0.71 m mantle exit stays on the 0.10 s position spring. A larger absorbed pop, still under the respawn gate, uses 0.18 s. Every measured pair is now under the pass-1 limits. Exit clips, the landing roll, and particles stay on the anim-fx lane. These blends finish on the destination pose, so that lane can take the body from there.
+
+Worst ten pose pairs, raw one-frame gap then the sprung step. Root is the visual mesh jump on that same pair.
+
+| Pair | Pose before | Pose after | Root before | Root after |
+|---|---|---|---|---|
+| air → punch | 228.8° | 17.4° | 0.000 m | 0.000 m |
+| punch → air | 228.8° | 17.4° | 0.000 m | 0.000 m |
+| air → dash | 214.8° | 16.4° | 0.000 m | 0.000 m |
+| dash → air | 214.8° | 16.4° | 0.000 m | 0.000 m |
+| slide → air | 192.8° | 14.7° | 0.000 m | 0.000 m |
+| air → stagger | 190.8° | 14.5° | 0.000 m | 0.000 m |
+| stagger → air | 190.8° | 14.5° | 0.000 m | 0.000 m |
+| dash → climb | 190.0° | 14.5° | 0.000 m | 0.000 m |
+| ground → pad | 182.1° | 13.9° | 0.000 m | 0.000 m |
+| ground → air | 158.8° | 16.2° | 0.000 m | 0.000 m |
+
+The largest root pair is mantle → ground (and vault → ground, the same exit write): 0.710 m down to 0.086 m. Climb → wall run and wall run → climb are pose handoffs, not a new motor edge. Vault → mantle is the same vault playing forward.
+
+- Idle already breathed and shifted weight. It now looks around once a period, and the It stands a little taller than a runner. Crouch walk at 3.68 uses a cadence of 35.31 rad/s, so the short step does not skate. A slide leans, drags the trailing hand, and looks forward. Slide speed is unchanged. Sprint arm swing scales from 1.00 at a walk to 1.35 at 13.8. A tag or a punch flinch adds a head and chest snap on the existing 0.25 s stagger clock. It does not change stagger time.
+- A cling slip at 3.7 scrabbles the hands and feet on top of the drag. A wall run plants both feet on the wall for the entry, then the plant eases off. Climb and wall run crossfade over 0.12 s when the wall mode changes.
+
+Stick figures from the joint angles are in `Docs/SmoothStills/pass4/idle-wall-flinch.png`. Twelve rows, eight frames. Idle, crouch, slide, slip, wall handoff, and flinch. Before, then after.
+
 ## TODO still open
 
 1. Done this pass. Small `LookRotation` steps ease. Large steps still snap with the mouse.
-2. Gait slews of 18–64 are a couple of frames, on purpose. Do not spring them or the feet lag the stride.
+2. A stride step at or under about 33° stays on the exponential gait slew. Do not spring that step or the feet lag. A verb-sized gap on the same slew is a different case and uses the wide spring from pass 4.
 3. Kill-box and other `Place` calls still snap the mesh. They should. Do not ease a respawn across the park.
 4. Wall-cling marks, slide scrape, dash ribbons, dust, and any new particle are the anim-fx lane (`cursor/tag-anim-fx`). That lane also owns the exit animation of each verb and the landing roll.
 5. If the locomotor sits on the capsule instead of a child, the mesh yaw is skipped so it cannot fight the camera yaw. Those pawns still snap their facing with the camera.
