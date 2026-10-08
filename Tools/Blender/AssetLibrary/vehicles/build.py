@@ -22,6 +22,30 @@ from _common import (  # noqa: E402
     manifest_entry,
     validate_colliders,
 )
+import _common  # noqa: E402
+
+
+def _point_inside_long(bvh, blender_point):
+    """Same parity test as the kit, with a longer ray.
+
+    A bus is a row of closed shells. The kit stops after 12 hits, which is
+    an even count, so a point inside the left rear tire reads as outside.
+    """
+    from mathutils import Vector
+
+    origin = Vector(blender_point)
+    direction = Vector((1.0, 0.17, 0.09)).normalized()
+    hits = 0
+    for _ in range(48):
+        loc, _normal, _idx, _dist = bvh.ray_cast(origin, direction)
+        if loc is None:
+            break
+        hits += 1
+        origin = loc + direction * 0.0008
+    return hits % 2 == 1
+
+
+_common._point_inside = _point_inside_long
 import shell  # noqa: E402
 import write_unity  # noqa: E402
 
@@ -33,6 +57,9 @@ MODULES = (
     "sedan_midsize",
     "sedan_compact",
     "crossover_compact",
+    "bus_city40",
+    "bus_city40_blue",
+    "bus_city40_red",
 )
 
 

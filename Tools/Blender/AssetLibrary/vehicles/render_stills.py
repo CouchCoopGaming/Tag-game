@@ -26,6 +26,9 @@ MODULES = (
     "sedan_midsize",
     "sedan_compact",
     "crossover_compact",
+    "bus_city40",
+    "bus_city40_blue",
+    "bus_city40_red",
     "mannequin",
 )
 
@@ -109,6 +112,39 @@ def _with_figure(found, prop, path, prop_pos, prop_yaw, fig_pos):
     _fit(path)
 
 
+def _transit_set(found, name, folder, length, height, door_z):
+    out = os.path.join(STILL_ROOT, folder)
+    os.makedirs(out, exist_ok=True)
+    _shot(found[name], os.path.join(out, "hero.png"), fill=0.86)
+    dist = max(18.0, length * 0.92)
+    _close(
+        found[name], os.path.join(out, "side.png"),
+        (dist, height * 0.46, length * 0.04), (0.0, height * 0.40, 0.0), 46.0,
+    )
+    # Figure at the curb door so the 1.8 m body reads against the step and the glass.
+    _close_pair(
+        found, name, os.path.join(out, "scale.png"),
+        (0.0, 0.0, 0.0), 0.0,
+        (1.85, 0.0, door_z), 90.0,
+        (6.2, 1.55, door_z + 2.4), (1.15, 1.15, door_z), 32.0,
+    )
+
+
+def _close_pair(found, prop, path, prop_pos, prop_yaw, fig_pos, fig_yaw, eye, aim, lens):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=False)
+    scene.cycles.samples = 24
+    r._ensure_materials()
+    r._world(scene, night=False)
+    r._spawn(found["Mannequin"](), fig_pos, fig_yaw)
+    r._spawn(found[prop](), prop_pos, prop_yaw)
+    r._ground("asphalt", 40.0)
+    _look(scene, eye, aim, lens)
+    r._render(scene, path)
+    _fit(path)
+
+
 def _sedan_set(found, name, folder):
     out = os.path.join(STILL_ROOT, folder)
     os.makedirs(out, exist_ok=True)
@@ -138,6 +174,18 @@ def main():
     if only is None or "crossover" in only:
         print("SHOT", "crossover_compact")
         _sedan_set(found, "Crossover_Compact", "crossover_compact")
+    if only is None or "bus" in only:
+        # Door center from the same overhang used by the shell.
+        door_z = 5.10
+        for name, folder in (
+            ("Bus_City40", "bus_city40"),
+            ("Bus_City40_Blue", "bus_city40_blue"),
+            ("Bus_City40_Red", "bus_city40_red"),
+        ):
+            if only not in (None, "bus") and only not in folder and folder not in only:
+                continue
+            print("SHOT", folder)
+            _transit_set(found, name, folder, 12.50, 3.20, door_z)
     print("VEHICLE_STILLS", STILL_ROOT)
 
 
