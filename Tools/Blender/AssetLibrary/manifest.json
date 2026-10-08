@@ -37062,5 +37062,447 @@
     ],
     "slackCm": 0.63,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/BusFlag_Stop.fbx"
+  },
+  {
+    "name": "Sedan_Midsize",
+    "category": "Vehicles",
+    "blurb": "Midsize sedan shell, 4.915 m long, 1.839 m wide, roof 1.445 m. Flush glass, two doors a side, lower grille.",
+    "size": [
+      2.035,
+      1.443,
+      4.915
+    ],
+    "min": [
+      -1.018,
+      0.0,
+      -2.457
+    ],
+    "max": [
+      1.018,
+      1.443,
+      2.457
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 12533,
+        "materials": [
+          "Lib_PaintBlue",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3454,
+        "materials": [
+          "Lib_PaintBlue",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.8123999999999999,
+          0.33645,
+          -1.3576300000000001
+        ],
+        "size": [
+          0.016,
+          0.322992,
+          0.322992
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.8123999999999999,
+          0.33645,
+          -1.3576300000000001
+        ],
+        "size": [
+          0.016,
+          0.322992,
+          0.322992
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.8123999999999999,
+          0.33645,
+          1.4668499999999998
+        ],
+        "size": [
+          0.016,
+          0.322992,
+          0.322992
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.8123999999999999,
+          0.33645,
+          1.4668499999999998
+        ],
+        "size": [
+          0.016,
+          0.322992,
+          0.322992
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.55,
+          0.06460999999999983
+        ],
+        "size": [
+          1.1401552000000001,
+          0.46,
+          1.1862815999999998
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.37526,
+          -0.19813125275965626
+        ],
+        "size": [
+          0.7355840000000001,
+          0.045,
+          0.5947029
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.6752569000000002,
+          1.7721499999999997
+        ],
+        "size": [
+          1.0665968000000001,
+          0.1,
+          0.5482400000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.56,
+          -1.8489956107150374
+        ],
+        "size": [
+          0.8827008000000001,
+          0.14,
+          0.43808716028517286
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Sheet metal. Not a cling wall.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Midsize.fbx"
+  },
+  {
+    "name": "Sedan_Compact",
+    "category": "Vehicles",
+    "blurb": "Compact sedan shell, 4.694 m long, 1.801 m wide, roof 1.415 m. Flush glass, two doors a side, lower grille.",
+    "size": [
+      1.998,
+      1.412,
+      4.694
+    ],
+    "min": [
+      -0.999,
+      0.0,
+      -2.347
+    ],
+    "max": [
+      0.999,
+      1.412,
+      2.347
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 11919,
+        "materials": [
+          "Lib_PaintRed",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 3437,
+        "materials": [
+          "Lib_PaintRed",
+          "Lib_TintGlass",
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Headlamp",
+          "Lib_Taillamp",
+          "Lib_Rubber"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.78633,
+          0.32145,
+          -1.29032
+        ],
+        "size": [
+          0.016,
+          0.308592,
+          0.308592
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          0.78633,
+          0.32145,
+          -1.29032
+        ],
+        "size": [
+          0.016,
+          0.308592,
+          0.308592
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          -0.78633,
+          0.32145,
+          1.4452600000000002
+        ],
+        "size": [
+          0.016,
+          0.308592,
+          0.308592
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.78633,
+          0.32145,
+          1.4452600000000002
+        ],
+        "size": [
+          0.016,
+          0.308592,
+          0.308592
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cabin",
+        "type": "box",
+        "center": [
+          0.0,
+          0.55,
+          0.08747000000000016
+        ],
+        "size": [
+          1.1165332000000001,
+          0.46,
+          1.1489436
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0.0,
+          1.3447799999999999,
+          -0.17588007657221683
+        ],
+        "size": [
+          0.7203440000000001,
+          0.045,
+          0.5679643200000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0.0,
+          0.6456557,
+          1.7061100000000002
+        ],
+        "size": [
+          1.0444988,
+          0.1,
+          0.5126799999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0.0,
+          0.56,
+          -1.7642519025745587
+        ],
+        "size": [
+          0.8644128,
+          0.14,
+          0.41954983014631786
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Sheet metal. Not a cling wall.",
+    "vaultNote": "Hood and roof are landings, not vault rails.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Vehicles/Sedan_Compact.fbx"
   }
 ]
