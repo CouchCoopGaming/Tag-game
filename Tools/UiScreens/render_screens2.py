@@ -12,7 +12,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass8")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass9")
 FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
@@ -681,39 +681,69 @@ def controls(bottom=False):
     return img, min(ratios)
 
 
+def draw_bust(d, x, y, h, color):
+    head = int(h * 0.28)
+    d.ellipse((x, y, x + head, y + head), fill=color)
+    tw = int(h * 0.46)
+    th = int(h * 0.34)
+    tx = x - (tw - head) // 2
+    ty = y + head - 6
+    rounded(d, (tx, ty, tx + tw, ty + th), 16, color)
+    lw = max(14, tw // 5)
+    lh = int(h * 0.28)
+    ly = ty + th - 4
+    inset = tw // 5
+    rounded(d, (tx + inset, ly, tx + inset + lw, ly + lh), 8, color)
+    rounded(d, (tx + tw - inset - lw, ly, tx + tw - inset, ly + lh), 8, color)
+
+
+def draw_join_glyph(d, kind, x, y):
+    s = 64
+    if kind == "space":
+        rounded(d, (x, y + 8, x + s + 28, y + s - 8), 10, CREAM, INK, 3)
+        d.text((x + 10, y + 18), "space", font=font(FONT_B, 22), fill=INK)
+    else:
+        d.ellipse((x, y, x + s, y + s), fill=(30, 170, 70))
+        d.text((x + 18, y + 10), "A", font=font(FONT_D, 40), fill=CREAM)
+
+
 def drop_in():
     img = screen(0.5)
     header(img, "Who's playing", "Seated players press Space to continue")
     cards = [
-        ("P1", "P1  keyboard\nLeft / Right picks a profile", True, 0),
-        ("P2", "P2  pad\nLeft / Right picks a profile", True, 1),
-        ("P3", "Press Space or A to join", False, 2),
-        ("P4", "Press Space or A to join", False, 3),
+        ("P1", "P1  keyboard\nLeft / Right picks a profile", True, 0, True),
+        ("P2", "P2  pad\nLeft / Right picks a profile", True, 1, False),
+        ("P3", "Press Space or A to join", False, 2, False),
+        ("P4", "Press Space or A to join", False, 3, False),
     ]
     ratios = []
-    for i, (title, detail, human, seat) in enumerate(cards):
+    for i, (title, detail, human, seat, ready) in enumerate(cards):
         x = 80 + i * 450
         fill = mix(INK, SEAT[seat], 0.4)
-        box = (x, 200, x + 420, 860)
+        box = (x, 200, x + 420, 900)
         shadow(img, box)
         d = ImageDraw.Draw(img)
-        hot = i == 0
-        rounded(d, box, 22, HOT if hot else fill, GOLD if hot else STROKE, 6 if hot else 3)
-        d.rounded_rectangle((x + 18, 236, x + 30, 820), 4, fill=SEAT[seat] if not hot else INK)
-        tc = INK if hot else CREAM
-        d.text((x + 48, 230), title, font=font(FONT_D, 48), fill=tc)
-        yy = 310
+        selected = i == 0
+        rounded(d, box, 22, fill, GOLD if selected else STROKE, 6 if selected else 3)
+        d.rounded_rectangle((x + 18, 248, x + 30, 860), 4, fill=SEAT[seat])
+        d.text((x + 48, 220), title, font=font(FONT_D, 48), fill=CREAM)
+        yy = 280
         for line in detail.split("\n"):
-            d.text((x + 48, yy), line, font=font(FONT_B, 26), fill=INK if hot else MUTE)
-            yy += 36
-        if not human:
-            draw_glyph(d, "space", x + 90, 520)
-            draw_glyph(d, "a", x + 220, 512)
-        elif i == 0:
-            draw_glyph(d, "arrows", x + 160, 560)
+            d.text((x + 48, yy), line, font=font(FONT_B, 26), fill=MUTE)
+            yy += 34
+        if human:
+            draw_bust(d, x + 176, 430, 200, SEAT[seat])
+            chip = (x + 130, 760, x + 290, 808)
+            rounded(d, chip, 12, GOLD if ready else NAVY, INK, 2)
+            word = "Ready" if ready else "Joined"
+            ink = INK if ready else CREAM
+            d.text((x + 158, 768), word, font=font(FONT_D, 32), fill=ink)
+            ratios.append(contrast(ink, GOLD if ready else NAVY))
         else:
-            draw_glyph(d, "stick", x + 160, 560)
-        ratios.append(contrast(tc, HOT if hot else fill))
+            draw_join_glyph(d, "space", x + 100, 560)
+            draw_join_glyph(d, "a", x + 240, 560)
+        ratios.append(contrast(CREAM, fill))
+        ratios.append(contrast(MUTE, fill))
     footer_both(img)
     return img, min(ratios)
 
@@ -750,29 +780,44 @@ def credits():
     return img, contrast(CREAM, (8, 22, 58))
 
 
-def records(filled=False, end=False):
+def records_empty():
     img = screen(0.5)
     header(img, "Records", "Matches, wins, tags, and longest time not It")
-    ratios = []
-    rows = []
-    if end:
-        rows = [("Empty", "", False) for _ in range(5)]
-        rows.append(("Back", "", True))
-    elif filled:
-        rows = [
-            ("Red", "matches 4   wins 1   tags 6   live 6.2", True),
-            ("Blue", "matches 2   wins 0   tags 1   live 3.0", False),
-            ("Empty", "", False),
-            ("Empty", "", False),
-            ("Empty", "", False),
-            ("Empty", "", False),
-        ]
-    else:
-        rows = [("Empty", "", i == 0) for i in range(6)]
-    y = 180
+    d = ImageDraw.Draw(img)
+    box = (360, 200, 1560, 500)
+    shadow(img, box)
+    rounded(d, box, 22, NAVY, GOLD, 4)
+    # Cup on a gold base. The sentence sits to the right of it.
+    d.ellipse((430, 250, 560, 380), fill=CREAM)
+    rounded(d, (470, 360, 520, 430), 8, GOLD)
+    rounded(d, (420, 420, 570, 470), 10, GOLD)
+    d.text((620, 280), "No records yet.", font=font(FONT_D, 40), fill=CREAM)
+    d.text((620, 340), "Play a match to set one.", font=font(FONT_B, 30), fill=MUTE)
+    ratios = [
+        contrast(CREAM, NAVY),
+        contrast(MUTE, NAVY),
+        button(img, (360, 524, 1560, 632), "Back", "", False),
+    ]
+    footer_both(img)
+    return img, min(ratios)
+
+
+def records_sample():
+    img = screen(0.5)
+    header(img, "Records", "Sample data. Not a saved profile.")
+    d = ImageDraw.Draw(img)
+    rounded(d, (360, 158, 530, 198), 8, GOLD, INK, 2)
+    d.text((378, 160), "SAMPLE", font=font(FONT_D, 28), fill=INK)
+    rows = [
+        ("Sample  Red", "matches 12    wins 4    tags 9    live 18.4 s", True),
+        ("Sample  Blue", "matches 9    wins 2    tags 7    live 11.0 s", False),
+        ("Sample  Yellow", "matches 6    wins 1    tags 3    live 8.5 s", False),
+        ("Back", "", False),
+    ]
+    ratios = [contrast(INK, GOLD)]
+    y = 200
     for title, detail, hot in rows:
-        sub = detail.replace("\n", "   ")
-        ratios.append(button(img, (360, y, 1560, y + 120), title, sub, hot))
+        ratios.append(button(img, (360, y, 1560, y + 120), title, detail, hot))
         y += 128
     footer_both(img)
     return img, min(ratios)
@@ -820,9 +865,8 @@ def main():
         ("10-controls-bottom-composite.png", controls(True)),
         ("11-drop-in-composite.png", drop_in()),
         ("12-credits-composite.png", credits()),
-        ("14-records-composite.png", records(False)),
-        ("14-records-card-composite.png", records(True)),
-        ("14-records-end-composite.png", records(end=True)),
+        ("14-records-composite.png", records_empty()),
+        ("14-records-sample-composite.png", records_sample()),
         ("16-trans-rules-composite.png", wipe()),
         ("16-trans-load-composite.png", wipe_load()),
         ("16-trans-results-composite.png", wipe_results()),

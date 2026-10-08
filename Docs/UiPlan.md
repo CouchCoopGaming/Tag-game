@@ -293,6 +293,10 @@ Runtime and the composites use the same numbers. Options and Accessibility rows 
 
 The Default accessibility palette is the seat slot colors: red, blue, yellow, green. Colorblind palettes stay on their own rows, and the swatch row names the palette that is showing. Reduce motion and Comic words draw a 96 by 40 pill; on is gold with the knob on the right. Loading uses `SceneManager.LoadSceneAsync`. The bar follows `AsyncOperation.progress`, and `allowSceneActivation` stays off until progress reaches 0.9 so the load can finish at 100. The loading still is that mid-load, `Loading  60%`, filled from the left. Control rows use the same 108 px height and 116 px step, so the title stays 40 px. At 100% the window shows 7 rows. Stills are composites in `Docs/UiStills/screens2/pass8/`.
 
+## Screens 2, pass 9
+
+Drop-in cards keep the seat tint and the seat stripe when they are selected. The gold stroke is the highlight. A joined seat draws a bust in the slot color and a Ready or Joined chip. An empty seat draws Space and A at 64 px. Y on a seated player toggles Ready. Confirm still opens character select. Records with no profiles is one card, "No records yet. Play a match to set one.", plus Back. The filled picture is sample data and its filename contains `-sample`. GoToPlay, the Rematch scene-load fallback, and QuitToMenu use the same async load as the menu boot. Stills are composites in `Docs/UiStills/screens2/pass9/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

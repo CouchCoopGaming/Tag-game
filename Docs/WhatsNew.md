@@ -332,6 +332,8 @@ The seventh pass makes the runtime match those pictures. Options and Accessibili
 
 The eighth pass makes the Default color swatches the same red, blue, yellow, and green as the seats, and names the palette on the row. Reduce motion and Comic words are pills, gold when on. Loading fills from the scene load, and the picture is `Loading  60%`. Control rows are 108 px, so the titles stay full size. Composites are in `Docs/UiStills/screens2/pass8/`. Space still jumps.
 
+The ninth pass keeps each drop-in card on its seat color. The selected card gets a gold border. Joined seats show a bust and Ready or Joined. Empty seats show Space and A at 64 px. Records with nothing saved is one card that says to play a match, and a second picture is marked sample. Leaving for a match, a rematch reload, and quit use the same scene load as the boot. Composites are in `Docs/UiStills/screens2/pass9/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

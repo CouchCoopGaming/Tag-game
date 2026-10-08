@@ -31,15 +31,29 @@ namespace Tag.Ui.Menu
             RectTransform root = tile.transform as RectTransform;
             float w = root != null ? root.sizeDelta.x : 360f;
             float h = root != null ? root.sizeDelta.y : 420f;
-            float s = 92f;
-            if (s > h * 0.28f) s = h * 0.28f;
-            if (s < 48f) s = 48f;
-            float y = h * 0.36f;
-            float gap = 18f;
-            float x = (w - s * 2f - gap) * 0.5f;
-            if (x < 12f) x = 12f;
-            Well(tile.transform, x, y, s, MenuIcons.KeySpace, MenuTheme.Navy);
-            Well(tile.transform, x + s + gap, y, s, MenuIcons.South, new Color(0.10f, 0.42f, 0.22f, 1f));
+            float glyph = 64f;
+            if (glyph > h * 0.34f) glyph = h * 0.34f;
+            float y = h * 0.46f;
+            if (y + glyph > h - 20f) y = h - 20f - glyph;
+            float gap = 28f;
+            float x = (w - glyph * 2f - gap) * 0.5f;
+            if (x < 16f) x = 16f;
+            JoinMark(tile.transform, x, y, glyph, MenuIcons.KeySpace, MenuTheme.Navy);
+            JoinMark(tile.transform, x + glyph + gap, y, glyph, MenuIcons.South, new Color(0.10f, 0.42f, 0.22f, 1f));
+        }
+
+        static void JoinMark(Transform parent, float x, float y, float s, Sprite icon, Color plate)
+        {
+            if (icon == null) return;
+            RectTransform well = MenuWidgets.Place(parent, "JoinGlyph", x, y, s, s);
+            Image back = well.gameObject.AddComponent<Image>();
+            MenuArt.Plate(back, plate, true);
+            back.raycastTarget = false;
+            RectTransform mark = MenuWidgets.Place(well, "Mark", 0f, 0f, s, s);
+            Image image = mark.gameObject.AddComponent<Image>();
+            image.sprite = icon;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
         }
 
         static void Well(Transform parent, float x, float y, float s, Sprite icon, Color plate)

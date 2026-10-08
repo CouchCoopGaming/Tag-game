@@ -230,12 +230,27 @@ namespace Tag.Core
             LookSensitivity.Apply();
             Time.timeScale = 1f;
             if (SceneManager.GetActiveScene().name != playSceneName)
-                SceneManager.LoadScene(playSceneName);
+                BeginAsyncLoad(playSceneName);
             else
             {
                 EnsurePlayHelpers();
                 EnsureRoundStarted();
             }
+        }
+
+        /// <summary>
+        /// Same hold as the menu boot load. Progress stalls at 0.9 until
+        /// AdvanceBootLoad allows activation, so the bar can reach 1.
+        /// </summary>
+        void BeginAsyncLoad(string sceneName)
+        {
+            _bootLoad = SceneManager.LoadSceneAsync(sceneName);
+            if (_bootLoad == null)
+            {
+                SceneManager.LoadScene(sceneName);
+                return;
+            }
+            _bootLoad.allowSceneActivation = false;
         }
 
         /// <summary>
@@ -258,13 +273,7 @@ namespace Tag.Core
             LookSensitivity.Load();
             LookSensitivity.Apply();
             Time.timeScale = 1f;
-            _bootLoad = SceneManager.LoadSceneAsync(playSceneName);
-            if (_bootLoad == null)
-            {
-                SceneManager.LoadScene(playSceneName);
-                return;
-            }
-            _bootLoad.allowSceneActivation = false;
+            BeginAsyncLoad(playSceneName);
         }
 
         /// <summary>
@@ -319,7 +328,7 @@ namespace Tag.Core
             ReturnToPlay();
             if (modeController == null) modeController = FindFirstObjectByType<TagModeController>();
             if (modeController != null) modeController.Rematch();
-            else SceneManager.LoadScene(playSceneName);
+            else BeginAsyncLoad(playSceneName);
         }
 
         /// <summary>
@@ -354,7 +363,7 @@ namespace Tag.Core
             State = GameFlowState.Boot;
             _bootFocus = 0;
             if (SceneManager.GetActiveScene().name != bootSceneName)
-                SceneManager.LoadScene(bootSceneName);
+                BeginAsyncLoad(bootSceneName);
         }
 
         public void OpenSetup()

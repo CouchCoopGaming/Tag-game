@@ -1285,10 +1285,22 @@ namespace Tag.Ui.Menu
                     OfferSeat(edge.Device, false);
                     continue;
                 }
+                if (edge.North && seated)
+                {
+                    int readySeat = SeatOf(edge.Device);
+                    if (readySeat >= 0)
+                    {
+                        MenuSession.Ready[readySeat] = !MenuSession.Ready[readySeat];
+                        if (MenuSession.Ready[readySeat]) MenuAudio.Ready(readySeat);
+                        else MenuAudio.Back();
+                    }
+                }
                 if (edge.Back)
                 {
                     if (seated)
                     {
+                        int leaving = SeatOf(edge.Device);
+                        if (leaving >= 0) MenuSession.Ready[leaving] = false;
                         CouchPlay.Leave(edge.Device);
                         MenuAudio.Back();
                     }
@@ -1828,28 +1840,18 @@ namespace Tag.Ui.Menu
                 if (36f + cardH > bodyH) cardH = bodyH - 48f;
                 AddTile(x, 24f, cardW, cardH, s, title, detail, true);
                 MenuTile tile = TileAt(s);
-                int family = PadGlyph.Generic;
-                if (human)
-                {
-                    int dev = CouchPlay.DeviceOf(s);
-                    family = dev <= 0 ? PadGlyph.Keyboard : PadGlyph.Family(dev);
-                }
-                if (human)
-                {
-                    Sprite mark = family == PadGlyph.Keyboard ? MenuIcons.Keys : MenuIcons.ConfirmOf(family, FaceFor(CouchPlay.DeviceOf(s), family));
-                    MenuWidgets.Glyph(tile, mark, MenuTheme.Seat(s));
-                }
-                else if (tile != null)
-                {
-                    if (tile.Detail != null) tile.Detail.text = MenuSheet.JoinPrompt;
-                    MenuBindRow.JoinPair(tile);
-                }
+                if (!human && tile != null && tile.Detail != null)
+                    tile.Detail.text = MenuSheet.JoinPrompt;
                 if (tile != null)
                 {
+                    Color seat = MenuTheme.Seat(s);
                     tile.KeepBar = true;
-                    tile.BarColor = MenuTheme.Seat(s);
+                    tile.BarColor = seat;
                     if (tile.Bar != null) tile.Bar.color = tile.BarColor;
-                    tile.Tint(Color.Lerp(MenuTheme.Ink, MenuTheme.Seat(s), UiSweep.SeatMix));
+                    tile.Tint(Color.Lerp(MenuTheme.Ink, seat, UiSweep.SeatMix));
+                    tile.LockColors = true;
+                    MenuWidgets.JoinDress(tile, seat, human, human && MenuSession.Ready[s]);
+                    if (!human) MenuBindRow.JoinPair(tile);
                 }
             }
             _count = 4;
@@ -3307,6 +3309,7 @@ namespace Tag.Ui.Menu
             {
                 n = n * 17 + CouchPlay.DeviceOf(s) + 3;
                 n = n * 13 + LocalProfiles.ProfileAt(s);
+                if (MenuSession.Ready[s]) n += 1;
             }
             return n;
         }
@@ -3338,7 +3341,13 @@ namespace Tag.Ui.Menu
         void PaintRecords()
         {
             ClearKeepHeader();
+            int filled = 0;
+            for (int i = 0; i < LocalProfiles.Max; i++)
+                if (LocalProfiles.SlotId(i) > 0) filled++;
+            _count = filled == 0 ? 2 : filled + 1;
             int win = UiFit.Window(UiFit.Current(), 128f, 8f);
+            if (_focus >= _count) _focus = _count - 1;
+            if (_focus < 0) _focus = 0;
             if (_focus < _window) _window = _focus;
             if (_focus >= _window + win) _window = _focus - (win - 1);
             int max = _count - win;
@@ -3346,42 +3355,56 @@ namespace Tag.Ui.Menu
             if (_window > max) _window = max;
             if (_window < 0) _window = 0;
             UiFit.RowBox(UiFit.Current(), 1100f, out float x, out float w);
-            for (int v = 0; v < win; v++)
+            if (filled == 0)
             {
-                int index = _window + v;
-                if (index >= _count) break;
-                string title;
-                string detail;
-                if (index >= LocalProfiles.Max)
+                MenuTile card = AddTile(x, 24f, w, 280f, 0, "No records yet.", "Play a match to set one.", true);
+                if (card != null)
                 {
-                    title = "Back";
-                    detail = "";
-                }
-                else
-                {
-                    int id = LocalProfiles.SlotId(index);
-                    if (id <= 0)
+                    card.LockColors = true;
+                    card.Tint(MenuTheme.Navy);
+                    if (card.Label != null)
                     {
-                        title = "Empty";
-                        detail = "";
+                        card.Label.resizeTextForBestFit = false;
+                        card.Label.fontSize = 40;
                     }
-                    else
+                    if (card.Detail != null)
                     {
-                    title = LocalProfiles.NameOf(id);
-                    detail = LocalProfiles.CardOf(id);
-                    string lead = title + "\n";
-                    if (!string.IsNullOrEmpty(detail) && detail.StartsWith(lead))
-                        detail = detail.Substring(lead.Length);
+                        card.Detail.resizeTextForBestFit = false;
+                        card.Detail.fontSize = UiFit.FloorFont;
                     }
+                    MenuWidgets.SeatLine(card.Label, 280f, 78f, 48f, 190f);
+                    MenuWidgets.SeatLine(card.Detail, 280f, 136f, 40f, 190f);
+                    MenuWidgets.EmptyMark(card.transform, 36f, 78f, 140f);
                 }
+                AddTile(x, 320f, w, UiFit.OptRow, 1, "Back", "", true);
+                RefreshFocus();
+                return;
+            }
+            int shown = 0;
+            for (int i = 0; i < LocalProfiles.Max && shown < filled; i++)
+            {
+                int id = LocalProfiles.SlotId(i);
+                if (id <= 0) continue;
+                int index = shown;
+                shown++;
+                if (index < _window || index >= _window + win) continue;
+                int v = index - _window;
+                string title = LocalProfiles.NameOf(id);
+                string detail = LocalProfiles.CardOf(id);
+                string lead = title + "\n";
+                if (!string.IsNullOrEmpty(detail) && detail.StartsWith(lead))
+                    detail = detail.Substring(lead.Length);
                 AddTile(x, 8f + v * 128f, w, 120f, index, title, detail, true);
             }
+            int back = filled;
+            if (back >= _window && back < _window + win)
+                AddTile(x, 8f + (back - _window) * 128f, w, 120f, back, "Back", "", true);
             RefreshFocus();
         }
 
         void ActivateRecords()
         {
-            if (_focus >= LocalProfiles.Max)
+            if (_focus >= _count - 1)
             {
                 MenuAudio.Back();
                 GoBack();
