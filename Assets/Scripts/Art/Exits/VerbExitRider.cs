@@ -23,6 +23,8 @@ namespace Tag.Art
         ExperimentalGrapple _grapple;
         ItController _it;
         FxBurstPool _fx;
+        int _vaultCol;
+        int _vaultSurf;
 
         Transform _hips, _spine, _head;
         Transform _uaL, _uaR, _laL, _laR;
@@ -164,6 +166,13 @@ namespace Tag.Art
                 _mantleFromClimb = _prevState == MoveState.WallClimb;
                 _mantlePlanar = _motor.HorizontalSpeed;
                 _trailLeft = NextLead();
+                if (_fx != null)
+                {
+                    int surf = DustContact.Read(_motor.Ground.collider, ref _vaultCol, ref _vaultSurf);
+                    DustLook.Puff puff = DustLook.At(surf, _motor.HorizSpeed, (int)DustLook.Kick.None);
+                    Vector3 hand = _motor.transform.position + Vector3.up * 1.15f;
+                    _fx.PlayShaped(FxBurstKind.VaultPuff, hand, puff);
+                }
             }
             if (_prevState == MoveState.Mantle && st != MoveState.Mantle)
             {

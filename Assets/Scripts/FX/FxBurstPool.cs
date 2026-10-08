@@ -8,7 +8,8 @@ namespace Tag.FX
         Roll = 0,
         Land = 1,
         WallScuff = 2,
-        VaultPuff = 3
+        VaultPuff = 3,
+        Run = 4
     }
 
     /// <summary>
@@ -48,7 +49,7 @@ namespace Tag.FX
             _main.startLifetime = 0.38f;
             _main.startSpeed = 2.2f;
             _main.startSize = 0.18f;
-            _main.maxParticles = 32;
+            _main.maxParticles = 64;
             _main.simulationSpace = ParticleSystemSimulationSpace.World;
             _main.gravityModifier = 0.55f;
             var emission = _ps.emission;
@@ -76,6 +77,38 @@ namespace Tag.FX
             _ps.Emit(Count(kind));
         }
 
+        public void PlayShaped(FxBurstKind kind, Vector3 worldPos, DustLook.Puff puff)
+        {
+            if (!_ready || _ps == null) return;
+            if (Calmed()) return;
+            if (puff.Count <= 0) return;
+            Apply(kind);
+            _main.startSize = puff.Size;
+            _main.startLifetime = puff.Life > 0.05f ? puff.Life : 0.05f;
+            float a = puff.Opacity;
+            if (a < 0f) a = 0f;
+            if (a > 1f) a = 1f;
+            _main.startColor = new Color(puff.R, puff.G, puff.B, a);
+            if (puff.Splash != 0)
+            {
+                _main.startSpeed = 2.4f;
+                _main.gravityModifier = 1.1f;
+            }
+            else if (puff.Spark != 0)
+            {
+                _main.startSpeed = 1.8f;
+                _main.gravityModifier = 0.15f;
+            }
+            else
+            {
+                _main.gravityModifier = 0.55f;
+            }
+            _ps.transform.position = worldPos;
+            int n = puff.Count;
+            if (n > 12) n = 12;
+            _ps.Emit(n);
+        }
+
         void Apply(FxBurstKind kind)
         {
             if (kind == FxBurstKind.Roll)
@@ -95,6 +128,12 @@ namespace Tag.FX
                 _main.startSpeed = 1.2f;
                 _main.startSize = 0.10f;
                 _main.startColor = new Color(0.75f, 0.72f, 0.66f, 0.65f);
+            }
+            else if (kind == FxBurstKind.Run)
+            {
+                _main.startSpeed = 1.5f;
+                _main.startSize = 0.16f;
+                _main.startColor = new Color(0.70f, 0.62f, 0.42f, 0.7f);
             }
             else
             {

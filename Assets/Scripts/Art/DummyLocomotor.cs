@@ -1,4 +1,5 @@
 using Tag.Experimental;
+using Tag.FX;
 using Tag.Gameplay;
 using Tag.Local;
 using TagArena.Movement;
@@ -1169,6 +1170,10 @@ namespace Tag.Art
         bool _stanceSole;
         float _solePitchL, _solePitchR;
 
+        public float GaitCycle => _cycle;
+        public float SurfPhase => _surfPhase;
+        public float HardTurnVis => _hardTurnVis;
+
         public void Bind(Transform visualRoot, PlayerMotor motor, PunchHitbox punch, CharacterController ccIgnored = null)
         {
             _motor = motor;
@@ -1177,6 +1182,7 @@ namespace Tag.Art
             _root0 = transform.localPosition;
             Cache(visualRoot);
             VerbExitRider.Ensure(gameObject);
+            DustEmitter.Ensure(gameObject);
             if (!_bound && !_loggedBindFail)
             {
                 _loggedBindFail = true;
@@ -17227,6 +17233,15 @@ namespace Tag.Art
             PunchPhase phase = _punch != null ? _punch.Phase : PunchPhase.Idle;
             bool punchHit = phase == PunchPhase.HitRecover;
             bool tag = HitConfirmTell.TagConnect(_tagFlinch, _itClaim);
+            Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
+            Vector3 forward = _motor != null ? _motor.transform.forward : transform.forward;
+            bool punchRise = punchHit && !_hitConfirmPunchWas;
+            bool tagRise = tag && !_hitConfirmTagWas;
+            if (punchRise || tagRise)
+            {
+                float reach = _punch != null ? _punch.Reach : 1.55f;
+                ComicBurst.Raise(origin, forward, reach, tagRise);
+            }
             HitConfirmTell.Note(ref _hitConfirmAge, solo, punchHit, tag, _hitConfirmPunchWas, _hitConfirmTagWas);
             _hitConfirmPunchWas = punchHit;
             _hitConfirmTagWas = tag;
@@ -17238,8 +17253,6 @@ namespace Tag.Art
             }
 
             EnsureHitConfirm();
-            Vector3 origin = _motor != null ? _motor.transform.position : transform.position;
-            Vector3 forward = _motor != null ? _motor.transform.forward : transform.forward;
             PlaceHitConfirm(origin, forward, HitConfirmTell.Alpha(_hitConfirmAge));
             HitConfirmTell.Step(ref _hitConfirmAge, dt, solo);
         }

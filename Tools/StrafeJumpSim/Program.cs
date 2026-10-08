@@ -790,6 +790,20 @@ static class Program
 
         Tag.Art.VerbExitStills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass2"));
 
+        Console.WriteLine(Tag.FX.DustLook.ProofLine());
+        if (!Tag.FX.DustLook.Holds())
+        {
+            Console.Error.WriteLine("running dust is not held");
+            return 1;
+        }
+        Console.WriteLine(Tag.FX.ComicWords.ProofLine());
+        if (!Tag.FX.ComicWords.Holds())
+        {
+            Console.Error.WriteLine("comic words are not held");
+            return 1;
+        }
+        Tag.FX.FxStills.Write(Path.Combine(RepoRoot(), "Docs", "AnimStills", "pass3"));
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
     }

@@ -1,6 +1,17 @@
 # Animation and FX plan
 
-Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those poses. FX waits until pass 3. Exits and the roll stay visual: they do not change speed, stun, coyote, cling, slide, or the camera.
+Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those poses. Pass 3 is the first FX: running dust and comic contact words. Exits, the roll, and the FX stay visual: they do not change speed, stun, coyote, cling, slide, or the camera.
+
+## Pass 3 (this branch)
+
+- Foot puffs land on the gait plant (the stride crossing each multiple of pi). Size, opacity, lifetime, and count grow with planar speed. A walk at 6.9 is faint. A sprint at 13.8 is a clear cloud. Run start, a hard pivot, and the first frame of a slide kick harder. A slide keeps a thinner trail. A wall run scuffs on the same plant, and a vault plays the hand puff. Both use the surface table. Reduced flashing skips the clouds.
+- Surfaces: grass (green-brown, light), dirt/sand including mulch (tan, thick, longer), concrete/asphalt (light gray, thin, short), wood (faint splinters), metal (quiet, a few sparks only on a hard pivot), wet (dark droplets). Put a `SurfaceTag` on the collider (kind 0 grass, 1 dirt, 2 concrete, 3 wood, 4 metal, 5 wet). If there is no tag, the physics material name is used, then the renderer material name, then the object name. The parks stamp grass, mulch, sand, concrete, wood, and metal when they build. Name a material `wet`, or set the tag to 5, for splash. The stamp does not change slide friction.
+- Comic words on a punch hit or a tag: POP!, POW!, BAM!, WHAM!. Random, and the same word never plays twice in a row. A punch favors POP! and POW!. A tag favors WHAM! and BAM!. Bold outlined letters on a spiky burst, a small tilt, a scale-pop in 0.05 s, then a hold and a fade, about 0.45 s. They sit at the contact and face each split camera. Settings has Comic words, on by default. Reduced flashing hides them. No hitstop, no shake, no new font file.
+- Mockups are in `Docs/AnimStills/pass3/`.
+
+## FX queue
+
+Running dust and the comic words are in. Do not add the later items until a later pass.
 
 ## Pass 2 (this branch)
 
@@ -19,39 +30,10 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - Shoulder roll when downward speed is at least 65% of terminal (56.16 m/s). Threshold is 36.50 m/s. From a stop, at fall gravity 22 × 1.62, that is a 18.69 m drop. A near-stop at the same speed is a short crouch absorb. Speed is unchanged. Camera does not roll.
 - Pooled dust foundation, and a roll dust burst. Reduced flashing skips the burst. The roll sound reuses the hard-land clip (`LandingRoll` on the audio bus). No new audio file.
 
-## FX queue
-
-FX waits for pass 3. Do not start it until the animation depth above is in.
-
-### 1. Running dust clouds
-
-First FX item, after pass 2. Foot dust while running, pooled, no allocations on the hot path.
-
-- Size, color, and density scale with planar speed. A walk is a light puff. A sprint is a thicker cloud.
-- Surface picks the look: grass, dirt/sand, concrete/asphalt, wood, metal, wet. Use the existing footstep surface names where they already match, and add dirt/sand, asphalt, and wet as labels on top of that map.
-- One pooled emitter per pawn. Emit from the pool. Do not allocate in Update or LateUpdate.
-- Reduced flashing (GameSettings) turns the clouds down or off.
-- Visual only. Do not change walk 6.9, sprint 13.8, or the footstep timing.
-
-### 2. Comic contact words
-
-After the running dust. Classic comic bursts on punch and tag contact.
-
-- Words: POP!, POW!, BAM!, WHAM!
-- Pick at random. Do not repeat the same word on the next contact.
-- A punch favors the smaller words (POP!, POW!). A successful tag favors the bigger words (WHAM!, BAM!).
-- Look: bold outlined letters on a spiky starburst, a slight tilt, a quick scale-pop (about 0.05 s in), then hold and fade. Whole life about 0.4–0.5 s.
-- World space at the contact point. Billboard to each split-screen camera so every pane can read it at couch distance.
-- Pooled. No allocations on the hot path.
-- Honor reduced-motion / reduced flashing, and add an on/off toggle.
-- No paid fonts and no purchased art. Use a font already in the project or a Unity built-in, or draw the letters as sprites.
-- Visual only. No hitstop, no camera shake, no change to punch reach 1.55 or to tag timing.
-
-### Later
+## Later
 
 - Speed lines.
-- Wall-scrape sparks.
+- Wall-scrape sparks beyond the foot scuff.
 - Tag hit burst (separate from the comic word).
 - It-handoff flash.
 - Pad and zip trails.
-- Wire the wall-run foot scuff and the vault hand-plant puff. The pool already has those two burst kinds. They are not played yet.

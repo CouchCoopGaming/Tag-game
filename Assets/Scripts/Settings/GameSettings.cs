@@ -44,10 +44,11 @@ namespace Tag.Settings
         public const int RowCaptions = 13;
         public const int RowRumble = 14;
         public const int RowReduceFlash = 15;
-        public const int RowReset = 16;
-        public const int RowReplay = 17;
-        public const int RowBack = 18;
-        public const int RowCount = 19;
+        public const int RowComic = 16;
+        public const int RowReset = 17;
+        public const int RowReplay = 18;
+        public const int RowBack = 19;
+        public const int RowCount = 20;
 
         public static readonly float[] MouseSteps = { 1.0f, 1.4f, 1.8f, 2.4f, 3.2f };
         public static readonly float[] PadLookSteps = { 1.0f, 1.6f, 2.2f, 3.0f, 4.5f };
@@ -83,6 +84,8 @@ namespace Tag.Settings
         public readonly bool[] Captions = new bool[SeatCount];
         public readonly int[] Rumble = new int[SeatCount];
         public readonly bool[] ReduceFlash = new bool[SeatCount];
+        /// <summary>Comic contact words. On until a seat turns them off. Reduced flashing also hides them.</summary>
+        public bool ComicWords = true;
 
         /// <summary>Opponents beside the local player. 0 is solo. 3 fills the pads.</summary>
         public const int AiMin = 0;
@@ -138,6 +141,7 @@ namespace Tag.Settings
             RoundsPerMatch = other.RoundsPerMatch;
             SplitAxis = other.SplitAxis;
             Listener = other.Listener;
+            ComicWords = other.ComicWords;
         }
 
         public void ResetToDefaults()
@@ -285,6 +289,7 @@ namespace Tag.Settings
                 case RowCaptions: Captions[AccessSeat] = !Captions[AccessSeat]; break;
                 case RowRumble: Rumble[AccessSeat] = (int)Step(Rumble[AccessSeat], dir, RumbleSteps); break;
                 case RowReduceFlash: ReduceFlash[AccessSeat] = !ReduceFlash[AccessSeat]; break;
+                case RowComic: ComicWords = !ComicWords; break;
             }
             Clamp();
         }
@@ -309,6 +314,7 @@ namespace Tag.Settings
                 case RowCaptions: return "Captions  " + (Captions[AccessSeat] ? "On" : "Off");
                 case RowRumble: return "Rumble  " + RumbleText(Rumble[AccessSeat]);
                 case RowReduceFlash: return "Reduced flashing  " + (ReduceFlash[AccessSeat] ? "On" : "Off");
+                case RowComic: return "Comic words  " + (ComicWords ? "On" : "Off");
                 case RowReset: return "Reset to defaults";
                 case RowReplay: return "Replay tips";
                 default: return "Back";

@@ -219,3 +219,10 @@ The recoveries from the last pass now move like a person changing their mind, an
 - Shorter falls have three landings. A small hop keeps the chest up. A medium fall bends the knees. A hard fall, still under the roll, brings the hands down near the ground. None of them change your speed. Try it: step off a curb, then a first-floor roof, then something just under the roll.
 - Leaving a wall, a vault, a slide, or a climb plays the matching side. The arms follow the chest, and the head is the last thing to settle. Try it: wall-run the left wall and the right wall, then vault and pop into a slide. The slide should arrive without a snap.
 - Jump during the roll and the jump shows within a blink. The roll does not make you wait.
+
+## Dust and comic words
+
+Footfalls kick up dust, and a punch or a tag pops a comic word. Speed, slide, and the camera stay as they were.
+
+- Walking is a small puff. Sprinting is a thicker cloud. Starting a run, spinning hard, and dropping into a slide kick more dust. The slide leaves a trail. A wall run scuffs, and a vault puffs at the hands. Grass is a light fleck, sand and mulch hang in the air, concrete fades fast, wood is a faint splinter, metal is almost quiet unless you pivot, and a wet surface splashes. Try it: sprint the lawn, then the sand, then a hard turn on the concrete.
+- A punch shows POP! or POW!. A tag shows BAM! or WHAM!. The same word does not repeat on the next hit. The letters face you in every split pane. Pause → Settings → Comic words turns them off. Reduced flashing hides the dust and the words. Try it: Practice, dummy on, punch, then tag.

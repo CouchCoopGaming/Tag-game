@@ -90,6 +90,9 @@
     <Compile Include="../../Assets/Scripts/Art/Exits/VerbExitProof.cs" />
     <Compile Include="../../Assets/Scripts/Art/Exits/VerbExitChain.cs" />
     <Compile Include="../../Assets/Scripts/Art/Exits/VerbExitStills.cs" />
+    <Compile Include="../../Assets/Scripts/FX/DustLook.cs" />
+    <Compile Include="../../Assets/Scripts/FX/ComicWords.cs" />
+    <Compile Include="../../Assets/Scripts/FX/FxStills.cs" />
     <Compile Include="../../Assets/Scripts/Art/MechPoseProof.cs" />
     <Compile Include="../../Assets/Scripts/Art/CrouchPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/MantlePose.cs" />

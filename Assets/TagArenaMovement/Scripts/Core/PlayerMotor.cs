@@ -38,6 +38,8 @@ namespace TagArena.Movement
         public float SuperGlideT { get; private set; } = -1f;
         public Vector3 WallNormal => _probe.Wall.normal;
         public bool WallLeft => _probe.Wall.left;
+        public Collider WallCollider => _probe != null ? _probe.Wall.collider : null;
+        public Vector3 WallPoint => _probe != null ? _probe.Wall.point : Vector3.zero;
         /// <summary>Seconds of cling-release grace still running. The pose reads this. The timer is not written here.</summary>
         public float ClingGraceRemaining => _clingGrace;
         /// <summary>True when a cling into the face just left is refused. The pose reads this.</summary>
