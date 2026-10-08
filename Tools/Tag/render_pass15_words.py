@@ -263,9 +263,9 @@ def frame_at(burst, word, age, box):
             layer.putalpha(band)
         canvas.alpha_composite(layer, ((box[0] - nw) // 2, (box[1] - nh) // 2))
 
-    # Fit the full-size pair into the panel, then apply the life scale on top.
+    # Fit the 1.15 overshoot into the panel so the settle reads smaller than the peak.
     full = max(burst.width, word.width, 1)
-    base = limit / float(full)
+    base = limit / float(full) / 1.15
     place(burst, bs * base)
     place(word, ws * base)
     bg.alpha_composite(canvas)
