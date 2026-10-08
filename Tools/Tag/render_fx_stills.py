@@ -2183,12 +2183,940 @@ def render_charts(cam, only_set):
         render_comic(cam)
 
 
+# Pass 11. Visual stills only. DustLook.At and ComicWords.Pick stay as they are.
+BANGERS = os.path.join(ROOT, "Tools", "Tag", "fonts", "Bangers-Regular.ttf")
+P11_N = 0
+P11_CELL = (600, 420)
+P11_COMIC_CELL = (520, 400)
+
+# Fresh-footfall volume is size^2 * count * opacity. Sprint is about 3x walk.
+# Wide/squash/lift are the still shape. They are not DustLook fields.
+PROPOSAL = {
+    "concrete": {
+        "walk": (0.18, 0.32, 4),
+        "sprint": (0.24, 0.44, 5),
+        "color": (0.96, 0.96, 0.94, 1.0),
+        "wide": 2.05,
+        "squash": 0.36,
+        "lift": 0.025,
+        "spread": (0.28, 0.50),
+        "layers": 2,
+    },
+    "dirt": {
+        "walk": (0.24, 0.62, 7),
+        "sprint": (0.335, 0.68, 10),
+        "color": (0.84, 0.58, 0.30, 1.0),
+        "wide": 1.05,
+        "squash": 0.95,
+        "lift": 0.09,
+        "spread": (0.22, 0.42),
+        "layers": 3,
+    },
+    "grass": {
+        "walk": (0.08, 0.24, 4),
+        "sprint": (0.11, 0.31, 5),
+        "color": (0.80, 0.76, 0.62, 1.0),
+        "wide": 1.0,
+        "squash": 0.70,
+        "lift": 0.05,
+        "spread": (0.12, 0.18),
+        "layers": 1,
+    },
+    "wood": {
+        "walk": (0.055, 0.70, 6),
+        "sprint": (0.078, 0.80, 8),
+        "color": (1.0, 0.97, 0.88, 1.0),
+        "wide": 0.85,
+        "squash": 0.70,
+        "lift": 0.04,
+        "spread": (0.16, 0.30),
+        "layers": 1,
+    },
+}
+CURRENT_COLOR = {
+    "concrete": (0.82, 0.82, 0.80, 1.0),
+    "dirt": (0.76, 0.55, 0.30, 1.0),
+    "grass": (0.40, 0.48, 0.18, 1.0),
+    "wood": (0.55, 0.42, 0.28, 1.0),
+}
+# step along -travel, size scale, opacity scale. Newest is still forming.
+P11_AGES = (
+    (0.0, 0.78, 1.00),
+    (1.0, 1.18, 0.65),
+    (2.0, 1.55, 0.42),
+)
+P11_CLUSTER = (
+    (0.04, 0.02),
+    (-0.20, 0.10),
+    (0.24, -0.08),
+    (-0.10, -0.22),
+    (0.34, 0.16),
+    (-0.32, -0.12),
+    (0.14, 0.28),
+    (-0.18, 0.26),
+    (0.30, -0.24),
+    (-0.38, 0.14),
+    (0.02, -0.32),
+    (0.22, 0.06),
+)
+
+
+def p11_name(prefix):
+    global P11_N
+    P11_N += 1
+    return "P11%s%d" % (prefix, P11_N)
+
+
+def p11_rand(i, salt):
+    x = math.sin(i * 12.9898 + salt * 78.233) * 43758.5453
+    return x - math.floor(x)
+
+
+def p11_clear(prefix):
+    if bpy.context.object is not None and getattr(bpy.context.object, "mode", "OBJECT") != "OBJECT":
+        bpy.ops.object.mode_set(mode="OBJECT")
+    for obj in list(bpy.data.objects):
+        if not obj.name.startswith(prefix):
+            continue
+        data = obj.data
+        bpy.data.objects.remove(obj, do_unlink=True)
+        if data is not None and data.users == 0 and isinstance(data, bpy.types.Mesh):
+            bpy.data.meshes.remove(data)
+
+
+def p11_speed_t(speed):
+    return _clamp((speed - 6.9) / (13.8 - 6.9), 0.0, 1.0)
+
+
+def p11_proposal_spec(surface, speed):
+    row = PROPOSAL[surface]
+    t = p11_speed_t(speed)
+    sw, ow, cw = row["walk"]
+    ss, os_, cs = row["sprint"]
+    size = sw + (ss - sw) * t
+    opacity = ow + (os_ - ow) * t
+    count = int(round(cw + (cs - cw) * t))
+    spread = row["spread"][0] + (row["spread"][1] - row["spread"][0]) * t
+    wide = row["wide"]
+    if surface == "concrete":
+        wide = 1.85 + (2.20 - 1.85) * t
+    return {
+        "size": size,
+        "opacity": opacity,
+        "count": count,
+        "spread": spread,
+        "color": row["color"],
+        "wide": wide,
+        "squash": row["squash"],
+        "lift": row["lift"],
+        "layers": row["layers"],
+        "blades": surface == "grass",
+    }
+
+
+def p11_current_spec(surface, speed):
+    size, opacity, count = dust_puff_spec(surface, speed)
+    return {
+        "size": size,
+        "opacity": opacity,
+        "count": max(count, 0),
+        "spread": max(0.04, size * 0.85),
+        "color": CURRENT_COLOR[surface],
+        "wide": 1.0,
+        "squash": 0.72,
+        "lift": 0.03,
+        "layers": 1,
+        "blades": False,
+    }
+
+
+def p11_volume(spec):
+    return spec["size"] * spec["size"] * spec["count"] * spec["opacity"]
+
+
+def p11_noise_mat(name, dark, light, scale, rough):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    noise = nt.nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = scale
+    noise.inputs["Detail"].default_value = 6.0
+    noise.inputs["Roughness"].default_value = 0.55
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.32
+    ramp.color_ramp.elements[0].color = dark
+    ramp.color_ramp.elements[1].position = 0.70
+    ramp.color_ramp.elements[1].color = light
+    nt.links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
+    nt.links.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
+    if "Roughness" in bsdf.inputs:
+        bsdf.inputs["Roughness"].default_value = rough
+    if "Specular IOR Level" in bsdf.inputs:
+        bsdf.inputs["Specular IOR Level"].default_value = 0.18
+    nt.links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
+    return mat
+
+
+def p11_link(mesh, name, mat):
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    if mat is not None:
+        obj.data.materials.append(mat)
+    return obj
+
+
+def p11_ground(surface):
+    p11_clear("P11")
+    if surface == "concrete":
+        mat = p11_noise_mat(p11_name("Mat"), (0.26, 0.26, 0.25, 1), (0.38, 0.38, 0.36, 1), 9.0, 0.92)
+        seam_mat = make_mat(p11_name("Mat"), (0.16, 0.16, 0.15, 1), 0.95)
+    elif surface == "dirt":
+        mat = p11_noise_mat(p11_name("Mat"), (0.24, 0.15, 0.08, 1), (0.40, 0.26, 0.13, 1), 7.0, 0.96)
+    elif surface == "grass":
+        mat = p11_noise_mat(p11_name("Mat"), (0.12, 0.26, 0.09, 1), (0.24, 0.40, 0.14, 1), 14.0, 0.94)
+    else:
+        mat = p11_noise_mat(p11_name("Mat"), (0.16, 0.10, 0.06, 1), (0.22, 0.14, 0.08, 1), 4.0, 0.9)
+        plank_mat = p11_noise_mat(p11_name("Mat"), (0.28, 0.17, 0.09, 1), (0.42, 0.26, 0.14, 1), 18.0, 0.72)
+    bpy.ops.mesh.primitive_plane_add(size=14.0, location=(0.0, 0.0, 0.0))
+    ground = bpy.context.active_object
+    ground.name = p11_name("Geo")
+    ground.data.materials.append(mat)
+    if surface == "concrete":
+        for i in range(-4, 5):
+            bpy.ops.mesh.primitive_cube_add(size=1.0, location=(i * 0.78, 0.0, 0.004))
+            seam = bpy.context.active_object
+            seam.name = p11_name("Geo")
+            seam.scale = (0.012, 6.0, 0.004)
+            seam.data.materials.append(seam_mat)
+            bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0.0, i * 0.78, 0.003))
+            seam2 = bpy.context.active_object
+            seam2.name = p11_name("Geo")
+            seam2.scale = (6.0, 0.010, 0.003)
+            seam2.data.materials.append(seam_mat)
+    elif surface == "dirt":
+        for i in range(9):
+            ang = p11_rand(i, 3) * math.tau
+            rad_i = 0.25 + p11_rand(i, 4) * 1.6
+            loc = (math.cos(ang) * rad_i, math.sin(ang) * rad_i, 0.012)
+            bpy.ops.mesh.primitive_ico_sphere_add(radius=0.012 + p11_rand(i, 5) * 0.014, location=loc, subdivisions=1)
+            pebble = bpy.context.active_object
+            pebble.name = p11_name("Geo")
+            pebble.data.materials.append(make_mat(p11_name("Mat"), (0.22, 0.16, 0.11, 1), 0.9))
+    elif surface == "grass":
+        verts = []
+        faces = []
+        for i in range(80):
+            x = (p11_rand(i, 1) - 0.5) * 4.6
+            y = (p11_rand(i, 2) - 0.5) * 4.6
+            h = 0.04 + p11_rand(i, 3) * 0.055
+            w = 0.005 + p11_rand(i, 4) * 0.005
+            yaw = p11_rand(i, 5) * math.tau
+            dx = math.cos(yaw) * w
+            dy = math.sin(yaw) * w
+            base = len(verts)
+            verts.extend(((x - dx, y - dy, 0.0), (x + dx, y + dy, 0.0), (x + dx, y + dy, h), (x - dx, y - dy, h)))
+            faces.append((base, base + 1, base + 2, base + 3))
+        mesh = bpy.data.meshes.new(p11_name("Lawn"))
+        mesh.from_pydata(verts, [], faces)
+        mesh.update()
+        lawn = p11_link(mesh, mesh.name, make_mat(p11_name("Mat"), (0.20, 0.42, 0.14, 1), 0.8))
+        lawn.data.materials[0].use_backface_culling = False
+    else:
+        for i in range(-5, 6):
+            bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0.0, i * 0.30, 0.02))
+            plank = bpy.context.active_object
+            plank.name = p11_name("Geo")
+            plank.scale = (3.4, 0.132, 0.02)
+            plank.data.materials.append(plank_mat)
+
+
+def p11_soft_image():
+    """Fat soft disc. The visible body is the puff size, with a short falloff."""
+    img = bpy.data.images.get("P11SoftDisc")
+    if img is not None:
+        return img
+    n = 64
+    img = bpy.data.images.new("P11SoftDisc", n, n, alpha=True, float_buffer=True)
+    pix = [0.0] * (n * n * 4)
+    for y in range(n):
+        for x in range(n):
+            dx = (x + 0.5) / n - 0.5
+            dy = (y + 0.5) / n - 0.5
+            ang = math.atan2(dy, dx)
+            wob = 0.84 + 0.10 * math.sin(ang * 3.0) + 0.06 * math.sin(ang * 7.0 + 0.8)
+            r = math.sqrt(dx * dx + dy * dy) / (0.50 * wob)
+            if r < 0.52:
+                alpha = 1.0
+            elif r < 1.0:
+                u = (r - 0.52) / 0.48
+                alpha = (1.0 - u) * (1.0 - u)
+            else:
+                alpha = 0.0
+            i = (y * n + x) * 4
+            pix[i] = pix[i + 1] = pix[i + 2] = 1.0
+            pix[i + 3] = alpha
+    img.pixels.foreach_set(pix)
+    img.pack()
+    return img
+
+
+def p11_puff_mat(name, color, opacity):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    mat.use_backface_culling = False
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    if hasattr(mat, "show_transparent_back"):
+        mat.show_transparent_back = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = p11_soft_image()
+    mul = nt.nodes.new("ShaderNodeMath")
+    mul.operation = "MULTIPLY"
+    mul.inputs[1].default_value = opacity
+    diff = nt.nodes.new("ShaderNodeBsdfDiffuse")
+    diff.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    diff.inputs["Roughness"].default_value = 1.0
+    trans = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(tex.outputs["Alpha"], mul.inputs[0])
+    nt.links.new(mul.outputs["Value"], mix.inputs["Fac"])
+    nt.links.new(trans.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(diff.outputs["BSDF"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
+
+
+def p11_puff(loc, width, height, color, opacity, cam_loc):
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=loc)
+    obj = bpy.context.active_object
+    obj.name = p11_name("Fx")
+    direction = cam_loc - loc
+    if direction.length < 0.001:
+        direction = Vector((0.0, -1.0, 0.2))
+    obj.rotation_euler = direction.to_track_quat("Z", "Y").to_euler()
+    obj.scale = (max(width, 0.01), max(height, 0.008), 1.0)
+    obj.data.materials.append(p11_puff_mat(p11_name("Mat"), color, opacity))
+    return obj
+
+
+def p11_heading(yaw_deg):
+    th = math.radians(yaw_deg)
+    fwd = Vector((math.sin(th), -math.cos(th), 0.0))
+    left = Vector((math.cos(th), math.sin(th), 0.0))
+    return fwd, left
+
+
+def p11_foot(arm):
+    obj = bpy.data.objects.get("Mesh_Foot_L")
+    if obj is None:
+        return bone_pos(arm, "Foot_L", tail=True)
+    verts, _polys = mesh_world(obj)
+    low = min(verts, key=lambda v: v.z)
+    return Vector((low.x, low.y, 0.02))
+
+
+def p11_cluster(origin, spec, across, along, cam_loc, salt):
+    count = spec["count"]
+    if count <= 0 or spec["size"] <= 0.001:
+        return 0
+    color = spec["color"]
+    made = 0
+    for i in range(count):
+        ox, oy = P11_CLUSTER[i % len(P11_CLUSTER)]
+        jitter = 0.85 + 0.3 * p11_rand(i, salt)
+        pos = origin + across * ox * spec["spread"] * jitter + along * oy * spec["spread"] * 0.72
+        rise = spec["lift"] + spec["size"] * spec["squash"] * (0.15 + 0.2 * p11_rand(i, salt + 1))
+        pos = Vector((pos.x, pos.y, origin.z + rise))
+        scale_i = 0.72 + 0.36 * p11_rand(i, salt + 2)
+        width = spec["size"] * spec["wide"] * scale_i
+        height = spec["size"] * spec["squash"] * (0.85 + 0.3 * p11_rand(i, salt + 3))
+        tint = 0.92 + 0.12 * p11_rand(i, salt + 4)
+        col = (color[0] * tint, color[1] * tint, color[2] * tint, 1.0)
+        p11_puff(pos, width, height, col, spec["opacity"], cam_loc)
+        made += 1
+        for layer in range(1, spec["layers"]):
+            off = across * (0.10 * layer) + along * (0.06 * layer) + Vector((0.0, 0.0, 0.045 * layer))
+            p11_puff(
+                pos + off,
+                width * (0.78 - 0.12 * layer),
+                height * (0.85 - 0.08 * layer),
+                col,
+                spec["opacity"] * 0.8,
+                cam_loc,
+            )
+            made += 1
+    return made
+
+
+def p11_flecks(origin, speed, across, along, cam_loc):
+    t = p11_speed_t(speed)
+    blades = 4 + int(round(4 * t))
+    leaves = 2 + int(round(2 * t))
+    colors = (
+        (0.90, 0.98, 0.32, 1.0),
+        (0.72, 0.88, 0.24, 1.0),
+        (0.55, 0.72, 0.18, 1.0),
+    )
+    for i in range(blades):
+        ox = (p11_rand(i, 11) - 0.25) * 0.50
+        oy = (p11_rand(i, 12) - 0.35) * 0.40
+        pos = origin + across * ox + along * oy + Vector((0.0, 0.0, 0.08 + 0.08 * p11_rand(i, 13)))
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=pos)
+        blade = bpy.context.active_object
+        blade.name = p11_name("Fx")
+        length = 0.16 + 0.10 * p11_rand(i, 14)
+        blade.scale = (0.032, 0.008, length)
+        to_cam = cam_loc - pos
+        yaw = math.atan2(to_cam.y, to_cam.x) + (p11_rand(i, 15) - 0.5) * 0.7
+        tilt = math.radians(58 + p11_rand(i, 16) * 24)
+        blade.rotation_euler = Euler((tilt, 0.0, yaw), "XYZ")
+        mat = make_mat(p11_name("Mat"), colors[i % 3], 0.75)
+        mat.use_backface_culling = False
+        blade.data.materials.append(mat)
+    for i in range(leaves):
+        ox = (p11_rand(i, 21) - 0.5) * 0.34
+        oy = (p11_rand(i, 22) - 0.3) * 0.26
+        pos = origin + across * ox + along * oy + Vector((0.0, 0.0, 0.05 + 0.04 * p11_rand(i, 23)))
+        bpy.ops.mesh.primitive_plane_add(size=1.0, location=pos)
+        leaf = bpy.context.active_object
+        leaf.name = p11_name("Fx")
+        leaf.scale = (0.09, 0.038, 1.0)
+        to_cam = cam_loc - pos
+        leaf.rotation_euler = (to_cam).to_track_quat("Z", "Y").to_euler()
+        leaf.rotation_euler.rotate_axis("X", math.radians(30 + p11_rand(i, 24) * 40))
+        mat = make_mat(p11_name("Mat"), (0.45, 0.72, 0.22, 1.0), 0.7)
+        mat.use_backface_culling = False
+        leaf.data.materials.append(mat)
+
+
+def p11_emit_dust(arm, cam, spec, speed, yaw_deg):
+    p11_clear("P11Fx")
+    fwd, left = p11_heading(yaw_deg)
+    foot = p11_foot(arm)
+    step = 0.46 + 0.22 * p11_speed_t(speed)
+    # Keep every footfall on the near side of the legs so the trail stays in view.
+    side = (0.16, 0.36, 0.52)
+    ahead = (0.20, 0.04, -0.02)
+    puffs = 0
+    for age_i, (step_mul, size_mul, op_mul) in enumerate(P11_AGES):
+        aged = dict(spec)
+        aged["size"] = spec["size"] * size_mul
+        aged["opacity"] = spec["opacity"] * op_mul
+        origin = foot - fwd * step * step_mul + left * side[age_i] + fwd * ahead[age_i]
+        origin.z = 0.025
+        if os.environ.get("FX_PASS11_DEBUG") == "1":
+            aged = dict(aged)
+            aged["color"] = ((1.0, 0.15, 0.1, 1.0), (0.15, 0.35, 1.0, 1.0), (0.1, 0.85, 0.2, 1.0))[age_i]
+            aged["opacity"] = 0.9
+        puffs += p11_cluster(origin, aged, left, -fwd, cam.location, 30 + age_i * 17)
+        if spec["blades"] and age_i == 0:
+            p11_flecks(origin, speed, left, -fwd, cam.location)
+    return foot, puffs
+
+
+def p11_aim_dust(cam, arm, foot, yaw_deg):
+    fwd, left = p11_heading(yaw_deg)
+    head = bone_pos(arm, "Head", tail=True)
+    trail = foot - fwd * 1.7 + left * 0.3 + Vector((0.0, 0.0, 0.12))
+    look = foot + Vector((0.0, 0.0, 0.48)) - fwd * 0.08
+    cam.data.type = "PERSP"
+    cam.data.lens = 30
+    cam.data.clip_start = 0.05
+    cam.data.clip_end = 40.0
+    dist = 2.15
+    side = 1.35
+    for _ in range(8):
+        cam.location = foot + fwd * dist + left * side + Vector((0.0, 0.0, 0.40))
+        look_at(cam, look)
+        bpy.context.view_layer.update()
+        marks = (head, foot + Vector((0, 0, 0.05)), trail, bone_pos(arm, "Foot_R", tail=True))
+        if all(point_in_frame(cam, p, 0.05) for p in marks):
+            break
+        dist *= 1.07
+        side *= 1.03
+    bpy.context.view_layer.update()
+    return dist
+
+
+def p11_grab(path, width, height):
+    scene = bpy.context.scene
+    scene.render.resolution_x = width
+    scene.render.resolution_y = height
+    scene.render.filepath = path
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    bpy.ops.render.render(write_still=True)
+    from PIL import Image
+
+    return Image.open(path).convert("RGB")
+
+
+def p11_font(size):
+    from PIL import ImageFont
+
+    return ImageFont.truetype(BANGERS, size)
+
+
+def p11_finish(path, limit=400 * 1024):
+    from PIL import Image
+
+    im = Image.open(path).convert("RGB")
+    im.save(path, optimize=True)
+    if os.path.getsize(path) <= limit:
+        print("SIZE", os.path.basename(path), os.path.getsize(path), im.size[0], im.size[1])
+        return
+    for colors in (180, 140, 112, 88):
+        q = im.quantize(colors=colors, method=Image.Quantize.MEDIANCUT)
+        q.save(path, optimize=True)
+        if os.path.getsize(path) <= limit:
+            print("SIZE", os.path.basename(path), os.path.getsize(path), "colors", colors)
+            return
+    w, h = im.size
+    while w > 1080 and os.path.getsize(path) > limit:
+        w = int(w * 0.9)
+        h = int(h * 0.9)
+        small = im.resize((w, h), Image.Resampling.LANCZOS)
+        small.save(path, optimize=True)
+        im = small
+    print("SIZE", os.path.basename(path), os.path.getsize(path), "scaled", w, h)
+
+
+def p11_sheet(cells, titles, headline, path):
+    from PIL import Image, ImageDraw
+
+    font = p11_font(26)
+    small = p11_font(20)
+    head_h = 40
+    foot_h = 34
+    gap = 6
+    w = sum(im.width for im in cells) + gap * (len(cells) - 1)
+    h = head_h + cells[0].height + foot_h
+    sheet = Image.new("RGB", (w, h), (28, 26, 24))
+    draw = ImageDraw.Draw(sheet)
+    draw.text((10, 6), headline, font=font, fill=(255, 228, 140))
+    x = 0
+    for im, title in zip(cells, titles):
+        sheet.paste(im, (x, head_h))
+        tw = draw.textlength(title, font=small)
+        draw.text((x + max(0, (im.width - tw) * 0.5), head_h + im.height + 6), title, font=small, fill=(255, 246, 226))
+        x += im.width + gap
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    sheet.save(path, optimize=True)
+    p11_finish(path)
+
+
+def p11_dust(arm, cam, yaw_deg, tmp):
+    apply_pose(arm, pose_run, 0.0, yaw_deg)
+    dist = p11_aim_dust(cam, arm, p11_foot(arm), yaw_deg)
+    print("CAM dust dist", round(dist, 2), "lens", cam.data.lens)
+    surfaces = ("concrete", "dirt", "grass", "wood")
+    speeds = (("walk", 6.9), ("run", 9.0), ("sprint", 13.8))
+    variants = ("current", "proposed")
+    probe = os.environ.get("FX_PASS11_PROBE") == "1"
+    if probe:
+        surfaces = ("dirt", "grass", "concrete", "wood")
+        variants = ("proposed",)
+    for surface in surfaces:
+        p11_ground(surface)
+        for variant in variants:
+            cells = []
+            titles = []
+            for label, speed in speeds:
+                spec = p11_current_spec(surface, speed) if variant == "current" else p11_proposal_spec(surface, speed)
+                vol = p11_volume(spec)
+                print(
+                    "PROPOSAL" if variant == "proposed" else "CURRENT",
+                    surface,
+                    label,
+                    "size", round(spec["size"], 3),
+                    "opacity", round(spec["opacity"], 3),
+                    "count", spec["count"],
+                    "volume", round(vol, 4),
+                    "wide", spec["wide"],
+                    "squash", spec["squash"],
+                )
+                _foot, puffs = p11_emit_dust(arm, cam, spec, speed, yaw_deg)
+                print("PUFFS", surface, variant, label, puffs)
+                cell_path = os.path.join(tmp, "%s-%s-%s.png" % (surface, variant, label))
+                cells.append(p11_grab(cell_path, P11_CELL[0], P11_CELL[1]))
+                titles.append("%s  %.3fm  op %.2f  x%d" % (label, spec["size"], spec["opacity"], spec["count"]))
+            if variant == "proposed":
+                headline = "%s   visual tuning proposal   FX, not a feel lock" % surface.upper()
+            else:
+                headline = "%s   DustLook.At current   true metre size" % surface.upper()
+            p11_sheet(cells, titles, headline, os.path.join(OUT, "dust-%s-%s.png" % (surface, variant)))
+            walk = p11_current_spec(surface, 6.9) if variant == "current" else p11_proposal_spec(surface, 6.9)
+            sprint = p11_current_spec(surface, 13.8) if variant == "current" else p11_proposal_spec(surface, 13.8)
+            wv = p11_volume(walk)
+            sv = p11_volume(sprint)
+            ratio = sv / wv if wv > 1e-8 else 0.0
+            print("RATIO", variant, surface, "sprint/walk", round(ratio, 2))
+
+
+def p11_star_mesh(name, radius, outline):
+    outers = (1.00, 0.82, 1.16, 0.90, 1.08, 0.74, 1.18, 0.86, 0.98, 1.12, 0.78, 1.06, 0.92, 1.14)
+    inners = (0.60, 0.50, 0.64, 0.46, 0.58, 0.52, 0.48, 0.62, 0.47, 0.56, 0.54, 0.49, 0.61, 0.51)
+    scale = 1.16 if outline else 1.0
+    verts = [(0.0, 0.0, 0.0)]
+    for i in range(14):
+        ang = i * math.tau / 14.0 - math.pi / 2.0 + (0.05 if i % 2 == 0 else -0.04)
+        outer = radius * outers[i] * scale
+        inner = radius * inners[i] * scale
+        mid = ang + math.tau / 28.0
+        verts.append((math.cos(ang) * outer, math.sin(ang) * outer, 0.0))
+        verts.append((math.cos(mid) * inner, math.sin(mid) * inner, 0.0))
+    n = 28
+    faces = [(0, 1 + i, 1 + (i + 1) % n) for i in range(n)]
+    mesh = bpy.data.meshes.new(name)
+    mesh.from_pydata(verts, [], faces)
+    mesh.update()
+    return mesh
+
+
+def p11_dot_image():
+    img = bpy.data.images.get("P11Halftone")
+    if img is not None:
+        return img
+    n = 64
+    img = bpy.data.images.new("P11Halftone", n, n, alpha=True, float_buffer=True)
+    pix = [0.0] * (n * n * 4)
+    for y in range(n):
+        for x in range(n):
+            dx = (x + 0.5) / n - 0.5
+            dy = (y + 0.5) / n - 0.5
+            r = math.sqrt(dx * dx + dy * dy)
+            ink = 1.0 if r < 0.20 else 0.0
+            i = (y * n + x) * 4
+            pix[i] = pix[i + 1] = pix[i + 2] = ink
+            pix[i + 3] = 1.0
+    img.pixels.foreach_set(pix)
+    img.pack()
+    try:
+        img.colorspace_settings.name = "Non-Color"
+    except (TypeError, AttributeError):
+        pass
+    return img
+
+
+def p11_ink_mat(name, color, fade, dots):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    emit = nt.nodes.new("ShaderNodeEmission")
+    trans = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    mix.inputs["Fac"].default_value = fade
+    if dots:
+        coord = nt.nodes.new("ShaderNodeTexCoord")
+        mapping = nt.nodes.new("ShaderNodeMapping")
+        mapping.inputs["Scale"].default_value = (6.5, 6.5, 6.5)
+        tex = nt.nodes.new("ShaderNodeTexImage")
+        tex.image = p11_dot_image()
+        tex.extension = "REPEAT"
+        mix_rgb = nt.nodes.new("ShaderNodeMixRGB")
+        dark = (color[0] * 0.28, color[1] * 0.28, color[2] * 0.28, 1.0)
+        mix_rgb.inputs["Color1"].default_value = (color[0], color[1], color[2], 1.0)
+        mix_rgb.inputs["Color2"].default_value = dark
+        nt.links.new(coord.outputs["Object"], mapping.inputs["Vector"])
+        nt.links.new(mapping.outputs["Vector"], tex.inputs["Vector"])
+        nt.links.new(tex.outputs["Color"], mix_rgb.inputs["Fac"])
+        nt.links.new(mix_rgb.outputs["Color"], emit.inputs["Color"])
+    else:
+        emit.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    emit.inputs["Strength"].default_value = 1.0
+    nt.links.new(trans.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(emit.outputs["Emission"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
+
+
+def p11_text_image(word, fill):
+    from PIL import Image, ImageDraw
+
+    box_w, box_h = 0.18, 0.100
+    width_px = 720
+    height_px = int(round(width_px * box_h / box_w))
+    pad = 0.12
+    target_w = width_px * (1.0 - 2.0 * pad)
+    target_h = height_px * (1.0 - 2.0 * pad)
+    best = 48
+    lo, hi = 20, 320
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        stroke = max(6, int(mid * 0.16))
+        font = p11_font(mid)
+        dummy = Image.new("RGBA", (4, 4))
+        bb = ImageDraw.Draw(dummy).textbbox((0, 0), word, font=font, stroke_width=stroke)
+        tw, th = bb[2] - bb[0], bb[3] - bb[1]
+        if tw <= target_w and th <= target_h:
+            best = mid
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    stroke = max(6, int(best * 0.16))
+    font = p11_font(best)
+    dummy = Image.new("RGBA", (4, 4))
+    bb = ImageDraw.Draw(dummy).textbbox((0, 0), word, font=font, stroke_width=stroke)
+    im = Image.new("RGBA", (width_px, height_px), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(im)
+    x = (width_px - (bb[2] - bb[0])) / 2.0 - bb[0]
+    y = (height_px - (bb[3] - bb[1])) / 2.0 - bb[1]
+    draw.text((x, y), word, font=font, fill=fill + (255,), stroke_width=stroke, stroke_fill=(0, 0, 0, 255))
+    print("COMIC-FONT", word, "px", best, "stroke", stroke)
+    return im, box_w, box_h
+
+
+def p11_image_mat(name, image, fade):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = image
+    emit = nt.nodes.new("ShaderNodeEmission")
+    trans = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    mul = nt.nodes.new("ShaderNodeMath")
+    mul.operation = "MULTIPLY"
+    mul.inputs[1].default_value = fade
+    nt.links.new(tex.outputs["Color"], emit.inputs["Color"])
+    emit.inputs["Strength"].default_value = 1.0
+    nt.links.new(tex.outputs["Alpha"], mul.inputs[0])
+    nt.links.new(mul.outputs["Value"], mix.inputs["Fac"])
+    nt.links.new(trans.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(emit.outputs["Emission"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
+
+
+def p11_speed_lines(parent, radius):
+    angles = (0.4, 1.15, 2.05, 2.7, 3.6, 5.3)
+    for i, ang in enumerate(angles):
+        inner = radius * (1.22 + 0.06 * (i % 2))
+        length = radius * (0.38 + 0.16 * (i % 3))
+        mid = inner + length * 0.5
+        cx = math.cos(ang) * mid
+        cy = math.sin(ang) * mid
+        mesh = bpy.data.meshes.new(p11_name("Line"))
+        hw = 0.008 if i % 2 == 0 else 0.012
+        hl = length * 0.5
+        ca, sa = math.cos(ang), math.sin(ang)
+        verts = []
+        for sx, sy in ((-hw, -hl), (hw, -hl), (hw, hl), (-hw, hl)):
+            verts.append((cx + ca * sx - sa * sy, cy + sa * sx + ca * sy, -0.01))
+        mesh.from_pydata(verts, [], [(0, 1, 2, 3)])
+        mesh.update()
+        obj = p11_link(mesh, p11_name("Fx"), p11_ink_mat(p11_name("Mat"), (0.02, 0.02, 0.02, 1.0), 1.0, False))
+        obj.parent = parent
+
+
+def p11_burst(cam, center, word, color, text_fill, scale, fade, shear, spin):
+    p11_clear("P11Fx")
+    empty = bpy.data.objects.new(p11_name("Fx"), None)
+    bpy.context.collection.objects.link(empty)
+    empty.location = center
+    empty.rotation_euler = (cam.location - center).to_track_quat("Z", "Y").to_euler()
+    empty.scale = (scale, scale, scale)
+    radius = 0.30
+    outline = p11_link(
+        p11_star_mesh(p11_name("Star"), radius, True),
+        p11_name("Fx"),
+        p11_ink_mat(p11_name("Mat"), (0.0, 0.0, 0.0, 1.0), fade, False),
+    )
+    outline.parent = empty
+    outline.location = (0.0, 0.0, -0.012)
+    outline.rotation_euler = Euler((0.0, 0.0, math.radians(spin)), "XYZ")
+    fill = p11_link(
+        p11_star_mesh(p11_name("Star"), radius, False),
+        p11_name("Fx"),
+        p11_ink_mat(p11_name("Mat"), color, fade, True),
+    )
+    fill.parent = empty
+    fill.location = (0.0, 0.0, 0.0)
+    fill.rotation_euler = Euler((0.0, 0.0, math.radians(spin)), "XYZ")
+    p11_speed_lines(empty, radius)
+    for child in list(empty.children):
+        if child.data and any(s.name.startswith("P11Line") or "Line" in child.name for s in []):
+            pass
+    # Speed-line fade follows the burst. Rebuild their material factor.
+    for child in empty.children:
+        if child.data is None or not child.material_slots:
+            continue
+        if child == fill or child == outline:
+            continue
+        child.material_slots[0].material = p11_ink_mat(p11_name("Mat"), (0.02, 0.02, 0.02, 1.0), fade, False)
+    im, box_w, box_h = p11_text_image(word, text_fill)
+    tmp = os.path.join("/tmp", "p11-%s.png" % word.replace("!", ""))
+    im.save(tmp)
+    image = bpy.data.images.load(tmp)
+    try:
+        image.colorspace_settings.name = "sRGB"
+    except (TypeError, AttributeError):
+        pass
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=(0.0, 0.0, 0.0))
+    text = bpy.context.active_object
+    text.name = p11_name("Fx")
+    for vert in text.data.vertices:
+        vert.co.x += vert.co.y * shear
+    text.scale = (box_w, box_h, 1.0)
+    text.location = (0.0, 0.0, 0.018)
+    text.rotation_euler = Euler((0.0, 0.0, math.radians(spin * 0.65)), "XYZ")
+    text.data.materials.append(p11_image_mat(p11_name("Mat"), image, fade))
+    text.parent = empty
+    bpy.context.view_layer.update()
+
+
+def p11_aim_punch(cam, arm, hand, yaw_deg):
+    fwd, left = p11_heading(yaw_deg)
+    right = -left
+    head = bone_pos(arm, "Head", tail=True)
+    hips = bone_pos(arm, "Hips")
+    look = (hand + hips) * 0.5 + Vector((0.0, 0.0, 0.05))
+    cam.data.type = "PERSP"
+    cam.data.lens = 42
+    cam.data.clip_start = 0.04
+    dist = 1.15
+    side = 0.55
+    for _ in range(8):
+        cam.location = hand + fwd * dist + right * side + Vector((0.0, 0.0, 0.18))
+        look_at(cam, look)
+        bpy.context.view_layer.update()
+        if point_in_frame(cam, head, 0.04) and point_in_frame(cam, hand, 0.08) and point_in_frame(cam, hips, 0.02):
+            break
+        dist *= 1.08
+        side *= 1.04
+    bpy.context.view_layer.update()
+
+
+def p11_comic(arm, cam, yaw_deg, tmp):
+    from PIL import Image, ImageDraw
+
+    p11_clear("P11")
+    for obj in bpy.data.objects:
+        if obj.name == "PropGround":
+            obj.hide_render = False
+    apply_pose(arm, pose_punch, 0.0, yaw_deg)
+    hand = bone_pos(arm, "Hand_R", tail=True)
+    p11_aim_punch(cam, arm, hand, yaw_deg)
+    to_cam = (cam.location - hand).normalized()
+    center = hand + to_cam * 0.08
+    panels = (
+        ("POP!", (1.0, 0.86, 0.12, 1.0), (255, 230, 40), 0.60, 0.72, 0.16, -7.0, "0.6 pop-in"),
+        ("POW!", (1.0, 0.46, 0.08, 1.0), (255, 236, 60), 1.15, 1.00, -0.14, 8.0, "1.15 overshoot"),
+        ("BAM!", (0.95, 0.12, 0.18, 1.0), (255, 255, 255), 1.00, 1.00, 0.12, -5.0, "1.0"),
+        ("WHAM!", (0.62, 0.18, 0.95, 1.0), (255, 255, 255), 1.00, 0.50, -0.10, 6.0, "1.0 fade"),
+    )
+    cells = []
+    titles = []
+    for word, color, fill, scale, fade, shear, spin, title in panels:
+        p11_burst(cam, center, word, color, fill, scale, fade, shear, spin)
+        print("COMIC", word, "scale", scale, "fade", fade, "spin", spin)
+        cells.append(p11_grab(os.path.join(tmp, "comic-%s.png" % word.replace("!", "")), P11_COMIC_CELL[0], P11_COMIC_CELL[1]))
+        titles.append(title)
+    p11_clear("P11Fx")
+    off = p11_grab(os.path.join(tmp, "comic-off.png"), P11_COMIC_CELL[0], P11_COMIC_CELL[1])
+    key = Image.new("RGB", P11_COMIC_CELL, (32, 28, 26))
+    draw = ImageDraw.Draw(key)
+    font = p11_font(28)
+    body = p11_font(22)
+    draw.text((24, 28), "POP IN", font=font, fill=(255, 220, 80))
+    lines = (
+        (70, "0.60   starts"),
+        (108, "1.15   overshoot"),
+        (146, "1.00   settles"),
+        (184, "then fades"),
+        (250, "Comic words  On"),
+        (292, "Comic words  Off"),
+    )
+    for y, line in lines:
+        draw.text((24, y), line, font=body, fill=(255, 246, 230))
+    cells.extend((off, key))
+    titles.extend(("Comic words  Off", "toggle"))
+    # 3 over 3
+    from PIL import Image as PILImage
+
+    row_h = P11_COMIC_CELL[1]
+    row_w = P11_COMIC_CELL[0]
+    gap = 6
+    head = 44
+    foot = 32
+    sheet_w = row_w * 3 + gap * 2
+    sheet_h = head + (row_h + foot) * 2 + gap
+    sheet = PILImage.new("RGB", (sheet_w, sheet_h), (24, 22, 20))
+    draw = ImageDraw.Draw(sheet)
+    draw.text((12, 8), "Comic words  On     punch contact     Bangers", font=p11_font(26), fill=(255, 228, 140))
+    label_font = p11_font(18)
+    for i, (cell, title) in enumerate(zip(cells, titles)):
+        col = i % 3
+        row = i // 3
+        x = col * (row_w + gap)
+        y = head + row * (row_h + foot + gap)
+        sheet.paste(cell, (x, y))
+        draw.text((x + 8, y + row_h + 4), title, font=label_font, fill=(255, 246, 226))
+    path = os.path.join(OUT, "comic-bursts.png")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    sheet.save(path, optimize=True)
+    p11_finish(path)
+
+
+def render_pass11(arm, cam):
+    """In-scene dust at DustLook size and a visual proposal, plus comic bursts on the punch."""
+    for obj in bpy.data.objects:
+        if obj.type == "LIGHT" and obj.data.type == "SUN":
+            obj.data.energy = 2.6
+        elif obj.type == "LIGHT" and obj.data.type == "AREA":
+            obj.data.energy = 48
+        if obj.name in ("PropGround", "PropSlab") or "Seam" in obj.name:
+            obj.hide_render = True
+    bg = bpy.context.scene.world.node_tree.nodes["Background"]
+    bg.inputs["Strength"].default_value = 0.62
+    bpy.context.scene.eevee.taa_render_samples = 8
+    tmp = "/tmp/pass11-cells"
+    os.makedirs(tmp, exist_ok=True)
+    os.makedirs(OUT, exist_ok=True)
+    yaw = 32.0
+    part = os.environ.get("FX_PASS11_PART", "all")
+    if part in ("all", "dust"):
+        p11_dust(arm, cam, yaw, tmp)
+        for surface in ("concrete", "dirt", "grass", "wood"):
+            walk = p11_proposal_spec(surface, 6.9)
+            sprint = p11_proposal_spec(surface, 13.8)
+            print(
+                "PROPOSAL-LOCK",
+                surface,
+                "walk", round(walk["size"], 3), round(walk["opacity"], 3), walk["count"],
+                "sprint", round(sprint["size"], 3), round(sprint["opacity"], 3), sprint["count"],
+                "ratio", round(p11_volume(sprint) / max(p11_volume(walk), 1e-8), 3),
+            )
+    if part in ("all", "comic"):
+        p11_comic(arm, cam, 18.0, tmp)
+    print("PASS11 stills", OUT)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
+    if os.environ.get("FX_PASS11") == "1":
+        render_pass11(arm, cam)
+        return
     shots = [
         ("landing-impact", pose_land, 24, 0.0, build_land, None),
         ("landing-roll", pose_roll, 28, 0.0, build_roll, frame_roll_contact),
