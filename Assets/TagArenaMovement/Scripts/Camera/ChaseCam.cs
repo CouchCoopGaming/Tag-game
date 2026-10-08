@@ -17,7 +17,11 @@ namespace TagArena.Movement
         public const float CatchRate = 22f;
         /// <summary>Same length as the wall-jump and slide pose windows.</summary>
         public const float CatchSeconds = 0.10f;
-        public const float BoomRate = 18f;
+        /// <summary>
+        /// Re-extension only. Pull-in stays the same frame so the lens never sits inside a wall.
+        /// Slower than the old 18, which closed about a meter of a full boom on frame one.
+        /// </summary>
+        public const float BoomRate = 6f;
         public const float LookRate = 8f;
         /// <summary>Catch-up does not change field of view.</summary>
         public const float FovPop = 0f;
