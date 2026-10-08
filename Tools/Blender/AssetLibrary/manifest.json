@@ -43661,5 +43661,117 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/PedSignal_Crosswalk.fbx"
+  },
+  {
+    "name": "FireAlarm_Box",
+    "category": "StreetFurniture",
+    "blurb": "Fire alarm box. Red, 0.26 m wide, door at 1.16 m, peaked cap at 1.51 m. Pull handle, no legend.",
+    "size": [
+      0.3,
+      1.51,
+      0.28
+    ],
+    "min": [
+      -0.15,
+      0.0,
+      -0.14
+    ],
+    "max": [
+      0.15,
+      1.51,
+      0.14
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 398,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintRed",
+          "Lib_BoxRed",
+          "Lib_Brass"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 154,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintRed",
+          "Lib_BoxRed"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.014,
+          0
+        ],
+        "size": [
+          0.18,
+          0.02,
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post",
+        "type": "capsule",
+        "center": [
+          0,
+          0.48,
+          0
+        ],
+        "radius": 0.03,
+        "height": 0.84,
+        "direction": 1
+      },
+      {
+        "name": "Col_Box",
+        "type": "box",
+        "center": [
+          0,
+          1.16,
+          -0.01
+        ],
+        "size": [
+          0.16,
+          0.32,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Not a cling.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/FireAlarm_Box.fbx"
   }
 ]
