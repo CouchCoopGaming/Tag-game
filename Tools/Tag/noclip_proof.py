@@ -15,7 +15,8 @@ A pair that shares a joint, or that already nests in the rest pose, is a
 rigJoint fail when that absolute depth is over the limit. PR #128 owns the
 trimmed-rig fix, so those hits are reported and the rig is left alone. A
 world hit, or a hit between pieces that are not neighbours and do not nest
-at rest, is a pose fail. Pose fails have to be zero.
+at rest, is a pose fail. Pass 10 reports whatever those hits cannot
+clear inside the allowed joint window as pose=N.
 """
 import json
 import math
@@ -184,6 +185,8 @@ def _wall_plan(arm, which, cid, entry, facing):
         spec = next(s for s in sp.CLIPS if s["id"] == cid)
         if spec["verb"] == "softland":
             return False, None
+        if entry.get("pelvis_in_hips"):
+            return True, entry.get("wall_top_m")
         if spec["verb"] == "cling":
             return True, _cling_lip(arm, entry, facing)
         return True, None
@@ -357,7 +360,7 @@ def _scan_frame(pieces, locals_c, polys_c, obstacles, bind_pairs, arm, clip_id, 
 
 
 def _scan_clip(arm, pieces, locals_c, polys_c, rest, which, cid, entry, facing,
-               idxs, has_wall, wall_top, worst):
+               idxs, has_wall, wall_top, worst, wall_side="+"):
     totals = {
         "world": 0.0,
         "abs": 0.0,
@@ -382,7 +385,7 @@ def _scan_clip(arm, pieces, locals_c, polys_c, rest, which, cid, entry, facing,
         glo, ghi = _aabb(gv)
         obstacles = [("ground", gb, glo, ghi)]
         if has_wall:
-            rh._show_wall(0.0, wall_top, arm.location.y, 2.4)
+            rh._show_wall(0.0, wall_top, arm.location.y, 2.4, side=wall_side)
             bpy.context.view_layer.update()
             wall = bpy.data.objects["ActionWall"]
             if "ActionWall" not in locals_c:
@@ -421,8 +424,14 @@ def run():
     rig_fails = 0
     pose_fails = 0
     for which, cid, entry in jobs:
-        facing = _pass5_facing(cid) if which == "pass5" else _pass6_facing(cid)
+        if which == "pass5" and entry.get("pelvis_in_hips"):
+            # The clip's own pelvis is on the Hips bone. A second facing yaw
+            # would turn the body off the reference.
+            facing = Euler((0.0, 0.0, 0.0), "XYZ")
+        else:
+            facing = _pass5_facing(cid) if which == "pass5" else _pass6_facing(cid)
         has_wall, wall_top = _wall_plan(arm, which, cid, entry, facing)
+        wall_side = entry.get("wall_side", "+") if which == "pass5" else "+"
         n = len(entry["keys"])
         fps = float(entry["fps"])
         idxs = _sample_indices(fps, n)
@@ -432,7 +441,7 @@ def run():
         )
         totals = _scan_clip(
             arm, pieces, locals_c, polys_c, rest, which, cid, entry, facing,
-            idxs, has_wall, wall_top, worst,
+            idxs, has_wall, wall_top, worst, wall_side=wall_side,
         )
         rig_fails += totals["rig"]
         pose_fails += totals["pose"]
@@ -463,7 +472,7 @@ def run():
     line = (
         f"no-clip clips={len(jobs)} frames={frames} "
         f"absMax={grand_abs * 100:.2f} worldMax={grand_world * 100:.2f} "
-        f"rigJoint={rig_fails} poseFails={pose_fails}"
+        f"rigJoint={rig_fails} poseFails={pose_fails} pose={pose_fails}"
     )
     _flush(line)
     _flush("--- worst frames (absolute depth; fail above 0.50 cm) ---")

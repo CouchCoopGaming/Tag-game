@@ -1357,9 +1357,11 @@ def _seat_cling(arm, spec, stage):
     _report(arm, spec, face, top, "cling", "Foot_L")
 
 
-def _show_wall(face_x, top_z, center_y, length):
+def _show_wall(face_x, top_z, center_y, length, side="+"):
     import bpy
-    # Default cube is 2 m. scale 0.045 on X is a 9 cm wall. The +X face is the contact.
+    # Default cube is 2 m. scale 0.045 on X is a 9 cm wall.
+    # side "+" : the body stands on +X and the contact is the wall's +X face.
+    # side "-" : the body stands on -X and the contact is the wall's -X face.
     half = 0.045
     if top_z is None:
         height = 2.55
@@ -1385,7 +1387,8 @@ def _show_wall(face_x, top_z, center_y, length):
             if "Alpha" in bsdf.inputs:
                 bsdf.inputs["Alpha"].default_value = 1.0
         wall.data.materials.append(mat)
-    wall.location = (face_x - half, center_y, center_z)
+    center_x = (face_x - half) if side != "-" else (face_x + half)
+    wall.location = (center_x, center_y, center_z)
     wall.scale = (half, scale_y, height * 0.5)
     wall.hide_render = False
     wall.hide_set(False)
