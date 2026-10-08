@@ -7,7 +7,7 @@ import base64
 import os
 import sys
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.dirname(__file__))
 import render_comic_sheet as sheet
@@ -22,38 +22,36 @@ BURST_ROWS = 2
 STAR_FRAC = 0.74
 WORD_TIMES = 1.17
 
-# Atlas order matches ComicWords.AtlasWord. The burst keeps the event colour.
-# The word fill is the opposite comic ink: yellow or white on a dark burst,
-# red or navy on a light burst, with a heavy black outline on the light ink.
-NAVY = (12, 18, 72)
+# Atlas order matches ComicWords.AtlasWord. Every word is yellow or white
+# on a dark burst, with a black outline. The light bursts were darkened
+# so the letters that used to be navy or red read the same way.
 YELLOW = (255, 230, 40)
 WHITE = (255, 255, 255)
-RED = (140, 10, 20)
 WORDS = (
-    ("POP!", "contact", NAVY),
-    ("POW!", "contact", NAVY),
-    ("BAM!", "contact", NAVY),
+    ("POP!", "contact", YELLOW),
+    ("POW!", "contact", YELLOW),
+    ("BAM!", "contact", YELLOW),
     ("WHAM!", "contact", YELLOW),
-    ("SMACK!", "contact", NAVY),
-    ("WHACK!", "contact", NAVY),
+    ("SMACK!", "contact", YELLOW),
+    ("WHACK!", "contact", YELLOW),
     ("THWACK!", "crash", YELLOW),
     ("BONK!", "contact", YELLOW),
     ("KAPOW!", "contact", YELLOW),
     ("TAG!", "contact", WHITE),
     ("GOTCHA!", "contact", WHITE),
     ("MINE!", "contact", WHITE),
-    ("WHIFF!", "whiff", RED),
-    ("SWISH!", "whiff", RED),
-    ("WHOOSH!", "whiff", RED),
+    ("WHIFF!", "whiff", YELLOW),
+    ("SWISH!", "whiff", YELLOW),
+    ("WHOOSH!", "whiff", YELLOW),
     ("THUD!", "land", WHITE),
     ("WHUMP!", "land", WHITE),
     ("THUMP!", "land", WHITE),
-    ("BOING!", "whiff", RED),
-    ("SPROING!", "whiff", RED),
-    ("POING!", "whiff", RED),
-    ("ZING!", "whiff", RED),
-    ("ZIP!", "whiff", RED),
-    ("WHIZZ!", "whiff", RED),
+    ("BOING!", "whiff", YELLOW),
+    ("SPROING!", "whiff", YELLOW),
+    ("POING!", "whiff", YELLOW),
+    ("ZING!", "whiff", YELLOW),
+    ("ZIP!", "whiff", YELLOW),
+    ("WHIZZ!", "whiff", YELLOW),
     ("THWIP!", "whiff", YELLOW),
     ("FWIP!", "whiff", YELLOW),
     ("ZWIP!", "whiff", YELLOW),
@@ -65,8 +63,25 @@ WORDS = (
     ("OUCH!", "contact", WHITE),
     ("BOOM!", "land", WHITE),
     ("KRUNCH!", "land", WHITE),
-    ("MISS!", "whiff", RED),
+    ("MISS!", "whiff", YELLOW),
 )
+
+# Same cells as ComicWords.AtlasMap. One burst texture is shared by the pool.
+EVENT_OF = [0] * len(WORDS)
+for _ev, _ids in (
+    (0, (0, 1, 4, 5, 2)),
+    (1, (3, 7, 8)),
+    (2, (9, 10, 11)),
+    (3, (12, 13, 14, 35)),
+    (4, (15, 16, 17, 33, 34)),
+    (5, (18, 19, 20)),
+    (6, (21, 22, 23)),
+    (7, (24, 25, 26)),
+    (8, (27, 28, 29, 6)),
+    (9, (30, 31, 32)),
+):
+    for _id in _ids:
+        EVENT_OF[_id] = _ev
 
 
 def streaks(glyph):
@@ -132,7 +147,7 @@ def fill_is_light(fill):
 
 
 def fit_word(word, fill, target_w, kind):
-    # Light ink gets the heavy black outline. Dark ink keeps a thinner edge.
+    # Yellow and white ink, heavy black outline, same as the words that already read.
     heavy = 0.12 if fill_is_light(fill) else None
     if kind == "whiff":
         stroke = 0.11 if fill_is_light(fill) else 0.07
@@ -296,6 +311,16 @@ def main():
     words = []
     for text, kind, fill in WORDS:
         words.append(fit_word(text, fill, target, kind))
+
+    # Dots stay on the spikes. The letter and its stroke sit on solid colour.
+    for ev in range(10):
+        cover = Image.new("L", (CELL, CELL), 0)
+        for i, word_im in enumerate(words):
+            if EVENT_OF[i] != ev:
+                continue
+            cover = ImageChops.lighter(cover, word_im.getchannel("A"))
+        mask = Image.merge("RGBA", (cover, cover, cover, cover))
+        sheet.knockout_dots(bursts[ev], mask, event_color(ev), pad=11)
 
     # Contact still has to clear the star. The other kinds are shaped on purpose.
     failed = 0

@@ -13,7 +13,7 @@ import bake_comic_layers as bake
 import render_comic_sheet as comic_sheet
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "FxStills", "pass18")
+OUT = os.path.join(ROOT, "Docs", "FxStills", "pass19")
 FONT = comic_sheet.FONT_PATH
 
 
@@ -101,7 +101,9 @@ def cell_of(index, box):
     text, kind, fill = bake.WORDS[index]
     word = bake.fit_word(text, fill, 280, kind)
     ev = ATLAS_EVENT.get(index, 0)
-    burst = comic_sheet.burst(bake.CELL, bake.CELL, comic_sheet.EVENTS[ev][1], bake.star_radius())
+    color = comic_sheet.EVENTS[ev][1]
+    burst = comic_sheet.burst(bake.CELL, bake.CELL, color, bake.star_radius())
+    comic_sheet.knockout_dots(burst, word, color, pad=11)
     # Burst behind, word in front, then one tilt so they stay a pair.
     pair = Image.new("RGBA", (bake.CELL, bake.CELL), (0, 0, 0, 0))
     pair.alpha_composite(burst)
@@ -237,7 +239,9 @@ def posed_layers(index):
     text, kind, fill = bake.WORDS[index]
     word = bake.fit_word(text, fill, 280, kind)
     ev = ATLAS_EVENT.get(index, 0)
-    burst = comic_sheet.burst(bake.CELL, bake.CELL, comic_sheet.EVENTS[ev][1], bake.star_radius())
+    color = comic_sheet.EVENTS[ev][1]
+    burst = comic_sheet.burst(bake.CELL, bake.CELL, color, bake.star_radius())
+    comic_sheet.knockout_dots(burst, word, color, pad=11)
     tilt, skew, size, arc, wide, tall = style_of(index)
     burst = shape(burst, tilt, skew, size, arc, wide, tall)
     word = shape(word, tilt, skew, size, arc, wide, tall)
@@ -317,21 +321,35 @@ def wcag(word_fill, burst_fill):
     return (hi + 0.05) / (lo + 0.05)
 
 
+def stroke_colors(fill):
+    """Outermost stroke, then the stroke that touches the fill."""
+    black = (0, 0, 0)
+    return black, black
+
+
 def contrast_report():
-    """Word fill against the event burst. Every pair has to clear 3.0."""
-    worst = None
-    worst_name = ""
+    """Outermost stroke against the burst, and the fill against its stroke."""
+    stroke_worst = None
+    stroke_name = ""
+    fill_worst = None
+    fill_name = ""
     failed = 0
     for i, (text, _kind, fill) in enumerate(bake.WORDS):
         burst = comic_sheet.EVENTS[ATLAS_EVENT[i]][1]
-        score = wcag(fill, burst)
-        if worst is None or score < worst:
-            worst = score
-            worst_name = text
-        if score < 3.0:
+        outer, inner = stroke_colors(fill)
+        stroke_score = wcag(outer, burst)
+        fill_score = wcag(fill, inner)
+        if stroke_worst is None or stroke_score < stroke_worst:
+            stroke_worst = stroke_score
+            stroke_name = text
+        if fill_worst is None or fill_score < fill_worst:
+            fill_worst = fill_score
+            fill_name = text
+        if stroke_score < 3.0 or fill_score < 3.0:
             failed += 1
-            print("CONTRAST FAIL", text, "%.2f" % score)
-    print("contrast min=%.2f worst=%s" % (worst, worst_name))
+            print("CONTRAST FAIL", text, "stroke-burst %.2f" % stroke_score, "fill-stroke %.2f" % fill_score)
+    print("stroke-burst min=%.2f worst=%s" % (stroke_worst, stroke_name))
+    print("fill-stroke min=%.2f worst=%s" % (fill_worst, fill_name))
     return failed
 
 
@@ -362,31 +380,50 @@ def live_pair(index, age, width):
     return canvas
 
 
-def pane_scene(pw, ph):
-    scene = Image.new("RGB", (pw, ph), (156, 186, 208))
-    draw = ImageDraw.Draw(scene)
-    horizon = int(ph * 0.58)
-    draw.rectangle((0, horizon, pw, ph), fill=(112, 108, 92))
-    draw.rectangle((0, int(ph * 0.74), pw, ph), fill=(86, 82, 68))
-    return scene
-
-
 def couch_four():
-    """1280x720 split screen. Four of the words that used to match their burst."""
-    names = ("SPROING!", "WHIZZ!", "THWIP!", "THUD!")
+    """1280x720. Chase-cam plates, words at the measured quad size in front of the runner."""
+    names = ("SPROING!", "WHIZZ!", "POW!", "SMACK!")
+    plates = ("sproing", "whizz", "pow", "smack")
+    # 1.65 m quad at the contact, from the pass 19 chase render.
+    base_px = 55.9
+    anchor = (323.7, 165.6)
     board = Image.new("RGB", (1280, 720), (12, 12, 12))
     draw = ImageDraw.Draw(board)
     font = ImageFont.truetype(FONT, 22)
     pw, ph = 640, 360
     age = 0.12
+    life = life_scale(age)
+    plate_dir = os.path.join(ROOT, "Docs", "FxStills", "pass19", "plates")
     for n, text in enumerate(names):
-        scene = pane_scene(pw, ph)
-        pair = live_pair(index_of(text), age, 250)
-        scene.paste(pair, ((pw - pair.width) // 2, int(ph * 0.42) - pair.height // 2), pair)
+        index = index_of(text)
+        scene = Image.open(os.path.join(plate_dir, plates[n] + ".png")).convert("RGB").resize((pw, ph), Image.Resampling.LANCZOS)
+        _text, burst, word = posed_layers(index)
+        _tilt, _skew, size, _arc, _wide, tall = style_of(index)
+        px = base_px * life * size * tall
+        meters = 1.65 * life * size * tall
+        pre_h = (bake.CELL + 48) * size * tall
+        scale = px / float(pre_h)
+
+        def layer(glyph):
+            nw = max(1, int(round(glyph.width * scale)))
+            nh = max(1, int(round(glyph.height * scale)))
+            return glyph.resize((nw, nh), Image.Resampling.LANCZOS)
+
+        back = layer(burst)
+        front = layer(word)
+        w = max(back.width, front.width)
+        h = max(back.height, front.height)
+        pair = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        pair.alpha_composite(back, ((w - back.width) // 2, (h - back.height) // 2))
+        pair.alpha_composite(front, ((w - front.width) // 2, (h - front.height) // 2))
+        x = int(round(anchor[0] - pair.width / 2.0))
+        y = int(round(anchor[1] - pair.height / 2.0))
+        scene.paste(pair, (x, y), pair)
         ox = (n % 2) * pw
         oy = (n // 2) * ph
         board.paste(scene, (ox, oy))
-        draw.text((ox + 16, oy + ph - 36), text, font=font, fill=(255, 244, 220))
+        draw.text((ox + 16, oy + ph - 32), text, font=font, fill=(255, 244, 220))
+        print("COUCH", text, "quad_m", round(meters, 3), "px", round(px, 1), "paste", pair.size)
     draw.line((640, 0, 640, 720), fill=(8, 8, 8), width=4)
     draw.line((0, 360, 1280, 360), fill=(8, 8, 8), width=4)
     return board

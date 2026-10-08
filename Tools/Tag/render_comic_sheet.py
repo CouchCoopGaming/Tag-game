@@ -15,19 +15,19 @@ OUT_DIR = os.path.join(ROOT, "Docs", "FxStills", "pass12")
 
 # Same pools as ComicWords. Punch runs from a light tap through a sprint hit.
 EVENTS = (
-    ("PUNCH", (255, 118, 28), (255, 236, 70),
+    ("PUNCH", (186, 62, 12), (255, 230, 40),
      ("POP!", "POW!", "SMACK!", "WHACK!", "THWACK!", "BAM!")),
     ("TAG", (168, 52, 242), (255, 255, 255),
      ("WHAM!", "BONK!", "KAPOW!")),
     ("TRANSFER", (242, 64, 122), (255, 244, 210),
      ("TAG!", "GOTCHA!", "MINE!")),
-    ("WHIFF", (92, 176, 242), (255, 255, 255),
+    ("WHIFF", (36, 100, 186), (255, 230, 40),
      ("WHIFF!", "SWISH!", "WHOOSH!")),
     ("LAND", (168, 112, 64), (255, 236, 200),
      ("THUD!", "WHUMP!", "THUMP!")),
-    ("LAUNCH", (242, 196, 36), (255, 255, 255),
+    ("LAUNCH", (156, 92, 12), (255, 230, 40),
      ("BOING!", "SPROING!", "POING!")),
-    ("ZIP", (36, 196, 204), (255, 255, 255),
+    ("ZIP", (12, 118, 128), (255, 230, 40),
      ("ZING!", "ZIP!", "WHIZZ!")),
     ("GRAPPLE", (32, 140, 124), (236, 255, 244),
      ("THWIP!", "FWIP!", "ZWIP!")),
@@ -330,6 +330,33 @@ def burst(w, h, color, radius):
     paint_star(draw, cx, cy, radius, color)
     halftone(im, cx, cy, radius, color)
     return im
+
+
+def knockout_dots(burst, word, color, pad=7):
+    """Solid burst colour under the word and its stroke. Dots stay outside that mask."""
+    from PIL import ImageFilter
+    if word.size != burst.size:
+        aligned = Image.new("RGBA", burst.size, (0, 0, 0, 0))
+        x = (burst.width - word.width) // 2
+        y = (burst.height - word.height) // 2
+        aligned.alpha_composite(word, (x, y))
+        word = aligned
+    mask = word.getchannel("A")
+    k = pad if pad % 2 == 1 else pad + 1
+    if k >= 3:
+        mask = mask.filter(ImageFilter.MaxFilter(k))
+    bp = burst.load()
+    mp = mask.load()
+    cr, cg, cb = color
+    for y in range(burst.height):
+        for x in range(burst.width):
+            if mp[x, y] < 28:
+                continue
+            r, g, b, a = bp[x, y]
+            if a < 40:
+                continue
+            bp[x, y] = (cr, cg, cb, 255)
+    return burst
 
 
 def opaque_bounds(im):

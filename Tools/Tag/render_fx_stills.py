@@ -4483,6 +4483,64 @@ def render_pass15(arm, cam):
     print("PASS15 stills", OUT)
 
 
+def render_pass19_park(arm, cam):
+    """Chase views of the runner on a Mega Park graybox. Prints the comic quad in pixels."""
+    for obj in list(bpy.data.objects):
+        if obj.name.startswith("PropSeam"):
+            obj.hide_render = True
+    ground = bpy.data.objects.get("PropGround")
+    if ground is not None:
+        ground.scale = (4.0, 4.0, 1.0)
+        mat = ground.data.materials[0]
+        ramp = mat.node_tree.nodes.get("ColorRamp")
+        if ramp is not None:
+            ramp.color_ramp.elements[0].color = (0.16, 0.38, 0.14, 1.0)
+            ramp.color_ramp.elements[1].color = (0.28, 0.52, 0.18, 1.0)
+    # Tan path and a couple of park blocks, same family as the Mega Park plates.
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0.0, 2.5, 0.02))
+    path = bpy.context.active_object
+    path.name = "ParkPath"
+    path.scale = (2.2, 14.0, 0.02)
+    path.data.materials.append(make_mat("ParkPathMat", (0.62, 0.48, 0.28, 1.0), 0.9))
+    for name, loc, scale, color in (
+        ("ParkBlue", (6.5, 8.0, 1.1), (2.2, 2.2, 2.2), (0.22, 0.42, 0.78, 1.0)),
+        ("ParkOrange", (-5.5, 7.0, 0.7), (1.6, 1.6, 1.4), (0.78, 0.38, 0.14, 1.0)),
+        ("ParkBlock", (3.2, -2.0, 0.55), (1.2, 1.2, 1.1), (0.45, 0.48, 0.52, 1.0)),
+    ):
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=loc)
+        block = bpy.context.active_object
+        block.name = name
+        block.scale = scale
+        block.data.materials.append(make_mat(name + "Mat", color, 0.85))
+    scene = bpy.context.scene
+    scene.render.resolution_x = 640
+    scene.render.resolution_y = 360
+    out_dir = os.path.join("/tmp", "pass19_plates")
+    os.makedirs(out_dir, exist_ok=True)
+    shots = (
+        ("sproing", pose_run, 18.0),
+        ("whizz", pose_run, 150.0),
+        ("pow", pose_punch, -24.0),
+        ("smack", pose_punch, 64.0),
+    )
+    from bpy_extras.object_utils import world_to_camera_view
+    for name, pose, yaw in shots:
+        apply_pose(arm, pose, yaw=yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        fwd, _left = p11_heading(yaw)
+        contact = foot + fwd * 1.35 + Vector((0.0, 0.0, 1.25))
+        up = cam.matrix_world.to_quaternion() @ Vector((0.0, 1.0, 0.0))
+        up.normalize()
+        p0 = world_to_camera_view(scene, cam, contact)
+        p1 = world_to_camera_view(scene, cam, contact + up * 1.65)
+        pix = abs(p1.y - p0.y) * 360.0
+        sx = p0.x * 640.0
+        sy = (1.0 - p0.y) * 360.0
+        render_to(os.path.join(out_dir, name + ".png"))
+        print("PLATE", name, "px", round(pix, 1), "xy", round(sx, 1), round(sy, 1))
+
+
 def main():
     global OUT
     if os.environ.get("FX_PASS17") == "1":
@@ -4494,6 +4552,9 @@ def main():
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
+    if os.environ.get("FX_PASS19") == "1":
+        render_pass19_park(arm, cam)
+        return
     if os.environ.get("FX_PASS17") == "1" or os.environ.get("FX_PASS16") == "1" or os.environ.get("FX_PASS15") == "1":
         render_pass15(arm, cam)
         return
