@@ -6,8 +6,9 @@ using UnityEngine.UI;
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Options pages. Audio, display, and accessibility sit behind the hub.
-    /// Values are the settings that already exist. Nothing here is a feel number.
+    /// Options pages. The row list matches the screens lane: Sound, Picture,
+    /// Accessibility, Controls, Look, and Credits, with a reset that arms
+    /// before it clears that page.
     /// </summary>
     public static class MenuDepth
     {
@@ -24,14 +25,24 @@ namespace Tag.Ui.Menu
         public const int OpenCredits = 4;
 
         public static int Page;
+        public const int BarReset = 0;
+        public const int BarBack = 1;
+        /// <summary>Hub prompt bar. Back is the confirm target so the last row still leaves.</summary>
+        public static int Bar = BarBack;
+        /// <summary>Room kept under the accessibility rows for the swatches.</summary>
+        public const float SwatchReserve = 276f;
+        /// <summary>Pinned Reset and Back row.</summary>
+        public const float BarBlock = 84f;
 
         public static void Reset()
         {
             Page = Hub;
+            Bar = BarBack;
         }
 
         public static bool ClosePage()
         {
+            OptionApply.Disarm();
             if (Page == Hub) return false;
             Page = Hub;
             return true;
@@ -41,9 +52,9 @@ namespace Tag.Ui.Menu
         {
             get
             {
-                if (Page == Audio) return 6;
-                if (Page == Display) return 6;
-                if (Page == Access) return 5;
+                if (Page == Audio) return 7;
+                if (Page == Display) return 7;
+                if (Page == Access) return 7;
                 if (Page == Look) return 6;
                 return 7;
             }
@@ -51,8 +62,8 @@ namespace Tag.Ui.Menu
 
         public static string Header()
         {
-            if (Page == Audio) return "Audio";
-            if (Page == Display) return "Display";
+            if (Page == Audio) return "Sound";
+            if (Page == Display) return "Picture";
             if (Page == Access) return "Accessibility";
             if (Page == Look) return "Look";
             return "Options";
@@ -61,19 +72,21 @@ namespace Tag.Ui.Menu
         public static string Banner()
         {
             if (Page == Audio) return "Sliders step the volumes you already have.";
-            if (Page == Display) return "Resolution, fullscreen, vsync, and UI scale.";
-            if (Page == Access) return "Reduce motion, text size, and colorblind-safe player colors.";
+            if (Page == Display) return "Resolution, fullscreen, vsync, and the couch UI scale.";
+            if (Page == Access) return "Motion, text size, seat colors, and comic words.";
             if (Page == Look) return "Look is shared by the couch.";
-            return "Audio, display, accessibility, controls, look, and credits.  " + Tag.Ui.Hud.MatchHudText.ComicHint;
+            return "Sound, picture, accessibility, controls, look, and credits.";
         }
 
         public static string Title(int index)
         {
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
+            if (OptionApply.IsResetRow(Page, index))
+                return OptionApply.ArmedRow(Page, index) ? "Reset to defaults?" : "Reset to defaults";
             if (Page == Hub)
             {
-                if (index == 0) return "Audio";
-                if (index == 1) return "Display";
+                if (index == 0) return "Sound";
+                if (index == 1) return "Picture";
                 if (index == 2) return "Accessibility";
                 if (index == 3) return "Controls";
                 if (index == 4) return "Look";
@@ -100,33 +113,45 @@ namespace Tag.Ui.Menu
             if (Page == Access)
             {
                 if (index == 0) return "Reduce motion  " + (MenuVideo.ReduceMotion ? "On" : "Off");
-                if (index == 1) return "Text size  " + s.HudScale.ToString("0.00", CultureInfo.InvariantCulture);
-                if (index == 2) return s.RowLabel(GameSettings.RowPlayer);
-                return s.RowLabel(GameSettings.RowColorblind);
+                if (index == 1) return "Color-blind seat colors  " + OptionApply.CvdWord();
+                if (index == 2) return "Text size  " + s.HudScale.ToString("0.00", CultureInfo.InvariantCulture);
+                if (index == 3) return s.RowLabel(GameSettings.RowPlayer);
+                if (index == 4) return "Player color set  " + AccessibilityPalette.Name(s.PaletteOf(s.AccessSeat));
+                if (index == 5) return "Comic words  " + (Tag.Ui.Hud.MatchHudText.ComicWords ? "On" : "Off");
+                return "Back";
             }
             if (index == 0) return s.RowLabel(GameSettings.RowMouse);
             if (index == 1) return s.RowLabel(GameSettings.RowPad);
             if (index == 2) return s.RowLabel(GameSettings.RowInvert);
-            if (index == 3) return s.RowLabel(GameSettings.RowFov);
-            return "Reset look and audio";
+            return s.RowLabel(GameSettings.RowFov);
         }
 
         public static string Detail(int index)
         {
+            if (OptionApply.IsResetRow(Page, index))
+            {
+                if (OptionApply.ArmedRow(Page, index)) return "Confirm to reset";
+                if (Page == Look) return "Does not change the park or the binds";
+                if (Page == Hub) return "Sound, picture, and accessibility";
+                return "This page only";
+            }
             if (Page == Hub)
             {
-                if (index == 0) return "Master, effects, UI, music";
-                if (index == 1) return "Resolution, fullscreen, vsync, scale";
-                if (index == 2) return "Motion, text, player colors";
-                if (index == 3) return "The bind list. Space still jumps.";
-                if (index == 4) return "Shared sensitivity";
-                if (index == 5) return "Team, font, and tools";
-                return "";
+                if (index == 0) return "Music, effects, and UI.";
+                if (index == 1) return "Resolution, fullscreen, and scale.";
+                if (index == 2) return "Motion, text size, and colors.";
+                if (index == 3) return "Keyboard and pad. Space jumps.";
+                if (index == 4) return "One sensitivity for the couch.";
+                if (index == 5) return "Team, the font, and the tools.";
+                return "Main menu";
             }
             if (index == Count - 1) return "";
-            if (Page == Look && index == 4) return "Does not change the park or the binds";
             if (Page == Access && index == 0) return "Menu slides and the title pulse only";
-            if (Page == Access && index == 1) return "Menu and HUD text";
+            if (Page == Access && index == 1) return "Off, Protan/Deutan, or Tritan";
+            if (Page == Access && index == 2) return "0.75, 1.00, 1.25, 1.50";
+            if (Page == Display && index == 3) return "Low, Medium, High, Ultra";
+            if (Page == Access && index == 4) return "Default, Deuteranopia, Protanopia, Tritanopia, or High contrast";
+            if (Page == Access && index == 5) return "Verb words during a match.";
             if (Page == Display && index == 4) return "80% to 130%, for a couch TV";
             if (Page == Audio && index < 4) return "Left / Right";
             return "Left / Right";
@@ -144,7 +169,7 @@ namespace Tag.Ui.Menu
                 if (index == 3) return s.Music;
                 return -1f;
             }
-            if (Page == Access && index == 1)
+            if (Page == Access && index == 2)
             {
                 float u = (s.HudScale - GameSettings.HudMin) / (GameSettings.HudMax - GameSettings.HudMin);
                 if (u < 0f) u = 0f;
@@ -167,23 +192,44 @@ namespace Tag.Ui.Menu
             {
                 if (index == 0) { Page = Audio; return Rebuild; }
                 if (index == 1) { Page = Display; return Rebuild; }
-                if (index == 2) { Page = Access; return Rebuild; }
+                if (index == 2) { Page = Access; Bar = BarBack; return Rebuild; }
                 if (index == 3) return OpenControls;
                 if (index == 4) { Page = Look; return Rebuild; }
                 if (index == 5) return OpenCredits;
+                if (index == Count - 1 && Bar == BarReset && OptionApply.IsResetRow(Page, index))
+                {
+                    GameSettings hub = GameSettings.Current ?? GameSettings.Defaults();
+                    GameSettings.Current = hub;
+                    OptionApply.ConfirmReset(Page, index, hub);
+                    return Stay;
+                }
                 return Leave;
             }
+            if (Page == Access && index == Count - 1)
+            {
+                if (Bar == BarReset && OptionApply.IsResetRow(Page, index))
+                {
+                    GameSettings access = GameSettings.Current ?? GameSettings.Defaults();
+                    GameSettings.Current = access;
+                    OptionApply.ConfirmReset(Page, index, access);
+                    return Stay;
+                }
+                Page = Hub;
+                Bar = BarBack;
+                return Rebuild;
+            }
+            if (OptionApply.IsResetRow(Page, index))
+            {
+                GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
+                GameSettings.Current = s;
+                OptionApply.ConfirmReset(Page, index, s);
+                return Stay;
+            }
+            OptionApply.Disarm();
             if (index == Count - 1)
             {
                 Page = Hub;
                 return Rebuild;
-            }
-            if (Page == Look && index == 4)
-            {
-                GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
-                GameSettings.Current = s;
-                s.ResetToDefaults();
-                return Stay;
             }
             Step(index, 1);
             return Stay;
@@ -191,7 +237,17 @@ namespace Tag.Ui.Menu
 
         public static bool Step(int index, int dir)
         {
-            if (Page == Hub || index < 0 || index >= Count - 1) return false;
+            if ((Page == Hub || Page == Access) && index == Count - 1)
+            {
+                int chip = Bar + (dir < 0 ? -1 : 1);
+                if (chip < BarReset) chip = BarReset;
+                if (chip > BarBack) chip = BarBack;
+                if (chip == Bar) return false;
+                Bar = chip;
+                OptionApply.Disarm();
+                return true;
+            }
+            if (Page == Hub || index < 0 || index >= Count - 1 || OptionApply.IsResetRow(Page, index)) return false;
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             GameSettings.Current = s;
             if (Page == Audio)
@@ -213,13 +269,14 @@ namespace Tag.Ui.Menu
             else if (Page == Access)
             {
                 if (index == 0) MenuVideo.ToggleMotion();
-                else if (index == 1) s.Nudge(GameSettings.RowHud, dir);
-                else if (index == 2) s.Nudge(GameSettings.RowPlayer, dir);
-                else s.Nudge(GameSettings.RowColorblind, dir);
+                else if (index == 1) OptionApply.CycleCvd(dir);
+                else if (index == 2) s.Nudge(GameSettings.RowHud, dir);
+                else if (index == 3) s.Nudge(GameSettings.RowPlayer, dir);
+                else if (index == 4) s.Nudge(GameSettings.RowColorblind, dir);
+                else if (index == 5) Tag.Ui.Hud.MatchHudText.ComicWords = !Tag.Ui.Hud.MatchHudText.ComicWords;
             }
             else if (Page == Look)
             {
-                if (index == 4) return false;
                 if (index == 0) s.Nudge(GameSettings.RowMouse, dir);
                 else if (index == 1) s.Nudge(GameSettings.RowPad, dir);
                 else if (index == 2) s.Nudge(GameSettings.RowInvert, dir);
@@ -227,6 +284,8 @@ namespace Tag.Ui.Menu
             }
             else return false;
             s.Clamp();
+            OptionApply.ComicOn = Tag.Ui.Hud.MatchHudText.ComicWords;
+            OptionApply.Disarm();
             return true;
         }
 
@@ -235,17 +294,46 @@ namespace Tag.Ui.Menu
             if (Page != Access || body == null) return;
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             int pal = s.PaletteOf(s.AccessSeat);
-            float y = 8f + Count * 96f;
+            bool marks = OptionApply.CvdMode != OptionApply.CvdOff;
+            float rowsBottom = 8f + 4f * 96f;
+            float y = UiFit.BodyH(UiFit.Current()) - BarBlock - 8f - SwatchReserve;
+            if (y < rowsBottom) y = rowsBottom;
+            float swH = 78f;
+            string head = marks ? OptionApply.CvdWord() : AccessibilityPalette.Name(pal);
+            Caption(body, head, 40f, y, 300f, 32f, TextAnchor.MiddleLeft);
+            float tiles = y + 36f;
             for (int i = 0; i < 4; i++)
             {
-                AccessibilityPalette.Player(pal, i, out float r, out float g, out float b);
-                RectTransform rt = MenuWidgets.Place(body, "Swatch", 360f + i * 150f, y, 120f, 78f);
+                float r, g, b;
+                if (marks) OptionApply.SeatColor(OptionApply.CvdMode, i, out r, out g, out b);
+                else AccessibilityPalette.Player(pal, i, out r, out g, out b);
+                float x = 360f + i * 150f;
+                RectTransform rt = MenuWidgets.Place(body, "Swatch", x, tiles, 120f, swH);
                 Image image = rt.gameObject.AddComponent<Image>();
                 MenuArt.Plate(image, new Color(r, g, b, 1f), true);
                 image.raycastTarget = false;
+                var shapeRt = MenuWidgets.Place(rt, "Shape", 8f, (swH - 28f) * 0.5f, 28f, 28f);
+                var shapeImg = shapeRt.gameObject.AddComponent<Image>();
+                shapeImg.sprite = SeatMark.For(i);
+                shapeImg.color = SeatInk(r, g, b);
+                shapeImg.raycastTarget = false;
                 string name = i == 0 ? "P1" : i == 1 ? "P2" : i == 2 ? "P3" : "P4";
-                MenuWidgets.Words(rt, name, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
+                Caption(body, name, x, tiles + swH + 4f, 120f, 32f, TextAnchor.MiddleCenter);
             }
+        }
+
+        static Color SeatInk(float r, float g, float b)
+        {
+            float luma = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+            return luma > 0.55f ? MenuTheme.Ink : MenuTheme.Cream;
+        }
+
+        static void Caption(Transform parent, string text, float x, float y, float w, float h, TextAnchor align)
+        {
+            RectTransform hold = MenuWidgets.Place(parent, "Caption", x, y, w, h);
+            Text label = MenuWidgets.Words(hold, text, UiFit.FloorFont, align, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            label.rectTransform.offsetMin = new Vector2(4f, 0f);
+            label.rectTransform.offsetMax = new Vector2(-4f, 0f);
         }
     }
 }

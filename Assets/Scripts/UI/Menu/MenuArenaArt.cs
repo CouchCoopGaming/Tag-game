@@ -24,8 +24,8 @@ namespace Tag.Ui.Menu
         }
 
         /// <summary>
-        /// Brighter centre crop for the row. Mega reads brick, Pocket clay, Stack olive,
-        /// so the three cards separate at row size. The big plate stays <see cref="Thumb"/>.
+        /// Brighter centre of the overhead, with the ground left as it is.
+        /// The big plate stays <see cref="Thumb"/>.
         /// </summary>
         public static Texture2D Card(int arena)
         {

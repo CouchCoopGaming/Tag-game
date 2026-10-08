@@ -139,11 +139,14 @@ namespace Tag.Ui.Menu
         float _travel = 1f;
         bool _enterBack;
         RawImage _arenaShot;
+        readonly RawImage[] _arenaSplit = new RawImage[3];
         Text _arenaShotName;
         Text _arenaShotBlurb;
         Text _arenaSize;
         Text _arenaPads;
         Text _arenaZips;
+        RectTransform _arenaPadHold;
+        RectTransform _arenaZipHold;
         RawImage _arenaRandom;
         Image _headerBand;
         int _arenaShuffle = -1;
@@ -621,6 +624,9 @@ namespace Tag.Ui.Menu
             _promptTail = null;
             _parade = null;
             _arenaShot = null;
+            for (int p = 0; p < _arenaSplit.Length; p++) _arenaSplit[p] = null;
+            _arenaPadHold = null;
+            _arenaZipHold = null;
             _arenaShotName = null;
             _arenaShotBlurb = null;
             _arenaSize = null;
@@ -2667,6 +2673,17 @@ namespace Tag.Ui.Menu
             _arenaShot = view.gameObject.AddComponent<RawImage>();
             _arenaShot.raycastTarget = false;
             _arenaShot.uvRect = new Rect(0.06f, 0.04f, 0.86f, 0.88f);
+            float viewW = shotW - pad * 2f;
+            float slice = viewW / 3f;
+            for (int p = 0; p < ParkArena.Count; p++)
+            {
+                var part = MenuWidgets.Place(shot, "Split", pad + p * slice, pad, slice, viewH);
+                var split = part.gameObject.AddComponent<RawImage>();
+                split.texture = MenuArenaArt.Thumb(p);
+                split.raycastTarget = false;
+                split.enabled = false;
+                _arenaSplit[p] = split;
+            }
             float mapInset = viewH > 180f ? 108f : 84f;
             MenuArenaCard.PaintAt(view, 0, shotW - pad * 2f - mapInset - 8f, 8f, mapInset, mapInset * 0.62f);
             float nameY = pad + viewH + 6f;
@@ -2677,6 +2694,7 @@ namespace Tag.Ui.Menu
             float iconY = nameY + 82f;
             if (iconY + 36f > shotH - 8f) iconY = shotH - 44f;
             var padHold = MenuWidgets.Place(shot, "Pads", pad, iconY, 150f, 36f);
+            _arenaPadHold = padHold;
             var padIcon = MenuWidgets.Place(padHold, "PadIcon", 0f, 4f, 28f, 28f);
             var padImage = padIcon.gameObject.AddComponent<Image>();
             padImage.sprite = MenuArt.Round;
@@ -2690,6 +2708,7 @@ namespace Tag.Ui.Menu
                 _arenaPads.rectTransform.offsetMin = min;
             }
             var zipHold = MenuWidgets.Place(shot, "Zips", pad + 160f, iconY, 170f, 36f);
+            _arenaZipHold = zipHold;
             var zipIcon = MenuWidgets.Place(zipHold, "ZipIcon", 0f, 14f, 28f, 8f);
             var zipImage = zipIcon.gameObject.AddComponent<Image>();
             zipImage.color = MenuTheme.Gold;
@@ -2780,13 +2799,22 @@ namespace Tag.Ui.Menu
             bool random = id == 3;
             int shown = id;
             if (shown < 0 || shown >= ParkArena.Count) shown = MenuSession.Arena;
-            if (random) shown = _arenaShuffle;
             if (shown < 0 || shown >= ParkArena.Count) shown = 0;
-            Texture tex = MenuBackdrop.Shot(shown);
-            _arenaShot.texture = tex;
-            _arenaShot.color = tex != null ? Color.white : MenuTheme.Panel;
-            if (_arenaRandom != null && random)
-                _arenaRandom.texture = tex;
+            for (int p = 0; p < _arenaSplit.Length; p++)
+            {
+                if (_arenaSplit[p] != null) _arenaSplit[p].enabled = random;
+            }
+            if (random)
+            {
+                _arenaShot.enabled = false;
+            }
+            else
+            {
+                Texture tex = MenuBackdrop.Shot(shown);
+                _arenaShot.enabled = true;
+                _arenaShot.texture = tex;
+                _arenaShot.color = tex != null ? Color.white : MenuTheme.Panel;
+            }
             PaintArenaFacts(shown, random);
             ShowFlyover(shown, 0.2f);
         }
@@ -2794,15 +2822,36 @@ namespace Tag.Ui.Menu
         void PaintArenaFacts(int shown, bool random)
         {
             if (shown < 0 || shown >= ParkArena.Count) shown = 0;
-            if (_arenaShotName != null)
-                _arenaShotName.text = random ? "?" : ParkArena.NameOf(shown);
-            if (_arenaSize != null)
-                _arenaSize.text = MenuArenaCard.Size(shown);
-            MenuArenaCard.Counts(shown, out int pads, out int zips);
-            if (_arenaPads != null) _arenaPads.text = DigitOf(pads);
-            if (_arenaZips != null) _arenaZips.text = DigitOf(zips);
+            if (random)
+            {
+                if (_arenaShotName != null) _arenaShotName.text = "RANDOM";
+                if (_arenaSize != null) _arenaSize.text = "One of the three parks";
+                if (_arenaPads != null) _arenaPads.text = "";
+                if (_arenaZips != null) _arenaZips.text = "";
+                if (_arenaPadHold != null) _arenaPadHold.gameObject.SetActive(false);
+                if (_arenaZipHold != null) _arenaZipHold.gameObject.SetActive(false);
+            }
+            else
+            {
+                if (_arenaShotName != null) _arenaShotName.text = ParkArena.NameOf(shown);
+                if (_arenaSize != null) _arenaSize.text = MenuArenaCard.Size(shown);
+                MenuArenaCard.Counts(shown, out int pads, out int zips);
+                if (_arenaPads != null) _arenaPads.text = DigitOf(pads);
+                if (_arenaZips != null) _arenaZips.text = DigitOf(zips);
+                if (_arenaPadHold != null) _arenaPadHold.gameObject.SetActive(true);
+                if (_arenaZipHold != null) _arenaZipHold.gameObject.SetActive(true);
+            }
             if (_arenaShot == null) return;
             Transform view = _arenaShot.transform;
+            if (random)
+            {
+                for (int i = view.childCount - 1; i >= 0; i--)
+                {
+                    Transform child = view.GetChild(i);
+                    if (child != null && child.name == "Map") Object.DestroyImmediate(child.gameObject);
+                }
+                return;
+            }
             for (int i = view.childCount - 1; i >= 0; i--)
             {
                 Transform child = view.GetChild(i);
@@ -2902,6 +2951,7 @@ namespace Tag.Ui.Menu
         {
             if (_arenaShot == null || _screen != MenuScreenId.Arena) return;
             bool still = MenuVideo.ReduceMotion || MenuCapture.Running;
+            if (_focus == 3) return;
             if (!still)
             {
                 float t = Time.unscaledTime;
@@ -2909,14 +2959,6 @@ namespace Tag.Ui.Menu
                 float v = 0.03f + 0.04f * Mathf.Sin(t * 0.11f);
                 _arenaShot.uvRect = new Rect(u, v, 0.86f, 0.88f);
             }
-            if (_focus != 3) return;
-            int frame = still ? 0 : (int)(Time.unscaledTime * 0.4f) % 3;
-            if (frame == _arenaShuffle) return;
-            _arenaShuffle = frame;
-            Texture tex = MenuBackdrop.Shot(frame);
-            _arenaShot.texture = tex;
-            if (_arenaRandom != null) _arenaRandom.texture = tex;
-            PaintArenaFacts(frame, true);
         }
 
         void ShowFlyover(int arena, float alpha)
@@ -3266,25 +3308,104 @@ namespace Tag.Ui.Menu
             TitleBar("  " + MenuDepth.Header());
             if (_banner != null) _banner.text = MenuDepth.Banner();
             int win = OptWindow;
-            if (_focus < _window) _window = _focus;
-            if (_focus >= _window + win) _window = _focus - (win - 1);
-            int max = _count - win;
+            if (MenuDepth.Page == MenuDepth.Access && win > 4) win = 4;
+            int pinned = MenuDepth.Page == MenuDepth.Access ? 1 : 0;
+            int scrollRows = _count - pinned;
+            int scrollFocus = _focus;
+            if (pinned > 0 && scrollFocus >= scrollRows) scrollFocus = scrollRows - 1;
+            if (scrollFocus < 0) scrollFocus = 0;
+            if (scrollFocus < _window) _window = scrollFocus;
+            if (scrollFocus >= _window + win) _window = scrollFocus - (win - 1);
+            int max = scrollRows - win;
             if (max < 0) max = 0;
             if (_window > max) _window = max;
             if (_window < 0) _window = 0;
+            const float rowH = 88f;
+            const float step = 96f;
             for (int v = 0; v < win; v++)
             {
                 int index = _window + v;
-                if (index >= _count) break;
+                if (index >= scrollRows) break;
                 UiFit.RowBox(UiFit.Current(), 1120f, out float rowX, out float rowW);
-                MenuTile tile = AddTile(rowX, 8f + v * 96f, rowW, 88f, index, MenuDepth.Title(index), MenuDepth.Detail(index), true);
+                if (MenuDepth.Page == MenuDepth.Hub && index == MenuDepth.Count - 1)
+                {
+                    PaintPromptBar(rowX, 8f + v * step, rowW, MenuDepth.Hub);
+                    continue;
+                }
+                MenuTile tile = AddTile(rowX, 8f + v * step, rowW, rowH, index, MenuDepth.Title(index), MenuDepth.Detail(index), true);
+                if (MenuDepth.Page == MenuDepth.Hub)
+                    MarkOption(tile, index);
                 float meter = MenuDepth.Meter(index);
                 if (tile != null && meter >= 0f)
                     PaintMeter(tile.transform, meter);
             }
+            if (MenuDepth.Page == MenuDepth.Access)
+            {
+                UiFit.RowBox(UiFit.Current(), 1120f, out float barX, out float barW);
+                float barY = UiFit.BodyH(UiFit.Current()) - MenuDepth.BarBlock;
+                if (barY < 8f) barY = 8f;
+                PaintPromptBar(barX, barY, barW, MenuDepth.Access);
+            }
             MenuDepth.PaintSwatches(_body);
             _count = MenuDepth.Count;
             RefreshFocus();
+        }
+
+        static void MarkOption(MenuTile tile, int index)
+        {
+            if (index == 0) MenuWidgets.Mark(tile, MenuIcons.Gear, MenuIcons.OptionsTint, 56f);
+            else if (index == 1) MenuWidgets.Mark(tile, MenuIcons.Star, MenuIcons.CreditsTint, 56f);
+            else if (index == 2) MenuWidgets.Mark(tile, MenuIcons.Play, MenuIcons.PlayTint, 56f);
+            else if (index == 3) MenuWidgets.Mark(tile, MenuIcons.Pad, MenuIcons.ControlsTint, 56f);
+            else if (index == 4) MenuWidgets.Mark(tile, MenuIcons.Cone, MenuIcons.PracticeTint, 56f);
+            else if (index == 5) MenuWidgets.Mark(tile, MenuIcons.Star, MenuIcons.CreditsTint, 56f);
+        }
+
+        void PaintPromptBar(float x, float y, float w, int page)
+        {
+            ActionBinds binds = ActionBinds.Defaults();
+            string confirmKey = binds.Keyboard[(int)PlayAction.Jump];
+            string confirmPad = binds.Gamepad[(int)PlayAction.Jump];
+            string backKey = binds.Keyboard[(int)PlayAction.Pause];
+            string backPad = binds.Gamepad[(int)PlayAction.Slide];
+            float gap = 16f;
+            float chipW = (w - gap) * 0.5f;
+            if (chipW < 180f) chipW = 180f;
+            bool onBar = _focus == MenuDepth.Count - 1;
+            bool armed = OptionApply.ArmedRow(page, MenuDepth.Count - 1);
+            string resetWord = armed ? "Reset?" : "Reset";
+            string backWord = page == MenuDepth.Hub && _pauseChild ? "Pause" : "Back";
+            HubChip(x, y, chipW, 72f, MenuDepth.BarReset, resetWord, confirmKey, confirmPad, onBar && MenuDepth.Bar == MenuDepth.BarReset);
+            HubChip(x + chipW + gap, y, chipW, 72f, MenuDepth.BarBack, backWord, backKey, backPad, onBar && MenuDepth.Bar == MenuDepth.BarBack);
+        }
+
+        void HubChip(float x, float y, float w, float h, int chip, string word, string keyToken, string padToken, bool hot)
+        {
+            RectTransform rt = MenuWidgets.Place(_body, chip == MenuDepth.BarReset ? "ResetChip" : "BackChip", x, y, w, h);
+            Image plate = rt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(plate, hot ? MenuTheme.PanelHot : MenuTheme.Navy, true);
+            plate.raycastTarget = true;
+            RectTransform keyRt = MenuWidgets.Place(rt, "Key", 12f, 16f, 56f, 40f);
+            Image key = keyRt.gameObject.AddComponent<Image>();
+            key.sprite = MenuIcons.ForToken(PadGlyph.Keyboard, keyToken);
+            key.preserveAspect = true;
+            key.raycastTarget = false;
+            RectTransform padRt = MenuWidgets.Place(rt, "Pad", 76f, 16f, 44f, 40f);
+            Image pad = padRt.gameObject.AddComponent<Image>();
+            pad.sprite = MenuIcons.ForToken(PadGlyph.Xbox, padToken);
+            pad.preserveAspect = true;
+            pad.raycastTarget = false;
+            Text label = MenuWidgets.Words(rt, word, UiFit.FloorFont, TextAnchor.MiddleLeft, hot ? MenuTheme.Ink : MenuTheme.Cream, Vector2.zero, Vector2.one);
+            label.rectTransform.offsetMin = new Vector2(132f, 4f);
+            label.rectTransform.offsetMax = new Vector2(-12f, -4f);
+            Button button = rt.gameObject.AddComponent<Button>();
+            button.targetGraphic = plate;
+            button.onClick.AddListener(() =>
+            {
+                MenuDepth.Bar = chip;
+                _focus = MenuDepth.Count - 1;
+                ActivateOptions();
+            });
         }
 
         static void PaintMeter(Transform tile, float meter)
@@ -3309,7 +3430,7 @@ namespace Tag.Ui.Menu
             _cols = 1;
             _window = 0;
             TitleBar("  Controls");
-            if (_banner != null) _banner.text = "The list is the current binds. Confirm changes one. Space still jumps.";
+            if (_banner != null) _banner.text = "Keyboard and pad glyphs. Space always jumps.";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             PaintControls();
         }
@@ -3325,6 +3446,10 @@ namespace Tag.Ui.Menu
             if (max < 0) max = 0;
             if (_window > max) _window = max;
             if (_window < 0) _window = 0;
+            UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
+            const float seatBlock = 76f;
+            PaintSeatStrip(rowX, 8f, rowW);
+            float listTop = 8f + seatBlock;
             for (int v = 0; v < win; v++)
             {
                 int index = _window + v;
@@ -3368,29 +3493,61 @@ namespace Tag.Ui.Menu
                     title = "Back";
                     detail = _conflict ?? "";
                 }
-                UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
-                MenuTile row = AddTile(rowX, 8f + v * 96f, rowW, 88f, index, title, detail, true);
+                MenuTile row = AddTile(rowX, listTop + v * 96f, rowW, 88f, index, title, detail, true);
                 if (index < actions && row != null)
                 {
-                    int family = MenuInput.LastKind == InputDeviceKind.Gamepad
-                        ? PadGlyph.Family(MenuInput.LastDevice)
-                        : PadGlyph.Keyboard;
-                    string token = family == PadGlyph.Keyboard ? binds.Keyboard[index] : binds.Gamepad[index];
-                    MenuWidgets.Mark(row, MenuIcons.ForToken(family, token), MenuTheme.Gold, 56f);
+                    MenuWidgets.Mark(row, MenuIcons.ForToken(PadGlyph.Keyboard, binds.Keyboard[index]), MenuTheme.Gold, 56f);
+                    var padRt = MenuWidgets.Place(row.transform, "PadGlyph", rowW - 72f, 22f, 44f, 44f);
+                    var padImg = padRt.gameObject.AddComponent<Image>();
+                    padImg.sprite = MenuIcons.ForToken(PadGlyph.Xbox, binds.Gamepad[index]);
+                    padImg.preserveAspect = true;
+                    padImg.raycastTarget = false;
+                }
+                else if (index >= confirmAt && index < resetAt && row != null)
+                {
+                    int seat = index - confirmAt;
+                    var shapeRt = MenuWidgets.Place(row.transform, "SeatShape", rowW - 72f, 22f, 44f, 44f);
+                    var shapeImg = shapeRt.gameObject.AddComponent<Image>();
+                    shapeImg.sprite = SeatMark.For(seat);
+                    shapeImg.color = MenuTheme.SeatBand(seat);
+                    shapeImg.raycastTarget = false;
                 }
             }
-            PaintControlScroll(win);
+            PaintControlScroll(win, listTop);
             RefreshFocus();
         }
 
-        void PaintControlScroll(int win)
+        void PaintSeatStrip(float x, float y, float w)
+        {
+            float gap = 12f;
+            float chip = 132f;
+            if (4f * chip + 3f * gap > w) chip = (w - 3f * gap) / 4f;
+            for (int s = 0; s < 4; s++)
+            {
+                Color seat = MenuTheme.SeatBand(s);
+                RectTransform rt = MenuWidgets.Place(_body, "Seat" + s.ToString(), x + s * (chip + gap), y, chip, 64f);
+                Image plate = rt.gameObject.AddComponent<Image>();
+                MenuArt.Plate(plate, seat, true);
+                plate.raycastTarget = false;
+                var shapeRt = MenuWidgets.Place(rt, "Shape", 10f, 16f, 32f, 32f);
+                var shapeImg = shapeRt.gameObject.AddComponent<Image>();
+                shapeImg.sprite = SeatMark.For(s);
+                shapeImg.color = MenuTheme.Ink;
+                shapeImg.raycastTarget = false;
+                string word = s == 0 ? "P1" : s == 1 ? "P2" : s == 2 ? "P3" : "P4";
+                Text label = MenuWidgets.Words(rt, word, 28, TextAnchor.MiddleLeft, MenuTheme.Ink, Vector2.zero, Vector2.one);
+                label.rectTransform.offsetMin = new Vector2(50f, 0f);
+            }
+        }
+
+        void PaintControlScroll(int win, float top)
         {
             if (win < 1) win = 1;
             UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
             float trackH = win * 96f - 16f;
             if (trackH < 120f) trackH = 120f;
             float trackX = rowX + rowW + 8f;
-            var track = MenuWidgets.Place(_body, "ScrollTrack", trackX, 12f, 14f, trackH);
+            var track = MenuWidgets.Place(_body, "ScrollTrack", trackX, top, 14f, trackH);
             var trackImage = track.gameObject.AddComponent<Image>();
             MenuArt.Plate(trackImage, new Color(0f, 0f, 0f, 0.55f), true);
             trackImage.raycastTarget = false;
@@ -3410,9 +3567,12 @@ namespace Tag.Ui.Menu
 
         int ControlWindow()
         {
-            if (8f + (OptWindow + 1) * 96f <= UiFit.BodyH(UiFit.Current()))
-                return OptWindow + 1;
-            return OptWindow;
+            float top = 8f + 76f;
+            float body = UiFit.BodyH(UiFit.Current());
+            int n = OptWindow;
+            if (top + (n + 1) * 96f <= body) n += 1;
+            while (n > 4 && top + n * 96f > body) n--;
+            return n;
         }
 
         void PaintLoad()
@@ -3831,17 +3991,10 @@ namespace Tag.Ui.Menu
             if (next < 0) next = 0;
             if (next >= _count) next = _count - 1;
             if (next == _focus) return;
-            int before = _window;
             _focus = next;
             MenuAudio.Move();
             if (_screen == MenuScreenId.Options)
-            {
-                int span = OptWindow;
-                if (_focus < _window || _focus >= _window + span || before != _window)
-                    PaintOptions();
-                else
-                    RefreshFocus();
-            }
+                PaintOptions();
             else if (_screen == MenuScreenId.Controls)
             {
                 int span = ControlWindow();

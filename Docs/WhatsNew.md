@@ -356,6 +356,8 @@ The forty-third pass uses one seat shape. P1 is a circle, P2 a triangle, P3 a sq
 
 The forty-fourth pass gives Mega Park that same overhead picture, with the edge of the yard in frame. The row cards are brighter, and each park keeps its own ground: Mega brick, Pocket clay, Stack olive. Random shows all three plates side by side and a question mark. The results title is larger, and the line under it stays. The pictures are `Docs/UiStills/pass44/arena-mega.png`, `arena-random.png`, and `results.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
 
+The forty-fifth pass keeps that Random card, and the big plate matches it: three parks, the title RANDOM, and the line "One of the three parks". The row cards leave the ground colour alone, so Pocket stays clay. Options uses the same pages as the screens lane: Sound, Picture, Accessibility, Controls, Look, and Credits. Reset asks once before it clears that page. Controls lists the binds that are saved. Cling is Hold into wall on the keyboard and Left stick hold on the pad. The seat marks stay a circle, a triangle, a square, and a diamond. Jump stays Space. The pause card is unchanged. The pictures are `Docs/UiStills/pass45/arena-random.png` and `options.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

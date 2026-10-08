@@ -365,6 +365,12 @@ Mega Park uses the same overhead plate as Pocket Park and Stack Yard. The camera
 
 `Docs/UiStills/pass44/arena-mega.png`, `arena-random.png`, and `results.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The proof lines are unchanged.
 
+## Pass 45
+
+Random's detail plate is the three parks side by side. The title is RANDOM and the line under it is "One of the three parks". That plate has no size and no pad or zip counts. The row cards drop the colour wash, so each park keeps the ground from its overhead. Options follows the screens lane: Sound, Picture, Accessibility, Controls, Look, and Credits. Reset asks once, then clears that page. Controls shows the current binds. Cling reads Hold into wall on the keyboard and Left stick hold on the pad. The seat marks are MenuMannequin.Shape: circle, triangle, square, diamond. Jump stays Space. The pause card is unchanged.
+
+`Docs/UiStills/pass45/arena-random.png` and `options.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.
