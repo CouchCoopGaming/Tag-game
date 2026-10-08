@@ -46,8 +46,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.905, z: 0.28}
-  m_Size: 1.81
+  m_LocalReferencePoint: {x: 0, y: 0.868, z: 0.188}
+  m_Size: 1.736
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -74,7 +74,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "StreetFurniture"
-  summary: "Offset dish, 0.90 m across, mast 1.20 m. The dish faces +Z."
+  summary: "Offset paraboloid, 0.90 m across and 0.12 m deep, mast 1.20 m. The dish tilts 22 deg up toward +Z."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
@@ -398,7 +398,7 @@ Transform:
   m_GameObject: {fileID: 300020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.35, z: 0.24}
+  m_LocalPosition: {x: 0, y: 1.3645, z: 0.09113}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -423,5 +423,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.36, y: 0.36, z: 0.03}
+  m_Size: {x: 0.04, y: 0.028, z: 0.008}
   m_Center: {x: 0, y: 0, z: 0}

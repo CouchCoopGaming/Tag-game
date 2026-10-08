@@ -266,10 +266,45 @@ def _pass5_lineup(found, path):
     _fit(path)
 
 
+def _pass7_lineup(found, path):
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.render.resolution_x = 1280
+    scene.render.resolution_y = 720
+    scene.cycles.samples = 24
+    r._ensure_materials()
+    r._world(scene, night=False)
+    specs = [
+        ("Mannequin", (0.0, 0.0, 0.5), 200),
+        ("Planter_Street", (2.2, 0.0, 0.2), 18),
+        ("SatelliteDish", (4.2, 0.0, 0.15), 24),
+        ("Sign_Blades", (6.0, 0.0, 0.0), 30),
+    ]
+    objs = [r._spawn(found[name](), pos, yaw) for name, pos, yaw in specs]
+    r._ground("concrete", 40.0)
+    r._frame(scene, objs, fill=0.72, elevation=12.0, azimuth=24.0)
+    r._render(scene, path)
+    _fit(path)
+
+
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
     found = _load()
-    if PASS >= 6:
+    if PASS >= 7:
+        shots = [
+            ("satellite", lambda: _shot(found["SatelliteDish"], os.path.join(STILL_DIR, "satellite.png"), fill=0.78)),
+            ("satellite_dish", lambda: _close(
+                found["SatelliteDish"], os.path.join(STILL_DIR, "satellite_dish.png"),
+                (1.15, 1.85, 1.35), (0.0, 1.48, 0.2), 48)),
+            ("planter_street", lambda: _shot(found["Planter_Street"], os.path.join(STILL_DIR, "planter_street.png"))),
+            ("sign_blades", lambda: _shot(found["Sign_Blades"], os.path.join(STILL_DIR, "sign_blades.png"), fill=0.78)),
+            ("sign_blades_joint", lambda: _close(
+                found["Sign_Blades"], os.path.join(STILL_DIR, "sign_blades_joint.png"),
+                (0.85, 3.15, 0.95), (0.0, 2.9, 0.0), 55)),
+            ("kit_lineup", lambda: _pass7_lineup(found, os.path.join(STILL_DIR, "kit_lineup.png"))),
+        ]
+    elif PASS >= 6:
         shots = [
             ("car_sedan", lambda: _shot(found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan.png"), kind="asphalt", fill=0.8)),
             ("car_sedan_side", lambda: _close(

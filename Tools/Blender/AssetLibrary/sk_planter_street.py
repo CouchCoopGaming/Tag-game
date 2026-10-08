@@ -12,7 +12,7 @@ def create():
     a = Asset(
         "Planter_Street",
         "StreetFurniture",
-        "Street planter 1.80 x 0.48 m, 0.46 m tall. Steel frame, wood slats, soil and two shrubs.",
+        "Street planter 1.80 x 0.48 m, 0.46 m tall. Steel frame, wood slats, soil and one shrub mass.",
     )
     a.climb_note = "Rim is 0.46 m. Too low to cling."
     a.vault_note = "Too low to vault."
@@ -36,9 +36,12 @@ def create():
             g.box((x, 0.24, 0.255), (0.22, 0.40, 0.018), "Lib_Wood", uv_scale=1.4, bevel=bev, segs=1)
         g.box((0, 0.16, 0), (1.64, 0.08, 0.32), "Lib_Soil", uv_scale=1.2)
         g.sphere((-0.42, 0.58, 0.0), 0.20, "Lib_Foliage", lod_pick(lod, 12, 8))
-        g.sphere((-0.16, 0.74, 0.06), 0.10, "Lib_FoliageDark", lod_pick(lod, 8, 6))
+        g.sphere((-0.22, 0.58, 0.08), 0.12, "Lib_FoliageDark", lod_pick(lod, 8, 6))
+        g.sphere((-0.08, 0.66, 0.0), 0.14, "Lib_FoliageLite", lod_pick(lod, 10, 6))
+        g.sphere((-0.02, 0.56, 0.0), 0.24, "Lib_Foliage", lod_pick(lod, 12, 8))
         g.sphere((0.36, 0.56, -0.02), 0.16, "Lib_FoliageLite", lod_pick(lod, 10, 6))
-        g.sphere((0.56, 0.68, 0.05), 0.09, "Lib_Foliage", lod_pick(lod, 8, 6))
+        g.sphere((0.18, 0.50, 0.08), 0.10, "Lib_Foliage", lod_pick(lod, 8, 6))
+        g.sphere((0.50, 0.48, 0.08), 0.10, "Lib_FoliageDark", lod_pick(lod, 8, 6))
         if lod == 0:
             g.sphere((-0.22, 0.62, 0.12), 0.025, "Lib_PaintRed", 6)
             g.sphere((0.42, 0.60, -0.10), 0.022, "Lib_PaintCream", 6)
