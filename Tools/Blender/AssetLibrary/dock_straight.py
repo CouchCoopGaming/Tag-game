@@ -16,17 +16,22 @@ def create():
     a = Asset(
         "Dock_Straight",
         "Harbor",
-        "Dock module 6.0 m long and 3.0 m wide. Deck top is 0.62 m. Cleats on both sides, a rope coil, and a line between the near cleats. Butt the next module on the Z ends (center to center 6.0 m).",
+        "Dock module 6.0 m long and 3.0 m wide. Deck top is 0.62 m. Pilings run from about 1.15 m below the pivot up to the joists. Cleats on both sides, two bollards, a ladder on -X, a rope coil, and a line between the near cleats. Butt the next module on the Z ends (center to center 6.0 m).",
     )
+    a.allow_below = True
+    a.loose_pivot = True
     a.climb_note = "Deck is a walk surface. Pilings are round, not cling panels."
     a.vault_note = "No rail on this module. Deck height is 0.62 m, under a vault."
     piles = ((-1.15, -2.40), (1.15, -2.40), (-1.15, 2.40), (1.15, 2.40))
+    pile_bot, pile_top = -1.15, 0.56
+    pile_h = pile_top - pile_bot
+    pile_y = (pile_top + pile_bot) * 0.5
     for lod in (0, 1):
         g = a.begin(lod)
         bev = 0.003 if lod == 0 else 0
         seg = lod_pick(lod, 10, 6)
         for x, z in piles:
-            g.cylinder((x, 0.28, z), 0.11, 0.56, "Lib_WoodDark", seg, bevel=bev, segs=1 if lod == 0 else 0)
+            g.cylinder((x, pile_y, z), 0.11, pile_h, "Lib_WoodDark", seg, bevel=bev, segs=1 if lod == 0 else 0)
             if lod == 0:
                 g.cylinder((x, 0.50, z), 0.118, 0.03, "Lib_SteelDark", seg)
         for x in (-0.95, 0.95):
@@ -46,10 +51,13 @@ def create():
             _cleat(g, -1.20, 1.55)
             _cleat(g, 1.20, -1.55)
             _cleat(g, 1.20, 1.55)
+            for x, z in ((-1.35, -2.15), (1.35, 2.15)):
+                _bollard(g, x, z, seg)
+            _ladder(g)
             _rope(g)
         a.end()
     for i, (x, z) in enumerate(piles):
-        a.capsule("Col_Pile_%d" % i, (x, 0.28, z), 0.11, 0.56, 1)
+        a.capsule("Col_Pile_%d" % i, (x, -0.30, z), 0.09, 1.48, 1)
     for i, x in enumerate((-0.95, 0.95)):
         a.box("Col_Stringer_%d" % i, (x, 0.42, 0), (0.10, 0.16, 5.70))
     # Plank gaps are about 2 cm and are not a passage. One box per plank matches the board.
@@ -59,8 +67,32 @@ def create():
         a.box("Col_Plank_%d" % i, (0, 0.602, z), (2.88, 0.032, pitch * 0.88))
     # Cleat base sits a few millimetres above the planks so the two skins do not share a face.
     for i, (x, z) in enumerate(((-1.20, -1.55), (-1.20, 1.55), (1.20, -1.55), (1.20, 1.55))):
-        a.box("Col_Cleat_%d" % i, (x, 0.70, z), (0.20, 0.06, 0.07))
+        a.box("Col_Cleat_%d" % i, (x, 0.706, z), (0.18, 0.020, 0.036))
+    for i, (x, z) in enumerate(((-1.35, -2.15), (1.35, 2.15))):
+        a.capsule("Col_Bollard_%d" % i, (x, 0.82, z), 0.05, 0.26, 1)
+    for i, dz in enumerate((-0.145, 0.145)):
+        a.capsule("Col_Ladder_%d" % i, (-1.62, 0.14, dz), 0.012, 1.05, 1)
     return a
+
+
+def _bollard(g, x, z, seg):
+    """Short steel bollard on the deck, clear of the cleats."""
+    g.cylinder((x, 0.640, z), 0.10, 0.028, "Lib_SteelDark", seg)
+    g.cylinder((x, 0.81, z), 0.06, 0.30, "Lib_SteelDark", seg)
+    g.cylinder((x, 0.99, z), 0.074, 0.036, "Lib_Steel", seg)
+
+
+def _ladder(g):
+    """Side ladder on -X, from below the waterline up over the deck edge."""
+    x = -1.62
+    z = 0.0
+    y0, y1 = -0.45, 0.74
+    for dz in (-0.145, 0.145):
+        g.cylinder((x, (y0 + y1) * 0.5, z + dz), 0.015, y1 - y0, "Lib_Steel", 6)
+    for y in (-0.28, -0.02, 0.24, 0.50):
+        g.cylinder((x, y, z), 0.011, 0.248, "Lib_Steel", 6, axis="Z")
+    for dz in (-0.145, 0.145):
+        g.box((-1.51, 0.756, z + dz), (0.22, 0.016, 0.026), "Lib_Steel")
 
 
 def _planks(g, lod, bev):

@@ -1,8 +1,8 @@
-"""Small log cabin. 4.6 x 3.6 m, porch on +Z, gable roof.
+"""Small log cabin. 4.6 x 3.6 m, porch on +Z, cedar-shake gable.
 
-Logs are round (untextured, overlapping courses) with grey-tan chinking in
-the groove. Corner notches show end grain from a ring texture, not mesh rings.
-The door is one plank leaf.
+Logs are round, overlapping, and shift colour per course. The door is one
+leaf of vertical boards with a Z-brace. The porch roof is a shed under the
+eave, and a ridge cap covers the gable.
 """
 
 import math
@@ -31,7 +31,8 @@ def create():
         "Cabin",
         "Buildings",
         "Log cabin 4.6 x 3.6 m, walls 2.2 m, ridge at 3.45 m, porch on +Z. "
-        "Round logs with grey-tan chinking, notched corners, and one plank door about 2.0 m.",
+        "Round logs with per-course colour, grey-tan chinking, a vertical-board door "
+        "with a Z-brace, and a cedar-shake roof with a ridge cap. The porch is a shed under the eave.",
     )
     a.climbable = True
     a.climb_note = "Log walls are cling. Door is closed. Roof slopes are landings."
@@ -57,9 +58,12 @@ def create():
         g.box((0, 0.14, depth * 0.5 + 1.62), (1.20, 0.10, 0.28), "Lib_Wood", grain=1.0)
         g.box((0, 0.12, depth * 0.5 + 0.7), (3.2, 0.10, 1.3), "Lib_Wood", bevel=0.004 if lod == 0 else 0, segs=1, uv_scale=1.0, grain=1.0)
         for x in (-1.3, 1.3):
-            g.box((x, 1.15, depth * 0.5 + 1.25), (0.12, 2.05, 0.12), "Lib_WoodDark")
-        g.box((0, 2.245, 3.08), (2.84, 0.16, 0.30), "Lib_WoodDark", grain=1.0)
-        g.box((0, 2.29, depth * 0.5 + 0.7), (3.4, 0.08, 1.5), "Lib_Roof", uv_scale=1.0)
+            # Stops a few millimetres under the beam so the two shells do not overlap.
+            g.box((x, 0.965, depth * 0.5 + 1.25), (0.12, 1.582, 0.12), "Lib_WoodDark")
+        # Beam under the low end of the shed. The shed sits on it.
+        g.box((0, 1.82, 3.16), (2.84, 0.12, 0.22), "Lib_WoodDark", grain=1.0)
+        # Ledger on the wall, under the main eave, where the shed starts.
+        g.box((0, 1.96, _OUT_Z - 0.02), (3.20, 0.10, 0.08), "Lib_WoodDark", grain=1.0)
         if lod < 2:
             g.pipe((-1.3, 0.95, depth * 0.5 + 1.25), (1.3, 0.95, depth * 0.5 + 1.25), 0.03, "Lib_WoodDark", 6, grain=1.0)
             for x in (-0.86, -0.43, 0.0, 0.43, 0.86):
@@ -73,9 +77,10 @@ def create():
     a.box("Col_StepLow", (0, 0.05, depth * 0.5 + 1.95), (1.00, 0.05, 0.24))
     a.box("Col_StepHigh", (0, 0.15, depth * 0.5 + 1.62), (1.05, 0.06, 0.20))
     a.box("Col_Porch", (0, 0.12, depth * 0.5 + 0.7), (3.2, 0.10, 1.3))
-    a.box("Col_PorchRoof", (0, 2.29, depth * 0.5 + 0.7), (3.2, 0.06, 1.35))
+    center, size, euler = _roof_box(1.80, 2.014, 3.27, 1.884, 0.045, 3.2)
+    a.box("Col_PorchRoof", center, size, euler=euler)
     a.capsule("Vault_PorchRail", (0, 0.95, depth * 0.5 + 1.25), 0.03, 2.6, 0)
-    _add_roof(a, width + 0.4, -2.05, 2.15, 0.0, 3.45, 0.06)
+    _add_roof(a, width + 0.4, -2.05, 2.15, 0.0, 3.45, 0.04)
     return a
 
 
@@ -85,10 +90,10 @@ def _walls(g, lod, courses, radius, step, seg):
         y = _Y0 + i * step
         proud = (i % 2 == 0)
         holes = _front_holes(y, radius)
-        _run_x(g, lod, y, radius, seg, _OUT_Z - radius, proud, holes, 1)
-        _run_x(g, lod, y, radius, seg, -(_OUT_Z - radius), proud, [], -1)
-        _run_z(g, lod, y, radius, seg, -(_OUT_X - radius), not proud, -1)
-        _run_z(g, lod, y, radius, seg, _OUT_X - radius, not proud, 1)
+        _run_x(g, lod, i, y, radius, seg, _OUT_Z - radius, proud, holes, 0)
+        _run_x(g, lod, i, y, radius, seg, -(_OUT_Z - radius), proud, [], 1)
+        _run_z(g, lod, i, y, radius, seg, -(_OUT_X - radius), not proud, 2)
+        _run_z(g, lod, i, y, radius, seg, _OUT_X - radius, not proud, 3)
         if i + 1 < courses:
             _chink(g, y + step * 0.5, radius, valley, holes)
 
@@ -118,10 +123,18 @@ def _spans(x0, x1, holes):
     return [(s0, s1) for s0, s1 in spans if s1 - s0 > 0.16]
 
 
-def _run_x(g, lod, y, radius, seg, z, proud, holes, face_sign):
+_LOG_MATS = ("Lib_Log0", "Lib_Log1", "Lib_Log2", "Lib_Log3", "Lib_Log4")
+
+
+def _log_mat(course, wall):
+    return _LOG_MATS[(course * 3 + wall) % len(_LOG_MATS)]
+
+
+def _run_x(g, lod, course, y, radius, seg, z, proud, holes, wall):
+    mat = _log_mat(course, wall)
     reach = _OUT_X + (_TAIL if proud else -radius)
     for x0, x1 in _spans(-reach, reach, holes):
-        g.cylinder(((x0 + x1) * 0.5, y, z), radius, x1 - x0, "Lib_Varnish", seg, axis="X")
+        g.cylinder(((x0 + x1) * 0.5, y, z), radius, x1 - x0, mat, seg, axis="X")
         if lod == 0 and proud:
             if x0 < -_OUT_X:
                 _end_disc(g, (x0, y, z), "X", radius * 0.98, -1)
@@ -129,13 +142,13 @@ def _run_x(g, lod, y, radius, seg, z, proud, holes, face_sign):
                 _end_disc(g, (x1, y, z), "X", radius * 0.98, 1)
 
 
-def _run_z(g, lod, y, radius, seg, x, proud, face_sign):
+def _run_z(g, lod, course, y, radius, seg, x, proud, wall):
+    mat = _log_mat(course, wall)
     reach = _OUT_Z + (_TAIL if proud else -radius)
-    g.cylinder((x, y, 0.0), radius, reach * 2.0, "Lib_Varnish", seg, axis="Z")
+    g.cylinder((x, y, 0.0), radius, reach * 2.0, mat, seg, axis="Z")
     if lod == 0 and proud:
         _end_disc(g, (x, y, -reach), "Z", radius * 0.98, -1)
         _end_disc(g, (x, y, reach), "Z", radius * 0.98, 1)
-    del face_sign
 
 
 def _chink(g, y, radius, valley, holes):
@@ -204,19 +217,47 @@ def _door_and_window(g, lod, radius):
     g.box((dx1 + 0.04, cy, z), (0.08, dy1 - dy0 + 0.08, 0.10), "Lib_Batten")
     g.box((cx, dy1 + 0.04, z), (dx1 - dx0 + 0.16, 0.08, 0.10), "Lib_Batten")
     g.box((cx, dy0 - 0.02, z), (dx1 - dx0 + 0.16, 0.06, 0.10), "Lib_Batten")
-    # One leaf. Vertical planks, no mid rail.
-    leaf_w = (dx1 - dx0) - 0.08
-    plank_n = 5
-    plank_w = leaf_w / plank_n
-    for i in range(plank_n):
-        px = dx0 + 0.04 + plank_w * (i + 0.5)
-        g.box((px, cy, z), (plank_w - 0.008, dy1 - dy0 - 0.06, 0.028), "Lib_Wood", grain=1.0)
+    # One leaf of vertical boards, about 13 cm, no horizontal plank tile.
+    leaf0 = dx0 + 0.05
+    leaf1 = dx1 - 0.05
+    board = 0.135
+    gap = 0.008
+    n = max(1, int(round((leaf1 - leaf0) / board)))
+    pitch = (leaf1 - leaf0) / n
+    y_leaf0 = dy0 + 0.04
+    y_leaf1 = dy1 - 0.04
+    for i in range(n):
+        px = leaf0 + pitch * (i + 0.5)
+        g.box((px, (y_leaf0 + y_leaf1) * 0.5, z + 0.01), (pitch - gap, y_leaf1 - y_leaf0, 0.028), _LOG_MATS[i % 5])
     if lod == 0:
-        g.box((dx1 - 0.12, cy - 0.05, z + 0.02), (0.035, 0.07, 0.025), "Lib_Brass")
+        _z_brace(g, leaf0, leaf1, y_leaf0, y_leaf1, z + 0.040)
+        _hinge(g, leaf0 + 0.02, 0.48, z + 0.036)
+        _hinge(g, leaf0 + 0.02, 1.55, z + 0.036)
+        # Latch on the lock stile, clear of the boards and the brace.
+        g.box((leaf1 - 0.05, 1.05, z + 0.058), (0.07, 0.028, 0.010), "Lib_SteelDark")
+        g.box((leaf1 - 0.015, 1.05, z + 0.074), (0.028, 0.07, 0.012), "Lib_Steel")
     wx0, wx1, wy0, wy1 = _WIN
     wcx, wcy = (wx0 + wx1) * 0.5, (wy0 + wy1) * 0.5
     g.box((wcx, wcy, z), (wx1 - wx0, wy1 - wy0, 0.06), "Lib_Batten")
     g.box((wcx, wcy, z + 0.02), (wx1 - wx0 - 0.10, wy1 - wy0 - 0.10, 0.02), "Lib_ShopGlass")
+
+
+def _z_brace(g, x0, x1, y0, y1, z):
+    """Top rail, bottom rail, and the diagonal of a Z, in iron."""
+    span = x1 - x0
+    g.box(((x0 + x1) * 0.5, y0 + 0.06, z), (span * 0.92, 0.045, 0.012), "Lib_SteelDark")
+    g.box(((x0 + x1) * 0.5, y1 - 0.06, z), (span * 0.92, 0.045, 0.012), "Lib_SteelDark")
+    dx = span * 0.86
+    dy = (y1 - y0) - 0.18
+    length = math.hypot(dx, dy)
+    angle = math.degrees(math.atan2(dy, dx))
+    g.box(((x0 + x1) * 0.5, (y0 + y1) * 0.5, z), (length, 0.04, 0.012), "Lib_SteelDark", euler=(0.0, 0.0, angle))
+
+
+def _hinge(g, x, y, z):
+    # Strap and barrel stay a few millimetres apart so the shells do not overlap.
+    g.box((x + 0.10, y, z), (0.14, 0.045, 0.010), "Lib_SteelDark")
+    g.cylinder((x, y, z + 0.016), 0.014, 0.07, "Lib_Steel", 6, axis="Y")
 
 
 def _log_climb(asset):
@@ -246,25 +287,93 @@ def _log_climb(asset):
 
 
 def _roof(g, width, lod):
-    g.mesh(_prism(width, -2.05, 2.15, 0.0, 3.45, 0.06), _prism_faces(), "Lib_Roof", uv_scale=1.0)
-    g.mesh(_prism(width, 2.05, 2.15, 0.0, 3.45, 0.06), _prism_faces(), "Lib_Roof", uv_scale=1.0)
+    """One closed gable so the ridge is a normal edge, plus a cap and the porch shed."""
+    _gable(g, width * 0.5, -2.05, 2.15, 2.05, 2.15, 3.45, 0.055, "Lib_Roof")
+    _ridge_cap(g, width * 0.5)
+    # Shed starts on the ledger under the eave and lands on the porch beam.
+    _one_slope(g, 1.60, 1.80, 2.014, 3.27, 1.884, 0.045, "Lib_Roof")
+    del lod
 
 
 def _add_roof(asset, width, z0, y0, z1, y1, thick):
-    center, size, euler = _roof_box(z0, y0, z1, y1, thick, width)
+    # The gable line is the top surface. The box sits inside the thickness.
+    center, size, euler = _roof_box(z0, y0, z1, y1, thick, width, below=True)
     asset.box("Col_RoofS", center, size, euler=euler)
-    center, size, euler = _roof_box(-z0, y0, -z1 if z1 else 0.0, y1, thick, width)
+    center, size, euler = _roof_box(-z0, y0, -z1 if z1 else 0.0, y1, thick, width, below=True)
     asset.box("Col_RoofN", center, size, euler=euler)
 
 
-def _roof_box(z0, y0, z1, y1, thick, width):
+def _gable(g, hx, zs, ys, zn, yn, ridge_y, thick, mat):
+    """Closed gable. The two slopes share the ridge, so that edge has two faces."""
+    def normal(z_eave, y_eave):
+        dy = y_eave - ridge_y
+        dz = z_eave
+        ny, nz = -dz, dy
+        if ny < 0:
+            ny, nz = -ny, -nz
+        length = math.hypot(ny, nz) or 1.0
+        return ny / length, nz / length
+
+    nsy, nsz = normal(zs, ys)
+    nny, nnz = normal(zn, yn)
+
+    def put(x, y, z, ny, nz, under):
+        if under:
+            return (x, y - ny * thick, z - nz * thick)
+        return (x, y, z)
+
+    xs = (-hx, hx)
+    verts = []
+    for x in xs:
+        verts.append(put(x, ys, zs, nsy, nsz, False))
+    for x in xs:
+        verts.append((x, ridge_y, 0.0))
+    for x in xs:
+        verts.append(put(x, yn, zn, nny, nnz, False))
+    for x in xs:
+        verts.append(put(x, ys, zs, nsy, nsz, True))
+    for x in xs:
+        verts.append(put(x, ridge_y, 0.0, nsy, nsz, True))
+    for x in xs:
+        verts.append(put(x, ridge_y, 0.0, nny, nnz, True))
+    for x in xs:
+        verts.append(put(x, yn, zn, nny, nnz, True))
+    faces = [
+        (0, 1, 3, 2),
+        (2, 3, 5, 4),
+        (6, 8, 9, 7),
+        (10, 12, 13, 11),
+        (0, 6, 7, 1),
+        (4, 5, 13, 12),
+        (8, 10, 11, 9),
+        (0, 2, 8, 6),
+        (2, 4, 12, 10),
+        (2, 10, 8),
+        (1, 7, 9, 3),
+        (3, 11, 13, 5),
+        (3, 9, 11),
+    ]
+    g.mesh(verts, faces, mat, uv_scale=1.0)
+
+
+def _ridge_cap(g, hx):
+    """Small cap above the ridge. It does not share the roof's ridge edge."""
+    _gable(g, hx + 0.04, -0.28, 3.30, 0.28, 3.30, 3.48, 0.016, "Lib_Roof")
+
+
+def _one_slope(g, hx, z0, y0, z1, y1, thick, mat):
+    g.mesh(_prism(hx * 2.0, z0, y0, z1, y1, thick), _prism_faces(), mat, uv_scale=1.0)
+
+
+def _roof_box(z0, y0, z1, y1, thick, width, below=False):
     dz, dy = (z1 - z0), (y1 - y0)
     length = math.hypot(dz, dy) or 1.0
     nz, ny = -dy / length, dz / length
     if ny < 0:
         nz, ny = -nz, -ny
-    cz = (z0 + z1) * 0.5 + nz * thick * 0.45
-    cy = (y0 + y1) * 0.5 + ny * thick * 0.45
+    sign = -1.0 if below else 1.0
+    cz = (z0 + z1) * 0.5 + nz * thick * 0.45 * sign
+    cy = (y0 + y1) * 0.5 + ny * thick * 0.45 * sign
     angle = math.degrees(math.atan2(abs(dy), abs(dz)))
     pitch = -angle if dz * dy > 0 else angle
     return (0.0, cy, cz), (width * 0.82, thick * 0.5, length * 0.70), (pitch, 0.0, 0.0)

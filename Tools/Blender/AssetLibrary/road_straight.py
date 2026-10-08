@@ -7,7 +7,14 @@ import bmesh
 import bpy
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from _common import ROAD_TOP, ROAD_W, TILE_L, Asset, register
+from _common import ROAD_TOP, ROAD_W, TILE_L, WALK_TOP, Asset, register
+
+# Same curb and gutter as Road_Junction so a tile butted to an arm continues both.
+HALF = ROAD_W * 0.5
+GUTTER = 0.22
+GAP = 0.004
+CURB = HALF + GUTTER
+WALK = 2.0
 
 # Buried into the asphalt and proud by 6 mm, then welded so the lines are one shell.
 PAINT_TOP = ROAD_TOP + 0.006
@@ -19,11 +26,13 @@ def create():
     a = Asset(
         "Road_Straight",
         "Roads",
-        "6 m wide (two 3 m lanes) by 4 m long. Top at 0.12 m. One continuous asphalt surface, one white edge line each side, double yellow centre. Center the next tile 4 m along Z.",
+        "6 m wide (two 3 m lanes) by 4 m long. Top at 0.12 m. One continuous asphalt surface, "
+        "one white edge line each side, and a double yellow of two 10 cm lines with a 10 cm gap. "
+        "A flush concrete gutter and a sidewalk run down both sides. Center the next tile 4 m along Z.",
     )
-    a.climb_note = "Flat road."
-    a.vault_note = "No curb on this tile. Sidewalks carry the curb."
-    half = ROAD_W * 0.5
+    a.climb_note = "Flat road and sidewalk."
+    a.vault_note = "Curb is 0.15 m. Not a vault."
+    half = HALF
     for lod in (0, 1):
         g = a.begin(lod)
         g.box((0, ROAD_TOP * 0.5, 0), (ROAD_W, ROAD_TOP, TILE_L), "Lib_Asphalt", bevel=0, segs=1, uv_scale=0.4)
@@ -31,12 +40,38 @@ def create():
         h = PAINT_TOP - PAINT_BOT
         g.box((-half + 0.18, y, 0), (0.10, h, TILE_L), "Lib_PaintWhite")
         g.box((half - 0.18, y, 0), (0.10, h, TILE_L), "Lib_PaintWhite")
-        g.box((-0.09, y, 0), (0.08, h, TILE_L), "Lib_Lane")
-        g.box((0.09, y, 0), (0.08, h, TILE_L), "Lib_Lane")
+        # Two 10 cm lines. Inner edges at ±5 cm, so the gap is 10 cm.
+        g.box((-0.10, y, 0), (0.10, h, TILE_L), "Lib_Lane")
+        g.box((0.10, y, 0), (0.10, h, TILE_L), "Lib_Lane")
+        _gutter_and_walk(g)
         a.end()
         _weld_paint(a.lods[lod])
-    a.box("Col_Slab", (0, ROAD_TOP * 0.5, 0), (ROAD_W - 0.04, ROAD_TOP - 0.02, TILE_L - 0.04))
+    a.box("Col_Slab", (0, 0.060, 0), (ROAD_W - 0.04, 0.104, TILE_L - 0.04))
+    gw = 0.16
+    gx = HALF + GUTTER * 0.5
+    for i, sign in enumerate((-1, 1)):
+        a.box("Col_Gutter_%d" % i, (sign * gx, 0.060, 0), (gw, 0.104, TILE_L - 0.06))
+        a.box(
+            "Col_Walk_%d" % i,
+            (sign * (CURB + WALK * 0.5), 0.13, 0),
+            (WALK - 0.04, 0.25, TILE_L - 0.06),
+        )
     return a
+
+
+def _gutter_and_walk(g):
+    """Concrete pan flush with the asphalt, then the curb and sidewalk. A few millimetres of air."""
+    gw = GUTTER - GAP * 2.0
+    gx = HALF + GAP + gw * 0.5
+    length = TILE_L - 0.008
+    for sign in (-1, 1):
+        g.box((sign * gx, ROAD_TOP * 0.5, 0), (gw, ROAD_TOP, length), "Lib_Concrete", uv_scale=0.7)
+        g.box(
+            (sign * (CURB + WALK * 0.5), WALK_TOP * 0.5, 0),
+            (WALK, WALK_TOP, length),
+            "Lib_Concrete",
+            uv_scale=0.7,
+        )
 
 
 def _extract(g, indices):

@@ -89,6 +89,12 @@ PALETTE = {
     "Lib_CraneYellow": ((0.78, 0.62, 0.16), 0.15, 0.32),
     # Flat varnish. Not the baked wood tile, which reads blotchy on a curved hull.
     "Lib_Varnish": ((0.52, 0.34, 0.16), 0.0, 0.38),
+    # Per-log shift, about ±8% value, so a wall is not one flat tan.
+    "Lib_Log0": ((0.478, 0.313, 0.147), 0.0, 0.36),
+    "Lib_Log1": ((0.545, 0.328, 0.148), 0.0, 0.36),
+    "Lib_Log2": ((0.52, 0.34, 0.16), 0.0, 0.36),
+    "Lib_Log3": ((0.50, 0.362, 0.148), 0.0, 0.36),
+    "Lib_Log4": ((0.562, 0.367, 0.173), 0.0, 0.36),
     # Untextured board paint and container enamel. The baked tiles read as brick.
     "Lib_Board": ((0.63, 0.46, 0.29), 0.0, 0.32),
     "Lib_Batten": ((0.38, 0.24, 0.14), 0.0, 0.28),
@@ -115,6 +121,7 @@ NORMALS = (
     "Lib_Brick", "Lib_Water", "Lib_Concrete", "Lib_Wood", "Lib_WoodDark",
     "Lib_Asphalt", "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue",
     "Lib_CraneYellow", "Lib_LogEnd",
+    "Lib_Log0", "Lib_Log1", "Lib_Log2", "Lib_Log3", "Lib_Log4",
 )
 ROUGHNESS = (
     "Lib_Brick", "Lib_Hydrant", "Lib_WoodWeather", "Lib_Asphalt", "Lib_Wood",
@@ -1167,20 +1174,29 @@ def _siding_pixel(x, y, w, h):
 
 
 def _roof_pixel(x, y, w, h):
-    u = x / w
-    v = y / h
-    course = v * 5.0
+    """Cedar shakes. Courses are staggered, with a dark butt on each course."""
+    u = x / float(w)
+    v = y / float(h)
+    courses = 8.0
+    shakes = 5.0
+    course = v * courses
     ci = math.floor(course)
     fy = course - ci
-    off = 0.5 if ci % 2 else 0.0
-    fx = ((u + off) * 6.0) % 1.0
-    edge = fy < 0.16 or fx < 0.04 or fx > 0.96
-    n = _value_noise(u * 8.0, v * 8.0, 14)
-    if edge:
-        vcol = 0.22 + n * 0.04
-    else:
-        vcol = 0.30 + n * 0.06
-    return (vcol, vcol * 1.01, vcol * 1.03)
+    off = 0.5 if int(ci) % 2 else 0.0
+    u2 = (u + off) % 1.0
+    fx = (u2 * shakes) % 1.0
+    si = math.floor((u + off) * shakes)
+    n = _hash01(si, int(ci), 14)
+    grain = 0.90 + _value_noise(u * 4.0, v * 18.0 + ci * 0.2, 18) * 0.16
+    r = (0.40 + n * 0.12) * grain
+    g = (0.22 + n * 0.06) * grain
+    b = (0.11 + n * 0.03) * grain
+    if fy < 0.14:
+        shade = 0.42
+        r, g, b = r * shade, g * shade, b * shade
+    elif fx < 0.045 or fx > 0.965:
+        r, g, b = r * 0.72, g * 0.72, b * 0.72
+    return (r, g, b)
 
 
 def _soil_pixel(x, y, w, h):
@@ -1275,6 +1291,24 @@ def _water_normal_pixel(x, y, w, h):
     return (nx / length * 0.5 + 0.5, ny / length * 0.5 + 0.5, nz / length * 0.5 + 0.5)
 
 
+def _log_height(x, y, w, h):
+    """Subtle vertical checking. Cracks run with the grain, not across it."""
+    u = x / float(w)
+    v = y / float(h)
+    fx = (u * 11.0) % 1.0
+    crack = 0.22 if fx < 0.045 or fx > 0.955 else 0.0
+    fine = _value_noise(u * 5.0, v * 16.0, 31) * 0.08
+    return 0.55 + fine - crack
+
+
+def _log_normal_pixel(x, y, w, h):
+    hx = _log_height(x + 1, y, w, h) - _log_height(x - 1, y, w, h)
+    hy = _log_height(x, y + 1, w, h) - _log_height(x, y - 1, w, h)
+    nx, ny, nz = -hx * 0.9, -hy * 0.9, 1.0
+    length = math.sqrt(nx * nx + ny * ny + nz * nz) or 1.0
+    return (nx / length * 0.5 + 0.5, ny / length * 0.5 + 0.5, nz / length * 0.5 + 0.5)
+
+
 def generate_textures():
     from _court_decal import render as render_court
     from _bake_pbr import bake_all
@@ -1293,13 +1327,15 @@ def generate_textures():
     _save_image("Lib_WoodWeather", w, h, _wood_weather_pixel)
     _save_image("Lib_WoodWeather_R", w, h, lambda x, y, W, H: _generic_rough_pixel(x, y, W, H, 44, 0.78))
     _save_image("Lib_Water_N", w, h, _water_normal_pixel)
+    for i in range(5):
+        _save_image("Lib_Log%d_N" % i, w, h, _log_normal_pixel)
 
 
 def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19", "render_pass20",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19", "render_pass20", "render_pass21",
         "write_unity", "_kit",
     }
     names = []

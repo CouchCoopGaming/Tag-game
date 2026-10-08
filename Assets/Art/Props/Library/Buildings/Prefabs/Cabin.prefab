@@ -93,8 +93,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 2.105, z: 0.914}
-  m_Size: 5.992
+  m_LocalReferencePoint: {x: 0, y: 2.105, z: 0.93}
+  m_Size: 5.96
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -125,7 +125,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Buildings"
-  summary: "Log cabin 4.6 x 3.6 m, walls 2.2 m, ridge at 3.45 m, porch on +Z. Round logs with grey-tan chinking, notched corners, and one plank door about 2.0 m."
+  summary: "Log cabin 4.6 x 3.6 m, walls 2.2 m, ridge at 3.45 m, porch on +Z. Round logs with per-course colour, grey-tan chinking, a vertical-board door with a Z-brace, and a cedar-shake roof with a ridge cap. The porch is a shed under the eave."
   climbable: 1
   vaultable: 1
   vaultHeightMeters: 0.95
@@ -197,15 +197,21 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 53ece5a73b8c687a91d45fbcd6fb37c3, type: 2}
+  - {fileID: 2100000, guid: 23333c0e2d79413fbb775037c5aa75ba, type: 2}
   - {fileID: 2100000, guid: ae9e6f29b988b7df9e58174bc37b7ac5, type: 2}
+  - {fileID: 2100000, guid: aa8c29e694c64675e211bad0456bd19c, type: 2}
+  - {fileID: 2100000, guid: d7d7fb39aac6d4dbef21e8764d759dd1, type: 2}
+  - {fileID: 2100000, guid: cb36488fc7dd285b4500cd629165315a, type: 2}
   - {fileID: 2100000, guid: 5607f02d9d419c745b7573bdbc424827, type: 2}
+  - {fileID: 2100000, guid: 342a6a7fd339e8b8af980ca64454ecde, type: 2}
   - {fileID: 2100000, guid: 070a4800ede22e85de5da65e0ce6dfd6, type: 2}
-  - {fileID: 2100000, guid: 039f45c8ec256a2c59edb56941405e17, type: 2}
-  - {fileID: 2100000, guid: 3515f7b9728b10281c73c55a077c3fea, type: 2}
+  - {fileID: 2100000, guid: beb173626a35c30c1ff350a8ec04f0d1, type: 2}
+  - {fileID: 2100000, guid: 3378749727762f35ade0a2e55dedd4ed, type: 2}
   - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
+  - {fileID: 2100000, guid: 53ece5a73b8c687a91d45fbcd6fb37c3, type: 2}
   - {fileID: 2100000, guid: cf85b31d4de195caa04850eebe9f8ab2, type: 2}
   - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
+  - {fileID: 2100000, guid: 039f45c8ec256a2c59edb56941405e17, type: 2}
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
   - {fileID: 2100000, guid: 477b1e5cc8c79883ad4e15dfdc184039, type: 2}
   m_StaticBatchInfo:
@@ -297,11 +303,15 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 53ece5a73b8c687a91d45fbcd6fb37c3, type: 2}
+  - {fileID: 2100000, guid: 23333c0e2d79413fbb775037c5aa75ba, type: 2}
+  - {fileID: 2100000, guid: aa8c29e694c64675e211bad0456bd19c, type: 2}
+  - {fileID: 2100000, guid: d7d7fb39aac6d4dbef21e8764d759dd1, type: 2}
+  - {fileID: 2100000, guid: cb36488fc7dd285b4500cd629165315a, type: 2}
   - {fileID: 2100000, guid: 5607f02d9d419c745b7573bdbc424827, type: 2}
+  - {fileID: 2100000, guid: 342a6a7fd339e8b8af980ca64454ecde, type: 2}
   - {fileID: 2100000, guid: 070a4800ede22e85de5da65e0ce6dfd6, type: 2}
-  - {fileID: 2100000, guid: 039f45c8ec256a2c59edb56941405e17, type: 2}
   - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
+  - {fileID: 2100000, guid: 039f45c8ec256a2c59edb56941405e17, type: 2}
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
   - {fileID: 2100000, guid: 477b1e5cc8c79883ad4e15dfdc184039, type: 2}
   m_StaticBatchInfo:
@@ -393,11 +403,15 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 53ece5a73b8c687a91d45fbcd6fb37c3, type: 2}
+  - {fileID: 2100000, guid: 23333c0e2d79413fbb775037c5aa75ba, type: 2}
+  - {fileID: 2100000, guid: aa8c29e694c64675e211bad0456bd19c, type: 2}
+  - {fileID: 2100000, guid: d7d7fb39aac6d4dbef21e8764d759dd1, type: 2}
+  - {fileID: 2100000, guid: cb36488fc7dd285b4500cd629165315a, type: 2}
   - {fileID: 2100000, guid: 5607f02d9d419c745b7573bdbc424827, type: 2}
+  - {fileID: 2100000, guid: 342a6a7fd339e8b8af980ca64454ecde, type: 2}
   - {fileID: 2100000, guid: 070a4800ede22e85de5da65e0ce6dfd6, type: 2}
-  - {fileID: 2100000, guid: 039f45c8ec256a2c59edb56941405e17, type: 2}
   - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
+  - {fileID: 2100000, guid: 039f45c8ec256a2c59edb56941405e17, type: 2}
   - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
   - {fileID: 2100000, guid: 477b1e5cc8c79883ad4e15dfdc184039, type: 2}
   m_StaticBatchInfo:
@@ -2833,8 +2847,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 300450}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.29, z: 2.5}
+  m_LocalRotation: {x: 0.04409, y: 0, z: 0, w: 0.99903}
+  m_LocalPosition: {x: 0, y: 1.96917, z: 2.53678}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2859,7 +2873,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.2, y: 0.06, z: 1.35}
+  m_Size: {x: 2.624, y: 0.0225, z: 1.03302}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300460
 GameObject:
@@ -2941,7 +2955,7 @@ Transform:
   m_GameObject: {fileID: 300470}
   serializedVersion: 2
   m_LocalRotation: {x: -0.27883, y: 0, z: 0, w: 0.96034}
-  m_LocalPosition: {x: 0, y: 2.8228, z: -1.03946}
+  m_LocalPosition: {x: 0, y: 2.7848, z: -1.01536}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2966,7 +2980,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.1, y: 0.03, z: 1.69921}
+  m_Size: {x: 4.1, y: 0.02, z: 1.69921}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300480
 GameObject:
@@ -2994,7 +3008,7 @@ Transform:
   m_GameObject: {fileID: 300480}
   serializedVersion: 2
   m_LocalRotation: {x: 0.27883, y: 0, z: 0, w: 0.96034}
-  m_LocalPosition: {x: 0, y: 2.8228, z: 1.03946}
+  m_LocalPosition: {x: 0, y: 2.7848, z: 1.01536}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3019,5 +3033,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.1, y: 0.03, z: 1.69921}
+  m_Size: {x: 4.1, y: 0.02, z: 1.69921}
   m_Center: {x: 0, y: 0, z: 0}

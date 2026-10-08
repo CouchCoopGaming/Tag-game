@@ -21,12 +21,17 @@ ARM = 11.0
 WALK = 2.0
 # Curb return. The arc centre sits one radius outside both curb lines.
 R_CURB = 5.0
+# Concrete gutter, flush with the asphalt, between the lane and the curb.
+GUTTER = 0.22
+# Air between the asphalt face and the gutter so the two shells are not coplanar.
+GAP = 0.004
+CURB = HALF + GUTTER
 RAMP_RUN = 1.20
-# Zebra on the straight walk, just past the tangent at HALF + R_CURB.
-CROSS_0 = 8.15
-CROSS_1 = 9.65
+# Zebra on the straight walk, just past the curb-return tangent.
+CROSS_0 = 8.30
+CROSS_1 = 9.80
 # White bar behind the zebra. Yellow starts on the far side of this bar.
-STOP_AT = 10.02
+STOP_AT = 10.10
 STOP_T = 0.36
 # Paint is buried 2 cm into the asphalt and proud by 6 mm, then welded.
 PAINT_TOP = ROAD_TOP + 0.006
@@ -40,14 +45,16 @@ def create():
         "Roads",
         "Flush asphalt intersection. Each corner is one sidewalk with a 5 m curb return "
         "into straight walks along both arms, and a curb ramp at each crosswalk. The box is clear. "
-        "A white stop bar covers the inbound lanes only; the double yellow ends at that bar. "
-        "Butt Road_Straight to the arm ends so the double yellow continues.",
+        "A white stop bar covers the inbound lanes only. The double yellow is two 10 cm lines "
+        "with a 10 cm gap, and it ends at that bar. A concrete gutter sits flush with the asphalt. "
+        "Butt Road_Straight to the arm ends so the yellow and the sidewalk continue.",
     )
     a.climb_note = "Flat asphalt and sidewalk. The curb face is 0.15 m above the road."
     a.vault_note = "Curb is 0.15 m. Not a vault."
     for lod in (0, 1):
         g = a.begin(lod)
         _asphalt(g)
+        _gutter(g)
         _sidewalks(g, lod)
         _markings(g)
         a.end()
@@ -84,10 +91,6 @@ def _asphalt(g):
     g.mesh(verts, faces, "Lib_Asphalt", uv_scale=0.4)
 
 
-# 1.5 cm under the road edge so the curb face is not coplanar with the asphalt side.
-LIP = 0.015
-
-
 def _profile(curb, mid, back, lip):
     """Three points across the walk, curb first. lip drops the curb to the road."""
     y0 = ROAD_TOP if lip else WALK_TOP
@@ -100,8 +103,8 @@ def _profile(curb, mid, back, lip):
 
 def _corner_profiles():
     """NE corner, from the north arm end around to the east arm end."""
-    cx = HALF + R_CURB
-    curb = HALF - LIP
+    cx = CURB + R_CURB
+    curb = CURB
     back = curb + WALK
     outer = cx - curb
     mid_r = cx - (curb + RAMP_RUN)
@@ -241,7 +244,7 @@ def _edges(g, y, h):
 
 
 def _yellow(g, y, h):
-    """Double yellow from the far side of the stop bar out to the arm end."""
+    """Two 10 cm lines, 10 cm apart, from the far side of the stop bar to the arm end."""
     z0 = STOP_AT + STOP_T * 0.5 + 0.04
     if ARM <= z0:
         return
@@ -249,8 +252,86 @@ def _yellow(g, y, h):
     mid = (z0 + ARM) * 0.5
     for sign in (-1, 1):
         for side in (-1, 1):
-            g.box((side * 0.09, y, sign * mid), (0.08, h, length), "Lib_Lane")
-            g.box((sign * mid, y, side * 0.09), (length, h, 0.08), "Lib_Lane")
+            g.box((side * 0.10, y, sign * mid), (0.10, h, length), "Lib_Lane")
+            g.box((sign * mid, y, side * 0.10), (length, h, 0.10), "Lib_Lane")
+
+
+def _ring(g, cx, cz, r_in, r_out, a0, a1, steps, mat):
+    """One closed band from r_in to r_out. No internal walls, so the arc stays manifold."""
+    outer = []
+    inner = []
+    for i in range(steps + 1):
+        a = a0 + (a1 - a0) * i / float(steps)
+        ca, sa = math.cos(a), math.sin(a)
+        outer.append((cx + r_out * ca, cz + r_out * sa))
+        inner.append((cx + r_in * ca, cz + r_in * sa))
+    n = steps + 1
+    verts = [(x, 0.0, z) for x, z in outer]
+    verts += [(x, 0.0, z) for x, z in inner]
+    verts += [(x, ROAD_TOP, z) for x, z in outer]
+    verts += [(x, ROAD_TOP, z) for x, z in inner]
+    faces = []
+    for i in range(steps):
+        faces.append((i, i + 1, n + i + 1, n + i))
+        faces.append((2 * n + i, 3 * n + i, 3 * n + i + 1, 2 * n + i + 1))
+        faces.append((i, 2 * n + i, 2 * n + i + 1, i + 1))
+        faces.append((n + i, n + i + 1, 3 * n + i + 1, 3 * n + i))
+    last = steps
+    faces.append((0, n, 3 * n, 2 * n))
+    faces.append((last, 2 * n + last, 3 * n + last, n + last))
+    g.mesh(verts, faces, mat, uv_scale=0.4 if mat == "Lib_Asphalt" else 0.7)
+
+
+def _fan(g, apex, cx, cz, radius, a0, a1, steps, mat):
+    """Closed fan from an apex out to an arc. Top is flush with the road."""
+    ax, az = apex
+    verts = [(ax, 0.0, az), (ax, ROAD_TOP, az)]
+    for i in range(steps + 1):
+        a = a0 + (a1 - a0) * i / float(steps)
+        x = cx + radius * math.cos(a)
+        z = cz + radius * math.sin(a)
+        verts.append((x, 0.0, z))
+        verts.append((x, ROAD_TOP, z))
+    faces = []
+    for i in range(steps):
+        b0 = 2 + i * 2
+        b1 = b0 + 2
+        faces.append((1, b0 + 1, b1 + 1))
+        faces.append((0, b1, b0))
+        faces.append((b0, b1, b1 + 1, b0 + 1))
+    faces.append((0, 1, 3, 2))
+    last = 2 + steps * 2
+    faces.append((0, last, last + 1, 1))
+    g.mesh(verts, faces, mat, uv_scale=0.4 if mat == "Lib_Asphalt" else 0.7)
+
+
+def _gutter(g):
+    """Flush concrete pan. A few millimetres of air keeps it off the asphalt face."""
+    r_road = (CURB + R_CURB) - HALF
+    # Smaller radius is the sidewalk. Stay a few millimetres on the road side of the curb.
+    r_curb = R_CURB + GAP
+    corners = (
+        (1, 1, math.pi, math.pi * 1.5),
+        (1, -1, math.pi * 0.5, math.pi),
+        (-1, -1, 0.0, math.pi * 0.5),
+        (-1, 1, math.pi * 1.5, math.pi * 2.0),
+    )
+    for sx, sz, a0, a1 in corners:
+        cx = sx * (CURB + R_CURB)
+        cz = sz * (CURB + R_CURB)
+        apex = (sx * (HALF + GAP), sz * (HALF + GAP))
+        _fan(g, apex, cx, cz, r_road - GAP, a0, a1, 8, "Lib_Asphalt")
+        _ring(g, cx, cz, r_curb, r_road - GAP * 2.0, a0, a1, 8, "Lib_Concrete")
+    z0 = CURB + R_CURB + GAP
+    length = ARM - z0
+    mid = (z0 + ARM) * 0.5
+    gutter_w = GUTTER - GAP * 2.0
+    gutter_x = HALF + GAP + gutter_w * 0.5
+    for sign in (-1, 1):
+        g.box((sign * gutter_x, ROAD_TOP * 0.5, sign * mid), (gutter_w, ROAD_TOP, length), "Lib_Concrete", uv_scale=0.7)
+        g.box((sign * gutter_x, ROAD_TOP * 0.5, -sign * mid), (gutter_w, ROAD_TOP, length), "Lib_Concrete", uv_scale=0.7)
+        g.box((sign * mid, ROAD_TOP * 0.5, sign * gutter_x), (length, ROAD_TOP, gutter_w), "Lib_Concrete", uv_scale=0.7)
+        g.box((-sign * mid, ROAD_TOP * 0.5, sign * gutter_x), (length, ROAD_TOP, gutter_w), "Lib_Concrete", uv_scale=0.7)
 
 
 def _extract(g, indices):
@@ -339,18 +420,65 @@ def _weld_paint(g):
 
 
 def _colliders(asset):
-    # Tops sit 2 cm under the asphalt. Each arm includes the outer lane.
-    y, h = 0.05, 0.10
-    # Stay off the 1.5 cm curb overlap so a sample does not start inside both shells.
-    asset.box("Col_Asphalt", (0, y, 0), (5.70, h, 5.70))
-    # Overlap the centre slab so the joint and the outer lane are both closed.
-    arm_c = (2.90 + (ARM - 0.04)) * 0.5
-    arm_l = (ARM - 0.04) - 2.90
-    asset.box("Col_Arm_N", (0, y, arm_c), (5.60, h, arm_l))
-    asset.box("Col_Arm_S", (0, y, -arm_c), (5.60, h, arm_l))
-    asset.box("Col_Arm_E", (arm_c, y, 0), (arm_l, h, 5.60))
-    asset.box("Col_Arm_W", (-arm_c, y, 0), (arm_l, h, 5.60))
+    # Top is about 8 mm under the asphalt. The arms meet the centre box with a small gap.
+    y, h = 0.060, 0.104
+    asset.box("Col_Asphalt", (0, y, 0), (5.96, h, 5.96))
+    inner = 3.00
+    outer = ARM - 0.02
+    arm_l = outer - inner
+    arm_c = (inner + outer) * 0.5
+    asset.box("Col_Arm_N", (0, y, arm_c), (5.96, h, arm_l))
+    asset.box("Col_Arm_S", (0, y, -arm_c), (5.96, h, arm_l))
+    asset.box("Col_Arm_E", (arm_c, y, 0), (arm_l, h, 5.96))
+    asset.box("Col_Arm_W", (-arm_c, y, 0), (arm_l, h, 5.96))
+    _fan_colliders(asset, y, h)
+    _gutter_colliders(asset, y, h)
     _walk_colliders(asset)
+
+
+def _fan_colliders(asset, y, h):
+    """Box in each asphalt fillet, inside the arc and clear of the plus."""
+    for i, (sx, sz) in enumerate(((1, 1), (1, -1), (-1, -1), (-1, 1))):
+        asset.box("Col_Fan_%d" % i, (sx * 3.75, y, sz * 3.75), (0.80, h, 0.80))
+
+
+def _gutter_colliders(asset, y, h):
+    gw = 0.16
+    gx = HALF + GUTTER * 0.5
+    z0 = CURB + R_CURB + 0.06
+    z1 = ARM - 0.04
+    mid = (z0 + z1) * 0.5
+    length = z1 - z0
+    n = 0
+    for sign in (-1, 1):
+        asset.box("Col_Gutter_%d" % n, (sign * gx, y, sign * mid), (gw, h, length))
+        n += 1
+        asset.box("Col_Gutter_%d" % n, (sign * gx, y, -sign * mid), (gw, h, length))
+        n += 1
+        asset.box("Col_Gutter_%d" % n, (sign * mid, y, sign * gx), (length, h, gw))
+        n += 1
+        asset.box("Col_Gutter_%d" % n, (-sign * mid, y, sign * gx), (length, h, gw))
+        n += 1
+    r_in = R_CURB + GAP
+    r_out = (CURB + R_CURB) - HALF - GAP * 2.0
+    radius = (r_in + r_out) * 0.5
+    corners = (
+        (1, 1, math.pi, math.pi * 1.5),
+        (1, -1, math.pi * 0.5, math.pi),
+        (-1, -1, 0.0, math.pi * 0.5),
+        (-1, 1, math.pi * 1.5, math.pi * 2.0),
+    )
+    for sx, sz, a0, a1 in corners:
+        cx = sx * (CURB + R_CURB)
+        cz = sz * (CURB + R_CURB)
+        for t in (0.32, 0.68):
+            ang = a0 + (a1 - a0) * t
+            asset.box(
+                "Col_Gutter_%d" % n,
+                (cx + radius * math.cos(ang), y, cz + radius * math.sin(ang)),
+                (0.06, h, 0.06),
+            )
+            n += 1
 
 
 def _box_in(asset, name, x0, z0, x1, z1, y_top):
@@ -370,52 +498,55 @@ def _box_in(asset, name, x0, z0, x1, z1, y_top):
 def _walk_colliders(asset):
     """Straight runs, the return bulb, and one box on each ramp."""
     n = 0
-    y_walk = WALK_TOP - 0.02
+    y_walk = WALK_TOP - 0.01
+    inner = CURB + 0.02
+    outer = CURB + WALK - 0.02
+    land = CURB + RAMP_RUN + 0.04
     for sx in (-1, 1):
         for sz in (-1, 1):
             # Straight walk past the crosswalk, full height.
             _box_in(
                 asset, "Col_Walk_%d" % n,
-                sx * (HALF + 0.06), sz * (CROSS_1 + 0.08),
-                sx * (HALF + WALK - 0.06), sz * (ARM - 0.06),
+                sx * inner, sz * (CROSS_1 + 0.08),
+                sx * outer, sz * (ARM - 0.06),
                 y_walk,
             )
             n += 1
             _box_in(
                 asset, "Col_Walk_%d" % n,
-                sx * (CROSS_1 + 0.08), sz * (HALF + 0.06),
-                sx * (ARM - 0.06), sz * (HALF + WALK - 0.06),
+                sx * (CROSS_1 + 0.08), sz * inner,
+                sx * (ARM - 0.06), sz * outer,
                 y_walk,
             )
             n += 1
             # Landing beside the ramp, still full height.
             _box_in(
                 asset, "Col_Walk_%d" % n,
-                sx * (HALF + RAMP_RUN + 0.06), sz * (CROSS_0 + 0.08),
-                sx * (HALF + WALK - 0.06), sz * (CROSS_1 - 0.08),
+                sx * land, sz * (CROSS_0 + 0.08),
+                sx * outer, sz * (CROSS_1 - 0.08),
                 y_walk,
             )
             n += 1
             _box_in(
                 asset, "Col_Walk_%d" % n,
-                sx * (CROSS_0 + 0.08), sz * (HALF + RAMP_RUN + 0.06),
-                sx * (CROSS_1 - 0.08), sz * (HALF + WALK - 0.06),
+                sx * (CROSS_0 + 0.08), sz * land,
+                sx * (CROSS_1 - 0.08), sz * outer,
                 y_walk,
             )
             n += 1
             # Ramp slab. The lip is the low end; this box sits where the slope has room.
-            ramp_y = 0.18
+            ramp_y = 0.17
             _box_in(
                 asset, "Col_Ramp_%d" % n,
-                sx * (HALF + 0.62), sz * (CROSS_0 + 0.10),
-                sx * (HALF + RAMP_RUN - 0.06), sz * (CROSS_1 - 0.10),
+                sx * (CURB + 0.58), sz * (CROSS_0 + 0.10),
+                sx * (CURB + RAMP_RUN - 0.08), sz * (CROSS_1 - 0.10),
                 ramp_y,
             )
             n += 1
             _box_in(
                 asset, "Col_Ramp_%d" % n,
-                sx * (CROSS_0 + 0.10), sz * (HALF + 0.62),
-                sx * (CROSS_1 - 0.10), sz * (HALF + RAMP_RUN - 0.06),
+                sx * (CROSS_0 + 0.10), sz * (CURB + 0.58),
+                sx * (CROSS_1 - 0.10), sz * (CURB + RAMP_RUN - 0.08),
                 ramp_y,
             )
             n += 1
