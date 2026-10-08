@@ -125,8 +125,9 @@ namespace Tag.FX
                     _root[i].SetActive(false);
                     continue;
                 }
-                float burst = ComicWords.Scale(_age[i]) * RestSize * _size[i];
-                float word = ComicWords.WordScale(_age[i]) * RestSize * _size[i];
+                float life = ComicWords.Scale(_age[i]);
+                float burst = life * RestSize * _size[i];
+                float word = ComicWords.WordScale(_age[i]) * life * RestSize * _size[i];
                 _burst[i].localScale = new Vector3(burst * _wide[i], burst * _tall[i], 1f);
                 _word[i].localScale = new Vector3(word * _wide[i], word * _tall[i], 1f);
                 _word[i].gameObject.SetActive(word > 0.001f);

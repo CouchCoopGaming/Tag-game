@@ -74,23 +74,31 @@ namespace Tag.FX
             return true;
         }
 
-        /// <summary>Starts at 0, overshoots to 1.25, and is back at 1 by 0.05 s.</summary>
+        /// <summary>
+        /// Starts at 0, overshoots to 1.25, is back at 1 by 0.05 s, then shrinks away by 0.45 s.
+        /// </summary>
         public static float Scale(float age)
         {
-            if (age <= 0f) return 0f;
-            if (age >= PopSeconds) return 1f;
-            float u = age / PopSeconds;
-            const float peakAt = 0.58f;
-            const float peak = 1.25f;
-            if (u < peakAt)
+            if (age <= 0f || age >= LifeSeconds) return 0f;
+            if (age < PopSeconds)
             {
-                float t = u / peakAt;
-                float e = t * t * (3f - 2f * t);
-                return peak * e;
+                float u = age / PopSeconds;
+                const float peakAt = 0.58f;
+                const float peak = 1.25f;
+                if (u < peakAt)
+                {
+                    float t = u / peakAt;
+                    float e = t * t * (3f - 2f * t);
+                    return peak * e;
+                }
+                float settle = (u - peakAt) / (1f - peakAt);
+                float down = settle * settle * (3f - 2f * settle);
+                return peak + (1f - peak) * down;
             }
-            float settle = (u - peakAt) / (1f - peakAt);
-            float down = settle * settle * (3f - 2f * settle);
-            return peak + (1f - peak) * down;
+            float span = LifeSeconds - PopSeconds;
+            float v = (age - PopSeconds) / span;
+            float ease = v * v * (3f - 2f * v);
+            return 1f - ease;
         }
 
         /// <summary>A few degrees of wobble that dies before the hold. Radians.</summary>

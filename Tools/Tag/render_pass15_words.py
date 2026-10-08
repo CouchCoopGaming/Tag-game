@@ -10,11 +10,11 @@ from PIL import Image, ImageDraw, ImageFont
 
 sys.path.insert(0, os.path.dirname(__file__))
 import bake_comic_layers as bake
-import render_comic_sheet as sheet
+import render_comic_sheet as comic_sheet
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "FxStills", "pass15")
-FONT = sheet.FONT_PATH
+OUT = os.path.join(ROOT, "Docs", "FxStills", "pass16")
+FONT = comic_sheet.FONT_PATH
 
 
 def category_of(i):
@@ -56,21 +56,21 @@ def shape(glyph, tilt, skew, size, arc, wide, tall):
         (1, -skew, 0 if skew > 0 else skew * h, 0, 1, 0),
         resample=Image.Resampling.BICUBIC,
     )
-    # Quadratic bow. p.y += p.x^2 * arc, with p in about -0.5..0.5.
+    # Quadratic bow, sampled from the destination so the arc does not open holes.
     sw, sh = skewed.size
     bowed = Image.new("RGBA", (sw, sh + 48), (0, 0, 0, 0))
     src = skewed.load()
     dst = bowed.load()
-    for y in range(sh):
+    for y in range(bowed.height):
         for x in range(sw):
-            p = src[x, y]
-            if p[3] < 8:
-                continue
             nx = x / float(sw) - 0.5
-            dy = int(nx * nx * arc * sh * 2.2)
-            yy = y + 24 - dy
-            if 0 <= yy < bowed.height:
-                dst[x, yy] = p
+            dy = nx * nx * arc * sh * 2.2
+            sy = y - 24 + dy
+            iy = int(round(sy))
+            if 0 <= iy < sh:
+                p = src[x, iy]
+                if p[3] >= 8:
+                    dst[x, y] = p
     nw = max(1, int(bowed.width * size * wide))
     nh = max(1, int(bowed.height * size * tall))
     bowed = bowed.resize((nw, nh), Image.Resampling.LANCZOS)
@@ -79,15 +79,38 @@ def shape(glyph, tilt, skew, size, arc, wide, tall):
     return bowed
 
 
+# Atlas cell to the burst event. Same pools as ComicWords.
+ATLAS_EVENT = {}
+for _ev, _ids in (
+    (0, (0, 1, 4, 5, 2)),
+    (1, (3, 7, 8)),
+    (2, (9, 10, 11)),
+    (3, (12, 13, 14, 35)),
+    (4, (15, 16, 17, 33, 34)),
+    (5, (18, 19, 20)),
+    (6, (21, 22, 23)),
+    (7, (24, 25, 26)),
+    (8, (27, 28, 29, 6)),
+    (9, (30, 31, 32)),
+):
+    for _id in _ids:
+        ATLAS_EVENT[_id] = _ev
+
+
 def cell_of(index, box):
     text, kind, fill = bake.WORDS[index]
-    glyph = bake.fit_word(text, fill, 280, kind)
-    # fit_word returns a 512 plate. Crop to the ink, then pose it.
-    bb = glyph.getchannel("A").getbbox()
+    word = bake.fit_word(text, fill, 280, kind)
+    ev = ATLAS_EVENT.get(index, 0)
+    burst = comic_sheet.burst(bake.CELL, bake.CELL, comic_sheet.EVENTS[ev][1], bake.star_radius())
+    # Burst behind, word in front, then one tilt so they stay a pair.
+    pair = Image.new("RGBA", (bake.CELL, bake.CELL), (0, 0, 0, 0))
+    pair.alpha_composite(burst)
+    pair.alpha_composite(word)
+    bb = pair.getchannel("A").getbbox()
     if bb:
-        glyph = glyph.crop(bb)
+        pair = pair.crop(bb)
     tilt, skew, size, arc, wide, tall = style_of(index)
-    posed = shape(glyph, tilt, skew, size, arc, wide, tall)
+    posed = shape(pair, tilt, skew, size, arc, wide, tall)
     bg = Image.new("RGB", box, (32, 30, 28))
     scale = min((box[0] - 24) / float(posed.width), (box[1] - 36) / float(posed.height))
     if scale < 1:
@@ -134,6 +157,136 @@ def sheet(title, indices, cols):
     return board
 
 
+def life_scale(age):
+    """Matches ComicWords.Scale. Overshoot by 0.05 s, then shrink to nothing by 0.45 s."""
+    pop = 0.05
+    life = 0.45
+    if age <= 0.0 or age >= life:
+        return 0.0
+    if age < pop:
+        u = age / pop
+        peak_at = 0.58
+        peak = 1.25
+        if u < peak_at:
+            t = u / peak_at
+            e = t * t * (3.0 - 2.0 * t)
+            return peak * e
+        settle = (u - peak_at) / (1.0 - peak_at)
+        down = settle * settle * (3.0 - 2.0 * settle)
+        return peak + (1.0 - peak) * down
+    v = (age - pop) / (life - pop)
+    ease = v * v * (3.0 - 2.0 * v)
+    return 1.0 - ease
+
+
+def word_scale(age):
+    start = 0.05
+    span = 0.08
+    if age <= start:
+        return 0.0
+    u = (age - start) / span
+    if u >= 1.0:
+        return 1.0
+    peak_at = 0.55
+    peak = 1.15
+    if u < peak_at:
+        t = u / peak_at
+        e = t * t * (3.0 - 2.0 * t)
+        return peak * e
+    settle = (u - peak_at) / (1.0 - peak_at)
+    down = settle * settle * (3.0 - 2.0 * settle)
+    return peak + (1.0 - peak) * down
+
+
+def life_alpha(age):
+    pop = 0.05
+    hold = 0.28
+    life = 0.45
+    if age < 0.0 or age >= life:
+        return 0.0
+    if age < pop:
+        return age / pop
+    if age < pop + hold:
+        return 1.0
+    span = life - pop - hold
+    u = (age - pop - hold) / span
+    if u < 0.0:
+        u = 0.0
+    if u > 1.0:
+        u = 1.0
+    return 1.0 - u
+
+
+def posed_layers(index):
+    text, kind, fill = bake.WORDS[index]
+    word = bake.fit_word(text, fill, 280, kind)
+    ev = ATLAS_EVENT.get(index, 0)
+    burst = comic_sheet.burst(bake.CELL, bake.CELL, comic_sheet.EVENTS[ev][1], bake.star_radius())
+    tilt, skew, size, arc, wide, tall = style_of(index)
+    burst = shape(burst, tilt, skew, size, arc, wide, tall)
+    word = shape(word, tilt, skew, size, arc, wide, tall)
+    return text, burst, word
+
+
+def frame_at(burst, word, age, box):
+    """One moment. Burst and word share the tilt. The word is in front."""
+    bg = Image.new("RGBA", box, (32, 30, 28, 255))
+    bs = life_scale(age)
+    ws = word_scale(age) * bs
+    a = life_alpha(age)
+    if bs < 0.02 and ws < 0.02 or a <= 0.001:
+        return bg.convert("RGB")
+    canvas = Image.new("RGBA", box, (0, 0, 0, 0))
+    limit = min(box[0] - 16, box[1] - 16)
+
+    def place(glyph, sc):
+        if sc < 0.02:
+            return
+        nw = max(1, int(glyph.width * sc))
+        nh = max(1, int(glyph.height * sc))
+        fitted = min(limit / float(nw), limit / float(nh), 1.0)
+        nw = max(1, int(nw * fitted))
+        nh = max(1, int(nh * fitted))
+        layer = glyph.resize((nw, nh), Image.Resampling.LANCZOS)
+        if a < 0.999:
+            band = layer.getchannel("A").point(lambda p: int(p * a))
+            layer.putalpha(band)
+        canvas.alpha_composite(layer, ((box[0] - nw) // 2, (box[1] - nh) // 2))
+
+    # Fit the full-size pair into the panel, then apply the life scale on top.
+    full = max(burst.width, word.width, 1)
+    base = limit / float(full)
+    place(burst, bs * base)
+    place(word, ws * base)
+    bg.alpha_composite(canvas)
+    return bg.convert("RGB")
+
+
+def life_strip():
+    index = index_of("POW!")
+    text, burst, word = posed_layers(index)
+    ages = (0.00, 0.03, 0.09, 0.18, 0.33, 0.45)
+    labels = ("0.00 small", "0.03 past full", "0.09 word out", "0.18 shrinking", "0.33 smaller", "0.45 gone")
+    font = ImageFont.truetype(FONT, 22)
+    small = ImageFont.truetype(FONT, 16)
+    box = (220, 220)
+    gap = 8
+    head = 40
+    foot = 28
+    w = len(ages) * box[0] + gap * (len(ages) + 1)
+    h = head + box[1] + foot + gap
+    board = Image.new("RGB", (w, h), (22, 20, 18))
+    draw = ImageDraw.Draw(board)
+    draw.text((12, 8), "POW!    burst life 0.45 s    small, past full, then gone", font=font, fill=(255, 220, 120))
+    for n, (age, label) in enumerate(zip(ages, labels)):
+        panel = frame_at(burst, word, age, box)
+        x = gap + n * (box[0] + gap)
+        y = head
+        board.paste(panel, (x, y))
+        draw.text((x + 6, y + box[1] + 4), label, font=small, fill=(255, 244, 220))
+    return board
+
+
 def index_of(word):
     for i, (text, _kind, _fill) in enumerate(bake.WORDS):
         if text == word:
@@ -152,6 +305,7 @@ def main():
         save_jpeg(sheet(title, [index_of(w) for w in words], 2), name)
     angles = ("POW!", "BAM!", "WHAM!", "ZIP!", "SWISH!", "THWACK!", "KRAK!", "WHUMP!")
     save_jpeg(sheet("Angle variety   each word has its own tilt", [index_of(w) for w in angles], 4), "comic-angles.jpg")
+    save_jpeg(life_strip(), "comic-life.jpg")
     prev = None
     for i, (text, _k, _f) in enumerate(bake.WORDS):
         tilt = style_of(i)[0]

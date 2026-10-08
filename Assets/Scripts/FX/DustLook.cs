@@ -215,25 +215,25 @@ namespace Tag.FX
                 {
                     size0 = 0.04f; size1 = 0.13f; op0 = 0.20f; op1 = 0.50f; count0 = 2f; count1 = 6f;
                     life0 = 0.14f; life1 = 0.42f; span0 = 0.07f; span1 = 0.48f; lift1 = 0.10f;
-                    puff.R = 0.80f; puff.G = 0.76f; puff.B = 0.62f;
+                    puff.R = 0.76f; puff.G = 0.77f; puff.B = 0.70f;
                 }
                 else if (surface == Surface.Dirt)
                 {
                     size0 = 0.12f; size1 = 0.34f; op0 = 0.55f; op1 = 0.88f; count0 = 5f; count1 = 11f;
                     life0 = 0.22f; life1 = 0.58f; span0 = 0.18f; span1 = 0.90f; lift1 = 0.22f;
-                    puff.R = 0.84f; puff.G = 0.58f; puff.B = 0.30f;
+                    puff.R = 0.68f; puff.G = 0.46f; puff.B = 0.24f;
                 }
                 else if (surface == Surface.Wood)
                 {
                     size0 = 0.04f; size1 = 0.10f; op0 = 0.45f; op1 = 0.78f; count0 = 3f; count1 = 8f;
                     life0 = 0.14f; life1 = 0.40f; span0 = 0.06f; span1 = 0.38f; lift1 = 0.08f;
-                    puff.R = 1.00f; puff.G = 0.97f; puff.B = 0.88f;
+                    puff.R = 0.90f; puff.G = 0.76f; puff.B = 0.56f;
                 }
                 else
                 {
                     size0 = 0.05f; size1 = 0.20f; op0 = 0.28f; op1 = 0.82f; count0 = 2f; count1 = 9f;
                     life0 = 0.16f; life1 = 0.50f; span0 = 0.10f; span1 = 0.72f; lift1 = 0.16f;
-                    puff.R = 0.86f; puff.G = 0.84f; puff.B = 0.80f;
+                    puff.R = 0.78f; puff.G = 0.78f; puff.B = 0.76f;
                 }
                 size = size0 + (size1 - size0) * u;
                 opacity = op0 + (op1 - op0) * u;

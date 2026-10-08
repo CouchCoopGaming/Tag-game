@@ -73,7 +73,7 @@ namespace Tag.FX
         /// <summary>
         /// Unlit soft disc. The built-in URP particle material soft-fades
         /// anything sitting on the ground, which hid the whole puff.
-        /// The opaque core fills the billboard, so startSize is the visible diameter.
+        /// The disc fades to the edge. startSize is the soft quad; the dense core is inside it.
         /// </summary>
         static Material DustMaterial()
         {
@@ -103,8 +103,11 @@ namespace Tag.FX
                     float dy = (y + 0.5f) / n - 0.5f;
                     float r = Mathf.Sqrt(dx * dx + dy * dy) / 0.5f;
                     float a = 0f;
-                    if (r < 0.72f) a = 1f;
-                    else if (r < 1f) a = 1f - (r - 0.72f) / 0.28f;
+                    if (r < 1f)
+                    {
+                        float t = 1f - r;
+                        a = t * t * (3f - 2f * t);
+                    }
                     pix[y * n + x] = new Color(1f, 1f, 1f, a);
                 }
             }
@@ -157,6 +160,11 @@ namespace Tag.FX
             {
                 _main.startSpeed = 1.8f;
                 _main.gravityModifier = 0.15f;
+            }
+            else if (puff.Back > 0.04f)
+            {
+                EmitTrail(worldPos, puff, a);
+                return;
             }
             else
             {
@@ -213,6 +221,94 @@ namespace Tag.FX
                 ep.position = worldPos + Vector3.up * 0.02f;
                 _ps.Emit(ep, 1);
             }
+        }
+
+        /// <summary>
+        /// Foot dust as a trail: small and dense at the plant, thinner as it kicks back and out.
+        /// Positions come from the puff the game already built. No new forces.
+        /// </summary>
+        void EmitTrail(Vector3 foot, DustLook.Puff puff, float alpha)
+        {
+            Transform root = transform.parent;
+            Vector3 fwd = root != null ? root.forward : Vector3.forward;
+            fwd.y = 0f;
+            if (fwd.sqrMagnitude < 0.0001f)
+                fwd = Vector3.forward;
+            else
+                fwd.Normalize();
+            Vector3 side = root != null ? root.right : Vector3.right;
+            side.y = 0f;
+            if (side.sqrMagnitude < 0.0001f)
+                side = Vector3.right;
+            else
+                side.Normalize();
+
+            int n = puff.Count;
+            float dens = FxAmount.Density(GameSettings.Current);
+            if (dens < 0.99f)
+            {
+                n = (int)(n * dens + 0.001f);
+                if (n < 1) n = 1;
+            }
+            if (n > 16) n = 16;
+            // The tuned span stays in DustLook (sprint 72 cm). The cloud draws at half.
+            const float vis = 0.5f;
+            float span = (puff.Span > 0.05f ? puff.Span : puff.Back) * vis;
+            float life = puff.Life > 0.05f ? puff.Life : 0.05f;
+            float gap = span / (n > 0 ? n : 1);
+            // Dirt's diameter is several times the spacing and fused into one blob.
+            // Concrete, grass, and wood stay on the half-size curve.
+            bool split = puff.Size * vis > gap * 2.8f;
+            Vector3 kick = (-fwd * (puff.Back * vis) + Vector3.up * (puff.Lift * vis * 0.35f)) / life;
+            for (int i = 0; i < n; i++)
+            {
+                float u = n == 1 ? 0f : i / (float)(n - 1);
+                float t = Mathf.Pow(u, 1.65f);
+                float h1 = TrailHash(i, 1);
+                float h2 = TrailHash(i, 2);
+                float h3 = TrailHash(i, 3);
+                float along = span * (0.02f + 0.96f * t);
+                float spread = span * (0.05f + 0.18f * t);
+                float sideOff = (h1 - 0.5f) * spread + 0.05f;
+                float up = 0.02f + puff.Lift * vis * (0.10f + 0.28f * t) * (0.40f + 0.60f * h2);
+                Vector3 pos = foot - fwd * along + side * sideOff + Vector3.up * up;
+                if (pos.y < foot.y + 0.018f)
+                    pos.y = foot.y + 0.018f;
+                float size = puff.Size * vis * (0.55f + 0.45f * t) * (0.78f + 0.44f * h3);
+                if (split)
+                {
+                    float uNext = n == 1 ? 1f : Mathf.Min(1f, (i + 1) / (float)(n - 1));
+                    float step = span * 0.96f * Mathf.Max(0.04f, Mathf.Pow(uNext, 1.65f) - t);
+                    size = Mathf.Min(size, step * (0.62f + 0.22f * h3));
+                }
+                if (size < 0.025f) size = 0.025f;
+                float fade = 1f - 0.58f * t;
+                float a = alpha * fade * (0.82f + 0.18f * h2);
+                if (a > 0.95f) a = 0.95f;
+                float tint = 0.90f + 0.16f * h1;
+                var ep = new ParticleSystem.EmitParams();
+                ep.position = pos;
+                ep.velocity = kick * (0.35f + 0.25f * h2);
+                ep.startSize = size / 0.55f;
+                ep.startLifetime = life;
+                ep.startColor = new Color(puff.R * tint, puff.G * tint, puff.B * tint, a);
+                ep.applyShapeToPosition = false;
+                _ps.Emit(ep, 1);
+                if (puff.Core > 0.15f && i < 2)
+                {
+                    ep.position = pos + Vector3.up * 0.012f;
+                    ep.startSize = size * 0.62f / 0.55f;
+                    ep.startColor = new Color(puff.R * 0.62f, puff.G * 0.62f, puff.B * 0.62f, a > 0.9f ? 0.9f : a);
+                    _ps.Emit(ep, 1);
+                }
+            }
+        }
+
+        static float TrailHash(int i, int salt)
+        {
+            uint x = (uint)i * 374761393u + (uint)salt * 668265263u;
+            x = (x ^ (x >> 13)) * 1274126177u;
+            return (x & 65535u) / 65535f;
         }
 
         void AimPlume(DustLook.Puff puff)

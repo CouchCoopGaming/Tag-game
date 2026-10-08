@@ -173,6 +173,29 @@ def letter_jitter(i, word):
     )
 
 
+def fill_x_bounds(plate, fill):
+    """Cap-line extent of the letter ink. The baseline is wider and hides a split."""
+    ab = plate.getchannel("A").getbbox()
+    if ab is None:
+        return None
+    y1 = ab[1] + max(1, int((ab[3] - ab[1]) * 0.42))
+    px = plate.load()
+    fr, fg, fb = fill
+    lo = plate.width
+    hi = -1
+    for y in range(ab[1], y1):
+        for x in range(plate.width):
+            r, g, b, a = px[x, y]
+            if a > 160 and abs(r - fr) < 70 and abs(g - fg) < 70 and abs(b - fb) < 70:
+                if x < lo:
+                    lo = x
+                if x > hi:
+                    hi = x
+    if hi < 0:
+        return None
+    return lo, hi
+
+
 def render_after(word, target_w, fill, stroke_frac=None, track=0.78, tilt=None):
     """Per-letter jitter, hard shadow, two-step extrude. Ink width is target_w.
 
@@ -191,6 +214,7 @@ def render_after(word, target_w, fill, stroke_frac=None, track=0.78, tilt=None):
     shadow = max(4, int(round(cap * 0.11)))
     pieces = []
     x = 0.0
+    prev_fill_right = None
     dark_fill = tuple(max(0, int(c * 0.45)) for c in fill)
     mid_fill = tuple(min(255, c + 28) for c in dark_fill)
     for i, ch in enumerate(word):
@@ -207,7 +231,17 @@ def render_after(word, target_w, fill, stroke_frac=None, track=0.78, tilt=None):
                stroke_width=stroke, stroke_fill=(0, 0, 0, 255))
         jx, jy, rot = letter_jitter(i, word)
         plate = plate.rotate(rot, expand=True, resample=Image.Resampling.BICUBIC)
+        # Bangers side bearings leave a hole between H and A at 0.78. Pull only
+        # a pair whose ink does not already touch, so the other words stay put.
+        fb = fill_x_bounds(plate, fill)
+        if fb is not None and prev_fill_right is not None:
+            gap = (x + fb[0]) - prev_fill_right
+            # Only a cap-line hole gets pulled in. A normal word stays at 0.78.
+            if gap > cap * 0.14:
+                x -= gap - cap * 0.06
         pieces.append((plate, x + jx * cap, jy * cap))
+        if fb is not None:
+            prev_fill_right = x + fb[1]
         # 0.78 is about 13% tighter than the 0.90 advance, so the letters read as one word.
         x += tw * track
     width = int(x + pieces[-1][0].width) + 4
