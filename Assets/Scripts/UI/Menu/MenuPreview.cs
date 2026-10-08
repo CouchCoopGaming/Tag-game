@@ -211,8 +211,6 @@ namespace Tag.Ui.Menu
                 if (!on) continue;
                 MenuPodium.Row row = rows[i];
                 GameObject body = MenuMannequin.Spawn(_podiumAnchor[i], MenuMannequin.NameOf(row.Hier), MenuMannequin.NameOf(row.Accent), row.Hat != 0);
-                int seat = row.Seat >= 0 ? row.Seat : i;
-                MenuCheer.Dress(body, MenuTheme.Seat(seat));
                 bool win = row.Winner;
                 bool clap = !win && i < 3;
                 MenuCheer.Play(body, win, clap, i == 2);
@@ -586,9 +584,9 @@ namespace Tag.Ui.Menu
         void Aim(int i)
         {
             if (_cam[i] == null || _anchor[i] == null) return;
-            Vector3 focus = _anchor[i].position + new Vector3(0f, 0.98f, 0f);
-            // About 4.9 m out. At 26° the 1.8 m figure fills about 80% of the well.
-            _cam[i].transform.position = focus + new Vector3(1.60f, 0.42f, 4.58f);
+            Vector3 focus = _anchor[i].position + new Vector3(0f, 1.10f, 0f);
+            // Far enough that a ready hop of 0.28 m still leaves about 5% above the head.
+            _cam[i].transform.position = focus + new Vector3(1.90f, 0.50f, 5.42f);
             _cam[i].transform.LookAt(focus);
         }
 

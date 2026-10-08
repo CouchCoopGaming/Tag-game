@@ -27,6 +27,7 @@ namespace Tag.Ui.Menu
             public int Accent;
             public int Hat;
             public int Seat;
+            public float Chase;
         }
 
         public static int Fill(Row[] rows)
@@ -72,6 +73,13 @@ namespace Tag.Ui.Menu
             }
             TagModeId id = mode != null ? mode.SelectedMode : MenuSession.Mode;
             Sort(rows, n, id);
+            float chase = mode != null ? mode.LongestChase : 0f;
+            for (int i = 0; i < n; i++)
+            {
+                Row row = rows[i];
+                row.Chase = chase;
+                rows[i] = row;
+            }
             return n;
         }
 
@@ -88,7 +96,7 @@ namespace Tag.Ui.Menu
 
         public static string Stats(Row row)
         {
-            return UiFit.FormatStats(row.Winner, row.Tags, row.Time, row.Wins);
+            return UiFit.FormatStats(row.Winner, row.Tags, row.Time, row.Wins, row.Chase);
         }
 
         public static int Sample(Row[] rows)
@@ -107,6 +115,7 @@ namespace Tag.Ui.Menu
                 row.Hier = i;
                 row.Accent = (i + 1) % 4;
                 row.Seat = i;
+                row.Chase = 14.2f;
                 rows[i] = row;
             }
             return n;

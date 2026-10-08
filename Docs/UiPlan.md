@@ -295,6 +295,10 @@ The card figure is the Hier mesh. Each seat has a lit preview, three-quarter vie
 
 The preview paints the look. Primary is the body swatch and secondary is the accent swatch, the same keys as the runner foam. Both are matte: metallic 0, roughness about 0.6. One light rig serves every seat: a soft key from the front-left, a fill, and a rim. The well is a gradient from navy to a lighter blue-grey, and the figure fills about 80% of that well, with a soft shadow under the feet. A Red torso shell pixel in the still reads `#C83E46` against primary `#E0383D`. The pass 32 card picture used a bright backdrop and colour-filled cards. That was the still, not a menu change. `Docs/UiStills/pass33/cast-looks.png` puts the mesh back on the pass 31 card chrome. The figure, the well gradient, and the contact shadow in the AFTER wells are the mesh render. The frames, type, and swatches are composite. The BEFORE panel is the pass 31 composite. The proof lines are unchanged.
 
+## Pass 34
+
+Orange and Tan keep a Base slot on the chest and the hips. The chest mesh also carries Joint and Wear. Each slot is painted on its own, so the shell stays the primary colour and the accent panel stays the second colour. The newer looks face the other way from Orange and Tan, so those four turn 180° on a parent and the sway stays centred on that face. The card camera sits further back: a ready hop of 0.28 m still leaves about 5% of the well above the head. RESULTS shows the same mesh in the existing cheer and slump poses, places 1st through 4th, and a line of tags, time as It, and the match's longest chase. That chase is one number for the match. In `Docs/UiStills/pass34/` the figures are FBX renders. The frames, type, and stat lines are composite. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

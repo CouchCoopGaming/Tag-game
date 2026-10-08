@@ -30,7 +30,14 @@ namespace Tag.Ui.Menu
                     inst = null;
                 }
                 else
+                {
                     Dress(inst, body, accent);
+                    // The newer Hier files face Unity -Z. The card camera sits on +Z.
+                    // A parent holds the turn so idle and cheer can still replace the
+                    // root rotation. The older armature already faces the camera.
+                    if (HasNamed(inst.transform, "Panel_Chest"))
+                        Face(inst, 180f);
+                }
             }
             if (inst == null)
                 inst = DummyPrimitiveFactory.Build(parent, false, body, accent);
@@ -109,7 +116,9 @@ namespace Tag.Ui.Menu
                 {
                     Material src = shared != null && i < shared.Length ? shared[i] : null;
                     string matName = src != null ? src.name : "";
-                    Color color = Shell(matName + " " + rend.gameObject.name, primary, secondary);
+                    // One slot at a time. Orange and Tan join Base, Joint, and Wear
+                    // onto the chest mesh. A joint slot must not paint the shell.
+                    Color color = Shell(matName, rend.gameObject.name, primary, secondary);
                     next[i] = DummyPrimitiveFactory.MakeMat(color, smooth, metal);
                 }
                 rend.sharedMaterials = next;
@@ -121,7 +130,14 @@ namespace Tag.Ui.Menu
             return name.IndexOf(token, System.StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        static Color Shell(string name, Color primary, Color secondary)
+        static Color Shell(string matName, string objName, Color primary, Color secondary)
+        {
+            if (!string.IsNullOrEmpty(matName))
+                return Paint(matName, primary, secondary);
+            return Paint(objName, primary, secondary);
+        }
+
+        static Color Paint(string name, Color primary, Color secondary)
         {
             if (Has(name, "Joint") || Has(name, "Rubber") || Has(name, "Bellow")
                 || Has(name, "Wear") || Has(name, "Sensor") || Has(name, "Eye")
@@ -130,6 +146,27 @@ namespace Tag.Ui.Menu
             if (Has(name, "Accent") || Has(name, "Panel") || Has(name, "Cal"))
                 return secondary;
             return primary;
+        }
+
+        static bool HasNamed(Transform root, string name)
+        {
+            Transform[] all = root.GetComponentsInChildren<Transform>(true);
+            for (int i = 0; i < all.Length; i++)
+            {
+                if (all[i].name == name) return true;
+            }
+            return false;
+        }
+
+        static void Face(GameObject inst, float yaw)
+        {
+            var pivot = new GameObject("FacePivot");
+            Transform parent = inst.transform.parent;
+            pivot.transform.SetParent(parent, false);
+            pivot.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
+            inst.transform.SetParent(pivot.transform, false);
+            inst.transform.localPosition = Vector3.zero;
+            inst.transform.localRotation = Quaternion.identity;
         }
 
         public static Color Swatch(string key)

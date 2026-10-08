@@ -332,6 +332,8 @@ The thirty-second pass puts the Hier mesh on the card. The preview is lit, at a 
 
 The thirty-third pass paints that mesh in the look. The body is the primary swatch and the panels are the accent, matte, with metallic at 0 and roughness about 0.6. One rig lights every card: key from the front-left, fill, and a rim. The well fades from navy to a lighter blue-grey. The figure fills about 80% of the well and stands on a soft shadow. A Red torso pixel in the still is `#C83E46`, against primary `#E0383D`. The bright cards in the previous still were the picture, not the menu. `Docs/UiStills/pass33/cast-looks.png` keeps the pass 31 card chrome. The figures in the AFTER wells are the FBX render.
 
+The thirty-fourth pass keeps the Orange and Tan chest on the primary colour. Those meshes share the shell with a joint slot, and the joint no longer paints the torso. The accent stays the second colour. Every card uses the same three-quarter front, with the face toward the camera when the sway is centred. The ready hop still has about 5% of the well above the head. RESULTS uses the cheer and the slump already on that screen, places 1st through 4th, and each line shows tags, time as It, and the match's longest chase. That chase is one number for the whole match. The pictures in `Docs/UiStills/pass34/` label the mesh pixels. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

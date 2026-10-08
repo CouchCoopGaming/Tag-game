@@ -339,15 +339,21 @@ namespace Tag.Ui.Menu
 
         public static string FormatStats(bool winner, int tags, float time, int wins)
         {
+            return FormatStats(winner, tags, time, wins, -1f);
+        }
+
+        public static string FormatStats(bool winner, int tags, float time, int wins, float chase)
+        {
             string tagWord = tags == 1 ? "1 tag" : tags.ToString() + " tags";
             string timeWord = time.ToString("0.0") + "s as It";
             string winWord = wins == 1 ? "1 round win" : wins.ToString() + " round wins";
+            string tail = chase >= 0f ? chase.ToString("0.0") + "s chase" : winWord;
             if (winner)
-                return "WIN  " + tagWord + "\n" + timeWord + "\n" + winWord;
+                return "WIN  " + tagWord + "\n" + timeWord + "\n" + tail;
             string head = tagWord + "  " + timeWord;
             if (InkWidth(head) > RankInk(ScaleMax))
                 head = tagWord + "\n" + timeWord;
-            return head + "\n" + winWord;
+            return head + "\n" + tail;
         }
 
         static bool RankCards()

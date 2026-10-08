@@ -109,6 +109,8 @@ namespace Tag.Modes
         public MatchPhase Phase => _phase;
         /// <summary>Seconds left in the current countdown or post-round beat. Display only.</summary>
         public float PhaseSeconds => _phaseTimer;
+        /// <summary>Longest single time someone stayed It. One number for the match.</summary>
+        public float LongestChase => _longestChase;
         /// <summary>1-based round for the top counter. Hot Potato uses its fuse index.</summary>
         public int RoundShown
         {
