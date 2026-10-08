@@ -1212,6 +1212,8 @@ namespace Tag.Art
         static Mesh _wallJumpDisc;
 
         Quaternion _spineT, _hipsT, _headT;
+        Vector3 _hipsPos0;
+        bool _hipsPosSet;
         Quaternion _uaLT, _uaRT, _laLT, _laRT;
         Quaternion _ulLT, _ulRT, _llLT, _llRT;
         Quaternion _ftLT, _ftRT;
@@ -15529,6 +15531,7 @@ namespace Tag.Art
             EaseFacing(dt, yawWall, climb, sliding);
             AbsorbPop(dt);
             ApplyChestGap(climb || wallRun);
+            ApplyPelvisDrop(mantle, mantle ? vault.PelvisDrop : 0f);
             ApplyVisualRoot(bob, WallJumpNudge());
             HoldHead(bob, grounded && !air && !sliding && !climb && !wallRun && !mantle);
             bool secondaryYield = climb || wallRun || mantle || punching || lunging || dashing
@@ -19384,6 +19387,21 @@ namespace Tag.Art
                 _yawBasisSet = true;
             }
             pivot.localRotation = _yawBasis * Quaternion.Euler(0f, _visualYaw, 0f);
+        }
+
+        /// <summary>
+        /// The hips bone drops on a plant and a landing. The capsule and the
+        /// visual root stay where the motor put them.
+        /// </summary>
+        void ApplyPelvisDrop(bool on, float drop)
+        {
+            if (_hips == null) return;
+            if (!_hipsPosSet)
+            {
+                _hipsPos0 = _hips.localPosition;
+                _hipsPosSet = true;
+            }
+            _hips.localPosition = _hipsPos0 + new Vector3(0f, on ? -drop : 0f, 0f);
         }
 
         /// <summary>

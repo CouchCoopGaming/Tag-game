@@ -80,7 +80,10 @@ namespace Tag.Art
         /// knee, over, and land, which is what the handoff proof measures.
         /// The arms stay an uncrossed plant on the obstacle. Both legs swing
         /// out to their own sides and stay there until the hips have passed,
-        /// then come home. The spine keeps its forward lean. Not a root lift.
+        /// then come home. The hip takes the pitch and the spine stays near
+        /// eight degrees. On the plant and the landing the pelvis bone drops
+        /// and the support knees bend, so the sit is not a straight leg leaned
+        /// back. That drop is the hips bone, not the capsule and not the root.
         /// </summary>
         struct VaultKey
         {
@@ -88,6 +91,7 @@ namespace Tag.Art
             public float ThL, ThR, KnL, KnR, YawL, YawR;
             public float ArmL, ArmR, AyL, AyR, ElbL, ElbR;
             public float Hip, Spine, Head;
+            public float PelvisDrop;
         }
 
         public struct Sample
@@ -97,6 +101,8 @@ namespace Tag.Art
             public float ArmPitchL, ArmPitchR, ArmYawL, ArmYawR;
             public float ElbowL, ElbowR;
             public float Hip, Spine, Head;
+            /// <summary>Meters the hips bone sits below its standing height. Not a root offset.</summary>
+            public float PelvisDrop;
         }
 
         /// <summary>
@@ -194,6 +200,7 @@ namespace Tag.Art
                 Hip = Mathf.Lerp(a.Hip, b.Hip, t),
                 Spine = Mathf.Lerp(a.Spine, b.Spine, t),
                 Head = Mathf.Lerp(a.Head, b.Head, t),
+                PelvisDrop = Mathf.Lerp(a.PelvisDrop, b.PelvisDrop, t),
             };
             if (!leadLeft) s = Mirror(s);
             return s;
@@ -203,17 +210,19 @@ namespace Tag.Art
         {
             return new VaultKey[]
             {
-                Key(0.00f, 24f, 14f, -36f, -22f, -10f, 8f, -58f, -58f, -18f, 18f, -46f, -46f, 14f, 20f, -10f),
-                Key(0.16f, 68f, 52f, -42f, -38f, -58f, 48f, -58f, -58f, -18f, 18f, -46f, -46f, 16f, 20f, -8f),
-                Key(0.36f, 82f, 70f, -40f, -44f, -78f, 70f, -56f, -56f, -16f, 16f, -42f, -42f, 18f, 20f, -6f),
-                Key(0.64f, 74f, 64f, -40f, -44f, -72f, 66f, -54f, -54f, -16f, 16f, -40f, -40f, 16f, 18f, -4f),
-                Key(0.82f, 36f, 32f, -38f, -36f, -10f, 10f, -48f, -48f, -16f, 16f, -38f, -38f, 14f, 16f, -4f),
-                Key(1.00f, 24f, 22f, -40f, -36f, 0f, 4f, -46f, -46f, -16f, 16f, -36f, -36f, 12f, 16f, -4f),
+                Key(0.00f, 52f, 52f, -64f, -64f, -12f, 12f, -58f, -58f, -18f, 18f, -46f, -46f, 18f, 8f, -10f, 0.10f),
+                Key(0.16f, 72f, 58f, -48f, -42f, -58f, 48f, -58f, -58f, -18f, 18f, -46f, -46f, 26f, 8f, -8f, 0f),
+                Key(0.36f, 82f, 70f, -40f, -44f, -78f, 70f, -56f, -56f, -16f, 16f, -42f, -42f, 28f, 8f, -6f, 0f),
+                Key(0.64f, 74f, 64f, -40f, -44f, -72f, 66f, -54f, -54f, -16f, 16f, -40f, -40f, 24f, 8f, -4f, 0f),
+                Key(0.82f, 48f, 42f, -42f, -38f, -10f, 10f, -48f, -48f, -16f, 16f, -38f, -38f, 22f, 8f, -4f, 0f),
+                Key(0.92f, 60f, 58f, -72f, -72f, -22f, 22f, -46f, -46f, -16f, 16f, -36f, -36f, 20f, 8f, -4f, 0.12f),
+                Key(1.00f, 64f, 64f, -82f, -82f, -26f, 26f, -46f, -46f, -16f, 16f, -36f, -36f, 20f, 8f, -4f, 0.20f),
             };
         }
 
         static VaultKey Key(float u, float thL, float thR, float knL, float knR, float yawL, float yawR,
-            float armL, float armR, float ayL, float ayR, float elbL, float elbR, float hip, float spine, float head)
+            float armL, float armR, float ayL, float ayR, float elbL, float elbR, float hip, float spine, float head,
+            float pelvisDrop)
         {
             return new VaultKey
             {
@@ -221,6 +230,7 @@ namespace Tag.Art
                 ThL = thL, ThR = thR, KnL = knL, KnR = knR, YawL = yawL, YawR = yawR,
                 ArmL = armL, ArmR = armR, AyL = ayL, AyR = ayR, ElbL = elbL, ElbR = elbR,
                 Hip = hip, Spine = spine, Head = head,
+                PelvisDrop = pelvisDrop,
             };
         }
 
@@ -446,6 +456,7 @@ namespace Tag.Art
                 Hip = s.Hip,
                 Spine = s.Spine,
                 Head = s.Head,
+                PelvisDrop = s.PelvisDrop,
             };
         }
 

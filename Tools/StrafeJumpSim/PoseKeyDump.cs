@@ -43,7 +43,8 @@ static class PoseKeyDump
             MantlePose.Sample s = MantlePose.Cleared(u, true);
             Emit(w, c, "vault", t, s.ThighL, s.ThighR, s.KneeL, s.KneeR, s.ThighYawL, s.ThighYawR,
                 s.ArmPitchL, s.ArmPitchR, s.ArmYawL, s.ArmYawR, 0f, 0f,
-                s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, 0f, 0f, 0f, 0f, 0f, 0f);
+                s.ElbowL, s.ElbowR, s.Hip, s.Spine, s.Head, 0f, 0f, 0f, 0f, 0f, 0f,
+                hipDrop: s.PelvisDrop);
             if (u >= 1f) break;
         }
     }
@@ -402,7 +403,7 @@ static class PoseKeyDump
         float elbL, float elbR, float hip, float spine, float head, float lean,
         float hipYaw, float spineYaw,         float footL, float footR, float drop,
         float elbYawL = 0f, float elbYawR = 0f, float shoulderL = 0f,
-        float thRollL = 0f, float thRollR = 0f)
+        float thRollL = 0f, float thRollR = 0f, float hipDrop = 0f)
     {
         w.Write(clip);
         w.Write('\t');
@@ -417,6 +418,7 @@ static class PoseKeyDump
         Write(w, c, footL); Write(w, c, footR); Write(w, c, drop);
         Write(w, c, elbYawL); Write(w, c, elbYawR); Write(w, c, shoulderL);
         Write(w, c, thRollL); Write(w, c, thRollR);
+        Write(w, c, hipDrop);
         w.WriteLine();
     }
 
