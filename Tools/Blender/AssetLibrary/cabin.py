@@ -2,7 +2,7 @@
 
 Logs are round and saddle-notched at the corners. The door is vertical boards.
 The porch shed sits on a ledger outside the logs, under the main eave. A brick
-chimney rises through the ridge, with stepped flashing, a concrete cap, and a flue.
+chimney rises through the ridge. The shakes and the ridge run up to the flashing.
 """
 
 import math
@@ -33,13 +33,17 @@ _SHED_Z0 = _LEDGER_Z0 + _LEDGER_D + 0.004
 _SHED_Y0 = _LEDGER_Y + 0.056
 _SHED_Z1 = 3.27
 _SHED_Y1 = 1.886
-# Chimney through the ridge. The roof hole is wider than the brick so flashing fits.
+# Chimney through the ridge. Shakes stop a few centimetres out; flashing covers the joint.
 _CH_X = 0.70
 _CH_Z = 0.0
 _CH_SX = 0.66
 _CH_SZ = 0.56
-_HOLE_X = _CH_SX * 0.5 + 0.12
-_HOLE_Z = _CH_SZ * 0.5 + 0.12
+_HOLE_X = _CH_SX * 0.5 + 0.030
+_HOLE_Z = _CH_SZ * 0.5 + 0.030
+_SHAKE_N = 10
+_SHAKE_BUTT = 0.028
+_SHAKE_HEAD = 0.010
+_SHAKE_UNDER = 0.016
 
 
 @register
@@ -49,8 +53,9 @@ def create():
         "Buildings",
         "Log cabin 4.6 x 3.6 m, walls 2.2 m, ridge at 3.45 m, porch on +Z. "
         "Saddle-notched round logs, a vertical-board door, board-and-batten gables, "
-        "and a side window on each wall. Weathered cedar shakes, a ridge cap, and a "
-        "brick chimney through the ridge with stepped flashing, a concrete cap, and a flue. "
+        "and a side window on each wall. Cedar shakes, about 25 cm exposure, run to the "
+        "flashing on both slopes, with a ridge that meets the chimney. Stepped flashing, "
+        "a concrete cap, and a flue. "
         "The porch has a top rail and a mid rail between the posts.",
     )
     a.climbable = True
@@ -62,10 +67,11 @@ def create():
     for lod in (0, 1, 2):
         g = a.begin(lod)
         courses = lod_pick(lod, 9, 6, 4)
-        seg = lod_pick(lod, 8, 6, 6)
+        seg = lod_pick(lod, 6, 6, 6)
+        side_seg = lod_pick(lod, 8, 6, 6)
         step = (_Y1 - _Y0) / max(1, courses - 1)
         radius = max(0.132, step * 0.5 + 0.02)
-        _walls(g, lod, courses, radius, step, seg)
+        _walls(g, lod, courses, radius, step, seg, side_seg)
         _door_and_window(g, lod, radius)
         if lod == 0:
             _side_windows(g, radius)
@@ -95,17 +101,17 @@ def create():
     a.box("Col_StepLow", (0, 0.05, depth * 0.5 + 1.95), (1.00, 0.05, 0.24))
     a.box("Col_StepHigh", (0, 0.15, depth * 0.5 + 1.62), (1.05, 0.06, 0.20))
     a.box("Col_Porch", (0, 0.12, depth * 0.5 + 0.7), (3.2, 0.10, 1.3))
-    center, size, euler = _roof_box(_SHED_Z0, _SHED_Y0, _SHED_Z1, _SHED_Y1, 0.045, 3.2)
+    center, size, euler = _roof_box(_SHED_Z0, _SHED_Y0, _SHED_Z1, _SHED_Y1, 0.008, 2.6)
     a.box("Col_PorchRoof", center, size, euler=euler)
     a.capsule("Vault_PorchRail", (0, 1.16, depth * 0.5 + 1.22), 0.018, 2.20, 0)
-    _add_roof(a, width + 0.4, -2.05, 2.15, 0.0, 3.45, 0.04)
+    _add_roof(a, width + 0.4, -2.05, 2.15, 0.0, 3.45, 0.008)
     # Footing and shaft block a runner. They do not overlap each other or the roof boxes.
     a.box("Col_ChimneyFoot", (_CH_X, 0.14, _CH_Z), (0.76, 0.22, 0.66))
     a.box("Col_Chimney", (_CH_X, 2.16, _CH_Z), (0.50, 3.48, 0.42))
     return a
 
 
-def _walls(g, lod, courses, radius, step, seg):
+def _walls(g, lod, courses, radius, step, seg, side_seg):
     valley = math.sqrt(max(0.0, radius * radius - (step * 0.5) ** 2))
     for i in range(courses):
         y = _Y0 + i * step
@@ -117,8 +123,8 @@ def _walls(g, lod, courses, radius, step, seg):
         y_side = y + step * 0.5
         if y_side <= _Y1 - step * 0.15:
             side_holes = _side_holes(y_side, radius)
-            _run_z(g, lod, i, y_side, radius, seg, -(_OUT_X - radius), not proud, side_holes, 2)
-            _run_z(g, lod, i, y_side, radius, seg, _OUT_X - radius, not proud, side_holes, 3)
+            _run_z(g, lod, i, y_side, radius, side_seg, -(_OUT_X - radius), not proud, side_holes, 2)
+            _run_z(g, lod, i, y_side, radius, side_seg, _OUT_X - radius, not proud, side_holes, 3)
             if y_side + step <= _Y1:
                 _chink_sides(g, y_side + step * 0.5, radius, valley)
         if i + 1 < courses:
@@ -199,7 +205,7 @@ def _chink(g, y, radius, valley, holes):
     z_back = -z_front
     for x0, x1 in _spans(-_OUT_X + 0.20, _OUT_X - 0.20, holes):
         g.box(((x0 + x1) * 0.5, y, z_front), (x1 - x0, band, thick), "Lib_Chink")
-        g.box(((x0 + x1) * 0.5, y, z_back), (x1 - x0, band, thick), "Lib_Chink")
+        # Back bead omitted so the shake courses stay inside the triangle budget.
 
 
 def _chink_sides(g, y, radius, valley):
@@ -447,20 +453,24 @@ def _chimney(g):
 
 
 def _flashing(g):
-    """Aprons on the shingles, then two stepped bands up the brick."""
+    """Aprons over the shake joint, then two stepped bands up the brick."""
     x, z = _CH_X, _CH_Z
     sx, sz = _CH_SX, _CH_SZ
-    y_edge = _roof_y(_HOLE_Z) + 0.012
-    # South and north aprons sit in the gap between the roof edge and the brick.
+    y_edge = _roof_y(_HOLE_Z) + _SHAKE_HEAD + 0.008
+    # South and north aprons lap the thin head of the top course and stop short of the brick.
     for sign in (-1, 1):
-        z_brick = z + sign * (sz * 0.5 + 0.008)
-        z_out = z + sign * (_HOLE_Z - 0.012)
-        z0, z1 = (z_out, z_brick) if sign < 0 else (z_brick, z_out)
-        y0 = _roof_y(z0) + 0.012
-        y1 = _roof_y(z1) + 0.012
-        _apron(g, x - sx * 0.5 + 0.02, x + sx * 0.5 - 0.02, z0, y0, z1, y1, 0.008)
-    # Side aprons along the ridge, clear of the gable pieces beside the hole.
-    # Two bands around the shaft, each closer to the brick than the one below.
+        z_brick = z + sign * (sz * 0.5 + 0.006)
+        z_roof = z + sign * (_HOLE_Z + 0.016)
+        z0, z1 = (z_roof, z_brick) if sign < 0 else (z_brick, z_roof)
+        y0 = _roof_y(z0) + _SHAKE_HEAD + 0.008
+        y1 = _roof_y(z1) + _SHAKE_HEAD + 0.008
+        _apron(g, x - sx * 0.5 + 0.02, x + sx * 0.5 - 0.02, z0, y0, z1, y1, 0.006)
+    # East and west shoes where the ridge meets the brick. Clear of the shake mesh.
+    for sign in (-1, 1):
+        x_brick = x + sign * (sx * 0.5 + 0.006)
+        x_roof = x + sign * _HOLE_X
+        x0, x1 = (x_roof, x_brick) if sign < 0 else (x_brick, x_roof)
+        _apron(g, x0, x1, -0.12, 3.42, 0.12, 3.42, 0.006)
     _band(g, y_edge + 0.08, 0.10, 0.016)
     _band(g, y_edge + 0.20, 0.09, 0.006)
 
@@ -537,23 +547,180 @@ def _log_climb(asset):
             )
 
 
+def _outward(z0, y0, z1, y1):
+    dz, dy = (z1 - z0), (y1 - y0)
+    length = math.hypot(dz, dy) or 1.0
+    nz, ny = -dy / length, dz / length
+    if ny < 0.0:
+        nz, ny = -nz, -ny
+    return ny, nz, length
+
+
+def _shake_pts(z0, y0, z1, y1, side, z_stop):
+    """Sawtooth from the eave toward the ridge, cut at z_stop when that is set."""
+    ny, nz, _length = _outward(z0, y0, z1, y1)
+    n = _SHAKE_N
+    t_max = 1.0
+    if z_stop is not None:
+        t_max = (z_stop - z0) / (z1 - z0)
+        t_max = max(0.05, min(1.0, t_max))
+    pts = []
+    for i in range(n):
+        t0 = i / n
+        t1 = (i + 1) / n
+        if t0 >= t_max - 1e-4:
+            break
+        t1 = min(t1, t_max)
+
+        def put(t, offset, role):
+            z = z0 + (z1 - z0) * t
+            y = y0 + (y1 - y0) * t
+            pts.append({
+                "y": y + ny * offset,
+                "z": z + nz * offset,
+                "role": role,
+                "course": i,
+                "side": side,
+                "v": 0.0 if role == "butt" else 1.0,
+            })
+
+        put(t0, _SHAKE_BUTT, "butt")
+        put(t1, _SHAKE_HEAD, "head")
+        if t1 >= t_max - 1e-6:
+            break
+    return pts, ny, nz
+
+
+def _close_under(pts, z0, y0, z1, y1, ny, nz):
+    """Return along the underside from the last outer point back to the eave."""
+    under = []
+    for src in (pts[-1], pts[0]):
+        # Drop from the outer point back onto the base, then inside by _SHAKE_UNDER.
+        # Use the eave and the cut as the underside ends so the solid stays simple.
+        under.append(src)
+    y_a = pts[-1]["y"] - ny * (_SHAKE_BUTT if pts[-1]["role"] == "butt" else _SHAKE_HEAD) - ny * _SHAKE_UNDER
+    z_a = pts[-1]["z"] - nz * (_SHAKE_BUTT if pts[-1]["role"] == "butt" else _SHAKE_HEAD) - nz * _SHAKE_UNDER
+    y_b = pts[0]["y"] - ny * _SHAKE_BUTT - ny * _SHAKE_UNDER
+    z_b = pts[0]["z"] - nz * _SHAKE_BUTT - nz * _SHAKE_UNDER
+    # The first point is always a butt. Recompute both from the base line to avoid drift.
+    del y_a, z_a, y_b, z_b, under
+    def base(p, role_off):
+        return {
+            "y": p["y"] - ny * role_off - ny * _SHAKE_UNDER,
+            "z": p["z"] - nz * role_off - nz * _SHAKE_UNDER,
+            "role": "under",
+            "course": -1,
+            "side": p["side"],
+            "v": 0.62,
+        }
+    head_off = _SHAKE_HEAD
+    butt_off = _SHAKE_BUTT
+    far = base(pts[-1], head_off if pts[-1]["role"] == "head" else butt_off)
+    near = base(pts[0], butt_off)
+    return [far, near]
+
+
+def _emit_shake(g, x0, x1, pts):
+    """Extrude a closed profile in x. Course faces carry the shake UVs."""
+    if x1 - x0 < 0.02 or len(pts) < 3:
+        return
+    bm = bmesh.new()
+    uv_layer = bm.loops.layers.uv.new("UVMap")
+    rings = []
+    for x in (x0, x1):
+        ring = []
+        for p in pts:
+            ring.append(bm.verts.new(unity_to_blender(x, p["y"], p["z"])))
+        rings.append(ring)
+    n = len(pts)
+
+    def face_uv(face, i, j, xa, xb):
+        pa, pb = pts[i], pts[j]
+        course = pa["course"] if pa["course"] == pb["course"] and pa["course"] >= 0 else -1
+        off = 0.0
+        if course >= 0 and {pa["role"], pb["role"]} == {"butt", "head"}:
+            off = _hash01(course, pa["side"], 5) * 0.63
+        coords = []
+        for p, x in ((pa, xa), (pb, xa), (pb, xb), (pa, xb)):
+            coords.append((x + off, p["v"] if course >= 0 else p["v"]))
+        # loop order is (i, j, n+j, n+i) = (xa,i), (xa,j), (xb,j), (xb,i)
+        order = (coords[0], coords[1], coords[2], coords[3])
+        for loop, uv in zip(face.loops, order):
+            loop[uv_layer].uv = uv
+
+    for i in range(n):
+        j = (i + 1) % n
+        f = bm.faces.new((rings[0][i], rings[0][j], rings[1][j], rings[1][i]))
+        face_uv(f, i, j, x0, x1)
+    cap0 = bm.faces.new([rings[0][i] for i in reversed(range(n))])
+    cap1 = bm.faces.new([rings[1][i] for i in range(n)])
+    for cap in (cap0, cap1):
+        for loop in cap.loops:
+            loop[uv_layer].uv = (0.2, 0.5)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    g._ingest(bm, "Lib_Roof", -1.0)
+
+
+def _hash01(a, b, c):
+    return ((a * 374761393 + b * 668265263 + c * 1442695041) & 0x7FFFFFFF) / 2147483647.0
+
+
+def _shake_slope(g, x0, x1, z0, y0, z1, y1, side, z_stop):
+    pts, ny, nz = _shake_pts(z0, y0, z1, y1, side, z_stop)
+    if len(pts) < 2:
+        return
+    pts.extend(_close_under(pts, z0, y0, z1, y1, ny, nz))
+    _emit_shake(g, x0, x1, pts)
+
+
+def _shake_gable(g, x0, x1):
+    """Both slopes and the ridge, one solid, from x0 to x1."""
+    south, ny_s, nz_s = _shake_pts(-2.05, 2.15, -0.02, _roof_y(0.02), 0, None)
+    north, ny_n, nz_n = _shake_pts(2.05, 2.15, 0.02, _roof_y(0.02), 1, None)
+    # North runs ridge to eave so the profile walks around the outside.
+    north_rev = list(reversed(north))
+    peak = {
+        "y": 3.45 + _SHAKE_HEAD + 0.022,
+        "z": 0.0,
+        "role": "peak",
+        "course": -1,
+        "side": 0,
+        "v": 0.0,
+    }
+    outer = south + [peak] + north_rev
+    # Underside: south eave, south ridge, north ridge, north eave.
+    def under_of(p, ny, nz, off):
+        return {
+            "y": p["y"] - ny * off - ny * _SHAKE_UNDER,
+            "z": p["z"] - nz * off - nz * _SHAKE_UNDER,
+            "role": "under",
+            "course": -1,
+            "side": 0,
+            "v": 0.62,
+        }
+    under = [
+        under_of(north[0], ny_n, nz_n, _SHAKE_BUTT),
+        under_of(north[-1], ny_n, nz_n, _SHAKE_HEAD),
+        under_of(south[-1], ny_s, nz_s, _SHAKE_HEAD),
+        under_of(south[0], ny_s, nz_s, _SHAKE_BUTT),
+    ]
+    _emit_shake(g, x0, x1, outer + under)
+
+
 def _roof(g, width, lod):
-    """Closed gable split around the chimney, plus the porch shed."""
+    """Shakes and ridge run up to the flashing. Higher LODs stay a plain gable."""
     hx = width * 0.5
-    gap = 0.006
-    x_w = _CH_X - _HOLE_X - gap
-    x_e = _CH_X + _HOLE_X + gap
-    _gable(g, -hx, x_w, -2.05, 2.15, 2.05, 2.15, 3.45, 0.055, "Lib_Roof")
-    _gable(g, x_e, hx, -2.05, 2.15, 2.05, 2.15, 3.45, 0.055, "Lib_Roof")
-    skirt0 = x_w + gap
-    skirt1 = x_e - gap
-    z_h = _HOLE_Z
-    _slope_span(g, skirt0, skirt1, -2.05, 2.15, -z_h, _roof_y(z_h), 0.055, "Lib_Roof")
-    _slope_span(g, skirt0, skirt1, z_h, _roof_y(z_h), 2.05, 2.15, 0.055, "Lib_Roof")
-    _ridge_cap(g, -hx - 0.04, x_w)
-    _ridge_cap(g, x_e, hx + 0.04)
-    _one_slope(g, 1.60, _SHED_Z0, _SHED_Y0, _SHED_Z1, _SHED_Y1, 0.045, "Lib_Roof")
-    del lod
+    if lod > 0:
+        _gable(g, -hx, hx, -2.05, 2.15, 2.05, 2.15, 3.45, 0.04, "Lib_Roof")
+        _one_slope(g, 1.60, _SHED_Z0, _SHED_Y0, _SHED_Z1, _SHED_Y1, 0.04, "Lib_Roof")
+        return
+    x_w = _CH_X - _HOLE_X - 0.004
+    x_e = _CH_X + _HOLE_X + 0.004
+    _shake_gable(g, -hx, x_w)
+    _shake_gable(g, x_e, hx)
+    _shake_slope(g, x_w + 0.004, x_e - 0.004, -2.05, 2.15, -0.02, _roof_y(0.02), 0, -_HOLE_Z)
+    _shake_slope(g, x_w + 0.004, x_e - 0.004, 2.05, 2.15, 0.02, _roof_y(0.02), 1, _HOLE_Z)
+    _shake_slope(g, -1.60, 1.60, _SHED_Z0, _SHED_Y0, _SHED_Z1, _SHED_Y1, 2, None)
 
 
 def _add_roof(asset, width, z0, y0, z1, y1, thick):
@@ -565,15 +732,15 @@ def _add_roof(asset, width, z0, y0, z1, y1, thick):
     for name, a, b in parts:
         span = b - a
         xc = (a + b) * 0.5
-        center, size, euler = _roof_box(z0, y0, z1, y1, thick, span, below=True, x=xc)
+        center, size, euler = _roof_box(z0, y0, z1, y1, thick, span, below=False, x=xc)
         asset.box("Col_RoofS" + name, center, size, euler=euler)
-        center, size, euler = _roof_box(-z0, y0, -z1 if z1 else 0.0, y1, thick, span, below=True, x=xc)
+        center, size, euler = _roof_box(-z0, y0, -z1 if z1 else 0.0, y1, thick, span, below=False, x=xc)
         asset.box("Col_RoofN" + name, center, size, euler=euler)
-    span = (_HOLE_X * 2.0) - 0.04
-    z_h = _HOLE_Z + 0.06
-    center, size, euler = _roof_box(-2.05, 2.15, -z_h, _roof_y(z_h), thick, span, below=True, x=_CH_X)
+    span = (_HOLE_X * 2.0) - 0.08
+    z_h = _HOLE_Z - 0.04
+    center, size, euler = _roof_box(-2.05, 2.15, -z_h, _roof_y(z_h), thick, span, below=False, x=_CH_X)
     asset.box("Col_RoofSM", center, size, euler=euler)
-    center, size, euler = _roof_box(z_h, _roof_y(z_h), 2.05, 2.15, thick, span, below=True, x=_CH_X)
+    center, size, euler = _roof_box(z_h, _roof_y(z_h), 2.05, 2.15, thick, span, below=False, x=_CH_X)
     asset.box("Col_RoofNM", center, size, euler=euler)
 
 

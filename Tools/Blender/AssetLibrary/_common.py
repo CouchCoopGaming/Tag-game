@@ -49,6 +49,11 @@ PALETTE = {
     "Lib_LogEnd": ((0.55, 0.38, 0.22), 0.0, 0.22),
     "Lib_Wood": ((0.62, 0.42, 0.24), 0.0, 0.32),
     "Lib_WoodDark": ((0.36, 0.22, 0.13), 0.0, 0.28),
+    # Round piles. Vertical grain, a wet shaft, a green waterline, a grey top.
+    "Lib_Pile": ((0.42, 0.30, 0.16), 0.0, 0.30),
+    "Lib_PileWet": ((0.18, 0.12, 0.07), 0.0, 0.18),
+    "Lib_PileAlgae": ((0.26, 0.34, 0.16), 0.0, 0.42),
+    "Lib_PileTop": ((0.50, 0.48, 0.42), 0.0, 0.48),
     "Lib_Mulch": ((0.361, 0.227, 0.18), 0.0, 0.15),
     "Lib_Foliage": ((0.15, 0.32, 0.11), 0.0, 0.08),
     "Lib_FoliageDark": ((0.08, 0.20, 0.08), 0.0, 0.08),
@@ -117,7 +122,7 @@ TEXTURED = (
     "Lib_Brick", "Lib_Asphalt", "Lib_Wood", "Lib_WoodDark", "Lib_Concrete",
     "Lib_Siding", "Lib_Roof", "Lib_Warn", "Lib_Soil", "Lib_Hydrant", "Lib_WoodWeather",
     "Lib_CourtDecal", "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue",
-    "Lib_CraneYellow", "Lib_LogEnd",
+    "Lib_CraneYellow", "Lib_LogEnd", "Lib_Pile",
 )
 NORMALS = (
     "Lib_Brick", "Lib_Roof", "Lib_Warn", "Lib_Water", "Lib_Concrete", "Lib_Wood", "Lib_WoodDark",
@@ -426,6 +431,113 @@ class Geo:
         bmesh.ops.translate(bm, verts=bm.verts, vec=Vector(unity_to_blender(*center)))
         self._finish_src(bm, bevel, segs)
         self._ingest(bm, mat, uv_scale, grain)
+
+    def cylinder_bands(self, x, z, radius, bands, segments=8):
+        """One closed vertical pile. bands is (y0, y1, material) from bottom to top."""
+        if radius <= 0 or not bands:
+            return
+        seg = max(3, int(segments))
+        bm = bmesh.new()
+        uv = bm.loops.layers.uv.new("UVMap")
+        ys = [bands[0][0]]
+        for _y0, y1, _mat in bands:
+            ys.append(y1)
+        rings = []
+        for y in ys:
+            ring = []
+            for i in range(seg):
+                ang = 2.0 * math.pi * i / seg
+                ring.append(bm.verts.new(unity_to_blender(
+                    x + radius * math.cos(ang), y, z + radius * math.sin(ang)
+                )))
+            rings.append(ring)
+        span = max(1e-4, ys[-1] - ys[0])
+        mats = []
+
+        def side(i0, i1, y_a, y_b, mat):
+            for i in range(seg):
+                j = (i + 1) % seg
+                face = bm.faces.new((rings[i0][i], rings[i0][j], rings[i1][j], rings[i1][i]))
+                mats.append(mat)
+                u0, u1 = i / seg, (i + 1) / seg
+                v0 = (y_a - ys[0]) / span
+                v1 = (y_b - ys[0]) / span
+                coords = ((u0, v0), (u1, v0), (u1, v1), (u0, v1))
+                for loop, uv_xy in zip(face.loops, coords):
+                    loop[uv].uv = uv_xy
+
+        for b, (y0, y1, mat) in enumerate(bands):
+            side(b, b + 1, y0, y1, mat)
+        cap0 = bm.faces.new(list(reversed(rings[0])))
+        mats.append(bands[0][2])
+        for loop in cap0.loops:
+            loop[uv].uv = (0.5, 0.0)
+        cap1 = bm.faces.new(rings[-1])
+        mats.append(bands[-1][2])
+        for loop in cap1.loops:
+            loop[uv].uv = (0.5, 1.0)
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        self._ingest_multi(bm, mats)
+
+    def tube(self, points, radius, mat, segments=8):
+        """One closed round tube along Unity points. Joints share rings, so segments do not overlap."""
+        if radius <= 0 or len(points) < 2:
+            return
+        pts = [Vector(p) for p in points]
+        seg = max(3, int(segments))
+        bm = bmesh.new()
+        rings = []
+        for i, p in enumerate(pts):
+            if i == 0:
+                direction = pts[1] - pts[0]
+            elif i == len(pts) - 1:
+                direction = pts[-1] - pts[-2]
+            else:
+                direction = pts[i + 1] - pts[i - 1]
+            if direction.length < 1e-6:
+                continue
+            direction.normalize()
+            tmp = Vector((0.0, 0.0, 1.0)) if abs(direction.z) < 0.85 else Vector((1.0, 0.0, 0.0))
+            x_axis = direction.cross(tmp).normalized()
+            z_axis = x_axis.cross(direction).normalized()
+            ring = []
+            for s in range(seg):
+                ang = 2.0 * math.pi * s / seg
+                radial = x_axis * (math.cos(ang) * radius) + z_axis * (math.sin(ang) * radius)
+                q = p + radial
+                ring.append(bm.verts.new(unity_to_blender(q.x, q.y, q.z)))
+            rings.append(ring)
+        if len(rings) < 2:
+            bm.free()
+            return
+        for i in range(len(rings) - 1):
+            for s in range(seg):
+                n = (s + 1) % seg
+                bm.faces.new((rings[i][s], rings[i][n], rings[i + 1][n], rings[i + 1][s]))
+        bm.faces.new(list(reversed(rings[0])))
+        bm.faces.new(rings[-1])
+        self._finish_src(bm, 0, 0)
+        self._ingest(bm, mat, 1.0)
+
+    def _ingest_multi(self, src, mats):
+        vmap = {}
+        for v in src.verts:
+            vmap[v] = self.bm.verts.new(v.co)
+        self.bm.verts.index_update()
+        src_uv = src.loops.layers.uv.active if src.loops.layers.uv else None
+        for f, mat in zip(src.faces, mats):
+            try:
+                nf = self.bm.faces.new([vmap[v] for v in f.verts])
+            except ValueError:
+                continue
+            nf.material_index = self.slot(mat)
+            nf.smooth = True
+            nf[self.scale_layer] = -1.0
+            nf[self.grain_layer] = 0.0
+            if src_uv is not None:
+                for loop, src_loop in zip(nf.loops, f.loops):
+                    loop[self.uv].uv = src_loop[src_uv].uv[:]
+        src.free()
 
     def cone(self, center, radius1, radius2, height, mat, segments=12, axis="Y", uv_scale=1.0):
         bm = bmesh.new()
@@ -1176,40 +1288,45 @@ def _siding_pixel(x, y, w, h):
 
 
 def _shake_at(u, v):
-    """Irregular cedar course. Returns course index, height in the course, shake index, across-shake."""
-    courses = 5.2
-    course = v * courses
-    ci = int(math.floor(course))
-    fy = course - ci
-    # Each course starts at a different offset and uses its own widths, so it is not a brick grid.
-    u2 = u + (0.37 if ci % 2 else 0.08) + _hash01(3, ci, 4) * 0.21
-    cursor = -0.15
+    """One exposed course fills the tile. Widths are 8–18 cm, not a brick bond.
+
+    v is 0 at the thick butt and 1 at the thin head. u is metres across the course.
+    """
+    u2 = u % 1.0
+    cursor = 0.0
     i = 0
     si = 0
     fx = 0.5
-    while cursor < u2 + 1.2 and i < 24:
-        width = 0.15 + _hash01(i, ci, 11) * 0.24
-        if _hash01(i, ci, 12) > 0.84:
-            width *= 0.62
+    width = 0.12
+    while cursor < u2 + 1e-6 and i < 16:
+        width = 0.08 + _hash01(i, 0, 11) * 0.10
+        if _hash01(i, 0, 12) > 0.72:
+            width = 0.06 + _hash01(i, 0, 13) * 0.04
         nxt = cursor + width
-        if cursor <= u2 < nxt:
+        if cursor <= u2 < nxt or nxt >= 1.0:
             si = i
-            fx = (u2 - cursor) / width
+            fx = (u2 - cursor) / max(width, 1e-4)
             break
         cursor = nxt
         i += 1
         si = i
-    return ci, fy, si, fx
+    # The butt edge wanders a couple of centimetres so it is not a sawn line.
+    wobble = (_hash01(si, 1, 9) - 0.5) * 0.05 + (_value_noise(u * 28.0, 0.2, 6) - 0.5) * 0.03
+    fy = v
+    return 0, fy, si, fx, wobble
 
 
 def _roof_height(x, y, w, h):
-    """Low at the butt and the side joint, high on the face of the shake."""
-    _ci, fy, _si, fx = _shake_at(x / float(w), y / float(h))
+    """Thick at the butt, feathered at the head, with a groove at each joint."""
+    _ci, fy, _si, fx, wobble = _shake_at(x / float(w), y / float(h))
     side = min(fx, 1.0 - fx)
-    if fy < 0.10 or side < 0.035:
-        return 0.05
-    edge = min(fy - 0.10, side - 0.035, 0.22)
-    return 0.35 + 0.65 * max(0.0, min(1.0, edge * 8.0))
+    butt = 0.16 + wobble
+    if fy < butt or side < 0.04:
+        return 0.02
+    rise = min(fy - butt, side - 0.04, 0.25)
+    # Taper: the head is thinner than the middle of the shake.
+    taper = 1.0 - 0.35 * max(0.0, fy - 0.55)
+    return (0.25 + 0.75 * max(0.0, min(1.0, rise * 7.0))) * taper
 
 
 def _roof_normal_pixel(x, y, w, h):
@@ -1221,29 +1338,45 @@ def _roof_normal_pixel(x, y, w, h):
 
 
 def _roof_pixel(x, y, w, h):
-    """Weathered cedar shakes. Widths change per course. The butt is a shadow line."""
+    """One cedar course: long vertical grain, random narrow widths, a thick dark butt."""
     u = x / float(w)
     v = y / float(h)
-    ci, fy, si, fx = _shake_at(u, v)
-    n = _hash01(si, ci, 14)
-    weather = _hash01(si, ci, 15)
-    grain = 0.86 + _value_noise(u * 3.0, v * 28.0 + ci * 0.17, 18) * 0.22
-    # Grey-brown, some shakes silvered, none a uniform brick red.
-    brown = (0.38 + n * 0.10, 0.26 + n * 0.05, 0.15 + n * 0.03)
-    grey = (0.48 + n * 0.08, 0.45 + n * 0.06, 0.40 + n * 0.05)
-    t = 0.28 + weather * 0.62
-    r = (brown[0] * (1.0 - t) + grey[0] * t) * grain
-    g = (brown[1] * (1.0 - t) + grey[1] * t) * grain
-    b = (brown[2] * (1.0 - t) + grey[2] * t) * grain
-    if fy < 0.07:
-        shade = 0.22
-    elif fy < 0.15:
-        shade = 0.48
+    _ci, fy, si, fx, wobble = _shake_at(u, v)
+    n = _hash01(si, 2, 14)
+    weather = _hash01(si, 2, 15)
+    # Grain runs up the shake. A little wander, no cross-grain brick joint.
+    grain = 0.78 + _value_noise(fx * 1.4 + si * 0.17, fy * 46.0, 18) * 0.28
+    streak = 0.92 + 0.08 * math.sin((fy * 70.0) + _hash01(si, 4, 2) * 6.0)
+    brown = (0.40 + n * 0.12, 0.24 + n * 0.05, 0.12 + n * 0.03)
+    grey = (0.50 + n * 0.08, 0.46 + n * 0.06, 0.40 + n * 0.04)
+    t = 0.22 + weather * 0.70
+    r = (brown[0] * (1.0 - t) + grey[0] * t) * grain * streak
+    g = (brown[1] * (1.0 - t) + grey[1] * t) * grain * streak
+    b = (brown[2] * (1.0 - t) + grey[2] * t) * grain * streak
+    butt = 0.15 + wobble
+    if fy < butt * 0.55:
+        shade = 0.18
+    elif fy < butt:
+        shade = 0.40
+    elif fy > 0.92:
+        shade = 0.82
     else:
         shade = 1.0
-    if fx < 0.035 or fx > 0.965:
-        shade *= 0.40
+    if fx < 0.045 or fx > 0.955:
+        shade *= 0.35
     return (r * shade, g * shade, b * shade)
+
+
+def _pile_pixel(x, y, w, h):
+    """Vertical grain around a round pile. No hoop seams."""
+    u = x / float(w)
+    v = y / float(h)
+    stripe = 0.5 + 0.5 * math.sin(u * math.pi * 28.0 + _value_noise(u * 4.0, v * 0.6, 3) * 1.6)
+    fine = _value_noise(u * 18.0, v * 2.0, 8)
+    r = 0.34 + stripe * 0.14 + fine * 0.04
+    g = 0.22 + stripe * 0.08 + fine * 0.03
+    b = 0.11 + stripe * 0.04 + fine * 0.02
+    return (r, g, b)
 
 
 def _warn_height(x, y, w, h):
@@ -1398,8 +1531,9 @@ def generate_textures():
     # small procedural tiles. Brick, concrete, wood, asphalt, bark, and the
     # worn metals are the node-baked sets from _bake_pbr.
     _save_image("Lib_Siding", w, h, _siding_pixel)
-    _save_image("Lib_Roof", w, h, _roof_pixel)
-    _save_image("Lib_Roof_N", w, h, _roof_normal_pixel)
+    _save_image("Lib_Roof", 512, 256, _roof_pixel)
+    _save_image("Lib_Roof_N", 512, 256, _roof_normal_pixel)
+    _save_image("Lib_Pile", w, h, _pile_pixel)
     _save_image("Lib_Warn", w, h, _warn_pixel)
     _save_image("Lib_Warn_N", w, h, _warn_normal_pixel)
     _save_image("Lib_Soil", w, h, _soil_pixel)
@@ -1416,7 +1550,7 @@ def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
     skip = {
-        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19", "render_pass20", "render_pass21", "render_pass22", "render_pass23",
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4", "render_pass5", "render_pass6", "render_pass7", "render_pass8", "render_pass9", "render_pass10", "render_pass11", "render_pass12", "render_pass13", "render_pass14", "render_pass15", "render_pass16", "render_pass17", "render_pass18", "render_pass19", "render_pass20", "render_pass21", "render_pass22", "render_pass23", "render_pass24",
         "write_unity", "_kit",
     }
     names = []

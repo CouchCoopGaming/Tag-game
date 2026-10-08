@@ -864,7 +864,7 @@ static class Program
                 "UpperBody.AimTwist",
                 "HangMotion.LegTrail",
                 "HangMotion.SwayExtra",
-                "HangMotion.RopeSpine",
+                // RopeSpine left the played pose when the hang fold was cleared.
                 "HangMotion.Windmill"))
         {
             Console.Error.WriteLine("smooth motion is not on the locomotor");
@@ -995,8 +995,6 @@ static class Program
         }
         if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
                 "BodyLine.WallArc",
-                "BodyLine.LineFix",
-                "HangMotion.RopeSpine",
                 "Handoff2Feel.ZipGrab",
                 "Handoff2Feel.ZipDrop",
                 "Handoff2Feel.PadOpen",

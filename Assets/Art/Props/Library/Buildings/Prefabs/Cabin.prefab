@@ -109,8 +109,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 2.115, z: 0.93}
-  m_Size: 5.96
+  m_LocalReferencePoint: {x: 0, y: 2.115, z: 0.9225}
+  m_Size: 5.975
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -141,7 +141,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Buildings"
-  summary: "Log cabin 4.6 x 3.6 m, walls 2.2 m, ridge at 3.45 m, porch on +Z. Saddle-notched round logs, a vertical-board door, board-and-batten gables, and a side window on each wall. Weathered cedar shakes, a ridge cap, and a brick chimney through the ridge with stepped flashing, a concrete cap, and a flue. The porch has a top rail and a mid rail between the posts."
+  summary: "Log cabin 4.6 x 3.6 m, walls 2.2 m, ridge at 3.45 m, porch on +Z. Saddle-notched round logs, a vertical-board door, board-and-batten gables, and a side window on each wall. Cedar shakes, about 25 cm exposure, run to the flashing on both slopes, with a ridge that meets the chimney. Stepped flashing, a concrete cap, and a flue. The porch has a top rail and a mid rail between the posts."
   climbable: 1
   vaultable: 1
   vaultHeightMeters: 1.02
@@ -3395,7 +3395,7 @@ Transform:
   m_GameObject: {fileID: 300550}
   serializedVersion: 2
   m_LocalRotation: {x: 0.02498, y: 0, z: 0, w: 0.99969}
-  m_LocalPosition: {x: 0, y: 1.94122, z: 2.57101}
+  m_LocalPosition: {x: 0, y: 1.9246, z: 2.57018}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3420,7 +3420,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.368, y: 0.02025, z: 0.84105}
+  m_Size: {x: 1.924, y: 0.0036, z: 0.84105}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300560
 GameObject:
@@ -3502,7 +3502,7 @@ Transform:
   m_GameObject: {fileID: 300570}
   serializedVersion: 2
   m_LocalRotation: {x: -0.27883, y: 0, z: 0, w: 0.96034}
-  m_LocalPosition: {x: -1.05, y: 2.7848, z: -1.01536}
+  m_LocalPosition: {x: -1.005, y: 2.80304, z: -1.02693}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3527,7 +3527,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.85, y: 0.018, z: 1.45647}
+  m_Size: {x: 1.9166, y: 0.0036, z: 1.45647}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300580
 GameObject:
@@ -3555,7 +3555,7 @@ Transform:
   m_GameObject: {fileID: 300580}
   serializedVersion: 2
   m_LocalRotation: {x: 0.27883, y: 0, z: 0, w: 0.96034}
-  m_LocalPosition: {x: -1.05, y: 2.7848, z: 1.01536}
+  m_LocalPosition: {x: -1.005, y: 2.80304, z: 1.02693}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3580,7 +3580,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.85, y: 0.018, z: 1.45647}
+  m_Size: {x: 1.9166, y: 0.0036, z: 1.45647}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300590
 GameObject:
@@ -3608,7 +3608,7 @@ Transform:
   m_GameObject: {fileID: 300590}
   serializedVersion: 2
   m_LocalRotation: {x: -0.27883, y: 0, z: 0, w: 0.96034}
-  m_LocalPosition: {x: 1.75, y: 2.7848, z: -1.01536}
+  m_LocalPosition: {x: 1.705, y: 2.80304, z: -1.02693}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3633,7 +3633,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.814, y: 0.018, z: 1.45647}
+  m_Size: {x: 0.8806, y: 0.0036, z: 1.45647}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300600
 GameObject:
@@ -3661,7 +3661,7 @@ Transform:
   m_GameObject: {fileID: 300600}
   serializedVersion: 2
   m_LocalRotation: {x: 0.27883, y: 0, z: 0, w: 0.96034}
-  m_LocalPosition: {x: 1.75, y: 2.7848, z: 1.01536}
+  m_LocalPosition: {x: 1.705, y: 2.80304, z: 1.02693}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3686,7 +3686,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.814, y: 0.018, z: 1.45647}
+  m_Size: {x: 0.8806, y: 0.0036, z: 1.45647}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300610
 GameObject:
@@ -3714,7 +3714,7 @@ Transform:
   m_GameObject: {fileID: 300610}
   serializedVersion: 2
   m_LocalRotation: {x: -0.27883, y: 0, z: 0, w: 0.96034}
-  m_LocalPosition: {x: 0.7, y: 2.63895, z: -1.24536}
+  m_LocalPosition: {x: 0.7, y: 2.71743, z: -1.16193}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3739,7 +3739,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.6364, y: 0.018, z: 1.12965}
+  m_Size: {x: 0.4736, y: 0.0036, z: 1.26464}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300620
 GameObject:
@@ -3767,7 +3767,7 @@ Transform:
   m_GameObject: {fileID: 300620}
   serializedVersion: 2
   m_LocalRotation: {x: 0.27883, y: 0, z: 0, w: 0.96034}
-  m_LocalPosition: {x: 0.7, y: 2.63895, z: 1.24536}
+  m_LocalPosition: {x: 0.7, y: 2.71743, z: 1.16193}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3792,7 +3792,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.6364, y: 0.018, z: 1.12965}
+  m_Size: {x: 0.4736, y: 0.0036, z: 1.26464}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &300630
 GameObject:
