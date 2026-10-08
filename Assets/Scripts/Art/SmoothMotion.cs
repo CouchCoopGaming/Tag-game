@@ -977,22 +977,77 @@ namespace Tag.Art
             int h = rows * cellH;
             var pix = new byte[w * h * 3];
             Fill(pix, w, h, 16, 18, 22);
-            PaintLoco(pix, w, h, rows, 0, "JUMP", "BEFORE", TrackWallArc(false), 196, 122, 96, true, 0f);
-            PaintLoco(pix, w, h, rows, 1, "JUMP", "AFTER", TrackWallArc(true), 120, 196, 150, true, 0f);
+            PaintLoco(pix, w, h, rows, 0, "WALL JUMP", "BEFORE", TrackWallArc(false), 196, 122, 96, true, 0f);
+            PaintLoco(pix, w, h, rows, 1, "WALL JUMP", "AFTER", TrackWallArc(true), 120, 196, 150, true, 0f);
             PaintLoco(pix, w, h, rows, 2, "ROPE", "BEFORE", TrackRope(false), 196, 122, 96, false, 0f);
             PaintLoco(pix, w, h, rows, 3, "ROPE", "AFTER", TrackRope(true), 150, 210, 140, false, 0f);
             PaintLoco(pix, w, h, rows, 4, "ZIP", "BEFORE", TrackZip(false), 196, 122, 96, false, 0f);
             PaintLoco(pix, w, h, rows, 5, "ZIP", "AFTER", TrackZip(true), 120, 186, 210, false, 0f);
             PaintLoco(pix, w, h, rows, 6, "PAD", "BEFORE", TrackPad(false), 196, 122, 96, false, 0f);
             PaintLoco(pix, w, h, rows, 7, "PAD", "AFTER", TrackPad(true), 210, 170, 110, false, 0f);
-            PaintLoco(pix, w, h, rows, 8, "REV", "BEFORE", TrackReverse(false), 196, 122, 96, false, 0f);
-            PaintLoco(pix, w, h, rows, 9, "REV", "AFTER", TrackReverse(true), 230, 210, 140, false, 0f);
-            PaintLoco(pix, w, h, rows, 10, "REACH", "BEFORE", TrackReach(false), 196, 122, 96, false, 0f);
-            PaintLoco(pix, w, h, rows, 11, "REACH", "AFTER", TrackReach(true), 186, 140, 120, false, 0f);
+            PaintLoco(pix, w, h, rows, 8, "REVERSAL", "BEFORE", TrackReverse(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 9, "REVERSAL", "AFTER", TrackReverse(true), 230, 210, 140, false, 0f);
+            PaintLoco(pix, w, h, rows, 10, "PUNCH", "BEFORE", TrackReach(false), 196, 122, 96, false, 0f);
+            PaintLoco(pix, w, h, rows, 11, "PUNCH", "AFTER", TrackReach(true), 186, 140, 120, false, 0f);
             string dir = Path.GetDirectoryName(path);
             if (!string.IsNullOrEmpty(dir))
                 Directory.CreateDirectory(dir);
             WritePng(path, pix, w, h);
+        }
+
+        /// <summary>
+        /// Pass 10. Run, start, stop, turn, idle, crouch walk, and slide.
+        /// Before, then after. Labels use the bundled face.
+        /// </summary>
+        public static void WritePass10Stills(string path)
+        {
+            const int frames = 8;
+            const int cellW = 120;
+            const int cellH = 156;
+            const int labelW = 168;
+            const int rows = 14;
+            int w = labelW + frames * cellW;
+            int h = rows * cellH;
+            var pix = new byte[w * h * 3];
+            Fill(pix, w, h, 16, 18, 22);
+            string[] titles = { "STRIDE", "START", "STOP", "TURN", "IDLE", "CROUCH", "SLIDE" };
+            byte[] cr = { 120, 186, 230, 150, 210, 186, 230 };
+            byte[] cg = { 196, 168, 176, 210, 170, 140, 200 };
+            byte[] cb = { 150, 230, 120, 140, 110, 120, 120 };
+            for (int k = 0; k < titles.Length; k++)
+            {
+                PaintLoco(pix, w, h, rows, k * 2, titles[k], "BEFORE", TrackFeel(k, false), 196, 122, 96, false, 0f);
+                PaintLoco(pix, w, h, rows, k * 2 + 1, titles[k], "AFTER", TrackFeel(k, true), cr[k], cg[k], cb[k], false, 0f);
+            }
+            string dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            WritePng(path, pix, w, h);
+        }
+
+        static Fig[] TrackFeel(int kind, bool after)
+        {
+            var shot = new Fig[8];
+            for (int i = 0; i < 8; i++)
+            {
+                LocoFeel.Shot s = LocoFeel.ShotAt(kind, i, after);
+                shot[i] = new Fig
+                {
+                    ArmL = s.ArmL,
+                    ArmR = s.ArmR,
+                    ElbL = s.ElbL,
+                    ElbR = s.ElbR,
+                    ThL = s.ThL,
+                    ThR = s.ThR,
+                    KnL = s.KnL,
+                    KnR = s.KnR,
+                    Spine = s.Spine,
+                    Hip = s.Hip,
+                    Head = s.Head,
+                    Lean = s.Lean,
+                };
+            }
+            return shot;
         }
 
         static Fig[] TrackWallArc(bool arced)
@@ -2036,6 +2091,10 @@ namespace Tag.Art
         static void Text(byte[] pix, int w, int h, int x, int y, string text, byte r, byte g, byte b, int scale)
         {
             if (scale < 1) scale = 1;
+            int px = 7 * scale;
+            if (px < 12) px = 12;
+            if (StillFont.Draw(pix, w, h, x, y, text, r, g, b, px) > 0)
+                return;
             int cx = x;
             for (int i = 0; i < text.Length; i++)
             {
@@ -2070,18 +2129,30 @@ namespace Tag.Art
                 case 'A': return 0b01110100011000111111100011000110001L;
                 case 'B': return 0b111101000111110100011000111110L;
                 case 'C': return 0b01110100011000010000100001000101110L;
+                case 'D': return 0b11110100011000110001100011000111110L;
                 case 'E': return 0b111111000011110100001000011111L;
                 case 'F': return 0b111111000011110100001000010000L;
+                case 'G': return 0b01110100011000010111100011000101110L;
                 case 'H': return 0b10001100011000111111100011000110001L;
                 case 'I': return 0b01110001000010000100001000010001110L;
+                case 'J': return 0b00111000010000100001000011000101110L;
+                case 'K': return 0b10001100101010011000101001001010001L;
                 case 'L': return 0b100001000010000100001000011111L;
                 case 'M': return 0b10001110111010110001100011000110001L;
                 case 'N': return 0b10001110011010110011100011000110001L;
                 case 'O': return 0b01110100011000110001100011000101110L;
+                case 'P': return 0b11110100011000111110100001000010000L;
+                case 'Q': return 0b01110100011000110001101011001001101L;
                 case 'R': return 0b111101000111110101011001010010L;
+                case 'S': return 0b01111100001000001110000011000111110L;
                 case 'T': return 0b11111001000010000100001000010000100L;
                 case 'U': return 0b10001100011000110001100011000101110L;
+                case 'V': return 0b10001100011000110001010100101000100L;
                 case 'W': return 0b10001100011000110101101011010101010L;
+                case 'X': return 0b10001100010101000100010101000110001L;
+                case 'Y': return 0b10001100010101000100001000010000100L;
+                case 'Z': return 0b11111000010001000100010001000011111L;
+                case '0': return 0b01110100011001110101110011000101110L;
                 case '1': return 0b00100011000010000100001000010001110L;
                 case '2': return 0b011101000100001000100010001000011111L;
                 case '3': return 0b01110100010000100110000011000101110L;
@@ -2090,6 +2161,7 @@ namespace Tag.Art
                 case '6': return 0b01110100001000011110100011000101110L;
                 case '7': return 0b11111000010001000010001000010000100L;
                 case '8': return 0b011101000110001011100100011000101110L;
+                case '9': return 0b01110100011000101111000011000101110L;
                 case ' ': return 0L;
                 default: return 0L;
             }
