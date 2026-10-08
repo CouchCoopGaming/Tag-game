@@ -17261,10 +17261,7 @@ namespace Tag.Art
             bool punchRise = punchHit && !_hitConfirmPunchWas;
             bool tagRise = tag && !_hitConfirmTagWas;
             if (punchRise || tagRise)
-            {
-                float reach = _punch != null ? _punch.Reach : 1.55f;
-                ComicBurst.Raise(origin, forward, reach, tagRise);
-            }
+                RaiseComicWord(origin, forward, tagRise);
             HitConfirmTell.Note(ref _hitConfirmAge, solo, punchHit, tag, _hitConfirmPunchWas, _hitConfirmTagWas);
             _hitConfirmPunchWas = punchHit;
             _hitConfirmTagWas = tag;
@@ -17278,6 +17275,12 @@ namespace Tag.Art
             EnsureHitConfirm();
             PlaceHitConfirm(origin, forward, HitConfirmTell.Alpha(_hitConfirmAge));
             HitConfirmTell.Step(ref _hitConfirmAge, dt, solo);
+        }
+
+        void RaiseComicWord(Vector3 origin, Vector3 forward, bool tag)
+        {
+            float reach = _punch != null ? _punch.Reach : PunchTagPose.ReachMeters;
+            ComicBurst.Raise(origin, forward, reach, tag);
         }
 
         bool HitConfirmSolo()
