@@ -165,6 +165,12 @@ PASSES = {
     23: (
         # Figure stands beside the pole, clear of the base.
         ("street_clock", "StreetClock_Post", 180.0, (0.90, 0.0, 0.15), 12.0),
+        ("fountain", "Fountain_Walk", 180.0, (0.90, 0.0, -0.58), 8.0),
+        ("bike_hoop1", "BikeRack_Hoop1", 180.0, (0.70, 0.0, 0.05), 12.0),
+        ("bike_hoop3", "BikeRack_Hoop3", 180.0, (1.15, 0.0, 0.15), 20.0),
+        ("bollard_fixed", "Bollard_Fixed", 180.0, (0.72, 0.0, 0.10), 15.0),
+        ("bollard_removable", "Bollard_Removable", 180.0, (0.70, 0.0, 0.10), 15.0),
+        ("wood_pole", "WoodPole_Single", 180.0, (1.15, 0.0, 0.45), 25.0),
     ),
 }
 
@@ -213,6 +219,12 @@ _FRAME22 = {
 # Pass 23. The face is high, so the aim sits above the middle of the pole.
 _FRAME23 = {
     "street_clock": (0.72, 12.0, 208.0, 0.55, 0.52, 0.42, 4.40),
+    "fountain": (0.76, 24.0, 208.0, 0.52, 0.50, 0.36, 3.40),
+    "bike_hoop1": (0.70, 16.0, 210.0, 0.46, 0.48, 0.34, 3.20),
+    "bike_hoop3": (0.64, 14.0, 200.0, 0.42, 0.46, 0.32, 4.80),
+    "bollard_fixed": (0.72, 14.0, 208.0, 0.44, 0.50, 0.34, 3.20),
+    "bollard_removable": (0.72, 14.0, 208.0, 0.44, 0.50, 0.34, 3.20),
+    "wood_pole": (0.70, 7.0, 206.0, 0.48, 0.46, 0.34, 12.0),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -282,6 +294,8 @@ def _load(names):
         "ParkingMeter_Twin": "sk_meter_twin",
         "NewspaperRack": "sk_newspaper_rack",
         "BikeRack_Hoop3": "sk_bike_wave",
+        "BikeRack_Hoop1": "sk_bike_hoop1",
+        "WoodPole_Single": "sk_wood_pole",
         "FireAlarm_Box": "sk_fire_alarm",
         "PayStation_Street": "sk_pay_station",
         "Newsstand_Corner": "sk_newsstand",
@@ -575,6 +589,11 @@ def main():
             print("SHOT", key + "_window")
             _window(found[name], os.path.join(STILL_DIR, key + "_window.png"), yaw=yaw)
         if PASS == 22 and key == "fountain":
+            print("SHOT", key + "_bowl")
+            _bowl(found[name], os.path.join(STILL_DIR, key + "_bowl.png"), yaw=yaw)
+            scale_az = 186.0
+            elevation = 14.0
+        if PASS == 23 and key == "fountain":
             print("SHOT", key + "_bowl")
             _bowl(found[name], os.path.join(STILL_DIR, key + "_bowl.png"), yaw=yaw)
             scale_az = 186.0

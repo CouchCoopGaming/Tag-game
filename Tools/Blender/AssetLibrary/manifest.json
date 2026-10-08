@@ -39292,45 +39292,41 @@
   {
     "name": "Bollard_Fixed",
     "category": "StreetFurniture",
-    "blurb": "Fixed bollard, 152 mm OD, 0.91 m above a concrete collar.",
+    "blurb": "Fixed steel bollard, 152 mm pipe, dome at 0.98 m, bolted flange.",
     "size": [
-      0.312,
-      0.986,
-      0.32
+      0.28,
+      0.98,
+      0.28
     ],
     "min": [
-      -0.156,
+      -0.14,
       0.0,
-      -0.16
+      -0.14
     ],
     "max": [
-      0.156,
-      0.986,
-      0.16
+      0.14,
+      0.98,
+      0.14
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 628,
+        "tris": 616,
         "materials": [
-          "Lib_Concrete",
+          "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_PaintYellow",
-          "Lib_PaintWhite",
-          "Lib_Rust",
-          "Lib_SteelDark"
+          "Lib_PaintYellow"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 160,
+        "tris": 172,
         "materials": [
-          "Lib_Concrete",
+          "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_PaintYellow",
-          "Lib_PaintWhite"
+          "Lib_PaintYellow"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -39338,17 +39334,17 @@
     ],
     "colliders": [
       {
-        "name": "Col_Collar",
+        "name": "Col_Flange",
         "type": "box",
         "center": [
           0,
-          0.03,
+          0.01,
           0
         ],
         "size": [
-          0.24,
-          0.04,
-          0.24
+          0.2,
+          0.016,
+          0.2
         ],
         "euler": [
           0,
@@ -39361,11 +39357,11 @@
         "type": "capsule",
         "center": [
           0,
-          0.44,
+          0.45,
           0
         ],
-        "radius": 0.055,
-        "height": 0.7,
+        "radius": 0.068,
+        "height": 0.74,
         "direction": 1
       }
     ],
@@ -39373,59 +39369,56 @@
     "vaultable": false,
     "vaultHeight": 0.0,
     "climbNote": "152 mm round post. Not a cling.",
-    "vaultNote": "Top is 0.96 m and domed. Not a vault rail.",
+    "vaultNote": "Top is 0.98 m and domed. Not a vault rail.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.48,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Bollard_Fixed.fbx"
   },
   {
     "name": "Bollard_Removable",
     "category": "StreetFurniture",
-    "blurb": "Removable bollard, 114 mm post, 0.90 m tall, in a flush steel socket.",
+    "blurb": "Removable bollard, 114 mm post, dome at 0.90 m, socket and lock collar.",
     "size": [
-      0.253,
-      0.937,
-      0.26
+      0.22,
+      0.9,
+      0.22
     ],
     "min": [
-      -0.127,
+      -0.11,
       0.0,
-      -0.13
+      -0.11
     ],
     "max": [
-      0.127,
-      0.937,
-      0.13
+      0.11,
+      0.9,
+      0.11
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 532,
+        "tris": 692,
         "materials": [
           "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_PaintYellow",
           "Lib_PaintWhite",
-          "Lib_Black",
-          "Lib_Rust"
+          "Lib_Steel"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 172,
+        "tris": 252,
         "materials": [
           "Lib_SteelDark",
-          "Lib_Steel",
           "Lib_PaintYellow",
           "Lib_PaintWhite",
-          "Lib_Black"
+          "Lib_Steel"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -39437,13 +39430,13 @@
         "type": "box",
         "center": [
           0,
-          0.02,
+          0.01,
           0
         ],
         "size": [
-          0.14,
-          0.024,
-          0.14
+          0.16,
+          0.014,
+          0.16
         ],
         "euler": [
           0,
@@ -39456,11 +39449,11 @@
         "type": "capsule",
         "center": [
           0,
-          0.46,
+          0.42,
           0
         ],
-        "radius": 0.044,
-        "height": 0.76,
+        "radius": 0.05,
+        "height": 0.7,
         "direction": 1
       }
     ],
@@ -39475,7 +39468,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.88,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Bollard_Removable.fbx"
   },
   {
@@ -44174,24 +44167,24 @@
     "category": "StreetFurniture",
     "blurb": "Pedestal fountain. Rim 0.98 m, shallow bowl, chrome bubbler inside the rim, push button, fluted base.",
     "size": [
-      0.388,
+      0.396,
       0.984,
-      0.396
+      0.389
     ],
     "min": [
-      -0.184,
+      -0.192,
       0.0,
-      -0.184
+      -0.192
     ],
     "max": [
       0.204,
       0.984,
-      0.212
+      0.197
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1568,
+        "tris": 2192,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
@@ -44202,7 +44195,7 @@
       },
       {
         "lod": 1,
-        "tris": 708,
+        "tris": 976,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintGreen",
@@ -44245,17 +44238,74 @@
         "direction": 1
       },
       {
-        "name": "Col_Floor",
+        "name": "Col_FloorF",
         "type": "box",
         "center": [
           0,
-          0.914,
+          0.904,
+          0.055
+        ],
+        "size": [
+          0.024,
+          0.005,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FloorB",
+        "type": "box",
+        "center": [
+          0,
+          0.904,
+          -0.055
+        ],
+        "size": [
+          0.024,
+          0.005,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FloorL",
+        "type": "box",
+        "center": [
+          -0.055,
+          0.904,
           0
         ],
         "size": [
-          0.08,
-          0.02,
-          0.08
+          0.024,
+          0.005,
+          0.024
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FloorR",
+        "type": "box",
+        "center": [
+          0.055,
+          0.904,
+          0
+        ],
+        "size": [
+          0.024,
+          0.005,
+          0.024
         ],
         "euler": [
           0,
@@ -44268,13 +44318,13 @@
         "type": "box",
         "center": [
           0,
-          0.958,
-          0.17
+          0.972,
+          0.18
         ],
         "size": [
-          0.024,
-          0.012,
-          0.012
+          0.016,
+          0.01,
+          0.008
         ],
         "euler": [
           0,
@@ -44287,13 +44337,13 @@
         "type": "box",
         "center": [
           0,
-          0.958,
-          -0.17
+          0.972,
+          -0.18
         ],
         "size": [
-          0.024,
-          0.012,
-          0.012
+          0.016,
+          0.01,
+          0.008
         ],
         "euler": [
           0,
@@ -44305,14 +44355,14 @@
         "name": "Col_RimL",
         "type": "box",
         "center": [
-          -0.17,
-          0.958,
+          -0.18,
+          0.972,
           0
         ],
         "size": [
-          0.012,
-          0.012,
-          0.024
+          0.008,
+          0.01,
+          0.016
         ],
         "euler": [
           0,
@@ -44324,14 +44374,14 @@
         "name": "Col_RimR",
         "type": "box",
         "center": [
-          0.17,
-          0.958,
+          0.18,
+          0.972,
           0
         ],
         "size": [
-          0.012,
-          0.012,
-          0.024
+          0.008,
+          0.01,
+          0.016
         ],
         "euler": [
           0,
@@ -44353,5 +44403,959 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Fountain_Walk.fbx"
+  },
+  {
+    "name": "BikeRack_Hoop1",
+    "category": "StreetFurniture",
+    "blurb": "One inverted-U hoop. 0.60 m between leg centres, tube top 0.86 m.",
+    "size": [
+      0.11,
+      0.86,
+      0.71
+    ],
+    "min": [
+      -0.055,
+      0.0,
+      -0.355
+    ],
+    "max": [
+      0.055,
+      0.86,
+      0.355
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1620,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 292,
+        "materials": [
+          "Lib_Steel",
+          "Lib_SteelDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Leg_0",
+        "type": "capsule",
+        "center": [
+          0,
+          0.26,
+          -0.3
+        ],
+        "radius": 0.016,
+        "height": 0.46,
+        "direction": 1
+      },
+      {
+        "name": "Col_Foot_0",
+        "type": "box",
+        "center": [
+          0,
+          0.01,
+          -0.3
+        ],
+        "size": [
+          0.07,
+          0.016,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_1",
+        "type": "capsule",
+        "center": [
+          0,
+          0.26,
+          0.3
+        ],
+        "radius": 0.016,
+        "height": 0.46,
+        "direction": 1
+      },
+      {
+        "name": "Col_Foot_1",
+        "type": "box",
+        "center": [
+          0,
+          0.01,
+          0.3
+        ],
+        "size": [
+          0.07,
+          0.016,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_4",
+        "type": "box",
+        "center": [
+          0.0,
+          0.6060336091567717,
+          -0.29171097611930297
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_6",
+        "type": "box",
+        "center": [
+          0.0,
+          0.650805029709527,
+          -0.27716385975338603
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_8",
+        "type": "box",
+        "center": [
+          0.0,
+          0.6927495694147847,
+          -0.2557920493062276
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_10",
+        "type": "box",
+        "center": [
+          0.0,
+          0.7308344144990552,
+          -0.22812178968000926
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_12",
+        "type": "box",
+        "center": [
+          0.0,
+          0.7641217896800093,
+          -0.19483441449905506
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_14",
+        "type": "box",
+        "center": [
+          0.0,
+          0.7917920493062277,
+          -0.15674956941478463
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_16",
+        "type": "box",
+        "center": [
+          0.0,
+          0.8131638597533861,
+          -0.11480502970952691
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_18",
+        "type": "box",
+        "center": [
+          0.0,
+          0.827710976119303,
+          -0.07003360915677154
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_20",
+        "type": "box",
+        "center": [
+          0.0,
+          0.8350752001199384,
+          -0.02353772871835346
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_22",
+        "type": "box",
+        "center": [
+          0.0,
+          0.8350752001199384,
+          0.0235377287183535
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_24",
+        "type": "box",
+        "center": [
+          0.0,
+          0.827710976119303,
+          0.07003360915677158
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_26",
+        "type": "box",
+        "center": [
+          0.0,
+          0.8131638597533861,
+          0.11480502970952694
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_28",
+        "type": "box",
+        "center": [
+          0.0,
+          0.7917920493062276,
+          0.15674956941478474
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_30",
+        "type": "box",
+        "center": [
+          0.0,
+          0.7641217896800093,
+          0.19483441449905506
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_32",
+        "type": "box",
+        "center": [
+          0.0,
+          0.7308344144990551,
+          0.2281217896800093
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_34",
+        "type": "box",
+        "center": [
+          0.0,
+          0.6927495694147847,
+          0.2557920493062276
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_36",
+        "type": "box",
+        "center": [
+          0.0,
+          0.6508050297095269,
+          0.27716385975338603
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arc_38",
+        "type": "box",
+        "center": [
+          0.0,
+          0.6060336091567716,
+          0.29171097611930297
+        ],
+        "size": [
+          0.018,
+          0.018,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Tube is too thin to cling.",
+    "vaultNote": "Crown is 0.86 m and round. Under the vault band.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/BikeRack_Hoop1.fbx"
+  },
+  {
+    "name": "WoodPole_Single",
+    "category": "StreetFurniture",
+    "blurb": "Wood pole, 9.2 m. Crossarm at 7.95 m, three pin insulators, transformer under the arm.",
+    "size": [
+      1.7,
+      9.2,
+      0.81
+    ],
+    "min": [
+      -0.85,
+      0.0,
+      -0.17
+    ],
+    "max": [
+      0.85,
+      9.2,
+      0.64
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 576,
+        "materials": [
+          "Lib_Bark",
+          "Lib_Wood",
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_PaintCream",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 292,
+        "materials": [
+          "Lib_Bark",
+          "Lib_Wood",
+          "Lib_SteelDark",
+          "Lib_PaintCream",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Pole_0",
+        "type": "capsule",
+        "center": [
+          0,
+          0.27,
+          0
+        ],
+        "radius": 0.16008695652173913,
+        "height": 0.42,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_1",
+        "type": "capsule",
+        "center": [
+          0,
+          0.5700000000000001,
+          0
+        ],
+        "radius": 0.15764130434782608,
+        "height": 0.42000000000000004,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_2",
+        "type": "capsule",
+        "center": [
+          0,
+          0.8699999999999999,
+          0
+        ],
+        "radius": 0.15519565217391304,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_3",
+        "type": "capsule",
+        "center": [
+          0,
+          1.17,
+          0
+        ],
+        "radius": 0.15275,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_4",
+        "type": "capsule",
+        "center": [
+          0,
+          1.47,
+          0
+        ],
+        "radius": 0.15030434782608695,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_5",
+        "type": "capsule",
+        "center": [
+          0,
+          1.77,
+          0
+        ],
+        "radius": 0.1478586956521739,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_6",
+        "type": "capsule",
+        "center": [
+          0,
+          2.0700000000000003,
+          0
+        ],
+        "radius": 0.14541304347826087,
+        "height": 0.42000000000000015,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_7",
+        "type": "capsule",
+        "center": [
+          0,
+          2.37,
+          0
+        ],
+        "radius": 0.14296739130434782,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_8",
+        "type": "capsule",
+        "center": [
+          0,
+          2.67,
+          0
+        ],
+        "radius": 0.14052173913043478,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_9",
+        "type": "capsule",
+        "center": [
+          0,
+          2.9699999999999998,
+          0
+        ],
+        "radius": 0.13807608695652174,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_10",
+        "type": "capsule",
+        "center": [
+          0,
+          3.2699999999999996,
+          0
+        ],
+        "radius": 0.1356304347826087,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_11",
+        "type": "capsule",
+        "center": [
+          0,
+          3.5699999999999994,
+          0
+        ],
+        "radius": 0.13318478260869565,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_12",
+        "type": "capsule",
+        "center": [
+          0,
+          3.869999999999999,
+          0
+        ],
+        "radius": 0.1307391304347826,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_13",
+        "type": "capsule",
+        "center": [
+          0,
+          4.169999999999999,
+          0
+        ],
+        "radius": 0.12829347826086956,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_14",
+        "type": "capsule",
+        "center": [
+          0,
+          4.469999999999999,
+          0
+        ],
+        "radius": 0.12584782608695652,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_15",
+        "type": "capsule",
+        "center": [
+          0,
+          4.769999999999999,
+          0
+        ],
+        "radius": 0.12340217391304348,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_16",
+        "type": "capsule",
+        "center": [
+          0,
+          5.0699999999999985,
+          0
+        ],
+        "radius": 0.12095652173913043,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_17",
+        "type": "capsule",
+        "center": [
+          0,
+          5.369999999999998,
+          0
+        ],
+        "radius": 0.1185108695652174,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_18",
+        "type": "capsule",
+        "center": [
+          0,
+          5.669999999999998,
+          0
+        ],
+        "radius": 0.11606521739130435,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_19",
+        "type": "capsule",
+        "center": [
+          0,
+          5.969999999999998,
+          0
+        ],
+        "radius": 0.11361956521739132,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_20",
+        "type": "capsule",
+        "center": [
+          0,
+          6.269999999999998,
+          0
+        ],
+        "radius": 0.11117391304347828,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_21",
+        "type": "capsule",
+        "center": [
+          0,
+          6.569999999999998,
+          0
+        ],
+        "radius": 0.10872826086956523,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_22",
+        "type": "capsule",
+        "center": [
+          0,
+          6.869999999999997,
+          0
+        ],
+        "radius": 0.10628260869565219,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_23",
+        "type": "capsule",
+        "center": [
+          0,
+          7.169999999999997,
+          0
+        ],
+        "radius": 0.10383695652173915,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_24",
+        "type": "capsule",
+        "center": [
+          0,
+          7.469999999999997,
+          0
+        ],
+        "radius": 0.1013913043478261,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_25",
+        "type": "capsule",
+        "center": [
+          0,
+          7.769999999999997,
+          0
+        ],
+        "radius": 0.09894565217391306,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_26",
+        "type": "capsule",
+        "center": [
+          0,
+          8.069999999999997,
+          0
+        ],
+        "radius": 0.09650000000000002,
+        "height": 0.4200000000000008,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_27",
+        "type": "capsule",
+        "center": [
+          0,
+          8.369999999999997,
+          0
+        ],
+        "radius": 0.09405434782608697,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_28",
+        "type": "capsule",
+        "center": [
+          0,
+          8.669999999999998,
+          0
+        ],
+        "radius": 0.09160869565217393,
+        "height": 0.41999999999999993,
+        "direction": 1
+      },
+      {
+        "name": "Col_Pole_29",
+        "type": "capsule",
+        "center": [
+          0,
+          8.905,
+          0
+        ],
+        "radius": 0.0902228260869565,
+        "height": 0.2900000000000027,
+        "direction": 1
+      },
+      {
+        "name": "Col_ArmL",
+        "type": "box",
+        "center": [
+          -0.5,
+          7.95,
+          0.06
+        ],
+        "size": [
+          0.66,
+          0.08,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_ArmR",
+        "type": "box",
+        "center": [
+          0.5,
+          7.95,
+          0.06
+        ],
+        "size": [
+          0.66,
+          0.08,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Can",
+        "type": "capsule",
+        "center": [
+          0,
+          6.85,
+          0.42
+        ],
+        "radius": 0.19,
+        "height": 0.58,
+        "direction": 0
+      },
+      {
+        "name": "Col_Hanger",
+        "type": "box",
+        "center": [
+          0,
+          7.18,
+          0.16
+        ],
+        "size": [
+          0.04,
+          0.14,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Round timber, 34 cm at the ground. Capsules follow the taper. Not a flat cling.",
+    "vaultNote": "No rail. The arm is 7.95 m.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/WoodPole_Single.fbx"
   }
 ]
