@@ -268,3 +268,25 @@ Stick figures are in `Docs/SmoothStills/pass10/locomotion.png`. Fourteen rows, e
 The pass 9 row labels were a 5-by-7 bitmap that had no J, P, Z, D, or V, so WALL JUMP, ROPE, ZIP, PAD, and REVERSAL drew as fragments. Stills now rasterize Liberation Sans from `Tools/StrafeJumpSim/Fonts`. `Docs/SmoothStills/pass9/body-line.png` was rendered again with those words.
 
 `loco-polish`, `body-life`, `foot-slide`, `respawn-blink`, `climb-contact`, `body-line`, `response-latency`, and `stick-quality` are unchanged. `climbRate` stays 16.50 and `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`. Mouse flicks still snap. Landing still waits one sample.
+
+## Pass 11
+
+Airborne motion. Visual only. The jump still leaves on the press frame. Coyote stays 0.10. The buffer stays 0.16. Jump speed stays 24.7. Rising gravity stays 22. The fall multiplier stays 1.62. Terminal stays 56.16. Walk, sprint, crouch, slide boost, dash, punch, climb, slip, wall-run, pad, zip, and the grapple are unchanged. The landing, wall-run, tic-tac, and cling poses are unchanged. One `CharacterController.Move` per Update. No root motion. No new verbs. No ledge hang and no shimmy. Chase-cam `fovPop`, shake, and `slowMo` stay 0.
+
+A jump used to open at the 0.62 stride lead, a 24.8° thigh step on the press frame. The push is on that frame, and the rest of the crouch eases. The peak step is 12.5°. The capsule still leaves on frame 1.
+
+The tuck used to be the same shape at every horizontal speed. A long jump now keeps less of it, so the thigh steps 1.6° instead of 3.7°. A straight hop keeps the full tuck. The arms sit wider on the hop, for balance.
+
+The fall used to freeze once vertical speed passed -12, then the hard land cut the thighs 58° (74 against 16). The legs and arms now brace as the drop approaches terminal 56.16. The remaining step into the existing hard land is 20°. The land pose is the same.
+
+A chained hop used to drive a knee toward 88°, a 22.1° step out of the fall. The legs now cycle lightly, and the first frame stays on the pose the hop left. The peak step is 4.9°. An air strafe used to put the full 18° roll on in one frame. It now eases, including a small bank on the rise, and the peak step is 1.8°. Letting go of the strafe eases the bank off.
+
+A coyote jump inside 0.10 used to snap to that same 24.8° lead. It now starts on the run and eases across the coyote window. The peak step is 10.9°.
+
+`air-feel takeoff=24.8>12.5 tuck=3.7>1.6 fall=58.0>20.0 hop=22.1>4.9 strafe=18.0>1.8 coyote=24.8>10.9 gameplayDelay=0 rootMotion=0`
+
+Stick figures are in `Docs/SmoothStills/pass11/air.png`. Twelve rows, eight frames: takeoff, apex, fall, hop, strafe, and coyote. Before, then after.
+
+The same poses are on the Hier mannequin, tinted a player blue, on a clean ground under a sky: `Docs/SmoothStills/pass11/stride.png`, `stop.png`, `turn.png`, `apex.png`, and `fall.png`.
+
+`loco-feel`, `loco-polish`, `body-life`, `foot-slide`, `respawn-blink`, `climb-contact`, `body-line`, `response-latency`, and `stick-quality` are unchanged. `climbRate` stays 16.50 and `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok. `transition-matrix` stays `over=0`. Mouse flicks still snap. Landing still waits one sample.

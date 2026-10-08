@@ -245,3 +245,12 @@ Running, starting, stopping, turning, idling, crouch-walking, and sliding ease i
 - Starting used to throw the chest forward on the first frame. It now leans in over one step, then settles. Stopping plants the lead foot and eases into idle instead of cutting the stride off. Try it: stand, sprint, then let go of the stick.
 - A turn leans with how fast you turn. A sharp turn while walking eases the outside foot around. Idle still breathes, shifts weight, and looks around. Crouch-walk stays a low stride at the same 3.68. Try it: walk a tight circle, stand still for a few seconds, then crouch-walk.
 - Sliding in and out used to drop the body in one hard step. It now eases down and back up. How fast the slide slows down is unchanged. Try it: sprint, slide, then come back up to a run.
+
+## Motion, eleventh pass
+
+Jumps, hops, and air strafes read on the body. The jump still leaves the ground on the frame you press it. Coyote, jump speed, and the landing pose are the same.
+
+- The takeoff push is on the press frame, then the crouch eases instead of cutting in. A long jump stays longer than a straight hop. The arms sit out for balance. Try it: hop straight up, then sprint and jump, and watch the knees at the top.
+- Falling used to freeze, then the land folded the legs in one step. The body now braces as the drop speeds up, and the existing land takes it from there. Try it: jump off something tall and watch the arms open on the way down.
+- A bunny hop keeps a light step in the legs, and the next hop does not pop off the one before it. Air strafe leans into the stick, including on the way up, and the lean eases off when you let go. Try it: chain a few hops, then hold A or D in the air.
+- A coyote jump off a ledge starts from the run you were already in. Try it: sprint off a ledge and jump within a tenth of a second.
