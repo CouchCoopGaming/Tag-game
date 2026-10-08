@@ -150,6 +150,10 @@ PASSES = {
         # Figure stands on the street side of the counter, clear of the booth.
         ("newsstand", "Newsstand_Corner", 180.0, (-1.62, 0.0, -1.22), 0.0),
     ),
+    21: (
+        # Figure stands on the street side, beside the basin, not behind the spout.
+        ("fountain", "Fountain_Walk", 180.0, (0.98, 0.0, -0.40), 12.0),
+    ),
 }
 
 # Pass 15 sits the prop on a sidewalk panel. Low camera, aim below center,
@@ -181,6 +185,11 @@ _FRAME15 = {
 # Pass 20 frames the rebuilt kiosk. The 3/4 sees the lit front and the lit side rack.
 _FRAME20 = {
     "newsstand": (0.70, 13.0, 232.0, 0.42, 0.50, 0.34, 7.20),
+}
+
+# Pass 21 looks down into the basin. The front faces the sun.
+_FRAME21 = {
+    "fountain": (0.78, 42.0, 196.0, 0.58, 0.52, 0.36, 3.60),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -253,6 +262,7 @@ def _load(names):
         "FireAlarm_Box": "sk_fire_alarm",
         "PayStation_Street": "sk_pay_station",
         "Newsstand_Corner": "sk_newsstand",
+        "Fountain_Walk": "sk_fountain",
         "MailDrop_Corner": "sk_mail_drop",
         "BusShelter_City": "sk_bus_shelter",
         "TrafficSignal_Mast": "sk_traffic_signal",
@@ -450,6 +460,8 @@ def main():
         tuned15 = _FRAME15.get(key) if PASS >= 15 else None
         if PASS >= 20 and key in _FRAME20:
             tuned15 = _FRAME20[key]
+        if PASS >= 21 and key in _FRAME21:
+            tuned15 = _FRAME21[key]
         if tuned15:
             fill, elevation, azimuth, aim, scale_fill, scale_aim, slab = tuned15
         else:
@@ -502,6 +514,9 @@ def main():
         # Pass 20: a near-front camera so the figure stands beside the hatch, not across the side.
         if PASS == 20 and key == "newsstand":
             scale_az = 188.0
+        if PASS == 21 and key == "fountain":
+            scale_az = 188.0
+            elevation = 16.0
         _scale(
             found[name],
             os.path.join(STILL_DIR, key + "_scale.png"),

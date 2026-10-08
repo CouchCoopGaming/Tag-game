@@ -44144,5 +44144,194 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Newsstand_Corner.fbx"
+  },
+  {
+    "name": "Fountain_Walk",
+    "category": "StreetFurniture",
+    "blurb": "Sidewalk fountain. Rim at 1.00 m, hollow basin, brass gooseneck, push button. No legend.",
+    "size": [
+      0.548,
+      1.151,
+      0.47
+    ],
+    "min": [
+      -0.235,
+      0.0,
+      -0.235
+    ],
+    "max": [
+      0.313,
+      1.151,
+      0.235
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1088,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintGreen",
+          "Lib_Brass",
+          "Lib_PaintRed"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 580,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintGreen",
+          "Lib_Steel",
+          "Lib_Brass",
+          "Lib_PaintRed"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.012,
+          0
+        ],
+        "size": [
+          0.28,
+          0.018,
+          0.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post",
+        "type": "capsule",
+        "center": [
+          0,
+          0.385,
+          0
+        ],
+        "radius": 0.05,
+        "height": 0.64,
+        "direction": 1
+      },
+      {
+        "name": "Col_Under",
+        "type": "box",
+        "center": [
+          0,
+          0.834,
+          0
+        ],
+        "size": [
+          0.14,
+          0.04,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RimF",
+        "type": "box",
+        "center": [
+          0,
+          0.946,
+          0.204
+        ],
+        "size": [
+          0.06,
+          0.028,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RimB",
+        "type": "box",
+        "center": [
+          0,
+          0.946,
+          -0.204
+        ],
+        "size": [
+          0.06,
+          0.028,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RimL",
+        "type": "box",
+        "center": [
+          -0.204,
+          0.946,
+          0
+        ],
+        "size": [
+          0.018,
+          0.028,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_RimR",
+        "type": "box",
+        "center": [
+          0.204,
+          0.946,
+          0
+        ],
+        "size": [
+          0.018,
+          0.028,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The pedestal is 16 cm across. Not a cling.",
+    "vaultNote": "Rim is 1.00 m and too small to stand on.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Fountain_Walk.fbx"
   }
 ]

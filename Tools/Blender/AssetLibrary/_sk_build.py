@@ -72,6 +72,7 @@ MODULES = (
     "sk_fire_alarm",
     "sk_pay_station",
     "sk_newsstand",
+    "sk_fountain",
     "sk_speed_cushion",
     "sk_street_clock",
     "sk_bike_pump",
