@@ -3,12 +3,13 @@ using System;
 namespace Tag.Gameplay
 {
     /// <summary>
-    /// Right-stick gestures for juke and spin. Ordinary look is not a move.
-    /// A flick is a sideways deflection past 0.85 that is back near center,
-    /// and stopped, within about 0.15 s. A half circle is 150° of arc at
-    /// more than 0.7 deflection inside 0.35 s. A held look, a pan, a runner
-    /// track, and looking up or down never arm a move. Dive and stutter are
-    /// not recognized here.
+    /// Right-stick gestures for juke, spin, and an airborne dive.
+    /// A flick is a deflection past 0.85 that is back near center, and
+    /// stopped, within about 0.15 s. Sideways is a juke. Forward is a dive
+    /// only while airborne; the same flick on the ground is look.
+    /// A half circle is 150° of arc at more than 0.7 deflection inside 0.35 s.
+    /// A held look, a pan, a runner track, and a tilt that stays out past
+    /// 0.15 s never arm a move. Stutter is the right-trigger double-tap.
     /// </summary>
     public static class EvasionGestures
     {
@@ -33,6 +34,7 @@ namespace Tag.Gameplay
             public bool Suppress;
             public bool ArcLive;
             public bool HasCenter;
+            public int Axis;
             public int Sign;
             public float ArmT;
             public float Settle;
@@ -59,7 +61,7 @@ namespace Tag.Gameplay
             s = default;
         }
 
-        public static Result Step(ref State s, float x, float y, float dt)
+        public static Result Step(ref State s, float x, float y, float dt, bool airborne)
         {
             Result result = default;
             if (dt <= 0f) dt = 0.0001f;
@@ -113,18 +115,28 @@ namespace Tag.Gameplay
             if (s.Suppress)
             {
                 if (m < SuppressReturn) s.Suppress = false;
-                Finish(ref s, x, y, dt);
-                return result;
+                else
+                {
+                    if (s.ArcLive || m >= 0.15f)
+                    {
+                        s.AccX += x;
+                        s.AccY += y;
+                    }
+                    Finish(ref s, x, y, dt);
+                    return result;
+                }
             }
 
             bool horiz = Abs(x) >= FlickGate && Abs(x) > Abs(y);
+            bool forward = y >= FlickGate && y > Abs(x);
             if (!s.Armed)
             {
-                if (horiz)
+                if (horiz || forward)
                 {
                     s.Armed = true;
+                    s.Axis = forward && !horiz ? 2 : 1;
                     s.ArmT = s.Time;
-                    s.Sign = x > 0f ? 1 : -1;
+                    s.Sign = s.Axis == 2 ? 1 : (x > 0f ? 1 : -1);
                     s.Settle = 0f;
                     s.HasCenter = false;
                 }
@@ -132,7 +144,8 @@ namespace Tag.Gameplay
             else
             {
                 float age = s.Time - s.ArmT;
-                if (x * s.Sign < -FlickGate)
+                bool opposite = s.Axis == 2 ? (y < -FlickGate) : (x * s.Sign < -FlickGate);
+                if (opposite)
                 {
                     Disarm(ref s);
                     if (!s.ArcLive) s.AccX = s.AccY = 0f;
@@ -140,13 +153,23 @@ namespace Tag.Gameplay
                 else if (!s.HasCenter && age > FlickWindow)
                 {
                     Disarm(ref s);
-                    s.AccX = s.AccY = 0f;
+                    if (s.ArcLive)
+                    {
+                        s.AccX += x;
+                        s.AccY += y;
+                    }
+                    else s.AccX = s.AccY = 0f;
                     s.Suppress = true;
                 }
                 else if (age > FlickMaxAge)
                 {
                     Disarm(ref s);
-                    s.AccX = s.AccY = 0f;
+                    if (s.ArcLive)
+                    {
+                        s.AccX += x;
+                        s.AccY += y;
+                    }
+                    else s.AccX = s.AccY = 0f;
                     s.Suppress = true;
                 }
                 else
@@ -165,14 +188,22 @@ namespace Tag.Gameplay
 
                     if (s.HasCenter && s.Settle >= FlickSettle && (s.CenterT - s.ArmT) <= FlickWindow)
                     {
-                        result.Kind = EvasionMoves.Kind.Juke;
-                        result.Sign = s.Sign;
-                        result.Commit = true;
-                        result.UndoX = s.AccX;
-                        result.UndoY = s.AccY;
-                        ClearMotion(ref s);
-                        Finish(ref s, x, y, dt);
-                        return result;
+                        bool dive = s.Axis == 2;
+                        if (dive && !airborne)
+                        {
+                            Disarm(ref s);
+                        }
+                        else
+                        {
+                            result.Kind = dive ? EvasionMoves.Kind.Dive : EvasionMoves.Kind.Juke;
+                            result.Sign = s.Sign;
+                            result.Commit = true;
+                            result.UndoX = s.AccX;
+                            result.UndoY = s.AccY;
+                            ClearMotion(ref s);
+                            Finish(ref s, x, y, dt);
+                            return result;
+                        }
                     }
                 }
             }
@@ -261,6 +292,8 @@ namespace Tag.Gameplay
             public int StutterFpN;
             public int StutterFn;
             public int StutterFnN;
+            public int DiveFn;
+            public int DiveFnN;
             public bool SwallowOk;
         }
 
@@ -268,7 +301,8 @@ namespace Tag.Gameplay
         {
             Report r = Measure();
             return r.Fp == 0 && r.Fn == 0 && r.Camera > 0 && r.Moves > 0 && r.SwallowOk
-                && r.StutterFp == 0 && r.StutterFn == 0 && r.StutterFpN > 0 && r.StutterFnN > 0;
+                && r.StutterFp == 0 && r.StutterFn == 0 && r.StutterFpN > 0 && r.StutterFnN > 0
+                && r.DiveFn == 0 && r.DiveFnN > 0;
         }
 
         public static string ProofLine()
@@ -278,7 +312,8 @@ namespace Tag.Gameplay
                 + "/" + r.Camera.ToString()
                 + " moveFN=" + r.Fn.ToString()
                 + "/" + r.Moves.ToString()
-                + " swallow=commit dive=unbound"
+                + " swallow=commit"
+                + " diveFN=" + r.DiveFn.ToString() + "/" + r.DiveFnN.ToString()
                 + " stutterFP=" + r.StutterFp.ToString() + "/" + r.StutterFpN.ToString()
                 + " stutterFN=" + r.StutterFn.ToString() + "/" + r.StutterFnN.ToString();
         }
@@ -293,6 +328,7 @@ namespace Tag.Gameplay
                 float dt = rates[i];
                 RunCamera(ref report, dt);
                 RunMoves(ref report, dt);
+                RunDive(ref report, dt);
             }
             report.SwallowOk = report.SwallowOk && SwallowHolds();
             RunStutter(ref report);
@@ -359,49 +395,62 @@ namespace Tag.Gameplay
 
         static void RunCamera(ref Report report, float dt)
         {
-            Count(ref report, true, false, dt, TraceSlow(1f, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceSlow(-1f, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceSnap(1f, 0.50f, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceSnap(-1f, 0.45f, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceAcross(0.18f, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceAcross(0.30f, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceAcross(0.80f, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceAcross(1.20f, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceSnapRelease(dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceLook(1f, true, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceLook(-1f, true, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceLook(1f, false, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceLook(-1f, false, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceUpDown(dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceTrack(dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceArc(90f, -120f, 0.25f, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceArc(90f, -180f, 0.55f, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceArc(10f, -80f, 0.25f, dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceSlowReturn(dt), EvasionMoves.Kind.None, 0);
-            Count(ref report, true, false, dt, TraceWobble(dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceSlow(1f, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceSlow(-1f, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceSnap(1f, 0.50f, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceSnap(-1f, 0.45f, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceAcross(0.18f, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceAcross(0.30f, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceAcross(0.80f, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceAcross(1.20f, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceSnapRelease(dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceLook(1f, true, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceLook(-1f, true, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceLook(1f, false, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceLook(-1f, false, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceUpDown(dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceTrack(dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceArc(90f, -120f, 0.25f, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceArc(90f, -180f, 0.55f, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceArc(10f, -80f, 0.25f, dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceSlowReturn(dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, false, dt, TraceWobble(dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, true, dt, TraceTiltSlow(dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, true, dt, TraceTiltHeld(dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, true, dt, TraceTiltFastHold(dt), EvasionMoves.Kind.None, 0);
+            Count(ref report, true, false, true, dt, TraceTiltLateRelease(dt), EvasionMoves.Kind.None, 0);
         }
 
         static void RunMoves(ref Report report, float dt)
         {
-            Count(ref report, false, true, dt, TraceFlick(1, 0.05f, 0.07f, dt), EvasionMoves.Kind.Juke, 1);
-            Count(ref report, false, true, dt, TraceFlick(-1, 0.05f, 0.07f, dt), EvasionMoves.Kind.Juke, -1);
-            Count(ref report, false, true, dt, TraceFlick(1, 0.03f, 0.05f, dt), EvasionMoves.Kind.Juke, 1);
-            Count(ref report, false, true, dt, TraceFlick(1, 0.04f, 0.10f, dt), EvasionMoves.Kind.Juke, 1);
-            Count(ref report, false, true, dt, TraceArc(90f, -170f, 0.28f, dt), EvasionMoves.Kind.Spin, 1);
-            Count(ref report, false, true, dt, TraceArc(90f, 170f, 0.28f, dt), EvasionMoves.Kind.Spin, -1);
-            Count(ref report, false, true, dt, TraceArc(0f, -160f, 0.30f, dt), EvasionMoves.Kind.Spin, 1);
-            Count(ref report, false, true, dt, TraceArc(180f, 160f, 0.30f, dt), EvasionMoves.Kind.Spin, -1);
+            Count(ref report, false, true, false, dt, TraceFlick(1, 0.05f, 0.07f, dt), EvasionMoves.Kind.Juke, 1);
+            Count(ref report, false, true, false, dt, TraceFlick(-1, 0.05f, 0.07f, dt), EvasionMoves.Kind.Juke, -1);
+            Count(ref report, false, true, false, dt, TraceFlick(1, 0.03f, 0.05f, dt), EvasionMoves.Kind.Juke, 1);
+            Count(ref report, false, true, false, dt, TraceFlick(1, 0.04f, 0.10f, dt), EvasionMoves.Kind.Juke, 1);
+            Count(ref report, false, true, false, dt, TraceArc(90f, -170f, 0.28f, dt), EvasionMoves.Kind.Spin, 1);
+            Count(ref report, false, true, false, dt, TraceArc(90f, 170f, 0.28f, dt), EvasionMoves.Kind.Spin, -1);
+            Count(ref report, false, true, false, dt, TraceArc(0f, -160f, 0.30f, dt), EvasionMoves.Kind.Spin, 1);
+            Count(ref report, false, true, false, dt, TraceArc(180f, 160f, 0.30f, dt), EvasionMoves.Kind.Spin, -1);
+        }
+
+        static void RunDive(ref Report report, float dt)
+        {
+            Count(ref report, false, false, true, dt, TraceDive(0.05f, 0.07f, dt), EvasionMoves.Kind.Dive, 1);
+            Count(ref report, false, false, true, dt, TraceDive(0.03f, 0.05f, dt), EvasionMoves.Kind.Dive, 1);
+            Count(ref report, false, false, true, dt, TraceDive(0.04f, 0.10f, dt), EvasionMoves.Kind.Dive, 1);
+            Count(ref report, false, false, true, dt, TraceDive(0.06f, 0.08f, dt), EvasionMoves.Kind.Dive, 1);
         }
 
         static bool SwallowHolds()
         {
-            if (!NetLook(TraceFlick(1, 0.05f, 0.07f, 1f / 60f), 1f / 60f)) return false;
-            if (!NetLook(TraceArc(90f, -170f, 0.28f, 1f / 60f), 1f / 60f)) return false;
+            if (!NetLook(TraceFlick(1, 0.05f, 0.07f, 1f / 60f), 1f / 60f, false)) return false;
+            if (!NetLook(TraceArc(90f, -170f, 0.28f, 1f / 60f), 1f / 60f, false)) return false;
+            if (!NetLook(TraceDive(0.05f, 0.07f, 1f / 60f), 1f / 60f, true)) return false;
             float[] pan = TraceSnap(1f, 0.40f, 1f / 60f);
             return PanKept(pan, 1f / 60f);
         }
 
-        static bool NetLook(float[] samples, float dt)
+        static bool NetLook(float[] samples, float dt, bool airborne)
         {
             State s = default;
             float lookX = 0f;
@@ -412,7 +461,7 @@ namespace Tag.Gameplay
             {
                 float x = samples[i * 2];
                 float y = samples[i * 2 + 1];
-                Result r = Step(ref s, x, y, dt);
+                Result r = Step(ref s, x, y, dt, airborne);
                 if (r.Commit)
                 {
                     lookX += -r.UndoX;
@@ -437,7 +486,7 @@ namespace Tag.Gameplay
             {
                 float x = samples[i * 2];
                 float y = samples[i * 2 + 1];
-                Result r = Step(ref s, x, y, dt);
+                Result r = Step(ref s, x, y, dt, false);
                 if (r.Commit) return false;
                 stick += x;
                 look += x;
@@ -445,23 +494,27 @@ namespace Tag.Gameplay
             return Abs(stick - look) < 0.0001f;
         }
 
-        static void Count(ref Report report, bool camera, bool move, float dt, float[] samples, EvasionMoves.Kind kind, int sign)
+        static void Count(ref Report report, bool camera, bool move, bool airborne, float dt, float[] samples, EvasionMoves.Kind kind, int sign)
         {
             if (camera) report.Camera++;
             if (move) report.Moves++;
+            bool dive = kind == EvasionMoves.Kind.Dive;
+            if (dive) report.DiveFnN++;
             State s = default;
             bool hit = false;
             int n = samples.Length / 2;
             for (int i = 0; i < n; i++)
             {
-                Result r = Step(ref s, samples[i * 2], samples[i * 2 + 1], dt);
+                Result r = Step(ref s, samples[i * 2], samples[i * 2 + 1], dt, airborne);
                 if (!r.Commit) continue;
                 hit = true;
                 if (camera) report.Fp++;
                 if (move && (r.Kind != kind || r.Sign != sign)) report.Fn++;
+                if (dive && (r.Kind != kind || r.Sign != sign)) report.DiveFn++;
                 break;
             }
             if (move && !hit) report.Fn++;
+            if (dive && !hit) report.DiveFn++;
         }
 
         static float[] TraceSlow(float sign, float dt)
@@ -537,6 +590,39 @@ namespace Tag.Gameplay
             return Cat(a, Hold(0.95f, 0.05f, 0.25f, dt));
         }
 
+        static float[] TraceTiltSlow(float dt)
+        {
+            float[] a = Lerp(0f, 0f, 0f, 0.95f, 0.70f, dt);
+            return Cat(a, Hold(0f, 0.95f, 0.40f, dt));
+        }
+
+        static float[] TraceTiltHeld(float dt)
+        {
+            float[] a = Lerp(0f, 0f, 0f, 0.96f, 0.12f, dt);
+            return Cat(a, Hold(0f, 0.96f, 0.50f, dt));
+        }
+
+        static float[] TraceTiltFastHold(float dt)
+        {
+            float[] a = Lerp(0f, 0f, 0f, 1f, 0.04f, dt);
+            return Cat(a, Hold(0f, 1f, 0.50f, dt));
+        }
+
+        static float[] TraceTiltLateRelease(float dt)
+        {
+            float[] a = Lerp(0f, 0f, 0f, 1f, 0.04f, dt);
+            float[] b = Hold(0f, 1f, 0.25f, dt);
+            float[] c = Lerp(0f, 1f, 0f, 0f, 0.08f, dt);
+            return Cat(a, Cat(b, Cat(c, Hold(0f, 0f, 0.12f, dt))));
+        }
+
+        static float[] TraceDive(float outT, float backT, float dt)
+        {
+            float[] a = Lerp(0f, 0f, 0f, 0.95f, outT, dt);
+            float[] b = Lerp(0f, 0.95f, 0f, 0f, backT, dt);
+            return Cat(a, Cat(b, Hold(0f, 0f, 0.08f, dt)));
+        }
+
         static float[] TraceFlick(int sign, float outT, float backT, float dt)
         {
             float edge = 0.95f * sign;
@@ -599,6 +685,7 @@ namespace Tag.Gameplay
             s.Armed = false;
             s.HasCenter = false;
             s.Settle = 0f;
+            s.Axis = 0;
         }
 
         static void ClearMotion(ref State s)

@@ -467,7 +467,8 @@ namespace TagArena.Movement
         }
 
         /// <summary>
-        /// Juke, spin, and the stutter double-tap. Only while the evasion flag is on.
+        /// Juke and spin on the ground, dive from an airborne forward flick,
+        /// and the stutter double-tap. Only while the evasion flag is on.
         /// The commit sample of a raised stick move replaces stick look.
         /// RT is the stutter. LT, LB, and RB are not read here.
         /// </summary>
@@ -481,10 +482,15 @@ namespace TagArena.Movement
             }
             float dt = Time.deltaTime;
             if (dt <= 0f) return;
-            EvasionGestures.Result step = EvasionGestures.Step(ref _gesture, PadLookStick.x, PadLookStick.y, dt);
-            if (step.Commit && EvasionGrounded)
+            EvasionGestures.Result step = EvasionGestures.Step(
+                ref _gesture, PadLookStick.x, PadLookStick.y, dt, !EvasionGrounded);
+            if (step.Commit)
             {
-                if (EvasionMoves.TryRaise(EvasionId, step.Kind, step.Sign, EvasionPlanarSpeed, true) && LookIsStick)
+                bool dive = step.Kind == EvasionMoves.Kind.Dive;
+                bool raised = dive
+                    ? !EvasionGrounded && EvasionMoves.TryRaise(EvasionId, EvasionMoves.Kind.Dive, step.Sign, EvasionPlanarSpeed, false)
+                    : EvasionGrounded && EvasionMoves.TryRaise(EvasionId, step.Kind, step.Sign, EvasionPlanarSpeed, true);
+                if (raised && LookIsStick)
                 {
                     Look = new Vector2(-step.UndoX, -step.UndoY);
                     LookFromGamepad = true;
