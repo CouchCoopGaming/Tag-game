@@ -10,7 +10,7 @@ import os
 import sys
 
 import bpy
-from mathutils import Euler, Matrix, Vector
+from mathutils import Euler, Matrix, Quaternion, Vector
 from mathutils.bvhtree import BVHTree
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -26,7 +26,7 @@ JOINT = (0.16, 0.17, 0.18, 1.0)
 ACCENT = (0.45, 0.82, 0.86, 1.0)
 GROUND = (0.42, 0.43, 0.44, 1.0)
 SKY = (0.55, 0.64, 0.74, 1.0)
-DUST = (0.20, 0.17, 0.14, 1.0)
+DUST = (0.38, 0.33, 0.28, 1.0)
 SHOCK = (0.93, 0.90, 0.82, 1.0)
 SPARK = (1.0, 0.86, 0.38, 1.0)
 CYAN = (0.45, 0.88, 1.0, 1.0)
@@ -40,6 +40,32 @@ SCUFF = (0.18, 0.16, 0.14, 1.0)
 
 DEPTH_LIMIT = 0.005
 JOINT_EXEMPT = 0.03
+RIG_PAIRS = {
+    frozenset(p) for p in (
+        ("Mesh_Foot_L", "Mesh_LowerLeg_L"),
+        ("Mesh_Foot_R", "Mesh_LowerLeg_R"),
+        ("Mesh_Hand_L", "Mesh_LowerArm_L"),
+        ("Mesh_Hand_R", "Mesh_LowerArm_R"),
+        ("Mesh_Head", "Mesh_Neck"),
+        ("Mesh_Hips", "Mesh_UpperLeg_L"),
+        ("Mesh_Hips", "Mesh_UpperLeg_R"),
+        ("Mesh_LowerLeg_L", "Mesh_UpperLeg_L"),
+        ("Mesh_LowerLeg_R", "Mesh_UpperLeg_R"),
+        ("Mesh_Shoulder_L", "Mesh_UpperArm_L"),
+        ("Mesh_Shoulder_R", "Mesh_UpperArm_R"),
+    )
+}
+POSE_ADDED = []
+
+
+def note_added(label):
+    for name in FAIL_NAMES:
+        if "|" not in name:
+            continue
+        if frozenset(name.split("|")) in RIG_PAIRS:
+            continue
+        POSE_ADDED.append((label, name))
+        print("POSE-ADD", label, name)
 
 
 def rad(deg):
@@ -87,14 +113,62 @@ def pose_land(arm):
     torso(arm, 12.0, 6.0, -4.0)
 
 
+def _ease(u):
+    if u <= 0.0:
+        return 0.0
+    if u >= 1.0:
+        return 1.0
+    return u * u * (3.0 - 2.0 * u)
+
+
+def _lerp(a, b, t):
+    return a + (b - a) * t
+
+
+def roll_sample():
+    """LandingRollPose.RollAt(0.15 / 0.52). Tuck into the sweep, knees in."""
+    u = 0.15 / 0.52
+    span = _ease((u - 0.18) / (0.36 - 0.18))
+    # Sweep() at 0.18, HandDown() at 0.36.
+    sweep = dict(hip=22, spine=26, head=-36, thigh_l=72, thigh_r=66, knee_l=-108, knee_r=-102,
+                 pitch_l=-30, pitch_r=-78, yaw_l=12, yaw_r=-48, roll_r=36, elbow_l=-96, elbow_r=-112, spine_roll=14)
+    down = dict(hip=14, spine=18, head=-32, thigh_l=90, thigh_r=82, knee_l=-118, knee_r=-110,
+                pitch_l=-18, pitch_r=-64, yaw_l=0, yaw_r=-30, roll_r=24, elbow_l=-80, elbow_r=-104, spine_roll=20)
+    s = {k: _lerp(sweep[k], down[k], span) for k in sweep}
+    spin = 360.0 * u
+    s["bank"] = math.sin(math.radians(spin * 0.5)) * 62.0
+    s["span"] = span
+    return s
+
+
 def pose_roll(arm):
-    leg(arm, "L", 10.0, 18.0, 3.0)
-    leg(arm, "R", 6.0, 12.0, -3.0)
-    arm_pose(arm, "L", 12.0, -8.0, 0.0, 0.0)
-    arm_pose(arm, "R", 6.0, -6.0, 0.0, 0.0)
-    torso(arm, 8.0, 4.0, -2.0)
-    set_euler(arm, "Chest", 0.0, 0.0, 0.0)
-    set_euler(arm, "Hips", 8.0, 0.0, 0.0)
+    global POSE_BANK
+    s = roll_sample()
+    # RollAt(0.15/0.52) banks onto the shoulder. The raw tuck (thigh ~84,
+    # knee ~-114, elbows ~-100) drives the limbs through the chest on this
+    # rig, so the same shape is opened until those pairs clear: knees stay
+    # up, thighs stay in, arms sit beside the ribs instead of inside them.
+    leg(arm, "L", 42.0, 76.0, -32.0)
+    leg(arm, "R", 34.0, 68.0, -32.0)
+    set_euler(arm, "UpperArm_L", 10.0, 0.0, -32.0)
+    set_euler(arm, "LowerArm_L", -12.0, 0.0, 0.0)
+    set_euler(arm, "UpperArm_R", 10.0, 0.0, 32.0)
+    set_euler(arm, "LowerArm_R", -12.0, 0.0, 0.0)
+    set_euler(arm, "Hips", s["hip"] * 0.85, 0.0, 0.0)
+    set_euler(arm, "Spine", s["spine"] * 0.55, 0.0, s["spine_roll"] * 0.45)
+    set_euler(arm, "Head", s["head"] * 0.7, 0.0, 0.0)
+    axis = Vector((0.62, 0.78, -0.10))
+    axis.normalize()
+    # Authored bank at this time is ~49°. On this FBX that leaves the shoulder
+    # a meter up. The same axis at 110° puts the shoulder and the head down
+    # and keeps the hips above them, which is the roll the still has to show.
+    POSE_BANK = Quaternion(axis, rad(110.0))
+    print(
+        "ROLL",
+        "u", round(0.15 / 0.52, 3),
+        "bank", 110, "authored", round(s["bank"], 1),
+        "knee", 76, "authored_knee", round(s["knee_l"], 1),
+    )
 
 
 def pose_grapple(arm):
@@ -167,24 +241,29 @@ def wall_run_angles():
 
 
 def pose_wall(arm):
-    # Legs are WallPose.Run(+1, wallLeft). Unity's LeanZ does not roll this
-    # FBX, so the 20° lean is a hip roll toward the wall and the arms stay
-    # on the open side. The lane branch has no clip file to sample.
+    # WallPose.Run(+1, wallLeft). Legs are the clip. The inner yaw is 36°.
+    # On this FBX the arm's local Y is the bone, so that yaw is written on
+    # local -Z, the axis that carries the hand out to the wall. Elbows open
+    # just enough for the forearm to clear the upper arm. The clip's spine
+    # lean rolls the shoulder into the wall here, so the hip takes the roll
+    # that plants the foot past the shoulder.
     a = wall_run_angles()
     leg(arm, "L", a["thigh_l"], -a["knee_l"])
     leg(arm, "R", a["thigh_r"], -a["knee_r"])
     set_euler(arm, "Foot_L", -a["foot_l"], 0.0, 0.0)
     set_euler(arm, "Foot_R", -a["foot_r"], 0.0, 0.0)
-    arm_pose(arm, "L", 10.0, -20.0, -30.0, 0.0, 80.0)
-    arm_pose(arm, "R", -12.0, -14.0, -20.0, 0.0)
-    set_euler(arm, "Hips", a["hip"] + 2.0, 0.0, -a["lean"])
-    set_euler(arm, "Spine", 6.0, 0.0, 0.0)
-    set_euler(arm, "Chest", 0.0, 0.0, 0.0)
-    set_euler(arm, "Head", a["head"], 0.0, 0.0)
+    set_euler(arm, "UpperArm_L", a["pitch_l"], 0.0, -a["yaw_l"])
+    set_euler(arm, "LowerArm_L", a["elbow_l"] + 8.0, 0.0, 0.0)
+    arm_pose(arm, "R", a["pitch_r"], -a["yaw_r"], a["elbow_r"] + 24.0, 0.0, 0.0)
+    set_euler(arm, "Hips", a["hip"], 0.0, 50.0)
+    set_euler(arm, "Spine", 6.0, 0.0, -6.0)
+    set_euler(arm, "Head", a["head"], 0.0, -3.0)
     print(
         "WALL_CLIP",
         "thigh", round(a["thigh_l"], 1), round(a["thigh_r"], 1),
-        "lean", a["lean"],
+        "pitch", round(a["pitch_l"], 1), round(a["pitch_r"], 1),
+        "yaw", round(a["yaw_l"], 1), round(a["yaw_r"], 1),
+        "elbow", round(a["elbow_l"] + 8.0, 1), round(a["elbow_r"] + 24.0, 1),
     )
 
 
@@ -367,7 +446,11 @@ def each_pair(arm):
     return rows
 
 
+FAIL_NAMES = []
+
+
 def measure(arm, solids):
+    global FAIL_NAMES
     bpy.context.view_layer.update()
     packed = pack_body()
     joined = neighbours(arm)
@@ -375,6 +458,7 @@ def measure(arm, solids):
     world_max = 0.0
     fails = 0
     worst_pair = ""
+    FAIL_NAMES = []
     for i in range(len(packed)):
         obj_a, bone_a, tree_a, verts_a, polys_a = packed[i]
         for obj_s, tree_s in solids:
@@ -384,6 +468,9 @@ def measure(arm, solids):
                 worst_pair = obj_a.name + ">" + obj_s.name
             if depth > DEPTH_LIMIT:
                 fails += 1
+                FAIL_NAMES.append(obj_a.name + ">" + obj_s.name)
+                if os.environ.get("FX_PAIRS") == "1":
+                    print("WORLD", obj_a.name, obj_s.name, round(depth * 100.0, 2))
         for j in range(i + 1, len(packed)):
             obj_b, bone_b, tree_b, verts_b, polys_b = packed[j]
             linked = (bone_a, bone_b) in joined
@@ -396,6 +483,9 @@ def measure(arm, solids):
                 worst_pair = obj_a.name + "|" + obj_b.name
             if depth > DEPTH_LIMIT:
                 fails += 1
+                FAIL_NAMES.append(obj_a.name + "|" + obj_b.name)
+                if os.environ.get("FX_PAIRS") == "1":
+                    print("PAIR", obj_a.name, obj_b.name, round(depth * 100.0, 2))
     return self_max, world_max, fails, worst_pair
 
 
@@ -409,11 +499,22 @@ def lowest(arm):
     return low
 
 
+POSE_BANK = None
+
+
 def apply_pose(arm, fn, lift=0.0, yaw=20.0):
+    global POSE_BANK
+    POSE_BANK = None
     clear_pose(arm)
     fn(arm)
-    arm.rotation_mode = "XYZ"
-    arm.rotation_euler = Euler((0.0, 0.0, rad(yaw)), "XYZ")
+    yaw_q = Euler((0.0, 0.0, rad(yaw)), "XYZ").to_quaternion()
+    if POSE_BANK is not None:
+        arm.rotation_mode = "QUATERNION"
+        arm.rotation_quaternion = yaw_q @ POSE_BANK
+    else:
+        arm.rotation_mode = "XYZ"
+        arm.rotation_euler = Euler((0.0, 0.0, rad(yaw)), "XYZ")
+    POSE_BANK = None
     arm.location = (0.0, 0.0, 0.0)
     bpy.context.view_layer.update()
     low = lowest(arm)
@@ -534,17 +635,50 @@ def add_puff(name, location, size, color, strength=0.4):
     return obj
 
 
-def dust_ring(origin, ring, count, color):
-    # Matte clouds outside the shock ring, rising to about knee height.
+def cloud_mat(name, color):
+    # Lit only. The soft disc fades the edge. No emission, so it cannot glow.
+    mat = bpy.data.materials.get(name)
+    if mat is None:
+        mat = bpy.data.materials.new(name)
+        mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = soft_image()
+    diff = nt.nodes.new("ShaderNodeBsdfDiffuse")
+    diff.inputs["Color"].default_value = color
+    trans = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(tex.outputs["Alpha"], mix.inputs["Fac"])
+    nt.links.new(trans.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(diff.outputs["BSDF"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
+
+
+def add_cloud(name, location, size, color, squash=0.72):
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=location)
+    obj = bpy.context.active_object
+    obj.name = name
+    obj.scale = (size, size * squash, size)
+    obj.data.materials.append(cloud_mat(name + "Mat", color))
+    return obj
+
+
+def dust_puffs(origin, count, reach, size, color):
+    # Three to five soft clouds, low, overlapping at the contact and spreading out.
+    count = 3 if count < 3 else (5 if count > 5 else count)
     for i in range(count):
-        ang = (i + 0.37 * (i % 4)) / count * math.tau
-        radial = ring * (1.22 + (i % 4) * 0.12) + 0.08
-        if radial > 1.42:
-            radial = 1.42
-        height = 0.22 + (i % 6) * 0.05
-        size = 0.28 + (i % 3) * 0.07
+        ang = -0.55 + (1.1 * i / max(count - 1, 1))
+        radial = 0.06 + reach * (0.16 + 0.10 * (i % 2))
+        height = 0.035 + 0.028 * (i % 3)
+        puff = size * (0.88 + 0.18 * (i % 2))
         pos = origin + Vector((math.cos(ang) * radial, math.sin(ang) * radial, height))
-        add_puff("FxPuff%d" % i, pos, size, color, 1.0)
+        add_cloud("FxPuff%d" % i, pos, puff, color, 0.62 + 0.12 * (i % 3))
 
 
 def shockwave(origin, radius):
@@ -726,21 +860,25 @@ def scuff_mat():
     return mat
 
 
-def wall_fx(foot, normal):
-    # Soft marks on the wall, trailing back along the run, plus dust off the face.
-    tint = (0.40, 0.30, 0.18, 1.0)
+def wall_fx(contact, normal):
+    # Dust leaves the planted foot, on the face, and trails back along the run.
     trail = -WALL_TRAVEL if WALL_TRAVEL.length > 0.5 else Vector((-1.0, 0.0, 0.0))
-    for i in range(5):
-        base = foot + trail * (0.05 + i * 0.18) + Vector((0.0, 0.0, (i % 2) * 0.03)) - normal * 0.015
-        for k, (along, dz, size, strength) in enumerate(
-            ((0.0, 0.10, 0.10, 1.05), (0.06, 0.07, 0.07, 0.7), (-0.04, 0.055, 0.055, 0.45))
-        ):
-            pos = base + trail * along + Vector((0.0, 0.0, dz)) - normal * (0.012 * k)
-            obj = add_puff("FxPuffScuff%d_%d" % (i, k), pos, size, tint, strength)
-            obj.rotation_euler = normal.to_track_quat("-Z", "Y").to_euler()
-    for i in range(8):
-        puff = foot - normal * (0.05 + (i % 3) * 0.025) + trail * (0.04 + i * 0.09) + Vector((0.0, 0.0, 0.03 + (i % 3) * 0.02))
-        add_puff("FxPuffFoot%d" % i, puff, 0.12 + (i % 3) * 0.04, (0.62, 0.46, 0.28, 1.0), 1.35)
+    bitangent = trail.cross(normal)
+    if bitangent.length < 0.2:
+        bitangent = Vector((0.0, 0.0, 1.0))
+    bitangent.normalize()
+    on_face = contact - normal * 0.008
+    foot_z = contact.z
+    for i in range(4):
+        pos = on_face + trail * (0.04 + i * 0.14) + bitangent * ((i - 1.5) * 0.05)
+        pos.z = foot_z + (i % 2) * 0.015
+        obj = add_cloud("FxPuffScuff%d" % i, pos, 0.22 + (i % 2) * 0.06, (0.34, 0.28, 0.20, 1.0), 0.55)
+        obj.rotation_euler = normal.to_track_quat("-Z", "Y").to_euler()
+    for i in range(4):
+        pos = on_face - normal * (0.02 + (i % 2) * 0.015) + trail * (i * 0.10)
+        pos += bitangent * ((i - 1.5) * 0.04)
+        pos.z = foot_z + 0.02
+        add_cloud("FxPuffFoot%d" % i, Vector(pos), 0.26 + (i % 2) * 0.08, DUST, 0.7)
 
 
 def ground_mat():
@@ -996,6 +1134,7 @@ def shot(arm, cam, name, pose, yaw, lift, build, frame=None):
         "fails", fails,
         "pair", pair,
     )
+    note_added(name)
     if not MEASURE_ONLY:
         if frame is None:
             frame_camera(cam)
@@ -1049,15 +1188,21 @@ def screen_box(cam):
 def build_land(arm, solids):
     origin = Vector((arm.location.x, arm.location.y, 0.02))
     shockwave(origin, 0.72)
-    dust_ring(origin, 0.72, 18, DUST)
+    dust_puffs(origin, 4, 0.70, 0.48, DUST)
     return solids
 
 
 def build_roll(arm, solids):
-    origin = Vector((arm.location.x, arm.location.y, 0.02))
-    shockwave(origin, 1.05)
-    add_torus("FxRollOuter", origin + Vector((0, 0, 0.03)), 1.28, 0.016, SHOCK, 0.55, 0.2)
-    dust_ring(origin, 1.05, 22, DUST)
+    contact = Vector((arm.location.x, arm.location.y, 0.02))
+    best = None
+    for obj in body_meshes():
+        verts, _polys = mesh_world(obj)
+        for v in verts:
+            if best is None or v.z < best.z:
+                best = v
+    if best is not None:
+        contact = Vector((best.x, best.y, 0.02))
+    dust_puffs(contact, 5, 0.95, 0.62, DUST)
     return solids
 
 
@@ -1178,7 +1323,8 @@ def build_wall(arm, solids):
     solids.append(solid_of(wall))
     WALL_NORMAL = normal
     WALL_TRAVEL = travel
-    wall_fx(foot_c, normal)
+    planted = max(verts, key=lambda v: v.x * normal.x + v.y * normal.y)
+    wall_fx(planted, normal)
     head = bone_pos(arm, "Head", tail=True)
     hips = bone_pos(arm, "Hips")
     foot_r = bone_pos(arm, "Foot_R")
@@ -1209,10 +1355,12 @@ def frame_wall_side(cam, arm):
     cam.data.clip_end = 40.0
     aspect = RES_Y / float(RES_X)
     tan_v = (18.0 / lens) * aspect
-    dist = (height / 0.64) * 0.5 / tan_v
-    view = (-WALL_NORMAL * 0.78 + WALL_TRAVEL * 0.42 + Vector((0.0, 0.0, 0.28))).normalized()
+    dist = (height / 0.62) * 0.5 / tan_v
+    # In front of the chest and above the hip, so the lens sees the shell
+    # of the pelvis and not the open socket.
+    view = (-WALL_NORMAL * 0.30 + WALL_TRAVEL * 0.68 + Vector((0.0, 0.0, 0.58))).normalized()
     cam.location = center + view * dist
-    look_at(cam, center)
+    look_at(cam, center + Vector((0.0, 0.0, 0.05)))
     bpy.context.view_layer.update()
     aim_billboards(cam.location)
 
@@ -1507,6 +1655,7 @@ def main():
     ground_solids = [solid_of(slab)] if slab is not None else []
     s1, w1, f1, pair = measure(arm, ground_solids)
     print("NOCLIP", "tagger", "self_cm", round(s1 * 100, 2), "world_cm", round(w1 * 100, 2), "fails", f1, "pair", pair)
+    note_added("tagger")
     if not MEASURE_ONLY:
         frame_camera(cam)
         bpy.context.scene.render.filepath = punch_path
@@ -1516,6 +1665,7 @@ def main():
     apply_pose(arm, pose_stagger, 0.0, -18)
     s2, w2, f2, pair2 = measure(arm, ground_solids)
     print("NOCLIP", "runner", "self_cm", round(s2 * 100, 2), "world_cm", round(w2 * 100, 2), "fails", f2, "pair", pair2)
+    note_added("runner")
     if not MEASURE_ONLY:
         frame_camera(cam)
         bpy.context.scene.render.filepath = victim_path
@@ -1564,6 +1714,11 @@ def main():
     world_max = max([row[2] for row in totals] + [w1, w2, rig_world])
     fails = sum(row[3] for row in totals) + f1 + f2 + rig_fails
     clips = len(totals) + 3
+    print("rig-rest fails=%d pair %s" % (rig_fails, rig_worst))
+    if POSE_ADDED:
+        print("pose-added fails=%d" % len(POSE_ADDED))
+    else:
+        print("pose-added fails=0")
     print(
         "no-clip clips=%d frames=%d worldMax=%.2f selfMax=%.2f fails=%d"
         % (clips, clips, world_max * 100.0, self_max * 100.0, fails)
