@@ -88,6 +88,16 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - The roll stills from pass 9 stay. Time stays 0.52 s. The 65% gate stays.
 - Stills are in `Docs/AnimStills/pass10/` (`dash-ghosts.png`, `tag-burst.png`, `running-dust.png`, `landing-ring.png`, `slide-scrape.png`, `launch-pad.png`, `zip-line.png`).
 
+## Pass 11 (this branch)
+
+- The dash still keeps the crown view and pulls back so the solid runner's feet stay in frame.
+- Dust cards are filled soft clouds. Center alpha is about 0.75, the edge fades, and the shader is alpha blend on a lit surface, not an additive ring. A sprint on dirt is a tan cloud at the feet, waist-low. Concrete is a smaller pale gray puff. A walk on dirt is a short faint puff. Close shots put the runner at about half the frame, and a wide shot puts the three together.
+- A hard landing under the roll gate is a deep knee absorb: knees near 100 degrees, hips low, chest forward, head up, one hand near a foot. The 1.30 m ring and 12 debris bits stay.
+- A launch pad throws short cyan rings and streaks that fade by knee height, plus a few speed lines behind a tucked leap.
+- A zip leans into the travel and leaves a short spark trail at the hand.
+- A punch (not a tag) shows a small POW!. The tag burst stays the large letter-free one.
+- Stills are in `Docs/AnimStills/pass11/`. The live dust numbers, the 0.52 s roll, and the 65% gate stay.
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue

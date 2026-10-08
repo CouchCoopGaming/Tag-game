@@ -365,3 +365,12 @@ The dash trail, the tag, and the dust pictures were taken again. A hard landing,
 - A tag stops the fist on the shoulder. The comic burst sits on that contact, under the face, with no letters. Try it: tag the dummy and watch the hand meet the shoulder.
 - Dirt throws a warm cloud at each step when you sprint. Concrete throws a small pale puff. A walk on dirt is fainter than the sprint. Grass is a few flecks. Try it: walk, then sprint, and cross from dirt onto concrete.
 - A hard landing draws a ring and kicks up debris. A slide leaves two short scrape ribbons. A pad throws a cyan ring on the way up. A zip throws violet sparks along the cable. Try it: drop from a roof, slide, hit a pad, then take a zip.
+
+## Clouds, a real absorb, and a tucked launch
+
+The effect pictures were taken again in the park, in warm daylight. Speed, the roll timer, and the camera in play stay as they were.
+
+- Dust at your feet is a soft filled cloud. A sprint on dirt throws a tan one. Concrete throws a smaller gray one. A walk is a short puff. Try it: walk, then sprint, and cross from dirt onto concrete.
+- A hard landing that is not fast enough to roll drops into a deep knee bend, chest forward, head up, one hand near a foot, with the ring and the debris. Try it: hop off something about head height while moving.
+- A launch pad kicks up a short cyan burst around your knees and you leave it in a tuck, with a few speed lines behind you. Try it: run over a pad.
+- A zip leans you along the cable and sparks trail off the hand. A punch throws a small POW!. A tag is still the bigger burst with no letters. Try it: take a zip, then punch the dummy.
