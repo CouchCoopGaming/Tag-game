@@ -29,7 +29,6 @@ namespace Tag.FX
         public const int DustRoll = 16;
         public const int SparkFull = 8;
         public const int DebrisFull = 8;
-        public const int RimCards = 12;
         public const int Stars = 5;
         public const int Streaks = 6;
         public const int Scuffs = 4;
@@ -208,7 +207,7 @@ namespace Tag.FX
                 + " low=" + low.ToString(CultureInfo.InvariantCulture)
                 + " spark=" + spark.ToString(CultureInfo.InvariantCulture)
                 + " debris=" + debris.ToString(CultureInfo.InvariantCulture)
-                + " rim=" + RimCards.ToString(CultureInfo.InvariantCulture)
+                + " rim=shell"
                 + " stars=" + Stars.ToString(CultureInfo.InvariantCulture)
                 + " streak=" + Streaks.ToString(CultureInfo.InvariantCulture)
                 + " scuff=" + Scuffs.ToString(CultureInfo.InvariantCulture)

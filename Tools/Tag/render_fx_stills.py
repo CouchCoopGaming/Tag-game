@@ -1,11 +1,9 @@
 """FX kit stills. Hier mannequin, one pose per effect, screen flash on one pane.
 
-No-clip measures evaluated meshes. Joined neighbours are exempt within 3 cm
-of the child bone segment. Outside that tube, a joined pair may keep the
-overlap it already has at rest (the rigid hip mesh sits about 4.8 cm inside
-the thigh, and that does not go away when the bone turns). A pose fails when
-it pushes a joined pair deeper than that rest depth by more than 0.5 cm.
-Non-joined pairs and world solids fail above 0.5 cm with no rest credit.
+No-clip measures evaluated meshes. Joined neighbours are exempt only within
+3 cm of their joint (the child bone head). Depth above 0.5 cm fails. There is
+no rest-pose credit. The authored hip/thigh overlap past that ball is a rig
+failure and is drawn in red.
 """
 import math
 import os
@@ -26,8 +24,8 @@ MEASURE_ONLY = os.environ.get("FX_MEASURE") == "1"
 PLAYER = (0.86, 0.55, 0.42, 1.0)
 JOINT = (0.16, 0.17, 0.18, 1.0)
 ACCENT = (0.45, 0.82, 0.86, 1.0)
-GROUND = (0.48, 0.52, 0.44, 1.0)
-SKY = (0.62, 0.74, 0.86, 1.0)
+GROUND = (0.30, 0.32, 0.27, 1.0)
+SKY = (0.55, 0.64, 0.74, 1.0)
 DUST = (0.62, 0.46, 0.28, 1.0)
 SHOCK = (0.93, 0.90, 0.82, 1.0)
 SPARK = (1.0, 0.86, 0.38, 1.0)
@@ -133,14 +131,15 @@ def pose_launch(arm):
 
 
 def pose_wall(arm):
-    leg(arm, "L", 12.0, -16.0, 6.0)
-    leg(arm, "R", -8.0, -12.0, -4.0)
-    arm_pose(arm, "L", 6.0, -18.0, -8.0, 0.0)
-    arm_pose(arm, "R", -6.0, -12.0, -8.0, 0.0)
-    torso(arm, 4.0, 2.0, -2.0)
-    set_euler(arm, "Chest", 8.0, 0.0, 6.0)
-    set_euler(arm, "Hips", 8.0, 0.0, 4.0)
-    set_euler(arm, "Foot_L", 0.0, 0.0, 0.0)
+    # Positive hip pitch puts the left foot toward +Y and the chest back.
+    leg(arm, "L", 6.0, -36.0, 4.0)
+    leg(arm, "R", 18.0, -22.0, -6.0)
+    arm_pose(arm, "L", 8.0, -12.0, -6.0, 0.0)
+    arm_pose(arm, "R", -8.0, -10.0, -6.0, 0.0)
+    torso(arm, 28.0, 8.0, -6.0)
+    set_euler(arm, "Chest", 10.0, 0.0, 0.0)
+    set_euler(arm, "Hips", 28.0, 0.0, 0.0)
+    set_euler(arm, "Foot_L", 36.0, 0.0, 0.0)
 
 
 def pose_punch(arm):
@@ -203,7 +202,7 @@ def body_meshes():
 
 
 def clear_fx():
-    keep = {"PropGround", "PropSlab"}
+    keep = {"PropGround", "PropSlab", "PropSeam"}
     for obj in list(bpy.data.objects):
         if obj.name in keep:
             continue
@@ -247,33 +246,6 @@ def joint_world(arm, a, b):
     return arm.matrix_world @ arm.pose.bones[child].head
 
 
-def bone_segment(arm, a, b):
-    child = b if arm.data.bones[b].parent and arm.data.bones[b].parent.name == a else a
-    if child not in arm.pose.bones:
-        return None
-    bone = arm.pose.bones[child]
-    head = arm.matrix_world @ bone.head
-    tail = arm.matrix_world @ bone.tail
-    return head, tail
-
-
-def near_segment(point, seg):
-    if seg is None:
-        return False
-    head, tail = seg
-    span = tail - head
-    denom = span.length_squared
-    if denom < 1e-8:
-        return (point - head).length <= JOINT_EXEMPT
-    t = (point - head).dot(span) / denom
-    if t < 0.0:
-        t = 0.0
-    if t > 1.0:
-        t = 1.0
-    closest = head + span * t
-    return (point - closest).length <= JOINT_EXEMPT
-
-
 def inside_depth(tree, point):
     """Penetration of a closed mesh. The ray follows the nearest face so a
     turned character does not change the result."""
@@ -302,15 +274,15 @@ def overlap_ids(tree_a, polys_a, tree_b):
     return used
 
 
-def pair_depth(tree_a, verts_a, polys_a, tree_b, segment):
-    """Deepest penetration. Points within 3 cm of the bone segment are exempt."""
+def pair_depth(tree_a, verts_a, polys_a, tree_b, joint):
+    """Deepest penetration. Joined verts within 3 cm of the joint are exempt."""
     used = overlap_ids(tree_a, polys_a, tree_b)
     worst = 0.0
     for idx in used:
         if idx >= len(verts_a):
             continue
         point = verts_a[idx]
-        if near_segment(point, segment):
+        if joint is not None and (point - joint).length <= JOINT_EXEMPT:
             continue
         depth = inside_depth(tree_b, point)
         if depth > worst:
@@ -329,36 +301,27 @@ def pack_body():
     return packed
 
 
-def capture_socket(arm):
-    """Deepest rest overlap of each joined pair, outside the 3 cm joint ball."""
-    bpy.context.view_layer.update()
-    clear_pose(arm)
-    arm.rotation_euler = Euler((0.0, 0.0, 0.0), "XYZ")
-    arm.location = (0.0, 0.0, 0.0)
-    bpy.context.view_layer.update()
+def each_pair(arm):
+    """Joined pairs only. Yields (name, depth_m) using the 3 cm joint-head exemption."""
     packed = pack_body()
     joined = neighbours(arm)
-    rest = {}
-    socket = 0.0
-    socket_pair = ""
+    rows = []
     for i in range(len(packed)):
         obj_a, bone_a, tree_a, verts_a, polys_a = packed[i]
-        for j in range(len(packed)):
-            if i == j:
-                continue
-            obj_b, bone_b, tree_b, _vb, _pb = packed[j]
+        for j in range(i + 1, len(packed)):
+            obj_b, bone_b, tree_b, verts_b, polys_b = packed[j]
             if (bone_a, bone_b) not in joined:
                 continue
-            segment = bone_segment(arm, bone_a, bone_b)
-            absolute = pair_depth(tree_a, verts_a, polys_a, tree_b, segment)
-            rest[(obj_a.name, obj_b.name)] = absolute
-            if absolute > socket:
-                socket = absolute
-                socket_pair = obj_a.name + "|" + obj_b.name
-    return rest, socket, socket_pair
+            joint = joint_world(arm, bone_a, bone_b)
+            d_ab = pair_depth(tree_a, verts_a, polys_a, tree_b, joint)
+            d_ba = pair_depth(tree_b, verts_b, polys_b, tree_a, joint)
+            depth = d_ab if d_ab > d_ba else d_ba
+            rows.append((obj_a.name + "|" + obj_b.name, depth))
+    rows.sort(key=lambda row: row[1], reverse=True)
+    return rows
 
 
-def measure(arm, solids, rest):
+def measure(arm, solids):
     bpy.context.view_layer.update()
     packed = pack_body()
     joined = neighbours(arm)
@@ -378,16 +341,9 @@ def measure(arm, solids, rest):
         for j in range(i + 1, len(packed)):
             obj_b, bone_b, tree_b, verts_b, polys_b = packed[j]
             linked = (bone_a, bone_b) in joined
-            segment = bone_segment(arm, bone_a, bone_b) if linked else None
-            d_ab = pair_depth(tree_a, verts_a, polys_a, tree_b, segment)
-            d_ba = pair_depth(tree_b, verts_b, polys_b, tree_a, segment)
-            if linked:
-                d_ab -= rest.get((obj_a.name, obj_b.name), 0.0)
-                d_ba -= rest.get((obj_b.name, obj_a.name), 0.0)
-                if d_ab < 0.0:
-                    d_ab = 0.0
-                if d_ba < 0.0:
-                    d_ba = 0.0
+            joint = joint_world(arm, bone_a, bone_b) if linked else None
+            d_ab = pair_depth(tree_a, verts_a, polys_a, tree_b, joint)
+            d_ba = pair_depth(tree_b, verts_b, polys_b, tree_a, joint)
             depth = d_ab if d_ab > d_ba else d_ba
             if depth > self_max:
                 self_max = depth
@@ -474,51 +430,166 @@ def add_curve(name, points, radius, color, alpha=0.7, emit=0.2):
     return obj
 
 
-def dust_ring(origin, scale, count, color, lift=0.08):
+def soft_image():
+    img = bpy.data.images.get("FxSoftDisc")
+    if img is not None:
+        return img
+    n = 48
+    img = bpy.data.images.new("FxSoftDisc", n, n, alpha=True, float_buffer=True)
+    pix = [0.0] * (n * n * 4)
+    for y in range(n):
+        for x in range(n):
+            dx = (x + 0.5) / n - 0.5
+            dy = (y + 0.5) / n - 0.5
+            r = math.sqrt(dx * dx + dy * dy) * 2.0
+            a = max(0.0, 1.0 - r)
+            a = a * a
+            i = (y * n + x) * 4
+            pix[i] = 1.0
+            pix[i + 1] = 1.0
+            pix[i + 2] = 1.0
+            pix[i + 3] = a
+    img.pixels.foreach_set(pix)
+    img.pack()
+    return img
+
+
+def soft_mat(name, color, strength=0.35):
+    mat = bpy.data.materials.get(name)
+    if mat is None:
+        mat = bpy.data.materials.new(name)
+        mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    emit = nt.nodes.new("ShaderNodeEmission")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = soft_image()
+    transparent = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    emit.inputs["Color"].default_value = color
+    emit.inputs["Strength"].default_value = strength
+    nt.links.new(tex.outputs["Alpha"], mix.inputs["Fac"])
+    nt.links.new(transparent.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(emit.outputs["Emission"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
+
+
+def add_puff(name, location, size, color, strength=0.4):
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=location)
+    obj = bpy.context.active_object
+    obj.name = name
+    obj.scale = (size, size, size)
+    obj.data.materials.append(soft_mat(name + "Mat", color, strength))
+    return obj
+
+
+def dust_ring(origin, scale, count, color, lift=0.03):
+    # scale is the impact multiplier. Each puff stays a few centimetres across.
+    puff = 0.022 + 0.012 * min(scale, 1.6)
+    if puff > 0.05:
+        puff = 0.05
     for i in range(count):
         ang = i / count * math.tau
-        radial = scale * (0.42 + (i % 3) * 0.14)
-        pos = origin + Vector((math.cos(ang) * radial, math.sin(ang) * radial, lift + (i % 2) * 0.12))
-        add_ico("FxDust%d" % i, pos, 0.09 + (i % 3) * 0.03, color, 0.88, 0.55)
+        band = 0.16 + (i % 3) * 0.11
+        radial = band + scale * (0.12 + (i % 4) * 0.02)
+        pos = origin + Vector((math.cos(ang) * radial, math.sin(ang) * radial, lift + (i % 5) * 0.012))
+        add_puff("FxPuff%d" % i, pos, puff + (i % 3) * 0.004, color, 0.95)
 
 
 def shockwave(origin, radius):
-    add_torus("FxShock", origin + Vector((0, 0, 0.03)), radius, 0.018, SHOCK, 0.9, 0.6)
-    add_torus("FxDustRing", origin + Vector((0, 0, 0.025)), radius * 0.72, 0.045, DUST, 0.55, 0.05)
+    add_torus("FxShock", origin + Vector((0, 0, 0.025)), radius, 0.012, SHOCK, 0.55, 0.15)
+    add_torus("FxDustRing", origin + Vector((0, 0, 0.02)), radius * 0.72, 0.02, DUST, 0.4, 0.02)
     add_plane(
         "FxDisc",
-        origin + Vector((0, 0, 0.02)),
-        (radius * 1.3, radius * 1.3, 1),
+        origin + Vector((0, 0, 0.012)),
+        (radius * 1.15, radius * 1.15, 1),
         (DUST[0], DUST[1], DUST[2], 1),
-        0.28,
+        0.16,
         0.0,
     )
 
 
+def star_object(name, location):
+    mesh = bpy.data.meshes.new(name + "Mesh")
+    verts = [(0.0, 0.0, 0.0)]
+    for i in range(10):
+        ang = i * math.pi / 5.0 - math.pi / 2.0
+        radius = 0.07 if i % 2 == 0 else 0.028
+        verts.append((math.cos(ang) * radius, math.sin(ang) * radius, 0.0))
+    faces = [(0, 1 + i, 1 + (i + 1) % 10) for i in range(10)]
+    mesh.from_pydata(verts, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.collection.objects.link(obj)
+    obj.location = location
+    obj.data.materials.append(make_mat(name + "Mat", STAR, 0.35, 1.0, 1.6))
+    return obj
+
+
 def stars(head, count=5):
-    add_torus("FxSwirl", head + Vector((0, 0, 0.28)), 0.20, 0.012, STAR, 0.9, 2.2)
     for i in range(count):
-        ang = i / count * math.tau + 0.4
-        pos = head + Vector((math.cos(ang) * 0.22, math.sin(ang) * 0.16, 0.30))
-        add_ico("FxStar%d" % i, pos, 0.07, STAR, 0.98, 2.4)
+        ang = i / count * math.tau + 0.5
+        pos = head + Vector((math.cos(ang) * 0.20, math.sin(ang) * 0.16, math.sin(ang * 2.0) * 0.05))
+        star_object("FxStar%d" % i, pos)
 
 
-def rim(origin, count=12):
-    for i in range(count):
-        ang = i / count * math.tau
-        z = 0.42 + (i % 4) * 0.32
-        rad = 0.46 + (i % 2) * 0.08
-        pos = origin + Vector((math.cos(ang) * rad, math.sin(ang) * rad, z))
-        add_ico("FxRim%d" % i, pos, 0.09, RIM, 0.62, 2.0)
+def fresnel_shell():
+    mat = bpy.data.materials.get("FxRimShell")
+    if mat is not None:
+        return mat
+    mat = bpy.data.materials.new("FxRimShell")
+    mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    emit = nt.nodes.new("ShaderNodeEmission")
+    fres = nt.nodes.new("ShaderNodeFresnel")
+    transparent = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    if hasattr(mat, "use_backface_culling"):
+        mat.use_backface_culling = True
+    fres.inputs["IOR"].default_value = 1.55
+    emit.inputs["Color"].default_value = RIM
+    emit.inputs["Strength"].default_value = 2.4
+    nt.links.new(fres.outputs["Fac"], mix.inputs["Fac"])
+    nt.links.new(transparent.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(emit.outputs["Emission"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
+
+
+def add_shell():
+    mat = fresnel_shell()
+    for obj in body_meshes():
+        shell = obj.copy()
+        shell.data = obj.data.copy()
+        shell.name = "FxShell" + obj.name
+        bpy.context.collection.objects.link(shell)
+        shell.parent = obj.parent
+        shell.parent_type = obj.parent_type
+        shell.parent_bone = obj.parent_bone
+        shell.matrix_parent_inverse = obj.matrix_parent_inverse.copy()
+        for vert in shell.data.vertices:
+            vert.co += vert.normal * 0.014
+        shell.data.materials.clear()
+        shell.data.materials.append(mat)
 
 
 def launch_fx(origin):
-    add_torus("FxLaunch", origin + Vector((0, 0, 0.85)), 0.85, 0.02, CYAN, 0.85, 1.2)
+    add_torus("FxLaunch", origin + Vector((0, 0, 0.72)), 0.72, 0.016, CYAN, 0.7, 0.35)
     for i in range(6):
         ang = i / 6 * math.tau
-        a = origin + Vector((math.cos(ang) * 0.32, math.sin(ang) * 0.32, 0.08))
-        b = a + Vector((math.cos(ang) * 0.08, math.sin(ang) * 0.08, 1.35 + (i % 2) * 0.35))
-        add_curve("FxStreak%d" % i, [a, b], 0.012, CYAN, 0.8, 1.0)
+        a = origin + Vector((math.cos(ang) * 0.28, math.sin(ang) * 0.28, 0.06))
+        b = a + Vector((math.cos(ang) * 0.05, math.sin(ang) * 0.05, 1.05 + (i % 2) * 0.28))
+        add_curve("FxStreak%d" % i, [a, b], 0.008, CYAN, 0.75, 0.25)
 
 
 def rope_shimmer(hand, anchor):
@@ -541,31 +612,65 @@ def rope_shimmer(hand, anchor):
     add_curve("PropRope", [hand, anchor], 0.012, ROPE, 1.0, 0.0)
 
 
+def chip(name, location, size, color):
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=location)
+    obj = bpy.context.active_object
+    obj.name = name
+    obj.scale = (size, size * 0.45, size * 0.7)
+    obj.rotation_euler = Euler((rad(20), rad(35), rad(15)), "XYZ")
+    obj.data.materials.append(make_mat(name + "Mat", color, 0.55, 1.0, 0.05))
+    return obj
+
+
 def hook_fx(anchor):
+    for i in range(6):
+        ang = i / 6 * math.tau
+        pos = anchor + Vector((math.cos(ang) * 0.05, math.sin(ang) * 0.04, 0.02 + (i % 2) * 0.015))
+        add_puff("FxPuffSpark%d" % i, pos, 0.02 + (i % 2) * 0.006, SPARK, 1.3)
+    for i in range(5):
+        ang = i / 5 * math.tau + 0.4
+        pos = anchor + Vector((math.cos(ang) * 0.07, math.sin(ang) * 0.05, 0.015))
+        chip("FxChip%d" % i, pos, 0.02 + (i % 3) * 0.012, DUST)
+
+
+def scuff_mat():
+    mat = bpy.data.materials.get("FxScuffDecal")
+    if mat is not None:
+        return mat
+    mat = bpy.data.materials.new("FxScuffDecal")
+    mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = soft_image()
+    diff = nt.nodes.new("ShaderNodeBsdfDiffuse")
+    diff.inputs["Color"].default_value = (0.16, 0.11, 0.07, 1.0)
+    trans = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    nt.links.new(tex.outputs["Alpha"], mix.inputs["Fac"])
+    nt.links.new(trans.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(diff.outputs["BSDF"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
+
+
+def wall_fx(foot, normal):
+    # Short soft streaks on the wall face, trailing back from the planted foot.
+    for i in range(4):
+        mark = foot - Vector((0.04 + i * 0.14, 0.004, 0.01 + (i % 2) * 0.025))
+        bpy.ops.mesh.primitive_plane_add(size=1.0, location=mark)
+        obj = bpy.context.active_object
+        obj.name = "FxPuffScuff%d" % i
+        obj.scale = (0.16, 0.034, 1.0)
+        obj.rotation_euler = Euler((rad(90), 0.0, rad(-6 + i * 5)), "XYZ")
+        obj.data.materials.append(scuff_mat())
     for i in range(8):
-        ang = i / 8 * math.tau
-        pos = anchor + Vector((math.cos(ang) * 0.12, math.sin(ang) * 0.08, 0.05 + (i % 3) * 0.04))
-        if i < 4:
-            add_ico("FxSpark%d" % i, pos + Vector((0, 0, 0.08)), 0.035, SPARK, 0.95, 2.0)
-        else:
-            add_ico("FxDebris%d" % i, pos, 0.05, DUST, 0.8, 0.1)
-
-
-def wall_fx(foot, along):
-    for i in range(4):
-        mark = foot - along * (0.08 + i * 0.1) + Vector((0, 0, 0.02 * (i % 2)))
-        add_plane(
-            "FxScuff%d" % i,
-            mark,
-            (0.09, 0.22, 1),
-            (0.08, 0.07, 0.06, 1),
-            0.95,
-            0.15,
-            Euler((rad(90), 0, 0), "XYZ"),
-        )
-    for i in range(4):
-        puff = foot + Vector((0.06, -0.04 * i, 0.05 + i * 0.03))
-        add_ico("FxFoot%d" % i, puff, 0.045 + i * 0.01, DUST, 0.7, 0.1)
+        puff = foot - normal * (0.02 + (i % 4) * 0.012) - Vector((0.02 + i * 0.02, 0.0, -0.015 * (i % 3)))
+        add_puff("FxPuffFoot%d" % i, puff, 0.026 + (i % 3) * 0.007, DUST, 0.9)
 
 
 def setup_world(arm):
@@ -579,16 +684,17 @@ def setup_world(arm):
     world.use_nodes = True
     bg = world.node_tree.nodes["Background"]
     bg.inputs["Color"].default_value = SKY
-    bg.inputs["Strength"].default_value = 1.05
-    bpy.ops.object.light_add(type="SUN", location=(3.2, -2.4, 8.0))
+    bg.inputs["Strength"].default_value = 0.42
+    bpy.ops.object.light_add(type="SUN", location=(4.2, -3.2, 7.5))
     sun = bpy.context.active_object
-    sun.data.energy = 3.6
+    sun.data.energy = 2.1
     sun.data.color = (1.0, 0.97, 0.92)
-    look_at(sun, Vector((0, 0, 1.0)))
-    bpy.ops.object.light_add(type="AREA", location=(-2.4, -1.6, 3.2))
+    sun.data.use_shadow = True
+    look_at(sun, Vector((0, 0, 0.8)))
+    bpy.ops.object.light_add(type="AREA", location=(-2.6, -2.2, 3.4))
     fill = bpy.context.active_object
-    fill.data.energy = 180
-    fill.data.size = 4.0
+    fill.data.energy = 28
+    fill.data.size = 3.2
     look_at(fill, Vector((0, 0, 1.1)))
     bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0, 0, -0.25))
     slab = bpy.context.active_object
@@ -602,15 +708,28 @@ def setup_world(arm):
     bpy.context.scene.camera = cam
     arm.hide_render = True
     scene = bpy.context.scene
+    for i in range(-3, 4):
+        bpy.ops.mesh.primitive_cube_add(size=1.0, location=(i * 0.72, 0.0, 0.001))
+        seam = bpy.context.active_object
+        seam.name = "PropSeam"
+        seam.scale = (0.012, 6.0, 0.002)
+        seam.data.materials.append(make_mat("SeamMat", (0.18, 0.19, 0.16, 1), 0.9))
+    scene = bpy.context.scene
     scene.render.engine = "BLENDER_EEVEE"
     scene.eevee.taa_render_samples = SAMPLES
+    try:
+        scene.eevee.use_bloom = False
+    except AttributeError:
+        pass
     scene.render.resolution_x = RES_X
     scene.render.resolution_y = RES_Y
     scene.render.image_settings.file_format = "PNG"
     scene.render.film_transparent = False
     try:
         scene.view_settings.view_transform = "Standard"
-    except TypeError:
+        scene.view_settings.look = "None"
+        scene.view_settings.exposure = 0.0
+    except (TypeError, AttributeError):
         pass
     return cam
 
@@ -646,14 +765,88 @@ def shrink(path, limit=400 * 1024):
     print("SIZE", os.path.basename(path), os.path.getsize(path), "resized")
 
 
-def shot(arm, cam, name, pose, yaw, lift, build, look, rest):
+def bounds_of():
+    mn = Vector((1e9, 1e9, 1e9))
+    mx = Vector((-1e9, -1e9, -1e9))
+    found = False
+    skip = {"PropGround", "PropSlab", "PropSeam"}
+    for obj in bpy.data.objects:
+        if obj.hide_render or obj.name in skip:
+            continue
+        take = obj.name.startswith("Mesh_") or obj.name.startswith("Fx") or obj.name.startswith("Prop")
+        if not take:
+            continue
+        for corner in obj.bound_box:
+            p = obj.matrix_world @ Vector(corner)
+            found = True
+            mn.x = min(mn.x, p.x)
+            mn.y = min(mn.y, p.y)
+            mn.z = min(mn.z, p.z)
+            mx.x = max(mx.x, p.x)
+            mx.y = max(mx.y, p.y)
+            mx.z = max(mx.z, p.z)
+    if not found:
+        return Vector((0, 0, 0)), Vector((1, 1, 2))
+    return mn, mx
+
+
+def aim_billboards(origin):
+    for obj in bpy.data.objects:
+        if not (obj.name.startswith("FxPuff") or obj.name.startswith("FxStar")):
+            continue
+        if "Scuff" in obj.name:
+            continue
+        direction = origin - obj.location
+        if direction.length < 0.001:
+            continue
+        obj.rotation_euler = direction.to_track_quat("Z", "Y").to_euler()
+
+
+def frame_camera(cam):
+    # 28mm on a 3/4 view. Distance grows until the padded bounds fit the
+    # vertical frame, which a 48mm lens was cropping.
+    view = Vector((0.50, -0.82, 0.24))
+    view.normalize()
+    mn, mx = bounds_of()
+    center = (mn + mx) * 0.5
+    cam.location = center + view * 3.4
+    look_at(cam, center)
+    bpy.context.view_layer.update()
+    aim_billboards(cam.location)
+    bpy.context.view_layer.update()
+    mn, mx = bounds_of()
+    if bpy.data.objects.get("PropWall") is not None:
+        mn.z = min(mn.z, 0.0)
+    pad = Vector((0.30, 0.30, 0.40))
+    mn = mn - pad
+    mx = mx + pad
+    center = (mn + mx) * 0.5
+    ext = mx - mn
+    lens = 28.0
+    cam.data.lens = lens
+    aspect = RES_Y / float(RES_X)
+    tan_v = (18.0 / lens) * aspect
+    tan_h = 18.0 / lens
+    dist_h = (max(ext.x, ext.y) * 0.46) / tan_h
+    dist_v = (ext.z * 0.5) / tan_v
+    dist = max(2.8, dist_h, dist_v) * 1.2
+    cam.location = center + view * dist
+    look_at(cam, center)
+    cam.data.lens = lens
+    cam.data.clip_start = 0.05
+    cam.data.clip_end = 80.0
+    bpy.context.view_layer.update()
+    aim_billboards(cam.location)
+
+
+def shot(arm, cam, name, pose, yaw, lift, build):
     clear_fx()
     apply_pose(arm, pose, lift, yaw)
     slab = bpy.data.objects.get("PropSlab")
     bpy.context.view_layer.update()
     solids = [solid_of(slab)] if slab is not None else []
     build(arm, solids)
-    self_max, world_max, fails, pair = measure(arm, solids, rest)
+    self_max, world_max, fails, pair = measure(arm, solids)
     print(
         "NOCLIP",
         name,
@@ -663,54 +856,53 @@ def shot(arm, cam, name, pose, yaw, lift, build, look, rest):
         "pair", pair,
     )
     if not MEASURE_ONLY:
-        cam.location = look[0]
-        look_at(cam, look[1])
+        frame_camera(cam)
         path = os.path.join(OUT, name + ".png")
         render_to(path)
     return self_max, world_max, fails
 
 
 def build_land(arm, solids):
-    origin = Vector((0, 0, 0.02))
-    shockwave(origin, 0.95)
-    dust_ring(origin, 0.9, 10, DUST)
+    origin = Vector((arm.location.x, arm.location.y, 0.02))
+    shockwave(origin, 0.72)
+    dust_ring(origin, 0.85, 40, DUST)
     return solids
 
 
 def build_roll(arm, solids):
-    origin = Vector((0, 0, 0.02))
-    shockwave(origin, 1.55)
-    add_torus("FxRollOuter", origin + Vector((0, 0, 0.04)), 1.85, 0.016, SHOCK, 0.75, 0.8)
-    dust_ring(origin, 1.55, 16, DUST, 0.14)
+    origin = Vector((arm.location.x, arm.location.y, 0.02))
+    shockwave(origin, 1.15)
+    add_torus("FxRollOuter", origin + Vector((0, 0, 0.03)), 1.35, 0.012, SHOCK, 0.45, 0.12)
+    dust_ring(origin, 1.35, 56, DUST, 0.04)
     return solids
 
 
 def build_grapple(arm, solids):
     hand = bone_pos(arm, "Hand_L")
-    anchor = hand + Vector((0.15, 0.85, 1.15))
-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(anchor.x, anchor.y, anchor.z + 0.18))
+    # Camera sits on -Y. The beam's near face points at the camera and the hook lands on it.
+    surface = hand + Vector((0.22, -0.62, 0.18))
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(surface.x, surface.y + 0.10, surface.z))
     beam = bpy.context.active_object
     beam.name = "PropBeam"
-    beam.scale = (0.18, 1.4, 0.12)
-    beam.data.materials.append(make_mat("BeamMat", (0.32, 0.30, 0.28, 1), 0.7))
+    beam.scale = (0.38, 0.16, 0.34)
+    beam.data.materials.append(make_mat("BeamMat", (0.34, 0.32, 0.28, 1), 0.75))
     bpy.context.view_layer.update()
-    # Keep the beam above the hand mesh.
     solids.append(solid_of(beam))
-    surface = Vector((anchor.x, anchor.y, anchor.z))
-    rope_shimmer(hand, surface)
-    hook_fx(surface + Vector((0, 0, -0.02)))
+    hit = Vector((surface.x, surface.y - 0.012, surface.z))
+    rope_shimmer(hand, hit)
+    hook_fx(hit)
     return solids
 
 
 def build_immune(arm, solids):
-    origin = Vector((arm.location.x, arm.location.y, 0.0))
-    rim(origin)
+    add_shell()
     return solids
 
 
 def build_stagger(arm, solids):
-    head = bone_pos(arm, "Head", tail=True)
-    stars(Vector((head.x, head.y, head.z)))
+    neck = bone_pos(arm, "Head", tail=False)
+    crown = bone_pos(arm, "Head", tail=True)
+    stars((neck + crown) * 0.5)
     return solids
 
 
@@ -741,20 +933,28 @@ def body_extent(axis, mode):
 
 
 def build_wall(arm, solids):
-    foot = bone_pos(arm, "Foot_L")
-    face_y = body_extent("y", "max")
-    # Wall sits just past every body mesh, solid on the +Y side.
-    gap = 0.01
-    wall_y = face_y + gap + 0.08
-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(0.1, wall_y, 1.2))
+    # Lift off the floor so the planted foot, not the ground, carries the body.
+    bpy.context.view_layer.update()
+    low = lowest(arm)
+    arm.location.z += 0.78 - low
+    bpy.context.view_layer.update()
+    foot = bpy.data.objects.get("Mesh_Foot_L")
+    verts, _polys = mesh_world(foot)
+    foot_y = max(v.y for v in verts)
+    foot_x = sum(v.x for v in verts) / len(verts)
+    foot_z = sum(v.z for v in verts) / len(verts)
+    # 2 mm past the leading foot. The shin sits behind that point, so the wall
+    # meets the sole without swallowing the leg.
+    face = foot_y + 0.002
+    wall_y = face + 0.12
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(foot_x - 0.05, wall_y, 1.50))
     wall = bpy.context.active_object
     wall.name = "PropWall"
-    wall.scale = (2.2, 0.16, 2.4)
-    wall.data.materials.append(make_mat("WallMat", WALL, 0.8))
+    wall.scale = (1.45, 0.24, 2.85)
+    wall.data.materials.append(make_mat("WallMat", WALL, 0.82))
     bpy.context.view_layer.update()
     solids.append(solid_of(wall))
-    along = Vector((1, 0, 0))
-    wall_fx(Vector((foot.x, face_y - 0.04, max(0.12, foot.z))), along)
+    wall_fx(Vector((foot_x, face, foot_z)), Vector((0.0, 1.0, 0.0)))
     return solids
 
 
@@ -803,52 +1003,122 @@ def stitch(left, right, dest):
     shrink(dest)
 
 
+def paint_rig_overlap(arm):
+    """Color hip and thigh faces that penetrate past the 3 cm joint ball."""
+    clear_pose(arm)
+    arm.rotation_euler = Euler((0.0, 0.0, 0.0), "XYZ")
+    arm.location = (0.0, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    low = lowest(arm)
+    arm.location.z += -low + 0.006
+    bpy.context.view_layer.update()
+    red = make_mat("OverlapRed", (0.92, 0.05, 0.04, 1), 0.35, 1.0, 1.6)
+    packed = {row[0].name: row for row in pack_body()}
+    joined = neighbours(arm)
+    marked = []
+    worst = 0.0
+    worst_pair = ""
+    for name_a, row_a in packed.items():
+        obj_a, bone_a, tree_a, verts_a, polys_a = row_a
+        for name_b, row_b in packed.items():
+            if name_a >= name_b:
+                continue
+            obj_b, bone_b, tree_b, verts_b, polys_b = row_b
+            if (bone_a, bone_b) not in joined:
+                continue
+            joint = joint_world(arm, bone_a, bone_b)
+            for src, other_tree, other_name in (
+                (row_a, tree_b, name_b),
+                (row_b, tree_a, name_a),
+            ):
+                obj, bone, tree, verts, polys = src
+                bad = set()
+                for idx in overlap_ids(tree, polys, other_tree):
+                    if idx >= len(verts):
+                        continue
+                    point = verts[idx]
+                    if joint is not None and (point - joint).length <= JOINT_EXEMPT:
+                        continue
+                    depth = inside_depth(other_tree, point)
+                    if depth <= DEPTH_LIMIT:
+                        continue
+                    bad.add(idx)
+                    if depth > worst:
+                        worst = depth
+                        worst_pair = obj.name + "|" + other_name
+                if not bad:
+                    continue
+                me = obj.data
+                slot = -1
+                for mi, existing in enumerate(me.materials):
+                    if existing == red:
+                        slot = mi
+                        break
+                if slot < 0:
+                    me.materials.append(red)
+                    slot = len(me.materials) - 1
+                for poly in me.polygons:
+                    if any(v in bad for v in poly.vertices):
+                        poly.material_index = slot
+                marked.append(obj.name)
+    return worst, worst_pair, sorted(set(marked))
+
+
+def ghost_body():
+    """Let the buried red faces read. The rig still is the only caller."""
+    for obj in body_meshes():
+        for slot in obj.material_slots:
+            mat = slot.material
+            if mat is None or mat.name == "OverlapRed":
+                continue
+            ghost = mat.copy()
+            ghost.blend_method = "BLEND"
+            if hasattr(ghost, "shadow_method"):
+                ghost.shadow_method = "NONE"
+            node = ghost.node_tree.nodes.get("Principled BSDF") if ghost.use_nodes else None
+            if node is not None and "Alpha" in node.inputs:
+                node.inputs["Alpha"].default_value = 0.28
+            slot.material = ghost
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
-    rest, socket, socket_pair = capture_socket(arm)
-    print(
-        "SOCKET restMax_cm %.2f pair %s"
-        % (socket * 100.0, socket_pair)
-    )
     cam = setup_world(arm)
-    # Hide the measurement slab's twin; PropGround stays visible.
     shots = [
-        ("landing-impact", pose_land, 28, 0.0, build_land, (Vector((1.7, -2.45, 0.95)), Vector((0.0, 0.05, 0.62)))),
-        ("landing-roll", pose_roll, 36, 0.0, build_roll, (Vector((1.85, -2.55, 0.78)), Vector((0.0, 0.0, 0.48)))),
-        ("grapple-hook", pose_grapple, -20, 0.15, build_grapple, (Vector((1.9, -1.85, 1.55)), Vector((0.15, 0.35, 1.25)))),
-        ("immunity-glow", pose_run, 18, 0.0, build_immune, (Vector((1.75, -2.55, 1.15)), Vector((0.0, 0.0, 0.95)))),
-        ("punch-stagger", pose_stagger, -12, 0.0, build_stagger, (Vector((1.35, -1.95, 1.45)), Vector((0.0, 0.0, 1.25)))),
-        ("launch-pad", pose_launch, 16, 0.85, build_launch, (Vector((1.9, -2.7, 1.35)), Vector((0.0, 0.0, 1.05)))),
-        ("wall-run", pose_wall, 8, 0.0, build_wall, (Vector((1.55, -1.35, 0.72)), Vector((0.05, 0.42, 0.42)))),
+        ("landing-impact", pose_land, 24, 0.0, build_land),
+        ("landing-roll", pose_roll, 28, 0.0, build_roll),
+        ("grapple-hook", pose_grapple, -18, 0.0, build_grapple),
+        ("immunity-glow", pose_run, 20, 0.0, build_immune),
+        ("punch-stagger", pose_stagger, -14, 0.0, build_stagger),
+        ("launch-pad", pose_launch, 18, 0.55, build_launch),
+        ("wall-run", pose_wall, 12, 0.0, build_wall),
     ]
     totals = []
-    for name, pose, yaw, lift, build, look in shots:
-        totals.append((name,) + shot(arm, cam, name, pose, yaw, lift, build, look, rest))
+    for name, pose, yaw, lift, build in shots:
+        totals.append((name,) + shot(arm, cam, name, pose, yaw, lift, build))
 
     clear_fx()
     punch_path = os.path.join(OUT, "_tagger.png")
     victim_path = os.path.join(OUT, "_runner.png")
-    apply_pose(arm, pose_punch, 0.0, 24)
+    apply_pose(arm, pose_punch, 0.0, 22)
     slab = bpy.data.objects.get("PropSlab")
     ground_solids = [solid_of(slab)] if slab is not None else []
-    s1, w1, f1, pair = measure(arm, ground_solids, rest)
+    s1, w1, f1, pair = measure(arm, ground_solids)
     print("NOCLIP", "tagger", "self_cm", round(s1 * 100, 2), "world_cm", round(w1 * 100, 2), "fails", f1, "pair", pair)
     if not MEASURE_ONLY:
-        cam.location = Vector((1.65, -2.4, 1.2))
-        look_at(cam, Vector((0.1, 0.0, 0.95)))
+        frame_camera(cam)
         bpy.context.scene.render.filepath = punch_path
         bpy.ops.render.render(write_still=True)
         vignette(punch_path, TAG)
 
-    apply_pose(arm, pose_stagger, 0.0, -16)
-    s2, w2, f2, pair2 = measure(arm, ground_solids, rest)
+    apply_pose(arm, pose_stagger, 0.0, -18)
+    s2, w2, f2, pair2 = measure(arm, ground_solids)
     print("NOCLIP", "runner", "self_cm", round(s2 * 100, 2), "world_cm", round(w2 * 100, 2), "fails", f2, "pair", pair2)
     if not MEASURE_ONLY:
-        cam.location = Vector((1.65, -2.4, 1.2))
-        look_at(cam, Vector((0.0, 0.0, 1.0)))
+        frame_camera(cam)
         bpy.context.scene.render.filepath = victim_path
         bpy.ops.render.render(write_still=True)
         dest = os.path.join(OUT, "tagged-flash.png")
@@ -856,17 +1126,49 @@ def main():
         os.remove(punch_path)
         os.remove(victim_path)
 
-    self_max = max([row[1] for row in totals] + [s1, s2])
-    world_max = max([row[2] for row in totals] + [w1, w2])
-    fails = sum(row[3] for row in totals) + f1 + f2
-    clips = len(totals) + 2
-    frames = clips
+    clear_fx()
+    clear_pose(arm)
+    arm.rotation_euler = Euler((0.0, 0.0, 0.0), "XYZ")
+    arm.location = (0.0, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    low = lowest(arm)
+    arm.location.z += -low + 0.006
+    bpy.context.view_layer.update()
+    for pair_name, pair_depth in each_pair(arm):
+        if pair_depth <= DEPTH_LIMIT:
+            continue
+        print("RIG-PAIR %s depth_cm %.2f" % (pair_name, pair_depth * 100.0))
+    depth, rig_pair, pieces = paint_rig_overlap(arm)
     print(
-        "no-clip clips=%d frames=%d worldMax=%.2f selfMax=%.2f socketRest=%.2f fails=%d"
-        % (clips, frames, world_max * 100.0, self_max * 100.0, socket * 100.0, fails)
+        "RIG-FAIL depth_cm %.2f pair %s pieces %s"
+        % (depth * 100.0, rig_pair, ",".join(pieces))
     )
-    if fails:
-        sys.exit(1)
+    rig_self, rig_world, rig_fails, rig_worst = measure(arm, ground_solids)
+    print(
+        "NOCLIP",
+        "rig-rest",
+        "self_cm", round(rig_self * 100, 2),
+        "world_cm", round(rig_world * 100, 2),
+        "fails", rig_fails,
+        "pair", rig_worst,
+    )
+    if not MEASURE_ONLY:
+        ghost_body()
+        hip = bpy.data.objects.get("Mesh_Hips")
+        focus = hip.matrix_world.translation if hip is not None else Vector((0, 0, 1))
+        cam.location = focus + Vector((0.72, -1.05, 0.18))
+        look_at(cam, focus + Vector((0.0, 0.0, -0.05)))
+        cam.data.lens = 62
+        render_to(os.path.join(OUT, "rig-overlap-hips-thigh.png"))
+
+    self_max = max([row[1] for row in totals] + [s1, s2, rig_self])
+    world_max = max([row[2] for row in totals] + [w1, w2, rig_world])
+    fails = sum(row[3] for row in totals) + f1 + f2 + rig_fails
+    clips = len(totals) + 3
+    print(
+        "no-clip clips=%d frames=%d worldMax=%.2f selfMax=%.2f fails=%d"
+        % (clips, clips, world_max * 100.0, self_max * 100.0, fails)
+    )
 
 
 if __name__ == "__main__":

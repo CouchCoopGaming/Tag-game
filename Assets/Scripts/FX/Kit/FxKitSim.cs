@@ -77,7 +77,7 @@ namespace Tag.FX
         Mote[] _spark;
         Mote[] _debris;
         Mote[] _foot;
-        Renderer[] _rim;
+        Renderer[] _shell;
         Renderer[] _stars;
         LineRenderer _shock;
         LineRenderer _dustRing;
@@ -96,6 +96,7 @@ namespace Tag.FX
         static Material _sprite;
         static Material _edge;
         static Material _line;
+        static Material _rimMat;
 
         public void Build(Transform root)
         {
@@ -111,7 +112,7 @@ namespace Tag.FX
             _spark = MakeMotes(FxKitLook.SparkFull, "FxSpark");
             _debris = MakeMotes(FxKitLook.DebrisFull, "FxDebris");
             _foot = MakeMotes(FxKitLook.FootDust, "FxFoot");
-            _rim = MakeCards(FxKitLook.RimCards, "FxRim");
+            BuildShells(root);
             _stars = MakeCards(FxKitLook.Stars, "FxStar");
             _shock = MakeLine("FxShock");
             _dustRing = MakeLine("FxDustRing");
@@ -326,22 +327,20 @@ namespace Tag.FX
             float a = 0f;
             if (show)
                 a = FxKitLook.RimAlpha(left, FxKitLook.ImmunitySeconds, Time.time, FxKitLook.SteadyGlow(settings));
-            if (_rim == null) return;
-            bool steady = FxKitLook.SteadyGlow(settings);
-            float spin = steady ? 0f : Time.time * 0.35f;
-            for (int i = 0; i < _rim.Length; i++)
+            if (_shell == null) return;
+            for (int i = 0; i < _shell.Length; i++)
             {
+                if (_shell[i] == null) continue;
                 if (!show || a < 0.02f)
                 {
-                    _rim[i].enabled = false;
+                    _shell[i].enabled = false;
                     continue;
                 }
-                float ang = spin + i * 6.2831855f / _rim.Length;
-                float y = 0.48f + (i % 3) * 0.42f;
-                float rad = 0.50f + (i % 2) * 0.05f;
-                Vector3 p = _root.position + new Vector3(Mathf.Cos(ang) * rad, y, Mathf.Sin(ang) * rad);
-                float size = 0.22f + 0.08f * a;
-                Place(_rim[i], p, size, _cr, _cg, _cb, a * 0.72f, 0f);
+                _shell[i].enabled = true;
+                Color c = new Color(_cr, _cg, _cb, a * 0.85f);
+                _block.SetColor("_Color", c);
+                _block.SetColor("_BaseColor", c);
+                _shell[i].SetPropertyBlock(_block);
             }
         }
 
@@ -369,7 +368,7 @@ namespace Tag.FX
                 float ang = spin + i * 6.2831855f / _stars.Length;
                 float bob = Mathf.Sin(spin * 0.5f + i) * 0.04f;
                 Vector3 p = head + new Vector3(Mathf.Cos(ang) * 0.20f, bob, Mathf.Sin(ang) * 0.20f);
-                Place(_stars[i], p, 0.16f, 1f, 0.88f, 0.28f, a, 2f);
+                Place(_stars[i], p, 0.11f, 1f, 0.88f, 0.28f, a, 2f);
             }
         }
 
@@ -538,7 +537,10 @@ namespace Tag.FX
                 float sp = scale * (0.9f + (i & 3) * 0.22f);
                 _dust[i].Age = 0.0001f;
                 _dust[i].Life = _landRoll ? FxKitLook.RollLife : FxKitLook.LandLife;
-                _dust[i].Size = _landRoll ? 0.28f + (i & 1) * 0.1f : 0.18f + (i & 1) * 0.08f;
+                float puff = 0.032f + 0.018f * scale;
+                if (puff > 0.07f) puff = 0.07f;
+                if (_landRoll) puff *= 1.2f;
+                _dust[i].Size = puff;
                 _dust[i].R = r;
                 _dust[i].G = g;
                 _dust[i].B = b;
@@ -556,7 +558,7 @@ namespace Tag.FX
                 float ang = i * 6.2831855f / n;
                 _spark[i].Age = 0.0001f;
                 _spark[i].Life = FxKitLook.SparkLife;
-                _spark[i].Size = 0.12f + (i & 1) * 0.05f;
+                _spark[i].Size = 0.018f + (i & 1) * 0.008f;
                 _spark[i].R = 1f;
                 _spark[i].G = 0.9f;
                 _spark[i].B = 0.45f;
@@ -575,7 +577,7 @@ namespace Tag.FX
                 float ang = i * 6.2831855f / n + 0.3f;
                 _debris[i].Age = 0.0001f;
                 _debris[i].Life = FxKitLook.DebrisLife;
-                _debris[i].Size = 0.16f + (i & 1) * 0.07f;
+                _debris[i].Size = 0.02f + (i % 3) * 0.013f;
                 _debris[i].R = r;
                 _debris[i].G = g;
                 _debris[i].B = b;
@@ -595,7 +597,7 @@ namespace Tag.FX
                 _footCursor++;
                 _foot[slot].Age = 0.0001f;
                 _foot[slot].Life = FxKitLook.FootLife;
-                _foot[slot].Size = 0.12f + (slot & 1) * 0.04f;
+                _foot[slot].Size = 0.03f + (slot & 1) * 0.012f;
                 _foot[slot].R = r;
                 _foot[slot].G = g;
                 _foot[slot].B = b;
@@ -655,11 +657,11 @@ namespace Tag.FX
                 _scuffLines[i].enabled = true;
                 _scuffLines[i].SetPosition(0, _scuffA[i]);
                 _scuffLines[i].SetPosition(1, _scuffB[i]);
-                _scuffLines[i].startWidth = 0.045f * a;
-                _scuffLines[i].endWidth = 0.02f * a;
-                Color c = new Color(0.22f, 0.2f, 0.18f, 0.8f * a);
+                Color c = new Color(0.45f, 0.38f, 0.30f, 0.55f * a);
                 _scuffLines[i].startColor = c;
                 _scuffLines[i].endColor = c;
+                _scuffLines[i].startWidth = 0.018f * a;
+                _scuffLines[i].endWidth = 0.006f * a;
             }
         }
 
@@ -756,10 +758,10 @@ namespace Tag.FX
             Clear(_spark);
             Clear(_debris);
             Clear(_foot);
-            if (_rim != null)
+            if (_shell != null)
             {
-                for (int i = 0; i < _rim.Length; i++)
-                    if (_rim[i] != null) _rim[i].enabled = false;
+                for (int i = 0; i < _shell.Length; i++)
+                    if (_shell[i] != null) _shell[i].enabled = false;
             }
             HideStars();
             HideStreaks();
@@ -836,6 +838,49 @@ namespace Tag.FX
             return rend;
         }
 
+        void BuildShells(Transform root)
+        {
+            EnsureShared();
+            MeshRenderer[] renderers = root.GetComponentsInChildren<MeshRenderer>(true);
+            int n = 0;
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (BodyMesh(renderers[i])) n++;
+            }
+            _shell = new Renderer[n];
+            int w = 0;
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (!BodyMesh(renderers[i])) continue;
+                _shell[w++] = MakeShell(renderers[i]);
+            }
+        }
+
+        static bool BodyMesh(MeshRenderer src)
+        {
+            if (src == null) return false;
+            string name = src.gameObject.name;
+            if (string.IsNullOrEmpty(name) || name.Length < 5) return false;
+            if (name[0] != 'M' || name[1] != 'e' || name[2] != 's' || name[3] != 'h' || name[4] != '_') return false;
+            MeshFilter filter = src.GetComponent<MeshFilter>();
+            return filter != null && filter.sharedMesh != null;
+        }
+
+        static Renderer MakeShell(MeshRenderer src)
+        {
+            MeshFilter filter = src.GetComponent<MeshFilter>();
+            var go = new GameObject("FxRimShell");
+            go.transform.SetParent(src.transform, false);
+            var shellFilter = go.AddComponent<MeshFilter>();
+            shellFilter.sharedMesh = filter.sharedMesh;
+            var renderer = go.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = _rimMat;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            renderer.enabled = false;
+            return renderer;
+        }
+
         LineRenderer MakeLine(string name)
         {
             var go = new GameObject(name);
@@ -885,6 +930,7 @@ namespace Tag.FX
             }
             if (_sprite == null) _sprite = MakeMat("Tag/FxKitSprite");
             if (_edge == null) _edge = MakeMat("Tag/FxKitEdge");
+            if (_rimMat == null) _rimMat = MakeMat("Tag/FxKitRim");
             if (_line == null)
             {
                 Shader shader = Shader.Find("Sprites/Default");
