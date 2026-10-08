@@ -26,9 +26,11 @@ _PROPS = (
     ("trash", "TrashCan_Lidded", 32.0, (1.55, 0.70, 1.45), (0.0, 0.46, 0.0), 38.0),
     ("lamp", "ParkLamp", 18.0, (4.0, 1.55, 5.2), (0.0, 1.55, 0.0), 28.0),
     ("median", "Median_Planter", 20.0, (2.2, 1.25, 2.5), (0.0, 0.48, 0.0), 36.0),
-    ("dock", "Dock_Straight", 28.0, (5.2, 2.6, 4.4), (0.0, 0.55, 0.0), 32.0),
+    # Low and back, so the joist-to-plank joint is in frame with a margin. The runner still carries the deck.
+    ("dock", "Dock_Straight", 16.0, (2.7, 0.35, 3.3), (0.25, 0.48, 0.05), 32.0),
     ("brick", "Brick_Wall", 24.0, (3.6, 1.8, 5.4), (0.0, 1.55, 0.0), 32.0),
-    ("light", "LightPost_Single", 20.0, (4.6, 2.2, 6.4), (0.0, 2.4, 0.0), 26.0),
+    # Whole post, cobra head and cast base, with ground under the foot.
+    ("light", "LightPost_Single", 18.0, (6.2, 3.1, 8.6), (0.0, 2.4, 0.0), 22.0),
 )
 
 

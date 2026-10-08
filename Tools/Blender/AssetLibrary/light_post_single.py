@@ -39,7 +39,7 @@ def create():
             for x in (-0.15, 0.15):
                 for z in (-0.15, 0.15):
                     g.cylinder((x, 0.065, z), 0.012, 0.016, "Lib_Steel", 6)
-        g.cone((0, 0.22, 0), 0.16, 0.09, 0.32, "Lib_Steel", seg)
+        g.cone((0, 0.22, 0), 0.16, 0.09, 0.32, "Lib_SteelDark", seg)
         g.cone((0, 2.78, 0), 0.085, 0.048, 4.90, "Lib_Steel", seg)
         g.cylinder((0, 4.55, 0), 0.058, 0.04, "Lib_SteelDark", seg)
         g.cylinder((0, 5.20, 0), 0.055, 0.08, "Lib_SteelDark", seg)
