@@ -17,7 +17,7 @@ namespace Tag.Art
         public const float OpenVy = -10f;
 
         public const float SwingArmPitch = -155f;
-        public const float SwingArmYaw = 16f;
+        public const float SwingArmYaw = -70f;
         public const float SwingElbow = -14f;
         public const float SwingThigh = 42f;
         public const float SwingKnee = -52f;
@@ -26,7 +26,7 @@ namespace Tag.Art
         public const float SwingHead = -10f;
 
         public const float TuckArmPitch = -168f;
-        public const float TuckArmYaw = 8f;
+        public const float TuckArmYaw = -70f;
         public const float TuckElbow = -10f;
         public const float TuckThigh = 96f;
         public const float TuckKnee = -128f;
