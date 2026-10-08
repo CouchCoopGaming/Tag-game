@@ -50,6 +50,15 @@ namespace Tag.Ui.Menu
         static readonly int[] HudPlayers = { 1, 2, 4 };
         static readonly string[] HudNames = { "14-hud-1", "15-hud-2", "16-hud-4" };
 
+        static readonly string[] ExtraNames =
+        {
+            "17-pause-4",
+            "18-audio",
+            "19-display",
+            "20-access",
+            "21-disconnect"
+        };
+
         static bool _run;
         static int _index;
         static int _wait;
@@ -80,17 +89,20 @@ namespace Tag.Ui.Menu
         public static bool Drive(MenuHost host)
         {
             if (!_run || host == null) return false;
-            int total = Order.Length + HudPlayers.Length;
+            int menus = Order.Length;
+            int extras = ExtraNames.Length;
+            int total = menus + extras + HudPlayers.Length;
             if (_index < 0 || _index >= total)
             {
                 Finish();
                 return true;
             }
             _wait++;
-            if (_index < Order.Length)
+            if (_index < menus)
             {
                 if (_wait == 1)
                 {
+                    MenuFlow.PreviewLost(false);
                     MatchHud.EndPreview();
                     host.Present(Order[_index]);
                     return true;
@@ -98,9 +110,27 @@ namespace Tag.Ui.Menu
                 if (_wait < 4) return true;
                 Save(Names[_index]);
             }
+            else if (_index < menus + extras)
+            {
+                int extra = _index - menus;
+                if (_wait == 1)
+                {
+                    MenuFlow.PreviewLost(false);
+                    MatchHud.EndPreview();
+                    if (extra == 0) host.PresentSplit(4);
+                    else if (extra == 1) host.PresentOptions(MenuDepth.Audio);
+                    else if (extra == 2) host.PresentOptions(MenuDepth.Display);
+                    else if (extra == 3) host.PresentOptions(MenuDepth.Access);
+                    else host.PresentLost();
+                    return true;
+                }
+                if (_wait < 4) return true;
+                Save(ExtraNames[extra]);
+                MenuFlow.PreviewLost(false);
+            }
             else
             {
-                int hud = _index - Order.Length;
+                int hud = _index - menus - extras;
                 if (_wait == 1)
                 {
                     host.HideForMatch();

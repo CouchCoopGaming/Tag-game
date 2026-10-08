@@ -1,0 +1,237 @@
+using System.Globalization;
+using Tag.Settings;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Tag.Ui.Menu
+{
+    /// <summary>
+    /// Options pages. Audio, display, and accessibility sit behind the hub.
+    /// Values are the settings that already exist. Nothing here is a feel number.
+    /// </summary>
+    public static class MenuDepth
+    {
+        public const int Hub = 0;
+        public const int Audio = 1;
+        public const int Display = 2;
+        public const int Access = 3;
+        public const int Look = 4;
+
+        public const int Stay = 0;
+        public const int Rebuild = 1;
+        public const int OpenControls = 2;
+        public const int Leave = 3;
+
+        public static int Page;
+
+        public static void Reset()
+        {
+            Page = Hub;
+        }
+
+        public static bool ClosePage()
+        {
+            if (Page == Hub) return false;
+            Page = Hub;
+            return true;
+        }
+
+        public static int Count
+        {
+            get
+            {
+                if (Page == Audio) return 6;
+                if (Page == Display) return 5;
+                if (Page == Access) return 5;
+                if (Page == Look) return 6;
+                return 6;
+            }
+        }
+
+        public static string Header()
+        {
+            if (Page == Audio) return "Audio";
+            if (Page == Display) return "Display";
+            if (Page == Access) return "Accessibility";
+            if (Page == Look) return "Look";
+            return "Options";
+        }
+
+        public static string Banner()
+        {
+            if (Page == Audio) return "Sliders step the volumes you already have.";
+            if (Page == Display) return "Resolution, fullscreen, and vsync.";
+            if (Page == Access) return "Reduce motion, text size, and colorblind-safe player colors.";
+            if (Page == Look) return "Look is shared by the couch.";
+            return "Audio, display, accessibility, controls, and look.";
+        }
+
+        public static string Title(int index)
+        {
+            GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
+            if (Page == Hub)
+            {
+                if (index == 0) return "Audio";
+                if (index == 1) return "Display";
+                if (index == 2) return "Accessibility";
+                if (index == 3) return "Controls";
+                if (index == 4) return "Look";
+                return "Back";
+            }
+            if (index == Count - 1) return "Back";
+            if (Page == Audio)
+            {
+                if (index == 0) return s.RowLabel(GameSettings.RowMaster);
+                if (index == 1) return s.RowLabel(GameSettings.RowSfx);
+                if (index == 2) return s.RowLabel(GameSettings.RowUi);
+                if (index == 3) return s.RowLabel(GameSettings.RowMusic);
+                return s.RowLabel(GameSettings.RowMute);
+            }
+            if (Page == Display)
+            {
+                if (index == 0) return "Resolution  " + MenuVideo.ResLabel();
+                if (index == 1) return "Fullscreen  " + (MenuVideo.Full ? "On" : "Window");
+                if (index == 2) return "VSync  " + (MenuVideo.VSync ? "On" : "Off");
+                return "Quality  " + MenuVideo.QualityLabel();
+            }
+            if (Page == Access)
+            {
+                if (index == 0) return "Reduce motion  " + (MenuVideo.ReduceMotion ? "On" : "Off");
+                if (index == 1) return "Text size  " + s.HudScale.ToString("0.00", CultureInfo.InvariantCulture);
+                if (index == 2) return s.RowLabel(GameSettings.RowPlayer);
+                return s.RowLabel(GameSettings.RowColorblind);
+            }
+            if (index == 0) return s.RowLabel(GameSettings.RowMouse);
+            if (index == 1) return s.RowLabel(GameSettings.RowPad);
+            if (index == 2) return s.RowLabel(GameSettings.RowInvert);
+            if (index == 3) return s.RowLabel(GameSettings.RowFov);
+            return "Reset look and audio";
+        }
+
+        public static string Detail(int index)
+        {
+            if (Page == Hub)
+            {
+                if (index == 0) return "Master, effects, UI, music";
+                if (index == 1) return "Resolution, fullscreen, vsync";
+                if (index == 2) return "Motion, text, player colors";
+                if (index == 3) return "The bind list. Space still jumps.";
+                if (index == 4) return "Shared sensitivity";
+                return "";
+            }
+            if (index == Count - 1) return "";
+            if (Page == Look && index == 4) return "Does not change the park or the binds";
+            if (Page == Access && index == 0) return "Menu slides and the title pulse only";
+            if (Page == Access && index == 1) return "Menu and HUD text";
+            if (Page == Audio && index < 4) return "Left / Right";
+            return "Left / Right";
+        }
+
+        public static float Meter(int index)
+        {
+            if (index < 0 || index == Count - 1) return -1f;
+            GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
+            if (Page == Audio)
+            {
+                if (index == 0) return s.Master;
+                if (index == 1) return s.Sfx;
+                if (index == 2) return s.Ui;
+                if (index == 3) return s.Music;
+                return -1f;
+            }
+            if (Page == Access && index == 1)
+            {
+                float u = (s.HudScale - GameSettings.HudMin) / (GameSettings.HudMax - GameSettings.HudMin);
+                if (u < 0f) u = 0f;
+                if (u > 1f) u = 1f;
+                return u;
+            }
+            return -1f;
+        }
+
+        public static int Activate(int index)
+        {
+            if (Page == Hub)
+            {
+                if (index == 0) { Page = Audio; return Rebuild; }
+                if (index == 1) { Page = Display; return Rebuild; }
+                if (index == 2) { Page = Access; return Rebuild; }
+                if (index == 3) return OpenControls;
+                if (index == 4) { Page = Look; return Rebuild; }
+                return Leave;
+            }
+            if (index == Count - 1)
+            {
+                Page = Hub;
+                return Rebuild;
+            }
+            if (Page == Look && index == 4)
+            {
+                GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
+                GameSettings.Current = s;
+                s.ResetToDefaults();
+                return Stay;
+            }
+            Step(index, 1);
+            return Stay;
+        }
+
+        public static bool Step(int index, int dir)
+        {
+            if (Page == Hub || index < 0 || index >= Count - 1) return false;
+            GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
+            GameSettings.Current = s;
+            if (Page == Audio)
+            {
+                if (index == 0) s.Nudge(GameSettings.RowMaster, dir);
+                else if (index == 1) s.Nudge(GameSettings.RowSfx, dir);
+                else if (index == 2) s.Nudge(GameSettings.RowUi, dir);
+                else if (index == 3) s.Nudge(GameSettings.RowMusic, dir);
+                else s.Nudge(GameSettings.RowMute, dir);
+            }
+            else if (Page == Display)
+            {
+                if (index == 0) MenuVideo.CycleRes(dir);
+                else if (index == 1) MenuVideo.ToggleFull();
+                else if (index == 2) MenuVideo.ToggleVSync();
+                else MenuVideo.CycleQuality(dir);
+            }
+            else if (Page == Access)
+            {
+                if (index == 0) MenuVideo.ToggleMotion();
+                else if (index == 1) s.Nudge(GameSettings.RowHud, dir);
+                else if (index == 2) s.Nudge(GameSettings.RowPlayer, dir);
+                else s.Nudge(GameSettings.RowColorblind, dir);
+            }
+            else if (Page == Look)
+            {
+                if (index == 4) return false;
+                if (index == 0) s.Nudge(GameSettings.RowMouse, dir);
+                else if (index == 1) s.Nudge(GameSettings.RowPad, dir);
+                else if (index == 2) s.Nudge(GameSettings.RowInvert, dir);
+                else s.Nudge(GameSettings.RowFov, dir);
+            }
+            else return false;
+            s.Clamp();
+            return true;
+        }
+
+        public static void PaintSwatches(RectTransform body)
+        {
+            if (Page != Access || body == null) return;
+            GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
+            int pal = s.PaletteOf(s.AccessSeat);
+            float y = 8f + Count * 96f;
+            for (int i = 0; i < 4; i++)
+            {
+                AccessibilityPalette.Player(pal, i, out float r, out float g, out float b);
+                RectTransform rt = MenuWidgets.Place(body, "Swatch", 360f + i * 150f, y, 120f, 78f);
+                Image image = rt.gameObject.AddComponent<Image>();
+                MenuArt.Plate(image, new Color(r, g, b, 1f), true);
+                image.raycastTarget = false;
+                string name = i == 0 ? "P1" : i == 1 ? "P2" : i == 2 ? "P3" : "P4";
+                MenuWidgets.Words(rt, name, 28, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
+            }
+        }
+    }
+}

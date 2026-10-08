@@ -75,6 +75,36 @@ namespace Tag.Ui.Menu
             return row.Time.ToString("0.0") + "s as It";
         }
 
+        public static string Stats(Row row)
+        {
+            string tags = row.Tags == 1 ? "1 tag" : row.Tags.ToString() + " tags";
+            string time = row.Time.ToString("0.0") + "s It";
+            string wins = row.Wins == 1 ? "1 round win" : row.Wins.ToString() + " round wins";
+            string line = tags + "    " + time + "    " + wins;
+            if (row.Winner) return "WIN    " + line;
+            return line;
+        }
+
+        public static int Sample(Row[] rows)
+        {
+            if (rows == null || rows.Length < 1) return 0;
+            int n = rows.Length < 4 ? rows.Length : 4;
+            for (int i = 0; i < n; i++)
+            {
+                Row row = new Row();
+                row.Name = i == 0 ? "P1" : i == 1 ? "P2" : i == 2 ? "P3" : "P4";
+                row.Tags = 6 - i;
+                row.Time = 8.5f + i * 6.2f;
+                row.Wins = i == 0 ? 2 : i == 1 ? 1 : 0;
+                row.Alive = i < 2;
+                row.Winner = i == 0;
+                row.Hier = i;
+                row.Accent = (i + 1) % 4;
+                rows[i] = row;
+            }
+            return n;
+        }
+
         static Row FromPawn(TagModeController mode, ItController pawn)
         {
             Row row = new Row();
