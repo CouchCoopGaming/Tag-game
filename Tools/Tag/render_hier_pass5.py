@@ -887,6 +887,12 @@ def solve_clip(arm, spec, smooth, facing, path):
                     break
                 cap = _lift_floor(arm, cap)
                 capsule[i] = cap
+        # Standing rule: a keyed pose may not leave a shell inside the body
+        # or a solid. Edit the pose here so a later solve cannot skip it.
+        import noclip_clear
+        noclip_clear.clear_solved_frame(arm, face, lip_z)
+        cap = arm.location.copy()
+        capsule[i] = cap
         floor_pen, wall_pen, torso, head, _limb, _hand, _foot = _scan(lip_z, face)
         if spec["verb"] in ("softland", "slide"):
             frame_pen = floor_pen
