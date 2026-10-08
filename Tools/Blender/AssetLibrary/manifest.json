@@ -25431,5 +25431,2444 @@
     ],
     "slackCm": 0.64,
     "fbx": "Assets/Art/Props/Library/Buildings/WoodFence.fbx"
+  },
+  {
+    "name": "LightPost_Globe",
+    "category": "StreetFurniture",
+    "blurb": "Ornamental acorn lamp. Globe center 3.30 m, finial 3.68 m. Painted pole, caged glass.",
+    "size": [
+      0.474,
+      3.678,
+      0.475
+    ],
+    "min": [
+      -0.238,
+      0.0,
+      -0.237
+    ],
+    "max": [
+      0.236,
+      3.678,
+      0.237
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 2324,
+        "materials": [
+          "Lib_Black",
+          "Lib_Steel",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Lamp",
+          "Lib_Brass"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 712,
+        "materials": [
+          "Lib_Black",
+          "Lib_SteelDark",
+          "Lib_Glass",
+          "Lib_Lamp",
+          "Lib_Brass"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Plinth",
+        "type": "box",
+        "center": [
+          0,
+          0.025,
+          0
+        ],
+        "size": [
+          0.38,
+          0.036,
+          0.38
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Step",
+        "type": "box",
+        "center": [
+          0,
+          0.085,
+          0
+        ],
+        "size": [
+          0.26,
+          0.036,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Urn",
+        "type": "capsule",
+        "center": [
+          0,
+          0.28,
+          0
+        ],
+        "radius": 0.1,
+        "height": 0.26,
+        "direction": 1
+      },
+      {
+        "name": "Col_Shaft",
+        "type": "capsule",
+        "center": [
+          0,
+          1.68,
+          0
+        ],
+        "radius": 0.028,
+        "height": 2.4,
+        "direction": 1
+      },
+      {
+        "name": "Col_Globe",
+        "type": "sphere",
+        "center": [
+          0,
+          3.3,
+          0
+        ],
+        "radius": 0.16
+      },
+      {
+        "name": "Col_Finial",
+        "type": "capsule",
+        "center": [
+          0,
+          3.58,
+          0
+        ],
+        "radius": 0.012,
+        "height": 0.1,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Round pole, about 11 cm at the urn. Not a cling wall.",
+    "vaultNote": "No rail. The cage is overhead.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/LightPost_Globe.fbx"
+  },
+  {
+    "name": "LightPost_Mast",
+    "category": "StreetFurniture",
+    "blurb": "Galvanized mast arm. Pole to 9.6 m, cobra head 4.7 m out at 9.7 m. Arm rises 0.22 m.",
+    "size": [
+      0.52,
+      9.75,
+      5.52
+    ],
+    "min": [
+      -0.26,
+      0.0,
+      -0.26
+    ],
+    "max": [
+      0.26,
+      9.75,
+      5.26
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 740,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintYellow",
+          "Lib_Black",
+          "Lib_Lamp"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 212,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintYellow",
+          "Lib_Lamp"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Base",
+        "type": "box",
+        "center": [
+          0,
+          0.016,
+          0
+        ],
+        "size": [
+          0.48,
+          0.028,
+          0.48
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_PoleLow",
+        "type": "capsule",
+        "center": [
+          0,
+          1.7,
+          0
+        ],
+        "radius": 0.12,
+        "height": 3.2,
+        "direction": 1
+      },
+      {
+        "name": "Col_PoleHigh",
+        "type": "capsule",
+        "center": [
+          0,
+          6.3,
+          0
+        ],
+        "radius": 0.06,
+        "height": 6.4,
+        "direction": 1
+      },
+      {
+        "name": "Col_Arm",
+        "type": "box",
+        "center": [
+          0.0,
+          9.43,
+          2.3399999999999994
+        ],
+        "size": [
+          0.03959797974644667,
+          0.03959797974644667,
+          4.200123593789278
+        ],
+        "euler": [
+          -3.865461169851735,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Head",
+        "type": "box",
+        "center": [
+          0,
+          9.62,
+          4.85
+        ],
+        "size": [
+          0.32,
+          0.13,
+          0.54
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Tapered round pole, 32 cm at the base. Not a cling wall.",
+    "vaultNote": "No rail. The arm is overhead.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.17,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/LightPost_Mast.fbx"
+  },
+  {
+    "name": "FireHydrant_Yellow",
+    "category": "StreetFurniture",
+    "blurb": "Yellow dry-barrel hydrant, 0.79 m to the operating nut. Brass nozzles, white band, chains.",
+    "size": [
+      0.42,
+      0.794,
+      0.421
+    ],
+    "min": [
+      -0.21,
+      0.0,
+      -0.17
+    ],
+    "max": [
+      0.21,
+      0.794,
+      0.251
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1728,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_PaintYellow",
+          "Lib_PaintWhite",
+          "Lib_Brass",
+          "Lib_Chain"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 624,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_PaintYellow",
+          "Lib_PaintWhite",
+          "Lib_Brass"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Flange",
+        "type": "box",
+        "center": [
+          0,
+          0.028,
+          0
+        ],
+        "size": [
+          0.22,
+          0.04,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Barrel",
+        "type": "capsule",
+        "center": [
+          0,
+          0.36,
+          0
+        ],
+        "radius": 0.078,
+        "height": 0.5,
+        "direction": 1
+      },
+      {
+        "name": "Col_Nozzle_L",
+        "type": "capsule",
+        "center": [
+          -0.128,
+          0.4,
+          0
+        ],
+        "radius": 0.028,
+        "height": 0.09,
+        "direction": 0
+      },
+      {
+        "name": "Col_Nozzle_R",
+        "type": "capsule",
+        "center": [
+          0.128,
+          0.4,
+          0
+        ],
+        "radius": 0.028,
+        "height": 0.09,
+        "direction": 0
+      },
+      {
+        "name": "Col_Pumper",
+        "type": "capsule",
+        "center": [
+          0,
+          0.38,
+          0.155
+        ],
+        "radius": 0.042,
+        "height": 0.11,
+        "direction": 2
+      },
+      {
+        "name": "Col_Bonnet",
+        "type": "capsule",
+        "center": [
+          0,
+          0.66,
+          0
+        ],
+        "radius": 0.04,
+        "height": 0.12,
+        "direction": 1
+      },
+      {
+        "name": "Col_Nut",
+        "type": "capsule",
+        "center": [
+          0,
+          0.762,
+          0
+        ],
+        "radius": 0.024,
+        "height": 0.05,
+        "direction": 1
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Round barrel under 0.8 m. Not a cling wall.",
+    "vaultNote": "Too short and too narrow to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.5,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/FireHydrant_Yellow.fbx"
+  },
+  {
+    "name": "FireHydrant_Silver",
+    "category": "StreetFurniture",
+    "blurb": "Yard hydrant, 0.81 m to the handwheel. Worn silver barrel, black caps, brass nozzles.",
+    "size": [
+      0.42,
+      0.811,
+      0.421
+    ],
+    "min": [
+      -0.21,
+      0.0,
+      -0.17
+    ],
+    "max": [
+      0.21,
+      0.811,
+      0.251
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1908,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_MetalWorn",
+          "Lib_Brass",
+          "Lib_Black",
+          "Lib_Chain"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 764,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_MetalWorn",
+          "Lib_Brass",
+          "Lib_Black",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Flange",
+        "type": "box",
+        "center": [
+          0,
+          0.028,
+          0
+        ],
+        "size": [
+          0.22,
+          0.04,
+          0.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Barrel",
+        "type": "capsule",
+        "center": [
+          0,
+          0.36,
+          0
+        ],
+        "radius": 0.078,
+        "height": 0.5,
+        "direction": 1
+      },
+      {
+        "name": "Col_Nozzle_L",
+        "type": "capsule",
+        "center": [
+          -0.128,
+          0.4,
+          0
+        ],
+        "radius": 0.028,
+        "height": 0.09,
+        "direction": 0
+      },
+      {
+        "name": "Col_Nozzle_R",
+        "type": "capsule",
+        "center": [
+          0.128,
+          0.4,
+          0
+        ],
+        "radius": 0.028,
+        "height": 0.09,
+        "direction": 0
+      },
+      {
+        "name": "Col_Pumper",
+        "type": "capsule",
+        "center": [
+          0,
+          0.38,
+          0.155
+        ],
+        "radius": 0.042,
+        "height": 0.11,
+        "direction": 2
+      },
+      {
+        "name": "Col_Neck",
+        "type": "capsule",
+        "center": [
+          0,
+          0.66,
+          0
+        ],
+        "radius": 0.04,
+        "height": 0.12,
+        "direction": 1
+      },
+      {
+        "name": "Col_Wheel",
+        "type": "box",
+        "center": [
+          0,
+          0.8,
+          0
+        ],
+        "size": [
+          0.12,
+          0.012,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Round barrel under 0.85 m. Not a cling wall.",
+    "vaultNote": "Too short and too narrow to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.5,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/FireHydrant_Silver.fbx"
+  },
+  {
+    "name": "Bench_Metal",
+    "category": "StreetFurniture",
+    "blurb": "1.80 m metal bench. Eight seat slats and five back slats on a tubular frame. Seat top 0.45 m.",
+    "size": [
+      1.64,
+      0.844,
+      0.575
+    ],
+    "min": [
+      -0.82,
+      0.0,
+      -0.315
+    ],
+    "max": [
+      0.82,
+      0.844,
+      0.26
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1488,
+        "materials": [
+          "Lib_Black",
+          "Lib_MetalWorn",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 432,
+        "materials": [
+          "Lib_Black",
+          "Lib_MetalWorn"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_FootA_0",
+        "type": "box",
+        "center": [
+          -0.72,
+          0.012,
+          -0.18
+        ],
+        "size": [
+          0.09,
+          0.02,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_0",
+        "type": "box",
+        "center": [
+          -0.72,
+          0.012,
+          0.2
+        ],
+        "size": [
+          0.09,
+          0.02,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegA_0",
+        "type": "capsule",
+        "center": [
+          -0.72,
+          0.215,
+          -0.18
+        ],
+        "radius": 0.014,
+        "height": 0.36,
+        "direction": 1
+      },
+      {
+        "name": "Col_LegB_0",
+        "type": "capsule",
+        "center": [
+          -0.72,
+          0.215,
+          0.2
+        ],
+        "radius": 0.014,
+        "height": 0.36,
+        "direction": 1
+      },
+      {
+        "name": "Col_Rail_0",
+        "type": "box",
+        "center": [
+          -0.72,
+          0.4,
+          0.01
+        ],
+        "size": [
+          0.02,
+          0.02,
+          0.34
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Back_0",
+        "type": "box",
+        "center": [
+          -0.72,
+          0.62,
+          -0.24
+        ],
+        "size": [
+          0.016970562748477143,
+          0.016970562748477143,
+          0.44607017003965516
+        ],
+        "euler": [
+          -74.74488129694222,
+          180.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_FootA_1",
+        "type": "box",
+        "center": [
+          0.72,
+          0.012,
+          -0.18
+        ],
+        "size": [
+          0.09,
+          0.02,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_1",
+        "type": "box",
+        "center": [
+          0.72,
+          0.012,
+          0.2
+        ],
+        "size": [
+          0.09,
+          0.02,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegA_1",
+        "type": "capsule",
+        "center": [
+          0.72,
+          0.215,
+          -0.18
+        ],
+        "radius": 0.014,
+        "height": 0.36,
+        "direction": 1
+      },
+      {
+        "name": "Col_LegB_1",
+        "type": "capsule",
+        "center": [
+          0.72,
+          0.215,
+          0.2
+        ],
+        "radius": 0.014,
+        "height": 0.36,
+        "direction": 1
+      },
+      {
+        "name": "Col_Rail_1",
+        "type": "box",
+        "center": [
+          0.72,
+          0.4,
+          0.01
+        ],
+        "size": [
+          0.02,
+          0.02,
+          0.34
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Back_1",
+        "type": "box",
+        "center": [
+          0.72,
+          0.62,
+          -0.24
+        ],
+        "size": [
+          0.016970562748477143,
+          0.016970562748477143,
+          0.44607017003965516
+        ],
+        "euler": [
+          -74.74488129694222,
+          180.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Seat_0",
+        "type": "box",
+        "center": [
+          0,
+          0.438,
+          -0.12
+        ],
+        "size": [
+          1.6,
+          0.014,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_1",
+        "type": "box",
+        "center": [
+          0,
+          0.438,
+          -0.07714285714285714
+        ],
+        "size": [
+          1.6,
+          0.014,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_2",
+        "type": "box",
+        "center": [
+          0,
+          0.438,
+          -0.03428571428571428
+        ],
+        "size": [
+          1.6,
+          0.014,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_3",
+        "type": "box",
+        "center": [
+          0,
+          0.438,
+          0.008571428571428563
+        ],
+        "size": [
+          1.6,
+          0.014,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_4",
+        "type": "box",
+        "center": [
+          0,
+          0.438,
+          0.051428571428571435
+        ],
+        "size": [
+          1.6,
+          0.014,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_5",
+        "type": "box",
+        "center": [
+          0,
+          0.438,
+          0.0942857142857143
+        ],
+        "size": [
+          1.6,
+          0.014,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_6",
+        "type": "box",
+        "center": [
+          0,
+          0.438,
+          0.13714285714285712
+        ],
+        "size": [
+          1.6,
+          0.014,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_7",
+        "type": "box",
+        "center": [
+          0,
+          0.438,
+          0.18
+        ],
+        "size": [
+          1.6,
+          0.014,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BackSlat_0",
+        "type": "box",
+        "center": [
+          0,
+          0.548,
+          -0.22036363636363637
+        ],
+        "size": [
+          1.6,
+          0.016,
+          0.012
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BackSlat_1",
+        "type": "box",
+        "center": [
+          0,
+          0.604,
+          -0.23563636363636362
+        ],
+        "size": [
+          1.6,
+          0.016,
+          0.012
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BackSlat_2",
+        "type": "box",
+        "center": [
+          0,
+          0.66,
+          -0.2509090909090909
+        ],
+        "size": [
+          1.6,
+          0.016,
+          0.012
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BackSlat_3",
+        "type": "box",
+        "center": [
+          0,
+          0.716,
+          -0.2661818181818182
+        ],
+        "size": [
+          1.6,
+          0.016,
+          0.012
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BackSlat_4",
+        "type": "box",
+        "center": [
+          0,
+          0.772,
+          -0.28145454545454546
+        ],
+        "size": [
+          1.6,
+          0.016,
+          0.012
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Slats are too broken up to cling. Not a wall-run panel.",
+    "vaultNote": "Seat top is 0.45 m. Below the 0.90\u20131.05 m vault band.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.12,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Bench_Metal.fbx"
+  },
+  {
+    "name": "Bench_WoodIron",
+    "category": "StreetFurniture",
+    "blurb": "1.83 m wood bench. Four seat slats and three back slats, cast legs, center leg. Seat top 0.45 m.",
+    "size": [
+      1.78,
+      0.84,
+      0.566
+    ],
+    "min": [
+      -0.89,
+      0.0,
+      -0.331
+    ],
+    "max": [
+      0.89,
+      0.84,
+      0.235
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 2464,
+        "materials": [
+          "Lib_Black",
+          "Lib_Wood",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 368,
+        "materials": [
+          "Lib_Black",
+          "Lib_Wood"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_LegF_0",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.24,
+          0.18
+        ],
+        "size": [
+          0.04,
+          0.34,
+          0.032
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegB_0",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.24,
+          -0.2
+        ],
+        "size": [
+          0.04,
+          0.34,
+          0.032
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootF_0",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.015,
+          0.18
+        ],
+        "size": [
+          0.1,
+          0.024,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_0",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.015,
+          -0.2
+        ],
+        "size": [
+          0.1,
+          0.024,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_0",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.62,
+          -0.3
+        ],
+        "size": [
+          0.042,
+          0.36,
+          0.032
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arm_0",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.67,
+          -0.02
+        ],
+        "size": [
+          0.06,
+          0.016,
+          0.38
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegF_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.24,
+          0.18
+        ],
+        "size": [
+          0.04,
+          0.34,
+          0.032
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegB_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.24,
+          -0.2
+        ],
+        "size": [
+          0.04,
+          0.34,
+          0.032
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootF_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.015,
+          0.18
+        ],
+        "size": [
+          0.1,
+          0.024,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.015,
+          -0.2
+        ],
+        "size": [
+          0.1,
+          0.024,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_1",
+        "type": "box",
+        "center": [
+          0.0,
+          0.62,
+          -0.3
+        ],
+        "size": [
+          0.042,
+          0.36,
+          0.032
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegF_2",
+        "type": "box",
+        "center": [
+          0.78,
+          0.24,
+          0.18
+        ],
+        "size": [
+          0.04,
+          0.34,
+          0.032
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LegB_2",
+        "type": "box",
+        "center": [
+          0.78,
+          0.24,
+          -0.2
+        ],
+        "size": [
+          0.04,
+          0.34,
+          0.032
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootF_2",
+        "type": "box",
+        "center": [
+          0.78,
+          0.015,
+          0.18
+        ],
+        "size": [
+          0.1,
+          0.024,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_FootB_2",
+        "type": "box",
+        "center": [
+          0.78,
+          0.015,
+          -0.2
+        ],
+        "size": [
+          0.1,
+          0.024,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_2",
+        "type": "box",
+        "center": [
+          0.78,
+          0.62,
+          -0.3
+        ],
+        "size": [
+          0.042,
+          0.36,
+          0.032
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Arm_2",
+        "type": "box",
+        "center": [
+          0.78,
+          0.67,
+          -0.02
+        ],
+        "size": [
+          0.06,
+          0.016,
+          0.38
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_0",
+        "type": "box",
+        "center": [
+          0,
+          0.452,
+          -0.1
+        ],
+        "size": [
+          1.74,
+          0.022,
+          0.046
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_1",
+        "type": "box",
+        "center": [
+          0,
+          0.452,
+          -0.013333333333333336
+        ],
+        "size": [
+          1.74,
+          0.022,
+          0.046
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_2",
+        "type": "box",
+        "center": [
+          0,
+          0.452,
+          0.07333333333333333
+        ],
+        "size": [
+          1.74,
+          0.022,
+          0.046
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_3",
+        "type": "box",
+        "center": [
+          0,
+          0.452,
+          0.16
+        ],
+        "size": [
+          1.74,
+          0.022,
+          0.046
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Back_0",
+        "type": "box",
+        "center": [
+          0,
+          0.58,
+          -0.32
+        ],
+        "size": [
+          1.7,
+          0.028,
+          0.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Back_1",
+        "type": "box",
+        "center": [
+          0,
+          0.7,
+          -0.32
+        ],
+        "size": [
+          1.7,
+          0.028,
+          0.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Back_2",
+        "type": "box",
+        "center": [
+          0,
+          0.82,
+          -0.32
+        ],
+        "size": [
+          1.7,
+          0.028,
+          0.014
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Back slats are too broken up to cling. Not a wall-run panel.",
+    "vaultNote": "Seat top is 0.45 m. Below the 0.90\u20131.05 m vault band.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.34,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Bench_WoodIron.fbx"
+  },
+  {
+    "name": "TrashCan_Drum",
+    "category": "StreetFurniture",
+    "blurb": "Steel drum can, 0.48 m across, 0.80 m to the lid, knob at 0.84 m. Three ribs and two handles.",
+    "size": [
+      0.58,
+      0.843,
+      0.5
+    ],
+    "min": [
+      -0.29,
+      0.0,
+      -0.25
+    ],
+    "max": [
+      0.29,
+      0.843,
+      0.25
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1420,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_MetalWorn",
+          "Lib_Steel",
+          "Lib_Black"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 520,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_MetalWorn",
+          "Lib_Steel",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Skirt",
+        "type": "box",
+        "center": [
+          0,
+          0.028,
+          0
+        ],
+        "size": [
+          0.3,
+          0.04,
+          0.3
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Body",
+        "type": "capsule",
+        "center": [
+          0,
+          0.385,
+          0
+        ],
+        "radius": 0.19,
+        "height": 0.6,
+        "direction": 1
+      },
+      {
+        "name": "Col_Rim",
+        "type": "box",
+        "center": [
+          0,
+          0.74,
+          0
+        ],
+        "size": [
+          0.32,
+          0.036,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Lid",
+        "type": "box",
+        "center": [
+          0,
+          0.785,
+          0
+        ],
+        "size": [
+          0.32,
+          0.024,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Round can under 0.9 m. Not a cling wall.",
+    "vaultNote": "Too short to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.72,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/TrashCan_Drum.fbx"
+  },
+  {
+    "name": "RecyclingBin_Dual",
+    "category": "StreetFurniture",
+    "blurb": "Two-stream bin, 1.10 m wide, 0.48 m deep, 1.04 m to the lids. Blue and green lids, four casters.",
+    "size": [
+      1.085,
+      1.05,
+      0.54
+    ],
+    "min": [
+      -0.543,
+      0.0,
+      -0.29
+    ],
+    "max": [
+      0.543,
+      1.05,
+      0.25
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1008,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Rubber",
+          "Lib_Steel",
+          "Lib_PaintBlue",
+          "Lib_PaintGreen",
+          "Lib_PaintWhite"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 368,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Rubber",
+          "Lib_Steel",
+          "Lib_PaintBlue",
+          "Lib_PaintGreen"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Post_00",
+        "type": "box",
+        "center": [
+          -0.52,
+          0.5,
+          -0.21
+        ],
+        "size": [
+          0.038,
+          0.94,
+          0.038
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.52,
+          0.04,
+          -0.21
+        ],
+        "size": [
+          0.032,
+          0.05,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_01",
+        "type": "box",
+        "center": [
+          -0.52,
+          0.5,
+          0.21
+        ],
+        "size": [
+          0.038,
+          0.94,
+          0.038
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          -0.52,
+          0.04,
+          0.21
+        ],
+        "size": [
+          0.032,
+          0.05,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_10",
+        "type": "box",
+        "center": [
+          0.52,
+          0.5,
+          -0.21
+        ],
+        "size": [
+          0.038,
+          0.94,
+          0.038
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          0.52,
+          0.04,
+          -0.21
+        ],
+        "size": [
+          0.032,
+          0.05,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_11",
+        "type": "box",
+        "center": [
+          0.52,
+          0.5,
+          0.21
+        ],
+        "size": [
+          0.038,
+          0.94,
+          0.038
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.52,
+          0.04,
+          0.21
+        ],
+        "size": [
+          0.032,
+          0.05,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Floor",
+        "type": "box",
+        "center": [
+          0,
+          0.12,
+          0
+        ],
+        "size": [
+          0.96,
+          0.024,
+          0.34
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Back",
+        "type": "box",
+        "center": [
+          0,
+          0.56,
+          0.2
+        ],
+        "size": [
+          0.96,
+          0.78,
+          0.016
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SideL",
+        "type": "box",
+        "center": [
+          -0.5,
+          0.56,
+          0.0
+        ],
+        "size": [
+          0.016,
+          0.78,
+          0.34
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SideR",
+        "type": "box",
+        "center": [
+          0.5,
+          0.56,
+          0.0
+        ],
+        "size": [
+          0.016,
+          0.78,
+          0.34
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Kick",
+        "type": "box",
+        "center": [
+          0,
+          0.26,
+          -0.21
+        ],
+        "size": [
+          0.96,
+          0.18,
+          0.016
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Rail",
+        "type": "box",
+        "center": [
+          0,
+          0.52,
+          -0.21
+        ],
+        "size": [
+          0.96,
+          0.06,
+          0.016
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Head",
+        "type": "box",
+        "center": [
+          0,
+          0.86,
+          -0.21
+        ],
+        "size": [
+          0.96,
+          0.14,
+          0.016
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Stile",
+        "type": "box",
+        "center": [
+          0,
+          0.62,
+          -0.21
+        ],
+        "size": [
+          0.032,
+          0.5,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LidL",
+        "type": "box",
+        "center": [
+          -0.26,
+          1.015,
+          0.0
+        ],
+        "size": [
+          0.46,
+          0.024,
+          0.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LidR",
+        "type": "box",
+        "center": [
+          0.26,
+          1.015,
+          0.0
+        ],
+        "size": [
+          0.46,
+          0.024,
+          0.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_HoodL",
+        "type": "box",
+        "center": [
+          -0.26,
+          0.7,
+          -0.25
+        ],
+        "size": [
+          0.36,
+          0.028,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_HoodR",
+        "type": "box",
+        "center": [
+          0.26,
+          0.7,
+          -0.25
+        ],
+        "size": [
+          0.36,
+          0.028,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The front is broken by the slots. Not a cling wall.",
+    "vaultNote": "Lid is 1.04 m, but the top is a thin lid over an open slot, not a vault rail.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.45,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/RecyclingBin_Dual.fbx"
+  },
+  {
+    "name": "Dumpster_Rear",
+    "category": "StreetFurniture",
+    "blurb": "Rear-load container 1.83 x 1.37 m, 1.28 m to the lid. Side trunnions, split lids, four casters.",
+    "size": [
+      2.1,
+      1.295,
+      1.381
+    ],
+    "min": [
+      -1.05,
+      0.0,
+      -0.675
+    ],
+    "max": [
+      1.05,
+      1.295,
+      0.706
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 1020,
+        "materials": [
+          "Lib_Rubber",
+          "Lib_SteelDark",
+          "Lib_ContainerBlue",
+          "Lib_Steel",
+          "Lib_Black",
+          "Lib_PaintYellow"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 404,
+        "materials": [
+          "Lib_Rubber",
+          "Lib_SteelDark",
+          "Lib_ContainerBlue",
+          "Lib_Steel"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Wheel_00",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.07,
+          -0.52
+        ],
+        "size": [
+          0.036,
+          0.09,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_01",
+        "type": "box",
+        "center": [
+          -0.78,
+          0.07,
+          0.52
+        ],
+        "size": [
+          0.036,
+          0.09,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_10",
+        "type": "box",
+        "center": [
+          0.78,
+          0.07,
+          -0.52
+        ],
+        "size": [
+          0.036,
+          0.09,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Wheel_11",
+        "type": "box",
+        "center": [
+          0.78,
+          0.07,
+          0.52
+        ],
+        "size": [
+          0.036,
+          0.09,
+          0.09
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Skirt",
+        "type": "box",
+        "center": [
+          0,
+          0.16,
+          0
+        ],
+        "size": [
+          1.64,
+          0.05,
+          1.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Tub",
+        "type": "box",
+        "center": [
+          0,
+          0.68,
+          0
+        ],
+        "size": [
+          1.72,
+          0.9,
+          1.22
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LidL",
+        "type": "box",
+        "center": [
+          -0.44,
+          1.24,
+          0.02
+        ],
+        "size": [
+          0.8,
+          0.036,
+          1.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_LidR",
+        "type": "box",
+        "center": [
+          0.44,
+          1.24,
+          0.02
+        ],
+        "size": [
+          0.8,
+          0.036,
+          1.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_TrunnionL",
+        "type": "capsule",
+        "center": [
+          -1.0,
+          1.02,
+          0.28
+        ],
+        "radius": 0.028,
+        "height": 0.09,
+        "direction": 0
+      },
+      {
+        "name": "Col_TrunnionR",
+        "type": "capsule",
+        "center": [
+          1.0,
+          1.02,
+          0.28
+        ],
+        "radius": 0.028,
+        "height": 0.09,
+        "direction": 0
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Side sheets are about 1.1 m and broken by ribs. Not a clean cling wall.",
+    "vaultNote": "Lid top is 1.28 m. Above the 0.90\u20131.05 m vault band.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Dumpster_Rear.fbx"
   }
 ]
