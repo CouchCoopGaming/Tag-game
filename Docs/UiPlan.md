@@ -371,6 +371,12 @@ Random's detail plate is the three parks side by side. The title is RANDOM and t
 
 `Docs/UiStills/pass45/arena-random.png` and `options.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The proof lines are unchanged.
 
+## Pass 46
+
+Arena row cards show the size again. Mega Park is 160 x 100 m, Pocket Park is 80 x 50 m, and Stack Yard is 110 x 70 m. Random has no size. Each card that has a vote shows the seat shape and the count. Left Alt is sampled for both Air dash and Sprint in `PlayerInputReader`, so both rows carry an Alt marker. The binds table still stores Air dash as Q and Sprint as Shift, which is why a defaults conflict count stays 0: that check only compares the stored tokens. Grapple is in the verb list. It is RMB in the left hand: a click pulls, and a second click within 0.28 s releases. Tag is the punch button, not a second action. Face buttons draw as A, B, and X chips. A PlayStation pad uses its own shapes when that pad was the last device. There is no separate Look setting for the family.
+
+`Docs/UiStills/pass46/arena.png`, `options-controls.png`, and `options-sound.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

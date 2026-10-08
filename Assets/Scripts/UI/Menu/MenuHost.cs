@@ -3456,15 +3456,14 @@ namespace Tag.Ui.Menu
                 if (index >= _count) break;
                 string title;
                 string detail;
-                ControlBands(out int actions, out int noteAt, out int stickAt, out int confirmAt, out int resetAt);
-                int stick = index - stickAt;
-                int note = index - noteAt;
-                if (index < actions)
+                ControlBands(out _, out _, out _, out int confirmAt, out int resetAt);
+                ControlSlot(index, out int actionIndex, out int note, out int stick, out int confirmSeat);
+                if (actionIndex >= 0)
                 {
-                    var action = (PlayAction)index;
+                    var action = (PlayAction)actionIndex;
                     title = ActionBinds.Name(action);
                     detail = ActionDetail(action, binds);
-                    if (_capturing && index == _captureAction) detail = "Press a key or a button";
+                    if (_capturing && actionIndex == _captureAction) detail = "Press a key or a button";
                 }
                 else if (note >= 0 && note < ContextNotes)
                 {
@@ -3476,12 +3475,11 @@ namespace Tag.Ui.Menu
                     title = MenuStick.Label(stick);
                     detail = MenuStick.Detail(stick);
                 }
-                else if (index >= confirmAt && index < resetAt)
+                else if (confirmSeat >= 0)
                 {
-                    int seat = index - confirmAt;
-                    title = ConfirmTitle(seat);
+                    title = ConfirmTitle(confirmSeat);
                     GameSettings settings = GameSettings.Current ?? GameSettings.Defaults();
-                    detail = FaceMap.Word(settings.ConfirmFace[seat]);
+                    detail = FaceMap.Word(settings.ConfirmFace[confirmSeat]);
                 }
                 else if (index == resetAt)
                 {
@@ -3494,15 +3492,17 @@ namespace Tag.Ui.Menu
                     detail = _conflict ?? "";
                 }
                 MenuTile row = AddTile(rowX, listTop + v * 96f, rowW, 88f, index, title, detail, true);
-                if (index < actions && row != null)
+                if (actionIndex >= 0 && row != null)
                 {
-                    MenuWidgets.Mark(row, MenuIcons.ForToken(PadGlyph.Keyboard, binds.Keyboard[index]), MenuTheme.Gold, 56f);
-                    var padRt = MenuWidgets.Place(row.transform, "PadGlyph", rowW - 72f, 22f, 44f, 44f);
-                    var padImg = padRt.gameObject.AddComponent<Image>();
-                    padImg.sprite = MenuIcons.ForToken(PadGlyph.Xbox, binds.Gamepad[index]);
-                    padImg.preserveAspect = true;
-                    padImg.raycastTarget = false;
+                    var action = (PlayAction)actionIndex;
+                    MenuWidgets.Mark(row, MenuIcons.ForToken(PadGlyph.Keyboard, binds.Keyboard[actionIndex]), MenuTheme.Gold, 56f);
+                    if (FaceToken(binds.Gamepad[actionIndex]))
+                        PaintPadChip(row.transform, rowW, binds.Gamepad[actionIndex]);
+                    if (action == PlayAction.AirDash || action == PlayAction.Sprint)
+                        PaintAltClash(row.transform, rowW);
                 }
+                else if (note == 0 && row != null)
+                    PaintPadChip(row.transform, rowW, "mouseRight");
                 else if (index >= confirmAt && index < resetAt && row != null)
                 {
                     int seat = index - confirmAt;
@@ -3862,11 +3862,10 @@ namespace Tag.Ui.Menu
 
         void ActivateControls()
         {
-            ControlBands(out _, out int noteAt, out int stickAt, out int confirmAt, out int resetAt);
-            int note = _focus - noteAt;
+            ControlBands(out _, out _, out _, out _, out int resetAt);
+            ControlSlot(_focus, out int actionIndex, out int note, out int stick, out int confirmSeat);
             if (note >= 0 && note < ContextNotes)
                 return;
-            int stick = _focus - stickAt;
             if (stick >= 0 && stick < MenuStick.Rows)
             {
                 if (MenuStick.Nudge(stick, 1))
@@ -3879,11 +3878,11 @@ namespace Tag.Ui.Menu
                 PaintControls();
                 return;
             }
-            if (_focus >= confirmAt && _focus < resetAt)
+            if (confirmSeat >= 0)
             {
                 GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
                 GameSettings.Current = s;
-                s.StepConfirm(_focus - confirmAt, 1);
+                s.StepConfirm(confirmSeat, 1);
                 UnlockLooks();
                 MenuAudio.Move();
                 PaintControls();
@@ -3907,8 +3906,9 @@ namespace Tag.Ui.Menu
                 GoBack();
                 return;
             }
+            if (actionIndex < 0) return;
             _capturing = true;
-            _captureAction = _focus;
+            _captureAction = actionIndex;
             _captureFrame = Time.frameCount;
             _conflict = "";
             MenuAudio.Confirm();
@@ -4469,7 +4469,95 @@ namespace Tag.Ui.Menu
                 key = ActionBinds.Show(kb) + " or E";
             else if (action == PlayAction.Sprint && kb == "leftShift")
                 key = "Shift or Alt";
+            if (FaceToken(binds.Gamepad[i])) return key;
             return key + "    /    " + pad;
+        }
+
+        /// <summary>
+        /// Grapple sits with the verbs. The later rows keep their old indexes,
+        /// so Zip, sticks, and confirm still land where they did.
+        /// </summary>
+        static void ControlSlot(int index, out int action, out int note, out int stick, out int confirm)
+        {
+            ControlBands(out int actions, out int noteAt, out int stickAt, out int confirmAt, out _);
+            action = -1;
+            note = -1;
+            stick = -1;
+            confirm = -1;
+            if (index == 7)
+            {
+                note = 0;
+                return;
+            }
+            if (index >= 0 && index < 7)
+            {
+                action = index;
+                return;
+            }
+            if (index > 7 && index <= actions)
+            {
+                action = index - 1;
+                return;
+            }
+            if (index > noteAt && index < stickAt)
+            {
+                note = index - noteAt;
+                return;
+            }
+            if (index >= stickAt && index < confirmAt)
+            {
+                stick = index - stickAt;
+                return;
+            }
+            if (index >= confirmAt && index < confirmAt + GameSettings.SeatCount)
+                confirm = index - confirmAt;
+        }
+
+        static bool FaceToken(string token)
+        {
+            return token == "buttonSouth" || token == "buttonEast" || token == "buttonWest" || token == "buttonNorth";
+        }
+
+        static int PadFaceFamily()
+        {
+            if (MenuInput.LastKind == InputDeviceKind.Gamepad)
+            {
+                int family = PadGlyph.Family(MenuInput.LastDevice);
+                if (family == PadGlyph.PlayStation || family == PadGlyph.Switch || family == PadGlyph.Xbox)
+                    return family;
+            }
+            return PadGlyph.Xbox;
+        }
+
+        static void PaintPadChip(Transform row, float rowW, string token)
+        {
+            if (row == null) return;
+            var plate = MenuWidgets.Place(row, "FaceChip", rowW - 78f, 18f, 52f, 52f);
+            var plateImage = plate.gameObject.AddComponent<Image>();
+            MenuArt.Plate(plateImage, MenuTheme.Gold, true);
+            plateImage.raycastTarget = false;
+            if (FaceToken(token))
+            {
+                var iconRt = MenuWidgets.Place(plate, "Glyph", 6f, 6f, 40f, 40f);
+                var icon = iconRt.gameObject.AddComponent<Image>();
+                icon.sprite = MenuIcons.ForToken(PadFaceFamily(), token);
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
+                return;
+            }
+            Text label = MenuWidgets.Words(plate, "RMB", 18, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
+            if (label != null) label.raycastTarget = false;
+        }
+
+        static void PaintAltClash(Transform row, float rowW)
+        {
+            if (row == null) return;
+            var plate = MenuWidgets.Place(row, "AltClash", rowW - 156f, 22f, 68f, 44f);
+            var plateImage = plate.gameObject.AddComponent<Image>();
+            MenuArt.Plate(plateImage, new Color(0.85f, 0.20f, 0.22f, 1f), true);
+            plateImage.raycastTarget = false;
+            Text label = MenuWidgets.Words(plate, "Alt", 22, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            if (label != null) label.raycastTarget = false;
         }
 
         static string NoteTitle(int note)

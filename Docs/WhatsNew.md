@@ -358,6 +358,8 @@ The forty-fourth pass gives Mega Park that same overhead picture, with the edge 
 
 The forty-fifth pass keeps that Random card, and the big plate matches it: three parks, the title RANDOM, and the line "One of the three parks". The row cards leave the ground colour alone, so Pocket stays clay. Options uses the same pages as the screens lane: Sound, Picture, Accessibility, Controls, Look, and Credits. Reset asks once before it clears that page. Controls lists the binds that are saved. Cling is Hold into wall on the keyboard and Left stick hold on the pad. The seat marks stay a circle, a triangle, a square, and a diamond. Jump stays Space. The pause card is unchanged. The pictures are `Docs/UiStills/pass45/arena-random.png` and `options.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
 
+The forty-sixth pass puts the size back on the arena cards, and the vote shape with its count. Random still has no size. Air dash and Sprint both read Alt because the solo reader samples Left Alt for each of them. The stored defaults stay Q and Shift, so a conflict count of the binds table stays 0. Grapple is listed with the verbs: RMB, left hand, click to pull, second click within 0.28 s to release. Tag is the punch button. Pad faces are A, B, and X chips. The pictures are `Docs/UiStills/pass46/arena.png`, `options-controls.png`, and `options-sound.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
