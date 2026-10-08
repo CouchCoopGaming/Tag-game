@@ -39522,5 +39522,577 @@
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Sidewalk_Joint.fbx"
+  },
+  {
+    "name": "Kiosk_ATM",
+    "category": "StreetFurniture",
+    "blurb": "ATM cabinet 0.72 x 0.46 x 1.40 m on a 60 mm pad. Screen faces +Z. ATM in Liberation Sans.",
+    "size": [
+      0.96,
+      1.48,
+      0.7
+    ],
+    "min": [
+      -0.48,
+      0.0,
+      -0.35
+    ],
+    "max": [
+      0.48,
+      1.48,
+      0.35
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 508,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Window",
+          "Lib_Black",
+          "Lib_PaintBlue",
+          "Lib_PaintWhite",
+          "Lib_Brass",
+          "Lib_Rust"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 60,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Window",
+          "Lib_Black"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Pad",
+        "type": "box",
+        "center": [
+          0,
+          0.02,
+          0
+        ],
+        "size": [
+          0.84,
+          0.028,
+          0.58
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          0.74,
+          0
+        ],
+        "size": [
+          0.56,
+          1.1,
+          0.32
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Hood",
+        "type": "box",
+        "center": [
+          0,
+          1.448,
+          0
+        ],
+        "size": [
+          0.6,
+          0.044,
+          0.38
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Smooth cabinet. Not a cling wall.",
+    "vaultNote": "Top is 1.48 m. Above a comfortable vault, and the hood is small.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Kiosk_ATM.fbx"
+  },
+  {
+    "name": "Kiosk_Charge",
+    "category": "StreetFurniture",
+    "blurb": "Charging pillar 0.38 x 0.24 x 2.40 m. Screen and shelf face +Z. CHARGE in Liberation Sans.",
+    "size": [
+      0.56,
+      2.56,
+      0.42
+    ],
+    "min": [
+      -0.28,
+      0.0,
+      -0.21
+    ],
+    "max": [
+      0.28,
+      2.56,
+      0.21
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 788,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_WindowLit",
+          "Lib_PaintWhite",
+          "Lib_Black",
+          "Lib_Rust"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 80,
+        "materials": [
+          "Lib_Concrete",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_WindowLit"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Pad",
+        "type": "box",
+        "center": [
+          0,
+          0.02,
+          0
+        ],
+        "size": [
+          0.44,
+          0.028,
+          0.3
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Body",
+        "type": "box",
+        "center": [
+          0,
+          1.16,
+          0
+        ],
+        "size": [
+          0.24,
+          1.9,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CapL",
+        "type": "box",
+        "center": [
+          -0.14,
+          2.428,
+          0
+        ],
+        "size": [
+          0.14,
+          0.024,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_CapR",
+        "type": "box",
+        "center": [
+          0.14,
+          2.428,
+          0
+        ],
+        "size": [
+          0.14,
+          0.024,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Narrow pillar. Not a cling wall.",
+    "vaultNote": "Top is 2.48 m. Not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Kiosk_Charge.fbx"
+  },
+  {
+    "name": "CafeSet_Bistro",
+    "category": "StreetFurniture",
+    "blurb": "Cafe table 0.72 m square, top at 0.76 m, plus two chairs with seats at 0.45 m.",
+    "size": [
+      0.72,
+      0.91,
+      1.64
+    ],
+    "min": [
+      -0.36,
+      0.0,
+      -0.82
+    ],
+    "max": [
+      0.36,
+      0.91,
+      0.82
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 576,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Wood",
+          "Lib_WoodWeather"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 332,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Wood"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Top",
+        "type": "box",
+        "center": [
+          0,
+          0.748,
+          0
+        ],
+        "size": [
+          0.56,
+          0.016,
+          0.56
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post",
+        "type": "capsule",
+        "center": [
+          0,
+          0.4,
+          0
+        ],
+        "radius": 0.024,
+        "height": 0.5,
+        "direction": 1
+      },
+      {
+        "name": "Col_SeatN",
+        "type": "box",
+        "center": [
+          0,
+          0.456,
+          0.62
+        ],
+        "size": [
+          0.3,
+          0.012,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SeatS",
+        "type": "box",
+        "center": [
+          0,
+          0.456,
+          -0.62
+        ],
+        "size": [
+          0.3,
+          0.012,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BackN",
+        "type": "box",
+        "center": [
+          0,
+          0.85,
+          0.46
+        ],
+        "size": [
+          0.24,
+          0.016,
+          0.012
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_BackS",
+        "type": "box",
+        "center": [
+          0,
+          0.85,
+          -0.78
+        ],
+        "size": [
+          0.24,
+          0.016,
+          0.012
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Table edge is a small lip.",
+    "vaultNote": "Top is 0.76 m. A low step, not a vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.75,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/CafeSet_Bistro.fbx"
+  },
+  {
+    "name": "Awning_Door",
+    "category": "StreetFurniture",
+    "blurb": "Post awning 3.00 m wide, projects 1.15 m. Rear board at 2.50 m, front board at 2.30 m, valance to 2.05 m.",
+    "size": [
+      2.9,
+      2.54,
+      1.25
+    ],
+    "min": [
+      -1.45,
+      0.0,
+      -0.07
+    ],
+    "max": [
+      1.45,
+      2.54,
+      1.18
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 288,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Awning",
+          "Lib_PaintCream"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 156,
+        "materials": [
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Awning"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_PostL",
+        "type": "capsule",
+        "center": [
+          -1.35,
+          1.1,
+          0.0
+        ],
+        "radius": 0.018,
+        "height": 1.8,
+        "direction": 1
+      },
+      {
+        "name": "Col_PostR",
+        "type": "capsule",
+        "center": [
+          1.35,
+          1.1,
+          0.0
+        ],
+        "radius": 0.018,
+        "height": 1.8,
+        "direction": 1
+      },
+      {
+        "name": "Col_Rear",
+        "type": "box",
+        "center": [
+          0,
+          2.484,
+          0.18
+        ],
+        "size": [
+          2.2,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Mid",
+        "type": "box",
+        "center": [
+          0,
+          2.424,
+          0.57
+        ],
+        "size": [
+          2.2,
+          0.02,
+          0.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Front",
+        "type": "box",
+        "center": [
+          0,
+          2.364,
+          0.98
+        ],
+        "size": [
+          2.2,
+          0.02,
+          0.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Fabric over boards. Not a cling wall.",
+    "vaultNote": "Front lip is 2.30 m. Too high to vault from the street.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/StreetFurniture/Awning_Door.fbx"
   }
 ]

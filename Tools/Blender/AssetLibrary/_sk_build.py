@@ -101,6 +101,10 @@ MODULES = (
     "sk_curb_straight",
     "sk_median_planted",
     "sk_sidewalk_joint",
+    "sk_kiosk_atm",
+    "sk_kiosk_charge",
+    "sk_cafe_set",
+    "sk_awning_door",
 )
 
 

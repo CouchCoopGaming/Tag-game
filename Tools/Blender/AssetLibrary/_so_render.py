@@ -68,6 +68,12 @@ PASSES = {
         ("median_planted", "StreetMedian_Planted", 20.0, (-4.4, 0.0, 1.6), 200.0),
         ("sidewalk_joint", "Sidewalk_Joint", 200.0, (-2.3, 0.0, 1.4), 160.0),
     ),
+    5: (
+        ("kiosk_atm", "Kiosk_ATM", 18.0, (-1.25, 0.0, 0.7), 200.0),
+        ("kiosk_charge", "Kiosk_Charge", 16.0, (-1.15, 0.0, 0.55), 200.0),
+        ("cafe_set", "CafeSet_Bistro", 24.0, (-1.55, 0.0, 0.2), 200.0),
+        ("awning_door", "Awning_Door", 20.0, (-2.3, 0.0, 0.4), 200.0),
+    ),
 }
 
 
@@ -102,6 +108,10 @@ def _load(names):
         "StreetCurb_Straight": "sk_curb_straight",
         "StreetMedian_Planted": "sk_median_planted",
         "Sidewalk_Joint": "sk_sidewalk_joint",
+        "Kiosk_ATM": "sk_kiosk_atm",
+        "Kiosk_Charge": "sk_kiosk_charge",
+        "CafeSet_Bistro": "sk_cafe_set",
+        "Awning_Door": "sk_awning_door",
     }
     for name in names:
         module = importlib.import_module(stems[name])
