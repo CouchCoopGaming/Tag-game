@@ -95,6 +95,11 @@ namespace Tag.Settings
         public readonly bool[] ReduceFlash = new bool[SeatCount];
         /// <summary>Comic contact words. On until a seat turns them off. Reduced flashing also hides them.</summary>
         public bool ComicWords = true;
+        /// <summary>
+        /// Air-dash and grapple speed lines. Off until a seat turns them on.
+        /// Not one of the 21 rows. The Options screen lists <see cref="SpeedLinesLabel"/>.
+        /// </summary>
+        public bool SpeedLines;
         /// <summary>0 off, 1 low, 2 full. Visual density only.</summary>
         public int Effects = 2;
 
@@ -157,6 +162,7 @@ namespace Tag.Settings
             SplitAxis = other.SplitAxis;
             Listener = other.Listener;
             ComicWords = other.ComicWords;
+            SpeedLines = other.SpeedLines;
             Effects = other.Effects;
         }
 
@@ -349,6 +355,12 @@ namespace Tag.Settings
                 case RowReplay: return "Replay tips";
                 default: return "Back";
             }
+        }
+
+        /// <summary>Label for the Options row. Default is Off.</summary>
+        public string SpeedLinesLabel()
+        {
+            return SpeedLines ? "Speed lines: On" : "Speed lines: Off";
         }
 
         public static string ArenaName(int arena)

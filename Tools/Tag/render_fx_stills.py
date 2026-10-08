@@ -450,6 +450,41 @@ def pose_launch(arm):
     print("RUNTIME launch At(24.7) padOpen 1 windmill 0")
 
 
+def pose_airdash(arm, side=0.0, fwd=1.0):
+    """AirDashPose.At(side, fwd) at dash weight 1.
+
+    Thigh, knee, and head negate into this FBX the same way pose_launch does.
+    ApplyAirDashPose feeds the sample straight into Quaternion.Euler, and
+    negates the right arm yaw. armZ is the resting 4°.
+    """
+    thigh = -16.0
+    knee = -12.0
+    pitch = 70.0
+    yaw = 10.0
+    elbow = -18.0
+    hip = 58.0 * fwd
+    spine = 24.0 * fwd
+    head = 6.0 * fwd
+    roll = 34.0 * side
+    arm_z = 4.0
+    set_zxy(arm, "UpperLeg_L", -thigh, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_L", -knee, 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_R", -thigh, 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_R", -knee, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_L", pitch, yaw, arm_z)
+    set_zxy(arm, "LowerArm_L", elbow, 0.0, 0.0)
+    set_zxy(arm, "UpperArm_R", pitch, -yaw, -arm_z)
+    set_zxy(arm, "LowerArm_R", elbow, 0.0, 0.0)
+    set_zxy(arm, "Hips", hip, 0.0, roll * 0.55)
+    set_zxy(arm, "Spine", spine, 0.0, roll)
+    set_zxy(arm, "Head", -head, 0.0, 0.0)
+    print(
+        "RUNTIME air dash",
+        "fwd", round(fwd, 2), "side", round(side, 2),
+        "hip", round(hip, 1), "spine", round(spine, 1), "roll", round(roll, 1),
+    )
+
+
 def wall_run_angles():
     """WallPose.Run(+1, wallLeft: true) at the locked 9.5 m/s gait.
 
@@ -4772,17 +4807,17 @@ def impact22_state(surface, speed, age_u=0.56):
     elif surface == "dirt":
         bit = (0.42, 0.26, 0.12)
         dust = (0.72, 0.50, 0.26)
-        plumes = min(8, 2 + int(k * 4.0))
+        plumes = impact25_plumes(k, True)
         kind = "chunk"
     elif surface == "wood":
         bit = (0.62, 0.48, 0.28)
         dust = (0.80, 0.70, 0.52)
-        plumes = min(8, 2 + int(k * 2.0))
+        plumes = impact25_plumes(k, False)
         kind = "wood"
     else:
         bit = (0.50, 0.49, 0.47)
         dust = (0.76, 0.75, 0.72)
-        plumes = min(8, 2 + int(k * 4.0))
+        plumes = impact25_plumes(k, True)
         kind = "chunk"
     grow = 1.0 if age_u >= 0.56 else 0.22 + 0.78 * (1.0 - (1.0 - age_u / 0.56) ** 2)
     fade = 1.0 if age_u <= 0.56 else 1.0 - (age_u - 0.56) / 0.44
@@ -4818,7 +4853,11 @@ def impact22_bit(i, state, salt):
     h = p11_rand(i, salt)
     h2 = p11_rand(i, salt + 4)
     age = state["age"]
-    hop = state["hop_lo"] + (state["hop_hi"] - state["hop_lo"]) * h2
+    accent = state["k"] >= 0.85 and i < 4
+    if accent:
+        hop = state["hop_hi"] * 0.72 + (state["hop_hi"] - state["hop_hi"] * 0.72) * h2
+    else:
+        hop = state["hop_lo"] + (state["hop_hi"] - state["hop_lo"]) * h2
     vy = math.sqrt(2.0 * 48.0 * hop)
     k = state["k"]
     spread = (0.8 + k * 2.2) * (0.4 + h)
@@ -4920,6 +4959,62 @@ def impact23_ring_mat(name, color, alpha):
     return mat
 
 
+def impact25_plumes(k, heavy):
+    """Sprint is a wisp. Concrete and dirt hard lands are 6–10 puffs."""
+    if not heavy:
+        return min(8, 2 + int(k * 2.0))
+    if k < 0.25:
+        return 2
+    n = 6 + int(k * 2.5)
+    if n > 10:
+        n = 10
+    return n
+
+
+def impact25_center(age, peak):
+    if age <= 0.12:
+        t = 0.0 if age < 0.0 else age / 0.12
+        t = 1.0 - (1.0 - t) * (1.0 - t)
+        return 0.05 + (peak - 0.05) * t
+    u = (age - 0.12) / (0.50 - 0.12)
+    if u < 0.0:
+        u = 0.0
+    if u > 1.0:
+        u = 1.0
+    return peak * (1.0 - 0.22 * u)
+
+
+def impact25_alpha(age, hard):
+    body = 0.72 if hard else 0.28
+    if age <= 0.03:
+        return body * (age / 0.03)
+    if age >= 0.50:
+        return 0.0
+    if age <= 0.16:
+        return body
+    u = (age - 0.16) / (0.50 - 0.16)
+    return body * (1.0 - u)
+
+
+def impact25_accent(pos, size, color, spin):
+    """10–12 cm chunk. Longest axis is `size` metres, mildly irregular."""
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=pos)
+    obj = bpy.context.active_object
+    obj.name = p11_name("Fx")
+    obj.scale = (
+        size * (0.82 + p11_rand(spin, 1) * 0.18),
+        size * (0.62 + p11_rand(spin, 2) * 0.22),
+        size * (0.48 + p11_rand(spin, 3) * 0.28),
+    )
+    obj.rotation_euler = (
+        p11_rand(spin, 4) * 2.4,
+        p11_rand(spin, 5) * 2.0,
+        spin * 0.31,
+    )
+    obj.data.materials.append(impact22_unlit(p11_name("Mat"), color, 1.0, 1.0))
+    return obj
+
+
 def impact24_size(h2):
     """Most chips 2–4 cm. The square bias keeps an 8 cm chunk rare."""
     size = 0.02 + (h2 * h2) * 0.06
@@ -4974,7 +5069,7 @@ def impact24_puff(pos, size, color, alpha, cam_loc):
     if direction.length < 0.001:
         direction = Vector((0.0, -1.0, 0.2))
     obj.rotation_euler = direction.to_track_quat("Z", "Y").to_euler()
-    obj.scale = (max(size, 0.08), max(size * 0.72, 0.06), 1.0)
+    obj.scale = (max(size * 1.15, 0.08), max(size, 0.06), 1.0)
     mat = bpy.data.materials.new(p11_name("Mat"))
     mat.use_nodes = True
     mat.blend_method = "BLEND"
@@ -5042,9 +5137,13 @@ def impact22_draw(origin, normal, state, cam_loc):
         else:
             pos = origin + radial * dist
             pos.z = z
-        size = impact24_size(h2)
-        dirt_clod = kind == "grass" and (i % 4) == 0
-        if dirt_clod:
+        accent = pace >= 0.85 and i < 4
+        size = (0.10 + h2 * 0.02) if accent else impact24_size(h2)
+        dirt_clod = (not accent) and kind == "grass" and (i % 4) == 0
+        if accent:
+            col = impact24_shade(bit_col, h)
+            impact25_accent(pos, size, col, i + 1)
+        elif dirt_clod:
             col = impact24_shade((0.42, 0.26, 0.12), h)
             impact24_chip(pos, size, col, "chip", i + 20)
         elif kind == "wood":
@@ -5052,35 +5151,43 @@ def impact22_draw(origin, normal, state, cam_loc):
             impact24_chip(pos, size, col, "splinter", i + 3)
         elif kind == "grass":
             col = impact24_shade(bit_col, h)
-            impact24_chip(pos, size, col, "clip", i + 5)
+            impact24_chip(pos, size * 0.85, col, "clip", i + 5)
         else:
             col = impact24_shade(bit_col, h)
             impact24_chip(pos, size, col, "chip", i + 1)
+    hard = pace >= 0.75
+    tops = []
     for i in range(state["plumes"]):
         h = p11_rand(i, 11)
         h2 = p11_rand(i, 15)
         age = state["age"]
-        hop = 0.16 + 0.42 * h2
-        vy = math.sqrt(2.0 * 48.0 * hop)
-        spread = (0.7 + pace * 1.4) * (0.45 + h * 0.8)
+        peak = (0.42 + h2 * 0.24) if hard else (0.08 + h2 * 0.06)
+        center = impact25_center(age, peak)
         ang = h * math.tau
-        dist = 0.25 + h * 0.35 + spread * age
-        z = 0.12 + vy * age - 0.5 * 48.0 * age * age
-        if z < 0.08:
-            z = 0.08
+        spread = (0.10 if hard else 0.04) + h * (0.22 if hard else 0.06)
+        spread += age * (0.45 if hard else 0.12)
+        grow = age / 0.12
+        if grow < 0.0:
+            grow = 0.0
+        if grow > 1.0:
+            grow = 1.0
+        grow = 0.72 + 0.28 * grow
+        puff = ((0.50 + h * 0.22) if hard else (0.16 + h * 0.06)) * grow
+        alpha = impact25_alpha(age, hard)
+        tops.append(center + puff * 0.5)
+        radial = Vector((math.cos(ang), math.sin(ang), 0.0))
         if abs(n.z) < 0.75:
             along = Vector((-n.y, n.x, 0.0))
             if along.length < 0.001:
                 along = Vector((1.0, 0.0, 0.0))
             along.normalize()
-            pos = origin + along * math.cos(ang) * dist * 0.45 + n * (0.25 + dist * 0.2)
-            pos.z = origin.z + z
+            pos = origin + along * math.cos(ang) * spread + n * center
         else:
-            pos = origin + Vector((math.cos(ang) * dist, math.sin(ang) * dist, z))
-        puff = (0.55 + pace * 0.35) * (0.75 + h2 * 0.55)
-        fade = 1.0 if state["u"] <= 0.56 else max(0.0, 1.0 - (state["u"] - 0.56) / 0.44)
-        alpha = (0.38 + state["k"] * 0.24) * max(0.25, fade)
+            pos = origin + radial * spread
+            pos.z = origin.z + center
         impact24_puff(pos, puff, dust, alpha, cam_loc)
+    if tops:
+        print("PLUME", "age", round(state["age"], 3), "puffs", len(tops), "top", round(max(tops), 2))
 
 
 def render_pass22_impact(arm, cam):
@@ -5100,9 +5207,9 @@ def render_pass22_impact(arm, cam):
     scene.view_settings.look = "None"
     scene.view_settings.exposure = 0.0
     scene.view_settings.gamma = 1.0
-    out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass24")
+    out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass25")
     os.makedirs(out_dir, exist_ok=True)
-    tmp = "/tmp/pass24-impact"
+    tmp = "/tmp/pass25-impact"
     os.makedirs(tmp, exist_ok=True)
     surfaces = ("concrete", "grass", "dirt", "wood")
     levels = (("low", 13.8), ("high", 36.5))
@@ -5206,70 +5313,146 @@ def render_pass22_impact(arm, cam):
         os.path.join(out_dir, "impact-strip.jpg"),
         4,
     )
-    render_pass24_trail(arm, cam, out_dir, tmp)
+    render_pass25_lines(arm, cam, out_dir, tmp)
 
 
-def render_pass24_trail(arm, cam, out_dir, tmp):
-    """Air dash and grapple pull. Short streaks, seat 0 tint, behind the body."""
-    from PIL import Image
+def render_pass25_lines(arm, cam, out_dir, tmp):
+    """Four chase panes. Air dash and grapple pull, seat tints, lines on for the still."""
+    from PIL import Image, ImageDraw
 
     scene = bpy.context.scene
-    tint = (0.95 * 0.5 + 0.5, 0.28 * 0.5 + 0.5, 0.32 * 0.5 + 0.5)
-    cells = []
-    titles = []
-
-    def streaks(origin, direction):
-        direction = Vector(direction)
-        if direction.length < 0.001:
-            direction = Vector((0.0, 1.0, 0.0))
-        direction.normalize()
-        side = Vector((direction.y, -direction.x, 0.0))
-        if side.length < 0.001:
-            side = Vector((1.0, 0.0, 0.0))
-        side.normalize()
-        for i in range(5):
-            h = p11_rand(i, 3)
-            height = 0.32 + (i % 5) * 0.16
-            length = 0.85 + h * 0.55
-            start = origin + Vector((0.0, 0.0, height)) + side * ((h - 0.45) * 0.5) - direction * 0.22
-            end = start - direction * length
-            mid = (start + end) * 0.5
-            bpy.ops.mesh.primitive_cube_add(size=1.0, location=mid)
-            obj = bpy.context.active_object
-            obj.name = p11_name("Fx")
-            obj.scale = (0.035, 0.035, length)
-            obj.rotation_euler = direction.to_track_quat("Z", "Y").to_euler()
-            obj.data.materials.append(impact22_unlit(p11_name("Mat"), tint, 0.7, 1.0))
-
-    p11_ground("concrete", asphalt=True)
-    apply_pose(arm, pose_launch, 1.15, 24.0)
-    foot = p11_foot(arm)
-    p14_aim(cam, foot, 24.0)
-    fwd, _left = p11_heading(24.0)
-    streaks(Vector((foot.x, foot.y, foot.z)), fwd)
-    png = os.path.join(tmp, "dash.png")
-    scene.render.filepath = png
-    bpy.ops.render.render(write_still=True)
-    cells.append(Image.open(png).convert("RGB").resize((480, 270), Image.Resampling.LANCZOS))
-    titles.append("air dash   seat red")
-
-    p11_clear("P11Fx")
-    p11_ground("concrete", asphalt=True)
-    apply_pose(arm, pose_grapple, 0.35, 24.0)
-    foot = p11_foot(arm)
-    p14_aim(cam, foot, 24.0)
-    fwd, _left = p11_heading(24.0)
-    streaks(Vector((foot.x, foot.y, foot.z)), -fwd)
-    png = os.path.join(tmp, "pull.png")
-    scene.render.filepath = png
-    bpy.ops.render.render(write_still=True)
-    cells.append(Image.open(png).convert("RGB").resize((480, 270), Image.Resampling.LANCZOS))
-    titles.append("grapple pull   seat red")
-    p14_sheet(
-        cells, titles,
-        "Speed lines   subtle seat tint   off unless toggled   key 8",
-        os.path.join(out_dir, "air-trail.jpg"),
+    scene.render.resolution_x = 640
+    scene.render.resolution_y = 360
+    seats = (
+        (0.95, 0.28, 0.32),
+        (0.25, 0.55, 1.00),
+        (1.00, 0.82, 0.15),
+        (0.25, 0.90, 0.45),
     )
+    # Forward dash, side dash, rope ahead, rope up and to the side.
+    shots = (
+        ("dash-fwd", "air dash  forward  red", 0, "dash", 0.0, 1.0),
+        ("dash-side", "air dash  right  blue", 1, "dash", 1.0, 0.0),
+        ("pull-fwd", "grapple pull  ahead  yellow", 2, "pull", 0.0, 1.0),
+        ("pull-side", "grapple pull  aside  green", 3, "pull", 0.65, 0.76),
+    )
+    panes = []
+    yaw = 24.0
+    for name, title, seat, kind, side, fwd_w in shots:
+        p11_clear("P11Fx")
+        p11_ground("concrete", asphalt=True)
+        if kind == "dash":
+            apply_pose(arm, lambda a, s=side, f=fwd_w: pose_airdash(a, s, f), 0.85, yaw)
+        else:
+            apply_pose(arm, pose_grapple, 0.75, yaw)
+        foot = p11_foot(arm)
+        p14_aim(cam, foot, yaw)
+        travel, _rope = pass25_travel(arm, foot, yaw, kind, side, fwd_w)
+        pass25_streaks(arm, travel, seats[seat])
+        if kind == "pull":
+            pass25_rope(arm, foot, yaw, side, fwd_w)
+        png = os.path.join(tmp, name + ".png")
+        scene.render.filepath = png
+        bpy.ops.render.render(write_still=True)
+        image = Image.open(png).convert("RGB")
+        draw = ImageDraw.Draw(image)
+        draw.text((10, 8), title, font=p11_font(18), fill=(255, 246, 226))
+        panes.append(image)
+        print("LINES", name, "seat", seat, "travel", tuple(round(v, 2) for v in travel))
+    sheet = Image.new("RGB", (1280, 720), (12, 12, 12))
+    sheet.paste(panes[0], (0, 0))
+    sheet.paste(panes[1], (640, 0))
+    sheet.paste(panes[2], (0, 360))
+    sheet.paste(panes[3], (640, 360))
+    p14_jpeg(os.path.join(out_dir, "speed-lines.jpg"), sheet)
+
+
+def pass25_travel(arm, foot, yaw, kind, side, fwd_w):
+    """Unit travel of the dash, or the pull toward the hook. Streaks use the opposite."""
+    fwd, left = p11_heading(yaw)
+    if kind == "dash":
+        # localForward is facing, localRight is -left on this heading.
+        travel = fwd * fwd_w + (-left) * side
+        if travel.length < 0.001:
+            travel = fwd
+        return travel.normalized(), None
+    hand = bone_pos(arm, "Hand_L")
+    anchor = pass25_anchor(hand, fwd, left, side, fwd_w)
+    travel = anchor - hand
+    if travel.length < 0.001:
+        travel = fwd
+    return travel.normalized(), anchor
+
+
+def pass25_anchor(hand, fwd, left, side, fwd_w):
+    right = -left
+    return hand + fwd * (4.5 * fwd_w) + right * (3.2 * side) + Vector((0.0, 0.0, 2.4))
+
+
+def pass25_streaks(arm, travel, tint):
+    """6–10 tapered streaks from the torso and the limbs, opposite velocity."""
+    trail = -travel
+    names = ("Spine", "Hips", "Hand_L", "Hand_R", "Foot_L", "Foot_R", "Head", "UpperArm_L")
+    for i, name in enumerate(names):
+        start = bone_pos(arm, name)
+        h = (i * 3 % 10) / 9.0
+        length = 0.60 + h * 0.60
+        end = start + trail * length
+        mid = (start + end) * 0.5
+        direction = end - start
+        if direction.length < 0.001:
+            continue
+        bpy.ops.mesh.primitive_cone_add(
+            vertices=6,
+            radius1=0.045,
+            radius2=0.008,
+            depth=length,
+            location=mid,
+        )
+        obj = bpy.context.active_object
+        obj.name = p11_name("Fx")
+        obj.rotation_euler = direction.to_track_quat("Z", "Y").to_euler()
+        obj.data.materials.append(pass25_line_mat(p11_name("Mat"), tint, 0.35))
+        print("STREAK", name, "len", round(length, 2))
+
+
+def pass25_rope(arm, foot, yaw, side, fwd_w):
+    """Thin tell so the pull streaks can be judged against the rope. Not GrappleRopeTell."""
+    fwd, left = p11_heading(yaw)
+    hand = bone_pos(arm, "Hand_L")
+    anchor = pass25_anchor(hand, fwd, left, side, fwd_w)
+    mid = (hand + anchor) * 0.5
+    direction = anchor - hand
+    length = direction.length
+    if length < 0.05:
+        return
+    bpy.ops.mesh.primitive_cylinder_add(vertices=6, radius=0.012, depth=length, location=mid)
+    obj = bpy.context.active_object
+    obj.name = p11_name("Fx")
+    obj.rotation_euler = direction.to_track_quat("Z", "Y").to_euler()
+    obj.data.materials.append(impact22_unlit(p11_name("Mat"), (0.92, 0.90, 0.82), 0.55, 0.4))
+
+
+def pass25_line_mat(name, color, alpha):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    mat.use_backface_culling = False
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    emit = nt.nodes.new("ShaderNodeEmission")
+    emit.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    emit.inputs["Strength"].default_value = 1.4
+    trans = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    mix.inputs["Fac"].default_value = alpha
+    nt.links.new(trans.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(emit.outputs["Emission"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
 
 
 def main():
@@ -5283,7 +5466,7 @@ def main():
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
-    if os.environ.get("FX_PASS24") == "1":
+    if os.environ.get("FX_PASS25") == "1" or os.environ.get("FX_PASS24") == "1":
         render_pass22_impact(arm, cam)
         return
     if os.environ.get("FX_PASS23") == "1" or os.environ.get("FX_PASS22") == "1":

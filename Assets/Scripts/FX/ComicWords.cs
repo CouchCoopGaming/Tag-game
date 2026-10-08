@@ -272,6 +272,15 @@ namespace Tag.FX
             GameSettings loaded = GameSettings.Defaults();
             SettingsFile.Read(blob, loaded, ActionBinds.Defaults());
             if (loaded.ComicWords) return false;
+            if (loaded.SpeedLines) return false;
+            if (loaded.SpeedLinesLabel().IndexOf("Speed lines: Off", System.StringComparison.Ordinal) < 0) return false;
+            loaded.SpeedLines = true;
+            string lines = SettingsFile.Write(loaded, ActionBinds.Defaults());
+            GameSettings linesBack = GameSettings.Defaults();
+            SettingsFile.Read(lines, linesBack, ActionBinds.Defaults());
+            if (!linesBack.SpeedLines) return false;
+            if (linesBack.SpeedLinesLabel().IndexOf("Speed lines: On", System.StringComparison.Ordinal) < 0) return false;
+            if (linesBack.ComicWords) return false;
             loaded.Nudge(GameSettings.RowComic, 1);
             if (!loaded.ComicWords) return false;
             loaded.Effects = 0;

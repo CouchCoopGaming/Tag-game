@@ -17,9 +17,11 @@ namespace Tag.FX
         public const float SlamSpeed = 13.8f;
         public const float HardSpeed = 36.5f;
         public const float LifeSeconds = 0.25f;
+        /// <summary>Dust billow outlives the ring. It peaks near 0.12 s and is gone by 0.50 s.</summary>
+        public const float PlumeLife = 0.50f;
         public const float Expand = 0.56f;
         public const float Gravity = 48f;
-        const int PlumeMax = 8;
+        const int PlumeMax = 10;
         const int PieceMax = BitsMax + PlumeMax;
         const int Slots = 4;
         const float RingOuter = 0.96f;
@@ -98,7 +100,7 @@ namespace Tag.FX
                 spec.DustR = 0.72f;
                 spec.DustG = 0.50f;
                 spec.DustB = 0.26f;
-                spec.Plumes = 2 + (int)(k * 4f);
+                spec.Plumes = PlumeCount(k);
             }
             else if (surface == (int)DustLook.Surface.Wood)
             {
@@ -138,10 +140,47 @@ namespace Tag.FX
                 spec.DustR = 0.76f;
                 spec.DustG = 0.75f;
                 spec.DustB = 0.72f;
-                spec.Plumes = 2 + (int)(k * 4f);
+                spec.Plumes = PlumeCount(k);
             }
             if (spec.Plumes > PlumeMax) spec.Plumes = PlumeMax;
             return spec;
+        }
+
+        /// <summary>Sprint stays a wisp. A hard land is 6–10 overlapping puffs.</summary>
+        public static int PlumeCount(float k)
+        {
+            if (k < 0.25f) return 2;
+            int n = 6 + (int)(k * 2.5f);
+            if (n > PlumeMax) n = PlumeMax;
+            return n;
+        }
+
+        /// <summary>Center of one puff. The cloud top is this plus half the puff.</summary>
+        public static float PlumeCenter(float age, float peak)
+        {
+            if (peak < 0.02f) peak = 0.02f;
+            if (age <= 0.12f)
+            {
+                float t = age / 0.12f;
+                if (t < 0f) t = 0f;
+                t = 1f - (1f - t) * (1f - t);
+                return 0.05f + (peak - 0.05f) * t;
+            }
+            float u = (age - 0.12f) / (PlumeLife - 0.12f);
+            if (u < 0f) u = 0f;
+            if (u > 1f) u = 1f;
+            return peak * (1f - 0.22f * u);
+        }
+
+        public static float PlumeAlpha(float age, bool hard)
+        {
+            float body = hard ? 0.72f : 0.28f;
+            if (age <= 0.03f) return body * (age / 0.03f);
+            if (age >= PlumeLife) return 0f;
+            if (age <= 0.16f) return body;
+            float u = (age - 0.16f) / (PlumeLife - 0.16f);
+            if (u > 1f) u = 1f;
+            return body * (1f - u);
         }
 
         /// <summary>0.22 at the pop, 1 once the ring has reached its radius.</summary>
@@ -301,13 +340,16 @@ namespace Tag.FX
                     continue;
                 }
                 _age[i] += dt;
-                if (_age[i] >= _life[i])
+                // The ring keeps its 0.25 s life. Puffs drift until 0.50 s.
+                float span = _plumes[i] > 0 ? PlumeLife : LifeSeconds;
+                if (_age[i] >= span)
                 {
                     Hide(i);
                     continue;
                 }
-                float grow = Grow(_age[i], _life[i]);
-                float fade = Fade(_age[i], _life[i]);
+                bool ringOn = _age[i] < LifeSeconds;
+                float grow = Grow(ringOn ? _age[i] : LifeSeconds, LifeSeconds);
+                float fade = ringOn ? Fade(_age[i], LifeSeconds) : 0f;
                 float shown = _radius[i] * grow;
                 float diameter = shown * 2f / RingOuter;
                 Vector3 n = _normal[i];
@@ -320,11 +362,22 @@ namespace Tag.FX
                 Color ring = _color[i];
                 ring.a = _opacity[i] * fade * thin;
                 _ringMat[i].color = ring;
+                _ringRend[i].enabled = ringOn;
                 int live = _bits[i] + _plumes[i];
                 for (int b = 0; b < PieceMax; b++)
                 {
                     int k = i * PieceMax + b;
                     if (b >= live || _piece[k].On == 0)
+                    {
+                        _bitRend[k].enabled = false;
+                        continue;
+                    }
+                    if (b >= _bits[i])
+                    {
+                        PlacePlume(i, b - _bits[i], k, _age[i]);
+                        continue;
+                    }
+                    if (!ringOn)
                     {
                         _bitRend[k].enabled = false;
                         continue;
@@ -417,9 +470,12 @@ namespace Tag.FX
                     float h = Hash(b + slot * 17);
                     float h2 = Hash(b + 40 + slot * 3);
                     float ang = (b + h * 0.35f) * 6.2831855f / n;
-                    float hop = Mathf.Lerp(spec.HopLo, spec.HopHi, h2);
-                    float vy = Mathf.Sqrt(2f * Gravity * hop);
                     float pace = StrengthFromRadius(spec.Radius);
+                    bool accent = pace >= 0.85f && b < 4;
+                    float hop = accent
+                        ? Mathf.Lerp(spec.HopHi * 0.72f, spec.HopHi, h2)
+                        : Mathf.Lerp(spec.HopLo, spec.HopHi, h2);
+                    float vy = Mathf.Sqrt(2f * Gravity * hop);
                     float spread = (0.8f + pace * 2.2f) * (0.4f + h);
                     Vector3 radial = tangent * Mathf.Cos(ang) + bitangent * Mathf.Sin(ang);
                     Vector3 vel;
@@ -436,10 +492,15 @@ namespace Tag.FX
                         start = 0.35f;
                     }
                     piece.Vel = vel;
-                    // Most chips 2–4 cm. The square bias keeps the 8 cm ones rare.
-                    float span = h2 * h2;
-                    piece.Size = 0.02f + span * 0.06f;
-                    if (piece.Size > 0.08f) piece.Size = 0.08f;
+                    // Most chips 2–4 cm, rare 8 cm. A hard land adds four 10–12 cm accents.
+                    if (accent)
+                        piece.Size = 0.10f + h2 * 0.02f;
+                    else
+                    {
+                        float span = h2 * h2;
+                        piece.Size = 0.02f + span * 0.06f;
+                        if (piece.Size > 0.08f) piece.Size = 0.08f;
+                    }
                     float shade = 0.82f + h * 0.28f;
                     piece.R = spec.R * shade;
                     piece.G = spec.G * shade;
@@ -448,7 +509,12 @@ namespace Tag.FX
                     bool grass = spec.Splinter > 1.5f;
                     bool dirtClod = grass && (b % 4) == 0;
                     bool splinter = !grass && spec.Splinter > 0.5f;
-                    if (dirtClod)
+                    if (accent)
+                    {
+                        piece.Shape = ShapeChunk;
+                        piece.Aspect = 0.72f + h * 0.28f;
+                    }
+                    else if (dirtClod)
                     {
                         piece.Shape = ShapeChunk;
                         piece.Aspect = 0.75f + h * 0.35f;
@@ -480,28 +546,52 @@ namespace Tag.FX
                 {
                     int p = b - n;
                     float h = Hash(100 + p + slot * 9);
-                    float h2 = Hash(130 + p);
-                    float ang = h * 6.2831855f;
-                    float hop = Mathf.Lerp(0.22f, 0.55f, h2);
-                    float vy = Mathf.Sqrt(2f * Gravity * hop);
-                    float spread = spec.Radius * (0.55f + h * 1.15f);
-                    Vector3 radial = tangent * Mathf.Cos(ang) + bitangent * Mathf.Sin(ang);
-                    Vector3 vel = floor
-                        ? radial * spread + Vector3.up * vy
-                        : tangent * Mathf.Cos(ang) * spread + normal * spread * 0.4f + Vector3.up * vy;
-                    piece.Vel = vel;
-                    piece.Size = (0.62f + StrengthFromRadius(spec.Radius) * 0.40f) * (0.85f + h2 * 0.40f);
+                    float pace = StrengthFromRadius(spec.Radius);
+                    bool hard = pace >= 0.75f;
+                    piece.Size = hard ? 0.50f + h * 0.22f : 0.16f + h * 0.06f;
                     piece.Aspect = 1.15f;
                     piece.R = spec.DustR;
                     piece.G = spec.DustG;
                     piece.B = spec.DustB;
                     piece.Shape = ShapeSoft;
                     piece.On = 1;
-                    _bit[k].localPosition = normal * 0.08f + radial * (0.12f + h * 0.2f);
+                    piece.Vel = Vector3.zero;
                     _bitMat[k].SetFloat("_Shape", ShapeSoft);
                 }
                 _piece[k] = piece;
             }
+        }
+
+        void PlacePlume(int slot, int p, int k, float age)
+        {
+            float h = Hash(100 + p + slot * 9);
+            float h2 = Hash(130 + p);
+            float pace = StrengthFromRadius(_radius[slot]);
+            bool hard = pace >= 0.75f;
+            float peak = hard ? 0.42f + h2 * 0.24f : 0.08f + h2 * 0.06f;
+            float y = PlumeCenter(age, peak);
+            float ang = h * 6.2831855f;
+            float spread = (hard ? 0.10f : 0.04f) + h * (hard ? 0.22f : 0.06f);
+            spread += age * (hard ? 0.45f : 0.12f);
+            Vector3 n = _normal[slot];
+            Vector3 tangent = Vector3.Cross(n, Vector3.up);
+            if (tangent.sqrMagnitude < 0.0001f) tangent = Vector3.Cross(n, Vector3.right);
+            tangent.Normalize();
+            Vector3 bitangent = Vector3.Cross(n, tangent).normalized;
+            Vector3 radial = tangent * Mathf.Cos(ang) + bitangent * Mathf.Sin(ang);
+            Vector3 pos = radial * spread + n * y;
+            float into = Vector3.Dot(pos, n);
+            if (into < 0.04f) pos += n * (0.04f - into);
+            _bit[k].localPosition = pos;
+            float grow = age / 0.12f;
+            if (grow < 0f) grow = 0f;
+            if (grow > 1f) grow = 1f;
+            grow = 0.72f + 0.28f * grow;
+            float size = _piece[k].Size * grow;
+            _bit[k].localScale = new Vector3(size * 1.15f, size, 1f);
+            float a = PlumeAlpha(age, hard);
+            _bitMat[k].color = new Color(_piece[k].R, _piece[k].G, _piece[k].B, a);
+            _bitRend[k].enabled = a > 0.02f;
         }
 
         static float StrengthFromRadius(float radius)

@@ -29,7 +29,7 @@ namespace Tag.FX
         public TagRole Role;
 
         Transform _root;
-        Transform _footL, _footR, _handL, _head;
+        Transform _footL, _footR, _handL, _handR, _head, _spine, _hips;
         MaterialPropertyBlock _block;
         int _seat;
         float _cr = 0.95f, _cg = 0.28f, _cb = 0.32f;
@@ -72,8 +72,8 @@ namespace Tag.FX
         readonly float[] _streakAge = new float[FxKitLook.Streaks];
         readonly Vector3[] _streakA = new Vector3[FxKitLook.Streaks];
         readonly Vector3[] _streakB = new Vector3[FxKitLook.Streaks];
-        const int AirLines = 6;
-        const float AirLife = 0.16f;
+        const int AirLines = 8;
+        const float AirLife = 0.15f;
         readonly float[] _airAge = new float[AirLines];
         readonly Vector3[] _airA = new Vector3[AirLines];
         readonly Vector3[] _airB = new Vector3[AirLines];
@@ -115,7 +115,10 @@ namespace Tag.FX
             _footL = Find(root, "Foot_L");
             _footR = Find(root, "Foot_R");
             _handL = Find(root, "Hand_L");
+            _handR = Find(root, "Hand_R");
             _head = Find(root, "Head");
+            _spine = Find(root, "Spine");
+            _hips = Find(root, "Hips");
             EnsureShared();
             _dust = MakeMotes(FxKitLook.DustRoll, "FxDust");
             _spark = MakeMotes(FxKitLook.SparkFull, "FxSpark");
@@ -776,15 +779,15 @@ namespace Tag.FX
         }
 
         /// <summary>
-        /// Short seat-tinted streaks behind an air dash or a grapple pull.
-        /// They sit behind the body and die in a fraction of a second.
-        /// SpeedLines defaults off so four split panes stay readable.
+        /// Thin seat-tinted streaks trailing an air dash or a grapple pull.
+        /// They leave the torso and the limbs, opposite the travel, and die in 0.15 s.
+        /// GameSettings.SpeedLines defaults off so four split panes stay readable.
         /// </summary>
         void TickAir(float dt, GameSettings settings)
         {
             if (_air == null) return;
-            bool allow = FxKitOptions.SpeedLines && FxKitLook.Master(settings);
-            if (allow && settings != null && settings.AnyReduceFlash()) allow = false;
+            bool allow = settings != null && settings.SpeedLines && FxKitLook.Master(settings);
+            if (allow && settings.AnyReduceFlash()) allow = false;
             bool dash = allow && Motor != null && Motor.IsAirDashing;
             bool pull = allow
                 && Grapple != null
@@ -793,7 +796,7 @@ namespace Tag.FX
             if (dash || pull)
             {
                 _airGap += dt;
-                if (!_airWas || _airGap >= 0.045f)
+                if (!_airWas || _airGap >= 0.12f)
                 {
                     _airGap = 0f;
                     SpawnAir(dash);
@@ -820,12 +823,12 @@ namespace Tag.FX
                 _air[i].enabled = true;
                 _air[i].SetPosition(0, _airA[i]);
                 _air[i].SetPosition(1, _airB[i]);
-                _air[i].startWidth = 0.07f * u;
-                _air[i].endWidth = 0.018f * u;
-                float a = 0.42f * u;
-                var c = new Color(_cr * 0.5f + 0.5f, _cg * 0.5f + 0.5f, _cb * 0.5f + 0.5f, a);
+                _air[i].startWidth = 0.045f * u;
+                _air[i].endWidth = 0.008f * u;
+                float a = 0.35f * u;
+                var c = new Color(_cr, _cg, _cb, a);
                 _air[i].startColor = c;
-                c.a = 0.02f;
+                c.a = a * 0.2f;
                 _air[i].endColor = c;
             }
         }
@@ -833,11 +836,11 @@ namespace Tag.FX
         void SpawnAir(bool dash)
         {
             Vector3 origin = _root.position;
-            Vector3 dir;
+            Vector3 travel;
             if (dash)
             {
-                dir = Motor.AirDashDirection;
-                dir.y = 0f;
+                travel = Motor.AirDashDirection;
+                travel.y = 0f;
             }
             else
             {
@@ -845,27 +848,44 @@ namespace Tag.FX
                 float length;
                 float slack;
                 if (Grapple.TryGetRope(out anchor, out length, out slack))
-                    dir = origin - anchor;
+                    travel = anchor - origin;
                 else if (_root.forward.sqrMagnitude > 0.0001f)
-                    dir = -_root.forward;
+                    travel = _root.forward;
                 else
-                    dir = Vector3.back;
-                dir.y *= 0.2f;
+                    travel = Vector3.forward;
             }
-            if (dir.sqrMagnitude < 0.0001f) dir = Vector3.forward;
-            dir.Normalize();
-            Vector3 side = Vector3.Cross(Vector3.up, dir);
-            if (side.sqrMagnitude < 0.0001f) side = Vector3.right;
-            else side.Normalize();
-            int slot = _airCursor % _air.Length;
-            _airCursor++;
-            float h = ((slot * 37) % 10) / 10f;
-            float height = 0.32f + (slot % 5) * 0.16f;
-            float len = 0.85f + h * 0.55f;
-            Vector3 start = origin + Vector3.up * height + side * ((h - 0.45f) * 0.5f) - dir * 0.22f;
-            _airA[slot] = start;
-            _airB[slot] = start - dir * len;
-            _airAge[slot] = 0.0001f;
+            if (travel.sqrMagnitude < 0.0001f) travel = Vector3.forward;
+            travel.Normalize();
+            // Streaks trail opposite the velocity, back along the dash or the rope.
+            Vector3 trail = -travel;
+            for (int i = 0; i < _air.Length; i++)
+            {
+                float h = (i * 3 % 10) / 9f;
+                float len = 0.60f + h * 0.60f;
+                Vector3 start = LimbPoint(i, origin);
+                _airA[i] = start;
+                _airB[i] = start + trail * len;
+                _airAge[i] = 0.0001f;
+            }
+        }
+
+        Vector3 LimbPoint(int i, Vector3 origin)
+        {
+            Transform bone = null;
+            float y = 1.05f;
+            switch (i)
+            {
+                case 0: bone = _spine; y = 1.15f; break;
+                case 1: bone = _hips; y = 0.92f; break;
+                case 2: bone = _handL; y = 1.05f; break;
+                case 3: bone = _handR; y = 1.02f; break;
+                case 4: bone = _footL; y = 0.22f; break;
+                case 5: bone = _footR; y = 0.28f; break;
+                case 6: bone = _head; y = 1.45f; break;
+                default: y = 1.25f; break;
+            }
+            if (bone != null) return bone.position;
+            return origin + Vector3.up * y;
         }
 
         void HideActive()
