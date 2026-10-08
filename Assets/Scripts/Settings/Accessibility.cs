@@ -37,7 +37,8 @@ namespace Tag.Settings
             "Default", "Deuteranopia", "Protanopia", "Tritanopia", "High contrast"
         };
 
-        public static readonly string[] PlayerGlyph = { "●", "■", "▲", "◆" };
+        // Same order as MenuMannequin.Shape: circle, triangle, square, diamond.
+        public static readonly string[] PlayerGlyph = { "●", "▲", "■", "◆" };
         public const string ItGlyph = "★";
 
         // Four light player colors per palette. Pairwise distance stays above

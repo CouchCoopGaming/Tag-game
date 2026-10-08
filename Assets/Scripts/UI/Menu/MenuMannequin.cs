@@ -195,6 +195,17 @@ namespace Tag.Ui.Menu
         }
 
         /// <summary>
+        /// Seat mark for P1–P4. 0 circle, 1 triangle, 2 square, 3 diamond.
+        /// Arena chips, results tags, and the name plate read this. No second shape table.
+        /// </summary>
+        public static int Shape(int seat)
+        {
+            if (seat < 0) return 0;
+            if (seat > 3) return 3;
+            return seat;
+        }
+
+        /// <summary>
         /// Same hue as <see cref="Swatch"/>, one step darker. The colour-blind
         /// scheme pairs this ink with the light step. No second colour table.
         /// </summary>

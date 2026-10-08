@@ -353,6 +353,12 @@ Arena select is a cup list. Each park is a golden-hour plate, Mega Park from the
 
 `Docs/UiStills/pass42/arena.png`, `arena-hover-4seats.png`, and `results-fix.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The proof lines are unchanged.
 
+## Pass 43
+
+Seat shapes come from MenuMannequin.Shape. P1 is a circle, P2 a triangle, P3 a square, P4 a diamond. The arena chips, the results tags, and the name plate read that one table. The overview camera sits above the yard, and anything within 15 m of that camera is left out, so poles and trees no longer cut a bar across the plate. Pocket Park and Stack Yard are a clearer golden hour, with the greens and the greys still readable. Two seats on the same row stack their shapes and the vote reads 2. The results header is the comic title on the dark band, and the subtitle stays.
+
+`Docs/UiStills/pass43/arena.png`, `arena-2seats-one-row.png`, and `results.png` are the checks. Each is under 400 KB. pose stays 0 and rigJoint stays 26. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

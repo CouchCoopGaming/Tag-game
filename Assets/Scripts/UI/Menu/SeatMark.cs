@@ -4,8 +4,7 @@ namespace Tag.Ui.Menu
 {
     /// <summary>
     /// Seat shapes on the results cards and the arena cursors.
-    /// P1 circle, P2 square, P3 triangle, P4 diamond. The ink is
-    /// MenuMannequin.DarkStep of the same swatch. No second shape set.
+    /// The kind is MenuMannequin.Shape: P1 circle, P2 triangle, P3 square, P4 diamond.
     /// </summary>
     public static class SeatMark
     {
@@ -14,9 +13,7 @@ namespace Tag.Ui.Menu
         public static Sprite For(int seat)
         {
             if (_sprites == null) _sprites = new Sprite[4];
-            int i = seat;
-            if (i < 0) i = 0;
-            if (i > 3) i = 3;
+            int i = MenuMannequin.Shape(seat);
             if (_sprites[i] != null) return _sprites[i];
             _sprites[i] = Build(i);
             return _sprites[i];
@@ -49,7 +46,7 @@ namespace Tag.Ui.Menu
                 float d = Mathf.Sqrt(dx * dx + dy * dy);
                 return d <= 0.40f ? 1f : 0f;
             }
-            if (kind == 1)
+            if (kind == 2)
                 return dx <= 0.36f && dy <= 0.36f ? 1f : 0f;
             if (kind == 3)
                 return dx + dy <= 0.46f ? 1f : 0f;

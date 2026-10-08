@@ -117,6 +117,9 @@ namespace Tag.Ui.Menu
 
         static bool ThumbStale(string key)
         {
+            // Mega's row plate is the golden-hour yard render. The block overview
+            // is the audit still, and copying it would put the treeline back on the tile.
+            if (key == "Mega") return false;
             string src = "Docs/ArenaStills/" + Source(key);
             if (!File.Exists(src)) return false;
             return Older("Assets/UI/ArenaThumbs/" + key + ".png", src)
@@ -132,6 +135,7 @@ namespace Tag.Ui.Menu
 
         static void Copy(string key)
         {
+            if (key == "Mega") return;
             string src = "Docs/ArenaStills/" + Source(key);
             if (!File.Exists(src)) return;
             if (!ThumbStale(key)) return;

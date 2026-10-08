@@ -352,6 +352,8 @@ The forty-second pass makes the place numeral fill the band, in the comic title 
 
 Arena select is a cup list. Each park shows a golden-hour picture, with a small map of the loop, the landmarks, the pads, and the zips. The big panel pans that picture and keeps the name, the size, and the pad and zip counts inside the frame. The header is the comic title on the dark band. Random is a question mark that shuffles the three parks. Joined players leave their shape and colour on the row they are hovering, with a vote count. The pictures are `Docs/UiStills/pass42/arena.png`, `arena-hover-4seats.png`, and `results-fix.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
 
+The forty-third pass uses one seat shape. P1 is a circle, P2 a triangle, P3 a square, and P4 a diamond, from MenuMannequin.Shape. The arena picture is taken from above the yard, so a pole or a tree no longer draws a bar across Pocket Park. The greens and the greys stay readable. Two players on the same park stack their shapes, and the count reads 2. Results uses the same comic title on the dark band, and the line under it stays. The pictures are `Docs/UiStills/pass43/arena.png`, `arena-2seats-one-row.png`, and `results.png`. pose stays 0 and rigJoint stays 26. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
