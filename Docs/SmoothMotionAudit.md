@@ -573,9 +573,15 @@ Vault is the 0.40 s mantle, from the reach to the plant to the landing. Slide is
 
 `no-clip clips=14 frames=475 worldMax=12.91 rawSelfMax=8.63 rigJoint=7.72 pose=8.63 fails=14`
 
-That line is the clips the Unity build plays, every 30 fps frame, absolute depth. No bind subtraction, no lift, no clamp. rigJoint is the rest hip-in-thigh overlap, 7.72 cm, and it is not a pose fail. pose is the deepest self hit whose pair is absent from that rest map, or whose depth is past the rest depth. The rig is not edited here.
+That line is every shipped clip at 30 fps, absolute depth, from the pass that measured the tag chest-into-arm at 8.63 cm. rigJoint is the rest hip-in-thigh overlap, 7.72 cm, and it is not a pose fail. pose is the deepest self hit whose pair is absent from that rest map, or whose depth is past the rest depth. No bind subtraction, no lift, no clamp. The rig is not edited here.
 
-Shoulder flare on the grapple (24 degrees outward), the launch swing and tuck yaw (-70, the right arm mirrored the way the pad pose applies it), and a 40 degree yaw on the cocked forearm are in the keys the locomotor writes. They are not in the printed feel lines. On the three frames that were worst before that flare, pose depth went from 10.35 cm to 2.42 cm on the pad, 9.48 cm to 4.67 cm on the grapple, and 9.42 cm to 7.84 cm on the punch. The clip maximum is still the tag chest-into-arm at 8.63 cm, and several clips sit a few millimetres past the 7.72 cm hip cuff, which this rule reports as the full depth. Pose is not 0.
+The rope frames are measured on their own. The hang the build plays raises the left shoulder, abducts it, flexes the elbow 2 degrees, and rolls the hips 2.5 degrees away from that hand. A spine roll of 0.4 degrees already counts the hip-spine cuff past the rest depth, so the lean is on the hips. Three degrees of elbow flex, or 3 degrees of hip roll, fails the cuff or puts a sole through the floor. Printed pull numbers stay the proof line.
+
+`no-clip clips=1 frames=22 worldMax=0.47 rawSelfMax=7.72 rigJoint=7.72 pose=0.0 fails=0`
+
+Worst rope frame before that hang was t=0.200, hips into the right thigh at 7.82 cm. After it, the same frame has no pose hit. The 7.72 cm that remains is the rig joint. The 0.47 cm world hit is the sole under the 2.5 degree lean, inside the 0.5 cm limit. Stills: `Docs/SmoothStills/pass20/noclip/rope-before.png` and `rope-after.png`.
+
+Shoulder flare on the grapple (24 degrees outward, then replaced by this hang), the launch swing and tuck yaw (-70, the right arm mirrored the way the pad pose applies it), and a 40 degree yaw on the cocked forearm are in the keys the locomotor writes. They are not in the printed feel lines. On the three frames that were worst before that flare, pose depth went from 10.35 cm to 2.42 cm on the pad, 9.48 cm to 4.67 cm on the grapple, and 9.42 cm to 7.84 cm on the punch. Outside the rope frames, the clip maximum is still the tag chest-into-arm at 8.63 cm. Pose on those other clips is not 0.
 
 `no-clip clips=14 frames=472 worldMax=0.38 selfMax=0.4 fails=0`
 
