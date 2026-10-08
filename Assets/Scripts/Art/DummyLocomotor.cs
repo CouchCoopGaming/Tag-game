@@ -36,6 +36,22 @@ namespace Tag.Art
         Quaternion _ulL0, _ulR0, _llL0, _llR0;
         Quaternion _ftL0, _ftR0;
         Vector3 _root0;
+        Vector3 _visualLag;
+        Vector3 _prevCapsule;
+        bool _hasCapsule;
+        float _lagVx, _lagVy, _lagVz;
+        float _visualYaw;
+        float _visualYawVel;
+        Quaternion _yawBasis;
+        bool _yawBasisSet;
+        float _slewSp, _slewHp, _slewHd;
+        float _slewUaL, _slewUaR, _slewLaL, _slewLaR;
+        float _slewUlL, _slewUlR, _slewLlL, _slewLlR;
+        float _slewFtL, _slewFtR;
+        float _landSquashGoal;
+        MoveState _popState;
+        float _prevPopX, _prevPopZ;
+        bool _hasPopSample;
         bool _bound;
         bool _loggedBindFail;
         float _cycle;
@@ -727,6 +743,30 @@ namespace Tag.Art
         Vector3 _prevPlanarVel;
         bool _hasPlanarVel;
         float _accelLean;
+        float _hardTurnAccum;
+        float _hardTurnAge;
+        float _hardTurnPlant;
+        float _hardTurnSign = 1f;
+        float _hardTurnVis;
+        float _hardTurnVisVel;
+        float _travelFwd;
+        float _travelFwdVel;
+        float _travelSide;
+        float _travelSideVel;
+        float _hipYawVis;
+        float _startBlendVis;
+        float _headLook;
+        float _headLookVel;
+        float _armCoastL;
+        float _armCoastR;
+        float _armCoastVelL;
+        float _armCoastVelR;
+        float _armSwingL;
+        float _armSwingR;
+        bool _armSwingSet;
+        Vector3 _footLPos0;
+        Vector3 _footRPos0;
+        bool _footPosBound;
         float _swayVis;
         float _idlePhase;
         bool _swayIdle;
@@ -1215,6 +1255,9 @@ namespace Tag.Art
             Tag.Core.FrameMeter.AddPose(Tag.Core.FrameMeter.PoseOps);
             float dt = Time.deltaTime;
             _stanceSole = false;
+            _armSwingSet = false;
+            _hipYawVis = 0f;
+            _startBlendVis = 0f;
             _punchTelegraph = Mathf.MoveTowards(_punchTelegraph, 0f, dt);
             if (_motor == null || _input == null || _grapple == null || _punch == null) BindActors();
             HookBounce();
@@ -5812,10 +5855,13 @@ namespace Tag.Art
             _prevSpeed = speed;
             if (_landHold > 0f)
                 _landHold = Mathf.Max(0f, _landHold - dt);
-            else
+            if (_landSquash + 0.001f < _landSquashGoal)
+                _landSquash = Mathf.MoveTowards(_landSquash, _landSquashGoal, dt / SmoothMotion.ResponsiveSeconds);
+            else if (_landHold <= 0f)
             {
                 // ~0.4s from a full buckle back to the stride.
                 _landSquash = Mathf.MoveTowards(_landSquash, 0f, dt * 3.1f);
+                _landSquashGoal = _landSquash;
             }
             // Bible WallBounce ~0.22s kick flash - brief TP limb tell after OnWallBounced.
             _bouncePulse = Mathf.MoveTowards(_bouncePulse, 0f, dt / 0.22f);
@@ -6096,7 +6142,9 @@ namespace Tag.Art
                     _runVis = Mathf.MoveTowards(runBefore, runAmt, runStep);
                 // Cadence follows planar speed. The idle start eases the rate in
                 // so the first step does not buzz under the blend.
-                float cadence = gaitCadence;
+                // GaitBlend.CadenceAt stays the proof curve. The mesh uses PlayCadence
+                // so a 6.9 walk and a 13.8 sprint cover the stance. Speed is unchanged.
+                float cadence = gaitPose ? LocomotionPolish.PlayCadence(speed) : gaitCadence;
                 if (_walkFromIdle)
                     cadence *= Mathf.Lerp(0.35f, 1f, Mathf.SmoothStep(0f, 1f, _walkFromIdleIn));
                 // A ski into a walk keeps the walk step. A ski into a run keeps the run step.
@@ -6529,10 +6577,26 @@ namespace Tag.Art
             }
             float yawRate = dt > 0.0001f ? Mathf.DeltaAngle(_prevYaw, yawNow) / dt : 0f;
             _prevYaw = yawNow;
+            float faceFwd = 0f;
+            float faceSide = 0f;
+            Vector3 faceF = leanSrc.forward;
+            faceF.y = 0f;
+            Vector3 faceR = leanSrc.right;
+            faceR.y = 0f;
+            if (faceF.sqrMagnitude > 0.0001f)
+                faceFwd = Vector3.Dot(planarVel, faceF.normalized);
+            if (faceR.sqrMagnitude > 0.0001f)
+                faceSide = Vector3.Dot(planarVel, faceR.normalized);
+            _travelFwd = SmoothMotion.Smooth(_travelFwd, faceFwd, ref _travelFwdVel, LocomotionPolish.SecondarySeconds, dt);
+            _travelSide = SmoothMotion.Smooth(_travelSide, faceSide, ref _travelSideVel, LocomotionPolish.SecondarySeconds, dt);
             // Positive yaw is a right turn. Visual only. Look speed is unchanged.
             bool canTurn = grounded && !air && !sliding && !crouch && !dashing && !jet && !wallRun && !climb && !mantle;
             float turnTarget = canTurn ? Mathf.Clamp(yawRate / 280f, -1f, 1f) : 0f;
             _turnVis = Mathf.MoveTowards(_turnVis, turnTarget, dt / 0.1f);
+            bool hardBlocked = !canTurn || punching || lunging || _skiBlend > 0.02f || _pivotW > 0.05f
+                || speed <= PivotPose.SpeedOff || mantle || climb || wallRun;
+            LocomotionPolish.NoteTurn(ref _hardTurnAccum, ref _hardTurnAge, ref _hardTurnPlant, ref _hardTurnSign, yawRate * dt, dt, canTurn, hardBlocked);
+            _hardTurnVis = SmoothMotion.Smooth(_hardTurnVis, _hardTurnPlant, ref _hardTurnVisVel, SmoothMotion.ResponsiveSeconds, dt);
             // The roll eases in with the turn. A hard gate popped the chest at chase distance.
             float turnAbs = Mathf.Abs(_turnVis);
             float turnIn = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(turnAbs / 0.55f));
@@ -6993,7 +7057,7 @@ namespace Tag.Art
                 // Air eases in over WallPose.AirBlendSeconds. No root motion.
                 CaptureWallAir();
                 float vyClimb = _motor != null ? _motor.Velocity.y : WallPose.ClimbSpeedRef;
-                ApplyWallSample(WallPose.Climb(Mathf.Sin(_surfPhase), vyClimb), armZ);
+                ApplyWallSample(ClimbPresented(Mathf.Sin(_surfPhase), vyClimb, true), armZ);
                 if (_strideSurfSnap && !_wallAirSnap && _strideSurfIn < 0.98f)
                 {
                     // A walk or a run eases onto the climb, then the climb holds.
@@ -7580,6 +7644,13 @@ namespace Tag.Art
                     elbowL = Mathf.Lerp(elbowL, Mathf.Max(elbowL, -12f), armHold);
                     elbowR = Mathf.Lerp(elbowR, Mathf.Max(elbowR, -12f), armHold);
                 }
+                _startBlendVis = startBlend;
+                if (stepping && !air)
+                {
+                    _armSwingL = pitchL + 12f;
+                    _armSwingR = pitchR + 12f;
+                    _armSwingSet = true;
+                }
                 _laLT = _laL0 * Quaternion.Euler(elbowL, 0f, 0f);
                 _laRT = _laR0 * Quaternion.Euler(elbowR, 0f, 0f);
                 if (footSki > 0.001f)
@@ -7922,7 +7993,7 @@ namespace Tag.Art
                 // The knee opposite the reaching hand drives. Same phase as the hands.
                 // Speed scales the phase. A slip keeps both knees in the drag.
                 float vyClimb = _motor != null ? _motor.Velocity.y : WallPose.ClimbSpeedRef;
-                ApplyWallLegs(WallPose.Climb(Mathf.Sin(_surfPhase), vyClimb));
+                ApplyWallLegs(ClimbPresented(Mathf.Sin(_surfPhase), vyClimb, true));
                 if (_strideSurfSnap && !_wallAirSnap && _strideSurfIn < 0.98f)
                 {
                     float intoStrideSurfLegs = _strideSurfIn;
@@ -8177,10 +8248,13 @@ namespace Tag.Art
                 // the other foot. Cadence matches that step up to the sprint cap.
                 // No extra plant on top. No root motion.
                 GaitBlend.Legs strideLegs = GaitBlend.At(_cycle, speed);
-                float thighL = strideLegs.ThighL;
-                float thighR = strideLegs.ThighR;
-                float kneeL = strideLegs.KneeL;
-                float kneeR = strideLegs.KneeR;
+                LocomotionPolish.Legs facingLegs = LocomotionPolish.FacingStride(
+                    strideLegs.ThighL, strideLegs.ThighR, strideLegs.KneeL, strideLegs.KneeR, _travelFwd, _travelSide);
+                float thighL = facingLegs.ThighL;
+                float thighR = facingLegs.ThighR;
+                float kneeL = facingLegs.KneeL;
+                float kneeR = facingLegs.KneeR;
+                _hipYawVis = facingLegs.HipYaw;
                 if (stepping && footSki < 0.02f && _dropVis < 0.2f)
                 {
                     _stanceSole = true;
@@ -8973,7 +9047,7 @@ namespace Tag.Art
                 float alongGrace = _motor != null ? _motor.HorizontalSpeed : 0f;
                 _surfPhase += dt * WallPose.SurfRate(_graceClimb, vyGrace, alongGrace);
                 if (_graceClimb)
-                    ApplyWallSample(WallPose.Climb(Mathf.Sin(_surfPhase), vyGrace), armZ);
+                    ApplyWallSample(ClimbPresented(Mathf.Sin(_surfPhase), vyGrace, false), armZ);
                 else
                     ApplyWallSample(WallPose.RunCycle(_surfPhase, _motor != null && _motor.WallLeft), armZ);
             }
@@ -14957,37 +15031,40 @@ namespace Tag.Art
                 legSlew = Mathf.Max(legSlew, JumpPose.TakeoffSlew);
                 torsoSlew = Mathf.Max(torsoSlew, JumpPose.TakeoffSlew);
             }
-            if (WallPoseTracking())
+            if (launchRise)
             {
-                armSlewL = Mathf.Max(armSlewL, WallPose.BlendSlew);
-                armSlewR = Mathf.Max(armSlewR, WallPose.BlendSlew);
-                legSlew = Mathf.Max(legSlew, WallPose.BlendSlew);
-                torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
-                slew = Mathf.Max(slew, WallPose.BlendSlew);
+                armSlewL = Mathf.Max(armSlewL, SmoothMotion.CycleSlew);
+                armSlewR = Mathf.Max(armSlewR, SmoothMotion.CycleSlew);
+                legSlew = Mathf.Max(legSlew, SmoothMotion.CycleSlew);
+                torsoSlew = Mathf.Max(torsoSlew, SmoothMotion.CycleSlew);
             }
-            if (_slideOffWant)
+            // Authored blend curves and the live climb / wall-run cycle track on the gait
+            // band. A second spring on BlendSlew would flatten the reach and the stride.
+            bool wallCycle = (climb || wallRun || _graceBody) && !WallPoseTracking();
+            if (WallPoseTracking() || _slideOffWant || wallCycle)
             {
-                armSlewL = Mathf.Max(armSlewL, WallPose.BlendSlew);
-                armSlewR = Mathf.Max(armSlewR, WallPose.BlendSlew);
-                legSlew = Mathf.Max(legSlew, WallPose.BlendSlew);
-                torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
-                slew = Mathf.Max(slew, WallPose.BlendSlew);
+                armSlewL = Mathf.Max(armSlewL, SmoothMotion.CycleSlew);
+                armSlewR = Mathf.Max(armSlewR, SmoothMotion.CycleSlew);
+                legSlew = Mathf.Max(legSlew, SmoothMotion.CycleSlew);
+                torsoSlew = Mathf.Max(torsoSlew, SmoothMotion.CycleSlew);
+                slew = Mathf.Max(slew, SmoothMotion.CycleSlew);
             }
             if (_wallJumpPoseAge >= 0f && !(WallJumpPose.Settled(_wallJumpPoseAge) && jumpPoseOn))
             {
-                armSlewL = Mathf.Max(armSlewL, WallJumpPose.Slew);
-                armSlewR = Mathf.Max(armSlewR, WallJumpPose.Slew);
-                legSlew = Mathf.Max(legSlew, WallJumpPose.Slew);
-                torsoSlew = Mathf.Max(torsoSlew, WallJumpPose.Slew);
-                slew = Mathf.Max(slew, WallJumpPose.Slew);
+                // WallJumpPose.Slew stays the pose constant. The push-off blend is what the mesh follows.
+                armSlewL = Mathf.Max(armSlewL, SmoothMotion.CycleSlew);
+                armSlewR = Mathf.Max(armSlewR, SmoothMotion.CycleSlew);
+                legSlew = Mathf.Max(legSlew, SmoothMotion.CycleSlew);
+                torsoSlew = Mathf.Max(torsoSlew, SmoothMotion.CycleSlew);
+                slew = Mathf.Max(slew, SmoothMotion.CycleSlew);
             }
             if (mantle || (_mantleExitSnap && _mantleExitIn < 0.98f))
             {
-                armSlewL = Mathf.Max(armSlewL, MantlePose.Slew);
-                armSlewR = Mathf.Max(armSlewR, MantlePose.Slew);
-                legSlew = Mathf.Max(legSlew, MantlePose.Slew);
-                torsoSlew = Mathf.Max(torsoSlew, MantlePose.Slew);
-                slew = Mathf.Max(slew, MantlePose.Slew);
+                armSlewL = Mathf.Max(armSlewL, SmoothMotion.CycleSlew);
+                armSlewR = Mathf.Max(armSlewR, SmoothMotion.CycleSlew);
+                legSlew = Mathf.Max(legSlew, SmoothMotion.CycleSlew);
+                torsoSlew = Mathf.Max(torsoSlew, SmoothMotion.CycleSlew);
+                slew = Mathf.Max(slew, SmoothMotion.CycleSlew);
             }
             if ((punching && phase != PunchPhase.Idle) || flinchAmt > 0.04f)
             {
@@ -14999,11 +15076,15 @@ namespace Tag.Art
             }
             if (_grappleSlew > 1f)
             {
-                armSlewL = Mathf.Max(armSlewL, _grappleSlew);
-                armSlewR = Mathf.Max(armSlewR, _grappleSlew);
-                legSlew = Mathf.Max(legSlew, _grappleSlew);
-                torsoSlew = Mathf.Max(torsoSlew, _grappleSlew);
-                slew = Mathf.Max(slew, _grappleSlew);
+                // A latch still uses its snap slew. A steady pull tracks the hang and the stride.
+                float gSlew = _grappleSlew;
+                if (_grapple != null && _grapple.IsPulling && !latching)
+                    gSlew = SmoothMotion.CycleSlew;
+                armSlewL = Mathf.Max(armSlewL, gSlew);
+                armSlewR = Mathf.Max(armSlewR, gSlew);
+                legSlew = Mathf.Max(legSlew, gSlew);
+                torsoSlew = Mathf.Max(torsoSlew, gSlew);
+                slew = Mathf.Max(slew, gSlew);
             }
             ApplyLungePose(dt);
             if (_lungePoseOn)
@@ -15103,7 +15184,7 @@ namespace Tag.Art
                 // Put the wall sample back so the body does not fall off during grace.
                 float vyGrace = _motor != null ? _motor.Velocity.y : 0f;
                 if (_graceClimb)
-                    ApplyWallSample(WallPose.Climb(Mathf.Sin(_surfPhase), vyGrace), armZ);
+                    ApplyWallSample(ClimbPresented(Mathf.Sin(_surfPhase), vyGrace, false), armZ);
                 else
                     ApplyWallSample(WallPose.RunCycle(_surfPhase, _motor != null && _motor.WallLeft), armZ);
             }
@@ -15130,14 +15211,20 @@ namespace Tag.Art
                     hang = BlendZip(ZipPose.JumpDrop(), hang, caught);
                 float ride = _motor != null ? _motor.HorizontalSpeed : 0f;
                 hang.LeanZ = ZipPose.Sway(Time.time, ride);
+                float rideU = ZipPose.RideSpeed > 0.001f ? ride / ZipPose.RideSpeed : 0f;
+                if (rideU < 0f) rideU = 0f;
+                if (rideU > 1f) rideU = 1f;
+                float pump = Mathf.Sin(_zipAge * 9f) * 8f * rideU;
+                hang.ElbowL += pump;
+                hang.ElbowR -= pump * 0.65f;
                 ApplyWallSample(hang, armZ);
                 _zipAge += dt;
                 _zipRelease = -1f;
-                armSlewL = Mathf.Max(armSlewL, WallPose.BlendSlew);
-                armSlewR = Mathf.Max(armSlewR, WallPose.BlendSlew);
-                legSlew = Mathf.Max(legSlew, WallPose.BlendSlew);
-                torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
-                slew = Mathf.Max(slew, WallPose.BlendSlew);
+                armSlewL = Mathf.Max(armSlewL, SmoothMotion.CycleSlew);
+                armSlewR = Mathf.Max(armSlewR, SmoothMotion.CycleSlew);
+                legSlew = Mathf.Max(legSlew, SmoothMotion.CycleSlew);
+                torsoSlew = Mathf.Max(torsoSlew, SmoothMotion.CycleSlew);
+                slew = Mathf.Max(slew, SmoothMotion.CycleSlew);
             }
             else if (_zipRelease >= 0f && PoseAllowed(DummyPosePaths.Wall))
             {
@@ -15147,10 +15234,10 @@ namespace Tag.Art
                 _zipRelease += dt;
                 if (_zipRelease >= ZipPose.ReleaseSeconds)
                     _zipRelease = -1f;
-                armSlewL = Mathf.Max(armSlewL, WallPose.BlendSlew);
-                armSlewR = Mathf.Max(armSlewR, WallPose.BlendSlew);
-                legSlew = Mathf.Max(legSlew, WallPose.BlendSlew);
-                torsoSlew = Mathf.Max(torsoSlew, WallPose.BlendSlew);
+                armSlewL = Mathf.Max(armSlewL, SmoothMotion.CycleSlew);
+                armSlewR = Mathf.Max(armSlewR, SmoothMotion.CycleSlew);
+                legSlew = Mathf.Max(legSlew, SmoothMotion.CycleSlew);
+                torsoSlew = Mathf.Max(torsoSlew, SmoothMotion.CycleSlew);
             }
             _zipWas = zipHang;
             bool staggerPose = _staggerAge >= 0f;
@@ -15169,21 +15256,24 @@ namespace Tag.Art
                 SealPunchRight(phase, punchProg);
                 armSlewR = 2400f;
             }
-            Slew(ref _spine, _spineT, torsoSlew, dt);
-            Slew(ref _hips, _hipsT, torsoSlew, dt);
-            Slew(ref _head, _headT, slew, dt);
-            Slew(ref _upperArmL, _uaLT, armSlewL, dt);
-            Slew(ref _upperArmR, _uaRT, armSlewR, dt);
-            Slew(ref _lowerArmL, _laLT, armSlewL, dt);
-            Slew(ref _lowerArmR, _laRT, armSlewR, dt);
-            Slew(ref _upperLegL, _ulLT, legSlew, dt);
-            Slew(ref _upperLegR, _ulRT, legSlew, dt);
-            Slew(ref _lowerLegL, _llLT, legSlew, dt);
-            Slew(ref _lowerLegR, _llRT, legSlew, dt);
+            bool pass3Yield = air || sliding || crouch || punching || mantle || climb || wallRun || lunging || dashing
+                || _dropVis > 0.2f || _aimTorsoW > 0.35f;
+            ApplyPass3Targets(pass3Yield);
+            Slew(ref _spine, _spineT, ref _slewSp, torsoSlew, dt);
+            Slew(ref _hips, _hipsT, ref _slewHp, torsoSlew, dt);
+            Slew(ref _head, _headT, ref _slewHd, slew, dt);
+            Slew(ref _upperArmL, _uaLT, ref _slewUaL, armSlewL, dt);
+            Slew(ref _upperArmR, _uaRT, ref _slewUaR, armSlewR, dt);
+            Slew(ref _lowerArmL, _laLT, ref _slewLaL, armSlewL, dt);
+            Slew(ref _lowerArmR, _laRT, ref _slewLaR, armSlewR, dt);
+            Slew(ref _upperLegL, _ulLT, ref _slewUlL, legSlew, dt);
+            Slew(ref _upperLegR, _ulRT, ref _slewUlR, legSlew, dt);
+            Slew(ref _lowerLegL, _llLT, ref _slewLlL, legSlew, dt);
+            Slew(ref _lowerLegR, _llRT, ref _slewLlR, legSlew, dt);
             if (_footL != null && _footR != null)
             {
-                Slew(ref _footL, _ftLT, legSlew, dt);
-                Slew(ref _footR, _ftRT, legSlew, dt);
+                Slew(ref _footL, _ftLT, ref _slewFtL, legSlew, dt);
+                Slew(ref _footR, _ftRT, ref _slewFtR, legSlew, dt);
             }
 
 
@@ -15213,7 +15303,14 @@ namespace Tag.Art
             if (flinchAmt > 0.04f) bob -= 0.1f * flinchAmt;
             if (_motor != null && _motor.ZipRiding)
                 bob = 0f;
-            transform.localPosition = _root0 + new Vector3(0f, bob, 0f) + WallJumpNudge();
+            bool yawWall = wallRun || climb;
+            EaseFacing(dt, yawWall, climb, sliding);
+            AbsorbPop(dt);
+            transform.localPosition = _root0 + new Vector3(0f, bob, 0f) + WallJumpNudge() + _visualLag;
+            bool secondaryYield = climb || wallRun || mantle || punching || lunging || dashing
+                || _aimTorsoW > 0.35f || _grappleFallHold || _grapplePose > 0.02f;
+            ApplySecondaryMotion(dt, secondaryYield, secondaryYield || sliding);
+            ApplyContactIk(grounded && !air && !sliding, wallRun || climb);
             float squash = 1f - 0.14f * _landSquash;
             // Air-dash: strong stretch then brief squash; tag flinch compresses
             float dashStretch = airDashing ? 0.32f : 0.18f;
@@ -15393,6 +15490,19 @@ namespace Tag.Art
             _spineT = Quaternion.Slerp(_spineT, _spine0 * Quaternion.Euler(off.Spine, 0f, off.LeanZ), w);
             _hipsT = Quaternion.Slerp(_hipsT, _hips0 * Quaternion.Euler(off.Hip, 0f, 0f), w);
             _headT = Quaternion.Slerp(_headT, _head0 * Quaternion.Euler(off.Head, 0f, 0f), w);
+        }
+
+        /// <summary>
+        /// Climb cycle at the locked speed. The first part of a grab aims at the entry
+        /// plant, then the reach/pull or the still hold. Grace keeps the cycle. No root motion.
+        /// </summary>
+        WallPose.Sample ClimbPresented(float phaseSin, float vy, bool entering)
+        {
+            WallPose.Sample live = WallPose.Climb(phaseSin, vy);
+            if (!entering || _surfIn >= 0.999f) return live;
+            float u = _surfIn;
+            float intoCycle = u <= 0.4f ? 0f : WallPose.Ease((u - 0.4f) / 0.6f);
+            return WallPose.Mix(WallPose.Entry(), live, intoCycle);
         }
 
         void ApplyWallSample(WallPose.Sample pose, float armZ)
@@ -16381,6 +16491,7 @@ namespace Tag.Art
             JumpPose.Sample pose = gaitJump
                 ? JumpPose.At(vy, _jumpPoseAge, _jumpDriveLeft)
                 : JumpPose.Mixed(vy, _jumpPoseAge, _jumpDriveLeft, speed, sinC, cycle);
+            LocomotionPolish.AirPhase(ref pose.ThighL, ref pose.ThighR, ref pose.KneeL, ref pose.KneeR, ref pose.ArmPitchL, ref pose.ArmPitchR, ref pose.Spine, vy, _hopChain);
             _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, 0f, 0f);
             _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, 0f, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
@@ -16576,6 +16687,7 @@ namespace Tag.Art
             float cycle = _hopChain ? _cycle : (_jumpPoseAge <= JumpPose.StrideBlendSeconds ? _jumpPoseCycle : _cycle);
             float sinC = Mathf.Sin(cycle);
             JumpPose.Sample beat = JumpPose.Mixed(vy, _jumpPoseAge, _jumpDriveLeft, speed, sinC, cycle);
+            LocomotionPolish.AirPhase(ref beat.ThighL, ref beat.ThighR, ref beat.KneeL, ref beat.KneeR, ref beat.ArmPitchL, ref beat.ArmPitchR, ref beat.Spine, vy, _hopChain);
             AirStrafeLeanPose.Sample lean = AirStrafeLeanPose.At(side);
             _spineT = _spine0 * Quaternion.Euler(beat.Spine, 0f, lean.Roll * w);
             _hipsT = _hips0 * Quaternion.Euler(beat.Hip, 0f, lean.HipRoll * w);
@@ -17464,7 +17576,8 @@ namespace Tag.Art
             float t = Mathf.Clamp01(Mathf.InverseLerp(soft, hard, impact));
             // Ease-in so mid falls stay readable but terminal velocity punches.
             // Slightly stronger mid-band so a park hop-off reads without waiting for stun speed.
-            _landSquash = Mathf.Clamp(Mathf.Lerp(0.55f, 1.35f, t * t), 0.55f, 1.35f);
+            // The buckle eases in. The hold and the release stay on the old clock.
+            _landSquashGoal = Mathf.Clamp(Mathf.Lerp(0.55f, 1.35f, t * t), 0.55f, 1.35f);
             // Brief absorb, then the pose eases into the run instead of popping off.
             _landHold = Mathf.Lerp(0.05f, 0.11f, t);
             _landHard = t;
@@ -17476,6 +17589,7 @@ namespace Tag.Art
         void ClearHopLand()
         {
             _landSquash = 0f;
+            _landSquashGoal = 0f;
             _landHold = 0f;
             _landHard = 0f;
             _landPoseHard = false;
@@ -18583,10 +18697,130 @@ namespace Tag.Art
             return false;
         }
 
-        static void Slew(ref Transform t, Quaternion target, float speed, float dt)
+        static void Slew(ref Transform t, Quaternion target, ref float vel, float speed, float dt)
         {
             if (t == null) return;
-            t.localRotation = Quaternion.Slerp(t.localRotation, target, 1f - Mathf.Exp(-speed * dt));
+            float seconds = SmoothMotion.SecondsForSlew(speed);
+            if (seconds <= 0f)
+            {
+                vel = 0f;
+                t.localRotation = Quaternion.Slerp(t.localRotation, target, 1f - Mathf.Exp(-speed * dt));
+                return;
+            }
+            float angle = Quaternion.Angle(t.localRotation, target);
+            if (angle < 0.05f)
+            {
+                vel = 0f;
+                t.localRotation = target;
+                return;
+            }
+            float next = SmoothMotion.Smooth(angle, 0f, ref vel, seconds, dt);
+            float closed = angle - next;
+            if (closed < 0f) closed = 0f;
+            float u = closed / angle;
+            if (u > 1f) u = 1f;
+            t.localRotation = Quaternion.Slerp(t.localRotation, target, u);
+        }
+
+        /// <summary>
+        /// Visual yaw only. The capsule keeps the camera yaw, so wish direction stays instant.
+        /// Climb faces the wall. A wall run faces along it. On the ground the chest eases toward the move.
+        /// </summary>
+        void EaseFacing(float dt, bool wallRun, bool climb, bool sliding)
+        {
+            if (_motor == null || transform == _motor.transform) return;
+            Vector3 fwd = _motor.transform.forward;
+            Vector3 desired = fwd;
+            Vector3 n = _motor.WallNormal;
+            n.y = 0f;
+            // Ground strafe keeps the camera facing. Only the wall turns the mesh,
+            // and it eases. Climb looks into the wall. A run looks along it.
+            if (!sliding && (climb || wallRun) && n.sqrMagnitude > 0.0001f)
+            {
+                if (climb)
+                    desired = -n;
+                else
+                {
+                    Vector3 tangent = Vector3.Cross(Vector3.up, n);
+                    Vector3 vel = _motor.Velocity;
+                    vel.y = 0f;
+                    if (vel.sqrMagnitude > 0.04f)
+                    {
+                        if (Vector3.Dot(tangent, vel) < 0f) tangent = -tangent;
+                    }
+                    else if (Vector3.Dot(tangent, fwd) < 0f)
+                        tangent = -tangent;
+                    desired = tangent;
+                }
+            }
+            float target = SmoothMotion.PlanarDelta(fwd.x, fwd.z, desired.x, desired.z);
+            _visualYaw = SmoothMotion.Smooth(_visualYaw, target, ref _visualYawVel, SmoothMotion.YawSeconds, dt);
+            if (!_yawBasisSet)
+            {
+                _yawBasis = transform.localRotation;
+                _yawBasisSet = true;
+            }
+            transform.localRotation = _yawBasis * Quaternion.Euler(0f, _visualYaw, 0f);
+        }
+
+        /// <summary>
+        /// Capsule corrections (step, skin, the mantle-exit write) stay on the controller.
+        /// The mesh keeps the pre-pop spot and eases over. A respawn is too big to hide.
+        /// </summary>
+        void AbsorbPop(float dt)
+        {
+            if (_motor == null) return;
+            Vector3 now = _motor.transform.position;
+            if (!_hasCapsule)
+            {
+                _prevCapsule = now;
+                _hasCapsule = true;
+                return;
+            }
+            float dtUse = dt > 0.0001f ? dt : SmoothMotion.Dt;
+            Vector3 expect = _prevCapsule + _motor.Velocity * dtUse;
+            Vector3 pop = now - expect;
+            _prevCapsule = now;
+            var st = _motor.State;
+            bool stateChanged = st != _popState;
+            _popState = st;
+            float mag = pop.magnitude;
+            Vector3 local = _motor.transform.InverseTransformDirection(pop);
+            if (mag >= SmoothMotion.PopIgnore)
+            {
+                _visualLag = Vector3.zero;
+                _lagVx = 0f;
+                _lagVy = 0f;
+                _lagVz = 0f;
+                _prevPopX = 0f;
+                _prevPopZ = 0f;
+                _hasPopSample = false;
+            }
+            else if (mag > 0.004f)
+            {
+                bool repeat = _hasPopSample && SmoothMotion.RepeatingPush(local.x, local.z, _prevPopX, _prevPopZ);
+                if (stateChanged)
+                    _visualLag -= local;
+                else
+                {
+                    if (local.y > 0.004f || local.y < -0.004f)
+                        _visualLag -= new Vector3(0f, local.y, 0f);
+                    float hx = local.x;
+                    float hz = local.z;
+                    if (!repeat && hx * hx + hz * hz > 0.000016f)
+                        _visualLag -= new Vector3(hx, 0f, hz);
+                }
+                _prevPopX = local.x;
+                _prevPopZ = local.z;
+                _hasPopSample = true;
+            }
+            else
+            {
+                _prevPopX = 0f;
+                _prevPopZ = 0f;
+                _hasPopSample = true;
+            }
+            _visualLag = SmoothMotion.Decay(_visualLag, ref _lagVx, ref _lagVy, ref _lagVz, SmoothMotion.PositionSeconds, dtUse);
         }
 
         void SealPunchRight(PunchPhase phase, float punchProg)
@@ -18804,6 +19038,134 @@ namespace Tag.Art
             head = _head0 * Quaternion.Euler(-12f, 0f, 0f);
         }
 
+        /// <summary>
+        /// Fast 180 plant and the run-start lean. Visual only. Slide, climb, and the other verbs keep their poses.
+        /// </summary>
+        void ApplyPass3Targets(bool yieldLegs)
+        {
+            if (!yieldLegs && _hardTurnVis > 0.04f)
+            {
+                float hw = _hardTurnVis;
+                if (_hardTurnSign > 0f)
+                {
+                    _ulLT = Quaternion.Slerp(_ulLT, _ulL0 * Quaternion.Euler(LocomotionPolish.HardPlantThigh, 0f, 0f), hw);
+                    _llLT = Quaternion.Slerp(_llLT, _llL0 * Quaternion.Euler(LocomotionPolish.HardPlantKnee, 0f, 0f), hw);
+                }
+                else
+                {
+                    _ulRT = Quaternion.Slerp(_ulRT, _ulR0 * Quaternion.Euler(LocomotionPolish.HardPlantThigh, 0f, 0f), hw);
+                    _llRT = Quaternion.Slerp(_llRT, _llR0 * Quaternion.Euler(LocomotionPolish.HardPlantKnee, 0f, 0f), hw);
+                }
+            }
+            if (!yieldLegs && Mathf.Abs(_hipYawVis) > 0.4f)
+                _hipsT = _hipsT * Quaternion.Euler(0f, _hipYawVis, 0f);
+            if (!yieldLegs && _startBlendVis > 0.04f)
+            {
+                float into = LocomotionPolish.StartLean(_startBlendVis, _accelLean);
+                _spineT = _spineT * Quaternion.Euler(into, 0f, 0f);
+            }
+        }
+
+        /// <summary>
+        /// Head looks along travel, the spine counters, and the arms coast after the swing.
+        /// Springs only. Punch, aim, mantle, and the wall own those bones.
+        /// </summary>
+        void ApplySecondaryMotion(float dt, bool yieldHead, bool yieldArms)
+        {
+            Transform face = _motor != null ? _motor.transform : transform;
+            Vector3 vel = _motor != null ? _motor.Velocity : Vector3.zero;
+            vel.y = 0f;
+            float speed = vel.magnitude;
+            float yawTarget = 0f;
+            if (!yieldHead)
+                yawTarget = LocomotionPolish.HeadYaw(LocomotionPolish.TravelYaw(_travelFwd, _travelSide, speed));
+            _headLook = SmoothMotion.Smooth(_headLook, yawTarget, ref _headLookVel, LocomotionPolish.SecondarySeconds, dt);
+            if (Mathf.Abs(_headLook) > 0.05f)
+            {
+                float spineC = LocomotionPolish.SpineYaw(_headLook);
+                if (_spine != null)
+                    _spine.localRotation = _spine.localRotation * Quaternion.Euler(0f, spineC, 0f);
+                if (_head != null)
+                    _head.localRotation = _head.localRotation * Quaternion.Euler(0f, _headLook, 0f);
+            }
+            float rawL = (!yieldArms && _armSwingSet) ? _armSwingL : 0f;
+            float rawR = (!yieldArms && _armSwingSet) ? _armSwingR : 0f;
+            float wantL = LocomotionPolish.ArmFollowTarget(rawL);
+            float wantR = LocomotionPolish.ArmFollowTarget(rawR);
+            _armCoastL = SmoothMotion.Smooth(_armCoastL, wantL, ref _armCoastVelL, LocomotionPolish.SecondarySeconds, dt);
+            _armCoastR = SmoothMotion.Smooth(_armCoastR, wantR, ref _armCoastVelR, LocomotionPolish.SecondarySeconds, dt);
+            if (_upperArmL != null && Mathf.Abs(_armCoastL) > 0.05f)
+                _upperArmL.localRotation = _upperArmL.localRotation * Quaternion.Euler(_armCoastL, 0f, 0f);
+            if (_upperArmR != null && Mathf.Abs(_armCoastR) > 0.05f)
+                _upperArmR.localRotation = _upperArmR.localRotation * Quaternion.Euler(_armCoastR, 0f, 0f);
+        }
+
+        /// <summary>
+        /// Stance feet sit on stairs and slopes. Hands meet the wall on a climb or a wall run.
+        /// Raycasts pose the bones. The capsule is not moved.
+        /// </summary>
+        void ApplyContactIk(bool feet, bool hands)
+        {
+            if (!_footPosBound)
+            {
+                if (_footL != null && _footR != null)
+                {
+                    _footLPos0 = _footL.localPosition;
+                    _footRPos0 = _footR.localPosition;
+                    _footPosBound = true;
+                }
+            }
+            Transform face = _motor != null ? _motor.transform : transform;
+            bool leftStance = Mathf.Cos(_cycle) <= 0f;
+            PlantFoot(_footL, _footLPos0, feet && leftStance, face);
+            PlantFoot(_footR, _footRPos0, feet && !leftStance, face);
+            if (!hands || _motor == null) return;
+            Vector3 n = _motor.WallNormal;
+            if (n.sqrMagnitude < 0.0001f) return;
+            n.Normalize();
+            Vector3 chest = _spine != null ? _spine.position : transform.position + Vector3.up * 1.15f;
+            RaycastHit hit;
+            if (!Physics.Raycast(chest, -n, out hit, 1.15f) || OwnBody(hit.transform))
+                return;
+            float pitch = LocomotionPolish.HandPitch(0.78f - hit.distance);
+            if (pitch > -0.5f && pitch < 0.5f) return;
+            if (_upperArmL != null)
+                _upperArmL.localRotation = _upperArmL.localRotation * Quaternion.Euler(pitch, 0f, 0f);
+            if (_upperArmR != null)
+                _upperArmR.localRotation = _upperArmR.localRotation * Quaternion.Euler(pitch, 0f, 0f);
+        }
+
+        void PlantFoot(Transform foot, Vector3 bind, bool stance, Transform face)
+        {
+            if (foot == null) return;
+            if (!stance || !_footPosBound)
+            {
+                if (_footPosBound)
+                    foot.localPosition = bind;
+                return;
+            }
+            Vector3 origin = foot.position + Vector3.up * 0.28f;
+            RaycastHit hit;
+            if (!Physics.Raycast(origin, Vector3.down, out hit, 0.62f) || OwnBody(hit.transform))
+            {
+                foot.localPosition = bind;
+                return;
+            }
+            float along = face != null ? Vector3.Dot(hit.normal, face.forward) : 0f;
+            float pitch = LocomotionPolish.FootPitch(hit.normal.y, along);
+            float lift = LocomotionPolish.FootLift(0.28f - hit.distance);
+            foot.localPosition = bind + new Vector3(0f, lift, 0f);
+            foot.localRotation = foot.localRotation * Quaternion.Euler(pitch, 0f, 0f);
+        }
+
+        bool OwnBody(Transform hit)
+        {
+            if (hit == null) return true;
+            if (hit == transform || hit.IsChildOf(transform)) return true;
+            if (_motor != null && (hit == _motor.transform || hit.IsChildOf(_motor.transform))) return true;
+            return false;
+        }
+
         void Cache(Transform root)
         {
             if (root == null) return;
@@ -18835,6 +19197,12 @@ namespace Tag.Art
             if (_lowerLegR) _llR0 = _lowerLegR.localRotation;
             if (_footL) _ftL0 = _footL.localRotation;
             if (_footR) _ftR0 = _footR.localRotation;
+            if (_footL != null && _footR != null)
+            {
+                _footLPos0 = _footL.localPosition;
+                _footRPos0 = _footR.localPosition;
+                _footPosBound = true;
+            }
             _spineT = _spine0; _hipsT = _hips0; _headT = _head0;
             _uaLT = _uaL0; _uaRT = _uaR0; _laLT = _laL0; _laRT = _laR0;
             _ulLT = _ulL0; _ulRT = _ulR0; _llLT = _llL0; _llRT = _llR0;

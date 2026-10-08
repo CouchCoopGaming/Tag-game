@@ -41,12 +41,18 @@ namespace TagArena.Movement
         float _boomDist;
         float _lookAhead;
         float _lookH = 1.25f;
+        float _lookHVel;
+        float _wallLook;
+        float _wallLookVel;
+        Vector3 _wallLookDir;
         float _catchT;
         bool _wasLunging;
         MoveState _prevState = MoveState.Idle;
         Vector3 _aheadSmoothed;
         Vector3 _kick;
-        float _fovKick;
+        Vector3 _kickFrom;
+        Vector3 _kickTo;
+        float _kickIn = 1f;
 
         PlayerInputReader _in;
         DummyLocomotor _loco;
@@ -133,14 +139,27 @@ namespace TagArena.Movement
                 else if (motor.State == MoveState.WallClimb)
                     wantLookH = lookAtHeight + 0.28f;
                 float lookRate = ChaseCam.LookRateFor(_catchT);
-                _lookH = Mathf.Lerp(_lookH, wantLookH, 1f - Mathf.Exp(-lookRate * dt));
+                // Height and the wall offset ease. The catch rate still owns look-ahead direction.
+                _lookH = SmoothMotion.Smooth(_lookH, wantLookH, ref _lookHVel, SmoothMotion.SettleSeconds, dt);
                 Vector3 lookAt = motor.transform.position + Vector3.up * _lookH;
+                float wantWall = 0f;
+                Vector3 wallDir = _wallLookDir.sqrMagnitude > 0.001f ? _wallLookDir : motor.transform.forward;
                 if (motor.State == MoveState.WallRun && motor.WallNormal.sqrMagnitude > 0.01f)
                 {
                     Vector3 wallInto = Vector3.ProjectOnPlane(-motor.WallNormal, Vector3.up);
                     if (wallInto.sqrMagnitude > 0.01f)
-                        lookAt += wallInto.normalized * 0.42f;
+                    {
+                        wantWall = 0.42f;
+                        wallDir = wallInto.normalized;
+                    }
                 }
+                if (_wallLookDir.sqrMagnitude < 0.001f)
+                    _wallLookDir = wallDir;
+                _wallLook = SmoothMotion.Smooth(_wallLook, wantWall, ref _wallLookVel, SmoothMotion.YawSeconds, dt);
+                float wallU = 1f - Mathf.Exp(-SmoothMotion.Rate(SmoothMotion.YawSeconds) * dt);
+                _wallLookDir = Vector3.Slerp(_wallLookDir, wallDir, wallU);
+                if (_wallLook > 0.001f && _wallLookDir.sqrMagnitude > 0.001f)
+                    lookAt += _wallLookDir.normalized * _wallLook;
                 float lo = cfg != null ? cfg.walkSpeed : lookAheadSpeedLo;
                 float hi = lookAheadSpeedHi;
                 float speedT = Mathf.InverseLerp(lo, hi, motor.HorizSpeed);
@@ -171,7 +190,17 @@ namespace TagArena.Movement
 
                 Vector3 to = lookAt - cam.transform.position;
                 if (to.sqrMagnitude > 0.001f)
-                    cam.transform.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
+                {
+                    // Mouse yaw is already on the rig this frame. A small look-point step eases.
+                    // A flick, or the boom pulling in, still snaps so the horizon does not trail the mouse.
+                    Vector3 dir = to.normalized;
+                    Quaternion want = Quaternion.LookRotation(dir, Vector3.up);
+                    float align = Vector3.Dot(cam.transform.forward, dir);
+                    if (align > 0.990f && align < 0.9998f)
+                        cam.transform.rotation = Quaternion.Slerp(cam.transform.rotation, want, 1f - Mathf.Exp(-18f * dt));
+                    else
+                        cam.transform.rotation = want;
+                }
 
                 // Mirror FpsMoveCamera cfg.fov* by MoveState (+ tiny continuous speed boost)
                 float targetFov = cfg != null ? cfg.fovIdle : 70f;
@@ -190,7 +219,6 @@ namespace TagArena.Movement
                     targetFov += speedFovBoostMax * speedT;
                 }
                 targetFov = LookFeel.ScaleFov(targetFov);
-                targetFov += _fovKick;
                 _fov = Mathf.Lerp(_fov, targetFov, 1f - Mathf.Exp(-6f * dt));
                 cam.fieldOfView = _fov;
             }
@@ -203,8 +231,15 @@ namespace TagArena.Movement
                 wantTilt = motor.WallLeft ? tiltMax * 0.6f : -tiltMax * 0.6f;
             _tilt = Mathf.Lerp(_tilt, wantTilt, 1f - Mathf.Exp(-8f * dt));
 
-            _kick = Vector3.Lerp(_kick, Vector3.zero, 1f - Mathf.Exp(-12f * dt));
-            _fovKick = Mathf.Lerp(_fovKick, 0f, 1f - Mathf.Exp(-10f * dt));
+            if (_kickIn < 1f)
+            {
+                _kickIn = Mathf.MoveTowards(_kickIn, 1f, dt / SmoothMotion.ResponsiveSeconds);
+                float u = _kickIn;
+                u = u * u * (3f - 2f * u);
+                _kick = Vector3.Lerp(_kickFrom, _kickTo, u);
+            }
+            else
+                _kick = Vector3.Lerp(_kick, Vector3.zero, 1f - Mathf.Exp(-12f * dt));
             if (_catchT > 0f)
                 _catchT = Mathf.Max(0f, _catchT - dt);
 
@@ -224,11 +259,12 @@ namespace TagArena.Movement
             if (_loco == null) _loco = motor.GetComponentInChildren<DummyLocomotor>(true);
         }
 
-        /// <summary>Brief punch/tag camera kick (local pivot offset + optional FOV punch).</summary>
+        /// <summary>Brief punch/tag camera offset. fovKick=0. Shake and slow motion stay 0.</summary>
         public void AddKick(Vector3 local)
         {
-            _kick += local;
-            _fovKick += Mathf.Clamp(local.magnitude * 18f, 2f, 8f);
+            _kickFrom = _kick;
+            _kickTo = _kick + local;
+            _kickIn = 0f;
         }
 
         void ApplyBoomWithCollision()

@@ -62,6 +62,7 @@
     <Compile Include="../../Assets/Scripts/Art/OpponentChaseTell.cs" />
     <Compile Include="../../Assets/Scripts/Art/VerbPoseClips.cs" />
     <Compile Include="../../Assets/Scripts/Art/GaitBlend.cs" />
+    <Compile Include="../../Assets/Scripts/Art/LocomotionPolish.cs" />
     <Compile Include="../../Assets/Scripts/Art/JumpPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/AirStrafeLeanPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/BunnyHopPose.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="../../Assets/Scripts/Art/MechPoseProof.cs" />
     <Compile Include="../../Assets/Scripts/Art/CrouchPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/MantlePose.cs" />
+    <Compile Include="../../Assets/Scripts/Art/SmoothMotion.cs" />
     <Compile Include="../../Assets/Scripts/Art/LungePose.cs" />
     <Compile Include="../../Assets/Scripts/Art/BecomeItPose.cs" />
     <Compile Include="../../Assets/Scripts/Art/PivotPose.cs" />

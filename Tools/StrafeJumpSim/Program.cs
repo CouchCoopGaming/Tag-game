@@ -677,8 +677,96 @@ static class Program
             return 1;
         }
 
+        Console.WriteLine(Tag.Art.SmoothMotion.ProofLine());
+        Console.WriteLine(Tag.Art.SmoothMotion.DetailLine());
+        Console.WriteLine(Tag.Art.SmoothMotion.ParkourLine());
+        Console.WriteLine(Tag.Art.SmoothMotion.ResponseLine());
+        Console.WriteLine(Tag.Art.LocomotionPolish.ProofLine());
+        Console.WriteLine(Tag.Art.LocomotionPolish.StepLine());
+        if (!Tag.Art.SmoothMotion.Holds())
+        {
+            Console.Error.WriteLine("smooth motion is not held");
+            return 1;
+        }
+        if (!Tag.Art.LocomotionPolish.Holds())
+        {
+            Console.Error.WriteLine("locomotion polish is not held");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
+                "SmoothMotion.Smooth",
+                "SmoothMotion.SecondsForSlew",
+                "SmoothMotion.CycleSlew",
+                "ClimbPresented",
+                "RepeatingPush",
+                "AbsorbPop",
+                "EaseFacing",
+                "LocomotionPolish.PlayCadence",
+                "LocomotionPolish.FacingStride",
+                "LocomotionPolish.NoteTurn",
+                "LocomotionPolish.AirPhase",
+                "LocomotionPolish.FootPitch",
+                "LocomotionPolish.HandPitch",
+                "LocomotionPolish.HeadYaw"))
+        {
+            Console.Error.WriteLine("smooth motion is not on the locomotor");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Input/PlayerInputReader.cs",
+                "DefaultExecutionOrder(-200)",
+                "_readSerial == serial"))
+        {
+            Console.Error.WriteLine("input read is not same-frame");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/TpsMoveCamera.cs",
+                "SmoothMotion.Smooth",
+                "SmoothMotion.YawSeconds",
+                "fovKick=0",
+                "Quaternion.Slerp"))
+        {
+            Console.Error.WriteLine("camera follow is not smoothed");
+            return 1;
+        }
+        if (!AssetHas("Assets/TagArenaMovement/Scripts/Camera/ChaseCam.cs",
+                "if (desired < current) return desired;",
+                "BoomRate = 6f"))
+        {
+            Console.Error.WriteLine("boom pull-in is not instant");
+            return 1;
+        }
+        if (!AssetHas("Assets/Scripts/Art/WallPose.cs",
+                "PlantShape",
+                "HoldWeight",
+                "Sample Entry"))
+        {
+            Console.Error.WriteLine("climb cycle is not on the wall pose");
+            return 1;
+        }
+
+        string stillDir = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass1");
+        Tag.Art.SmoothMotion.WriteStrip(Path.Combine(stillDir, "transitions.ppm"));
+        string still2 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass2");
+        Tag.Art.SmoothMotion.WriteParkourStills(Path.Combine(still2, "climb-wall-mantle.png"));
+        string still3 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass3");
+        Tag.Art.SmoothMotion.WriteLocomotionStills(Path.Combine(still3, "loco-air-ik.png"));
+
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
+    }
+
+    static string RepoRoot()
+    {
+        string dir = Directory.GetCurrentDirectory();
+        for (int i = 0; i < 6; i++)
+        {
+            if (File.Exists(Path.Combine(dir, "Docs", "WhatsNew.md")))
+                return dir;
+            DirectoryInfo parent = Directory.GetParent(dir);
+            if (parent == null) break;
+            dir = parent.FullName;
+        }
+        return Directory.GetCurrentDirectory();
     }
 
     static bool Locked(float value, float expect) => Math.Abs(value - expect) <= 0.001f;
