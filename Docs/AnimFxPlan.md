@@ -253,6 +253,8 @@ The full 40-clip set was not re-run. Exit clips sample this pull through `ForBod
 
 Stills, dark backdrop and mid-grey floor, key and rim: `Docs/AnimStills/pass22/`. Backdrop pixels are about (89, 94, 101). The floor is about (150, 149, 146). Near-white pixels are under 0.01%. The pull cord is 2 px across and straight. The old cord in the before frame is 8 px across. Hold and release bow about 5 px off that line. The launch 3/4 frame shows both arms. Red overlap pixels are 0 because these frames are already under 0.5 cm. Each PNG is 1024×576 and under 400 KB.
 
+The map lane tip `9219d01` arrived during this pass. It substitutes a straight-arm hang (elbow −2, yaw 120, trunk and legs zeroed) so its own overlap count stays at zero. `ForBody` keeps the yank. The lane's hip lean (−2.5°) and left clavicle lift (12°) stay on the locomotor. The trunk still meets the rope through `LineFix`, so a level rope does not stack a second fold on the cuff.
+
 StrafeJumpSim exits 0. Gameplay lines match the pass 21 sim. Animation lines that moved:
 
 - grapple pose: `pullPitch=-78/-84 pullYaw=32/-32 pullElbow=-2/-4 pullSpine=42 pullHip=40 pullHead=-20 strideThigh=20/-30 tuckKnee=-94 pullRead=-84` → `pullPitch=-118/-12 pullYaw=28/-68 pullElbow=-46/-28 pullSpine=4 pullHip=14 pullHead=18 strideThigh=12/6 tuckKnee=-36 pullRead=-12`

@@ -29,6 +29,33 @@ namespace Tag.Art
         /// </summary>
         public const float ShoulderFlare = 24f;
 
+        /// <summary>
+        /// Lane clearance pitch. Not written over the yank. The pull sample is what plays.
+        /// </summary>
+        public const float HangPitchL = -100f;
+        /// <summary>Played off arm, out beside the ribs so the two arms do not meet.</summary>
+        public const float HangPitchR = -90f;
+        /// <summary>Played abduction. The left hand sits out from the chest, not through it.</summary>
+        public const float HangYaw = 120f;
+        /// <summary>
+        /// Played elbow flex, in degrees. Two degrees clears the head and the torso
+        /// without burying the forearm in the upper arm. Three degrees crosses the
+        /// rig cuff, and that absolute depth counts. Printed elbows stay the sample.
+        /// </summary>
+        public const float HangElbow = -2f;
+        /// <summary>
+        /// Hip roll away from the left hand, in degrees. A spine roll of 0.4 degrees
+        /// already puts the hip-spine cuff past the rest depth, so the lean sits on
+        /// the hips and that cuff stays the rig. 2.5 degrees keeps the sole inside
+        /// 0.5 cm of the floor. 3 degrees does not.
+        /// </summary>
+        public const float HangLean = -2.5f;
+        /// <summary>
+        /// Left clavicle yaw, in degrees. It lifts the left shoulder on top of the
+        /// raised, abducted upper arm. Printed arm pitches stay the sample.
+        /// </summary>
+        public const float HangShoulder = 12f;
+
         /// <summary>Move the lead sample onto the left arm when the left hand fires.</summary>
         public static Sample ForBody(Sample s)
         {

@@ -29,6 +29,7 @@ namespace Tag.Art
         public string VerbState { get; private set; }
 
         Transform _hips, _spine, _head;
+        Transform _shoulderL;
         Transform _upperArmL, _upperArmR, _lowerArmL, _lowerArmR;
         Transform _upperLegL, _upperLegR, _lowerLegL, _lowerLegR;
         Transform _footL, _footR;
@@ -41,6 +42,7 @@ namespace Tag.Art
         float _chestPushVel;
         Vector3 _chestLocal;
         Quaternion _hips0, _spine0, _head0;
+        Quaternion _shL0, _shLT;
         Quaternion _uaL0, _uaR0, _laL0, _laR0;
         Quaternion _ulL0, _ulR0, _llL0, _llR0;
         Quaternion _ftL0, _ftR0;
@@ -59,7 +61,9 @@ namespace Tag.Art
         Quaternion _yawBasis;
         bool _yawBasisSet;
         float _slewSp, _slewHp, _slewHd;
+        float _slewShL;
         float _slewUaL, _slewUaR, _slewLaL, _slewLaR;
+        bool _hangShoulder;
         float _slewUlL, _slewUlR, _slewLlL, _slewLlR;
         float _slewFtL, _slewFtR;
         float _landSquashGoal;
@@ -15473,6 +15477,13 @@ namespace Tag.Art
             Slew(ref _spine, _spineT, ref _slewSp, torsoSlew, dt);
             Slew(ref _hips, _hipsT, ref _slewHp, torsoSlew, dt);
             Slew(ref _head, _headT, ref _slewHd, slew, dt);
+            if (_shoulderL != null)
+            {
+                if (!_hangShoulder)
+                    _shLT = _shL0;
+                Slew(ref _shoulderL, _shLT, ref _slewShL, armSlewL, dt);
+                _hangShoulder = false;
+            }
             Slew(ref _upperArmL, _uaLT, ref _slewUaL, armSlewL, dt);
             Slew(ref _upperArmR, _uaRT, ref _slewUaR, armSlewR, dt);
             Slew(ref _lowerArmL, _laLT, ref _slewLaL, armSlewL, dt);
@@ -15942,6 +15953,8 @@ namespace Tag.Art
         void ApplyBodyLine(float elev, float weight)
         {
             if (weight <= 0.001f) return;
+            // The yank already carries hip plus spine. Add only the remainder that
+            // meets the rope, so a level rope does not stack a second fold on the cuff.
             float shared = HangMotion.RopeSpine(elev);
             float pose = GrapplePose.PullHip + GrapplePose.PullSpine + shared;
             float fix = BodyLine.LineFix(pose, elev) * weight;
@@ -15970,8 +15983,15 @@ namespace Tag.Art
             if (!legs)
                 spineYaw = UpperBody.AimTwist(spineYaw);
             Quaternion spine = _spine0 * Quaternion.Euler(pose.Spine, spineYaw, 0f);
-            Quaternion hips = _hips0 * Quaternion.Euler(pose.Hip, pose.HipYaw * yawKeep, 0f);
+            // HangLean rolls the hips away from the left hand. Spine roll crosses the cuff.
+            Quaternion hips = _hips0 * Quaternion.Euler(pose.Hip, pose.HipYaw * yawKeep, GrapplePose.HangLean);
             Quaternion head = _head0 * Quaternion.Euler(pose.Head, pose.HeadYaw * yawKeep, 0f);
+            if (_shoulderL != null)
+            {
+                Quaternion sh = _shL0 * Quaternion.Euler(0f, GrapplePose.HangShoulder, 0f);
+                _shLT = weight >= 0.999f ? sh : Quaternion.Slerp(_shL0, sh, weight);
+                _hangShoulder = true;
+            }
             if (weight >= 0.999f)
             {
                 _uaLT = uaL;
@@ -20102,6 +20122,7 @@ namespace Tag.Art
             if (root == null) return;
             _hips = FindBone(root, "Hips", "Pelvis", "mixamorig:Hips", "hip");
             _spine = FindBone(root, "Spine", "Torso", "Spine1", "mixamorig:Spine", "Chest");
+            _shoulderL = FindBone(root, "Shoulder_L", "Shoulder.L", "LeftShoulder", "mixamorig:LeftShoulder", "shoulder_l");
             _head = FindBone(root, "Head", "mixamorig:Head", "head");
             _upperArmL = FindBone(root, "UpperArm_L", "UpperArm.L", "LeftArm", "LeftUpperArm", "mixamorig:LeftArm", "Arm_L", "upperarm_l", "Upper_Arm_L");
             _upperArmR = FindBone(root, "UpperArm_R", "UpperArm.R", "RightArm", "RightUpperArm", "mixamorig:RightArm", "Arm_R", "upperarm_r", "Upper_Arm_R");
@@ -20119,6 +20140,7 @@ namespace Tag.Art
             if (!_bound) return;
             if (_hips) _hips0 = _hips.localRotation;
             if (_spine) _spine0 = _spine.localRotation;
+            if (_shoulderL) _shL0 = _shoulderL.localRotation;
             if (_head) _head0 = _head.localRotation;
             if (_head) _headPos0 = _head.localPosition;
             if (_upperArmL) _uaL0 = _upperArmL.localRotation;
@@ -20144,6 +20166,7 @@ namespace Tag.Art
                 _footPosBound = true;
             }
             _spineT = _spine0; _hipsT = _hips0; _headT = _head0;
+            _shLT = _shL0;
             _uaLT = _uaL0; _uaRT = _uaR0; _laLT = _laL0; _laRT = _laR0;
             _ulLT = _ulL0; _ulRT = _ulR0; _llLT = _llL0; _llRT = _llR0;
             _ftLT = _ftL0; _ftRT = _ftR0;
