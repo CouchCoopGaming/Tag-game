@@ -2,8 +2,11 @@
 
 Each box is about 0.50 m wide and 0.45 m deep, between 1.05 m and 1.14 m tall.
 One has a rounded top, one a flat lid, one a slanted lid.
+The lock cable is visual only (no collider): a capsule inside the 16 mm tube
+fails the 8 mm inset, and an axis-aligned capsule misses the sag.
 """
 
+import math
 import os
 import sys
 
@@ -92,12 +95,64 @@ def _wear(g, kind, x, lod):
         g.box((x - 0.242, 0.62, -0.02), (0.008, 0.055, 0.08), "Lib_Orange", euler=(0, -9, 0))
 
 
+def _dome(g, x, lod):
+    """Capsule crown. Hemispherical ends, not flat cylinder caps.
+
+    Outer half-width is 0.22 m, inside the 0.48 m cabinet. The lower half
+    is buried in the cabinet. Crown stays at 1.08 m.
+    """
+    radius = 0.18
+    straight = 0.04
+    y0 = 0.90
+    around = lod_pick(lod, 20, 10)
+    cap_n = lod_pick(lod, 8, 4)
+    stations = []
+    for i in range(cap_n + 1):
+        ang = (math.pi * 0.5) * (i / float(cap_n))
+        stations.append((-straight - radius * math.cos(ang), radius * math.sin(ang)))
+    stations.append((0.0, radius))
+    for i in range(cap_n + 1):
+        ang = (math.pi * 0.5) * (i / float(cap_n))
+        stations.append((straight + radius * math.sin(ang), radius * math.cos(ang)))
+    verts = []
+    rings = []
+    for axial, ring_r in stations:
+        start = len(verts)
+        if ring_r < 1e-5:
+            verts.append((x + axial, y0, ZC))
+            rings.append((start, 1))
+            continue
+        for j in range(around):
+            ang = 2.0 * math.pi * j / float(around)
+            verts.append((
+                x + axial,
+                y0 + ring_r * math.sin(ang),
+                ZC + ring_r * math.cos(ang),
+            ))
+        rings.append((start, around))
+    faces = []
+    for i in range(len(rings) - 1):
+        a0, na = rings[i]
+        b0, nb = rings[i + 1]
+        if na == 1:
+            for j in range(nb):
+                faces.append((a0, b0 + j, b0 + (j + 1) % nb))
+        elif nb == 1:
+            for j in range(na):
+                faces.append((b0, a0 + (j + 1) % na, a0 + j))
+        else:
+            for j in range(na):
+                jn = (j + 1) % na
+                faces.append((a0 + j, b0 + j, b0 + jn, a0 + jn))
+    g.mesh(verts, faces, "Lib_PaintBlue")
+
+
 def _round_box(g, x, lod):
     bev = lod_pick(lod, 0.003, 0.0)
     bs = 1 if lod == 0 else 0
     _feet(g, x, lod)
     g.box((x, 0.52, ZC), (0.48, 0.76, 0.38), "Lib_PaintBlue", bevel=bev, segs=bs)
-    g.cylinder((x, 0.90, ZC), 0.18, 0.44, "Lib_PaintBlue", lod_pick(lod, 20, 10), axis="X")
+    _dome(g, x, lod)
     g.box((x, 0.36, 0.185), (0.44, 0.30, 0.014), "Lib_PaintBlue", bevel=bev, segs=bs)
     g.cylinder((x - 0.232, 0.52, 0.198), 0.009, 0.50, "Lib_Steel", lod_pick(lod, 8, 6), axis="Y")
     _window(g, x - 0.06, 0.64, 0.206, 0.26, 0.30, lod)
@@ -156,7 +211,7 @@ def create():
     a = Asset(
         "NewspaperRack",
         "StreetFurniture",
-        "Three honor boxes, 0.50 m wide, lids from 1.05 m to 1.14 m, chained to a pole. No masthead.",
+        "Three honor boxes, 0.50 m wide, lids from 1.05 m to 1.14 m, chained to a pole. Dome ends are round. Cable is no-collide. No masthead.",
     )
     a.climb_note = "Not a cling surface."
     a.vault_note = "Too short to vault."

@@ -129,6 +129,10 @@ PASSES = {
         ("newspaper_rack", "NewspaperRack", 200.0, (1.85, 0.0, 0.55), 30.0),
         ("bike_rack", "BikeRack_Wave", 24.0, (-1.70, 0.0, 0.55), 200.0),
     ),
+    18: (
+        ("newspaper_rack", "NewspaperRack", 200.0, (1.85, 0.0, 0.55), 30.0),
+        ("bike_rack", "BikeRack_Hoop3", 0.0, (0.20, 0.0, 1.15), 80.0),
+    ),
 }
 
 # Pass 15 sits the prop on a sidewalk panel. Low camera, aim below center,
@@ -141,7 +145,7 @@ _FRAME15 = {
     "meter_single": (0.46, 14.0, 40.0, 0.36, 0.40, 0.22, 3.60),
     "meter_twin": (0.44, 14.0, 38.0, 0.36, 0.38, 0.22, 3.80),
     "newspaper_rack": (0.62, 16.0, 148.0, 0.36, 0.44, 0.32, 6.80),
-    "bike_rack": (0.62, 14.0, 42.0, 0.36, 0.48, 0.28, 4.40),
+    "bike_rack": (0.58, 12.0, 72.0, 0.40, 0.42, 0.32, 4.60),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -210,6 +214,7 @@ def _load(names):
         "ParkingMeter_Single": "sk_meter_single",
         "ParkingMeter_Twin": "sk_meter_twin",
         "NewspaperRack": "sk_newspaper_rack",
+        "BikeRack_Hoop3": "sk_bike_wave",
         "BikeRack_Wave": "sk_bike_wave",
     }
     for name in names:

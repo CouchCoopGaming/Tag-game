@@ -97,7 +97,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "StreetFurniture"
-  summary: "Three honor boxes, 0.50 m wide, lids from 1.05 m to 1.14 m, chained to a pole. No masthead."
+  summary: "Three honor boxes, 0.50 m wide, lids from 1.05 m to 1.14 m, chained to a pole. Dome ends are round. Cable is no-collide. No masthead."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0

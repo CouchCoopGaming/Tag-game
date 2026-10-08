@@ -1,4 +1,8 @@
-"""Three inverted-U bike hoops. Each tube is bent, with a flange under each leg."""
+"""Three inverted-U bike hoops. Each tube is bent, with a flange under each leg.
+
+BikeRack_Wave was renamed to BikeRack_Hoop3. The old prefab is a copy of this
+mesh so the previous guid still resolves.
+"""
 
 import math
 import os
@@ -9,10 +13,12 @@ from _common import Asset, register, lod_pick
 from sk_parts import polyline
 
 HOOPS = (-0.90, 0.0, 0.90)
-# Semicircle of this radius. Legs sit at z = ±radius so the bend is a true U.
-RADIUS = 0.36
+# 0.60 m between leg centres. The bend is a semicircle of that half-width.
+RADIUS = 0.30
 TUBE = 0.024
-YB = 0.48
+# Tube centerline. The top of the 48 mm tube sits at 0.86 m.
+CROWN = 0.86 - TUBE
+YB = CROWN - RADIUS
 
 
 def _arc_points(x, steps):
@@ -24,8 +30,8 @@ def _arc_points(x, steps):
 
 
 def _hoop(g, x, lod):
-    seg = lod_pick(lod, 10, 6)
-    steps = lod_pick(lod, 12, 6)
+    seg = lod_pick(lod, 12, 8)
+    steps = lod_pick(lod, 24, 10)
     for z in (-RADIUS, RADIUS):
         g.pipe((x, 0.016, z), (x, YB + 0.02, z), TUBE, "Lib_Steel", seg)
     polyline(g, _arc_points(x, steps), TUBE, "Lib_Steel", seg)
@@ -41,24 +47,25 @@ def _hoop(g, x, lod):
 @register
 def create():
     a = Asset(
-        "BikeRack_Wave",
+        "BikeRack_Hoop3",
         "StreetFurniture",
-        "Three inverted-U hoops, 0.84 m to the crown, 48 mm tube, flange feet. No shared rail.",
+        "Three inverted-U hoops. 0.60 m between leg centres, 0.86 m to the top of the tube, 24-step crown. Flange feet, no shared rail.",
     )
     a.climb_note = "Tube is too thin to cling."
-    a.vault_note = "Crown is 0.84 m and round. Under the vault band."
+    a.vault_note = "Crown is 0.86 m and round. Under the vault band."
     for lod in (0, 1):
         g = a.begin(lod)
         for x in HOOPS:
             _hoop(g, x, lod)
         a.end()
-    steps = 12
+    steps = 24
     for i, x in enumerate(HOOPS):
         for j, z in enumerate((-RADIUS, RADIUS)):
-            a.capsule("Col_Leg_%d_%d" % (i, j), (x, 0.26, z), 0.016, 0.42, direction=1)
+            a.capsule("Col_Leg_%d_%d" % (i, j), (x, 0.28, z), 0.016, 0.50, direction=1)
             a.box("Col_Foot_%d_%d" % (i, j), (x, 0.010, z), (0.07, 0.016, 0.07))
         for k, pt in enumerate(_arc_points(x, steps)):
-            if k == 0 or k == steps:
+            # Endpoints sit inside the leg tubes. The next step still overlaps them.
+            if k < 2 or k > steps - 2:
                 continue
-            a.box("Col_Arc_%d_%d" % (i, k), pt, (0.018, 0.018, 0.018))
+            a.box("Col_Arc_%d_%d" % (i, k), pt, (0.016, 0.016, 0.016))
     return a
