@@ -2,15 +2,28 @@ costume-fit sets=12 frames=4128 worldMax=0.38 fails=0
 cloth-band min=0.60 max=0.60 under=0 over=0
 accessory-max=12.41 piece=Lab_Brim
 worst sprint t=0.200 cm=0.38
-worn Reed-1-hood tris=10858
-worn Reed-2-cap tris=11094
-worn Reed-3-helmet tris=10938
-worn Bram-1-helmet tris=10938
-worn Bram-2-cap tris=11094
-worn Bram-3-hood tris=10858
-worn Pip-1-cap tris=7760
-worn Pip-2-hair tris=7464
-worn Pip-3-helmet tris=7604
-worn Sol-1-collar-cap tris=11270
-worn Sol-2-hood tris=10858
-worn Sol-3-helmet-pack tris=11082
+worn Reed_1_Hood tris=10858
+worn Reed_2_Cap tris=11094
+worn Reed_3_Helmet tris=10938
+worn Bram_1_Helmet tris=10938
+worn Bram_2_Cap tris=11094
+worn Bram_3_Hood tris=10858
+worn Pip_1_Cap tris=7760
+worn Pip_2_Hair tris=7464
+worn Pip_3_Helmet tris=7604
+worn Sol_1_Collar_Cap tris=11270
+worn Sol_2_Hood tris=10858
+worn Sol_3_Helmet_Pack tris=11082
+# lod LOD0/LOD1/LOD2 worn triangles
+lod Reed_1_Hood 10858/5630/2592
+lod Reed_2_Cap 11094/5752/2651
+lod Reed_3_Helmet 10938/5672/2614
+lod Bram_1_Helmet 10938/5672/2614
+lod Bram_2_Cap 11094/5752/2651
+lod Bram_3_Hood 10858/5630/2592
+lod Pip_1_Cap 7760/4022/1856
+lod Pip_2_Hair 7464/3870/1784
+lod Pip_3_Helmet 7604/3942/1819
+lod Sol_1_Collar_Cap 11270/5844/2693
+lod Sol_2_Hood 10858/5630/2592
+lod Sol_3_Helmet_Pack 11082/5746/2648

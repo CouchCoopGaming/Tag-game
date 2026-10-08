@@ -52,7 +52,16 @@ Each piece is its own mesh, weighted to one existing Hier bone. The kit is a hoo
 
 Player colour is one RGB node named `PlayerColor` on the lab material. Joggers, shoes, and the pack stay fixed colours so the torso and the head stay the seat colour. The surface is a procedural noise bump. There are no image textures, logos, or brands.
 
-LOD0 triangle counts after the fit cut: Reed 10858–11094, Bram the same meshes, Pip 7464–7760, Sol 10858–11270.
+Each loadout id is the license name in `Art/CharacterLab/LICENSES.md`. Bram's three ids are Reed's meshes with a blue `PlayerColor`.
+
+LOD0 is the fitted mesh. LOD1 and LOD2 are collapse copies of those same pieces, parented to the same bones, and left out of the render loadout. Worn triangles, LOD0/LOD1/LOD2:
+
+- Reed_1_Hood 10858/5630/2592. Reed_2_Cap 11094/5752/2651. Reed_3_Helmet 10938/5672/2614.
+- Bram_1_Helmet, Bram_2_Cap, and Bram_3_Hood match those three Reed totals.
+- Pip_1_Cap 7760/4022/1856. Pip_2_Hair 7464/3870/1784. Pip_3_Helmet 7604/3942/1819.
+- Sol_1_Collar_Cap 11270/5844/2693. Sol_2_Hood 10858/5630/2592. Sol_3_Helmet_Pack 11082/5746/2648.
+
+The costume ceilings are 15000 / 8000 / 4000. Every loadout is under them, and each coarser level has fewer triangles than the one above it.
 
 ## Fit
 
@@ -62,13 +71,22 @@ Cloth sits 0.60 cm off the rendered hull. The band check is min 0.60 cm, max 0.6
 
 ## Stills
 
+Pass 1 keeps the lineup, the variant sheet, and the 30 px readability frame:
+
 - `Docs/Characters/pass1/lineup-front.png`
 - `Docs/Characters/pass1/lineup-three-quarter.png`
 - `Docs/Characters/pass1/lineup-side.png`
 - `Docs/Characters/pass1/readability-30px.png`
 - `Docs/Characters/pass1/variants.png`
 
-The lineup is Reed's hood, Bram's helmet, Pip's cropped cap and pack, and Sol's collar and cap, in seat colours, on a neutral floor with contact shadows. The readability frame is a quarter of 1080p with each figure about 30 px tall.
+Pass 3 is the still quartet, each 1280×720 and under 400 KB:
+
+- `Docs/Characters/pass3/lineup-three-quarter.png` — Reed's hood, Bram's blue helmet, Pip's crop, Sol's collar and cap.
+- `Docs/Characters/pass3/lineup-side.png` — the same four from the side.
+- `Docs/Characters/pass3/joint-close.png` — Reed's right knee, where the jogger shells leave the joint open.
+- `Docs/Characters/pass3/scale-figure.png` — Reed's hood on the Hier body, feet on the ground, beside a 1.80 m staff and a bench.
+
+The readability frame is a quarter of 1080p with each figure about 30 px tall. It does not replace the quartet.
 
 ## Honest flaws
 
@@ -82,4 +100,7 @@ The lineup is Reed's hood, Bram's helmet, Pip's cropped cap and pack, and Sol's 
 - The chest colour is a shell over the Hier plate with the flanks cut back so the arms can pass. It is not a tailored hoodie.
 - Weights are one bone per piece. There is no cloth simulation.
 - The mannequin's hip and thigh rest overlap is untouched.
+- These clothes are fitted to the pre-ball Hier. The clearance candidate, with ball-and-socket hips and ankles, is not in this branch. Nothing here is refitted to that rig until the player lane says it is stable. The check on this tip still reports `rig-not-clearance` and `rig-proof-missing` for that reason.
+- LOD1 and LOD2 are in the blend and on the `lod` lines of `Docs/Characters/pass1/fit.txt`. The models check reads only the single `worn` triangle count, so it still prints `lod1-missing` and `lod2-missing`.
+- The Hier body in the scale still measures 1.86 m from the sole to the top of the hood. The staff next to it is 1.80 m. The mannequin scale is unchanged.
 - This lab lives under `Art/CharacterLab/` and `Docs/Characters/`. It is not in the player build.

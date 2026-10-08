@@ -17,7 +17,7 @@ LOADOUTS = os.path.join(BLEND_DIR, "loadouts.json")
 RAW = "/tmp/charlab/pass1"
 DOCS = os.path.join(ROOT, "Docs", "Characters", "pass1")
 
-LINEUP = ("Reed-1-hood", "Bram-1-helmet", "Pip-1-cap", "Sol-1-collar-cap")
+LINEUP = ("Reed_1_Hood", "Bram_1_Helmet", "Pip_1_Cap", "Sol_1_Collar_Cap")
 
 
 def log(msg):
@@ -412,7 +412,7 @@ def main():
     mins, _maxs = world_bounds(shown_meshes(clones[:1]))
     z_lift = 0.006 - mins.z
     log("Z-LIFT %.4f" % z_lift)
-    head = bpy.data.objects.get("Mesh_Head_Reed-1-hood")
+    head = bpy.data.objects.get("Mesh_Head_Reed_1_Hood")
     if head is not None:
         log("HEAD-Z %.3f" % head.matrix_world.translation.z)
     make_floor()

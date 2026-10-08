@@ -1029,6 +1029,12 @@ def tri_of(piece):
     return len(piece.obj.data.loop_triangles)
 
 
+def id_for(who, index, label):
+    """Underscore id so a license row can name the loadout exactly."""
+    parts = [who, str(index)] + [part.capitalize() for part in label.split("-")]
+    return "_".join(parts)
+
+
 def loadout_map():
     long_core = [
         "Lab_HoodieChest", "Lab_Seam", "Lab_Pocket",
@@ -1059,7 +1065,7 @@ def loadout_map():
     sets = []
     for who, index, label, names in specs:
         sets.append({
-            "id": "%s-%d-%s" % (who, index, label),
+            "id": id_for(who, index, label),
             "character": who,
             "variant": index,
             "label": label,

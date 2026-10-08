@@ -1,7 +1,7 @@
 {
   "sets": [
     {
-      "id": "Reed-1-hood",
+      "id": "Reed_1_Hood",
       "character": "Reed",
       "variant": 1,
       "label": "hood",
@@ -26,10 +26,27 @@
         "Lab_ShoeR",
         "Lab_Hood",
         "Lab_HoodRoll"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "mesh": "LOD0",
+          "tris": 10858
+        },
+        {
+          "lod": 1,
+          "mesh": "LOD1",
+          "tris": 5630
+        },
+        {
+          "lod": 2,
+          "mesh": "LOD2",
+          "tris": 2592
+        }
       ]
     },
     {
-      "id": "Reed-2-cap",
+      "id": "Reed_2_Cap",
       "character": "Reed",
       "variant": 2,
       "label": "cap",
@@ -55,10 +72,27 @@
         "Lab_Cap",
         "Lab_Brim",
         "Lab_Pack"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "mesh": "LOD0",
+          "tris": 11094
+        },
+        {
+          "lod": 1,
+          "mesh": "LOD1",
+          "tris": 5752
+        },
+        {
+          "lod": 2,
+          "mesh": "LOD2",
+          "tris": 2651
+        }
       ]
     },
     {
-      "id": "Reed-3-helmet",
+      "id": "Reed_3_Helmet",
       "character": "Reed",
       "variant": 3,
       "label": "helmet",
@@ -83,10 +117,27 @@
         "Lab_ShoeR",
         "Lab_Helmet",
         "Lab_Visor"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "mesh": "LOD0",
+          "tris": 10938
+        },
+        {
+          "lod": 1,
+          "mesh": "LOD1",
+          "tris": 5672
+        },
+        {
+          "lod": 2,
+          "mesh": "LOD2",
+          "tris": 2614
+        }
       ]
     },
     {
-      "id": "Bram-1-helmet",
+      "id": "Bram_1_Helmet",
       "character": "Bram",
       "variant": 1,
       "label": "helmet",
@@ -111,10 +162,27 @@
         "Lab_ShoeR",
         "Lab_Helmet",
         "Lab_Visor"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "mesh": "LOD0",
+          "tris": 10938
+        },
+        {
+          "lod": 1,
+          "mesh": "LOD1",
+          "tris": 5672
+        },
+        {
+          "lod": 2,
+          "mesh": "LOD2",
+          "tris": 2614
+        }
       ]
     },
     {
-      "id": "Bram-2-cap",
+      "id": "Bram_2_Cap",
       "character": "Bram",
       "variant": 2,
       "label": "cap",
@@ -140,10 +208,27 @@
         "Lab_Cap",
         "Lab_Brim",
         "Lab_Pack"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "mesh": "LOD0",
+          "tris": 11094
+        },
+        {
+          "lod": 1,
+          "mesh": "LOD1",
+          "tris": 5752
+        },
+        {
+          "lod": 2,
+          "mesh": "LOD2",
+          "tris": 2651
+        }
       ]
     },
     {
-      "id": "Bram-3-hood",
+      "id": "Bram_3_Hood",
       "character": "Bram",
       "variant": 3,
       "label": "hood",
@@ -168,10 +253,27 @@
         "Lab_ShoeR",
         "Lab_Hood",
         "Lab_HoodRoll"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "mesh": "LOD0",
+          "tris": 10858
+        },
+        {
+          "lod": 1,
+          "mesh": "LOD1",
+          "tris": 5630
+        },
+        {
+          "lod": 2,
+          "mesh": "LOD2",
+          "tris": 2592
+        }
       ]
     },
     {
-      "id": "Pip-1-cap",
+      "id": "Pip_1_Cap",
       "character": "Pip",
       "variant": 1,
       "label": "cap",
@@ -193,10 +295,27 @@
         "Lab_Cap",
         "Lab_Brim",
         "Lab_Pack"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "mesh": "LOD0",
+          "tris": 7760
+        },
+        {
+          "lod": 1,
+          "mesh": "LOD1",
+          "tris": 4022
+        },
+        {
+          "lod": 2,
+          "mesh": "LOD2",
+          "tris": 1856
+        }
       ]
     },
     {
-      "id": "Pip-2-hair",
+      "id": "Pip_2_Hair",
       "character": "Pip",
       "variant": 2,
       "label": "hair",
@@ -216,10 +335,27 @@
         "Lab_ShoeL",
         "Lab_ShoeR",
         "Lab_Hair"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "mesh": "LOD0",
+          "tris": 7464
+        },
+        {
+          "lod": 1,
+          "mesh": "LOD1",
+          "tris": 3870
+        },
+        {
+          "lod": 2,
+          "mesh": "LOD2",
+          "tris": 1784
+        }
       ]
     },
     {
-      "id": "Pip-3-helmet",
+      "id": "Pip_3_Helmet",
       "character": "Pip",
       "variant": 3,
       "label": "helmet",
@@ -240,10 +376,27 @@
         "Lab_ShoeR",
         "Lab_Helmet",
         "Lab_Visor"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "mesh": "LOD0",
+          "tris": 7604
+        },
+        {
+          "lod": 1,
+          "mesh": "LOD1",
+          "tris": 3942
+        },
+        {
+          "lod": 2,
+          "mesh": "LOD2",
+          "tris": 1819
+        }
       ]
     },
     {
-      "id": "Sol-1-collar-cap",
+      "id": "Sol_1_Collar_Cap",
       "character": "Sol",
       "variant": 1,
       "label": "collar-cap",
@@ -269,10 +422,27 @@
         "Lab_Collar",
         "Lab_Cap",
         "Lab_Brim"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "mesh": "LOD0",
+          "tris": 11270
+        },
+        {
+          "lod": 1,
+          "mesh": "LOD1",
+          "tris": 5844
+        },
+        {
+          "lod": 2,
+          "mesh": "LOD2",
+          "tris": 2693
+        }
       ]
     },
     {
-      "id": "Sol-2-hood",
+      "id": "Sol_2_Hood",
       "character": "Sol",
       "variant": 2,
       "label": "hood",
@@ -297,10 +467,27 @@
         "Lab_ShoeR",
         "Lab_Hood",
         "Lab_HoodRoll"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "mesh": "LOD0",
+          "tris": 10858
+        },
+        {
+          "lod": 1,
+          "mesh": "LOD1",
+          "tris": 5630
+        },
+        {
+          "lod": 2,
+          "mesh": "LOD2",
+          "tris": 2592
+        }
       ]
     },
     {
-      "id": "Sol-3-helmet-pack",
+      "id": "Sol_3_Helmet_Pack",
       "character": "Sol",
       "variant": 3,
       "label": "helmet-pack",
@@ -326,6 +513,23 @@
         "Lab_Helmet",
         "Lab_Visor",
         "Lab_Pack"
+      ],
+      "lods": [
+        {
+          "lod": 0,
+          "mesh": "LOD0",
+          "tris": 11082
+        },
+        {
+          "lod": 1,
+          "mesh": "LOD1",
+          "tris": 5746
+        },
+        {
+          "lod": 2,
+          "mesh": "LOD2",
+          "tris": 2648
+        }
       ]
     }
   ],
@@ -358,18 +562,72 @@
       "Lab_CordR": 264
     },
     "worn": {
-      "Reed-1-hood": 10858,
-      "Reed-2-cap": 11094,
-      "Reed-3-helmet": 10938,
-      "Bram-1-helmet": 10938,
-      "Bram-2-cap": 11094,
-      "Bram-3-hood": 10858,
-      "Pip-1-cap": 7760,
-      "Pip-2-hair": 7464,
-      "Pip-3-helmet": 7604,
-      "Sol-1-collar-cap": 11270,
-      "Sol-2-hood": 10858,
-      "Sol-3-helmet-pack": 11082
+      "Reed_1_Hood": 10858,
+      "Reed_2_Cap": 11094,
+      "Reed_3_Helmet": 10938,
+      "Bram_1_Helmet": 10938,
+      "Bram_2_Cap": 11094,
+      "Bram_3_Hood": 10858,
+      "Pip_1_Cap": 7760,
+      "Pip_2_Hair": 7464,
+      "Pip_3_Helmet": 7604,
+      "Sol_1_Collar_Cap": 11270,
+      "Sol_2_Hood": 10858,
+      "Sol_3_Helmet_Pack": 11082
+    },
+    "lod1": {
+      "Lab_Brim": 104,
+      "Lab_Cap": 410,
+      "Lab_Collar": 166,
+      "Lab_CordL": 136,
+      "Lab_CordR": 136,
+      "Lab_Hair": 436,
+      "Lab_Helmet": 459,
+      "Lab_Hood": 350,
+      "Lab_HoodRoll": 116,
+      "Lab_HoodieChest": 564,
+      "Lab_HoodieSpine": 6,
+      "Lab_JogLL": 145,
+      "Lab_JogLR": 594,
+      "Lab_JogUL": 465,
+      "Lab_JogUR": 594,
+      "Lab_Pack": 74,
+      "Lab_Pocket": 173,
+      "Lab_Seam": 248,
+      "Lab_ShoeL": 290,
+      "Lab_ShoeR": 295,
+      "Lab_SleeveLL": 451,
+      "Lab_SleeveLR": 540,
+      "Lab_SleeveUL": 402,
+      "Lab_SleeveUR": 403,
+      "Lab_Visor": 49
+    },
+    "lod2": {
+      "Lab_Brim": 48,
+      "Lab_Cap": 190,
+      "Lab_Collar": 76,
+      "Lab_CordL": 62,
+      "Lab_CordR": 62,
+      "Lab_Hair": 200,
+      "Lab_Helmet": 212,
+      "Lab_Hood": 161,
+      "Lab_HoodRoll": 52,
+      "Lab_HoodieChest": 260,
+      "Lab_HoodieSpine": 2,
+      "Lab_JogLL": 66,
+      "Lab_JogLR": 274,
+      "Lab_JogUL": 215,
+      "Lab_JogUR": 274,
+      "Lab_Pack": 34,
+      "Lab_Pocket": 80,
+      "Lab_Seam": 114,
+      "Lab_ShoeL": 133,
+      "Lab_ShoeR": 136,
+      "Lab_SleeveLL": 207,
+      "Lab_SleeveLR": 248,
+      "Lab_SleeveUL": 186,
+      "Lab_SleeveUR": 186,
+      "Lab_Visor": 23
     }
   },
   "colors": {
