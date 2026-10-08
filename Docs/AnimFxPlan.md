@@ -63,6 +63,14 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - Speed lines, wall-scrape sparks, the tag hit burst, the It handoff flash, and the pad and zip trails stay on `Pass5Host` and `Pass5Burst`. This pass renders them on the tinted mannequin.
 - Stills are in `Docs/AnimStills/pass7/` (`landing-tiers.png`, `roll-swirl.png`, `dash-ghosts.png`, `roll-strip.png`, `speed-lines.png`, `wall-scrape.png`, `tag-burst.png`, `handoff-flash.png`).
 
+## Pass 8 (this branch)
+
+- The dash still is a three-quarter side view. Four mesh ghosts trail behind the runner along the path and overlap the body. Alphas are 0.60, 0.45, 0.30, 0.15. Each one is the player tint with a fresnel rim, not an opaque white shell.
+- The roll stills are a medium side view. The strip is five frames: hand to the ground, tuck, shoulder contact with the legs in, coming up, then a run. The swirl frame is the shoulder contact. The shape follows the grade-B roll strips on clips 01 and 02. Time stays 0.52 s. The 65% gate stays.
+- The tag still is a letter-free comic burst at the fist: jagged spikes, a black outline, halftone dots, a white inner flash, and speed spikes. POP, POW, BAM, and WHAM stay on the words.
+- The ground is a grass plane plus a concrete pad, both noised so they read as texture. The key is a warm sun under a Hosek sky.
+- Stills are in `Docs/AnimStills/pass8/` (`dash-ghosts.png`, `roll-swirl.png`, `roll-strip.png`, `tag-burst.png`). Coyote, speeds, the 0.52 s roll, and the 65% gate stay.
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue

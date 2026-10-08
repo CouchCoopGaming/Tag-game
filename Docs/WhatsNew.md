@@ -326,3 +326,11 @@ A dash now leaves copies of your body, and the fast landing rolls over the shoul
 - The roll tucks the chin and bends the lead arm into a hoop. You go over that shoulder, across the back, and up into the run. It is still the same half second, and it still waits for the same fast fall. Try it: fall about 19 meters while running, and watch the shoulder come down first. The head stays tucked.
 - An exit eases in once. The live pose joins the recovery over the first 22% of the clip. The extra 0.16 s fade is not stacked on that join. A stagger, and the end of tag-back, still fade in on the short blend, because those two do not join. Try it: leave a wall jump, then take a stagger. The wall jump should leave the shove without a second fade.
 - Sprinting draws pale speed lines. A wall run or a climb throws sparks at the chest and the hand, above the foot scuff. A tag throws a gold burst with no letters. Becoming It, or losing it, swells once on the body and rings outward. A pad leaves a cyan trail and a zip leaves a violet one. Try it: sprint, wall-run metal, tag, then take It.
+
+## Dash trail, shoulder roll, and a comic tag
+
+The pictures for the dash, the roll, and the tag now show the move from the side, on grass and concrete, in warm light. Speed, the roll timer, and the camera in play stay as they were.
+
+- The dash ghosts trail behind you. Each one is your color and a step more transparent, with a bright rim, and they overlap your body. They are not white cards standing in a row. Try it: dash, and look back along the path.
+- The roll reaches one hand down, tucks the chin, goes over the shoulder with the legs in, and comes up into the run. The whole body stays in frame. It is still the same half second, and it still waits for the same fast fall. Try it: fall about 19 meters while running.
+- The tag picture is a jagged burst at the hand. Black outline, print dots, a white flash, speed spikes, and no letters. The words still say POP, POW, BAM, and WHAM. Try it: tag the dummy, then compare the hand to the still.
