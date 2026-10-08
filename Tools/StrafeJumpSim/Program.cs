@@ -1030,7 +1030,7 @@ static class Program
                 "HandoffFeel.RollWeight",
                 "HandoffFeel.Rolls",
                 "Handoff2Feel.ClimbOpen",
-                "Handoff2Feel.VaultShown",
+                "MantlePose.Cleared(mantleU",
                 "Handoff2Feel.VaultOutOpen",
                 "Handoff2Feel.LatchOpen",
                 "Handoff2Feel.ReleaseShown",
