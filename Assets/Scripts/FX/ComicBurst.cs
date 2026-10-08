@@ -28,6 +28,11 @@ namespace Tag.FX
         Material[] _wordMat;
         float[] _age;
         float[] _tilt;
+        float[] _skew;
+        float[] _arc;
+        float[] _wide;
+        float[] _tall;
+        float[] _size;
         Texture2D _bursts;
         Texture2D _words;
 
@@ -83,6 +88,11 @@ namespace Tag.FX
             _wordMat = new Material[Slots];
             _age = new float[Slots];
             _tilt = new float[Slots];
+            _skew = new float[Slots];
+            _arc = new float[Slots];
+            _wide = new float[Slots];
+            _tall = new float[Slots];
+            _size = new float[Slots];
             float clamp = RestSize * WordPeak;
             for (int i = 0; i < Slots; i++)
             {
@@ -115,10 +125,10 @@ namespace Tag.FX
                     _root[i].SetActive(false);
                     continue;
                 }
-                float burst = ComicWords.Scale(_age[i]) * RestSize;
-                float word = ComicWords.WordScale(_age[i]) * RestSize;
-                _burst[i].localScale = new Vector3(burst, burst, 1f);
-                _word[i].localScale = new Vector3(word, word, 1f);
+                float burst = ComicWords.Scale(_age[i]) * RestSize * _size[i];
+                float word = ComicWords.WordScale(_age[i]) * RestSize * _size[i];
+                _burst[i].localScale = new Vector3(burst * _wide[i], burst * _tall[i], 1f);
+                _word[i].localScale = new Vector3(word * _wide[i], word * _tall[i], 1f);
                 _word[i].gameObject.SetActive(word > 0.001f);
                 float a = ComicWords.Alpha(_age[i]);
                 Paint(_burstMat[i], a);
@@ -126,6 +136,10 @@ namespace Tag.FX
                 float tilt = _tilt[i] + ComicWords.Wobble(_age[i]);
                 _burstMat[i].SetFloat("_Tilt", tilt);
                 _wordMat[i].SetFloat("_Tilt", tilt);
+                _burstMat[i].SetFloat("_Skew", _skew[i]);
+                _wordMat[i].SetFloat("_Skew", _skew[i]);
+                _burstMat[i].SetFloat("_Arc", _arc[i]);
+                _wordMat[i].SetFloat("_Arc", _arc[i]);
             }
         }
 
@@ -133,8 +147,14 @@ namespace Tag.FX
         {
             int slot = Free();
             if (slot < 0) slot = Oldest();
-            _rng = _rng * 1664525u + 1013904223u;
-            _tilt[slot] = ComicWords.TiltRadians(_rng >> 8);
+            float tiltDeg, skew, size, arc, wide, tall;
+            ComicWords.StyleOf(atlas, out tiltDeg, out skew, out size, out arc, out wide, out tall);
+            _tilt[slot] = tiltDeg * 0.017453292f;
+            _skew[slot] = skew;
+            _arc[slot] = arc;
+            _size[slot] = size;
+            _wide[slot] = wide;
+            _tall[slot] = tall;
             _age[slot] = 0f;
             Vector3 contact = HitConfirmTell.Contact(origin, forward, reach);
             contact.y += 0.55f;
@@ -147,6 +167,10 @@ namespace Tag.FX
             Paint(_wordMat[slot], 1f);
             _burstMat[slot].SetFloat("_Tilt", _tilt[slot]);
             _wordMat[slot].SetFloat("_Tilt", _tilt[slot]);
+            _burstMat[slot].SetFloat("_Skew", _skew[slot]);
+            _wordMat[slot].SetFloat("_Skew", _skew[slot]);
+            _burstMat[slot].SetFloat("_Arc", _arc[slot]);
+            _wordMat[slot].SetFloat("_Arc", _arc[slot]);
             ApplyUv(_burstMat[slot], ev, true);
             ApplyUv(_wordMat[slot], atlas, false);
         }

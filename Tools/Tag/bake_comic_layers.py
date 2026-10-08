@@ -22,20 +22,83 @@ BURST_ROWS = 2
 STAR_FRAC = 0.74
 WORD_TIMES = 1.17
 
-# Atlas order. The first four stay POP POW BAM WHAM so the old four-cell blit still matches.
+# Atlas order matches ComicWords.AtlasWord. Contact stays the bold Bangers look.
+# Whiff is thinner and cooler, land is heavy and dust-coloured, crash is jagged.
 WORDS = (
-    ("POP!", 0), ("POW!", 0), ("BAM!", 0), ("WHAM!", 1),
-    ("SMACK!", 0), ("WHACK!", 0), ("THWACK!", 0),
-    ("BONK!", 1), ("KAPOW!", 1),
-    ("TAG!", 2), ("GOTCHA!", 2), ("MINE!", 2),
-    ("WHIFF!", 3), ("SWISH!", 3), ("WHOOSH!", 3),
-    ("THUD!", 4), ("WHUMP!", 4), ("THUMP!", 4),
-    ("BOING!", 5), ("SPROING!", 5), ("POING!", 5),
-    ("ZING!", 6), ("ZIP!", 6), ("WHIZZ!", 6),
-    ("THWIP!", 7), ("FWIP!", 7), ("ZWIP!", 7),
-    ("KRAK!", 8), ("FWOOSH!", 8), ("THOK!", 8),
-    ("OOF!", 9), ("UGH!", 9), ("OUCH!", 9),
+    ("POP!", "contact", (255, 220, 40)),
+    ("POW!", "contact", (255, 140, 28)),
+    ("BAM!", "contact", (240, 36, 48)),
+    ("WHAM!", "contact", (168, 52, 242)),
+    ("SMACK!", "contact", (255, 186, 48)),
+    ("WHACK!", "contact", (255, 96, 32)),
+    ("THWACK!", "crash", (255, 88, 36)),
+    ("BONK!", "contact", (214, 64, 220)),
+    ("KAPOW!", "contact", (255, 244, 210)),
+    ("TAG!", "contact", (242, 64, 122)),
+    ("GOTCHA!", "contact", (255, 120, 150)),
+    ("MINE!", "contact", (255, 210, 170)),
+    ("WHIFF!", "whiff", (170, 214, 255)),
+    ("SWISH!", "whiff", (120, 186, 255)),
+    ("WHOOSH!", "whiff", (196, 228, 255)),
+    ("THUD!", "land", (196, 140, 78)),
+    ("WHUMP!", "land", (168, 108, 58)),
+    ("THUMP!", "land", (150, 96, 52)),
+    ("BOING!", "whiff", (255, 214, 80)),
+    ("SPROING!", "whiff", (255, 186, 64)),
+    ("POING!", "whiff", (255, 230, 120)),
+    ("ZING!", "whiff", (64, 210, 220)),
+    ("ZIP!", "whiff", (36, 186, 210)),
+    ("WHIZZ!", "whiff", (120, 230, 236)),
+    ("THWIP!", "whiff", (64, 196, 168)),
+    ("FWIP!", "whiff", (36, 160, 140)),
+    ("ZWIP!", "whiff", (150, 230, 210)),
+    ("KRAK!", "crash", (230, 56, 28)),
+    ("SLAM!", "crash", (255, 112, 40)),
+    ("SPLAT!", "crash", (196, 42, 36)),
+    ("OOF!", "contact", (186, 196, 72)),
+    ("UGH!", "contact", (150, 168, 64)),
+    ("OUCH!", "contact", (210, 186, 80)),
+    ("BOOM!", "land", (120, 78, 46)),
+    ("KRUNCH!", "land", (176, 124, 68)),
+    ("MISS!", "whiff", (110, 160, 230)),
 )
+
+
+def streaks(glyph):
+    """A few cool motion lines behind a whiff, so it is not a solid stamp."""
+    pad = 18
+    im = Image.new("RGBA", (glyph.width + pad * 2, glyph.height + pad), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(im)
+    y0 = glyph.height // 2
+    for i, length in enumerate((46, 34, 28)):
+        y = y0 - 16 + i * 14
+        x1 = 6 + i * 8
+        draw.line((x1, y, x1 + length, y - 3), fill=(190, 220, 255, 180), width=3)
+    im.alpha_composite(glyph, (pad, pad // 2))
+    return im
+
+
+def squash(glyph, sy):
+    h = max(1, int(glyph.height * sy))
+    flat = glyph.resize((glyph.width, h), Image.Resampling.LANCZOS)
+    im = Image.new("RGBA", (glyph.width, glyph.height), (0, 0, 0, 0))
+    im.alpha_composite(flat, (0, glyph.height - h))
+    return im
+
+
+def crack(glyph):
+    """A hard offset copy, so a crash reads as a split plate."""
+    im = Image.new("RGBA", (glyph.width + 8, glyph.height + 6), (0, 0, 0, 0))
+    shard = glyph.copy()
+    pix = shard.load()
+    for y in range(0, shard.height, 7):
+        for x in range(shard.width):
+            r, g, b, a = pix[x, y]
+            if a:
+                pix[x, y] = (r, g, b, 0)
+    im.alpha_composite(shard, (5, 0))
+    im.alpha_composite(glyph, (0, 4))
+    return im
 
 
 def event_fill(ev):
@@ -58,8 +121,18 @@ def measure_star(radius):
     return im, box
 
 
-def fit_word(word, fill, target_w):
-    glyph = sheet.render_after(word, target_w, fill)
+def fit_word(word, fill, target_w, kind):
+    if kind == "whiff":
+        glyph = sheet.render_after(word, target_w * 0.92, fill, stroke_frac=0.045, track=0.70, tilt=0.0)
+        glyph = streaks(glyph)
+    elif kind == "land":
+        glyph = sheet.render_after(word, target_w * 1.05, fill, stroke_frac=0.13, track=0.92, tilt=0.0)
+        glyph = squash(glyph, 0.78)
+    elif kind == "crash":
+        glyph = sheet.render_after(word, target_w, fill, stroke_frac=0.10, track=0.76, tilt=0.0)
+        glyph = crack(glyph)
+    else:
+        glyph = sheet.render_after(word, target_w, fill, tilt=0.0)
     span = sheet.fill_span(glyph, fill)
     if span is None:
         return glyph
@@ -206,13 +279,12 @@ def main():
         bursts.append(sheet.burst(CELL, CELL, event_color(ev), radius))
 
     words = []
-    for text, ev in WORDS:
-        words.append(fit_word(text, event_fill(ev), target))
+    for text, kind, fill in WORDS:
+        words.append(fit_word(text, fill, target, kind))
 
-    # Overflow: word fill wider than the star, and inside the cell.
+    # Contact still has to clear the star. The other kinds are shaped on purpose.
     failed = 0
-    for (text, ev), word_im in zip(WORDS, words):
-        fill = event_fill(ev)
+    for (text, kind, fill), word_im in zip(WORDS, words):
         ink = sheet.fill_span(word_im, fill)
         if ink is None or star_box is None:
             print("MISSING", text)
@@ -221,6 +293,8 @@ def main():
         word_w = ink[1] - ink[0] + 1
         past = ink[0] < star_box[0] - 1 and ink[1] > star_box[1] + 1
         inside = ink[0] > 2 and ink[1] < CELL - 3 and ink[2] > 2 and ink[3] < CELL - 3
+        if kind != "contact":
+            past = True
         if not past or not inside:
             failed += 1
             print("CELL", text, "word", word_w, "star", outer_w, "past", past, "inside", inside, ink)
@@ -246,7 +320,7 @@ def main():
         "Comic burst layer, one cell per event. Built by Tools/Tag/bake_comic_layers.py.",
         10, BURST_COLS, BURST_ROWS, burst_png)
 
-    out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass13")
+    out_dir = "/tmp/comic-bake-preview"
     label = ImageFont.truetype(sheet.FONT_PATH, 22)
     small = ImageFont.truetype(sheet.FONT_PATH, 16)
 
@@ -261,7 +335,8 @@ def main():
     board = Image.new("RGB", (board_w, board_h), (22, 20, 18))
     draw = ImageDraw.Draw(board)
     draw.text((12, 8), "In game    word in front    tracking tightened", font=label, fill=(255, 220, 120))
-    for i, ((text, ev), word_im) in enumerate(zip(WORDS, words)):
+    for i, ((text, kind, _fill), word_im) in enumerate(zip(WORDS, words)):
+        ev = min(i % 10, 9)
         pair = compose_pair(word_im, bursts[ev])
         col = i % cols
         row = i // cols
@@ -310,7 +385,7 @@ def main():
     fd.text((8, 4), "Split-screen 4-up    word inside the pane", font=small, fill=(255, 220, 120))
     edge_fail = 0
     for i, (idx, text, name) in enumerate(quads):
-        ev = WORDS[idx][1]
+        ev = idx % 10
         pair = compose_pair(words[idx], bursts[ev])
         inner = pane - pad * 2
         thumb = pair.resize((inner, inner), Image.Resampling.LANCZOS)
@@ -361,7 +436,7 @@ def main():
         cd.rectangle((x, y, x + pane - 1, y + pane - 1), outline=(255, 210, 80))
     # Top-left pane. Natural center is the top-right corner of that pane.
     idx = 6
-    ev = WORDS[idx][1]
+    ev = idx % 10
     pair = compose_pair(words[idx], bursts[ev])
     shown = pair.resize((150, 150), Image.Resampling.LANCZOS)
     half_w = shown.width * 0.5
@@ -382,8 +457,8 @@ def main():
     for yy in range(28, 28 + pane):
         for xx in range(0, pane):
             r, g, b = px[xx, yy]
-            # THWACK fill is yellow. The pane border is gold and is not the word.
-            if r > 230 and g > 220 and b < 120:
+            # THWACK fill is orange. The pane border is gold and is not the word.
+            if r > 200 and g < 140 and b < 90 and r > g + 40:
                 xs.append(xx)
                 ys.append(yy)
     if xs:

@@ -2431,10 +2431,14 @@ def p11_link(mesh, name, mat):
     return obj
 
 
-def p11_ground(surface, light=False):
+def p11_ground(surface, light=False, asphalt=False):
     p11_clear("P11")
     if surface == "concrete":
-        if light:
+        if asphalt:
+            # Mid-grey asphalt. The pass 14 slab (0.78) matched the dust (0.86).
+            dark = (0.22, 0.22, 0.21, 1)
+            pale = (0.40, 0.39, 0.37, 1)
+        elif light:
             dark = (0.58, 0.58, 0.55, 1)
             pale = (0.78, 0.78, 0.74, 1)
         else:
@@ -3908,12 +3912,491 @@ def render_pass14(arm, cam):
     print("PASS14 stills", OUT)
 
 
+P15_AGE = 0.20
+P15_CELL = (640, 360)
+
+
+def p15_disc():
+    """Opaque core out to 72% of the quad, so the plane scale is the visible diameter."""
+    img = bpy.data.images.get("P15Disc")
+    if img is not None:
+        return img
+    n = 64
+    img = bpy.data.images.new("P15Disc", n, n, alpha=True, float_buffer=True)
+    pix = [0.0] * (n * n * 4)
+    for y in range(n):
+        for x in range(n):
+            dx = (x + 0.5) / n - 0.5
+            dy = (y + 0.5) / n - 0.5
+            r = math.sqrt(dx * dx + dy * dy) / 0.5
+            if r < 0.72:
+                alpha = 1.0
+            elif r < 1.0:
+                alpha = 1.0 - (r - 0.72) / 0.28
+            else:
+                alpha = 0.0
+            i = (y * n + x) * 4
+            pix[i] = pix[i + 1] = pix[i + 2] = 1.0
+            pix[i + 3] = alpha
+    img.pixels.foreach_set(pix)
+    try:
+        img.alpha_mode = "STRAIGHT"
+    except (TypeError, AttributeError):
+        pass
+    img.pack()
+    img.update()
+    return img
+
+
+def p15_puff_mat(name, color, opacity):
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    mat.blend_method = "BLEND"
+    mat.use_backface_culling = False
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "NONE"
+    if hasattr(mat, "show_transparent_back"):
+        mat.show_transparent_back = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    emit = nt.nodes.new("ShaderNodeEmission")
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = p15_disc()
+    trans = nt.nodes.new("ShaderNodeBsdfTransparent")
+    mix = nt.nodes.new("ShaderNodeMixShader")
+    mul = nt.nodes.new("ShaderNodeMath")
+    mul.operation = "MULTIPLY"
+    mul.inputs[1].default_value = max(0.0, min(1.0, opacity))
+    emit.inputs["Color"].default_value = (color[0], color[1], color[2], 1.0)
+    emit.inputs["Strength"].default_value = 1.0
+    nt.links.new(tex.outputs["Alpha"], mul.inputs[0])
+    nt.links.new(mul.outputs["Value"], mix.inputs["Fac"])
+    nt.links.new(trans.outputs["BSDF"], mix.inputs[1])
+    nt.links.new(emit.outputs["Emission"], mix.inputs[2])
+    nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
+    return mat
+
+
+def p15_billboard(loc, diameter, color, opacity, cam_loc):
+    """Unlit disc. diameter is the visible width, matching ParticleSystem startSize."""
+    bpy.ops.mesh.primitive_plane_add(size=1.0, location=loc)
+    obj = bpy.context.active_object
+    obj.name = p11_name("Fx")
+    direction = cam_loc - loc
+    if direction.length < 0.001:
+        direction = Vector((0.0, -1.0, 0.4))
+    obj.rotation_euler = direction.to_track_quat("Z", "Y").to_euler()
+    # Disc alpha is 1.0 out to 72% of the quad, so the quad is the visible diameter.
+    span = max(diameter, 0.02) / 0.72
+    obj.scale = (span, span, 1.0)
+    obj.data.materials.append(p15_puff_mat(p11_name("Mat"), color, opacity))
+    return obj
+
+
+def p15_move(foot, fwd, left, spec, along, side, up, age):
+    """Box birth along Span, then the plume kick for `age` seconds. Gravity 0.25."""
+    back = spec["back"]
+    lift = spec["lift"]
+    aim = -fwd * back + Vector((0.0, 0.0, lift))
+    if aim.length < 1e-4:
+        aim = -fwd * 0.01 + Vector((0.0, 0.0, 0.01))
+    aim = aim.normalized()
+    life = spec["life"] if spec["life"] > 0.05 else 0.05
+    speed = back / life
+    grav = 0.25 * 9.81
+    # Bias the cloud to the outside of the plant foot. A centred puff sits inside
+    # the calf and the chase camera only catches a sliver.
+    pos = foot - fwd * along + left * (side + 0.16) + Vector((0.0, 0.0, 0.05 + up))
+    pos = pos + aim * speed * age + Vector((0.0, 0.0, -0.5 * grav * age * age))
+    if pos.z < 0.04:
+        pos.z = 0.04
+    return pos
+
+
+def p15_plume(foot, fwd, left, spec, cam_loc, age, salt):
+    """One footfall, aged. A puff whose life has ended is not drawn."""
+    if spec["count"] <= 0 or spec["life"] <= age:
+        return 0
+    n = spec["count"]
+    made = 0
+    color = spec["color"]
+    for i in range(n):
+        along = (0.06 + 0.88 * p11_rand(i, salt)) * spec["span"]
+        side = (p11_rand(i, salt + 1) - 0.5) * spec["span"] * 0.36
+        up = (p11_rand(i, salt + 2) - 0.1) * max(0.04, spec["lift"] * 0.8 + 0.04)
+        pos = p15_move(foot, fwd, left, spec, along, side, up, age)
+        tint = 0.92 + 0.10 * p11_rand(i, salt + 3)
+        col = (color[0] * tint, color[1] * tint, color[2] * tint)
+        p15_billboard(pos, spec["size"], col, spec["opacity"], cam_loc)
+        made += 1
+        if spec["core"] > 0.15 and i < max(1, n // 3):
+            grit = tuple(c * 0.62 for c in color)
+            p15_billboard(pos + Vector((0.0, 0.0, 0.03)), spec["size"] * 0.55, grit, spec["opacity"], cam_loc)
+            made += 1
+    return made
+
+
+def p15_ring(foot, spec, impact, cam_loc, age):
+    radius, t = p14_ring_radius(impact)
+    n = 8 + int(t * 8.0)
+    if n > 16:
+        n = 16
+    if n < 6:
+        n = 6
+    size = 0.06 + t * 0.10
+    op = min(0.90, 0.45 + t * 0.35)
+    lift = 0.05 + t * 0.07
+    out_sp = 0.35 + lift
+    up_sp = 0.20 + lift
+    grav = 0.25 * 9.81
+    color = spec["color"]
+    core = t > 0.45
+    for i in range(n):
+        ang = i / n * math.tau
+        radial = Vector((math.cos(ang), math.sin(ang), 0.0))
+        pos = foot + radial * radius + Vector((0.0, 0.0, 0.06))
+        pos = pos + radial * out_sp * age + Vector((0.0, 0.0, up_sp * age - 0.5 * grav * age * age))
+        if pos.z < 0.04:
+            pos.z = 0.04
+        p15_billboard(pos, size, color, op, cam_loc)
+        if core:
+            grit = tuple(c * 0.62 for c in color)
+            p15_billboard(pos + Vector((0.0, 0.0, 0.03)), size * 0.55, grit, op, cam_loc)
+    return radius, n
+
+
+def p15_slide(foot, fwd, left, surface, cam_loc):
+    """Trail puffs every TrailGap while sliding. Newest is a young plume, older ones linger."""
+    gap = 0.045
+    speed = 13.8
+    step = speed * gap
+    made = 0
+    for i in range(8):
+        age = 0.06 + i * gap
+        kick = 2.10 if i == 0 else 1.25
+        spec = p14_at(surface, 13.8, kick=kick)
+        if spec["life"] <= age:
+            continue
+        origin = foot - fwd * (step * i)
+        origin = Vector((origin.x, origin.y, foot.z))
+        made += p15_plume(origin, fwd, left, spec, cam_loc, age, 40 + i * 5)
+    return made
+
+
+def p15_aim_close(cam, foot, yaw_deg, focus_back):
+    """Low side view so the trail's length crosses the frame instead of running at the lens."""
+    fwd, left = p11_heading(yaw_deg)
+    cam.data.type = "PERSP"
+    cam.data.sensor_fit = "VERTICAL"
+    cam.data.sensor_height = 24.0
+    cam.data.lens = 32.0
+    cam.data.clip_start = 0.02
+    cam.data.clip_end = 40.0
+    cam.location = foot - fwd * 0.42 + left * 1.65 + Vector((0.0, 0.0, 0.58))
+    look_at(cam, foot - fwd * focus_back + Vector((0.0, 0.0, 0.10)))
+    bpy.context.view_layer.update()
+    return (cam.location - foot).length
+
+
+def p15_box(foot, fwd, left, reach, side, up):
+    corners = []
+    for along in (0.0, reach):
+        for s in (-side, side):
+            for z in (0.0, up):
+                corners.append(foot - fwd * along + left * s + Vector((0.0, 0.0, z)))
+    return corners
+
+
+def p15_rect(cam, corners, width, height):
+    from bpy_extras.object_utils import world_to_camera_view
+
+    scene = bpy.context.scene
+    xs = []
+    ys = []
+    for point in corners:
+        co = world_to_camera_view(scene, cam, point)
+        if co.z <= 0.02:
+            continue
+        xs.append(co.x * width)
+        ys.append((1.0 - co.y) * height)
+    if len(xs) < 2:
+        return (0, int(height * 0.45), width, height)
+    pad = 8
+    x0 = max(0, int(min(xs)) - pad)
+    x1 = min(width, int(max(xs)) + pad)
+    y0 = max(0, int(min(ys)) - pad)
+    y1 = min(height, int(max(ys)) + pad)
+    if x1 < x0 + 12 or y1 < y0 + 12:
+        return (0, int(height * 0.45), width, height)
+    return (x0, y0, x1, y1)
+
+
+def p15_changed(off, on, rect):
+    x0, y0, x1, y1 = rect
+    a = off.crop((x0, y0, x1, y1)).load()
+    b = on.crop((x0, y0, x1, y1)).load()
+    w = x1 - x0
+    h = y1 - y0
+    changed = 0
+    total = w * h
+    for y in range(h):
+        for x in range(w):
+            r1, g1, b1 = a[x, y]
+            r2, g2, b2 = b[x, y]
+            if max(abs(r1 - r2), abs(g1 - g2), abs(b1 - b2)) >= 18:
+                changed += 1
+    pct = 100.0 * changed / float(total) if total else 0.0
+    return pct, changed, total
+
+
+def p15_pair(stub, width, height, draw):
+    p11_clear("P11Fx")
+    off = p11_grab(stub + "-off.png", width, height)
+    draw()
+    on = p11_grab(stub + "-on.png", width, height)
+    p11_clear("P11Fx")
+    return off, on
+
+
+def render_pass15(arm, cam):
+    """Mid-life dust on mid-grey asphalt. Chase cam plus a close foot crop.
+
+    Pass 14 drew a lit card whose opaque core was 44% of a quad only 42% as
+    tall as the mote, on a 0.78 slab the same colour as the dust, with the
+    plume running at the lens. The three concrete panels measured the same grey.
+    """
+    for obj in bpy.data.objects:
+        if obj.type == "LIGHT" and obj.data.type == "SUN":
+            obj.data.energy = 2.6
+        elif obj.type == "LIGHT" and obj.data.type == "AREA":
+            obj.data.energy = 48
+        if obj.name in ("PropGround", "PropSlab") or "Seam" in obj.name:
+            obj.hide_render = True
+    bg = bpy.context.scene.world.node_tree.nodes["Background"]
+    bg.inputs["Strength"].default_value = 0.62
+    bpy.context.scene.eevee.taa_render_samples = 8
+    tmp = "/tmp/pass15-cells"
+    os.makedirs(tmp, exist_ok=True)
+    os.makedirs(OUT, exist_ok=True)
+    yaw = 32.0
+    fwd, left = p11_heading(yaw)
+    surfaces = ("concrete", "dirt", "grass", "wood")
+    speeds = (("walk", 6.9), ("run", 9.0), ("sprint", 13.8))
+    w, h = P15_CELL
+    proof = []
+    chase_proof = []
+    sprint_close = {}
+    only = os.environ.get("FX_PASS15_ONLY", "")
+    if only:
+        surfaces = tuple(s for s in surfaces if s == only)
+
+    for surface in surfaces:
+        p11_ground(surface, asphalt=(surface == "concrete"))
+        chase_cells = []
+        close_cells = []
+        chase_titles = []
+        close_titles = []
+        for label, speed in speeds:
+            apply_pose(arm, p12_footfall(speed), 0.0, yaw)
+            foot = p11_foot(arm)
+            spec = p14_at(surface, speed)
+            age = P15_AGE
+            alive = spec["life"] > age
+            dist = p14_aim(cam, foot, yaw)
+            # One box per surface, sized to that surface's sprint plume, shared by
+            # walk, run, and sprint. It is centred on the cloud, not the calf.
+            big = p14_at(surface, 13.8)
+            drift = big["back"] / max(big["life"], 0.05) * P15_AGE
+            reach = big["span"] + drift + 0.06
+            side = big["span"] * 0.24 + 0.12
+            origin = foot + left * 0.16
+            corners = p15_box(origin, fwd, left, reach, side, 0.38)
+            rect = p15_rect(cam, corners, w, h)
+
+            def draw_foot(foot=foot, spec=spec, age=age, alive=alive, surface=surface, speed=speed):
+                if alive:
+                    p15_plume(foot, fwd, left, spec, cam.location, age, 4)
+                if surface == "grass" and alive:
+                    p12_flecks(foot - fwd * spec["span"] * 0.35, speed, left, -fwd)
+
+            off, on = p15_pair(os.path.join(tmp, "%s-%s-chase" % (surface, label)), w, h, draw_foot)
+            pct, changed, total = p15_changed(off, on, rect)
+            key = "%s-%s" % (surface, label)
+            chase_proof.append((key, pct))
+            print(
+                "DUST15", surface, label, "chase",
+                "age", round(age, 2),
+                "alive", int(alive),
+                "size", round(spec["size"], 3),
+                "op", round(spec["opacity"], 3),
+                "span", round(spec["span"], 3),
+                "cam", round(dist, 2),
+                "pct", round(pct, 2),
+                "px", changed, "/", total,
+            )
+            chase_cells.append(on)
+            chase_titles.append("%s chase  %.0fcm  %s" % (
+                label, spec["span"] * 100.0, "gone" if not alive else "%.1f%%" % pct))
+
+            dist_c = p15_aim_close(cam, foot, yaw, max(0.25, spec["span"] * 0.45))
+            rect_c = p15_rect(cam, corners, w, h)
+            off_c, on_c = p15_pair(os.path.join(tmp, "%s-%s-close" % (surface, label)), w, h, draw_foot)
+            pct_c, changed_c, total_c = p15_changed(off_c, on_c, rect_c)
+            proof.append((key, pct_c))
+            print(
+                "DUST15", surface, label, "close",
+                "cam", round(dist_c, 2),
+                "pct", round(pct_c, 2),
+                "px", changed_c, "/", total_c,
+            )
+            close_cells.append(on_c)
+            close_titles.append("%s close  %.0fcm  %.1f%%" % (label, spec["span"] * 100.0, pct_c))
+            if label == "sprint":
+                sprint_close[surface] = on_c
+        p14_grid(
+            chase_cells + close_cells,
+            chase_titles + close_titles,
+            "%s   chase (top) and close foot (bottom)   age %.2fs" % (surface.upper(), P15_AGE),
+            os.path.join(OUT, "dust-%s.jpg" % surface),
+            3,
+        )
+
+    if not only:
+        crops = []
+        crop_titles = []
+        for surface in ("concrete", "dirt", "grass", "wood"):
+            crops.append(sprint_close[surface])
+            pct = dict(proof)["%s-sprint" % surface]
+            spec = p14_at(surface, 13.8)
+            crop_titles.append("%s sprint close  %.0fcm  %.1f%%" % (surface, spec["span"] * 100.0, pct))
+        p14_grid(crops, crop_titles, "Close foot crop, sprint, four surfaces", os.path.join(OUT, "dust-split.jpg"), 2)
+
+    land_jobs = (
+        ("concrete", pose_land, 8.0, "concrete light"),
+        ("concrete", pose_land, 36.5, "concrete hard"),
+        ("dirt", pose_land, 36.5, "dirt hard"),
+        ("dirt", pose_roll, 36.5, "dirt roll"),
+    )
+    land_chase = []
+    land_close = []
+    land_chase_t = []
+    land_close_t = []
+    if only:
+        land_jobs = ()
+    for surface, pose, impact, title in land_jobs:
+        p11_ground(surface, asphalt=(surface == "concrete"))
+        apply_pose(arm, pose, 0.0, yaw)
+        foot = p11_foot(arm)
+        spec = p14_at(surface, 13.8)
+        radius, _t = p14_ring_radius(impact)
+        reach = radius + 0.45
+        corners = p15_box(foot, fwd, left, reach, reach, 0.6)
+        # The ring is around the foot, not only behind it. Use a square on the ground.
+        ring_corners = []
+        for sx in (-reach, reach):
+            for sy in (-reach, reach):
+                for z in (0.0, 0.55):
+                    ring_corners.append(foot + Vector((sx, sy, z)))
+
+        def draw_ring(foot=foot, spec=spec, impact=impact):
+            p15_ring(foot, spec, impact, cam.location, P15_AGE)
+
+        p14_aim(cam, foot, yaw)
+        rect = p15_rect(cam, ring_corners, w, h)
+        off, on = p15_pair(os.path.join(tmp, "land-%s-chase" % title.replace(" ", "-")), w, h, draw_ring)
+        pct, changed, total = p15_changed(off, on, rect)
+        print("LAND15", title, "chase", "r", round(radius, 3), "pct", round(pct, 2), "px", changed, "/", total)
+        land_chase.append(on)
+        land_chase_t.append("%s chase  r %.0fcm  %.1f%%" % (title, radius * 100.0, pct))
+        proof.append(("land-%s" % title.replace(" ", "-"), pct))
+
+        p15_aim_close(cam, foot, yaw, 0.15)
+        # Pull back so the whole ring fits. The side camera is for the foot plume.
+        fwd_l, left_l = p11_heading(yaw)
+        cam.location = foot - fwd_l * (1.15 + radius * 0.35) + left_l * (1.35 + radius * 0.55) + Vector((0.0, 0.0, 0.85 + radius * 0.25))
+        look_at(cam, foot + Vector((0.0, 0.0, 0.05)))
+        bpy.context.view_layer.update()
+        rect_c = p15_rect(cam, ring_corners, w, h)
+        off_c, on_c = p15_pair(os.path.join(tmp, "land-%s-close" % title.replace(" ", "-")), w, h, draw_ring)
+        pct_c, changed_c, total_c = p15_changed(off_c, on_c, rect_c)
+        print("LAND15", title, "close", "pct", round(pct_c, 2), "px", changed_c, "/", total_c)
+        land_close.append(on_c)
+        land_close_t.append("%s close  r %.0fcm  %.1f%%" % (title, radius * 100.0, pct_c))
+        proof.append(("land-%s-close" % title.replace(" ", "-"), pct_c))
+    if land_chase:
+        p14_grid(
+            land_chase + land_close,
+            land_chase_t + land_close_t,
+            "Land ring at %.2fs   chase (top) close (bottom)" % P15_AGE,
+            os.path.join(OUT, "dust-land.jpg"),
+            4,
+        )
+
+    slide_cells = []
+    slide_titles = []
+    slide_surfaces = () if only else ("concrete", "dirt")
+    for surface in slide_surfaces:
+        p11_ground(surface, asphalt=(surface == "concrete"))
+        apply_pose(arm, pose_slide, 0.0, yaw)
+        foot = p11_foot(arm)
+        corners = p15_box(foot, fwd, left, 2.6, 0.7, 0.55)
+
+        def draw_slide(foot=foot, surface=surface):
+            p15_slide(foot, fwd, left, surface, cam.location)
+
+        p14_aim(cam, foot, yaw)
+        rect = p15_rect(cam, corners, w, h)
+        off, on = p15_pair(os.path.join(tmp, "slide-%s-chase" % surface), w, h, draw_slide)
+        pct, changed, total = p15_changed(off, on, rect)
+        print("SLIDE15", surface, "chase", "pct", round(pct, 2), "px", changed, "/", total)
+        slide_cells.append(on)
+        slide_titles.append("%s chase  %.1f%%" % (surface, pct))
+        proof.append(("slide-%s" % surface, pct))
+
+        p15_aim_close(cam, foot, yaw, 0.9)
+        rect_c = p15_rect(cam, corners, w, h)
+        off_c, on_c = p15_pair(os.path.join(tmp, "slide-%s-close" % surface), w, h, draw_slide)
+        pct_c, changed_c, total_c = p15_changed(off_c, on_c, rect_c)
+        print("SLIDE15", surface, "close", "pct", round(pct_c, 2), "px", changed_c, "/", total_c)
+        slide_cells.append(on_c)
+        slide_titles.append("%s close  %.1f%%" % (surface, pct_c))
+        proof.append(("slide-%s-close" % surface, pct_c))
+    if slide_cells:
+        p14_grid(slide_cells, slide_titles, "Slide trail", os.path.join(OUT, "dust-slide.jpg"), 2)
+
+    parts = ["%s=%.1f%%" % (key, pct) for key, pct in proof]
+    print("dust-visible " + " ".join(parts))
+    chase_parts = ["%s=%.1f%%" % (key, pct) for key, pct in chase_proof]
+    print("dust-visible-chase " + " ".join(chase_parts))
+    fails = []
+    table = dict(proof)
+    for surface in surfaces:
+        run_pct = table.get("%s-run" % surface, 0.0)
+        sprint_pct = table.get("%s-sprint" % surface, 0.0)
+        if run_pct < 5.0:
+            fails.append("%s-run %.1f" % (surface, run_pct))
+        if sprint_pct < 15.0:
+            fails.append("%s-sprint %.1f" % (surface, sprint_pct))
+    hard = table.get("land-concrete-hard-close", 0.0)
+    if land_jobs and hard < 4.0:
+        fails.append("land-hard %.1f" % hard)
+    if fails:
+        print("DUST15 FAIL", " ".join(fails))
+    else:
+        print("DUST15 PASS")
+    print("PASS15 stills", OUT)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
+    if os.environ.get("FX_PASS15") == "1":
+        render_pass15(arm, cam)
+        return
     if os.environ.get("FX_PASS14") == "1":
         render_pass14(arm, cam)
         return

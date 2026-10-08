@@ -1163,6 +1163,7 @@ namespace Tag.Art
         bool _comicClaimWas;
         bool _comicMissWas;
         bool _comicGroundWas;
+        float _comicPlanar;
         bool _comicLaunchWas;
         bool _comicZipWas;
         bool _comicPullWas;
@@ -17742,9 +17743,12 @@ namespace Tag.Art
             _comicMissWas = miss;
 
             bool grounded = _motor.Ground.grounded;
-            if (grounded && !_comicGroundWas && FxKitLook.Hard(_motor.LastLandImpactSpeed))
+            // Hard land and roll only. The gate is the existing roll threshold,
+            // 65% of terminal. A light plant stays quiet.
+            if (grounded && !_comicGroundWas && LandingRollPose.Triggered(_motor.LastLandImpactSpeed))
                 ComicBurst.RaiseEvent(origin, forward, 0f, ComicWords.EvLand, 0);
             _comicGroundWas = grounded;
+            _comicPlanar = _motor.HorizSpeed;
 
             bool launch = _motor.LaunchArc;
             if (launch && !_comicLaunchWas)
@@ -18102,7 +18106,9 @@ namespace Tag.Art
             // Cling plus Jump, including cling grace. The shove holds, then eases
             // into the jump rise and fall. Impulse and cling grace stay put.
             _wallJumpPoseAge = 0f;
-            if (_motor != null)
+            // A wall or object hit only shouts when the body was already at sprint.
+            // The speed is the motor's planar speed from the frame before the bounce.
+            if (_motor != null && _comicPlanar >= Tag.FX.DustLook.Sprint)
                 ComicBurst.RaiseEvent(_motor.transform.position, _motor.transform.forward, 0f, ComicWords.EvWall, 0);
             _wallJumpPosePlant = _wallExit > 0.5f ? !_exitLeadLeft : (_motor != null && _motor.WallLeft);
             _wallJumpHandoff = false;

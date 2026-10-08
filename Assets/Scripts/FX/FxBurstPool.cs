@@ -58,8 +58,59 @@ namespace Tag.FX
             shape.enabled = true;
             shape.shapeType = ParticleSystemShapeType.Hemisphere;
             shape.radius = 0.12f;
+            var rend = _ps.GetComponent<ParticleSystemRenderer>();
+            rend.renderMode = ParticleSystemRenderMode.Billboard;
+            rend.alignment = ParticleSystemRenderSpace.View;
+            rend.minParticleSize = 0f;
+            rend.maxParticleSize = 2f;
+            rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rend.receiveShadows = false;
+            rend.material = DustMaterial();
             _ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             _ready = true;
+        }
+
+        /// <summary>
+        /// Unlit soft disc. The built-in URP particle material soft-fades
+        /// anything sitting on the ground, which hid the whole puff.
+        /// The opaque core fills the billboard, so startSize is the visible diameter.
+        /// </summary>
+        static Material DustMaterial()
+        {
+            Shader shader = Shader.Find("Sprites/Default");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
+            var mat = new Material(shader);
+            mat.mainTexture = Disc();
+            if (mat.HasProperty("_SoftParticlesEnabled"))
+                mat.SetFloat("_SoftParticlesEnabled", 0f);
+            if (mat.HasProperty("_CameraFadingEnabled"))
+                mat.SetFloat("_CameraFadingEnabled", 0f);
+            mat.DisableKeyword("_SOFTPARTICLES_ON");
+            return mat;
+        }
+
+        static Texture2D Disc()
+        {
+            const int n = 64;
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
+            var pix = new Color[n * n];
+            for (int y = 0; y < n; y++)
+            {
+                for (int x = 0; x < n; x++)
+                {
+                    float dx = (x + 0.5f) / n - 0.5f;
+                    float dy = (y + 0.5f) / n - 0.5f;
+                    float r = Mathf.Sqrt(dx * dx + dy * dy) / 0.5f;
+                    float a = 0f;
+                    if (r < 0.72f) a = 1f;
+                    else if (r < 1f) a = 1f - (r - 0.72f) / 0.28f;
+                    pix[y * n + x] = new Color(1f, 1f, 1f, a);
+                }
+            }
+            tex.SetPixels(pix);
+            tex.Apply(false, true);
+            return tex;
         }
 
         public static bool Calmed()
@@ -133,8 +184,41 @@ namespace Tag.FX
             }
         }
 
+        /// <summary>
+        /// One mote with its own velocity. The land ring uses this so each puff
+        /// stays on the circle instead of inheriting one shared forward speed.
+        /// </summary>
+        public void PlayRadial(Vector3 worldPos, Vector3 velocity, DustLook.Puff puff)
+        {
+            if (!_ready || _ps == null) return;
+            if (Calmed()) return;
+            if (puff.Count <= 0 && puff.Opacity <= 0.01f) return;
+            float a = puff.Opacity;
+            if (a < 0f) a = 0f;
+            if (a > 1f) a = 1f;
+            float life = puff.Life > 0.05f ? puff.Life : 0.05f;
+            var ep = new ParticleSystem.EmitParams();
+            ep.position = worldPos;
+            ep.velocity = velocity;
+            ep.startSize = puff.Size;
+            ep.startLifetime = life;
+            ep.startColor = new Color(puff.R, puff.G, puff.B, a);
+            ep.applyShapeToPosition = false;
+            _ps.Emit(ep, 1);
+            if (puff.Core > 0.15f)
+            {
+                float grit = 0.62f;
+                ep.startSize = puff.Size * 0.55f;
+                ep.startColor = new Color(puff.R * grit, puff.G * grit, puff.B * grit, a);
+                ep.position = worldPos + Vector3.up * 0.02f;
+                _ps.Emit(ep, 1);
+            }
+        }
+
         void AimPlume(DustLook.Puff puff)
         {
+            var shape = _ps.shape;
+            shape.enabled = true;
             if (puff.Back > 0.04f && transform.parent != null)
             {
                 Vector3 fwd = transform.parent.forward;
@@ -149,11 +233,30 @@ namespace Tag.FX
                 float life = puff.Life > 0.05f ? puff.Life : 0.05f;
                 _main.startSpeed = puff.Back / life;
                 _main.gravityModifier = 0.25f;
-                var shape = _ps.shape;
-                shape.radius = puff.Span > 0.05f ? puff.Span * 0.16f : 0.05f;
+                // The cloud is Span long at birth. A radius of Span * 0.16
+                // was an 11 cm ball, which is why a 72 cm sprint read as a speck.
+                float span = puff.Span > 0.05f ? puff.Span : puff.Back;
+                shape.shapeType = ParticleSystemShapeType.Box;
+                shape.scale = new Vector3(
+                    Mathf.Max(0.05f, span * 0.36f),
+                    Mathf.Max(0.04f, rise * 0.8f + 0.04f),
+                    span);
+                shape.position = new Vector3(0f, rise * 0.2f, span * 0.5f);
             }
-            else if (transform.parent != null)
-                transform.rotation = transform.parent.rotation;
+            else
+            {
+                shape.shapeType = ParticleSystemShapeType.Hemisphere;
+                shape.radius = 0.05f;
+                shape.scale = Vector3.one;
+                shape.position = Vector3.zero;
+                if (puff.Spark == 0 && puff.Splash == 0)
+                {
+                    _main.startSpeed = 0.35f;
+                    _main.gravityModifier = 0.45f;
+                }
+                if (transform.parent != null)
+                    transform.rotation = transform.parent.rotation;
+            }
         }
 
         void Apply(FxBurstKind kind)

@@ -160,7 +160,7 @@ namespace Tag.FX
                 if (r > max) max = r;
             }
             if (max - min < 0.25f) return false;
-            if (ComicAtlas.Cells != 33 || ComicBurstAtlas.Cells != 10) return false;
+            if (ComicAtlas.Cells != 36 || ComicBurstAtlas.Cells != 10) return false;
             if (!DecodePng(ComicAtlas.Png(), out int w, out int h, out byte[] rgba)) return false;
             if (w != ComicAtlas.Columns * ComicAtlas.CellWidth || h != ComicAtlas.Rows * ComicAtlas.CellHeight) return false;
             if (!DecodePng(ComicBurstAtlas.Png(), out int bw, out int bh, out byte[] burst)) return false;

@@ -173,12 +173,18 @@ def letter_jitter(i, word):
     )
 
 
-def render_after(word, target_w, fill):
-    """Per-letter jitter, 9% stroke, hard shadow, two-step extrude. Ink width is target_w."""
+def render_after(word, target_w, fill, stroke_frac=None, track=0.78, tilt=None):
+    """Per-letter jitter, hard shadow, two-step extrude. Ink width is target_w.
+
+    stroke_frac defaults to 9% of cap height. track is the advance.
+    tilt is degrees. None keeps the old small hash tilt.
+    """
     size = 180
     face = font(size)
     cap = cap_height(face)
-    stroke = max(2, int(round(cap * STROKE_FRAC)))
+    if stroke_frac is None:
+        stroke_frac = STROKE_FRAC
+    stroke = max(2, int(round(cap * stroke_frac)))
     dummy = Image.new("RGBA", (8, 8))
     draw = ImageDraw.Draw(dummy)
     extrude = max(3, int(round(cap * 0.07)))
@@ -203,15 +209,17 @@ def render_after(word, target_w, fill):
         plate = plate.rotate(rot, expand=True, resample=Image.Resampling.BICUBIC)
         pieces.append((plate, x + jx * cap, jy * cap))
         # 0.78 is about 13% tighter than the 0.90 advance, so the letters read as one word.
-        x += tw * 0.78
+        x += tw * track
     width = int(x + pieces[-1][0].width) + 4
     height = max(p.height for p, _, _ in pieces) + int(cap)
     sheet = Image.new("RGBA", (width, height), (0, 0, 0, 0))
     base_y = int(cap * 0.40)
     for plate, px, py in pieces:
         sheet.alpha_composite(plate, (max(0, int(px)), max(0, int(base_y + py))))
-    tilt = hash01(len(word), 4) * 12 - 6
-    sheet = sheet.rotate(tilt, expand=True, resample=Image.Resampling.BICUBIC)
+    if tilt is None:
+        tilt = hash01(len(word), 4) * 12 - 6
+    if abs(tilt) > 0.05:
+        sheet = sheet.rotate(tilt, expand=True, resample=Image.Resampling.BICUBIC)
     sheet = crop_alpha(sheet)
     return scale_fill_width(sheet, fill, target_w)
 

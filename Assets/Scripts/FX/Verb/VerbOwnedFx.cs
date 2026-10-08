@@ -209,11 +209,14 @@ namespace Tag.FX
             one.Count = 1;
             one.Back = 0f;
             float step = 6.2831855f / n;
+            float outSp = 0.35f + one.Lift;
+            float upSp = 0.20f + one.Lift;
             for (int i = 0; i < n; i++)
             {
                 float ang = i * step;
-                Vector3 p = center + new Vector3(Mathf.Cos(ang) * radius, 0.02f, Mathf.Sin(ang) * radius);
-                _fx.PlayShaped(FxBurstKind.Land, p, one);
+                Vector3 radial = new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang));
+                Vector3 p = center + radial * radius + Vector3.up * 0.04f;
+                _fx.PlayRadial(p, radial * outSp + Vector3.up * upSp, one);
             }
         }
 

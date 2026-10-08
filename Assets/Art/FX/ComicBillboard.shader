@@ -5,6 +5,8 @@ Shader "Tag/ComicBillboard"
         _MainTex ("Tex", 2D) = "white" {}
         _Color ("Color", Color) = (1, 1, 1, 1)
         _Tilt ("Tilt", Float) = 0
+        _Skew ("Skew", Float) = 0
+        _Arc ("Arc", Float) = 0
         _ClampExtent ("Clamp", Float) = 0
         _Front ("Front", Float) = 0
     }
@@ -37,6 +39,8 @@ Shader "Tag/ComicBillboard"
                 float4 _MainTex_ST;
                 float4 _Color;
                 float _Tilt;
+                float _Skew;
+                float _Arc;
                 float _ClampExtent;
                 float _Front;
             CBUFFER_END
@@ -65,6 +69,9 @@ Shader "Tag/ComicBillboard"
                 float s = sin(_Tilt);
                 float c = cos(_Tilt);
                 float2 p = input.positionOS.xy;
+                // Italic lean, then a small arc so the line is not a flat stamp.
+                p.x += p.y * _Skew;
+                p.y += p.x * p.x * _Arc;
                 float2 spun = float2(c * p.x - s * p.y, s * p.x + c * p.y);
                 float3 world = center + right * spun.x * sx + up * spun.y * sy;
                 float4 clip = TransformWorldToHClip(world);

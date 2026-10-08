@@ -263,14 +263,19 @@ namespace Tag.FX
             if (WordScale(PopSeconds + 0.044f) < 1.10f) return false;
             if (WordScale(0.20f) < 0.98f || WordScale(LifeSeconds) < 0.98f) return false;
             if (!PoolsHold()) return false;
-            if (WordCount != 33) return false;
+            if (WordCount != 36) return false;
             if (!AtlasHolds()) return false;
+            if (!StylesHold()) return false;
             if (ClampAxis(1f, 0.25f) != 0.75f) return false;
             if (ClampAxis(0f, 0.25f) != 0f) return false;
             if (ClampAxis(-1f, 0.25f) != -0.75f) return false;
             string proof = ProofLine();
-            if (proof.IndexOf("words=33", System.StringComparison.Ordinal) < 0) return false;
-            if (proof.IndexOf("repeat=0,0,0,0,0,0,0,0,0,0", System.StringComparison.Ordinal) < 0) return false;
+            if (proof.IndexOf("words=36", System.StringComparison.Ordinal) < 0) return false;
+            if (proof.IndexOf("contact=14", System.StringComparison.Ordinal) < 0) return false;
+            if (proof.IndexOf("whiff=13", System.StringComparison.Ordinal) < 0) return false;
+            if (proof.IndexOf("land=5", System.StringComparison.Ordinal) < 0) return false;
+            if (proof.IndexOf("crash=4", System.StringComparison.Ordinal) < 0) return false;
+            if (proof.IndexOf("repeat=0,0,0,0", System.StringComparison.Ordinal) < 0) return false;
             return true;
         }
 
@@ -363,9 +368,10 @@ namespace Tag.FX
             int span = pool.Length;
             if (ev == EvPunch)
             {
+                // Five words: tap is the light end, a sprint punch is the heavy end.
                 if (strength <= Tap) { start = 0; span = 3; }
                 else if (strength == Punch) { start = 1; span = 4; }
-                else { start = 3; span = 3; }
+                else { start = pool.Length - 3; span = 3; }
             }
             state = state * 1664525u + 1013904223u;
             int pick = start + (int)((state >> 16) % (uint)span);
@@ -404,29 +410,34 @@ namespace Tag.FX
             return true;
         }
 
-        static readonly string[] PunchWords = { "POP!", "POW!", "SMACK!", "WHACK!", "THWACK!", "BAM!" };
+        static readonly string[] PunchWords = { "POP!", "POW!", "SMACK!", "WHACK!", "BAM!" };
         static readonly string[] TagWords = { "WHAM!", "BONK!", "KAPOW!" };
         static readonly string[] TransferWords = { "TAG!", "GOTCHA!", "MINE!" };
-        static readonly string[] WhiffWords = { "WHIFF!", "SWISH!", "WHOOSH!" };
-        static readonly string[] LandWords = { "THUD!", "WHUMP!", "THUMP!" };
+        static readonly string[] WhiffWords = { "WHIFF!", "SWISH!", "WHOOSH!", "MISS!" };
+        static readonly string[] LandWords = { "THUD!", "WHUMP!", "THUMP!", "BOOM!", "KRUNCH!" };
         static readonly string[] LaunchWords = { "BOING!", "SPROING!", "POING!" };
         static readonly string[] ZipWords = { "ZING!", "ZIP!", "WHIZZ!" };
         static readonly string[] GrappleWords = { "THWIP!", "FWIP!", "ZWIP!" };
-        static readonly string[] WallWords = { "KRAK!", "FWOOSH!", "THOK!" };
+        static readonly string[] WallWords = { "KRAK!", "SLAM!", "SPLAT!", "THWACK!" };
         static readonly string[] StaggerWords = { "OOF!", "UGH!", "OUCH!" };
 
-        public const int WordCount = 33;
+        public const int WordCount = 36;
+        public const int CatContact = 0;
+        public const int CatWhiff = 1;
+        public const int CatLand = 2;
+        public const int CatCrash = 3;
+        public const int CatCount = 4;
 
         // Atlas cells. The first four stay POP, POW, BAM, WHAM.
-        static readonly int[] PunchAtlas = { 0, 1, 4, 5, 6, 2 };
+        static readonly int[] PunchAtlas = { 0, 1, 4, 5, 2 };
         static readonly int[] TagAtlas = { 3, 7, 8 };
         static readonly int[] TransferAtlas = { 9, 10, 11 };
-        static readonly int[] WhiffAtlas = { 12, 13, 14 };
-        static readonly int[] LandAtlas = { 15, 16, 17 };
+        static readonly int[] WhiffAtlas = { 12, 13, 14, 35 };
+        static readonly int[] LandAtlas = { 15, 16, 17, 33, 34 };
         static readonly int[] LaunchAtlas = { 18, 19, 20 };
         static readonly int[] ZipAtlas = { 21, 22, 23 };
         static readonly int[] GrappleAtlas = { 24, 25, 26 };
-        static readonly int[] WallAtlas = { 27, 28, 29 };
+        static readonly int[] WallAtlas = { 27, 28, 29, 6 };
         static readonly int[] StaggerAtlas = { 30, 31, 32 };
 
         public static int AtlasOf(int ev, int poolIndex)
@@ -504,10 +515,14 @@ namespace Tag.FX
                 case 25: return "FWIP!";
                 case 26: return "ZWIP!";
                 case 27: return "KRAK!";
-                case 28: return "FWOOSH!";
-                case 29: return "THOK!";
+                case 28: return "SLAM!";
+                case 29: return "SPLAT!";
                 case 30: return "OOF!";
                 case 31: return "UGH!";
+                case 32: return "OUCH!";
+                case 33: return "BOOM!";
+                case 34: return "KRUNCH!";
+                case 35: return "MISS!";
                 default: return "OUCH!";
             }
         }
@@ -528,28 +543,133 @@ namespace Tag.FX
 
         public static string ProofLine()
         {
-            uint state = 9u;
-            string repeat = "";
-            for (int ev = 0; ev < EvCount; ev++)
+            int[] counts = new int[CatCount];
+            for (int i = 0; i < WordCount; i++)
+                counts[CategoryOf(i)]++;
+            string cats = "";
+            for (int c = 0; c < CatCount; c++)
             {
                 string previous = null;
                 int hits = 0;
-                for (int i = 0; i < 40; i++)
+                uint roll = (uint)(11 + c * 3);
+                int n = counts[c];
+                for (int k = 0; k < 40; k++)
                 {
-                    int pick = PickEvent(ref state, ev, i % 3, previous);
-                    string word = PoolWord(ev, pick);
+                    roll = roll * 1664525u + 1013904223u;
+                    int pick = (int)((roll >> 16) % (uint)n);
+                    string word = CategoryWord(c, pick);
+                    if (!string.IsNullOrEmpty(previous) && word == previous)
+                        pick = (pick + 1) % n;
+                    word = CategoryWord(c, pick);
                     if (word == previous) hits++;
                     previous = word;
                 }
-                if (ev > 0) repeat += ",";
-                repeat += hits.ToString();
+                if (c > 0) cats += ",";
+                cats += hits.ToString();
             }
             return "comic-words"
                 + " words=" + WordCount.ToString()
-                + " repeat=" + repeat
+                + " contact=" + counts[CatContact].ToString()
+                + " whiff=" + counts[CatWhiff].ToString()
+                + " land=" + counts[CatLand].ToString()
+                + " crash=" + counts[CatCrash].ToString()
+                + " repeat=" + cats
                 + " pop=" + PopSeconds.ToString("0.00")
                 + " life=" + LifeSeconds.ToString("0.00")
                 + " toggle=1";
+        }
+
+        /// <summary>
+        /// 0 contact, 1 whiff, 2 hard land, 3 crash. Every atlas cell is one of these.
+        /// </summary>
+        public static int CategoryOf(int atlas)
+        {
+            if (atlas == 6 || atlas == 27 || atlas == 28 || atlas == 29) return CatCrash;
+            if (atlas == 15 || atlas == 16 || atlas == 17 || atlas == 33 || atlas == 34) return CatLand;
+            if (atlas == 12 || atlas == 13 || atlas == 14 || atlas == 35) return CatWhiff;
+            if (atlas >= 18 && atlas <= 26) return CatWhiff;
+            return CatContact;
+        }
+
+        public static int CategoryCount(int cat)
+        {
+            int n = 0;
+            for (int i = 0; i < WordCount; i++)
+            {
+                if (CategoryOf(i) == cat) n++;
+            }
+            return n;
+        }
+
+        public static string CategoryWord(int cat, int nth)
+        {
+            int seen = 0;
+            for (int i = 0; i < WordCount; i++)
+            {
+                if (CategoryOf(i) != cat) continue;
+                if (seen == nth) return AtlasWord(i);
+                seen++;
+            }
+            return AtlasWord(0);
+        }
+
+        /// <summary>
+        /// Each word has its own tilt in ±8–25°, plus a lean, a size, and a small arc.
+        /// Neighbours never share a tilt.
+        /// </summary>
+        public static void StyleOf(int atlas, out float tiltDeg, out float skew, out float size, out float arc, out float wide, out float tall)
+        {
+            int i = atlas;
+            if (i < 0) i = 0;
+            int mag = 8 + ((i * 17) % 18);
+            int sign = (i & 1) == 0 ? 1 : -1;
+            tiltDeg = sign * mag;
+            skew = ((i % 5) - 2) * 0.09f;
+            size = 0.88f + (i % 7) * 0.04f;
+            arc = ((i % 3) - 1) * 0.12f;
+            int cat = CategoryOf(i);
+            if (cat == CatWhiff)
+            {
+                wide = 1.14f;
+                tall = 0.82f;
+                skew += 0.10f * sign;
+            }
+            else if (cat == CatLand)
+            {
+                wide = 1.28f;
+                tall = 0.74f;
+            }
+            else if (cat == CatCrash)
+            {
+                wide = 1.06f;
+                tall = 1.08f;
+                skew += 0.06f * -sign;
+            }
+            else
+            {
+                wide = 1f;
+                tall = 1f;
+            }
+        }
+
+        static bool StylesHold()
+        {
+            float prev = 0f;
+            for (int i = 0; i < WordCount; i++)
+            {
+                float tilt, skew, size, arc, wide, tall;
+                StyleOf(i, out tilt, out skew, out size, out arc, out wide, out tall);
+                float abs = tilt < 0f ? -tilt : tilt;
+                if (abs < 8f || abs > 25f) return false;
+                if (i > 0 && tilt == prev) return false;
+                if (size < 0.8f || size > 1.2f) return false;
+                prev = tilt;
+            }
+            if (CategoryCount(CatContact) != 14) return false;
+            if (CategoryCount(CatWhiff) != 13) return false;
+            if (CategoryCount(CatLand) != 5) return false;
+            if (CategoryCount(CatCrash) != 4) return false;
+            return true;
         }
     }
 }
