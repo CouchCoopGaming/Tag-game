@@ -1,3 +1,4 @@
+using System.Globalization;
 using Tag.Settings;
 using Tag.Ui.Hud;
 using UnityEngine;
@@ -25,6 +26,8 @@ namespace Tag.Ui.Menu
         public static float AppliedScale;
         public static bool ComicOn = true;
         public static int Armed = -1;
+        public static string BusLine = "";
+        public static string CvdLine = "";
 
         public static bool IsResetRow(int page, int index)
         {
@@ -124,6 +127,13 @@ namespace Tag.Ui.Menu
             bool reset = false, apply = false, persist = false;
             try
             {
+                float protan = AccessibilityPalette.MinPlayerDistance(AccessibilityPalette.Default, AccessibilityPalette.CvdProtanopia);
+                float deutan = AccessibilityPalette.MinPlayerDistance(AccessibilityPalette.Default, AccessibilityPalette.CvdDeuteranopia);
+                float tritan = AccessibilityPalette.MinPlayerDistance(AccessibilityPalette.Default, AccessibilityPalette.CvdTritanopia);
+                CvdLine = "ui-cvd protan=" + protan.ToString("0.00", CultureInfo.InvariantCulture)
+                    + " deutan=" + deutan.ToString("0.00", CultureInfo.InvariantCulture)
+                    + " tritan=" + tritan.ToString("0.00", CultureInfo.InvariantCulture)
+                    + " floor=" + AccessibilityPalette.MinPairDistance.ToString("0.00", CultureInfo.InvariantCulture);
                 GameSettings edited = GameSettings.Defaults();
                 edited.Master = 0.5f;
                 edited.Sfx = 0.75f;
@@ -147,6 +157,8 @@ namespace Tag.Ui.Menu
                 edited.Fov = 90f;
                 GameSettings.Current = edited;
                 Apply(edited);
+                float openMaster = GroupMaster;
+                float openEar = AudioListener.volume;
                 bool buses = Near(GroupMaster, 0.5f) && Near(GroupSfx, 0.5f * 0.75f) && Near(GroupUi, 0.5f * 0.5f) && Near(GroupMusic, 0.5f * 0.55f);
                 bool picture = QualitySettings.GetQualityLevel() == qualityLive && Screen.width == 1280 && Screen.fullScreenMode == FullScreenMode.Windowed && QualitySettings.vSyncCount == 0;
                 bool words = !MatchHudText.ComicWords && MatchHudText.Comic(MatchHudText.DashGo).Length == 0 && MatchHudText.Comic(MatchHudText.YoureIt).Length == 0;
@@ -157,6 +169,12 @@ namespace Tag.Ui.Menu
                 apply = buses && picture && words && wordsOn && type && Near(AppliedScale, 1.1f);
                 edited.Muted = true;
                 Apply(edited);
+                float shutMaster = GroupMaster;
+                float shutEar = AudioListener.volume;
+                BusLine = "ui-bus master=" + openMaster.ToString("0.00", CultureInfo.InvariantCulture)
+                    + " listener=" + openEar.ToString("0.00", CultureInfo.InvariantCulture)
+                    + " muted-master=" + shutMaster.ToString("0.00", CultureInfo.InvariantCulture)
+                    + " muted-listener=" + shutEar.ToString("0.00", CultureInfo.InvariantCulture);
                 bool mutedBus = GroupMaster == 0f && GroupSfx == 0f && GroupUi == 0f && GroupMusic == 0f && AudioListener.volume == 0f;
                 string blob = SettingsFile.Write(edited, ActionBinds.Defaults());
                 GameSettings loaded = GameSettings.Defaults();
@@ -201,7 +219,7 @@ namespace Tag.Ui.Menu
                 }
                 GameSettings partial = GameSettings.Defaults();
                 SettingsFile.Read("v=2\nmouse=1.8\n", partial, ActionBinds.Defaults());
-                bool kept = partial.ComicWords && !partial.ReduceMotion && partial.ResIndex == 2 && partial.Fullscreen && partial.VSync && partial.PictureQuality == 0;
+                bool kept = partial.ComicWords && !partial.ReduceMotion && partial.ResIndex == 2 && partial.Fullscreen && partial.VSync && partial.PictureQuality == GameSettings.QualityMedium;
                 if (!kept) persist = false;
                 GameSettings page = GameSettings.Defaults();
                 page.Master = 0.25f;

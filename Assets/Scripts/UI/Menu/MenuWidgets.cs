@@ -112,10 +112,13 @@ namespace Tag.Ui.Menu
             var title = Words(rt, label, 40, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
             title.font = MenuTheme.Display;
             var sub = Words(rt, detail, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Mute, Vector2.zero, Vector2.one);
-            if (h >= UiFit.OptRow && h <= UiFit.RematchH)
+            int titlePx = UiFit.TextPx(40);
+            int detailPx = UiFit.TextPx(UiFit.FloorFont);
+            bool identityType = titlePx == 40 && detailPx == UiFit.FloorFont;
+            bool typedRow = h >= UiFit.OptRow && h <= UiFit.RematchH && identityType;
+            bool grownRow = !identityType && h + 0.5f >= 24f + titlePx + 6f + detailPx + 8f;
+            if (typedRow || grownRow)
             {
-                int titlePx = UiFit.TextPx(40);
-                int detailPx = UiFit.TextPx(UiFit.FloorFont);
                 title.resizeTextForBestFit = false;
                 title.fontSize = titlePx;
                 title.resizeTextMaxSize = titlePx;

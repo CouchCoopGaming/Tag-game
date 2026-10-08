@@ -20,7 +20,7 @@ namespace Tag.Ui.Menu
         public static int Index = 2;
         public static bool Full = true;
         public static bool VSync = true;
-        public static int Quality;
+        public static int Quality = Tag.Settings.GameSettings.QualityMedium;
         public static bool ReduceMotion;
         /// <summary>The settings blob already pushed picture values. PlayerPrefs must not stomp them.</summary>
         public static bool Adopted;
@@ -43,7 +43,7 @@ namespace Tag.Ui.Menu
                 }
                 Full = PlayerPrefs.GetInt(KeyFull, 1) == 1;
                 VSync = PlayerPrefs.GetInt(KeyVSync, 1) == 1;
-                Quality = PlayerPrefs.GetInt(KeyQuality, 0);
+                Quality = PlayerPrefs.GetInt(KeyQuality, Tag.Settings.GameSettings.QualityMedium);
             }
             Push(Tag.Settings.GameSettings.Current);
             Apply();

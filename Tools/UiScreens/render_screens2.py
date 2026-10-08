@@ -12,7 +12,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass13")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass14")
 FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
@@ -591,8 +591,18 @@ def pause():
     return img, min(ratios)
 
 
-def options(page):
+def options(page, quality="Medium", hub="bar", access="tiles", mute=False, levels=True):
     img = screen(0.5)
+    picture_detail = "Low, Medium, High, Ultra" if levels else "Left / Right"
+    sound_rows = [
+        ("Master  0.00" if mute else "Master  0.80", "Left / Right", True),
+        ("SFX  1.00", "Left / Right", False),
+        ("UI  1.00", "Left / Right", False),
+        ("Music  0.35", "Left / Right", False),
+        ("Mute  On" if mute else "Mute  (Comma)", "Left / Right", False),
+        ("Reset to defaults?", "Confirm to reset", False),
+        ("Back", "", False),
+    ]
     pages = {
         "hub": ("Options", "Sound, picture, accessibility, controls, look, and credits.", [
             ("Sound", "Music, effects, and UI.", True),
@@ -601,42 +611,35 @@ def options(page):
             ("Controls", "Keyboard and pad. Space jumps.", False),
             ("Look", "One sensitivity for the couch.", False),
             ("Credits", "Team, the font, and the tools.", False),
-            ("Reset to defaults", "Sound, picture, and accessibility", False),
-        ], {}),
-        "sound": ("Sound", "Sliders step the volumes you already have.", [
-            ("Master  0.80", "Left / Right", True),
-            ("SFX  1.00", "Left / Right", False),
-            ("UI  1.00", "Left / Right", False),
-            ("Music  0.35", "Left / Right", False),
-            ("Mute  (Comma)", "Left / Right", False),
-            ("Reset to defaults?", "Confirm to reset", False),
-            ("Back", "", False),
-        ], {0: 0.80, 1: 1.0, 2: 1.0, 3: 0.35}),
+        ] + ([("Reset to defaults", "Sound, picture, and accessibility", False)] if hub == "before" else []), {}),
+        "sound": ("Sound", "Sliders step the volumes you already have.", sound_rows,
+                  {0: 0.0 if mute else 0.80, 1: 1.0, 2: 1.0, 3: 0.35}),
         "picture": ("Picture", "Resolution, fullscreen, vsync, and the couch UI scale.", [
             ("Resolution  1920 x 1080", "Left / Right", True),
             ("Fullscreen  On", "Left / Right", False),
             ("VSync  On", "Left / Right", False),
-            ("Quality  Medium", "Left / Right", False),
+            ("Quality  " + quality, picture_detail, False),
             ("UI scale  100%", "80% to 130%, for a couch TV", False),
             ("Reset to defaults", "This page only", False),
             ("Back", "", False),
         ], {4: 0.40}),
         "access": ("Accessibility", "Reduce motion, text size, player colors, and comic words.", [
             ("Reduce motion  Off", "Menu slides and the title pulse only", True),
-            ("Text size  1.00", "Menu and HUD text", False),
+            ("Text size  1.00", "0.85, 1.00, 1.25, 1.50", False),
             ("Player  P1", "Left / Right", False),
             ("Colorblind palette  Default", "Left / Right", False),
             ("Comic words  On", "Verb words during a match.", False),
+        ] + ([
             ("Reset to defaults", "This page only", False),
             ("Back", "", False),
-        ], {1: 0.333}),
+        ] if access == "strip" else []), {1: 0.333}),
     }
     title, banner, rows, meters = pages[page]
     header(img, title, banner)
     ratios = []
-    y = 140 if page == "access" else 148
+    y = 148
     row_h = 108
-    step = 116
+    step = 108 if page == "access" and access != "strip" else 116
     for i, (name, sub, hot) in enumerate(rows):
         inset = 52 if page == "hub" and i < 6 else 0
         ratios.append(button(img, (280, y, 1640, y + row_h), name, sub, hot, inset=inset))
@@ -652,8 +655,9 @@ def options(page):
             d = ImageDraw.Draw(img)
             draw_switch(d, 1640 - 96 - 28, y + 34, i == 4)
         y += step
-    if page == "access":
-        # Seven rows fill the window, so the swatches are the short strip under Back.
+    if page == "hub" and hub == "bar":
+        ratios.append(prompt_bar(img, y + 4, 280, 1360, hot="back"))
+    if page == "access" and access == "strip":
         d = ImageDraw.Draw(img)
         sy = y - step + row_h + 6
         sh = 32
@@ -663,9 +667,100 @@ def options(page):
             x = 520 + i * 160
             rounded(d, (x, sy, x + 140, sy + sh), 10, c)
             ratios.append(contrast(CREAM, (8, 22, 58)))
+    if page == "access" and access != "strip":
+        ratios.extend(swatch_band(img, y + 8))
     ratios.append(contrast(GOLD, NAVY))
     footer_both(img)
     return img, min(ratios)
+
+
+def prompt_bar(img, y, x, w, hot="back"):
+    """Reset and Back on one row. Glyphs match the footer: space/A confirm, esc/B back."""
+    d = ImageDraw.Draw(img)
+    gap = 16
+    chip_w = (w - gap) // 2
+    h = 72
+    chips = (("reset", "Reset", "space", "a"), ("back", "Back", "esc", "b"))
+    ratio = 99
+    for i, (key, word, g0, g1) in enumerate(chips):
+        cx = x + i * (chip_w + gap)
+        selected = key == hot
+        fill = HOT if selected else NAVY
+        ink = INK if selected else CREAM
+        rounded(d, (cx, y, cx + chip_w, y + h), 14, fill, GOLD, 3 if selected else 2)
+        draw_glyph(d, g0, cx + 12, y + 12)
+        draw_glyph(d, g1, cx + 84, y + 12)
+        d.text((cx + 148, y + 20), word, font=font(FONT_B, 28), fill=ink)
+        ratio = min(ratio, contrast(ink, fill))
+    return ratio
+
+
+# Seat colors from AccessibilityPalette.Default, then the same CVD matrices.
+SEAT_F = (
+    (0.95, 0.16, 0.22),
+    (0.16, 0.45, 1.00),
+    (1.00, 0.86, 0.12),
+    (0.16, 0.82, 0.28),
+)
+
+
+def simulate_cvd(kind, rgb):
+    r, g, b = rgb
+    if kind == "protan":
+        o = (0.152286 * r + 1.052583 * g - 0.204868 * b,
+             0.114503 * r + 0.786281 * g + 0.099216 * b,
+             -0.003882 * r - 0.048116 * g + 1.051998 * b)
+    elif kind == "tritan":
+        o = (1.255528 * r - 0.076749 * g - 0.178779 * b,
+             -0.078411 * r + 0.930809 * g + 0.147602 * b,
+             0.004733 * r + 0.691367 * g + 0.303900 * b)
+    else:
+        o = (0.367322 * r + 0.860646 * g - 0.227968 * b,
+             0.280085 * r + 0.672501 * g + 0.047413 * b,
+             -0.011820 * r + 0.042940 * g + 0.968881 * b)
+    return tuple(max(0.0, min(1.0, c)) for c in o)
+
+
+def pair_distance(kind):
+    cols = [simulate_cvd(kind, c) for c in SEAT_F]
+    worst = 99.0
+    for i in range(4):
+        for j in range(i + 1, 4):
+            d = sum((cols[i][k] - cols[j][k]) ** 2 for k in range(3)) ** 0.5
+            if d < worst:
+                worst = d
+    return worst
+
+
+def swatch_band(img, y):
+    d = ImageDraw.Draw(img)
+    ratios = []
+    d.text((300, y), "Default", font=font(FONT_B, 28), fill=CREAM)
+    ratios.append(contrast(CREAM, (8, 22, 58)))
+    tiles = y + 36
+    sw_h = 78
+    for i, rgb in enumerate(SEAT_F):
+        c = tuple(int(round(ch * 255)) for ch in rgb)
+        x = 620 + i * 150
+        rounded(d, (x, tiles, x + 120, tiles + sw_h), 12, c)
+        cap = (x, tiles + sw_h + 4, x + 120, tiles + sw_h + 40)
+        rounded(d, cap, 8, NAVY)
+        label = "P%d" % (i + 1)
+        tw = d.textlength(label, font=font(FONT_B, 28))
+        d.text((x + (120 - tw) / 2, tiles + sw_h + 6), label, font=font(FONT_B, 28), fill=CREAM)
+        ratios.append(contrast(CREAM, NAVY))
+    row_y = tiles + sw_h + 48
+    for kind, title in (("protan", "Protan"), ("deutan", "Deutan"), ("tritan", "Tritan")):
+        dist = pair_distance(kind)
+        d.text((300, row_y + 2), "%s  %.2f" % (title, dist), font=font(FONT_B, 24), fill=CREAM)
+        ratios.append(contrast(CREAM, (8, 22, 58)))
+        cols = [simulate_cvd(kind, c) for c in SEAT_F]
+        for i, rgb in enumerate(cols):
+            c = tuple(int(round(ch * 255)) for ch in rgb)
+            x = 620 + i * 150
+            rounded(d, (x, row_y, x + 120, row_y + 32), 8, c)
+        row_y += 40
+    return ratios
 
 
 # ActionBinds.Show, plus Xbox face names from ActionBinds.PadWord.
@@ -1126,6 +1221,182 @@ def wipe_results():
     return bars(img), ratio
 
 
+def text_inside(draw, xy, text, face, box, slop=3):
+    bbox = draw.textbbox(xy, text, font=face)
+    x0, y0, x1, y1 = box
+    ok = bbox[0] >= x0 - slop and bbox[1] >= y0 - slop and bbox[2] <= x1 + slop and bbox[3] <= y1 + slop
+    return ok, bbox
+
+
+def menu_text(scale):
+    """Accessibility rows at a text size. The type stays inside each button."""
+    img = screen(0.5)
+    header(img, "Accessibility", "Text size  %.2f" % scale)
+    title_px = int(round(40 * scale))
+    sub_px = int(round(30 * scale))
+    row_h = 24 + title_px + 6 + sub_px + 12
+    if row_h < 108:
+        row_h = 108
+    step = row_h + 8
+    rows = [
+        ("Reduce motion  Off", "Menu slides and the title pulse only", True),
+        ("Text size  %.2f" % scale, "0.85, 1.00, 1.25, 1.50", False),
+        ("Comic words  On", "Verb words during a match.", False),
+    ]
+    y = 168
+    ratios = []
+    d = ImageDraw.Draw(img)
+    for title, sub, hot in rows:
+        box = (280, y, 1640, y + row_h)
+        shadow(img, box)
+        d = ImageDraw.Draw(img)
+        fill = HOT if hot else PANEL
+        rounded(d, box, 22, fill, GOLD if hot else STROKE, 6 if hot else 3)
+        d.rectangle((296, y + 8, 1624, y + 16), fill=GOLD if hot else (255, 255, 255, 70))
+        title_c = INK if hot else CREAM
+        sub_c = INK if hot else MUTE
+        tf = font(FONT_D, title_px)
+        sf = font(FONT_B, sub_px)
+        title_xy = (308, y + 24)
+        sub_xy = (308, y + 24 + title_px + 6)
+        d.text(title_xy, title, font=tf, fill=title_c)
+        d.text(sub_xy, sub, font=sf, fill=sub_c)
+        well = (292, y + 18, 1628, y + row_h - 6)
+        ok_t, tb = text_inside(d, title_xy, title, tf, well)
+        ok_s, sb = text_inside(d, sub_xy, sub, sf, well)
+        if not ok_t or not ok_s:
+            raise SystemExit("menu clip scale=%s title=%s sub=%s well=%s" % (scale, tb, sb, well))
+        ratios.append(contrast(title_c, fill))
+        ratios.append(contrast(sub_c, fill))
+        y += step
+    ratios.append(contrast(GOLD, NAVY))
+    footer_both(img)
+    return img, min(ratios)
+
+
+def match_hud(scale):
+    """Two-player match HUD. Plates grow with the text size so nothing clips."""
+    img = screen(0.28)
+    d = ImageDraw.Draw(img)
+    name_px = int(round(36 * scale)) if scale < 1.2 else int(round(36 * scale))
+    if abs(scale - 1.0) < 0.01:
+        name_px, floor_px, call_px, clock_px = 36, 30, 68, 46
+        name_h, badge_h, clock_h, clock_w, chip_w, chip_h = 132, 52, 70, 260, 52, 72
+    else:
+        floor_px = int(round(30 * scale))
+        call_px = int(round(68 * scale))
+        clock_px = int(round(46 * scale))
+        name_px = int(round(36 * scale))
+        name_h = max(name_px / 0.34, floor_px / 0.32, floor_px / 0.38) + 4
+        badge_h = max(52, floor_px + 8)
+        clock_h = max(70, clock_px / 0.84 + 8)
+        clock_w = min(420, max(260, clock_px * 3.6))
+        chip_w = max(52, floor_px * 3.0)
+        chip_h = (floor_px + 8) / 0.42
+    # Seam and a quiet plate per half.
+    d.rectangle((W // 2 - 2, 0, W // 2 + 2, H), fill=GOLD)
+    seats = ((0, SEAT[0], "P1", "Keyboard", True), (W // 2, SEAT[1], "P2", "Pad", False))
+    ratios = [contrast(GOLD, NAVY)]
+    nf = font(FONT_D, name_px)
+    ff = font(FONT_B, floor_px)
+    for origin, seat, name, profile, it in seats:
+        plate = (origin + 28, 28, origin + 28 + 112 + 16 + 460, 28 + int(name_h))
+        # Identity sits in the corner. The badge is the seat, the name is beside it.
+        badge = (origin + 36, 36, origin + 36 + 112, 36 + int(badge_h))
+        rounded(d, badge, 10, GOLD if it else NAVY, INK, 2)
+        it_word = "IT"
+        itf = font(FONT_D, floor_px)
+        tw = d.textlength(it_word, font=itf)
+        it_xy = (badge[0] + (112 - tw) / 2, badge[1] + (badge_h - floor_px) / 2 - 2)
+        d.text(it_xy, it_word, font=itf, fill=INK if it else CREAM)
+        ok, bb = text_inside(d, it_xy, it_word, itf, (badge[0] + 4, badge[1] + 2, badge[2] - 4, badge[3] - 2))
+        if not ok:
+            raise SystemExit("badge clip %s %s" % (scale, bb))
+        ratios.append(contrast(INK if it else CREAM, GOLD if it else NAVY))
+        nx = badge[2] + 16
+        ny = 36
+        d.text((nx, ny), name, font=nf, fill=CREAM)
+        ok, bb = text_inside(d, (nx, ny), name, nf, (nx, ny, nx + 420, ny + name_px + 4))
+        if not ok:
+            raise SystemExit("name clip %s %s" % (scale, bb))
+        mid = ny + int(name_h * 0.34)
+        d.text((nx, mid), profile, font=ff, fill=MUTE)
+        d.text((nx + 220, mid), "TAGS  1" if it else "TAGS  0", font=ff, fill=MUTE)
+        low = ny + int(name_h * 0.66)
+        d.text((nx, low), "8.5s as It" if it else "Live", font=ff, fill=GOLD)
+        for word, xy in (
+            (profile, (nx, mid)),
+            ("TAGS  1" if it else "TAGS  0", (nx + 220, mid)),
+            ("8.5s as It" if it else "Live", (nx, low)),
+        ):
+            ok, bb = text_inside(d, xy, word, ff, (origin + 28, 28, origin + W // 2 - 24, 36 + int(name_h)))
+            if not ok:
+                raise SystemExit("hud line clip %s %s %s" % (scale, word, bb))
+        ratios.append(contrast(CREAM, (8, 22, 58)))
+        # Verb words along the bottom. The chip is wide enough for the word.
+        verbs = ("GO", "IT")
+        base_y = H - 36 - int(chip_h)
+        for i, word in enumerate(verbs):
+            cx = origin + 36 + i * (int(chip_w) + 8)
+            chip = (cx, base_y, cx + int(chip_w), base_y + int(chip_h))
+            rounded(d, chip, 12, NAVY, STROKE, 2)
+            vf = font(FONT_B, floor_px)
+            vw = d.textlength(word, font=vf)
+            word_top = chip[3] - int(chip_h * 0.42)
+            vxy = (cx + (chip_w - vw) / 2, word_top + (chip_h * 0.42 - floor_px) / 2)
+            d.text(vxy, word, font=vf, fill=CREAM)
+            band = (chip[0] + 2, word_top, chip[2] - 2, chip[3] - 2)
+            ok, bb = text_inside(d, vxy, word, vf, band)
+            if not ok:
+                raise SystemExit("verb clip %s %s %s band %s" % (scale, word, bb, band))
+            ratios.append(contrast(CREAM, NAVY))
+        if it:
+            cf = font(FONT_D, call_px)
+            call = "YOU'RE IT!"
+            cw = d.textlength(call, font=cf)
+            band_l = origin + 80
+            band_r = origin + W // 2 - 80
+            band_t = 360
+            band_b = 360 + call_px + 16
+            if cw <= (band_r - band_l):
+                cxy = (band_l + (band_r - band_l - cw) / 2, band_t)
+                d.text(cxy, call, font=cf, fill=GOLD)
+                ok, bb = text_inside(d, cxy, call, cf, (band_l, band_t, band_r, band_b))
+            else:
+                cxy = (band_l, band_t)
+                d.text(cxy, call, font=cf, fill=GOLD)
+                ok, bb = text_inside(d, cxy, call, cf, (band_l, band_t, band_r, band_t + call_px + 8))
+            if not ok:
+                raise SystemExit("call clip %s %s" % (scale, bb))
+            ratios.append(contrast(GOLD, (8, 22, 58)))
+    # Clock on the seam.
+    cx0 = (W - int(clock_w)) / 2
+    clock = (cx0, 28, cx0 + clock_w, 28 + clock_h)
+    rounded(d, clock, 12, INK, GOLD, 3)
+    clf = font(FONT_D, clock_px)
+    clock_word = "1:30"
+    ctw = d.textlength(clock_word, font=clf)
+    # The clock text uses the left 62% of the plate, same as the runtime anchors.
+    text_r = clock[0] + clock_w * 0.62
+    cxy = (clock[0] + 12, clock[1] + (clock_h - clock_px) / 2 - 2)
+    if cxy[0] + ctw > text_r:
+        cxy = (text_r - ctw - 4, cxy[1])
+    d.text(cxy, clock_word, font=clf, fill=CREAM)
+    ok, bb = text_inside(d, cxy, clock_word, clf, (clock[0] + 8, clock[1] + 4, text_r, clock[3] - 4))
+    if not ok:
+        raise SystemExit("clock clip %s %s plate %s" % (scale, bb, clock))
+    round_word = "1/3"
+    rf = font(FONT_B, floor_px)
+    rxy = (text_r + 8, clock[1] + (clock_h - floor_px) / 2)
+    d.text(rxy, round_word, font=rf, fill=GOLD)
+    ok, bb = text_inside(d, rxy, round_word, rf, (text_r, clock[1] + 4, clock[2] - 8, clock[3] - 4))
+    if not ok:
+        raise SystemExit("round clip %s %s" % (scale, bb))
+    ratios.append(contrast(CREAM, INK))
+    ratios.append(contrast(GOLD, INK))
+    return img, min(ratios)
+
+
 def main():
     notes = []
     jobs = [
@@ -1138,9 +1409,18 @@ def main():
         ("07-loading-composite.png", loading()),
         ("08-pause-composite.png", pause()),
         ("09-options-composite.png", options("hub")),
+        ("09-hub-before-composite.png", options("hub", hub="before")),
         ("09-sound-composite.png", options("sound")),
+        ("09-sound-muted-composite.png", options("sound", mute=True)),
         ("09-picture-composite.png", options("picture")),
+        ("09-quality-before-composite.png", options("picture", levels=False)),
+        ("09-quality-ultra-composite.png", options("picture", quality="Ultra")),
         ("09-access-composite.png", options("access")),
+        ("09-access-before-composite.png", options("access", access="strip")),
+        ("09-menu-text-100-composite.png", menu_text(1.0)),
+        ("09-menu-text-150-composite.png", menu_text(1.5)),
+        ("03-hud-text-100-composite.png", match_hud(1.0)),
+        ("03-hud-text-150-composite.png", match_hud(1.5)),
         ("10-controls-composite.png", controls(False)),
         ("10-controls-bottom-composite.png", controls(True)),
         ("11-drop-in-composite.png", drop_in()),

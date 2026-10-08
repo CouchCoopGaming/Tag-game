@@ -63,7 +63,12 @@ namespace Tag.Settings
         public static readonly float[] SfxSteps = { 0f, 0.5f, 0.75f, 1f };
         public static readonly float[] UiSteps = { 0f, 0.5f, 0.75f, 1f };
         public static readonly float[] MusicSteps = { 0f, 0.15f, 0.35f, 0.55f, 1f };
-        public static readonly float[] HudSteps = { 0.75f, 1f, 1.25f, 1.5f };
+        /// <summary>Menu steps. 1.00 is the identity size. HudMin stays 0.75 so a saved smaller scale still clamps.</summary>
+        public static readonly float[] HudSteps = { 0.85f, 1f, 1.25f, 1.5f };
+        public const int QualityLow = 0;
+        public const int QualityMedium = 1;
+        public const int QualityHigh = 2;
+        public const int QualityUltra = 3;
         public static readonly float[] RumbleSteps = { 0f, 25f, 50f, 75f, 100f };
         static readonly string[] SeatNames = { "P1", "P2", "P3", "P4" };
 
@@ -87,7 +92,7 @@ namespace Tag.Settings
         /// <summary>Verb words on the match HUD. Missing from an old blob stays on.</summary>
         public bool ComicWords = true;
         public bool ReduceMotion;
-        public int PictureQuality;
+        public int PictureQuality = QualityMedium;
         public int ResIndex = 2;
         public bool Fullscreen = true;
         public bool VSync = true;

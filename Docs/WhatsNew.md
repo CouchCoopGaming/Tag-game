@@ -342,6 +342,8 @@ The twelfth pass reads each controls glyph from the binding token. Punch shows a
 
 The thirteenth pass makes the options rows do what they say. Volumes reach the listener and the effect, UI, and music gains. Picture quality sets the quality level. Text size changes the menu and the match HUD, and UI scale still changes the couch canvas. Comic words turns the verb words on and off. The values stay in the settings file. Each options page can reset that page after a confirm. Loading names the arena, fills the bar from the scene load, and the tip it opens on is hold into a wall to cling, then jump to wall jump. Composites are in `Docs/UiStills/screens2/pass13/`. Space still jumps.
 
+The fourteenth pass adds Low, High, and Ultra beside Medium. Medium is still the level the game starts on. The options hub keeps Reset and Back on one row at the bottom. Accessibility shows a full tile for P1 through P4, and the same four colors as protan, deutan, and tritan. Text size offers 0.85, 1.00, 1.25, and 1.50. 1.00 is the size the menus already used. Mute still drives the listener, and the headless run prints that. Composites are in `Docs/UiStills/screens2/pass14/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

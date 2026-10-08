@@ -24,10 +24,17 @@ namespace Tag.Ui.Menu
         public const int OpenCredits = 4;
 
         public static int Page;
+        public const int BarReset = 0;
+        public const int BarBack = 1;
+        /// <summary>Hub prompt bar. Back is the confirm target so the last row still leaves.</summary>
+        public static int Bar = BarBack;
+        /// <summary>Room kept under the accessibility rows for the full swatches and the CVD preview.</summary>
+        public const float SwatchReserve = 276f;
 
         public static void Reset()
         {
             Page = Hub;
+            Bar = BarBack;
         }
 
         public static bool ClosePage()
@@ -51,7 +58,7 @@ namespace Tag.Ui.Menu
                 if (Page == Display) return 7;
                 if (Page == Access) return 7;
                 if (Page == Look) return 6;
-                return 8;
+                return 7;
             }
         }
 
@@ -140,7 +147,8 @@ namespace Tag.Ui.Menu
             }
             if (index == Count - 1) return "";
             if (Page == Access && index == 0) return "Menu slides and the title pulse only";
-            if (Page == Access && index == 1) return "Menu and HUD text";
+            if (Page == Access && index == 1) return "0.85, 1.00, 1.25, 1.50";
+            if (Page == Display && index == 3) return "Low, Medium, High, Ultra";
             if (Page == Access && index == 4) return "Verb words during a match.";
             if (Page == Display && index == 4) return "80% to 130%, for a couch TV";
             if (Page == Audio && index < 4) return "Left / Right";
@@ -186,7 +194,7 @@ namespace Tag.Ui.Menu
                 if (index == 3) return OpenControls;
                 if (index == 4) { Page = Look; return Rebuild; }
                 if (index == 5) return OpenCredits;
-                if (OptionApply.IsResetRow(Page, index))
+                if (index == Count - 1 && Bar == BarReset && OptionApply.IsResetRow(Page, index))
                 {
                     GameSettings hub = GameSettings.Current ?? GameSettings.Defaults();
                     GameSettings.Current = hub;
@@ -214,6 +222,16 @@ namespace Tag.Ui.Menu
 
         public static bool Step(int index, int dir)
         {
+            if (Page == Hub && index == Count - 1)
+            {
+                int chip = Bar + (dir < 0 ? -1 : 1);
+                if (chip < BarReset) chip = BarReset;
+                if (chip > BarBack) chip = BarBack;
+                if (chip == Bar) return false;
+                Bar = chip;
+                OptionApply.Disarm();
+                return true;
+            }
             if (Page == Hub || index < 0 || index >= Count - 1 || OptionApply.IsResetRow(Page, index)) return false;
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             GameSettings.Current = s;
@@ -271,42 +289,60 @@ namespace Tag.Ui.Menu
             if (Page != Access || body == null) return;
             GameSettings s = GameSettings.Current ?? GameSettings.Defaults();
             int pal = s.PaletteOf(s.AccessSeat);
-            int shown = Count;
-            int win = UiFit.Window(UiFit.Current(), UiFit.OptStep, 8f);
-            if (shown > win) shown = win;
-            float y = 8f + (shown - 1) * UiFit.OptStep + UiFit.OptRow + 8f;
-            float room = UiFit.BodyH(UiFit.Current()) - 8f - y;
-            float nameH = UiFit.FloorFont;
-            bool named = room >= 48f + 4f + nameH;
-            float swH = named ? 78f : room;
-            if (named && swH + 4f + nameH > room) swH = room - 4f - nameH;
-            if (swH > 78f) swH = 78f;
-            if (swH < 36f) return;
-            string palette = AccessibilityPalette.Name(pal);
-            Text label = MenuWidgets.Words(body, palette, UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
-            RectTransform labelRt = label.rectTransform;
-            labelRt.anchorMin = new Vector2(0f, 1f);
-            labelRt.anchorMax = new Vector2(0f, 1f);
-            labelRt.pivot = new Vector2(0f, 1f);
-            labelRt.anchoredPosition = new Vector2(40f, -y);
-            labelRt.sizeDelta = new Vector2(280f, swH);
+            float y = UiFit.BodyH(UiFit.Current()) - SwatchReserve;
+            if (y < 8f) y = 8f;
+            float swH = 78f;
+            float capH = 40f;
+            Caption(body, AccessibilityPalette.Name(pal), 40f, y, 300f, 32f, TextAnchor.MiddleLeft);
+            float tiles = y + 36f;
             for (int i = 0; i < 4; i++)
             {
                 AccessibilityPalette.Player(pal, i, out float r, out float g, out float b);
-                RectTransform rt = MenuWidgets.Place(body, "Swatch", 360f + i * 150f, y, 120f, swH);
+                float x = 360f + i * 150f;
+                RectTransform rt = MenuWidgets.Place(body, "Swatch", x, tiles, 120f, swH);
                 Image image = rt.gameObject.AddComponent<Image>();
                 MenuArt.Plate(image, new Color(r, g, b, 1f), true);
                 image.raycastTarget = false;
-                if (!named) continue;
+                RectTransform cap = MenuWidgets.Place(body, "SwatchName", x, tiles + swH + 4f, 120f, capH);
+                Image capPlate = cap.gameObject.AddComponent<Image>();
+                MenuArt.Plate(capPlate, MenuTheme.Navy, true);
+                capPlate.raycastTarget = false;
                 string name = i == 0 ? "P1" : i == 1 ? "P2" : i == 2 ? "P3" : "P4";
-                Text pname = MenuWidgets.Words(body, name, UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
-                RectTransform prt = pname.rectTransform;
-                prt.anchorMin = new Vector2(0f, 1f);
-                prt.anchorMax = new Vector2(0f, 1f);
-                prt.pivot = new Vector2(0f, 1f);
-                prt.anchoredPosition = new Vector2(360f + i * 150f, -(y + swH + 4f));
-                prt.sizeDelta = new Vector2(120f, nameH);
+                Caption(cap, name, 0f, 0f, 120f, capH, TextAnchor.MiddleCenter);
             }
+            float rowY = tiles + swH + 4f + capH + 8f;
+            int[] cvd = { AccessibilityPalette.CvdProtanopia, AccessibilityPalette.CvdDeuteranopia, AccessibilityPalette.CvdTritanopia };
+            string[] cvdName = { "Protan", "Deutan", "Tritan" };
+            for (int c = 0; c < cvd.Length; c++)
+            {
+                float d = AccessibilityPalette.MinPlayerDistance(pal, cvd[c]);
+                string row = cvdName[c] + "  " + d.ToString("0.00", CultureInfo.InvariantCulture);
+                Caption(body, row, 40f, rowY, 300f, 32f, TextAnchor.MiddleLeft);
+                for (int i = 0; i < 4; i++)
+                {
+                    AccessibilityPalette.Player(pal, i, out float r, out float g, out float b);
+                    AccessibilityPalette.Simulate(cvd[c], r, g, b, out float oR, out float oG, out float oB);
+                    RectTransform chip = MenuWidgets.Place(body, "Cvd", 360f + i * 150f, rowY, 120f, 32f);
+                    Image chipImage = chip.gameObject.AddComponent<Image>();
+                    MenuArt.Plate(chipImage, new Color(oR, oG, oB, 1f), true);
+                    chipImage.raycastTarget = false;
+                }
+                rowY += 40f;
+            }
+        }
+
+        static void Caption(Transform parent, string text, float x, float y, float w, float h, TextAnchor align)
+        {
+            RectTransform hold = MenuWidgets.Place(parent, "Caption", x, y, w, h);
+            Text label = MenuWidgets.Words(hold, text, UiFit.FloorFont, align, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            label.rectTransform.offsetMin = new Vector2(4f, 0f);
+            label.rectTransform.offsetMax = new Vector2(-4f, 0f);
+            label.resizeTextForBestFit = false;
+            int px = UiFit.TextPx(UiFit.FloorFont);
+            if (px > (int)h - 4) px = (int)h - 4;
+            if (px < 1) px = 1;
+            label.fontSize = px;
+            label.resizeTextMaxSize = px;
         }
     }
 }

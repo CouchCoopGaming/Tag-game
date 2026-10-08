@@ -313,6 +313,10 @@ Each controls glyph is the sprite for that row's ActionBinds token. Punch's pad 
 
 Sound, Picture, Accessibility, and Look apply when you step a row, and the settings blob keeps the value. Master, mute, and the listener are one group. Sfx, UI, and music are the bus gains. Picture quality calls QualitySettings. Text size scales menu type and the match HUD. UI scale still scales the canvas. Comic words turns the verb words on and off. A second headless line, `ui-apply`, sets each value, reloads, and reads it back. Each options page has Reset to defaults. The first confirm asks, the second resets that page. Loading still names the arena and fills the bar from the scene load. The tip it opens on is the cling and wall-jump line. Stills are composites in `Docs/UiStills/screens2/pass13/`.
 
+## Screens 2, pass 14
+
+Picture quality is Low, Medium, High, and Ultra. Medium stays the level the game boots on, with the same shadows, antialiasing, and LOD bias as before. The Picture row steps through all four. The options hub puts Reset and Back on one bottom row, with the confirm and back glyphs from the default binds. Accessibility shows full P1–P4 tiles and a protan, deutan, and tritan preview of those four colors, with the pair distance beside each row. Text size steps are 0.85, 1.00, 1.25, and 1.50, and 1.00 is still the size the screens already used. The mute path prints `ui-bus` from the headless run. Stills are composites in `Docs/UiStills/screens2/pass14/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

@@ -715,7 +715,21 @@ namespace Tag.Ui.Hud
             if (Clock != null)
             {
                 RectTransform plate = Clock.transform.parent as RectTransform;
-                if (plate != null) plate.anchoredPosition = new Vector2(0f, -UiFit.SafeY);
+                if (plate != null)
+                {
+                    plate.anchoredPosition = new Vector2(0f, -UiFit.SafeY);
+                    int clockPx = UiFit.TextPx(46);
+                    if (clockPx != 46)
+                    {
+                        float h = clockPx / 0.84f + 8f;
+                        if (h < HudCorner.ClockH) h = HudCorner.ClockH;
+                        float w = HudCorner.ClockW;
+                        float want = clockPx * 3.6f;
+                        if (want > w) w = want;
+                        if (w > 420f) w = 420f;
+                        plate.sizeDelta = new Vector2(w, h);
+                    }
+                }
             }
             for (int i = 0; i < 4; i++)
             {
@@ -777,13 +791,25 @@ namespace Tag.Ui.Hud
             bool right = lay.Right;
             int floor = UiFit.TextPx(UiFit.FloorFont);
             if (nameSize < floor) nameSize = floor;
+            float badgeH = HudCorner.BadgeH;
+            if (floor + 8f > badgeH) badgeH = floor + 8f;
+            float nameH = HudCorner.NameH;
+            if (nameSize > nameH * 0.34f || floor > nameH * 0.32f || floor > nameH * 0.38f)
+            {
+                float need = nameSize / 0.34f;
+                float mid = floor / 0.32f;
+                float low = floor / 0.38f;
+                if (mid > need) need = mid;
+                if (low > need) need = low;
+                nameH = need + 4f;
+            }
             if (pane.Badge != null)
             {
                 RectTransform rt = pane.Badge.rectTransform;
                 rt.anchorMin = new Vector2(right ? 1f : 0f, 1f);
                 rt.anchorMax = rt.anchorMin;
                 rt.pivot = new Vector2(right ? 1f : 0f, 1f);
-                rt.sizeDelta = new Vector2(HudCorner.BadgeW, HudCorner.BadgeH);
+                rt.sizeDelta = new Vector2(HudCorner.BadgeW, badgeH);
                 rt.anchoredPosition = new Vector2(lay.BadgeX, lay.BadgeY);
             }
             if (pane.Identity != null)
@@ -793,7 +819,22 @@ namespace Tag.Ui.Hud
                 rt.anchorMax = rt.anchorMin;
                 rt.pivot = new Vector2(right ? 1f : 0f, 1f);
                 rt.anchoredPosition = new Vector2(lay.NameX, lay.NameY);
-                rt.sizeDelta = new Vector2(lay.NameW, HudCorner.NameH);
+                rt.sizeDelta = new Vector2(lay.NameW, nameH);
+            }
+            if (floor > UiFit.FloorFont && pane.Verbs != null)
+            {
+                float chipH = (floor + 8f) / 0.42f;
+                float chipW = floor * 3.0f;
+                if (chipW < 52f) chipW = 52f;
+                float gap = 4f;
+                pane.Verbs.sizeDelta = new Vector2(chipW * 3f + gap * 2f, chipH);
+                for (int c = 0; c < pane.Verbs.childCount; c++)
+                {
+                    RectTransform child = pane.Verbs.GetChild(c) as RectTransform;
+                    if (child == null) continue;
+                    child.anchoredPosition = new Vector2(c * (chipW + gap), 0f);
+                    child.sizeDelta = new Vector2(chipW, chipH);
+                }
             }
             TextAnchor align = right ? TextAnchor.MiddleRight : TextAnchor.MiddleLeft;
             if (pane.Name != null)

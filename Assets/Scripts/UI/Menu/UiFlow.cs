@@ -311,7 +311,7 @@ namespace Tag.Ui.Menu
             }
             if (!BackTo(ref cred, Options, report)) return 0;
             Spot leave = menu;
-            leave.Focus = 7;
+            leave.Focus = 6;
             leave = Confirm(leave);
             if (leave.Screen != Main || !Fit(leave, report))
             {
@@ -609,7 +609,7 @@ namespace Tag.Ui.Menu
                 case Controls: return 2;
                 case Records: return RecordRows();
                 case Options:
-                    if (s.Page == 0) return 8;
+                    if (s.Page == 0) return 7;
                     if (s.Page == 4) return 6;
                     return 7;
                 default: return 0;

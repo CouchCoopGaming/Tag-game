@@ -262,6 +262,22 @@ namespace Tag.Ui.Menu
         public const float OptRow = 108f;
         public const float OptStep = 116f;
 
+        /// <summary>Options row. At text size 1.00 this is the 108/116 pair. Above that the row grows so the type fits.</summary>
+        public static void OptionSpan(out float row, out float step)
+        {
+            int title = TextPx(40);
+            int detail = TextPx(FloorFont);
+            if (title == 40 && detail == FloorFont)
+            {
+                row = OptRow;
+                step = OptStep;
+                return;
+            }
+            row = 24f + title + 6f + detail + 12f;
+            if (row < OptRow) row = OptRow;
+            step = row + 8f;
+        }
+
         /// <summary>RESULTS action row. Rematch carries the "Same setup" sub-line.</summary>
         public const float RematchH = 128f;
 
@@ -291,7 +307,11 @@ namespace Tag.Ui.Menu
                 detailH = 0f;
                 return;
             }
-            if (h >= OptRow && h <= RematchH)
+            int titlePx = TextPx(40);
+            int detailPx = TextPx(FloorFont);
+            bool identity = titlePx == 40 && detailPx == FloorFont;
+            float need = 24f + titlePx + 6f + detailPx + 8f;
+            if (h >= OptRow && h <= RematchH && identity)
             {
                 titleFromTop = 24f;
                 titleH = 40f;
@@ -302,6 +322,14 @@ namespace Tag.Ui.Menu
                     detailH = FloorFont;
                     detailFromTop = h - 8f - detailH;
                 }
+                return;
+            }
+            if (!identity && h + 0.5f >= need)
+            {
+                titleFromTop = 24f;
+                titleH = titlePx;
+                detailFromTop = 24f + titlePx + 6f;
+                detailH = detailPx;
                 return;
             }
             float titleBand = FloorFont + 4f;

@@ -2535,12 +2535,18 @@ namespace Tag.Ui.Menu
             if (max < 0) max = 0;
             if (_window > max) _window = max;
             if (_window < 0) _window = 0;
+            UiFit.OptionSpan(out float rowH, out float step);
             for (int v = 0; v < win; v++)
             {
                 int index = _window + v;
                 if (index >= _count) break;
                 UiFit.RowBox(UiFit.Current(), 1120f, out float rowX, out float rowW);
-                MenuTile tile = AddTile(rowX, 8f + v * UiFit.OptStep, rowW, UiFit.OptRow, index, MenuDepth.Title(index), MenuDepth.Detail(index), true);
+                if (MenuDepth.Page == MenuDepth.Hub && index == MenuDepth.Count - 1)
+                {
+                    PaintHubBar(rowX, 8f + v * step, rowW);
+                    continue;
+                }
+                MenuTile tile = AddTile(rowX, 8f + v * step, rowW, rowH, index, MenuDepth.Title(index), MenuDepth.Detail(index), true);
                 if (MenuDepth.Page == MenuDepth.Hub)
                     MarkOption(tile, index);
                 if (_pauseChild && MenuDepth.Page == MenuDepth.Hub && index == MenuDepth.Count - 1 && tile != null && tile.Detail != null)
@@ -2693,9 +2699,63 @@ namespace Tag.Ui.Menu
 
         int OptionWindow()
         {
-            int n = UiFit.Window(UiFit.Current(), UiFit.OptStep, 8f);
+            float top = 8f;
+            if (MenuDepth.Page == MenuDepth.Access)
+                top += MenuDepth.SwatchReserve;
+            UiFit.OptionSpan(out _, out float step);
+            int n = UiFit.Window(UiFit.Current(), step, top);
             if (n > OptWindow) n = OptWindow;
+            if (n < 1) n = 1;
             return n;
+        }
+
+        void PaintHubBar(float x, float y, float w)
+        {
+            ActionBinds binds = ActionBinds.Defaults();
+            string confirmKey = binds.Keyboard[(int)PlayAction.Jump];
+            string confirmPad = binds.Gamepad[(int)PlayAction.Jump];
+            string backKey = binds.Keyboard[(int)PlayAction.Pause];
+            string backPad = binds.Gamepad[(int)PlayAction.Slide];
+            float gap = 16f;
+            float chipW = (w - gap) * 0.5f;
+            if (chipW < 180f) chipW = 180f;
+            bool onBar = _focus == MenuDepth.Count - 1;
+            bool armed = OptionApply.ArmedRow(MenuDepth.Hub, MenuDepth.Count - 1);
+            string resetWord = armed ? "Reset?" : "Reset";
+            string backWord = _pauseChild ? "Pause" : "Back";
+            HubChip(x, y, chipW, 72f, MenuDepth.BarReset, resetWord, confirmKey, confirmPad, onBar && MenuDepth.Bar == MenuDepth.BarReset);
+            HubChip(x + chipW + gap, y, chipW, 72f, MenuDepth.BarBack, backWord, backKey, backPad, onBar && MenuDepth.Bar == MenuDepth.BarBack);
+        }
+
+        void HubChip(float x, float y, float w, float h, int chip, string word, string keyToken, string padToken, bool hot)
+        {
+            RectTransform rt = MenuWidgets.Place(_body, chip == MenuDepth.BarReset ? "ResetChip" : "BackChip", x, y, w, h);
+            Image plate = rt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(plate, hot ? MenuTheme.PanelHot : MenuTheme.Navy, true);
+            plate.raycastTarget = true;
+            RectTransform keyRt = MenuWidgets.Place(rt, "Key", 12f, 16f, 56f, 40f);
+            Image key = keyRt.gameObject.AddComponent<Image>();
+            key.sprite = MenuIcons.Glyph(keyToken);
+            key.preserveAspect = true;
+            key.raycastTarget = false;
+            RectTransform padRt = MenuWidgets.Place(rt, "Pad", 76f, 16f, 44f, 40f);
+            Image pad = padRt.gameObject.AddComponent<Image>();
+            pad.sprite = MenuIcons.Glyph(padToken);
+            pad.preserveAspect = true;
+            pad.raycastTarget = false;
+            Text label = MenuWidgets.Words(rt, word, UiFit.FloorFont, TextAnchor.MiddleLeft, hot ? MenuTheme.Ink : MenuTheme.Cream, Vector2.zero, Vector2.one);
+            label.rectTransform.offsetMin = new Vector2(132f, 4f);
+            label.rectTransform.offsetMax = new Vector2(-12f, -4f);
+            label.resizeTextForBestFit = false;
+            label.fontSize = UiFit.TextPx(UiFit.FloorFont);
+            Button button = rt.gameObject.AddComponent<Button>();
+            button.targetGraphic = plate;
+            button.onClick.AddListener(() =>
+            {
+                MenuDepth.Bar = chip;
+                _focus = MenuDepth.Count - 1;
+                ActivateOptions();
+            });
         }
 
         int ControlWindow()
@@ -3185,12 +3245,14 @@ namespace Tag.Ui.Menu
             bool armed = OptionApply.Armed >= 0;
             OptionApply.Disarm();
             int before = _window;
+            int previous = _focus;
             _focus = next;
             MenuAudio.Move();
             if (_screen == MenuScreenId.Options)
             {
                 int span = OptionWindow();
-                if (armed || _focus < _window || _focus >= _window + span || before != _window)
+                bool hubBar = MenuDepth.Page == MenuDepth.Hub && (previous == _count - 1 || _focus == _count - 1);
+                if (armed || hubBar || _focus < _window || _focus >= _window + span || before != _window)
                     PaintOptions();
                 else
                     RefreshFocus();

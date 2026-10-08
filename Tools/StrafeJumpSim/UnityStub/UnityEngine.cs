@@ -216,9 +216,9 @@ namespace UnityEngine
 
     public static class QualitySettings
     {
-        public static string[] names = { "Low", "Medium", "High" };
+        public static string[] names = { "Low", "Medium", "High", "Ultra" };
         public static int vSyncCount = 1;
-        public static int LastLevel;
+        public static int LastLevel = 1;
 
         public static void SetQualityLevel(int index, bool applyExpensiveChanges)
         {
