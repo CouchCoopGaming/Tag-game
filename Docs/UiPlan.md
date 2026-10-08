@@ -321,6 +321,10 @@ Picture quality is Low, Medium, High, and Ultra. Medium stays the level the game
 
 A settings blob without `qv` still means the old single picture level. Stored quality 0 loads Medium. New saves write `qv=1`, so Low stays Low. The headless run prints `ui-quality`. Accessibility can switch the four seat colours to a Protan/Deutan set or a Tritan set. Both clear the 0.35 pair floor under protan, deutan, and tritan. Off keeps the original colours. Seat chips gain a circle, triangle, square, or diamond only while that option is on. Text size 1.50 grows every menu row and leaves the type at that size. Reset and Back on Accessibility sit on the bottom row, outside the scroll. Stills are composites in `Docs/UiStills/screens2/pass15/`.
 
+## Screens 2, pass 16
+
+Color-blind seat colors is the second Accessibility row, so it sits in the first window at 1080p. The older row is Player color set. That one still cycles Default, Deuteranopia, Protanopia, Tritanopia, and High contrast. The two rows are not the same control. Seat colors stay Off unless the player changes them. Drop-in says where to find them. Text size 1.25 and 1.50 keep the screen title in the top band, and the character cards name Red / Tan, Blue / Mint, Orange / Lavender, and Lavender / Mint. The hat line and the mode blurbs wrap instead of being cut off. Controls can show a conflict, and Jump stays on Space until reset. Stills are composites in `Docs/UiStills/screens2/pass16/`.
+
 ## Later passes
 
 - Left from a rule row returns to the modes even when that rule can still decrease. Right from the right-hand mode, and Left at the end of a rule, already move between the columns.

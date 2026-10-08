@@ -314,7 +314,8 @@ namespace Tag.Ui.Menu
         public static float CastNameBand()
         {
             if (IdentityText()) return CastNameH;
-            float need = 12f + TextPx(FloorFont) * 2f + 8f;
+            // Name, then the look. At 1.50 a long look wraps, so the band is three lines.
+            float need = 12f + TextPx(FloorFont) * 3f + 8f;
             return need > CastNameH ? need : CastNameH;
         }
 

@@ -344,7 +344,7 @@ namespace Tag.Settings
     }
 
     /// <summary>
-    /// Optional seat colours. Off keeps the default four. The other two sets
+    /// Optional seat colors. Off keeps the default four. The other two sets
     /// clear the 0.35 pair floor under protan, deutan, and tritan.
     /// </summary>
     public static class SeatCvd

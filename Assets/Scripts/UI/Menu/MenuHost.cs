@@ -312,6 +312,7 @@ namespace Tag.Ui.Menu
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             ClearBody();
+            FitHeader();
             if (_bannerPlate != null) _bannerPlate.enabled = false;
             switch (id)
             {
@@ -505,7 +506,31 @@ namespace Tag.Ui.Menu
             _preview = previewGo.AddComponent<MenuPreview>();
             _preview.Build();
             BuildLost(root);
+            FitHeader();
             _canvas.enabled = false;
+        }
+
+        void FitHeader()
+        {
+            if (_header == null) return;
+            RectTransform headerRt = _header.rectTransform;
+            if (UiFit.IdentityText())
+            {
+                _header.resizeTextForBestFit = true;
+                _header.fontSize = 42;
+                _header.resizeTextMinSize = UiFit.FloorFont;
+                _header.resizeTextMaxSize = 42;
+                headerRt.sizeDelta = new Vector2(0f, 96f);
+                return;
+            }
+            int px = UiFit.TextPx(42);
+            _header.resizeTextForBestFit = false;
+            _header.fontSize = px;
+            _header.resizeTextMinSize = px;
+            _header.resizeTextMaxSize = px;
+            float band = 28f + px;
+            if (band < 96f) band = 96f;
+            headerRt.sizeDelta = new Vector2(0f, band);
         }
 
         void BuildLost(RectTransform root)
@@ -1866,6 +1891,10 @@ namespace Tag.Ui.Menu
             if (_header != null) _header.text = "  Who's playing";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             _joinSig = JoinSig();
+            float span = UiFit.BodyW(UiFit.Current());
+            float bodyH = UiFit.BodyH(UiFit.Current());
+            float cardH = 420f;
+            if (36f + cardH > bodyH) cardH = bodyH - 48f;
             for (int s = 0; s < 4; s++)
             {
                 bool human = CouchPlay.HumanAt(s);
@@ -1875,14 +1904,10 @@ namespace Tag.Ui.Menu
                 if (human && string.IsNullOrEmpty(profile)) profile = CouchPlay.Name(s);
                 int device = human ? CouchPlay.DeviceOf(s) : -1;
                 string deviceLine = device <= CouchPlay.DeviceKeyboard ? "Keyboard" : "Gamepad";
-                float span = UiFit.BodyW(UiFit.Current());
                 float cardW = (span - 16f * 5f) / 4f;
                 if (cardW > 428f) cardW = 428f;
                 if (cardW < 180f) cardW = 180f;
                 float x = 16f + s * (cardW + 16f);
-                float cardH = 420f;
-                float bodyH = UiFit.BodyH(UiFit.Current());
-                if (36f + cardH > bodyH) cardH = bodyH - 48f;
                 AddTile(x, 24f, cardW, cardH, s, title, detail, true);
                 MenuTile tile = TileAt(s);
                 if (!human && tile != null && tile.Detail != null)
@@ -1905,6 +1930,17 @@ namespace Tag.Ui.Menu
                 _banner.text = CouchPlay.Humans > 0
                     ? "Everyone Ready? Press Start"
                     : "Anyone can join";
+            }
+            float hintY = 24f + cardH + 12f;
+            float hintH = 44f;
+            if (hintY + hintH < bodyH - 8f)
+            {
+                var hintRt = MenuWidgets.Place(_body, "CvdHint", 16f, hintY, span - 32f, hintH);
+                var hintPlate = hintRt.gameObject.AddComponent<Image>();
+                MenuArt.Plate(hintPlate, MenuTheme.Navy, true);
+                hintPlate.raycastTarget = false;
+                Text hint = MenuWidgets.Words(hintRt, "Color-blind seat colors in Options > Accessibility", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
+                LockFit(hint, UiFit.FloorFont);
             }
             SyncStartMarks();
         }
@@ -2571,6 +2607,7 @@ namespace Tag.Ui.Menu
 
         void PaintOptions()
         {
+            FitHeader();
             ClearKeepHeader();
             _count = MenuDepth.Count;
             if (_header != null) _header.text = "  " + MenuDepth.Header();
@@ -2665,6 +2702,13 @@ namespace Tag.Ui.Menu
         void PaintControls()
         {
             ClearKeepHeader();
+            FitHeader();
+            if (_banner != null)
+            {
+                _banner.text = string.IsNullOrEmpty(_conflict)
+                    ? "Keyboard and pad glyphs. Confirm changes one. Space still jumps."
+                    : _conflict;
+            }
             ActionBinds binds = ActionBinds.Current ?? ActionBinds.Defaults();
             int win = ControlWindow();
             if (_focus < _window) _window = _focus;

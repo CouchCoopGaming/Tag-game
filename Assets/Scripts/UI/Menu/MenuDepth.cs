@@ -77,7 +77,7 @@ namespace Tag.Ui.Menu
         {
             if (Page == Audio) return "Sliders step the volumes you already have.";
             if (Page == Display) return "Resolution, fullscreen, vsync, and the couch UI scale.";
-            if (Page == Access) return "Motion, text size, seat colours, and comic words.";
+            if (Page == Access) return "Motion, text size, seat colors, and comic words.";
             if (Page == Look) return "Look is shared by the couch.";
             return "Sound, picture, accessibility, controls, look, and credits.";
         }
@@ -117,10 +117,10 @@ namespace Tag.Ui.Menu
             if (Page == Access)
             {
                 if (index == 0) return "Reduce motion  " + (MenuVideo.ReduceMotion ? "On" : "Off");
-                if (index == 1) return "Text size  " + s.HudScale.ToString("0.00", CultureInfo.InvariantCulture);
-                if (index == 2) return s.RowLabel(GameSettings.RowPlayer);
-                if (index == 3) return s.RowLabel(GameSettings.RowColorblind);
-                if (index == 4) return "Colour-blind seat palette  " + s.CvdSeatWord();
+                if (index == 1) return "Color-blind seat colors  " + s.CvdSeatWord();
+                if (index == 2) return "Text size  " + s.HudScale.ToString("0.00", CultureInfo.InvariantCulture);
+                if (index == 3) return s.RowLabel(GameSettings.RowPlayer);
+                if (index == 4) return "Player color set  " + AccessibilityPalette.Name(s.PaletteOf(s.AccessSeat));
                 if (index == 5) return "Comic words  " + (Tag.Ui.Hud.MatchHudText.ComicWords ? "On" : "Off");
                 return "Back";
             }
@@ -151,9 +151,10 @@ namespace Tag.Ui.Menu
             }
             if (index == Count - 1) return "";
             if (Page == Access && index == 0) return "Menu slides and the title pulse only";
-            if (Page == Access && index == 1) return "0.85, 1.00, 1.25, 1.50";
+            if (Page == Access && index == 1) return "Off, Protan/Deutan, or Tritan";
+            if (Page == Access && index == 2) return "0.85, 1.00, 1.25, 1.50";
             if (Page == Display && index == 3) return "Low, Medium, High, Ultra";
-            if (Page == Access && index == 4) return "Off, Protan/Deutan, or Tritan";
+            if (Page == Access && index == 4) return "Default, Deuteranopia, Protanopia, Tritanopia, or High contrast";
             if (Page == Access && index == 5) return "Verb words during a match.";
             if (Page == Display && index == 4) return "80% to 130%, for a couch TV";
             if (Page == Audio && index < 4) return "Left / Right";
@@ -172,7 +173,7 @@ namespace Tag.Ui.Menu
                 if (index == 3) return s.Music;
                 return -1f;
             }
-            if (Page == Access && index == 1)
+            if (Page == Access && index == 2)
             {
                 float u = (s.HudScale - GameSettings.HudMin) / (GameSettings.HudMax - GameSettings.HudMin);
                 if (u < 0f) u = 0f;
@@ -280,10 +281,10 @@ namespace Tag.Ui.Menu
                     MenuVideo.ToggleMotion();
                     s.ReduceMotion = MenuVideo.ReduceMotion;
                 }
-                else if (index == 1) s.Nudge(GameSettings.RowHud, dir);
-                else if (index == 2) s.Nudge(GameSettings.RowPlayer, dir);
-                else if (index == 3) s.Nudge(GameSettings.RowColorblind, dir);
-                else if (index == 4) s.CycleCvdSeats(dir);
+                else if (index == 1) s.CycleCvdSeats(dir);
+                else if (index == 2) s.Nudge(GameSettings.RowHud, dir);
+                else if (index == 3) s.Nudge(GameSettings.RowPlayer, dir);
+                else if (index == 4) s.Nudge(GameSettings.RowColorblind, dir);
                 else if (index == 5)
                 {
                     s.ComicWords = !s.ComicWords;

@@ -346,6 +346,8 @@ The fourteenth pass adds Low, High, and Ultra beside Medium. Medium is still the
 
 The fifteenth pass keeps an old picture setting on Medium. A save that has no quality version and stored 0 loads Medium. A new save writes the version, so Low stays Low. Accessibility can switch the seat colours to Protan/Deutan or Tritan, and those seats also show a circle, triangle, square, or diamond. Off leaves the colours as they were. Text size 1.50 makes the menu rows taller, including the main menu, character select, mode and rules, and RESULTS. Reset and Back on Accessibility stay on the bottom row. Composites are in `Docs/UiStills/screens2/pass15/`. Space still jumps.
 
+The sixteenth pass puts Color-blind seat colors second on Accessibility, above the fold. Player color set is the older row: it cycles the mark colors, and it does not change the four seat colors. Drop-in points at Options, Accessibility. Text size 1.25 and 1.50 keep Menu, Characters, Mode and rules, and RESULTS in the title band. Each character card names its own look, and the hat line and the mode blurbs wrap. Controls shows a conflict, keeps Jump on Space, and can reset the binds. Composites are in `Docs/UiStills/screens2/pass16/`. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

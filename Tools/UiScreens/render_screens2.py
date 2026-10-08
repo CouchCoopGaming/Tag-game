@@ -12,7 +12,7 @@ import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass15")
+OUT = os.path.join(ROOT, "Docs", "UiStills", "screens2", "pass16")
 FIG = os.path.join(OUT, "figures")
 W, H = 1920, 1080
 
@@ -177,6 +177,9 @@ def header(img, title, banner):
     img.alpha_composite(lock, (70, 18))
     tf = font(FONT_D, 64)
     d.text((310, 28), title, font=tf, fill=GOLD)
+    ok, bb = text_inside(d, (310, 28), title, tf, (300, 8, W - 40, 146))
+    if not ok:
+        raise SystemExit("title clip %s %s" % (title, bb))
     if banner:
         bf = font(FONT_B, 28)
         tw = d.textlength(banner, font=bf)
@@ -625,16 +628,14 @@ def options(page, quality="Medium", hub="bar", access="tiles", mute=False, level
             ("Reset to defaults", "This page only", False),
             ("Back", "", False),
         ], {4: 0.40}),
-        "access": ("Accessibility", "Reduce motion, text size, player colors, and comic words.", [
+        "access": ("Accessibility", "Motion, text size, seat colors, and comic words.", [
             ("Reduce motion  Off", "Menu slides and the title pulse only", True),
+            ("Color-blind seat colors  Off", "Off, Protan/Deutan, or Tritan", False),
             ("Text size  1.00", "0.85, 1.00, 1.25, 1.50", False),
             ("Player  P1", "Left / Right", False),
-            ("Colorblind palette  Default", "Left / Right", False),
+            ("Player color set  Default", "Default, Deuteranopia, Protanopia, Tritanopia, or High contrast", False),
             ("Comic words  On", "Verb words during a match.", False),
-        ] + ([
-            ("Reset to defaults", "This page only", False),
-            ("Back", "", False),
-        ] if access == "strip" else []), {1: 0.333}),
+        ], {2: 0.333}),
     }
     title, banner, rows, meters = pages[page]
     header(img, title, banner)
@@ -653,9 +654,9 @@ def options(page, quality="Medium", hub="bar", access="tiles", mute=False, level
             d = ImageDraw.Draw(img)
             d.rounded_rectangle((1080, y + 74, 1500, y + 90), 4, fill=(0, 0, 0, 90))
             d.rounded_rectangle((1080, y + 74, 1080 + int(420 * meters[i]), y + 90), 4, fill=GOLD)
-        if page == "access" and i in (0, 4):
+        if page == "access" and i in (0, 5):
             d = ImageDraw.Draw(img)
-            draw_switch(d, 1640 - 96 - 28, y + 34, i == 4)
+            draw_switch(d, 1640 - 96 - 28, y + 34, i == 5)
         y += step
     if page == "hub" and hub == "bar":
         ratios.append(prompt_bar(img, y + 4, 280, 1360, hot="back"))
@@ -807,7 +808,7 @@ def swatch_band(img, y, colors=None, title="Default", marks=False, sw_h=78, row_
 def access_page(seats="off"):
     """Accessibility. Reset and Back stay on the bottom row, outside the scroll."""
     img = screen(0.5)
-    header(img, "Accessibility", "Motion, text size, seat colours, and comic words.")
+    header(img, "Accessibility", "Motion, text size, seat colors, and comic words.")
     if seats == "pd":
         seat_name, colors, head = "Protan/Deutan", PD_F, "Protan/Deutan"
     elif seats == "tritan":
@@ -815,19 +816,23 @@ def access_page(seats="off"):
     else:
         seat_name, colors, head = "Off", SEAT_F, "Default"
     rows = [
+        ("Reduce motion  Off", "Menu slides and the title pulse only", True),
+        ("Color-blind seat colors  " + seat_name, "Off, Protan/Deutan, or Tritan", seats != "off"),
+        ("Text size  1.00", "0.85, 1.00, 1.25, 1.50", False),
         ("Player  P1", "Left / Right", False),
-        ("Colorblind palette  Default", "Left / Right", False),
-        ("Colour-blind seat palette  " + seat_name, "Off, Protan/Deutan, or Tritan", seats != "off"),
-        ("Comic words  On", "Verb words during a match.", False),
     ]
     ratios = []
     y = 160
     row_h = 108
     for i, (name, sub, hot) in enumerate(rows):
         ratios.append(button(img, (280, y, 1640, y + row_h), name, sub, hot))
-        if i == 3:
+        if i == 0:
             d = ImageDraw.Draw(img)
-            draw_switch(d, 1640 - 96 - 28, y + 34, True)
+            draw_switch(d, 1640 - 96 - 28, y + 34, False)
+        if i == 2:
+            d = ImageDraw.Draw(img)
+            d.rounded_rectangle((1080, y + 74, 1500, y + 90), 4, fill=(0, 0, 0, 90))
+            d.rounded_rectangle((1080, y + 74, 1080 + int(420 * 0.333), y + 90), 4, fill=GOLD)
         y += 112
     d = ImageDraw.Draw(img)
     d.rounded_rectangle((1660, 172, 1674, 560), 4, fill=(0, 0, 0, 140))
@@ -1136,6 +1141,15 @@ def draw_join_glyph(d, kind, x, y):
 def drop_in():
     img = screen(0.5)
     header(img, "Who's playing", "Everyone Ready? Press Start")
+    d = ImageDraw.Draw(img)
+    hint = "Color-blind seat colors in Options > Accessibility"
+    hf = font(FONT_B, 22)
+    hw = d.textlength(hint, font=hf)
+    rounded(d, (300, 156, 318 + hw + 18, 190), 8, NAVY)
+    d.text((318, 160), hint, font=hf, fill=CREAM)
+    ok, bb = text_inside(d, (318, 160), hint, hf, (308, 156, 310 + hw + 28, 190))
+    if not ok:
+        raise SystemExit("hint clip %s" % (bb,))
     # Joined seats: keyboard shows Space / Enter, a pad shows A. Both show Y Ready.
     cards = [
         (True, 0, True, "P1", True),
@@ -1316,8 +1330,8 @@ def menu_text(scale):
     step = row_h + 8
     rows = [
         ("Reduce motion  Off", "Menu slides and the title pulse only", True),
+        ("Color-blind seat colors  Off", "Off, Protan/Deutan, or Tritan", False),
         ("Text size  %.2f" % scale, "0.85, 1.00, 1.25, 1.50", False),
-        ("Comic words  On", "Verb words during a match.", False),
     ]
     y = 168
     ratios = []
@@ -1598,50 +1612,82 @@ def board_main(scale, grown):
     return img, min(ratios), locked
 
 
+# Body, then trim. Same pairs on every text size. The well is the idle-mesh bust.
+CAST_LOOKS = (
+    ("Red / Tan", (224, 56, 61)),
+    ("Blue / Mint", (107, 173, 235)),
+    ("Orange / Lavender", (240, 107, 36)),
+    ("Lavender / Mint", (179, 148, 224)),
+)
+
+
 def board_cast(scale, grown):
     img = screen(0.5)
     header(img, "Characters", "Text size  %.2f" % scale)
     name_px = type_px(30, scale)
-    name_h = 78 if not grown else max(78, 12 + name_px * 2 + 8)
+    name_h = 78 if not grown else max(78, 12 + name_px * 3 + 8)
     status_h = 52 if not grown else max(52, 12 + name_px * 2 + 8)
-    card_w = 420
-    card_h = 400 if not grown else 430
+    card_w = 412
+    card_h = 400 if not grown else 460
     ratios = []
     y0 = 168
+    gap = 16
+    x0 = (W - (card_w * 4 + gap * 3)) // 2
     for s in range(4):
-        x = 48 + s * (card_w + 16)
+        look, body = CAST_LOOKS[s]
+        x = x0 + s * (card_w + gap)
         d = ImageDraw.Draw(img)
         rounded(d, (x, y0, x + card_w, y0 + card_h), 18, SEAT[s], STROKE, 3)
-        rounded(d, (x + 36, y0 + 16, x + card_w - 36, y0 + card_h - name_h - status_h - 24), 12, NAVY)
+        well = (x + 36, y0 + 16, x + card_w - 36, y0 + card_h - name_h - status_h - 24)
+        rounded(d, well, 12, NAVY)
+        bust_w = well[2] - well[0] - 28
+        bust_h = well[3] - well[1] - 16
+        if bust_h < 48:
+            bust_h = 48
+        if bust_w > int(bust_h * 0.72):
+            bust_w = int(bust_h * 0.72)
+        draw_bust(img, well[0] + (well[2] - well[0] - bust_w) // 2, well[1] + 6, bust_w, bust_h, body)
+        d = ImageDraw.Draw(img)
         name_box = (x + 12, y0 + card_h - name_h - status_h - 8, x + card_w - 12, y0 + card_h - status_h - 8)
         stat_box = (x + 12, name_box[3], x + card_w - 12, name_box[3] + status_h)
         rounded(d, name_box, 8, NAVY)
         rounded(d, stat_box, 8, NAVY)
         face_px = name_px if grown else 28
         nf = font(FONT_B, face_px)
-        d.text((name_box[0] + 12, name_box[1] + 6), "P%d" % (s + 1), font=nf, fill=CREAM)
-        d.text((name_box[0] + 12, name_box[1] + 8 + face_px), "Red / Red", font=nf, fill=CREAM)
+        ink_box = (name_box[0] + 4, name_box[1] + 2, name_box[2] - 4, name_box[3] - 2)
+        stat_ink = (stat_box[0] + 4, stat_box[1] + 2, stat_box[2] - 4, stat_box[3] - 2)
+        width = ink_box[2] - (name_box[0] + 12)
+        look_lines = wrap_words(d, look, nf, width) if grown else [look]
+        yy = name_box[1] + 6
+        d.text((name_box[0] + 12, yy), "P%d" % (s + 1), font=nf, fill=CREAM)
         if grown:
-            d.text((stat_box[0] + 12, stat_box[1] + 6), "Hat off", font=nf, fill=CREAM)
-            d.text((stat_box[0] + 12, stat_box[1] + 8 + face_px), "Not ready", font=nf, fill=CREAM)
-        else:
-            d.text((stat_box[0] + 12, stat_box[1] + 8), "Hat off   Not ready", font=nf, fill=CREAM)
-        if grown:
-            for word, xy, box in (
-                ("P%d" % (s + 1), (name_box[0] + 12, name_box[1] + 6), name_box),
-                ("Red / Red", (name_box[0] + 12, name_box[1] + 8 + face_px), name_box),
-                ("Hat off", (stat_box[0] + 12, stat_box[1] + 6), stat_box),
-                ("Not ready", (stat_box[0] + 12, stat_box[1] + 8 + face_px), stat_box),
-            ):
-                ok, bb = text_inside(d, xy, word, nf, (box[0] + 4, box[1] + 2, box[2] - 4, box[3] - 2))
+            ok, bb = text_inside(d, (name_box[0] + 12, yy), "P%d" % (s + 1), nf, ink_box)
+            if not ok:
+                raise SystemExit("cast clip P%d %s" % (s + 1, bb))
+        yy += face_px + 2
+        for line in look_lines:
+            d.text((name_box[0] + 12, yy), line, font=nf, fill=CREAM)
+            if grown:
+                ok, bb = text_inside(d, (name_box[0] + 12, yy), line, nf, ink_box)
                 if not ok:
-                    raise SystemExit("cast clip %s %s" % (word, bb))
+                    raise SystemExit("cast clip %s %s" % (line, bb))
+            yy += face_px + 2
+        hat = "Hat off   Not ready"
+        hat_lines = ["Hat off", "Not ready"] if grown and d.textlength(hat, font=nf) > (stat_ink[2] - (stat_box[0] + 12)) else [hat]
+        hy = stat_box[1] + 6
+        for line in hat_lines:
+            d.text((stat_box[0] + 12, hy), line, font=nf, fill=CREAM)
+            if grown:
+                ok, bb = text_inside(d, (stat_box[0] + 12, hy), line, nf, stat_ink)
+                if not ok:
+                    raise SystemExit("cast clip %s %s" % (line, bb))
+            hy += face_px + 2
         ratios.append(contrast(CREAM, NAVY))
     title_px = type_px(40, scale)
     sub_px = type_px(30, scale)
     grid_h = 100 if not grown else max(100, 24 + title_px + 6 + sub_px + 12)
     grid_step = 108 if not grown else grid_h + 8
-    names = ["RED", "BLUE", "ORANGE", "LAVENDER", "TAN", "MINT"]
+    names = ["BLUE", "MINT", "ORANGE", "LAVENDER", "TAN", "RED"]
     grid_y = y0 + card_h + 16
     locked = []
     col_w = 280
@@ -1757,17 +1803,175 @@ def quad_split(scale, grown):
         shots.append((label, img))
     canvas = Image.new("RGB", (W, H), (8, 14, 32))
     d = ImageDraw.Draw(canvas)
-    note = "Text size 1.50, rows grown" if grown else "Text size 1.50, old row height"
+    note = "Text size %.2f, rows grown" % scale if grown else "Text size %.2f, old row height" % scale
     d.text((24, 6), note, font=font(FONT_B, 22), fill=GOLD)
-    pw, ph = W // 2 - 16, H // 2 - 40
+    label_h = 28
+    pw, ph = W // 2 - 16, H // 2 - 40 - label_h
     for i, (label, img) in enumerate(shots):
         thumb = img.convert("RGB").resize((pw, ph), Image.Resampling.LANCZOS)
         x = 8 + (i % 2) * (W // 2)
         y = 40 + (i // 2) * (H // 2)
-        canvas.paste(thumb, (x, y))
-        d.rectangle((x, y, x + 320, y + 28), fill=NAVY)
-        d.text((x + 8, y + 3), "%s  1.50" % label, font=font(FONT_B, 20), fill=CREAM)
+        d.rectangle((x, y, x + pw, y + label_h), fill=NAVY)
+        d.text((x + 8, y + 3), "%s  %.2f" % (label, scale), font=font(FONT_B, 20), fill=CREAM)
+        canvas.paste(thumb, (x, y + label_h))
     return canvas, worst
+
+
+def scale_columns():
+    """Four looks and four mode blurbs at 1.00, 1.25, and 1.50."""
+    scales = (1.0, 1.25, 1.5)
+    col_w = W // 3
+    # Same ink width as a character card and a mode tile, so the wrap matches the menus.
+    inner = 372
+    probe = ImageDraw.Draw(Image.new("RGB", (8, 8)))
+    need = 64
+    plans = []
+    for scale in scales:
+        grown = abs(scale - 1.0) > 0.02
+        face = type_px(30, scale) if grown else 28
+        nf = font(FONT_B, face)
+        title_px = type_px(40, scale)
+        sub_px = type_px(30, scale)
+        seats = []
+        block = 72
+        for look, body in CAST_LOOKS:
+            looks = wrap_words(probe, look, nf, inner)
+            hat = "Hat off   Not ready"
+            if probe.textlength(hat, font=nf) > inner:
+                hats = ["Hat off", "Not ready"]
+            else:
+                hats = [hat]
+            h = 12 + (1 + len(looks) + len(hats)) * (face + 4)
+            seats.append((look, body, looks, hats, h))
+            block += h + 8
+        block += 12
+        modes = []
+        for title, blurb in (
+            ("Hot Potato", "First to 2. Fuse 45 / 40 / 35s."),
+            ("Least It", "Least time as It. Next punch breaks a tie."),
+            ("Trail Tag", "Ribbons eliminate. Last standing."),
+            ("Free play", "Punch transfers It. No timer."),
+        ):
+            lines = wrap_words(probe, blurb, font(FONT_B, sub_px), inner)
+            h = 16 + title_px + 6 + len(lines) * (sub_px + 4) + 8
+            modes.append((title, lines, h))
+            block += h + 8
+        plans.append((scale, grown, face, title_px, sub_px, seats, modes, block))
+        if block > need:
+            need = block
+    canvas = Image.new("RGB", (W, need + 24), (8, 14, 32))
+    d = ImageDraw.Draw(canvas)
+    d.text((24, 8), "1.00, 1.25, and 1.50. Looks, hat line, and mode blurbs.", font=font(FONT_B, 22), fill=GOLD)
+    worst = 99.0
+    for i, (scale, grown, face, title_px, sub_px, seats, modes, _block) in enumerate(plans):
+        x = i * col_w
+        d.rectangle((x + 8, 40, x + col_w - 8, 68), fill=NAVY)
+        word = "%.2f" % scale
+        d.text((x + 16, 42), word, font=font(FONT_B, 22), fill=CREAM)
+        worst = min(worst, contrast(CREAM, NAVY))
+        y = 80
+        nf = font(FONT_B, face)
+        for s, (look, body, looks, hats, h) in enumerate(seats):
+            box = (x + 12, y, x + col_w - 12, y + h)
+            rounded(d, box, 12, NAVY, body, 4)
+            yy = y + 8
+            d.text((x + 24, yy), "P%d" % (s + 1), font=nf, fill=CREAM)
+            ok, bb = text_inside(d, (x + 24, yy), "P%d" % (s + 1), nf, box)
+            if not ok:
+                raise SystemExit("scale seat clip %s" % (bb,))
+            yy += face + 4
+            for line in looks:
+                d.text((x + 24, yy), line, font=nf, fill=CREAM)
+                ok, bb = text_inside(d, (x + 24, yy), line, nf, box)
+                if not ok:
+                    raise SystemExit("scale look clip %s %s" % (line, bb))
+                yy += face + 4
+            for line in hats:
+                d.text((x + 24, yy), line, font=nf, fill=CREAM)
+                ok, bb = text_inside(d, (x + 24, yy), line, nf, box)
+                if not ok:
+                    raise SystemExit("scale hat clip %s %s" % (line, bb))
+                yy += face + 4
+            worst = min(worst, contrast(CREAM, NAVY))
+            y += h + 8
+        y += 8
+        tf = font(FONT_D, title_px)
+        sf = font(FONT_B, sub_px)
+        for n, (title, lines, h) in enumerate(modes):
+            box = (x + 12, y, x + col_w - 12, y + h)
+            hot = n == 1
+            fill = HOT if hot else PANEL
+            rounded(d, box, 12, fill, GOLD if hot else STROKE, 3)
+            ink_t = INK if hot else CREAM
+            ink_s = INK if hot else MUTE
+            yy = y + 10
+            d.text((x + 24, yy), title, font=tf, fill=ink_t)
+            ok, bb = text_inside(d, (x + 24, yy), title, tf, box)
+            if not ok:
+                raise SystemExit("scale mode clip %s %s" % (title, bb))
+            yy += title_px + 4
+            for line in lines:
+                d.text((x + 24, yy), line, font=sf, fill=ink_s)
+                ok, bb = text_inside(d, (x + 24, yy), line, sf, box)
+                if not ok:
+                    raise SystemExit("scale blurb clip %s %s" % (line, bb))
+                yy += sub_px + 4
+            worst = min(worst, contrast(ink_t, fill), contrast(ink_s, fill))
+            y += h + 8
+    return canvas, worst
+
+
+def rebind():
+    """Jump stays on Space, a conflict stays on screen, and reset puts the defaults back."""
+    img = screen(0.5)
+    header(img, "Controls", "Keyboard and pad. Space stays Jump.")
+    ratios = []
+    y = 168
+    row_h = 108
+    step = 116
+    d = ImageDraw.Draw(img)
+    ratios.append(button(img, (120, y, 1760, y + row_h), "Jump", "Space / A", True, right=200))
+    gx = 1720
+    for token in ("buttonSouth", "space"):
+        w = mark_width(token)
+        gx -= w
+        draw_token(d, token, gx, y + 30)
+        gx -= 8
+    y += step
+    note = "That key is not kept for Jump. Space stays jump."
+    nf = font(FONT_B, 28)
+    nw = d.textlength(note, font=nf)
+    plate = (120, y, 140 + int(nw) + 36, y + 64)
+    rounded(d, plate, 12, NAVY, GOLD, 3)
+    d.text((148, y + 16), note, font=nf, fill=GOLD)
+    ok, bb = text_inside(d, (148, y + 16), note, nf, plate)
+    if not ok:
+        raise SystemExit("rebind clip %s" % (bb,))
+    ratios.append(contrast(GOLD, NAVY))
+    y += 80
+    ratios.append(button(img, (120, y, 1760, y + row_h), "Slide", "Ctrl / B", False, right=220))
+    gx = 1720
+    for token in ("buttonEast", "leftCtrl"):
+        w = mark_width(token)
+        gx -= w
+        draw_token(d, token, gx, y + 30)
+        gx -= 8
+    y += step
+    clash = "Slide conflicts with Punch"
+    cw = d.textlength(clash, font=nf)
+    plate = (120, y, 140 + int(cw) + 36, y + 64)
+    rounded(d, plate, 12, NAVY, HOT, 3)
+    d.text((148, y + 16), clash, font=nf, fill=CREAM)
+    ok, bb = text_inside(d, (148, y + 16), clash, nf, plate)
+    if not ok:
+        raise SystemExit("rebind clip %s" % (bb,))
+    ratios.append(contrast(CREAM, NAVY))
+    y += 80
+    ratios.append(button(img, (120, y, 1760, y + row_h), "Reset bindings", "Back to the defaults. Jump is Space.", False))
+    ratios.append(contrast(CREAM, X_BLUE))
+    ratios.append(contrast(KEY_INK, KEY_CAP))
+    footer_both(img)
+    return img, min(ratios)
 
 
 def main():
@@ -1790,10 +1994,13 @@ def main():
         ("09-quality-ultra-composite.png", options("picture", quality="Ultra")),
         ("09-access-composite.png", options("access")),
         ("09-access-before-composite.png", options("access", access="strip")),
-        ("15-seats-pd-composite.png", options("access", seats="pd")),
-        ("15-seats-tritan-composite.png", options("access", seats="tritan")),
-        ("15-rows-before-composite.png", quad_split(1.5, False)),
-        ("15-rows-after-composite.png", quad_split(1.5, True)),
+        ("16-seats-pd-composite.png", options("access", seats="pd")),
+        ("16-seats-tritan-composite.png", options("access", seats="tritan")),
+        ("16-rows-before-composite.png", quad_split(1.5, False)),
+        ("16-rows-125-composite.png", quad_split(1.25, True)),
+        ("16-rows-150-composite.png", quad_split(1.5, True)),
+        ("16-scale-composite.png", scale_columns()),
+        ("16-rebind-composite.png", rebind()),
         ("09-menu-text-100-composite.png", menu_text(1.0)),
         ("09-menu-text-150-composite.png", menu_text(1.5)),
         ("03-hud-text-100-composite.png", match_hud(1.0)),

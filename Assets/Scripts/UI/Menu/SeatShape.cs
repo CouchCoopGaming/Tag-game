@@ -6,7 +6,7 @@ namespace Tag.Ui.Menu
 {
     /// <summary>
     /// Circle, triangle, square, diamond for seats 1–4. Drawn only when the
-    /// colour-blind seat palette is on, so the default chips stay as they are.
+    /// color-blind seat colors are on, so the default chips stay as they are.
     /// </summary>
     public static class SeatShape
     {
