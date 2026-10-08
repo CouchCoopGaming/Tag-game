@@ -53,7 +53,7 @@ def create():
     a = Asset(
         "Playground",
         "Park",
-        "Play set about 7.4 x 4.8 m. A-frame swings with two chains per belt seat, a slide with rails and a curled lip, square posts to the mulch, guard panels, and stairs. Spring rider seat is about 0.6 m. Climbing dome is a geodesic of bars. Wood-chip patch inside a rubber border. Pivot is the pad center.",
+        "Play set about 7.4 x 4.8 m. A-frame swings with two chains per red belt seat and a cream rim. Slide with rails and a curled lip, square posts to the mulch, guard panels, and blue stairs. Spring rider seat is about 0.6 m. Climbing dome is a geodesic of bars. Wood-chip patch inside a rubber border. Pivot is the pad center.",
     )
     a.climb_note = "Bars and posts are too small to cling. Not a wall."
     a.vault_note = "The deck panels are a guard, not a 0.90 m vault. The rider seat is about 0.6 m."
@@ -99,8 +99,14 @@ def _swings(g, lod, bev):
         # Two chains, spread to the seat edges. Nothing hangs in the middle.
         for dz in (-0.18, 0.18):
             g.pipe((apex_x, 2.38, z + dz), (apex_x - 0.02, 0.56, z + dz), 0.008, "Lib_Chain", 5)
-        g.box((apex_x - 0.02, 0.52, z), (0.38, 0.04, 0.46), "Lib_Rubber", bevel=bev, segs=1)
-        g.box((apex_x - 0.02, 0.47, z), (0.32, 0.02, 0.40), "Lib_Rubber")
+        seat_x = apex_x - 0.02
+        # Red rubber belt. Cream rim bars sit outside it, with air so the shells do not share a volume.
+        g.box((seat_x, 0.52, z), (0.38, 0.04, 0.46), "Lib_PaintRed", bevel=bev, segs=1)
+        g.box((seat_x, 0.47, z), (0.32, 0.02, 0.40), "Lib_PaintRed")
+        g.box((seat_x - 0.212, 0.52, z), (0.036, 0.036, 0.532), "Lib_PaintCream")
+        g.box((seat_x + 0.212, 0.52, z), (0.036, 0.036, 0.532), "Lib_PaintCream")
+        g.box((seat_x, 0.52, z - 0.252), (0.38, 0.036, 0.036), "Lib_PaintCream")
+        g.box((seat_x, 0.52, z + 0.252), (0.38, 0.036, 0.036), "Lib_PaintCream")
 
 
 def _swing_cols(a):
@@ -206,7 +212,7 @@ def _stairs(g, lod):
         top = 0.269 + i * 0.194
         bottom = 0.078 if i == 0 else top - 0.16
         height = top - bottom
-        g.box((x0 + depth * 0.5, bottom + height * 0.5, 0.05), (depth, height, 0.50), "Lib_Steel")
+        g.box((x0 + depth * 0.5, bottom + height * 0.5, 0.05), (depth, height, 0.50), "Lib_PaintBlue")
     if lod == 2:
         return
     g.pipe((0.02, 0.10, -0.46), (0.72, 1.08, -0.46), 0.018, "Lib_Steel", 5)
