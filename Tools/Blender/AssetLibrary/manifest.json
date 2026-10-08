@@ -37635,43 +37635,43 @@
   {
     "name": "StreetClock_Post",
     "category": "StreetFurniture",
-    "blurb": "Post clock. Pole to 2.35 m, face 0.46 m across, hands at 10:10.",
+    "blurb": "Two-face post clock. Face center 2.40 m, dial 0.46 m, crown 2.76 m. No numerals.",
     "size": [
-      0.46,
-      2.51,
-      0.28
+      0.472,
+      2.756,
+      0.42
     ],
     "min": [
-      -0.23,
+      -0.236,
       0.0,
-      -0.14
+      -0.21
     ],
     "max": [
-      0.23,
-      2.51,
-      0.14
+      0.236,
+      2.756,
+      0.21
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 276,
+        "tris": 1748,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_PaintCream",
-          "Lib_Black"
+          "Lib_Black",
+          "Lib_PaintCream"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 172,
+        "tris": 700,
         "materials": [
           "Lib_SteelDark",
+          "Lib_Black",
           "Lib_Steel",
-          "Lib_PaintCream",
-          "Lib_Black"
+          "Lib_PaintCream"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -37679,17 +37679,17 @@
     ],
     "colliders": [
       {
-        "name": "Col_Base",
+        "name": "Col_Plate",
         "type": "box",
         "center": [
           0,
-          0.02,
+          0.01,
           0
         ],
         "size": [
-          0.18,
-          0.024,
-          0.18
+          0.28,
+          0.016,
+          0.28
         ],
         "euler": [
           0,
@@ -37698,29 +37698,48 @@
         ]
       },
       {
-        "name": "Col_Pole",
+        "name": "Col_Foot",
+        "type": "box",
+        "center": [
+          0,
+          0.09,
+          0
+        ],
+        "size": [
+          0.1,
+          0.08,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post",
         "type": "capsule",
         "center": [
           0,
-          1.0,
+          1.05,
           0
         ],
         "radius": 0.026,
-        "height": 1.9,
+        "height": 1.7,
         "direction": 1
       },
       {
-        "name": "Col_HeadL",
+        "name": "Col_Case",
         "type": "box",
         "center": [
-          -0.12,
-          2.28,
-          0.04
+          0,
+          2.4,
+          0
         ],
         "size": [
-          0.12,
-          0.18,
-          0.03
+          0.22,
+          0.26,
+          0.04
         ],
         "euler": [
           0,
@@ -37729,17 +37748,17 @@
         ]
       },
       {
-        "name": "Col_HeadR",
+        "name": "Col_Hood",
         "type": "box",
         "center": [
-          0.12,
-          2.28,
-          0.04
+          0,
+          2.676,
+          0
         ],
         "size": [
-          0.12,
-          0.18,
-          0.03
+          0.14,
+          0.032,
+          0.14
         ],
         "euler": [
           0,
@@ -37751,7 +37770,7 @@
     "climbable": false,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Pole is 8 cm. Not a cling.",
+    "climbNote": "The shaft is about 8 cm across. Not a cling.",
     "vaultNote": "Too tall and smooth to vault.",
     "warnings": [],
     "fbxNames": [
@@ -37759,7 +37778,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.91,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/StreetClock_Post.fbx"
   },
   {

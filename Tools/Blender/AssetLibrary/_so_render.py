@@ -162,6 +162,10 @@ PASSES = {
         ("meter_single", "ParkingMeter_Single", 180.0, (0.72, 0.0, 0.08), 15.0),
         ("pay_station", "PayStation_Street", 180.0, (0.85, 0.0, 0.08), 18.0),
     ),
+    23: (
+        # Figure stands beside the pole, clear of the base.
+        ("street_clock", "StreetClock_Post", 180.0, (0.90, 0.0, 0.15), 12.0),
+    ),
 }
 
 # Pass 15 sits the prop on a sidewalk panel. Low camera, aim below center,
@@ -204,6 +208,11 @@ _FRAME21 = {
 _FRAME22 = {
     "newsstand": (0.70, 13.0, 232.0, 0.42, 0.50, 0.34, 7.20),
     "fountain": (0.76, 24.0, 208.0, 0.52, 0.50, 0.36, 3.40),
+}
+
+# Pass 23. The face is high, so the aim sits above the middle of the pole.
+_FRAME23 = {
+    "street_clock": (0.72, 12.0, 208.0, 0.55, 0.52, 0.42, 4.40),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -277,6 +286,7 @@ def _load(names):
         "PayStation_Street": "sk_pay_station",
         "Newsstand_Corner": "sk_newsstand",
         "Fountain_Walk": "sk_fountain",
+        "StreetClock_Post": "sk_street_clock",
         "MailDrop_Corner": "sk_mail_drop",
         "BusShelter_City": "sk_bus_shelter",
         "TrafficSignal_Mast": "sk_traffic_signal",
@@ -504,6 +514,8 @@ def main():
             tuned15 = _FRAME21[key]
         if PASS >= 22 and key in _FRAME22:
             tuned15 = _FRAME22[key]
+        if PASS >= 23 and key in _FRAME23:
+            tuned15 = _FRAME23[key]
         if tuned15:
             fill, elevation, azimuth, aim, scale_fill, scale_aim, slab = tuned15
         else:
