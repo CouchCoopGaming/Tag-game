@@ -159,15 +159,16 @@ def _skirt(g, lod):
             x = p0[0] + (p1[0] - p0[0]) * t + normal[0] * (0.008 + thick * 0.5)
             z = p0[2] + (p1[2] - p0[2]) * t + normal[1] * (0.008 + thick * 0.5)
             height = DECK_TOP - 0.012
-            g.box((x, height * 0.5, z), (thick, height, width), "Lib_WoodDark", euler=(0.0, yaw, 0.0), uv_scale=0.45)
+            # Low UV scale keeps each board one tone, so the baked wave does not wiggle down the face.
+            g.box((x, height * 0.5, z), (thick, height, width), "Lib_WoodDark", euler=(0.0, yaw, 0.0), uv_scale=0.08)
 
 
 def _rails(g, lod, posts):
     # Top and bottom box rails on every side but the entry. Balusters fill the gap.
     count = 4 if lod == 0 else 3
     top_h = 0.050
-    bot_y = DECK_TOP + 0.20
-    bot_h = 0.042
+    bot_y = DECK_TOP + 0.18
+    bot_h = 0.055
     for i in range(6):
         if i == OPEN_SIDE:
             continue

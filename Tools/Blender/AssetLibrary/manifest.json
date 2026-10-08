@@ -6747,7 +6747,7 @@
   {
     "name": "Gazebo",
     "category": "Park",
-    "blurb": "Hexagonal gazebo, about 4.4 m across the posts. Deck is 0.32 m with a skirt. Six posts on the deck corners, roof corners on the same rays with a 0.32 m overhang, rails and balusters on five sides, one open side with a step. Rail is 0.95 m above the deck. The square shelter is Pavilion.",
+    "blurb": "Hexagonal gazebo, about 4.4 m across the posts. Deck is 0.32 m with vertical skirt boards. Six posts on the deck corners, roof corners on the same rays with a 0.32 m overhang. Every side except the entry has a top rail, a bottom rail, and even balusters. One open side with a step. Top rail is 0.95 m above the deck. The square shelter is Pavilion.",
     "size": [
       4.363,
       3.55,
@@ -6766,7 +6766,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 632,
+        "tris": 1216,
         "materials": [
           "Lib_Wood",
           "Lib_WoodDark",
@@ -6777,7 +6777,7 @@
       },
       {
         "lod": 1,
-        "tris": 384,
+        "tris": 872,
         "materials": [
           "Lib_Wood",
           "Lib_WoodDark",
@@ -6788,7 +6788,7 @@
       },
       {
         "lod": 2,
-        "tris": 260,
+        "tris": 404,
         "materials": [
           "Lib_Wood",
           "Lib_WoodDark",
@@ -7150,7 +7150,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 0.69,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Park/Gazebo.fbx"
   },
   {
@@ -12615,7 +12615,7 @@
   {
     "name": "Playground",
     "category": "Park",
-    "blurb": "Play set about 7.4 x 4.8 m. A-frame swings with belt seats, a slide with rails and a curled lip, a guarded deck and ladder, a spring rider, and a climbing dome. Wood-chip patch inside a rubber border. Pivot is the pad center.",
+    "blurb": "Play set about 7.4 x 4.8 m. A-frame swings with two chains per belt seat, a slide with rails and a curled lip, square posts to the mulch, guard panels, and stairs. Spring rider seat is about 0.6 m. Climbing dome is a geodesic of bars. Wood-chip patch inside a rubber border. Pivot is the pad center.",
     "size": [
       7.4,
       2.48,
@@ -12634,7 +12634,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 1774,
+        "tris": 3378,
         "materials": [
           "Lib_Rubber",
           "Lib_Mulch",
@@ -12642,6 +12642,7 @@
           "Lib_SteelDark",
           "Lib_Chain",
           "Lib_Steel",
+          "Lib_Wood",
           "Lib_Orange",
           "Lib_PaintRed",
           "Lib_PaintYellow",
@@ -12652,7 +12653,7 @@
       },
       {
         "lod": 1,
-        "tris": 1058,
+        "tris": 1192,
         "materials": [
           "Lib_Rubber",
           "Lib_Mulch",
@@ -12660,6 +12661,7 @@
           "Lib_SteelDark",
           "Lib_Chain",
           "Lib_Steel",
+          "Lib_Wood",
           "Lib_Orange",
           "Lib_PaintRed",
           "Lib_PaintYellow",
@@ -12670,7 +12672,7 @@
       },
       {
         "lod": 2,
-        "tris": 352,
+        "tris": 340,
         "materials": [
           "Lib_Rubber",
           "Lib_Mulch",
@@ -12880,13 +12882,32 @@
         "type": "box",
         "center": [
           0.78,
-          0.62,
+          0.612,
           -0.32
         ],
         "size": [
-          0.04,
-          0.9,
-          0.04
+          0.08,
+          0.96,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Guard_0",
+        "type": "box",
+        "center": [
+          0.78,
+          1.58,
+          -0.32
+        ],
+        "size": [
+          0.06,
+          0.52,
+          0.06
         ],
         "euler": [
           0,
@@ -12899,13 +12920,32 @@
         "type": "box",
         "center": [
           0.78,
-          0.62,
+          0.612,
           0.42
         ],
         "size": [
-          0.04,
-          0.9,
-          0.04
+          0.08,
+          0.96,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Guard_1",
+        "type": "box",
+        "center": [
+          0.78,
+          1.58,
+          0.42
+        ],
+        "size": [
+          0.06,
+          0.52,
+          0.06
         ],
         "euler": [
           0,
@@ -12918,13 +12958,32 @@
         "type": "box",
         "center": [
           1.62,
-          0.62,
+          0.612,
           -0.32
         ],
         "size": [
-          0.04,
-          0.9,
-          0.04
+          0.08,
+          0.96,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Guard_2",
+        "type": "box",
+        "center": [
+          1.62,
+          1.58,
+          -0.32
+        ],
+        "size": [
+          0.06,
+          0.52,
+          0.06
         ],
         "euler": [
           0,
@@ -12937,13 +12996,32 @@
         "type": "box",
         "center": [
           1.62,
-          0.62,
+          0.612,
           0.42
         ],
         "size": [
-          0.04,
-          0.9,
-          0.04
+          0.08,
+          0.96,
+          0.08
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Guard_3",
+        "type": "box",
+        "center": [
+          1.62,
+          1.58,
+          0.42
+        ],
+        "size": [
+          0.06,
+          0.52,
+          0.06
         ],
         "euler": [
           0,
@@ -13028,41 +13106,98 @@
         ]
       },
       {
-        "name": "Col_Ladder_0",
+        "name": "Col_Stair_0",
         "type": "box",
         "center": [
-          0.5599999999999999,
-          0.66,
-          -0.18
+          0.1,
+          0.1735,
+          0.05
         ],
         "size": [
-          0.9697544431452736,
-          0.025299999999999996,
-          0.025299999999999996
+          0.144,
+          0.13752,
+          0.36
         ],
         "euler": [
-          0.0,
-          0.0,
-          75.96375653207353
+          0,
+          0,
+          0
         ]
       },
       {
-        "name": "Col_Ladder_1",
+        "name": "Col_Stair_1",
         "type": "box",
         "center": [
-          0.5599999999999999,
-          0.66,
-          0.22
+          0.25,
+          0.383,
+          0.05
         ],
         "size": [
-          0.9697544431452736,
-          0.025299999999999996,
-          0.025299999999999996
+          0.144,
+          0.11519999999999998,
+          0.36
         ],
         "euler": [
-          0.0,
-          0.0,
-          75.96375653207353
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Stair_2",
+        "type": "box",
+        "center": [
+          0.4,
+          0.577,
+          0.05
+        ],
+        "size": [
+          0.144,
+          0.11520000000000002,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Stair_3",
+        "type": "box",
+        "center": [
+          0.5499999999999999,
+          0.7710000000000001,
+          0.05
+        ],
+        "size": [
+          0.144,
+          0.11520000000000002,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Stair_4",
+        "type": "box",
+        "center": [
+          0.7,
+          0.9649999999999999,
+          0.05
+        ],
+        "size": [
+          0.144,
+          0.11520000000000002,
+          0.36
+        ],
+        "euler": [
+          0,
+          0,
+          0
         ]
       },
       {
@@ -13070,13 +13205,13 @@
         "type": "box",
         "center": [
           -0.15,
-          0.098,
+          0.11,
           -1.55
         ],
         "size": [
-          0.28,
-          0.024,
-          0.2
+          0.4,
+          0.028,
+          0.28
         ],
         "euler": [
           0,
@@ -13089,13 +13224,13 @@
         "type": "box",
         "center": [
           -0.15,
-          0.62,
-          -1.53
+          0.86,
+          -1.5
         ],
         "size": [
-          0.14,
-          0.1,
-          0.22
+          0.26,
+          0.28,
+          0.42
         ],
         "euler": [
           0,
@@ -13108,7 +13243,7 @@
     "vaultable": false,
     "vaultHeight": 0.0,
     "climbNote": "Bars and posts are too small to cling. Not a wall.",
-    "vaultNote": "The deck rail is a guard, not a 0.90 m vault. Seats are at 0.50 m.",
+    "vaultNote": "The deck panels are a guard, not a 0.90 m vault. The rider seat is about 0.6 m.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
@@ -13116,21 +13251,21 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 1.03,
+    "slackCm": 0.94,
     "fbx": "Assets/Art/Props/Library/Park/Playground.fbx"
   },
   {
     "name": "Quay_Edge",
     "category": "Harbor",
-    "blurb": "Concrete quay, 18 m long, apron 8.2 m deep, deck at 0.90 m. Bullnose, edge stone, four bollards, a ladder, and five fenders on -Z. The face runs into the water.",
+    "blurb": "Concrete quay, 18 m long, apron 8.2 m deep, deck at 0.90 m. The water face is a vertical wall from about 1.2 m below the pivot up to the deck, with edge stone, four bollards, a ladder, and five fenders on -Z.",
     "size": [
       18.0,
-      2.03,
+      2.78,
       8.87
     ],
     "min": [
       -9.0,
-      -0.45,
+      -1.2,
       -1.72
     ],
     "max": [
@@ -13141,7 +13276,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 1240,
+        "tris": 1244,
         "materials": [
           "Lib_Concrete",
           "Lib_Rubber",
@@ -13154,7 +13289,7 @@
       },
       {
         "lod": 1,
-        "tris": 724,
+        "tris": 708,
         "materials": [
           "Lib_Concrete",
           "Lib_Rubber",
@@ -13190,13 +13325,32 @@
         "type": "box",
         "center": [
           0,
-          0.18,
-          -1.22
+          -0.16,
+          -1.25
         ],
         "size": [
           17.6,
-          0.64,
-          0.22
+          1.96,
+          0.26
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Foundation",
+        "type": "box",
+        "center": [
+          0,
+          0.23,
+          3.03
+        ],
+        "size": [
+          17.3,
+          0.5,
+          7.86
         ],
         "euler": [
           0,
@@ -13774,10 +13928,10 @@
   {
     "name": "Road_Straight",
     "category": "Roads",
-    "blurb": "6 m wide (two 3 m lanes) by 4 m long. Top at 0.12 m. Worn edge lines and darkened wheel paths. Center the next tile 4 m along Z.",
+    "blurb": "6 m wide (two 3 m lanes) by 4 m long. Top at 0.12 m. Near-uniform asphalt, slight wheel-path darkening, one white edge line each side, dashed yellow center. Center the next tile 4 m along Z.",
     "size": [
       6.0,
-      0.13,
+      0.135,
       4.0
     ],
     "min": [
@@ -13787,26 +13941,26 @@
     ],
     "max": [
       3.0,
-      0.13,
+      0.135,
       2.0
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 248,
+        "tris": 120,
         "materials": [
           "Lib_Asphalt",
           "Lib_AsphaltWear",
-          "Lib_AsphaltPatch",
           "Lib_PaintWhite",
-          "Lib_Lane"
+          "Lib_Lane",
+          "Lib_AsphaltPatch"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 180,
+        "tris": 84,
         "materials": [
           "Lib_Asphalt",
           "Lib_AsphaltWear",
@@ -13849,7 +14003,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.1,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Roads/Road_Straight.fbx"
   },
   {

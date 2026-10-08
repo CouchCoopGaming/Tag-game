@@ -42,7 +42,7 @@ def _water_mat():
 
 
 def _foam_mat():
-    return p6._mat("Pass8Foam", (0.48, 0.56, 0.52), 0.96)
+    return p6._mat("Pass8Foam", (0.62, 0.70, 0.66), 0.92)
 
 
 def _cube(center, size, mat, yaw=0.0):
@@ -134,7 +134,7 @@ def _harbor(found):
     land = p6._mat("Pass8Land", (0.34, 0.38, 0.30), 0.94)
     p6._sheet(0.0, 0.02, 46.0, 180.0, 78.0, land)
     foam = _foam_mat()
-    p6._sheet(0.0, WATER_Y + 0.012, -1.55, 16.8, 0.16, foam)
+    p6._sheet(0.0, WATER_Y + 0.015, -1.62, 16.8, 0.36, foam)
     for side in (-0.96, 0.96):
         center = p6._yaw_point(boat_pos, boat_yaw, (side, WATER_Y + 0.018, 0.12))
         _cube(center, (0.045, 0.016, 4.4), foam, boat_yaw)
@@ -191,10 +191,10 @@ def _road(found):
     r._render(scene, os.path.join(STILL_DIR, "road_curb.png"))
 
 
-def _turntable(found, name, path, yaw=28.0, elevation=18.0, fill=0.72):
+def _turntable(found, name, path, yaw=28.0, elevation=18.0, fill=0.72, ground=(0.55, 0.56, 0.54)):
     scene = p6._begin(wide=True)
     obj = p6._spawn(found, name, (0, 0, 0), yaw)
-    p6._ground((0.55, 0.56, 0.54))
+    p6._ground(ground)
     r._frame(scene, [obj], fill=fill, elevation=elevation, azimuth=38.0)
     r._render(scene, path)
 
@@ -211,7 +211,7 @@ def main():
         ("road", lambda: _road(found)),
         ("playground", lambda: _turntable(found, "Playground", os.path.join(STILL_DIR, "playground.png"), 32)),
         ("gazebo", lambda: _turntable(found, "Gazebo", os.path.join(STILL_DIR, "gazebo.png"), -52)),
-        ("court", lambda: _turntable(found, "Court", os.path.join(STILL_DIR, "court.png"), 24, 52, 0.86)),
+        ("court", lambda: _turntable(found, "Court", os.path.join(STILL_DIR, "court.png"), 24, 52, 0.86, (0.15, 0.16, 0.15))),
         ("fire_hydrant", lambda: _turntable(found, "FireHydrant", os.path.join(STILL_DIR, "fire_hydrant.png"), 30)),
         ("median", lambda: _turntable(found, "Median_Planter", os.path.join(STILL_DIR, "median_planter.png"), 24)),
         ("cabin", lambda: _turntable(found, "Cabin", os.path.join(STILL_DIR, "cabin.png"), 28)),

@@ -96,7 +96,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Park"
-  summary: "Hexagonal gazebo, about 4.4 m across the posts. Deck is 0.32 m with a skirt. Six posts on the deck corners, roof corners on the same rays with a 0.32 m overhang, rails and balusters on five sides, one open side with a step. Rail is 0.95 m above the deck. The square shelter is Pavilion."
+  summary: "Hexagonal gazebo, about 4.4 m across the posts. Deck is 0.32 m with vertical skirt boards. Six posts on the deck corners, roof corners on the same rays with a 0.32 m overhang. Every side except the entry has a top rail, a bottom rail, and even balusters. One open side with a step. Top rail is 0.95 m above the deck. The square shelter is Pavilion."
   climbable: 0
   vaultable: 1
   vaultHeightMeters: 0.95

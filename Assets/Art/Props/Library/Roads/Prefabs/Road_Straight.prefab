@@ -44,7 +44,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.065, z: 0}
+  m_LocalReferencePoint: {x: 0, y: 0.0675, z: 0}
   m_Size: 6
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -72,7 +72,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Roads"
-  summary: "6 m wide (two 3 m lanes) by 4 m long. Top at 0.12 m. Worn edge lines and darkened wheel paths. Center the next tile 4 m along Z."
+  summary: "6 m wide (two 3 m lanes) by 4 m long. Top at 0.12 m. Near-uniform asphalt, slight wheel-path darkening, one white edge line each side, dashed yellow center. Center the next tile 4 m along Z."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
@@ -146,9 +146,9 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 3a513732d7a96e6b4713c7c1e0ed008e, type: 2}
   - {fileID: 2100000, guid: 8c3c11300f3f49c7f276f7788b18bf42, type: 2}
-  - {fileID: 2100000, guid: bf4e0cdb19ed973964673d67a3426994, type: 2}
   - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
   - {fileID: 2100000, guid: 3b3121e16097e53647deea3bc4c3b77c, type: 2}
+  - {fileID: 2100000, guid: bf4e0cdb19ed973964673d67a3426994, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
