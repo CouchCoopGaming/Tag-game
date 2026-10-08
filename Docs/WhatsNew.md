@@ -166,3 +166,14 @@ The climb, the wall run, and the vault now read as motion instead of a held pose
 - The camera still snaps in when a wall is inside the boom, so the lens never sits in the wall. Coming back out to full length eases. A punch no longer zooms the lens. The camera nudges and settles. No shake, no slow motion. Try it: back into a corner, step out, then punch.
 - Nothing here waits on an animation. Jump, slide, dash, punch, lunge, climb, wall run, wall jump, vault, zip, pad, grapple, and stagger all show on the frame they happen.
 - Exit poses, the landing roll, cling marks, dash ribbons, and dust are a separate pass. Stick figures of the climb, the wall run, and the vault are in `Docs/SmoothStills/pass2/climb-wall-mantle.png`.
+
+## Run, jump, and contact, third pass
+
+The stride, the jump, and the hands and feet read as one move. Speeds are the same. A press is still the same frame.
+
+- Sprinting at 13.8 and walking at 6.9 keep the feet with the ground. The step used to skate at a sprint because the cycle capped early. Stopping still plants and settles. A fast about-face plants the outside foot, then eases back into the stride. Strafing and backpedaling use a shorter step instead of the forward run. Try it: Practice, dummy on, sprint, stop, spin, then hold sideways and back.
+- A jump still crouches, tucks, and opens by how fast you are rising or falling. At the top the body floats for a moment. Chained hops keep the arms out instead of restarting the crouch. Air-strafe still banks the chest. Try it: hop twice, then hold a side key in the air.
+- Feet pitch onto stairs, slopes, and ramps. On a climb or a wall run the hands sit on the wall. The capsule does not move for either of those. Try it: run a stair or a sand ramp, then wall-run the cling lane.
+- The head turns a little toward where you are going, the chest counters, and the arms follow through after a stride. Try it: sprint, then let go of the stick and watch the arms settle.
+- The camera eases tiny look steps. A fast mouse turn still snaps. No zoom punch, no shake, no slow motion.
+- Nothing here waits on an animation. The before/after numbers are in `Docs/SmoothMotionAudit.md`. Stick figures are in `Docs/SmoothStills/pass3/loco-air-ik.png`.

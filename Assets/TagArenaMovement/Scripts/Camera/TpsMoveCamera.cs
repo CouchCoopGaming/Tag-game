@@ -190,7 +190,17 @@ namespace TagArena.Movement
 
                 Vector3 to = lookAt - cam.transform.position;
                 if (to.sqrMagnitude > 0.001f)
-                    cam.transform.rotation = Quaternion.LookRotation(to.normalized, Vector3.up);
+                {
+                    // Mouse yaw is already on the rig this frame. A small look-point step eases.
+                    // A flick, or the boom pulling in, still snaps so the horizon does not trail the mouse.
+                    Vector3 dir = to.normalized;
+                    Quaternion want = Quaternion.LookRotation(dir, Vector3.up);
+                    float align = Vector3.Dot(cam.transform.forward, dir);
+                    if (align > 0.990f && align < 0.9998f)
+                        cam.transform.rotation = Quaternion.Slerp(cam.transform.rotation, want, 1f - Mathf.Exp(-18f * dt));
+                    else
+                        cam.transform.rotation = want;
+                }
 
                 // Mirror FpsMoveCamera cfg.fov* by MoveState (+ tiny continuous speed boost)
                 float targetFov = cfg != null ? cfg.fovIdle : 70f;
