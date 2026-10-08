@@ -196,7 +196,7 @@ namespace Tag.Ui.Menu
         }
 
         public const float CastNameH = 78f;
-        public const float CastStatusH = 44f;
+        public const float CastStatusH = 52f;
         public const float CastLine = 36f;
 
         public static void CastBands(float scale, out float cardH, out float gridTop, out float gridH, out float gridStep)
@@ -250,6 +250,7 @@ namespace Tag.Ui.Menu
         public static void TileText(float h, bool two, out float titleFromTop, out float titleH, out float detailFromTop, out float detailH)
         {
             float top = StripeClear();
+            if (h >= 96f) top += 8f;
             float bot = 4f;
             float well = h - top - bot;
             if (well < 1f) well = 1f;

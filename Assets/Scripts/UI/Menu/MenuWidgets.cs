@@ -223,6 +223,7 @@ namespace Tag.Ui.Menu
             {
                 float labelH = 52f;
                 float top = UiFit.StripeClear();
+                if (h >= 96f) top += 8f;
                 RectTransform rt = tile.Label.rectTransform;
                 rt.anchorMin = new Vector2(0f, 1f - (top + labelH) / h);
                 rt.anchorMax = new Vector2(1f, 1f - top / h);

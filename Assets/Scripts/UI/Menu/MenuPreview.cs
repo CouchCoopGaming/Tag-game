@@ -315,11 +315,13 @@ namespace Tag.Ui.Menu
                 var trimRend = trim.GetComponent<Renderer>();
                 if (trimRend != null)
                     trimRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.98f, 0.94f, 0.82f, 1f), 0.28f, 0.12f);
+                float plateH = 0.30f;
+                float plateY = -0.02f;
                 var face = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 face.name = "Face" + i.ToString();
                 face.transform.SetParent(_podiumRoot, false);
-                face.transform.localPosition = new Vector3(xs[i], heights[i] * 0.46f, deep * 0.5f + 0.02f);
-                face.transform.localScale = new Vector3(wide * 0.46f, heights[i] * 0.38f, 0.04f);
+                face.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.72f);
+                face.transform.localScale = new Vector3(wide * 0.46f, plateH, 0.05f);
                 var faceCol = face.GetComponent<Collider>();
                 if (faceCol != null) Destroy(faceCol);
                 var faceRend = face.GetComponent<Renderer>();
@@ -327,7 +329,7 @@ namespace Tag.Ui.Menu
                     faceRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.98f, 0.96f, 0.90f, 1f), 0.4f, 0.02f);
                 var numGo = new GameObject("Num" + i.ToString());
                 numGo.transform.SetParent(_podiumRoot, false);
-                numGo.transform.localPosition = new Vector3(xs[i], heights[i] * 0.46f, deep * 0.5f + 0.06f);
+                numGo.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.78f);
                 var num = numGo.AddComponent<TextMesh>();
                 num.text = (i + 1).ToString();
                 num.fontSize = 64;

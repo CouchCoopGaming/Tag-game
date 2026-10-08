@@ -294,6 +294,8 @@ The twelfth pass shows that prompt once: PRESS and the button, or PRESS START. C
 
 The thirteenth pass centers each button label under the highlight stripe and puts the sublabel on a second line. READY sits in the corner of the portrait so the face stays visible. The card frame is the seat, marked P1 to P4, and the color you picked stays on the figure and the swatch. Results uses that same seat bar. The four figures stand larger on their own blocks, each with a contact shadow, and the time reads as seconds as It. The title crew stands on discs under the lockup. Space still jumps. Mockups are in `Docs/UiStills/pass13/`.
 
+The fourteenth pass insets each arena photo inside the navy frame. Mega Park, Pocket Park, and Stack Yard each show a daylight view with the pads, a zip, and the loop. The two figures on the main menu stand on discs, and that screen's header reads Menu so the lockup is the only TAG. Play, Practice, Options, and Controls use the same gap under the stripe as the color swatches. The hat and ready line sits inside its box, and the 3 and 4 on results sit in front of the discs. Space still jumps. Mockups are in `Docs/UiStills/pass14/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

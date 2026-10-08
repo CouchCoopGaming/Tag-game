@@ -197,6 +197,12 @@ The READY burst sits in the lower corner of the portrait so the face stays clear
 
 The results group is closer, each figure has a contact shadow on its own block, and the time reads "8.5s as It". The title crew stands on discs with contact shadows, under the lockup and above the prompt. Mockups are in `Docs/UiStills/pass13/`.
 
+## Pass 14
+
+The arena preview sits inside the navy frame with even padding. Mega Park, Pocket Park, and Stack Yard each have a daylight hero: a three-quarter view with the real colors, and a hint of the pads, the zip, and the loop. The main menu chase stands on discs with contact shadows. The header on that screen is Menu, so TAG is only the lockup. Button titles use the same well under the stripe as the color swatches.
+
+Character cards keep the hat and ready line inside its box, with space above the bottom edge, and the card ends with that row. On results the 3 and 4 plates sit low and in front of the discs so the numbers read. Mode and rules, loading, pause, options, controls, and the drop-in join (two seats in, two waiting) are in the same set. Mockups are in `Docs/UiStills/pass14/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

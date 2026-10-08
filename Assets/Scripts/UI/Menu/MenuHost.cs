@@ -1659,7 +1659,7 @@ namespace Tag.Ui.Menu
         {
             _count = 0;
             _cols = 1;
-            if (_header != null) _header.text = "  TAG";
+            if (_header != null) _header.text = "  Menu";
             if (_banner != null) _banner.text = "";
             if (_dim != null) _dim.color = MenuTheme.Veil;
             ShowFlyover(ParkArena.Mega, 0.88f);
@@ -1841,12 +1841,22 @@ namespace Tag.Ui.Menu
                 namePlate.raycastTarget = false;
                 _castName[s] = MenuWidgets.Words(nameRt, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
                 Snug(_castName[s]);
+                if (_castName[s] != null)
+                {
+                    _castName[s].rectTransform.offsetMin = new Vector2(12f, 6f);
+                    _castName[s].rectTransform.offsetMax = new Vector2(-12f, -6f);
+                }
                 var statRt = MenuWidgets.Place(card, "StatusLine", 4f, textY + UiFit.CastNameH, cardW - 8f, UiFit.CastStatusH);
                 var statPlate = statRt.gameObject.AddComponent<Image>();
                 MenuArt.Plate(statPlate, MenuTheme.Navy, true);
                 statPlate.raycastTarget = false;
                 _castReady[s] = MenuWidgets.Words(statRt, "", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
                 Snug(_castReady[s]);
+                if (_castReady[s] != null)
+                {
+                    _castReady[s].rectTransform.offsetMin = new Vector2(12f, 8f);
+                    _castReady[s].rectTransform.offsetMax = new Vector2(-12f, -8f);
+                }
                 SeatChip(card, 12f, 12f, s);
                 _castJoin[s] = MenuWidgets.Words(card, PadGlyph.Join(PadGlyph.Generic), 32, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.72f));
                 float burstW = viewSide * 0.42f;

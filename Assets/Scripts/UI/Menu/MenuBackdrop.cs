@@ -27,7 +27,6 @@ namespace Tag.Ui.Menu
         public static Texture Shot(int arena)
         {
             Load();
-            if (arena == ParkArena.Mega && _gold != null) return _gold;
             return MenuArenaArt.Thumb(arena);
         }
 
