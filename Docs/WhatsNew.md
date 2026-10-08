@@ -306,6 +306,8 @@ The eighteenth pass puts the Hier mannequin on each chase, in that seat's color,
 
 The nineteenth pass takes the yellow wash off the chase. Trees stay green, concrete stays grey, the paths stay tan, and the sky stays blue, with only a little warm sun. The runners are lit from that sun, and each one has a contact shadow under the feet. On RESULTS the raised hands stay in frame. The places read 1st, 2nd, 3rd, and 4th, and the stat lines stay on the cards. Space still jumps. Mockups are in `Docs/UiStills/pass19/`.
 
+The twentieth pass makes the chase path a light warm tan, and the concrete a lighter grey. On RESULTS the place stays on the step, and the cards keep 1st, 2nd, 3rd, and 4th. The 4th figure stands on a step. Character select shows the four Hier runners in the seat colors, each standing a different way, with READY on the seats that locked in. Space still jumps. Mockups are in `Docs/UiStills/pass20/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

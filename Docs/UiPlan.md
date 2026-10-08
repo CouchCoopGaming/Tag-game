@@ -225,6 +225,10 @@ The chase runner is the Hier mannequin in that seat's tint, mid-run, with the fo
 
 The chase drops the extra grade. Foliage stays green, concrete stays grey, the paths stay tan, and the sky stays blue, with only the afternoon sun. Each runner takes that sun on the foam and the panels, and a contact shadow sits under the feet. RESULTS keeps the raised hands inside the frame. The place words read 1st, 2nd, 3rd, and 4th, and the stat lines stay inside the cards. YOU'RE IT, the tagger flash, the seat tints, and the three wipes stay. Mockups are in `Docs/UiStills/pass19/`.
 
+## Pass 20
+
+The chase path is a light warm tan, about #C8A878, and the concrete that shows is a lighter grey. The swatches the contrast proof uses stay dark. That lift is only on the upward path in the chase stills. RESULTS keeps the place plates on the steps. The extra pills under the figures are gone, because the cards already say 1st, 2nd, 3rd, and 4th. The 4th figure stands on a step. Character select shows the four Hier runners in the seat colors, with the same sun and a contact shadow, each in its own idle. READY stays on the seats that locked in. The arena line sits on the same row as the other screens, and the RESULTS actions line up with the cards. Mockups are in `Docs/UiStills/pass20/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

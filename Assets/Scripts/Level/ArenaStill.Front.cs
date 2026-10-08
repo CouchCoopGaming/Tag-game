@@ -424,6 +424,7 @@ namespace Tag.Level
             if (string.IsNullOrEmpty(folder)) return "hud-chases missing folder";
             Directory.CreateDirectory(folder);
             List<Tri> park = Gather(ParkArena.Mega);
+            LiftChaseGround(park);
             float mapW = MegaParkP1Layout.MapW;
             float mapD = MegaParkP1Layout.MapD;
             Sun(out float lsx, out float lsy, out float lsz);
@@ -464,7 +465,96 @@ namespace Tag.Level
                 ChasePng(tris, Path.Combine(folder, "chase4_" + i.ToString() + ".png"), 960, 540,
                     ex, ey, ez, tx, ty, tz, seatShadow, sox, soy, soz, srx, sry, srz, sux, suy, suz, lsx, lsy, lsz, half);
             }
-            return hier ? "hud-chases " + folder + " hier=posed" : "hud-chases " + folder + " hier=missing";
+            int idles = WriteIdlePortraits(folder, sr, sg, sb);
+            string posed = hier ? "hier=posed" : "hier=missing";
+            return "hud-chases " + folder + " " + posed + " idle=" + idles.ToString();
+        }
+
+        /// <summary>
+        /// Chase cameras sit on the dark zone paint, so the path reads maroon.
+        /// The locked swatches stay put for the contrast proof. Only upward
+        /// dirt and concrete in these stills move: tan about #C8A878, and a
+        /// lighter grey.
+        /// </summary>
+        static void LiftChaseGround(List<Tri> tris)
+        {
+            const float tanR = 183f / 255f;
+            const float tanG = 164f / 255f;
+            const float tanB = 114f / 255f;
+            const float greyR = 179f / 255f;
+            const float greyG = 195f / 255f;
+            const float greyB = 197f / 255f;
+            for (int i = 0; i < tris.Count; i++)
+            {
+                Tri t = tris[i];
+                if (t.Ny < 0.72f) continue;
+                float y = (t.Y0 + t.Y1 + t.Y2) / 3f;
+                if (y > 0.55f || y < -0.8f) continue;
+                if (DirtPath(t.R, t.G, t.B))
+                {
+                    t.R = tanR; t.G = tanG; t.B = tanB;
+                    tris[i] = t;
+                }
+                else if (SameInk(t.R, t.G, t.B, 46f / 255f, 52f / 255f, 58f / 255f))
+                {
+                    t.R = greyR; t.G = greyG; t.B = greyB;
+                    tris[i] = t;
+                }
+            }
+        }
+
+        static bool DirtPath(float r, float g, float b)
+        {
+            if (SameInk(r, g, b, 40f / 255f, 22f / 255f, 22f / 255f)) return true;
+            if (SameInk(r, g, b, 70f / 255f, 43f / 255f, 30f / 255f)) return true;
+            if (SameInk(r, g, b, 0x3A / 255f, 0x22 / 255f, 0x18 / 255f)) return true;
+            if (SameInk(r, g, b, 66f / 255f, 36f / 255f, 32f / 255f)) return true;
+            // The other zone paints. From the shoulder they read as dried blood or dusk, not a path.
+            if (SameInk(r, g, b, 74f / 255f, 52f / 255f, 58f / 255f)) return true;
+            if (SameInk(r, g, b, 52f / 255f, 46f / 255f, 80f / 255f)) return true;
+            if (SameInk(r, g, b, 32f / 255f, 52f / 255f, 40f / 255f)) return true;
+            if (SameInk(r, g, b, 34f / 255f, 30f / 255f, 46f / 255f)) return true;
+            return false;
+        }
+
+        static bool SameInk(float r, float g, float b, float tr, float tg, float tb)
+        {
+            float dr = r - tr;
+            float dg = g - tg;
+            float db = b - tb;
+            return dr * dr + dg * dg + db * db < 0.0004f;
+        }
+
+        static int WriteIdlePortraits(string folder, float[] sr, float[] sg, float[] sb)
+        {
+            int n = 0;
+            string docs = RepoDocs();
+            if (docs == null) return 0;
+            for (int i = 0; i < 4; i++)
+            {
+                string src = Path.Combine(docs, "UiStills", "hier-idle-" + i.ToString() + ".tris");
+                if (!LoadHierFile(src)) continue;
+                var tris = new List<Tri>(8);
+                AddBox(tris, 0f, -0.04f, 0f, 2.6f, 0.08f, 2.6f, 183f / 255f, 164f / 255f, 114f / 255f);
+                AddHier(tris, 0f, 0f, 0f, 16f, sr[i], sg[i], sb[i]);
+                AddContact(tris, 0f, 0f, 0f);
+                var shadow = new float[16 * 16];
+                for (int s = 0; s < shadow.Length; s++) shadow[s] = -1e20f;
+                PortraitPng(tris, Path.Combine(folder, "idle_" + i.ToString() + ".png"), 640, 800,
+                    0.62f, 1.08f, 3.55f, 0f, 0.90f, 0.02f, shadow);
+                n++;
+            }
+            return n;
+        }
+
+        static void PortraitPng(List<Tri> tris, string path, int w, int h,
+            float ex, float ey, float ez, float tx, float ty, float tz, float[] shadow)
+        {
+            var rgb = new byte[w * h * 3];
+            var depth = new float[w * h];
+            Paint(tris, rgb, depth, w, h, ex, ey, ez, tx, ty, tz, 28f, true,
+                shadow, 16, 0f, 2f, 0f, 1f, 0f, 0f, 0f, 1f, 0f, 0f, 1f, 0f, 4f);
+            WritePng(path, rgb, w, h);
         }
 
         struct HierTri
@@ -482,8 +572,12 @@ namespace Tag.Level
             _hierTried = true;
             string docs = RepoDocs();
             if (docs == null) return false;
-            string path = Path.Combine(docs, "UiStills", "hier-run.tris");
-            if (!File.Exists(path)) return false;
+            return LoadHierFile(Path.Combine(docs, "UiStills", "hier-run.tris"));
+        }
+
+        static bool LoadHierFile(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path)) return false;
             using (var fs = File.OpenRead(path))
             using (var br = new BinaryReader(fs))
             {
