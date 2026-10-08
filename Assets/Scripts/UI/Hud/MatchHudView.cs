@@ -32,7 +32,7 @@ namespace Tag.Ui.Hud
             plate.type = Image.Type.Sliced;
             plate.color = new Color(0.04f, 0.08f, 0.16f, 0.90f);
             plate.raycastTarget = false;
-            hud.Clock = Label(plateRt, "Clock", 60, TextAnchor.MiddleCenter, new Vector2(0f, 0.36f), new Vector2(1f, 1f));
+            hud.Clock = Label(plateRt, "Clock", 60, TextAnchor.MiddleCenter, new Vector2(0f, 0.36f), new Vector2(1f, 1f), true);
             hud.RoundLabel = Label(plateRt, "Round", UiFit.FloorFont, TextAnchor.MiddleCenter, new Vector2(0f, 0f), new Vector2(1f, 0.40f));
             hud.RoundLabel.color = MenuTheme.Gold;
 
@@ -43,13 +43,24 @@ namespace Tag.Ui.Hud
             hud.CenterPlate.type = Image.Type.Sliced;
             hud.CenterPlate.color = new Color(0.04f, 0.07f, 0.14f, 0.78f);
             hud.CenterPlate.raycastTarget = false;
-            hud.CenterCall = Label(center, "Call", 96, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one);
+            hud.CenterCall = Label(center, "Call", 96, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, true);
             hud.CenterPlate.enabled = false;
             hud.CenterCall.enabled = false;
 
             for (int i = 0; i < 4; i++)
                 hud.Panes[i] = BuildPane(root, i);
             hud.ScoreRoot = BuildScore(root, hud);
+            RectTransform hint = MenuWidgets.Box(root, "ComicHint", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f));
+            hint.sizeDelta = new Vector2(360f, 44f);
+            hint.anchoredPosition = new Vector2(0f, 16f);
+            Image hintPlate = hint.gameObject.AddComponent<Image>();
+            hintPlate.sprite = MenuArt.Round;
+            hintPlate.type = Image.Type.Sliced;
+            hintPlate.color = new Color(0.04f, 0.08f, 0.16f, 0.88f);
+            hintPlate.raycastTarget = false;
+            hud.ComicHint = Label(hint, "Hint", UiFit.FloorFont, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, true);
+            hud.ComicHint.text = MatchHudText.ComicHint;
+            hud.ComicHint.color = MenuTheme.Gold;
         }
 
         static HudPane BuildPane(Transform root, int index)
@@ -69,7 +80,7 @@ namespace Tag.Ui.Hud
             pane.Badge.type = Image.Type.Sliced;
             pane.Badge.color = MenuTheme.Gold;
             pane.Badge.raycastTarget = false;
-            pane.BadgeWord = Label(badge, "It", UiFit.FloorFont, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one);
+            pane.BadgeWord = Label(badge, "It", UiFit.FloorFont, TextAnchor.MiddleCenter, Vector2.zero, Vector2.one, true);
             pane.BadgeWord.color = MenuTheme.Ink;
             pane.BadgeWord.text = MatchHudText.It;
             Outline badgeEdge = pane.BadgeWord.GetComponent<Outline>();
@@ -77,13 +88,17 @@ namespace Tag.Ui.Hud
 
             pane.Identity = MenuWidgets.Place(rt, "Identity", 136f, 12f, 480f, 128f);
             pane.Name = Label(pane.Identity, "Name", 34, TextAnchor.MiddleLeft, new Vector2(0f, 0.66f), new Vector2(1f, 1f));
-            pane.Profile = Label(pane.Identity, "Profile", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0f, 0.36f), new Vector2(1f, 0.68f));
+            pane.Profile = Label(pane.Identity, "Profile", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0f, 0.36f), new Vector2(0.58f, 0.68f));
             pane.Profile.color = MenuTheme.Mute;
+            pane.Tags = Label(pane.Identity, "Tags", UiFit.FloorFont, TextAnchor.MiddleRight, new Vector2(0.56f, 0.36f), new Vector2(0.78f, 0.68f));
+            pane.Tags.color = MenuTheme.Mute;
+            pane.Tags.text = MatchHudText.Tags;
+            pane.TagsValue = Label(pane.Identity, "TagsN", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0.80f, 0.36f), new Vector2(1f, 0.68f));
             pane.Metric = Label(pane.Identity, "Metric", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0f, 0f), new Vector2(0.42f, 0.38f));
             pane.Metric.color = MenuTheme.Gold;
             pane.Value = Label(pane.Identity, "Value", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0.40f, 0f), new Vector2(1f, 0.38f));
 
-            pane.Call = Label(rt, "Call", 64, TextAnchor.MiddleCenter, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.68f));
+            pane.Call = Label(rt, "Call", 64, TextAnchor.MiddleCenter, new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.68f), true);
             pane.Call.enabled = false;
 
             pane.Verbs = MenuWidgets.Place(rt, "Verbs", 16f, 0f, 300f, 108f);
@@ -121,7 +136,7 @@ namespace Tag.Ui.Hud
             plate.type = Image.Type.Sliced;
             plate.color = new Color(0.04f, 0.08f, 0.16f, 0.94f);
             plate.raycastTarget = false;
-            pane.BoardTitle = Label(rt, "Title", 36, TextAnchor.MiddleCenter, new Vector2(0.06f, 0.84f), new Vector2(0.94f, 0.98f));
+            pane.BoardTitle = Label(rt, "Title", 36, TextAnchor.MiddleCenter, new Vector2(0.06f, 0.84f), new Vector2(0.94f, 0.98f), true);
             pane.BoardTitle.text = ScorePeek.Title;
             pane.BoardRound = Label(rt, "Round", UiFit.FloorFont, TextAnchor.MiddleLeft, new Vector2(0.08f, 0.72f), new Vector2(0.58f, 0.84f));
             pane.BoardClock = Label(rt, "Clock", UiFit.FloorFont, TextAnchor.MiddleRight, new Vector2(0.50f, 0.72f), new Vector2(0.92f, 0.84f));
@@ -177,7 +192,7 @@ namespace Tag.Ui.Hud
             fill.fillClockwise = true;
             fill.fillAmount = 0f;
             fill.raycastTarget = false;
-            word = Label(rt, "Word", UiFit.FloorFont, TextAnchor.MiddleCenter, new Vector2(0f, 0f), new Vector2(1f, 0.42f));
+            word = Label(rt, "Word", UiFit.FloorFont, TextAnchor.MiddleCenter, new Vector2(0f, 0f), new Vector2(1f, 0.42f), true);
         }
 
         static RectTransform BuildScore(Transform root, MatchHud hud)
@@ -188,7 +203,7 @@ namespace Tag.Ui.Hud
             plate.type = Image.Type.Sliced;
             plate.color = new Color(0.05f, 0.10f, 0.20f, 0.92f);
             plate.raycastTarget = false;
-            hud.ScoreTitle = Label(rt, "Title", 32, TextAnchor.MiddleLeft, new Vector2(0f, 0.82f), new Vector2(1f, 1f));
+            hud.ScoreTitle = Label(rt, "Title", 32, TextAnchor.MiddleLeft, new Vector2(0f, 0.82f), new Vector2(1f, 1f), true);
             hud.ScoreTitle.text = MatchHudText.Score;
             for (int i = 0; i < 4; i++)
             {
@@ -218,14 +233,14 @@ namespace Tag.Ui.Hud
             return image;
         }
 
-        static Text Label(Transform parent, string name, int size, TextAnchor align, Vector2 min, Vector2 max)
+        static Text Label(Transform parent, string name, int size, TextAnchor align, Vector2 min, Vector2 max, bool comic = false)
         {
             RectTransform rt = MenuWidgets.Box(parent, name, min, max, new Vector2(0.5f, 0.5f));
             rt.offsetMin = new Vector2(8f, 0f);
             rt.offsetMax = new Vector2(-8f, 0f);
             Text text = rt.gameObject.AddComponent<Text>();
             if (size < UiFit.FloorFont) size = UiFit.FloorFont;
-            text.font = MenuTheme.Font;
+            text.font = comic ? MenuTheme.Display : MenuTheme.Font;
             text.fontSize = size;
             text.fontStyle = FontStyle.Bold;
             text.alignment = align;

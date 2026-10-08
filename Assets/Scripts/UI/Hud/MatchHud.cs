@@ -28,6 +28,8 @@ namespace Tag.Ui.Hud
         public Text Profile;
         public Text Metric;
         public Text Value;
+        public Text Tags;
+        public Text TagsValue;
         public Text BadgeWord;
         public Text Call;
         public Image DashBg;
@@ -63,6 +65,7 @@ namespace Tag.Ui.Hud
         public CanvasScaler Scaler;
         public Text Clock;
         public Text RoundLabel;
+        public Text ComicHint;
         public Text CenterCall;
         public Image CenterPlate;
         public RectTransform ScoreRoot;
@@ -410,6 +413,8 @@ namespace Tag.Ui.Hud
             else if (index == 2) Set(pane.Value, it ? MatchHudText.In : MatchHudText.Out);
             else if (index == 3) Set(pane.Value, HudDigits.Whole0(3f));
             else Set(pane.Value, HudDigits.Tenth0(12.4f));
+            Set(pane.Tags, MatchHudText.Tags);
+            Set(pane.TagsValue, HudDigits.Whole0(index));
             Color tint = MenuTheme.Seat(index);
             TintEdges(pane, it ? Color.Lerp(tint, MenuTheme.Gold, 0.7f) : tint);
             if (pane.Glow != null)
@@ -450,6 +455,8 @@ namespace Tag.Ui.Hud
             TagModeId mode = modes.SelectedMode;
             Set(pane.Metric, MatchHudText.Metric(mode));
             Set(pane.Value, ValueOf(modes, pawn));
+            Set(pane.Tags, MatchHudText.Tags);
+            Set(pane.TagsValue, pawn != null ? HudDigits.Whole0(pawn.TagsLanded) : MatchHudText.Off);
 
             bool isIt = pawn != null && pawn.IsIt;
             Color tint = SeatTint(seat);
@@ -794,6 +801,8 @@ namespace Tag.Ui.Hud
                 pane.Value.resizeTextMinSize = UiFit.FloorFont;
                 pane.Value.alignment = align;
             }
+            if (pane.Tags != null) pane.Tags.alignment = align;
+            if (pane.TagsValue != null) pane.TagsValue.alignment = align;
             if (pane.Call != null)
             {
                 pane.Call.fontSize = callSize;

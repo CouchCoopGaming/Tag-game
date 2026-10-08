@@ -1670,7 +1670,7 @@ namespace Tag.Ui.Menu
             var blurb = MenuWidgets.Place(_body, "Blurb", 8f, logoH + 2f, logoW - 28f, 48f);
             MenuWidgets.Words(blurb, "Local couch. One keyboard, four pads.", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
             float heroY = logoH + 54f;
-            float tipH = 84f;
+            float tipH = 16f + (UiFit.FloorFont + 6f) * 4f;
             float heroH = bodyH - heroY - tipH - 8f;
             if (heroH > 440f) heroH = 440f;
             if (heroH < 88f) heroH = 88f;
@@ -1686,11 +1686,13 @@ namespace Tag.Ui.Menu
             var tipPlate = tipRt.gameObject.AddComponent<Image>();
             MenuArt.Plate(tipPlate, MenuTheme.Navy, true);
             tipPlate.raycastTarget = false;
-            MenuWidgets.Words(tipRt, "Tip of the day", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Mute, new Vector2(0f, 0.48f), Vector2.one);
-            MenuWidgets.Words(tipRt, MenuTips.At(0), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, new Vector2(1f, 0.52f));
+            MenuWidgets.Words(tipRt, "Tip of the day", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Mute, new Vector2(0.04f, 0.76f), new Vector2(0.96f, 0.98f));
+            MenuWidgets.Words(tipRt, MenuTips.At(0), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.04f, 0.52f), new Vector2(0.96f, 0.74f));
+            MenuWidgets.Words(tipRt, MenuTips.At(2), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.04f, 0.28f), new Vector2(0.96f, 0.50f));
+            MenuWidgets.Words(tipRt, MenuTips.At(7), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.04f, 0.02f), new Vector2(0.96f, 0.26f));
             float y = 8f;
             AddTile(tileX, y, tileW, 96f, 0, "Play", "Local couch", true); y += 108f;
-            AddTile(tileX, y, tileW, 96f, 1, "Practice", "Free arena, routes you already have", true); y += 108f;
+            AddTile(tileX, y, tileW, 96f, 1, "Practice", "Free run any arena, no tagger", true); y += 108f;
             AddTile(tileX, y, tileW, 96f, 2, "Options", "Sound, picture, access", true); y += 108f;
             AddTile(tileX, y, tileW, 96f, 3, "Controls", "Binds. Space still jumps.", true); y += 108f;
             float gap = 12f;
@@ -2098,24 +2100,44 @@ namespace Tag.Ui.Menu
             ShowFlyover(fly, 0.72f);
             MenuWidgets.Heading(_body, name, 64, TextAnchor.MiddleCenter, MenuTheme.Gold, new Vector2(0.08f, 0.86f), new Vector2(0.92f, 0.98f));
             GameSettings rules = GameSettings.Current ?? GameSettings.Defaults();
-            string[] ruleLabel = { "Length", "Rounds", "Win target", "Starting It", "Handicaps", "Pads", "Zips", "Tip" };
             string it = RuleBook.LoadStart(rules);
             const string itPrefix = "Starting It  ";
             if (it != null && it.StartsWith(itPrefix))
                 it = it.Substring(itPrefix.Length);
-            string[] ruleValue =
+            string rounds = RuleBook.LoadRounds(rules);
+            bool hot = MenuSession.Mode == TagModeId.HotPotato;
+            string[] ruleLabel = new string[8];
+            string[] ruleValue = new string[8];
+            int rows = 0;
+            ruleLabel[rows] = "Length";
+            ruleValue[rows] = RuleBook.LoadLength(rules);
+            rows++;
+            ruleLabel[rows] = "Rounds";
+            ruleValue[rows] = rounds;
+            rows++;
+            if (hot || rounds != "1")
             {
-                RuleBook.LoadLength(rules),
-                RuleBook.LoadRounds(rules),
-                RuleBook.LoadWin(rules),
-                it,
-                RuleBook.LoadHand(rules, 0) + "  " + RuleBook.LoadHand(rules, 1) + "  " + RuleBook.LoadHand(rules, 2) + "  " + RuleBook.LoadHand(rules, 3),
-                RuleBook.LoadPads(rules),
-                RuleBook.LoadZips(rules),
-                MenuTips.At(_tip)
-            };
+                ruleLabel[rows] = "Win target";
+                ruleValue[rows] = hot ? "First to " + RuleBook.LoadWin(rules) + " round wins" : RuleBook.LoadWin(rules);
+                rows++;
+            }
+            ruleLabel[rows] = "Starting It";
+            ruleValue[rows] = it;
+            rows++;
+            ruleLabel[rows] = "Handicaps";
+            ruleValue[rows] = HandLine(rules);
+            rows++;
+            ruleLabel[rows] = "Pads";
+            ruleValue[rows] = RuleBook.LoadPads(rules);
+            rows++;
+            ruleLabel[rows] = "Zips";
+            ruleValue[rows] = RuleBook.LoadZips(rules);
+            rows++;
+            ruleLabel[rows] = "Tip";
+            ruleValue[rows] = MenuTips.At(_tip);
+            rows++;
             _tip++;
-            for (int i = 0; i < ruleLabel.Length; i++)
+            for (int i = 0; i < rows; i++)
             {
                 float top = 0.78f - i * 0.07f;
                 float bot = top - 0.065f;
@@ -2322,7 +2344,7 @@ namespace Tag.Ui.Menu
         {
             ClearKeepHeader();
             ActionBinds binds = ActionBinds.Current ?? ActionBinds.Defaults();
-            int win = OptWindow;
+            int win = ControlWindow();
             if (_focus < _window) _window = _focus;
             if (_focus >= _window + win) _window = _focus - (win - 1);
             int max = _count - win;
@@ -2382,7 +2404,40 @@ namespace Tag.Ui.Menu
                     MenuWidgets.Mark(row, MenuIcons.BindOf(family, index), MenuTheme.Gold, 56f);
                 }
             }
+            PaintControlScroll(win);
             RefreshFocus();
+        }
+
+        void PaintControlScroll(int win)
+        {
+            if (win < 1) win = 1;
+            UiFit.RowBox(UiFit.Current(), 1680f, out float rowX, out float rowW);
+            float trackH = win * 96f - 16f;
+            if (trackH < 120f) trackH = 120f;
+            float trackX = rowX + rowW + 8f;
+            var track = MenuWidgets.Place(_body, "ScrollTrack", trackX, 12f, 14f, trackH);
+            var trackImage = track.gameObject.AddComponent<Image>();
+            MenuArt.Plate(trackImage, new Color(0f, 0f, 0f, 0.55f), true);
+            trackImage.raycastTarget = false;
+            int max = _count - win;
+            if (max < 0) max = 0;
+            float span = _count <= win ? 1f : win / (float)_count;
+            float thumbH = trackH * span;
+            if (thumbH < 56f) thumbH = 56f;
+            if (thumbH > trackH) thumbH = trackH;
+            float travel = trackH - thumbH;
+            float t = max <= 0 ? 0f : _window / (float)max;
+            var thumb = MenuWidgets.Place(track, "ScrollThumb", 2f, travel * t, 10f, thumbH);
+            var thumbImage = thumb.gameObject.AddComponent<Image>();
+            MenuArt.Plate(thumbImage, MenuTheme.Gold, true);
+            thumbImage.raycastTarget = false;
+        }
+
+        int ControlWindow()
+        {
+            if (8f + (OptWindow + 1) * 96f <= UiFit.BodyH(UiFit.Current()))
+                return OptWindow + 1;
+            return OptWindow;
         }
 
         void PaintLoad()
@@ -2811,7 +2866,7 @@ namespace Tag.Ui.Menu
             }
             else if (_screen == MenuScreenId.Controls)
             {
-                int span = OptWindow;
+                int span = ControlWindow();
                 if (_focus < _window || _focus >= _window + span)
                     PaintControls();
                 else
@@ -3175,6 +3230,23 @@ namespace Tag.Ui.Menu
             if (cell == ' ') return "Space";
             if (cell == '\0') return "";
             return cell.ToString();
+        }
+
+        static string HandLine(GameSettings rules)
+        {
+            string line = "";
+            int n = 0;
+            int seats = GameSettings.SeatCount;
+            for (int s = 0; s < seats; s++)
+            {
+                string word = RuleBook.LoadHand(rules, s);
+                if (word == "Off") continue;
+                if (n > 0) line = line + "  ";
+                line = line + "P" + (s + 1).ToString() + " " + word;
+                n++;
+            }
+            if (n == 0) return "none";
+            return line;
         }
 
         static string ConfirmTitle(int seat)

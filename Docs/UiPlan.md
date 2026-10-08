@@ -207,6 +207,12 @@ Character cards keep the hat and ready line inside its box, with space above the
 
 Every button title stays on the comic display face, selected or not, and every sublabel stays on the body face. Sublabels use the full button width before they wrap. The controls list prints the keys the reader actually samples, including grapple on RMB (click pulls, a second click releases, no pad bind), zip as the cling hold, and a launch pad you walk onto. Cling stays a hold into the wall, and wall jump is that hold plus Jump. The main-menu discs sit inside the frame, above the tip. Loading reads Starting It, then Random, and that screen has no confirm or back hint. Pause says Paused by P1 in the header, with the buttons centered in the card. Mega Park is a lower three-quarter view with a pad and a zip in front and a light vignette. Mockups are in `Docs/UiStills/pass15/`.
 
+## Pass 16
+
+The tip of the day lists three lines that match the binds: Space jumps, hold into a wall to climb, and a double-click on RMB lets go of the grapple. Practice reads "Free run any arena, no tagger". Controls keeps a window on the list and a gold scrollbar. The first window runs through Pause. The last window is the stick rows, the confirm faces, reset, and back. Cling is still the hold into the wall, not its own key.
+
+Arena previews use the daylight overview of the real Mega Park, Pocket Park, and Stack Yard: the loop, the structures, the pads, and a zip. Loading hides the win target when the match is one round, and it says Handicaps none unless a seat is set. The card sits on a blurred Mega Park photo. The match HUD uses the comic face for the timer, the IT badge, and the verb words, with a tag count on each seat and a Comic words hint. Mockups are in `Docs/UiStills/pass16/`.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

@@ -298,6 +298,8 @@ The fourteenth pass insets each arena photo inside the navy frame. Mega Park, Po
 
 The fifteenth pass keeps every button title on the comic face and every sublabel on the body face, and the sublabel uses the width of the button. Controls lists grapple, the cling hold, zip, and the launch pad the way they are bound. The chase discs clear the edge and the tip. Loading says Starting It, then Random, with no confirm or back hint. Pause reads Paused by P1. Mega Park is framed lower, with a zip and a pad in front. Space still jumps. Mockups are in `Docs/UiStills/pass15/`.
 
+The sixteenth pass fills the tip of the day with three lines that match the binds, and Practice says you can free run any arena with no tagger. Controls scrolls, with the gold bar showing there is more past the first window, and the last window is in the same set. The arena cards use the daylight overview of each real park. A one-round match does not list a win target beside it, and handicaps read none until a seat is set. The loading card uses a blurred Mega Park photo. In a match the timer, the IT badge, and the verb words use the comic face, each seat shows its tag count, and a Comic words hint sits under the clock, on a two-player split and a four-player split. Space still jumps. Mockups are in `Docs/UiStills/pass16/`.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.
