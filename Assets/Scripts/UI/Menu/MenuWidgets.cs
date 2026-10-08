@@ -282,6 +282,23 @@ namespace Tag.Ui.Menu
         }
 
         /// <summary>
+        /// Seat mark on a drop-in card. The kind is <see cref="MenuMannequin.Shape"/>.
+        /// A dark well keeps the fill readable at couch size.
+        /// </summary>
+        public static void JoinShape(MenuTile tile, int seat)
+        {
+            if (tile == null) return;
+            RectTransform root = tile.transform as RectTransform;
+            float w = root != null ? root.sizeDelta.x : 400f;
+            const float size = 88f;
+            var well = Place(tile.transform, "JoinWell", w - size - 16f, 14f, size, size);
+            var back = well.gameObject.AddComponent<Image>();
+            back.color = new Color(0.02f, 0.02f, 0.04f, 1f);
+            back.raycastTarget = false;
+            SeatShape.StampKind(well, MenuMannequin.Shape(seat), 10f, 10f, size - 20f, MenuTheme.SeatFill(seat));
+        }
+
+        /// <summary>
         /// Head, chest, and legs in the seat color. A joined drop-in card uses this
         /// instead of a tiny device mark.
         /// </summary>

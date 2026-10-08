@@ -18,11 +18,16 @@ namespace Tag.Ui.Menu
 
         public static void Stamp(Transform parent, int seat, float x, float y, float size, Color ink)
         {
+            StampKind(parent, MenuMannequin.Shape(seat), x, y, size, ink);
+        }
+
+        public static void StampKind(Transform parent, int kind, float x, float y, float size, Color ink)
+        {
             if (parent == null)
                 return;
             RectTransform rt = MenuWidgets.Place(parent, "SeatShape", x, y, size, size);
             Image image = rt.gameObject.AddComponent<Image>();
-            image.sprite = SpriteOf(seat);
+            image.sprite = SpriteForKind(kind);
             image.color = ink;
             image.preserveAspect = true;
             image.raycastTarget = false;
@@ -30,8 +35,12 @@ namespace Tag.Ui.Menu
 
         static Sprite SpriteOf(int seat)
         {
+            return SpriteForKind(MenuMannequin.Shape(seat));
+        }
+
+        static Sprite SpriteForKind(int kind)
+        {
             if (_sprites == null) _sprites = new Sprite[4];
-            int kind = MenuMannequin.SeatMark(seat);
             if (kind < 0) kind = 0;
             if (kind > 3) kind = 3;
             if (_sprites[kind] != null) return _sprites[kind];

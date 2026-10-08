@@ -79,6 +79,12 @@ namespace Tag.Ui.Menu
             return Seats[SeatIndex(seat)].Mark;
         }
 
+        /// <summary>Drop-in join reads the seat shape from here. Same mark as <see cref="SeatMark"/>.</summary>
+        public static int Shape(int seat)
+        {
+            return SeatMark(seat);
+        }
+
         static int SeatIndex(int seat)
         {
             if (seat < 0) return 0;

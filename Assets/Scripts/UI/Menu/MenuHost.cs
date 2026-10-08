@@ -359,20 +359,21 @@ namespace Tag.Ui.Menu
             bool title = id == MenuScreenId.Title;
             bool photo = title || id == MenuScreenId.Main;
             bool loading = id == MenuScreenId.Loading;
+            bool plate = photo || id == MenuScreenId.Pause;
             if (_vignette != null) _vignette.SetActive(photo);
             if (_pattern != null)
             {
                 Color wash = _pattern.color;
-                wash.a = photo || loading ? 0f : 0.22f;
+                wash.a = plate || loading ? 0f : 0.22f;
                 _pattern.color = wash;
             }
             for (int i = 0; i < _ribbons.Length; i++)
             {
-                if (_ribbons[i] != null) _ribbons[i].gameObject.SetActive(!title && !loading);
+                if (_ribbons[i] != null) _ribbons[i].gameObject.SetActive(!plate && !loading);
             }
             for (int i = 0; i < _orbs.Length; i++)
             {
-                if (_orbs[i] != null) _orbs[i].gameObject.SetActive(!loading);
+                if (_orbs[i] != null) _orbs[i].gameObject.SetActive(!plate && !loading);
             }
             if (id == MenuScreenId.Cast)
             {
@@ -709,10 +710,13 @@ namespace Tag.Ui.Menu
 
         void RefreshFocus()
         {
+            bool couch = _screen == MenuScreenId.Main || _screen == MenuScreenId.Join;
             for (int i = 0; i < _tiles.Count; i++)
             {
                 MenuTile tile = _tiles[i];
-                if (tile != null) tile.SetHot(tile.Index == _focus);
+                if (tile == null) continue;
+                tile.SetHot(tile.Index == _focus);
+                if (couch) tile.CouchEdge();
             }
         }
 
@@ -1061,6 +1065,14 @@ namespace Tag.Ui.Menu
             LayoutPrompt(keyboard);
         }
 
+        static string PressLine(bool keyboard)
+        {
+            ActionBinds binds = ActionBinds.Current ?? ActionBinds.Defaults();
+            string space = ActionBinds.Show(binds.Keyboard[(int)PlayAction.Jump]);
+            string start = ActionBinds.Show(binds.Gamepad[(int)PlayAction.Pause]);
+            return keyboard ? "Press " + space + " or " + start : "Press " + start + " or " + space;
+        }
+
         void LayoutPrompt(bool keyboard)
         {
             if (_promptWord == null) return;
@@ -1068,29 +1080,13 @@ namespace Tag.Ui.Menu
             word.anchorMin = new Vector2(0.5f, 0.5f);
             word.anchorMax = new Vector2(0.5f, 0.5f);
             if (_promptTail != null) _promptTail.gameObject.SetActive(false);
-            if (keyboard)
-            {
-                if (_promptWord.text != "PRESS START") _promptWord.text = "PRESS START";
-                _promptWord.alignment = TextAnchor.MiddleCenter;
-                word.pivot = new Vector2(0.5f, 0.5f);
-                word.sizeDelta = new Vector2(720f, 110f);
-                word.anchoredPosition = Vector2.zero;
-                if (_startGlyph != null) _startGlyph.enabled = false;
-                return;
-            }
-            if (_promptWord.text != "PRESS") _promptWord.text = "PRESS";
-            _promptWord.alignment = TextAnchor.MiddleRight;
-            word.pivot = new Vector2(1f, 0.5f);
-            word.sizeDelta = new Vector2(320f, 110f);
-            word.anchoredPosition = new Vector2(-12f, 0f);
-            if (_startGlyph == null) return;
-            _startGlyph.enabled = true;
-            RectTransform glyph = _startGlyph.rectTransform;
-            glyph.anchorMin = new Vector2(0.5f, 0.5f);
-            glyph.anchorMax = new Vector2(0.5f, 0.5f);
-            glyph.pivot = new Vector2(0f, 0.5f);
-            glyph.sizeDelta = new Vector2(92f, 92f);
-            glyph.anchoredPosition = new Vector2(12f, 0f);
+            string line = PressLine(keyboard);
+            if (_promptWord.text != line) _promptWord.text = line;
+            _promptWord.alignment = TextAnchor.MiddleCenter;
+            word.pivot = new Vector2(0.5f, 0.5f);
+            word.sizeDelta = new Vector2(1280f, 140f);
+            word.anchoredPosition = Vector2.zero;
+            if (_startGlyph != null) _startGlyph.enabled = false;
         }
 
         static void Snug(Text label)
@@ -1824,25 +1820,28 @@ namespace Tag.Ui.Menu
             _count = 0;
             if (_header != null) _header.text = "";
             if (_banner != null) _banner.text = "";
-            if (_dim != null) _dim.color = new Color(0.02f, 0.04f, 0.10f, 0.25f);
-            ShowFlyover(ParkArena.Mega, 1f);
+            if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0.18f);
+            ShowPark(ParkArena.Mega, 1f);
             var paradeRt = MenuWidgets.Box(_body, "Parade", Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f));
             _parade = paradeRt.gameObject.AddComponent<RawImage>();
             _parade.raycastTarget = false;
             _parade.color = Color.white;
-            RectTransform logo = MenuWidgets.Logo(_body, 0f, 0f, 1100f, 280f, 168);
+            RectTransform logo = MenuWidgets.Logo(_body, 0f, 0f, 860f, 658f, 220);
             logo.anchorMin = new Vector2(0.5f, 0.5f);
             logo.anchorMax = new Vector2(0.5f, 0.5f);
             logo.pivot = new Vector2(0.5f, 0.5f);
-            logo.sizeDelta = new Vector2(1100f, 280f);
-            logo.anchoredPosition = new Vector2(0f, 150f);
+            logo.sizeDelta = new Vector2(860f, 658f);
+            logo.anchoredPosition = new Vector2(0f, 140f);
             var prompt = MenuWidgets.Box(_body, "StartPrompt", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
-            prompt.sizeDelta = new Vector2(980f, 128f);
-            prompt.anchoredPosition = new Vector2(0f, -250f);
+            prompt.sizeDelta = new Vector2(1400f, 160f);
+            prompt.anchoredPosition = new Vector2(0f, -320f);
+            var promptPlate = prompt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(promptPlate, new Color(0.04f, 0.08f, 0.18f, 0.88f), true);
+            promptPlate.raycastTarget = false;
             _startPrompt = prompt.gameObject.AddComponent<CanvasGroup>();
             _startPrompt.blocksRaycasts = false;
             _startPrompt.interactable = false;
-            _promptWord = MenuWidgets.Heading(prompt, "PRESS", 72, TextAnchor.MiddleRight, MenuTheme.Cream, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+            _promptWord = MenuWidgets.Heading(prompt, "Press", 84, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
             var glyphRt = MenuWidgets.Box(prompt, "StartGlyph", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f));
             _startGlyph = glyphRt.gameObject.AddComponent<Image>();
             _startGlyph.preserveAspect = true;
@@ -1915,13 +1914,19 @@ namespace Tag.Ui.Menu
             _cols = 1;
             if (_header != null) _header.text = "  Menu";
             if (_banner != null) _banner.text = "";
-            if (_dim != null) _dim.color = MenuTheme.Veil;
-            ShowFlyover(ParkArena.Mega, 0.88f);
+            if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0.25f);
+            ShowPark(ParkArena.Mega, 1f);
             float scale = UiFit.Current();
             UiFit.MainSplit(scale, out float logoW, out float tileX, out float tileW);
             float bodyH = UiFit.BodyH(scale);
-            float logoH = bodyH < 720f ? 128f : 168f;
-            MenuWidgets.Logo(_body, 8f, 4f, logoW - 20f, logoH, 84);
+            float logoH = bodyH < 720f ? 200f : 340f;
+            float aspect = 450f / 344f;
+            Texture2D lockup = MenuBackdrop.Lockup;
+            if (lockup != null && lockup.height > 0)
+                aspect = lockup.width / (float)lockup.height;
+            float logoDrawW = logoH * aspect;
+            if (logoDrawW > logoW - 20f) logoDrawW = logoW - 20f;
+            MenuWidgets.Logo(_body, 8f, 4f, logoDrawW, logoH, 84);
             var blurb = MenuWidgets.Place(_body, "Blurb", 8f, logoH + 2f, logoW - 28f, 48f);
             MenuWidgets.Words(blurb, "Local couch. One keyboard, four pads.", UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, Vector2.zero, Vector2.one);
             float heroY = logoH + 54f;
@@ -1972,7 +1977,8 @@ namespace Tag.Ui.Menu
             _count = 0;
             _cols = 4;
             if (_header != null) _header.text = "  Who's playing";
-            if (_dim != null) _dim.color = MenuTheme.Veil;
+            if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0.28f);
+            ShowPark(ParkArena.Mega, 1f);
             _joinSig = JoinSig();
             float span = UiFit.BodyW(UiFit.Current());
             float bodyH = UiFit.BodyH(UiFit.Current());
@@ -2004,6 +2010,7 @@ namespace Tag.Ui.Menu
                     tile.Tint(Color.Lerp(MenuTheme.Ink, seat, UiSweep.SeatMix));
                     tile.LockColors = true;
                     MenuWidgets.JoinDress(tile, seat, human, human && MenuSession.Ready[s], profile, deviceLine);
+                    MenuWidgets.JoinShape(tile, s);
                     if (!human) MenuBindRow.JoinPair(tile);
                 }
             }
@@ -2445,6 +2452,14 @@ namespace Tag.Ui.Menu
             ShowFlyover(shown, 0.2f);
         }
 
+        void ShowPark(int arena, float alpha)
+        {
+            ShowFlyover(arena, alpha);
+            if (_flyover == null) return;
+            Texture bright = MenuBackdrop.Bright(arena);
+            if (bright != null) _flyover.texture = bright;
+        }
+
         void ShowFlyover(int arena, float alpha)
         {
             if (_flyover == null) return;
@@ -2468,12 +2483,7 @@ namespace Tag.Ui.Menu
             if (_header != null) _header.text = "  Loading";
             int fly = MenuSession.Arena;
             if (fly < 0 || fly >= ParkArena.Count) fly = 0;
-            ShowFlyover(fly, 1f);
-            if (_flyover != null)
-            {
-                Texture bright = MenuBackdrop.Bright(fly);
-                if (bright != null) _flyover.texture = bright;
-            }
+            ShowPark(fly, 1f);
             _tipBase = _tip;
             _tipSpin = int.MinValue;
             BuildLoadSeats(name, fly);
@@ -2593,7 +2603,10 @@ namespace Tag.Ui.Menu
             _count = MenuSplitPause.Items;
             _cols = 1;
             _focus = 0;
-            if (_dim != null) _dim.color = MenuTheme.Dim;
+            if (_dim != null) _dim.color = new Color(0f, 0f, 0f, 0.35f);
+            int arena = MenuSession.Arena;
+            if (arena < 0 || arena >= ParkArena.Count) arena = ParkArena.Mega;
+            ShowPark(arena, 1f);
             int opener = 0;
             if (GameSettings.Current != null) opener = GameSettings.Current.AccessSeat;
             bool preview = MenuSplitPause.Preview > 0;

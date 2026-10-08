@@ -85,6 +85,18 @@ namespace Tag.Ui.Menu
             if (Bar != null) Bar.color = hot ? MenuTheme.Ink : (KeepBar ? BarColor : new Color(1f, 1f, 1f, 0.35f));
         }
 
+        /// <summary>A thicker gold edge on the focused row, so it reads from the couch.</summary>
+        public void CouchEdge()
+        {
+            if (Stroke == null) return;
+            RectTransform rt = transform as RectTransform;
+            if (rt == null) return;
+            float pad = _hot ? 16f : 5f;
+            RectTransform stroke = Stroke.rectTransform;
+            stroke.anchoredPosition = new Vector2(-pad, pad);
+            stroke.sizeDelta = new Vector2(rt.sizeDelta.x + pad * 2f, rt.sizeDelta.y + pad * 2f);
+        }
+
         public void OnPointerEnter(PointerEventData eventData)
         {
             if (!Allow) return;

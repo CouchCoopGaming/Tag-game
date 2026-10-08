@@ -4,14 +4,16 @@ using UnityEngine;
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Baked menu art. Mega Park is a golden-hour render of the pass-19 yard.
-    /// The lockup, the chase, and the ready burst match the comic wordmarks.
-    /// Loaded once. The live character view stays the Hier preview.
+    /// Baked menu art. Mega Park's bright plate is the graded yard: neutral
+    /// white balance, an S-curve, and a saturation lift. The lockup, the chase,
+    /// and the ready burst match the comic wordmarks. Loaded once.
+    /// The live character view stays the Hier preview.
     /// </summary>
     public static class MenuBackdrop
     {
         static Texture2D _dusk;
         static Texture2D _gold;
+        static Texture2D _grade;
         static Texture2D _chase;
         static Texture2D _lockup;
         static Texture2D _ready;
@@ -24,11 +26,18 @@ namespace Tag.Ui.Menu
             return MenuArenaArt.Thumb(arena);
         }
 
-        /// <summary>The bright Mega Park shot. Loading uses this so the yard is not the dusk plate.</summary>
+        /// <summary>
+        /// The graded Mega Park plate. Loading and pause use this so the yard
+        /// matches the neutral, sunny stills. Mega Gold stays the ungraded source.
+        /// </summary>
         public static Texture Bright(int arena)
         {
             Load();
-            if (arena == ParkArena.Mega && _gold != null) return _gold;
+            if (arena == ParkArena.Mega)
+            {
+                if (_grade != null) return _grade;
+                if (_gold != null) return _gold;
+            }
             return Fly(arena);
         }
 
@@ -71,6 +80,7 @@ namespace Tag.Ui.Menu
             _tried = true;
             _dusk = Resources.Load<Texture2D>("UI/Menu/MegaDusk");
             _gold = Resources.Load<Texture2D>("UI/Menu/MegaGold");
+            _grade = Resources.Load<Texture2D>("UI/Menu/MegaGrade");
             _chase = Resources.Load<Texture2D>("UI/Menu/Chase");
             _lockup = Resources.Load<Texture2D>("UI/Menu/TagLockup");
             _ready = Resources.Load<Texture2D>("UI/Menu/ReadyBurst");
