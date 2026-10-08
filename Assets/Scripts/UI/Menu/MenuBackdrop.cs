@@ -17,6 +17,7 @@ namespace Tag.Ui.Menu
         static Texture2D _soft;
         static Texture2D _chase;
         static Texture2D _idle;
+        static Texture2D _load;
         static Texture2D _lockup;
         static Texture2D _ready;
         static bool _tried;
@@ -81,6 +82,16 @@ namespace Tag.Ui.Menu
             }
         }
 
+        /// <summary>Four Hier idles, one cell each. Same camera, seat color, chest shape.</summary>
+        public static Texture2D SeatLoad
+        {
+            get
+            {
+                Load();
+                return _load;
+            }
+        }
+
         public static Texture2D Lockup
         {
             get
@@ -109,6 +120,7 @@ namespace Tag.Ui.Menu
             _soft = Resources.Load<Texture2D>("UI/Menu/MegaBlur");
             _chase = Resources.Load<Texture2D>("UI/Menu/Chase");
             _idle = Resources.Load<Texture2D>("UI/Menu/SeatIdle");
+            _load = Resources.Load<Texture2D>("UI/Menu/SeatLoad");
             _lockup = Resources.Load<Texture2D>("UI/Menu/TagLockup");
             _ready = Resources.Load<Texture2D>("UI/Menu/ReadyBurst");
         }

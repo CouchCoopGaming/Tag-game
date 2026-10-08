@@ -73,7 +73,7 @@ namespace Tag.Ui.Menu
             ActionBinds binds = CouchPlay.BindsFor(device);
             if (binds == null) binds = ActionBinds.Defaults();
             bool pad = device != CouchPlay.DeviceKeyboard;
-            if (i == 0) return Verb(PlayAction.Jump) + " [" + Mark(binds, PlayAction.Jump, pad) + "].";
+            if (i == 0) return Verb(PlayAction.Jump) + " [" + Mark(binds, PlayAction.Jump, pad) + "] to leave the ground.";
             if (i == 1) return Verb(PlayAction.Sprint) + " [" + Mark(binds, PlayAction.Sprint, pad) + "], then " + Later(PlayAction.Slide) + " [" + Mark(binds, PlayAction.Slide, pad) + "].";
             if (i == 2) return "Hold [" + ClingWord(binds, pad) + "] into a wall to climb.";
             if (i == 3) return "[" + ClingWord(binds, pad) + "] into a wall + [" + Mark(binds, PlayAction.Jump, pad) + "] to wall jump.";

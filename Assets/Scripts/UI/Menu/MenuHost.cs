@@ -2658,24 +2658,36 @@ namespace Tag.Ui.Menu
                     cam.color = Color.white;
                     cam.raycastTarget = false;
                     cam.uvRect = new Rect(LoadCamX[i], LoadCamY[i], LoadCamW[i], LoadCamH[i]);
-                    if (i == 1)
+                    Texture runners = MenuBackdrop.SeatLoad;
+                    if (runners != null)
                     {
-                        Texture runners = MenuBackdrop.SeatIdle;
-                        Rect uv = new Rect(0.5f, 0f, 0.5f, 1f);
-                        if (runners == null)
+                        int cell = i;
+                        if (cell < 0) cell = 0;
+                        if (cell > 3) cell = 3;
+                        Rect uv = new Rect(cell * 0.25f, 0f, 0.25f, 1f);
+                        // Square cell on a 16:9 frame, same corner of every pane, feet just above the card.
+                        float paneAspect = (w * 16f) / (h * 9f);
+                        if (paneAspect < 0.2f) paneAspect = 0.2f;
+                        float fh = 0.38f;
+                        float fw = fh / paneAspect;
+                        if (fw > 0.34f)
                         {
-                            runners = MenuBackdrop.Chase;
-                            uv = new Rect(0.16f, 0.19f, 0.67f, 0.74f);
+                            fw = 0.34f;
+                            fh = fw * paneAspect;
                         }
-                        if (runners != null)
-                        {
-                            var runRt = MenuWidgets.Box(camRt, "LoadChase", new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.94f), new Vector2(0.5f, 0.5f));
-                            RawImage run = runRt.gameObject.AddComponent<RawImage>();
-                            run.texture = runners;
-                            run.color = Color.white;
-                            run.raycastTarget = false;
-                            run.uvRect = uv;
-                        }
+                        if (fh > 0.60f) fh = 0.60f;
+                        float x1 = 0.97f;
+                        float y0 = 0.34f;
+                        float x0 = x1 - fw;
+                        if (x0 < 0.50f) x0 = 0.50f;
+                        float y1 = y0 + fh;
+                        if (y1 > 0.96f) y1 = 0.96f;
+                        var runRt = MenuWidgets.Box(camRt, "LoadChase", new Vector2(x0, y0), new Vector2(x1, y1), new Vector2(0.5f, 0.5f));
+                        RawImage run = runRt.gameObject.AddComponent<RawImage>();
+                        run.texture = runners;
+                        run.color = Color.white;
+                        run.raycastTarget = false;
+                        run.uvRect = uv;
                     }
                 }
                 float pad = 0.02f;
@@ -2715,7 +2727,7 @@ namespace Tag.Ui.Menu
                 Image trackImage = track.gameObject.AddComponent<Image>();
                 MenuArt.Plate(trackImage, new Color(0.02f, 0.05f, 0.12f, 1f), true);
                 trackImage.raycastTarget = false;
-                var fill = MenuWidgets.Box(track, "Fill", new Vector2(0f, 0.42f), new Vector2(0f, 0.58f), new Vector2(0f, 0.5f));
+                var fill = MenuWidgets.Box(track, "Fill", new Vector2(0f, 0.08f), new Vector2(0.04f, 0.92f), new Vector2(0f, 0.5f));
                 Image fillImage = fill.gameObject.AddComponent<Image>();
                 MenuArt.Plate(fillImage, new Color(1f, 0.84f, 0.35f, 0.38f), true);
                 fillImage.raycastTarget = false;
@@ -3397,20 +3409,16 @@ namespace Tag.Ui.Menu
         void TickLoadDash()
         {
             if (_screen != MenuScreenId.Loading || _loadFill == null || _loadStep > 0) return;
-            float dash = 0.10f;
-            float u = MenuVideo.ReduceMotion ? 0.36f : Mathf.Repeat(Time.unscaledTime * 0.35f, 1f);
-            float x = u * (1f - dash);
-            Color shimmer = new Color(1f, 0.84f, 0.35f, 0.38f);
             for (int i = 0; i < _loadBar.Length; i++)
             {
                 Image bar = _loadBar[i];
                 if (bar == null) continue;
                 RectTransform rt = bar.rectTransform;
-                rt.anchorMin = new Vector2(x, 0.42f);
-                rt.anchorMax = new Vector2(x + dash, 0.58f);
+                rt.anchorMin = new Vector2(0f, 0.08f);
+                rt.anchorMax = new Vector2(0.04f, 0.92f);
                 rt.offsetMin = Vector2.zero;
                 rt.offsetMax = Vector2.zero;
-                bar.color = shimmer;
+                bar.color = MenuTheme.Gold;
                 bar.enabled = true;
             }
         }
