@@ -3527,44 +3527,43 @@
   {
     "name": "HarborCrane",
     "category": "Harbor",
-    "blurb": "Simplified crane. Base 2.2 m square, mast to 7.2 m, boom rises toward +Z and reaches about 7 m out. The hook cable is visual only.",
+    "blurb": "Steel jib crane. 1.6 m base, tubular mast to 4.7 m, cab, and a level jib reaching about 4 m toward +Z. Counterweight on -Z.",
     "size": [
-      2.2,
-      8.923,
-      7.354
+      1.6,
+      5.176,
+      5.14
     ],
     "min": [
-      -1.1,
+      -0.8,
       0.0,
-      -1.1
+      -1.19
     ],
     "max": [
-      1.1,
-      8.923,
-      6.254
+      0.8,
+      5.176,
+      3.95
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 540,
+        "tris": 472,
         "materials": [
           "Lib_Concrete",
           "Lib_SteelDark",
-          "Lib_MetalWorn",
+          "Lib_Steel",
           "Lib_CraneYellow",
-          "Lib_Glass",
-          "Lib_Steel"
+          "Lib_ShopGlass"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 300,
+        "tris": 208,
         "materials": [
           "Lib_Concrete",
           "Lib_SteelDark",
-          "Lib_MetalWorn",
+          "Lib_Steel",
           "Lib_CraneYellow"
         ],
         "mesh": "LOD1",
@@ -3572,11 +3571,11 @@
       },
       {
         "lod": 2,
-        "tris": 108,
+        "tris": 136,
         "materials": [
           "Lib_Concrete",
           "Lib_SteelDark",
-          "Lib_MetalWorn",
+          "Lib_Steel",
           "Lib_CraneYellow"
         ],
         "mesh": "LOD2",
@@ -3589,13 +3588,13 @@
         "type": "box",
         "center": [
           0,
-          0.15,
+          0.1,
           0
         ],
         "size": [
-          2.2,
-          0.3,
-          2.2
+          1.52,
+          0.16,
+          1.52
         ],
         "euler": [
           0,
@@ -3604,84 +3603,60 @@
         ]
       },
       {
-        "name": "Col_Slew",
+        "name": "Col_Plinth",
+        "type": "capsule",
+        "center": [
+          0,
+          0.33,
+          0
+        ],
+        "radius": 0.32,
+        "height": 0.641,
+        "direction": 1
+      },
+      {
+        "name": "Col_Mast",
+        "type": "capsule",
+        "center": [
+          0,
+          2.56,
+          0
+        ],
+        "radius": 0.11,
+        "height": 4.0,
+        "direction": 1
+      },
+      {
+        "name": "Col_Head",
         "type": "box",
         "center": [
           0,
-          0.45,
+          4.715,
           0
         ],
         "size": [
-          1.5,
-          0.28,
-          1.5
+          0.32,
+          0.05,
+          0.32
         ],
         "euler": [
           0,
           0,
           0
         ]
-      },
-      {
-        "name": "Col_Chord_0",
-        "type": "capsule",
-        "center": [
-          -0.28,
-          3.7,
-          -0.28
-        ],
-        "radius": 0.045,
-        "height": 6.4,
-        "direction": 1
-      },
-      {
-        "name": "Col_Chord_1",
-        "type": "capsule",
-        "center": [
-          0.28,
-          3.7,
-          -0.28
-        ],
-        "radius": 0.045,
-        "height": 6.4,
-        "direction": 1
-      },
-      {
-        "name": "Col_Chord_2",
-        "type": "capsule",
-        "center": [
-          -0.28,
-          3.7,
-          0.28
-        ],
-        "radius": 0.045,
-        "height": 6.4,
-        "direction": 1
-      },
-      {
-        "name": "Col_Chord_3",
-        "type": "capsule",
-        "center": [
-          0.28,
-          3.7,
-          0.28
-        ],
-        "radius": 0.045,
-        "height": 6.4,
-        "direction": 1
       },
       {
         "name": "Col_Cab",
         "type": "box",
         "center": [
           0,
-          6.55,
-          0.15
+          4.15,
+          0.58
         ],
         "size": [
-          0.68,
-          0.52,
-          0.68
+          0.54,
+          0.46,
+          0.46
         ],
         "euler": [
           0,
@@ -3690,39 +3665,96 @@
         ]
       },
       {
-        "name": "Col_Boom",
+        "name": "Col_Saddle",
         "type": "box",
         "center": [
           0,
-          7.55,
-          3.3
+          4.84,
+          0.0
         ],
         "size": [
-          0.14,
-          0.14,
-          6.0
+          0.08,
+          0.1,
+          0.08
         ],
         "euler": [
-          -24,
+          0,
           0,
           0
         ]
       },
       {
-        "name": "Col_BoomLow",
+        "name": "Col_Jib",
         "type": "box",
         "center": [
           0,
-          7.15,
-          3.3
+          4.94,
+          2.1
         ],
         "size": [
-          0.08,
-          0.08,
-          5.8
+          0.1,
+          0.1,
+          3.4
         ],
         "euler": [
-          -24,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Chord",
+        "type": "box",
+        "center": [
+          0,
+          4.7,
+          2.15
+        ],
+        "size": [
+          0.05,
+          0.05,
+          3.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Counter",
+        "type": "box",
+        "center": [
+          0,
+          4.55,
+          -0.88
+        ],
+        "size": [
+          0.46,
+          0.32,
+          0.5
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Tail",
+        "type": "box",
+        "center": [
+          0,
+          4.7,
+          -0.42
+        ],
+        "size": [
+          0.06,
+          0.05,
+          0.2
+        ],
+        "euler": [
+          0,
           0,
           0
         ]
@@ -3731,8 +3763,8 @@
     "climbable": false,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "The mast is a 0.45 m lattice, not a flat cling wall.",
-    "vaultNote": "No rail. The boom is overhead.",
+    "climbNote": "The mast is a 0.28 m tube, not a cling wall.",
+    "vaultNote": "No rail. The jib is overhead.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
@@ -3740,7 +3772,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 1.64,
+    "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Harbor/HarborCrane.fbx"
   },
   {
@@ -6713,23 +6745,413 @@
     "fbx": "Assets/Art/Props/Library/Buildings/Garage.fbx"
   },
   {
+    "name": "Gazebo",
+    "category": "Park",
+    "blurb": "Hexagonal gazebo, about 4.4 m across. Deck at 0.12 m, rail at 0.95 m above the deck, eave at 2.40 m, peak at 3.55 m. The square shelter is Pavilion.",
+    "size": [
+      4.612,
+      3.602,
+      4.009
+    ],
+    "min": [
+      -2.306,
+      0.0,
+      -2.004
+    ],
+    "max": [
+      2.306,
+      3.602,
+      2.004
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 452,
+        "materials": [
+          "Lib_Wood",
+          "Lib_WoodDark",
+          "Lib_Roof"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 308,
+        "materials": [
+          "Lib_Wood",
+          "Lib_WoodDark",
+          "Lib_Roof"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 164,
+        "materials": [
+          "Lib_Wood",
+          "Lib_WoodDark",
+          "Lib_Roof"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          0,
+          0.06,
+          0
+        ],
+        "size": [
+          2.28,
+          0.08,
+          2.28
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Post_0",
+        "type": "capsule",
+        "center": [
+          2.16,
+          1.18,
+          0.0
+        ],
+        "radius": 0.045,
+        "height": 2.22,
+        "direction": 1
+      },
+      {
+        "name": "Col_Roof_0",
+        "type": "box",
+        "center": [
+          1.0718141730231843,
+          2.8728339066308495,
+          0.6188122013161915
+        ],
+        "size": [
+          0.7,
+          0.033,
+          0.85
+        ],
+        "euler": [
+          -29.781892919073513,
+          -119.99999999999999,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Post_1",
+        "type": "capsule",
+        "center": [
+          1.0800000000000003,
+          1.18,
+          1.8706148721743876
+        ],
+        "radius": 0.045,
+        "height": 2.22,
+        "direction": 1
+      },
+      {
+        "name": "Col_Roof_1",
+        "type": "box",
+        "center": [
+          2.0780754230874611e-16,
+          2.8728339066308495,
+          1.237624402632383
+        ],
+        "size": [
+          0.7,
+          0.033,
+          0.85
+        ],
+        "euler": [
+          -29.781892919073513,
+          -180.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Post_2",
+        "type": "capsule",
+        "center": [
+          -1.0799999999999996,
+          1.18,
+          1.8706148721743878
+        ],
+        "radius": 0.045,
+        "height": 2.22,
+        "direction": 1
+      },
+      {
+        "name": "Col_Roof_2",
+        "type": "box",
+        "center": [
+          -1.0718141730231838,
+          2.8728339066308495,
+          0.6188122013161916
+        ],
+        "size": [
+          0.7,
+          0.033,
+          0.85
+        ],
+        "euler": [
+          -29.781892919073513,
+          120.00000000000001,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Post_3",
+        "type": "capsule",
+        "center": [
+          -2.16,
+          1.18,
+          2.645237086158283e-16
+        ],
+        "radius": 0.045,
+        "height": 2.22,
+        "direction": 1
+      },
+      {
+        "name": "Col_Roof_3",
+        "type": "box",
+        "center": [
+          -1.0718141730231845,
+          2.8728339066308495,
+          -0.6188122013161913
+        ],
+        "size": [
+          0.7,
+          0.033,
+          0.85
+        ],
+        "euler": [
+          -29.781892919073506,
+          60.00000000000002,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Post_4",
+        "type": "capsule",
+        "center": [
+          -1.080000000000001,
+          1.18,
+          -1.870614872174387
+        ],
+        "radius": 0.045,
+        "height": 2.22,
+        "direction": 1
+      },
+      {
+        "name": "Col_Roof_4",
+        "type": "box",
+        "center": [
+          -2.7794742956397284e-16,
+          2.8728339066308495,
+          -1.237624402632383
+        ],
+        "size": [
+          0.7,
+          0.033,
+          0.85
+        ],
+        "euler": [
+          -29.781892919073513,
+          1.28862743965985e-14,
+          0.0
+        ]
+      },
+      {
+        "name": "Col_Post_5",
+        "type": "capsule",
+        "center": [
+          1.0800000000000003,
+          1.18,
+          -1.8706148721743876
+        ],
+        "radius": 0.045,
+        "height": 2.22,
+        "direction": 1
+      },
+      {
+        "name": "Col_Roof_5",
+        "type": "box",
+        "center": [
+          1.0718141730231843,
+          2.8728339066308495,
+          -0.6188122013161915
+        ],
+        "size": [
+          0.7,
+          0.033,
+          0.85
+        ],
+        "euler": [
+          -29.781892919073513,
+          -60.00000000000001,
+          0.0
+        ]
+      },
+      {
+        "name": "Vault_Rail_0",
+        "type": "box",
+        "center": [
+          1.6200000000000003,
+          1.07,
+          0.9353074360871938
+        ],
+        "size": [
+          0.028,
+          0.028,
+          1.7400000000000002
+        ],
+        "euler": [
+          0.0,
+          -29.999999999999993,
+          0.0
+        ]
+      },
+      {
+        "name": "Vault_Rail_1",
+        "type": "box",
+        "center": [
+          3.3306690738754696e-16,
+          1.07,
+          1.8706148721743876
+        ],
+        "size": [
+          0.028,
+          0.028,
+          1.74
+        ],
+        "euler": [
+          0.0,
+          -90.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Vault_Rail_2",
+        "type": "box",
+        "center": [
+          -1.62,
+          1.07,
+          0.935307436087194
+        ],
+        "size": [
+          0.028,
+          0.028,
+          1.7400000000000002
+        ],
+        "euler": [
+          0.0,
+          -149.99999999999997,
+          0.0
+        ]
+      },
+      {
+        "name": "Vault_Rail_3",
+        "type": "box",
+        "center": [
+          -1.6200000000000006,
+          1.07,
+          -0.9353074360871934
+        ],
+        "size": [
+          0.028,
+          0.028,
+          1.7399999999999993
+        ],
+        "euler": [
+          0.0,
+          150.0,
+          0.0
+        ]
+      },
+      {
+        "name": "Vault_Rail_4",
+        "type": "box",
+        "center": [
+          -3.3306690738754696e-16,
+          1.07,
+          -1.8706148721743872
+        ],
+        "size": [
+          0.028,
+          0.028,
+          1.7400000000000013
+        ],
+        "euler": [
+          0.0,
+          90.00000000000003,
+          0.0
+        ]
+      },
+      {
+        "name": "Vault_Rail_5",
+        "type": "box",
+        "center": [
+          1.6200000000000003,
+          1.07,
+          -0.9353074360871938
+        ],
+        "size": [
+          0.028,
+          0.028,
+          1.7400000000000002
+        ],
+        "euler": [
+          0.0,
+          29.999999999999993,
+          0.0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": true,
+    "vaultHeight": 0.95,
+    "climbNote": "Posts are 11 cm. Not a cling wall. The roof is a landing.",
+    "vaultNote": "Rail is 0.95 m above the deck (rail center y = 1.07).",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Park/Gazebo.fbx"
+  },
+  {
     "name": "Gutter",
     "category": "Roads",
     "blurb": "0.40 m wide, 4 m long. Channel along Z. The +X lip butts the sidewalk curb; the -X lip sits at the road edge.",
     "size": [
       0.38,
       0.13,
-      3.94
+      4.0
     ],
     "min": [
       -0.19,
       0.01,
-      -1.97
+      -2.0
     ],
     "max": [
       0.19,
       0.14,
-      1.97
+      2.0
     ],
     "lods": [
       {
@@ -6765,7 +7187,7 @@
         "size": [
           0.07,
           0.07,
-          3.88
+          3.96
         ],
         "euler": [
           0,
@@ -6784,7 +7206,7 @@
         "size": [
           0.12,
           0.05,
-          3.86
+          3.96
         ],
         "euler": [
           0,
@@ -6803,7 +7225,7 @@
         "size": [
           0.05,
           0.08,
-          3.88
+          3.96
         ],
         "euler": [
           0,
@@ -12216,6 +12638,406 @@
     "fbx": "Assets/Art/Props/Library/Park/Planter.fbx"
   },
   {
+    "name": "Playground",
+    "category": "Park",
+    "blurb": "Play set about 6.0 x 3.6 m. Two swings, a slide, and a three-bar climber on a rubber pad. Pivot is the pad center.",
+    "size": [
+      6.0,
+      2.44,
+      3.6
+    ],
+    "min": [
+      -3.0,
+      0.0,
+      -1.8
+    ],
+    "max": [
+      3.0,
+      2.44,
+      1.8
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 784,
+        "materials": [
+          "Lib_Rubber",
+          "Lib_PaintBlue",
+          "Lib_Steel",
+          "Lib_Orange",
+          "Lib_PaintRed"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 368,
+        "materials": [
+          "Lib_Rubber",
+          "Lib_PaintBlue",
+          "Lib_Steel",
+          "Lib_Orange",
+          "Lib_PaintRed"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 180,
+        "materials": [
+          "Lib_Rubber",
+          "Lib_PaintBlue",
+          "Lib_Steel",
+          "Lib_Orange",
+          "Lib_PaintRed"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Col_Pad",
+        "type": "box",
+        "center": [
+          0,
+          0.025,
+          0
+        ],
+        "size": [
+          5.9,
+          0.04,
+          3.5
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SwingPost_0",
+        "type": "box",
+        "center": [
+          -2.15,
+          1.2,
+          -1.05
+        ],
+        "size": [
+          0.06,
+          2.2,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_SwingPost_1",
+        "type": "box",
+        "center": [
+          -2.15,
+          1.2,
+          1.05
+        ],
+        "size": [
+          0.06,
+          2.2,
+          0.06
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Beam",
+        "type": "box",
+        "center": [
+          -2.15,
+          2.4,
+          0
+        ],
+        "size": [
+          0.07,
+          0.05,
+          2.16
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_0",
+        "type": "box",
+        "center": [
+          -2.15,
+          0.46,
+          -0.42
+        ],
+        "size": [
+          0.28,
+          0.028,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Seat_1",
+        "type": "box",
+        "center": [
+          -2.15,
+          0.46,
+          0.42
+        ],
+        "size": [
+          0.28,
+          0.028,
+          0.1
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Deck",
+        "type": "box",
+        "center": [
+          1.05,
+          1.14,
+          0
+        ],
+        "size": [
+          0.86,
+          0.04,
+          0.8
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_0",
+        "type": "box",
+        "center": [
+          0.7,
+          0.58,
+          -0.34
+        ],
+        "size": [
+          0.05,
+          0.96,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_1",
+        "type": "box",
+        "center": [
+          0.7,
+          0.58,
+          0.34
+        ],
+        "size": [
+          0.05,
+          0.96,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_2",
+        "type": "box",
+        "center": [
+          1.4,
+          0.58,
+          -0.34
+        ],
+        "size": [
+          0.05,
+          0.96,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Leg_3",
+        "type": "box",
+        "center": [
+          1.4,
+          0.58,
+          0.34
+        ],
+        "size": [
+          0.05,
+          0.96,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Slide",
+        "type": "box",
+        "center": [
+          2.12,
+          0.6,
+          0
+        ],
+        "size": [
+          1.0,
+          0.024,
+          0.26
+        ],
+        "euler": [
+          0.0,
+          0.0,
+          -39.40066066347943
+        ]
+      },
+      {
+        "name": "Col_Climb_0",
+        "type": "box",
+        "center": [
+          -0.15,
+          0.68,
+          -0.5
+        ],
+        "size": [
+          0.05,
+          1.16,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Climb_1",
+        "type": "box",
+        "center": [
+          -0.15,
+          0.68,
+          0.5
+        ],
+        "size": [
+          0.05,
+          1.16,
+          0.05
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Bar_0",
+        "type": "box",
+        "center": [
+          -0.15,
+          0.48,
+          0
+        ],
+        "size": [
+          0.03,
+          0.025,
+          0.78
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Bar_1",
+        "type": "box",
+        "center": [
+          -0.15,
+          0.82,
+          0
+        ],
+        "size": [
+          0.03,
+          0.025,
+          0.78
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Bar_2",
+        "type": "box",
+        "center": [
+          -0.15,
+          1.18,
+          0
+        ],
+        "size": [
+          0.03,
+          0.025,
+          0.78
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": false,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "Bars and posts are too small to cling. Not a wall.",
+    "vaultNote": "The climber bars are under 1.25 m and too narrow to vault.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 0.0,
+    "fbx": "Assets/Art/Props/Library/Park/Playground.fbx"
+  },
+  {
     "name": "Quay_Edge",
     "category": "Harbor",
     "blurb": "Concrete quay, 18 m long, apron 8.2 m deep, deck at 0.90 m. Bullnose, edge stone, four bollards, a ladder, and five fenders on -Z. The face runs into the water.",
@@ -14036,7 +14858,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 4324,
+        "tris": 4732,
         "materials": [
           "Lib_Brick",
           "Lib_PaintCream",
@@ -14049,6 +14871,8 @@
           "Lib_Steel",
           "Lib_Wood",
           "Lib_WoodDark",
+          "Lib_ShopGlass",
+          "Lib_Orange",
           "Lib_PaintRed",
           "Lib_Awning"
         ],
@@ -14057,7 +14881,7 @@
       },
       {
         "lod": 1,
-        "tris": 3100,
+        "tris": 3388,
         "materials": [
           "Lib_Brick",
           "Lib_PaintCream",
@@ -14069,6 +14893,7 @@
           "Lib_Steel",
           "Lib_Wood",
           "Lib_WoodDark",
+          "Lib_ShopGlass",
           "Lib_PaintRed",
           "Lib_Awning"
         ],
@@ -14077,7 +14902,7 @@
       },
       {
         "lod": 2,
-        "tris": 2388,
+        "tris": 2676,
         "materials": [
           "Lib_Brick",
           "Lib_PaintCream",
@@ -14085,7 +14910,10 @@
           "Lib_Window",
           "Lib_WindowLit",
           "Lib_Interior",
+          "Lib_ShopGlass",
+          "Lib_Wood",
           "Lib_WoodDark",
+          "Lib_SteelDark",
           "Lib_PaintRed",
           "Lib_Awning"
         ],
@@ -15501,6 +16329,253 @@
         ]
       },
       {
+        "name": "Col_Shelf",
+        "type": "box",
+        "center": [
+          -2.9416666666666673,
+          1.08,
+          2.99
+        ],
+        "size": [
+          0.8246666666666667,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_2",
+        "type": "box",
+        "center": [
+          -2.9416666666666673,
+          1.58,
+          2.99
+        ],
+        "size": [
+          0.8246666666666667,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_3",
+        "type": "box",
+        "center": [
+          -1.9770000000000003,
+          1.08,
+          2.99
+        ],
+        "size": [
+          0.8246666666666669,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_4",
+        "type": "box",
+        "center": [
+          -1.9770000000000003,
+          1.58,
+          2.99
+        ],
+        "size": [
+          0.8246666666666669,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_5",
+        "type": "box",
+        "center": [
+          -1.0123333333333338,
+          1.08,
+          2.99
+        ],
+        "size": [
+          0.8246666666666669,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_6",
+        "type": "box",
+        "center": [
+          -1.0123333333333338,
+          1.58,
+          2.99
+        ],
+        "size": [
+          0.8246666666666669,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_7",
+        "type": "box",
+        "center": [
+          1.0123333333333333,
+          1.08,
+          2.99
+        ],
+        "size": [
+          0.8246666666666669,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_8",
+        "type": "box",
+        "center": [
+          1.0123333333333333,
+          1.58,
+          2.99
+        ],
+        "size": [
+          0.8246666666666669,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_9",
+        "type": "box",
+        "center": [
+          1.977,
+          1.08,
+          2.99
+        ],
+        "size": [
+          0.8246666666666667,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_10",
+        "type": "box",
+        "center": [
+          1.977,
+          1.58,
+          2.99
+        ],
+        "size": [
+          0.8246666666666667,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_11",
+        "type": "box",
+        "center": [
+          2.941666666666667,
+          1.08,
+          2.99
+        ],
+        "size": [
+          0.8246666666666671,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_12",
+        "type": "box",
+        "center": [
+          2.941666666666667,
+          1.58,
+          2.99
+        ],
+        "size": [
+          0.8246666666666671,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Interior",
+        "type": "box",
+        "center": [
+          0.0,
+          1.28,
+          2.6700000000000004
+        ],
+        "size": [
+          5.0083,
+          1.4,
+          0.012
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Door",
         "type": "box",
         "center": [
@@ -15539,17 +16614,36 @@
         ]
       },
       {
+        "name": "Col_SignBack",
+        "type": "box",
+        "center": [
+          0.0,
+          2.98,
+          3.6380000000000003
+        ],
+        "size": [
+          4.4,
+          0.82,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Sign",
         "type": "box",
         "center": [
           0.0,
-          2.88,
-          3.665
+          2.98,
+          3.688
         ],
         "size": [
-          3.32,
-          0.32,
-          0.04
+          4.12,
+          0.64,
+          0.03
         ],
         "euler": [
           0,
@@ -15562,13 +16656,13 @@
         "type": "box",
         "center": [
           0.0,
-          3.22,
+          3.56,
           3.6550000000000002
         ],
         "size": [
           7.268,
-          0.08,
-          0.04
+          0.07,
+          0.035
         ],
         "euler": [
           0,
@@ -15581,13 +16675,13 @@
         "type": "box",
         "center": [
           0.0,
-          3.44,
+          3.74,
           3.7
         ],
         "size": [
           7.268,
-          0.07,
-          0.07
+          0.06,
+          0.06
         ],
         "euler": [
           0,
@@ -15843,6 +16937,177 @@
         ]
       },
       {
+        "name": "Col_Shelf_13",
+        "type": "box",
+        "center": [
+          3.39,
+          1.08,
+          -2.4005
+        ],
+        "size": [
+          0.14,
+          0.016,
+          1.1070000000000002
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_14",
+        "type": "box",
+        "center": [
+          3.39,
+          1.58,
+          -2.4005
+        ],
+        "size": [
+          0.14,
+          0.016,
+          1.1070000000000002
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_15",
+        "type": "box",
+        "center": [
+          3.39,
+          1.08,
+          -1.1535
+        ],
+        "size": [
+          0.14,
+          0.016,
+          1.1070000000000002
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_16",
+        "type": "box",
+        "center": [
+          3.39,
+          1.58,
+          -1.1535
+        ],
+        "size": [
+          0.14,
+          0.016,
+          1.1070000000000002
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_17",
+        "type": "box",
+        "center": [
+          3.39,
+          1.08,
+          1.1535000000000002
+        ],
+        "size": [
+          0.14,
+          0.016,
+          1.1070000000000002
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_18",
+        "type": "box",
+        "center": [
+          3.39,
+          1.58,
+          1.1535000000000002
+        ],
+        "size": [
+          0.14,
+          0.016,
+          1.1070000000000002
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_19",
+        "type": "box",
+        "center": [
+          3.39,
+          1.08,
+          2.4005000000000005
+        ],
+        "size": [
+          0.14,
+          0.016,
+          1.1070000000000004
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_20",
+        "type": "box",
+        "center": [
+          3.39,
+          1.58,
+          2.4005000000000005
+        ],
+        "size": [
+          0.14,
+          0.016,
+          1.1070000000000004
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Interior_2",
+        "type": "box",
+        "center": [
+          3.0700000000000003,
+          1.28,
+          0.0
+        ],
+        "size": [
+          0.012,
+          1.4,
+          4.4283
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Door_2",
         "type": "box",
         "center": [
@@ -15881,17 +17146,36 @@
         ]
       },
       {
-        "name": "Col_Sign_2",
+        "name": "Col_SignBack_2",
         "type": "box",
         "center": [
-          4.065,
-          2.88,
+          4.038,
+          2.98,
           0.0
         ],
         "size": [
-          0.04,
-          0.32,
-          3.32
+          0.018,
+          0.82,
+          4.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Sign_2",
+        "type": "box",
+        "center": [
+          4.088,
+          2.98,
+          0.0
+        ],
+        "size": [
+          0.03,
+          0.64,
+          4.12
         ],
         "euler": [
           0,
@@ -15904,12 +17188,12 @@
         "type": "box",
         "center": [
           4.055,
-          3.22,
+          3.56,
           0.0
         ],
         "size": [
-          0.04,
-          0.08,
+          0.035,
+          0.07,
           6.468
         ],
         "euler": [
@@ -15923,12 +17207,12 @@
         "type": "box",
         "center": [
           4.1000000000000005,
-          3.44,
+          3.74,
           0.0
         ],
         "size": [
-          0.07,
-          0.07,
+          0.06,
+          0.06,
           6.468
         ],
         "euler": [
@@ -16045,7 +17329,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 1.9,
+    "slackCm": 2.4,
     "fbx": "Assets/Art/Props/Library/Buildings/Store_Corner.fbx"
   },
   {
@@ -16070,19 +17354,21 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 3012,
+        "tris": 2604,
         "materials": [
           "Lib_PaintCream",
           "Lib_PaintRed",
           "Lib_Concrete",
           "Lib_Window",
-          "Lib_WindowLit",
-          "Lib_Interior",
           "Lib_Brass",
+          "Lib_Interior",
+          "Lib_WindowLit",
           "Lib_SteelDark",
           "Lib_Steel",
           "Lib_Wood",
           "Lib_WoodDark",
+          "Lib_ShopGlass",
+          "Lib_Orange",
           "Lib_Brick"
         ],
         "mesh": "LOD0",
@@ -16090,18 +17376,19 @@
       },
       {
         "lod": 1,
-        "tris": 2340,
+        "tris": 1932,
         "materials": [
           "Lib_PaintCream",
           "Lib_PaintRed",
           "Lib_Concrete",
           "Lib_Window",
-          "Lib_WindowLit",
           "Lib_Interior",
+          "Lib_WindowLit",
           "Lib_SteelDark",
           "Lib_Steel",
           "Lib_Wood",
           "Lib_WoodDark",
+          "Lib_ShopGlass",
           "Lib_Brick"
         ],
         "mesh": "LOD1",
@@ -16109,15 +17396,18 @@
       },
       {
         "lod": 2,
-        "tris": 1692,
+        "tris": 1284,
         "materials": [
           "Lib_PaintCream",
           "Lib_PaintRed",
           "Lib_Concrete",
           "Lib_Window",
-          "Lib_WindowLit",
           "Lib_Interior",
+          "Lib_WindowLit",
           "Lib_Steel",
+          "Lib_ShopGlass",
+          "Lib_Wood",
+          "Lib_SteelDark",
           "Lib_Brick"
         ],
         "mesh": "LOD2",
@@ -16148,12 +17438,12 @@
         "name": "Climb_Front_2",
         "type": "box",
         "center": [
-          -3.62845,
+          0.0,
           0.020000000000000018,
           3.39
         ],
         "size": [
-          1.6210999999999995,
+          8.878,
           0.04,
           0.14
         ],
@@ -16167,12 +17457,12 @@
         "name": "Climb_Front_3",
         "type": "box",
         "center": [
-          -3.62845,
+          0.0,
           3.58,
           3.39
         ],
         "size": [
-          1.6210999999999995,
+          8.878,
           2.01,
           0.14
         ],
@@ -16186,291 +17476,6 @@
         "name": "Climb_Front_4",
         "type": "box",
         "center": [
-          -2.2279,
-          0.020000000000000018,
-          3.39
-        ],
-        "size": [
-          1.12,
-          0.04,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_5",
-        "type": "box",
-        "center": [
-          -2.2279,
-          3.135,
-          3.39
-        ],
-        "size": [
-          1.12,
-          1.1199999999999999,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_6",
-        "type": "box",
-        "center": [
-          -2.2279,
-          4.455,
-          3.39
-        ],
-        "size": [
-          1.12,
-          0.26,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_7",
-        "type": "box",
-        "center": [
-          -1.11395,
-          0.020000000000000018,
-          3.39
-        ],
-        "size": [
-          1.0479,
-          0.04,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_8",
-        "type": "box",
-        "center": [
-          -1.11395,
-          3.58,
-          3.39
-        ],
-        "size": [
-          1.0479,
-          2.01,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_9",
-        "type": "box",
-        "center": [
-          0.0,
-          0.020000000000000018,
-          3.39
-        ],
-        "size": [
-          1.1199999999999999,
-          0.04,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_10",
-        "type": "box",
-        "center": [
-          0.0,
-          3.135,
-          3.39
-        ],
-        "size": [
-          1.1199999999999999,
-          1.1199999999999999,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_11",
-        "type": "box",
-        "center": [
-          0.0,
-          4.455,
-          3.39
-        ],
-        "size": [
-          1.1199999999999999,
-          0.26,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_12",
-        "type": "box",
-        "center": [
-          1.11395,
-          0.020000000000000018,
-          3.39
-        ],
-        "size": [
-          1.0479,
-          0.04,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_13",
-        "type": "box",
-        "center": [
-          1.11395,
-          3.58,
-          3.39
-        ],
-        "size": [
-          1.0479,
-          2.01,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_14",
-        "type": "box",
-        "center": [
-          2.2279,
-          0.020000000000000018,
-          3.39
-        ],
-        "size": [
-          1.12,
-          0.04,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_15",
-        "type": "box",
-        "center": [
-          2.2279,
-          3.135,
-          3.39
-        ],
-        "size": [
-          1.12,
-          1.1199999999999999,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_16",
-        "type": "box",
-        "center": [
-          2.2279,
-          4.455,
-          3.39
-        ],
-        "size": [
-          1.12,
-          0.26,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_17",
-        "type": "box",
-        "center": [
-          3.62845,
-          0.020000000000000018,
-          3.39
-        ],
-        "size": [
-          1.6210999999999995,
-          0.04,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_18",
-        "type": "box",
-        "center": [
-          3.62845,
-          3.58,
-          3.39
-        ],
-        "size": [
-          1.6210999999999995,
-          2.01,
-          0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Climb_Front_19",
-        "type": "box",
-        "center": [
           4.614,
           2.3,
           3.39
@@ -16479,63 +17484,6 @@
           0.29000000000000026,
           4.569999999999999,
           0.14
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Glass",
-        "type": "box",
-        "center": [
-          -2.227866666666667,
-          4.01,
-          3.31
-        ],
-        "size": [
-          0.8720999999999998,
-          0.4045999999999997,
-          0.008
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Glass_2",
-        "type": "box",
-        "center": [
-          0.0,
-          4.01,
-          3.31
-        ],
-        "size": [
-          0.8720999999999998,
-          0.4045999999999997,
-          0.008
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Glass_3",
-        "type": "box",
-        "center": [
-          2.227866666666667,
-          4.01,
-          3.31
-        ],
-        "size": [
-          0.8720999999999998,
-          0.4045999999999997,
-          0.008
         ],
         "euler": [
           0,
@@ -16677,7 +17625,7 @@
         ]
       },
       {
-        "name": "Col_Glass_4",
+        "name": "Col_Glass",
         "type": "box",
         "center": [
           -1.71864,
@@ -16696,7 +17644,7 @@
         ]
       },
       {
-        "name": "Col_Glass_5",
+        "name": "Col_Glass_2",
         "type": "box",
         "center": [
           2.10056,
@@ -16791,7 +17739,7 @@
         ]
       },
       {
-        "name": "Col_Glass_6",
+        "name": "Col_Glass_3",
         "type": "box",
         "center": [
           4.81,
@@ -16886,7 +17834,7 @@
         ]
       },
       {
-        "name": "Col_Glass_7",
+        "name": "Col_Glass_4",
         "type": "box",
         "center": [
           -4.81,
@@ -17095,7 +18043,7 @@
         ]
       },
       {
-        "name": "Col_Glass_8",
+        "name": "Col_Glass_5",
         "type": "box",
         "center": [
           -3.7799999999999994,
@@ -17114,7 +18062,7 @@
         ]
       },
       {
-        "name": "Col_Glass_9",
+        "name": "Col_Glass_6",
         "type": "box",
         "center": [
           -2.491999999999999,
@@ -17133,7 +18081,7 @@
         ]
       },
       {
-        "name": "Col_Glass_10",
+        "name": "Col_Glass_7",
         "type": "box",
         "center": [
           -1.2039999999999995,
@@ -17152,7 +18100,7 @@
         ]
       },
       {
-        "name": "Col_Glass_11",
+        "name": "Col_Glass_8",
         "type": "box",
         "center": [
           0.08400000000000052,
@@ -17171,7 +18119,7 @@
         ]
       },
       {
-        "name": "Col_Glass_12",
+        "name": "Col_Glass_9",
         "type": "box",
         "center": [
           1.3720000000000008,
@@ -17190,7 +18138,7 @@
         ]
       },
       {
-        "name": "Col_Glass_13",
+        "name": "Col_Glass_10",
         "type": "box",
         "center": [
           2.6600000000000006,
@@ -17201,6 +18149,253 @@
           1.2079999999999993,
           2.0250000000000004,
           0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf",
+        "type": "box",
+        "center": [
+          -3.7799999999999994,
+          1.08,
+          2.89
+        ],
+        "size": [
+          1.1480000000000001,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_2",
+        "type": "box",
+        "center": [
+          -3.7799999999999994,
+          1.58,
+          2.89
+        ],
+        "size": [
+          1.1480000000000001,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_3",
+        "type": "box",
+        "center": [
+          -2.491999999999999,
+          1.08,
+          2.89
+        ],
+        "size": [
+          1.1479999999999997,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_4",
+        "type": "box",
+        "center": [
+          -2.491999999999999,
+          1.58,
+          2.89
+        ],
+        "size": [
+          1.1479999999999997,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_5",
+        "type": "box",
+        "center": [
+          -1.2039999999999995,
+          1.08,
+          2.89
+        ],
+        "size": [
+          1.1479999999999997,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_6",
+        "type": "box",
+        "center": [
+          -1.2039999999999995,
+          1.58,
+          2.89
+        ],
+        "size": [
+          1.1479999999999997,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_7",
+        "type": "box",
+        "center": [
+          0.08400000000000052,
+          1.08,
+          2.89
+        ],
+        "size": [
+          1.1480000000000001,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_8",
+        "type": "box",
+        "center": [
+          0.08400000000000052,
+          1.58,
+          2.89
+        ],
+        "size": [
+          1.1480000000000001,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_9",
+        "type": "box",
+        "center": [
+          1.3720000000000008,
+          1.08,
+          2.89
+        ],
+        "size": [
+          1.1480000000000001,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_10",
+        "type": "box",
+        "center": [
+          1.3720000000000008,
+          1.58,
+          2.89
+        ],
+        "size": [
+          1.1480000000000001,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_11",
+        "type": "box",
+        "center": [
+          2.6600000000000006,
+          1.08,
+          2.89
+        ],
+        "size": [
+          1.1479999999999992,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_12",
+        "type": "box",
+        "center": [
+          2.6600000000000006,
+          1.58,
+          2.89
+        ],
+        "size": [
+          1.1479999999999992,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Interior",
+        "type": "box",
+        "center": [
+          0.0,
+          1.28,
+          2.5700000000000003
+        ],
+        "size": [
+          6.4582999999999995,
+          1.4,
+          0.012
         ],
         "euler": [
           0,
@@ -17247,17 +18442,36 @@
         ]
       },
       {
+        "name": "Col_SignBack",
+        "type": "box",
+        "center": [
+          0.0,
+          2.98,
+          3.5380000000000003
+        ],
+        "size": [
+          5.4,
+          0.82,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Sign",
         "type": "box",
         "center": [
           0.0,
-          2.88,
-          3.565
+          2.98,
+          3.588
         ],
         "size": [
-          4.52,
-          0.32,
-          0.04
+          5.12,
+          0.64,
+          0.03
         ],
         "euler": [
           0,
@@ -17270,13 +18484,13 @@
         "type": "box",
         "center": [
           0.0,
-          3.22,
+          3.56,
           3.555
         ],
         "size": [
           9.268,
-          0.08,
-          0.04
+          0.07,
+          0.035
         ],
         "euler": [
           0,
@@ -17289,13 +18503,13 @@
         "type": "box",
         "center": [
           0.0,
-          3.44,
+          3.74,
           3.6
         ],
         "size": [
           9.268,
-          0.07,
-          0.07
+          0.06,
+          0.06
         ],
         "euler": [
           0,
@@ -17411,7 +18625,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 1.89,
+    "slackCm": 1.71,
     "fbx": "Assets/Art/Props/Library/Buildings/Store_Diner.fbx"
   },
   {
@@ -17436,7 +18650,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 4532,
+        "tris": 5228,
         "materials": [
           "Lib_PaintWhite",
           "Lib_PaintTeal",
@@ -17449,6 +18663,8 @@
           "Lib_Steel",
           "Lib_Wood",
           "Lib_WoodDark",
+          "Lib_ShopGlass",
+          "Lib_Orange",
           "Lib_Brick"
         ],
         "mesh": "LOD0",
@@ -17456,7 +18672,7 @@
       },
       {
         "lod": 1,
-        "tris": 3388,
+        "tris": 3868,
         "materials": [
           "Lib_PaintWhite",
           "Lib_PaintTeal",
@@ -17468,6 +18684,7 @@
           "Lib_Steel",
           "Lib_Wood",
           "Lib_WoodDark",
+          "Lib_ShopGlass",
           "Lib_Brick"
         ],
         "mesh": "LOD1",
@@ -17475,7 +18692,7 @@
       },
       {
         "lod": 2,
-        "tris": 2580,
+        "tris": 3060,
         "materials": [
           "Lib_PaintWhite",
           "Lib_PaintTeal",
@@ -17483,6 +18700,9 @@
           "Lib_Window",
           "Lib_WindowLit",
           "Lib_Interior",
+          "Lib_ShopGlass",
+          "Lib_Wood",
+          "Lib_SteelDark",
           "Lib_Brick"
         ],
         "mesh": "LOD2",
@@ -17571,12 +18791,12 @@
         "type": "box",
         "center": [
           -2.0412,
-          3.1350000000000002,
+          3.2750000000000004,
           3.29
         ],
         "size": [
           1.12,
-          1.1200000000000003,
+          1.4000000000000001,
           0.14
         ],
         "euler": [
@@ -17666,12 +18886,12 @@
         "type": "box",
         "center": [
           0.0,
-          3.1350000000000002,
+          3.2750000000000004,
           3.29
         ],
         "size": [
           1.1199999999999999,
-          1.1200000000000003,
+          1.4000000000000001,
           0.14
         ],
         "euler": [
@@ -17761,12 +18981,12 @@
         "type": "box",
         "center": [
           2.0412,
-          3.1350000000000002,
+          3.2750000000000004,
           3.29
         ],
         "size": [
           1.12,
-          1.1200000000000003,
+          1.4000000000000001,
           0.14
         ],
         "euler": [
@@ -17856,12 +19076,12 @@
         "type": "box",
         "center": [
           -2.0412,
-          4.11,
+          4.25,
           3.21
         ],
         "size": [
           0.8720999999999998,
-          0.5745999999999999,
+          0.3366,
           0.008
         ],
         "euler": [
@@ -17875,12 +19095,12 @@
         "type": "box",
         "center": [
           0.0,
-          4.11,
+          4.25,
           3.21
         ],
         "size": [
           0.8720999999999998,
-          0.5745999999999999,
+          0.3366,
           0.008
         ],
         "euler": [
@@ -17894,12 +19114,12 @@
         "type": "box",
         "center": [
           2.0412,
-          4.11,
+          4.25,
           3.21
         ],
         "size": [
           0.8720999999999998,
-          0.5745999999999999,
+          0.3366,
           0.008
         ],
         "euler": [
@@ -18255,12 +19475,12 @@
         "type": "box",
         "center": [
           -4.489999999999999,
-          3.1350000000000002,
+          3.2750000000000004,
           -1.4812
         ],
         "size": [
           0.14,
-          1.1200000000000003,
+          1.4000000000000001,
           0.9856
         ],
         "euler": [
@@ -18350,12 +19570,12 @@
         "type": "box",
         "center": [
           -4.489999999999999,
-          3.1350000000000002,
+          3.2750000000000004,
           0.0
         ],
         "size": [
           0.14,
-          1.1200000000000003,
+          1.4000000000000001,
           0.9856
         ],
         "euler": [
@@ -18445,12 +19665,12 @@
         "type": "box",
         "center": [
           -4.489999999999999,
-          3.1350000000000002,
+          3.2750000000000004,
           1.4812
         ],
         "size": [
           0.14,
-          1.1200000000000003,
+          1.4000000000000001,
           0.9856
         ],
         "euler": [
@@ -18540,12 +19760,12 @@
         "type": "box",
         "center": [
           -4.409999999999999,
-          4.11,
+          4.25,
           -1.4812
         ],
         "size": [
           0.008,
-          0.5745999999999999,
+          0.3366,
           0.7579279999999999
         ],
         "euler": [
@@ -18559,12 +19779,12 @@
         "type": "box",
         "center": [
           -4.409999999999999,
-          4.11,
+          4.25,
           0.0
         ],
         "size": [
           0.008,
-          0.5745999999999999,
+          0.3366,
           0.7579279999999999
         ],
         "euler": [
@@ -18578,12 +19798,12 @@
         "type": "box",
         "center": [
           -4.409999999999999,
-          4.11,
+          4.25,
           1.4812
         ],
         "size": [
           0.008,
-          0.5745999999999999,
+          0.3366,
           0.7579279999999999
         ],
         "euler": [
@@ -19087,6 +20307,443 @@
         ]
       },
       {
+        "name": "Col_Shelf",
+        "type": "box",
+        "center": [
+          -2.589090909090909,
+          1.08,
+          2.79
+        ],
+        "size": [
+          0.48981818181818165,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_2",
+        "type": "box",
+        "center": [
+          -2.589090909090909,
+          1.58,
+          2.79
+        ],
+        "size": [
+          0.48981818181818165,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_3",
+        "type": "box",
+        "center": [
+          -1.9592727272727268,
+          1.08,
+          2.79
+        ],
+        "size": [
+          0.4898181818181819,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_4",
+        "type": "box",
+        "center": [
+          -1.9592727272727268,
+          1.58,
+          2.79
+        ],
+        "size": [
+          0.4898181818181819,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_5",
+        "type": "box",
+        "center": [
+          -1.3294545454545452,
+          1.08,
+          2.79
+        ],
+        "size": [
+          0.4898181818181819,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_6",
+        "type": "box",
+        "center": [
+          -1.3294545454545452,
+          1.58,
+          2.79
+        ],
+        "size": [
+          0.4898181818181819,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_7",
+        "type": "box",
+        "center": [
+          -0.6996363636363634,
+          1.08,
+          2.79
+        ],
+        "size": [
+          0.48981818181818165,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_8",
+        "type": "box",
+        "center": [
+          -0.6996363636363634,
+          1.58,
+          2.79
+        ],
+        "size": [
+          0.48981818181818165,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_9",
+        "type": "box",
+        "center": [
+          -0.06981818181818178,
+          1.08,
+          2.79
+        ],
+        "size": [
+          0.48981818181818165,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_10",
+        "type": "box",
+        "center": [
+          -0.06981818181818178,
+          1.58,
+          2.79
+        ],
+        "size": [
+          0.48981818181818165,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_11",
+        "type": "box",
+        "center": [
+          0.56,
+          1.08,
+          2.79
+        ],
+        "size": [
+          0.4898181818181821,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_12",
+        "type": "box",
+        "center": [
+          0.56,
+          1.58,
+          2.79
+        ],
+        "size": [
+          0.4898181818181821,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_13",
+        "type": "box",
+        "center": [
+          1.1898181818181817,
+          1.08,
+          2.79
+        ],
+        "size": [
+          0.4898181818181812,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_14",
+        "type": "box",
+        "center": [
+          1.1898181818181817,
+          1.58,
+          2.79
+        ],
+        "size": [
+          0.4898181818181812,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_15",
+        "type": "box",
+        "center": [
+          1.8196363636363633,
+          1.08,
+          2.79
+        ],
+        "size": [
+          0.4898181818181821,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_16",
+        "type": "box",
+        "center": [
+          1.8196363636363633,
+          1.58,
+          2.79
+        ],
+        "size": [
+          0.4898181818181821,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_17",
+        "type": "box",
+        "center": [
+          2.4494545454545453,
+          1.08,
+          2.79
+        ],
+        "size": [
+          0.4898181818181821,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_18",
+        "type": "box",
+        "center": [
+          2.4494545454545453,
+          1.58,
+          2.79
+        ],
+        "size": [
+          0.4898181818181821,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_19",
+        "type": "box",
+        "center": [
+          3.079272727272727,
+          1.08,
+          2.79
+        ],
+        "size": [
+          0.4898181818181812,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_20",
+        "type": "box",
+        "center": [
+          3.079272727272727,
+          1.58,
+          2.79
+        ],
+        "size": [
+          0.4898181818181812,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_21",
+        "type": "box",
+        "center": [
+          3.709090909090908,
+          1.08,
+          2.79
+        ],
+        "size": [
+          0.48981818181818165,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_22",
+        "type": "box",
+        "center": [
+          3.709090909090908,
+          1.58,
+          2.79
+        ],
+        "size": [
+          0.48981818181818165,
+          0.016,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Interior",
+        "type": "box",
+        "center": [
+          0.0,
+          1.28,
+          2.47
+        ],
+        "size": [
+          5.8782999999999985,
+          1.4,
+          0.012
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Door",
         "type": "box",
         "center": [
@@ -19125,17 +20782,36 @@
         ]
       },
       {
+        "name": "Col_SignBack",
+        "type": "box",
+        "center": [
+          0.0,
+          2.98,
+          3.438
+        ],
+        "size": [
+          4.4,
+          0.82,
+          0.018
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Sign",
         "type": "box",
         "center": [
           0.0,
-          2.88,
-          3.465
+          2.98,
+          3.488
         ],
         "size": [
-          3.32,
-          0.32,
-          0.04
+          4.12,
+          0.64,
+          0.03
         ],
         "euler": [
           0,
@@ -19148,13 +20824,13 @@
         "type": "box",
         "center": [
           0.0,
-          3.22,
+          3.56,
           3.455
         ],
         "size": [
           8.468,
-          0.08,
-          0.04
+          0.07,
+          0.035
         ],
         "euler": [
           0,
@@ -19167,13 +20843,13 @@
         "type": "box",
         "center": [
           0.0,
-          3.44,
+          3.74,
           3.5
         ],
         "size": [
           8.468,
-          0.07,
-          0.07
+          0.06,
+          0.06
         ],
         "euler": [
           0,
@@ -19543,6 +21219,291 @@
         ]
       },
       {
+        "name": "Col_Shelf_23",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.08,
+          -1.3805714285714283
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571431
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_24",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.58,
+          -1.3805714285714283
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571431
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_25",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.08,
+          -0.7337142857142855
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571429
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_26",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.58,
+          -0.7337142857142855
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571429
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_27",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.08,
+          -0.08685714285714263
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571431
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_28",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.58,
+          -0.08685714285714263
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571431
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_29",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.08,
+          0.5600000000000003
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571429
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_30",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.58,
+          0.5600000000000003
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571429
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_31",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.08,
+          1.206857142857143
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571429
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_32",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.58,
+          1.206857142857143
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571429
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_33",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.08,
+          1.853714285714286
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571436
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_34",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.58,
+          1.853714285714286
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571436
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_35",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.08,
+          2.5005714285714293
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571429
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Shelf_36",
+        "type": "box",
+        "center": [
+          -3.9899999999999993,
+          1.58,
+          2.5005714285714293
+        ],
+        "size": [
+          0.14,
+          0.016,
+          0.5068571428571429
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Interior_2",
+        "type": "box",
+        "center": [
+          -3.6699999999999995,
+          1.28,
+          0.0
+        ],
+        "size": [
+          0.012,
+          1.4,
+          4.1383
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
         "name": "Col_Door_2",
         "type": "box",
         "center": [
@@ -19581,17 +21542,36 @@
         ]
       },
       {
-        "name": "Col_Sign_2",
+        "name": "Col_SignBack_2",
         "type": "box",
         "center": [
-          -4.664999999999999,
-          2.88,
+          -4.637999999999999,
+          2.98,
           0.0
         ],
         "size": [
-          0.04,
-          0.32,
-          3.32
+          0.018,
+          0.82,
+          4.4
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Sign_2",
+        "type": "box",
+        "center": [
+          -4.688,
+          2.98,
+          0.0
+        ],
+        "size": [
+          0.03,
+          0.64,
+          4.12
         ],
         "euler": [
           0,
@@ -19604,12 +21584,12 @@
         "type": "box",
         "center": [
           -4.654999999999999,
-          3.22,
+          3.56,
           0.0
         ],
         "size": [
-          0.04,
-          0.08,
+          0.035,
+          0.07,
           6.068
         ],
         "euler": [
@@ -19623,12 +21603,12 @@
         "type": "box",
         "center": [
           -4.699999999999999,
-          3.44,
+          3.74,
           0.0
         ],
         "size": [
-          0.07,
-          0.07,
+          0.06,
+          0.06,
           6.068
         ],
         "euler": [
@@ -19745,7 +21725,7 @@
       "LOD1",
       "LOD2"
     ],
-    "slackCm": 1.89,
+    "slackCm": 1.9,
     "fbx": "Assets/Art/Props/Library/Buildings/Store_Laundromat.fbx"
   },
   {
