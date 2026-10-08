@@ -557,10 +557,10 @@ def wall_fx(foot, along):
         add_plane(
             "FxScuff%d" % i,
             mark,
-            (0.05, 0.14, 1),
-            SCUFF,
-            0.85,
-            0.0,
+            (0.09, 0.22, 1),
+            (0.08, 0.07, 0.06, 1),
+            0.95,
+            0.15,
             Euler((rad(90), 0, 0), "XYZ"),
         )
     for i in range(4):
@@ -679,8 +679,9 @@ def build_land(arm, solids):
 
 def build_roll(arm, solids):
     origin = Vector((0, 0, 0.02))
-    shockwave(origin, 1.45)
-    dust_ring(origin, 1.35, 16, DUST, 0.12)
+    shockwave(origin, 1.55)
+    add_torus("FxRollOuter", origin + Vector((0, 0, 0.04)), 1.85, 0.016, SHOCK, 0.75, 0.8)
+    dust_ring(origin, 1.55, 16, DUST, 0.14)
     return solids
 
 
@@ -821,7 +822,7 @@ def main():
         ("immunity-glow", pose_run, 18, 0.0, build_immune, (Vector((1.75, -2.55, 1.15)), Vector((0.0, 0.0, 0.95)))),
         ("punch-stagger", pose_stagger, -12, 0.0, build_stagger, (Vector((1.35, -1.95, 1.45)), Vector((0.0, 0.0, 1.25)))),
         ("launch-pad", pose_launch, 16, 0.85, build_launch, (Vector((1.9, -2.7, 1.35)), Vector((0.0, 0.0, 1.05)))),
-        ("wall-run", pose_wall, 8, 0.0, build_wall, (Vector((2.05, -1.7, 1.05)), Vector((0.1, 0.25, 0.85)))),
+        ("wall-run", pose_wall, 8, 0.0, build_wall, (Vector((1.55, -1.35, 0.72)), Vector((0.05, 0.42, 0.42)))),
     ]
     totals = []
     for name, pose, yaw, lift, build, look in shots:
