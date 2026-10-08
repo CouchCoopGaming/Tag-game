@@ -26,17 +26,17 @@ def create():
         # Four mast chords.
         for x in (-0.28, 0.28):
             for z in (-0.28, 0.28):
-                g.cylinder((x, 3.7, z), 0.045, 6.4, "Lib_Steel", seg)
+                g.cylinder((x, 3.7, z), 0.045, 6.4, "Lib_MetalWorn", seg)
         if lod < 2:
             for y in (1.4, 2.6, 3.8, 5.0, 6.2):
                 g.box((0, y, 0), (0.56, 0.04, 0.04), "Lib_SteelDark")
                 g.box((0, y, 0), (0.04, 0.04, 0.56), "Lib_SteelDark")
-        g.box((0, 6.55, 0.15), (0.7, 0.55, 0.7), "Lib_PaintYellow", bevel=bev, segs=1)
+        g.box((0, 6.55, 0.15), (0.7, 0.55, 0.7), "Lib_CraneYellow", bevel=bev, segs=1)
         if lod == 0:
             g.box((0, 6.55, 0.52), (0.40, 0.22, 0.02), "Lib_Glass")
         # Boom from the cab toward +Z, rising.
-        g.box((0, 7.55, 3.3), (0.16, 0.16, 6.4), "Lib_PaintYellow", euler=(-24, 0, 0), bevel=bev, segs=1)
-        g.box((0, 7.15, 3.3), (0.10, 0.10, 6.2), "Lib_Steel", euler=(-24, 0, 0))
+        g.box((0, 7.55, 3.3), (0.16, 0.16, 6.4), "Lib_CraneYellow", euler=(-24, 0, 0), bevel=bev, segs=1)
+        g.box((0, 7.15, 3.3), (0.10, 0.10, 6.2), "Lib_MetalWorn", euler=(-24, 0, 0))
         if lod < 2:
             g.cylinder((0, 6.9, 0.55), 0.08, 0.2, "Lib_SteelDark", seg, axis="X")
             # Pendant from mast head to boom tip area.

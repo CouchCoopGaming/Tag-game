@@ -26,7 +26,7 @@ def create():
     a = Asset("Tree_Maple", "Park", "Maple. Slimmer trunk than the oak, upright forks, olive and deep-green clusters.")
     a.climb_note = "Trunk is round. Not a flat cling wall."
     a.vault_note = "No rail. The canopy is visual; the trunk is the blocker."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         broadleaf(g, lod, MAPLE)
         a.end()

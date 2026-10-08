@@ -34,7 +34,11 @@ def load_palette():
     textured = re.search(r"TEXTURED = (\([^)]*\))", text, re.S).group(1)
     normals = re.search(r"NORMALS = (\([^)]*\))", text, re.S)
     normal_names = set(ast.literal_eval(normals.group(1))) if normals else set()
-    return ast.literal_eval(block), set(ast.literal_eval(textured)), normal_names
+    ao = re.search(r"AO = (\([^)]*\))", text, re.S)
+    ao_names = set(ast.literal_eval(ao.group(1))) if ao else set()
+    emissive = re.search(r"EMISSIVE = (\{.*?\n\})", text, re.S)
+    emissive_map = ast.literal_eval(emissive.group(1)) if emissive else {}
+    return ast.literal_eval(block), set(ast.literal_eval(textured)), normal_names, ao_names, emissive_map
 
 
 def q_from_matrix(m):
@@ -148,7 +152,7 @@ def scene_meta(path):
     write(path + ".meta", "fileFormatVersion: 2\nguid: %s\nDefaultImporter:\n  externalObjects: {}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n" % guid("scene", "AssetShowcase"))
 
 
-def texture_meta(path, key, normal=False):
+def texture_meta(path, key, normal=False, linear=False, npot=False, size=256):
     text = """fileFormatVersion: 2
 guid: %s
 TextureImporter:
@@ -182,7 +186,7 @@ TextureImporter:
   cubemapConvolution: 0
   seamlessCubemap: 0
   textureFormat: 1
-  maxTextureSize: 256
+  maxTextureSize: %d
   textureSettings:
     serializedVersion: 2
     filterMode: 1
@@ -220,7 +224,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 256
+    maxTextureSize: %d
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -250,15 +254,18 @@ TextureImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-""" % guid("tex", key)
-    if normal:
+""" % (guid("tex", key), size, size)
+    if normal or linear:
         text = text.replace("sRGBTexture: 1", "sRGBTexture: 0", 1)
+    if normal:
         text = text.replace("textureType: 0", "textureType: 1", 1)
+    if npot:
+        text = text.replace("nPOTScale: 1", "nPOTScale: 0", 1)
     write(path + ".meta", text)
     return guid("tex", key)
 
 
-def write_materials(palette, textured, normals):
+def write_materials(palette, textured, normals, ao_names, emissive):
     src = open(RUNNER_MAT, encoding="utf-8").read()
     # Drop the editor version sidecar; the material itself ends at the first document.
     src = src.split("--- !u!114")[0].rstrip() + "\n"
@@ -275,24 +282,29 @@ def write_materials(palette, textured, normals):
             tex = "{fileID: 2800000, guid: %s, type: 3}" % guid("tex", name)
             body = body.replace("_BaseMap:\n        m_Texture: {fileID: 0}", "_BaseMap:\n        m_Texture: " + tex)
             body = body.replace("_MainTex:\n        m_Texture: {fileID: 0}", "_MainTex:\n        m_Texture: " + tex)
+        keywords = []
         if name in normals:
             bump = "{fileID: 2800000, guid: %s, type: 3}" % guid("tex", name + "_N")
             body = body.replace("_BumpMap:\n        m_Texture: {fileID: 0}", "_BumpMap:\n        m_Texture: " + bump)
-            body = body.replace("m_ValidKeywords: []", "m_ValidKeywords:\n  - _NORMALMAP")
+            keywords.append("_NORMALMAP")
             scale = "0.35" if name == "Lib_Water" else "0.6"
             body = body.replace("- _BumpScale: 1", "- _BumpScale: %s" % scale)
-        if name == "Lib_Lamp":
+        if name in ao_names:
+            occ = "{fileID: 2800000, guid: %s, type: 3}" % guid("tex", name + "_AO")
+            body = body.replace("_OcclusionMap:\n        m_Texture: {fileID: 0}", "_OcclusionMap:\n        m_Texture: " + occ)
+            keywords.append("_OCCLUSIONMAP")
+        if name in emissive:
+            emit, _strength = emissive[name]
             body = body.replace(
                 "- _EmissionColor: {r: 0, g: 0, b: 0, a: 1}",
-                "- _EmissionColor: {r: 1, g: 0.75, b: 0.38, a: 1}",
+                "- _EmissionColor: {r: %s, g: %s, b: %s, a: 1}" % (num(emit[0]), num(emit[1]), num(emit[2])),
             )
-            body = body.replace("m_ValidKeywords: []", "m_ValidKeywords:\n  - _EMISSION")
-        if name == "Lib_Window":
+            keywords.append("_EMISSION")
+        if keywords:
             body = body.replace(
-                "- _EmissionColor: {r: 0, g: 0, b: 0, a: 1}",
-                "- _EmissionColor: {r: 0.62, g: 0.82, b: 0.95, a: 1}",
+                "m_ValidKeywords: []",
+                "m_ValidKeywords:\n" + "\n".join("  - " + key for key in keywords),
             )
-            body = body.replace("m_ValidKeywords: []", "m_ValidKeywords:\n  - _EMISSION")
         path = os.path.join(LIB, "Materials", name + ".mat")
         write(path, body if body.startswith("%YAML") else "%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:\n" + body)
         write(path + ".meta", "fileFormatVersion: 2\nguid: %s\nNativeFormatImporter:\n  externalObjects: {}\n  mainObjectFileID: 2100000\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n" % g)
@@ -545,18 +557,18 @@ def collider_summary(cols):
 
 def write_doc(entries):
     lines = []
-    lines.append("# Asset library, pass 3")
+    lines.append("# Asset library, pass 4")
     lines.append("")
     lines.append("Procedural props for the couch tag arenas. Real meters, +Y up, pivot at the ground contact (or the module origin called out in the notes). Players are about 1.8 m. Vault rails in the park kit sit at 0.90–1.05 m. Every mesh is rebuilt from `Tools/Blender/AssetLibrary/<asset>.py`.")
     lines.append("")
-    lines.append("No third-party textures. Albedo, roughness, and the brick normal are generated in `_common.py`. Brick mortar is a real recess in the normal map. Hydrant paint and dock planks carry wear. Window glass and street-light lenses emit.")
+    lines.append("No third-party textures. Brick, concrete, wood, bark, asphalt, and the worn metals are Blender node trees baked to albedo, roughness, normal, and occlusion, one meter per tile. Siding, roof, soil, and hydrant paint stay on the small procedural tiles. The court paint is one decal, not rescaled by the importer. Window glass and street-light lenses emit. Some shop windows use a warmer night glass.")
     lines.append("")
     lines.append("## Rebuild")
     lines.append("")
     lines.append("```")
     lines.append("blender --background --python Tools/Blender/AssetLibrary/build_all.py")
     lines.append("python3 Tools/Blender/AssetLibrary/write_unity.py")
-    lines.append("blender --background --python Tools/Blender/AssetLibrary/render_pass3.py")
+    lines.append("blender --background --python Tools/Blender/AssetLibrary/render_pass4.py")
     lines.append("```")
     lines.append("")
     lines.append("Blender 4.2 LTS is enough. `write_unity.py` does not need Blender. The showcase scene is `Assets/Scenes/AssetShowcase.unity`. It is not in the build settings and it does not touch the three arenas. `Tag/Asset Showcase` rebuilds that scene from the prefabs.")
@@ -594,13 +606,13 @@ def write_doc(entries):
     lines.append("## Modules")
     lines.append("")
     lines.append("- Roads are 6 m wide and 4 m long. Top of asphalt is 0.12 m. Sidewalk top is 0.27 m (15 cm curb) and the curb faces -X, so it butts the road edge at x = ±3. Straight tiles step 4 m along Z.")
-    lines.append("- Brick bays are 4.0 m wide, 3.2 m tall, 0.30 m thick, exterior +Z. Stack a second row at y = 3.2 for two stories. `Storefront_Glass` and `ShopFront` (the awning option) replace a ground-floor bay. `Roof_Parapet` stacks on the top course.")
-    lines.append("- Dock modules share a deck at 0.62 m. `Dock_Straight` is 4 × 2 m. `Dock_Corner` is an L inside a 4 m square; its pivot is the center of that square.")
+    lines.append("- Brick bays are 4.0 m wide, 3.2 m tall, 0.30 m thick, exterior +Z. Stack a second row at y = 3.2 for two stories. `Storefront_Glass` and `ShopFront` (the awning option) replace a ground-floor bay. `Roof_Parapet` stacks on the top course. `Store_Corner`, `Store_Diner`, and `Store_Laundromat` are closed volumes (four walls, parapet, alley face). `House_Gable` and `House_Hip` are porch houses.")
+    lines.append("- Dock modules share a deck at 0.62 m. `Dock_Straight` is 6 × 3 m, with cleats on both sides and a rope coil. `Dock_Corner` is an L inside a 4 m square; its pivot is the center of that square.")
     lines.append("- Containers are external ISO sizes: 20 ft is 6.06 × 2.44 × 2.59 m, 40 ft is 12.19 × 2.44 × 2.59 m. Doors face +Z. Ribs stand about 2 cm proud of the collider.")
-    lines.append("- The court is a 22 × 12 m street full court. Each end has a 3.66 m lane and a free-throw 5.79 m from the baseline. The arc is 6.75 m and the center circle is 1.80 m. `CourtFence` shares that pivot. `Hoop` faces +Z; place one at each baseline, yaw 180 on the far end, so both rims face center court.")
+    lines.append("- The court is a 22 × 12 m street full court. Paint is one decal: FIBA markings scaled by 22/28 along the length and 12/15 across the width, every line 5 cm. Boundary, center line, center circle, lane, free-throw circle, restricted arc, and the 3-point arc are on that texture. `CourtFence` shares that pivot. `Hoop` faces +Z; place one at each baseline, yaw 180 on the far end, so both rims face center court.")
     lines.append("- `DockRamp` is 4 × 2 m and falls from 0.62 m at -Z to 0.05 m at +Z. A dock centered at the origin meets a ramp centered at z = 4.")
     lines.append("- `LaneArrow` and `StopBar` are paint. Place them on a road top (y = 0.12). They have no collider. `RaisedCrosswalk` replaces a 6 × 4 m road tile; the crown is 8 cm above the road and the collider follows that hump.")
-    lines.append("- `HarborWater` is a dark rippled sheet with no collider. `Quay_Edge` is an 8 m concrete quay, deck at 0.90 m, bullnose and fenders on -Z, face running below the pivot into the water. `Piling` continues about 1.4 m below its pivot. `Mooring` is a 3.2 m finger at 0.55 m.")
+    lines.append("- `HarborWater` is a dark rippled sheet with no collider. `Quay_Edge` is an 18 m concrete quay, deck at 0.90 m, bullnose and five fenders on -Z, face running below the pivot into the water. `Piling` continues about 1.4 m below its pivot. `Mooring` is a 3.2 m finger at 0.55 m.")
     lines.append("- No gazebo existed in the repo. `Pavilion` is the park shelter: 4.6 m square, rail 0.95 m above the deck, pyramid roof.")
     lines.append("- `Mannequin` is a 1.80 m scale figure for the showcase. It is not a gameplay character.")
     lines.append("")
@@ -1055,26 +1067,25 @@ def ensure_folders():
 
 
 def main():
-    palette, textured, normals = load_palette()
+    palette, textured, normals, ao_names, emissive = load_palette()
     entries = json.load(open(MANIFEST, encoding="utf-8"))
     ensure_folders()
-    for name in textured:
-        png = os.path.join(LIB, "Textures", name + ".png")
-        if os.path.isfile(png):
-            texture_meta(png, name)
-    normal_png = os.path.join(LIB, "Textures", "Lib_Brick_N.png")
-    if os.path.isfile(normal_png):
-        texture_meta(normal_png, "Lib_Brick_N", normal=True)
     tex_dir = os.path.join(LIB, "Textures")
     if os.path.isdir(tex_dir):
         for fn in sorted(os.listdir(tex_dir)):
             if not fn.endswith(".png"):
                 continue
             png = os.path.join(tex_dir, fn)
-            if os.path.isfile(png + ".meta"):
-                continue
-            texture_meta(png, fn[:-4], normal=fn.endswith("_N.png"))
-    mat_guids = write_materials(palette, textured, normals)
+            key = fn[:-4]
+            normal = key.endswith("_N")
+            linear = normal or key.endswith("_R") or key.endswith("_AO")
+            npot = key == "Lib_CourtDecal"
+            size = 2048 if key == "Lib_CourtDecal" else 512 if key.startswith("Lib_") and not key.endswith(("_R", "_N", "_AO")) else 512
+            # Court paint is 1200 x 2200 and must not be rescaled onto a power of two.
+            if key == "Lib_CourtDecal":
+                size = 2048
+            texture_meta(png, key, normal=normal, linear=linear, npot=npot, size=size)
+    mat_guids = write_materials(palette, textured, normals, ao_names, emissive)
     script_guid = guid("script", "LibraryPropMeta")
     script_meta(os.path.join(LIB, "Scripts", "LibraryPropMeta.cs"), "LibraryPropMeta")
     script_meta(os.path.join(REPO, "Assets", "Editor", "AssetLibraryShowcase.cs"), "AssetLibraryShowcase")

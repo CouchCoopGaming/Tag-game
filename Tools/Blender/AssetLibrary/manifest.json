@@ -3076,12 +3076,13 @@
         "tris": 1868,
         "materials": [
           "Lib_ContainerRed",
-          "Lib_SteelDark",
+          "Lib_MetalWorn",
           "Lib_Steel",
           "Lib_Brass",
           "Lib_PaintYellow",
           "Lib_PaintWhite",
-          "Lib_ContainerBlue"
+          "Lib_ContainerBlue",
+          "Lib_SteelDark"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
@@ -3091,7 +3092,7 @@
         "tris": 432,
         "materials": [
           "Lib_ContainerRed",
-          "Lib_SteelDark",
+          "Lib_MetalWorn",
           "Lib_Steel",
           "Lib_Brass"
         ],
@@ -3103,7 +3104,7 @@
         "tris": 108,
         "materials": [
           "Lib_ContainerRed",
-          "Lib_SteelDark"
+          "Lib_MetalWorn"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -3170,11 +3171,12 @@
         "tris": 2624,
         "materials": [
           "Lib_ContainerBlue",
-          "Lib_SteelDark",
+          "Lib_MetalWorn",
           "Lib_Steel",
           "Lib_Brass",
           "Lib_PaintYellow",
-          "Lib_PaintWhite"
+          "Lib_PaintWhite",
+          "Lib_SteelDark"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
@@ -3184,7 +3186,7 @@
         "tris": 612,
         "materials": [
           "Lib_ContainerBlue",
-          "Lib_SteelDark",
+          "Lib_MetalWorn",
           "Lib_Steel",
           "Lib_Brass"
         ],
@@ -3196,7 +3198,7 @@
         "tris": 108,
         "materials": [
           "Lib_ContainerBlue",
-          "Lib_SteelDark"
+          "Lib_MetalWorn"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -3241,10 +3243,10 @@
   {
     "name": "Court",
     "category": "Park",
-    "blurb": "Street full court, 22 m by 12 m. Both ends have a 3.66 m lane, a 5.79 m free-throw, and a 6.75 m arc. Paint has no collider.",
+    "blurb": "Street full court, 22 m by 12 m. One decal carries the FIBA paint scaled to the slab: boundary, center line, center circle, and at each end a lane, free-throw circle, restricted arc, and a 3-point arc that meets the corner lines. Lines are 5 cm. No collider on the paint.",
     "size": [
       12.0,
-      0.129,
+      0.126,
       22.0
     ],
     "min": [
@@ -3254,28 +3256,26 @@
     ],
     "max": [
       6.0,
-      0.129,
+      0.126,
       11.0
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1064,
+        "tris": 14,
         "materials": [
           "Lib_Asphalt",
-          "Lib_PaintWhite",
-          "Lib_Court"
+          "Lib_CourtDecal"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 648,
+        "tris": 14,
         "materials": [
           "Lib_Asphalt",
-          "Lib_PaintWhite",
-          "Lib_Court"
+          "Lib_CourtDecal"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -3313,7 +3313,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.31,
+    "slackCm": 0.8,
     "fbx": "Assets/Art/Props/Library/Park/Court.fbx"
   },
   {
@@ -3581,9 +3581,10 @@
         "materials": [
           "Lib_Concrete",
           "Lib_SteelDark",
-          "Lib_Steel",
-          "Lib_PaintYellow",
-          "Lib_Glass"
+          "Lib_MetalWorn",
+          "Lib_CraneYellow",
+          "Lib_Glass",
+          "Lib_Steel"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
@@ -3594,8 +3595,8 @@
         "materials": [
           "Lib_Concrete",
           "Lib_SteelDark",
-          "Lib_Steel",
-          "Lib_PaintYellow"
+          "Lib_MetalWorn",
+          "Lib_CraneYellow"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -3606,8 +3607,8 @@
         "materials": [
           "Lib_Concrete",
           "Lib_SteelDark",
-          "Lib_Steel",
-          "Lib_PaintYellow"
+          "Lib_MetalWorn",
+          "Lib_CraneYellow"
         ],
         "mesh": "LOD2",
         "fileID": 736115405485880582
@@ -4850,38 +4851,40 @@
   {
     "name": "Dock_Straight",
     "category": "Harbor",
-    "blurb": "Dock module 4.0 m long and 2.0 m wide. Deck top is 0.62 m. Butt the next module on the Z ends (center to center 4.0 m).",
+    "blurb": "Dock module 6.0 m long and 3.0 m wide. Deck top is 0.62 m. Cleats on both sides, a rope coil, and a line between the near cleats. Butt the next module on the Z ends (center to center 6.0 m).",
     "size": [
-      2.01,
-      0.68,
-      3.982
+      2.97,
+      0.763,
+      5.98
     ],
     "min": [
-      -1.005,
+      -1.485,
       0.0,
-      -1.991
+      -2.99
     ],
     "max": [
-      1.005,
-      0.68,
-      1.991
+      1.485,
+      0.763,
+      2.99
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 2448,
+        "tris": 3320,
         "materials": [
           "Lib_WoodDark",
           "Lib_SteelDark",
           "Lib_Wood",
-          "Lib_WoodWeather"
+          "Lib_WoodWeather",
+          "Lib_Steel",
+          "Lib_Rust"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 344,
+        "tris": 416,
         "materials": [
           "Lib_WoodDark",
           "Lib_Wood",
@@ -4896,9 +4899,9 @@
         "name": "Col_Pile_0",
         "type": "capsule",
         "center": [
-          -0.72,
+          -1.15,
           0.28,
-          -1.55
+          -2.4
         ],
         "radius": 0.11,
         "height": 0.56,
@@ -4908,9 +4911,9 @@
         "name": "Col_Pile_1",
         "type": "capsule",
         "center": [
-          0.72,
+          1.15,
           0.28,
-          -1.55
+          -2.4
         ],
         "radius": 0.11,
         "height": 0.56,
@@ -4920,9 +4923,9 @@
         "name": "Col_Pile_2",
         "type": "capsule",
         "center": [
-          -0.72,
+          -1.15,
           0.28,
-          1.55
+          2.4
         ],
         "radius": 0.11,
         "height": 0.56,
@@ -4932,9 +4935,9 @@
         "name": "Col_Pile_3",
         "type": "capsule",
         "center": [
-          0.72,
+          1.15,
           0.28,
-          1.55
+          2.4
         ],
         "radius": 0.11,
         "height": 0.56,
@@ -4944,14 +4947,14 @@
         "name": "Col_Stringer_0",
         "type": "box",
         "center": [
-          -0.55,
+          -0.95,
           0.42,
           0
         ],
         "size": [
           0.1,
           0.16,
-          3.72
+          5.7
         ],
         "euler": [
           0,
@@ -4963,14 +4966,14 @@
         "name": "Col_Stringer_1",
         "type": "box",
         "center": [
-          0.55,
+          0.95,
           0.42,
           0
         ],
         "size": [
           0.1,
           0.16,
-          3.72
+          5.7
         ],
         "euler": [
           0,
@@ -4984,12 +4987,12 @@
         "center": [
           0,
           0.602,
-          -1.9230769230769231
+          -2.9166666666666665
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5003,12 +5006,12 @@
         "center": [
           0,
           0.602,
-          -1.7692307692307692
+          -2.75
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5022,12 +5025,12 @@
         "center": [
           0,
           0.602,
-          -1.6153846153846154
+          -2.5833333333333335
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5041,12 +5044,12 @@
         "center": [
           0,
           0.602,
-          -1.4615384615384615
+          -2.416666666666667
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5060,12 +5063,12 @@
         "center": [
           0,
           0.602,
-          -1.3076923076923077
+          -2.25
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5079,12 +5082,12 @@
         "center": [
           0,
           0.602,
-          -1.1538461538461537
+          -2.0833333333333335
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5098,12 +5101,12 @@
         "center": [
           0,
           0.602,
-          -1.0
+          -1.9166666666666667
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5117,12 +5120,12 @@
         "center": [
           0,
           0.602,
-          -0.846153846153846
+          -1.75
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5136,12 +5139,12 @@
         "center": [
           0,
           0.602,
-          -0.6923076923076923
+          -1.5833333333333335
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5155,12 +5158,12 @@
         "center": [
           0,
           0.602,
-          -0.5384615384615383
+          -1.4166666666666667
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5174,12 +5177,12 @@
         "center": [
           0,
           0.602,
-          -0.3846153846153846
+          -1.25
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5193,12 +5196,12 @@
         "center": [
           0,
           0.602,
-          -0.23076923076923062
+          -1.0833333333333335
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5212,12 +5215,12 @@
         "center": [
           0,
           0.602,
-          -0.07692307692307687
+          -0.916666666666667
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5231,12 +5234,12 @@
         "center": [
           0,
           0.602,
-          0.0769230769230771
+          -0.75
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5250,12 +5253,12 @@
         "center": [
           0,
           0.602,
-          0.23076923076923084
+          -0.5833333333333335
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5269,12 +5272,12 @@
         "center": [
           0,
           0.602,
-          0.3846153846153846
+          -0.41666666666666696
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5288,12 +5291,12 @@
         "center": [
           0,
           0.602,
-          0.5384615384615388
+          -0.25
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5307,12 +5310,12 @@
         "center": [
           0,
           0.602,
-          0.6923076923076925
+          -0.08333333333333348
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5326,12 +5329,12 @@
         "center": [
           0,
           0.602,
-          0.8461538461538463
+          0.08333333333333304
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5345,12 +5348,12 @@
         "center": [
           0,
           0.602,
-          1.0
+          0.25
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5364,12 +5367,12 @@
         "center": [
           0,
           0.602,
-          1.1538461538461542
+          0.4166666666666665
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5383,12 +5386,12 @@
         "center": [
           0,
           0.602,
-          1.307692307692308
+          0.583333333333333
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5402,12 +5405,12 @@
         "center": [
           0,
           0.602,
-          1.4615384615384617
+          0.75
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5421,12 +5424,12 @@
         "center": [
           0,
           0.602,
-          1.6153846153846154
+          0.9166666666666665
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5440,12 +5443,12 @@
         "center": [
           0,
           0.602,
-          1.7692307692307696
+          1.083333333333333
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
         ],
         "euler": [
           0,
@@ -5459,12 +5462,278 @@
         "center": [
           0,
           0.602,
-          1.9230769230769234
+          1.25
         ],
         "size": [
-          1.92,
+          2.88,
           0.032,
-          0.13538461538461538
+          0.14666666666666667
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_26",
+        "type": "box",
+        "center": [
+          0,
+          0.602,
+          1.416666666666666
+        ],
+        "size": [
+          2.88,
+          0.032,
+          0.14666666666666667
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_27",
+        "type": "box",
+        "center": [
+          0,
+          0.602,
+          1.583333333333333
+        ],
+        "size": [
+          2.88,
+          0.032,
+          0.14666666666666667
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_28",
+        "type": "box",
+        "center": [
+          0,
+          0.602,
+          1.75
+        ],
+        "size": [
+          2.88,
+          0.032,
+          0.14666666666666667
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_29",
+        "type": "box",
+        "center": [
+          0,
+          0.602,
+          1.916666666666666
+        ],
+        "size": [
+          2.88,
+          0.032,
+          0.14666666666666667
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_30",
+        "type": "box",
+        "center": [
+          0,
+          0.602,
+          2.083333333333333
+        ],
+        "size": [
+          2.88,
+          0.032,
+          0.14666666666666667
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_31",
+        "type": "box",
+        "center": [
+          0,
+          0.602,
+          2.25
+        ],
+        "size": [
+          2.88,
+          0.032,
+          0.14666666666666667
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_32",
+        "type": "box",
+        "center": [
+          0,
+          0.602,
+          2.416666666666666
+        ],
+        "size": [
+          2.88,
+          0.032,
+          0.14666666666666667
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_33",
+        "type": "box",
+        "center": [
+          0,
+          0.602,
+          2.583333333333333
+        ],
+        "size": [
+          2.88,
+          0.032,
+          0.14666666666666667
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_34",
+        "type": "box",
+        "center": [
+          0,
+          0.602,
+          2.75
+        ],
+        "size": [
+          2.88,
+          0.032,
+          0.14666666666666667
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Plank_35",
+        "type": "box",
+        "center": [
+          0,
+          0.602,
+          2.916666666666666
+        ],
+        "size": [
+          2.88,
+          0.032,
+          0.14666666666666667
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cleat_0",
+        "type": "box",
+        "center": [
+          -1.2,
+          0.7,
+          -1.55
+        ],
+        "size": [
+          0.2,
+          0.06,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cleat_1",
+        "type": "box",
+        "center": [
+          -1.2,
+          0.7,
+          1.55
+        ],
+        "size": [
+          0.2,
+          0.06,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cleat_2",
+        "type": "box",
+        "center": [
+          1.2,
+          0.7,
+          -1.55
+        ],
+        "size": [
+          0.2,
+          0.06,
+          0.07
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Cleat_3",
+        "type": "box",
+        "center": [
+          1.2,
+          0.7,
+          1.55
+        ],
+        "size": [
+          0.2,
+          0.06,
+          0.07
         ],
         "euler": [
           0,
@@ -5484,7 +5753,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.42,
+    "slackCm": 2.21,
     "fbx": "Assets/Art/Props/Library/Harbor/Dock_Straight.fbx"
   },
   {
@@ -7130,6 +7399,1036 @@
     ],
     "slackCm": 0.8,
     "fbx": "Assets/Art/Props/Library/Buildings/House.fbx"
+  },
+  {
+    "name": "House_Gable",
+    "category": "Buildings",
+    "blurb": "Gable house. Body 7.6 x 6.8 m, walls 2.8 m, ridge about 4.6 m, porch on +Z. Siding, dark roof.",
+    "size": [
+      7.95,
+      4.896,
+      8.759
+    ],
+    "min": [
+      -3.975,
+      0.004,
+      -4.484
+    ],
+    "max": [
+      3.975,
+      4.9,
+      4.275
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 780,
+        "materials": [
+          "Lib_Siding",
+          "Lib_PaintWhite",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_Wood",
+          "Lib_Roof",
+          "Lib_WoodDark",
+          "Lib_Brick"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 636,
+        "materials": [
+          "Lib_Siding",
+          "Lib_PaintWhite",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_Wood",
+          "Lib_Roof"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 616,
+        "materials": [
+          "Lib_Siding",
+          "Lib_PaintWhite",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_Wood",
+          "Lib_Roof"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Vault_PorchRail",
+        "type": "capsule",
+        "center": [
+          0,
+          1.25,
+          4.18
+        ],
+        "radius": 0.03,
+        "height": 4.18,
+        "direction": 0
+      },
+      {
+        "name": "Climb_Front",
+        "type": "box",
+        "center": [
+          -3.2020999999999997,
+          1.4,
+          2.41
+        ],
+        "size": [
+          0.7937999999999998,
+          2.77,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_2",
+        "type": "box",
+        "center": [
+          -1.5902,
+          0.36500000000000005,
+          2.41
+        ],
+        "size": [
+          2.37,
+          0.7000000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_3",
+        "type": "box",
+        "center": [
+          -1.5902,
+          2.615,
+          2.41
+        ],
+        "size": [
+          2.37,
+          0.33999999999999964,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_4",
+        "type": "box",
+        "center": [
+          1.6118999999999999,
+          1.4,
+          2.41
+        ],
+        "size": [
+          3.9742,
+          2.77,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass",
+        "type": "box",
+        "center": [
+          -1.59016,
+          1.58,
+          2.33
+        ],
+        "size": [
+          1.9345999999999999,
+          1.3396,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back",
+        "type": "box",
+        "center": [
+          -2.1069999999999998,
+          1.4,
+          -4.21
+        ],
+        "size": [
+          2.984,
+          2.77,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_2",
+        "type": "box",
+        "center": [
+          0.0,
+          0.5805,
+          -4.21
+        ],
+        "size": [
+          1.17,
+          1.131,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_3",
+        "type": "box",
+        "center": [
+          0.0,
+          2.5555,
+          -4.21
+        ],
+        "size": [
+          1.17,
+          0.45899999999999985,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_4",
+        "type": "box",
+        "center": [
+          2.1069999999999998,
+          1.4,
+          -4.21
+        ],
+        "size": [
+          2.984,
+          2.77,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_2",
+        "type": "box",
+        "center": [
+          0.0,
+          1.736,
+          -4.13
+        ],
+        "size": [
+          0.9145999999999999,
+          0.8720999999999998,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right",
+        "type": "box",
+        "center": [
+          3.71,
+          1.4,
+          -1.907
+        ],
+        "size": [
+          0.14,
+          2.77,
+          2.584
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_2",
+        "type": "box",
+        "center": [
+          3.71,
+          0.5805,
+          0.0
+        ],
+        "size": [
+          0.14,
+          1.131,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_3",
+        "type": "box",
+        "center": [
+          3.71,
+          2.5555,
+          0.0
+        ],
+        "size": [
+          0.14,
+          0.45899999999999985,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_4",
+        "type": "box",
+        "center": [
+          3.71,
+          1.4,
+          1.907
+        ],
+        "size": [
+          0.14,
+          2.77,
+          2.584
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_3",
+        "type": "box",
+        "center": [
+          3.63,
+          1.736,
+          0.0
+        ],
+        "size": [
+          0.008,
+          0.8720999999999998,
+          0.9145999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left",
+        "type": "box",
+        "center": [
+          -3.71,
+          1.4,
+          -1.907
+        ],
+        "size": [
+          0.14,
+          2.77,
+          2.584
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_2",
+        "type": "box",
+        "center": [
+          -3.71,
+          0.5805,
+          0.0
+        ],
+        "size": [
+          0.14,
+          1.131,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_3",
+        "type": "box",
+        "center": [
+          -3.71,
+          2.5555,
+          0.0
+        ],
+        "size": [
+          0.14,
+          0.45899999999999985,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_4",
+        "type": "box",
+        "center": [
+          -3.71,
+          1.4,
+          1.907
+        ],
+        "size": [
+          0.14,
+          2.77,
+          2.584
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_4",
+        "type": "box",
+        "center": [
+          -3.63,
+          1.736,
+          0.0
+        ],
+        "size": [
+          0.008,
+          0.8720999999999998,
+          0.9145999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Porch",
+        "type": "box",
+        "center": [
+          0,
+          0.3,
+          3.4
+        ],
+        "size": [
+          5.168,
+          0.12,
+          1.6800000000000002
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_PorchRoof",
+        "type": "box",
+        "center": [
+          0,
+          2.55,
+          3.475
+        ],
+        "size": [
+          4.712,
+          0.04,
+          1.3900000000000001
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": true,
+    "vaultHeight": 0.95,
+    "climbNote": "Siding walls are cling. Windows are glass. The porch is open on +Z.",
+    "vaultNote": "Porch rail is 0.95 m above the porch deck.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 1.3,
+    "fbx": "Assets/Art/Props/Library/Buildings/House_Gable.fbx"
+  },
+  {
+    "name": "House_Hip",
+    "category": "Buildings",
+    "blurb": "Hip-roof house. Body 8.4 x 7.2 m, walls 2.9 m, hip about 4.5 m, porch on +Z. Cream walls.",
+    "size": [
+      8.7,
+      4.846,
+      9.005
+    ],
+    "min": [
+      -4.35,
+      0.004,
+      -4.58
+    ],
+    "max": [
+      4.35,
+      4.85,
+      4.425
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 748,
+        "materials": [
+          "Lib_PaintCream",
+          "Lib_PaintWhite",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_Wood",
+          "Lib_Roof",
+          "Lib_WoodDark",
+          "Lib_Brick"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 604,
+        "materials": [
+          "Lib_PaintCream",
+          "Lib_PaintWhite",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_Wood",
+          "Lib_Roof"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 584,
+        "materials": [
+          "Lib_PaintCream",
+          "Lib_PaintWhite",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_Wood",
+          "Lib_Roof"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Vault_PorchRail",
+        "type": "capsule",
+        "center": [
+          0,
+          1.25,
+          4.33
+        ],
+        "radius": 0.03,
+        "height": 4.620000000000001,
+        "direction": 0
+      },
+      {
+        "name": "Climb_Front",
+        "type": "box",
+        "center": [
+          -3.4901,
+          1.45,
+          2.66
+        ],
+        "size": [
+          1.0178,
+          2.87,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_2",
+        "type": "box",
+        "center": [
+          -1.7662,
+          0.36500000000000005,
+          2.66
+        ],
+        "size": [
+          2.3700000000000006,
+          0.7000000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_3",
+        "type": "box",
+        "center": [
+          -1.7662,
+          2.665,
+          2.66
+        ],
+        "size": [
+          2.3700000000000006,
+          0.4399999999999997,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_4",
+        "type": "box",
+        "center": [
+          1.7239,
+          1.45,
+          2.66
+        ],
+        "size": [
+          4.5502,
+          2.87,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass",
+        "type": "box",
+        "center": [
+          -1.7661600000000002,
+          1.58,
+          2.58
+        ],
+        "size": [
+          1.9345999999999999,
+          1.3396,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back",
+        "type": "box",
+        "center": [
+          -2.307,
+          1.45,
+          -4.36
+        ],
+        "size": [
+          3.3840000000000003,
+          2.87,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_2",
+        "type": "box",
+        "center": [
+          0.0,
+          0.6115,
+          -4.36
+        ],
+        "size": [
+          1.17,
+          1.193,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_3",
+        "type": "box",
+        "center": [
+          0.0,
+          2.6365,
+          -4.36
+        ],
+        "size": [
+          1.17,
+          0.49699999999999966,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_4",
+        "type": "box",
+        "center": [
+          2.307,
+          1.45,
+          -4.36
+        ],
+        "size": [
+          3.3840000000000003,
+          2.87,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_2",
+        "type": "box",
+        "center": [
+          0.0,
+          1.798,
+          -4.28
+        ],
+        "size": [
+          0.9145999999999999,
+          0.8720999999999998,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right",
+        "type": "box",
+        "center": [
+          4.11,
+          1.45,
+          -2.007
+        ],
+        "size": [
+          0.14,
+          2.87,
+          2.7840000000000003
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_2",
+        "type": "box",
+        "center": [
+          4.11,
+          0.6115,
+          0.0
+        ],
+        "size": [
+          0.14,
+          1.193,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_3",
+        "type": "box",
+        "center": [
+          4.11,
+          2.6365,
+          0.0
+        ],
+        "size": [
+          0.14,
+          0.49699999999999966,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_4",
+        "type": "box",
+        "center": [
+          4.11,
+          1.45,
+          2.007
+        ],
+        "size": [
+          0.14,
+          2.87,
+          2.7840000000000003
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_3",
+        "type": "box",
+        "center": [
+          4.03,
+          1.798,
+          0.0
+        ],
+        "size": [
+          0.008,
+          0.8720999999999998,
+          0.9145999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left",
+        "type": "box",
+        "center": [
+          -4.11,
+          1.45,
+          -2.007
+        ],
+        "size": [
+          0.14,
+          2.87,
+          2.7840000000000003
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_2",
+        "type": "box",
+        "center": [
+          -4.11,
+          0.6115,
+          0.0
+        ],
+        "size": [
+          0.14,
+          1.193,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_3",
+        "type": "box",
+        "center": [
+          -4.11,
+          2.6365,
+          0.0
+        ],
+        "size": [
+          0.14,
+          0.49699999999999966,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_4",
+        "type": "box",
+        "center": [
+          -4.11,
+          1.45,
+          2.007
+        ],
+        "size": [
+          0.14,
+          2.87,
+          2.7840000000000003
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_4",
+        "type": "box",
+        "center": [
+          -4.03,
+          1.798,
+          0.0
+        ],
+        "size": [
+          0.008,
+          0.8720999999999998,
+          0.9145999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Porch",
+        "type": "box",
+        "center": [
+          0,
+          0.3,
+          3.6
+        ],
+        "size": [
+          5.712000000000001,
+          0.12,
+          1.58
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_PorchRoof",
+        "type": "box",
+        "center": [
+          0,
+          2.55,
+          3.6750000000000003
+        ],
+        "size": [
+          5.208,
+          0.04,
+          1.29
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": true,
+    "vaultHeight": 0.95,
+    "climbNote": "Siding walls are cling. Windows are glass. The porch is open on +Z.",
+    "vaultNote": "Porch rail is 0.95 m above the porch deck.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 1.3,
+    "fbx": "Assets/Art/Props/Library/Buildings/House_Hip.fbx"
   },
   {
     "name": "LaneArrow",
@@ -9948,26 +11247,26 @@
   {
     "name": "Quay_Edge",
     "category": "Harbor",
-    "blurb": "Concrete quay module, 8 x 3.6 m, deck at 0.90 m. Bullnose and three fenders on -Z. The face runs into the water.",
+    "blurb": "Concrete quay module, 18 x 3.6 m, deck at 0.90 m. Bullnose and five fenders on -Z. The face runs into the water.",
     "size": [
-      8.0,
+      18.0,
       1.165,
       3.67
     ],
     "min": [
-      -4.0,
+      -9.0,
       -0.2,
       -1.72
     ],
     "max": [
-      4.0,
+      9.0,
       0.965,
       1.95
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 316,
+        "tris": 452,
         "materials": [
           "Lib_Concrete",
           "Lib_Rubber",
@@ -9980,7 +11279,7 @@
       },
       {
         "lod": 1,
-        "tris": 136,
+        "tris": 192,
         "materials": [
           "Lib_Concrete",
           "Lib_Rubber"
@@ -9999,7 +11298,7 @@
           0.55
         ],
         "size": [
-          7.8,
+          17.6,
           0.3,
           2.6
         ],
@@ -10018,7 +11317,7 @@
           -1.22
         ],
         "size": [
-          7.8,
+          17.6,
           0.64,
           0.22
         ],
@@ -10032,7 +11331,7 @@
         "name": "Col_Fender_0",
         "type": "capsule",
         "center": [
-          -2.6,
+          -7.0,
           0.32,
           -1.58
         ],
@@ -10044,7 +11343,7 @@
         "name": "Col_Fender_1",
         "type": "capsule",
         "center": [
-          0.0,
+          -3.5,
           0.32,
           -1.58
         ],
@@ -10056,7 +11355,31 @@
         "name": "Col_Fender_2",
         "type": "capsule",
         "center": [
-          2.6,
+          0.0,
+          0.32,
+          -1.58
+        ],
+        "radius": 0.11,
+        "height": 0.48,
+        "direction": 1
+      },
+      {
+        "name": "Col_Fender_3",
+        "type": "capsule",
+        "center": [
+          3.5,
+          0.32,
+          -1.58
+        ],
+        "radius": 0.11,
+        "height": 0.48,
+        "direction": 1
+      },
+      {
+        "name": "Col_Fender_4",
+        "type": "capsule",
+        "center": [
+          7.0,
           0.32,
           -1.58
         ],
@@ -11628,6 +12951,3318 @@
     "fbx": "Assets/Art/Props/Library/Roads/StopBar.fbx"
   },
   {
+    "name": "Store_Corner",
+    "category": "Buildings",
+    "blurb": "Corner shop, 8.0 x 7.2 m, two stories to a 6.4 m parapet. Glazing on +Z and +X. Alley face is -Z, with a fire escape and downspouts. Awning and MARKET sign on the front.",
+    "size": [
+      9.16,
+      7.716,
+      9.07
+    ],
+    "min": [
+      -4.11,
+      0.004,
+      -4.32
+    ],
+    "max": [
+      5.05,
+      7.72,
+      4.75
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 2704,
+        "materials": [
+          "Lib_Brick",
+          "Lib_PaintCream",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Brass",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Wood",
+          "Lib_WoodDark",
+          "Lib_Awning",
+          "Lib_PaintRed"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 1988,
+        "materials": [
+          "Lib_Brick",
+          "Lib_PaintCream",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Wood",
+          "Lib_WoodDark",
+          "Lib_Awning",
+          "Lib_PaintRed"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 1524,
+        "materials": [
+          "Lib_Brick",
+          "Lib_PaintCream",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_WindowLit"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Climb_Front",
+        "type": "box",
+        "center": [
+          -3.3173,
+          3.2,
+          3.49
+        ],
+        "size": [
+          0.8834000000000002,
+          6.37,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_2",
+        "type": "box",
+        "center": [
+          -2.8369999999999997,
+          0.36500000000000005,
+          3.49
+        ],
+        "size": [
+          0.04,
+          0.7000000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_3",
+        "type": "box",
+        "center": [
+          -2.8369999999999997,
+          4.415,
+          3.49
+        ],
+        "size": [
+          0.04,
+          3.9400000000000004,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_4",
+        "type": "box",
+        "center": [
+          -2.1134,
+          0.36500000000000005,
+          3.49
+        ],
+        "size": [
+          1.37,
+          0.7000000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_5",
+        "type": "box",
+        "center": [
+          -2.1134,
+          3.2190000000000003,
+          3.49
+        ],
+        "size": [
+          1.37,
+          1.5479999999999998,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_6",
+        "type": "box",
+        "center": [
+          -2.1134,
+          5.804,
+          3.49
+        ],
+        "size": [
+          1.37,
+          1.162000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_7",
+        "type": "box",
+        "center": [
+          -1.0567,
+          0.36500000000000005,
+          3.49
+        ],
+        "size": [
+          0.6834,
+          0.7000000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_8",
+        "type": "box",
+        "center": [
+          -1.0567,
+          4.415,
+          3.49
+        ],
+        "size": [
+          0.6834,
+          3.9400000000000004,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_9",
+        "type": "box",
+        "center": [
+          -0.5803,
+          0.36500000000000005,
+          3.49
+        ],
+        "size": [
+          0.20939999999999995,
+          0.7000000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_10",
+        "type": "box",
+        "center": [
+          -0.5803,
+          3.2190000000000003,
+          3.49
+        ],
+        "size": [
+          0.20939999999999995,
+          1.5479999999999998,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_11",
+        "type": "box",
+        "center": [
+          -0.5803,
+          5.804,
+          3.49
+        ],
+        "size": [
+          0.20939999999999995,
+          1.162000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_12",
+        "type": "box",
+        "center": [
+          0.11969999999999997,
+          2.004,
+          3.49
+        ],
+        "size": [
+          1.1306,
+          3.978,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_13",
+        "type": "box",
+        "center": [
+          0.11969999999999997,
+          5.804,
+          3.49
+        ],
+        "size": [
+          1.1306,
+          1.162000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_14",
+        "type": "box",
+        "center": [
+          1.0567,
+          3.2,
+          3.49
+        ],
+        "size": [
+          0.6834,
+          6.37,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_15",
+        "type": "box",
+        "center": [
+          2.1134,
+          2.004,
+          3.49
+        ],
+        "size": [
+          1.37,
+          3.978,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_16",
+        "type": "box",
+        "center": [
+          2.1134,
+          5.804,
+          3.49
+        ],
+        "size": [
+          1.37,
+          1.162000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_17",
+        "type": "box",
+        "center": [
+          3.2937000000000003,
+          3.2,
+          3.49
+        ],
+        "size": [
+          0.9305999999999999,
+          6.37,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass",
+        "type": "box",
+        "center": [
+          -1.66056,
+          1.58,
+          3.41
+        ],
+        "size": [
+          1.9345999999999999,
+          1.3396,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_2",
+        "type": "box",
+        "center": [
+          -2.11344,
+          4.608,
+          3.41
+        ],
+        "size": [
+          1.0845999999999998,
+          0.9145999999999999,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_3",
+        "type": "box",
+        "center": [
+          0.0,
+          4.608,
+          3.41
+        ],
+        "size": [
+          1.0845999999999998,
+          0.9145999999999999,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_4",
+        "type": "box",
+        "center": [
+          2.11344,
+          4.608,
+          3.41
+        ],
+        "size": [
+          1.0845999999999998,
+          0.9145999999999999,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back",
+        "type": "box",
+        "center": [
+          -2.8163,
+          3.2,
+          -3.49
+        ],
+        "size": [
+          1.8854,
+          6.37,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_2",
+        "type": "box",
+        "center": [
+          -1.3586,
+          0.03749999999999998,
+          -3.49
+        ],
+        "size": [
+          0.97,
+          0.04499999999999996,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_3",
+        "type": "box",
+        "center": [
+          -1.3586,
+          4.3125,
+          -3.49
+        ],
+        "size": [
+          0.97,
+          4.1450000000000005,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_4",
+        "type": "box",
+        "center": [
+          0.17599999999999993,
+          3.2,
+          -3.49
+        ],
+        "size": [
+          2.0392,
+          6.37,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_5",
+        "type": "box",
+        "center": [
+          1.6605999999999999,
+          1.7215,
+          -3.49
+        ],
+        "size": [
+          0.8699999999999999,
+          3.4130000000000003,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_6",
+        "type": "box",
+        "center": [
+          1.6605999999999999,
+          5.4465,
+          -3.49
+        ],
+        "size": [
+          0.8699999999999999,
+          1.877,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_7",
+        "type": "box",
+        "center": [
+          2.9423,
+          3.2,
+          -3.49
+        ],
+        "size": [
+          1.6334000000000002,
+          6.37,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_5",
+        "type": "box",
+        "center": [
+          -1.3586399999999998,
+          1.15,
+          -3.41
+        ],
+        "size": [
+          0.7445999999999999,
+          1.7220999999999997,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_6",
+        "type": "box",
+        "center": [
+          1.66056,
+          3.968,
+          -3.41
+        ],
+        "size": [
+          0.6596,
+          0.7871,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right",
+        "type": "box",
+        "center": [
+          3.89,
+          3.2,
+          -3.0293
+        ],
+        "size": [
+          0.14,
+          6.37,
+          0.6594
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_2",
+        "type": "box",
+        "center": [
+          3.89,
+          0.36500000000000005,
+          -2.6244
+        ],
+        "size": [
+          0.14,
+          0.7000000000000001,
+          0.09040000000000006
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_3",
+        "type": "box",
+        "center": [
+          3.89,
+          4.415,
+          -2.6244
+        ],
+        "size": [
+          0.14,
+          3.9400000000000004,
+          0.09040000000000006
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_4",
+        "type": "box",
+        "center": [
+          3.89,
+          0.36500000000000005,
+          -1.8894
+        ],
+        "size": [
+          0.14,
+          0.7000000000000001,
+          1.3196
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_5",
+        "type": "box",
+        "center": [
+          3.89,
+          3.2190000000000003,
+          -1.8894
+        ],
+        "size": [
+          0.14,
+          1.5479999999999998,
+          1.3196
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_6",
+        "type": "box",
+        "center": [
+          3.89,
+          5.804,
+          -1.8894
+        ],
+        "size": [
+          0.14,
+          1.162000000000001,
+          1.3196
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_7",
+        "type": "box",
+        "center": [
+          3.89,
+          0.36500000000000005,
+          -0.9446999999999999
+        ],
+        "size": [
+          0.14,
+          0.7000000000000001,
+          0.5097999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_8",
+        "type": "box",
+        "center": [
+          3.89,
+          4.415,
+          -0.9446999999999999
+        ],
+        "size": [
+          0.14,
+          3.9400000000000004,
+          0.5097999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_9",
+        "type": "box",
+        "center": [
+          3.89,
+          0.36500000000000005,
+          -0.4797
+        ],
+        "size": [
+          0.14,
+          0.7000000000000001,
+          0.36019999999999996
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_10",
+        "type": "box",
+        "center": [
+          3.89,
+          3.2190000000000003,
+          -0.4797
+        ],
+        "size": [
+          0.14,
+          1.5479999999999998,
+          0.36019999999999996
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_11",
+        "type": "box",
+        "center": [
+          3.89,
+          5.804,
+          -0.4797
+        ],
+        "size": [
+          0.14,
+          1.162000000000001,
+          0.36019999999999996
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_12",
+        "type": "box",
+        "center": [
+          3.89,
+          2.004,
+          0.19509999999999997
+        ],
+        "size": [
+          0.14,
+          3.978,
+          0.9294
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_13",
+        "type": "box",
+        "center": [
+          3.89,
+          5.804,
+          0.19509999999999997
+        ],
+        "size": [
+          0.14,
+          1.162000000000001,
+          0.9294
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_14",
+        "type": "box",
+        "center": [
+          3.89,
+          3.2,
+          0.9446999999999999
+        ],
+        "size": [
+          0.14,
+          6.37,
+          0.5097999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_15",
+        "type": "box",
+        "center": [
+          3.89,
+          2.004,
+          1.8894
+        ],
+        "size": [
+          0.14,
+          3.978,
+          1.3196
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_16",
+        "type": "box",
+        "center": [
+          3.89,
+          5.804,
+          1.8894
+        ],
+        "size": [
+          0.14,
+          1.162000000000001,
+          1.3196
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_17",
+        "type": "box",
+        "center": [
+          3.89,
+          3.2,
+          2.9691
+        ],
+        "size": [
+          0.14,
+          6.37,
+          0.7798
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_7",
+        "type": "box",
+        "center": [
+          3.81,
+          1.58,
+          -1.48456
+        ],
+        "size": [
+          0.008,
+          1.3396,
+          1.9345999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_8",
+        "type": "box",
+        "center": [
+          3.81,
+          4.608,
+          -1.8894400000000002
+        ],
+        "size": [
+          0.008,
+          0.9145999999999999,
+          1.04176
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_9",
+        "type": "box",
+        "center": [
+          3.81,
+          4.608,
+          0.0
+        ],
+        "size": [
+          0.008,
+          0.9145999999999999,
+          1.04176
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_10",
+        "type": "box",
+        "center": [
+          3.81,
+          4.608,
+          1.8894400000000002
+        ],
+        "size": [
+          0.008,
+          0.9145999999999999,
+          1.04176
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left",
+        "type": "box",
+        "center": [
+          -3.89,
+          3.2,
+          -1.987
+        ],
+        "size": [
+          0.14,
+          6.37,
+          2.744
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_2",
+        "type": "box",
+        "center": [
+          -3.89,
+          1.6965,
+          0.0
+        ],
+        "size": [
+          0.14,
+          3.363,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_3",
+        "type": "box",
+        "center": [
+          -3.89,
+          5.471500000000001,
+          0.0
+        ],
+        "size": [
+          0.14,
+          1.8270000000000002,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_4",
+        "type": "box",
+        "center": [
+          -3.89,
+          3.2,
+          1.987
+        ],
+        "size": [
+          0.14,
+          6.37,
+          2.744
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_11",
+        "type": "box",
+        "center": [
+          -3.81,
+          3.968,
+          0.0
+        ],
+        "size": [
+          0.008,
+          0.8720999999999998,
+          0.9145999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          6.48,
+          0
+        ],
+        "size": [
+          7.92,
+          0.08,
+          7.12
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_ParapetF",
+        "type": "box",
+        "center": [
+          0,
+          6.8100000000000005,
+          3.52
+        ],
+        "size": [
+          7.616,
+          0.48,
+          0.13
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_ParapetB",
+        "type": "box",
+        "center": [
+          0,
+          6.8100000000000005,
+          -3.52
+        ],
+        "size": [
+          7.616,
+          0.48,
+          0.13
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Escape",
+        "type": "box",
+        "center": [
+          0,
+          3.2,
+          -3.9700000000000006
+        ],
+        "size": [
+          1.4,
+          0.04,
+          0.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Awning",
+        "type": "box",
+        "center": [
+          0,
+          3.05,
+          4.175
+        ],
+        "size": [
+          6.072,
+          0.05,
+          1.1099999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The four walls are cling. Glass is solid. The roof is a parapet, not a rail.",
+    "vaultNote": "No ground-height rail. The parapet is on the roof.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 2.14,
+    "fbx": "Assets/Art/Props/Library/Buildings/Store_Corner.fbx"
+  },
+  {
+    "name": "Store_Diner",
+    "category": "Buildings",
+    "blurb": "Diner, 10.0 x 7.0 m, walls 4.6 m under a parapet. Cream body, red awning and DINER sign. Alley face is -Z.",
+    "size": [
+      10.22,
+      5.916,
+      8.87
+    ],
+    "min": [
+      -5.11,
+      0.004,
+      -4.22
+    ],
+    "max": [
+      5.11,
+      5.92,
+      4.65
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 2124,
+        "materials": [
+          "Lib_PaintCream",
+          "Lib_PaintRed",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Brass",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Wood",
+          "Lib_WoodDark"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 1544,
+        "materials": [
+          "Lib_PaintCream",
+          "Lib_PaintRed",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Wood",
+          "Lib_WoodDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 1092,
+        "materials": [
+          "Lib_PaintCream",
+          "Lib_PaintRed",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_WindowLit"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Climb_Front",
+        "type": "box",
+        "center": [
+          -4.0737000000000005,
+          2.3,
+          3.39
+        ],
+        "size": [
+          1.3705999999999998,
+          4.569999999999999,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_2",
+        "type": "box",
+        "center": [
+          -3.337,
+          1.3559999999999999,
+          3.39
+        ],
+        "size": [
+          0.04279999999999998,
+          2.682,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_3",
+        "type": "box",
+        "center": [
+          -3.337,
+          4.256,
+          3.39
+        ],
+        "size": [
+          0.04279999999999998,
+          0.6579999999999997,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_4",
+        "type": "box",
+        "center": [
+          -2.637,
+          0.36500000000000005,
+          3.39
+        ],
+        "size": [
+          1.2972000000000001,
+          0.7000000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_5",
+        "type": "box",
+        "center": [
+          -2.637,
+          2.5709999999999997,
+          3.39
+        ],
+        "size": [
+          1.2972000000000001,
+          0.25199999999999956,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_6",
+        "type": "box",
+        "center": [
+          -2.637,
+          4.256,
+          3.39
+        ],
+        "size": [
+          1.2972000000000001,
+          0.6579999999999997,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_7",
+        "type": "box",
+        "center": [
+          -1.437,
+          0.36500000000000005,
+          3.39
+        ],
+        "size": [
+          1.0428,
+          0.7000000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_8",
+        "type": "box",
+        "center": [
+          -1.437,
+          3.5149999999999997,
+          3.39
+        ],
+        "size": [
+          1.0428,
+          2.1399999999999997,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_9",
+        "type": "box",
+        "center": [
+          -0.8003,
+          2.3,
+          3.39
+        ],
+        "size": [
+          0.1706,
+          4.569999999999999,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_10",
+        "type": "box",
+        "center": [
+          0.0,
+          1.3559999999999999,
+          3.39
+        ],
+        "size": [
+          1.3699999999999999,
+          2.682,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_11",
+        "type": "box",
+        "center": [
+          0.0,
+          4.256,
+          3.39
+        ],
+        "size": [
+          1.3699999999999999,
+          0.6579999999999997,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_12",
+        "type": "box",
+        "center": [
+          1.3367,
+          2.3,
+          3.39
+        ],
+        "size": [
+          1.2434,
+          4.569999999999999,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_13",
+        "type": "box",
+        "center": [
+          2.6734,
+          1.3559999999999999,
+          3.39
+        ],
+        "size": [
+          1.37,
+          2.682,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_14",
+        "type": "box",
+        "center": [
+          2.6734,
+          4.256,
+          3.39
+        ],
+        "size": [
+          1.37,
+          0.6579999999999997,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_15",
+        "type": "box",
+        "center": [
+          4.0737000000000005,
+          2.3,
+          3.39
+        ],
+        "size": [
+          1.3705999999999998,
+          4.569999999999999,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass",
+        "type": "box",
+        "center": [
+          -2.10056,
+          1.58,
+          3.31
+        ],
+        "size": [
+          1.9345999999999999,
+          1.3396,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_2",
+        "type": "box",
+        "center": [
+          -2.6734400000000003,
+          3.312,
+          3.31
+        ],
+        "size": [
+          1.0845999999999998,
+          0.9145999999999999,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_3",
+        "type": "box",
+        "center": [
+          0.0,
+          3.312,
+          3.31
+        ],
+        "size": [
+          1.0845999999999998,
+          0.9145999999999999,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_4",
+        "type": "box",
+        "center": [
+          2.6734400000000003,
+          3.312,
+          3.31
+        ],
+        "size": [
+          1.0845999999999998,
+          0.9145999999999999,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back",
+        "type": "box",
+        "center": [
+          -3.4962999999999997,
+          2.3,
+          -3.39
+        ],
+        "size": [
+          2.5254000000000003,
+          4.569999999999999,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_2",
+        "type": "box",
+        "center": [
+          -1.7186,
+          0.03749999999999998,
+          -3.39
+        ],
+        "size": [
+          0.97,
+          0.04499999999999996,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_3",
+        "type": "box",
+        "center": [
+          -1.7186,
+          3.4124999999999996,
+          -3.39
+        ],
+        "size": [
+          0.97,
+          2.345,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_4",
+        "type": "box",
+        "center": [
+          0.21600000000000008,
+          2.3,
+          -3.39
+        ],
+        "size": [
+          2.8392000000000004,
+          4.569999999999999,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_5",
+        "type": "box",
+        "center": [
+          2.1006,
+          1.1635,
+          -3.39
+        ],
+        "size": [
+          0.8700000000000001,
+          2.297,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_6",
+        "type": "box",
+        "center": [
+          2.1006,
+          3.9884999999999997,
+          -3.39
+        ],
+        "size": [
+          0.8700000000000001,
+          1.1929999999999998,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_7",
+        "type": "box",
+        "center": [
+          3.6623,
+          2.3,
+          -3.39
+        ],
+        "size": [
+          2.1934,
+          4.569999999999999,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_5",
+        "type": "box",
+        "center": [
+          -1.71864,
+          1.15,
+          -3.31
+        ],
+        "size": [
+          0.7445999999999999,
+          1.7220999999999997,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_6",
+        "type": "box",
+        "center": [
+          2.10056,
+          2.852,
+          -3.31
+        ],
+        "size": [
+          0.6596,
+          0.7871,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right",
+        "type": "box",
+        "center": [
+          4.89,
+          2.3,
+          -1.937
+        ],
+        "size": [
+          0.14,
+          4.569999999999999,
+          2.644
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_2",
+        "type": "box",
+        "center": [
+          4.89,
+          1.1385,
+          0.0
+        ],
+        "size": [
+          0.14,
+          2.2470000000000003,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_3",
+        "type": "box",
+        "center": [
+          4.89,
+          4.0135,
+          0.0
+        ],
+        "size": [
+          0.14,
+          1.143,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_4",
+        "type": "box",
+        "center": [
+          4.89,
+          2.3,
+          1.937
+        ],
+        "size": [
+          0.14,
+          4.569999999999999,
+          2.644
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_7",
+        "type": "box",
+        "center": [
+          4.81,
+          2.852,
+          0.0
+        ],
+        "size": [
+          0.008,
+          0.8720999999999998,
+          0.9145999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left",
+        "type": "box",
+        "center": [
+          -4.89,
+          2.3,
+          -1.937
+        ],
+        "size": [
+          0.14,
+          4.569999999999999,
+          2.644
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_2",
+        "type": "box",
+        "center": [
+          -4.89,
+          1.1385,
+          0.0
+        ],
+        "size": [
+          0.14,
+          2.2470000000000003,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_3",
+        "type": "box",
+        "center": [
+          -4.89,
+          4.0135,
+          0.0
+        ],
+        "size": [
+          0.14,
+          1.143,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_4",
+        "type": "box",
+        "center": [
+          -4.89,
+          2.3,
+          1.937
+        ],
+        "size": [
+          0.14,
+          4.569999999999999,
+          2.644
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_8",
+        "type": "box",
+        "center": [
+          -4.81,
+          2.852,
+          0.0
+        ],
+        "size": [
+          0.008,
+          0.8720999999999998,
+          0.9145999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          4.68,
+          0
+        ],
+        "size": [
+          9.92,
+          0.08,
+          6.92
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_ParapetF",
+        "type": "box",
+        "center": [
+          0,
+          5.01,
+          3.42
+        ],
+        "size": [
+          9.616000000000001,
+          0.48,
+          0.13
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_ParapetB",
+        "type": "box",
+        "center": [
+          0,
+          5.01,
+          -3.42
+        ],
+        "size": [
+          9.616000000000001,
+          0.48,
+          0.13
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Escape",
+        "type": "box",
+        "center": [
+          0,
+          3.2,
+          -3.87
+        ],
+        "size": [
+          1.4,
+          0.04,
+          0.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Awning",
+        "type": "box",
+        "center": [
+          0,
+          3.05,
+          4.075
+        ],
+        "size": [
+          7.590000000000001,
+          0.05,
+          1.1099999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The four walls are cling. Glass is solid. The roof is a parapet, not a rail.",
+    "vaultNote": "No ground-height rail. The parapet is on the roof.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 2.12,
+    "fbx": "Assets/Art/Props/Library/Buildings/Store_Diner.fbx"
+  },
+  {
+    "name": "Store_Laundromat",
+    "category": "Buildings",
+    "blurb": "Laundromat, 9.2 x 6.8 m, walls 4.8 m under a parapet. White body, teal awning and WASH sign. Alley face is -Z.",
+    "size": [
+      9.42,
+      6.116,
+      8.67
+    ],
+    "min": [
+      -4.71,
+      0.004,
+      -4.12
+    ],
+    "max": [
+      4.71,
+      6.12,
+      4.55
+    ],
+    "lods": [
+      {
+        "lod": 0,
+        "tris": 2544,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_PaintTeal",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_Brass",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Wood",
+          "Lib_WoodDark",
+          "Lib_PaintCream"
+        ],
+        "mesh": "LOD0",
+        "fileID": -1633821710574564935
+      },
+      {
+        "lod": 1,
+        "tris": 1916,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_PaintTeal",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_WindowLit",
+          "Lib_SteelDark",
+          "Lib_Steel",
+          "Lib_Wood",
+          "Lib_WoodDark"
+        ],
+        "mesh": "LOD1",
+        "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 1464,
+        "materials": [
+          "Lib_PaintWhite",
+          "Lib_PaintTeal",
+          "Lib_Concrete",
+          "Lib_Window",
+          "Lib_Interior",
+          "Lib_WindowLit"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
+      }
+    ],
+    "colliders": [
+      {
+        "name": "Climb_Front",
+        "type": "box",
+        "center": [
+          -3.7617,
+          2.4,
+          3.29
+        ],
+        "size": [
+          1.1945999999999997,
+          4.77,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_2",
+        "type": "box",
+        "center": [
+          -2.4370000000000003,
+          0.36500000000000005,
+          3.29
+        ],
+        "size": [
+          1.3452,
+          0.7000000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_3",
+        "type": "box",
+        "center": [
+          -2.4370000000000003,
+          2.643,
+          3.29
+        ],
+        "size": [
+          1.3452,
+          0.3959999999999997,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_4",
+        "type": "box",
+        "center": [
+          -2.4370000000000003,
+          4.428,
+          3.29
+        ],
+        "size": [
+          1.3452,
+          0.7139999999999997,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_5",
+        "type": "box",
+        "center": [
+          -1.237,
+          0.36500000000000005,
+          3.29
+        ],
+        "size": [
+          0.9947999999999999,
+          0.7000000000000001,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_6",
+        "type": "box",
+        "center": [
+          -1.237,
+          3.615,
+          3.29
+        ],
+        "size": [
+          0.9947999999999999,
+          2.34,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_7",
+        "type": "box",
+        "center": [
+          0.0,
+          1.428,
+          3.29
+        ],
+        "size": [
+          1.3699999999999999,
+          2.826,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_8",
+        "type": "box",
+        "center": [
+          0.0,
+          4.428,
+          3.29
+        ],
+        "size": [
+          1.3699999999999999,
+          0.7139999999999997,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_9",
+        "type": "box",
+        "center": [
+          1.2247,
+          2.4,
+          3.29
+        ],
+        "size": [
+          1.0194,
+          4.77,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_10",
+        "type": "box",
+        "center": [
+          2.4494,
+          1.428,
+          3.29
+        ],
+        "size": [
+          1.3699999999999999,
+          2.826,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_11",
+        "type": "box",
+        "center": [
+          2.4494,
+          4.428,
+          3.29
+        ],
+        "size": [
+          1.3699999999999999,
+          0.7139999999999997,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Front_12",
+        "type": "box",
+        "center": [
+          3.7617,
+          2.4,
+          3.29
+        ],
+        "size": [
+          1.1945999999999997,
+          4.77,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass",
+        "type": "box",
+        "center": [
+          -1.9245599999999998,
+          1.58,
+          3.21
+        ],
+        "size": [
+          1.9345999999999999,
+          1.3396,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_2",
+        "type": "box",
+        "center": [
+          -2.44944,
+          3.456,
+          3.21
+        ],
+        "size": [
+          1.0845999999999998,
+          0.9145999999999999,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_3",
+        "type": "box",
+        "center": [
+          0.0,
+          3.456,
+          3.21
+        ],
+        "size": [
+          1.0845999999999998,
+          0.9145999999999999,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_4",
+        "type": "box",
+        "center": [
+          2.44944,
+          3.456,
+          3.21
+        ],
+        "size": [
+          1.0845999999999998,
+          0.9145999999999999,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back",
+        "type": "box",
+        "center": [
+          -3.2243,
+          2.4,
+          -3.29
+        ],
+        "size": [
+          2.2693999999999996,
+          4.77,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_2",
+        "type": "box",
+        "center": [
+          -1.5746000000000002,
+          0.03749999999999998,
+          -3.29
+        ],
+        "size": [
+          0.9700000000000002,
+          0.04499999999999996,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_3",
+        "type": "box",
+        "center": [
+          -1.5746000000000002,
+          3.5124999999999997,
+          -3.29
+        ],
+        "size": [
+          0.9700000000000002,
+          2.5450000000000004,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_4",
+        "type": "box",
+        "center": [
+          0.19999999999999996,
+          2.4,
+          -3.29
+        ],
+        "size": [
+          2.5192,
+          4.77,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_5",
+        "type": "box",
+        "center": [
+          1.9245999999999999,
+          1.2255,
+          -3.29
+        ],
+        "size": [
+          0.8700000000000001,
+          2.4210000000000003,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_6",
+        "type": "box",
+        "center": [
+          1.9245999999999999,
+          4.1505,
+          -3.29
+        ],
+        "size": [
+          0.8700000000000001,
+          1.269,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Back_7",
+        "type": "box",
+        "center": [
+          3.3743,
+          2.4,
+          -3.29
+        ],
+        "size": [
+          1.9693999999999996,
+          4.77,
+          0.14
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_5",
+        "type": "box",
+        "center": [
+          -1.5746399999999998,
+          1.15,
+          -3.21
+        ],
+        "size": [
+          0.7445999999999999,
+          1.7220999999999997,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_6",
+        "type": "box",
+        "center": [
+          1.9245599999999998,
+          2.976,
+          -3.21
+        ],
+        "size": [
+          0.6596,
+          0.7871,
+          0.008
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right",
+        "type": "box",
+        "center": [
+          4.489999999999999,
+          2.4,
+          -1.887
+        ],
+        "size": [
+          0.14,
+          4.77,
+          2.544
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_2",
+        "type": "box",
+        "center": [
+          4.489999999999999,
+          1.2005,
+          0.0
+        ],
+        "size": [
+          0.14,
+          2.371,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_3",
+        "type": "box",
+        "center": [
+          4.489999999999999,
+          4.1754999999999995,
+          0.0
+        ],
+        "size": [
+          0.14,
+          1.2189999999999996,
+          1.17
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Right_4",
+        "type": "box",
+        "center": [
+          4.489999999999999,
+          2.4,
+          1.887
+        ],
+        "size": [
+          0.14,
+          4.77,
+          2.544
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_7",
+        "type": "box",
+        "center": [
+          4.409999999999999,
+          2.976,
+          0.0
+        ],
+        "size": [
+          0.008,
+          0.8720999999999998,
+          0.9145999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          2.4,
+          -2.8566000000000003
+        ],
+        "size": [
+          0.14,
+          4.77,
+          0.6047999999999998
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_2",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          0.36500000000000005,
+          -2.4757
+        ],
+        "size": [
+          0.14,
+          0.7000000000000001,
+          0.09700000000000022
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_3",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          3.615,
+          -2.4757
+        ],
+        "size": [
+          0.14,
+          2.34,
+          0.09700000000000022
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_4",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          0.36500000000000005,
+          -1.7774
+        ],
+        "size": [
+          0.14,
+          0.7000000000000001,
+          1.2395999999999998
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_5",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          2.643,
+          -1.7774
+        ],
+        "size": [
+          0.14,
+          0.3959999999999997,
+          1.2395999999999998
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_6",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          4.428,
+          -1.7774
+        ],
+        "size": [
+          0.14,
+          0.7139999999999997,
+          1.2395999999999998
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_7",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          0.36500000000000005,
+          -0.8887
+        ],
+        "size": [
+          0.14,
+          0.7000000000000001,
+          0.4778
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_8",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          3.615,
+          -0.8887
+        ],
+        "size": [
+          0.14,
+          2.34,
+          0.4778
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_9",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          0.36500000000000005,
+          -0.44435
+        ],
+        "size": [
+          0.14,
+          0.7000000000000001,
+          0.3509
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_10",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          2.643,
+          -0.44435
+        ],
+        "size": [
+          0.14,
+          0.3959999999999997,
+          0.3509
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_11",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          4.428,
+          -0.44435
+        ],
+        "size": [
+          0.14,
+          0.7139999999999997,
+          0.3509
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_12",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          1.428,
+          0.19045
+        ],
+        "size": [
+          0.14,
+          2.826,
+          0.8587
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_13",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          4.428,
+          0.19045
+        ],
+        "size": [
+          0.14,
+          0.7139999999999997,
+          0.8587
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_14",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          2.4,
+          0.8887
+        ],
+        "size": [
+          0.14,
+          4.77,
+          0.4778
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_15",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          1.428,
+          1.7774
+        ],
+        "size": [
+          0.14,
+          2.826,
+          1.2395999999999998
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_16",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          4.428,
+          1.7774
+        ],
+        "size": [
+          0.14,
+          0.7139999999999997,
+          1.2395999999999998
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Climb_Left_17",
+        "type": "box",
+        "center": [
+          -4.489999999999999,
+          2.4,
+          2.7931
+        ],
+        "size": [
+          0.14,
+          4.77,
+          0.7318
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_8",
+        "type": "box",
+        "center": [
+          -4.409999999999999,
+          1.58,
+          -1.39656
+        ],
+        "size": [
+          0.008,
+          1.3396,
+          1.8370879999999996
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_9",
+        "type": "box",
+        "center": [
+          -4.409999999999999,
+          3.456,
+          -1.7774400000000001
+        ],
+        "size": [
+          0.008,
+          0.9145999999999999,
+          0.97376
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_10",
+        "type": "box",
+        "center": [
+          -4.409999999999999,
+          3.456,
+          0.0
+        ],
+        "size": [
+          0.008,
+          0.9145999999999999,
+          0.97376
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Glass_11",
+        "type": "box",
+        "center": [
+          -4.409999999999999,
+          3.456,
+          1.7774400000000001
+        ],
+        "size": [
+          0.008,
+          0.9145999999999999,
+          0.97376
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Roof",
+        "type": "box",
+        "center": [
+          0,
+          4.88,
+          0
+        ],
+        "size": [
+          9.12,
+          0.08,
+          6.72
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_ParapetF",
+        "type": "box",
+        "center": [
+          0,
+          5.21,
+          3.32
+        ],
+        "size": [
+          8.816,
+          0.48,
+          0.13
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_ParapetB",
+        "type": "box",
+        "center": [
+          0,
+          5.21,
+          -3.32
+        ],
+        "size": [
+          8.816,
+          0.48,
+          0.13
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Escape",
+        "type": "box",
+        "center": [
+          0,
+          3.2,
+          -3.77
+        ],
+        "size": [
+          1.4,
+          0.04,
+          0.6
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Awning",
+        "type": "box",
+        "center": [
+          0,
+          3.05,
+          3.9749999999999996
+        ],
+        "size": [
+          6.9828,
+          0.05,
+          1.1099999999999999
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "climbable": true,
+    "vaultable": false,
+    "vaultHeight": 0.0,
+    "climbNote": "The four walls are cling. Glass is solid. The roof is a parapet, not a rail.",
+    "vaultNote": "No ground-height rail. The parapet is on the roof.",
+    "warnings": [],
+    "fbxNames": [
+      "LODBoxS",
+      "LOD0",
+      "LOD1",
+      "LOD2"
+    ],
+    "slackCm": 2.13,
+    "fbx": "Assets/Art/Props/Library/Buildings/Store_Laundromat.fbx"
+  },
+  {
     "name": "Storefront_Glass",
     "category": "Buildings",
     "blurb": "4.00 x 3.20 m ground-floor bay. Inset glass, mullions, and a framed door with a handle. Exterior is +Z. No awning.",
@@ -12218,26 +16853,26 @@
     "category": "Park",
     "blurb": "Oak. Tapered trunk to about 2.2 m, forked limbs, and overlapping green clusters. Canopy about 4.0 m tall.",
     "size": [
-      3.417,
-      3.792,
-      2.801
+      3.482,
+      3.539,
+      3.066
     ],
     "min": [
-      -1.62,
+      -1.652,
       0.0,
-      -1.556
+      -1.754
     ],
     "max": [
-      1.797,
-      3.792,
-      1.245
+      1.83,
+      3.539,
+      1.312
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 936,
+        "tris": 1584,
         "materials": [
-          "Lib_WoodDark",
+          "Lib_Bark",
           "Lib_Foliage",
           "Lib_FoliageDark",
           "Lib_FoliageLite"
@@ -12247,15 +16882,26 @@
       },
       {
         "lod": 1,
-        "tris": 552,
+        "tris": 732,
         "materials": [
-          "Lib_WoodDark",
+          "Lib_Bark",
           "Lib_Foliage",
           "Lib_FoliageDark",
           "Lib_FoliageLite"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 336,
+        "materials": [
+          "Lib_Bark",
+          "Lib_Foliage",
+          "Lib_FoliageDark"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -12300,7 +16946,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 1.5,
     "fbx": "Assets/Art/Props/Library/Park/Tree.fbx"
@@ -12310,26 +16957,26 @@
     "category": "Park",
     "blurb": "Maple. Slimmer trunk than the oak, upright forks, olive and deep-green clusters.",
     "size": [
-      2.684,
-      3.918,
-      2.162
+      2.739,
+      3.702,
+      2.385
     ],
     "min": [
-      -1.292,
+      -1.319,
       0.0,
-      -1.123
+      -1.289
     ],
     "max": [
-      1.393,
-      3.918,
-      1.038
+      1.421,
+      3.702,
+      1.096
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 936,
+        "tris": 1584,
         "materials": [
-          "Lib_WoodDark",
+          "Lib_Bark",
           "Lib_FoliageLite",
           "Lib_Foliage",
           "Lib_FoliageDark"
@@ -12339,15 +16986,27 @@
       },
       {
         "lod": 1,
-        "tris": 552,
+        "tris": 732,
         "materials": [
-          "Lib_WoodDark",
+          "Lib_Bark",
           "Lib_FoliageLite",
           "Lib_Foliage",
           "Lib_FoliageDark"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 264,
+        "materials": [
+          "Lib_Bark",
+          "Lib_FoliageLite",
+          "Lib_Foliage",
+          "Lib_FoliageDark"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -12392,7 +17051,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 2.23,
     "fbx": "Assets/Art/Props/Library/Park/Tree_Maple.fbx"
@@ -12421,7 +17081,7 @@
         "lod": 0,
         "tris": 120,
         "materials": [
-          "Lib_WoodDark",
+          "Lib_Bark",
           "Lib_PalmDry",
           "Lib_Palm"
         ],
@@ -12432,12 +17092,23 @@
         "lod": 1,
         "tris": 60,
         "materials": [
-          "Lib_WoodDark",
+          "Lib_Bark",
           "Lib_PalmDry",
           "Lib_Palm"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 48,
+        "materials": [
+          "Lib_Bark",
+          "Lib_PalmDry",
+          "Lib_Palm"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -12463,7 +17134,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 0.0,
     "fbx": "Assets/Art/Props/Library/Park/Tree_Palm.fbx"
@@ -12473,26 +17145,26 @@
     "category": "Park",
     "blurb": "Pine. Trunk to about 3.4 m, branch whorls, and a narrow crown of needle clusters.",
     "size": [
-      3.018,
-      4.352,
-      2.801
+      2.968,
+      4.214,
+      2.75
     ],
     "min": [
-      -1.454,
+      -1.466,
       0.0,
-      -1.331
+      -1.401
     ],
     "max": [
-      1.565,
-      4.352,
-      1.47
+      1.502,
+      4.214,
+      1.349
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1732,
+        "tris": 2932,
         "materials": [
-          "Lib_WoodDark",
+          "Lib_Bark",
           "Lib_Needle",
           "Lib_FoliageDark"
         ],
@@ -12501,14 +17173,25 @@
       },
       {
         "lod": 1,
-        "tris": 528,
+        "tris": 816,
         "materials": [
-          "Lib_WoodDark",
+          "Lib_Bark",
           "Lib_Needle",
           "Lib_FoliageDark"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
+      },
+      {
+        "lod": 2,
+        "tris": 528,
+        "materials": [
+          "Lib_Bark",
+          "Lib_Needle",
+          "Lib_FoliageDark"
+        ],
+        "mesh": "LOD2",
+        "fileID": 736115405485880582
       }
     ],
     "colliders": [
@@ -12553,7 +17236,8 @@
     "fbxNames": [
       "LODBoxS",
       "LOD0",
-      "LOD1"
+      "LOD1",
+      "LOD2"
     ],
     "slackCm": 2.27,
     "fbx": "Assets/Art/Props/Library/Park/Tree_Pine.fbx"

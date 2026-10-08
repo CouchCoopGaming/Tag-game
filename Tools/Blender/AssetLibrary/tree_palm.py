@@ -18,7 +18,7 @@ def create():
     a.climb_note = "Trunk is round. Not a flat cling wall."
     a.vault_note = "No rail. Fronds are visual; the trunk is the blocker."
     a.loose_pivot = True
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         palm_tree(g, lod)
         a.end()

@@ -68,21 +68,44 @@ PALETTE = {
     "Lib_WoodWeather": ((0.45, 0.38, 0.28), 0.0, 0.18),
     "Lib_Lamp": ((1.0, 0.86, 0.55), 0.0, 0.90),
     "Lib_Window": ((0.14, 0.20, 0.26), 0.04, 0.82),
+    "Lib_WindowLit": ((0.55, 0.36, 0.16), 0.0, 0.40),
+    "Lib_PaintCream": ((0.86, 0.78, 0.66), 0.0, 0.32),
+    "Lib_PaintTeal": ((0.10, 0.36, 0.40), 0.0, 0.30),
+    "Lib_Interior": ((0.18, 0.13, 0.10), 0.0, 0.45),
+    "Lib_CourtDecal": ((0.16, 0.16, 0.17), 0.0, 0.18),
+    "Lib_Bark": ((0.34, 0.24, 0.14), 0.0, 0.22),
+    "Lib_MetalWorn": ((0.42, 0.40, 0.38), 0.55, 0.28),
+    "Lib_CraneYellow": ((0.78, 0.62, 0.16), 0.15, 0.32),
 }
 
 # Blender emission (color, strength). Unity gets the same color on _EmissionColor.
 EMISSIVE = {
     "Lib_Lamp": ((1.0, 0.75, 0.38), 8.0),
     "Lib_Window": ((0.55, 0.75, 0.90), 0.22),
+    "Lib_WindowLit": ((1.0, 0.68, 0.32), 0.20),
 }
 
 # Grayscale-or-color albedo multiplied is baked as full color. UV is meters.
 TEXTURED = (
     "Lib_Brick", "Lib_Asphalt", "Lib_Wood", "Lib_WoodDark", "Lib_Concrete",
     "Lib_Siding", "Lib_Roof", "Lib_Soil", "Lib_Hydrant", "Lib_WoodWeather",
+    "Lib_CourtDecal", "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue",
+    "Lib_CraneYellow",
 )
-NORMALS = ("Lib_Brick", "Lib_Water")
-ROUGHNESS = ("Lib_Brick", "Lib_Hydrant", "Lib_WoodWeather", "Lib_Asphalt", "Lib_Wood")
+NORMALS = (
+    "Lib_Brick", "Lib_Water", "Lib_Concrete", "Lib_Wood", "Lib_WoodDark",
+    "Lib_Asphalt", "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue",
+    "Lib_CraneYellow",
+)
+ROUGHNESS = (
+    "Lib_Brick", "Lib_Hydrant", "Lib_WoodWeather", "Lib_Asphalt", "Lib_Wood",
+    "Lib_WoodDark", "Lib_Concrete", "Lib_Bark", "Lib_MetalWorn",
+    "Lib_ContainerRed", "Lib_ContainerBlue", "Lib_CraneYellow",
+)
+AO = (
+    "Lib_Brick", "Lib_Concrete", "Lib_Wood", "Lib_WoodDark", "Lib_Asphalt",
+    "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue", "Lib_CraneYellow",
+)
 
 # Modular street kit. Straight tiles are ROAD_W wide and TILE_L long.
 # Tops: road 0.12 m, sidewalk 0.27 m (15 cm curb). Pivot is ground center.
@@ -273,6 +296,9 @@ class Geo:
         for v in src.verts:
             vmap[v] = self.bm.verts.new(v.co)
         self.bm.verts.index_update()
+        src_uv = None
+        if uv_scale < 0 and src.loops.layers.uv:
+            src_uv = src.loops.layers.uv.active
         for f in src.faces:
             try:
                 nf = self.bm.faces.new([vmap[v] for v in f.verts])
@@ -281,6 +307,9 @@ class Geo:
             nf.material_index = mi
             nf.smooth = True
             nf[self.scale_layer] = uv_scale
+            if src_uv is not None:
+                for loop, src_loop in zip(nf.loops, f.loops):
+                    loop[self.uv].uv = src_loop[src_uv].uv[:]
         src.free()
 
     def _finish_src(self, bm, bevel, segs):
@@ -524,6 +553,19 @@ class Geo:
         bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
         self._ingest(bm, mat, 1.0)
 
+    def quad(self, verts, faces, uvs, mat):
+        """Unity-space verts with authored UVs. Skips the meter projection."""
+        bm = bmesh.new()
+        uv_layer = bm.loops.layers.uv.new("UVMap")
+        bverts = [bm.verts.new(unity_to_blender(*v)) for v in verts]
+        for face in faces:
+            nf = bm.faces.new([bverts[i] for i in face])
+            for loop in nf.loops:
+                idx = bverts.index(loop.vert)
+                loop[uv_layer].uv = uvs[idx]
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+        self._ingest(bm, mat, -1.0)
+
     def mesh(self, verts, faces, mat, uv_scale=1.0, bevel=0.0, segs=0):
         """verts are Unity-space. faces are index tuples (quads preferred)."""
         bm = bmesh.new()
@@ -564,7 +606,11 @@ class Geo:
 
     def _assign_uvs(self):
         for f in self.bm.faces:
-            scale = f[self.scale_layer] or 1.0
+            scale = f[self.scale_layer]
+            if scale < 0:
+                continue
+            if not scale:
+                scale = 1.0
             n = f.normal
             nu = Vector(blender_to_unity(n.x, n.y, n.z))
             if nu.length:
@@ -761,6 +807,33 @@ def _link_image(nt, bsdf, path, socket, non_color=False):
     return tex
 
 
+def _multiply_ao(nt, bsdf, path):
+    """Darken the albedo by the baked occlusion so mortar and cracks read in stills."""
+    tex = nt.nodes.new("ShaderNodeTexImage")
+    tex.image = bpy.data.images.load(path)
+    try:
+        tex.image.colorspace_settings.name = "Non-Color"
+    except (TypeError, AttributeError):
+        pass
+    mix = nt.nodes.new("ShaderNodeMix")
+    mix.data_type = "RGBA"
+    mix.blend_type = "MULTIPLY"
+    mix.inputs["Factor"].default_value = 0.85
+    base = bsdf.inputs["Base Color"]
+    src = None
+    for link in list(nt.links):
+        if link.to_socket == base:
+            src = link.from_socket
+            nt.links.remove(link)
+            break
+    if src is not None:
+        nt.links.new(src, mix.inputs["A"])
+    else:
+        mix.inputs["A"].default_value = tuple(base.default_value)
+    nt.links.new(tex.outputs["Color"], mix.inputs["B"])
+    nt.links.new(mix.outputs["Result"], base)
+
+
 def _ensure_materials():
     for name, (color, metal, smooth) in PALETTE.items():
         mat = bpy.data.materials.get(name)
@@ -792,6 +865,9 @@ def _ensure_materials():
             nmap.inputs["Strength"].default_value = 1.2
             nt.links.new(tex.outputs["Color"], nmap.inputs["Color"])
             nt.links.new(nmap.outputs["Normal"], bsdf.inputs["Normal"])
+        ao_path = os.path.join(TEX_DIR, name + "_AO.png")
+        if name in AO and os.path.isfile(ao_path):
+            _multiply_ao(nt, bsdf, ao_path)
         if name in EMISSIVE:
             emit, strength = EMISSIVE[name]
             color_socket = "Emission Color" if "Emission Color" in bsdf.inputs else "Emission"
@@ -1164,17 +1240,15 @@ def _water_normal_pixel(x, y, w, h):
 
 
 def generate_textures():
+    from _court_decal import render as render_court
+    from _bake_pbr import bake_all
+    render_court(os.path.join(TEX_DIR, "Lib_CourtDecal.png"))
+    bake_all()
     _reset_scene()
     w = h = 256
-    _save_image("Lib_Brick", w, h, _brick_pixel)
-    _save_image("Lib_Brick_N", w, h, _brick_normal_pixel)
-    _save_image("Lib_Brick_R", w, h, lambda x, y, W, H: _generic_rough_pixel(x, y, W, H, 41, 0.72))
-    _save_image("Lib_Asphalt", w, h, _asphalt_pixel)
-    _save_image("Lib_Asphalt_R", w, h, lambda x, y, W, H: _generic_rough_pixel(x, y, W, H, 42, 0.84))
-    _save_image("Lib_Wood", w, h, lambda x, y, W, H: _wood_pixel(x, y, W, H, False))
-    _save_image("Lib_Wood_R", w, h, lambda x, y, W, H: _generic_rough_pixel(x, y, W, H, 43, 0.62))
-    _save_image("Lib_WoodDark", w, h, lambda x, y, W, H: _wood_pixel(x, y, W, H, True))
-    _save_image("Lib_Concrete", w, h, _concrete_pixel)
+    # Siding, roof, soil, hydrant, and weathered dock planks stay on the
+    # small procedural tiles. Brick, concrete, wood, asphalt, bark, and the
+    # worn metals are the node-baked sets from _bake_pbr.
     _save_image("Lib_Siding", w, h, _siding_pixel)
     _save_image("Lib_Roof", w, h, _roof_pixel)
     _save_image("Lib_Soil", w, h, _soil_pixel)
@@ -1188,7 +1262,10 @@ def generate_textures():
 def load_asset_modules():
     if ROOT not in sys.path:
         sys.path.insert(0, ROOT)
-    skip = {"_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "write_unity", "_kit"}
+    skip = {
+        "_common", "build_all", "render_pass1", "render_pass2", "render_pass3", "render_pass4",
+        "write_unity", "_kit",
+    }
     names = []
     for fn in sorted(os.listdir(ROOT)):
         if not fn.endswith(".py"):

@@ -44,7 +44,7 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 0.0645, z: 0}
+  m_LocalReferencePoint: {x: 0, y: 0.063, z: 0}
   m_Size: 22
   m_FadeMode: 0
   m_AnimateCrossFading: 0
@@ -72,7 +72,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Park"
-  summary: "Street full court, 22 m by 12 m. Both ends have a 3.66 m lane, a 5.79 m free-throw, and a 6.75 m arc. Paint has no collider."
+  summary: "Street full court, 22 m by 12 m. One decal carries the FIBA paint scaled to the slab: boundary, center line, center circle, and at each end a lane, free-throw circle, restricted arc, and a 3-point arc that meets the corner lines. Lines are 5 cm. No collider on the paint."
   climbable: 0
   vaultable: 0
   vaultHeightMeters: 0
@@ -145,8 +145,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 3a513732d7a96e6b4713c7c1e0ed008e, type: 2}
-  - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
-  - {fileID: 2100000, guid: 0dd9daa587e6f6f55edfab0056506943, type: 2}
+  - {fileID: 2100000, guid: 3b19ce5c41b35c6c342a73fd39e1086d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -237,8 +236,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 3a513732d7a96e6b4713c7c1e0ed008e, type: 2}
-  - {fileID: 2100000, guid: b47c340ca201ae754a5835c14bb84ad8, type: 2}
-  - {fileID: 2100000, guid: 0dd9daa587e6f6f55edfab0056506943, type: 2}
+  - {fileID: 2100000, guid: 3b19ce5c41b35c6c342a73fd39e1086d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

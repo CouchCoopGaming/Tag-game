@@ -39,10 +39,10 @@ def build_container(name, length, color, blurb):
         # Corner posts.
         for x in (-width * 0.5 + 0.06, width * 0.5 - 0.06):
             for z in (-length * 0.5 + 0.06, length * 0.5 - 0.06):
-                g.box((x, height * 0.5, z), (0.12, height, 0.12), "Lib_SteelDark", bevel=bev, segs=1)
+                g.box((x, height * 0.5, z), (0.12, height, 0.12), "Lib_MetalWorn", bevel=bev, segs=1)
         # Top and bottom rails.
         for y in (0.06, height - 0.06):
-            g.box((0, y, 0), (width, 0.10, length), "Lib_SteelDark", uv_scale=0.5)
+            g.box((0, y, 0), (width, 0.10, length), "Lib_MetalWorn", uv_scale=0.5)
         ribs = lod_pick(lod, 18 if length < 8 else 32, 8 if length < 8 else 14, 0)
         if ribs:
             _ribs(g, length, width, height, ribs, color)
@@ -78,8 +78,8 @@ def _ribs(g, length, width, height, count, color, shift=0.0, scale=1.0):
 
 def _doors(g, length, width, height, lod, bev):
     z = length * 0.5 - 0.02
-    g.box((-width * 0.22, height * 0.48, z), (width * 0.42, height * 0.82, 0.04), "Lib_SteelDark", bevel=bev, segs=1, uv_scale=0.6)
-    g.box((width * 0.22, height * 0.48, z), (width * 0.42, height * 0.82, 0.04), "Lib_SteelDark", bevel=bev, segs=1, uv_scale=0.6)
+    g.box((-width * 0.22, height * 0.48, z), (width * 0.42, height * 0.82, 0.04), "Lib_MetalWorn", bevel=bev, segs=1, uv_scale=0.6)
+    g.box((width * 0.22, height * 0.48, z), (width * 0.42, height * 0.82, 0.04), "Lib_MetalWorn", bevel=bev, segs=1, uv_scale=0.6)
     if lod < 2:
         for x in (-0.18, 0.18):
             g.box((x, height * 0.48, z + 0.03), (0.035, height * 0.86, 0.03), "Lib_Steel", bevel=bev, segs=1)

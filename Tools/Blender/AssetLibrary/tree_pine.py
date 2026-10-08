@@ -13,7 +13,7 @@ def create():
     a = Asset("Tree_Pine", "Park", "Pine. Trunk to about 3.4 m, branch whorls, and a narrow crown of needle clusters.")
     a.climb_note = "Trunk is round. Not a flat cling wall."
     a.vault_note = "No rail. The crown is visual; the trunk is the blocker."
-    for lod in (0, 1):
+    for lod in (0, 1, 2):
         g = a.begin(lod)
         pine_tree(g, lod)
         a.end()

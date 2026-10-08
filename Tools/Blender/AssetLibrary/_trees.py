@@ -5,18 +5,30 @@ import math
 from _common import lod_pick
 
 
-def _cluster(g, center, radius, mat, seg, count=3):
-    offsets = (
-        (0.0, 0.0, 0.0),
-        (0.42, 0.12, 0.18),
-        (-0.36, -0.08, 0.22),
-        (0.12, 0.16, -0.40),
-    )
+# Scattered so the crown has holes. Outer clumps sit a little lower than the joint.
+_SEEDS = (
+    (0.12, 0.16, 0.04),
+    (0.82, -0.10, 0.30),
+    (-0.76, -0.18, 0.24),
+    (0.28, 0.02, -0.86),
+    (-0.36, 0.08, -0.74),
+    (0.04, -0.28, 0.78),
+    (-0.90, -0.34, -0.16),
+    (0.64, -0.30, -0.28),
+)
+
+
+def _cluster(g, center, radius, mat, seg, count=6, droop=0.12):
     for i in range(count):
-        ox, oy, oz = offsets[i]
+        ox, oy, oz = _SEEDS[i % len(_SEEDS)]
+        rad = radius * (0.42 if i % 3 == 0 else 0.32)
         g.sphere(
-            (center[0] + ox * radius, center[1] + oy * radius, center[2] + oz * radius),
-            radius * (0.92 if i == 0 else 0.72),
+            (
+                center[0] + ox * radius,
+                center[1] + oy * radius * 0.55 - droop * (0.4 + (i % 4) * 0.15),
+                center[2] + oz * radius,
+            ),
+            rad,
             mat,
             seg,
         )
@@ -35,21 +47,23 @@ def _fork(g, a, b, radius, mat, seg, children=()):
 
 def shade_trunk(g, lod, height, base_r, top_r):
     seg = lod_pick(lod, 10, 7)
-    g.cylinder((0, 0.06, 0), base_r * 1.25, 0.12, "Lib_WoodDark", seg)
-    g.cone((0, height * 0.5, 0), base_r, top_r, height, "Lib_WoodDark", seg)
+    g.cylinder((0, 0.06, 0), base_r * 1.25, 0.12, "Lib_Bark", seg)
+    g.cone((0, height * 0.5, 0), base_r, top_r, height, "Lib_Bark", seg)
     return seg
 
 
 def broadleaf(g, lod, spec):
     """spec: list of (start, end, radius, cluster_r, mat)."""
     seg = shade_trunk(g, lod, spec["trunk"][0], spec["trunk"][1], spec["trunk"][2])
-    cseg = lod_pick(lod, 6, 5)
-    count = 3 if lod == 0 else 2
+    cseg = lod_pick(lod, 6, 5, 4)
+    count = lod_pick(lod, 6, 3, 2)
     for start, end, radius, cr, mat in spec["limbs"]:
         if lod > 0 and cr < 0.34:
             continue
-        _fork(g, start, end, radius, "Lib_WoodDark", seg)
-        _cluster(g, end, cr, mat, cseg, count)
+        if lod > 1 and cr < 0.46:
+            continue
+        _fork(g, start, end, radius, "Lib_Bark", seg)
+        _cluster(g, end, cr, mat, cseg, count, droop=0.08 + cr * 0.12)
 
 
 def pine_tree(g, lod):
@@ -66,8 +80,11 @@ def pine_tree(g, lod):
         for i in range(n):
             ang = (i / float(n)) * math.tau + y
             tip = (math.cos(ang) * reach, y + 0.15, math.sin(ang) * reach)
-            g.pipe((0, y - 0.15, 0), tip, 0.025, "Lib_WoodDark", max(4, seg - 4))
-            _cluster(g, (tip[0], tip[1] + 0.05, tip[2]), cr, mat, cseg, 2 if lod == 0 else 1)
+            g.pipe((0, y - 0.15, 0), tip, 0.025, "Lib_Bark", max(4, seg - 4))
+            _cluster(
+                g, (tip[0], tip[1] - 0.02, tip[2]), cr * 0.85, mat, cseg,
+                lod_pick(lod, 4, 2, 1), droop=0.06 + cr * 0.08,
+            )
     # Small dark tip. Not a pale cap.
     _cluster(g, (0, 4.15, 0), 0.22, "Lib_FoliageDark", cseg, 2)
 
@@ -79,13 +96,13 @@ def palm_tree(g, lod):
     trunk and separate fronds, not a round canopy. The lower trunk is one cone
     so the collider sits in a single closed volume.
     """
-    seg = lod_pick(lod, 8, 6)
-    g.cone((0.04, 1.20, 0.02), 0.16, 0.09, 2.4, "Lib_WoodDark", seg)
+    seg = lod_pick(lod, 8, 6, 5)
+    g.cone((0.04, 1.20, 0.02), 0.16, 0.09, 2.4, "Lib_Bark", seg)
     crown_base = (0.18, 2.45, 0.04)
     crown = (0.48, 4.2, 0.1)
-    g.pipe(crown_base, crown, 0.065, "Lib_WoodDark", seg)
-    fronds = 8 if lod == 0 else 5
-    blades = 4 if lod == 0 else 2
+    g.pipe(crown_base, crown, 0.065, "Lib_Bark", seg)
+    fronds = lod_pick(lod, 8, 5, 4)
+    blades = lod_pick(lod, 4, 2, 2)
     for i in range(fronds):
         ang = math.tau * i / fronds
         mat = "Lib_PalmDry" if i % 4 == 0 else "Lib_Palm"
