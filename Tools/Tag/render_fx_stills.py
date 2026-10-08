@@ -56,16 +56,20 @@ RIG_PAIRS = {
     )
 }
 POSE_ADDED = []
+FAIL_DEPTH = {}
 
 
 def note_added(label):
     for name in FAIL_NAMES:
+        depth_cm = round(FAIL_DEPTH.get(name, 0.0) * 100.0, 2)
         if "|" not in name:
+            print("POSE-WORLD", label, name, depth_cm)
             continue
         if frozenset(name.split("|")) in RIG_PAIRS:
+            print("POSE-RIG", label, name, depth_cm)
             continue
-        POSE_ADDED.append((label, name))
-        print("POSE-ADD", label, name)
+        POSE_ADDED.append((label, name, depth_cm))
+        print("POSE-ADD", label, name, depth_cm)
 
 
 def rad(deg):
@@ -76,6 +80,13 @@ def set_euler(arm, name, xdeg, ydeg, zdeg):
     bone = arm.pose.bones[name]
     bone.rotation_mode = "XYZ"
     bone.rotation_euler = Euler((rad(xdeg), rad(ydeg), rad(zdeg)), "XYZ")
+
+
+def set_zxy(arm, name, xdeg, ydeg, zdeg):
+    """Blender ZXY matches Quaternion.Euler: Z, then X, then Y."""
+    bone = arm.pose.bones[name]
+    bone.rotation_mode = "ZXY"
+    bone.rotation_euler = Euler((rad(xdeg), rad(ydeg), rad(zdeg)), "ZXY")
 
 
 def clear_pose(arm):
@@ -142,32 +153,38 @@ def roll_sample():
 
 
 def pose_roll(arm):
+    """LandingRollPose.RollAt(0.15/0.52) with shoulderLeft false.
+
+    Bone signs are the FBX map, not a clearance pose: this rig's toes point
+    −Y, so a Unity forward thigh is a negative X and a Unity knee bend is a
+    positive X. Quaternion.Euler is ZXY. The bank is BankDegrees, about 49°.
+    """
     global POSE_BANK
     s = roll_sample()
-    # RollAt(0.15/0.52) banks onto the shoulder. The raw tuck (thigh ~84,
-    # knee ~-114, elbows ~-100) drives the limbs through the chest on this
-    # rig, so the same shape is opened until those pairs clear: knees stay
-    # up, thighs stay in, arms sit beside the ribs instead of inside them.
-    leg(arm, "L", 42.0, 76.0, -32.0)
-    leg(arm, "R", 34.0, 68.0, -32.0)
-    set_euler(arm, "UpperArm_L", 10.0, 0.0, -32.0)
-    set_euler(arm, "LowerArm_L", -12.0, 0.0, 0.0)
-    set_euler(arm, "UpperArm_R", 10.0, 0.0, 32.0)
-    set_euler(arm, "LowerArm_R", -12.0, 0.0, 0.0)
-    set_euler(arm, "Hips", s["hip"] * 0.85, 0.0, 0.0)
-    set_euler(arm, "Spine", s["spine"] * 0.55, 0.0, s["spine_roll"] * 0.45)
-    set_euler(arm, "Head", s["head"] * 0.7, 0.0, 0.0)
-    axis = Vector((0.62, 0.78, -0.10))
+    set_zxy(arm, "UpperLeg_L", -s["thigh_l"], 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_L", -s["knee_l"], 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_R", -s["thigh_r"], 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_R", -s["knee_r"], 0.0, 0.0)
+    set_zxy(arm, "UpperArm_L", s["pitch_l"], s["yaw_l"], 0.0)
+    set_zxy(arm, "LowerArm_L", s["elbow_l"], 0.0, 0.0)
+    set_zxy(arm, "UpperArm_R", s["pitch_r"], s["yaw_r"], s["roll_r"])
+    set_zxy(arm, "LowerArm_R", s["elbow_r"], 0.0, 0.0)
+    set_zxy(arm, "Hips", s["hip"], 0.0, 0.0)
+    set_zxy(arm, "Spine", s["spine"], 0.0, -s["spine_roll"])
+    set_zxy(arm, "Head", -s["head"], 0.0, 0.0)
+    # Unity axis (right, up, forward) = (0.62, −0.10, 0.78). On this FBX
+    # right is −X, up is +Z, forward is −Y, and Unity's angle is left-handed.
+    axis = Vector((0.62, 0.78, 0.10))
     axis.normalize()
-    # Authored bank at this time is ~49°. On this FBX that leaves the shoulder
-    # a meter up. The same axis at 110° puts the shoulder and the head down
-    # and keeps the hips above them, which is the roll the still has to show.
-    POSE_BANK = Quaternion(axis, rad(110.0))
+    POSE_BANK = Quaternion(axis, rad(s["bank"]))
     print(
-        "ROLL",
-        "u", round(0.15 / 0.52, 3),
-        "bank", 110, "authored", round(s["bank"], 1),
-        "knee", 76, "authored_knee", round(s["knee_l"], 1),
+        "ROLL_RUNTIME",
+        "t", 0.15, "dur", 0.52,
+        "u", round(0.15 / 0.52, 4),
+        "bank", round(s["bank"], 2),
+        "thigh", round(s["thigh_l"], 1), round(s["thigh_r"], 1),
+        "knee", round(s["knee_l"], 1), round(s["knee_r"], 1),
+        "elbow", round(s["elbow_l"], 1), round(s["elbow_r"], 1),
     )
 
 
@@ -237,33 +254,46 @@ def wall_run_angles():
         "spine": 12.0,
         "head": -4.0,
         "lean": -20.0,
+        # ApplyWallSample writes this on top of the sample. gaitW at 9.5
+        # dominates runVis, so the A-pose roll is Lerp(4, 8, PoseWeight).
+        "arm_z": 4.0 + 4.0 * weight,
     }
 
 
 def pose_wall(arm):
-    # WallPose.Run(+1, wallLeft). Legs are the clip. The inner yaw is 36°.
-    # On this FBX the arm's local Y is the bone, so that yaw is written on
-    # local -Z, the axis that carries the hand out to the wall. Elbows open
-    # just enough for the forearm to clear the upper arm. The clip's spine
-    # lean rolls the shoulder into the wall here, so the hip takes the roll
-    # that plants the foot past the shoulder.
+    """WallPose.Run(+1, wallLeft) through ApplyWallSample.
+
+    No wall-run clip is on this lane. The game poses RunCycle at phase 3π/2.
+    Thigh and knee X are flipped to this FBX (toes point −Y). LeanZ stays
+    −20. The inner yaw stays on Euler Y. Elbows stay −18 and the outer blend.
+    """
     a = wall_run_angles()
-    leg(arm, "L", a["thigh_l"], -a["knee_l"])
-    leg(arm, "R", a["thigh_r"], -a["knee_r"])
-    set_euler(arm, "Foot_L", -a["foot_l"], 0.0, 0.0)
-    set_euler(arm, "Foot_R", -a["foot_r"], 0.0, 0.0)
-    set_euler(arm, "UpperArm_L", a["pitch_l"], 0.0, -a["yaw_l"])
-    set_euler(arm, "LowerArm_L", a["elbow_l"] + 8.0, 0.0, 0.0)
-    arm_pose(arm, "R", a["pitch_r"], -a["yaw_r"], a["elbow_r"] + 24.0, 0.0, 0.0)
-    set_euler(arm, "Hips", a["hip"], 0.0, 50.0)
-    set_euler(arm, "Spine", 6.0, 0.0, -6.0)
-    set_euler(arm, "Head", a["head"], 0.0, -3.0)
+    z = a["arm_z"]
+    set_zxy(arm, "UpperLeg_L", -a["thigh_l"], 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_L", -a["knee_l"], 0.0, 0.0)
+    set_zxy(arm, "Foot_L", -a["foot_l"], 0.0, 0.0)
+    set_zxy(arm, "UpperLeg_R", -a["thigh_r"], 0.0, 0.0)
+    set_zxy(arm, "LowerLeg_R", -a["knee_r"], 0.0, 0.0)
+    set_zxy(arm, "Foot_R", -a["foot_r"], 0.0, 0.0)
+    set_zxy(arm, "UpperArm_L", a["pitch_l"], a["yaw_l"], z)
+    set_zxy(arm, "LowerArm_L", a["elbow_l"], 0.0, 0.0)
+    set_zxy(arm, "UpperArm_R", a["pitch_r"], a["yaw_r"], -z)
+    set_zxy(arm, "LowerArm_R", a["elbow_r"], 0.0, 0.0)
+    hip_z = -a["lean"] * 0.45
+    head_z = -a["lean"] * 0.25
+    set_zxy(arm, "Hips", a["hip"], 0.0, -hip_z)
+    set_zxy(arm, "Spine", a["spine"], 0.0, -a["lean"])
+    set_zxy(arm, "Head", -a["head"], 0.0, -head_z)
     print(
-        "WALL_CLIP",
+        "WALL_RUNTIME",
+        "phase", "3pi/2",
         "thigh", round(a["thigh_l"], 1), round(a["thigh_r"], 1),
+        "knee", round(a["knee_l"], 1), round(a["knee_r"], 1),
         "pitch", round(a["pitch_l"], 1), round(a["pitch_r"], 1),
         "yaw", round(a["yaw_l"], 1), round(a["yaw_r"], 1),
-        "elbow", round(a["elbow_l"] + 8.0, 1), round(a["elbow_r"] + 24.0, 1),
+        "elbow", round(a["elbow_l"], 1), round(a["elbow_r"], 1),
+        "hip", a["hip"], "spine", a["spine"], "lean", a["lean"],
+        "armZ", round(z, 2),
     )
 
 
@@ -450,7 +480,7 @@ FAIL_NAMES = []
 
 
 def measure(arm, solids):
-    global FAIL_NAMES
+    global FAIL_NAMES, FAIL_DEPTH
     bpy.context.view_layer.update()
     packed = pack_body()
     joined = neighbours(arm)
@@ -459,6 +489,7 @@ def measure(arm, solids):
     fails = 0
     worst_pair = ""
     FAIL_NAMES = []
+    FAIL_DEPTH = {}
     for i in range(len(packed)):
         obj_a, bone_a, tree_a, verts_a, polys_a = packed[i]
         for obj_s, tree_s in solids:
@@ -468,7 +499,9 @@ def measure(arm, solids):
                 worst_pair = obj_a.name + ">" + obj_s.name
             if depth > DEPTH_LIMIT:
                 fails += 1
-                FAIL_NAMES.append(obj_a.name + ">" + obj_s.name)
+                world_name = obj_a.name + ">" + obj_s.name
+                FAIL_NAMES.append(world_name)
+                FAIL_DEPTH[world_name] = depth
                 if os.environ.get("FX_PAIRS") == "1":
                     print("WORLD", obj_a.name, obj_s.name, round(depth * 100.0, 2))
         for j in range(i + 1, len(packed)):
@@ -483,7 +516,11 @@ def measure(arm, solids):
                 worst_pair = obj_a.name + "|" + obj_b.name
             if depth > DEPTH_LIMIT:
                 fails += 1
-                FAIL_NAMES.append(obj_a.name + "|" + obj_b.name)
+                pair_name = obj_a.name + "|" + obj_b.name
+                FAIL_NAMES.append(pair_name)
+                prev = FAIL_DEPTH.get(pair_name, 0.0)
+                if depth > prev:
+                    FAIL_DEPTH[pair_name] = depth
                 if os.environ.get("FX_PAIRS") == "1":
                     print("PAIR", obj_a.name, obj_b.name, round(depth * 100.0, 2))
     return self_max, world_max, fails, worst_pair
@@ -860,25 +897,21 @@ def scuff_mat():
     return mat
 
 
-def wall_fx(contact, normal):
-    # Dust leaves the planted foot, on the face, and trails back along the run.
+def wall_cluster(name, contact, normal, count, size):
+    # Scuff speed is the 9.5 m/s wall run, smaller than the roll burst.
     trail = -WALL_TRAVEL if WALL_TRAVEL.length > 0.5 else Vector((-1.0, 0.0, 0.0))
     bitangent = trail.cross(normal)
     if bitangent.length < 0.2:
         bitangent = Vector((0.0, 0.0, 1.0))
     bitangent.normalize()
-    on_face = contact - normal * 0.008
-    foot_z = contact.z
-    for i in range(4):
-        pos = on_face + trail * (0.04 + i * 0.14) + bitangent * ((i - 1.5) * 0.05)
-        pos.z = foot_z + (i % 2) * 0.015
-        obj = add_cloud("FxPuffScuff%d" % i, pos, 0.22 + (i % 2) * 0.06, (0.34, 0.28, 0.20, 1.0), 0.55)
+    on_face = contact - normal * 0.01
+    for i in range(count):
+        along = (i - (count - 1) * 0.5) * 0.07
+        side = ((i % 3) - 1) * 0.045
+        pos = on_face + trail * along + bitangent * side
+        pos += normal * (-0.004 * (i % 2))
+        obj = add_cloud("%s%d" % (name, i), pos, size * (0.9 + 0.15 * (i % 2)), DUST, 0.62)
         obj.rotation_euler = normal.to_track_quat("-Z", "Y").to_euler()
-    for i in range(4):
-        pos = on_face - normal * (0.02 + (i % 2) * 0.015) + trail * (i * 0.10)
-        pos += bitangent * ((i - 1.5) * 0.04)
-        pos.z = foot_z + 0.02
-        add_cloud("FxPuffFoot%d" % i, Vector(pos), 0.26 + (i % 2) * 0.08, DUST, 0.7)
 
 
 def ground_mat():
@@ -1192,17 +1225,51 @@ def build_land(arm, solids):
     return solids
 
 
-def build_roll(arm, solids):
-    contact = Vector((arm.location.x, arm.location.y, 0.02))
-    best = None
+FX_FOCUS = Vector((0.0, 0.0, 0.05))
+
+
+def iter_body_verts():
     for obj in body_meshes():
         verts, _polys = mesh_world(obj)
         for v in verts:
-            if best is None or v.z < best.z:
-                best = v
-    if best is not None:
-        contact = Vector((best.x, best.y, 0.02))
+            yield obj.name, v
+
+
+def dump_bones(arm, label):
+    for name in ("Head", "Shoulder_L", "Shoulder_R", "Hips", "Hand_L", "Hand_R", "Foot_L", "Foot_R"):
+        p = bone_pos(arm, name, tail=(name == "Head"))
+        print(label, name, round(p.x, 3), round(p.y, 3), round(p.z, 3))
+
+
+def build_roll(arm, solids):
+    global FX_FOCUS
+    dump_bones(arm, "ROLL_BONE")
+    band = []
+    low = None
+    for name, v in iter_body_verts():
+        if low is None or v.z < low:
+            low = v.z
+        band.append((name, v))
+    touch = [(name, v) for name, v in band if v.z <= low + 0.025]
+    if not touch:
+        touch = [(band[0][0], Vector((0.0, 0.0, 0.02)))]
+    acc = Vector((0.0, 0.0, 0.0))
+    names = {}
+    for name, v in touch:
+        acc += v
+        names[name] = names.get(name, 0) + 1
+    contact = acc / len(touch)
+    contact.z = 0.02
+    FX_FOCUS = contact.copy()
+    # Roll burst is the heavier impact: five puffs, wider than a hard land.
     dust_puffs(contact, 5, 0.95, 0.62, DUST)
+    print(
+        "ROLL_CONTACT",
+        "low_z", round(low, 3),
+        "n", len(touch),
+        "at", round(contact.x, 3), round(contact.y, 3),
+        "meshes", ",".join("%s:%d" % (k, names[k]) for k in sorted(names)),
+    )
     return solids
 
 
@@ -1292,24 +1359,19 @@ def build_wall(arm, solids):
     bpy.context.view_layer.update()
     foot = bpy.data.objects.get("Mesh_Foot_L")
     verts, _polys = mesh_world(foot)
-    hips = bone_pos(arm, "Hips")
-    foot_r = bone_pos(arm, "Foot_R")
-    foot_c = Vector((
-        sum(v.x for v in verts) / len(verts),
-        sum(v.y for v in verts) / len(verts),
-        sum(v.z for v in verts) / len(verts),
-    ))
-    # Stride runs along the wall. The wall is the character's left, from the left shoulder.
-    travel = Vector((foot_r.x - foot_c.x, foot_r.y - foot_c.y, 0.0))
-    if travel.length < 0.05:
+    # Rest pose: toes −Y, character left +X. The armature yaw is the facing.
+    # A stride does not move the wall; WallLeft keeps it on that side.
+    rot = arm.matrix_world.to_quaternion()
+    normal = rot @ Vector((1.0, 0.0, 0.0))
+    normal.z = 0.0
+    if normal.length < 0.2:
+        normal = Vector((0.0, 1.0, 0.0))
+    normal.normalize()
+    travel = rot @ Vector((0.0, -1.0, 0.0))
+    travel.z = 0.0
+    if travel.length < 0.2:
         travel = Vector((1.0, 0.0, 0.0))
     travel.normalize()
-    side = foot_c - hips
-    side.z = 0.0
-    side = side - travel * side.dot(travel)
-    if side.length < 0.02:
-        side = Vector((-travel.y, travel.x, 0.0))
-    normal = side.normalized()
     face = max(v.x * normal.x + v.y * normal.y for v in verts) + 0.002
     center = normal * (face + 0.16)
     center.z = 1.35
@@ -1324,17 +1386,50 @@ def build_wall(arm, solids):
     WALL_NORMAL = normal
     WALL_TRAVEL = travel
     planted = max(verts, key=lambda v: v.x * normal.x + v.y * normal.y)
-    wall_fx(planted, normal)
+    # The wall sits on the planted foot, which is where the game emits scuff.
+    # Any other mesh through that plane is a real contact too.
+    groups = {}
+    for name, v in iter_body_verts():
+        depth = v.x * normal.x + v.y * normal.y - (face - 0.002)
+        if depth < -0.008:
+            continue
+        acc, n, deep = groups.get(name, (Vector((0.0, 0.0, 0.0)), 0, -1.0))
+        groups[name] = (acc + v, n + 1, deep if deep > depth else depth)
+    ranked = sorted(groups.items(), key=lambda item: item[1][2], reverse=True)
+    contacts = []
+    for name, (acc, n, deep) in ranked:
+        center = acc / n
+        center = center - normal * (center.x * normal.x + center.y * normal.y - (face - 0.002))
+        contacts.append((name, center, deep))
+        print("WALL_CONTACT", name, "n", n, "depth_cm", round(deep * 100.0, 2),
+              "at", round(center.x, 3), round(center.y, 3), round(center.z, 3))
+    if not contacts:
+        contacts = [("Mesh_Foot_L", planted, 0.0)]
+    # One cluster on the deepest contact, one on the foot when that is a
+    # different mesh. Five puffs total, sized under the roll burst.
+    primary = contacts[0]
+    wall_cluster("FxPuffHit", primary[1], normal, 3, 0.42)
+    foot_hit = next((c for c in contacts if "Foot" in c[0]), None)
+    if foot_hit is not None and foot_hit[0] != primary[0]:
+        wall_cluster("FxPuffFoot", foot_hit[1], normal, 2, 0.28)
+    elif len(contacts) > 1:
+        wall_cluster("FxPuffFoot", contacts[1][1], normal, 2, 0.26)
+    else:
+        wall_cluster("FxPuffFoot", primary[1], normal, 2, 0.28)
+    global FX_FOCUS
+    FX_FOCUS = primary[1].copy()
+    dump_bones(arm, "WALL_BONE")
     head = bone_pos(arm, "Head", tail=True)
     hips = bone_pos(arm, "Hips")
     foot_r = bone_pos(arm, "Foot_R")
+    foot_l = bone_pos(arm, "Foot_L")
     hand_l = bone_pos(arm, "Hand_L")
     up = head - hips
     print(
         "WALL_POSE",
         "head", round(head.x, 2), round(head.y, 2), round(head.z, 2),
         "hips", round(hips.x, 2), round(hips.y, 2), round(hips.z, 2),
-        "footL", round(foot_c.x, 2), round(foot_c.y, 2), round(foot_c.z, 2),
+        "footL", round(foot_l.x, 2), round(foot_l.y, 2), round(foot_l.z, 2),
         "footR", round(foot_r.x, 2), round(foot_r.y, 2), round(foot_r.z, 2),
         "handL", round(hand_l.x, 2), round(hand_l.y, 2), round(hand_l.z, 2),
         "up", round(up.x, 2), round(up.y, 2), round(up.z, 2),
@@ -1343,41 +1438,49 @@ def build_wall(arm, solids):
     return solids
 
 
-def frame_wall_side(cam, arm):
-    # Open side of the wall, so the upright body is in profile and the face is behind the plant.
-    mn, mx = body_bounds()
-    height = max(mx.z - mn.z, 1.55)
-    center = (mn + mx) * 0.5
-    lens = 36.0
+def frame_on_contact(cam, view, dist, lens):
+    focus = FX_FOCUS.copy()
     cam.data.type = "PERSP"
     cam.data.lens = lens
-    cam.data.clip_start = 0.04
-    cam.data.clip_end = 40.0
-    aspect = RES_Y / float(RES_X)
-    tan_v = (18.0 / lens) * aspect
-    dist = (height / 0.62) * 0.5 / tan_v
-    # In front of the chest and above the hip, so the lens sees the shell
-    # of the pelvis and not the open socket.
-    view = (-WALL_NORMAL * 0.30 + WALL_TRAVEL * 0.68 + Vector((0.0, 0.0, 0.58))).normalized()
-    cam.location = center + view * dist
-    look_at(cam, center + Vector((0.0, 0.0, 0.05)))
+    cam.data.clip_start = 0.02
+    cam.data.clip_end = 30.0
+    cam.location = focus + view.normalized() * dist
+    look_at(cam, focus)
     bpy.context.view_layer.update()
     aim_billboards(cam.location)
+    from bpy_extras.object_utils import world_to_camera_view
+
+    scene = bpy.context.scene
+    for obj in bpy.data.objects:
+        if not obj.name.startswith("FxPuff"):
+            continue
+        co = world_to_camera_view(scene, cam, obj.location)
+        print("PUFF", obj.name, round(co.x, 3), round(co.y, 3), round(obj.scale.x, 3))
+    print("FRAME", round(body_frame_fraction(cam), 3), "dist", round(dist, 2), "lens", lens)
+
+
+def frame_roll_contact(cam, arm):
+    # Low and close on the foot. The torso crops; the puffs stay in frame.
+    view = Vector((0.22, -0.90, 0.16))
+    frame_on_contact(cam, view, 1.05, 28.0)
+
+
+def frame_wall_side(cam, arm):
+    # Graze the face so the scuff sits on the wall and the body stays to the side.
+    view = -WALL_NORMAL * 0.46 + WALL_TRAVEL * 0.78 + Vector((0.0, 0.0, 0.24))
+    frame_on_contact(cam, view, 1.05, 28.0)
 
 
 def frame_wall_top(cam, arm):
-    # Plan view. Screen up is the wall normal, so the planted foot meets the face.
-    mn, mx = body_bounds()
+    # Plan view tight on the contact. Screen up is the wall normal.
     normal = WALL_NORMAL
     travel = WALL_TRAVEL
-    up = travel.cross(normal)
-    if up.z < 0.0:
+    if travel.cross(normal).z < 0.0:
         travel = -travel
-    center = (mn + mx) * 0.5
-    span = max(mx.x - mn.x, mx.y - mn.y, 1.2) * 1.55
+    center = FX_FOCUS.copy()
     cam.data.type = "ORTHO"
     cam.data.sensor_fit = "HORIZONTAL"
-    cam.data.ortho_scale = max(span, span / (RES_Y / float(RES_X)) * 0.85)
+    cam.data.ortho_scale = 0.95
     cam.data.clip_start = 0.01
     cam.data.clip_end = 40.0
     cam.matrix_world = Matrix((
@@ -1387,6 +1490,7 @@ def frame_wall_top(cam, arm):
         (0.0, 0.0, 0.0, 1.0),
     ))
     bpy.context.view_layer.update()
+    print("FRAME", "top", round(body_frame_fraction(cam), 3))
 
 
 def frame_grapple_shoulder(cam, arm):
@@ -1621,7 +1725,7 @@ def main():
     cam = setup_world(arm)
     shots = [
         ("landing-impact", pose_land, 24, 0.0, build_land, None),
-        ("landing-roll", pose_roll, 28, 0.0, build_roll, None),
+        ("landing-roll", pose_roll, 28, 0.0, build_roll, frame_roll_contact),
         ("grapple-shoulder", pose_grapple, -12, 0.0, build_grapple, frame_grapple_shoulder),
         ("grapple-side", pose_grapple, -12, 0.0, build_grapple, frame_grapple_side),
         ("immunity-glow", pose_run, 20, 0.0, build_immune, None),
