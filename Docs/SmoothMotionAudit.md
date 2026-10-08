@@ -150,20 +150,53 @@ The joystick axes in the input manager used a per-axis deadzone of 0.19 and pass
 
 Mouse look is still the delta times sensitivity. There is no look smoothing and no mouse acceleration. Gamepad look has an accel curve that stays off (`lookAccel=0`). Turning it up eases small deflections and keeps a full stick at full speed. Inner deadzone, outer deadzone, the stick curve, and look accel are stored on `GameSettings` and in the settings blob (`stickInner`, `stickOuter`, `stickCurve`, `lookAccel`). The blob version stays 2, so an older file keeps these defaults. The pause menu still has 19 rows. The options screen can grow those rows later.
 
-Items 2–9 still do not fit this pass. A short stride stays on the exponential slew. Kill-box snaps stay instant. Exit poses, the landing roll, landing tiers, and particles stay with the anim-fx lane. A capsule-mounted locomotor still skips mesh yaw. An unbound mannequin still skips the visual offset. The vault capsule still teleports on the last mantle frame. Air dash is still 0.10 s with the pose arriving over 0.06 s. Landing still waits one sample so a hop can cancel the thud.
+Items 2–9 were left for a later pass. Exit poses, the landing roll, landing tiers, and particles stay with the anim-fx lane.
 
 `response-latency kb=0 mouse=0 pad=0 look=0 beforeKb=0 beforeMouse=1 beforePad=0 beforeLook=1 read=-200 cam=-100 motor=0 vsync=1 rate=-1 fixed=0.02`
 
 `stick-quality diag=1.000 card=1.000 ramp=0.012 axialHole=0 inner=0.19 outer=1 curve=1 lookAccel=0`
 
+## Pass 7
+
+Feet, a blink on a kill-box, the vault exit, and mesh yaw. Speeds, jump, coyote, and the other locked numbers are unchanged. One `CharacterController.Move` per Update. No root motion.
+
+A planted sole was shorter than the step at the retuned speeds. Walk and sprint already had a play cadence that covers 6.9 and 13.8. Crouch already had its own cadence at 3.68. The proof cadence stays capped, and that cap is the "before" measurement. Wall-run cadence stays 26.50, locked to the gait cap, so the planted foot got longer instead: the inner swing stays tucked, the stance uses the full step, and the trailing thigh adds 2.2°. A strafe or a backpedal still shortens the swing. The foot that is down keeps the full step. Steps at or under about 33° stay on the exponential slew.
+
+Centimeters of slip per planted foot, before then after:
+
+| Verb | Speed | Before | After |
+|---|---|---|---|
+| Walk | 6.9 | 11.4 cm | 0.0 cm |
+| Sprint | 13.8 | 51.7 cm | 0.0 cm |
+| Crouch | 3.68 | 61.7 cm | 0.0 cm |
+| Wall run | 9.5 | 30.2 cm | 0.0 cm |
+
+`foot-slide walk=11.4>0.0 sprint=51.7>0.0 crouch=61.7>0.0 wall=30.2>0.0 gameplayDelay=0 rootMotion=0`
+
+A kill-plane fall and a practice restart still move the capsule on that frame. The mesh hides for 0.12 s and comes back, and the camera boom dips to 0.35 of its distance and eases out. Gallery resets, round start, and a safe spawn do not blink. Field of view, shake, and gameplay `slowMo` stay 0.
+
+`respawn-blink hide=1.00 back=0.00 open=0.35 seconds=0.12 gameplayInstant=1`
+
+The vault still lasts `mantleDuration` and still leaves at the speed you had on entry, at least the walk speed. The arc used to finish a full push past the lip, then the last frame wrote a quarter of that push and the body jumped backward about 0.71 m. The arc now ends on that stand point, so the last write is the point the body is already on. The transition matrix no longer has a root pop. Worst pose is still air → punch, 228.8° down to 17.4°. Worst root is a zero pair, ground → air, 0.000 m. `over=0`.
+
+Landing on the same frame the ground is detected is not safe. `BunnyHopPose.Absorb(false, 0)` is 0 and `Absorb(false, 0.05)` is 1. A hop inside one sample (`ChainSeconds` is 1/60) must skip the thud. Playing the land on the grounding frame would play that thud into the hop. The wait stays.
+
+Gallery mannequins and in-game mannequins already build a Hier visual (`DummyVisual_*`, or the Hier FBX, or the primitive fallback). The locomotor on the capsule yaws, bobs, and blinks that child. The capsule heading stays the camera yaw. A fast turn counter-rotates the mesh on that frame and eases it back over 0.10 s, so a 180 does not spin the mesh with the capsule. A pawn with no visual child and no limb rig still has nothing to turn. That case does not rotate the capsule.
+
+Air dash stays 0.10 s. The pose still arrives over 0.06 s. The first pose is still the press frame. The slew stays 2800. Exit poses, the landing roll, landing tiers, and particles stay with the anim-fx lane.
+
+Stick figures are in `Docs/SmoothStills/pass7/plant-blink-yaw.png`. Twelve rows, eight frames: walk, sprint, wall plant, vault exit, blink, and yaw. Before, then after.
+
+`loco-polish`, `body-life`, `response-latency`, and `stick-quality` are unchanged. `runRate` stays 26.50. Enemy, pocket, and stack AI lines are unchanged. Hot-path allocs stay 0. Frame budget stays steady=ok.
+
 ## TODO still open
 
-1. Done this pass. Small `LookRotation` steps ease. Large steps still snap with the mouse.
-2. A stride step at or under about 33° stays on the exponential gait slew. Do not spring that step or the feet lag. A verb-sized gap on the same slew is a different case and uses the wide spring from pass 4.
-3. Kill-box and other `Place` calls still snap the mesh. They should. Do not ease a respawn across the park.
-4. Wall-cling marks, slide scrape, dash ribbons, dust, and any new particle are the anim-fx lane (`cursor/tag-anim-fx`). That lane also owns the exit animation of each verb and the landing roll.
-5. If the locomotor sits on the capsule instead of a child, the mesh yaw is skipped so it cannot fight the camera yaw. Those pawns still snap their facing with the camera.
-6. An unbound mannequin (no limb rig) does not run the visual offset. The pill is hidden, but a failed bind would still pop.
-7. The vault capsule still teleports on the last mantle frame (`transform.position` plus the one Move). The mesh hides it. Folding that write into the Move would move the capsule, which can move the AI lines. Leave it.
+1. Done in pass 6. Small `LookRotation` steps ease. Large steps still snap with the mouse.
+2. Done this pass for the skate. A stride step at or under about 33° stays on the exponential gait slew. Do not spring that step or the feet lag.
+3. Done this pass. A kill-plane or practice restart blinks the mesh and the boom. The capsule still teleports. Do not ease a respawn across the park.
+4. Wall-cling marks, slide scrape, dash ribbons, dust, and any new particle are the anim-fx lane (`cursor/tag-anim-fx`). That lane also owns the exit animation of each verb, the landing roll, and landing tiers.
+5. Done this pass. Visual yaw eases on the Hier child. The capsule heading stays exact.
+6. A mannequin with no Hier child and no limb rig still has no mesh to ease. The capsule is not rotated to fake it.
+7. Done this pass. The vault arc ends on the stand point. Duration and exit speed are unchanged.
 8. Air dash is 0.10 s long and the pose arrives over 0.06 s. The first visible pose is still the press frame. Do not put the slew back to 2800.
-9. Landing still waits one sample so a hop can cancel the thud. That is not input delay. Leave it unless the hop and the land both read wrong.
+9. Landing still waits one sample. `Absorb(false, 0)` stays 0 so a hop inside 1/60 s skips the thud. Same-frame land is not safe.

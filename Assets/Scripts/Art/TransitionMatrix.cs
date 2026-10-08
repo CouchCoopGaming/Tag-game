@@ -271,10 +271,10 @@ namespace Tag.Art
             return false;
         }
 
-        /// <summary>Mantle and vault exit write the capsule, then the mesh eases. Other pairs do not pop the root.</summary>
+        /// <summary>The vault arc ends on the stand point, so the exit write is not a pop.</summary>
         static float RootPop(int from, int to)
         {
-            if (to == 0 && (from == 10 || from == 11)) return 0.71f;
+            if (to == 0 && (from == 10 || from == 11)) return 0f;
             return 0f;
         }
 
