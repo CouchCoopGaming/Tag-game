@@ -1614,7 +1614,9 @@ def _facing_euler(spec, trunk):
         return Euler((math.radians(min(float(trunk), 16.0)), 0.0, 0.0), "XYZ")
     if verb == "wallrun":
         pitch = min(max(float(trunk), 6.0), 16.0)
-        return Euler((math.radians(pitch), 0.0, math.radians(-15.0)), "XYZ")
+        # +90 yaw puts a foot on the wall face and leaves the chest off it.
+        # -15 left the hand on the face and both feet in the air.
+        return Euler((math.radians(pitch), 0.0, math.radians(90.0)), "XYZ")
     if verb == "walljump":
         return Euler((math.radians(6.0), math.radians(10.0), math.radians(-76.0)), "XYZ")
     return Euler((math.radians(12.0), 0.0, math.radians(-74.0)), "XYZ")

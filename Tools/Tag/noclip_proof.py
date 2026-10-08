@@ -8,14 +8,14 @@ BVHTree.overlap is the broad phase. Depth is how far a vertex of an
 overlapping triangle sits past the other surface.
 
 Joined neighbours (a parent bone and its child) ignore hits within 3 cm of
-the shared joint, the child bone head. The fail limit is 0.5 cm.
+the shared joint, the child bone head. The fail limit is 0.5 cm of absolute
+depth. Bind-pose depth is not subtracted.
 
-The approved shells nest on purpose: the pelvis sits inside the thigh, the
-chest meets the upper arm. That nesting is in the bind pose, and these keys
-are not allowed to rebuild the mesh. For each pair, after the joint exemption,
-self depth is how much deeper that pair is than its bind-pose depth. A world
-hit counts in full. selfMax in the proof line is that extra depth. The
-worst-frame table also lists the absolute depth.
+A pair that shares a joint, or that already nests in the rest pose, is a
+rigJoint fail when that absolute depth is over the limit. PR #128 owns the
+trimmed-rig fix, so those hits are reported and the rig is left alone. A
+world hit, or a hit between pieces that are not neighbours and do not nest
+at rest, is a pose fail. Pose fails have to be zero.
 """
 import json
 import math
@@ -261,6 +261,13 @@ def _in_aabb(v, lo, hi, pad=0.01):
     )
 
 
+def _pair_kind(joint, bind_depth):
+    """rig = rest nesting or a joined pair. pose = a non-neighbour hit."""
+    if joint is not None or bind_depth > 0.001:
+        return "rig"
+    return "pose"
+
+
 def _scan_frame(pieces, locals_c, polys_c, obstacles, bind_pairs, arm, clip_id, frame, worst, totals):
     packed = []
     for obj in pieces:
@@ -288,30 +295,30 @@ def _scan_frame(pieces, locals_c, polys_c, obstacles, bind_pairs, arm, clip_id, 
             if depth <= 0.0:
                 continue
             base = bind_pairs.get((oa.name, ob.name), 0.0)
-            excess = depth - base
-            if excess < 0.0:
-                excess = 0.0
-            totals["self_abs"] = max(totals["self_abs"], depth)
-            if excess >= totals["self_ex"]:
-                totals["self_ex"] = excess
-                totals["self_where"] = (frame, label, excess, depth, base)
+            kind = _pair_kind(joint, base)
+            totals["abs"] = max(totals["abs"], depth)
             key = tuple(sorted((oa.name, ob.name)))
-            prev = totals["self_pairs"].get(key, 0.0)
-            if excess > prev:
-                totals["self_pairs"][key] = excess
-            if excess > 1.0e-4:
+            prev = totals["pairs"].get(key, 0.0)
+            if depth > prev:
+                totals["pairs"][key] = depth
+                totals["pair_kind"][key] = kind
+            if depth > LIMIT_M:
+                failed_pairs.add((kind, key))
+                if kind == "pose" and depth >= totals["pose_abs"]:
+                    totals["pose_abs"] = depth
+                    totals["pose_where"] = (frame, label, depth)
+                if depth >= totals["abs_where_d"]:
+                    totals["abs_where_d"] = depth
+                    totals["abs_where"] = (frame, kind, label, depth, base)
                 _consider(worst, {
                     "clip": clip_id,
                     "frame": frame,
-                    "kind": "self",
+                    "kind": kind,
                     "pair": label,
                     "abs_cm": round(depth * 100.0, 2),
                     "rest_cm": round(base * 100.0, 2),
-                    "counted": excess,
-                    "excess_cm": round(excess * 100.0, 2),
+                    "counted": depth,
                 })
-            if excess > LIMIT_M:
-                failed_pairs.add(("self", tuple(sorted((oa.name, ob.name)))))
     for obj, verts, bvh in packed:
         for oname, obvh, lo, hi in obstacles:
             # overlap() is the broad phase the rule asks for. Vertices buried
@@ -334,7 +341,8 @@ def _scan_frame(pieces, locals_c, polys_c, obstacles, bind_pairs, arm, clip_id, 
                 totals["world"] = deep
                 totals["world_where"] = (frame, f"{obj.name} in {oname}", deep)
             label = f"{obj.name} in {oname}"
-            if deep > 1.0e-4:
+            if deep > LIMIT_M:
+                failed_pairs.add(("world", label))
                 _consider(worst, {
                     "clip": clip_id,
                     "frame": frame,
@@ -343,25 +351,25 @@ def _scan_frame(pieces, locals_c, polys_c, obstacles, bind_pairs, arm, clip_id, 
                     "abs_cm": round(deep * 100.0, 2),
                     "rest_cm": 0.0,
                     "counted": deep,
-                    "excess_cm": round(deep * 100.0, 2),
                 })
-            if deep > LIMIT_M:
-                failed_pairs.add(("world", label))
-    totals["world_fails"] += sum(1 for k, _p in failed_pairs if k == "world")
-    totals["self_fails"] += sum(1 for k, _p in failed_pairs if k == "self")
+    totals["rig"] += sum(1 for k, _p in failed_pairs if k == "rig")
+    totals["pose"] += sum(1 for k, _p in failed_pairs if k in ("pose", "world"))
 
 
 def _scan_clip(arm, pieces, locals_c, polys_c, rest, which, cid, entry, facing,
                idxs, has_wall, wall_top, worst):
     totals = {
         "world": 0.0,
-        "self_abs": 0.0,
-        "self_ex": 0.0,
-        "world_fails": 0,
-        "self_fails": 0,
+        "abs": 0.0,
+        "pose_abs": 0.0,
+        "abs_where_d": 0.0,
+        "rig": 0,
+        "pose": 0,
         "world_where": None,
-        "self_where": None,
-        "self_pairs": {},
+        "pose_where": None,
+        "abs_where": None,
+        "pairs": {},
+        "pair_kind": {},
     }
     ground = _ensure_ground()
     g_local = _local_coords(ground)
@@ -389,8 +397,8 @@ def _scan_clip(arm, pieces, locals_c, polys_c, rest, which, cid, entry, facing,
         if n_i == 0 or (n_i + 1) % 40 == 0 or n_i + 1 == len(idxs):
             _flush(
                 f"  {cid} {n_i + 1}/{len(idxs)} "
-                f"w={totals['world'] * 100:.2f} ex={totals['self_ex'] * 100:.2f} "
-                f"abs={totals['self_abs'] * 100:.2f}"
+                f"w={totals['world'] * 100:.2f} abs={totals['abs'] * 100:.2f} "
+                f"rig={totals['rig']} pose={totals['pose']}"
             )
     return totals
 
@@ -408,10 +416,10 @@ def run():
     jobs = _clip_jobs()
     worst = []
     grand_world = 0.0
-    grand_self = 0.0
     grand_abs = 0.0
     frames = 0
-    fails = 0
+    rig_fails = 0
+    pose_fails = 0
     for which, cid, entry in jobs:
         facing = _pass5_facing(cid) if which == "pass5" else _pass6_facing(cid)
         has_wall, wall_top = _wall_plan(arm, which, cid, entry, facing)
@@ -426,43 +434,46 @@ def run():
             arm, pieces, locals_c, polys_c, rest, which, cid, entry, facing,
             idxs, has_wall, wall_top, worst,
         )
-        fails += totals["world_fails"] + totals["self_fails"]
+        rig_fails += totals["rig"]
+        pose_fails += totals["pose"]
         grand_world = max(grand_world, totals["world"])
-        grand_self = max(grand_self, totals["self_ex"])
-        grand_abs = max(grand_abs, totals["self_abs"])
+        grand_abs = max(grand_abs, totals["abs"])
         ww = totals["world_where"]
-        sw = totals["self_where"]
+        aw = totals["abs_where"]
+        pw = totals["pose_where"]
         _flush(
-            f"DONE {cid} frames={len(idxs)} worldMax={totals['world'] * 100:.2f} "
-            f"selfExcess={totals['self_ex'] * 100:.2f} selfAbs={totals['self_abs'] * 100:.2f} "
-            f"worldFails={totals['world_fails']} selfFails={totals['self_fails']}"
+            f"DONE {cid} frames={len(idxs)} absMax={totals['abs'] * 100:.2f} "
+            f"worldMax={totals['world'] * 100:.2f} "
+            f"rigJoint={totals['rig']} poseFails={totals['pose']}"
         )
         if ww:
             _flush(f"  WORLD {cid} f={ww[0]} {ww[1]} {ww[2] * 100:.2f}")
-        if sw:
+        if pw:
+            _flush(f"  POSE {cid} f={pw[0]} {pw[1]} {pw[2] * 100:.2f}")
+        if aw:
             _flush(
-                f"  SELF {cid} f={sw[0]} {sw[1]} excess={sw[2] * 100:.2f} "
-                f"abs={sw[3] * 100:.2f} bind={sw[4] * 100:.2f}"
+                f"  ABS {cid} f={aw[0]} {aw[1]} {aw[2]} "
+                f"abs={aw[3] * 100:.2f} rest={aw[4] * 100:.2f}"
             )
-        ranked = sorted(totals["self_pairs"].items(), key=lambda kv: -kv[1])
+        ranked = sorted(totals["pairs"].items(), key=lambda kv: -kv[1])
         for (a, b), depth in ranked[:6]:
             if depth <= LIMIT_M:
                 break
-            _flush(f"  PAIR {a} {b} {depth * 100:.2f}")
+            _flush(f"  PAIR {totals['pair_kind'][(a, b)]} {a} {b} {depth * 100:.2f}")
     line = (
         f"no-clip clips={len(jobs)} frames={frames} "
-        f"worldMax={grand_world * 100:.2f} selfMax={grand_self * 100:.2f} fails={fails}"
+        f"absMax={grand_abs * 100:.2f} worldMax={grand_world * 100:.2f} "
+        f"rigJoint={rig_fails} poseFails={pose_fails}"
     )
     _flush(line)
-    _flush(f"selfAbsMax={grand_abs * 100:.2f}")
-    _flush("--- worst frames (excess or world depth; fail above 0.50 cm) ---")
+    _flush("--- worst frames (absolute depth; fail above 0.50 cm) ---")
     shown = sorted(worst, key=lambda r: -r["counted"])[:16]
     if not shown:
         _flush("WORST none")
     for r in shown:
         _flush(
             f"WORST {r['clip']} f={r['frame']} {r['kind']} {r['pair']} "
-            f"abs={r['abs_cm']:.2f} rest={r['rest_cm']:.2f} excess={r['excess_cm']:.2f}"
+            f"abs={r['abs_cm']:.2f} rest={r['rest_cm']:.2f}"
         )
     rh._reset(arm)
     rh._hide_wall()

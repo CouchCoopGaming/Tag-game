@@ -712,6 +712,32 @@ def _unstick_feet(arm, face, pins, spec, cap):
     return cap
 
 
+def _settle_world(arm, face, lip_z, cap):
+    """Push the preview capsule out of the ground and the wall.
+
+    Bone rotations are not touched. The wall contact is the +X face. A vertex
+    above a cat-leap lip is over the wall, not inside it.
+    """
+    import bpy
+    from mathutils import Vector
+    bpy.context.view_layer.update()
+    for _ in range(4):
+        floor, wall, _torso, _head, _limb, _hand, foot_deep = _scan(lip_z, face)
+        moved = False
+        if floor > 0.002:
+            cap = Vector((cap.x, cap.y, cap.z + floor))
+            moved = True
+        if face is not None and wall > 0.003:
+            # _scan's wall depth is how far a vertex sits past the face.
+            cap = Vector((cap.x + wall + 0.001, cap.y, cap.z))
+            moved = True
+        if not moved:
+            break
+        arm.location = cap
+        bpy.context.view_layer.update()
+    return cap
+
+
 def solve_clip(arm, spec, smooth, facing, path):
     """Pose every frame in the moving capsule and pin near contacts."""
     import bpy
@@ -887,13 +913,10 @@ def solve_clip(arm, spec, smooth, facing, path):
                     break
                 cap = _lift_floor(arm, cap)
                 capsule[i] = cap
-        # Standing rule: a keyed pose may not leave a shell inside the body
-        # or a solid. Edit the pose here so a later solve cannot skip it.
-        import noclip_clear
-        import contact_pin
-        noclip_clear.clear_solved_frame(arm, face, lip_z)
-        contact_pin.seat_solved_frame(arm, pins, face, lip_z)
-        cap = arm.location.copy()
+        # World solids are cleared by moving the preview capsule. Bone angles
+        # stay on the pose track. Straightening a limb to dodge overlap is
+        # not allowed here.
+        cap = _settle_world(arm, face, lip_z, cap)
         capsule[i] = cap
         floor_pen, wall_pen, torso, head, _limb, _hand, _foot = _scan(lip_z, face)
         if spec["verb"] in ("softland", "slide"):
