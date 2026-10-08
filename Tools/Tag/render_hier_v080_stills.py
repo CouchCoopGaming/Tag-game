@@ -17,7 +17,11 @@ sys.path.insert(0, HERE)
 OUT = "/workspace/Docs/HierStills/v080"
 PREV = "/tmp/hier_v080_stills"
 OLD_FBX = "/tmp/hier_v078_tan.fbx"
+PASS4_OLD_FBX = "/tmp/hier_v079g_tan.fbx"
 NEW_BLEND = "/tmp/Dummy_Mannequin_Hier_Hi_v080_Tan.blend"
+PASS4 = os.path.join(OUT, "pass4")
+# Keyed clips do not translate the armature or the Root bone.
+LOCK_ROOT = False
 
 # Same camera for old and new so the composite is one scale.
 CAMS = {
@@ -695,6 +699,8 @@ def _square_feet(arm):
 
 def _lift_feet(arm, floor):
     import bpy
+    if LOCK_ROOT:
+        return
     z = _mesh_min_z(lambda n: "Foot" in n)
     if z is not None and z < floor:
         arm.location.z += floor - z
@@ -857,6 +863,10 @@ def _hook_fingers(arm, face, top):
 
 def _cap_root(arm):
     import bpy
+    if LOCK_ROOT:
+        arm.location = (0.0, 0.0, 0.0)
+        bpy.context.view_layer.update()
+        return
     if abs(arm.location.x) > ROOT_SLIDE_MAX:
         arm.location.x = max(-ROOT_SLIDE_MAX, min(ROOT_SLIDE_MAX, arm.location.x))
         bpy.context.view_layer.update()
@@ -888,13 +898,13 @@ def _seat_foot(arm, spec, contact_bone, contact_z):
     import bpy
     _object_mode(arm)
     pivot = _bone_world(arm, contact_bone)
-    if pivot is not None:
+    if pivot is not None and not LOCK_ROOT:
         arm.location.z += contact_z - pivot.z
         bpy.context.view_layer.update()
     _lift_feet(arm, 0.10)
     _lean_until_clear(arm, contact_bone)
     pivot = _bone_world(arm, contact_bone)
-    if pivot is not None:
+    if pivot is not None and not LOCK_ROOT:
         arm.location.z += contact_z - pivot.z
         bpy.context.view_layer.update()
     _cap_root(arm)
@@ -1571,7 +1581,7 @@ def _plant(arm):
             z = (mw @ v.co).z
             if lowest is None or z < lowest:
                 lowest = z
-    if lowest is None:
+    if lowest is None or LOCK_ROOT:
         return
     arm.location.z -= lowest
     bpy.context.view_layer.update()
@@ -1597,12 +1607,451 @@ def _apply_eulers(arm, eulers):
     bpy.context.view_layer.update()
 
 
+def _facing_euler(spec, trunk):
+    from mathutils import Euler
+    verb = spec["verb"]
+    if verb == "softland":
+        return Euler((math.radians(min(float(trunk), 16.0)), 0.0, 0.0), "XYZ")
+    if verb == "wallrun":
+        pitch = min(max(float(trunk), 6.0), 16.0)
+        return Euler((math.radians(pitch), 0.0, math.radians(-15.0)), "XYZ")
+    if verb == "walljump":
+        return Euler((math.radians(6.0), math.radians(10.0), math.radians(-76.0)), "XYZ")
+    return Euler((math.radians(12.0), 0.0, math.radians(-74.0)), "XYZ")
+
+
+def _apply_curve(arm, smooth, u, facing):
+    """Bone rotations from the joint curves. The armature stays at the origin."""
+    import bpy
+    import storror_pose as sp
+    ch = sp.sample_raw(smooth, u)
+    pose = sp.unity_pose(ch)
+    _apply_eulers(arm, sp.blender_euler(pose))
+    arm.location = (0.0, 0.0, 0.0)
+    arm.rotation_euler = facing
+    root = arm.pose.bones.get("Root")
+    if root is not None:
+        root.location = (0.0, 0.0, 0.0)
+    bpy.context.view_layer.update()
+    return pose
+
+
+def _foot_probe(side):
+    """Min-x and min-z vertices of one foot mesh."""
+    import bpy
+    _ensure_object()
+    deps = bpy.context.evaluated_depsgraph_get()
+    token = f"Foot_{side}"
+    min_x = at_x = min_z = at_z = None
+    for obj in bpy.data.objects:
+        if not _body_mesh(obj) or token not in obj.name:
+            continue
+        ev = obj.evaluated_get(deps)
+        mw = ev.matrix_world
+        for v in ev.data.vertices:
+            w = mw @ v.co
+            if min_x is None or w.x < min_x:
+                min_x = w.x
+                at_x = w.copy()
+            if min_z is None or w.z < min_z:
+                min_z = w.z
+                at_z = w.copy()
+    return min_x, at_x, min_z, at_z
+
+
+def _plant_side(spec, pose):
+    if spec["verb"] == "wallrun":
+        return "L" if abs(pose["knee_l"]) <= abs(pose["knee_r"]) else "R"
+    if spec["verb"] == "walljump":
+        return "L" if pose["thigh_l"] >= pose["thigh_r"] else "R"
+    return None
+
+
+def _skate(pts):
+    """How far a planted contact wanders, in metres. pts are (along, across)."""
+    if len(pts) < 2:
+        return 0.0, 0.0
+    step = 0.0
+    for a, b in zip(pts, pts[1:]):
+        step = max(step, math.hypot(b[0] - a[0], b[1] - a[1]))
+    span = math.hypot(max(p[0] for p in pts) - min(p[0] for p in pts),
+                      max(p[1] for p in pts) - min(p[1] for p in pts))
+    return span, step
+
+
+def _measure_clip(arm, spec, smooth, facing):
+    """Foot slide and penetration of the in-place curve against a fixed contact."""
+    import storror_pose as sp
+    n = len(smooth["knee_flex_L"])
+    hero_u, hero_i = sp.hero_u(spec["id"], smooth)
+    _apply_curve(arm, smooth, hero_u, facing)
+    hero_pose = sp.unity_pose(sp.sample_raw(smooth, hero_u))
+    side = _plant_side(spec, hero_pose)
+    probes = {s: _foot_probe(s) for s in ("L", "R")}
+    if spec["verb"] == "softland":
+        face = None
+        top = None
+        kind = "ground"
+    else:
+        if side is None:
+            xs = [probes[s][0] for s in ("L", "R") if probes[s][0] is not None]
+            face = sum(xs) / len(xs) if xs else 0.0
+        else:
+            face = probes[side][0] if probes[side][0] is not None else 0.0
+        top = _head_crown() if spec["verb"] == "cling" else None
+        kind = "cling" if spec["verb"] == "cling" else "foot"
+    series = {s: [] for s in ("L", "R")}
+    pen = {s: 0.0 for s in ("L", "R")}
+    gap = {s: 1.0e6 for s in ("L", "R")}
+    palm_pen = 0.0
+    for i in range(n):
+        u = 0.0 if n <= 1 else i / (n - 1)
+        _apply_curve(arm, smooth, u, facing)
+        for s in ("L", "R"):
+            min_x, at_x, min_z, at_z = _foot_probe(s)
+            if spec["verb"] == "softland":
+                if min_z is None:
+                    continue
+                depth = -min_z
+                near = abs(min_z) <= 0.04
+                series[s].append((near, at_z.x, at_z.y))
+                gap[s] = min(gap[s], abs(min_z))
+            else:
+                if min_x is None or face is None:
+                    continue
+                depth = face - min_x
+                near = abs(min_x - face) <= 0.04
+                series[s].append((near, at_x.y, at_x.z))
+                gap[s] = min(gap[s], abs(min_x - face))
+            if depth > pen[s]:
+                pen[s] = depth
+        if spec["verb"] == "cling" and face is not None and top is not None:
+            for s in ("L", "R"):
+                _best, dist = _palm_gap(arm, s, face, top)
+                if dist is not None and -dist > palm_pen:
+                    # dist is unsigned. Penetration is the palm past the face.
+                    pass
+            for s in ("L", "R"):
+                cluster = _palm_cluster(arm, s)
+                if not cluster:
+                    continue
+                depth = max(face - v.x for v in cluster)
+                if depth > palm_pen:
+                    palm_pen = depth
+    slides = {}
+    for s in ("L", "R"):
+        planted = [(a, b) for near, a, b in series[s] if near]
+        span, step = _skate(planted)
+        slides[s] = (span, step, len(planted))
+    return {
+        "hero_u": hero_u,
+        "hero_i": hero_i,
+        "frames": n,
+        "kind": kind,
+        "side": side,
+        "face": face,
+        "top": top,
+        "pen": pen,
+        "gap": gap,
+        "slides": slides,
+        "palm_pen": palm_pen,
+        "root": (arm.location.x, arm.location.y, arm.location.z),
+    }
+
+
+def _key_clip(arm, spec, smooth, facing):
+    """Rotation keys only. No Root or armature location keys."""
+    import bpy
+    import storror_pose as sp
+    from mathutils import Euler
+    n = len(smooth["knee_flex_L"])
+    action = bpy.data.actions.new("Storror_" + spec["id"])
+    if arm.animation_data is None:
+        arm.animation_data_create()
+    arm.animation_data.action = action
+    keys = []
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode="POSE")
+    for i in range(n):
+        u = 0.0 if n <= 1 else i / (n - 1)
+        ch = sp.sample_raw(smooth, u)
+        eulers = sp.blender_euler(sp.unity_pose(ch))
+        frame = i + 1
+        bones = {}
+        for name, deg in eulers.items():
+            pb = arm.pose.bones.get(name)
+            if pb is None:
+                continue
+            pb.rotation_mode = "XYZ"
+            pb.rotation_euler = Euler(tuple(math.radians(a) for a in deg), "XYZ")
+            pb.keyframe_insert(data_path="rotation_euler", frame=frame)
+            bones[name] = [round(float(a), 2) for a in deg]
+        keys.append({"frame": i, "t": round(i / float(smooth and 1 or 1), 4), "bones": bones})
+    # Timing is the source fps. Location channels are not inserted.
+    for fc in list(action.fcurves):
+        if fc.data_path.endswith("location"):
+            action.fcurves.remove(fc)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    return action, keys
+
+
+def render_pass4_shots():
+    """Re-render the five-frame strips from the curves. Does not rebuild the keys."""
+    import bpy
+    import storror_pose as sp
+    global LOCK_ROOT
+    LOCK_ROOT = True
+    dest = os.path.join(PREV, "pass4")
+    os.makedirs(dest, exist_ok=True)
+    arm = bpy.data.objects.get("DummyArmature")
+    if arm is None:
+        raise SystemExit("Tan blend has no DummyArmature")
+    if arm.animation_data is not None:
+        arm.animation_data.action = None
+    _prepare_scene()
+    sc = bpy.context.scene
+    sc.render.resolution_x = 900
+    sc.render.resolution_y = 1200
+    if hasattr(sc, "eevee"):
+        sc.eevee.taa_render_samples = 12
+    sc.frame_set(1)
+    for spec in sp.CLIPS:
+        curves = sp.clip_curves(spec["id"], keys=24)
+        smooth = curves["raw_smooth"]
+        hero_u, hero_i = sp.hero_u(spec["id"], smooth)
+        raw = sp.load_clip(spec["id"])
+        ang = raw["joint_angles_deg"][hero_i] or {}
+        trunk = float(ang.get("trunk_lean_from_cam_vertical") or 0.0)
+        facing = _facing_euler(spec, trunk)
+        _apply_curve(arm, smooth, hero_u, facing)
+        pose = sp.unity_pose(sp.sample_raw(smooth, hero_u))
+        side = _plant_side(spec, pose) or "L"
+        if spec["verb"] == "softland":
+            _hide_wall()
+        else:
+            probes = {s: _foot_probe(s) for s in ("L", "R")}
+            if spec["verb"] == "cling":
+                xs = [probes[s][0] for s in ("L", "R") if probes[s][0] is not None]
+                face = sum(xs) / len(xs) if xs else 0.0
+                top = _head_crown()
+            else:
+                face = probes[side][0] if probes[side][0] is not None else 0.0
+                top = None
+            foot = _bone_world(arm, "Foot_" + side)
+            cy = foot.y if foot is not None else 0.0
+            _show_wall(face, top, cy, 1.40)
+            _hide_marks()
+            z_mesh = _mesh_min_z(lambda n, side=side: f"Foot_{side}" in n)
+            _show_foot_mark(face, cy, z_mesh if z_mesh is not None else 0.2, side)
+            if top is not None:
+                _show_lip_mark(face, top, cy, 0.40)
+        slug = SLUGS[spec["id"]]
+        for i, u in enumerate(_motion_us(hero_u)):
+            _apply_curve(arm, smooth, u, facing)
+            _shot(os.path.join(dest, f"{slug}_{i}.png"), *POSE_CAM)
+            _side_contact_line(spec)
+            loc, look, scale = _side_cam(arm, spec)
+            _shot(os.path.join(dest, f"{slug}_{i}_side.png"), loc, look, ortho=scale)
+            print(f"pass4 {slug} {i} u={u:.2f}")
+        _reset(arm)
+
+
+def render_pass4():
+    """Idle stills against v0.7.9g, then in-place keyed clips."""
+    import bpy
+    import json
+    import storror_pose as sp
+    global LOCK_ROOT
+    LOCK_ROOT = True
+    os.makedirs(PREV, exist_ok=True)
+    dest = os.path.join(PREV, "pass4")
+    os.makedirs(dest, exist_ok=True)
+    arm = bpy.data.objects.get("DummyArmature")
+    if arm is None:
+        raise SystemExit("Tan blend has no DummyArmature")
+    _prepare_scene()
+    _render_views(arm, "pass4_new")
+
+    sc = bpy.context.scene
+    sc.render.resolution_x = 900
+    sc.render.resolution_y = 1200
+    if hasattr(sc, "eevee"):
+        sc.eevee.taa_render_samples = 12
+    doc = {
+        "root_motion": False,
+        "note": "Bone rotation keys only. Armature location and Root location stay at the origin.",
+        "clips": {},
+    }
+    for spec in sp.CLIPS:
+        curves = sp.clip_curves(spec["id"], keys=24)
+        smooth = curves["raw_smooth"]
+        hero_u, _hero_i = sp.hero_u(spec["id"], smooth)
+        raw = sp.load_clip(spec["id"])
+        ang = raw["joint_angles_deg"][int(round(hero_u * (curves["frames"] - 1)))] or {}
+        trunk = float(ang.get("trunk_lean_from_cam_vertical") or 0.0)
+        facing = _facing_euler(spec, trunk)
+        stats = _measure_clip(arm, spec, smooth, facing)
+        action, keys = _key_clip(arm, spec, smooth, facing)
+        fps = float(curves["fps"])
+        for k in keys:
+            k["t"] = round(k["frame"] / fps, 4)
+        sides = stats["slides"]
+        plant = stats["side"] or "L"
+        span, step, nplant = sides[plant]
+        other = "R" if plant == "L" else "L"
+        ospan, ostep, onplant = sides[other]
+        line = (
+            f"CLIP id={spec['id']} frames={stats['frames']} fps={fps:.2f} "
+            f"root_cm=({stats['root'][0]*100:.2f},{stats['root'][1]*100:.2f},{stats['root'][2]*100:.2f}) "
+            f"plant={plant} slide_cm={span*100:.2f} step_cm={step*100:.2f} planted={nplant} "
+            f"other_slide_cm={ospan*100:.2f} "
+            f"pen_L_cm={stats['pen']['L']*100:.2f} pen_R_cm={stats['pen']['R']*100:.2f} "
+            f"gap_L_cm={stats['gap']['L']*100:.2f} gap_R_cm={stats['gap']['R']*100:.2f} "
+            f"palm_pen_cm={stats['palm_pen']*100:.2f} "
+            f"face={stats['face']} top={stats['top']} keys={len(keys)} action={action.name}"
+        )
+        print(line)
+        doc["clips"][spec["id"]] = {
+            "fps": fps,
+            "frames": stats["frames"],
+            "hero_frame": stats["hero_i"],
+            "plant": plant,
+            "foot_slide_cm": round(span * 100.0, 2),
+            "foot_step_cm": round(step * 100.0, 2),
+            "other_slide_cm": round(ospan * 100.0, 2),
+            "penetration_cm": {
+                "L": round(stats["pen"]["L"] * 100.0, 2),
+                "R": round(stats["pen"]["R"] * 100.0, 2),
+                "palm": round(stats["palm_pen"] * 100.0, 2),
+            },
+            "min_gap_cm": {
+                "L": round(stats["gap"]["L"] * 100.0, 2),
+                "R": round(stats["gap"]["R"] * 100.0, 2),
+            },
+            "root_cm": [0.0, 0.0, 0.0],
+            "keys": keys,
+        }
+        # Five-frame strip from the same keys. The wall stays on the hero contact.
+        _apply_curve(arm, smooth, hero_u, facing)
+        if stats["kind"] == "ground":
+            _hide_wall()
+        else:
+            cy = 0.0
+            foot = _bone_world(arm, "Foot_" + plant)
+            if foot is not None:
+                cy = foot.y
+            _show_wall(stats["face"], stats["top"], cy, 1.40)
+            _hide_marks()
+            z_mesh = _mesh_min_z(lambda n, plant=plant: f"Foot_{plant}" in n)
+            y = foot.y if foot is not None else 0.0
+            _show_foot_mark(stats["face"], y, z_mesh if z_mesh is not None else 0.2, plant)
+            if stats["top"] is not None:
+                _show_lip_mark(stats["face"], stats["top"], cy, 0.40)
+        slug = SLUGS[spec["id"]]
+        # The action would override every still with frame 1. The keys live in the action
+        # and in keyed_clips.json; the strip is posed from the same curves directly.
+        if arm.animation_data is not None:
+            arm.animation_data.action = None
+        bpy.context.scene.frame_set(1)
+        for i, u in enumerate(_motion_us(stats["hero_u"])):
+            _apply_curve(arm, smooth, u, facing)
+            _shot(os.path.join(dest, f"{slug}_{i}.png"), *POSE_CAM)
+            _side_contact_line(spec)
+            loc, look, scale = _side_cam(arm, spec)
+            _shot(os.path.join(dest, f"{slug}_{i}_side.png"), loc, look, ortho=scale)
+            print(f"pass4 {slug} {i} u={u:.2f}")
+        _reset(arm)
+        if arm.animation_data is not None:
+            arm.animation_data.action = None
+    os.makedirs(PASS4, exist_ok=True)
+    with open(os.path.join(PASS4, "keyed_clips.json"), "w") as f:
+        json.dump(doc, f)
+    print("wrote", os.path.join(PASS4, "keyed_clips.json"))
+
+    # v0.7.9g idle, same cameras, after the v0.8.0 shots are on disk.
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.fbx(filepath=PASS4_OLD_FBX, automatic_bone_orientation=False, global_scale=1.0)
+    old = None
+    for o in bpy.data.objects:
+        if o.type == "ARMATURE":
+            old = o
+            break
+    if old is None:
+        raise SystemExit("v0.7.9g FBX imported no armature")
+    _prepare_scene()
+    _render_views(old, "pass4_old")
+
+
+def composite_pass4():
+    """v0.7.9g beside v0.8.0, plus the five in-place strips."""
+    from PIL import Image, ImageDraw, ImageFont
+    import storror_pose as sp
+    os.makedirs(PASS4, exist_ok=True)
+    font = ImageFont.load_default()
+
+    def label(im, text):
+        d = ImageDraw.Draw(im)
+        d.rectangle((16, 16, 16 + 8 * len(text) + 16, 40), fill=(20, 18, 16))
+        d.text((26, 20), text, fill=(245, 236, 220), font=font)
+        return im
+
+    for name in ("front", "threequarter", "side"):
+        old = Image.open(os.path.join(PREV, f"pass4_old_{name}.png")).convert("RGB")
+        new = Image.open(os.path.join(PREV, f"pass4_new_{name}.png")).convert("RGB")
+        w, h = old.size
+        canvas = Image.new("RGB", (w * 2 + 24, h), (48, 44, 40))
+        canvas.paste(label(old, "v0.7.9g"), (0, 0))
+        canvas.paste(label(new, "v0.8.0"), (w + 24, 0))
+        path = os.path.join(PASS4, f"{name}.png")
+        canvas.save(path)
+        print("wrote", path)
+    old = Image.open(os.path.join(PREV, "pass4_old_front.png")).convert("RGB")
+    new = Image.open(os.path.join(PREV, "pass4_new_front.png")).convert("RGB")
+    tinted = []
+    for r, g, b in old.getdata():
+        tinted.append((int(r * 0.45 + 40), int(g * 0.55 + 50), int(b * 0.75 + 70)))
+    old_t = Image.new("RGB", old.size)
+    old_t.putdata(tinted)
+    over = Image.blend(old_t, new, 0.55)
+    label(over, "overlay  v0.7.9g cool  /  v0.8.0")
+    path = os.path.join(PASS4, "overlay.png")
+    over.save(path)
+    print("wrote", path)
+
+    src = os.path.join(PREV, "pass4")
+    labels = {
+        "03_wall_drop_softland": "03 soft land",
+        "04_window_drop_softland": "04 soft land",
+        "10_wallrun_slanted": "10 wall run",
+        "12_tictac_slanted_wall": "12 tic-tac",
+        "15_cat_leap_wall": "15 cat leap",
+    }
+    for spec in sp.CLIPS:
+        slug = SLUGS[spec["id"]]
+        for suffix, tag in (("", "3/4"), ("_side", "side")):
+            frames = []
+            for i in range(5):
+                frames.append(Image.open(os.path.join(src, f"{slug}_{i}{suffix}.png")).convert("RGB"))
+            w, h = frames[0].size
+            gap = 12
+            canvas = Image.new("RGB", (w * 5 + gap * 4, h), (48, 44, 40))
+            for i, im in enumerate(frames):
+                canvas.paste(im, (i * (w + gap), 0))
+            text = labels[spec["id"]] + "  " + tag + "  in place"
+            label(canvas, text)
+            path = os.path.join(PASS4, f"strip_{slug}{suffix}.png")
+            canvas.save(path)
+            print("wrote", path)
+
+
 if __name__ == "__main__":
     args = _args()
     if "--anim" in args:
         composite_anim()
     elif "--motion-composite" in args:
         composite_motion()
+    elif "--pass4-composite" in args:
+        composite_pass4()
     elif "--composite" in args or (
         "bpy" not in sys.modules
         and "--new" not in args
@@ -1610,8 +2059,14 @@ if __name__ == "__main__":
         and "--poses" not in args
         and "--solve" not in args
         and "--motion" not in args
+        and "--pass4" not in args
+        and "--pass4-shots" not in args
     ):
         composite()
+    elif "--pass4-shots" in args:
+        render_pass4_shots()
+    elif "--pass4" in args:
+        render_pass4()
     elif "--old" in args:
         render_old()
     elif "--poses" in args:
