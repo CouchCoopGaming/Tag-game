@@ -10,7 +10,7 @@ import os
 import sys
 
 import bpy
-from mathutils import Euler, Vector
+from mathutils import Euler, Matrix, Vector
 from mathutils.bvhtree import BVHTree
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -131,15 +131,17 @@ def pose_launch(arm):
 
 
 def pose_wall(arm):
-    # Positive hip pitch puts the left foot toward +Y and the chest back.
-    leg(arm, "L", 6.0, -36.0, 4.0)
-    leg(arm, "R", 18.0, -22.0, -6.0)
-    arm_pose(arm, "L", 8.0, -12.0, -6.0, 0.0)
-    arm_pose(arm, "R", -8.0, -10.0, -6.0, 0.0)
-    torso(arm, 28.0, 8.0, -6.0)
-    set_euler(arm, "Chest", 10.0, 0.0, 0.0)
-    set_euler(arm, "Hips", 28.0, 0.0, 0.0)
-    set_euler(arm, "Foot_L", 36.0, 0.0, 0.0)
+    # Hips pitched until the body is nearly horizontal: left foot leads into +Y,
+    # chest and head lean back toward -Y. Travel along +X, so a side camera
+    # sees the profile and the trailing leg.
+    leg(arm, "L", 12.0, -28.0, 8.0)
+    leg(arm, "R", 28.0, -20.0, -10.0)
+    arm_pose(arm, "L", 24.0, -22.0, -12.0, 0.0)
+    arm_pose(arm, "R", -18.0, -18.0, -10.0, 0.0)
+    torso(arm, 72.0, 8.0, -10.0)
+    set_euler(arm, "Chest", 14.0, 0.0, 0.0)
+    set_euler(arm, "Hips", 72.0, 0.0, 0.0)
+    set_euler(arm, "Foot_L", 48.0, 0.0, 0.0)
 
 
 def pose_punch(arm):
@@ -488,15 +490,17 @@ def add_puff(name, location, size, color, strength=0.4):
     return obj
 
 
-def dust_ring(origin, scale, count, color, lift=0.04):
-    # Soft discs, about 7–11 cm. Big enough to read, still smaller than a shin.
-    puff = 0.07 + 0.018 * min(scale, 1.5)
+def dust_ring(origin, ring, count, color):
+    # Soft clouds outside the shock ring, rising to about knee height.
     for i in range(count):
-        ang = i / count * math.tau
-        band = 0.18 + (i % 3) * 0.12
-        radial = band + scale * (0.10 + (i % 4) * 0.018)
-        pos = origin + Vector((math.cos(ang) * radial, math.sin(ang) * radial, lift + (i % 5) * 0.02))
-        add_puff("FxPuff%d" % i, pos, puff + (i % 4) * 0.012, color, 1.35)
+        ang = (i + 0.37 * (i % 4)) / count * math.tau
+        radial = ring * (1.22 + (i % 4) * 0.12) + 0.08
+        if radial > 1.42:
+            radial = 1.42
+        height = 0.22 + (i % 6) * 0.05
+        size = 0.28 + (i % 3) * 0.07
+        pos = origin + Vector((math.cos(ang) * radial, math.sin(ang) * radial, height))
+        add_puff("FxPuff%d" % i, pos, size, color, 1.25)
 
 
 def shockwave(origin, radius):
@@ -622,8 +626,8 @@ def rope_shimmer(hand, anchor):
         bell = 4 * t * (1 - t)
         wob = 0.028 * bell
         pts.append(hand + direction * (dist * t) + side * wob)
-    add_curve("FxRope", pts, 0.008, (1.0, 0.9, 0.55, 1), 0.75, 0.8)
-    add_curve("PropRope", [hand, anchor], 0.012, ROPE, 1.0, 0.0)
+    add_curve("FxRope", pts, 0.05, (1.0, 0.72, 0.28, 1), 0.95, 0.45)
+    add_curve("PropRope", [hand, anchor], 0.065, ROPE, 1.0, 0.04)
 
 
 def chip(name, location, size, color):
@@ -636,17 +640,21 @@ def chip(name, location, size, color):
     return obj
 
 
-def hook_fx(anchor):
-    add_puff("FxPuffSparkCore", anchor + Vector((0.0, -0.02, 0.03)), 0.09, SPARK, 3.4)
+def hook_fx(anchor, toward):
+    # Burst sits in front of the post face, on the runner's side of the hit.
+    away = toward.normalized() if toward.length > 0.001 else Vector((0.0, -1.0, 0.0))
+    core = anchor + away * 0.08 + Vector((0.0, 0.0, 0.08))
+    gold = (1.0, 0.62, 0.08, 1.0)
+    add_puff("FxPuffSparkCore", core, 0.34, gold, 2.0)
     for i in range(10):
-        ang = i / 10 * math.tau
-        spread = 0.05 + (i % 3) * 0.028
-        pos = anchor + Vector((math.cos(ang) * spread, -0.03 + math.sin(ang) * spread * 0.45, 0.02 + (i % 4) * 0.025))
-        add_puff("FxPuffSpark%d" % i, pos, 0.045 + (i % 3) * 0.012, SPARK, 2.6)
-    for i in range(5):
-        ang = i / 5 * math.tau + 0.4
-        pos = anchor + Vector((math.cos(ang) * 0.09, math.sin(ang) * 0.05, 0.02))
-        chip("FxChip%d" % i, pos, 0.02 + (i % 3) * 0.012, DUST)
+        ang = i / 10.0 * math.tau
+        spread = 0.12 + (i % 3) * 0.07
+        pos = core + away * (0.05 + (i % 3) * 0.04) + Vector((math.cos(ang) * spread, math.sin(ang) * spread * 0.45, 0.04 + (i % 4) * 0.06))
+        add_puff("FxPuffSpark%d" % i, pos, 0.14 + (i % 3) * 0.05, gold, 1.6)
+    for i in range(6):
+        ang = i / 6.0 * math.tau + 0.4
+        pos = core + away * 0.14 + Vector((math.cos(ang) * 0.22, math.sin(ang) * 0.12, (i % 3) * 0.05))
+        chip("FxChip%d" % i, pos, 0.06 + (i % 3) * 0.02, (0.45, 0.32, 0.16, 1))
 
 
 def scuff_mat():
@@ -675,23 +683,22 @@ def scuff_mat():
 
 
 def wall_fx(foot, normal):
-    # Irregular soft marks. Each one is a few faded discs, not a dark slab.
-    tint = (0.33, 0.26, 0.18, 1.0)
-    for i in range(4):
-        base = foot - Vector((0.03 + i * 0.13, 0.008, (i % 2) * 0.02))
+    # Soft marks on the wall, trailing back along the run, plus dust off the face.
+    tint = (0.40, 0.30, 0.18, 1.0)
+    for i in range(5):
+        base = foot - Vector((0.05 + i * 0.18, 0.0, (i % 2) * 0.03)) - normal * 0.015
         spec = (
-            (0.0, 0.0, 0.055, 0.95),
-            (0.04, 0.012, 0.038, 0.55),
-            (-0.018, -0.016, 0.028, 0.32),
-            (0.07, -0.006, 0.018, 0.16),
+            (0.0, 0.0, 0.10, 1.05),
+            (0.06, 0.02, 0.07, 0.7),
+            (-0.04, -0.02, 0.055, 0.45),
         )
         for k, (dx, dz, size, strength) in enumerate(spec):
-            pos = base + Vector((dx, 0.0, dz))
+            pos = base + Vector((dx, 0.0, dz)) - normal * (0.012 * k)
             obj = add_puff("FxPuffScuff%d_%d" % (i, k), pos, size, tint, strength)
-            obj.rotation_euler = Euler((rad(90), 0.0, rad(-8 + i * 6 + k * 4)), "XYZ")
+            obj.rotation_euler = Euler((rad(78), 0.0, rad(-12 + i * 7)), "XYZ")
     for i in range(8):
-        puff = foot - normal * (0.03 + (i % 3) * 0.015) - Vector((i * 0.03, 0.0, -0.02 - (i % 4) * 0.015))
-        add_puff("FxPuffFoot%d" % i, puff, 0.055 + (i % 3) * 0.015, DUST, 1.2)
+        puff = foot - normal * (0.05 + (i % 3) * 0.025) - Vector((0.04 + i * 0.09, 0.0, -0.03 - (i % 3) * 0.02))
+        add_puff("FxPuffFoot%d" % i, puff, 0.12 + (i % 3) * 0.04, DUST, 1.35)
 
 
 def ground_mat():
@@ -847,44 +854,91 @@ def aim_billboards(origin):
         obj.rotation_euler = direction.to_track_quat("Z", "Y").to_euler()
 
 
-def frame_camera(cam):
-    # 28mm on a 3/4 view. Distance grows until the padded bounds fit the
-    # vertical frame, which a 48mm lens was cropping.
-    view = Vector((0.50, -0.82, 0.24))
-    view.normalize()
-    mn, mx = bounds_of()
-    center = (mn + mx) * 0.5
-    cam.location = center + view * 3.4
-    look_at(cam, center)
-    bpy.context.view_layer.update()
-    aim_billboards(cam.location)
-    bpy.context.view_layer.update()
-    mn, mx = bounds_of()
-    if bpy.data.objects.get("PropWall") is not None:
-        mn.z = min(mn.z, 0.0)
-    pad = Vector((0.35, 0.35, 0.55))
-    mn = mn - pad
-    mx = mx + pad
-    center = (mn + mx) * 0.5
-    ext = mx - mn
-    lens = 28.0
+def body_bounds():
+    mn = Vector((1e9, 1e9, 1e9))
+    mx = Vector((-1e9, -1e9, -1e9))
+    for obj in body_meshes():
+        for corner in obj.bound_box:
+            p = obj.matrix_world @ Vector(corner)
+            mn.x = min(mn.x, p.x)
+            mn.y = min(mn.y, p.y)
+            mn.z = min(mn.z, p.z)
+            mx.x = max(mx.x, p.x)
+            mx.y = max(mx.y, p.y)
+            mx.z = max(mx.z, p.z)
+    return mn, mx
+
+
+def body_frame_fraction(cam):
+    from bpy_extras.object_utils import world_to_camera_view
+
+    scene = bpy.context.scene
+    ys = []
+    for obj in body_meshes():
+        for corner in obj.bound_box:
+            co = world_to_camera_view(scene, cam, obj.matrix_world @ Vector(corner))
+            if co.z > 0:
+                ys.append(co.y)
+    if len(ys) < 2:
+        return 0.0
+    return max(ys) - min(ys)
+
+
+def point_in_frame(cam, point, margin=0.03):
+    from bpy_extras.object_utils import world_to_camera_view
+
+    co = world_to_camera_view(bpy.context.scene, cam, point)
+    if co.z <= 0.05:
+        return False
+    return margin < co.x < 1.0 - margin and margin < co.y < 1.0 - margin
+
+
+def fx_points(skip):
+    pts = []
+    for obj in bpy.data.objects:
+        if obj.hide_render or obj.name in skip:
+            continue
+        if not (obj.name.startswith("Fx") or obj.name.startswith("Prop")):
+            continue
+        if obj.name in ("PropGround", "PropSlab", "PropSeam", "PropWall", "PropPost"):
+            continue
+        for corner in obj.bound_box:
+            pts.append(obj.matrix_world @ Vector(corner))
+    return pts
+
+
+def frame_camera(cam, view=None, fraction=0.66):
+    """Put the runner at about 65% of frame height, then back up only if an effect is clipped."""
+    if view is None:
+        view = Vector((0.55, -0.84, 0.24))
+    view = view.normalized()
+    cam.data.type = "PERSP"
+    lens = 35.0
     cam.data.lens = lens
     aspect = RES_Y / float(RES_X)
     tan_v = (18.0 / lens) * aspect
-    tan_h = 18.0 / lens
-    dist_h = (max(ext.x, ext.y) * 0.46) / tan_h
-    dist_v = (ext.z * 0.5) / tan_v
-    dist = max(2.8, dist_h, dist_v) * 1.2
-    cam.location = center + view * dist
-    look_at(cam, center)
-    cam.data.lens = lens
-    cam.data.clip_start = 0.05
+    mn, mx = body_bounds()
+    height = max(mx.z - mn.z, 1.45)
+    center = (mn + mx) * 0.5
+    dist = (height / fraction) * 0.5 / tan_v
+    cam.data.clip_start = 0.04
     cam.data.clip_end = 80.0
+    for _ in range(10):
+        cam.location = center + view * dist
+        look_at(cam, center)
+        bpy.context.view_layer.update()
+        aim_billboards(cam.location)
+        outside = [p for p in fx_points(set()) if not point_in_frame(cam, p, 0.04)]
+        frac = body_frame_fraction(cam)
+        if not outside or frac <= 0.60:
+            break
+        dist *= 1.04
     bpy.context.view_layer.update()
     aim_billboards(cam.location)
+    print("FRAME", round(body_frame_fraction(cam), 3), "dist", round(dist, 2))
 
 
-def shot(arm, cam, name, pose, yaw, lift, build):
+def shot(arm, cam, name, pose, yaw, lift, build, frame=None):
     clear_fx()
     apply_pose(arm, pose, lift, yaw)
     slab = bpy.data.objects.get("PropSlab")
@@ -901,41 +955,102 @@ def shot(arm, cam, name, pose, yaw, lift, build):
         "pair", pair,
     )
     if not MEASURE_ONLY:
-        frame_camera(cam)
+        if frame is None:
+            frame_camera(cam)
+        else:
+            frame(cam, arm)
+            print("FRAME", name, round(body_frame_fraction(cam), 3))
+        screen_box(cam)
         path = os.path.join(OUT, name + ".png")
         render_to(path)
     return self_max, world_max, fails
 
 
+def ndc_box(cam):
+    from bpy_extras.object_utils import world_to_camera_view
+
+    scene = bpy.context.scene
+    xs = []
+    ys = []
+    for obj in body_meshes():
+        for corner in obj.bound_box:
+            co = world_to_camera_view(scene, cam, obj.matrix_world @ Vector(corner))
+            if co.z > 0:
+                xs.append(co.x)
+                ys.append(co.y)
+    if not xs:
+        return (0.0, 0.0, 0.0, 0.0)
+    return (min(xs), max(xs), min(ys), max(ys))
+
+
+def screen_box(cam):
+    from bpy_extras.object_utils import world_to_camera_view
+
+    scene = bpy.context.scene
+    xs = []
+    ys = []
+    for obj in body_meshes():
+        for corner in obj.bound_box:
+            co = world_to_camera_view(scene, cam, obj.matrix_world @ Vector(corner))
+            if co.z > 0:
+                xs.append(co.x)
+                ys.append(co.y)
+    if not xs:
+        return
+    print(
+        "SCREEN",
+        "x", round(min(xs), 3), round(max(xs), 3),
+        "y", round(min(ys), 3), round(max(ys), 3),
+    )
+
+
 def build_land(arm, solids):
     origin = Vector((arm.location.x, arm.location.y, 0.02))
     shockwave(origin, 0.72)
-    dust_ring(origin, 0.85, 40, DUST)
+    dust_ring(origin, 0.72, 18, DUST)
     return solids
 
 
 def build_roll(arm, solids):
     origin = Vector((arm.location.x, arm.location.y, 0.02))
-    shockwave(origin, 1.15)
-    add_torus("FxRollOuter", origin + Vector((0, 0, 0.03)), 1.35, 0.012, SHOCK, 0.45, 0.12)
-    dust_ring(origin, 1.35, 56, DUST, 0.04)
+    shockwave(origin, 1.05)
+    add_torus("FxRollOuter", origin + Vector((0, 0, 0.03)), 1.28, 0.016, SHOCK, 0.55, 0.2)
+    dust_ring(origin, 1.05, 22, DUST)
     return solids
 
 
 def build_grapple(arm, solids):
     hand = bone_pos(arm, "Hand_L")
-    # Camera sits on -Y. The beam's near face points at the camera and the hook lands on it.
-    surface = hand + Vector((0.22, -0.62, 0.18))
-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(surface.x, surface.y + 0.10, surface.z))
-    beam = bpy.context.active_object
-    beam.name = "PropBeam"
-    beam.scale = (0.38, 0.16, 0.34)
-    beam.data.materials.append(make_mat("BeamMat", (0.34, 0.32, 0.28, 1), 0.75))
+    shoulder = bone_pos(arm, "Shoulder_L")
+    flat = Vector((hand.x - shoulder.x, hand.y - shoulder.y, 0.0))
+    if flat.length < 0.15:
+        flat = Vector((0.35, -0.94, 0.0))
+    flat.normalize()
+    # The hook face is 5 m out along the reach. A narrow post sits behind that face.
+    hit = hand + flat * 5.0
+    hit.z = hand.z
+    if abs(flat.y) >= abs(flat.x):
+        sign = 1.0 if flat.y >= 0.0 else -1.0
+        center = Vector((hit.x, hit.y + sign * 0.17, 1.20))
+        scale = (0.42, 0.34, 2.35)
+    else:
+        sign = 1.0 if flat.x >= 0.0 else -1.0
+        center = Vector((hit.x + sign * 0.17, hit.y, 1.20))
+        scale = (0.34, 0.42, 2.35)
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=center)
+    post = bpy.context.active_object
+    post.name = "PropPost"
+    post.scale = scale
+    post.data.materials.append(make_mat("PostMat", (0.38, 0.40, 0.43, 1), 0.75))
     bpy.context.view_layer.update()
-    solids.append(solid_of(beam))
-    hit = Vector((surface.x, surface.y - 0.012, surface.z))
+    solids.append(solid_of(post))
+    empty = bpy.data.objects.new("PropHook", None)
+    empty.location = hit
+    empty.empty_display_size = 0.05
+    bpy.context.collection.objects.link(empty)
     rope_shimmer(hand, hit)
-    hook_fx(hit)
+    hook_fx(hit, -flat)
+    print("GRAPPLE", "dist_m", round((hit - hand).length, 2))
     return solids
 
 
@@ -978,29 +1093,182 @@ def body_extent(axis, mode):
 
 
 def build_wall(arm, solids):
-    # Lift off the floor so the planted foot, not the ground, carries the body.
+    # Lift off the floor. The planted foot, not the ground, carries the body.
     bpy.context.view_layer.update()
     low = lowest(arm)
-    arm.location.z += 0.78 - low
+    arm.location.z += 0.72 - low
     bpy.context.view_layer.update()
     foot = bpy.data.objects.get("Mesh_Foot_L")
     verts, _polys = mesh_world(foot)
     foot_y = max(v.y for v in verts)
     foot_x = sum(v.x for v in verts) / len(verts)
     foot_z = sum(v.z for v in verts) / len(verts)
-    # 2 mm past the leading foot. The shin sits behind that point, so the wall
-    # meets the sole without swallowing the leg.
+    # 2 mm past the leading foot. The shin sits well behind that point.
     face = foot_y + 0.002
-    wall_y = face + 0.12
-    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(foot_x - 0.05, wall_y, 1.50))
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=(foot_x - 0.35, face + 0.14, 1.45))
     wall = bpy.context.active_object
     wall.name = "PropWall"
-    wall.scale = (1.45, 0.24, 2.85)
-    wall.data.materials.append(make_mat("WallMat", WALL, 0.82))
+    wall.scale = (3.4, 0.28, 2.6)
+    wall.data.materials.append(make_mat("WallMat", (0.62, 0.64, 0.68, 1), 0.78))
     bpy.context.view_layer.update()
     solids.append(solid_of(wall))
     wall_fx(Vector((foot_x, face, foot_z)), Vector((0.0, 1.0, 0.0)))
     return solids
+
+
+def frame_wall_side(cam, arm):
+    # Profile: the body runs along Y, the camera sits mostly on +X.
+    mn, mx = body_bounds()
+    center = (mn + mx) * 0.5
+    center.y += 0.15
+    length = max(mx.y - mn.y, 1.5)
+    lens = 38.0
+    cam.data.type = "PERSP"
+    cam.data.lens = lens
+    cam.data.clip_start = 0.04
+    cam.data.clip_end = 40.0
+    tan_h = 18.0 / lens
+    dist = (length / 0.62) * 0.5 / tan_h
+    view = Vector((0.82, -0.42, 0.28))
+    view.normalize()
+    cam.location = center + view * dist
+    look_at(cam, center)
+    bpy.context.view_layer.update()
+    aim_billboards(cam.location)
+
+
+def frame_wall_top(cam, arm):
+    # Orthographic plan. Screen right is world +X (travel). Screen up is
+    # world +Y, toward the wall, so the foot and the wall face share an edge.
+    mn, mx = body_bounds()
+    wall = bpy.data.objects.get("PropWall")
+    face_y = mx.y
+    if wall is not None:
+        face_y = min((wall.matrix_world @ Vector(corner)).y for corner in wall.bound_box)
+    foot = bpy.data.objects.get("Mesh_Foot_L")
+    fx = (mn.x + mx.x) * 0.5
+    if foot is not None:
+        verts, _polys = mesh_world(foot)
+        fx = sum(v.x for v in verts) / len(verts)
+    x0, x1 = fx - 1.05, fx + 0.85
+    y0, y1 = mn.y - 0.28, face_y + 0.42
+    center = Vector(((x0 + x1) * 0.5, (y0 + y1) * 0.5, (mn.z + mx.z) * 0.5))
+    span_x = (x1 - x0) * 1.12
+    span_y = (y1 - y0) * 1.15
+    cam.data.type = "ORTHO"
+    cam.data.sensor_fit = "HORIZONTAL"
+    cam.data.ortho_scale = max(span_x, span_y / (RES_Y / float(RES_X)))
+    cam.data.clip_start = 0.01
+    cam.data.clip_end = 40.0
+    cam.matrix_world = Matrix((
+        (1.0, 0.0, 0.0, center.x),
+        (0.0, 1.0, 0.0, center.y),
+        (0.0, 0.0, 1.0, center.z + 8.0),
+        (0.0, 0.0, 0.0, 1.0),
+    ))
+    bpy.context.view_layer.update()
+    print("WALLFACE", "y", round(face_y, 3), "body_max_y", round(mx.y, 3))
+
+
+def frame_grapple_shoulder(cam, arm):
+    # Behind the shoulder and off the rope axis, so the line leaves the
+    # left hand and the post is not sitting on the chest. Feet stay in frame.
+    hand = bone_pos(arm, "Hand_L")
+    hip = bone_pos(arm, "Hips")
+    hook = bpy.data.objects["PropHook"].location.copy()
+    to_hook = Vector((hook.x - hip.x, hook.y - hip.y, 0.0))
+    if to_hook.length < 0.2:
+        to_hook = Vector((0.0, -1.0, 0.0))
+    to_hook.normalize()
+    side = Vector((to_hook.y, -to_hook.x, 0.0))
+    # Stand off the rope, on the side away from the hand, so the line
+    # crosses open ground instead of running through the chest.
+    if (hand - hip).dot(side) > 0.0:
+        side = -side
+    mn, mx = body_bounds()
+    height = max(mx.z - mn.z, 1.5)
+    center = (mn + mx) * 0.5
+    lens = 26.0
+    cam.data.type = "PERSP"
+    cam.data.lens = lens
+    cam.data.clip_start = 0.05
+    cam.data.clip_end = 50.0
+    aspect = RES_Y / float(RES_X)
+    tan_v = (18.0 / lens) * aspect
+    dist = (height / 0.64) * 0.5 / tan_v
+    view = (-to_hook * 0.48 + side * 0.78 + Vector((0.0, 0.0, 0.22))).normalized()
+    aim = Vector((center.x * 0.7 + hook.x * 0.3, center.y * 0.7 + hook.y * 0.3, center.z - 0.05))
+    for _ in range(8):
+        cam.location = center + view * dist
+        look_at(cam, aim)
+        bpy.context.view_layer.update()
+        aim_billboards(cam.location)
+        box = ndc_box(cam)
+        body_ok = box[0] > 0.03 and box[1] < 0.97 and box[2] > 0.04 and box[3] < 0.96
+        hook_ok = point_in_frame(cam, hook, 0.05)
+        hand_ok = point_in_frame(cam, hand, 0.03)
+        if body_ok and hook_ok and hand_ok:
+            break
+        if box[2] < 0.04:
+            aim.z -= 0.12
+        elif not body_ok:
+            dist *= 1.08
+        elif not hook_ok or not hand_ok:
+            aim.x = aim.x * 0.8 + hook.x * 0.2
+            aim.y = aim.y * 0.8 + hook.y * 0.2
+            dist *= 1.05
+    from bpy_extras.object_utils import world_to_camera_view
+
+    hook_ndc = world_to_camera_view(bpy.context.scene, cam, hook)
+    hand_ndc = world_to_camera_view(bpy.context.scene, cam, hand)
+    print(
+        "HOOK_IN", "shoulder",
+        point_in_frame(cam, hook, 0.04),
+        point_in_frame(cam, hand, 0.03),
+        "frac", round(body_frame_fraction(cam), 3),
+        "box", [round(v, 3) for v in ndc_box(cam)],
+        "hook", round(hook_ndc.x, 3), round(hook_ndc.y, 3),
+        "hand", round(hand_ndc.x, 3), round(hand_ndc.y, 3),
+    )
+
+
+def frame_grapple_side(cam, arm):
+    hand = bone_pos(arm, "Hand_L")
+    hook = bpy.data.objects["PropHook"].location.copy()
+    mn, mx = body_bounds()
+    body_c = (mn + mx) * 0.5
+    flat = Vector((hook.x - hand.x, hook.y - hand.y, 0.0))
+    if flat.length < 0.2:
+        flat = Vector((0.0, -1.0, 0.0))
+    flat.normalize()
+    side = Vector((flat.y, -flat.x, 0.0))
+    span = hook - Vector((body_c.x, body_c.y, hook.z))
+    length = max(span.length + 1.3, 5.5)
+    center = (hook + body_c) * 0.5
+    center.z = 1.1
+    lens = 32.0
+    cam.data.type = "PERSP"
+    cam.data.lens = lens
+    cam.data.clip_start = 0.05
+    cam.data.clip_end = 50.0
+    tan_h = 18.0 / lens
+    dist = (length / 0.82) * 0.5 / tan_h
+    for _ in range(6):
+        cam.location = Vector((center.x, center.y, 0.0)) + side * dist + Vector((0.0, 0.0, 1.7))
+        look_at(cam, center)
+        bpy.context.view_layer.update()
+        aim_billboards(cam.location)
+        feet = Vector(((mn.x + mx.x) * 0.5, (mn.y + mx.y) * 0.5, mn.z))
+        head = Vector(((mn.x + mx.x) * 0.5, (mn.y + mx.y) * 0.5, mx.z))
+        if point_in_frame(cam, hook, 0.05) and point_in_frame(cam, hand, 0.04) and point_in_frame(cam, feet, 0.04) and point_in_frame(cam, head, 0.04):
+            break
+        dist *= 1.08
+    print(
+        "HOOK_IN", "side",
+        point_in_frame(cam, hook, 0.04),
+        point_in_frame(cam, hand, 0.04),
+        "frac", round(body_frame_fraction(cam), 3),
+    )
 
 
 def build_punch(arm, solids):
@@ -1133,17 +1401,19 @@ def main():
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
     shots = [
-        ("landing-impact", pose_land, 24, 0.0, build_land),
-        ("landing-roll", pose_roll, 28, 0.0, build_roll),
-        ("grapple-hook", pose_grapple, -18, 0.0, build_grapple),
-        ("immunity-glow", pose_run, 20, 0.0, build_immune),
-        ("punch-stagger", pose_stagger, -14, 0.0, build_stagger),
-        ("launch-pad", pose_launch, 18, 0.55, build_launch),
-        ("wall-run", pose_wall, 12, 0.0, build_wall),
+        ("landing-impact", pose_land, 24, 0.0, build_land, None),
+        ("landing-roll", pose_roll, 28, 0.0, build_roll, None),
+        ("grapple-shoulder", pose_grapple, -12, 0.0, build_grapple, frame_grapple_shoulder),
+        ("grapple-side", pose_grapple, -12, 0.0, build_grapple, frame_grapple_side),
+        ("immunity-glow", pose_run, 20, 0.0, build_immune, None),
+        ("punch-stagger", pose_stagger, -14, 0.0, build_stagger, None),
+        ("launch-pad", pose_launch, 18, 0.55, build_launch, None),
+        ("wall-run", pose_wall, 0, 0.0, build_wall, frame_wall_side),
+        ("wall-run-top", pose_wall, 0, 0.0, build_wall, frame_wall_top),
     ]
     totals = []
-    for name, pose, yaw, lift, build in shots:
-        totals.append((name,) + shot(arm, cam, name, pose, yaw, lift, build))
+    for name, pose, yaw, lift, build, frame in shots:
+        totals.append((name,) + shot(arm, cam, name, pose, yaw, lift, build, frame))
 
     clear_fx()
     punch_path = os.path.join(OUT, "_tagger.png")
