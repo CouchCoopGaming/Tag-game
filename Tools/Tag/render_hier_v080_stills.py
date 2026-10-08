@@ -344,7 +344,7 @@ def _prepare_scene():
         fill.data.size = 4.0
 
 
-def _shot(path, loc, look, ortho=None, up="Y"):
+def _shot(path, loc, look, ortho=None, up="Y", sensor_fit=None):
     import bpy
     from mathutils import Vector
     if "ShotCam" in bpy.data.objects:
@@ -354,6 +354,9 @@ def _shot(path, loc, look, ortho=None, up="Y"):
         cam = bpy.context.active_object
         cam.name = "ShotCam"
     cam.data.lens = 48
+    # The camera object is reused. Put sensor fit back to AUTO unless this
+    # shot asks for a lock, so a vertical wall frame cannot leak into the slide.
+    cam.data.sensor_fit = sensor_fit or "AUTO"
     if ortho is None:
         cam.data.type = "PERSP"
     else:
