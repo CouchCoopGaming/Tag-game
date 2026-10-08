@@ -14,6 +14,13 @@ namespace Tag.Ui.Hud
         public static readonly string Free = "FREE";
         public static readonly string Go = "GO";
         public static readonly string RoundEnd = "ROUND END";
+        public static readonly string RoundOver = "ROUND OVER";
+        public static readonly string Locked = "LOCKED";
+        public static readonly string ResultsWord = "RESULTS";
+        public static readonly string NextRound = "NEXT ROUND";
+        public static readonly string LeastWins = "LEAST IT TIME WINS";
+        public static readonly string SoloAi = "AI";
+        public static readonly string[] Left = { "P1 left", "P2 left", "P3 left", "P4 left" };
         public static readonly string YoureIt = "YOU'RE IT!";
         public static readonly string Tagged = "TAGGED!";
         public static readonly string It = "IT";
@@ -92,6 +99,22 @@ namespace Tag.Ui.Hud
             int i = (int)(seconds * 10f + 0.5f);
             if (i > 10) i = 10;
             return SafeLine[i];
+        }
+
+        static readonly string[] StandingLine = new string[4];
+        static readonly int[] StandingKey = { -2, -2, -2, -2 };
+
+        /// <summary>Seat plus tenths, cached per tenth so the standings card does not build a string every frame.</summary>
+        public static string Standing(int seat, float time)
+        {
+            if (seat < 0 || seat > 3) return Blank;
+            if (time < 0f) time = 0f;
+            int key = (int)(time * 10f + 0.5f);
+            if (key > 12000) key = 12000;
+            if (StandingKey[seat] == key && StandingLine[seat] != null) return StandingLine[seat];
+            StandingKey[seat] = key;
+            StandingLine[seat] = Seat[seat] + "   " + HudDigits.Tenth0(key * 0.1f);
+            return StandingLine[seat];
         }
 
         static string[] BuildClock()

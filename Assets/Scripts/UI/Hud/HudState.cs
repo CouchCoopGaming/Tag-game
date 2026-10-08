@@ -209,9 +209,118 @@ namespace Tag.Ui.Hud
             return true;
         }
 
+        public const int OpeningIt = 0;
+        public const int DroppedSeat = 3;
+        public const int SoloHuman = 0;
+        public const int SoloAi = 1;
+
+        public static readonly float[] ItTime = { 8.1f, 12.4f, 0.2f, 4.0f };
+
+        public static string Digit(int step)
+        {
+            if (step <= 0) return "3";
+            if (step == 1) return "2";
+            if (step == 2) return "1";
+            return MatchHudText.Go;
+        }
+
+        public static bool InputLocked(int step)
+        {
+            return step < 3;
+        }
+
+        public static bool CountHolds()
+        {
+            if (Digit(0) != "3" || Digit(1) != "2" || Digit(2) != "1" || Digit(3) != MatchHudText.Go) return false;
+            if (MatchHudText.Locked != "LOCKED") return false;
+            if (!InputLocked(0) || !InputLocked(2) || InputLocked(3)) return false;
+            return OpeningIt == 0;
+        }
+
+        public static bool ClockHot(float remaining)
+        {
+            return remaining > 0f && remaining <= 10f;
+        }
+
+        /// <summary>The last ten seconds ask for the existing round tick. No new clip.</summary>
+        public static bool WantsTick(float remaining)
+        {
+            return ClockHot(remaining);
+        }
+
+        public static bool HotHolds()
+        {
+            if (!ClockHot(8f) || !WantsTick(1f)) return false;
+            if (ClockHot(10.01f) || ClockHot(0f)) return false;
+            return true;
+        }
+
+        public static int Place(int rank)
+        {
+            if (rank <= 0) return 2;
+            if (rank == 1) return 3;
+            if (rank == 2) return 0;
+            return 1;
+        }
+
+        public static string AfterRound(bool finalRound)
+        {
+            return finalRound ? MatchHudText.ResultsWord : MatchHudText.NextRound;
+        }
+
+        static bool HasPodium(string word)
+        {
+            if (string.IsNullOrEmpty(word)) return false;
+            return word.IndexOf("podium") >= 0;
+        }
+
+        public static bool OverHolds()
+        {
+            if (MatchHudText.RoundOver != "ROUND OVER") return false;
+            if (AfterRound(true) != "RESULTS") return false;
+            if (AfterRound(false) != "NEXT ROUND") return false;
+            if (HasPodium(MatchHudText.RoundOver) || HasPodium(AfterRound(true)) || HasPodium(AfterRound(false))) return false;
+            if (HasPodium(MatchHudText.LeastWins) || HasPodium(MatchHudText.Locked)) return false;
+            float prev = -1f;
+            for (int i = 0; i < 4; i++)
+            {
+                float t = ItTime[Place(i)];
+                if (t + 0.0001f < prev) return false;
+                prev = t;
+            }
+            return Place(0) == Script().It;
+        }
+
+        public static bool TagHolds()
+        {
+            if (Script().It != Script().To(0)) return false;
+            bool was = MatchHudText.ComicWords;
+            MatchHudText.ComicWords = true;
+            bool shown = MatchHudText.Comic(MatchHudText.YoureIt) == MatchHudText.YoureIt;
+            MatchHudText.ComicWords = false;
+            bool hidden = MatchHudText.Comic(MatchHudText.YoureIt).Length == 0;
+            MatchHudText.ComicWords = was;
+            return shown && hidden;
+        }
+
+        public static bool DropHolds()
+        {
+            if (MatchHudText.Left[DroppedSeat] != "P4 left") return false;
+            Snap snap = Script();
+            if (snap.It == DroppedSeat || snap.Safe == DroppedSeat) return false;
+            return ItCount() == 1;
+        }
+
+        public static bool SoloHolds()
+        {
+            return SoloHuman != SoloAi && ItCount() == 1 && SoloHuman != Script().It;
+        }
+
         public static bool Holds()
         {
-            return FeedSame() && SafePrev() && ItCount() == 1 && AimHolds();
+            return FeedSame() && SafePrev() && ItCount() == 1 && AimHolds()
+                && CountHolds() && HotHolds() && OverHolds() && TagHolds()
+                && DropHolds() && SoloHolds();
         }
 
         public static string Line()
@@ -221,7 +330,13 @@ namespace Tag.Ui.Hud
             int it = ItCount();
             return "hud-state feed=" + (feed ? "same" : "split")
                 + " safe=" + (safe ? "prev" : "wrong")
-                + " it=" + it.ToString();
+                + " it=" + it.ToString()
+                + " count=" + (CountHolds() ? "lock" : "open")
+                + " hot=" + (HotHolds() ? "tick" : "no")
+                + " over=" + (OverHolds() ? "least" : "no")
+                + " tag=" + (TagHolds() ? "flash" : "no")
+                + " drop=" + (DropHolds() ? "left" : "no")
+                + " solo=" + (SoloHolds() ? "ai" : "no");
         }
     }
 }

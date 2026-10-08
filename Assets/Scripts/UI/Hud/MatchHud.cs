@@ -106,6 +106,11 @@ namespace Tag.Ui.Hud
         bool _live;
         float _uiScale = -1f;
         int _tagSerial = -1;
+        readonly int[] _rank = { 0, 1, 2, 3 };
+        readonly bool[] _wasIn = new bool[4];
+        int _leftSeat = -1;
+        bool _rosterSeen;
+        bool _cardOn;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Auto()
@@ -193,6 +198,9 @@ namespace Tag.Ui.Hud
             if (!_live && (Root == null || !Root.enabled)) return;
             _live = false;
             _tagSerial = -1;
+            _leftSeat = -1;
+            _rosterSeen = false;
+            _cardOn = false;
             TagFeed.Reset();
             if (Root != null) Root.enabled = false;
             for (int i = 0; i < 4; i++)
@@ -259,17 +267,22 @@ namespace Tag.Ui.Hud
             if (pane == null) return;
             float now = Time.unscaledTime;
             bool hold = MenuVideo.ReduceMotion;
+            int shift = _leftSeat >= 0 && _leftSeat < MatchHudText.Left.Length ? 1 : 0;
+            if (shift == 1)
+                ShowFeedLine(pane, 0, _leftSeat, MatchHudText.Left[_leftSeat]);
             for (int row = 0; row < 3; row++)
             {
-                Text line = pane.Feed[row];
+                int dest = row + shift;
+                if (dest >= 3) break;
+                Text line = pane.Feed[dest];
                 if (line == null) continue;
                 bool on = TagFeed.On(row, now);
                 line.enabled = on;
                 if (!on)
                 {
-                    if (pane.FeedPlate[row] != null) pane.FeedPlate[row].enabled = false;
-                    if (pane.FeedChip[row] != null) pane.FeedChip[row].enabled = false;
-                    if (pane.FeedMark[row] != null) pane.FeedMark[row].enabled = false;
+                    if (pane.FeedPlate[dest] != null) pane.FeedPlate[dest].enabled = false;
+                    if (pane.FeedChip[dest] != null) pane.FeedChip[dest].enabled = false;
+                    if (pane.FeedMark[dest] != null) pane.FeedMark[dest].enabled = false;
                     continue;
                 }
                 Set(line, TagFeed.Text(row));
@@ -279,19 +292,19 @@ namespace Tag.Ui.Hud
                 line.color = new Color(MenuTheme.Cream.r, MenuTheme.Cream.g, MenuTheme.Cream.b, a);
                 int from = TagFeed.From(row);
                 Color seat = MenuTheme.Seat(from);
-                Image plate = pane.FeedPlate[row];
+                Image plate = pane.FeedPlate[dest];
                 if (plate != null)
                 {
                     plate.enabled = true;
                     plate.color = new Color(MenuTheme.Ink.r, MenuTheme.Ink.g, MenuTheme.Ink.b, a);
                 }
-                Image chip = pane.FeedChip[row];
+                Image chip = pane.FeedChip[dest];
                 if (chip != null)
                 {
                     chip.enabled = true;
                     chip.color = new Color(seat.r, seat.g, seat.b, a);
                 }
-                Image mark = pane.FeedMark[row];
+                Image mark = pane.FeedMark[dest];
                 if (mark != null)
                 {
                     bool shapes = SeatMarks();
@@ -398,7 +411,11 @@ namespace Tag.Ui.Hud
             int split = GameSettingsSplit();
             ApplyLayout(humans, split, true);
             Set(Clock, MatchHudText.Clock(84f));
-            if (Clock != null) Clock.color = MenuTheme.Cream;
+            if (Clock != null)
+            {
+                Clock.color = MenuTheme.Cream;
+                Clock.rectTransform.localScale = Vector3.one;
+            }
             Set(RoundLabel, MatchHudText.Round(humans >= 4 ? 2 : 1, humans >= 4 ? 3 : 1));
             HudState.Snap snap = HudState.Script();
             int panes = CouchPlay.Panes(humans);
@@ -424,13 +441,11 @@ namespace Tag.Ui.Hud
         {
             int humans = Humans < 1 ? 1 : Humans;
             ApplyLayout(humans, Split, false);
+            NoteRoster();
             if (modes.SelectedMode == TagModeId.FreePlay) Set(Clock, MatchHudText.Free);
             else Set(Clock, MatchHudText.Clock(modes.Remaining));
-            if (Clock != null)
-            {
-                bool hot = modes.SelectedMode != TagModeId.FreePlay && modes.Remaining <= 10f && modes.Remaining > 0f;
-                Clock.color = hot ? MenuTheme.Gold : MenuTheme.Cream;
-            }
+            bool hot = modes.SelectedMode != TagModeId.FreePlay && HudState.ClockHot(modes.Remaining);
+            PulseClock(Clock, hot);
             Set(RoundLabel, MatchHudText.Round(modes.RoundShown, modes.RoundCap));
             PaintCenter(modes);
             NoteTag(modes);
@@ -519,6 +534,7 @@ namespace Tag.Ui.Hud
             Set(pane.Name, name);
             string profile = LocalProfiles.SeatName(seat);
             if (string.IsNullOrEmpty(profile)) profile = CouchPlay.SeatLine(seat);
+            if (CouchPlay.AiAt(seat) && !CouchPlay.HumanAt(seat)) profile = MatchHudText.SoloAi;
             Set(pane.Profile, profile);
             TagModeId mode = modes.SelectedMode;
             Set(pane.Metric, MatchHudText.Metric(mode));
@@ -530,18 +546,37 @@ namespace Tag.Ui.Hud
                 if (mode == TagModeId.FreePlay) Set(pane.Timer, MatchHudText.Free);
                 else Set(pane.Timer, MatchHudText.Clock(modes.Remaining));
                 Set(pane.TimerRound, MatchHudText.Round(modes.RoundShown, modes.RoundCap));
+                bool paneHot = mode != TagModeId.FreePlay && HudState.ClockHot(modes.Remaining);
+                PulseClock(pane.Timer, paneHot);
             }
             ShowSeatMark(pane, seat);
 
             bool isIt = pawn != null && pawn.IsIt;
-            ShowItMark(pane, isIt);
             TintEdges(pane, SeatTint(seat));
-            if (pane.Glow != null) pane.Glow.enabled = false;
-            ShowItFrame(pane, isIt);
-            if (pane.Badge != null) pane.Badge.enabled = isIt;
-            if (pane.BadgeWord != null) pane.BadgeWord.enabled = isIt;
+            bool counting = modes.Phase == MatchPhase.Countdown;
+            bool going = modes.Phase == MatchPhase.Playing && Time.unscaledTime < _goUntil;
+            if (counting || going)
+            {
+                int reveal = RevealSeat(modes);
+                bool shown = isIt || seat == reveal;
+                ShowItMark(pane, shown);
+                ShowItFrame(pane, shown);
+                if (pane.Badge != null) pane.Badge.enabled = shown;
+                if (pane.BadgeWord != null) pane.BadgeWord.enabled = shown;
+                ShowCountCall(pane, going ? HudState.Digit(3) : CountWord(modes.PhaseSeconds));
+                ShowOpeningFlash(pane, counting && seat == reveal);
+            }
+            else
+            {
+                ShowItMark(pane, isIt);
+                ShowItFrame(pane, isIt);
+                if (pane.Badge != null) pane.Badge.enabled = isIt;
+                if (pane.BadgeWord != null) pane.BadgeWord.enabled = isIt;
+                if (pane.Glow != null) pane.Glow.enabled = false;
+                PaintPawnCall(pane, index, isIt);
+                ShowTagFlash(pane, index);
+            }
             PaintVerbs(pane, index, pawn);
-            PaintPawnCall(pane, index, isIt);
         }
 
         void PaintVerbs(HudPane pane, int index, ItController pawn)
@@ -665,52 +700,246 @@ namespace Tag.Ui.Hud
             bool sudden = modes.SuddenDeath || CouchPlay.TieText.Length > 0;
             int kind = RoundCard.Pick(sudden, countdown, modes.RoundShown, modes.RoundCap, point);
             string word = MatchHudText.Blank;
-            if (kind == RoundCard.Sudden) word = RoundCard.SuddenText;
-            else if (kind == RoundCard.Final) word = RoundCard.FinalText;
-            else if (kind == RoundCard.Round2) word = RoundCard.Round2Text;
-            else if (kind == RoundCard.Point) word = RoundCard.PointText;
-            else if (phase == MatchPhase.Countdown)
+            bool standings = false;
+            if (phase == MatchPhase.Countdown)
+                word = kind == RoundCard.Sudden ? RoundCard.SuddenText : MatchHudText.Locked;
+            else if (now < _goUntil) word = MatchHudText.Go;
+            else if (phase == MatchPhase.PostRound && now < _endUntil)
+                word = MatchHudText.RoundOver;
+            else if (phase == MatchPhase.PostRound)
             {
-                float sec = modes.PhaseSeconds;
-                int show = (int)sec;
-                if (sec > show) show++;
-                if (show < 1) show = 1;
-                if (show > 9) show = 9;
-                word = HudDigits.Whole0(show);
+                bool final = modes.RoundCap > 1 && modes.RoundShown >= modes.RoundCap;
+                word = HudState.AfterRound(final);
+                standings = !final;
             }
-            else if (now < _goUntil) word = MatchHudText.Comic(MatchHudText.Go);
-            else if (now < _endUntil) word = MatchHudText.RoundEnd;
+            else if (kind == RoundCard.Point) word = RoundCard.PointText;
+            if (standings) PaintStandings(modes);
+            else HideStandings(Humans < 1 ? 1 : Humans);
             bool on = word.Length != 0;
             if (CenterPlate != null) CenterPlate.enabled = on;
             if (CenterCall == null) return;
             CenterCall.enabled = on;
             Set(CenterCall, word);
+            PlaceCenter(standings ? -300f : 0f);
             if (!on) return;
-            if (MenuVideo.ReduceMotion)
+            if (MenuVideo.ReduceMotion || word != MatchHudText.Go)
             {
                 CenterCall.rectTransform.localScale = Vector3.one;
                 return;
             }
-            if (word == MatchHudText.Go)
+            float span = 0.8f;
+            float left = _goUntil - now;
+            float u = 1f - left / span;
+            if (u < 0f) u = 0f;
+            if (u > 1f) u = 1f;
+            float pop = u < 0.22f ? Mathf.Lerp(1.28f, 1f, u / 0.22f) : 1f;
+            CenterCall.rectTransform.localScale = new Vector3(pop, pop, 1f);
+        }
+
+        void NoteRoster()
+        {
+            for (int i = 0; i < 4; i++)
             {
-                float span = 0.8f;
-                float left = _goUntil - now;
-                float u = 1f - left / span;
-                if (u < 0f) u = 0f;
-                if (u > 1f) u = 1f;
-                float pop = u < 0.22f ? Mathf.Lerp(1.28f, 1f, u / 0.22f) : 1f;
-                CenterCall.rectTransform.localScale = new Vector3(pop, pop, 1f);
-                return;
+                bool inn = CouchPlay.HumanAt(i) || CouchPlay.AiAt(i);
+                if (_rosterSeen && _wasIn[i] && !inn) _leftSeat = i;
+                _wasIn[i] = inn;
             }
-            if (phase != MatchPhase.Countdown)
+            _rosterSeen = true;
+        }
+
+        static string CountWord(float sec)
+        {
+            int show = (int)sec;
+            if (sec > show) show++;
+            if (show >= 3) return HudState.Digit(0);
+            if (show == 2) return HudState.Digit(1);
+            return HudState.Digit(2);
+        }
+
+        int RevealSeat(TagModeController modes)
+        {
+            int n = Humans < 1 ? 1 : Humans;
+            if (n > 4) n = 4;
+            for (int i = 0; i < n; i++)
             {
-                CenterCall.rectTransform.localScale = Vector3.one;
-                return;
+                ItController pawn = Pawns[i];
+                if (pawn == null || !pawn.IsIt) continue;
+                int seat = Seat[i];
+                if (seat < 0 || seat > 3) seat = i;
+                return seat;
             }
-            float frac = modes.PhaseSeconds - (int)modes.PhaseSeconds;
-            if (frac < 0f) frac = 0f;
-            float beat = frac > 0.78f ? Mathf.Lerp(1.24f, 1f, (1f - frac) / 0.22f) : 1f;
-            CenterCall.rectTransform.localScale = new Vector3(beat, beat, 1f);
+            GameSettings rules = GameSettings.Current;
+            int start = rules != null ? rules.StartIt : GameSettings.StartRandom;
+            if (start == GameSettings.StartChosen && rules != null)
+            {
+                int pick = rules.StartSeat;
+                if (pick < 0) pick = 0;
+                if (pick > 3) pick = 3;
+                return pick;
+            }
+            if (start == GameSettings.StartLast)
+            {
+                int best = 0;
+                float worst = -1f;
+                for (int i = 0; i < n; i++)
+                {
+                    ItController pawn = Pawns[i];
+                    float t = pawn != null ? pawn.TimeAsIt : 0f;
+                    if (t < worst) continue;
+                    worst = t;
+                    int seat = Seat[i];
+                    if (seat < 0 || seat > 3) seat = i;
+                    best = seat;
+                }
+                return best;
+            }
+            int step = (int)(Time.unscaledTime * 8f);
+            if (step < 0) step = 0;
+            int index = step % n;
+            int spin = Seat[index];
+            if (spin < 0 || spin > 3) spin = index;
+            return spin;
+        }
+
+        static void ShowCountCall(HudPane pane, string word)
+        {
+            if (pane.Call == null) return;
+            pane.Call.enabled = true;
+            Set(pane.Call, word);
+            Font face = MenuTheme.Display;
+            if (pane.Call.font != face) pane.Call.font = face;
+            pane.Call.rectTransform.localScale = Vector3.one;
+        }
+
+        static void ShowOpeningFlash(HudPane pane, bool on)
+        {
+            if (pane.Glow == null) return;
+            pane.Glow.enabled = on;
+            if (!on) return;
+            float a = 0.34f;
+            if (!MenuVideo.ReduceMotion)
+            {
+                float s = Mathf.Sin(Time.unscaledTime * 10f);
+                if (s < 0f) s = -s;
+                a = 0.22f + 0.28f * s;
+            }
+            pane.Glow.color = new Color(1f, 0.86f, 0.2f, a);
+        }
+
+        void ShowTagFlash(HudPane pane, int index)
+        {
+            if (pane.Glow == null) return;
+            float now = Time.unscaledTime;
+            float hold = MenuVideo.ReduceMotion ? 0.7f : 1.5f;
+            float flash = MenuVideo.ReduceMotion ? 0.2f : 0.35f;
+            bool tagged = _callKind[index] == 1 && now < _callUntil[index];
+            float elapsed = hold - (_callUntil[index] - now);
+            bool on = tagged && elapsed >= 0f && elapsed < flash;
+            pane.Glow.enabled = on;
+            if (!on) return;
+            float u = elapsed / flash;
+            pane.Glow.color = new Color(1f, 0.84f, 0.12f, 0.55f * (1f - u));
+        }
+
+        static void PulseClock(Text text, bool hot)
+        {
+            if (text == null) return;
+            text.color = hot ? MenuTheme.Gold : MenuTheme.Cream;
+            float scale = 1f;
+            if (hot && !MenuVideo.ReduceMotion)
+            {
+                float s = Mathf.Sin(Time.unscaledTime * 9f);
+                if (s < 0f) s = -s;
+                scale = 1f + 0.12f * s;
+            }
+            text.rectTransform.localScale = new Vector3(scale, scale, 1f);
+        }
+
+        void PlaceCenter(float y)
+        {
+            if (CenterCall == null) return;
+            RectTransform plate = CenterCall.rectTransform.parent as RectTransform;
+            if (plate == null) return;
+            plate.anchoredPosition = new Vector2(0f, y);
+        }
+
+        void PaintStandings(TagModeController modes)
+        {
+            if (ScoreRoot == null) return;
+            _cardOn = true;
+            ScoreRoot.anchorMin = new Vector2(0.30f, 0.22f);
+            ScoreRoot.anchorMax = new Vector2(0.70f, 0.78f);
+            ScoreRoot.offsetMin = Vector2.zero;
+            ScoreRoot.offsetMax = Vector2.zero;
+            ScoreRoot.gameObject.SetActive(true);
+            Set(ScoreTitle, MatchHudText.LeastWins);
+            for (int i = 0; i < 4; i++) _rank[i] = i;
+            for (int a = 0; a < 3; a++)
+            {
+                for (int b = a + 1; b < 4; b++)
+                {
+                    if (ItSeconds(modes, _rank[b]) >= ItSeconds(modes, _rank[a])) continue;
+                    int tmp = _rank[a];
+                    _rank[a] = _rank[b];
+                    _rank[b] = tmp;
+                }
+            }
+            for (int row = 0; row < 4; row++)
+            {
+                int seat = _rank[row];
+                bool on = CouchPlay.HumanAt(seat) || CouchPlay.AiAt(seat);
+                float time = ItSeconds(modes, seat);
+                string line = on ? MatchHudText.Standing(seat, time) : MatchHudText.Blank;
+                PaintRankRow(row, seat, line, on);
+            }
+        }
+
+        float ItSeconds(TagModeController modes, int seat)
+        {
+            ItController pawn = PawnForSeat(seat);
+            if (pawn == null) return 9999f;
+            return pawn.TimeAsIt;
+        }
+
+        void PaintRankRow(int row, int seat, string text, bool on)
+        {
+            Text line = ScoreLine[row];
+            if (line != null)
+            {
+                line.enabled = on;
+                if (on)
+                {
+                    Set(line, text);
+                    line.color = MenuTheme.Cream;
+                }
+            }
+            Image chip = ScoreChip[row];
+            if (chip != null)
+            {
+                chip.enabled = on;
+                if (on) chip.color = MenuTheme.Seat(seat);
+            }
+            Image mark = ScoreMark[row];
+            if (mark == null) return;
+            bool shapes = on && SeatMarks();
+            mark.enabled = shapes;
+            if (!shapes) return;
+            Sprite sprite = SeatShape.For(seat);
+            if (mark.sprite != sprite) mark.sprite = sprite;
+            mark.color = MenuTheme.Cream;
+        }
+
+        void HideStandings(int humans)
+        {
+            if (_cardOn)
+            {
+                _cardOn = false;
+                _layout = -1;
+            }
+            if (ScoreRoot != null && humans != 3 && _cardOn == false && ScoreRoot.gameObject.activeSelf)
+            {
+                if (humans != 3) ScoreRoot.gameObject.SetActive(false);
+            }
         }
 
         void PaintArrow(TagModeController modes, int index)
