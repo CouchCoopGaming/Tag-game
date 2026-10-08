@@ -283,6 +283,27 @@ StrafeJumpSim exits 0. Gameplay lines match pass 22, including `exit-fit` `grapp
 - grapple pose: `pullPitch=-118/-12 pullYaw=28/-68 pullElbow=-46/-28 strideThigh=12/6 strideKnee=-28/-18 tuckThigh=16 tuckKnee=-36 pullRead=-12` → `pullPitch=-118/-68 pullYaw=28/-52 pullElbow=-46/-38 strideThigh=18/8 strideKnee=-32/-24 tuckThigh=52 tuckKnee=-40 pullRead=-68`
 - grapple-pose-polish: `pullPitch=-118/-12 pullZ=0.18/0.02` → `pullPitch=-118/-68 pullZ=0.18/0.24`
 
+## Pass 24 (climb crouch, vault landing, slide pump, exit strips)
+
+The grapple pull from pass 23 stays locked. Bent knees, the free arm forward, the rope hand clean. `GrapplePose` was not edited. The smooth-motion lane was not merged.
+
+Climb top-out is a low crouch on the lid. Both thighs and both knees match, so the soles share one height, 26 cm under the hips, and both feet sit under the hips (about 1 cm fore-aft, 14 cm to each side). One hand stays on the lip. The other reaches forward (19 cm to 44 cm in front of the hips). The chest does not stand up: chest stays about 20 cm in front of the hips. Opening a knee or unfolding the hip drops that foot through the lid, which the checker still rejects. Hips are 31.5 cm above the box. Worst pose 0.25 cm, world 0.
+
+Vault no longer sits on a box. The trail foot starts high and behind the lead foot, then both feet meet the ground in front of it and the arms pump. A trail thigh past about 54° walks into the spine (58° is 0.50 cm, 62° is 0.73 cm), so the clear is a low one: the drawn lid is 18 cm, and 1281 trail-foot vertices sit over it on the first frame. Both landing feet are in front of that face. Nothing rests on the top. A long run stride would put the heel back on the obstacle, so the arms carry the run and the feet stay short of the face. The dump tests this exit against the ground. A box that follows the hands cannot sit behind the body: the arms do not reach past the hips. Worst pose 0.35 cm, world 0.
+
+Slide rises through a forward lean. The chest goes from 6 cm behind the hips to 14 cm in front. Both arm pitches stay negative, so the pump stays in the line of the run. The widest hand is 34 cm to the side, down from the old arm that stuck straight out. Worst pose 0.33 cm, world 0.
+
+Every exit has a five-frame strip (start, 25%, 50%, 75%, end) in three-quarter view in `Docs/AnimStills/pass24/`. The obstacle is in frame where the clip has one. Each PNG is under 400 KB. The mesh check on all 95 panels found no straddle, no foot inside a lid, and no arm stuck out past 55 cm. Mantle is unchanged and still uses the wide plant; its hips stay about 10 cm above its box.
+
+Full set, same convention, after the re-key:
+
+`no-clip clips=40 frames=337 worldMax=0.00 poseMax=0.49 rigMax=3.40 poseFails=0 rigJoint=330`
+
+StrafeJumpSim exits 0. Gameplay lines match pass 23, including `exit-fit` `grapple=-118`, `closest=54`, and `handoff2` `grappleOut=21.2>9.6`. Animation lines that moved:
+
+- verb-exit: `exit-chain vault-slide=17.6` → `vault-slide=13.5` (budget 96)
+- exit-fit: `step=49.7` → `step=49.5` (budget 96)
+
 ## FX queue
 
 Running dust, the comic words, the verb layer, and the pass-5 effects are in.

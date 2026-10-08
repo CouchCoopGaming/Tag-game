@@ -216,19 +216,15 @@ namespace Tag.Art
             c.ArmRollR = 12f;
         }
 
-        /// <summary>Hand plant, lead knee up, then stand.</summary>
+        /// <summary>Low crouch on the lid, both feet under the hips, then the chest rises.</summary>
         static void ClimbTop(out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
         {
-            a = P(-8f, 4f, -2f, 14f, -16f, -16f, -12f, 22f, 18f, 16f, -14f, -48f, -44f);
-            a.ThighRollL = -MantlePose.LegSpread;
-            a.ThighRollR = MantlePose.LegSpread;
-            b = P(-6f, 6f, -2f, 50f, 8f, -16f, -10f, 24f, 20f, 14f, -14f, -40f, -36f);
-            b.ThighRollL = -MantlePose.LegSpread;
-            b.ThighRollR = MantlePose.LegSpread;
-            b.Drop = 0.04f;
-            c = P(4f, 8f, -2f, 36f, 26f, -16f, -12f, 18f, 20f, 10f, -10f, -32f, -30f);
-            c.ThighRollL = -MantlePose.LegSpread;
-            c.ThighRollR = MantlePose.LegSpread;
+            // Both knees stay deep and matched so the two soles share the lid.
+            // Opening either knee, or the hip fold, drops that foot through the top.
+            a = P(34f, 14f, -10f, 32f, 32f, -136f, -136f, -30f, -26f, 4f, -2f, -14f, -10f);
+            b = P(36f, 16f, -2f, 32f, 32f, -136f, -136f, -32f, -28f, 2f, -4f, -12f, -8f);
+            // One hand stays on the lip so the soles remain above it. The other arm leaves into the run.
+            c = P(36f, 16f, 10f, 32f, 32f, -136f, -136f, -50f, -28f, -8f, 2f, -18f, -10f);
         }
 
         /// <summary>Hands open off the wall and the body drops into the fall.</summary>
@@ -244,20 +240,16 @@ namespace Tag.Art
             c.ThighRollL = WallPose.PlantRoll;
         }
 
-        /// <summary>Trail leg sweeps back. Palms stay on the lip, elbows stay bent.</summary>
+        /// <summary>Trail leg clears, then both feet absorb in front of the obstacle.</summary>
         static void Vault(out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
         {
-            a = P(-8f, 4f, -8f, 14f, -22f, -16f, -14f, 26f, 14f, 16f, -14f, -48f, -44f);
-            a.ThighRollL = -MantlePose.LegSpread;
-            a.ThighRollR = MantlePose.LegSpread;
-            b = P(-4f, 8f, 6f, 24f, -22f, -18f, -20f, 16f, 22f, 14f, -16f, -44f, -38f);
-            b.ThighRollL = -MantlePose.LegSpread;
-            b.ThighRollR = MantlePose.LegSpread;
-            b.HipYaw = -12f;
-            b.SpineYaw = 10f;
-            c = P(4f, 6f, -2f, 30f, 16f, -16f, -12f, 14f, 20f, 10f, -12f, -36f, -30f);
-            c.ThighRollL = -MantlePose.LegSpread;
-            c.ThighRollR = MantlePose.LegSpread;
+            // The trail foot is high and behind the lead foot. A straighter trail
+            // thigh walks into the spine, so the clear stays at this bend.
+            // Both feet then meet the ground in front of that foot. A long run
+            // stride would put the heel back on the obstacle, so the arms carry the run.
+            a = P(8f, 4f, -12f, 0f, 54f, -20f, -82f, -22f, -10f, -6f, 2f, -16f, -14f);
+            b = P(18f, 10f, 4f, 0f, -2f, -38f, -34f, -32f, -16f, -6f, 2f, -16f, -14f);
+            c = P(12f, 6f, 8f, 4f, 0f, -28f, -24f, -46f, -18f, -6f, 2f, -16f, -14f);
         }
 
         /// <summary>Both knees come up together. Not the climb's lead knee, not the vault's sweep.</summary>
@@ -278,13 +270,14 @@ namespace Tag.Art
             c.ThighRollR = MantlePose.LegSpread;
         }
 
-        /// <summary>Pop the chest up out of the baseball slide and into the run. Slide boost is not here.</summary>
+        /// <summary>Rise through a forward lean. The arms pump. Slide boost is not here.</summary>
         static void Slide(out VerbExitSample a, out VerbExitSample b, out VerbExitSample c)
         {
-            a = P(-18f, -14f, 12f, 36f, 22f, -16f, -70f, -30f, 40f, -20f, 18f, -24f, -32f);
-            b = P(8f, 4f, -2f, 18f, 28f, -18f, -48f, -28f, -20f, -18f, 16f, -16f, -28f);
-            b.HipYaw = 8f;
-            c = P(4f, 2f, 0f, 22f, 8f, -16f, -12f, -20f, -12f, -16f, 14f, -10f, -8f);
+            // Positive arm pitch swings the hand out to the side. Both pitches stay
+            // negative so the pump stays in the line of the run.
+            a = P(-16f, -10f, 6f, 38f, 22f, -22f, -58f, -42f, -22f, -6f, 2f, -24f, -20f);
+            b = P(18f, 12f, -4f, 32f, 14f, -28f, -18f, -48f, -26f, -4f, 0f, -22f, -18f);
+            c = P(10f, 6f, 0f, 26f, 12f, -20f, -14f, -36f, -20f, -4f, 2f, -16f, -14f);
         }
 
         /// <summary>The stretched dash settles back onto the air line.</summary>

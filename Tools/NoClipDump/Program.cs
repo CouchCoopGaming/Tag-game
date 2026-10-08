@@ -110,10 +110,11 @@ namespace Tag.NoClipDump
                 case VerbExitId.WallJump:
                 case VerbExitId.ClingDrop:
                     return "wall";
-                case VerbExitId.Vault:
                 case VerbExitId.Mantle:
                 case VerbExitId.ClimbTopOut:
                     return "box";
+                case VerbExitId.Vault:
+                    return "ground";
                 case VerbExitId.ZipDrop:
                     return "zip";
                 case VerbExitId.GrappleArrive:

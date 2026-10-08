@@ -1,0 +1,54 @@
+Pass 24. Climb crouch, vault landing past a low box, slide lean and pump. Five-frame strips.
+
+no-clip clips=40 frames=337 worldMax=0.00 poseMax=0.49 rigMax=3.40 poseFails=0 rigJoint=330
+
+Pull keys were not edited. Grapple pull worst stays pose 0.27 cm, rig 1.80 cm, world 0.
+
+Climb. Both feet under the hips, soles 25.6 cm, footX ±14 cm. One hand stays at the lip (handY ~19 cm), the other leaves to 44 cm. ChestY 20.1 to 20.9. No foot vertex inside the box. The chest does not stand up; opening the knees puts a foot through the lid.
+Vault. Drawn box face at -18.9 cm, top at 18.1 cm. Frame 0 has 1281 trail-foot vertices over that top and the lead foot on the ground in front. Frames at 50%, 75%, and the end have both feet in front and none inside. Pose 0.35 cm. The checker solid is the ground, because a hand-following box cannot sit behind the hips.
+Slide. ChestY -5.9, 0.9, 13.8, 11.0, 9.9. HandX stays inside ±35 cm. Both arm pitches stay negative. No flag.
+All 95 panels: flags none. Mantle was not re-keyed. Its hips stay 10.1 cm above its box and it still uses the wide plant.
+
+Sim re-pins against pass 23: vault-slide 17.6 -> 13.5, exit-fit step 49.7 -> 49.5. grapple=-118, closest=54, handoff2 unchanged. Lane not merged.
+
+Per clip:
+exit-WallRun t=0.133 world=0.0 pose=0.22 rig=2.35 poseFails=0 rigJoint=10
+exit-WallJump t=0.133 world=0.0 pose=0.27 rig=2.34 poseFails=0 rigJoint=10
+exit-ClimbTopOut t=0.167 world=0.0 pose=0.25 rig=0.8 poseFails=0 rigJoint=11
+exit-ClingDrop t=0.133 world=0.0 pose=0.16 rig=2.33 poseFails=0 rigJoint=8
+exit-Vault t=0.0 world=0.0 pose=0.35 rig=1.55 poseFails=0 rigJoint=10
+exit-Mantle t=0.133 world=0.0 pose=0.13 rig=2.08 poseFails=0 rigJoint=10
+exit-Slide t=0.0 world=0.0 pose=0.33 rig=2.35 poseFails=0 rigJoint=9
+exit-AirDash t=0.033 world=0.0 pose=0.22 rig=2.18 poseFails=0 rigJoint=6
+exit-Punch t=0.1 world=0.0 pose=0.2 rig=2.7 poseFails=0 rigJoint=10
+exit-Lunge t=0.033 world=0.0 pose=0.25 rig=1.72 poseFails=0 rigJoint=9
+exit-ZipDrop t=0.067 world=0.0 pose=0.22 rig=0.7 poseFails=0 rigJoint=9
+exit-LaunchLand t=0.167 world=0.0 pose=0.22 rig=2.35 poseFails=0 rigJoint=10
+exit-GrappleArrive t=0.0 world=0.0 pose=0.16 rig=2.34 poseFails=0 rigJoint=9
+exit-GrappleRelease t=0.0 world=0.0 pose=0.16 rig=2.22 poseFails=0 rigJoint=8
+exit-Stagger t=0.0 world=0.0 pose=0.19 rig=1.72 poseFails=0 rigJoint=10
+exit-TagBackEnd t=0.1 world=0.0 pose=0.22 rig=1.72 poseFails=0 rigJoint=8
+exit-SoftLand t=0.0 world=0.0 pose=0.32 rig=2.35 poseFails=0 rigJoint=9
+exit-Roll t=0.433 world=0.0 pose=0.33 rig=2.81 poseFails=0 rigJoint=17
+exit-RollAbsorb t=0.3 world=0.0 pose=0.36 rig=2.16 poseFails=0 rigJoint=11
+wall-run t=0.167 world=0.0 pose=0.35 rig=2.09 poseFails=0 rigJoint=9
+wall-run-right t=0.2 world=0.0 pose=0.29 rig=2.22 poseFails=0 rigJoint=9
+wall-jump t=0.0 world=0.0 pose=0.42 rig=1.58 poseFails=0 rigJoint=10
+vault t=0.167 world=0.0 pose=0.27 rig=1.94 poseFails=0 rigJoint=13
+zip-catch t=0.1 world=0.0 pose=0.25 rig=2.12 poseFails=0 rigJoint=4
+zip-ride t=0.367 world=0.0 pose=0.25 rig=0.7 poseFails=0 rigJoint=13
+zip-release t=0.0 world=0.0 pose=0.22 rig=2.04 poseFails=0 rigJoint=6
+grapple-aim t=0.0 world=0.0 pose=0.0 rig=2.23 poseFails=0 rigJoint=3
+grapple-latch t=0.07 world=0.0 pose=0.19 rig=2.35 poseFails=0 rigJoint=4
+grapple-pull t=0.033 world=0.0 pose=0.27 rig=1.8 poseFails=0 rigJoint=15
+grapple-release t=0.0 world=0.0 pose=0.3 rig=1.8 poseFails=0 rigJoint=4
+grapple-miss t=0.167 world=0.0 pose=0.42 rig=3.4 poseFails=0 rigJoint=9
+slide t=0.1 world=0.0 pose=0.46 rig=2.33 poseFails=0 rigJoint=12
+punch t=0.0 world=0.0 pose=0.49 rig=3.27 poseFails=0 rigJoint=8
+punch-recover t=0.0 world=0.0 pose=0.22 rig=3.27 poseFails=0 rigJoint=6
+tag t=0.0 world=0.0 pose=0.0 rig=3.27 poseFails=0 rigJoint=7
+stagger t=0.067 world=0.0 pose=0.44 rig=1.49 poseFails=0 rigJoint=6
+launch-rise t=0.0 world=0.0 pose=0.24 rig=0.73 poseFails=0 rigJoint=2
+launch-mill t=0.0 world=0.0 pose=0.24 rig=1.18 poseFails=0 rigJoint=2
+land-hard t=0.0 world=0.0 pose=0.43 rig=0.97 poseFails=0 rigJoint=2
+run-speed9 t=0.0 world=0.0 pose=0.45 rig=1.86 poseFails=0 rigJoint=2
