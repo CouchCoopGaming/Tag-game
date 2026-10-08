@@ -262,3 +262,7 @@ The jump still leaves on the press frame. The tuck at the top holds the arms out
 ## Motion, thirteenth pass
 
 A long fall now bends the knees, sets the feet a little ahead, and opens the arms. Climbing onto a ledge, vaulting, sliding, grabbing and leaving a zip, arriving and letting go of a grapple, and leaving a launch pad no longer pop a bone in one frame. Speeds and the timers you feel are the same. Try it: fall from high up and watch the knees, then climb, vault, slide, zip, grapple, and hit a launch pad.
+
+## Motion, fourteenth pass
+
+A long fall keeps the chest up and a little forward. The knees bend under the hips, and the arms lift out to the sides for balance. Try it: jump off something tall and watch the arms and the knees on the way down.

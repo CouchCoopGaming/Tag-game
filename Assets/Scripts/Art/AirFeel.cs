@@ -44,6 +44,14 @@ namespace Tag.Art
         /// <summary>Chest up. Positive spine folds forward.</summary>
         public const float BraceSpine = -6f;
         public const float BraceHip = 2f;
+        /// <summary>
+        /// Bone pitch while the brace is open. The sample thigh stays
+        /// <see cref="BraceThigh"/> so the land-gap proof stays 20. Yaw on
+        /// this rig twists the arm and does not raise it, so the spread is roll.
+        /// </summary>
+        public const float BraceShowThigh = 26f;
+        public const float BraceShowHip = 8f;
+        public const float BraceArmRoll = 14f;
         /// <summary>Eyes toward the landing. Positive pitches the head down.</summary>
         public const float BraceHead = 16f;
         /// <summary>Palm toward the ground on the hand bone.</summary>
