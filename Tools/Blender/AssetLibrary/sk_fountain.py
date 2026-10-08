@@ -15,20 +15,25 @@ from _common import Asset, register, lod_pick
 from sk_parts import sweep_tube
 
 
-# (radius, height). Closed loop. Floor is shallow; the lip rolls over.
+# (radius, height). Closed loop. Drain is 8 cm under the crown.
+# The floor stays nearly flat, then the wall rises into the rolled lip.
 BOWL = (
-    (0.018, 0.898),
-    (0.105, 0.898),
-    (0.145, 0.910),
-    (0.168, 0.938),
-    (0.180, 0.958),
-    (0.184, 0.970),
-    (0.176, 0.984),
-    (0.162, 0.974),
-    (0.146, 0.952),
-    (0.122, 0.936),
-    (0.096, 0.930),
-    (0.018, 0.928),
+    (0.017, 0.898),
+    (0.017, 0.904),
+    (0.055, 0.907),
+    (0.105, 0.912),
+    (0.140, 0.916),
+    (0.156, 0.948),
+    (0.168, 0.970),
+    (0.178, 0.978),
+    (0.184, 0.984),
+    (0.192, 0.978),
+    (0.190, 0.970),
+    (0.190, 0.920),
+    (0.178, 0.902),
+    (0.160, 0.896),
+    (0.090, 0.894),
+    (0.017, 0.896),
 )
 
 # Valley radius of the casting. Flutes add the ridges.
@@ -43,12 +48,12 @@ PED = (
     (0.074, 0.890),
 )
 
-# Inside the bowl. Base just above the floor, nozzle down toward +Z.
+# Short guarded arc. The first point sits on the boss cap.
 BUBBLER = (
-    (0.0, 0.941, -0.036),
-    (0.0, 0.968, -0.036),
-    (0.0, 0.974, -0.010),
-    (0.0, 0.958, 0.014),
+    (0.0, 0.931, 0.000),
+    (0.0, 0.948, 0.000),
+    (0.0, 0.954, 0.014),
+    (0.0, 0.944, 0.030),
 )
 
 PET = (
@@ -107,6 +112,27 @@ def _fluted(g, profile, flutes, amp, seg, mat):
     g.mesh(verts, faces, mat)
 
 
+def _face_ring(g, y, z, major, minor, seg, mat):
+    """Chrome ring in the Unity XY plane, facing +Z."""
+    verts = []
+    minor_seg = 6
+    for i in range(seg):
+        a = 2.0 * math.pi * i / float(seg)
+        ca, sa = math.cos(a), math.sin(a)
+        for j in range(minor_seg):
+            b = 2.0 * math.pi * j / float(minor_seg)
+            rad = major + minor * math.cos(b)
+            verts.append((rad * sa, y + rad * ca, z + minor * math.sin(b)))
+    faces = []
+    n = minor_seg
+    for i in range(seg):
+        i2 = (i + 1) % seg
+        for j in range(n):
+            j2 = (j + 1) % n
+            faces.append((i * n + j, i2 * n + j, i2 * n + j2, i * n + j2))
+    g.mesh(verts, faces, mat)
+
+
 def _body(g, lod):
     seg = lod_pick(lod, 32, 16)
     bev = lod_pick(lod, 0.0015, 0.0)
@@ -118,12 +144,18 @@ def _body(g, lod):
             g.cylinder((math.sin(ang) * 0.148, 0.030, math.cos(ang) * 0.148), 0.008, 0.012, "Lib_Steel", 6)
     _fluted(g, PED, 8, 0.008, seg, "Lib_PaintGreen")
     _lathe(g, BOWL, lod_pick(lod, 24, 14), "Lib_PaintGreen")
-    # Drain, clear of the floor and of the bubbler.
-    g.cylinder((0.028, 0.936, 0.020), 0.014, 0.004, "Lib_SteelDark", lod_pick(lod, 10, 6))
-    sweep_tube(g, BUBBLER, 0.008, "Lib_Steel", segments=lod_pick(lod, 8, 6))
-    # Bezel and button on the front of the bowl, clear of the casting.
-    g.cylinder((0, 0.952, 0.192), 0.022, 0.008, "Lib_Steel", lod_pick(lod, 10, 6), axis="Z")
-    g.cylinder((0, 0.952, 0.206), 0.014, 0.012, "Lib_Steel", lod_pick(lod, 10, 6), axis="Z")
+    # Chrome boss plugs the drain. The arc starts on its cap.
+    g.cylinder((0, 0.914, 0), 0.015, 0.032, "Lib_Steel", lod_pick(lod, 12, 8))
+    sweep_tube(g, BUBBLER, 0.0065, "Lib_Steel", segments=lod_pick(lod, 8, 6))
+    if lod == 0:
+        _face_ring(g, 0.950, 0.020, 0.012, 0.0025, 12, "Lib_Steel")
+        g.box((0, 0.966, 0.018), (0.020, 0.004, 0.014), "Lib_Steel")
+        g.box((-0.011, 0.952, 0.018), (0.003, 0.014, 0.012), "Lib_Steel")
+        g.box((0.011, 0.952, 0.018), (0.003, 0.014, 0.012), "Lib_Steel")
+    # Round push-plate, 4.4 cm across, on the vertical face of the rim.
+    # Back is 1.5 mm clear of the wall. Front is 6 mm proud of that face.
+    g.cylinder((0, 0.945, 0.194), 0.022, 0.005, "Lib_SteelDark", lod_pick(lod, 20, 12), axis="Z")
+    _face_ring(g, 0.945, 0.194, 0.027, 0.0025, lod_pick(lod, 20, 12), "Lib_Steel")
     if lod == 0:
         _lathe(g, PET, 12, "Lib_PaintGreen", origin=(0.148, 0.200, 0.0))
         g.cylinder((0.080, 0.218, 0.0), 0.008, 0.012, "Lib_PaintGreen", 6, axis="X")
@@ -144,9 +176,12 @@ def create():
         a.end()
     a.box("Col_Plate", (0, 0.010, 0), (0.26, 0.016, 0.26))
     a.capsule("Col_Post", (0, 0.48, 0), 0.028, 0.62, direction=1)
-    a.box("Col_Floor", (0, 0.914, 0), (0.08, 0.020, 0.08))
-    a.box("Col_RimF", (0, 0.958, 0.170), (0.024, 0.012, 0.012))
-    a.box("Col_RimB", (0, 0.958, -0.170), (0.024, 0.012, 0.012))
-    a.box("Col_RimL", (-0.170, 0.958, 0), (0.012, 0.012, 0.024))
-    a.box("Col_RimR", (0.170, 0.958, 0), (0.012, 0.012, 0.024))
+    a.box("Col_FloorF", (0, 0.904, 0.055), (0.024, 0.005, 0.024))
+    a.box("Col_FloorB", (0, 0.904, -0.055), (0.024, 0.005, 0.024))
+    a.box("Col_FloorL", (-0.055, 0.904, 0), (0.024, 0.005, 0.024))
+    a.box("Col_FloorR", (0.055, 0.904, 0), (0.024, 0.005, 0.024))
+    a.box("Col_RimF", (0, 0.972, 0.180), (0.016, 0.010, 0.008))
+    a.box("Col_RimB", (0, 0.972, -0.180), (0.016, 0.010, 0.008))
+    a.box("Col_RimL", (-0.180, 0.972, 0), (0.008, 0.010, 0.016))
+    a.box("Col_RimR", (0.180, 0.972, 0), (0.008, 0.010, 0.016))
     return a
