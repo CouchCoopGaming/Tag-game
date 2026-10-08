@@ -233,10 +233,13 @@ def _bounds(objects):
     return pts
 
 
-def _frame(scene, objects, fill=0.70, elevation=16.0, azimuth=36.0):
-    """Eye-level 3/4. Horizon stays level because camera up tracks world Z."""
+def _frame(scene, objects, fill=0.70, elevation=16.0, azimuth=36.0, points=None, aim_frac=0.42):
+    """Eye-level 3/4. Horizon stays level because camera up tracks world Z.
+
+    `points` replaces the object bounds when a still should frame part of a tall prop.
+    """
     bpy.context.view_layer.update()
-    pts = _bounds(objects)
+    pts = list(points) if points is not None else _bounds(objects)
     xs = [p.x for p in pts]
     ys = [p.y for p in pts]
     zs = [p.z for p in pts]
@@ -244,7 +247,7 @@ def _frame(scene, objects, fill=0.70, elevation=16.0, azimuth=36.0):
     mx = Vector((max(xs), max(ys), max(zs)))
     center = (mn + mx) * 0.5
     # Aim a little below the bbox center so the contact shadow stays in frame.
-    aim = Vector((center.x, center.y, mn.z + (mx.z - mn.z) * 0.42))
+    aim = Vector((center.x, center.y, mn.z + (mx.z - mn.z) * aim_frac))
     az = math.radians(azimuth)
     el = math.radians(elevation)
     back = Vector((math.sin(az), -math.cos(az), 0.0))

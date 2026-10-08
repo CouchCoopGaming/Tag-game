@@ -97,6 +97,24 @@ PASSES = {
         ("valve_box", "ValveBox_Walk", 20.0, (-0.85, 0.0, 0.4), 200.0),
         ("sign_aframe", "Sign_AFrame", 22.0, (-1.15, 0.0, 0.45), 200.0),
     ),
+    11: (
+        ("fence_weave", "Fence_ChainWeave", 18.0, (-2.05, 0.0, 0.85), 200.0),
+        ("sign_street", "Sign_StreetName", 22.0, (-1.35, 0.0, 0.70), 200.0),
+        ("sign_aframe", "Sign_AFrame", 28.0, (-1.15, 0.0, 0.55), 200.0),
+        ("litter_can", "LitterCan_Street", 20.0, (-1.10, 0.0, 0.60), 200.0),
+        ("curb_return", "StreetCurb_Return", 28.0, (-1.85, 0.0, 1.20), 200.0),
+        ("ped_button", "PedButton_Post", 18.0, (-0.95, 0.0, 0.50), 200.0),
+    ),
+}
+
+# Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
+_FRAME11 = {
+    "fence_weave": (0.70, 11.0, 42.0),
+    "sign_street": (0.70, 7.0, 46.0),
+    "sign_aframe": (0.70, 14.0, 42.0),
+    "litter_can": (0.70, 12.0, 40.0),
+    "curb_return": (0.70, 22.0, 48.0),
+    "ped_button": (0.70, 12.0, 36.0),
 }
 
 
@@ -158,15 +176,14 @@ def _load(names):
 def _fit(path):
     """Quantize with system Pillow. Blender's Python does not ship PIL."""
     helper = "/tmp/so_fit.py"
-    if not os.path.isfile(helper):
-        with open(helper, "w", encoding="utf-8") as handle:
-            handle.write(
-                "import sys\nfrom PIL import Image\n"
-                "p = sys.argv[1]\n"
-                "im = Image.open(p).convert('RGB')\n"
-                "q = im.quantize(colors=96, method=Image.Quantize.MEDIANCUT)\n"
-                "q.save(p, optimize=True)\n"
-            )
+    with open(helper, "w", encoding="utf-8") as handle:
+        handle.write(
+            "import sys\nfrom PIL import Image\n"
+            "p = sys.argv[1]\n"
+            "im = Image.open(p).convert('RGB')\n"
+            "q = im.quantize(colors=128, method=Image.Quantize.MEDIANCUT)\n"
+            "q.save(p, optimize=True)\n"
+        )
     os.system("/usr/bin/python3 %s %s" % (helper, path))
     size = os.path.getsize(path)
     print("SIZE", size, path)
@@ -176,7 +193,7 @@ def _fit(path):
         print("SIZE_OK", size, path)
 
 
-def _hero(fn, path, kind="concrete", yaw=18.0):
+def _hero(fn, path, kind="concrete", yaw=18.0, fill=0.78, elevation=16.0, azimuth=38.0, aim_frac=0.42):
     r._reset_scene()
     scene = bpy.context.scene
     r._engine(scene, wide=True)
@@ -186,7 +203,30 @@ def _hero(fn, path, kind="concrete", yaw=18.0):
     asset = fn()
     obj = r._spawn(asset, (0, 0, 0), yaw)
     r._ground(kind, 80.0)
-    r._frame(scene, [obj], fill=0.78, elevation=16.0, azimuth=38.0)
+    r._frame(scene, [obj], fill=fill, elevation=elevation, azimuth=azimuth, aim_frac=aim_frac)
+    r._render(scene, path)
+    _fit(path)
+
+
+def _blades(fn, path, yaw=24.0):
+    """3/4 of the street-name head so both blades fill the frame."""
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.cycles.samples = 24
+    r._ensure_materials()
+    r._world(scene, night=False)
+    asset = fn()
+    obj = r._spawn(asset, (0, 0, 0), yaw)
+    r._ground("concrete", 40.0)
+    bpy.context.view_layer.update()
+    pts = []
+    for vert in obj.data.vertices:
+        world = obj.matrix_world @ vert.co
+        # Head only. Including the pole below the blades shoves the legend against the frame.
+        if 2.72 <= world.z <= 3.42:
+            pts.append(world)
+    r._frame(scene, [obj], fill=0.64, elevation=12.0, azimuth=52.0, points=pts, aim_frac=0.50)
     r._render(scene, path)
     _fit(path)
 
@@ -226,7 +266,7 @@ def _place_hier(pos, yaw):
     return meshes
 
 
-def _scale(fn, path, prop_yaw, hier_pos, hier_yaw, kind="concrete"):
+def _scale(fn, path, prop_yaw, hier_pos, hier_yaw, kind="concrete", fill=0.80, elevation=12.0, azimuth=32.0, aim_frac=0.42):
     r._reset_scene()
     scene = bpy.context.scene
     r._engine(scene, wide=True)
@@ -237,7 +277,7 @@ def _scale(fn, path, prop_yaw, hier_pos, hier_yaw, kind="concrete"):
     prop = r._spawn(asset, (0, 0, 0), prop_yaw)
     meshes = _place_hier(hier_pos, hier_yaw)
     r._ground(kind, 40.0)
-    r._frame(scene, [prop] + meshes, fill=0.80, elevation=12.0, azimuth=32.0)
+    r._frame(scene, [prop] + meshes, fill=fill, elevation=elevation, azimuth=azimuth, aim_frac=aim_frac)
     r._render(scene, path)
     _fit(path)
 
@@ -253,8 +293,17 @@ def main():
         if ONLY and ONLY not in key:
             continue
         kind = "asphalt" if any(part in key for part in ("barrier", "road", "curb", "median")) else "concrete"
+        tuned = _FRAME11.get(key) if PASS == 11 else None
+        fill, elevation, azimuth = tuned if tuned else (0.78, 16.0, 38.0)
+        aim = 0.50 if PASS == 11 else 0.42
         print("SHOT", key)
-        _hero(found[name], os.path.join(STILL_DIR, key + ".png"), kind=kind, yaw=yaw)
+        _hero(
+            found[name], os.path.join(STILL_DIR, key + ".png"),
+            kind=kind, yaw=yaw, fill=fill, elevation=elevation, azimuth=azimuth, aim_frac=aim,
+        )
+        if PASS == 11 and key == "sign_street":
+            print("SHOT", key + "_blades")
+            _blades(found[name], os.path.join(STILL_DIR, key + "_blades.png"), yaw=28.0)
         print("SHOT", key + "_scale")
         _scale(
             found[name],
@@ -263,6 +312,10 @@ def main():
             hier_pos,
             hier_yaw,
             kind=kind,
+            fill=0.72 if PASS == 11 else 0.80,
+            elevation=elevation if PASS == 11 else 12.0,
+            azimuth=36.0 if PASS == 11 else 32.0,
+            aim_frac=aim,
         )
     print("STREET_OBJECTS_STILLS", STILL_DIR)
 

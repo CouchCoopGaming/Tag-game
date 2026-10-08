@@ -152,7 +152,7 @@ def scene_meta(path):
     write(path + ".meta", "fileFormatVersion: 2\nguid: %s\nDefaultImporter:\n  externalObjects: {}\n  userData: \n  assetBundleName: \n  assetBundleVariant: \n" % guid("scene", "AssetShowcase"))
 
 
-def texture_meta(path, key, normal=False, linear=False, npot=False, size=256):
+def texture_meta(path, key, normal=False, linear=False, npot=False, size=256, cutout=False):
     text = """fileFormatVersion: 2
 guid: %s
 TextureImporter:
@@ -261,8 +261,19 @@ TextureImporter:
         text = text.replace("textureType: 0", "textureType: 1", 1)
     if npot:
         text = text.replace("nPOTScale: 1", "nPOTScale: 0", 1)
+    if cutout:
+        text = text.replace("alphaIsTransparency: 0", "alphaIsTransparency: 1", 1)
+        text = text.replace("mipMapsPreserveCoverage: 0", "mipMapsPreserveCoverage: 1", 1)
     write(path + ".meta", text)
     return guid("tex", key)
+
+
+def _cutout_names():
+    text = open(COMMON, encoding="utf-8").read()
+    found = re.search(r"CUTOUT = (\([^)]*\))", text, re.S)
+    if not found:
+        return set()
+    return set(ast.literal_eval(found.group(1)))
 
 
 def write_materials(palette, textured, normals, ao_names, emissive, only=None):
@@ -302,6 +313,11 @@ def write_materials(palette, textured, normals, ao_names, emissive, only=None):
                 "- _EmissionColor: {r: %s, g: %s, b: %s, a: 1}" % (num(emit[0]), num(emit[1]), num(emit[2])),
             )
             keywords.append("_EMISSION")
+        if name in _cutout_names():
+            body = body.replace("- _AlphaClip: 0", "- _AlphaClip: 1", 1)
+            body = body.replace("RenderType: Opaque", "RenderType: TransparentCutout", 1)
+            body = body.replace("m_CustomRenderQueue: -1", "m_CustomRenderQueue: 2450", 1)
+            keywords.append("_ALPHATEST_ON")
         if keywords:
             body = body.replace(
                 "m_ValidKeywords: []",

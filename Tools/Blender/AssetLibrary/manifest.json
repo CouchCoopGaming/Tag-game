@@ -40782,30 +40782,30 @@
   {
     "name": "Sign_StreetName",
     "category": "StreetFurniture",
-    "blurb": "Street blades 0.90 x 0.23 m. Bottoms at 2.74 m and 3.01 m. Pole 60 mm. MAIN and 5TH in Liberation Sans.",
+    "blurb": "Street blades 0.91 x 0.23 m and 0.61 x 0.23 m. Bottoms at 2.74 m and 3.01 m. Slip base. MAIN and 5TH in Overpass.",
     "size": [
-      0.9,
-      3.32,
-      0.9
+      0.91,
+      3.258,
+      0.61
     ],
     "min": [
-      -0.45,
+      -0.455,
       0.0,
-      -0.45
+      -0.305
     ],
     "max": [
-      0.45,
-      3.32,
-      0.45
+      0.455,
+      3.258,
+      0.305
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 916,
+        "tris": 2064,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_PaintGreen",
+          "Lib_SignGreen",
           "Lib_PaintWhite"
         ],
         "mesh": "LOD0",
@@ -40813,11 +40813,11 @@
       },
       {
         "lod": 1,
-        "tris": 192,
+        "tris": 448,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_PaintGreen",
+          "Lib_SignGreen",
           "Lib_PaintWhite"
         ],
         "mesh": "LOD1",
@@ -40830,12 +40830,12 @@
         "type": "box",
         "center": [
           0,
-          0.01,
+          0.005,
           0
         ],
         "size": [
           0.12,
-          0.012,
+          0.006,
           0.12
         ],
         "euler": [
@@ -40849,25 +40849,25 @@
         "type": "capsule",
         "center": [
           0,
-          1.2,
+          1.3,
           0
         ],
         "radius": 0.018,
-        "height": 2.2,
+        "height": 2.3,
         "direction": 1
       },
       {
-        "name": "Col_MainL",
+        "name": "Col_MainF",
         "type": "box",
         "center": [
-          -0.26,
+          0.3,
           2.855,
-          0.044
+          0.054
         ],
         "size": [
-          0.32,
-          0.15,
-          0.006
+          0.24,
+          0.14,
+          0.008
         ],
         "euler": [
           0,
@@ -40876,17 +40876,17 @@
         ]
       },
       {
-        "name": "Col_MainR",
+        "name": "Col_MainB",
         "type": "box",
         "center": [
-          0.26,
+          -0.3,
           2.855,
-          0.044
+          -0.054
         ],
         "size": [
-          0.32,
-          0.15,
-          0.006
+          0.24,
+          0.14,
+          0.008
         ],
         "euler": [
           0,
@@ -40895,17 +40895,17 @@
         ]
       },
       {
-        "name": "Col_FifthS",
+        "name": "Col_FifthF",
         "type": "box",
         "center": [
-          0.048,
+          0.054,
           3.125,
-          -0.24
+          0.18
         ],
         "size": [
-          0.006,
-          0.15,
-          0.32
+          0.008,
+          0.14,
+          0.14
         ],
         "euler": [
           0,
@@ -40914,17 +40914,17 @@
         ]
       },
       {
-        "name": "Col_FifthN",
+        "name": "Col_FifthB",
         "type": "box",
         "center": [
-          0.048,
+          -0.054,
           3.125,
-          0.24
+          -0.18
         ],
         "size": [
-          0.006,
-          0.15,
-          0.32
+          0.008,
+          0.14,
+          0.14
         ],
         "euler": [
           0,
@@ -40944,36 +40944,37 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.51,
+    "slackCm": 0.7,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Sign_StreetName.fbx"
   },
   {
     "name": "Fence_ChainWeave",
     "category": "StreetFurniture",
-    "blurb": "Chain-link bay 2.44 m between posts, top rail at 1.83 m. Diamond is about 60 mm. A dark sheet backs the wires.",
+    "blurb": "Chain-link bay 2.44 m. 2 inch galvanized diamond, tension bars, 50 mm bottom wire, knuckled top, terminal brace.",
     "size": [
-      2.56,
-      2.018,
-      0.12
+      2.61,
+      2.01,
+      0.13
     ],
     "min": [
-      -1.28,
+      -1.285,
       0.0,
-      -0.06
+      -0.065
     ],
     "max": [
-      1.28,
-      2.018,
-      0.06
+      1.325,
+      2.01,
+      0.065
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1204,
+        "tris": 892,
         "materials": [
           "Lib_Steel",
           "Lib_Concrete",
           "Lib_SteelDark",
+          "Lib_ChainMesh",
           "Lib_Chain"
         ],
         "mesh": "LOD0",
@@ -40981,11 +40982,12 @@
       },
       {
         "lod": 1,
-        "tris": 220,
+        "tris": 432,
         "materials": [
           "Lib_Steel",
           "Lib_Concrete",
-          "Lib_SteelDark"
+          "Lib_SteelDark",
+          "Lib_ChainMesh"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -40993,14 +40995,26 @@
     ],
     "colliders": [
       {
-        "name": "Col_PostL",
+        "name": "Col_PostT",
         "type": "capsule",
         "center": [
           -1.22,
           0.95,
           0
         ],
-        "radius": 0.018,
+        "radius": 0.016,
+        "height": 1.5,
+        "direction": 1
+      },
+      {
+        "name": "Col_PostL",
+        "type": "capsule",
+        "center": [
+          0.0,
+          0.9,
+          0
+        ],
+        "radius": 0.012,
         "height": 1.4,
         "direction": 1
       },
@@ -41009,25 +41023,25 @@
         "type": "capsule",
         "center": [
           1.22,
-          0.95,
+          0.9,
           0
         ],
-        "radius": 0.018,
+        "radius": 0.012,
         "height": 1.4,
         "direction": 1
       },
       {
-        "name": "Col_Mesh",
+        "name": "Col_MeshL",
         "type": "box",
         "center": [
-          0,
-          0.95,
-          -0.0035
+          -0.55,
+          0.96,
+          0.016
         ],
         "size": [
-          1.7,
-          1.2,
-          0.003
+          0.86,
+          1.36,
+          0.01
         ],
         "euler": [
           0,
@@ -41036,17 +41050,17 @@
         ]
       },
       {
-        "name": "Col_Rail",
+        "name": "Col_MeshR",
         "type": "box",
         "center": [
-          0,
-          1.784,
-          -0.004
+          0.55,
+          0.96,
+          0.016
         ],
         "size": [
-          1.9,
-          0.014,
-          0.008
+          0.86,
+          1.36,
+          0.01
         ],
         "euler": [
           0,
@@ -41058,7 +41072,7 @@
     "climbable": false,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Wires are not a solid cling. The sheet blocks passage.",
+    "climbNote": "The fabric is a cutout sheet. Not a solid cling.",
     "vaultNote": "Top rail is 1.83 m.",
     "warnings": [],
     "fbxNames": [
@@ -41066,7 +41080,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.0,
+    "slackCm": 0.39,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Fence_ChainWeave.fbx"
   },
   {
@@ -41091,7 +41105,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 212,
+        "tris": 356,
         "materials": [
           "Lib_Concrete",
           "Lib_Mortar"
@@ -41101,7 +41115,7 @@
       },
       {
         "lod": 1,
-        "tris": 116,
+        "tris": 140,
         "materials": [
           "Lib_Concrete"
         ],
@@ -41242,42 +41256,41 @@
   {
     "name": "LitterCan_Street",
     "category": "StreetFurniture",
-    "blurb": "Litter can, 0.56 m across and 1.02 m to the lid. Steel body, two belts, rain cap.",
+    "blurb": "Slatted litter can, 0.60 m across and 1.06 m to the dome. Liner shows between the slats.",
     "size": [
-      0.66,
-      1.045,
-      0.66
+      0.67,
+      1.055,
+      0.67
     ],
     "min": [
-      -0.33,
+      -0.335,
       0.0,
-      -0.33
+      -0.335
     ],
     "max": [
-      0.33,
-      1.045,
-      0.33
+      0.335,
+      1.055,
+      0.335
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 412,
+        "tris": 772,
         "materials": [
           "Lib_SteelDark",
-          "Lib_PaintGreen",
           "Lib_Steel",
-          "Lib_Black"
+          "Lib_PaintGreen"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 196,
+        "tris": 424,
         "materials": [
           "Lib_SteelDark",
-          "Lib_PaintGreen",
-          "Lib_Steel"
+          "Lib_Steel",
+          "Lib_PaintGreen"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -41289,32 +41302,13 @@
         "type": "box",
         "center": [
           0,
-          0.012,
+          0.022,
           0
         ],
         "size": [
-          0.32,
-          0.014,
-          0.32
-        ],
-        "euler": [
-          0,
-          0,
-          0
-        ]
-      },
-      {
-        "name": "Col_Body",
-        "type": "box",
-        "center": [
-          0,
-          0.45,
-          0
-        ],
-        "size": [
-          0.32,
           0.22,
-          0.32
+          0.028,
+          0.22
         ],
         "euler": [
           0,
@@ -41323,17 +41317,36 @@
         ]
       },
       {
-        "name": "Col_Lid",
+        "name": "Col_Liner",
         "type": "box",
         "center": [
           0,
-          1.004,
+          0.46,
           0
         ],
         "size": [
+          0.18,
           0.4,
-          0.012,
-          0.4
+          0.18
+        ],
+        "euler": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "Col_Dome",
+        "type": "box",
+        "center": [
+          0,
+          1.03,
+          0
+        ],
+        "size": [
+          0.06,
+          0.03,
+          0.06
         ],
         "euler": [
           0,
@@ -41345,8 +41358,8 @@
     "climbable": false,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "Smooth body. Not a cling.",
-    "vaultNote": "Lid is 1.02 m. Not a vault.",
+    "climbNote": "Smooth slats. Not a cling.",
+    "vaultNote": "Dome is 1.06 m. Not a vault.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
@@ -41532,45 +41545,43 @@
   {
     "name": "PedButton_Post",
     "category": "StreetFurniture",
-    "blurb": "Pushbutton pole. Button center at 1.07 m. Pole 90 mm. PUSH in Liberation Sans.",
+    "blurb": "Pushbutton pole. Button center at 1.07 m. Arrow plate and speaker housing. Pole 90 mm.",
     "size": [
-      0.22,
-      1.412,
-      0.22
+      0.249,
+      1.39,
+      0.221
     ],
     "min": [
-      -0.11,
+      -0.1,
       0.0,
-      -0.11
+      -0.1
     ],
     "max": [
-      0.11,
-      1.412,
-      0.11
+      0.149,
+      1.39,
+      0.121
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 736,
+        "tris": 464,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_PaintYellow",
           "Lib_Black",
-          "Lib_PaintWhite"
+          "Lib_PaintYellow"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 128,
+        "tris": 240,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_PaintYellow",
           "Lib_Black",
-          "Lib_PaintWhite"
+          "Lib_PaintYellow"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -41582,13 +41593,13 @@
         "type": "box",
         "center": [
           0,
-          0.01,
+          0.012,
           0
         ],
         "size": [
-          0.14,
-          0.012,
-          0.14
+          0.12,
+          0.016,
+          0.12
         ],
         "euler": [
           0,
@@ -41601,11 +41612,11 @@
         "type": "capsule",
         "center": [
           0,
-          0.48,
+          0.42,
           0
         ],
         "radius": 0.028,
-        "height": 0.8,
+        "height": 0.7,
         "direction": 1
       },
       {
@@ -41613,12 +41624,12 @@
         "type": "box",
         "center": [
           0,
-          1.07,
+          1.08,
           0.062
         ],
         "size": [
-          0.08,
-          0.12,
+          0.05,
+          0.1,
           0.016
         ],
         "euler": [
@@ -41853,41 +41864,45 @@
   {
     "name": "Sign_AFrame",
     "category": "StreetFurniture",
-    "blurb": "A-frame 0.56 m wide and 0.86 m tall. OPEN in Liberation Sans on the street face.",
+    "blurb": "Chalkboard A-frame 0.58 m wide and 0.88 m tall. Hinge, spreader chains, feet on the legs. OPEN on both faces.",
     "size": [
-      0.58,
-      0.818,
-      0.64
+      0.61,
+      0.856,
+      0.806
     ],
     "min": [
-      -0.29,
+      -0.305,
       0.0,
-      -0.32
+      -0.403
     ],
     "max": [
-      0.29,
-      0.818,
-      0.32
+      0.305,
+      0.856,
+      0.403
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 492,
+        "tris": 5502,
         "materials": [
-          "Lib_PaintWhite",
-          "Lib_Steel",
+          "Lib_Wood",
+          "Lib_WoodDark",
+          "Lib_Black",
           "Lib_SteelDark",
-          "Lib_Black"
+          "Lib_Steel",
+          "Lib_Chain",
+          "Lib_PaintCream"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 100,
+        "tris": 196,
         "materials": [
-          "Lib_PaintWhite",
-          "Lib_Steel",
+          "Lib_Wood",
+          "Lib_WoodDark",
+          "Lib_Black",
           "Lib_SteelDark"
         ],
         "mesh": "LOD1",
@@ -41899,17 +41914,17 @@
         "name": "Col_Front",
         "type": "box",
         "center": [
-          0,
-          0.42,
-          0.16
+          0.0,
+          0.45583896752085,
+          0.18750424953903802
         ],
         "size": [
-          0.4,
-          0.56,
+          0.24,
+          0.32,
           0.01
         ],
         "euler": [
-          14,
+          -21.0,
           0,
           0
         ]
@@ -41918,17 +41933,17 @@
         "name": "Col_Back",
         "type": "box",
         "center": [
-          0,
-          0.42,
-          -0.16
+          0.0,
+          0.45583896752085,
+          -0.18750424953903802
         ],
         "size": [
-          0.4,
-          0.56,
+          0.24,
+          0.32,
           0.01
         ],
         "euler": [
-          -14,
+          21.0,
           0,
           0
         ]

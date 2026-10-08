@@ -64,7 +64,7 @@ def create():
     a.vault_note = "Curb is 0.15 m above the gutter. Not a vault."
     for lod in (0, 1):
         g = a.begin(lod)
-        _sweep(g, 6 if lod == 0 else 3)
+        _sweep(g, 12 if lod == 0 else 4)
         if lod == 0:
             for angle in (math.radians(8), math.radians(82)):
                 x, y, z = _point(angle, 0.14, 0.271)

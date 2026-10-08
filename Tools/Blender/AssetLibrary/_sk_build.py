@@ -142,6 +142,19 @@ def _merge(entries):
     return path
 
 
+def _cutout_assets():
+    """Write the alpha-cutout material and its texture importer. Other materials stay put."""
+    png = os.path.join(ROOT, "..", "..", "..", "Assets", "Art", "Props", "Library", "Textures", "Lib_ChainMesh.png")
+    png = os.path.normpath(png)
+    if not os.path.isfile(png):
+        return
+    write_unity.texture_meta(png, "Lib_ChainMesh", size=512, cutout=True)
+    palette, textured, normals, ao_names, emissive = write_unity.load_palette()
+    write_unity.write_materials(
+        palette, textured, normals, ao_names, emissive, only={"Lib_ChainMesh", "Lib_SignGreen"},
+    )
+
+
 def _prefabs(entries):
     palette, _textured, _normals, _ao, _emissive = write_unity.load_palette()
     mat_guids = {name: write_unity.guid("mat", name) for name in palette}
@@ -190,6 +203,7 @@ def main():
         sys.exit(1)
     _merge(entries)
     _prefabs(entries)
+    _cutout_assets()
     print("STREET_KIT_WORST_SLACK_CM", worst[0], worst[1])
     print("STREET_KIT_COUNT", len(entries))
 

@@ -63,6 +63,10 @@ PALETTE = {
     "Lib_Water": ((0.025, 0.07, 0.09), 0.02, 0.55),
     "Lib_Brass": ((0.74, 0.58, 0.28), 0.85, 0.55),
     "Lib_Chain": ((0.68, 0.70, 0.72), 0.62, 0.38),
+    # Galvanized diamond. The albedo is the cutout texture; the tint stays white.
+    "Lib_ChainMesh": ((1.0, 1.0, 1.0), 0.72, 0.46),
+    # Reflective highway green for street-name blades.
+    "Lib_SignGreen": ((0.03, 0.32, 0.15), 0.20, 0.62),
     "Lib_Soil": ((0.28, 0.18, 0.10), 0.0, 0.12),
     "Lib_Siding": ((0.78, 0.80, 0.78), 0.0, 0.30),
     "Lib_Roof": ((0.28, 0.30, 0.32), 0.05, 0.25),
@@ -115,7 +119,11 @@ TEXTURED = (
     "Lib_Brick", "Lib_Asphalt", "Lib_Wood", "Lib_WoodDark", "Lib_Concrete",
     "Lib_Siding", "Lib_Roof", "Lib_Soil", "Lib_Hydrant", "Lib_WoodWeather",
     "Lib_CourtDecal", "Lib_Bark", "Lib_MetalWorn", "Lib_ContainerRed", "Lib_ContainerBlue",
-    "Lib_CraneYellow",
+    "Lib_CraneYellow", "Lib_ChainMesh",
+)
+# Alpha-cutout albedo. The PNG alpha is the clip mask.
+CUTOUT = (
+    "Lib_ChainMesh",
 )
 NORMALS = (
     "Lib_Brick", "Lib_Water", "Lib_Concrete", "Lib_Wood", "Lib_WoodDark",
@@ -543,9 +551,10 @@ class Geo:
         bmesh.ops.recalc_face_normals(out, faces=out.faces)
         self._ingest(out, mat, 1.0)
 
-    def text(self, body, location, size, mat, extrude=0.008, yaw=0.0, font=None):
-        """Centered text standing in the Unity XY plane, extruded toward +Z, then yawed.
+    def text(self, body, location, size, mat, extrude=0.008, yaw=0.0, font=None, pitch=0.0):
+        """Centered text standing in the Unity XY plane, extruded toward +Z, then pitched and yawed.
 
+        Pitch matches a box euler X rotation so legends sit on a leaning board.
         Pass an OFL font path. The default Blender font is GPL and is not used for new signs.
         """
         curve = bpy.data.curves.new("LibText", "FONT")
@@ -565,13 +574,17 @@ class Geo:
         me = obj.data
         a = math.radians(yaw)
         ca, sa = math.cos(a), math.sin(a)
+        p = math.radians(pitch)
+        cp, sp = math.cos(p), math.sin(p)
         bm = bmesh.new()
         vmap = []
         for v in me.vertices:
             x, y, z = v.co.x, v.co.y, v.co.z
-            xr = x * ca + z * sa
-            zr = -x * sa + z * ca
-            u = (xr + location[0], y + location[1], zr + location[2])
+            yp = y * cp - z * sp
+            zp = y * sp + z * cp
+            xr = x * ca + zp * sa
+            zr = -x * sa + zp * ca
+            u = (xr + location[0], yp + location[1], zr + location[2])
             vmap.append(bm.verts.new(unity_to_blender(*u)))
         for poly in me.polygons:
             try:
@@ -920,6 +933,19 @@ def _ensure_materials():
             bsdf.inputs["Roughness"].default_value = 0.04
             if "IOR" in bsdf.inputs:
                 bsdf.inputs["IOR"].default_value = 1.45
+        if name in CUTOUT and os.path.isfile(img_path):
+            tex = None
+            for node in nt.nodes:
+                if node.type == "TEX_IMAGE" and node.image:
+                    tex = node
+                    break
+            if tex is not None and "Alpha" in bsdf.inputs:
+                nt.links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
+            try:
+                mat.surface_render_method = "DITHERED"
+            except (TypeError, AttributeError):
+                pass
+            mat.use_backface_culling = False
 
 
 def _object_from_geo(geo, name):

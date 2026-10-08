@@ -1,67 +1,29 @@
-"""Chain-link bay with a diamond of wires. 8 ft between post centers.
+"""Chain-link terminal bay. Fabric is a galvanized diamond cutout, not a solid sheet.
 
-A dark sheet sits behind the wires so the bay has a solid for the collider.
-The wires are round tubes, not a twisted knuckle weave.
+8 ft between the terminal post and the far line post. Mesh is 2 inch.
+A bottom tension wire sits 5 cm off the ground. The terminal post carries a brace.
 """
 
-import math
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
+from sk_parts import polyline
+
+# One diamond repeat along the fence. Matches Lib_ChainMesh.png.
+_UV = 1.0 / (0.0508 * (2.0 ** 0.5))
 
 
-def _clip(x0, y0, dx, dy, bounds):
-    xmin, xmax, ymin, ymax = bounds
-    ts = []
-    if abs(dx) > 1e-9:
-        ts.append((xmin - x0) / dx)
-        ts.append((xmax - x0) / dx)
-    if abs(dy) > 1e-9:
-        ts.append((ymin - y0) / dy)
-        ts.append((ymax - y0) / dy)
-    hits = []
-    for t in ts:
-        x = x0 + dx * t
-        y = y0 + dy * t
-        if xmin - 1e-3 <= x <= xmax + 1e-3 and ymin - 1e-3 <= y <= ymax + 1e-3:
-            key = (round(x, 4), round(y, 4))
-            if key not in hits:
-                hits.append(key)
-    best = None
-    best_d = 0.04
-    for i in range(len(hits)):
-        for j in range(i + 1, len(hits)):
-            d = (hits[i][0] - hits[j][0]) ** 2 + (hits[i][1] - hits[j][1]) ** 2
-            if d > best_d:
-                best_d = d
-                best = (hits[i], hits[j])
-    return best
-
-
-def _wires(g, z, direction):
-    # About a 2.4 in diamond. Tubes stay proud of the sheet and clear of the collider.
-    bounds = (-1.00, 1.00, 0.16, 1.74)
-    spacing = 0.06
-    dx, dy = direction
-    perp = (dy, -dx)
-    scale = spacing / math.hypot(*perp)
-    for i in range(-48, 49):
-        ox = perp[0] * scale * i
-        oy = perp[1] * scale * i
-        seg = _clip(ox, oy, dx, dy, bounds)
-        if not seg:
-            continue
-        (x0, y0), (x1, y1) = seg
-        g.pipe((x0, y0, z), (x1, y1, z), 0.0035, "Lib_Chain", 4)
-
-
-def _post(g, x, lod):
+def _post(g, x, radius, height, cap, lod):
     seg = lod_pick(lod, 8, 6)
-    g.cylinder((x, 0.98, 0), 0.030, 1.96, "Lib_Steel", seg)
-    g.cylinder((x, 0.03, 0), 0.06, 0.06, "Lib_Concrete", 8)
-    g.sphere((x, 1.98, 0), 0.038, "Lib_Steel", seg)
+    g.cylinder((x, height * 0.5, 0), radius, height, "Lib_Steel", seg)
+    g.cylinder((x, 0.025, 0), radius + 0.035, 0.05, "Lib_Concrete", 8)
+    if cap == "dome":
+        g.sphere((x, height + 0.012, 0), radius + 0.008, "Lib_Steel", seg)
+    else:
+        # Loop cap: a sleeve the top rail runs through.
+        g.cylinder((x, 1.83, 0), 0.026, 0.05, "Lib_SteelDark", 8, axis="X")
 
 
 @register
@@ -69,27 +31,54 @@ def create():
     a = Asset(
         "Fence_ChainWeave",
         "StreetFurniture",
-        "Chain-link bay 2.44 m between posts, top rail at 1.83 m. Diamond is about 60 mm. A dark sheet backs the wires.",
+        "Chain-link bay 2.44 m. 2 inch galvanized diamond, tension bars, 50 mm bottom wire, knuckled top, terminal brace.",
     )
-    a.climb_note = "Wires are not a solid cling. The sheet blocks passage."
+    a.climb_note = "The fabric is a cutout sheet. Not a solid cling."
     a.vault_note = "Top rail is 1.83 m."
     for lod in (0, 1):
         g = a.begin(lod)
         seg = lod_pick(lod, 8, 6)
-        for x in (-1.22, 1.22):
-            _post(g, x, lod)
-        g.cylinder((0.0, 1.78, 0), 0.016, 2.48, "Lib_Steel", seg, axis="X")
-        g.cylinder((0.0, 0.12, 0), 0.012, 2.48, "Lib_Steel", 6, axis="X")
-        # Sheet is the solid. Wires bite its front face and stay out of the collider.
-        g.box((0, 0.95, 0), (2.00, 1.58, 0.012), "Lib_SteelDark")
+        _post(g, -1.22, 0.030, 1.96, "dome", lod)
+        _post(g, 0.0, 0.024, 1.78, "loop", lod)
+        _post(g, 1.22, 0.024, 1.78, "loop", lod)
+        # Top rail ends in the terminal and runs out through the line-post caps.
+        g.cylinder((0.05, 1.83, 0), 0.016, 2.55, "Lib_Steel", seg, axis="X")
+        # Bottom tension wire, 5 cm off the ground, inside the fabric.
+        g.cylinder((0.0, 0.05, 0.016), 0.0035, 2.36, "Lib_Steel", 6, axis="X")
+        # Tension bars bite the fabric and the clamp bands bite the end posts.
+        for x in (-1.05, 1.05):
+            g.box((x, 0.95, 0.016), (0.012, 1.76, 0.022), "Lib_SteelDark")
+        for band in (-1.16, 1.16):
+            for y in (0.40, 0.95, 1.55):
+                g.box((band, y, 0.014), (0.14, 0.030, 0.040), "Lib_Steel")
+        # Fabric runs into the posts. 16 mm thick so an 8 mm collider inset stays inside.
+        g.box((0, 0.95, 0.016), (2.40, 1.82, 0.016), "Lib_ChainMesh", bevel=0, uv_scale=_UV)
+        # Brace on the back face, from the terminal post up to the top rail.
+        polyline(g, [(-1.18, 1.42, -0.02), (-0.55, 1.83, -0.012)], 0.012, "Lib_Steel", seg)
+        g.cylinder((-1.20, 1.42, -0.012), 0.040, 0.028, "Lib_SteelDark", 8)
         if lod == 0:
-            _wires(g, 0.0075, (1.0, 1.0))
-            _wires(g, 0.0105, (1.0, -1.0))
+            # Knuckle the fabric over the top rail.
+            x = -0.96
+            while x <= 0.96:
+                polyline(
+                    g,
+                    [(x, 1.78, 0.020), (x, 1.90, 0.0), (x, 1.78, -0.010)],
+                    0.0032,
+                    "Lib_Chain",
+                    4,
+                )
+                x += 0.16
+            # Ties along the top rail and the bottom wire.
+            for x in (-0.8, -0.4, 0.4, 0.8):
+                g.pipe((x, 1.74, 0.018), (x, 1.84, 0.0), 0.0025, "Lib_Steel", 4)
+                g.pipe((x, 0.05, 0.016), (x, 0.12, 0.016), 0.0025, "Lib_Steel", 4)
+            g.pipe((0.0, 0.55, 0.012), (0.0, 0.55, 0.020), 0.0025, "Lib_Steel", 4)
+            g.pipe((0.0, 1.20, 0.012), (0.0, 1.20, 0.020), 0.0025, "Lib_Steel", 4)
         a.end()
-    a.capsule("Col_PostL", (-1.22, 0.95, 0), 0.018, 1.40)
-    a.capsule("Col_PostR", (1.22, 0.95, 0), 0.018, 1.40)
-    # Back half of the sheet, clear of the wires.
-    a.box("Col_Mesh", (0, 0.95, -0.0035), (1.70, 1.20, 0.003))
-    # Back of the top rail, between the posts, under the crown.
-    a.box("Col_Rail", (0, 1.784, -0.004), (1.90, 0.014, 0.008))
+    a.capsule("Col_PostT", (-1.22, 0.95, 0), 0.016, 1.50)
+    a.capsule("Col_PostL", (0.0, 0.90, 0), 0.012, 1.40)
+    a.capsule("Col_PostR", (1.22, 0.90, 0), 0.012, 1.40)
+    # Thin boxes in the fabric, clear of the line post, the tension bars, and the wires.
+    a.box("Col_MeshL", (-0.55, 0.96, 0.016), (0.86, 1.36, 0.010))
+    a.box("Col_MeshR", (0.55, 0.96, 0.016), (0.86, 1.36, 0.010))
     return a
