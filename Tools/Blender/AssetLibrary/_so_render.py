@@ -154,6 +154,14 @@ PASSES = {
         # Figure stands on the street side, beside the basin, not behind the spout.
         ("fountain", "Fountain_Walk", 180.0, (0.98, 0.0, -0.40), 12.0),
     ),
+    22: (
+        ("newsstand", "Newsstand_Corner", 180.0, (-1.62, 0.0, -1.22), 0.0),
+        # Figure stands beside the bowl, on the street side.
+        ("fountain", "Fountain_Walk", 180.0, (0.90, 0.0, -0.58), 8.0),
+        ("mail_drop", "MailDrop_Corner", 180.0, (0.90, 0.0, 0.05), 20.0),
+        ("meter_single", "ParkingMeter_Single", 180.0, (0.72, 0.0, 0.08), 15.0),
+        ("pay_station", "PayStation_Street", 180.0, (0.85, 0.0, 0.08), 18.0),
+    ),
 }
 
 # Pass 15 sits the prop on a sidewalk panel. Low camera, aim below center,
@@ -190,6 +198,12 @@ _FRAME20 = {
 # Pass 21 looks down into the basin. The front faces the sun.
 _FRAME21 = {
     "fountain": (0.78, 42.0, 196.0, 0.58, 0.52, 0.36, 3.60),
+}
+
+# Pass 22. Newsstand 3/4 matches the accepted camera. Fountain is a lower 3/4.
+_FRAME22 = {
+    "newsstand": (0.70, 13.0, 232.0, 0.42, 0.50, 0.34, 7.20),
+    "fountain": (0.76, 24.0, 208.0, 0.52, 0.50, 0.36, 3.40),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
@@ -366,6 +380,32 @@ def _blades(fn, path, yaw=24.0):
     _fit(path)
 
 
+def _bowl(fn, path, yaw=180.0):
+    """Close three-quarter into the shallow bowl and the bubbler."""
+    r._reset_scene()
+    scene = bpy.context.scene
+    r._engine(scene, wide=True)
+    scene.cycles.samples = 28
+    r._ensure_materials()
+    r._world(scene, night=False)
+    asset = fn()
+    obj = r._spawn(asset, (0, 0, 0), yaw)
+    _sidewalk(3.2)
+    bpy.context.view_layer.update()
+    pts = []
+    for vert in obj.data.vertices:
+        world = obj.matrix_world @ vert.co
+        ux, uy, uz = blender_to_unity(world.x, world.y, world.z)
+        if 0.82 <= uy <= 1.05 and abs(ux) <= 0.28 and abs(uz) <= 0.28:
+            pts.append(world)
+    if len(pts) < 8:
+        print("BOWL_PTS", len(pts))
+        pts = None
+    r._frame(scene, [obj], fill=0.82, elevation=32.0, azimuth=205.0, points=pts, aim_frac=0.55)
+    r._render(scene, path)
+    _fit(path)
+
+
 def _window(fn, path, yaw=180.0):
     """Close view into the open service hatch."""
     r._reset_scene()
@@ -462,6 +502,8 @@ def main():
             tuned15 = _FRAME20[key]
         if PASS >= 21 and key in _FRAME21:
             tuned15 = _FRAME21[key]
+        if PASS >= 22 and key in _FRAME22:
+            tuned15 = _FRAME22[key]
         if tuned15:
             fill, elevation, azimuth, aim, scale_fill, scale_aim, slab = tuned15
         else:
@@ -517,6 +559,14 @@ def main():
         if PASS == 21 and key == "fountain":
             scale_az = 188.0
             elevation = 16.0
+        if PASS == 22 and key == "newsstand":
+            print("SHOT", key + "_window")
+            _window(found[name], os.path.join(STILL_DIR, key + "_window.png"), yaw=yaw)
+        if PASS == 22 and key == "fountain":
+            print("SHOT", key + "_bowl")
+            _bowl(found[name], os.path.join(STILL_DIR, key + "_bowl.png"), yaw=yaw)
+            scale_az = 186.0
+            elevation = 14.0
         _scale(
             found[name],
             os.path.join(STILL_DIR, key + "_scale.png"),

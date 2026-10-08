@@ -43780,7 +43780,7 @@
     "blurb": "Pay station, 0.40 m wide, 1.60 m tall. Screen, keypad, card slot, coin, ticket mouth. No brand.",
     "size": [
       0.48,
-      1.586,
+      1.695,
       0.401
     ],
     "min": [
@@ -43790,16 +43790,18 @@
     ],
     "max": [
       0.24,
-      1.586,
+      1.695,
       0.2
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 344,
+        "tris": 396,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
+          "Lib_PaintBlue",
+          "Lib_PaintWhite",
           "Lib_Black",
           "Lib_Glass"
         ],
@@ -43808,10 +43810,11 @@
       },
       {
         "lod": 1,
-        "tris": 140,
+        "tris": 180,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
+          "Lib_PaintBlue",
           "Lib_Black",
           "Lib_Glass"
         ],
@@ -43895,7 +43898,7 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 2152,
+        "tris": 4600,
         "materials": [
           "Lib_PaintGreen",
           "Lib_Interior",
@@ -43905,13 +43908,15 @@
           "Lib_WoodDark",
           "Lib_Wood",
           "Lib_PaintCream",
-          "Lib_PaintWhite",
+          "Lib_PaintBlue",
+          "Lib_Glass",
           "Lib_Orange",
+          "Lib_PaintYellow",
+          "Lib_WindowLit",
+          "Lib_PaintWhite",
+          "Lib_Brass",
           "Lib_PaintRed",
           "Lib_BoxBlue",
-          "Lib_BoxRed",
-          "Lib_WindowLit",
-          "Lib_Brass",
           "Lib_PaintTeal",
           "Lib_Concrete"
         ],
@@ -43920,7 +43925,7 @@
       },
       {
         "lod": 1,
-        "tris": 512,
+        "tris": 780,
         "materials": [
           "Lib_PaintGreen",
           "Lib_Interior",
@@ -44148,45 +44153,41 @@
   {
     "name": "Fountain_Walk",
     "category": "StreetFurniture",
-    "blurb": "Sidewalk fountain. Rim at 1.00 m, hollow basin, brass gooseneck, push button. No legend.",
+    "blurb": "Pedestal fountain. Rim 0.98 m, shallow bowl, chrome bubbler inside the rim, push button, fluted base.",
     "size": [
-      0.548,
-      1.151,
-      0.47
+      0.388,
+      0.984,
+      0.396
     ],
     "min": [
-      -0.235,
+      -0.184,
       0.0,
-      -0.235
+      -0.184
     ],
     "max": [
-      0.313,
-      1.151,
-      0.235
+      0.204,
+      0.984,
+      0.212
     ],
     "lods": [
       {
         "lod": 0,
-        "tris": 1088,
+        "tris": 1568,
         "materials": [
           "Lib_SteelDark",
           "Lib_Steel",
-          "Lib_PaintGreen",
-          "Lib_Brass",
-          "Lib_PaintRed"
+          "Lib_PaintGreen"
         ],
         "mesh": "LOD0",
         "fileID": -1633821710574564935
       },
       {
         "lod": 1,
-        "tris": 580,
+        "tris": 708,
         "materials": [
           "Lib_SteelDark",
           "Lib_PaintGreen",
-          "Lib_Steel",
-          "Lib_Brass",
-          "Lib_PaintRed"
+          "Lib_Steel"
         ],
         "mesh": "LOD1",
         "fileID": -179393741545503174
@@ -44194,17 +44195,17 @@
     ],
     "colliders": [
       {
-        "name": "Col_Base",
+        "name": "Col_Plate",
         "type": "box",
         "center": [
           0,
-          0.012,
+          0.01,
           0
         ],
         "size": [
-          0.28,
-          0.018,
-          0.28
+          0.26,
+          0.016,
+          0.26
         ],
         "euler": [
           0,
@@ -44217,25 +44218,25 @@
         "type": "capsule",
         "center": [
           0,
-          0.385,
+          0.48,
           0
         ],
-        "radius": 0.05,
-        "height": 0.64,
+        "radius": 0.028,
+        "height": 0.62,
         "direction": 1
       },
       {
-        "name": "Col_Under",
+        "name": "Col_Floor",
         "type": "box",
         "center": [
           0,
-          0.834,
+          0.914,
           0
         ],
         "size": [
-          0.14,
-          0.04,
-          0.14
+          0.08,
+          0.02,
+          0.08
         ],
         "euler": [
           0,
@@ -44248,13 +44249,13 @@
         "type": "box",
         "center": [
           0,
-          0.946,
-          0.204
+          0.958,
+          0.17
         ],
         "size": [
-          0.06,
-          0.028,
-          0.018
+          0.024,
+          0.012,
+          0.012
         ],
         "euler": [
           0,
@@ -44267,13 +44268,13 @@
         "type": "box",
         "center": [
           0,
-          0.946,
-          -0.204
+          0.958,
+          -0.17
         ],
         "size": [
-          0.06,
-          0.028,
-          0.018
+          0.024,
+          0.012,
+          0.012
         ],
         "euler": [
           0,
@@ -44285,14 +44286,14 @@
         "name": "Col_RimL",
         "type": "box",
         "center": [
-          -0.204,
-          0.946,
+          -0.17,
+          0.958,
           0
         ],
         "size": [
-          0.018,
-          0.028,
-          0.06
+          0.012,
+          0.012,
+          0.024
         ],
         "euler": [
           0,
@@ -44304,14 +44305,14 @@
         "name": "Col_RimR",
         "type": "box",
         "center": [
-          0.204,
-          0.946,
+          0.17,
+          0.958,
           0
         ],
         "size": [
-          0.018,
-          0.028,
-          0.06
+          0.012,
+          0.012,
+          0.024
         ],
         "euler": [
           0,
@@ -44323,8 +44324,8 @@
     "climbable": false,
     "vaultable": false,
     "vaultHeight": 0.0,
-    "climbNote": "The pedestal is 16 cm across. Not a cling.",
-    "vaultNote": "Rim is 1.00 m and too small to stand on.",
+    "climbNote": "The pedestal is about 11 cm across. Not a cling.",
+    "vaultNote": "Rim is 0.98 m and too small to stand on.",
     "warnings": [],
     "fbxNames": [
       "LODBoxS",
