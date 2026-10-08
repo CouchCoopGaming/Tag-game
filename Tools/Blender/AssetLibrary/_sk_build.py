@@ -148,7 +148,7 @@ def _cutout_assets():
     """Write the alpha-cutout material and its texture importer. Other materials stay put."""
     png = os.path.join(ROOT, "..", "..", "..", "Assets", "Art", "Props", "Library", "Textures", "Lib_ChainMesh.png")
     png = os.path.normpath(png)
-    names = {"Lib_HonorGlass", "Lib_SignalWhite"}
+    names = {"Lib_HonorGlass", "Lib_SignalWhite", "Lib_LensRed", "Lib_LensAmber", "Lib_LensGreen"}
     if os.path.isfile(png):
         write_unity.texture_meta(png, "Lib_ChainMesh", size=512, cutout=True)
         names.update(("Lib_ChainMesh", "Lib_SignGreen"))

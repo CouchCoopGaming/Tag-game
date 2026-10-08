@@ -87,6 +87,9 @@ PALETTE = {
     "Lib_Taillamp": ((0.72, 0.04, 0.03), 0.04, 0.86),
     "Lib_SignalAmber": ((0.86, 0.42, 0.05), 0.04, 0.88),
     "Lib_SignalGreen": ((0.05, 0.48, 0.12), 0.04, 0.88),
+    "Lib_LensRed": ((0.45, 0.05, 0.03), 0.02, 0.62),
+    "Lib_LensAmber": ((0.62, 0.28, 0.04), 0.02, 0.62),
+    "Lib_LensGreen": ((0.04, 0.28, 0.07), 0.02, 0.62),
     "Lib_SignalWhite": ((0.86, 0.90, 0.93), 0.04, 0.90),
     "Lib_WindowLit": ((0.55, 0.36, 0.16), 0.0, 0.40),
     "Lib_PaintCream": ((0.86, 0.78, 0.66), 0.0, 0.32),
@@ -116,6 +119,10 @@ EMISSIVE = {
     "Lib_SignalAmber": ((1.0, 0.48, 0.05), 1.6),
     "Lib_SignalGreen": ((0.12, 0.85, 0.18), 1.6),
     "Lib_SignalWhite": ((0.95, 0.97, 1.0), 2.0),
+    # Traffic lenses stay bright, but weak enough that a visor shadow still reads.
+    "Lib_LensRed": ((0.90, 0.08, 0.03), 0.18),
+    "Lib_LensAmber": ((1.0, 0.46, 0.06), 0.16),
+    "Lib_LensGreen": ((0.12, 0.75, 0.16), 0.16),
 }
 
 # Grayscale-or-color albedo multiplied is baked as full color. UV is meters.

@@ -17,6 +17,98 @@ def polyline(g, pts, radius, mat, segments=6):
         g.pipe(pts[i], pts[i + 1], radius, mat, segments)
 
 
+def _rodrigues(v, axis, ang):
+    c = math.cos(ang)
+    s = math.sin(ang)
+    ax, ay, az = axis
+    dot = ax * v[0] + ay * v[1] + az * v[2]
+    cx = ay * v[2] - az * v[1]
+    cy = az * v[0] - ax * v[2]
+    cz = ax * v[1] - ay * v[0]
+    return (
+        v[0] * c + cx * s + ax * dot * (1.0 - c),
+        v[1] * c + cy * s + ay * dot * (1.0 - c),
+        v[2] * c + cz * s + az * dot * (1.0 - c),
+    )
+
+
+def sweep_tube(g, pts, radius0, mat, segments=12, radius1=None):
+    """One tube through Unity-space points. radius1 tapers the far end.
+
+    Rings share vertices, so a fine bend shades smooth instead of showing a crease
+    at every pipe joint.
+    """
+    if radius1 is None:
+        radius1 = radius0
+    n = len(pts)
+    if n < 2 or radius0 <= 0 or radius1 <= 0:
+        return
+
+    def sub(a, b):
+        return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
+
+    def add(a, b):
+        return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
+
+    def mul(a, s):
+        return (a[0] * s, a[1] * s, a[2] * s)
+
+    def dot(a, b):
+        return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+
+    def cross(a, b):
+        return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+
+    def length(a):
+        return math.sqrt(max(0.0, dot(a, a)))
+
+    def norm(a):
+        return mul(a, 1.0 / length(a))
+
+    tangents = []
+    for i in range(n):
+        if i == 0:
+            t = sub(pts[1], pts[0])
+        elif i == n - 1:
+            t = sub(pts[-1], pts[-2])
+        else:
+            t = sub(pts[i + 1], pts[i - 1])
+        tangents.append(norm(t))
+    seed = (0.0, 0.0, 1.0)
+    if abs(dot(tangents[0], seed)) > 0.85:
+        seed = (1.0, 0.0, 0.0)
+    normal = norm(cross(tangents[0], seed))
+    verts = []
+    rings = []
+    for i, p in enumerate(pts):
+        if i:
+            axis = cross(tangents[i - 1], tangents[i])
+            alen = length(axis)
+            if alen > 1e-8:
+                ang = math.atan2(alen, dot(tangents[i - 1], tangents[i]))
+                normal = _rodrigues(normal, norm(axis), ang)
+            normal = sub(normal, mul(tangents[i], dot(normal, tangents[i])))
+            normal = norm(normal)
+        binormal = norm(cross(tangents[i], normal))
+        t = i / float(n - 1)
+        radius = radius0 + (radius1 - radius0) * t
+        ring = []
+        for s in range(segments):
+            a = 2.0 * math.pi * s / float(segments)
+            radial = add(mul(normal, math.cos(a) * radius), mul(binormal, math.sin(a) * radius))
+            ring.append(len(verts))
+            verts.append(add(p, radial))
+        rings.append(ring)
+    faces = []
+    for i in range(n - 1):
+        for s in range(segments):
+            ns = (s + 1) % segments
+            faces.append((rings[i][s], rings[i][ns], rings[i + 1][ns], rings[i + 1][s]))
+    faces.append(tuple(reversed(rings[0])))
+    faces.append(tuple(rings[-1]))
+    g.mesh(verts, faces, mat)
+
+
 def tri_plate(g, center, side, thick, mat, bevel=0.0, segs=0, point="down"):
     """Equilateral plate. `point` is down, up, left, or right in the Unity XY plane."""
     h = side * math.sqrt(3.0) / 2.0

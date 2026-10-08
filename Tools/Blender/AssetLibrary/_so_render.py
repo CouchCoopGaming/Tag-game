@@ -139,6 +139,7 @@ PASSES = {
     ),
     19: (
         ("mail_drop", "MailDrop_Corner", 180.0, (0.90, 0.0, 0.05), 20.0),
+        ("traffic_signal", "TrafficSignal_Mast", 180.0, (-1.35, 0.0, 1.15), 20.0),
     ),
 }
 
@@ -159,6 +160,8 @@ _FRAME15 = {
     "ped_signal": (0.62, 12.0, 36.0, 0.42, 0.48, 0.32, 4.20),
     # Front faces the sun. 158 is a front 3/4; the side still is a separate shot.
     "mail_drop": (0.70, 12.0, 158.0, 0.40, 0.58, 0.34, 3.60),
+    # Face the lenses into the sun so the visor shadow falls on the glass.
+    "traffic_signal": (0.78, 9.0, 196.0, 0.48, 0.62, 0.40, 10.0),
 }
 
 # Pass 11 frames the subject at about 70% and aims at the middle of the bounds.
