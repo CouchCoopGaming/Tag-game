@@ -21,9 +21,9 @@ HIER_FBX = os.path.join(
 )
 
 # Pulled back so the chimney top stays in frame with the door.
-_CABIN = (32.0, (6.4, 2.8, 6.8), (0.2, 1.9, 0.2), 26.0, (0.34, 0.36, 0.32))
-# Whole crossing, one straight tile past each arm, sidewalks out to about ±16 m.
-_JUNCTION_CAM = ((30.0, 22.0, 32.0), (0.0, 0.25, 0.0), 28.0)
+_CABIN = (32.0, (8.2, 5.5, 8.6), (0.3, 2.0, 0.2), 32.0, (0.34, 0.36, 0.32))
+# High enough that a 10 cm yellow gap is a few pixels, still wide enough for one tile per arm.
+_JUNCTION_CAM = ((16.0, 38.0, 18.0), (0.0, 0.2, 0.0), 32.0)
 _JUNCTION_GROUND = (0.16, 0.18, 0.14)
 _ROAD_AT = 13.0
 
@@ -135,7 +135,9 @@ def _shots(found):
         path = os.path.join(STILL_DIR, "%s_cabin.jpg" % tag)
         shots.append((
             "%s_cabin" % tag,
-            lambda p=path: _one(found, "Cabin", yaw, cam, aim, lens, p, ground),
+            lambda p=path, yaw=yaw, cam=cam, aim=aim, lens=lens, ground=ground: _one(
+                found, "Cabin", yaw, cam, aim, lens, p, ground
+            ),
         ))
     shots.append((
         "cabin_runner",
