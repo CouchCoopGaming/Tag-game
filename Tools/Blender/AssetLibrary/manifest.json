@@ -33890,11 +33890,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 2744,
+        "tris": 3712,
         "materials": [
           "Lib_PaintBlue",
-          "Lib_ShopGlass",
           "Lib_Black",
+          "Lib_ShopGlass",
           "Lib_PaintCream",
           "Lib_SteelDark",
           "Lib_PaintRed",
@@ -33906,11 +33906,11 @@
       },
       {
         "lod": 1,
-        "tris": 1912,
+        "tris": 2460,
         "materials": [
           "Lib_PaintBlue",
-          "Lib_ShopGlass",
           "Lib_Black",
+          "Lib_ShopGlass",
           "Lib_PaintCream",
           "Lib_PaintRed",
           "Lib_Rubber",
@@ -34110,11 +34110,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 2660,
+        "tris": 3460,
         "materials": [
           "Lib_PaintRed",
-          "Lib_ShopGlass",
           "Lib_Black",
+          "Lib_ShopGlass",
           "Lib_PaintCream",
           "Lib_SteelDark",
           "Lib_Rubber",
@@ -34125,11 +34125,11 @@
       },
       {
         "lod": 1,
-        "tris": 1828,
+        "tris": 2320,
         "materials": [
           "Lib_PaintRed",
-          "Lib_ShopGlass",
           "Lib_Black",
+          "Lib_ShopGlass",
           "Lib_PaintCream",
           "Lib_Rubber",
           "Lib_Steel"
@@ -34303,7 +34303,7 @@
       "LOD0",
       "LOD1"
     ],
-    "slackCm": 0.41,
+    "slackCm": 0.29,
     "fbx": "Assets/Art/Props/Library/StreetFurniture/Car_Hatch.fbx"
   },
   {
@@ -34328,11 +34328,11 @@
     "lods": [
       {
         "lod": 0,
-        "tris": 2452,
+        "tris": 3088,
         "materials": [
           "Lib_PaintWhite",
-          "Lib_ShopGlass",
           "Lib_Black",
+          "Lib_ShopGlass",
           "Lib_PaintCream",
           "Lib_SteelDark",
           "Lib_PaintRed",
@@ -34344,11 +34344,11 @@
       },
       {
         "lod": 1,
-        "tris": 1524,
+        "tris": 2056,
         "materials": [
           "Lib_PaintWhite",
-          "Lib_ShopGlass",
           "Lib_Black",
+          "Lib_ShopGlass",
           "Lib_PaintCream",
           "Lib_PaintRed",
           "Lib_Rubber",

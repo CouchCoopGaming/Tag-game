@@ -12,7 +12,7 @@ SPEC = {
     "paint": "Lib_PaintWhite",
     "z0": -0.22,
     "z1": 2.48,
-    "step": 0.10,
+    "step": 0.06,
     "axles": (1.58,),
     "wheel_axles": (1.58,),
     "axle_y": 0.36,

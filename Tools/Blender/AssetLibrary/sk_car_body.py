@@ -187,14 +187,29 @@ def _side_glass(g, spec, z0, z1, sign, mat):
     for dx in (-thick * 0.5, thick * 0.5):
         for z, y, x in ((z0, y0, x_bot), (z1, y0, x_bot), (z1, y1, x_top), (z0, y1, x_top)):
             verts.append((sign * (x + dx), y, z))
-    g.mesh(verts, [
+    faces = [
         (0, 1, 2, 3),
         (4, 7, 6, 5),
         (0, 4, 5, 1),
         (1, 5, 6, 2),
         (2, 6, 7, 3),
         (3, 7, 4, 0),
-    ], mat)
+    ]
+    g.mesh(verts, faces, mat)
+    z0b, z1b = z0 + 0.04, z1 - 0.04
+    if z1b - z0b < 0.08:
+        return
+    inset = 0.012
+    back = []
+    for dx in (-0.003, 0.003):
+        for z, y, x in (
+            (z0b, y0 + 0.03, x_bot - inset),
+            (z1b, y0 + 0.03, x_bot - inset),
+            (z1b, y1 - 0.03, x_top - inset),
+            (z0b, y1 - 0.03, x_top - inset),
+        ):
+            back.append((sign * (x + dx), y, z))
+    g.mesh(back, faces, "Lib_Black")
 
 
 def _raked(g, spec, z0, z1):
@@ -212,8 +227,26 @@ def _raked(g, spec, z0, z1):
     )
 
 
+def _dark_raked(g, spec, z0, z1):
+    """Black sheet under the glass chord, inside the opening, so the pane reads as a window."""
+    if z0 <= z1:
+        za, zb = z0 + 0.05, z1 - 0.05
+    else:
+        za, zb = z0 - 0.05, z1 + 0.05
+    if (zb - za) * (1 if z0 <= z1 else -1) < 0.08:
+        return
+    ya, xa = _lerp(spec["crown"], za)
+    yb, xb = _lerp(spec["crown"], zb)
+    _slab(
+        g, ya - 0.030, za, yb - 0.030, zb,
+        max(0.12, xa - 0.11), max(0.12, xb - 0.09),
+        0.006, "Lib_Black",
+    )
+
+
 def _glass(g, spec):
     hz, _hy, cz, _cy = spec["windshield"]
+    _dark_raked(g, spec, hz, cz)
     _raked(g, spec, hz, cz)
     if spec.get("bed_z0") is not None:
         _ry0, _ry1 = spec["rear_glass"][1], spec["rear_glass"][3]
@@ -225,6 +258,7 @@ def _glass(g, spec):
         )
     else:
         rz0, _ry0, rz1, _ry1 = spec["rear_glass"]
+        _dark_raked(g, spec, rz0, rz1)
         _raked(g, spec, rz0, rz1)
     for z0, z1 in spec["windows"]:
         lo, hi = (z0, z1) if z0 <= z1 else (z1, z0)

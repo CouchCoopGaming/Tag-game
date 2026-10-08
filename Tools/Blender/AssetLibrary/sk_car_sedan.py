@@ -12,7 +12,7 @@ SPEC = {
     "paint": "Lib_PaintBlue",
     "z0": -2.28,
     "z1": 2.28,
-    "step": 0.10,
+    "step": 0.06,
     "axles": (-1.35, 1.35),
     "wheel_axles": (-1.35, 1.35),
     "axle_y": 0.31,
