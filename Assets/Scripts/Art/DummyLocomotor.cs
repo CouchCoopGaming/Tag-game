@@ -19384,13 +19384,25 @@ namespace Tag.Art
         {
             Transform pivot = YawPivot();
             float evasion = 0f;
+            float seat = 0f;
+            float bank = 0f;
+            Vector3 orbit = Vector3.zero;
             if (Tag.Gameplay.EvasionMoves.Enabled && _motor != null)
             {
                 EvasionPose.Sample evasionPose;
                 if (Tag.Gameplay.EvasionMoves.TrySample(_motor.GetInstanceID(), out evasionPose))
+                {
                     evasion = evasionPose.Drop;
+                    seat = evasionPose.Seat;
+                    bank = evasionPose.Bank;
+                    if (bank > 0.01f || bank < -0.01f)
+                        orbit = EvasionPose.OrbitDelta(bank);
+                }
             }
-            Vector3 offset = new Vector3(0f, bob + evasion, 0f) + nudge + _visualLag + _chestLocal;
+            Vector3 offset = new Vector3(orbit.x, bob + evasion + seat + orbit.y, orbit.z) + nudge + _visualLag + _chestLocal;
+            bool onMotor = _motor != null && pivot == _motor.transform;
+            if (!onMotor && pivot != null && (bank > 0.01f || bank < -0.01f))
+                pivot.localRotation = pivot.localRotation * Quaternion.AngleAxis(bank, EvasionPose.RollAxis());
             if (pivot != null && pivot != transform)
             {
                 pivot.localPosition = _pivot0 + offset;
