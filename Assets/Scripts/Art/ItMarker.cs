@@ -209,7 +209,11 @@ namespace Tag.Art
                 Color hue = new Color(sr, sg, sb, 1f);
                 ApplyRuntimeColor(_plateRend, new Color(0.02f, 0.02f, 0.04f, 1f), 0.35f);
                 if (_plateText != null) _plateText.color = hue;
-                if (_shapeText != null) _shapeText.color = hue;
+                if (_shapeText != null)
+                {
+                    Color fill = Tag.Ui.Menu.MenuTheme.SeatFill(_shape);
+                    _shapeText.color = fill;
+                }
             }
 
             // Hotter / brighter materials as fuse drains
@@ -368,20 +372,24 @@ namespace Tag.Art
             VerbHudLayout.PushMarker(Screen.width, Screen.height, ref x, ref y, mark, mark + 18f, ParkArena.IsPocket, ParkArena.IsStack);
 
             var prev = GUI.color;
-            GUI.color = new Color(0.02f, 0.02f, 0.04f, 0.92f);
-            GUI.DrawTexture(new Rect(x, y, mark, mark), Texture2D.whiteTexture);
             // PaletteOf(_shape) is the player-color-set row, not this mark.
             float hud = 1f;
             if (GameSettings.Current != null)
                 hud = Tag.Profiles.LocalProfiles.TextScale(_shape);
             Tag.Couch.CouchPlay.Tint(_shape, out float sr, out float sg, out float sb);
+            Color band = new Color(sr, sg, sb, 1f);
+            Color fill = Tag.Ui.Menu.MenuTheme.SeatFill(_shape);
+            GUI.color = band;
+            GUI.DrawTexture(new Rect(x - 3f, y - 3f, mark + 6f, mark + 6f), Texture2D.whiteTexture);
+            GUI.color = new Color(0.02f, 0.02f, 0.04f, 0.92f);
+            GUI.DrawTexture(new Rect(x, y, mark, mark), Texture2D.whiteTexture);
             GUI.color = Color.white;
             if (_itStyle == null) return;
             _itStyle.fontSize = (int)((Screen.height >= 1000 ? 13 : 11) * hud);
             _itStyle.normal.textColor = new Color(1f, 0.98f, 0.92f, 1f);
             GUI.Label(new Rect(x, y, mark, mark * 0.42f), AccessibilityPalette.ItGlyph, _itStyle);
             _itStyle.fontSize = (int)((Screen.height >= 1000 ? 22 : 18) * hud);
-            _itStyle.normal.textColor = new Color(sr, sg, sb, 1f);
+            _itStyle.normal.textColor = fill;
             GUI.Label(new Rect(x, y + mark * 0.30f, mark, mark * 0.70f), AccessibilityPalette.Glyph(_shape), _itStyle);
             if (_plateName != null && _plateName.Length > 0)
             {

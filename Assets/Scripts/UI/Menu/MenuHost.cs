@@ -127,10 +127,10 @@ namespace Tag.Ui.Menu
         readonly Text[] _loadTip = new Text[4];
         readonly Image[] _loadBar = new Image[4];
         // Unity uv origin is the bottom left. Left yard, chase yard, right yard, close path.
-        static readonly float[] LoadCamX = { 0.00f, 0.16f, 0.52f, 0.26f };
-        static readonly float[] LoadCamY = { 0.18f, 0.20f, 0.22f, 0.18f };
-        static readonly float[] LoadCamW = { 0.50f, 0.48f, 0.48f, 0.50f };
-        static readonly float[] LoadCamH = { 0.50f, 0.48f, 0.46f, 0.50f };
+            static readonly float[] LoadCamX = { 0.00f, 0.16f, 0.52f, 0.26f };
+            static readonly float[] LoadCamY = { 0.22f, 0.22f, 0.22f, 0.22f };
+            static readonly float[] LoadCamW = { 0.50f, 0.48f, 0.48f, 0.50f };
+            static readonly float[] LoadCamH = { 0.40f, 0.44f, 0.40f, 0.44f };
         int _loadStep = -1;
         int _tipBase;
         int _tipSpin = int.MinValue;
@@ -1131,7 +1131,7 @@ namespace Tag.Ui.Menu
             var plate = rt.gameObject.AddComponent<Image>();
             MenuArt.Plate(plate, new Color(0.02f, 0.02f, 0.04f, 1f), true);
             plate.raycastTarget = false;
-            SeatShape.Stamp(rt, seat, 6f, 6f, 28f, seatColor);
+            SeatShape.Stamp(rt, seat, 6f, 6f, 28f, MenuTheme.SeatFill(seat));
             Text word = MenuWidgets.Words(rt, "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
             Snug(word);
             LockFit(word, UiFit.FloorFont);
@@ -1198,7 +1198,7 @@ namespace Tag.Ui.Menu
             var plate = rt.gameObject.AddComponent<Image>();
             MenuArt.Plate(plate, new Color(0.02f, 0.02f, 0.04f, 1f), true);
             plate.raycastTarget = false;
-            SeatShape.Stamp(rt, seat, 6f, 6f, 28f, MenuTheme.Seat(seat));
+            SeatShape.Stamp(rt, seat, 6f, 6f, 28f, MenuTheme.SeatFill(seat));
             Text word = MenuWidgets.Words(rt, "P" + (seat + 1).ToString(), UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
             Snug(word);
             LockFit(word, UiFit.FloorFont);
@@ -2090,7 +2090,7 @@ namespace Tag.Ui.Menu
                 Image castBack = castChip.gameObject.AddComponent<Image>();
                 castBack.color = new Color(0.02f, 0.02f, 0.04f, 1f);
                 castBack.raycastTarget = false;
-                SeatShape.Stamp(castChip, s, 6f, 6f, 44f, MenuTheme.Seat(s));
+                SeatShape.Stamp(castChip, s, 6f, 6f, 44f, MenuTheme.SeatFill(s));
                 float nameH = UiFit.CastNameBand();
                 float statusH = UiFit.CastStatusBand();
                 float textH = nameH + statusH;
@@ -2498,7 +2498,12 @@ namespace Tag.Ui.Menu
                 CouchPlay.Norm(i, humans, split, out float x, out float y, out float w, out float h);
                 if (look != null)
                 {
-                    var camRt = MenuWidgets.Box(_body, "LoadCam", new Vector2(x, y), new Vector2(x + w, y + h), new Vector2(0.5f, 0.5f));
+                    var frameRt = MenuWidgets.Box(_body, "LoadBand", new Vector2(x, y), new Vector2(x + w, y + h), new Vector2(0.5f, 0.5f));
+                    Image band = frameRt.gameObject.AddComponent<Image>();
+                    band.color = MenuTheme.Seat(i);
+                    band.raycastTarget = false;
+                    const float edge = 0.012f;
+                    var camRt = MenuWidgets.Box(frameRt, "LoadCam", new Vector2(edge, edge), new Vector2(1f - edge, 1f - edge), new Vector2(0.5f, 0.5f));
                     RawImage cam = camRt.gameObject.AddComponent<RawImage>();
                     cam.texture = look;
                     cam.color = Color.white;
@@ -2519,13 +2524,13 @@ namespace Tag.Ui.Menu
                     }
                 }
                 float pad = 0.02f;
-                float y0 = y + 0.02f;
-                float y1 = y + h * 0.34f;
+                float y0 = y + 0.012f;
+                float y1 = y + h * 0.32f;
                 var card = MenuWidgets.Box(_body, "LoadSeat", new Vector2(x + pad, y0), new Vector2(x + w - pad, y1), new Vector2(0.5f, 0.5f));
                 Image plate = card.gameObject.AddComponent<Image>();
                 MenuArt.Plate(plate, new Color(0.04f, 0.07f, 0.16f, 0.82f), true);
                 plate.raycastTarget = false;
-                var well = MenuWidgets.Box(card, "Well", new Vector2(0.04f, 0.66f), new Vector2(0.20f, 0.96f), new Vector2(0.5f, 0.5f));
+                var well = MenuWidgets.Box(card, "Well", new Vector2(0.04f, 0.62f), new Vector2(0.16f, 0.94f), new Vector2(0.5f, 0.5f));
                 Image wellImage = well.gameObject.AddComponent<Image>();
                 wellImage.color = new Color(0.02f, 0.02f, 0.04f, 1f);
                 wellImage.raycastTarget = false;
@@ -2538,7 +2543,7 @@ namespace Tag.Ui.Menu
                 shape.sprite = SeatShape.For(i);
                 shape.preserveAspect = true;
                 shape.raycastTarget = false;
-                shape.color = MenuTheme.Seat(i);
+                shape.color = MenuTheme.SeatFill(i);
                 chip.color = new Color(0.02f, 0.02f, 0.04f, 1f);
                 MenuWidgets.Words(card, arena, 36, TextAnchor.MiddleLeft, MenuTheme.Gold, new Vector2(0.24f, 0.82f), new Vector2(0.78f, 0.96f));
                 MenuWidgets.Words(card, MenuArenaCard.Size(fly), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0.24f, 0.68f), new Vector2(0.78f, 0.80f));
@@ -2600,27 +2605,45 @@ namespace Tag.Ui.Menu
             {
                 MenuSplitPause.Card card = _cards[c];
                 if (!card.Show) continue;
-                var plate = MenuWidgets.Place(_body, "PauseCard", card.X + 12f, card.Y + 8f, card.W - 24f, card.H - 16f);
-                var plateImage = plate.gameObject.AddComponent<Image>();
-                MenuArt.Plate(plateImage, new Color(0.05f, 0.12f, 0.32f, 0.78f), true);
-                plateImage.raycastTarget = false;
-                float edge = 36f;
-                float gap = 12f;
-                float bh = (card.H - edge * 2f - gap * (MenuSplitPause.Items - 1)) / MenuSplitPause.Items;
-                if (bh > 108f) bh = 108f;
-                if (bh < 58f) bh = 58f;
+                float gap = 8f;
+                float bh = 84f;
+                if (card.H < 640f) bh = 68f;
                 if (!UiFit.IdentityText())
                 {
-                    float need = UiFit.RowH(108f);
+                    float need = UiFit.RowH(84f);
                     if (bh < need) bh = need;
                 }
                 float stack = MenuSplitPause.Items * bh + (MenuSplitPause.Items - 1) * gap;
+                float room = card.H * 0.46f;
+                if (stack > room && room > 240f)
+                {
+                    bh = (room - gap * (MenuSplitPause.Items - 1)) / MenuSplitPause.Items;
+                    if (bh < 58f) bh = 58f;
+                    stack = MenuSplitPause.Items * bh + (MenuSplitPause.Items - 1) * gap;
+                }
                 float bw = card.W - 72f;
                 if (bw > 760f) bw = 760f;
                 if (bw < 240f) bw = card.W - 36f;
                 float bx = card.X + (card.W - bw) * 0.5f;
-                float by = card.Y + (card.H - stack) * 0.5f;
-                if (by < card.Y + edge) by = card.Y + edge;
+                float by = card.Y + card.H - stack - 20f;
+                if (by < card.Y + 64f) by = card.Y + 64f;
+                float plateX = bx - 16f;
+                float plateY = by - 52f;
+                float plateW = bw + 32f;
+                float plateH = stack + 68f;
+                var plate = MenuWidgets.Place(_body, "PauseCard", plateX, plateY, plateW, plateH);
+                var plateImage = plate.gameObject.AddComponent<Image>();
+                MenuArt.Plate(plateImage, new Color(0.05f, 0.12f, 0.32f, 0.92f), true);
+                plateImage.raycastTarget = false;
+                var stripe = MenuWidgets.Place(plate, "PauseBand", 0f, 0f, plateW, 8f);
+                Image stripeImage = stripe.gameObject.AddComponent<Image>();
+                stripeImage.color = MenuTheme.Seat(card.Seat);
+                stripeImage.raycastTarget = false;
+                var markWell = MenuWidgets.Place(plate, "PauseWell", 14f, 14f, 32f, 32f);
+                Image markBack = markWell.gameObject.AddComponent<Image>();
+                markBack.color = new Color(0.02f, 0.02f, 0.04f, 1f);
+                markBack.raycastTarget = false;
+                SeatShape.Stamp(markWell, card.Seat, 2f, 2f, 28f, MenuTheme.SeatFill(card.Seat));
                 for (int i = 0; i < MenuSplitPause.Items; i++)
                     AddTile(bx, by + i * (bh + gap), bw, bh, i, MenuSplitPause.Item[i], MenuSplitPause.Blurb[i], true);
             }

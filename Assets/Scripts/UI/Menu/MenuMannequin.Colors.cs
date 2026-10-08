@@ -48,10 +48,29 @@ namespace Tag.Ui.Menu
             new SeatRow { Body = "Lavender", Mark = Diamond },
         };
 
+        /// <summary>The light step. It lives on the band, not in the diamond.</summary>
+        public static readonly Color LavenderBand = new Color(0.82f, 0.70f, 0.98f, 1f);
+
+        /// <summary>Base costume lavender. The shape fill, so the diamond stays purple.</summary>
+        public static readonly Color LavenderFill = new Color(0.70f, 0.58f, 0.88f, 1f);
+
         /// <summary>P1 red, P2 blue, P3 orange, P4 lavender. The costume swatches, not a second table.</summary>
         public static Color SeatColor(int seat)
         {
             return Swatch(Seats[SeatIndex(seat)].Body);
+        }
+
+        /// <summary>Shape fill. Lavender uses the base swatch. The light step is <see cref="SeatBand"/>.</summary>
+        public static Color SeatFill(int seat)
+        {
+            if (Seats[SeatIndex(seat)].Body == "Lavender") return LavenderFill;
+            return SeatColor(seat);
+        }
+
+        /// <summary>Pane band and border. Lavender's light step lives here.</summary>
+        public static Color SeatBand(int seat)
+        {
+            return SeatColor(seat);
         }
 
         /// <summary>The shape that sits with this seat. 0 circle, 1 triangle, 2 square, 3 diamond.</summary>
@@ -74,7 +93,7 @@ namespace Tag.Ui.Menu
                 case "Blue": return new Color(0.20f, 0.48f, 0.88f, 1f);
                 case "Mint": return new Color(0.42f, 0.82f, 0.70f, 1f);
                 case "Orange": return new Color(1.00f, 0.62f, 0.18f, 1f);
-                case "Lavender": return new Color(0.82f, 0.70f, 0.98f, 1f);
+                case "Lavender": return LavenderBand;
                 case "Red": return new Color(0.90f, 0.18f, 0.20f, 1f);
                 default: return new Color(0.90f, 0.76f, 0.52f, 1f);
             }

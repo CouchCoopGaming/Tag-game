@@ -22,10 +22,10 @@ namespace Tag.Ui.Menu
 
         public static readonly string[] Blurb =
         {
-            "",
+            "Back into the match",
             "Same arena, same rules",
-            "",
-            ""
+            "Sound, picture, and controls",
+            "Leave this match"
         };
 
         public struct Card

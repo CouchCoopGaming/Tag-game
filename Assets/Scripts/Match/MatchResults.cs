@@ -68,9 +68,12 @@ namespace Tag.MatchStats
                 CouchPlay.Tint(seat, out float r, out float g, out float b);
                 GUI.color = Color.white;
                 GUI.Box(new Rect(cx, cy, cw, ch), "");
+                Color band = new Color(r, g, b, 1f);
+                Color hue = Tag.Ui.Menu.MenuTheme.SeatFill(seat);
+                GUI.color = band;
+                GUI.DrawTexture(new Rect(cx + 6f, cy + 6f, 40f, 40f), Texture2D.whiteTexture);
                 GUI.color = new Color(0.02f, 0.02f, 0.04f, 1f);
                 GUI.DrawTexture(new Rect(cx + 8f, cy + 8f, 36f, 36f), Texture2D.whiteTexture);
-                Color hue = new Color(r, g, b, 1f);
                 GUI.color = hue;
                 _style.normal.textColor = hue;
                 _style.alignment = TextAnchor.MiddleCenter;

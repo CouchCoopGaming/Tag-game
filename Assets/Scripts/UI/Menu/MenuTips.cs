@@ -66,8 +66,8 @@ namespace Tag.Ui.Menu
             bool pad = device != CouchPlay.DeviceKeyboard;
             if (i == 0) return Verb(PlayAction.Jump) + " [" + Mark(binds, PlayAction.Jump, pad) + "].";
             if (i == 1) return Verb(PlayAction.Sprint) + " [" + Mark(binds, PlayAction.Sprint, pad) + "], then " + Later(PlayAction.Slide) + " [" + Mark(binds, PlayAction.Slide, pad) + "].";
-            if (i == 2) return Verb(PlayAction.Cling) + " [" + Mark(binds, PlayAction.Cling, pad) + "] against a wall to climb.";
-            if (i == 3) return Verb(PlayAction.Cling) + " [" + Mark(binds, PlayAction.Cling, pad) + "] + " + Later(PlayAction.Jump) + " [" + Mark(binds, PlayAction.Jump, pad) + "] to wall jump.";
+            if (i == 2) return "Hold [" + ClingWord(binds, pad) + "] into a wall to climb.";
+            if (i == 3) return "[" + ClingWord(binds, pad) + "] into a wall + [" + Mark(binds, PlayAction.Jump, pad) + "] to wall jump.";
             if (i == 4) return Verb(PlayAction.AirDash) + " [" + Mark(binds, PlayAction.AirDash, pad) + "] in the air.";
             if (i == 5) return Verb(PlayAction.Punch) + " [" + Mark(binds, PlayAction.Punch, pad) + "]. It changes hands.";
             if (i == 7)
@@ -76,6 +76,22 @@ namespace Tag.Ui.Menu
                 return "Grapple [" + ActionBinds.Chip(token) + "], double-click to let go.";
             }
             return Lines[i];
+        }
+
+        /// <summary>
+        /// The cling display name, once. "Left stick hold" would repeat the verb Hold.
+        /// </summary>
+        static string ClingWord(ActionBinds binds, bool pad)
+        {
+            if (binds == null) binds = ActionBinds.Defaults();
+            string token = pad ? binds.Gamepad[(int)PlayAction.Cling] : binds.Keyboard[(int)PlayAction.Cling];
+            if (token == "leftStickHold") return "Left stick";
+            if (token == "holdIntoWall") return "WASD";
+            string show = ActionBinds.Show(token);
+            const string tail = " hold";
+            if (show.Length > tail.Length && show.EndsWith(tail))
+                return show.Substring(0, show.Length - tail.Length);
+            return show;
         }
 
         static string Verb(PlayAction action)
@@ -122,7 +138,9 @@ namespace Tag.Ui.Menu
             if (For(0, 0) != At(0) || For(0, 1) != At(1)) return false;
             if (For(1, 0) == For(0, 0)) return false;
             if (At(2).IndexOf("into a wall", System.StringComparison.Ordinal) >= 0) return false;
-            if (Shown(2, 0).IndexOf("against a wall") < 0) return false;
+            if (Shown(2, 0).IndexOf("into a wall") < 0) return false;
+            if (Shown(2, 0).IndexOf("Cling hold", System.StringComparison.Ordinal) >= 0) return false;
+            if (Shown(3, 0).IndexOf("Cling hold", System.StringComparison.Ordinal) >= 0) return false;
             if (Shown(3, 0).IndexOf("wall jump") < 0) return false;
             string sprint = ActionBinds.Name(PlayAction.Sprint);
             if (Shown(1, 0).IndexOf(sprint + " [", System.StringComparison.Ordinal) != 0) return false;

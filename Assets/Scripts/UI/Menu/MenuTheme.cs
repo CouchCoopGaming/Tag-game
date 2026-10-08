@@ -54,6 +54,17 @@ namespace Tag.Ui.Menu
 
         public static Color Seat(int seat)
         {
+            return SeatTint(seat, false);
+        }
+
+        /// <summary>Shape fill. Colour-blind mode still replaces it. Lavender's light step stays on <see cref="Seat"/>.</summary>
+        public static Color SeatFill(int seat)
+        {
+            return SeatTint(seat, true);
+        }
+
+        static Color SeatTint(int seat, bool fill)
+        {
             int i = seat;
             if (i < 0) i = 0;
             if (i > 3) i = 3;
@@ -62,7 +73,7 @@ namespace Tag.Ui.Menu
                 Tag.Settings.SeatCvd.Color(Tag.Settings.GameSettings.Current.CvdSeats, i, out float r, out float g, out float b);
                 return new Color(r, g, b, 1f);
             }
-            return MenuMannequin.SeatColor(i);
+            return fill ? MenuMannequin.SeatFill(i) : MenuMannequin.SeatBand(i);
         }
 
         public static string Place(int rank)

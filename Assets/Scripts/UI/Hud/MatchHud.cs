@@ -329,7 +329,8 @@ namespace Tag.Ui.Hud
                     {
                         Sprite sprite = SeatShape.For(from);
                         if (mark.sprite != sprite) mark.sprite = sprite;
-                        mark.color = new Color(seat.r, seat.g, seat.b, a);
+                        Color fill = MenuTheme.SeatFill(from);
+                        mark.color = new Color(fill.r, fill.g, fill.b, a);
                     }
                 }
             }
@@ -1721,7 +1722,6 @@ namespace Tag.Ui.Hud
         static void ShowSeatMark(HudPane pane, int seat)
         {
             if (pane.SeatMark == null) return;
-            Color seatColor = MenuTheme.Seat(seat);
             if (pane.SeatWell != null)
             {
                 pane.SeatWell.enabled = true;
@@ -1730,7 +1730,7 @@ namespace Tag.Ui.Hud
             pane.SeatMark.enabled = true;
             Sprite sprite = SeatShape.For(seat);
             if (pane.SeatMark.sprite != sprite) pane.SeatMark.sprite = sprite;
-            pane.SeatMark.color = seatColor;
+            pane.SeatMark.color = MenuTheme.SeatFill(seat);
         }
 
         static void ShowSafeGlow(HudPane pane, bool on)
