@@ -15190,10 +15190,9 @@ namespace Tag.Art
             if (_mantleExitSnap && _mantleExitIn < 0.98f)
             {
                 // The vault eases into the gait, a crouch, or the land absorb.
-                // One smoothstep. A wall climb and a wall-jump push-off keep their poses.
-                // VaultOutOpen is the blend. MantleLand stays so the pose-path check still sees it.
-                PoseHandoff.MantleLand(_mantleExitIn, out _, out float intoMantleGround);
-                intoMantleGround = Handoff2Feel.VaultOutOpen(_mantleExitIn);
+                // MantleLand stays on this path. The bones use the longer visual window.
+                PoseHandoff.MantleLand(_mantleExitIn, out _, out _);
+                float intoMantleGround = Handoff2Feel.VaultOutOpen(_mantleExitIn);
                 _uaLT = Quaternion.Slerp(_mantleExitUaL, _uaLT, intoMantleGround);
                 _uaRT = Quaternion.Slerp(_mantleExitUaR, _uaRT, intoMantleGround);
                 _laLT = Quaternion.Slerp(_mantleExitLaL, _laLT, intoMantleGround);
@@ -15643,17 +15642,24 @@ namespace Tag.Art
             AirFeel.BalanceArms(ref air, speed, vy, 0.4f);
             AirFeel.Brace(ref air, vy);
             float head = AirFeel.HeadPitch(vy);
-            _uaLT = Quaternion.Slerp(_exitUaL, _uaL0 * Quaternion.Euler(air.ArmPitchL, air.ArmYawL, armZ), toW);
-            _uaRT = Quaternion.Slerp(_exitUaR, _uaR0 * Quaternion.Euler(air.ArmPitchR, -air.ArmYawR, -armZ), toW);
+            float brace = AirFeel.Brace01(vy);
+            float legOut = AirFeel.BraceLegYaw * brace;
+            float showThighL = Mathf.Lerp(air.ThighL, AirFeel.BraceShowThigh, brace);
+            float showThighR = Mathf.Lerp(air.ThighR, AirFeel.BraceShowThigh, brace);
+            float showHip = Mathf.Lerp(air.Hip, AirFeel.BraceShowHip, brace);
+            float roll = AirFeel.BraceArmRoll * brace;
+            float yawL = Mathf.Lerp(air.ArmYawL, 0f, brace);
+            float yawR = Mathf.Lerp(air.ArmYawR, 0f, brace);
+            _uaLT = Quaternion.Slerp(_exitUaL, _uaL0 * Quaternion.Euler(air.ArmPitchL, yawL, armZ - roll), toW);
+            _uaRT = Quaternion.Slerp(_exitUaR, _uaR0 * Quaternion.Euler(air.ArmPitchR, -yawR, -armZ + roll), toW);
             _laLT = Quaternion.Slerp(_exitLaL, _laL0 * Quaternion.Euler(air.ElbowL, 0f, 0f), toW);
             _laRT = Quaternion.Slerp(_exitLaR, _laR0 * Quaternion.Euler(air.ElbowR, 0f, 0f), toW);
-            float legOut = AirFeel.BraceLegYaw * AirFeel.Brace01(vy);
-            _ulLT = Quaternion.Slerp(_exitUlL, _ulL0 * Quaternion.Euler(air.ThighL, -legOut, 0f), toW);
-            _ulRT = Quaternion.Slerp(_exitUlR, _ulR0 * Quaternion.Euler(air.ThighR, legOut, 0f), toW);
+            _ulLT = Quaternion.Slerp(_exitUlL, _ulL0 * Quaternion.Euler(showThighL, -legOut, 0f), toW);
+            _ulRT = Quaternion.Slerp(_exitUlR, _ulR0 * Quaternion.Euler(showThighR, legOut, 0f), toW);
             _llLT = Quaternion.Slerp(_exitLlL, _llL0 * Quaternion.Euler(air.KneeL, 0f, 0f), toW);
             _llRT = Quaternion.Slerp(_exitLlR, _llR0 * Quaternion.Euler(air.KneeR, 0f, 0f), toW);
             _spineT = Quaternion.Slerp(_exitSpine, _spine0 * Quaternion.Euler(air.Spine, 0f, 0f), toW);
-            _hipsT = Quaternion.Slerp(_exitHips, _hips0 * Quaternion.Euler(air.Hip, 0f, 0f), toW);
+            _hipsT = Quaternion.Slerp(_exitHips, _hips0 * Quaternion.Euler(showHip, 0f, 0f), toW);
             _headT = Quaternion.Slerp(_exitHead, _head0 * Quaternion.Euler(head, 0f, 0f), toW);
         }
 
@@ -16941,17 +16947,24 @@ namespace Tag.Art
                 JumpPose.Sample stride = JumpPose.Stride(speed, sinC, cycle);
                 pose = AirFeel.Blend(stride, beat, AirFeel.PushOpen(_jumpPoseAge));
             }
-            float legOut = AirFeel.BraceLegYaw * AirFeel.Brace01(vy);
-            _ulLT = _ulL0 * Quaternion.Euler(pose.ThighL, -legOut, 0f);
-            _ulRT = _ulR0 * Quaternion.Euler(pose.ThighR, legOut, 0f);
+            float brace = AirFeel.Brace01(vy);
+            float legOut = AirFeel.BraceLegYaw * brace;
+            float showThighL = Mathf.Lerp(pose.ThighL, AirFeel.BraceShowThigh, brace);
+            float showThighR = Mathf.Lerp(pose.ThighR, AirFeel.BraceShowThigh, brace);
+            float showHip = Mathf.Lerp(pose.Hip, AirFeel.BraceShowHip, brace);
+            float roll = AirFeel.BraceArmRoll * brace;
+            float yawL = Mathf.Lerp(pose.ArmYawL, 0f, brace);
+            float yawR = Mathf.Lerp(pose.ArmYawR, 0f, brace);
+            _ulLT = _ulL0 * Quaternion.Euler(showThighL, -legOut, 0f);
+            _ulRT = _ulR0 * Quaternion.Euler(showThighR, legOut, 0f);
             _llLT = _llL0 * Quaternion.Euler(pose.KneeL, 0f, 0f);
             _llRT = _llR0 * Quaternion.Euler(pose.KneeR, 0f, 0f);
-            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, pose.ArmYawL, armZ);
-            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, -pose.ArmYawR, -armZ);
+            _uaLT = _uaL0 * Quaternion.Euler(pose.ArmPitchL, yawL, armZ - roll);
+            _uaRT = _uaR0 * Quaternion.Euler(pose.ArmPitchR, -yawR, -armZ + roll);
             _laLT = _laL0 * Quaternion.Euler(pose.ElbowL, 0f, 0f);
             _laRT = _laR0 * Quaternion.Euler(pose.ElbowR, 0f, 0f);
             _spineT = _spine0 * Quaternion.Euler(pose.Spine, 0f, 0f);
-            _hipsT = _hips0 * Quaternion.Euler(pose.Hip, 0f, 0f);
+            _hipsT = _hips0 * Quaternion.Euler(showHip, 0f, 0f);
             float head = AirFeel.HeadPitch(vy);
             _headT = Quaternion.Slerp(_head0, _head0 * Quaternion.Euler(head, 0f, 0f), AirFeel.Brace01(vy));
             if (_handBound)
