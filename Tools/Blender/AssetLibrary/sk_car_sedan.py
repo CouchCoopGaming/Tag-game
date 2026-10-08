@@ -56,10 +56,10 @@ SPEC = {
 
 def _wheel_cols(a):
     r = SPEC["tire_r"]
-    x = SPEC["tire_x"] + SPEC["tire_half_w"] * 0.55
+    x = SPEC["tire_x"] + SPEC["tire_half_w"] * 0.15
     for i, z in enumerate(SPEC["wheel_axles"]):
         for j, sign in enumerate((-1.0, 1.0)):
-            a.box("Col_Wheel_%d%d" % (i, j), (sign * x, SPEC["axle_y"], z), (0.016, r * 1.15, r * 1.15))
+            a.box("Col_Wheel_%d%d" % (i, j), (sign * x, SPEC["axle_y"], z), (0.016, r * 1.02, r * 1.02))
 
 
 @register

@@ -333,7 +333,32 @@ def _pass9_lineup(found, path):
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
     found = _load()
-    if PASS >= 9:
+    if PASS >= 10:
+        shots = [
+            ("car_sedan", lambda: _shot(found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan.png"), kind="asphalt", fill=0.84)),
+            ("car_sedan_nose", lambda: _close(
+                found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan_nose.png"),
+                (1.45, 0.85, 3.7), (0.15, 0.7, 1.6), 42)),
+            ("car_sedan_wheel", lambda: _close(
+                found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan_wheel.png"),
+                (1.7, 0.55, 2.15), (0.82, 0.32, 1.35), 48)),
+            ("car_hatch", lambda: _shot(found["Car_Hatch"], os.path.join(STILL_DIR, "car_hatch.png"), kind="asphalt", fill=0.84)),
+            ("car_pickup", lambda: _shot(found["Car_Pickup"], os.path.join(STILL_DIR, "car_pickup.png"), kind="asphalt", fill=0.84)),
+            ("sign_yield", lambda: _close(
+                found["Sign_Yield"], os.path.join(STILL_DIR, "sign_yield.png"),
+                (0.95, 2.35, 1.45), (0.0, 2.70, 0.06), 46)),
+            ("sign_oneway", lambda: _close(
+                found["Sign_OneWay"], os.path.join(STILL_DIR, "sign_oneway.png"),
+                (1.05, 2.15, 1.35), (0.12, 2.48, 0.07), 42)),
+            ("sign_blades", lambda: _close(
+                found["Sign_Blades"], os.path.join(STILL_DIR, "sign_blades.png"),
+                (1.15, 2.55, 1.35), (0.0, 2.92, 0.0), 42)),
+            ("planter_street", lambda: _shot(found["Planter_Street"], os.path.join(STILL_DIR, "planter_street.png"), fill=0.86)),
+            ("roof_vent", lambda: _shot(found["RoofVent_Turbine"], os.path.join(STILL_DIR, "roof_vent.png"), fill=0.82)),
+            ("satellite", lambda: _shot(found["SatelliteDish"], os.path.join(STILL_DIR, "satellite.png"), fill=0.84)),
+            ("kit_lineup", lambda: _pass9_lineup(found, os.path.join(STILL_DIR, "kit_lineup.png"))),
+        ]
+    elif PASS >= 9:
         close = 0.86
         shots = [
             ("car_sedan", lambda: _shot(found["Car_Sedan"], os.path.join(STILL_DIR, "car_sedan.png"), kind="asphalt", fill=0.82)),

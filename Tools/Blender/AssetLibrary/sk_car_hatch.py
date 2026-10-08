@@ -56,10 +56,10 @@ SPEC = {
 
 def _wheel_cols(a):
     r = SPEC["tire_r"]
-    x = SPEC["tire_x"] + SPEC["tire_half_w"] * 0.55
+    x = SPEC["tire_x"] + SPEC["tire_half_w"] * 0.15
     for i, z in enumerate(SPEC["wheel_axles"]):
         for j, sign in enumerate((-1.0, 1.0)):
-            a.box("Col_Wheel_%d%d" % (i, j), (sign * x, SPEC["axle_y"], z), (0.016, r * 1.15, r * 1.15))
+            a.box("Col_Wheel_%d%d" % (i, j), (sign * x, SPEC["axle_y"], z), (0.016, r * 1.02, r * 1.02))
 
 
 @register
@@ -76,7 +76,7 @@ def create():
         body.build(g, SPEC, lod)
         a.end()
     a.box("Col_Body", (0, 0.52, -0.15), (1.00, 0.40, 1.40))
-    a.box("Col_Roof", (0, 1.40, -0.28), (0.86, 0.10, 0.85))
+    a.box("Col_Roof", (0, 1.455, -0.30), (0.48, 0.04, 0.70))
     a.box("Col_Nose", (0, 0.42, 1.74), (0.90, 0.12, 0.28))
     a.box("Col_Tail", (0, 0.46, -1.74), (0.95, 0.12, 0.22))
     _wheel_cols(a)

@@ -29,7 +29,7 @@ def create():
         # Two blades stop short of the pole so the pole can pass between them.
         # Collar covers the gap where the two blades meet the pole.
         # Wider collar, and the green blades sink into it so the pole joint closes.
-        g.cylinder((0, 2.96, 0), 0.095, 0.34, "Lib_SteelDark", seg)
+        g.cylinder((0, 2.96, 0), 0.095, 0.34, "Lib_PaintGreen", seg)
         for z in (-0.24, 0.24):
             for sign in (1.0, -1.0):
                 g.box((sign * 0.046, 2.96, z), (0.036, 0.22, 0.52), "Lib_PaintGreen", bevel=bev, segs=1)

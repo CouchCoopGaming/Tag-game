@@ -14,7 +14,7 @@ _APEX = (0.0, 0.52, 0.04)
 _TILT = 36.0
 _RADIUS = 0.40
 _DEPTH = 0.16
-_THICK = 0.016
+_THICK = 0.032
 
 
 def _axis(dist):
@@ -121,4 +121,16 @@ def create():
     a.box("Col_Riser", (0, 0.05, -0.02), (0.12, 0.04, 0.05))
     # Rear of the knuckle, clear of the dish skin.
     a.box("Col_Knuckle", _axis(-0.078), (0.055, 0.04, 0.028), euler=euler)
+    # Convex boxes in the bowl meat. sz is along the dish axis.
+    a.box("Col_BowlA", _place(0.0, 0.0, -_THICK * 0.50), (0.05, 0.05, 0.012), euler=euler)
+    for i in range(4):
+        ang = math.pi * 0.5 * i + 0.4
+        rad = 0.12
+        surf = _DEPTH * (rad / _RADIUS) ** 2
+        a.box(
+            "Col_Bowl%d" % i,
+            _place(rad * math.cos(ang), rad * math.sin(ang), surf - _THICK * 0.50),
+            (0.032, 0.032, 0.012),
+            euler=euler,
+        )
     return a

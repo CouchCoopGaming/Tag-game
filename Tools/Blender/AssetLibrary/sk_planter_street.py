@@ -1,10 +1,43 @@
-"""Downtown steel planter. 1.80 m, slatted sides, soil, two shrubs."""
+"""Downtown steel planter. 1.80 m, slatted sides, soil, clustered shrubs."""
 
+import math
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _common import Asset, register, lod_pick
+
+
+def _shrub(g, origin, scale, seg, lod):
+    """Overlapping cones plus a few leaf cards. Cones are closed solids."""
+    ox, oy, oz = origin
+    clumps = (
+        (0.00, 0.00, 0.00, 1.00, "Lib_Foliage"),
+        (0.11, -0.01, 0.05, 0.70, "Lib_FoliageDark"),
+        (-0.09, 0.02, -0.04, 0.62, "Lib_FoliageLite"),
+        (0.03, 0.05, 0.03, 0.50, "Lib_Foliage"),
+        (-0.02, 0.08, -0.06, 0.42, "Lib_FoliageDark"),
+    )
+    for dx, dy, dz, s, mat in clumps:
+        sc = scale * s
+        g.cone(
+            (ox + dx * scale, oy + dy * scale + sc * 0.12, oz + dz * scale),
+            sc * 0.14, sc * 0.018, sc * 0.26,
+            mat, seg,
+        )
+    if lod == 0:
+        for k in range(6):
+            ang = k * 1.05 + 0.4
+            g.box(
+                (
+                    ox + math.cos(ang) * scale * 0.10,
+                    oy + 0.20 * scale + (k % 3) * 0.03,
+                    oz + math.sin(ang) * scale * 0.07,
+                ),
+                (0.10 * scale, 0.010, 0.045 * scale),
+                "Lib_FoliageLite" if k % 2 else "Lib_Foliage",
+                euler=(16, k * 36, 8),
+            )
 
 
 @register
@@ -35,16 +68,12 @@ def create():
             g.box((x, 0.24, -0.255), (0.22, 0.40, 0.018), "Lib_Wood", uv_scale=1.4, bevel=bev, segs=1)
             g.box((x, 0.24, 0.255), (0.22, 0.40, 0.018), "Lib_Wood", uv_scale=1.4, bevel=bev, segs=1)
         g.box((0, 0.16, 0), (1.64, 0.08, 0.32), "Lib_Soil", uv_scale=1.2)
-        g.sphere((-0.42, 0.58, 0.0), 0.20, "Lib_Foliage", lod_pick(lod, 12, 8))
-        g.sphere((-0.22, 0.58, 0.08), 0.12, "Lib_FoliageDark", lod_pick(lod, 8, 6))
-        g.sphere((-0.08, 0.66, 0.0), 0.14, "Lib_FoliageLite", lod_pick(lod, 10, 6))
-        g.sphere((-0.02, 0.56, 0.0), 0.24, "Lib_Foliage", lod_pick(lod, 12, 8))
-        g.sphere((0.36, 0.56, -0.02), 0.16, "Lib_FoliageLite", lod_pick(lod, 10, 6))
-        g.sphere((0.18, 0.50, 0.08), 0.10, "Lib_Foliage", lod_pick(lod, 8, 6))
-        g.sphere((0.50, 0.48, 0.08), 0.10, "Lib_FoliageDark", lod_pick(lod, 8, 6))
+        seg = lod_pick(lod, 8, 6)
+        _shrub(g, (-0.42, 0.48, 0.0), 1.05, seg, lod)
+        _shrub(g, (0.28, 0.46, -0.02), 0.82, seg, lod)
         if lod == 0:
-            g.sphere((-0.22, 0.62, 0.12), 0.025, "Lib_PaintRed", 6)
-            g.sphere((0.42, 0.60, -0.10), 0.022, "Lib_PaintCream", 6)
+            g.sphere((-0.22, 0.62, 0.10), 0.018, "Lib_PaintRed", 6)
+            g.sphere((0.40, 0.58, -0.08), 0.016, "Lib_PaintCream", 6)
             for x in (-0.70, 0.70):
                 for z in (-0.16, 0.16):
                     g.box((x, 0.015, z), (0.08, 0.03, 0.06), "Lib_Rubber", bevel=0.002, segs=1)
@@ -55,6 +84,6 @@ def create():
     a.box("Col_WallE", (0.88, 0.22, 0), (0.028, 0.36, 0.32))
     a.box("Col_Floor", (0, 0.045, 0), (1.60, 0.03, 0.32))
     a.box("Col_Rim", (0, 0.472, 0), (1.74, 0.014, 0.44))
-    a.sphere("Col_ShrubL", (-0.42, 0.64, 0.0), 0.10)
-    a.sphere("Col_ShrubR", (0.36, 0.62, -0.02), 0.08)
+    a.sphere("Col_ShrubL", (-0.42, 0.54, 0.0), 0.05)
+    a.sphere("Col_ShrubR", (0.28, 0.52, -0.02), 0.04)
     return a

@@ -73,6 +73,10 @@ PALETTE = {
     "Lib_Window": ((0.14, 0.20, 0.26), 0.04, 0.82),
     # Display glass. Dark, slightly metallic, transmissive, and not a light panel.
     "Lib_ShopGlass": ((0.06, 0.09, 0.12), 0.22, 0.92),
+    # Car glass. One dark tint, no separate backing sheet.
+    "Lib_TintGlass": ((0.015, 0.03, 0.04), 0.08, 0.96),
+    "Lib_Headlamp": ((0.82, 0.88, 0.74), 0.04, 0.90),
+    "Lib_Taillamp": ((0.72, 0.04, 0.03), 0.04, 0.86),
     "Lib_WindowLit": ((0.55, 0.36, 0.16), 0.0, 0.40),
     "Lib_PaintCream": ((0.86, 0.78, 0.66), 0.0, 0.32),
     "Lib_PaintTeal": ((0.10, 0.36, 0.40), 0.0, 0.30),
@@ -96,6 +100,8 @@ EMISSIVE = {
     "Lib_Lamp": ((1.0, 0.75, 0.38), 8.0),
     "Lib_Window": ((0.55, 0.75, 0.90), 0.22),
     "Lib_WindowLit": ((1.0, 0.68, 0.32), 0.20),
+    "Lib_Headlamp": ((1.0, 0.93, 0.72), 2.4),
+    "Lib_Taillamp": ((0.95, 0.04, 0.02), 1.8),
 }
 
 # Grayscale-or-color albedo multiplied is baked as full color. UV is meters.
@@ -531,9 +537,14 @@ class Geo:
         bmesh.ops.recalc_face_normals(out, faces=out.faces)
         self._ingest(out, mat, 1.0)
 
-    def text(self, body, location, size, mat, extrude=0.008, yaw=0.0):
-        """Centered text standing in the Unity XY plane, extruded toward +Z, then yawed."""
+    def text(self, body, location, size, mat, extrude=0.008, yaw=0.0, font=None):
+        """Centered text standing in the Unity XY plane, extruded toward +Z, then yawed.
+
+        Pass an OFL font path. The default Blender font is GPL and is not used for new signs.
+        """
         curve = bpy.data.curves.new("LibText", "FONT")
+        if font:
+            curve.font = bpy.data.fonts.load(font, check_existing=True)
         curve.body = body
         curve.align_x = "CENTER"
         curve.align_y = "CENTER"
@@ -896,6 +907,11 @@ def _ensure_materials():
         if name == "Lib_ShopGlass" and "Transmission Weight" in bsdf.inputs:
             bsdf.inputs["Transmission Weight"].default_value = 0.48
             bsdf.inputs["Roughness"].default_value = 0.07
+            if "IOR" in bsdf.inputs:
+                bsdf.inputs["IOR"].default_value = 1.45
+        if name == "Lib_TintGlass" and "Transmission Weight" in bsdf.inputs:
+            bsdf.inputs["Transmission Weight"].default_value = 0.22
+            bsdf.inputs["Roughness"].default_value = 0.04
             if "IOR" in bsdf.inputs:
                 bsdf.inputs["IOR"].default_value = 1.45
 

@@ -1,4 +1,4 @@
-"""36-inch yield triangle. Red border, white field, no lettering."""
+"""36-inch yield triangle. Red border, white field, OFL YIELD lettering."""
 
 import math
 import os
@@ -10,6 +10,10 @@ from sk_parts import tri_plate
 
 SIDE = 0.91
 CY = 2.62
+_FONT = os.path.normpath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "..", "..", "StrafeJumpSim", "Fonts", "LiberationSans-Regular.ttf",
+))
 
 
 @register
@@ -33,6 +37,7 @@ def create():
         tri_plate(g, (0, CY + 0.01, 0.070), SIDE * 0.72, 0.010, "Lib_PaintWhite")
         if lod == 0:
             g.cylinder((0, CY - 0.02, 0.04), 0.012, 0.04, "Lib_Steel", 6, axis="Z")
+            g.text("YIELD", (0, 2.72, 0.086), 0.18, "Lib_PaintRed", extrude=0.004, font=_FONT)
         a.end()
     a.box("Col_Base", (0, 0.03, 0), (0.14, 0.048, 0.14))
     a.capsule("Col_Pole", (0, 1.52, 0), 0.026, 2.90, 1)

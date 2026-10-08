@@ -2,8 +2,95 @@
 
 import math
 
+import bmesh
+import bpy
+from mathutils import Matrix, Vector
 
-def _loft(g, rings, mat):
+from _common import unity_to_blender
+
+
+def _apply_mod(obj, name):
+    if bpy.context.object is not None and bpy.context.object.mode != "OBJECT":
+        bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.modifier_apply(modifier=name)
+
+
+def _well_cutter(center, radius, length):
+    """Closed cylinder along Unity X, used to open a wheel well."""
+    bm = bmesh.new()
+    bmesh.ops.create_cone(
+        bm, cap_ends=True, cap_tris=False, segments=20,
+        radius1=radius, radius2=radius, depth=length,
+    )
+    bmesh.ops.rotate(bm, verts=bm.verts, cent=Vector((0, 0, 0)), matrix=Matrix.Rotation(math.pi * 0.5, 4, "Y"))
+    bmesh.ops.translate(bm, verts=bm.verts, vec=Vector(unity_to_blender(*center)))
+    me = bpy.data.meshes.new("well")
+    bm.to_mesh(me)
+    bm.free()
+    obj = bpy.data.objects.new("well", me)
+    bpy.context.scene.collection.objects.link(obj)
+    return obj
+
+
+def _emit_smooth(g, verts, faces, mat, level, wells):
+    """Subdivide the shell, crease panel edges, then cut the wheel openings."""
+    bm = bmesh.new()
+    bverts = [bm.verts.new(unity_to_blender(*v)) for v in verts]
+    for face in faces:
+        try:
+            bm.faces.new([bverts[i] for i in face])
+        except ValueError:
+            continue
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    if level:
+        layer = bm.edges.layers.float.new("crease_edge")
+        for edge in bm.edges:
+            ang = edge.calc_face_angle(0.0) if len(edge.link_faces) == 2 else math.pi
+            edge[layer] = 0.9 if ang > math.radians(32.0) else 0.0
+    me = bpy.data.meshes.new("shell")
+    bm.to_mesh(me)
+    bm.free()
+    obj = bpy.data.objects.new("shell", me)
+    bpy.context.scene.collection.objects.link(obj)
+    if level:
+        mod = obj.modifiers.new("Sub", "SUBSURF")
+        mod.levels = int(level)
+        mod.render_levels = int(level)
+        mod.use_creases = True
+        _apply_mod(obj, "Sub")
+    for center, radius, length in wells:
+        cut = _well_cutter(center, radius, length)
+        boolean = obj.modifiers.new("Well", "BOOLEAN")
+        boolean.operation = "DIFFERENCE"
+        boolean.solver = "EXACT"
+        boolean.object = cut
+        cut_mesh = cut.data
+        try:
+            _apply_mod(obj, "Well")
+        except RuntimeError as exc:
+            print("WELL_BOOLEAN_FAILED", exc)
+            if obj.modifiers.get("Well") is not None:
+                obj.modifiers.remove(boolean)
+        bpy.data.objects.remove(cut, do_unlink=True)
+        bpy.data.meshes.remove(cut_mesh)
+    out = bmesh.new()
+    out.from_mesh(obj.data)
+    bpy.data.objects.remove(obj, do_unlink=True)
+    bpy.data.meshes.remove(me)
+    bmesh.ops.recalc_face_normals(out, faces=out.faces)
+    g._ingest(out, mat, 1.0)
+
+
+def _wells(spec, axles):
+    radius = spec["tire_r"] + 0.03
+    length = spec["tire_half_w"] * 2.0 + 0.30
+    return [((sign * spec["tire_x"], spec["axle_y"], z), radius, length) for z in axles for sign in (-1.0, 1.0)]
+
+
+def _loft(g, rings, mat, smooth=0, wells=()):
     """Solid loft through closed rings of equal length. Ends are capped."""
     count = len(rings[0])
     verts = [p for ring in rings for p in ring]
@@ -28,7 +115,10 @@ def _loft(g, rings, mat):
             a = vid(ring_i, i)
             b = vid(ring_i, i + 1)
             faces.append((center_i, b, a) if flip else (center_i, a, b))
-    g.mesh(verts, faces, mat)
+    if smooth or wells:
+        _emit_smooth(g, verts, faces, mat, smooth, wells)
+    else:
+        g.mesh(verts, faces, mat)
 
 
 def _stations(z0, z1, step, extra):
@@ -138,7 +228,7 @@ def _ring(half, z):
     return pts
 
 
-def _shell(g, spec, step, mat, axles):
+def _shell(g, spec, step, mat, axles, level):
     extra = [k[0] for k in spec["crown"]]
     extra.extend((spec["a_pillar_z"], spec["c_pillar_z"]))
     extra.extend((spec["windshield"][0], spec["windshield"][2], spec["rear_glass"][0], spec["rear_glass"][2]))
@@ -149,7 +239,7 @@ def _shell(g, spec, step, mat, axles):
         extra.extend((axle - spec["arch_r"], axle, axle + spec["arch_r"]))
     zs = _stations(spec["z0"], spec["z1"], step, extra)
     rings = [_ring(_half(z, spec, axles), z) for z in zs]
-    _loft(g, rings, mat)
+    _loft(g, rings, mat, smooth=level, wells=_wells(spec, axles))
 
 
 def _slab(g, y0, z0, y1, z1, half_x0, half_x1, thick, mat):
@@ -173,16 +263,16 @@ def _slab(g, y0, z0, y1, z1, half_x0, half_x1, thick, mat):
 
 
 def _side_glass(g, spec, z0, z1, sign, mat):
-    """Chord across the window pocket. Bottom enters the belt, top enters the drip rail, ends enter the pillars."""
-    y0 = spec["belt_y"] + 0.012
-    y1 = spec["roof_y"] - 0.028
+    """One pane in the recess. The top stays under the drip rail so it cannot cut the roof."""
+    y0 = spec["belt_y"] + 0.05
+    y1 = spec["roof_y"] - 0.16
     zmid = (z0 + z1) * 0.5
     x_out = _flare(zmid, spec, spec["axles"])
-    x_bot = x_out - 0.014
-    x_top = spec["roof_x"] - 0.012
-    if x_top > x_bot - 0.05:
-        x_top = x_bot - 0.05
-    thick = 0.012
+    x_bot = x_out - spec["inset"] + 0.03
+    x_top = min(spec["roof_x"] - 0.02, x_bot - 0.04)
+    if y1 < y0 + 0.12:
+        y1 = y0 + 0.12
+    thick = 0.010
     verts = []
     for dx in (-thick * 0.5, thick * 0.5):
         for z, y, x in ((z0, y0, x_bot), (z1, y0, x_bot), (z1, y1, x_top), (z0, y1, x_top)):
@@ -196,57 +286,27 @@ def _side_glass(g, spec, z0, z1, sign, mat):
         (3, 7, 4, 0),
     ]
     g.mesh(verts, faces, mat)
-    z0b, z1b = z0 + 0.04, z1 - 0.04
-    if z1b - z0b < 0.08:
-        return
-    inset = 0.012
-    back = []
-    for dx in (-0.003, 0.003):
-        for z, y, x in (
-            (z0b, y0 + 0.03, x_bot - inset),
-            (z1b, y0 + 0.03, x_bot - inset),
-            (z1b, y1 - 0.03, x_top - inset),
-            (z0b, y1 - 0.03, x_top - inset),
-        ):
-            back.append((sign * (x + dx), y, z))
-    g.mesh(back, faces, "Lib_Black")
 
 
 def _raked(g, spec, z0, z1):
-    """Pane on the crown chord. Both ends run past the opening into the shell."""
+    """Pane inside the dipped pocket, short of the undipped skin at either end."""
+    span = abs(z1 - z0)
+    inset = min(0.10, span * 0.24)
     if z0 <= z1:
-        za, zb = z0 - 0.04, z1 + 0.04
+        za, zb = z0 + inset, z1 - inset
     else:
-        za, zb = z0 + 0.04, z1 - 0.04
+        za, zb = z0 - inset, z1 + inset
     ya, xa = _lerp(spec["crown"], za)
     yb, xb = _lerp(spec["crown"], zb)
     _slab(
-        g, ya - 0.012, za, yb - 0.012, zb,
-        max(0.16, xa - 0.05), max(0.16, xb - 0.04),
-        0.014, "Lib_ShopGlass",
-    )
-
-
-def _dark_raked(g, spec, z0, z1):
-    """Black sheet under the glass chord, inside the opening, so the pane reads as a window."""
-    if z0 <= z1:
-        za, zb = z0 + 0.05, z1 - 0.05
-    else:
-        za, zb = z0 - 0.05, z1 + 0.05
-    if (zb - za) * (1 if z0 <= z1 else -1) < 0.08:
-        return
-    ya, xa = _lerp(spec["crown"], za)
-    yb, xb = _lerp(spec["crown"], zb)
-    _slab(
-        g, ya - 0.030, za, yb - 0.030, zb,
-        max(0.12, xa - 0.11), max(0.12, xb - 0.09),
-        0.006, "Lib_Black",
+        g, ya - 0.032, za, yb - 0.032, zb,
+        max(0.16, xa - 0.08), max(0.16, xb - 0.08),
+        0.008, "Lib_TintGlass",
     )
 
 
 def _glass(g, spec):
     hz, _hy, cz, _cy = spec["windshield"]
-    _dark_raked(g, spec, hz, cz)
     _raked(g, spec, hz, cz)
     if spec.get("bed_z0") is not None:
         _ry0, _ry1 = spec["rear_glass"][1], spec["rear_glass"][3]
@@ -254,16 +314,15 @@ def _glass(g, spec):
         _slab(
             g, _ry0, z_cap + 0.018, _ry1, z_cap - 0.010,
             spec["roof_x"] - 0.08, spec["roof_x"] - 0.05,
-            0.014, "Lib_ShopGlass",
+            0.012, "Lib_TintGlass",
         )
     else:
         rz0, _ry0, rz1, _ry1 = spec["rear_glass"]
-        _dark_raked(g, spec, rz0, rz1)
         _raked(g, spec, rz0, rz1)
     for z0, z1 in spec["windows"]:
         lo, hi = (z0, z1) if z0 <= z1 else (z1, z0)
         for sign in (1.0, -1.0):
-            _side_glass(g, spec, lo - 0.06, hi + 0.06, sign, "Lib_ShopGlass")
+            _side_glass(g, spec, lo + 0.02, hi - 0.02, sign, "Lib_TintGlass")
 
 
 def _seams(g, spec):
@@ -291,25 +350,27 @@ def _handles(g, spec):
 
 def _lamps(g, spec, lod):
     paint = spec["paint"]
-    z_nose = spec["z1"] - 0.08
+    bev = 0.006 if lod == 0 else 0.0
+    segs = 2 if lod == 0 else 0
+    z_nose = spec["z1"]
     for x in (-spec["lamp_x"], spec["lamp_x"]):
-        g.box((x, spec["lamp_y"], z_nose - 0.02), (0.30, 0.12, 0.07), "Lib_Black")
-        g.box((x, spec["lamp_y"], z_nose + 0.012), (0.24, 0.08, 0.018), "Lib_PaintCream")
-        if lod == 0:
-            g.box((x, spec["lamp_y"], z_nose + 0.024), (0.12, 0.045, 0.010), "Lib_ShopGlass")
-    g.box((0, spec["lamp_y"] - 0.02, z_nose + 0.01), (0.55, 0.10, 0.025), "Lib_Black")
+        g.box((x, spec["lamp_y"], z_nose - 0.012), (0.30, 0.12, 0.028), "Lib_Black", bevel=bev, segs=1 if lod == 0 else 0)
+        g.box((x, spec["lamp_y"], z_nose + 0.010), (0.22, 0.072, 0.014), "Lib_Headlamp", bevel=bev, segs=segs)
+    g.box((0, spec["lamp_y"] - 0.02, z_nose - 0.004), (0.52, 0.09, 0.018), "Lib_Black")
     if lod == 0:
         for i in range(4):
-            g.box((0, spec["lamp_y"] - 0.05 + i * 0.025, z_nose + 0.026), (0.46, 0.008, 0.008), "Lib_SteelDark")
+            g.box((0, spec["lamp_y"] - 0.048 + i * 0.022, z_nose + 0.008), (0.44, 0.008, 0.006), "Lib_SteelDark")
     if spec.get("bed_z0") is None:
-        z_tail = spec["z0"] + 0.06
+        z_lens = spec["z0"] - 0.012
+        z_bezel = spec["z0"] + 0.006
         z_bump = spec["z0"] + 0.02
     else:
-        z_tail = spec["bed_z0"] + 0.05
+        z_lens = spec["bed_z0"] - 0.022
+        z_bezel = spec["bed_z0"] - 0.004
         z_bump = spec["bed_z0"] + 0.02
     for x in (-spec["lamp_x"], spec["lamp_x"]):
-        g.box((x, spec["tail_y"], z_tail + 0.015), (0.28, 0.11, 0.06), "Lib_Black")
-        g.box((x, spec["tail_y"], z_tail - 0.012), (0.22, 0.07, 0.016), "Lib_PaintRed")
+        g.box((x, spec["tail_y"], z_bezel), (0.26, 0.10, 0.016), "Lib_Black", bevel=bev, segs=1 if lod == 0 else 0)
+        g.box((x, spec["tail_y"], z_lens), (0.20, 0.064, 0.012), "Lib_Taillamp", bevel=bev, segs=segs)
     g.box((0, spec["bumper_y"], spec["z1"] - 0.02), (spec["body_x"] * 1.92, 0.14, 0.07), "Lib_Black")
     width = spec["bed_x"] if spec.get("bed_z0") is not None else spec["body_x"]
     g.box((0, spec["bumper_y"], z_bump), (width * 1.92, 0.14, 0.07), "Lib_Black")
@@ -318,26 +379,38 @@ def _lamps(g, spec, lod):
 
 
 def _wheels(g, spec, lod, axles):
-    seg = 12 if lod == 0 else 8
+    seg = 16 if lod == 0 else 10
     r = spec["tire_r"]
     half_w = spec["tire_half_w"]
     for z in axles:
         for x in (-spec["tire_x"], spec["tire_x"]):
-            g.cylinder((x, spec["axle_y"], z), r, half_w * 2.0, "Lib_Rubber", seg, axis="X")
-            cap = x + (half_w * 0.92 if x > 0 else -half_w * 0.92)
-            g.cylinder((cap, spec["axle_y"], z), r * 0.62, 0.012, "Lib_Steel", seg, axis="X")
+            g.cylinder(
+                (x, spec["axle_y"], z), r, half_w * 2.0, "Lib_Rubber", seg,
+                axis="X", bevel=0.016 if lod == 0 else 0.0, segs=2 if lod == 0 else 0,
+            )
+            sign = 1.0 if x > 0 else -1.0
+            outer = x + sign * half_w
+            # Proud of the sidewall by a few mm so the rim does not share a face with the tire.
+            face = outer + sign * 0.012
+            g.cylinder((face, spec["axle_y"], z), r * 0.70, 0.012, "Lib_Steel", seg, axis="X")
+            g.cylinder((face + sign * 0.010, spec["axle_y"], z), r * 0.22, 0.012, "Lib_SteelDark", max(8, seg // 2), axis="X")
             if lod == 0:
                 for k in range(5):
-                    ang = math.radians(k * 72.0 + 8.0)
+                    # Unity +X rotation swings local +Y toward +Z, so the spoke's long axis is (cos, sin).
+                    theta = math.radians(k * 72.0 + 8.0)
                     g.box(
-                        (cap, spec["axle_y"] + math.sin(ang) * r * 0.28, z + math.cos(ang) * r * 0.28),
+                        (
+                            face,
+                            spec["axle_y"] + math.cos(theta) * r * 0.42,
+                            z + math.sin(theta) * r * 0.42,
+                        ),
                         (0.010, r * 0.46, 0.018),
-                        "Lib_SteelDark",
-                        euler=(math.degrees(ang), 0, 0),
+                        "Lib_Steel",
+                        euler=(math.degrees(theta), 0, 0),
                     )
 
 
-def _bed(g, spec, step, mat):
+def _bed(g, spec, step, mat, level):
     z1 = spec["bed_z1"]
     z0 = spec["bed_z0"]
     floor_y = spec["bed_floor_y"]
@@ -369,17 +442,18 @@ def _bed(g, spec, step, mat):
                 (x_i, rail, z),
                 (x_i, max(y_lo, floor_y), z),
             ])
-        _loft(g, rings, mat)
+        _loft(g, rings, mat, smooth=level, wells=_wells(spec, (spec["bed_axle"],)))
 
 
 def build(g, spec, lod):
+    level = 1 if lod == 0 else 0
     step = spec["step"] if lod == 0 else spec["step"] * 1.8
-    _shell(g, spec, step, spec["paint"], spec["axles"])
+    _shell(g, spec, step, spec["paint"], spec["axles"], level)
     _glass(g, spec)
     _seams(g, spec)
     _handles(g, spec)
     _lamps(g, spec, lod)
     _wheels(g, spec, lod, spec["wheel_axles"])
     if spec.get("bed_z0") is not None:
-        _bed(g, spec, step, spec["paint"])
+        _bed(g, spec, step, spec["paint"], level)
         _wheels(g, spec, lod, (spec["bed_axle"],))

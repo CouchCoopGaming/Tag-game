@@ -59,10 +59,10 @@ SPEC = {
 
 def _wheel_cols(a, axles, tag):
     r = SPEC["tire_r"]
-    x = SPEC["tire_x"] + SPEC["tire_half_w"] * 0.55
+    x = SPEC["tire_x"] + SPEC["tire_half_w"] * 0.12
     for i, z in enumerate(axles):
         for j, sign in enumerate((-1.0, 1.0)):
-            a.box("Col_%s_%d%d" % (tag, i, j), (sign * x, SPEC["axle_y"], z), (0.018, r * 1.05, r * 1.05))
+            a.box("Col_%s_%d%d" % (tag, i, j), (sign * x, SPEC["axle_y"], z), (0.016, r * 0.98, r * 0.98))
 
 
 @register
@@ -78,12 +78,12 @@ def create():
         g = a.begin(lod)
         body.build(g, SPEC, lod)
         a.end()
-    a.box("Col_Cab", (0, 0.78, 0.85), (1.20, 0.55, 1.15))
-    a.box("Col_Roof", (0, 1.66, 0.40), (0.55, 0.06, 0.40))
+    a.box("Col_Cab", (0, 0.82, 0.78), (0.90, 0.48, 1.00))
+    a.box("Col_Roof", (0, 1.70, 0.40), (0.36, 0.04, 0.32))
     a.box("Col_Bed", (0, 0.55, -1.20), (1.20, 0.02, 1.60))
     a.box("Col_SideL", (-0.845, 0.98, -1.30), (0.02, 0.12, 1.70))
     a.box("Col_SideR", (0.845, 0.98, -1.30), (0.02, 0.12, 1.70))
-    a.box("Col_Tailgate", (0, 0.86, -2.56), (1.20, 0.32, 0.02))
+    a.box("Col_Tailgate", (0, 0.86, -2.568), (0.90, 0.26, 0.014))
     _wheel_cols(a, (1.58,), "Fr")
     _wheel_cols(a, (-1.62,), "Rr")
     return a
