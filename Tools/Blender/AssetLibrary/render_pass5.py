@@ -160,9 +160,9 @@ def _court(found):
 def _harbor(found):
     scene = _begin(wide=True)
     quay_bollard = (2.4, 1.15, -0.42)
-    boat_pos = (3.15, 0.0, -5.55)
-    boat_yaw = -12.0
-    dock_pos = (0.15, 0.0, -5.55)
+    boat_pos = (3.25, 0.0, -4.85)
+    boat_yaw = -8.0
+    dock_pos = (0.2, 0.0, -4.9)
     specs = [
         ("Quay_Edge", (0, 0, 0), 0),
         ("Container_20", (3.6, 0.90, 2.55), 90),
@@ -185,7 +185,8 @@ def _harbor(found):
     p3._rim(0.5, -3.5, -0.08, 32.0, 26.0)
     p3._slab(1.0, -6.0, 0.0, 28.0, 16.0, "Lib_Water")
     _horizon(False)
-    r._frame(scene, objs, fill=0.80, elevation=16.0, azimuth=48.0)
+    # From the water, so the cabin boat is in front of the quay face instead of hidden behind the apron.
+    r._frame(scene, objs, fill=0.78, elevation=18.0, azimuth=205.0)
     r._render(scene, os.path.join(STILL_DIR, "vignette_harbor.png"))
 
 
@@ -239,17 +240,29 @@ def _street(found):
 
 def main():
     os.makedirs(STILL_DIR, exist_ok=True)
+    only = None
+    if "--only" in sys.argv:
+        only = sys.argv[sys.argv.index("--only") + 1]
     found = r._catalog()
-    _shop(found, "Store_Corner", 8.0, 7.2, os.path.join(STILL_DIR, "store_corner.png"), 42)
-    _shop(found, "Store_Diner", 10.0, 7.0, os.path.join(STILL_DIR, "store_diner.png"), 34)
-    _shop(found, "Store_Laundromat", 9.2, 6.8, os.path.join(STILL_DIR, "store_laundromat.png"), -36)
-    _court(found)
-    _harbor(found)
-    _house(found, "House_Gable", os.path.join(STILL_DIR, "house_gable_front.png"), 40)
-    _house(found, "House_Gable", os.path.join(STILL_DIR, "house_gable_back.png"), 220)
-    _house(found, "House_Hip", os.path.join(STILL_DIR, "house_hip_front.png"), 40)
-    _house(found, "House_Hip", os.path.join(STILL_DIR, "house_hip_back.png"), 220)
-    _street(found)
+    shots = (
+        ("store_corner", lambda: _shop(found, "Store_Corner", 8.0, 7.2, os.path.join(STILL_DIR, "store_corner.png"), 42)),
+        ("store_diner", lambda: _shop(found, "Store_Diner", 10.0, 7.0, os.path.join(STILL_DIR, "store_diner.png"), 34)),
+        ("store_laundromat", lambda: _shop(found, "Store_Laundromat", 9.2, 6.8, os.path.join(STILL_DIR, "store_laundromat.png"), -36)),
+        ("court", _court),
+        ("harbor", _harbor),
+        ("house_gable_front", lambda: _house(found, "House_Gable", os.path.join(STILL_DIR, "house_gable_front.png"), 40)),
+        ("house_gable_back", lambda: _house(found, "House_Gable", os.path.join(STILL_DIR, "house_gable_back.png"), 220)),
+        ("house_hip_front", lambda: _house(found, "House_Hip", os.path.join(STILL_DIR, "house_hip_front.png"), 40)),
+        ("house_hip_back", lambda: _house(found, "House_Hip", os.path.join(STILL_DIR, "house_hip_back.png"), 220)),
+        ("street", _street),
+    )
+    for name, fn in shots:
+        if only and only not in name:
+            continue
+        if name in ("court", "harbor", "street"):
+            fn(found)
+        else:
+            fn()
     print("PASS5_DONE", STILL_DIR)
 
 
