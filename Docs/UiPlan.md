@@ -303,6 +303,16 @@ Orange and Tan keep a Base slot on the chest and the hips. The chest mesh also c
 
 RESULTS plants every figure on its block. The sole sits half a centimetre above the cap, with a contact shadow, and that plant runs again on each cheer and slump frame. The results camera moves in so the winner is about 45% of a 1920x1080 stage, the same size as the screen, so the view is not a small picture blown up. The stage stays 2nd, 1st, 3rd, 4th. The stat cards use that same order and sit under the figures. The bar across the top of a card is the seat colour. A small swatch is the look, so a yellow bar can sit beside an orange shell. The longest chase is one header line, Longest chase 14.2s, plus the name when the match recorded who ran it. The player lines are tags, time as It, and round wins. The still uses the existing cheer at the frame where the head yaw peaks. That pose opens the arms a few degrees. It does not add a new raise. Pause shows Resume, Restart round, Options, and Quit to menu, and it asks "Leave the match?" before it quits. The panel of the player who paused takes that seat's colour. In `Docs/UiStills/pass35/` the results figures are the mesh render. The cards, the pause panels, and the labels are composite. The arena quarters in the pause picture are earlier chase stills. The proof lines are unchanged.
 
+## Pass 36
+
+Every look uses the runner mesh the match ships. That is Tan Hier when the catalog slot is empty, painted with the look's primary and accent. Orange was already that generation. Red, Blue, Lavender, and Mint no longer fall back to the older mannequin, on the cast cards, on the look sheet, or on RESULTS. The shared head is closed: no boundary edges, and the crown normals face out. The open cap was on the older Red head, which these screens no longer show.
+
+The results clips are menu poses, not gameplay verbs. First place raises both arms in a V and hops. Second and third pump one fist. Fourth drops the head, brings the shoulders forward, and lets the arms hang. The no-clip rule is the same: 30 fps, 0.5 cm, a 3 cm joint exemption, and no subtraction of the rest depth. The rest hip overlap is still the only fail, so the line stays rigJoint=26 pose=0. The red stills mark that rest overlap.
+
+Pause keeps a single menu, owned by the player who paused, centred on that pane. The other panes dim, and a small tag names the owner. Only that player's input drives the menu. Another player can press Start and take it after two seconds. Choosing Quit opens a Yes/No modal with No selected. The leave question is not on the banner before that.
+
+In `Docs/UiStills/pass36/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards, the pause chrome, and the labels are composite. The arena quarters in the pause pictures are earlier chase stills. Each still is under 400 KB. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

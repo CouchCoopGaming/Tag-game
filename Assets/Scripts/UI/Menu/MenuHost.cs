@@ -174,6 +174,14 @@ namespace Tag.Ui.Menu
         Image _lostPlate;
         Text _lostWho;
         bool _quitAsk;
+        int _quitPick;
+        int _pauseOwner;
+        int _turnSeat = -1;
+        float _turnAt;
+        float _pauseX, _pauseY, _pauseW, _pauseH;
+        RectTransform _quitModal;
+        Image _quitNoPlate;
+        Image _quitYesPlate;
 
         readonly Text[] _castMark = new Text[6];
         readonly RawImage[] _castView = new RawImage[4];
@@ -1776,25 +1784,115 @@ namespace Tag.Ui.Menu
         void TickPause()
         {
             if (Gated()) return;
-            ReadNav(out int dx, out int dy, out bool confirm, out bool back, out bool start);
-            if (start || back)
+            int dx;
+            int dy;
+            bool confirm;
+            bool back;
+            bool start;
+            int ask;
+            ReadPause(_pauseOwner, out dx, out dy, out confirm, out back, out start, out ask);
+            if (ask >= 0) NoteTurn(ask);
+            if (TurnDue())
+            {
+                GiveTurn();
+                return;
+            }
+            if (start)
             {
                 EatPause = true;
                 if (MenuFlow.Disconnected) return;
                 ResumeMatch();
                 return;
             }
-            if (dx != 0 || dy != 0)
+            if (_quitAsk)
             {
-                if (_quitAsk) ClearQuitAsk();
-                Move(dx, dy);
+                if (back)
+                {
+                    ClearQuitAsk();
+                    return;
+                }
+                if (dx != 0 || dy != 0)
+                {
+                    _quitPick = (dx > 0 || dy > 0) ? 1 : 0;
+                    PaintQuit();
+                }
+                if (confirm) ConfirmQuit();
+                return;
             }
+            if (back)
+            {
+                EatPause = true;
+                if (MenuFlow.Disconnected) return;
+                ResumeMatch();
+                return;
+            }
+            if (dx != 0 || dy != 0) Move(dx, dy);
             if (confirm) ArmActivate();
+        }
+
+        void ReadPause(int owner, out int dx, out int dy, out bool confirm, out bool back, out bool start, out int ask)
+        {
+            dx = 0;
+            dy = 0;
+            confirm = false;
+            back = false;
+            start = false;
+            ask = -1;
+            for (int i = 0; i < MenuInput.Count; i++)
+            {
+                MenuEdge edge = MenuInput.Edges[i];
+                int seat = SeatOf(edge.Device);
+                if (seat == owner)
+                {
+                    if (edge.X != 0) dx = edge.X;
+                    if (edge.Y != 0) dy = edge.Y;
+                    if (edge.Confirm) confirm = true;
+                    if (edge.Back) back = true;
+                    if (edge.Start) start = true;
+                }
+                else if (edge.Start && seat >= 0 && ask < 0)
+                    ask = seat;
+            }
+        }
+
+        void NoteTurn(int seat)
+        {
+            if (seat < 0 || seat == _pauseOwner) return;
+            if (_turnSeat >= 0) return;
+            _turnSeat = seat;
+            _turnAt = Time.unscaledTime;
+        }
+
+        bool TurnDue()
+        {
+            if (_turnSeat < 0) return false;
+            return Time.unscaledTime >= _turnAt + 2f;
+        }
+
+        void GiveTurn()
+        {
+            int seat = _turnSeat;
+            _turnSeat = -1;
+            if (seat < 0) return;
+            if (GameSettings.Current != null) GameSettings.Current.AccessSeat = seat;
+            _pauseOwner = seat;
+            ClearBody();
+            BuildPause();
+            RefreshFocus();
+            PaintFooter();
         }
 
         void ClearQuitAsk()
         {
             _quitAsk = false;
+            _quitPick = 0;
+            if (_quitModal != null)
+            {
+                Destroy(_quitModal.gameObject);
+                _quitModal = null;
+                _quitNoPlate = null;
+                _quitYesPlate = null;
+            }
             for (int i = 0; i < _tiles.Count; i++)
             {
                 MenuTile tile = _tiles[i];
@@ -1803,6 +1901,62 @@ namespace Tag.Ui.Menu
             }
             if (_banner != null && _screen == MenuScreenId.Pause)
                 _banner.text = Tag.Ui.Hud.MatchHudText.ComicHint;
+        }
+
+        void PaintQuit()
+        {
+            if (_quitNoPlate != null)
+                _quitNoPlate.color = _quitPick == 0 ? MenuTheme.Gold : new Color(0.16f, 0.22f, 0.34f, 1f);
+            if (_quitYesPlate != null)
+                _quitYesPlate.color = _quitPick == 1 ? MenuTheme.Gold : new Color(0.16f, 0.22f, 0.34f, 1f);
+        }
+
+        void ConfirmQuit()
+        {
+            if (_quitPick == 0)
+            {
+                MenuAudio.Back();
+                ClearQuitAsk();
+                return;
+            }
+            EatPause = true;
+            MenuAudio.Back();
+            _quitAsk = false;
+            QuitMatch();
+        }
+
+        void ShowQuitModal()
+        {
+            if (_quitModal != null) return;
+            _quitAsk = true;
+            _quitPick = 0;
+            MenuAudio.Confirm();
+            float w = 440f;
+            float h = 210f;
+            float x = _pauseX + (_pauseW - w) * 0.5f;
+            float y = _pauseY + (_pauseH - h) * 0.5f;
+            if (x < 12f) x = 12f;
+            if (y < 12f) y = 12f;
+            var plate = MenuWidgets.Place(_body, "QuitModal", x, y, w, h);
+            var image = plate.gameObject.AddComponent<Image>();
+            image.color = new Color(0.04f, 0.08f, 0.16f, 0.96f);
+            image.raycastTarget = false;
+            _quitModal = plate;
+            MenuWidgets.Words(plate, "Leave the match?", UiFit.FloorFont, TextAnchor.MiddleCenter, MenuTheme.Cream, new Vector2(0.06f, 0.52f), new Vector2(0.94f, 0.92f));
+            float bw = 160f;
+            float bh = 64f;
+            float gap = 18f;
+            float total = bw * 2f + gap;
+            float bx = (w - total) * 0.5f;
+            var no = MenuWidgets.Place(plate, "QuitNo", bx, 28f, bw, bh);
+            _quitNoPlate = no.gameObject.AddComponent<Image>();
+            _quitNoPlate.raycastTarget = false;
+            MenuWidgets.Words(no, "No", 26, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
+            var yes = MenuWidgets.Place(plate, "QuitYes", bx + bw + gap, 28f, bw, bh);
+            _quitYesPlate = yes.gameObject.AddComponent<Image>();
+            _quitYesPlate.raycastTarget = false;
+            MenuWidgets.Words(yes, "Yes", 26, TextAnchor.MiddleCenter, MenuTheme.Cream, Vector2.zero, Vector2.one);
+            PaintQuit();
         }
 
         void TickOptions()
@@ -2560,55 +2714,87 @@ namespace Tag.Ui.Menu
         void BuildPause()
         {
             _quitAsk = false;
+            _quitPick = 0;
+            _quitModal = null;
+            _quitNoPlate = null;
+            _quitYesPlate = null;
+            _turnSeat = -1;
             _count = MenuSplitPause.Items;
             _cols = 1;
             _focus = 0;
-            if (_dim != null) _dim.color = MenuTheme.Dim;
             int opener = 0;
             if (GameSettings.Current != null) opener = GameSettings.Current.AccessSeat;
+            if (opener < 0) opener = 0;
+            if (opener > 3) opener = 3;
+            _pauseOwner = opener;
             bool preview = MenuSplitPause.Preview > 0;
             string who = MenuSplitPause.SeatLabel(opener, preview);
-            if (_header != null) _header.text = "  Paused by " + who;
+            if (_header != null) _header.text = "  Pause";
             if (_banner != null) _banner.text = Tag.Ui.Hud.MatchHudText.ComicHint;
             int n = MenuSplitPause.Fill(_cards);
+            int humans = preview ? MenuSplitPause.Preview : CouchPlay.Humans;
+            if (humans < 1) humans = 1;
+            bool split = humans > 1;
+            if (_dim != null) _dim.color = split ? new Color(0f, 0f, 0f, 0f) : MenuTheme.Dim;
+            MenuSplitPause.Card home = n > 0 ? _cards[0] : new MenuSplitPause.Card();
+            bool have = false;
             for (int c = 0; c < n; c++)
             {
                 MenuSplitPause.Card card = _cards[c];
                 if (!card.Show) continue;
-                bool owner = card.Seat == opener;
-                Color seat = MenuTheme.Seat(card.Seat);
-                var plate = MenuWidgets.Place(_body, "PauseCard", card.X + 12f, card.Y + 8f, card.W - 24f, card.H - 16f);
-                var plateImage = plate.gameObject.AddComponent<Image>();
-                Color plateColor = new Color(0.05f, 0.12f, 0.32f, 0.88f);
-                if (owner) plateColor = Color.Lerp(plateColor, seat, 0.42f);
-                MenuArt.Plate(plateImage, plateColor, true);
-                plateImage.raycastTarget = false;
-                var ownerBar = MenuWidgets.Place(plate, "OwnerBar", 0f, 0f, card.W - 24f, owner ? 10f : 6f);
-                var ownerImage = ownerBar.gameObject.AddComponent<Image>();
-                ownerImage.color = seat;
-                ownerImage.raycastTarget = false;
-                float head = UiFit.HeaderTop(card.H);
-                float headBand = 40f;
-                RectTransform paneHead = MenuWidgets.Place(plate, "PaneHead", 20f, head, card.W - 64f, headBand);
-                MenuWidgets.Words(paneHead, MenuSplitPause.SeatLabel(card.Seat, preview), UiFit.FloorFont, TextAnchor.MiddleLeft, MenuTheme.Gold, Vector2.zero, Vector2.one);
-                float edge = head + headBand;
-                float gap = 12f;
-                float bh = (card.H - edge * 2f - gap * (MenuSplitPause.Items - 1)) / MenuSplitPause.Items;
-                if (bh > 108f) bh = 108f;
-                if (bh < 58f) bh = 58f;
-                float stack = MenuSplitPause.Items * bh + (MenuSplitPause.Items - 1) * gap;
-                float bw = card.W - 72f;
-                if (bw > 760f) bw = 760f;
-                if (bw < 240f) bw = card.W - 36f;
-                float bx = card.X + (card.W - bw) * 0.5f;
-                float by = card.Y + (card.H - stack) * 0.5f;
-                if (by < card.Y + edge) by = card.Y + edge;
-                for (int i = 0; i < MenuSplitPause.Items; i++)
-                    AddTile(bx, by + i * (bh + gap), bw, bh, i, MenuSplitPause.Item[i], MenuSplitPause.Blurb[i], true);
+                if (split && card.Seat != opener)
+                {
+                    var shade = MenuWidgets.Place(_body, "PaneDim", card.X, card.Y, card.W, card.H);
+                    var shadeImage = shade.gameObject.AddComponent<Image>();
+                    shadeImage.color = new Color(0.02f, 0.04f, 0.08f, 0.72f);
+                    shadeImage.raycastTarget = false;
+                    continue;
+                }
+                home = card;
+                have = true;
             }
+            if (!have && n > 0) home = _cards[0];
+            float bw = 460f;
+            if (home.W > 40f && bw > home.W - 28f) bw = home.W - 28f;
+            if (bw < 280f) bw = home.W > 120f ? home.W - 24f : 460f;
+            float bh = 68f;
+            float gap = 10f;
+            float stack = MenuSplitPause.Items * bh + (MenuSplitPause.Items - 1) * gap;
+            float cardW = bw + 36f;
+            float cardH = stack + 28f;
+            float cx = home.X + (home.W - cardW) * 0.5f;
+            float cy = home.Y + (home.H - cardH) * 0.5f - 8f;
+            if (cx < 8f) cx = 8f;
+            if (cy < 8f) cy = 8f;
+            _pauseX = cx;
+            _pauseY = cy;
+            _pauseW = cardW;
+            _pauseH = cardH;
+            Color seat = MenuTheme.Seat(opener);
+            float tagW = 196f;
+            float tagH = 32f;
+            float tagX = cx + cardW - tagW;
+            float tagY = cy + cardH + 8f;
+            var tag = MenuWidgets.Place(_body, "PauseTag", tagX, tagY, tagW, tagH);
+            var tagImage = tag.gameObject.AddComponent<Image>();
+            tagImage.color = seat;
+            tagImage.raycastTarget = false;
+            MenuWidgets.Words(tag, "Paused by " + who, 20, TextAnchor.MiddleCenter, MenuTheme.Ink, Vector2.zero, Vector2.one);
+            var plate = MenuWidgets.Place(_body, "PauseCard", cx, cy, cardW, cardH);
+            var plateImage = plate.gameObject.AddComponent<Image>();
+            Color plateColor = Color.Lerp(new Color(0.05f, 0.12f, 0.32f, 0.94f), seat, 0.42f);
+            MenuArt.Plate(plateImage, plateColor, true);
+            plateImage.raycastTarget = false;
+            var ownerBar = MenuWidgets.Place(plate, "OwnerBar", 0f, 0f, cardW, 8f);
+            var ownerImage = ownerBar.gameObject.AddComponent<Image>();
+            ownerImage.color = seat;
+            ownerImage.raycastTarget = false;
+            float bx = 18f;
+            float by = 18f;
+            for (int i = 0; i < MenuSplitPause.Items; i++)
+                AddTile(cx + bx, cy + by + i * (bh + gap), bw, bh, i, MenuSplitPause.Item[i], MenuSplitPause.Blurb[i], true);
             _count = MenuSplitPause.Items;
             _cols = 1;
-            BuildPanePrompts();
         }
 
         void BuildResults()
@@ -3101,21 +3287,10 @@ namespace Tag.Ui.Menu
                 case 3:
                     if (!_quitAsk)
                     {
-                        _quitAsk = true;
-                        MenuAudio.Confirm();
-                        if (_banner != null) _banner.text = "Leave the match?";
-                        for (int i = 0; i < _tiles.Count; i++)
-                        {
-                            MenuTile tile = _tiles[i];
-                            if (tile == null || tile.Index != 3 || tile.Detail == null) continue;
-                            tile.Detail.text = "Leave the match?";
-                        }
+                        ShowQuitModal();
                         break;
                     }
-                    _quitAsk = false;
-                    EatPause = true;
-                    MenuAudio.Back();
-                    QuitMatch();
+                    ConfirmQuit();
                     break;
                 default:
                     EatPause = true;

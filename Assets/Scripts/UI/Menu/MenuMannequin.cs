@@ -5,9 +5,10 @@ using UnityEngine;
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Preview body. Prefers the Hier HiPoly mesh for the picked color.
-    /// The editor loads the FBX by path. A player build uses the catalog
-    /// once the editor bake has filled it, then the primitive mannequin.
+    /// Preview body. Every look uses the runner mesh the match ships
+    /// (Tan Hier when the catalog slot is empty) and tints it. The editor
+    /// loads that FBX by path. A player build uses the catalog once the
+    /// editor bake has filled it, then the primitive mannequin.
     /// </summary>
     public static class MenuMannequin
     {
@@ -70,15 +71,20 @@ namespace Tag.Ui.Menu
 
         static GameObject FindPrefab(string key)
         {
+            if (string.IsNullOrEmpty(key)) key = "Tan";
+            // One body for every look. The match tints this same runner.
+            // key is the colour Dress paints, not a second mesh.
             HierMannequinCatalog cat = Resources.Load<HierMannequinCatalog>("Characters/HierMannequinCatalog");
             if (cat != null)
             {
-                GameObject slotted = cat.ForRunner(key);
+                GameObject runner = cat.Runner;
+                if (runner != null) return runner;
+                GameObject slotted = cat.ForRunner("Tan");
                 if (slotted != null) return slotted;
             }
 #if UNITY_EDITOR
             return UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(
-                "Assets/Art/Characters/HiPoly/Dummy_Mannequin_" + key + "_Hier_Hi.fbx");
+                "Assets/Art/Characters/HiPoly/Dummy_Mannequin_Tan_Hier_Hi.fbx");
 #else
             return null;
 #endif

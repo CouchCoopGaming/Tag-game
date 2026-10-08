@@ -19,6 +19,13 @@ static class Program
             Console.WriteLine(Tag.Ui.Menu.MenuNoClip.ProbePairs(RepoRoot()));
             return 0;
         }
+        if (args != null && args.Length > 0 && args[0] == "--pass36")
+        {
+            string raw = args.Length > 1 ? args[1] : "/tmp/pass36-overlap";
+            Tag.Ui.Menu.MenuNoClip.ExportCelebrate(RepoRoot(), raw);
+            Console.WriteLine("celebrate-overlap " + raw);
+            return 0;
+        }
         if (args != null && args.Length > 0 && args[0] == "--rail")
         {
             Console.WriteLine(Tag.Ui.Menu.MenuNoClip.ProbeRail(RepoRoot()));

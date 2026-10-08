@@ -5,8 +5,8 @@ namespace Tag.Ui.Menu
     /// <summary>
     /// Menu-only poses. The hip shell already sits in the thigh at rest.
     /// Life is a whole-body lean, a look, a breath, and a small weight shift.
-    /// The march keeps the chest up. A raised arm, a clapped elbow, and a
-    /// vault knee sink on this rig.
+    /// The march keeps the chest up. Celebrate poses are menu clips: a V,
+    /// a fist pump, and a slump. They are not gameplay verbs.
     /// </summary>
     public static class MenuAlive
     {
@@ -140,9 +140,8 @@ namespace Tag.Ui.Menu
         }
 
         /// <summary>
-        /// Winner. The whole body leans back. An arm raise sinks the shoulder
-        /// into the chest on this rig, so the arms only open a little.
-        /// lean is 1 for the winner and smaller for the places beside them.
+        /// Winner. Both arms up in a V, a lean back, and a look.
+        /// lean is 1 on the top block. The hop is separate, in Hop.
         /// </summary>
         public static Angles Cheer(float t, float lean)
         {
@@ -153,29 +152,52 @@ namespace Tag.Ui.Menu
             a.RootPitch = -16f * lean;
             a.HeadYaw = 10f * s * lean;
             a.Spine = -2f * lean;
-            a.ArmPitchL = -1.5f * lean;
-            a.ArmPitchR = -1.5f * lean;
-            a.ArmYawL = -4f * lean;
-            a.ArmYawR = 4f * lean;
-            a.ElbowL = -2f * lean;
-            a.ElbowR = -2f * lean;
+            a.ArmPitchL = -120f * lean;
+            a.ArmPitchR = -120f * lean;
+            a.ArmYawL = -50f * lean;
+            a.ArmYawR = 50f * lean;
+            a.ElbowL = -8f * lean;
+            a.ElbowR = -8f * lean;
             return a;
         }
 
-        /// <summary>Last place. A bow. A chin tuck past this sinks the head.</summary>
+        /// <summary>Second and third. One fist up, the other arm down.</summary>
+        public static Angles Pump(float t)
+        {
+            float s = Mathf.Sin(t * 4.2f);
+            var a = new Angles();
+            a.RootPitch = -16f;
+            a.Spine = -2f;
+            a.HeadYaw = 6f * s;
+            a.ArmPitchL = -120f;
+            a.ElbowL = -70f;
+            a.ArmPitchR = 4f;
+            a.ElbowR = -6f;
+            return a;
+        }
+
+        /// <summary>Small hop under the winner. The soles still plant on the way down.</summary>
+        public static float Hop(float t)
+        {
+            float s = Mathf.Sin(t * 3.4f);
+            if (s < 0f) s = 0f;
+            return 0.05f * s;
+        }
+
+        /// <summary>Last place. Head down, shoulders forward, arms hanging.</summary>
         public static Angles Slump(float t)
         {
             float s = Mathf.Sin(t * 1.1f);
             var a = new Angles();
             a.RootPitch = 16f;
             a.RootRoll = 3f * s;
-            a.Spine = 2f;
-            a.Head = 1f;
+            a.Spine = 22f;
+            a.Head = 28f;
             a.HeadYaw = -8f;
             a.KneeL = -3f;
             a.KneeR = -3f;
-            a.ArmPitchL = 1.5f;
-            a.ArmPitchR = 1.5f;
+            a.ArmPitchL = 20f;
+            a.ArmPitchR = 20f;
             return a;
         }
     }

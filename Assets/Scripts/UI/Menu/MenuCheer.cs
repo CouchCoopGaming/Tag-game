@@ -4,9 +4,9 @@ using UnityEngine;
 namespace Tag.Ui.Menu
 {
     /// <summary>
-    /// Results poses. The winner leans back. The last place bows.
-    /// A raised arm and a clap sink on this rig. No root travel.
-    /// Reduce motion holds one frame of that pose.
+    /// Results poses. The winner raises both arms and hops.
+    /// Second and third pump a fist. Last place slumps.
+    /// These are menu clips. Reduce motion holds one frame.
     /// </summary>
     public sealed class MenuCheer : MonoBehaviour
     {
@@ -25,6 +25,7 @@ namespace Tag.Ui.Menu
         Transform _shadow;
         float _floor;
         bool _hasFloor;
+        float _hop;
 
         public static void Slot(int rank, out float x, out float height)
         {
@@ -91,8 +92,9 @@ namespace Tag.Ui.Menu
             float time = _still ? 1.2f : t;
             MenuAlive.Angles a;
             if (_win) a = MenuAlive.Cheer(time, 1f);
-            else if (_clap) a = MenuAlive.Cheer(time, _small ? 0.3f : 0.55f);
+            else if (_clap) a = MenuAlive.Pump(time);
             else a = MenuAlive.Slump(time);
+            _hop = _win ? MenuAlive.Hop(time) : 0f;
             Pose(a);
             Ground();
         }
@@ -140,7 +142,7 @@ namespace Tag.Ui.Menu
             }
             if (!any) return;
             if (foot) lowest = footLow;
-            float target = _floor + 0.005f;
+            float target = _floor + 0.005f + _hop;
             float dy = target - lowest;
             float scale = 1f;
             if (transform.parent != null)

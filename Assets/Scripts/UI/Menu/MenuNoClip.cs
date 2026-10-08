@@ -484,6 +484,82 @@ namespace Tag.Ui.Menu
         /// <summary>
         /// Rest pose with the penetrating hip/thigh triangles marked red (mat 4).
         /// </summary>
+        public static void ExportCelebrate(string repo, string folder)
+        {
+            Directory.CreateDirectory(folder);
+            Rig rig = Rig.Load(Path.Combine(repo, "Docs", "UiStills", "hier-rigid.bin"));
+            float peak = 1.5707963f / 2.1f;
+            WriteOverlapPose(rig, Path.Combine(folder, "victory.tris"), From(MenuAlive.Cheer(peak, 1f)));
+            WriteOverlapPose(rig, Path.Combine(folder, "pump.tris"), From(MenuAlive.Pump(0.4f)));
+            WriteOverlapPose(rig, Path.Combine(folder, "slump.tris"), From(MenuAlive.Slump(0.2f)));
+        }
+
+        static void WriteOverlapPose(Rig rig, string path, Pose pose)
+        {
+            var posed = new Posed(rig);
+            posed.Place(pose, 0f, 0f, 0f);
+            int n = 0;
+            for (int p = 0; p < rig.Pieces; p++)
+                for (int s = 0; s < rig.Piece[p].Subs; s++)
+                    n += rig.Piece[p].Sub[s].Tris;
+            using (var fs = File.Create(path))
+            using (var bw = new BinaryWriter(fs))
+            {
+                bw.Write(0x52454948);
+                bw.Write(n);
+                for (int p = 0; p < rig.Pieces; p++)
+                {
+                    Piece piece = rig.Piece[p];
+                    var q = new Rot { X = posed.Qx[p], Y = posed.Qy[p], Z = posed.Qz[p], W = posed.Qw[p] };
+                    float ox = posed.Ox[p], oy = posed.Oy[p], oz = posed.Oz[p];
+                    for (int s = 0; s < piece.Subs; s++)
+                    {
+                        Shell shell = piece.Sub[s];
+                        for (int t = 0; t < shell.Tris; t++)
+                        {
+                            byte mat = OverlapAny(posed, p, shell, t) ? (byte)4 : MatOf(piece.Name, shell.Name);
+                            bw.Write(mat);
+                            WriteVert(bw, q, ox, oy, oz, shell, shell.I0[t]);
+                            WriteVert(bw, q, ox, oy, oz, shell, shell.I1[t]);
+                            WriteVert(bw, q, ox, oy, oz, shell, shell.I2[t]);
+                        }
+                    }
+                }
+            }
+        }
+
+        static bool OverlapAny(Posed posed, int piece, Shell shell, int t)
+        {
+            float ax, ay, az, bx, by, bz, cx, cy, cz;
+            WorldVert(posed, piece, shell, shell.I0[t], out ax, out ay, out az);
+            WorldVert(posed, piece, shell, shell.I1[t], out bx, out by, out bz);
+            WorldVert(posed, piece, shell, shell.I2[t], out cx, out cy, out cz);
+            float mx = (ax + bx + cx) / 3f;
+            float my = (ay + by + cy) / 3f;
+            float mz = (az + bz + cz) / 3f;
+            Rig rig = posed.Rig;
+            for (int b = 0; b < rig.Pieces; b++)
+            {
+                if (b == piece) continue;
+                if (mx < posed.MinX[b] - 0.01f || mx > posed.MaxX[b] + 0.01f) continue;
+                if (my < posed.MinY[b] - 0.01f || my > posed.MaxY[b] + 0.01f) continue;
+                if (mz < posed.MinZ[b] - 0.01f || mz > posed.MaxZ[b] + 0.01f) continue;
+                bool joined = rig.Join[piece] == b || rig.Join[b] == piece;
+                float jx = 0f, jy = 0f, jz = 0f;
+                if (joined)
+                {
+                    int child = rig.Join[piece] == b ? piece : b;
+                    jx = posed.Ox[child];
+                    jy = posed.Oy[child];
+                    jz = posed.Oz[child];
+                }
+                string shellName;
+                float depth = InsidePiece(posed, b, mx, my, mz, joined, jx, jy, jz, out shellName);
+                if (depth > Limit) return true;
+            }
+            return false;
+        }
+
         public static void ExportOverlap(string repo, string path)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -739,10 +815,11 @@ namespace Tag.Ui.Menu
                     float deep = 1.02f;
                     Pose pose;
                     int poseId;
-                    if (rank == 0) { pose = Cheer(t, 1f); poseId = 4; }
+                    float hop = 0f;
+                    if (rank == 0) { pose = Cheer(t, 1f); poseId = 4; hop = MenuAlive.Hop(t); }
                     else if (rank == 3) { pose = Slump(t); poseId = 5; }
-                    else { pose = Cheer(t, rank == 2 ? 0.3f : 0.55f); poseId = 4; }
-                    posed[rank].Place(pose, sx, height + 0.09f, 0f);
+                    else { pose = Pump(t); poseId = 4; }
+                    posed[rank].Place(pose, sx, height + 0.09f + hop, 0f);
                     solids[0] = Solid.Box("step", sx, height * 0.5f, 0f, wide * 0.5f, height * 0.5f, deep * 0.5f);
                     solids[1] = Solid.Box("trim", sx, height + 0.025f, 0f, (wide + 0.10f) * 0.5f, 0.025f, (deep + 0.08f) * 0.5f);
                     solids[2] = Solid.Cyl("shade", sx, height + 0.065f, 0f, 0.575f, 0.012f, 0.36f);
@@ -994,6 +1071,11 @@ namespace Tag.Ui.Menu
         static Pose Cheer(float t, float lean)
         {
             return From(MenuAlive.Cheer(t, lean));
+        }
+
+        static Pose Pump(float t)
+        {
+            return From(MenuAlive.Pump(t));
         }
 
         static Pose Slump(float t)
