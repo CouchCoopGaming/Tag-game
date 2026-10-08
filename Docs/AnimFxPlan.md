@@ -55,6 +55,14 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - Zip drop, the hands-down absorb, wall jump, climb top-out, and mantle ease in over 0.16 s. The other exits keep the 0.08 s onset. Cancel stays 0.06 s. Durations stay put.
 - Rendered stills are in `Docs/AnimStills/pass6/`.
 
+## Pass 7 (this branch)
+
+- Dash ghosts are frozen copies of the mannequin mesh, in the pose at each of the last four dash samples. `Tag/Afterimage` tints that mesh with the player color and a fresnel rim. They are not cards. The newest copy is the brightest. The oldest has eased out. Low still draws one fewer.
+- The shoulder roll tucks the chin, keeps the lead arm bent into a hoop, and turns across the back onto the far hip, then stands into the run. The shape follows the grade-B roll clips (usable with care) on `cursor/tag-storror-mocap`. Time stays 0.52 s. The 65% gate stays. Speed, stun, and the camera stay put.
+- Exit onset is one curve. `VerbExitFit` joins the live pose over 0.22 of the clip. `VerbExitEase.Enter` stays at 1 for every joined exit, so the 0.16 s show-weight is not stacked on that blend. Stagger and tag-back do not join, and they still rise over 0.08 s. Cancel stays 0.06 s.
+- Speed lines, wall-scrape sparks, the tag hit burst, the It handoff flash, and the pad and zip trails stay on `Pass5Host` and `Pass5Burst`. This pass renders them on the tinted mannequin.
+- Stills are in `Docs/AnimStills/pass7/` (`landing-tiers.png`, `roll-swirl.png`, `dash-ghosts.png`, `roll-strip.png`, `speed-lines.png`, `wall-scrape.png`, `tag-burst.png`, `handoff-flash.png`).
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue

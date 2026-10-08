@@ -5,8 +5,10 @@ namespace Tag.Art
 {
     /// <summary>
     /// Parkour shoulder roll when a landing is near terminal fall speed.
-    /// The visual root turns a full circle about the lead-shoulder diagonal.
-    /// The capsule, the velocity, and the camera stay put.
+    /// Chin tucks, the lead arm stays bent into a hoop, and the visual root
+    /// turns a full circle from that shoulder across the back to the far hip.
+    /// The shape follows the grade-B roll clips (usable with care). The capsule,
+    /// the velocity, and the camera stay put.
     /// </summary>
     public static class LandingRollPose
     {
@@ -297,55 +299,62 @@ namespace Tag.Art
         static VerbExitSample Tuck()
         {
             VerbExitSample s = default;
-            s.Hip = 24f;
-            s.Spine = 18f;
-            s.Head = -34f;
-            s.ThighL = 48f;
-            s.ThighR = 42f;
-            s.KneeL = -78f;
-            s.KneeR = -72f;
-            s.ArmPitchL = -36f;
-            s.ArmPitchR = -28f;
-            s.ElbowL = -96f;
-            s.ElbowR = -88f;
-            s.SpineRoll = 6f;
+            s.Hip = 28f;
+            s.Spine = 22f;
+            s.Head = -40f;
+            s.ThighL = 62f;
+            s.ThighR = 56f;
+            s.KneeL = -96f;
+            s.KneeR = -90f;
+            s.ArmPitchL = -42f;
+            s.ArmPitchR = -55f;
+            s.ArmYawL = 18f;
+            s.ArmYawR = -36f;
+            s.ArmRollR = 22f;
+            s.ElbowL = -108f;
+            s.ElbowR = -100f;
+            s.SpineRoll = 8f;
             return s;
         }
 
         static VerbExitSample Sweep()
         {
             VerbExitSample s = default;
-            s.Hip = 18f;
-            s.Spine = 22f;
-            s.Head = -28f;
-            s.ThighL = 64f;
-            s.ThighR = 58f;
-            s.KneeL = -96f;
-            s.KneeR = -90f;
-            s.ArmPitchL = -48f;
-            s.ArmPitchR = -102f;
-            s.ArmYawR = -16f;
-            s.ElbowL = -80f;
-            s.ElbowR = -22f;
-            s.SpineRoll = 10f;
+            s.Hip = 22f;
+            s.Spine = 26f;
+            s.Head = -36f;
+            s.ThighL = 72f;
+            s.ThighR = 66f;
+            s.KneeL = -108f;
+            s.KneeR = -102f;
+            s.ArmPitchL = -30f;
+            s.ArmPitchR = -78f;
+            s.ArmYawL = 12f;
+            s.ArmYawR = -48f;
+            s.ArmRollR = 36f;
+            s.ElbowL = -96f;
+            s.ElbowR = -112f;
+            s.SpineRoll = 14f;
             return s;
         }
 
         static VerbExitSample HandDown()
         {
             VerbExitSample s = default;
-            s.Hip = 12f;
-            s.Spine = 16f;
-            s.Head = -22f;
-            s.ThighL = 88f;
-            s.ThighR = 80f;
-            s.KneeL = -112f;
-            s.KneeR = -104f;
-            s.ArmPitchL = -30f;
-            s.ArmPitchR = -58f;
-            s.ElbowL = -70f;
-            s.ElbowR = -64f;
-            s.SpineRoll = 16f;
+            s.Hip = 14f;
+            s.Spine = 18f;
+            s.Head = -32f;
+            s.ThighL = 90f;
+            s.ThighR = 82f;
+            s.KneeL = -118f;
+            s.KneeR = -110f;
+            s.ArmPitchL = -18f;
+            s.ArmPitchR = -64f;
+            s.ArmYawR = -30f;
+            s.ArmRollR = 24f;
+            s.ElbowL = -80f;
+            s.ElbowR = -104f;
+            s.SpineRoll = 20f;
             return s;
         }
 
@@ -353,35 +362,36 @@ namespace Tag.Art
         {
             VerbExitSample s = default;
             s.Hip = 8f;
-            s.Spine = 4f;
-            s.Head = -36f;
+            s.Spine = 6f;
+            s.Head = -38f;
             s.ThighL = 112f;
             s.ThighR = 104f;
-            s.KneeL = -116f;
-            s.KneeR = -108f;
-            s.ArmPitchL = -24f;
-            s.ArmPitchR = 10f;
-            s.ElbowL = -64f;
-            s.ElbowR = -78f;
-            s.SpineRoll = 26f;
-            s.HipRoll = -8f;
+            s.KneeL = -120f;
+            s.KneeR = -112f;
+            s.ArmPitchL = -12f;
+            s.ArmPitchR = -28f;
+            s.ArmYawR = -16f;
+            s.ElbowL = -70f;
+            s.ElbowR = -92f;
+            s.SpineRoll = 28f;
+            s.HipRoll = -10f;
             return s;
         }
 
         static VerbExitSample LegsOver()
         {
             VerbExitSample s = default;
-            s.Hip = -6f;
-            s.Spine = -8f;
-            s.Head = -18f;
+            s.Hip = -4f;
+            s.Spine = -6f;
+            s.Head = -22f;
             s.ThighL = 118f;
             s.ThighR = 108f;
-            s.KneeL = -104f;
-            s.KneeR = -96f;
-            s.ArmPitchL = -16f;
-            s.ArmPitchR = 14f;
-            s.ElbowL = -48f;
-            s.ElbowR = -56f;
+            s.KneeL = -108f;
+            s.KneeR = -100f;
+            s.ArmPitchL = -10f;
+            s.ArmPitchR = -8f;
+            s.ElbowL = -52f;
+            s.ElbowR = -64f;
             s.SpineRoll = 18f;
             return s;
         }
@@ -389,17 +399,17 @@ namespace Tag.Art
         static VerbExitSample Plant()
         {
             VerbExitSample s = default;
-            s.Hip = 10f;
-            s.Spine = 6f;
-            s.Head = -6f;
-            s.ThighL = 36f;
+            s.Hip = 12f;
+            s.Spine = 8f;
+            s.Head = -8f;
+            s.ThighL = 38f;
             s.ThighR = 22f;
-            s.KneeL = -28f;
+            s.KneeL = -32f;
             s.KneeR = -18f;
-            s.ArmPitchL = -18f;
-            s.ArmPitchR = -8f;
-            s.ElbowL = -30f;
-            s.ElbowR = -22f;
+            s.ArmPitchL = -20f;
+            s.ArmPitchR = -12f;
+            s.ElbowL = -36f;
+            s.ElbowR = -28f;
             s.SpineRoll = 8f;
             return s;
         }
@@ -407,17 +417,17 @@ namespace Tag.Art
         static VerbExitSample Rise()
         {
             VerbExitSample s = default;
-            s.Hip = 4f;
+            s.Hip = 6f;
             s.Spine = 2f;
-            s.Head = 0f;
-            s.ThighL = 22f;
-            s.ThighR = 8f;
-            s.KneeL = -16f;
-            s.KneeR = -10f;
-            s.ArmPitchL = -16f;
-            s.ArmPitchR = -8f;
-            s.ElbowL = -12f;
-            s.ElbowR = -10f;
+            s.Head = -2f;
+            s.ThighL = 24f;
+            s.ThighR = 10f;
+            s.KneeL = -18f;
+            s.KneeR = -12f;
+            s.ArmPitchL = -18f;
+            s.ArmPitchR = -10f;
+            s.ElbowL = -16f;
+            s.ElbowR = -14f;
             return s;
         }
 

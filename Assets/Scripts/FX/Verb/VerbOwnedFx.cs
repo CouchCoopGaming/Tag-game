@@ -10,7 +10,10 @@ namespace Tag.FX
     /// <summary>
     /// Landing ring and debris, roll swirl, dash ghosts, hook spark,
     /// release snap, comic dizzy stars, the tag-back rim, and wet drips.
-    /// Pad, zip, wisps, and wall scuffs stay on VerbFxHost. Visual only.
+    /// Speed lines, chest-and-hand scrape sparks, the tag hit burst, the It
+    /// handoff flash, and the pad and zip polylines live on Pass5Host and
+    /// Pass5Burst. Pad wind, zip sparks, wisps, and foot scuffs stay on
+    /// VerbFxHost. Visual only.
     /// </summary>
     [DefaultExecutionOrder(130)]
     public sealed class VerbOwnedFx : MonoBehaviour
@@ -49,7 +52,7 @@ namespace Tag.FX
         float _ghostGap;
         int _ghostCursor;
         readonly float[] _ghostAge = new float[Ghosts];
-        readonly Vector3[] _ghostPos = new Vector3[Ghosts];
+        DashSilhouette _sil;
         float _colorR = 0.95f;
         float _colorG = 0.28f;
         float _colorB = 0.32f;
@@ -57,8 +60,6 @@ namespace Tag.FX
         LineRenderer _ring;
         LineRenderer _snap;
         LineRenderer[] _rims;
-        Transform[] _ghosts;
-        Material[] _ghostMat;
         Transform _dizzy;
         Transform[] _stars;
         Material[] _starMat;
@@ -74,6 +75,7 @@ namespace Tag.FX
         {
             if (host == null) return;
             VerbFxCards.Ensure(host);
+            DashSilhouette.Ensure(host);
             if (host.GetComponent<VerbOwnedFx>() == null)
                 host.AddComponent<VerbOwnedFx>();
         }
@@ -96,18 +98,11 @@ namespace Tag.FX
             Shader shader = Shader.Find("Tag/ComicBillboard");
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
             if (shader == null) shader = Shader.Find("Sprites/Default");
-            Shader ghostShader = Shader.Find("Tag/Afterimage");
-            if (ghostShader == null) ghostShader = shader;
             Mesh quad = Quad();
             Texture2D starTex = LoadStar();
-            _ghosts = new Transform[Ghosts];
-            _ghostMat = new Material[Ghosts];
             for (int i = 0; i < Ghosts; i++)
-            {
                 _ghostAge[i] = -1f;
-                _ghosts[i] = MakeQuad(transform, "DashGhost", quad, ghostShader, null, out _ghostMat[i]);
-                _ghostMat[i].SetFloat("_Fresnel", 1.6f);
-            }
+            _sil = GetComponent<DashSilhouette>();
             _dizzy = new GameObject("Dizzy").transform;
             _dizzy.SetParent(transform, false);
             _stars = new Transform[Stars];
@@ -345,8 +340,9 @@ namespace Tag.FX
         {
             int slot = _ghostCursor % Ghosts;
             _ghostCursor++;
-            _ghostAge[slot] = 0f;
-            _ghostPos[slot] = pos;
+            _ghostAge[slot] = 0.0001f;
+            if (_sil != null)
+                _sil.Capture(slot);
         }
 
         void FadeGhosts(float dt)
@@ -355,28 +351,18 @@ namespace Tag.FX
             {
                 if (_ghostAge[i] < 0f)
                 {
-                    _ghosts[i].gameObject.SetActive(false);
+                    if (_sil != null) _sil.Hide(i);
                     continue;
                 }
                 _ghostAge[i] += dt;
                 if (_ghostAge[i] >= VerbFxLook.GhostLife)
                 {
                     _ghostAge[i] = -1f;
-                    _ghosts[i].gameObject.SetActive(false);
+                    if (_sil != null) _sil.Hide(i);
                     continue;
                 }
-                _ghosts[i].gameObject.SetActive(true);
-                _ghosts[i].position = _ghostPos[i];
-                float a = VerbFxEase.Alpha(_ghostAge[i], VerbFxLook.GhostLife);
-                float s = VerbFxEase.Scale(_ghostAge[i], VerbFxLook.GhostLife, 0.92f, 1.06f);
-                Color c = _ghostMat[i].color;
-                c.r = _colorR;
-                c.g = _colorG;
-                c.b = _colorB;
-                c.a = 0.85f * a;
-                _ghostMat[i].color = c;
-                _ghostMat[i].SetFloat("_Fade", a);
-                _ghosts[i].localScale = new Vector3(0.46f * s, 0.95f * s, 1f);
+                float a = VerbFxEase.Trail(_ghostAge[i], VerbFxLook.GhostLife);
+                if (_sil != null) _sil.Show(i, a);
             }
         }
 
@@ -460,6 +446,7 @@ namespace Tag.FX
             _starAge = -1f;
             _rimVis = 0f;
             if (_cards != null) _cards.HideAll();
+            if (_sil != null) _sil.HideAll();
             if (_ring != null) _ring.enabled = false;
             if (_snap != null) _snap.enabled = false;
             if (_dizzy != null) _dizzy.gameObject.SetActive(false);
@@ -468,14 +455,8 @@ namespace Tag.FX
                 _rims[0].enabled = false;
                 _rims[1].enabled = false;
             }
-            if (_ghosts != null)
-            {
-                for (int i = 0; i < Ghosts; i++)
-                {
-                    _ghostAge[i] = -1f;
-                    _ghosts[i].gameObject.SetActive(false);
-                }
-            }
+            for (int i = 0; i < Ghosts; i++)
+                _ghostAge[i] = -1f;
         }
 
         void Remember()

@@ -321,3 +321,12 @@ The landing ring, the dust, the dash ghosts, and the wet drips now read as print
 - Dizzy stars grow in and fade out over the same quarter second. Try it: let the dummy punch you.
 - A wet wall drips a real droplet when a foot plants. Try it: wall-run a surface named wet.
 - Leaving a zip, a hard standing land, a wall jump, a climb, or a mantle eases in a little longer. Jump, slide, punch, dash, and lunge still peel an exit off in the same short window.
+
+## A real ghost and a tucked roll
+
+A dash now leaves copies of your body, and the fast landing rolls over the shoulder instead of planting the head. Speed, slide, and the camera stay as they were.
+
+- The ghosts are your silhouette at the last few steps of the dash, in your color, with a bright rim. The one closest to you is the strongest. The ones behind fade out. Try it: dash, and look at the trail. It should read as you, not as a flat card.
+- The roll tucks the chin and bends the lead arm into a hoop. You go over that shoulder, across the back, and up into the run. It is still the same half second, and it still waits for the same fast fall. Try it: fall about 19 meters while running, and watch the shoulder come down first. The head stays tucked.
+- An exit eases in once. The live pose joins the recovery over the first 22% of the clip. The extra 0.16 s fade is not stacked on that join. A stagger, and the end of tag-back, still fade in on the short blend, because those two do not join. Try it: leave a wall jump, then take a stagger. The wall jump should leave the shove without a second fade.
+- Sprinting draws pale speed lines. A wall run or a climb throws sparks at the chest and the hand, above the foot scuff. A tag throws a gold burst with no letters. Becoming It, or losing it, swells once on the body and rings outward. A pad leaves a cyan trail and a zip leaves a violet one. Try it: sprint, wall-run metal, tag, then take It.

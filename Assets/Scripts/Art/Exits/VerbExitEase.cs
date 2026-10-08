@@ -2,9 +2,14 @@ namespace Tag.Art
 {
     /// <summary>
     /// Visual onset for an exit. Cancel time and the clip clock stay put.
-    /// The five loudest onsets, measured as the biggest bone step inside the
-    /// first 0.08 s, rise on a longer smoothstep: zip drop, hands-down absorb,
-    /// wall jump, climb top-out, and mantle.
+    /// A joined exit already leaves the live pose inside <see cref="VerbExitFit"/>
+    /// over <see cref="VerbExitFit.Join"/> of the clip. That blend is the only
+    /// onset, so <see cref="Enter"/> stays at 1 and does not stack a second ease.
+    /// Stagger and tag-back do not join, and they still rise over
+    /// <see cref="VerbExitChain.BlendSeconds"/>.
+    /// The five loud exits (zip drop, hands-down absorb, wall jump, climb
+    /// top-out, mantle) keep <see cref="SoftSeconds"/> for the case they stop
+    /// joining. While they join, that 0.16 s weight is not applied.
     /// </summary>
     public static class VerbExitEase
     {
@@ -21,6 +26,8 @@ namespace Tag.Art
 
         public static float Enter(VerbExitId id, float age)
         {
+            if (VerbExitFit.Joins(id))
+                return 1f;
             float window = Soft(id) ? SoftSeconds : VerbExitChain.BlendSeconds;
             float u = 1f;
             if (window > 0.0001f)

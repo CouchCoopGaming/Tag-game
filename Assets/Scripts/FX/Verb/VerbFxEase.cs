@@ -21,6 +21,18 @@ namespace Tag.FX
             return 1f - k * k;
         }
 
+        /// <summary>
+        /// Ghost trail. A short rise, then an ease-out, so the newest copy
+        /// is the brightest and the oldest has faded. 0 at both ends.
+        /// </summary>
+        public static float Trail(float age, float life)
+        {
+            if (life <= 0.0001f || age <= 0f || age >= life) return 0f;
+            float u = age / life;
+            float rise = Smooth(u / 0.10f);
+            return rise * (1f - Out(u));
+        }
+
         /// <summary>0 at birth, full by the peak, 0 at the end.</summary>
         public static float Alpha(float age, float life)
         {
