@@ -8,6 +8,7 @@ only while the 0.5 cm test still passes. Frames that were not planted are
 left on their approach.
 """
 import json
+import math
 import os
 import sys
 
@@ -35,8 +36,10 @@ def _min_point(name):
     mw = obj.matrix_world
     for v in obj.data.vertices:
         p = mw @ v.co
+        # mathutils reuses the returned vector. Keep a real copy or the
+        # next vertex overwrites the point we thought was foremost.
         if best is None or p.x < best.x:
-            best = p
+            best = Vector((p.x, p.y, p.z))
     return best
 
 
@@ -145,6 +148,34 @@ def _plants_from_pins(pins):
     return meshes
 
 
+def slide_foremost(arm, pieces, locals_c, polys_c, bind, obstacles, plant_meshes):
+    """Slide onto the face when the plant is already the foremost shell.
+
+    A hand or foot that leads the body can meet the wall by translation.
+    That does not change how the shells overlap each other. Frames where
+    another shell leads are left for the swing, which has its own limit.
+    """
+    if not plant_meshes:
+        return False
+    xs = [p.x for n in plant_meshes if (p := _min_point(n)) is not None]
+    if not xs:
+        return False
+    px = min(xs)
+    _name, gx = _closest(pieces)
+    if gx < px - 0.01 or px < 0.015:
+        return False
+    shift = px - FACE_M
+    if shift <= 0.002:
+        return False
+    snap = nclear._snap(arm)
+    arm.location.x -= shift
+    bpy.context.view_layer.update()
+    if not _clear(arm, pieces, locals_c, polys_c, bind, obstacles):
+        nclear._restore(arm, snap)
+        return False
+    return True
+
+
 def seat_solved_frame(arm, pins, face, wall_top):
     """Hook for solve_clip, after the no-clip edit. face is None off the wall."""
     if face is None:
@@ -162,6 +193,9 @@ def seat_solved_frame(arm, pins, face, wall_top):
         nclear._restore(arm, snap)
     obstacles = nclear._obstacle_bvh(arm, True, wall_top, state.locals, state.polys)
     seat_plants(
+        arm, state.pieces, state.locals, state.polys, state.bind, obstacles, meshes,
+    )
+    slide_foremost(
         arm, state.pieces, state.locals, state.polys, state.bind, obstacles, meshes,
     )
 
@@ -213,7 +247,11 @@ def pin_pass5(prenoclip_path):
                 wv = nc._world(locals_c["ActionWall"], wall.matrix_world)
                 obstacles = [obstacles[0], ("wall", nc._bvh(wv, polys_c["ActionWall"]), nc._aabb(wv))]
             if meshes:
-                if seat_plants(arm, pieces, locals_c, polys_c, bind, obstacles, meshes):
+                moved = seat_plants(arm, pieces, locals_c, polys_c, bind, obstacles, meshes)
+                moved = slide_foremost(
+                    arm, pieces, locals_c, polys_c, bind, obstacles, meshes,
+                ) or moved
+                if moved:
                     n_hit += 1
                     key["bones"] = nclear._read_bones(arm, key["bones"])
                     cpos = arm.location
@@ -233,6 +271,182 @@ def pin_pass5(prenoclip_path):
     rh._hide_wall()
 
 
+def _plant_meshes(arm):
+    """Feet and hands whose shell already met the wall in the source pose."""
+    meshes = []
+    for side in ("L", "R"):
+        foot = _min_point(f"Mesh_Foot_{side}")
+        if foot is not None and foot.x < ON_M:
+            meshes.append(f"Mesh_Foot_{side}")
+        hand = _min_point(f"Mesh_Hand_{side}")
+        if hand is not None and hand.x < ON_M:
+            meshes.append(f"Mesh_Hand_{side}")
+    return meshes
+
+
+def slide_pass5(prenoclip_path):
+    """Pin plants that already lead the body. Does not re-swing other frames."""
+    arm = bpy.data.objects["DummyArmature"]
+    rh._prepare_scene()
+    pieces = nc._pieces(arm)
+    locals_c = {obj.name: nc._local_coords(obj) for obj in pieces}
+    polys_c = {obj.name: nc._polys(obj) for obj in pieces}
+    bind = nc._bind_self(arm, pieces, locals_c, polys_c)
+    old = json.load(open(prenoclip_path))
+    new = json.load(open(nc.PASS5_JSON))
+    for spec in sp.CLIPS:
+        if spec["verb"] == "softland":
+            continue
+        cid = spec["id"]
+        before = old["clips"][cid]
+        entry = new["clips"][cid]
+        facing = nc._pass5_facing(cid)
+        has_wall, wall_top = nc._wall_plan(arm, "pass5", cid, entry, facing)
+        if not has_wall:
+            continue
+        planted = []
+        for i, key in enumerate(before["keys"]):
+            nc._apply_key(arm, key["bones"], before["capsule_preview_m"][i], facing)
+            planted.append(_plant_meshes(arm))
+        n_hit = 0
+        gaps = []
+        obstacles = None
+        for i, key in enumerate(entry["keys"]):
+            meshes = planted[i]
+            nc._apply_key(arm, key["bones"], entry["capsule_preview_m"][i], facing)
+            if obstacles is None:
+                obstacles = nclear._obstacle_bvh(arm, True, wall_top, locals_c, polys_c)
+            else:
+                rh._show_wall(0.0, wall_top, arm.location.y, 2.4)
+                bpy.context.view_layer.update()
+                wall = bpy.data.objects["ActionWall"]
+                wv = nc._world(locals_c["ActionWall"], wall.matrix_world)
+                obstacles = [obstacles[0], ("wall", nc._bvh(wv, polys_c["ActionWall"]), nc._aabb(wv))]
+            if meshes and slide_foremost(arm, pieces, locals_c, polys_c, bind, obstacles, meshes):
+                n_hit += 1
+                key["bones"] = nclear._read_bones(arm, key["bones"])
+                cpos = arm.location
+                entry["capsule_preview_m"][i] = [round(cpos.x, 4), round(cpos.y, 4), round(cpos.z, 4)]
+            xs = [_min_point(n).x for n in meshes if _min_point(n) is not None]
+            if xs:
+                gaps.append(min(xs))
+        near = min(gaps) if gaps else None
+        far = max(gaps) if gaps else None
+        nc._flush(
+            f"SLIDE {cid} planted={sum(1 for m in planted if m)} moved={n_hit} "
+            f"near_cm={None if near is None else round(near * 100, 1)} "
+            f"far_cm={None if far is None else round(far * 100, 1)}"
+        )
+    with open(nc.PASS5_JSON, "w") as f:
+        json.dump(new, f)
+    nc._flush("wrote " + nc.PASS5_JSON)
+    rh._reset(arm)
+    rh._hide_wall()
+
+
+def _sole(name):
+    obj = bpy.data.objects.get(name)
+    if obj is None:
+        return None
+    best = None
+    mw = obj.matrix_world
+    for v in obj.data.vertices:
+        p = mw @ v.co
+        if best is None or p.z < best.z:
+            best = Vector((p.x, p.y, p.z))
+    return best
+
+
+def _copy_leg(arm, bones, side):
+    for name in (f"UpperLeg_{side}", f"LowerLeg_{side}", f"Foot_{side}"):
+        deg = bones.get(name)
+        pb = arm.pose.bones.get(name)
+        if deg is None or pb is None:
+            continue
+        pb.rotation_mode = "XYZ"
+        pb.rotation_euler = tuple(math.radians(a) for a in deg)
+    bpy.context.view_layer.update()
+
+
+def hold_soles():
+    """Stop a grounded sole from popping to a new spot between frames.
+
+    The no-clip open sometimes snaps one leg to the generic stance while
+    the sole is still down, and the foot jumps. Copying the previous
+    frame's leg keeps the plant when that copy still clears.
+    """
+    arm = bpy.data.objects["DummyArmature"]
+    rh._prepare_scene()
+    pieces = nc._pieces(arm)
+    locals_c = {obj.name: nc._local_coords(obj) for obj in pieces}
+    polys_c = {obj.name: nc._polys(obj) for obj in pieces}
+    bind = nc._bind_self(arm, pieces, locals_c, polys_c)
+    new = json.load(open(nc.PASS5_JSON))
+    for spec in sp.CLIPS:
+        cid = spec["id"]
+        entry = new["clips"][cid]
+        facing = nc._pass5_facing(cid)
+        has_wall, wall_top = nc._wall_plan(arm, "pass5", cid, entry, facing)
+        n_hit = 0
+        worst = 0.0
+        for i in range(1, len(entry["keys"])):
+            prev_key = entry["keys"][i - 1]
+            key = entry["keys"][i]
+            nc._apply_key(arm, prev_key["bones"], entry["capsule_preview_m"][i - 1], facing)
+            anchors = {}
+            for side in ("L", "R"):
+                p = _sole(f"Mesh_Foot_{side}")
+                if p is not None and p.z < 0.02:
+                    anchors[side] = (p.x, p.y, p.z)
+            if not anchors:
+                continue
+            nc._apply_key(arm, key["bones"], entry["capsule_preview_m"][i], facing)
+            popped = []
+            for side, anchor in anchors.items():
+                cur = _sole(f"Mesh_Foot_{side}")
+                if cur is None or cur.z > 0.02:
+                    continue
+                was = ((cur.x - anchor[0]) ** 2 + (cur.y - anchor[1]) ** 2) ** 0.5
+                if was >= 0.03:
+                    popped.append((side, was, anchor))
+            for side, was, anchor in popped:
+                snap = nclear._snap(arm)
+                _copy_leg(arm, prev_key["bones"], side)
+                sole = _sole(f"Mesh_Foot_{side}")
+                if sole is not None and sole.z < -0.002:
+                    arm.location.z -= sole.z
+                    bpy.context.view_layer.update()
+                obstacles = nclear._obstacle_bvh(arm, has_wall, wall_top, locals_c, polys_c)
+                if not _clear(arm, pieces, locals_c, polys_c, bind, obstacles):
+                    nclear._restore(arm, snap)
+                    continue
+                sole = _sole(f"Mesh_Foot_{side}")
+                if sole is None:
+                    nclear._restore(arm, snap)
+                    continue
+                now = ((sole.x - anchor[0]) ** 2 + (sole.y - anchor[1]) ** 2) ** 0.5
+                if now > was - 0.02 or sole.z > 0.02:
+                    nclear._restore(arm, snap)
+                    continue
+                key["bones"] = nclear._read_bones(arm, key["bones"])
+                cpos = arm.location
+                entry["capsule_preview_m"][i] = [round(cpos.x, 4), round(cpos.y, 4), round(cpos.z, 4)]
+                n_hit += 1
+                worst = max(worst, was)
+        nc._flush(f"SOLE {cid} held={n_hit} worst_was_cm={round(worst * 100, 1)}")
+    with open(nc.PASS5_JSON, "w") as f:
+        json.dump(new, f)
+    nc._flush("wrote " + nc.PASS5_JSON)
+    rh._reset(arm)
+    rh._hide_wall()
+
+
 if __name__ == "__main__":
-    src = sys.argv[sys.argv.index("--") + 1] if "--" in sys.argv else "/tmp/pass5_prenoclip.json"
-    pin_pass5(src)
+    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    src = next((a for a in argv if not a.startswith("--")), "/tmp/pass5_prenoclip.json")
+    if "--slide" in argv:
+        slide_pass5(src)
+    elif "--soles" in argv:
+        hold_soles()
+    else:
+        pin_pass5(src)
