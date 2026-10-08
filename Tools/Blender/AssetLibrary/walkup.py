@@ -86,9 +86,13 @@ def _facade(g, lod):
 
 
 def _cornice(g):
-    """Parapet cap, and a corona that mitres around every corner."""
-    g.box((0, 9.48, -0.06), (8.46, 0.18, 6.78), "Lib_PaintCream", uv_scale=0.6)
-    g.box((0, 9.70, -0.06), (8.22, 0.12, 6.54), "Lib_Concrete", uv_scale=0.5)
+    """A thin coping on the parapet, and a corona that mitres around every corner."""
+    # 4 mm above the brick top so the two shells do not weld. 5.6 cm tall, not a lid.
+    y, h = 9.332, 0.056
+    g.box((0, y, 3.14), (8.24, h, 0.18), "Lib_Concrete", uv_scale=0.5)
+    g.box((0, y, -3.14), (8.24, h, 0.18), "Lib_Concrete", uv_scale=0.5)
+    g.box((3.94, y, 0.0), (0.18, h, 6.08), "Lib_Concrete", uv_scale=0.5)
+    g.box((-3.94, y, 0.0), (0.18, h, 6.08), "Lib_Concrete", uv_scale=0.5)
     # Straight runs stop 2 cm short of the mitre so the corner prisms do not share a volume.
     g.box((0, 9.28, 3.39), (8.16, 0.14, 0.22), "Lib_Concrete", uv_scale=0.5)
     g.box((0, 9.28, -3.39), (8.16, 0.14, 0.22), "Lib_Concrete", uv_scale=0.5)
@@ -270,7 +274,7 @@ def create():
         "Buildings",
         "Brick walk-up, 8.0 x 6.4 m, three stories, parapet at 9.5 m. Brick is 13 courses per metre. "
         "Windows are recessed 13 cm with brick returns, a stone sill, and a lintel. "
-        "A concrete corona projects past each wall under the parapet cap. Stoop and canopy on +Z. "
+        "A thin concrete coping sits on the brick parapet, and a corona projects under it. Stoop and canopy on +Z. "
         "One fire-escape landing per upper floor, each spanning two windows, at 4.02 m and 6.92 m. "
         "A stair with a stringer on both sides runs along the wall between them, and a drop ladder hangs from the lower landing. "
         "Rails are 1.02 m above each deck, on the street edge. Brackets bolt into the brick under each landing.",
@@ -290,7 +294,7 @@ def create():
         _entry(g, lod)
         _escape(g, lod)
         if lod == 0:
-            g.box((1.2, BODY_H + 0.55, -0.6), (0.80, 0.46, 0.60), "Lib_Steel")
+            g.box((1.2, 9.54, -0.6), (0.80, 0.46, 0.60), "Lib_Steel")
         a.end()
     a.box("Col_Body", (0, 4.55, -0.08), (7.70, 8.80, 5.90))
     a.box("Climb_Front", (0, 4.4, 2.96), (7.2, 8.0, 0.08))
@@ -299,7 +303,11 @@ def create():
     a.box("Climb_SideR", (3.88, 4.4, -0.08), (0.08, 8.0, 5.6))
     a.box("Col_Stoop", (0, 0.09, 3.62), (1.55, 0.12, 0.60))
     a.box("Col_Canopy", (0, 2.52, 3.66), (1.60, 0.05, 0.62))
-    a.box("Col_Cornice", (0, 9.48, -0.06), (8.10, 0.12, 6.40))
+    a.box("Col_Roof", (0, 9.22, -0.04), (7.50, 0.10, 5.70))
+    a.box("Col_CopeF", (0, 9.332, 3.14), (8.08, 0.036, 0.12))
+    a.box("Col_CopeB", (0, 9.332, -3.14), (8.08, 0.036, 0.12))
+    a.box("Col_CopeR", (3.94, 9.332, 0.0), (0.12, 0.036, 5.92))
+    a.box("Col_CopeL", (-3.94, 9.332, 0.0), (0.12, 0.036, 5.92))
     a.box("Col_CoronaF", (0, 9.28, 3.39), (7.70, 0.08, 0.14))
     a.box("Col_CoronaB", (0, 9.28, -3.39), (7.70, 0.08, 0.14))
     a.box("Col_CoronaR", (4.21, 9.28, 0.0), (0.12, 0.08, 6.10))

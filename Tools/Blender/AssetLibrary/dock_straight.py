@@ -36,7 +36,7 @@ def create():
         "Dock_Straight",
         "Harbor",
         "Dock module 6.0 m long and 3.0 m wide. Deck top is 0.62 m. "
-        "The side is open: gapped deck planks, one 5 by 20 cm stringer, then flat steel straps bolted pile to pile. "
+        "The side is open: flat deck planks within 3 mm of one height, one 5 by 20 cm stringer, then flat steel straps bolted pile to pile. "
         "Piles are 30 cm rounds from below the water (darker under the line) up to the stringer. "
         "A round ladder on -X is bolted to the stringer, curves over the deck as grab handles, and runs down into the water. "
         "Cleats, two bollards, and a rope that lies on the deck. "
@@ -49,12 +49,11 @@ def create():
     piles = [(x, z) for x in PILE_XS for z in PILE_ZS]
     for lod in (0, 1):
         g = a.begin(lod)
-        bev = 0.003 if lod == 0 else 0
         seg = lod_pick(lod, 10, 6)
         for x, z in piles:
             _pile(g, x, z, seg if lod == 0 else 6)
         _frame(g, lod)
-        _planks(g, lod, bev)
+        _planks(g, lod)
         if lod == 0:
             _braces(g)
             for x, z in ((-1.20, -1.55), (-1.20, 1.55), (1.20, -1.55), (1.20, 1.55)):
@@ -72,7 +71,8 @@ def create():
     board = pitch - PLANK_GAP
     for i in range(PLANKS):
         z = -LENGTH * 0.5 + pitch * (i + 0.5)
-        a.box("Col_Plank_%d" % i, (0, PLANK_TOP - PLANK_T * 0.5, z), (2.40, PLANK_T * 0.7, board * 0.86))
+        y = PLANK_TOP - PLANK_T * 0.5 + _plank_lift(i)
+        a.box("Col_Plank_%d" % i, (0, y, z), (2.40, PLANK_T * 0.7, board * 0.86))
     for i, (x, z) in enumerate(((-1.20, -1.55), (-1.20, 1.55), (1.20, -1.55), (1.20, 1.55))):
         a.box("Col_Cleat_%d" % i, (x, 0.706, z), (0.18, 0.020, 0.036))
     for i, (x, z) in enumerate(((-0.55, -1.85), (0.85, 1.70))):
@@ -222,14 +222,19 @@ def _bolt(g, pile, direction, y, sign):
     g.cylinder((hx, y, hz), 0.009, 0.008, "Lib_Steel", 6, axis=axis)
 
 
-def _planks(g, lod, bev):
+def _plank_lift(i):
+    """Boards stay flat. A few sit 0.5–1.5 mm lower. None crown up at the ends."""
+    return -((i * 17 + 5) % 4) * 0.0005
+
+
+def _planks(g, lod):
     count = lod_pick(lod, PLANKS, PLANKS // 2)
     pitch = LENGTH / count
     board = pitch - PLANK_GAP
-    y = PLANK_TOP - PLANK_T * 0.5
     for i in range(count):
         z = -LENGTH * 0.5 + pitch * (i + 0.5)
-        g.box((0, y, z), (2.64, PLANK_T, board), "Lib_WoodWeather", bevel=bev, segs=1 if lod == 0 else 0, uv_scale=1.2, grain=1.0)
+        y = PLANK_TOP - PLANK_T * 0.5 + _plank_lift(i)
+        g.box((0, y, z), (2.64, PLANK_T, board), "Lib_WoodWeather", uv_scale=1.2, grain=1.0)
         if lod == 0 and i % 4 == 0:
             for x in (-1.05, 1.05):
                 g.cylinder((x, PLANK_TOP + 0.008, z), 0.010, 0.008, "Lib_SteelDark", 6)
