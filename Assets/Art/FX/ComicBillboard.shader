@@ -14,6 +14,10 @@ Shader "Tag/ComicBillboard"
         _SideDist ("Side", Float) = 0
         _Tail ("Tail", Float) = 0
         _TailWidth ("Tail Width", Float) = 0.04
+        _Life ("Life", Float) = 1
+        _WordPunch ("Word Punch", Float) = 1
+        _WideOverTall ("Wide Over Tall", Float) = 1
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("ZTest", Float) = 4
     }
     SubShader
     {
@@ -30,6 +34,7 @@ Shader "Tag/ComicBillboard"
             Tags { "LightMode" = "UniversalForward" }
             Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off
+            ZTest [_ZTest]
             Cull Off
 
             HLSLPROGRAM
@@ -53,6 +58,9 @@ Shader "Tag/ComicBillboard"
                 float _SideDist;
                 float _Tail;
                 float _TailWidth;
+                float _Life;
+                float _WordPunch;
+                float _WideOverTall;
             CBUFFER_END
 
             struct Attributes
@@ -67,8 +75,21 @@ Shader "Tag/ComicBillboard"
                 float2 uv : TEXCOORD0;
             };
 
-            // 22% of the pane. Clip y spans 2, so the full quad is 0.44 and the half is 0.22.
-            #define PANE_HALF_MIN 0.22
+            // Clip y spans 2, so a half of 0.22 is 22% of the pane and 0.30 is 30%.
+            // Settle and shrink stay on the 22% floor. The overshoot peak stretches to 30%.
+            #define PANE_HALF_SETTLE 0.22
+            #define PANE_HALF_PEAK 0.30
+            #define LIFE_PEAK 1.25
+
+            float ScreenHalf(float life)
+            {
+                if (life <= 1.0)
+                    return PANE_HALF_SETTLE * life;
+                float u = (life - 1.0) / (LIFE_PEAK - 1.0);
+                if (u < 0.0) u = 0.0;
+                if (u > 1.0) u = 1.0;
+                return lerp(PANE_HALF_SETTLE, PANE_HALF_PEAK, u);
+            }
 
             Varyings vert(Attributes input)
             {
@@ -84,6 +105,47 @@ Shader "Tag/ComicBillboard"
                     side = (originClip.x / originClip.w) > 0.0 ? -1.0 : 1.0;
                 }
                 float3 shift = up * _UpDist + right * (side * _SideDist);
+                float3 center = origin + shift;
+                float life = _Life;
+                if (life < 0.0) life = 0.0;
+                // World size at this life, grown only when that would miss the screen target.
+                float boost = 1.0;
+                if (_RestHalf > 0.001 && life > 0.0001)
+                {
+                    float4 restClip = TransformWorldToHClip(center + up * _RestHalf);
+                    float4 restCenter = TransformWorldToHClip(center);
+                    if (restClip.w > 0.0001 && restCenter.w > 0.0001)
+                    {
+                        float halfNdc = abs(restClip.y / restClip.w - restCenter.y / restCenter.w);
+                        float worldNdc = halfNdc * life;
+                        float desired = ScreenHalf(life);
+                        if (worldNdc > 0.0001 && worldNdc < desired)
+                            boost = desired / worldNdc;
+                    }
+                }
+                float punch = _WordPunch;
+                if (punch < 1.0) punch = 1.0;
+                float aspect = _WideOverTall;
+                if (aspect < 0.2) aspect = 1.0;
+                float s = sin(_Tilt);
+                float c = cos(_Tilt);
+                // Pad from the drawn word, including tilt, so the nudge matches every quad.
+                float hy = _RestHalf * life * boost * punch;
+                float hx = hy * aspect;
+                float padX = abs(c) * hx + abs(s) * hy + abs(_Skew) * hy;
+                float padY = abs(s) * hx + abs(c) * hy + abs(_Arc) * hy;
+                float2 nudge = float2(0.0, 0.0);
+                float4 centerClip = TransformWorldToHClip(center);
+                if (_RestHalf > 0.001 && centerClip.w > 0.0001 && hy > 0.001)
+                {
+                    float3 corner = center + right * padX + up * padY;
+                    float4 cornerClip = TransformWorldToHClip(corner);
+                    float2 cNdc = centerClip.xy / centerClip.w;
+                    float2 eNdc = cornerClip.xy / max(cornerClip.w, 0.0001);
+                    float2 pad = abs(eNdc - cNdc) + 0.03;
+                    float2 limit = max(float2(1.0, 1.0) - pad, float2(0.0, 0.0));
+                    nudge = clamp(cNdc, -limit, limit) - cNdc;
+                }
                 if (_Tail > 0.5)
                 {
                     float along = input.positionOS.y;
@@ -91,30 +153,16 @@ Shader "Tag/ComicBillboard"
                     float jag = input.positionOS.z;
                     float3 pos = origin + shift * along + right * (across * _TailWidth + jag);
                     float4 tailClip = TransformWorldToHClip(pos);
+                    // The hit stays put. The tip follows the burst inward.
+                    tailClip.xy += nudge * along * tailClip.w;
                     tailClip.z -= _Front * tailClip.w;
                     output.positionCS = tailClip;
                     output.uv = TRANSFORM_TEX(input.uv, _MainTex);
                     return output;
                 }
-                float3 center = origin + shift;
                 float3x3 objectToWorld = (float3x3)GetObjectToWorldMatrix();
                 float sx = length(objectToWorld._m00_m10_m20);
                 float sy = length(objectToWorld._m01_m11_m21);
-                // World size at rest, grown only when that would be under 22% of this pane.
-                float boost = 1.0;
-                if (_RestHalf > 0.001)
-                {
-                    float4 restClip = TransformWorldToHClip(center + up * _RestHalf);
-                    float4 centerClip = TransformWorldToHClip(center);
-                    if (restClip.w > 0.0001 && centerClip.w > 0.0001)
-                    {
-                        float halfNdc = abs(restClip.y / restClip.w - centerClip.y / centerClip.w);
-                        if (halfNdc > 0.0001 && halfNdc < PANE_HALF_MIN)
-                            boost = PANE_HALF_MIN / halfNdc;
-                    }
-                }
-                float s = sin(_Tilt);
-                float c = cos(_Tilt);
                 float2 p = input.positionOS.xy;
                 // Italic lean, then a small arc so the line is not a flat stamp.
                 p.x += p.y * _Skew;
@@ -122,21 +170,8 @@ Shader "Tag/ComicBillboard"
                 float2 spun = float2(c * p.x - s * p.y, s * p.x + c * p.y);
                 float3 world = center + right * spun.x * sx * boost + up * spun.y * sy * boost;
                 float4 clip = TransformWorldToHClip(world);
-                // Shift the whole quad in this camera so the word stays inside the pane.
-                float4 centerClip = TransformWorldToHClip(center);
-                if (_ClampExtent > 0.001 && clip.w > 0.0001 && centerClip.w > 0.0001)
-                {
-                    float3 corner = center + right * _ClampExtent * boost + up * _ClampExtent * boost;
-                    float4 cornerClip = TransformWorldToHClip(corner);
-                    float2 cNdc = centerClip.xy / centerClip.w;
-                    float2 eNdc = cornerClip.xy / max(cornerClip.w, 0.0001);
-                    float2 pad = abs(eNdc - cNdc);
-                    // 0.03 keeps a sliver of the pane around the quad.
-                    float2 limit = max(float2(1, 1) - pad - 0.03, float2(0, 0));
-                    float2 shifted = clamp(cNdc, -limit, limit);
-                    float2 ndc = clip.xy / clip.w + (shifted - cNdc);
-                    clip.xy = ndc * clip.w;
-                }
+                if (clip.w > 0.0001)
+                    clip.xy += nudge * clip.w;
                 clip.z -= _Front * clip.w;
                 output.positionCS = clip;
                 output.uv = TRANSFORM_TEX(input.uv, _MainTex);

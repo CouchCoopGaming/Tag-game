@@ -1164,6 +1164,10 @@ namespace Tag.Art
         bool _comicMissWas;
         bool _comicGroundWas;
         float _comicPlanar;
+        int _impactGroundId;
+        int _impactGroundSurf = (int)DustLook.Surface.Concrete;
+        int _impactWallId;
+        int _impactWallSurf = (int)DustLook.Surface.Concrete;
         bool _comicLaunchWas;
         bool _comicZipWas;
         bool _comicPullWas;
@@ -17746,7 +17750,11 @@ namespace Tag.Art
             // Hard land and roll only. The gate is the existing roll threshold,
             // 65% of terminal. A light plant stays quiet.
             if (grounded && !_comicGroundWas && LandingRollPose.Triggered(_motor.LastLandImpactSpeed))
+            {
                 ComicBurst.RaiseEvent(origin, forward, 0f, ComicWords.EvLand, 0);
+                int surf = DustContact.Read(_motor.Ground.collider, ref _impactGroundId, ref _impactGroundSurf);
+                ImpactFx.Land(origin, _motor.LastLandImpactSpeed, surf);
+            }
             _comicGroundWas = grounded;
             _comicPlanar = _motor.HorizSpeed;
 
@@ -18109,7 +18117,14 @@ namespace Tag.Art
             // A wall or object hit only shouts when the body was already at sprint.
             // The speed is the motor's planar speed from the frame before the bounce.
             if (_motor != null && _comicPlanar >= Tag.FX.DustLook.Sprint)
+            {
                 ComicBurst.RaiseEvent(_motor.transform.position, _motor.transform.forward, 0f, ComicWords.EvWall, 0);
+                Vector3 hit = _motor.WallPoint;
+                if (hit.sqrMagnitude < 0.0001f)
+                    hit = _motor.transform.position + Vector3.up * 0.9f;
+                int surf = DustContact.Read(_motor.WallCollider, ref _impactWallId, ref _impactWallSurf);
+                ImpactFx.Wall(hit, _motor.WallNormal, _comicPlanar, surf);
+            }
             _wallJumpPosePlant = _wallExit > 0.5f ? !_exitLeadLeft : (_motor != null && _motor.WallLeft);
             _wallJumpHandoff = false;
             // The climb eases into the push. A wall run eases into its own push.

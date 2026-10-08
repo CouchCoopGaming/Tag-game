@@ -4483,6 +4483,155 @@ def render_pass15(arm, cam):
     print("PASS15 stills", OUT)
 
 
+def impact_state(surface, speed, age_u=0.45):
+    """Same curve as ImpactFx.Measure. age_u is how far through the short life."""
+    spec = p14_at(surface, speed)
+    u = speed / 13.8
+    if u < 0.0:
+        u = 0.0
+    if u > 2.8:
+        u = 2.8
+    radius = 0.35 + u * 0.45
+    debris = spec["size"]
+    if debris < 0.04:
+        debris = 0.04
+    debris *= 0.65 + u * 0.55
+    bits = spec["count"]
+    if bits < 3:
+        bits = 3
+    bits += int(u * 3.0)
+    if bits > 12:
+        bits = 12
+    life_u = 2.0 if u > 2.0 else u
+    life = 0.20 + life_u * 0.04
+    opacity = spec["opacity"]
+    if opacity < 0.35:
+        opacity = 0.35
+    if opacity > 0.90:
+        opacity = 0.90
+    grow = 0.28 + 0.92 * age_u
+    fade = (1.0 - age_u) / 0.88 if age_u >= 0.12 else age_u / 0.12
+    return {
+        "radius": radius,
+        "shown": radius * grow,
+        "debris": debris,
+        "bits": bits,
+        "life": life,
+        "age": age_u * life,
+        "opacity": opacity * fade,
+        "color": spec["color"],
+        "out": 1.1 + u * 0.85,
+        "up": 1.4 + u * 0.55,
+        "u": u,
+    }
+
+
+def impact_draw(foot, state, cam_loc):
+    shown = state["shown"]
+    color = state["color"]
+    ring_col = color + (1.0,)
+    bpy.ops.mesh.primitive_torus_add(
+        major_radius=shown,
+        minor_radius=max(0.02, shown * 0.055),
+        major_segments=40,
+        minor_segments=8,
+        location=(foot.x, foot.y, 0.03),
+    )
+    ring = bpy.context.active_object
+    ring.name = p11_name("Fx")
+    ring.data.materials.append(make_mat(
+        p11_name("Mat"), ring_col, 0.4, max(0.35, state["opacity"]), emit=0.55,
+    ))
+    shock = tuple(min(1.0, c * 0.35 + 0.62) for c in color) + (1.0,)
+    bpy.ops.mesh.primitive_torus_add(
+        major_radius=shown * 1.18,
+        minor_radius=max(0.012, shown * 0.028),
+        major_segments=40,
+        minor_segments=6,
+        location=(foot.x, foot.y, 0.035),
+    )
+    outer = bpy.context.active_object
+    outer.name = p11_name("Fx")
+    outer.data.materials.append(make_mat(
+        p11_name("Mat"), shock, 0.3, state["opacity"] * 0.7, emit=0.8,
+    ))
+    age = state["age"]
+    bits = state["bits"]
+    for i in range(bits):
+        ang = i / float(bits) * math.tau
+        hop = 0.75 + (0.35 if (i & 1) else 0.0)
+        dist = state["radius"] * 0.18 + state["out"] * age
+        z = 0.05 + state["up"] * hop * age - 0.5 * 12.0 * age * age
+        if z < 0.03:
+            z = 0.03
+        pos = Vector((foot.x + math.cos(ang) * dist, foot.y + math.sin(ang) * dist, z))
+        tint = 0.82 + 0.18 * p11_rand(i, 5)
+        col = (color[0] * tint, color[1] * tint, color[2] * tint, 1.0)
+        puff = state["debris"]
+        p11_puff(pos, puff, puff * 0.72, col, min(0.92, state["opacity"] + 0.08), cam_loc)
+        if i % 3 == 0:
+            grit = tuple(c * 0.62 for c in color) + (1.0,)
+            p11_puff(pos + Vector((0.0, 0.0, 0.03)), puff * 0.45, puff * 0.4, grit, state["opacity"], cam_loc)
+
+
+def render_pass21_impact(arm, cam):
+    """Hard-land / wall-slam ring and debris. One still per surface at low and high speed."""
+    for obj in bpy.data.objects:
+        if obj.type == "LIGHT" and obj.data.type == "SUN":
+            obj.data.energy = 2.6
+        elif obj.type == "LIGHT" and obj.data.type == "AREA":
+            obj.data.energy = 48
+        if obj.name in ("PropGround", "PropSlab") or "Seam" in obj.name:
+            obj.hide_render = True
+    scene = bpy.context.scene
+    scene.render.resolution_x = 640
+    scene.render.resolution_y = 360
+    scene.eevee.taa_render_samples = 8
+    out_dir = os.path.join(ROOT, "Docs", "FxStills", "pass21")
+    os.makedirs(out_dir, exist_ok=True)
+    tmp = "/tmp/pass21-impact"
+    os.makedirs(tmp, exist_ok=True)
+    surfaces = ("concrete", "grass", "dirt", "wood")
+    levels = (("low", 13.8), ("high", 36.5))
+    yaw = 24.0
+    cells = []
+    titles = []
+    from PIL import Image
+
+    for surface in surfaces:
+        for label, speed in levels:
+            p11_ground(surface, asphalt=(surface == "concrete"))
+            apply_pose(arm, pose_land, 0.0, yaw)
+            foot = p11_foot(arm)
+            p14_aim(cam, foot, yaw)
+            state = impact_state(surface, speed)
+            impact_draw(foot, state, cam.location)
+            png = os.path.join(tmp, "%s-%s.png" % (surface, label))
+            scene.render.filepath = png
+            bpy.ops.render.render(write_still=True)
+            image = Image.open(png).convert("RGB")
+            path = os.path.join(out_dir, "impact-%s-%s.jpg" % (surface, label))
+            p14_jpeg(path, image)
+            cells.append(image.resize((320, 180), Image.Resampling.LANCZOS))
+            titles.append("%s %s  r %.0fcm  bits %d" % (
+                surface, label, state["shown"] * 100.0, state["bits"],
+            ))
+            print(
+                "IMPACT", surface, label,
+                "u", round(state["u"], 2),
+                "shown", round(state["shown"], 2),
+                "debris", round(state["debris"], 3),
+                "bits", state["bits"],
+                "op", round(state["opacity"], 2),
+            )
+    p14_grid(
+        cells, titles,
+        "Impact ring + debris   low sprint 13.8   high land 36.5",
+        os.path.join(out_dir, "impact-sheet.jpg"),
+        4,
+    )
+
+
 def render_pass20_runners(arm, cam):
     """Attacker and victim, chase camera, transparent, for the arena couch composite."""
     for obj in bpy.data.objects:
@@ -4599,6 +4748,9 @@ def main():
     bpy.ops.import_scene.fbx(filepath=FBX)
     arm = next(obj for obj in bpy.data.objects if obj.type == "ARMATURE")
     cam = setup_world(arm)
+    if os.environ.get("FX_PASS21") == "1":
+        render_pass21_impact(arm, cam)
+        return
     if os.environ.get("FX_PASS20") == "1":
         render_pass20_runners(arm, cam)
         return

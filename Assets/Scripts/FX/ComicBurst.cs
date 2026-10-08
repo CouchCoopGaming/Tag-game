@@ -145,8 +145,9 @@ namespace Tag.FX
                     continue;
                 }
                 float life = ComicWords.Scale(_age[i]);
+                float punch = ComicWords.WordPunch(_age[i]);
                 float burst = life * RestSize * _size[i];
-                float word = life * ComicWords.WordPunch(_age[i]) * RestSize * _size[i];
+                float word = life * punch * RestSize * _size[i];
                 _burst[i].localScale = new Vector3(burst * _wide[i], burst * _tall[i], 1f);
                 _word[i].localScale = new Vector3(word * _wide[i], word * _tall[i], 1f);
                 _word[i].gameObject.SetActive(word > 0.001f);
@@ -154,6 +155,9 @@ namespace Tag.FX
                 Paint(_burstMat[i], a);
                 Paint(_wordMat[i], a);
                 Paint(_tailMat[i], a);
+                SetLife(_burstMat[i], life, punch);
+                SetLife(_wordMat[i], life, punch);
+                SetLife(_tailMat[i], life, punch);
                 float tilt = _tilt[i] + ComicWords.Wobble(_age[i]);
                 _burstMat[i].SetFloat("_Tilt", tilt);
                 _wordMat[i].SetFloat("_Tilt", tilt);
@@ -185,8 +189,13 @@ namespace Tag.FX
             _word[slot].gameObject.SetActive(false);
             _root[slot].SetActive(true);
             float restHalf = RestSize * size * tall;
+            float wideOver = tall > 0.001f ? wide / tall : 1f;
             _burstMat[slot].SetFloat("_RestHalf", restHalf);
             _wordMat[slot].SetFloat("_RestHalf", restHalf);
+            _tailMat[slot].SetFloat("_RestHalf", restHalf);
+            _burstMat[slot].SetFloat("_WideOverTall", wideOver);
+            _wordMat[slot].SetFloat("_WideOverTall", wideOver);
+            _tailMat[slot].SetFloat("_WideOverTall", wideOver);
             Paint(_burstMat[slot], 1f);
             Paint(_wordMat[slot], 1f);
             Paint(_tailMat[slot], 1f);
@@ -244,6 +253,13 @@ namespace Tag.FX
             mat.SetFloat("_SideDist", BodyHeight * SideBodies);
         }
 
+        static void SetLife(Material mat, float life, float punch)
+        {
+            if (mat == null) return;
+            mat.SetFloat("_Life", life);
+            mat.SetFloat("_WordPunch", punch);
+        }
+
         static void Paint(Material mat, float a)
         {
             if (mat == null) return;
@@ -261,6 +277,11 @@ namespace Tag.FX
             if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
             if (mat.HasProperty("_Front")) mat.SetFloat("_Front", front);
             if (mat.HasProperty("_ClampExtent")) mat.SetFloat("_ClampExtent", 0f);
+            if (mat.HasProperty("_Life")) mat.SetFloat("_Life", 1f);
+            if (mat.HasProperty("_WordPunch")) mat.SetFloat("_WordPunch", 1f);
+            if (mat.HasProperty("_WideOverTall")) mat.SetFloat("_WideOverTall", 1f);
+            // Comic words draw after the world so a rail cannot cut the burst.
+            if (mat.HasProperty("_ZTest")) mat.SetFloat("_ZTest", 8f);
             return mat;
         }
 

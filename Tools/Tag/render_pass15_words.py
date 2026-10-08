@@ -13,7 +13,7 @@ import bake_comic_layers as bake
 import render_comic_sheet as comic_sheet
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "Docs", "FxStills", "pass20")
+OUT = os.path.join(ROOT, "Docs", "FxStills", "pass21")
 FONT = comic_sheet.FONT_PATH
 
 
@@ -416,14 +416,48 @@ def jagged_tail(draw, hit, burst_edge, color=(12, 10, 8)):
     draw.line(pts, fill=color, width=4)
 
 
+def pane_fraction(life):
+    """Full burst height as a fraction of the pane.
+
+    Settle and the shrink stay on the 22% floor. The overshoot peak is 30%.
+    """
+    if life <= 1.0:
+        return 0.22 * life
+    u = (life - 1.0) / 0.25
+    if u < 0.0:
+        u = 0.0
+    if u > 1.0:
+        u = 1.0
+    return 0.22 + (0.30 - 0.22) * u
+
+
+def nudge_inside(cx, cy, width, height, pw, ph, margin=8.0):
+    """Slide the burst back in so the glyph stays inside the pane."""
+    dx = 0.0
+    dy = 0.0
+    left = cx - width * 0.5
+    right = cx + width * 0.5
+    top = cy - height * 0.5
+    bot = cy + height * 0.5
+    if left < margin:
+        dx = margin - left
+    if right > pw - margin:
+        dx = (pw - margin) - right
+    if top < margin:
+        dy = margin - top
+    if bot > ph - margin:
+        dy = (ph - margin) - bot
+    return cx + dx, cy + dy, dx, dy
+
+
 def couch_four():
-    """1280x720. Arena plates, two runners, burst at the pane minimum mid-overshoot."""
+    """1280x720. Arena plates, two runners, burst at the 30% peak."""
     names = ("SPROING!", "WHIZZ!", "POW!", "SMACK!")
     plates = (
         os.path.join(ROOT, "Docs", "ArenaStills", "MegaPark_Eye.png"),
         os.path.join(ROOT, "Docs", "ArenaStills", "MegaPark_Edge.png"),
-        os.path.join(ROOT, "Docs", "ArenaStills", "PocketPark_Eye.png"),
-        os.path.join(ROOT, "Docs", "ArenaStills", "PocketPark_Edge.png"),
+        os.path.join(ROOT, "Docs", "FxStills", "pass21", "plates", "pocket-a.png"),
+        os.path.join(ROOT, "Docs", "FxStills", "pass21", "plates", "pocket-b.png"),
     )
     # Two runners in the first two panes and the Pocket eye pane. The edge pane keeps both too.
     pair_panes = (True, True, True, True)
@@ -469,8 +503,8 @@ def couch_four():
         burst_cx = hit_x + side * side_px
         burst_cy = hit_y - up_px
         _text, burst, word = posed_layers(index)
-        # 22% of the pane at rest, times the overshoot. The world quad is smaller, so the minimum wins.
-        burst_px = 0.22 * ph * life
+        # 22% floor, stretched to 30% of the pane at the overshoot peak.
+        burst_px = pane_fraction(life) * ph
         word_px = burst_px * punch
         _tilt, _skew, size, _arc, _wide, tall = style_of(index)
         pre_h = (bake.CELL + 48) * size * tall
@@ -483,6 +517,10 @@ def couch_four():
 
         back = fit(burst, burst_px)
         front = fit(word, word_px)
+        # The word is the larger glyph. Nudge both inward if either would leave the pane.
+        burst_cx, burst_cy, nudge_x, nudge_y = nudge_inside(
+            burst_cx, burst_cy, front.width, front.height, pw, ph,
+        )
         # Tail stops at the near edge of the burst so it points at the hit.
         edge_y = burst_cy + back.height * 0.28
         jagged_tail(ImageDraw.Draw(scene), (hit_x, hit_y), (burst_cx, edge_y))
@@ -497,9 +535,11 @@ def couch_four():
             "life", round(life, 3),
             "punch", round(punch, 3),
             "burst_px", round(burst_px, 1),
+            "word_px", round(word_px, 1),
             "body_px", round(body, 1),
             "up", round(up_px, 1),
             "side", round(side_px, 1),
+            "nudge", round(nudge_x, 1), round(nudge_y, 1),
         )
     draw.line((640, 0, 640, 720), fill=(8, 8, 8), width=4)
     draw.line((0, 360, 1280, 360), fill=(8, 8, 8), width=4)

@@ -138,6 +138,35 @@ namespace Tag.Level
             Check(edge, park + " edge", fail);
         }
 
+        /// <summary>
+        /// Gameplay chase camera: 4.99 m behind the feet, 2.92 m up, look height 1.25, fov 78.
+        /// Yaw 0 faces +Z. The plate has no figure, so a composite can stand the runners in.
+        /// </summary>
+        public static void WriteChase(string path, int arena, float feetX, float feetZ, float yawDeg)
+        {
+            List<Tri> tris = Gather(arena);
+            float mapW = arena == ParkArena.Stack ? StackYardLayout.MapW
+                : arena == ParkArena.Pocket ? PocketParkLayout.MapW
+                : MegaParkP1Layout.MapW;
+            float mapD = arena == ParkArena.Stack ? StackYardLayout.MapD
+                : arena == ParkArena.Pocket ? PocketParkLayout.MapD
+                : MegaParkP1Layout.MapD;
+            float yaw = yawDeg * (float)(Math.PI / 180.0);
+            float fx = (float)Math.Sin(yaw);
+            float fz = (float)Math.Cos(yaw);
+            float lx = fz;
+            float lz = -fx;
+            const float back = 4.992f;
+            const float side = 0.40f;
+            float ex = feetX - fx * back - lx * side;
+            float ey = 2.921f;
+            float ez = feetZ - fz * back - lz * side;
+            string dir = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            Render(tris, path, mapW, mapD, ex, ey, ez, feetX, 1.25f, feetZ, 78f, true);
+        }
+
         static void AddRailFence(List<Tri> tris, MegaParkP1Layout.Solid s)
         {
             MegaParkP1Layout.TryLook("fence", out float r, out float g, out float b, out _, out _);

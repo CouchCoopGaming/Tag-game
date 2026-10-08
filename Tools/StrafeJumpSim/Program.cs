@@ -6,8 +6,18 @@ using UnityEngine;
 
 static class Program
 {
-    static int Main()
+    static int Main(string[] args)
     {
+        if (args != null && args.Length > 0 && args[0] == "fx-chase")
+        {
+            string dir = args.Length > 1 ? args[1] : "Docs/FxStills/pass21/plates";
+            // South lane, clear of the bar row at z=32 and the cling walls at x=50.
+            Tag.Level.ArenaStill.WriteChase(Path.Combine(dir, "pocket-a.png"), Tag.Level.ParkArena.Pocket, 22f, 14f, 90f);
+            Tag.Level.ArenaStill.WriteChase(Path.Combine(dir, "pocket-b.png"), Tag.Level.ParkArena.Pocket, 66f, 14f, -90f);
+            Console.WriteLine("fx-chase " + dir);
+            return 0;
+        }
+
         StrafeJumpReport report = StrafeJumpProof.Run60();
         Console.WriteLine(report.ToString());
         if (!report.Ok)
