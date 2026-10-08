@@ -1,4 +1,4 @@
-"""Small harbor skiff. 3.2 m long, planked hull, gunwales at 0.46 m."""
+"""Harbor work boat. Cabin amidships, bow to -Z, gunwale near 1.0 m."""
 
 import os
 import sys
@@ -12,35 +12,42 @@ def create():
     a = Asset(
         "Boat",
         "Harbor",
-        "Skiff, 3.20 m long, 1.05 m across the stern, gunwale at 0.46 m. Bow is -Z.",
+        "Work boat, 6.4 m long, 2.1 m across the stern, gunwale at 1.02 m, cabin roof at 2.15 m. Bow is -Z. Cleats on the gunwales.",
     )
-    a.climb_note = "Hull is a solid prop. Not a cling wall."
-    a.vault_note = "Gunwale is 0.46 m. Not a vault rail."
+    a.climb_note = "The hull is a solid prop. Not a cling wall."
+    a.vault_note = "Gunwale is about 1.0 m. Not a vault rail."
     for lod in (0, 1):
         g = a.begin(lod)
-        bev = 0.003 if lod == 0 else 0
-        # Floor boards, narrower toward the bow.
-        for z, length, beam in ((-1.15, 0.70, 0.42), (-0.40, 0.80, 0.62), (0.40, 0.80, 0.72), (1.15, 0.65, 0.58)):
-            g.box((0, 0.02, z), (beam, 0.04, length), "Lib_Wood", bevel=bev, segs=1, uv_scale=1.2)
-        # Sides toe in toward the bow. Yaw sign brings the -Z end inward.
-        g.box((-0.34, 0.26, 0.05), (0.035, 0.36, 2.85), "Lib_PaintWhite", bevel=bev, segs=1, euler=(0, -7, 0), uv_scale=1.0)
-        g.box((0.34, 0.26, 0.05), (0.035, 0.36, 2.85), "Lib_PaintWhite", bevel=bev, segs=1, euler=(0, 7, 0), uv_scale=1.0)
-        g.box((-0.36, 0.42, 0.05), (0.02, 0.04, 2.85), "Lib_PaintBlue", euler=(0, -7, 0))
-        g.box((0.36, 0.42, 0.05), (0.02, 0.04, 2.85), "Lib_PaintBlue", euler=(0, 7, 0))
-        g.box((0, 0.24, 1.48), (0.62, 0.36, 0.04), "Lib_PaintWhite", bevel=bev, segs=1)
-        g.box((0, 0.22, -1.42), (0.16, 0.28, 0.18), "Lib_PaintWhite", bevel=bev, segs=1)
-        g.box((0, 0.50, -0.35), (0.36, 0.04, 0.28), "Lib_Wood", uv_scale=1.2)
-        g.box((0, 0.50, 0.75), (0.42, 0.04, 0.28), "Lib_Wood", uv_scale=1.2)
+        bev = 0.004 if lod == 0 else 0
+        seg = lod_pick(lod, 10, 8)
+        g.box((0, 0.14, 0.05), (1.15, 0.22, 4.85), "Lib_PaintBlue", bevel=bev, segs=1, uv_scale=1.0)
+        g.box((-0.78, 0.58, 0.12), (0.07, 0.74, 4.90), "Lib_PaintWhite", euler=(0, -3.5, 0), uv_scale=1.0)
+        g.box((0.78, 0.58, 0.12), (0.07, 0.74, 4.90), "Lib_PaintWhite", euler=(0, 3.5, 0), uv_scale=1.0)
+        g.box((-0.92, 1.04, 0.12), (0.055, 0.06, 4.90), "Lib_WoodDark", euler=(0, -3.5, 0))
+        g.box((0.92, 1.04, 0.12), (0.055, 0.06, 4.90), "Lib_WoodDark", euler=(0, 3.5, 0))
+        g.box((0, 0.55, 3.02), (1.62, 0.88, 0.07), "Lib_PaintWhite")
+        g.box((0, 0.48, -2.78), (0.55, 0.72, 0.48), "Lib_PaintWhite")
+        g.box((0, 0.84, 0.15), (1.28, 0.055, 4.35), "Lib_Wood", uv_scale=1.1)
+        # Cabin sits above the deck with a gap so the two skins do not weld.
+        g.box((0, 1.50, 0.45), (1.22, 1.05, 1.70), "Lib_PaintWhite")
+        g.box((0, 2.12, 0.45), (1.40, 0.07, 1.90), "Lib_PaintCream")
+        g.box((0.628, 1.58, 0.45), (0.014, 0.28, 0.72), "Lib_Window")
+        g.box((-0.628, 1.58, 0.45), (0.014, 0.28, 0.72), "Lib_Window")
+        g.box((0, 1.58, -0.415), (0.52, 0.28, 0.014), "Lib_Window")
         if lod == 0:
-            g.cylinder((0.40, 0.46, -0.1), 0.015, 0.03, "Lib_Brass", 8)
-            g.cylinder((-0.40, 0.46, -0.1), 0.015, 0.03, "Lib_Brass", 8)
+            g.box((0, 1.22, 1.36), (0.42, 0.55, 0.028), "Lib_WoodDark")
+            g.cylinder((0.32, 2.85, -0.7), 0.028, 0.95, "Lib_Steel", seg)
+            g.box((0, 1.12, 2.05), (0.72, 0.42, 0.55), "Lib_Wood")
+            for x, z in ((-0.52, -1.45), (0.52, -1.45), (-0.52, 1.70), (0.52, 1.70)):
+                g.box((x, 0.92, z), (0.12, 0.045, 0.06), "Lib_Steel")
+                g.box((x, 0.97, z), (0.045, 0.045, 0.035), "Lib_SteelDark")
         a.end()
-    for i, (z, length, beam) in enumerate(((-1.15, 0.66, 0.38), (-0.40, 0.76, 0.58), (0.40, 0.76, 0.68), (1.15, 0.60, 0.54))):
-        a.box("Col_Floor_%d" % i, (0, 0.02, z), (beam, 0.035, length))
-    a.box("Col_SideL", (-0.34, 0.26, 0.05), (0.03, 0.32, 2.70), euler=(0, -7, 0))
-    a.box("Col_SideR", (0.34, 0.26, 0.05), (0.03, 0.32, 2.70), euler=(0, 7, 0))
-    a.box("Col_Transom", (0, 0.24, 1.48), (0.58, 0.32, 0.035))
-    a.box("Col_Bow", (0, 0.22, -1.42), (0.14, 0.24, 0.16))
-    a.box("Col_SeatA", (0, 0.50, -0.35), (0.32, 0.035, 0.24))
-    a.box("Col_SeatB", (0, 0.50, 0.75), (0.38, 0.035, 0.24))
+    a.box("Col_Keel", (0, 0.14, 0.05), (1.00, 0.16, 4.60))
+    a.box("Col_SideL", (-0.78, 0.58, 0.12), (0.045, 0.60, 4.55), euler=(0, -3.5, 0))
+    a.box("Col_SideR", (0.78, 0.58, 0.12), (0.045, 0.60, 4.55), euler=(0, 3.5, 0))
+    a.box("Col_Transom", (0, 0.55, 3.02), (1.46, 0.74, 0.045))
+    a.box("Col_Bow", (0, 0.48, -2.78), (0.42, 0.58, 0.36))
+    a.box("Col_Deck", (0, 0.84, 0.15), (1.12, 0.035, 4.05))
+    a.box("Col_Cabin", (0, 1.50, 0.45), (1.08, 0.90, 1.50))
+    a.box("Col_CabinRoof", (0, 2.12, 0.45), (1.22, 0.045, 1.70))
     return a

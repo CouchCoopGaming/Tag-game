@@ -9,7 +9,7 @@ from _volume import build_house
 
 PROFILE = {
     "name": "House_Hip",
-    "blurb": "Hip-roof house. Body 8.4 x 7.2 m, walls 2.9 m, hip about 4.5 m, porch on +Z. Cream walls.",
+    "blurb": "Hip-roof house. Body 8.4 x 7.2 m, walls 2.9 m, hip about 4.5 m. Porch, steps, paneled door, trimmed windows, gutters on the eaves, and a chimney. Porch faces +Z.",
     "sx": 8.4,
     "sz": 7.2,
     "porch": 1.7,

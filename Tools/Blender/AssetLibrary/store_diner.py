@@ -9,7 +9,7 @@ from _volume import build_store
 
 PROFILE = {
     "name": "Store_Diner",
-    "blurb": "Diner, 10.0 x 7.0 m, walls 4.6 m under a parapet. Cream body, red awning and DINER sign. Alley face is -Z.",
+    "blurb": "Diner, 10.0 x 7.0 m, walls 4.6 m under a parapet. Cream body, a long mullioned DINER front with a red rail, recessed door, sign band, brick string course, and a sloped red awning. Alley face is -Z.",
     "sx": 10.0,
     "sz": 7.0,
     "wall_h": 4.6,
@@ -18,7 +18,7 @@ PROFILE = {
     "awning": "Lib_PaintRed",
     "accent": "Lib_PaintRed",
     "sign": "DINER",
-    "front": "shop",
+    "front": "shop_diner",
     "right": "plain",
     "left": "plain",
     "back": "alley",

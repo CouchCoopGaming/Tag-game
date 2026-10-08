@@ -45,6 +45,31 @@ def _panels(x0, x1, y0, y1, holes):
     return rects
 
 
+# Ground-floor shopfront. One tall opening; the kickplate, glass, and door sit in it.
+SHOP_HEAD = 2.56
+SHOP_PIER = 0.32
+
+
+def _shop_style(kind):
+    if kind in ("shop", "shop_market"):
+        return "market"
+    if kind == "shop_diner":
+        return "diner"
+    if kind == "shop_wash":
+        return "wash"
+    return None
+
+
+def _house_row(span, n):
+    wh = 1.12
+    cy = 1.50
+    holes = []
+    for i in range(n):
+        cx = ((i + 0.5) / float(n) - 0.5) * span * 0.56
+        holes.append((cx, cy, min(0.88, span * 0.2), wh, False, False))
+    return holes
+
+
 def _fit_holes(span, wall_h, kind):
     """Openings along a wall of clear span `span`. (cx, cy, w, h, lit, door)."""
     if kind == "plain":
@@ -56,24 +81,38 @@ def _fit_holes(span, wall_h, kind):
             (-span * 0.18, 1.15, 1.0, 2.15, False, True),
             (span * 0.22, wall_h * 0.62, 0.9, 1.05, True, False),
         ]
-    # Shop front: a wide window, a door, and a row upstairs.
-    door_w = 1.05
-    win_w = min(2.4, span * 0.36)
-    holes = [
-        (-span * 0.22, 1.58, win_w, 1.7, False, False),
-        (span * 0.22, 1.15, door_w, 2.2, False, True),
-    ]
-    if wall_h > 4.2:
-        for cx, lit in ((-span * 0.28, True), (0.0, False), (span * 0.28, True)):
-            holes.append((cx, wall_h * 0.72, min(1.4, span * 0.2), 1.2, lit, False))
-    kept = []
-    for cx, cy, w, h, lit, door in holes:
-        if abs(cx) + w * 0.5 > span * 0.5 - 0.18:
-            continue
-        if cy + h * 0.5 > wall_h - 0.18 or cy - h * 0.5 < 0.08:
-            continue
-        kept.append((cx, cy, w, h, lit, door))
-    return kept
+    if kind == "house_front":
+        ww = min(0.92, span * 0.18)
+        return [
+            (-span * 0.28, 1.52, ww, 1.18, False, False),
+            (0.05, 1.08, 0.96, 2.02, False, "solid"),
+            (span * 0.28, 1.52, ww, 1.18, False, False),
+        ]
+    if kind == "house_side":
+        return _house_row(span, 2 if span > 5.0 else 1)
+    if kind == "house_back":
+        return _house_row(span, 2)
+    style = _shop_style(kind)
+    if style is None:
+        return []
+    # One shopfront void from the sidewalk to the head. Piers stay as brick.
+    open_w = span - SHOP_PIER * 2
+    cy = (0.04 + SHOP_HEAD) * 0.5
+    holes = [(0.0, cy, open_w, SHOP_HEAD - 0.04, False, "opening")]
+    win_bot = 3.68
+    win_top = wall_h - 0.26
+    if win_top - win_bot >= 0.62:
+        if wall_h > 5.5:
+            wh = 1.15
+            wcy = wall_h - 0.30 - wh * 0.5
+        else:
+            wh = min(0.82, win_top - win_bot - 0.06)
+            wcy = (win_bot + win_top) * 0.5
+        count = 3 if span > 6.2 else 2
+        for i in range(count):
+            cx = ((i + 0.5) / float(count) - 0.5) * (span * 0.70)
+            holes.append((cx, wcy, min(1.15, span * 0.16), wh, i % 2 == 0, False))
+    return holes
 
 
 def _window(g, origin, axis, inward, hole, trim, lod):
@@ -97,6 +136,7 @@ def _window(g, origin, axis, inward, hole, trim, lod):
         if lod == 0:
             g.box((cx, cy, z_glass - inward * 0.008), (0.025, glass_h - 0.08, 0.012), trim)
             g.box((cx, cy, z_glass - inward * 0.008), (glass_w - 0.08, 0.025, 0.012), trim)
+        _casing(g, origin, "z", inward, cx, cy, w, h, trim)
         return (cx, cy, z_glass, glass_w, glass_h, "z")
     x_out = origin
     x_glass = x_out + inward * depth
@@ -110,6 +150,7 @@ def _window(g, origin, axis, inward, hole, trim, lod):
     if lod == 0:
         g.box((x_glass - inward * 0.008, cy, cx), (0.012, glass_h - 0.08, 0.025), trim)
         g.box((x_glass - inward * 0.008, cy, cx), (0.012, 0.025, glass_w - 0.08), trim)
+    _casing(g, origin, "x", inward, cx, cy, w, h, trim)
     return (x_glass, cy, cx, glass_w, glass_h, "x")
 
 
@@ -120,6 +161,47 @@ def _place_backing(g, info, inward, lit):
         g.box((info[0], info[1], info[2] + inward * push), (info[3] * 0.9, info[4] * 0.9, 0.02), mat)
     else:
         g.box((info[0] + inward * push, info[1], info[2]), (0.02, info[4] * 0.9, info[3] * 0.9), mat)
+
+
+def _casing(g, origin, axis, inward, cx, cy, w, h, trim):
+    """Architrave proud of the outer face, clear of the wall shell."""
+    n = origin - inward * 0.145
+    t = 0.075
+    d = 0.032
+    if axis == "z":
+        g.box((cx, cy + h * 0.5 + t * 0.4, n), (w + t * 1.6, t, d), trim)
+        g.box((cx, cy - h * 0.5 - t * 0.4, n), (w + t * 1.6, t, d), trim)
+        g.box((cx - w * 0.5 - t * 0.4, cy, n), (t, h, d), trim)
+        g.box((cx + w * 0.5 + t * 0.4, cy, n), (t, h, d), trim)
+    else:
+        g.box((n, cy + h * 0.5 + t * 0.4, cx), (d, t, w + t * 1.6), trim)
+        g.box((n, cy - h * 0.5 - t * 0.4, cx), (d, t, w + t * 1.6), trim)
+        g.box((n, cy, cx - w * 0.5 - t * 0.4), (d, h, t), trim)
+        g.box((n, cy, cx + w * 0.5 + t * 0.4), (d, h, t), trim)
+
+
+def _solid_door(g, origin, axis, inward, hole, trim, lod):
+    """A paneled entry door, recessed a few centimetres, with casing."""
+    cx, cy, w, h = hole
+    n = origin - inward * 0.02
+    if axis == "z":
+        g.box((cx, cy, n), (w - 0.08, h - 0.05, 0.045), "Lib_WoodDark")
+        if lod == 0:
+            g.box((cx, cy + h * 0.22, n - inward * 0.028), (w * 0.62, h * 0.36, 0.012), "Lib_Wood")
+            g.box((cx, cy - h * 0.22, n - inward * 0.028), (w * 0.62, h * 0.38, 0.012), "Lib_Wood")
+            g.box((cx + w * 0.28, cy, n - inward * 0.04), (0.04, 0.12, 0.03), "Lib_Brass")
+        center = (cx, cy, n)
+        size = (w - 0.14, h - 0.10, 0.03)
+    else:
+        g.box((n, cy, cx), (0.045, h - 0.05, w - 0.08), "Lib_WoodDark")
+        if lod == 0:
+            g.box((n - inward * 0.028, cy + h * 0.22, cx), (0.012, h * 0.36, w * 0.62), "Lib_Wood")
+            g.box((n - inward * 0.028, cy - h * 0.22, cx), (0.012, h * 0.38, w * 0.62), "Lib_Wood")
+            g.box((n - inward * 0.04, cy, cx + w * 0.28), (0.03, 0.12, 0.04), "Lib_Brass")
+        center = (n, cy, cx)
+        size = (0.03, h - 0.10, w - 0.14)
+    _casing(g, origin, axis, inward, cx, cy, w, h, trim)
+    return center, size
 
 
 def _door(g, origin, axis, inward, hole, trim, lod):
@@ -146,6 +228,12 @@ def _wall(g, cols, axis, origin, inward, span, y0, y1, holes, body, trim, lod, t
             cols.append((tag, (origin, cy, cx), (0.14, max(0.04, h - 0.03), max(0.04, w - 0.03))))
     glass = []
     for cx, cy, w, h, lit, door in holes:
+        if door == "opening":
+            continue
+        if door == "solid":
+            center, size = _solid_door(g, origin, axis, inward, (cx, cy, w, h), trim, lod)
+            cols.append(("box", "Col_Door", center, size))
+            continue
         if door:
             info = _door(g, origin, axis, inward, (cx, cy, w, h), trim, lod)
         else:
@@ -221,20 +309,191 @@ def _interior(g, hx, hz, front_in):
     g.box((0, 1.6, front_in - 2.4), (hx * 2 - 0.9, 2.6, 0.08), "Lib_Interior")
 
 
-def _awning(g, cols, hx, front_z, y, mat, lod):
-    depth = 1.15
-    g.box((0, y, front_z + depth * 0.5), (hx * 1.7, 0.06, depth), mat)
-    g.box((0, y - 0.08, front_z + depth - 0.04), (hx * 1.7, 0.10, 0.06), mat)
-    cols.append(("box", "Col_Awning", (0, y, front_z + depth * 0.5), (hx * 1.65, 0.05, depth - 0.04)))
+def _street(origin, inward, dist):
+    """dist > 0 is toward the street, measured from the wall center."""
+    return origin - inward * dist
+
+
+def _box_ax(g, axis, along, y, normal, sa, sy, sn, mat):
+    if axis == "z":
+        g.box((along, y, normal), (sa, sy, sn), mat)
+        return (along, y, normal), (sa, sy, sn)
+    g.box((normal, y, along), (sn, sy, sa), mat)
+    return (normal, y, along), (sn, sy, sa)
+
+
+def _col_box(cols, name, center, size):
+    if min(size) < 0.008:
+        return
+    cols.append(("box", name, center, size))
+
+
+_SHOP = {
+    "market": {
+        "door": "center", "bay": 1.15, "kick": 0.50,
+        "kick_mat": "Lib_PaintCream", "mullion": None,
+        "door_mat": "Lib_WoodDark", "sign_mat": "Lib_PaintRed", "text_mat": "Lib_PaintCream",
+        "rail": False,
+    },
+    "diner": {
+        "door": "right", "bay": 1.40, "kick": 0.36,
+        "kick_mat": "Lib_Steel", "mullion": "Lib_Steel",
+        "door_mat": "Lib_PaintRed", "sign_mat": "Lib_PaintCream", "text_mat": "Lib_PaintRed",
+        "rail": True,
+    },
+    "wash": {
+        "door": "left", "bay": 0.62, "kick": 0.64,
+        "kick_mat": "Lib_PaintWhite", "mullion": "Lib_PaintTeal",
+        "door_mat": "Lib_PaintWhite", "sign_mat": "Lib_PaintTeal", "text_mat": "Lib_PaintWhite",
+        "rail": False,
+    },
+}
+
+
+def _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, stop_pos, stop_neg):
+    """Kickplate, mullioned glass, recessed door and transom, sign, cornice, sloped awning."""
+    spec = _SHOP[style]
+    mullion = spec["mullion"] or profile["trim"]
+    half = (span - SHOP_PIER * 2) * 0.5
+    door_w = 0.96
+    if spec["door"] == "right":
+        dc = half - 0.62
+    elif spec["door"] == "left":
+        dc = -half + 0.62
+    else:
+        dc = 0.0
+    door_a, door_b = dc - door_w * 0.5, dc + door_w * 0.5
+    kick = spec["kick"]
+    glass_bot = kick + 0.045
+    glass_top = SHOP_HEAD - 0.05
+    glass_n = _street(origin, inward, 0.055)
+    door_n = _street(origin, inward, -0.18)
+
+    def bays_of(a0, a1):
+        width = a1 - a0
+        if width < 0.40:
+            return []
+        n = max(1, int(round(width / spec["bay"])))
+        step = width / float(n)
+        return [(a0 + i * step, a0 + (i + 1) * step) for i in range(n)]
+
+    bays = bays_of(-half + 0.03, door_a - 0.05) + bays_of(door_b + 0.05, half - 0.03)
+    # Bulkhead under the display only. The door runs to the sidewalk.
+    for a0, a1 in bays:
+        inset = 0.012
+        _c, _s = _box_ax(
+            g, axis, (a0 + a1) * 0.5, kick * 0.48, origin,
+            (a1 - a0) - inset * 2, kick * 0.86, 0.15, spec["kick_mat"],
+        )
+        _col_box(cols, "Col_Kick", _c, ((a1 - a0) - 0.06, kick * 0.7, 0.10) if axis == "z" else (0.10, kick * 0.7, (a1 - a0) - 0.06))
+        if lod == 0:
+            _box_ax(g, axis, (a0 + a1) * 0.5, kick - 0.02, _street(origin, inward, 0.09), (a1 - a0) - 0.02, 0.035, 0.025, mullion)
+    # Display panes and the mullions between them.
+    gh = glass_top - glass_bot
+    gcy = (glass_top + glass_bot) * 0.5
+    for i, (a0, a1) in enumerate(bays):
+        _c, _s = _box_ax(g, axis, (a0 + a1) * 0.5, gcy, glass_n, (a1 - a0) - 0.05, gh - 0.04, 0.012, "Lib_Window")
+        _col_box(cols, "Col_Glass", _c, ((a1 - a0) - 0.08, gh - 0.08, 0.008) if axis == "z" else (0.008, gh - 0.08, (a1 - a0) - 0.08))
+        if lod < 2:
+            _box_ax(g, axis, a0, gcy, _street(origin, inward, 0.06), 0.04, gh, 0.04, mullion)
+        if spec["rail"] and lod < 2:
+            _box_ax(g, axis, (a0 + a1) * 0.5, 1.48, _street(origin, inward, 0.095), (a1 - a0) - 0.08, 0.03, 0.016, "Lib_PaintRed")
+    if bays and lod < 2:
+        last = bays[-1][1]
+        _box_ax(g, axis, last, gcy, _street(origin, inward, 0.06), 0.04, gh, 0.04, mullion)
+    # Recessed door, jambs, and a transom in the storefront plane.
+    dh = 2.00
+    _c, _s = _box_ax(g, axis, dc, 0.05 + dh * 0.5, door_n, door_w - 0.08, dh, 0.045, spec["door_mat"])
+    _col_box(cols, "Col_Door", _c, (door_w - 0.12, dh - 0.08, 0.03) if axis == "z" else (0.03, dh - 0.08, door_w - 0.12))
     if lod == 0:
-        g.pipe((-hx * 0.7, y - 0.06, front_z + depth - 0.1), (-hx * 0.7, 0.02, front_z + 0.15), 0.025, "Lib_SteelDark", 6)
-        g.pipe((hx * 0.7, y - 0.06, front_z + depth - 0.1), (hx * 0.7, 0.02, front_z + 0.15), 0.025, "Lib_SteelDark", 6)
+        lite_n = _street(origin, inward, -0.145)
+        _box_ax(g, axis, dc, 1.45, lite_n, door_w * 0.55, 0.70, 0.012, "Lib_Window")
+        _box_ax(g, axis, dc + door_w * 0.30, 1.05, _street(origin, inward, -0.14), 0.035, 0.12, 0.02, "Lib_Brass")
+    # Jambs from the glass plane back to the door. They stay inside the opening.
+    jamb_n = _street(origin, inward, -0.05)
+    jamb_d = 0.18
+    for edge, sign in ((door_a, -1.0), (door_b, 1.0)):
+        _box_ax(g, axis, edge + sign * 0.02, 1.08, jamb_n, 0.04, 1.96, jamb_d, profile["trim"])
+    _box_ax(g, axis, dc, 2.16, jamb_n, door_w - 0.02, 0.045, jamb_d, profile["trim"])
+    th = glass_top - 2.20
+    if th > 0.08:
+        _c, _s = _box_ax(g, axis, dc, 2.20 + th * 0.5, glass_n, door_w - 0.08, th - 0.03, 0.012, "Lib_Window")
+        _col_box(cols, "Col_Transom", _c, (door_w - 0.14, max(0.04, th - 0.06), 0.008) if axis == "z" else (0.008, max(0.04, th - 0.06), door_w - 0.14))
+        _box_ax(g, axis, dc, 2.175, _street(origin, inward, 0.065), door_w, 0.04, 0.035, mullion)
+    # Sign band, then a brick string course and a cornice between the floors.
+    sign_w = min(span * 0.72, 4.6 if style == "diner" else 3.4)
+    sign_n = _street(origin, inward, 0.175)
+    _c, _s = _box_ax(g, axis, 0.0, 2.88, sign_n, sign_w, 0.42, 0.055, spec["sign_mat"])
+    _col_box(cols, "Col_Sign", _c, (sign_w - 0.08, 0.32, 0.04) if axis == "z" else (0.04, 0.32, sign_w - 0.08))
+    if lod == 0 and profile.get("sign"):
+        yaw = 0.0 if axis == "z" else (90.0 if inward < 0.0 else -90.0)
+        text_n = _street(origin, inward, 0.22)
+        loc = (0.0, 2.88, text_n) if axis == "z" else (text_n, 2.88, 0.0)
+        g.text(profile["sign"], loc, 0.24, spec["text_mat"], extrude=0.006, yaw=yaw)
+    run0 = -span * 0.5 + 0.06 + stop_neg
+    run1 = span * 0.5 - 0.06 - stop_pos
+    if run1 - run0 > 0.8:
+        mid = (run0 + run1) * 0.5
+        rw = run1 - run0
+        _c, _s = _box_ax(g, axis, mid, 3.22, _street(origin, inward, 0.165), rw, 0.14, 0.07, "Lib_Brick")
+        _col_box(cols, "Col_String", _c, (rw - 0.08, 0.08, 0.04) if axis == "z" else (0.04, 0.08, rw - 0.08))
+        _c, _s = _box_ax(g, axis, mid, 3.44, _street(origin, inward, 0.21), rw, 0.12, 0.12, "Lib_Concrete")
+        _col_box(cols, "Col_Cornice", _c, (rw - 0.08, 0.07, 0.07) if axis == "z" else (0.07, 0.07, rw - 0.08))
+        if lod < 2:
+            _box_ax(g, axis, mid, 3.54, _street(origin, inward, 0.175), rw, 0.05, 0.06, profile["trim"])
+    _awning_fabric(g, cols, axis, origin, inward, -half + 0.02, half - 0.02, profile["awning"], lod)
 
 
-def _sign(g, text, front_z, y, mat, lod):
-    g.box((0, y, front_z + 0.06), (2.4, 0.55, 0.06), mat)
-    if lod == 0 and text:
-        g.text(text, (0, y, front_z + 0.11), 0.22, "Lib_PaintCream", extrude=0.008, yaw=0)
+def _awning_fabric(g, cols, axis, origin, inward, along0, along1, mat, lod):
+    """Sloped cloth, a scalloped valance, and an angled steel frame. Not a flat slab."""
+    depth = 1.26
+    y_hi = 2.48
+    y_lo = 2.06
+    thick = 0.028
+    n_hi = _street(origin, inward, 0.14)
+    n_lo = _street(origin, inward, 0.14 + depth)
+
+    def p(along, y, normal):
+        if axis == "z":
+            return (along, y, normal)
+        return (normal, y, along)
+
+    v = [
+        p(along0, y_hi, n_hi), p(along1, y_hi, n_hi), p(along1, y_lo, n_lo), p(along0, y_lo, n_lo),
+        p(along0, y_hi - thick, n_hi), p(along1, y_hi - thick, n_hi),
+        p(along1, y_lo - thick, n_lo), p(along0, y_lo - thick, n_lo),
+    ]
+    g.mesh(v, [
+        (0, 3, 2, 1), (4, 5, 6, 7),
+        (0, 4, 7, 3), (1, 2, 6, 5),
+        (0, 1, 5, 4), (3, 7, 6, 2),
+    ], mat, uv_scale=1.0)
+    # Three axis-aligned slices live inside the slope so the collider does not leave the cloth.
+    span = along1 - along0
+    slices = 5
+    for i in range(slices):
+        t = (i + 0.5) / float(slices)
+        y_top = y_hi + (y_lo - y_hi) * t
+        normal = _street(origin, inward, 0.14 + depth * t)
+        seg = depth / float(slices) * 0.55
+        cy = y_top - thick * 0.62
+        if axis == "z":
+            _col_box(cols, "Col_Awning", ((along0 + along1) * 0.5, cy, normal), (span * 0.82, thick * 0.40, seg))
+        else:
+            _col_box(cols, "Col_Awning", (normal, cy, (along0 + along1) * 0.5), (seg, thick * 0.40, span * 0.82))
+    scallops = 8 if lod == 0 else 3
+    for i in range(scallops):
+        a0 = along0 + span * i / scallops
+        a1 = along0 + span * (i + 1) / scallops
+        drop = 0.15 if i % 2 == 0 else 0.24
+        _box_ax(g, axis, (a0 + a1) * 0.5, y_lo - thick - drop * 0.5, n_lo, (a1 - a0) * 0.94, drop, 0.016, mat)
+    if lod < 2:
+        g.pipe(p(along0 - 0.04, y_hi - thick - 0.02, n_hi), p(along0 - 0.04, y_lo - thick - 0.02, n_lo), 0.016, "Lib_SteelDark", 5)
+        g.pipe(p(along1 + 0.04, y_hi - thick - 0.02, n_hi), p(along1 + 0.04, y_lo - thick - 0.02, n_lo), 0.016, "Lib_SteelDark", 5)
+        front_n = _street(origin, inward, 0.14 + depth + 0.025)
+        g.pipe(p(along0, y_lo - thick - 0.02, front_n), p(along1, y_lo - thick - 0.02, front_n), 0.016, "Lib_SteelDark", 5)
+        mid = (along0 + along1) * 0.5
+        g.pipe(p(mid, y_hi - thick - 0.03, n_hi), p(mid, y_lo - thick - 0.03, n_lo), 0.014, "Lib_SteelDark", 5)
 
 
 def _gable_slab(g, x, y_base, z0, z1, y_peak, z_peak, thick, mat):
@@ -254,19 +513,23 @@ def _gable_slab(g, x, y_base, z0, z1, y_peak, z_peak, thick, mat):
     g.mesh(verts, faces, mat, uv_scale=1.0)
 
 
-def _hip(g, hx, hz, eave, rise):
+def _hip(g, hx, hz, eave, rise, zshift=0.0):
     """Closed hip: flat ceiling at the eave, four slopes up to a short ridge."""
     ridge = hx * 0.42
     y0 = eave + 0.01
     y1 = eave + rise
+
+    def zz(z):
+        return z + zshift
+
     # Bottom, then ridge. Winding is repaired by recalc in mesh().
     verts = [
-        (-hx, y0, -hz),
-        (hx, y0, -hz),
-        (hx, y0, hz),
-        (-hx, y0, hz),
-        (-ridge, y1, 0.0),
-        (ridge, y1, 0.0),
+        (-hx, y0, zz(-hz)),
+        (hx, y0, zz(-hz)),
+        (hx, y0, zz(hz)),
+        (-hx, y0, zz(hz)),
+        (-ridge, y1, zz(0.0)),
+        (ridge, y1, zz(0.0)),
     ]
     faces = [
         (0, 1, 2, 3),
@@ -328,13 +591,15 @@ def build_store(profile):
                 _escape(g, cols, -hz, wall_h, lod)
                 _downspouts(g, hx, -hz, wall_h)
                 _interior(g, hx, hz, front_z)
-                _awning(g, cols, hx * 0.92, hz, 3.05 if wall_h > 4 else wall_h - 0.4, profile["awning"], lod)
-                _sign(g, profile["sign"], hz, 3.55 if wall_h > 4 else wall_h - 0.15, profile["accent"], lod)
-                # A second awning on the corner face when that side is a shop.
-                if profile["right"] == "shop" and lod < 2:
-                    # Reuse the awning helper by swapping axes: a box on +X.
-                    depth = 1.05
-                    g.box((hx + depth * 0.5, 3.05, 0.2), (depth, 0.06, span_z * 0.7), profile["awning"])
+            # Each cornice stops at its own pier, short of the corner, so two faces never share a volume.
+            for axis, origin, inward, span, face in (
+                ("z", front_z, -1.0, span_x, profile["front"]),
+                ("x", side_x, -1.0, span_z, profile["right"]),
+                ("x", -side_x, 1.0, span_z, profile["left"]),
+            ):
+                style = _shop_style(face)
+                if style:
+                    _dress_storefront(g, cols, axis, origin, inward, span, profile, style, lod, 0.04, 0.04)
             if lod == 0:
                 a._cols = cols
             a.end()
@@ -369,14 +634,50 @@ def _apply_cols(asset):
             asset.box(label, center, size)
 
 
+def _house_trim(g, cols, profile, hx, hz, shift, wall_h, porch, lod):
+    """Front steps, eave gutters, and a chimney seated above the ridge."""
+    deck_depth = porch - 0.05
+    deck_z = shift + hz + porch * 0.5
+    front = deck_z + deck_depth * 0.5
+    g.box((0, 0.20, front + 0.16), (1.20, 0.10, 0.30), "Lib_Concrete")
+    cols.append(("box", "Col_StepHigh", (0, 0.20, front + 0.16), (1.08, 0.07, 0.22)))
+    g.box((0, 0.10, front + 0.46), (1.32, 0.10, 0.30), "Lib_Concrete")
+    cols.append(("box", "Col_StepLow", (0, 0.10, front + 0.46), (1.18, 0.07, 0.22)))
+    if lod < 2:
+        porch_len = porch - 0.25
+        porch_cz = shift + hz + 0.2 + porch_len * 0.5
+        porch_front = porch_cz + porch_len * 0.5
+        g.pipe((-hx * 0.34, 2.64, porch_front + 0.09), (hx * 0.34, 2.64, porch_front + 0.09), 0.038, "Lib_SteelDark", 6)
+        z_back = shift - hz - 0.15 - 0.09
+        g.pipe((-hx * 0.92, wall_h + 0.08, z_back), (hx * 0.92, wall_h + 0.08, z_back), 0.038, "Lib_SteelDark", 6)
+        z_wall = shift - hz + 0.28
+        for x in (-hx + 0.32, hx - 0.32):
+            g.pipe((x, wall_h - 0.04, z_wall), (x, 0.05, z_wall), 0.03, "Lib_SteelDark", 6)
+        if profile["roof"] == "hip":
+            y = wall_h + 0.04
+            z0 = shift - hz + 0.2
+            z1 = shift + hz - 0.25
+            g.pipe((hx + 0.28, y, z0), (hx + 0.28, y, z1), 0.038, "Lib_SteelDark", 6)
+            g.pipe((-hx - 0.28, y, z0), (-hx - 0.28, y, z1), 0.038, "Lib_SteelDark", 6)
+    ridge_y = wall_h + profile["rise"]
+    cx = hx * 0.28
+    base = ridge_y + 0.18
+    g.box((cx, base + 0.48, shift), (0.58, 0.96, 0.18), "Lib_Brick")
+    g.box((cx, base + 1.02, shift), (0.72, 0.08, 0.28), "Lib_Concrete")
+    if lod == 0:
+        g.box((cx, base + 1.16, shift), (0.22, 0.18, 0.16), "Lib_Brick")
+    cols.append(("box", "Col_Chimney", (cx, base + 0.48, shift), (0.46, 0.78, 0.12)))
+
+
 def build_house(profile):
     def create():
         sx = profile["sx"]
         body_z = profile["sz"]
         porch = profile["porch"]
         wall_h = profile["wall_h"]
-        # Shift so the foundation, including the porch, is centered on Z.
-        shift = -porch * 0.5
+        step_run = 0.64
+        # Shift so the foundation, porch, and front steps are centered on Z.
+        shift = -(porch + step_run) * 0.5
         a = Asset(profile["name"], "Buildings", profile["blurb"])
         a.climbable = True
         a.vaultable = True
@@ -404,17 +705,17 @@ def build_house(profile):
             )
             _wall(
                 g, cols, "z", back, 1.0, span_x, 0.0, wall_h,
-                _fit_holes(span_x, wall_h, "plain"),
+                _fit_holes(span_x, wall_h, "house_back"),
                 profile["body"], profile["trim"], lod, "Climb_Back",
             )
             _wall(
                 g, cols, "x", hx - thick * 0.5, -1.0, span_z, 0.0, wall_h,
-                _fit_holes(span_z, wall_h, "plain"),
+                _fit_holes(span_z, wall_h, "house_side"),
                 profile["body"], profile["trim"], lod, "Climb_Right",
             )
             _wall(
                 g, cols, "x", -(hx - thick * 0.5), 1.0, span_z, 0.0, wall_h,
-                _fit_holes(span_z, wall_h, "plain"),
+                _fit_holes(span_z, wall_h, "house_side"),
                 profile["body"], profile["trim"], lod, "Climb_Left",
             )
             # Porch deck and roof, in front of the body. The walls themselves hit the ground.
@@ -434,7 +735,7 @@ def build_house(profile):
                 if lod == 0:
                     a.capsule("Vault_PorchRail", (0, 1.25, rail_z), 0.03, sx * 0.55, 0)
             if profile["roof"] == "hip":
-                _hip(g, hx + 0.15, hz + 0.12, wall_h, profile["rise"])
+                _hip(g, hx + 0.15, hz + 0.12, wall_h, profile["rise"], shift)
             else:
                 ridge = wall_h + profile["rise"]
                 z0 = wz(-hz - 0.15)
@@ -450,9 +751,9 @@ def build_house(profile):
                     g, hx + 0.02, wall_h + 0.04, wz(-hz + 0.08), wz(hz - 0.08),
                     ridge - 0.08, wz(0.0), 0.04, profile["body"],
                 )
+            _house_trim(g, cols, profile, hx, hz, shift, wall_h, porch, lod)
             if lod == 0:
                 _interior(g, hx, hz, front)
-                g.box((0, wall_h + profile["rise"] + 0.15, shift), (0.4, 0.5, 0.4), "Lib_Brick")
             if lod == 0:
                 a._cols = cols
             a.end()

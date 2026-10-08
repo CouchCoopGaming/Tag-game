@@ -9,7 +9,7 @@ from _volume import build_house
 
 PROFILE = {
     "name": "House_Gable",
-    "blurb": "Gable house. Body 7.6 x 6.8 m, walls 2.8 m, ridge about 4.6 m, porch on +Z. Siding, dark roof.",
+    "blurb": "Gable house. Body 7.6 x 6.8 m, walls 2.8 m, ridge about 4.6 m. Porch, steps, paneled door, trimmed windows, eave gutters, and a chimney. Porch faces +Z.",
     "sx": 7.6,
     "sz": 6.8,
     "porch": 1.8,
