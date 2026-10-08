@@ -47,8 +47,8 @@ LODGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
-  m_LocalReferencePoint: {x: 0, y: 1.6, z: 0.001}
-  m_Size: 4
+  m_LocalReferencePoint: {x: 0, y: 1.6, z: 0}
+  m_Size: 4.1
   m_FadeMode: 0
   m_AnimateCrossFading: 0
   m_LastLODIsBillboard: 0
@@ -79,7 +79,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tag.Art.Library.LibraryPropMeta
   category: "Buildings"
-  summary: "4.00 x 3.20 x 0.30 m brick wall. Exterior normal is +Z. Butt the ends to Brick_Corner."
+  summary: "4.00 x 3.20 x 0.30 m brick bay. Exterior is +Z, with a closed door and a window. Butt the ends to Brick_Corner."
   climbable: 1
   vaultable: 0
   vaultHeightMeters: 0
@@ -152,6 +152,10 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: cf85b31d4de195caa04850eebe9f8ab2, type: 2}
+  - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
+  - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
+  - {fileID: 2100000, guid: 3515f7b9728b10281c73c55a077c3fea, type: 2}
+  - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
   - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -243,6 +247,9 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: cf85b31d4de195caa04850eebe9f8ab2, type: 2}
+  - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
+  - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
+  - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
   - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -334,6 +341,9 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: cf85b31d4de195caa04850eebe9f8ab2, type: 2}
+  - {fileID: 2100000, guid: 1d3b255f6085b9c47ad0b917071efa3d, type: 2}
+  - {fileID: 2100000, guid: 9a816b1d8e4f0105d2133b2d7031058c, type: 2}
+  - {fileID: 2100000, guid: bf0ace326dd21cd814cc8d0c1df35c10, type: 2}
   - {fileID: 2100000, guid: 5416f652738bd1efcc5b621780aa931f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0

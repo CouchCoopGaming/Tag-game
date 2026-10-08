@@ -19,7 +19,7 @@ def _hedge(g, mat, seg):
     """Beveled box (superellipsoid) with a little surface noise. One closed shell."""
     hx, hy, hz = 0.24, 0.28, 0.55
     cy = 0.42
-    power = 0.35
+    power = 0.24
     rings = 8 if seg >= 12 else 5
     verts = []
     grid = []
