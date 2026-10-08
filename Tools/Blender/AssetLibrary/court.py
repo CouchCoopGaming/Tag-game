@@ -22,7 +22,7 @@ def create():
         "restricted arc, and a 3-point arc that meets the corner lines. Lines are 5 cm. No collider on the paint.",
     )
     a.climb_note = "Flat slab, 0.12 m thick."
-    a.vault_note = "No rail. Place each Hoop at the baseline with the rim facing center court."
+    a.vault_note = "No rail. Place each Hoop pole 1.2 m behind the end line, rim toward center court."
     hw, hl = W * 0.5, L * 0.5
     y = 0.126
     verts = [

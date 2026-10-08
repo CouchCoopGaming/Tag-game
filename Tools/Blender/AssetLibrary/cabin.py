@@ -81,12 +81,8 @@ def create():
         _roof(g, width + 0.4, lod)
         a.end()
     a.loose_pivot = True
-    a.box("Climb_FrontL", (-1.28, 1.05, depth * 0.5 - 0.12), (1.50, 1.65, 0.14))
-    a.box("Climb_FrontR", (1.28, 1.05, depth * 0.5 - 0.12), (1.50, 1.65, 0.14))
-    a.box("Climb_FrontHead", (0, 2.02, depth * 0.5 - 0.12), (3.6, 0.16, 0.12))
-    a.box("Climb_Back", (0, 1.05, -depth * 0.5 + 0.12), (width - 0.5, 1.9, 0.20))
-    a.box("Climb_SideL", (-width * 0.5 + 0.12, 1.05, 0), (0.20, 1.9, depth - 0.5))
-    a.box("Climb_SideR", (width * 0.5 - 0.12, 1.05, 0), (0.20, 1.9, depth - 0.5))
+    # One box inside each log. A single wall slab sticks out of the round courses.
+    _log_climb(a, width, depth)
     a.box("Col_Door", (0, 1.05, depth * 0.5 - 0.08), (0.90, 1.85, 0.06))
     a.box("Col_StepLow", (0, 0.05, depth * 0.5 + 1.95), (1.00, 0.05, 0.24))
     a.box("Col_StepHigh", (0, 0.15, depth * 0.5 + 1.62), (1.05, 0.06, 0.20))
@@ -96,6 +92,26 @@ def create():
     # Roof colliders sit inside the slabs. Pivot is the cabin floor, porch is +Z.
     _add_roof(a, width + 0.4, -2.05, 2.15, 0.0, 3.45, 0.06)
     return a
+
+
+def _log_climb(asset, width, depth):
+    courses = 9
+    span_x = width - 0.46
+    span_z = depth - 0.46
+    z_front = depth * 0.5 - 0.12
+    z_back = -depth * 0.5 + 0.12
+    x_side = width * 0.5 - 0.12
+    thick = 0.10
+    for i in range(courses):
+        y = 0.18 + i * (1.85 / (courses - 1))
+        if y < 1.85:
+            asset.box("Climb_FrontL_%d" % i, (-1.28, y, z_front), (1.32, thick, thick))
+            asset.box("Climb_FrontR_%d" % i, (1.28, y, z_front), (1.32, thick, thick))
+        else:
+            asset.box("Climb_FrontHead_%d" % i, (0.0, y, z_front), (span_x - 0.20, thick, thick))
+        asset.box("Climb_Back_%d" % i, (0.0, y, z_back), (span_x - 0.20, thick, thick))
+        asset.box("Climb_SideL_%d" % i, (-x_side, y, 0.0), (thick, thick, span_z - 0.20))
+        asset.box("Climb_SideR_%d" % i, (x_side, y, 0.0), (thick, thick, span_z - 0.20))
 
 
 def _roof(g, width, lod):
