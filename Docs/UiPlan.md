@@ -333,6 +333,12 @@ The four blocks share one footprint. A gap stays between them, the front edges s
 
 In `Docs/UiStills/pass39/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards, the summary, and the labels are composite. The BEFORE picture is the pass 38 results still. Each still is under 400 KB. The proof lines are unchanged.
 
+## Pass 40
+
+Every results block is the same stone. A band on the front uses the seat palette, P1 red, P2 blue, P3 orange, P4 purple, from MenuTheme.SeatBand, and a large rank numeral sits on that band. A floor plane sits under the blocks, with a soft contact shadow under each one, and the key light drops the figure's shadow onto the cap. Second place pumps a fist: the upper arm is about 45° up, the elbow is about 90°, and the fist is above the shoulder. Every stat card reads the same way, tags, time as It, and round wins, with no WIN label. pose stays 0 and rigJoint stays 26.
+
+In `Docs/UiStills/pass40/` the figures are renders of `Dummy_Mannequin_Tan_Hier_Hi.fbx`. The cards, the summary, and the labels are composite. The BEFORE picture is the pass 39 results still. Each still is under 400 KB. The proof lines are unchanged.
+
 ## Later passes
 
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.

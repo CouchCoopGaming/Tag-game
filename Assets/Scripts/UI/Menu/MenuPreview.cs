@@ -32,6 +32,10 @@ namespace Tag.Ui.Menu
         RenderTexture _paradeRt;
         readonly Transform[] _step = new Transform[Slots];
         readonly Transform[] _trim = new Transform[Slots];
+        readonly Transform[] _blot = new Transform[Slots];
+        readonly Transform[] _band = new Transform[Slots];
+        readonly Renderer[] _bandRend = new Renderer[Slots];
+        readonly TextMesh[] _rankNum = new TextMesh[Slots];
         readonly Transform[] _podiumAnchor = new Transform[Slots];
         readonly MenuCheer[] _planter = new MenuCheer[Slots];
         readonly float[] _stepH = new float[Slots];
@@ -74,7 +78,7 @@ namespace Tag.Ui.Menu
             // the rim from behind so the silhouette leaves the well.
             // Key from the front three-quarter, fill kept soft, rim from behind
             // so the face plate and the eye sockets are not a flat ball.
-            AddSun("PreviewKey", new Vector3(0.39f, -0.48f, -0.79f), new Color(1f, 0.96f, 0.90f, 1f), 1.55f);
+            AddSun("PreviewKey", new Vector3(0.39f, -0.48f, -0.79f), new Color(1f, 0.96f, 0.90f, 1f), 1.55f, true);
             AddSun("PreviewFill", new Vector3(-0.42f, -0.18f, -0.55f), new Color(0.75f, 0.82f, 1f, 1f), 0.28f);
             AddSun("PreviewRim", new Vector3(-0.55f, -0.25f, 0.80f), new Color(0.82f, 0.90f, 1f, 1f), 0.70f);
             for (int i = 0; i < Slots; i++)
@@ -218,12 +222,19 @@ namespace Tag.Ui.Menu
                 }
                 bool on = i < count && rows != null;
                 _step[i].gameObject.SetActive(on);
+                if (_band[i] != null) _band[i].gameObject.SetActive(on);
+                if (_rankNum[i] != null) _rankNum[i].gameObject.SetActive(on);
+                if (_blot[i] != null) _blot[i].gameObject.SetActive(on);
                 if (!on)
                 {
                     _planter[i] = null;
                     continue;
                 }
                 MenuPodium.Row row = rows[i];
+                int seat = row.Seat;
+                if (seat < 0) seat = i;
+                if (_bandRend[i] != null)
+                    _bandRend[i].sharedMaterial = DummyPrimitiveFactory.MakeMat(MenuTheme.SeatBand(seat), 0.4f, 0.02f);
                 GameObject body = MenuMannequin.Spawn(_podiumAnchor[i], MenuMannequin.NameOf(row.Hier), MenuMannequin.NameOf(row.Accent), row.Hat != 0);
                 bool win = row.Winner;
                 bool clap = !win && i < 3;
@@ -291,6 +302,25 @@ namespace Tag.Ui.Menu
                     Vector3 sp = stand.localPosition;
                     sp.y = h + 0.05f;
                     stand.localPosition = sp;
+                }
+                Transform band = _band[i];
+                if (band != null)
+                {
+                    Vector3 bp = band.localPosition;
+                    bp.y = h * 0.48f;
+                    band.localPosition = bp;
+                    Vector3 bs = band.localScale;
+                    bs.y = h * 0.55f;
+                    if (bs.y < 0.08f) bs.y = 0.08f;
+                    band.localScale = bs;
+                }
+                TextMesh num = _rankNum[i];
+                if (num != null)
+                {
+                    Vector3 np = num.transform.localPosition;
+                    np.y = h * 0.48f;
+                    num.transform.localPosition = np;
+                    num.characterSize = h * 0.22f;
                 }
                 MenuCheer planter = _planter[i];
                 if (planter != null)
@@ -399,13 +429,18 @@ namespace Tag.Ui.Menu
             float[] xs = new float[Slots];
             for (int s = 0; s < Slots; s++)
                 MenuCheer.Slot(s, out xs[s], out heights[s]);
-            Color[] paints =
-            {
-                MenuTheme.Gold,
-                new Color(0.75f, 0.78f, 0.84f, 1f),
-                new Color(0.72f, 0.42f, 0.22f, 1f),
-                MenuTheme.Panel
-            };
+            Color stone = new Color(0.62f, 0.60f, 0.57f, 1f);
+            Color cap = new Color(0.74f, 0.72f, 0.68f, 1f);
+            var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            floor.name = "Floor";
+            floor.transform.SetParent(_podiumRoot, false);
+            floor.transform.localPosition = new Vector3(0.80f, -0.04f, 0.15f);
+            floor.transform.localScale = new Vector3(8.4f, 0.08f, 6.2f);
+            var floorCol = floor.GetComponent<Collider>();
+            if (floorCol != null) Destroy(floorCol);
+            var floorRend = floor.GetComponent<Renderer>();
+            if (floorRend != null)
+                floorRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.48f, 0.47f, 0.45f, 1f), 0.18f, 0f);
             for (int i = 0; i < Slots; i++)
             {
                 var step = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -419,7 +454,7 @@ namespace Tag.Ui.Menu
                 var col = step.GetComponent<Collider>();
                 if (col != null) Destroy(col);
                 var rend = step.GetComponent<Renderer>();
-                if (rend != null) rend.sharedMaterial = DummyPrimitiveFactory.MakeMat(paints[i], 0.35f, 0.08f);
+                if (rend != null) rend.sharedMaterial = DummyPrimitiveFactory.MakeMat(stone, 0.22f, 0.02f);
                 _step[i] = step.transform;
                 var trim = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 trim.name = "Trim" + i.ToString();
@@ -431,29 +466,43 @@ namespace Tag.Ui.Menu
                 _trim[i] = trim.transform;
                 var trimRend = trim.GetComponent<Renderer>();
                 if (trimRend != null)
-                    trimRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.98f, 0.94f, 0.82f, 1f), 0.28f, 0.12f);
-                float plateH = 0.30f;
-                float plateY = -0.02f;
+                    trimRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(cap, 0.2f, 0.04f);
+                float plateY = heights[i] * 0.48f;
                 var face = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 face.name = "Face" + i.ToString();
                 face.transform.SetParent(_podiumRoot, false);
-                face.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.03f);
-                face.transform.localScale = new Vector3(wide * 0.44f, plateH, 0.04f);
+                face.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.02f);
+                face.transform.localScale = new Vector3(wide * 0.92f, heights[i] * 0.55f, 0.035f);
                 var faceCol = face.GetComponent<Collider>();
                 if (faceCol != null) Destroy(faceCol);
                 var faceRend = face.GetComponent<Renderer>();
                 if (faceRend != null)
-                    faceRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.98f, 0.96f, 0.90f, 1f), 0.4f, 0.02f);
+                    faceRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(MenuTheme.SeatBand(i), 0.4f, 0.02f);
+                _band[i] = face.transform;
+                _bandRend[i] = faceRend;
                 var numGo = new GameObject("Num" + i.ToString());
                 numGo.transform.SetParent(_podiumRoot, false);
-                numGo.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.06f);
+                numGo.transform.localPosition = new Vector3(xs[i], plateY, deep * 0.5f + 0.05f);
                 var num = numGo.AddComponent<TextMesh>();
                 num.text = (i + 1).ToString();
-                num.fontSize = 64;
-                num.characterSize = 0.045f;
+                num.fontSize = 90;
+                num.characterSize = heights[i] * 0.22f;
                 num.anchor = TextAnchor.MiddleCenter;
                 num.alignment = TextAlignment.Center;
-                num.color = new Color(0.08f, 0.08f, 0.12f, 1f);
+                num.color = new Color(0.98f, 0.97f, 0.94f, 1f);
+                num.fontStyle = FontStyle.Bold;
+                _rankNum[i] = num;
+                var blot = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                blot.name = "BlockShade" + i.ToString();
+                blot.transform.SetParent(_podiumRoot, false);
+                blot.transform.localPosition = new Vector3(xs[i], 0.012f, 0.06f);
+                blot.transform.localScale = new Vector3(wide + 0.28f, 0.008f, deep + 0.22f);
+                var blotCol = blot.GetComponent<Collider>();
+                if (blotCol != null) Destroy(blotCol);
+                var blotRend = blot.GetComponent<Renderer>();
+                if (blotRend != null)
+                    blotRend.sharedMaterial = DummyPrimitiveFactory.MakeMat(new Color(0.02f, 0.02f, 0.03f, 0.45f), 0.95f, 0f);
+                _blot[i] = blot.transform;
                 var stand = new GameObject("Stand" + i.ToString());
                 stand.transform.SetParent(_podiumRoot, false);
                 stand.transform.localPosition = new Vector3(xs[i], heights[i] + 0.05f, 0f);
@@ -617,7 +666,7 @@ namespace Tag.Ui.Menu
             return tex;
         }
 
-        void AddSun(string name, Vector3 rayDir, Color color, float intensity)
+        void AddSun(string name, Vector3 rayDir, Color color, float intensity, bool shadow = false)
         {
             var go = new GameObject(name);
             go.transform.SetParent(transform, false);
@@ -626,7 +675,8 @@ namespace Tag.Ui.Menu
             light.type = LightType.Directional;
             light.color = color;
             light.intensity = intensity;
-            light.shadows = LightShadows.None;
+            light.shadows = shadow ? LightShadows.Soft : LightShadows.None;
+            if (shadow) light.shadowStrength = 0.65f;
         }
 
         void BuildWell(int i)

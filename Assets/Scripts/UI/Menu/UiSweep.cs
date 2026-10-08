@@ -55,9 +55,9 @@ namespace Tag.Ui.Menu
 
         static bool SeatText()
         {
-            float[] r = { 0.95f, 0.16f, 1f, 0.16f };
-            float[] g = { 0.16f, 0.45f, 0.86f, 0.82f };
-            float[] b = { 0.22f, 1f, 0.12f, 0.28f };
+            float[] r = { 0.95f, 0.16f, 0.94f, 0.62f };
+            float[] g = { 0.16f, 0.45f, 0.42f, 0.32f };
+            float[] b = { 0.22f, 1f, 0.14f, 0.86f };
             for (int i = 0; i < 4; i++)
             {
                 float pr = Mix(0.04f, r[i]);

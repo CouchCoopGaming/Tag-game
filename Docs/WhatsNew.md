@@ -344,6 +344,8 @@ The thirty-eighth pass puts each results card under its block, at one width, wit
 
 The thirty-ninth pass gives the blocks one footprint, a gap, and a shared front edge. The heights stay second, first, third, fourth. The stat cards match that spacing, with equal gaps, and the row is centred under the blocks. The summary names who was It the least and who ran the longest chase. Second place bends the raised elbow so the fist shows. The check is `Docs/UiStills/pass39/results-reveal.gif`. pose stays 0 and rigJoint stays 26. Space still jumps.
 
+The fortieth pass makes every results block the same stone. The front band is that seat's colour, P1 red, P2 blue, P3 orange, P4 purple, and the rank numeral is on the band. Those four colours are MenuTheme.SeatBand. A floor sits under the blocks, each block has a soft contact shadow, and the figure shadows the top of the block. Second place pumps a fist, upper arm about 45° up, elbow about 90°, fist above the shoulder. The stat line is the same on every card: tags, time as It, and round wins. The check is `Docs/UiStills/pass40/results-reveal.gif`. pose stays 0 and rigJoint stays 26. Space still jumps.
+
 ## Motion, ninth pass
 
 The wall jump, the rope, the zip, the launch pad, a landing, the dash flash, a hard turnaround, and a punch while you run all ease instead of snapping. Speeds, the jump, and the dash length are the same.

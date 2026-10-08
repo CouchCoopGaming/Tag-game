@@ -348,12 +348,10 @@ namespace Tag.Ui.Menu
             string timeWord = time.ToString("0.0") + "s as It";
             string winWord = wins == 1 ? "1 round win" : wins.ToString() + " round wins";
             string tail = chase >= 0f ? chase.ToString("0.0") + "s chase" : winWord;
-            if (winner)
-                return "WIN  " + tagWord + "\n" + timeWord + "\n" + tail;
-            string head = tagWord + "  " + timeWord;
-            if (InkWidth(head) > RankInk(ScaleMax))
-                head = tagWord + "\n" + timeWord;
-            return head + "\n" + tail;
+            string line = tagWord + " · " + timeWord;
+            if (InkWidth(line) > RankInk(ScaleMax))
+                return tagWord + "\n" + timeWord + "\n" + tail;
+            return line + "\n" + tail;
         }
 
         static bool RankCards()

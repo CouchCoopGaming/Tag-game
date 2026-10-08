@@ -825,7 +825,7 @@ namespace Tag.Ui.Menu
                     solids[0] = Solid.Box("step", sx, height * 0.5f, 0f, wide * 0.5f, height * 0.5f, deep * 0.5f);
                     solids[1] = Solid.Box("trim", sx, height + 0.025f, 0f, wide * 0.5f, 0.025f, deep * 0.5f);
                     solids[2] = Solid.Cyl("shade", sx, height + 0.065f, 0f, 0.38f, 0.012f, 0.25f);
-                    solids[3] = Solid.Box("face", sx, -0.02f, deep * 0.5f + 0.03f, wide * 0.22f, 0.15f, 0.02f);
+                    solids[3] = Solid.Box("face", sx, height * 0.48f, deep * 0.5f + 0.02f, wide * 0.46f, height * 0.28f, 0.018f);
                     for (int c = 0; c < 18; c++)
                     {
                         float ang = c * 0.55f;

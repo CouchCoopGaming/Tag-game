@@ -1038,14 +1038,14 @@ namespace Tag.Level
         }
 
         /// <summary>
-        /// Seat paint from MenuTheme, the same colors as the P badges.
-        /// P1 red, P2 blue, P3 yellow, P4 green.
+        /// Seat paint from MenuTheme.SeatBand, the same colors as the P badges.
+        /// P1 red, P2 blue, P3 orange, P4 purple.
         /// </summary>
         static void SlotPaint(int seat, out float bodyR, out float bodyG, out float bodyB, out float accentR, out float accentG, out float accentB)
         {
-            float[] r = { 0.95f, 0.16f, 1f, 0.16f };
-            float[] g = { 0.16f, 0.45f, 0.86f, 0.82f };
-            float[] b = { 0.22f, 1f, 0.12f, 0.28f };
+            float[] r = { 0.95f, 0.16f, 0.94f, 0.62f };
+            float[] g = { 0.16f, 0.45f, 0.42f, 0.32f };
+            float[] b = { 0.22f, 1f, 0.14f, 0.86f };
             int i = seat < 0 ? 0 : (seat > 3 ? 3 : seat);
             bodyR = r[i]; bodyG = g[i]; bodyB = b[i];
             accentR = r[i]; accentG = g[i]; accentB = b[i];
