@@ -114,6 +114,27 @@ namespace Tag.Modes
             && !_resultsActionTaken
             && Time.unscaledTime >= _resultsInputReadyAt;
         public string ResultMessage => _resultMessage;
+
+        /// <summary>Hot Potato round wins. Other modes return 0. Results screen only.</summary>
+        public int RoundWinsOf(string playerId)
+        {
+            HotPotatoMode hot = _mode as HotPotatoMode;
+            if (hot == null) return 0;
+            return hot.RoundWins(playerId);
+        }
+
+        /// <summary>True when this mode's own winner list names the player.</summary>
+        public bool WinnerNamed(string playerId)
+        {
+            if (_mode == null || _ctx == null || string.IsNullOrEmpty(playerId)) return false;
+            System.Collections.Generic.IReadOnlyList<string> list = _mode.GetWinnerIds(_ctx);
+            if (list == null) return false;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i] == playerId) return true;
+            }
+            return false;
+        }
         /// <summary>Last punch/round handoff, for the local TAG flash.</summary>
         public string LastFromId { get; private set; }
         public string LastToId { get; private set; }

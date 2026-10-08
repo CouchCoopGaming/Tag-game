@@ -180,3 +180,9 @@ Options covers the volumes, the shared look (sensitivity and invert are still on
 The pictures in `Docs/UiStills/pass1/` are mockups, drawn to show the layout. They are not captures from the Unity editor. The screen order and the leftover list are in `Docs/UiPlan.md`.
 
 The old title cards are still in the game. Set the PlayerPrefs key `Tag.Ui.Legacy` to 1 if you want those instead. Nothing about how the pawn moves was changed for this menu.
+
+The menu's second pass is the look. Tiles are chunky and rounded, with a thick edge and a shadow. The background is a bright gradient and a slow chevron. Moving between screens slides the page and a gold bar in about a fifth of a second. The bottom chips say Arrows or Stick, Space or South, and Esc or East, matching the last device you touched. The letters are Liberation Sans Bold. The license sits next to the font file. No new paid art.
+
+On character select, each player gets a colored panel and a turning preview. In the Unity editor that preview is the Hier mannequin for the color you picked. It breathes and shifts its weight the way the idle pose already does. A green READY! stamp lands when that player locks in. After you run Tag → Menu → Bake Hier Catalog And Arena Thumbs, a built player uses those same meshes. Before that bake, the preview is the primitive mannequin with the same colors.
+
+Arena cards show the overview photo of Mega Park, Pocket Park, or Stack Yard, and the big panel on the right follows the highlighted card. Results put people on a podium in the order that mode actually uses: Hot Potato by round wins (first to 2), Least It by time as It, Trail Tag by who is still standing, Free play by tags with no winner. Confetti shows when someone won, and it stays off if reduce motion is on. The pictures for this pass are mockups in `Docs/UiStills/pass2/`.

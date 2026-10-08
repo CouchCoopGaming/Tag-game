@@ -60,8 +60,19 @@ namespace Tag.Ui.Menu
         public static MenuTile Tile(Transform parent, float x, float y, float w, float h, int index, string label, string detail, bool allow, Action<int> hover, Action<int> press)
         {
             var rt = Place(parent, "Tile" + index.ToString(), x, y, w, h);
-            var plate = rt.gameObject.AddComponent<Image>();
-            plate.color = allow ? MenuTheme.Panel : MenuTheme.Off;
+            var shadow = Place(rt, "Shadow", 10f, 12f, w, h);
+            var shadowImage = shadow.gameObject.AddComponent<Image>();
+            MenuArt.Plate(shadowImage, MenuTheme.Shadow, true);
+            shadowImage.raycastTarget = false;
+
+            var strokeRt = Place(rt, "Stroke", -5f, -5f, w + 10f, h + 10f);
+            var stroke = strokeRt.gameObject.AddComponent<Image>();
+            MenuArt.Plate(stroke, allow ? MenuTheme.Stroke : MenuTheme.Off, true);
+            stroke.raycastTarget = false;
+
+            var fill = Place(rt, "Fill", 0f, 0f, w, h);
+            var plate = fill.gameObject.AddComponent<Image>();
+            MenuArt.Plate(plate, allow ? MenuTheme.Panel : MenuTheme.Off, true);
             var button = rt.gameObject.AddComponent<Button>();
             button.targetGraphic = plate;
             button.transition = Selectable.Transition.None;
@@ -69,21 +80,33 @@ namespace Tag.Ui.Menu
             nav.mode = Navigation.Mode.None;
             button.navigation = nav;
 
-            var bar = Place(rt, "Bar", 0f, 0f, 14f, h);
+            var bar = Place(rt, "Bar", 10f, 16f, 12f, h - 32f);
             var barImage = bar.gameObject.AddComponent<Image>();
-            barImage.color = new Color(1f, 1f, 1f, 0.16f);
+            MenuArt.Plate(barImage, new Color(1f, 1f, 1f, 0.35f), true);
             barImage.raycastTarget = false;
 
-            var title = Words(rt, label, 36, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0f, 0.42f), new Vector2(1f, 1f));
+            var title = Words(rt, label, 40, TextAnchor.MiddleLeft, MenuTheme.Cream, new Vector2(0f, 0.42f), new Vector2(1f, 1f));
             var sub = Words(rt, detail, 22, TextAnchor.UpperLeft, MenuTheme.Mute, new Vector2(0f, 0f), new Vector2(1f, 0.48f));
             var tile = rt.gameObject.AddComponent<MenuTile>();
             tile.Plate = plate;
+            tile.Stroke = stroke;
             tile.Label = title;
             tile.Detail = sub;
             tile.Bar = barImage;
             tile.Setup(index, label, detail, MenuTheme.Panel, allow, hover, press);
             button.onClick.AddListener(() => tile.Click());
             return tile;
+        }
+
+        public static RawImage Thumb(MenuTile tile, Texture tex, float x, float y, float w, float h)
+        {
+            if (tile == null) return null;
+            var rt = Place(tile.transform, "Thumb", x, y, w, h);
+            var raw = rt.gameObject.AddComponent<RawImage>();
+            raw.texture = tex;
+            raw.color = tex != null ? Color.white : new Color(0.15f, 0.35f, 0.7f, 1f);
+            raw.raycastTarget = false;
+            return raw;
         }
     }
 }

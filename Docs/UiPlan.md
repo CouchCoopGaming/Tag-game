@@ -71,13 +71,21 @@ MainMenu.unity is the same door without the park. It is third in the build list,
 | Controls | Rebind through ActionBinds. Unknown Jump keys are rejected. Space still jumps. |
 | Credits | Short original note. Built-in font. Existing UI sounds. |
 
+## Pass 2
+
+Tiles are rounded, outlined, and shadowed. The sky is a gradient with a scrolling chevron. Screens slide in about 0.2 s with a gold sweep. The footer is three prompt chips that swap between keyboard words and pad words. The display font is Liberation Sans Bold (SIL OFL, license in `Assets/UI/Fonts/OFL-Liberation.txt`). Seat chips follow the accessibility palette once someone has joined. Empty slots use red, blue, yellow, and green.
+
+Character previews load `Dummy_Mannequin_*_Hier_Hi` in the editor, or the catalog after Tag → Menu → Bake Hier Catalog And Arena Thumbs. Until that bake is saved, a player build uses the primitive mannequin with the same bone names. Idle breath and weight shift come from `IdlePose`. The primitive also hangs its arms with `VerbPoseClips` idle numbers. Ready stamps the panel.
+
+Arena cards use the overview stills in `Assets/UI/ArenaThumbs` (also under Resources so the build includes them). The hovered card fills the big preview.
+
+The podium orders players by the mode that ended: Hot Potato round wins (first to 2), Least It by time as It with that mode's winner first, Trail Tag last standing, Free play by tags and no winner stamp. The 3D steps use the same mannequin. Confetti plays only when there is a winner and reduce motion is off.
+
 ## Later passes
 
-- Real Hier meshes in the preview, not the primitive mannequin.
-- Arena stills from `ArenaStill` on the cards, not flat color.
-- Rank the podium by the mode's own winner (Hot Potato is first to 2; this pass sorts by least time as It, which matches the old front-end tie rule).
 - A 2D focus grid on rules so Left from a rule row lands on a mode tile.
 - Per-player look, only if the settings blob grows a seat field. Do not invent it in the menu.
-- Editor captures from a real Unity play session to replace these mockups (`Docs/UiStills/pass1/` is labeled MOCKUP).
+- Editor captures from a real Unity play session to replace the mockups in `Docs/UiStills/pass2/`.
 - Online tile, when online exists. Leave it disabled until then.
 - Profile rename and delete on the join screen (the profile API already has them).
+- A live camera flyover of the park, once a menu scene can spin a hidden arena without loading Play.

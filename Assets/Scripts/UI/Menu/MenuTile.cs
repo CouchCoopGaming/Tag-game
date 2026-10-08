@@ -9,6 +9,7 @@ namespace Tag.Ui.Menu
     {
         public int Index;
         public Image Plate;
+        public Image Stroke;
         public Text Label;
         public Text Detail;
         public Image Bar;
@@ -40,7 +41,8 @@ namespace Tag.Ui.Menu
             _hot = hot;
             if (hot && !MenuVideo.ReduceMotion) _punch = 1f;
             if (Plate != null) Plate.color = hot ? _hotColor : _base;
-            if (Bar != null) Bar.color = hot ? MenuTheme.Gold : new Color(1f, 1f, 1f, 0.16f);
+            if (Stroke != null) Stroke.color = hot ? MenuTheme.Gold : MenuTheme.Stroke;
+            if (Bar != null) Bar.color = hot ? MenuTheme.Gold : new Color(1f, 1f, 1f, 0.35f);
         }
 
         public void OnPointerEnter(PointerEventData eventData)
