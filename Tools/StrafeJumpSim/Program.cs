@@ -683,6 +683,9 @@ static class Program
         Console.WriteLine(Tag.Art.SmoothMotion.ResponseLine());
         Console.WriteLine(Tag.Art.LocomotionPolish.ProofLine());
         Console.WriteLine(Tag.Art.LocomotionPolish.StepLine());
+        Console.WriteLine(Tag.Art.BodyLife.ProofLine());
+        Console.WriteLine(Tag.Art.TransitionMatrix.ProofLine());
+        Console.WriteLine(Tag.Art.TransitionMatrix.TopLine());
         if (!Tag.Art.SmoothMotion.Holds())
         {
             Console.Error.WriteLine("smooth motion is not held");
@@ -691,6 +694,16 @@ static class Program
         if (!Tag.Art.LocomotionPolish.Holds())
         {
             Console.Error.WriteLine("locomotion polish is not held");
+            return 1;
+        }
+        if (!Tag.Art.BodyLife.Holds())
+        {
+            Console.Error.WriteLine("body life is not held");
+            return 1;
+        }
+        if (!Tag.Art.TransitionMatrix.Holds())
+        {
+            Console.Error.WriteLine("transition matrix is not held");
             return 1;
         }
         if (!AssetHas("Assets/Scripts/Art/DummyLocomotor.cs",
@@ -707,7 +720,15 @@ static class Program
                 "LocomotionPolish.AirPhase",
                 "LocomotionPolish.FootPitch",
                 "LocomotionPolish.HandPitch",
-                "LocomotionPolish.HeadYaw"))
+                "LocomotionPolish.HeadYaw",
+                "TransitionMatrix.BoneSeconds",
+                "TransitionMatrix.RootSeconds",
+                "BodyLife.CrouchCadence",
+                "BodyLife.Scrabble",
+                "BodyLife.EntryPlant",
+                "BodyLife.ModeBlend",
+                "BodyLife.ArmPump",
+                "BodyLife.FlinchWeight"))
         {
             Console.Error.WriteLine("smooth motion is not on the locomotor");
             return 1;
@@ -750,6 +771,8 @@ static class Program
         Tag.Art.SmoothMotion.WriteParkourStills(Path.Combine(still2, "climb-wall-mantle.png"));
         string still3 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass3");
         Tag.Art.SmoothMotion.WriteLocomotionStills(Path.Combine(still3, "loco-air-ik.png"));
+        string still4 = Path.Combine(RepoRoot(), "Docs", "SmoothStills", "pass4");
+        Tag.Art.SmoothMotion.WritePass4Stills(Path.Combine(still4, "idle-wall-flinch.png"));
 
         Console.WriteLine("solo grapple on; opponent and couch off; jet off; clips and locks held");
         return 0;
