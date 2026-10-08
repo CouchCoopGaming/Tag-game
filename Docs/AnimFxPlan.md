@@ -35,6 +35,13 @@ Pass 1 is the exit poses and the terminal landing roll. Pass 2 deepens those pos
 - Pause → Settings → Effects is still Off, Low, or Full. Off and Reduced flashing hide this layer. Low draws fewer ghosts and particles.
 - Stills are in `Docs/AnimStills/pass5/` (`owned-fx.png`, `dizzy-star.png`, `bam-wham.png`).
 
+## Pass 6 (this branch)
+
+- Dust puffs are an 8-frame flipbook. The landing ring is a soft decal, and a heavy fall uses the cracked variant for that surface (grass, dirt, concrete, wood, metal, wet). Wet plants use a drip sprite. Dash ghosts use an afterimage shader with a fresnel rim and the player color. Art is project-owned, in `Assets/Resources/FX`.
+- Alpha and scale ease in and out. A card starts at 0 and ends at 0.
+- Zip drop, the hands-down absorb, wall jump, climb top-out, and mantle ease in over 0.16 s. The other exits keep the 0.08 s onset. Cancel stays 0.06 s. Durations stay put.
+- Rendered stills are in `Docs/AnimStills/pass6/`.
+
 Pass 3 mockups stay in `Docs/AnimStills/pass3/`.
 
 ## FX queue

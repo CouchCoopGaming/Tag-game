@@ -61,11 +61,19 @@ namespace Tag.FX
         Material[] _ghostMat;
         Transform _dizzy;
         Transform[] _stars;
+        Material[] _starMat;
         RaycastHit _hookHit;
+        VerbFxCards _cards;
+        float _rimVis;
+        float _starAge = -1f;
+        bool _prevStagger;
+        int _ringSurf;
+        bool _ringCracked;
 
         public static void Ensure(GameObject host)
         {
             if (host == null) return;
+            VerbFxCards.Ensure(host);
             if (host.GetComponent<VerbOwnedFx>() == null)
                 host.AddComponent<VerbOwnedFx>();
         }
@@ -88,6 +96,8 @@ namespace Tag.FX
             Shader shader = Shader.Find("Tag/ComicBillboard");
             if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
             if (shader == null) shader = Shader.Find("Sprites/Default");
+            Shader ghostShader = Shader.Find("Tag/Afterimage");
+            if (ghostShader == null) ghostShader = shader;
             Mesh quad = Quad();
             Texture2D starTex = LoadStar();
             _ghosts = new Transform[Ghosts];
@@ -95,18 +105,20 @@ namespace Tag.FX
             for (int i = 0; i < Ghosts; i++)
             {
                 _ghostAge[i] = -1f;
-                _ghosts[i] = MakeQuad(transform, "DashGhost", quad, shader, null, out _ghostMat[i]);
+                _ghosts[i] = MakeQuad(transform, "DashGhost", quad, ghostShader, null, out _ghostMat[i]);
+                _ghostMat[i].SetFloat("_Fresnel", 1.6f);
             }
             _dizzy = new GameObject("Dizzy").transform;
             _dizzy.SetParent(transform, false);
             _stars = new Transform[Stars];
+            _starMat = new Material[Stars];
             for (int i = 0; i < Stars; i++)
             {
-                Material mat;
-                _stars[i] = MakeQuad(_dizzy, "Star", quad, shader, starTex, out mat);
-                mat.color = Color.white;
-                mat.SetFloat("_Tilt", (i - 1) * 0.12f);
+                _stars[i] = MakeQuad(_dizzy, "Star", quad, shader, starTex, out _starMat[i]);
+                _starMat[i].color = Color.white;
+                _starMat[i].SetFloat("_Tilt", (i - 1) * 0.12f);
             }
+            _cards = GetComponent<VerbFxCards>();
             _dizzy.gameObject.SetActive(false);
             _ready = _motor != null && _fx != null;
         }
@@ -131,11 +143,12 @@ namespace Tag.FX
             TickDash(dt);
             TickGrapple();
             TickStagger(dt);
-            TickRim();
+            TickRim(dt);
             TickDrip();
             FadeRing(dt);
             FadeSnap(dt);
             FadeGhosts(dt);
+            if (_cards != null) _cards.Tick(dt);
             Remember();
         }
 
@@ -149,12 +162,16 @@ namespace Tag.FX
                     float tier = LandingRollPose.TierScale(impact);
                     _ringAge = 0f;
                     _ringR = VerbFxLook.LandRing(impact) * (0.55f + 0.45f * tier);
+                    _ringSurf = _groundSurf;
+                    _ringCracked = tier >= 0.99f;
                     Vector3 pos = _motor.transform.position;
                     pos.y += 0.05f;
                     DustLook.Puff puff = DustLook.At(_groundSurf, speed, (int)DustLook.Kick.None);
                     puff.Count = VerbFxLook.Debris(impact, 1f);
                     puff.Size *= 0.75f + 0.5f * tier;
                     _fx.PlayShaped(FxBurstKind.Land, pos, puff);
+                    if (_cards != null)
+                        _cards.Burst(pos, puff.Count, puff.Size * 2.4f, puff.R, puff.G, puff.B, 0.28f + tier * 0.35f);
                     if (VerbFxLook.RollSwirl(impact, speed))
                     {
                         _swirlAge = 0f;
@@ -180,6 +197,8 @@ namespace Tag.FX
                     DustLook.Puff swirl = DustLook.At(_groundSurf, DustLook.Sprint, (int)DustLook.Kick.Trail);
                     swirl.Count = 2;
                     _fx.PlayShaped(FxBurstKind.Roll, p, swirl);
+                    if (_cards != null)
+                        _cards.SpawnSwirl(p, swirl.R, swirl.G, swirl.B);
                 }
             }
         }
@@ -224,6 +243,8 @@ namespace Tag.FX
                     puff.Count = VerbFxLook.HookBits(surf, true);
                     if (surf == (int)DustLook.Surface.Metal) puff.Spark = 1;
                     _fx.PlayShaped(FxBurstKind.VaultPuff, anchor, puff);
+                    if (_cards != null)
+                        _cards.SpawnHook(anchor, surf, surf == (int)DustLook.Surface.Concrete || surf == (int)DustLook.Surface.Metal);
                 }
             }
             if (!on && _prevGrapple)
@@ -240,33 +261,53 @@ namespace Tag.FX
         void TickStagger(float dt)
         {
             bool on = _motor.IsPunchStaggered;
-            _dizzy.gameObject.SetActive(on);
-            if (!on) return;
+            if (on && !_prevStagger) _starAge = 0.0001f;
+            if (!on)
+            {
+                _starAge = -1f;
+                _dizzy.gameObject.SetActive(false);
+                return;
+            }
+            _starAge += dt;
+            float life = PunchStaggerPose.Duration;
+            float a = VerbFxEase.Alpha(_starAge, life);
+            float s = VerbFxEase.Scale(_starAge, life, 0.2f, 1f);
+            _dizzy.gameObject.SetActive(a > 0.01f);
+            if (a <= 0.01f) return;
             _dizzy.position = _motor.transform.position + Vector3.up * 1.85f;
             _dizzy.Rotate(0f, 140f * dt, 0f, Space.World);
             float spin = Time.time * 3f;
             for (int i = 0; i < Stars; i++)
             {
-                float a = spin + i * 2.094f;
-                _stars[i].localPosition = new Vector3(Mathf.Cos(a) * 0.32f, Mathf.Sin(a) * 0.12f, 0f);
-                _stars[i].localScale = new Vector3(0.42f, 0.42f, 1f);
+                float ang = spin + i * 2.094f;
+                _stars[i].localPosition = new Vector3(Mathf.Cos(ang) * 0.32f, Mathf.Sin(ang) * 0.12f, 0f);
+                _stars[i].localScale = new Vector3(0.42f * s, 0.42f * s, 1f);
+                Color c = _starMat[i].color;
+                c.r = 1f;
+                c.g = 1f;
+                c.b = 1f;
+                c.a = a;
+                _starMat[i].color = c;
             }
         }
 
-        void TickRim()
+        void TickRim(float dt)
         {
             float left = 0f;
             if (_it != null && _it.TagBackRemaining > left) left = _it.TagBackRemaining;
             if (_role != null && _role.TagBackRemaining > left) left = _role.TagBackRemaining;
             float pulse = VerbFxLook.Rim(left, TagBackImmunity.DefaultSeconds, Time.time);
-            bool on = pulse > 0.02f;
+            float follow = dt * 8f;
+            if (follow > 1f) follow = 1f;
+            _rimVis += (pulse - _rimVis) * follow;
+            bool on = _rimVis > 0.02f;
             _rims[0].enabled = on;
             _rims[1].enabled = on;
             if (!on) return;
-            float radius = 0.46f + 0.06f * pulse;
-            Color c = new Color(_colorR, _colorG, _colorB, 0.25f + 0.55f * pulse);
-            PlaceRing(_rims[0], _motor.transform.position + Vector3.up * (0.7f + 0.04f * pulse), radius, c);
-            PlaceRing(_rims[1], _motor.transform.position + Vector3.up * (1.25f + 0.04f * pulse), radius * 0.92f, c);
+            float radius = 0.46f + 0.06f * _rimVis;
+            Color c = new Color(_colorR, _colorG, _colorB, 0.25f + 0.55f * _rimVis);
+            PlaceRing(_rims[0], _motor.transform.position + Vector3.up * (0.7f + 0.04f * _rimVis), radius, c);
+            PlaceRing(_rims[1], _motor.transform.position + Vector3.up * (1.25f + 0.04f * _rimVis), radius * 0.92f, c);
         }
 
         void TickDrip()
@@ -287,6 +328,11 @@ namespace Tag.FX
                         DustLook.Puff puff = DustLook.At(_wallSurf, _motor.HorizSpeed, (int)DustLook.Kick.None);
                         puff.Count = 3;
                         _fx.PlayShaped(FxBurstKind.WallScuff, point, puff);
+                        if (_cards != null)
+                        {
+                            _cards.SpawnDrip(point);
+                            _cards.SpawnDrip(point + new Vector3(0.04f, 0.08f, 0f));
+                        }
                     }
                 }
                 _prevSurf = surf;
@@ -321,14 +367,16 @@ namespace Tag.FX
                 }
                 _ghosts[i].gameObject.SetActive(true);
                 _ghosts[i].position = _ghostPos[i];
-                float u = 1f - _ghostAge[i] / VerbFxLook.GhostLife;
+                float a = VerbFxEase.Alpha(_ghostAge[i], VerbFxLook.GhostLife);
+                float s = VerbFxEase.Scale(_ghostAge[i], VerbFxLook.GhostLife, 0.92f, 1.06f);
                 Color c = _ghostMat[i].color;
                 c.r = _colorR;
                 c.g = _colorG;
                 c.b = _colorB;
-                c.a = 0.55f * u;
+                c.a = 0.85f * a;
                 _ghostMat[i].color = c;
-                _ghosts[i].localScale = new Vector3(0.42f, 0.9f, 1f);
+                _ghostMat[i].SetFloat("_Fade", a);
+                _ghosts[i].localScale = new Vector3(0.46f * s, 0.95f * s, 1f);
             }
         }
 
@@ -337,6 +385,7 @@ namespace Tag.FX
             if (_ringAge < 0f)
             {
                 _ring.enabled = false;
+                if (_cards != null) _cards.HideRing();
                 return;
             }
             _ringAge += dt;
@@ -344,11 +393,20 @@ namespace Tag.FX
             {
                 _ringAge = -1f;
                 _ring.enabled = false;
+                if (_cards != null) _cards.HideRing();
                 return;
             }
-            float u = 1f - _ringAge / 0.36f;
-            float rad = _ringR * (0.7f + 0.5f * (_ringAge / 0.36f));
-            Color c = new Color(0.85f, 0.72f, 0.48f, 0.8f * u);
+            float a = VerbFxEase.Alpha(_ringAge, 0.36f);
+            float rad = _ringR * VerbFxEase.Scale(_ringAge, 0.36f, 0.7f, 1.15f);
+            if (_cards != null)
+            {
+                _ring.enabled = false;
+                Vector3 pos = _motor.transform.position;
+                pos.y += 0.04f;
+                _cards.PaintRing(pos, rad, _ringAge, 0.36f, _ringSurf, _ringCracked);
+                return;
+            }
+            Color c = new Color(0.85f, 0.72f, 0.48f, 0.8f * a);
             PlaceRing(_ring, _motor.transform.position + Vector3.up * 0.06f, rad, c);
         }
 
@@ -366,13 +424,17 @@ namespace Tag.FX
                 _snap.enabled = false;
                 return;
             }
-            float u = 1f - _snapAge / VerbFxLook.ReleaseSeconds;
-            _snap.enabled = true;
+            float a = VerbFxEase.Alpha(_snapAge, VerbFxLook.ReleaseSeconds);
+            float lift = VerbFxEase.Scale(_snapAge, VerbFxLook.ReleaseSeconds, 0.12f, 0.62f);
+            _snap.enabled = a > 0.01f;
             if (_snap.positionCount != 2) _snap.positionCount = 2;
             _snap.SetPosition(0, _snapPos);
-            _snap.SetPosition(1, _snapPos + Vector3.up * (0.15f + u * 0.45f));
-            _snap.startWidth = 0.08f * u;
-            _snap.endWidth = 0.01f;
+            _snap.SetPosition(1, _snapPos + Vector3.up * lift);
+            _snap.startWidth = 0.08f * a;
+            _snap.endWidth = 0.012f * a;
+            Color c = new Color(1f, 0.9f, 0.4f, a);
+            _snap.startColor = c;
+            _snap.endColor = c;
         }
 
         void PlaceRing(LineRenderer line, Vector3 center, float radius, Color color)
@@ -395,6 +457,9 @@ namespace Tag.FX
             _ringAge = -1f;
             _swirlAge = -1f;
             _snapAge = -1f;
+            _starAge = -1f;
+            _rimVis = 0f;
+            if (_cards != null) _cards.HideAll();
             if (_ring != null) _ring.enabled = false;
             if (_snap != null) _snap.enabled = false;
             if (_dizzy != null) _dizzy.gameObject.SetActive(false);
@@ -418,6 +483,7 @@ namespace Tag.FX
             _prevGround = _motor.Ground.grounded;
             _prevDash = _motor.IsAirDashing;
             _prevGrapple = _grapple != null && _grapple.IsPulling;
+            _prevStagger = _motor.IsPunchStaggered;
         }
 
         void CacheSeat()

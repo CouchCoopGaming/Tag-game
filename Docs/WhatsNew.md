@@ -284,3 +284,14 @@ BAM! and WHAM! sit a little larger in their bursts, and the big moves you own in
 - Tag-back still lasts one second. A colored rim pulses on the safe body in every split pane. Try it: get tagged, then look at the body before you can be tagged again.
 - A wet wall drips when a foot plants. Try it: wall-run a surface named wet.
 - Pause → Settings → Effects is still Off, Low, or Full. Off and Reduced flashing hide these trails.
+
+## Softer trails and five quieter exits
+
+The landing ring, the dust, the dash ghosts, and the wet drips now read as printed art instead of a placeholder. Speed, slide, and the camera stay as they were.
+
+- A landing stamps a soft ring in the color of the ground. A heavy fall cracks that ring. Debris is a short puff that grows and fades. The shoulder roll leaves the same puff along the path. Try it: hop, then fall hard onto concrete, then onto dirt.
+- A dash leaves a tinted afterimage with a bright rim. It fades out instead of popping off. Try it: dash.
+- The rope still sags. The hook chips the surface with a small cracked stamp, and letting go eases the snap away. Try it: click to pull, then double-click to release.
+- Dizzy stars grow in and fade out over the same quarter second. Try it: let the dummy punch you.
+- A wet wall drips a real droplet when a foot plants. Try it: wall-run a surface named wet.
+- Leaving a zip, a hard standing land, a wall jump, a climb, or a mantle eases in a little longer. Jump, slide, punch, dash, and lunge still peel an exit off in the same short window.

@@ -322,12 +322,7 @@ namespace Tag.Art
                 return;
             float show = w;
             if (!_chain)
-            {
-                float enter = _age / VerbExitChain.BlendSeconds;
-                if (enter < 0f) enter = 0f;
-                if (enter > 1f) enter = 1f;
-                show *= PoseHandoff.Ease(enter);
-            }
+                show *= VerbExitEase.Enter(_id, _age);
             if (show <= 0.001f)
                 return;
             VerbExitSample target = VerbExitClips.At(_id, Unit(_age), _fallScale, _stepDown, _shoulderLeft);
